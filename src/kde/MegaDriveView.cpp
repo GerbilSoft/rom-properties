@@ -21,6 +21,7 @@
 
 #include "MegaDriveView.hpp"
 #include "libromdata/MegaDrive.hpp"
+#include <cstdio>
 
 #include "ui_MegaDriveView.h"
 class MegaDriveViewPrivate
@@ -38,6 +39,11 @@ class MegaDriveViewPrivate
 	public:
 		Ui::MegaDriveView ui;
 		const LibRomData::MegaDrive *rom;
+
+		/**
+		 * Update the display widgets.
+		 */
+		void updateDisplay(void);
 };
 
 /** MegaDriveViewPrivate **/
@@ -52,6 +58,57 @@ MegaDriveViewPrivate::~MegaDriveViewPrivate()
 	delete rom;
 }
 
+/**
+ * Update the display widgets.
+ */
+void MegaDriveViewPrivate::updateDisplay(void)
+{
+	ui.lblSystem->setText(QString::fromUtf8(rom->m_system.c_str()));
+	ui.lblCopyright->setText(QString::fromUtf8(rom->m_copyright.c_str()));
+	ui.lblTitleDomestic->setText(QString::fromUtf8(rom->m_title_domestic.c_str()));
+	ui.lblTitleExport->setText(QString::fromUtf8(rom->m_title_export.c_str()));
+	ui.lblSerialNumber->setText(QString::fromUtf8(rom->m_serial.c_str()));
+	// TODO: Company.
+
+	// Checksum, in hex.
+	char buf[128];
+	snprintf(buf, sizeof(buf), "0x%04X", rom->m_checksum);
+	ui.lblChecksum->setText(QLatin1String(buf));
+	// FIXME: Verify checksum?
+	ui.lblChecksumStatus->setVisible(false);
+
+	// I/O support.
+	ui.chkIO3btn->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_JOYPAD_3));
+	ui.chkIO6btn->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_JOYPAD_6));
+	ui.chkIO2btn->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_JOYPAD_SMS));
+	ui.chkIOTeamPlayer->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_TEAM_PLAYER));
+	ui.chkIOKeyboard->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_KEYBOARD));
+	ui.chkIOSerial->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_SERIAL));
+	ui.chkIOPrinter->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_PRINTER));
+	ui.chkIOTablet->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_TABLET));
+	ui.chkIOTrackball->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_TRACKBALL));
+	ui.chkIOPaddle->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_PADDLE));
+	ui.chkIOFloppy->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_FDD));
+	ui.chkIOMegaCD->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_CDROM));
+	ui.chkIOActivator->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_ACTIVATOR));
+	ui.chkIOMegaMouse->setChecked(!!(rom->m_io_support & LibRomData::MegaDrive::IO_MEGA_MOUSE));
+
+	// ROM range.
+	snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", rom->m_rom_start, rom->m_rom_end);
+	ui.lblROMRange->setText(QLatin1String(buf));
+	// RAM range.
+	snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", rom->m_ram_start, rom->m_ram_end);
+	ui.lblRAMRange->setText(QLatin1String(buf));
+
+	// TODO: SRAM.
+
+	// Vectors.
+	snprintf(buf, sizeof(buf), "0x%08X", rom->m_entry_point);
+	ui.lblEntryPoint->setText(QLatin1String(buf));
+	snprintf(buf, sizeof(buf), "0x%08X", rom->m_initial_sp);
+	ui.lblInitialSP->setText(QLatin1String(buf));
+}
+
 /** MegaDriveView **/
 
 MegaDriveView::MegaDriveView(const LibRomData::MegaDrive *rom, QWidget *parent)
@@ -60,6 +117,9 @@ MegaDriveView::MegaDriveView(const LibRomData::MegaDrive *rom, QWidget *parent)
 {
 	Q_D(MegaDriveView);
 	d->ui.setupUi(this);
+
+	// Update the display widgets.
+	d->updateDisplay();
 }
 
 MegaDriveView::~MegaDriveView()

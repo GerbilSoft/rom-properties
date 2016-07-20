@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>373</width>
-    <height>359</height>
+    <width>483</width>
+    <height>373</height>
    </rect>
   </property>
   <layout class="QFormLayout" name="formLayout">
@@ -29,6 +29,9 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="1" column="0">
@@ -46,10 +49,13 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="lblDomesticTitleDesc">
+    <widget class="QLabel" name="lblTitleDomesticDesc">
      <property name="text">
       <string>Domestic Title:</string>
      </property>
@@ -59,14 +65,17 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLabel" name="lblDomesticTitle">
+    <widget class="QLabel" name="lblTitleDomestic">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="lblExportTitleDesc">
+    <widget class="QLabel" name="lblTitleExportDesc">
      <property name="text">
       <string>Export Title:</string>
      </property>
@@ -76,9 +85,12 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLabel" name="lblExportTitle">
+    <widget class="QLabel" name="lblTitleExport">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
@@ -97,6 +109,9 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="5" column="0">
@@ -113,6 +128,9 @@
     <widget class="QLabel" name="lblCompany">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
@@ -132,6 +150,9 @@
       <widget class="QLabel" name="lblChecksum">
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
      </item>
@@ -287,6 +308,9 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="9" column="0">
@@ -303,6 +327,9 @@
     <widget class="QLabel" name="lblRAMRange">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
@@ -321,6 +348,9 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="11" column="0">
@@ -338,6 +368,9 @@
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item row="12" column="0">
@@ -354,6 +387,9 @@
     <widget class="QLabel" name="lblInitialSP">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>
