@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin.                 *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * MegaDriveView.cpp: Sega Mega Drive ROM viewer.                          *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,18 +19,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__
-#define __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__
+#include "MegaDriveView.hpp"
+#include "libromdata/MegaDrive.hpp"
 
-#include <kpropertiesdialog.h>
-
-class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
+#include "ui_MegaDriveView.h"
+class MegaDriveViewPrivate
 {
-	Q_OBJECT
+	public:
+		MegaDriveViewPrivate(MegaDriveView *q, const LibRomData::MegaDrive *rom);
+		~MegaDriveViewPrivate();
+
+	private:
+		MegaDriveView *const q_ptr;
+		Q_DECLARE_PUBLIC(MegaDriveView)
+	private:
+		Q_DISABLE_COPY(MegaDriveViewPrivate)
 
 	public:
-		explicit RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList & = QVariantList());
-		virtual ~RomPropertiesDialogPlugin();
+		Ui::MegaDriveView ui;
+		const LibRomData::MegaDrive *rom;
 };
 
-#endif /* __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__ */
+/** MegaDriveViewPrivate **/
+
+MegaDriveViewPrivate::MegaDriveViewPrivate(MegaDriveView *q, const LibRomData::MegaDrive *rom)
+	: q_ptr(q)
+	, rom(rom)
+{ }
+
+MegaDriveViewPrivate::~MegaDriveViewPrivate()
+{
+	delete rom;
+}
+
+/** MegaDriveView **/
+
+MegaDriveView::MegaDriveView(const LibRomData::MegaDrive *rom, QWidget *parent)
+	: super(parent)
+	, d_ptr(new MegaDriveViewPrivate(this, rom))
+{
+	Q_D(MegaDriveView);
+	d->ui.setupUi(this);
+}
+
+MegaDriveView::~MegaDriveView()
+{
+	delete d_ptr;
+}

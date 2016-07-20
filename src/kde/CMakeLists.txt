@@ -9,22 +9,30 @@ IF(BUILD_KDE4)
 	FIND_PACKAGE(KDE4 REQUIRED)
 ENDIF(BUILD_KDE4)
 
+# Include the current source and binary directories.
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+
+# Include the previous source and binary directories.
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/..)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
+
 # TODO: Check for iconv on non-Windows systems.
 # NOTE: KDE4_ADD_PLUGIN() uses automoc.
 
 # Sources and headers.
 SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
+	MegaDriveView.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
+	MegaDriveView.hpp
 	)
-
-# UI files.
-#SET(rom-properties-kde_UIS
-	#MegaDrive.ui
-#	)
-#QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde_UIS})
+SET(rom-properties-kde_UIS
+	MegaDriveView.ui
+	)
+KDE4_ADD_UI_FILES(rom-properties-kde4_UIS_H ${rom-properties-kde_UIS})
 
 #####################
 # Build the plugin. #
@@ -33,9 +41,10 @@ SET(rom-properties-kde_H
 KDE4_ADD_PLUGIN(rom-properties-kde4
 	${rom-properties-kde_SRCS}
 	${rom-properties-kde_H}
-	#${rom-properties-kde4_UIS_H}
+	${rom-properties-kde4_UIS_H}
 	)
 TARGET_LINK_LIBRARIES(rom-properties-kde4
+	libromdata
 	${KDE4_KFILE_LIBRARY}
 	Qt4::QtGui Qt4::QtCore
 	)

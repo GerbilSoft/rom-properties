@@ -43,8 +43,6 @@ class MegaDrive
 		 */
 		MegaDrive(const uint8_t *header, size_t size);
 
-		~MegaDrive();
-
 	private:
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);

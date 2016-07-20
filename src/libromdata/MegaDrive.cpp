@@ -178,5 +178,13 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	m_initial_sp = be32_to_cpu(vectors[0]);
 }
 
+/**
+ * Is this ROM recognized as a Sega Mega Drive ROM?
+ * @return True if it is; false if it isn't.
+ */
+bool MegaDrive::isValid(void) const
+{
+	return m_isValid;
+}
 
 }

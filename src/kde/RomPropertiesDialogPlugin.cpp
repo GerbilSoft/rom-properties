@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page extension. (KDE4/KDE5)                              *
+ * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -30,6 +30,9 @@
 #include "RomPropertiesDialogPlugin.hpp"
 #include <kpluginfactory.h>
 
+#include "libromdata/MegaDrive.hpp"
+#include "MegaDriveView.hpp"
+
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	Q_UNUSED(w)
@@ -44,9 +47,27 @@ K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: KPropertiesDialogPlugin(props)
 {
-	// TODO: Check if a single file is specified,
-	// and if the file is supported.
-	props->addPage(new QWidget(props), QLatin1String("ROM Properties"));
+	// Check if a single file was specified.
+	KUrl url = props->kurl();
+	if (url.isValid() && url.isLocalFile()) {
+		// Single file, and it's local.
+		// Open it and read the first 65536+512 bytes.
+		// TODO: Use KIO and transparent decompression?
+		QString filename = url.toLocalFile();
+		QFile file(filename);
+		if (file.open(QIODevice::ReadOnly)) {
+			QByteArray data = file.read(65536+512);
+			file.close();
+
+			// Check if this might be an MD ROM.
+			LibRomData::MegaDrive *rom = new LibRomData::MegaDrive((const uint8_t*)data.data(), data.size());
+			if (rom->isValid()) {
+				// MD ROM. Show the properties.
+				MegaDriveView *mdView = new MegaDriveView(rom, props);
+				props->addPage(mdView, tr("ROM Properties"));
+			}
+		}
+	}
 }
 
 RomPropertiesDialogPlugin::~RomPropertiesDialogPlugin()

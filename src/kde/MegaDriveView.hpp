@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin.                 *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * MegaDriveView.hpp: Sega Mega Drive ROM viewer.                          *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,18 +19,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__
-#define __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__
+#ifndef __ROMPROPERTIES_KDE_MEGADRIVEVIEW_HPP__
+#define __ROMPROPERTIES_KDE_MEGADRIVEVIEW_HPP__
 
-#include <kpropertiesdialog.h>
+#include <QWidget>
 
-class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
+namespace LibRomData {
+	class MegaDrive;
+}
+
+class MegaDriveViewPrivate;
+class MegaDriveView : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		explicit RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList & = QVariantList());
-		virtual ~RomPropertiesDialogPlugin();
+		MegaDriveView(const LibRomData::MegaDrive *rom, QWidget *parent = 0);
+		virtual ~MegaDriveView();
+
+	private:
+		typedef QWidget super;
+		MegaDriveViewPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(MegaDriveView)
+	private:
+		Q_DISABLE_COPY(MegaDriveView)
 };
 
-#endif /* __ROMPROPERTIES_KDE4_ROMPROPERTIESDIALOGPLUGIN_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_MEGADRIVEVIEW_HPP__ */
