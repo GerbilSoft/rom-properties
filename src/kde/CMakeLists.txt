@@ -81,4 +81,15 @@ IF(BUILD_KDE4)
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca4.
+
+	# Check if a split debug file should be installed.
+	IF(INSTALL_DEBUG)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde4 PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES ${DEBUG_FILENAME}
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/lib/kde4"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+	ENDIF(INSTALL_DEBUG)
 ENDIF(BUILD_KDE4)
