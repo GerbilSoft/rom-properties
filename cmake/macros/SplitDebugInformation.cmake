@@ -22,6 +22,8 @@ IF(NOT MSVC)
 ENDIF(NOT MSVC)
 
 MACRO(SPLIT_DEBUG_INFORMATION EXE_TARGET)
+# TODO: Set target property containing the split debug filename
+# to make it easier to install it.
 SET(SPLIT_OK 1)
 IF(MSVC)
 	# MSVC splits debug information by itself.
