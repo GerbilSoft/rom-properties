@@ -32,23 +32,28 @@ SET(rom-properties-kde_H
 SET(rom-properties-kde_UIS
 	MegaDriveView.ui
 	)
-KDE4_ADD_UI_FILES(rom-properties-kde4_UIS_H ${rom-properties-kde_UIS})
+IF(BUILD_KDE4)
+	KDE4_ADD_UI_FILES(rom-properties-kde4_UIS_H ${rom-properties-kde_UIS})
+ENDIF(BUILD_KDE4)
 
 #####################
 # Build the plugin. #
 #####################
 
-KDE4_ADD_PLUGIN(rom-properties-kde4
-	${rom-properties-kde_SRCS}
-	${rom-properties-kde_H}
-	${rom-properties-kde4_UIS_H}
-	)
-TARGET_LINK_LIBRARIES(rom-properties-kde4
-	libromdata16
-	${KDE4_KFILE_LIBRARY}
-	Qt4::QtGui Qt4::QtCore
-	)
-TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
+IF(BUILD_KDE4)
+	KDE4_ADD_PLUGIN(rom-properties-kde4
+		${rom-properties-kde_SRCS}
+		${rom-properties-kde_H}
+		${rom-properties-kde4_UIS_H}
+		)
+	DO_SPLIT_DEBUG(rom-properties-kde4)
+	TARGET_LINK_LIBRARIES(rom-properties-kde4
+		libromdata16
+		${KDE4_KFILE_LIBRARY}
+		Qt4::QtGui Qt4::QtCore
+		)
+	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
+ENDIF(BUILD_KDE4)
 
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)

@@ -1,12 +1,47 @@
 PROJECT(rom-properties)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
 
-# TODO: Options.
-SET(BUILD_KDE4 ON)
+# Set default build options.
+INCLUDE(cmake/options.cmake)
 
 LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
 	)
+
+# Program information.
+SET(DESCRIPTION "ROM Properties Page shell extension")
+SET(AUTHOR "David Korth")
+SET(VERSION_MAJOR 0)
+SET(VERSION_MINOR 0)
+SET(VERSION_PATCH 0)
+SET(VERSION_DEVEL 1)
+IF(VERSION_PATCH)
+	SET(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+ELSE(VERSION_PATCH)
+	SET(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}")
+ENDIF(VERSION_PATCH)
+IF(VERSION_DEVEL)
+	SET(VERSION_STRING "${VERSION_STRING}+")
+ENDIF(VERSION_DEVEL)
+SET(VERSION_STRING_WIN32 "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_DEVEL}")
+
+# Split Debug macro.
+# Also sets the image version for Windows builds.
+INCLUDE(Win32ImageVersionLinkerFlags)
+MACRO(DO_SPLIT_DEBUG _TARGET)
+	# Split debug information.
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_TARGET})
+	IF(SPLIT_DEBUG)
+		INCLUDE(SplitDebugInformation)
+		SPLIT_DEBUG_INFORMATION(${_TARGET})
+	ENDIF(SPLIT_DEBUG)
+	# Set image version.
+	# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
+	# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
+	# so "1.3" will actually be "1.03".
+	WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+ENDMACRO(DO_SPLIT_DEBUG)
 
 # Check for platform-specific functionality.
 INCLUDE(cmake/platform.cmake)
