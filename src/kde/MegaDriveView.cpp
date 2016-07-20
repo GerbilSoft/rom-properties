@@ -58,16 +58,27 @@ MegaDriveViewPrivate::~MegaDriveViewPrivate()
 	delete rom;
 }
 
+static inline QString rpToQS(const LibRomData::rp_string &rps)
+{
+#if defined(RP_UTF8)
+	return QString::fromUtf8(rps.c_str(), (int)rps.size());
+#elif defined(RP_UTF16)
+	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.c_str()), (int)rps.size());
+#else
+#error Text conversion not available on this system.
+#endif
+}
+
 /**
  * Update the display widgets.
  */
 void MegaDriveViewPrivate::updateDisplay(void)
 {
-	ui.lblSystem->setText(QString::fromUtf8(rom->m_system.c_str()));
-	ui.lblCopyright->setText(QString::fromUtf8(rom->m_copyright.c_str()));
-	ui.lblTitleDomestic->setText(QString::fromUtf8(rom->m_title_domestic.c_str()));
-	ui.lblTitleExport->setText(QString::fromUtf8(rom->m_title_export.c_str()));
-	ui.lblSerialNumber->setText(QString::fromUtf8(rom->m_serial.c_str()));
+	ui.lblSystem->setText(rpToQS(rom->m_system));
+	ui.lblCopyright->setText(rpToQS(rom->m_copyright));
+	ui.lblTitleDomestic->setText(rpToQS(rom->m_title_domestic));
+	ui.lblTitleExport->setText(rpToQS(rom->m_title_export));
+	ui.lblSerialNumber->setText(rpToQS(rom->m_serial));
 	// TODO: Company.
 
 	// Checksum, in hex.

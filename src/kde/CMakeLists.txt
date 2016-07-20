@@ -44,7 +44,7 @@ KDE4_ADD_PLUGIN(rom-properties-kde4
 	${rom-properties-kde4_UIS_H}
 	)
 TARGET_LINK_LIBRARIES(rom-properties-kde4
-	libromdata8	# FIXME: Switch to libromdata16.
+	libromdata16
 	${KDE4_KFILE_LIBRARY}
 	Qt4::QtGui Qt4::QtCore
 	)
