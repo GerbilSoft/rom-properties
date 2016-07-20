@@ -1,0 +1,7 @@
+PROJECT(rom-properties)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
+
+SET(BUILD_KDE4 ON)
+
+# Project subdirectories.
+ADD_SUBDIRECTORY(src)

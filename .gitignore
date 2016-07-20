@@ -1,0 +1,18 @@
+# Filetypes.
+*~
+*.o
+*.a
+*.so
+.directory
+
+# Build directories.
+/build*/
+
+# KDevelop project files.
+*.kdev4
+
+# CMake temproary files.
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+git_version.h
