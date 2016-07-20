@@ -2,4 +2,5 @@ PROJECT(src)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
 
 # Source Code subdirectories.
+ADD_SUBDIRECTORY(libromdata)
 ADD_SUBDIRECTORY(kde)
