@@ -103,11 +103,11 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 
 	// Read the rest of the header.
 	// TODO: Trim the strings.
-	m_system = std::string(romHeader->system, sizeof(romHeader->system));
-	m_copyright = std::string(romHeader->copyright, sizeof(romHeader->copyright));
-	m_title_domestic = std::string(romHeader->title_domestic, sizeof(romHeader->title_domestic));
-	m_title_export = std::string(romHeader->title_export, sizeof(romHeader->title_export));
-	m_serial = std::string(romHeader->serial, sizeof(romHeader->serial));
+	m_system = cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system));
+	m_copyright = cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright));
+	m_title_domestic = cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic));
+	m_title_export = cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export));
+	m_serial = cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial));
 	// TODO: Parse company from the copyright line.
 	m_checksum = be16_to_cpu(romHeader->checksum);
 

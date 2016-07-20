@@ -1,0 +1,54 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * config.libromdata.h.in: LibRomData configuration. (source file)         *
+ * MegaDrive.hpp: Sega Mega Drive ROM reader.                              *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
+#define __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
+
+#ifdef __cplusplus
+#include <string>
+#endif /* __cplusplus */
+
+/* Define to 1 if you have iconv() in either libc or libiconv. */
+#cmakedefine HAVE_ICONV 1
+
+/* String types. This may vary based on build target. */
+#if defined(RP_UTF8) && defined(RP_UTF16)
+#error Must define RP_UTF8 or RP_UTF16, but not both.
+#elif defined(RP_UTF8)
+typedef char rp_char;
+#ifdef __cplusplus
+namespace LibRomData {
+	typedef std::string rp_string;
+}
+#endif /* __cplusplus */
+#elif defined(RP_UTF16)
+typedef char16_t rp_char;
+#ifdef __cplusplus
+namespace LibRomData {
+	typedef std::u16string rp_string;
+}
+#endif /* __cplusplus */
+#else
+#error Must define RP_UTF8 or RP_UTF16, but not both.
+#endif
+
+#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

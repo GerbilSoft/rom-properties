@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <string>
+#include "TextFuncs.hpp"
 
 namespace LibRomData {
 
@@ -88,12 +89,12 @@ class MegaDrive
 		};
 
 		// TODO: Make accessor functions.
-		std::string m_system;
-		std::string m_copyright;
-		std::string m_title_domestic;
-		std::string m_title_export;
-		std::string m_serial;
-		std::string m_company;
+		rp_string m_system;
+		rp_string m_copyright;
+		rp_string m_title_domestic;
+		rp_string m_title_export;
+		rp_string m_serial;
+		rp_string m_company;
 		uint16_t m_checksum;
 		uint32_t m_io_support;
 		uint32_t m_rom_start;
