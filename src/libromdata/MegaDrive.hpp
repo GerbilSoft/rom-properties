@@ -91,10 +91,10 @@ class MegaDrive
 		// TODO: Make accessor functions.
 		rp_string m_system;
 		rp_string m_copyright;
+		rp_string m_publisher;
 		rp_string m_title_domestic;
 		rp_string m_title_export;
 		rp_string m_serial;
-		rp_string m_company;
 		uint16_t m_checksum;
 		uint32_t m_io_support;
 		uint32_t m_rom_start;
@@ -106,6 +106,15 @@ class MegaDrive
 		uint32_t m_sram_end;
 		uint32_t m_entry_point;
 		uint32_t m_initial_sp;
+
+	private:
+		// Third-party company list.
+		// Reference: http://segaretro.org/Third-party_T-series_codes
+		struct MD_ThirdParty {
+			unsigned int t_code;
+			const char *publisher;	// UTF-8
+		};
+		static const MD_ThirdParty MD_ThirdParty_List[];
 };
 
 }

@@ -34,6 +34,21 @@ namespace LibRomData {
  */
 rp_string cp1252_sjis_to_rp_string(const char *str, size_t n);
 
+/**
+ * Convert UTF-8 text to rp_string.
+ * @param str UTF-8 text.
+ * @param n Length of str.
+ * @return rp_string.
+ */
+#if defined(RP_UTF8)
+static inline rp_string utf8_to_rp_string(const char *str, size_t n)
+{
+	return rp_string(str, n);
+}
+#elif defined(RP_UTF16)
+rp_string utf8_to_rp_string(const char *str, size_t n);
+#endif
+
 }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */

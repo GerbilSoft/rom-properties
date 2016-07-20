@@ -101,14 +101,59 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	if (!m_isValid)
 		return;
 
-	// Read the rest of the header.
-	// TODO: Trim the strings.
+	// Read the strings from the header.
 	m_system = cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system));
 	m_copyright = cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright));
+
+	// Determine the publisher.
+	// Formats in the copyright line:
+	// - "(C)SEGA"
+	// - "(C)T-xx"
+	// - "(C)T-xxx"
+	// - "(C)Txxx"
+	m_publisher.clear();
+	if (!memcmp(romHeader->copyright, "(C)SEGA", 7)) {
+		// Sega first-party game.
+		m_publisher = utf8_to_rp_string("Sega", 4);
+	} else if (!memcmp(romHeader->copyright, "(C)T", 4)) {
+		// Third-party game.
+		int start = 4;
+		if (romHeader->copyright[4] == '-')
+			start++;
+		char *endptr;
+		unsigned long t_code = strtoul(&romHeader->copyright[start], &endptr, 10);
+		if (t_code != 0 &&
+		    endptr > &romHeader->copyright[start] &&
+		    endptr < &romHeader->copyright[start+3])
+		{
+			// Valid T-code.
+			// Look it up in the table.
+			// TODO: bsearch();
+			for (const MD_ThirdParty *entry = MD_ThirdParty_List; entry->t_code != 0; entry++) {
+				if (entry->t_code == t_code) {
+					// Found the T-code.
+					// TODO: Make 'n' optional?
+					m_publisher = utf8_to_rp_string(entry->publisher, strlen(entry->publisher));
+					break;
+				}
+			}
+
+			if (m_publisher.empty()) {
+				// No publisher. Just print the T code.
+				char buf[16];
+				snprintf(buf, sizeof(buf), "T-%lu", t_code);
+				// TODO: Make 'n' optional?
+				m_publisher = utf8_to_rp_string(buf, strlen(buf));
+			}
+		}
+	} else {
+		// Unknown publisher.
+		m_publisher = utf8_to_rp_string("Unknown", 7);
+	}
+
 	m_title_domestic = cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic));
 	m_title_export = cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export));
 	m_serial = cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial));
-	// TODO: Parse company from the copyright line.
 	m_checksum = be16_to_cpu(romHeader->checksum);
 
 	// Parse I/O support.

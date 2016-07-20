@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>483</width>
-    <height>373</height>
+    <height>377</height>
    </rect>
   </property>
   <layout class="QFormLayout" name="formLayout">
@@ -55,9 +55,9 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="lblTitleDomesticDesc">
+    <widget class="QLabel" name="lblPublisherDesc">
      <property name="text">
-      <string>Domestic Title:</string>
+      <string>Publisher:</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -65,7 +65,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLabel" name="lblTitleDomestic">
+    <widget class="QLabel" name="lblPublisher">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
@@ -75,9 +75,9 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="lblTitleExportDesc">
+    <widget class="QLabel" name="lblTitleDomesticDesc">
      <property name="text">
-      <string>Export Title:</string>
+      <string>Domestic Title:</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -85,7 +85,7 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLabel" name="lblTitleExport">
+    <widget class="QLabel" name="lblTitleDomestic">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
@@ -95,9 +95,9 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="lblSerialNumberDesc">
+    <widget class="QLabel" name="lblTitleExportDesc">
      <property name="text">
-      <string>Serial Number:</string>
+      <string>Export Title:</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -105,7 +105,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLabel" name="lblSerialNumber">
+    <widget class="QLabel" name="lblTitleExport">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
@@ -115,9 +115,9 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="lblCompanyDesc">
+    <widget class="QLabel" name="lblSerialNumberDesc">
      <property name="text">
-      <string>Company:</string>
+      <string>Serial Number:</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -125,7 +125,7 @@
     </widget>
    </item>
    <item row="5" column="1">
-    <widget class="QLabel" name="lblCompany">
+    <widget class="QLabel" name="lblSerialNumber">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
@@ -134,7 +134,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="lblChecksumDesc">
      <property name="text">
       <string>Checksum:</string>
@@ -144,7 +144,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <layout class="QHBoxLayout" name="hboxChecksum">
      <item>
       <widget class="QLabel" name="lblChecksum">
@@ -181,7 +181,7 @@
      </item>
     </layout>
    </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="lblIOSupport">
      <property name="text">
       <string>I/O Support:</string>
@@ -191,7 +191,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="8" column="1">
     <layout class="QGridLayout" name="gridIOSupport">
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkIO3btn">
@@ -293,7 +293,7 @@
      </item>
     </layout>
    </item>
-   <item row="8" column="0">
+   <item row="9" column="0">
     <widget class="QLabel" name="lblROMRangeDesc">
      <property name="text">
       <string>ROM Range:</string>
@@ -303,7 +303,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="9" column="1">
     <widget class="QLabel" name="lblROMRange">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -313,7 +313,7 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
+   <item row="10" column="0">
     <widget class="QLabel" name="lblRAMRangeDesc">
      <property name="text">
       <string>RAM Range:</string>
@@ -323,7 +323,7 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="10" column="1">
     <widget class="QLabel" name="lblRAMRange">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -333,8 +333,8 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="lblSRAMRange">
+   <item row="11" column="0">
+    <widget class="QLabel" name="lblSRAMRangeDesc">
      <property name="text">
       <string>SRAM Range:</string>
      </property>
@@ -343,28 +343,8 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
-    <widget class="QLabel" name="lblSRAMRange">
-     <property name="textFormat">
-      <enum>Qt::PlainText</enum>
-     </property>
-     <property name="textInteractionFlags">
-      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-     </property>
-    </widget>
-   </item>
-   <item row="11" column="0">
-    <widget class="QLabel" name="lblEntryPointDesc">
-     <property name="text">
-      <string>Entry Point:</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::PlainText</enum>
-     </property>
-    </widget>
-   </item>
    <item row="11" column="1">
-    <widget class="QLabel" name="lblEntryPoint">
+    <widget class="QLabel" name="lblSRAMRange">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
      </property>
@@ -374,6 +354,26 @@
     </widget>
    </item>
    <item row="12" column="0">
+    <widget class="QLabel" name="lblEntryPointDesc">
+     <property name="text">
+      <string>Entry Point:</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QLabel" name="lblEntryPoint">
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0">
     <widget class="QLabel" name="lblInitialSPDesc">
      <property name="text">
       <string>Initial SP:</string>
@@ -383,7 +383,7 @@
      </property>
     </widget>
    </item>
-   <item row="12" column="1">
+   <item row="13" column="1">
     <widget class="QLabel" name="lblInitialSP">
      <property name="textFormat">
       <enum>Qt::PlainText</enum>

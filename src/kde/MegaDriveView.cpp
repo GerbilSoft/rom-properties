@@ -76,10 +76,10 @@ void MegaDriveViewPrivate::updateDisplay(void)
 {
 	ui.lblSystem->setText(rpToQS(rom->m_system));
 	ui.lblCopyright->setText(rpToQS(rom->m_copyright));
+	ui.lblPublisher->setText(rpToQS(rom->m_publisher));
 	ui.lblTitleDomestic->setText(rpToQS(rom->m_title_domestic));
 	ui.lblTitleExport->setText(rpToQS(rom->m_title_export));
 	ui.lblSerialNumber->setText(rpToQS(rom->m_serial));
-	// TODO: Company.
 
 	// Checksum, in hex.
 	char buf[128];
