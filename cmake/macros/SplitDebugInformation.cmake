@@ -53,7 +53,7 @@ IF(SPLIT_OK)
 			${SPLITDEBUG_LOCATION} ${SPLITDEBUG_FILENAME}
 		COMMAND ${CMAKE_STRIP}
 			${SPLITDEBUG_LOCATION}
-		COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink="${_target}.debug"
+		COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink="${SPLITDEBUG_DIRECTORY}/${_target}.debug"
 			${SPLITDEBUG_LOCATION}
 		)
 
