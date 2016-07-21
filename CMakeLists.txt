@@ -1,5 +1,7 @@
 PROJECT(rom-properties)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
+# CMake 2.8.11 adds TARGET_INCLUDE_DIRECTORIES() and Qt4::xxx targets, similar to Qt5.
+# CMake 2.8.12 automates adding compile flags for Qt5, e.g. -fPIC on Linux.
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
@@ -48,3 +50,7 @@ INCLUDE(cmake/platform.cmake)
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(src)
+
+# TODO: Print build summary indicating what plugins will be built.
+# (Some other project had something like this...)
+# TODO: Fail if no plugins are being built.

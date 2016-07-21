@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
+ * ROM Properties Page shell extension. (KDE5)                             *
+ * RomPropertiesDialogPluginFactoryKDE5.cpp: Factory class.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -28,38 +28,24 @@
  */
 
 #include "RomPropertiesDialogPlugin.hpp"
-#include "libromdata/MegaDrive.hpp"
-#include "MegaDriveView.hpp"
+#include <kpluginfactory.h>
 
-RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
-	: KPropertiesDialogPlugin(props)
+static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
-	// Check if a single file was specified.
-#if QT_VERSION >= 0x050000
-	QUrl url = props->url();
-#else /* QT_VERSION < 0x050000 */
-	KUrl url = props->kurl();
-#endif
-	if (url.isValid() && url.isLocalFile()) {
-		// Single file, and it's local.
-		// Open it and read the first 65536+512 bytes.
-		// TODO: Use KIO and transparent decompression?
-		QString filename = url.toLocalFile();
-		QFile file(filename);
-		if (file.open(QIODevice::ReadOnly)) {
-			QByteArray data = file.read(65536+512);
-			file.close();
-
-			// Check if this might be an MD ROM.
-			LibRomData::MegaDrive *rom = new LibRomData::MegaDrive((const uint8_t*)data.data(), data.size());
-			if (rom->isValid()) {
-				// MD ROM. Show the properties.
-				MegaDriveView *mdView = new MegaDriveView(rom, props);
-				props->addPage(mdView, tr("ROM Properties"));
-			}
-		}
-	}
+	Q_UNUSED(w)
+	KPropertiesDialog *props = qobject_cast<KPropertiesDialog*>(parent);
+	Q_ASSERT(props);
+	return new RomPropertiesDialogPlugin(props, args);
 }
 
-RomPropertiesDialogPlugin::~RomPropertiesDialogPlugin()
-{ }
+K_PLUGIN_FACTORY(RomPropertiesDialogFactory, registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
+#if QT_VERSION < 0x050000
+K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
+#endif
+
+// automoc4 works correctly without any special handling.
+// automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
+// Q_OBJECT macro, so it needs a manual .moc include.
+// That .moc include trips up automoc4, even if it's #ifdef'd.
+// Hence, we need separate files for KDE4 and KDE5.
+#include "RomPropertiesDialogPluginFactory.moc"
