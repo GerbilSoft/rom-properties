@@ -26,9 +26,11 @@
 #include <string>
 #include "TextFuncs.hpp"
 
+#include "RomData.hpp"
+
 namespace LibRomData {
 
-class MegaDrive
+class MegaDrive : public RomData
 {
 	public:
 		// TODO: Some abstraction to read the file directory
@@ -47,16 +49,6 @@ class MegaDrive
 	private:
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);
-
-	public:
-		/**
-		 * Is this ROM recognized as a Sega Mega Drive ROM?
-		 * @return True if it is; false if it isn't.
-		 */
-		bool isValid(void) const;
-
-	private:
-		bool m_isValid;
 
 	public:
 		/** MD ROM properties. **/

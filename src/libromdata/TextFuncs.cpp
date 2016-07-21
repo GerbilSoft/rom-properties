@@ -311,4 +311,42 @@ rp_string utf8_to_rp_string(const char *str, size_t n)
 }
 #endif /* RP_UTF16 */
 
+#if defined(RP_UTF16)
+/**
+ * strlen() function for rp_char strings.
+ * @param str String.
+ * @return String length.
+ */
+size_t rp_strlen(const rp_char *str)
+{
+	size_t n = 0;
+	while (*str++)
+		n++;
+	return n;
+}
+#endif /* RP_UTF16 */
+
+#if defined(RP_UTF16)
+/**
+ * strdup() function for rp_char strings.
+ * @param str String.
+ * @return Duplicated string.
+ */
+rp_char *rp_strdup(const rp_char *str)
+{
+	size_t len = rp_strlen(str)+1;	// includes terminator
+	rp_char *ret = (rp_char*)malloc(len*sizeof(rp_char));
+	memcpy(ret, str, len*sizeof(rp_char));
+	return ret;
+}
+
+rp_char *rp_strdup(const rp_string &str)
+{
+	size_t len = str.size()+1;	// includes terminator
+	rp_char *ret = (rp_char*)malloc(len*sizeof(rp_char));
+	memcpy(ret, str.c_str(), len*sizeof(rp_char));
+	return ret;
+}
+#endif /* RP_UTF16 */
+
 }

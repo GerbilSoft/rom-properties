@@ -24,6 +24,12 @@
 
 #include "libromdata/config.libromdata.h"
 
+#ifdef RP_UTF8
+// rp_str*() are inlined versions of the standard
+// str*() functions in the UTF-8 build.
+#include <cstring>
+#endif
+
 namespace LibRomData {
 
 /**
@@ -47,6 +53,39 @@ static inline rp_string utf8_to_rp_string(const char *str, size_t n)
 }
 #elif defined(RP_UTF16)
 rp_string utf8_to_rp_string(const char *str, size_t n);
+#endif
+
+/**
+ * strlen() function for rp_char strings.
+ * @param str String.
+ * @return String length.
+ */
+#if defined(RP_UTF8)
+static inline size_t rp_strlen(const rp_char *str)
+{
+	return strlen(str);
+}
+#elif defined(RP_UTF16)
+size_t rp_strlen(const rp_char *str);
+#endif
+
+/**
+ * strdup() function for rp_char strings.
+ * @param str String.
+ * @return Duplicated string.
+ */
+#if defined(RP_UTF8)
+static inline rp_char *rp_strdup(const rp_char *str)
+{
+	return strdup(str);
+}
+static inline rp_char *rp_strdup(const rp_string &str)
+{
+	return strdup(str.c_str());
+}
+#elif defined(RP_UTF16)
+rp_char *rp_strdup(const rp_char *str);
+rp_char *rp_strdup(const rp_string &str);
 #endif
 
 }

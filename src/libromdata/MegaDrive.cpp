@@ -23,7 +23,37 @@
 #include "byteswap.h"
 #include <cstring>
 
+// TODO: Move this elsewhere.
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
 namespace LibRomData {
+
+// I/O support bitfield.
+static const rp_char *md_io_bitfield[] = {
+	_RP("Joypad"), _RP("6-button Joypad"), _RP("SMS Joypad"),
+	_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
+	_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
+	_RP("Paddle"), _RP("Floppy Drive"), _RP("CD-ROM"),
+	_RP("Activator"), _RP("Mega Mouse")
+};
+
+// ROM fields.
+// TODO: Private class?
+static const struct RomData::RomFieldDesc md_fields[] = {
+	{_RP("System"), RomData::RFT_STRING, {}},
+	{_RP("Copyright"), RomData::RFT_STRING, {}},
+	{_RP("Publisher"), RomData::RFT_STRING, {}},
+	{_RP("Domestic Title"), RomData::RFT_STRING, {}},
+	{_RP("Export Title"), RomData::RFT_STRING, {}},
+	{_RP("Serial Number"), RomData::RFT_STRING, {}},
+	{_RP("Checksum"), RomData::RFT_STRING, {}},
+	{_RP("I/O Support"), RomData::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), md_io_bitfield}},
+	{_RP("ROM Range"), RomData::RFT_STRING, {}},
+	{_RP("RAM Range"), RomData::RFT_STRING, {}},
+	{_RP("SRAM Range"), RomData::RFT_STRING, {}},
+	{_RP("Entry Point"), RomData::RFT_STRING, {}},
+	{_RP("Initial SP"), RomData::RFT_STRING, {}}
+};
 
 /**
  * Mega Drive ROM header.
@@ -68,7 +98,7 @@ struct MD_RomHeader {
  * Check isValid() to determine if this is a valid ROM.
  */
 MegaDrive::MegaDrive(const uint8_t *header, size_t size)
-	: m_isValid(false)
+	: RomData(md_fields, ARRAY_SIZE(md_fields))
 {
 	// TODO: Handle SMD and other interleaved formats.
 	// TODO: Handle Sega CD.
@@ -221,15 +251,16 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
 	m_entry_point = be32_to_cpu(vectors[1]);
 	m_initial_sp = be32_to_cpu(vectors[0]);
-}
 
-/**
- * Is this ROM recognized as a Sega Mega Drive ROM?
- * @return True if it is; false if it isn't.
- */
-bool MegaDrive::isValid(void) const
-{
-	return m_isValid;
+	// Add fields for RomData.
+	// TODO: Remove the individual fields later.
+	addField_string(m_system);
+	addField_string(m_copyright);
+	addField_string(m_publisher);
+	addField_string(m_title_domestic);
+	addField_string(m_title_export);
+	addField_string(m_serial);
+	// TODO: Numeric and bitfields.
 }
 
 }
