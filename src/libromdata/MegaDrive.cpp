@@ -114,7 +114,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	m_publisher.clear();
 	if (!memcmp(romHeader->copyright, "(C)SEGA", 7)) {
 		// Sega first-party game.
-		m_publisher = utf8_to_rp_string("Sega", 4);
+		m_publisher = _RP("Sega");
 	} else if (!memcmp(romHeader->copyright, "(C)T", 4)) {
 		// Third-party game.
 		int start = 4;
@@ -132,8 +132,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 			for (const MD_ThirdParty *entry = MD_ThirdParty_List; entry->t_code != 0; entry++) {
 				if (entry->t_code == t_code) {
 					// Found the T-code.
-					// TODO: Make 'n' optional?
-					m_publisher = utf8_to_rp_string(entry->publisher, strlen(entry->publisher));
+					m_publisher = entry->publisher;
 					break;
 				}
 			}
@@ -143,12 +142,13 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 				char buf[16];
 				snprintf(buf, sizeof(buf), "T-%lu", t_code);
 				// TODO: Make 'n' optional?
+				// TODO: Faster ascii_to_rp_string() function?
 				m_publisher = utf8_to_rp_string(buf, strlen(buf));
 			}
 		}
 	} else {
 		// Unknown publisher.
-		m_publisher = utf8_to_rp_string("Unknown", 7);
+		m_publisher = _RP("Unknown");
 	}
 
 	m_title_domestic = cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic));

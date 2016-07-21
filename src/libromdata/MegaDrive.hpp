@@ -112,7 +112,7 @@ class MegaDrive
 		// Reference: http://segaretro.org/Third-party_T-series_codes
 		struct MD_ThirdParty {
 			unsigned int t_code;
-			const char *publisher;	// UTF-8
+			const rp_char *publisher;
 		};
 		static const MD_ThirdParty MD_ThirdParty_List[];
 };

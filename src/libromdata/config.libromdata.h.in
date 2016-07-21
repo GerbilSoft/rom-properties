@@ -35,6 +35,7 @@
 #error Must define RP_UTF8 or RP_UTF16, but not both.
 #elif defined(RP_UTF8)
 typedef char rp_char;
+#define _RP(x) u8 ##x
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::string rp_string;
@@ -42,6 +43,7 @@ namespace LibRomData {
 #endif /* __cplusplus */
 #elif defined(RP_UTF16)
 typedef char16_t rp_char;
+#define _RP(x) u ##x
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::u16string rp_string;
