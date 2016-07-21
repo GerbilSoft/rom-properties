@@ -62,10 +62,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
 	MegaDriveView.cpp
+	RomDataView.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
 	MegaDriveView.hpp
+	RomDataView.hpp
 	)
 SET(rom-properties-kde_UIS
 	MegaDriveView.ui
