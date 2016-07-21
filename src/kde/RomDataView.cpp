@@ -90,7 +90,7 @@ static inline QString rpToQS(const LibRomData::rp_string &rps)
 #if defined(RP_UTF8)
 	return QString::fromUtf8(rps.c_str(), (int)rps.size());
 #elif defined(RP_UTF16)
-	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.c_str()), (int)rps.size());
+	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.data()), (int)rps.size());
 #else
 #error Text conversion not available on this system.
 #endif
