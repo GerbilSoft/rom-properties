@@ -96,7 +96,7 @@ IF(BUILD_KDE4)
 		)
 	DO_SPLIT_DEBUG(rom-properties-kde4)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4
-		libromdata16
+		romdata16
 		${KDE4_KFILE_LIBRARY}
 		Qt4::QtGui Qt4::QtCore
 		)
@@ -114,7 +114,7 @@ IF(BUILD_KDE5)
 	SET_TARGET_PROPERTIES(rom-properties-kde5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-kde5)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5
-		libromdata16
+		romdata16
 		KF5::KIOWidgets
 		Qt5::Widgets Qt5::Gui Qt5::Core
 		)
