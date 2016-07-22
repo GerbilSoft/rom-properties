@@ -82,8 +82,12 @@ class RomData
 		void close(void);
 
 	protected:
-		// Subclass must set this to true if the ROM is valid.
-		bool m_isValid;
+		/**
+		* Load field data.
+		* Called by RomData::fields() if the field data hasn't been loaded yet.
+		* @return 0 on success; negative POSIX error code on error.
+		*/
+		virtual int loadFieldData(void) = 0;
 
 	public:
 		/**
@@ -93,11 +97,9 @@ class RomData
 		const RomFields *fields(void) const;
 
 	protected:
-		// Open file.
-		FILE *m_file;
-
-		// ROM fields.
-		RomFields *const m_fields;
+		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
+		FILE *m_file;			// Open file.
+		RomFields *const m_fields;	// ROM fields.
 };
 
 }

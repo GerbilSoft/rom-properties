@@ -54,6 +54,14 @@ class MegaDrive : public RomData
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);
 
+	protected:
+		/**
+		* Load field data.
+		* Called by RomData::fields() if the field data hasn't been loaded yet.
+		* @return 0 on success; negative POSIX error code on error.
+		*/
+		virtual int loadFieldData(void) override;
+
 	private:
 		// Third-party company list.
 		// Reference: http://segaretro.org/Third-party_T-series_codes

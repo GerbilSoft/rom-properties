@@ -193,9 +193,23 @@ const RomFields::Desc *RomFields::desc(int idx) const
  */
 const RomFields::Data *RomFields::data(int idx) const
 {
-	if (idx < 0 || idx >= m_count || idx >= (int)m_data->size())
+	if (idx < 0 || idx >= m_count ||
+	    !m_data || idx >= (int)m_data->size())
+	{
+		// Index out of range; or, the index is in range,
+		// but no data is available.
 		return nullptr;
+	}
 	return &m_data->at(idx);
+}
+
+/**
+ * Is data loaded?
+ * @return True if m_data has at least one row; false if m_data is nullptr or empty.
+ */
+bool RomFields::isDataLoaded(void) const
+{
+	return (m_data && !m_data->empty());
 }
 
 /** Convenience functions for RomData subclasses. **/

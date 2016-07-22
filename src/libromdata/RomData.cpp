@@ -92,6 +92,11 @@ void RomData::close(void)
  */
 const RomFields *RomData::fields(void) const
 {
+	if (!m_fields->isDataLoaded()) {
+		// Data has not been loaded.
+		// Load it now.
+		const_cast<RomData*>(this)->loadFieldData();
+	}
 	return m_fields;
 }
 

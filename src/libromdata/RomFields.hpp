@@ -105,6 +105,12 @@ class RomFields
 		 */
 		const Data *data(int idx) const;
 
+		/**
+		 * Is data loaded?
+		 * @return True if m_data has at least one row; false if m_data is nullptr or empty.
+		 */
+		bool isDataLoaded(void) const;
+
 	private:
 		// ROM field descriptions.
 		const Desc *const m_fields;

@@ -143,12 +143,17 @@ MegaDrive::MegaDrive(FILE *file)
 		"SEGA 32X        ",
 	};
 
+	// Seek to the beginning of the file.
+	rewind(m_file);
+	fflush(m_file);
+
 	// Read the header. [0x200 bytes]
 	uint8_t header[0x200];
 	size_t size = fread(header, 1, sizeof(header), m_file);
 	if (size != sizeof(header))
 		return;
 
+	// Check the system name.
 	const MD_RomHeader *romHeader = reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
 	for (int i = 0; i < 4; i++) {
 		if (!strncmp(romHeader->system, strchk[i], 16) ||
@@ -159,9 +164,38 @@ MegaDrive::MegaDrive(FILE *file)
 			break;
 		}
 	}
+}
 
-	if (!m_isValid)
-		return;
+/**
+ * Load field data.
+ * Called by RomData::fields() if the field data hasn't been loaded yet.
+ * @return Number of fields read on success; negative POSIX error code on error.
+ */
+int MegaDrive::loadFieldData(void)
+{
+	if (m_fields->isDataLoaded()) {
+		// Field data *has* been loaded...
+		return 0;
+	}
+	if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	}
+
+	// Seek to the beginning of the file.
+	rewind(m_file);
+	fflush(m_file);
+
+	// Read the header. [0x200 bytes]
+	uint8_t header[0x200];
+	size_t size = fread(header, 1, sizeof(header), m_file);
+	if (size != sizeof(header)) {
+		// File isn't big enough for an MD header...
+		return -EIO;
+	}
+
+	// MD ROM header, excluding the vector table.
+	const MD_RomHeader *romHeader = reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
 
 	// Read the strings from the header.
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
@@ -302,6 +336,9 @@ MegaDrive::MegaDrive(FILE *file)
 	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
 	m_fields->addData_string_numeric(be32_to_cpu(vectors[1]), RomFields::FB_HEX, 8);	// Entry point
 	m_fields->addData_string_numeric(be32_to_cpu(vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+
+	// Finished reading the field data.
+	return (int)m_fields->count();
 }
 
 }
