@@ -266,7 +266,28 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	// I/O support.
 	addField_bitfield(m_io_support);
 
-	// TODO: Remaining numeric fields.
+	// ROM range.
+	// TODO: Range helper? (Can't be used for SRAM, though...)
+	char buf[32];
+	int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", m_rom_start, m_rom_end);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+
+	// RAM range.
+	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", m_ram_start, m_ram_end);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+
+	// SRAM range. (TODO)
+	addField_string(_RP(""));
+
+	// Entry point.
+	addField_string_numeric(m_entry_point, FB_HEX, 8);
+
+	// Initial SP.
+	addField_string_numeric(m_initial_sp, FB_HEX, 8);
 }
 
 }
