@@ -54,6 +54,16 @@ class MegaDrive : public RomData
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);
 
+	public:
+		/**
+		 * Detect if a ROM is supported by this class.
+		 * TODO: Actually detect the type; for now, just returns true if it's supported.
+		 * @param header Header data.
+		 * @param size Size of header.
+		 * @return True if the ROM is supported; false if it isn't.
+		 */
+		static bool isRomSupported(const uint8_t *header, size_t size);
+
 	protected:
 		/**
 		* Load field data.

@@ -39,6 +39,7 @@ SET(libromdata_SRCS
 	RomFields.cpp
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
+	RomDataFactory.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -47,6 +48,7 @@ SET(libromdata_H
 	RomFields.hpp
 	TextFuncs.hpp
 	MegaDrive.hpp
+	RomDataFactory.hpp
 	)
 
 ######################

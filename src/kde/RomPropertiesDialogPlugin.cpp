@@ -28,7 +28,7 @@
  */
 
 #include "RomPropertiesDialogPlugin.hpp"
-#include "libromdata/MegaDrive.hpp"
+#include "libromdata/RomDataFactory.hpp"
 #include "RomDataView.hpp"
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
@@ -50,11 +50,11 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 			// For now, using stdio.
 			FILE *file = fopen(filename.toUtf8().constData(), "rb");
 			if (file) {
-				// Check if this might be an MD ROM.
-				LibRomData::MegaDrive *rom = new LibRomData::MegaDrive(file);
-				if (rom->isValid()) {
+				// Get the appropriate RomData class for this ROM.
+				LibRomData::RomData *romData = LibRomData::RomDataFactory::getInstance(file);
+				if (romData) {
 					// MD ROM. Show the properties.
-					RomDataView *romDataView = new RomDataView(rom, props);
+					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
 				}
 			}
