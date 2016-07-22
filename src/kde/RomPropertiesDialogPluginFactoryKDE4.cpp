@@ -48,4 +48,4 @@ K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
 // Hence, we need separate files for KDE4 and KDE5.
-//#include "RomPropertiesDialogPluginFactory.moc"
+//#include "RomPropertiesDialogPluginFactoryKDE4.moc"
