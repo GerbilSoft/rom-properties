@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RomDataFactory.hpp: RomData factory class.                              *
+ * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,58 +19,59 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RomDataFactory.hpp"
+#ifndef __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__
 
-// RomData subclasses.
-#include "MegaDrive.hpp"
-#include "GameCube.hpp"
+#include "TextFuncs.hpp"
 
 namespace LibRomData {
 
-/**
- * Create a RomData class for the specified ROM file.
- *
- * NOTE: RomData::isValid() is checked before returning a
- * created RomData instance, so returned objects can be
- * assumed to be valid as long as they aren't nullptr.
- *
- * @param file ROM file.
- * @return RomData class, or nullptr if the ROM isn't supported.
- */
-RomData *RomDataFactory::getInstance(FILE *file)
+class NintendoPublishers
 {
-	// Read 4,096 bytes from the ROM header.
-	// This should be enough to detect most systems.
-	uint8_t header[4096];
-	rewind(file);
-	fflush(file);
-	size_t count = fread(header, 1, sizeof(header), file);
+	private:
+		NintendoPublishers();
+		~NintendoPublishers();
+	private:
+		NintendoPublishers(const NintendoPublishers &);
+		NintendoPublishers &operator=(const NintendoPublishers &);
 
-	// Try to detect the ROM format.
-	RomData *romData;
+	private:
+		/**
+		 * Nintendo third-party publisher list.
+		 * References:
+		 * - http://www.gametdb.com/Wii
+		 * - http://www.gametdb.com/Wii/Downloads
+		 */
+		struct ThirdPartyList {
+			uint16_t code;			// 2-byte code
+			const rp_char *publisher;
+		};
+		static const ThirdPartyList ms_thirdPartyList[];
 
-	if (MegaDrive::isRomSupported(header, sizeof(header))) {
-		romData = new MegaDrive(file);
-		if (romData->isValid())
-			return romData;
+	public:
+		/**
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int compar(const void *a, const void *b);
 
-		// Not actually supported.
-		delete romData;
-		romData = nullptr;
-	}
+		/**
+		 * Look up a company code.
+		 * @param code Company code.
+		 * @return Publisher, or nullptr if not found.
+		 */
+		static const rp_char *lookup(uint16_t code);
 
-	if (GameCube::isRomSupported(header, sizeof(header))) {
-		romData = new GameCube(file);
-		if (romData->isValid())
-			return romData;
+		/**
+		 * Look up a company code.
+		 * @param code Company code.
+		 * @return Publisher, or nullptr if not found.
+		 */
+		static const rp_char *lookup(const char *code);
+};
 
-		// Not actually supported.
-		delete romData;
-		romData = nullptr;
-	}
-
-	// Not supported.
-	return nullptr;
 }
 
-}
+#endif /* __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__ */

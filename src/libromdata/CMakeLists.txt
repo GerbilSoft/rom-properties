@@ -39,6 +39,8 @@ SET(libromdata_SRCS
 	RomFields.cpp
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
+	GameCube.cpp
+	NintendoPublishers.cpp
 	RomDataFactory.cpp
 	)
 SET(libromdata_H
@@ -48,6 +50,8 @@ SET(libromdata_H
 	RomFields.hpp
 	TextFuncs.hpp
 	MegaDrive.hpp
+	GameCube.hpp
+	NintendoPublishers.hpp
 	RomDataFactory.hpp
 	)
 
