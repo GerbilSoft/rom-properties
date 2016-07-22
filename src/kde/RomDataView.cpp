@@ -41,7 +41,7 @@ using LibRomData::RomFields;
 class RomDataViewPrivate
 {
 	public:
-		RomDataViewPrivate(RomDataView *q, const RomData *romData);
+		RomDataViewPrivate(RomDataView *q, RomData *romData);
 		~RomDataViewPrivate();
 
 	private:
@@ -58,7 +58,7 @@ class RomDataViewPrivate
 			// TODO: Store the field widgets?
 		};
 		Ui ui;
-		const RomData *romData;
+		RomData *romData;
 
 		/**
 		 * Update the display widgets.
@@ -71,7 +71,7 @@ class RomDataViewPrivate
 
 /** RomDataViewPrivate **/
 
-RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, const RomData *romData)
+RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
 	, displayInit(false)
@@ -123,9 +123,15 @@ void RomDataViewPrivate::updateDisplay(void)
 	displayInit = true;
 
 	// Get the fields.
-	Q_Q(RomDataView);
 	const RomFields *fields = romData->fields();
 	const int count = fields->count();
+
+	// Make sure the underlying file handle is closed,
+	// since we don't need it anymore.
+	romData->close();
+
+	// Create the UI widgets.
+	Q_Q(RomDataView);
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -190,7 +196,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 /** RomDataView **/
 
-RomDataView::RomDataView(const RomData *rom, QWidget *parent)
+RomDataView::RomDataView(RomData *rom, QWidget *parent)
 	: super(parent)
 	, d_ptr(new RomDataViewPrivate(this, rom))
 {

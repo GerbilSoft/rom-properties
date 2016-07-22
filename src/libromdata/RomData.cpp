@@ -21,21 +21,48 @@
 
 #include "RomData.hpp"
 
+// C includes.
+#include <unistd.h>
+
 namespace LibRomData {
 
 /**
  * ROM data base class.
- * Subclass must pass an array of RomFieldDesc structs.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * In addition, subclasses must pass an array of RomFielDesc structs.
+ *
+ * @param file ROM file.
  * @param fields Array of ROM Field descriptions.
  * @param count Number of ROM Field descriptions.
  */
-RomData::RomData(const RomFields::Desc *fields, int count)
+RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
+	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
-{ }
+{
+	// TODO: Windows version.
+	// dup() the file.
+	int fd_old = fileno(file);
+	int fd_new = dup(fd_old);
+	if (fd_new >= 0) {
+		m_file = fdopen(fd_new, "rb");
+		if (m_file) {
+			// Make sure we're at the beginning of the file.
+			rewind(m_file);
+			fflush(m_file);
+		}
+	}
+}
 
 RomData::~RomData()
 {
+	this->close();
 	delete m_fields;
 }
 
@@ -46,6 +73,17 @@ RomData::~RomData()
 bool RomData::isValid(void) const
 {
 	return m_isValid;
+}
+
+/**
+ * Close the opened file.
+ */
+void RomData::close(void)
+{
+	if (m_file) {
+		fclose(m_file);
+		m_file = nullptr;
+	}
 }
 
 /**

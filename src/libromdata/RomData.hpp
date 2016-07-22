@@ -28,6 +28,9 @@
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstdio>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -43,11 +46,22 @@ class RomData
 
 		/**
 		 * ROM data base class.
-		 * Subclass must pass an array of RomFieldDesc structs.
+		 *
+		 * A ROM file must be opened by the caller. The file handle
+		 * will be dup()'d and must be kept open in order to load
+		 * data from the ROM.
+		 *
+		 * To close the file, either delete this object or call close().
+		 *
+		 * NOTE: Check isValid() to determine if this is a valid ROM.
+		 *
+		 * In addition, subclasses must pass an array of RomFielDesc structs.
+		 *
+		 * @param file ROM file.
 		 * @param fields Array of ROM Field descriptions.
 		 * @param count Number of ROM Field descriptions.
 		 */
-		RomData(const RomFields::Desc *fields, int count);
+		RomData(FILE *file, const RomFields::Desc *fields, int count);
 	public:
 		virtual ~RomData();
 
@@ -62,6 +76,11 @@ class RomData
 		 */
 		bool isValid(void) const;
 
+		/**
+		 * Close the opened file.
+		 */
+		void close(void);
+
 	protected:
 		// Subclass must set this to true if the ROM is valid.
 		bool m_isValid;
@@ -74,6 +93,9 @@ class RomData
 		const RomFields *fields(void) const;
 
 	protected:
+		// Open file.
+		FILE *m_file;
+
 		// ROM fields.
 		RomFields *const m_fields;
 };

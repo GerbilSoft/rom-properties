@@ -109,14 +109,27 @@ struct MD_RomHeader {
 
 /**
  * Read a Sega Mega Drive ROM.
- * @param header ROM header. (Should be at least 65536+512 bytes.)
- * @param size Header size.
  *
- * Check isValid() to determine if this is a valid ROM.
+ * A ROM file must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open ROM file.
  */
-MegaDrive::MegaDrive(const uint8_t *header, size_t size)
-	: RomData(md_fields, ARRAY_SIZE(md_fields))
+MegaDrive::MegaDrive(FILE *file)
+	: RomData(file, md_fields, ARRAY_SIZE(md_fields))
 {
+	// TODO: Only validate that this is an MD ROM here.
+	// Load fields elsewhere.
+	if (!m_file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
 	// TODO: Handle SMD and other interleaved formats.
 	// TODO: Handle Sega CD.
 	// TODO: Store specific system type.
@@ -130,8 +143,10 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 		"SEGA 32X        ",
 	};
 
-	// Header must be at *least* 0x200 bytes.
-	if (size < 0x200)
+	// Read the header. [0x200 bytes]
+	uint8_t header[0x200];
+	size_t size = fread(header, 1, sizeof(header), m_file);
+	if (size != sizeof(header))
 		return;
 
 	const MD_RomHeader *romHeader = reinterpret_cast<const MD_RomHeader*>(&header[0x100]);

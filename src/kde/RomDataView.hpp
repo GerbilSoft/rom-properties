@@ -34,7 +34,7 @@ class RomDataView : public QWidget
 	Q_OBJECT
 
 	public:
-		RomDataView(const LibRomData::RomData *romData, QWidget *parent = 0);
+		RomDataView(LibRomData::RomData *romData, QWidget *parent = 0);
 		virtual ~RomDataView();
 
 	private:

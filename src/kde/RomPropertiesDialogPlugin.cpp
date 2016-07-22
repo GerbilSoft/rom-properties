@@ -45,18 +45,23 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		// Open it and read the first 65536+512 bytes.
 		// TODO: Use KIO and transparent decompression?
 		QString filename = url.toLocalFile();
-		QFile file(filename);
-		if (file.open(QIODevice::ReadOnly)) {
-			QByteArray data = file.read(65536+512);
-			file.close();
-
-			// Check if this might be an MD ROM.
-			LibRomData::MegaDrive *rom = new LibRomData::MegaDrive((const uint8_t*)data.data(), data.size());
-			if (rom->isValid()) {
-				// MD ROM. Show the properties.
-				RomDataView *romDataView = new RomDataView(rom, props);
-				props->addPage(romDataView, tr("ROM Properties"));
+		if (!filename.isEmpty()) {
+			// TODO: rp_QFile() wrapper?
+			// For now, using stdio.
+			FILE *file = fopen(filename.toUtf8().constData(), "rb");
+			if (file) {
+				// Check if this might be an MD ROM.
+				LibRomData::MegaDrive *rom = new LibRomData::MegaDrive(file);
+				if (rom->isValid()) {
+					// MD ROM. Show the properties.
+					RomDataView *romDataView = new RomDataView(rom, props);
+					props->addPage(romDataView, tr("ROM Properties"));
+				}
 			}
+
+			// RomData classes dup() the file, so
+			// we can close the original one.
+			fclose(file);
 		}
 	}
 }

@@ -39,12 +39,16 @@ class MegaDrive : public RomData
 
 		/**
 		 * Read a Sega Mega Drive ROM.
-		 * @param header ROM header. (Should be at least 65536+512 bytes.)
-		 * @param size Header size.
 		 *
-		 * Check isValid() to determine if this is a valid ROM.
+		 * A ROM file must be opened by the caller. The file handle
+		 * will be dup()'d and must be kept open in order to load
+		 * data from the ROM.
+		 *
+		 * To close the file, either delete this object or call close().
+		 *
+		 * @param file Open ROM file.
 		 */
-		MegaDrive(const uint8_t *header, size_t size);
+		MegaDrive(FILE *file);
 
 	private:
 		MegaDrive(const MegaDrive &);
