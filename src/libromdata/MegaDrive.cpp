@@ -47,7 +47,7 @@ static const struct RomData::RomFieldDesc md_fields[] = {
 	{_RP("Export Title"), RomData::RFT_STRING, {}},
 	{_RP("Serial Number"), RomData::RFT_STRING, {}},
 	{_RP("Checksum"), RomData::RFT_STRING, {}},
-	{_RP("I/O Support"), RomData::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), md_io_bitfield}},
+	{_RP("I/O Support"), RomData::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), 3, md_io_bitfield}},
 	{_RP("ROM Range"), RomData::RFT_STRING, {}},
 	{_RP("RAM Range"), RomData::RFT_STRING, {}},
 	{_RP("SRAM Range"), RomData::RFT_STRING, {}},
@@ -260,7 +260,24 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	addField_string(m_title_domestic);
 	addField_string(m_title_export);
 	addField_string(m_serial);
-	// TODO: Numeric and bitfields.
+
+	// Checksum.
+	// TODO: Helper function for numeric values?
+	char buf[16];
+	int len = snprintf(buf, sizeof(buf), "0x%04X", m_checksum);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	if (len > 0) {
+		// TODO: ascii_to_rp_string()?
+		addField_string(utf8_to_rp_string(buf, len));
+	} else {
+		addField_string(_RP(""));
+	}
+
+	// I/O support.
+	addField_bitfield(m_io_support);
+
+	// TODO: Remaining numeric fields.
 }
 
 }

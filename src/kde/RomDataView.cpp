@@ -130,33 +130,53 @@ void RomDataViewPrivate::updateDisplay(void)
 		if (!desc->name || desc->name[0] == '\0')
 			continue;
 
-		QWidget *dataWidget = nullptr;
+		QLabel *lblDesc = new QLabel(q);
+		lblDesc->setTextFormat(Qt::PlainText);
+		lblDesc->setText(RomDataView::tr("%1:").arg(rpToQS(desc->name)));
+
 		switch (desc->type) {
 			case RomData::RFT_STRING: {
 				// String type.
 				// TODO: Monospace hint?
-				QLabel *label = new QLabel(q);
-				label->setTextFormat(Qt::PlainText);
-				label->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+				QLabel *lblString = new QLabel(q);
+				lblString->setTextFormat(Qt::PlainText);
+				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
-					label->setText(rpToQS(data->str));
+					lblString->setText(rpToQS(data->str));
 				}
-				dataWidget = label;
+				ui.formLayout->addRow(lblDesc, lblString);
+				break;
+			}
+
+			case RomData::RFT_BITFIELD: {
+				// Bitfield type. Create a grid of checkboxes.
+				QGridLayout *gridLayout = new QGridLayout();
+				int row = 0, col = 0;
+				for (int i = 0; i < desc->bitfield.elements; i++) {
+					const rp_char *name = desc->bitfield.names[i];
+					if (!name)
+						continue;
+					// TODO: Prevent toggling; disable automatic alt key.
+					QCheckBox *checkBox = new QCheckBox(q);
+					checkBox->setText(rpToQS(name));
+					if (data->bitfield & (1 << i)) {
+						checkBox->setChecked(true);
+					}
+					gridLayout->addWidget(checkBox, row, col, 1, 1);
+					col++;
+					if (col == desc->bitfield.elemsPerRow) {
+						row++;
+						col = 0;
+					}
+				}
+				ui.formLayout->addRow(lblDesc, gridLayout);
 				break;
 			}
 
 			default:
 				// Unsupported right now.
+				delete lblDesc;
 				break;
-		}
-
-		if (dataWidget) {
-			QLabel *lblDesc = new QLabel(q);
-			lblDesc->setTextFormat(Qt::PlainText);
-			lblDesc->setText(RomDataView::tr("%1:").arg(rpToQS(desc->name)));
-
-			// Add the widgets to the form layout.
-			ui.formLayout->addRow(lblDesc, dataWidget);
 		}
 	}
 }

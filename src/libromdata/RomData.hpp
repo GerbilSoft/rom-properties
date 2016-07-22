@@ -51,7 +51,9 @@ class RomData
 			struct {
 				// Number of bits to check. (must be 1-32)
 				int elements;
-				// Bitfield names.
+				// Bit flags per row. (3 or 4 is usually good)
+				int elemsPerRow;
+				// Bit flag names.
 				// Must be an array of at least 'elements' strings.
 				// If a name is nullptr, that element is skipped.
 				const rp_char **names;
@@ -146,6 +148,13 @@ class RomData
 		 * @return Field index.
 		 */
 		int addField_string(const rp_string &str);
+
+		/**
+		 * Add a bitfield.
+		 * @param val Bitfield.
+		 * @return Field index.
+		 */
+		int addField_bitfield(uint32_t bitfield);
 };
 
 }

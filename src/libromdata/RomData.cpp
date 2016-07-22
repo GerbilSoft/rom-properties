@@ -114,4 +114,18 @@ int RomData::addField_string(const rp_string &str)
 	return (int)(m_fieldData.size() - 1);
 }
 
+/**
+ * Add a bitfield.
+ * @param bitfield Bitfield.
+ * @return Field index.
+ */
+int RomData::addField_bitfield(uint32_t bitfield)
+{
+	RomFieldData data;
+	data.type = RFT_BITFIELD;
+	data.bitfield = bitfield;
+	m_fieldData.push_back(data);
+	return (int)(m_fieldData.size() - 1);
+}
+
 }
