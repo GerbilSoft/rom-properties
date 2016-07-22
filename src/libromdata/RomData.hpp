@@ -22,54 +22,20 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATA_HPP__
 
+#include "TextFuncs.hpp"
+#include "RomFields.hpp"
+
+// C includes.
 #include <stdint.h>
+
+// C++ includes.
 #include <string>
 #include <vector>
-#include "TextFuncs.hpp"
 
 namespace LibRomData {
 
 class RomData
 {
-	public:
-		// ROM field types.
-		enum RomFieldType {
-			RFT_INVALID,	// Invalid
-			RFT_STRING,	// Basic string.
-			RFT_BITFIELD,	// Bitfield.
-		};
-
-		// The ROM data class holds a number of customizable fields.
-		// These fields are hard-coded by the subclass and passed
-		// to the constructor.
-		struct RomFieldDesc {
-			const rp_char *name;	// Display name.
-			RomFieldType type;	// ROM field type.
-
-			// Some types require more information.
-			// TODO: Optimize by using a union?
-			struct {
-				// Number of bits to check. (must be 1-32)
-				int elements;
-				// Bit flags per row. (3 or 4 is usually good)
-				int elemsPerRow;
-				// Bit flag names.
-				// Must be an array of at least 'elements' strings.
-				// If a name is nullptr, that element is skipped.
-				const rp_char **names;
-			} bitfield;
-		};
-
-		// ROM field data.
-		// Actual contents depend on the field type.
-		struct RomFieldData {
-			RomFieldType type;	// ROM field type.
-			union {
-				const rp_char *str;	// String data.
-				uint32_t bitfield;	// Bitfield.
-			};
-		};
-
 	protected:
 		// TODO: Some abstraction to read the file directory
 		// using a wrapper around FILE*, QFile, etc.
@@ -78,8 +44,10 @@ class RomData
 		/**
 		 * ROM data base class.
 		 * Subclass must pass an array of RomFieldDesc structs.
+		 * @param fields Array of ROM Field descriptions.
+		 * @param count Number of ROM Field descriptions.
 		 */
-		RomData(const RomFieldDesc *fields, int fieldCount);
+		RomData(const RomFields::Desc *fields, int count);
 	public:
 		virtual ~RomData();
 
@@ -99,77 +67,15 @@ class RomData
 		bool m_isValid;
 
 	public:
-
 		/**
-		 * Get the number of fields.
-		 * @return Number of fields.
+		 * Get the ROM Fields object.
+		 * @return ROM Fields object.
 		 */
-		int count(void) const;
-
-		/**
-		 * Get a ROM field description.
-		 * @param idx Field index.
-		 * @return ROM field, or nullptr if the index is invalid.
-		 */
-		const RomFieldDesc *desc(int idx) const;
-
-		/**
-		 * Get the data for a ROM field.
-		 * @param idx Field index.
-		 * @return ROM field data, or nullptr if the index is invalid.
-		 */
-		const RomFieldData *data(int idx) const;
-
-	private:
-		// ROM field descriptions.
-		const RomFieldDesc *const m_fields;
-		int const m_fieldCount;
-
-	private:
-		// ROM field data.
-		// This must be filled in using the convenience functions.
-		// NOTE: Strings are *copied* into this vector (to prevent
-		// std::string issues) and are deleted by the destructor.
-		std::vector<RomFieldData> m_fieldData;
+		const RomFields *fields(void) const;
 
 	protected:
-		/** Convenience functions for m_fieldData. **/
-
-		/**
-		 * Add a string field.
-		 * @param str String.
-		 * @return Field index.
-		 */
-		int addField_string(const rp_char *str);
-
-		/**
-		 * Add a string field.
-		 * @param str String.
-		 * @return Field index.
-		 */
-		int addField_string(const rp_string &str);
-
-		enum Base {
-			FB_DEC,
-			FB_HEX,
-			FB_OCT,
-		};
-
-		/**
-		 * Add a string field using a numeric value.
-		 * @param val Numeric value.
-		 * @param base Base. If not decimal, a prefix will be added.
-		 * @param digits Number of leading digits. (0 for none)
-		 * @return Field index.
-		 */
-		int addField_string_numeric(uint32_t val, Base base, int digits = 0);
-
-		/**
-		 * Add a bitfield.
-		 * @param val Bitfield.
-		 * @return Field index.
-		 */
-		int addField_bitfield(uint32_t bitfield);
+		// ROM fields.
+		RomFields *const m_fields;
 };
 
 }

@@ -56,20 +56,20 @@ enum MD_IOSupport {
 
 // ROM fields.
 // TODO: Private class?
-static const struct RomData::RomFieldDesc md_fields[] = {
-	{_RP("System"), RomData::RFT_STRING, {}},
-	{_RP("Copyright"), RomData::RFT_STRING, {}},
-	{_RP("Publisher"), RomData::RFT_STRING, {}},
-	{_RP("Domestic Title"), RomData::RFT_STRING, {}},
-	{_RP("Export Title"), RomData::RFT_STRING, {}},
-	{_RP("Serial Number"), RomData::RFT_STRING, {}},
-	{_RP("Checksum"), RomData::RFT_STRING, {}},
-	{_RP("I/O Support"), RomData::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), 3, md_io_bitfield}},
-	{_RP("ROM Range"), RomData::RFT_STRING, {}},
-	{_RP("RAM Range"), RomData::RFT_STRING, {}},
-	{_RP("SRAM Range"), RomData::RFT_STRING, {}},
-	{_RP("Entry Point"), RomData::RFT_STRING, {}},
-	{_RP("Initial SP"), RomData::RFT_STRING, {}}
+static const struct RomFields::Desc md_fields[] = {
+	{_RP("System"), RomFields::RFT_STRING, {}},
+	{_RP("Copyright"), RomFields::RFT_STRING, {}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {}},
+	{_RP("Domestic Title"), RomFields::RFT_STRING, {}},
+	{_RP("Export Title"), RomFields::RFT_STRING, {}},
+	{_RP("Serial Number"), RomFields::RFT_STRING, {}},
+	{_RP("Checksum"), RomFields::RFT_STRING, {}},
+	{_RP("I/O Support"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), 3, md_io_bitfield}},
+	{_RP("ROM Range"), RomFields::RFT_STRING, {}},
+	{_RP("RAM Range"), RomFields::RFT_STRING, {}},
+	{_RP("SRAM Range"), RomFields::RFT_STRING, {}},
+	{_RP("Entry Point"), RomFields::RFT_STRING, {}},
+	{_RP("Initial SP"), RomFields::RFT_STRING, {}}
 };
 
 /**
@@ -149,8 +149,8 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 		return;
 
 	// Read the strings from the header.
-	addField_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
-	addField_string(cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -189,24 +189,24 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 
 	if (publisher) {
 		// Publisher identified.
-		addField_string(publisher);
+		m_fields->addData_string(publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
 		char buf[16];
 		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+		m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 	} else {
 		// Unknown publisher.
-		addField_string(_RP("Unknown"));
+		m_fields->addData_string(_RP("Unknown"));
 	}
 
 	// Titles, serial number, and checksum.
-	addField_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
-	addField_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
-	addField_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
-	addField_string_numeric(be16_to_cpu(romHeader->checksum), FB_HEX, 4);
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
+	m_fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
 
 	// Parse I/O support.
 	uint32_t io_support = 0;
@@ -260,7 +260,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	}
 
 	// Add the I/O support field.
-	addField_bitfield(io_support);
+	m_fields->addData_bitfield(io_support);
 
 	// ROM range.
 	// TODO: Range helper? (Can't be used for SRAM, though...)
@@ -270,7 +270,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 			be32_to_cpu(romHeader->rom_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
-	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 
 	// RAM range.
 	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
@@ -278,15 +278,15 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 			be32_to_cpu(romHeader->ram_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
-	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 
 	// SRAM range. (TODO)
-	addField_string(_RP(""));
+	m_fields->addData_string(_RP(""));
 
 	// Vectors.
 	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
-	addField_string_numeric(be32_to_cpu(vectors[1]), FB_HEX, 8);	// Entry point
-	addField_string_numeric(be32_to_cpu(vectors[0]), FB_HEX, 8);	// Initial SP
+	m_fields->addData_string_numeric(be32_to_cpu(vectors[1]), RomFields::FB_HEX, 8);	// Entry point
+	m_fields->addData_string_numeric(be32_to_cpu(vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
 }
 
 }

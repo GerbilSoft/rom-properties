@@ -20,10 +20,15 @@
  ***************************************************************************/
 
 #include "RomDataView.hpp"
-#include <cstdio>
 
 #include "libromdata/RomData.hpp"
+#include "libromdata/RomFields.hpp"
 using LibRomData::RomData;
+using LibRomData::RomFields;
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstdio>
 
 #include <QLabel>
 #include <QCheckBox>
@@ -119,10 +124,11 @@ void RomDataViewPrivate::updateDisplay(void)
 
 	// Get the fields.
 	Q_Q(RomDataView);
-	const int count = romData->count();
+	const RomFields *fields = romData->fields();
+	const int count = fields->count();
 	for (int i = 0; i < count; i++) {
-		const RomData::RomFieldDesc *desc = romData->desc(i);
-		const RomData::RomFieldData *data = romData->data(i);
+		const RomFields::Desc *desc = fields->desc(i);
+		const RomFields::Data *data = fields->data(i);
 		if (!desc || !data)
 			continue;
 		if (desc->type != data->type)
@@ -135,7 +141,7 @@ void RomDataViewPrivate::updateDisplay(void)
 		lblDesc->setText(RomDataView::tr("%1:").arg(rpToQS(desc->name)));
 
 		switch (desc->type) {
-			case RomData::RFT_STRING: {
+			case RomFields::RFT_STRING: {
 				// String type.
 				// TODO: Monospace hint?
 				QLabel *lblString = new QLabel(q);
@@ -148,7 +154,7 @@ void RomDataViewPrivate::updateDisplay(void)
 				break;
 			}
 
-			case RomData::RFT_BITFIELD: {
+			case RomFields::RFT_BITFIELD: {
 				// Bitfield type. Create a grid of checkboxes.
 				QGridLayout *gridLayout = new QGridLayout();
 				int row = 0, col = 0;
@@ -175,6 +181,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 			default:
 				// Unsupported right now.
+				assert(false);
 				delete lblDesc;
 				break;
 		}

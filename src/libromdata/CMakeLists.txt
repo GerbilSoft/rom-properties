@@ -36,6 +36,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CUR
 SET(libromdata_SRCS
 	TextFuncs.cpp
 	RomData.cpp
+	RomFields.cpp
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
 	)
@@ -43,6 +44,7 @@ SET(libromdata_H
 	byteorder.h
 	byteswap.h
 	RomData.hpp
+	RomFields.hpp
 	TextFuncs.hpp
 	MegaDrive.hpp
 	)
