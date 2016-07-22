@@ -56,14 +56,15 @@ SET(RP_SHARED_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32}")
 # a bug in `ld` where if it generates the .reloc section,
 # it conveniently forgets the entry point.
 # Reference: https://lists.libav.org/pipermail/libav-devel/2014-October/063871.html
-INCLUDE(CheckSystemX8632)
-CHECK_SYSTEM_X86_32(MINGW_IS_CPU_X86_32)
 # TODO: Does ARM Windows have a leading underscore?
-IF(MINGW_IS_CPU_X86_32)
-	SET(ENTRY_POINT "_mainCRTStartup")
-ELSE(MINGW_IS_CPU_X86_32)
-	SET(ENTRY_POINT "mainCRTStartup")
-ENDIF(MINGW_IS_CPU_X86_32)
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		SET(ENTRY_POINT "_mainCRTStartup")
+	ELSE()
+		SET(ENTRY_POINT "mainCRTStartup")
+	ENDIF()
+ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 FOREACH(FLAG_TEST "-Wl,--dynamicbase,--pic-executable")
 	# CMake doesn't like "+" characters in variable names.
