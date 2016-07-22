@@ -50,6 +50,7 @@ SET(libromdata_H
 	RomFields.hpp
 	TextFuncs.hpp
 	MegaDrive.hpp
+	MegaDrivePublishers.hpp
 	GameCube.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp

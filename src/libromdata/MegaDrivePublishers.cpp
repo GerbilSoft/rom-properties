@@ -19,15 +19,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "MegaDrive.hpp"
+#include "MegaDrivePublishers.hpp"
+#include <stdlib.h>
+
+// TODO: Move this elsewhere.
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 namespace LibRomData {
 
 /**
- * Third-party publisher list.
+ * Sega Mega Drive third-party publisher list.
  * Reference: http://segaretro.org/Third-party_T-series_codes
  */
-const MegaDrive::MD_ThirdParty MegaDrive::MD_ThirdParty_List[] = {
+const MegaDrivePublishers::ThirdPartyList MegaDrivePublishers::ms_thirdPartyList[] = {
 	{11,	_RP("Taito")},
 	{12,	_RP("Capcom")},
 	{13,	_RP("Data East")},
@@ -377,5 +381,36 @@ const MegaDrive::MD_ThirdParty MegaDrive::MD_ThirdParty_List[] = {
 
 	{0, nullptr}
 };
+
+/**
+ * Comparison function for bsearch().
+ * @param a
+ * @param b
+ * @return
+ */
+int MegaDrivePublishers::compar(const void *a, const void *b)
+{
+	unsigned int code1 = reinterpret_cast<const ThirdPartyList*>(a)->t_code;
+	unsigned int code2 = reinterpret_cast<const ThirdPartyList*>(b)->t_code;
+	if (code1 < code2) return -1;
+	if (code1 > code2) return 1;
+	return 0;
+}
+
+/**
+ * Look up a company code.
+ * @param code Company code.
+ * @return Publisher, or nullptr if not found.
+ */
+const rp_char *MegaDrivePublishers::lookup(unsigned int code)
+{
+	// Do a binary search.
+	const ThirdPartyList key = {code, nullptr};
+	const ThirdPartyList *res =
+		reinterpret_cast<const ThirdPartyList*>(bsearch(&key,
+			ms_thirdPartyList, ARRAY_SIZE(ms_thirdPartyList)-1,
+			sizeof(ThirdPartyList), compar));
+	return (res ? res->publisher : nullptr);
+}
 
 }

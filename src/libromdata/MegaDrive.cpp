@@ -20,7 +20,11 @@
  ***************************************************************************/
 
 #include "MegaDrive.hpp"
+#include "MegaDrivePublishers.hpp"
+#include "TextFuncs.hpp"
 #include "byteswap.h"
+
+// C includes. (C++ namespace)
 #include <cstring>
 
 // TODO: Move this elsewhere.
@@ -240,16 +244,8 @@ int MegaDrive::loadFieldData(void)
 		    endptr > &romHeader->copyright[start] &&
 		    endptr < &romHeader->copyright[start+3])
 		{
-			// Valid T-code.
-			// Look it up in the table.
-			// TODO: bsearch();
-			for (const MD_ThirdParty *entry = MD_ThirdParty_List; entry->t_code != 0; entry++) {
-				if (entry->t_code == t_code) {
-					// Found the T-code.
-					publisher = entry->publisher;
-					break;
-				}
-			}
+			// Valid T-code. Look up the publisher.
+			publisher = MegaDrivePublishers::lookup(t_code);
 		}
 	}
 

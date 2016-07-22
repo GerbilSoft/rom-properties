@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * MegaDrive.hpp: Sega Mega Drive ROM reader.                              *
+ * MegaDrivePublishers.cpp: Sega Mega Drive third-party publishers list.    *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,60 +19,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVE_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_MEGADRIVE_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
 
-#include <stdint.h>
-#include <string>
 #include "TextFuncs.hpp"
-
-#include "RomData.hpp"
 
 namespace LibRomData {
 
-class MegaDrive : public RomData
+class MegaDrivePublishers
 {
-	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
-		/**
-		 * Read a Sega Mega Drive ROM.
-		 *
-		 * A ROM file must be opened by the caller. The file handle
-		 * will be dup()'d and must be kept open in order to load
-		 * data from the ROM.
-		 *
-		 * To close the file, either delete this object or call close().
-		 *
-		 * @param file Open ROM file.
-		 */
-		MegaDrive(FILE *file);
+	private:
+		MegaDrivePublishers();
+		~MegaDrivePublishers();
+	private:
+		MegaDrivePublishers(const MegaDrivePublishers &);
+		MegaDrivePublishers &operator=(const MegaDrivePublishers &);
 
 	private:
-		MegaDrive(const MegaDrive &);
-		MegaDrive &operator=(const MegaDrive &);
+		/**
+		 * Sega Mega Drive third-party publisher list.
+		 * Reference: http://segaretro.org/Third-party_T-series_codes
+		 */
+		struct ThirdPartyList {
+			unsigned int t_code;
+			const rp_char *publisher;
+		};
+		static const ThirdPartyList ms_thirdPartyList[];
 
 	public:
 		/**
-		 * Detect if a ROM is supported by this class.
-		 * TODO: Actually detect the type; for now, just returns true if it's supported.
-		 * @param header Header data.
-		 * @param size Size of header.
-		 * @return True if the ROM is supported; false if it isn't.
+		 * Comparison function for bsearch().
+		 * @param a
+		 * @param b
+		 * @return
 		 */
-		static bool isRomSupported(const uint8_t *header, size_t size);
+		static int compar(const void *a, const void *b);
 
-	protected:
 		/**
-		* Load field data.
-		* Called by RomData::fields() if the field data hasn't been loaded yet.
-		* @return 0 on success; negative POSIX error code on error.
-		*/
-		virtual int loadFieldData(void) override;
+		 * Look up a company code.
+		 * @param code Company code.
+		 * @return Publisher, or nullptr if not found.
+		 */
+		static const rp_char *lookup(unsigned int code);
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_MEGADRIVE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__ */
