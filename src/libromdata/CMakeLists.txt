@@ -40,6 +40,7 @@ SET(libromdata_SRCS
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
 	GameCube.cpp
+	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
 	)
@@ -52,6 +53,7 @@ SET(libromdata_H
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	GameCube.hpp
+	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
 	)

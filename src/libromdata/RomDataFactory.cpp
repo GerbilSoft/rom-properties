@@ -24,6 +24,7 @@
 // RomData subclasses.
 #include "MegaDrive.hpp"
 #include "GameCube.hpp"
+#include "NintendoDS.hpp"
 
 namespace LibRomData {
 
@@ -47,27 +48,22 @@ RomData *RomDataFactory::getInstance(FILE *file)
 	size_t count = fread(header, 1, sizeof(header), file);
 
 	// Try to detect the ROM format.
-	RomData *romData;
 
-	if (MegaDrive::isRomSupported(header, sizeof(header))) {
-		romData = new MegaDrive(file);
-		if (romData->isValid())
-			return romData;
+#define CheckRomData(sys) \
+	do { \
+		if (sys::isRomSupported(header, sizeof(header))) { \
+			RomData *romData = new sys(file); \
+			if (romData->isValid()) \
+				return romData; \
+			\
+			/* Not actually supported. */ \
+			delete romData; \
+		} \
+	} while (0)
 
-		// Not actually supported.
-		delete romData;
-		romData = nullptr;
-	}
-
-	if (GameCube::isRomSupported(header, sizeof(header))) {
-		romData = new GameCube(file);
-		if (romData->isValid())
-			return romData;
-
-		// Not actually supported.
-		delete romData;
-		romData = nullptr;
-	}
+	CheckRomData(MegaDrive);
+	CheckRomData(GameCube);
+	CheckRomData(NintendoDS);
 
 	// Not supported.
 	return nullptr;

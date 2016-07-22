@@ -223,7 +223,7 @@ int RomFields::addData_string(const rp_char *str)
 {
 	Data data;
 	data.type = RFT_STRING;
-	data.str = rp_strdup(str);
+	data.str = (str ? rp_strdup(str) : nullptr);
 
 	if (!m_data)
 		m_data = new vector<Data>();
