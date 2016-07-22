@@ -45,6 +45,12 @@ MACRO(DO_SPLIT_DEBUG _TARGET)
 	WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
 ENDMACRO(DO_SPLIT_DEBUG)
 
+# If no build type is set, default to "debug".
+# TODO: Default to "release"?
+IF(CMAKE_BUILD_TYPE MATCHES ^$)
+       SET(CMAKE_BUILD_TYPE "debug")
+ENDIF()
+
 # Check for platform-specific functionality.
 INCLUDE(cmake/platform.cmake)
 
