@@ -35,24 +35,24 @@ namespace LibRomData {
 /**
  * Convert cp1252 or Shift-JIS text to rp_string.
  * @param str cp1252 or Shift-JIS text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
-rp_string cp1252_sjis_to_rp_string(const char *str, size_t n);
+rp_string cp1252_sjis_to_rp_string(const char *str, size_t len);
 
 /**
  * Convert UTF-8 text to rp_string.
  * @param str UTF-8 text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
 #if defined(RP_UTF8)
-static inline rp_string utf8_to_rp_string(const char *str, size_t n)
+static inline rp_string utf8_to_rp_string(const char *str, size_t len)
 {
 	return rp_string(str, n);
 }
 #elif defined(RP_UTF16)
-rp_string utf8_to_rp_string(const char *str, size_t n);
+rp_string utf8_to_rp_string(const char *str, size_t len);
 #endif
 
 /**
@@ -60,16 +60,16 @@ rp_string utf8_to_rp_string(const char *str, size_t n);
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
  * @param str ASCII text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
 #if defined(RP_UTF8)
-static inline rp_string ascii_to_rp_string(const char *str, size_t n)
+static inline rp_string ascii_to_rp_string(const char *str, size_t len)
 {
 	return rp_string(str, n);
 }
 #elif defined(RP_UTF16)
-rp_string ascii_to_rp_string(const char *str, size_t n);
+rp_string ascii_to_rp_string(const char *str, size_t len);
 #endif
 
 /**

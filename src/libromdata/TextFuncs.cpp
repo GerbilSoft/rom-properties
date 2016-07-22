@@ -59,17 +59,19 @@ namespace LibRomData {
  * Convert a null-terminated multibyte string to UTF-16.
  * @param mbs		[in] Multibyte string. (null-terminated)
  * @param codepage	[in] mbs codepage.
+ * @param dwFlags	[in] Conversion flags.
  * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
  */
-static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage)
+static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage, DWORD dwFlags = 0)
 {
-	int cchWcs = MultiByteToWideChar(codepage, 0, mbs, -1, nullptr, 0);
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
+	int cchWcs = MultiByteToWideChar(codepage, dwFlags, mbs, -1, nullptr, 0);
 	if (cchWcs <= 0)
 		return nullptr;
 
-	char16_t *wcs = (char16_t*)malloc(cchWcs * sizeof(char16_t));
-	MultiByteToWideChar(codepage, 0, mbs, -1, (wchar_t*)wcs, cchWcs);
-	return wcs;
+	wchar_t *wcs = (wchar_t*)malloc(cchWcs * sizeof(wchar_t));
+	MultiByteToWideChar(codepage, dwFlags, mbs, -1, wcs, cchWcs);
+	return reinterpret_cast<char16_t*>(wcs);
 }
 
 /**
@@ -88,12 +90,12 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
 	if (cchWcs <= 0)
 		return nullptr;
 
-	wchar_t *wcs = (char16_t*)malloc(cchWcs * sizeof(char16_t));
-	MultiByteToWideChar(codepage, 0, mbs, cbMbs, (wchar_t*)wcs, cchWcs);
+	wchar_t *wcs = (wchar_t*)malloc(cchWcs * sizeof(wchar_t));
+	MultiByteToWideChar(codepage, 0, mbs, cbMbs, wcs, cchWcs);
 
 	if (cchWcs_ret)
 		*cchWcs_ret = cchWcs;
-	return wcs;
+	return reinterpret_cast<char16_t*>(wcs);
 }
 
 /**
@@ -104,12 +106,12 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
  */
 static char *W32U_UTF16_to_mbs(const char16_t *wcs, unsigned int codepage)
 {
-	int cbMbs = WideCharToMultiByte(codepage, 0, (const wchar_t*)wcs, -1, nullptr, 0, nullptr, nullptr);
+	int cbMbs = WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), -1, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0)
 		return nullptr;
  
 	char *mbs = (char*)malloc(cbMbs);
-	WideCharToMultiByte(codepage, 0, (const wchar_t*)wcs, -1, mbs, cbMbs, nullptr, nullptr);
+	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), -1, mbs, cbMbs, nullptr, nullptr);
 	return mbs;
 }
 
@@ -125,12 +127,12 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, unsigned int codepage)
 static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 		unsigned int codepage, int *cbMbs_ret)
 {
-	int cbMbs = WideCharToMultiByte(codepage, 0, (const wchar_t*)wcs, cchWcs, nullptr, 0, nullptr, nullptr);
+	int cbMbs = WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0)
 		return nullptr;
 
 	char *mbs = (char*)malloc(cbMbs);
-	WideCharToMultiByte(codepage, 0, (const wchar_t*)wcs, cchWcs, mbs, cbMbs, nullptr, nullptr);
+	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, mbs, cbMbs, nullptr, nullptr);
 
 	if (cbMbs_ret)
 		*cbMbs_ret = cbMbs;
@@ -225,16 +227,22 @@ static char *gens_iconv(const char *src, size_t src_bytes_len,
 /**
  * Convert cp1252 or Shift-JIS text to rp_string.
  * @param str cp1252 or Shift-JIS text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
-rp_string cp1252_sjis_to_rp_string(const char *str, size_t n)
+rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 {
 	// Attempt to convert str from Shift-JIS to UTF-16.
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
-	wchar_t *wcs = W32U_mbs_to_UTF16(str, n, 932, &cchWcs);
+	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
+	if (!wcs) {
+		// Shift-JIS conversion failed.
+		// Fall back to cp1252.
+		wcs = W32U_mbs_to_UTF16(str, (int)len, 1252, &cchWcs);
+	}
+
 	if (wcs) {
 #if defined(RP_UTF8)
 		// Convert the UTF-16 to UTF-8.
@@ -254,7 +262,7 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t n)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	rp_char *rps = (rp_char*)gens_iconv((char*)str, n, "SHIFT-JIS", RP_ICONV_ENCODING);
+	rp_char *rps = (rp_char*)gens_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
@@ -262,42 +270,42 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t n)
 	}
 
 	// Try cp1252.
-	rps = (rp_char*)gens_iconv((char*)str, n, "CP1252", RP_ICONV_ENCODING);
+	rps = (rp_char*)gens_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
 		return ret;
 	}
-
-	// Unable to convert the string.
-	return rp_string();
 #else
 #error Text conversion not available on this system.
 #endif
+
+	// Unable to convert the string.
+	return rp_string();
 }
 
 #ifdef RP_UTF16
 /**
  * Convert UTF-8 text to rp_string.
  * @param str UTF-8 text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
-rp_string utf8_to_rp_string(const char *str, size_t n)
+rp_string utf8_to_rp_string(const char *str, size_t len)
 {
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
-	wchar_t *wcs = W32U_mbs_to_UTF16(str, n, 932, &cchWcs);
+	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs);
 	if (wcs) {
-		rp_string ret(reinterpret_cast<const char16_t*>(wcs), cchWcs);
+		rp_string ret(wcs, cchWcs);
 		free(wcs);
 		return ret;
 	}
 	return rp_string();
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	rp_char *rps = (rp_char*)gens_iconv((char*)str, n, "UTF-8", RP_ICONV_ENCODING);
+	rp_char *rps = (rp_char*)gens_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
@@ -318,16 +326,16 @@ rp_string utf8_to_rp_string(const char *str, size_t n)
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
  * @param str ASCII text.
- * @param n Length of str.
+ * @param len Length of str.
  * @return rp_string.
  */
-rp_string ascii_to_rp_string(const char *str, size_t n)
+rp_string ascii_to_rp_string(const char *str, size_t len)
 {
 	// Direct copy from ASCII to UTF-16.
 	// TODO: More efficient to work on rp_string directly,
 	// even though it initializes the string to all 0?
-	rp_string rps(n+1, 0);
-	for (rp_char *ptr = &rps[0]; n > 0; n--) {
+	rp_string rps(len+1, 0);
+	for (rp_char *ptr = &rps[0]; len > 0; len--) {
 		// To make sure no one incorrectly uses this
 		// function for Latin-1, mask with 0x7F.
 		assert(!(*str & 0x80));
@@ -345,10 +353,10 @@ rp_string ascii_to_rp_string(const char *str, size_t n)
  */
 size_t rp_strlen(const rp_char *str)
 {
-	size_t n = 0;
+	size_t len = 0;
 	while (*str++)
-		n++;
-	return n;
+		len++;
+	return len;
 }
 #endif /* RP_UTF16 */
 
