@@ -33,11 +33,11 @@ namespace LibRomData {
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
 	// TODO: Banner?
+	{_RP("Title"), RomFields::RFT_STRING, {}},
 	{_RP("Game ID"), RomFields::RFT_STRING, {}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Disc Number"), RomFields::RFT_STRING, {}},
-	{_RP("Disc Revision"), RomFields::RFT_STRING, {}},
-	{_RP("Game Title"), RomFields::RFT_STRING, {}},
+	{_RP("Disc #"), RomFields::RFT_STRING, {}},
+	{_RP("Revision"), RomFields::RFT_STRING, {}},
 
 	// TODO:
 	// - Partition table.
@@ -165,13 +165,9 @@ int GameCube::loadFieldData(void)
 		return -EIO;
 	}
 
-	/*
-	{_RP("Game ID"), RomFields::RFT_STRING, {}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Disc Number"), RomFields::RFT_STRING, {}},
-	{_RP("Disc Revision"), RomFields::RFT_STRING, {}},
-	{_RP("Game Title"), RomFields::RFT_STRING, {}},
-	*/
+	// Game title.
+	// TODO: Is Shift-JIS actually permissible here?
+	m_fields->addData_string(cp1252_sjis_to_rp_string(header.game_title, sizeof(header.game_title)));
 
 	// Game ID and publisher.
 	m_fields->addData_string(ascii_to_rp_string(header.id6, sizeof(header.id6)));
@@ -183,10 +179,6 @@ int GameCube::loadFieldData(void)
 	// Other fields.
 	m_fields->addData_string_numeric(header.disc_number+1, RomFields::FB_DEC);
 	m_fields->addData_string_numeric(header.revision, RomFields::FB_DEC, 2);
-
-	// Game title.
-	// TODO: Is Shift-JIS actually permissible here?
-	m_fields->addData_string(cp1252_sjis_to_rp_string(header.game_title, sizeof(header.game_title)));
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
