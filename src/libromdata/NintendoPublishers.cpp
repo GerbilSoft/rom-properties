@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "NintendoPublishers.hpp"
+#include <stdlib.h>
 
 // TODO: Move this elsewhere.
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
