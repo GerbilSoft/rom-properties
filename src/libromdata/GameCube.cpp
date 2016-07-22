@@ -161,7 +161,7 @@ int GameCube::loadFieldData(void)
 	GCN_DiscHeader header;
 	size_t size = fread(&header, 1, sizeof(header), m_file);
 	if (size != sizeof(header)) {
-		// File isn't big enough for an MD header...
+		// File isn't big enough for a GameCube/Wii header...
 		return -EIO;
 	}
 
