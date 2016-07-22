@@ -29,7 +29,6 @@
 
 #include "RomPropertiesDialogPlugin.hpp"
 #include "libromdata/MegaDrive.hpp"
-#include "MegaDriveView.hpp"
 #include "RomDataView.hpp"
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
@@ -55,14 +54,8 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 			LibRomData::MegaDrive *rom = new LibRomData::MegaDrive((const uint8_t*)data.data(), data.size());
 			if (rom->isValid()) {
 				// MD ROM. Show the properties.
-				MegaDriveView *mdView = new MegaDriveView(rom, props);
-				props->addPage(mdView, tr("ROM Properties"));
-
-				// ROM Data View version.
-				// FIXME: Both views take ownership, so we have to dupe it for now.
-				LibRomData::MegaDrive *rom2 = new LibRomData::MegaDrive((const uint8_t*)data.data(), data.size());
-				RomDataView *romDataView = new RomDataView(rom2, props);
-				props->addPage(romDataView, tr("RomDataView"));
+				RomDataView *romDataView = new RomDataView(rom, props);
+				props->addPage(romDataView, tr("ROM Properties"));
 			}
 		}
 	}

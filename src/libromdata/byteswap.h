@@ -24,13 +24,14 @@
 
 /* Get the system byte order. */
 #include "byteorder.h"
+#include <stdint.h>
 
-#define __swab16(x) (((x) << 8) | ((x) >> 8))
+#define __swab16(x) ((uint16_t)(((x) << 8) | ((x) >> 8)))
 
 #define __swab32(x) \
-	(((x) << 24) | ((x) >> 24) | \
+	((uint32_t)(((x) << 24) | ((x) >> 24) | \
 		(((x) & 0x0000FF00UL) << 8) | \
-		(((x) & 0x00FF0000UL) >> 8))
+		(((x) & 0x00FF0000UL) >> 8)))
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	#define be16_to_cpu(x)	__swab16(x)

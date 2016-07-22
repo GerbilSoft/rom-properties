@@ -50,55 +50,6 @@ class MegaDrive : public RomData
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);
 
-	public:
-		/** MD ROM properties. **/
-
-		enum SysID {
-			MD_MEGA_DRIVE,		// Mega Drive
-			MD_MEGA_CD_DISC,	// Mega CD (disc)
-			MD_MEGA_CD_BOOT,	// Mega CD (boot ROM)
-			MD_32X,			// Sega 32X
-			MD_PICO,		// Sega Pico
-		};
-		SysID m_sysID;
-
-		// I/O support bitfield.
-		enum IOSupport {
-			IO_JOYPAD_3	= (1 << 0),	// 3-button joypad
-			IO_JOYPAD_6	= (1 << 1),	// 6-button joypad
-			IO_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
-			IO_TEAM_PLAYER	= (1 << 3),	// Team Player
-			IO_KEYBOARD	= (1 << 4),	// Keyboard
-			IO_SERIAL	= (1 << 5),	// Serial (RS-232C)
-			IO_PRINTER	= (1 << 6),	// Printer
-			IO_TABLET	= (1 << 7),	// Tablet
-			IO_TRACKBALL	= (1 << 8),	// Trackball
-			IO_PADDLE	= (1 << 9),	// Paddle
-			IO_FDD		= (1 << 10),	// Floppy Drive
-			IO_CDROM	= (1 << 11),	// CD-ROM
-			IO_ACTIVATOR	= (1 << 12),	// Activator
-			IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
-		};
-
-		// TODO: Make accessor functions.
-		rp_string m_system;
-		rp_string m_copyright;
-		rp_string m_publisher;
-		rp_string m_title_domestic;
-		rp_string m_title_export;
-		rp_string m_serial;
-		uint16_t m_checksum;
-		uint32_t m_io_support;
-		uint32_t m_rom_start;
-		uint32_t m_rom_end;
-		uint32_t m_ram_start;
-		uint32_t m_ram_end;
-		// TODO: SRAM type.
-		uint32_t m_sram_start;
-		uint32_t m_sram_end;
-		uint32_t m_entry_point;
-		uint32_t m_initial_sp;
-
 	private:
 		// Third-party company list.
 		// Reference: http://segaretro.org/Third-party_T-series_codes

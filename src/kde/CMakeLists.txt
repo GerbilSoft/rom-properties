@@ -61,25 +61,18 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/..)
 # Sources and headers.
 SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
-	MegaDriveView.cpp
 	RomDataView.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
-	MegaDriveView.hpp
 	RomDataView.hpp
 	)
-SET(rom-properties-kde_UIS
-	MegaDriveView.ui
-	)
 IF(BUILD_KDE4)
-	KDE4_ADD_UI_FILES(rom-properties-kde4_UIS_H ${rom-properties-kde_UIS})
 	SET(rom-properties-kde4_SRCS
 		RomPropertiesDialogPluginFactoryKDE4.cpp
 		)
 ENDIF(BUILD_KDE4)
 IF(BUILD_KDE5)
-	QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde_UIS})
 	SET(rom-properties-kde5_SRCS
 		RomPropertiesDialogPluginFactoryKDE5.cpp
 		)

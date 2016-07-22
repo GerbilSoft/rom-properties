@@ -37,6 +37,23 @@ static const rp_char *md_io_bitfield[] = {
 	_RP("Activator"), _RP("Mega Mouse")
 };
 
+enum MD_IOSupport {
+	MD_IO_JOYPAD_3		= (1 << 0),	// 3-button joypad
+	MD_IO_JOYPAD_6		= (1 << 1),	// 6-button joypad
+	MD_IO_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
+	MD_IO_TEAM_PLAYER	= (1 << 3),	// Team Player
+	MD_IO_KEYBOARD		= (1 << 4),	// Keyboard
+	MD_IO_SERIAL		= (1 << 5),	// Serial (RS-232C)
+	MD_IO_PRINTER		= (1 << 6),	// Printer
+	MD_IO_TABLET		= (1 << 7),	// Tablet
+	MD_IO_TRACKBALL		= (1 << 8),	// Trackball
+	MD_IO_PADDLE		= (1 << 9),	// Paddle
+	MD_IO_FDD		= (1 << 10),	// Floppy Drive
+	MD_IO_CDROM		= (1 << 11),	// CD-ROM
+	MD_IO_ACTIVATOR		= (1 << 12),	// Activator
+	MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
+};
+
 // ROM fields.
 // TODO: Private class?
 static const struct RomData::RomFieldDesc md_fields[] = {
@@ -132,8 +149,8 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 		return;
 
 	// Read the strings from the header.
-	m_system = cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system));
-	m_copyright = cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright));
+	addField_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
+	addField_string(cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -141,17 +158,18 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	// - "(C)T-xx"
 	// - "(C)T-xxx"
 	// - "(C)Txxx"
-	m_publisher.clear();
+	const rp_char *publisher = nullptr;
+	unsigned int t_code = 0;
 	if (!memcmp(romHeader->copyright, "(C)SEGA", 7)) {
 		// Sega first-party game.
-		m_publisher = _RP("Sega");
+		publisher = _RP("Sega");
 	} else if (!memcmp(romHeader->copyright, "(C)T", 4)) {
 		// Third-party game.
 		int start = 4;
 		if (romHeader->copyright[4] == '-')
 			start++;
 		char *endptr;
-		unsigned long t_code = strtoul(&romHeader->copyright[start], &endptr, 10);
+		t_code = strtoul(&romHeader->copyright[start], &endptr, 10);
 		if (t_code != 0 &&
 		    endptr > &romHeader->copyright[start] &&
 		    endptr < &romHeader->copyright[start+3])
@@ -162,120 +180,102 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 			for (const MD_ThirdParty *entry = MD_ThirdParty_List; entry->t_code != 0; entry++) {
 				if (entry->t_code == t_code) {
 					// Found the T-code.
-					m_publisher = entry->publisher;
+					publisher = entry->publisher;
 					break;
 				}
 			}
-
-			if (m_publisher.empty()) {
-				// No publisher. Just print the T code.
-				char buf[16];
-				snprintf(buf, sizeof(buf), "T-%lu", t_code);
-				// TODO: Make 'n' optional?
-				m_publisher = ascii_to_rp_string(buf, strlen(buf));
-			}
 		}
-	} else {
-		// Unknown publisher.
-		m_publisher = _RP("Unknown");
 	}
 
-	m_title_domestic = cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic));
-	m_title_export = cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export));
-	m_serial = cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial));
-	m_checksum = be16_to_cpu(romHeader->checksum);
+	if (publisher) {
+		// Publisher identified.
+		addField_string(publisher);
+	} else if (t_code > 0) {
+		// Unknown publisher, but there is a valid T code.
+		char buf[16];
+		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	} else {
+		// Unknown publisher.
+		addField_string(_RP("Unknown"));
+	}
+
+	// Titles, serial number, and checksum.
+	addField_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
+	addField_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
+	addField_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
+	addField_string_numeric(be16_to_cpu(romHeader->checksum), FB_HEX, 4);
 
 	// Parse I/O support.
-	m_io_support = 0;
+	uint32_t io_support = 0;
 	for (int i = (int)sizeof(romHeader->io_support)-1; i >= 0; i--) {
 		switch (romHeader->io_support[i]) {
 			case 'J':
-				m_io_support |= IO_JOYPAD_3;
+				io_support |= MD_IO_JOYPAD_3;
 				break;
 			case '6':
-				m_io_support |= IO_JOYPAD_6;
+				io_support |= MD_IO_JOYPAD_6;
 				break;
 			case '0':
-				m_io_support |= IO_JOYPAD_SMS;
+				io_support |= MD_IO_JOYPAD_SMS;
 				break;
 			case '4':
-				m_io_support |= IO_TEAM_PLAYER;
+				io_support |= MD_IO_TEAM_PLAYER;
 				break;
 			case 'K':
-				m_io_support |= IO_KEYBOARD;
+				io_support |= MD_IO_KEYBOARD;
 				break;
 			case 'R':
-				m_io_support |= IO_SERIAL;
+				io_support |= MD_IO_SERIAL;
 				break;
 			case 'P':
-				m_io_support |= IO_PRINTER;
+				io_support |= MD_IO_PRINTER;
 				break;
 			case 'T':
-				m_io_support |= IO_TABLET;
+				io_support |= MD_IO_TABLET;
 				break;
 			case 'B':
-				m_io_support |= IO_TRACKBALL;
+				io_support |= MD_IO_TRACKBALL;
 				break;
 			case 'V':
-				m_io_support |= IO_PADDLE;
+				io_support |= MD_IO_PADDLE;
 				break;
 			case 'F':
-				m_io_support |= IO_FDD;
+				io_support |= MD_IO_FDD;
 				break;
 			case 'C':
-				m_io_support |= IO_CDROM;
+				io_support |= MD_IO_CDROM;
 				break;
 			case 'L':
-				m_io_support |= IO_ACTIVATOR;
+				io_support |= MD_IO_ACTIVATOR;
 				break;
 			case 'M':
-				m_io_support |= IO_MEGA_MOUSE;
+				io_support |= MD_IO_MEGA_MOUSE;
 				break;
 			default:
 				break;
 		}
 	}
 
-	// ROM/RAM addresses.
-	m_rom_start = be32_to_cpu(romHeader->rom_start);
-	m_rom_end   = be32_to_cpu(romHeader->rom_end);
-	m_ram_start = be32_to_cpu(romHeader->ram_start);
-	m_ram_end   = be32_to_cpu(romHeader->ram_end);
-
-	// SRAM. (TODO)
-	m_sram_start = 0;
-	m_sram_end = 0;
-
-	// Vectors.
-	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
-	m_entry_point = be32_to_cpu(vectors[1]);
-	m_initial_sp = be32_to_cpu(vectors[0]);
-
-	// Add fields for RomData.
-	// TODO: Remove the individual fields later.
-	addField_string(m_system);
-	addField_string(m_copyright);
-	addField_string(m_publisher);
-	addField_string(m_title_domestic);
-	addField_string(m_title_export);
-	addField_string(m_serial);
-
-	// Checksum.
-	addField_string_numeric(m_checksum, FB_HEX, 4);
-
-	// I/O support.
-	addField_bitfield(m_io_support);
+	// Add the I/O support field.
+	addField_bitfield(io_support);
 
 	// ROM range.
 	// TODO: Range helper? (Can't be used for SRAM, though...)
 	char buf[32];
-	int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", m_rom_start, m_rom_end);
+	int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+			be32_to_cpu(romHeader->rom_start),
+			be32_to_cpu(romHeader->rom_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 
 	// RAM range.
-	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X", m_ram_start, m_ram_end);
+	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+			be32_to_cpu(romHeader->ram_start),
+			be32_to_cpu(romHeader->ram_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 	addField_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
@@ -283,11 +283,10 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	// SRAM range. (TODO)
 	addField_string(_RP(""));
 
-	// Entry point.
-	addField_string_numeric(m_entry_point, FB_HEX, 8);
-
-	// Initial SP.
-	addField_string_numeric(m_initial_sp, FB_HEX, 8);
+	// Vectors.
+	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
+	addField_string_numeric(be32_to_cpu(vectors[1]), FB_HEX, 8);	// Entry point
+	addField_string_numeric(be32_to_cpu(vectors[0]), FB_HEX, 8);	// Initial SP
 }
 
 }
