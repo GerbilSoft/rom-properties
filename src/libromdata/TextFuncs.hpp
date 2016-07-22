@@ -49,7 +49,7 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len);
 #if defined(RP_UTF8)
 static inline rp_string utf8_to_rp_string(const char *str, size_t len)
 {
-	return rp_string(str, n);
+	return rp_string(str, len);
 }
 #elif defined(RP_UTF16)
 rp_string utf8_to_rp_string(const char *str, size_t len);
@@ -66,7 +66,7 @@ rp_string utf8_to_rp_string(const char *str, size_t len);
 #if defined(RP_UTF8)
 static inline rp_string ascii_to_rp_string(const char *str, size_t len)
 {
-	return rp_string(str, n);
+	return rp_string(str, len);
 }
 #elif defined(RP_UTF16)
 rp_string ascii_to_rp_string(const char *str, size_t len);
