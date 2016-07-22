@@ -46,6 +46,7 @@ using std::u16string;
 using std::wstring;
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 
@@ -308,6 +309,31 @@ rp_string utf8_to_rp_string(const char *str, size_t n)
 #else
 #error Text conversion not available on this system.
 #endif
+}
+#endif /* RP_UTF16 */
+
+#ifdef RP_UTF16
+/**
+ * Convert ASCII text to rp_string.
+ * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
+ * Those aren't handled here for performance reasons.
+ * @param str ASCII text.
+ * @param n Length of str.
+ * @return rp_string.
+ */
+rp_string ascii_to_rp_string(const char *str, size_t n)
+{
+	// Direct copy from ASCII to UTF-16.
+	// TODO: More efficient to work on rp_string directly,
+	// even though it initializes the string to all 0?
+	rp_string rps(n+1, 0);
+	for (rp_char *ptr = &rps[0]; n > 0; n--) {
+		// To make sure no one incorrectly uses this
+		// function for Latin-1, mask with 0x7F.
+		assert(!(*str & 0x80));
+		*ptr++ = (((rp_char)*str++) & 0x7F);
+	}
+	return rps;
 }
 #endif /* RP_UTF16 */
 

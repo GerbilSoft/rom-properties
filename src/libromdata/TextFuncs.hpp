@@ -56,6 +56,23 @@ rp_string utf8_to_rp_string(const char *str, size_t n);
 #endif
 
 /**
+ * Convert ASCII text to rp_string.
+ * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
+ * Those aren't handled here for performance reasons.
+ * @param str ASCII text.
+ * @param n Length of str.
+ * @return rp_string.
+ */
+#if defined(RP_UTF8)
+static inline rp_string ascii_to_rp_string(const char *str, size_t n)
+{
+	return rp_string(str, n);
+}
+#elif defined(RP_UTF16)
+rp_string ascii_to_rp_string(const char *str, size_t n);
+#endif
+
+/**
  * strlen() function for rp_char strings.
  * @param str String.
  * @return String length.

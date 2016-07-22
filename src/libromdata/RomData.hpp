@@ -149,6 +149,21 @@ class RomData
 		 */
 		int addField_string(const rp_string &str);
 
+		enum Base {
+			FB_DEC,
+			FB_HEX,
+			FB_OCT,
+		};
+
+		/**
+		 * Add a string field using a numeric value.
+		 * @param val Numeric value.
+		 * @param base Base. If not decimal, a prefix will be added.
+		 * @param digits Number of leading digits. (0 for none)
+		 * @return Field index.
+		 */
+		int addField_string_numeric(uint32_t val, Base base, int digits = 0);
+
 		/**
 		 * Add a bitfield.
 		 * @param val Bitfield.

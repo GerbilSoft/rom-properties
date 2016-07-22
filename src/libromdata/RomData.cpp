@@ -115,6 +115,37 @@ int RomData::addField_string(const rp_string &str)
 }
 
 /**
+ * Add a string field using a numeric value.
+ * @param val Numeric value.
+ * @param base Base. If not decimal, a prefix will be added.
+ * @param digits Number of leading digits. (0 for none)
+ * @return Field index.
+ */
+int RomData::addField_string_numeric(uint32_t val, Base base, int digits)
+{
+	char buf[32];
+	int len;
+	switch (base) {
+		case FB_DEC:
+		default:
+			len = snprintf(buf, sizeof(buf), "%0*u", digits, val);
+			break;
+		case FB_HEX:
+			len = snprintf(buf, sizeof(buf), "0x%0*X", digits, val);
+			break;
+		case FB_OCT:
+			len = snprintf(buf, sizeof(buf), "0%0*o", digits, val);
+			break;
+	}
+
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+
+	rp_string str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	return addField_string(str);
+}
+
+/**
  * Add a bitfield.
  * @param bitfield Bitfield.
  * @return Field index.

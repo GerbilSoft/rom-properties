@@ -172,8 +172,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 				char buf[16];
 				snprintf(buf, sizeof(buf), "T-%lu", t_code);
 				// TODO: Make 'n' optional?
-				// TODO: Faster ascii_to_rp_string() function?
-				m_publisher = utf8_to_rp_string(buf, strlen(buf));
+				m_publisher = ascii_to_rp_string(buf, strlen(buf));
 			}
 		}
 	} else {
@@ -262,17 +261,7 @@ MegaDrive::MegaDrive(const uint8_t *header, size_t size)
 	addField_string(m_serial);
 
 	// Checksum.
-	// TODO: Helper function for numeric values?
-	char buf[16];
-	int len = snprintf(buf, sizeof(buf), "0x%04X", m_checksum);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-	if (len > 0) {
-		// TODO: ascii_to_rp_string()?
-		addField_string(utf8_to_rp_string(buf, len));
-	} else {
-		addField_string(_RP(""));
-	}
+	addField_string_numeric(m_checksum, FB_HEX, 4);
 
 	// I/O support.
 	addField_bitfield(m_io_support);
