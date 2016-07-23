@@ -275,17 +275,6 @@ int NintendoDS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO
-	/*
-	{_RP("Title"), RomFields::RFT_STRING, {}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Revision"), RomFields::RFT_STRING, {}},
-	{_RP("Hardware"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(ds_hw_bitfield), 2, ds_hw_bitfield}},
-	{_RP("DS Region"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(ds_region_bitfield), 3, ds_region_bitfield}},
-	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(dsi_region_bitfield), 3, dsi_region_bitfield}},
-	*/
-
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
 	m_fields->addData_string(cp1252_sjis_to_rp_string(header.title, sizeof(header.title)));
@@ -324,7 +313,6 @@ int NintendoDS::loadFieldData(void)
 		if (header.nds_region & 0x40)
 			nds_region |= DS_REGION_SKOREA;
 	}
-	printf("region: %02X\n", nds_region);
 	m_fields->addData_bitfield(nds_region);
 
 	// DSi Region.
