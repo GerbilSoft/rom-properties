@@ -26,6 +26,7 @@
 
 // C includes. (C++ namespace)
 #include <cstring>
+#include <cctype>
 
 // TODO: Move this elsewhere.
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
@@ -58,6 +59,19 @@ enum MD_IOSupport {
 	MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
 };
 
+// Region code.
+static const rp_char *md_region_code_bitfield[] = {
+	_RP("Japan"), _RP("Asia"),
+	_RP("USA"), _RP("Europe")
+};
+
+enum MD_RegionCode {
+	MD_REGION_JAPAN		= (1 << 0),
+	MD_REGION_ASIA		= (1 << 1),
+	MD_REGION_USA		= (1 << 2),
+	MD_REGION_EUROPE	= (1 << 3),
+};
+
 // ROM fields.
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
@@ -72,6 +86,7 @@ static const struct RomFields::Desc md_fields[] = {
 	{_RP("ROM Range"), RomFields::RFT_STRING, {}},
 	{_RP("RAM Range"), RomFields::RFT_STRING, {}},
 	{_RP("SRAM Range"), RomFields::RFT_STRING, {}},
+	{_RP("Region Code"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(md_region_code_bitfield), 0, md_region_code_bitfield}},
 	{_RP("Entry Point"), RomFields::RFT_STRING, {}},
 	{_RP("Initial SP"), RomFields::RFT_STRING, {}}
 };
@@ -344,6 +359,72 @@ int MegaDrive::loadFieldData(void)
 
 	// SRAM range. (TODO)
 	m_fields->addData_string(_RP(""));
+
+	// Region code.
+	uint32_t region_code = 0;
+
+	// Check for a hex code.
+	if (isalnum(romHeader->region_codes[0]) &&
+	    (romHeader->region_codes[1] == 0 || isspace(romHeader->region_codes[1])))
+	{
+		// Single character region code.
+		// Assume it's a hex code, *unless* it's 'E'.
+		char code = toupper(romHeader->region_codes[0]);
+		if (code >= '0' && code <= '9') {
+			// Numeric code from '0' to '9'.
+			region_code = code - '0';
+		} else if (code == 'E') {
+			// 'E'. This is probably Europe.
+			// If interpreted as a hex code, this would be
+			// Asia, USA, and Europe, with Japan excluded.
+			region_code = MD_REGION_EUROPE;
+		} else if (code >= 'A' && code <= 'F') {
+			// Letter code from 'A' to 'F'.
+			region_code = (code - 'A') + 10;
+		}
+	} else if (romHeader->region_codes[0] < 16) {
+		// Hex code not mapped to ASCII.
+		region_code = romHeader->region_codes[0];
+	}
+
+	if (region_code == 0) {
+		// Not a hex code, or the hex code was 0.
+		// Hex code being 0 shouldn't happen...
+
+		// Check for string region codes.
+		// Some games incorrectly use these.
+		if (!strncasecmp(romHeader->region_codes, "EUR", 3)) {
+			region_code = MD_REGION_EUROPE;
+		} else if (!strncasecmp(romHeader->region_codes, "USA", 3)) {
+			region_code = MD_REGION_USA;
+		} else if (!strncasecmp(romHeader->region_codes, "JPN", 3) ||
+			   !strncasecmp(romHeader->region_codes, "JAP", 3))
+		{
+			region_code = MD_REGION_JAPAN | MD_REGION_ASIA;
+		} else {
+			// Check for old-style JUE region codes.
+			// (J counts as both Japan and Asia.)
+			for (int i = 0; i < (int)sizeof(romHeader->region_codes); i++) {
+				if (romHeader->region_codes[i] == 0 || isspace(romHeader->region_codes[i]))
+					break;
+				switch (romHeader->region_codes[i]) {
+					case 'J':
+						region_code |= MD_REGION_JAPAN | MD_REGION_ASIA;
+						break;
+					case 'U':
+						region_code |= MD_REGION_USA;
+						break;
+					case 'E':
+						region_code |= MD_REGION_EUROPE;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+	}
+
+	m_fields->addData_bitfield(region_code);
 
 	// Vectors.
 	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
