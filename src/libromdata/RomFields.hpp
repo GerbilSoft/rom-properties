@@ -29,6 +29,7 @@
 
 namespace LibRomData {
 
+class RomFieldsPrivate;
 class RomFields
 {
 	public:
@@ -77,10 +78,14 @@ class RomFields
 		 * @param count Number of fields.
 		 */
 		RomFields(const Desc *fields, int count);
-	public:
 		~RomFields();
+	public:
 		RomFields(const RomFields &other);
 		RomFields &operator=(const RomFields &other);
+
+	private:
+		friend class RomFieldsPrivate;
+		RomFieldsPrivate *d;
 
 	public:
 		/** Field accessors. **/
@@ -112,35 +117,10 @@ class RomFields
 		bool isDataLoaded(void) const;
 
 	private:
-		// ROM field descriptions.
-		const Desc *const m_fields;
-		const int m_count;
-
-	private:
-		/**
-		 * ROM field data.
-		 *
-		 * This must be filled in by a RomData class using the
-		 * convenience functions.
-		 *
-		 * NOTE: Strings are *copied* into this vector (to prevent
-		 * std::string issues) and are deleted by the destructor.
-		 *
-		 * NOTE: This field is implicitly shared by all copies
-		 * of this RomFields instance.
-		 */
-		std::vector<Data> *m_data;
-		int *m_refCount;	// allocated int; shared with all instances
-
 		/**
 		 * Detach this instance from all other instances.
 		 */
 		void detach(void);
-
-		/**
-		 * Delete m_data.
-		 */
-		void delete_data(void);
 
 	public:
 		/** Convenience functions for RomData subclasses. **/

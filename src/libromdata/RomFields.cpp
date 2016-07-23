@@ -32,124 +32,125 @@ using std::vector;
 
 namespace LibRomData {
 
-/**
- * Initialize a ROM Fields class.
- * @param fields Array of fields.
- * @param count Number of fields.
- */
-RomFields::RomFields(const Desc *fields, int count)
-	: m_fields(fields)
-	, m_count(count)
-	, m_data(nullptr)
-	, m_refCount(new int(1))
+class RomFieldsPrivate
+{
+	public:
+		RomFieldsPrivate(const RomFields::Desc *fields, int count);
+	private:
+		~RomFieldsPrivate();	// call unref() instead
+
+	private:
+		RomFieldsPrivate(const RomFieldsPrivate &other);
+		RomFieldsPrivate &operator=(const RomFieldsPrivate &other);
+
+	public:
+		/** Reference count functions. **/
+
+		/**
+		 * Create a reference of this object.
+		 * @return this
+		 */
+		RomFieldsPrivate *ref(void);
+
+		/**
+		 * Unreference this object.
+		 */
+		void unref(void);
+
+		/**
+		 * Is this object currently shared?
+		 * @return True if refCount > 1; false if not.
+		 */
+		inline bool isShared(void) const;
+
+	private:
+		// Current reference count.
+		int refCount;
+
+	public:
+		// ROM field descriptions.
+		const RomFields::Desc *const fields;
+		const int count;
+
+		/**
+		 * ROM field data.
+		 *
+		 * This must be filled in by a RomData class using the
+		 * convenience functions.
+		 *
+		 * NOTE: Strings are *copied* into this vector (to prevent
+		 * std::string issues) and are deleted by the destructor.
+		 *
+		 * NOTE: This RomFieldsPrivate object is shared by all
+		 * instances of this RomFields until detach().
+		 */
+		vector<RomFields::Data> data;
+
+		/**
+		 * Deletes allocated strings in this->data.
+		 */
+		void delete_data(void);
+};
+
+/** RomFieldsPrivate **/
+
+RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *fields, int count)
+	: refCount(1)
+	, fields(fields)
+	, count(count)
 { }
 
-RomFields::~RomFields()
+RomFieldsPrivate::~RomFieldsPrivate()
 {
-	assert(*m_refCount > 0);
-	if (--(*m_refCount) == 0) {
+	delete_data();
+}
+
+/**
+ * Create a reference of this object.
+ * @return this
+ */
+RomFieldsPrivate *RomFieldsPrivate::ref(void)
+{
+	refCount++;
+	return this;
+}
+
+/**
+ * Unreference this object.
+ */
+void RomFieldsPrivate::unref(void)
+{
+	assert(refCount > 0);
+	if (--refCount == 0) {
 		// All references deleted.
-		delete_data();
-		delete m_refCount;
+		delete this;
 	}
 }
 
 /**
- * Copy constructor.
- * @param other Other instance.
+ * Is this object currently shared?
+ * @return True if refCount > 1; false if not.
  */
-RomFields::RomFields(const RomFields &other)
-	: m_fields(other.m_fields)
-	, m_count(other.m_count)
-	, m_data(other.m_data)
-	, m_refCount(other.m_refCount)
+inline bool RomFieldsPrivate::isShared(void) const
 {
-	// Increment the reference count.
-	(*m_refCount)++;
+	assert(refCount > 0);
+	return (refCount > 1);
 }
 
 /**
- * Assignment operator.
- * @param other Other instance.
- * @return This instance.
+ * Deletes allocated strings in this->data.
  */
-RomFields &RomFields::operator=(const RomFields &other)
+void RomFieldsPrivate::delete_data(void)
 {
-	assert(*m_refCount > 0);
-
-	// Discard the existing data.
-	if (--(*m_refCount) == 0) {
-		// All references deleted.
-		delete_data();
-		delete m_refCount;
-	}
-
-	// Copy the other object's data pointers and
-	// increment its reference counter.
-	m_data = other.m_data;
-	m_refCount = other.m_refCount;
-	(*m_refCount)++;
-
-	// Return this object, as per convention.
-	return *this;
-}
-
-/**
- * Detach this instance from all other instances.
- */
-void RomFields::detach(void)
-{
-	assert(*m_refCount > 0);
-	if (*m_refCount <= 1) {
-		// Only one reference.
-		// Nothing to detach from.
-		return;
-	}
-
-	// Need to detach.
-	if (m_data) {
-		vector<Data> *new_data = new vector<Data>(*m_data);
-		for (int i = (int)(m_data->size() - 1); i >= 0; i--) {
-			Data &data = m_data->at(i);
-			switch (data.type) {
-				case RFT_STRING:
-					// Duplicate the string.
-					data.str = rp_strdup(data.str);
-					break;
-				case RFT_BITFIELD:
-					// Nothing needed.
-					break;
-				default:
-					// ERROR!
-					assert(false);
-					break;
-			}
-		}
-
-		m_data = new_data;
-	}
-
-	// Detached.
-	m_refCount = new int(1);
-}
-
-/**
- * Delete m_data.
- */
-void RomFields::delete_data(void)
-{
-	if (!m_data)
-		return;
-
-	// Delete all of the allocated strings in m_data.
-	for (int i = (int)(m_data->size() - 1); i >= 0; i--) {
-		const Data &data = m_data->at(i);
+	// Delete all of the allocated strings in this->data.
+	for (int i = (int)(data.size() - 1); i >= 0; i--) {
+		const RomFields::Data &data = this->data.at(i);
 		switch (data.type) {
-			case RFT_STRING:
+			case RomFields::RFT_STRING:
 				// Allocated string. Free it.
 				free((rp_char*)data.str);
 				break;
-			case RFT_BITFIELD:
+			case RomFields::RFT_BITFIELD:
 				// Nothing needed.
 				break;
 			default:
@@ -159,9 +160,85 @@ void RomFields::delete_data(void)
 		}
 	}
 
-	// Delete the m_data vector.
-	delete m_data;
-	m_data = nullptr;
+	// Clear the data vector.
+	this->data.clear();
+}
+
+/** RomFields **/
+
+/**
+ * Initialize a ROM Fields class.
+ * @param fields Array of fields.
+ * @param count Number of fields.
+ */
+RomFields::RomFields(const Desc *fields, int count)
+	: d(new RomFieldsPrivate(fields, count))
+{ }
+
+RomFields::~RomFields()
+{
+	d->unref();
+}
+
+/**
+ * Copy constructor.
+ * @param other Other instance.
+ */
+RomFields::RomFields(const RomFields &other)
+	: d(other.d->ref())
+{ }
+
+/**
+ * Assignment operator.
+ * @param other Other instance.
+ * @return This instance.
+ */
+RomFields &RomFields::operator=(const RomFields &other)
+{
+	RomFieldsPrivate *d_old = this->d;
+	this->d = other.d->ref();
+	d_old->unref();
+	return *this;
+}
+
+/**
+ * Detach this instance from all other instances.
+ */
+void RomFields::detach(void)
+{
+	if (!d->isShared()) {
+		// Only one reference.
+		// Nothing to detach from.
+		return;
+	}
+
+	// Need to detach.
+	RomFieldsPrivate *d_new = new RomFieldsPrivate(d->fields, d->count);
+	RomFieldsPrivate *d_old = d;
+	d_new->data.reserve(d_old->data.size());
+	for (int i = (int)(d_old->data.size() - 1); i >= 0; i--) {
+		const Data &data_old = d_old->data.at(i);
+		Data &data_new = d_new->data.at(i);
+		data_new.type = data_old.type;
+		switch (data_old.type) {
+			case RFT_STRING:
+				// Duplicate the string.
+				data_new.str = rp_strdup(data_old.str);
+				break;
+			case RFT_BITFIELD:
+				// Copy the bitfield.
+				data_new.bitfield = data_old.bitfield;
+				break;
+			default:
+				// ERROR!
+				assert(false);
+				break;
+		}
+	}
+
+	// Detached.
+	d = d_new;
+	d_old->unref();
 }
 
 /** Field accessors. **/
@@ -172,7 +249,7 @@ void RomFields::delete_data(void)
  */
 int RomFields::count(void) const
 {
-	return m_count;
+	return d->count;
 }
 
 /**
@@ -181,9 +258,9 @@ int RomFields::count(void) const
  */
 const RomFields::Desc *RomFields::desc(int idx) const
 {
-	if (idx < 0 || idx >= m_count)
+	if (idx < 0 || idx >= d->count)
 		return nullptr;
-	return &m_fields[idx];
+	return &d->fields[idx];
 }
 
 /**
@@ -193,14 +270,14 @@ const RomFields::Desc *RomFields::desc(int idx) const
  */
 const RomFields::Data *RomFields::data(int idx) const
 {
-	if (idx < 0 || idx >= m_count ||
-	    !m_data || idx >= (int)m_data->size())
+	if (idx < 0 || idx >= d->count ||
+	    idx >= (int)d->data.size())
 	{
 		// Index out of range; or, the index is in range,
 		// but no data is available.
 		return nullptr;
 	}
-	return &m_data->at(idx);
+	return &d->data.at(idx);
 }
 
 /**
@@ -209,7 +286,7 @@ const RomFields::Data *RomFields::data(int idx) const
  */
 bool RomFields::isDataLoaded(void) const
 {
-	return (m_data && !m_data->empty());
+	return (!d->data.empty());
 }
 
 /** Convenience functions for RomData subclasses. **/
@@ -224,11 +301,8 @@ int RomFields::addData_string(const rp_char *str)
 	Data data;
 	data.type = RFT_STRING;
 	data.str = (str ? rp_strdup(str) : nullptr);
-
-	if (!m_data)
-		m_data = new vector<Data>();
-	m_data->push_back(data);
-	return (int)(m_data->size() - 1);
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
 }
 
 /**
@@ -241,11 +315,8 @@ int RomFields::addData_string(const rp_string &str)
 	Data data;
 	data.type = RFT_STRING;
 	data.str = rp_strdup(str);
-
-	if (!m_data)
-		m_data = new vector<Data>();
-	m_data->push_back(data);
-	return (int)(m_data->size() - 1);
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
 }
 
 /**
@@ -289,11 +360,8 @@ int RomFields::addData_bitfield(uint32_t bitfield)
 	Data data;
 	data.type = RFT_BITFIELD;
 	data.bitfield = bitfield;
-
-	if (!m_data)
-		m_data = new vector<Data>();
-	m_data->push_back(data);
-	return (int)(m_data->size() - 1);
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
 }
 
 }
