@@ -197,7 +197,7 @@ struct PACKED DS_ROMHeader {
 #pragma pack(1)
 struct PACKED DS_IconTitleData {
 	uint16_t version;	// known values: 0x0001, 0x0002, 0x0003, 0x0103
-	uint32_t crc16[4];	// CRC16s for the four known versions.
+	uint16_t crc16[4];	// CRC16s for the four known versions.
 	uint8_t reserved1[0x16];
 
 	uint8_t icon_data[0x200];	// Icon data. (32x32, 4x4 tiles, 4-bit color)
@@ -364,6 +364,51 @@ int NintendoDS::loadFieldData(void)
 }
 
 /**
+ * Convert an RGB555 pixel to ARGB32.
+ * @param px16 RGB555 pixel.
+ * @return ARGB32 pixel.
+ */
+static inline uint32_t RGB555_to_ARGB32(uint16_t px16)
+{
+	uint32_t px32;
+
+	// BGR555: xBBBBBGG GGGRRRRR
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 17) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+
+	// No alpha channel.
+	px32 |= 0xFF000000U;
+	return px32;
+}
+
+/**
+ * Blit a tile to a linear image buffer.
+ * @param pixel		[in] Pixel type.
+ * @param tileW		[in] Tile width.
+ * @param tileH		[in] Tile height.
+ * @param imgBuf	[out] Linear image buffer.
+ * @param pitch		[in] Pitch of image buffer, in pixels.
+ * @param tileBuf	[in] Tile buffer.
+ * @param tileX		[in] Horizontal tile number.
+ * @param tileY		[in] Vertical tile number.
+ */
+template<typename pixel, int tileW, int tileH>
+static inline void BlitTile(pixel *imgBuf, int pitch,
+			    const pixel *tileBuf, int tileX, int tileY)
+{
+	// Go to the first pixel for this tile.
+	imgBuf += ((tileY * tileH * pitch) + (tileX * tileW));
+
+	for (int y = tileH; y != 0; y--) {
+		memcpy(imgBuf, tileBuf, (tileW * sizeof(pixel)));
+		imgBuf += pitch;
+		tileBuf += tileW;
+	}
+}
+
+/**
  * Load the internal icon.
  * Called by RomData::icon() if the icon data hasn't been loaded yet.
  * @return 0 on success; negative POSIX error code on error.
@@ -405,21 +450,26 @@ int NintendoDS::loadInternalIcon(void)
 	palette[0] = 0; // Color 0 is always transparent.
 	for (int i = 1; i < 16; i++) {
 		// DS color format is BGR555.
-		uint16_t ds_color = le16_to_cpu(ds_icon_title.icon_pal[i]);
-		palette[i] = ((((ds_color >> 7) & 0xF8) | ((ds_color >> 12) & 0x07))) |		// Blue
-			     ((((ds_color >> 2) & 0xF8) | ((ds_color >> 5) & 0x07)) << 8) |	// Green
-			     ((((ds_color << 3) & 0xF8) | ((ds_color >> 2) & 0x07)) << 16);	// Red
-		palette[i] |= 0xFF000000;	// Opaque color.
+		palette[i] = RGB555_to_ARGB32(le16_to_cpu(ds_icon_title.icon_pal[i]));
 	}
 
-	// Convert the pixels.
-	// TODO: 4x4 tile decoding.
-	uint8_t *data = (uint8_t*)icon->bits();
+	// 2 bytes = 4 pixels
+	// Image is composed of 8x8px tiles.
+	// 4 tiles wide, 4 tiles tall.
+	uint8_t tileBuf[8*8];
 	const uint8_t *src = ds_icon_title.icon_data;
-	for (int i = 32*32/2; i > 0; i--, data += 2, src++) {
-		// Two pixels per byte.
-		data[0] = *src >> 4;
-		data[1] = *src & 0x0F;
+
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			// Convert each tile to 8-bit color manually.
+			for (int i = 0; i < 8*8; i += 2, src++) {
+				tileBuf[i+0] = *src & 0x0F;
+				tileBuf[i+1] = *src >> 4;
+			}
+
+			// Blit the tile to the main image buffer.
+			BlitTile<uint8_t, 8, 8>((uint8_t*)icon->bits(), 32, tileBuf, x, y);
+		}
 	}
 
 	// Finished decoding the icon.
