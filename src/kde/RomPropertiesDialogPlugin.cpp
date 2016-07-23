@@ -53,15 +53,15 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 				// Get the appropriate RomData class for this ROM.
 				LibRomData::RomData *romData = LibRomData::RomDataFactory::getInstance(file);
 				if (romData) {
-					// MD ROM. Show the properties.
+					// ROM is supported. Show the properties.
 					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
 				}
-			}
 
-			// RomData classes dup() the file, so
-			// we can close the original one.
-			fclose(file);
+				// RomData classes dup() the file, so
+				// we can close the original one.
+				fclose(file);
+			}
 		}
 	}
 }
