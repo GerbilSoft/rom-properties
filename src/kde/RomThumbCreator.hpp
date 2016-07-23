@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin.                 *
+ * RomThumbCreator.hpp: Thumbnail creator.                                 *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,18 +19,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_ROMPROPERTIESDIALOGPLUGIN_HPP__
-#define __ROMPROPERTIES_KDE_ROMPROPERTIESDIALOGPLUGIN_HPP__
+#ifndef __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
+#define __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 
-#include <kpropertiesdialog.h>
+#include <kio/thumbcreator.h>
 
-class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
+// TODO: ThumbCreatorV2 on KDE4 for user configuration?
+// (This was merged into ThumbCreator for KDE5.)
+
+namespace LibRomData {
+	class rp_image;
+}
+
+class RomThumbCreator : public ThumbCreator
 {
-	Q_OBJECT
-
 	public:
-		explicit RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList & = QVariantList());
-		virtual ~RomPropertiesDialogPlugin();
+		virtual ~RomThumbCreator();
+
+		virtual bool create(const QString &path, int width, int height, QImage &img) override;
+
+	protected:
+		/**
+		 * Convert an rp_image to QImage.
+		 * TODO: Move to another file?
+		 * @param rp_image rp_image.
+		 * @return QImage.
+		 */
+		static QImage rpToQImage(const LibRomData::rp_image *image);
 };
 
-#endif /* __ROMPROPERTIES_KDE_ROMPROPERTIESDIALOGPLUGIN_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */

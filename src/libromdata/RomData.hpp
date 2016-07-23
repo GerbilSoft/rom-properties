@@ -37,6 +37,7 @@
 
 namespace LibRomData {
 
+class rp_image;
 class RomData
 {
 	protected:
@@ -83,11 +84,18 @@ class RomData
 
 	protected:
 		/**
-		* Load field data.
-		* Called by RomData::fields() if the field data hasn't been loaded yet.
-		* @return 0 on success; negative POSIX error code on error.
-		*/
+		 * Load field data.
+		 * Called by RomData::fields() if the field data hasn't been loaded yet.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
 		virtual int loadFieldData(void) = 0;
+
+		/**
+		 * Load the internal icon.
+		 * Called by RomData::icon() if the icon data hasn't been loaded yet.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadInternalIcon(void);
 
 	public:
 		/**
@@ -96,10 +104,20 @@ class RomData
 		 */
 		const RomFields *fields(void) const;
 
+		/**
+		 * Get the ROM's internal icon.
+		 * @return Internal icon, or nullptr if the ROM doesn't have one.
+		 */
+		const rp_image *icon(void) const;
+
 	protected:
+		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
 		FILE *m_file;			// Open file.
 		RomFields *const m_fields;	// ROM fields.
+
+		// Images.
+		rp_image *m_icon;		// Internal icon.
 };
 
 }

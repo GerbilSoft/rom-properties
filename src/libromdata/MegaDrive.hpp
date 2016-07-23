@@ -66,10 +66,10 @@ class MegaDrive : public RomData
 
 	protected:
 		/**
-		* Load field data.
-		* Called by RomData::fields() if the field data hasn't been loaded yet.
-		* @return 0 on success; negative POSIX error code on error.
-		*/
+		 * Load field data.
+		 * Called by RomData::fields() if the field data hasn't been loaded yet.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
 		virtual int loadFieldData(void) override;
 };
 

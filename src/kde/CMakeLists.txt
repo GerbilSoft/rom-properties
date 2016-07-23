@@ -56,10 +56,12 @@ ENDIF(BUILD_KDE5)
 SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
+	RomThumbCreator.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
+	RomThumbCreator.hpp
 	)
 IF(BUILD_KDE4)
 	SET(rom-properties-kde4_SRCS
@@ -100,7 +102,7 @@ ENDIF(BUILD_KDE4)
 
 IF(BUILD_KDE5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
-	ADD_LIBRARY(rom-properties-kde5 SHARED
+	ADD_LIBRARY(rom-properties-kde5 MODULE
 		${rom-properties-kde_SRCS}
 		${rom-properties-kde5_SRCS}
 		${rom-properties-kde_H}
@@ -168,8 +170,8 @@ ENDIF(BUILD_KDE4)
 
 IF(BUILD_KDE5)
 	# FIXME: Determine the correct plugin path.
-	# On Kubuntu 16.04, it's /usr/lib/x86_64-linux-gnu/qt5/plugins/kf5/
-	SET(KDE5_PLUGIN_DIRECTORY "lib/x86_64-linux-gnu/qt5/plugins/kf5")
+	# On Kubuntu 16.04, it's /usr/lib/x86_64-linux-gnu/qt5/plugins/
+	SET(KDE5_PLUGIN_DIRECTORY "lib/x86_64-linux-gnu/qt5/plugins")
 	INSTALL(TARGETS rom-properties-kde5
 		LIBRARY DESTINATION ${KDE5_PLUGIN_DIRECTORY}
 		COMPONENT "plugin"

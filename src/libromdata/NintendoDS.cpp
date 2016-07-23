@@ -24,6 +24,9 @@
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 
+// rp_image for internal icon.
+#include "rp_image.hpp"
+
 // C includes. (C++ namespace)
 #include <cstring>
 
@@ -93,6 +96,7 @@ static const struct RomFields::Desc md_fields[] = {
  * This matches the ROM header format exactly.
  * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeheader
  * 
+ * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
@@ -181,6 +185,36 @@ struct PACKED DS_ROMHeader {
 	// TODO: More DSi header entries.
 	// Reference: http://problemkaputt.de/gbatek.htm#dsicartridgeheader
 	uint8_t reserved_more_dsi[3708];
+};
+#pragma pack()
+
+/**
+ * Nintendo DS icon and title struct.
+ * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeheader
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+struct PACKED DS_IconTitleData {
+	uint16_t version;	// known values: 0x0001, 0x0002, 0x0003, 0x0103
+	uint32_t crc16[4];	// CRC16s for the four known versions.
+	uint8_t reserved1[0x16];
+
+	uint8_t icon_data[0x200];	// Icon data. (32x32, 4x4 tiles, 4-bit color)
+	uint16_t icon_pal[0x10];	// Icon palette. (16-bit color; color 0 is transparent)
+
+	// Titles. (128 characters each; UTF-16)
+	// Order: JP, EN, FR, DE, IT, ES, ZH (v0002), KR (v0003)
+	char title[8][128];
+
+	// Reserved space, possibly for other titles.
+	char reserved2[0x800];
+
+	// DSi animated icons (v0103h)
+	// Icons use the same format as DS icons.
+	uint8_t dsi_icon_data[8][0x200];	// Icon data. (Up to 8 frames)
+	uint8_t dsi_icon_pal[8][0x10];		// Icon palette.
+	uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 };
 #pragma pack()
 
@@ -327,6 +361,70 @@ int NintendoDS::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
+}
+
+/**
+ * Load the internal icon.
+ * Called by RomData::icon() if the icon data hasn't been loaded yet.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NintendoDS::loadInternalIcon(void)
+{
+	if (m_icon) {
+		// Icon *has* been loaded...
+		return 0;
+	}
+	if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	}
+
+	// Address of icon/title information is located at
+	// 0x68 in the cartridge header.
+	uint32_t icon_addr;
+	fseek(m_file, 0x68, SEEK_SET);
+	size_t size = fread(&icon_addr, 1, sizeof(icon_addr), m_file);
+	if (size != sizeof(icon_addr))
+		return -EIO;
+	icon_addr = le32_to_cpu(icon_addr);
+
+	// Read the icon data.
+	// TODO: Also store titles?
+	DS_IconTitleData ds_icon_title;
+	fseek(m_file, icon_addr, SEEK_SET);
+	size = fread(&ds_icon_title, 1, sizeof(ds_icon_title), m_file);
+	if (size != sizeof(ds_icon_title))
+		return -EIO;
+
+	// Convert the icon from DS format to 256-color.
+	rp_image *icon = new rp_image(32, 32, rp_image::FORMAT_CI8);
+
+	// Convert the palette first.
+	// TODO: Make sure there's at least 16 entries?
+	uint32_t *palette = icon->palette();
+	palette[0] = 0; // Color 0 is always transparent.
+	for (int i = 1; i < 16; i++) {
+		// DS color format is BGR555.
+		uint16_t ds_color = le16_to_cpu(ds_icon_title.icon_pal[i]);
+		palette[i] = ((((ds_color >> 7) & 0xF8) | ((ds_color >> 12) & 0x07))) |		// Blue
+			     ((((ds_color >> 2) & 0xF8) | ((ds_color >> 5) & 0x07)) << 8) |	// Green
+			     ((((ds_color << 3) & 0xF8) | ((ds_color >> 2) & 0x07)) << 16);	// Red
+		palette[i] |= 0xFF000000;	// Opaque color.
+	}
+
+	// Convert the pixels.
+	// TODO: 4x4 tile decoding.
+	uint8_t *data = (uint8_t*)icon->bits();
+	const uint8_t *src = ds_icon_title.icon_data;
+	for (int i = 32*32/2; i > 0; i--, data += 2, src++) {
+		// Two pixels per byte.
+		data[0] = *src >> 4;
+		data[1] = *src & 0x0F;
+	}
+
+	// Finished decoding the icon.
+	m_icon = icon;
+	return 0;
 }
 
 }

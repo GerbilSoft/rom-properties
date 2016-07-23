@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomData.hpp"
+#include "rp_image.hpp"
 
 // C includes.
 #include <unistd.h>
@@ -45,6 +46,7 @@ RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
 	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
+	, m_icon(nullptr)
 {
 	// TODO: Windows version.
 	// dup() the file.
@@ -64,6 +66,7 @@ RomData::~RomData()
 {
 	this->close();
 	delete m_fields;
+	delete m_icon;
 }
 
 /**
@@ -87,6 +90,17 @@ void RomData::close(void)
 }
 
 /**
+ * Load the internal icon.
+ * Called by RomData::icon() if the icon data hasn't been loaded yet.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RomData::loadInternalIcon(void)
+{
+	// No icon by default.
+	return -ENOENT;
+}
+
+/**
  * Get the ROM Fields object.
  * @return ROM Fields object.
  */
@@ -95,9 +109,29 @@ const RomFields *RomData::fields(void) const
 	if (!m_fields->isDataLoaded()) {
 		// Data has not been loaded.
 		// Load it now.
-		const_cast<RomData*>(this)->loadFieldData();
+		int ret = const_cast<RomData*>(this)->loadFieldData();
+		if (ret < 0)
+			return nullptr;
 	}
 	return m_fields;
+}
+
+/**
+ * Get the ROM's internal icon.
+ * @return Internal icon, or nullptr if the ROM doesn't have one.
+ */
+const rp_image *RomData::icon(void) const
+{
+	if (!m_icon) {
+		// Internal icon has not been loaded.
+		// Load it now.
+		// TODO: Some flag to indicate if a class supports it?
+		int ret = const_cast<RomData*>(this)->loadInternalIcon();
+		if (ret < 0)
+			return nullptr;
+	}
+
+	return m_icon;
 }
 
 }

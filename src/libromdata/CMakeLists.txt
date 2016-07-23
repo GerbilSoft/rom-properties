@@ -43,6 +43,7 @@ SET(libromdata_SRCS
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
+	rp_image.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -56,6 +57,7 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
+	rp_image.hpp
 	)
 
 ######################
