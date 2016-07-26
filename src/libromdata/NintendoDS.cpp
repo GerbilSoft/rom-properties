@@ -41,32 +41,32 @@
 namespace LibRomData {
 
 // Hardware bitfield.
-static const rp_char *ds_hw_bitfield_names[] = {
+static const rp_char *nds_hw_bitfield_names[] = {
 	_RP("Nintendo DS"), _RP("Nintendo DSi")
 };
 
-enum DS_HWType {
+enum NDS_HWType {
 	DS_HW_DS	= (1 << 0),
 	DS_HW_DSi	= (1 << 1),
 };
 
-static const RomFields::BitfieldDesc ds_hw_bitfield = {
-	ARRAY_SIZE(ds_hw_bitfield_names), 2, ds_hw_bitfield_names
+static const RomFields::BitfieldDesc nds_hw_bitfield = {
+	ARRAY_SIZE(nds_hw_bitfield_names), 2, nds_hw_bitfield_names
 };
 
 // DS region bitfield.
-static const rp_char *ds_region_bitfield_names[] = {
+static const rp_char *nds_region_bitfield_names[] = {
 	_RP("Region-Free"), _RP("South Korea"), _RP("China")
 };
 
-enum DS_Region {
-	DS_REGION_FREE		= (1 << 0),
-	DS_REGION_SKOREA	= (1 << 1),
-	DS_REGION_CHINA		= (1 << 2),
+enum NDS_Region {
+	NDS_REGION_FREE		= (1 << 0),
+	NDS_REGION_SKOREA	= (1 << 1),
+	NDS_REGION_CHINA	= (1 << 2),
 };
 
-static const RomFields::BitfieldDesc ds_region_bitfield = {
-	ARRAY_SIZE(ds_region_bitfield_names), 3, ds_region_bitfield_names
+static const RomFields::BitfieldDesc nds_region_bitfield = {
+	ARRAY_SIZE(nds_region_bitfield_names), 3, nds_region_bitfield_names
 };
 
 // DSi region bitfield.
@@ -90,14 +90,14 @@ static const RomFields::BitfieldDesc dsi_region_bitfield = {
 
 // ROM fields.
 // TODO: Private class?
-static const struct RomFields::Desc md_fields[] = {
+static const struct RomFields::Desc nds_fields[] = {
 	// TODO: Banner?
 	{_RP("Title"), RomFields::RFT_STRING, nullptr},
 	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
 	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
 	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
-	{_RP("Hardware"), RomFields::RFT_BITFIELD, &ds_hw_bitfield},
-	{_RP("DS Region"), RomFields::RFT_BITFIELD, &ds_region_bitfield},
+	{_RP("Hardware"), RomFields::RFT_BITFIELD, &nds_hw_bitfield},
+	{_RP("DS Region"), RomFields::RFT_BITFIELD, &nds_region_bitfield},
 	{_RP("DSi Region"), RomFields::RFT_BITFIELD, &dsi_region_bitfield},
 
 	// TODO: Icon, full game title.
@@ -244,7 +244,7 @@ struct PACKED DS_IconTitleData {
  * @param file Open ROM image.
  */
 NintendoDS::NintendoDS(FILE *file)
-	: RomData(file, md_fields, ARRAY_SIZE(md_fields))
+	: RomData(file, nds_fields, ARRAY_SIZE(nds_fields))
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -351,13 +351,13 @@ int NintendoDS::loadFieldData(void)
 	uint32_t nds_region;
 	if (header.nds_region == 0) {
 		// Region-free.
-		nds_region = DS_REGION_FREE;
+		nds_region = NDS_REGION_FREE;
 	} else {
 		nds_region = 0;
 		if (header.nds_region & 0x80)
-			nds_region |= DS_REGION_CHINA;
+			nds_region |= NDS_REGION_CHINA;
 		if (header.nds_region & 0x40)
-			nds_region |= DS_REGION_SKOREA;
+			nds_region |= NDS_REGION_SKOREA;
 	}
 	m_fields->addData_bitfield(nds_region);
 

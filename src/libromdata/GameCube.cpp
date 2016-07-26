@@ -31,7 +31,7 @@ namespace LibRomData {
 
 // ROM fields.
 // TODO: Private class?
-static const struct RomFields::Desc md_fields[] = {
+static const struct RomFields::Desc gcn_fields[] = {
 	// TODO: Banner?
 	{_RP("Title"), RomFields::RFT_STRING, nullptr},
 	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
@@ -87,7 +87,7 @@ struct GCN_DiscHeader {
  * @param file Open disc image.
  */
 GameCube::GameCube(FILE *file)
-	: RomData(file, md_fields, ARRAY_SIZE(md_fields))
+	: RomData(file, gcn_fields, ARRAY_SIZE(gcn_fields))
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
