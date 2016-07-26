@@ -33,11 +33,11 @@ namespace LibRomData {
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
 	// TODO: Banner?
-	{_RP("Title"), RomFields::RFT_STRING, {}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Disc #"), RomFields::RFT_STRING, {}},
-	{_RP("Revision"), RomFields::RFT_STRING, {}},
+	{_RP("Title"), RomFields::RFT_STRING, nullptr},
+	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
+	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
+	{_RP("Disc #"), RomFields::RFT_STRING, nullptr},
+	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
 
 	// TODO:
 	// - Partition table.

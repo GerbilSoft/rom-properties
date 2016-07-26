@@ -34,7 +34,7 @@
 namespace LibRomData {
 
 // I/O support bitfield.
-static const rp_char *md_io_bitfield[] = {
+static const rp_char *md_io_bitfield_names[] = {
 	_RP("Joypad"), _RP("6-button Joypad"), _RP("SMS Joypad"),
 	_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
 	_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
@@ -59,8 +59,12 @@ enum MD_IOSupport {
 	MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
 };
 
+static const RomFields::BitfieldDesc md_io_bitfield = {
+	ARRAY_SIZE(md_io_bitfield_names), 3, md_io_bitfield_names
+};
+
 // Region code.
-static const rp_char *md_region_code_bitfield[] = {
+static const rp_char *md_region_code_bitfield_names[] = {
 	_RP("Japan"), _RP("Asia"),
 	_RP("USA"), _RP("Europe")
 };
@@ -72,23 +76,27 @@ enum MD_RegionCode {
 	MD_REGION_EUROPE	= (1 << 3),
 };
 
+static const RomFields::BitfieldDesc md_region_code_bitfield = {
+	ARRAY_SIZE(md_region_code_bitfield_names), 0, md_region_code_bitfield_names
+};
+
 // ROM fields.
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
-	{_RP("System"), RomFields::RFT_STRING, {}},
-	{_RP("Copyright"), RomFields::RFT_STRING, {}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Domestic Title"), RomFields::RFT_STRING, {}},
-	{_RP("Export Title"), RomFields::RFT_STRING, {}},
-	{_RP("Serial Number"), RomFields::RFT_STRING, {}},
-	{_RP("Checksum"), RomFields::RFT_STRING, {}},
-	{_RP("I/O Support"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(md_io_bitfield), 3, md_io_bitfield}},
-	{_RP("ROM Range"), RomFields::RFT_STRING, {}},
-	{_RP("RAM Range"), RomFields::RFT_STRING, {}},
-	{_RP("SRAM Range"), RomFields::RFT_STRING, {}},
-	{_RP("Region Code"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(md_region_code_bitfield), 0, md_region_code_bitfield}},
-	{_RP("Entry Point"), RomFields::RFT_STRING, {}},
-	{_RP("Initial SP"), RomFields::RFT_STRING, {}}
+	{_RP("System"), RomFields::RFT_STRING, nullptr},
+	{_RP("Copyright"), RomFields::RFT_STRING, nullptr},
+	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
+	{_RP("Domestic Title"), RomFields::RFT_STRING, nullptr},
+	{_RP("Export Title"), RomFields::RFT_STRING, nullptr},
+	{_RP("Serial Number"), RomFields::RFT_STRING, nullptr},
+	{_RP("Checksum"), RomFields::RFT_STRING, nullptr},
+	{_RP("I/O Support"), RomFields::RFT_BITFIELD, &md_io_bitfield},
+	{_RP("ROM Range"), RomFields::RFT_STRING, nullptr},
+	{_RP("RAM Range"), RomFields::RFT_STRING, nullptr},
+	{_RP("SRAM Range"), RomFields::RFT_STRING, nullptr},
+	{_RP("Region Code"), RomFields::RFT_BITFIELD, &md_region_code_bitfield},
+	{_RP("Entry Point"), RomFields::RFT_STRING, nullptr},
+	{_RP("Initial SP"), RomFields::RFT_STRING, nullptr}
 };
 
 /**

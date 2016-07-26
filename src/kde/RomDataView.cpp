@@ -164,8 +164,9 @@ void RomDataViewPrivate::updateDisplay(void)
 				// Bitfield type. Create a grid of checkboxes.
 				QGridLayout *gridLayout = new QGridLayout();
 				int row = 0, col = 0;
-				for (int i = 0; i < desc->bitfield.elements; i++) {
-					const rp_char *name = desc->bitfield.names[i];
+				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+				for (int i = 0; i < bitfieldDesc->elements; i++) {
+					const rp_char *name = bitfieldDesc->names[i];
 					if (!name)
 						continue;
 					// TODO: Prevent toggling; disable automatic alt key.
@@ -176,7 +177,7 @@ void RomDataViewPrivate::updateDisplay(void)
 					}
 					gridLayout->addWidget(checkBox, row, col, 1, 1);
 					col++;
-					if (col == desc->bitfield.elemsPerRow) {
+					if (col == bitfieldDesc->elemsPerRow) {
 						row++;
 						col = 0;
 					}

@@ -40,6 +40,18 @@ class RomFields
 			RFT_BITFIELD,	// Bitfield.
 		};
 
+		// Description for Bitfield.
+		struct BitfieldDesc {
+			// Number of bits to check. (must be 1-32)
+			int elements;
+			// Bit flags per row. (3 or 4 is usually good)
+			int elemsPerRow;
+			// Bit flag names.
+			// Must be an array of at least 'elements' strings.
+			// If a name is nullptr, that element is skipped.
+			const rp_char **names;
+		};
+
 		// The ROM data class holds a number of customizable fields.
 		// These fields are hard-coded by the subclass and passed
 		// to the constructor.
@@ -48,17 +60,12 @@ class RomFields
 			RomFieldType type;	// ROM field type.
 
 			// Some types require more information.
-			// TODO: Optimize by using a union?
-			struct {
-				// Number of bits to check. (must be 1-32)
-				int elements;
-				// Bit flags per row. (3 or 4 is usually good)
-				int elemsPerRow;
-				// Bit flag names.
-				// Must be an array of at least 'elements' strings.
-				// If a name is nullptr, that element is skipped.
-				const rp_char **names;
-			} bitfield;
+			// The following pointer must point to the required
+			// data structure for the type.
+			union {
+				const void *ptr;
+				const BitfieldDesc *bitfield;
+			};
 		};
 
 		// ROM field data.

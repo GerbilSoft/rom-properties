@@ -41,7 +41,7 @@
 namespace LibRomData {
 
 // Hardware bitfield.
-static const rp_char *ds_hw_bitfield[] = {
+static const rp_char *ds_hw_bitfield_names[] = {
 	_RP("Nintendo DS"), _RP("Nintendo DSi")
 };
 
@@ -50,8 +50,12 @@ enum DS_HWType {
 	DS_HW_DSi	= (1 << 1),
 };
 
+static const RomFields::BitfieldDesc ds_hw_bitfield = {
+	ARRAY_SIZE(ds_hw_bitfield_names), 2, ds_hw_bitfield_names
+};
+
 // DS region bitfield.
-static const rp_char *ds_region_bitfield[] = {
+static const rp_char *ds_region_bitfield_names[] = {
 	_RP("Region-Free"), _RP("South Korea"), _RP("China")
 };
 
@@ -61,8 +65,12 @@ enum DS_Region {
 	DS_REGION_CHINA		= (1 << 2),
 };
 
+static const RomFields::BitfieldDesc ds_region_bitfield = {
+	ARRAY_SIZE(ds_region_bitfield_names), 3, ds_region_bitfield_names
+};
+
 // DSi region bitfield.
-static const rp_char *dsi_region_bitfield[] = {
+static const rp_char *dsi_region_bitfield_names[] = {
 	_RP("Japan"), _RP("USA"), _RP("Europe"),
 	_RP("Australia"), _RP("China"), _RP("South Korea")
 };
@@ -76,17 +84,21 @@ enum DSi_Region {
 	DSi_REGION_SKOREA	= (1 << 5),
 };
 
+static const RomFields::BitfieldDesc dsi_region_bitfield = {
+	ARRAY_SIZE(dsi_region_bitfield_names), 3, dsi_region_bitfield_names
+};
+
 // ROM fields.
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
 	// TODO: Banner?
-	{_RP("Title"), RomFields::RFT_STRING, {}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {}},
-	{_RP("Revision"), RomFields::RFT_STRING, {}},
-	{_RP("Hardware"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(ds_hw_bitfield), 2, ds_hw_bitfield}},
-	{_RP("DS Region"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(ds_region_bitfield), 3, ds_region_bitfield}},
-	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {ARRAY_SIZE(dsi_region_bitfield), 3, dsi_region_bitfield}},
+	{_RP("Title"), RomFields::RFT_STRING, nullptr},
+	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
+	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
+	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
+	{_RP("Hardware"), RomFields::RFT_BITFIELD, &ds_hw_bitfield},
+	{_RP("DS Region"), RomFields::RFT_BITFIELD, &ds_region_bitfield},
+	{_RP("DSi Region"), RomFields::RFT_BITFIELD, &dsi_region_bitfield},
 
 	// TODO: Icon, full game title.
 };
