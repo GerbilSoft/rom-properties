@@ -22,8 +22,12 @@
 #include "RomData.hpp"
 #include "rp_image.hpp"
 
-// C includes.
+// dup()
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace LibRomData {
 

@@ -30,12 +30,31 @@
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
 
+#ifdef _MSC_VER
+/* MSVC 2015 added support for Unicode string literals. */
+/* Older versions still support L"str" for UTF-16. */
+/* FIXME: char16_t is defined in c++11-compat.h, not here. */
+#if _MSC_VER < 1900
+#define _RP_U8(x)	x
+#define _RP_U16(x)	((char16_t*)(L ##x))
+#else
+#define _RP_U8(x)	(u8 ##x)
+#define _RP_U16(x)	(u ##x)
+#endif
+#else
+/* Other compilers with C++ 2011 support should support Unicode */
+/* string literals without any issues. */
+/* FIXME: Fail if the compiler doesn't support Unicode string literals. */
+#define _RP_U8(x)	(u8 ##x)
+#define _RP_U16(x)	(u ##x)
+#endif
+
 /* String types. This may vary based on build target. */
 #if defined(RP_UTF8) && defined(RP_UTF16)
 #error Must define RP_UTF8 or RP_UTF16, but not both.
 #elif defined(RP_UTF8)
 typedef char rp_char;
-#define _RP(x) u8 ##x
+#define _RP(x) _RP_U8(x)
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::string rp_string;
@@ -43,7 +62,7 @@ namespace LibRomData {
 #endif /* __cplusplus */
 #elif defined(RP_UTF16)
 typedef char16_t rp_char;
-#define _RP(x) u ##x
+#define _RP(x) _RP_U16(x)
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::u16string rp_string;

@@ -59,7 +59,7 @@ namespace LibRomData {
  * Convert a null-terminated multibyte string to UTF-16.
  * @param mbs		[in] Multibyte string. (null-terminated)
  * @param codepage	[in] mbs codepage.
- * @param dwFlags	[in] Conversion flags.
+ * @param dwFlags	[in, opt] Conversion flags.
  * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
  */
 static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage, DWORD dwFlags = 0)
@@ -80,18 +80,19 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage, DWORD
  * @param cbMbs		[in] Length of mbs, in bytes.
  * @param codepage	[in] mbs codepage.
  * @param cchWcs_ret	[out, opt] Number of characters in the returned string.
+ * @param dwFlags	[in, opt] Conversion flags.
  * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
  * NOTE: Returned string might NOT be NULL-terminated!
  */
 static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
-		unsigned int codepage, int *cchWcs_ret)
+		unsigned int codepage, int *cchWcs_ret, DWORD dwFlags = 0)
 {
-	int cchWcs = MultiByteToWideChar(codepage, 0, mbs, cbMbs, nullptr, 0);
+	int cchWcs = MultiByteToWideChar(codepage, dwFlags, mbs, cbMbs, nullptr, 0);
 	if (cchWcs <= 0)
 		return nullptr;
 
 	wchar_t *wcs = (wchar_t*)malloc(cchWcs * sizeof(wchar_t));
-	MultiByteToWideChar(codepage, 0, mbs, cbMbs, wcs, cchWcs);
+	MultiByteToWideChar(codepage, dwFlags, mbs, cbMbs, wcs, cchWcs);
 
 	if (cchWcs_ret)
 		*cchWcs_ret = cchWcs;
