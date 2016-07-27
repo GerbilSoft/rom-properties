@@ -46,6 +46,10 @@ class IDiscReader
 	public:
 		virtual ~IDiscReader();
 
+	private:
+		IDiscReader(const IDiscReader &);
+		IDiscReader &operator=(const IDiscReader&);
+
 	public:
 		/**
 		 * Is the file open?

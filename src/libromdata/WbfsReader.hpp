@@ -37,8 +37,11 @@ class WbfsReader : public IDiscReader
 		 * @param file File to read from.
 		 */
 		WbfsReader(FILE *file);
+		virtual ~WbfsReader();
 
-		~WbfsReader();
+	private:
+		WbfsReader(const WbfsReader &);
+		WbfsReader &operator=(const WbfsReader &);
 
 	protected:
 		/**

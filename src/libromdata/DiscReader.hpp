@@ -39,6 +39,10 @@ class DiscReader : public IDiscReader
 		 */
 		DiscReader(FILE *file);
 
+	private:
+		DiscReader(const DiscReader &);
+		DiscReader &operator=(const DiscReader&);
+
 	public:
 		/**
 		 * Read data from the file.
