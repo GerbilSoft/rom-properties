@@ -172,13 +172,13 @@ MegaDrive::MegaDrive(FILE *file)
 }
 
 /**
- * Detect if a ROM is supported by this class.
+ * Detect if a ROM image is supported by this class.
  * TODO: Actually detect the type; for now, just returns true if it's supported.
  * @param header Header data.
  * @param size Size of header.
- * @return True if the ROM is supported; false if it isn't.
+ * @return 1 if the ROM image is supported; 0 if it isn't.
  */
-bool MegaDrive::isRomSupported(const uint8_t *header, size_t size)
+int MegaDrive::isRomSupported(const uint8_t *header, size_t size)
 {
 	// TODO: Handle SMD and other interleaved formats.
 	// TODO: Handle Sega CD.
@@ -201,13 +201,14 @@ bool MegaDrive::isRomSupported(const uint8_t *header, size_t size)
 			    !strncmp(&romHeader->system[1], strchk[i], 15))
 			{
 				// Found a Mega Drive ROM.
-				return true;
+				// TODO: Identify the specific type.
+				return 1;
 			}
 		}
 	}
 
 	// Not supported.
-	return false;
+	return 0;
 }
 
 /**

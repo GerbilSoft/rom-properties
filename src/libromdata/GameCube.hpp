@@ -57,14 +57,20 @@ class GameCube : public RomData
 		GameCube &operator=(const GameCube &);
 
 	public:
+		enum DiscType {
+			DISC_UNKNOWN = 0,	// Unknown disc type.
+			DISC_GCN,		// GameCube disc image.
+			DISC_WII,		// Wii disc image.
+			DISC_WII_WBFS,		// Wii disc image, in WBFS format.
+		};
+
 		/**
 		 * Detect if a disc image is supported by this class.
-		 * TODO: Actually detect the type; for now, just returns true if it's supported.
 		 * @param header Header data.
 		 * @param size Size of header.
-		 * @return True if the disc image is supported; false if it isn't.
+		 * @return DiscType if the disc image is supported; 0 if it isn't.
 		 */
-		static bool isRomSupported(const uint8_t *header, size_t size);
+		static DiscType isRomSupported(const uint8_t *header, size_t size);
 
 	protected:
 		/**

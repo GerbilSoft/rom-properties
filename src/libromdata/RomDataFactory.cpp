@@ -51,7 +51,7 @@ RomData *RomDataFactory::getInstance(FILE *file)
 
 #define CheckRomData(sys) \
 	do { \
-		if (sys::isRomSupported(header, sizeof(header))) { \
+		if (sys::isRomSupported(header, sizeof(header)) > 0) { \
 			RomData *romData = new sys(file); \
 			if (romData->isValid()) \
 				return romData; \

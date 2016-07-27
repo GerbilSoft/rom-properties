@@ -111,12 +111,11 @@ GameCube::GameCube(FILE *file)
 
 /**
  * Detect if a disc image is supported by this class.
- * TODO: Actually detect the type; for now, just returns true if it's supported.
  * @param header Header data.
  * @param size Size of header.
- * @return True if the disc image is supported; false if it isn't.
+ * @return DiscType if the disc image is supported; 0 if it isn't.
  */
-bool GameCube::isRomSupported(const uint8_t *header, size_t size)
+GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
 {
 	// TODO: WBFS support.
 
@@ -125,15 +124,15 @@ bool GameCube::isRomSupported(const uint8_t *header, size_t size)
 		const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(header);
 		if (gcn_header->magic_wii == cpu_to_be32(0x5D1C9EA3)) {
 			// Wii disc image.
-			return true;
+			return DISC_WII;
 		} else if (gcn_header->magic_gcn == cpu_to_be32(0xC2339F3D)) {
 			// GameCube disc image.
-			return true;
+			return DISC_GCN;
 		}
 	}
 
 	// Not supported.
-	return false;
+	return DISC_UNKNOWN;
 }
 
 /**

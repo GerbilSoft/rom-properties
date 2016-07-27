@@ -267,13 +267,13 @@ NintendoDS::NintendoDS(FILE *file)
 }
 
 /**
- * Detect if a disc image is supported by this class.
+ * Detect if a ROM image is supported by this class.
  * TODO: Actually detect the type; for now, just returns true if it's supported.
  * @param header Header data.
  * @param size Size of header.
- * @return True if the disc image is supported; false if it isn't.
+ * @return 1 if the ROM image is supported; 0 if it isn't.
  */
-bool NintendoDS::isRomSupported(const uint8_t *header, size_t size)
+int NintendoDS::isRomSupported(const uint8_t *header, size_t size)
 {
 	if (size >= sizeof(DS_ROMHeader)) {
 		// Check the first 16 bytes of the Nintendo logo.
@@ -285,12 +285,13 @@ bool NintendoDS::isRomSupported(const uint8_t *header, size_t size)
 		const DS_ROMHeader *ds_header = reinterpret_cast<const DS_ROMHeader*>(header);
 		if (!memcmp(ds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 			// Nintendo logo is present at the correct location.
-			return true;
+			// TODO: DS vs. DSi?
+			return 1;
 		}
 	}
 
 	// Not supported.
-	return false;
+	return 0;
 }
 
 /**

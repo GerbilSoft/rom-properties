@@ -56,13 +56,13 @@ class MegaDrive : public RomData
 
 	public:
 		/**
-		 * Detect if a ROM is supported by this class.
+		 * Detect if a ROM image is supported by this class.
 		 * TODO: Actually detect the type; for now, just returns true if it's supported.
 		 * @param header Header data.
 		 * @param size Size of header.
-		 * @return True if the ROM is supported; false if it isn't.
+		 * @return 1 if the ROM image is supported; 0 if it isn't.
 		 */
-		static bool isRomSupported(const uint8_t *header, size_t size);
+		static int isRomSupported(const uint8_t *header, size_t size);
 
 	protected:
 		/**
