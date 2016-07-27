@@ -37,6 +37,7 @@ WbfsReader::WbfsReader(FILE *file)
 	: IDiscReader(file)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
+	, m_wbfs_pos(0)
 {
 	if (!m_file)
 		return;
@@ -234,6 +235,11 @@ wbfs_disc_t *WbfsReader::openWbfsDisc(wbfs_t *p, uint32_t index)
 					return nullptr;
 				}
 
+				// TODO: Byteswap wlba_table[] here?
+				// Removes unnecessary byteswaps when reading,
+				// but may not be necessary if we're not reading
+				// the entire disc.
+
 				// Disc information read successfully.
 				p->n_disc_open++;
 				return disc;
@@ -274,7 +280,7 @@ int64_t WbfsReader::getWbfsDiscSize(const wbfs_disc_t *disc)
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
-	const be16_t *wlba_table = disc->header->wlba_table;
+	const be16_t *const wlba_table = disc->header->wlba_table;
 	int lastBlock = disc->p->n_wbfs_sec_per_disc - 1;
 	for (; lastBlock >= 0; lastBlock--) {
 		if (be16_to_cpu(wlba_table[lastBlock]) != 0)
@@ -295,8 +301,107 @@ int64_t WbfsReader::getWbfsDiscSize(const wbfs_disc_t *disc)
 size_t WbfsReader::read(void *ptr, size_t size)
 {
 	assert(m_file != nullptr);
-	// TODO
-	return 0;
+	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
+	size_t ret = 0;
+
+	// Are we already at the end of the file?
+	if (m_wbfs_pos >= m_fileSize)
+		return 0;
+
+	// Make sure m_wbfs_pos + size <= file size.
+	// If it isn't, we'll do a short read.
+	if (m_wbfs_pos + (int64_t)size >= m_fileSize) {
+		size = (size_t)(m_fileSize - m_wbfs_pos);
+	}
+
+	// Check if we're not starting on a block boundary.
+	const uint32_t wbfs_sec_sz = m_wbfs->wbfs_sec_sz;
+	const uint16_t *const wlba_table = m_wbfs_disc->header->wlba_table;
+	const uint32_t blockStartOffset = m_wbfs_pos % wbfs_sec_sz;
+	if (blockStartOffset != 0) {
+		// Not a block boundary.
+		// Read the end of the block.
+		uint32_t read_sz = m_wbfs->wbfs_sec_sz;
+		if (size < read_sz)
+			read_sz = size;
+
+		// Get the physical block number first.
+		uint16_t blockStart = (m_wbfs_pos / wbfs_sec_sz);
+		uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
+		if (physBlockStartIdx == 0) {
+			// Empty block.
+			memset(ptr8, 0, read_sz);
+		} else {
+			// Seek to the physical block address.
+			int64_t physBlockStartAddr = (uint64_t)physBlockStartIdx * wbfs_sec_sz;
+			fseek(m_file, physBlockStartAddr + blockStartOffset, SEEK_SET);
+			// Read read_sz bytes.
+			size_t rd = fread(ptr8, 1, read_sz, m_file);
+			if (rd != read_sz) {
+				// Error reading the data.
+				return rd;
+			}
+		}
+
+		// Starting block read.
+		size -= read_sz;
+		ptr8 += read_sz;
+		ret += read_sz;
+		m_wbfs_pos += read_sz;
+	}
+
+	// Read entire blocks.
+	for (; size >= wbfs_sec_sz;
+	    size -= wbfs_sec_sz, ptr8 += wbfs_sec_sz,
+	    ret += wbfs_sec_sz, m_wbfs_pos += wbfs_sec_sz)
+	{
+		assert(m_wbfs_pos % wbfs_sec_sz == 0);
+		uint16_t physBlockIdx = be16_to_cpu(wlba_table[m_wbfs_pos / wbfs_sec_sz]);
+		if (physBlockIdx == 0) {
+			// Empty block.
+			memset(ptr8, 0, wbfs_sec_sz);
+		} else {
+			// Seek to the physical block address.
+			int64_t physBlockAddr = (uint64_t)physBlockIdx * wbfs_sec_sz;
+			fseek(m_file, physBlockAddr, SEEK_SET);
+			// Read one WBFS sector worth of data.
+			size_t rd = fread(ptr8, 1, wbfs_sec_sz, m_file);
+			if (rd != wbfs_sec_sz) {
+				// Error reading the data.
+				return rd + ret;
+			}
+		}
+	}
+
+	// Check if we still have data left. (not a full block)
+	if (size > 0) {
+		// Not a full block.
+
+		// Get the physical block number first.
+		assert(m_wbfs_pos % wbfs_sec_sz == 0);
+		uint16_t blockEnd = (m_wbfs_pos / wbfs_sec_sz);
+		uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
+		if (physBlockEndIdx == 0) {
+			// Empty block.
+			memset(ptr8, 0, size);
+		} else {
+			// Seek to the physical block address.
+			int64_t physBlockEndAddr = (uint64_t)physBlockEndIdx * wbfs_sec_sz;
+			fseek(m_file, physBlockEndAddr, SEEK_SET);
+			// Read size bytes.
+			size_t rd = fread(ptr8, 1, size, m_file);
+			if (rd != size) {
+				// Error reading the data.
+				return rd + ret;
+			}
+		}
+
+		ret += size;
+		m_wbfs_pos += size;
+	}
+
+	// Finished reading the data.
+	return ret;
 }
 
 /**
@@ -306,8 +411,19 @@ size_t WbfsReader::read(void *ptr, size_t size)
 void WbfsReader::seek(int64_t pos)
 {
 	assert(m_file != nullptr);
-	// TODO
-	return;
+	assert(m_wbfs != nullptr);
+	assert(m_wbfs_disc != nullptr);
+	if (!m_wbfs_disc)
+		return;
+
+	// Handle out-of-range cases.
+	// TODO: How does POSIX behave?
+	if (pos < 0)
+		m_wbfs_pos = 0;
+	else if (pos >= m_fileSize)
+		m_wbfs_pos = m_fileSize;
+	else
+		m_wbfs_pos = pos;
 }
 
 }

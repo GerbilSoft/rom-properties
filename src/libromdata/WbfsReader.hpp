@@ -98,10 +98,9 @@ class WbfsReader : public IDiscReader
 
 	protected:
 		// WBFS structs.
-		wbfs_t *m_wbfs;
-
-		// Opened disc information.
-		wbfs_disc_t *m_wbfs_disc;
+		wbfs_t *m_wbfs;			// WBFS image.
+		wbfs_disc_t *m_wbfs_disc;	// Current disc.
+		int64_t m_wbfs_pos;		// Read position in m_wbfs_disc.
 };
 
 }
