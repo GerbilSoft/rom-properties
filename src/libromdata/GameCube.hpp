@@ -72,6 +72,31 @@ class GameCube : public RomData
 		 */
 		static DiscType isRomSupported(const uint8_t *header, size_t size);
 
+	private:
+		// Disc type.
+		DiscType m_discType;
+
+		/**
+		 * Wii partition tables.
+		 * Decoded from the actual on-disc tables.
+		 */
+		struct WiiPartEntry {
+			uint64_t start;		// Starting address, in bytes.
+			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
+			uint32_t type;		// Partition type. (0 == Game, 1 == Update, 2 == Channel)
+		};
+
+		typedef std::vector<WiiPartEntry> WiiPartTable;
+		WiiPartTable m_wiiMpt[4];
+		bool m_wiiMptLoaded;
+
+		/**
+		 * Load the Wii partition tables.
+		 * Partition tables are loaded into m_wiiMpt[].
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadWiiPartitionTables(void);
+
 	protected:
 		/**
 		* Load field data.

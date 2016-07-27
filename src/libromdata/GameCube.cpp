@@ -138,6 +138,8 @@ struct RVL_PartitionTableEntry {
  */
 GameCube::GameCube(FILE *file)
 	: RomData(file, gcn_fields, ARRAY_SIZE(gcn_fields))
+	, m_discType(DISC_UNKNOWN)
+	, m_wiiMptLoaded(false)
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -156,7 +158,8 @@ GameCube::GameCube(FILE *file)
 		return;
 
 	// Check if this disc image is supported.
-	m_isValid = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+	m_discType = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+	m_isValid = (m_discType != DISC_UNKNOWN);
 }
 
 /**
@@ -186,6 +189,86 @@ GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
 }
 
 /**
+ * Load the Wii partition tables.
+ * Partition tables are loaded into m_wiiMpt[].
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCube::loadWiiPartitionTables(void)
+{
+	if (m_wiiMptLoaded) {
+		// Partition tables have already been loaded.
+		return 0;
+	} else if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (m_discType != DISC_WII) {
+		// Unsupported disc type.
+		// TODO: DISC_WII_WBFS
+		return -EIO;
+	}
+
+	// Clear the existing partition tables.
+	for (int i = ARRAY_SIZE(m_wiiMpt)-1; i >= 0; i--) {
+		m_wiiMpt[i].clear();
+	}
+
+	// Assuming a maximum of 128 partitions per table.
+	// (This is a rather high estimate.)
+	RVL_MasterPartitionTable mpt;
+	RVL_PartitionTableEntry pt[1024];
+
+	// Read the master partition table.
+	// Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	fseek(m_file, 0x40000, SEEK_SET);
+	size_t size = fread(&mpt, 1, sizeof(mpt), m_file);
+	if (size != sizeof(mpt)) {
+		// Could not read the master partition table.
+		// TODO: Return error from fread()?
+		return -EIO;
+	}
+
+	// Get the size of the disc image.
+	// TODO: Large File Support for 32-bit Linux and Windows.
+	fseek(m_file, 0, SEEK_END);
+	int64_t discSize = ftell(m_file);
+	if (discSize < 0) {
+		// Error getting the size of the disc image.
+		return -errno;
+	}
+
+	// Process each partition table.
+	for (int i = 0; i < 4; i++) {
+		uint32_t count = be32_to_cpu(mpt.table[i].count);
+		if (count == 0) {
+			continue;
+		} else if (count > ARRAY_SIZE(pt)) {
+			count = ARRAY_SIZE(pt);
+		}
+
+		// Read the individual partition table.
+		uint64_t pt_addr = (uint64_t)(be32_to_cpu(mpt.table[i].addr)) << 2;
+		fseek(m_file, pt_addr, SEEK_SET);
+		size = fread(pt, sizeof(RVL_PartitionTableEntry), count, m_file);
+		if (size != count) {
+			// Error reading the partition table entries.
+			return -EIO;
+		}
+
+		// Process each partition table entry.
+		m_wiiMpt[i].resize(count);
+		for (int j = 0; j < (int)count; j++) {
+			WiiPartEntry &entry = m_wiiMpt[i].at(j);
+			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			// TODO: Figure out how to calculate length?
+			entry.type = be32_to_cpu(pt[j].type);
+		}
+	}
+
+	// Done reading the partition tables.
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -195,10 +278,12 @@ int GameCube::loadFieldData(void)
 	if (m_fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	}
-	if (!m_file) {
+	} else if (!m_file) {
 		// File isn't open.
 		return -EBADF;
+	} else if (m_discType == DISC_UNKNOWN) {
+		// Unknown disc type.
+		return -EIO;
 	}
 
 	// Seek to the beginning of the file.
@@ -211,13 +296,6 @@ int GameCube::loadFieldData(void)
 	size_t size = fread(&header, 1, sizeof(header), m_file);
 	if (size != sizeof(header)) {
 		// File isn't big enough for a GameCube/Wii header...
-		return -EIO;
-	}
-
-	// Get the disc type.
-	DiscType discType = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
-	if (discType == DISC_UNKNOWN) {
-		// Unknown disc type...
 		return -EIO;
 	}
 
@@ -238,85 +316,65 @@ int GameCube::loadFieldData(void)
 
 	// Partition table. (Wii only)
 	// TODO: WBFS.
-	if (discType == DISC_WII) {
+	if (m_discType == DISC_WII) {
 		RomFields::ListData *partitions = new RomFields::ListData();
 
-		// Assuming a maximum of 128 partitions per table.
-		// (This is a rather high estimate.)
-		RVL_MasterPartitionTable mpt;
-		RVL_PartitionTableEntry pt[1024];
-
-		// Read the master partition table.
-		// Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
-		fseek(m_file, 0x40000, SEEK_SET);
-		size = fread(&mpt, 1, sizeof(mpt), m_file);
-		if (size == sizeof(mpt)) {
-			// Process each partition table.
-			vector<rp_string> data_row;	// Temporary storage for each partition entry.
-
+		// Load the Wii partition tables.
+		int ret = loadWiiPartitionTables();
+		if (ret == 0) {
+			// Wii partition tables loaded.
+			// Convert them to RFT_LISTDATA for display purposes.
+			vector<rp_string> data_row;     // Temporary storage for each partition entry.
 			for (int i = 0; i < 4; i++) {
-				uint32_t count = be32_to_cpu(mpt.table[i].count);
-				if (count == 0) {
-					continue;
-				} else if (count > ARRAY_SIZE(pt)) {
-					count = ARRAY_SIZE(pt);
-				}
+				const int count = (int)m_wiiMpt[i].size();
+				for (int j = 0; j < count; j++) {
+					const WiiPartEntry &entry = m_wiiMpt[i].at(j);
+					data_row.clear();
 
-				// Read the individual partition table.
-				// TODO: 64-bit fseek()?
-				fseek(m_file, (be32_to_cpu(mpt.table[i].addr) << 2), SEEK_SET);
-				size = fread(pt, sizeof(RVL_PartitionTableEntry), count, m_file);
-				if (size == count) {
-					// Process each partition table entry.
-					partitions->data.reserve(partitions->data.size() + count);
-					data_row.reserve(ARRAY_SIZE(rvl_partitions_names));
-					for (int j = 0; j < (int)count; j++) {
-						data_row.clear();
+					// Partition number.
+					char buf[16];
+					int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
+					if (len > (int)sizeof(buf))
+						len = sizeof(buf);
+					data_row.push_back(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 
-						// Partition number.
-						char buf[16];
-						int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
-						if (len > (int)sizeof(buf))
-							len = sizeof(buf);
-						printf("buf = %s, len = %d\n", buf, len);
-						data_row.push_back(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
-
-						// Partition type.
-						uint32_t type = be32_to_cpu(pt[j].type);
-						rp_string str;
-						switch (type) {
-							case 0:
-								str = _RP("Game");
-								break;
-							case 1:
-								str = _RP("Update");
-								break;
-							case 2:
-								str = _RP("Channel");
-								break;
-							default:
-								// If all four bytes are ASCII,
-								// print it as-is. (SSBB demo channel)
-								// Otherwise, print the number.
-								memcpy(buf, &pt[j].type, 4);
-								if (isalnum(buf[0]) && isalnum(buf[1]) &&
-								    isalnum(buf[2]) && isalnum(buf[3]))
-								{
-									// All four bytes are ASCII.
-									str = ascii_to_rp_string(buf, 4);
-								} else {
-									// Non-ASCII data. Print the hex values instead.
-									len = snprintf(buf, sizeof(buf), "%08X", be32_to_cpu(pt[j].type));
-									if (len > (int)sizeof(buf))
-										len = sizeof(buf);
-									str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
-								}
-						}
-						data_row.push_back(str);
-
-						// Add the partition information to the ListData.
-						partitions->data.push_back(data_row);
+					// Partition type.
+					rp_string str;
+					switch (entry.type) {
+						case 0:
+							str = _RP("Game");
+							break;
+						case 1:
+							str = _RP("Update");
+							break;
+						case 2:
+							str = _RP("Channel");
+							break;
+						default: {
+							// If all four bytes are ASCII,
+							// print it as-is. (SSBB demo channel)
+							// Otherwise, print the number.
+							// NOTE: Must be BE32 for proper display.
+							uint32_t be32_type = cpu_to_be32(entry.type);
+							memcpy(buf, &be32_type, 4);
+							if (isalnum(buf[0]) && isalnum(buf[1]) &&
+							    isalnum(buf[2]) && isalnum(buf[3]))
+							{
+								// All four bytes are ASCII.
+								str = ascii_to_rp_string(buf, 4);
+							} else {
+								// Non-ASCII data. Print the hex values instead.
+								len = snprintf(buf, sizeof(buf), "%08X", entry.type);
+								if (len > (int)sizeof(buf))
+									len = sizeof(buf);
+								str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+							}
+ 						}
 					}
+					data_row.push_back(str);
+
+					// Add the partition information to the ListData.
+					partitions->data.push_back(data_row);
 				}
 			}
 		}
