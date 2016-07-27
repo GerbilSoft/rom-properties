@@ -129,6 +129,11 @@ void RomDataViewPrivate::updateDisplay(void)
 
 	// Get the fields.
 	const RomFields *fields = romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
 	const int count = fields->count();
 
 	// Make sure the underlying file handle is closed,
