@@ -24,10 +24,28 @@
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 
+// C includes. (C++ namespace)
+#include <cctype>
+#include <cstring>
+
+// C++ includes.
+#include <vector>
+using std::vector;
+
 // TODO: Move this elsewhere.
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 namespace LibRomData {
+
+// Wii partition table.
+static const rp_char *rvl_partitions_names[] = {
+	_RP("#"), _RP("Type"),
+	// TODO: Start/End addresses?
+};
+
+static const struct RomFields::ListDataDesc rvl_partitions = {
+	ARRAY_SIZE(rvl_partitions_names), rvl_partitions_names
+};
 
 // ROM fields.
 // TODO: Private class?
@@ -39,8 +57,14 @@ static const struct RomFields::Desc gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, nullptr},
 	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
 
+	// Wii partition table.
+	// NOTE: Actually a table of tables, so we'll use
+	// 0p0-style numbering, where the first digit is
+	// the table number, and the second digit is the
+	// partition number. (both start at 0)
+	{_RP("Partitions"), RomFields::RFT_LISTDATA, &rvl_partitions},
+
 	// TODO:
-	// - Partition table.
 	// - System update version.
 	// - Region and age ratings.
 };
@@ -71,6 +95,32 @@ struct GCN_DiscHeader {
 	uint32_t magic_gcn;		// GameCube magic. (0xC2339F3D)
 
 	char game_title[64];		// Game title.
+};
+
+/**
+ * Wii master partition table.
+ * Contains information about the (maximum of) four partition tables.
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ *
+ * All fields are big-endian.
+ */
+struct RVL_MasterPartitionTable {
+	struct {
+		uint32_t count;		// Number of partitions in this table.
+		uint32_t addr;		// Start address of this table, rshifted by 2.
+	} table[4];
+};
+
+/**
+ * Wii partition table entry.
+ * Contains information about an individual partition.
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ *
+ * All fields are big-endian.
+ */
+struct RVL_PartitionTableEntry {
+	uint32_t addr;	// Start address of this partition, rshifted by 2.
+	uint32_t type;	// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 };
 
 /**
@@ -164,6 +214,13 @@ int GameCube::loadFieldData(void)
 		return -EIO;
 	}
 
+	// Get the disc type.
+	DiscType discType = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+	if (discType == DISC_UNKNOWN) {
+		// Unknown disc type...
+		return -EIO;
+	}
+
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
 	m_fields->addData_string(cp1252_sjis_to_rp_string(header.game_title, sizeof(header.game_title)));
@@ -178,6 +235,98 @@ int GameCube::loadFieldData(void)
 	// Other fields.
 	m_fields->addData_string_numeric(header.disc_number+1, RomFields::FB_DEC);
 	m_fields->addData_string_numeric(header.revision, RomFields::FB_DEC, 2);
+
+	// Partition table. (Wii only)
+	// TODO: WBFS.
+	if (discType == DISC_WII) {
+		RomFields::ListData *partitions = new RomFields::ListData();
+
+		// Assuming a maximum of 128 partitions per table.
+		// (This is a rather high estimate.)
+		RVL_MasterPartitionTable mpt;
+		RVL_PartitionTableEntry pt[1024];
+
+		// Read the master partition table.
+		// Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+		fseek(m_file, 0x40000, SEEK_SET);
+		size = fread(&mpt, 1, sizeof(mpt), m_file);
+		if (size == sizeof(mpt)) {
+			// Process each partition table.
+			vector<rp_string> data_row;	// Temporary storage for each partition entry.
+
+			for (int i = 0; i < 4; i++) {
+				uint32_t count = be32_to_cpu(mpt.table[i].count);
+				if (count == 0) {
+					continue;
+				} else if (count > ARRAY_SIZE(pt)) {
+					count = ARRAY_SIZE(pt);
+				}
+
+				// Read the individual partition table.
+				// TODO: 64-bit fseek()?
+				fseek(m_file, (be32_to_cpu(mpt.table[i].addr) << 2), SEEK_SET);
+				size = fread(pt, sizeof(RVL_PartitionTableEntry), count, m_file);
+				if (size == count) {
+					// Process each partition table entry.
+					partitions->data.reserve(partitions->data.size() + count);
+					data_row.reserve(ARRAY_SIZE(rvl_partitions_names));
+					for (int j = 0; j < (int)count; j++) {
+						data_row.clear();
+
+						// Partition number.
+						char buf[16];
+						int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
+						if (len > (int)sizeof(buf))
+							len = sizeof(buf);
+						printf("buf = %s, len = %d\n", buf, len);
+						data_row.push_back(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+
+						// Partition type.
+						uint32_t type = be32_to_cpu(pt[j].type);
+						rp_string str;
+						switch (type) {
+							case 0:
+								str = _RP("Game");
+								break;
+							case 1:
+								str = _RP("Update");
+								break;
+							case 2:
+								str = _RP("Channel");
+								break;
+							default:
+								// If all four bytes are ASCII,
+								// print it as-is. (SSBB demo channel)
+								// Otherwise, print the number.
+								memcpy(buf, &pt[j].type, 4);
+								if (isalnum(buf[0]) && isalnum(buf[1]) &&
+								    isalnum(buf[2]) && isalnum(buf[3]))
+								{
+									// All four bytes are ASCII.
+									str = ascii_to_rp_string(buf, 4);
+								} else {
+									// Non-ASCII data. Print the hex values instead.
+									len = snprintf(buf, sizeof(buf), "%08X", be32_to_cpu(pt[j].type));
+									if (len > (int)sizeof(buf))
+										len = sizeof(buf);
+									str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+								}
+						}
+						data_row.push_back(str);
+
+						// Add the partition information to the ListData.
+						partitions->data.push_back(data_row);
+					}
+				}
+			}
+		}
+
+		// Add the partitions list data.
+		m_fields->addData_listData(partitions);
+	} else {
+		// Add a dummy entry.
+		m_fields->addData_string(nullptr);
+	}
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
