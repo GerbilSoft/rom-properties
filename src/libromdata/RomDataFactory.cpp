@@ -40,9 +40,9 @@ namespace LibRomData {
  */
 RomData *RomDataFactory::getInstance(FILE *file)
 {
-	// Read 4,096 bytes from the ROM header.
+	// Read 4,096+256 bytes from the ROM header.
 	// This should be enough to detect most systems.
-	uint8_t header[4096];
+	uint8_t header[4096+256];
 	rewind(file);
 	fflush(file);
 	size_t count = fread(header, 1, sizeof(header), file);

@@ -26,6 +26,7 @@
 
 // DiscReader
 #include "DiscReader.hpp"
+#include "WbfsReader.hpp"
 
 // C includes. (C++ namespace)
 #include <cctype>
@@ -156,7 +157,7 @@ GameCube::GameCube(FILE *file)
 
 	// Read the disc header.
 	// TODO: WBFS support.
-	uint8_t header[512];
+	uint8_t header[4096+256];
 	size_t size = fread(&header, 1, sizeof(header), m_file);
 	if (size != sizeof(header))
 		return;
@@ -164,10 +165,14 @@ GameCube::GameCube(FILE *file)
 	// Check if this disc image is supported.
 	m_discType = isRomSupported(header, sizeof(header));
 	// TODO: DiscReaderFactory?
+	// TODO: Separate console and disc image format values?
 	switch (m_discType) {
 		case DISC_GCN:
 		case DISC_WII:
 			m_discReader = new DiscReader(m_file);
+			break;
+		case DISC_WII_WBFS:
+			m_discReader = new WbfsReader(m_file);
 			break;
 		default:
 			m_discType = DISC_UNKNOWN;
@@ -185,17 +190,36 @@ GameCube::GameCube(FILE *file)
  */
 GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
 {
-	// TODO: WBFS support.
+	static const uint32_t magic_wii = 0x5D1C9EA3;
+	static const uint32_t magic_gcn = 0xC2339F3D;
 
 	if (size >= sizeof(GCN_DiscHeader)) {
 		// Check for the magic numbers.
 		const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(header);
-		if (gcn_header->magic_wii == cpu_to_be32(0x5D1C9EA3)) {
+		if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
 			// Wii disc image.
 			return DISC_WII;
-		} else if (gcn_header->magic_gcn == cpu_to_be32(0xC2339F3D)) {
+		} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
 			// GameCube disc image.
 			return DISC_GCN;
+		}
+
+		// Check for WBFS.
+		// This is checked after the magic numbers in case some joker
+		// decides to make a GCN or Wii disc image with the game ID "WBFS".
+		static const uint8_t wbfs_magic[4] = {'W', 'B', 'F', 'S'};
+		if (!memcmp(header, wbfs_magic, sizeof(wbfs_magic))) {
+			// Disc image is stored in "HDD" sector 1.
+			unsigned int hdd_sector_size = (1 << header[8]);
+			if (size >= hdd_sector_size + 0x200) {
+				// Check for Wii magic.
+				// FIXME: GCN magic too?
+				gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&header[hdd_sector_size]);
+				if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
+					// Wii disc image. (WBFS format)
+					return DISC_WII_WBFS;
+				}
+			}
 		}
 	}
 
@@ -216,9 +240,8 @@ int GameCube::loadWiiPartitionTables(void)
 	} else if (!m_file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (m_discType != DISC_WII) {
+	} else if (m_discType != DISC_WII && m_discType != DISC_WII_WBFS) {
 		// Unsupported disc type.
-		// TODO: DISC_WII_WBFS
 		return -EIO;
 	}
 
@@ -329,8 +352,7 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(header.revision, RomFields::FB_DEC, 2);
 
 	// Partition table. (Wii only)
-	// TODO: WBFS.
-	if (m_discType == DISC_WII) {
+	if (m_discType == DISC_WII || m_discType == DISC_WII_WBFS) {
 		RomFields::ListData *partitions = new RomFields::ListData();
 
 		// Load the Wii partition tables.

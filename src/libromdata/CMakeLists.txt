@@ -46,6 +46,7 @@ SET(libromdata_SRCS
 	rp_image.cpp
 	IDiscReader.cpp
 	DiscReader.cpp
+	WbfsReader.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -62,6 +63,8 @@ SET(libromdata_H
 	rp_image.hpp
 	IDiscReader.hpp
 	DiscReader.hpp
+	WbfsReader.hpp
+	libwbfs.h
 	)
 
 ######################
