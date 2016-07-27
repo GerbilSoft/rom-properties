@@ -60,9 +60,18 @@ class GameCube : public RomData
 	public:
 		enum DiscType {
 			DISC_UNKNOWN = 0,	// Unknown disc type.
-			DISC_GCN,		// GameCube disc image.
-			DISC_WII,		// Wii disc image.
-			DISC_WII_WBFS,		// Wii disc image, in WBFS format.
+
+			// Low byte: System ID.
+			DISC_SYSTEM_UNKNOWN = 0,
+			DISC_SYSTEM_GCN = 1,	// GameCube disc image.
+			DISC_SYSTEM_WII = 2,	// Wii disc image.
+			DISC_SYSTEM_MASK = 0xFF,
+
+			// High byte: Image format.
+			DISC_FORMAT_UNKNOWN = (0 << 8),
+			DISC_FORMAT_RAW  = (1 << 8),	// Raw image. (ISO, GCM)
+			DISC_FORMAT_WBFS = (2 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_MASK = (0xFF << 8),
 		};
 
 		/**
