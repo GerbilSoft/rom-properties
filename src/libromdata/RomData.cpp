@@ -52,7 +52,9 @@ RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
 	, m_fields(new RomFields(fields, count))
 	, m_icon(nullptr)
 {
-	// TODO: Windows version.
+	if (!file)
+		return;
+
 	// dup() the file.
 	int fd_old = fileno(file);
 	int fd_new = dup(fd_old);

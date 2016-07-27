@@ -44,6 +44,8 @@ SET(libromdata_SRCS
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
 	rp_image.cpp
+	IDiscReader.cpp
+	DiscReader.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -58,6 +60,8 @@ SET(libromdata_H
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
 	rp_image.hpp
+	IDiscReader.hpp
+	DiscReader.hpp
 	)
 
 ######################

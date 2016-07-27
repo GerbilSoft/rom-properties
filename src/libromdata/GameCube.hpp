@@ -30,6 +30,7 @@
 
 namespace LibRomData {
 
+class IDiscReader;
 class GameCube : public RomData
 {
 	public:
@@ -75,6 +76,9 @@ class GameCube : public RomData
 	private:
 		// Disc type.
 		DiscType m_discType;
+
+		// Disc reader object.
+		IDiscReader *m_discReader;
 
 		/**
 		 * Wii partition tables.

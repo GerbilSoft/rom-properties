@@ -24,6 +24,9 @@
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 
+// DiscReader
+#include "DiscReader.hpp"
+
 // C includes. (C++ namespace)
 #include <cctype>
 #include <cstring>
@@ -139,6 +142,7 @@ struct RVL_PartitionTableEntry {
 GameCube::GameCube(FILE *file)
 	: RomData(file, gcn_fields, ARRAY_SIZE(gcn_fields))
 	, m_discType(DISC_UNKNOWN)
+	, m_discReader(nullptr)
 	, m_wiiMptLoaded(false)
 {
 	if (!m_file) {
@@ -152,13 +156,24 @@ GameCube::GameCube(FILE *file)
 
 	// Read the disc header.
 	// TODO: WBFS support.
-	GCN_DiscHeader header;
+	uint8_t header[512];
 	size_t size = fread(&header, 1, sizeof(header), m_file);
 	if (size != sizeof(header))
 		return;
 
 	// Check if this disc image is supported.
-	m_discType = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+	m_discType = isRomSupported(header, sizeof(header));
+	// TODO: DiscReaderFactory?
+	switch (m_discType) {
+		case DISC_GCN:
+		case DISC_WII:
+			m_discReader = new DiscReader(m_file);
+			break;
+		default:
+			m_discType = DISC_UNKNOWN;
+			break;
+	}
+
 	m_isValid = (m_discType != DISC_UNKNOWN);
 }
 
@@ -219,8 +234,8 @@ int GameCube::loadWiiPartitionTables(void)
 
 	// Read the master partition table.
 	// Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
-	fseek(m_file, 0x40000, SEEK_SET);
-	size_t size = fread(&mpt, 1, sizeof(mpt), m_file);
+	m_discReader->seek(0x40000);
+	size_t size = m_discReader->read(&mpt, sizeof(mpt));
 	if (size != sizeof(mpt)) {
 		// Could not read the master partition table.
 		// TODO: Return error from fread()?
@@ -229,8 +244,7 @@ int GameCube::loadWiiPartitionTables(void)
 
 	// Get the size of the disc image.
 	// TODO: Large File Support for 32-bit Linux and Windows.
-	fseek(m_file, 0, SEEK_END);
-	int64_t discSize = ftell(m_file);
+	int64_t discSize = m_discReader->fileSize();
 	if (discSize < 0) {
 		// Error getting the size of the disc image.
 		return -errno;
@@ -247,9 +261,10 @@ int GameCube::loadWiiPartitionTables(void)
 
 		// Read the individual partition table.
 		uint64_t pt_addr = (uint64_t)(be32_to_cpu(mpt.table[i].addr)) << 2;
-		fseek(m_file, pt_addr, SEEK_SET);
-		size = fread(pt, sizeof(RVL_PartitionTableEntry), count, m_file);
-		if (size != count) {
+		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
+		m_discReader->seek((int64_t)pt_addr);
+		size = m_discReader->read(pt, ptSize);
+		if (size != ptSize) {
 			// Error reading the partition table entries.
 			return -EIO;
 		}
@@ -287,13 +302,12 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
+	m_discReader->rewind();
 
 	// Read the disc header.
 	// TODO: WBFS support.
 	GCN_DiscHeader header;
-	size_t size = fread(&header, 1, sizeof(header), m_file);
+	size_t size = m_discReader->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
 		// File isn't big enough for a GameCube/Wii header...
 		return -EIO;
