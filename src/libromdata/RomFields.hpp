@@ -38,6 +38,7 @@ class RomFields
 			RFT_INVALID,	// Invalid
 			RFT_STRING,	// Basic string.
 			RFT_BITFIELD,	// Bitfield.
+			RFT_LISTDATA,	// ListData.
 		};
 
 		// Description for Bitfield.
@@ -49,6 +50,16 @@ class RomFields
 			// Bit flag names.
 			// Must be an array of at least 'elements' strings.
 			// If a name is nullptr, that element is skipped.
+			const rp_char **names;
+		};
+
+		// Description for ListData.
+		struct ListDataDesc {
+			// Number of fields per row.
+			int count;
+			// List field names. (headers)
+			// Must be an array of at least 'fields' strings.
+			// If a name is nullptr, that field is skipped.
 			const rp_char **names;
 		};
 
@@ -65,7 +76,15 @@ class RomFields
 			union {
 				const void *ptr;
 				const BitfieldDesc *bitfield;
+				const ListDataDesc *list_data;
 			};
+		};
+
+		// List data for a list view.
+		struct ListData {
+			// Each entry in 'data' contains a vector of strings,
+			// which represents each field.
+			std::vector<std::vector<rp_string> > data;
 		};
 
 		// ROM field data.
@@ -75,6 +94,7 @@ class RomFields
 			union {
 				const rp_char *str;	// String data.
 				uint32_t bitfield;	// Bitfield.
+				ListData *list_data;	// ListData
 			};
 		};
 
@@ -167,6 +187,13 @@ class RomFields
 		 * @return Field index.
 		 */
 		int addData_bitfield(uint32_t bitfield);
+
+		/**
+		 * Add ListData.
+		 * @param list_data ListData. (must be allocated with new)
+		 * @return Field index.
+		 */
+		int addData_listData(ListData *list_data);
 };
 
 }

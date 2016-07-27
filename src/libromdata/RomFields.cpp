@@ -153,6 +153,10 @@ void RomFieldsPrivate::delete_data(void)
 			case RomFields::RFT_BITFIELD:
 				// Nothing needed.
 				break;
+			case RomFields::RFT_LISTDATA:
+				// ListData.
+				delete data.list_data;
+				break;
 			default:
 				// ERROR!
 				assert(false);
@@ -229,6 +233,9 @@ void RomFields::detach(void)
 				// Copy the bitfield.
 				data_new.bitfield = data_old.bitfield;
 				break;
+			case RFT_LISTDATA:
+				// Copy the ListData.
+				data_new.list_data = new ListData(*data_old.list_data);
 			default:
 				// ERROR!
 				assert(false);
@@ -360,6 +367,20 @@ int RomFields::addData_bitfield(uint32_t bitfield)
 	Data data;
 	data.type = RFT_BITFIELD;
 	data.bitfield = bitfield;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
+
+/**
+ * Add ListData.
+ * @param list_data ListData. (must be allocated with new)
+ * @return Field index.
+ */
+int RomFields::addData_listData(ListData *list_data)
+{
+	Data data;
+	data.type = RFT_LISTDATA;
+	data.list_data = list_data;
 	d->data.push_back(data);
 	return (int)(d->data.size() - 1);
 }

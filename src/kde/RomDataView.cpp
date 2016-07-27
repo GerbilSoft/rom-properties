@@ -30,6 +30,10 @@ using LibRomData::RomFields;
 #include <cassert>
 #include <cstdio>
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 #include <QLabel>
 #include <QCheckBox>
 
@@ -37,6 +41,7 @@ using LibRomData::RomFields;
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>
+#include <QTreeWidget>
 
 class RomDataViewPrivate
 {
@@ -162,9 +167,9 @@ void RomDataViewPrivate::updateDisplay(void)
 
 			case RomFields::RFT_BITFIELD: {
 				// Bitfield type. Create a grid of checkboxes.
+				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 				QGridLayout *gridLayout = new QGridLayout();
 				int row = 0, col = 0;
-				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 				for (int i = 0; i < bitfieldDesc->elements; i++) {
 					const rp_char *name = bitfieldDesc->names[i];
 					if (!name)
@@ -183,6 +188,52 @@ void RomDataViewPrivate::updateDisplay(void)
 					}
 				}
 				ui.formLayout->addRow(lblDesc, gridLayout);
+				break;
+			}
+
+			case RomFields::RFT_LISTDATA: {
+				// ListData type. Create a QTreeWidget.
+				const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+				QTreeWidget *treeWidget = new QTreeWidget(q);
+				treeWidget->setRootIsDecorated(false);
+				treeWidget->setUniformRowHeights(true);
+
+				// Set up the column names.
+				const int count = listDataDesc->count;
+				treeWidget->setColumnCount(count);
+				QStringList columnNames;
+				columnNames.reserve(count);
+				for (int i = 0; i < count; i++) {
+					if (listDataDesc->names[i]) {
+						columnNames.append(rpToQS(listDataDesc->names[i]));
+					} else {
+						// Don't show this column.
+						columnNames.append(QString());
+						treeWidget->setColumnHidden(i, true);
+					}
+				}
+				treeWidget->setHeaderLabels(columnNames);
+
+				// Add the row data.
+				const RomFields::ListData *listData = data->list_data;
+				for (int i = 0; i < (int)listData->data.size(); i++) {
+					const vector<LibRomData::rp_string> &data_row = listData->data.at(i);
+					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
+					int field = 0;
+					for (vector<LibRomData::rp_string>::const_iterator iter = data_row.begin();
+					     iter != data_row.end(); ++iter, ++field)
+					{
+						treeWidgetItem->setData(field, Qt::DisplayRole, rpToQS(*iter));
+					}
+				}
+
+				// Resize the columns to fit the contents.
+				for (int i = 0; i < count; i++) {
+					treeWidget->resizeColumnToContents(i);
+				}
+				treeWidget->resizeColumnToContents(count);
+
+				ui.formLayout->addRow(lblDesc, treeWidget);
 				break;
 			}
 
