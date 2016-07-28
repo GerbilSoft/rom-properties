@@ -6,9 +6,6 @@
 # - Enable MSVC 2005 compatibility. (In MinGW-w64 v4.0.2, this enables 64-bit time_t.)
 SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D__MINGW_USE_VC2005_COMPAT")
 
-# NOTE: This program is Unicode only on Windows.
-# No ANSI support.
-
 # Subsystem and minimum Windows version:
 # - If 32-bit: 5.00
 # - If 64-bit: 5.02
@@ -16,12 +13,12 @@ SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D__MINGW_USE_VC2005_COMPAT")
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	# 64-bit, Unicode Windows only.
 	# (There is no 64-bit ANSI Windows.)
-	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D_WIN32_WINNT=0x0502")
+	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0502 -D_WIN32_WINNT=0x0502 -D_WIN32_IE=0x0600")
 	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.02")
 	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.02")
 ELSE()
 	# 32-bit, Unicode Windows only.
-	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D_WIN32_WINNT=0x0500")
+	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_IE=0x0500")
 	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.00")
 	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.00")
 ENDIF()

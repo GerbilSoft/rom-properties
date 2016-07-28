@@ -6,6 +6,10 @@
 # - Define NOMINMAX to disable the MIN() and MAX() macros.
 SET(RP_C_FLAGS_WIN32 "-DSTRICT -DWIN32_LEAN_AND_MEAN -DNOMINMAX")
 
+# NOTE: This program only supports Unicode on Windows.
+# No support for ANSI Windows, i.e. Win9x.
+SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DUNICODE -D_UNICODE")
+
 # Enable secure template overloads for C++.
 # References:
 # - MinGW's _mingw_secapi.h
