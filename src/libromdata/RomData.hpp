@@ -82,6 +82,67 @@ class RomData
 		 */
 		void close(void);
 
+	public:
+		/** Class-specific functions that can be used even if isValid() is false. **/
+
+		/**
+		 * Get a list of all supported file extensions.
+		 * This is to be used for file type registration;
+		 * subclasses don't explicitly check the extension.
+		 *
+		 * NOTE: The extensions include the leading dot,
+		 * e.g. ".bin" instead of "bin".
+		 *
+		 * NOTE 2: The strings in the std::vector should *not*
+		 * be freed by the caller.
+		 *
+		 * @return List of all supported file extensions.
+		 */
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const = 0;
+
+		/**
+		 * Image types supported by a RomData subclass.
+		 */
+		enum ImageType {
+			// Internal images are contained with the ROM or disc image.
+			IMG_INT_ICON = 0,	// Internal icon, e.g. DS launcher icon
+			IMG_INT_BANNER,		// Internal banner, e.g. GameCube discs
+			IMG_INT_MEDIA,		// Internal media scan, e.g. Dreamcast discs
+
+			// External images are downloaded from websites.
+			// TODO
+			IMG_EXT_MEDIA,		// External media scan, e.g. GameTDB
+			IMG_EXT_BOX,		// External box scan
+
+			// Ranges.
+			IMG_INT_MIN = IMG_INT_ICON,
+			IMG_INT_MAX = IMG_INT_MEDIA,
+			IMG_EXT_MIN = IMG_EXT_MEDIA,
+			IMG_EXT_MAX = IMG_EXT_BOX
+		};
+
+		/**
+		 * Image type bitfield.
+		 * Used in cases where multiple image types are supported.
+		 */
+		enum ImageTypeBF {
+			// Internal images are contained with the ROM or disc image.
+			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
+			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
+			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
+
+			// External images are downloaded from websites.
+			// TODO
+			IMGBF_EXT_MEDIA  = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
+			IMGBF_EXT_BOX    = (1 << IMG_EXT_BOX),		// External box scan
+		};
+
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		virtual uint32_t supportedImageTypes(void) const;
+
 	protected:
 		/**
 		 * Load field data.
@@ -91,11 +152,12 @@ class RomData
 		virtual int loadFieldData(void) = 0;
 
 		/**
-		 * Load the internal icon.
-		 * Called by RomData::icon() if the icon data hasn't been loaded yet.
+		 * Load an internal image.
+		 * Called by RomData::image() if the image data hasn't been loaded yet.
+		 * @param imageType Image type to load.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalIcon(void);
+		virtual int loadInternalImage(ImageType imageType);
 
 	public:
 		/**
@@ -105,10 +167,11 @@ class RomData
 		const RomFields *fields(void) const;
 
 		/**
-		 * Get the ROM's internal icon.
-		 * @return Internal icon, or nullptr if the ROM doesn't have one.
+		 * Get an internal image from the ROM.
+		 * @param imageType Image type to load.
+		 * @return Internal image, or nullptr if the ROM doesn't have one.
 		 */
-		const rp_image *icon(void) const;
+		const rp_image *image(ImageType imageType) const;
 
 	protected:
 		// TODO: Make a private class?
@@ -116,8 +179,8 @@ class RomData
 		FILE *m_file;			// Open file.
 		RomFields *const m_fields;	// ROM fields.
 
-		// Images.
-		rp_image *m_icon;		// Internal icon.
+		// Internal images.
+		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];
 };
 
 }

@@ -66,6 +66,27 @@ class NintendoDS : public RomData
 		 */
 		static int isRomSupported(const uint8_t *header, size_t size);
 
+		/**
+		 * Get a list of all supported file extensions.
+		 * This is to be used for file type registration;
+		 * subclasses don't explicitly check the extension.
+		 *
+		 * NOTE: The extensions include the leading dot,
+		 * e.g. ".bin" instead of "bin".
+		 *
+		 * NOTE 2: The strings in the std::vector should *not*
+		 * be freed by the caller.
+		 *
+		 * @return List of all supported file extensions.
+		 */
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		virtual uint32_t supportedImageTypes(void) const override;
+
 	protected:
 		/**
 		 * Load field data.
@@ -75,11 +96,12 @@ class NintendoDS : public RomData
 		virtual int loadFieldData(void) override;
 
 		/**
-		 * Load the internal icon.
-		 * Called by RomData::icon() if the icon data hasn't been loaded yet.
+		 * Load an internal image.
+		 * Called by RomData::image() if the image data hasn't been loaded yet.
+		 * @param imageType Image type to load.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalIcon(void) override;
+		virtual int loadInternalImage(ImageType imageType) override;
 };
 
 }

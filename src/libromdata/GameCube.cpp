@@ -173,6 +173,30 @@ GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
 }
 
 /**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions do not include the leading dot,
+ * e.g. "bin" instead of ".bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> GameCube::supportedFileExtensions(void) const
+{
+	// TODO: Add ".iso" later? (Too generic, though...)
+	vector<const rp_char*> ret;
+	ret.reserve(3);
+	ret.push_back(_RP(".gcm"));
+	ret.push_back(_RP(".rvm"));
+	ret.push_back(_RP(".wbfs"));
+	return ret;
+}
+
+/**
  * Load the Wii volume group and partition tables.
  * Partition tables are loaded into m_wiiVgTbl[].
  * @return 0 on success; negative POSIX error code on error.

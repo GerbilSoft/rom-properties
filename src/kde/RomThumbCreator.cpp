@@ -20,9 +20,12 @@
  ***************************************************************************/
 
 #include "RomThumbCreator.hpp"
+
+// libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
+using namespace LibRomData;
 
 #include <QtGui/QImage>
 #include <QLabel>
@@ -50,7 +53,7 @@ RomThumbCreator::~RomThumbCreator()
  * @param rp_image rp_image.
  * @return QImage.
  */
-QImage RomThumbCreator::rpToQImage(const LibRomData::rp_image *image)
+QImage RomThumbCreator::rpToQImage(const rp_image *image)
 {
 	if (!image || !image->isValid())
 		return QImage();
@@ -58,10 +61,10 @@ QImage RomThumbCreator::rpToQImage(const LibRomData::rp_image *image)
 	// Determine the QImage format.
 	QImage::Format fmt;
 	switch (image->format()) {
-		case LibRomData::rp_image::FORMAT_CI8:
+		case rp_image::FORMAT_CI8:
 			fmt = QImage::Format_Indexed8;
 			break;
-		case LibRomData::rp_image::FORMAT_ARGB32:
+		case rp_image::FORMAT_ARGB32:
 			fmt = QImage::Format_ARGB32;
 			break;
 		default:
@@ -108,11 +111,11 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	FILE *file = fopen(path.toUtf8().constData(), "rb");
 	if (file) {
 		// Get the appropriate RomData class for this ROM.
-		LibRomData::RomData *romData = LibRomData::RomDataFactory::getInstance(file);
+		RomData *romData = RomDataFactory::getInstance(file);
 		if (romData) {
 			// ROM is supported. Get the internal icon.
 			// TODO: Customize for internal icon, disc/cart scan, etc.?
-			const LibRomData::rp_image *icon = romData->icon();
+			const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 			if (icon) {
 				// Convert the icon to QImage.
 				img = rpToQImage(icon);

@@ -21,6 +21,7 @@
 
 #include "RomData.hpp"
 #include "rp_image.hpp"
+#include "common.h"
 
 // dup()
 #ifdef _WIN32
@@ -28,6 +29,9 @@
 #else
 #include <unistd.h>
 #endif
+
+// C includes. (C++ namespace)
+#include <cassert>
 
 namespace LibRomData {
 
@@ -50,8 +54,10 @@ RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
 	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
-	, m_icon(nullptr)
 {
+	// Clear the internal images field.
+	memset(&m_images, 0, sizeof(m_images));
+
 	if (!file)
 		return;
 
@@ -72,7 +78,11 @@ RomData::~RomData()
 {
 	this->close();
 	delete m_fields;
-	delete m_icon;
+
+	// Delete the internal images.
+	for (int i = ARRAY_SIZE(m_images)-1; i >= 0; i--) {
+		delete m_images[i];
+	}
 }
 
 /**
@@ -96,13 +106,30 @@ void RomData::close(void)
 }
 
 /**
- * Load the internal icon.
- * Called by RomData::icon() if the icon data hasn't been loaded yet.
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t RomData::supportedImageTypes(void) const
+{
+	// No images supported by default.
+	return 0;
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image() if the image data hasn't been loaded yet.
+ * @param imageType Image type to load.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::loadInternalIcon(void)
+int RomData::loadInternalImage(ImageType imageType)
 {
-	// No icon by default.
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+
+	// No images supported by the base class.
 	return -ENOENT;
 }
 
@@ -123,21 +150,27 @@ const RomFields *RomData::fields(void) const
 }
 
 /**
- * Get the ROM's internal icon.
- * @return Internal icon, or nullptr if the ROM doesn't have one.
+ * Get an internal image from the ROM.
+ * @param imageType Image type to load.
+ * @return Internal image, or nullptr if the ROM doesn't have one.
  */
-const rp_image *RomData::icon(void) const
+const rp_image *RomData::image(ImageType imageType) const
 {
-	if (!m_icon) {
-		// Internal icon has not been loaded.
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return nullptr;
+	}
+
+	if (!m_images[imageType]) {
+		// Internal image has not been loaded.
 		// Load it now.
-		// TODO: Some flag to indicate if a class supports it?
-		int ret = const_cast<RomData*>(this)->loadInternalIcon();
+		int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
 		if (ret < 0)
 			return nullptr;
 	}
 
-	return m_icon;
+	return m_images[imageType];
 }
 
 }

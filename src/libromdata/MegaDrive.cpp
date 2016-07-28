@@ -29,6 +29,10 @@
 #include <cstring>
 #include <cctype>
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 namespace LibRomData {
 
 // I/O support bitfield.
@@ -207,6 +211,30 @@ int MegaDrive::isRomSupported(const uint8_t *header, size_t size)
 
 	// Not supported.
 	return 0;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
+{
+	// NOTE: Not including ".md" due to conflicts with Markdown.
+	// TODO: Add ".bin" later? (Too generic, though...)
+	vector<const rp_char*> ret;
+	ret.reserve(2);
+	ret.push_back(_RP(".gen"));
+	ret.push_back(_RP(".smd"));
+	return ret;
 }
 
 /**

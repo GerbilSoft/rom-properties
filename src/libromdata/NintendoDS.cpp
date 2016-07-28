@@ -29,7 +29,12 @@
 #include "rp_image.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstring>
+
+// C++ includes.
+#include <vector>
+using std::vector;
 
 namespace LibRomData {
 
@@ -288,6 +293,36 @@ int NintendoDS::isRomSupported(const uint8_t *header, size_t size)
 }
 
 /**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
+{
+	vector<const rp_char*> ret;
+	ret.reserve(1);
+	ret.push_back(_RP(".nds"));
+	return ret;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t NintendoDS::supportedImageTypes(void) const
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -415,19 +450,31 @@ static inline void BlitTile(pixel *imgBuf, int pitch,
 }
 
 /**
- * Load the internal icon.
- * Called by RomData::icon() if the icon data hasn't been loaded yet.
+ * Load an internal image.
+ * Called by RomData::image() if the image data hasn't been loaded yet.
+ * @param imageType Image type to load.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::loadInternalIcon(void)
+int NintendoDS::loadInternalImage(ImageType imageType)
 {
-	if (m_icon) {
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+	if (m_images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
 	}
 	if (!m_file) {
 		// File isn't open.
 		return -EBADF;
+	}
+
+	// Check for supported image types.
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by DS.
+		return -ENOENT;
 	}
 
 	// Address of icon/title information is located at
@@ -479,7 +526,7 @@ int NintendoDS::loadInternalIcon(void)
 	}
 
 	// Finished decoding the icon.
-	m_icon = icon;
+	m_images[imageType] = icon;
 	return 0;
 }
 
