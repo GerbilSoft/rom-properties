@@ -60,19 +60,21 @@ typedef struct PACKED _GCN_DiscHeader {
 #pragma pack()
 
 /**
- * Wii master partition table.
- * Contains information about the (maximum of) four partition tables.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ * Wii volume group table.
+ * Contains information about the (maximum of) four volume groups.
+ * References:
+ * - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ * - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
  *
  * All fields are big-endian.
  */
 #pragma pack(1)
-typedef struct PACKED _RVL_MasterPartitionTable {
+typedef struct PACKED _RVL_VolumeGroupTable {
 	struct {
-		uint32_t count;		// Number of partitions in this table.
+		uint32_t count;		// Number of partitions in this volume group.
 		uint32_t addr;		// Start address of this table, rshifted by 2.
-	} table[4];
-} RVL_MasterPartitionTable;
+	} vg[4];
+} RVL_VolumeGroupTable;
 #pragma pack()
 
 /**

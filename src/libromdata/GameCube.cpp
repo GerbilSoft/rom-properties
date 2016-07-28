@@ -90,7 +90,7 @@ GameCube::GameCube(FILE *file)
 	: RomData(file, gcn_fields, ARRAY_SIZE(gcn_fields))
 	, m_discType(DISC_UNKNOWN)
 	, m_discReader(nullptr)
-	, m_wiiMptLoaded(false)
+	, m_wiiVgTblLoaded(false)
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -173,13 +173,13 @@ GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
 }
 
 /**
- * Load the Wii partition tables.
- * Partition tables are loaded into m_wiiMpt[].
+ * Load the Wii volume group and partition tables.
+ * Partition tables are loaded into m_wiiVgTbl[].
  * @return 0 on success; negative POSIX error code on error.
  */
 int GameCube::loadWiiPartitionTables(void)
 {
-	if (m_wiiMptLoaded) {
+	if (m_wiiVgTblLoaded) {
 		// Partition tables have already been loaded.
 		return 0;
 	} else if (!m_file) {
@@ -191,21 +191,23 @@ int GameCube::loadWiiPartitionTables(void)
 	}
 
 	// Clear the existing partition tables.
-	for (int i = ARRAY_SIZE(m_wiiMpt)-1; i >= 0; i--) {
-		m_wiiMpt[i].clear();
+	for (int i = ARRAY_SIZE(m_wiiVgTbl)-1; i >= 0; i--) {
+		m_wiiVgTbl[i].clear();
 	}
 
 	// Assuming a maximum of 128 partitions per table.
 	// (This is a rather high estimate.)
-	RVL_MasterPartitionTable mpt;
+	RVL_VolumeGroupTable vgtbl;
 	RVL_PartitionTableEntry pt[1024];
 
-	// Read the master partition table.
-	// Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	// Read the volume group table.
+	// References:
+	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
 	m_discReader->seek(0x40000);
-	size_t size = m_discReader->read(&mpt, sizeof(mpt));
-	if (size != sizeof(mpt)) {
-		// Could not read the master partition table.
+	size_t size = m_discReader->read(&vgtbl, sizeof(vgtbl));
+	if (size != sizeof(vgtbl)) {
+		// Could not read the volume group table.
 		// TODO: Return error from fread()?
 		return -EIO;
 	}
@@ -218,17 +220,17 @@ int GameCube::loadWiiPartitionTables(void)
 		return -errno;
 	}
 
-	// Process each partition table.
+	// Process each volume group.
 	for (int i = 0; i < 4; i++) {
-		uint32_t count = be32_to_cpu(mpt.table[i].count);
+		uint32_t count = be32_to_cpu(vgtbl.vg[i].count);
 		if (count == 0) {
 			continue;
 		} else if (count > ARRAY_SIZE(pt)) {
 			count = ARRAY_SIZE(pt);
 		}
 
-		// Read the individual partition table.
-		uint64_t pt_addr = (uint64_t)(be32_to_cpu(mpt.table[i].addr)) << 2;
+		// Read the partition table entries.
+		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
 		m_discReader->seek((int64_t)pt_addr);
 		size = m_discReader->read(pt, ptSize);
@@ -238,9 +240,9 @@ int GameCube::loadWiiPartitionTables(void)
 		}
 
 		// Process each partition table entry.
-		m_wiiMpt[i].resize(count);
+		m_wiiVgTbl[i].resize(count);
 		for (int j = 0; j < (int)count; j++) {
-			WiiPartEntry &entry = m_wiiMpt[i].at(j);
+			WiiPartEntry &entry = m_wiiVgTbl[i].at(j);
 			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
 			// TODO: Figure out how to calculate length?
 			entry.type = be32_to_cpu(pt[j].type);
@@ -307,9 +309,9 @@ int GameCube::loadFieldData(void)
 			// Convert them to RFT_LISTDATA for display purposes.
 			vector<rp_string> data_row;     // Temporary storage for each partition entry.
 			for (int i = 0; i < 4; i++) {
-				const int count = (int)m_wiiMpt[i].size();
+				const int count = (int)m_wiiVgTbl[i].size();
 				for (int j = 0; j < count; j++) {
-					const WiiPartEntry &entry = m_wiiMpt[i].at(j);
+					const WiiPartEntry &entry = m_wiiVgTbl[i].at(j);
 					data_row.clear();
 
 					// Partition number.

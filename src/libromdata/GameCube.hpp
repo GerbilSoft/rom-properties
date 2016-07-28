@@ -100,12 +100,12 @@ class GameCube : public RomData
 		};
 
 		typedef std::vector<WiiPartEntry> WiiPartTable;
-		WiiPartTable m_wiiMpt[4];
-		bool m_wiiMptLoaded;
+		WiiPartTable m_wiiVgTbl[4];	// Volume group table.
+		bool m_wiiVgTblLoaded;
 
 		/**
-		 * Load the Wii partition tables.
-		 * Partition tables are loaded into m_wiiMpt[].
+		 * Load the Wii volume group and partition tables.
+		 * Partition tables are loaded into m_wiiVgTbl[].
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadWiiPartitionTables(void);
