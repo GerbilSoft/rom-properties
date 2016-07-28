@@ -23,20 +23,13 @@
 #include "NintendoPublishers.hpp"
 #include "TextFuncs.hpp"
 #include "byteswap.h"
+#include "common.h"
 
 // rp_image for internal icon.
 #include "rp_image.hpp"
 
 // C includes. (C++ namespace)
 #include <cstring>
-
-// TODO: Move this elsewhere.
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-#ifdef __GNUC__
-#define PACKED __attribute__((packed))
-#else
-#define PACKED
-#endif
 
 namespace LibRomData {
 

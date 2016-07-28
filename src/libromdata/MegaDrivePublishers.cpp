@@ -20,10 +20,9 @@
  ***************************************************************************/
 
 #include "MegaDrivePublishers.hpp"
-#include <stdlib.h>
+#include "common.h"
 
-// TODO: Move this elsewhere.
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+#include <stdlib.h>
 
 namespace LibRomData {
 

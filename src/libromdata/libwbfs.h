@@ -4,22 +4,15 @@
 #ifndef LIBWBFS_H
 #define LIBWBFS_H
 
+#include "common.h"
+#include <stdint.h>
+
 #ifdef __cplusplus
    extern "C" {
 #endif /* __cplusplus */
 
-#include <stdint.h>
 typedef uint32_t be32_t;
 typedef uint16_t be16_t;
-
-// TODO: Move this elsewhere.
-#ifndef PACKED
-#ifdef __GNUC__
-#define PACKED __attribute__((packed))
-#else
-#define PACKED
-#endif
-#endif
 
 #pragma pack(1)
 typedef struct PACKED wbfs_head {

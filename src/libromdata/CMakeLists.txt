@@ -51,6 +51,7 @@ SET(libromdata_SRCS
 SET(libromdata_H
 	byteorder.h
 	byteswap.h
+	common.h
 	RomData.hpp
 	RomFields.hpp
 	TextFuncs.hpp

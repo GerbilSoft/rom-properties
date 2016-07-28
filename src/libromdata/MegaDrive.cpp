@@ -23,13 +23,11 @@
 #include "MegaDrivePublishers.hpp"
 #include "TextFuncs.hpp"
 #include "byteswap.h"
+#include "common.h"
 
 // C includes. (C++ namespace)
 #include <cstring>
 #include <cctype>
-
-// TODO: Move this elsewhere.
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 namespace LibRomData {
 
