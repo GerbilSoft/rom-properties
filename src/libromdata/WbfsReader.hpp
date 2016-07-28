@@ -23,10 +23,10 @@
 #define __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 
 #include "IDiscReader.hpp"
-#include "libwbfs.h"
 
 namespace LibRomData {
 
+class WbfsReaderPrivate;
 class WbfsReader : public IDiscReader
 {
 	public:
@@ -40,49 +40,13 @@ class WbfsReader : public IDiscReader
 		virtual ~WbfsReader();
 
 	private:
+		// TODO: Rearrange other classes so the private class
+		// is *before* the copy constructors?
+		friend class WbfsReaderPrivate;
+		WbfsReaderPrivate *const d;
+	private:
 		WbfsReader(const WbfsReader &);
 		WbfsReader &operator=(const WbfsReader &);
-
-	protected:
-		/**
-		 * Read the WBFS header.
-		 * @param ppHead Pointer to wbfs_head_t*. (will be allocated on success)
-		 * @param p wbfs_t struct.
-		 * @return Allocated wbfs_t on success; nullptr on error.
-		 */
-		wbfs_t *readWbfsHeader(void);
-
-		/**
-		 * Free an allocated WBFS header.
-		 * This frees all associated structs.
-		 * All opened discs *must* be closed.
-		 * @param wbfs_t wbfs_t struct.
-		 */
-		void freeWbfsHeader(wbfs_t *p);
-
-		/**
-		 * Open a disc from the WBFS image.
-		 * @param p wbfs_t struct.
-		 * @param index Disc index.
-		 * @return Allocated wbfs_disc_t on success; nullptr on error.
-		 */
-		wbfs_disc_t *openWbfsDisc(wbfs_t *p, uint32_t index);
-
-		/**
-		 * Close a WBFS disc.
-		 * This frees all associated structs.
-		 * @param disc wbfs_disc_t.
-		 */
-		void closeWbfsDisc(wbfs_disc_t *disc);
-
-		/**
-		 * Get the non-sparse size of an open WBFS disc, in bytes.
-		 * This scans the block table to find the first block
-		 * from the end of wlba_table[] that has been allocated.
-		 * @param disc wbfs_disc_t struct.
-		 * @return Non-sparse size, in bytes.
-		 */
-		int64_t getWbfsDiscSize(const wbfs_disc_t *disc);
 
 	public:
 		/**
@@ -98,12 +62,6 @@ class WbfsReader : public IDiscReader
 		 * @param pos File position.
 		 */
 		virtual void seek(int64_t pos) override;
-
-	protected:
-		// WBFS structs.
-		wbfs_t *m_wbfs;			// WBFS image.
-		wbfs_disc_t *m_wbfs_disc;	// Current disc.
-		int64_t m_wbfs_pos;		// Read position in m_wbfs_disc.
 };
 
 }

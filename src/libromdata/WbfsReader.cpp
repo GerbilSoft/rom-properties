@@ -23,6 +23,7 @@
 
 #include "WbfsReader.hpp"
 #include "byteswap.h"
+#include "libwbfs.h"
 
 // C includes.
 #include <stdlib.h>
@@ -33,21 +34,84 @@
 
 namespace LibRomData {
 
-WbfsReader::WbfsReader(FILE *file)
-	: IDiscReader(file)
+class WbfsReaderPrivate {
+	public:
+		WbfsReaderPrivate(WbfsReader *q);
+		~WbfsReaderPrivate();
+
+	private:
+		friend class WbfsReader;
+		WbfsReader *const q;
+	private:
+		WbfsReaderPrivate(const WbfsReaderPrivate &other);
+		WbfsReaderPrivate &operator=(const WbfsReaderPrivate &other);
+
+	public:
+		// WBFS structs.
+		wbfs_t *m_wbfs;			// WBFS image.
+		wbfs_disc_t *m_wbfs_disc;	// Current disc.
+		int64_t m_wbfs_pos;		// Read position in m_wbfs_disc.
+
+		/** WBFS functions. **/
+
+		/**
+		 * Read the WBFS header.
+		 * @param ppHead Pointer to wbfs_head_t*. (will be allocated on success)
+		 * @param p wbfs_t struct.
+		 * @return Allocated wbfs_t on success; nullptr on error.
+		 */
+		wbfs_t *readWbfsHeader(void);
+
+		/**
+		 * Free an allocated WBFS header.
+		 * This frees all associated structs.
+		 * All opened discs *must* be closed.
+		 * @param wbfs_t wbfs_t struct.
+		 */
+		void freeWbfsHeader(wbfs_t *p);
+
+		/**
+		 * Open a disc from the WBFS image.
+		 * @param p wbfs_t struct.
+		 * @param index Disc index.
+		 * @return Allocated wbfs_disc_t on success; nullptr on error.
+		 */
+		wbfs_disc_t *openWbfsDisc(wbfs_t *p, uint32_t index);
+
+		/**
+		 * Close a WBFS disc.
+		 * This frees all associated structs.
+		 * @param disc wbfs_disc_t.
+		 */
+		void closeWbfsDisc(wbfs_disc_t *disc);
+
+		/**
+		 * Get the non-sparse size of an open WBFS disc, in bytes.
+		 * This scans the block table to find the first block
+		 * from the end of wlba_table[] that has been allocated.
+		 * @param disc wbfs_disc_t struct.
+		 * @return Non-sparse size, in bytes.
+		 */
+		int64_t getWbfsDiscSize(const wbfs_disc_t *disc);
+};
+
+/** WbfsReaderPrivate **/
+
+WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q)
+	: q(q)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
 	, m_wbfs_pos(0)
 {
-	if (!m_file)
+	if (!q->m_file)
 		return;
 
 	// Read the WBFS header.
 	m_wbfs = readWbfsHeader();
 	if (!m_wbfs) {
 		// Error reading the WBFS header.
-		fclose(m_file);
-		m_file = nullptr;
+		fclose(q->m_file);
+		q->m_file = nullptr;
 		return;
 	}
 
@@ -57,16 +121,16 @@ WbfsReader::WbfsReader(FILE *file)
 		// Error opening the WBFS disc.
 		freeWbfsHeader(m_wbfs);
 		m_wbfs = nullptr;
-		fclose(m_file);
-		m_file = nullptr;
+		fclose(q->m_file);
+		q->m_file = nullptr;
 		return;
 	}
 
 	// Get the size of the WBFS disc.
-	m_fileSize = getWbfsDiscSize(m_wbfs_disc);
+	q->m_fileSize = getWbfsDiscSize(m_wbfs_disc);
 }
 
-WbfsReader::~WbfsReader()
+WbfsReaderPrivate::~WbfsReaderPrivate()
 {
 	if (m_wbfs_disc) {
 		closeWbfsDisc(m_wbfs_disc);
@@ -95,7 +159,7 @@ static uint8_t size_to_shift(uint32_t size)
  * @param ppHead Pointer to wbfs_head_t*. (will be allocated on success)
  * @return Allocated wbfs_t on success; nullptr on error.
  */
-wbfs_t *WbfsReader::readWbfsHeader(void)
+wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 {
 	static const uint8_t WBFS_MAGIC[4] = {'W', 'B', 'F', 'S'};
 
@@ -104,8 +168,8 @@ wbfs_t *WbfsReader::readWbfsHeader(void)
 	wbfs_head_t *head = (wbfs_head_t*)malloc(hd_sec_sz);
 
 	// Read the WBFS header.
-	::rewind(m_file);
-	size_t size = fread(head, 1, hd_sec_sz, m_file);
+	::rewind(q->m_file);
+	size_t size = fread(head, 1, hd_sec_sz, q->m_file);
 	if (size != hd_sec_sz) {
 		// Read error.
 		free(head);
@@ -147,8 +211,8 @@ wbfs_t *WbfsReader::readWbfsHeader(void)
 		head = (wbfs_head_t*)malloc(hd_sec_sz);
 
 		// Re-read the WBFS header.
-		::rewind(m_file);
-		size_t size = fread(head, 1, hd_sec_sz, m_file);
+		::rewind(q->m_file);
+		size_t size = fread(head, 1, hd_sec_sz, q->m_file);
 		if (size != hd_sec_sz) {
 			// Read error.
 			// TODO: Return errno?
@@ -193,7 +257,7 @@ wbfs_t *WbfsReader::readWbfsHeader(void)
  * All opened discs *must* be closed.
  * @param wbfs_t wbfs_t struct.
  */
-void WbfsReader::freeWbfsHeader(wbfs_t *p)
+void WbfsReaderPrivate::freeWbfsHeader(wbfs_t *p)
 {
 	assert(p != nullptr);
 	assert(p->head != nullptr);
@@ -210,7 +274,7 @@ void WbfsReader::freeWbfsHeader(wbfs_t *p)
  * @param index Disc index.
  * @return Allocated wbfs_disc_t on success; non-zero on error.
  */
-wbfs_disc_t *WbfsReader::openWbfsDisc(wbfs_t *p, uint32_t index)
+wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
@@ -226,8 +290,8 @@ wbfs_disc_t *WbfsReader::openWbfsDisc(wbfs_t *p, uint32_t index)
 
 				// Read the disc header.
 				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
-				fseek(m_file, p->hd_sec_sz + (i*p->disc_info_sz), SEEK_SET);
-				size_t size = fread(disc->header, 1, p->disc_info_sz, m_file);
+				fseek(q->m_file, p->hd_sec_sz + (i*p->disc_info_sz), SEEK_SET);
+				size_t size = fread(disc->header, 1, p->disc_info_sz, q->m_file);
 				if (size != p->disc_info_sz) {
 					// Error reading the disc information.
 					free(disc->header);
@@ -256,7 +320,7 @@ wbfs_disc_t *WbfsReader::openWbfsDisc(wbfs_t *p, uint32_t index)
  * This frees all associated structs.
  * @param disc wbfs_disc_t.
  */
-void WbfsReader::closeWbfsDisc(wbfs_disc_t *disc)
+void WbfsReaderPrivate::closeWbfsDisc(wbfs_disc_t *disc)
 {
 	assert(disc != nullptr);
 	assert(disc->p != nullptr);
@@ -276,7 +340,7 @@ void WbfsReader::closeWbfsDisc(wbfs_disc_t *disc)
  * @param disc wbfs_disc_t struct.
  * @return Non-sparse size, in bytes.
  */
-int64_t WbfsReader::getWbfsDiscSize(const wbfs_disc_t *disc)
+int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc)
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
@@ -292,6 +356,21 @@ int64_t WbfsReader::getWbfsDiscSize(const wbfs_disc_t *disc)
 	return (int64_t)(lastBlock + 1) * (int64_t)(p->wbfs_sec_sz);
 }
 
+/** WbfsReader **/
+
+WbfsReader::WbfsReader(FILE *file)
+	: IDiscReader(file)
+	, d(new WbfsReaderPrivate(this))
+{
+	if (!m_file)
+		return;
+}
+
+WbfsReader::~WbfsReader()
+{
+	delete d;
+}
+
 /**
  * Read data from the file.
  * @param ptr Output data buffer.
@@ -301,32 +380,37 @@ int64_t WbfsReader::getWbfsDiscSize(const wbfs_disc_t *disc)
 size_t WbfsReader::read(void *ptr, size_t size)
 {
 	assert(m_file != nullptr);
+	assert(d->m_wbfs != nullptr);
+	assert(d->m_wbfs_disc != nullptr);
+	if (!d->m_wbfs_disc)
+		return 0;
+
 	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
 	size_t ret = 0;
 
 	// Are we already at the end of the file?
-	if (m_wbfs_pos >= m_fileSize)
+	if (d->m_wbfs_pos >= m_fileSize)
 		return 0;
 
 	// Make sure m_wbfs_pos + size <= file size.
 	// If it isn't, we'll do a short read.
-	if (m_wbfs_pos + (int64_t)size >= m_fileSize) {
-		size = (size_t)(m_fileSize - m_wbfs_pos);
+	if (d->m_wbfs_pos + (int64_t)size >= m_fileSize) {
+		size = (size_t)(m_fileSize - d->m_wbfs_pos);
 	}
 
 	// Check if we're not starting on a block boundary.
-	const uint32_t wbfs_sec_sz = m_wbfs->wbfs_sec_sz;
-	const uint16_t *const wlba_table = m_wbfs_disc->header->wlba_table;
-	const uint32_t blockStartOffset = m_wbfs_pos % wbfs_sec_sz;
+	const uint32_t wbfs_sec_sz = d->m_wbfs->wbfs_sec_sz;
+	const uint16_t *const wlba_table = d->m_wbfs_disc->header->wlba_table;
+	const uint32_t blockStartOffset = d->m_wbfs_pos % wbfs_sec_sz;
 	if (blockStartOffset != 0) {
 		// Not a block boundary.
 		// Read the end of the block.
-		uint32_t read_sz = m_wbfs->wbfs_sec_sz;
+		uint32_t read_sz = d->m_wbfs->wbfs_sec_sz;
 		if (size < read_sz)
 			read_sz = size;
 
 		// Get the physical block number first.
-		uint16_t blockStart = (m_wbfs_pos / wbfs_sec_sz);
+		uint16_t blockStart = (d->m_wbfs_pos / wbfs_sec_sz);
 		uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
 		if (physBlockStartIdx == 0) {
 			// Empty block.
@@ -347,16 +431,16 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		size -= read_sz;
 		ptr8 += read_sz;
 		ret += read_sz;
-		m_wbfs_pos += read_sz;
+		d->m_wbfs_pos += read_sz;
 	}
 
 	// Read entire blocks.
 	for (; size >= wbfs_sec_sz;
 	    size -= wbfs_sec_sz, ptr8 += wbfs_sec_sz,
-	    ret += wbfs_sec_sz, m_wbfs_pos += wbfs_sec_sz)
+	    ret += wbfs_sec_sz, d->m_wbfs_pos += wbfs_sec_sz)
 	{
-		assert(m_wbfs_pos % wbfs_sec_sz == 0);
-		uint16_t physBlockIdx = be16_to_cpu(wlba_table[m_wbfs_pos / wbfs_sec_sz]);
+		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
+		uint16_t physBlockIdx = be16_to_cpu(wlba_table[d->m_wbfs_pos / wbfs_sec_sz]);
 		if (physBlockIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, wbfs_sec_sz);
@@ -378,8 +462,8 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		// Not a full block.
 
 		// Get the physical block number first.
-		assert(m_wbfs_pos % wbfs_sec_sz == 0);
-		uint16_t blockEnd = (m_wbfs_pos / wbfs_sec_sz);
+		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
+		uint16_t blockEnd = (d->m_wbfs_pos / wbfs_sec_sz);
 		uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
 		if (physBlockEndIdx == 0) {
 			// Empty block.
@@ -397,7 +481,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		}
 
 		ret += size;
-		m_wbfs_pos += size;
+		d->m_wbfs_pos += size;
 	}
 
 	// Finished reading the data.
@@ -411,19 +495,19 @@ size_t WbfsReader::read(void *ptr, size_t size)
 void WbfsReader::seek(int64_t pos)
 {
 	assert(m_file != nullptr);
-	assert(m_wbfs != nullptr);
-	assert(m_wbfs_disc != nullptr);
-	if (!m_wbfs_disc)
+	assert(d->m_wbfs != nullptr);
+	assert(d->m_wbfs_disc != nullptr);
+	if (!d->m_wbfs_disc)
 		return;
 
 	// Handle out-of-range cases.
 	// TODO: How does POSIX behave?
 	if (pos < 0)
-		m_wbfs_pos = 0;
+		d->m_wbfs_pos = 0;
 	else if (pos >= m_fileSize)
-		m_wbfs_pos = m_fileSize;
+		d->m_wbfs_pos = m_fileSize;
 	else
-		m_wbfs_pos = pos;
+		d->m_wbfs_pos = pos;
 }
 
 }
