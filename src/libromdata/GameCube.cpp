@@ -21,6 +21,8 @@
 
 #include "GameCube.hpp"
 #include "NintendoPublishers.hpp"
+#include "gcn_structs.h"
+
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 #include "common.h"
@@ -69,60 +71,6 @@ static const struct RomFields::Desc gcn_fields[] = {
 	// TODO:
 	// - System update version.
 	// - Region and age ratings.
-};
-
-/**
- * GameCube/Wii disc image header.
- * This matches the disc image format exactly.
- * 
- * NOTE: Strings are NOT null-terminated!
- */
-struct GCN_DiscHeader {
-	union {
-		char id6[6];	// Game code. (ID6)
-		struct {
-			char id4[4];		// Game code. (ID4)
-			char company[2];	// Company code.
-		};
-	};
-
-	uint8_t disc_number;		// Disc number.
-	uint8_t revision;		// Revision.
-	uint8_t audio_streaming;	// Audio streaming flag.
-	uint8_t stream_buffer_size;	// Streaming buffer size.
-
-	uint8_t reserved1[14];
-
-	uint32_t magic_wii;		// Wii magic. (0x5D1C9EA3)
-	uint32_t magic_gcn;		// GameCube magic. (0xC2339F3D)
-
-	char game_title[64];		// Game title.
-};
-
-/**
- * Wii master partition table.
- * Contains information about the (maximum of) four partition tables.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
- *
- * All fields are big-endian.
- */
-struct RVL_MasterPartitionTable {
-	struct {
-		uint32_t count;		// Number of partitions in this table.
-		uint32_t addr;		// Start address of this table, rshifted by 2.
-	} table[4];
-};
-
-/**
- * Wii partition table entry.
- * Contains information about an individual partition.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
- *
- * All fields are big-endian.
- */
-struct RVL_PartitionTableEntry {
-	uint32_t addr;	// Start address of this partition, rshifted by 2.
-	uint32_t type;	// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 };
 
 /**

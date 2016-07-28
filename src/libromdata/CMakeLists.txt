@@ -66,6 +66,7 @@ SET(libromdata_H
 	DiscReader.hpp
 	WbfsReader.hpp
 	libwbfs.h
+	gcn_structs.h
 	)
 
 ######################
