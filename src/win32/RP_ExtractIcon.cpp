@@ -85,7 +85,7 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP(const rp_image *image)
 		return nullptr;
 
 	// FIXME: Only 256-color images are supported right now.
-	// FIXME: Alpha-transparency doesn't seem to work in 256-color icons on Windows XP.
+	// FIXME: Alpha transparency doesn't seem to work in 256-color icons on Windows XP.
 	if (image->format() != rp_image::FORMAT_CI8)
 		return nullptr;
 
@@ -199,15 +199,19 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 
 	// XOR mask: Parse the original image.
 
-	// Find the first fully-transparent color.
-	const uint32_t *palette = image->palette();
-	int palette_len = image->palette_len();
-	int tr_idx = -1;
-	for (int i = 0; i < palette_len; i++, palette++) {
-		if ((*palette & 0xFF000000) == 0) {
-			// Found a transparent color.
-			tr_idx = i;
-			break;
+	// Get the transparent color index.
+	int tr_idx = image->tr_idx();
+	if (tr_idx < 0) {
+		// tr_idx isn't set.
+		// Find the first fully-transparent color.
+		const uint32_t *palette = image->palette();
+		int palette_len = image->palette_len();
+		for (int i = 0; i < palette_len; i++, palette++) {
+			if ((*palette & 0xFF000000) == 0) {
+				// Found a transparent color.
+				tr_idx = i;
+				break;
+			}
 		}
 	}
 

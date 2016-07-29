@@ -57,6 +57,7 @@ class rp_image_private
 		// Image palette.
 		uint32_t *palette;
 		int palette_len;
+		int tr_idx;
 };
 
 /** rp_image_private **/
@@ -69,6 +70,7 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	, data_len(0)
 	, palette(nullptr)
 	, palette_len(0)
+	, tr_idx(0)
 {
 	if (this->width <= 0 || this->height <= 0 ||
 	    this->format == rp_image::FORMAT_NONE)
@@ -287,6 +289,37 @@ uint32_t *rp_image::palette(void)
 int rp_image::palette_len(void) const
 {
 	return d->palette_len;
+}
+
+/**
+ * Get the index of the transparency color in the palette.
+ * This is useful for images that use a single transparency
+ * color instead of alpha transparency.
+ * @return Transparent color index, or -1 if ARGB32 is used or the palette has alpha transparent colors.
+ */
+int rp_image::tr_idx(void) const
+{
+	if (d->format != FORMAT_CI8)
+		return -1;
+	return d->tr_idx;
+}
+
+/**
+* Set the index of the transparency color in the palette.
+* This is useful for images that use a single transparency
+* color instead of alpha transparency.
+* @param tr_idx Transparent color index.
+*/
+void rp_image::set_tr_idx(int tr_idx)
+{
+	assert(d->format == FORMAT_CI8);
+	assert(tr_idx >= 0 && tr_idx < d->palette_len);
+
+	if (d->format == FORMAT_CI8 &&
+	    tr_idx >= 0 && tr_idx < d->palette_len)
+	{
+		d->tr_idx = tr_idx;
+	}
 }
 
 }

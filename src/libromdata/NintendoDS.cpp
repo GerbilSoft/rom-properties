@@ -501,6 +501,7 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	// TODO: Make sure there's at least 16 entries?
 	uint32_t *palette = icon->palette();
 	palette[0] = 0; // Color 0 is always transparent.
+	icon->set_tr_idx(0);
 	for (int i = 1; i < 16; i++) {
 		// DS color format is BGR555.
 		palette[i] = RGB555_to_ARGB32(le16_to_cpu(ds_icon_title.icon_pal[i]));

@@ -127,6 +127,22 @@ class rp_image
 		 * @return Number of elements in the image palette, or 0 if not a paletted image.
 		 */
 		int palette_len(void) const;
+
+		/**
+		 * Get the index of the transparency color in the palette.
+		 * This is useful for images that use a single transparency
+		 * color instead of alpha transparency.
+		 * @return Transparent color index, or -1 if ARGB32 is used or the palette has alpha transparent colors.
+		 */
+		int tr_idx(void) const;
+
+		/**
+		 * Set the index of the transparency color in the palette.
+		 * This is useful for images that use a single transparency
+		 * color instead of alpha transparency.
+		 * @param tr_idx Transparent color index.
+		 */
+		void set_tr_idx(int tr_idx);
 };
 
 }
