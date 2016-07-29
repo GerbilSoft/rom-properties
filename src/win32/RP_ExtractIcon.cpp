@@ -203,16 +203,10 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 	int tr_idx = image->tr_idx();
 	if (tr_idx < 0) {
 		// tr_idx isn't set.
-		// Find the first fully-transparent color.
-		const uint32_t *palette = image->palette();
-		int palette_len = image->palette_len();
-		for (int i = 0; i < palette_len; i++, palette++) {
-			if ((*palette & 0xFF000000) == 0) {
-				// Found a transparent color.
-				tr_idx = i;
-				break;
-			}
-		}
+		// FIXME: This means the image has alpha transparency,
+		// so it should be converted to ARGB32.
+		DeleteObject(hBitmap)
+		return nullptr;
 	}
 
 	if (tr_idx >= 0) {

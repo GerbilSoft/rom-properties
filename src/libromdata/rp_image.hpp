@@ -140,7 +140,7 @@ class rp_image
 		 * Set the index of the transparency color in the palette.
 		 * This is useful for images that use a single transparency
 		 * color instead of alpha transparency.
-		 * @param tr_idx Transparent color index.
+		 * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparnet colors.)
 		 */
 		void set_tr_idx(int tr_idx);
 };
