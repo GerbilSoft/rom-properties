@@ -1,15 +1,47 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "stdafx.h"
 #include "RP_ExtractIcon.hpp"
+
+// libromdata
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomDataFactory.hpp"
+#include "libromdata/rp_image.hpp"
+using namespace LibRomData;
+
+// C includes. (C++ namespace)
+#include <cstdio>
+#include <cstring>
+
+// C++ includes.
+#include <string>
+using std::wstring;
 
 // CLSID
 const GUID CLSID_RP_ExtractIcon =
 	{0xe51bc107, 0xe491, 0x4b29, {0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02}};
 const wchar_t CLSID_RP_ExtractIcon_Str[] =
 	L"{E51BC107-E491-4B29-A6A3-2A4309259802}";
-
-RP_ExtractIcon::RP_ExtractIcon()
-{ }
 
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
@@ -41,6 +73,71 @@ STDMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	return NOERROR;
 }
 
+/**
+ * Convert an rp_image to HICON.
+ * @param image rp_image.
+ * @return HICON, or nullptr on error.
+ */
+HICON RP_ExtractIcon::rpToHICON(const LibRomData::rp_image *image)
+{
+	if (!image || !image->isValid())
+		return nullptr;
+
+	// FIXME: Only 256-color images are supported right now.
+	if (image->format() != rp_image::FORMAT_CI8)
+		return nullptr;
+
+	// References:
+	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
+	// - http://stackoverflow.com/a/2901465
+
+	// BITMAPINFO with 256-color palette.
+	uint8_t bmi[sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256)];
+	BITMAPINFOHEADER *biHeader = reinterpret_cast<BITMAPINFOHEADER*>(&bmi[0]);
+	RGBQUAD *palette = reinterpret_cast<RGBQUAD*>(&bmi[sizeof(BITMAPINFOHEADER)]);
+
+	// Initialize the BITMAPINFOHEADER.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	biHeader->biSize = sizeof(BITMAPINFOHEADER);
+	biHeader->biWidth = image->width();
+	biHeader->biHeight = -image->height();	// negative for top-down
+	biHeader->biPlanes = 1;
+	biHeader->biBitCount = 8;
+	biHeader->biCompression = BI_RGB;
+	biHeader->biSizeImage = 0;	// TODO?
+	biHeader->biXPelsPerMeter = 0;	// TODO
+	biHeader->biYPelsPerMeter = 0;	// TODO
+	biHeader->biClrUsed = image->palette_len();
+	biHeader->biClrImportant = biHeader->biClrUsed;	// TODO?
+
+	// Copy the palette from the image.
+	memcpy(palette, image->palette(), biHeader->biClrUsed * sizeof(uint32_t));
+
+	// Create the bitmap.
+	void *pvBits;
+	HBITMAP hBitmap = CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&bmi),
+		DIB_RGB_COLORS, &pvBits, nullptr, 0);
+	if (!hBitmap)
+		return nullptr;
+
+	// Copy the data from the rp_image into the bitmap.
+	memcpy(pvBits, image->bits(), image->data_len());
+
+	// Convert to an icon.
+	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
+	ICONINFO ii = {0};
+	ii.fIcon = TRUE;
+	ii.hbmColor = hBitmap;
+	ii.hbmMask = hBitmap;	// FIXME: Causes icons to be screwy.
+
+	// Create the icon.
+	HICON hIcon = CreateIconIndirect(&ii);
+
+	// Delete the original bitmap and we're done.
+	DeleteObject(hBitmap);
+	return hIcon;
+}
+
 /** IExtractIcon **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
@@ -57,51 +154,55 @@ STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	__out_opt HICON *phiconLarge, __out_opt HICON *phiconSmall,
 	UINT nIconSize)
 {
-	// TODO: Extract the actual icon.
-	// For now, create an icon that's all cyan.
-	// Reference: http://stackoverflow.com/questions/7375003/how-to-convert-hicon-to-hbitmap-in-vc
-	HDC hDC = GetDC(NULL);
-	HDC hMemDC = CreateCompatibleDC(hDC);
-	HBITMAP hMemBmp = CreateCompatibleBitmap(hDC, 32, 32);
-	HANDLE hPrevObj = SelectObject(hMemDC, hMemBmp);
+	// NOTE: pszFile should be nullptr here.
+	// TODO: Fail if it's not nullptr?
 
-	HBRUSH hCyanBrush = CreateSolidBrush(RGB(0, 255, 255));
-	RECT rect = {0, 0, 32, 32};
-	FillRect(hMemDC, &rect, hCyanBrush);
-	SelectObject(hMemDC, hPrevObj);
+	// Make sure a filename was set by calling IPersistFile::Load().
+	if (m_filename.empty())
+		return E_INVALIDARG;
 
-	// Create a mask.
-	HBITMAP hbmMask = CreateCompatibleBitmap(hMemDC, 0, 0);
+	// Attempt to open the ROM file.
+	// TODO: rp_QFile() wrapper?
+	// For now, using stdio.
+	FILE *file = _wfopen(m_filename.c_str(), L"rb");
+	if (!file)
+		return E_FAIL;
 
-	// Convert to an icon.
-	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
-	ICONINFO ii = {0};
-	ii.fIcon = TRUE;
-	ii.hbmColor = hMemBmp;
-	ii.hbmMask = hbmMask;
+	// Get the appropriate RomData class for this ROM.
+	RomData *romData = RomDataFactory::getInstance(file);
+	fclose(file);	// file is dup()'d by RomData.
 
-	HICON hIcon = CreateIconIndirect(&ii);
-
-	// Clean up.
-	// TODO: DeleteBrush() et al?
-	DeleteObject(hMemDC);
-	DeleteObject(hMemBmp);
-	DeleteObject(hCyanBrush);
-	DeleteObject(hbmMask);
-	ReleaseDC(NULL, hDC);
-
-	if (phiconLarge) {
-		*phiconLarge = hIcon;
-	} else {
-		DeleteObject(hIcon);
+	if (!romData) {
+		// ROM is not supported.
+		return S_FALSE;
 	}
 
-	if (phiconSmall) {
-		// FIXME: Is this valid?
-		*phiconSmall = nullptr;
-	}
+	// ROM is supported. Get the internal icon.
+	// TODO: Customize for internal icon, disc/cart scan, etc.?
+	HRESULT ret = S_FALSE;
+	const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+	if (icon) {
+		// Convert the icon to HICON.
+		HICON hIcon = rpToHICON(icon);
+		if (hIcon != nullptr) {
+			// Icon converted.
+			if (phiconLarge) {
+				*phiconLarge = hIcon;
+			} else {
+				DeleteObject(hIcon);
+			}
 
-	return S_OK;
+			if (phiconSmall) {
+				// FIXME: is this valid?
+				*phiconSmall = nullptr;
+			}
+
+			ret = S_OK;
+		}
+	}
+	delete romData;
+
+	return ret;
 }
 
 /** IPersistFile **/
@@ -124,7 +225,7 @@ STDMETHODIMP RP_ExtractIcon::IsDirty(void)
 STDMETHODIMP RP_ExtractIcon::Load(__RPC__in LPCOLESTR pszFileName, DWORD dwMode)
 {
 	// pszFileName is the file being worked on.
-	// TODO: Do we need that for anything?
+	m_filename = pszFileName;
 	return S_OK;
 }
 
