@@ -194,10 +194,10 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.
 
-	// AND mask: all 0 to disable inversion.
+	// XOR mask: all 0 to disable inversion.
 	memset(&pvBits[icon_sz], 0, icon_sz);
 
-	// XOR mask: Parse the original image.
+	// AND mask: Parse the original image.
 
 	// Get the transparent color index.
 	int tr_idx = image->tr_idx();
