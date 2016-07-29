@@ -31,6 +31,7 @@
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
 #include "stdafx.h"
+#include "RegKey.hpp"
 #include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
@@ -112,216 +113,117 @@ STDAPI DllRegisterServer(void)
 {
 	// Register this DLL as an icon handler for ".nds".
 	// TODO: Add helper functions for registry access.
+	static const wchar_t ProgID[] = L"rom-properties";
+
+	/** Register the ".nds" file type. **/
 
 	// Create/open the ".nds" key.
-	HKEY hKeyCR_nds;
-	LONG ret = RegCreateKeyEx(HKEY_CLASSES_ROOT, L".nds", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKeyCR_nds, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the ".nds" key.
+	RegKey hkcr_nds(HKEY_CLASSES_ROOT, L".nds", KEY_WRITE, true);
+	if (!hkcr_nds.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Set the default value to "rom-properties".
-	static const wchar_t ProgID[] = L"rom-properties";
-	ret = RegSetValueEx(hKeyCR_nds, nullptr, 0, REG_SZ,
-		(const BYTE*)ProgID, sizeof(ProgID));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the default value.
-		RegCloseKey(hKeyCR_nds);
+	LONG ret = hkcr_nds.write(nullptr, ProgID);
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
+	hkcr_nds.close();
 
-	// Close the keys.
-	RegCloseKey(hKeyCR_nds);
+	/** Register the ProgID. **/
 
 	// Create/open the ProgID key.
-	HKEY hKeyCR_ProgID;
-	ret = RegCreateKeyEx(HKEY_CLASSES_ROOT, ProgID, 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKeyCR_ProgID, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the ProgID key.
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, ProgID, KEY_WRITE, true);
+	if (!hkcr_ProgID.isOpen())
 		return SELFREG_E_CLASS;
-	}
 
 	// Create/open the "ShellEx" key.
-	HKEY hKey_ShellEx;
-	ret = RegCreateKeyEx(hKeyCR_ProgID, L"ShellEx", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_ShellEx, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the "ShellEx" key.
-		RegCloseKey(hKeyCR_ProgID);
+	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
+	if (!hkcr_ShellEx.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Create/open the "IconHandler" key.
-	HKEY hKey_IconHandler;
-	ret = RegCreateKeyEx(hKey_ShellEx, L"IconHandler", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_IconHandler, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the "IconHandler" key.
-		RegCloseKey(hKey_ShellEx);
-		RegCloseKey(hKeyCR_ProgID);
+	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
+	if (!hkcr_IconHandler.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
-	// Set the default value to our CLSID.
-	ret = RegSetValueEx(hKey_IconHandler, nullptr, 0, REG_SZ,
-		(const BYTE*)CLSID_RP_ExtractIcon_Str,
-		(wcslen(CLSID_RP_ExtractIcon_Str)+1)*sizeof(wchar_t));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the default value.
-		RegCloseKey(hKey_IconHandler);
-		RegCloseKey(hKey_ShellEx);
-		RegCloseKey(hKeyCR_ProgID);
+	// Set the default value to RP_ExtractIcon's CLSID.
+	ret = hkcr_IconHandler.write(nullptr, CLSID_RP_ExtractIcon_Str);
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
-
-	RegCloseKey(hKey_IconHandler);
-	RegCloseKey(hKey_ShellEx);
+	hkcr_IconHandler.close();
+	hkcr_ShellEx.close();
 
 	// Create/open the "DefaultIcon" key.
-	HKEY hKey_DefaultIcon;
-	ret = RegCreateKeyEx(hKeyCR_ProgID, L"DefaultIcon", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_DefaultIcon, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the "DefaultIcon" key.
-		RegCloseKey(hKeyCR_ProgID);
+	RegKey hkcr_DefaultIcon(hkcr_ProgID, L"DefaultIcon", KEY_WRITE, true);
+	if (!hkcr_DefaultIcon.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Set the default value to "%1".
-	ret = RegSetValueEx(hKey_DefaultIcon, nullptr, 0, REG_SZ,
-		(const BYTE*)L"%1", 3*sizeof(wchar_t));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the default value.
-		RegCloseKey(hKey_DefaultIcon);
-		RegCloseKey(hKeyCR_ProgID);
+	ret = hkcr_DefaultIcon.write(nullptr, L"%1");
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
-
-	// Close the registry keys.
-	RegCloseKey(hKey_DefaultIcon);
-	RegCloseKey(hKeyCR_ProgID);
+	hkcr_DefaultIcon.close();
+	hkcr_ProgID.close();
 
 	/** Register the DLL itself. **/
 
 	// Open HKCR\CLSID.
-	HKEY hKeyCLSID;
-	ret = RegOpenKeyEx(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_WRITE, &hKeyCLSID);
-	if (ret != ERROR_SUCCESS)
-	{
-		// Unable to open the "CLSID" key.
+	RegKey hkcr_CLSID(HKEY_CLASSES_ROOT, L"CLSID", KEY_WRITE, false);
+	if (!hkcr_CLSID.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Create a key using the CLSID.
-	HKEY hKey_OurCLSID;
-	ret = RegCreateKeyEx(hKeyCLSID, CLSID_RP_ExtractIcon_Str, 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_OurCLSID, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open our CLSID key.
-		RegCloseKey(hKeyCLSID);
+	RegKey hkcr_RP_ExtractIcon(hkcr_CLSID, CLSID_RP_ExtractIcon_Str, KEY_WRITE, true);
+	if (!hkcr_RP_ExtractIcon.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Set the name of the key.
-	ret = RegSetValueEx(hKey_OurCLSID, nullptr, 0, REG_SZ,
-		(const BYTE*)ProgID, sizeof(ProgID));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the default value.
-		RegCloseKey(hKey_OurCLSID);
-		RegCloseKey(hKeyCLSID);
+	ret = hkcr_RP_ExtractIcon.write(nullptr, ProgID);
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
 
 	// Create an InprocServer32 subkey.
-	HKEY hKey_InprocServer32;
-	ret = RegCreateKeyEx(hKey_OurCLSID, L"InprocServer32", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_InprocServer32, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the InprocServer32 subkey.
-		RegCloseKey(hKey_OurCLSID);
-		RegCloseKey(hKeyCLSID);
+	RegKey hkcr_InprocServer32(hkcr_RP_ExtractIcon, L"InprocServer32", KEY_WRITE, true);
+	if (!hkcr_InprocServer32.isOpen())
 		return SELFREG_E_CLASS;
-	}
 
 	// Set the default value to the DLL filename.
 	wchar_t dll_filename[MAX_PATH];
 	int dll_filename_len = GetModuleFileName(g_hInstance, dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
 	// TODO: Handle buffer size errors.
 	if (dll_filename_len > 0) {
-		ret = RegSetValueEx(hKey_InprocServer32, nullptr, 0, REG_SZ,
-			(const BYTE*)dll_filename, (dll_filename_len+1)*sizeof(dll_filename[0]));
-		if (ret != ERROR_SUCCESS) {
-			// Unable to set the default value.
-			RegCloseKey(hKey_InprocServer32);
-			RegCloseKey(hKey_OurCLSID);
-			RegCloseKey(hKeyCLSID);
+		ret = hkcr_InprocServer32.write(nullptr, dll_filename);
+		if (ret != ERROR_SUCCESS)
 			return SELFREG_E_CLASS;
-		}
 	}
 
 	// Set the threading model to Apartment.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-	ret = RegSetValueEx(hKey_InprocServer32, L"ThreadingModel", 0, REG_SZ,
-		(const BYTE*)L"Apartment", 10*sizeof(wchar_t));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the threading model value.
-		RegCloseKey(hKey_InprocServer32);
-		RegCloseKey(hKey_OurCLSID);
-		RegCloseKey(hKeyCLSID);
+	ret = hkcr_InprocServer32.write(L"ThreadingModel", L"Apartment");
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
-
-	RegCloseKey(hKey_InprocServer32);
+	hkcr_InprocServer32.close();
 
 	// Create a ProgID subkey.
-	HKEY hKey_OurCLSID_ProgID;
-	ret = RegCreateKeyEx(hKey_OurCLSID, L"ProgID", 0, nullptr, 0,
-		KEY_WRITE, nullptr, &hKey_OurCLSID_ProgID, nullptr);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to create/open the ProgID subkey.
-		RegCloseKey(hKey_OurCLSID);
-		RegCloseKey(hKeyCLSID);
+	RegKey hkcr_CLSID_ProgID(hkcr_RP_ExtractIcon, L"ProgID", KEY_WRITE, true);
+	if (!hkcr_CLSID_ProgID.isOpen())
 		return SELFREG_E_CLASS;
-	}
-
 	// Set the default value.
-	ret = RegSetValueEx(hKey_OurCLSID_ProgID, nullptr, 0, REG_SZ,
-		(const BYTE*)ProgID, sizeof(ProgID));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the default value.
-		RegCloseKey(hKey_OurCLSID_ProgID);
-		RegCloseKey(hKey_OurCLSID);
-		RegCloseKey(hKeyCLSID);
+	ret = hkcr_CLSID_ProgID.write(nullptr, ProgID);
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
-
-	// Close the registry keys.
-	RegCloseKey(hKey_OurCLSID_ProgID);
-	RegCloseKey(hKey_OurCLSID);
-	RegCloseKey(hKeyCLSID);
+	hkcr_CLSID_ProgID.close();
+	hkcr_RP_ExtractIcon.close();
+	hkcr_CLSID.close();
 
 	/** Register the shell extension as "approved". **/
-	HKEY hKey_Approved;
-	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE,  L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved", 0, KEY_WRITE, &hKey_Approved);
-	if (ret != ERROR_SUCCESS) {
-		// Unable to open the "Approved" subkey.
+	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+		KEY_WRITE, false);
+	if (!hklm_Approved.isOpen())
 		return SELFREG_E_CLASS;
-	}
 
 	// Create a value for RP_ExtractIcon.
 	static const wchar_t RP_ExtractIcon_Name[] = L"ROM Properties Page - Icon Extractor";
-	ret = RegSetValueEx(hKey_Approved, CLSID_RP_ExtractIcon_Str, 0, REG_SZ,
-		(const BYTE*)RP_ExtractIcon_Name, sizeof(RP_ExtractIcon_Name));
-	if (ret != ERROR_SUCCESS) {
-		// Unable to set the CLSID value for RP_ExtractIcon.
-		RegCloseKey(hKey_Approved);
+	ret = hklm_Approved.write(CLSID_RP_ExtractIcon_Str, RP_ExtractIcon_Name);
+	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	}
+	hklm_Approved.close();
 
-	return (ret == ERROR_SUCCESS ? S_OK : SELFREG_E_CLASS);
+	return S_OK;
 }
 
 /**

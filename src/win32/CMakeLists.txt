@@ -6,10 +6,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 # Sources and headers.
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
+	RegKey.cpp
 	RP_ExtractIcon.cpp
 	RP_ComBase.cpp
 	)
 SET(rom-properties-win32_H
+	RegKey.hpp
 	RP_ExtractIcon.hpp
 	RP_ClassFactory.hpp
 	RP_ComBase.hpp

@@ -1,0 +1,104 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RegKey.hpp: Registry key wrapper.                                       *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_WIN32_REGKEY_HPP__
+#define __ROMPROPERTIES_WIN32_REGKEY_HPP__
+
+class RegKey
+{
+	public:
+		/**
+		 * Create or open a registry key.
+		 * @param root Root key.
+		 * @param path Path of the registry key.
+		 * @param samDesired Desired access rights.
+		 * @param create If true, create the key if it doesn't exist.
+		 */
+		RegKey(HKEY root, LPCTSTR path, REGSAM samDesired, bool create = false);
+
+		/**
+		 * Create or open a registry key.
+		 * @param root Root key.
+		 * @param path Path of the registry key.
+		 * @param samDesired Desired access rights.
+		 * @param create If true, create the key if it doesn't exist.
+		 */
+		RegKey(const RegKey& root, LPCTSTR path, REGSAM samDesired, bool create = false);
+
+		~RegKey();
+
+	private:
+		RegKey(const RegKey &);
+		RegKey &operator=(const RegKey &);
+
+	public:
+		/**
+		 * Get the handle to the opened registry key.
+		 * @return Handle to the opened registry key, or INVALID_HANDLE_VALUE if not open.
+		 */
+		HKEY handle(void) const;
+
+		/**
+		* Was the key opened successfully?
+		* @return True if the key was opened successfully; false if not.
+		*/
+		bool isOpen(void) const;
+
+		/**
+		* Get the return value of RegCreateKeyEx() or RegOpenKeyEx().
+		* @return Return value.
+		*/
+		LONG lOpenRes(void) const;
+
+		/**
+		 * Get the key's desired access rights.
+		 * @return Desired access rights.
+		 */
+		REGSAM samDesired(void) const;
+
+		/**
+		 * Close the key.
+		 */
+		void close(void);
+
+		/**
+		 * Write a value to this key.
+		 * @param name Value name. (Use nullptr or an empty string for the default value.)
+		 * @param value Value.
+		 * @return RegSetValueEx() return value.
+		 */
+		LONG write(LPCTSTR name, LPCTSTR value);
+
+		/**
+		 * Write a value to this key.
+		 * @param name Value name. (Use nullptr or an empty string for the default value.)
+		 * @param value Value.
+		 * @return RegSetValueEx() return value.
+		 */
+		LONG write(LPCTSTR name, const std::wstring& value);
+
+	protected:
+		HKEY m_hKey;		// Registry key handle.
+		LONG m_lOpenRes;	// Result from RegOpenKeyEx() or RegCreateKeyEx().
+		REGSAM m_samDesired;
+};
+
+#endif /* __ROMPROPERTIES_WIN32_REGKEY_HPP__ */
