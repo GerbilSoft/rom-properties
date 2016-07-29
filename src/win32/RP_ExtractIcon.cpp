@@ -30,6 +30,7 @@
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
@@ -193,10 +194,44 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.
 
-	// AND mask: all 0.
+	// AND mask: all 0 to disable inversion.
 	memset(&pvBits[icon_sz], 0, icon_sz);
-	// XOR mask: all 1.
-	memset(pvBits, 0xFF, icon_sz);
+
+	// XOR mask: Parse the original image.
+
+	// Find the first fully-transparent color.
+	const uint32_t *palette = image->palette();
+	int palette_len = image->palette_len();
+	int tr_idx = -1;
+	for (int i = 0; i < palette_len; i++, palette++) {
+		if ((*palette & 0xFF000000) == 0) {
+			// Found a transparent color.
+			tr_idx = i;
+			break;
+		}
+	}
+
+	if (tr_idx >= 0) {
+		// Find all pixels matching tr_idx.
+		uint8_t *dest = pvBits;
+		for (int y = image->height()-1; y >= 0; y--) {
+			const uint8_t *src = reinterpret_cast<const uint8_t*>(image->scanLine(y));
+			// FIXME: Handle images that aren't a multiple of 8px wide.
+			assert(image->width() % 8 == 0);
+			for (int x = image->width(); x > 0; x -= 8) {
+				uint8_t pxMono = 0;
+				for (int px = 8; px > 0; px--, src++) {
+					// MSB == left-most pixel.
+					pxMono <<= 1;
+					pxMono |= (*src != tr_idx);
+				}
+				*dest++ = pxMono;
+			}
+		}
+	} else {
+		// No transparent color.
+		memset(pvBits, 0xFF, icon_sz);
+	}
 
 	// Return the bitmap.
 	return hBitmap;
