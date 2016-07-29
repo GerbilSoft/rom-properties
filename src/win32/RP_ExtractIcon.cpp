@@ -281,7 +281,14 @@ STDMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	__out int *piIndex, __out UINT *pwFlags)
 {
 	// TODO: If the icon is cached on disk, return a filename.
+#ifndef NDEBUG
+	// Debug version. Don't cache icons.
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
+#else /* !NDEBUG */
+	// Release version. Cache icons.
+	*pwFlags = GIL_NOTFILENAME;
+#endif /* NDEBUG */
+
 	return S_OK;
 }
 
