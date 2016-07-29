@@ -205,7 +205,7 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 		// tr_idx isn't set.
 		// FIXME: This means the image has alpha transparency,
 		// so it should be converted to ARGB32.
-		DeleteObject(hBitmap)
+		DeleteObject(hBitmap);
 		return nullptr;
 	}
 
