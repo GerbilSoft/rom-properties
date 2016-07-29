@@ -352,11 +352,8 @@ STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 
 STDMETHODIMP RP_ExtractIcon::GetClassID(__RPC__out CLSID *pClassID)
 {
-	// 3DS extension returns E_NOTIMPL here.
-	// TODO: Set a CLSID for RP_ExtractIcon?
-	// TODO: Use separate CLSIDs for the different RP_ classes,
-	// instead of one CLSID for everything?
-	return E_NOTIMPL;
+	*pClassID = CLSID_RP_ExtractIcon;
+	return S_OK;
 }
 
 STDMETHODIMP RP_ExtractIcon::IsDirty(void)
