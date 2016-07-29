@@ -133,6 +133,8 @@ void RegKey::close(void)
 	}
 }
 
+/** Basic registry access functions. **/
+
 /**
  * Write a value to this key.
  * @param name Value name. (Use nullptr or an empty string for the default value.)
@@ -179,4 +181,104 @@ LONG RegKey::write(LPCTSTR name, const std::wstring& value)
 
 	return RegSetValueEx(m_hKey, name, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
+}
+
+/** COM registration convenience functions. **/
+
+/**
+ * Register a file type.
+ * @param fileType File extension, with leading dot. (e.g. ".bin")
+ * @param progID ProgID.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::registerFileType(LPCWSTR fileType, LPCWSTR progID)
+{
+	// TODO: Handle cases where the user has already selected
+	// a file association?
+
+	// Create/open the file type key.
+	RegKey hkcr_fileType(HKEY_CLASSES_ROOT, fileType, KEY_WRITE, true);
+	if (!hkcr_fileType.isOpen())
+		return hkcr_fileType.lOpenRes();
+
+	// Set the default value to the ProgID.
+	return hkcr_fileType.write(nullptr, progID);
+}
+
+/**
+ * Register a COM object in this DLL.
+ * @param rclsid CLSID.
+ * @param progID ProgID.
+ * @param description Description of the COM object.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description)
+{
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	int ret = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (ret <= 0)
+		return ERROR_INVALID_PARAMETER;
+
+	// Open HKCR\CLSID.
+	RegKey hkcr_CLSID(HKEY_CLASSES_ROOT, L"CLSID", KEY_WRITE, false);
+	if (!hkcr_CLSID.isOpen())
+		return hkcr_CLSID.lOpenRes();
+
+	// Create a key using the CLSID.
+	RegKey hkcr_Obj_CLSID(hkcr_CLSID, clsid_str, KEY_WRITE, true);
+	if (!hkcr_Obj_CLSID.isOpen())
+		return hkcr_Obj_CLSID.lOpenRes();
+	// Set the default value to the descirption of the COM object.
+	ret = hkcr_Obj_CLSID.write(nullptr, description);
+	if (ret != ERROR_SUCCESS)
+		return ret;
+
+	// Create an InprocServer32 subkey.
+	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, L"InprocServer32", KEY_WRITE, true);
+	if (!hkcr_InprocServer32.isOpen())
+		return hkcr_InprocServer32.lOpenRes();
+	// Set the default value to the DLL filename.
+	extern wchar_t dll_filename[MAX_PATH];
+	if (dll_filename[0] != 0) {
+		ret = hkcr_InprocServer32.write(nullptr, dll_filename);
+		if (ret != ERROR_SUCCESS)
+			return ret;
+	}
+
+	// Set the threading model to Apartment.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+	ret = hkcr_InprocServer32.write(L"ThreadingModel", L"Apartment");
+	if (ret != ERROR_SUCCESS)
+		return ret;
+
+	// Create a ProgID subkey.
+	RegKey hkcr_Obj_CLSID_ProgID(hkcr_Obj_CLSID, L"ProgID", KEY_WRITE, true);
+	if (!hkcr_Obj_CLSID_ProgID.isOpen())
+		return hkcr_Obj_CLSID_ProgID.lOpenRes();
+	// Set the default value.
+	return hkcr_Obj_CLSID_ProgID.write(nullptr, progID);
+}
+
+/**
+ * Register a shell extension as an approved extension.
+ * @param rclsid CLSID.
+ * @param description Description of the shell extension.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::registerApprovedExtension(REFCLSID rclsid, LPCWSTR description)
+{
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	int ret = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (ret <= 0)
+		return ERROR_INVALID_PARAMETER;
+
+	// Open the approved shell extensions key.
+	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+		KEY_WRITE, false);
+	if (!hklm_Approved.isOpen())
+		return hklm_Approved.lOpenRes();
+
+	// Create a value for the specified CLSID.
+	return hklm_Approved.write(clsid_str, description);
 }

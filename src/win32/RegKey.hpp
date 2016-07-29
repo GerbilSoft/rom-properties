@@ -79,6 +79,9 @@ class RegKey
 		 */
 		void close(void);
 
+	public:
+		/** Basic registry access functions. **/
+
 		/**
 		 * Write a value to this key.
 		 * @param name Value name. (Use nullptr or an empty string for the default value.)
@@ -94,6 +97,34 @@ class RegKey
 		 * @return RegSetValueEx() return value.
 		 */
 		LONG write(LPCTSTR name, const std::wstring& value);
+
+	public:
+		/** COM registration convenience functions. **/
+
+		/**
+		 * Register a file type.
+		 * @param fileType File extension, with leading dot. (e.g. ".bin")
+		 * @param progID ProgID.
+		 * @return ERROR_SUCCESS on success; WinAPI error on error.
+		 */
+		static LONG registerFileType(LPCWSTR fileType, LPCWSTR progID);
+
+		/**
+		 * Register a COM object in this DLL.
+		 * @param rclsid CLSID.
+		 * @param progID ProgID.
+		 * @param description Description of the COM object.
+		 * @return ERROR_SUCCESS on success; WinAPI error on error.
+		 */
+		static LONG registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description);
+
+		/**
+		 * Register a shell extension as an approved extension.
+		 * @param rclsid CLSID.
+		 * @param description Description of the shell extension.
+		 * @return ERROR_SUCCESS on success; WinAPI error on error.
+		 */
+		static LONG registerApprovedExtension(REFCLSID rclsid, LPCWSTR description);
 
 	protected:
 		HKEY m_hKey;		// Registry key handle.

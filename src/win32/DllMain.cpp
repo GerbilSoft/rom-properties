@@ -37,6 +37,7 @@
 #include "RP_ClassFactory.hpp"
 
 static HINSTANCE g_hInstance = nullptr;
+wchar_t dll_filename[MAX_PATH];
 
 /**
  * DLL entry point.
@@ -48,14 +49,23 @@ extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch (dwReason) {
-		case DLL_PROCESS_ATTACH:
+		case DLL_PROCESS_ATTACH: {
 			// DLL loaded by a process.
 			g_hInstance = hInstance;
+
+			// Get the DLL filename.
+			int ret = GetModuleFileName(g_hInstance,
+				dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
+			if (ret <= 0) {
+				// FIXME: Handle this.
+				dll_filename[0] = 0;
+			}
 
 			// Disable thread library calls, since we don't
 			// care about thread attachments.
 			DisableThreadLibraryCalls(hInstance);
 			break;
+		}
 
 		case DLL_PROCESS_DETACH:
 			// DLL is being unloaded.
@@ -115,17 +125,10 @@ STDAPI DllRegisterServer(void)
 	// TODO: Add helper functions for registry access.
 	static const wchar_t ProgID[] = L"rom-properties";
 
-	/** Register the ".nds" file type. **/
-
-	// Create/open the ".nds" key.
-	RegKey hkcr_nds(HKEY_CLASSES_ROOT, L".nds", KEY_WRITE, true);
-	if (!hkcr_nds.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the default value to "rom-properties".
-	LONG ret = hkcr_nds.write(nullptr, ProgID);
+	// Register the ".nds" file type.
+	int ret = RegKey::registerFileType(L".nds", ProgID);
 	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	hkcr_nds.close();
 
 	/** Register the ProgID. **/
 
@@ -160,68 +163,16 @@ STDAPI DllRegisterServer(void)
 	hkcr_DefaultIcon.close();
 	hkcr_ProgID.close();
 
-	/** Register the DLL itself. **/
-
-	// Open HKCR\CLSID.
-	RegKey hkcr_CLSID(HKEY_CLASSES_ROOT, L"CLSID", KEY_WRITE, false);
-	if (!hkcr_CLSID.isOpen())
-		return SELFREG_E_CLASS;
-	// Create a key using the CLSID.
-	RegKey hkcr_RP_ExtractIcon(hkcr_CLSID, CLSID_RP_ExtractIcon_Str, KEY_WRITE, true);
-	if (!hkcr_RP_ExtractIcon.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the name of the key.
-	ret = hkcr_RP_ExtractIcon.write(nullptr, ProgID);
+	// Register the COM objects in the DLL.
+	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
+	ret = RegKey::registerComObject(CLSID_RP_ExtractIcon, ProgID, description);
 	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	// Create an InprocServer32 subkey.
-	RegKey hkcr_InprocServer32(hkcr_RP_ExtractIcon, L"InprocServer32", KEY_WRITE, true);
-	if (!hkcr_InprocServer32.isOpen())
-		return SELFREG_E_CLASS;
-
-	// Set the default value to the DLL filename.
-	wchar_t dll_filename[MAX_PATH];
-	int dll_filename_len = GetModuleFileName(g_hInstance, dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
-	// TODO: Handle buffer size errors.
-	if (dll_filename_len > 0) {
-		ret = hkcr_InprocServer32.write(nullptr, dll_filename);
-		if (ret != ERROR_SUCCESS)
-			return SELFREG_E_CLASS;
-	}
-
-	// Set the threading model to Apartment.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-	ret = hkcr_InprocServer32.write(L"ThreadingModel", L"Apartment");
+	// Register the shell extension as "approved".
+	ret = RegKey::registerApprovedExtension(CLSID_RP_ExtractIcon, description);
 	if (ret != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	hkcr_InprocServer32.close();
-
-	// Create a ProgID subkey.
-	RegKey hkcr_CLSID_ProgID(hkcr_RP_ExtractIcon, L"ProgID", KEY_WRITE, true);
-	if (!hkcr_CLSID_ProgID.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the default value.
-	ret = hkcr_CLSID_ProgID.write(nullptr, ProgID);
-	if (ret != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hkcr_CLSID_ProgID.close();
-	hkcr_RP_ExtractIcon.close();
-	hkcr_CLSID.close();
-
-	/** Register the shell extension as "approved". **/
-	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
-		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
-		KEY_WRITE, false);
-	if (!hklm_Approved.isOpen())
-		return SELFREG_E_CLASS;
-
-	// Create a value for RP_ExtractIcon.
-	static const wchar_t RP_ExtractIcon_Name[] = L"ROM Properties Page - Icon Extractor";
-	ret = hklm_Approved.write(CLSID_RP_ExtractIcon_Str, RP_ExtractIcon_Name);
-	if (ret != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hklm_Approved.close();
 
 	return S_OK;
 }
