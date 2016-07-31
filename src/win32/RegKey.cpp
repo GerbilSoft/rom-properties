@@ -191,7 +191,7 @@ LONG RegKey::write(LPCTSTR name, const std::wstring& value)
  * @param progID ProgID.
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::registerFileType(LPCWSTR fileType, LPCWSTR progID)
+LONG RegKey::RegisterFileType(LPCWSTR fileType, LPCWSTR progID)
 {
 	// TODO: Handle cases where the user has already selected
 	// a file association?
@@ -212,7 +212,7 @@ LONG RegKey::registerFileType(LPCWSTR fileType, LPCWSTR progID)
  * @param description Description of the COM object.
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description)
+LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description)
 {
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -265,7 +265,7 @@ LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
  * @param description Description of the shell extension.
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::registerApprovedExtension(REFCLSID rclsid, LPCWSTR description)
+LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description)
 {
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));

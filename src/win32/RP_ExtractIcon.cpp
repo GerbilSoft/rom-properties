@@ -89,12 +89,12 @@ LONG RP_ExtractIcon::Register(void)
 		return ERROR_INVALID_PARAMETER;
 
 	// Register the COM object.
-	lResult = RegKey::registerComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
+	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
 	// Register as an "approved" shell extension.
-	lResult = RegKey::registerApprovedExtension(__uuidof(RP_ExtractIcon), description);
+	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractIcon), description);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 

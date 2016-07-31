@@ -110,7 +110,7 @@ class RegKey
 		 * @param progID ProgID.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG registerFileType(LPCWSTR fileType, LPCWSTR progID);
+		static LONG RegisterFileType(LPCWSTR fileType, LPCWSTR progID);
 
 		/**
 		 * Register a COM object in this DLL.
@@ -119,7 +119,7 @@ class RegKey
 		 * @param description Description of the COM object.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description);
+		static LONG RegisterComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description);
 
 		/**
 		 * Register a shell extension as an approved extension.
@@ -127,7 +127,7 @@ class RegKey
 		 * @param description Description of the shell extension.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG registerApprovedExtension(REFCLSID rclsid, LPCWSTR description);
+		static LONG RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description);
 
 	protected:
 		HKEY m_hKey;		// Registry key handle.

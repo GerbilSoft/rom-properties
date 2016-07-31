@@ -133,7 +133,7 @@ STDAPI DllRegisterServer(void)
 
 	// Register the ".nds" file type and associate
 	// it with our ProgID.
-	lResult = RegKey::registerFileType(L".nds", RP_ProgID);
+	lResult = RegKey::RegisterFileType(L".nds", RP_ProgID);
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
