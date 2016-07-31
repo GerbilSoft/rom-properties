@@ -174,5 +174,10 @@ STDAPI DllUnregisterServer(void)
 		return SELFREG_E_CLASS;
 	}
 
+	// Delete the rom-properties ProgID.
+	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return lResult;
+
 	return S_OK;
 }
