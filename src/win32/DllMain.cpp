@@ -36,6 +36,10 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
 
+// C++ includes.
+#include <string>
+using std::wstring;
+
 static HINSTANCE g_hInstance = nullptr;
 extern wchar_t dll_filename[];
 wchar_t dll_filename[MAX_PATH];
@@ -150,7 +154,25 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	// TODO: Remove the ProgID.
+	// Check the registered file types.
+	// If they're registered with rom-properties, blank it out.
+	// TODO: RegKey::UnregisterFileType()?
+	wstring reg_progID;
+
+	RegKey hkcr_nds(HKEY_CLASSES_ROOT, L".nds", KEY_READ|KEY_WRITE, false);
+	if (hkcr_nds.isOpen()) {
+		// Get the ProgID.
+		reg_progID = hkcr_nds.read(nullptr);
+		if (reg_progID == RP_ProgID) {
+			// ProgID matches. Unset it.
+			lResult = hkcr_nds.deleteValue(nullptr);
+			if (lResult != ERROR_SUCCESS)
+				return SELFREG_E_CLASS;
+		}
+	} else if (hkcr_nds.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+		// Key couldn't be opened.
+		return SELFREG_E_CLASS;
+	}
 
 	return S_OK;
 }

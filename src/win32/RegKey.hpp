@@ -86,6 +86,13 @@ class RegKey
 		/** Basic registry access functions. **/
 
 		/**
+		 * Read a string value from a key. (REG_SZ)
+		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+		 * @return String value, or empty string on error.
+		 */
+		std::wstring read(LPCWSTR lpValueName) const;
+
+		/**
 		 * Write a value to this key.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
@@ -100,6 +107,13 @@ class RegKey
 		 * @return RegSetValueEx() return value.
 		 */
 		LONG write(LPCWSTR lpValueName, const std::wstring& value);
+
+		/**
+		 * Delete a value.
+		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+		 * @return RegDeleteValue() return value.
+		 */
+		LONG deleteValue(LPCWSTR lpValueName);
 
 		/**
 		 * Recursively delete a subkey.

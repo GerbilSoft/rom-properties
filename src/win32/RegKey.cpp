@@ -23,6 +23,7 @@
 #include "RegKey.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstring>
 
 /**
@@ -136,6 +137,50 @@ void RegKey::close(void)
 /** Basic registry access functions. **/
 
 /**
+ * Read a string value from a key. (REG_SZ)
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * @return String value, or empty string on error.
+ */
+std::wstring RegKey::read(LPCWSTR lpValueName) const
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return std::wstring();
+	}
+
+	// FIXME: Handle ERROR_MORE_DATA?
+	// We're only handling pathnames and CLSIDs,
+	// so MAX_PATH should be sufficient.
+	wchar_t buf[MAX_PATH+1];
+	DWORD cbData = (DWORD)sizeof(buf);
+	DWORD dwType;
+	LONG lResult = RegQueryValueEx(m_hKey, lpValueName, nullptr, &dwType,
+		reinterpret_cast<LPBYTE>(buf), &cbData);
+	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
+		// Either an error occurred, or this isn't REG_SZ.
+		return std::wstring();
+	}
+
+	// Convert cbData to cchData.
+	assert(cbData % 2 == 0);
+	DWORD cchData = cbData / sizeof(buf[0]);
+
+	// Check for NULL terminators.
+	for (; cchData > 0; cchData--) {
+		if (buf[cchData-1] != 0)
+			break;
+	}
+
+	if (cchData == 0) {
+		// No actual string data.
+		return std::wstring();
+	}
+
+	// Return the string.
+	return std::wstring(buf, cchData);
+}
+
+/**
  * Write a value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
@@ -181,6 +226,22 @@ LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
 
 	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
+}
+
+/**
+ * Delete a value.
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * @return RegDeleteValue() return value.
+ */
+LONG RegKey::deleteValue(LPCWSTR lpValueName)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
+	// Delete the value.
+	return RegDeleteValue(m_hKey, lpValueName);
 }
 
 /**
