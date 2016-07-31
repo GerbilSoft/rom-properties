@@ -517,10 +517,84 @@ int GameCube::loadURLs(ImageType imageType)
 	// GameTDB doesn't have "discHQ" or "discM" for Wii/GCN.
 	// TODO: Configurable quality settings?
 	// TODO: Option to pick "discB"?
+	// TODO: Handle discs that have weird region codes?
+	const char *region;
+
+	// If PAL, fall back to EN if a language-specific
+	// image isn't available.
+	bool isPal = false;
+
+	switch (d->discHeader.id4[3]) {
+		// PAL regions. (Europe)
+		case 'P':
+		default:
+			// TODO: Region selection for PAL?
+			// Assuming "EN" for now.
+			region = "EN";
+			isPal = false;	// No fallback needed.
+			break;
+		case 'R':	// Russia
+			region = "RU";
+			isPal = true;
+			break;
+		case 'I':	// Italy
+			region = "IT";
+			isPal = true;
+			break;
+		case 'F':	// France
+			region = "FR";
+			isPal = true;
+			break;
+		case 'S':	// Spain
+			region = "ES";
+			isPal = true;
+			break;
+		case 'D':	// Germany
+			region = "DE";
+			isPal = true;
+			break;
+
+		// NTSC regions.
+		case 'E':	// USA
+			region = "US";
+			break;
+		case 'J':	// Japan
+			region = "JA";
+			break;
+		case 'K':	// South Korea
+			region = "KO";
+			break;
+
+		// Ambiguous...
+		case 'W':
+			// FIXME: This is used for Taiwan as well as
+			// various "alternate" language packs in
+			// PAL regions.
+			region = "ZH";
+			isPal = true;
+			break;
+		case 'X':
+		case 'Y':
+		case 'Z':
+			// FIXME: This is used for "alternate" language packs
+			// in PAL regions, plus some "special" versions.
+			region = "EN";
+			isPal = false;	// TODO: Fallback to US?
+			break;
+	}
+
 	char buf[256];
-	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/wii/disc/US/%.6s.png", d->discHeader.id6);
+	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/wii/disc/%s/%.6s.png", region, d->discHeader.id6);
 	if (len > 0 && len < (int)sizeof(buf)) {
 		extURLs.push_back(ascii_to_rp_string(buf, len));
+	}
+
+	if (isPal) {
+		// Fall back to "EN" if the region-specific image wasn't found.
+		len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/wii/disc/%s/%.6s.png", "EN", d->discHeader.id6);
+		if (len > 0 && len < (int)sizeof(buf)) {
+			extURLs.push_back(ascii_to_rp_string(buf, len));
+		}
 	}
 
 	// All URLs added.
