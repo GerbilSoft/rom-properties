@@ -141,6 +141,10 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
+	// Notify the shell that file associations have changed.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
+	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+
 	return S_OK;
 }
 
@@ -162,6 +166,10 @@ STDAPI DllUnregisterServer(void)
 	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
 	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
 		return lResult;
+
+	// Notify the shell that file associations have changed.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
+	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
 	return S_OK;
 }
