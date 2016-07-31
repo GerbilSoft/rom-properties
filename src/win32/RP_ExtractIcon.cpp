@@ -140,6 +140,13 @@ LONG RP_ExtractIcon::Register(void)
  */
 LONG RP_ExtractIcon::Unregister(void)
 {
+	extern const wchar_t RP_ProgID[];
+
+	// Unegister the COM object.
+	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID);
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
+
 	// TODO
 	return ERROR_SUCCESS;
 }

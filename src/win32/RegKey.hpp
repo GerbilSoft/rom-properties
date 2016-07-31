@@ -101,6 +101,21 @@ class RegKey
 		 */
 		LONG write(LPCWSTR lpValueName, const std::wstring& value);
 
+		/**
+		 * Recursively delete a subkey.
+		 * @param hKeyRoot Root key.
+		 * @param lpSubKey Subkey name.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG deleteSubKey(HKEY hKeyRoot, LPCWSTR subKey);
+
+		/**
+		 * Recursively delete a subkey.
+		 * @param lpSubKey Subkey name.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		LONG deleteSubKey(LPCWSTR subKey);
+
 	public:
 		/** COM registration convenience functions. **/
 
@@ -128,6 +143,14 @@ class RegKey
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
 		static LONG RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description);
+
+		/**
+		 * Unregister a COM object in this DLL.
+		 * @param rclsid CLSID.
+		 * @param progID ProgID.
+		 * @return ERROR_SUCCESS on success; WinAPI error on error.
+		 */
+		static LONG UnregisterComObject(REFCLSID rclsid, LPCWSTR progID);
 
 	protected:
 		HKEY m_hKey;		// Registry key handle.

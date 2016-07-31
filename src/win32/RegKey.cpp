@@ -183,6 +183,72 @@ LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
 }
 
+/**
+ * Recursively delete a subkey.
+ * @param hKeyRoot Root key.
+ * @param lpSubKey Subkey name.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey)
+{
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724235(v=vs.85).aspx
+	if (!hKeyRoot || !lpSubKey || !lpSubKey[0]) {
+		// nullptr specified, or lpSubKey is empty.
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Attempt to delete the key directly without recursing.
+	LONG lResult = RegDeleteKey(hKeyRoot, lpSubKey);
+	if (lResult == ERROR_SUCCESS) {
+		// Key deleted. We're done here.
+		return ERROR_SUCCESS;
+	}
+
+	// We need to recurse into the key and delete all subkeys.
+	HKEY hSubKey;
+	lResult = RegOpenKeyEx(hKeyRoot, lpSubKey, 0, KEY_READ, &hSubKey);
+	if (lResult != ERROR_SUCCESS) {
+		// Something failed.
+		return lResult;
+	}
+
+	// Enumerate the keys.
+	wchar_t szName[MAX_PATH];
+	DWORD dwSize = (DWORD)(sizeof(szName)/sizeof(szName[0]));
+	lResult = RegEnumKeyEx(hSubKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+	if (lResult == ERROR_SUCCESS) {
+		do {
+			// Recurse through this subkey.
+			lResult = deleteSubKey(hSubKey, szName);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+				break;
+
+			dwSize = MAX_PATH;
+			lResult = RegEnumKeyEx(hSubKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+		} while (lResult == ERROR_SUCCESS);
+	}
+
+	RegCloseKey(hSubKey);
+
+	// Try to delete the key again.
+	return RegDeleteKey(hKeyRoot, lpSubKey);
+}
+
+/**
+ * Recursively delete a subkey.
+ * @param lpSubKey Subkey name.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
+	return deleteSubKey(m_hKey, lpSubKey);
+}
+
 /** COM registration convenience functions. **/
 
 /**
@@ -281,4 +347,31 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCWSTR description)
 
 	// Create a value for the specified CLSID.
 	return hklm_Approved.write(clsid_str, description);
+}
+
+/**
+ * Unregister a COM object in this DLL.
+ * @param rclsid CLSID.
+ * @param progID ProgID.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCWSTR progID)
+{
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0)
+		return ERROR_INVALID_PARAMETER;
+
+	// Open HKCR\CLSID.
+	RegKey hkcr_CLSID(HKEY_CLASSES_ROOT, L"CLSID", KEY_WRITE, false);
+	if (!hkcr_CLSID.isOpen())
+		return hkcr_CLSID.lOpenRes();
+
+	// Delete the CLSID key.
+	lResult = hkcr_CLSID.deleteSubKey(clsid_str);
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
+
+	// TODO: Check progID and remove CLSID if it's present.
+	return ERROR_SUCCESS;
 }
