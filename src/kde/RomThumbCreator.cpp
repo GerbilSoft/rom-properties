@@ -115,6 +115,15 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *userdata)
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
 	QByteArray *ba = reinterpret_cast<QByteArray*>(userdata);
 	size_t len = size * nmemb;
+
+	// Maximum buffer size of 4 MB.
+	// TODO: Configure that somewhere?
+	// TODO: Check Content-Length header before receiving anything?
+	if (ba->size() + len > 4*1024*1024) {
+		// Out of memory.
+		return 0;
+	}
+
 	ba->append(reinterpret_cast<const char*>(ptr), (int)len);
 	return len;
 }
