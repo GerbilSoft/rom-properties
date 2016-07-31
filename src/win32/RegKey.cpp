@@ -367,9 +367,11 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCWSTR progID)
 	if (!hkcr_CLSID.isOpen())
 		return hkcr_CLSID.lOpenRes();
 
-	// Delete the CLSID key.
+        // Delete the CLSID key.
+	// NOTE: deleteSubKey() may return ERROR_FILE_NOT_FOUND,
+	// which indicates the object was already unregistered.
 	lResult = hkcr_CLSID.deleteSubKey(clsid_str);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
 		return lResult;
 
 	// TODO: Check progID and remove CLSID if it's present.
