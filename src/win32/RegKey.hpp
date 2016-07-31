@@ -22,6 +22,9 @@
 #ifndef __ROMPROPERTIES_WIN32_REGKEY_HPP__
 #define __ROMPROPERTIES_WIN32_REGKEY_HPP__
 
+// C++ includes.
+#include <string>
+
 class RegKey
 {
 	public:
