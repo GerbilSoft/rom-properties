@@ -134,6 +134,24 @@ int RomData::loadInternalImage(ImageType imageType)
 }
 
 /**
+ * Load URLs for an external media type.
+ * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * @param imageType Image type to load.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RomData::loadURLs(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+
+	// No images supported by the base class.
+	return -ENOENT;
+}
+
+/**
  * Get the ROM Fields object.
  * @return ROM Fields object.
  */
@@ -161,8 +179,10 @@ const rp_image *RomData::image(ImageType imageType) const
 		// ImageType is out of range.
 		return nullptr;
 	}
+	// TODO: Check supportedImageTypes()?
 
-	if (!m_images[imageType]) {
+	const int idx = imageType - IMG_INT_MIN;
+	if (!m_images[idx]) {
 		// Internal image has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
@@ -170,7 +190,34 @@ const rp_image *RomData::image(ImageType imageType) const
 			return nullptr;
 	}
 
-	return m_images[imageType];
+	return m_images[idx];
+}
+
+/**
+ * Get a list of URLs for an external media type.
+ * @param imageType Image type.
+ * @return List of URLs, or nullptr if the ROM doesn't have one.
+ */
+const std::vector<rp_string> *RomData::extURLs(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return nullptr;
+	}
+
+	// TODO: Check supportedImageTypes()?
+
+	const int idx = imageType - IMG_EXT_MIN;
+	if (m_extURLs[idx].empty()) {
+		// List of URLs has not been loaded.
+		// Load it now.
+		int ret = const_cast<RomData*>(this)->loadURLs(imageType);
+		if (ret < 0)
+			return nullptr;
+	}
+
+	return &m_extURLs[idx];
 }
 
 }

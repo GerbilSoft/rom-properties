@@ -32,6 +32,7 @@
 #include "WbfsReader.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cctype>
 #include <cstring>
 
@@ -63,6 +64,9 @@ class GameCubePrivate
 		// Disc type and reader.
 		GameCube::DiscType discType;
 		IDiscReader *discReader;
+
+		// Disc header.
+		GCN_DiscHeader discHeader;
 
 		/**
 		 * Wii partition tables.
@@ -270,6 +274,16 @@ GameCube::GameCube(FILE *file)
 	}
 
 	m_isValid = (d->discType != DISC_UNKNOWN);
+
+	// Save the disc header for later.
+	d->discReader->rewind();
+	size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
+	if (size != sizeof(d->discHeader)) {
+		// Error reading the disc header.
+		delete d->discReader;
+		d->discReader = nullptr;
+		m_isValid = DISC_UNKNOWN;
+	}
 }
 
 GameCube::~GameCube()
@@ -350,6 +364,15 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameCube::supportedImageTypes(void) const
+{
+       return IMGBF_EXT_MEDIA;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -367,32 +390,24 @@ int GameCube::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Seek to the beginning of the file.
-	d->discReader->rewind();
-
-	// Read the disc header.
-	// TODO: WBFS support.
-	GCN_DiscHeader header;
-	size_t size = d->discReader->read(&header, sizeof(header));
-	if (size != sizeof(header)) {
-		// File isn't big enough for a GameCube/Wii header...
-		return -EIO;
-	}
+	// Disc header is read in the constructor.
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
-	m_fields->addData_string(cp1252_sjis_to_rp_string(header.game_title, sizeof(header.game_title)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(
+		d->discHeader.game_title, sizeof(d->discHeader.game_title)));
 
 	// Game ID and publisher.
-	m_fields->addData_string(ascii_to_rp_string(header.id6, sizeof(header.id6)));
+	m_fields->addData_string(ascii_to_rp_string(
+		d->discHeader.id6, sizeof(d->discHeader.id6)));
 
 	// Look up the publisher.
-	const rp_char *publisher = NintendoPublishers::lookup(header.company);
+	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
 	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// Other fields.
-	m_fields->addData_string_numeric(header.disc_number+1, RomFields::FB_DEC);
-	m_fields->addData_string_numeric(header.revision, RomFields::FB_DEC, 2);
+	m_fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
+	m_fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
 	// Partition table. (Wii only)
 	if ((d->discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII) {
@@ -467,6 +482,49 @@ int GameCube::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
+}
+
+/**
+ * Load URLs for an external media type.
+ * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * @param imageType Image type to load.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCube::loadURLs(ImageType imageType)
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+	std::vector<rp_string> &extURLs = m_extURLs[imageType - IMG_EXT_MIN];
+	if (!extURLs.empty()) {
+		// URLs *have* been loaded...
+		return 0;
+	}
+	if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	}
+
+	// Check for supported image types.
+	if (imageType != IMG_EXT_MEDIA) {
+		// Only IMG_EXT_MEDIA is supported by GCN.
+		return -ENOENT;
+	}
+
+	// Check for "disc".
+	// GameTDB doesn't have "discHQ" or "discM" for Wii/GCN.
+	// TODO: Configurable quality settings?
+	// TODO: Option to pick "discB"?
+	char buf[256];
+	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/wii/disc/US/%.6s.png", d->discHeader.id6);
+	if (len > 0 && len < (int)sizeof(buf)) {
+		extURLs.push_back(ascii_to_rp_string(buf, len));
+	}
+
+	// All URLs added.
+	return (extURLs.empty() ? -ENOENT : 0);
 }
 
 }

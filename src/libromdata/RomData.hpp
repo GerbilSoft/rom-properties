@@ -174,6 +174,14 @@ class RomData
 		 */
 		virtual int loadInternalImage(ImageType imageType);
 
+		/**
+		 * Load URLs for an external media type.
+		 * Called by RomData::extURL() if the URLs haven't been loaded yet.
+		 * @param imageType Image type to load.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadURLs(ImageType imageType);
+
 	public:
 		/**
 		 * Get the ROM Fields object.
@@ -188,6 +196,13 @@ class RomData
 		 */
 		const rp_image *image(ImageType imageType) const;
 
+		/**
+		 * Get a list of URLs for an external media type.
+		 * @param imageType Image type.
+		 * @return List of URLs, or nullptr if the ROM doesn't have one.
+		 */
+		const std::vector<rp_string> *extURLs(ImageType imageType) const;
+
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
@@ -196,6 +211,13 @@ class RomData
 
 		// Internal images.
 		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];
+
+		// Lists of URLs for external media types.
+		// Each vector contains a list of URLs for the given
+		// media type, in priority order. ([0] == highest priority)
+		// This is done to allow for multiple quality levels.
+		// TODO: Allow the user to customize quality levels?
+		std::vector<rp_string> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
 };
 
 }

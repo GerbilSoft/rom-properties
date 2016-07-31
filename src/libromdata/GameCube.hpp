@@ -101,6 +101,12 @@ class GameCube : public RomData
 		 */
 		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
 
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		virtual uint32_t supportedImageTypes(void) const override;
+
 	protected:
 		/**
 		* Load field data.
@@ -108,6 +114,14 @@ class GameCube : public RomData
 		* @return 0 on success; negative POSIX error code on error.
 		*/
 		virtual int loadFieldData(void) override;
+
+		/**
+		 * Load URLs for an external media type.
+		 * Called by RomData::extURL() if the URLs haven't been loaded yet.
+		 * @param imageType Image type to load.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadURLs(ImageType imageType) override;
 };
 
 }
