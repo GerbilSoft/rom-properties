@@ -30,7 +30,7 @@
 
 namespace LibRomData {
 
-class IDiscReader;
+class GameCubePrivate;
 class GameCube : public RomData
 {
 	public:
@@ -57,6 +57,10 @@ class GameCube : public RomData
 	private:
 		GameCube(const GameCube &);
 		GameCube &operator=(const GameCube &);
+
+	private:
+		friend class GameCubePrivate;
+		GameCubePrivate *const d;
 
 	public:
 		enum DiscType {
@@ -96,34 +100,6 @@ class GameCube : public RomData
 		 * @return List of all supported file extensions.
 		 */
 		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
-
-	private:
-		// Disc type.
-		DiscType m_discType;
-
-		// Disc reader object.
-		IDiscReader *m_discReader;
-
-		/**
-		 * Wii partition tables.
-		 * Decoded from the actual on-disc tables.
-		 */
-		struct WiiPartEntry {
-			uint64_t start;		// Starting address, in bytes.
-			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
-			uint32_t type;		// Partition type. (0 == Game, 1 == Update, 2 == Channel)
-		};
-
-		typedef std::vector<WiiPartEntry> WiiPartTable;
-		WiiPartTable m_wiiVgTbl[4];	// Volume group table.
-		bool m_wiiVgTblLoaded;
-
-		/**
-		 * Load the Wii volume group and partition tables.
-		 * Partition tables are loaded into m_wiiVgTbl[].
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int loadWiiPartitionTables(void);
 
 	protected:
 		/**

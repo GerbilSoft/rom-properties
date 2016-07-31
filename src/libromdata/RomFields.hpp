@@ -60,7 +60,7 @@ class RomFields
 			// List field names. (headers)
 			// Must be an array of at least 'fields' strings.
 			// If a name is nullptr, that field is skipped.
-			const rp_char **names;
+			const rp_char *const *names;
 		};
 
 		// The ROM data class holds a number of customizable fields.

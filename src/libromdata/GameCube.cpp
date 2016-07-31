@@ -41,19 +41,77 @@ using std::vector;
 
 namespace LibRomData {
 
+class GameCubePrivate
+{
+	public:
+		GameCubePrivate(GameCube *q);
+		~GameCubePrivate();
+
+	private:
+		GameCubePrivate(const GameCubePrivate &other);
+		GameCubePrivate &operator=(const GameCubePrivate &other);
+
+	private:
+		GameCube *const q;
+
+	public:
+		// RomFields data.
+		static const rp_char *const rvl_partitions_names[];
+		static const RomFields::ListDataDesc rvl_partitions;
+		static const struct RomFields::Desc gcn_fields[];
+
+		// Disc type and reader.
+		GameCube::DiscType discType;
+		IDiscReader *discReader;
+
+		/**
+		 * Wii partition tables.
+		 * Decoded from the actual on-disc tables.
+		 */
+		struct WiiPartEntry {
+			uint64_t start;		// Starting address, in bytes.
+			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
+			uint32_t type;		// Partition type. (0 == Game, 1 == Update, 2 == Channel)
+		};
+
+		typedef std::vector<WiiPartEntry> WiiPartTable;
+		WiiPartTable wiiVgTbl[4];	// Volume group table.
+		bool wiiVgTblLoaded;
+
+		/**
+		 * Load the Wii volume group and partition tables.
+		 * Partition tables are loaded into wiiVgTbl[].
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadWiiPartitionTables(void);
+};
+
+/** GameCubePrivate **/
+
+GameCubePrivate::GameCubePrivate(GameCube *q)
+	: q(q)
+	, discType(GameCube::DISC_UNKNOWN)
+	, discReader(nullptr)
+	, wiiVgTblLoaded(false)
+{ }
+
+GameCubePrivate::~GameCubePrivate()
+{
+	delete discReader;
+}
+
 // Wii partition table.
-static const rp_char *rvl_partitions_names[] = {
+const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
 	_RP("#"), _RP("Type"),
 	// TODO: Start/End addresses?
 };
 
-static const struct RomFields::ListDataDesc rvl_partitions = {
+const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
 	ARRAY_SIZE(rvl_partitions_names), rvl_partitions_names
 };
 
 // ROM fields.
-// TODO: Private class?
-static const struct RomFields::Desc gcn_fields[] = {
+const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	// TODO: Banner?
 	{_RP("Title"), RomFields::RFT_STRING, nullptr},
 	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
@@ -74,6 +132,89 @@ static const struct RomFields::Desc gcn_fields[] = {
 };
 
 /**
+ * Load the Wii volume group and partition tables.
+ * Partition tables are loaded into wiiVgTbl[].
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCubePrivate::loadWiiPartitionTables(void)
+{
+	if (wiiVgTblLoaded) {
+		// Partition tables have already been loaded.
+		return 0;
+	} else if (!q->m_file) {
+		// File isn't open.
+		return -EBADF;
+	} else if ((discType & GameCube::DISC_SYSTEM_MASK) != GameCube::DISC_SYSTEM_WII) {
+		// Unsupported disc type.
+		return -EIO;
+	}
+
+	// Clear the existing partition tables.
+	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
+		wiiVgTbl[i].clear();
+	}
+
+	// Assuming a maximum of 128 partitions per table.
+	// (This is a rather high estimate.)
+	RVL_VolumeGroupTable vgtbl;
+	RVL_PartitionTableEntry pt[1024];
+
+	// Read the volume group table.
+	// References:
+	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
+	discReader->seek(0x40000);
+	size_t size = discReader->read(&vgtbl, sizeof(vgtbl));
+	if (size != sizeof(vgtbl)) {
+		// Could not read the volume group table.
+		// TODO: Return error from fread()?
+		return -EIO;
+	}
+
+	// Get the size of the disc image.
+	// TODO: Large File Support for 32-bit Linux and Windows.
+	int64_t discSize = discReader->fileSize();
+	if (discSize < 0) {
+		// Error getting the size of the disc image.
+		return -errno;
+	}
+
+	// Process each volume group.
+	for (int i = 0; i < 4; i++) {
+		uint32_t count = be32_to_cpu(vgtbl.vg[i].count);
+		if (count == 0) {
+			continue;
+		} else if (count > ARRAY_SIZE(pt)) {
+			count = ARRAY_SIZE(pt);
+		}
+
+		// Read the partition table entries.
+		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
+		discReader->seek((int64_t)pt_addr);
+		size = discReader->read(pt, ptSize);
+		if (size != ptSize) {
+			// Error reading the partition table entries.
+			return -EIO;
+		}
+
+		// Process each partition table entry.
+		wiiVgTbl[i].resize(count);
+		for (int j = 0; j < (int)count; j++) {
+			WiiPartEntry &entry = wiiVgTbl[i].at(j);
+			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			// TODO: Figure out how to calculate length?
+			entry.type = be32_to_cpu(pt[j].type);
+		}
+	}
+
+	// Done reading the partition tables.
+	return 0;
+}
+
+/** GameCube **/
+
+/**
  * Read a Nintendo GameCube or Wii disc image.
  *
  * A disc image must be opened by the caller. The file handle
@@ -87,10 +228,8 @@ static const struct RomFields::Desc gcn_fields[] = {
  * @param file Open disc image.
  */
 GameCube::GameCube(FILE *file)
-	: RomData(file, gcn_fields, ARRAY_SIZE(gcn_fields))
-	, m_discType(DISC_UNKNOWN)
-	, m_discReader(nullptr)
-	, m_wiiVgTblLoaded(false)
+	: RomData(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
+	, d(new GameCubePrivate(this))
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -114,28 +253,28 @@ GameCube::GameCube(FILE *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for GCN.
 	info.szFile = 0;	// Not needed for GCN.
-	m_discType = isRomSupported(&info);
+	d->discType = isRomSupported(&info);
 
 	// TODO: DiscReaderFactory?
-	switch (m_discType & DISC_FORMAT_MASK) {
+	switch (d->discType & DISC_FORMAT_MASK) {
 		case DISC_FORMAT_RAW:
-			m_discReader = new DiscReader(m_file);
+			d->discReader = new DiscReader(m_file);
 			break;
 		case DISC_FORMAT_WBFS:
-			m_discReader = new WbfsReader(m_file);
+			d->discReader = new WbfsReader(m_file);
 			break;
 		case DISC_FORMAT_UNKNOWN:
 		default:
-			m_discType = DISC_UNKNOWN;
+			d->discType = DISC_UNKNOWN;
 			break;
 	}
 
-	m_isValid = (m_discType != DISC_UNKNOWN);
+	m_isValid = (d->discType != DISC_UNKNOWN);
 }
 
 GameCube::~GameCube()
 {
-	delete m_discReader;
+	delete d;
 }
 
 /**
@@ -211,87 +350,6 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
 }
 
 /**
- * Load the Wii volume group and partition tables.
- * Partition tables are loaded into m_wiiVgTbl[].
- * @return 0 on success; negative POSIX error code on error.
- */
-int GameCube::loadWiiPartitionTables(void)
-{
-	if (m_wiiVgTblLoaded) {
-		// Partition tables have already been loaded.
-		return 0;
-	} else if (!m_file) {
-		// File isn't open.
-		return -EBADF;
-	} else if ((m_discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
-		// Unsupported disc type.
-		return -EIO;
-	}
-
-	// Clear the existing partition tables.
-	for (int i = ARRAY_SIZE(m_wiiVgTbl)-1; i >= 0; i--) {
-		m_wiiVgTbl[i].clear();
-	}
-
-	// Assuming a maximum of 128 partitions per table.
-	// (This is a rather high estimate.)
-	RVL_VolumeGroupTable vgtbl;
-	RVL_PartitionTableEntry pt[1024];
-
-	// Read the volume group table.
-	// References:
-	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
-	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
-	m_discReader->seek(0x40000);
-	size_t size = m_discReader->read(&vgtbl, sizeof(vgtbl));
-	if (size != sizeof(vgtbl)) {
-		// Could not read the volume group table.
-		// TODO: Return error from fread()?
-		return -EIO;
-	}
-
-	// Get the size of the disc image.
-	// TODO: Large File Support for 32-bit Linux and Windows.
-	int64_t discSize = m_discReader->fileSize();
-	if (discSize < 0) {
-		// Error getting the size of the disc image.
-		return -errno;
-	}
-
-	// Process each volume group.
-	for (int i = 0; i < 4; i++) {
-		uint32_t count = be32_to_cpu(vgtbl.vg[i].count);
-		if (count == 0) {
-			continue;
-		} else if (count > ARRAY_SIZE(pt)) {
-			count = ARRAY_SIZE(pt);
-		}
-
-		// Read the partition table entries.
-		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
-		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
-		m_discReader->seek((int64_t)pt_addr);
-		size = m_discReader->read(pt, ptSize);
-		if (size != ptSize) {
-			// Error reading the partition table entries.
-			return -EIO;
-		}
-
-		// Process each partition table entry.
-		m_wiiVgTbl[i].resize(count);
-		for (int j = 0; j < (int)count; j++) {
-			WiiPartEntry &entry = m_wiiVgTbl[i].at(j);
-			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
-			// TODO: Figure out how to calculate length?
-			entry.type = be32_to_cpu(pt[j].type);
-		}
-	}
-
-	// Done reading the partition tables.
-	return 0;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -304,18 +362,18 @@ int GameCube::loadFieldData(void)
 	} else if (!m_file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (m_discType == DISC_UNKNOWN) {
+	} else if (d->discType == DISC_UNKNOWN) {
 		// Unknown disc type.
 		return -EIO;
 	}
 
 	// Seek to the beginning of the file.
-	m_discReader->rewind();
+	d->discReader->rewind();
 
 	// Read the disc header.
 	// TODO: WBFS support.
 	GCN_DiscHeader header;
-	size_t size = m_discReader->read(&header, sizeof(header));
+	size_t size = d->discReader->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
 		// File isn't big enough for a GameCube/Wii header...
 		return -EIO;
@@ -337,19 +395,19 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(header.revision, RomFields::FB_DEC, 2);
 
 	// Partition table. (Wii only)
-	if ((m_discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII) {
+	if ((d->discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII) {
 		RomFields::ListData *partitions = new RomFields::ListData();
 
 		// Load the Wii partition tables.
-		int ret = loadWiiPartitionTables();
+		int ret = d->loadWiiPartitionTables();
 		if (ret == 0) {
 			// Wii partition tables loaded.
 			// Convert them to RFT_LISTDATA for display purposes.
 			vector<rp_string> data_row;     // Temporary storage for each partition entry.
 			for (int i = 0; i < 4; i++) {
-				const int count = (int)m_wiiVgTbl[i].size();
+				const int count = (int)d->wiiVgTbl[i].size();
 				for (int j = 0; j < count; j++) {
-					const WiiPartEntry &entry = m_wiiVgTbl[i].at(j);
+					const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
 					data_row.clear();
 
 					// Partition number.
