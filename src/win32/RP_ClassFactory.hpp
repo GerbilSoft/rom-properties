@@ -79,7 +79,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 			}
 
 			// Create an instance of the object.
-			comObj *pObj = CreateObject();
+			comObj *pObj = RP_MultiCreator<comObj>::CreateObject();
 			if (!pObj) {
 				// Could not create the object.
 				return E_OUTOFMEMORY;

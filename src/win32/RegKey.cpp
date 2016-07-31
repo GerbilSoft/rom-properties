@@ -34,8 +34,8 @@
  * @param create If true, create the key if it doesn't exist.
  */
 RegKey::RegKey(HKEY hKeyRoot, LPCWSTR path, REGSAM samDesired, bool create)
-	: m_lOpenRes(ERROR_SUCCESS)
-	, m_hKey(nullptr)
+	: m_hKey(nullptr)
+	, m_lOpenRes(ERROR_SUCCESS)
 	, m_samDesired(samDesired)
 {
 	if (create) {

@@ -242,7 +242,6 @@ HBITMAP RP_ExtractIcon::rpToHBITMAP_mask(const LibRomData::rp_image *image)
 	 */
 	const int width8 = (image->width() + 8) & ~8;	// Round up to 8px width.
 	const int icon_sz = width8 * image->height() / 8;
-	uint8_t *data = (uint8_t*)malloc(icon_sz * 2);
 
 	BITMAPINFO bmi;
 	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
@@ -338,8 +337,10 @@ HICON RP_ExtractIcon::rpToHICON(const rp_image *image)
 
 	// Convert to an icon.
 	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
-	ICONINFO ii = {0};
+	ICONINFO ii;
 	ii.fIcon = TRUE;
+	ii.xHotspot = 0;
+	ii.yHotspot = 0;
 	ii.hbmColor = hBitmap;
 	ii.hbmMask = hbmMask;
 
@@ -356,12 +357,16 @@ HICON RP_ExtractIcon::rpToHICON(const rp_image *image)
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
 STDMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
-	__out_ecount(cchMax) LPTSTR pszIconFile, UINT cchMax,
-	__out int *piIndex, __out UINT *pwFlags)
+	LPTSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761852(v=vs.85).aspx
+	UNUSED(uFlags);
+	UNUSED(pszIconFile);
+	UNUSED(cchMax);
+	UNUSED(piIndex);
+
 #ifndef NDEBUG
 	// Debug version. Don't cache icons.
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
@@ -374,11 +379,15 @@ STDMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 }
 
 STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
-	__out_opt HICON *phiconLarge, __out_opt HICON *phiconSmall,
-	UINT nIconSize)
+	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: pszFile should be nullptr here.
 	// TODO: Fail if it's not nullptr?
+
+	// TODO: Use nIconSize?
+	UNUSED(pszFile);
+	UNUSED(nIconIndex);
+	UNUSED(nIconSize);
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	if (m_filename.empty())
@@ -431,7 +440,7 @@ STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 /** IPersistFile **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
 
-STDMETHODIMP RP_ExtractIcon::GetClassID(__RPC__out CLSID *pClassID)
+STDMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
 {
 	*pClassID = CLSID_RP_ExtractIcon;
 	return S_OK;
@@ -442,24 +451,30 @@ STDMETHODIMP RP_ExtractIcon::IsDirty(void)
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::Load(__RPC__in LPCOLESTR pszFileName, DWORD dwMode)
+STDMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
+	UNUSED(dwMode);	// TODO
+
 	// pszFileName is the file being worked on.
 	m_filename = pszFileName;
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractIcon::Save(__RPC__in_opt LPCOLESTR pszFileName, BOOL fRemember)
+STDMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
 {
+	UNUSED(pszFileName);
+	UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::SaveCompleted(__RPC__in_opt LPCOLESTR pszFileName)
+STDMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
 {
+	UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::GetCurFile(__RPC__deref_out_opt LPOLESTR *ppszFileName)
+STDMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
 {
+	UNUSED(ppszFileName);
 	return E_NOTIMPL;
 }

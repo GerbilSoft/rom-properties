@@ -38,8 +38,7 @@ namespace LibRomData {
 // C++ includes.
 #include <string>
 
-// FIXME: Use this GUID for RP_ExtractIcon etc.
-class __declspec(uuid("{E51BC107-E491-4B29-A6A3-2A4309259802}"))
+class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
 RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 {
 	public:
@@ -88,20 +87,25 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 	public:
 		// IExtractIcon
-		STDMETHOD(GetIconLocation)(UINT uFlags, __out_ecount(cchMax) LPTSTR pszIconFile,
-			UINT cchMax, __out int *piIndex, __out UINT *pwFlags) override;
+		STDMETHOD(GetIconLocation)(UINT uFlags, LPTSTR pszIconFile,
+			UINT cchMax, int *piIndex, UINT *pwFlags) override;
 		STDMETHOD(Extract)(LPCTSTR pszFile, UINT nIconIndex,
-			__out_opt HICON *phiconLarge,__out_opt HICON *phiconSmall,
+			HICON *phiconLarge, HICON *phiconSmall,
 			UINT nIconSize) override;
 
 		// IPersist (IPersistFile base class)
-		STDMETHOD(GetClassID)(__RPC__out CLSID *pClassID) override;
+		STDMETHOD(GetClassID)(CLSID *pClassID) override;
 		// IPersistFile
 		STDMETHOD(IsDirty)(void) override;
-		STDMETHOD(Load)(__RPC__in LPCOLESTR pszFileName, DWORD dwMode) override;
-		STDMETHOD(Save)(__RPC__in_opt LPCOLESTR pszFileName, BOOL fRemember) override;
-		STDMETHOD(SaveCompleted)(__RPC__in_opt LPCOLESTR pszFileName) override;
-		STDMETHOD(GetCurFile)(__RPC__deref_out_opt LPOLESTR *ppszFileName) override;
+		STDMETHOD(Load)(LPCOLESTR pszFileName, DWORD dwMode) override;
+		STDMETHOD(Save)(LPCOLESTR pszFileName, BOOL fRemember) override;
+		STDMETHOD(SaveCompleted)(LPCOLESTR pszFileName) override;
+		STDMETHOD(GetCurFile)(LPOLESTR *ppszFileName) override;
 };
+
+#ifdef __CRT_UUID_DECL
+// Required for MinGw-w64 __uuidof() emulation.
+__CRT_UUID_DECL(RP_ExtractIcon, 0xe51bc107, 0xe491, 0x4b29, 0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02)
+#endif
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__ */

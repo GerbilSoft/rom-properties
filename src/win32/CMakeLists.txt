@@ -26,6 +26,7 @@ ADD_LIBRARY(rom-properties MODULE
 		${rom-properties-win32_SRCS}
 		${rom-properties-win32_H}
 		)
+SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -37,10 +38,16 @@ TARGET_LINK_LIBRARIES(rom-properties
 	romdata16
 	)
 
-# Use the .def file.
-# TODO: MinGW support.
+# Use the .def file for DLL exports.
 IF(MSVC)
 	SET_TARGET_PROPERTIES(rom-properties
 		PROPERTIES LINK_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def"
 		)
-ENDIF(MSVC)
+ELSEIF(MINGW)
+	# NOTE: Enabling stdcall fixups so we can use
+	# the same .def file for Win32 and Win64,
+	# since Win64 doesn't use stdcall.
+	SET_TARGET_PROPERTIES(rom-properties
+		PROPERTIES LINK_FLAGS "-Wl,-enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def"
+		)
+ENDIF()
