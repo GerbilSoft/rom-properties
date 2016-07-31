@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
- * RomDataView.cpp: Sega Mega Drive ROM viewer.                          *
+ * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
