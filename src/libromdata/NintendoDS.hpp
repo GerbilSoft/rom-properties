@@ -60,11 +60,10 @@ class NintendoDS : public RomData
 		/**
 		 * Detect if a ROM image is supported by this class.
 		 * TODO: Actually detect the type; for now, just returns true if it's supported.
-		 * @param header Header data.
-		 * @param size Size of header.
+		 * @param info ROM detection information.
 		 * @return 1 if the ROM image is supported; 0 if it isn't.
 		 */
-		static int isRomSupported(const uint8_t *header, size_t size);
+		static int isRomSupported(const DetectInfo *info);
 
 		/**
 		 * Get a list of all supported file extensions.

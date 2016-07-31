@@ -109,7 +109,13 @@ GameCube::GameCube(FILE *file)
 		return;
 
 	// Check if this disc image is supported.
-	m_discType = isRomSupported(header, sizeof(header));
+	DetectInfo info;
+	info.pHeader = header;
+	info.szHeader = sizeof(header);
+	info.ext = nullptr;	// Not needed for GCN.
+	info.szFile = 0;	// Not needed for GCN.
+	m_discType = isRomSupported(&info);
+
 	// TODO: DiscReaderFactory?
 	switch (m_discType & DISC_FORMAT_MASK) {
 		case DISC_FORMAT_RAW:
@@ -129,41 +135,44 @@ GameCube::GameCube(FILE *file)
 
 /**
  * Detect if a disc image is supported by this class.
- * @param header Header data.
- * @param size Size of header.
+ * @param info ROM detection information.
  * @return DiscType if the disc image is supported; 0 if it isn't.
  */
-GameCube::DiscType GameCube::isRomSupported(const uint8_t *header, size_t size)
+GameCube::DiscType GameCube::isRomSupported(const DetectInfo *info)
 {
+	if (!info || info->szHeader < sizeof(GCN_DiscHeader)) {
+		// Either no detection information was specified,
+		// or the header is too small.
+		return DISC_UNKNOWN;
+	}
+
 	static const uint32_t magic_wii = 0x5D1C9EA3;
 	static const uint32_t magic_gcn = 0xC2339F3D;
 
-	if (size >= sizeof(GCN_DiscHeader)) {
-		// Check for the magic numbers.
-		const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(header);
-		if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
-			// Wii disc image.
-			return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_RAW);
-		} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
-			// GameCube disc image.
-			return (DiscType)(DISC_SYSTEM_GCN | DISC_FORMAT_RAW);
-		}
+	// Check for the magic numbers.
+	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->pHeader);
+	if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
+		// Wii disc image.
+		return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_RAW);
+	} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
+		// GameCube disc image.
+		return (DiscType)(DISC_SYSTEM_GCN | DISC_FORMAT_RAW);
+	}
 
-		// Check for WBFS.
-		// This is checked after the magic numbers in case some joker
-		// decides to make a GCN or Wii disc image with the game ID "WBFS".
-		static const uint8_t wbfs_magic[4] = {'W', 'B', 'F', 'S'};
-		if (!memcmp(header, wbfs_magic, sizeof(wbfs_magic))) {
-			// Disc image is stored in "HDD" sector 1.
-			unsigned int hdd_sector_size = (1 << header[8]);
-			if (size >= hdd_sector_size + 0x200) {
-				// Check for Wii magic.
-				// FIXME: GCN magic too?
-				gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&header[hdd_sector_size]);
-				if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
-					// Wii disc image. (WBFS format)
-					return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_WBFS);
-				}
+	// Check for WBFS.
+	// This is checked after the magic numbers in case some joker
+	// decides to make a GCN or Wii disc image with the game ID "WBFS".
+	static const uint8_t wbfs_magic[4] = {'W', 'B', 'F', 'S'};
+	if (!memcmp(info->pHeader, wbfs_magic, sizeof(wbfs_magic))) {
+		// Disc image is stored in "HDD" sector 1.
+		unsigned int hdd_sector_size = (1 << info->pHeader[8]);
+		if (info->szHeader >= hdd_sector_size + 0x200) {
+			// Check for Wii magic.
+			// FIXME: GCN magic too?
+			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->pHeader[hdd_sector_size]);
+			if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
+				// Wii disc image. (WBFS format)
+				return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_WBFS);
 			}
 		}
 	}

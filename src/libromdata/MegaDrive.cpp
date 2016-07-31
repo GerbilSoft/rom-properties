@@ -170,18 +170,25 @@ MegaDrive::MegaDrive(FILE *file)
 		return;
 
 	// Check if this ROM is supported.
-	m_isValid = isRomSupported(header, sizeof(header));
+	DetectInfo info;
+	info.pHeader = header;
+	info.szHeader = sizeof(header);
+	info.ext = nullptr;	// Not needed for MD.
+	info.szFile = 0;	// Not needed for MD.
+	m_isValid = isRomSupported(&info);
 }
 
 /**
  * Detect if a ROM image is supported by this class.
  * TODO: Actually detect the type; for now, just returns true if it's supported.
- * @param header Header data.
- * @param size Size of header.
+ * @param info ROM detection information.
  * @return 1 if the ROM image is supported; 0 if it isn't.
  */
-int MegaDrive::isRomSupported(const uint8_t *header, size_t size)
+int MegaDrive::isRomSupported(const DetectInfo *info)
 {
+	if (!info)
+		return 0;
+
 	// TODO: Handle SMD and other interleaved formats.
 	// TODO: Handle Sega CD.
 	// TODO: Store specific system type.
@@ -195,9 +202,10 @@ int MegaDrive::isRomSupported(const uint8_t *header, size_t size)
 		"SEGA 32X        ",
 	};
 
-	if (size >= 0x200) {
+	if (info->szHeader >= 0x200) {
 		// Check the system name.
-		const MD_RomHeader *romHeader = reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
+		const MD_RomHeader *romHeader =
+			reinterpret_cast<const MD_RomHeader*>(&info->pHeader[0x100]);
 		for (int i = 0; i < 4; i++) {
 			if (!strncmp(romHeader->system, strchk[i], 16) ||
 			    !strncmp(&romHeader->system[1], strchk[i], 15))

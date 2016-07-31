@@ -261,31 +261,39 @@ NintendoDS::NintendoDS(FILE *file)
 		return;
 
 	// Check if this ROM image is supported.
-	m_isValid = isRomSupported(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+	DetectInfo info;
+	info.pHeader = reinterpret_cast<const uint8_t*>(&header);
+	info.szHeader = sizeof(header);
+	info.ext = nullptr;	// Not needed for NDS.
+	info.szFile = 0;	// Not needed for NDS.
+	m_isValid = isRomSupported(&info);
 }
 
 /**
  * Detect if a ROM image is supported by this class.
  * TODO: Actually detect the type; for now, just returns true if it's supported.
- * @param header Header data.
- * @param size Size of header.
+ * @param info ROM detection information.
  * @return 1 if the ROM image is supported; 0 if it isn't.
  */
-int NintendoDS::isRomSupported(const uint8_t *header, size_t size)
+int NintendoDS::isRomSupported(const DetectInfo *info)
 {
-	if (size >= sizeof(DS_ROMHeader)) {
-		// Check the first 16 bytes of the Nintendo logo.
-		static const uint8_t nintendo_gba_logo[16] = {
-			0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
-			0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
-		};
+	if (!info || info->szHeader < sizeof(DS_ROMHeader)) {
+		// Either no detection information was specified,
+		// or the header is too small.
+		return 0;
+	}
 
-		const DS_ROMHeader *ds_header = reinterpret_cast<const DS_ROMHeader*>(header);
-		if (!memcmp(ds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
-			// Nintendo logo is present at the correct location.
-			// TODO: DS vs. DSi?
-			return 1;
-		}
+	// Check the first 16 bytes of the Nintendo logo.
+	static const uint8_t nintendo_gba_logo[16] = {
+		0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
+		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
+	};
+
+	const DS_ROMHeader *nds_header = reinterpret_cast<const DS_ROMHeader*>(info->pHeader);
+	if (!memcmp(nds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
+		// Nintendo logo is present at the correct location.
+		// TODO: DS vs. DSi?
+		return 1;
 	}
 
 	// Not supported.

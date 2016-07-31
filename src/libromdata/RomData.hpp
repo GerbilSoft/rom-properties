@@ -37,6 +37,21 @@
 
 namespace LibRomData {
 
+/**
+ * ROM detection information.
+ * Used for the class-specific isRomSupported() functions.
+ * TODO: Make isRomSupported() non-static with a static wrapper?
+ */
+struct DetectInfo {
+	// ROM header.
+	const uint8_t *pHeader;	// ROM header.
+	size_t szHeader;	// Size of header.
+
+	// File information.
+	const rp_char *ext;	// File extension, including leading '.'
+	int64_t szFile;		// File size. (Required for certain types.)
+};
+
 class rp_image;
 class RomData
 {

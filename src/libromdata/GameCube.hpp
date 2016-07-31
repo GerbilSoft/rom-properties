@@ -76,11 +76,10 @@ class GameCube : public RomData
 
 		/**
 		 * Detect if a disc image is supported by this class.
-		 * @param header Header data.
-		 * @param size Size of header.
+		 * @param info ROM detection information.
 		 * @return DiscType if the disc image is supported; 0 if it isn't.
 		 */
-		static DiscType isRomSupported(const uint8_t *header, size_t size);
+		static DiscType isRomSupported(const DetectInfo *info);
 
 		/**
 		 * Get a list of all supported file extensions.

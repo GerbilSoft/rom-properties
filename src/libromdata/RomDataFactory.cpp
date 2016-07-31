@@ -40,18 +40,26 @@ namespace LibRomData {
  */
 RomData *RomDataFactory::getInstance(FILE *file)
 {
+	DetectInfo info;
+
+	// Get the file size.
+	fseek(file, 0, SEEK_SET);
+	info.szFile = ftell(file);
+
 	// Read 4,096+256 bytes from the ROM header.
 	// This should be enough to detect most systems.
 	uint8_t header[4096+256];
 	rewind(file);
 	fflush(file);
-	size_t count = fread(header, 1, sizeof(header), file);
+	info.szHeader = fread(header, 1, sizeof(header), file);
+	info.pHeader = header;
 
-	// Try to detect the ROM format.
+	// TODO: File extension? (Needed for .gci)
+	info.ext = nullptr;
 
 #define CheckRomData(sys) \
 	do { \
-		if (sys::isRomSupported(header, sizeof(header)) > 0) { \
+		if (sys::isRomSupported(&info) > 0) { \
 			RomData *romData = new sys(file); \
 			if (romData->isValid()) \
 				return romData; \
