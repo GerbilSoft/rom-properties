@@ -169,6 +169,10 @@ const RomFields *RomData::fields(void) const
 
 /**
  * Get an internal image from the ROM.
+ *
+ * NOTE: The rp_image is owned by this object.
+ * Do NOT delete this object until you're done using this rp_image.
+ *
  * @param imageType Image type to load.
  * @return Internal image, or nullptr if the ROM doesn't have one.
  */
@@ -195,6 +199,10 @@ const rp_image *RomData::image(ImageType imageType) const
 
 /**
  * Get a list of URLs for an external media type.
+ *
+ * NOTE: The std::vector<rp_string> is owned by this object.
+ * Do NOT delete this object until you're done using this rp_image.
+ *
  * @param imageType Image type.
  * @return List of URLs, or nullptr if the ROM doesn't have one.
  */

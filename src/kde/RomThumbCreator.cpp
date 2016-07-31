@@ -109,24 +109,46 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// TODO: rp_QFile() wrapper?
 	// For now, using stdio.
 	FILE *file = fopen(path.toUtf8().constData(), "rb");
-	if (file) {
-		// Get the appropriate RomData class for this ROM.
-		RomData *romData = RomDataFactory::getInstance(file);
-		if (romData) {
-			// ROM is supported. Get the internal icon.
-			// TODO: Customize for internal icon, disc/cart scan, etc.?
-			const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
-			if (icon) {
-				// Convert the icon to QImage.
-				img = rpToQImage(icon);
-				if (!img.isNull())
-					ret = true;
-			}
-			delete romData;
-		}
-
-		fclose(file);
+	if (!file) {
+		// Could not open the file.
+		return false;
 	}
+
+	// Get the appropriate RomData class for this ROM.
+	RomData *romData = RomDataFactory::getInstance(file);
+	fclose(file);	// file is dup()'d by RomData.
+	if (!romData) {
+		// ROM is not supported.
+		return false;
+	}
+
+	// TODO: Customize which ones are used per-system.
+	// For now, check EXT MEDIA, then INT ICON.
+	const rp_image *image = nullptr;
+
+	uint32_t imgbf = romData->supportedImageTypes();
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		// TODO
+	}
+
+	if (!image) {
+		// No external media scan.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			image = romData->image(RomData::IMG_INT_ICON);
+		}
+	}
+
+	if (image) {
+		// Convert the icon to QImage.
+		img = rpToQImage(image);
+		if (!img.isNull())
+			ret = true;
+	}
+
+	// We're done with romData.
+	delete romData;
 
 	return ret;
 }
