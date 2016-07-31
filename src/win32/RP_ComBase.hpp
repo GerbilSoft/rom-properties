@@ -53,6 +53,7 @@ static inline bool RP_ComBase_isReferenced(void)
 	\
 	public: \
 		name() : m_ulRefCount(0) { } \
+		virtual ~name() { } \
 	\
 	public: \
 		/** IUnknown **/ \

@@ -98,6 +98,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		STDMETHOD(LockServer)(BOOL fLock) override
 		{
 			// Not implemented.
+			UNUSED(fLock);
 			return S_OK;
 		}
 };
