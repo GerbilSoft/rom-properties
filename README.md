@@ -12,6 +12,9 @@ Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
 * KDE 4.x
 * KDE Frameworks 5.x
+* Windows XP (and later)
+
+### Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
 * KDE 4.x: libqt4-dev, kdelibs5-dev
@@ -34,6 +37,26 @@ After installing, restart Dolphin, then right-click a supported ROM or disc imag
 and click Properties. If everything worked correctly, you should see a
 "ROM Properties" tab that shows information from the ROM header.
 
+### Windows
+
+The Windows version requires one of the following compilers: (minimum versions)
+* MS Visual C++ 2010 with the Windows 7 SDK
+* gcc-4.5 with MinGW-w64
+
+Clone the repository, then:
+* cd rom-properties
+* mkdir build
+* cd build
+* cmake ..
+* make
+* cd src\win32
+* regsvr32 rom-properties.dll
+
+Caveats:
+* Registering rom-properties.dll hard-codes the full path in the registry. Moving the file will break the registration.
+* If building with MSVC, you may need to specify -G "NMake Makefiles".
+* CMake does not support building for multiple architectures at once. For Win64, a 64-bit build will work for Windows Explorer, but will not work in any 32-bit programs.
+
 ## Current OS Feature Support Level
 
 |     Platform     | Properties Tab | Thumbnails | Icons |
@@ -42,7 +65,7 @@ and click Properties. If everything worked correctly, you should see a
 | KDE 5.x          |       Yes      |     Yes    |  N/A  |
 | XFCE (Thunar)    |       No       |     No     |  N/A  |
 | GNOME (Nautilus) |       No       |     No     |  N/A  |
-| Windows          |       No       |     No     |   No  |
+| Windows          |       No       |     No     |  Yes  |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
