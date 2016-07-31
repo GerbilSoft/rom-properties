@@ -54,9 +54,9 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			g_hInstance = hInstance;
 
 			// Get the DLL filename.
-			int ret = GetModuleFileName(g_hInstance,
+			DWORD dwResult = GetModuleFileName(g_hInstance,
 				dll_filename, sizeof(dll_filename)/sizeof(dll_filename[0]));
-			if (ret <= 0) {
+			if (dwResult == 0) {
 				// FIXME: Handle this.
 				dll_filename[0] = 0;
 			}
@@ -126,8 +126,8 @@ STDAPI DllRegisterServer(void)
 	static const wchar_t ProgID[] = L"rom-properties";
 
 	// Register the ".nds" file type.
-	int ret = RegKey::registerFileType(L".nds", ProgID);
-	if (ret != ERROR_SUCCESS)
+	LONG lResult = RegKey::registerFileType(L".nds", ProgID);
+	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
 	/** Register the ProgID. **/
@@ -146,8 +146,8 @@ STDAPI DllRegisterServer(void)
 	if (!hkcr_IconHandler.isOpen())
 		return SELFREG_E_CLASS;
 	// Set the default value to RP_ExtractIcon's CLSID.
-	ret = hkcr_IconHandler.write(nullptr, CLSID_RP_ExtractIcon_Str);
-	if (ret != ERROR_SUCCESS)
+	lResult = hkcr_IconHandler.write(nullptr, CLSID_RP_ExtractIcon_Str);
+	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 	hkcr_IconHandler.close();
 	hkcr_ShellEx.close();
@@ -157,21 +157,21 @@ STDAPI DllRegisterServer(void)
 	if (!hkcr_DefaultIcon.isOpen())
 		return SELFREG_E_CLASS;
 	// Set the default value to "%1".
-	ret = hkcr_DefaultIcon.write(nullptr, L"%1");
-	if (ret != ERROR_SUCCESS)
+	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
+	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 	hkcr_DefaultIcon.close();
 	hkcr_ProgID.close();
 
 	// Register the COM objects in the DLL.
 	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
-	ret = RegKey::registerComObject(CLSID_RP_ExtractIcon, ProgID, description);
-	if (ret != ERROR_SUCCESS)
+	lResult = RegKey::registerComObject(CLSID_RP_ExtractIcon, ProgID, description);
+	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
 	// Register the shell extension as "approved".
-	ret = RegKey::registerApprovedExtension(CLSID_RP_ExtractIcon, description);
-	if (ret != ERROR_SUCCESS)
+	lResult = RegKey::registerApprovedExtension(CLSID_RP_ExtractIcon, description);
+	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
 	return S_OK;

@@ -215,8 +215,8 @@ LONG RegKey::registerFileType(LPCWSTR fileType, LPCWSTR progID)
 LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR description)
 {
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	int ret = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (ret <= 0)
+	LONG lResult = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
 	// Open HKCR\CLSID.
@@ -229,9 +229,9 @@ LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
 	if (!hkcr_Obj_CLSID.isOpen())
 		return hkcr_Obj_CLSID.lOpenRes();
 	// Set the default value to the descirption of the COM object.
-	ret = hkcr_Obj_CLSID.write(nullptr, description);
-	if (ret != ERROR_SUCCESS)
-		return ret;
+	lResult = hkcr_Obj_CLSID.write(nullptr, description);
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
 
 	// Create an InprocServer32 subkey.
 	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, L"InprocServer32", KEY_WRITE, true);
@@ -240,16 +240,16 @@ LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
 	// Set the default value to the DLL filename.
 	extern wchar_t dll_filename[MAX_PATH];
 	if (dll_filename[0] != 0) {
-		ret = hkcr_InprocServer32.write(nullptr, dll_filename);
-		if (ret != ERROR_SUCCESS)
-			return ret;
+		lResult = hkcr_InprocServer32.write(nullptr, dll_filename);
+		if (lResult != ERROR_SUCCESS)
+			return lResult;
 	}
 
 	// Set the threading model to Apartment.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-	ret = hkcr_InprocServer32.write(L"ThreadingModel", L"Apartment");
-	if (ret != ERROR_SUCCESS)
-		return ret;
+	lResult = hkcr_InprocServer32.write(L"ThreadingModel", L"Apartment");
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
 
 	// Create a ProgID subkey.
 	RegKey hkcr_Obj_CLSID_ProgID(hkcr_Obj_CLSID, L"ProgID", KEY_WRITE, true);
@@ -268,8 +268,8 @@ LONG RegKey::registerComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
 LONG RegKey::registerApprovedExtension(REFCLSID rclsid, LPCWSTR description)
 {
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	int ret = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (ret <= 0)
+	LONG lResult = StringFromGUID2(rclsid, clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
 	// Open the approved shell extensions key.
