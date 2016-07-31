@@ -150,7 +150,7 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
  * @param dest_charset	[in] Destination character set.
  * @return malloc()'d UTF-8 string, or nullptr on error.
  */
-static char *gens_iconv(const char *src, size_t src_bytes_len,
+static char *rp_iconv(const char *src, size_t src_bytes_len,
 			const char *src_charset, const char *dest_charset)
 {
 	if (!src || src_bytes_len == 0)
@@ -233,6 +233,12 @@ static char *gens_iconv(const char *src, size_t src_bytes_len,
  */
 rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 {
+#ifdef RP_WIS16
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
+#else /* !RP_WIS16 */
+	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
+#endif /* RP_WIS16 */
+
 	// Attempt to convert str from Shift-JIS to UTF-16.
 #if defined(_WIN32)
 	// Win32 version.
@@ -263,7 +269,7 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	rp_char *rps = (rp_char*)gens_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
+	rp_char *rps = (rp_char*)rp_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
@@ -271,7 +277,7 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 	}
 
 	// Try cp1252.
-	rps = (rp_char*)gens_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
+	rps = (rp_char*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
@@ -306,7 +312,7 @@ rp_string utf8_to_rp_string(const char *str, size_t len)
 	return rp_string();
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	rp_char *rps = (rp_char*)gens_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
+	rp_char *rps = (rp_char*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
 	if (rps) {
 		rp_string ret(rps);
 		free(rps);
@@ -346,7 +352,7 @@ rp_string ascii_to_rp_string(const char *str, size_t len)
 }
 #endif /* RP_UTF16 */
 
-#if defined(RP_UTF16)
+#if defined(RP_UTF16) && !defined(RP_WIS16)
 /**
  * strlen() function for rp_char strings.
  * @param str String.
@@ -359,9 +365,9 @@ size_t rp_strlen(const rp_char *str)
 		len++;
 	return len;
 }
-#endif /* RP_UTF16 */
+#endif /* RP_UTF16 && !RP_WIS16 */
 
-#if defined(RP_UTF16)
+#if defined(RP_UTF16) && !defined(RP_WIS16)
 /**
  * strdup() function for rp_char strings.
  * @param str String.
@@ -382,6 +388,6 @@ rp_char *rp_strdup(const rp_string &str)
 	memcpy(ret, str.c_str(), len*sizeof(rp_char));
 	return ret;
 }
-#endif /* RP_UTF16 */
+#endif /* RP_UTF16 && !RP_WIS16 */
 
 }

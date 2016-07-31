@@ -30,6 +30,11 @@
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
 
+/* Define to 1 if the system has a 16-bit wchar_t. */
+#ifdef _WIN32
+#define RP_WIS16 1
+#endif
+
 #ifdef _MSC_VER
 /* MSVC 2015 added support for Unicode string literals. */
 /* Older versions still support L"str" for UTF-16. */
