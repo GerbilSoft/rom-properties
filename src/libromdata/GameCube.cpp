@@ -133,6 +133,11 @@ GameCube::GameCube(FILE *file)
 	m_isValid = (m_discType != DISC_UNKNOWN);
 }
 
+GameCube::~GameCube()
+{
+	delete m_discReader;
+}
+
 /**
  * Detect if a disc image is supported by this class.
  * @param info ROM detection information.

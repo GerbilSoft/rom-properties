@@ -52,6 +52,7 @@ class GameCube : public RomData
 		 * @param file Open disc image.
 		 */
 		GameCube(FILE *file);
+		virtual ~GameCube();
 
 	private:
 		GameCube(const GameCube &);
