@@ -155,7 +155,7 @@ LONG RegKey::write(LPCTSTR name, LPCTSTR value)
 	} else {
 		// Get the string length, add 1 for NULL,
 		// and multiply by sizeof(wchar_t).
-		cbData = (wcslen(value) + 1) * sizeof(wchar_t);
+		cbData = (DWORD)((wcslen(value) + 1) * sizeof(wchar_t));
 	}
 
 	return RegSetValueEx(m_hKey, name, 0, REG_SZ,
@@ -177,7 +177,7 @@ LONG RegKey::write(LPCTSTR name, const std::wstring& value)
 
 	// Get the string length, add 1 for NULL,
 	// and multiply by sizeof(wchar_t).
-	DWORD cbData = (value.size() + 1) * sizeof(wchar_t);
+	DWORD cbData = (DWORD)((value.size() + 1) * sizeof(wchar_t));
 
 	return RegSetValueEx(m_hKey, name, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
