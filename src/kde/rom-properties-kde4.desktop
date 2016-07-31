@@ -14,5 +14,5 @@ X-KDE-Protocol=file
 MimeType=application/octet-stream;
 
 # ThumbCreator settings.
-CacheThumbnail=false
+CacheThumbnail=true
 IgnoreMaximumSize=true

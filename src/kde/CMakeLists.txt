@@ -49,8 +49,9 @@ IF(BUILD_KDE5)
 	ENDIF()
 ENDIF(BUILD_KDE5)
 
-# TODO: Check for iconv on non-Windows systems.
-# NOTE: KDE4_ADD_PLUGIN() uses automoc.
+# Find cURL for network access.
+# TODO: Make it optional?
+FIND_PACKAGE(CURL REQUIRED)
 
 # Sources and headers.
 SET(rom-properties-kde_SRCS
@@ -78,6 +79,9 @@ ENDIF(BUILD_KDE5)
 # Build the plugin. #
 #####################
 
+# CURL
+INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
+
 IF(BUILD_KDE4)
 	KDE4_ADD_PLUGIN(rom-properties-kde4
 		${rom-properties-kde_SRCS}
@@ -94,6 +98,7 @@ IF(BUILD_KDE4)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4
 		romdata16
+		${CURL_LIBRARIES}
 		${KDE4_KFILE_LIBRARY}
 		Qt4::QtGui Qt4::QtCore
 		)
@@ -118,6 +123,7 @@ IF(BUILD_KDE5)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5
 		romdata16
+		${CURL_LIBRARIES}
 		KF5::KIOWidgets
 		Qt5::Widgets Qt5::Gui Qt5::Core
 		)

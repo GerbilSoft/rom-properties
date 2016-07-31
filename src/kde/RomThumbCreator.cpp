@@ -21,14 +21,24 @@
 
 #include "RomThumbCreator.hpp"
 
+// C includes.
+#include <unistd.h>
+
+// cURL for network access.
+// TODO: Split into a separate library for use by the
+// KDE and GTK frontends?
+#include <curl/curl.h>
+
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
 using namespace LibRomData;
 
-#include <QtGui/QImage>
 #include <QLabel>
+#include <QtCore/QBuffer>
+#include <QtGui/QImage>
+#include <QtGui/QImageReader>
 
 /**
  * Factory method.
@@ -91,6 +101,81 @@ QImage RomThumbCreator::rpToQImage(const rp_image *image)
 }
 
 /**
+ * cURL write_data() function.
+ * @param ptr Data to write.
+ * @param size Element size.
+ * @param nmemb Number of elements.
+ * @param userdata QByteArray pointer.
+ */
+static size_t write_data(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	// References:
+	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
+	// - http://stackoverflow.com/a/1636415
+	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
+	QByteArray *ba = reinterpret_cast<QByteArray*>(userdata);
+	size_t len = size * nmemb;
+	ba->append(reinterpret_cast<const char*>(ptr), (int)len);
+	return len;
+}
+
+/**
+ * Download an image from a URL.
+ * @param url URL.
+ * @return QImage, or invalid QImage if an error occurred.
+ */
+QImage RomThumbCreator::download(const QString &url)
+{
+	// References:
+	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
+	// - http://stackoverflow.com/a/1636415
+	// - https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
+	CURL *curl = curl_easy_init();
+	if (!curl) {
+		// Could not initialize cURL.
+		return QImage();
+	}
+
+	// Data buffer.
+	QByteArray data;
+	data.reserve(256*1024);
+
+	// Set options for curl's "easy" mode.
+	curl_easy_setopt(curl, CURLOPT_URL, url.toUtf8().constData());
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+	// TODO: Set the User-Agent?
+	CURLcode res = curl_easy_perform(curl);
+	if (res != CURLE_OK) {
+		// Error downloading the file.
+		return QImage();
+	}
+
+	// Check if we have data.
+	if (data.isEmpty()) {
+		// No data.
+		return QImage();
+	}
+
+	// Attempt to load the image.
+	QBuffer buffer(&data);
+	QImageReader imageReader(&buffer);
+	return imageReader.read();
+}
+
+// TODO: Move this elsehwere.
+static inline QString rpToQS(const LibRomData::rp_string &rps)
+{
+#if defined(RP_UTF8)
+	return QString::fromUtf8(rps.c_str(), (int)rps.size());
+#elif defined(RP_UTF16)
+	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.data()), (int)rps.size());
+#else
+#error Text conversion not available on this system.
+#endif
+}
+
+/**
  * Create a thumbnail for a ROM image.
  * @param path Local pathname of the ROM image.
  * @param width Requested width.
@@ -124,27 +209,41 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 
 	// TODO: Customize which ones are used per-system.
 	// For now, check EXT MEDIA, then INT ICON.
-	const rp_image *image = nullptr;
 
 	uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		// TODO
-	}
-
-	if (!image) {
-		// No external media scan.
-		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
-			image = romData->image(RomData::IMG_INT_ICON);
+		// Synchronously download from the source URLs.
+		// TODO: Cache to disk?
+		const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+		if (extURLs && !extURLs->empty()) {
+			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
+			     iter != extURLs->end(); iter++)
+			{
+				QImage dlImg = download(rpToQS(*iter));
+				if (!dlImg.isNull()) {
+					// Image downloaded successfully.
+					// TODO: Width/height and transparency processing?
+					img = dlImg;
+					ret = true;
+					break;
+				}
+			}
 		}
 	}
 
-	if (image) {
-		// Convert the icon to QImage.
-		img = rpToQImage(image);
-		if (!img.isNull())
-			ret = true;
+	if (!ret) {
+		// No external media scan.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			const rp_image *image = romData->image(RomData::IMG_INT_ICON);
+			if (image) {
+				// Convert the icon to QImage.
+				img = rpToQImage(image);
+				if (!img.isNull())
+					ret = true;
+			}
+		}
 	}
 
 	// We're done with romData.

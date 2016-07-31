@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 
 #include <kio/thumbcreator.h>
+class QUrl;
 
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KDE5.)
@@ -46,6 +47,13 @@ class RomThumbCreator : public ThumbCreator
 		 * @return QImage.
 		 */
 		static QImage rpToQImage(const LibRomData::rp_image *image);
+
+		/**
+		 * Download an image from a URL.
+		 * @param url URL.
+		 * @return QImage, or invalid QImage if an error occurred.
+		 */
+		QImage download(const QString &url);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */
