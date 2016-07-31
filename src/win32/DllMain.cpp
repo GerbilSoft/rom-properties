@@ -37,7 +37,12 @@
 #include "RP_ClassFactory.hpp"
 
 static HINSTANCE g_hInstance = nullptr;
+extern wchar_t dll_filename[];
 wchar_t dll_filename[MAX_PATH];
+
+// Program ID for COM object registration.
+extern const wchar_t RP_ProgID[];
+const wchar_t RP_ProgID[] = L"rom-properties";
 
 /**
  * DLL entry point.
@@ -121,56 +126,14 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
  */
 STDAPI DllRegisterServer(void)
 {
-	// Register this DLL as an icon handler for ".nds".
-	// TODO: Add helper functions for registry access.
-	static const wchar_t ProgID[] = L"rom-properties";
-
-	// Register the ".nds" file type.
-	LONG lResult = RegKey::registerFileType(L".nds", ProgID);
+	// Register the COM objects.
+	LONG lResult = RP_ExtractIcon::Register();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	/** Register the ProgID. **/
-
-	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
-		return SELFREG_E_CLASS;
-
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
-		return SELFREG_E_CLASS;
-	// Create/open the "IconHandler" key.
-	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
-	if (!hkcr_IconHandler.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the default value to RP_ExtractIcon's CLSID.
-	lResult = hkcr_IconHandler.write(nullptr, CLSID_RP_ExtractIcon_Str);
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hkcr_IconHandler.close();
-	hkcr_ShellEx.close();
-
-	// Create/open the "DefaultIcon" key.
-	RegKey hkcr_DefaultIcon(hkcr_ProgID, L"DefaultIcon", KEY_WRITE, true);
-	if (!hkcr_DefaultIcon.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the default value to "%1".
-	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hkcr_DefaultIcon.close();
-	hkcr_ProgID.close();
-
-	// Register the COM objects in the DLL.
-	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
-	lResult = RegKey::registerComObject(CLSID_RP_ExtractIcon, ProgID, description);
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-
-	// Register the shell extension as "approved".
-	lResult = RegKey::registerApprovedExtension(CLSID_RP_ExtractIcon, description);
+	// Register the ".nds" file type and associate
+	// it with our ProgID.
+	lResult = RegKey::registerFileType(L".nds", RP_ProgID);
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
@@ -182,6 +145,12 @@ STDAPI DllRegisterServer(void)
  */
 STDAPI DllUnregisterServer(void)
 {
-	// TODO
+	// Unregister the COM objects.
+	LONG lResult = RP_ExtractIcon::Unregister();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	// TODO: Remove the ProgID.
+
 	return S_OK;
 }

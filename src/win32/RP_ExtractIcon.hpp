@@ -28,8 +28,7 @@
 
 // CLSID
 extern "C" {
-	extern const GUID CLSID_RP_ExtractIcon;
-	extern const wchar_t CLSID_RP_ExtractIcon_Str[];
+	extern const CLSID CLSID_RP_ExtractIcon;
 }
 
 namespace LibRomData {
@@ -47,7 +46,22 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		// IUnknown
 		STDMETHOD(QueryInterface)(REFIID riid, LPVOID *ppvObj) override;
 
-	protected:
+	public:
+		/**
+		 * Register the COM object.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG Register(void);
+
+		/**
+		 * Unregister the COM object.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG Unregister(void);
+
+ 	protected:
+		/** Image conversion functions. **/
+
 		/**
 		 * Convert an rp_image to an HBITMAP.
 		 * @return image rp_image.
