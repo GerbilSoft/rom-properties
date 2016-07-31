@@ -27,23 +27,23 @@
 
 /**
  * Create or open a registry key.
- * @param root Root key.
+ * @param hKeyRoot Root key.
  * @param path Path of the registry key.
  * @param samDesired Desired access rights.
  * @param create If true, create the key if it doesn't exist.
  */
-RegKey::RegKey(HKEY root, LPCTSTR path, REGSAM samDesired, bool create)
+RegKey::RegKey(HKEY hKeyRoot, LPCWSTR path, REGSAM samDesired, bool create)
 	: m_lOpenRes(ERROR_SUCCESS)
 	, m_hKey(nullptr)
 	, m_samDesired(samDesired)
 {
 	if (create) {
 		// REG_CREATE
-		m_lOpenRes = RegCreateKeyEx(root, path, 0, nullptr, 0,
+		m_lOpenRes = RegCreateKeyEx(hKeyRoot, path, 0, nullptr, 0,
 			samDesired, nullptr, &m_hKey, nullptr);
 	} else {
 		// REG_OPEN
-		m_lOpenRes = RegOpenKeyEx(root, path, 0, samDesired, &m_hKey);
+		m_lOpenRes = RegOpenKeyEx(hKeyRoot, path, 0, samDesired, &m_hKey);
 	}
 
 	if (m_lOpenRes != ERROR_SUCCESS) {
@@ -59,7 +59,7 @@ RegKey::RegKey(HKEY root, LPCTSTR path, REGSAM samDesired, bool create)
  * @param samDesired Desired access rights.
  * @param create If true, create the key if it doesn't exist.
  */
-RegKey::RegKey(const RegKey& root, LPCTSTR path, REGSAM samDesired, bool create)
+RegKey::RegKey(const RegKey& root, LPCWSTR path, REGSAM samDesired, bool create)
 	: m_lOpenRes(ERROR_SUCCESS)
 	, m_hKey(nullptr)
 	, m_samDesired(samDesired)
@@ -137,13 +137,13 @@ void RegKey::close(void)
 
 /**
  * Write a value to this key.
- * @param name Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCTSTR name, LPCTSTR value)
+LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
 {
-	if (m_hKey == nullptr) {
+	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
 	}
@@ -158,19 +158,19 @@ LONG RegKey::write(LPCTSTR name, LPCTSTR value)
 		cbData = (DWORD)((wcslen(value) + 1) * sizeof(wchar_t));
 	}
 
-	return RegSetValueEx(m_hKey, name, 0, REG_SZ,
+	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value), cbData);
 }
 
 /**
  * Write a value to this key.
- * @param name Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCTSTR name, const std::wstring& value)
+LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
 {
-	if (m_hKey == nullptr) {
+	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
 	}
@@ -179,7 +179,7 @@ LONG RegKey::write(LPCTSTR name, const std::wstring& value)
 	// and multiply by sizeof(wchar_t).
 	DWORD cbData = (DWORD)((value.size() + 1) * sizeof(wchar_t));
 
-	return RegSetValueEx(m_hKey, name, 0, REG_SZ,
+	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
 }
 

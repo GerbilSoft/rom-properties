@@ -30,12 +30,12 @@ class RegKey
 	public:
 		/**
 		 * Create or open a registry key.
-		 * @param root Root key.
+		 * @param hKeyRoot Root key.
 		 * @param path Path of the registry key.
 		 * @param samDesired Desired access rights.
 		 * @param create If true, create the key if it doesn't exist.
 		 */
-		RegKey(HKEY root, LPCTSTR path, REGSAM samDesired, bool create = false);
+		RegKey(HKEY hKeyRoot, LPCWSTR path, REGSAM samDesired, bool create = false);
 
 		/**
 		 * Create or open a registry key.
@@ -44,7 +44,7 @@ class RegKey
 		 * @param samDesired Desired access rights.
 		 * @param create If true, create the key if it doesn't exist.
 		 */
-		RegKey(const RegKey& root, LPCTSTR path, REGSAM samDesired, bool create = false);
+		RegKey(const RegKey& root, LPCWSTR path, REGSAM samDesired, bool create = false);
 
 		~RegKey();
 
@@ -87,19 +87,19 @@ class RegKey
 
 		/**
 		 * Write a value to this key.
-		 * @param name Value name. (Use nullptr or an empty string for the default value.)
+		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCTSTR name, LPCTSTR value);
+		LONG write(LPCWSTR lpValueName, LPCWSTR value);
 
 		/**
 		 * Write a value to this key.
-		 * @param name Value name. (Use nullptr or an empty string for the default value.)
+		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCTSTR name, const std::wstring& value);
+		LONG write(LPCWSTR lpValueName, const std::wstring& value);
 
 	public:
 		/** COM registration convenience functions. **/
