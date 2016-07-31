@@ -50,7 +50,7 @@ class RomFields
 			// Bit flag names.
 			// Must be an array of at least 'elements' strings.
 			// If a name is nullptr, that element is skipped.
-			const rp_char **names;
+			const rp_char *const *names;
 		};
 
 		// Description for ListData.

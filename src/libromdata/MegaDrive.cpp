@@ -36,7 +36,7 @@ using std::vector;
 namespace LibRomData {
 
 // I/O support bitfield.
-static const rp_char *md_io_bitfield_names[] = {
+static const rp_char *const md_io_bitfield_names[] = {
 	_RP("Joypad"), _RP("6-button Joypad"), _RP("SMS Joypad"),
 	_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
 	_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
@@ -66,7 +66,7 @@ static const RomFields::BitfieldDesc md_io_bitfield = {
 };
 
 // Region code.
-static const rp_char *md_region_code_bitfield_names[] = {
+static const rp_char *const md_region_code_bitfield_names[] = {
 	_RP("Japan"), _RP("Asia"),
 	_RP("USA"), _RP("Europe")
 };

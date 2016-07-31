@@ -53,7 +53,7 @@ static const RomFields::BitfieldDesc nds_hw_bitfield = {
 };
 
 // DS region bitfield.
-static const rp_char *nds_region_bitfield_names[] = {
+static const rp_char *const nds_region_bitfield_names[] = {
 	_RP("Region-Free"), _RP("South Korea"), _RP("China")
 };
 
@@ -68,7 +68,7 @@ static const RomFields::BitfieldDesc nds_region_bitfield = {
 };
 
 // DSi region bitfield.
-static const rp_char *dsi_region_bitfield_names[] = {
+static const rp_char *const dsi_region_bitfield_names[] = {
 	_RP("Japan"), _RP("USA"), _RP("Europe"),
 	_RP("Australia"), _RP("China"), _RP("South Korea")
 };
