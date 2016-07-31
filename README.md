@@ -84,8 +84,8 @@ Notes:
 |:-----------------:|:--------------:|:-------------:|:---------------:|:-------------------:|:-------------------:|:-----------------:|
 | Sega Mega Drive   |       Yes      |      N/A      |       N/A       |         N/A         |          No         |         No        |
 | Nintendo DS(i)    |       Yes      |      Yes      |       N/A       |         N/A         |          No         |         No        |
-| Nintendo GameCube |       Yes      |       No      |        No       |         N/A         |          No         |         No        |
-| Nintendo Wii      |       Yes      |       No      |       N/A       |         N/A         |          No         |         No        |
+| Nintendo GameCube |       Yes      |       No      |        No       |         N/A         |         Yes         |         No        |
+| Nintendo Wii      |       Yes      |       No      |       N/A       |         N/A         |         Yes         |         No        |
 
 Notes:
 * Internal icon, banner, and media scan refers to artwork contained within
@@ -103,3 +103,13 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo DS(i): Decrypted (\*.nds)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
+
+## Credits
+
+* [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
+  and Nintendo DSi technical information. Used for ROM format information for
+  those systems.
+* [WiiBrew](http://wiibrew.org/wiki/Main_Page): Wii homebrew and reverse
+  engineering. Used for Wii and GameCube disc format information.
+* [GameTDB](http://www.gametdb.com/): Database of games for various game
+  consoles. Used for automatic downloading of disc scans for Wii and GameCube.
