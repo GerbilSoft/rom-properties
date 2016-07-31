@@ -30,6 +30,13 @@
 #include <cstring>
 #endif
 
+#if defined(RP_UTF16) && defined(RP_WIS16)
+// rp_str*() are inlined versions of the standard
+// wcs*() functions in the UTF-16 build if
+// wchar_t is 16-bit.
+#include <cwchar>
+#endif
+
 namespace LibRomData {
 
 /**
@@ -83,7 +90,14 @@ static inline size_t rp_strlen(const rp_char *str)
 	return strlen(str);
 }
 #elif defined(RP_UTF16)
+#ifdef RP_WIS16
+static inline size_t rp_strlen(const rp_char *str)
+{
+	return wcslen(reinterpret_cast<const wchar_t*>(str));
+}
+#else /* !RP_WIS16 */
 size_t rp_strlen(const rp_char *str);
+#endif /* RP_WIS16 */
 #endif
 
 /**
@@ -101,8 +115,21 @@ static inline rp_char *rp_strdup(const rp_string &str)
 	return strdup(str.c_str());
 }
 #elif defined(RP_UTF16)
+#ifdef RP_WIS16
+static inline rp_char *rp_strdup(const rp_char *str)
+{
+	return reinterpret_cast<rp_char*>(
+		wcsdup(reinterpret_cast<const wchar_t*>(str)));
+}
+static inline rp_char *rp_strdup(const rp_string &str)
+{
+	return reinterpret_cast<rp_char*>(
+		wcsdup(reinterpret_cast<const wchar_t*>(str.c_str())));
+}
+#else /* !RP_WIS16 */
 rp_char *rp_strdup(const rp_char *str);
 rp_char *rp_strdup(const rp_string &str);
+#endif /* RP_WIS16 */
 #endif
 
 }
