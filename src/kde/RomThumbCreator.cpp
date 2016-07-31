@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomThumbCreator.hpp"
+#include "CurlDownloader.hpp"
 
 // C includes.
 #include <unistd.h>
@@ -100,79 +101,6 @@ QImage RomThumbCreator::rpToQImage(const rp_image *image)
 	return img;
 }
 
-/**
- * cURL write_data() function.
- * @param ptr Data to write.
- * @param size Element size.
- * @param nmemb Number of elements.
- * @param userdata QByteArray pointer.
- */
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	// References:
-	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
-	// - http://stackoverflow.com/a/1636415
-	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
-	QByteArray *ba = reinterpret_cast<QByteArray*>(userdata);
-	size_t len = size * nmemb;
-
-	// Maximum buffer size of 4 MB.
-	// TODO: Configure that somewhere?
-	// TODO: Check Content-Length header before receiving anything?
-	if (ba->size() + len > 4*1024*1024) {
-		// Out of memory.
-		return 0;
-	}
-
-	ba->append(reinterpret_cast<const char*>(ptr), (int)len);
-	return len;
-}
-
-/**
- * Download an image from a URL.
- * @param url URL.
- * @return QImage, or invalid QImage if an error occurred.
- */
-QImage RomThumbCreator::download(const QString &url)
-{
-	// References:
-	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
-	// - http://stackoverflow.com/a/1636415
-	// - https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
-	CURL *curl = curl_easy_init();
-	if (!curl) {
-		// Could not initialize cURL.
-		return QImage();
-	}
-
-	// Data buffer.
-	QByteArray data;
-	data.reserve(256*1024);
-
-	// Set options for curl's "easy" mode.
-	curl_easy_setopt(curl, CURLOPT_URL, url.toUtf8().constData());
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-	// TODO: Set the User-Agent?
-	CURLcode res = curl_easy_perform(curl);
-	if (res != CURLE_OK) {
-		// Error downloading the file.
-		return QImage();
-	}
-
-	// Check if we have data.
-	if (data.isEmpty()) {
-		// No data.
-		return QImage();
-	}
-
-	// Attempt to load the image.
-	QBuffer buffer(&data);
-	QImageReader imageReader(&buffer);
-	return imageReader.read();
-}
-
-// TODO: Move this elsehwere.
 static inline QString rpToQS(const LibRomData::rp_string &rps)
 {
 #if defined(RP_UTF8)
@@ -183,7 +111,6 @@ static inline QString rpToQS(const LibRomData::rp_string &rps)
 #error Text conversion not available on this system.
 #endif
 }
-
 /**
  * Create a thumbnail for a ROM image.
  * @param path Local pathname of the ROM image.
@@ -197,7 +124,8 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	Q_UNUSED(width);
 	Q_UNUSED(height);
 
-	bool ret = false;
+	// Set to true if we have an image.
+	bool haveImage = false;
 
 	// Attempt to open the ROM file.
 	// TODO: rp_QFile() wrapper?
@@ -226,22 +154,35 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// TODO: Cache to disk?
 		const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 		if (extURLs && !extURLs->empty()) {
+			CurlDownloader curlDL;
+			curlDL.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
 			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
 			     iter != extURLs->end(); iter++)
 			{
-				QImage dlImg = download(rpToQS(*iter));
+				curlDL.setUrl(*iter);
+				int curlRet = curlDL.download();
+				if (curlRet != 0)
+					continue;
+
+				// Attempt to load the image.
+				// NOTE: This QByteArray is NOT a deep copy.
+				QByteArray ba = QByteArray::fromRawData(
+					reinterpret_cast<const char*>(curlDL.data()), curlDL.dataSize());
+				QBuffer buffer(&ba);
+				QImageReader imageReader(&buffer);
+				QImage dlImg = imageReader.read();
 				if (!dlImg.isNull()) {
 					// Image downloaded successfully.
 					// TODO: Width/height and transparency processing?
 					img = dlImg;
-					ret = true;
+					haveImage = true;
 					break;
 				}
 			}
 		}
 	}
 
-	if (!ret) {
+	if (!haveImage) {
 		// No external media scan.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
@@ -249,8 +190,9 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			if (image) {
 				// Convert the icon to QImage.
 				img = rpToQImage(image);
-				if (!img.isNull())
-					ret = true;
+				if (!img.isNull()) {
+					haveImage = true;
+				}
 			}
 		}
 	}
@@ -258,5 +200,5 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// We're done with romData.
 	delete romData;
 
-	return ret;
+	return haveImage;
 }

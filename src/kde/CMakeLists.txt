@@ -58,11 +58,13 @@ SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
 	RomThumbCreator.cpp
+	CurlDownloader.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomThumbCreator.hpp
+	CurlDownloader.hpp
 	)
 IF(BUILD_KDE4)
 	SET(rom-properties-kde4_SRCS

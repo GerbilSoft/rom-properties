@@ -63,6 +63,20 @@ rp_string utf8_to_rp_string(const char *str, size_t len);
 #endif
 
 /**
+ * Convert an rp_string to UTF-8.
+ * @param rps rp_string.
+ * @return UTF-8 text in an std::string.
+ */
+#if defined(RP_UTF8)
+static inline rp_string rp_string_to_utf8(const rp_string &rps)
+{
+	return rps;
+}
+#elif defined(RP_UTF16)
+std::string rp_string_to_utf8(const rp_string &rps);
+#endif
+
+/**
  * Convert ASCII text to rp_string.
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
