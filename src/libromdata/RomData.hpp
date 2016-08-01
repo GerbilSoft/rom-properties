@@ -200,16 +200,27 @@ class RomData
 		 */
 		const rp_image *image(ImageType imageType) const;
 
+		// External image URLs.
+		struct ExtUrl {
+			rp_string url;		// URL
+			rp_string cache_key;	// Cache key.
+		};
+
 		/**
 		 * Get a list of URLs for an external media type.
 		 *
-		 * NOTE: The std::vector<rp_string> is owned by this object.
+		 * This returns a list of ExtUrl, which contains the actual URL
+		 * and a cache key. The cache key identifies the image uniquely
+		 * in the local cache. It may contain slashes to indicate
+		 * subdirectories, and also a file extension.
+		 *
+		 * NOTE: The std::vector<ExtUrl> is owned by this object.
 		 * Do NOT delete this object until you're done using this rp_image.
 		 *
 		 * @param imageType Image type.
-		 * @return List of URLs, or nullptr if the ROM doesn't have one.
+		 * @return List of ExtUrl, or nullptr if the ROM doesn't have one.
 		 */
-		const std::vector<rp_string> *extURLs(ImageType imageType) const;
+		const std::vector<ExtUrl> *extURLs(ImageType imageType) const;
 
 	protected:
 		// TODO: Make a private class?
@@ -225,7 +236,7 @@ class RomData
 		// media type, in priority order. ([0] == highest priority)
 		// This is done to allow for multiple quality levels.
 		// TODO: Allow the user to customize quality levels?
-		std::vector<rp_string> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
+		std::vector<ExtUrl> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
 };
 
 }

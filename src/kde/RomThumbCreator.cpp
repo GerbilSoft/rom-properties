@@ -152,14 +152,15 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// External media scan.
 		// Synchronously download from the source URLs.
 		// TODO: Cache to disk?
-		const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+		const std::vector<RomData::ExtUrl> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 		if (extURLs && !extURLs->empty()) {
 			CurlDownloader curlDL;
 			curlDL.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
-			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
+			for (std::vector<RomData::ExtUrl>::const_iterator iter = extURLs->begin();
 			     iter != extURLs->end(); iter++)
 			{
-				curlDL.setUrl(*iter);
+				const RomData::ExtUrl &extUrl = *iter;
+				curlDL.setUrl(extUrl.url);
 				int curlRet = curlDL.download();
 				if (curlRet != 0)
 					continue;
@@ -173,6 +174,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 				QImage dlImg = imageReader.read();
 				if (!dlImg.isNull()) {
 					// Image downloaded successfully.
+					// TODO: Cache it locally.
 					// TODO: Width/height and transparency processing?
 					img = dlImg;
 					haveImage = true;

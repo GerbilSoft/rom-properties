@@ -206,7 +206,7 @@ const rp_image *RomData::image(ImageType imageType) const
  * @param imageType Image type.
  * @return List of URLs, or nullptr if the ROM doesn't have one.
  */
-const std::vector<rp_string> *RomData::extURLs(ImageType imageType) const
+const std::vector<RomData::ExtUrl> *RomData::extURLs(ImageType imageType) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
