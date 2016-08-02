@@ -95,6 +95,41 @@ void CurlDownloader::setUrl(const LibRomData::rp_string &url)
 }
 
 /**
+ * Get the proxy server.
+ * @return Proxy server URL.
+ */
+LibRomData::rp_string CurlDownloader::proxyUrl(void) const
+{
+	return m_proxyUrl;
+}
+
+/**
+ * Set the proxy server.
+ * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
+ */
+void CurlDownloader::setProxyUrl(const rp_char *proxyUrl)
+{
+	assert(!m_inProgress);
+	// TODO: Don't set if m_inProgress?
+	if (proxyUrl) {
+		m_proxyUrl = proxyUrl;
+	} else {
+		m_proxyUrl.clear();
+	}
+}
+
+/**
+ * Set the proxy server.
+ * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
+ */
+void CurlDownloader::setProxyUrl(const LibRomData::rp_string &proxyUrl)
+{
+	assert(!m_inProgress);
+	// TODO: Don't set if m_inProgress?
+	m_proxyUrl = proxyUrl;
+}
+
+/**
  * Get the maximum buffer size. (0 == unlimited)
  * @return Maximum buffer size.
  */
@@ -201,6 +236,13 @@ int CurlDownloader::download(void)
 	// Convert the URL to UTF-8.
 	// TODO: Only if not RP_UTF8?
 	string url8 = LibRomData::rp_string_to_utf8(m_url);
+
+	// Proxy settings.
+	if (!m_proxyUrl.empty()) {
+		// TODO: Only if not RP_UTF8?
+		string proxyUrl8 = LibRomData::rp_string_to_utf8(m_proxyUrl);
+		curl_easy_setopt(curl, CURLOPT_PROXY, proxyUrl8.c_str());
+	}
 
 	// Set options for curl's "easy" mode.
 	curl_easy_setopt(curl, CURLOPT_URL, url8.c_str());

@@ -38,8 +38,13 @@ using namespace LibRomData;
 
 #include <QLabel>
 #include <QtCore/QBuffer>
+#include <QtCore/QUrl>
 #include <QtGui/QImage>
 #include <QtGui/QImageReader>
+
+// KDE protocl manager.
+// Used to find the KDE proxy settings.
+#include <kprotocolmanager.h>
 
 /**
  * Factory method.
@@ -159,7 +164,20 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
 			     iter != extURLs->end(); iter++)
 			{
-				curlDL.setUrl(*iter);
+				const rp_string &url = *iter;
+				curlDL.setUrl(url);
+
+				// Check if a proxy is required for this URL.
+				// TODO: Optimizations.
+				QString proxy = KProtocolManager::proxyForUrl(QUrl(rpToQS(url)));
+				if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
+					// No proxy.
+					curlDL.setProxyUrl(nullptr);
+				} else {
+					// Proxy is specified.
+					curlDL.setProxyUrl((const rp_char*)proxy.utf16());
+				}
+
 				int curlRet = curlDL.download();
 				if (curlRet != 0)
 					continue;

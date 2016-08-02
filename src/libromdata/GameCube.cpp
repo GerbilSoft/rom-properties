@@ -245,7 +245,6 @@ GameCube::GameCube(FILE *file)
 	fflush(m_file);
 
 	// Read the disc header.
-	// TODO: WBFS support.
 	uint8_t header[4096+256];
 	size_t size = fread(&header, 1, sizeof(header), m_file);
 	if (size != sizeof(header))

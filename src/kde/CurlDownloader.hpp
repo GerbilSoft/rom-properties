@@ -72,6 +72,24 @@ class CurlDownloader
 		void setUrl(const LibRomData::rp_string &url);
 
 		/**
+		 * Get the proxy server.
+		 * @return Proxy server URL.
+		 */
+		LibRomData::rp_string proxyUrl(void) const;
+
+		/**
+		 * Set the proxy server.
+		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
+		 */
+		void setProxyUrl(const rp_char *proxyUrl);
+
+		/**
+		 * Set the proxy server.
+		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
+		 */
+		void setProxyUrl(const LibRomData::rp_string &proxyUrl);
+
+		/**
 		 * Get the maximum buffer size. (0 == unlimited)
 		 * @return Maximum buffer size.
 		 */
@@ -120,6 +138,8 @@ class CurlDownloader
 
 	protected:
 		LibRomData::rp_string m_url;
+		LibRomData::rp_string m_proxyUrl;
+
 		// TODO: Use C malloc()/realloc()?
 		// std::vector::resize() forces initialization.
 		std::vector<uint8_t> m_data;
