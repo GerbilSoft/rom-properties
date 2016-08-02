@@ -485,32 +485,22 @@ int GameCube::loadFieldData(void)
 }
 
 /**
- * Get the GameTDB ExtURL for a given game.
+ * Get the GameTDB URL for a given game.
  * @param system System name.
  * @param type Image type.
  * @param region Region name.
  * @param gameID Game ID.
- * @return GameTDB ExtURL.
+ * @return GameTDB URL.
  */
-static RomData::ExtUrl getExtURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
+static LibRomData::rp_string getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
 {
-	RomData::ExtUrl extUrl;
-
-	// Get the actual URL.
 	char buf[128];
 	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s.png", system, type, region, gameID);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);	// TODO: Handle truncation better.
 
-	// "http://art.gametdb.com/" is 23 characters.
-	if (len > 23) {
-		extUrl.url = ascii_to_rp_string(buf, len);
-
-		// Get the cache filename.
-		extUrl.cache_key = ascii_to_rp_string(&buf[23], len-24);
-	}
-
-	return extUrl;
+	// TODO: UTF-8, not ASCII?
+	return (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
 }
 
 /**
@@ -526,7 +516,7 @@ int GameCube::loadURLs(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	std::vector<ExtUrl> &extURLs = m_extURLs[imageType - IMG_EXT_MIN];
+	std::vector<rp_string> &extURLs = m_extURLs[imageType - IMG_EXT_MIN];
 	if (!extURLs.empty()) {
 		// URLs *have* been loaded...
 		return 0;
@@ -624,19 +614,19 @@ int GameCube::loadURLs(ImageType imageType)
 		char s_discNum[16];
 		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
-			extURLs.push_back(getExtURL_GameTDB("wii", s_discNum, region, id6));
+			extURLs.push_back(getURL_GameTDB("wii", s_discNum, region, id6));
 			if (isPal) {
 				// Fall back to "EN" if the region-specific image wasn't found.
-				extURLs.push_back(getExtURL_GameTDB("wii", s_discNum, "EN", id6));
+				extURLs.push_back(getURL_GameTDB("wii", s_discNum, "EN", id6));
 			}
 		}
 	}
 
 	// First disc.
-	extURLs.push_back(getExtURL_GameTDB("wii", "disc", region, id6));
+	extURLs.push_back(getURL_GameTDB("wii", "disc", region, id6));
 	if (isPal) {
 		// Fall back to "EN" if the region-specific image wasn't found.
-		extURLs.push_back(getExtURL_GameTDB("wii", "disc", "EN", id6));
+		extURLs.push_back(getURL_GameTDB("wii", "disc", "EN", id6));
 	}
 
 	// All URLs added.
