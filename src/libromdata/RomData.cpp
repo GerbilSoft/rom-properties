@@ -228,4 +228,29 @@ const std::vector<rp_string> *RomData::extURLs(ImageType imageType) const
 	return &m_extURLs[idx];
 }
 
+/**
+ * Get a cache key for an external media type.
+ * @return Cache key, or nullptr if not cacheable.
+ */
+const rp_char *RomData::cacheKey(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return nullptr;
+	}
+
+	// cacheKeys is dependent on extURLs.
+	const int idx = imageType - IMG_EXT_MIN;
+	if (m_extURLs[idx].empty()) {
+		// List of URLs has not been loaded.
+		// Load it now.
+		int ret = const_cast<RomData*>(this)->loadURLs(imageType);
+		if (ret < 0)
+			return nullptr;
+	}
+
+	return (m_cacheKey[idx].empty() ? nullptr : m_cacheKey[idx].c_str());
+}
+
 }

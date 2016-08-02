@@ -504,6 +504,25 @@ static LibRomData::rp_string getURL_GameTDB(const char *system, const char *type
 }
 
 /**
+ * Get the GameTDB URL for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param gameID Game ID.
+ * TODO: PAL multi-region selection?
+ * @return GameTDB URL.
+ */
+static LibRomData::rp_string getCacheKey(const char *system, const char *type, const char *gameID)
+{
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf), "%s/%s/%s.png", system, type, gameID);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);	// TODO: Handle truncation better.
+
+	// TODO: UTF-8, not ASCII?
+	return (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
  * Load URLs for an external media type.
  * Called by RomData::extURL() if the URLs haven't been loaded yet.
  * @param imageType Image type to load.
@@ -516,7 +535,9 @@ int GameCube::loadURLs(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	std::vector<rp_string> &extURLs = m_extURLs[imageType - IMG_EXT_MIN];
+
+	const int idx = imageType - IMG_EXT_MIN;
+	std::vector<rp_string> &extURLs = m_extURLs[idx];
 	if (!extURLs.empty()) {
 		// URLs *have* been loaded...
 		return 0;
@@ -620,6 +641,12 @@ int GameCube::loadURLs(ImageType imageType)
 				extURLs.push_back(getURL_GameTDB("wii", s_discNum, "EN", id6));
 			}
 		}
+
+		// Create the cache key.
+		m_cacheKey[idx] = getCacheKey("wii", s_discNum, id6);
+	} else {
+		// Create the cache key. (disc1)
+		m_cacheKey[idx] = getCacheKey("wii", "disc", id6);
 	}
 
 	// First disc.

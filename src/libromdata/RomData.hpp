@@ -211,6 +211,12 @@ class RomData
 		 */
 		const std::vector<rp_string> *extURLs(ImageType imageType) const;
 
+		/**
+		 * Get a cache key for an external media type.
+		 * @return Cache key, or nullptr if not cacheable.
+		 */
+		const rp_char *cacheKey(ImageType imageType) const;
+
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
@@ -226,6 +232,9 @@ class RomData
 		// This is done to allow for multiple quality levels.
 		// TODO: Allow the user to customize quality levels?
 		std::vector<rp_string> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
+
+		// List of cache keys for external media types.
+		rp_string m_cacheKey[IMG_EXT_MAX - IMG_EXT_MIN + 1];
 };
 
 }
