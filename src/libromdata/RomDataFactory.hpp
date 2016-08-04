@@ -22,8 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
-// C includes. (C++ namespace)
-#include <cstdio>
+#include "IRpFile.hpp"
 
 namespace LibRomData {
 
@@ -48,7 +47,7 @@ class RomDataFactory
 		 * @param file ROM file.
 		 * @return RomData class, or nullptr if the ROM isn't supported.
 		 */
-		static RomData *getInstance(FILE *file);
+		static RomData *getInstance(IRpFile *file);
 };
 
 }

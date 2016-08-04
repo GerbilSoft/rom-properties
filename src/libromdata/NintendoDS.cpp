@@ -241,7 +241,7 @@ struct PACKED DS_IconTitleData {
  *
  * @param file Open ROM image.
  */
-NintendoDS::NintendoDS(FILE *file)
+NintendoDS::NintendoDS(IRpFile *file)
 	: RomData(file, nds_fields, ARRAY_SIZE(nds_fields))
 {
 	if (!m_file) {
@@ -249,14 +249,11 @@ NintendoDS::NintendoDS(FILE *file)
 		return;
 	}
 
-	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
-
 	// Read the ROM header.
 	static_assert(sizeof(DS_ROMHeader) == 4096, "DS_ROMHeader is not 4,096 bytes.");
 	DS_ROMHeader header;
-	size_t size = fread(&header, 1, sizeof(header), m_file);
+	m_file->rewind();
+	size_t size = m_file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -346,13 +343,10 @@ int NintendoDS::loadFieldData(void)
 		return -EBADF;
 	}
 
-	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
-
 	// Read the ROM header.
 	DS_ROMHeader header;
-	size_t size = fread(&header, 1, sizeof(header), m_file);
+	m_file->rewind();
+	size_t size = m_file->read(&header, sizeof(header));
 	if (size != sizeof(header)) {
 		// File isn't big enough for a Nintendo DS header...
 		return -EIO;
@@ -487,9 +481,10 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 
 	// Address of icon/title information is located at
 	// 0x68 in the cartridge header.
+	// TODO: Save the ROM header in the constructor, like GameCube?
 	uint32_t icon_addr;
-	fseek(m_file, 0x68, SEEK_SET);
-	size_t size = fread(&icon_addr, 1, sizeof(icon_addr), m_file);
+	m_file->seek(0x68);
+	size_t size = m_file->read(&icon_addr, sizeof(icon_addr));
 	if (size != sizeof(icon_addr))
 		return -EIO;
 	icon_addr = le32_to_cpu(icon_addr);
@@ -497,8 +492,8 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	// Read the icon data.
 	// TODO: Also store titles?
 	DS_IconTitleData ds_icon_title;
-	fseek(m_file, icon_addr, SEEK_SET);
-	size = fread(&ds_icon_title, 1, sizeof(ds_icon_title), m_file);
+	m_file->seek(icon_addr);
+	size = m_file->read(&ds_icon_title, sizeof(ds_icon_title));
 	if (size != sizeof(ds_icon_title))
 		return -EIO;
 

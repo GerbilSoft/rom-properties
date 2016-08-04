@@ -28,8 +28,19 @@
  */
 
 #include "RomPropertiesDialogPlugin.hpp"
-#include "libromdata/RomDataFactory.hpp"
 #include "RomDataView.hpp"
+
+#include "libromdata/RomDataFactory.hpp"
+#include "libromdata/RpFile.hpp"
+using namespace LibRomData;
+
+// TODO: RP_UTF8 version?
+#ifdef RP_UTF16
+static inline const rp_char *qsToRpCharPtr(const QString &qs)
+{
+	return reinterpret_cast<const rp_char*>(qs.utf16());
+}
+#endif /* RP_UTF16 */
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: KPropertiesDialogPlugin(props)
@@ -46,22 +57,22 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		// TODO: Use KIO and transparent decompression?
 		QString filename = url.toLocalFile();
 		if (!filename.isEmpty()) {
-			// TODO: rp_QFile() wrapper?
-			// For now, using stdio.
-			FILE *file = fopen(filename.toUtf8().constData(), "rb");
-			if (file) {
+			// TODO: RpQFile wrapper.
+			// For now, using RpFile, which is an stdio wrapper.
+			IRpFile *file = new RpFile(qsToRpCharPtr(filename), RpFile::FM_OPEN_READ);
+			if (file && file->isOpen()) {
 				// Get the appropriate RomData class for this ROM.
-				LibRomData::RomData *romData = LibRomData::RomDataFactory::getInstance(file);
+				RomData *romData = RomDataFactory::getInstance(file);
 				if (romData) {
 					// ROM is supported. Show the properties.
 					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
 				}
-
-				// RomData classes dup() the file, so
-				// we can close the original one.
-				fclose(file);
 			}
+
+			// RomData classes dup() the file, so
+			// we can close the original one.
+			delete file;
 		}
 	}
 }

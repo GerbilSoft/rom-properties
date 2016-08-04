@@ -21,13 +21,6 @@
 
  #include "IDiscReader.hpp"
 
- // dup()
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -42,7 +35,7 @@ namespace LibRomData {
  *
  * @param file File to read from.
  */
-IDiscReader::IDiscReader(FILE *file)
+IDiscReader::IDiscReader(IRpFile *file)
 	: m_file(nullptr)
 	, m_fileSize(0)
 {
@@ -50,23 +43,12 @@ IDiscReader::IDiscReader(FILE *file)
 		return;
 
 	// dup() the file.
-	int fd_old = fileno(file);
-	int fd_new = dup(fd_old);
-	if (fd_new >= 0) {
-		m_file = fdopen(fd_new, "rb");
-		if (m_file) {
-			// Make sure we're at the beginning of the file.
-			::rewind(m_file);
-			::fflush(m_file);
-		}
-	}
+	m_file = file->dup();
 }
 
 IDiscReader::~IDiscReader()
 {
-	if (m_file) {
-		fclose(m_file);
-	}
+	delete m_file;
 }
 
 /**

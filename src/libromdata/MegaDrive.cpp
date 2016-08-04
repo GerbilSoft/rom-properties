@@ -149,7 +149,7 @@ struct MD_RomHeader {
  *
  * @param file Open ROM file.
  */
-MegaDrive::MegaDrive(FILE *file)
+MegaDrive::MegaDrive(IRpFile *file)
 	: RomData(file, md_fields, ARRAY_SIZE(md_fields))
 {
 	// TODO: Only validate that this is an MD ROM here.
@@ -160,12 +160,11 @@ MegaDrive::MegaDrive(FILE *file)
 	}
 
 	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
+	m_file->rewind();
 
 	// Read the header. [0x200 bytes]
 	uint8_t header[0x200];
-	size_t size = fread(header, 1, sizeof(header), m_file);
+	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -256,18 +255,15 @@ int MegaDrive::loadFieldData(void)
 		// Field data *has* been loaded...
 		return 0;
 	}
-	if (!m_file) {
+	if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	}
 
-	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
-
 	// Read the header. [0x200 bytes]
 	uint8_t header[0x200];
-	size_t size = fread(header, 1, sizeof(header), m_file);
+	m_file->rewind();
+	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
 		// File isn't big enough for an MD header...
 		return -EIO;

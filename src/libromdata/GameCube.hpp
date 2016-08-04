@@ -51,7 +51,7 @@ class GameCube : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		GameCube(FILE *file);
+		GameCube(IRpFile *file);
 		virtual ~GameCube();
 
 	private:

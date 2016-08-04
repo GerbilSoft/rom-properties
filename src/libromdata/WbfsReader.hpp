@@ -36,7 +36,7 @@ class WbfsReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		WbfsReader(FILE *file);
+		WbfsReader(IRpFile *file);
 		virtual ~WbfsReader();
 
 	private:
@@ -60,8 +60,9 @@ class WbfsReader : public IDiscReader
 		/**
 		 * Set the file position.
 		 * @param pos File position.
+		 * @return 0 on success; -1 on error.
 		 */
-		virtual void seek(int64_t pos) override;
+		virtual int seek(int64_t pos) override;
 };
 
 }

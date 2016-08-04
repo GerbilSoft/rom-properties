@@ -50,7 +50,7 @@ class NintendoDS : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		NintendoDS(FILE *file);
+		NintendoDS(IRpFile *file);
 
 	private:
 		NintendoDS(const NintendoDS &);

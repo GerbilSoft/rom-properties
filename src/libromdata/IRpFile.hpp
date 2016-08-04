@@ -1,8 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DiscReader.hpp: Basic disc reader interface.                            *
- * This class is a "null" interface that simply passes calls down to       *
- * libc's stdio functions.                                                 *
+ * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -21,45 +19,82 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
 
-#include "IDiscReader.hpp"
+// C includes.
+#include <stdint.h>
+
+// C includes. (C++ namespace)
+#include <cstddef>	/* for size_t */
 
 namespace LibRomData {
 
-class DiscReader : public IDiscReader
+class IRpFile
 {
+	protected:
+		IRpFile() { }
 	public:
-		/**
-		 * Construct a DiscReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
-		 * @param file File to read from.
-		 */
-		DiscReader(IRpFile *file);
+		virtual ~IRpFile() { }
 
 	private:
-		DiscReader(const DiscReader &);
-		DiscReader &operator=(const DiscReader&);
+		IRpFile(const IRpFile &);
+		IRpFile &operator=(const IRpFile&);
 
 	public:
+		/**
+		 * Is the file open?
+		 * This usually only returns false if an error occurred.
+		 * @return True if the file is open; false if it isn't.
+		 */
+		virtual bool isOpen(void) const = 0;
+
+		/**
+		 * dup() the file handle.
+		 * Needed because IRpFile* objects are typically
+		 * pointers, not actual instances of the object.
+		 * @return dup()'d file, or nullptr on error.
+		 */
+		virtual IRpFile *dup(void) = 0;
+
+		/**
+		 * Close the file.
+		 */
+		virtual void close(void) = 0;
+
 		/**
 		 * Read data from the file.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
 		 * Set the file position.
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		virtual int seek(int64_t pos) = 0;
+
+		/**
+		 * Seek to the beginning of the file.
+		 */
+		virtual void rewind(void) = 0;
+
+		/**
+		 * Get the file size.
+		 * @return File size.
+		 */
+		virtual int64_t fileSize(void) = 0;
+
+		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const = 0;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__ */

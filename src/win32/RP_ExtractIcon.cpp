@@ -28,6 +28,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
+#include "libromdata/RpFile.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -394,15 +395,17 @@ STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		return E_INVALIDARG;
 
 	// Attempt to open the ROM file.
-	// TODO: rp_QFile() wrapper?
-	// For now, using stdio.
-	FILE *file = _wfopen(m_filename.c_str(), L"rb");
-	if (!file)
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	IRpFile *file = new RpFile(m_filename, RpFile::FM_OPEN_READ);
+	if (!file || !file->isOpen()) {
+		delete file;
 		return E_FAIL;
+	}
 
 	// Get the appropriate RomData class for this ROM.
 	RomData *romData = RomDataFactory::getInstance(file);
-	fclose(file);	// file is dup()'d by RomData.
+	delete file;	// file is dup()'d by RomData.
 
 	if (!romData) {
 		// ROM is not supported.
@@ -456,7 +459,12 @@ STDMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	UNUSED(dwMode);	// TODO
 
 	// pszFileName is the file being worked on.
-	m_filename = pszFileName;
+#ifdef RP_UTF16
+	m_filename = reinterpret_cast<const rp_char*>(pszFileName);
+#else
+	// FIXME: Not supported.
+	#error RP_ExtractIcon requires UTF-16.
+#endif
 	return S_OK;
 }
 

@@ -25,6 +25,7 @@
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 
 #include "RP_ComBase.hpp"
+#include "libromdata/config.libromdata.h"
 
 // CLSID
 extern "C" {
@@ -83,7 +84,7 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		static HICON rpToHICON(const LibRomData::rp_image *image);
 
 		// ROM filename from IPersistFile::Load().
-		std::wstring m_filename;
+		LibRomData::rp_string m_filename;
 
 	public:
 		// IExtractIcon

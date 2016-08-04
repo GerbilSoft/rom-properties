@@ -145,7 +145,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	if (wiiVgTblLoaded) {
 		// Partition tables have already been loaded.
 		return 0;
-	} else if (!q->m_file) {
+	} else if (!q->m_file || !q->m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if ((discType & GameCube::DISC_SYSTEM_MASK) != GameCube::DISC_SYSTEM_WII) {
@@ -231,7 +231,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
  *
  * @param file Open disc image.
  */
-GameCube::GameCube(FILE *file)
+GameCube::GameCube(IRpFile *file)
 	: RomData(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
 	, d(new GameCubePrivate(this))
 {
@@ -240,13 +240,10 @@ GameCube::GameCube(FILE *file)
 		return;
 	}
 
-	// Seek to the beginning of the file.
-	rewind(m_file);
-	fflush(m_file);
-
 	// Read the disc header.
 	uint8_t header[4096+256];
-	size_t size = fread(&header, 1, sizeof(header), m_file);
+	m_file->rewind();
+	size_t size = m_file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -381,7 +378,7 @@ int GameCube::loadFieldData(void)
 	if (m_fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file) {
+	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (d->discType == DISC_UNKNOWN) {
@@ -541,7 +538,7 @@ int GameCube::loadURLs(ImageType imageType)
 		// URLs *have* been loaded...
 		return 0;
 	}
-	if (!m_file) {
+	if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	}

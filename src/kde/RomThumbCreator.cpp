@@ -34,6 +34,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
+#include "libromdata/RpFile.hpp"
 using namespace LibRomData;
 
 #include <QLabel>
@@ -116,6 +117,15 @@ static inline QString rpToQS(const LibRomData::rp_string &rps)
 #error Text conversion not available on this system.
 #endif
 }
+
+// TODO: RP_UTF8 version?
+#ifdef RP_UTF16
+static inline const rp_char *qsToRpCharPtr(const QString &qs)
+{
+	return reinterpret_cast<const rp_char*>(qs.utf16());
+}
+#endif /* RP_UTF16 */
+
 /**
  * Create a thumbnail for a ROM image.
  * @param path Local pathname of the ROM image.
@@ -133,17 +143,18 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	bool haveImage = false;
 
 	// Attempt to open the ROM file.
-	// TODO: rp_QFile() wrapper?
-	// For now, using stdio.
-	FILE *file = fopen(path.toUtf8().constData(), "rb");
-	if (!file) {
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	IRpFile *file = new RpFile(qsToRpCharPtr(path), RpFile::FM_OPEN_READ);
+	if (!file || !file->isOpen()) {
 		// Could not open the file.
+		delete file;
 		return false;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	RomData *romData = RomDataFactory::getInstance(file);
-	fclose(file);	// file is dup()'d by RomData.
+	delete file;	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return false;

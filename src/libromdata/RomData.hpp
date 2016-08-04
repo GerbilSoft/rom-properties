@@ -24,12 +24,10 @@
 
 #include "TextFuncs.hpp"
 #include "RomFields.hpp"
+#include "IRpFile.hpp"
 
 // C includes.
 #include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cstdio>
 
 // C++ includes.
 #include <string>
@@ -71,13 +69,13 @@ class RomData
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
-		 * In addition, subclasses must pass an array of RomFielDesc structs.
+		 * In addition, subclasses must pass an array of RomFieldDesc structs.
 		 *
 		 * @param file ROM file.
 		 * @param fields Array of ROM Field descriptions.
 		 * @param count Number of ROM Field descriptions.
 		 */
-		RomData(FILE *file, const RomFields::Desc *fields, int count);
+		RomData(IRpFile *file, const RomFields::Desc *fields, int count);
 	public:
 		virtual ~RomData();
 
@@ -220,7 +218,7 @@ class RomData
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
-		FILE *m_file;			// Open file.
+		IRpFile *m_file;		// Open file.
 		RomFields *const m_fields;	// ROM fields.
 
 		// Internal images.

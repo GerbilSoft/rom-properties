@@ -28,16 +28,14 @@
 
 namespace LibRomData {
 
-DiscReader::DiscReader(FILE *file)
+DiscReader::DiscReader(IRpFile *file)
 	: IDiscReader(file)
 {
 	if (!m_file)
 		return;
 
 	// Get the file size.
-	fseek(m_file, 0, SEEK_END);
-	m_fileSize = ftell(m_file);
-	::rewind(m_file);
+	m_fileSize = file->fileSize();
 }
 
 /**
@@ -49,17 +47,18 @@ DiscReader::DiscReader(FILE *file)
 size_t DiscReader::read(void *ptr, size_t size)
 {
 	assert(m_file != nullptr);
-	return fread(ptr, 1, size, m_file);
+	return m_file->read(ptr, size);
 }
 
 /**
  * Set the file position.
  * @param pos File position.
+ * @return 0 on success; -1 on error.
  */
-void DiscReader::seek(int64_t pos)
+int DiscReader::seek(int64_t pos)
 {
 	assert(m_file != nullptr);
-	fseek(m_file, pos, SEEK_SET);
+	return m_file->seek(pos);
 }
 
 }

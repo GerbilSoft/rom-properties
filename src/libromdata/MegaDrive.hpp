@@ -48,7 +48,7 @@ class MegaDrive : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		MegaDrive(FILE *file);
+		MegaDrive(IRpFile *file);
 
 	private:
 		MegaDrive(const MegaDrive &);

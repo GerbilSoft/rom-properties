@@ -44,13 +44,13 @@ namespace LibRomData {
  *
  * To close the file, either delete this object or call close().
  *
- * In addition, subclasses must pass an array of RomFielDesc structs.
+ * In addition, subclasses must pass an array of RomFieldDesc structs.
  *
  * @param file ROM file.
  * @param fields Array of ROM Field descriptions.
  * @param count Number of ROM Field descriptions.
  */
-RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
+RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
 	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
@@ -62,16 +62,7 @@ RomData::RomData(FILE *file, const RomFields::Desc *fields, int count)
 		return;
 
 	// dup() the file.
-	int fd_old = fileno(file);
-	int fd_new = dup(fd_old);
-	if (fd_new >= 0) {
-		m_file = fdopen(fd_new, "rb");
-		if (m_file) {
-			// Make sure we're at the beginning of the file.
-			rewind(m_file);
-			fflush(m_file);
-		}
-	}
+	m_file = file->dup();
 }
 
 RomData::~RomData()
@@ -100,7 +91,7 @@ bool RomData::isValid(void) const
 void RomData::close(void)
 {
 	if (m_file) {
-		fclose(m_file);
+		delete m_file;
 		m_file = nullptr;
 	}
 }

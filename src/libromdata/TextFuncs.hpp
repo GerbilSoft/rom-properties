@@ -68,7 +68,7 @@ rp_string utf8_to_rp_string(const char *str, size_t len);
  * @return UTF-8 text in an std::string.
  */
 #if defined(RP_UTF8)
-static inline rp_string rp_string_to_utf8(const rp_string &rps)
+static inline std::string rp_string_to_utf8(const rp_string &rps)
 {
 	return rps;
 }
