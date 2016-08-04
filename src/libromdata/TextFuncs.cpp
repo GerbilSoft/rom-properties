@@ -360,6 +360,40 @@ string rp_string_to_utf8(const rp_string &rps)
 }
 #endif /* RP_UTF16 */
 
+#ifdef RP_UTF8
+/**
+ * Convert an rp_string to UTF-16.
+ * @param rps rp_string.
+ * @return UTF-8 text in an std::string.
+ */
+u16string rp_string_to_utf16(const rp_string &rps)
+{
+#if defined(_WIN32)
+	// Win32 version.
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(rps.data(), rps.size(), CP_UTF8, &cchWcs);
+	if (wcs) {
+		u16string ret(wcs, cchWcs);
+		free(wcs);
+		return ret;
+	}
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	char16_t *wcs = (char16_t*)rp_iconv(rps.data(), rps.size(), "UTF-8", RP_ICONV_ENCODING);
+	if (wcs) {
+		u16string ret(wcs);
+		free(wcs);
+		return ret;
+	}
+#else
+#error Text conversion is not available on this system.
+#endif
+
+	// Unable to convert the string.
+	return u16string();
+}
+#endif /* RP_UTF16 */
+
 #ifdef RP_UTF16
 /**
  * Convert ASCII text to rp_string.

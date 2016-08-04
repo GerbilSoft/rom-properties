@@ -25,6 +25,7 @@
 // C++ includes.
 #include <string>
 using std::string;
+using std::u16string;
 
 #ifdef _WIN32
 // Windows: _wfopen() requires a Unicode mode string.
@@ -80,11 +81,18 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	}
 
 	// TODO: Combine the two constructors.
+	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
 
 #if defined(RP_UTF8)
 	// rp_char is UTF-8.
-	// FIXME: On Win32, convert filename to UTF-16.
+#if defined(_WIN32)
+	// Windows: Convert to UTF-16, then use UTF-16.
+	u16string u16_filename = rp_string_to_utf16(rp_string(filename));
+	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename), mode_str);
+#else /* !_WIN32 */
+	// Linux: Use the UTF-8 filename directly.
 	m_file = fopen(filename, mode_str);
+#endif /* _WIN32 */
 #elif defined(RP_UTF16)
 	// rp_string is UTF-16.
 #if defined(_WIN32)
@@ -121,10 +129,18 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 		return;
 	}
 
+	// TODO: Combine the two constructors.
+	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
+
 #if defined(RP_UTF8)
-	// rp_char is UTF-8.
-	// FIXME: On Win32, convert filename to UTF-16.
+#if defined(_WIN32)
+	// Windows: Convert to UTF-16, then use UTF-16.
+	u16string u16_filename = rp_string_to_utf16(filename);
+	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename.c_str()), mode_str);
+#else /* !_WIN32 */
+	// Linux: Use the UTF-8 filename directly.
 	m_file = fopen(filename.c_str(), mode_str);
+#endif /* _WIN32 */
 #elif defined(RP_UTF16)
 	// rp_string is UTF-16.
 #if defined(_WIN32)

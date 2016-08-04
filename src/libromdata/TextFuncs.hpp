@@ -77,6 +77,20 @@ std::string rp_string_to_utf8(const rp_string &rps);
 #endif
 
 /**
+ * Convert an rp_string to UTF-16.
+ * @param rps rp_string.
+ * @return UTF-16 text in an std::u16string.
+ */
+#if defined(RP_UTF8)
+std::u16string rp_string_to_utf16(const rp_string &rps);
+#elif defined(RP_UTF16)
+static inline std::u16string rp_string_to_utf16(const rp_string &rps)
+{
+	return rps;
+}
+#endif
+
+/**
  * Convert ASCII text to rp_string.
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
