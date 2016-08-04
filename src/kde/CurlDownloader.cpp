@@ -24,6 +24,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cctype>
 #include <cstring>
 
 // C++ includes.
@@ -187,7 +188,7 @@ void CurlDownloader::clear(void)
  * @param userdata m_data pointer.
  * @return Number of bytes written.
  */
-size_t CurlDownloader::write_data(void *ptr, size_t size, size_t nmemb, void *userdata)
+size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	// References:
 	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
@@ -206,9 +207,73 @@ size_t CurlDownloader::write_data(void *ptr, size_t size, size_t nmemb, void *us
 		}
 	}
 
+	if (vec->capacity() == 0) {
+		// Capacity wasn't initialized by Content-Length.
+		// Reserve at least 64 KB.
+		static const size_t min_reserve = 64*1024;
+		size_t reserve = (len > min_reserve ? len : min_reserve);
+		vec->reserve(reserve);
+	}
+
 	size_t pos = vec->size();
 	vec->resize(pos + len);
 	memcpy(vec->data() + pos, ptr, len);
+	return len;
+}
+
+/**
+ * Internal cURL header parsing function.
+ * @param buffer Pointer to header data. (NOT necessarily null-terminated!)
+ * @param size Element size.
+ * @param nitems Number of elements.
+ * @param userdata m_data pointer.
+ * @return Amount of data processed, or 0 on error.
+ */
+size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void *userdata)
+{
+	// References:
+	// - https://curl.haxx.se/libcurl/c/CURLOPT_HEADERFUNCTION.html
+
+	// TODO: Add support for non-HTTP protocols?
+	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
+	vector<uint8_t> *vec = &curlDL->m_data;
+	size_t len = size * nitems;
+
+	static const char http_content_length[] = "Content-Length: ";
+	if (len >= sizeof(http_content_length) &&
+	    !memcmp(ptr, http_content_length, sizeof(http_content_length)-1))
+	{
+		// Found the Content-Length.
+		// Parse the value.
+		char s_val[24];
+		size_t val_len = len-sizeof(http_content_length);
+		if (val_len >= sizeof(s_val)) {
+			// Shouldn't happen...
+			val_len = sizeof(s_val)-1;
+		}
+		memcpy(s_val, ptr+sizeof(http_content_length)-1, val_len);
+		s_val[val_len] = 0;
+
+		// Convert the Content-Length to an int64_t.
+		char *endptr;
+		int64_t fileSize = strtoll(s_val, &endptr, 10);
+
+		// *endptr should be \0 or a whitespace character.
+		if (*endptr != '\0' && !isspace(*endptr)) {
+			// Content-Length is invalid.
+			return 0;
+		} else if (curlDL->m_maxSize > 0 &&
+			   fileSize > (int64_t)curlDL->m_maxSize)
+		{
+			// Content-Length is too big.
+			return 0;
+		}
+
+		// Reserve enough space for the file being downloaded.
+		vec->reserve(fileSize);
+	}
+
+	// Continue processing.
 	return len;
 }
 
@@ -230,9 +295,6 @@ int CurlDownloader::download(void)
 		return -1;	// TODO: Better error?
 	}
 
-	// Reserve at least 128 KB.
-	m_data.reserve(128*1024);
-
 	// Convert the URL to UTF-8.
 	// TODO: Only if not RP_UTF8?
 	string url8 = LibRomData::rp_string_to_utf8(m_url);
@@ -244,8 +306,12 @@ int CurlDownloader::download(void)
 		curl_easy_setopt(curl, CURLOPT_PROXY, proxyUrl8.c_str());
 	}
 
+	// TODO: Send a HEAD request first?
+
 	// Set options for curl's "easy" mode.
 	curl_easy_setopt(curl, CURLOPT_URL, url8.c_str());
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
+	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 	// TODO: Set the User-Agent?

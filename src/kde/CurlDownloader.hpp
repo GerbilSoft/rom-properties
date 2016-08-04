@@ -127,7 +127,17 @@ class CurlDownloader
 		 * @param userdata m_data pointer.
 		 * @return Number of bytes written.
 		 */
-		static size_t write_data(void *ptr, size_t size, size_t nmemb, void *userdata);
+		static size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata);
+
+		/**
+		 * Internal cURL header parsing function.
+		 * @param buffer Pointer to header data. (NOT necessarily null-terminated!)
+		 * @param size Element size.
+		 * @param nitems Number of elements.
+		 * @param userdata m_data pointer.
+		 * @return Amount of data processed, or 0 on error.
+		 */
+		static size_t parse_header(char *ptr, size_t size, size_t nitems, void *userdata);
 
 	public:
 		/**
