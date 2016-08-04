@@ -328,6 +328,39 @@ rp_string utf8_to_rp_string(const char *str, size_t len)
 
 #ifdef RP_UTF16
 /**
+ * Convert an rp_char* to UTF-8.
+ * @param str rp_char*.
+ * @param len Length of str, in characters.
+ * @return UTF-8 text in an std::string.
+ */
+string rp_string_to_utf8(const rp_char *str, size_t len)
+{
+#if defined(_WIN32)
+	// Win32 version.
+	int cbMbs;
+	char *mbs = W32U_UTF16_to_mbs(str, len, CP_UTF8, &cbMbs);
+	if (mbs) {
+		string ret(mbs, cbMbs);
+		free(mbs);
+		return ret;
+	}
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(rp_char), RP_ICONV_ENCODING, "UTF-8");
+	if (mbs) {
+		string ret(mbs);
+		free(mbs);
+		return ret;
+	}
+#else
+#error Text conversion is not available on this system.
+#endif
+
+	// Unable to convert the string.
+	return string();
+}
+
+/**
  * Convert an rp_string to UTF-8.
  * @param rps rp_string.
  * @return UTF-8 text in an std::string.
@@ -362,6 +395,39 @@ string rp_string_to_utf8(const rp_string &rps)
 
 #ifdef RP_UTF8
 /**
+ * Convert an rp_char* to UTF-16.
+ * @param str rp_char*.
+ * @param len Length of str, in characters.
+ * @return UTF-8 text in an std::string.
+ */
+u16string rp_string_to_utf16(const rp_char *str, size_t len)
+{
+#if defined(_WIN32)
+	// Win32 version.
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(str, len, CP_UTF8, &cchWcs);
+	if (wcs) {
+		u16string ret(wcs, cchWcs);
+		free(wcs);
+		return ret;
+	}
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	char16_t *wcs = (char16_t*)rp_iconv(str, len, "UTF-8", RP_ICONV_ENCODING);
+	if (wcs) {
+		u16string ret(wcs);
+		free(wcs);
+		return ret;
+	}
+#else
+#error Text conversion is not available on this system.
+#endif
+
+	// Unable to convert the string.
+	return u16string();
+}
+
+/**
  * Convert an rp_string to UTF-16.
  * @param rps rp_string.
  * @return UTF-8 text in an std::string.
@@ -392,7 +458,7 @@ u16string rp_string_to_utf16(const rp_string &rps)
 	// Unable to convert the string.
 	return u16string();
 }
-#endif /* RP_UTF16 */
+#endif /* RP_UTF8 */
 
 #ifdef RP_UTF16
 /**

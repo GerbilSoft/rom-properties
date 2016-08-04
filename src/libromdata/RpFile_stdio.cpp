@@ -87,7 +87,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	// rp_char is UTF-8.
 #if defined(_WIN32)
 	// Windows: Convert to UTF-16, then use UTF-16.
-	u16string u16_filename = rp_string_to_utf16(rp_string(filename));
+	u16string u16_filename = rp_string_to_utf16(filename, rp_strlen(filename));
 	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename), mode_str);
 #else /* !_WIN32 */
 	// Linux: Use the UTF-8 filename directly.
@@ -100,7 +100,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename), mode_str);
 #else /* !_WIN32 */
 	// Linux: Convert to UTF-8 first.
-	string u8_filename = rp_string_to_utf8(rp_string(filename));
+	string u8_filename = rp_string_to_utf8(filename, rp_strlen(filename));
 	m_file = fopen(u8_filename.c_str(), mode_str);
 #endif /* _WIN32 */
 #endif /* RP_UTF8, RP_UTF16 */

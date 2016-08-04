@@ -63,6 +63,21 @@ rp_string utf8_to_rp_string(const char *str, size_t len);
 #endif
 
 /**
+ * Convert an rp_char* to UTF-8.
+ * @param str rp_char*.
+ * @param len Length of str, in characters.
+ * @return UTF-8 text in an std::string.
+ */
+#if defined(RP_UTF8)
+static inline std::string rp_string_to_utf8(const rp_char *str, size_t len)
+{
+	return std::string(str, len);
+}
+#elif defined(RP_UTF16)
+std::string rp_string_to_utf8(const rp_char *str, size_t len);
+#endif
+
+/**
  * Convert an rp_string to UTF-8.
  * @param rps rp_string.
  * @return UTF-8 text in an std::string.
@@ -74,6 +89,21 @@ static inline std::string rp_string_to_utf8(const rp_string &rps)
 }
 #elif defined(RP_UTF16)
 std::string rp_string_to_utf8(const rp_string &rps);
+#endif
+
+/**
+ * Convert an rp_char* to UTF-16.
+ * @param str rp_char*.
+ * @param len Length of rps, in characters.
+ * @return UTF-16 text in an std::u16string.
+ */
+#if defined(RP_UTF8)
+std::u16string rp_string_to_utf16(const rp_char *str, size_t len);
+#elif defined(RP_UTF16)
+static inline std::u16string rp_string_to_utf16(const rp_char *str, size_t len)
+{
+	return std::u16string(str, len);
+}
 #endif
 
 /**
