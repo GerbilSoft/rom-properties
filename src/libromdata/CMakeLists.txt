@@ -47,7 +47,6 @@ SET(libromdata_SRCS
 	IDiscReader.cpp
 	DiscReader.cpp
 	WbfsReader.cpp
-	RpFile_stdio.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -72,12 +71,22 @@ SET(libromdata_H
 	RpFile.hpp
 	)
 
+IF(WIN32)
+	SET(libromdata_OS_SRCS
+		RpFile_Win32.cpp
+		)
+ELSE(WIN32)
+	SET(libromdata_OS_SRCS
+		RpFile_stdio.cpp
+		)
+ENDIF(WIN32)
+
 ######################
 # Build the library. #
 ######################
 
 # UTF-8 version.
-ADD_LIBRARY(romdata8 STATIC ${libromdata_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata8 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
 TARGET_INCLUDE_DIRECTORIES(romdata8
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -91,7 +100,7 @@ SET_TARGET_PROPERTIES(romdata8 PROPERTIES
         )
 
 # UTF-16 version.
-ADD_LIBRARY(romdata16 STATIC ${libromdata_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata16 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
 TARGET_INCLUDE_DIRECTORIES(romdata16
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>

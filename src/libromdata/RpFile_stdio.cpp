@@ -365,7 +365,7 @@ void RpFile::rewind(void)
 
 /**
  * Get the file size.
- * @return File size.
+ * @return File size, or negative on error.
  */
 int64_t RpFile::fileSize(void)
 {
@@ -373,6 +373,8 @@ int64_t RpFile::fileSize(void)
 		m_lastError = EBADF;
 		return -1;
 	}
+
+	// TODO: Error checking?
 
 	// Save the current position.
 	int64_t cur_pos = ftell(m_file);

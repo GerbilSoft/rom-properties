@@ -104,7 +104,7 @@ class RpFile : public IRpFile
 
 		/**
 		 * Get the file size.
-		 * @return File size.
+		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void);
 
@@ -115,7 +115,14 @@ class RpFile : public IRpFile
 		virtual int lastError(void) const;
 
 	protected:
+#ifdef _WIN32
+		// Win32: m_file is a HANDLE.
+		void *m_file;
+#else
+		// Other: m_file is an stdio FILE.
 		FILE *m_file;
+#endif
+
 		FileMode m_mode;
 		int m_lastError;
 };

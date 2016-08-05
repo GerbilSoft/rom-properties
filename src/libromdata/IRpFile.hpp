@@ -84,7 +84,7 @@ class IRpFile
 
 		/**
 		 * Get the file size.
-		 * @return File size.
+		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) = 0;
 
