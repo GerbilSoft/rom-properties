@@ -70,6 +70,15 @@ class NintendoPublishers
 		 * @return Publisher, or nullptr if not found.
 		 */
 		static const rp_char *lookup(const char *code);
+
+		/**
+		 * Look up a company code.
+		 * This uses the *old* company code, present in
+		 * older Game Boy titles.
+		 * @param code Company code.
+		 * @return Publisher, or nullptr if not found.
+		 */
+		static const rp_char *lookup_old(uint8_t code);
 };
 
 }

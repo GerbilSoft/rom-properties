@@ -480,4 +480,20 @@ const rp_char *NintendoPublishers::lookup(const char *code)
 	return lookup(code16);
 }
 
+/**
+ * Look up a company code.
+ * This uses the *old* company code, present in
+ * older Game Boy titles.
+ * @param code Company code.
+ * @return Publisher, or nullptr if not found.
+ */
+const rp_char *NintendoPublishers::lookup_old(uint8_t code)
+{
+	char buf[8];
+	snprintf(buf, sizeof(buf), "%02X", code);
+	uint16_t code16 = ((uint8_t)(buf[0]) << 8) |
+			   (uint8_t)(buf[1]);
+	return lookup(code16);
+}
+
 }
