@@ -65,8 +65,9 @@ class GameCubePrivate
 			DISC_UNKNOWN = -1,	// Unknown disc type.
 
 			// Low byte: System ID.
-			DISC_SYSTEM_GCN = 0,	// GameCube disc image.
-			DISC_SYSTEM_WII = 1,	// Wii disc image.
+			DISC_SYSTEM_GCN = 0,		// GameCube disc image.
+			DISC_SYSTEM_WII = 1,		// Wii disc image.
+			DISC_SYSTEM_TRIFORCE = 2,	// Triforce disc/ROM image. [TODO]
 			DISC_SYSTEM_UNKNOWN = 0xFF,
 			DISC_SYSTEM_MASK = 0xFF,
 
@@ -331,6 +332,23 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
 	} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
 		// GameCube disc image.
+		// TODO: Check for Triforce?
+		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
+	}
+
+	// Check for NDDEMO. (Early GameCube demo discs.)
+	static const uint8_t nddemo_header[64] = {
+		0x30, 0x30, 0x00, 0x45, 0x30, 0x31, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x4E, 0x44, 0x44, 0x45, 0x4D, 0x4F, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	};
+	if (!memcmp(gcn_header, nddemo_header, sizeof(nddemo_header))) {
+		// NDDEMO disc.
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
 	}
 
@@ -377,6 +395,8 @@ const rp_char *GameCube::systemName(void) const
 			return _RP("GameCube");
 		case GameCubePrivate::DISC_SYSTEM_WII:
 			return _RP("Wii");
+		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+			return _RP("Triforce");
 		default:
 			break;
 	}
@@ -437,14 +457,25 @@ int GameCube::loadFieldData(void)
 
 	// Disc header is read in the constructor.
 
+	// TODO: Trim the titles. (nulls, spaces)
+	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
+
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
 	m_fields->addData_string(cp1252_sjis_to_rp_string(
 		d->discHeader.game_title, sizeof(d->discHeader.game_title)));
 
-	// Game ID and publisher.
-	m_fields->addData_string(ascii_to_rp_string(
-		d->discHeader.id6, sizeof(d->discHeader.id6)));
+	// Game ID.
+	// Replace any non-printable characters with underscores.
+	// (NDDEMO has ID6 "00\0E01".)
+	char id6[7];
+	for (int i = 0; i < 6; i++) {
+		id6[i] = (isprint(d->discHeader.id6[i])
+			? d->discHeader.id6[i]
+			: '_');
+	}
+	id6[6] = 0;
+	m_fields->addData_string(ascii_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
@@ -676,6 +707,30 @@ int GameCube::loadURLs(ImageType imageType)
 	char id6[7];
 	memcpy(id6, d->discHeader.id6, sizeof(id6));
 	id6[6] = 0;
+
+	// Replace any non-printable characters with underscores.
+	// (NDDEMO has ID6 "00\0E01".)
+	for (int i = 0; i < 6; i++) {
+		if (!isprint(id6[i])) {
+			id6[i] = '_';
+		}
+	}
+
+	// Determine the system name.
+	// (Used for cache keys only)
+	const char *cache_sysName;
+	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+		case GameCubePrivate::DISC_SYSTEM_WII:
+		default:
+			cache_sysName = "wii";
+			break;
+		case GameCubePrivate::DISC_SYSTEM_GCN:
+			cache_sysName = "gcn";
+			break;
+		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+			cache_sysName = "triforce";
+			break;
+	}
 
 	// Is this not the first disc?
 	if (d->discHeader.disc_number > 0) {
