@@ -57,14 +57,29 @@ class NintendoDS : public RomData
 		NintendoDS &operator=(const NintendoDS &);
 
 	public:
-		/**
-		 * Detect if a ROM image is supported by this class.
-		 * TODO: Actually detect the type; for now, just returns true if it's supported.
-		 * @param info ROM detection information.
-		 * @return 1 if the ROM image is supported; 0 if it isn't.
-		 */
-		static int isRomSupported(const DetectInfo *info);
+		/** ROM detection functions. **/
 
+		/**
+		 * Is a ROM image supported by this class?
+		 * @param info DetectInfo containing ROM detection information.
+		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+		 */
+		static int isRomSupported_static(const DetectInfo *info);
+
+		/**
+		 * Is a ROM image supported by this object?
+		 * @param info DetectInfo containing ROM detection information.
+		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isRomSupported(const DetectInfo *info) const override;
+
+		/**
+		 * Get the name of the system the loaded ROM is designed for.
+		 * @return System name, or nullptr if not supported.
+		 */
+		virtual const rp_char *systemName(void) const override;
+
+	public:
 		/**
 		 * Get a list of all supported file extensions.
 		 * This is to be used for file type registration;

@@ -40,7 +40,7 @@ namespace LibRomData {
  */
 RomData *RomDataFactory::getInstance(IRpFile *file)
 {
-	DetectInfo info;
+	RomData::DetectInfo info;
 
 	// Get the file size.
 	info.szFile = file->fileSize();
@@ -57,7 +57,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 
 #define CheckRomData(sys) \
 	do { \
-		if (sys::isRomSupported(&info) > 0) { \
+		if (sys::isRomSupported_static(&info) >= 0) { \
 			RomData *romData = new sys(file); \
 			if (romData->isValid()) \
 				return romData; \

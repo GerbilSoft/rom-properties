@@ -263,22 +263,23 @@ NintendoDS::NintendoDS(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
-	m_isValid = isRomSupported(&info);
+	m_isValid = (isRomSupported(&info) >= 0);
 }
 
 /**
- * Detect if a ROM image is supported by this class.
- * TODO: Actually detect the type; for now, just returns true if it's supported.
- * @param info ROM detection information.
- * @return 1 if the ROM image is supported; 0 if it isn't.
+ * Is a ROM image supported by this class?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int NintendoDS::isRomSupported(const DetectInfo *info)
+int NintendoDS::isRomSupported_static(const DetectInfo *info)
 {
 	if (!info || info->szHeader < sizeof(DS_ROMHeader)) {
 		// Either no detection information was specified,
 		// or the header is too small.
-		return 0;
+		return -1;
 	}
+
+	// TODO: Detect DS vs. DSi and return the system ID.
 
 	// Check the first 16 bytes of the Nintendo logo.
 	static const uint8_t nintendo_gba_logo[16] = {
@@ -290,11 +291,31 @@ int NintendoDS::isRomSupported(const DetectInfo *info)
 	if (!memcmp(nds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		// TODO: DS vs. DSi?
-		return 1;
+		return 0;
 	}
 
 	// Not supported.
-	return 0;
+	return -1;
+}
+
+/**
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int NintendoDS::isRomSupported(const DetectInfo *info) const
+{
+	return isRomSupported_static(info);
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @return System name, or nullptr if not supported.
+ */
+const rp_char *NintendoDS::systemName(void) const
+{
+	// TODO: Store system ID.
+	return _RP("Nintendo DS");
 }
 
 /**

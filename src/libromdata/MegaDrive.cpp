@@ -174,19 +174,20 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
-	m_isValid = isRomSupported(&info);
+	m_isValid = (isRomSupported(&info) >= 0);
 }
 
+/** ROM detection functions. **/
+
 /**
- * Detect if a ROM image is supported by this class.
- * TODO: Actually detect the type; for now, just returns true if it's supported.
- * @param info ROM detection information.
- * @return 1 if the ROM image is supported; 0 if it isn't.
+ * Is a ROM image supported by this class?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
-int MegaDrive::isRomSupported(const DetectInfo *info)
+int MegaDrive::isRomSupported_static(const DetectInfo *info)
 {
 	if (!info)
-		return 0;
+		return -1;
 
 	// TODO: Handle SMD and other interleaved formats.
 	// TODO: Handle Sega CD.
@@ -211,13 +212,33 @@ int MegaDrive::isRomSupported(const DetectInfo *info)
 			{
 				// Found a Mega Drive ROM.
 				// TODO: Identify the specific type.
-				return 1;
+				return 0;
 			}
 		}
 	}
 
 	// Not supported.
-	return 0;
+	return -1;
+}
+
+/**
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int MegaDrive::isRomSupported(const DetectInfo *info) const
+{
+	return isRomSupported_static(info);
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @return System name, or nullptr if not supported.
+ */
+const rp_char *MegaDrive::systemName(void) const
+{
+	// TODO: Store system ID.
+	return _RP("Mega Drive");
 }
 
 /**

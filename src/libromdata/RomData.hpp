@@ -35,21 +35,6 @@
 
 namespace LibRomData {
 
-/**
- * ROM detection information.
- * Used for the class-specific isRomSupported() functions.
- * TODO: Make isRomSupported() non-static with a static wrapper?
- */
-struct DetectInfo {
-	// ROM header.
-	const uint8_t *pHeader;	// ROM header.
-	size_t szHeader;	// Size of header.
-
-	// File information.
-	const rp_char *ext;	// File extension, including leading '.'
-	int64_t szFile;		// File size. (Required for certain types.)
-};
-
 class rp_image;
 class RomData
 {
@@ -94,6 +79,41 @@ class RomData
 		 * Close the opened file.
 		 */
 		void close(void);
+
+	public:
+		/** ROM detection functions. **/
+
+		/**
+		 * ROM detection information.
+		 * Used for isRomSupported() functions.
+		 */
+		struct DetectInfo {
+			// ROM header.
+			const uint8_t *pHeader;	// ROM header.
+			size_t szHeader;	// Size of header.
+
+			// File information.
+			const rp_char *ext;	// File extension, including leading '.'
+			int64_t szFile;		// File size. (Required for certain types.)
+		};
+
+		/**
+		 * Is a ROM image supported by this object?
+		 * @param info DetectInfo containing ROM detection information.
+		 * @return Object-specific system ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isRomSupported(const DetectInfo *info) const = 0;
+
+		/**
+		 * Get the name of the system the loaded ROM is designed for.
+		 * TODO: Parameter for long or short name, or region?
+		 * @return System name, or nullptr if not supported.
+		 */
+		virtual const rp_char *systemName(void) const = 0;
+
+		// TODO:
+		// - List of supported systems.
+		// - Get logo from current system and/or other system?
 
 	public:
 		/** Class-specific functions that can be used even if isValid() is false. **/

@@ -63,29 +63,29 @@ class GameCube : public RomData
 		GameCubePrivate *const d;
 
 	public:
-		enum DiscType {
-			DISC_UNKNOWN = 0,	// Unknown disc type.
-
-			// Low byte: System ID.
-			DISC_SYSTEM_UNKNOWN = 0,
-			DISC_SYSTEM_GCN = 1,	// GameCube disc image.
-			DISC_SYSTEM_WII = 2,	// Wii disc image.
-			DISC_SYSTEM_MASK = 0xFF,
-
-			// High byte: Image format.
-			DISC_FORMAT_UNKNOWN = (0 << 8),
-			DISC_FORMAT_RAW  = (1 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_WBFS = (2 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_MASK = (0xFF << 8),
-		};
+		/** ROM detection functions. **/
 
 		/**
-		 * Detect if a disc image is supported by this class.
-		 * @param info ROM detection information.
-		 * @return DiscType if the disc image is supported; 0 if it isn't.
+		 * Is a ROM image supported by this class?
+		 * @param info DetectInfo containing ROM detection information.
+		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		static DiscType isRomSupported(const DetectInfo *info);
+		static int isRomSupported_static(const DetectInfo *info);
 
+		/**
+		 * Is a ROM image supported by this object?
+		 * @param info DetectInfo containing ROM detection information.
+		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isRomSupported(const DetectInfo *info) const override;
+
+		/**
+		 * Get the name of the system the loaded ROM is designed for.
+		 * @return System name, or nullptr if not supported.
+		 */
+		virtual const rp_char *systemName(void) const override;
+
+	public:
 		/**
 		 * Get a list of all supported file extensions.
 		 * This is to be used for file type registration;
@@ -109,10 +109,10 @@ class GameCube : public RomData
 
 	protected:
 		/**
-		* Load field data.
-		* Called by RomData::fields() if the field data hasn't been loaded yet.
-		* @return 0 on success; negative POSIX error code on error.
-		*/
+		 * Load field data.
+		 * Called by RomData::fields() if the field data hasn't been loaded yet.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
 		virtual int loadFieldData(void) override;
 
 		/**

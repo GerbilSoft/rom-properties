@@ -61,8 +61,24 @@ class GameCubePrivate
 		static const RomFields::ListDataDesc rvl_partitions;
 		static const struct RomFields::Desc gcn_fields[];
 
+		enum DiscType {
+			DISC_UNKNOWN = -1,	// Unknown disc type.
+
+			// Low byte: System ID.
+			DISC_SYSTEM_GCN = 0,	// GameCube disc image.
+			DISC_SYSTEM_WII = 1,	// Wii disc image.
+			DISC_SYSTEM_UNKNOWN = 0xFF,
+			DISC_SYSTEM_MASK = 0xFF,
+
+			// High byte: Image format.
+			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
+			DISC_FORMAT_WBFS = (1 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_UNKNOWN = (0xFF << 8),
+			DISC_FORMAT_MASK = (0xFF << 8),
+		};
+
 		// Disc type and reader.
-		GameCube::DiscType discType;
+		int discType;
 		IDiscReader *discReader;
 
 		// Disc header.
@@ -94,7 +110,7 @@ class GameCubePrivate
 
 GameCubePrivate::GameCubePrivate(GameCube *q)
 	: q(q)
-	, discType(GameCube::DISC_UNKNOWN)
+	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, wiiVgTblLoaded(false)
 { }
@@ -148,7 +164,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	} else if (!q->m_file || !q->m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if ((discType & GameCube::DISC_SYSTEM_MASK) != GameCube::DISC_SYSTEM_WII) {
+	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
 		// Unsupported disc type.
 		return -EIO;
 	}
@@ -256,20 +272,22 @@ GameCube::GameCube(IRpFile *file)
 	d->discType = isRomSupported(&info);
 
 	// TODO: DiscReaderFactory?
-	switch (d->discType & DISC_FORMAT_MASK) {
-		case DISC_FORMAT_RAW:
-			d->discReader = new DiscReader(m_file);
-			break;
-		case DISC_FORMAT_WBFS:
-			d->discReader = new WbfsReader(m_file);
-			break;
-		case DISC_FORMAT_UNKNOWN:
-		default:
-			d->discType = DISC_UNKNOWN;
-			break;
+	if (d->discType >= 0) {
+		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
+			case GameCubePrivate::DISC_FORMAT_RAW:
+				d->discReader = new DiscReader(m_file);
+				break;
+			case GameCubePrivate::DISC_FORMAT_WBFS:
+				d->discReader = new WbfsReader(m_file);
+				break;
+			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
+			default:
+				d->discType = GameCubePrivate::DISC_UNKNOWN;
+				break;
+		}
 	}
 
-	m_isValid = (d->discType != DISC_UNKNOWN);
+	m_isValid = (d->discType >= 0);
 
 	// Save the disc header for later.
 	d->discReader->rewind();
@@ -278,7 +296,8 @@ GameCube::GameCube(IRpFile *file)
 		// Error reading the disc header.
 		delete d->discReader;
 		d->discReader = nullptr;
-		m_isValid = DISC_UNKNOWN;
+		d->discType = GameCubePrivate::DISC_UNKNOWN;
+		m_isValid = false;
 	}
 }
 
@@ -287,17 +306,19 @@ GameCube::~GameCube()
 	delete d;
 }
 
+/** ROM detection functions. **/
+
 /**
- * Detect if a disc image is supported by this class.
- * @param info ROM detection information.
- * @return DiscType if the disc image is supported; 0 if it isn't.
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Object-specific system ID (>= 0) if supported; -1 if not.
  */
-GameCube::DiscType GameCube::isRomSupported(const DetectInfo *info)
+int GameCube::isRomSupported_static(const DetectInfo *info)
 {
 	if (!info || info->szHeader < sizeof(GCN_DiscHeader)) {
 		// Either no detection information was specified,
 		// or the header is too small.
-		return DISC_UNKNOWN;
+		return GameCubePrivate::DISC_UNKNOWN;
 	}
 
 	static const uint32_t magic_wii = 0x5D1C9EA3;
@@ -307,10 +328,10 @@ GameCube::DiscType GameCube::isRomSupported(const DetectInfo *info)
 	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->pHeader);
 	if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
 		// Wii disc image.
-		return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_RAW);
+		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
 	} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
 		// GameCube disc image.
-		return (DiscType)(DISC_SYSTEM_GCN | DISC_FORMAT_RAW);
+		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
 	}
 
 	// Check for WBFS.
@@ -326,13 +347,41 @@ GameCube::DiscType GameCube::isRomSupported(const DetectInfo *info)
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->pHeader[hdd_sector_size]);
 			if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
 				// Wii disc image. (WBFS format)
-				return (DiscType)(DISC_SYSTEM_WII | DISC_FORMAT_WBFS);
+				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
 		}
 	}
 
 	// Not supported.
-	return DISC_UNKNOWN;
+	return GameCubePrivate::DISC_UNKNOWN;
+}
+
+/**
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int GameCube::isRomSupported(const DetectInfo *info) const
+{
+	return isRomSupported_static(info);
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @return System name, or nullptr if not supported.
+ */
+const rp_char *GameCube::systemName(void) const
+{
+	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+		case GameCubePrivate::DISC_SYSTEM_GCN:
+			return _RP("GameCube");
+		case GameCubePrivate::DISC_SYSTEM_WII:
+			return _RP("Wii");
+		default:
+			break;
+	}
+
+	return nullptr;
 }
 
 /**
@@ -381,7 +430,7 @@ int GameCube::loadFieldData(void)
 	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (d->discType == DISC_UNKNOWN) {
+	} else if (d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -406,7 +455,7 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
 	// Partition table. (Wii only)
-	if ((d->discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII) {
+	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
 		RomFields::ListData *partitions = new RomFields::ListData();
 
 		// Load the Wii partition tables.
@@ -541,6 +590,10 @@ int GameCube::loadURLs(ImageType imageType)
 	if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
+	}
+	if (d->discType < 0) {
+		// Unknown disc type.
+		return -EIO;
 	}
 
 	// Check for supported image types.
