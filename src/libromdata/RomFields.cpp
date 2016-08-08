@@ -28,6 +28,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 
 // C++ includes.
 #include <vector>
@@ -358,6 +359,30 @@ int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 		len = sizeof(buf);
 
 	rp_string str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	return addData_string(str);
+}
+
+/**
+ * Add a string field formatted like a hex dump
+ * @param data Input bytes
+ * @param sz Byte count
+ * @return Field index.
+ */
+int RomFields::addData_string_hexdump(const uint8_t *data,size_t sz){
+	if(!sz) return addData_string(_RP(""));
+	
+	char buf[32]={0}, buf2[4];
+	int len=0;
+	for(unsigned i=0;i<sz;i++){
+		snprintf(buf2,sizeof(buf2)," %02X",data[i]);
+		strncat(buf,buf2,sizeof(buf));
+		len+=3;
+	}
+	
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	
+	rp_string str = ascii_to_rp_string(buf+1, len-1); //NOTE: first character is a space, so we skip it
 	return addData_string(str);
 }
 
