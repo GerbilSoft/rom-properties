@@ -39,13 +39,98 @@
 
 namespace LibRomData {
 
+/** Generic text conversion functions. **/
+
+// TODO: #ifdef out functions that aren't used
+// in RP_UTF8 and/or RP_UTF16 builds?
+
+/**
+ * Convert cp1252 or Shift-JIS text to UTF-8.
+ * @param str cp1252 or Shift-JIS text.
+ * @param len Length of str, in bytes.
+ * @return UTF-8 string.
+ */
+std::string cp1252_sjis_to_utf8(const char *str, size_t len);
+
+/**
+ * Convert cp1252 or Shift-JIS text to UTF-16.
+ * @param str cp1252 or Shift-JIS text.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
+ */
+std::u16string cp1252_sjis_to_utf16(const char *str, size_t len);
+
+/**
+ * Convert UTF-8 text to UTF-16.
+ * @param str UTF-8 text.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
+ */
+std::u16string utf8_to_utf16(const char *str, size_t len);
+
+/**
+ * Convert UTF-16 text to UTF-8.
+ * @param str UTF-16 text.
+ * @param len Length of str, in characters.
+ * @return UTF-8 string.
+ */
+std::string utf16_to_utf8(const char16_t *str, size_t len);
+
+/**
+ * Convert ASCII text to UTF-16.
+ * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
+ * Those aren't handled here for performance reasons.
+ * @param str ASCII text.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
+ */
+std::u16string ascii_to_utf16(const char *str, size_t len);
+
+/**
+ * char16_t strlen().
+ * @param wcs 16-bit string.
+ * @return Length of wcs, in characters.
+ */
+#ifdef RP_WIS16
+static inline size_t u16_strlen(const char16_t *wcs)
+{
+	return wcslen(reinterpret_cast<const wchar_t*>(wcs));
+}
+#else /* !RP_WIS16 */
+size_t u16_strlen(const char16_t *wcs);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strdup().
+ * @param wcs 16-bit string.
+ * @return Copy of wcs.
+ */
+#ifdef RP_WIS16
+static inline char16_t *u16_strdup(const char16_t *wcs)
+{
+	return reinterpret_cast<char16_t*>(
+		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
+}
+#else /* !RP_WIS16 */
+char16_t *u16_strdup(const char16_t *wcs);
+#endif /* RP_WIS16 */
+
+/** rp_string wrappers. **/
+
 /**
  * Convert cp1252 or Shift-JIS text to rp_string.
  * @param str cp1252 or Shift-JIS text.
  * @param len Length of str.
  * @return rp_string.
  */
-rp_string cp1252_sjis_to_rp_string(const char *str, size_t len);
+static inline rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
+{
+#ifdef RP_UTF8
+	return cp1252_sjis_to_utf8(str, len);
+#else
+	return cp1252_sjis_to_utf16(str, len);
+#endif
+}
 
 /**
  * Convert UTF-8 text to rp_string.
@@ -53,142 +138,139 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len);
  * @param len Length of str.
  * @return rp_string.
  */
-#if defined(RP_UTF8)
 static inline rp_string utf8_to_rp_string(const char *str, size_t len)
 {
+#if defined(RP_UTF8)
 	return rp_string(str, len);
-}
 #elif defined(RP_UTF16)
-rp_string utf8_to_rp_string(const char *str, size_t len);
+	return utf8_to_utf16(str, len);
 #endif
+}
 
 /**
- * Convert an rp_char* to UTF-8.
- * @param str rp_char*.
- * @param len Length of str, in characters.
- * @return UTF-8 text in an std::string.
+ * Convert UTF-8 text to rp_string.
+ * @param str UTF-8 text.
+ * @return rp_string.
  */
+static inline rp_string utf8_to_rp_string(const std::string &str)
+{
 #if defined(RP_UTF8)
+	return str;
+#elif defined(RP_UTF16)
+	return utf8_to_utf16(str.data(), str.size());
+#endif
+}
+
+/**
+ * Convert rp_string to UTF-8 text.
+ * @param str rp_string.
+ * @param len Length of str, in characters.
+ * @return UTF-8 string.
+ */
 static inline std::string rp_string_to_utf8(const rp_char *str, size_t len)
 {
+#if defined(RP_UTF8)
 	return std::string(str, len);
-}
 #elif defined(RP_UTF16)
-std::string rp_string_to_utf8(const rp_char *str, size_t len);
+	return utf16_to_utf8(str, len);
 #endif
+}
 
 /**
- * Convert an rp_string to UTF-8.
+ * Convert rp_string to UTF-8 text.
  * @param rps rp_string.
- * @return UTF-8 text in an std::string.
+ * @return UTF-8 string.
  */
-#if defined(RP_UTF8)
 static inline std::string rp_string_to_utf8(const rp_string &rps)
 {
+#if defined(RP_UTF8)
 	return rps;
-}
 #elif defined(RP_UTF16)
-std::string rp_string_to_utf8(const rp_string &rps);
+	return utf16_to_utf8(rps.data(), rps.size());
 #endif
+}
 
 /**
- * Convert an rp_char* to UTF-16.
- * @param str rp_char*.
- * @param len Length of rps, in characters.
- * @return UTF-16 text in an std::u16string.
+ * Convert rp_string to UTF-16 text.
+ * @param str rp_string.
+ * @param len Length of str, in characters.
+ * @return UTF-16 string.
  */
-#if defined(RP_UTF8)
-std::u16string rp_string_to_utf16(const rp_char *str, size_t len);
-#elif defined(RP_UTF16)
 static inline std::u16string rp_string_to_utf16(const rp_char *str, size_t len)
 {
+#if defined(RP_UTF8)
+	return utf8_to_utf16(str, len);
+#elif defined(RP_UTF16)
 	return std::u16string(str, len);
-}
 #endif
+}
 
 /**
- * Convert an rp_string to UTF-16.
+ * Convert rp_string to UTF-8 text.
  * @param rps rp_string.
- * @return UTF-16 text in an std::u16string.
+ * @return UTF-8 string.
  */
-#if defined(RP_UTF8)
-std::u16string rp_string_to_utf16(const rp_string &rps);
-#elif defined(RP_UTF16)
 static inline std::u16string rp_string_to_utf16(const rp_string &rps)
 {
+#if defined(RP_UTF8)
+	return utf8_to_utf16(rps.data(), rps.size());
+#elif defined(RP_UTF16)
 	return rps;
-}
 #endif
+}
 
 /**
  * Convert ASCII text to rp_string.
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
  * @param str ASCII text.
- * @param len Length of str.
+ * @param len Length of str, in bytes.
  * @return rp_string.
  */
-#if defined(RP_UTF8)
 static inline rp_string ascii_to_rp_string(const char *str, size_t len)
 {
+#if defined(RP_UTF8)
 	return rp_string(str, len);
-}
 #elif defined(RP_UTF16)
-rp_string ascii_to_rp_string(const char *str, size_t len);
+	return ascii_to_utf16(str, len);
 #endif
+}
 
 /**
  * strlen() function for rp_char strings.
- * @param str String.
- * @return String length.
+ * @param str rp_string.
+ * @return Length of str, in characters.
  */
+static inline size_t rp_strlen(const rp_char *str)
+{
 #if defined(RP_UTF8)
-static inline size_t rp_strlen(const rp_char *str)
-{
 	return strlen(str);
-}
 #elif defined(RP_UTF16)
-#ifdef RP_WIS16
-static inline size_t rp_strlen(const rp_char *str)
-{
-	return wcslen(reinterpret_cast<const wchar_t*>(str));
-}
-#else /* !RP_WIS16 */
-size_t rp_strlen(const rp_char *str);
-#endif /* RP_WIS16 */
+	return u16_strlen(str);
 #endif
+}
 
 /**
  * strdup() function for rp_char strings.
  * @param str String.
  * @return Duplicated string.
  */
+static inline rp_char *rp_strdup(const rp_char *str)
+{
 #if defined(RP_UTF8)
-static inline rp_char *rp_strdup(const rp_char *str)
-{
 	return strdup(str);
-}
-static inline rp_char *rp_strdup(const rp_string &str)
-{
-	return strdup(str.c_str());
-}
 #elif defined(RP_UTF16)
-#ifdef RP_WIS16
-static inline rp_char *rp_strdup(const rp_char *str)
-{
-	return reinterpret_cast<rp_char*>(
-		wcsdup(reinterpret_cast<const wchar_t*>(str)));
+	return u16_strdup(str);
+#endif
 }
 static inline rp_char *rp_strdup(const rp_string &str)
 {
-	return reinterpret_cast<rp_char*>(
-		wcsdup(reinterpret_cast<const wchar_t*>(str.c_str())));
-}
-#else /* !RP_WIS16 */
-rp_char *rp_strdup(const rp_char *str);
-rp_char *rp_strdup(const rp_string &str);
-#endif /* RP_WIS16 */
+#if defined(RP_UTF8)
+	return strdup(str.c_str());
+#elif defined(RP_UTF16)
+	return u16_strdup(str.c_str());
 #endif
+}
 
 }
 

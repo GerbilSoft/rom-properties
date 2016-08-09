@@ -226,12 +226,67 @@ static char *rp_iconv(const char *src, size_t src_bytes_len,
 #endif /* HAVE_ICONV */
 
 /**
- * Convert cp1252 or Shift-JIS text to rp_string.
+ * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str.
- * @return rp_string.
+ * @param len Length of str, in bytes.
+ * @return UTF-8 string.
  */
-rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
+std::string cp1252_sjis_to_utf8(const char *str, size_t len)
+{
+#if defined(_WIN32)
+	// Win32 version.
+	// Attempt to convert from Shift-JIS to UTF-16.
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
+	if (!wcs) {
+		// Shift-JIS conversion failed.
+		// Fall back to cp1252.
+		wcs = W32U_mbs_to_UTF16(str, (int)len, 1252, &cchWcs);
+	}
+
+	if (wcs) {
+		// Convert the UTF-16 to UTF-8.
+		int cbMbs;
+		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
+		free(wcs);
+		if (!mbs)
+			return string();
+		string ret(mbs, cbMbs);
+		free(mbs);
+		return ret;
+	}
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	// Try Shift-JIS first.
+	char *mbs = rp_iconv((char*)str, len, "SHIFT-JIS", "UTF-8");
+	if (mbs) {
+		string ret(mbs);
+		free(mbs);
+		return ret;
+	}
+
+	// Try cp1252.
+	mbs = rp_iconv((char*)str, len, "CP1252", "UTF-8");
+	if (mbs) {
+		string ret(mbs);
+		free(mbs);
+		return ret;
+	}
+#else
+#error Text conversion is not available on this system.
+#endif
+
+	// Unable to convert the string.
+	return string();
+}
+
+/**
+ * Convert cp1252 or Shift-JIS text to UTF-16.
+ * @param str cp1252 or Shift-JIS text.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
+ */
+u16string cp1252_sjis_to_utf16(const char *str, size_t len)
 {
 #ifdef RP_WIS16
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
@@ -251,36 +306,26 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 	}
 
 	if (wcs) {
-#if defined(RP_UTF8)
-		// Convert the UTF-16 to UTF-8.
-		int cbMbs;
-		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
+		// Return the UTF-16 string.
+		u16string ret(reinterpret_cast<const char16_t*>(wcs), cchWcs);
 		free(wcs);
-		if (!mbs)
-			return rp_string();
-		rp_string ret(mbs, cbMbs);
-		free(mbs);
 		return ret;
-#elif defined(RP_UTF16)
-		// Return the UTF-16 as-is.
-		return rp_string(reinterpret_cast<const char16_t*>(wcs), cchWcs);
-#endif
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	rp_char *rps = (rp_char*)rp_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
-	if (rps) {
-		rp_string ret(rps);
-		free(rps);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
+	if (wcs) {
+		u16string ret(wcs);
+		free(wcs);
 		return ret;
 	}
 
 	// Try cp1252.
-	rps = (rp_char*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
-	if (rps) {
-		rp_string ret(rps);
-		free(rps);
+	wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
+	if (wcs) {
+		u16string ret(wcs);
+		free(wcs);
 		return ret;
 	}
 #else
@@ -288,132 +333,29 @@ rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 #endif
 
 	// Unable to convert the string.
-	return rp_string();
+	return u16string();
 }
 
-#ifdef RP_UTF16
 /**
- * Convert UTF-8 text to rp_string.
+ * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
- * @param len Length of str.
- * @return rp_string.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
  */
-rp_string utf8_to_rp_string(const char *str, size_t len)
+u16string utf8_to_utf16(const char *str, size_t len)
 {
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
 	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs);
 	if (wcs) {
-		rp_string ret(wcs, cchWcs);
-		free(wcs);
-		return ret;
-	}
-#elif defined(HAVE_ICONV)
-	// iconv version.
-	rp_char *rps = (rp_char*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
-	if (rps) {
-		rp_string ret(rps);
-		free(rps);
-		return ret;
-	}
-#else
-#error Text conversion is not available on this system.
-#endif
-
-	// Unable to convert the string.
-	return rp_string();
-}
-#endif /* RP_UTF16 */
-
-#ifdef RP_UTF16
-/**
- * Convert an rp_char* to UTF-8.
- * @param str rp_char*.
- * @param len Length of str, in characters.
- * @return UTF-8 text in an std::string.
- */
-string rp_string_to_utf8(const rp_char *str, size_t len)
-{
-#if defined(_WIN32)
-	// Win32 version.
-	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(str, len, CP_UTF8, &cbMbs);
-	if (mbs) {
-		string ret(mbs, cbMbs);
-		free(mbs);
-		return ret;
-	}
-#elif defined(HAVE_ICONV)
-	// iconv version.
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(rp_char), RP_ICONV_ENCODING, "UTF-8");
-	if (mbs) {
-		string ret(mbs);
-		free(mbs);
-		return ret;
-	}
-#else
-#error Text conversion is not available on this system.
-#endif
-
-	// Unable to convert the string.
-	return string();
-}
-
-/**
- * Convert an rp_string to UTF-8.
- * @param rps rp_string.
- * @return UTF-8 text in an std::string.
- */
-string rp_string_to_utf8(const rp_string &rps)
-{
-#if defined(_WIN32)
-	// Win32 version.
-	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(rps.data(), rps.size(), CP_UTF8, &cbMbs);
-	if (mbs) {
-		string ret(mbs, cbMbs);
-		free(mbs);
-		return ret;
-	}
-#elif defined(HAVE_ICONV)
-	// iconv version.
-	char *mbs = (char*)rp_iconv((char*)rps.data(), rps.size()*sizeof(rp_char), RP_ICONV_ENCODING, "UTF-8");
-	if (mbs) {
-		string ret(mbs);
-		free(mbs);
-		return ret;
-	}
-#else
-#error Text conversion is not available on this system.
-#endif
-
-	// Unable to convert the string.
-	return string();
-}
-#endif /* RP_UTF16 */
-
-#ifdef RP_UTF8
-/**
- * Convert an rp_char* to UTF-16.
- * @param str rp_char*.
- * @param len Length of str, in characters.
- * @return UTF-8 text in an std::string.
- */
-u16string rp_string_to_utf16(const rp_char *str, size_t len)
-{
-#if defined(_WIN32)
-	// Win32 version.
-	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, len, CP_UTF8, &cchWcs);
-	if (wcs) {
 		u16string ret(wcs, cchWcs);
 		free(wcs);
 		return ret;
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char16_t *wcs = (char16_t*)rp_iconv(str, len, "UTF-8", RP_ICONV_ENCODING);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
 	if (wcs) {
 		u16string ret(wcs);
 		free(wcs);
@@ -428,27 +370,28 @@ u16string rp_string_to_utf16(const rp_char *str, size_t len)
 }
 
 /**
- * Convert an rp_string to UTF-16.
- * @param rps rp_string.
- * @return UTF-8 text in an std::string.
+ * Convert UTF-16 text to UTF-8.
+ * @param str UTF-16 text.
+ * @param len Length of str, in characters.
+ * @return UTF-8 string.
  */
-u16string rp_string_to_utf16(const rp_string &rps)
+string utf16_to_utf8(const char16_t *str, size_t len)
 {
 #if defined(_WIN32)
 	// Win32 version.
-	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(rps.data(), rps.size(), CP_UTF8, &cchWcs);
-	if (wcs) {
-		u16string ret(wcs, cchWcs);
-		free(wcs);
+	int cbMbs;
+	char *mbs = W32U_UTF16_to_mbs(str, (int)len, CP_UTF8, &cbMbs);
+	if (mbs) {
+		string ret(mbs, cbMbs);
+		free(mbs);
 		return ret;
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char16_t *wcs = (char16_t*)rp_iconv(rps.data(), rps.size(), "UTF-8", RP_ICONV_ENCODING);
-	if (wcs) {
-		u16string ret(wcs);
-		free(wcs);
+	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_ENCODING, "UTF-8");
+	if (mbs) {
+		string ret(mbs);
+		free(mbs);
 		return ret;
 	}
 #else
@@ -456,71 +399,58 @@ u16string rp_string_to_utf16(const rp_string &rps)
 #endif
 
 	// Unable to convert the string.
-	return u16string();
+	return string();
 }
-#endif /* RP_UTF8 */
 
-#ifdef RP_UTF16
 /**
- * Convert ASCII text to rp_string.
+ * Convert ASCII text to UTF-16.
  * NOTE: The text MUST be ASCII, NOT Latin-1 or UTF-8!
  * Those aren't handled here for performance reasons.
  * @param str ASCII text.
- * @param len Length of str.
- * @return rp_string.
+ * @param len Length of str, in bytes.
+ * @return UTF-16 string.
  */
-rp_string ascii_to_rp_string(const char *str, size_t len)
+u16string ascii_to_utf16(const char *str, size_t len)
 {
 	// Direct copy from ASCII to UTF-16.
-	// TODO: More efficient to work on rp_string directly,
+	// TODO: More efficient to work on u16string directly,
 	// even though it initializes the string to all 0?
-	rp_string rps(len, 0);
-	for (rp_char *ptr = &rps[0]; len > 0; len--) {
+	u16string wcs(len, 0);
+	for (char16_t *ptr = &wcs[0]; len > 0; len--) {
 		// To make sure no one incorrectly uses this
 		// function for Latin-1, mask with 0x7F.
 		assert(!(*str & 0x80));
-		*ptr++ = (((rp_char)*str++) & 0x7F);
+		*ptr++ = (((char16_t)*str++) & 0x7F);
 	}
-	return rps;
+	return wcs;
 }
-#endif /* RP_UTF16 */
 
-#if defined(RP_UTF16) && !defined(RP_WIS16)
+#ifndef RP_WIS16
 /**
- * strlen() function for rp_char strings.
- * @param str String.
- * @return String length.
+ * char16_t strlen().
+ * @param str 16-bit string.
+ * @return Length of str, in characters.
  */
-size_t rp_strlen(const rp_char *str)
+size_t u16_strlen(const char16_t *wcs)
 {
 	size_t len = 0;
-	while (*str++)
+	while (*wcs++)
 		len++;
 	return len;
 }
-#endif /* RP_UTF16 && !RP_WIS16 */
 
-#if defined(RP_UTF16) && !defined(RP_WIS16)
 /**
- * strdup() function for rp_char strings.
- * @param str String.
- * @return Duplicated string.
+ * char16_t strdup().
+ * @param wcs 16-bit string.
+ * @return Copy of wcs.
  */
-rp_char *rp_strdup(const rp_char *str)
+char16_t *u16_strdup(const char16_t *wcs)
 {
-	size_t len = rp_strlen(str)+1;	// includes terminator
-	rp_char *ret = (rp_char*)malloc(len*sizeof(rp_char));
-	memcpy(ret, str, len*sizeof(rp_char));
+	size_t len = u16_strlen(wcs)+1;	// includes terminator
+	char16_t *ret = (char16_t*)malloc(len*sizeof(*wcs));
+	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
 }
-
-rp_char *rp_strdup(const rp_string &str)
-{
-	size_t len = str.size()+1;	// includes terminator
-	rp_char *ret = (rp_char*)malloc(len*sizeof(rp_char));
-	memcpy(ret, str.c_str(), len*sizeof(rp_char));
-	return ret;
-}
-#endif /* RP_UTF16 && !RP_WIS16 */
+#endif /* !RP_WIS16 */
 
 }
