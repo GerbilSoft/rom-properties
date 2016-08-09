@@ -20,9 +20,6 @@ class RP_MultiCreator
 template <class comObj, class creatorClass = RP_MultiCreator<comObj> >
 class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 {
-	protected:
-		volatile long m_lRef;
-
 	public:
 		RP_ClassFactory() { }
 
@@ -87,11 +84,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 
 			// Query the object for the requested interface.
 			HRESULT hr = pObj->QueryInterface(riid, ppvObject);
-			if (hr != S_OK) {
-				// Interface not found.
-				delete pObj;
-			}
-
+			pObj->Release();
 			return hr;
 		}
 

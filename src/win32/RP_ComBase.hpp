@@ -52,7 +52,10 @@ static inline bool RP_ComBase_isReferenced(void)
 		volatile ULONG m_ulRefCount; \
 	\
 	public: \
-		name() : m_ulRefCount(0) { } \
+		name() : m_ulRefCount(1) \
+		{ \
+			InterlockedIncrement(&RP_ulTotalRefCount); \
+		} \
 		virtual ~name() { } \
 	\
 	public: \
