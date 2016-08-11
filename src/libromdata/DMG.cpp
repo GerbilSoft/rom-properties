@@ -32,9 +32,23 @@
 
 // C++ includes.
 #include <vector>
+#include <algorithm>
 using std::vector;
 
 namespace LibRomData {
+
+/**
+ * String length with limit
+ * @param str The string itself
+ * @param len Maximum length of the string
+ * @returns equivivalent to min(strlen(str), len) without buffer overruns
+ */
+static inline size_t strnlen(const char *str, size_t len){
+	size_t rv=0;
+	for(rv=0;rv<len;rv++)
+		if(!*(str++)) break;
+	return rv;
+}
 
 // System
 static const rp_char *const dmg_system_bitfield_names[] = {
@@ -79,6 +93,8 @@ static const struct RomFields::Desc dmg_fields[] = {
 	{_RP("RAM Size"), RomFields::RFT_STRING, nullptr},
 	{_RP("Region"), RomFields::RFT_STRING, nullptr},
 	{_RP("Checksum"), RomFields::RFT_STRING, nullptr},
+	{_RP("Title"), RomFields::RFT_STRING, nullptr},
+	{_RP("GameID"), RomFields::RFT_STRING, nullptr},
 };
 
 // Cartrige hardware
@@ -272,7 +288,7 @@ DMG::DMG(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	m_isValid = isRomSupported(&info);
+	m_isValid = isRomSupported(&info)>=0;
 }
 
 /** ROM detection functions. **/
@@ -486,6 +502,28 @@ int DMG::loadFieldData(void)
 	}
 	m_fields->addData_string(ascii_to_rp_string(buffer,len));
 	
+	// Game title & Game ID
+	/* NOTE: there are two approaches for doing this, when the 15 bytes are all used
+	 * 1) prioritize id
+	 * 2) prioritize title
+	 * Both of those have counter examples:
+	 * If you do the first, you will get "SUPER MARIO" and "LAND" on super mario land rom
+	 * With the second one, you will get "MARIO DELUXAHYJ" and Unknown on super mario deluxe rom
+	 * 
+	 * Current method is the first one.
+	 */
+	len = strnlen(romHeader->title,(romHeader->cgbflag < 0x80 ? 16 : 15));
+	
+	
+	if(	(romHeader->cgbflag&0x3F) == 0 &&	// gameid is only present when cgbflag is
+		4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
+		m_fields->addData_string(ascii_to_rp_string(romHeader->title,std::min(len,11)));
+		m_fields->addData_string(ascii_to_rp_string(romHeader->title+11,4));
+	}
+	else{
+		m_fields->addData_string(ascii_to_rp_string(romHeader->title,len));
+		m_fields->addData_string(_RP("Unknown"));
+	}
 	return (int)m_fields->count();
 }
 
