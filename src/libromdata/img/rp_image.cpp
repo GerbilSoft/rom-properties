@@ -363,4 +363,22 @@ void rp_image::set_tr_idx(int tr_idx)
 	}
 }
 
+static const rp_char *format_names[]={
+	_RP("None"),
+	_RP("CI8"),
+	_RP("ARGB32"),
+};
+/**
+* Get name of a format
+* @param format Format.
+* @return String containing user-friendly name of a format.
+*/
+const rp_char *rp_image::getFormatName(Format format){
+	assert(format >= FORMAT_NONE && format <= FORMAT_ARGB32);
+	if (format < FORMAT_NONE || format > FORMAT_ARGB32) {
+		return nullptr;
+	}
+	return format_names[format];
+}
+
 }
