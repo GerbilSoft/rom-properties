@@ -6,8 +6,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 # Sources and headers.
 SET(rom-properties-rpcli_SRCS
 	rpcli.cpp
+	properties.cpp
+	bmp.cpp
 	)
 SET(rom-properties-rpcli_H
+	properties.hpp
+	bmp.hpp
 	)
 
 #####################

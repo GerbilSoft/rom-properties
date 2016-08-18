@@ -20,187 +20,104 @@
  ***************************************************************************/
 
 #include <iostream>
-#include <algorithm>
-#include <iomanip>
+#include <fstream>
+#include <cstdlib>
+#include <cassert>
+
 #include <libromdata/RpFile.hpp>
 #include <libromdata/RomData.hpp>
 #include <libromdata/RomDataFactory.hpp>
-#include <libromdata/RomFields.hpp>
 #include <libromdata/TextFuncs.hpp>
+#include <libromdata/rp_image.hpp>
+#include "bmp.hpp"
+#include "properties.hpp"
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::ostream;
-using std::max;
-using std::setw;
+using std::ofstream;
 using namespace LibRomData;
-
-class Pad{
-	size_t width;
-public:
-	Pad(size_t width):width(width){}
-	friend ostream& operator<<(ostream& os,const Pad& pad){
-		return os << setw(pad.width) << "";
-	}
-	
-};
-class ColonPad{
-	size_t width;
-	const rp_char* str;
-public:
-	ColonPad(size_t width,const rp_char* str):width(width),str(str){}
-	friend ostream& operator<<(ostream& os,const ColonPad& cp){
-		return os << cp.str << std::left << setw(max(0,(signed)( cp.width - rp_strlen(cp.str) ))) << ":";
-	}
-};
-class StringField{
-	size_t width;
-	const RomFields::Desc* desc;
-	const RomFields::Data* data;
-public:
-	StringField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const StringField& field){
-		auto desc = field.desc;
-		auto data = field.data;
-		return os << ColonPad(field.width,desc->name) << "'" << data->str << "'";
-	}
-};
-
-class BitfieldField{
-	size_t width;
-	const RomFields::Desc* desc;
-	const RomFields::Data* data;
-public:
-	BitfieldField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const BitfieldField& field){
-		auto desc = field.desc;
-		auto data = field.data;
-		
-		int perRow = desc->bitfield->elemsPerRow ? desc->bitfield->elemsPerRow : 4;
-		
-		size_t *colSize = new size_t[perRow]();
-		for(int i=0;i<desc->bitfield->elements;i++){
-			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]),colSize[i%perRow]);
+void DoFile(const char*filename, int extract, const char* outnames[]){
+	cout << "== Reading file '" << filename << "'..." << endl;
+	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
+	if (file && file->isOpen()) {
+		RomData *romData = RomDataFactory::getInstance(file);
+		if (romData) {
+			if(romData->isValid()){
+				cout << "-- " << romData->systemName() << " rom detected" << endl;
+				cout << *(romData->fields()) << endl;
+				
+				int supported = romData->supportedImageTypes();
+				union{
+					int i;
+					RomData::ImageType it;
+				};
+				for(i=RomData::IMG_INT_MIN; i<=RomData::IMG_INT_MAX; i++){
+					if(supported&(1<<i)){
+						cout << "-- " << RomData::getImageTypeName(it) << " is present (use -x" << i << " to extract)" << endl;
+						auto image = romData->image(it);
+						if(image && image->isValid()){
+							cout << "   Format : " << rp_image::getFormatName(image->format()) << endl;
+							cout << "   Size   : " << image->width() << " x " << image->height() << endl;
+						}
+						if(extract&(1<<i)){
+							cout << "-- Extracting " << RomData::getImageTypeName(it) << " into '" << outnames[i] << "'" << endl;
+							ofstream file(outnames[i],std::ios::out | std::ios::binary);
+							if(!file.is_open()){
+								cout << "-- Couldn't create file " << outnames[i] << endl;
+								continue;
+							}
+							rpbmp(file,image);
+							file.close();
+						}
+					}
+				}
+				for(i=RomData::IMG_EXT_MIN; i<=RomData::IMG_EXT_MAX; i++){
+					if(supported&(1<<i)){
+						auto &urls = *romData->extURLs(it);
+						for(auto s : urls)
+							cout << "-- " << RomData::getImageTypeName(it) << ": " << s << endl;
+					}	
+				}
+			}else{
+				cout << "-- Rom is not supported" << endl;
+			}			
+			romData->close();
 		}
-		
-		os << ColonPad(field.width,desc->name); // ColonPad sets std::left
-		
-		for(int i=0;i<desc->bitfield->elements;i++){
-			if(i && i%perRow == 0) os << endl << Pad(field.width);
-			os << " [" << (data->bitfield & (1<<i) ? '*' : ' ') << "] " <<
-				setw(colSize[i%perRow]) << desc->bitfield->names[i];
-		}
-		delete[] colSize;
-		return os;
+	}else{
+		cout << "-- Couldn't open file..." << endl;
 	}
-};
-
-class ListDataField{
-	size_t width;
-	const RomFields::Desc* desc;
-	const RomFields::Data* data;
-public:
-	ListDataField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const ListDataField& field){
-		auto desc = field.desc;
-		auto data = field.data;
-		
-		size_t *colSize = new size_t[desc->list_data->count]();
-		size_t totalWidth = desc->list_data->count + 1;
-		for(int i=0;i<desc->list_data->count;i++){
-			colSize[i] = rp_strlen(desc->list_data->names[i]); 
-		}
-		for(auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it){
-			int i=0;
-			for(auto jt = it->begin(); jt != it->end(); ++jt){
-				colSize[i] = max(jt->length(),colSize[i]);
-				i++;
-			}
-		}
-		
-		os << ColonPad(field.width,desc->name); // ColonPad sets std::left
-		
-		for(int i=0;i<desc->list_data->count;i++){
-			totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-			os << "|" << setw(colSize[i]) << desc->list_data->names[i];
-		}
-		os << "|" << endl << Pad(field.width) << rp_string(totalWidth,'-');
-		for(auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it){
-			int i=0;
-			os << endl << Pad(field.width);
-			for(auto jt = it->begin(); jt != it->end(); ++jt){
-				os << "|" << setw(colSize[i++]) << *jt;
-			}
-			os << "|";
-		}
-		delete[] colSize;
-		return os;
-	}
-};
-ostream& operator<<(ostream& os,const RomFields& fields){
-	size_t maxWidth=0;
-	for(int i=0;i<fields.count();i++){
-		maxWidth=max(maxWidth,rp_strlen(fields.desc(i)->name));
-	}
-	maxWidth+=2;
-	for(int i=0;i<fields.count();i++){
-		auto desc = fields.desc(i);
-		auto data = fields.data(i);
-		if(i) os << endl;
-		switch(desc->type){
-			case RomFields::RFT_STRING:{
-				os << StringField(maxWidth,desc,data);
-				break;
-			}
-			case RomFields::RomFields::RFT_BITFIELD:{
-				os << BitfieldField(maxWidth,desc,data);
-				break;
-			}
-			case RomFields::RomFields::RFT_LISTDATA:{
-				os << ListDataField(maxWidth,desc,data);
-				break;
-			}
-			default:{
-				os << ColonPad(maxWidth,desc->name) << "NYI";
-			}
-		}
-	}
-	return os;
+	delete file;
 }
 int main(int argc,char **argv){
 	if(argc<2){
-		cerr << "Usage: rpcli [filenames...]" << endl;
+		cerr << "Usage: rpcli [[-xN outfile]... filename]..." << endl;
+		cerr << "Examples:" << endl;
+		cerr << "* rpcli s3.gen" << endl;
+		cerr << "\t displays info about s3.gen" << endl;
+		cerr << "* rpcli -x0 icon.bmp ~/pokeb2.nds" << endl;
+		cerr << "\t extracts icon from ~/pokeb2.nds" << endl;
 	}
+	
+	assert(RomData::IMG_INT_MIN == 0);
+	const char* outnames[RomData::IMG_INT_MAX+1] = {0};
+	int extract=0;
 	for(int i=1;i<argc;i++){
-		cout << "Reading file '" << argv[i] << "'..." << endl;
-		IRpFile *file = new RpFile(argv[i], RpFile::FM_OPEN_READ);	
-		if (file && file->isOpen()) {
-			RomData *romData = RomDataFactory::getInstance(file);
-			if (romData) {
-				if(romData->isValid()){
-					cout << "== " << romData->systemName() << " rom detected" << endl;
-					cout << *(romData->fields()) << endl;
-					// TODO: make this part not suck
-					int img = romData->supportedImageTypes();
-					if(img&RomData::IMGBF_EXT_BOX){
-						auto &urls = *romData->extURLs(RomData::IMG_EXT_BOX);
-						for(auto s : urls)
-							cout << "== External Box: " << s << endl;
-					}
-					if(img&RomData::IMGBF_EXT_MEDIA){
-						auto &urls = *romData->extURLs(RomData::IMG_EXT_MEDIA);
-						for(auto s : urls)
-							cout << "== External Media: "  << s << endl;
-					}
-				}else{
-					cout << "== Rom is not supported" << endl;
-				}			
-				romData->close();
+		if(argv[i][0] == '-'){
+			if(argv[i][1] == 'x'){
+				long num = atol(argv[i]+2);
+				if(num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX){
+					cerr << "Warning: skipping unknown image type " << num << endl;
+					i++; continue;
+				}
+				outnames[num] = argv[++i];
+				extract |= 1<<num;
 			}
-		}else{
-			cout << "== Couldn't open file..." << endl;
+			else cerr << "Warning: skipping unknown switch '" << argv[i][1] << "'" << endl;
 		}
-		delete file;
+		else{
+			DoFile(argv[i], extract, outnames);
+			extract=0;
+		}
 	}
 	return 0;
 }
