@@ -318,6 +318,13 @@ class RomData
 		 */
 		uint32_t imgpf(ImageType imageType) const;
 
+		/**
+		 * Get name of an image type
+		 * @param imageType Image type.
+		 * @return String containing user-friendly name of an image type.
+		 */
+		static const rp_char *getImageTypeName(ImageType imageType);
+
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.

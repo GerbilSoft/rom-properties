@@ -271,4 +271,27 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	return m_imgpf[imageType];
 }
 
+static const rp_char *image_type_names[]={
+	// Internal
+	_RP("Internal icon"),		// IMG_INT_ICON
+	_RP("Internal banner"),		// IMG_INT_BANNER
+	_RP("Internal media scan"),	// IMG_INT_MEDIA
+	// External
+	_RP("External media scan"),	// IMG_EXT_MEDIA
+	_RP("External box scan"),	// IMG_EXT_BOX
+	
+};
+/**
+* Get name of an image type
+* @param imageType Image type.
+* @return String containing user-friendly name of an image type.
+*/
+const rp_char *RomData::getImageTypeName(ImageType imageType){
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		return nullptr;
+	}
+	return image_type_names[imageType];
+}
+
 }
