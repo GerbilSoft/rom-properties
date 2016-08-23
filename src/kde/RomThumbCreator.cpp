@@ -43,7 +43,7 @@ using namespace LibRomData;
 #include <QtGui/QImage>
 #include <QtGui/QImageReader>
 
-// KDE protocl manager.
+// KDE protocol manager.
 // Used to find the KDE proxy settings.
 #include <kprotocolmanager.h>
 
