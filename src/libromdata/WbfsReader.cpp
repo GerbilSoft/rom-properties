@@ -197,6 +197,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		// This isn't possible unless you're using
 		// a Commodore 64 or an Apple ][.
 		free(head);
+		free(p);
 		return nullptr;
 	}
 	p->hd_sec_sz = (1 << head->hd_sec_sz_s);

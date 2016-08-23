@@ -173,7 +173,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			CurlDownloader curlDL;
 			curlDL.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
 			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
-			     iter != extURLs->end(); iter++)
+			     iter != extURLs->end(); ++iter)
 			{
 				const rp_string &url = *iter;
 				curlDL.setUrl(url);

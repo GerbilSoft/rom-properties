@@ -207,6 +207,7 @@ RomFields &RomFields::operator=(const RomFields &other)
 
 /**
  * Detach this instance from all other instances.
+ * TODO: Move to RomFieldsPrivate?
  */
 void RomFields::detach(void)
 {

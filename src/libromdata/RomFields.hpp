@@ -146,6 +146,7 @@ class RomFields
 	private:
 		/**
 		 * Detach this instance from all other instances.
+		 * TODO: Move to RomFieldsPrivate?
 		 */
 		void detach(void);
 

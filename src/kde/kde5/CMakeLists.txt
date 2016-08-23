@@ -96,7 +96,8 @@ ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 IF(BUILD_KDE5)
 	# FIXME: Determine the correct plugin path.
 	# On Kubuntu 16.04, it's /usr/lib/x86_64-linux-gnu/qt5/plugins/
-	SET(KDE5_PLUGIN_DIRECTORY "lib/x86_64-linux-gnu/qt5/plugins")
+	#SET(KDE5_PLUGIN_DIRECTORY "lib/x86_64-linux-gnu/qt5/plugins")
+	SET(KDE5_PLUGIN_DIRECTORY "lib64/qt5/plugins")
 	INSTALL(TARGETS rom-properties-kde5
 		LIBRARY DESTINATION ${KDE5_PLUGIN_DIRECTORY}
 		COMPONENT "plugin"

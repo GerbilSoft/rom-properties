@@ -137,6 +137,7 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 rp_image_private::~rp_image_private()
 {
 	free(data);
+	free(palette);
 }
 
 /**
