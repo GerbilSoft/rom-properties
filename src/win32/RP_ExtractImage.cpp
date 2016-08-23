@@ -188,17 +188,13 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		return E_INVALIDARG;
 
 	// Create an image.
-	rp_image *img = new rp_image(m_bmSize.cx, m_bmSize.cy, rp_image::FORMAT_CI8);
-	uint32_t *palette = img->palette();
-	memset(palette, 0, img->palette_len() * sizeof(uint32_t));
-	palette[0] = 0xFFFF00FF;	// Magenta
-	palette[1] = 0xFFFFFF00;	// Cyan
-	palette[2] = 0xFF00FFFF;	// Yellow
+	rp_image *img = new rp_image(m_bmSize.cx, m_bmSize.cy, rp_image::FORMAT_ARGB32);
 	for (int y = 0; y < m_bmSize.cy; y++) {
-		uint8_t *scanline = (uint8_t*)img->scanLine(y);
+		uint32_t *scanline = (uint32_t*)img->scanLine(y);
 		for (int x = m_bmSize.cx; x > 0; x -= 2) {
-			scanline[0] = (y%2 ? 1 : 2);
-			scanline[1] = (y%2 ? 2 : 1);
+			// Alternating opaque red and translucent blue.
+			scanline[0] = (y%2 ? 0xFF0000FF : 0x80FF0000);
+			scanline[1] = (y%2 ? 0x80FF0000 : 0xFF0000FF);
 			scanline += 2;
 		}
 	}

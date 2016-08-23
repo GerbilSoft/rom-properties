@@ -27,6 +27,7 @@ using LibRomData::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -173,21 +174,32 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	if (!image || !image->isValid())
 		return nullptr;
 
-	// TODO: Support more than CI8.
-	assert(image->format() == rp_image::FORMAT_CI8);
-	if (image->format() != rp_image::FORMAT_CI8)
-		return nullptr;
-
-	// NOTE: Alpha transparency doesn't seem to work in 256-color icons on Windows XP.
+	size_t szBmi;
+	WORD biBitCount;
+	switch (image->format()) {
+		case rp_image::FORMAT_CI8:
+			// BITMAPINFO must have a palette.
+			szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
+			biBitCount = 8;
+			break;
+		case rp_image::FORMAT_ARGB32:
+			// No palette.
+			szBmi = sizeof(BITMAPINFO);
+			biBitCount = 32;
+			break;
+		default:
+			// Unsupported image format.
+			assert(false);
+			return nullptr;
+	}
 
 	// References:
 	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
 	// - http://stackoverflow.com/a/2901465
 
 	// BITMAPINFO with 256-color palette.
-	uint8_t bmi[sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256)];
-	BITMAPINFOHEADER *bmiHeader = reinterpret_cast<BITMAPINFOHEADER*>(&bmi[0]);
-	RGBQUAD *palette = reinterpret_cast<RGBQUAD*>(&bmi[sizeof(BITMAPINFOHEADER)]);
+	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
+	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
@@ -195,28 +207,35 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	bmiHeader->biWidth = image->width();
 	bmiHeader->biHeight = -image->height();	// negative for top-down
 	bmiHeader->biPlanes = 1;
-	bmiHeader->biBitCount = 8;
+	bmiHeader->biBitCount = biBitCount;
 	bmiHeader->biCompression = BI_RGB;
 	bmiHeader->biSizeImage = 0;	// TODO?
 	bmiHeader->biXPelsPerMeter = 0;	// TODO
 	bmiHeader->biYPelsPerMeter = 0;	// TODO
-	bmiHeader->biClrUsed = image->palette_len();
-	bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
-
-	// Copy the palette from the image.
-	memcpy(palette, image->palette(), bmiHeader->biClrUsed * sizeof(uint32_t));
+	if (image->format() == rp_image::FORMAT_CI8) {
+		bmiHeader->biClrUsed = image->palette_len();
+		bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
+		// Copy the palette from the image.
+		memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
+	} else {
+		bmiHeader->biClrUsed = 0;
+		bmiHeader->biClrImportant = 0;
+	}
 
 	// Create the bitmap.
 	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&bmi),
-		DIB_RGB_COLORS, reinterpret_cast<void**>(&pvBits), nullptr, 0);
-	if (!hBitmap)
+	HBITMAP hBitmap = CreateDIBSection(nullptr, bmi, DIB_RGB_COLORS,
+		reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	if (!hBitmap) {
+		free(bmi);
 		return nullptr;
+	}
 
 	// Copy the data from the rp_image into the bitmap.
 	memcpy(pvBits, image->bits(), image->data_len());
 
 	// Return the bitmap.
+	free(bmi);
 	return hBitmap;
 }
 
@@ -227,6 +246,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
  */
 HICON RpImageWin32::toHICON(const rp_image *image)
 {
+	// NOTE: Alpha transparency doesn't seem to work in 256-color icons on Windows XP.
 	assert(image != nullptr);
 	if (!image || !image->isValid())
 		return nullptr;
