@@ -31,6 +31,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstring>
+#include <cstddef>
 
 // C++ includes.
 #include <vector>
@@ -200,7 +201,7 @@ struct PACKED DS_ROMHeader {
 
 /**
  * Nintendo DS icon and title struct.
- * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeheader
+ * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeicontitle
  *
  * All fields are little-endian.
  */
@@ -213,17 +214,17 @@ struct PACKED DS_IconTitleData {
 	uint8_t icon_data[0x200];	// Icon data. (32x32, 4x4 tiles, 4-bit color)
 	uint16_t icon_pal[0x10];	// Icon palette. (16-bit color; color 0 is transparent)
 
-	// Titles. (128 characters each; UTF-16)
+	// [0x240] Titles. (128 characters each; UTF-16)
 	// Order: JP, EN, FR, DE, IT, ES, ZH (v0002), KR (v0003)
-	char title[8][128];
+	char16_t title[8][128];
 
-	// Reserved space, possibly for other titles.
+	// [0xA40] Reserved space, possibly for other titles.
 	char reserved2[0x800];
 
-	// DSi animated icons (v0103h)
+	// [0x1240] DSi animated icons (v0103h)
 	// Icons use the same format as DS icons.
 	uint8_t dsi_icon_data[8][0x200];	// Icon data. (Up to 8 frames)
-	uint8_t dsi_icon_pal[8][0x10];		// Icon palette.
+	uint16_t dsi_icon_pal[8][0x10];		// Icon palettes.
 	uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 };
 #pragma pack()
@@ -512,10 +513,12 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 
 	// Read the icon data.
 	// TODO: Also store titles?
+	static_assert(sizeof(DS_IconTitleData) == 0x23C0, "DS_IconTitleData is not 0x23C0 (9,152) bytes.");
 	DS_IconTitleData ds_icon_title;
 	m_file->seek(icon_addr);
 	size = m_file->read(&ds_icon_title, sizeof(ds_icon_title));
-	if (size != sizeof(ds_icon_title))
+	// Make sure we have up to the icon plus two titles.
+	if (size < (offsetof(DS_IconTitleData, title) + 0x200))
 		return -EIO;
 
 	// Convert the icon from DS format to 256-color.
