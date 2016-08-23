@@ -215,7 +215,7 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 
 	// ROM is supported. Get the external media image.
 	// TODO: Customize for internal icon, disc/cart scan, etc.?
-	const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 	if (!extURLs || extURLs->empty()) {
 		// No external URLs.
 		// TODO: Fallback to icon?
@@ -240,11 +240,11 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	UrlmonDownloader dl;
 	dl.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
 	status = Gdiplus::Status::GenericError;
-	for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
+	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
 	     iter != extURLs->end(); ++iter)
 	{
-		const rp_string &url = *iter;
-		dl.setUrl(url);
+		const RomData::ExtURL &extURL = *iter;
+		dl.setUrl(extURL.url);
 		int ret = dl.download();
 		if (ret != 0)
 			continue;

@@ -168,19 +168,19 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// External media scan.
 		// Synchronously download from the source URLs.
 		// TODO: Cache to disk?
-		const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+		const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 		if (extURLs && !extURLs->empty()) {
 			CurlDownloader curlDL;
 			curlDL.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
-			for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
+			for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
 			     iter != extURLs->end(); ++iter)
 			{
-				const rp_string &url = *iter;
-				curlDL.setUrl(url);
+				const RomData::ExtURL &extURL = *iter;
+				curlDL.setUrl(extURL.url);
 
 				// Check if a proxy is required for this URL.
 				// TODO: Optimizations.
-				QString proxy = KProtocolManager::proxyForUrl(QUrl(rpToQS(url)));
+				QString proxy = KProtocolManager::proxyForUrl(QUrl(rpToQS(extURL.url)));
 				if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 					// No proxy.
 					curlDL.setProxyUrl(nullptr);

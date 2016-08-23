@@ -191,13 +191,13 @@ const rp_image *RomData::image(ImageType imageType) const
 /**
  * Get a list of URLs for an external media type.
  *
- * NOTE: The std::vector<rp_string> is owned by this object.
+ * NOTE: The std::vector<extURL> is owned by this object.
  * Do NOT delete this object until you're done using this rp_image.
  *
  * @param imageType Image type.
- * @return List of URLs, or nullptr if the ROM doesn't have one.
+ * @return List of URLs and cache keys, or nullptr if the ROM doesn't have one.
  */
-const std::vector<rp_string> *RomData::extURLs(ImageType imageType) const
+const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
@@ -217,31 +217,6 @@ const std::vector<rp_string> *RomData::extURLs(ImageType imageType) const
 	}
 
 	return &m_extURLs[idx];
-}
-
-/**
- * Get a cache key for an external media type.
- * @return Cache key, or nullptr if not cacheable.
- */
-const rp_char *RomData::cacheKey(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return nullptr;
-	}
-
-	// cacheKeys is dependent on extURLs.
-	const int idx = imageType - IMG_EXT_MIN;
-	if (m_extURLs[idx].empty()) {
-		// List of URLs has not been loaded.
-		// Load it now.
-		int ret = const_cast<RomData*>(this)->loadURLs(imageType);
-		if (ret < 0)
-			return nullptr;
-	}
-
-	return (m_cacheKey[idx].empty() ? nullptr : m_cacheKey[idx].c_str());
 }
 
 }
