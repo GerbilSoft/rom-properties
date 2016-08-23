@@ -40,7 +40,7 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H "${rom-properties-
 
 # Sources and headers. (KDE5-specific)
 SET(rom-properties-kde5_SRCS
-    ${rom-properties-kde5_SRCS}
+	${rom-properties-kde5_SRCS}
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 

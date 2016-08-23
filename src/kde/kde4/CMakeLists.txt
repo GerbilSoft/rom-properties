@@ -7,15 +7,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 SET(QT4_NO_LINK_QTMAIN 1)
 FIND_PACKAGE(Qt4 4.6.0 COMPONENTS QtCore QtGui)
 IF(QT4_FOUND)
-    # Find KDE4. (TODO: Version?)
-    FIND_PACKAGE(KDE4)
-    IF(NOT KDE4_FOUND)
-        # KDE4 not found.
-        SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)
-    ENDIF(NOT KDE4_FOUND)
+	# Find KDE4. (TODO: Version?)
+	FIND_PACKAGE(KDE4)
+	IF(NOT KDE4_FOUND)
+		# KDE4 not found.
+		SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)
+	ENDIF(NOT KDE4_FOUND)
 ELSE(QT4_FOUND)
-    # Qt4 not found.
-    SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)
+	# Qt4 not found.
+	SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)
 ENDIF(QT4_FOUND)
 
 # Find cURL for network access.
@@ -28,7 +28,7 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-
 
 # Sources and headers. (KDE4-specific)
 SET(rom-properties-kde4_SRCS
-    ${rom-properties-kde4_SRCS}
+	${rom-properties-kde4_SRCS}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
 
