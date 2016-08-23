@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libcachemgr)                      *
  * UrlmonDownloader.cpp: urlmon-based file downloader.                     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -40,6 +40,8 @@ using std::vector;
 
 // Windows includes.
 #include <urlmon.h>
+
+namespace LibCacheMgr {
 
 UrlmonDownloader::UrlmonDownloader()
 	: m_inProgress(false)
@@ -204,4 +206,6 @@ int UrlmonDownloader::download(void)
 	// Data loaded.
 	// TODO: Delete the cached file?
 	return 0;
+}
+
 }

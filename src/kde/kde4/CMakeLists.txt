@@ -18,10 +18,6 @@ ELSE(QT4_FOUND)
 	SET(BUILD_KDE4 OFF CACHE "" INTERNAL FORCE)
 ENDIF(QT4_FOUND)
 
-# Find cURL for network access.
-# TODO: Make it optional?
-FIND_PACKAGE(CURL REQUIRED)
-
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-kde_H}")
@@ -35,9 +31,6 @@ SET(rom-properties-kde4_SRCS
 #####################
 # Build the plugin. #
 #####################
-
-# CURL
-INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
 
 IF(BUILD_KDE4)
 	KDE4_ADD_PLUGIN(rom-properties-kde4
@@ -55,7 +48,7 @@ IF(BUILD_KDE4)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4
 		romdata16
-		${CURL_LIBRARIES}
+		cachemgr16
 		${KDE4_KFILE_LIBRARY}
 		Qt4::QtGui Qt4::QtCore
 		)

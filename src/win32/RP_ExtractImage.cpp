@@ -24,7 +24,6 @@
 #include "RP_ExtractImage.hpp"
 #include "RegKey.hpp"
 #include "RpImageWin32.hpp"
-#include "UrlmonDownloader.hpp"
 
 // libromdata
 #include "libromdata/RomData.hpp"
@@ -32,6 +31,10 @@
 #include "libromdata/rp_image.hpp"
 #include "libromdata/RpFile.hpp"
 using namespace LibRomData;
+
+// libcachemgr
+#include "libcachemgr/UrlmonDownloader.hpp"
+using LibCacheMgr::UrlmonDownloader;
 
 // C includes. (C++ namespace)
 #include <cassert>

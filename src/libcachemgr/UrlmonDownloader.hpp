@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libcachemgr)                      *
  * UrlmonDownloader.hpp: urlmon-based file downloader.                     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_URLMONDOWNLOADER_HPP__
-#define __ROMPROPERTIES_WIN32_URLMONDOWNLOADER_HPP__
+#ifndef __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
+#define __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
 
 #include "libromdata/config.libromdata.h"
 
@@ -29,6 +29,8 @@
 
 // C++ includes.
 #include <vector>
+
+namespace LibCacheMgr {
 
 class UrlmonDownloader
 {
@@ -120,4 +122,6 @@ class UrlmonDownloader
 		std::wstring m_cacheFile;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_URLMONDOWNLOADER_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__ */

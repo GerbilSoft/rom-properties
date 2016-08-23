@@ -20,7 +20,10 @@
  ***************************************************************************/
 
 #include "RomThumbCreator.hpp"
-#include "CurlDownloader.hpp"
+
+// libcachemgr
+#include "libcachemgr/CurlDownloader.hpp"
+using LibCacheMgr::CurlDownloader;
 
 // C includes.
 #include <unistd.h>

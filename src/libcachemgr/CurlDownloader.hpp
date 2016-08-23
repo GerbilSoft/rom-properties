@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (libcachemgr)                      *
  * CurlDownloader.hpp: libcurl-based file downloader.                      *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -19,11 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CURLDOWNLOADER_HPP__
-#define __ROMPROPERTIES_KDE_CURLDOWNLOADER_HPP__
-
-// TODO: Split out into a library shared by
-// both KDE and GTK+ later.
+#ifndef __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__
+#define __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__
 
 #include "libromdata/config.libromdata.h"
 
@@ -32,6 +29,8 @@
 
 // C++ includes.
 #include <vector>
+
+namespace LibCacheMgr {
 
 class CurlDownloader
 {
@@ -158,4 +157,6 @@ class CurlDownloader
 		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
 };
 
-#endif /* __ROMPROPERTIES_KDE_CURLDOWNLOADER_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBCACHEMGR_CURLDOWNLOADER_HPP__ */

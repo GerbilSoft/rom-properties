@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
+ * ROM Properties Page shell extension. (libcachemgr)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -35,6 +35,8 @@ using std::vector;
 
 // cURL for network access.
 #include <curl/curl.h>
+
+namespace LibCacheMgr {
 
 CurlDownloader::CurlDownloader()
 	: m_inProgress(false)
@@ -331,4 +333,6 @@ int CurlDownloader::download(void)
 
 	// Data retrieved.
 	return 0;
+}
+
 }

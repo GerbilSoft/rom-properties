@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libcachemgr)                      *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_STDAFX_H__
-#define __ROMPROPERTIES_WIN32_STDAFX_H__
+#ifndef __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
+#define __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
 
 #ifndef _WIN32
 #error stdafx.h is Windows only
@@ -60,4 +60,4 @@
 #include <comdef.h>
 #include <shlobj.h>
 
-#endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */
+#endif /* __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__ */

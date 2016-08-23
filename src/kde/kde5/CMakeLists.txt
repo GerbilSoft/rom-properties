@@ -30,10 +30,6 @@ ELSE()
 	SET(BUILD_KDE5 OFF CACHE "" INTERNAL FORCE)
 ENDIF()
 
-# Find cURL for network access.
-# TODO: Make it optional?
-FIND_PACKAGE(CURL REQUIRED)
-
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H "${rom-properties-kde_H}")
@@ -47,9 +43,6 @@ SET(rom-properties-kde5_SRCS
 #####################
 # Build the plugin. #
 #####################
-
-# CURL
-INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
 
 IF(BUILD_KDE5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
@@ -69,7 +62,7 @@ IF(BUILD_KDE5)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5
 		romdata16
-		${CURL_LIBRARIES}
+		cachemgr16
 		KF5::KIOWidgets
 		Qt5::Widgets Qt5::Gui Qt5::Core
 		)
