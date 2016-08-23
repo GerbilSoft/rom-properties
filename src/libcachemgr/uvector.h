@@ -14,6 +14,22 @@
  * @copyright André Offringa, 2013, distributed under the GPL license version 3.
  */
 
+// MSVC compatibility.
+#ifdef _MSC_VER
+#if _MSC_VER < 1900
+#define noexcept
+#endif
+#if _MSC_VER < 1800
+#define MSVC_NO_INITIALIZER_LIST
+#define MSVC_NO_VARIADIC_TEMPLATES
+#endif
+#if _MSC_VER < 1700
+// MSVC 2010 partially spuports std::is_standard_layout,
+// but it doesn't work in static_assert().
+#define MSVC_NO_IS_STANDARD_LAYOUT
+#endif
+#endif /* _MSC_VER */
+
 namespace ao {
 
 /**
@@ -75,7 +91,9 @@ namespace ao {
 template<typename Tp, typename Alloc = std::allocator<Tp> >
 class uvector : private Alloc
 {
+#ifndef MSVC_NO_IS_STANDARD_LAYOUT
 	static_assert(std::is_standard_layout<Tp>(), "A uvector can only hold classes with standard layout");
+#endif /* !MSVC_NO_IS_STANDARD_LAYOUT */
 public:
 	/// Element type
 	typedef Tp value_type;
@@ -212,6 +230,7 @@ public:
 		other._endOfStorage = nullptr;
 	}
 	
+#ifndef MSVC_NO_INITIALIZER_LIST
 	/** @brief Construct a uvector from a initializer list.
 	 * @param initlist Initializer list used for initializing the new uvector.
 	 * @param allocator Allocator used for allocating and deallocating memory.
@@ -229,6 +248,7 @@ public:
 			++destIter;
 		}
 	}
+#endif /* !MSVC_NO_INITIALIZER_LIST */
 	
 	/** @brief Destructor. */
 	~uvector()
@@ -472,6 +492,7 @@ public:
 		std::uninitialized_fill_n<Tp*,Tp>(_begin, n, val);
 	}
 	
+#ifndef MSVC_NO_INITIALIZER_LIST
 	/** @brief Assign this container to an initializer list.
 	 * @details The container will be resized to fit the length of the given
 	 * initializer list. Iterators are invalidated.
@@ -494,6 +515,7 @@ public:
 			++destIter;
 		}
 	}
+#endif /* !MSVC_NO_INITIALIZER_LIST */
 	
 	/** @brief Add the given value to the end of the container.
 	 * @details Iterators are invalidated.
@@ -620,6 +642,7 @@ public:
 		return const_cast<iterator>(position);
 	}
 	
+#ifndef MSVC_NO_INITIALIZER_LIST
 	/** @brief Insert elements at a given position and initialize them from a initializer list.
 	 * @details All iterators will be invalidated. This operation needs to move all elements after
 	 * the new element, and can therefore be expensive.
@@ -648,6 +671,7 @@ public:
 		}
 		return const_cast<iterator>(position);
 	}
+#endif /* !MSVC_NO_INITIALIZER_LIST */
 	
 	/** @brief Delete an element from the container.
 	 * @details This operation moves all elements past the removed element, and can therefore be
@@ -699,6 +723,7 @@ public:
 		_end = _begin;
 	}
 	
+#ifndef MSVC_NO_VARIADIC_TEMPLATES
 	/** @brief Insert an element at a given position by constructing it in place.
 	 * @details All iterators will be invalidated. This operation needs to move all elements after
 	 * the new element, and can therefore be expensive.
@@ -736,6 +761,7 @@ public:
 		*_end = Tp(std::forward<Args...>(args...));
 		++_end;
 	}
+#endif /* !MSVC_NO_VARIADIC_TEMPLATES */
 	
 	/** @brief Get a copy of the allocator. */
 	allocator_type get_allocator() const noexcept
@@ -800,6 +826,7 @@ public:
 		_end += n;
 	}
 	
+#ifndef MSVC_NO_INITIALIZER_LIST
 	/** @brief Add elements from an initializer list to the end of the container.
 	 * @details All iterators will be invalidated. 
 	 * 
@@ -818,6 +845,7 @@ public:
 			++_end;
 		}
 	}
+#endif /* !MSVC_NO_INITIALIZER_LIST */
 	
 	/** @brief Add elements at the end without initializing them.
 	 * @details All iterators will be invalidated. 
