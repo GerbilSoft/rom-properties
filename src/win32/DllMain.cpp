@@ -37,9 +37,15 @@
 #include "RP_ClassFactory.hpp"
 #include "RP_ExtractImage.hpp"
 
+// For file extensions.
+#include "libromdata/RomDataFactory.hpp"
+using LibRomData::RomDataFactory;
+
 // C++ includes.
 #include <string>
+#include <vector>
 using std::wstring;
+using std::vector;
 
 static HINSTANCE g_hInstance = nullptr;
 extern wchar_t dll_filename[];
@@ -149,11 +155,19 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	// Register the ".nds" file type and associate
-	// it with our ProgID.
-	lResult = RegKey::RegisterFileType(L".nds", RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
+	// Register all supported file types and associate them
+	// with our ProgID.
+	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
+	for (vector<const rp_char*>::const_iterator iter = vec_exts.begin();
+	     iter != vec_exts.end(); ++iter)
+	{
+		// NOTE: Assuming rp_char is UTF-16.
+		static_assert(sizeof(rp_char) == sizeof(wchar_t), "rp_char != wchar_t");
+		const wchar_t *filetype = reinterpret_cast<const wchar_t*>(*iter);
+		lResult = RegKey::RegisterFileType(filetype, RP_ProgID);
+		if (lResult != ERROR_SUCCESS)
+			return SELFREG_E_CLASS;
+	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx

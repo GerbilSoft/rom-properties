@@ -23,6 +23,10 @@
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
 #include "IRpFile.hpp"
+#include "config.libromdata.h"
+
+// C++ includes.
+#include <vector>
 
 namespace LibRomData {
 
@@ -48,6 +52,13 @@ class RomDataFactory
 		 * @return RomData class, or nullptr if the ROM isn't supported.
 		 */
 		static RomData *getInstance(IRpFile *file);
+
+		/**
+		 * Get all supported file extensions.
+		 * Used for Win32 COM registration.
+		 * @return All supported file extensions, including the leading dot
+		 */
+		static std::vector<const rp_char*> supportedFileExtensions(void);
 };
 
 }

@@ -21,6 +21,10 @@
 
 #include "RomDataFactory.hpp"
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 // RomData subclasses.
 #include "MegaDrive.hpp"
 #include "GameCube.hpp"
@@ -73,6 +77,29 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 
 	// Not supported.
 	return nullptr;
+}
+
+/**
+ * Get all supported file extensions.
+ * Used for Win32 COM registration.
+ * @return All supported file extensions, including the leading dot
+ */
+vector<const rp_char*> RomDataFactory::supportedFileExtensions(void)
+{
+	vector<const rp_char*> vec;
+
+#define GetFileExtensions(sys) \
+	do { \
+		RomData *romData = new sys(nullptr); \
+		vector<const rp_char*> sys_vec = romData->supportedFileExtensions(); \
+		vec.insert(vec.end(), sys_vec.begin(), sys_vec.end()); \
+	} while (0)
+
+	GetFileExtensions(MegaDrive);
+	GetFileExtensions(GameCube);
+	GetFileExtensions(NintendoDS);
+
+	return vec;
 }
 
 }
