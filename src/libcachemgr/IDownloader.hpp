@@ -25,7 +25,10 @@
 #include "libromdata/config.libromdata.h"
 
 #include <stdint.h>
-#include <vector>
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 
 namespace LibCacheMgr {
 
@@ -134,9 +137,9 @@ class IDownloader
 		LibRomData::rp_string m_url;
 		LibRomData::rp_string m_proxyUrl;
 
-		// TODO: Use C malloc()/realloc()?
-		// std::vector::resize() forces initialization.
-		std::vector<uint8_t> m_data;
+		// Uninitialized vector class.
+		// Reference: http://andreoffringa.org/?q=uvector
+		ao::uvector<uint8_t> m_data;
 
 		bool m_inProgress;	// Set when downloading.
 		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)

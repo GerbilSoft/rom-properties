@@ -34,9 +34,7 @@ using LibRomData::rp_string;
 
 // C++ includes.
 #include <string>
-#include <vector>
 using std::string;
-using std::vector;
 
 // Windows includes.
 #include <urlmon.h>

@@ -29,9 +29,7 @@
 
 // C++ includes.
 #include <string>
-#include <vector>
 using std::string;
-using std::vector;
 
 // cURL for network access.
 #include <curl/curl.h>
@@ -65,7 +63,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	// - http://stackoverflow.com/a/1636415
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
 	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
-	vector<uint8_t> *vec = &curlDL->m_data;
+	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nmemb;
 
 	if (curlDL->m_maxSize > 0) {
@@ -106,7 +104,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 
 	// TODO: Add support for non-HTTP protocols?
 	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
-	vector<uint8_t> *vec = &curlDL->m_data;
+	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nitems;
 
 	static const char http_content_length[] = "Content-Length: ";
