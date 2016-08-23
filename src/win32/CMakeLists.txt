@@ -11,6 +11,7 @@ SET(rom-properties-win32_SRCS
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
 	RpImageWin32.cpp
+	UrlmonDownloader.cpp
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
@@ -19,6 +20,7 @@ SET(rom-properties-win32_H
 	RP_ComBase.hpp
 	RP_ExtractImage.hpp
 	RpImageWin32.hpp
+	UrlmonDownloader.hpp
 	)
 
 #####################
@@ -38,9 +40,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
-TARGET_LINK_LIBRARIES(rom-properties
-	romdata16
-	)
+TARGET_LINK_LIBRARIES(rom-properties romdata16 gdiplus urlmon)
 
 # Use the .def file for DLL exports.
 IF(MSVC)

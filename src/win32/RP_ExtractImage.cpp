@@ -24,6 +24,7 @@
 #include "RP_ExtractImage.hpp"
 #include "RegKey.hpp"
 #include "RpImageWin32.hpp"
+#include "UrlmonDownloader.hpp"
 
 // libromdata
 #include "libromdata/RomData.hpp"
@@ -40,6 +41,16 @@ using namespace LibRomData;
 // C++ includes.
 #include <string>
 using std::wstring;
+
+// Gdiplus for PNG decoding.
+// TODO: Use libpng and/or GDI+ in rp_image?
+// NOTE: Gdiplus requires min/max.
+#include <algorithm>
+namespace Gdiplus {
+	using std::min;
+	using std::max;
+}
+#include <gdiplus.h>
 
 // CLSID
 const CLSID CLSID_RP_ExtractImage =
@@ -180,37 +191,86 @@ STDMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 
 STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
-	// TODO: Actually get a bitmap.
-	// For now, just draw a square with alternating cyan and yellow pixels.
+	// TODO: Handle m_bmSize?
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	if (m_filename.empty())
 		return E_INVALIDARG;
 
-	// Create an image.
-	rp_image *img = new rp_image(m_bmSize.cx, m_bmSize.cy, rp_image::FORMAT_ARGB32);
-	for (int y = 0; y < m_bmSize.cy; y++) {
-		uint32_t *scanline = (uint32_t*)img->scanLine(y);
-		for (int x = m_bmSize.cx; x > 0; x -= 2) {
-			// Alternating opaque red and translucent blue.
-			scanline[0] = (y%2 ? 0xFF0000FF : 0x80FF0000);
-			scanline[1] = (y%2 ? 0x80FF0000 : 0xFF0000FF);
-			scanline += 2;
+	// Get the RomData object.
+	IRpFile *file = new RpFile(m_filename, RpFile::FM_OPEN_READ);
+	if (!file || !file->isOpen()) {
+		delete file;
+		return E_FAIL;	// TODO: More specific error?
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	RomData *romData = RomDataFactory::getInstance(file);
+	delete file;	// file is dup()'d by RomData.
+
+	if (!romData) {
+		// ROM is not supported.
+		return S_FALSE;
+	}
+
+	// ROM is supported. Get the external media image.
+	// TODO: Customize for internal icon, disc/cart scan, etc.?
+	const std::vector<rp_string> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+	if (!extURLs || extURLs->empty()) {
+		// No external URLs.
+		// TODO: Fallback to icon?
+		return S_FALSE;
+	}
+
+	// Initialize GDI+.
+	// TODO: Do this when RP_ExtractImage is instantiated?
+	Gdiplus::GdiplusStartupInput gdipSI;
+	gdipSI.GdiplusVersion = 1;
+	gdipSI.DebugEventCallback = nullptr;
+	gdipSI.SuppressBackgroundThread = FALSE;
+	gdipSI.SuppressExternalCodecs = FALSE;
+	ULONG_PTR gdipToken;
+	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
+	if (status != Gdiplus::Status::Ok) {
+		// Failed to initialize GDI+.
+		return E_FAIL;
+	}
+
+	// Check each URL.
+	UrlmonDownloader dl;
+	dl.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
+	status = Gdiplus::Status::GenericError;
+	for (std::vector<rp_string>::const_iterator iter = extURLs->begin();
+	     iter != extURLs->end(); ++iter)
+	{
+		const rp_string &url = *iter;
+		dl.setUrl(url);
+		int ret = dl.download();
+		if (ret != 0)
+			continue;
+
+		// Attempt to load the image.
+		// TODO: libpng in rp_image? For now, using Gdiplus.
+		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(dl.m_cacheFile.c_str(), FALSE);
+		if (!gdipBmp)
+			continue;
+
+		// Image loaded.
+		Gdiplus::Color bgColor(0xFFFFFFFF);
+		status = gdipBmp->GetHBITMAP(bgColor, phBmpImage);
+		delete gdipBmp;
+		if (status == Gdiplus::Status::Ok) {
+			// Converted to HBITMAP successfully.
+			break;
 		}
+
+		// Try the next one...
 	}
 
-	// Convert it to an HBITMAP.
-	HBITMAP hBitmap = RpImageWin32::toHBITMAP(img);
-	if (hBitmap) {
-		// Bitmap has been created.
-		*phBmpImage = hBitmap;
-		delete img;
-		return S_OK;
-	}
+	// Shut down GDI+.
+	Gdiplus::GdiplusShutdown(gdipToken);
 
-	// Error creating the bitmap.
-	delete img;
-	return E_FAIL;
+	return (status == Gdiplus::Status::Ok ? S_OK : E_FAIL);
 }
 
 /** IPersistFile **/
