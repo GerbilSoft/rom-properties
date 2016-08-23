@@ -7,8 +7,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 # TODO: Make network access optional?
 
 SET(libcachemgr_SRCS
+	IDownloader.cpp
 	)
 SET(libcachemgr_H
+	IDownloader.hpp
 	)
 
 IF(NOT WIN32)

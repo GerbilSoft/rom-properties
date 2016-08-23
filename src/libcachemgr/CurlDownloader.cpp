@@ -39,148 +39,16 @@ using std::vector;
 namespace LibCacheMgr {
 
 CurlDownloader::CurlDownloader()
-	: m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader()
 { }
 
 CurlDownloader::CurlDownloader(const rp_char *url)
-	: m_url(url)
-	, m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader(url)
 { }
 
 CurlDownloader::CurlDownloader(const LibRomData::rp_string &url)
-	: m_url(url)
-	, m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader(url)
 { }
-
-/** Properties. **/
-
-/**
- * Is a download in progress?
- * @return True if a download is in progress.
- */
-bool CurlDownloader::isInProgress(void) const
-{
-	return m_inProgress;
-}
-
-/**
- * Get the current URL.
- * @return URL.
- */
-LibRomData::rp_string CurlDownloader::url(void) const
-{
-	return m_url;
-}
-
-/**
- * Set the URL.
- * @param url New URL.
- */
-void CurlDownloader::setUrl(const rp_char *url)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_url = url;
-}
-
-/**
- * Set the URL.
- * @param url New URL.
- */
-void CurlDownloader::setUrl(const LibRomData::rp_string &url)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_url = url;
-}
-
-/**
- * Get the proxy server.
- * @return Proxy server URL.
- */
-LibRomData::rp_string CurlDownloader::proxyUrl(void) const
-{
-	return m_proxyUrl;
-}
-
-/**
- * Set the proxy server.
- * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
- */
-void CurlDownloader::setProxyUrl(const rp_char *proxyUrl)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	if (proxyUrl) {
-		m_proxyUrl = proxyUrl;
-	} else {
-		m_proxyUrl.clear();
-	}
-}
-
-/**
- * Set the proxy server.
- * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
- */
-void CurlDownloader::setProxyUrl(const LibRomData::rp_string &proxyUrl)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_proxyUrl = proxyUrl;
-}
-
-/**
- * Get the maximum buffer size. (0 == unlimited)
- * @return Maximum buffer size.
- */
-size_t CurlDownloader::maxSize(void) const
-{
-	return m_maxSize;
-}
-
-/**
- * Set the maximum buffer size. (0 == unlimited)
- * @param maxSize Maximum buffer size.
- */
-void CurlDownloader::setMaxSize(size_t maxSize)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_maxSize = maxSize;
-}
-
-/**
- * Get the size of the data.
- * @return Size of the data.
- */
-size_t CurlDownloader::dataSize(void) const
-{
-	return m_data.size();
-}
-
-/**
-* Get a pointer to the start of the data.
-* @return Pointer to the start of the data.
-*/
-const uint8_t *CurlDownloader::data(void) const
-{
-	return m_data.data();
-}
-
-/**
- * Clear the data.
- */
-void CurlDownloader::clear(void)
-{
-	assert(!m_inProgress);
-	// TODO: Don't clear if m_inProgress?
-	m_data.clear();
-}
-
-/** Main functions. **/
 
 /**
  * Internal cURL data write function.

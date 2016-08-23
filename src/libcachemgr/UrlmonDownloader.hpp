@@ -22,17 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_URLMONDOWNLOADER_HPP__
 
-#include "libromdata/config.libromdata.h"
-
-// C includes.
-#include <stdint.h>
-
-// C++ includes.
-#include <vector>
+#include "IDownloader.hpp"
 
 namespace LibCacheMgr {
 
-class UrlmonDownloader
+class UrlmonDownloader : public IDownloader
 {
 	public:
 		UrlmonDownloader();
@@ -44,77 +38,11 @@ class UrlmonDownloader
 		UrlmonDownloader &operator=(const UrlmonDownloader &);
 
 	public:
-		/** Properties. **/
-
-		/**
-		 * Is a download in progress?
-		 * @return True if a download is in progress.
-		 */
-		bool isInProgress(void) const;
-
-		/**
-		 * Get the current URL.
-		 * @return URL.
-		 */
-		LibRomData::rp_string url(void) const;
-
-		/**
-		 * Set the URL.
-		 * @param url New URL.
-		 */
-		void setUrl(const rp_char *url);
-
-		/**
-		 * Set the URL.
-		 * @param url New URL.
-		 */
-		void setUrl(const LibRomData::rp_string &url);
-
-		/**
-		 * Get the maximum buffer size. (0 == unlimited)
-		 * @return Maximum buffer size.
-		 */
-		size_t maxSize(void) const;
-
-		/**
-		 * Set the maximum buffer size. (0 == unlimited)
-		 * @param maxSize Maximum buffer size.
-		 */
-		void setMaxSize(size_t maxSize);
-
-		/**
-		 * Get the size of the data.
-		 * @return Size of the data.
-		 */
-		size_t dataSize(void) const;
-
-		/**
-		 * Get a pointer to the start of the data.
-		 * @return Pointer to the start of the data.
-		 */
-		const uint8_t *data(void) const;
-
-		/**
-		 * Clear the data.
-		 */
-		void clear(void);
-
-	public:
 		/**
 		 * Download the file.
 		 * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
 		 */
-		int download(void);
-
-	protected:
-		LibRomData::rp_string m_url;
-
-		// TODO: Use C malloc()/realloc()?
-		// std::vector::resize() forces initialization.
-		std::vector<uint8_t> m_data;
-
-		bool m_inProgress;	// Set when downloading.
-		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
+		virtual int download(void) override;
 
 	public:
 		// FIXME: Remove this.

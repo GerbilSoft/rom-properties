@@ -44,116 +44,16 @@ using std::vector;
 namespace LibCacheMgr {
 
 UrlmonDownloader::UrlmonDownloader()
-	: m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader()
 { }
 
 UrlmonDownloader::UrlmonDownloader(const rp_char *url)
-	: m_url(url)
-	, m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader(url)
 { }
 
 UrlmonDownloader::UrlmonDownloader(const rp_string &url)
-	: m_url(url)
-	, m_inProgress(false)
-	, m_maxSize(0)
+	: IDownloader(url)
 { }
-
-/** Properties. **/
-
-/**
- * Is a download in progress?
- * @return True if a download is in progress.
- */
-bool UrlmonDownloader::isInProgress(void) const
-{
-	return m_inProgress;
-}
-
-/**
- * Get the current URL.
- * @return URL.
- */
-rp_string UrlmonDownloader::url(void) const
-{
-	return m_url;
-}
-
-/**
- * Set the URL.
- * @param url New URL.
- */
-void UrlmonDownloader::setUrl(const rp_char *url)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_url = url;
-}
-
-/**
- * Set the URL.
- * @param url New URL.
- */
-void UrlmonDownloader::setUrl(const rp_string &url)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_url = url;
-}
-
-/**
- * Get the maximum buffer size. (0 == unlimited)
- * @return Maximum buffer size.
- */
-size_t UrlmonDownloader::maxSize(void) const
-{
-	return m_maxSize;
-}
-
-/**
- * Set the maximum buffer size. (0 == unlimited)
- * @param maxSize Maximum buffer size.
- */
-void UrlmonDownloader::setMaxSize(size_t maxSize)
-{
-	assert(!m_inProgress);
-	// TODO: Don't set if m_inProgress?
-	m_maxSize = maxSize;
-}
-
-/**
- * Get the size of the data.
- * @return Size of the data.
- */
-size_t UrlmonDownloader::dataSize(void) const
-{
-	return m_data.size();
-}
-
-/**
-* Get a pointer to the start of the data.
-* @return Pointer to the start of the data.
-*/
-const uint8_t *UrlmonDownloader::data(void) const
-{
-	return m_data.data();
-}
-
-/**
- * Clear the data.
- */
-void UrlmonDownloader::clear(void)
-{
-	assert(!m_inProgress);
-	// TODO: Don't clear if m_inProgress?
-	m_data.clear();
-}
-
-/** Main functions. **/
-
-// TODO: IBindStatusCallback to enforce data size?
-// TODO: Check Content-Length to prevent large files in the first place?
 
 /**
  * Download the file.
@@ -162,6 +62,9 @@ void UrlmonDownloader::clear(void)
 int UrlmonDownloader::download(void)
 {
 	// Reference: https://msdn.microsoft.com/en-us/library/ms775122(v=vs.85).aspx
+	// TODO: IBindStatusCallback to enforce data size?
+	// TODO: Check Content-Length to prevent large files in the first place?
+	// TODO: Replace with WinInet?
 
 	// Buffer for cache filename.
 	wchar_t szFileName[MAX_PATH];
