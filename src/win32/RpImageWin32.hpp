@@ -56,7 +56,7 @@ class RpImageWin32
 		 * @param image rp_image.
 		 * @return HICON, or nullptr on error.
 		 */
-		static HICON RpImageWin32::toHICON(const LibRomData::rp_image *image);
+		static HICON toHICON(const LibRomData::rp_image *image);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__ */
