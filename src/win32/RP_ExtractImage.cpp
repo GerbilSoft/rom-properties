@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "RP_ExtractImage.hpp"
 #include "RegKey.hpp"
+#include "RpImageWin32.hpp"
 
 // libromdata
 #include "libromdata/RomData.hpp"
@@ -180,49 +181,40 @@ STDMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
 	// TODO: Actually get a bitmap.
-	// For now, just draw a magenta square.
+	// For now, just draw a square with alternating cyan and yellow pixels.
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	if (m_filename.empty())
 		return E_INVALIDARG;
 
-	// Create a bitmap.
-	BITMAPINFO bmi;
-	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
-
-	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
-	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
-	bmiHeader->biWidth = m_bmSize.cx;
-	bmiHeader->biHeight = -m_bmSize.cy;	// negative for top-down
-	bmiHeader->biPlanes = 1;
-	bmiHeader->biBitCount = 24;
-	bmiHeader->biCompression = BI_RGB;
-	bmiHeader->biSizeImage = 0;	// TODO?
-	bmiHeader->biXPelsPerMeter = 0;	// TODO
-	bmiHeader->biYPelsPerMeter = 0;	// TODO
-	bmiHeader->biClrUsed = 0;
-	bmiHeader->biClrImportant = 0;
-
-	// Create the bitmap.
-	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&bmi),
-		DIB_RGB_COLORS, reinterpret_cast<void**>(&pvBits), nullptr, 0);
-	if (!hBitmap)
-		return E_OUTOFMEMORY;
-
-	// Fill the bitmap with magenta.
-	DWORD pxs = m_bmSize.cx * m_bmSize.cy;
-	uint8_t *ptr = pvBits;
-	for (; pxs > 0; pxs--, ptr += 3) {
-		ptr[0] = 0xFF;	// Blue
-		ptr[1] = 0x00;	// Green
-		ptr[2] = 0xFF;	// Red
+	// Create an image.
+	rp_image *img = new rp_image(m_bmSize.cx, m_bmSize.cy, rp_image::FORMAT_CI8);
+	uint32_t *palette = img->palette();
+	memset(palette, 0, img->palette_len() * sizeof(uint32_t));
+	palette[0] = 0xFFFF00FF;	// Magenta
+	palette[1] = 0xFFFFFF00;	// Cyan
+	palette[2] = 0xFF00FFFF;	// Yellow
+	for (int y = 0; y < m_bmSize.cy; y++) {
+		uint8_t *scanline = (uint8_t*)img->scanLine(y);
+		for (int x = m_bmSize.cx; x > 0; x -= 2) {
+			scanline[0] = (y%2 ? 1 : 2);
+			scanline[1] = (y%2 ? 2 : 1);
+			scanline += 2;
+		}
 	}
 
-	// Bitmap has been created.
-	*phBmpImage = hBitmap;
-	return S_OK;
+	// Convert it to an HBITMAP.
+	HBITMAP hBitmap = RpImageWin32::toHBITMAP(img);
+	if (hBitmap) {
+		// Bitmap has been created.
+		*phBmpImage = hBitmap;
+		delete img;
+		return S_OK;
+	}
+
+	// Error creating the bitmap.
+	delete img;
+	return E_FAIL;
 }
 
 /** IPersistFile **/
