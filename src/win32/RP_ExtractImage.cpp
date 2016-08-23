@@ -39,7 +39,9 @@ using namespace LibRomData;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
+using std::auto_ptr;
 using std::wstring;
 
 // Gdiplus for PNG decoding.
@@ -205,10 +207,10 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	RomData *romData = RomDataFactory::getInstance(file);
+	auto_ptr<RomData> romData(RomDataFactory::getInstance(file));
 	delete file;	// file is dup()'d by RomData.
 
-	if (!romData) {
+	if (!romData.get()) {
 		// ROM is not supported.
 		return S_FALSE;
 	}

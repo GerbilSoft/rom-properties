@@ -37,6 +37,10 @@
 #include "libromdata/RpFile.hpp"
 using namespace LibRomData;
 
+// C++ includes.
+#include <memory>
+using std::auto_ptr;
+
 #include <QLabel>
 #include <QtCore/QBuffer>
 #include <QtCore/QUrl>
@@ -153,9 +157,9 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	RomData *romData = RomDataFactory::getInstance(file);
+	std::auto_ptr<RomData> romData(RomDataFactory::getInstance(file));
 	delete file;	// file is dup()'d by RomData.
-	if (!romData) {
+	if (!romData.get()) {
 		// ROM is not supported.
 		return false;
 	}
@@ -225,9 +229,6 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			}
 		}
 	}
-
-	// We're done with romData.
-	delete romData;
 
 	return haveImage;
 }
