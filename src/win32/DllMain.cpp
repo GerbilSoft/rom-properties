@@ -35,6 +35,7 @@
 #include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
+#include "RP_ExtractImage.hpp"
 
 // C++ includes.
 #include <string>
@@ -108,7 +109,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 {
 	*ppvOut = nullptr;
 
-	// Check for RP_ExtractIcon.
+	// Check for supported classes.
 	if (IsEqualIID(rclsid, CLSID_RP_ExtractIcon)) {
 		// Create a new class factory.
 		RP_ClassFactory<RP_ExtractIcon> *pCF = new RP_ClassFactory<RP_ExtractIcon>();
@@ -117,6 +118,16 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		if (hr != S_OK) {
 			// Interface not found.
 			*ppvOut = nullptr;	// TODO: Not needed?
+		}
+		return hr;
+	} else if (IsEqualIID(rclsid, CLSID_RP_ExtractImage)) {
+		// Create a new class factory.
+		RP_ClassFactory<RP_ExtractImage> *pCF = new RP_ClassFactory<RP_ExtractImage>();
+		HRESULT hr = pCF->QueryInterface(riid, ppvOut);
+		if (hr != S_OK) {
+			// Interface not found.
+			*ppvOut = nullptr;	// TODO: Not needed?
+			delete pCF;
 		}
 		return hr;
 	}
@@ -132,6 +143,9 @@ STDAPI DllRegisterServer(void)
 {
 	// Register the COM objects.
 	LONG lResult = RP_ExtractIcon::Register();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::Register();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
@@ -155,6 +169,9 @@ STDAPI DllUnregisterServer(void)
 {
 	// Unregister the COM objects.
 	LONG lResult = RP_ExtractIcon::Unregister();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::Unregister();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
