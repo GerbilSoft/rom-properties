@@ -60,29 +60,6 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		static LONG Unregister(void);
 
  	protected:
-		/** Image conversion functions. **/
-
-		/**
-		 * Convert an rp_image to an HBITMAP.
-		 * @return image rp_image.
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP rpToHBITMAP_mask(const LibRomData::rp_image *image);
-
-		/**
-		 * Convert an rp_image to an HBITMAP, suitable for use as an icon mask.
-		 * @return image rp_image.
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP rpToHBITMAP(const LibRomData::rp_image *image);
-
-		/**
-		 * Convert an rp_image to an HICON.
-		 * @param image rp_image.
-		 * @return HICON, or nullptr on error.
-		 */
-		static HICON rpToHICON(const LibRomData::rp_image *image);
-
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string m_filename;
 
