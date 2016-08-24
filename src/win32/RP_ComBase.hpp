@@ -1,5 +1,26 @@
-#ifndef __ROMPROPERTIES_WIN32_RP_COMBASE_H__
-#define __ROMPROPERTIES_WIN32_RP_COMBASE_H__
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RP_ComBase.hpp: Base class for COM objects.                             *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__
+#define __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__
 
 /**
  * COM base class. Handles reference counting and IUnknown.
@@ -9,10 +30,10 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
-#if defined(__GNUC__) && defined(__MINGW32__)
+#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
 /**
- * MinGw-w64 is also missing ULONG overloads for the various
- * atomic functions.
+ * MinGW-w64 only defines ULONG overloads for the various atomic functions
+ * if _WIN32_WINNT > 0x0502.
  */
 static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
 {
@@ -22,7 +43,7 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 {
 	return (ULONG)(InterlockedDecrement(reinterpret_cast<LONG volatile*>(Addend)));
 }
-#endif /* __GNUC__ && __MINGW32__ */
+#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
 
 #ifdef _MSC_VER
 #define UUID_ATTR(str) __declspec(uuid(str))
@@ -88,4 +109,4 @@ template<class I1, class I2>
 class RP_ComBase2 : public I1, public I2
 	RP_COMBASE_IMPL(RP_ComBase2);
 
-#endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_H__ */
+#endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__ */

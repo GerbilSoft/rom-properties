@@ -1,5 +1,26 @@
-#ifndef __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_H__
-#define __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_H__
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RP_ClassFactory.hpp: IClassFactory implementation.                      *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__
+#define __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__
 
 // References:
 // - http://www.codeproject.com/Articles/665/A-very-simple-COM-server-without-ATL-or-MFC
@@ -96,4 +117,4 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		}
 };
 
-#endif /* __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_H__ */
+#endif /* __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__ */
