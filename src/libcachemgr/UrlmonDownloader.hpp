@@ -34,6 +34,7 @@ class UrlmonDownloader : public IDownloader
 		explicit UrlmonDownloader(const LibRomData::rp_string &url);
 
 	private:
+		typedef IDownloader super;
 		UrlmonDownloader(const UrlmonDownloader &);
 		UrlmonDownloader &operator=(const UrlmonDownloader &);
 

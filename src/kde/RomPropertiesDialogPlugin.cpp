@@ -43,7 +43,7 @@ static inline const rp_char *qsToRpCharPtr(const QString &qs)
 #endif /* RP_UTF16 */
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
-	: KPropertiesDialogPlugin(props)
+	: super(props)
 {
 	// Check if a single file was specified.
 #if QT_VERSION >= 0x050000

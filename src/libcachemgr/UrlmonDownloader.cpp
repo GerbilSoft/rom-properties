@@ -42,15 +42,15 @@ using std::string;
 namespace LibCacheMgr {
 
 UrlmonDownloader::UrlmonDownloader()
-	: IDownloader()
+	: super()
 { }
 
 UrlmonDownloader::UrlmonDownloader(const rp_char *url)
-	: IDownloader(url)
+	: super(url)
 { }
 
 UrlmonDownloader::UrlmonDownloader(const rp_string &url)
-	: IDownloader(url)
+	: super(url)
 { }
 
 /**

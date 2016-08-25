@@ -34,6 +34,7 @@ class CurlDownloader : public IDownloader
 		explicit CurlDownloader(const LibRomData::rp_string &url);
 
 	private:
+		typedef IDownloader super;
 		CurlDownloader(const CurlDownloader &);
 		CurlDownloader &operator=(const CurlDownloader &);
 

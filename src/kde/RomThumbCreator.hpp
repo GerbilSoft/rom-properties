@@ -35,9 +35,10 @@ namespace LibRomData {
 class RomThumbCreator : public ThumbCreator
 {
 	public:
-		virtual ~RomThumbCreator();
-
 		virtual bool create(const QString &path, int width, int height, QImage &img) override;
+
+	private:
+		typedef ThumbCreator super;
 
 	protected:
 		/**

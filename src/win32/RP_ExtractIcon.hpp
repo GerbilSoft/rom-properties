@@ -45,6 +45,8 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 	public:
 		// IUnknown
 		STDMETHOD(QueryInterface)(REFIID riid, LPVOID *ppvObj) override;
+	private:
+		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
 
 	public:
 		/**

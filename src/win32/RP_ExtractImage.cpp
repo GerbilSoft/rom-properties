@@ -62,7 +62,6 @@ const CLSID CLSID_RP_ExtractImage =
 	{0x84573bc0, 0x9502, 0x42f8, {0x80, 0x66, 0xCC, 0x52, 0x7D, 0x07, 0x79, 0xE5}};
 
 RP_ExtractImage::RP_ExtractImage()
-	: super()
 {
 	m_bmSize.cx = 0;
 	m_bmSize.cy = 0;

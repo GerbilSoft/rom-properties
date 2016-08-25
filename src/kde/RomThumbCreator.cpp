@@ -64,9 +64,6 @@ extern "C" {
 
 /** RomThumbCreator **/
 
-RomThumbCreator::~RomThumbCreator()
-{ }
-
 /**
  * Convert an rp_image to QImage.
  * @param image rp_image.

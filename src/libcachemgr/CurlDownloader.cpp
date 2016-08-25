@@ -37,15 +37,15 @@ using std::string;
 namespace LibCacheMgr {
 
 CurlDownloader::CurlDownloader()
-	: IDownloader()
+	: super()
 { }
 
 CurlDownloader::CurlDownloader(const rp_char *url)
-	: IDownloader(url)
+	: super(url)
 { }
 
 CurlDownloader::CurlDownloader(const LibRomData::rp_string &url)
-	: IDownloader(url)
+	: super(url)
 { }
 
 /**
