@@ -312,20 +312,11 @@ int64_t CacheManager::filesize(const LibRomData::rp_string &filename)
 }
 
 /**
- * Download a file.
- * @param url URL.
- * @param cacheKey Cache key.
- *
- * If the file is present in the cache, the cached version
- * will be retrieved. Otherwise, the file will be downloaded.
- *
- * If the file was not found on the server, or it was not found
- * the last time it was requested, an empty string will be
- * returned, and a zero-byte file will be stored in the cache.
- *
- * @return Absolute path to cached file.
+ * Get a cache filename.
+ * @param cache_key Cache key.
+ * @return Cache filename, or empty string on error.
  */
-LibRomData::rp_string CacheManager::download(const LibRomData::rp_string &url, const LibRomData::rp_string &cacheKey)
+rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
@@ -338,22 +329,54 @@ LibRomData::rp_string CacheManager::download(const LibRomData::rp_string &url, c
 	// The cache key uses slashes. This must be converted
 	// to backslashes on Windows.
 #ifdef _WIN32
-	cache_filename.reserve(cache_filename.size() + cacheKey.size());
-	for (size_t i = 0; i < cacheKey.size(); i++) {
-		if (cacheKey[i] == '/')
+	cache_filename.reserve(cache_filename.size() + cache_key.size());
+	for (size_t i = 0; i < cache_key.size(); i++) {
+		if (cache_key[i] == '/') {
 			cache_filename += DIR_SEP_CHR;
-		else
-			cache_filename += cacheKey[i];
+		} else {
+			cache_filename += cache_key[i];
+		}
 	}
 #else
 	// Use slashes in the cache key.
-	cache_filename += cacheKey;
+	cache_filename += cache_key;
 #endif
 
 	// NOTE: The filename portion MUST be kept in cache_filename,
 	// since the last component is ignored by rmkdir().
-	if (rmkdir(cache_filename) != 0)
+	if (rmkdir(cache_filename) != 0) {
+		// Error creating subdirectories.
 		return rp_string();
+	}
+
+	// Cache filename created.
+	return cache_filename;
+}
+
+/**
+ * Download a file.
+ * @param url URL.
+ * @param cache_key Cache key.
+ * @param cache_key_fb Fallback cache key.
+ *
+ * If the file is present in the cache, the cached version
+ * will be retrieved. Otherwise, the file will be downloaded.
+ *
+ * If the file was not found on the server, or it was not found
+ * the last time it was requested, an empty string will be
+ * returned, and a zero-byte file will be stored in the cache.
+ *
+ * @return Absolute path to cached file.
+ */
+LibRomData::rp_string CacheManager::download(const rp_string &url,
+	const rp_string &cache_key, const rp_string &cache_key_fb)
+{
+	// Check the main cache key.
+	rp_string cache_filename = getCacheFilename(cache_key);
+	if (cache_filename.empty()) {
+		// Error obtaining the cache key filename.
+		return rp_string();
+	}
 
 	// Check if the file already exists.
 	if (!access(cache_filename, R_OK)) {
@@ -368,6 +391,24 @@ LibRomData::rp_string CacheManager::download(const LibRomData::rp_string &url, c
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
 			return cache_filename;
+		}
+	}
+
+	// Check the fallback cache key.
+	if (!cache_key_fb.empty()) {
+		rp_string cache_fb_filename = getCacheFilename(cache_key_fb);
+		if (!cache_fb_filename.empty()) {
+			// Check if the file already exists.
+			if (!access(cache_fb_filename, R_OK)) {
+				// File exists.
+				// Is it larger than 0 bytes?
+				int64_t sz = filesize(cache_fb_filename);
+				if (sz > 0) {
+					// File is larger than 0 bytes, which indicates
+					// the fallback entry is valid.
+					return cache_fb_filename;
+				}
+			}
 		}
 	}
 

@@ -166,7 +166,6 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
 		// Synchronously download from the source URLs.
-		// TODO: Cache to disk?
 		const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 		if (extURLs && !extURLs->empty()) {
 			CacheManager cache;
@@ -187,7 +186,8 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 				}
 
 				// TODO: Have download() return the actual data and/or load the cached file.
-				rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+				rp_string cache_filename = cache.download(extURL.url,
+						extURL.cache_key, extURL.cache_key_fb);
 				if (cache_filename.empty())
 					continue;
 

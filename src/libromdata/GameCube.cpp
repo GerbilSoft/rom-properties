@@ -720,16 +720,20 @@ int GameCube::loadURLs(ImageType imageType)
 	// Determine the system name.
 	// (Used for cache keys only)
 	const char *cache_sysName;
+	bool cache_fallback_wii = false;
 	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
 		case GameCubePrivate::DISC_SYSTEM_WII:
 		default:
 			cache_sysName = "wii";
+			cache_fallback_wii = false;
 			break;
 		case GameCubePrivate::DISC_SYSTEM_GCN:
 			cache_sysName = "gcn";
+			cache_fallback_wii = true;
 			break;
 		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
 			cache_sysName = "triforce";
+			cache_fallback_wii = true;
 			break;
 	}
 
@@ -745,12 +749,18 @@ int GameCube::loadURLs(ImageType imageType)
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
 			extURL.url = getURL_GameTDB("wii", s_discNum, region, id6);
 			extURL.cache_key = getCacheKey(cache_sysName, s_discNum, region, id6);
+			if (cache_fallback_wii) {
+				extURL.cache_key_fb = getCacheKey("wii", s_discNum, region, id6);
+			}
 			extURLs.push_back(extURL);
 
 			if (isPal) {
 				// Fall back to "EN" if the region-specific image wasn't found.
 				extURL.url = getURL_GameTDB("wii", s_discNum, "EN", id6);
 				extURL.cache_key = getCacheKey(cache_sysName, s_discNum, "EN", id6);
+				if (cache_fallback_wii) {
+					extURL.cache_key_fb = getCacheKey("wii", s_discNum, "EN", id6);
+				}
 				extURLs.push_back(extURL);
 			}
 		}
@@ -759,11 +769,17 @@ int GameCube::loadURLs(ImageType imageType)
 	// First disc.
 	extURL.url = getURL_GameTDB("wii", "disc", region, id6);
 	extURL.cache_key = getCacheKey(cache_sysName, "disc", region, id6);
+	if (cache_fallback_wii) {
+		extURL.cache_key_fb = getCacheKey("wii", "disc", region, id6);
+	}
 	extURLs.push_back(extURL);
 	if (isPal) {
 		// Fall back to "EN" if the region-specific image wasn't found.
 		extURL.url = getURL_GameTDB("wii", "disc", "EN", id6);
 		extURL.cache_key = getCacheKey(cache_sysName, "disc", "EN", id6);
+		if (cache_fallback_wii) {
+			extURL.cache_key_fb = getCacheKey("wii", "disc", "EN", id6);
+		}
 		extURLs.push_back(extURL);
 	}
 
