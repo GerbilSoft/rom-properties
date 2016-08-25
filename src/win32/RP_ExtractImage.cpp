@@ -33,8 +33,8 @@
 using namespace LibRomData;
 
 // libcachemgr
-#include "libcachemgr/UrlmonDownloader.hpp"
-using LibCacheMgr::UrlmonDownloader;
+#include "libcachemgr/CacheManager.hpp"
+using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -241,21 +241,27 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	}
 
 	// Check each URL.
-	UrlmonDownloader dl;
-	dl.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
+	CacheManager cache;
 	status = Gdiplus::Status::GenericError;
 	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
 	     iter != extURLs->end(); ++iter)
 	{
 		const RomData::ExtURL &extURL = *iter;
-		dl.setUrl(extURL.url);
-		int ret = dl.download();
-		if (ret != 0)
+
+		// TODO: Have download() return the actual data and/or load the cached file.
+		rp_string cache_filename = cache.download(extURL.url,
+				extURL.cache_key, extURL.cache_key_fb);
+		if (cache_filename.empty())
 			continue;
 
 		// Attempt to load the image.
 		// TODO: libpng in rp_image? For now, using Gdiplus.
-		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(dl.m_cacheFile.c_str(), FALSE);
+		// FIXME: Only works with RP_UTF16.
+#ifndef RP_UTF16
+#error RP_ExtractImage only works with RP_UTF16.
+#endif
+		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(
+			reinterpret_cast<const wchar_t*>(cache_filename.c_str()), FALSE);
 		if (!gdipBmp)
 			continue;
 

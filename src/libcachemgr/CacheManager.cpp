@@ -29,6 +29,9 @@ using LibRomData::RpFile;
 
 // Windows includes.
 #ifdef _WIN32
+#ifndef RP_UTF16
+#error CacheManager only supports RP_UTF16 on Windows.
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -49,6 +52,9 @@ using LibRomData::RpFile;
 // C++ includes.
 #include <string>
 using std::string;
+#ifdef _WIN32
+using std::wstring;
+#endif /* _WIN32 */
 
 // Windows doesn't define X_OK, W_OK, or R_OK.
 #ifndef F_OK
@@ -204,9 +210,41 @@ const LibRomData::rp_string &CacheManager::cacheDir(void)
  */
 int CacheManager::rmkdir(const LibRomData::rp_string &path)
 {
+	// TODO: Combine the two paths using a templated function?
+
 #ifdef _WIN32
-	// TODO: Windows version.
-	return -1;
+	// FIXME: Only works with RP_UTF16.
+	rp_string pathW = path;
+
+	// Find all backslashes and ensure the directory component exists.
+	// (Skip the drive letter and root backslash.)
+	size_t slash_pos = pathW.find(DIR_SEP_CHR, 4);
+
+	do {
+		// Temporarily NULL out this slash.
+		pathW[slash_pos] = 0;
+
+		// Does the directory exist?
+		if (!::_waccess(reinterpret_cast<const wchar_t*>(pathW.c_str()), F_OK)) {
+			// Directory component exists.
+			// Put the slash back in.
+			pathW[slash_pos] = DIR_SEP_CHR;
+			slash_pos++;
+			continue;
+		}
+
+		// Attempt to create this directory.
+		BOOL bRet = CreateDirectory(reinterpret_cast<const wchar_t*>(pathW.c_str()), nullptr);
+		if (bRet == 0) {
+			// Error creating the directory.
+			// TODO: GetLastError()?
+			return -EIO;
+		}
+
+		// Put the slash back in.
+		pathW[slash_pos] = DIR_SEP_CHR;
+		slash_pos++;
+	} while ((slash_pos = pathW.find(DIR_SEP_CHR, slash_pos)) != string::npos);
 #else
 	string path8 = LibRomData::rp_string_to_utf8(path);
 
@@ -256,8 +294,8 @@ int CacheManager::rmkdir(const LibRomData::rp_string &path)
 int CacheManager::access(const LibRomData::rp_string &pathname, int mode)
 {
 #ifdef _WIN32
-	// TODO
-	return -1;
+	// FIXME: Only works with RP_UTF16.
+	return ::_waccess(reinterpret_cast<const wchar_t*>(pathname.c_str()), mode);
 #else /* !_WIN32 */
 #ifdef RP_UTF16
 	string pathname8 = LibRomData::rp_string_to_utf8(pathname);
@@ -321,6 +359,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
 	rp_string cache_filename = cacheDir();
+
 	if (cache_filename.empty())
 		return rp_string();
 	if (cache_filename.at(cache_filename.size()-1) != DIR_SEP_CHR)
