@@ -83,31 +83,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_mode(mode)
 	, m_lastError(0)
 {
-	// TODO: Combine the two constructors.
-#ifndef RP_UTF16
-	#error RpFile_Win32.cpp only supports UTF-16. FIXME?
-#endif
-
-	// Determine the file mode.
-	DWORD dwDesiredAccess, dwCreationDisposition;
-	if (mode_to_win32(mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
-		// Invalid mode.
-		m_lastError = EINVAL;
-		return;
-	}
-
-	// Open the file.
-	m_file = CreateFile(reinterpret_cast<LPCWSTR>(filename),
-			dwDesiredAccess, FILE_SHARE_READ, nullptr,
-			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
-			nullptr);
-	if (m_file == INVALID_HANDLE_VALUE) {
-		// Error opening the file.
-		// TODO: More extensive conversion of GetLastError() to POSIX?
-		DWORD dwError = GetLastError();
-		m_lastError = (dwError == ERROR_FILE_NOT_FOUND ? ENOENT : EIO);
-		return;
-	}
+	init(filename);
 }
 
 /**
@@ -122,21 +98,29 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_mode(mode)
 	, m_lastError(0)
 {
-	// TODO: Combine the two constructors.
+	init(filename.c_str());
+}
+
+/**
+ * Common initialization function for RpFile's constructors.
+ * @param filename Filename.
+ */
+void RpFile::init(const rp_char *filename)
+{
 #ifndef RP_UTF16
 	#error RpFile_Win32.cpp only supports UTF-16. FIXME?
 #endif
 
 	// Determine the file mode.
 	DWORD dwDesiredAccess, dwCreationDisposition;
-	if (mode_to_win32(mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
+	if (mode_to_win32(m_mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		m_lastError = EINVAL;
 		return;
 	}
 
 	// Open the file.
-	m_file = CreateFile(reinterpret_cast<LPCWSTR>(filename.c_str()),
+	m_file = CreateFile(reinterpret_cast<LPCWSTR>(filename),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr);

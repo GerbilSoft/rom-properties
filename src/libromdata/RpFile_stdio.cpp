@@ -74,13 +74,36 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_mode(mode)
 	, m_lastError(0)
 {
-	const mode_str_t *mode_str = mode_to_str(mode);
+	init(filename);
+}
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename.
+ * @param mode File mode.
+ */
+RpFile::RpFile(const rp_string &filename, FileMode mode)
+	: IRpFile()
+	, m_file(nullptr)
+	, m_mode(mode)
+	, m_lastError(0)
+{
+	init(filename.c_str());
+}
+
+/**
+ * Common initialization function for RpFile's constructors.
+ * @param filename Filename.
+ */
+void RpFile::init(const rp_char *filename)
+{
+	const mode_str_t *mode_str = mode_to_str(m_mode);
 	if (!mode_str) {
 		m_lastError = EINVAL;
 		return;
 	}
 
-	// TODO: Combine the two constructors.
 	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
 
 #if defined(RP_UTF8)
@@ -101,54 +124,6 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 #else /* !_WIN32 */
 	// Linux: Convert to UTF-8 first.
 	string u8_filename = rp_string_to_utf8(filename, rp_strlen(filename));
-	m_file = fopen(u8_filename.c_str(), mode_str);
-#endif /* _WIN32 */
-#endif /* RP_UTF8, RP_UTF16 */
-
-	if (!m_file) {
-		// An error occurred while opening the file.
-		m_lastError = errno;
-	}
-}
-
-/**
- * Open a file.
- * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
- */
-RpFile::RpFile(const rp_string &filename, FileMode mode)
-	: IRpFile()
-	, m_file(nullptr)
-	, m_mode(mode)
-	, m_lastError(0)
-{
-	const mode_str_t *mode_str = mode_to_str(mode);
-	if (!mode_str) {
-		m_lastError = EINVAL;
-		return;
-	}
-
-	// TODO: Combine the two constructors.
-	// TODO: On Windows, prepend "\\\\?\\" for super-long filenames?
-
-#if defined(RP_UTF8)
-#if defined(_WIN32)
-	// Windows: Convert to UTF-16, then use UTF-16.
-	u16string u16_filename = rp_string_to_utf16(filename);
-	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename.c_str()), mode_str);
-#else /* !_WIN32 */
-	// Linux: Use the UTF-8 filename directly.
-	m_file = fopen(filename.c_str(), mode_str);
-#endif /* _WIN32 */
-#elif defined(RP_UTF16)
-	// rp_string is UTF-16.
-#if defined(_WIN32)
-	// Windows: Use _wfopen() with the UTF-16 string.
-	m_file = _wfopen(reinterpret_cast<const wchar_t*>(filename.c_str()), mode_str);
-#else /* !_WIN32 */
-	// Linux: Convert to UTF-8 first.
-	string u8_filename = rp_string_to_utf8(filename);
 	m_file = fopen(u8_filename.c_str(), mode_str);
 #endif /* _WIN32 */
 #endif /* RP_UTF8, RP_UTF16 */
