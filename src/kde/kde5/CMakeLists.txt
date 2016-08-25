@@ -75,11 +75,13 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
 # - Disable implicit QString ASCII casts.
+# - Use strict iterators.
 ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 	-DQT_USE_FAST_OPERATOR_PLUS
 	-DQT_USE_QSTRINGBUILDER
 	-DQT_NO_CAST_FROM_ASCII
 	-DQT_NO_CAST_TO_ASCII
+	-DQT_STRICT_ITERATORS
 	)
 
 #######################
