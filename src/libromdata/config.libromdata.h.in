@@ -41,17 +41,20 @@
 /* FIXME: char16_t is defined in c++11-compat.h, not here. */
 #if _MSC_VER < 1900
 #define _RP_U8(x)	x
-#define _RP_U16(x)	((char16_t*)(L ##x))
+#define _RP_U16_STR(x)	((char16_t*)(L ##x))
+#define _RP_U16_CHR(x)	((char16_t)(L ##x))
 #else
 #define _RP_U8(x)	(u8 ##x)
-#define _RP_U16(x)	(u ##x)
+#define _RP_U16_STR(x)	(u ##x)
+#define _RP_U16_CHR(x)	(u ##x)
 #endif
 #else
 /* Other compilers with C++ 2011 support should support Unicode */
 /* string literals without any issues. */
 /* FIXME: Fail if the compiler doesn't support Unicode string literals. */
 #define _RP_U8(x)	(u8 ##x)
-#define _RP_U16(x)	(u ##x)
+#define _RP_U16_STR(x)	(u ##x)
+#define _RP_U16_CHR(x)	(u ##x)
 #endif
 
 /* String types. This may vary based on build target. */
@@ -60,6 +63,7 @@
 #elif defined(RP_UTF8)
 typedef char rp_char;
 #define _RP(x) _RP_U8(x)
+#define _RP_CHR(x) _RP_U8(x)
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::string rp_string;
@@ -67,7 +71,8 @@ namespace LibRomData {
 #endif /* __cplusplus */
 #elif defined(RP_UTF16)
 typedef char16_t rp_char;
-#define _RP(x) _RP_U16(x)
+#define _RP(x) _RP_U16_STR(x)
+#define _RP_CHR(x) _RP_U16_CHR(x)
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::u16string rp_string;

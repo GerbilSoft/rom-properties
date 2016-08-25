@@ -8,9 +8,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 SET(libcachemgr_SRCS
 	IDownloader.cpp
+	CacheManager.cpp
 	)
 SET(libcachemgr_H
 	IDownloader.hpp
+	CacheManager.hpp
 	)
 
 IF(NOT WIN32)

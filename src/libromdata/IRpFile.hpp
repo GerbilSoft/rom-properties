@@ -71,6 +71,14 @@ class IRpFile
 		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
+		 * Write data to the file.
+		 * @param ptr Output data buffer.
+		 * @param size Amount of data to read, in bytes.
+		 * @return Number of bytes written.
+		 */
+		virtual size_t write(void *ptr, size_t size) = 0;
+
+		/**
 		 * Set the file position.
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.

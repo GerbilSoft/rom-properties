@@ -69,7 +69,7 @@ static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
  * @param mode File mode.
  */
 RpFile::RpFile(const rp_char *filename, FileMode mode)
-	: IRpFile()
+	: super()
 	, m_file(nullptr)
 	, m_mode(mode)
 	, m_lastError(0)
@@ -323,6 +323,29 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	size_t ret = fread(ptr, 1, size, m_file);
+	if (ferror(m_file)) {
+		// An error occurred.
+		m_lastError = errno;
+	}
+	return ret;
+}
+
+/**
+ * Write data to the file.
+ * @param ptr Output data buffer.
+ * @param size Amount of data to read, in bytes.
+ * @return Number of bytes written.
+ */
+size_t RpFile::write(void *ptr, size_t size)
+{
+	if (!m_file || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return 0;
+	}
+
+	size_t ret = fwrite(ptr, 1, size, m_file);
 	if (ferror(m_file)) {
 		// An error occurred.
 		m_lastError = errno;

@@ -22,8 +22,8 @@
 #include "RomThumbCreator.hpp"
 
 // libcachemgr
-#include "libcachemgr/CurlDownloader.hpp"
-using LibCacheMgr::CurlDownloader;
+#include "libcachemgr/CacheManager.hpp"
+using LibCacheMgr::CacheManager;
 
 // C includes.
 #include <unistd.h>
@@ -169,35 +169,30 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// TODO: Cache to disk?
 		const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
 		if (extURLs && !extURLs->empty()) {
-			CurlDownloader curlDL;
-			curlDL.setMaxSize(4*1024*1024);	// TODO: Configure this somewhere?
+			CacheManager cache;
 			for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
 			     iter != extURLs->end(); ++iter)
 			{
 				const RomData::ExtURL &extURL = *iter;
-				curlDL.setUrl(extURL.url);
 
 				// Check if a proxy is required for this URL.
 				// TODO: Optimizations.
 				QString proxy = KProtocolManager::proxyForUrl(QUrl(rpToQS(extURL.url)));
 				if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 					// No proxy.
-					curlDL.setProxyUrl(nullptr);
+					cache.setProxyUrl(nullptr);
 				} else {
 					// Proxy is specified.
-					curlDL.setProxyUrl((const rp_char*)proxy.utf16());
+					cache.setProxyUrl((const rp_char*)proxy.utf16());
 				}
 
-				int curlRet = curlDL.download();
-				if (curlRet != 0)
+				// TODO: Have download() return the actual data and/or load the cached file.
+				rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+				if (cache_filename.empty())
 					continue;
 
 				// Attempt to load the image.
-				// NOTE: This QByteArray is NOT a deep copy.
-				QByteArray ba = QByteArray::fromRawData(
-					reinterpret_cast<const char*>(curlDL.data()), curlDL.dataSize());
-				QBuffer buffer(&ba);
-				QImageReader imageReader(&buffer);
+				QImageReader imageReader(rpToQS(cache_filename));
 				QImage dlImg = imageReader.read();
 				if (!dlImg.isNull()) {
 					// Image downloaded successfully.

@@ -78,7 +78,7 @@ static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, 
  * @param mode File mode.
  */
 RpFile::RpFile(const rp_char *filename, FileMode mode)
-	: IRpFile()
+	: super()
 	, m_file(INVALID_HANDLE_VALUE)
 	, m_mode(mode)
 	, m_lastError(0)
@@ -288,6 +288,33 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	return bytesRead;
+}
+
+/**
+ * Write data to the file.
+ * @param ptr Output data buffer.
+ * @param size Amount of data to read, in bytes.
+ * @return Number of bytes written.
+ */
+size_t RpFile::write(void *ptr, size_t size)
+{
+	if (!m_file || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return 0;
+	}
+
+	DWORD bytesWritten;
+	BOOL bRet = WriteFile(m_file, ptr, (DWORD)size, &bytesWritten, nullptr);
+	if (bRet == 0) {
+		// An error occurred.
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return 0;
+	}
+
+	return bytesWritten;
 }
 
 /**
