@@ -428,7 +428,7 @@ u16string ascii_to_utf16(const char *str, size_t len)
 #ifndef RP_WIS16
 /**
  * char16_t strlen().
- * @param str 16-bit string.
+ * @param wcs 16-bit string.
  * @return Length of str, in characters.
  */
 size_t u16_strlen(const char16_t *wcs)

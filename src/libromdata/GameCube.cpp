@@ -134,18 +134,18 @@ const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
 // ROM fields.
 const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	// TODO: Banner?
-	{_RP("Title"), RomFields::RFT_STRING, nullptr},
-	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
-	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
-	{_RP("Disc #"), RomFields::RFT_STRING, nullptr},
-	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
+	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 
 	// Wii partition table.
 	// NOTE: Actually a table of tables, so we'll use
 	// 0p0-style numbering, where the first digit is
 	// the table number, and the second digit is the
 	// partition number. (both start at 0)
-	{_RP("Partitions"), RomFields::RFT_LISTDATA, &rvl_partitions},
+	{_RP("Partitions"), RomFields::RFT_LISTDATA, {&rvl_partitions}},
 
 	// TODO:
 	// - System update version.

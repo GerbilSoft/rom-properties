@@ -28,11 +28,6 @@ using LibCacheMgr::CurlDownloader;
 // C includes.
 #include <unistd.h>
 
-// cURL for network access.
-// TODO: Split into a separate library for use by the
-// KDE and GTK frontends?
-#include <curl/curl.h>
-
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -74,7 +69,7 @@ RomThumbCreator::~RomThumbCreator()
 
 /**
  * Convert an rp_image to QImage.
- * @param rp_image rp_image.
+ * @param image rp_image.
  * @return QImage.
  */
 QImage RomThumbCreator::rpToQImage(const rp_image *image)

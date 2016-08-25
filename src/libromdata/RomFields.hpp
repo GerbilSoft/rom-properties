@@ -184,7 +184,7 @@ class RomFields
 
 		/**
 		 * Add bitfield data.
-		 * @param val Bitfield.
+		 * @param bitfield Bitfield.
 		 * @return Field index.
 		 */
 		int addData_bitfield(uint32_t bitfield);

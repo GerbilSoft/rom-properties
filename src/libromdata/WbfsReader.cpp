@@ -56,8 +56,6 @@ class WbfsReaderPrivate {
 
 		/**
 		 * Read the WBFS header.
-		 * @param ppHead Pointer to wbfs_head_t*. (will be allocated on success)
-		 * @param p wbfs_t struct.
 		 * @return Allocated wbfs_t on success; nullptr on error.
 		 */
 		wbfs_t *readWbfsHeader(void);
@@ -66,7 +64,7 @@ class WbfsReaderPrivate {
 		 * Free an allocated WBFS header.
 		 * This frees all associated structs.
 		 * All opened discs *must* be closed.
-		 * @param wbfs_t wbfs_t struct.
+		 * @param p wbfs_t struct.
 		 */
 		void freeWbfsHeader(wbfs_t *p);
 
@@ -156,7 +154,6 @@ static uint8_t size_to_shift(uint32_t size)
 
 /**
  * Read the WBFS header.
- * @param ppHead Pointer to wbfs_head_t*. (will be allocated on success)
  * @return Allocated wbfs_t on success; nullptr on error.
  */
 wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
@@ -256,7 +253,7 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
  * Free an allocated WBFS header.
  * This frees all associated structs.
  * All opened discs *must* be closed.
- * @param wbfs_t wbfs_t struct.
+ * @param p wbfs_t struct.
  */
 void WbfsReaderPrivate::freeWbfsHeader(wbfs_t *p)
 {

@@ -50,7 +50,7 @@ class CurlDownloader : public IDownloader
 
 		/**
 		 * Internal cURL header parsing function.
-		 * @param buffer Pointer to header data. (NOT necessarily null-terminated!)
+		 * @param ptr Pointer to header data. (NOT necessarily null-terminated!)
 		 * @param size Element size.
 		 * @param nitems Number of elements.
 		 * @param userdata m_data pointer.

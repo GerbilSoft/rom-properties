@@ -43,7 +43,7 @@ class RomThumbCreator : public ThumbCreator
 		/**
 		 * Convert an rp_image to QImage.
 		 * TODO: Move to another file?
-		 * @param rp_image rp_image.
+		 * @param image rp_image.
 		 * @return QImage.
 		 */
 		static QImage rpToQImage(const LibRomData::rp_image *image);

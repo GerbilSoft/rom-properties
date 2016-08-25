@@ -19,6 +19,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#ifndef __ROMPROPERTIES_LIBROMDATA_RP_IMAGE_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_RP_IMAGE_HPP__
+
 // C includes.
 #include <stdint.h>
 
@@ -146,3 +149,5 @@ class rp_image
 };
 
 }
+
+#endif /* __ROMPROPERTIES_LIBROMDATA_RP_IMAGE_HPP__ */

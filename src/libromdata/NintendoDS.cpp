@@ -91,13 +91,13 @@ static const RomFields::BitfieldDesc dsi_region_bitfield = {
 // TODO: Private class?
 static const struct RomFields::Desc nds_fields[] = {
 	// TODO: Banner?
-	{_RP("Title"), RomFields::RFT_STRING, nullptr},
-	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
-	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
-	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
-	{_RP("Hardware"), RomFields::RFT_BITFIELD, &nds_hw_bitfield},
-	{_RP("DS Region"), RomFields::RFT_BITFIELD, &nds_region_bitfield},
-	{_RP("DSi Region"), RomFields::RFT_BITFIELD, &dsi_region_bitfield},
+	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Hardware"), RomFields::RFT_BITFIELD, {&nds_hw_bitfield}},
+	{_RP("DS Region"), RomFields::RFT_BITFIELD, {&nds_region_bitfield}},
+	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
 
 	// TODO: Icon, full game title.
 };
@@ -450,9 +450,9 @@ static inline uint32_t RGB555_to_ARGB32(uint16_t px16)
 
 /**
  * Blit a tile to a linear image buffer.
- * @param pixel		[in] Pixel type.
- * @param tileW		[in] Tile width.
- * @param tileH		[in] Tile height.
+ * @tparam pixel	[in] Pixel type.
+ * @tparam tileW	[in] Tile width.
+ * @tparam tileH	[in] Tile height.
  * @param imgBuf	[out] Linear image buffer.
  * @param pitch		[in] Pitch of image buffer, in pixels.
  * @param tileBuf	[in] Tile buffer.
