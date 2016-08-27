@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 #include <stdexcept>
+#include <algorithm>
 
 /**
  * @file uvector.h
