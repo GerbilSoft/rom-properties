@@ -130,10 +130,10 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		// Create a new class factory.
 		RP_ClassFactory<RP_ExtractImage> *pCF = new RP_ClassFactory<RP_ExtractImage>();
 		HRESULT hr = pCF->QueryInterface(riid, ppvOut);
+		pCF->Release();
 		if (hr != S_OK) {
 			// Interface not found.
 			*ppvOut = nullptr;	// TODO: Not needed?
-			delete pCF;
 		}
 		return hr;
 	}
