@@ -68,33 +68,6 @@ class CacheManager
 		const LibRomData::rp_string &cacheDir(void);
 
 		/**
-		 * Recursively mkdir() subdirectories.
-		 *
-		 * The last element in the path will be ignored, so if
-		 * the entire pathname is a directory, a trailing slash
-		 * must be included.
-		 *
-		 * @param path Path to recursively mkdir. (last component is ignored)
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int rmkdir(const LibRomData::rp_string &path);
-
-		/**
-		 * Does a file exist? [wrapper function]
-		 * @param pathname Pathname.
-		 * @param mode Mode.
-		 * @return 0 if the file exists with the specified mode; non-zero if not.
-		 */
-		static int access(const LibRomData::rp_string &pathname, int mode);
-
-		/**
-		 * Get a file's size.
-		 * @param filename Filename.
-		 * @return Size on success; -1 on error.
-		 */
-		static int64_t filesize(const LibRomData::rp_string &filename);
-
-		/**
 		 * Get a cache filename.
 		 * @param cache_key Cache key.
 		 * @return Cache filename, or empty string on error.

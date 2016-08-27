@@ -46,47 +46,22 @@ using LibRomData::RpFile;
 #ifndef _WIN32
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #endif /* !_WIN32 */
 
 // C++ includes.
 #include <string>
 using std::string;
-#ifdef _WIN32
-using std::wstring;
-#endif /* _WIN32 */
-
-// Windows doesn't define X_OK, W_OK, or R_OK.
-#ifndef F_OK
-#define F_OK 0
-#endif
-#ifndef X_OK
-#define X_OK 1
-#endif
-#ifndef W_OK
-#define W_OK 2
-#endif
-#ifndef R_OK
-#define R_OK 4
-#endif
 
 // TODO: DownloaderFactory?
 #ifdef _WIN32
-#define DIR_SEP_CHR8 '\\'
-#define DIR_SEP_CHR16 L'\\'
 #include "UrlmonDownloader.hpp"
 #else
-#define DIR_SEP_CHR8 '/'
-#define DIR_SEP_CHR16 L'/'
 #include "CurlDownloader.hpp"
 #endif
 
-#ifdef RP_UTF8
-#define DIR_SEP_CHR DIR_SEP_CHR8
-#endif
-#ifdef RP_UTF16
-#define DIR_SEP_CHR DIR_SEP_CHR16
-#endif
+// File system wrapper functions.
+#include "FileSystem.hpp"
+using namespace LibCacheMgr::FileSystem;
 
 namespace LibCacheMgr {
 
@@ -196,157 +171,6 @@ const LibRomData::rp_string &CacheManager::cacheDir(void)
 #endif
 
 	return m_cacheDir;
-}
-
-/**
- * Recursively mkdir() subdirectories.
- *
- * The last element in the path will be ignored, so if
- * the entire pathname is a directory, a trailing slash
- * must be included.
- *
- * @param path Path to recursively mkdir. (last component is ignored)
- * @return 0 on success; non-zero on error.
- */
-int CacheManager::rmkdir(const LibRomData::rp_string &path)
-{
-	// TODO: Combine the two paths using a templated function?
-
-#ifdef _WIN32
-	// FIXME: Only works with RP_UTF16.
-	rp_string pathW = path;
-
-	// Find all backslashes and ensure the directory component exists.
-	// (Skip the drive letter and root backslash.)
-	size_t slash_pos = pathW.find(DIR_SEP_CHR, 4);
-
-	do {
-		// Temporarily NULL out this slash.
-		pathW[slash_pos] = 0;
-
-		// Does the directory exist?
-		if (!::_waccess(reinterpret_cast<const wchar_t*>(pathW.c_str()), F_OK)) {
-			// Directory component exists.
-			// Put the slash back in.
-			pathW[slash_pos] = DIR_SEP_CHR;
-			slash_pos++;
-			continue;
-		}
-
-		// Attempt to create this directory.
-		BOOL bRet = CreateDirectory(reinterpret_cast<const wchar_t*>(pathW.c_str()), nullptr);
-		if (bRet == 0) {
-			// Error creating the directory.
-			// TODO: GetLastError()?
-			return -EIO;
-		}
-
-		// Put the slash back in.
-		pathW[slash_pos] = DIR_SEP_CHR;
-		slash_pos++;
-	} while ((slash_pos = pathW.find(DIR_SEP_CHR, slash_pos)) != string::npos);
-#else
-	string path8 = LibRomData::rp_string_to_utf8(path);
-
-	// Find all slashes and ensure the directory component exists.
-	size_t slash_pos = path8.find(DIR_SEP_CHR8, 0);
-	if (slash_pos == 0) {
-		// Root is always present.
-		slash_pos = path8.find(DIR_SEP_CHR8, 1);
-	}
-
-	do {
-		// Temporarily NULL out this slash.
-		path8[slash_pos] = 0;
-
-		// Does the directory exist?
-		if (!::access(path8.c_str(), F_OK)) {
-			// Directory component exists.
-			// Put the slash back in.
-			path8[slash_pos] = DIR_SEP_CHR8;
-			slash_pos++;
-			continue;
-		}
-
-		// Attempt to create this directory.
-		int ret = mkdir(path8.c_str(), 0777);
-		if (ret != 0) {
-			// Error creating the directory.
-			return -errno;
-		}
-
-		// Put the slash back in.
-		path8[slash_pos] = DIR_SEP_CHR8;
-		slash_pos++;
-	} while ((slash_pos = path8.find(DIR_SEP_CHR8, slash_pos)) != string::npos);
-#endif
-
-	// rmkdir() succeeded.
-	return 0;
-}
-
-/**
- * Does a file exist? [wrapper function]
- * @param pathname Pathname.
- * @param mode Mode.
- * @return 0 if the file exists with the specified mode; non-zero if not.
- */
-int CacheManager::access(const LibRomData::rp_string &pathname, int mode)
-{
-#ifdef _WIN32
-	// FIXME: Only works with RP_UTF16.
-	return ::_waccess(reinterpret_cast<const wchar_t*>(pathname.c_str()), mode);
-#else /* !_WIN32 */
-#ifdef RP_UTF16
-	string pathname8 = LibRomData::rp_string_to_utf8(pathname);
-	return ::access(pathname8.c_str(), mode);
-#endif
-#ifdef RP_UTF8
-	return ::access(pathname.c_str(), mode);
-#endif
-#endif /* _WIN32 */
-
-	// Should not get here...
-	return -1;
-}
-
-/**
- * Get a file's size.
- * @param filename Filename.
- * @return Size on success; -1 on error.
- */
-int64_t CacheManager::filesize(const LibRomData::rp_string &filename)
-{
-	int ret = -1;
-
-#ifdef _WIN32
-	// FIXME: Only works with RP_UTF16.
-	struct _stati64 buf;
-	ret = _wstati64(reinterpret_cast<const wchar_t*>(filename.c_str()), &buf);
-#else /* !_WIN32 */
-	struct stat buf;
-#ifdef RP_UTF16
-	string filename8 = LibRomData::rp_string_to_utf8(filename);
-	ret = stat(filename8.c_str(), &buf);
-#endif
-#ifdef RP_UTF8
-	ret = stat(filename.c_str(), &buf);
-#endif
-#endif /* _WIN32 */
-
-	if (ret != 0) {
-		// stat() failed.
-		ret = -errno;
-		if (ret == 0) {
-			// Something happened...
-			ret = -EINVAL;
-		}
-
-		return ret;
-	}
-
-	// Return the filesize.
-	return buf.st_size;
 }
 
 /**
