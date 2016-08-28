@@ -37,6 +37,7 @@
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <pwd.h>
 #endif
 
 // C++ includes.
@@ -269,11 +270,31 @@ const LibRomData::rp_string &getCacheDirectory(void)
 #else
 	// Linux: Cache directory is ~/.cache/rom-properties/.
 	// TODO: Mac OS X.
-	// TODO: What if the HOME environment variable isn't set?
 	const char *home = getenv("HOME");
-	if (!home || home[0] == 0)
-		return cache_dir;
-	string path = home;
+	string path;
+	if (home && home[0] != 0) {
+		// HOME variable is set.
+		path = home;
+	} else {
+		// HOME variable is not set.
+		// Check the user's pwent.
+		// TODO: Can pwd_result be nullptr?
+		// TODO: Check for ENOMEM?
+		// TODO: Support getpwuid() if the system doesn't support getpwuid_r()?
+		char buf[2048];
+		struct passwd pwd;
+		struct passwd *pwd_result;
+		int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
+		if (ret != 0 || !pwd_result) {
+			// getpwuid_r() failed.
+			return cache_dir;
+		}
+
+		if (pwd_result->pw_dir[0] == 0)
+			return cache_dir;
+
+		path = string(pwd_result->pw_dir);
+	}
 
 	// Add a trailing slash if necessary.
 	if (path.at(path.size()-1) != '/')
