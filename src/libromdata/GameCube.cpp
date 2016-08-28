@@ -717,6 +717,20 @@ int GameCube::loadURLs(ImageType imageType)
 		}
 	}
 
+	// Determine the image processing field.
+	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+		case GameCubePrivate::DISC_SYSTEM_WII:
+		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+		default:
+			// 120mm disc.
+			m_imgpf[imageType] = IMGPF_CDROM_120MM;
+			break;
+		case GameCubePrivate::DISC_SYSTEM_GCN:
+			// 80mm disc.
+			m_imgpf[imageType] = IMGPF_CDROM_80MM;
+			break;
+	}
+
 	// Current extURL.
 	ExtURL extURL;
 

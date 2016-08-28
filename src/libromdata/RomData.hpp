@@ -139,6 +139,7 @@ class RomData
 		enum ImageType {
 			// Internal images are contained with the ROM or disc image.
 			IMG_INT_ICON = 0,	// Internal icon, e.g. DS launcher icon
+			//IMG_INT_ICON_SMALL,	// Internal small icon. (3DS) [TODO]
 			IMG_INT_BANNER,		// Internal banner, e.g. GameCube discs
 			IMG_INT_MEDIA,		// Internal media scan, e.g. Dreamcast discs
 
@@ -161,6 +162,7 @@ class RomData
 		enum ImageTypeBF {
 			// Internal images are contained with the ROM or disc image.
 			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
+			//IMGBF_INT_ICON_SMALL = (1 << IMG_INT_ICON_SMALL),	// Internal small icon. (3DS) [TODO]
 			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
 			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
 
@@ -168,6 +170,14 @@ class RomData
 			// TODO
 			IMGBF_EXT_MEDIA  = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
 			IMGBF_EXT_BOX    = (1 << IMG_EXT_BOX),		// External box scan
+		};
+
+		/**
+		 * Image processing flags.
+		 */
+		enum ImageProcessingBF {
+			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
+			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
 		};
 
 		/**
@@ -207,6 +217,15 @@ class RomData
 		 */
 		const RomFields *fields(void) const;
 
+	private:
+		/**
+		 * Verify that the specified image type has been loaded.
+		 * @param imageType Image type.
+		 * @return 0 if loaded; negative POSIX error code on error.
+		 */
+		int verifyImageTypeLoaded(ImageType imageType) const;
+
+	public:
 		/**
 		 * Get an internal image from the ROM.
 		 *
@@ -238,6 +257,17 @@ class RomData
 		 */
 		const std::vector<ExtURL> *extURLs(ImageType imageType) const;
 
+		/**
+		 * Get image processing flags.
+		 *
+		 * These specify post-processing operations for images,
+		 * e.g. applying transparency masks.
+		 *
+		 * @param imageType Image type.
+		 * @return Bitfield of ImageProcessingBF operations to perform.
+		 */
+		uint32_t imgpf(ImageType imageType) const;
+
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
@@ -253,6 +283,9 @@ class RomData
 		// This is done to allow for multiple quality levels.
 		// TODO: Allow the user to customize quality levels?
 		std::vector<ExtURL> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
+
+		// Image processing flags.
+		uint32_t m_imgpf[IMG_EXT_MAX];
 };
 
 }
