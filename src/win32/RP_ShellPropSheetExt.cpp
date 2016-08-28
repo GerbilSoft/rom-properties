@@ -51,73 +51,23 @@ RP_ShellPropSheetExt::RP_ShellPropSheetExt()
 	m_szSelectedFile[0] = 0;
 
 	// Create the dialog.
-	// NOTE: For property sheets, this MUST be DLGTEMPLATEEX.
-	// References:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/ms644996(v=vs.85).aspx#template_in_memory
-	// - https://blogs.msdn.microsoft.com/oldnewthing/20040623-00/?p=38753
-	// TODO: Better dialog template.
-	uint8_t *pDlgBuf = m_dlgbuf;
+	DLGTEMPLATE dlg;
+	dlg.style = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;
+	dlg.dwExtendedStyle = 0;
+	dlg.cdit = 0;   // automatically updated by DialogBuilder
+	dlg.x = 10; dlg.y = 10;
+	dlg.cx = 200; dlg.cy = 100;
+	m_dlgBuilder.init(&dlg, L"rpdlg");
 
-	LPWORD lpw;
-	LPDWORD lpdw;
-	LPWSTR lpwsz;
-
-	// Set up DLGTEMPLATEEX.
-	lpw = (LPWORD)pDlgBuf;
-	*lpw++ = 1;		// WORD wVersion
-	*lpw++ = 0xFFFF;	// WORD wSignature
-	lpdw = (LPDWORD)lpw;
-	*lpdw++ = 0;		// DWORD dwHelpID
-
-	// DLGTEMPLATEEX
-	*lpdw++ = 0;		// DWORD dwExStyle
-	*lpdw++ = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;	// DWORD dwStyle
-	lpw = (LPWORD)lpdw;
-	*lpw++ = 1;			// WORD cItems
-	*lpw++ = 10; *lpw++ = 10;	// WORD x, y
-	*lpw++ = 200; *lpw++ = 100;	// WORD cx, cy
-
-	*lpw++ = 0;	// No menu.
-	*lpw++ = 0;	// Default dialog class.
-
-	// Dialog title.
-	lpwsz = (LPWSTR)lpw;
-	wcscpy(lpwsz, L"rpdlg");
-	lpw += 6;
-
-	// Font information.
-	*lpw++ = 8;		// WORD wSize
-	*lpw++ = FW_NORMAL;	// WORD wWeight
-	*lpw++ = 0;		// BYTE italic; BYTE charset;
-
-	// Font name.
-	lpwsz = (LPWSTR)lpw;
-	wcscpy(lpwsz, L"MS Shell Dlg");
-	lpw += 13;
-
-	// Define an OK button.
-	// DLGITEMTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645389(v=vs.85).aspx
-	lpw = lpwAlign(lpw);	// DWORD alignment.
-	lpdw = (LPDWORD)lpw;
-	*lpdw++ = 0;						// DWORD helpID;
-	*lpdw++ = 0;						// DWORD exStyle;
-	*lpdw++ = WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON;	// DWORD style;
-	lpw = (LPWORD)lpdw;
-	*lpw++ = 10; *lpw++ = 70;				// WORD x, y;
-	*lpw++ = 180; *lpw++ = 20;				// WORD cx, cy;
-	lpdw = (LPDWORD)lpw;
-	*lpdw++ = IDOK;						// DWORD id;
-	lpw = (LPWORD)lpdw;
-	*lpw++ = 0xFFFF;
-	*lpw++ = 0x0080;	// Button class
-
-	// Button text.
-	lpwsz = (LPWSTR)lpw;
-	wcscpy(lpwsz, L"OK");
-	lpw += 3;
-
-	*lpw++ = 0;						// WORD extraCount;
-	*lpw++ = 0;
+	// Create an OK button.
+	DLGITEMTEMPLATE item;
+	item.style = WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON;
+	item.dwExtendedStyle = 0;
+	item.x = 10; item.y = 70;
+	item.cx = 180; item.cy = 20;
+	item.id = IDOK;
+	// NOTE: 0x0080 == Button
+	m_dlgBuilder.add(&item, MAKEINTRESOURCE(0x0080), L"OK");
 }
 
 /** IUnknown **/
@@ -294,7 +244,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USETITLE | PSP_USECALLBACK | PSP_DLGINDIRECT;
 	psp.hInstance = nullptr;
-	psp.pResource = (LPCDLGTEMPLATE)m_dlgbuf;
+	psp.pResource = m_dlgBuilder.get();
 	psp.pszIcon = nullptr;
 	psp.pszTitle = L"ROM Properties";
 	psp.pfnDlgProc = DlgProc;

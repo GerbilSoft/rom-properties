@@ -38,6 +38,9 @@ extern "C" {
 // C++ includes.
 #include <string>
 
+// Win32 dialog builder.
+#include "DialogBuilder.hpp"
+
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
 RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 {
@@ -73,11 +76,8 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		wchar_t m_szSelectedFile[MAX_PATH];
 		PCWSTR GetSelectedFile(void) const;
 
-		// Indirect dialog template memory buffer.
-		// NOTE: Cannot be read-only, and cannot be
-		// temporarily allocated on the stack, since
-		// the system doesn't copy the template.
-		uint8_t m_dlgbuf[32768];
+		// Dialog builder.
+		DialogBuilder m_dlgBuilder;
 
 	public:
 		// IShellExtInit
