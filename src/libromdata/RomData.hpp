@@ -225,7 +225,6 @@ class RomData
 		struct ExtURL {
 			rp_string url;		// URL
 			rp_string cache_key;	// Cache key
-			rp_string cache_key_fb;	// Fallback cache key
 		};
 
 		/**

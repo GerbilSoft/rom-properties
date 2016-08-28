@@ -220,7 +220,6 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  * Download a file.
  * @param url URL.
  * @param cache_key Cache key.
- * @param cache_key_fb Fallback cache key.
  *
  * If the file is present in the cache, the cached version
  * will be retrieved. Otherwise, the file will be downloaded.
@@ -231,8 +230,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  *
  * @return Absolute path to cached file.
  */
-LibRomData::rp_string CacheManager::download(const rp_string &url,
-	const rp_string &cache_key, const rp_string &cache_key_fb)
+LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_string &cache_key)
 {
 	// Check the main cache key.
 	rp_string cache_filename = getCacheFilename(cache_key);
@@ -254,24 +252,6 @@ LibRomData::rp_string CacheManager::download(const rp_string &url,
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
 			return cache_filename;
-		}
-	}
-
-	// Check the fallback cache key.
-	if (!cache_key_fb.empty()) {
-		rp_string cache_fb_filename = getCacheFilename(cache_key_fb);
-		if (!cache_fb_filename.empty()) {
-			// Check if the file already exists.
-			if (!access(cache_fb_filename, R_OK)) {
-				// File exists.
-				// Is it larger than 0 bytes?
-				int64_t sz = filesize(cache_fb_filename);
-				if (sz > 0) {
-					// File is larger than 0 bytes, which indicates
-					// the fallback entry is valid.
-					return cache_fb_filename;
-				}
-			}
 		}
 	}
 

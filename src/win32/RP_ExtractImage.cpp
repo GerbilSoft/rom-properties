@@ -249,8 +249,7 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		const RomData::ExtURL &extURL = *iter;
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url,
-				extURL.cache_key, extURL.cache_key_fb);
+		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
 		if (cache_filename.empty())
 			continue;
 

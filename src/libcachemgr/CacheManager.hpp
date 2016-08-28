@@ -79,7 +79,6 @@ class CacheManager
 		 * Download a file.
 		 * @param url URL.
 		 * @param cache_key Cache key.
-		 * @param cache_key_fb Fallback cache key.
 		 *
 		 * If the file is present in the cache, the cached version
 		 * will be retrieved. Otherwise, the file will be downloaded.
@@ -88,15 +87,10 @@ class CacheManager
 		 * the last time it was requested, an empty string will be
 		 * returned, and a zero-byte file will be stored in the cache.
 		 *
-		 * NOTE: If a fallback cache key is specified, this is checked
-		 * if the main cache key is missing. If not found, then a regular
-		 * download will be done.
-		 *
 		 * @return Absolute path to cached file.
 		 */
 		LibRomData::rp_string download(const LibRomData::rp_string &url,
-				const LibRomData::rp_string &cache_key,
-				const LibRomData::rp_string &cache_key_fb = LibRomData::rp_string());
+				const LibRomData::rp_string &cache_key);
 
 	protected:
 		LibRomData::rp_string m_proxyUrl;
