@@ -36,6 +36,7 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
 #include "RP_ExtractImage.hpp"
+#include "RP_ShellPropSheetExt.hpp"
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"
@@ -117,7 +118,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 
 	// Check for supported classes.
 	if (IsEqualIID(rclsid, CLSID_RP_ExtractIcon)) {
-		// Create a new class factory.
+		// Create a new class factory for RP_ExtractIcon.
 		RP_ClassFactory<RP_ExtractIcon> *pCF = new RP_ClassFactory<RP_ExtractIcon>();
 		HRESULT hr = pCF->QueryInterface(riid, ppvOut);
 		pCF->Release();
@@ -127,8 +128,18 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		}
 		return hr;
 	} else if (IsEqualIID(rclsid, CLSID_RP_ExtractImage)) {
-		// Create a new class factory.
+		// Create a new class factory for RP_ExtractImage.
 		RP_ClassFactory<RP_ExtractImage> *pCF = new RP_ClassFactory<RP_ExtractImage>();
+		HRESULT hr = pCF->QueryInterface(riid, ppvOut);
+		pCF->Release();
+		if (hr != S_OK) {
+			// Interface not found.
+			*ppvOut = nullptr;	// TODO: Not needed?
+		}
+		return hr;
+	} else if (IsEqualIID(rclsid, CLSID_RP_ShellPropSheetExt)) {
+		// Create a new class factory for RP_ShellPropSheetExt.
+		RP_ClassFactory<RP_ShellPropSheetExt> *pCF = new RP_ClassFactory<RP_ShellPropSheetExt>();
 		HRESULT hr = pCF->QueryInterface(riid, ppvOut);
 		pCF->Release();
 		if (hr != S_OK) {
@@ -152,6 +163,9 @@ STDAPI DllRegisterServer(void)
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::Register();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ShellPropSheetExt::Register();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
