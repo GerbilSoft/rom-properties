@@ -20,11 +20,16 @@
  ***************************************************************************/
 
 // DLGTEMPLATEEX references:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/ms644996(v=vs.85).aspx#template_in_memory
-// - https://blogs.msdn.microsoft.com/oldnewthing/20040623-00/?p=38753
+// - DLGTEMPLATE: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645394(v=vs.85).aspx
+// - DLGTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645398(v=vs.85).aspx
+// - DLGITEMTEMPLATE: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644997(v=vs.85).aspx
+// - DLGITEMTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645389(v=vs.85).aspx
+// - 32-bit extended dialogs: https://blogs.msdn.microsoft.com/oldnewthing/20040623-00/?p=38753
 
 #include "stdafx.h"
 #include "DialogBuilder.hpp"
+
+#include "libromdata/common.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -37,6 +42,51 @@ DialogBuilder::DialogBuilder()
 DialogBuilder::~DialogBuilder()
 { }
 
+/**
+ * DLGTEMPLATEEX helper structs.
+ * These structs contain the main data, but not the
+ * variable-length strings.
+ *
+ * NOTE: These structs MUST be packed!
+ */
+
+#pragma pack(1)
+typedef struct PACKED _DLGTEMPLATEEX {
+	WORD dlgVer;
+	WORD signature;
+	DWORD helpID;
+	DWORD exStyle;
+	DWORD style;
+	WORD cDlgItems;
+	short x;
+	short y;
+	short cx;
+	short cy;
+} DLGTEMPLATEEX;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct PACKED _DLGTEMPLATEEX_FONT {
+	WORD pointsize;
+	WORD weight;
+	BYTE italic;
+	BYTE charset;
+} DLGTEMPLATEEX_FONT;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct PACKED _DLGITEMTEMPLATEEX {
+	DWORD helpID;
+	DWORD exStyle;
+	DWORD style;
+	short x;
+	short y;
+	short cx;
+	short cy;
+	DWORD id;
+} DLGITEMTEMPLATEEX;
+#pragma pack()
+
 /** DLGTEMPLATEEX helper functions. **/
 
 inline void DialogBuilder::write_word(WORD w)
@@ -45,14 +95,6 @@ inline void DialogBuilder::write_word(WORD w)
 	LPWORD lpw = (LPWORD)m_pDlgBuf;
 	*lpw = w;
 	m_pDlgBuf += sizeof(WORD);
-}
-
-inline void DialogBuilder::write_dword(DWORD dw)
-{
-	// FIXME: Prevent buffer overflows.
-	LPDWORD lpdw = (LPDWORD)m_pDlgBuf;
-	*lpdw = dw;
-	m_pDlgBuf += sizeof(DWORD);
 }
 
 inline void DialogBuilder::write_wstr(LPCWSTR wstr)
@@ -83,13 +125,6 @@ inline void DialogBuilder::write_wstr_ord(LPCWSTR wstr)
 	}
 }
 
-inline void DialogBuilder::align_word(void)
-{
-	ULONG_PTR ul = (ULONG_PTR)m_pDlgBuf;
-	ul = (ul + 1) & ~1;
-	m_pDlgBuf = (uint8_t*)ul;
-}
-
 inline void DialogBuilder::align_dword(void)
 {
 	ULONG_PTR ul = (ULONG_PTR)m_pDlgBuf;
@@ -115,34 +150,42 @@ void DialogBuilder::init(LPCDLGTEMPLATE lpTemplate, LPCWSTR lpszTitle)
 	// Reset the dialog buffer pointer.
 	m_pDlgBuf = m_DlgBuf;
 
-	// DLGTEMPLATEEX
-	write_word(1);		// WORD wVersion
-	write_word(0xFFFF);	// WORD wSignature
-	write_dword(0);		// DWORD dwHelpID
+	// Initialize the DLGTEMPLATEEX.
+	DLGTEMPLATEEX *lpdt = (DLGTEMPLATEEX*)m_pDlgBuf;
+	m_pDlgBuf += sizeof(*lpdt);
+	lpdt->dlgVer = 1;
+	lpdt->signature = 0xFFFF;
+	lpdt->helpID = 0;
 
 	// Copy from DLGTEMPLATE.
-	write_dword(lpTemplate->dwExtendedStyle);	// DWORD dwExtendedStyle
-	write_dword(lpTemplate->style | DS_SETFONT);	// DWORD style
-	m_pcDlgItems = (LPWORD)m_pDlgBuf;		// Save the cDlgItems pointer.
-	write_word(0);					// WORD cDlgItems
-	write_word(lpTemplate->x);			// short x
-	write_word(lpTemplate->y);			// short y
-	write_word(lpTemplate->cx);			// short cx
-	write_word(lpTemplate->cy);			// short cy
+	lpdt->exStyle = lpTemplate->dwExtendedStyle;
+	lpdt->style = lpTemplate->style | DS_SETFONT;
+	lpdt->cDlgItems = 0;	// updated later
+	lpdt->x = lpTemplate->x;
+	lpdt->y = lpTemplate->y;
+	lpdt->cx = lpTemplate->cx;
+	lpdt->cy = lpTemplate->cy;
+
+	// Save the address of DLGTEMPLATEEX's cDlgItems for later.
+	m_pcDlgItems = &lpdt->cDlgItems;
 
 	// No menu; default dialog class.
-	write_word(0);		// sz_Or_Ord menu
-	write_word(0);		// sz_Or_Ord windowClass
+	write_word(0);		// sz_Or_Ord menu;
+	write_word(0);		// sz_Or_Ord windowClass;
 
 	// Dialog title.
 	write_wstr(lpszTitle);
 
 	// Font information.
 	// TODO: Make DS_SETFONT optional?
-	write_word(8);		// WORD wSize
-	write_word(FW_NORMAL);	// WORD wWeight
-	write_word(0);		// BYTE italic; BYTE charset;
-	write_wstr(L"MS Shell Dlg");	// WCHAR typeface[]
+	DLGTEMPLATEEX_FONT *lpdtf = (DLGTEMPLATEEX_FONT*)m_pDlgBuf;
+	m_pDlgBuf += sizeof(*lpdtf);
+	lpdtf->pointsize = 8;
+	lpdtf->weight = FW_NORMAL;
+	lpdtf->italic = FALSE;
+	lpdtf->charset = 0;
+	// TODO: "MS Shell Dlg" or "MS Shell Dlg 2"?
+	write_wstr(L"MS Shell Dlg");	// WCHAR typeface[];
 }
 
 /**
@@ -157,22 +200,25 @@ void DialogBuilder::add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindo
 
 	// Create a DLGITEMTEMPLATEEX based on the DLGITEMTEMPLATE.
 	align_dword();
+	DLGITEMTEMPLATEEX *lpdit = (DLGITEMTEMPLATEEX*)m_pDlgBuf;
+	m_pDlgBuf += sizeof(*lpdit);
 
 	// Copy from DLGITEMTEMPLATE.
-	write_dword(0);					// DWORD helpID
-	write_dword(lpItemTemplate->dwExtendedStyle);	// DWORD exStyle
-	write_dword(lpItemTemplate->style);		// DWORD style
-	write_word(lpItemTemplate->x);			// short x
-	write_word(lpItemTemplate->y);			// short y
-	write_word(lpItemTemplate->cx);			// short cx
-	write_word(lpItemTemplate->cy);			// short cy
-	write_dword((DWORD)lpItemTemplate->id);		// WORD id
+	lpdit->helpID = 0;
+	lpdit->exStyle = lpItemTemplate->dwExtendedStyle;
+	lpdit->style = lpItemTemplate->style;
+	lpdit->x = lpItemTemplate->x;
+	lpdit->y = lpItemTemplate->y;
+	lpdit->cx = lpItemTemplate->cx;
+	lpdit->cy = lpItemTemplate->cy;
+	lpdit->id = (DWORD)lpItemTemplate->id;
 
 	// Window class and text.
 	write_wstr_ord(lpszWindowClass);
 	write_wstr_ord(lpszWindowText);
 
-	write_word(0);					// WORD extraCount
+	// Extra count.
+	write_word(0);		// WORD extraCount;
 
 	// Increment the dialog's control count.
 	(*m_pcDlgItems)++;

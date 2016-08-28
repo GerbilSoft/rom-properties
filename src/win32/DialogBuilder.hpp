@@ -38,11 +38,9 @@ class DialogBuilder
 	private:
 		/** DLGTEMPLATEEX helper functions. **/
 		inline void write_word(WORD w);
-		inline void write_dword(DWORD dw);
 		inline void write_wstr(LPCWSTR wstr);
 		inline void write_wstr_ord(LPCWSTR wstr);
 
-		inline void align_word(void);
 		inline void align_dword(void);
 
 	public:
