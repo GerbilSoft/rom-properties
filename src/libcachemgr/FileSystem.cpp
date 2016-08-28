@@ -25,6 +25,14 @@
 #include "libromdata/TextFuncs.hpp"
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <shlobj.h>
 #include <direct.h>
 #else
 #include <sys/stat.h>
@@ -38,6 +46,9 @@ using std::u16string;
 
 namespace LibCacheMgr {
 namespace FileSystem {
+
+// User's cache directory.
+static LibRomData::rp_string cache_dir;
 
 /**
  * Recursively mkdir() subdirectories.
@@ -217,6 +228,65 @@ int64_t filesize(const LibRomData::rp_string &filename)
 
 	// Return the filesize.
 	return buf.st_size;
+}
+
+/**
+ * Get the user's cache directory for ROM Properties.
+ * This is usually one of the following:
+ * - WinXP: %APPDATA%\Local Settings\rom-properties\cache
+ * - WinVista: %LOCALAPPDATA%\rom-properties\cache
+ * - Linux: ~/.cache/rom-properties
+ *
+ * @return Cache directory, or empty string on error.
+ */
+const LibRomData::rp_string &getCacheDirectory(void)
+{
+	if (!cache_dir.empty()) {
+		// We already got the cache directory.
+		return cache_dir;
+	}
+
+#ifdef _WIN32
+	// Windows: Get CSIDL_LOCAL_APPDATA.
+	// XP: C:\Documents and Settings\username\Local Settings\Application Data
+	// Vista+: C:\Users\username\AppData\Local
+	wchar_t path[MAX_PATH];
+	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
+		nullptr, SHGFP_TYPE_CURRENT, path);
+	if (hr != S_OK)
+		return cache_dir;
+
+	cache_dir = LibRomData::utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	if (cache_dir.empty())
+		return cache_dir;
+
+	// Add a trailing backslash if necessary.
+	if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\'))
+		cache_dir += _RP_CHR('\\');
+
+	// Append "rom-properties\\cache".
+	cache_dir += _RP("rom-properties\\cache");
+#else
+	// Linux: Cache directory is ~/.cache/rom-properties/.
+	// TODO: Mac OS X.
+	// TODO: What if the HOME environment variable isn't set?
+	const char *home = getenv("HOME");
+	if (!home || home[0] == 0)
+		return cache_dir;
+	string path = home;
+
+	// Add a trailing slash if necessary.
+	if (path.at(path.size()-1) != '/')
+		path += '/';
+
+	// Append ".cache/rom-properties".
+	path += ".cache/rom-properties";
+
+	// Convert to rp_string.
+	cache_dir = LibRomData::utf8_to_rp_string(path);
+#endif
+
+	return cache_dir;
 }
 
 } }

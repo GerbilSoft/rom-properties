@@ -86,6 +86,17 @@ int access(const LibRomData::rp_string &pathname, int mode);
  */
 int64_t filesize(const LibRomData::rp_string &filename);
 
+/**
+ * Get the user's cache directory.
+ * This is usually one of the following:
+ * - WinXP: %APPDATA%\Local Settings
+ * - WinVista: %LOCALAPPDATA%
+ * - Linux: ~/.cache/
+ *
+ * @return User's cache directory, or empty string on error.
+ */
+const LibRomData::rp_string &getCacheDirectory(void);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBCACHEMGR_FILESYSTEM_HPP__ */

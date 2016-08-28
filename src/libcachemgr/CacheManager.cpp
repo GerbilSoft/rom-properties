@@ -27,27 +27,6 @@ using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 
-// Windows includes.
-#ifdef _WIN32
-#ifndef RP_UTF16
-#error CacheManager only supports RP_UTF16 on Windows.
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <shlobj.h>
-#endif /* _WIN32 */
-
-// POSIX includes.
-#ifndef _WIN32
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif /* !_WIN32 */
-
 // C++ includes.
 #include <string>
 using std::string;
@@ -119,61 +98,6 @@ void CacheManager::setProxyUrl(const LibRomData::rp_string &proxyUrl)
 }
 
 /**
- * Get the ROM Properties cache directory.
- * @return Cache directory.
- */
-const LibRomData::rp_string &CacheManager::cacheDir(void)
-{
-	if (!m_cacheDir.empty()) {
-		// We already got the cache directory.
-		return m_cacheDir;
-	}
-
-#ifdef _WIN32
-	// Windows: Get CSIDL_LOCAL_APPDATA.
-	// XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// Vista+: C:\Users\username\AppData\Local
-	wchar_t path[MAX_PATH];
-	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr != S_OK)
-		return m_cacheDir;
-
-	// FIXME: Only works with RP_UTF16.
-	m_cacheDir = reinterpret_cast<const char16_t*>(path);
-	if (m_cacheDir.empty())
-		return m_cacheDir;
-
-	// Add a trailing backslash if necessary.
-	if (m_cacheDir.at(m_cacheDir.size()-1) != _RP_CHR('\\'))
-		m_cacheDir += _RP_CHR('\\');
-
-	// Append "rom-properties\\cache".
-	m_cacheDir += _RP("rom-properties\\cache");
-#else
-	// Linux: Cache directory is ~/.cache/rom-properties/.
-	// TODO: Mac OS X.
-	// TODO: What if the HOME environment variable isn't set?
-	const char *home = getenv("HOME");
-	if (!home || home[0] == 0)
-		return m_cacheDir;
-	string path = home;
-
-	// Add a trailing slash if necessary.
-	if (path.at(path.size()-1) != '/')
-		path += '/';
-
-	// Append ".cache/rom-properties".
-	path += ".cache/rom-properties";
-
-	// Convert to rp_string.
-	m_cacheDir = LibRomData::utf8_to_rp_string(path);
-#endif
-
-	return m_cacheDir;
-}
-
-/**
  * Get a cache filename.
  * @param cache_key Cache key.
  * @return Cache filename, or empty string on error.
@@ -182,7 +106,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	rp_string cache_filename = cacheDir();
+	rp_string cache_filename = FileSystem::getCacheDirectory();
 
 	if (cache_filename.empty())
 		return rp_string();

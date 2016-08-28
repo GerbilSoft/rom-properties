@@ -191,6 +191,35 @@ static inline std::string rp_string_to_utf8(const rp_string &rps)
 }
 
 /**
+ * Convert UTF-16 text to rp_string.
+ * @param str UTF-16 text.
+ * @param len Length of str.
+ * @return rp_string.
+ */
+static inline rp_string utf16_to_rp_string(const char16_t *str, size_t len)
+{
+#if defined(RP_UTF8)
+	return utf16_to_utf8(str, len);
+#elif defined(RP_UTF16)
+	return rp_string(str, len);
+#endif
+}
+
+/**
+ * Convert UTF-16 text to rp_string.
+ * @param str UTF-16 text.
+ * @return rp_string.
+ */
+static inline rp_string utf16_to_rp_string(const std::u16string &str)
+{
+#if defined(RP_UTF8)
+	return utf16_to_utf8(str.data(), str.size());
+#elif defined(RP_UTF16)
+	return str;
+#endif
+}
+
+/**
  * Convert rp_string to UTF-16 text.
  * @param str rp_string.
  * @param len Length of str, in characters.
@@ -206,9 +235,9 @@ static inline std::u16string rp_string_to_utf16(const rp_char *str, size_t len)
 }
 
 /**
- * Convert rp_string to UTF-8 text.
+ * Convert rp_string to UTF-16 text.
  * @param rps rp_string.
- * @return UTF-8 string.
+ * @return UTF-16 string.
  */
 static inline std::u16string rp_string_to_utf16(const rp_string &rps)
 {

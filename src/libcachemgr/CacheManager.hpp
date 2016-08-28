@@ -62,12 +62,6 @@ class CacheManager
 
 	protected:
 		/**
-		 * Get the ROM Properties cache directory.
-		 * @return Cache directory.
-		 */
-		const LibRomData::rp_string &cacheDir(void);
-
-		/**
 		 * Get a cache filename.
 		 * @param cache_key Cache key.
 		 * @return Cache filename, or empty string on error.
@@ -94,7 +88,6 @@ class CacheManager
 
 	protected:
 		LibRomData::rp_string m_proxyUrl;
-		LibRomData::rp_string m_cacheDir;
 
 		IDownloader *m_downloader;
 };
