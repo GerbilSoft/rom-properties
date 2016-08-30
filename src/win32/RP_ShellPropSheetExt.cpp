@@ -40,6 +40,10 @@ using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
@@ -48,6 +52,10 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #ifndef IDC_STATIC
 #define IDC_STATIC (-1)
 #endif
+
+// Control base IDs.
+#define IDC_RFT_STRING_BASE	0x1000
+#define IDC_RFT_LISTDATA_BASE	0x2000
 
 // Property for "external pointer".
 // This links the property sheet to the COM object.
@@ -265,6 +273,14 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	}
 	const int count = fields->count();
 
+	// Make sure we have all required window classes available.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	INITCOMMONCONTROLSEX initCommCtrl;
+	initCommCtrl.dwSize = sizeof(initCommCtrl);
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
+	// TODO: Also ICC_STANDARD_CLASSES on XP+?
+	InitCommonControlsEx(&initCommCtrl);
+
 	// Create the dialog.
 	DLGTEMPLATE dlt;
 	dlt.style = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;
@@ -308,7 +324,7 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	struct { short x, y; } curPt = {7, 7};
 
 	// Width available for the value widget(s).
-	const short dlit_value_width = dlt.cx - (curPt.x * 2);
+	const short dlit_value_width = dlt.cx - (curPt.x * 2) - descSize.cx;
 
 	DLGITEMTEMPLATE dlit;
 	for (int i = 0; i < count; i++) {
@@ -336,17 +352,30 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 		m_dlgBuilder.add(&dlit, WC_ORD_STATIC, desc_text);
 
 		// Create the value widget.
+		int field_cy = dlit.cy;	// Default row size.
 		switch (desc->type) {
 			case RomFields::RFT_STRING:
 				// Create a read-only EDIT widget.
 				// The STATIC control doesn't allow the user
 				// to highlight and copy data.
 				dlit.style = WS_CHILD | WS_VISIBLE | ES_LEFT | ES_READONLY;
-				dlit.dwExtendedStyle = 0;
+				dlit.dwExtendedStyle = WS_EX_LEFT;
 				dlit.x = curPt.x + descSize.cx; dlit.y = curPt.y;
-				dlit.cx = dlit_value_width; dlit.cy = 8;	// TODO: More than 8?
-				dlit.id = 0x1000 + i;
+				dlit.cx = dlit_value_width; dlit.cy = field_cy;
+				dlit.id = IDC_RFT_STRING_BASE + i;
 				m_dlgBuilder.add(&dlit, WC_ORD_EDIT, data->str);
+				break;
+
+			case RomFields::RFT_LISTDATA:
+				// Create a ListView widget.
+				// TODO: Maximum width; initialize data in WM_INITDIALOG.
+				field_cy = 72;	// TODO: Ideal height?
+				dlit.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT;
+				dlit.dwExtendedStyle = WS_EX_LEFT;
+				dlit.x = curPt.x + descSize.cx; dlit.y = curPt.y;
+				dlit.cx = dlit_value_width; dlit.cy = field_cy;
+				dlit.id = IDC_RFT_LISTDATA_BASE + i;
+				m_dlgBuilder.add(&dlit, WC_LISTVIEW, L"");
 				break;
 
 			default:
@@ -357,10 +386,112 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 		}
 
 		// Next row.
-		curPt.y += descSize.cy;
+		curPt.y += field_cy;
 	}
 
 	return m_dlgBuilder.get();
+}
+
+/**
+ * Initialize a ListView control.
+ * @param hWnd HWND of the ListView control.
+ * @param desc RomFields description.
+ * @param data RomFields data.
+ */
+void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	if (!hWnd || !desc || !data)
+		return;
+	if (desc->type != RomFields::RFT_LISTDATA ||
+	    data->type != RomFields::RFT_LISTDATA)
+		return;
+	if (!desc->name || desc->name[0] == '\0')
+		return;
+
+	// Set extended ListView styles.
+	ListView_SetExtendedListViewStyle(hWnd, LVS_EX_FULLROWSELECT);
+
+	// Insert columns.
+	// TODO: Make sure there aren't any columns to start with?
+	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+	const int count = listDataDesc->count;
+	for (int i = 0; i < count; i++) {
+		LVCOLUMN lvColumn;
+		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
+		lvColumn.fmt = LVCFMT_LEFT;
+		if (listDataDesc->names[i]) {
+			// TODO: Support for RP_UTF8?
+			// NOTE: pszText is LPWSTR, not LPCWSTR...
+			lvColumn.pszText = (LPWSTR)listDataDesc->names[i];
+		} else {
+			// Don't show this column.
+			// FIXME: Zero-width column is a bad hack...
+			lvColumn.pszText = L"";
+			lvColumn.mask |= LVCF_WIDTH;
+			lvColumn.cx = 0;
+		}
+
+		ListView_InsertColumn(hWnd, i, &lvColumn);
+	}
+
+	// Add the row data.
+	const RomFields::ListData *listData = data->list_data;
+	for (int i = 0; i < (int)listData->data.size(); i++) {
+		LVITEM lvItem;
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = i;
+
+		const vector<rp_string> &data_row = listData->data.at(i);
+		int field = 0;
+		for (vector<rp_string>::const_iterator iter = data_row.begin();
+		     iter != data_row.end(); ++iter, ++field)
+		{
+			lvItem.iSubItem = field;
+			// TODO: Support for RP_UTF8?
+			// NOTE: pszText is LPWSTR, not LPCWSTR...
+			// FIXME: Is this use of c_str() valid?
+			lvItem.pszText = (LPWSTR)(*iter).c_str();
+			if (field == 0) {
+				// Field 0: Insert the item.
+				ListView_InsertItem(hWnd, &lvItem);
+			} else {
+				// Fields 1 and higher: Set the subitem.
+				ListView_SetItem(hWnd, &lvItem);
+			}
+		}
+	}
+
+	// Resize all of the columns.
+	// TODO: Do this on system theme change?
+	for (int i = 0; i < count; i++) {
+		ListView_SetColumnWidth(hWnd, i, LVSCW_AUTOSIZE_USEHEADER);
+	}
+}
+
+/**
+ * Initialize RFT_LISTDATA fields in a dialog.
+ * @param hDlg Dialog window.
+ */
+void RP_ShellPropSheetExt::initListDataFields(HWND hDlg)
+{
+	const RomFields *fields = m_romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
+
+	const int count = fields->count();
+	for (int i = 0; i < count; i++) {
+		const RomFields::Desc *desc = fields->desc(i);
+		if (desc->type == RomFields::RFT_LISTDATA) {
+			// Check if we have a matching dialog item.
+			HWND hDlgItem = GetDlgItem(hDlg, IDC_RFT_LISTDATA_BASE + i);
+			if (hDlgItem) {
+				initListView(hDlgItem, desc, fields->data(i));
+			}
+		}
+	}
 }
 
 /** IShellPropSheetExt **/
@@ -448,9 +579,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 				if (pExt) {
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
-				}
 
-				// TODO: Initialize RFT_LISTDATA fields here.
+					// Initialize RFT_LISTDATA fields.
+					pExt->initListDataFields(hWnd);
+				}
 			}
 			return TRUE;
 		}

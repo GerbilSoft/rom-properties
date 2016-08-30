@@ -57,6 +57,8 @@
 #endif
 
 #include <windows.h>
+#include <windowsx.h>
+#include <commctrl.h>
 #include <comdef.h>
 #include <shlobj.h>
 #include <shellapi.h>

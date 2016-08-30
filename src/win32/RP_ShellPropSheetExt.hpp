@@ -29,6 +29,7 @@
 
 #include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
+#include "libromdata/RomFields.hpp"
 
 namespace LibRomData {
 	class RomData;
@@ -92,6 +93,20 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @return Dialog template from DialogBuilder on success; nullptr on error.
 		 */
 		LPCDLGTEMPLATE initDialog(void);
+
+		/**
+		 * Initialize a ListView control.
+		 * @param hWnd HWND of the ListView control.
+		 * @param desc RomFields description.
+		 * @param data RomFields data.
+		 */
+		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
+
+		/**
+		 * Initialize RFT_LISTDATA fields in a dialog.
+		 * @param hDlg Dialog window.
+		 */
+		void initListDataFields(HWND hDlg);
 
 	public:
 		// IShellExtInit
