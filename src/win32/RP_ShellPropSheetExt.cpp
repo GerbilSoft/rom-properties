@@ -425,11 +425,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 				// Access the property sheet extension from property page.
 				RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 				if (pExt) {
-					// Display the name of the selected file.
-					// NOTE: Uses the "OK" button.
-					HWND hFileLabel = GetDlgItem(hWnd, IDOK);
-					SetWindowText(hFileLabel, pExt->GetSelectedFile());
-
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
 				}
