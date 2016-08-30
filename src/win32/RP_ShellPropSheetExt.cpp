@@ -303,9 +303,10 @@ void RP_ShellPropSheetExt::initDialog(void)
 
 	// Create the ROM field widgets.
 	// Each static control is ((maxLen+1)*4) DLUs wide,
-	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
+	// and 8 DLUs tall, plus 3 vertical DLUs for spacing.
 	// NOTE: Not using SIZE because dialogs use short, not LONG.
-	const struct { short cx, cy; } descSize = {((((short)maxLen) + 1) * 4), 8+4};
+	// FIXME: 8+3 might be too small on Windows XP...
+	const struct { short cx, cy; } descSize = {((((short)maxLen) + 1) * 4), 8+3};
 	// Current position.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
