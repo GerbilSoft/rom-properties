@@ -277,13 +277,14 @@ void RP_ShellPropSheetExt::initDialog(void)
 	dlt.dwExtendedStyle = 0;
 	dlt.cdit = 0;   // automatically updated by DialogBuilder
 	dlt.x = 0; dlt.y = 0;
-	dlt.cx = PROP_LG_CXDLG; dlt.cy = PROP_LG_CYDLG;
+	dlt.cx = PROP_MED_CXDLG; dlt.cy = PROP_MED_CYDLG;
 	// TODO: Localization.
 	m_dlgBuilder.init(&dlt, L"ROM Properties");
 
 	// Determine the maximum length of all field names.
 	// Assume each character is an average of 4x8 DLUs.
 	// TODO: Line breaks?
+	// TODO: Calculate actual font metrics and convert to DLUs?
 	size_t maxLen = 0;
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
