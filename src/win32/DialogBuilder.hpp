@@ -124,6 +124,11 @@ class DialogBuilder
 		 */
 		LPCDLGTEMPLATE get(void) const;
 
+		/**
+		 * Clear the dialog template.
+		 */
+		void clear(void);
+
 	protected:
 		// DLGTEMPLATEEX data.
 		// TODO: Smaller maximum size and/or dynamic allocation?

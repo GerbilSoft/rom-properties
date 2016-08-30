@@ -237,3 +237,12 @@ LPCDLGTEMPLATE DialogBuilder::get(void) const
 
 	return (LPCDLGTEMPLATE)m_DlgBuf;
 }
+
+/**
+ * Clear the dialog template.
+ */
+void DialogBuilder::clear(void)
+{
+	// Reset the pointer to the beginning of the buffer.
+	m_pDlgBuf = m_DlgBuf;
+}

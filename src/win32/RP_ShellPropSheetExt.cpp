@@ -28,9 +28,26 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RegKey.hpp"
 
+// libromdata
+#include "libromdata/RomDataFactory.hpp"
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomFields.hpp"
+#include "libromdata/RpFile.hpp"
+using LibRomData::RomDataFactory;
+using LibRomData::RomData;
+using LibRomData::RomFields;
+using LibRomData::IRpFile;
+using LibRomData::RpFile;
+using LibRomData::rp_string;
+
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
+
+// IDC_STATIC might not be defined.
+#ifndef IDC_STATIC
+#define IDC_STATIC (-1)
+#endif
 
 // Property for "external pointer".
 // This links the property sheet to the COM object.
@@ -47,27 +64,14 @@ static inline LPWORD lpwAlign(LPWORD lpIn, ULONG_PTR dw2Power = 4)
 }
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
+	: m_romData(nullptr)
 {
 	m_szSelectedFile[0] = 0;
+}
 
-	// Create the dialog.
-	DLGTEMPLATE dlg;
-	dlg.style = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;
-	dlg.dwExtendedStyle = 0;
-	dlg.cdit = 0;   // automatically updated by DialogBuilder
-	dlg.x = 10; dlg.y = 10;
-	dlg.cx = 200; dlg.cy = 100;
-	m_dlgBuilder.init(&dlg, L"rpdlg");
-
-	// Create an OK button.
-	DLGITEMTEMPLATE item;
-	item.style = WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON;
-	item.dwExtendedStyle = 0;
-	item.x = 10; item.y = 70;
-	item.cx = 180; item.cy = 20;
-	item.id = IDOK;
-	// NOTE: 0x0080 == Button
-	m_dlgBuilder.add(&item, MAKEINTRESOURCE(0x0080), L"OK");
+RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
+{
+	delete m_romData;
 }
 
 /** IUnknown **/
@@ -179,8 +183,6 @@ PCWSTR RP_ShellPropSheetExt::GetSelectedFile(void) const
 
 /** IShellExtInit **/
 
-IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID);
-
 /** IShellPropSheetExt **/
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/bb775094(v=vs.85).aspx
@@ -200,24 +202,40 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// The pDataObj pointer contains the objects being acted upon. In this 
 	// example, we get an HDROP handle for enumerating the selected files and 
 	// folders.
-	if (SUCCEEDED(pDataObj->GetData(&fe, &stm)))
-	{
+	if (SUCCEEDED(pDataObj->GetData(&fe, &stm))) {
 		// Get an HDROP handle.
 		HDROP hDrop = static_cast<HDROP>(GlobalLock(stm.hGlobal));
-		if (hDrop != NULL)
-		{
+		if (hDrop != NULL) {
 			// Determine how many files are involved in this operation. This 
 			// code sample displays the custom context menu item when only 
 			// one file is selected. 
 			UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-			if (nFiles == 1)
-			{
+			if (nFiles == 1) {
 				// Get the path of the file.
 				if (0 != DragQueryFile(hDrop, 0, m_szSelectedFile, 
 				    ARRAYSIZE(m_szSelectedFile)))
 				{
-					// TODO: Verify that this is a supported ROM file.
-					hr = S_OK;
+					// Open the file.
+					// FIXME: Use utf16_to_rp_string() after merging to master.
+					IRpFile *file = new RpFile(
+						rp_string(reinterpret_cast<const char16_t*>(m_szSelectedFile)),
+						RpFile::FM_OPEN_READ);
+					if (file && file->isOpen()) {
+						// Get the appropriate RomData class for this ROM.
+						m_romData = RomDataFactory::getInstance(file);
+						if (m_romData) {
+							// ROM is supported. Initialize the dialog.
+							initDialog();
+							hr = S_OK;
+						} else {
+							// ROM is not supported.
+							hr = E_FAIL;
+						}
+					}
+
+					// RomData classes dup() the file, so
+					// we can close the original one.
+					delete file;
 				}
 			}
 
@@ -232,6 +250,99 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	return hr;
 }
 
+/**
+ * Initialize the dialog for the open ROM data object.
+ */
+void RP_ShellPropSheetExt::initDialog(void)
+{
+	if (!m_romData) {
+		// No ROM data loaded.
+		m_dlgBuilder.clear();
+		return;
+	}
+
+	// Get the fields.
+	const RomFields *fields = m_romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		m_dlgBuilder.clear();
+		return;
+	}
+	const int count = fields->count();
+
+	// Create the dialog.
+	DLGTEMPLATE dlt;
+	dlt.style = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;
+	dlt.dwExtendedStyle = 0;
+	dlt.cdit = 0;   // automatically updated by DialogBuilder
+	dlt.x = 0; dlt.y = 0;
+	dlt.cx = PROP_LG_CXDLG; dlt.cy = PROP_LG_CYDLG;
+	// TODO: Localization.
+	m_dlgBuilder.init(&dlt, L"ROM Properties");
+
+	// Determine the maximum length of all field names.
+	// Assume each character is an average of 4x8 DLUs.
+	// TODO: Line breaks?
+	size_t maxLen = 0;
+	for (int i = 0; i < count; i++) {
+		const RomFields::Desc *desc = fields->desc(i);
+		const RomFields::Data *data = fields->data(i);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		size_t len = LibRomData::rp_strlen(desc->name);
+		if (len > maxLen)
+			maxLen = len;
+	}
+
+	// Create the ROM field widgets.
+	// Each static control is ((maxLen+1)*4) DLUs wide,
+	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
+	// NOTE: Not using SIZE because dialogs use short, not LONG.
+	const struct { short cx, cy; } descSize = {((((short)maxLen) + 1) * 4), 8+4};
+	// Current position.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	// NOTE: Not using POINT because dialogs use short, not LONG.
+	struct { short x, y; } curPt = {7, 7};
+
+	DLGITEMTEMPLATE dlit;
+	for (int i = 0; i < count; i++) {
+		const RomFields::Desc *desc = fields->desc(i);
+		const RomFields::Data *data = fields->data(i);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// Append a ":" to the description.
+		// TODO: Localization.
+		rp_string desc_text(desc->name);
+		desc_text += _RP_CHR(':');
+
+		// Create the static text widget. (FIXME: Disable mnemonics?)
+		dlit.style = WS_CHILD | WS_VISIBLE | SS_LEFT;
+		dlit.dwExtendedStyle = 0;
+		dlit.x = curPt.x; dlit.y = curPt.y;
+		dlit.cx = descSize.cx; dlit.cy = descSize.cy;
+		dlit.id = IDC_STATIC;
+		m_dlgBuilder.add(&dlit, WC_ORD_STATIC, desc_text);
+
+		// TODO: Actual value widget.
+
+		// Next row.
+		curPt.y += descSize.cy;
+	}
+}
+
+
 /** IShellPropSheetExt **/
 
 IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
@@ -239,14 +350,20 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
+	LPCDLGTEMPLATE pDlgTemplate = m_dlgBuilder.get();
+	if (!pDlgTemplate) {
+		// No property sheet is available.
+		return E_FAIL;
+	}
+
 	// Create a property sheet page.
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
-	psp.dwFlags = PSP_USETITLE | PSP_USECALLBACK | PSP_DLGINDIRECT;
+	psp.dwFlags = PSP_USECALLBACK | PSP_DLGINDIRECT;
 	psp.hInstance = nullptr;
-	psp.pResource = m_dlgBuilder.get();
+	psp.pResource = pDlgTemplate;
 	psp.pszIcon = nullptr;
-	psp.pszTitle = L"ROM Properties";
+	psp.pszTitle = nullptr;
 	psp.pfnDlgProc = DlgProc;
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = CallbackProc;

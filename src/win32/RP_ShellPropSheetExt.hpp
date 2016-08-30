@@ -30,6 +30,10 @@
 #include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
 
+namespace LibRomData {
+	class RomData;
+}
+
 // CLSID
 extern "C" {
 	extern const CLSID CLSID_RP_ShellPropSheetExt;
@@ -46,6 +50,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 {
 	public:
 		RP_ShellPropSheetExt();
+		virtual ~RP_ShellPropSheetExt();
 	private:
 		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
 
@@ -78,6 +83,14 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		// Dialog builder.
 		DialogBuilder m_dlgBuilder;
+
+		// ROM data.
+		LibRomData::RomData *m_romData;
+
+		/**
+		 * Initialize the dialog for the open ROM data object.
+		 */
+		void initDialog(void);
 
 	public:
 		// IShellExtInit
