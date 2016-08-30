@@ -56,7 +56,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 	public:
 		// IUnknown
-		STDMETHOD(QueryInterface)(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
 
 	public:
 		/**

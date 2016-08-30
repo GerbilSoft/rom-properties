@@ -50,7 +50,7 @@ const CLSID CLSID_RP_ExtractIcon =
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-STDMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -158,7 +158,7 @@ LONG RP_ExtractIcon::Unregister(void)
 /** IExtractIcon **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
-STDMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
+IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	LPTSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
 	// TODO: If the icon is cached on disk, return a filename.
@@ -180,7 +180,7 @@ STDMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
+IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: pszFile should be nullptr here.
@@ -243,18 +243,18 @@ STDMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 /** IPersistFile **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
 
-STDMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
 {
 	*pClassID = CLSID_RP_ExtractIcon;
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractIcon::IsDirty(void)
+IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
 {
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
 	UNUSED(dwMode);	// TODO
 
@@ -268,20 +268,20 @@ STDMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
 {
 	UNUSED(pszFileName);
 	UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
 {
 	UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
 {
 	UNUSED(ppszFileName);
 	return E_NOTIMPL;

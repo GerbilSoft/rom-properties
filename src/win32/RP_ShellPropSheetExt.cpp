@@ -77,7 +77,7 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-STDMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)

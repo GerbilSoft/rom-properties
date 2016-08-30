@@ -53,11 +53,11 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		// References:
 		// - http://stackoverflow.com/questions/5478669/good-techniques-for-keeping-com-classes-that-implement-multiple-interfaces-manag
 		// - http://stackoverflow.com/a/5480348
-		STDMETHOD_(ULONG, AddRef)(void) { return RP_ComBase::AddRef(); }
-		STDMETHOD_(ULONG, Release)(void) { return RP_ComBase::Release(); }
+		IFACEMETHODIMP_(ULONG) AddRef(void) { return RP_ComBase::AddRef(); }
+		IFACEMETHODIMP_(ULONG) Release(void) { return RP_ComBase::Release(); }
 		#endif
 
-		STDMETHOD(QueryInterface)(REFIID riid, LPVOID *ppvObj) override
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObj)
@@ -84,7 +84,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 
 		/** IClassFactory **/
 
-		STDMETHOD(CreateInstance)(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) override
+		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) override
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
@@ -109,7 +109,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 			return hr;
 		}
 
-		STDMETHOD(LockServer)(BOOL fLock) override
+		IFACEMETHODIMP LockServer(BOOL fLock) override
 		{
 			// Not implemented.
 			UNUSED(fLock);
