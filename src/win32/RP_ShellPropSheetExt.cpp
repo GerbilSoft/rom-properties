@@ -313,6 +313,9 @@ void RP_ShellPropSheetExt::initDialog(void)
 	// NOTE: Not using POINT because dialogs use short, not LONG.
 	struct { short x, y; } curPt = {7, 7};
 
+	// Width available for the value widget(s).
+	const short dlit_value_width = dlt.cx - (curPt.x * 2);
+
 	DLGITEMTEMPLATE dlit;
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
@@ -335,9 +338,29 @@ void RP_ShellPropSheetExt::initDialog(void)
 		dlit.x = curPt.x; dlit.y = curPt.y;
 		dlit.cx = descSize.cx; dlit.cy = descSize.cy;
 		dlit.id = IDC_STATIC;
+		// TODO: Remove if the value widget is invalid?
 		m_dlgBuilder.add(&dlit, WC_ORD_STATIC, desc_text);
 
-		// TODO: Actual value widget.
+		// Create the value widget.
+		switch (desc->type) {
+			case RomFields::RFT_STRING:
+				// Create a read-only EDIT widget.
+				// The STATIC control doesn't allow the user
+				// to highlight and copy data.
+				dlit.style = WS_CHILD | WS_VISIBLE | ES_LEFT | ES_READONLY;
+				dlit.dwExtendedStyle = 0;
+				dlit.x = curPt.x + descSize.cx; dlit.y = curPt.y;
+				dlit.cx = dlit_value_width; dlit.cy = 8;	// TODO: More than 8?
+				dlit.id = 0x1000 + i;
+				m_dlgBuilder.add(&dlit, WC_ORD_EDIT, data->str);
+				break;
+
+			default:
+				// FIXME: Implement the rest, then uncomment this assert.
+				//assert(false);
+				// TODO: Remove the description STATIC control.
+				break;
+		}
 
 		// Next row.
 		curPt.y += descSize.cy;
