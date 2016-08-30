@@ -13,6 +13,7 @@ SET(rom-properties-win32_SRCS
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	DialogBuilder.cpp
+	resource.rc
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
