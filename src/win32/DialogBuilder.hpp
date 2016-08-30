@@ -25,6 +25,22 @@
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstring>
+
+// rp_string
+#include "libromdata/TextFuncs.hpp"
+
+// Standard window classes.
+// These macros use the ordinal value, which saves
+// space in the generated dialog resource.
+#define WC_ORD_BUTTON		MAKEINTRESOURCE(0x0080)
+#define WC_ORD_EDIT		MAKEINTRESOURCE(0x0081)
+#define WC_ORD_STATIC		MAKEINTRESOURCE(0x0082)
+#define WC_ORD_LISTBOX		MAKEINTRESOURCE(0x0083)
+#define WC_ORD_SCROLLBAR	MAKEINTRESOURCE(0x0084)
+#define WC_ORD_COMBOBOX		MAKEINTRESOURCE(0x0085)
+
 class DialogBuilder
 {
 	public:
@@ -66,6 +82,41 @@ class DialogBuilder
 		 * @param lpszWindowText	[in, opt] Window text. (May be an ordinal value.)
 		 */
 		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, LPCWSTR lpszWindowText);
+
+		/**
+		 * Add a control to the dialog.
+		 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
+		 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
+		 * @param lpszWindowText	[in, opt] Window text.
+		 */
+		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const rp_char *lpszWindowText)
+		{
+#ifdef RP_UTF8
+			add(lpItemTemplate, lpszWindowClass,
+				reinterpret_cast<LPCWSTR>(LibRomData::rp_string_to_utf16(
+					lpszWindowText, wcslen(lpszWindowText)).c_str()));
+#endif
+#ifdef RP_UTF16
+			add(lpItemTemplate, lpszWindowClass, reinterpret_cast<LPCWSTR>(lpszWindowText));
+#endif
+		}
+
+		/**
+		 * Add a control to the dialog.
+		 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
+		 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
+		 * @param lpszWindowText	[in, opt] Window text.
+		 */
+		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const LibRomData::rp_string &lpszWindowText)
+		{
+#ifdef RP_UTF8
+			add(lpItemTemplate, lpszWindowClass,
+				reinterpret_cast<LPCWSTR>(LibRomData::rp_string_to_utf16(lpszWindowText).c_str()));
+#endif
+#ifdef RP_UTF16
+			add(lpItemTemplate, lpszWindowClass, reinterpret_cast<LPCWSTR>(lpszWindowText.c_str()));
+#endif
+		}
 
 		/**
 		 * Get a pointer to the created DLGTEMPLATEEX.
