@@ -89,8 +89,9 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		/**
 		 * Initialize the dialog for the open ROM data object.
+		 * @return Dialog template from DialogBuilder on success; nullptr on error.
 		 */
-		void initDialog(void);
+		LPCDLGTEMPLATE initDialog(void);
 
 	public:
 		// IShellExtInit

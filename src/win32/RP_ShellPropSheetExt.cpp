@@ -223,14 +223,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 					if (file && file->isOpen()) {
 						// Get the appropriate RomData class for this ROM.
 						m_romData = RomDataFactory::getInstance(file);
-						if (m_romData) {
-							// ROM is supported. Initialize the dialog.
-							initDialog();
-							hr = S_OK;
-						} else {
-							// ROM is not supported.
-							hr = E_FAIL;
-						}
+						hr = (m_romData != nullptr ? S_OK : E_FAIL);
 					}
 
 					// RomData classes dup() the file, so
@@ -252,13 +245,14 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 /**
  * Initialize the dialog for the open ROM data object.
+ * @return Dialog template from DialogBuilder on success; nullptr on error.
  */
-void RP_ShellPropSheetExt::initDialog(void)
+LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 {
 	if (!m_romData) {
 		// No ROM data loaded.
 		m_dlgBuilder.clear();
-		return;
+		return nullptr;
 	}
 
 	// Get the fields.
@@ -267,7 +261,7 @@ void RP_ShellPropSheetExt::initDialog(void)
 		// No fields.
 		// TODO: Show an error?
 		m_dlgBuilder.clear();
-		return;
+		return nullptr;
 	}
 	const int count = fields->count();
 
@@ -365,8 +359,9 @@ void RP_ShellPropSheetExt::initDialog(void)
 		// Next row.
 		curPt.y += descSize.cy;
 	}
-}
 
+	return m_dlgBuilder.get();
+}
 
 /** IShellPropSheetExt **/
 
@@ -375,7 +370,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
-	LPCDLGTEMPLATE pDlgTemplate = m_dlgBuilder.get();
+	// Initialize the dialog template.
+	LPCDLGTEMPLATE pDlgTemplate = initDialog();
 	if (!pDlgTemplate) {
 		// No property sheet is available.
 		return E_FAIL;
@@ -453,53 +449,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
 				}
+
+				// TODO: Initialize RFT_LISTDATA fields here.
 			}
 			return TRUE;
-		}
-
-		case WM_COMMAND: {
-			// TODO
-#if 0
-			switch (LOWORD(wParam)) {
-				case IDC_CHANGEPROP_BUTTON:
-				// User clicks the "Simulate Property Changing" button...
-
-				// Simulate property changing. Inform the property sheet to 
-				// enable the Apply button.
-				SendMessage(GetParent(hWnd), PSM_CHANGED, 
-					reinterpret_cast<WPARAM>(hWnd), 0);
-				return TRUE;
-			}
-#endif
-			break;
-		}
-
-		case WM_NOTIFY: {
-			// TODO
-#if 0
-			switch ((reinterpret_cast<LPNMHDR>(lParam))->code) {
-				case PSN_APPLY:
-					// The PSN_APPLY notification code is sent to every page in the 
-					// property sheet to indicate that the user has clicked the OK, 
-					// Close, or Apply button and wants all changes to take effect. 
-
-					// Get the property sheet extension object pointer that was 
-					// stored in the page dialog (See the handling of WM_INITDIALOG 
-					// in FilePropPageDlgProc).
-					RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-						GetProp(hWnd, EXT_POINTER_PROP));
-
-					// Access the property sheet extension object.
-					// ...
-
-					// Return PSNRET_NOERROR to allow the property dialog to close if 
-					// the user clicked OK.
-					SetWindowLong(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
-
-					return TRUE;
-			}
-#endif
-			break;
 		}
 
 		case WM_DESTROY: {
