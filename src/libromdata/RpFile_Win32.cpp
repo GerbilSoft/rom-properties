@@ -107,10 +107,6 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
  */
 void RpFile::init(const rp_char *filename)
 {
-#ifndef RP_UTF16
-	#error RpFile_Win32.cpp only supports UTF-16. FIXME?
-#endif
-
 	// Determine the file mode.
 	DWORD dwDesiredAccess, dwCreationDisposition;
 	if (mode_to_win32(m_mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
@@ -120,7 +116,7 @@ void RpFile::init(const rp_char *filename)
 	}
 
 	// Open the file.
-	m_file = CreateFile(reinterpret_cast<LPCWSTR>(filename),
+	m_file = CreateFile(RP2W_c(filename),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr);

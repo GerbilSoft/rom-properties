@@ -255,12 +255,7 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 
 		// Attempt to load the image.
 		// TODO: libpng in rp_image? For now, using Gdiplus.
-		// FIXME: Only works with RP_UTF16.
-#ifndef RP_UTF16
-#error RP_ExtractImage only works with RP_UTF16.
-#endif
-		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(
-			reinterpret_cast<const wchar_t*>(cache_filename.c_str()), FALSE);
+		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(RP2W_s(cache_filename), FALSE);
 		if (!gdipBmp)
 			continue;
 
@@ -301,12 +296,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	UNUSED(dwMode);	// TODO
 
 	// pszFileName is the file being worked on.
-#ifdef RP_UTF16
-	m_filename = reinterpret_cast<const rp_char*>(pszFileName);
-#else
-	// FIXME: Not supported.
-	#error RP_ExtractImage requires UTF-16.
-#endif
+	m_filename = W2RP_c(pszFileName);
 	return S_OK;
 }
 

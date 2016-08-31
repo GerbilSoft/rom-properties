@@ -29,9 +29,6 @@ using LibRomData::RpFile;
 
 // Windows includes.
 #ifdef _WIN32
-#ifndef RP_UTF16
-#error CacheManager only supports RP_UTF16 on Windows.
-#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -139,8 +136,7 @@ const LibRomData::rp_string &CacheManager::cacheDir(void)
 	if (hr != S_OK)
 		return m_cacheDir;
 
-	// FIXME: Only works with RP_UTF16.
-	m_cacheDir = reinterpret_cast<const char16_t*>(path);
+	m_cacheDir = W2RP_c(path);
 	if (m_cacheDir.empty())
 		return m_cacheDir;
 

@@ -228,8 +228,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 				{
 					// Open the file.
 					// FIXME: Use utf16_to_rp_string() after merging to master.
-					IRpFile *file = new RpFile(
-						rp_string(reinterpret_cast<const char16_t*>(m_szSelectedFile)),
+					IRpFile *file = new RpFile(rp_string(W2RP_c(m_szSelectedFile)),
 						RpFile::FM_OPEN_READ);
 					if (file && file->isOpen()) {
 						// Get the appropriate RomData class for this ROM.
@@ -339,14 +338,11 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 			continue;
 
 		// Make sure this is a UTF-16 string.
-		// FIXME: wstring?
-		std::u16string s_name = LibRomData::rp_string_to_utf16(
-			desc->name, rp_strlen(desc->name));
+		std::wstring s_name = RP2W_c(desc->name);
 
 		// Get the width of this specific entry.
 		SIZE textSize;
-		GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
-			(int)s_name.size(), &textSize);
+		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
 		}
@@ -531,13 +527,11 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 				continue;
 
 			// Make sure this is a UTF-16 string.
-			// FIXME: wstring?
-			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
+			std::wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
 			SIZE textSize;
-			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
-				(int)s_name.size(), &textSize);
+			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			int chk_w = rect_chkbox.right + textSize.cx;
 			if (chk_w > col_widths[col]) {
 				col_widths[col] = chk_w;
@@ -563,13 +557,11 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 		int chk_w;
 		if (bitfieldDesc->elemsPerRow == 0) {
 			// Make sure this is a UTF-16 string.
-			// FIXME: wstring?
-			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
+			std::wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
 			SIZE textSize;
-			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
-				(int)s_name.size(), &textSize);
+			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
 			// Use the largest width in the column.
@@ -577,9 +569,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 		}
 
 		// FIXME: Tab ordering?
-		// FIXME: RP_UTF8?
-		HWND hCheckBox = CreateWindow(WC_BUTTON,
-			reinterpret_cast<const wchar_t*>(name),
+		HWND hCheckBox = CreateWindow(WC_BUTTON, RP2W_c(name),
 			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hDlg, (HMENU)(IDC_RFT_BITFIELD(idx, j)),
@@ -662,7 +652,6 @@ void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, 
 			lvItem.iSubItem = field;
 			// TODO: Support for RP_UTF8?
 			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			// FIXME: Is this use of c_str() valid?
 			lvItem.pszText = (LPWSTR)(*iter).c_str();
 			if (field == 0) {
 				// Field 0: Insert the item.

@@ -274,4 +274,105 @@ static inline rp_char *rp_strdup(const rp_string &str)
 
 }
 
+#if defined(_WIN32) && defined(RP_WIS16)
+/** Windows-specific wrappers for wchar_t. **/
+
+/**
+ * NOTE: These are defined outside of the LibRomData
+ * namespace because macros are needed for the UTF-8
+ * versions.
+ *
+ * NOTE 2: The UTF-8 versions return c_str() from
+ * temporary strings. Therefore, you *must* assign
+ * the result to an std::wstring or rp_string if
+ * storing it, since a wchar_t* or rp_char* will
+ * result in a dangling pointer.
+ */
+
+#if defined(RP_UTF8)
+
+/**
+ * Get const wchar_t* from const rp_char*.
+ * @param str const rp_char*.
+ * @return const wchar_t*
+ */
+#define RP2W_c(str) \
+	(reinterpret_cast<const wchar_t*>( \
+		LibRomData::rp_string_to_utf16(str, strlen(str)).c_str()))
+
+/**
+ * Get const wchar_t* from rp_string.
+ * @param rps rp_string.
+ * @return const wchar_t*
+ */
+#define RP2W_s(rps) \
+	(reinterpret_cast<const wchar_t*>( \
+		LibRomData::rp_string_to_utf16(rps).c_str()))
+
+/**
+ * Get const rp_char* from const wchar_t*.
+ * @param wcs const wchar_t*.
+ * @return const rp_char*
+ */
+#define W2RP_c(wcs) \
+	(LibRomData::utf16_to_rp_string( \
+		reinterpret_cast<const char16_t*>(wcs), \
+		wcslen(wcs)))
+
+/**
+ * Get const rp_char* from std::wstring.
+ * @param wcs std::wstring.
+ * @return const rp_char*
+ */
+#define W2RP_s(wcs) \
+	(LibRomData::utf16_to_rp_string( \
+		reinterpret_cast<const char16_t*>(wcs.data()), \
+		wcs.size()))
+
+#elif defined(RP_UTF16)
+
+/**
+ * Get const wchar_t* from const rp_char*.
+ * @param str const rp_char*.
+ * @return const wchar_t*
+ */
+static inline const wchar_t *RP2W_c(const rp_char *str)
+{
+	return reinterpret_cast<const wchar_t*>(str);
+}
+
+/**
+ * Get const wchar_t* from rp_string.
+ * @param rps rp_string.
+ * @return const wchar_t*
+ */
+static inline const wchar_t *RP2W_s(const LibRomData::rp_string &rps)
+{
+	return reinterpret_cast<const wchar_t*>(rps.c_str());
+}
+
+/**
+ * Get const rp_char* from const wchar_t*.
+ * @param wcs const wchar_t*.
+ * @return const rp_char*
+ */
+static inline const rp_char *W2RP_c(const wchar_t *wcs)
+{
+	return reinterpret_cast<const rp_char*>(wcs);
+}
+
+/**
+ * Get const rp_char* from std::wstring.
+ * @param wcs std::wstring.
+ * @return const rp_char*
+ */
+static inline const rp_char *W2RP_s(const std::wstring &wcs)
+{
+	return reinterpret_cast<const rp_char*>(wcs.c_str());
+}
+
+#endif /* RP_UTF16 */
+
+#endif /* _WIN32 && RP_WIS16 */
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */
