@@ -316,10 +316,11 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 
 	// Create the ROM field widgets.
 	// Each static control is ((maxLen+1)*4) DLUs wide,
-	// and 8 DLUs tall, plus 3 vertical DLUs for spacing.
+	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	// NOTE: Not using SIZE because dialogs use short, not LONG.
-	// FIXME: 8+3 might be too small on Windows XP...
-	const struct { short cx, cy; } descSize = {((((short)maxLen) + 1) * 4), 8+3};
+	// FIXME: May need to resize labels on display because the
+	// DLU calculation isn't always accurate...
+	const struct { short cx, cy; } descSize = {(((short)maxLen+1) * 4), 8+4};
 	// Current position.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
@@ -453,7 +454,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 
 	// Checkbox size.
 	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
-	RECT rect_chkbox = {0, 0, 12+6, 10};
+	RECT rect_chkbox = {0, 0, 12+4, 11};
 	MapDialogRect(hDlg, &rect_chkbox);
 
 	// Dialog font and device context.
@@ -464,26 +465,74 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 	// Create a grid of checkboxes.
 	POINT pt = pt_start;
 	SIZE textSize;
-
 	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
-	// TODO: Handle multiple rows.
+
+	// Column widths for multi-row layouts.
+	// (Includes the checkbox size.)
+	std::vector<int> col_widths;
+	int row = 0, col = 0;
+	if (bitfieldDesc->elemsPerRow == 1) {
+		// Optimization: Use the entire width of the dialog.
+		// TODO: Testing; right margin.
+		RECT rectDlg;
+		GetClientRect(hDlg, &rectDlg);
+		col_widths.push_back(rectDlg.right - pt_start.x);
+	} else if (bitfieldDesc->elemsPerRow > 1) {
+		// Determine the widest entry in each column.
+		col_widths.resize(bitfieldDesc->elemsPerRow);
+		for (int j = 0; j < bitfieldDesc->elements; j++) {
+			const rp_char *name = bitfieldDesc->names[j];
+			if (!name)
+				continue;
+
+			// Make sure this is a UTF-16 string.
+			// FIXME: wstring?
+			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
+
+			// Get the width of this specific entry.
+			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
+				(int)s_name.size(), &textSize);
+			int chk_w = rect_chkbox.right + textSize.cx;
+			if (chk_w > col_widths[col]) {
+				col_widths[col] = chk_w;
+			}
+
+			// Next column.
+			col++;
+			if (col == bitfieldDesc->elemsPerRow) {
+				// Next row.
+				row++;
+				col = 0;
+			}
+		}
+	}
+
+	row = 0; col = 0;
 	for (int j = 0; j < bitfieldDesc->elements; j++) {
 		const rp_char *name = bitfieldDesc->names[j];
 		if (!name)
 			continue;
 
-		// Make sure this is a UTF-16 string.
-		// FIXME: wstring?
-		std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
-
 		// Get the text size.
-		GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
-			(int)s_name.size(), &textSize);
-		int chk_w = rect_chkbox.right + textSize.cx;
+		int chk_w;
+		if (bitfieldDesc->elemsPerRow == 0) {
+			// Make sure this is a UTF-16 string.
+			// FIXME: wstring?
+			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
+
+			// Get the width of this specific entry.
+			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
+				(int)s_name.size(), &textSize);
+			chk_w = rect_chkbox.right + textSize.cx;
+		} else {
+			// Use the largest width in the column.
+			chk_w = col_widths[col];
+		}
 
 		// FIXME: Tab ordering?
+		// FIXME: RP_UTF8?
 		HWND hCheckBox = CreateWindow(WC_BUTTON,
-			reinterpret_cast<const wchar_t*>(s_name.c_str()),
+			reinterpret_cast<const wchar_t*>(name),
 			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hDlg, (HMENU)(IDC_RFT_BITFIELD(idx, j)),
@@ -492,6 +541,14 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 
 		// Next column.
 		pt.x += chk_w;
+		col++;
+		if (col == bitfieldDesc->elemsPerRow) {
+			// Next row.
+			row++;
+			col = 0;
+			pt.x = pt_start.x;
+			pt.y += rect_chkbox.bottom;
+		}
 	}
 
 	SelectFont(hDC, hFontOrig);
