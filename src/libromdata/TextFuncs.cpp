@@ -347,7 +347,7 @@ u16string utf8_to_utf16(const char *str, size_t len)
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs);
+	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, CP_UTF8, &cchWcs);
 	if (wcs) {
 		u16string ret(wcs, cchWcs);
 		free(wcs);
