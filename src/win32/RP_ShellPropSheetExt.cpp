@@ -505,7 +505,6 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
 	// Create a grid of checkboxes.
-	POINT pt = pt_start;
 	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 
 	// Column widths for multi-row layouts.
@@ -546,6 +545,16 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 			}
 		}
 	}
+
+	// Initial position on the dialog, in pixels.
+	POINT pt = pt_start;
+	// Subtract 0.5 DLU from the starting row.
+	RECT rect_subtract = {0, 0, 1, 1};
+	MapDialogRect(hDlg, &rect_subtract);
+	if (rect_subtract.bottom > 1) {
+		rect_subtract.bottom /= 2;
+	}
+	pt.y -= rect_subtract.bottom;
 
 	row = 0; col = 0;
 	for (int j = 0; j < bitfieldDesc->elements; j++) {
