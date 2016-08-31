@@ -294,11 +294,40 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	// TODO: Localization.
 	m_dlgBuilder.init(&dlt, L"ROM Properties");
 
+	// Dialog font and device context.
+	// Reference: http://cboard.cprogramming.com/windows-programming/81464-obtaining-system-font-custom-size.html
+	const int fontPtSize = 8;
+	HDC hDC = GetDC(nullptr);
+	const LOGFONT lfDlgFont = {
+		MulDiv(fontPtSize, GetDeviceCaps(hDC, LOGPIXELSY), 72),	// lfHeight
+		0, 0, 0,			// lfWidht, lfEscapement, lfOrientation
+		FW_NORMAL, FALSE, FALSE, FALSE,	// lfWeight, lfItalic, lfUnderline, lfStrikeOut
+		DEFAULT_CHARSET,		// lfCharSet
+		OUT_DEFAULT_PRECIS,		// lfOutPrecision
+		CLIP_DEFAULT_PRECIS,		// lfClipPrecision
+		DEFAULT_QUALITY,		// lfQuality
+		DEFAULT_PITCH | FF_DONTCARE,	// lfPitchAndFamily
+		L"MS Shell Dlg"			// lfFaceName
+	};
+	HFONT hFont = CreateFontIndirect(&lfDlgFont);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Calculate dialog units for this font.
+	// Reference: https://support.microsoft.com/en-us/kb/145994
+	SIZE dlgBase;
+	{
+		TEXTMETRIC tm;
+		GetTextMetrics(hDC, &tm);
+		SIZE textSize;
+		GetTextExtentPoint32(hDC,
+			L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52, &textSize);
+		dlgBase.cx = (textSize.cx / 26 + 1) / 2;
+		dlgBase.cy = tm.tmHeight;
+	}
+
 	// Determine the maximum length of all field names.
-	// Assume each character is an average of 4x8 DLUs.
 	// TODO: Line breaks?
-	// TODO: Calculate actual font metrics and convert to DLUs?
-	size_t maxLen = 0;
+	int max_text_width = 0;
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -309,18 +338,35 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 		if (!desc->name || desc->name[0] == '\0')
 			continue;
 
-		size_t len = LibRomData::rp_strlen(desc->name);
-		if (len > maxLen)
-			maxLen = len;
+		// Make sure this is a UTF-16 string.
+		// FIXME: wstring?
+		std::u16string s_name = LibRomData::rp_string_to_utf16(
+			desc->name, rp_strlen(desc->name));
+
+		// Get the width of this specific entry.
+		SIZE textSize;
+		GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
+			(int)s_name.size(), &textSize);
+		if (textSize.cx > max_text_width) {
+			max_text_width = textSize.cx;
+		}
 	}
 
+	// Convert the text width to dialog units.
+	// NOTE: +(4*3) for the ":". [TODO: Is that right?]
+	const short dlu_text_width = (short)((max_text_width * 4) / dlgBase.cx) + (4*3);
+
+	SelectFont(hDC, hFontOrig);
+	DeleteFont(hFont);
+	ReleaseDC(nullptr, hDC);
+
 	// Create the ROM field widgets.
-	// Each static control is ((maxLen+1)*4) DLUs wide,
+	// Each static control is dlu_text_width DLUs wide,
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	// NOTE: Not using SIZE because dialogs use short, not LONG.
 	// FIXME: May need to resize labels on display because the
 	// DLU calculation isn't always accurate...
-	const struct { short cx, cy; } descSize = {(((short)maxLen+1) * 4), 8+4};
+	const struct { short cx, cy; } descSize = {dlu_text_width, 8+4};
 	// Current position.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
@@ -464,7 +510,6 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 
 	// Create a grid of checkboxes.
 	POINT pt = pt_start;
-	SIZE textSize;
 	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 
 	// Column widths for multi-row layouts.
@@ -490,6 +535,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
 
 			// Get the width of this specific entry.
+			SIZE textSize;
 			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
 				(int)s_name.size(), &textSize);
 			int chk_w = rect_chkbox.right + textSize.cx;
@@ -521,6 +567,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 			std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
 
 			// Get the width of this specific entry.
+			SIZE textSize;
 			GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
 				(int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
