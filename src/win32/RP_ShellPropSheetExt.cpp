@@ -362,7 +362,9 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	// NOTE: Not using SIZE because dialogs use short, not LONG.
 	// FIXME: May need to resize labels on display because the
 	// DLU calculation isn't always accurate...
-	const struct { short cx, cy; } descSize = {dlu_text_width, 8+4};
+	struct DLU_SZ { short cx, cy; };
+	const DLU_SZ descSize = {dlu_text_width, 8+4};
+
 	// Current position.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
@@ -400,7 +402,7 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 
 		// Create the value widget.
 		int field_cy = dlit.cy;	// Default row size.
-		const DLU_PT obj_pt_start = {curPt.x + descSize.cx, curPt.y};
+		const DLU_PT pt_start = {curPt.x + descSize.cx, curPt.y};
 		switch (desc->type) {
 			case RomFields::RFT_STRING:
 				// Create a read-only EDIT widget.
@@ -408,17 +410,18 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 				// to highlight and copy data.
 				dlit.style = WS_CHILD | WS_VISIBLE | ES_READONLY;
 				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = obj_pt_start.x; dlit.y = obj_pt_start.y;
+				dlit.x = pt_start.x; dlit.y = pt_start.y;
 				dlit.cx = dlit_value_width; dlit.cy = field_cy;
 				dlit.id = IDC_RFT_STRING(i);
 				m_dlgBuilder.add(&dlit, WC_ORD_EDIT, data->str);
 				break;
 
 			case RomFields::RFT_BITFIELD: {
-				// NOTE: We can't properly create the checkboxes here
-				// due to the font not exactly matching up to DLUs.
-				// Hence, we'll just reserve space for the required
-				// number of rows.
+				// NOTE: Although we can use dialog metrics to create the
+				// bitfield checkboxes here, the result is a mess due to
+				// DLUs not necessarily being a 1:1 mapping to pixels,
+				// so some rows don't have the same spacing as others.
+				// Just reserve the space for the rows here.
 				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 				int rows = 1;
 				if (bitfieldDesc->elemsPerRow > 0) {
@@ -440,6 +443,7 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 				}
 
 				field_cy *= rows;
+				field_cy -= (rows / 2);
 				break;
 			}
 
@@ -449,7 +453,7 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 				field_cy = 72;
 				dlit.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT;
 				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = obj_pt_start.x; dlit.y = obj_pt_start.y;
+				dlit.x = pt_start.x; dlit.y = pt_start.y;
 				dlit.cx = dlit_value_width; dlit.cy = field_cy;
 				dlit.id = IDC_RFT_LISTDATA(i);
 				m_dlgBuilder.add(&dlit, WC_LISTVIEW, L"");
