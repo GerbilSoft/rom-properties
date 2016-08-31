@@ -95,6 +95,14 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		LPCDLGTEMPLATE initDialog(void);
 
 		/**
+		 * Initialize a bitfield layout.
+		 * @param hDlg Dialog window.
+		 * @param pt_start Starting position, in pixels.
+		 * @param idx Field index.
+		 */
+		void initBitfield(HWND hDlg, const POINT &pt_start, int idx);
+
+		/**
 		 * Initialize a ListView control.
 		 * @param hWnd HWND of the ListView control.
 		 * @param desc RomFields description.
@@ -103,10 +111,10 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
 
 		/**
-		 * Initialize RFT_LISTDATA fields in a dialog.
+		 * Initialize various fields in a dialog.
 		 * @param hDlg Dialog window.
 		 */
-		void initListDataFields(HWND hDlg);
+		void initFields(HWND hDlg);
 
 	public:
 		// IShellExtInit

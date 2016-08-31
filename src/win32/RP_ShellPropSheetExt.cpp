@@ -39,6 +39,7 @@ using LibRomData::RomFields;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;
+using LibRomData::rp_strlen;
 
 // C++ includes.
 #include <vector>
@@ -54,8 +55,10 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #endif
 
 // Control base IDs.
-#define IDC_RFT_STRING_BASE	0x1000
-#define IDC_RFT_LISTDATA_BASE	0x2000
+#define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
+#define IDC_RFT_STRING(idx)		(0x2000 + (idx))
+#define IDC_RFT_BITFIELD(idx, bit)	(0x3000 + ((idx) * 32) + (bit))
+#define IDC_RFT_LISTDATA(idx)		(0x4000 + (idx))
 
 // Property for "external pointer".
 // This links the property sheet to the COM object.
@@ -321,7 +324,8 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	// NOTE: Not using POINT because dialogs use short, not LONG.
-	struct { short x, y; } curPt = {7, 7};
+	struct DLU_PT { short x, y; };
+	DLU_PT curPt = {7, 7};
 
 	// Width available for the value widget(s).
 	const short dlit_value_width = dlt.cx - (curPt.x * 2) - descSize.cx;
@@ -347,34 +351,64 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 		dlit.dwExtendedStyle = 0;
 		dlit.x = curPt.x; dlit.y = curPt.y;
 		dlit.cx = descSize.cx; dlit.cy = descSize.cy;
-		dlit.id = IDC_STATIC;
+		dlit.id = IDC_STATIC_DESC(i);
 		// TODO: Remove if the value widget is invalid?
 		m_dlgBuilder.add(&dlit, WC_ORD_STATIC, desc_text);
 
 		// Create the value widget.
 		int field_cy = dlit.cy;	// Default row size.
+		const DLU_PT obj_pt_start = {curPt.x + descSize.cx, curPt.y};
 		switch (desc->type) {
 			case RomFields::RFT_STRING:
 				// Create a read-only EDIT widget.
 				// The STATIC control doesn't allow the user
 				// to highlight and copy data.
-				dlit.style = WS_CHILD | WS_VISIBLE | ES_LEFT | ES_READONLY;
+				dlit.style = WS_CHILD | WS_VISIBLE | ES_READONLY;
 				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = curPt.x + descSize.cx; dlit.y = curPt.y;
+				dlit.x = obj_pt_start.x; dlit.y = obj_pt_start.y;
 				dlit.cx = dlit_value_width; dlit.cy = field_cy;
-				dlit.id = IDC_RFT_STRING_BASE + i;
+				dlit.id = IDC_RFT_STRING(i);
 				m_dlgBuilder.add(&dlit, WC_ORD_EDIT, data->str);
 				break;
 
+			case RomFields::RFT_BITFIELD: {
+				// NOTE: We can't properly create the checkboxes here
+				// due to the font not exactly matching up to DLUs.
+				// Hence, we'll just reserve space for the required
+				// number of rows.
+				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+				int rows = 1;
+				if (bitfieldDesc->elemsPerRow > 0) {
+					// Multiple rows.
+					// Determine how many rows we need.
+					int cols = 0;
+					for (int j = 0; j < bitfieldDesc->elements; j++) {
+						if (!bitfieldDesc->names[i])
+							continue;
+						if (cols >= bitfieldDesc->elemsPerRow) {
+							// Next row.
+							rows++;
+							cols = 0;
+						}
+
+						// Next column.
+						cols++;
+					}
+				}
+
+				field_cy *= rows;
+				break;
+			}
+
 			case RomFields::RFT_LISTDATA:
 				// Create a ListView widget.
-				// TODO: Maximum width; initialize data in WM_INITDIALOG.
-				field_cy = 72;	// TODO: Ideal height?
+				// TODO: Best width/height?
+				field_cy = 72;
 				dlit.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT;
 				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = curPt.x + descSize.cx; dlit.y = curPt.y;
+				dlit.x = obj_pt_start.x; dlit.y = obj_pt_start.y;
 				dlit.cx = dlit_value_width; dlit.cy = field_cy;
-				dlit.id = IDC_RFT_LISTDATA_BASE + i;
+				dlit.id = IDC_RFT_LISTDATA(i);
 				m_dlgBuilder.add(&dlit, WC_LISTVIEW, L"");
 				break;
 
@@ -390,6 +424,78 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	}
 
 	return m_dlgBuilder.get();
+}
+
+/**
+ * Initialize a bitfield layout.
+ * @param hDlg Dialog window.
+ * @param pt_start Starting position, in pixels.
+ * @param idx Field index.
+ */
+void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx)
+{
+	if (!hDlg)
+		return;
+
+	const RomFields *fields = m_romData->fields();
+	if (!fields)
+		return;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	const RomFields::Data *data = fields->data(idx);
+	if (!desc || !data)
+		return;
+	if (desc->type != RomFields::RFT_BITFIELD ||
+	    data->type != RomFields::RFT_BITFIELD)
+		return;
+	if (!desc->name || desc->name[0] == '\0')
+		return;
+
+	// Checkbox size.
+	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
+	RECT rect_chkbox = {0, 0, 12+6, 10};
+	MapDialogRect(hDlg, &rect_chkbox);
+
+	// Dialog font and device context.
+	HFONT hFont = GetWindowFont(hDlg);
+	HDC hDC = GetDC(hDlg);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Create a grid of checkboxes.
+	POINT pt = pt_start;
+	SIZE textSize;
+
+	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+	// TODO: Handle multiple rows.
+	for (int j = 0; j < bitfieldDesc->elements; j++) {
+		const rp_char *name = bitfieldDesc->names[j];
+		if (!name)
+			continue;
+
+		// Make sure this is a UTF-16 string.
+		// FIXME: wstring?
+		std::u16string s_name = LibRomData::rp_string_to_utf16(name, rp_strlen(name));
+
+		// Get the text size.
+		GetTextExtentPoint32(hDC, reinterpret_cast<const wchar_t*>(s_name.data()),
+			(int)s_name.size(), &textSize);
+		int chk_w = rect_chkbox.right + textSize.cx;
+
+		// FIXME: Tab ordering?
+		HWND hCheckBox = CreateWindow(WC_BUTTON,
+			reinterpret_cast<const wchar_t*>(s_name.c_str()),
+			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
+			pt.x, pt.y, chk_w, rect_chkbox.bottom,
+			hDlg, (HMENU)(IDC_RFT_BITFIELD(idx, j)),
+			nullptr, nullptr);
+		SetWindowFont(hCheckBox, hFont, FALSE);
+
+		// Next column.
+		pt.x += chk_w;
+	}
+
+	SelectFont(hDC, hFontOrig);
+	ReleaseDC(hDlg, hDC);
 }
 
 /**
@@ -469,10 +575,10 @@ void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, 
 }
 
 /**
- * Initialize RFT_LISTDATA fields in a dialog.
+ * Initialize various fields in a dialog.
  * @param hDlg Dialog window.
  */
-void RP_ShellPropSheetExt::initListDataFields(HWND hDlg)
+void RP_ShellPropSheetExt::initFields(HWND hDlg)
 {
 	const RomFields *fields = m_romData->fields();
 	if (!fields) {
@@ -484,12 +590,30 @@ void RP_ShellPropSheetExt::initListDataFields(HWND hDlg)
 	const int count = fields->count();
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
-		if (desc->type == RomFields::RFT_LISTDATA) {
-			// Check if we have a matching dialog item.
-			HWND hDlgItem = GetDlgItem(hDlg, IDC_RFT_LISTDATA_BASE + i);
-			if (hDlgItem) {
-				initListView(hDlgItem, desc, fields->data(i));
-			}
+		HWND hDlgItem;
+		switch (desc->type) {
+			case RomFields::RFT_BITFIELD:
+				// Get the position of the description label.
+				hDlgItem = GetDlgItem(hDlg, IDC_STATIC_DESC(i));
+				if (hDlgItem) {
+					RECT lblRect; POINT pt_start;
+					GetWindowRect(hDlgItem, &lblRect);
+					// NOTE: .bottom/.right is 1px outside of
+					// the control's rectangle.
+					pt_start.x = lblRect.right;
+					pt_start.y = lblRect.top;
+					ScreenToClient(hDlg, &pt_start);
+					initBitfield(hDlg, pt_start, i);
+				}
+				break;
+
+			case RomFields::RFT_LISTDATA:
+				// Check if we have a matching dialog item.
+				hDlgItem = GetDlgItem(hDlg, IDC_RFT_LISTDATA(i));
+				if (hDlgItem) {
+					initListView(hDlgItem, desc, fields->data(i));
+				}
+				break;
 		}
 	}
 }
@@ -580,8 +704,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
 
-					// Initialize RFT_LISTDATA fields.
-					pExt->initListDataFields(hWnd);
+					// Initialize various data fields.
+					pExt->initFields(hWnd);
 				}
 			}
 			return TRUE;
