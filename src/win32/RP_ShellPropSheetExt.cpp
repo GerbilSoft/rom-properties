@@ -539,6 +539,9 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFont, FALSE);
 
+		// Set the checkbox state.
+		Button_SetCheck(hCheckBox, (data->bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
+
 		// Next column.
 		pt.x += chk_w;
 		col++;
