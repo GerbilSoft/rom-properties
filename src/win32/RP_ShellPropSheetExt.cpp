@@ -33,13 +33,8 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/RpFile.hpp"
-using LibRomData::RomDataFactory;
-using LibRomData::RomData;
-using LibRomData::RomFields;
-using LibRomData::IRpFile;
-using LibRomData::RpFile;
-using LibRomData::rp_string;
-using LibRomData::rp_strlen;
+#include "libromdata/RpWin32.hpp"
+using namespace LibRomData;
 
 // C++ includes.
 #include <vector>

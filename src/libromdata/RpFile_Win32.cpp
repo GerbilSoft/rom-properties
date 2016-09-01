@@ -21,6 +21,7 @@
 
 #include "RpFile.hpp"
 #include "TextFuncs.hpp"
+#include "RpWin32.hpp"
 
 // C++ includes.
 #include <string>

@@ -31,6 +31,7 @@ using std::u16string;
 // Windows: _wfopen() requires a Unicode mode string.
 typedef wchar_t mode_str_t;
 #define _MODE(str) (L ##str)
+#include "RpWin32.hpp"
 #else
 // Other: fopen() requires an 8-bit mode string.
 typedef char mode_str_t;

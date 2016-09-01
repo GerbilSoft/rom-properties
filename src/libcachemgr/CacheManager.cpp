@@ -37,6 +37,7 @@ using LibRomData::RpFile;
 #endif
 #include <windows.h>
 #include <shlobj.h>
+#include "libromdata/RpWin32.hpp"
 #endif /* _WIN32 */
 
 // POSIX includes.

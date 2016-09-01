@@ -24,6 +24,7 @@
 
 #include "libromdata/TextFuncs.hpp"
 #include "libromdata/RpFile.hpp"
+#include "libromdata/RpWin32.hpp"
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;

@@ -30,6 +30,7 @@
 
 // rp_string
 #include "libromdata/TextFuncs.hpp"
+#include "libromdata/RpWin32.hpp"
 
 // Standard window classes.
 // These macros use the ordinal value, which saves

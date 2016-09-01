@@ -26,6 +26,7 @@
 
 #ifdef _WIN32
 #include <direct.h>
+#include "libromdata/RpWin32.hpp"
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
