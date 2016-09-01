@@ -12,7 +12,7 @@ SET(rom-properties-win32_SRCS
 	RP_ExtractImage.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
-	DialogBuilder.cpp
+	#DialogBuilder.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -23,7 +23,7 @@ SET(rom-properties-win32_H
 	RP_ExtractImage.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
-	DialogBuilder.hpp
+	#DialogBuilder.hpp
 	resource.h
 	)
 
