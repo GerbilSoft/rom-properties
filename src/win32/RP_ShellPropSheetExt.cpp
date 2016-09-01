@@ -37,6 +37,9 @@
 #include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -250,226 +253,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// sheet is not displayed.
 	return hr;
 }
-
-// FIXME: Port to WM_INITDIALOG.
-#if 0
-/**
- * Initialize the dialog for the open ROM data object.
- * @return Dialog template from DialogBuilder on success; nullptr on error.
- */
-LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
-{
-	// TODO: Move to WM_INITDIALOG.
-	if (!m_romData) {
-		// No ROM data loaded.
-		return nullptr;
-	}
-
-	// Get the fields.
-	const RomFields *fields = m_romData->fields();
-	if (!fields) {
-		// No fields.
-		// TODO: Show an error?
-		return nullptr;
-	}
-	const int count = fields->count();
-
-	// Make sure we have all required window classes available.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
-	INITCOMMONCONTROLSEX initCommCtrl;
-	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
-	// TODO: Also ICC_STANDARD_CLASSES on XP+?
-	InitCommonControlsEx(&initCommCtrl);
-
-	// Create the dialog.
-	DLGTEMPLATE dlt;
-	dlt.style = DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION;
-	dlt.dwExtendedStyle = 0;
-	dlt.cdit = 0;   // automatically updated by DialogBuilder
-	dlt.x = 0; dlt.y = 0;
-	dlt.cx = PROP_MED_CXDLG; dlt.cy = PROP_MED_CYDLG;
-	// TODO: Localization.
-	m_dlgBuilder.init(&dlt, L"ROM Properties");
-
-	// Dialog font and device context.
-	// Reference: http://cboard.cprogramming.com/windows-programming/81464-obtaining-system-font-custom-size.html
-	const int fontPtSize = 8;
-	HDC hDC = GetDC(nullptr);
-	const LOGFONT lfDlgFont = {
-		MulDiv(fontPtSize, GetDeviceCaps(hDC, LOGPIXELSY), 72),	// lfHeight
-		0, 0, 0,			// lfWidht, lfEscapement, lfOrientation
-		FW_NORMAL, FALSE, FALSE, FALSE,	// lfWeight, lfItalic, lfUnderline, lfStrikeOut
-		DEFAULT_CHARSET,		// lfCharSet
-		OUT_DEFAULT_PRECIS,		// lfOutPrecision
-		CLIP_DEFAULT_PRECIS,		// lfClipPrecision
-		DEFAULT_QUALITY,		// lfQuality
-		DEFAULT_PITCH | FF_DONTCARE,	// lfPitchAndFamily
-		L"MS Shell Dlg"			// lfFaceName
-	};
-	HFONT hFont = CreateFontIndirect(&lfDlgFont);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
-
-	// Calculate dialog units for this font.
-	// Reference: https://support.microsoft.com/en-us/kb/145994
-	SIZE dlgBase;
-	{
-		TEXTMETRIC tm;
-		GetTextMetrics(hDC, &tm);
-		SIZE textSize;
-		GetTextExtentPoint32(hDC,
-			L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52, &textSize);
-		dlgBase.cx = (textSize.cx / 26 + 1) / 2;
-		dlgBase.cy = tm.tmHeight;
-	}
-
-	// Determine the maximum length of all field names.
-	// TODO: Line breaks?
-	int max_text_width = 0;
-	for (int i = 0; i < count; i++) {
-		const RomFields::Desc *desc = fields->desc(i);
-		const RomFields::Data *data = fields->data(i);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
-			continue;
-
-		// Make sure this is a UTF-16 string.
-		std::wstring s_name = RP2W_c(desc->name);
-
-		// Get the width of this specific entry.
-		SIZE textSize;
-		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-		if (textSize.cx > max_text_width) {
-			max_text_width = textSize.cx;
-		}
-	}
-
-	// Convert the text width to dialog units.
-	// NOTE: +(4*3) for the ":". [TODO: Is that right?]
-	const short dlu_text_width = (short)((max_text_width * 4) / dlgBase.cx) + (4*3);
-
-	SelectFont(hDC, hFontOrig);
-	DeleteFont(hFont);
-	ReleaseDC(nullptr, hDC);
-
-	// Create the ROM field widgets.
-	// Each static control is dlu_text_width DLUs wide,
-	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
-	// NOTE: Not using SIZE because dialogs use short, not LONG.
-	// FIXME: May need to resize labels on display because the
-	// DLU calculation isn't always accurate...
-	struct DLU_SZ { short cx, cy; };
-	const DLU_SZ descSize = {dlu_text_width, 8+4};
-
-	// Current position.
-	// 7x7 DLU margin is recommended by the Windows UX guidelines.
-	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-	// NOTE: Not using POINT because dialogs use short, not LONG.
-	struct DLU_PT { short x, y; };
-	DLU_PT curPt = {7, 7};
-
-	// Width available for the value widget(s).
-	const short dlit_value_width = dlt.cx - (curPt.x * 2) - descSize.cx;
-
-	DLGITEMTEMPLATE dlit;
-	for (int i = 0; i < count; i++) {
-		const RomFields::Desc *desc = fields->desc(i);
-		const RomFields::Data *data = fields->data(i);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
-			continue;
-
-		// Append a ":" to the description.
-		// TODO: Localization.
-		rp_string desc_text(desc->name);
-		desc_text += _RP_CHR(':');
-
-		// Create the static text widget. (FIXME: Disable mnemonics?)
-		dlit.style = WS_CHILD | WS_VISIBLE | SS_LEFT;
-		dlit.dwExtendedStyle = 0;
-		dlit.x = curPt.x; dlit.y = curPt.y;
-		dlit.cx = descSize.cx; dlit.cy = descSize.cy;
-		dlit.id = IDC_STATIC_DESC(i);
-		// TODO: Remove if the value widget is invalid?
-		m_dlgBuilder.add(&dlit, WC_ORD_STATIC, desc_text);
-
-		// Create the value widget.
-		int field_cy = dlit.cy;	// Default row size.
-		const DLU_PT pt_start = {curPt.x + descSize.cx, curPt.y};
-		switch (desc->type) {
-			case RomFields::RFT_STRING:
-				// Create a read-only EDIT widget.
-				// The STATIC control doesn't allow the user
-				// to highlight and copy data.
-				dlit.style = WS_CHILD | WS_VISIBLE | ES_READONLY;
-				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = pt_start.x; dlit.y = pt_start.y;
-				dlit.cx = dlit_value_width; dlit.cy = field_cy;
-				dlit.id = IDC_RFT_STRING(i);
-				m_dlgBuilder.add(&dlit, WC_ORD_EDIT, data->str);
-				break;
-
-			case RomFields::RFT_BITFIELD: {
-				// NOTE: Although we can use dialog metrics to create the
-				// bitfield checkboxes here, the result is a mess due to
-				// DLUs not necessarily being a 1:1 mapping to pixels,
-				// so some rows don't have the same spacing as others.
-				// Just reserve the space for the rows here.
-				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
-				int rows = 1;
-				if (bitfieldDesc->elemsPerRow > 0) {
-					// Multiple rows.
-					// Determine how many rows we need.
-					int cols = 0;
-					for (int j = 0; j < bitfieldDesc->elements; j++) {
-						if (!bitfieldDesc->names[i])
-							continue;
-						if (cols >= bitfieldDesc->elemsPerRow) {
-							// Next row.
-							rows++;
-							cols = 0;
-						}
-
-						// Next column.
-						cols++;
-					}
-				}
-
-				field_cy *= rows;
-				field_cy -= (rows / 2);
-				break;
-			}
-
-			case RomFields::RFT_LISTDATA:
-				// Create a ListView widget.
-				// TODO: Best width/height?
-				field_cy = 72;
-				dlit.style = WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT;
-				dlit.dwExtendedStyle = WS_EX_LEFT;
-				dlit.x = pt_start.x; dlit.y = pt_start.y;
-				dlit.cx = dlit_value_width; dlit.cy = field_cy;
-				dlit.id = IDC_RFT_LISTDATA(i);
-				m_dlgBuilder.add(&dlit, WC_LISTVIEW, L"");
-				break;
-
-			default:
-				// FIXME: Implement the rest, then uncomment this assert.
-				//assert(false);
-				// TODO: Remove the description STATIC control.
-				break;
-		}
-
-		// Next row.
-		curPt.y += field_cy;
-	}
-}
-#endif
 
 /**
  * Initialize a bitfield layout.
@@ -845,14 +628,12 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 				initListView(hDlgItem, desc, fields->data(idx));
 				break;
 
-#if 0
 			default:
-				// TODO: Assert here once the other fields are implemented.
+				// Unsupported data type.
 				assert(false);
 				field_cy = 0;
 				DestroyWindow(hStatic);
 				break;
-#endif
 		}
 
 		// Next row.
