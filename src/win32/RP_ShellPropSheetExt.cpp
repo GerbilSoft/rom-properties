@@ -77,6 +77,7 @@ static inline LPWORD lpwAlign(LPWORD lpIn, ULONG_PTR dw2Power = 4)
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
 	: m_romData(nullptr)
+	, m_hFontMono(nullptr)
 {
 	m_szSelectedFile[0] = 0;
 }
@@ -84,6 +85,12 @@ RP_ShellPropSheetExt::RP_ShellPropSheetExt()
 RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 {
 	delete m_romData;
+
+	// Delete the monospaced font.
+	if (m_hFontMono) {
+		DeleteFont(m_hFontMono);
+		m_hFontMono = nullptr;
+	}
 }
 
 /** IUnknown **/
@@ -555,6 +562,18 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 	GetClientRect(hDlg, &tmpRect);
 	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
 
+	// Get a matching monospaced font.
+	// TODO: Delete the old font if it's already there?
+	if (!m_hFontMono) {
+		LOGFONT lfFontMono;
+		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) != 0) {
+			// Adjust the font and create a new one.
+			// TODO: What's the best font for this?
+			wcscpy(lfFontMono.lfFaceName, L"Lucida Console");
+			m_hFontMono = CreateFontIndirect(&lfFontMono);
+		}
+	}
+
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Desc *desc = fields->desc(idx);
 		const RomFields::Data *data = fields->data(idx);
@@ -581,6 +600,7 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
+		HFONT hFontItem = hFont;
 		HWND hDlgItem;
 		switch (desc->type) {
 			case RomFields::RFT_STRING:
@@ -593,7 +613,18 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 					dlg_value_width, field_cy,
 					hDlg, (HMENU)(IDC_RFT_STRING(idx)),
 					nullptr, nullptr);
-				SetWindowFont(hDlgItem, hFont, FALSE);
+
+				// Check for any formatting options.
+				if (desc->str_desc) {
+					// Monospace font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+						if (m_hFontMono != nullptr) {
+							hFontItem = m_hFontMono;
+						}
+					}
+				}
+
+				SetWindowFont(hDlgItem, hFontItem, FALSE);
 				break;
 
 			case RomFields::RFT_BITFIELD:

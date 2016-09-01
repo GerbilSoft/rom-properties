@@ -82,6 +82,9 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		// ROM data.
 		LibRomData::RomData *m_romData;
 
+		// Monospaced font.
+		HFONT m_hFontMono;
+
 		/**
 		 * Initialize a bitfield layout.
 		 * @param hDlg Dialog window.
