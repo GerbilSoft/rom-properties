@@ -792,20 +792,21 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
+		HWND hDlgItem;
 		switch (desc->type) {
-			case RomFields::RFT_STRING: {
+			case RomFields::RFT_STRING:
 				// Create a read-only EDIT widget.
 				// The STATIC control doesn't allow the user
 				// to highlight and copy data.
-				HWND hEdit = CreateWindow(WC_EDIT, RP2W_c(data->str),
+				hDlgItem = CreateWindow(WC_EDIT, RP2W_c(data->str),
 					WS_CHILD | WS_VISIBLE | ES_READONLY,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
 					hDlg, (HMENU)(IDC_RFT_STRING(idx)),
 					nullptr, nullptr);
-				SetWindowFont(hEdit, hFont, FALSE);
+				SetWindowFont(hDlgItem, hFont, FALSE);
 				break;
-			}
+
 #if 0
 			case RomFields::RFT_BITFIELD:
 				// Get the position of the description label.
@@ -821,15 +822,30 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 					initBitfield(hDlg, pt_start, i);
 				}
 				break;
+#endif
 
 			case RomFields::RFT_LISTDATA:
-				// Check if we have a matching dialog item.
-				hDlgItem = GetDlgItem(hDlg, IDC_RFT_LISTDATA(i));
-				if (hDlgItem) {
-					initListView(hDlgItem, desc, fields->data(i));
-				}
+				// Increase row height to 72 DLU.
+				// descSize is 8+4 DLU (12); 72/12 == 6
+				// FIXME: The last row seems to be cut off with the
+				// Windows XP Luna theme, but not Windows Classic...
+				field_cy *= 6;
+
+				// Create a ListView widget.
+				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
+					WC_LISTVIEW, RP2W_c(data->str),
+					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
+					pt_start.x, pt_start.y,
+					dlg_value_width, field_cy,
+					hDlg, (HMENU)(IDC_RFT_LISTDATA(idx)),
+					nullptr, nullptr);
+				SetWindowFont(hDlgItem, hFont, FALSE);
+
+				// Initialize the ListView data.
+				initListView(hDlgItem, desc, fields->data(idx));
 				break;
 
+#if 0
 			default:
 				// TODO: Assert here once the other fields are implemented.
 				assert(false);
