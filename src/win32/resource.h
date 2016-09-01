@@ -19,23 +19,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-// Resource script for the ROM Properties Page shell extension.
-#include <windows.h>
-#include <wingdi.h>
-#include <prsht.h>
-#include "resource.h"
+#ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
+#define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
-/** Dialogs. **/
+// Dialogs.
+#define IDD_PROPERTY_SHEET	100	/* Generic property sheet. */
 
-// Generic property sheet.
-IDD_PROPERTY_SHEET DIALOGEX 0, 0, PROP_MED_CXDLG, PROP_MED_CYDLG
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-EXSTYLE 0
-FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
-BEGIN
-END
-
-/** Manifest. **/
-ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rom-properties.dll.manifest"
-
-// TODO: Version resource.
+#endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

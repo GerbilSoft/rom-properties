@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RegKey.hpp"
+#include "resource.h"
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -37,7 +38,9 @@
 using namespace LibRomData;
 
 // C++ includes.
+#include <string>
 #include <vector>
+using std::wstring;
 using std::vector;
 
 // CLSID
@@ -248,15 +251,17 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	return hr;
 }
 
+// FIXME: Port to WM_INITDIALOG.
+#if 0
 /**
  * Initialize the dialog for the open ROM data object.
  * @return Dialog template from DialogBuilder on success; nullptr on error.
  */
 LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 {
+	// TODO: Move to WM_INITDIALOG.
 	if (!m_romData) {
 		// No ROM data loaded.
-		m_dlgBuilder.clear();
 		return nullptr;
 	}
 
@@ -265,7 +270,6 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
-		m_dlgBuilder.clear();
 		return nullptr;
 	}
 	const int count = fields->count();
@@ -464,9 +468,8 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
 		// Next row.
 		curPt.y += field_cy;
 	}
-
-	return m_dlgBuilder.get();
 }
+#endif
 
 /**
  * Initialize a bitfield layout.
@@ -525,7 +528,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 				continue;
 
 			// Make sure this is a UTF-16 string.
-			std::wstring s_name = RP2W_c(name);
+			wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
 			SIZE textSize;
@@ -565,7 +568,7 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 		int chk_w;
 		if (bitfieldDesc->elemsPerRow == 0) {
 			// Make sure this is a UTF-16 string.
-			std::wstring s_name = RP2W_c(name);
+			wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
 			SIZE textSize;
@@ -679,23 +682,131 @@ void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, 
 }
 
 /**
- * Initialize various fields in a dialog.
+ * Initialize the dialog.
+ * Called by WM_INITDIALOG.
  * @param hDlg Dialog window.
  */
-void RP_ShellPropSheetExt::initFields(HWND hDlg)
+void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 {
+	if (!m_romData) {
+		// No ROM data loaded.
+		return;
+	}
+
+	// Get the fields.
 	const RomFields *fields = m_romData->fields();
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
 		return;
 	}
-
 	const int count = fields->count();
+
+	// Make sure we have all required window classes available.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	INITCOMMONCONTROLSEX initCommCtrl;
+	initCommCtrl.dwSize = sizeof(initCommCtrl);
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
+	// TODO: Also ICC_STANDARD_CLASSES on XP+?
+	InitCommonControlsEx(&initCommCtrl);
+
+	// Dialog font and device context.
+	HFONT hFont = GetWindowFont(hDlg);
+	HDC hDC = GetDC(hDlg);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Determine the maximum length of all field names.
+	// TODO: Line breaks?
+	int max_text_width = 0;
+	SIZE textSize;
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
-		HWND hDlgItem;
+		const RomFields::Data *data = fields->data(i);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// Make sure this is a UTF-16 string.
+		wstring s_name = RP2W_c(desc->name);
+
+		// Get the width of this specific entry.
+		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+		if (textSize.cx > max_text_width) {
+			max_text_width = textSize.cx;
+		}
+	}
+
+	// Add additional spacing for the ':'.
+	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
+	max_text_width += textSize.cx;
+
+	// Release the DC.
+	SelectFont(hDC, hFontOrig);
+	ReleaseDC(hDlg, hDC);
+
+	// Create the ROM field widgets.
+	// Each static control is max_text_width pixels wide
+	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
+	RECT tmpRect = {0, 0, 0, 8+4};
+	MapDialogRect(hDlg, &tmpRect);
+	const SIZE descSize = {max_text_width, tmpRect.bottom};
+
+	// Current position.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	tmpRect.left = 7; tmpRect.top = 7;
+	tmpRect.right = 8; tmpRect.bottom = 8;
+	MapDialogRect(hDlg, &tmpRect);
+	POINT curPt = {tmpRect.left, tmpRect.top};
+
+	// Width available for the value widget(s).
+	GetClientRect(hDlg, &tmpRect);
+	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
+
+	for (int idx = 0; idx < count; idx++) {
+		const RomFields::Desc *desc = fields->desc(idx);
+		const RomFields::Data *data = fields->data(idx);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// Append a ":" to the description.
+		// TODO: Localization.
+		wstring desc_text = RP2W_c(desc->name);
+		desc_text += L':';
+
+		// Create the static text widget. (FIXME: Disable mnemonics?)
+		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
+			WS_CHILD | WS_VISIBLE | SS_LEFT,
+			curPt.x, curPt.y, descSize.cx, descSize.cy,
+			hDlg, (HMENU)(IDC_STATIC_DESC(idx)),
+			nullptr, nullptr);
+		SetWindowFont(hStatic, hFont, FALSE);
+
+		// Create the value widget.
+		int field_cy = descSize.cy;	// Default row size.
+		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
 		switch (desc->type) {
+			case RomFields::RFT_STRING: {
+				// Create a read-only EDIT widget.
+				// The STATIC control doesn't allow the user
+				// to highlight and copy data.
+				HWND hEdit = CreateWindow(WC_EDIT, RP2W_c(data->str),
+					WS_CHILD | WS_VISIBLE | ES_READONLY,
+					pt_start.x, pt_start.y,
+					dlg_value_width, field_cy,
+					hDlg, (HMENU)(IDC_RFT_STRING(idx)),
+					nullptr, nullptr);
+				SetWindowFont(hEdit, hFont, FALSE);
+				break;
+			}
+#if 0
 			case RomFields::RFT_BITFIELD:
 				// Get the position of the description label.
 				hDlgItem = GetDlgItem(hDlg, IDC_STATIC_DESC(i));
@@ -718,7 +829,17 @@ void RP_ShellPropSheetExt::initFields(HWND hDlg)
 					initListView(hDlgItem, desc, fields->data(i));
 				}
 				break;
+
+			default:
+				// TODO: Assert here once the other fields are implemented.
+				assert(false);
+				DestroyWindow(hStatic);
+				break;
+#endif
 		}
+
+		// Next row.
+		curPt.y += descSize.cy;
 	}
 }
 
@@ -729,21 +850,15 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 
-	// Initialize the dialog template.
-	LPCDLGTEMPLATE pDlgTemplate = initDialog();
-	if (!pDlgTemplate) {
-		// No property sheet is available.
-		return E_FAIL;
-	}
-
 	// Create a property sheet page.
+	extern HINSTANCE g_hInstance;
 	PROPSHEETPAGE psp;
 	psp.dwSize = sizeof(psp);
-	psp.dwFlags = PSP_USECALLBACK | PSP_DLGINDIRECT;
-	psp.hInstance = nullptr;
-	psp.pResource = pDlgTemplate;
+	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp.hInstance = g_hInstance;
+	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
-	psp.pszTitle = nullptr;
+	psp.pszTitle = L"ROM Properties";
 	psp.pfnDlgProc = DlgProc;
 	psp.pcRefParent = nullptr;
 	psp.pfnCallback = CallbackProc;
@@ -808,8 +923,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
 
-					// Initialize various data fields.
-					pExt->initFields(hWnd);
+					// Initialize the dialog.
+					pExt->initDialog(hWnd);
 				}
 			}
 			return TRUE;

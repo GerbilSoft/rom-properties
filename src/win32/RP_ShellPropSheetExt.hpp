@@ -43,9 +43,6 @@ extern "C" {
 // C++ includes.
 #include <string>
 
-// Win32 dialog builder.
-#include "DialogBuilder.hpp"
-
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
 RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 {
@@ -82,17 +79,8 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		wchar_t m_szSelectedFile[MAX_PATH];
 		PCWSTR GetSelectedFile(void) const;
 
-		// Dialog builder.
-		DialogBuilder m_dlgBuilder;
-
 		// ROM data.
 		LibRomData::RomData *m_romData;
-
-		/**
-		 * Initialize the dialog for the open ROM data object.
-		 * @return Dialog template from DialogBuilder on success; nullptr on error.
-		 */
-		LPCDLGTEMPLATE initDialog(void);
 
 		/**
 		 * Initialize a bitfield layout.
@@ -111,10 +99,11 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
 
 		/**
-		 * Initialize various fields in a dialog.
+		 * Initialize the dialog.
+		 * Called by WM_INITDIALOG.
 		 * @param hDlg Dialog window.
 		 */
-		void initFields(HWND hDlg);
+		void initDialog(HWND hDlg);
 
 	public:
 		// IShellExtInit

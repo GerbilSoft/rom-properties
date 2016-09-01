@@ -48,7 +48,8 @@ using LibRomData::RomDataFactory;
 using std::wstring;
 using std::vector;
 
-static HINSTANCE g_hInstance = nullptr;
+extern HINSTANCE g_hInstance;
+HINSTANCE g_hInstance = nullptr;
 extern wchar_t dll_filename[];
 wchar_t dll_filename[MAX_PATH];
 

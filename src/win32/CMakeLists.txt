@@ -24,6 +24,7 @@ SET(rom-properties-win32_H
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	DialogBuilder.hpp
+	resource.h
 	)
 
 #####################
