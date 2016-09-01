@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomDataView.hpp"
+#include "RpQt.hpp"
 
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
@@ -94,29 +95,6 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	formLayout = new QFormLayout(RomDataView);
 }
 
-// TODO: Move this elsehwere.
-static inline QString rpToQS(const LibRomData::rp_string &rps)
-{
-#if defined(RP_UTF8)
-	return QString::fromUtf8(rps.c_str(), (int)rps.size());
-#elif defined(RP_UTF16)
-	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.data()), (int)rps.size());
-#else
-#error Text conversion not available on this system.
-#endif
-}
-
-static inline QString rpToQS(const rp_char *rps)
-{
-#if defined(RP_UTF8)
-	return QString::fromUtf8(rps);
-#elif defined(RP_UTF16)
-	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps));
-#else
-#error Text conversion not available on this system.
-#endif
-}
-
 /**
  * Update the display widgets.
  * FIXME: Allow running this multiple times?
@@ -154,7 +132,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 		QLabel *lblDesc = new QLabel(q);
 		lblDesc->setTextFormat(Qt::PlainText);
-		lblDesc->setText(RomDataView::tr("%1:").arg(rpToQS(desc->name)));
+		lblDesc->setText(RomDataView::tr("%1:").arg(RP2Q(desc->name)));
 
 		switch (desc->type) {
 			case RomFields::RFT_STRING: {
@@ -164,7 +142,7 @@ void RomDataViewPrivate::updateDisplay(void)
 				lblString->setTextFormat(Qt::PlainText);
 				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
-					lblString->setText(rpToQS(data->str));
+					lblString->setText(RP2Q(data->str));
 				}
 				ui.formLayout->addRow(lblDesc, lblString);
 				break;
@@ -181,7 +159,7 @@ void RomDataViewPrivate::updateDisplay(void)
 						continue;
 					// TODO: Prevent toggling; disable automatic alt key.
 					QCheckBox *checkBox = new QCheckBox(q);
-					checkBox->setText(rpToQS(name));
+					checkBox->setText(RP2Q(name));
 					if (data->bitfield & (1 << i)) {
 						checkBox->setChecked(true);
 					}
@@ -210,7 +188,7 @@ void RomDataViewPrivate::updateDisplay(void)
 				columnNames.reserve(count);
 				for (int i = 0; i < count; i++) {
 					if (listDataDesc->names[i]) {
-						columnNames.append(rpToQS(listDataDesc->names[i]));
+						columnNames.append(RP2Q(listDataDesc->names[i]));
 					} else {
 						// Don't show this column.
 						columnNames.append(QString());
@@ -228,7 +206,7 @@ void RomDataViewPrivate::updateDisplay(void)
 					for (vector<LibRomData::rp_string>::const_iterator iter = data_row.begin();
 					     iter != data_row.end(); ++iter, ++field)
 					{
-						treeWidgetItem->setData(field, Qt::DisplayRole, rpToQS(*iter));
+						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
 					}
 				}
 

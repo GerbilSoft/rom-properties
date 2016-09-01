@@ -29,18 +29,11 @@
 
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
+#include "RpQt.hpp"
 
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpFile.hpp"
 using namespace LibRomData;
-
-// TODO: RP_UTF8 version?
-#ifdef RP_UTF16
-static inline const rp_char *qsToRpCharPtr(const QString &qs)
-{
-	return reinterpret_cast<const rp_char*>(qs.utf16());
-}
-#endif /* RP_UTF16 */
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
@@ -59,7 +52,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		if (!filename.isEmpty()) {
 			// TODO: RpQFile wrapper.
 			// For now, using RpFile, which is an stdio wrapper.
-			IRpFile *file = new RpFile(qsToRpCharPtr(filename), RpFile::FM_OPEN_READ);
+			IRpFile *file = new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ);
 			if (file && file->isOpen()) {
 				// Get the appropriate RomData class for this ROM.
 				RomData *romData = RomDataFactory::getInstance(file);

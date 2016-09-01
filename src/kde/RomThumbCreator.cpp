@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomThumbCreator.hpp"
+#include "RpQt.hpp"
 
 // libcachemgr
 #include "libcachemgr/CacheManager.hpp"
@@ -106,25 +107,6 @@ QImage RomThumbCreator::rpToQImage(const rp_image *image)
 	return img;
 }
 
-static inline QString rpToQS(const LibRomData::rp_string &rps)
-{
-#if defined(RP_UTF8)
-	return QString::fromUtf8(rps.c_str(), (int)rps.size());
-#elif defined(RP_UTF16)
-	return QString::fromUtf16(reinterpret_cast<const ushort*>(rps.data()), (int)rps.size());
-#else
-#error Text conversion not available on this system.
-#endif
-}
-
-// TODO: RP_UTF8 version?
-#ifdef RP_UTF16
-static inline const rp_char *qsToRpCharPtr(const QString &qs)
-{
-	return reinterpret_cast<const rp_char*>(qs.utf16());
-}
-#endif /* RP_UTF16 */
-
 /**
  * Create a thumbnail for a ROM image.
  * @param path Local pathname of the ROM image.
@@ -144,7 +126,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFile *file = new RpFile(qsToRpCharPtr(path), RpFile::FM_OPEN_READ);
+	IRpFile *file = new RpFile(Q2RP(path), RpFile::FM_OPEN_READ);
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
 		delete file;
@@ -176,13 +158,13 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 
 				// Check if a proxy is required for this URL.
 				// TODO: Optimizations.
-				QString proxy = KProtocolManager::proxyForUrl(QUrl(rpToQS(extURL.url)));
+				QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(extURL.url)));
 				if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
 					// No proxy.
 					cache.setProxyUrl(nullptr);
 				} else {
 					// Proxy is specified.
-					cache.setProxyUrl((const rp_char*)proxy.utf16());
+					cache.setProxyUrl(Q2RP(proxy));
 				}
 
 				// TODO: Have download() return the actual data and/or load the cached file.
@@ -191,7 +173,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 					continue;
 
 				// Attempt to load the image.
-				QImageReader imageReader(rpToQS(cache_filename));
+				QImageReader imageReader(RP2Q(cache_filename));
 				QImage dlImg = imageReader.read();
 				if (!dlImg.isNull()) {
 					// Image downloaded successfully.

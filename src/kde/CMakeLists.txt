@@ -15,6 +15,7 @@ SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomThumbCreator.hpp
+	RpQt.hpp
 	)
 IF(BUILD_KDE4)
 	SET(rom-properties-kde4_SRCS
