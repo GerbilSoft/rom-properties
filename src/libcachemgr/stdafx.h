@@ -57,7 +57,6 @@
 #endif
 
 #include <windows.h>
-#include <comdef.h>
 #include <shlobj.h>
 
 #endif /* __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__ */

@@ -25,6 +25,9 @@
 #include "byteswap.h"
 #include "common.h"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cstring>
 #include <cctype>

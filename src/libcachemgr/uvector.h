@@ -21,15 +21,36 @@
 #define noexcept
 #endif
 #if _MSC_VER < 1800
-#define MSVC_NO_INITIALIZER_LIST
-#define MSVC_NO_VARIADIC_TEMPLATES
+#define CXX_NO_INITIALIZER_LIST
+#define CXX_NO_VARIADIC_TEMPLATES
 #endif
 #if _MSC_VER < 1700
 // MSVC 2010 partially spuports std::is_standard_layout,
 // but it doesn't work in static_assert().
-#define MSVC_NO_IS_STANDARD_LAYOUT
+#define CXX_NO_IS_STANDARD_LAYOUT
+#endif
+
+// FIXME: std::is_standard_layout isn't working on MSVC 2015...
+#ifndef CXX_NO_IS_STANDARD_LAYOUT
+#define CXX_NO_IS_STANDARD_LAYOUT
 #endif
 #endif /* _MSC_VER */
+
+// GCC compatibility.
+#ifdef __GNUC__
+
+/* std::allocator_traits: Added in gcc-4.7. */
+#if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 7))
+#define CXX_NO_ALLOCATOR_TRAITS
+#endif
+
+/* noexcept, constexpr: Added in gcc-4.6. */
+#if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+#define noexcept
+#define CXX_NO_CONSTEXPR
+#endif
+
+#endif /* __GNUC__ */
 
 namespace ao {
 
@@ -92,12 +113,9 @@ namespace ao {
 template<typename Tp, typename Alloc = std::allocator<Tp> >
 class uvector : private Alloc
 {
-// FIXME: Not working on MSVC 2015...
-#ifndef _MSC_VER
-#ifndef MSVC_NO_IS_STANDARD_LAYOUT
+#if !defined(CXX_NO_IS_STANDARD_LAYOUT) && !defined(CXX_NO_CONSTEXPR)
 	static_assert(std::is_standard_layout<Tp>(), "A uvector can only hold classes with standard layout");
-#endif /* !MSVC_NO_IS_STANDARD_LAYOUT */
-#endif /* _MSC_VER */
+#endif /* !CXX_NO_IS_STANDARD_LAYOUT */
 public:
 	/// Element type
 	typedef Tp value_type;
@@ -178,6 +196,7 @@ public:
 		construct_from_range<InputIterator>(first, last, std::is_integral<InputIterator>());
 	}
 	
+#ifndef CXX_NO_ALLOCATOR_TRAITS
 	/** @brief Copy construct a uvector.
 	 * @details The allocator of the new uvector will be initialized from
 	 * @c std::allocator_traits<Alloc>::select_on_container_copy_construction(other).
@@ -191,6 +210,7 @@ public:
 	{
 		memcpy(_begin, other._begin, other.size() * sizeof(Tp));
 	}
+#endif /* CXX_NO_ALLOCATOR_TRAITS */
 	
 	/** @brief Copy construct a uvector with custom allocator.
 	 * @param other Source uvector to be copied from.
@@ -234,7 +254,7 @@ public:
 		other._endOfStorage = nullptr;
 	}
 	
-#ifndef MSVC_NO_INITIALIZER_LIST
+#ifndef CXX_NO_INITIALIZER_LIST
 	/** @brief Construct a uvector from a initializer list.
 	 * @param initlist Initializer list used for initializing the new uvector.
 	 * @param allocator Allocator used for allocating and deallocating memory.
@@ -252,7 +272,7 @@ public:
 			++destIter;
 		}
 	}
-#endif /* !MSVC_NO_INITIALIZER_LIST */
+#endif /* !CXX_NO_INITIALIZER_LIST */
 	
 	/** @brief Destructor. */
 	~uvector()
@@ -260,6 +280,7 @@ public:
 		deallocate();
 	}
 	
+#ifndef CXX_NO_ALLOCATOR_TRAITS
 	/** @brief Assign another uvector to this uvector.
 	 * @details The allocator of the uvector will be assigned to @p other when
 	 * std::allocator_traits<Alloc>::propagate_on_container_copy_assignment() is of true_type.
@@ -277,6 +298,7 @@ public:
 	{
 		return assign_move_from(std::move(other), typename std::allocator_traits<Alloc>::propagate_on_container_move_assignment());
 	}
+#endif /* CXX_NO_ALLOCATOR_TRAITS */
 	
 	/** @brief Get iterator to first element. */
 	iterator begin() { return _begin; }
@@ -473,7 +495,7 @@ public:
 	 * @param last Iterator past the end of the range.
 	 */ 
 	template<class InputIterator>
-  void assign(InputIterator first, InputIterator last)
+	void assign(InputIterator first, InputIterator last)
 	{
 		assign_from_range<InputIterator>(first, last, std::is_integral<InputIterator>());
 	}
@@ -496,7 +518,7 @@ public:
 		std::uninitialized_fill_n<Tp*,Tp>(_begin, n, val);
 	}
 	
-#ifndef MSVC_NO_INITIALIZER_LIST
+#ifndef CXX_NO_INITIALIZER_LIST
 	/** @brief Assign this container to an initializer list.
 	 * @details The container will be resized to fit the length of the given
 	 * initializer list. Iterators are invalidated.
@@ -519,7 +541,7 @@ public:
 			++destIter;
 		}
 	}
-#endif /* !MSVC_NO_INITIALIZER_LIST */
+#endif /* !CXX_NO_INITIALIZER_LIST */
 	
 	/** @brief Add the given value to the end of the container.
 	 * @details Iterators are invalidated.
@@ -646,7 +668,7 @@ public:
 		return const_cast<iterator>(position);
 	}
 	
-#ifndef MSVC_NO_INITIALIZER_LIST
+#ifndef CXX_NO_INITIALIZER_LIST
 	/** @brief Insert elements at a given position and initialize them from a initializer list.
 	 * @details All iterators will be invalidated. This operation needs to move all elements after
 	 * the new element, and can therefore be expensive.
@@ -675,7 +697,7 @@ public:
 		}
 		return const_cast<iterator>(position);
 	}
-#endif /* !MSVC_NO_INITIALIZER_LIST */
+#endif /* !CXX_NO_INITIALIZER_LIST */
 	
 	/** @brief Delete an element from the container.
 	 * @details This operation moves all elements past the removed element, and can therefore be
@@ -705,6 +727,7 @@ public:
 		return const_cast<iterator>(first);
 	}
 	
+#ifndef CXX_NO_ALLOCATOR_TRAITS
 	/** @brief Swap the contents of this uvector with the given uvector.
 	 * @details Iterators to both vectors will remain valid and will point into
 	 * to the swapped container afterwards. This function will never reallocate
@@ -720,6 +743,7 @@ public:
 	{
 		swap(other, typename std::allocator_traits<Alloc>::propagate_on_container_swap());
 	}
+#endif /* CXX_NO_ALLOCATOR_TRAITS */
 	
 	/** @brief Remove all elements from the container. */
 	void clear()
@@ -727,7 +751,7 @@ public:
 		_end = _begin;
 	}
 	
-#ifndef MSVC_NO_VARIADIC_TEMPLATES
+#ifndef CXX_NO_VARIADIC_TEMPLATES
 	/** @brief Insert an element at a given position by constructing it in place.
 	 * @details All iterators will be invalidated. This operation needs to move all elements after
 	 * the new element, and can therefore be expensive.
@@ -765,7 +789,7 @@ public:
 		*_end = Tp(std::forward<Args...>(args...));
 		++_end;
 	}
-#endif /* !MSVC_NO_VARIADIC_TEMPLATES */
+#endif /* !CXX_NO_VARIADIC_TEMPLATES */
 	
 	/** @brief Get a copy of the allocator. */
 	allocator_type get_allocator() const noexcept
@@ -830,7 +854,7 @@ public:
 		_end += n;
 	}
 	
-#ifndef MSVC_NO_INITIALIZER_LIST
+#ifndef CXX_NO_INITIALIZER_LIST
 	/** @brief Add elements from an initializer list to the end of the container.
 	 * @details All iterators will be invalidated. 
 	 * 
@@ -849,7 +873,7 @@ public:
 			++_end;
 		}
 	}
-#endif /* !MSVC_NO_INITIALIZER_LIST */
+#endif /* !CXX_NO_INITIALIZER_LIST */
 	
 	/** @brief Add elements at the end without initializing them.
 	 * @details All iterators will be invalidated. 
