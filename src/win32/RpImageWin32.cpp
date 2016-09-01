@@ -86,16 +86,13 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	if (!hBitmap)
 		return nullptr;
 
-	// TODO: Convert the image to a mask.
-	// For now, assume the entire image is opaque.
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.
 
-	// XOR mask: all 0 to disable inversion.
+	// XOR mask: All 0 to disable inversion.
 	memset(&pvBits[icon_sz], 0, icon_sz);
 
 	// AND mask: Parse the original image.
-
 	switch (image->format()) {
 		case rp_image::FORMAT_CI8: {
 			// Get the transparent color index.

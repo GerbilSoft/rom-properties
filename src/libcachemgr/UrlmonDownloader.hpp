@@ -44,11 +44,6 @@ class UrlmonDownloader : public IDownloader
 		 * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
 		 */
 		virtual int download(void) override;
-
-	public:
-		// FIXME: Remove this.
-		// Only for Gdiplus testing.
-		std::wstring m_cacheFile;
 };
 
 }

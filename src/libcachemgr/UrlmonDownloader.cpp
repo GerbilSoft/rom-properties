@@ -84,8 +84,6 @@ int UrlmonDownloader::download(void)
 		delete file;
 		return -1;
 	}
-	// TODO: Remove this after Gdiplus testing.
-	m_cacheFile = szFileName;
 
 	// Read the file into the data buffer.
 	// TODO: malloc()'d buffer to prevent initialization?

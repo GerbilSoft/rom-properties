@@ -125,7 +125,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		pCF->Release();
 		if (hr != S_OK) {
 			// Interface not found.
-			*ppvOut = nullptr;	// TODO: Not needed?
+			*ppvOut = nullptr;
 		}
 		return hr;
 	} else if (IsEqualIID(rclsid, CLSID_RP_ExtractImage)) {
@@ -135,7 +135,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		pCF->Release();
 		if (hr != S_OK) {
 			// Interface not found.
-			*ppvOut = nullptr;	// TODO: Not needed?
+			*ppvOut = nullptr;
 		}
 		return hr;
 	} else if (IsEqualIID(rclsid, CLSID_RP_ShellPropSheetExt)) {
@@ -145,7 +145,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 		pCF->Release();
 		if (hr != S_OK) {
 			// Interface not found.
-			*ppvOut = nullptr;	// TODO: Not needed?
+			*ppvOut = nullptr;
 		}
 		return hr;
 	}

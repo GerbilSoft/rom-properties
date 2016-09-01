@@ -96,7 +96,7 @@ static inline QString RP2Q(const LibRomData::rp_string &rps)
 
 /**
  * Convert a const rp_char* to a QString.
- * @param str const rp_char*
+ * @param rps const rp_char*
  * @param len Length of str, in characters. (optional; -1 for C string)
  * @return QString
  */
@@ -121,7 +121,6 @@ static inline const rp_char *Q2RP(const QString &qs)
 
 /**
  * Convert an rp_image to QImage.
- * TODO: Move to another file?
  * @param image rp_image.
  * @return QImage.
  */
