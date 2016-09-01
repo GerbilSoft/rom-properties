@@ -228,7 +228,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 				    ARRAYSIZE(m_szSelectedFile)))
 				{
 					// Open the file.
-					// FIXME: Use utf16_to_rp_string() after merging to master.
 					IRpFile *file = new RpFile(rp_string(W2RP_c(m_szSelectedFile)),
 						RpFile::FM_OPEN_READ);
 					if (file && file->isOpen()) {
