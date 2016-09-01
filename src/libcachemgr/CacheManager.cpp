@@ -181,6 +181,7 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 
 	// TODO: Keep-alive cURL connections (one per server)?
 	m_downloader->setUrl(url);
+	m_downloader->setProxyUrl(m_proxyUrl);
 	int ret = m_downloader->download();
 
 	// Write the file to the cache.
