@@ -91,14 +91,7 @@ class DialogBuilder
 		 */
 		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const rp_char *lpszWindowText)
 		{
-#ifdef RP_UTF8
-			add(lpItemTemplate, lpszWindowClass,
-				reinterpret_cast<LPCWSTR>(LibRomData::rp_string_to_utf16(
-					lpszWindowText, wcslen(lpszWindowText)).c_str()));
-#endif
-#ifdef RP_UTF16
-			add(lpItemTemplate, lpszWindowClass, reinterpret_cast<LPCWSTR>(lpszWindowText));
-#endif
+			add(lpItemTemplate, lpszWindowClass, RP2W_c(lpszWindowText));
 		}
 
 		/**
@@ -109,13 +102,7 @@ class DialogBuilder
 		 */
 		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const LibRomData::rp_string &lpszWindowText)
 		{
-#ifdef RP_UTF8
-			add(lpItemTemplate, lpszWindowClass,
-				reinterpret_cast<LPCWSTR>(LibRomData::rp_string_to_utf16(lpszWindowText).c_str()));
-#endif
-#ifdef RP_UTF16
-			add(lpItemTemplate, lpszWindowClass, reinterpret_cast<LPCWSTR>(lpszWindowText.c_str()));
-#endif
+			add(lpItemTemplate, lpszWindowClass, RP2W_s(lpszWindowText));
 		}
 
 		/**

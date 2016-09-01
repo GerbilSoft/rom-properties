@@ -259,12 +259,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	UNUSED(dwMode);	// TODO
 
 	// pszFileName is the file being worked on.
-#ifdef RP_UTF16
-	m_filename = reinterpret_cast<const rp_char*>(pszFileName);
-#else
-	// FIXME: Not supported.
-	#error RP_ExtractIcon requires UTF-16.
-#endif
+	m_filename = W2RP_cs(pszFileName);
 	return S_OK;
 }
 

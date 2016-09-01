@@ -293,7 +293,7 @@ static inline rp_char *rp_strdup(const rp_string &str)
 
 /**
  * Get const wchar_t* from const rp_char*.
- * @param str const rp_char*.
+ * @param str const rp_char*
  * @return const wchar_t*
  */
 #define RP2W_c(str) \
@@ -302,7 +302,7 @@ static inline rp_char *rp_strdup(const rp_string &str)
 
 /**
  * Get const wchar_t* from rp_string.
- * @param rps rp_string.
+ * @param rps rp_string
  * @return const wchar_t*
  */
 #define RP2W_s(rps) \
@@ -311,20 +311,43 @@ static inline rp_char *rp_strdup(const rp_string &str)
 
 /**
  * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*.
+ * @param wcs const wchar_t*
  * @return const rp_char*
  */
 #define W2RP_c(wcs) \
 	(LibRomData::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs), \
-		wcslen(wcs)))
+		wcslen(wcs)).c_str())
 
 /**
  * Get const rp_char* from std::wstring.
- * @param wcs std::wstring.
+ * @param wcs std::wstring
  * @return const rp_char*
  */
 #define W2RP_s(wcs) \
+	(LibRomData::utf16_to_rp_string( \
+		reinterpret_cast<const char16_t*>(wcs.data()), \
+		wcs.size()).c_str())
+
+// COMMIT NOTE: Fix existing RP_UTF8 macros before committing the new stuff.
+// FIXME: In-place conversion of std::u16string to std::wstring?
+
+/**
+ * Get rp_string from const wchar_t*.
+ * @param wcs const wchar_t*
+ * @return rp_string
+ */
+#define W2RP_cs(wcs) \
+	(LibRomData::utf16_to_rp_string( \
+		reinterpret_cast<const char16_t*>(wcs), \
+		wcslen(wcs)))
+
+/**
+ * Get rp_string from std::wstring.
+ * @param wcs std::wstring
+ * @return rp_string
+ */
+#define W2RP_ss(wcs) \
 	(LibRomData::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs.data()), \
 		wcs.size()))
@@ -333,7 +356,7 @@ static inline rp_char *rp_strdup(const rp_string &str)
 
 /**
  * Get const wchar_t* from const rp_char*.
- * @param str const rp_char*.
+ * @param str const rp_char*
  * @return const wchar_t*
  */
 static inline const wchar_t *RP2W_c(const rp_char *str)
@@ -343,7 +366,7 @@ static inline const wchar_t *RP2W_c(const rp_char *str)
 
 /**
  * Get const wchar_t* from rp_string.
- * @param rps rp_string.
+ * @param rps rp_string
  * @return const wchar_t*
  */
 static inline const wchar_t *RP2W_s(const LibRomData::rp_string &rps)
@@ -353,7 +376,7 @@ static inline const wchar_t *RP2W_s(const LibRomData::rp_string &rps)
 
 /**
  * Get const rp_char* from const wchar_t*.
- * @param wcs const wchar_t*.
+ * @param wcs const wchar_t*
  * @return const rp_char*
  */
 static inline const rp_char *W2RP_c(const wchar_t *wcs)
@@ -363,12 +386,36 @@ static inline const rp_char *W2RP_c(const wchar_t *wcs)
 
 /**
  * Get const rp_char* from std::wstring.
- * @param wcs std::wstring.
+ * @param wcs std::wstring
  * @return const rp_char*
  */
 static inline const rp_char *W2RP_s(const std::wstring &wcs)
 {
 	return reinterpret_cast<const rp_char*>(wcs.c_str());
+}
+
+// FIXME: In-place conversion of std::u16string to std::wstring?
+
+/**
+ * Get rp_string from const wchar_t*.
+ * @param wcs const wchar_t*
+ * @return const rp_char*
+ */
+static inline const LibRomData::rp_string W2RP_cs(const wchar_t *wcs)
+{
+	return LibRomData::rp_string(
+		reinterpret_cast<const rp_char*>(wcs));
+}
+
+/**
+ * Get const rp_char* from std::wstring.
+ * @param wcs std::wstring
+ * @return const rp_char*
+ */
+static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
+{
+	return LibRomData::rp_string(
+		reinterpret_cast<const rp_char*>(wcs.data()), wcs.size());
 }
 
 #endif /* RP_UTF16 */
