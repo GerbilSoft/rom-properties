@@ -41,6 +41,18 @@ class RomFields
 			RFT_LISTDATA,	// ListData.
 		};
 
+		// Description for String.
+		struct StringDesc {
+			enum StringFormat {
+				// Print the string using a monospaced font.
+				STRF_MONOSPACE	= (1 << 0),
+			};
+
+			// Custom formatting options.
+			// (See the StringFormat enum.)
+			uint32_t formatting;
+		};
+
 		// Description for Bitfield.
 		struct BitfieldDesc {
 			// Number of bits to check. (must be 1-32)
@@ -75,6 +87,7 @@ class RomFields
 			// data structure for the type.
 			union {
 				const void *ptr;
+				const StringDesc *str_desc;	// May be nullptr.
 				const BitfieldDesc *bitfield;
 				const ListDataDesc *list_data;
 			};

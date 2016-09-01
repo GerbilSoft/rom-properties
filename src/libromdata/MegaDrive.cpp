@@ -85,6 +85,11 @@ static const RomFields::BitfieldDesc md_region_code_bitfield = {
 	ARRAY_SIZE(md_region_code_bitfield_names), 0, md_region_code_bitfield_names
 };
 
+// Monospace string formatting.
+static const RomFields::StringDesc md_string_monospace = {
+	RomFields::StringDesc::STRF_MONOSPACE
+};
+
 // ROM fields.
 // TODO: Private class?
 static const struct RomFields::Desc md_fields[] = {
@@ -94,14 +99,14 @@ static const struct RomFields::Desc md_fields[] = {
 	{_RP("Domestic Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Export Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Serial Number"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Checksum"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Checksum"), RomFields::RFT_STRING, {&md_string_monospace}},
 	{_RP("I/O Support"), RomFields::RFT_BITFIELD, {&md_io_bitfield}},
-	{_RP("ROM Range"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("RAM Range"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("SRAM Range"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("ROM Range"), RomFields::RFT_STRING, {&md_string_monospace}},
+	{_RP("RAM Range"), RomFields::RFT_STRING, {&md_string_monospace}},
+	{_RP("SRAM Range"), RomFields::RFT_STRING, {&md_string_monospace}},
 	{_RP("Region Code"), RomFields::RFT_BITFIELD, {&md_region_code_bitfield}},
-	{_RP("Entry Point"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Initial SP"), RomFields::RFT_STRING, {nullptr}}
+	{_RP("Entry Point"), RomFields::RFT_STRING, {&md_string_monospace}},
+	{_RP("Initial SP"), RomFields::RFT_STRING, {&md_string_monospace}}
 };
 
 /**

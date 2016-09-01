@@ -137,13 +137,23 @@ void RomDataViewPrivate::updateDisplay(void)
 		switch (desc->type) {
 			case RomFields::RFT_STRING: {
 				// String type.
-				// TODO: Monospace hint?
 				QLabel *lblString = new QLabel(q);
 				lblString->setTextFormat(Qt::PlainText);
 				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
 					lblString->setText(RP2Q(data->str));
 				}
+
+				// Check for any formatting options.
+				if (desc->str_desc) {
+					// Monospace font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+						QFont font(QLatin1String("Monospace"));
+						font.setStyleHint(QFont::TypeWriter);
+						lblString->setFont(font);
+					}
+				}
+\
 				ui.formLayout->addRow(lblDesc, lblString);
 				break;
 			}
