@@ -23,13 +23,22 @@
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
 #include "libromdata/config.libromdata.h"
+
+namespace LibRomData {
+	class rp_image;
+}
+
+// Qt includes.
 #include <QtCore/QString>
+#include <QtGui/QImage>
 
 #if !defined(RP_UTF8) && !defined(RP_UTF16)
 #error Neither RP_UTF8 nor RP_UTF16 has been defined.
 #elif defined(RP_UTF8) && defined(RP_UTF16)
 #error Both RP_UTF8 and RP_UTF16 are defined, but only one should be.
 #endif
+
+/** Text conversion. **/
 
 // NOTE: QChar contains a single field, a ushort ucs value.
 // Hence, we can cast UTF-16 strings to QChar* and use the
@@ -107,5 +116,15 @@ static inline const rp_char *Q2RP(const QString &qs)
 }
 
 #endif
+
+/** Image conversion. **/
+
+/**
+ * Convert an rp_image to QImage.
+ * TODO: Move to another file?
+ * @param image rp_image.
+ * @return QImage.
+ */
+QImage rpToQImage(const LibRomData::rp_image *image);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

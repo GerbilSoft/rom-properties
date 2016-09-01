@@ -10,6 +10,7 @@ SET(rom-properties-kde_SRCS
 	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
 	RomThumbCreator.cpp
+	RpQt.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp

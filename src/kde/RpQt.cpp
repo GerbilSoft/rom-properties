@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RomThumbCreator.hpp: Thumbnail creator.                                 *
+ * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,34 +19,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
-#define __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
+#include "RpQt.hpp"
 
-#include <kio/thumbcreator.h>
-class QUrl;
+// libromdata
+#include "libromdata/rp_image.hpp"
+using LibRomData::rp_image;
 
-// TODO: ThumbCreatorV2 on KDE4 for user configuration?
-// (This was merged into ThumbCreator for KDE5.)
-
-namespace LibRomData {
-	class rp_image;
-}
-
-class RomThumbCreator : public ThumbCreator
+/**
+ * Convert an rp_image to QImage.
+ * @param image rp_image.
+ * @return QImage.
+ */
+QImage rpToQImage(const rp_image *image)
 {
-	public:
-		virtual bool create(const QString &path, int width, int height, QImage &img) override;
+	if (!image || !image->isValid())
+		return QImage();
 
-	private:
-		typedef ThumbCreator super;
+	// Determine the QImage format.
+	QImage::Format fmt;
+	switch (image->format()) {
+		case rp_image::FORMAT_CI8:
+			fmt = QImage::Format_Indexed8;
+			break;
+		case rp_image::FORMAT_ARGB32:
+			fmt = QImage::Format_ARGB32;
+			break;
+		default:
+			fmt = QImage::Format_Invalid;
+			break;
+	}
+	if (fmt == QImage::Format_Invalid)
+		return QImage();
 
-	protected:
-		/**
-		 * Download an image from a URL.
-		 * @param url URL.
-		 * @return QImage, or invalid QImage if an error occurred.
-		 */
-		QImage download(const QString &url);
-};
+	QImage img(image->width(), image->height(), fmt);
 
-#endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */
+	// Copy the image data.
+	memcpy(img.bits(), image->bits(), image->data_len());
+
+	// Copy the palette data, if necessary.
+	if (fmt == QImage::Format_Indexed8) {
+		QVector<QRgb> palette(image->palette_len());
+		memcpy(palette.data(), image->palette(), image->palette_len()*sizeof(QRgb));
+		img.setColorTable(palette);
+	}
+
+	// Image converted successfully.
+	return img;
+}
