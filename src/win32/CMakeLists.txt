@@ -11,6 +11,9 @@ SET(rom-properties-win32_SRCS
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
 	RpImageWin32.cpp
+	RP_ShellPropSheetExt.cpp
+	DialogBuilder.cpp
+	resource.rc
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
@@ -19,6 +22,9 @@ SET(rom-properties-win32_H
 	RP_ComBase.hpp
 	RP_ExtractImage.hpp
 	RpImageWin32.hpp
+	RP_ShellPropSheetExt.hpp
+	DialogBuilder.hpp
+	resource.h
 	)
 
 #####################
@@ -38,7 +44,8 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
-TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16 gdiplus)
+TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
+TARGET_LINK_LIBRARIES(rom-properties gdiplus comctl32)
 
 # Use the .def file for DLL exports.
 IF(MSVC)

@@ -81,14 +81,14 @@ static inline bool RP_ComBase_isReferenced(void)
 	\
 	public: \
 		/** IUnknown **/ \
-		STDMETHOD_(ULONG,AddRef)(void) override \
+		IFACEMETHODIMP_(ULONG) AddRef(void) override \
 		{ \
 			InterlockedIncrement(&RP_ulTotalRefCount); \
 			InterlockedIncrement(&m_ulRefCount); \
 			return m_ulRefCount; \
 		} \
 		\
-		STDMETHOD_(ULONG,Release)(void) override \
+		IFACEMETHODIMP_(ULONG) Release(void) override \
 		{ \
 			ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount); \
 			if (ulRefCount == 0) { \

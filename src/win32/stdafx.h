@@ -57,7 +57,10 @@
 #endif
 
 #include <windows.h>
-#include <comdef.h>
+#include <windowsx.h>
+#include <olectl.h>
+#include <commctrl.h>
 #include <shlobj.h>
+#include <shellapi.h>
 
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

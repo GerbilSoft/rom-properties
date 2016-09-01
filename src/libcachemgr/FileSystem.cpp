@@ -34,6 +34,7 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <direct.h>
+#include "libromdata/RpWin32.hpp"
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -44,6 +45,9 @@
 #include <string>
 using std::string;
 using std::u16string;
+#ifdef _WIN32
+using std::wstring;
+#endif /* _WIN32 */
 
 namespace LibCacheMgr {
 namespace FileSystem {
@@ -77,7 +81,7 @@ int rmkdir(const LibRomData::rp_string &path)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif
 
-	u16string path16 = LibRomData::rp_string_to_utf16(path);
+	wstring path16 = RP2W_s(path);
 
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
@@ -88,7 +92,7 @@ int rmkdir(const LibRomData::rp_string &path)
 		path16[slash_pos] = 0;
 
 		// Does the directory exist?
-		if (!::_waccess(reinterpret_cast<const wchar_t*>(path16.c_str()), F_OK)) {
+		if (!::_waccess(path16.c_str(), F_OK)) {
 			// Directory component exists.
 			// Put the slash back in.
 			path16[slash_pos] = DIR_SEP_CHR;
@@ -97,7 +101,7 @@ int rmkdir(const LibRomData::rp_string &path)
 		}
 
 		// Attempt to create this directory.
-		if (::_wmkdir(reinterpret_cast<const wchar_t*>(path16.c_str())) != 0) {
+		if (::_wmkdir(path16.c_str()) != 0) {
 			// Error creating the directory.
 			return -errno;
 		}
@@ -159,22 +163,14 @@ int access(const LibRomData::rp_string &pathname, int mode)
 #ifdef _WIN32
 	// Windows doesn't recognize X_OK.
 	mode &= ~X_OK;
-
-#ifdef RP_UTF16
-	return ::_waccess(reinterpret_cast<const wchar_t*>(pathname.c_str()), mode);
-#endif
-#ifdef RP_UTF8
-	u16string pathname16 = LibRomData::rp_string_to_utf16(pathname);
-	return ::_waccess(reinterpret_cast<const wchar_t*>(pathname16.c_str()), mode);
-#endif
+	return ::_waccess(RP2W_s(pathname), mode);
 
 #else /* !_WIN32 */
 
-#ifdef RP_UTF16
+#if defined(RP_UTF16)
 	string pathname8 = LibRomData::rp_string_to_utf8(pathname);
 	return ::access(pathname8.c_str(), mode);
-#endif
-#ifdef RP_UTF8
+#elif defined(RP_UTF8)
 	return ::access(pathname.c_str(), mode);
 #endif
 
@@ -195,22 +191,14 @@ int64_t filesize(const LibRomData::rp_string &filename)
 
 #ifdef _WIN32
 	struct _stati64 buf;
-#ifdef RP_UTF16
-	ret = _wstati64(reinterpret_cast<const wchar_t*>(filename.c_str()), &buf);
-#endif
-#ifdef RP_UTF8
-	u16string filename16 = LibRomData::rp_string_to_utf16(filename);
-	ret = _wstati64(reinterpret_cast<const wchar_t*>(filename16.c_str()), &buf);
-#endif
-
+	ret = _wstati64(RP2W_s(filename), &buf);
 #else /* !_WIN32 */
 
 	struct stat buf;
-#ifdef RP_UTF16
+#if defined(RP_UTF16)
 	string filename8 = LibRomData::rp_string_to_utf8(filename);
 	ret = stat(filename8.c_str(), &buf);
-#endif
-#ifdef RP_UTF8
+#elif defined(RP_UTF8)
 	ret = stat(filename.c_str(), &buf);
 #endif
 

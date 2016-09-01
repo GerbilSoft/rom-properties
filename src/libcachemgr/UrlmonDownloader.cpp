@@ -24,6 +24,7 @@
 
 #include "libromdata/TextFuncs.hpp"
 #include "libromdata/RpFile.hpp"
+#include "libromdata/RpWin32.hpp"
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;
@@ -67,13 +68,7 @@ int UrlmonDownloader::download(void)
 	// Buffer for cache filename.
 	wchar_t szFileName[MAX_PATH];
 
-#ifndef RP_UTF16
-	// FIXME: RP_UTF8 support?
-	#error UrlmonDownloader only supports RP_UTF16.
-#endif
-
-	HRESULT hr = URLDownloadToCacheFile(nullptr,
-		reinterpret_cast<const wchar_t*>(m_url.c_str()),
+	HRESULT hr = URLDownloadToCacheFile(nullptr, RP2W_s(m_url),
 		szFileName, sizeof(szFileName)/sizeof(szFileName[0]),
 		0, nullptr /* TODO */);
 
@@ -83,8 +78,7 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	// TODO: UTF-8 support.
-	IRpFile *file = new RpFile(reinterpret_cast<const rp_char*>(szFileName), RpFile::FM_OPEN_READ);
+	IRpFile *file = new RpFile(W2RP_c(szFileName), RpFile::FM_OPEN_READ);
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		delete file;

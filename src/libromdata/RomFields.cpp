@@ -22,6 +22,9 @@
 #include "RomFields.hpp"
 #include "TextFuncs.hpp"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdio>

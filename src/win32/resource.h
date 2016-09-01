@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
- * stdafx.h: Common definitions and includes for COM.                      *
+ * ROM Properties Page shell extension. (Win32)                            *
+ * resource.rc: Win32 resource script.                                     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,44 +19,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
-#define __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__
+#ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
+#define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
-#ifndef _WIN32
-#error stdafx.h is Windows only
-#endif
+// Dialogs.
+#define IDD_PROPERTY_SHEET	100	/* Generic property sheet. */
 
-// Show a warning if one of the macros isn't defined in CMake.
-#ifndef WINVER
-#pragma message("WINVER not defined; defaulting to 0x0500.")
-#define WINVER		0x0500
-#endif
-#ifndef _WIN32_WINNT
-#pragma message("_WIN32_WINNT not defined; defaulting to 0x0500.")
-#define _WIN32_WINNT	0x0500
-#endif
-#ifndef _WIN32_IE
-#pragma message("_WIN32_IE not defined; defaulting to 0x0500.")
-#define _WIN32_IE	0x0500
-#endif
-
-// Define this symbol to get XP themes. See:
-// http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
-// for more info. Note that as of May 2006, the page says the symbols should
-// be called "SIDEBYSIDE_COMMONCONTROLS" but the headers in my SDKs in VC 6 & 7
-// don't reference that symbol. If ISOLATION_AWARE_ENABLED doesn't work for you,
-// try changing it to SIDEBYSIDE_COMMONCONTROLS
-#define ISOLATION_AWARE_ENABLED 1
-
-// Win32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
-#include <windows.h>
-#include <shlobj.h>
-
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_STDAFX_H__ */
+#endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

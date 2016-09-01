@@ -25,6 +25,9 @@
 #include "byteswap.h"
 #include "common.h"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cstring>
 #include <cctype>
@@ -37,7 +40,7 @@ namespace LibRomData {
 
 // I/O support bitfield.
 static const rp_char *const md_io_bitfield_names[] = {
-	_RP("Joypad"), _RP("6-button Joypad"), _RP("SMS Joypad"),
+	_RP("Joypad"), _RP("6-button"), _RP("SMS Joypad"),
 	_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
 	_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
 	_RP("Paddle"), _RP("Floppy Drive"), _RP("CD-ROM"),

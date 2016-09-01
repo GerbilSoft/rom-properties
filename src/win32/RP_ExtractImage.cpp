@@ -30,6 +30,7 @@
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
 #include "libromdata/RpFile.hpp"
+#include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 
 // libcachemgr
@@ -70,7 +71,7 @@ RP_ExtractImage::RP_ExtractImage()
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-STDMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -169,7 +170,7 @@ LONG RP_ExtractImage::Unregister(void)
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761848(v=vs.85).aspx
 // - http://www.codeproject.com/Articles/2887/Create-Thumbnail-Extractor-objects-for-your-MFC-do
 
-STDMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
+IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	DWORD cchMax, DWORD *pdwPriority, const SIZE *prgSize,
 	DWORD dwRecClrDepth, DWORD *pdwFlags)
 {
@@ -193,7 +194,7 @@ STDMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
+IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
 	// TODO: Handle m_bmSize?
 
@@ -255,12 +256,7 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 
 		// Attempt to load the image.
 		// TODO: libpng in rp_image? For now, using Gdiplus.
-		// FIXME: Only works with RP_UTF16.
-#ifndef RP_UTF16
-#error RP_ExtractImage only works with RP_UTF16.
-#endif
-		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(
-			reinterpret_cast<const wchar_t*>(cache_filename.c_str()), FALSE);
+		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(RP2W_s(cache_filename), FALSE);
 		if (!gdipBmp)
 			continue;
 
@@ -285,45 +281,40 @@ STDMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 /** IPersistFile **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
 
-STDMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
+IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
 {
 	*pClassID = CLSID_RP_ExtractImage;
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractImage::IsDirty(void)
+IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
 {
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
+IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
 	UNUSED(dwMode);	// TODO
 
 	// pszFileName is the file being worked on.
-#ifdef RP_UTF16
-	m_filename = reinterpret_cast<const rp_char*>(pszFileName);
-#else
-	// FIXME: Not supported.
-	#error RP_ExtractImage requires UTF-16.
-#endif
+	m_filename = W2RP_c(pszFileName);
 	return S_OK;
 }
 
-STDMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
+IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
 {
 	UNUSED(pszFileName);
 	UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
+IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
 {
 	UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
+IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
 {
 	UNUSED(ppszFileName);
 	return E_NOTIMPL;

@@ -27,6 +27,25 @@ using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 
+// Windows includes.
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <shlobj.h>
+#include "libromdata/RpWin32.hpp"
+#endif /* _WIN32 */
+
+// POSIX includes.
+#ifndef _WIN32
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif /* !_WIN32 */
+
 // C++ includes.
 #include <string>
 using std::string;
