@@ -143,16 +143,18 @@ class RomData
 			IMG_INT_BANNER,		// Internal banner, e.g. GameCube discs
 			IMG_INT_MEDIA,		// Internal media scan, e.g. Dreamcast discs
 
-			// External images are downloaded from websites.
-			// TODO
-			IMG_EXT_MEDIA,		// External media scan, e.g. GameTDB
+			// External images are downloaded from websites,
+			// such as GameTDB.
+			IMG_EXT_MEDIA,		// External media scan
 			IMG_EXT_BOX,		// External box scan
+			IMG_EXT_BOX_FULL,	// External box scan (both sides)
+			IMG_EXT_BOX_3D,		// External box scan (3D version)
 
 			// Ranges.
 			IMG_INT_MIN = IMG_INT_ICON,
 			IMG_INT_MAX = IMG_INT_MEDIA,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
-			IMG_EXT_MAX = IMG_EXT_BOX
+			IMG_EXT_MAX = IMG_EXT_BOX_3D
 		};
 
 		/**
@@ -166,10 +168,12 @@ class RomData
 			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
 			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
 
-			// External images are downloaded from websites.
-			// TODO
-			IMGBF_EXT_MEDIA  = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
-			IMGBF_EXT_BOX    = (1 << IMG_EXT_BOX),		// External box scan
+			// External images are downloaded from websites,
+			// such as GameTDB.
+			IMGBF_EXT_MEDIA    = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
+			IMGBF_EXT_BOX      = (1 << IMG_EXT_BOX),	// External box scan
+			IMGBF_EXT_BOX_FULL = (1 << IMG_EXT_BOX_FULL),	// External box scan (both sides)
+			IMGBF_EXT_BOX_3D   = (1 << IMG_EXT_BOX_3D),	// External box scan (3D version)
 		};
 
 		/**

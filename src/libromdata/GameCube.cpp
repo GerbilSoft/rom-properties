@@ -628,23 +628,37 @@ int GameCube::loadURLs(ImageType imageType)
 		return -EIO;
 	}
 
-	// Check for supported image types.
-	if (imageType != IMG_EXT_MEDIA) {
-		// Only IMG_EXT_MEDIA is supported by GCN.
-		return -ENOENT;
-	}
-
-	// Check for "disc".
-	// GameTDB doesn't have "discHQ" or "discM" for Wii/GCN.
+	// Check for the requested media type.
+	// NOTE: GameTDB has coverHQ for Wii/GCN, but not discHQ.
+	// GameTDB does not have *M for Wii/GCN.
 	// TODO: Configurable quality settings?
-	// TODO: Option to pick "discB"?
+	// TODO: Option to pick the *B version?
 	// TODO: Handle discs that have weird region codes?
-	const char *region;
+	const char *imageTypeName;
+	switch (imageType) {
+		case IMG_EXT_MEDIA:
+			imageTypeName = "disc";
+			break;
+		case IMG_EXT_BOX:
+			imageTypeName = "cover";
+			break;
+		case IMG_EXT_BOX_FULL:
+			imageTypeName = "coverfull";
+			break;
+		case IMG_EXT_BOX_3D:
+			imageTypeName = "cover3D";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
 
 	// If PAL, fall back to EN if a language-specific
 	// image isn't available.
 	bool isPal = false;
 
+	// Determine the GameTDB region code.
+	const char *region;
 	switch (d->discHeader.id4[3]) {
 		// PAL regions. (Europe)
 		case 'P':
@@ -718,24 +732,32 @@ int GameCube::loadURLs(ImageType imageType)
 	}
 
 	// Determine the image processing field.
-	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-		case GameCubePrivate::DISC_SYSTEM_WII:
-		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
-		default:
-			// 120mm disc.
-			m_imgpf[imageType] = IMGPF_CDROM_120MM;
-			break;
-		case GameCubePrivate::DISC_SYSTEM_GCN:
-			// 80mm disc.
-			m_imgpf[imageType] = IMGPF_CDROM_80MM;
-			break;
+	if (imageType == IMG_EXT_MEDIA) {
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_WII:
+			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
+			default:
+				// 120mm disc.
+				m_imgpf[imageType] = IMGPF_CDROM_120MM;
+				break;
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+				// 80mm disc.
+				m_imgpf[imageType] = IMGPF_CDROM_80MM;
+				break;
+		}
+	} else {
+		// No image processing for other types.
+		// TODO: Should IMG_EXT_BOX_3D have a transparency mask?
+		m_imgpf[imageType] = 0;
 	}
 
 	// Current extURL.
 	ExtURL extURL;
 
-	// Is this not the first disc?
-	if (d->discHeader.disc_number > 0) {
+	// Disc scan: Is this not the first disc?
+	if (imageType == IMG_EXT_MEDIA &&
+	    d->discHeader.disc_number > 0)
+	{
 		// Disc 2 (or 3, or 4...)
 		// Request the disc 2 image first.
 		char s_discNum[16];
@@ -754,14 +776,14 @@ int GameCube::loadURLs(ImageType imageType)
 		}
 	}
 
-	// First disc.
-	extURL.url = getURL_GameTDB("wii", "disc", region, id6);
-	extURL.cache_key = getCacheKey("wii", "disc", region, id6);
+	// First disc, or not a disc scan.
+	extURL.url = getURL_GameTDB("wii", imageTypeName, region, id6);
+	extURL.cache_key = getCacheKey("wii", imageTypeName, region, id6);
 	extURLs.push_back(extURL);
 	if (isPal) {
 		// Fall back to "EN" if the region-specific image wasn't found.
-		extURL.url = getURL_GameTDB("wii", "disc", "EN", id6);
-		extURL.cache_key = getCacheKey("wii", "disc", "EN", id6);
+		extURL.url = getURL_GameTDB("wii", imageTypeName, "EN", id6);
+		extURL.cache_key = getCacheKey("wii", imageTypeName, "EN", id6);
 		extURLs.push_back(extURL);
 	}
 
