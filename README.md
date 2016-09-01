@@ -66,7 +66,7 @@ Caveats:
 | KDE 5.x          |       Yes      |     Yes    |  N/A  |
 | XFCE (Thunar)    |       No       |     No     |  N/A  |
 | GNOME (Nautilus) |       No       |     No     |  N/A  |
-| Windows          |       No       |     No     |  Yes  |
+| Windows          |       Yes      |     Yes    |  Yes  |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
@@ -81,19 +81,23 @@ Notes:
 
 ## Current ROM Feature Support Level
 
-|       System      | Properties Tab | Internal Icon | Internal Banner | Internal Media Scan | External Media Scan | External Box Scan |
-|:-----------------:|:--------------:|:-------------:|:---------------:|:-------------------:|:-------------------:|:-----------------:|
-| Sega Mega Drive   |       Yes      |      N/A      |       N/A       |         N/A         |          No         |         No        |
-| Nintendo DS(i)    |       Yes      |      Yes      |       N/A       |         N/A         |          No         |         No        |
-| Nintendo GameCube |       Yes      |       No      |        No       |         N/A         |         Yes         |         No        |
-| Nintendo Wii      |       Yes      |       No      |       N/A       |         N/A         |         Yes         |         No        |
+|       System      | Properties Tab | Internal Images | External Scans |
+|:-----------------:|:--------------:|:---------------:|:--------------:|
+| Sega Mega Drive   |       Yes      |       N/A       |       No       |
+| Nintendo DS(i)    |       Yes      |       Icon      |       No       |
+| Nintendo GameCube |       Yes      |        No       |      Disc      |
+| Nintendo Wii      |       Yes      |        No       |      Disc      |
 
 Notes:
 * Internal icon, banner, and media scan refers to artwork contained within
   the ROM and/or disc image. These images are typically displayed on the
   system's main menu prior to starting the game.
+  * "N/A" here means the ROM or disc image doesn't have this feature.
+  * "No" indicates that the feature is present but not currently implemented.
 * External media and box scans refers to scans from an external database,
   such as GameTDB.com for GameCube and Wii.
+  * "No" indicates no database is currently available for this system.
+  * Anything else indicates what types of images are available.
 
 There will eventually be a configuration window for setting which image
 will be used for thumbnails (and icons on Windows).
@@ -104,6 +108,31 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo DS(i): Decrypted (\*.nds)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
+
+## External Media Downloads
+
+Currently, two systems (GameCube and Wii) support the use of external media
+scans through GameTDB.com. The current release of the ROM Properties Page shell
+extension will always attempt to download images from GameTDB.com if thumbnail
+preview is enabled and a valid GameCube or Wii disc image is present in the
+current directory. An option to disable automatic downloads will be added in
+a future version.
+
+Downloaded images are cached to the following directory:
+* Linux: `~/.cache/rom-properties/`
+* Windows: `%LOCALAPPDATA%\rom-properties\cache`
+
+The directory structure matches the source site, so e.g. a disc image of
+Super Smash Bros. Brawl would be downloaded to
+`~/.cache/rom-properties/wii/disc/US/RSBE01.png`. Note that if the download
+fails for any reason, a 0-byte dummy file will be placed in the cache,
+which tells the shell extension not to attempt to download the file again.
+[FIXME: If the download fails due to no network connectivity, it shouldn't
+do this.]
+
+If you have an offline copy of the GameTDB image database, you can copy
+it to the ROM Properties Page cache directory to allow the extension to
+use the pre-downloaded version instead of downloading images as needed.
 
 ## Credits
 
