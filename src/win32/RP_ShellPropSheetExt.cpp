@@ -476,25 +476,26 @@ LPCDLGTEMPLATE RP_ShellPropSheetExt::initDialog(void)
  * @param hDlg Dialog window.
  * @param pt_start Starting position, in pixels.
  * @param idx Field index.
+ * @return Field height, in pixels.
  */
-void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx)
+int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx)
 {
 	if (!hDlg)
-		return;
+		return 0;
 
 	const RomFields *fields = m_romData->fields();
 	if (!fields)
-		return;
+		return 0;
 
 	const RomFields::Desc *desc = fields->desc(idx);
 	const RomFields::Data *data = fields->data(idx);
 	if (!desc || !data)
-		return;
+		return 0;
 	if (desc->type != RomFields::RFT_BITFIELD ||
 	    data->type != RomFields::RFT_BITFIELD)
-		return;
+		return 0;
 	if (!desc->name || desc->name[0] == '\0')
-		return;
+		return 0;
 
 	// Checkbox size.
 	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
@@ -604,6 +605,12 @@ void RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int id
 
 	SelectFont(hDC, hFontOrig);
 	ReleaseDC(hDlg, hDC);
+
+	// Return the total number of rows times the checkbox height,
+	// plus another 0.25 of a checkbox.
+	int ret = ((row + 1) * rect_chkbox.bottom);
+	ret += (rect_chkbox.bottom / 4);
+	return ret;
 }
 
 /**
@@ -807,22 +814,15 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 				SetWindowFont(hDlgItem, hFont, FALSE);
 				break;
 
-#if 0
 			case RomFields::RFT_BITFIELD:
-				// Get the position of the description label.
-				hDlgItem = GetDlgItem(hDlg, IDC_STATIC_DESC(i));
-				if (hDlgItem) {
-					RECT lblRect; POINT pt_start;
-					GetWindowRect(hDlgItem, &lblRect);
-					// NOTE: .bottom/.right is 1px outside of
-					// the control's rectangle.
-					pt_start.x = lblRect.right;
-					pt_start.y = lblRect.top;
-					ScreenToClient(hDlg, &pt_start);
-					initBitfield(hDlg, pt_start, i);
+				// Create checkboxes starting at the current point.
+				field_cy = initBitfield(hDlg, pt_start, idx);
+				if (field_cy == 0) {
+					// initBitfield() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
 				}
 				break;
-#endif
 
 			case RomFields::RFT_LISTDATA:
 				// Increase row height to 72 DLU.
@@ -849,13 +849,14 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 			default:
 				// TODO: Assert here once the other fields are implemented.
 				assert(false);
+				field_cy = 0;
 				DestroyWindow(hStatic);
 				break;
 #endif
 		}
 
 		// Next row.
-		curPt.y += descSize.cy;
+		curPt.y += field_cy;
 	}
 }
 

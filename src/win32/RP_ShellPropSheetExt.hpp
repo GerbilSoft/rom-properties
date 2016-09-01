@@ -87,8 +87,9 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param hDlg Dialog window.
 		 * @param pt_start Starting position, in pixels.
 		 * @param idx Field index.
+		 * @return Field height, in pixels.
 		 */
-		void initBitfield(HWND hDlg, const POINT &pt_start, int idx);
+		int initBitfield(HWND hDlg, const POINT &pt_start, int idx);
 
 		/**
 		 * Initialize a ListView control.
