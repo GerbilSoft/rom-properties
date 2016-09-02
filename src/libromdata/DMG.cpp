@@ -86,7 +86,7 @@ static const struct RomFields::Desc dmg_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, nullptr},
 	{_RP("GameID"), RomFields::RFT_STRING, nullptr},
 	{_RP("System"), RomFields::RFT_BITFIELD, &dmg_system_bitfield},
-	{_RP("Entrypoint"), RomFields::RFT_STRING, nullptr},
+	{_RP("Entry Point"), RomFields::RFT_STRING, nullptr},
 	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
 	{_RP("Hardware"), RomFields::RFT_STRING, nullptr},
 	{_RP("Features"), RomFields::RFT_BITFIELD, &dmg_feature_bitfield},
@@ -434,7 +434,7 @@ int DMG::loadFieldData(void)
 	}
 	m_fields->addData_bitfield(dmg_system);
 
-	// Entrypoint
+	// Entry Point
 	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
 		// this is the "standard" way of doing the entry point
 		uint16_t entry_address;
@@ -507,7 +507,7 @@ int DMG::loadFieldData(void)
 	m_fields->addData_string(romHeader->region?_RP("Non-Japanese"):_RP("Japanese"));
 	
 	// Revision
-	m_fields->addData_string_numeric(romHeader->version,RomFields::FB_DEC);
+	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
 	
 	// Checksum
 	uint8_t checksum=0xE7; // -0x19
@@ -515,10 +515,11 @@ int DMG::loadFieldData(void)
 		checksum-=header[i];
 	}
 	if(checksum - romHeader->header_checksum){
-		len = snprintf(buffer,sizeof(buffer),"Invalid! (%02X, should be %02X)",romHeader->header_checksum,checksum);
+		len = snprintf(buffer, sizeof(buffer), "0x02X (INVALID; should be 0x%02X)",
+			checksum, romHeader->header_checksum);
 	}
 	else{
-		len = snprintf(buffer,sizeof(buffer),"Valid");
+		len = snprintf(buffer, sizeof(buffer), "0x%02X (valid)", checksum);
 	}
 	m_fields->addData_string(ascii_to_rp_string(buffer,len));
 	
