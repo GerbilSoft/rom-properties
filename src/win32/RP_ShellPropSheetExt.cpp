@@ -354,6 +354,14 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 		if (!name)
 			continue;
 
+		if (col == bitfieldDesc->elemsPerRow) {
+			// Next row.
+			row++;
+			col = 0;
+			pt.x = pt_start.x;
+			pt.y += rect_chkbox.bottom;
+		}
+
 		// Get the text size.
 		int chk_w;
 		if (bitfieldDesc->elemsPerRow == 0) {
@@ -383,13 +391,6 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 		// Next column.
 		pt.x += chk_w;
 		col++;
-		if (col == bitfieldDesc->elemsPerRow) {
-			// Next row.
-			row++;
-			col = 0;
-			pt.x = pt_start.x;
-			pt.y += rect_chkbox.bottom;
-		}
 	}
 
 	SelectFont(hDC, hFontOrig);
