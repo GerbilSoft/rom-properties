@@ -22,9 +22,11 @@
 
 #include "DMG.hpp"
 #include "NintendoPublishers.hpp"
-#include "TextFuncs.hpp"
-#include "byteswap.h"
+
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cstring>
@@ -210,6 +212,7 @@ static const unsigned dmg_ram_size[] = {
 };
 /**
  * Nintendo's logo which is checked by bootrom.
+ * (First 16 bytes.)
  * 
  * NOTE: CGB bootrom only checks half of the logo (see 0x00D1 of CGB IPL)
  */

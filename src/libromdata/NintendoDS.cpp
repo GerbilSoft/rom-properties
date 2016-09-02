@@ -21,9 +21,11 @@
 
 #include "NintendoDS.hpp"
 #include "NintendoPublishers.hpp"
-#include "TextFuncs.hpp"
-#include "byteswap.h"
+
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
 
 // rp_image for internal icon.
 #include "rp_image.hpp"

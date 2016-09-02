@@ -21,9 +21,11 @@
 
 #include "MegaDrive.hpp"
 #include "MegaDrivePublishers.hpp"
-#include "TextFuncs.hpp"
-#include "byteswap.h"
+
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
 
 // C includes.
 #include <stdlib.h>

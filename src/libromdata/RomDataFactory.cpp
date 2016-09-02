@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "RomDataFactory.hpp"
+#include "file/IRpFile.hpp"
 
 // C++ includes.
 #include <vector>

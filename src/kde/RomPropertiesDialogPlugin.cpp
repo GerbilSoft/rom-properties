@@ -32,7 +32,7 @@
 #include "RpQt.hpp"
 
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 using namespace LibRomData;
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)

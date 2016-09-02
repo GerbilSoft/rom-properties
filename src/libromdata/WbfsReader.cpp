@@ -22,8 +22,10 @@
  ***************************************************************************/
 
 #include "WbfsReader.hpp"
-#include "byteswap.h"
 #include "libwbfs.h"
+
+#include "byteswap.h"
+#include "file/IRpFile.hpp"
 
 // C includes.
 #include <stdlib.h>

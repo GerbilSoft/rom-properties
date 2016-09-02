@@ -68,18 +68,18 @@ SET(libromdata_H
 	WbfsReader.hpp
 	libwbfs.h
 	gcn_structs.h
-	IRpFile.hpp
-	RpFile.hpp
 	DMG.hpp
+	file/IRpFile.hpp
+	file/RpFile.hpp
 	)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		RpFile_Win32.cpp
+		file/RpFile_Win32.cpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
-		RpFile_stdio.cpp
+		file/RpFile_stdio.cpp
 		)
 ENDIF(WIN32)
 

@@ -20,8 +20,9 @@
  ***************************************************************************/
 
 #include "RomData.hpp"
-#include "rp_image.hpp"
 #include "common.h"
+#include "file/IRpFile.hpp"
+#include "rp_image.hpp"
 
 // dup()
 #ifdef _WIN32

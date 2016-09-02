@@ -23,7 +23,7 @@
 #include "UrlmonDownloader.hpp"
 
 #include "libromdata/TextFuncs.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
 using LibRomData::IRpFile;
 using LibRomData::RpFile;

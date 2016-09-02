@@ -33,7 +33,7 @@
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 

@@ -22,9 +22,15 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
 
-#include "IRpFile.hpp"
+// C includes.
+#include <stdint.h>
+
+// C includes. (C++ namespace)
+#include <cstddef>
 
 namespace LibRomData {
+
+class IRpFile;
 
 class IDiscReader
 {

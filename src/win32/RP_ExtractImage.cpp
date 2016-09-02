@@ -29,7 +29,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/rp_image.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 

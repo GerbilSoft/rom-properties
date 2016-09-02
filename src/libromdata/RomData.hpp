@@ -24,7 +24,6 @@
 
 #include "TextFuncs.hpp"
 #include "RomFields.hpp"
-#include "IRpFile.hpp"
 
 // C includes.
 #include <stdint.h>
@@ -35,7 +34,9 @@
 
 namespace LibRomData {
 
+class IRpFile;
 class rp_image;
+
 class RomData
 {
 	protected:
