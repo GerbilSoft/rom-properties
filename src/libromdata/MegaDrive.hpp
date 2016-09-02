@@ -30,13 +30,10 @@
 
 namespace LibRomData {
 
+class MegaDrivePrivate;
 class MegaDrive : public RomData
 {
 	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * Read a Sega Mega Drive ROM.
 		 *
@@ -49,10 +46,15 @@ class MegaDrive : public RomData
 		 * @param file Open ROM file.
 		 */
 		MegaDrive(IRpFile *file);
+		virtual ~MegaDrive();
 
 	private:
 		MegaDrive(const MegaDrive &);
 		MegaDrive &operator=(const MegaDrive &);
+
+	private:
+		friend class MegaDrivePrivate;
+		MegaDrivePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

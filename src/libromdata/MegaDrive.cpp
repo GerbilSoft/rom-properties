@@ -29,8 +29,9 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
-#include <cstring>
+#include <cassert>
 #include <cctype>
+#include <cstring>
 
 // C++ includes.
 #include <vector>
@@ -38,8 +39,112 @@ using std::vector;
 
 namespace LibRomData {
 
+class MegaDrivePrivate
+{
+	public:
+		MegaDrivePrivate();
+
+	private:
+		MegaDrivePrivate(const MegaDrivePrivate &other);
+		MegaDrivePrivate &operator=(const MegaDrivePrivate &other);
+
+	public:
+		/** RomFields **/
+
+		// I/O support. (RFT_BITFIELD)
+		enum MD_IOSupport {
+			MD_IO_JOYPAD_3		= (1 << 0),	// 3-button joypad
+			MD_IO_JOYPAD_6		= (1 << 1),	// 6-button joypad
+			MD_IO_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
+			MD_IO_TEAM_PLAYER	= (1 << 3),	// Team Player
+			MD_IO_KEYBOARD		= (1 << 4),	// Keyboard
+			MD_IO_SERIAL		= (1 << 5),	// Serial (RS-232C)
+			MD_IO_PRINTER		= (1 << 6),	// Printer
+			MD_IO_TABLET		= (1 << 7),	// Tablet
+			MD_IO_TRACKBALL		= (1 << 8),	// Trackball
+			MD_IO_PADDLE		= (1 << 9),	// Paddle
+			MD_IO_FDD		= (1 << 10),	// Floppy Drive
+			MD_IO_CDROM		= (1 << 11),	// CD-ROM
+			MD_IO_ACTIVATOR		= (1 << 12),	// Activator
+			MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
+		};
+		static const rp_char *const md_io_bitfield_names[];
+		static const RomFields::BitfieldDesc md_io_bitfield;
+
+		// Region code. (RFT_BITFIELD)
+		enum MD_RegionCode {
+			MD_REGION_JAPAN		= (1 << 0),
+			MD_REGION_ASIA		= (1 << 1),
+			MD_REGION_USA		= (1 << 2),
+			MD_REGION_EUROPE	= (1 << 3),
+		};
+		static const rp_char *const md_region_code_bitfield_names[];
+		static const RomFields::BitfieldDesc md_region_code_bitfield;
+
+		// Monospace string formatting.
+		static const RomFields::StringDesc md_string_monospace;
+
+		// ROM fields.
+		static const struct RomFields::Desc md_fields[];
+
+		/** Internal ROM data. **/
+
+		/**
+		 * Mega Drive ROM header.
+		 * This matches the MD ROM header format exactly.
+		 *
+		 * NOTE: Strings are NOT null-terminated!
+		 */
+		#pragma pack(1)
+		struct PACKED MD_RomHeader {
+			char system[16];
+			char copyright[16];
+			char title_domestic[48];	// Japanese ROM name.
+			char title_export[48];	// US/Europe ROM name.
+			char serial[14];
+			uint16_t checksum;
+			char io_support[16];
+
+			// ROM/RAM address information.
+			uint32_t rom_start;
+			uint32_t rom_end;
+			uint32_t ram_start;
+			uint32_t ram_end;
+
+			// Save RAM information.
+			// Info format: 'R', 'A', %1x1yz000, 0x20
+			// x == 1 for backup (SRAM), 0 for not backup
+			// yz == 10 for even addresses, 11 for odd addresses
+			uint32_t sram_info;
+			uint32_t sram_start;
+			uint32_t sram_end;
+
+			// Miscellaneous.
+			char modem_info[12];
+			char notes[40];
+			char region_codes[16];
+		};
+		#pragma pack()
+
+		/**
+		 * Parse the I/O support field.
+		 * @param io_support I/O support field.
+		 * @param size Size of io_support.
+		 * @return io_support bitfield.
+		 */
+		uint32_t parseIOSupport(const char *io_support, int size);
+
+		/**
+		 * Parse the region codes field.
+		 * @param region_codes Region codes field.
+		 * @param size Size of region_codes.
+		 * @return region_codes bitfield.
+		 */
+		uint32_t parseRegionCodes(const char *region_codes, int size);
+};
+
 // I/O support bitfield.
-static const rp_char *const md_io_bitfield_names[] = {
+const rp_char *const MegaDrivePrivate::md_io_bitfield_names[] = {
 	_RP("Joypad"), _RP("6-button"), _RP("SMS Joypad"),
 	_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
 	_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
@@ -47,52 +152,27 @@ static const rp_char *const md_io_bitfield_names[] = {
 	_RP("Activator"), _RP("Mega Mouse")
 };
 
-enum MD_IOSupport {
-	MD_IO_JOYPAD_3		= (1 << 0),	// 3-button joypad
-	MD_IO_JOYPAD_6		= (1 << 1),	// 6-button joypad
-	MD_IO_JOYPAD_SMS	= (1 << 2),	// 2-button joypad (SMS)
-	MD_IO_TEAM_PLAYER	= (1 << 3),	// Team Player
-	MD_IO_KEYBOARD		= (1 << 4),	// Keyboard
-	MD_IO_SERIAL		= (1 << 5),	// Serial (RS-232C)
-	MD_IO_PRINTER		= (1 << 6),	// Printer
-	MD_IO_TABLET		= (1 << 7),	// Tablet
-	MD_IO_TRACKBALL		= (1 << 8),	// Trackball
-	MD_IO_PADDLE		= (1 << 9),	// Paddle
-	MD_IO_FDD		= (1 << 10),	// Floppy Drive
-	MD_IO_CDROM		= (1 << 11),	// CD-ROM
-	MD_IO_ACTIVATOR		= (1 << 12),	// Activator
-	MD_IO_MEGA_MOUSE	= (1 << 13),	// Mega Mouse
-};
-
-static const RomFields::BitfieldDesc md_io_bitfield = {
+const RomFields::BitfieldDesc MegaDrivePrivate::md_io_bitfield = {
 	ARRAY_SIZE(md_io_bitfield_names), 3, md_io_bitfield_names
 };
 
 // Region code.
-static const rp_char *const md_region_code_bitfield_names[] = {
+const rp_char *const MegaDrivePrivate::md_region_code_bitfield_names[] = {
 	_RP("Japan"), _RP("Asia"),
 	_RP("USA"), _RP("Europe")
 };
 
-enum MD_RegionCode {
-	MD_REGION_JAPAN		= (1 << 0),
-	MD_REGION_ASIA		= (1 << 1),
-	MD_REGION_USA		= (1 << 2),
-	MD_REGION_EUROPE	= (1 << 3),
-};
-
-static const RomFields::BitfieldDesc md_region_code_bitfield = {
+const RomFields::BitfieldDesc MegaDrivePrivate::md_region_code_bitfield = {
 	ARRAY_SIZE(md_region_code_bitfield_names), 0, md_region_code_bitfield_names
 };
 
 // Monospace string formatting.
-static const RomFields::StringDesc md_string_monospace = {
+const RomFields::StringDesc MegaDrivePrivate::md_string_monospace = {
 	RomFields::StringDesc::STRF_MONOSPACE
 };
 
 // ROM fields.
-// TODO: Private class?
-static const struct RomFields::Desc md_fields[] = {
+const struct RomFields::Desc MegaDrivePrivate::md_fields[] = {
 	{_RP("System"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Copyright"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
@@ -110,39 +190,152 @@ static const struct RomFields::Desc md_fields[] = {
 };
 
 /**
- * Mega Drive ROM header.
- * This matches the MD ROM header format exactly.
- * 
- * NOTE: Strings are NOT null-terminated!
+ * Parse the I/O support field.
+ * @param io_support I/O support field.
+ * @param size Size of io_support.
+ * @return io_support bitfield.
  */
-struct MD_RomHeader {
-	char system[16];
-	char copyright[16];
-	char title_domestic[48];	// Japanese ROM name.
-	char title_export[48];	// US/Europe ROM name.
-	char serial[14];
-	uint16_t checksum;
-	char io_support[16];
+uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
+{
+	uint32_t ret = 0;
+	for (int i = size-1; i >= 0; i--) {
+		switch (io_support[i]) {
+			case 'J':
+				ret |= MD_IO_JOYPAD_3;
+				break;
+			case '6':
+				ret |= MD_IO_JOYPAD_6;
+				break;
+			case '0':
+				ret |= MD_IO_JOYPAD_SMS;
+				break;
+			case '4':
+				ret |= MD_IO_TEAM_PLAYER;
+				break;
+			case 'K':
+				ret |= MD_IO_KEYBOARD;
+				break;
+			case 'R':
+				ret |= MD_IO_SERIAL;
+				break;
+			case 'P':
+				ret |= MD_IO_PRINTER;
+				break;
+			case 'T':
+				ret |= MD_IO_TABLET;
+				break;
+			case 'B':
+				ret |= MD_IO_TRACKBALL;
+				break;
+			case 'V':
+				ret |= MD_IO_PADDLE;
+				break;
+			case 'F':
+				ret |= MD_IO_FDD;
+				break;
+			case 'C':
+				ret |= MD_IO_CDROM;
+				break;
+			case 'L':
+				ret |= MD_IO_ACTIVATOR;
+				break;
+			case 'M':
+				ret |= MD_IO_MEGA_MOUSE;
+				break;
+			default:
+				break;
+		}
+	}
 
-	// ROM/RAM address information.
-	uint32_t rom_start;
-	uint32_t rom_end;
-	uint32_t ram_start;
-	uint32_t ram_end;
+	return ret;
+}
 
-	// Save RAM information.
-	// Info format: 'R', 'A', %1x1yz000, 0x20
-	// x == 1 for backup (SRAM), 0 for not backup
-	// yz == 10 for even addresses, 11 for odd addresses
-	uint32_t sram_info;
-	uint32_t sram_start;
-	uint32_t sram_end;
+/**
+ * Parse the region codes field.
+ * @param region_codes Region codes field.
+ * @param size Size of region_codes.
+ * @return region_codes bitfield.
+ */
+uint32_t MegaDrivePrivate::parseRegionCodes(const char *region_codes, int size)
+{
+	// Make sure the region codes field is valid.
+	assert(region_codes != nullptr);	// NOT checking this in release builds.
+	assert(size > 0);
+	if (size <= 0)
+		return 0;
 
-	// Miscellaneous.
-	char modem_info[12];
-	char notes[40];
-	char region_codes[16];
-};
+	uint32_t ret = 0;
+
+	// Check for a hex code.
+	if (isalnum(region_codes[0]) &
+	    (region_codes[1] == 0 || isspace(region_codes[1])))
+	{
+		// Single character region code.
+		// Assume it's a hex code, *unless* it's 'E'.
+		char code = toupper(region_codes[0]);
+		if (code >= '0' && code <= '9') {
+			// Numeric code from '0' to '9'.
+			ret = code - '0';
+		} else if (code == 'E') {
+			// 'E'. This is probably Europe.
+			// If interpreted as a hex code, this would be
+			// Asia, USA, and Europe, with Japan excluded.
+			ret = MD_REGION_EUROPE;
+		} else if (code >= 'A' && code <= 'F') {
+			// Letter code from 'A' to 'F'.
+			ret = (code - 'A') + 10;
+		}
+	} else if (region_codes[0] < 16) {
+		// Hex code not mapped to ASCII.
+		ret = region_codes[0];
+	}
+
+	if (ret == 0) {
+		// Not a hex code, or the hex code was 0.
+		// Hex code being 0 shouldn't happen...
+
+		// Check for string region codes.
+		// Some games incorrectly use these.
+		if (!strncasecmp(region_codes, "EUR", 3)) {
+			ret = MD_REGION_EUROPE;
+		} else if (!strncasecmp(region_codes, "USA", 3)) {
+			ret = MD_REGION_USA;
+		} else if (!strncasecmp(region_codes, "JPN", 3) ||
+			   !strncasecmp(region_codes, "JAP", 3))
+		{
+			ret = MD_REGION_JAPAN | MD_REGION_ASIA;
+		} else {
+			// Check for old-style JUE region codes.
+			// (J counts as both Japan and Asia.)
+			for (int i = 0; i < size; i++) {
+				if (region_codes[i] == 0 || isspace(region_codes[i]))
+					break;
+				switch (region_codes[i]) {
+					case 'J':
+						ret |= MD_REGION_JAPAN | MD_REGION_ASIA;
+						break;
+					case 'U':
+						ret |= MD_REGION_USA;
+						break;
+					case 'E':
+						ret |= MD_REGION_EUROPE;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+/** MegaDrivePrivate **/
+
+MegaDrivePrivate::MegaDrivePrivate()
+{ }
+
+/** MegaDrive **/
 
 /**
  * Read a Sega Mega Drive ROM.
@@ -158,7 +351,8 @@ struct MD_RomHeader {
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: RomData(file, md_fields, ARRAY_SIZE(md_fields))
+	: RomData(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
+	, d(new MegaDrivePrivate())
 {
 	// TODO: Only validate that this is an MD ROM here.
 	// Load fields elsewhere.
@@ -183,6 +377,11 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
 	m_isValid = (isRomSupported(&info) >= 0);
+}
+
+MegaDrive::~MegaDrive()
+{
+	delete d;
 }
 
 /** ROM detection functions. **/
@@ -212,8 +411,8 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 
 	if (info->szHeader >= 0x200) {
 		// Check the system name.
-		const MD_RomHeader *romHeader =
-			reinterpret_cast<const MD_RomHeader*>(&info->pHeader[0x100]);
+		const MegaDrivePrivate::MD_RomHeader *romHeader =
+			reinterpret_cast<const MegaDrivePrivate::MD_RomHeader*>(&info->pHeader[0x100]);
 		for (int i = 0; i < 4; i++) {
 			if (!strncmp(romHeader->system, strchk[i], 16) ||
 			    !strncmp(&romHeader->system[1], strchk[i], 15))
@@ -299,7 +498,8 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// MD ROM header, excluding the vector table.
-	const MD_RomHeader *romHeader = reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
+	const MegaDrivePrivate::MD_RomHeader *romHeader =
+		reinterpret_cast<const MegaDrivePrivate::MD_RomHeader*>(&header[0x100]);
 
 	// Read the strings from the header.
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
@@ -354,57 +554,7 @@ int MegaDrive::loadFieldData(void)
 	m_fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
 
 	// Parse I/O support.
-	uint32_t io_support = 0;
-	for (int i = (int)sizeof(romHeader->io_support)-1; i >= 0; i--) {
-		switch (romHeader->io_support[i]) {
-			case 'J':
-				io_support |= MD_IO_JOYPAD_3;
-				break;
-			case '6':
-				io_support |= MD_IO_JOYPAD_6;
-				break;
-			case '0':
-				io_support |= MD_IO_JOYPAD_SMS;
-				break;
-			case '4':
-				io_support |= MD_IO_TEAM_PLAYER;
-				break;
-			case 'K':
-				io_support |= MD_IO_KEYBOARD;
-				break;
-			case 'R':
-				io_support |= MD_IO_SERIAL;
-				break;
-			case 'P':
-				io_support |= MD_IO_PRINTER;
-				break;
-			case 'T':
-				io_support |= MD_IO_TABLET;
-				break;
-			case 'B':
-				io_support |= MD_IO_TRACKBALL;
-				break;
-			case 'V':
-				io_support |= MD_IO_PADDLE;
-				break;
-			case 'F':
-				io_support |= MD_IO_FDD;
-				break;
-			case 'C':
-				io_support |= MD_IO_CDROM;
-				break;
-			case 'L':
-				io_support |= MD_IO_ACTIVATOR;
-				break;
-			case 'M':
-				io_support |= MD_IO_MEGA_MOUSE;
-				break;
-			default:
-				break;
-		}
-	}
-
-	// Add the I/O support field.
+	uint32_t io_support = d->parseIOSupport(romHeader->io_support, sizeof(romHeader->io_support));
 	m_fields->addData_bitfield(io_support);
 
 	// ROM range.
@@ -428,70 +578,8 @@ int MegaDrive::loadFieldData(void)
 	// SRAM range. (TODO)
 	m_fields->addData_string(_RP(""));
 
-	// Region code.
-	uint32_t region_code = 0;
-
-	// Check for a hex code.
-	if (isalnum(romHeader->region_codes[0]) &&
-	    (romHeader->region_codes[1] == 0 || isspace(romHeader->region_codes[1])))
-	{
-		// Single character region code.
-		// Assume it's a hex code, *unless* it's 'E'.
-		char code = toupper(romHeader->region_codes[0]);
-		if (code >= '0' && code <= '9') {
-			// Numeric code from '0' to '9'.
-			region_code = code - '0';
-		} else if (code == 'E') {
-			// 'E'. This is probably Europe.
-			// If interpreted as a hex code, this would be
-			// Asia, USA, and Europe, with Japan excluded.
-			region_code = MD_REGION_EUROPE;
-		} else if (code >= 'A' && code <= 'F') {
-			// Letter code from 'A' to 'F'.
-			region_code = (code - 'A') + 10;
-		}
-	} else if (romHeader->region_codes[0] < 16) {
-		// Hex code not mapped to ASCII.
-		region_code = romHeader->region_codes[0];
-	}
-
-	if (region_code == 0) {
-		// Not a hex code, or the hex code was 0.
-		// Hex code being 0 shouldn't happen...
-
-		// Check for string region codes.
-		// Some games incorrectly use these.
-		if (!strncasecmp(romHeader->region_codes, "EUR", 3)) {
-			region_code = MD_REGION_EUROPE;
-		} else if (!strncasecmp(romHeader->region_codes, "USA", 3)) {
-			region_code = MD_REGION_USA;
-		} else if (!strncasecmp(romHeader->region_codes, "JPN", 3) ||
-			   !strncasecmp(romHeader->region_codes, "JAP", 3))
-		{
-			region_code = MD_REGION_JAPAN | MD_REGION_ASIA;
-		} else {
-			// Check for old-style JUE region codes.
-			// (J counts as both Japan and Asia.)
-			for (int i = 0; i < (int)sizeof(romHeader->region_codes); i++) {
-				if (romHeader->region_codes[i] == 0 || isspace(romHeader->region_codes[i]))
-					break;
-				switch (romHeader->region_codes[i]) {
-					case 'J':
-						region_code |= MD_REGION_JAPAN | MD_REGION_ASIA;
-						break;
-					case 'U':
-						region_code |= MD_REGION_USA;
-						break;
-					case 'E':
-						region_code |= MD_REGION_EUROPE;
-						break;
-					default:
-						break;
-				}
-			}
-		}
-	}
-
+	// Region codes.
+	uint32_t region_code = d->parseRegionCodes(romHeader->region_codes, sizeof(romHeader->region_codes));
 	m_fields->addData_bitfield(region_code);
 
 	// Vectors.
