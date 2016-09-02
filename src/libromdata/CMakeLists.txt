@@ -3,10 +3,13 @@ PROJECT(libromdata)
 # CMake 2.8.12 automates adding compile flags for Qt5, e.g. -fPIC on Linux.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
-# On Win32, we use MultiByteToWideChar() and WideCharToMultiByte().
-# On other systems, we use iconv(), which could be in libc or libiconv.
-# Figure out which library has iconv().
 IF(NOT WIN32)
+	# Non-Windows library checks.
+
+	# On Win32, we use MultiByteToWideChar() and WideCharToMultiByte().
+	# On other systems, we use iconv(), which could be in libc or libiconv.
+	# Figure out which library has iconv().
+
 	# First, check libc for iconv().
 	INCLUDE(CheckLibraryExists)
 	CHECK_LIBRARY_EXISTS(c iconv "" HAVE_ICONV_C)	# libc: iconv()
@@ -28,6 +31,9 @@ IF(NOT WIN32)
 	IF(NOT HAVE_ICONV)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
+
+	# Check for libpng.
+	FIND_PACKAGE(PNG REQUIRED)
 ENDIF(NOT WIN32)
 
 # Write the config.h file.
@@ -49,6 +55,7 @@ SET(libromdata_SRCS
 	DMG.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
+	img/RpImageLoader.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -73,6 +80,8 @@ SET(libromdata_H
 	file/RpFile.hpp
 	file/RpMemFile.hpp
 	img/rp_image.hpp
+	img/RpImageLoader.hpp
+	img/RpPng.hpp
 	)
 
 IF(WIN32)
@@ -82,6 +91,7 @@ IF(WIN32)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
 		file/RpFile_stdio.cpp
+		img/RpPng_libpng.cpp
 		)
 ENDIF(WIN32)
 
@@ -105,6 +115,11 @@ SET_TARGET_PROPERTIES(romdata8 PROPERTIES
 IF(ICONV_LIBRARY)
 	TARGET_LINK_LIBRARIES(romdata8 ${ICONV_LIBRARY})
 ENDIF(ICONV_LIBRARY)
+IF(PNG_FOUND)
+	TARGET_LINK_LIBRARIES(romdata8 ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(romdata8 PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(romdata8 PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_FOUND)
 
 # UTF-16 version.
 ADD_LIBRARY(romdata16 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
@@ -122,6 +137,11 @@ SET_TARGET_PROPERTIES(romdata16 PROPERTIES
 IF(ICONV_LIBRARY)
 	TARGET_LINK_LIBRARIES(romdata16 ${ICONV_LIBRARY})
 ENDIF(ICONV_LIBRARY)
+IF(PNG_FOUND)
+	TARGET_LINK_LIBRARIES(romdata16 ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(romdata16 PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(romdata16 PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_FOUND)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

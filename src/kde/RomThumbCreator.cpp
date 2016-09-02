@@ -34,6 +34,7 @@ using LibCacheMgr::CacheManager;
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
 
 // C++ includes.
@@ -44,7 +45,6 @@ using std::auto_ptr;
 #include <QtCore/QBuffer>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
-#include <QtGui/QImageReader>
 
 // KDE protocol manager.
 // Used to find the KDE proxy settings.
@@ -131,14 +131,20 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 					continue;
 
 				// Attempt to load the image.
-				QImageReader imageReader(RP2Q(cache_filename));
-				QImage dlImg = imageReader.read();
-				if (!dlImg.isNull()) {
-					// Image downloaded successfully.
-					// TODO: Width/height and transparency processing?
-					img = dlImg;
-					haveImage = true;
-					break;
+				IRpFile *file = new RpFile(cache_filename, RpFile::FM_OPEN_READ);
+				if (file && file->isOpen()) {
+					rp_image *dl_img = RpImageLoader::load(file);
+					if (dl_img && dl_img->isValid()) {
+						// Image loaded successfully.
+						QImage qdl_img = rpToQImage(dl_img);
+						if (!qdl_img.isNull()) {
+							// Image converted successfully.
+							// TODO: Width/height and transparency processing?
+							img = qdl_img;
+							haveImage = true;
+							break;
+						}
+					}
 				}
 			}
 		}
