@@ -17,6 +17,7 @@ addons:
       libcurl4-openssl-dev
       libpng-dev
       libqt4-dev
+      kdelibs5-dev
 
 # Compile using CMake.
 script:
