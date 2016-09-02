@@ -198,6 +198,15 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 		}
 	}
 
+	// Check if the URL is blank.
+	// This is allowed for some databases that are only available offline.
+	if (url.empty()) {
+		// Blank URL. Don't try to download anything.
+		// Don't mark the file as unavailable by creating a
+		// 0-byte dummy file, either.
+		return rp_string();
+	}
+
 	// TODO: Keep-alive cURL connections (one per server)?
 	m_downloader->setUrl(url);
 	m_downloader->setProxyUrl(m_proxyUrl);
