@@ -29,6 +29,7 @@ using std::vector;
 #include "MegaDrive.hpp"
 #include "GameCube.hpp"
 #include "NintendoDS.hpp"
+#include "DMG.hpp"
 
 namespace LibRomData {
 
@@ -74,6 +75,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 	CheckRomData(MegaDrive);
 	CheckRomData(GameCube);
 	CheckRomData(NintendoDS);
+	CheckRomData(DMG);
 
 	// Not supported.
 	return nullptr;

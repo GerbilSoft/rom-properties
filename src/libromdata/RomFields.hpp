@@ -194,7 +194,15 @@ class RomFields
 		 * @return Field index.
 		 */
 		int addData_string_numeric(uint32_t val, Base base, int digits = 0);
-
+		
+		/**
+		* Add a string field formatted like a hex dump
+		* @param data Input bytes
+		* @param sz Byte count
+		* @return Field index.
+		*/
+		int addData_string_hexdump(const uint8_t *data, size_t sz);
+		
 		/**
 		 * Add bitfield data.
 		 * @param bitfield Bitfield.
