@@ -87,7 +87,7 @@ Notes:
 | Nintendo DS(i)    |       Yes      |       Icon      |       No       |
 | Nintendo GameCube |       Yes      |        No       |      Disc      |
 | Nintendo Wii      |       Yes      |        No       |      Disc      |
-| Nintendo GameBoy  |       Yes      |       N/A       |       No       |
+| Nintendo Game Boy |       Yes      |       N/A       |       No       |
 
 Notes:
 * Internal icon, banner, and media scan refers to artwork contained within
@@ -109,7 +109,7 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo DS(i): Decrypted (\*.nds)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
-* Nintendo GameBoy: Plain binary (\*.gb, \*.gbc, \*.sgb)
+* Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 
 ## External Media Downloads
 
@@ -145,6 +145,6 @@ use the pre-downloaded version instead of downloading images as needed.
   engineering. Used for Wii and GameCube disc format information.
 * [GameTDB](http://www.gametdb.com/): Database of games for various game
   consoles. Used for automatic downloading of disc scans for Wii and GameCube.
-* [Pan Docs](http://problemkaputt.de/pandocs.htm): GameBoy, GameBoy Color and
-  Super GameBoy technical information. Used for ROM format information for
+* [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
+  Super Game Boy technical information. Used for ROM format information for
   those systems.

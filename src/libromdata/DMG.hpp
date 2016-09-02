@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DMG.hpp: GameBoy (DMG/CGB/SGB) ROM reader.                              *
+ * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  * Copyright (c) 2016 by Egor.                                             *
@@ -39,7 +39,7 @@ class DMG : public RomData
 		// For now, just check the header.
 
 		/**
-		 * Read a GameBoy ROM.
+		 * Read a Game Boy ROM.
 		 *
 		 * A ROM file must be opened by the caller. The file handle
 		 * will be dup()'d and must be kept open in order to load

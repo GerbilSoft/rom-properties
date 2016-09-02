@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DMG.hpp: GameBoy (DMG/CGB/SGB) ROM reader.                              *
+ * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  * Copyright (c) 2016 by Egor.                                             *
@@ -220,7 +220,7 @@ static const uint8_t dmg_nintendo[0x30] = {
 };
 
 /**
- * Gameboy ROM header.
+ * Game Boy ROM header.
  * 
  * NOTE: Strings are NOT null-terminated!
  */
@@ -251,7 +251,7 @@ struct DMG_RomHeader {
 };
 
 /**
- * Read a Gameboy ROM.
+ * Read a Game Boy ROM.
  *
  * A ROM file must be opened by the caller. The file handle
  * will be dup()'d and must be kept open in order to load
@@ -338,7 +338,7 @@ int DMG::isRomSupported(const DetectInfo *info) const
 const rp_char *DMG::systemName(void) const
 {
 	// TODO: Store system ID.
-	return _RP("GameBoy");
+	return _RP("Game Boy");
 }
 
 /**
@@ -385,7 +385,7 @@ int DMG::loadFieldData(void)
 	m_file->rewind();
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header)) {
-		// File isn't big enough for an GameBoy header...
+		// File isn't big enough for a Game Boy header...
 		return -EIO;
 	}
 
