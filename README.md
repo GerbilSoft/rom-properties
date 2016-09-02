@@ -17,7 +17,7 @@ following platforms:
 ### Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
-* All: libcurl-dev
+* All: libcurl-dev, cmake
 * KDE 4.x: libqt4-dev, kdelibs5-dev
 * KDE 5.x: qtbase5-dev, kio-dev
 
@@ -44,8 +44,11 @@ The Windows version requires one of the following compilers: (minimum versions)
 * MS Visual C++ 2010 with the Windows 7 SDK
 * gcc-4.5 with MinGW-w64
 
-Clone the repository, then:
-* cd rom-properties
+You will also need to install [CMake](https://cmake.org/download/), since the
+project uses the CMake build system.
+
+Clone the repository, then open an MSVC or MinGW command prompt and run the
+following commands from your rom-properties repository directory:
 * mkdir build
 * cd build
 * cmake ..
