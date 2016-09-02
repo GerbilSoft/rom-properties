@@ -364,26 +364,37 @@ int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 
 /**
  * Add a string field formatted like a hex dump
- * @param data Input bytes
- * @param sz Byte count
+ * @param buf Input bytes.
+ * @param size Byte count.
  * @return Field index.
  */
-int RomFields::addData_string_hexdump(const uint8_t *data,size_t sz){
-	if(!sz) return addData_string(_RP(""));
-	
-	char buf[32]={0}, buf2[4];
-	int len=0;
-	for(unsigned i=0;i<sz;i++){
-		snprintf(buf2,sizeof(buf2)," %02X",data[i]);
-		strncat(buf,buf2,sizeof(buf));
-		len+=3;
+int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
+{
+	if (size == 0) {
+		return addData_string(_RP(""));
 	}
-	
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-	
-	rp_string str = ascii_to_rp_string(buf+1, len-1); //NOTE: first character is a space, so we skip it
-	return addData_string(str);
+
+	// Reserve 3 characters per byte.
+	// (Two hex digits, plus one space.)
+	rp_string rps;
+	rps.resize(size * 3);
+	size_t rps_pos = 0;
+
+	// Temporary snprintf buffer.
+	char hexbuf[8];
+	for (; size > 0; size--, buf++, rps_pos += 3) {
+		snprintf(hexbuf, sizeof(hexbuf), "%02X ", *buf);
+		rps[rps_pos+0] = hexbuf[0];
+		rps[rps_pos+1] = hexbuf[1];
+		rps[rps_pos+2] = hexbuf[2];
+	}
+
+	// Remove the trailing space.
+	if (rps.size() > 0) {
+		rps.resize(rps.size() - 1);
+	}
+
+	return addData_string(rps);
 }
 
 /**
