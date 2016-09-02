@@ -289,16 +289,17 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	m_isValid = (d->discType >= 0);
-
-	// Save the disc header for later.
-	d->discReader->rewind();
-	size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
-	if (size != sizeof(d->discHeader)) {
-		// Error reading the disc header.
-		delete d->discReader;
-		d->discReader = nullptr;
-		d->discType = GameCubePrivate::DISC_UNKNOWN;
-		m_isValid = false;
+	if (m_isValid) {
+		// Save the disc header for later.
+		d->discReader->rewind();
+		size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
+		if (size != sizeof(d->discHeader)) {
+			// Error reading the disc header.
+			delete d->discReader;
+			d->discReader = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			m_isValid = false;
+		}
 	}
 }
 
