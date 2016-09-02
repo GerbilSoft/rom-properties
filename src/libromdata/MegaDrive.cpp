@@ -141,6 +141,11 @@ class MegaDrivePrivate
 		 * @return region_codes bitfield.
 		 */
 		uint32_t parseRegionCodes(const char *region_codes, int size);
+
+	public:
+		// ROM header.
+		uint32_t vectors[64];	// Interrupt vectors. (BE32)
+		MD_RomHeader romHeader;	// ROM header.
 };
 
 // I/O support bitfield.
@@ -377,6 +382,14 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
 	m_isValid = (isRomSupported(&info) >= 0);
+
+	if (m_isValid) {
+		// Save the header for later.
+		// TODO: Adjust for SMD, Sega CD, etc.
+		static_assert(sizeof(d->romHeader) == 0x100, "MD_RomHeader is the wrong size. (should be 256 bytes)");
+		memcpy(&d->vectors,    header,        sizeof(d->vectors));
+		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+	}
 }
 
 MegaDrive::~MegaDrive()
@@ -484,24 +497,16 @@ int MegaDrive::loadFieldData(void)
 		return 0;
 	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
+		// NOTE: We already loaded the header,
+		// so *maybe* this is okay?
 		return -EBADF;
 	} else if (!m_isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
 
-	// Read the header. [0x200 bytes]
-	uint8_t header[0x200];
-	m_file->rewind();
-	size_t size = m_file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
-		// File isn't big enough for an MD header...
-		return -EIO;
-	}
-
 	// MD ROM header, excluding the vector table.
-	const MegaDrivePrivate::MD_RomHeader *romHeader =
-		reinterpret_cast<const MegaDrivePrivate::MD_RomHeader*>(&header[0x100]);
+	const MegaDrivePrivate::MD_RomHeader *romHeader = &d->romHeader;
 
 	// Read the strings from the header.
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
@@ -585,9 +590,8 @@ int MegaDrive::loadFieldData(void)
 	m_fields->addData_bitfield(region_code);
 
 	// Vectors.
-	const uint32_t *vectors = reinterpret_cast<const uint32_t*>(header);
-	m_fields->addData_string_numeric(be32_to_cpu(vectors[1]), RomFields::FB_HEX, 8);	// Entry point
-	m_fields->addData_string_numeric(be32_to_cpu(vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+	m_fields->addData_string_numeric(be32_to_cpu(d->vectors[1]), RomFields::FB_HEX, 8);	// Entry point
+	m_fields->addData_string_numeric(be32_to_cpu(d->vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
