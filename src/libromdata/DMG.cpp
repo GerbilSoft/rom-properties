@@ -212,14 +212,15 @@ static const unsigned dmg_ram_size[] = {
 };
 /**
  * Nintendo's logo which is checked by bootrom.
- * (First 16 bytes.)
+ * (Top half only.)
  * 
- * NOTE: CGB bootrom only checks half of the logo (see 0x00D1 of CGB IPL)
+ * NOTE: CGB bootrom only checks the top half of the logo.
+ * (see 0x00D1 of CGB IPL)
  */
-static const uint8_t dmg_nintendo[0x30] = {
-	0xCE,0xED,0x66,0x66,0xCC,0x0D,0x00,0x0B,0x03,0x73,0x00,0x83,0x00,0x0C,0x00,0x0D,
-	0x00,0x08,0x11,0x1F,0x88,0x89,0x00,0x0E,0xDC,0xCC,0x6E,0xE6,0xDD,0xDD,0xD9,0x99,
-	0xBB,0xBB,0x67,0x63,0x6E,0x0E,0xEC,0xCC,0xDD,0xDC,0x99,0x9F,0xBB,0xB9,0x33,0x3E,
+static const uint8_t dmg_nintendo[0x18] = {
+	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
+	0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+	0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E
 };
 
 /**
@@ -310,9 +311,9 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 		// Check the system name.
 		const DMG_RomHeader *romHeader =
 			reinterpret_cast<const DMG_RomHeader*>(&info->pHeader[0x100]);
-		if(!memcmp(romHeader->nintendo,dmg_nintendo,0x18)){
+		if (!memcmp(romHeader->nintendo, dmg_nintendo, sizeof(dmg_nintendo))) {
 			// Found a DMG ROM.
-			if((romHeader->cgbflag & 0xC0) >= 0x80){
+			if (romHeader->cgbflag & 0x80) {
 				//TODO: Make this an enum, maybe
 				return 1; // CGB supported
 			}
@@ -362,8 +363,10 @@ vector<const rp_char*> DMG::supportedFileExtensions(void) const
 	vector<const rp_char*> ret;
 	ret.reserve(3);
 	ret.push_back(_RP(".gb"));
-	ret.push_back(_RP(".gbc"));
 	ret.push_back(_RP(".sgb"));
+	ret.push_back(_RP(".sgb2"));
+	ret.push_back(_RP(".gbc"));
+	ret.push_back(_RP(".cgb"));
 	return ret;
 }
 
@@ -431,6 +434,9 @@ int DMG::loadFieldData(void)
 			// Not CGB exclusive.
 			dmg_system |= DMG_SYSTEM_DMG;
 		}
+	} else {
+		// Game does not support CGB.
+		dmg_system |= DMG_SYSTEM_DMG;
 	}
 
 	if (romHeader->old_publisher_code == 0x33 && romHeader->sgbflag==0x03) {
