@@ -359,10 +359,12 @@ int NintendoDS::loadFieldData(void)
 	if (m_fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	}
-	if (!m_file) {
+	} else if (!m_file) {
 		// File isn't open.
 		return -EBADF;
+	} else if (!m_isValid) {
+		// ROM image isn't valid.
+		return -EIO;
 	}
 
 	// Read the ROM header.
@@ -489,10 +491,12 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	if (m_images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	}
-	if (!m_file) {
+	} else if (!m_file) {
 		// File isn't open.
 		return -EBADF;
+	} else if (!m_isValid) {
+		// ROM image isn't valid.
+		return -EIO;
 	}
 
 	// Check for supported image types.

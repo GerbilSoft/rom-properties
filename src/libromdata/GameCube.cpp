@@ -451,7 +451,7 @@ int GameCube::loadFieldData(void)
 	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (d->discType < 0) {
+	} else if (!m_isValid || d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -619,12 +619,10 @@ int GameCube::loadURLs(ImageType imageType)
 	if (!extURLs.empty()) {
 		// URLs *have* been loaded...
 		return 0;
-	}
-	if (!m_file || !m_file->isOpen()) {
+	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	}
-	if (d->discType < 0) {
+	} else if (d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}

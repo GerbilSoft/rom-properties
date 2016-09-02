@@ -482,10 +482,12 @@ int MegaDrive::loadFieldData(void)
 	if (m_fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	}
-	if (!m_file || !m_file->isOpen()) {
+	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
+	} else if (!m_isValid) {
+		// ROM image isn't valid.
+		return -EIO;
 	}
 
 	// Read the header. [0x200 bytes]
