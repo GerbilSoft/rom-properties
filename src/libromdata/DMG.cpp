@@ -430,6 +430,9 @@ int DMG::loadFieldData(void)
 			// Not CGB exclusive.
 			dmg_system |= DMG_SYSTEM_DMG;
 		}
+	} else {
+		// Game does not support CGB.
+		dmg_system |= DMG_SYSTEM_DMG;
 	}
 
 	if (romHeader->old_publisher_code == 0x33 && romHeader->sgbflag==0x03) {
