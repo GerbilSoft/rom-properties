@@ -100,6 +100,7 @@ vector<const rp_char*> RomDataFactory::supportedFileExtensions(void)
 	GetFileExtensions(MegaDrive);
 	GetFileExtensions(GameCube);
 	GetFileExtensions(NintendoDS);
+	GetFileExtensions(DMG);
 
 	return vec;
 }
