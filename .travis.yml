@@ -14,7 +14,7 @@ dist: trusty
 addons:
   apt:
     packages:
-      libcurl-dev
+      libcurl4-openssl-dev
       libpng-dev
       libqt4-dev
 
