@@ -102,7 +102,31 @@ static inline QString RP2Q(const LibRomData::rp_string &rps)
  */
 static inline QString RP2Q(const rp_char *rps, int len = -1)
 {
+#if QT_VERSION >= 0x050000
 	return QString(reinterpret_cast<const QChar*>(rps), len);
+#else /* QT_VERSION < 0x050000 */
+	// Qt 4.7 has two separate constructors for const QChar*.
+	// The version with an explicit length does not handle
+	// NULL-terminated strings when len == -1.
+	if (len >= 0) {
+		return QString(reinterpret_cast<const QChar*>(rps), len);
+	} else {
+#if QT_VERSION >= 0x040700
+		// Qt 4.7: Use the constructor without an explicit length.
+		return QString(reinterpret_cast<const QChar*>(rps));
+#else /* QT_VERSION < 0x040700 */
+		// Qt 4.6: No constructor is available for const QChar*
+		// that takes a string without an explicit length.
+		// Figure out the length first.
+		// TODO: Is pointer arithmetic faster?
+		len = 0;
+		while (rps[len] != 0) {
+			len++;
+		}
+		return QString(reinterpret_cast<const QChar*>(rps), len);
+#endif /* QT_VERSION >= 0x040700 */
+	}
+#endif /* QT_VERSION >= 0x050000 */
 }
 
 /**
