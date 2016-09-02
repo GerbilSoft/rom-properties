@@ -408,34 +408,32 @@ int DMG::loadFieldData(void)
 	len = strnlen(romHeader->title,(romHeader->cgbflag < 0x80 ? 16 : 15));
 	
 	
-	if(	(romHeader->cgbflag&0x3F) == 0 &&	// gameid is only present when cgbflag is
-		4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
+	if ((romHeader->cgbflag&0x3F) == 0 &&		// gameid is only present when cgbflag is
+	    4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
 		m_fields->addData_string(ascii_to_rp_string(romHeader->title,std::min(len,11)));
 		m_fields->addData_string(ascii_to_rp_string(romHeader->title+11,4));
-	}
-	else{
+	} else{
 		m_fields->addData_string(ascii_to_rp_string(romHeader->title,len));
 		m_fields->addData_string(_RP("Unknown"));
 	}
-	
+
 	// System
-	uint32_t system;
-	switch(romHeader->cgbflag){
-		default:
-			system=DMG_SYSTEM_DMG;
-			break;
-		case 0x80:
-			system=DMG_SYSTEM_DMG|DMG_SYSTEM_CGB;
-			break;
-		case 0xC0:
-			system=DMG_SYSTEM_CGB;
-			break;
+	uint32_t dmg_system;
+	if (romHeader->cgbflag & 0x80) {
+		// Game supports CGB.
+		dmg_system = DMG_SYSTEM_CGB;
+		if (!(romHeader->cgbflag & 0x40)) {
+			// Not CGB exclusive.
+			dmg_system |= DMG_SYSTEM_DMG;
+		}
 	}
-	if(romHeader->old_publisher_code==0x33 && romHeader->sgbflag==0x03){
-		system|=DMG_SYSTEM_SGB;
+
+	if (romHeader->old_publisher_code == 0x33 && romHeader->sgbflag==0x03) {
+		// Game supports SGB.
+		dmg_system |= DMG_SYSTEM_SGB;
 	}
-	m_fields->addData_bitfield(system);
-	
+	m_fields->addData_bitfield(dmg_system);
+
 	// Entrypoint
 	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
 		// this is the "standard" way of doing the entry point
