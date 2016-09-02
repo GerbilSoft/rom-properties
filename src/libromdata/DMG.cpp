@@ -418,7 +418,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// System
-	uint32_t dmg_system;
+	uint32_t dmg_system = 0;
 	if (romHeader->cgbflag & 0x80) {
 		// Game supports CGB.
 		dmg_system = DMG_SYSTEM_CGB;
