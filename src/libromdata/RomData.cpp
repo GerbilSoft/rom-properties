@@ -22,7 +22,7 @@
 #include "RomData.hpp"
 #include "common.h"
 #include "file/IRpFile.hpp"
-#include "rp_image.hpp"
+#include "img/rp_image.hpp"
 
 // dup()
 #ifdef _WIN32

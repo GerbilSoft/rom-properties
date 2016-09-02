@@ -43,12 +43,12 @@ SET(libromdata_SRCS
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
-	rp_image.cpp
 	IDiscReader.cpp
 	DiscReader.cpp
 	WbfsReader.cpp
 	DMG.cpp
 	file/RpMemFile.cpp
+	img/rp_image.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -63,7 +63,6 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	rp_image.hpp
 	IDiscReader.hpp
 	DiscReader.hpp
 	WbfsReader.hpp
@@ -73,6 +72,7 @@ SET(libromdata_H
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
+	img/rp_image.hpp
 	)
 
 IF(WIN32)

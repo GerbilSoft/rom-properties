@@ -28,9 +28,9 @@
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/rp_image.hpp"
-#include "libromdata/file/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
 
 // libcachemgr

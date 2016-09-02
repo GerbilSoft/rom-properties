@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
-#include "libromdata/rp_image.hpp"
+#include "libromdata/img/rp_image.hpp"
 using LibRomData::rp_image;
 
 // C includes. (C++ namespace)
