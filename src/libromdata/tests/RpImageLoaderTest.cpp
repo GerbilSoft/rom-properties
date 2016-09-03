@@ -86,16 +86,17 @@ TEST_P(RpImageLoaderTest, loadTest)
 	// Open the PNG image file.
 	auto_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen());
+	ASSERT_TRUE(file->isOpen()) << "RpFile failed to open "
+		<< rp_string_to_utf8(mode.png_filename);
 
 	// Load the PNG image.
 	auto_ptr<rp_image> img(RpImageLoader::load(file.get()));
-	ASSERT_TRUE(img.get() != nullptr);
+	ASSERT_TRUE(img.get() != nullptr) << "RpImageLoader failed to load the image.";
 
 	// Check the rp_image parameters.
-	EXPECT_EQ(mode.rp_img_w, img->width());
-	EXPECT_EQ(mode.rp_img_h, img->height());
-	EXPECT_EQ(mode.rp_format, img->format());
+	EXPECT_EQ(mode.rp_img_w, img->width()) << "rp_image width is incorrect.";
+	EXPECT_EQ(mode.rp_img_h, img->height()) << "rp_image height is incorrect.";
+	EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
 }
 
 // Test cases.
