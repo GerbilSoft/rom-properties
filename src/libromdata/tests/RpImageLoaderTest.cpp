@@ -26,6 +26,17 @@
 #include <zlib.h>
 #include <png.h>
 #include "png_chunks.h"
+#include "bmp.h"
+
+// gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
+#if (ZLIB_VER_MAJOR > 1) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR > 2) || \
+    (ZLIB_VER_MAJOR == 1 && ZLIB_VER_MINOR == 2 && ZLIB_VER_REVISION >= 4)
+// zlib-1.2.4 or later
+#else
+#define gzclose_r(file) gzclose(file)
+#define gzclose_w(file) gzclose(file)
+#endif
 
 // libromdata
 #include "common.h"
@@ -50,18 +61,25 @@ namespace LibRomData { namespace Tests {
 struct RpImageLoaderTest_mode
 {
 	rp_string png_filename;		// PNG image to test.
+	rp_string bmp_gz_filename;	// Gzipped BMP image for comparison.
 
 	// Expected rp_image parameters.
-	const PNG_IHDR_t ihdr;	// FIXME: Making this const& causes problems.
+	const PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
+	const BITMAPINFOHEADER bih;	// FIXME: Making this const& causes problems.
 	rp_image::Format rp_format;
 
 	// TODO: Verify PNG bit depth and color type.
 
-	RpImageLoaderTest_mode(const rp_char *png_filename,
+	RpImageLoaderTest_mode(
+		const rp_char *png_filename,
+		const rp_char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
+		const BITMAPINFOHEADER &bih,
 		rp_image::Format rp_format)
 		: png_filename(png_filename)
+		, bmp_gz_filename(bmp_gz_filename)
 		, ihdr(ihdr)
+		, bih(bih)
 		, rp_format(rp_format)
 	{ }
 };
@@ -74,9 +92,11 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 	protected:
 		RpImageLoaderTest()
 			: ::testing::TestWithParam<RpImageLoaderTest_mode>()
+			, m_gzBmp(nullptr)
 		{ }
 
 		virtual void SetUp(void) override;
+		virtual void TearDown(void) override;
 
 	public:
 		/**
@@ -86,9 +106,25 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 		 */
 		static void Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src);
 
+		/**
+		 * Load and verify the headers from a bitmap file.
+		 * @param pBfh Destination BITMAPFILEHEADER.
+		 * @param pBih Destination BITMAPINFOHEADER.
+		 * @param bmp_buf Bitmap buffer.
+		 */
+		static void Load_Verify_BMP_headers(
+			BITMAPFILEHEADER *pBfh,
+			BITMAPINFOHEADER *pBih,
+			const ao::uvector<uint8_t> &bmp_buf);
+
 	public:
 		// Image buffers.
 		ao::uvector<uint8_t> m_png_buf;
+		ao::uvector<uint8_t> m_bmp_buf;
+
+		// gzip file handle for .bmp.gz.
+		// Placed here so it can be freed by TearDown() if necessary.
+		gzFile m_gzBmp;
 };
 
 /**
@@ -118,15 +154,56 @@ void RpImageLoaderTest::SetUp(void)
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
-	ASSERT_LE(file->fileSize(), MAX_IMAGE_FILESIZE) << "Test image is too big.";
+	ASSERT_LE(file->fileSize(), MAX_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
 	size_t pngSize = (size_t)file->fileSize();
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading image file: "
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: "
 		<< rp_string_to_utf8(mode.png_filename);
+
+	// Open the gzipped BMP image file being tested.
+	file.reset(new RpFile(mode.bmp_gz_filename, RpFile::FM_OPEN_READ));
+	ASSERT_TRUE(file.get() != nullptr);
+	ASSERT_TRUE(file->isOpen());
+	ASSERT_GT(file->fileSize(), 16);
+
+	// Get the uncompressed image size from the end of the file.
+	uint32_t bmpSize;
+	file->seek(file->fileSize() - 4);
+	file->read(&bmpSize, sizeof(bmpSize));
+	bmpSize = le32_to_cpu(bmpSize);
+	ASSERT_GT(bmpSize, sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER))
+		<< "BMP test image is too small.";
+	ASSERT_LE(bmpSize, MAX_IMAGE_FILESIZE)
+		<< "BMP test image is too big.";
+
+	// Read the BMP image into memory.
+	m_bmp_buf.resize(bmpSize);
+	ASSERT_EQ((size_t)bmpSize, m_bmp_buf.size());
+	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "r");
+	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
+		<< rp_string_to_utf8(mode.png_filename);
+	int sz = gzread(m_gzBmp, m_bmp_buf.data(), bmpSize);
+	ASSERT_EQ(bmpSize, (uint32_t)sz) << "Error loading BMP image file: "
+		<< rp_string_to_utf8(mode.png_filename);
+
+	gzclose_r(m_gzBmp);
+	m_gzBmp = nullptr;
+}
+
+/**
+ * TearDown() function.
+ * Run after each test.
+ */
+void RpImageLoaderTest::TearDown(void)
+{
+	if (m_gzBmp) {
+		gzclose_r(m_gzBmp);
+		m_gzBmp = nullptr;
+	}
 }
 
 /**
@@ -151,10 +228,12 @@ void RpImageLoaderTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_s
 		      sizeof(ihdr_full.chunk_name) + sizeof(ihdr_full.data)));
 
 	// Byteswap the values.
-	ihdr_full.chunk_size = be32_to_cpu(ihdr_full.chunk_size);
-	ihdr_full.data.width = be32_to_cpu(ihdr_full.data.width);
-	ihdr_full.data.height = be32_to_cpu(ihdr_full.data.height);
-	ihdr_full.crc32 = be32_to_cpu(ihdr_full.crc32);
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+	ihdr_full.chunk_size	= be32_to_cpu(ihdr_full.chunk_size);
+	ihdr_full.data.width	= be32_to_cpu(ihdr_full.data.width);
+	ihdr_full.data.height	= be32_to_cpu(ihdr_full.data.height);
+	ihdr_full.crc32		= be32_to_cpu(ihdr_full.crc32);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 
 	// Copy the data section of the IHDR chunk.
 	memcpy(ihdr, &ihdr_full.data, sizeof(*ihdr));
@@ -175,6 +254,87 @@ void RpImageLoaderTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_s
 }
 
 /**
+ * Load and verify the headers from a bitmap file.
+ * @param pBfh Destination BITMAPFILEHEADER.
+ * @param pBih Destination BITMAPINFOHEADER.
+ * @param bmp_buf Bitmap buffer.
+ */
+void RpImageLoaderTest::Load_Verify_BMP_headers(
+	BITMAPFILEHEADER *pBfh,
+	BITMAPINFOHEADER *pBih,
+	const ao::uvector<uint8_t> &bmp_buf)
+{
+	static_assert(sizeof(BITMAPFILEHEADER) == BITMAPFILEHEADER_SIZE,
+		"BITMAPFILEHEADER size is incorrect. (should be 14 bytes)");
+	static_assert(sizeof(BITMAPINFOHEADER) == BITMAPINFOHEADER_SIZE,
+		"BITMAPINFOHEADER size is incorrect. (should be 40 bytes)");
+
+	// Load the BITMAPFILEHEADER.
+	memcpy(pBfh, bmp_buf.data(), sizeof(*pBfh));
+
+	// Byteswap the values.
+	pBfh->bfType		= be16_to_cpu(pBfh->bfType);
+	pBfh->bfSize		= le32_to_cpu(pBfh->bfSize);
+	pBfh->bfReserved1	= le16_to_cpu(pBfh->bfReserved1);
+	pBfh->bfReserved2	= le16_to_cpu(pBfh->bfReserved2);
+	pBfh->bfOffBits		= le32_to_cpu(pBfh->bfOffBits);
+
+	// Check the magic number.
+	ASSERT_EQ(BMP_magic, pBfh->bfType) <<
+		"BITMAPFILEHEADER's magic number is incorrect.";
+	// bfh.bfSize should be the size of the file.
+	EXPECT_EQ(bmp_buf.size(), (size_t)pBfh->bfSize) <<
+		"BITMAPFILEHEADER.bfSize does not match the BMP file size.";
+	// TODO: Check bfh.bfOffBits?
+
+	// Load the BITMAPINFOHEADER.
+	memcpy(pBih, &bmp_buf.data()[sizeof(BITMAPFILEHEADER)], sizeof(*pBih));
+
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+	// Byteswap the values.
+	// TODO: Update the byteswapping macros to handle signed ints.
+	pBih->biSize		= le32_to_cpu(pBih->biSize);
+	pBih->biWidth		= le32_to_cpu((uint32_t)pBih->biWidth);
+	pBih->biHeight		= le32_to_cpu((uint32_t)pBih->biHeight);
+	pBih->biPlanes		= le16_to_cpu(pBih->biPlanes);
+	pBih->biBitCount	= le16_to_cpu(pBih->biBitCount);
+	pBih->biCompression	= le32_to_cpu(pBih->biCompression);
+	pBih->biSizeImage	= le32_to_cpu(pBih->biSizeImage);
+	pBih->biXPelsPerMeter	= le32_to_cpu((uint32_t)pBih->biXPelsPerMeter);
+	pBih->biYPelsPerMeter	= le32_to_cpu((uint32_t)pBih->biYPelsPerMeter);
+	pBih->biClrUsed		= le32_to_cpu(pBih->biClrUsed);
+	pBih->biClrImportant	= le32_to_cpu(pBih->biClrImportant);
+#endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
+
+	// NOTE: The BITMAPINFOHEADER may be one of several types.
+	// We only care about the BITMAPINFOHEADER section.
+	ASSERT_NE(BITMAPCOREHEADER_SIZE, pBih->biSize) <<
+		"Windows 2.0 and OS/2 1.x bitmaps are not supported.";
+	ASSERT_NE(OS22XBITMAPHEADER_SIZE, pBih->biSize) <<
+		"OS/2 2.x bitmaps are not supported.";
+	ASSERT_NE(OS22XBITMAPHEADER_SHORT_SIZE, pBih->biSize) <<
+		"OS/2 2.x bitmaps are not supported.";
+
+	switch (pBih->biSize) {
+		case BITMAPINFOHEADER_SIZE:
+		case BITMAPV2INFOHEADER_SIZE:
+		case BITMAPV3INFOHEADER_SIZE:
+		case BITMAPV4HEADER_SIZE:
+		case BITMAPV5HEADER_SIZE:
+			// Supported size.
+			break;
+
+		default:
+			// Assume anything larger than BITMAPINFOHEADER_SIZE is supported.
+			ASSERT_GE(pBih->biSize, BITMAPINFOHEADER_SIZE) <<
+				"Unsupported BITMAPINFOHEADER size.";
+			break;
+	}
+
+	// TODO: Other checks?
+}
+
+/**
  * Run an RpImageLoader test.
  */
 TEST_P(RpImageLoaderTest, loadTest)
@@ -187,7 +347,7 @@ TEST_P(RpImageLoaderTest, loadTest)
 
 	// Verify the PNG image's magic number.
 	ASSERT_EQ(0, memcmp(PNG_magic, m_png_buf.data(), sizeof(PNG_magic))) <<
-		"PNG magic number is incorrect.";
+		"PNG image's magic number is incorrect.";
 
 	// Load and verify the IHDR.
 	// This should be located immediately after the magic number.
@@ -195,13 +355,13 @@ TEST_P(RpImageLoaderTest, loadTest)
 	ASSERT_NO_FATAL_FAILURE(Load_Verify_IHDR(&ihdr, &m_png_buf.data()[8]));
 
 	// Check if the IHDR values are correct.
-	EXPECT_EQ(mode.ihdr.width, ihdr.width);
-	EXPECT_EQ(mode.ihdr.height, ihdr.height);
-	EXPECT_EQ(mode.ihdr.bit_depth, ihdr.bit_depth);
-	EXPECT_EQ(mode.ihdr.color_type, ihdr.color_type);
-	EXPECT_EQ(mode.ihdr.compression_method, ihdr.compression_method);
-	EXPECT_EQ(mode.ihdr.filter_method, ihdr.filter_method);
-	EXPECT_EQ(mode.ihdr.interlace_method, ihdr.interlace_method);
+	EXPECT_EQ(mode.ihdr.width,		ihdr.width);
+	EXPECT_EQ(mode.ihdr.height,		ihdr.height);
+	EXPECT_EQ(mode.ihdr.bit_depth,		ihdr.bit_depth);
+	EXPECT_EQ(mode.ihdr.color_type,		ihdr.color_type);
+	EXPECT_EQ(mode.ihdr.compression_method,	ihdr.compression_method);
+	EXPECT_EQ(mode.ihdr.filter_method,	ihdr.filter_method);
+	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
 	// Create an RpMemFile.
 	auto_ptr<IRpFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
@@ -216,41 +376,108 @@ TEST_P(RpImageLoaderTest, loadTest)
 	EXPECT_EQ((int)mode.ihdr.width, img->width()) << "rp_image width is incorrect.";
 	EXPECT_EQ((int)mode.ihdr.height, img->height()) << "rp_image height is incorrect.";
 	EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
+
+	// Load and verify the bitmap headers.
+	BITMAPFILEHEADER bfh;
+	BITMAPINFOHEADER bih;
+	ASSERT_NO_FATAL_FAILURE(Load_Verify_BMP_headers(&bfh, &bih, m_bmp_buf));
+
+	// Check if the BITMAPINFOHEADER values are correct.
+	// BITMAPINFOHEADER.biSize is checked by Load_Verify_BMP_headers().
+	// NOTE: The PelsPerMeter fields are ignored. The test BMP images
+	// have them set to 3936 (~100 dpi).
+	EXPECT_EQ(mode.bih.biWidth,		bih.biWidth);
+	EXPECT_EQ(mode.bih.biHeight,		bih.biHeight);
+	EXPECT_EQ(mode.bih.biPlanes,		bih.biPlanes);
+	EXPECT_EQ(mode.bih.biBitCount,		bih.biBitCount);
+	EXPECT_EQ(mode.bih.biCompression,	bih.biCompression);
+	EXPECT_EQ(mode.bih.biSizeImage,		bih.biSizeImage);
+	//EXPECT_EQ(mode.bih.biXPelsPerMeter,	bih.biXPelsPerMeter);
+	//EXPECT_EQ(mode.bih.biYPelsPerMeter,	bih.biYPelsPerMeter);
+	EXPECT_EQ(mode.bih.biClrUsed,		bih.biClrUsed);
+	EXPECT_EQ(mode.bih.biClrImportant,	bih.biClrImportant);
+
+	// TODO: Compare the image data.
 }
 
 // Test cases.
 
+// NOTE: 32-bit ARGB bitmaps use BI_BITFIELDS.
+// 24-bit RGB bitmaps use BI_RGB.
+// 256-color bitmaps use BI_RGB, unless they're RLE-compressed,
+// in which case they use BI_RLE8.
+
 // gl_triangle PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_triangle.RGB24.png"),
+			_RP("gl_triangle.RGB24.bmp.gz"),
 			{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				400, 352, 1, 24, BI_RGB, 400*352*(24/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.tRNS.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_triangle.RGB24.tRNS.png"),
+			_RP("gl_triangle.RGB24.tRNS.bmp.gz"),
 			{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_triangle.ARGB32.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_triangle.ARGB32.png"),
+			_RP("gl_triangle.ARGB32.bmp.gz"),
 			{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_triangle.gray.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_triangle.gray.png"),
+			_RP("gl_triangle.gray.bmp.gz"),
 			{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				400, 352, 1, 8, BI_RGB, 400*352,
+				3936, 3936, 256, 256},
 			rp_image::FORMAT_CI8)
 		));
 
 // gl_quad PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_quad.RGB24.png"),
+			_RP("gl_quad.RGB24.bmp.gz"),
 			{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				480, 384, 1, 24, BI_RGB, 480*384*(24/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.tRNS.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_quad.RGB24.tRNS.png"),
+			_RP("gl_quad.RGB24.tRNS.bmp.gz"),
 			{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_quad.ARGB32.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_quad.ARGB32.png"),
+			_RP("gl_quad.ARGB32.bmp.gz"),
 			{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
+				3936, 3936, 0, 0},
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(_RP("gl_quad.gray.png"),
+		RpImageLoaderTest_mode(
+			_RP("gl_quad.gray.png"),
+			_RP("gl_quad.gray.bmp.gz"),
 			{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
+			{sizeof(BITMAPINFOHEADER),
+				480, 384, 1, 8, BI_RGB, 480*384,
+				3936, 3936, 256, 256},
 			rp_image::FORMAT_CI8)
 		));
 } }

@@ -21,18 +21,8 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 # Copy the reference images to the test directory.
-FILE(COPY
-	gl_triangle.ARGB32.png
-	gl_triangle.RGB24.png
-	gl_triangle.RGB24.tRNS.png
-	gl_triangle.gray.png
-	gl_quad.ARGB32.png
-	gl_quad.RGB24.png
-	gl_quad.RGB24.tRNS.png
-	gl_quad.gray.png
-	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
-	)
-
+FILE(GLOB test_images *.png *.bmp.gz)
+FILE(COPY ${test_images} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # RpImageLoader test.
 IF(NOT WIN32)
