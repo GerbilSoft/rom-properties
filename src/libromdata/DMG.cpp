@@ -463,7 +463,7 @@ int DMG::loadFieldData(void)
 	}else{
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
 	}
-	m_fields->addData_string(publisher);
+	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
 	
 	// Hardware
 	m_fields->addData_string(dmg_hardware_names[CartType(romHeader->cart_type).hardware]);
