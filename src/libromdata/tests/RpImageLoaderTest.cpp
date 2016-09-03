@@ -221,7 +221,10 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(_RP("gl_triangle.ARGB32.png"),
 			{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
-			rp_image::FORMAT_ARGB32)
+			rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_triangle.gray.png"),
+			{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
+			rp_image::FORMAT_CI8)
 		));
 
 // gl_quad PNG image tests.
@@ -235,7 +238,10 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(_RP("gl_quad.ARGB32.png"),
 			{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
-			rp_image::FORMAT_ARGB32)
+			rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_quad.gray.png"),
+			{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
+			rp_image::FORMAT_CI8)
 		));
 } }
 

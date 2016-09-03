@@ -133,12 +133,10 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	switch (color_type) {
 		case PNG_COLOR_TYPE_GRAY:
 			// FIXME: Handle grayscale images properly.
-			assert(false);
-			break;
+			return nullptr;
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
 			// FIXME: Handle grayscale images properly.
-			assert(false);
-			break;
+			return nullptr;
 		case PNG_COLOR_TYPE_PALETTE:
 			// FIXME: Verify 1, 2, and 4.
 			assert(bit_depth != 8);
@@ -155,7 +153,6 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			break;
 		default:
 			// Unsupported color type.
-			assert(false);
 			return nullptr;
 	}
 
