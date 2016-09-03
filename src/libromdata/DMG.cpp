@@ -524,7 +524,7 @@ int DMG::loadFieldData(void)
 		checksum-=header[i];
 	}
 	if(checksum - romHeader->header_checksum){
-		len = snprintf(buffer, sizeof(buffer), "0x02X (INVALID; should be 0x%02X)",
+		len = snprintf(buffer, sizeof(buffer), "0x%02X (INVALID; should be 0x%02X)",
 			checksum, romHeader->header_checksum);
 	}
 	else{
