@@ -22,3 +22,6 @@ addons:
 # Compile using CMake.
 script:
   - mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && cmake --build .
+
+notifications:
+  irc: "ircs://irc.badnik.zone:6697/#GensGS"
