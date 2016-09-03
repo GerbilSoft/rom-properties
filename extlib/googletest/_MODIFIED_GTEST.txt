@@ -1,0 +1,14 @@
+This copy of googletest-1.8.0 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- Removed .travis.yml and appveyor.xml.
+
+- Disabled INSTALL() rules.
+
+- Forced static library builds.
+
+- Disabled some options for enabling unit tests and other
+  settings that aren't necessary for rom-properties.
+
+To obtain the original googletest-1.8.0, visit https://github.com/google/googletest .
