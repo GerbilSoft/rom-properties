@@ -7,9 +7,12 @@
 
 # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to
 # make it prominent in the GUI.
-option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
+# NOTE: Disabled for rom-properties.
+#option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
 
-option(gmock_build_tests "Build all of Google Mock's own tests." OFF)
+# NOTE: Disabled for rom-properties.
+#option(gmock_build_tests "Build all of Google Mock's own tests." OFF)
+SET(gmock_build_tests OFF)
 
 # A directory to find Google Test sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.txt")

@@ -146,15 +146,18 @@ endmacro()
 function(cxx_library_with_type name type cxx_flags)
   # type can be either STATIC or SHARED to denote a static or shared library.
   # ARGN refers to additional arguments after 'cxx_flags'.
-  add_library(${name} ${type} ${ARGN})
+  # NOTE: ${type} has been disabled for rom-properties.
+  #add_library(${name} ${type} ${ARGN})
+  add_library(${name} STATIC ${ARGN})
   set_target_properties(${name}
     PROPERTIES
     COMPILE_FLAGS "${cxx_flags}")
-  if (BUILD_SHARED_LIBS OR type STREQUAL "SHARED")
-    set_target_properties(${name}
-      PROPERTIES
-      COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
-  endif()
+  # NOTE: Disabled for rom-properties.
+  #if (BUILD_SHARED_LIBS OR type STREQUAL "SHARED")
+  #  set_target_properties(${name}
+  #    PROPERTIES
+  #    COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
+  #endif()
   if (CMAKE_USE_PTHREADS_INIT)
     target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
   endif()

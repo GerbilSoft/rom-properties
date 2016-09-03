@@ -7,7 +7,8 @@
 
 # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to
 # make it prominent in the GUI.
-option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
+# NOTE: Disabled for rom-properties.
+#option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
 
 # When other libraries are using a shared version of runtime libraries,
 # Google Test also has to use one.
@@ -16,16 +17,21 @@ option(
   "Use shared (DLL) run-time lib even when Google Test is built as static lib."
   OFF)
 
-option(gtest_build_tests "Build all of gtest's own tests." OFF)
+# NOTE: Disabled for rom-properties.
+#option(gtest_build_tests "Build all of gtest's own tests." OFF)
+SET(gtest_build_tests OFF)
 
-option(gtest_build_samples "Build gtest's sample programs." OFF)
+# NOTE: Disabled for rom-properties.
+#option(gtest_build_samples "Build gtest's sample programs." OFF)
+SET(gtest_build_samples OFF)
 
 option(gtest_disable_pthreads "Disable uses of pthreads in gtest." OFF)
 
-option(
-  gtest_hide_internal_symbols
-  "Build gtest with internal symbols hidden in shared libraries."
-  OFF)
+# NOTE: Disabled for rom-properties.
+#option(
+#  gtest_hide_internal_symbols
+#  "Build gtest with internal symbols hidden in shared libraries."
+#  OFF)
 
 # Defines pre_project_set_up_hermetic_build() and set_up_hermetic_build().
 include(cmake/hermetic_build.cmake OPTIONAL)
@@ -51,10 +57,11 @@ if (COMMAND set_up_hermetic_build)
   set_up_hermetic_build()
 endif()
 
-if (gtest_hide_internal_symbols)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-  set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-endif()
+# NOTE: Disabled for rom-properties.
+#if (gtest_hide_internal_symbols)
+#  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+#  set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+#endif()
 
 # Define helper functions and macros used by Google Test.
 include(cmake/internal_utils.cmake)
