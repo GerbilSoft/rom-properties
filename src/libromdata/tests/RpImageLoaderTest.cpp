@@ -126,6 +126,15 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 			const rp_image *img,
 			const uint8_t *pBits);
 
+		/**
+		 * Compare an ARGB32 rp_image to a 32-bit ARGB bitmap.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 */
+		static void Compare_ARGB32_BMP32(
+			const rp_image *img,
+			const uint8_t *pBits);
+
 	public:
 		// Image buffers.
 		ao::uvector<uint8_t> m_png_buf;
@@ -367,17 +376,49 @@ void RpImageLoaderTest::Compare_ARGB32_BMP24(
 		// 24-bit:          RRRRRRRR GGGGGGGG BBBBBBBB
 		// NOTE: We're reading the individual bytes from the BMP.
 		// BMP uses little-endian, so the Blue channel is first.
-		const uint32_t *src = reinterpret_cast<const uint32_t*>(img->scanLine(y));
-		for (int x = img->width()-1; x >= 0; x--, src++, pBits += 3) {
+		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits += 3) {
 			// Convert the source's 24-bit pixel to 32-bit.
 			uint32_t bmp32 = pBits[0] | pBits[1] << 8 | pBits[2] << 16;
 			// Pixel is fully opaque.
 			bmp32 |= 0xFF000000;
-			xor_result |= (*src ^ bmp32);
+			xor_result |= (*pSrc ^ bmp32);
 		}
 	}
 
-	EXPECT_EQ(0, xor_result) << "Comparison of ARGB32 rp_image to 24-bit RGB BMP failed.";
+	EXPECT_EQ(0U, xor_result) << "Comparison of ARGB32 rp_image to 24-bit RGB BMP failed.";
+}
+
+/**
+ * Compare an ARGB32 rp_image to a 32-bit RGB bitmap.
+ * @param img rp_image
+ * @param pBfh BITMAPFILEHEADER
+ * @param pBih BITMAPINFOHEADER
+ * @param pBits Bitmap image data.
+ */
+void RpImageLoaderTest::Compare_ARGB32_BMP32(
+	const rp_image *img,
+	const uint8_t *pBits)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+	const uint32_t *pBmp32 = reinterpret_cast<const uint32_t*>(pBits);
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+	for (int y = img->height()-1; y >= 0; y--) {
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		// BMP uses little-endian, so byteswapping is needed.
+		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBmp32++) {
+			xor_result |= (*pSrc ^ *pBmp32);
+		}
+	}
+
+	EXPECT_EQ(0U, xor_result) << "Comparison of ARGB32 rp_image to 32-bit ARGB BMP failed.";
 }
 
 /**
@@ -445,11 +486,18 @@ TEST_P(RpImageLoaderTest, loadTest)
 
 	// Compare the image data.
 	const uint8_t *pBits = m_bmp_buf.data() + bfh.bfOffBits;
-	if (img->format() == rp_image::FORMAT_ARGB32 &&
-	    bih.biBitCount == 24 && bih.biCompression == BI_RGB)
-	{
-		// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
-		ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
+	if (img->format() == rp_image::FORMAT_ARGB32) {
+		if (bih.biBitCount == 24 && bih.biCompression == BI_RGB) {
+			// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
+		} else if (bih.biBitCount == 32 && bih.biCompression == BI_BITFIELDS) {
+			// Comparing an ARGB32 rp_image to a 32-bit ARGB bitmap.
+			// TODO: Check the bitfield masks?
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP32(img.get(), pBits));
+		} else {
+			// Unsupported comparison.
+			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
+		}
 	} else {
 		// Unsupported comparison.
 		ASSERT_TRUE(false) << "Image format comparison isn't supported.";
