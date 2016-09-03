@@ -227,6 +227,8 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 					// Assume the color is opaque.
 					color |= 0xFF000000;
 				}
+
+				*img_palette = color;
 			}
 		}
 	}
