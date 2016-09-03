@@ -67,6 +67,16 @@ class RpPngPrivate
 		static void png_io_IRpFile_read(png_structp png_ptr, png_bytep buf, png_size_t size);
 
 		/**
+		* Read the palette for a CI8 image.
+		* @param png_ptr png_structp
+		* @param info_ptr png_infop
+		* @param color_type PNG color type.
+		* @param img rp_image to store the palette in.
+		*/
+		static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
+					     int color_type, rp_image *img);
+
+		/**
 		 * Load a PNG image from an opened PNG handle.
 		 * @param png_ptr png_structp
 		 * @param info_ptr png_infop
@@ -100,6 +110,104 @@ void RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep buf, png_s
 			// Zero out the rest of the buffer.
 			memset(&buf[sz], 0, size-sz);
 		}
+	}
+}
+
+/**
+ * Read the palette for a CI8 image.
+ * @param png_ptr png_structp
+ * @param info_ptr png_infop
+ * @param color_type PNG color type.
+ * @param img rp_image to store the palette in.
+ */
+void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
+				    int color_type, rp_image *img)
+{
+	png_colorp png_palette;
+	png_bytep trans;
+	int num_palette, num_trans;
+
+	assert(img->format() == rp_image::FORMAT_CI8);
+	if (img->format() != rp_image::FORMAT_CI8)
+		return;
+
+	// rp_image's palette data.
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t *img_palette = img->palette();
+	assert(img_palette != nullptr);
+	if (!img_palette)
+		return;
+
+	switch (color_type) {
+		case PNG_COLOR_TYPE_PALETTE:
+			// Get the palette from the PNG image.
+			if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) != PNG_INFO_PLTE)
+				break;
+
+			// Check if there's a tRNS chunk.
+			if (png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr) != PNG_INFO_tRNS) {
+				// No tRNS chunk.
+				trans = nullptr;
+			}
+
+			// Combine the 24-bit RGB palette with the transparency information.
+			for (int i = std::min(num_palette, img->palette_len());
+				i > 0; i--, img_palette++, png_palette++)
+			{
+				uint32_t color = (png_palette->blue << 0) |
+							(png_palette->green << 8) |
+							(png_palette->red << 16);
+				if (trans && num_trans > 0) {
+					// Copy the transparency information.
+					color |= (*trans << 24);
+					num_trans--;
+				} else {
+					// No transparency information.
+					// Assume the color is opaque.
+					color |= 0xFF000000;
+				}
+
+				*img_palette = color;
+			}
+
+			if (num_palette < img->palette_len()) {
+				// Clear the rest of the palette.
+				// (NOTE: 0 == fully transparent.)
+				for (int i = img->palette_len()-num_palette;
+				i > 0; i--, img_palette++)
+				{
+					*img_palette = 0;
+				}
+			}
+			break;
+
+		case PNG_COLOR_TYPE_GRAY:
+			// Create a default grayscale palette.
+			// NOTE: If the palette isn't 256 entries long,
+			// the grayscale values will be incorrect.
+			// TODO: Handle the tRNS chunk?
+			for (int i = 0; i < std::min(256, img->palette_len());
+				i++, img_palette++)
+			{
+				uint8_t gray = (uint8_t)i;
+				*img_palette = (gray | gray << 8 | gray << 16);
+				// TODO: tRNS chunk handling.
+				*img_palette |= 0xFF000000;
+			}
+
+			if (img->palette_len() > 256) {
+				// Clear the rest of the palette.
+				// (NOTE: 0 == fully transparent.)
+				for (int i = img->palette_len()-256; i > 0;
+					i--, img_palette++)
+				{
+					*img_palette = 0;
+				}
+			}
+			break;
+
+		default:
+			break;
 	}
 }
 
@@ -215,85 +323,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 
 	// If CI8, read the palette.
 	if (fmt == rp_image::FORMAT_CI8) {
-		png_colorp png_palette;
-		png_bytep trans;
-		int num_palette, num_trans;
-
-		// rp_image's palette data.
-		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-		uint32_t *img_palette = img->palette();
-
-		switch (color_type) {
-			case PNG_COLOR_TYPE_PALETTE:
-				// Get the palette from the PNG image.
-				if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) != PNG_INFO_PLTE)
-					break;
-
-				// Check if there's a tRNS chunk.
-				if (png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr) != PNG_INFO_tRNS) {
-					// No tRNS chunk.
-					trans = nullptr;
-				}
-
-				// Combine the 24-bit RGB palette with the transparency information.
-				for (int i = std::min(num_palette, img->palette_len());
-				     i > 0; i--, img_palette++, png_palette++)
-				{
-					uint32_t color = (png_palette->blue << 0) |
-							 (png_palette->green << 8) |
-							 (png_palette->red << 16);
-					if (trans && num_trans > 0) {
-						// Copy the transparency information.
-						color |= (*trans << 24);
-						num_trans--;
-					} else {
-						// No transparency information.
-						// Assume the color is opaque.
-						color |= 0xFF000000;
-					}
-
-					*img_palette = color;
-				}
-
-				if (num_palette < img->palette_len()) {
-					// Clear the rest of the palette.
-					// (NOTE: 0 == fully transparent.)
-					for (int i = img->palette_len()-num_palette;
-					i > 0; i--, img_palette++)
-					{
-						*img_palette = 0;
-					}
-				}
-				break;
-
-			case PNG_COLOR_TYPE_GRAY:
-				// Create a default grayscale palette.
-				// NOTE: If the palette isn't 256 entries long,
-				// the grayscale values will be incorrect.
-				// TODO: Handle the tRNS chunk?
-				for (int i = 0; i < std::min(256, img->palette_len());
-				     i++, img_palette++)
-				{
-					uint8_t gray = (uint8_t)i;
-					*img_palette = (gray | gray << 8 | gray << 16);
-					// TODO: tRNS chunk handling.
-					*img_palette |= 0xFF000000;
-				}
-
-				if (img->palette_len() > 256) {
-					// Clear the rest of the palette.
-					// (NOTE: 0 == fully transparent.)
-					for (int i = img->palette_len()-256; i > 0;
-					     i--, img_palette++)
-					{
-						*img_palette = 0;
-					}
-				}
-				break;
-
-			default:
-				break;
-		}
+		Read_CI8_Palette(png_ptr, info_ptr, color_type, img);
 	}
 
 	// Done reading the PNG image.
