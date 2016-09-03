@@ -52,7 +52,7 @@ IF(CMAKE_BUILD_TYPE MATCHES ^$)
 ENDIF()
 
 # Check for platform-specific functionality.
-INCLUDE(cmake/platform.cmake)
+INCLUDE(cmake/platform.cmake NO_POLICY_SCOPE)
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(src)

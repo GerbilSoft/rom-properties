@@ -1,7 +1,4 @@
 PROJECT(rom-properties-kde4)
-# CMake 2.8.11 adds TARGET_INCLUDE_DIRECTORIES() and Qt4::xxx targets, similar to Qt5.
-# CMake 2.8.12 automates adding compile flags for Qt5, e.g. -fPIC on Linux.
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 # Find Qt4.
 SET(QT4_NO_LINK_QTMAIN 1)
