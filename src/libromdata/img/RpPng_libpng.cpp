@@ -212,7 +212,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			}
 
 			// Combine the 24-bit RGB palette with the transparency information.
-			for (int i = std::max(num_palette, img->palette_len());
+			for (int i = std::min(num_palette, img->palette_len());
 			     i > 0; i--, img_palette++, png_palette++)
 			{
 				uint32_t color = (png_palette->blue << 0) |
@@ -229,6 +229,16 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 				}
 
 				*img_palette = color;
+			}
+
+			if (num_palette < img->palette_len()) {
+				// Clear the rest of the palette.
+				// (NOTE: 0 == fully transparent.)
+				for (int i = img->palette_len()-num_palette;
+				     i > 0; i--, img_palette++)
+				{
+					*img_palette = 0;
+				}
 			}
 		}
 	}
