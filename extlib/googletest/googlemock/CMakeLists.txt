@@ -103,10 +103,11 @@ endif()
 ########################################################################
 #
 # Install rules
-install(TARGETS gmock gmock_main
-  DESTINATION lib)
-install(DIRECTORY ${gmock_SOURCE_DIR}/include/gmock
-  DESTINATION include)
+# NOTE: Disabled for rom-properties.
+#install(TARGETS gmock gmock_main
+#  DESTINATION lib)
+#install(DIRECTORY ${gmock_SOURCE_DIR}/include/gmock
+#  DESTINATION include)
 
 ########################################################################
 #
