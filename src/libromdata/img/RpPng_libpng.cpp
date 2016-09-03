@@ -272,8 +272,14 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			break;
 		case PNG_COLOR_TYPE_RGB:
 			// 24-bit RGB.
-			is24bit = true;
 			fmt = rp_image::FORMAT_ARGB32;
+			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS) {
+				// tRNS chunk is present. Use it as the alpha channel.
+				png_set_tRNS_to_alpha(png_ptr);
+			} else {
+				// 24-bit RGB with no transparency.
+				is24bit = true;
+			}
 			break;
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 			// 32-bit ARGB.
