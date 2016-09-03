@@ -414,7 +414,8 @@ void RpImageLoaderTest::Compare_ARGB32_BMP32(
 		// BMP uses little-endian, so byteswapping is needed.
 		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBmp32++) {
-			xor_result |= (*pSrc ^ *pBmp32);
+			const uint32_t pxBmp = le32_to_cpu(*pBmp32);
+			xor_result |= (*pSrc ^ pxBmp);
 		}
 	}
 
