@@ -30,7 +30,9 @@
 // libromdata
 #include "common.h"
 #include "byteswap.h"
+#include "uvector.h"
 #include "TextFuncs.hpp"
+
 #include "file/RpFile.hpp"
 #include "file/RpMemFile.hpp"
 #include "img/rp_image.hpp"
@@ -72,14 +74,9 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 	protected:
 		RpImageLoaderTest()
 			: ::testing::TestWithParam<RpImageLoaderTest_mode>()
-			, m_pngBuf(nullptr)
-			, m_pngBuf_len(0)
 		{ }
 
-		virtual ~RpImageLoaderTest()
-		{
-			free(m_pngBuf);
-		}
+		virtual void SetUp(void) override;
 
 	public:
 		/**
@@ -90,9 +87,8 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 		static void Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src);
 
 	public:
-		// PNG image buffer.
-		uint8_t *m_pngBuf;
-		size_t m_pngBuf_len;
+		// Image buffers.
+		ao::uvector<uint8_t> m_png_buf;
 };
 
 /**
@@ -101,6 +97,37 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 inline ::std::ostream& operator<<(::std::ostream& os, const RpImageLoaderTest_mode& mode) {
 	return os << rp_string_to_utf8(mode.png_filename);
 };
+
+/**
+ * SetUp() function.
+ * Run before each test.
+ */
+void RpImageLoaderTest::SetUp(void)
+{
+	if (::testing::UnitTest::GetInstance()->current_test_info()->value_param() == nullptr) {
+		// Not a parameterized test.
+		return;
+	}
+
+	// Parameterized test.
+	const RpImageLoaderTest_mode &mode = GetParam();
+
+	// Open the PNG image file being tested.
+	auto_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
+	ASSERT_TRUE(file.get() != nullptr);
+	ASSERT_TRUE(file->isOpen());
+
+	// Maximum image size.
+	ASSERT_LE(file->fileSize(), MAX_IMAGE_FILESIZE) << "Test image is too big.";
+
+	// Read the PNG image into memory.
+	size_t pngSize = (size_t)file->fileSize();
+	m_png_buf.resize(pngSize);
+	ASSERT_EQ(pngSize, m_png_buf.size());
+	size_t readSize = file->read(m_png_buf.data(), pngSize);
+	ASSERT_EQ(pngSize, readSize) << "Error loading image file: "
+		<< rp_string_to_utf8(mode.png_filename);
+}
 
 /**
  * Load and verify an IHDR chunk.
@@ -154,34 +181,18 @@ TEST_P(RpImageLoaderTest, loadTest)
 {
 	const RpImageLoaderTest_mode &mode = GetParam();
 
-	// TODO: Load the PNG image into memory and verify its parameters.
-
-	// Open the PNG image file.
-	auto_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
-	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen()) << "RpFile failed to open "
-		<< rp_string_to_utf8(mode.png_filename);
-
-	// Maximum image size.
-	ASSERT_LE(file->fileSize(), MAX_IMAGE_FILESIZE) << "Test image is too big.";
-
-	// Read the PNG image into memory.
-	size_t pngSize = (size_t)file->fileSize();
-	m_pngBuf = (uint8_t*)malloc(pngSize);
-	ASSERT_TRUE(m_pngBuf != nullptr) << "malloc(" << pngSize << ") failed.";
-	size_t readSize = file->read(m_pngBuf, pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error reading image "
-		<< rp_string_to_utf8(mode.png_filename);
-	m_pngBuf_len = pngSize;
+	// Make sure the PNG image was actually loaded.
+	ASSERT_GT(m_png_buf.size(), sizeof(PNG_magic) + sizeof(PNG_IHDR_full_t)) <<
+		"PNG image is too small.";
 
 	// Verify the PNG image's magic number.
-	ASSERT_EQ(0, memcmp(PNG_magic, m_pngBuf, sizeof(PNG_magic))) <<
+	ASSERT_EQ(0, memcmp(PNG_magic, m_png_buf.data(), sizeof(PNG_magic))) <<
 		"PNG magic number is incorrect.";
 
 	// Load and verify the IHDR.
 	// This should be located immediately after the magic number.
 	PNG_IHDR_t ihdr;
-	ASSERT_NO_FATAL_FAILURE(Load_Verify_IHDR(&ihdr, &m_pngBuf[8]));
+	ASSERT_NO_FATAL_FAILURE(Load_Verify_IHDR(&ihdr, &m_png_buf.data()[8]));
 
 	// Check if the IHDR values are correct.
 	EXPECT_EQ(mode.ihdr.width, ihdr.width);
@@ -193,13 +204,12 @@ TEST_P(RpImageLoaderTest, loadTest)
 	EXPECT_EQ(mode.ihdr.interlace_method, ihdr.interlace_method);
 
 	// Create an RpMemFile.
-	// This also deletes the previous IRpFile object.
-	file.reset(new RpMemFile(m_pngBuf, m_pngBuf_len));
-	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen());
+	auto_ptr<IRpFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	ASSERT_TRUE(png_mem_file.get() != nullptr);
+	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	auto_ptr<rp_image> img(RpImageLoader::load(file.get()));
+	auto_ptr<rp_image> img(RpImageLoader::load(png_mem_file.get()));
 	ASSERT_TRUE(img.get() != nullptr) << "RpImageLoader failed to load the image.";
 
 	// Check the rp_image parameters.
