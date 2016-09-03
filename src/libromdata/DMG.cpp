@@ -83,18 +83,18 @@ static const RomFields::BitfieldDesc dmg_feature_bitfield = {
 };
 
 static const struct RomFields::Desc dmg_fields[] = {
-	{_RP("Title"), RomFields::RFT_STRING, nullptr},
-	{_RP("GameID"), RomFields::RFT_STRING, nullptr},
-	{_RP("System"), RomFields::RFT_BITFIELD, &dmg_system_bitfield},
-	{_RP("Entry Point"), RomFields::RFT_STRING, nullptr},
-	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
-	{_RP("Hardware"), RomFields::RFT_STRING, nullptr},
-	{_RP("Features"), RomFields::RFT_BITFIELD, &dmg_feature_bitfield},
-	{_RP("ROM Size"), RomFields::RFT_STRING, nullptr},
-	{_RP("RAM Size"), RomFields::RFT_STRING, nullptr},
-	{_RP("Region"), RomFields::RFT_STRING, nullptr},
-	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
-	{_RP("Checksum"), RomFields::RFT_STRING, nullptr},
+	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("GameID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("System"), RomFields::RFT_BITFIELD, {&dmg_system_bitfield}},
+	{_RP("Entry Point"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Hardware"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Features"), RomFields::RFT_BITFIELD, {&dmg_feature_bitfield}},
+	{_RP("ROM Size"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("RAM Size"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Checksum"), RomFields::RFT_STRING, {nullptr}},
 };
 
 // Cartrige hardware
