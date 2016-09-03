@@ -206,8 +206,9 @@ inline int RomSize(uint8_t type){
 }
 
 static const unsigned dmg_ram_size[] = {
-	0,2,8,42,128,64
+	0,2,8,32,128,64
 };
+
 /**
  * Nintendo's logo which is checked by bootrom.
  * (Top half only.)
