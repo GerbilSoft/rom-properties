@@ -21,3 +21,6 @@ addons:
 
 # Run the build script.
 script: ./travis.sh
+
+notifications:
+  irc: "ircs://irc.badnik.zone:6697/#GensGS"
