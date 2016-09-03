@@ -84,7 +84,7 @@ static const RomFields::BitfieldDesc dmg_feature_bitfield = {
 
 static const struct RomFields::Desc dmg_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("GameID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("System"), RomFields::RFT_BITFIELD, {&dmg_system_bitfield}},
 	{_RP("Entry Point"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
