@@ -181,7 +181,7 @@ static const dmg_cart_type dmg_cart_types_end[] = {
 	{DMG_HW_HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
-inline const dmg_cart_type& CartType(uint8_t type){
+static inline const dmg_cart_type& CartType(uint8_t type){
 	static const dmg_cart_type unk= {DMG_HW_UNK, 0};
 	if(type<ARRAY_SIZE(dmg_cart_types_start)){
 		return dmg_cart_types_start[type];
@@ -193,7 +193,7 @@ inline const dmg_cart_type& CartType(uint8_t type){
 	return unk;
 }
 
-inline int RomSize(uint8_t type){
+static inline int RomSize(uint8_t type){
 	static const int rom_size[] = { 32,64,128,256,512,1024,2048,4096 };
 	static const int rom_size_52[] = { 1152,1280,1536 };
 	if(type<ARRAY_SIZE(rom_size)){
@@ -205,7 +205,7 @@ inline int RomSize(uint8_t type){
 	return -1u;
 }
 
-static const unsigned dmg_ram_size[] = {
+static const uint8_t dmg_ram_size[] = {
 	0,2,8,32,128,64
 };
 
@@ -491,28 +491,23 @@ int DMG::loadFieldData(void)
 		m_fields->addData_string(_RP("Unknown"));
 	}
 	else{
-		int ram_size = dmg_ram_size[romHeader->ram_size];
-		if(ram_size<0){
-			m_fields->addData_string(_RP("Unknown"));
-		}
-		else if(ram_size==0 && CartType(romHeader->cart_type).hardware == DMG_HW_MBC2){
+		uint8_t ram_size = dmg_ram_size[romHeader->ram_size];
+		if (ram_size == 0 && CartType(romHeader->cart_type).hardware == DMG_HW_MBC2) {
 			// Not really RAM, but whatever
 			m_fields->addData_string(_RP("512 x 4 bits"));
-		}
-		else if(ram_size==0){
+		} else if(ram_size == 0) {
 			m_fields->addData_string(_RP("No RAM"));
-		}
-		else{
+		} else {
 			if(ram_size>8){
-				len = snprintf(buffer,sizeof(buffer),"%d KiB (%d banks)",ram_size,ram_size/8);
+				len = snprintf(buffer,sizeof(buffer),"%u KiB (%u banks)",ram_size,ram_size/8);
 			}
 			else{
-				len = snprintf(buffer,sizeof(buffer),"%d KiB",ram_size);
+				len = snprintf(buffer,sizeof(buffer),"%u KiB",ram_size);
 			}
 			m_fields->addData_string(ascii_to_rp_string(buffer,len));
 		}
 	}
-	
+
 	// Region
 	m_fields->addData_string(romHeader->region?_RP("Non-Japanese"):_RP("Japanese"));
 	
