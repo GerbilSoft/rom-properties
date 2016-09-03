@@ -76,6 +76,7 @@ SET(libromdata_H
 	libwbfs.h
 	gcn_structs.h
 	DMG.hpp
+	uvector.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
