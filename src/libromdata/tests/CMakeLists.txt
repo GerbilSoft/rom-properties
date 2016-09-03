@@ -31,7 +31,12 @@ FILE(COPY
 
 # RpImageLoader test.
 ADD_EXECUTABLE(RpImageLoaderTest RpImageLoaderTest.cpp)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest romdata8 ${GTEST_LIBRARY})
+TARGET_LINK_LIBRARIES(RpImageLoaderTest
+	romdata8
+	${PNG_LIBRARY}
+	${ZLIB_LIBRARY}
+	${GTEST_LIBRARY}
+	)
 DO_SPLIT_DEBUG(RpImageLoaderTest)
 ADD_TEST(NAME RpImageLoaderTest
 	COMMAND RpImageLoaderTest
