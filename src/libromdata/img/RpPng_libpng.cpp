@@ -32,6 +32,20 @@
 // Image format libraries.
 #include <png.h>
 
+#if PNG_LIBPNG_VER < 10209 || \
+    (PNG_LIBPNG_VER == 10209 && \
+        (PNG_LIBPNG_VER_BUILD >= 1 && PNG_LIBPNG_VER_BUILD < 8))
+/**
+ * libpng-1.2.9beta8 added png_set_expand_gray_1_2_4_to_8()
+ * as a replacement for png_set_gray_1_2_4_to_8().
+ * The old function was removed in libpng-1.4.0beta1.
+ *
+ * This macro is for compatibility with older libpng.
+ */
+#define png_set_expand_gray_1_2_4_to_8(png_ptr) \
+	png_set_gray_1_2_4_to_8(png_ptr)
+#endif
+
 namespace LibRomData {
 
 class RpPngPrivate
@@ -132,8 +146,14 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	rp_image::Format fmt;
 	switch (color_type) {
 		case PNG_COLOR_TYPE_GRAY:
-			// FIXME: Handle grayscale images properly.
-			return nullptr;
+			// Grayscale is handled as a 256-color image
+			// with a grayscale palette.
+			fmt = rp_image::FORMAT_CI8;
+			if (bit_depth < 8) {
+				// Expand to 8-bit grayscale.
+				png_set_expand_gray_1_2_4_to_8(png_ptr);
+			}
+			break;
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
 			// FIXME: Handle grayscale images properly.
 			return nullptr;
@@ -203,43 +223,76 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		uint32_t *img_palette = img->palette();
 
-		// Get the palette from the PNG image.
-		if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) == PNG_INFO_PLTE) {
-			// Check if there's a tRNS chunk.
-			if (png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr) != PNG_INFO_tRNS) {
-				// No tRNS chunk.
-				trans = nullptr;
-			}
+		switch (color_type) {
+			case PNG_COLOR_TYPE_PALETTE:
+				// Get the palette from the PNG image.
+				if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) != PNG_INFO_PLTE)
+					break;
 
-			// Combine the 24-bit RGB palette with the transparency information.
-			for (int i = std::min(num_palette, img->palette_len());
-			     i > 0; i--, img_palette++, png_palette++)
-			{
-				uint32_t color = (png_palette->blue << 0) |
-						 (png_palette->green << 8) |
-						 (png_palette->red << 16);
-				if (trans && num_trans > 0) {
-					// Copy the transparency information.
-					color |= (*trans << 24);
-					num_trans--;
-				} else {
-					// No transparency information.
-					// Assume the color is opaque.
-					color |= 0xFF000000;
+				// Check if there's a tRNS chunk.
+				if (png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr) != PNG_INFO_tRNS) {
+					// No tRNS chunk.
+					trans = nullptr;
 				}
 
-				*img_palette = color;
-			}
-
-			if (num_palette < img->palette_len()) {
-				// Clear the rest of the palette.
-				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-num_palette;
-				     i > 0; i--, img_palette++)
+				// Combine the 24-bit RGB palette with the transparency information.
+				for (int i = std::min(num_palette, img->palette_len());
+				     i > 0; i--, img_palette++, png_palette++)
 				{
-					*img_palette = 0;
+					uint32_t color = (png_palette->blue << 0) |
+							 (png_palette->green << 8) |
+							 (png_palette->red << 16);
+					if (trans && num_trans > 0) {
+						// Copy the transparency information.
+						color |= (*trans << 24);
+						num_trans--;
+					} else {
+						// No transparency information.
+						// Assume the color is opaque.
+						color |= 0xFF000000;
+					}
+
+					*img_palette = color;
 				}
-			}
+
+				if (num_palette < img->palette_len()) {
+					// Clear the rest of the palette.
+					// (NOTE: 0 == fully transparent.)
+					for (int i = img->palette_len()-num_palette;
+					i > 0; i--, img_palette++)
+					{
+						*img_palette = 0;
+					}
+				}
+				break;
+
+			case PNG_COLOR_TYPE_GRAY:
+				// Create a default grayscale palette.
+				// NOTE: If the palette isn't 256 entries long,
+				// the grayscale values will be incorrect.
+				// TODO: Handle the tRNS chunk?
+				for (int i = 0; i < std::min(256, img->palette_len());
+				     i++, img_palette++)
+				{
+					uint8_t gray = (uint8_t)i;
+					*img_palette = (gray | gray << 8 | gray << 16);
+					// TODO: tRNS chunk handling.
+					*img_palette |= 0xFF000000;
+				}
+
+				if (img->palette_len() > 256) {
+					// Clear the rest of the palette.
+					// (NOTE: 0 == fully transparent.)
+					for (int i = img->palette_len()-256; i > 0;
+					     i--, img_palette++)
+					{
+						*img_palette = 0;
+					}
+				}
+				break;
+
+			default:
+				break;
 		}
 	}
 
