@@ -38,9 +38,10 @@ namespace LibRomData {
 
 static const struct RomFields::Desc vb_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, nullptr},
-	{_RP("GameID"), RomFields::RFT_STRING, nullptr},
+	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
 	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
 	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
+	{_RP("Region"), RomFields::RFT_STRING, nullptr},
 };
 
 /**
@@ -102,6 +103,24 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 /** ROM detection functions. **/
 
 /**
+ * Is character a valid JIS X 0201 codepoint?
+ * @param c The character
+ * @return Wether or not character is valid
+ */
+static bool inline isJISX0201(unsigned char c){
+	return (c>=' ' && c<='~') || (c>0xA0 && c<0xE0);
+}
+
+/**
+ * Is character a valid Game ID character?
+ * @param c The character
+ * @return Wether or not character is valid
+ */
+static bool inline isGameID(char c){
+	return (c>='A' && c<='Z') || (c>='0' && c<='9');
+}
+
+/**
  * Is a ROM image supported by this class?
  * @param info DetectInfo containing ROM detection information.
  * @return Class-specific system ID (>= 0) if supported; -1 if not.
@@ -119,7 +138,24 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 			case 0x80000:
 			case 0x100000:
 			case 0x200000:
-				// TODO: Validate strings
+				// NOTE: The following is true for every Virtual Boy ROM:
+				// 1) First 20 bytes of title are non-control JIS X 0201 characters (padded with space if needed)
+				// 2) 21th byte is a null
+				// 3) Game ID is either VxxJ (for Japan) or VxxE (for USA) (xx are alphanumeric uppercase characters)
+				// 4) ROM version is always 0, but let's not count on that.
+				// 5) And, obviously, the publisher is always valid, but again let's not rely on this
+				// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
+				if(romHeader->title[20] || romHeader->gameid[0] != 'V' || ( romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E' )){
+					return -1;
+				}
+				for(int i=0;i<20;i++){
+					if(!isJISX0201(romHeader->title[i])){
+						return -1;
+					}
+				}
+				if(!isGameID(romHeader->gameid[1]) || !isGameID(romHeader->gameid[2])){
+					return -1;
+				}
 				return 0;
 		}
 	}
@@ -202,18 +238,33 @@ int VirtualBoy::loadFieldData(void)
 	// Virtual Boy ROM header, excluding the vector table.
 	const VB_RomHeader *romHeader = reinterpret_cast<const VB_RomHeader*>(header);
 	
-	
 	// Title
-	m_fields->addData_string(ascii_to_rp_string(romHeader->title,21));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
 	
 	// Game ID
-	m_fields->addData_string(ascii_to_rp_string(romHeader->gameid,4));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->gameid,sizeof(romHeader->gameid)));
 	
 	// Publisher
-	m_fields->addData_string(NintendoPublishers::lookup(romHeader->publisher));
+	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
+	m_fields->addData_string(publisher?publisher:_RP("Unknown"));
 	
 	// Revision
 	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
+	
+	// Region
+	const rp_char* region;
+	switch(romHeader->gameid[3]){
+		case 'J':
+			region = _RP("Japan");
+			break;
+		case 'E':
+			region = _RP("USA");
+			break;
+		default:
+			region = _RP("Unknown");
+			break;
+	}
+	m_fields->addData_string(region);
 	
 	return (int)m_fields->count();
 }

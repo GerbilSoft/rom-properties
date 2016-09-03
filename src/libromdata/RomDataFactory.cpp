@@ -61,15 +61,21 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 	// TODO: File extension? (Needed for .gci)
 	info.ext = nullptr;
 
+	// TODO: figure out a better way to handle "footer" formats
+#define CheckRomDataCustom(sys) \
+	do { \
+		RomData *romData = new sys(file); \
+		if (romData->isValid()) \
+			return romData; \
+		\
+		/* Not actually supported. */ \
+		delete romData; \
+	} while (0)
+	
 #define CheckRomData(sys) \
 	do { \
 		if (sys::isRomSupported_static(&info) >= 0) { \
-			RomData *romData = new sys(file); \
-			if (romData->isValid()) \
-				return romData; \
-			\
-			/* Not actually supported. */ \
-			delete romData; \
+			CheckRomDataCustom(sys); \
 		} \
 	} while (0)
 
@@ -77,7 +83,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 	CheckRomData(GameCube);
 	CheckRomData(NintendoDS);
 	CheckRomData(DMG);
-	CheckRomData(VirtualBoy);
+	CheckRomDataCustom(VirtualBoy);
 
 	// Not supported.
 	return nullptr;
