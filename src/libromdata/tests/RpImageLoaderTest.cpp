@@ -38,13 +38,23 @@ struct RpImageLoaderTest_mode
 {
 	rp_string png_filename;		// PNG image to test.
 
+	// Expected rp_image parameters.
+	int rp_img_w, rp_img_h;
+	rp_image::Format rp_format;
+
 	// TODO: Verify PNG bit depth and color type.
 
 	RpImageLoaderTest_mode()
 		: png_filename(_RP("")) { }
 
-	RpImageLoaderTest_mode(const rp_char *png_filename)
-		: png_filename(png_filename) { }
+	RpImageLoaderTest_mode(const rp_char *png_filename,
+		int rp_img_w, int rp_img_h,
+		rp_image::Format rp_format)
+		: png_filename(png_filename)
+		, rp_img_w(rp_img_w)
+		, rp_img_h(rp_img_h)
+		, rp_format(rp_format)
+	{ }
 };
 
 class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode>
@@ -69,7 +79,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const RpImageLoaderTest_mo
  */
 TEST_P(RpImageLoaderTest, loadTest)
 {
-	RpImageLoaderTest_mode mode = GetParam();
+	const RpImageLoaderTest_mode &mode = GetParam();
 
 	// TODO: Load the PNG image into memory and verify its parameters.
 
@@ -81,6 +91,11 @@ TEST_P(RpImageLoaderTest, loadTest)
 	// Load the PNG image.
 	auto_ptr<rp_image> img(RpImageLoader::load(file.get()));
 	ASSERT_TRUE(img.get() != nullptr);
+
+	// Check the rp_image parameters.
+	EXPECT_EQ(mode.rp_img_w, img->width());
+	EXPECT_EQ(mode.rp_img_h, img->height());
+	EXPECT_EQ(mode.rp_format, img->format());
 }
 
 // Test cases.
@@ -88,17 +103,23 @@ TEST_P(RpImageLoaderTest, loadTest)
 // gl_triangle PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.png")),
-		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.tRNS.png")),
-		RpImageLoaderTest_mode(_RP("gl_triangle.ARGB32.png"))
+		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.png"),
+			400, 352, rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_triangle.RGB24.tRNS.png"),
+			400, 352, rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_triangle.ARGB32.png"),
+			400, 352, rp_image::FORMAT_ARGB32)
 		));
 
 // gl_quad PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.png")),
-		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.tRNS.png")),
-		RpImageLoaderTest_mode(_RP("gl_quad.ARGB32.png"))
+		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.png"),
+			480, 384, rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_quad.RGB24.tRNS.png"),
+			480, 384, rp_image::FORMAT_ARGB32),
+		RpImageLoaderTest_mode(_RP("gl_quad.ARGB32.png"),
+			480, 384, rp_image::FORMAT_ARGB32)
 		));
 } }
 
