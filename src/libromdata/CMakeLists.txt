@@ -45,6 +45,7 @@ SET(libromdata_SRCS
 	DiscReader.cpp
 	WbfsReader.cpp
 	DMG.cpp
+	VirtualBoy.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -68,6 +69,7 @@ SET(libromdata_H
 	IRpFile.hpp
 	RpFile.hpp
 	DMG.hpp
+	VirtualBoy.hpp
 	)
 
 IF(WIN32)

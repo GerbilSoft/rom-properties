@@ -84,13 +84,14 @@ Notes:
 
 ## Current ROM Feature Support Level
 
-|       System      | Properties Tab | Internal Images | External Scans |
-|:-----------------:|:--------------:|:---------------:|:--------------:|
-| Sega Mega Drive   |       Yes      |       N/A       |       No       |
-| Nintendo DS(i)    |       Yes      |       Icon      |       No       |
-| Nintendo GameCube |       Yes      |        No       |      Disc      |
-| Nintendo Wii      |       Yes      |        No       |      Disc      |
-| Nintendo Game Boy |       Yes      |       N/A       |       No       |
+|        System        | Properties Tab | Internal Images | External Scans |
+|:--------------------:|:--------------:|:---------------:|:--------------:|
+| Sega Mega Drive      |       Yes      |       N/A       |       No       |
+| Nintendo DS(i)       |       Yes      |       Icon      |       No       |
+| Nintendo GameCube    |       Yes      |        No       |      Disc      |
+| Nintendo Wii         |       Yes      |        No       |      Disc      |
+| Nintendo Game Boy    |       Yes      |       N/A       |       No       |
+| Nintendo Virtual Boy |       Yes      |       N/A       |       No       |
 
 Notes:
 * Internal icon, banner, and media scan refers to artwork contained within
@@ -113,6 +114,7 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
+* Nintendo Virtual Boy: Plain binary (\*.vb)
 
 ## External Media Downloads
 
@@ -151,3 +153,6 @@ use the pre-downloaded version instead of downloading images as needed.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
   Super Game Boy technical information. Used for ROM format information for
   those systems.
+* [Virtual Boy Programmers Manual](http://www.goliathindustries.com/vb/download/vbprog.pdf):
+  Virtual Boy technical information. Used for ROM format information for that
+  system.
