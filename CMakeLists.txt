@@ -5,6 +5,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
+# Testing functions.
+INCLUDE(cmake/gtest.cmake)
 
 LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
@@ -55,6 +57,7 @@ ENDIF()
 INCLUDE(cmake/platform.cmake)
 
 # Project subdirectories.
+ADD_SUBDIRECTORY(extlib)
 ADD_SUBDIRECTORY(src)
 
 # TODO: Print build summary indicating what plugins will be built.
