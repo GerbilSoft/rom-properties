@@ -117,6 +117,15 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 			BITMAPINFOHEADER *pBih,
 			const ao::uvector<uint8_t> &bmp_buf);
 
+		/**
+		 * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 */
+		static void Compare_ARGB32_BMP24(
+			const rp_image *img,
+			const uint8_t *pBits);
+
 	public:
 		// Image buffers.
 		ao::uvector<uint8_t> m_png_buf;
@@ -285,10 +294,12 @@ void RpImageLoaderTest::Load_Verify_BMP_headers(
 	// bfh.bfSize should be the size of the file.
 	EXPECT_EQ(bmp_buf.size(), (size_t)pBfh->bfSize) <<
 		"BITMAPFILEHEADER.bfSize does not match the BMP file size.";
-	// TODO: Check bfh.bfOffBits?
+	// bfOffBits should be less than the file size.
+	ASSERT_LT((size_t)pBfh->bfOffBits, bmp_buf.size()) <<
+		"BITMAPFILEHEADER.bfOffBits is past the end of the BMP file.";
 
 	// Load the BITMAPINFOHEADER.
-	memcpy(pBih, &bmp_buf.data()[sizeof(BITMAPFILEHEADER)], sizeof(*pBih));
+	memcpy(pBih, bmp_buf.data() + sizeof(BITMAPFILEHEADER), sizeof(*pBih));
 
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	// Byteswap the values.
@@ -330,8 +341,43 @@ void RpImageLoaderTest::Load_Verify_BMP_headers(
 				"Unsupported BITMAPINFOHEADER size.";
 			break;
 	}
+}
 
-	// TODO: Other checks?
+/**
+ * Compare an ARGB32 rp_image to a 24-bit RGB bitmap.
+ * @param img rp_image
+ * @param pBfh BITMAPFILEHEADER
+ * @param pBih BITMAPINFOHEADER
+ * @param pBits Bitmap image data.
+ */
+void RpImageLoaderTest::Compare_ARGB32_BMP24(
+	const rp_image *img,
+	const uint8_t *pBits)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+	for (int y = img->height()-1; y >= 0; y--) {
+		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		// 24-bit:          RRRRRRRR GGGGGGGG BBBBBBBB
+		// NOTE: We're reading the individual bytes from the BMP.
+		// BMP uses little-endian, so the Blue channel is first.
+		const uint32_t *src = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		for (int x = img->width()-1; x >= 0; x--, src++, pBits += 3) {
+			// Convert the source's 24-bit pixel to 32-bit.
+			uint32_t bmp32 = pBits[0] | pBits[1] << 8 | pBits[2] << 16;
+			// Pixel is fully opaque.
+			bmp32 |= 0xFF000000;
+			xor_result |= (*src ^ bmp32);
+		}
+	}
+
+	EXPECT_EQ(0, xor_result) << "Comparison of ARGB32 rp_image to 24-bit RGB BMP failed.";
 }
 
 /**
@@ -352,7 +398,7 @@ TEST_P(RpImageLoaderTest, loadTest)
 	// Load and verify the IHDR.
 	// This should be located immediately after the magic number.
 	PNG_IHDR_t ihdr;
-	ASSERT_NO_FATAL_FAILURE(Load_Verify_IHDR(&ihdr, &m_png_buf.data()[8]));
+	ASSERT_NO_FATAL_FAILURE(Load_Verify_IHDR(&ihdr, m_png_buf.data() + 8));
 
 	// Check if the IHDR values are correct.
 	EXPECT_EQ(mode.ihdr.width,		ihdr.width);
@@ -397,7 +443,17 @@ TEST_P(RpImageLoaderTest, loadTest)
 	EXPECT_EQ(mode.bih.biClrUsed,		bih.biClrUsed);
 	EXPECT_EQ(mode.bih.biClrImportant,	bih.biClrImportant);
 
-	// TODO: Compare the image data.
+	// Compare the image data.
+	const uint8_t *pBits = m_bmp_buf.data() + bfh.bfOffBits;
+	if (img->format() == rp_image::FORMAT_ARGB32 &&
+	    bih.biBitCount == 24 && bih.biCompression == BI_RGB)
+	{
+		// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
+		ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
+	} else {
+		// Unsupported comparison.
+		ASSERT_TRUE(false) << "Image format comparison isn't supported.";
+	}
 }
 
 // Test cases.
