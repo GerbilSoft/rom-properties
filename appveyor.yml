@@ -26,6 +26,9 @@ before_build:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - msbuild ALL_BUILD.vcxproj
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
   - msbuild RUN_TESTS.vcxproj
 
 # TODO: Automatic packaging?
