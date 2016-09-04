@@ -117,7 +117,7 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 	auto_ptr<Gdiplus::Bitmap> gdipBmp(Gdiplus::Bitmap::FromStream(file, FALSE));
 	if (!gdipBmp.get()) {
 		// Could not load the image.
-		nullptr;
+		return nullptr;
 	}
 
 	// Image loaded.
@@ -166,21 +166,23 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 
 	// Copy the image, line by line.
 	// NOTE: If Stride is negative, the image is upside-down.
-	int gdip_line_start, gdip_line_inc;
+	int rp_line_start, rp_line_inc, gdip_line_inc;
 	if (bmpData.Stride < 0) {
 		// Bottom-up
-		gdip_line_start = bmpData.Height - 1;
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
 		gdip_line_inc = -bmpData.Stride;
 	} else {
 		// Top-down
-		gdip_line_start = 0;
+		rp_line_start = 0;
+		rp_line_inc = 1;
 		gdip_line_inc = bmpData.Stride;
 	}
 
 	// Copy the image data.
 	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
-	for (int rp_y = 0; rp_y < (int)bmpData.Height;
-	     rp_y++, gdip_px += gdip_line_inc)
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+	     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
 	{
 		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
 		memcpy(rp_px, gdip_px, line_size);
