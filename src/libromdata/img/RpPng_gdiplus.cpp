@@ -126,6 +126,7 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 	Gdiplus::PixelFormat gdipFmt;
 	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
 	size_t line_size;	// Number of image bytes per scanline.
+	bool argb32_to_grayscale = false;
 	switch (gdipBmp->GetPixelFormat()) {
 		case PixelFormat1bppIndexed:
 		case PixelFormat4bppIndexed:
@@ -135,6 +136,27 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 			fmt = rp_image::FORMAT_CI8;
 			gdipFmt = PixelFormat8bppIndexed;
 			line_size = 1 * bmpRect.Width;
+			break;
+
+		case PixelFormat32bppARGB:
+			// If the colorspace is gray, this is actually a
+			// grayscale image, and should be converted to CI8.
+			// Reference: http://stackoverflow.com/questions/30391832/gdi-grayscale-png-loaded-as-pixelformat32bppargb
+
+			// TODO: PARGB or ARGB?
+			gdipFmt = PixelFormat32bppARGB;
+
+			if (gdipBmp->GetFlags() & Gdiplus::ImageFlagsColorSpaceGRAY) {
+				// Grayscale image.
+				// NOTE: Need to manually convert to CI8.
+				argb32_to_grayscale = true;
+				fmt = rp_image::FORMAT_CI8;
+				line_size = bmpRect.Width;
+			} else {
+				// Some other format. Use ARGB32.
+				fmt = rp_image::FORMAT_ARGB32;
+				line_size = 4 * bmpRect.Width;
+			}
 			break;
 
 		default:
@@ -179,13 +201,41 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		gdip_line_inc = bmpData.Stride;
 	}
 
-	// Copy the image data.
-	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
-	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
-	     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
-	{
-		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
-		memcpy(rp_px, gdip_px, line_size);
+	// TODO: Copy CI8 palettes from 256-color images.
+	if (argb32_to_grayscale) {
+		// Convert from ARGB32 to grayscale.
+
+		// Initialize the rp_image palette.
+		uint32_t *palette = reinterpret_cast<uint32_t*>(img->palette());
+		uint32_t color = 0xFF000000;
+		for (int i = img->palette_len(); i > 0; i--, palette++) {
+			*palette = color;
+			color += 0x010101;
+		}
+
+		// Downconvert the grayscale image.
+		// We'll take the least-significant byte. (blue)
+		gdip_line_inc -= (bmpData.Width * 4);
+		const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+		for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+		{
+			uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+			for (int x = bmpData.Width; x > 0; x--) {
+				*rp_px = *gdip_px;
+				rp_px++;
+				gdip_px += 4;
+			}
+		}
+	} else {
+		// Copy the image data.
+		const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+		for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+		{
+			uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+			memcpy(rp_px, gdip_px, line_size);
+		}
 	}
 
 	// Done reading the PNG image.
