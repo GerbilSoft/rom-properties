@@ -135,6 +135,17 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 			const rp_image *img,
 			const uint8_t *pBits);
 
+		/**
+		 * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 * @param pBmpPalette Bitmap palette.
+		 */
+		static void Compare_CI8_BMP8(
+			const rp_image *img,
+			const uint8_t *pBits,
+			const uint32_t *pBmpPalette);
+
 	public:
 		// Image buffers.
 		ao::uvector<uint8_t> m_png_buf;
@@ -376,6 +387,7 @@ void RpImageLoaderTest::Compare_ARGB32_BMP24(
 		// 24-bit:          RRRRRRRR GGGGGGGG BBBBBBBB
 		// NOTE: We're reading the individual bytes from the BMP.
 		// BMP uses little-endian, so the Blue channel is first.
+		// FIXME: This may fail on aligned architectures.
 		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits += 3) {
 			// Convert the source's 24-bit pixel to 32-bit.
@@ -402,6 +414,7 @@ void RpImageLoaderTest::Compare_ARGB32_BMP32(
 {
 	// BMP images are stored upside-down.
 	// TODO: 8px row alignment?
+	// FIXME: This may fail on aligned architectures.
 	const uint32_t *pBmp32 = reinterpret_cast<const uint32_t*>(pBits);
 
 	// To avoid calling EXPECT_EQ() for every single pixel,
@@ -420,6 +433,47 @@ void RpImageLoaderTest::Compare_ARGB32_BMP32(
 	}
 
 	EXPECT_EQ(0U, xor_result) << "Comparison of ARGB32 rp_image to 32-bit ARGB BMP failed.";
+}
+
+/**
+ * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
+ * @param img rp_image
+ * @param pBits Bitmap image data.
+ * @param pBmpPalette Bitmap palette.
+ */
+void RpImageLoaderTest::Compare_CI8_BMP8(
+	const rp_image *img,
+	const uint8_t *pBits,
+	const uint32_t *pBmpPalette)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+	// Check the palette.
+	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
+	for (int i = img->palette_len()-1; i >= 0; i--, pSrcPalette++, pBmpPalette++) {
+		// NOTE: The alpha channel in the BMP palette is ignored.
+		// It's always 0. Assume all colors are fully opaque.
+		const uint32_t bmp_color = le32_to_cpu(*pBmpPalette) | 0xFF000000;
+		xor_result |= (*pSrcPalette ^ bmp_color);
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
+
+	// Check the image data.
+	xor_result = 0;
+	const int width = img->width();
+	for (int y = img->height()-1; y >= 0; y--, pBits += width) {
+		// Do a full memcmp() instead of xoring bytes, since
+		// each pixel is a single byte.
+		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		xor_result |= memcmp(pSrc, pBits, width);
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's pixel data doesn't match CI8 BMP.";
 }
 
 /**
@@ -498,6 +552,17 @@ TEST_P(RpImageLoaderTest, loadTest)
 		} else {
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
+		}
+	} else if (img->format() == rp_image::FORMAT_CI8) {
+		if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
+			// 256-color image. Get the palette.
+			ASSERT_EQ(img->palette_len(), (int)bih.biClrUsed)
+				<< "BMP palette length does not match rp_image palette length.";
+			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
+			// FIXME: This may fail on aligned architectures.
+			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
+				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits, pBmpPalette));
 		}
 	} else {
 		// Unsupported comparison.
