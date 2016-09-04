@@ -24,9 +24,12 @@
 
 // zlib and libpng
 #include <zlib.h>
-#include <png.h>
 #include "png_chunks.h"
 #include "bmp.h"
+
+#ifdef HAVE_LIBPNG
+#include <png.h>
+#endif /* HAVE_LIBPNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
 #if (ZLIB_VER_MAJOR > 1) || \
@@ -64,8 +67,8 @@ struct RpImageLoaderTest_mode
 	rp_string bmp_gz_filename;	// Gzipped BMP image for comparison.
 
 	// Expected rp_image parameters.
-	const PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
-	const BITMAPINFOHEADER bih;	// FIXME: Making this const& causes problems.
+	PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
+	BITMAPINFOHEADER bih;		// FIXME: Making this const& causes problems.
 	rp_image::Format rp_format;
 
 	// TODO: Verify PNG bit depth and color type.
@@ -82,6 +85,26 @@ struct RpImageLoaderTest_mode
 		, bih(bih)
 		, rp_format(rp_format)
 	{ }
+
+	// May be required for MSVC 2010?
+	RpImageLoaderTest_mode(const RpImageLoaderTest_mode &other)
+		: png_filename(other.png_filename)
+		, bmp_gz_filename(other.bmp_gz_filename)
+		, ihdr(other.ihdr)
+		, bih(other.bih)
+		, rp_format(other.rp_format)
+	{ }
+
+	// Required for MSVC 2010.
+	RpImageLoaderTest_mode &operator=(const RpImageLoaderTest_mode &other)
+	{
+		png_filename = other.png_filename;
+		bmp_gz_filename = other.bmp_gz_filename;
+		ihdr = other.ihdr;
+		bih = other.bih;
+		rp_format = other.rp_format;
+		return *this;
+	}
 };
 
 // Maximum file size for PNG images.
@@ -581,42 +604,82 @@ TEST_P(RpImageLoaderTest, loadTest)
 // with alphatransparency, and gray/paletted images using
 // 1-, 2-, 4-, and 8 bits per channel.
 
+static const PNG_IHDR_t gl_triangle_RGB24_IHDR =
+	{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
+static const PNG_IHDR_t gl_triangle_ARGB32_IHDR =
+	{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
+static const PNG_IHDR_t gl_triangle_gray_IHDR =
+	{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
+
+static const BITMAPINFOHEADER gl_triangle_RGB24_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		400, 352, 1, 24, BI_RGB, 400*352*(24/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_triangle_RGB24_tRNS_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_triangle_ARGB32_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_triangle_gray_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		400, 352, 1, 8, BI_RGB, 400*352,
+		3936, 3936, 256, 256};
+
 // gl_triangle PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
 	::testing::Values(
 		RpImageLoaderTest_mode(
 			_RP("gl_triangle.RGB24.png"),
 			_RP("gl_triangle.RGB24.bmp.gz"),
-			{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				400, 352, 1, 24, BI_RGB, 400*352*(24/8),
-				3936, 3936, 0, 0},
+			gl_triangle_RGB24_IHDR,
+			gl_triangle_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_triangle.RGB24.tRNS.png"),
 			_RP("gl_triangle.RGB24.tRNS.bmp.gz"),
-			{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
-				3936, 3936, 0, 0},
+			gl_triangle_RGB24_IHDR,
+			gl_triangle_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_triangle.ARGB32.png"),
 			_RP("gl_triangle.ARGB32.bmp.gz"),
-			{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
-				3936, 3936, 0, 0},
+			gl_triangle_ARGB32_IHDR,
+			gl_triangle_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_triangle.gray.png"),
 			_RP("gl_triangle.gray.bmp.gz"),
-			{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				400, 352, 1, 8, BI_RGB, 400*352,
-				3936, 3936, 256, 256},
+			gl_triangle_gray_IHDR,
+			gl_triangle_gray_BIH,
 			rp_image::FORMAT_CI8)
 		));
+
+static const PNG_IHDR_t gl_quad_RGB24_IHDR =
+	{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
+static const PNG_IHDR_t gl_quad_ARGB32_IHDR =
+	{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
+static const PNG_IHDR_t gl_quad_gray_IHDR =
+	{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
+
+static const BITMAPINFOHEADER gl_quad_RGB24_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		480, 384, 1, 24, BI_RGB, 480*384*(24/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_quad_RGB24_tRNS_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_quad_ARGB32_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
+		3936, 3936, 0, 0};
+static const BITMAPINFOHEADER gl_quad_gray_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		480, 384, 1, 8, BI_RGB, 480*384,
+		3936, 3936, 256, 256};
 
 // gl_quad PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
@@ -624,34 +687,26 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
 		RpImageLoaderTest_mode(
 			_RP("gl_quad.RGB24.png"),
 			_RP("gl_quad.RGB24.bmp.gz"),
-			{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				480, 384, 1, 24, BI_RGB, 480*384*(24/8),
-				3936, 3936, 0, 0},
+			gl_quad_RGB24_IHDR,
+			gl_quad_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_quad.RGB24.tRNS.png"),
 			_RP("gl_quad.RGB24.tRNS.bmp.gz"),
-			{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
-				3936, 3936, 0, 0},
+			gl_quad_RGB24_IHDR,
+			gl_quad_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_quad.ARGB32.png"),
 			_RP("gl_quad.ARGB32.bmp.gz"),
-			{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
-				3936, 3936, 0, 0},
+			gl_quad_ARGB32_IHDR,
+			gl_quad_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
 		RpImageLoaderTest_mode(
 			_RP("gl_quad.gray.png"),
 			_RP("gl_quad.gray.bmp.gz"),
-			{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0},
-			{sizeof(BITMAPINFOHEADER),
-				480, 384, 1, 8, BI_RGB, 480*384,
-				3936, 3936, 256, 256},
+			gl_quad_gray_IHDR,
+			gl_quad_gray_BIH,
 			rp_image::FORMAT_CI8)
 		));
 } }

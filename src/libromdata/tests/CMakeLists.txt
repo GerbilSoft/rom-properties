@@ -7,9 +7,11 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 # Google Test
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIR})
 
-IF(NOT WIN32)
+IF(WIN32)
+	# Use extlib/zlib/.
+	SET(ZLIB_LIBRARY zlibstatic)
+ELSE(WIN32)
 	# zlib
-	# FIXME: crc32() replacement for the Windows build.
 	FIND_LIBRARY(ZLIB REQUIRED)
 	INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 	ADD_DEFINITIONS(-DZLIB_CONST)
@@ -18,24 +20,20 @@ IF(NOT WIN32)
 	FIND_LIBRARY(PNG REQUIRED)
 	INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIRS})
 	ADD_DEFINITIONS(${PNG_DEFINITIONS})
-ENDIF(NOT WIN32)
+ENDIF(WIN32)
 
 # Copy the reference images to the test directory.
 FILE(GLOB test_images *.png *.bmp.gz)
 FILE(COPY ${test_images} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # RpImageLoader test.
-IF(NOT WIN32)
-# FIXME: Enable for Windows after implementing RpPng_gdiplus.cpp.
 ADD_EXECUTABLE(RpImageLoaderTest RpImageLoaderTest.cpp)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest
-	romdata8
-	${PNG_LIBRARY}
-	${ZLIB_LIBRARY}
-	${GTEST_LIBRARY}
-	)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest romdata8)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest ${ZLIB_LIBRARY} ${GTEST_LIBRARY})
+IF(PNG_LIBRARY)
+	TARGET_LINK_LIBRARIES(RpImageLoaderTest ${PNG_LIBRARY})
+ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(RpImageLoaderTest)
 ADD_TEST(NAME RpImageLoaderTest
 	COMMAND RpImageLoaderTest
 	)
-ENDIF(NOT WIN32)

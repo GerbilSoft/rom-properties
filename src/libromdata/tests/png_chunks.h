@@ -23,8 +23,32 @@
 #define __ROMPROPERTIES_LIBROMDATA_TESTS_PNG_CHUNKS_H__
 
 #include "common.h"
-#include <png.h>
 #include <stdint.h>
+
+#include "libromdata/config.libromdata.h"
+
+#ifndef HAVE_LIBPNG
+// libpng isn't available, so we have to define
+// various libpng constants here.
+// (Copied from libpng-1.6.21's png.h.)
+
+/* These describe the color_type field in png_info. */
+/* color type masks */
+#define PNG_COLOR_MASK_PALETTE    1
+#define PNG_COLOR_MASK_COLOR      2
+#define PNG_COLOR_MASK_ALPHA      4
+
+/* color types.  Note that not all combinations are legal */
+#define PNG_COLOR_TYPE_GRAY 0
+#define PNG_COLOR_TYPE_PALETTE  (PNG_COLOR_MASK_COLOR | PNG_COLOR_MASK_PALETTE)
+#define PNG_COLOR_TYPE_RGB        (PNG_COLOR_MASK_COLOR)
+#define PNG_COLOR_TYPE_RGB_ALPHA  (PNG_COLOR_MASK_COLOR | PNG_COLOR_MASK_ALPHA)
+#define PNG_COLOR_TYPE_GRAY_ALPHA (PNG_COLOR_MASK_ALPHA)
+/* aliases */
+#define PNG_COLOR_TYPE_RGBA  PNG_COLOR_TYPE_RGB_ALPHA
+#define PNG_COLOR_TYPE_GA  PNG_COLOR_TYPE_GRAY_ALPHA
+
+#endif /* HAVE_LIBPNG */
 
 // PNG magic.
 static const uint8_t PNG_magic[8] = {0x89,'P','N','G','\r','\n',0x1A,'\n'};
@@ -53,6 +77,6 @@ typedef struct PACKED _PNG_IHDR_full_t {
 	PNG_IHDR_t data;
 	uint32_t crc32;
 } PNG_IHDR_full_t;
-#pragma pack(0)
+#pragma pack()
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TESTS_PNG_CHUNKS_H__ */

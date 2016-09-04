@@ -34,6 +34,7 @@ IF(NOT WIN32)
 
 	# Check for libpng.
 	FIND_PACKAGE(PNG REQUIRED)
+	SET(HAVE_LIBPNG ${PNG_FOUND})
 ENDIF(NOT WIN32)
 
 # Write the config.h file.

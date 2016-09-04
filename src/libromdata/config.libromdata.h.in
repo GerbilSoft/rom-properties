@@ -27,6 +27,9 @@
 #include <string>
 #endif /* __cplusplus */
 
+/* Define to 1 if you have libpng. */
+#cmakedefine HAVE_LIBPNG 1
+
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
 
