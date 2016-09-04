@@ -21,7 +21,9 @@ The following changes have been made to the original:
 - 64-bit assembly-optimized routines now check for __x86_64__ in addition
   to __amd64__ for compatibility with certain compilers, e.g. icc.
 
-- CMakeLists.txt adds -DZLIB_CONST to the zlib and zlibstatic targets'
-  compile definitions.
+- CMakeLists.txt now sets the target compile definitions to -DZLIB_CONST
+  and sets the target include directories. This allows all targets
+  that depend on zlib/zlibstatic to automatically pick up the compile
+  definitions and include directories.
 
 To obtain the original zlib-1.2.8, visit http://www.zlib.net .

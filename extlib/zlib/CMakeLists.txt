@@ -217,6 +217,16 @@ add_definitions(${ZLIB_DEFINITIONS})
 #target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
 target_compile_definitions(zlibstatic PUBLIC -DZLIB_CONST)
 
+# rom-properties: Set include directories.
+#TARGET_INCLUDE_DIRECTORIES(zlib
+#	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+#		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+#	)
+TARGET_INCLUDE_DIRECTORIES(zlibstatic
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	)
+
 # rom-properties: Set the MSVC debug path.
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(zlib)
