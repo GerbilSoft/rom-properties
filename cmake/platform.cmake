@@ -39,6 +39,19 @@ IF(WIN32)
 	INCLUDE(cmake/platform/win32.cmake)
 ENDIF(WIN32)
 
+# Set Windows subsystem when building with MSVC.
+FUNCTION(SET_WINDOWS_SUBSYSTEM _target _subsystem)
+	IF(MSVC)
+		GET_TARGET_PROPERTY(TARGET_LINK_FLAGS ${_target} LINK_FLAGS)
+		IF(TARGET_LINK_FLAGS)
+			SET(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} ${RP_LINKER_FLAGS_${_subsystem}_EXE}")
+		ELSE()
+			SET(TARGET_LINK_FLAGS "${RP_LINKER_FLAGS_${_subsystem}_EXE}")
+		ENDIF()
+		SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
+	ENDIF(MSVC)
+ENDFUNCTION()
+
 # Set CMAKE flags.
 # TODO: RelWithDebInfo / MinSizeRel?
 # Common

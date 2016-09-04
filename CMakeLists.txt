@@ -5,6 +5,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
+# Check for platform-specific functionality.
+INCLUDE(cmake/platform.cmake)
 # Testing functions.
 INCLUDE(cmake/gtest.cmake)
 
@@ -52,9 +54,6 @@ ENDMACRO(DO_SPLIT_DEBUG)
 IF(CMAKE_BUILD_TYPE MATCHES ^$)
        SET(CMAKE_BUILD_TYPE "debug")
 ENDIF()
-
-# Check for platform-specific functionality.
-INCLUDE(cmake/platform.cmake)
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)

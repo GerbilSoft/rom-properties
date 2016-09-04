@@ -38,6 +38,7 @@ ADD_LIBRARY(rom-properties MODULE
 		)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
+SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
 TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -49,14 +50,23 @@ TARGET_LINK_LIBRARIES(rom-properties comctl32)
 
 # Use the .def file for DLL exports.
 IF(MSVC)
-	SET_TARGET_PROPERTIES(rom-properties
-		PROPERTIES LINK_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def"
-		)
+	SET(RP_DLL_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
 ELSEIF(MINGW)
 	# NOTE: Enabling stdcall fixups so we can use
 	# the same .def file for Win32 and Win64,
 	# since Win64 doesn't use stdcall.
-	SET_TARGET_PROPERTIES(rom-properties
-		PROPERTIES LINK_FLAGS "-Wl,-enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def"
-		)
+	SET(RP_DLL_FLAGS "-Wl,-enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
 ENDIF()
+
+IF(RP_DLL_FLAGS)
+	GET_TARGET_PROPERTY(RP_LINK_FLAGS rom-properties LINK_FLAGS)
+	IF(RP_LINK_FLAGS)
+		SET(RP_LINK_FLAGS "${RP_LINK_FLAGS} ${RP_DLL_FLAGS}")
+	ELSE()
+		SET(RP_LINK_FLAGS "${RP_DLL_FLAGS}")
+	ENDIF()
+	SET_TARGET_PROPERTIES(rom-properties PROPERTIES LINK_FLAGS "${RP_LINK_FLAGS}")
+ENDIF(RP_DLL_FLAGS)
+
+UNSET(RP_DLL_FLAGS)
+UNSET(RP_LINK_FLAGS)
