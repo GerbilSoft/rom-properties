@@ -21,7 +21,7 @@ environment:
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake
+  - cmake .
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
