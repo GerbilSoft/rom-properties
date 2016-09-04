@@ -92,8 +92,7 @@ vector<const rp_char*> RomDataFactory::supportedFileExtensions(void)
 
 #define GetFileExtensions(sys) \
 	do { \
-		RomData *romData = new sys(nullptr); \
-		vector<const rp_char*> sys_vec = romData->supportedFileExtensions(); \
+		vector<const rp_char*> sys_vec = sys::supportedFileExtensions_static(); \
 		vec.insert(vec.end(), sys_vec.begin(), sys_vec.end()); \
 	} while (0)
 
