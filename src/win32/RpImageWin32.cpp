@@ -159,6 +159,19 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	return hBitmap;
 }
 
+// http://source.winehq.org/git/wine.git/blob/7baaab5b53011c3a593e1ff32538c9ca706db212:/dlls/gdiplus/image.c#l1441
+static inline DWORD blend_argb_no_bkgnd_alpha(DWORD src, DWORD bkgnd)
+{
+	BYTE b = (BYTE)src;
+	BYTE g = (BYTE)(src >> 8);
+	BYTE r = (BYTE)(src >> 16);
+	DWORD alpha  = (BYTE)(src >> 24);
+	return ((b     + ((BYTE)bkgnd         * (255 - alpha) + 127) / 255) |
+		(g     + ((BYTE)(bkgnd >> 8)  * (255 - alpha) + 127) / 255) << 8 |
+		(r     + ((BYTE)(bkgnd >> 16) * (255 - alpha) + 127) / 255) << 16 |
+		(alpha << 24));
+}
+
 /**
  * Convert an rp_image to HBITMAP.
  * @return image rp_image.
@@ -173,6 +186,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 
 	size_t szBmi;
 	WORD biBitCount;
+	DWORD biCompression;
 	switch (image->format()) {
 		case rp_image::FORMAT_CI8:
 			// BITMAPINFO must have a palette.
@@ -180,9 +194,13 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 			biBitCount = 8;
 			break;
 		case rp_image::FORMAT_ARGB32:
-			// No palette.
-			szBmi = sizeof(BITMAPINFO);
+			// No palette, but a 4-element color table
+			// is required for the bitfield mask.
+			// NOTE: BI_RGB works, but BI_BITFIELDS is
+			// preferred for ARGB32.
+			szBmi = sizeof(BITMAPINFOHEADER) + 4*sizeof(RGBQUAD);
 			biBitCount = 32;
+			biCompression = BI_BITFIELDS;
 			break;
 		default:
 			// Unsupported image format.
@@ -205,18 +223,34 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	bmiHeader->biHeight = -image->height();	// negative for top-down
 	bmiHeader->biPlanes = 1;
 	bmiHeader->biBitCount = biBitCount;
-	bmiHeader->biCompression = BI_RGB;
+	bmiHeader->biCompression = biCompression;
 	bmiHeader->biSizeImage = 0;	// TODO?
 	bmiHeader->biXPelsPerMeter = 0;	// TODO
 	bmiHeader->biYPelsPerMeter = 0;	// TODO
-	if (image->format() == rp_image::FORMAT_CI8) {
-		bmiHeader->biClrUsed = image->palette_len();
-		bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
-		// Copy the palette from the image.
-		memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
-	} else {
-		bmiHeader->biClrUsed = 0;
-		bmiHeader->biClrImportant = 0;
+
+	switch (image->format()) {
+		case rp_image::FORMAT_CI8: {
+			bmiHeader->biClrUsed = image->palette_len();
+			bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
+			// Copy the palette from the image.
+			memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
+			break;
+		}
+		case rp_image::FORMAT_ARGB32: {
+			bmiHeader->biClrUsed = 0;
+			bmiHeader->biClrImportant = 0;
+			// Set the bitfield masks.
+			uint32_t *pBfMask = reinterpret_cast<uint32_t*>(&bmi->bmiColors);
+			pBfMask[0] = 0x00FF0000;
+			pBfMask[1] = 0x0000FF00;
+			pBfMask[2] = 0x000000FF;
+			pBfMask[3] = 0xFF000000;
+			break;
+		}
+		default:
+			assert(false);
+			free(bmi);
+			return nullptr;
 	}
 
 	// Create the bitmap.
@@ -230,6 +264,23 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 
 	// Copy the data from the rp_image into the bitmap.
 	memcpy(pvBits, image->bits(), image->data_len());
+
+	// If this is ARGB32, alpha-blend the background with white.
+	// References:
+	// - https://www.winehq.org/pipermail/wine-patches/2011-October/107417.html
+	// - http://source.winehq.org/git/wine.git/blob/7baaab5b53011c3a593e1ff32538c9ca706db212:/dlls/gdiplus/image.c#l1494
+	// FIXME: Use GDI+ to convert from rp_image to HBITMAP.
+	// This method has weird color fringing issues.
+	if (image->format() == rp_image::FORMAT_ARGB32) {
+		// TODO: Optimize this?
+		static const DWORD background = 0xFFFFFFFF;
+		DWORD *pdwBits = reinterpret_cast<DWORD*>(pvBits);
+		for (int i = (int)image->data_len()/4; i > 0; i--, pdwBits++) {
+			if ((*pdwBits & 0xFF000000) == 0xFF000000)
+				continue;
+			*pdwBits = blend_argb_no_bkgnd_alpha(*pdwBits, background);
+		}
+	}
 
 	// Return the bitmap.
 	free(bmi);
