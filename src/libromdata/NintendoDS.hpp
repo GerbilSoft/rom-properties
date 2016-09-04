@@ -114,6 +114,12 @@ class NintendoDS : public RomData
 		 * Get a bitfield of image types this class can retrieve.
 		 * @return Bitfield of supported image types. (ImageTypesBF)
 		 */
+		static uint32_t supportedImageTypes_static(void);
+
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
 		virtual uint32_t supportedImageTypes(void) const override;
 
 	protected:

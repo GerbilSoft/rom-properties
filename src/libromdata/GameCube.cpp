@@ -451,9 +451,18 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-uint32_t GameCube::supportedImageTypes(void) const
+uint32_t GameCube::supportedImageTypes_static(void)
 {
        return IMGBF_EXT_MEDIA;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameCube::supportedImageTypes(void) const
+{
+       return supportedImageTypes_static();
 }
 
 /**

@@ -362,9 +362,18 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-uint32_t NintendoDS::supportedImageTypes(void) const
+uint32_t NintendoDS::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t NintendoDS::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
 }
 
 /**
