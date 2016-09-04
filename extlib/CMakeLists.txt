@@ -4,6 +4,8 @@ PROJECT(extlib)
 # TODO: Test on all archs and fix Z_PREFIX issues.
 # TODO: Add more assembly files from contrib/ besides the
 # default ones that were listed in zlib's CMakeLists.txt.
+# FIXME: Broken on AppVeyor. (MSVC 2015)
+IF(0)
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# i386/amd64. Check sizeof(void*) for the actual architecture,
@@ -26,6 +28,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	ENDIF()
 ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 UNSET(arch)
+ENDIF(0)
 
 # Don't install any of these libraries.
 SET(OLD_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
