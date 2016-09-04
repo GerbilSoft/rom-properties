@@ -40,10 +40,15 @@ namespace LibRomData {
  * created RomData instance, so returned objects can be
  * assumed to be valid as long as they aren't nullptr.
  *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData class in order to
+ * be returned.
+ *
  * @param file ROM file.
+ * @param thumbnail If true, RomData class must support at least one image type.
  * @return RomData class, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::getInstance(IRpFile *file)
+RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 {
 	RomData::DetectInfo info;
 
@@ -62,6 +67,10 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 
 #define CheckRomData(sys) \
 	do { \
+		if (thumbnail) { \
+			/* This RomData class doesn't support any images. */ \
+			break; \
+		} \
 		if (sys::isRomSupported_static(&info) >= 0) { \
 			RomData *romData = new sys(file); \
 			if (romData->isValid()) \
@@ -72,9 +81,26 @@ RomData *RomDataFactory::getInstance(IRpFile *file)
 		} \
 	} while (0)
 
+#define CheckRomData_imgbf(sys) \
+	do { \
+		if (sys::isRomSupported_static(&info) >= 0) { \
+			if (thumbnail) { \
+				/* Check if at least one image type is supported. */ \
+				if (sys::supportedImageTypes_static() == 0) \
+					break; \
+			} \
+			RomData *romData = new sys(file); \
+			if (romData->isValid()) \
+				return romData; \
+			\
+			/* Not actually supported. */ \
+			delete romData; \
+		} \
+	} while (0)
+
 	CheckRomData(MegaDrive);
-	CheckRomData(GameCube);
-	CheckRomData(NintendoDS);
+	CheckRomData_imgbf(GameCube);
+	CheckRomData_imgbf(NintendoDS);
 	CheckRomData(DMG);
 
 	// Not supported.

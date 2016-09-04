@@ -92,7 +92,8 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	std::auto_ptr<RomData> romData(RomDataFactory::getInstance(file));
+	// RomData class *must* support at least one image type.
+	std::auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
 	delete file;	// file is dup()'d by RomData.
 	if (!romData.get()) {
 		// ROM is not supported.
