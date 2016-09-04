@@ -88,6 +88,11 @@ SET(libromdata_H
 IF(WIN32)
 	SET(libromdata_OS_SRCS
 		file/RpFile_Win32.cpp
+		file/RP_IStream_Win32.cpp
+		img/RpPng_gdiplus.cpp
+		)
+	SET(libromdata_OS_H
+		file/RP_IStream_Win32.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
@@ -101,7 +106,10 @@ ENDIF(WIN32)
 ######################
 
 # UTF-8 version.
-ADD_LIBRARY(romdata8 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata8 STATIC
+	${libromdata_SRCS} ${libromdata_H}
+	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	)
 TARGET_INCLUDE_DIRECTORIES(romdata8
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -121,9 +129,15 @@ IF(PNG_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(romdata8 PRIVATE ${PNG_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(romdata8 PRIVATE ${PNG_DEFINITIONS})
 ENDIF(PNG_FOUND)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(romdata8 gdiplus)
+ENDIF(WIN32)
 
 # UTF-16 version.
-ADD_LIBRARY(romdata16 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata16 STATIC
+	${libromdata_SRCS} ${libromdata_H}
+	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	)
 TARGET_INCLUDE_DIRECTORIES(romdata16
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -143,6 +157,9 @@ IF(PNG_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(romdata16 PRIVATE ${PNG_INCLUDE_DIRS})
 	TARGET_COMPILE_DEFINITIONS(romdata16 PRIVATE ${PNG_DEFINITIONS})
 ENDIF(PNG_FOUND)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(romdata16 gdiplus)
+ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

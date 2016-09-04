@@ -40,6 +40,16 @@
  * result in a dangling pointer.
  */
 
+#include "libromdata/TextFuncs.hpp"
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+
 #if defined(RP_UTF8)
 
 /**
@@ -80,7 +90,6 @@
 		reinterpret_cast<const char16_t*>(wcs.data()), \
 		wcs.size()).c_str())
 
-// COMMIT NOTE: Fix existing RP_UTF8 macros before committing the new stuff.
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
 /**
