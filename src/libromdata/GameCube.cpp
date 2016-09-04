@@ -418,7 +418,7 @@ const rp_char *GameCube::systemName(void) const
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> GameCube::supportedFileExtensions(void) const
+vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
 	// TODO: Add ".iso" later? (Too generic, though...)
 	vector<const rp_char*> ret;
@@ -427,6 +427,24 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
 	ret.push_back(_RP(".rvm"));
 	ret.push_back(_RP(".wbfs"));
 	return ret;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions do not include the leading dot,
+ * e.g. "bin" instead of ".bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> GameCube::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
 }
 
 /**

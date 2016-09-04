@@ -474,7 +474,7 @@ const rp_char *MegaDrive::systemName(void) const
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
+vector<const rp_char*> MegaDrive::supportedFileExtensions_static(void)
 {
 	// NOTE: Not including ".md" due to conflicts with Markdown.
 	// TODO: Add ".bin" later? (Too generic, though...)
@@ -483,6 +483,24 @@ vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
 	ret.push_back(_RP(".gen"));
 	ret.push_back(_RP(".smd"));
 	return ret;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
 }
 
 /**
