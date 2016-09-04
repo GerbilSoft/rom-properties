@@ -577,6 +577,10 @@ TEST_P(RpImageLoaderTest, loadTest)
 // 256-color bitmaps use BI_RGB, unless they're RLE-compressed,
 // in which case they use BI_RLE8.
 
+// TODO: Test PNG_COLOR_TYPE_GRAY_ALPHA, paletted images
+// with alphatransparency, and gray/paletted images using
+// 1-, 2-, 4-, and 8 bits per channel.
+
 // gl_triangle PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
 	::testing::Values(
