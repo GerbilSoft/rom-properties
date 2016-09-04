@@ -3,16 +3,16 @@ PROJECT(rom-properties)
 # CMake 2.8.12 automates adding compile flags for Qt5, e.g. -fPIC on Linux.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
+LIST(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
+	)
+
 # Set default build options.
 INCLUDE(cmake/options.cmake)
 # Check for platform-specific functionality.
 INCLUDE(cmake/platform.cmake)
 # Testing functions.
 INCLUDE(cmake/gtest.cmake)
-
-LIST(APPEND CMAKE_MODULE_PATH
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
-	)
 
 # Program information.
 SET(DESCRIPTION "ROM Properties Page shell extension")
@@ -54,6 +54,7 @@ ENDMACRO(DO_SPLIT_DEBUG)
 IF(CMAKE_BUILD_TYPE MATCHES ^$)
        SET(CMAKE_BUILD_TYPE "debug")
 ENDIF()
+
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)
