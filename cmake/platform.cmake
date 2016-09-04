@@ -52,6 +52,20 @@ FUNCTION(SET_WINDOWS_SUBSYSTEM _target _subsystem)
 	ENDIF(MSVC)
 ENDFUNCTION()
 
+# Disable automatic manifest generation when building with MSVC.
+# Only use this if you have a custom manifest specified in the resource script.
+FUNCTION(SET_WINDOWS_NO_MANIFEST _target)
+	IF(MSVC)
+		GET_TARGET_PROPERTY(TARGET_LINK_FLAGS ${_target} LINK_FLAGS)
+		IF(TARGET_LINK_FLAGS)
+			SET(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} /MANIFEST:NO")
+		ELSE()
+			SET(TARGET_LINK_FLAGS "/MANIFEST:NO")
+		ENDIF()
+		SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
+	ENDIF(MSVC)
+ENDFUNCTION()
+
 # Set CMAKE flags.
 # TODO: RelWithDebInfo / MinSizeRel?
 # Common
