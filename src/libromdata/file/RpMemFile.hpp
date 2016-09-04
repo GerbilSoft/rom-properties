@@ -80,11 +80,11 @@ class RpMemFile : public IRpFile
 		/**
 		 * Write data to the file.
 		 * (NOTE: Not valid for RpMemFile; this will always return 0.)
-		 * @param ptr Output data buffer.
+		 * @param ptr Input data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
-		virtual size_t write(void *ptr, size_t size) override;
+		virtual size_t write(const void *ptr, size_t size) override;
 
 		/**
 		 * Set the file position.
@@ -92,6 +92,12 @@ class RpMemFile : public IRpFile
 		 * @return 0 on success; -1 on error.
 		 */
 		virtual int seek(int64_t pos) override;
+
+		/**
+		 * Get the file position.
+		 * @return File position, or -1 on error.
+		 */
+		virtual int64_t tell(void) override;
 
 		/**
 		 * Seek to the beginning of the file.

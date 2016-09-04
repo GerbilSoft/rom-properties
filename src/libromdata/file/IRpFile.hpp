@@ -72,11 +72,11 @@ class IRpFile
 
 		/**
 		 * Write data to the file.
-		 * @param ptr Output data buffer.
+		 * @param ptr Input data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
-		virtual size_t write(void *ptr, size_t size) = 0;
+		virtual size_t write(const void *ptr, size_t size) = 0;
 
 		/**
 		 * Set the file position.
@@ -84,6 +84,12 @@ class IRpFile
 		 * @return 0 on success; -1 on error.
 		 */
 		virtual int seek(int64_t pos) = 0;
+
+		/**
+		 * Get the file position.
+		 * @return File position, or -1 on error.
+		 */
+		virtual int64_t tell(void) = 0;
 
 		/**
 		 * Seek to the beginning of the file.

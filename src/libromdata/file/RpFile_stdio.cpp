@@ -299,11 +299,11 @@ size_t RpFile::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * @param ptr Output data buffer.
+ * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
  */
-size_t RpFile::write(void *ptr, size_t size)
+size_t RpFile::write(const void *ptr, size_t size)
 {
 	if (!m_file || !(m_mode & FM_WRITE)) {
 		// Either the file isn't open,
@@ -337,6 +337,20 @@ int RpFile::seek(int64_t pos)
 		m_lastError = errno;
 	}
 	return ret;
+}
+
+/**
+ * Get the file position.
+ * @return File position, or -1 on error.
+ */
+int64_t RpFile::tell(void)
+{
+	if (!m_file) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	return ftell(m_file);
 }
 
 /**
