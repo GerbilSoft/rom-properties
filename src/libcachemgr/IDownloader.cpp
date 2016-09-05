@@ -27,14 +27,14 @@
 namespace LibCacheMgr {
 
 IDownloader::IDownloader()
-	: m_mtime(0)
+	: m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
 { }
 
 IDownloader::IDownloader(const rp_char *url)
 	: m_url(url)
-	, m_mtime(0)
+	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
 { }
