@@ -48,10 +48,15 @@ class RomDataFactory
 		 * created RomData instance, so returned objects can be
 		 * assumed to be valid as long as they aren't nullptr.
 		 *
+		 * If imgbf is non-zero, at least one of the specified image
+		 * types must be supported by the RomData class in order to
+		 * be returned.
+		 *
 		 * @param file ROM file.
+		 * @param thumbnail If true, RomData class must support at least one image type.
 		 * @return RomData class, or nullptr if the ROM isn't supported.
 		 */
-		static RomData *getInstance(IRpFile *file);
+		static RomData *getInstance(IRpFile *file, bool thumbnail = false);
 
 		/**
 		 * Get all supported file extensions.

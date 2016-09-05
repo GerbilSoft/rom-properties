@@ -210,7 +210,8 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	auto_ptr<RomData> romData(RomDataFactory::getInstance(file));
+	// RomData class *must* support at least one image type.
+	auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
 	delete file;	// file is dup()'d by RomData.
 
 	if (!romData.get()) {

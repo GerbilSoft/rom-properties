@@ -34,12 +34,17 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <direct.h>
+#include <sys/utime.h>
 #include "libromdata/RpWin32.hpp"
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <utime.h>
 #endif
+
+// C includes. (C++ namespace)
+#include <ctime>
 
 // C++ includes.
 #include <string>
@@ -296,6 +301,36 @@ const LibRomData::rp_string &getCacheDirectory(void)
 #endif
 
 	return cache_dir;
+}
+
+/**
+ * Set the modification timestamp of a file.
+ * @param mtime Modification time.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int set_mtime(const LibRomData::rp_string &filename, time_t mtime)
+{
+	// FIXME: time_t is 32-bit on 32-bit Linux.
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+	int ret = 0;
+
+#ifdef _WIN32
+#if _USE_32BIT_TIME_T
+#error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+	struct __utimbuf64 utbuf;
+	utbuf.actime = _time64(nullptr);
+	utbuf.modtime = mtime;
+	ret = _wutime64(RP2W_s(filename), &utbuf);
+#else /* !_WIN32 */
+	struct utimbuf utbuf;
+	utbuf.actime = time(nullptr);
+	utbuf.modtime = mtime;
+	ret = utime(LibRomData::rp_string_to_utf8(filename).c_str(), &utbuf);
+#endif
+
+	return (ret == 0 ? 0 : -errno);
 }
 
 } }

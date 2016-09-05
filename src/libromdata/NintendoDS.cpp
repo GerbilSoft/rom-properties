@@ -332,7 +332,7 @@ const rp_char *NintendoDS::systemName(void) const
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
+vector<const rp_char*> NintendoDS::supportedFileExtensions_static(void)
 {
 	vector<const rp_char*> ret;
 	ret.reserve(1);
@@ -341,12 +341,39 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
 }
 
 /**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t NintendoDS::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_ICON;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
 uint32_t NintendoDS::supportedImageTypes(void) const
 {
-	return IMGBF_INT_ICON;
+	return supportedImageTypes_static();
 }
 
 /**

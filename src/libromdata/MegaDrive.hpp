@@ -93,6 +93,21 @@ class MegaDrive : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
+		static std::vector<const rp_char*> supportedFileExtensions_static(void);
+
+		/**
+		 * Get a list of all supported file extensions.
+		 * This is to be used for file type registration;
+		 * subclasses don't explicitly check the extension.
+		 *
+		 * NOTE: The extensions include the leading dot,
+		 * e.g. ".bin" instead of "bin".
+		 *
+		 * NOTE 2: The strings in the std::vector should *not*
+		 * be freed by the caller.
+		 *
+		 * @return List of all supported file extensions.
+		 */
 		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
 
 	protected:

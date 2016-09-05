@@ -357,6 +357,31 @@ const rp_char *DMG::systemName(void) const
  *
  * @return List of all supported file extensions.
  */
+vector<const rp_char*> DMG::supportedFileExtensions_static(void)
+{
+	vector<const rp_char*> ret;
+	ret.reserve(3);
+	ret.push_back(_RP(".gb"));
+	ret.push_back(_RP(".sgb"));
+	ret.push_back(_RP(".sgb2"));
+	ret.push_back(_RP(".gbc"));
+	ret.push_back(_RP(".cgb"));
+	return ret;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
 vector<const rp_char*> DMG::supportedFileExtensions(void) const
 {
 	vector<const rp_char*> ret;

@@ -27,18 +27,21 @@
 namespace LibCacheMgr {
 
 IDownloader::IDownloader()
-	: m_inProgress(false)
+	: m_mtime(-1)
+	, m_inProgress(false)
 	, m_maxSize(0)
 { }
 
 IDownloader::IDownloader(const rp_char *url)
 	: m_url(url)
+	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
 { }
 
 IDownloader::IDownloader(const LibRomData::rp_string &url)
 	: m_url(url)
+	, m_mtime(-1)
 	, m_inProgress(false)
 	, m_maxSize(0)
 { }
@@ -165,6 +168,15 @@ size_t IDownloader::dataSize(void) const
 const uint8_t *IDownloader::data(void) const
 {
 	return m_data.data();
+}
+
+/**
+ * Get the Last-Modified time.
+ * @return Last-Modified time, or -1 if none was set by the server.
+ */
+time_t IDownloader::mtime(void) const
+{
+	return m_mtime;
 }
 
 /**

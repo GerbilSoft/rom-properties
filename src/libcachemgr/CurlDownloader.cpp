@@ -107,7 +107,10 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nitems;
 
+	// Supported headers.
 	static const char http_content_length[] = "Content-Length: ";
+	static const char http_last_modified[] = "Last-Modified: ";
+
 	if (len >= sizeof(http_content_length) &&
 	    !memcmp(ptr, http_content_length, sizeof(http_content_length)-1))
 	{
@@ -140,6 +143,25 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 		// Reserve enough space for the file being downloaded.
 		vec->reserve(fileSize);
 	}
+	else if (len >= sizeof(http_last_modified) &&
+	         !memcmp(ptr, http_last_modified, sizeof(http_last_modified)-1))
+	{
+		// Found the Last-Modified time.
+		// Should be in the format: "Wed, 15 Nov 1995 04:58:08 GMT"
+		// - "GMT" can be "UTC".
+		// - It should NOT be another timezone, but some servers are misconfigured...
+		char mtime_str[40];
+		size_t val_len = len-sizeof(http_last_modified);
+		if (val_len >= sizeof(mtime_str)) {
+			// Shouldn't happen...
+			val_len = sizeof(mtime_str)-1;
+		}
+		memcpy(mtime_str, ptr+sizeof(http_last_modified)-1, val_len);
+		mtime_str[val_len] = 0;
+
+		// Parse the modification time.
+		curlDL->m_mtime = curl_getdate(mtime_str, nullptr);
+	}
 
 	// Continue processing.
 	return len;
@@ -155,6 +177,10 @@ int CurlDownloader::download(void)
 	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
 	// - http://stackoverflow.com/a/1636415
 	// - https://curl.haxx.se/libcurl/c/curl_easy_setopt.html
+
+	// Clear the previous download.
+	m_data.clear();
+	m_mtime = -1;
 
 	// Initialize cURL.
 	CURL *curl = curl_easy_init();

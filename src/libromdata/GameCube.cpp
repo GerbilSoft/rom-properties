@@ -418,7 +418,7 @@ const rp_char *GameCube::systemName(void) const
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> GameCube::supportedFileExtensions(void) const
+vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
 	// TODO: Add ".iso" later? (Too generic, though...)
 	vector<const rp_char*> ret;
@@ -430,12 +430,39 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
 }
 
 /**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions do not include the leading dot,
+ * e.g. "bin" instead of ".bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> GameCube::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t GameCube::supportedImageTypes_static(void)
+{
+       return IMGBF_EXT_MEDIA;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
 uint32_t GameCube::supportedImageTypes(void) const
 {
-       return IMGBF_EXT_MEDIA;
+       return supportedImageTypes_static();
 }
 
 /**

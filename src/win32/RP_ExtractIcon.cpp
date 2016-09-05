@@ -206,7 +206,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	auto_ptr<RomData> romData(RomDataFactory::getInstance(file));
+	// RomData class *must* support at least one image type.
+	auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
 	delete file;	// file is dup()'d by RomData.
 
 	if (!romData.get()) {

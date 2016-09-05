@@ -230,6 +230,13 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 	file->close();
 	delete file;
 
+	// Set the file's mtime if it was obtained by the downloader.
+	// TODO: IRpFile::set_mtime()?
+	time_t mtime = m_downloader->mtime();
+	if (mtime >= 0) {
+		FileSystem::set_mtime(cache_filename, mtime);
+	}
+
 	// Return the cache filename.
 	return cache_filename;
 }
