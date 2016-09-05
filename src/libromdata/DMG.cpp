@@ -384,14 +384,7 @@ vector<const rp_char*> DMG::supportedFileExtensions_static(void)
  */
 vector<const rp_char*> DMG::supportedFileExtensions(void) const
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".gb"));
-	ret.push_back(_RP(".sgb"));
-	ret.push_back(_RP(".sgb2"));
-	ret.push_back(_RP(".gbc"));
-	ret.push_back(_RP(".cgb"));
-	return ret;
+	return supportedFileExtensions_static();
 }
 
 /**
