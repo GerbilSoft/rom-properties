@@ -122,6 +122,12 @@ class IDownloader
 		const uint8_t *data(void) const;
 
 		/**
+		 * Get the Last-Modified time.
+		 * @return Last-Modified time, or -1 if none was set by the server.
+		 */
+		time_t mtime(void) const;
+
+		/**
 		 * Clear the data.
 		 */
 		void clear(void);
@@ -140,6 +146,9 @@ class IDownloader
 		// Uninitialized vector class.
 		// Reference: http://andreoffringa.org/?q=uvector
 		ao::uvector<uint8_t> m_data;
+
+		// Last-Modified time.
+		time_t m_mtime;
 
 		bool m_inProgress;	// Set when downloading.
 		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
