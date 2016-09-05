@@ -97,6 +97,13 @@ int64_t filesize(const LibRomData::rp_string &filename);
  */
 const LibRomData::rp_string &getCacheDirectory(void);
 
+/**
+ * Set the modification timestamp of a file.
+ * @param mtime Modification time.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int set_mtime(const LibRomData::rp_string &filename, time_t mtime);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBCACHEMGR_FILESYSTEM_HPP__ */
