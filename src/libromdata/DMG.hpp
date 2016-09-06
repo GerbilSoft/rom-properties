@@ -31,13 +31,10 @@
 
 namespace LibRomData {
 
+class DMGPrivate;
 class DMG : public RomData
 {
 	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * Read a Game Boy ROM.
 		 *
@@ -50,10 +47,15 @@ class DMG : public RomData
 		 * @param file Open ROM file.
 		 */
 		DMG(IRpFile *file);
+		virtual ~DMG();
 
 	private:
 		DMG(const DMG &);
 		DMG &operator=(const DMG &);
+
+	private:
+		friend class DMGPrivate;
+		DMGPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/
