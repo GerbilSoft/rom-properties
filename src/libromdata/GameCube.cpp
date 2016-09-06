@@ -23,9 +23,10 @@
 #include "NintendoPublishers.hpp"
 #include "gcn_structs.h"
 
-#include "TextFuncs.hpp"
-#include "byteswap.h"
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
 
 // DiscReader
 #include "DiscReader.hpp"

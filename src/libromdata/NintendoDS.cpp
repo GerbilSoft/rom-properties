@@ -21,12 +21,12 @@
 
 #include "NintendoDS.hpp"
 #include "NintendoPublishers.hpp"
-#include "TextFuncs.hpp"
-#include "byteswap.h"
-#include "common.h"
 
-// rp_image for internal icon.
-#include "rp_image.hpp"
+#include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
+#include "img/rp_image.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

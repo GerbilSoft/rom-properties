@@ -28,9 +28,10 @@
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/rp_image.hpp"
-#include "libromdata/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
 
 // libcachemgr
@@ -47,16 +48,6 @@ using LibCacheMgr::CacheManager;
 #include <string>
 using std::auto_ptr;
 using std::wstring;
-
-// Gdiplus for PNG decoding.
-// TODO: Use libpng and/or GDI+ in rp_image?
-// NOTE: Gdiplus requires min/max.
-#include <algorithm>
-namespace Gdiplus {
-	using std::min;
-	using std::max;
-}
-#include <gdiplus.h>
 
 // CLSID
 const CLSID CLSID_RP_ExtractImage =
@@ -197,6 +188,7 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
 	// TODO: Handle m_bmSize?
+	*phBmpImage = nullptr;
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	if (m_filename.empty())
@@ -228,23 +220,9 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		return S_FALSE;
 	}
 
-	// Initialize GDI+.
-	// TODO: Do this when RP_ExtractImage is instantiated?
-	Gdiplus::GdiplusStartupInput gdipSI;
-	gdipSI.GdiplusVersion = 1;
-	gdipSI.DebugEventCallback = nullptr;
-	gdipSI.SuppressBackgroundThread = FALSE;
-	gdipSI.SuppressExternalCodecs = FALSE;
-	ULONG_PTR gdipToken;
-	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
-	if (status != Gdiplus::Status::Ok) {
-		// Failed to initialize GDI+.
-		return E_FAIL;
-	}
 
 	// Check each URL.
 	CacheManager cache;
-	status = Gdiplus::Status::GenericError;
 	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
 	     iter != extURLs->end(); ++iter)
 	{
@@ -256,27 +234,27 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 			continue;
 
 		// Attempt to load the image.
-		// TODO: libpng in rp_image? For now, using Gdiplus.
-		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(RP2W_s(cache_filename), FALSE);
-		if (!gdipBmp)
+		auto_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		if (!file.get() || !file->isOpen())
+			continue;
+
+		auto_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
+		if (!dl_img.get() || !dl_img->isValid())
 			continue;
 
 		// Image loaded.
-		Gdiplus::Color bgColor(0xFFFFFFFF);
-		status = gdipBmp->GetHBITMAP(bgColor, phBmpImage);
-		delete gdipBmp;
-		if (status == Gdiplus::Status::Ok) {
-			// Converted to HBITMAP successfully.
-			break;
+		// Convert it to HBITMAP.
+		*phBmpImage = RpImageWin32::toHBITMAP(dl_img.get());
+		if (!*phBmpImage) {
+			// Could not convert to HBITMAP.
+			continue;
 		}
 
-		// Try the next one...
+		// Image converted to HBITMAP successfully.
+		break;
 	}
 
-	// Shut down GDI+.
-	Gdiplus::GdiplusShutdown(gdipToken);
-
-	return (status == Gdiplus::Status::Ok ? S_OK : E_FAIL);
+	return (*phBmpImage != nullptr ? S_OK : E_FAIL);
 }
 
 /** IPersistFile **/

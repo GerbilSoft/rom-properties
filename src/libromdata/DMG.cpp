@@ -22,9 +22,11 @@
 
 #include "DMG.hpp"
 #include "NintendoPublishers.hpp"
-#include "TextFuncs.hpp"
-#include "byteswap.h"
+
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cstring>

@@ -19,7 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
- #include "IDiscReader.hpp"
+#include "IDiscReader.hpp"
+#include "file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

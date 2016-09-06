@@ -1,0 +1,34 @@
+# Build worker image (VM template)
+image: Visual Studio 2015
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# clone directory
+clone_folder: c:\projects\rom-properties
+
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+before_build:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - cmake .
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - msbuild ALL_BUILD.vcxproj
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - msbuild RUN_TESTS.vcxproj
+
+# TODO: Automatic packaging?

@@ -22,7 +22,7 @@
 #include "CacheManager.hpp"
 
 #include "libromdata/TextFuncs.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;

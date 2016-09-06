@@ -22,12 +22,26 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
-#include "libromdata/rp_image.hpp"
+#include "libromdata/img/rp_image.hpp"
 using LibRomData::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstring>
+
+// C++ includes.
+#include <memory>
+using std::auto_ptr;
+
+// Gdiplus for HBITMAP conversion.
+// NOTE: Gdiplus requires min/max.
+#include <algorithm>
+namespace Gdiplus {
+	using std::min;
+	using std::max;
+}
+#include <gdiplus.h>
+#include "libromdata/img/GdiplusHelper.hpp"
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -160,41 +174,26 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 }
 
 /**
- * Convert an rp_image to HBITMAP.
- * @return image rp_image.
+ * Convert an rp_image to HBITMAP. (CI8)
+ * @return image rp_image. (Must be CI8.)
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
+HBITMAP RpImageWin32::toHBITMAP_CI8(const rp_image *image)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
 	if (!image || !image->isValid())
 		return nullptr;
-
-	size_t szBmi;
-	WORD biBitCount;
-	switch (image->format()) {
-		case rp_image::FORMAT_CI8:
-			// BITMAPINFO must have a palette.
-			szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
-			biBitCount = 8;
-			break;
-		case rp_image::FORMAT_ARGB32:
-			// No palette.
-			szBmi = sizeof(BITMAPINFO);
-			biBitCount = 32;
-			break;
-		default:
-			// Unsupported image format.
-			assert(false);
-			return nullptr;
-	}
+	assert(image->format() == rp_image::FORMAT_CI8);
+	if (image->format() != rp_image::FORMAT_CI8)
+		return nullptr;
 
 	// References:
 	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
 	// - http://stackoverflow.com/a/2901465
 
 	// BITMAPINFO with 256-color palette.
+	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
 	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
 	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
 
@@ -204,20 +203,16 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	bmiHeader->biWidth = image->width();
 	bmiHeader->biHeight = -image->height();	// negative for top-down
 	bmiHeader->biPlanes = 1;
-	bmiHeader->biBitCount = biBitCount;
+	bmiHeader->biBitCount = 8;
 	bmiHeader->biCompression = BI_RGB;
-	bmiHeader->biSizeImage = 0;	// TODO?
+	bmiHeader->biSizeImage = 0;
 	bmiHeader->biXPelsPerMeter = 0;	// TODO
 	bmiHeader->biYPelsPerMeter = 0;	// TODO
-	if (image->format() == rp_image::FORMAT_CI8) {
-		bmiHeader->biClrUsed = image->palette_len();
-		bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
-		// Copy the palette from the image.
-		memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
-	} else {
-		bmiHeader->biClrUsed = 0;
-		bmiHeader->biClrImportant = 0;
-	}
+	bmiHeader->biClrUsed = image->palette_len();
+	bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
+
+	// Copy the palette from the image.
+	memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
 
 	// Create the bitmap.
 	uint8_t *pvBits;
@@ -234,6 +229,76 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	// Return the bitmap.
 	free(bmi);
 	return hBitmap;
+}
+
+/**
+ * Convert an rp_image to HBITMAP. (ARGB32)
+ * @return image rp_image. (Must be ARGB32.)
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid())
+		return nullptr;
+	assert(image->format() == rp_image::FORMAT_ARGB32);
+	if (image->format() != rp_image::FORMAT_ARGB32)
+		return nullptr;
+
+	// NOTE: Gdiplus requires non-const BYTE*.
+	ScopedGdiplus gdip;
+	const int stride = image->width() * 4;
+	auto_ptr<Gdiplus::Bitmap> gdipBmp(
+		new Gdiplus::Bitmap(
+			image->width(), image->height(), stride,
+			PixelFormat32bppARGB,
+			(BYTE*)image->bits()));
+	if (!gdipBmp.get())
+		return nullptr;
+
+	// Convert the image to HBITMAP.
+	// TODO: Allow the caller to specify a background color?
+	HBITMAP hbmpRet;
+	Gdiplus::Color bgColor(0xFFFFFFFF);
+	Gdiplus::Status status = gdipBmp->GetHBITMAP(bgColor, &hbmpRet);
+	if (status != Gdiplus::Status::Ok) {
+		// Error converting to HBITMAP.
+		return nullptr;
+	}
+
+	// Converted to HBITMAP.
+	return hbmpRet;
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * @return image rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid())
+		return nullptr;
+
+	HBITMAP hbmpRet = nullptr;
+	switch (image->format()) {
+		case rp_image::FORMAT_CI8:
+			// FIXME: If the palette has any alpha-transparent colors,
+			// use GDI+ and convert to ARGB32.
+			hbmpRet = toHBITMAP_CI8(image);
+			break;
+		case rp_image::FORMAT_ARGB32:
+			hbmpRet = toHBITMAP_ARGB32(image);
+			break;
+		default:
+			assert(false);
+			break;
+	}
+
+	return hbmpRet;
 }
 
 /**

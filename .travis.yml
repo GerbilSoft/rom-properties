@@ -19,9 +19,8 @@ addons:
       libqt4-dev
       kdelibs5-dev
 
-# Compile using CMake.
-script:
-  - mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr && cmake --build .
+# Run the build script.
+script: ./travis.sh
 
 notifications:
   irc: "ircs://irc.badnik.zone:6697/#GensGS"

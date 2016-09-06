@@ -22,6 +22,7 @@
  ***************************************************************************/
 
 #include "DiscReader.hpp"
+#include "file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -22,13 +22,14 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
-#include "IRpFile.hpp"
 #include "config.libromdata.h"
 
 // C++ includes.
 #include <vector>
 
 namespace LibRomData {
+
+class IRpFile;
 
 class RomData;
 class RomDataFactory

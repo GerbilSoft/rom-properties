@@ -1,9 +1,12 @@
 PROJECT(libromdata)
 
-# On Win32, we use MultiByteToWideChar() and WideCharToMultiByte().
-# On other systems, we use iconv(), which could be in libc or libiconv.
-# Figure out which library has iconv().
 IF(NOT WIN32)
+	# Non-Windows library checks.
+
+	# On Win32, we use MultiByteToWideChar() and WideCharToMultiByte().
+	# On other systems, we use iconv(), which could be in libc or libiconv.
+	# Figure out which library has iconv().
+
 	# First, check libc for iconv().
 	INCLUDE(CheckLibraryExists)
 	CHECK_LIBRARY_EXISTS(c iconv "" HAVE_ICONV_C)	# libc: iconv()
@@ -25,6 +28,10 @@ IF(NOT WIN32)
 	IF(NOT HAVE_ICONV)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
+
+	# Check for libpng.
+	FIND_PACKAGE(PNG REQUIRED)
+	SET(HAVE_LIBPNG ${PNG_FOUND})
 ENDIF(NOT WIN32)
 
 # Write the config.h file.
@@ -40,11 +47,13 @@ SET(libromdata_SRCS
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
-	rp_image.cpp
 	IDiscReader.cpp
 	DiscReader.cpp
 	WbfsReader.cpp
 	DMG.cpp
+	file/RpMemFile.cpp
+	img/rp_image.cpp
+	img/RpImageLoader.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -59,24 +68,36 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	rp_image.hpp
 	IDiscReader.hpp
 	DiscReader.hpp
 	WbfsReader.hpp
 	libwbfs.h
 	gcn_structs.h
-	IRpFile.hpp
-	RpFile.hpp
 	DMG.hpp
+	uvector.h
+	file/IRpFile.hpp
+	file/RpFile.hpp
+	file/RpMemFile.hpp
+	img/rp_image.hpp
+	img/RpImageLoader.hpp
+	img/RpPng.hpp
 	)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		RpFile_Win32.cpp
+		file/RpFile_Win32.cpp
+		file/RP_IStream_Win32.cpp
+		img/RpPng_gdiplus.cpp
+		img/GdiplusHelper.cpp
+		)
+	SET(libromdata_OS_H
+		file/RP_IStream_Win32.hpp
+		img/GdiplusHelper.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
-		RpFile_stdio.cpp
+		file/RpFile_stdio.cpp
+		img/RpPng_libpng.cpp
 		)
 ENDIF(WIN32)
 
@@ -85,7 +106,10 @@ ENDIF(WIN32)
 ######################
 
 # UTF-8 version.
-ADD_LIBRARY(romdata8 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata8 STATIC
+	${libromdata_SRCS} ${libromdata_H}
+	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	)
 TARGET_INCLUDE_DIRECTORIES(romdata8
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -100,9 +124,20 @@ SET_TARGET_PROPERTIES(romdata8 PROPERTIES
 IF(ICONV_LIBRARY)
 	TARGET_LINK_LIBRARIES(romdata8 ${ICONV_LIBRARY})
 ENDIF(ICONV_LIBRARY)
+IF(PNG_FOUND)
+	TARGET_LINK_LIBRARIES(romdata8 ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(romdata8 PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(romdata8 PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_FOUND)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(romdata8 gdiplus)
+ENDIF(WIN32)
 
 # UTF-16 version.
-ADD_LIBRARY(romdata16 STATIC ${libromdata_SRCS} ${libromdata_OS_SRCS} ${libromdata_H})
+ADD_LIBRARY(romdata16 STATIC
+	${libromdata_SRCS} ${libromdata_H}
+	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	)
 TARGET_INCLUDE_DIRECTORIES(romdata16
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -117,9 +152,22 @@ SET_TARGET_PROPERTIES(romdata16 PROPERTIES
 IF(ICONV_LIBRARY)
 	TARGET_LINK_LIBRARIES(romdata16 ${ICONV_LIBRARY})
 ENDIF(ICONV_LIBRARY)
+IF(PNG_FOUND)
+	TARGET_LINK_LIBRARIES(romdata16 ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(romdata16 PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(romdata16 PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_FOUND)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(romdata16 gdiplus)
+ENDIF(WIN32)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
 	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
+
+# Test suite.
+IF(BUILD_TESTING)
+	ADD_SUBDIRECTORY(tests)
+ENDIF(BUILD_TESTING)
