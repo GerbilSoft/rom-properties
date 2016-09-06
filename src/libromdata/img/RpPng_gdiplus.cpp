@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpPng_libpng.cpp: PNG handler using libpng.                             *
+ * RpPng_gdiplus.cpp: PNG handler using gdiplus. (Win32)                   *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -26,7 +26,6 @@
 
 // Win32
 #include "../RpWin32.hpp"
-#include <olectl.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -43,7 +42,9 @@ namespace Gdiplus {
 	using std::min;
 	using std::max;
 }
+#include <olectl.h>
 #include <gdiplus.h>
+#include "GdiplusHelper.hpp"
 
 namespace LibRomData {
 
@@ -58,18 +59,6 @@ class RpPngPrivate
 
 	public:
 		/**
-		 * Initialize GDI+.
-		 * @return GDI+ token, or 0 if initialization failed.
-		 */
-		static ULONG_PTR InitGDIPlus(void);
-
-		/**
-		 * Shut down GDI+.
-		 * @param gdipToken GDI+ token.
-		 */
-		static void ShutdownGDIPlus(ULONG_PTR gdipToken);
-
-		/**
 		 * Load a PNG image from a file.
 		 * @param file IStream wrapping an IRpFile.
 		 * @return rp_image*, or nullptr on error.
@@ -78,31 +67,6 @@ class RpPngPrivate
 };
 
 /** RpPngPrivate **/
-
-/**
- * Initialize GDI+.
- * @return GDI+ token, or 0 if initialization failed.
- */
-ULONG_PTR RpPngPrivate::InitGDIPlus(void)
-{
-	Gdiplus::GdiplusStartupInput gdipSI;
-	gdipSI.GdiplusVersion = 1;
-	gdipSI.DebugEventCallback = nullptr;
-	gdipSI.SuppressBackgroundThread = FALSE;
-	gdipSI.SuppressExternalCodecs = FALSE;
-	ULONG_PTR gdipToken;
-	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
-	return (status == Gdiplus::Status::Ok ? gdipToken : 0);
-}
-
-/**
- * Shut down GDI+.
- * @param gdipToken GDI+ token.
- */
-void RpPngPrivate::ShutdownGDIPlus(ULONG_PTR gdipToken)
-{
-	Gdiplus::GdiplusShutdown(gdipToken);
-}
 
 /**
  * Load a PNG image from a file.
@@ -256,8 +220,8 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 {
 	// Initialize GDI+.
 	// TODO: Don't init/shutdown on every image.
-	ULONG_PTR gdipToken = RpPngPrivate::InitGDIPlus();
-	if (gdipToken == 0) {
+	ScopedGdiplus gdip;
+	if (!gdip.isValid()) {
 		// Failed to initialize GDI+.
 		return nullptr;
 	}
@@ -270,9 +234,6 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 
 	// Release the IStream wrapper.
 	stream->Release();
-
-	// Shut down GDI+.
-	RpPngPrivate::ShutdownGDIPlus(gdipToken);
 
 	// Return the image.
 	return img;
