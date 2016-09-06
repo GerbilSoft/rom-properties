@@ -22,7 +22,6 @@
 #include "GdiplusHelper.hpp"
 
 // Gdiplus for PNG decoding.
-// TODO: Use libpng and/or GDI+ in rp_image?
 // NOTE: Gdiplus requires min/max.
 #include <algorithm>
 namespace Gdiplus {
