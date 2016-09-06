@@ -98,7 +98,9 @@ class DMGPrivate
 		 * 
 		 * NOTE: Strings are NOT null-terminated!
 		 */
-		struct DMG_RomHeader {
+		#define DMG_RomHeader_SIZE 80
+		#pragma pack(1)
+		struct PACKED DMG_RomHeader {
 			uint8_t entry[4];
 			uint8_t nintendo[0x30];
 
@@ -121,8 +123,9 @@ class DMGPrivate
 			uint8_t version;
 
 			uint8_t header_checksum; // checked by bootrom
-			uint8_t rom_checksum; // checked by no one
+			uint16_t rom_checksum;   // checked by no one
 		};
+		#pragma pack()
 
 		// Cartridge hardware.
 		enum DMG_Hardware {
@@ -371,7 +374,9 @@ DMG::DMG(IRpFile *file)
 	// Seek to the beginning of the header.
 	m_file->rewind();
 
-	// Read the header. [0x150 bytes]
+	// Read the ROM header. [0x150 bytes]
+	static_assert(sizeof(DMGPrivate::DMG_RomHeader) == DMG_RomHeader_SIZE,
+		"DMG_RomHeader_SIZE is not 80 bytes.");
 	uint8_t header[0x150];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
