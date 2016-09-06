@@ -241,6 +241,7 @@ void RomFields::detach(void)
 			case RFT_LISTDATA:
 				// Copy the ListData.
 				data_new.list_data = new ListData(*data_old.list_data);
+				break;
 			default:
 				// ERROR!
 				assert(false);
