@@ -94,13 +94,13 @@ Notes:
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
 
 Notes:
-* Internal icon, banner, and media scan refers to artwork contained within
-  the ROM and/or disc image. These images are typically displayed on the
-  system's main menu prior to starting the game.
+* Internal image refers to artwork contained within the ROM and/or disc image.
+  These images are typically displayed on the system's main menu prior to
+  starting the game.
   * "N/A" here means the ROM or disc image doesn't have this feature.
   * "No" indicates that the feature is present but not currently implemented.
-* External media and box scans refers to scans from an external database,
-  such as GameTDB.com for GameCube and Wii.
+* External scans refers to scans from an external database, such as GameTDB.com
+  for GameCube and Wii.
   * "No" indicates no database is currently available for this system.
   * Anything else indicates what types of images are available.
 
@@ -114,6 +114,9 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
+* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb)
+  * \*.mb is also supported, but not currently registered on Windows due to conflicts
+    with AutoDesk Maya.
 
 ## External Media Downloads
 
