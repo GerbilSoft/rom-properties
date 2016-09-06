@@ -44,7 +44,7 @@ namespace LibRomData {
 class MegaDrivePrivate
 {
 	public:
-		MegaDrivePrivate();
+		MegaDrivePrivate() { }
 
 	private:
 		MegaDrivePrivate(const MegaDrivePrivate &other);
@@ -97,6 +97,7 @@ class MegaDrivePrivate
 		 *
 		 * NOTE: Strings are NOT null-terminated!
 		 */
+		#define MD_RomHeader_SIZE 256
 		#pragma pack(1)
 		struct PACKED MD_RomHeader {
 			char system[16];
@@ -149,6 +150,8 @@ class MegaDrivePrivate
 		uint32_t vectors[64];	// Interrupt vectors. (BE32)
 		MD_RomHeader romHeader;	// ROM header.
 };
+
+/** MegaDrivePrivate **/
 
 // I/O support bitfield.
 const rp_char *const MegaDrivePrivate::md_io_bitfield_names[] = {
@@ -337,11 +340,6 @@ uint32_t MegaDrivePrivate::parseRegionCodes(const char *region_codes, int size)
 	return ret;
 }
 
-/** MegaDrivePrivate **/
-
-MegaDrivePrivate::MegaDrivePrivate()
-{ }
-
 /** MegaDrive **/
 
 /**
@@ -371,7 +369,9 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	m_file->rewind();
 
-	// Read the header. [0x200 bytes]
+	// Read the ROM header. [0x200 bytes]
+	static_assert(sizeof(MegaDrivePrivate::MD_RomHeader) == MD_RomHeader_SIZE,
+		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x200];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
@@ -388,7 +388,6 @@ MegaDrive::MegaDrive(IRpFile *file)
 	if (m_isValid) {
 		// Save the header for later.
 		// TODO: Adjust for SMD, Sega CD, etc.
-		static_assert(sizeof(d->romHeader) == 0x100, "MD_RomHeader is the wrong size. (should be 256 bytes)");
 		memcpy(&d->vectors,    header,        sizeof(d->vectors));
 		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 	}
