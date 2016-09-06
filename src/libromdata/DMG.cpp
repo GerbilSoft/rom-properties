@@ -187,6 +187,10 @@ class DMGPrivate
 		 * (see 0x00D1 of CGB IPL)
 		 */
 		static const uint8_t dmg_nintendo[0x18];
+
+	public:
+		// ROM header.
+		DMG_RomHeader romHeader;
 };
 
 /** DMGPrivate **/
@@ -388,7 +392,13 @@ DMG::DMG(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	m_isValid = isRomSupported(&info)>=0;
+	m_isValid = (isRomSupported(&info) >= 0);
+
+	if (m_isValid) {
+		// Save the header for later.
+		// TODO: Save the RST table?
+		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+	}
 }
 
 DMG::~DMG()
@@ -507,18 +517,8 @@ int DMG::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Read the header. [0x150 bytes]
-	uint8_t header[0x150];
-	m_file->rewind();
-	size_t size = m_file->read(header, sizeof(header));
-	if (size != sizeof(header)) {
-		// File isn't big enough for a Game Boy header...
-		return -EIO;
-	}
-
 	// DMG ROM header, excluding the RST table.
-	const DMGPrivate::DMG_RomHeader *romHeader =
-		reinterpret_cast<const DMGPrivate::DMG_RomHeader*>(&header[0x100]);
+	const DMGPrivate::DMG_RomHeader *romHeader = &d->romHeader;
 	
 	char buffer[64];
 	int len;
@@ -648,16 +648,20 @@ int DMG::loadFieldData(void)
 	// Revision
 	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
 	
-	// Checksum
-	uint8_t checksum=0xE7; // -0x19
-	for(int i=0x0134;i<0x014D;i++){
-		checksum-=header[i];
+	// Header checksum.
+	// This is a checksum of ROM addresses 0x134-0x14D.
+	// Note that romHeader is a copy of the ROM header
+	// starting at 0x100, so the values are offset accordingly.
+	uint8_t checksum = 0xE7; // -0x19
+	const uint8_t *romHeader8 = reinterpret_cast<const uint8_t*>(romHeader);
+	for(int i = 0x0034; i < 0x004D; i++){
+		checksum -= romHeader8[i];
 	}
-	if(checksum - romHeader->header_checksum){
+
+	if (checksum - romHeader->header_checksum) {
 		len = snprintf(buffer, sizeof(buffer), "0x%02X (INVALID; should be 0x%02X)",
 			checksum, romHeader->header_checksum);
-	}
-	else{
+	} else {
 		len = snprintf(buffer, sizeof(buffer), "0x%02X (valid)", checksum);
 	}
 	m_fields->addData_string(ascii_to_rp_string(buffer,len));
