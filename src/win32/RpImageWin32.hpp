@@ -43,6 +43,20 @@ class RpImageWin32
 		 */
 		static HBITMAP toHBITMAP_mask(const LibRomData::rp_image *image);
 
+		/**
+		 * Convert an rp_image to HBITMAP. (CI8)
+		 * @return image rp_image. (Must be CI8.)
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_CI8(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an rp_image to HBITMAP. (ARGB32)
+		 * @return image rp_image. (Must be ARGB32.)
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_ARGB32(const LibRomData::rp_image *image);
+
 	public:
 		/**
 		 * Convert an rp_image to HBITMAP.

@@ -29,6 +29,20 @@ using LibRomData::rp_image;
 #include <cassert>
 #include <cstring>
 
+// C++ includes.
+#include <memory>
+using std::auto_ptr;
+
+// Gdiplus for HBITMAP conversion.
+// NOTE: Gdiplus requires min/max.
+#include <algorithm>
+namespace Gdiplus {
+	using std::min;
+	using std::max;
+}
+#include <gdiplus.h>
+#include "libromdata/img/GdiplusHelper.hpp"
+
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
  * @return image rp_image.
@@ -159,17 +173,102 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	return hBitmap;
 }
 
-// http://source.winehq.org/git/wine.git/blob/7baaab5b53011c3a593e1ff32538c9ca706db212:/dlls/gdiplus/image.c#l1441
-static inline DWORD blend_argb_no_bkgnd_alpha(DWORD src, DWORD bkgnd)
+/**
+ * Convert an rp_image to HBITMAP. (CI8)
+ * @return image rp_image. (Must be CI8.)
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_CI8(const rp_image *image)
 {
-	BYTE b = (BYTE)src;
-	BYTE g = (BYTE)(src >> 8);
-	BYTE r = (BYTE)(src >> 16);
-	DWORD alpha  = (BYTE)(src >> 24);
-	return ((b     + ((BYTE)bkgnd         * (255 - alpha) + 127) / 255) |
-		(g     + ((BYTE)(bkgnd >> 8)  * (255 - alpha) + 127) / 255) << 8 |
-		(r     + ((BYTE)(bkgnd >> 16) * (255 - alpha) + 127) / 255) << 16 |
-		(alpha << 24));
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid())
+		return nullptr;
+	assert(image->format() == rp_image::FORMAT_CI8);
+	if (image->format() != rp_image::FORMAT_CI8)
+		return nullptr;
+
+	// References:
+	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
+	// - http://stackoverflow.com/a/2901465
+
+	// BITMAPINFO with 256-color palette.
+	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
+	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
+	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
+
+	// Initialize the BITMAPINFOHEADER.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
+	bmiHeader->biWidth = image->width();
+	bmiHeader->biHeight = -image->height();	// negative for top-down
+	bmiHeader->biPlanes = 1;
+	bmiHeader->biBitCount = 8;
+	bmiHeader->biCompression = BI_RGB;
+	bmiHeader->biSizeImage = 0;
+	bmiHeader->biXPelsPerMeter = 0;	// TODO
+	bmiHeader->biYPelsPerMeter = 0;	// TODO
+	bmiHeader->biClrUsed = image->palette_len();
+	bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
+
+	// Copy the palette from the image.
+	memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
+
+	// Create the bitmap.
+	uint8_t *pvBits;
+	HBITMAP hBitmap = CreateDIBSection(nullptr, bmi, DIB_RGB_COLORS,
+		reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	if (!hBitmap) {
+		free(bmi);
+		return nullptr;
+	}
+
+	// Copy the data from the rp_image into the bitmap.
+	memcpy(pvBits, image->bits(), image->data_len());
+
+	// Return the bitmap.
+	free(bmi);
+	return hBitmap;
+}
+
+/**
+ * Convert an rp_image to HBITMAP. (ARGB32)
+ * @return image rp_image. (Must be ARGB32.)
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid())
+		return nullptr;
+	assert(image->format() == rp_image::FORMAT_ARGB32);
+	if (image->format() != rp_image::FORMAT_ARGB32)
+		return nullptr;
+
+	// NOTE: Gdiplus requires non-const BYTE*.
+	ScopedGdiplus gdip;
+	const int stride = image->width() * 4;
+	auto_ptr<Gdiplus::Bitmap> gdipBmp(
+		new Gdiplus::Bitmap(
+			image->width(), image->height(), stride,
+			PixelFormat32bppARGB,
+			(BYTE*)image->bits()));
+	if (!gdipBmp.get())
+		return nullptr;
+
+	// Convert the image to HBITMAP.
+	// TODO: Allow the caller to specify a background color?
+	HBITMAP hbmpRet;
+	Gdiplus::Color bgColor(0xFFFFFFFF);
+	Gdiplus::Status status = gdipBmp->GetHBITMAP(bgColor, &hbmpRet);
+	if (status != Gdiplus::Status::Ok) {
+		// Error converting to HBITMAP.
+		return nullptr;
+	}
+
+	// Converted to HBITMAP.
+	return hbmpRet;
 }
 
 /**
@@ -184,107 +283,22 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 	if (!image || !image->isValid())
 		return nullptr;
 
-	size_t szBmi;
-	WORD biBitCount;
-	DWORD biCompression;
+	HBITMAP hbmpRet = nullptr;
 	switch (image->format()) {
 		case rp_image::FORMAT_CI8:
-			// BITMAPINFO must have a palette.
-			szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
-			biBitCount = 8;
+			// FIXME: If the palette has any alpha-transparent colors,
+			// use GDI+ and convert to ARGB32.
+			hbmpRet = toHBITMAP_CI8(image);
 			break;
 		case rp_image::FORMAT_ARGB32:
-			// No palette, but a 4-element color table
-			// is required for the bitfield mask.
-			// NOTE: BI_RGB works, but BI_BITFIELDS is
-			// preferred for ARGB32.
-			szBmi = sizeof(BITMAPINFOHEADER) + 4*sizeof(RGBQUAD);
-			biBitCount = 32;
-			biCompression = BI_BITFIELDS;
+			hbmpRet = toHBITMAP_ARGB32(image);
 			break;
 		default:
-			// Unsupported image format.
 			assert(false);
-			return nullptr;
-	}
-
-	// References:
-	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
-	// - http://stackoverflow.com/a/2901465
-
-	// BITMAPINFO with 256-color palette.
-	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
-	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
-
-	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
-	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
-	bmiHeader->biWidth = image->width();
-	bmiHeader->biHeight = -image->height();	// negative for top-down
-	bmiHeader->biPlanes = 1;
-	bmiHeader->biBitCount = biBitCount;
-	bmiHeader->biCompression = biCompression;
-	bmiHeader->biSizeImage = 0;	// TODO?
-	bmiHeader->biXPelsPerMeter = 0;	// TODO
-	bmiHeader->biYPelsPerMeter = 0;	// TODO
-
-	switch (image->format()) {
-		case rp_image::FORMAT_CI8: {
-			bmiHeader->biClrUsed = image->palette_len();
-			bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
-			// Copy the palette from the image.
-			memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
 			break;
-		}
-		case rp_image::FORMAT_ARGB32: {
-			bmiHeader->biClrUsed = 0;
-			bmiHeader->biClrImportant = 0;
-			// Set the bitfield masks.
-			uint32_t *pBfMask = reinterpret_cast<uint32_t*>(&bmi->bmiColors);
-			pBfMask[0] = 0x00FF0000;
-			pBfMask[1] = 0x0000FF00;
-			pBfMask[2] = 0x000000FF;
-			pBfMask[3] = 0xFF000000;
-			break;
-		}
-		default:
-			assert(false);
-			free(bmi);
-			return nullptr;
 	}
 
-	// Create the bitmap.
-	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, bmi, DIB_RGB_COLORS,
-		reinterpret_cast<void**>(&pvBits), nullptr, 0);
-	if (!hBitmap) {
-		free(bmi);
-		return nullptr;
-	}
-
-	// Copy the data from the rp_image into the bitmap.
-	memcpy(pvBits, image->bits(), image->data_len());
-
-	// If this is ARGB32, alpha-blend the background with white.
-	// References:
-	// - https://www.winehq.org/pipermail/wine-patches/2011-October/107417.html
-	// - http://source.winehq.org/git/wine.git/blob/7baaab5b53011c3a593e1ff32538c9ca706db212:/dlls/gdiplus/image.c#l1494
-	// FIXME: Use GDI+ to convert from rp_image to HBITMAP.
-	// This method has weird color fringing issues.
-	if (image->format() == rp_image::FORMAT_ARGB32) {
-		// TODO: Optimize this?
-		static const DWORD background = 0xFFFFFFFF;
-		DWORD *pdwBits = reinterpret_cast<DWORD*>(pvBits);
-		for (int i = (int)image->data_len()/4; i > 0; i--, pdwBits++) {
-			if ((*pdwBits & 0xFF000000) == 0xFF000000)
-				continue;
-			*pdwBits = blend_argb_no_bkgnd_alpha(*pdwBits, background);
-		}
-	}
-
-	// Return the bitmap.
-	free(bmi);
-	return hBitmap;
+	return hbmpRet;
 }
 
 /**
