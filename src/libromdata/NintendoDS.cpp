@@ -94,8 +94,8 @@ class NintendoDSPrivate
 		 * NOTE: Strings are NOT null-terminated!
 		 */
 		#pragma pack(1)
-		#define NDS_ROMHeader_SIZE 4096
-		struct PACKED NDS_ROMHeader {
+		#define NDS_RomHeader_SIZE 4096
+		struct PACKED NDS_RomHeader {
 			char title[12];
 			union {
 				char id6[6];	// Game code. (ID6)
@@ -213,6 +213,10 @@ class NintendoDSPrivate
 			uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 		};
 		#pragma pack()
+
+	public:
+		// ROM header.
+		NDS_RomHeader romHeader;
 };
 
 /** NintendoDSPrivate **/
@@ -282,9 +286,9 @@ NintendoDS::NintendoDS(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	static_assert(sizeof(NintendoDSPrivate::NDS_ROMHeader) == NDS_ROMHeader_SIZE,
-		"NDS_ROMHeader is not 4,096 bytes.");
-	NintendoDSPrivate::NDS_ROMHeader header;
+	static_assert(sizeof(NintendoDSPrivate::NDS_RomHeader) == NDS_RomHeader_SIZE,
+		"NDS_RomHeader is not 4,096 bytes.");
+	NintendoDSPrivate::NDS_RomHeader header;
 	m_file->rewind();
 	size_t size = m_file->read(&header, sizeof(header));
 	if (size != sizeof(header))
@@ -297,6 +301,11 @@ NintendoDS::NintendoDS(IRpFile *file)
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
 	m_isValid = (isRomSupported(&info) >= 0);
+
+	if (m_isValid) {
+		// Save the header for later.
+		memcpy(&d->romHeader, &header, sizeof(d->romHeader));
+	}
 }
 
 NintendoDS::~NintendoDS()
@@ -311,7 +320,7 @@ NintendoDS::~NintendoDS()
  */
 int NintendoDS::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(NintendoDSPrivate::NDS_ROMHeader)) {
+	if (!info || info->szHeader < sizeof(NintendoDSPrivate::NDS_RomHeader)) {
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
@@ -325,8 +334,8 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
-	const NintendoDSPrivate::NDS_ROMHeader *nds_header =
-		reinterpret_cast<const NintendoDSPrivate::NDS_ROMHeader*>(info->pHeader);
+	const NintendoDSPrivate::NDS_RomHeader *nds_header =
+		reinterpret_cast<const NintendoDSPrivate::NDS_RomHeader*>(info->pHeader);
 	if (!memcmp(nds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		// TODO: DS vs. DSi?
@@ -432,33 +441,27 @@ int NintendoDS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Read the ROM header.
-	NintendoDSPrivate::NDS_ROMHeader header;
-	m_file->rewind();
-	size_t size = m_file->read(&header, sizeof(header));
-	if (size != sizeof(header)) {
-		// File isn't big enough for a Nintendo DS header...
-		return -EIO;
-	}
+	// Nintendo DS ROM header.
+	const NintendoDSPrivate::NDS_RomHeader *romHeader = &d->romHeader;
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
-	m_fields->addData_string(cp1252_sjis_to_rp_string(header.title, sizeof(header.title)));
+	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
-	m_fields->addData_string(ascii_to_rp_string(header.id6, sizeof(header.id6)));
+	m_fields->addData_string(ascii_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
 
 	// Look up the publisher.
-	const rp_char *publisher = NintendoPublishers::lookup(header.company);
+	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
 	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// ROM version.
-	m_fields->addData_string_numeric(header.rom_version, RomFields::FB_DEC, 2);
+	m_fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
-	uint32_t hw_type = (header.unitcode & NintendoDSPrivate::DS_HW_DS) ^ NintendoDSPrivate::DS_HW_DS;
-	hw_type |= (header.unitcode & NintendoDSPrivate::DS_HW_DSi);
+	uint32_t hw_type = (romHeader->unitcode & NintendoDSPrivate::DS_HW_DS) ^ NintendoDSPrivate::DS_HW_DS;
+	hw_type |= (romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
 	if (hw_type == 0) {
 		// 0x01 is invalid. Assume DS.
 		hw_type = NintendoDSPrivate::DS_HW_DS;
@@ -469,14 +472,14 @@ int NintendoDS::loadFieldData(void)
 
 	// DS Region.
 	uint32_t nds_region;
-	if (header.nds_region == 0) {
+	if (romHeader->nds_region == 0) {
 		// Region-free.
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
 	} else {
 		nds_region = 0;
-		if (header.nds_region & 0x80)
+		if (romHeader->nds_region & 0x80)
 			nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
-		if (header.nds_region & 0x40)
+		if (romHeader->nds_region & 0x40)
 			nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
 	}
 	m_fields->addData_bitfield(nds_region);
@@ -484,7 +487,7 @@ int NintendoDS::loadFieldData(void)
 	// DSi Region.
 	// Maps directly to the header field.
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
-		m_fields->addData_bitfield(header.dsi_region);
+		m_fields->addData_bitfield(romHeader->dsi_region);
 	} else {
 		// No DSi region.
 		// TODO: addData_null()?
@@ -570,23 +573,19 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 		return -ENOENT;
 	}
 
-	// Address of icon/title information is located at
-	// 0x68 in the cartridge header.
-	// TODO: Save the ROM header in the constructor, like GameCube?
-	uint32_t icon_addr;
-	m_file->seek(0x68);
-	size_t size = m_file->read(&icon_addr, sizeof(icon_addr));
-	if (size != sizeof(icon_addr))
-		return -EIO;
-	icon_addr = le32_to_cpu(icon_addr);
+	// Nintendo DS ROM header.
+	const NintendoDSPrivate::NDS_RomHeader *romHeader = &d->romHeader;
+
+	// Get the address of the icon/title information.
+	uint32_t icon_offset = le32_to_cpu(romHeader->icon_offset);
 
 	// Read the icon data.
 	// TODO: Also store titles?
 	static_assert(sizeof(NintendoDSPrivate::NDS_IconTitleData) == NDS_IconTitleData_SIZE,
 		      "NDS_IconTitleData is not 9,152 bytes.");
 	NintendoDSPrivate::NDS_IconTitleData nds_icon_title;
-	m_file->seek(icon_addr);
-	size = m_file->read(&nds_icon_title, sizeof(nds_icon_title));
+	m_file->seek(icon_offset);
+	size_t size = m_file->read(&nds_icon_title, sizeof(nds_icon_title));
 	// Make sure we have up to the icon plus two titles.
 	if (size < (offsetof(NintendoDSPrivate::NDS_IconTitleData, title) + 0x200))
 		return -EIO;
