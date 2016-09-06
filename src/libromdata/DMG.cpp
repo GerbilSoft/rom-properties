@@ -39,18 +39,23 @@ using std::vector;
 
 namespace LibRomData {
 
+#ifndef HAVE_STRNLEN
 /**
  * String length with limit
  * @param str The string itself
  * @param len Maximum length of the string
  * @returns equivivalent to min(strlen(str), len) without buffer overruns
  */
-static inline size_t strnlen(const char *str, size_t len){
-	size_t rv=0;
-	for(rv=0;rv<len;rv++)
-		if(!*(str++)) break;
+static inline size_t strnlen(const char *str, size_t len)
+{
+	size_t rv = 0;
+	for (rv = 0; rv < len; rv++) {
+		if (!*(str++))
+			break;
+	}
 	return rv;
 }
+#endif /* HAVE_STRNLEN */
 
 // System
 static const rp_char *const dmg_system_bitfield_names[] = {

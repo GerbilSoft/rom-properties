@@ -34,6 +34,10 @@ IF(NOT WIN32)
 	SET(HAVE_LIBPNG ${PNG_FOUND})
 ENDIF(NOT WIN32)
 
+# Check for C library functions.
+INCLUDE(CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
