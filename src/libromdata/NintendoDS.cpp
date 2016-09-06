@@ -334,9 +334,9 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
-	const NintendoDSPrivate::NDS_RomHeader *nds_header =
+	const NintendoDSPrivate::NDS_RomHeader *romHeader =
 		reinterpret_cast<const NintendoDSPrivate::NDS_RomHeader*>(info->pHeader);
-	if (!memcmp(nds_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
+	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		// TODO: DS vs. DSi?
 		return 0;
