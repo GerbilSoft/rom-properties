@@ -354,14 +354,6 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 		if (!name)
 			continue;
 
-		if (col == bitfieldDesc->elemsPerRow) {
-			// Next row.
-			row++;
-			col = 0;
-			pt.x = pt_start.x;
-			pt.y += rect_chkbox.bottom;
-		}
-
 		// Get the text size.
 		int chk_w;
 		if (bitfieldDesc->elemsPerRow == 0) {
@@ -373,6 +365,14 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
+			if (col == bitfieldDesc->elemsPerRow) {
+				// Next row.
+				row++;
+				col = 0;
+				pt.x = pt_start.x;
+				pt.y += rect_chkbox.bottom;
+			}
+
 			// Use the largest width in the column.
 			chk_w = col_widths[col];
 		}
