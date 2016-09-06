@@ -11,4 +11,7 @@ The following changes have been made to the original:
 - Disabled some options for enabling unit tests and other
   settings that aren't necessary for rom-properties.
 
+- cmake_minimum_required() is disabled, since it interfered with
+  policies set by the main build infrastructure.
+
 To obtain the original googletest-1.8.0, visit https://github.com/google/googletest .
