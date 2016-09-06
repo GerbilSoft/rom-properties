@@ -30,6 +30,7 @@
 
 namespace LibRomData {
 
+class NintendoDSPrivate;
 class NintendoDS : public RomData
 {
 	public:
@@ -51,10 +52,15 @@ class NintendoDS : public RomData
 		 * @param file Open ROM image.
 		 */
 		NintendoDS(IRpFile *file);
+		virtual ~NintendoDS();
 
 	private:
 		NintendoDS(const NintendoDS &);
 		NintendoDS &operator=(const NintendoDS &);
+
+	private:
+		friend class NintendoDSPrivate;
+		NintendoDSPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/
