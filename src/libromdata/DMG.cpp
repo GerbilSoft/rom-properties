@@ -626,7 +626,19 @@ int DMG::loadFieldData(void)
 	}
 
 	// Region
-	m_fields->addData_string(romHeader->region?_RP("Non-Japanese"):_RP("Japanese"));
+	switch (romHeader->region) {
+		case 0:
+			m_fields->addData_string(_RP("Japanese"));
+			break;
+		case 1:
+			m_fields->addData_string(_RP("Non-Japanese"));
+			break;
+		default:
+			// Invalid value.
+			len = snprintf(buffer, sizeof(buffer), "0x%02X (INVALID)", romHeader->region);
+			m_fields->addData_string(ascii_to_rp_string(buffer, len));
+			break;
+	}
 	
 	// Revision
 	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
