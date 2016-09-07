@@ -273,10 +273,10 @@ int GameBoyAdvance::loadFieldData(void)
 	const GameBoyAdvancePrivate::GBA_RomHeader *romHeader = &d->romHeader;
 
 	// Game title.
-	m_fields->addData_string(ascii_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
-	m_fields->addData_string(ascii_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	m_fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);

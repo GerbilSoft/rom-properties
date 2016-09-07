@@ -403,20 +403,18 @@ string utf16_to_utf8(const char16_t *str, size_t len)
 }
 
 /**
- * Convert ASCII text to UTF-16.
- * NOTE: The text is handled as Latin-1.
- * @param str ASCII text.
+ * Convert Latin-1 (ISO-8859-1) text to UTF-16.
+ * @param str Latin-1 text.
  * @param len Length of str, in bytes.
  * @return UTF-16 string.
  */
-u16string ascii_to_utf16(const char *str, size_t len)
+u16string latin1_to_utf16(const char *str, size_t len)
 {
-	// Direct copy from Latin-1 to UTF-16.
-	// TODO: More efficient to work on u16string directly,
-	// even though it initializes the string to all 0?
-	u16string wcs(len, 0);
-	for (char16_t *ptr = &wcs[0]; len > 0; len--) {
-		*ptr++ = ((char16_t)*str++);
+	// Convert from Latin-1 to UTF-16.
+	u16string wcs;
+	wcs.reserve(len);
+	for (; len > 0; len--, str++) {
+		wcs.push_back(*str);
 	}
 	return wcs;
 }

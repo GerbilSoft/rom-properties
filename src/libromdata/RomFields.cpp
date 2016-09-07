@@ -359,7 +359,7 @@ int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 
-	rp_string str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	rp_string str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	return addData_string(str);
 }
 

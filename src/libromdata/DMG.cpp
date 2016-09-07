@@ -538,10 +538,10 @@ int DMG::loadFieldData(void)
 	
 	if ((romHeader->cgbflag&0x3F) == 0 &&		// gameid is only present when cgbflag is
 	    4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
-		m_fields->addData_string(ascii_to_rp_string(romHeader->title,std::min(len,11)));
-		m_fields->addData_string(ascii_to_rp_string(romHeader->title+11,4));
+		m_fields->addData_string(latin1_to_rp_string(romHeader->title,std::min(len,11)));
+		m_fields->addData_string(latin1_to_rp_string(romHeader->title+11,4));
 	} else{
-		m_fields->addData_string(ascii_to_rp_string(romHeader->title,len));
+		m_fields->addData_string(latin1_to_rp_string(romHeader->title,len));
 		m_fields->addData_string(_RP("Unknown"));
 	}
 
@@ -604,7 +604,7 @@ int DMG::loadFieldData(void)
 		else{
 			len = snprintf(buffer,sizeof(buffer),"%d KiB",rom_size);
 		}
-		m_fields->addData_string(ascii_to_rp_string(buffer,len));
+		m_fields->addData_string(latin1_to_rp_string(buffer,len));
 	}
 	
 	// RAM Size
@@ -626,7 +626,7 @@ int DMG::loadFieldData(void)
 			else{
 				len = snprintf(buffer,sizeof(buffer),"%u KiB",ram_size);
 			}
-			m_fields->addData_string(ascii_to_rp_string(buffer,len));
+			m_fields->addData_string(latin1_to_rp_string(buffer,len));
 		}
 	}
 
@@ -641,7 +641,7 @@ int DMG::loadFieldData(void)
 		default:
 			// Invalid value.
 			len = snprintf(buffer, sizeof(buffer), "0x%02X (INVALID)", romHeader->region);
-			m_fields->addData_string(ascii_to_rp_string(buffer, len));
+			m_fields->addData_string(latin1_to_rp_string(buffer, len));
 			break;
 	}
 	
@@ -664,7 +664,7 @@ int DMG::loadFieldData(void)
 	} else {
 		len = snprintf(buffer, sizeof(buffer), "0x%02X (valid)", checksum);
 	}
-	m_fields->addData_string(ascii_to_rp_string(buffer,len));
+	m_fields->addData_string(latin1_to_rp_string(buffer,len));
 	
 	
 	return (int)m_fields->count();

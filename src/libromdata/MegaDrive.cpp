@@ -567,7 +567,7 @@ int MegaDrive::loadFieldData(void)
 		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	} else {
 		// Unknown publisher.
 		m_fields->addData_string(_RP("Unknown"));
@@ -591,7 +591,7 @@ int MegaDrive::loadFieldData(void)
 			be32_to_cpu(romHeader->rom_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
-	m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 	// RAM range.
 	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
@@ -599,7 +599,7 @@ int MegaDrive::loadFieldData(void)
 			be32_to_cpu(romHeader->ram_end));
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
-	m_fields->addData_string(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 	// SRAM range. (TODO)
 	m_fields->addData_string(_RP(""));

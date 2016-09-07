@@ -504,7 +504,7 @@ int GameCube::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	m_fields->addData_string(ascii_to_rp_string(id6, 6));
+	m_fields->addData_string(latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
@@ -535,7 +535,7 @@ int GameCube::loadFieldData(void)
 					int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
 					if (len > (int)sizeof(buf))
 						len = sizeof(buf);
-					data_row.push_back(len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 					// Partition type.
 					rp_string str;
@@ -560,13 +560,13 @@ int GameCube::loadFieldData(void)
 							    isalnum(buf[2]) && isalnum(buf[3]))
 							{
 								// All four bytes are ASCII.
-								str = ascii_to_rp_string(buf, 4);
+								str = latin1_to_rp_string(buf, 4);
 							} else {
 								// Non-ASCII data. Print the hex values instead.
 								len = snprintf(buf, sizeof(buf), "%08X", entry.type);
 								if (len > (int)sizeof(buf))
 									len = sizeof(buf);
-								str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+								str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 							}
  						}
 					}
@@ -604,8 +604,8 @@ static LibRomData::rp_string getURL_GameTDB(const char *system, const char *type
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);	// TODO: Handle truncation better.
 
-	// TODO: UTF-8, not ASCII?
-	return (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
 /**
@@ -624,8 +624,8 @@ static LibRomData::rp_string getCacheKey(const char *system, const char *type, c
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);	// TODO: Handle truncation better.
 
-	// TODO: UTF-8, not ASCII?
-	return (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
 /**
