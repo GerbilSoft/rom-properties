@@ -78,6 +78,7 @@ std::string utf16_to_utf8(const char16_t *str, size_t len);
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
+ * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str ASCII text.
  * @param len Length of str, in bytes.
  * @return UTF-16 string.
@@ -248,6 +249,7 @@ static inline std::u16string rp_string_to_utf16(const rp_string &rps)
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to rp_string.
+ * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str ASCII text.
  * @param len Length of str, in bytes.
  * @return rp_string.

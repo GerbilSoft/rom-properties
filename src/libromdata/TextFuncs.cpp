@@ -404,6 +404,7 @@ string utf16_to_utf8(const char16_t *str, size_t len)
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
+ * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
  * @param len Length of str, in bytes.
  * @return UTF-16 string.
@@ -414,7 +415,13 @@ u16string latin1_to_utf16(const char *str, size_t len)
 	u16string wcs;
 	wcs.reserve(len);
 	for (; len > 0; len--, str++) {
-		wcs.push_back(*str);
+		if ((*str & 0xE0) == 0x80) {
+			// Characters 0x80-0x9F. Replace with '?'.
+			wcs.push_back(_RP_CHR('?'));
+		} else {
+			// Other character.
+			wcs.push_back(*str);
+		}
 	}
 	return wcs;
 }
