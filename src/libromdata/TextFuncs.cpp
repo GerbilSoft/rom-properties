@@ -414,6 +414,7 @@ string latin1_to_utf8(const char* str, size_t len)
 	string mbs;
 	mbs.reserve(len*2);
 	for (; len > 0; len--, str++) {
+		// TODO: Optimize the branches?
 		if ((*str & 0x80) == 0) {
 			// ASCII.
 			mbs.push_back(*str);
