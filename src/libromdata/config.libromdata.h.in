@@ -48,11 +48,11 @@
 /* Older versions still support L"str" for UTF-16. */
 /* FIXME: char16_t is defined in c++11-compat.h, not here. */
 #if _MSC_VER < 1900
-#define _RP_U8(x)	x
+#define _RP_U8_STR(x)	x
 #define _RP_U16_STR(x)	((char16_t*)(L ##x))
 #define _RP_U16_CHR(x)	((char16_t)(L ##x))
 #else
-#define _RP_U8(x)	(u8 ##x)
+#define _RP_U8_STR(x)	(u8 ##x)
 #define _RP_U16_STR(x)	(u ##x)
 #define _RP_U16_CHR(x)	(u ##x)
 #endif
@@ -60,7 +60,7 @@
 /* Other compilers with C++ 2011 support should support Unicode */
 /* string literals without any issues. */
 /* FIXME: Fail if the compiler doesn't support Unicode string literals. */
-#define _RP_U8(x)	(u8 ##x)
+#define _RP_U8_STR(x)	(u8 ##x)
 #define _RP_U16_STR(x)	(u ##x)
 #define _RP_U16_CHR(x)	(u ##x)
 #endif
@@ -70,7 +70,7 @@
 #error Must define RP_UTF8 or RP_UTF16, but not both.
 #elif defined(RP_UTF8)
 typedef char rp_char;
-#define _RP(x) _RP_U8(x)
+#define _RP(x) _RP_U8_STR(x)
 /* NOTE: There is no UTF-8 character literal in C++ 2011. */
 #define _RP_CHR(x) (x)
 #ifdef __cplusplus
