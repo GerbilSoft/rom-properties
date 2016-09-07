@@ -77,9 +77,18 @@ std::u16string utf8_to_utf16(const char *str, size_t len);
 std::string utf16_to_utf8(const char16_t *str, size_t len);
 
 /**
+ * Convert Latin-1 (ISO-8859-1) text to UTF-8.
+ * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
+ * @param str Latin-1 text.
+ * @param len Length of str, in bytes.
+ * @return UTF-8 string.
+ */
+std::string latin1_to_utf8(const char* str, size_t len);
+
+/**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
- * @param str ASCII text.
+ * @param str Latin-1 text.
  * @param len Length of str, in bytes.
  * @return UTF-16 string.
  */
@@ -250,15 +259,14 @@ static inline std::u16string rp_string_to_utf16(const rp_string &rps)
 /**
  * Convert Latin-1 (ISO-8859-1) text to rp_string.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
- * @param str ASCII text.
+ * @param str Latin-1 text.
  * @param len Length of str, in bytes.
  * @return rp_string.
  */
 static inline rp_string latin1_to_rp_string(const char *str, size_t len)
 {
 #if defined(RP_UTF8)
-	// FIXME: Not correct for Latin-1.
-	return rp_string(str, len);
+	return latin1_to_utf8(str, len);
 #elif defined(RP_UTF16)
 	return latin1_to_utf16(str, len);
 #endif

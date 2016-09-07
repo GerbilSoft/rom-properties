@@ -403,6 +403,33 @@ string utf16_to_utf8(const char16_t *str, size_t len)
 }
 
 /**
+ * Convert Latin-1 (ISO-8859-1) text to UTF-8.
+ * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
+ * @param str Latin-1 text.
+ * @param len Length of str, in bytes.
+ * @return UTF-8 string.
+ */
+string latin1_to_utf8(const char* str, size_t len)
+{
+	string mbs;
+	mbs.reserve(len*2);
+	for (; len > 0; len--, str++) {
+		if ((*str & 0x80) == 0) {
+			// ASCII.
+			mbs.push_back(*str);
+		} else if ((*str & 0xE0) == 0x80) {
+			// Characters 0x80-0x9F. Replace with '?'.
+			mbs.push_back('?');
+		} else {
+			// Other character. 2 bytes are needed.
+			mbs.push_back(0xC0 | ((*str >> 6) & 0x03));
+			mbs.push_back(0x80 | (*str & 0x3F));
+		}
+	}
+	return mbs;
+}
+
+/**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
@@ -411,13 +438,12 @@ string utf16_to_utf8(const char16_t *str, size_t len)
  */
 u16string latin1_to_utf16(const char *str, size_t len)
 {
-	// Convert from Latin-1 to UTF-16.
 	u16string wcs;
 	wcs.reserve(len);
 	for (; len > 0; len--, str++) {
 		if ((*str & 0xE0) == 0x80) {
 			// Characters 0x80-0x9F. Replace with '?'.
-			wcs.push_back(_RP_CHR('?'));
+			wcs.push_back(_RP_U16_CHR('?'));
 		} else {
 			// Other character.
 			wcs.push_back(*str);
