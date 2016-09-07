@@ -71,7 +71,8 @@
 #elif defined(RP_UTF8)
 typedef char rp_char;
 #define _RP(x) _RP_U8(x)
-#define _RP_CHR(x) _RP_U8(x)
+/* NOTE: There is no UTF-8 character literal in C++ 2011. */
+#define _RP_CHR(x) (x)
 #ifdef __cplusplus
 namespace LibRomData {
 	typedef std::string rp_string;
