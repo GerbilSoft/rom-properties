@@ -31,7 +31,7 @@ using LibRomData::rp_image;
 
 // C++ includes.
 #include <memory>
-using std::auto_ptr;
+using std::unique_ptr;
 
 // Gdiplus for HBITMAP conversion.
 // NOTE: Gdiplus requires min/max.
@@ -249,12 +249,12 @@ HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
 	// NOTE: Gdiplus requires non-const BYTE*.
 	ScopedGdiplus gdip;
 	const int stride = image->width() * 4;
-	auto_ptr<Gdiplus::Bitmap> gdipBmp(
+	unique_ptr<Gdiplus::Bitmap> gdipBmp(
 		new Gdiplus::Bitmap(
 			image->width(), image->height(), stride,
 			PixelFormat32bppARGB,
 			(BYTE*)image->bits()));
-	if (!gdipBmp.get())
+	if (!gdipBmp)
 		return nullptr;
 
 	// Convert the image to HBITMAP.

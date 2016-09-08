@@ -57,7 +57,7 @@
 
 // C++ includes.
 #include <memory>
-using std::auto_ptr;
+using std::unique_ptr;
 
 namespace LibRomData { namespace Tests {
 
@@ -201,7 +201,7 @@ void RpImageLoaderTest::SetUp(void)
 	const RpImageLoaderTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	auto_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
 	ASSERT_TRUE(file->isOpen());
 
@@ -529,12 +529,12 @@ TEST_P(RpImageLoaderTest, loadTest)
 	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
 	// Create an RpMemFile.
-	auto_ptr<IRpFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	unique_ptr<IRpFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(png_mem_file.get() != nullptr);
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	auto_ptr<rp_image> img(RpImageLoader::load(png_mem_file.get()));
+	unique_ptr<rp_image> img(RpImageLoader::load(png_mem_file.get()));
 	ASSERT_TRUE(img.get() != nullptr) << "RpImageLoader failed to load the image.";
 
 	// Check the rp_image parameters.

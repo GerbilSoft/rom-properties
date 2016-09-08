@@ -50,7 +50,7 @@ using std::wstring;
 #include <cstdlib>
 #include <cstring>
 
-// TODO: Use std::auto_ptr<>?
+// TODO: Use std::unique_ptr<>?
 
 namespace LibRomData {
 

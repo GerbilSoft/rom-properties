@@ -46,7 +46,7 @@ using LibCacheMgr::CacheManager;
 // C++ includes.
 #include <memory>
 #include <string>
-using std::auto_ptr;
+using std::unique_ptr;
 using std::wstring;
 
 // CLSID
@@ -203,10 +203,10 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
 	delete file;	// file is dup()'d by RomData.
 
-	if (!romData.get()) {
+	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
 	}
@@ -234,12 +234,12 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 			continue;
 
 		// Attempt to load the image.
-		auto_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
-		if (!file.get() || !file->isOpen())
+		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		if (!file || !file->isOpen())
 			continue;
 
-		auto_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
-		if (!dl_img.get() || !dl_img->isValid())
+		unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
+		if (!dl_img || !dl_img->isValid())
 			continue;
 
 		// Image loaded.

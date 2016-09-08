@@ -41,7 +41,7 @@ using namespace LibRomData;
 // C++ includes.
 #include <memory>
 #include <string>
-using std::auto_ptr;
+using std::unique_ptr;
 using std::wstring;
 
 // CLSID
@@ -207,10 +207,10 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
 	delete file;	// file is dup()'d by RomData.
 
-	if (!romData.get()) {
+	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
 	}

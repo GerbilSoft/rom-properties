@@ -32,7 +32,7 @@
 
 // C includes. (C++ namespace)
 #include <memory>
-using std::auto_ptr;
+using std::unique_ptr;
 
 // Gdiplus for PNG decoding.
 // NOTE: Gdiplus requires min/max.
@@ -77,8 +77,8 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 	Gdiplus::Status status = Gdiplus::Status::GenericError;
 
 	// Attempt to load the image.
-	auto_ptr<Gdiplus::Bitmap> gdipBmp(Gdiplus::Bitmap::FromStream(file, FALSE));
-	if (!gdipBmp.get()) {
+	unique_ptr<Gdiplus::Bitmap> gdipBmp(Gdiplus::Bitmap::FromStream(file, FALSE));
+	if (!gdipBmp) {
 		// Could not load the image.
 		return nullptr;
 	}
