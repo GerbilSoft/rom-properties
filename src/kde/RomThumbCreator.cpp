@@ -84,17 +84,16 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFile *file = new RpFile(Q2RP(path), RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> file(new RpFile(Q2RP(path), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
-		delete file;
 		return false;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
-	delete file;	// file is dup()'d by RomData.
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
+	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
 		return false;
@@ -132,9 +131,9 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 					continue;
 
 				// Attempt to load the image.
-				IRpFile *file = new RpFile(cache_filename, RpFile::FM_OPEN_READ);
+				unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
 				if (file && file->isOpen()) {
-					rp_image *dl_img = RpImageLoader::load(file);
+					rp_image *dl_img = RpImageLoader::load(file.get());
 					if (dl_img && dl_img->isValid()) {
 						// Image loaded successfully.
 						QImage qdl_img = rpToQImage(dl_img);

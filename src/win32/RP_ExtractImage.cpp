@@ -195,16 +195,15 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		return E_INVALIDARG;
 
 	// Get the RomData object.
-	IRpFile *file = new RpFile(m_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
-		delete file;
 		return E_FAIL;	// TODO: More specific error?
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
-	delete file;	// file is dup()'d by RomData.
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
+	file.reset(nullptr);	// file is dup()'d by RomData.
 
 	if (!romData) {
 		// ROM is not supported.

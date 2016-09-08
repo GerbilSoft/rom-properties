@@ -199,16 +199,15 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	IRpFile *file = new RpFile(m_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
-		delete file;
 		return E_FAIL;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
-	delete file;	// file is dup()'d by RomData.
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
+	file.reset(nullptr);	// file is dup()'d by RomData.
 
 	if (!romData) {
 		// ROM is not supported.

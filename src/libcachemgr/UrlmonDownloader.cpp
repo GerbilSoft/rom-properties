@@ -34,7 +34,9 @@ using LibRomData::rp_string;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <string>
+using std::unique_ptr;
 using std::string;
 
 // Windows includes.
@@ -78,10 +80,9 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Open the cached file.
-	IRpFile *file = new RpFile(W2RP_c(szFileName), RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> file(new RpFile(W2RP_c(szFileName), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
-		delete file;
 		return -1;
 	}
 

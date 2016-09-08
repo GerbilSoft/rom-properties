@@ -41,8 +41,10 @@ using namespace LibRomData;
 #include <cassert>
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
+using std::unique_ptr;
 using std::wstring;
 using std::vector;
 
@@ -235,17 +237,15 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 				    ARRAYSIZE(m_szSelectedFile)))
 				{
 					// Open the file.
-					IRpFile *file = new RpFile(rp_string(W2RP_c(m_szSelectedFile)),
-						RpFile::FM_OPEN_READ);
+					unique_ptr<IRpFile> file(new RpFile(
+						rp_string(W2RP_c(m_szSelectedFile)),
+						RpFile::FM_OPEN_READ));
 					if (file && file->isOpen()) {
 						// Get the appropriate RomData class for this ROM.
-						m_romData = RomDataFactory::getInstance(file);
+						// file is dup()'d by RomData.
+						m_romData = RomDataFactory::getInstance(file.get());
 						hr = (m_romData != nullptr ? S_OK : E_FAIL);
 					}
-
-					// RomData classes dup() the file, so
-					// we can close the original one.
-					delete file;
 				}
 			}
 

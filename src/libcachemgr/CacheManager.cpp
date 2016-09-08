@@ -47,7 +47,9 @@ using LibRomData::RpFile;
 #endif /* !_WIN32 */
 
 // C++ includes.
+#include <memory>
 #include <string>
+using std::unique_ptr;
 using std::string;
 
 // TODO: DownloaderFactory?
@@ -213,22 +215,22 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 	int ret = m_downloader->download();
 
 	// Write the file to the cache.
-	IRpFile *file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
+	unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_CREATE_WRITE));
 
-	if (ret != 0) {
-		// Error downloading the file.
+	if (ret != 0 || !file || !file->isOpen()) {
+		// Error downloading the file, or error opening
+		// the file in the local cache.
+
 		// TODO: Only keep a negative cache if it's a 404.
 		// Keep the cached file as a 0-byte file to indicate
 		// a "negative" hit, but return an empty filename.
-		file->close();
-		delete file;
+
 		return rp_string();
 	}
 
 	// Write the file.
 	file->write((void*)m_downloader->data(), m_downloader->dataSize());
 	file->close();
-	delete file;
 
 	// Set the file's mtime if it was obtained by the downloader.
 	// TODO: IRpFile::set_mtime()?
