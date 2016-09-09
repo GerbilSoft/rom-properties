@@ -163,11 +163,13 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		 * @param img rp_image
 		 * @param pBits Bitmap image data.
 		 * @param pBmpPalette Bitmap palette.
+		 * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
 		 */
 		static void Compare_CI8_BMP8(
 			const rp_image *img,
 			const uint8_t *pBits,
-			const uint32_t *pBmpPalette);
+			const uint32_t *pBmpPalette,
+			int biClrUsed = -1);
 
 	public:
 		// Image buffers.
@@ -463,11 +465,13 @@ void RpPngFormatTest::Compare_ARGB32_BMP32(
  * @param img rp_image
  * @param pBits Bitmap image data.
  * @param pBmpPalette Bitmap palette.
+ * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
  */
 void RpPngFormatTest::Compare_CI8_BMP8(
 	const rp_image *img,
 	const uint8_t *pBits,
-	const uint32_t *pBmpPalette)
+	const uint32_t *pBmpPalette,
+	int biClrUsed)
 {
 	// BMP images are stored upside-down.
 	// TODO: 8px row alignment?
@@ -479,13 +483,31 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 
 	// Check the palette.
 	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
-	for (int i = img->palette_len()-1; i >= 0; i--, pSrcPalette++, pBmpPalette++) {
+	if (biClrUsed < 0) {
+		biClrUsed = img->palette_len();
+	}
+	for (int i = biClrUsed; i > 0; i--, pSrcPalette++, pBmpPalette++) {
 		// NOTE: The alpha channel in the BMP palette is ignored.
 		// It's always 0. Assume all colors are fully opaque.
 		const uint32_t bmp_color = le32_to_cpu(*pBmpPalette) | 0xFF000000;
 		xor_result |= (*pSrcPalette ^ bmp_color);
 	}
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
+
+	// Make sure the unused colors are all 0.
+	if (biClrUsed < img->palette_len()) {
+		uint32_t or_result = 0;
+		for (int i = img->palette_len(); i > biClrUsed; i--, pSrcPalette++) {
+			or_result |= *pSrcPalette;
+		}
+		EXPECT_EQ(0U, or_result) << "CI8 rp_image's palette doesn't have unused entries set to 0.";
+
+		or_result = 0;
+		for (int i = img->palette_len(); i > biClrUsed; i--, pBmpPalette++) {
+			or_result |= *pBmpPalette;
+		}
+		EXPECT_EQ(0U, or_result) << "CI8 BMP's palette doesn't have unused entries set to 0.";
+	}
 
 	// Check the image data.
 	xor_result = 0;
@@ -579,13 +601,16 @@ TEST_P(RpPngFormatTest, loadTest)
 	} else if (img->format() == rp_image::FORMAT_CI8) {
 		if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
 			// 256-color image. Get the palette.
-			ASSERT_EQ(img->palette_len(), (int)bih.biClrUsed)
-				<< "BMP palette length does not match rp_image palette length.";
+			// NOTE: rp_image's palette length is always 256, which may be
+			// greater than the used colors in the BMP.
+			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+				<< "BMP palette is larger than the rp_image palette.";
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
 			// FIXME: This may fail on aligned architectures.
 			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
-			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits, pBmpPalette));
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits,
+				pBmpPalette, bih.biClrUsed));
 		}
 	} else {
 		// Unsupported comparison.
@@ -604,6 +629,7 @@ TEST_P(RpPngFormatTest, loadTest)
 // with alphatransparency, and gray/paletted images using
 // 1-, 2-, 4-, and 8 bits per channel.
 
+// gl_triangle PNG IHDR chunks.
 static const PNG_IHDR_t gl_triangle_RGB24_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
 static const PNG_IHDR_t gl_triangle_ARGB32_IHDR =
@@ -613,6 +639,7 @@ static const PNG_IHDR_t gl_triangle_gray_IHDR =
 static const PNG_IHDR_t gl_triangle_gray_alpha_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
+// gl_triangle BITMAPINFOHEADER structs.
 static const BITMAPINFOHEADER gl_triangle_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 24, BI_RGB, 400*352*(24/8),
@@ -670,6 +697,7 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			rp_image::FORMAT_ARGB32)
 		));
 
+// gl_quad PNG IHDR chunks.
 static const PNG_IHDR_t gl_quad_RGB24_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_RGB, 0, 0, 0};
 static const PNG_IHDR_t gl_quad_ARGB32_IHDR =
@@ -679,6 +707,7 @@ static const PNG_IHDR_t gl_quad_gray_IHDR =
 static const PNG_IHDR_t gl_quad_gray_alpha_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
+// gl_quad BITMAPINFOHEADER structs.
 static const BITMAPINFOHEADER gl_quad_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 24, BI_RGB, 480*384*(24/8),
@@ -735,4 +764,26 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			gl_quad_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
 		));
+
+// xterm 256-color PNG IHDR chunks.
+static const PNG_IHDR_t xterm_256color_CI8_IHDR =
+	{608, 720, 8, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
+
+// xterm 256-color BITMAPINFOHEADER structs.
+static const BITMAPINFOHEADER xterm_256color_CI8_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		608, 720, 1, 8, BI_RGB, 608*720,
+		3936, 3936, 253, 253};
+
+// xterm 256-color PNG image tests.
+INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
+	::testing::Values(
+		RpPngFormatTest_mode(
+			_RP("xterm-256color.CI8.png"),
+			_RP("xterm-256color.CI8.bmp.gz"),
+			xterm_256color_CI8_IHDR,
+			xterm_256color_CI8_BIH,
+			rp_image::FORMAT_CI8)
+		));
+
 } }

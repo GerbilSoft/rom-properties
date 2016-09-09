@@ -149,8 +149,6 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		return nullptr;
 	}
 
-	// TODO: Copy the palette if necessary.
-
 	// Copy the image, line by line.
 	// NOTE: If Stride is negative, the image is upside-down.
 	int rp_line_start, rp_line_inc, gdip_line_inc;
@@ -166,7 +164,6 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		gdip_line_inc = bmpData.Stride;
 	}
 
-	// TODO: Copy CI8 palettes from 256-color images.
 	if (argb32_to_grayscale) {
 		// Convert from ARGB32 to grayscale.
 
@@ -200,6 +197,31 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		{
 			uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
 			memcpy(rp_px, gdip_px, line_size);
+		}
+
+		if (fmt == rp_image::FORMAT_CI8) {
+			// Copy the palette.
+			INT size = gdipBmp->GetPaletteSize();
+			assert(size > 0);
+			Gdiplus::ColorPalette *palette =
+				reinterpret_cast<Gdiplus::ColorPalette*>(malloc(size));
+			gdipBmp->GetPalette(palette, size);
+
+			// Copy the palette colors.
+			// TODO: Check flags for alpha/grayscale?
+			assert((int)palette->Count > 0);
+			assert((int)palette->Count <= img->palette_len());
+			int color_count = std::min((int)palette->Count, img->palette_len());
+			memcpy(img->palette(), palette->Entries, color_count*sizeof(uint32_t));
+
+			// Zero out any remaining colors.
+			const int diff = img->palette_len() - color_count;
+			if (diff > 0) {
+				memset(img->palette() + color_count, 0, diff*sizeof(uint32_t));
+			}
+
+			// We don't need the GDI+ palette anymore.
+			free(palette);
 		}
 	}
 
