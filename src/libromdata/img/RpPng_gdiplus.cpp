@@ -106,6 +106,10 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 			// grayscale image, and should be converted to CI8.
 			// Reference: http://stackoverflow.com/questions/30391832/gdi-grayscale-png-loaded-as-pixelformat32bppargb
 
+			// NOTE: GDI+ loads 256-color PNG images with tRNS chunks
+			// as if they're ARGB32, and there's no way to figure out
+			// that this conversion happened through GDI+.
+
 			// TODO: PARGB or ARGB?
 			gdipFmt = PixelFormat32bppARGB;
 

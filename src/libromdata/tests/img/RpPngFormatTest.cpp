@@ -84,18 +84,48 @@ namespace testing { namespace internal {
 
 namespace LibRomData { namespace Tests {
 
+// tRNS chunk for CI8 paletted images.
+// BMP format doesn't support alpha values
+// in the color table.
+struct tRNS_CI8_t {
+	uint8_t alpha[256];
+};
+
 struct RpPngFormatTest_mode
 {
 	rp_string png_filename;		// PNG image to test.
 	rp_string bmp_gz_filename;	// Gzipped BMP image for comparison.
 
-	// Expected rp_image parameters.
+	// Expected PNG and BMP parameters.
 	PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
 	BITMAPINFOHEADER bih;		// FIXME: Making this const& causes problems.
+	tRNS_CI8_t bmp_tRNS;		// FIXME: Making this const& causes problems.
+
+	// Expected rp_image format.
 	rp_image::Format rp_format;	// Expected format.
 	rp_image::Format rp_format_alt;	// Alternate expected format.
 
+	bool has_bmp_tRNS;		// Set if bmp_tRNS is specified in the constructor.
+
 	// TODO: Verify PNG bit depth and color type.
+
+	RpPngFormatTest_mode(
+		const rp_char *png_filename,
+		const rp_char *bmp_gz_filename,
+		const PNG_IHDR_t &ihdr,
+		const BITMAPINFOHEADER &bih,
+		const tRNS_CI8_t &bmp_tRNS,
+		rp_image::Format rp_format,
+		rp_image::Format rp_format_alt = rp_image::FORMAT_NONE)
+		: png_filename(png_filename)
+		, bmp_gz_filename(bmp_gz_filename)
+		, ihdr(ihdr)
+		, bih(bih)
+		, bmp_tRNS(bmp_tRNS)
+		, rp_format(rp_format)
+		, rp_format_alt(rp_format_alt)
+		, has_bmp_tRNS(true)
+	{ }
 
 	RpPngFormatTest_mode(
 		const rp_char *png_filename,
@@ -110,7 +140,11 @@ struct RpPngFormatTest_mode
 		, bih(bih)
 		, rp_format(rp_format)
 		, rp_format_alt(rp_format_alt)
-	{ }
+		, has_bmp_tRNS(false)
+	{
+		// No tRNS chunk for the BMP image.
+		memset(bmp_tRNS.alpha, 0xFF, sizeof(bmp_tRNS));
+	}
 
 	// May be required for MSVC 2010?
 	RpPngFormatTest_mode(const RpPngFormatTest_mode &other)
@@ -120,7 +154,10 @@ struct RpPngFormatTest_mode
 		, bih(other.bih)
 		, rp_format(other.rp_format)
 		, rp_format_alt(other.rp_format_alt)
-	{ }
+		, has_bmp_tRNS(other.has_bmp_tRNS)
+	{
+		memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
+	}
 
 	// Required for MSVC 2010.
 	RpPngFormatTest_mode &operator=(const RpPngFormatTest_mode &other)
@@ -129,14 +166,17 @@ struct RpPngFormatTest_mode
 		bmp_gz_filename = other.bmp_gz_filename;
 		ihdr = other.ihdr;
 		bih = other.bih;
+		memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
 		rp_format = other.rp_format;
 		rp_format_alt = other.rp_format_alt;
+		has_bmp_tRNS = other.has_bmp_tRNS;
 		return *this;
 	}
 };
 
-// Maximum file size for PNG images.
-static const int64_t MAX_IMAGE_FILESIZE = 1048576;
+// Maximum file size for images.
+static const int64_t MAX_PNG_IMAGE_FILESIZE =    512*1024;
+static const int64_t MAX_BMP_IMAGE_FILESIZE = 2*1024*1024;
 
 class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {
@@ -178,7 +218,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const uint8_t *pBits);
 
 		/**
-		 * Compare an ARGB32 rp_image to a 32-bit ARGB bitmap.
+		 * Compare an ARGB32 rp_image to an ARGB32 bitmap.
 		 * @param img rp_image
 		 * @param pBits Bitmap image data.
 		 */
@@ -191,12 +231,14 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		 * @param img rp_image
 		 * @param pBits Bitmap image data.
 		 * @param pBmpPalette Bitmap palette.
+		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
 		 * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
 		 */
 		static void Compare_CI8_BMP8(
 			const rp_image *img,
 			const uint8_t *pBits,
 			const uint32_t *pBmpPalette,
+			const tRNS_CI8_t *pBmpAlpha = nullptr,
 			int biClrUsed = -1);
 
 		/**
@@ -212,6 +254,17 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const rp_image *img,
 			const uint8_t *pBits,
 			const uint32_t *pBmpPalette);
+
+		/**
+		 * Compare a CI8 rp_image to an ARGB32 bitmap.
+		 * wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
+		 * instead of as ARGB32 for some reason.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 */
+		static void Compare_CI8_BMP32(
+			const rp_image *img,
+			const uint8_t *pBits);
 
 	public:
 		// Image buffers.
@@ -250,7 +303,7 @@ void RpPngFormatTest::SetUp(void)
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
-	ASSERT_LE(file->fileSize(), MAX_IMAGE_FILESIZE) << "PNG test image is too big.";
+	ASSERT_LE(file->fileSize(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
 	size_t pngSize = (size_t)file->fileSize();
@@ -273,7 +326,7 @@ void RpPngFormatTest::SetUp(void)
 	bmpSize = le32_to_cpu(bmpSize);
 	ASSERT_GT(bmpSize, sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER))
 		<< "BMP test image is too small.";
-	ASSERT_LE(bmpSize, MAX_IMAGE_FILESIZE)
+	ASSERT_LE(bmpSize, MAX_BMP_IMAGE_FILESIZE)
 		<< "BMP test image is too big.";
 
 	// Read the BMP image into memory.
@@ -457,7 +510,7 @@ void RpPngFormatTest::Compare_ARGB32_BMP24(
 		// FIXME: This may fail on aligned architectures.
 		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits += 3) {
-			// Convert the source's 24-bit pixel to 32-bit.
+			// Convert the BMP's 24-bit pixel to 32-bit.
 			uint32_t bmp32 = pBits[0] | pBits[1] << 8 | pBits[2] << 16;
 			// Pixel is fully opaque.
 			bmp32 |= 0xFF000000;
@@ -507,12 +560,14 @@ void RpPngFormatTest::Compare_ARGB32_BMP32(
  * @param img rp_image
  * @param pBits Bitmap image data.
  * @param pBmpPalette Bitmap palette.
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
  * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
  */
 void RpPngFormatTest::Compare_CI8_BMP8(
 	const rp_image *img,
 	const uint8_t *pBits,
 	const uint32_t *pBmpPalette,
+	const tRNS_CI8_t *pBmpAlpha,
 	int biClrUsed)
 {
 	// BMP images are stored upside-down.
@@ -528,11 +583,16 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 	if (biClrUsed < 0) {
 		biClrUsed = img->palette_len();
 	}
-	for (int i = biClrUsed; i > 0; i--, pSrcPalette++, pBmpPalette++) {
-		// NOTE: The alpha channel in the BMP palette is ignored.
-		// It's always 0. Assume all colors are fully opaque.
-		const uint32_t bmp_color = le32_to_cpu(*pBmpPalette) | 0xFF000000;
-		xor_result |= (*pSrcPalette ^ bmp_color);
+	for (int i = 0; i < biClrUsed; i++, pSrcPalette++, pBmpPalette++) {
+		uint32_t bmp32 = le32_to_cpu(*pBmpPalette) & 0x00FFFFFF;
+		if (pBmpAlpha) {
+			// BMP tRNS chunk is specified.
+			bmp32 |= pBmpAlpha->alpha[i] << 24;
+		} else {
+			// No tRNS chunk. Assume the color is opaque.
+			bmp32 |= 0xFF000000;
+		}
+		xor_result |= (*pSrcPalette ^ bmp32);
 	}
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
 
@@ -585,26 +645,10 @@ void RpPngFormatTest::Compare_ARGB32_BMP8(
 	// The eventual result should be 0 if the images are identical.
 	uint32_t xor_result = 0;
 
-#if 0
-	// Check the palette.
-	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
-	if (biClrUsed < 0) {
-		biClrUsed = img->palette_len();
-	}
-	for (int i = biClrUsed; i > 0; i--, pSrcPalette++, pBmpPalette++) {
-		// NOTE: The alpha channel in the BMP palette is ignored.
-		// It's always 0. Assume all colors are fully opaque.
-		const uint32_t bmp_color = le32_to_cpu(*pBmpPalette) | 0xFF000000;
-		xor_result |= (*pSrcPalette ^ bmp_color);
-	}
-	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
-#endif
-
 	// Check the image data.
 	xor_result = 0;
 	for (int y = img->height()-1; y >= 0; y--) {
-		// Do a full memcmp() instead of xoring bytes, since
-		// each pixel is a single byte.
+		// Compare 32-bit rp_image data to 8-bit BMP data.
 		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits++) {
 			// Look up the 24-bit color entry from the bitmap's palette.
@@ -615,6 +659,50 @@ void RpPngFormatTest::Compare_ARGB32_BMP8(
 		}
 	}
 	EXPECT_EQ(0U, xor_result) << "ARGB32 rp_image's pixel data doesn't match CI8 BMP.";
+}
+
+/**
+ * Compare a CI8 rp_image to a 32-bit RGB bitmap.
+ * wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
+ * instead of as ARGB32 for some reason.
+ * @param img rp_image
+ * @param pBits Bitmap image data.
+ */
+void RpPngFormatTest::Compare_CI8_BMP32(
+	const rp_image *img,
+	const uint8_t *pBits)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+	// FIXME: This may fail on aligned architectures.
+	const uint32_t *pBmp32 = reinterpret_cast<const uint32_t*>(pBits);
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+	// Get the rp_image palette.
+	const uint32_t *pSrcPalette = img->palette();
+	ASSERT_TRUE(pSrcPalette != nullptr);
+	ASSERT_EQ(256, img->palette_len());
+
+	// Check the image data.
+	xor_result = 0;
+	for (int y = img->height()-1; y >= 0; y--) {
+		// Compare 8-bit rp_image data to 24-bit BMP data.
+		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBmp32++) {
+			// Look up the 32-bit palette entry from the rp_image.
+			const uint32_t src32 = pSrcPalette[*pSrc];
+			// BMP uses little-endian, so byteswapping is needed.
+			const uint32_t bmp32 = le32_to_cpu(*pBmp32);
+
+			// Compare the pixels
+			xor_result |= (src32 ^ bmp32);
+		}
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's pixel data doesn't match ARGB32 BMP.";
 }
 
 /**
@@ -709,7 +797,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			// Comparing an ARGB32 rp_image to a 24-bit RGB bitmap.
 			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP24(img.get(), pBits));
 		} else if (bih.biBitCount == 32 && bih.biCompression == BI_BITFIELDS) {
-			// Comparing an ARGB32 rp_image to a 32-bit ARGB bitmap.
+			// Comparing an ARGB32 rp_image to an ARGB32 bitmap.
 			// TODO: Check the bitfield masks?
 			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP32(img.get(), pBits));
 		} else if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
@@ -732,12 +820,19 @@ TEST_P(RpPngFormatTest, loadTest)
 			// greater than the used colors in the BMP.
 			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
+
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
 			// FIXME: This may fail on aligned architectures.
 			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
+			const tRNS_CI8_t *pBmpAlpha = (mode.has_bmp_tRNS ? &mode.bmp_tRNS : nullptr);
 			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits,
-				pBmpPalette, bih.biClrUsed));
+				pBmpPalette, pBmpAlpha, bih.biClrUsed));
+		} else if (bih.biBitCount == 32 && bih.biCompression == BI_BITFIELDS) {
+			// Comparing a CI8 rp_image to an ARGB32 bitmap.
+			// wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
+			// instead of as ARGB32 for some reason.
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP32(img.get(), pBits));
 		} else {
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
@@ -904,12 +999,50 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 // xterm 256-color PNG IHDR chunks.
 static const PNG_IHDR_t xterm_256color_CI8_IHDR =
 	{608, 720, 8, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
+static const PNG_IHDR_t xterm_256color_CI8_tRNS_IHDR =
+	{608, 720, 8, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
 
 // xterm 256-color BITMAPINFOHEADER structs.
 static const BITMAPINFOHEADER xterm_256color_CI8_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
 		3936, 3936, 253, 253};
+#if defined(HAVE_LIBPNG)
+static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		608, 720, 1, 8, BI_RGB, 608*720,
+		3936, 3936, 254, 254};
+#elif defined(_WIN32)
+// GDI+ converts PNG_COLOR_TYPE_PALETTE + tRNS to 32-bit ARGB.
+static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		608, 720, 1, 32, BI_BITFIELDS, 608*720*(32/8),
+		3936, 3936, 0, 0};
+#else
+#error Missing xterm-256color.CI8.tRNS.png test case.
+#endif
+
+#ifdef HAVE_LIBPNG
+// tRNS chunk for CI8.tRNS BMPs.
+static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
+	0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+}};
+#endif /* HAVE_LIBPNG */
 
 // xterm 256-color PNG image tests.
 INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
@@ -921,5 +1054,33 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 			xterm_256color_CI8_BIH,
 			rp_image::FORMAT_CI8)
 		));
+
+// xterm 256-color PNG image tests with transparency.
+// FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
+// https://connect.microsoft.com/VisualStudio/Feedback/Details/2084691
+#if defined(HAVE_LIBPNG)
+INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
+	::testing::Values(
+		RpPngFormatTest_mode(
+			_RP("xterm-256color.CI8.tRNS.png"),
+			_RP("xterm-256color.CI8.tRNS.bmp.gz"),
+			xterm_256color_CI8_tRNS_IHDR,
+			xterm_256color_CI8_tRNS_BIH,
+			xterm_256color_CI8_tRNS_bmp_tRNS,
+			rp_image::FORMAT_CI8)
+		));
+#elif defined(_WIN32)
+INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
+	::testing::Values(
+		// GDI+ converts PNG_COLOR_TYPE_PALETTE + tRNS to ARGB32.
+		RpPngFormatTest_mode(
+			_RP("xterm-256color.CI8.tRNS.png"),
+			_RP("xterm-256color.CI8.tRNS.gdip.bmp.gz"),
+			xterm_256color_CI8_tRNS_IHDR,
+			xterm_256color_CI8_tRNS_gdip_BIH,
+			rp_image::FORMAT_ARGB32,
+			rp_image::FORMAT_CI8)
+		));
+#endif
 
 } }
