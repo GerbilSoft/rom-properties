@@ -670,6 +670,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			// Reference: http://stackoverflow.com/questions/16491675/how-to-send-custom-message-in-google-c-testing-framework
 			PRINTF("img->format() == %d\n", img->format());
 			PRINTF("rp_format == %d, rp_format_alt == %d\n", mode.rp_format, mode.rp_format_alt);
+			PRINTF("PNG filename: %s\n", rp_string_to_utf8(mode.png_filename).c_str());
 			PRINTF("WARNING: Using alternate image format.\n");
 			PRINTF("WARNING: PNG implementation may be broken.\n");
 		}
