@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4.4)
+#cmake_minimum_required(VERSION 2.4.4)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
@@ -137,7 +137,7 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 	# rom-properties: cmake-2.8.4 is required for nasm.
-	cmake_minimum_required(VERSION 2.8.4)
+	#cmake_minimum_required(VERSION 2.8.4)
 	if(ASM686)
 		set(ZLIB_ASMS contrib/asm686/match.S)
 	elseif (AMD64)
@@ -158,7 +158,7 @@ endif()
 
 if(MSVC)
 	# rom-properties: cmake-2.6.3 is required for masm.
-	cmake_minimum_required(VERSION 2.6.3)
+	#cmake_minimum_required(VERSION 2.6.3)
 	if(ASM686)
 		ENABLE_LANGUAGE(ASM_MASM)
 		set(ZLIB_ASMS
