@@ -738,6 +738,9 @@ TEST_P(RpPngFormatTest, loadTest)
 				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
 			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP8(img.get(), pBits,
 				pBmpPalette, bih.biClrUsed));
+		} else {
+			// Unsupported comparison.
+			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
 		}
 	} else {
 		// Unsupported comparison.
