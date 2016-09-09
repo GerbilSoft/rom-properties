@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata/tests)                 *
- * RpImageLoaderTest.cpp: RpImageLoader class test.                        *
+ * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -61,7 +61,7 @@ using std::unique_ptr;
 
 namespace LibRomData { namespace Tests {
 
-struct RpImageLoaderTest_mode
+struct RpPngFormatTest_mode
 {
 	rp_string png_filename;		// PNG image to test.
 	rp_string bmp_gz_filename;	// Gzipped BMP image for comparison.
@@ -73,7 +73,7 @@ struct RpImageLoaderTest_mode
 
 	// TODO: Verify PNG bit depth and color type.
 
-	RpImageLoaderTest_mode(
+	RpPngFormatTest_mode(
 		const rp_char *png_filename,
 		const rp_char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
@@ -87,7 +87,7 @@ struct RpImageLoaderTest_mode
 	{ }
 
 	// May be required for MSVC 2010?
-	RpImageLoaderTest_mode(const RpImageLoaderTest_mode &other)
+	RpPngFormatTest_mode(const RpPngFormatTest_mode &other)
 		: png_filename(other.png_filename)
 		, bmp_gz_filename(other.bmp_gz_filename)
 		, ihdr(other.ihdr)
@@ -96,7 +96,7 @@ struct RpImageLoaderTest_mode
 	{ }
 
 	// Required for MSVC 2010.
-	RpImageLoaderTest_mode &operator=(const RpImageLoaderTest_mode &other)
+	RpPngFormatTest_mode &operator=(const RpPngFormatTest_mode &other)
 	{
 		png_filename = other.png_filename;
 		bmp_gz_filename = other.bmp_gz_filename;
@@ -110,11 +110,11 @@ struct RpImageLoaderTest_mode
 // Maximum file size for PNG images.
 static const int64_t MAX_IMAGE_FILESIZE = 1048576;
 
-class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode>
+class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 {
 	protected:
-		RpImageLoaderTest()
-			: ::testing::TestWithParam<RpImageLoaderTest_mode>()
+		RpPngFormatTest()
+			: ::testing::TestWithParam<RpPngFormatTest_mode>()
 			, m_gzBmp(nullptr)
 		{ }
 
@@ -180,9 +180,9 @@ class RpImageLoaderTest : public ::testing::TestWithParam<RpImageLoaderTest_mode
 };
 
 /**
- * Formatting function for RpImageLoaderTest.
+ * Formatting function for RpPngFormatTest.
  */
-inline ::std::ostream& operator<<(::std::ostream& os, const RpImageLoaderTest_mode& mode) {
+inline ::std::ostream& operator<<(::std::ostream& os, const RpPngFormatTest_mode& mode) {
 	return os << rp_string_to_utf8(mode.png_filename);
 };
 
@@ -190,7 +190,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const RpImageLoaderTest_mo
  * SetUp() function.
  * Run before each test.
  */
-void RpImageLoaderTest::SetUp(void)
+void RpPngFormatTest::SetUp(void)
 {
 	if (::testing::UnitTest::GetInstance()->current_test_info()->value_param() == nullptr) {
 		// Not a parameterized test.
@@ -198,7 +198,7 @@ void RpImageLoaderTest::SetUp(void)
 	}
 
 	// Parameterized test.
-	const RpImageLoaderTest_mode &mode = GetParam();
+	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
 	unique_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
@@ -250,7 +250,7 @@ void RpImageLoaderTest::SetUp(void)
  * TearDown() function.
  * Run after each test.
  */
-void RpImageLoaderTest::TearDown(void)
+void RpPngFormatTest::TearDown(void)
 {
 	if (m_gzBmp) {
 		gzclose_r(m_gzBmp);
@@ -263,7 +263,7 @@ void RpImageLoaderTest::TearDown(void)
  * @param ihdr Destination IHDR chunk. (data only)
  * @param ihdr_src Source IHDR chunk. (full chunk)
  */
-void RpImageLoaderTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src)
+void RpPngFormatTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_src)
 {
 	static_assert(sizeof(PNG_IHDR_t) == PNG_IHDR_t_SIZE,
 		"PNG_IHDR_t size is incorrect. (should be 13 bytes)");
@@ -311,7 +311,7 @@ void RpImageLoaderTest::Load_Verify_IHDR(PNG_IHDR_t *ihdr, const uint8_t *ihdr_s
  * @param pBih Destination BITMAPINFOHEADER.
  * @param bmp_buf Bitmap buffer.
  */
-void RpImageLoaderTest::Load_Verify_BMP_headers(
+void RpPngFormatTest::Load_Verify_BMP_headers(
 	BITMAPFILEHEADER *pBfh,
 	BITMAPINFOHEADER *pBih,
 	const ao::uvector<uint8_t> &bmp_buf)
@@ -393,7 +393,7 @@ void RpImageLoaderTest::Load_Verify_BMP_headers(
  * @param pBih BITMAPINFOHEADER
  * @param pBits Bitmap image data.
  */
-void RpImageLoaderTest::Compare_ARGB32_BMP24(
+void RpPngFormatTest::Compare_ARGB32_BMP24(
 	const rp_image *img,
 	const uint8_t *pBits)
 {
@@ -431,7 +431,7 @@ void RpImageLoaderTest::Compare_ARGB32_BMP24(
  * @param pBih BITMAPINFOHEADER
  * @param pBits Bitmap image data.
  */
-void RpImageLoaderTest::Compare_ARGB32_BMP32(
+void RpPngFormatTest::Compare_ARGB32_BMP32(
 	const rp_image *img,
 	const uint8_t *pBits)
 {
@@ -464,7 +464,7 @@ void RpImageLoaderTest::Compare_ARGB32_BMP32(
  * @param pBits Bitmap image data.
  * @param pBmpPalette Bitmap palette.
  */
-void RpImageLoaderTest::Compare_CI8_BMP8(
+void RpPngFormatTest::Compare_CI8_BMP8(
 	const rp_image *img,
 	const uint8_t *pBits,
 	const uint32_t *pBmpPalette)
@@ -502,9 +502,9 @@ void RpImageLoaderTest::Compare_CI8_BMP8(
 /**
  * Run an RpImageLoader test.
  */
-TEST_P(RpImageLoaderTest, loadTest)
+TEST_P(RpPngFormatTest, loadTest)
 {
-	const RpImageLoaderTest_mode &mode = GetParam();
+	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Make sure the PNG image was actually loaded.
 	ASSERT_GT(m_png_buf.size(), sizeof(PNG_magic) + sizeof(PNG_IHDR_full_t)) <<
@@ -629,27 +629,27 @@ static const BITMAPINFOHEADER gl_triangle_gray_BIH =
 		3936, 3936, 256, 256};
 
 // gl_triangle PNG image tests.
-INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpImageLoaderTest,
+INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_triangle.RGB24.png"),
 			_RP("gl_triangle.RGB24.bmp.gz"),
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_triangle.RGB24.tRNS.png"),
 			_RP("gl_triangle.RGB24.tRNS.bmp.gz"),
 			gl_triangle_RGB24_IHDR,
 			gl_triangle_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_triangle.ARGB32.png"),
 			_RP("gl_triangle.ARGB32.bmp.gz"),
 			gl_triangle_ARGB32_IHDR,
 			gl_triangle_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_triangle.gray.png"),
 			_RP("gl_triangle.gray.bmp.gz"),
 			gl_triangle_gray_IHDR,
@@ -682,27 +682,27 @@ static const BITMAPINFOHEADER gl_quad_gray_BIH =
 		3936, 3936, 256, 256};
 
 // gl_quad PNG image tests.
-INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
+INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 	::testing::Values(
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_quad.RGB24.png"),
 			_RP("gl_quad.RGB24.bmp.gz"),
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_quad.RGB24.tRNS.png"),
 			_RP("gl_quad.RGB24.tRNS.bmp.gz"),
 			gl_quad_RGB24_IHDR,
 			gl_quad_RGB24_tRNS_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_quad.ARGB32.png"),
 			_RP("gl_quad.ARGB32.bmp.gz"),
 			gl_quad_ARGB32_IHDR,
 			gl_quad_ARGB32_BIH,
 			rp_image::FORMAT_ARGB32),
-		RpImageLoaderTest_mode(
+		RpPngFormatTest_mode(
 			_RP("gl_quad.gray.png"),
 			_RP("gl_quad.gray.bmp.gz"),
 			gl_quad_gray_IHDR,
@@ -710,18 +710,3 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpImageLoaderTest,
 			rp_image::FORMAT_CI8)
 		));
 } }
-
-/**
- * Test suite main function.
- */
-int main(int argc, char *argv[])
-{
-	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
-	fflush(nullptr);
-
-	// Make sure the CRC32 table is initialized.
-	get_crc_table();
-
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}

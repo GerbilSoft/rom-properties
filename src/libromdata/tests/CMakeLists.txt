@@ -23,11 +23,14 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Copy the reference images to the test directory.
-FILE(GLOB test_images *.png *.bmp.gz)
+FILE(GLOB test_images img/*.png img/*.bmp.gz)
 FILE(COPY ${test_images} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # RpImageLoader test.
-ADD_EXECUTABLE(RpImageLoaderTest RpImageLoaderTest.cpp)
+ADD_EXECUTABLE(RpImageLoaderTest
+	img/RpImageLoaderTest.cpp
+	img/RpPngFormatTest.cpp
+	)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest romdata8)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest ${ZLIB_LIBRARY} ${GTEST_LIBRARY})
 IF(PNG_LIBRARY)
