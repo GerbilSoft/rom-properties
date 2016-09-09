@@ -10,5 +10,5 @@ cmake .. \
 make romdata8 romdata16 cachemgr8 cachemgr16 || RET=1
 # Build the actual plugin(s).
 make || RET=1
-CTEST_OUTPUT_ON_FAILURE=1 make test || RET=1
+ctest -V || RET=1
 exit "${RET}"

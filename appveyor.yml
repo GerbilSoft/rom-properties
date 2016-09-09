@@ -16,9 +16,6 @@ configuration:
   - Debug
   - Release
 
-environment:
-  CTEST_OUTPUT_ON_FAILURE: 1
-
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - cmake .
@@ -29,6 +26,6 @@ build_script:
 
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - msbuild RUN_TESTS.vcxproj
+  - ctest -V -C %CONFIGURATION%
 
 # TODO: Automatic packaging?
