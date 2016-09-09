@@ -59,6 +59,29 @@
 #include <memory>
 using std::unique_ptr;
 
+// Google Test ColoredPrintf() wrapper.
+// Reference: http://stackoverflow.com/questions/16491675/how-to-send-custom-message-in-google-c-testing-framework
+namespace testing { namespace internal {
+	enum GTestColor {
+		COLOR_DEFAULT,
+		COLOR_RED,
+		COLOR_GREEN,
+		COLOR_YELLOW
+	};
+
+	extern void ColoredPrintf(GTestColor color, const char* fmt, ...)
+#ifdef __GNUC__
+		__attribute__ ((format (printf, 2, 3)))
+#endif /* __GNUC__ */
+		;
+} }
+
+#define PRINTF(...) \
+	do { \
+		testing::internal::ColoredPrintf(testing::internal::COLOR_GREEN, "[          ] "); \
+		testing::internal::ColoredPrintf(testing::internal::COLOR_YELLOW, __VA_ARGS__); \
+	} while(0)
+
 namespace LibRomData { namespace Tests {
 
 struct RpPngFormatTest_mode
@@ -69,7 +92,8 @@ struct RpPngFormatTest_mode
 	// Expected rp_image parameters.
 	PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
 	BITMAPINFOHEADER bih;		// FIXME: Making this const& causes problems.
-	rp_image::Format rp_format;
+	rp_image::Format rp_format;	// Expected format.
+	rp_image::Format rp_format_alt;	// Alternate expected format.
 
 	// TODO: Verify PNG bit depth and color type.
 
@@ -78,12 +102,14 @@ struct RpPngFormatTest_mode
 		const rp_char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
-		rp_image::Format rp_format)
+		rp_image::Format rp_format,
+		rp_image::Format rp_format_alt = rp_image::FORMAT_NONE)
 		: png_filename(png_filename)
 		, bmp_gz_filename(bmp_gz_filename)
 		, ihdr(ihdr)
 		, bih(bih)
 		, rp_format(rp_format)
+		, rp_format_alt(rp_format_alt)
 	{ }
 
 	// May be required for MSVC 2010?
@@ -93,6 +119,7 @@ struct RpPngFormatTest_mode
 		, ihdr(other.ihdr)
 		, bih(other.bih)
 		, rp_format(other.rp_format)
+		, rp_format_alt(other.rp_format_alt)
 	{ }
 
 	// Required for MSVC 2010.
@@ -103,6 +130,7 @@ struct RpPngFormatTest_mode
 		ihdr = other.ihdr;
 		bih = other.bih;
 		rp_format = other.rp_format;
+		rp_format_alt = other.rp_format_alt;
 		return *this;
 	}
 };
@@ -170,6 +198,20 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const uint8_t *pBits,
 			const uint32_t *pBmpPalette,
 			int biClrUsed = -1);
+
+		/**
+		 * Compare an ARGB32 rp_image to an 8-bit CI8 bitmap.
+		 * NOTE: This should only happen if GDI+ decoded
+		 * a grayscale image to ARGB32, which seems to happen
+		 * on wine-1.9.18 and AppVeyor for some reason.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 * @param pBmpPalette Bitmap palette.
+		 */
+		static void Compare_ARGB32_BMP8(
+			const rp_image *img,
+			const uint8_t *pBits,
+			const uint32_t *pBmpPalette);
 
 	public:
 		// Image buffers.
@@ -522,6 +564,60 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 }
 
 /**
+ * Compare an ARGB32 rp_image to an 8-bit CI8 bitmap.
+ * NOTE: This should only happen if GDI+ decoded
+ * a grayscale image to ARGB32, which seems to happen
+ * on wine-1.9.18 and AppVeyor for some reason.
+ * @param img rp_image
+ * @param pBits Bitmap image data.
+ * @param pBmpPalette Bitmap palette.
+ */
+void RpPngFormatTest::Compare_ARGB32_BMP8(
+	const rp_image *img,
+	const uint8_t *pBits,
+	const uint32_t *pBmpPalette)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+#if 0
+	// Check the palette.
+	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
+	if (biClrUsed < 0) {
+		biClrUsed = img->palette_len();
+	}
+	for (int i = biClrUsed; i > 0; i--, pSrcPalette++, pBmpPalette++) {
+		// NOTE: The alpha channel in the BMP palette is ignored.
+		// It's always 0. Assume all colors are fully opaque.
+		const uint32_t bmp_color = le32_to_cpu(*pBmpPalette) | 0xFF000000;
+		xor_result |= (*pSrcPalette ^ bmp_color);
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
+#endif
+
+	// Check the image data.
+	xor_result = 0;
+	for (int y = img->height()-1; y >= 0; y--) {
+		// Do a full memcmp() instead of xoring bytes, since
+		// each pixel is a single byte.
+		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits++) {
+			// Look up the 24-bit color entry from the bitmap's palette.
+			uint32_t bmp32 = le32_to_cpu(pBmpPalette[*pBits]);
+			// Pixel is fully opaque.
+			bmp32 |= 0xFF000000;
+			xor_result |= (*pSrc ^ bmp32);
+		}
+	}
+	EXPECT_EQ(0U, xor_result) << "ARGB32 rp_image's pixel data doesn't match CI8 BMP.";
+}
+
+/**
  * Run an RpImageLoader test.
  */
 TEST_P(RpPngFormatTest, loadTest)
@@ -562,7 +658,28 @@ TEST_P(RpPngFormatTest, loadTest)
 	// Check the rp_image parameters.
 	EXPECT_EQ((int)mode.ihdr.width, img->width()) << "rp_image width is incorrect.";
 	EXPECT_EQ((int)mode.ihdr.height, img->height()) << "rp_image height is incorrect.";
-	EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
+
+	// Check the image format.
+	if (mode.rp_format == img->format() ||
+	    (mode.rp_format_alt != rp_image::FORMAT_NONE &&
+	     mode.rp_format_alt == img->format()))
+	{
+		// Image format is correct.
+		if (mode.rp_format != img->format()) {
+			// Using the alternate format.
+			// Reference: http://stackoverflow.com/questions/16491675/how-to-send-custom-message-in-google-c-testing-framework
+			PRINTF("img->format() == %d\n", img->format());
+			PRINTF("rp_format == %d, rp_format_alt == %d\n", mode.rp_format, mode.rp_format_alt);
+			PRINTF("WARNING: Using alternate image format.\n");
+			PRINTF("WARNING: PNG implementation may be broken.\n");
+		}
+	} else {
+		// Image format is incorrect.
+		EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
+		if (mode.rp_format_alt != rp_image::FORMAT_NONE) {
+			EXPECT_EQ(mode.rp_format_alt, img->format()) << "rp_image alternate format is incorrect.";
+		}
+	}
 
 	// Load and verify the bitmap headers.
 	BITMAPFILEHEADER bfh;
@@ -594,6 +711,15 @@ TEST_P(RpPngFormatTest, loadTest)
 			// Comparing an ARGB32 rp_image to a 32-bit ARGB bitmap.
 			// TODO: Check the bitfield masks?
 			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP32(img.get(), pBits));
+		} else if (bih.biBitCount == 8 && bih.biCompression == BI_RGB) {
+			// Comparing an ARGB32 rp_image to a CI8 bitmap.
+			// NOTE: This should only happen if GDI+ decoded
+			// a grayscale image to ARGB32, which seems to happen
+			// on wine-1.9.18 and AppVeyor for some reason.
+			// FIXME: This may fail on aligned architectures.
+			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
+				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
+			ASSERT_NO_FATAL_FAILURE(Compare_ARGB32_BMP8(img.get(), pBits, pBmpPalette));
 		} else {
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
@@ -688,7 +814,10 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			_RP("gl_triangle.gray.bmp.gz"),
 			gl_triangle_gray_IHDR,
 			gl_triangle_gray_BIH,
-			rp_image::FORMAT_CI8),
+			rp_image::FORMAT_CI8,
+			// wine-1.9.18 and AppVeyor add an alpha channel
+			// to grayscale images for some reason.
+			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
 			_RP("gl_triangle.gray.alpha.png"),
 			_RP("gl_triangle.gray.alpha.bmp.gz"),
@@ -756,7 +885,10 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			_RP("gl_quad.gray.bmp.gz"),
 			gl_quad_gray_IHDR,
 			gl_quad_gray_BIH,
-			rp_image::FORMAT_CI8),
+			rp_image::FORMAT_CI8,
+			// wine-1.9.18 and AppVeyor add an alpha channel
+			// to grayscale images for some reason.
+			rp_image::FORMAT_ARGB32),
 		RpPngFormatTest_mode(
 			_RP("gl_quad.gray.alpha.png"),
 			_RP("gl_quad.gray.alpha.bmp.gz"),
