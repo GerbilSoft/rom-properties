@@ -109,8 +109,10 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 			// TODO: PARGB or ARGB?
 			gdipFmt = PixelFormat32bppARGB;
 
-			if (gdipBmp->GetFlags() & Gdiplus::ImageFlagsColorSpaceGRAY) {
-				// Grayscale image.
+			// Grayscale should be converted to CI8.
+			// Grayscale+Alpha and others should be ARGB32.
+			if ((gdipBmp->GetFlags() & (Gdiplus::ImageFlagsColorSpaceGRAY | Gdiplus::ImageFlagsHasAlpha)) == Gdiplus::ImageFlagsColorSpaceGRAY) {
+				// Grayscale image without alpha transparency.
 				// NOTE: Need to manually convert to CI8.
 				argb32_to_grayscale = true;
 				fmt = rp_image::FORMAT_CI8;

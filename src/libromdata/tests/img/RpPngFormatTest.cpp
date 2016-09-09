@@ -610,6 +610,8 @@ static const PNG_IHDR_t gl_triangle_ARGB32_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
 static const PNG_IHDR_t gl_triangle_gray_IHDR =
 	{400, 352, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
+static const PNG_IHDR_t gl_triangle_gray_alpha_IHDR =
+	{400, 352, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
 static const BITMAPINFOHEADER gl_triangle_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
@@ -627,6 +629,11 @@ static const BITMAPINFOHEADER gl_triangle_gray_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		400, 352, 1, 8, BI_RGB, 400*352,
 		3936, 3936, 256, 256};
+// BMP doesn't support gray+alpha, so we're using ARGB32.
+static const BITMAPINFOHEADER gl_triangle_gray_alpha_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		400, 352, 1, 32, BI_BITFIELDS, 400*352*(32/8),
+		3936, 3936, 0, 0};
 
 // gl_triangle PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
@@ -654,7 +661,13 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			_RP("gl_triangle.gray.bmp.gz"),
 			gl_triangle_gray_IHDR,
 			gl_triangle_gray_BIH,
-			rp_image::FORMAT_CI8)
+			rp_image::FORMAT_CI8),
+		RpPngFormatTest_mode(
+			_RP("gl_triangle.gray.alpha.png"),
+			_RP("gl_triangle.gray.alpha.bmp.gz"),
+			gl_triangle_gray_alpha_IHDR,
+			gl_triangle_gray_alpha_BIH,
+			rp_image::FORMAT_ARGB32)
 		));
 
 static const PNG_IHDR_t gl_quad_RGB24_IHDR =
@@ -663,6 +676,8 @@ static const PNG_IHDR_t gl_quad_ARGB32_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0};
 static const PNG_IHDR_t gl_quad_gray_IHDR =
 	{480, 384, 8, PNG_COLOR_TYPE_GRAY, 0, 0, 0};
+static const PNG_IHDR_t gl_quad_gray_alpha_IHDR =
+	{480, 384, 8, PNG_COLOR_TYPE_GRAY_ALPHA, 0, 0, 0};
 
 static const BITMAPINFOHEADER gl_quad_RGB24_BIH =
 	{sizeof(BITMAPINFOHEADER),
@@ -680,6 +695,11 @@ static const BITMAPINFOHEADER gl_quad_gray_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		480, 384, 1, 8, BI_RGB, 480*384,
 		3936, 3936, 256, 256};
+// BMP doesn't support gray+alpha, so we're using ARGB32.
+static const BITMAPINFOHEADER gl_quad_gray_alpha_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		480, 384, 1, 32, BI_BITFIELDS, 480*384*(32/8),
+		3936, 3936, 0, 0};
 
 // gl_quad PNG image tests.
 INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
@@ -707,6 +727,12 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			_RP("gl_quad.gray.bmp.gz"),
 			gl_quad_gray_IHDR,
 			gl_quad_gray_BIH,
-			rp_image::FORMAT_CI8)
+			rp_image::FORMAT_CI8),
+		RpPngFormatTest_mode(
+			_RP("gl_quad.gray.alpha.png"),
+			_RP("gl_quad.gray.alpha.bmp.gz"),
+			gl_quad_gray_alpha_IHDR,
+			gl_quad_gray_alpha_BIH,
+			rp_image::FORMAT_ARGB32)
 		));
 } }

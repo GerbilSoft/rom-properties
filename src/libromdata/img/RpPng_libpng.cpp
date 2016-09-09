@@ -263,8 +263,11 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			}
 			break;
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
-			// FIXME: Handle grayscale images properly.
-			return nullptr;
+			// Grayscale+Alpha is handled as ARGB32.
+			// TODO: Does this work with 1, 2, and 4-bit grayscale?
+			fmt = rp_image::FORMAT_ARGB32;
+			png_set_gray_to_rgb(png_ptr);
+			break;
 		case PNG_COLOR_TYPE_PALETTE:
 			// FIXME: Verify 1, 2, and 4.
 			assert(bit_depth != 8);
