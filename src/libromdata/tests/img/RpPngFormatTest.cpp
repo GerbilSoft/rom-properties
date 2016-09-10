@@ -334,10 +334,10 @@ void RpPngFormatTest::SetUp(void)
 	ASSERT_EQ((size_t)bmpSize, m_bmp_buf.size());
 	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "r");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
-		<< rp_string_to_utf8(mode.png_filename);
+		<< rp_string_to_utf8(mode.bmp_gz_filename);
 	int sz = gzread(m_gzBmp, m_bmp_buf.data(), bmpSize);
 	ASSERT_EQ(bmpSize, (uint32_t)sz) << "Error loading BMP image file: "
-		<< rp_string_to_utf8(mode.png_filename);
+		<< rp_string_to_utf8(mode.bmp_gz_filename);
 
 	gzclose_r(m_gzBmp);
 	m_gzBmp = nullptr;
