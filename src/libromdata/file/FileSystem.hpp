@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_FILESYSTEM_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_FILESYSTEM_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_FILESYSTEM_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_FILESYSTEM_HPP__
 
 #include "libromdata/config.libromdata.h"
 #include <stdint.h>
@@ -53,8 +53,7 @@
 #define DIR_SEP_CHR '/'
 #endif
 
-namespace LibCacheMgr {
-namespace FileSystem {
+namespace LibRomData { namespace FileSystem {
 
 /**
  * Recursively mkdir() subdirectories.
@@ -69,7 +68,7 @@ namespace FileSystem {
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; non-zero on error.
  */
-int rmkdir(const LibRomData::rp_string &path);
+int rmkdir(const rp_string &path);
 
 /**
  * Does a file exist?
@@ -77,14 +76,14 @@ int rmkdir(const LibRomData::rp_string &path);
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const LibRomData::rp_string &pathname, int mode);
+int access(const rp_string &pathname, int mode);
 
 /**
  * Get a file's size.
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const LibRomData::rp_string &filename);
+int64_t filesize(const rp_string &filename);
 
 /**
  * Get the user's cache directory.
@@ -95,15 +94,15 @@ int64_t filesize(const LibRomData::rp_string &filename);
  *
  * @return User's cache directory, or empty string on error.
  */
-const LibRomData::rp_string &getCacheDirectory(void);
+const rp_string &getCacheDirectory(void);
 
 /**
  * Set the modification timestamp of a file.
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const LibRomData::rp_string &filename, time_t mtime);
+int set_mtime(const rp_string &filename, time_t mtime);
 
 } }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_FILESYSTEM_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_FILESYSTEM_HPP__ */

@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * FileSystem.cpp: File system functions.                                  *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -22,7 +22,7 @@
 #include "FileSystem.hpp"
 
 // libromdata
-#include "libromdata/TextFuncs.hpp"
+#include "../TextFuncs.hpp"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -54,11 +54,10 @@ using std::u16string;
 using std::wstring;
 #endif /* _WIN32 */
 
-namespace LibCacheMgr {
-namespace FileSystem {
+namespace LibRomData { namespace FileSystem {
 
 // User's cache directory.
-static LibRomData::rp_string cache_dir;
+static rp_string cache_dir;
 
 /**
  * Recursively mkdir() subdirectories.
@@ -73,7 +72,7 @@ static LibRomData::rp_string cache_dir;
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const LibRomData::rp_string &path)
+int rmkdir(const rp_string &path)
 {
 	// TODO: Combine the two code paths using a templated function?
 
@@ -118,7 +117,7 @@ int rmkdir(const LibRomData::rp_string &path)
 
 #else /* !_WIN32 */
 	// Linux (and most other systems) use UTF-8 natively.
-	string path8 = LibRomData::rp_string_to_utf8(path);
+	string path8 = rp_string_to_utf8(path);
 
 	// Find all slashes and ensure the directory component exists.
 	size_t slash_pos = path8.find(DIR_SEP_CHR, 0);
@@ -163,7 +162,7 @@ int rmkdir(const LibRomData::rp_string &path)
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const LibRomData::rp_string &pathname, int mode)
+int access(const rp_string &pathname, int mode)
 {
 #ifdef _WIN32
 	// Windows doesn't recognize X_OK.
@@ -173,7 +172,7 @@ int access(const LibRomData::rp_string &pathname, int mode)
 #else /* !_WIN32 */
 
 #if defined(RP_UTF16)
-	string pathname8 = LibRomData::rp_string_to_utf8(pathname);
+	string pathname8 = rp_string_to_utf8(pathname);
 	return ::access(pathname8.c_str(), mode);
 #elif defined(RP_UTF8)
 	return ::access(pathname.c_str(), mode);
@@ -190,7 +189,7 @@ int access(const LibRomData::rp_string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-int64_t filesize(const LibRomData::rp_string &filename)
+int64_t filesize(const rp_string &filename)
 {
 	int ret = -1;
 
@@ -201,7 +200,7 @@ int64_t filesize(const LibRomData::rp_string &filename)
 
 	struct stat buf;
 #if defined(RP_UTF16)
-	string filename8 = LibRomData::rp_string_to_utf8(filename);
+	string filename8 = rp_string_to_utf8(filename);
 	ret = stat(filename8.c_str(), &buf);
 #elif defined(RP_UTF8)
 	ret = stat(filename.c_str(), &buf);
@@ -233,7 +232,7 @@ int64_t filesize(const LibRomData::rp_string &filename)
  *
  * @return Cache directory, or empty string on error.
  */
-const LibRomData::rp_string &getCacheDirectory(void)
+const rp_string &getCacheDirectory(void)
 {
 	if (!cache_dir.empty()) {
 		// We already got the cache directory.
@@ -250,7 +249,7 @@ const LibRomData::rp_string &getCacheDirectory(void)
 	if (hr != S_OK)
 		return cache_dir;
 
-	cache_dir = LibRomData::utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	cache_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
 	if (cache_dir.empty())
 		return cache_dir;
 
@@ -297,7 +296,7 @@ const LibRomData::rp_string &getCacheDirectory(void)
 	path += ".cache/rom-properties";
 
 	// Convert to rp_string.
-	cache_dir = LibRomData::utf8_to_rp_string(path);
+	cache_dir = utf8_to_rp_string(path);
 #endif
 
 	return cache_dir;
@@ -308,7 +307,7 @@ const LibRomData::rp_string &getCacheDirectory(void)
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const LibRomData::rp_string &filename, time_t mtime)
+int set_mtime(const rp_string &filename, time_t mtime)
 {
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -327,7 +326,7 @@ int set_mtime(const LibRomData::rp_string &filename, time_t mtime)
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
-	ret = utime(LibRomData::rp_string_to_utf8(filename).c_str(), &utbuf);
+	ret = utime(rp_string_to_utf8(filename).c_str(), &utbuf);
 #endif
 
 	return (ret == 0 ? 0 : -errno);
