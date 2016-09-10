@@ -617,14 +617,32 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 		EXPECT_EQ(0U, or_result) << "CI8 BMP's palette doesn't have unused entries set to 0.";
 	}
 
+	// 256-color BMP images always have an internal width that's
+	// a multiple of 8px. If the image isn't a multiple of 8px,
+	// then we need to skip the extra pixels.
+	int mod8 = img->width() % 8;
+	if (mod8 != 0) {
+		mod8 = 8 - mod8;
+	}
+
 	// Check the image data.
 	xor_result = 0;
 	const int width = img->width();
-	for (int y = img->height()-1; y >= 0; y--, pBits += width) {
+	for (int y = img->height()-1; y >= 0; y--) {
 		// Do a full memcmp() instead of xoring bytes, since
 		// each pixel is a single byte.
 		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
 		xor_result |= memcmp(pSrc, pBits, width);
+		pBits += width;
+
+		if (mod8 > 0) {
+			// Image isn't a multiple of 8 pixels wide.
+			// Make sure the extra pixels in the BMP image
+			// are all 0.
+			for (int x = mod8; x > 0; x--, pBits++) {
+				xor_result |= *pBits;
+			}
+		}
 	}
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's pixel data doesn't match CI8 BMP.";
 }
@@ -651,6 +669,14 @@ void RpPngFormatTest::Compare_ARGB32_BMP8(
 	// The eventual result should be 0 if the images are identical.
 	uint32_t xor_result = 0;
 
+	// 256-color BMP images always have an internal width that's
+	// a multiple of 8px. If the image isn't a multiple of 8px,
+	// then we need to skip the extra pixels.
+	int mod8 = img->width() % 8;
+	if (mod8 != 0) {
+		mod8 = 8 - mod8;
+	}
+
 	// Check the image data.
 	xor_result = 0;
 	for (int y = img->height()-1; y >= 0; y--) {
@@ -662,6 +688,15 @@ void RpPngFormatTest::Compare_ARGB32_BMP8(
 			// Pixel is fully opaque.
 			bmp32 |= 0xFF000000;
 			xor_result |= (*pSrc ^ bmp32);
+		}
+
+		if (mod8 > 0) {
+			// Image isn't a multiple of 8 pixels wide.
+			// Make sure the extra pixels in the BMP image
+			// are all 0.
+			for (int x = mod8; x > 0; x--, pBits++) {
+				xor_result |= *pBits;
+			}
 		}
 	}
 	EXPECT_EQ(0U, xor_result) << "ARGB32 rp_image's pixel data doesn't match CI8 BMP.";
@@ -1088,5 +1123,34 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			rp_image::FORMAT_CI8)
 		));
 #endif
+
+/** Low color depth and odd width tests. **/
+
+// 135x270 with 16-color palette.
+static const PNG_IHDR_t odd_width_16color_CI4_IHDR =
+	{135, 270, 4, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
+
+// 135x270 with 16-color palette.
+// NOTE: Image actually has a 256-color palette because
+// RpPng converts it to 8bpp, since RpImage does not
+// support CI4 images.
+// NOTE 2: Image width is internally a multiple of 8.
+static const BITMAPINFOHEADER odd_width_16color_CI8_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		135, 270, 1, 8, BI_RGB, (135+1)*270,
+		3936, 3936, 16, 16};
+
+// odd-width_16color PNG image tests.
+INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
+	::testing::Values(
+		// FIXME: wine loads the PNG image as ARGB32.
+		RpPngFormatTest_mode(
+			_RP("odd-width.16color.CI4.png"),
+			_RP("odd-width.16color.CI8.bmp.gz"),
+			odd_width_16color_CI4_IHDR,
+			odd_width_16color_CI8_BIH,
+			rp_image::FORMAT_CI8,
+			rp_image::FORMAT_ARGB32)
+		));
 
 } }

@@ -269,8 +269,10 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			png_set_gray_to_rgb(png_ptr);
 			break;
 		case PNG_COLOR_TYPE_PALETTE:
-			// FIXME: Verify 1, 2, and 4.
-			assert(bit_depth == 8);
+			if (bit_depth < 8) {
+				// Expand to 8-bit pixels.
+				png_set_packing(png_ptr);
+			}
 			fmt = rp_image::FORMAT_CI8;
 			break;
 		case PNG_COLOR_TYPE_RGB:
