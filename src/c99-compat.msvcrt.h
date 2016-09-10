@@ -130,7 +130,9 @@ int C99_snprintf(char *str, size_t size, const char *format, ...)
 //  where it's only required on 32-bit.)
 // TODO: Use _fseeki64() and _ftelli64() on MinGW-w64 to avoid
 // use of wrapper functions?
+#ifdef _MSC_VER
 #define fseeko(stream, offset, origin) _fseeki64(stream, offset, origin)
 #define ftello(stream) _ftelli64(stream)
+#endif /* _MSC_VER */
 
 #endif /* __C99_COMPAT_MSVCRT_H__ */
