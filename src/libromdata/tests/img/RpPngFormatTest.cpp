@@ -314,16 +314,25 @@ void RpPngFormatTest::SetUp(void)
 		<< rp_string_to_utf8(mode.png_filename);
 
 	// Open the gzipped BMP image file being tested.
-	file.reset(new RpFile(mode.bmp_gz_filename, RpFile::FM_OPEN_READ));
-	ASSERT_TRUE(file.get() != nullptr);
-	ASSERT_TRUE(file->isOpen());
-	ASSERT_GT(file->fileSize(), 16);
+	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "rb");
+	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
+		<< rp_string_to_utf8(mode.bmp_gz_filename);
 
-	// Get the uncompressed image size from the end of the file.
-	uint32_t bmpSize;
-	file->seek(file->fileSize() - 4);
-	file->read(&bmpSize, sizeof(bmpSize));
-	bmpSize = le32_to_cpu(bmpSize);
+	// Get the decompressed file size.
+	// gzseek() does not support SEEK_END.
+	// Read through the file until we hit an EOF.
+	// NOTE: We could optimize this by reading the uncompressed
+	// file size if gzdirect() == 1, but this is a test case,
+	// so it doesn't really matter.
+	uint8_t buf[4096];
+	uint32_t bmpSize = 0;
+	while (!gzeof(m_gzBmp)) {
+		int sz_read = gzread(m_gzBmp, buf, sizeof(buf));
+		ASSERT_NE(sz_read, -1) << "gzread() failed.";
+		bmpSize += sz_read;
+	}
+	gzrewind(m_gzBmp);
+
 	ASSERT_GT(bmpSize, sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER))
 		<< "BMP test image is too small.";
 	ASSERT_LE(bmpSize, MAX_BMP_IMAGE_FILESIZE)
@@ -332,15 +341,12 @@ void RpPngFormatTest::SetUp(void)
 	// Read the BMP image into memory.
 	m_bmp_buf.resize(bmpSize);
 	ASSERT_EQ((size_t)bmpSize, m_bmp_buf.size());
-	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "r");
-	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
-		<< rp_string_to_utf8(mode.bmp_gz_filename);
 	int sz = gzread(m_gzBmp, m_bmp_buf.data(), bmpSize);
-	ASSERT_EQ(bmpSize, (uint32_t)sz) << "Error loading BMP image file: "
-		<< rp_string_to_utf8(mode.bmp_gz_filename);
-
 	gzclose_r(m_gzBmp);
 	m_gzBmp = nullptr;
+
+	ASSERT_EQ(bmpSize, (uint32_t)sz) << "Error loading BMP image file: "
+		<< rp_string_to_utf8(mode.bmp_gz_filename);
 }
 
 /**
