@@ -88,13 +88,23 @@ int64_t filesize(const rp_string &filename);
 /**
  * Get the user's cache directory.
  * This is usually one of the following:
- * - WinXP: %APPDATA%\Local Settings
- * - WinVista: %LOCALAPPDATA%
- * - Linux: ~/.cache/
+ * - Windows XP: %APPDATA%\Local Settings\rom-properties\cache
+ * - Windows Vista: %LOCALAPPDATA%\rom-properties\cache
+ * - Linux: ~/.cache/rom-properties
  *
- * @return User's cache directory, or empty string on error.
+ * @return User's rom-properties cache directory, or empty string on error.
  */
 const rp_string &getCacheDirectory(void);
+
+/**
+ * Get the user's rom-properties configuration directory.
+ * This is usually one of the following:
+ * - Windows: %APPDATA%\rom-properties
+ * - Linux: ~/.config/rom-properties
+ *
+ * @return User's rom-properties configuration directory, or empty string on error.
+ */
+const rp_string &getConfigDirectory(void);
 
 /**
  * Set the modification timestamp of a file.

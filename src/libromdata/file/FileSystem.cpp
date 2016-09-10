@@ -44,6 +44,7 @@
 #endif
 
 // C includes. (C++ namespace)
+#include <cstring>
 #include <ctime>
 
 // C++ includes.
@@ -58,6 +59,13 @@ namespace LibRomData { namespace FileSystem {
 
 // User's cache directory.
 static rp_string cache_dir;
+// User's configuration directory.
+static rp_string config_dir;
+
+#ifndef _WIN32
+// User's home directory.
+static rp_string home_dir;
+#endif /* !_WIN32 */
 
 /**
  * Recursively mkdir() subdirectories.
@@ -223,50 +231,22 @@ int64_t filesize(const rp_string &filename)
 	return buf.st_size;
 }
 
+#ifndef _WIN32
 /**
- * Get the user's cache directory for ROM Properties.
- * This is usually one of the following:
- * - WinXP: %APPDATA%\Local Settings\rom-properties\cache
- * - WinVista: %LOCALAPPDATA%\rom-properties\cache
- * - Linux: ~/.cache/rom-properties
- *
- * @return Cache directory, or empty string on error.
+ * Get the user's home directory. (Unix systems only!)
+ * @return User's home directory, or empty string on error.
  */
-const rp_string &getCacheDirectory(void)
+static const rp_string &getHomeDirectory(void)
 {
-	if (!cache_dir.empty()) {
-		// We already got the cache directory.
-		return cache_dir;
+	if (!home_dir.empty()) {
+		// We already got the home directory.
+		return home_dir;
 	}
 
-#ifdef _WIN32
-	// Windows: Get CSIDL_LOCAL_APPDATA.
-	// XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// Vista+: C:\Users\username\AppData\Local
-	wchar_t path[MAX_PATH];
-	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr != S_OK)
-		return cache_dir;
-
-	cache_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
-	if (cache_dir.empty())
-		return cache_dir;
-
-	// Add a trailing backslash if necessary.
-	if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\'))
-		cache_dir += _RP_CHR('\\');
-
-	// Append "rom-properties\\cache".
-	cache_dir += _RP("rom-properties\\cache");
-#else
-	// Linux: Cache directory is ~/.cache/rom-properties/.
-	// TODO: Mac OS X.
 	const char *home = getenv("HOME");
-	string path;
 	if (home && home[0] != 0) {
 		// HOME variable is set.
-		path = home;
+		home_dir = utf8_to_rp_string(home);
 	} else {
 		// HOME variable is not set.
 		// Check the user's pwent.
@@ -285,21 +265,123 @@ const rp_string &getCacheDirectory(void)
 		if (pwd_result->pw_dir[0] == 0)
 			return cache_dir;
 
-		path = string(pwd_result->pw_dir);
+		home_dir = utf8_to_rp_string(pwd_result->pw_dir,
+			strnlen(pwd_result->pw_dir, sizeof(pwd_result->pw_dir)));
 	}
 
+	return home_dir;
+}
+#endif /* _WIN32 */
+
+/**
+ * Get the user's cache directory.
+ * This is usually one of the following:
+ * - Windows XP: %APPDATA%\Local Settings\rom-properties\cache
+ * - Windows Vista: %LOCALAPPDATA%\rom-properties\cache
+ * - Linux: ~/.cache/rom-properties
+ *
+ * @return User's rom-properties cache directory, or empty string on error.
+ */
+const rp_string &getCacheDirectory(void)
+{
+	if (!cache_dir.empty()) {
+		// We already got the cache directory.
+		return cache_dir;
+	}
+
+	// TODO: Mutex to prevent race conditions?
+
+#ifdef _WIN32
+	// Windows: Get CSIDL_LOCAL_APPDATA.
+	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
+	// - Windows Vista: C:\Users\username\AppData\Local
+	wchar_t path[MAX_PATH];
+	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
+		nullptr, SHGFP_TYPE_CURRENT, path);
+	if (hr != S_OK)
+		return cache_dir;
+
+	cache_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	if (cache_dir.empty())
+		return cache_dir;
+
+	// Add a trailing backslash if necessary.
+	if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\'))
+		cache_dir += _RP_CHR('\\');
+
+	// Append "rom-properties\\cache".
+	cache_dir += _RP("rom-properties\\cache");
+#else
+	// Unix/Linux: Cache directory is ~/.cache/rom-properties/.
+	// TODO: Mac OS X.
+	cache_dir = getHomeDirectory();
+	if (cache_dir.empty())
+		return cache_dir;
+
 	// Add a trailing slash if necessary.
-	if (path.at(path.size()-1) != '/')
-		path += '/';
+	if (cache_dir.at(cache_dir.size()-1) != '/')
+		cache_dir += _RP_CHR('/');
 
 	// Append ".cache/rom-properties".
-	path += ".cache/rom-properties";
-
-	// Convert to rp_string.
-	cache_dir = utf8_to_rp_string(path);
+	cache_dir += _RP(".cache/rom-properties");
 #endif
 
 	return cache_dir;
+}
+
+/**
+ * Get the user's rom-properties configuration directory.
+ * This is usually one of the following:
+ * - Windows: %APPDATA%\rom-properties
+ * - Linux: ~/.config/rom-properties
+ *
+ * @return User's rom-properties configuration directory, or empty string on error.
+ */
+const rp_string &getConfigDirectory(void)
+{
+	if (!config_dir.empty()) {
+		// We already got the cache directory.
+		return config_dir;
+	}
+
+	// TODO: Mutex to prevent race conditions?
+
+#ifdef _WIN32
+	// Windows: Get CSIDL_APPDATA.
+	// - Windows XP: C:\Documents and Settings\username\Application Data
+	// - Windows Vista: C:\Users\username\AppData\Roaming
+	wchar_t path[MAX_PATH];
+	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
+		nullptr, SHGFP_TYPE_CURRENT, path);
+	if (hr != S_OK)
+		return config_dir;
+
+	config_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	if (config_dir.empty())
+		return config_dir;
+
+	// Add a trailing backslash if necessary.
+	if (config_dir.at(config_dir.size()-1) != _RP_CHR('\\'))
+		config_dir += _RP_CHR('\\');
+
+	// Append "rom-properties".
+	config_dir += _RP("rom-properties");
+#else
+	// Unix/Linux: Cache directory is ~/.config/rom-properties/.
+	// TODO: Mac OS X.
+	config_dir = getHomeDirectory();
+	if (config_dir.empty())
+		return config_dir;
+
+	// Add a trailing slash if necessary.
+	if (config_dir.at(config_dir.size()-1) != '/')
+		config_dir += _RP_CHR('/');
+
+	// Append ".config/rom-properties".
+	config_dir += _RP(".config/rom-properties");
+#endif
+
+	return config_dir;
 }
 
 /**
