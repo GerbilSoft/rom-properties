@@ -470,16 +470,17 @@ int NintendoDS::loadFieldData(void)
 	// TODO: Combine DS Region and DSi Region into one bitfield?
 
 	// DS Region.
-	uint32_t nds_region;
-	if (romHeader->nds_region == 0) {
-		// Region-free.
+	uint32_t nds_region = 0;
+	if (romHeader->nds_region & 0x80) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
+	}
+	if (romHeader->nds_region & 0x40) {
+		nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
+	}
+	if (nds_region == 0) {
+		// No known region flags.
+		// Note that the Sonic Colors demo has 0x02 here.
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
-	} else {
-		nds_region = 0;
-		if (romHeader->nds_region & 0x80)
-			nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
-		if (romHeader->nds_region & 0x40)
-			nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
 	}
 	m_fields->addData_bitfield(nds_region);
 
