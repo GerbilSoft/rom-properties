@@ -59,6 +59,17 @@ IF(WIN32)
 	INCLUDE(cmake/platform/win32.cmake)
 ENDIF(WIN32)
 
+# Check for Large File Support.
+INCLUDE(CheckLargeFileSupport)
+CHECK_LARGE_FILE_SUPPORT()
+IF(NOT LFS_FOUND)
+	MESSAGE(FATAL_ERROR "Large File Support is required.")
+ENDIF(NOT LFS_FOUND)
+IF(LFS_DEFINITIONS)
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${LFS_DEFINITIONS}")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${LFS_DEFINITIONS}")
+ENDIF(LFS_DEFINITIONS)
+
 # Set Windows subsystem when building with MSVC.
 FUNCTION(SET_WINDOWS_SUBSYSTEM _target _subsystem)
 	IF(MSVC)

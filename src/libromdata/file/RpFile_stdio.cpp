@@ -332,7 +332,7 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	int ret = fseek(m_file, pos, SEEK_SET);
+	int ret = fseeko(m_file, pos, SEEK_SET);
 	if (ret != 0) {
 		m_lastError = errno;
 	}
@@ -350,7 +350,7 @@ int64_t RpFile::tell(void)
 		return -1;
 	}
 
-	return ftell(m_file);
+	return ftello(m_file);
 }
 
 /**
@@ -381,14 +381,14 @@ int64_t RpFile::fileSize(void)
 	// TODO: Error checking?
 
 	// Save the current position.
-	int64_t cur_pos = ftell(m_file);
+	int64_t cur_pos = ftello(m_file);
 
 	// Seek to the end of the file and record its position.
-	fseek(m_file, 0, SEEK_END);
-	int64_t end_pos = ftell(m_file);
+	fseeko(m_file, 0, SEEK_END);
+	int64_t end_pos = ftello(m_file);
 
 	// Go back to the previous position.
-	fseek(m_file, cur_pos, SEEK_SET);
+	fseeko(m_file, cur_pos, SEEK_SET);
 
 	// Return the file size.
 	return end_pos;
