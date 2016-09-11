@@ -604,6 +604,12 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		HFONT hFontItem = hFont;
 		HWND hDlgItem;
 		switch (desc->type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				DestroyWindow(hStatic);
+				field_cy = 0;
+				break;
+
 			case RomFields::RFT_STRING:
 				// Create a read-only EDIT widget.
 				// The STATIC control doesn't allow the user
@@ -662,8 +668,8 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 			default:
 				// Unsupported data type.
 				assert(false);
-				field_cy = 0;
 				DestroyWindow(hStatic);
+				field_cy = 0;
 				break;
 		}
 

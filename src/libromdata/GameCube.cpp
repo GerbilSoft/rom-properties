@@ -582,7 +582,7 @@ int GameCube::loadFieldData(void)
 		m_fields->addData_listData(partitions);
 	} else {
 		// Add a dummy entry.
-		m_fields->addData_string(nullptr);
+		m_fields->addData_invalid();
 	}
 
 	// Finished reading the field data.

@@ -135,6 +135,11 @@ void RomDataViewPrivate::updateDisplay(void)
 		lblDesc->setText(RomDataView::tr("%1:").arg(RP2Q(desc->name)));
 
 		switch (desc->type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				delete lblDesc;
+				break;
+
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);

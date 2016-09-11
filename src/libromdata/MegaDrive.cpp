@@ -543,6 +543,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	if (!info)
 		return -1;
 
+	// ROM header.
 	const uint8_t *const pHeader = info->pHeader;
 
 	// Magic strings.
@@ -783,8 +784,8 @@ int MegaDrive::loadFieldData(void)
 	} else {
 		// Discs don't have vector tables.
 		// Add dummy entries for the vectors.
-		m_fields->addData_string(nullptr);
-		m_fields->addData_string(nullptr);
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
 	}
 
 	// Finished reading the field data.

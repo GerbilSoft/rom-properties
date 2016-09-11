@@ -490,8 +490,7 @@ int NintendoDS::loadFieldData(void)
 		m_fields->addData_bitfield(romHeader->dsi_region);
 	} else {
 		// No DSi region.
-		// TODO: addData_null()?
-		m_fields->addData_string(nullptr);
+		m_fields->addData_invalid();
 	}
 
 	// Finished reading the field data.

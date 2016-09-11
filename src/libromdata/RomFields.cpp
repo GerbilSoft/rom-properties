@@ -150,6 +150,9 @@ void RomFieldsPrivate::delete_data(void)
 	for (int i = (int)(data.size() - 1); i >= 0; i--) {
 		const RomFields::Data &data = this->data.at(i);
 		switch (data.type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				break;
 			case RomFields::RFT_STRING:
 				// Allocated string. Free it.
 				free((rp_char*)data.str);
@@ -230,6 +233,10 @@ void RomFields::detach(void)
 		Data &data_new = d_new->data.at(i);
 		data_new.type = data_old.type;
 		switch (data_old.type) {
+			case RFT_INVALID:
+				// No data here.
+				data_new.str = nullptr;
+				break;
 			case RFT_STRING:
 				// Duplicate the string.
 				data_new.str = rp_strdup(data_old.str);
@@ -303,6 +310,20 @@ bool RomFields::isDataLoaded(void) const
 }
 
 /** Convenience functions for RomData subclasses. **/
+
+/**
+ * Add invalid field data.
+ * This effectively hides the field.
+ * @return Field index.
+ */
+int RomFields::addData_invalid(void)
+{
+	Data data;
+	data.type = RFT_INVALID;
+	data.str = nullptr;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
 
 /**
  * Add string field data.

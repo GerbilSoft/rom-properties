@@ -35,7 +35,7 @@ class RomFields
 	public:
 		// ROM field types.
 		enum RomFieldType {
-			RFT_INVALID,	// Invalid
+			RFT_INVALID,	// Invalid. (skips the field)
 			RFT_STRING,	// Basic string.
 			RFT_BITFIELD,	// Bitfield.
 			RFT_LISTDATA,	// ListData.
@@ -165,6 +165,13 @@ class RomFields
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
+
+		/**
+		 * Add invalid field data.
+		 * This effectively hides the field.
+		 * @return Field index.
+		 */
+		int addData_invalid(void);
 
 		/**
 		 * Add string field data.
