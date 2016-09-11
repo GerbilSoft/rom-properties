@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesCipher.cpp: AES-128 CBC decryption class. (Windows version)          *
+ * AesCipher_CAPI.cpp: AES-128 CBC decryption class. (Windows version)     *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -210,7 +210,7 @@ int AesCipher::setChainingMode(ChainingMode mode)
 
 	DWORD dwMode;
 	switch (mode) {
-		case CM_EBC:
+		case CM_ECB:
 			dwMode = CRYPT_MODE_ECB;
 			break;
 		case CM_CBC:

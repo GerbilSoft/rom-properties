@@ -57,7 +57,7 @@ class AesCipher
 		virtual int setKey(const uint8_t *key, uint32_t len);
 
 		enum ChainingMode {
-			CM_EBC,
+			CM_ECB,
 			CM_CBC,
 		};
 
