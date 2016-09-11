@@ -33,6 +33,9 @@
 /* Define to 1 if you have the `strnlen' function. */
 #cmakedefine HAVE_STRNLEN 1
 
+/* Define to 1 if decryption should be enabled. */
+#cmakedefine ENABLE_DECRYPTION 1
+
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */

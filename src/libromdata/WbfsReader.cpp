@@ -1,8 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
  * WbfsReader.cpp: WBFS disc image reader.                                 *
- * This class is a "null" interface that simply passes calls down to       *
- * libc's stdio functions.                                                 *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *

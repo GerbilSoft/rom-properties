@@ -48,6 +48,7 @@ SET(libromdata_SRCS
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
 	GameCube.cpp
+	WiiPartition.cpp
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
@@ -71,6 +72,7 @@ SET(libromdata_H
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	GameCube.hpp
+	WiiPartition.hpp
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
@@ -115,7 +117,13 @@ IF(ENABLE_DECRYPTION)
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/KeyManager.hpp
+		crypto/AesCipher.hpp
 		)
+	IF(WIN32)
+		SET(libromdata_CRYPTO_OS_SRCS
+			crypto/AesCipher_CAPI.cpp
+			)
+	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
 
 ######################
@@ -127,6 +135,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_CRYPTO_OS_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 
@@ -135,6 +144,7 @@ ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_CRYPTO_OS_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 

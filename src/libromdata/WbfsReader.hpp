@@ -40,13 +40,11 @@ class WbfsReader : public IDiscReader
 		virtual ~WbfsReader();
 
 	private:
-		// TODO: Rearrange other classes so the private class
-		// is *before* the copy constructors?
-		friend class WbfsReaderPrivate;
-		WbfsReaderPrivate *const d;
-	private:
 		WbfsReader(const WbfsReader &);
 		WbfsReader &operator=(const WbfsReader &);
+	private:
+		friend class WbfsReaderPrivate;
+		WbfsReaderPrivate *const d;
 
 	public:
 		/**

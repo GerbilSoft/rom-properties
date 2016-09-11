@@ -22,6 +22,7 @@
 #include "GameCube.hpp"
 #include "NintendoPublishers.hpp"
 #include "gcn_structs.h"
+#include "WiiPartition.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -100,6 +101,9 @@ class GameCubePrivate
 		WiiPartTable wiiVgTbl[4];	// Volume group table.
 		bool wiiVgTblLoaded;
 
+		// Update partition.
+		WiiPartition *updatePartition;
+
 		/**
 		 * Load the Wii volume group and partition tables.
 		 * Partition tables are loaded into wiiVgTbl[].
@@ -115,10 +119,12 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, wiiVgTblLoaded(false)
+	, updatePartition(nullptr)
 { }
 
 GameCubePrivate::~GameCubePrivate()
 {
+	delete updatePartition;
 	delete discReader;
 }
 
@@ -227,6 +233,13 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
 			// TODO: Figure out how to calculate length?
 			entry.type = be32_to_cpu(pt[j].type);
+
+			if (entry.type == 1 && !updatePartition) {
+				// System Update partition.
+				// TODO: Create WiiPartition objects for all partitions
+				// so we can get the partition length?
+				updatePartition = new WiiPartition(discReader, entry.start);
+			}
 		}
 	}
 
