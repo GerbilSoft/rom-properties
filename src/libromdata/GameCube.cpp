@@ -172,6 +172,9 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 
+	// Wii System Update version.
+	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
+
 	// Wii partition table.
 	// NOTE: Actually a table of tables, so we'll use
 	// 0p0-style numbering, where the first digit is
@@ -180,7 +183,6 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Partitions"), RomFields::RFT_LISTDATA, {&rvl_partitions}},
 
 	// TODO:
-	// - System update version.
 	// - Region and age ratings.
 };
 
@@ -638,78 +640,95 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
 	m_fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
-	// Partition table. (Wii only)
-	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
+	// The remaining fields are Wii only.
+	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
+	    GameCubePrivate::DISC_SYSTEM_WII)
+	{
+		// Add dummy entries for Wii-specific fields.
+		m_fields->addData_string(nullptr);
+
+		// Finished reading the field data.
+		return (int)m_fields->count();
+	}
+	
+	/** Wii-specific fields. **/
+
+	// Load the Wii partition tables.
+	int ret = d->loadWiiPartitionTables();
+	if (ret == 0) {
+		// Wii partition tables loaded.
+		// Convert them to RFT_LISTDATA for display purposes.
+
+		// Update version. (TODO)
+		m_fields->addData_string(_RP("TODO"));
+
+		// Partition table.
 		RomFields::ListData *partitions = new RomFields::ListData();
 
-		// Load the Wii partition tables.
-		int ret = d->loadWiiPartitionTables();
-		if (ret == 0) {
-			// Wii partition tables loaded.
-			// Convert them to RFT_LISTDATA for display purposes.
-			vector<rp_string> data_row;     // Temporary storage for each partition entry.
-			for (int i = 0; i < 4; i++) {
-				const int count = (int)d->wiiVgTbl[i].size();
-				for (int j = 0; j < count; j++) {
-					const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
-					data_row.clear();
+		vector<rp_string> data_row;     // Temporary storage for each partition entry.
+		for (int i = 0; i < 4; i++) {
+			const int count = (int)d->wiiVgTbl[i].size();
+			for (int j = 0; j < count; j++) {
+				const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
+				data_row.clear();
 
-					// Partition number.
-					char buf[16];
-					int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
-					if (len > (int)sizeof(buf))
-						len = sizeof(buf);
-					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				// Partition number.
+				char buf[16];
+				int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-					// Partition type.
-					rp_string str;
-					switch (entry.type) {
-						case GameCubePrivate::PARTITION_GAME:
-							str = _RP("Game");
-							break;
-						case GameCubePrivate::PARTITION_UPDATE:
-							str = _RP("Update");
-							break;
-						case GameCubePrivate::PARTITION_CHANNEL:
-							str = _RP("Channel");
-							break;
-						default: {
-							// If all four bytes are ASCII,
-							// print it as-is. (SSBB demo channel)
-							// Otherwise, print the number.
-							// NOTE: Must be BE32 for proper display.
-							uint32_t be32_type = cpu_to_be32(entry.type);
-							memcpy(buf, &be32_type, 4);
-							if (isalnum(buf[0]) && isalnum(buf[1]) &&
-							    isalnum(buf[2]) && isalnum(buf[3]))
-							{
-								// All four bytes are ASCII.
-								str = latin1_to_rp_string(buf, 4);
-							} else {
-								// Non-ASCII data. Print the hex values instead.
-								len = snprintf(buf, sizeof(buf), "%08X", entry.type);
-								if (len > (int)sizeof(buf))
-									len = sizeof(buf);
-								str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-							}
- 						}
+				// Partition type.
+				rp_string str;
+				switch (entry.type) {
+					case GameCubePrivate::PARTITION_GAME:
+						str = _RP("Game");
+						break;
+					case GameCubePrivate::PARTITION_UPDATE:
+						str = _RP("Update");
+						break;
+					case GameCubePrivate::PARTITION_CHANNEL:
+						str = _RP("Channel");
+						break;
+					default: {
+						// If all four bytes are ASCII,
+						// print it as-is. (SSBB demo channel)
+						// Otherwise, print the number.
+						// NOTE: Must be BE32 for proper display.
+						uint32_t be32_type = cpu_to_be32(entry.type);
+						memcpy(buf, &be32_type, 4);
+						if (isalnum(buf[0]) && isalnum(buf[1]) &&
+							isalnum(buf[2]) && isalnum(buf[3]))
+						{
+							// All four bytes are ASCII.
+							str = latin1_to_rp_string(buf, 4);
+						} else {
+							// Non-ASCII data. Print the hex values instead.
+							len = snprintf(buf, sizeof(buf), "%08X", entry.type);
+							if (len > (int)sizeof(buf))
+								len = sizeof(buf);
+							str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+						}
 					}
-					data_row.push_back(str);
-
-					// Partition size.
-					data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
-
-					// Add the partition information to the ListData.
-					partitions->data.push_back(data_row);
 				}
+				data_row.push_back(str);
+
+				// Partition size.
+				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
+
+				// Add the partition information to the ListData.
+				partitions->data.push_back(data_row);
 			}
 		}
 
 		// Add the partitions list data.
 		m_fields->addData_listData(partitions);
 	} else {
-		// Add a dummy entry.
-		m_fields->addData_string(nullptr);
+		// Could not load partition tables.
+		// FIXME: Show an error? For now, add dummy fields.
+		m_fields->addData_string(nullptr);	// Update
+		m_fields->addData_string(nullptr);	// Partitions
 	}
 
 	// Finished reading the field data.
