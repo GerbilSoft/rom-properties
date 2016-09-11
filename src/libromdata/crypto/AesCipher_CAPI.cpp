@@ -268,6 +268,10 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len)
 		return 0;
 	}
 
+	// FIXME: Nettle version doesn't do this, which allows
+	// calling decrypt() multiple times for CBC with large
+	// amounts of data.
+
 	// Temporarily duplicate the key so we don't overwrite
 	// the feedback register in the original key.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379913(v=vs.85).aspx
@@ -305,6 +309,10 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len,
 		// Invalid IV.
 		return 0;
 	}
+
+	// FIXME: Nettle version doesn't do this, which allows
+	// us to calling decrypt() multiple times for CBC with
+	// large amounts of data.
 
 	// Temporarily duplicate the key so we don't overwrite
 	// the feedback register in the original key.
