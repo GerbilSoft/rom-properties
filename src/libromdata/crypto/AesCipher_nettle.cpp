@@ -20,7 +20,8 @@
  ***************************************************************************/
 
 #include "AesCipher.hpp"
-#include <cstdio>
+#include "config.libromdata.h"
+
 // C includes. (C++ namespace)
 #include <cerrno>
 #include <cstring>
@@ -43,29 +44,32 @@ class AesCipherPrivate
 
 	public:
 		// AES context.
-		// FIXME: Support for nettle-2.7.
-		// nettle-3.0's cbc_decrypt() only supports the
-		// current version of the context.
+#ifdef HAVE_NETTLE_3
 		union {
 			struct aes128_ctx aes128;
 			struct aes192_ctx aes192;
 			struct aes256_ctx aes256;
 		} ctx;
+#else /* !HAVE_NETTLE_3 */
+		struct aes_ctx ctx;
+#endif /* HAVE_NETTLE_3 */
 		uint8_t iv[AES_BLOCK_SIZE];
 
 		AesCipher::ChainingMode chainingMode;
 
+#ifdef HAVE_NETTLE_3
 		// Cipher function for cbc_decrypt().
-		// nettle-3.0: Depends on the key length.
-		// FIXME: nettle-2.7 compatibility?
 		nettle_cipher_func *decrypt_fn;
+#endif /* HAVE_NETTLE_3 */
 };
 
 /** AesCipherPrivate **/
 
 AesCipherPrivate::AesCipherPrivate()
 	: chainingMode(AesCipher::CM_ECB)
+#ifdef HAVE_NETTLE_3
 	, decrypt_fn(nullptr)
+#endif /* HAVE_NETTLE_3 */
 {
 	// Clear the context and IV.
 	memset(&ctx, 0, sizeof(ctx));
@@ -109,7 +113,7 @@ int AesCipher::setKey(const uint8_t *key, uint32_t len)
 		return -EINVAL;
 	}
 
-	// FIXME: nettle-2.7 compatibility?
+#ifdef HAVE_NETTLE_3
 	switch (len) {
 		case 16:
 			d->decrypt_fn = (nettle_cipher_func*)aes128_decrypt;
@@ -126,6 +130,9 @@ int AesCipher::setKey(const uint8_t *key, uint32_t len)
 		default:
 			return -EINVAL;
 	}
+#else /* !HAVE_NETTLE_3 */
+	aes_set_decrypt_key(&d->ctx, len, key);
+#endif
 
 	return 0;
 }
@@ -176,6 +183,7 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len)
 	}
 
 	// Decrypt the data.
+#ifdef HAVE_NETTLE_3
 	switch (d->chainingMode) {
 		case CM_ECB:
 			d->decrypt_fn(&d->ctx, data_len, data, data);
@@ -195,6 +203,22 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len)
 		default:
 			return 0;
 	}
+#else /* !HAVE_NETTLE_3 */
+	switch (d->chainingMode) {
+		case CM_ECB:
+			aes_decrypt(&d->ctx, data_len, data, data);
+			break;
+
+		case CM_CBC:
+			// IV is automatically updated for the next block.
+			cbc_decrypt(&d->ctx, (nettle_crypt_func*)aes_decrypt, AES_BLOCK_SIZE,
+				    d->iv, data_len, data, data);
+			break;
+
+		default:
+			return 0;
+	}
+#endif /* HAVE_NETTLE_3 */
 
 	return data_len;
 }
@@ -220,6 +244,7 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len,
 	memcpy(d->iv, iv, AES_BLOCK_SIZE);
 
 	// Decrypt the data.
+#ifdef HAVE_NETTLE_3
 	switch (d->chainingMode) {
 		case CM_ECB:
 			d->decrypt_fn(&d->ctx, data_len, data, data);
@@ -238,6 +263,21 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len,
 		default:
 			return 0;
 	}
+#else /* !HAVE_NETTLE_3 */
+	switch (d->chainingMode) {
+		case CM_ECB:
+			aes_decrypt(&d->ctx, data_len, data, data);
+			break;
+
+		case CM_CBC:
+			cbc_decrypt(&d->ctx, (nettle_crypt_func*)aes_decrypt, AES_BLOCK_SIZE,
+				    d->iv, data_len, data, data);
+			break;
+
+		default:
+			return 0;
+	}
+#endif /* HAVE_NETTLE_3 */
 
 	return data_len;
 }

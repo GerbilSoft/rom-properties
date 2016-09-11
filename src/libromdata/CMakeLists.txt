@@ -37,6 +37,12 @@ IF(NOT WIN32)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
 		FIND_PACKAGE(Nettle REQUIRED)
+
+		# Check if this is Nettle 3.x.
+		# Nettle 3.1 added version.h, which isn't available
+		# in older verisons, so we can't simply check that.
+		INCLUDE(CheckSymbolExists)
+		CHECK_SYMBOL_EXISTS(aes128_set_decrypt_key "nettle/aes.h" HAVE_NETTLE_3)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
 
