@@ -109,6 +109,15 @@ ELSE(WIN32)
 		)
 ENDIF(WIN32)
 
+IF(ENABLE_DECRYPTION)
+	SET(libromdata_CRYPTO_SRCS
+		crypto/KeyManager.cpp
+		)
+	SET(libromdata_CRYPTO_H
+		crypto/KeyManager.hpp
+		)
+ENDIF(ENABLE_DECRYPTION)
+
 ######################
 # Build the library. #
 ######################
@@ -117,6 +126,7 @@ ENDIF(WIN32)
 ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 
@@ -124,6 +134,7 @@ TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 
