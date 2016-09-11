@@ -25,6 +25,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cctype>
 
 // C++ includes.
 #include <memory>
@@ -83,6 +84,10 @@ class KeyManagerPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadKeys(void);
+
+		// Temporary configuration loading variables.
+		std::string cfg_curSection;
+		bool cfg_isInKeysSection;
 };
 
 /** KeyManagerPrivate **/
@@ -93,6 +98,7 @@ unique_ptr<KeyManager> KeyManagerPrivate::instance(new KeyManager());
 KeyManagerPrivate::KeyManagerPrivate()
 	: loadAttempted(false)
 	, loadKeysRet(0)
+	, cfg_isInKeysSection(false)
 {
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
@@ -104,7 +110,94 @@ KeyManagerPrivate::KeyManagerPrivate()
  */
 void KeyManagerPrivate::processConfigLine(const string &line_buf)
 {
-	// TODO: Parse the configuration line.
+	bool foundNonSpace = false;
+	const char *sect_start = nullptr;
+	const char *equals_pos = nullptr;
+
+	const char *chr = line_buf.data();
+	for (int i = 0; i < (int)line_buf.size(); i++, chr++) {
+		if (!foundNonSpace) {
+			// Check if the current character is still a space.
+			if (isspace(*chr)) {
+				// Space character.
+				continue;
+			} else if (*chr == '[') {
+				// Start of section.
+				sect_start = chr+1;
+				foundNonSpace = true;
+			} else if (*chr == '=' || *chr == ';' || *chr == '#') {
+				// Equals with no key name, or comment line.
+				// Skip this line.
+				return;
+			} else {
+				// Regular key line.
+				foundNonSpace = true;
+			}
+		} else {
+			if (sect_start != nullptr) {
+				// Section header.
+				if (*chr == ';' || *chr == '#') {
+					// Comment. Skip this line.
+					return;
+				} else if (*chr == ']') {
+					// End of section header.
+					if (sect_start == chr) {
+						// Empty section header.
+						return;
+					}
+
+					// Check the section.
+					cfg_curSection = string(sect_start, chr - sect_start);
+					if (!strncasecmp(cfg_curSection.data(), "Keys", cfg_curSection.size())) {
+						// This is the "Keys" section.
+						cfg_isInKeysSection = true;
+					} else {
+						// This is not the "Keys" section.
+						cfg_isInKeysSection = false;
+					}
+
+					// Skip the rest of the line.
+					return;
+				}
+			} else {
+				// Key name/value.
+				if (!equals_pos) {
+					// We haven't found the equals symbol yet.
+					if (*chr == ';' || *chr == '#') {
+						// Comment. Skip this line.
+						return;
+					} else if (*chr == '=') {
+						// Found the equals symbol.
+						equals_pos = chr;
+					}
+				} else {
+					// We found the equals symbol.
+					if (*chr == ';' || *chr == '#') {
+						// Comment. Skip the rest of the line.
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// Parse the key and value.
+	if (!equals_pos) {
+		// No equals sign.
+		return;
+	}
+
+	const char *end = line_buf.data() + line_buf.size();
+	if (chr > end) {
+		// Out of bounds. Assume the end of the line.
+		chr = end - 1;
+	}
+
+	// TODO: Parse the key and value.
+	string keyName(line_buf.data(), equals_pos - line_buf.data());
+	printf("Key name: %s\n", keyName.c_str());
+	string value(equals_pos + 1, end - equals_pos);
+	printf("Value: %s\n", value.c_str());
 }
 
 /**
@@ -153,6 +246,10 @@ int KeyManagerPrivate::loadKeys(void)
 		}
 		return loadKeysRet;
 	}
+
+	// We're not in the keys section initially.
+	cfg_curSection.clear();
+	cfg_isInKeysSection = false;
 
 	// Parse the file.
 	// We're looking for the "[Keys]" section.
