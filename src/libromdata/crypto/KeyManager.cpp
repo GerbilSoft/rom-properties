@@ -157,8 +157,10 @@ int KeyManagerPrivate::loadKeys(void)
 	// Parse the file.
 	// We're looking for the "[Keys]" section.
 	string line_buf;
-	line_buf.reserve(256);
+	static const int LINE_LENGTH_MAX = 256;
+	line_buf.reserve(LINE_LENGTH_MAX);
 	size_t sz;
+	bool skipLine = false;
 	do {
 		char buf[4096];
 		sz = file->read(buf, sizeof(buf));
@@ -170,16 +172,28 @@ int KeyManagerPrivate::loadKeys(void)
 			// Find the first '\r' or '\n', starting at pos.
 			if (buf[pos] == '\r' || buf[pos] == '\n') {
 				// Found a newline.
-				if (lastStartPos == pos) {
-					// Empty line. Continue.
+				if (lastStartPos == pos || skipLine) {
+					// Empty line, or the length limit has been exceeded.
+					// Continue to the next line.
+					// Next line starts at the next character.
+					lastStartPos = pos + 1;
+					skipLine = false;
+					continue;
+				}
+
+				const int data_size = (pos - lastStartPos);
+
+				// Add the string from lastStartPos up to the previous
+				// character to the line buffer.
+				if (line_buf.size() + data_size > LINE_LENGTH_MAX) {
+					// Line length limit exceeded.
+					line_buf.clear();
 					// Next line starts at the next character.
 					lastStartPos = pos + 1;
 					continue;
 				}
 
-				// Add the string from lastStartPos up to the previous
-				// character to the line buffer.
-				line_buf.append(&buf[lastStartPos], pos - lastStartPos);
+				line_buf.append(&buf[lastStartPos], data_size);
 				if (!line_buf.empty()) {
 					// Process the line.
 					processConfigLine(line_buf);
@@ -193,14 +207,21 @@ int KeyManagerPrivate::loadKeys(void)
 
 		// If anything is still left in buf[],
 		// add it to the line buffer.
-		if (lastStartPos < (int)sz) {
-			line_buf.append(&buf[lastStartPos], (int)sz - lastStartPos);
+		if (!skipLine && lastStartPos < (int)sz) {
+			const int data_size = ((int)sz - lastStartPos);
+			if (line_buf.size() + data_size > LINE_LENGTH_MAX) {
+				// Line length limit exceeded.
+				skipLine = true;
+				line_buf.clear();
+			} else {
+				line_buf.append(&buf[lastStartPos], data_size);
+			}
 		}
 	} while (sz != 0);
 
 	// If any data is left in the line buffer (possibly due
 	// to a missing trailing newline), process it.
-	if (!line_buf.empty()) {
+	if (!skipLine && !line_buf.empty()) {
 		// Process the line.
 		processConfigLine(line_buf);
 	}
