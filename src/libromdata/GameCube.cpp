@@ -87,6 +87,12 @@ class GameCubePrivate
 		// Disc header.
 		GCN_DiscHeader discHeader;
 
+		enum WiiPartitionType {
+			PARTITION_GAME = 0,
+			PARTITION_UPDATE = 1,
+			PARTITION_CHANNEL = 2,
+		};
+
 		/**
 		 * Wii partition tables.
 		 * Decoded from the actual on-disc tables.
@@ -94,7 +100,7 @@ class GameCubePrivate
 		struct WiiPartEntry {
 			uint64_t start;		// Starting address, in bytes.
 			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
-			uint32_t type;		// Partition type. (0 == Game, 1 == Update, 2 == Channel)
+			uint32_t type;		// Partition type. (See WiiPartitionType.)
 		};
 
 		typedef std::vector<WiiPartEntry> WiiPartTable;
@@ -234,7 +240,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			// TODO: Figure out how to calculate length?
 			entry.type = be32_to_cpu(pt[j].type);
 
-			if (entry.type == 1 && !updatePartition) {
+			if (entry.type == PARTITION_UPDATE && !updatePartition) {
 				// System Update partition.
 				// TODO: Create WiiPartition objects for all partitions
 				// so we can get the partition length?
@@ -553,13 +559,13 @@ int GameCube::loadFieldData(void)
 					// Partition type.
 					rp_string str;
 					switch (entry.type) {
-						case 0:
+						case GameCubePrivate::PARTITION_GAME:
 							str = _RP("Game");
 							break;
-						case 1:
+						case GameCubePrivate::PARTITION_UPDATE:
 							str = _RP("Update");
 							break;
-						case 2:
+						case GameCubePrivate::PARTITION_CHANNEL:
 							str = _RP("Channel");
 							break;
 						default: {
