@@ -36,6 +36,8 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
+#include <cinttypes>
+#include <cstdio>
 #include <cstring>
 
 // C++ includes.
@@ -98,9 +100,9 @@ class GameCubePrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			uint64_t start;		// Starting address, in bytes.
-			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
-			uint32_t type;		// Partition type. (See WiiPartitionType.)
+			uint64_t start;			// Starting address, in bytes.
+			uint32_t type;			// Partition type. (See WiiPartitionType.)
+			WiiPartition *partition;	// Partition object.
 		};
 
 		typedef std::vector<WiiPartEntry> WiiPartTable;
@@ -108,6 +110,7 @@ class GameCubePrivate
 		bool wiiVgTblLoaded;
 
 		// Update partition.
+		// Points to entry within WiiParttable.
 		WiiPartition *updatePartition;
 
 		/**
@@ -116,6 +119,13 @@ class GameCubePrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadWiiPartitionTables(void);
+
+		/**
+		 * Format a file size.
+		 * @param fileSize File size.
+		 * @return Formatted file size.
+		 */
+		static rp_string formatFileSize(int64_t fileSize);
 };
 
 /** GameCubePrivate **/
@@ -130,14 +140,24 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 
 GameCubePrivate::~GameCubePrivate()
 {
-	delete updatePartition;
+	updatePartition = nullptr;
+
+	// Delete partition objects in wiiVgTbl[].
+	// TODO: Check wiiVgTblLoaded?
+	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
+		for (std::vector<WiiPartEntry>::iterator iter = wiiVgTbl[i].begin();
+		     iter != wiiVgTbl[i].end(); ++iter)
+		{
+			delete iter->partition;
+		}
+	}
+
 	delete discReader;
 }
 
 // Wii partition table.
 const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
-	_RP("#"), _RP("Type"),
-	// TODO: Start/End addresses?
+	_RP("#"), _RP("Type"), _RP("Size")
 };
 
 const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
@@ -237,20 +257,55 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		for (int j = 0; j < (int)count; j++) {
 			WiiPartEntry &entry = wiiVgTbl[i].at(j);
 			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
-			// TODO: Figure out how to calculate length?
 			entry.type = be32_to_cpu(pt[j].type);
+			entry.partition = new WiiPartition(discReader, entry.start);
 
 			if (entry.type == PARTITION_UPDATE && !updatePartition) {
 				// System Update partition.
-				// TODO: Create WiiPartition objects for all partitions
-				// so we can get the partition length?
-				updatePartition = new WiiPartition(discReader, entry.start);
+				updatePartition = entry.partition;
 			}
 		}
 	}
 
 	// Done reading the partition tables.
 	return 0;
+}
+
+/**
+ * Format a file size.
+ * @param size File size.
+ * @return Formatted file size.
+ */
+rp_string GameCubePrivate::formatFileSize(int64_t size)
+{
+	// TODO: Move to somewhere common?
+	// TODO: Thousands formatting?
+	char buf[64];
+
+         // TODO: Optimize this?
+	int len;
+	if (size < 0) {
+		// Invalid size. Print the value as-is.
+		len = snprintf(buf, sizeof(buf), "%" PRId64, size);
+	} else if (size < (2LL << 10)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " byte(s)", size);
+	} else if (size < (2LL << 20)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " KB", size >> 10);
+	} else if (size < (2LL << 30)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " MB", size >> 20);
+	} else if (size < (2LL << 40)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " GB", size >> 30);
+	} else if (size < (2LL << 50)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " TB", size >> 40);
+	} else if (size < (2LL << 60)) {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " PB", size >> 50);
+	} else /*if (size < (2ULL << 70))*/ {
+		len = snprintf(buf, sizeof(buf), "%" PRId64 " EB", size >> 60);
+	}
+
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
 /** GameCube **/
@@ -590,6 +645,9 @@ int GameCube::loadFieldData(void)
  						}
 					}
 					data_row.push_back(str);
+
+					// Partition size.
+					data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
 
 					// Add the partition information to the ListData.
 					partitions->data.push_back(data_row);
