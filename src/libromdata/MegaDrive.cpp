@@ -146,6 +146,44 @@ class MegaDrivePrivate
 		uint32_t parseRegionCodes(const char *region_codes, int size);
 
 	public:
+		enum MD_RomType {
+			ROM_UNKNOWN = -1,		// Unknown ROM type.
+
+			// Low byte: System ID.
+			// (TODO: MCD Boot ROMs, other specialized types?)
+			ROM_SYSTEM_MD = 0,		// Mega Drive
+			ROM_SYSTEM_MCD = 1,		// Mega CD
+			ROM_SYSTEM_32X = 2,		// Sega 32X
+			ROM_SYSTEM_MCD32X = 3,		// Sega CD 32X
+			ROM_SYSTEM_PICO = 4,		// Sega Pico
+			ROM_SYSTEM_UNKNOWN = 0xFF,
+			ROM_SYSTEM_MASK = 0xFF,
+
+			// High byte: Image format.
+			ROM_FORMAT_CART_BIN = (0 << 8),		// Cartridge: Binary format.
+			ROM_FORMAT_CART_SMD = (1 << 8),		// Cartridge: SMD format.
+			ROM_FORMAT_DISC_2048 = (2 << 8),	// Disc: 2048-byte sectors. (ISO)
+			ROM_FORMAT_DISC_2352 = (3 << 8),	// Disc: 2352-byte sectors. (BIN)
+			ROM_FORMAT_UNKNOWN = (0xFF << 8),
+			ROM_FORMAT_MASK = (0xFF << 8),
+		};
+
+		// ROM type.
+		int romType;
+
+		/**
+		 * Is this a disc?
+		 * Discs don't have a vector table.
+		 * @return True if this is a disc; false if not.
+		 */
+		inline bool isDisc(void)
+		{
+			int rfmt = romType & ROM_FORMAT_MASK;
+			return (rfmt == ROM_FORMAT_DISC_2048 ||
+				rfmt == ROM_FORMAT_DISC_2352);
+		}
+
+	public:
 		// ROM header.
 		uint32_t vectors[64];	// Interrupt vectors. (BE32)
 		MD_RomHeader romHeader;	// ROM header.
@@ -369,10 +407,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Seek to the beginning of the file.
 	m_file->rewind();
 
-	// Read the ROM header. [0x200 bytes]
+	// Read the ROM header. [0x400 bytes]
 	static_assert(sizeof(MegaDrivePrivate::MD_RomHeader) == MD_RomHeader_SIZE,
 		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
-	uint8_t header[0x200];
+	uint8_t header[0x400];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
@@ -383,14 +421,46 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
-	m_isValid = (isRomSupported(&info) >= 0);
+	d->romType = isRomSupported(&info);
 
-	if (m_isValid) {
+	if (d->romType >= 0) {
 		// Save the header for later.
-		// TODO: Adjust for SMD, Sega CD, etc.
-		memcpy(&d->vectors,    header,        sizeof(d->vectors));
-		memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
+		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
+			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
+				// MD header is at 0x100.
+				// Vector table is at 0.
+				memcpy(&d->vectors,    header,        sizeof(d->vectors));
+				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+				break;
+
+			case MegaDrivePrivate::ROM_FORMAT_CART_SMD:
+				// TODO: Need to decode the SMD block...
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+				break;
+
+			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
+				// MCD-specific header is at 0. [TODO]
+				// MD-style header is at 0x100.
+				// No vector table is present on the disc.
+				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
+				break;
+
+			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
+				// MCD-specific header is at 0x10. [TODO]
+				// MD-style header is at 0x110.
+				// No vector table is present on the disc.
+				memcpy(&d->romHeader, &header[0x110], sizeof(d->romHeader));
+				break;
+
+			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
+			default:
+				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+				break;
+		}
 	}
+
+	m_isValid = (d->romType >= 0);
 }
 
 MegaDrive::~MegaDrive()
@@ -410,36 +480,71 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	if (!info)
 		return -1;
 
-	// TODO: Handle SMD and other interleaved formats.
-	// TODO: Handle Sega CD.
-	// TODO: Store specific system type.
+	const uint8_t *const pHeader = info->pHeader;
 
-	// Check for certain strings at $100 and/or $101.
-	// TODO: Better checks.
-	static const char strchk[][17] = {
-		"SEGA MEGA DRIVE ",
-		"SEGA GENESIS    ",
-		"SEGA PICO       ",
-		"SEGA 32X        ",
+	// Magic strings.
+	static const char sega_magic[4] = {'S','E','G','A'};
+	static const char segacd_magic[16] =
+		{'S','E','G','A','D','I','S','C','S','Y','S','T','E','M',' ',' '};;
+
+	static const struct {
+		const char system_name[16];
+		uint32_t system_id;
+	} cart_magic[] = {
+		{{'S','E','G','A',' ','P','I','C','O',' ',' ',' ',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_PICO},
+		{{'S','E','G','A',' ','3','2','X',' ',' ',' ',' ',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_32X},
+		{{'S','E','G','A',' ','M','E','G','A',' ','D','R','I','V','E',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
+		{{'S','E','G','A',' ','G','E','N','E','S','I','S',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
 	if (info->szHeader >= 0x200) {
-		// Check the system name.
-		const MegaDrivePrivate::MD_RomHeader *romHeader =
-			reinterpret_cast<const MegaDrivePrivate::MD_RomHeader*>(&info->pHeader[0x100]);
-		for (int i = 0; i < 4; i++) {
-			if (!strncmp(romHeader->system, strchk[i], 16) ||
-			    !strncmp(&romHeader->system[1], strchk[i], 15))
+		// Check for Sega CD.
+		// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
+		// "BIN/2048", and "BIN/2352". I don't think that's
+		// right; there should only be 2048 and 2352.
+		// TODO: Detect Sega CD 32X.
+		if (!memcmp(&pHeader[0x0010], segacd_magic, sizeof(segacd_magic))) {
+			// Found a Sega CD disc image. (2352-byte sectors)
+			return MegaDrivePrivate::ROM_SYSTEM_MCD |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2352;
+		} else if (!memcmp(&pHeader[0x0000], segacd_magic, sizeof(segacd_magic))) {
+			// Found a Sega CD disc image. (2048-byte sectors)
+			return MegaDrivePrivate::ROM_SYSTEM_MCD |
+			       MegaDrivePrivate::ROM_FORMAT_DISC_2048;
+		}
+
+		// Check for SMD format. (Mega Drive only)
+		if (info->szHeader >= 0x300) {
+			// Check if "SEGA" is in the header in the correct place
+			// for a plain binary ROM.
+			if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
+			    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
 			{
-				// Found a Mega Drive ROM.
-				// TODO: Identify the specific type.
-				return 0;
+				// "SEGA" is not in the header. This might be SMD.
+				if ((pHeader[0x08] == 0xAA && pHeader[0x09] == 0xBB && pHeader[0x0A] == 0x06) ||
+				    (pHeader[0x280] == 'E' && pHeader[0x281] == 'A'))
+				{
+					// This is an SMD-format ROM.
+					// TODO: Indicate split format? (pHeader[0x02] > 0 for split)
+					return MegaDrivePrivate::ROM_SYSTEM_MD |
+					       MegaDrivePrivate::ROM_FORMAT_CART_SMD;
+				}
+			}
+		}
+
+		// Check for other MD-based cartridge formats.
+		for (int i = 0; i < ARRAY_SIZE(cart_magic); i++) {
+			if (!memcmp(&pHeader[0x100], cart_magic[i].system_name, 16) ||
+			    !memcmp(&pHeader[0x101], cart_magic[i].system_name, 15))
+			{
+				// Found a matching system name.
+				return MegaDrivePrivate::ROM_FORMAT_CART_BIN | cart_magic[i].system_id;
 			}
 		}
 	}
 
 	// Not supported.
-	return -1;
+	return MegaDrivePrivate::ROM_UNKNOWN;
 }
 
 /**
@@ -609,8 +714,15 @@ int MegaDrive::loadFieldData(void)
 	m_fields->addData_bitfield(region_code);
 
 	// Vectors.
-	m_fields->addData_string_numeric(be32_to_cpu(d->vectors[1]), RomFields::FB_HEX, 8);	// Entry point
-	m_fields->addData_string_numeric(be32_to_cpu(d->vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+	if (!d->isDisc()) {
+		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[1]), RomFields::FB_HEX, 8);	// Entry point
+		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+	} else {
+		// Discs don't have vector tables.
+		// Add dummy entries for the vectors.
+		m_fields->addData_string(nullptr);
+		m_fields->addData_string(nullptr);
+	}
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
