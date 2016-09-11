@@ -746,34 +746,47 @@ int MegaDrive::loadFieldData(void)
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
-	m_fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
+	if (!d->isDisc()) {
+		m_fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
+	} else {
+		// Checksum is not valid in Mega CD headers.
+		m_fields->addData_invalid();
+	}
 
 	// Parse I/O support.
 	uint32_t io_support = d->parseIOSupport(romHeader->io_support, sizeof(romHeader->io_support));
 	m_fields->addData_bitfield(io_support);
 
-	// ROM range.
-	// TODO: Range helper? (Can't be used for SRAM, though...)
-	char buf[32];
-	int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
-			be32_to_cpu(romHeader->rom_start),
-			be32_to_cpu(romHeader->rom_end));
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	if (!d->isDisc()) {
+		// ROM range.
+		// TODO: Range helper? (Can't be used for SRAM, though...)
+		char buf[32];
+		int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+				be32_to_cpu(romHeader->rom_start),
+				be32_to_cpu(romHeader->rom_end));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-	// RAM range.
-	len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
-			be32_to_cpu(romHeader->ram_start),
-			be32_to_cpu(romHeader->ram_end));
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		// RAM range.
+		len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+				be32_to_cpu(romHeader->ram_start),
+				be32_to_cpu(romHeader->ram_end));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-	// SRAM range. (TODO)
-	m_fields->addData_string(_RP(""));
+		// SRAM range. (TODO)
+		m_fields->addData_string(_RP(""));
+	} else {
+		// ROM, RAM, and SRAM ranges are not valid in Mega CD headers.
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	}
 
 	// Region codes.
+	// TODO: Validate the Mega CD security program?
 	uint32_t region_code = d->parseRegionCodes(romHeader->region_codes, sizeof(romHeader->region_codes));
 	m_fields->addData_bitfield(region_code);
 
