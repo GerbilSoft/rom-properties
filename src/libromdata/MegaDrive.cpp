@@ -21,6 +21,7 @@
 
 #include "MegaDrive.hpp"
 #include "MegaDrivePublishers.hpp"
+#include "CopierFormats.h"
 
 #include "common.h"
 #include "byteswap.h"
@@ -197,6 +198,7 @@ class MegaDrivePrivate
 		// ROM header.
 		uint32_t vectors[64];	// Interrupt vectors. (BE32)
 		MD_RomHeader romHeader;	// ROM header.
+		SMD_Header smdHeader;	// SMD header.
 };
 
 /** MegaDrivePrivate **/
@@ -481,6 +483,9 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+				// Save the SMD header.
+				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
+
 				// First bank needs to be deinterleaved.
 				uint8_t smd_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
 				uint8_t bin_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
@@ -585,11 +590,14 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 			    memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic)) != 0)
 			{
 				// "SEGA" is not in the header. This might be SMD.
-				if ((pHeader[0x08] == 0xAA && pHeader[0x09] == 0xBB && pHeader[0x0A] == 0x06) ||
-				    (pHeader[0x280] == 'E' && pHeader[0x281] == 'A'))
+				const SMD_Header *smdHeader = reinterpret_cast<const SMD_Header*>(pHeader);
+				if (smdHeader->id[0] == 0xAA && smdHeader->id[1] == 0xBB &&
+				    smdHeader->smd.file_data_type == SMD_FDT_68K_PROGRAM &&
+				    smdHeader->file_type == SMD_FT_SMD_GAME_FILE)
 				{
 					// This is an SMD-format ROM.
-					// TODO: Indicate split format? (pHeader[0x02] > 0 for split)
+					// TODO: Show extended information from the SMD header,
+					// including "split" and other stuff?
 					return MegaDrivePrivate::ROM_SYSTEM_MD |
 					       MegaDrivePrivate::ROM_FORMAT_CART_SMD;
 				}

@@ -81,6 +81,7 @@ SET(libromdata_H
 	DMG.hpp
 	uvector.h
 	GameBoyAdvance.hpp
+	CopierFormats.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
