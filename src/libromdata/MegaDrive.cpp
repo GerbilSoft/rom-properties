@@ -171,6 +171,9 @@ class MegaDrivePrivate
 		// ROM type.
 		int romType;
 
+		// SMD bank size.
+		static const uint32_t SMD_BLOCK_SIZE = 16384;
+
 		/**
 		 * Is this a disc?
 		 * Discs don't have a vector table.
@@ -182,6 +185,13 @@ class MegaDrivePrivate
 			return (rfmt == ROM_FORMAT_DISC_2048 ||
 				rfmt == ROM_FORMAT_DISC_2352);
 		}
+
+		/**
+		 * Decode a Super Magic Drive interleaved block.
+		 * @param dest	[out] Destination block. (Must be 16 KB.)
+		 * @param src	[in] Source block. (Must be 16 KB.)
+		 */
+		static void decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE]);
 
 	public:
 		// ROM header.
@@ -378,6 +388,42 @@ uint32_t MegaDrivePrivate::parseRegionCodes(const char *region_codes, int size)
 	return ret;
 }
 
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * @param dest	[out] Destination block. (Must be 16 KB.)
+ * @param src	[in] Source block. (Must be 16 KB.)
+ */
+void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE])
+{
+	// TODO: Add the "restrict" keyword to both parameters?
+
+	// First 8 KB of the source block is ODD bytes.
+	const uint8_t *end_block = src + 8192;
+	for (uint8_t *odd = dest + 1; src < end_block; odd += 16, src += 8) {
+		odd[ 0] = src[0];
+		odd[ 2] = src[1];
+		odd[ 4] = src[2];
+		odd[ 6] = src[3];
+		odd[ 8] = src[4];
+		odd[10] = src[5];
+		odd[12] = src[6];
+		odd[14] = src[7];
+	}
+
+	// Second 8 KB of the source block is EVEN bytes.
+	end_block = src + 8192;
+	for (uint8_t *even = dest; src < end_block; even += 16, src += 8) {
+		even[ 0] = src[ 0];
+		even[ 2] = src[ 1];
+		even[ 4] = src[ 2];
+		even[ 6] = src[ 3];
+		even[ 8] = src[ 4];
+		even[10] = src[ 5];
+		even[12] = src[ 6];
+		even[14] = src[ 7];
+	}
+}
+
 /** MegaDrive **/
 
 /**
@@ -434,10 +480,27 @@ MegaDrive::MegaDrive(IRpFile *file)
 				memcpy(&d->romHeader, &header[0x100], sizeof(d->romHeader));
 				break;
 
-			case MegaDrivePrivate::ROM_FORMAT_CART_SMD:
-				// TODO: Need to decode the SMD block...
-				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+				// First bank needs to be deinterleaved.
+				uint8_t smd_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
+				uint8_t bin_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
+				m_file->seek(512);
+				size = m_file->read(smd_data, sizeof(smd_data));
+				if (size != sizeof(smd_data)) {
+					// Short read. ROM is invalid.
+					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+					break;
+				}
+
+				// Decode the SMD block.
+				d->decodeSMDBlock(bin_data, smd_data);
+
+				// MD header is at 0x100.
+				// Vector table is at 0.
+				memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
+				memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
 				break;
+			}
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
 				// MCD-specific header is at 0. [TODO]
