@@ -58,8 +58,8 @@ class KeyManager
 
 		// Encryption key data.
 		struct KeyData_t {
-			uint32_t length;	// Key length.
 			const uint8_t *key;	// Key data.
+			uint32_t length;	// Key length.
 		};
 
 		/**

@@ -235,7 +235,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 	};
 
 	chr = value.data();
-	for (int i = (int)value.size(); i > 0; i -= 2, vKeys_pos++) {
+	for (int i = (int)value.size(); i > 0; i -= 2, vKeys_pos++, chr += 2) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
 		char chr0 = ascii_to_hex[(uint8_t)chr[0]];
@@ -245,8 +245,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 			vKeys.resize(vKeys_start_pos);
 		}
 
-		vKeys[vKeys_pos+0] = chr0;
-		vKeys[vKeys_pos+1] = chr1;
+		vKeys[vKeys_pos] = (chr0 << 4 | chr1);
 	}
 
 	// Value parsed successfully.
@@ -448,8 +447,8 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 		return -EFAULT;
 	}
 
-	pKeyData->length = len;
 	pKeyData->key = d->vKeys.data() + idx;
+	pKeyData->length = len;
 	return 0;
 }
 
