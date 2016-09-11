@@ -35,6 +35,10 @@
 #include <cassert>
 #include <cstring>
 
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
+
 namespace LibRomData {
 
 #define SECTOR_SIZE_ENCRYPTED 0x8000
@@ -72,9 +76,21 @@ class WiiPartitionPrivate {
 
 		WiiPartition::EncInitStatus encInitStatus;
 #ifdef ENABLE_DECRYPTION
-		// AES ciphers.
-		AesCipher *aes_common;
+		// AES cipher for the Common key.
+		// - Index 0: rvl-common
+		// - Index 1: rvl-korean
+		// TODO: Dev keys?
+		static AesCipher *aes_common[2];
+		static int aes_common_refcnt;
+
+		// AES cipher for this partition's title key.
 		AesCipher *aes_title;
+
+		/**
+		 * Initialize decryption.
+		 * @return EncInitStatus.
+		 */
+		WiiPartition::EncInitStatus initDecryption(void);
 #endif
 
 		/**
@@ -89,6 +105,9 @@ class WiiPartitionPrivate {
 
 /** WiiPartitionPrivate **/
 
+AesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
+int WiiPartitionPrivate::aes_common_refcnt = 0;
+
 WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partition_offset)
 	: discReader(discReader)
 	, partition_offset(partition_offset)
@@ -99,7 +118,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 	, sector_num(-1)
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
-	, aes_common(nullptr)
 	, aes_title(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, encInitStatus(WiiPartition::ENCINIT_DISABLED)
@@ -111,6 +129,10 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 		"sizeof(RVL_Ticket) is incorrect. (Should be 0x2A4)");
 	static_assert(sizeof(RVL_PartitionHeader) == RVL_PartitionHeader_SIZE,
 		"sizeof(RVL_PartitionHeader) is incorrect. (Should be 0x20000)");
+
+	// Increment the AES common key reference counter.
+	// TODO: Atomic reference count?
+	++aes_common_refcnt;
 
 	if (!discReader->isOpen())
 		return;
@@ -126,31 +148,82 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 	if (be32_to_cpu(partitionHeader.ticket.signature_type) != RVL_SIGNATURE_TYPE_RSA2048)
 		return;
 
+	// Save important data.
+	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
+	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
+	partition_size  = data_size + ((int64_t)be32_to_cpu(partitionHeader.data_offset) << 2);
+
+#ifdef ENABLE_DECRYPTION
+	// Initialize decryption.
+	// TODO: Only do this when required?
+	initDecryption();
+#endif
+}
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Initialize decryption.
+ * @return EncInitStatus.
+ */
+WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
+{
+	if (encInitStatus != WiiPartition::ENCINIT_UNKNOWN) {
+		// Decryption has already been initialized.
+		return encInitStatus;
+	}
+
 	// If decryption is enabled, we can load the key and enable reading.
 	// Otherwise, we can only get the partition size information.
-#ifdef ENABLE_DECRYPTION
 	// Initialize the Key Manager.
 	KeyManager *keyManager = KeyManager::instance();
-	// Initialize the ciphers.
-	// TODO: Static instances?
-	// TODO: Korean key and dev key?
-	aes_common = new AesCipher();
-	if (!aes_common->isInit()) {
-		// Error initializing the cipher.
-		delete aes_common;
-		aes_common = nullptr;
-		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+
+	// Initialize the common key cipher required for this disc.
+	assert(partitionHeader.ticket.common_key_index <= 1);
+	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
+	if (keyIdx > 1) {
+		// Invalid common key index.
+		encInitStatus = WiiPartition::ENCINIT_INVALID_KEY_IDX;
+		return encInitStatus;
 	}
-	aes_title = new AesCipher();
-	if (!aes_title->isInit()) {
+
+	// TODO: Mutex?
+	if (!aes_common[keyIdx]) {
+		// Initialize this key.
+		// TODO: Dev keys?
+		unique_ptr<AesCipher> cipher(new AesCipher());
+		if (!cipher->isInit()) {
+			// Error initializing the cipher.
+			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+			return encInitStatus;
+		}
+
+		// Get the common key.
+		KeyManager::KeyData_t keyData;
+		if (keyManager->get("rvl-common", &keyData) != 0) {
+			// "rvl-common" key was not found.
+			// TODO: NO_KEYFILE if the key file is missing?
+			encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+			return encInitStatus;
+		}
+
+		// Load the common key. (CBC mode)
+		int ret = cipher->setKey(keyData.key, keyData.length);
+		ret |= cipher->setChainingMode(AesCipher::CM_CBC);
+		if (ret != 0) {
+			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+			return encInitStatus;
+		}
+
+		// Save the cipher as the common instance.
+		aes_common[keyIdx] = cipher.release();
+	}
+
+	// Initialize the title key AES cipher.
+	unique_ptr<AesCipher> cipher(new AesCipher());
+	if (!cipher->isInit()) {
 		// Error initializing the cipher.
-		delete aes_title;
-		aes_title = nullptr;
-		delete aes_common;
-		aes_common = nullptr;
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+		return encInitStatus;
 	}
 
 	// Get the Wii common key.
@@ -159,17 +232,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 		// "rvl-common" key was not found.
 		// TODO: NO_KEYFILE if the key file is missing?
 		encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
-		return;
-	}
-
-	// Load the common key. (CBC mode)
-	if (aes_common->setKey(keyData.key, keyData.length) != 0) {
-		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
-	}
-	if (aes_common->setChainingMode(AesCipher::CM_CBC) != 0) {
-		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+		return encInitStatus;
 	}
 
 	// Get the IV.
@@ -181,64 +244,73 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 
 	// Decrypt the title key.
 	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
-	if (aes_common->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
+	if (aes_common[keyIdx]->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+		return encInitStatus;
 	}
 
 	// Load the title key. (CBC mode)
-	if (aes_title->setKey(title_key, sizeof(title_key)) != 0) {
+	if (cipher->setKey(title_key, sizeof(title_key)) != 0) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+		return encInitStatus;
 	}
-	if (aes_title->setChainingMode(AesCipher::CM_CBC) != 0) {
+	if (cipher->setChainingMode(AesCipher::CM_CBC) != 0) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return;
+		return encInitStatus;
 	}
 
 	// Cipher initialized.
 	encInitStatus = WiiPartition::ENCINIT_OK;
+	aes_title = cipher.release();
 
-	// Save important data.
-	data_offset	= (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
-	data_size	= (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
-	partition_size	= data_size + ((int64_t)be32_to_cpu(partitionHeader.data_offset) << 2);
+	/** TODO: This is debug code. **/
 
 	// Read the first encrypted sector of the partition.
 	int ret = discReader->seek(partition_offset + data_offset);
 	if (ret != 0)
-		return;
+		return encInitStatus;
 	size_t sz = discReader->read(sector_buf, sizeof(sector_buf));
 	if (sz != SECTOR_SIZE_ENCRYPTED)
-		return;
+		return encInitStatus;
 
 	// Decrypt the sector.
 	if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
 	    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
 	{
-		return;
+		return encInitStatus;
 	}
 
 	// Read the first encrypted sector of the partition.
 	ret = discReader->seek(partition_offset + data_offset);
 	sz = discReader->read(sector_buf, sizeof(sector_buf));
 	if (sz != SECTOR_SIZE_ENCRYPTED)
-		return;
+		return encInitStatus;
 
 	// Decrypt the sector.
 	if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
 	    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
 	{
-		return;
+		return encInitStatus;
 	}
-#endif /* ENABLE_DECRYPTION */
+
+	return encInitStatus;
 }
+#endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::~WiiPartitionPrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	delete aes_common;
 	delete aes_title;
+
+	// Decrement the reference counter for the common keys.
+	// TODO: Atomic reference count?
+	if (--aes_common_refcnt == 0) {
+		// Delete the common keys.
+		delete aes_common[0];
+		aes_common[0] = nullptr;
+		delete aes_common[1];
+		aes_common[1] = nullptr;
+	}
 #endif /* ENABLE_DECRYPTION */
 }
 
