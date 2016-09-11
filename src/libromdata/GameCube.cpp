@@ -36,7 +36,6 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
-#include <cinttypes>
 #include <cstdio>
 #include <cstring>
 
@@ -271,6 +270,19 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	return 0;
 }
 
+static inline int calc_frac_part(int64_t size, int64_t mask)
+{
+	float f = (float)(size & (mask - 1)) / (float)mask;
+	int frac_part = (int)(f * 1000.0f);
+
+	// MSVC added round() and roundf() in MSVC 2013.
+	// Use our own rounding code instead.
+	int round_adj = (frac_part % 10 > 5);
+	frac_part /= 10;
+	frac_part += round_adj;
+	return frac_part;
+}
+
 /**
  * Format a file size.
  * @param size File size.
@@ -282,25 +294,63 @@ rp_string GameCubePrivate::formatFileSize(int64_t size)
 	// TODO: Thousands formatting?
 	char buf[64];
 
-         // TODO: Optimize this?
-	int len;
+	const char *suffix;
+	// frac_part is always 0 to 100.
+	// If whole_part >= 10, frac_part is divided by 10.
+	int whole_part, frac_part;
+
+	// TODO: Optimize this?
+	// TODO: Localize this?
 	if (size < 0) {
 		// Invalid size. Print the value as-is.
-		len = snprintf(buf, sizeof(buf), "%" PRId64, size);
+		suffix = "";
+		whole_part = (int)size;
+		frac_part = 0;
 	} else if (size < (2LL << 10)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " byte(s)", size);
+		suffix = (size == 1 ? "byte" : " bytes");
+		whole_part = (int)size;
+		frac_part = 0;
 	} else if (size < (2LL << 20)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " KB", size >> 10);
+		suffix = " KB";
+		whole_part = (int)(size >> 10);
+		frac_part = calc_frac_part(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " MB", size >> 20);
+		suffix = " MB";
+		whole_part = (int)(size >> 20);
+		frac_part = calc_frac_part(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " GB", size >> 30);
+		suffix = " GB";
+		whole_part = (int)(size >> 30);
+		frac_part = calc_frac_part(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " TB", size >> 40);
+		suffix = " TB";
+		whole_part = (int)(size >> 40);
+		frac_part = calc_frac_part(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " PB", size >> 50);
+		suffix = " PB";
+		whole_part = (int)(size >> 50);
+		frac_part = calc_frac_part(size, (1LL << 50));
 	} else /*if (size < (2ULL << 70))*/ {
-		len = snprintf(buf, sizeof(buf), "%" PRId64 " EB", size >> 60);
+		suffix = " EB";
+		whole_part = (int)(size >> 60);
+		frac_part = calc_frac_part(size, (1LL << 60));
+	}
+
+	int len;
+	if (size < (2LL << 10)) {
+		// Bytes or negative value. No fractional part.
+		len = snprintf(buf, sizeof(buf), "%d%s", whole_part, suffix);
+	} else {
+		// TODO: Localized decimal point?
+		int frac_digits = 2;
+		if (whole_part >= 10) {
+			int round_adj = (frac_part % 10 > 5);
+			frac_part /= 10;
+			frac_part += round_adj;
+			frac_digits = 1;
+		}
+		len = snprintf(buf, sizeof(buf), "%d.%0*d%s",
+			whole_part, frac_digits, frac_part, suffix);
 	}
 
 	if (len > (int)sizeof(buf))
