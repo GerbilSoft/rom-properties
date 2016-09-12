@@ -48,14 +48,6 @@
 // try changing it to SIDEBYSIDE_COMMONCONTROLS
 #define ISOLATION_AWARE_ENABLED 1
 
-// Win32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
 #include <windows.h>
 #include <shlobj.h>
 

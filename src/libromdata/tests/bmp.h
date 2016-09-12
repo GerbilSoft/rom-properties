@@ -42,13 +42,8 @@ static const uint16_t BMP_magic = 0x424D; // "BM"
 #define BITMAPV5HEADER_SIZE		124U
 
 #ifdef _WIN32
+
 // Windows: Get the bitmap structs from the Windows SDK.
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #include <windows.h>
 
 #else /* !_WIN32 */
