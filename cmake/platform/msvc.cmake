@@ -19,6 +19,13 @@ SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 # Disable C++ RTTI and asynchronous exceptions.
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -GR- -EHsc")
 
+# Check what flag is needed for stack smashing protection.
+INCLUDE(CheckStackProtectorCompilerFlag)
+CHECK_STACK_PROTECTOR_COMPILER_FLAG(RP_STACK_CFLAG)
+SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+UNSET(RP_STACK_CFLAG)
+
 # Disable the RC and MASM "logo".
 # FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,
 # since CMake already sets /NOLOGO there.
