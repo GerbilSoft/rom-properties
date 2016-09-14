@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * WiiPartition.hpp: Wii partition reader.                                 *
+ * IPartition.hpp: Partition reader interface.                             *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,43 +19,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
 
-#include "IPartition.hpp"
+#include "IDiscReader.hpp"
 
 namespace LibRomData {
 
-class WiiPartitionPrivate;
-class WiiPartition : public IPartition
+class IPartition : public IDiscReader
 {
+	protected:
+		IPartition() { }
 	public:
-		/**
-		 * Construct a WiiPartition with the specified IDiscReader.
-		 * NOTE: The IDiscReader *must* remain valid while this
-		 * WiiPartition is open.
-		 * @param discReader IDiscReader.
-		 * @param partition_offset Partition start offset.
-		 */
-		WiiPartition(IDiscReader *discReader, int64_t partition_offset);
-		~WiiPartition();
+		virtual ~IPartition() = 0;
 
 	private:
-		WiiPartition(const WiiPartition &);
-		WiiPartition &operator=(const WiiPartition &);
-	private:
-		friend class WiiPartitionPrivate;
-		WiiPartitionPrivate *const d;
+		IPartition(const IPartition &other);
+		IPartition &operator=(const IPartition &other);
 
 	public:
-		/** IDiscReader **/
-
 		/**
 		 * Is the partition open?
 		 * This usually only returns false if an error occurred.
 		 * @return True if the partition is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override;
+		virtual bool isOpen(void) const = 0;
 
 		/**
 		 * Read data from the partition.
@@ -63,56 +51,44 @@ class WiiPartition : public IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
 		 * Set the partition position.
-		 * @param pos Partition position.
+		 * @param pos partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		virtual int seek(int64_t pos) = 0;
 
 		/**
 		 * Seek to the beginning of the partition.
 		 */
-		virtual void rewind(void) override;
+		virtual void rewind(void) = 0;
 
 		/**
 		 * Get the data size.
-		 * This size does not include the partition header,
-		 * and it's adjusted to exclude hashes.
+		 * This is the size of the usable data area,
+		 * not including any headers or container metadata.
 		 * @return Data size, or -1 on error.
 		 */
-		virtual int64_t size(void) const override;
-
-		/** IPartition **/
+		virtual int64_t size(void) const = 0;
 
 		/**
 		 * Get the partition size.
-		 * This size includes the partition header and hashes.
+		 * This includes the partition headers and any
+		 * metadata, e.g. Wii sector hashes, if present.
 		 * @return Partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size(void) const override;
-
-		/** WiiPartition **/
-
-		enum EncInitStatus {
-			ENCINIT_OK = 0,
-			ENCINIT_UNKNOWN,
-			ENCINIT_DISABLED,		// ENABLE_DECRYPTION disabled.
-			ENCINIT_INVALID_KEY_IDX,	// Invalid common key index in the disc header.
-			ENCINIT_NO_KEYFILE,		// keys.conf not found.
-			ENCINIT_MISSING_KEY,		// Required key not found.
-			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
-		};
-
-		/**
-		 * Encryption initialization status.
-		 * @return Encryption initialization status.
-		 */
-		EncInitStatus encInitStatus(void) const;
+		virtual int64_t partition_size(void) const = 0;
 };
+
+/**
+ * Both gcc and MSVC fail to compile unless we provide
+ * an empty implementation, even though the function is
+ * declared as pure-virtual.
+ */
+inline IPartition::~IPartition() { }
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__ */

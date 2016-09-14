@@ -101,6 +101,7 @@ SET(libromdata_H
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
+	disc/IPartition.hpp
 	disc/WiiPartition.hpp
 	)
 

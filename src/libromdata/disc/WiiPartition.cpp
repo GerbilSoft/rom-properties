@@ -332,13 +332,16 @@ WiiPartition::~WiiPartition()
 	delete d;
 }
 
+/** IDiscReader **/
+
 /**
- * Encryption initialization status.
- * @return Encryption initialization status.
+ * Is the partition open?
+ * This usually only returns false if an error occurred.
+ * @return True if the partition is open; false if it isn't.
  */
-WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
+bool WiiPartition::isOpen(void) const
 {
-	return d->encInitStatus;
+	return (d->discReader && d->discReader->isOpen());
 }
 
 /**
@@ -390,6 +393,19 @@ void WiiPartition::rewind(void)
 }
 
 /**
+ * Get the data size.
+ * This size does not include the partition header,
+ * and it's adjusted to exclude hashes.
+ * @return Data size, or -1 on error.
+ */
+int64_t WiiPartition::size(void) const
+{
+	return d->data_size;
+}
+
+/** IPartition **/
+
+/**
  * Get the partition size.
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
@@ -399,15 +415,15 @@ int64_t WiiPartition::partition_size(void) const
 	return d->partition_size;
 }
 
+/** WiiPartition **/
+
 /**
- * Get the data size.
- * This size does not include the partition header,
- * and it's adjusted to exclude hashes.
- * @return Data size, or -1 on error.
+ * Encryption initialization status.
+ * @return Encryption initialization status.
  */
-int64_t WiiPartition::data_size(void) const
+WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 {
-	return d->data_size;
+	return d->encInitStatus;
 }
 
 }
