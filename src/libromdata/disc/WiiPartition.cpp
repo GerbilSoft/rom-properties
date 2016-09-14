@@ -25,6 +25,7 @@
 #include "byteswap.h"
 #include "gcn_structs.h"
 #include "IDiscReader.hpp"
+#include "GcnFst.hpp"
 
 #ifdef ENABLE_DECRYPTION
 #include "crypto/AesCipher.hpp"
@@ -91,6 +92,10 @@ class WiiPartitionPrivate {
 		 * @return EncInitStatus.
 		 */
 		WiiPartition::EncInitStatus initDecryption(void);
+
+		// Filesystem table.
+		GcnFst *fst;
+		GCN_FST_Info fstInfo;
 #endif
 
 		/**
@@ -119,6 +124,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
 	, aes_title(nullptr)
+	, fst(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, encInitStatus(WiiPartition::ENCINIT_DISABLED)
 #endif /* ENABLE_DECRYPTION */
@@ -129,6 +135,8 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 		"sizeof(RVL_Ticket) is incorrect. (Should be 0x2A4)");
 	static_assert(sizeof(RVL_PartitionHeader) == RVL_PartitionHeader_SIZE,
 		"sizeof(RVL_PartitionHeader) is incorrect. (Should be 0x20000)");
+	static_assert(sizeof(GCN_FST_Info) == GCN_FST_Info_SIZE,
+		"sizeof(GCN_FST_Info) is incorrect. (Should be 12)");
 
 	// Increment the AES common key reference counter.
 	// TODO: Atomic reference count?
@@ -300,6 +308,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 WiiPartitionPrivate::~WiiPartitionPrivate()
 {
 #ifdef ENABLE_DECRYPTION
+	delete fst;
 	delete aes_title;
 
 	// Decrement the reference counter for the common keys.

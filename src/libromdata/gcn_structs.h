@@ -59,6 +59,42 @@ typedef struct PACKED _GCN_DiscHeader {
 } GCN_DiscHeader;
 #pragma pack()
 
+// FST information.
+// Located at 0x420.
+#pragma pack(1)
+#define GCN_FST_Info_ADDRESS 0x420
+#define GCN_FST_Info_SIZE 16
+typedef struct PACKED _GCN_FST_Info {
+	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
+	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
+	uint32_t fst_size;
+	uint32_t fst_max_size;
+} GCN_FST_Info;
+#pragma pack()
+
+/**
+ * FST entry.
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+#define GCN_FST_Entry_SIZE 12
+typedef struct PACKED _GCN_FST_Entry {
+	uint32_t file_type_name_offset;	// MSB = type; low 24 bits = name offset
+	union {
+		struct {
+			uint32_t parent_dir_idx;	// Parent directory index.
+			uint32_t last_entry_idx;	// Index of last entry in this directory.
+		} dir;
+		struct {
+			uint32_t offset;		// File offset. (<< 2 for Wii)
+			uint32_t size;			// File size.
+		} file;
+	};
+} GCN_FST_Entry;
+#pragma pack()
+
+/** Wii-specific structs. **/
+
 // 34-bit value stored in uint32_t.
 // The value must be lshifted by 2.
 typedef uint32_t uint34_rshift2_t;

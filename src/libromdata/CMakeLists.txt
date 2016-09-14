@@ -72,6 +72,7 @@ SET(libromdata_SRCS
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
+	disc/GcnFst.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -103,6 +104,7 @@ SET(libromdata_H
 	disc/WbfsReader.hpp
 	disc/IPartition.hpp
 	disc/WiiPartition.hpp
+	disc/GcnFst.hpp
 	)
 
 IF(WIN32)
