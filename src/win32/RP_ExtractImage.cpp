@@ -241,9 +241,18 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		if (!dl_img.get() || !dl_img->isValid())
 			continue;
 
-		// Image loaded.
-		// Convert it to HBITMAP.
-		*phBmpImage = RpImageWin32::toHBITMAP(dl_img.get());
+		// Image loaded. Convert it to HBITMAP.
+		// NOTE: IExtractImage doesn't support alpha transparency,
+		// so blend the image with COLOR_WINDOW. This works for the
+		// most part, at least with Windows Explorer, but the cached
+		// Thumbs.db images won't reflect color scheme changes.
+		// NOTE 2: GetSysColor() has swapped R and B channels
+		// compared to GDI+.
+		COLORREF bgColor = GetSysColor(COLOR_WINDOW);
+		bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
+			  ((bgColor & 0xFF) << 16) |
+			  ((bgColor >> 16) & 0xFF);
+		*phBmpImage = RpImageWin32::toHBITMAP(dl_img.get(), bgColor);
 		if (!*phBmpImage) {
 			// Could not convert to HBITMAP.
 			continue;
