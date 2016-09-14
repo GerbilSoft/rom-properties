@@ -764,25 +764,9 @@ int GameCube::loadURLs(ImageType imageType)
 		}
 	}
 
-	// Determine the image processing field.
-	if (imageType == IMG_EXT_MEDIA) {
-		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-			case GameCubePrivate::DISC_SYSTEM_WII:
-			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
-			default:
-				// 120mm disc.
-				m_imgpf[imageType] = IMGPF_CDROM_120MM;
-				break;
-			case GameCubePrivate::DISC_SYSTEM_GCN:
-				// 80mm disc.
-				m_imgpf[imageType] = IMGPF_CDROM_80MM;
-				break;
-		}
-	} else {
-		// No image processing for other types.
-		// TODO: Should IMG_EXT_BOX_3D have a transparency mask?
-		m_imgpf[imageType] = 0;
-	}
+	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
+	// alpha transparency. Hence, no image processing is required.
+	m_imgpf[imageType] = 0;
 
 	// Current extURL.
 	ExtURL extURL;
