@@ -290,7 +290,7 @@ class RomData
 		std::vector<ExtURL> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
 
 		// Image processing flags.
-		uint32_t m_imgpf[IMG_EXT_MAX];
+		uint32_t m_imgpf[IMG_EXT_MAX+1];
 };
 
 }
