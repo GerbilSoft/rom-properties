@@ -161,6 +161,11 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 }
 
+GameBoyAdvance::~GameBoyAdvance()
+{
+	delete d;
+}
+
 /**
  * Is a ROM image supported by this class?
  * @param info DetectInfo containing ROM detection information.
