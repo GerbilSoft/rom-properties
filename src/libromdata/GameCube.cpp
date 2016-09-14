@@ -745,9 +745,15 @@ int GameCube::loadURLs(ImageType imageType)
 			break;
 	}
 
-	// NULL-terminate the id6.
+	// Game ID.
+	// Replace any non-printable characters with underscores.
+	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
-	memcpy(id6, d->discHeader.id6, sizeof(id6));
+	for (int i = 0; i < 6; i++) {
+		id6[i] = (isprint(d->discHeader.id6[i])
+			? d->discHeader.id6[i]
+			: '_');
+	}
 	id6[6] = 0;
 
 	// Replace any non-printable characters with underscores.
