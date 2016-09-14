@@ -22,7 +22,6 @@
 #include "GameCube.hpp"
 #include "NintendoPublishers.hpp"
 #include "gcn_structs.h"
-#include "WiiPartition.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -30,8 +29,9 @@
 #include "file/IRpFile.hpp"
 
 // DiscReader
-#include "DiscReader.hpp"
-#include "WbfsReader.hpp"
+#include "disc/DiscReader.hpp"
+#include "disc/WbfsReader.hpp"
+#include "disc/WiiPartition.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

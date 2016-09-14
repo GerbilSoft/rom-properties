@@ -60,19 +60,19 @@ SET(libromdata_SRCS
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
 	GameCube.cpp
-	WiiPartition.cpp
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
-	IDiscReader.cpp
-	DiscReader.cpp
-	WbfsReader.cpp
 	DMG.cpp
 	GameBoyAdvance.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/RpImageLoader.cpp
+	disc/IDiscReader.cpp
+	disc/DiscReader.cpp
+	disc/WbfsReader.cpp
+	disc/WiiPartition.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -84,13 +84,9 @@ SET(libromdata_H
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	GameCube.hpp
-	WiiPartition.hpp
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	IDiscReader.hpp
-	DiscReader.hpp
-	WbfsReader.hpp
 	libwbfs.h
 	gcn_structs.h
 	DMG.hpp
@@ -103,6 +99,10 @@ SET(libromdata_H
 	img/rp_image.hpp
 	img/RpImageLoader.hpp
 	img/RpPng.hpp
+	disc/IDiscReader.hpp
+	disc/DiscReader.hpp
+	disc/WbfsReader.hpp
+	disc/WiiPartition.hpp
 	)
 
 IF(WIN32)
