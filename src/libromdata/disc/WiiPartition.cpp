@@ -69,12 +69,6 @@ class WiiPartitionPrivate {
 		RVL_PartitionHeader partitionHeader;
 		uint8_t title_key[16];		// Decrypted title key.
 
-		// Decrypted sector cache.
-		// NOTE: Actual data starts at 0x400.
-		// Hashes and the sector IV are stored first.
-		uint32_t sector_num;				// Sector number.
-		uint8_t sector_buf[SECTOR_SIZE_ENCRYPTED];	// Decrypted sector data.
-
 		WiiPartition::EncInitStatus encInitStatus;
 #ifdef ENABLE_DECRYPTION
 		// AES cipher for the Common key.
@@ -93,10 +87,11 @@ class WiiPartitionPrivate {
 		 */
 		WiiPartition::EncInitStatus initDecryption(void);
 
-		// Filesystem table.
-		GcnFst *fst;
-		GCN_FST_Info fstInfo;
-#endif
+		// Decrypted sector cache.
+		// NOTE: Actual data starts at 0x400.
+		// Hashes and the sector IV are stored first.
+		uint32_t sector_num;				// Sector number.
+		uint8_t sector_buf[SECTOR_SIZE_ENCRYPTED];	// Decrypted sector data.
 
 		/**
 		 * Read and decrypt a sector.
@@ -106,6 +101,11 @@ class WiiPartitionPrivate {
 		 * @return 0 on success; non-zero on error.
 		 */
 		int readSector(uint32_t sector_num);
+
+		// Filesystem table.
+		GcnFst *fst;
+		GCN_FST_Info fstInfo;
+#endif
 };
 
 /** WiiPartitionPrivate **/
@@ -120,10 +120,10 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 	, partition_size(-1)
 	, data_size(-1)
 	, pos_7C00(-1)
-	, sector_num(-1)
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
 	, aes_title(nullptr)
+	, sector_num(~0)
 	, fst(nullptr)
 #else /* !ENABLE_DECRYPTION */
 	, encInitStatus(WiiPartition::ENCINIT_DISABLED)
@@ -160,12 +160,10 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
 	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
 	partition_size  = data_size + ((int64_t)be32_to_cpu(partitionHeader.data_offset) << 2);
+	pos_7C00	= 0;
 
-#ifdef ENABLE_DECRYPTION
-	// Initialize decryption.
-	// TODO: Only do this when required?
-	initDecryption();
-#endif
+	// Encryption will not be initialized until
+	// read() is called.
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -270,37 +268,6 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	// Cipher initialized.
 	encInitStatus = WiiPartition::ENCINIT_OK;
 	aes_title = cipher.release();
-
-	/** TODO: This is debug code. **/
-
-	// Read the first encrypted sector of the partition.
-	int ret = discReader->seek(partition_offset + data_offset);
-	if (ret != 0)
-		return encInitStatus;
-	size_t sz = discReader->read(sector_buf, sizeof(sector_buf));
-	if (sz != SECTOR_SIZE_ENCRYPTED)
-		return encInitStatus;
-
-	// Decrypt the sector.
-	if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
-	    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
-	{
-		return encInitStatus;
-	}
-
-	// Read the first encrypted sector of the partition.
-	ret = discReader->seek(partition_offset + data_offset);
-	sz = discReader->read(sector_buf, sizeof(sector_buf));
-	if (sz != SECTOR_SIZE_ENCRYPTED)
-		return encInitStatus;
-
-	// Decrypt the sector.
-	if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
-	    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
-	{
-		return encInitStatus;
-	}
-
 	return encInitStatus;
 }
 #endif /* ENABLE_DECRYPTION */
@@ -322,6 +289,51 @@ WiiPartitionPrivate::~WiiPartitionPrivate()
 	}
 #endif /* ENABLE_DECRYPTION */
 }
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Read and decrypt a sector.
+ * The decrypted sector is stored in sector_buf.
+ *
+ * @param sector_num Sector number. (address / 0x7C00)
+ * @return 0 on success; non-zero on error.
+ */
+int WiiPartitionPrivate::readSector(uint32_t sector_num)
+{
+	if (this->sector_num == sector_num) {
+		// Sector is already in memory.
+		return 0;
+	}
+
+	// Read the first encrypted sector of the partition.
+	int64_t sector_addr = partition_offset + data_offset;
+	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
+
+	int ret = discReader->seek(sector_addr);
+	if (ret != 0)
+		return ret;
+
+	size_t sz = discReader->read(sector_buf, sizeof(sector_buf));
+	if (sz != SECTOR_SIZE_ENCRYPTED) {
+		// sector_buf may be invalid.
+		this->sector_num = ~0;
+		return -1;
+	}
+
+	// Decrypt the sector.
+	if (aes_title->decrypt(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED,
+	    &sector_buf[0x3D0], 16) != SECTOR_SIZE_DECRYPTED)
+	{
+		// sector_buf may be invalid.
+		this->sector_num = ~0;
+		return -1;
+	}
+
+	// Sector read and decrypted.
+	this->sector_num = sector_num;
+	return 0;
+}
+#endif /* ENABLE_DECRYPTION */
 
 /** WiiPartition **/
 
@@ -361,9 +373,99 @@ bool WiiPartition::isOpen(void) const
  */
 size_t WiiPartition::read(void *ptr, size_t size)
 {
+	assert(d->discReader != nullptr);
+	assert(d->discReader->isOpen());
+	if (!d->discReader || !d->discReader->isOpen())
+		return 0;
+
 #ifdef ENABLE_DECRYPTION
-	// TODO
-	return 0;
+	switch (d->encInitStatus) {
+		case ENCINIT_UNKNOWN:
+			// Attempt to initialize decryption.
+			if (d->initDecryption() != ENCINIT_OK) {
+				// Decryption could not be initialized.
+				return 0;
+			}
+			break;
+
+		case ENCINIT_OK:
+			// Decryption is initialized.
+			break;
+
+		default:
+			// Decryption failed to initialize.
+			return 0;
+	}
+
+	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
+	size_t ret = 0;
+
+	// Are we already at the end of the file?
+	if (d->pos_7C00 >= d->data_size)
+		return 0;
+
+	// Make sure d->pos_7C00 + size <= d->data_size.
+	// If it isn't, we'll do a short read.
+	if (d->pos_7C00 + (int64_t)size >= d->data_size) {
+		size = (size_t)(d->data_size - d->pos_7C00);
+	}
+
+	// Check if we're not starting on a block boundary.
+	const uint32_t blockStartOffset = d->pos_7C00 % SECTOR_SIZE_DECRYPTED;
+	if (blockStartOffset != 0) {
+		// Not a block boundary.
+		// Read the end of the block.
+		uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
+		if (size < read_sz)
+			read_sz = size;
+
+		// Read and decrypt the sector.
+		uint32_t blockStart = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		d->readSector(blockStart);
+
+		// Copy data from the sector.
+		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET + blockStartOffset], read_sz);
+
+		// Starting block read.
+		size -= read_sz;
+		ptr8 += read_sz;
+		ret += read_sz;
+		d->pos_7C00 += read_sz;
+	}
+
+	// Read entire blocks.
+	for (; size >= SECTOR_SIZE_DECRYPTED;
+	    size -= SECTOR_SIZE_DECRYPTED, ptr8 += SECTOR_SIZE_DECRYPTED,
+	    ret += SECTOR_SIZE_DECRYPTED, d->pos_7C00 += SECTOR_SIZE_DECRYPTED)
+	{
+		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
+
+		// Read and decrypt the sector.
+		uint32_t blockStart = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		d->readSector(blockStart);
+
+		// Copy data from the sector.
+		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], SECTOR_SIZE_DECRYPTED);
+	}
+
+	// Check if we still have data left. (not a full block)
+	if (size > 0) {
+		// Not a full block.
+
+		// Read and decrypt the sector.
+		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
+		uint32_t blockEnd = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		d->readSector(blockEnd);
+
+		// Copy data from the sector.
+		memcpy(ptr8, &d->sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET], size);
+
+		ret += size;
+		d->pos_7C00 += size;
+	}
+
+	// Finished reading the data.
+	return ret;
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled in this build.
 	return 0;
