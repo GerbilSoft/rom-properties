@@ -35,18 +35,9 @@ class IRpFile;
 class IDiscReader
 {
 	protected:
-		/**
-		 * Construct an IDiscReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
-		 *
-		 * NOTE: Subclasses must initialize m_fileSize.
-		 *
-		 * @param file File to read from.
-		 */
-		IDiscReader(IRpFile *file);
+		IDiscReader() { }
 	public:
-		virtual ~IDiscReader();
+		virtual ~IDiscReader() = 0;
 
 	private:
 		IDiscReader(const IDiscReader &);
@@ -54,14 +45,14 @@ class IDiscReader
 
 	public:
 		/**
-		 * Is the file open?
+		 * Is the disc image open?
 		 * This usually only returns false if an error occurred.
-		 * @return True if the file is open; false if it isn't.
+		 * @return True if the disc image is open; false if it isn't.
 		 */
-		bool isOpen(void) const;
+		virtual bool isOpen(void) const = 0;
 
 		/**
-		 * Read data from the file.
+		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
@@ -69,27 +60,30 @@ class IDiscReader
 		virtual size_t read(void *ptr, size_t size) = 0;
 
 		/**
-		 * Set the file position.
-		 * @param pos File position.
+		 * Set the disc image position.
+		 * @param pos disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
 		virtual int seek(int64_t pos) = 0;
 
 		/**
-		 * Seek to the beginning of the file.
+		 * Seek to the beginning of the disc image.
 		 */
-		void rewind(void);
+		virtual void rewind(void) = 0;
 
 		/**
-		 * Get the file size.
-		 * @return File size.
+		 * Get the disc image size.
+		 * @return Disc image size, or -1 on error.
 		 */
-		int64_t fileSize(void) const;
-
-	protected:
-		IRpFile *m_file;
-		int64_t m_fileSize;
+		virtual int64_t size(void) const = 0;
 };
+
+/**
+ * Both gcc and MSVC fail to compile unless we provide
+ * an empty implementation, even though the function is
+ * declared as pure-virtual.
+ */
+inline IDiscReader::~IDiscReader() { }
 
 }
 

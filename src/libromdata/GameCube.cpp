@@ -227,8 +227,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Get the size of the disc image.
-	// TODO: Large File Support for 32-bit Linux and Windows.
-	int64_t discSize = discReader->fileSize();
+	int64_t discSize = discReader->size();
 	if (discSize < 0) {
 		// Error getting the size of the disc image.
 		return -errno;

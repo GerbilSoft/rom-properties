@@ -69,7 +69,6 @@ SET(libromdata_SRCS
 	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/RpImageLoader.cpp
-	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
