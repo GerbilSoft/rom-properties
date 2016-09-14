@@ -133,10 +133,10 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 				// Attempt to load the image.
 				unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
 				if (file && file->isOpen()) {
-					rp_image *dl_img = RpImageLoader::load(file.get());
+					unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
 					if (dl_img && dl_img->isValid()) {
 						// Image loaded successfully.
-						QImage qdl_img = rpToQImage(dl_img);
+						QImage qdl_img = rpToQImage(dl_img.get());
 						if (!qdl_img.isNull()) {
 							// Image converted successfully.
 							// TODO: Width/height and transparency processing?
