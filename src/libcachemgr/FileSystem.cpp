@@ -81,12 +81,18 @@ int rmkdir(const LibRomData::rp_string &path)
 #endif
 
 	wstring path16 = RP2W_s(path);
+	if (path16.size() == 3) {
+		// 3 characters. Root directory is always present.
+		return 0;
+	} else if (path16.size() < 3) {
+		// Less than 3 characters. Path isn't valid.
+		return -EINVAL;
+	}
 
 	// Find all backslashes and ensure the directory component exists.
 	// (Skip the drive letter and root backslash.)
-	size_t slash_pos = path16.find((char16_t)DIR_SEP_CHR, 4);
-
-	do {
+	size_t slash_pos = 4;
+	while ((slash_pos = path16.find((char16_t)DIR_SEP_CHR, slash_pos)) != string::npos) {
 		// Temporarily NULL out this slash.
 		path16[slash_pos] = 0;
 
@@ -104,7 +110,7 @@ int rmkdir(const LibRomData::rp_string &path)
 		// Put the slash back in.
 		path16[slash_pos] = DIR_SEP_CHR;
 		slash_pos++;
-	} while ((slash_pos = path16.find((char16_t)DIR_SEP_CHR, slash_pos)) != string::npos);
+	}
 
 #else /* !_WIN32 */
 	// Linux (and most other systems) use UTF-8 natively.
@@ -117,7 +123,7 @@ int rmkdir(const LibRomData::rp_string &path)
 		slash_pos = path8.find(DIR_SEP_CHR, 1);
 	}
 
-	do {
+	while (slash_pos != string::npos) {
 		// Temporarily NULL out this slash.
 		path8[slash_pos] = 0;
 
@@ -135,7 +141,10 @@ int rmkdir(const LibRomData::rp_string &path)
 		// Put the slash back in.
 		path8[slash_pos] = DIR_SEP_CHR;
 		slash_pos++;
-	} while ((slash_pos = path8.find(DIR_SEP_CHR, slash_pos)) != string::npos);
+
+		// Find the next slash.
+		slash_pos = path8.find(DIR_SEP_CHR, slash_pos);
+	}
 #endif
 
 	// rmkdir() succeeded.
