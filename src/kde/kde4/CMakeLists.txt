@@ -73,16 +73,14 @@ ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 #######################
 
 IF(BUILD_KDE4)
-	# FIXME: Determine the correct plugin path.
-	# NOTE: Debian multiarch still uses /usr/lib/kde4.
-	# Fedora 64-bit uses /usr/lib64/kde4. (/usr/lib is 32-bit)
-	SET(KDE4_PLUGIN_DIRECTORY "lib/kde4")
+	# FIXME: KDE4's installation directories have the prefix
+	# hard-coded. This should be removed.
 	INSTALL(TARGETS rom-properties-kde4
-		LIBRARY DESTINATION ${KDE4_PLUGIN_DIRECTORY}
+		LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde4.desktop"
-		DESTINATION "share/kde4/services"
+		DESTINATION ${SERVICES_INSTALL_DIR}
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca4.
@@ -92,7 +90,7 @@ IF(BUILD_KDE4)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde4 PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES ${DEBUG_FILENAME}
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KDE4_PLUGIN_DIRECTORY}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
