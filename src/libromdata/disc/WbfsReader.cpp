@@ -413,7 +413,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	if (blockStartOffset != 0) {
 		// Not a block boundary.
 		// Read the end of the block.
-		uint32_t read_sz = d->m_wbfs->wbfs_sec_sz;
+		uint32_t read_sz = d->m_wbfs->wbfs_sec_sz - blockStartOffset;
 		if (size < read_sz)
 			read_sz = size;
 
