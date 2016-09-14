@@ -608,7 +608,7 @@ int DMG::loadFieldData(void)
 	}
 	
 	// RAM Size
-	if (romHeader->ram_size > ARRAY_SIZE(DMGPrivate::dmg_ram_size)){
+	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)){
 		m_fields->addData_string(_RP("Unknown"));
 	} else {
 		uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
