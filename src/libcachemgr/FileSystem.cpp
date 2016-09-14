@@ -90,19 +90,15 @@ int rmkdir(const LibRomData::rp_string &path)
 		// Temporarily NULL out this slash.
 		path16[slash_pos] = 0;
 
-		// Does the directory exist?
-		if (!::_waccess(path16.c_str(), F_OK)) {
-			// Directory component exists.
-			// Put the slash back in.
-			path16[slash_pos] = DIR_SEP_CHR;
-			slash_pos++;
-			continue;
-		}
-
 		// Attempt to create this directory.
 		if (::_wmkdir(path16.c_str()) != 0) {
-			// Error creating the directory.
-			return -errno;
+			// Could not create the directory.
+			// If it exists already, that's fine.
+			// Otherwise, something went wrong.
+			if (errno != EEXIST) {
+				// Something went wrong.
+				return -errno;
+			}
 		}
 
 		// Put the slash back in.
@@ -125,20 +121,15 @@ int rmkdir(const LibRomData::rp_string &path)
 		// Temporarily NULL out this slash.
 		path8[slash_pos] = 0;
 
-		// Does the directory exist?
-		if (!::access(path8.c_str(), F_OK)) {
-			// Directory component exists.
-			// Put the slash back in.
-			path8[slash_pos] = DIR_SEP_CHR;
-			slash_pos++;
-			continue;
-		}
-
 		// Attempt to create this directory.
-		int ret = mkdir(path8.c_str(), 0777);
-		if (ret != 0) {
-			// Error creating the directory.
-			return -errno;
+		if (::mkdir(path8.c_str(), 0777) != 0) {
+			// Could not create the directory.
+			// If it exists already, that's fine.
+			// Otherwise, something went wrong.
+			if (errno != EEXIST) {
+				// Something went wrong.
+				return -errno;
+			}
 		}
 
 		// Put the slash back in.
