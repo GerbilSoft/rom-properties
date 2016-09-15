@@ -56,6 +56,7 @@ SET(libromdata_SRCS
 	WbfsReader.cpp
 	DMG.cpp
 	GameBoyAdvance.cpp
+	SystemRegion.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
 	img/RpImageLoader.cpp
@@ -82,6 +83,7 @@ SET(libromdata_H
 	uvector.h
 	GameBoyAdvance.hpp
 	CopierFormats.h
+	SystemRegion.hpp
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
