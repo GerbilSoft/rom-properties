@@ -21,6 +21,7 @@
 
 #include "MegaDrive.hpp"
 #include "MegaDrivePublishers.hpp"
+#include "MegaDriveRegions.hpp"
 #include "CopierFormats.h"
 
 #include "common.h"
@@ -75,12 +76,6 @@ class MegaDrivePrivate
 		static const RomFields::BitfieldDesc md_io_bitfield;
 
 		// Region code. (RFT_BITFIELD)
-		enum MD_RegionCode {
-			MD_REGION_JAPAN		= (1 << 0),
-			MD_REGION_ASIA		= (1 << 1),
-			MD_REGION_USA		= (1 << 2),
-			MD_REGION_EUROPE	= (1 << 3),
-		};
 		static const rp_char *const md_region_code_bitfield_names[];
 		static const RomFields::BitfieldDesc md_region_code_bitfield;
 
@@ -137,14 +132,6 @@ class MegaDrivePrivate
 		 * @return io_support bitfield.
 		 */
 		uint32_t parseIOSupport(const char *io_support, int size);
-
-		/**
-		 * Parse the region codes field.
-		 * @param region_codes Region codes field.
-		 * @param size Size of region_codes.
-		 * @return region_codes bitfield.
-		 */
-		uint32_t parseRegionCodes(const char *region_codes, int size);
 
 	public:
 		enum MD_RomType {
@@ -306,86 +293,6 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 				break;
 			default:
 				break;
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Parse the region codes field.
- * @param region_codes Region codes field.
- * @param size Size of region_codes.
- * @return region_codes bitfield.
- */
-uint32_t MegaDrivePrivate::parseRegionCodes(const char *region_codes, int size)
-{
-	// Make sure the region codes field is valid.
-	assert(region_codes != nullptr);	// NOT checking this in release builds.
-	assert(size > 0);
-	if (size <= 0)
-		return 0;
-
-	uint32_t ret = 0;
-
-	// Check for a hex code.
-	if (isalnum(region_codes[0]) &
-	    (region_codes[1] == 0 || isspace(region_codes[1])))
-	{
-		// Single character region code.
-		// Assume it's a hex code, *unless* it's 'E'.
-		char code = toupper(region_codes[0]);
-		if (code >= '0' && code <= '9') {
-			// Numeric code from '0' to '9'.
-			ret = code - '0';
-		} else if (code == 'E') {
-			// 'E'. This is probably Europe.
-			// If interpreted as a hex code, this would be
-			// Asia, USA, and Europe, with Japan excluded.
-			ret = MD_REGION_EUROPE;
-		} else if (code >= 'A' && code <= 'F') {
-			// Letter code from 'A' to 'F'.
-			ret = (code - 'A') + 10;
-		}
-	} else if (region_codes[0] < 16) {
-		// Hex code not mapped to ASCII.
-		ret = region_codes[0];
-	}
-
-	if (ret == 0) {
-		// Not a hex code, or the hex code was 0.
-		// Hex code being 0 shouldn't happen...
-
-		// Check for string region codes.
-		// Some games incorrectly use these.
-		if (!strncasecmp(region_codes, "EUR", 3)) {
-			ret = MD_REGION_EUROPE;
-		} else if (!strncasecmp(region_codes, "USA", 3)) {
-			ret = MD_REGION_USA;
-		} else if (!strncasecmp(region_codes, "JPN", 3) ||
-			   !strncasecmp(region_codes, "JAP", 3))
-		{
-			ret = MD_REGION_JAPAN | MD_REGION_ASIA;
-		} else {
-			// Check for old-style JUE region codes.
-			// (J counts as both Japan and Asia.)
-			for (int i = 0; i < size; i++) {
-				if (region_codes[i] == 0 || isspace(region_codes[i]))
-					break;
-				switch (region_codes[i]) {
-					case 'J':
-						ret |= MD_REGION_JAPAN | MD_REGION_ASIA;
-						break;
-					case 'U':
-						ret |= MD_REGION_USA;
-						break;
-					case 'E':
-						ret |= MD_REGION_EUROPE;
-						break;
-					default:
-						break;
-				}
-			}
 		}
 	}
 
@@ -813,7 +720,8 @@ int MegaDrive::loadFieldData(void)
 
 	// Region codes.
 	// TODO: Validate the Mega CD security program?
-	uint32_t region_code = d->parseRegionCodes(romHeader->region_codes, sizeof(romHeader->region_codes));
+	uint32_t region_code = MegaDriveRegions::parseRegionCodes(
+		romHeader->region_codes, sizeof(romHeader->region_codes));
 	m_fields->addData_bitfield(region_code);
 
 	// Vectors.

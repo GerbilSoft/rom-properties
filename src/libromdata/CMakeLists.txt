@@ -47,6 +47,7 @@ SET(libromdata_SRCS
 	RomFields.cpp
 	MegaDrive.cpp
 	MegaDrivePublishers.cpp
+	MegaDriveRegions.cpp
 	GameCube.cpp
 	NintendoDS.cpp
 	NintendoPublishers.cpp
@@ -70,6 +71,7 @@ SET(libromdata_H
 	TextFuncs.hpp
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
+	MegaDriveRegions.hpp
 	GameCube.hpp
 	NintendoDS.hpp
 	NintendoPublishers.hpp
