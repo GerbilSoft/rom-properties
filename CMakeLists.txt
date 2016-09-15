@@ -8,7 +8,9 @@ LIST(APPEND CMAKE_MODULE_PATH
 	)
 
 # Enable testing.
-INCLUDE(CTest)
+# TODO: INCLUDE(CTest) for more advanced testing after
+# enough tests are added.
+ENABLE_TESTING()
 
 # Set default build options.
 INCLUDE(cmake/options.cmake)
