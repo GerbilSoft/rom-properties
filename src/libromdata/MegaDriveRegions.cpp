@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "MegaDriveRegions.hpp"
+#include "SystemRegion.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -106,6 +107,155 @@ uint32_t MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
 	}
 
 	return ret;
+}
+
+/**
+ * Determine the branding region to use for a ROM.
+ * This is based on the ROM's region code and the system's locale.
+ * @param md_region MD hexadecimal region code.
+ * @return MD branding region.
+ */
+MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(uint32_t md_region)
+{
+	if (md_region == 0) {
+		// No region code. Assume "all regions".
+		md_region = ~0;
+	}
+
+	// Get the country code.
+	uint16_t cc = SystemRegion::getCountryCode();
+
+	// Check for a single-region ROM.
+	switch (md_region) {
+		case MD_REGION_JAPAN:
+		case MD_REGION_ASIA:
+		case MD_REGION_JAPAN | MD_REGION_ASIA:
+			// Japan/Asia. Use Japanese branding,
+			// except for South Korea.
+			return (cc == 'KR' ? MD_BREGION_SOUTH_KOREA : MD_BREGION_JAPAN);
+
+		case MD_REGION_USA:
+			// USA. May be Brazilian.
+			return (cc == 'BR' ? MD_BREGION_BRAZIL : MD_BREGION_USA);
+
+		case MD_REGION_EUROPE:
+			// Europe.
+			return MD_BREGION_EUROPE;
+
+		default:
+			// Multi-region ROM.
+			break;
+	}
+
+	// Multi-region ROM.
+	// Determine the system's branding region.
+	MD_BrandingRegion md_bregion = MD_BREGION_UNKNOWN;
+
+	switch (cc) {
+		// Japanese region
+		case 'JP':	// Japan
+		case 'IN':	// India
+		case 'HK':	// Hong Kong
+		case 'MO':	// Macao
+		case 'SG':	// Singapore
+		case 'MY':	// Malaysia
+		case 'BN':	// Brunei
+		case 'TH':	// Thailand
+		case 'TW':	// Taiwan
+		case 'PH':	// Philippines
+			// TODO: Add more countries that used JP branding?
+			md_bregion = MD_BREGION_JAPAN;
+			break;
+
+		case 'KR':	// South Korea
+			md_bregion = MD_BREGION_SOUTH_KOREA;
+			break;
+
+		case 'US':	// USA
+		case 'AG':	// Antigua and Barbuda
+		case 'BS':	// The Bahamas
+		case 'BB':	// Barbados
+		case 'BZ':	// Belize
+		case 'CA':	// Canada
+		case 'CR':	// Costa Rica
+		case 'CU':	// Cuba
+		case 'DM':	// Dominica
+		case 'DO':	// Dominican Republic
+		case 'SV':	// El Salvador
+		case 'GL':	// Greenland (TODO: Technically European?)
+		case 'GD':	// Grenada
+		case 'GT':	// Guatemala
+		case 'HT':	// Haiti
+		case 'HN':	// Honduras
+		case 'JM':	// Jamaica
+		case 'MX':	// Mexico
+		case 'NI':	// Nicaragua
+		case 'PA':	// Panama
+		case 'PR':	// Puerto Rico
+		case 'KN':	// Saint Kitts and Nevis
+		case 'LC':	// Saint Lucia
+		case 'VC':	// Saint Vincent and the Grenadines
+		case 'TT':	// Trinidad and Tobago
+		case 'TC':	// Turks and Caicos Islands
+		case 'VI':	// United States Virgin Islands
+		case 'UM':	// United States Minor Outlying Islands
+			// TODO: Verify that all of these countries
+			// use USA branding.
+			md_bregion = MD_BREGION_USA;
+			break;
+
+		case 'BR':	// Brazil
+			md_bregion = MD_BREGION_BRAZIL;
+			break;
+
+		default:
+			// Assume everything else is Europe.
+			md_bregion = MD_BREGION_EUROPE;
+			break;
+	}
+
+	// Check for a matching BREGION.
+	switch (md_bregion) {
+		case MD_BREGION_JAPAN:
+		case MD_BREGION_SOUTH_KOREA:
+			if (md_region & (MD_REGION_JAPAN | MD_REGION_ASIA)) {
+				return md_bregion;
+			}
+			break;
+
+		case MD_BREGION_USA:
+		case MD_BREGION_BRAZIL:
+			if (md_region & MD_REGION_USA) {
+				return md_bregion;
+			}
+			break;
+
+		case MD_BREGION_EUROPE:
+			if (md_region & MD_REGION_EUROPE) {
+				return md_bregion;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	// No matching BREGION.
+	// Use a default priority list of Japan, USA, Europe.
+	if (md_region & (MD_REGION_JAPAN | MD_REGION_ASIA)) {
+		// Japan/Asia. Use Japanese branding,
+		// except for South Korea.
+		return (cc == 'KR' ? MD_BREGION_SOUTH_KOREA : MD_BREGION_JAPAN);
+	} else if (md_region & MD_REGION_USA) {
+		// USA. May be Brazilian.
+		return (cc == 'BR' ? MD_BREGION_BRAZIL : MD_BREGION_USA);
+	} else if (md_region & MD_REGION_EUROPE) {
+		// Europe.
+		return MD_BREGION_EUROPE;
+	}
+
+	// Still no region! Default to Japan.
+	return MD_BREGION_JAPAN;
 }
 
 }

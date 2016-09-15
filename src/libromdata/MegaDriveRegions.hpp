@@ -53,6 +53,28 @@ class MegaDriveRegions
 		 * @return MD hexadecimal region code. (See MD_RegionCode.)
 		 */
 		static uint32_t parseRegionCodes(const char *region_codes, int size);
+
+		// Branding region.
+		enum MD_BrandingRegion {
+			MD_BREGION_UNKNOWN = 0,
+
+			// Primary regions.
+			MD_BREGION_JAPAN,
+			MD_BREGION_USA,
+			MD_BREGION_EUROPE,
+
+			// Additional regions.
+			MD_BREGION_SOUTH_KOREA,
+			MD_BREGION_BRAZIL,
+		};
+
+		/**
+		 * Determine the branding region to use for a ROM.
+		 * This is based on the ROM's region code and the system's locale.
+		 * @param md_region MD hexadecimal region code.
+		 * @return MD branding region.
+		 */
+		static MD_BrandingRegion getBrandingRegion(uint32_t md_region);
 };
 
 }

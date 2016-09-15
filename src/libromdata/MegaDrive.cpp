@@ -46,7 +46,7 @@ namespace LibRomData {
 class MegaDrivePrivate
 {
 	public:
-		MegaDrivePrivate() { }
+		MegaDrivePrivate();
 
 	private:
 		MegaDrivePrivate(const MegaDrivePrivate &other);
@@ -158,8 +158,8 @@ class MegaDrivePrivate
 			ROM_FORMAT_MASK = (0xFF << 8),
 		};
 
-		// ROM type.
-		int romType;
+		int romType;		// ROM type.
+		uint32_t md_region;	// MD hexadecimal region code.
 
 		// SMD bank size.
 		static const uint32_t SMD_BLOCK_SIZE = 16384;
@@ -191,6 +191,11 @@ class MegaDrivePrivate
 };
 
 /** MegaDrivePrivate **/
+
+MegaDrivePrivate::MegaDrivePrivate()
+	: romType(ROM_UNKNOWN)
+	, md_region(0)
+{ }
 
 // I/O support bitfield.
 const rp_char *const MegaDrivePrivate::md_io_bitfield_names[] = {
@@ -440,6 +445,11 @@ MegaDrive::MegaDrive(IRpFile *file)
 	}
 
 	m_isValid = (d->romType >= 0);
+	if (m_isValid) {
+		// Parse the MD region code.
+		d->md_region = MegaDriveRegions::parseRegionCodes(
+			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
+	}
 }
 
 MegaDrive::~MegaDrive()
@@ -564,18 +574,94 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
 		romSys = MegaDrivePrivate::ROM_SYSTEM_MD;
 	}
 
-	// Bits 0-1: Type. (short, long, abbreviation)
-	// Bits 2-4: System type.
-	static const rp_char *const sysNames[20] = {
-		_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
-		_RP("Sega Mega CD"), _RP("Mega CD"), _RP("MCD"), nullptr,
-		_RP("Sega 32X"), _RP("32X"), _RP("32X"), nullptr,
-		_RP("Sega Mega CD 32X"), _RP("Mega CD 32X"), _RP("MCD32X"), nullptr,
-		_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
-	};
+	// sysNames[] bitfield:
+	// - Bits 0-1: Type. (short, long, abbreviation)
+	// - Bits 2-4: System type.
+	uint32_t idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
+	if (idx >= 20) {
+		// Invalid index...
+		idx &= SYSNAME_TYPE_MASK;
+	}
 
-	const uint32_t idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
-	return sysNames[idx];
+	static_assert(SYSNAME_REGION_MASK == (1 << 2),
+		"MegaDrive::systemName() region type optimization needs to be updated.");
+	if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
+		// Generic system name.
+		static const rp_char *const sysNames[20] = {
+			_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
+			_RP("Sega Mega CD"), _RP("Mega CD"), _RP("MCD"), nullptr,
+			_RP("Sega 32X"), _RP("Sega 32X"), _RP("32X"), nullptr,
+			_RP("Sega Mega CD 32X"), _RP("Mega CD 32X"), _RP("MCD32X"), nullptr,
+			_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
+		};
+		return sysNames[idx];
+	}
+
+	// Get the system branding region.
+	const MegaDriveRegions::MD_BrandingRegion md_bregion =
+		MegaDriveRegions::getBrandingRegion(d->md_region);
+	switch (md_bregion) {
+		case MegaDriveRegions::MD_BREGION_JAPAN:
+		default: {
+			static const rp_char *const sysNames_JP[20] = {
+				_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
+				_RP("Sega Mega CD"), _RP("Mega CD"), _RP("MCD"), nullptr,
+				_RP("Sega Super 32X"), _RP("Super 32X"), _RP("32X"), nullptr,
+				_RP("Sega Mega CD 32X"), _RP("Mega CD 32X"), _RP("MCD32X"), nullptr,
+				_RP("Sega Kids Computer Pico"), _RP("Kids Computer Pico"), _RP("Pico"), nullptr
+			};
+			return sysNames_JP[idx];
+		}
+
+		case MegaDriveRegions::MD_BREGION_USA: {
+			static const rp_char *const sysNames_US[20] = {
+				// TODO: "MD" or "Gen"?
+				_RP("Sega Genesis"), _RP("Genesis"), _RP("MD"), nullptr,
+				_RP("Sega CD"), _RP("Sega CD"), _RP("MCD"), nullptr,
+				_RP("Sega 32X"), _RP("Sega 32X"), _RP("32X"), nullptr,
+				_RP("Sega CD 32X"), _RP("Sega CD 32X"), _RP("MCD32X"), nullptr,
+				_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
+			};
+			return sysNames_US[idx];
+		}
+
+		case MegaDriveRegions::MD_BREGION_EUROPE: {
+			static const rp_char *const sysNames_EU[20] = {
+				_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
+				_RP("Sega Mega CD"), _RP("Mega CD"), _RP("MCD"), nullptr,
+				_RP("Sega Mega Drive 32X"), _RP("Mega Drive 32X"), _RP("32X"), nullptr,
+				_RP("Sega Mega CD 32X"), _RP("Sega Mega CD 32X"), _RP("MCD32X"), nullptr,
+				_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
+			};
+			return sysNames_EU[idx];
+		}
+
+		case MegaDriveRegions::MD_BREGION_SOUTH_KOREA: {
+			static const rp_char *const sysNames_KR[20] = {
+				// TODO: "MD" or something else?
+				_RP("Samsung Super Aladdin Boy"), _RP("Super Aladdin Boy"), _RP("MD"), nullptr,
+				_RP("Samsung CD Aladdin Boy"), _RP("CD Aladdin Boy"), _RP("MCD"), nullptr,
+				_RP("Samsung Super 32X"), _RP("Super 32X"), _RP("32X"), nullptr,
+				_RP("Sega Mega CD 32X"), _RP("Sega Mega CD 32X"), _RP("MCD32X"), nullptr,
+				_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
+			};
+			return sysNames_KR[idx];
+		}
+
+		case MegaDriveRegions::MD_BREGION_BRAZIL: {
+			static const rp_char *const sysNames_BR[20] = {
+				_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
+				_RP("Sega CD"), _RP("Sega CD"), _RP("MCD"), nullptr,
+				_RP("Sega Mega 32X"), _RP("Mega 32X"), _RP("32X"), nullptr,
+				_RP("Sega CD 32X"), _RP("Sega CD 32X"), _RP("MCD32X"), nullptr,
+				_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
+			};
+			return sysNames_BR[idx];
+		}
+	}
+
+	// Should not get here...
+	return nullptr;
 }
 
 /**
@@ -736,9 +822,7 @@ int MegaDrive::loadFieldData(void)
 
 	// Region codes.
 	// TODO: Validate the Mega CD security program?
-	uint32_t region_code = MegaDriveRegions::parseRegionCodes(
-		romHeader->region_codes, sizeof(romHeader->region_codes));
-	m_fields->addData_bitfield(region_code);
+	m_fields->addData_bitfield(d->md_region);
 
 	// Vectors.
 	if (!d->isDisc()) {
