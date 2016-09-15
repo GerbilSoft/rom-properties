@@ -596,9 +596,11 @@ vector<const rp_char*> MegaDrive::supportedFileExtensions_static(void)
 	// NOTE: Not including ".md" due to conflicts with Markdown.
 	// TODO: Add ".bin" later? (Too generic, though...)
 	vector<const rp_char*> ret;
-	ret.reserve(2);
+	ret.reserve(4);
 	ret.push_back(_RP(".gen"));
 	ret.push_back(_RP(".smd"));
+	ret.push_back(_RP(".32x"));
+	ret.push_back(_RP(".pco"));
 	return ret;
 }
 
