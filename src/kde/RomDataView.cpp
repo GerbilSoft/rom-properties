@@ -26,6 +26,7 @@
 #include "libromdata/RomFields.hpp"
 using LibRomData::RomData;
 using LibRomData::RomFields;
+using LibRomData::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -118,8 +119,25 @@ void RomDataViewPrivate::updateDisplay(void)
 	// since we don't need it anymore.
 	romData->close();
 
-	// Create the UI widgets.
+	// System name.
+	// TODO: Logo, game icon, and game title?
 	Q_Q(RomDataView);
+	rp_string systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	if (!systemName.empty()) {
+		QLabel *lblSystemName = new QLabel(q);
+		lblSystemName->setAlignment(Qt::AlignCenter);
+		lblSystemName->setTextFormat(Qt::PlainText);
+		lblSystemName->setText(RP2Q(systemName));
+
+		// Use a bold font.
+		QFont font = lblSystemName->font();
+		font.setBold(true);
+		lblSystemName->setFont(font);
+
+		ui.formLayout->addRow(lblSystemName);
+	}
+
+	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -215,10 +233,10 @@ void RomDataViewPrivate::updateDisplay(void)
 				// Add the row data.
 				const RomFields::ListData *listData = data->list_data;
 				for (int i = 0; i < (int)listData->data.size(); i++) {
-					const vector<LibRomData::rp_string> &data_row = listData->data.at(i);
+					const vector<rp_string> &data_row = listData->data.at(i);
 					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
 					int field = 0;
-					for (vector<LibRomData::rp_string>::const_iterator iter = data_row.begin();
+					for (vector<rp_string>::const_iterator iter = data_row.begin();
 					     iter != data_row.end(); ++iter, ++field)
 					{
 						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));

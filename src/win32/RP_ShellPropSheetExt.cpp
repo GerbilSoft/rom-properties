@@ -85,14 +85,16 @@ class RP_ShellPropSheetExt_Private
 		// ROM data.
 		LibRomData::RomData *romData;
 
-		// Monospaced font.
-		HFONT hFontMono;
+		// Fonts.
+		HFONT hFontBold;	// Bold font.
+		HFONT hFontMono;	// Monospaced font.
 };
 
 /** RP_ShellPropSheetExt_Private **/
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private()
 	: romData(nullptr)
+	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 {
 	szSelectedFile[0] = 0;
@@ -102,7 +104,10 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
 	delete romData;
 
-	// Delete the monospaced font.
+	// Delete the fonts.
+	if (hFontBold) {
+		DeleteFont(hFontBold);
+	}
 	if (hFontMono) {
 		DeleteFont(hFontMono);
 	}
@@ -596,6 +601,31 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 	// Width available for the value widget(s).
 	GetClientRect(hDlg, &tmpRect);
 	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
+
+	// System name.
+	// TODO: Logo, game icon, and game title?
+	rp_string systemName = d->romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	if (!systemName.empty()) {
+		// Use a bold font.
+		// TODO: Delete the old font if it's already there?
+		if (!d->hFontBold) {
+			LOGFONT lfFontBold;
+			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
+				// Adjust the font and create a new one.
+				lfFontBold.lfWeight = FW_BOLD;
+				d->hFontBold = CreateFontIndirect(&lfFontBold);
+			}
+		}
+
+		const int sysName_width = dlg_value_width + descSize.cx;
+		HWND lblSystemName = CreateWindow(WC_STATIC, RP2W_s(systemName),
+			WS_CHILD | WS_VISIBLE | SS_CENTER,
+			curPt.x, curPt.y, sysName_width, descSize.cy,
+			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(lblSystemName, (d->hFontBold ? d->hFontBold : hFont), FALSE);
+		curPt.y += descSize.cy;
+	}
 
 	// Get a matching monospaced font.
 	// TODO: Delete the old font if it's already there?
