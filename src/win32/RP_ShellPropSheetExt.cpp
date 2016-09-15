@@ -67,6 +67,54 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // This links the property sheet to the COM object.
 #define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
 
+class RP_ShellPropSheetExt_Private
+{
+	public:
+		RP_ShellPropSheetExt_Private();
+		~RP_ShellPropSheetExt_Private();
+
+	private:
+		RP_ShellPropSheetExt_Private(const RP_ShellPropSheetExt_Private &other);
+		RP_ShellPropSheetExt_Private &operator=(const RP_ShellPropSheetExt_Private &other);
+
+	public:
+		// Selected file.
+		wchar_t szSelectedFile[MAX_PATH];
+		PCWSTR GetSelectedFile(void) const;
+
+		// ROM data.
+		LibRomData::RomData *romData;
+
+		// Monospaced font.
+		HFONT hFontMono;
+};
+
+/** RP_ShellPropSheetExt_Private **/
+
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private()
+	: romData(nullptr)
+	, hFontMono(nullptr)
+{
+	szSelectedFile[0] = 0;
+}
+
+RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
+{
+	delete romData;
+
+	// Delete the monospaced font.
+	if (hFontMono) {
+		DeleteFont(hFontMono);
+	}
+}
+
+PCWSTR RP_ShellPropSheetExt_Private::GetSelectedFile(void) const
+{
+	return this->szSelectedFile;
+}
+
+/** RP_ShellPropSheetExt **/
+
 static inline LPWORD lpwAlign(LPWORD lpIn, ULONG_PTR dw2Power = 4)
 {
 	ULONG_PTR ul;
@@ -78,21 +126,12 @@ static inline LPWORD lpwAlign(LPWORD lpIn, ULONG_PTR dw2Power = 4)
 }
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
-	: m_romData(nullptr)
-	, m_hFontMono(nullptr)
-{
-	m_szSelectedFile[0] = 0;
-}
+	: d(new RP_ShellPropSheetExt_Private())
+{ }
 
 RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 {
-	delete m_romData;
-
-	// Delete the monospaced font.
-	if (m_hFontMono) {
-		DeleteFont(m_hFontMono);
-		m_hFontMono = nullptr;
-	}
+	delete d;
 }
 
 /** IUnknown **/
@@ -197,11 +236,6 @@ LONG RP_ShellPropSheetExt::Unregister(void)
 	return ERROR_SUCCESS;
 }
 
-PCWSTR RP_ShellPropSheetExt::GetSelectedFile(void) const
-{
-	return this->m_szSelectedFile;
-}
-
 /** IShellExtInit **/
 
 /** IShellPropSheetExt **/
@@ -233,18 +267,18 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 			UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
 			if (nFiles == 1) {
 				// Get the path of the file.
-				if (0 != DragQueryFile(hDrop, 0, m_szSelectedFile, 
-				    ARRAYSIZE(m_szSelectedFile)))
+				if (0 != DragQueryFile(hDrop, 0, d->szSelectedFile, 
+				    ARRAYSIZE(d->szSelectedFile)))
 				{
 					// Open the file.
 					unique_ptr<IRpFile> file(new RpFile(
-						rp_string(W2RP_c(m_szSelectedFile)),
+						rp_string(W2RP_c(d->szSelectedFile)),
 						RpFile::FM_OPEN_READ));
 					if (file && file->isOpen()) {
 						// Get the appropriate RomData class for this ROM.
 						// file is dup()'d by RomData.
-						m_romData = RomDataFactory::getInstance(file.get());
-						hr = (m_romData != nullptr ? S_OK : E_FAIL);
+						d->romData = RomDataFactory::getInstance(file.get());
+						hr = (d->romData != nullptr ? S_OK : E_FAIL);
 					}
 				}
 			}
@@ -272,7 +306,7 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 	if (!hDlg)
 		return 0;
 
-	const RomFields *fields = m_romData->fields();
+	const RomFields *fields = d->romData->fields();
 	if (!fields)
 		return 0;
 
@@ -485,13 +519,13 @@ void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, 
  */
 void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 {
-	if (!m_romData) {
+	if (!d->romData) {
 		// No ROM data loaded.
 		return;
 	}
 
 	// Get the fields.
-	const RomFields *fields = m_romData->fields();
+	const RomFields *fields = d->romData->fields();
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
@@ -565,13 +599,13 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 
 	// Get a matching monospaced font.
 	// TODO: Delete the old font if it's already there?
-	if (!m_hFontMono) {
+	if (!d->hFontMono) {
 		LOGFONT lfFontMono;
 		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) != 0) {
 			// Adjust the font and create a new one.
 			// TODO: What's the best font for this?
 			wcscpy(lfFontMono.lfFaceName, L"Lucida Console");
-			m_hFontMono = CreateFontIndirect(&lfFontMono);
+			d->hFontMono = CreateFontIndirect(&lfFontMono);
 		}
 	}
 
@@ -625,8 +659,8 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 				if (desc->str_desc) {
 					// Monospace font?
 					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-						if (m_hFontMono != nullptr) {
-							hFontItem = m_hFontMono;
+						if (d->hFontMono != nullptr) {
+							hFontItem = d->hFontMono;
 						}
 					}
 				}

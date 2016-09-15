@@ -43,6 +43,8 @@ extern "C" {
 // C++ includes.
 #include <string>
 
+class RP_ShellPropSheetExt_Private;
+
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
 RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 {
@@ -51,6 +53,13 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		virtual ~RP_ShellPropSheetExt();
 	private:
 		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
+
+	private:
+		friend class RP_ShellPropSheetExt_Private;
+		RP_ShellPropSheetExt_Private *const d;
+	private:
+		RP_ShellPropSheetExt(const RP_ShellPropSheetExt &other);
+		RP_ShellPropSheetExt&operator=(const RP_ShellPropSheetExt &other);
 
 	public:
 		// IUnknown
@@ -70,21 +79,6 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		static LONG Unregister(void);
 
  	protected:
-		// Information from IShellExtInit.
-		PCIDLIST_ABSOLUTE m_pidlFolder;
-		IDataObject *m_pdtobj;
-		HKEY m_hkeyProgID;
-
-		// Selected file.
-		wchar_t m_szSelectedFile[MAX_PATH];
-		PCWSTR GetSelectedFile(void) const;
-
-		// ROM data.
-		LibRomData::RomData *m_romData;
-
-		// Monospaced font.
-		HFONT m_hFontMono;
-
 		/**
 		 * Initialize a bitfield layout.
 		 * @param hDlg Dialog window.
