@@ -7,12 +7,13 @@ LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
 	)
 
+# Enable testing.
+INCLUDE(CTest)
+
 # Set default build options.
 INCLUDE(cmake/options.cmake)
 # Check for platform-specific functionality.
 INCLUDE(cmake/platform.cmake NO_POLICY_SCOPE)
-# Testing functions.
-INCLUDE(cmake/gtest.cmake)
 
 # Program information.
 SET(DESCRIPTION "ROM Properties Page shell extension")
