@@ -144,6 +144,7 @@ class MegaDrivePrivate
 			ROM_SYSTEM_32X = 2,		// Sega 32X
 			ROM_SYSTEM_MCD32X = 3,		// Sega CD 32X
 			ROM_SYSTEM_PICO = 4,		// Sega Pico
+			ROM_SYSTEM_MAX = ROM_SYSTEM_PICO,
 			ROM_SYSTEM_UNKNOWN = 0xFF,
 			ROM_SYSTEM_MASK = 0xFF,
 
@@ -152,6 +153,7 @@ class MegaDrivePrivate
 			ROM_FORMAT_CART_SMD = (1 << 8),		// Cartridge: SMD format.
 			ROM_FORMAT_DISC_2048 = (2 << 8),	// Disc: 2048-byte sectors. (ISO)
 			ROM_FORMAT_DISC_2352 = (3 << 8),	// Disc: 2352-byte sectors. (BIN)
+			ROM_FORMAT_MAX = ROM_FORMAT_DISC_2352,
 			ROM_FORMAT_UNKNOWN = (0xFF << 8),
 			ROM_FORMAT_MASK = (0xFF << 8),
 		};
@@ -556,12 +558,24 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"MegaDrive::systemName() array index optimization needs to be updated.");
 
+	uint32_t romSys = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
+	if (romSys > MegaDrivePrivate::ROM_SYSTEM_MAX) {
+		// Invalid system type. Default to MD.
+		romSys = MegaDrivePrivate::ROM_SYSTEM_MD;
+	}
+
 	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr
+	// Bits 2-4: System type.
+	static const rp_char *const sysNames[20] = {
+		_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr,
+		_RP("Sega Mega CD"), _RP("Mega CD"), _RP("MCD"), nullptr,
+		_RP("Sega 32X"), _RP("32X"), _RP("32X"), nullptr,
+		_RP("Sega Mega CD 32X"), _RP("Mega CD 32X"), _RP("MCD32X"), nullptr,
+		_RP("Sega Pico"), _RP("Pico"), _RP("Pico"), nullptr
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	const uint32_t idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
+	return sysNames[idx];
 }
 
 /**
