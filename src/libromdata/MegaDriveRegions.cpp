@@ -45,7 +45,7 @@ uint32_t MegaDriveRegions::parseRegionCodes(const char *region_codes, int size)
 	uint32_t ret = 0;
 
 	// Check for a hex code.
-	if (isalnum(region_codes[0]) &
+	if (isalnum(region_codes[0]) &&
 	    (region_codes[1] == 0 || isspace(region_codes[1])))
 	{
 		// Single character region code.
