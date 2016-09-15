@@ -81,9 +81,10 @@ class GameCube : public RomData
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemName enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const override;
+		virtual const rp_char *systemName(uint32_t type) const override;
 
 	public:
 		/**

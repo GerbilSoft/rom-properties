@@ -358,12 +358,56 @@ int NintendoDS::isRomSupported(const DetectInfo *info) const
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
  */
-const rp_char *NintendoDS::systemName(void) const
+const rp_char *NintendoDS::systemName(uint32_t type) const
 {
-	// TODO: Store system ID.
-	return _RP("Nintendo DS");
+	if (!m_isValid || !isSystemNameTypeValid(type))
+		return nullptr;
+
+	// NDS/DSi are mostly the same worldwide, except for China.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"NintendoDS::systemName() array index optimization needs to be updated.");
+	static_assert(SYSNAME_REGION_MASK == (1 << 2),
+		"NintendoDS::systemName() array index optimization needs to be updated.");
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
+	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
+	static const rp_char *const sysNames[16] = {
+		// Nintendo (worldwide)
+		_RP("Nintendo DS"), _RP("Nintendo DS"), _RP("NDS"), nullptr,
+		_RP("Nintendo DSi"), _RP("Nintendo DSi"), _RP("DSi"), nullptr,
+
+		// iQue (China)
+		_RP("iQue DS"), _RP("iQue DS"), _RP("NDS"), nullptr,
+		_RP("iQue DSi"), _RP("iQue DSi"), _RP("DSi"), nullptr
+	};
+
+	uint32_t idx = (type & SYSNAME_TYPE_MASK);
+	if ((d->romHeader.unitcode & 0x03) == 0x03) {
+		// DSi-exclusive game.
+		idx |= (1 << 2);
+		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+			if ((d->romHeader.dsi_region & NintendoDSPrivate::DSi_REGION_CHINA) ||
+			    (d->romHeader.nds_region & 0x80))
+			{
+				// iQue DSi.
+				idx |= (1 << 3);
+			}
+		}
+	} else {
+		// NDS-only and/or DSi-enhanced game.
+		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
+			if (d->romHeader.nds_region & 0x80) {
+				// iQue DS.
+				idx |= (1 << 3);
+			}
+		}
+	}
+
+	return sysNames[idx];
 }
 
 /**

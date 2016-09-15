@@ -388,22 +388,32 @@ int GameCube::isRomSupported(const DetectInfo *info) const
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
  */
-const rp_char *GameCube::systemName(void) const
+const rp_char *GameCube::systemName(uint32_t type) const
 {
-	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-		case GameCubePrivate::DISC_SYSTEM_GCN:
-			return _RP("GameCube");
-		case GameCubePrivate::DISC_SYSTEM_WII:
-			return _RP("Wii");
-		case GameCubePrivate::DISC_SYSTEM_TRIFORCE:
-			return _RP("Triforce");
-		default:
-			break;
-	}
+	if (!m_isValid || !isSystemNameTypeValid(type))
+		return nullptr;
 
-	return nullptr;
+	// GCN, Wii, and Triforce have the same name worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"GameCube::systemName() array index optimization needs to be updated.");
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
+
+	static const rp_char *const sysNames[16] = {
+		// FIXME: "NGC" in Japan?
+		_RP("Nintendo GameCube"), _RP("GameCube"), _RP("GCN"), nullptr,
+		_RP("Nintendo Wii"), _RP("Wii"), _RP("Wii"), nullptr,
+		_RP("Nintendo/Sega/Namco Triforce"), _RP("Triforce"), _RP("TF"), nullptr,
+		nullptr, nullptr, nullptr, nullptr
+	};
+
+	const uint32_t idx = (type & SYSNAME_TYPE_MASK) | ((d->discType & 3) << 2);
+	return sysNames[idx];
 }
 
 /**

@@ -229,7 +229,7 @@ const struct RomFields::Desc DMGPrivate::dmg_fields[] = {
 	{_RP("Checksum"), RomFields::RFT_STRING, {nullptr}},
 };
 
-// Internal ROM data.
+/** Internal ROM data. **/
 
 // Cartrige hardware.
 const rp_char *const DMGPrivate::dmg_hardware_names[] = {
@@ -448,12 +448,36 @@ int DMG::isRomSupported(const DetectInfo *info) const
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
  */
-const rp_char *DMG::systemName(void) const
+const rp_char *DMG::systemName(uint32_t type) const
 {
-	// TODO: Store system ID.
-	return _RP("Game Boy");
+	if (!m_isValid || !isSystemNameTypeValid(type))
+		return nullptr;
+
+	// GB/GBC have the same names worldwide, so we can
+	// ignore the region selection.
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"DMG::systemName() array index optimization needs to be updated.");
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	// Bit 2: Game Boy Color. (DMG-specific)
+	static const rp_char *const sysNames[8] = {
+		_RP("Nintendo Game Boy"), _RP("Game Boy"), _RP("GB"), nullptr,
+		_RP("Nintendo Game Boy Color"), _RP("Game Boy Color"), _RP("GBC"), nullptr
+	};
+
+	uint32_t idx = (type & SYSNAME_TYPE_MASK);
+	if (d->romHeader.cgbflag & 0x80) {
+		// ROM supports Game Boy Color functionality.
+		// NOTE: Pokemon Yellow used a "Game Boy" box, even though
+		// the US version supported GBC, but Pokemon Gold and Silver
+		// use a "Game Boy Color" box.
+		idx |= 4;
+	}
+
+	return sysNames[idx];
 }
 
 /**

@@ -105,12 +105,57 @@ class RomData
 		 */
 		virtual int isRomSupported(const DetectInfo *info) const = 0;
 
+		enum SystemNameType {
+			/**
+			 * The SystemNameType enum is a bitfield.
+			 *
+			 * Type:
+			 * - Long: Full company and system name.
+			 * - Short: System name only.
+			 * - Abbreviation: System initials.
+			 *
+			 * Region:
+			 * - Generic: Most well-known name for the system.
+			 * - ROM Local: Localized version based on the ROM region.
+			 *   If a ROM is multi-region, the name is selected based
+			 *   on the current system locale.
+			 */
+
+			SYSNAME_TYPE_LONG		= (0 << 0),
+			SYSNAME_TYPE_SHORT		= (1 << 0),
+			SYSNAME_TYPE_ABBREVIATION	= (2 << 0),
+			SYSNAME_TYPE_MASK		= (3 << 0),
+
+			SYSNAME_REGION_GENERIC		= (0 << 2),
+			SYSNAME_REGION_ROM_LOCAL	= (1 << 2),
+			SYSNAME_REGION_MASK		= (1 << 2),
+		};
+
+	protected:
+		/**
+		 * Is a SystemNameType bitfield value valid?
+		 * @param type Bitfield containing SystemNameType values.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool isSystemNameTypeValid(uint32_t type)
+		{
+			// Check for an invalid SYSNAME_TYPE.
+			if ((type & SYSNAME_TYPE_MASK) > SYSNAME_TYPE_ABBREVIATION)
+				return false;
+			// Check for any unsupported bits.
+			if ((type & ~(SYSNAME_REGION_MASK | SYSNAME_TYPE_MASK)) != 0)
+				return false;
+			// Type is valid.
+			return true;
+		}
+
+	public:
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * TODO: Parameter for long or short name, or region?
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemNameType enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const = 0;
+		virtual const rp_char *systemName(uint32_t type) const = 0;
 
 		// TODO:
 		// - List of supported systems.

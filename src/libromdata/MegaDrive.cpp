@@ -249,6 +249,8 @@ const struct RomFields::Desc MegaDrivePrivate::md_fields[] = {
 	{_RP("Initial SP"), RomFields::RFT_STRING, {&md_string_monospace}}
 };
 
+/** Internal ROM data. **/
+
 /**
  * Parse the I/O support field.
  * @param io_support I/O support field.
@@ -631,12 +633,28 @@ int MegaDrive::isRomSupported(const DetectInfo *info) const
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
  */
-const rp_char *MegaDrive::systemName(void) const
+const rp_char *MegaDrive::systemName(uint32_t type) const
 {
-	// TODO: Store system ID.
-	return _RP("Mega Drive");
+	if (!m_isValid || !isSystemNameTypeValid(type))
+		return nullptr;
+
+	// FIXME: Lots of system names and regions to check.
+	// Also, games can be region-free, so we need to check
+	// against the host system's locale.
+	// For now, just use the generic "Mega Drive".
+
+	static_assert(SYSNAME_TYPE_MASK == 3,
+		"MegaDrive::systemName() array index optimization needs to be updated.");
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	static const rp_char *const sysNames[4] = {
+		_RP("Sega Mega Drive"), _RP("Mega Drive"), _RP("MD"), nullptr
+	};
+
+	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**
