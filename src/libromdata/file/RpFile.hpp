@@ -74,6 +74,17 @@ class RpFile : public IRpFile
 		virtual bool isOpen(void) const override;
 
 		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const override;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) override;
+
+		/**
 		 * dup() the file handle.
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
@@ -125,12 +136,6 @@ class RpFile : public IRpFile
 		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) override;
-
-		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const override;
 
 	protected:
 #ifdef _WIN32

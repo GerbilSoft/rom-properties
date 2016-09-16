@@ -255,6 +255,23 @@ bool RpFile::isOpen(void) const
 }
 
 /**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int RpFile::lastError(void) const
+{
+	return m_lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void RpFile::clearError(void)
+{
+	m_lastError = 0;
+}
+
+/**
  * dup() the file handle.
  * Needed because IRpFile* objects are typically
  * pointers, not actual instances of the object.
@@ -392,16 +409,6 @@ int64_t RpFile::fileSize(void)
 
 	// Return the file size.
 	return end_pos;
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile::lastError(void) const
-{
-	// TODO: Move up to IRpFile?
-	return m_lastError;
 }
 
 }

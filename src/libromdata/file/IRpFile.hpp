@@ -50,6 +50,17 @@ class IRpFile
 		virtual bool isOpen(void) const = 0;
 
 		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const = 0;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) = 0;
+
+		/**
 		 * dup() the file handle.
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
@@ -101,12 +112,6 @@ class IRpFile
 		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) = 0;
-
-		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const = 0;
 };
 
 }

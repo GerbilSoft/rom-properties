@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpMemFile.hpp: IRpFile implementation using a memory block.             *
+ * RpMemFile.hpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -57,6 +57,17 @@ class RpMemFile : public IRpFile
 		virtual bool isOpen(void) const override;
 
 		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const override;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) override;
+
+		/**
 		 * dup() the file handle.
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
@@ -109,12 +120,6 @@ class RpMemFile : public IRpFile
 		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) override;
-
-		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const override;
 
 	protected:
 		const void *m_buf;	// Memory buffer.

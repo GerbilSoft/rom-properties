@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
+ * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -90,6 +90,23 @@ RpMemFile &RpMemFile::operator=(const RpMemFile &other)
 bool RpMemFile::isOpen(void) const
 {
 	return (m_buf != nullptr);
+}
+
+/**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int RpMemFile::lastError(void) const
+{
+	return m_lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void RpMemFile::clearError(void)
+{
+	m_lastError = 0;
 }
 
 /**
@@ -227,16 +244,6 @@ int64_t RpMemFile::fileSize(void)
 	}
 
 	return m_size;
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpMemFile::lastError(void) const
-{
-	// TODO: Move up to IRpFile?
-	return m_lastError;
 }
 
 }
