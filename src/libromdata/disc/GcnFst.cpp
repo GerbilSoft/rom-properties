@@ -32,19 +32,54 @@ using LibRomData::rp_string;
 
 namespace LibRomData {
 
-/**
- * Parse a GameCube FST.
- * @param fstData FST data.
- * @param len Length of fstData, in bytes.
- * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
- */
-GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
-	: m_fstData(nullptr)
-	, m_fstData_sz(0)
-	, m_string_table(nullptr)
-	, m_string_table_sz(0)
-	, m_offsetShift(offsetShift)
-	, m_fstDirCount(0)
+class GcnFstPrivate
+{
+	public:
+		GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
+		~GcnFstPrivate();
+
+	private:
+		GcnFstPrivate(const GcnFstPrivate &other);
+		GcnFstPrivate &operator=(const GcnFstPrivate &other);
+
+	public:
+		// FST data.
+		GCN_FST_Entry *fstData;
+		uint32_t fstData_sz;
+
+		// String table. (Pointer into d->fstData.)
+		// String table. (malloc'd)
+		const char *string_table;
+		uint32_t string_table_sz;
+
+		// Offset shift.
+		uint8_t offsetShift;
+
+		// FstDir* reference counter.
+		int fstDirCount;
+
+		/**
+		 * Get an FST entry.
+		 *
+		 * NOTE: FST entries have NOT been byteswapped.
+		 * Use be32_to_cpu() when reading.
+		 *
+		 * @param idx		[in] FST entry index.
+		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
+		 * @return FST entry, or nullptr on error.
+		 */
+		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+};
+
+/** GcnFstPrivate **/
+
+GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
+	: fstData(nullptr)
+	, fstData_sz(0)
+	, string_table(nullptr)
+	, string_table_sz(0)
+	, offsetShift(offsetShift)
+	, fstDirCount(0)
 {
 	static_assert(sizeof(GCN_FST_Entry) == GCN_FST_Entry_SIZE,
 		"sizeof(GCN_FST_Entry) is incorrect. (Should be 12)");
@@ -69,18 +104,72 @@ GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 		return;
 	}
 	fst8[len] = 0; // Make sure the string table is NULL-terminated.
-	m_fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
-	memcpy(m_fstData, fstData, len);
+	this->fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
+	memcpy(this->fstData, fstData, len);
 
 	// Save a pointer to the string table.
-	m_string_table = reinterpret_cast<char*>(&fst8[string_table_offset]);
-	m_string_table_sz = len - string_table_offset;
+	string_table = reinterpret_cast<char*>(&fst8[string_table_offset]);
+	string_table_sz = len - string_table_offset;
 }
+
+GcnFstPrivate::~GcnFstPrivate()
+{
+	assert(fstDirCount == 0);
+	free(fstData);
+}
+
+/**
+ * Get an FST entry.
+ *
+ * NOTE: FST entries have NOT been byteswapped.
+ * Use be32_to_cpu() when reading.
+ *
+ * @param idx		[in] FST entry index.
+ * @param ppszName	[out, opt] Entry name. (Do not free this!)
+ * @return FST entry, or nullptr on error.
+ */
+const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
+{
+	if (!fstData || idx < 0) {
+		// No FST, or idx is invalid.
+		return nullptr;
+	}
+
+	// NOTE: For the root directory, last_entry_idx is number of entries.
+	if ((uint32_t)idx >= be32_to_cpu(fstData[0].root_dir.file_count)) {
+		// Index is out of range.
+		return nullptr;
+	}
+
+	if (ppszName) {
+		// Get the name entry from the string table.
+		uint32_t offset = be32_to_cpu(fstData[idx].file_type_name_offset) & 0xFFFFFF;
+		if (offset < string_table_sz) {
+			*ppszName = &string_table[offset];
+		} else {
+			// Offset is out of range.
+			*ppszName = nullptr;
+		}
+	}
+
+	return &fstData[idx];
+}
+
+/** GcnFst **/
+
+/**
+ * Parse a GameCube FST.
+ * @param fstData FST data.
+ * @param len Length of fstData, in bytes.
+ * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
+ */
+GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
+	: d(new GcnFstPrivate(fstData, len, offsetShift))
+{ }
 
 GcnFst::~GcnFst()
 {
-	assert(m_fstDirCount == 0);
-	free(m_fstData);
+	delete d;
 }
 
 /**
@@ -89,45 +178,12 @@ GcnFst::~GcnFst()
  */
 int GcnFst::count(void) const
 {
-	if (!m_fstData) {
+	if (!d->fstData) {
 		// No FST.
 		return -1;
 	}
 
-	return (be32_to_cpu(m_fstData[0].dir.last_entry_idx) + 1);
-}
-
-/**
- * Get an FST entry.
- * @param idx		[in] FST entry index.
- * @param ppszName	[out, opt] Entry name. (Do not free this!)
- * @return FST entry, or nullptr on error.
- */
-const GCN_FST_Entry *GcnFst::entry(int idx, const char **ppszName) const
-{
-	if (!m_fstData || idx < 0) {
-		// No FST, or idx is invalid.
-		return nullptr;
-	}
-
-	// NOTE: For the root directory, last_entry_idx is number of entries.
-	if ((uint32_t)idx >= be32_to_cpu(m_fstData[0].root_dir.file_count)) {
-		// Index is out of range.
-		return nullptr;
-	}
-
-	if (ppszName) {
-		// Get the name entry from the string table.
-		uint32_t offset = be32_to_cpu(m_fstData[idx].file_type_name_offset) & 0xFFFFFF;
-		if (offset < m_string_table_sz) {
-			*ppszName = &m_string_table[offset];
-		} else {
-			// Offset is out of range.
-			*ppszName = nullptr;
-		}
-	}
-
-	return &m_fstData[idx];
+	return (be32_to_cpu(d->fstData[0].dir.last_entry_idx) + 1);
 }
 
 /**
@@ -139,13 +195,13 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 {
 	// TODO: Ignoring path right now.
 	// Always reading the root directory.
-	if (!m_fstData) {
+	if (!d->fstData) {
 		// No FST.
 		return nullptr;
 	}
 
 	const char *pName;
-	const GCN_FST_Entry *fst_entry = this->entry(0, &pName);
+	const GCN_FST_Entry *fst_entry = d->entry(0, &pName);
 	if (!fst_entry) {
 		// Error retrieving the root directory.
 		return nullptr;
@@ -157,7 +213,7 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 		return nullptr;
 	}
 
-	m_fstDirCount++;
+	d->fstDirCount++;
 	dirp->dir_idx = 0;
 
 	// Initialize the entry to the root directory.
@@ -192,7 +248,7 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 
 	// Seek to the next entry in the directory.
 	int idx = dirp->entry.idx;
-	const GCN_FST_Entry *fst_entry = this->entry(idx, nullptr);
+	const GCN_FST_Entry *fst_entry = d->entry(idx, nullptr);
 	if (!fst_entry) {
 		// No more entries.
 		return nullptr;
@@ -207,7 +263,7 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 	}
 
 	const char *pName;
-	fst_entry = this->entry(idx, &pName);
+	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
 	if (!fst_entry) {
 		// No more entries.
@@ -225,7 +281,7 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 		dirp->entry.size = 0;
 	} else {
 		// Save the offset and size.
-		dirp->entry.offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << m_offsetShift);
+		dirp->entry.offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << d->offsetShift);
 		dirp->entry.size = be32_to_cpu(fst_entry->file.size);
 	}
 
@@ -239,14 +295,14 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
  */
 int GcnFst::closedir(FstDir *dirp)
 {
-	assert(m_fstDirCount > 0);
+	assert(d->fstDirCount > 0);
 	if (!dirp) {
 		// Invalid pointer.
 		return -EINVAL;
 	}
 
 	free(dirp);
-	m_fstDirCount--;
+	d->fstDirCount--;
 	return 0;
 }
 

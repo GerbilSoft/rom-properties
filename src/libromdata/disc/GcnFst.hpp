@@ -34,6 +34,7 @@
 
 namespace LibRomData {
 
+class GcnFstPrivate;
 class GcnFst
 {
 	public:
@@ -49,6 +50,9 @@ class GcnFst
 	private:
 		GcnFst(const GcnFst &other);
 		GcnFst &operator=(const GcnFst &other);
+	private:
+		friend class GcnFstPrivate;
+		GcnFstPrivate *const d;
 
 	public:
 		/**
@@ -59,16 +63,6 @@ class GcnFst
 
 		/** opendir() interface. **/
 		// TOOD: IFst?
-
-		/**
-		 * Get an FST entry.
-		 * NOTE: FST entries have NOT been byteswapped.
-		 * Use be32_to_cpu() when reading.
-		 * @param idx		[in] FST entry index.
-		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
-		 * @return FST entry, or nullptr on error.
-		 */
-		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
 
 		struct FstDirEntry {
 			int idx;	// File index.
@@ -114,22 +108,6 @@ class GcnFst
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int closedir(FstDir *dirp);
-
-	private:
-		// FST data.
-		GCN_FST_Entry *m_fstData;
-		uint32_t m_fstData_sz;
-
-		// String table. (Pointer into m_fstData.)
-		// String table. (malloc'd)
-		const char *m_string_table;
-		uint32_t m_string_table_sz;
-
-		// Offset shift.
-		uint8_t m_offsetShift;
-
-		// FstDir* reference counter.
-		int m_fstDirCount;
 };
 
 }
