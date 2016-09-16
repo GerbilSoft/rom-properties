@@ -730,7 +730,8 @@ int GameCube::loadFieldData(void)
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
 		// Add dummy entries for Wii-specific fields.
-		m_fields->addData_string(nullptr);
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
 
 		// Finished reading the field data.
 		return (int)m_fields->count();
