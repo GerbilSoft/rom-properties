@@ -125,6 +125,13 @@ class GameCubePrivate
 		 * @return Formatted file size.
 		 */
 		static rp_string formatFileSize(int64_t fileSize);
+
+		/**
+		 * Parse the Wii System Update version.
+		 * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
+		 * @return Wii System Update version, or nullptr if unknown.
+		 */
+		static const rp_char *parseWiiSystemMenuVersion(unsigned int version);
 };
 
 /** GameCubePrivate **/
@@ -264,20 +271,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 				// System Update partition.
 				updatePartition = entry.partition;
 			}
-
-			// Print the root directory.
-			// TODO: Remove after we're finished debugging.
-			GcnFst::FstDir *dirp = entry.partition->opendir(_RP("/_sys/"));
-			printf("Partition %dp%d:\n", i, j);
-			if (dirp) {
-				GcnFst::FstDirEntry *dirent;
-				while ((dirent = entry.partition->readdir(dirp)) != nullptr) {
-					printf("%s %s - addr %08lX, size %u\n",
-					       (dirent->type == DT_DIR ? "DIR: " : "FILE:"),
-					       dirent->name, dirent->offset, dirent->size);
-				}
-				entry.partition->closedir(dirp);
-			}
 		}
 	}
 
@@ -371,6 +364,75 @@ rp_string GameCubePrivate::formatFileSize(int64_t size)
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Parse the Wii System Update version.
+ * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
+ * @return Wii System Update version, or nullptr if unknown.
+ */
+const rp_char *GameCubePrivate::parseWiiSystemMenuVersion(unsigned int version)
+{
+	switch (version) {
+		// Wii
+		// Reference: http://wiiubrew.org/wiki/Title_database
+		case 33:	return _RP("1.0");
+		case 97:	return _RP("2.0U");
+		case 128:	return _RP("2.0J");
+		case 130:	return _RP("2.0E");
+		case 162:	return _RP("2.1E");
+		case 192:	return _RP("2.2J");
+		case 193:	return _RP("2.2U");
+		case 194:	return _RP("2.2E");
+		case 224:	return _RP("3.0J");
+		case 225:	return _RP("3.0U");
+		case 226:	return _RP("3.0E");
+		case 256:	return _RP("3.1J");
+		case 257:	return _RP("3.1U");
+		case 258:	return _RP("3.1E");
+		case 288:	return _RP("3.2J");
+		case 289:	return _RP("3.2U");
+		case 290:	return _RP("3.2E");
+		case 326:	return _RP("3.3K");
+		case 352:	return _RP("3.3J");
+		case 353:	return _RP("3.3U");
+		case 354:	return _RP("3.3E");
+		case 384:	return _RP("3.4J");
+		case 385:	return _RP("3.4U");
+		case 386:	return _RP("3.4E");
+		case 390:	return _RP("3.5K");
+		case 416:	return _RP("4.0J");
+		case 417:	return _RP("4.0U");
+		case 418:	return _RP("4.0E");
+		case 448:	return _RP("4.1J");
+		case 449:	return _RP("4.1U");
+		case 450:	return _RP("4.1E");
+		case 454:	return _RP("4.1K");
+		case 480:	return _RP("4.2J");
+		case 481:	return _RP("4.2U");
+		case 482:	return _RP("4.2E");
+		case 483:	return _RP("4.2K");
+		case 512:	return _RP("4.3J");
+		case 513:	return _RP("4.3U");
+		case 514:	return _RP("4.3E");
+		case 518:	return _RP("4.3K");
+
+		// vWii
+		// References:
+		// - http://wiiubrew.org/wiki/Title_database
+		// - https://yls8.mtheall.com/ninupdates/reports.php
+		// NOTE: These are all listed as 4.3.
+		// NOTE 2: vWii also has 512, 513, and 514.
+		case 544:	return _RP("4.3J");
+		case 545:	return _RP("4.3U");
+		case 546:	return _RP("4.3E");
+		case 608:	return _RP("4.3J");
+		case 609:	return _RP("4.3U");
+		case 610:	return _RP("4.3E");
+
+		// Unknown version.
+		default:	return nullptr;
+	}
 }
 
 /** GameCube **/
@@ -672,8 +734,40 @@ int GameCube::loadFieldData(void)
 		// Wii partition tables loaded.
 		// Convert them to RFT_LISTDATA for display purposes.
 
-		// Update version. (TODO)
-		m_fields->addData_string(_RP("TODO"));
+		// Update version.
+		const rp_char *sysMenu = nullptr;
+		if (d->updatePartition) {
+			// Find the RVL-WiiSystemmenu-v*.wad file.
+			GcnFst::FstDir *dirp = d->updatePartition->opendir(_RP("/_sys/"));
+			if (dirp) {
+				GcnFst::FstDirEntry *dirent;
+				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
+					if (dirent->name) {
+						unsigned int version;
+						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
+						if (ret == 1) {
+							sysMenu = d->parseWiiSystemMenuVersion(version);
+							break;
+						}
+					}
+				}
+				d->updatePartition->closedir(dirp);
+			}
+		}
+
+		if (sysMenu) {
+			m_fields->addData_string(sysMenu);
+		} else {
+			// TODO: Show specific errors if the system menu WAD wasn't found.
+			// Missing encryption key, etc.
+			if (!d->updatePartition) {
+				sysMenu = _RP("None");
+			} else {
+				sysMenu = _RP("Unknown");
+			}
+
+			m_fields->addData_string(sysMenu);
+		}
 
 		// Partition table.
 		RomFields::ListData *partitions = new RomFields::ListData();
