@@ -437,12 +437,12 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 
 	// Found the key.
 	uint32_t keyIdx = iter->second;
-	uint8_t len = ((keyIdx >> 24) & 0xFF);
 	uint32_t idx = (keyIdx & 0xFFFFFF);
+	uint8_t len = ((keyIdx >> 24) & 0xFF);
 
 	// Make sure the key index is valid.
-	assert(idx + len < d->vKeys.size());
-	if (idx + len >= d->vKeys.size()) {
+	assert(idx + len <= d->vKeys.size());
+	if (idx + len > d->vKeys.size()) {
 		// Should not happen...
 		return -EFAULT;
 	}
