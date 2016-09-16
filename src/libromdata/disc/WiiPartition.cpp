@@ -113,7 +113,7 @@ class WiiPartitionPrivate {
 
 		/**
 		 * Load the FST.
-		 * @return 0 on success; non-zero on error.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadFst(void);
 #endif
@@ -363,7 +363,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 
 /**
  * Load the FST.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int WiiPartitionPrivate::loadFst(void)
 {
@@ -380,7 +380,7 @@ int WiiPartitionPrivate::loadFst(void)
 				// Decryption could not be initialized.
 				// TODO: Better error?
 				lastError = ENOSYS;
-				return 0;
+				return -lastError;
 			}
 			break;
 
@@ -390,7 +390,8 @@ int WiiPartitionPrivate::loadFst(void)
 
 		default:
 			// Decryption failed to initialize.
-			return 0;
+			lastError = EIO;
+			return -lastError;
 	}
 
 	// Load the FST info.
