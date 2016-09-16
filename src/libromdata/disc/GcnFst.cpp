@@ -22,7 +22,11 @@
 #include "GcnFst.hpp"
 #include "byteswap.h"
 
+#include "TextFuncs.hpp"
+using LibRomData::rp_string;
+
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 
@@ -40,6 +44,7 @@ GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 	, m_string_table(nullptr)
 	, m_string_table_sz(0)
 	, m_offsetShift(offsetShift)
+	, m_fstDirCount(0)
 {
 	static_assert(sizeof(GCN_FST_Entry) == GCN_FST_Entry_SIZE,
 		"sizeof(GCN_FST_Entry) is incorrect. (Should be 12)");
@@ -51,8 +56,8 @@ GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 
 	// String table is stored directly after the root entry.
 	const GCN_FST_Entry *root_entry = reinterpret_cast<const GCN_FST_Entry*>(fstData);
-	uint32_t string_table_offset = root_entry->dir.last_entry_idx * sizeof(GCN_FST_Entry);
-	if (string_table_offset <= len) {
+	uint32_t string_table_offset = be32_to_cpu(root_entry->dir.last_entry_idx) * sizeof(GCN_FST_Entry);
+	if (string_table_offset >= len) {
 		// Invalid FST length.
 		return;
 	}
@@ -74,6 +79,7 @@ GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 
 GcnFst::~GcnFst()
 {
+	assert(m_fstDirCount == 0);
 	free(m_fstData);
 }
 
@@ -99,15 +105,13 @@ int GcnFst::count(void) const
  */
 const GCN_FST_Entry *GcnFst::entry(int idx, const char **ppszName) const
 {
-	// TODO: opendir()/readdir()-like interface instead of
-	// accessing the raw FST data.
-
 	if (!m_fstData || idx < 0) {
 		// No FST, or idx is invalid.
 		return nullptr;
 	}
 
-	if ((uint32_t)idx > be32_to_cpu(m_fstData[0].dir.last_entry_idx)) {
+	// NOTE: For the root directory, last_entry_idx is number of entries.
+	if ((uint32_t)idx >= be32_to_cpu(m_fstData[0].root_dir.file_count)) {
 		// Index is out of range.
 		return nullptr;
 	}
@@ -124,6 +128,126 @@ const GCN_FST_Entry *GcnFst::entry(int idx, const char **ppszName) const
 	}
 
 	return &m_fstData[idx];
+}
+
+/**
+ * Open a directory.
+ * @param path	[in] Directory path.
+ * @return FstDir*, or nullptr on error.
+ */
+GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
+{
+	// TODO: Ignoring path right now.
+	// Always reading the root directory.
+	if (!m_fstData) {
+		// No FST.
+		return nullptr;
+	}
+
+	const char *pName;
+	const GCN_FST_Entry *fst_entry = this->entry(0, &pName);
+	if (!fst_entry) {
+		// Error retrieving the root directory.
+		return nullptr;
+	}
+
+	FstDir *dirp = reinterpret_cast<FstDir*>(malloc(sizeof(*dirp)));
+	if (!dirp) {
+		// malloc() failed.
+		return nullptr;
+	}
+
+	m_fstDirCount++;
+	dirp->dir_idx = 0;
+
+	// Initialize the entry to the root directory.
+	// readdir() will automatically seek to the next entry.
+	dirp->entry.idx = dirp->dir_idx;
+	dirp->entry.type = DT_DIR;
+	dirp->entry.name = pName;
+	// offset and size are not valid for directories.
+	dirp->entry.offset = 0;
+	dirp->entry.size = 0;
+
+	// Return the FstDir*.
+	return dirp;
+}
+
+// Extract the d_type from a file_name_type_offset.
+// TODO: Move somewhere else?
+#define FTNO_D_TYPE(ftno) ((be32_to_cpu(ftno) >> 24) == 1 ? DT_DIR : DT_REG)
+
+/**
+ * Read a directory entry.
+ * @param dirp FstDir pointer.
+ * @return FstDirEntry*, or nullptr if end of directory or on error.
+ * (End of directory does not set lastError; an error does.)
+ */
+GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
+{
+	if (!dirp) {
+		// No directory pointer.
+		return nullptr;
+	}
+
+	// Seek to the next entry in the directory.
+	int idx = dirp->entry.idx;
+	const GCN_FST_Entry *fst_entry = this->entry(idx, nullptr);
+	if (!fst_entry) {
+		// No more entries.
+		return nullptr;
+	}
+
+	if (idx != dirp->dir_idx && FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+		// Skip over this directory.
+		idx = be32_to_cpu(fst_entry->dir.last_entry_idx) + 1;
+	} else {
+		// Go to the next file.
+		idx++;
+	}
+
+	const char *pName;
+	fst_entry = this->entry(idx, &pName);
+	dirp->entry.idx = idx;
+	if (!fst_entry) {
+		// No more entries.
+		dirp->entry.type = 0;
+		dirp->entry.name = nullptr;
+		return nullptr;
+	}
+
+	// Save the entry information.
+	dirp->entry.type = FTNO_D_TYPE(fst_entry->file_type_name_offset);
+	dirp->entry.name = pName;
+	if (dirp->entry.type == DT_DIR) {
+		// offset and size are not valid for directories.
+		dirp->entry.offset = 0;
+		dirp->entry.size = 0;
+	} else {
+		// Save the offset and size.
+		dirp->entry.offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << m_offsetShift);
+		dirp->entry.size = be32_to_cpu(fst_entry->file.size);
+	}
+
+	return &dirp->entry;
+}
+
+/**
+ * Close an opened directory.
+ * @param dirp FstDir pointer.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GcnFst::closedir(FstDir *dirp)
+{
+	assert(m_fstDirCount > 0);
+	if (!dirp) {
+		// Invalid pointer.
+		return -EINVAL;
+	}
+
+	free(dirp);
+	m_fstDirCount--;
+	return 0;
 }
 
 }

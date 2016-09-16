@@ -82,6 +82,10 @@ typedef struct PACKED _GCN_FST_Entry {
 	uint32_t file_type_name_offset;	// MSB = type; low 24 bits = name offset
 	union {
 		struct {
+			uint32_t unused;		// Unused.
+			uint32_t file_count;		// File count.
+		} root_dir;
+		struct {
 			uint32_t parent_dir_idx;	// Parent directory index.
 			uint32_t last_entry_idx;	// Index of last entry in this directory.
 		} dir;

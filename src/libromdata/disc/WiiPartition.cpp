@@ -49,12 +49,14 @@ namespace LibRomData {
 
 class WiiPartitionPrivate {
 	public:
-		WiiPartitionPrivate(IDiscReader *discReader, int64_t partition_offset);
+		WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset);
 		~WiiPartitionPrivate();
 
 	private:
 		WiiPartitionPrivate(const WiiPartitionPrivate &other);
 		WiiPartitionPrivate &operator=(const WiiPartitionPrivate &other);
+	private:
+		WiiPartition *const q;
 
 	public:
 		int lastError;
@@ -108,6 +110,12 @@ class WiiPartitionPrivate {
 		// Filesystem table.
 		GcnFst *fst;
 		GCN_FST_Info fstInfo;
+
+		/**
+		 * Load the FST.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadFst(void);
 #endif
 };
 
@@ -116,8 +124,9 @@ class WiiPartitionPrivate {
 AesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
 
-WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partition_offset)
-	: lastError(0)
+WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset)
+	: q(q)
+	, lastError(0)
 	, discReader(discReader)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
@@ -352,6 +361,107 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 }
 #endif /* ENABLE_DECRYPTION */
 
+/**
+ * Load the FST.
+ * @return 0 on success; non-zero on error.
+ */
+int WiiPartitionPrivate::loadFst(void)
+{
+	if (fst) {
+		// FST is already loaded.
+		return 0;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	switch (encInitStatus) {
+		case WiiPartition::ENCINIT_UNKNOWN:
+			// Attempt to initialize decryption.
+			if (initDecryption() != WiiPartition::ENCINIT_OK) {
+				// Decryption could not be initialized.
+				// TODO: Better error?
+				lastError = ENOSYS;
+				return 0;
+			}
+			break;
+
+		case WiiPartition::ENCINIT_OK:
+			// Decryption is initialized.
+			break;
+
+		default:
+			// Decryption failed to initialize.
+			return 0;
+	}
+
+	// Load the FST info.
+	GCN_FST_Info fstInfo;
+	int ret = q->seek(GCN_FST_Info_ADDRESS);
+	if (ret != 0) {
+		// Seek failed.
+		return -lastError;
+	}
+
+	size_t size = q->read(&fstInfo, sizeof(fstInfo));
+	if (size != sizeof(fstInfo)) {
+		// fstInfo read failed.
+		lastError = EIO;
+		return -lastError;
+	}
+
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+	// Byteswap fstInfo.
+	fstInfo.dol_offset	= be32_to_cpu(fstInfo.dol_offset);
+	fstInfo.fst_offset	= be32_to_cpu(fstInfo.fst_offset);
+	fstInfo.fst_size	= be32_to_cpu(fstInfo.fst_size);
+	fstInfo.fst_max_size	= be32_to_cpu(fstInfo.fst_max_size);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+
+	// NOTE: fstInfo's values are all uint34_rsh2_t on Wii.
+	if (fstInfo.fst_size > (1048576>>2) || fstInfo.fst_max_size > (1048576>>2)) {
+		// Sanity check: FST larger than 1 MB is invalid.
+		// TODO: What is the actual largest FST?
+		lastError = EIO;
+		return -lastError;
+	} else if (fstInfo.fst_size > fstInfo.fst_max_size) {
+		// FST is invalid.
+		lastError = EIO;
+		return -lastError;
+	}
+
+	// Seek to the beginning of the FST.
+	ret = q->seek((int64_t)fstInfo.fst_offset << 2);
+	if (ret != 0) {
+		// Seek failed.
+		return -lastError;
+	}
+
+	// Read the FST.
+	// TODO: Eliminate the extra copy?
+	size_t fstData_len = (size_t)fstInfo.fst_size << 2;
+	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(fstData_len));
+	if (!fstData) {
+		// malloc() failed.
+		lastError = ENOMEM;
+		return -lastError;
+	}
+	size = q->read(fstData, fstData_len);
+	if (size != fstData_len) {
+		// Short read.
+		free(fstData);
+		lastError = -EIO;
+		return -lastError;
+	}
+
+	// Create the GcnFst.
+	fst = new GcnFst(fstData, fstData_len, 2);
+	free(fstData);	// TODO: Eliminate the extra copy?
+	return 0;
+#else /* !ENABLE_DECRYPTION */
+	// Decryption is required in order to load the FST.
+	return -EIO;
+#endif /* ENABLE_DECRYPTION */
+}
+
 /** WiiPartition **/
 
 /**
@@ -362,7 +472,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param partition_offset Partition start offset.
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset)
-	: d(new WiiPartitionPrivate(discReader, partition_offset))
+	: d(new WiiPartitionPrivate(this, discReader, partition_offset))
 { }
 
 WiiPartition::~WiiPartition()
@@ -579,6 +689,73 @@ WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 {
 	// TODO: Errors?
 	return d->encInitStatus;
+}
+
+		/** GcnFst wrapper functions. **/
+
+/**
+ * Open a directory.
+ * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+ * @return FstDir*, or nullptr on error.
+ */
+GcnFst::FstDir *WiiPartition::opendir(const rp_char *path)
+{
+#ifdef ENABLE_DECRYPTION
+	if (!d->fst) {
+		// FST isn't loaded.
+		if (d->loadFst() != 0) {
+			// FST load failed.
+			// TODO: Errors?
+			return nullptr;
+		}
+	}
+
+	return d->fst->opendir(path);
+#else
+	// TODO: Errors?
+	return nullptr;
+#endif
+}
+
+/**
+ * Read a directory entry.
+ * @param dirp FstDir pointer.
+ * @return FstDirEntry*, or nullptr if end of directory or on error.
+ * (TODO: Add lastError()?)
+ */
+GcnFst::FstDirEntry *WiiPartition::readdir(GcnFst::FstDir *dirp)
+{
+#ifdef ENABLE_DECRYPTION
+	if (!d->fst) {
+		// TODO: Errors?
+		return nullptr;
+	}
+
+	return d->fst->readdir(dirp);
+#else
+	// TODO: Errors?
+	return nullptr;
+#endif
+}
+
+/**
+ * Close an opened directory.
+ * @param dirp FstDir pointer.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int WiiPartition::closedir(GcnFst::FstDir *dirp)
+{
+#ifdef ENABLE_DECRYPTION
+	if (!d->fst) {
+		// TODO: Errors?
+		return -EBADF;
+	}
+
+	return d->fst->closedir(dirp);
+#else
+	// TODO: Errors?
+	return -EBADF;
+#endif
 }
 
 }

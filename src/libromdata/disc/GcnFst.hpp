@@ -19,13 +19,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_GCNFST_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_GCNFST_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 
+#include "config.libromdata.h"
 #include "gcn_structs.h"
 
 // C includes.
 #include <stdint.h>
+
+// Directory type values.
+// Based on dirent.h from glibc-2.23.
+#include "d_type.h"
 
 namespace LibRomData {
 
@@ -52,6 +57,9 @@ class GcnFst
 		 */
 		int count(void) const;
 
+		/** opendir() interface. **/
+		// TOOD: IFst?
+
 		/**
 		 * Get an FST entry.
 		 * NOTE: FST entries have NOT been byteswapped.
@@ -61,6 +69,51 @@ class GcnFst
 		 * @return FST entry, or nullptr on error.
 		 */
 		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+
+		struct FstDirEntry {
+			int idx;	// File index.
+			uint8_t type;	// File type. (See d_type.h)
+			const char *name;	// Filename. (TODO: Encoding?)
+			int64_t offset;		// Starting address.
+			uint32_t size;		// File size.
+		};
+
+		struct FstDir {
+			int dir_idx;		// Directory index in the FST.
+			FstDirEntry entry;	// Current FstDirEntry.
+		};
+
+		/**
+		 * Open a directory.
+		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @return FstDir*, or nullptr on error.
+		 */
+		FstDir *opendir(const rp_char *path);
+
+		/**
+		 * Open a directory.
+		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @return FstDir*, or nullptr on error.
+		 */
+		inline FstDir *opendir(const LibRomData::rp_string &path)
+		{
+			return opendir(path.c_str());
+		}
+
+		/**
+		 * Read a directory entry.
+		 * @param dirp FstDir pointer.
+		 * @return FstDirEntry*, or nullptr if end of directory or on error.
+		 * (TODO: Add lastError()?)
+		 */
+		FstDirEntry *readdir(FstDir *dirp);
+
+		/**
+		 * Close an opened directory.
+		 * @param dirp FstDir pointer.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int closedir(FstDir *dirp);
 
 	private:
 		// FST data.
@@ -74,8 +127,11 @@ class GcnFst
 
 		// Offset shift.
 		uint8_t m_offsetShift;
+
+		// FstDir* reference counter.
+		int m_fstDirCount;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_GCNFST_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__ */

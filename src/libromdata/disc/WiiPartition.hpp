@@ -19,10 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
 #include "IPartition.hpp"
+#include "GcnFst.hpp"
 
 namespace LibRomData {
 
@@ -122,8 +123,42 @@ class WiiPartition : public IPartition
 		 * @return Encryption initialization status.
 		 */
 		EncInitStatus encInitStatus(void) const;
+
+		/** GcnFst wrapper functions. **/
+
+		/**
+		 * Open a directory.
+		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @return FstDir*, or nullptr on error.
+		 */
+		GcnFst::FstDir *opendir(const rp_char *path);
+
+		/**
+		 * Open a directory.
+		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @return FstDir*, or nullptr on error.
+		 */
+		inline GcnFst::FstDir *opendir(const LibRomData::rp_string &path)
+		{
+			return opendir(path.c_str());
+		}
+
+		/**
+		 * Read a directory entry.
+		 * @param dirp FstDir pointer.
+		 * @return FstDirEntry*, or nullptr if end of directory or on error.
+		 * (TODO: Add lastError()?)
+		 */
+		GcnFst::FstDirEntry *readdir(GcnFst::FstDir *dirp);
+
+		/**
+		 * Close an opened directory.
+		 * @param dirp FstDir pointer.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int closedir(GcnFst::FstDir *dirp);
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIIPARTITION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__ */
