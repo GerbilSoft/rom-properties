@@ -326,7 +326,7 @@ inline int DMGPrivate::RomSize(uint8_t type)
 	} else if (type >= 0x52 && type < 0x52+ARRAY_SIZE(rom_size_52)) {
 		return rom_size_52[type-0x52];
 	}
-	return -1u;
+	return -1;
 }
 
 /**
