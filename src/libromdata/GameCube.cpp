@@ -753,7 +753,7 @@ int GameCube::loadFieldData(void)
 			if (dirp) {
 				GcnFst::FstDirEntry *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
-					if (dirent->name) {
+					if (dirent->name && dirent->type == DT_REG) {
 						unsigned int version;
 						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
