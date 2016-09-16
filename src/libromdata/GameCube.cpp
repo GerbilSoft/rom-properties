@@ -774,7 +774,27 @@ int GameCube::loadFieldData(void)
 			if (!d->updatePartition) {
 				sysMenu = _RP("None");
 			} else {
-				sysMenu = _RP("Unknown");
+				switch (d->updatePartition->encInitStatus()) {
+					case WiiPartition::ENCINIT_DISABLED:
+						sysMenu = _RP("ERROR: Decryption is disabled.");
+						break;
+					case WiiPartition::ENCINIT_INVALID_KEY_IDX:
+						sysMenu = _RP("ERROR: Invalid common key index.");
+						break;
+					case WiiPartition::ENCINIT_NO_KEYFILE:
+						sysMenu = _RP("ERROR: keys.conf was not found.");
+						break;
+					case WiiPartition::ENCINIT_MISSING_KEY:
+						// TODO: Which key?
+						sysMenu = _RP("ERROR: Required key was not found in keys.conf.");
+						break;
+					case WiiPartition::ENCINIT_CIPHER_ERROR:
+						sysMenu = _RP("ERROR: Decryption library failed.");
+						break;
+					default:
+						sysMenu = _RP("Unknown");
+						break;
+				}
 			}
 
 			m_fields->addData_string(sysMenu);
