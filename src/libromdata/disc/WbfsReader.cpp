@@ -30,6 +30,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 namespace LibRomData {
@@ -45,6 +46,7 @@ class WbfsReaderPrivate {
 
 	public:
 		IRpFile *file;
+		int lastError;
 		int64_t disc_size;		// Virtual disc image size.
 
 		// WBFS structs.
@@ -97,13 +99,16 @@ class WbfsReaderPrivate {
 
 WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 	: file(nullptr)
+	, lastError(0)
 	, disc_size(0)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
 	, m_wbfs_pos(0)
 {
-	if (!file)
+	if (!file) {
+		lastError = EBADF;
 		return;
+	}
 	this->file = file->dup();
 
 	// Read the WBFS header.
@@ -112,6 +117,7 @@ WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 		// Error reading the WBFS header.
 		delete this->file;
 		this->file = nullptr;
+		lastError = EIO;
 		return;
 	}
 
@@ -123,6 +129,7 @@ WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 		m_wbfs = nullptr;
 		delete this->file;
 		this->file = nullptr;
+		lastError = EIO;
 		return;
 	}
 
@@ -380,6 +387,23 @@ bool WbfsReader::isOpen(void) const
 }
 
 /**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int WbfsReader::lastError(void) const
+{
+	return d->lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void WbfsReader::clearError(void)
+{
+	d->lastError = 0;
+}
+
+/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -390,8 +414,10 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc)
+	if (!d->m_wbfs_disc) {
+		d->lastError = EBADF;
 		return 0;
+	}
 
 	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
 	size_t ret = 0;
@@ -506,8 +532,10 @@ int WbfsReader::seek(int64_t pos)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc)
+	if (!d->m_wbfs_disc) {
+		d->lastError = EBADF;
 		return -1;
+	}
 
 	// Handle out-of-range cases.
 	// TODO: How does POSIX behave?
@@ -528,8 +556,10 @@ void WbfsReader::rewind(void)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc)
+	if (!d->m_wbfs_disc) {
+		d->lastError = EBADF;
 		return;
+	}
 
 	d->m_wbfs_pos = 0;
 }
@@ -543,8 +573,10 @@ int64_t WbfsReader::size(void) const
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc)
+	if (!d->m_wbfs_disc) {
+		d->lastError = EBADF;
 		return -1;
+	}
 
 	return d->disc_size;
 }

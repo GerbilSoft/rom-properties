@@ -26,14 +26,19 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 namespace LibRomData {
 
 DiscReader::DiscReader(IRpFile *file)
 	: m_file(nullptr)
+	, m_lastError(0)
 {
-	if (!file)
+	if (!file) {
+		m_lastError = EBADF;
 		return;
+	}
+	// TODO: Propagate errors.
 	m_file = file->dup();
 }
 
@@ -53,6 +58,23 @@ bool DiscReader::isOpen(void) const
 }
 
 /**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int DiscReader::lastError(void) const
+{
+	return m_lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void DiscReader::clearError(void)
+{
+	m_lastError = 0;
+}
+
+/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -61,8 +83,11 @@ bool DiscReader::isOpen(void) const
 size_t DiscReader::read(void *ptr, size_t size)
 {
 	assert(m_file != nullptr);
-	if (!m_file)
+	if (!m_file) {
+		m_lastError = EBADF;
 		return 0;
+	}
+	// TODO: Propagate errors.
 	return m_file->read(ptr, size);
 }
 
@@ -74,8 +99,11 @@ size_t DiscReader::read(void *ptr, size_t size)
 int DiscReader::seek(int64_t pos)
 {
 	assert(m_file != nullptr);
-	if (!m_file)
+	if (!m_file) {
+		m_lastError = EBADF;
 		return -1;
+	}
+	// TODO: Propagate errors.
 	return m_file->seek(pos);
 }
 
@@ -85,9 +113,12 @@ int DiscReader::seek(int64_t pos)
 void DiscReader::rewind(void)
 {
 	assert(m_file != nullptr);
-	if (m_file) {
-		m_file->rewind();
+	if (!m_file) {
+		m_lastError = EBADF;
+		return;
 	}
+	// TODO: Propagate errors.
+	m_file->rewind();
 }
 
 /**
@@ -97,8 +128,11 @@ void DiscReader::rewind(void)
 int64_t DiscReader::size(void) const
 {
 	assert(m_file != nullptr);
-	if (!m_file)
+	if (!m_file) {
+		const_cast<DiscReader*>(this)->m_lastError = EBADF;
 		return -1;
+	}
+	// TODO: Propagate errors.
 	return m_file->fileSize();
 }
 

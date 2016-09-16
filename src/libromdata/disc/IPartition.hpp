@@ -39,41 +39,6 @@ class IPartition : public IDiscReader
 
 	public:
 		/**
-		 * Is the partition open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the partition is open; false if it isn't.
-		 */
-		virtual bool isOpen(void) const = 0;
-
-		/**
-		 * Read data from the partition.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
-		 */
-		virtual size_t read(void *ptr, size_t size) = 0;
-
-		/**
-		 * Set the partition position.
-		 * @param pos partition position.
-		 * @return 0 on success; -1 on error.
-		 */
-		virtual int seek(int64_t pos) = 0;
-
-		/**
-		 * Seek to the beginning of the partition.
-		 */
-		virtual void rewind(void) = 0;
-
-		/**
-		 * Get the data size.
-		 * This is the size of the usable data area,
-		 * not including any headers or container metadata.
-		 * @return Data size, or -1 on error.
-		 */
-		virtual int64_t size(void) const = 0;
-
-		/**
 		 * Get the partition size.
 		 * This includes the partition headers and any
 		 * metadata, e.g. Wii sector hashes, if present.

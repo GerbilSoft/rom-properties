@@ -52,6 +52,17 @@ class IDiscReader
 		virtual bool isOpen(void) const = 0;
 
 		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const = 0;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) = 0;
+
+		/**
 		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.

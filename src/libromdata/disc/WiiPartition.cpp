@@ -34,6 +34,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 // C++ includes.
@@ -56,6 +57,8 @@ class WiiPartitionPrivate {
 		WiiPartitionPrivate &operator=(const WiiPartitionPrivate &other);
 
 	public:
+		int lastError;
+
 		IDiscReader *discReader;
 		int64_t partition_offset;	// Partition start offset.
 		int64_t data_offset;		// Encrypted data start offset. (-1 == error)
@@ -114,7 +117,8 @@ AesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
 
 WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partition_offset)
-	: discReader(discReader)
+	: lastError(0)
+	, discReader(discReader)
 	, partition_offset(partition_offset)
 	, data_offset(-1)	// -1 == invalid
 	, partition_size(-1)
@@ -142,19 +146,28 @@ WiiPartitionPrivate::WiiPartitionPrivate(IDiscReader *discReader, int64_t partit
 	// TODO: Atomic reference count?
 	++aes_common_refcnt;
 
-	if (!discReader->isOpen())
+	if (!discReader->isOpen()) {
+		lastError = discReader->lastError();
 		return;
+	}
 
 	// Read the partition header.
-	if (discReader->seek(partition_offset) != 0)
+	if (discReader->seek(partition_offset) != 0) {
+		lastError = discReader->lastError();
 		return;
+	}
 	size_t size = discReader->read(&partitionHeader, sizeof(partitionHeader));
-	if (size != sizeof(partitionHeader))
+	if (size != sizeof(partitionHeader)) {
+		lastError = EIO;
 		return;
+	}
 
 	// Make sure the signature type is correct.
-	if (be32_to_cpu(partitionHeader.ticket.signature_type) != RVL_SIGNATURE_TYPE_RSA2048)
+	if (be32_to_cpu(partitionHeader.ticket.signature_type) != RVL_SIGNATURE_TYPE_RSA2048) {
+		// TODO: Better error?
+		lastError = EIO;
 		return;
+	}
 
 	// Save important data.
 	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
@@ -310,13 +323,16 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
 
 	int ret = discReader->seek(sector_addr);
-	if (ret != 0)
+	if (ret != 0) {
+		lastError = discReader->lastError();
 		return ret;
+	}
 
 	size_t sz = discReader->read(sector_buf, sizeof(sector_buf));
 	if (sz != SECTOR_SIZE_ENCRYPTED) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
+		lastError = EIO;
 		return -1;
 	}
 
@@ -326,6 +342,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	{
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
+		lastError = EIO;
 		return -1;
 	}
 
@@ -366,6 +383,23 @@ bool WiiPartition::isOpen(void) const
 }
 
 /**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int WiiPartition::lastError(void) const
+{
+	return d->lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void WiiPartition::clearError(void)
+{
+	d->lastError = 0;
+}
+
+/**
  * Read data from the file.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -375,8 +409,10 @@ size_t WiiPartition::read(void *ptr, size_t size)
 {
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
-	if (!d->discReader || !d->discReader->isOpen())
+	if (!d->discReader || !d->discReader->isOpen()) {
+		d->lastError = EBADF;
 		return 0;
+	}
 
 #ifdef ENABLE_DECRYPTION
 	switch (d->encInitStatus) {
@@ -384,6 +420,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			// Attempt to initialize decryption.
 			if (d->initDecryption() != ENCINIT_OK) {
 				// Decryption could not be initialized.
+				// TODO: Better error?
+				d->lastError = ENOSYS;
 				return 0;
 			}
 			break;
@@ -468,6 +506,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	return ret;
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled in this build.
+	d->lastError = ENOSYS;
 	return 0;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -481,8 +520,10 @@ int WiiPartition::seek(int64_t pos)
 {
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
-	if (!d->discReader || !d->discReader->isOpen())
+	if (!d->discReader ||  !d->discReader->isOpen()) {
+		d->lastError = EBADF;
 		return -1;
+	}
 
 	// Handle out-of-range cases.
 	// TODO: How does POSIX behave?
@@ -511,6 +552,7 @@ void WiiPartition::rewind(void)
  */
 int64_t WiiPartition::size(void) const
 {
+	// TODO: Errors?
 	return d->data_size;
 }
 
@@ -523,6 +565,7 @@ int64_t WiiPartition::size(void) const
  */
 int64_t WiiPartition::partition_size(void) const
 {
+	// TODO: Errors?
 	return d->partition_size;
 }
 
@@ -534,6 +577,7 @@ int64_t WiiPartition::partition_size(void) const
  */
 WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 {
+	// TODO: Errors?
 	return d->encInitStatus;
 }
 

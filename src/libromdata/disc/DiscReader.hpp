@@ -53,6 +53,17 @@ class DiscReader : public IDiscReader
 		virtual bool isOpen(void) const override;
 
 		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const override;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) override;
+
+		/**
 		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
@@ -80,6 +91,7 @@ class DiscReader : public IDiscReader
 
 	protected:
 		IRpFile *m_file;
+		int m_lastError;
 };
 
 }
