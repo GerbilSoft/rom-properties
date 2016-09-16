@@ -30,6 +30,10 @@ using LibRomData::rp_string;
 #include <cstdlib>
 #include <cstring>
 
+// C++ includes.
+#include <string>
+using std::string;
+
 namespace LibRomData {
 
 class GcnFstPrivate
@@ -59,6 +63,13 @@ class GcnFstPrivate
 		int fstDirCount;
 
 		/**
+		 * Get an FST entry's name.
+		 * @param fst_entry FST entry.
+		 * @return Name, or nullptr if an error occurred.
+		 */
+		inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
+
+		/**
 		 * Get an FST entry.
 		 *
 		 * NOTE: FST entries have NOT been byteswapped.
@@ -69,6 +80,13 @@ class GcnFstPrivate
 		 * @return FST entry, or nullptr on error.
 		 */
 		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+
+		/**
+		 * Find a path.
+		 * @param path Path.
+		 * @return fst_entry if found, or nullptr if not.
+		 */
+		const GCN_FST_Entry *find_path(const rp_char *path) const;
 };
 
 /** GcnFstPrivate **/
@@ -118,6 +136,27 @@ GcnFstPrivate::~GcnFstPrivate()
 	free(fstData);
 }
 
+// Extract the d_type from a file_name_type_offset.
+// TODO: Move somewhere else?
+#define FTNO_D_TYPE(ftno) ((be32_to_cpu(ftno) >> 24) == 1 ? DT_DIR : DT_REG)
+
+/**
+ * Get an FST entry's name.
+ * @param fst_entry FST entry.
+ * @return Name, or nullptr if an error occurred.
+ */
+inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
+{
+	// Get the name entry from the string table.
+	uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
+	if (offset < string_table_sz) {
+		return &string_table[offset];
+	}
+
+	// Offset is out of range.
+	return nullptr;
+}
+
 /**
  * Get an FST entry.
  *
@@ -142,17 +181,134 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 	}
 
 	if (ppszName) {
-		// Get the name entry from the string table.
-		uint32_t offset = be32_to_cpu(fstData[idx].file_type_name_offset) & 0xFFFFFF;
-		if (offset < string_table_sz) {
-			*ppszName = &string_table[offset];
-		} else {
-			// Offset is out of range.
+		if (idx == 0) {
+			// Root directory has no name.
 			*ppszName = nullptr;
+		} else {
+			// Get the entry's name.
+			*ppszName = entry_name(&fstData[idx]);
 		}
 	}
 
 	return &fstData[idx];
+}
+
+/**
+ * Find a path.
+ * @param path Path.
+ * @return fst_entry if found, or nullptr if not.
+ */
+const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
+{
+	if (!path) {
+		// Invalid path.
+		return nullptr;
+	} else if (!path[0]) {
+		// Empty path. Assume "/".
+		return this->entry(0, nullptr);
+	}
+
+	// Convert the path to UTF-8.
+	// TODO: ASCII or Latin-1 instead?
+	string path8 = rp_string_to_utf8(path, rp_strlen(path));
+	if (path8.empty()) {
+		// Invalid path.
+		return nullptr;
+	}
+
+	// If there's a trailing slash, remove it.
+	if (path8[path8.size()-1] == '/') {
+		path8.resize(path8.size()-1);
+	}
+
+	// Get the root directory.
+	const GCN_FST_Entry *fst_entry = this->entry(0, nullptr);
+	if (!fst_entry) {
+		// Can't find the root directory.
+		return nullptr;
+	}
+
+	// Is the path root?
+	if (path8 == "/") {
+		// Root directory.
+		return fst_entry;
+	}
+
+	// Skip the initial slash.
+	int idx = 1;	// Ignore the root directory.
+	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count) - 1;
+	size_t slash_pos = 0;
+	do {
+		size_t next_slash_pos = path8.find('/', slash_pos + 1);
+		string path_component;
+		bool are_more_slashes = true;
+		if (next_slash_pos == string::npos) {
+			// No more slashes.
+			are_more_slashes = false;
+			path_component = path8.substr(slash_pos + 1);
+		} else {
+			// Found another slash.
+			int sz = (int)(next_slash_pos - slash_pos - 1);
+			if (sz <= 0) {
+				// Empty path component.
+				slash_pos = next_slash_pos;
+				continue;
+			}
+			path_component = path8.substr(slash_pos + 1, (size_t)sz);
+		}
+
+		if (path_component.empty()) {
+			// Empty path component.
+			slash_pos = next_slash_pos;
+			continue;
+		}
+
+		// Search this directory for a matching path component.
+		bool found = false;
+		for (; idx <= last_fst_idx; idx++) {
+			const char *pName;
+			fst_entry = this->entry(idx, &pName);
+			if (!fst_entry) {
+				// Invalid path.
+				return nullptr;
+			}
+
+			// TODO: Is GCN/Wii case-sensitive?
+			if (pName && !strcmp(path_component.c_str(), pName)) {
+				// Found a match.
+				found = true;
+				break;
+			}
+
+			// If this is a directory, skip it.
+			if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+				idx = be32_to_cpu(fst_entry->dir.last_entry_idx);
+			}
+		}
+
+		if (!found) {
+			// No match.
+			return nullptr;
+		}
+
+		if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+			// Directory. Save the last_fst_idx.
+			last_fst_idx = be32_to_cpu(fst_entry->dir.last_entry_idx);
+			idx++;
+		} else {
+			// File: Make sure there's no more slashes.
+			if (are_more_slashes) {
+				// More slashes. Not a match.
+				return nullptr;
+			}
+		}
+
+		// Next slash.
+		slash_pos = next_slash_pos;
+	} while (slash_pos != string::npos);
+
+	// Found the directory entry.
+	return fst_entry;
 }
 
 /** GcnFst **/
@@ -200,10 +356,16 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 		return nullptr;
 	}
 
-	const char *pName;
-	const GCN_FST_Entry *fst_entry = d->entry(0, &pName);
+	// Find the path.
+	const GCN_FST_Entry *fst_entry = d->find_path(path);
 	if (!fst_entry) {
-		// Error retrieving the root directory.
+		// Error finding the path.
+		return nullptr;
+	}
+
+	if (FTNO_D_TYPE(fst_entry->file_type_name_offset) != DT_DIR) {
+		// Not a directory.
+		// TODO: Set ENOTDIR?
 		return nullptr;
 	}
 
@@ -214,13 +376,14 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 	}
 
 	d->fstDirCount++;
-	dirp->dir_idx = 0;
+	// TODO: Better way to get dir_idx?
+	dirp->dir_idx = (int)(fst_entry - d->fstData);
 
 	// Initialize the entry to the root directory.
 	// readdir() will automatically seek to the next entry.
 	dirp->entry.idx = dirp->dir_idx;
 	dirp->entry.type = DT_DIR;
-	dirp->entry.name = pName;
+	dirp->entry.name = d->entry_name(fst_entry);
 	// offset and size are not valid for directories.
 	dirp->entry.offset = 0;
 	dirp->entry.size = 0;
@@ -228,10 +391,6 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 	// Return the FstDir*.
 	return dirp;
 }
-
-// Extract the d_type from a file_name_type_offset.
-// TODO: Move somewhere else?
-#define FTNO_D_TYPE(ftno) ((be32_to_cpu(ftno) >> 24) == 1 ? DT_DIR : DT_REG)
 
 /**
  * Read a directory entry.
@@ -243,6 +402,13 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 {
 	if (!dirp) {
 		// No directory pointer.
+		return nullptr;
+	}
+
+	// Get the directory's fst_entry.
+	const GCN_FST_Entry *dir_fst_entry = d->entry(dirp->dir_idx);
+	if (!dir_fst_entry) {
+		// dir_idx is corrupted.
 		return nullptr;
 	}
 
@@ -260,6 +426,11 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 	} else {
 		// Go to the next file.
 		idx++;
+	}
+
+	if (idx >= (int)be32_to_cpu(dir_fst_entry->dir.last_entry_idx)) {
+		// Last entry in the directory.
+		return nullptr;
 	}
 
 	const char *pName;

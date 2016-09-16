@@ -267,13 +267,13 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 			// Print the root directory.
 			// TODO: Remove after we're finished debugging.
-			GcnFst::FstDir *dirp = entry.partition->opendir(_RP("/"));
+			GcnFst::FstDir *dirp = entry.partition->opendir(_RP("/_sys/"));
 			printf("Partition %dp%d:\n", i, j);
 			if (dirp) {
 				GcnFst::FstDirEntry *dirent;
 				while ((dirent = entry.partition->readdir(dirp)) != nullptr) {
-					printf("%s: %s - addr %08lX, size %u\n",
-					       (dirent->type == DT_DIR ? "DIR:  " : "FILE: "),
+					printf("%s %s - addr %08lX, size %u\n",
+					       (dirent->type == DT_DIR ? "DIR: " : "FILE:"),
 					       dirent->name, dirent->offset, dirent->size);
 				}
 				entry.partition->closedir(dirp);
