@@ -29,12 +29,14 @@
 #include "file/IRpFile.hpp"
 
 // DiscReader
-#include "DiscReader.hpp"
-#include "WbfsReader.hpp"
+#include "disc/DiscReader.hpp"
+#include "disc/WbfsReader.hpp"
+#include "disc/WiiPartition.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
+#include <cstdio>
 #include <cstring>
 
 // C++ includes.
@@ -86,19 +88,29 @@ class GameCubePrivate
 		// Disc header.
 		GCN_DiscHeader discHeader;
 
+		enum WiiPartitionType {
+			PARTITION_GAME = 0,
+			PARTITION_UPDATE = 1,
+			PARTITION_CHANNEL = 2,
+		};
+
 		/**
 		 * Wii partition tables.
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			uint64_t start;		// Starting address, in bytes.
-			//uint64_t length;	// Length, in bytes. [TODO: Calculate this]
-			uint32_t type;		// Partition type. (0 == Game, 1 == Update, 2 == Channel)
+			uint64_t start;			// Starting address, in bytes.
+			uint32_t type;			// Partition type. (See WiiPartitionType.)
+			WiiPartition *partition;	// Partition object.
 		};
 
 		typedef std::vector<WiiPartEntry> WiiPartTable;
 		WiiPartTable wiiVgTbl[4];	// Volume group table.
 		bool wiiVgTblLoaded;
+
+		// Update partition.
+		// Points to entry within WiiParttable.
+		WiiPartition *updatePartition;
 
 		/**
 		 * Load the Wii volume group and partition tables.
@@ -106,6 +118,20 @@ class GameCubePrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadWiiPartitionTables(void);
+
+		/**
+		 * Format a file size.
+		 * @param fileSize File size.
+		 * @return Formatted file size.
+		 */
+		static rp_string formatFileSize(int64_t fileSize);
+
+		/**
+		 * Parse the Wii System Update version.
+		 * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
+		 * @return Wii System Update version, or nullptr if unknown.
+		 */
+		static const rp_char *parseWiiSystemMenuVersion(unsigned int version);
 };
 
 /** GameCubePrivate **/
@@ -115,17 +141,29 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, wiiVgTblLoaded(false)
+	, updatePartition(nullptr)
 { }
 
 GameCubePrivate::~GameCubePrivate()
 {
+	updatePartition = nullptr;
+
+	// Delete partition objects in wiiVgTbl[].
+	// TODO: Check wiiVgTblLoaded?
+	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
+		for (std::vector<WiiPartEntry>::iterator iter = wiiVgTbl[i].begin();
+		     iter != wiiVgTbl[i].end(); ++iter)
+		{
+			delete iter->partition;
+		}
+	}
+
 	delete discReader;
 }
 
 // Wii partition table.
 const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
-	_RP("#"), _RP("Type"),
-	// TODO: Start/End addresses?
+	_RP("#"), _RP("Type"), _RP("Size")
 };
 
 const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
@@ -141,6 +179,9 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 
+	// Wii System Update version.
+	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
+
 	// Wii partition table.
 	// NOTE: Actually a table of tables, so we'll use
 	// 0p0-style numbering, where the first digit is
@@ -149,7 +190,6 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Partitions"), RomFields::RFT_LISTDATA, {&rvl_partitions}},
 
 	// TODO:
-	// - System update version.
 	// - Region and age ratings.
 };
 
@@ -194,8 +234,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Get the size of the disc image.
-	// TODO: Large File Support for 32-bit Linux and Windows.
-	int64_t discSize = discReader->fileSize();
+	int64_t discSize = discReader->size();
 	if (discSize < 0) {
 		// Error getting the size of the disc image.
 		return -errno;
@@ -225,13 +264,175 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		for (int j = 0; j < (int)count; j++) {
 			WiiPartEntry &entry = wiiVgTbl[i].at(j);
 			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
-			// TODO: Figure out how to calculate length?
 			entry.type = be32_to_cpu(pt[j].type);
+			entry.partition = new WiiPartition(discReader, entry.start);
+
+			if (entry.type == PARTITION_UPDATE && !updatePartition) {
+				// System Update partition.
+				updatePartition = entry.partition;
+			}
 		}
 	}
 
 	// Done reading the partition tables.
 	return 0;
+}
+
+static inline int calc_frac_part(int64_t size, int64_t mask)
+{
+	float f = (float)(size & (mask - 1)) / (float)mask;
+	int frac_part = (int)(f * 1000.0f);
+
+	// MSVC added round() and roundf() in MSVC 2013.
+	// Use our own rounding code instead.
+	int round_adj = (frac_part % 10 > 5);
+	frac_part /= 10;
+	frac_part += round_adj;
+	return frac_part;
+}
+
+/**
+ * Format a file size.
+ * @param size File size.
+ * @return Formatted file size.
+ */
+rp_string GameCubePrivate::formatFileSize(int64_t size)
+{
+	// TODO: Move to somewhere common?
+	// TODO: Thousands formatting?
+	char buf[64];
+
+	const char *suffix;
+	// frac_part is always 0 to 100.
+	// If whole_part >= 10, frac_part is divided by 10.
+	int whole_part, frac_part;
+
+	// TODO: Optimize this?
+	// TODO: Localize this?
+	if (size < 0) {
+		// Invalid size. Print the value as-is.
+		suffix = "";
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 10)) {
+		suffix = (size == 1 ? "byte" : " bytes");
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 20)) {
+		suffix = " KB";
+		whole_part = (int)(size >> 10);
+		frac_part = calc_frac_part(size, (1LL << 10));
+	} else if (size < (2LL << 30)) {
+		suffix = " MB";
+		whole_part = (int)(size >> 20);
+		frac_part = calc_frac_part(size, (1LL << 20));
+	} else if (size < (2LL << 40)) {
+		suffix = " GB";
+		whole_part = (int)(size >> 30);
+		frac_part = calc_frac_part(size, (1LL << 30));
+	} else if (size < (2LL << 50)) {
+		suffix = " TB";
+		whole_part = (int)(size >> 40);
+		frac_part = calc_frac_part(size, (1LL << 40));
+	} else if (size < (2LL << 60)) {
+		suffix = " PB";
+		whole_part = (int)(size >> 50);
+		frac_part = calc_frac_part(size, (1LL << 50));
+	} else /*if (size < (2ULL << 70))*/ {
+		suffix = " EB";
+		whole_part = (int)(size >> 60);
+		frac_part = calc_frac_part(size, (1LL << 60));
+	}
+
+	int len;
+	if (size < (2LL << 10)) {
+		// Bytes or negative value. No fractional part.
+		len = snprintf(buf, sizeof(buf), "%d%s", whole_part, suffix);
+	} else {
+		// TODO: Localized decimal point?
+		int frac_digits = 2;
+		if (whole_part >= 10) {
+			int round_adj = (frac_part % 10 > 5);
+			frac_part /= 10;
+			frac_part += round_adj;
+			frac_digits = 1;
+		}
+		len = snprintf(buf, sizeof(buf), "%d.%0*d%s",
+			whole_part, frac_digits, frac_part, suffix);
+	}
+
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Parse the Wii System Update version.
+ * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
+ * @return Wii System Update version, or nullptr if unknown.
+ */
+const rp_char *GameCubePrivate::parseWiiSystemMenuVersion(unsigned int version)
+{
+	switch (version) {
+		// Wii
+		// Reference: http://wiiubrew.org/wiki/Title_database
+		case 33:	return _RP("1.0");
+		case 97:	return _RP("2.0U");
+		case 128:	return _RP("2.0J");
+		case 130:	return _RP("2.0E");
+		case 162:	return _RP("2.1E");
+		case 192:	return _RP("2.2J");
+		case 193:	return _RP("2.2U");
+		case 194:	return _RP("2.2E");
+		case 224:	return _RP("3.0J");
+		case 225:	return _RP("3.0U");
+		case 226:	return _RP("3.0E");
+		case 256:	return _RP("3.1J");
+		case 257:	return _RP("3.1U");
+		case 258:	return _RP("3.1E");
+		case 288:	return _RP("3.2J");
+		case 289:	return _RP("3.2U");
+		case 290:	return _RP("3.2E");
+		case 326:	return _RP("3.3K");
+		case 352:	return _RP("3.3J");
+		case 353:	return _RP("3.3U");
+		case 354:	return _RP("3.3E");
+		case 384:	return _RP("3.4J");
+		case 385:	return _RP("3.4U");
+		case 386:	return _RP("3.4E");
+		case 390:	return _RP("3.5K");
+		case 416:	return _RP("4.0J");
+		case 417:	return _RP("4.0U");
+		case 418:	return _RP("4.0E");
+		case 448:	return _RP("4.1J");
+		case 449:	return _RP("4.1U");
+		case 450:	return _RP("4.1E");
+		case 454:	return _RP("4.1K");
+		case 480:	return _RP("4.2J");
+		case 481:	return _RP("4.2U");
+		case 482:	return _RP("4.2E");
+		case 483:	return _RP("4.2K");
+		case 512:	return _RP("4.3J");
+		case 513:	return _RP("4.3U");
+		case 514:	return _RP("4.3E");
+		case 518:	return _RP("4.3K");
+
+		// vWii
+		// References:
+		// - http://wiiubrew.org/wiki/Title_database
+		// - https://yls8.mtheall.com/ninupdates/reports.php
+		// NOTE: These are all listed as 4.3.
+		// NOTE 2: vWii also has 512, 513, and 514.
+		case 544:	return _RP("4.3J");
+		case 545:	return _RP("4.3U");
+		case 546:	return _RP("4.3E");
+		case 608:	return _RP("4.3J");
+		case 609:	return _RP("4.3U");
+		case 610:	return _RP("4.3E");
+
+		// Unknown version.
+		default:	return nullptr;
+	}
 }
 
 /** GameCube **/
@@ -524,75 +725,127 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
 	m_fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
-	// Partition table. (Wii only)
-	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_WII) {
+	// The remaining fields are Wii only.
+	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
+	    GameCubePrivate::DISC_SYSTEM_WII)
+	{
+		// Add dummy entries for Wii-specific fields.
+		m_fields->addData_string(nullptr);
+
+		// Finished reading the field data.
+		return (int)m_fields->count();
+	}
+	
+	/** Wii-specific fields. **/
+
+	// Load the Wii partition tables.
+	int ret = d->loadWiiPartitionTables();
+	if (ret == 0) {
+		// Wii partition tables loaded.
+		// Convert them to RFT_LISTDATA for display purposes.
+
+		// Update version.
+		const rp_char *sysMenu = nullptr;
+		if (d->updatePartition) {
+			// Find the RVL-WiiSystemmenu-v*.wad file.
+			GcnFst::FstDir *dirp = d->updatePartition->opendir(_RP("/_sys/"));
+			if (dirp) {
+				GcnFst::FstDirEntry *dirent;
+				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
+					if (dirent->name) {
+						unsigned int version;
+						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
+						if (ret == 1) {
+							sysMenu = d->parseWiiSystemMenuVersion(version);
+							break;
+						}
+					}
+				}
+				d->updatePartition->closedir(dirp);
+			}
+		}
+
+		if (sysMenu) {
+			m_fields->addData_string(sysMenu);
+		} else {
+			// TODO: Show specific errors if the system menu WAD wasn't found.
+			// Missing encryption key, etc.
+			if (!d->updatePartition) {
+				sysMenu = _RP("None");
+			} else {
+				sysMenu = _RP("Unknown");
+			}
+
+			m_fields->addData_string(sysMenu);
+		}
+
+		// Partition table.
 		RomFields::ListData *partitions = new RomFields::ListData();
 
-		// Load the Wii partition tables.
-		int ret = d->loadWiiPartitionTables();
-		if (ret == 0) {
-			// Wii partition tables loaded.
-			// Convert them to RFT_LISTDATA for display purposes.
-			vector<rp_string> data_row;     // Temporary storage for each partition entry.
-			for (int i = 0; i < 4; i++) {
-				const int count = (int)d->wiiVgTbl[i].size();
-				for (int j = 0; j < count; j++) {
-					const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
-					data_row.clear();
+		vector<rp_string> data_row;     // Temporary storage for each partition entry.
+		for (int i = 0; i < 4; i++) {
+			const int count = (int)d->wiiVgTbl[i].size();
+			for (int j = 0; j < count; j++) {
+				const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
+				data_row.clear();
 
-					// Partition number.
-					char buf[16];
-					int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
-					if (len > (int)sizeof(buf))
-						len = sizeof(buf);
-					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				// Partition number.
+				char buf[16];
+				int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-					// Partition type.
-					rp_string str;
-					switch (entry.type) {
-						case 0:
-							str = _RP("Game");
-							break;
-						case 1:
-							str = _RP("Update");
-							break;
-						case 2:
-							str = _RP("Channel");
-							break;
-						default: {
-							// If all four bytes are ASCII,
-							// print it as-is. (SSBB demo channel)
-							// Otherwise, print the number.
-							// NOTE: Must be BE32 for proper display.
-							uint32_t be32_type = cpu_to_be32(entry.type);
-							memcpy(buf, &be32_type, 4);
-							if (isalnum(buf[0]) && isalnum(buf[1]) &&
-							    isalnum(buf[2]) && isalnum(buf[3]))
-							{
-								// All four bytes are ASCII.
-								str = latin1_to_rp_string(buf, 4);
-							} else {
-								// Non-ASCII data. Print the hex values instead.
-								len = snprintf(buf, sizeof(buf), "%08X", entry.type);
-								if (len > (int)sizeof(buf))
-									len = sizeof(buf);
-								str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-							}
- 						}
+				// Partition type.
+				rp_string str;
+				switch (entry.type) {
+					case GameCubePrivate::PARTITION_GAME:
+						str = _RP("Game");
+						break;
+					case GameCubePrivate::PARTITION_UPDATE:
+						str = _RP("Update");
+						break;
+					case GameCubePrivate::PARTITION_CHANNEL:
+						str = _RP("Channel");
+						break;
+					default: {
+						// If all four bytes are ASCII,
+						// print it as-is. (SSBB demo channel)
+						// Otherwise, print the number.
+						// NOTE: Must be BE32 for proper display.
+						uint32_t be32_type = cpu_to_be32(entry.type);
+						memcpy(buf, &be32_type, 4);
+						if (isalnum(buf[0]) && isalnum(buf[1]) &&
+							isalnum(buf[2]) && isalnum(buf[3]))
+						{
+							// All four bytes are ASCII.
+							str = latin1_to_rp_string(buf, 4);
+						} else {
+							// Non-ASCII data. Print the hex values instead.
+							len = snprintf(buf, sizeof(buf), "%08X", entry.type);
+							if (len > (int)sizeof(buf))
+								len = sizeof(buf);
+							str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+						}
 					}
-					data_row.push_back(str);
-
-					// Add the partition information to the ListData.
-					partitions->data.push_back(data_row);
 				}
+				data_row.push_back(str);
+
+				// Partition size.
+				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
+
+				// Add the partition information to the ListData.
+				partitions->data.push_back(data_row);
 			}
 		}
 
 		// Add the partitions list data.
 		m_fields->addData_listData(partitions);
 	} else {
-		// Add a dummy entry.
-		m_fields->addData_invalid();
+		// Could not load partition tables.
+		// FIXME: Show an error? For now, add dummy fields.
+		m_fields->addData_invalid();		// Update
+		m_fields->addData_invalid();		// Partitions
 	}
 
 	// Finished reading the field data.

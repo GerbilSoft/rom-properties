@@ -23,9 +23,11 @@
 
 #include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/RpFile.hpp"
+#include "libromdata/file/FileSystem.hpp"
 using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
+using namespace LibRomData::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
@@ -52,10 +54,6 @@ using std::string;
 #else
 #include "CurlDownloader.hpp"
 #endif
-
-// File system wrapper functions.
-#include "FileSystem.hpp"
-using namespace LibCacheMgr::FileSystem;
 
 namespace LibCacheMgr {
 
@@ -121,7 +119,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	rp_string cache_filename = FileSystem::getCacheDirectory();
+	rp_string cache_filename = getCacheDirectory();
 
 	if (cache_filename.empty())
 		return rp_string();
@@ -230,7 +228,7 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 	// TODO: IRpFile::set_mtime()?
 	time_t mtime = m_downloader->mtime();
 	if (mtime >= 0) {
-		FileSystem::set_mtime(cache_filename, mtime);
+		set_mtime(cache_filename, mtime);
 	}
 
 	// Return the cache filename.

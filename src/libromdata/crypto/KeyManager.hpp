@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * IDiscReader.cpp: Disc reader interface.                                 *
+ * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,65 +19,58 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "IDiscReader.hpp"
-#include "file/IRpFile.hpp"
+#ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
-// C includes. (C++ namespace)
-#include <cassert>
+// C includes.
+#include <stdint.h>
 
 namespace LibRomData {
- 
-/**
- * Construct an IDiscReader with the specified file.
- * The file is dup()'d, so the original file can be
- * closed afterwards.
- *
- * NOTE: Subclasses must initialize m_fileSize.
- *
- * @param file File to read from.
- */
-IDiscReader::IDiscReader(IRpFile *file)
-	: m_file(nullptr)
-	, m_fileSize(0)
+
+class KeyManagerPrivate;
+class KeyManager
 {
-	if (!file)
-		return;
+	protected:
+		/**
+		 * KeyManager class.
+		 *
+		 * This class is a Singleton, so the caller must obtain a
+		 * pointer to the class using instance().
+		 */
+		KeyManager();
+	public:
+		~KeyManager();
 
-	// dup() the file.
-	m_file = file->dup();
+	private:
+		KeyManager(const KeyManager &other);
+		KeyManager &operator=(const KeyManager &other);
+
+	private:
+		friend class KeyManagerPrivate;
+		KeyManagerPrivate *const d;
+
+	public:
+		/**
+		 * Get the KeyManager instance.
+		 * @return KeyManager instance.
+		 */
+		static KeyManager *instance(void);
+
+		// Encryption key data.
+		struct KeyData_t {
+			const uint8_t *key;	// Key data.
+			uint32_t length;	// Key length.
+		};
+
+		/**
+		 * Get an encryption key.
+		 * @param keyName	[in]  Encryption key name.
+		 * @param pKeyData	[out] Key data struct.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int get(const char *keyName, KeyData_t *pKeyData) const;
+};
+
 }
 
-IDiscReader::~IDiscReader()
-{
-	delete m_file;
-}
-
-/**
- * Is the file open?
- * This usually only returns false if an error occurred.
- * @return True if the file is open; false if it isn't.
- */
-bool IDiscReader::isOpen(void) const
-{
-	return (m_file != nullptr);
-}
-
-/**
- * Seek to the beginning of the file.
- */
-void IDiscReader::rewind(void)
-{
-	this->seek(0);
-}
-
-/**
- * Get the file size.
- * @return File size.
- */
-int64_t IDiscReader::fileSize(void) const
-{
-	assert(m_file != nullptr);
-	return m_fileSize;
-}
-
-}
+#endif /* __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__ */

@@ -26,21 +26,56 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 namespace LibRomData {
 
 DiscReader::DiscReader(IRpFile *file)
-	: IDiscReader(file)
+	: m_file(nullptr)
+	, m_lastError(0)
 {
-	if (!m_file)
+	if (!file) {
+		m_lastError = EBADF;
 		return;
+	}
+	// TODO: Propagate errors.
+	m_file = file->dup();
+}
 
-	// Get the file size.
-	m_fileSize = file->fileSize();
+DiscReader::~DiscReader()
+{
+	delete m_file;
 }
 
 /**
- * Read data from the file.
+ * Is the disc image open?
+ * This usually only returns false if an error occurred.
+ * @return True if the disc image is open; false if it isn't.
+ */
+bool DiscReader::isOpen(void) const
+{
+	return (m_file != nullptr);
+}
+
+/**
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
+ */
+int DiscReader::lastError(void) const
+{
+	return m_lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void DiscReader::clearError(void)
+{
+	m_lastError = 0;
+}
+
+/**
+ * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
@@ -48,18 +83,57 @@ DiscReader::DiscReader(IRpFile *file)
 size_t DiscReader::read(void *ptr, size_t size)
 {
 	assert(m_file != nullptr);
+	if (!m_file) {
+		m_lastError = EBADF;
+		return 0;
+	}
+	// TODO: Propagate errors.
 	return m_file->read(ptr, size);
 }
 
 /**
- * Set the file position.
- * @param pos File position.
+ * Set the disc image position.
+ * @param pos Disc image position.
  * @return 0 on success; -1 on error.
  */
 int DiscReader::seek(int64_t pos)
 {
 	assert(m_file != nullptr);
+	if (!m_file) {
+		m_lastError = EBADF;
+		return -1;
+	}
+	// TODO: Propagate errors.
 	return m_file->seek(pos);
+}
+
+/**
+ * Seek to the beginning of the disc image.
+ */
+void DiscReader::rewind(void)
+{
+	assert(m_file != nullptr);
+	if (!m_file) {
+		m_lastError = EBADF;
+		return;
+	}
+	// TODO: Propagate errors.
+	m_file->rewind();
+}
+
+/**
+ * Get the disc image size.
+ * @return Disc image size, or -1 on error.
+ */
+int64_t DiscReader::size(void) const
+{
+	assert(m_file != nullptr);
+	if (!m_file) {
+		const_cast<DiscReader*>(this)->m_lastError = EBADF;
+		return -1;
+	}
+	// TODO: Propagate errors.
+	return m_file->fileSize();
 }
 
 }

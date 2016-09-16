@@ -32,6 +32,18 @@ IF(NOT WIN32)
 	# Check for libpng.
 	FIND_PACKAGE(PNG REQUIRED)
 	SET(HAVE_LIBPNG ${PNG_FOUND})
+
+	IF(ENABLE_DECRYPTION)
+		# TODO: Show warning if not found, and recommend
+		# setting -DENABLE_DECRYPTION=Off?
+		FIND_PACKAGE(Nettle REQUIRED)
+
+		# Check if this is Nettle 3.x.
+		# Nettle 3.1 added version.h, which isn't available
+		# in older verisons, so we can't simply check that.
+		INCLUDE(CheckSymbolExists)
+		CHECK_SYMBOL_EXISTS(aes128_set_decrypt_key "nettle/aes.h" HAVE_NETTLE_3)
+	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
 
 # Check for C library functions.
@@ -52,15 +64,17 @@ SET(libromdata_SRCS
 	NintendoDS.cpp
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
-	IDiscReader.cpp
-	DiscReader.cpp
-	WbfsReader.cpp
 	DMG.cpp
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
 	file/RpMemFile.cpp
+	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/RpImageLoader.cpp
+	disc/DiscReader.cpp
+	disc/WbfsReader.cpp
+	disc/WiiPartition.cpp
+	disc/GcnFst.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -76,9 +90,6 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	IDiscReader.hpp
-	DiscReader.hpp
-	WbfsReader.hpp
 	libwbfs.h
 	gcn_structs.h
 	DMG.hpp
@@ -89,9 +100,16 @@ SET(libromdata_H
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
+	file/FileSystem.hpp
 	img/rp_image.hpp
 	img/RpImageLoader.hpp
 	img/RpPng.hpp
+	disc/IDiscReader.hpp
+	disc/DiscReader.hpp
+	disc/WbfsReader.hpp
+	disc/IPartition.hpp
+	disc/WiiPartition.hpp
+	disc/GcnFst.hpp
 	)
 
 IF(WIN32)
@@ -112,6 +130,25 @@ ELSE(WIN32)
 		)
 ENDIF(WIN32)
 
+IF(ENABLE_DECRYPTION)
+	SET(libromdata_CRYPTO_SRCS
+		crypto/KeyManager.cpp
+		)
+	SET(libromdata_CRYPTO_H
+		crypto/KeyManager.hpp
+		crypto/AesCipher.hpp
+		)
+	IF(WIN32)
+		SET(libromdata_CRYPTO_OS_SRCS
+			crypto/AesCipher_CAPI.cpp
+			)
+	ELSE(WIN32)
+		SET(libromdata_CRYPTO_OS_SRCS
+			crypto/AesCipher_nettle.cpp
+			)
+	ENDIF(WIN32)
+ENDIF(ENABLE_DECRYPTION)
+
 ######################
 # Build the library. #
 ######################
@@ -120,6 +157,8 @@ ENDIF(WIN32)
 ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_CRYPTO_OS_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 
@@ -127,6 +166,8 @@ TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
+	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_CRYPTO_OS_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 
@@ -150,8 +191,15 @@ FOREACH(_target romdata8 romdata16)
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${PNG_INCLUDE_DIRS})
 		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${PNG_DEFINITIONS})
 	ENDIF(PNG_FOUND)
+	IF(NETTLE_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} ${NETTLE_LIBRARY})
+		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${NETTLE_INCLUDE_DIRS})
+	ENDIF(NETTLE_FOUND)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} gdiplus)
+		IF(ENABLE_DECRYPTION)
+			TARGET_LINK_LIBRARIES(${_target} advapi32)
+		ENDIF(ENABLE_DECRYPTION)
 	ENDIF(WIN32)
 ENDFOREACH()
 

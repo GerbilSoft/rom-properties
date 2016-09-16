@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * IDiscReader.hpp: Disc reader interface.                                 *
+ * WbfsReader.hpp: WBFS disc image reader.                                 *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,78 +19,79 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 
-// C includes.
-#include <stdint.h>
-
-// C includes. (C++ namespace)
-#include <cstddef>
+#include "IDiscReader.hpp"
 
 namespace LibRomData {
 
-class IRpFile;
-
-class IDiscReader
+class WbfsReaderPrivate;
+class WbfsReader : public IDiscReader
 {
-	protected:
+	public:
 		/**
-		 * Construct an IDiscReader with the specified file.
+		 * Construct a WbfsReader with the specified file.
 		 * The file is dup()'d, so the original file can be
 		 * closed afterwards.
-		 *
-		 * NOTE: Subclasses must initialize m_fileSize.
-		 *
 		 * @param file File to read from.
 		 */
-		IDiscReader(IRpFile *file);
-	public:
-		virtual ~IDiscReader();
+		WbfsReader(IRpFile *file);
+		virtual ~WbfsReader();
 
 	private:
-		IDiscReader(const IDiscReader &);
-		IDiscReader &operator=(const IDiscReader&);
+		WbfsReader(const WbfsReader &);
+		WbfsReader &operator=(const WbfsReader &);
+	private:
+		friend class WbfsReaderPrivate;
+		WbfsReaderPrivate *const d;
 
 	public:
 		/**
-		 * Is the file open?
+		 * Is the disc image open?
 		 * This usually only returns false if an error occurred.
-		 * @return True if the file is open; false if it isn't.
+		 * @return True if the disc image is open; false if it isn't.
 		 */
-		bool isOpen(void) const;
+		virtual bool isOpen(void) const override;
 
 		/**
-		 * Read data from the file.
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		virtual int lastError(void) const override;
+
+		/**
+		 * Clear the last error.
+		 */
+		virtual void clearError(void) override;
+
+		/**
+		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) = 0;
+		virtual size_t read(void *ptr, size_t size) override;
 
 		/**
-		 * Set the file position.
-		 * @param pos File position.
+		 * Set the disc image position.
+		 * @param pos Disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) = 0;
+		virtual int seek(int64_t pos) override;
 
 		/**
-		 * Seek to the beginning of the file.
+		 * Seek to the beginning of the disc image.
 		 */
-		void rewind(void);
+		virtual void rewind(void) override;
 
 		/**
-		 * Get the file size.
-		 * @return File size.
+		 * Get the disc image size.
+		 * @return Disc image size, or -1 on error.
 		 */
-		int64_t fileSize(void) const;
-
-	protected:
-		IRpFile *m_file;
-		int64_t m_fileSize;
+		virtual int64_t size(void) const override;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__ */

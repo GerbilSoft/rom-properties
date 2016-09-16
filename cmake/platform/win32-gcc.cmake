@@ -7,9 +7,11 @@
 SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D__MINGW_USE_VC2005_COMPAT")
 
 # Subsystem and minimum Windows version:
-# - If 32-bit: 5.00
+# - If 32-bit: 5.01
 # - If 64-bit: 5.02
-# TODO: Does CMAKE_CREATE_*_EXE also affect DLLs?
+# NOTE: MS_ENH_RSA_AES_PROV is only available starting with
+# Windows XP. Because we're actually using some XP-specific
+# functionality now, the minimum version is now Windows XP.
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	# 64-bit, Unicode Windows only.
 	# (There is no 64-bit ANSI Windows.)
@@ -18,9 +20,9 @@ IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.02")
 ELSE()
 	# 32-bit, Unicode Windows only.
-	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_IE=0x0500")
-	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.00")
-	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.00")
+	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_IE=0x0600")
+	SET(CMAKE_CREATE_WIN32_EXE "-Wl,--subsystem,windows:5.01")
+	SET(CMAKE_CREATE_CONSOLE_EXE "-Wl,--subsystem,console:5.01")
 ENDIF()
 
 SET(RP_EXE_LINKER_FLAGS_WIN32 "")

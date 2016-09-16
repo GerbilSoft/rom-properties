@@ -17,7 +17,7 @@ following platforms:
 ### Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
-* All: libcurl-dev, cmake
+* All: cmake, libcurl-dev, nettle-dev
 * KDE 4.x: libqt4-dev, kdelibs5-dev
 * KDE 5.x: qtbase5-dev, kio-dev
 

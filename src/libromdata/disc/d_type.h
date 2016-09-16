@@ -1,8 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DiscReader.hpp: Basic disc reader interface.                            *
- * This class is a "null" interface that simply passes calls down to       *
- * libc's stdio functions.                                                 *
+ * d_type.h: d_type enumeration.                                           *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -21,45 +19,60 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_D_TYPE_H__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_D_TYPE_H__
 
-#include "IDiscReader.hpp"
+#ifndef _WIN32
+#include <dirent.h>
+#endif
 
-namespace LibRomData {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class DiscReader : public IDiscReader
-{
-	public:
-		/**
-		 * Construct a DiscReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
-		 * @param file File to read from.
-		 */
-		DiscReader(IRpFile *file);
-
-	private:
-		DiscReader(const DiscReader &);
-		DiscReader &operator=(const DiscReader&);
-
-	public:
-		/**
-		 * Read data from the file.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
-		 */
-		virtual size_t read(void *ptr, size_t size) override;
-
-		/**
-		 * Set the file position.
-		 * @param pos File position.
-		 * @return 0 on success; -1 on error.
-		 */
-		virtual int seek(int64_t pos) override;
+// Directory type values.
+// From glibc-2.23's dirent.h.
+enum {
+#ifndef DT_UNKNOWN
+	DT_UNKNOWN = 0,
+# define DT_UNKNOWN	DT_UNKNOWN
+#endif
+#ifndef DT_FIFO
+	DT_FIFO = 1,
+# define DT_FIFO	DT_FIFO
+#endif
+#ifndef DT_CHR
+	DT_CHR = 2,
+# define DT_CHR		DT_CHR
+#endif
+#ifndef DT_DIR
+	DT_DIR = 4,
+# define DT_DIR		DT_DIR
+#endif
+#ifndef DT_BLK
+    DT_BLK = 6,
+# define DT_BLK		DT_BLK
+#endif
+#ifndef DT_REG
+    DT_REG = 8,
+# define DT_REG		DT_REG
+#endif
+#ifndef DT_LNK
+    DT_LNK = 10,
+# define DT_LNK		DT_LNK
+#endif
+#ifndef DT_SOCK
+    DT_SOCK = 12,
+# define DT_SOCK	DT_SOCK
+#endif
+#ifndef DT_WHT
+    DT_WHT = 14
+# define DT_WHT		DT_WHT
+#endif
 };
 
+#ifdef __cplusplus
 }
+#endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISCREADER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_D_TYPE_H__ */
