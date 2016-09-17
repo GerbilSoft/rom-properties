@@ -1376,8 +1376,10 @@ int pngcheck(IRpFile *fp)
       first_idat = 1;  /* flag:  next IDAT will be the first in this subimage */
       zlib_error = 0;  /* flag:  no zlib errors yet in this file */
       /* GRR 20000304:  data dump not yet compatible with interlaced images: */
+#if 0 /* rom-properties */
       if (lace && verbose > 3)  /* (FIXME eventually...or move to pngcrunch) */
         verbose = 2;
+#endif /* rom-properties */
 #endif
 
     /*------*
@@ -2006,7 +2008,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
             sz -= toread;
             toread = (sz > BS)? BS:sz;
-            if ((data_read = fread(buffer, 1, toread, fp)) != toread) {
+            if ((data_read = fp->read(buffer, toread)) != toread) {
               printf("\nEOF while reading %s data\n", chunkid);
               set_err(kCriticalError);
               return global_error;
@@ -3345,8 +3347,10 @@ FIXME: add support for decompressing/printing zTXt
       first_idat = 1;  /* flag:  next IDAT will be the first in this subimage */
       zlib_error = 0;  /* flag:  no zlib errors yet in this file */
       /* GRR 20000304:  data dump not yet compatible with interlaced images: */
+#if 0 /* rom-properties */
       if (lace && verbose > 3)  /* (FIXME eventually...or move to pngcrunch) */
         verbose = 2;
+#endif /* rom-properties */
 #endif
 
     /*------*
