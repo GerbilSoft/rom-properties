@@ -191,12 +191,12 @@ void usage (FILE *fpMsg);
 void make_crc_table (void);
 ulg  update_crc (ulg crc, uch *buf, int len);
 #endif
-ulg  getlong (FILE *fp, char *fname, char *where);
+ulg  getlong (FILE *fp, const char *fname, const char *where);
 void putlong (FILE *fpOut, ulg ul);
 #if 0 /* rom-properties */
 void init_printbuf_state (printbuf_state *prbuf);
 void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
-void report_printbuf (printbuf_state *prbuf, char *fname, char *chunkid);
+void report_printbuf (printbuf_state *prbuf, const char *fname, const char *chunkid);
 #else /* rom-properties: Use dummy macros for these. */
 #define init_printbuf_state(prbuf) do { } while (0)
 #define print_buffer(prbuf, buffer, size, indent) do { } while (0)
@@ -206,15 +206,15 @@ int  keywordlen (uch *buffer, int maxsize);
 const char *getmonth (int m);
 int  ratio (ulg uc, ulg c);
 ulg  gcf (ulg a, ulg b);
-int  pngcheck (FILE *fp, char *_fname, int searching, FILE *fpOut);
-int  pnginfile (FILE *fp, char *fname, int ipng, int extracting);
-void pngsearch (FILE *fp, char *fname, int extracting);
-int  check_magic (uch *magic, char *fname, int which);
-int  check_chunk_name (char *chunk_name, char *fname);
+int  pngcheck (FILE *fp, const char *_fname, int searching, FILE *fpOut);
+int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
+void pngsearch (FILE *fp, const char *fname, int extracting);
+int  check_magic (uch *magic, const char *fname, int which);
+int  check_chunk_name (const char *chunk_name, const char *fname);
 int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
-                    char *keyword_name, char *chunkid, char *fname);
-int  check_text (uch *buffer, int maxsize, char *chunkid, char *fname);
-int  check_ascii_float (uch *buffer, int len, char *chunkid, char *fname);
+                    const char *keyword_name, const char *chunkid, const char *fname);
+int  check_text (uch *buffer, int maxsize, const char *chunkid, const char *fname);
+int  check_ascii_float (uch *buffer, int len, const char *chunkid, const char *fname);
 
 #define BS 32000 /* size of read block for CRC calculation (and zlib) */
 
@@ -676,7 +676,7 @@ int main(int argc, char *argv[])
     if (isatty(0)) { /* if stdin not redirected, give the user help */
       usage(stdout);
     } else {
-      char *fname = "stdin";
+      const char *fname = "stdin";
 
       if (search)
         pngsearch(stdin, fname, extract);  /* currently returns void */
@@ -711,7 +711,7 @@ int main(int argc, char *argv[])
 
     /* main loop over files listed on command line */
     for (i = 1; i < argc; ++i) {
-      char *fname = argv[i];
+      const char *fname = argv[i];
 
       err = kOK;
       if (strcmp(fname, "-") == 0) {
@@ -865,7 +865,7 @@ ulg update_crc(ulg crc, uch *buf, int len)
 
 
 
-ulg getlong(FILE *fp, char *fname, char *where)
+ulg getlong(FILE *fp, const char *fname, const char *where)
 {
   ulg res = 0;
   int j;
@@ -953,7 +953,7 @@ void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
 
 
 
-void report_printbuf(printbuf_state *prbuf, char *fname, char *chunkid)
+void report_printbuf(printbuf_state *prbuf, const char *fname, const char *chunkid)
 {
   if (prbuf->cr) {
     if (prbuf->lf) {
@@ -1046,13 +1046,13 @@ ulg gcf(ulg a, ulg b)
 
 
 
-int pngcheck(FILE *fp, char *fname, int searching, FILE *fpOut)
+int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 {
   int i, j;
   long sz;  /* FIXME:  should be ulg (not using negative values as flags...) */
   uch magic[8];
   char chunkid[5] = {'\0', '\0', '\0', '\0', '\0'};
-  char *and = "";
+  const char *and_str = "";
   int toread;
   int c;
   int have_IHDR = 0, have_IEND = 0;
@@ -1422,7 +1422,7 @@ int pngcheck(FILE *fp, char *fname, int searching, FILE *fpOut)
             if (bitdepth == 20) {
               need_JSEP = 1;
               jbitd = 8;
-              and = "and 12-bit ";
+              and_str = "and 12-bit ";
             } else
               jbitd = bitdepth;
             a = alphadepth = buffer[12];
@@ -1436,10 +1436,10 @@ int pngcheck(FILE *fp, char *fname, int searching, FILE *fpOut)
             } else if (verbose && no_err(kMinorError)) {
               if (jtyp < 2)
                 printf("\n    %ld x %ld image, %d-bit %s%s%s\n",
-                  w, h, jbitd, and, jng_type[jtyp], lace? ", progressive":"");
+                  w, h, jbitd, and_str, jng_type[jtyp], lace? ", progressive":"");
               else
                 printf("\n    %ld x %ld image, %d-bit %s%s + %d-bit alpha%s\n",
-                  w, h, jbitd, and, jng_type[jtyp-2], alphadepth,
+                  w, h, jbitd, and_str, jng_type[jtyp-2], alphadepth,
                   lace? ", progressive":"");
             }
           }
@@ -1662,7 +1662,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
           printf(": %d palette entr%s\n", nplte, nplte == 1? "y":"ies");
         }
         if (printpal) {
-          char *spc;
+          const char *spc;
 
           if (nplte < 10)
             spc = "  ";
@@ -2294,7 +2294,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
         printf(": %ld histogram entr%s\n", sz / 2, sz/2 == 1? "y":"ies");
       }
       if (printpal && no_err(kMinorError)) {
-        char *spc;
+        const char *spc;
 
         if (sz < 10)
           spc = "  ";
@@ -2834,7 +2834,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
           printf("\n");
         }
         if (printpal && no_err(kMinorError)) {
-          char *spc;
+          const char *spc;
           int i, j = name_len+2;
 
           if (nsplt < 10)
@@ -3098,7 +3098,7 @@ FIXME: add support for decompressing/printing zTXt
               printf(": %ld transparency entr%s\n", sz, sz == 1? "y":"ies");
             }
             if (printpal && no_err(kMinorError)) {
-              char *spc;
+              const char *spc;
 
               if (sz < 10)
                 spc = "  ";
@@ -3298,7 +3298,7 @@ FIXME: add support for decompressing/printing zTXt
 
         printf("\n    object ID = %u, image type = %s, delta type = %s\n",
           SH(buffer), buffer[2]? "PNG":"unspecified",
-          (dtype < sizeof(delta_type)/sizeof(char *))?
+          (dtype < sizeof(delta_type)/sizeof(const char *))?
           delta_type[dtype] : inv);
         if (sz > 4) {
           if (dtype == 5) {
@@ -3344,7 +3344,7 @@ FIXME: add support for decompressing/printing zTXt
         uch fmode = buffer[0];
 
         printf(": mode %d\n    %s\n", fmode,
-          (fmode < sizeof(framing_mode)/sizeof(char *))?
+          (fmode < sizeof(framing_mode)/sizeof(const char *))?
           framing_mode[fmode] : inv);
         if (sz > 1) {
           uch *p = buffer+1;
@@ -3474,7 +3474,7 @@ FIXME: add support for decompressing/printing zTXt
               break;
             }
             printf("    entry type = %s", (type <
-              sizeof(entry_type)/sizeof(char *))? entry_type[type] : inv);
+              sizeof(entry_type)/sizeof(const char *))? entry_type[type] : inv);
             ++p;
             if (type <= 1) {
               ulg first4 = LG(p);
@@ -3711,8 +3711,8 @@ FIXME: add support for decompressing/printing zTXt
         printf("\n    parent object ID = %u, clone object ID = %u\n",
           SH(buffer), SH(buffer+2));
         printf("    clone type = %s, %s, %s\n",
-          (ct < sizeof(clone_type)/sizeof(char *))? clone_type[ct] : inv,
-          (dns < sizeof(do_not_show)/sizeof(char *))? do_not_show[dns] : inv,
+          (ct < sizeof(clone_type)/sizeof(const char *))? clone_type[ct] : inv,
+          (dns < sizeof(do_not_show)/sizeof(const char *))? do_not_show[dns] : inv,
           cf? "same concreteness as parent":"abstract");
         if (ldt)
           printf("    difference from parent's position:  delta-x = %ld,"
@@ -3750,7 +3750,7 @@ FIXME: add support for decompressing/printing zTXt
           smode = buffer[4];
         printf("\n    first object = %u, last object = %u\n", first, last);
         printf("    %s\n",
-          (smode < sizeof(show_mode)/sizeof(char *))? show_mode[smode] : inv);
+          (smode < sizeof(show_mode)/sizeof(const char *))? show_mode[smode] : inv);
       }
       last_is_IDAT = last_is_JDAT = 0;
 
@@ -4035,7 +4035,7 @@ FIXME: add support for decompressing/printing zTXt
           verbose? ":":fname, verbose? "":"PPLT ");
         set_err(kMinorError);
       } else {
-        char *plus;
+        const char *plus;
         uch dtype = buffer[0];
         uch first_idx = buffer[1];
         uch last_idx = buffer[2];
@@ -4046,7 +4046,7 @@ FIXME: add support for decompressing/printing zTXt
         if (!verbose && printpal && !quiet)
           printf("  PPLT chunk");
         if (verbose)
-          printf(": %s\n", (dtype < sizeof(pplt_delta_type)/sizeof(char *))?
+          printf(": %s\n", (dtype < sizeof(pplt_delta_type)/sizeof(const char *))?
             pplt_delta_type[dtype] : inv);
         plus = (dtype & 1)? "+" : "";
         if (dtype < 2)
@@ -4323,7 +4323,7 @@ FIXME: add support for decompressing/printing zTXt
         int num_names = 0;
 
         while (bytes_left > 0) {
-          if (check_chunk_name((char *)buf, fname) != 0) {
+          if (check_chunk_name((const char *)buf, fname) != 0) {
             printf("%s  invalid chunk name to be dropped\n",
               verbose? ":":fname);
             set_err(kMinorError);
@@ -4361,7 +4361,7 @@ FIXME: add support for decompressing/printing zTXt
         printf("%s  invalid %spolarity (%u)\n",
           verbose? ":":fname, verbose? "":"DBYK ", buffer[4]);
         set_err(kMinorError);
-      } else if (check_chunk_name((char *)buffer, fname) != 0) {
+      } else if (check_chunk_name((const char *)buffer, fname) != 0) {
         printf("%s  invalid chunk name to be dropped\n",
           verbose? ":":fname);
         set_err(kMinorError);
@@ -4377,7 +4377,7 @@ FIXME: add support for decompressing/printing zTXt
           space_left -= buffer[4]? 18:15;   /* e.g., "cHNK: drop all but" */
         }
         while (bytes_left > 0) {
-          char *sep;
+          const char *sep;
           int keylen;
 
           if (check_keyword(buf, bytes_left, &keylen, "keyword", chunkid,
@@ -4433,7 +4433,7 @@ FIXME: add support for decompressing/printing zTXt
         if (verbose)
           printf("\n");
         while (bytes_left > 0) {
-          if (check_chunk_name((char *)buf, fname) != 0) {
+          if (check_chunk_name((const char *)buf, fname) != 0) {
             printf("%s  %slisted chunk name is invalid\n",
               verbose? ":":fname, verbose? "":"ORDR: ");
             set_err(kMinorError);
@@ -4697,7 +4697,7 @@ FIXME: add support for decompressing/printing zTXt
 #endif /* rom-properties */
 
     } else if (jng) {
-      char *sgn = "";
+      const char *sgn = "";
       int cfactor;
       ulg ucsize;
 
@@ -4727,18 +4727,18 @@ FIXME: add support for decompressing/printing zTXt
           printf("%s: %s%s%s (%ldx%ld, %d-bit %s%s%s, %s%d.%d%%).\n",
             global_error? brief_warn : brief_OK,
             color? COLOR_YELLOW:"", fname, color? COLOR_NORMAL:"",
-            w, h, jbitd, and, jng_type[jtyp],
+            w, h, jbitd, and_str, jng_type[jtyp],
             lace? ", progressive":"", sgn, cfactor/10, cfactor%10);
         else
           printf("%s: %s%s%s (%ldx%ld, %d-bit %s%s + %d-bit alpha%s, %s%d.%d%%)"
             ".\n", global_error? brief_warn : brief_OK,
             color? COLOR_YELLOW:"", fname, color? COLOR_NORMAL:"",
-            w, h, jbitd, and, jng_type[jtyp-2],
+            w, h, jbitd, and_str, jng_type[jtyp-2],
             alphadepth, lace? ", progressive":"", sgn, cfactor/10, cfactor%10);
       }
 
     } else {
-      char *sgn = "";
+      const char *sgn = "";
       int cfactor;
 
       if (!did_stat)
@@ -4773,7 +4773,7 @@ FIXME: add support for decompressing/printing zTXt
 
 
 
-int pnginfile(FILE *fp, char *fname, int ipng, int extracting)
+int pnginfile(FILE *fp, const char *fname, int ipng, int extracting)
 {
   char name[1024], *szdot;
   int err = kOK;
@@ -4820,7 +4820,7 @@ int pnginfile(FILE *fp, char *fname, int ipng, int extracting)
 
 
 
-void pngsearch(FILE *fp, char *fname, int extracting)
+void pngsearch(FILE *fp, const char *fname, int extracting)
 {
   /* Go through the file looking for a PNG magic number; if one is
      found, check the data to see if it is a PNG and validate the
@@ -4875,7 +4875,7 @@ void pngsearch(FILE *fp, char *fname, int extracting)
  * without any restrictions.
  *
  */
-int check_magic(uch *magic, char *fname, int which)
+int check_magic(uch *magic, const char *fname, int which)
 {
   int i;
   const uch *good_magic = (which == 0)? good_PNG_magic :
@@ -4900,23 +4900,23 @@ int check_magic(uch *magic, char *fname, int which)
     printf("  File is CORRUPTED.  It seems to have suffered ");
 
     /* This coding derived from Alexander Lehmann's checkpng code   */
-    if (strncmp((char *)&magic[4], "\012\032", 2) == 0)
+    if (strncmp((const char *)&magic[4], "\012\032", 2) == 0)
       printf("DOS->Unix");
-    else if (strncmp((char *)&magic[4], "\015\032", 2) == 0)
+    else if (strncmp((const char *)&magic[4], "\015\032", 2) == 0)
       printf("DOS->Mac");
-    else if (strncmp((char *)&magic[4], "\015\015\032", 3) == 0)
+    else if (strncmp((const char *)&magic[4], "\015\015\032", 3) == 0)
       printf("Unix->Mac");
-    else if (strncmp((char *)&magic[4], "\012\012\032", 3) == 0)
+    else if (strncmp((const char *)&magic[4], "\012\012\032", 3) == 0)
       printf("Mac->Unix");
-    else if (strncmp((char *)&magic[4], "\012\012", 2) == 0)
+    else if (strncmp((const char *)&magic[4], "\012\012", 2) == 0)
       printf("DOS->Unix");
-    else if (strncmp((char *)&magic[4], "\015\015\012\032", 4) == 0)
+    else if (strncmp((const char *)&magic[4], "\015\015\012\032", 4) == 0)
       printf("Unix->DOS");
-    else if (strncmp((char *)&magic[4], "\015\012\032\015", 4) == 0)
+    else if (strncmp((const char *)&magic[4], "\015\012\032\015", 4) == 0)
       printf("Unix->DOS");
-    else if (strncmp((char *)&magic[4], "\015\012\012", 3) == 0)
+    else if (strncmp((const char *)&magic[4], "\015\012\012", 3) == 0)
       printf("DOS EOF");
-    else if (strncmp((char *)&magic[4], "\015\012\032\012", 4) != 0)
+    else if (strncmp((const char *)&magic[4], "\015\012\032\012", 4) != 0)
       printf("EOL");
     else
       printf("an unknown");
@@ -4937,7 +4937,7 @@ int check_magic(uch *magic, char *fname, int which)
 
 
 /* GRR 20061203:  now EBCDIC-safe */
-int check_chunk_name(char *chunk_name, char *fname)
+int check_chunk_name(const char *chunk_name, const char *fname)
 {
   if (isASCIIalpha((int)chunk_name[0]) && isASCIIalpha((int)chunk_name[1]) &&
       isASCIIalpha((int)chunk_name[2]) && isASCIIalpha((int)chunk_name[3]))
@@ -4957,7 +4957,7 @@ int check_chunk_name(char *chunk_name, char *fname)
 /* keyword_name is "keyword" for most chunks, but it can instead be "name" or
  * "identifier" or whatever makes sense for the chunk in question */
 int check_keyword(uch *buffer, int maxsize, int *pKeylen,
-                  char *keyword_name, char *chunkid, char *fname)
+                  const char *keyword_name, const char *chunkid, const char *fname)
 {
   int j, prev_space = 0;
   int keylen = keywordlen(buffer, maxsize);
@@ -5017,7 +5017,7 @@ int check_keyword(uch *buffer, int maxsize, int *pKeylen,
 
 /* GRR 20070707 */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int check_text(uch *buffer, int maxsize, char *chunkid, char *fname)
+int check_text(uch *buffer, int maxsize, const char *chunkid, const char *fname)
 {
   int j, ctrlwarn = verbose? 1 : 0;  /* print message once, only if verbose */
 
@@ -5040,7 +5040,7 @@ int check_text(uch *buffer, int maxsize, char *chunkid, char *fname)
 
 /* GRR 20061203 (used only for sCAL) */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int check_ascii_float(uch *buffer, int len, char *chunkid, char *fname)
+int check_ascii_float(uch *buffer, int len, const char *chunkid, const char *fname)
 {
   uch *qq = buffer, *bufEnd = buffer + len;
   int have_sign = 0, have_integer = 0, have_dot = 0, have_fraction = 0;

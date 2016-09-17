@@ -59,7 +59,7 @@ SET(libromdata_SRCS
 	file/RpMemFile.cpp
 	img/rp_image.cpp
 	img/RpImageLoader.cpp
-	img/pngcheck/pngcheck.c
+	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
 	byteorder.h
