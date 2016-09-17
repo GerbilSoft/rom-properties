@@ -830,6 +830,14 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 	// Check the palette.
 	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 2, biClrUsed));
 
+	// Monochrome BMP images always have an internal width that's
+	// a multiple of 32px. (stride == 4) If the image isn't a
+	// multiple of 32px, then we need to skip the extra pixels.
+	int mod32 = img->width() % 32;
+	if (mod32 != 0) {
+		mod32 = 32 - mod32;
+	}
+
 	// Check the image data.
 	xor_result = 0;
 	for (int y = img->height()-1; y >= 0; y--) {
@@ -838,10 +846,16 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
 		for (int x = img->width(); x > 0; x -= 8, pBits++) {
 			uint8_t mono_pxs = *pBits;
-			for (int bit = 8; bit > 0; bit--, pSrc++) {
+			for (int bit = (x > 8 ? 8 : x); bit > 0; bit--, pSrc++) {
 				xor_result |= (mono_pxs >> 7) ^ *pSrc;
 				mono_pxs <<= 1;
 			}
+		}
+
+		if (mod32 > 0) {
+			// TODO: Check that the extra pixels are 0.
+			// For now, just skip the remaining bytes.
+			pBits += (mod32 / 8);
 		}
 	}
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's pixel data doesn't match monochrome BMP.";
@@ -1308,20 +1322,38 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 
 static const PNG_IHDR_t happy_mac_mono_IHDR =
 	{512, 342, 1, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
+static const PNG_IHDR_t happy_mac_mono_odd_size_IHDR =
+	{75, 73, 1, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
 
 static const BITMAPINFOHEADER happy_mac_mono_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		512, 342, 1, 1, BI_RGB, 512*342/8,
 		3936, 3936, 2, 2};
+// NOTE: Monochrome bitmaps always have a stride of 4 bytes.
+// For 75px, that increases it to 96px wide.
+// (Internal width is a multiple of 32px.)
+static const BITMAPINFOHEADER happy_mac_mono_odd_size_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		75, 73, 1, 1, BI_RGB, 96*73/8,
+		3936, 3936, 2, 2};
 
 // happy_mac_mono PNG image tests.
 INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
 	::testing::Values(
+		// Full 512x342 version.
 		RpPngFormatTest_mode(
 			_RP("happy-mac.mono.png"),
 			_RP("happy-mac.mono.bmp.gz"),
 			happy_mac_mono_IHDR,
 			happy_mac_mono_BIH,
+			rp_image::FORMAT_CI8),
+
+		// Cropped 75x73 version.
+		RpPngFormatTest_mode(
+			_RP("happy-mac.mono.odd-size.png"),
+			_RP("happy-mac.mono.odd-size.bmp.gz"),
+			happy_mac_mono_odd_size_IHDR,
+			happy_mac_mono_odd_size_BIH,
 			rp_image::FORMAT_CI8)
 		)
 	, test_case_suffix_generator);
