@@ -168,6 +168,8 @@ using LibRomData::IRpFile;
 #  include <zlib.h>
 #endif
 
+namespace LibRomData {
+
 typedef unsigned char  uch;
 typedef unsigned short ush;
 typedef unsigned long  ulg;
@@ -190,39 +192,39 @@ void usage (FILE *fpMsg);
 #define printf(fmt, ...) do { } while (0)
 
 #ifndef USE_ZLIB
-void make_crc_table (void);
-ulg  update_crc (ulg crc, uch *buf, int len);
+static void make_crc_table (void);
+static ulg  update_crc (ulg crc, uch *buf, int len);
 #endif
-ulg  getlong (IRpFile *fp, const char *fname, const char *where);
-void putlong (FILE *fpOut, ulg ul);
+static ulg  getlong (IRpFile *fp, const char *fname, const char *where);
+static void putlong (FILE *fpOut, ulg ul);
 #if 0 /* rom-properties */
-void init_printbuf_state (printbuf_state *prbuf);
-void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
-void report_printbuf (printbuf_state *prbuf, const char *fname, const char *chunkid);
+static void init_printbuf_state (printbuf_state *prbuf);
+static void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
+static void report_printbuf (printbuf_state *prbuf, const char *fname, const char *chunkid);
 #else /* rom-properties: Use dummy macros for these. */
 #define init_printbuf_state(prbuf) do { } while (0)
 #define print_buffer(prbuf, buffer, size, indent) do { } while (0)
 #define report_printbuf(prbuf, fname, chunkid) do { } while (0)
 #endif /* rom-properties */
-int  keywordlen (uch *buffer, int maxsize);
-const char *getmonth (int m);
-int  ratio (ulg uc, ulg c);
-ulg  gcf (ulg a, ulg b);
+static int  keywordlen (uch *buffer, int maxsize);
+static const char *getmonth (int m);
+static int  ratio (ulg uc, ulg c);
+static ulg  gcf (ulg a, ulg b);
 #if 0 /* rom-properties */
 // TODO: Wrapper function for compatibility?
 int  pngcheck (FILE *fp, const char *_fname, int searching, FILE *fpOut);
 #endif /* rom-properties */
-int  pngcheck (IRpFile *fp, int searching);
+int  pngcheck (IRpFile *fp);
 #if 0 /* rom-properties */
-int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
-void pngsearch (FILE *fp, const char *fname, int extracting);
+static int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
+static void pngsearch (FILE *fp, const char *fname, int extracting);
 #endif /* rom-properties */
-int  check_magic (uch *magic, const char *fname, int which);
-int  check_chunk_name (const char *chunk_name, const char *fname);
-int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
+static int  check_magic (uch *magic, const char *fname, int which);
+static int  check_chunk_name (const char *chunk_name, const char *fname);
+static int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
                     const char *keyword_name, const char *chunkid, const char *fname);
-int  check_text (uch *buffer, int maxsize, const char *chunkid, const char *fname);
-int  check_ascii_float (uch *buffer, int len, const char *chunkid, const char *fname);
+static int  check_text (uch *buffer, int maxsize, const char *chunkid, const char *fname);
+static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const char *fname);
 
 #define BS 32000 /* size of read block for CRC calculation (and zlib) */
 
@@ -278,31 +280,31 @@ enum {
 
 /* Command-line flag variables */
 #if 0 /* rom-properties */
-int verbose = 0;	/* print chunk info */
-int quiet = 0;		/* print only error messages */
-int printtext = 0;	/* print tEXt chunks */
-int printpal = 0;	/* print PLTE/tRNS/hIST/sPLT contents */
-int color = 0;		/* print with ANSI colors to spice things up */
-int sevenbit = 0;	/* escape characters >=160 */
+static int verbose = 0;	/* print chunk info */
+static int quiet = 0;		/* print only error messages */
+static int printtext = 0;	/* print tEXt chunks */
+static int printpal = 0;	/* print PLTE/tRNS/hIST/sPLT contents */
+static int color = 0;		/* print with ANSI colors to spice things up */
+static int sevenbit = 0;	/* escape characters >=160 */
 #else /* rom-properties: Use default values. */
-#define verbose 0	/* print chunk info */
-#define quiet 1		/* print only error messages */
-#define printtext 0	/* print tEXt chunks */
-#define printpal 0	/* print PLTE/tRNS/hIST/sPLT contents */
-#define color 0		/* print with ANSI colors to spice things up */
-#define sevenbit 0	/* escape characters >=160 */
+static const int verbose = 0;		/* print chunk info */
+static const int quiet = 1;		/* print only error messages */
+static const int printtext = 0;		/* print tEXt chunks */
+static const int printpal = 0;		/* print PLTE/tRNS/hIST/sPLT contents */
+static const int color = 0;		/* print with ANSI colors to spice things up */
+static const int sevenbit = 0;		/* escape characters >=160 */
 #endif /* rom-properties */
-int force = 0;		/* continue even if an error occurs (CRC error, etc) */
-int check_windowbits = 1;	/* more stringent zlib stream-checking */
-int suppress_warnings = 0;	/* don't fuss about ambiguous stuff */
-int search = 0;		/* hunt for PNGs in the file... */
-int extract = 0;	/* ...and extract them to arbitrary file names. */
-int png = 0;		/* it's a PNG */
-int mng = 0;		/* it's a MNG instead of a PNG (won't work in pipe) */
-int jng = 0;		/* it's a JNG */
+static int force = 0;		/* continue even if an error occurs (CRC error, etc) */
+static int check_windowbits = 1;	/* more stringent zlib stream-checking */
+static int suppress_warnings = 0;	/* don't fuss about ambiguous stuff */
+static int search = 0;		/* hunt for PNGs in the file... */
+static int extract = 0;	/* ...and extract them to arbitrary file names. */
+static int png = 0;		/* it's a PNG */
+static int mng = 0;		/* it's a MNG instead of a PNG (won't work in pipe) */
+static int jng = 0;		/* it's a JNG */
 
-int global_error = kOK; /* the current error status */
-uch buffer[BS];
+static int global_error = kOK; /* the current error status */
+static uch buffer[BS];
 
 /* what the PNG, MNG and JNG magic numbers should be */
 static const uch good_PNG_magic[8] = {137, 80, 78, 71, 13, 10, 26, 10};
@@ -348,17 +350,17 @@ static const uch latin1_text_discouraged[256] = {
 };
 
 #ifdef USE_ZLIB
-   int first_idat = 1;           /* flag:  is this the first IDAT chunk? */
-   int zlib_error = 0;           /* reset in IHDR section; used for IDAT */
-   int check_zlib = 1;           /* validate zlib stream (just IDATs for now) */
-   unsigned zlib_windowbits = 15;
-   uch outbuf[BS];
-   z_stream zstrm;
-   const char **pass_color;
-   const char *color_off;
+   static int first_idat = 1;           /* flag:  is this the first IDAT chunk? */
+   static int zlib_error = 0;           /* reset in IHDR section; used for IDAT */
+   static int check_zlib = 1;           /* validate zlib stream (just IDATs for now) */
+   static unsigned zlib_windowbits = 15;
+   static uch outbuf[BS];
+   static z_stream zstrm;
+   static const char **pass_color;
+   static const char *color_off;
 #else
-   ulg crc_table[256];           /* table of CRCs of all 8-bit messages */
-   int crc_table_computed = 0;   /* flag:  has the table been computed? */
+   static ulg crc_table[256];           /* table of CRCs of all 8-bit messages */
+   static int crc_table_computed = 0;   /* flag:  has the table been computed? */
 #endif
 
 
@@ -573,19 +575,19 @@ static const char *magnification_method[] = {		/* MAGN */
   "linear interpolation of alpha, nearest-pixel replication of color"
 };
 
-const char *brief_error_color = COLOR_RED_BOLD "ERROR" COLOR_NORMAL;
-const char *brief_error_plain = "ERROR";
-const char *brief_warn_color = COLOR_YELLOW_BOLD "WARN" COLOR_NORMAL;
-const char *brief_warn_plain = "WARN";
-const char *brief_OK_color = COLOR_GREEN_BOLD "OK" COLOR_NORMAL;
-const char *brief_OK_plain = "OK";
+static const char *brief_error_color = COLOR_RED_BOLD "ERROR" COLOR_NORMAL;
+static const char *brief_error_plain = "ERROR";
+static const char *brief_warn_color = COLOR_YELLOW_BOLD "WARN" COLOR_NORMAL;
+static const char *brief_warn_plain = "WARN";
+static const char *brief_OK_color = COLOR_GREEN_BOLD "OK" COLOR_NORMAL;
+static const char *brief_OK_plain = "OK";
 
-const char *errors_color = COLOR_RED_BOLD "ERRORS DETECTED" COLOR_NORMAL;
-const char *errors_plain = "ERRORS DETECTED";
-const char *warnings_color = COLOR_YELLOW_BOLD "WARNINGS DETECTED" COLOR_NORMAL;
-const char *warnings_plain = "WARNINGS DETECTED";
-const char *no_err_color = COLOR_GREEN_BOLD "No errors detected" COLOR_NORMAL;
-const char *no_err_plain = "No errors detected";
+static const char *errors_color = COLOR_RED_BOLD "ERRORS DETECTED" COLOR_NORMAL;
+static const char *errors_plain = "ERRORS DETECTED";
+static const char *warnings_color = COLOR_YELLOW_BOLD "WARNINGS DETECTED" COLOR_NORMAL;
+static const char *warnings_plain = "WARNINGS DETECTED";
+static const char *no_err_color = COLOR_GREEN_BOLD "No errors detected" COLOR_NORMAL;
+static const char *no_err_plain = "No errors detected";
 
 
 
@@ -776,7 +778,7 @@ int main(int argc, char *argv[])
 
 
 /* GRR 20061203 */
-void usage(FILE *fpMsg)
+static void usage(FILE *fpMsg)
 {
   fprintf(fpMsg, "PNGcheck, version %s,\n", VERSION);
   fprintf(fpMsg, "   by Alexander Lehmann, Andreas Dilger and Greg Roelofs.\n");
@@ -830,7 +832,7 @@ void usage(FILE *fpMsg)
 #  define CRCINIT (CRCCOMPL(0))
 
 /* make the table for a fast crc */
-void make_crc_table(void)
+static void make_crc_table(void)
 {
   int n;
 
@@ -853,7 +855,7 @@ void make_crc_table(void)
    initialized to all 1's, and the transmitted value is the 1's complement
    of the final running crc. */
 
-ulg update_crc(ulg crc, uch *buf, int len)
+static ulg update_crc(ulg crc, uch *buf, int len)
 {
   ulg c = crc;
   uch *p = buf;
@@ -873,7 +875,7 @@ ulg update_crc(ulg crc, uch *buf, int len)
 
 
 
-ulg getlong(IRpFile *fp, const char *fname, const char *where)
+static ulg getlong(IRpFile *fp, const char *fname, const char *where)
 {
   ulg res = 0;
   int j;
@@ -896,7 +898,7 @@ ulg getlong(IRpFile *fp, const char *fname, const char *where)
 
 
 /* output a long when copying an embedded PNG out of a file. */
-void putlong(FILE *fpOut, ulg ul)
+static void putlong(FILE *fpOut, ulg ul)
 {
   putc(ul >> 24, fpOut);
   putc(ul >> 16, fpOut);
@@ -911,7 +913,7 @@ void putlong(FILE *fpOut, ulg ul)
    chars other than whitespace, since this may open ways of attack by so-
    called ANSI-bombs */
 
-void init_printbuf_state(printbuf_state *prbuf)
+static void init_printbuf_state(printbuf_state *prbuf)
 {
   prbuf->cr = 0;
   prbuf->lf = 0;
@@ -923,7 +925,7 @@ void init_printbuf_state(printbuf_state *prbuf)
 
 
 /* GRR EBCDIC WARNING */
-void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
+static void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
 {
   if (indent)
     printf("    ");
@@ -961,7 +963,7 @@ void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
 
 
 
-void report_printbuf(printbuf_state *prbuf, const char *fname, const char *chunkid)
+static void report_printbuf(printbuf_state *prbuf, const char *fname, const char *chunkid)
 {
   if (prbuf->cr) {
     if (prbuf->lf) {
@@ -988,7 +990,7 @@ void report_printbuf(printbuf_state *prbuf, const char *fname, const char *chunk
 
 
 
-int keywordlen(uch *buf, int maxsize)
+static int keywordlen(uch *buf, int maxsize)
 {
   int j = 0;
 
@@ -1000,7 +1002,7 @@ int keywordlen(uch *buf, int maxsize)
 
 
 
-const char *getmonth(int m)
+static const char *getmonth(int m)
 {
   static const char *month[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -1012,7 +1014,7 @@ const char *getmonth(int m)
 
 
 
-int ratio(ulg uc, ulg c)   /* GRR 19970621:  swiped from UnZip 5.31 list.c */
+static int ratio(ulg uc, ulg c)   /* GRR 19970621:  swiped from UnZip 5.31 list.c */
 {
     ulg denom;
 
@@ -1037,7 +1039,7 @@ int ratio(ulg uc, ulg c)   /* GRR 19970621:  swiped from UnZip 5.31 list.c */
  *                common factor of two positive integers.
  *                (see http://mathworld.wolfram.com/EuclideanAlgorithm.html)
  */
-ulg gcf(ulg a, ulg b)
+static ulg gcf(ulg a, ulg b)
 {
     ulg r;
 
@@ -1063,10 +1065,11 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 
 
 
-int pngcheck(IRpFile *fp, int searching)
+int pngcheck(IRpFile *fp)
 {
   const char *const fname = nullptr;	// dummy
   FILE *const fpOut = nullptr;		// dummy
+  const int searching = 0;		// dummy
 
   int i, j;
   long sz;  /* FIXME:  should be ulg (not using negative values as flags...) */
@@ -4794,7 +4797,7 @@ FIXME: add support for decompressing/printing zTXt
 
 
 #if 0 /* rom-properties */
-int pnginfile(FILE *fp, const char *fname, int ipng, int extracting)
+static int pnginfile(FILE *fp, const char *fname, int ipng, int extracting)
 {
   char name[1024], *szdot;
   int err = kOK;
@@ -4841,7 +4844,7 @@ int pnginfile(FILE *fp, const char *fname, int ipng, int extracting)
 
 
 
-void pngsearch(FILE *fp, const char *fname, int extracting)
+static void pngsearch(FILE *fp, const char *fname, int extracting)
 {
   /* Go through the file looking for a PNG magic number; if one is
      found, check the data to see if it is a PNG and validate the
@@ -4897,7 +4900,7 @@ void pngsearch(FILE *fp, const char *fname, int extracting)
  * without any restrictions.
  *
  */
-int check_magic(uch *magic, const char *fname, int which)
+static int check_magic(uch *magic, const char *fname, int which)
 {
   int i;
   const uch *good_magic = (which == 0)? good_PNG_magic :
@@ -4959,7 +4962,7 @@ int check_magic(uch *magic, const char *fname, int which)
 
 
 /* GRR 20061203:  now EBCDIC-safe */
-int check_chunk_name(const char *chunk_name, const char *fname)
+static int check_chunk_name(const char *chunk_name, const char *fname)
 {
   if (isASCIIalpha((int)chunk_name[0]) && isASCIIalpha((int)chunk_name[1]) &&
       isASCIIalpha((int)chunk_name[2]) && isASCIIalpha((int)chunk_name[3]))
@@ -4978,7 +4981,7 @@ int check_chunk_name(const char *chunk_name, const char *fname)
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
 /* keyword_name is "keyword" for most chunks, but it can instead be "name" or
  * "identifier" or whatever makes sense for the chunk in question */
-int check_keyword(uch *buffer, int maxsize, int *pKeylen,
+static int check_keyword(uch *buffer, int maxsize, int *pKeylen,
                   const char *keyword_name, const char *chunkid, const char *fname)
 {
   int j, prev_space = 0;
@@ -5039,7 +5042,7 @@ int check_keyword(uch *buffer, int maxsize, int *pKeylen,
 
 /* GRR 20070707 */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int check_text(uch *buffer, int maxsize, const char *chunkid, const char *fname)
+static int check_text(uch *buffer, int maxsize, const char *chunkid, const char *fname)
 {
   int j, ctrlwarn = verbose? 1 : 0;  /* print message once, only if verbose */
 
@@ -5062,7 +5065,7 @@ int check_text(uch *buffer, int maxsize, const char *chunkid, const char *fname)
 
 /* GRR 20061203 (used only for sCAL) */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-int check_ascii_float(uch *buffer, int len, const char *chunkid, const char *fname)
+static int check_ascii_float(uch *buffer, int len, const char *chunkid, const char *fname)
 {
   uch *qq = buffer, *bufEnd = buffer + len;
   int have_sign = 0, have_integer = 0, have_dot = 0, have_fraction = 0;
@@ -5164,4 +5167,6 @@ int check_ascii_float(uch *buffer, int len, const char *chunkid, const char *fna
   }
 
   return rc;
+}
+
 }
