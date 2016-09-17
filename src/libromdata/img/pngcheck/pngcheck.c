@@ -126,6 +126,11 @@
  * pngcheck sources:	http://www.libpng.org/pub/png/apps/pngcheck.html
  */
 
+/**
+ * rom-properties: Modified to be usable as a library for IRpFile*
+ * instead of as a standalone program.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -165,6 +170,7 @@ typedef unsigned char  uch;
 typedef unsigned short ush;
 typedef unsigned long  ulg;
 
+#if 0 /* rom-properties */
 /* printbuf state variables */
 typedef struct printbuf_state {
   int cr;
@@ -176,15 +182,26 @@ typedef struct printbuf_state {
 
 /* int  main (int argc, char *argv[]); */
 void usage (FILE *fpMsg);
+#endif /* rom-properties */
+
+/* rom-properties: Disable printf(), since we don't want any console output. */
+#define printf(fmt, ...) do { } while (0)
+
 #ifndef USE_ZLIB
 void make_crc_table (void);
 ulg  update_crc (ulg crc, uch *buf, int len);
 #endif
 ulg  getlong (FILE *fp, char *fname, char *where);
 void putlong (FILE *fpOut, ulg ul);
+#if 0 /* rom-properties */
 void init_printbuf_state (printbuf_state *prbuf);
 void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
 void report_printbuf (printbuf_state *prbuf, char *fname, char *chunkid);
+#else /* rom-properties: Use dummy macros for these. */
+#define init_printbuf_state(prbuf) do { } while (0)
+#define print_buffer(prbuf, buffer, size, indent) do { } while (0)
+#define report_printbuf(prbuf, fname, chunkid) do { } while (0)
+#endif /* rom-properties */
 int  keywordlen (uch *buffer, int maxsize);
 const char *getmonth (int m);
 int  ratio (ulg uc, ulg c);
@@ -210,6 +227,7 @@ int  check_ascii_float (uch *buffer, int len, char *chunkid, char *fname);
 #define DO_MNG  1
 #define DO_JNG  2
 
+#if 0 /* rom-properties */
 /* GRR 20070704:  borrowed from GRR from/mailx hack */
 #define COLOR_NORMAL        "\033[0m"
 #define COLOR_RED_BOLD      "\033[01;31m"
@@ -226,6 +244,7 @@ int  check_ascii_float (uch *buffer, int len, char *chunkid, char *fname);
 #define COLOR_CYAN          "\033[40;36m"
 #define COLOR_WHITE_BOLD    "\033[01;37m"	/* filenames, filter seps */
 #define COLOR_WHITE         "\033[40;37m"
+#endif /* rom-properties */
 
 #define isASCIIalpha(x)     (ascii_alpha_table[x] & 0x1)
 
@@ -250,12 +269,21 @@ enum {
 };
 
 /* Command-line flag variables */
+#if 0 /* rom-properties */
 int verbose = 0;	/* print chunk info */
 int quiet = 0;		/* print only error messages */
 int printtext = 0;	/* print tEXt chunks */
 int printpal = 0;	/* print PLTE/tRNS/hIST/sPLT contents */
 int color = 0;		/* print with ANSI colors to spice things up */
 int sevenbit = 0;	/* escape characters >=160 */
+#else /* rom-properties: Use default values. */
+#define verbose 0	/* print chunk info */
+#define quiet 1		/* print only error messages */
+#define printtext 0	/* print tEXt chunks */
+#define printpal 0	/* print PLTE/tRNS/hIST/sPLT contents */
+#define color 0		/* print with ANSI colors to spice things up */
+#define sevenbit 0	/* escape characters >=160 */
+#endif /* rom-properties */
 int force = 0;		/* continue even if an error occurs (CRC error, etc) */
 int check_windowbits = 1;	/* more stringent zlib stream-checking */
 int suppress_warnings = 0;	/* don't fuss about ambiguous stuff */
@@ -341,6 +369,7 @@ static const char *png_type[] = {		/* IHDR, tRNS, BASI, summary */
   "RGB+alpha"
 };
 
+#if 0 /* rom-properties */
 static const char *deflate_type[] = {			/* IDAT */
   "superfast",
   "fast",
@@ -380,9 +409,11 @@ static const char *eqn_type[] = {			/* pCAL */
   "physical_value = p0 + p1 * pow(p2, (original_sample / (x1-x0)))",
   "physical_value = p0 + p1 * sinh(p2 * (original_sample - p3) / (x1-x0))"
 };
+#endif /* rom-properties */
 
 static const int eqn_params[] = { 2, 3, 3, 4 };		/* pCAL */
 
+#if 0 /* rom-properties */
 static const char *rendering_intent[] = {		/* sRGB */
   "perceptual",
   "relative colorimetric",
@@ -773,6 +804,7 @@ void usage(FILE *fpMsg)
 
   fflush(fpMsg);
 }
+#endif /* rom-properties */
 
 
 
@@ -866,6 +898,7 @@ void putlong(FILE *fpOut, ulg ul)
 
 
 
+#if 0 /* rom-properties */
 /* print out "size" characters in buffer, taking care not to print control
    chars other than whitespace, since this may open ways of attack by so-
    called ANSI-bombs */
@@ -943,6 +976,7 @@ void report_printbuf(printbuf_state *prbuf, char *fname, char *chunkid)
     set_err(kMinorError);
   }
 }
+#endif /* rom-properties */
 
 
 
@@ -1041,16 +1075,21 @@ int pngcheck(FILE *fp, char *fname, int searching, FILE *fpOut)
   int bitdepth = 0, sampledepth = 0, ityp = 1, jtyp = 0, lace = 0, nplte = 0;
   int jbitd = 0, alphadepth = 0;
   int did_stat = 0;
+#if 0 /* rom-properties */
   printbuf_state prbuf_state;
+#endif /* rom-properties */
   struct stat statbuf;
   static int first_file = 1;
+#if 0 /* rom-properties */
   const char *brief_warn  = color? brief_warn_color  : brief_warn_plain;
   const char *brief_OK    = color? brief_OK_color    : brief_OK_plain;
   const char *warnings_detected  = color? warnings_color : warnings_plain;
   const char *no_errors_detected = color? no_err_color   : no_err_plain;
+#endif /* rom-properties */
 
   global_error = kOK;
 
+#if 0 /* rom-properties */
   if (verbose || printtext || printpal) {
     printf("%sFile: %s%s%s", first_file? "":"\n", color? COLOR_WHITE_BOLD:"",
       fname, color? COLOR_NORMAL:"");
@@ -1064,6 +1103,7 @@ int pngcheck(FILE *fp, char *fname, int searching, FILE *fpOut)
       printf(" (%ld bytes)\n", (long)statbuf.st_size);
     }
   }
+#endif /* rom-properties */
 
   first_file = 0;
   png = mng = jng = 0;
@@ -3555,6 +3595,7 @@ FIXME: add support for decompressing/printing zTXt
           verbose? ":":fname, verbose? "":"DEFI ");
         set_err(kMajorError);
       }
+#if 0 /* rom-properties */
       if (verbose && no_err(kMinorError)) {
         const char *noshow = do_not_show[0];
         uch concrete = 0;
@@ -3581,6 +3622,7 @@ FIXME: add support for decompressing/printing zTXt
             LG(buffer+12), LG(buffer+16), LG(buffer+20), LG(buffer+24));
         }
       }
+#endif /* rom-properties */
       last_is_IDAT = last_is_JDAT = 0;
 
     /*------*
@@ -4632,6 +4674,7 @@ FIXME: add support for decompressing/printing zTXt
 
   /* if (global_error == 0) */ {   /* GRR 20061202:  always print a summary */
     if (mng) {
+#if 0 /* rom-properties */
       if (verbose) {  /* already printed MHDR/IHDR/JHDR info */
         printf("%s in %s (%ld chunks).\n",
           global_error? warnings_detected : no_errors_detected, fname,
@@ -4651,6 +4694,7 @@ FIXME: add support for decompressing/printing zTXt
           printf(", %lu frame%s", frames, (frames == 1L)? "" : "s");
         printf(").\n");
       }
+#endif /* rom-properties */
 
     } else if (jng) {
       char *sgn = "";
