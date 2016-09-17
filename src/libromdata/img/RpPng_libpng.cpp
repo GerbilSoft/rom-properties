@@ -395,6 +395,7 @@ rp_image *RpPng::load(IRpFile *file)
 	// Check the image with pngcheck() first.
 	file->rewind();
 	int ret = pngcheck(file);
+	assert(ret == kOK);
 	if (ret != kOK) {
 		// PNG image has errors.
 		return nullptr;
