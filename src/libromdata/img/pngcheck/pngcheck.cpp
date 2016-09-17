@@ -130,11 +130,13 @@
  * rom-properties: Modified to be usable as a library for IRpFile*
  * instead of as a standalone program.
  */
+#include "../../file/IRpFile.hpp"
+using LibRomData::IRpFile;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <cstring>
 
 #ifdef __riscos
    /* not sure if this will work (fragile!), but relatively clean... */
@@ -191,7 +193,7 @@ void usage (FILE *fpMsg);
 void make_crc_table (void);
 ulg  update_crc (ulg crc, uch *buf, int len);
 #endif
-ulg  getlong (FILE *fp, const char *fname, const char *where);
+ulg  getlong (IRpFile *fp, const char *fname, const char *where);
 void putlong (FILE *fpOut, ulg ul);
 #if 0 /* rom-properties */
 void init_printbuf_state (printbuf_state *prbuf);
@@ -206,7 +208,11 @@ int  keywordlen (uch *buffer, int maxsize);
 const char *getmonth (int m);
 int  ratio (ulg uc, ulg c);
 ulg  gcf (ulg a, ulg b);
+#if 0 /* rom-properties */
+// TODO: Wrapper function for compatibility?
 int  pngcheck (FILE *fp, const char *_fname, int searching, FILE *fpOut);
+#endif /* rom-properties */
+int  pngcheck (IRpFile *fp, int searching);
 #if 0 /* rom-properties */
 int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
 void pngsearch (FILE *fp, const char *fname, int extracting);
@@ -867,7 +873,7 @@ ulg update_crc(ulg crc, uch *buf, int len)
 
 
 
-ulg getlong(FILE *fp, const char *fname, const char *where)
+ulg getlong(IRpFile *fp, const char *fname, const char *where)
 {
   ulg res = 0;
   int j;
@@ -875,7 +881,7 @@ ulg getlong(FILE *fp, const char *fname, const char *where)
   for (j = 0; j < 4; ++j) {
     int c;
 
-    if ((c = fgetc(fp)) == EOF) {
+    if ((c = fp->getc()) == EOF) {
       printf("%s  EOF while reading %s\n", verbose? ":":fname, where);
       set_err(kCriticalError);
       return 0;
@@ -1048,8 +1054,20 @@ ulg gcf(ulg a, ulg b)
 
 
 
+#if 0 /* rom-properties */
+// TODO: Wrapper function for compatibility?
 int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 {
+}
+#endif /* rom-properties **/
+
+
+
+int pngcheck(IRpFile *fp, int searching)
+{
+  const char *const fname = nullptr;	// dummy
+  FILE *const fpOut = nullptr;		// dummy
+
   int i, j;
   long sz;  /* FIXME:  should be ulg (not using negative values as flags...) */
   uch magic[8];
@@ -1113,7 +1131,7 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
   if (!searching) {
     int check = 0;
 
-    if (fread(magic, 1, 8, fp)!=8) {
+    if (fp->read(magic, 8)!=8) {
       printf("%s  cannot read PNG or MNG signature\n", verbose? "":fname);
       set_err(kCriticalError);
       return global_error;
@@ -1123,7 +1141,7 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
       if (!quiet)
         printf("%s  (trying to skip MacBinary header)\n", verbose? "":fname);
 
-      if (fread(buffer, 1, 120, fp) != 120 || fread(magic, 1, 8, fp) != 8) {
+      if (fp->read(buffer, 120) != 120 || fp->read(magic, 8) != 8) {
         printf("    cannot read past MacBinary header\n");
         set_err(kCriticalError);
       } else if ((check = check_magic(magic, fname, DO_PNG)) == 0) {
@@ -1166,8 +1184,8 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 
   /*-------------------- BEGINNING OF IMMENSE WHILE-LOOP --------------------*/
 
-  while ((c = fgetc(fp)) != EOF) {
-    ungetc(c, fp);
+  while ((c = fp->getc()) != EOF) {
+    fp->ungetc(c);
 
     if (((png || jng) && have_IEND) || (mng && have_MEND)) {
       if (searching) /* start looking again in the next file */
@@ -1194,7 +1212,7 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
         return global_error;
     }
 
-    if (fread(chunkid, 1, 4, fp) != 4) {
+    if (fp->read(chunkid, 4) != 4) {
       printf("%s  EOF while reading chunk type\n", verbose? ":":fname);
       set_err(kCriticalError);
       return global_error;
@@ -1234,7 +1252,7 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 
     toread = (sz > BS)? BS:sz;
 
-    if (fread(buffer, 1, (size_t)toread, fp) != (size_t)toread) {
+    if (fp->read(buffer, (size_t)toread) != (size_t)toread) {
       printf("%s  EOF while reading %s%sdata\n",
         verbose? ":":fname, verbose? "":chunkid, verbose? "":" ");
       set_err(kCriticalError);
@@ -4616,7 +4634,7 @@ FIXME: add support for decompressing/printing zTXt
         sz -= toread;
         toread = (sz > BS)? BS:sz;
 
-        data_read = fread(buffer, 1, toread, fp);
+        data_read = fp->read(buffer, toread);
         if (fpOut != NULL)
           (void)fwrite(buffer, 1, data_read, fpOut);
 

@@ -107,6 +107,27 @@ class IRpFile
 		 * @return Last POSIX error, or 0 if no error.
 		 */
 		virtual int lastError(void) const = 0;
+
+	public:
+		/** Convenience functions implemented for all IRpFile classes. **/
+
+		/**
+		 * Get a single character (byte) from the file
+		 * @return Character from file, or EOF on end of file or error.
+		 */
+		int getc(void);
+
+		/**
+		 * Un-get a single character (byte) from the file.
+		 *
+		 * Note that this implementation doesn't actually
+		 * use a character buffer; it merely decrements the
+		 * seek pointer by 1.
+		 *
+		 * @param c Character. (ignored!)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int ungetc(int c);
 };
 
 }
