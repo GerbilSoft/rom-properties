@@ -53,10 +53,13 @@
 #include "img/RpImageLoader.hpp"
 
 // C includes.
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 // C++ includes.
 #include <memory>
+#include <string>
+using std::string;
 using std::unique_ptr;
 
 // Google Test ColoredPrintf() wrapper.
@@ -87,7 +90,8 @@ namespace LibRomData { namespace Tests {
 // tRNS chunk for CI8 paletted images.
 // BMP format doesn't support alpha values
 // in the color table.
-struct tRNS_CI8_t {
+struct tRNS_CI8_t
+{
 	uint8_t alpha[256];
 };
 
@@ -279,7 +283,8 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 /**
  * Formatting function for RpPngFormatTest.
  */
-inline ::std::ostream& operator<<(::std::ostream& os, const RpPngFormatTest_mode& mode) {
+inline ::std::ostream& operator<<(::std::ostream& os, const RpPngFormatTest_mode& mode)
+{
 	return os << rp_string_to_utf8(mode.png_filename);
 };
 
@@ -884,6 +889,28 @@ TEST_P(RpPngFormatTest, loadTest)
 	}
 }
 
+/**
+ * Test case suffix generator.
+ * @param info Test parameter information.
+ * @return Test case suffix.
+ */
+static string test_case_suffix_generator(::testing::TestParamInfo<RpPngFormatTest_mode> info)
+{
+	rp_string suffix = info.param.png_filename;
+
+	// Replace all non-alphanumeric characters with '_'.
+	// See gtest-param-util.h::IsValidParamName().
+	for (int i = (int)suffix.size()-1; i >= 0; i--) {
+		rp_char chr = suffix[i];
+		if (!isalnum(chr) && chr != '_') {
+			suffix[i] = '_';
+		}
+	}
+
+	// TODO: rp_string_to_ascii()?
+	return rp_string_to_utf8(suffix);
+}
+
 // Test cases.
 
 // NOTE: 32-bit ARGB bitmaps use BI_BITFIELDS.
@@ -964,7 +991,8 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			gl_triangle_gray_alpha_IHDR,
 			gl_triangle_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
-		));
+		)
+	, test_case_suffix_generator);
 
 // gl_quad PNG IHDR chunks.
 static const PNG_IHDR_t gl_quad_RGB24_IHDR =
@@ -1035,7 +1063,8 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			gl_quad_gray_alpha_IHDR,
 			gl_quad_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
-		));
+		)
+	, test_case_suffix_generator);
 
 // xterm 256-color PNG IHDR chunks.
 static const PNG_IHDR_t xterm_256color_CI8_IHDR =
@@ -1094,7 +1123,8 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 			xterm_256color_CI8_IHDR,
 			xterm_256color_CI8_BIH,
 			rp_image::FORMAT_CI8)
-		));
+		)
+	, test_case_suffix_generator);
 
 // xterm 256-color PNG image tests with transparency.
 // FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
@@ -1109,7 +1139,8 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			xterm_256color_CI8_tRNS_BIH,
 			xterm_256color_CI8_tRNS_bmp_tRNS,
 			rp_image::FORMAT_CI8)
-		));
+		)
+	, test_case_suffix_generator);
 #elif defined(_WIN32)
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
@@ -1121,7 +1152,8 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			xterm_256color_CI8_tRNS_gdip_BIH,
 			rp_image::FORMAT_ARGB32,
 			rp_image::FORMAT_CI8)
-		));
+		)
+	, test_case_suffix_generator);
 #endif
 
 /** Low color depth and odd width tests. **/
@@ -1151,6 +1183,7 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 			odd_width_16color_CI8_BIH,
 			rp_image::FORMAT_CI8,
 			rp_image::FORMAT_ARGB32)
-		));
+		)
+	, test_case_suffix_generator);
 
 } }
