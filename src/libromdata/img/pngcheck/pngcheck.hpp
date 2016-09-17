@@ -27,7 +27,21 @@ namespace LibRomData {
 
 class IRpFile;
 
-int pngcheck(IRpFile *fp, int searching);
+enum {
+  kOK = 0,
+  kWarning,           /* could be an error in some circumstances but not all */
+  kCommandLineError,  /* pilot error */
+  kMinorError,        /* minor spec errors (e.g., out-of-range values) */
+  kMajorError,        /* file corruption, invalid chunk length/layout, etc. */
+  kCriticalError      /* unexpected EOF or other file(system) error */
+};
+
+/**
+ * Check a PNG file for errors.
+ * @param fp PNG file.
+ * @return kOK on success; other value on error.
+ */
+int pngcheck(IRpFile *fp);
 
 }
 

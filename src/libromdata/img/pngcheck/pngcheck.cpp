@@ -130,6 +130,7 @@
  * rom-properties: Modified to be usable as a library for IRpFile*
  * instead of as a standalone program.
  */
+#include "pngcheck.hpp"
 #include "../../file/IRpFile.hpp"
 using LibRomData::IRpFile;
 
@@ -268,15 +269,6 @@ static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const 
 #define set_err(x)  global_error = ((global_error < (x))? (x) : global_error)
 #define is_err(x)   (global_error > (x) || (!force && global_error == (x)))
 #define no_err(x)   (global_error < (x) || (force && global_error == (x)))
-
-enum {
-  kOK = 0,
-  kWarning,           /* could be an error in some circumstances but not all */
-  kCommandLineError,  /* pilot error */
-  kMinorError,        /* minor spec errors (e.g., out-of-range values) */
-  kMajorError,        /* file corruption, invalid chunk length/layout, etc. */
-  kCriticalError      /* unexpected EOF or other file(system) error */
-};
 
 /* Command-line flag variables */
 #if 0 /* rom-properties */
