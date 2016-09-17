@@ -207,8 +207,10 @@ const char *getmonth (int m);
 int  ratio (ulg uc, ulg c);
 ulg  gcf (ulg a, ulg b);
 int  pngcheck (FILE *fp, const char *_fname, int searching, FILE *fpOut);
+#if 0 /* rom-properties */
 int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
 void pngsearch (FILE *fp, const char *fname, int extracting);
+#endif /* rom-properties */
 int  check_magic (uch *magic, const char *fname, int which);
 int  check_chunk_name (const char *chunk_name, const char *fname);
 int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
@@ -4773,6 +4775,7 @@ FIXME: add support for decompressing/printing zTXt
 
 
 
+#if 0 /* rom-properties */
 int pnginfile(FILE *fp, const char *fname, int ipng, int extracting)
 {
   char name[1024], *szdot;
@@ -4854,6 +4857,7 @@ void pngsearch(FILE *fp, const char *fname, int extracting)
     }
   } while (ch != EOF);
 }
+#endif /* rom-properties */
 
 
 
