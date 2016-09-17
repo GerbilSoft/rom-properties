@@ -45,6 +45,9 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "GdiplusHelper.hpp"
 
+// pngcheck()
+#include "pngcheck/pngcheck.hpp"
+
 namespace LibRomData {
 
 class RpPngPrivate
@@ -602,6 +605,30 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 
 	// Return the image.
 	return img;
+}
+
+/**
+ * Load a PNG image from an IRpFile.
+ *
+ * This image is verified with various tools to ensure
+ * it doesn't have any errors.
+ *
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image *RpPng::load(IRpFile *file)
+{
+	// Check the image with pngcheck() first.
+	file->rewind();
+	int ret = pngcheck(file);
+	if (ret != kOK) {
+		// PNG image has errors.
+		return nullptr;
+	}
+
+	// PNG image has been validated.
+	file->rewind();
+	return loadUnchecked(file);
 }
 
 }

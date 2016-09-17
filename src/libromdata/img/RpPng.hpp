@@ -47,6 +47,17 @@ class RpPng
 		 * @return rp_image*, or nullptr on error.
 		 */
 		static rp_image *loadUnchecked(IRpFile *file);
+
+		/**
+		 * Load a PNG image from an IRpFile.
+		 *
+		 * This image is verified with various tools to ensure
+		 * it doesn't have any errors.
+		 *
+		 * @param file IRpFile to load from.
+		 * @return rp_image*, or nullptr on error.
+		 */
+		static rp_image *load(IRpFile *file);
 };
 
 }

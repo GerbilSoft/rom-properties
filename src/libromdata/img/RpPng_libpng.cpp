@@ -46,6 +46,9 @@
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// pngcheck()
+#include "pngcheck/pngcheck.hpp"
+
 namespace LibRomData {
 
 class RpPngPrivate
@@ -376,6 +379,30 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	return img;
+}
+
+/**
+ * Load a PNG image from an IRpFile.
+ *
+ * This image is verified with various tools to ensure
+ * it doesn't have any errors.
+ *
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image *RpPng::load(IRpFile *file)
+{
+	// Check the image with pngcheck() first.
+	file->rewind();
+	int ret = pngcheck(file);
+	if (ret != kOK) {
+		// PNG image has errors.
+		return nullptr;
+	}
+
+	// PNG image has been validated.
+	file->rewind();
+	return loadUnchecked(file);
 }
 
 }
