@@ -853,8 +853,9 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 		}
 
 		if (mod32 > 0) {
-			// TODO: Check that the extra pixels are 0.
-			// For now, just skip the remaining bytes.
+			// Skip the remaining bytes.
+			// NOTE: The unused pixels aren't necessarily set to 0,
+			// so we can't check them, unlike CI8 bitmaps.
 			pBits += (mod32 / 8);
 		}
 	}
