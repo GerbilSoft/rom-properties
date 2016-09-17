@@ -40,14 +40,9 @@ class rp_image_private
 		rp_image_private &operator=(const rp_image_private &);
 
 	public:
-		/**
-		 * Get the pixel size for the image format.
-		 * @return Pixel size, in bytes.
-		 */
-		int pxSize(void) const;
-
 		int width;
 		int height;
+		int stride;
 		rp_image::Format format;
 
 		// Image data.
@@ -63,42 +58,41 @@ class rp_image_private
 /** rp_image_private **/
 
 rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
-	: width(width)
-	, height(height)
-	, format(format)
+	: width(0)
+	, height(0)
+	, stride(0)
+	, format(rp_image::FORMAT_NONE)
 	, data(nullptr)
 	, data_len(0)
 	, palette(nullptr)
 	, palette_len(0)
 	, tr_idx(0)
 {
-	if (this->width <= 0 || this->height <= 0 ||
-	    this->format == rp_image::FORMAT_NONE)
-	{
+	if (width <= 0 || height <= 0 || format == rp_image::FORMAT_NONE) {
 		// Invalid image specifications.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
 		return;
 	}
 
-	int pxs = pxSize();
-	if (pxs <= 0) {
-		// Invalid image format.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
-		return;
+	// Calculate the stride.
+	int stride = width;
+	switch (format) {
+		case rp_image::FORMAT_CI8:
+			//stride *= 1;
+			break;
+		case rp_image::FORMAT_ARGB32:
+			stride *= 4;
+			break;
+		default:
+			// Invalid image format.
+			assert(false);
+			return;
 	}
 
 	// Allocate memory for the image.
-	data_len = width * height * pxs;
+	data_len = height * stride;
 	assert(data_len > 0);
 	if (data_len == 0) {
 		// Somehow we have a 0-length image...
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
 		return;
 	}
 
@@ -106,23 +100,17 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	assert(data != nullptr);
 	if (!data) {
 		// Failed to allocate memory.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
 		return;
 	}
 
 	// Do we need to allocate memory for the palette?
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::FORMAT_CI8) {
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
 		palette = (uint32_t*)calloc(256, sizeof(*palette));
 		if (!palette) {
 			// Failed to allocate memory.
-			this->width = 0;
-			this->height = 0;
-			this->format = rp_image::FORMAT_NONE;
 			free(data);
 			data = nullptr;
 			data_len = 0;
@@ -132,29 +120,18 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 		// 256 colors allocated in the palette.
 		palette_len = 256;
 	}
+
+	// Save the image attributes.
+	this->width = width;
+	this->height = height;
+	this->stride = stride;
+	this->format = format;
 }
 
 rp_image_private::~rp_image_private()
 {
 	free(data);
 	free(palette);
-}
-
-/**
- * Get the pixel size for the image format.
- * @return Pixel size, in bytes.
- */
-int rp_image_private::pxSize(void) const
-{
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			return 1;
-		case rp_image::FORMAT_ARGB32:
-			return 4;
-		case rp_image::FORMAT_NONE:
-		default:
-			return 0;
-	}
 }
 
 /** rp_image **/
@@ -176,7 +153,7 @@ rp_image::~rp_image()
  */
 bool rp_image::isValid(void) const
 {
-	return (d->width > 0 && d->height > 0 &&
+	return (d->width > 0 && d->height > 0 && d->stride > 0 &&
 		d->format != FORMAT_NONE &&
 		d->data && d->data_len > 0 &&
 		(d->format != FORMAT_CI8 || (d->palette && d->palette_len > 0)));
@@ -198,6 +175,15 @@ int rp_image::width(void) const
 int rp_image::height(void) const
 {
 	return d->height;
+}
+
+/**
+ * Get the number of bytes per line.
+ * @return Bytes per line.
+ */
+int rp_image::stride(void) const
+{
+	return d->stride;
 }
 
 /**
@@ -238,7 +224,7 @@ const void *rp_image::scanLine(int i) const
 	if (!d->data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->width * i * d->pxSize());
+	return ((uint8_t*)d->data) + (d->stride * i);
 }
 
 /**
@@ -252,7 +238,7 @@ void *rp_image::scanLine(int i)
 	if (!d->data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->width * i * d->pxSize());
+	return ((uint8_t*)d->data) + (d->stride * i);
 }
 
 /**

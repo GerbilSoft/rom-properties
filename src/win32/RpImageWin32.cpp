@@ -249,10 +249,10 @@ HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image, COLORREF bgColor)
 
 	// NOTE: Gdiplus requires non-const BYTE*.
 	ScopedGdiplus gdip;
-	const int stride = image->width() * 4;
 	unique_ptr<Gdiplus::Bitmap> gdipBmp(
 		new Gdiplus::Bitmap(
-			image->width(), image->height(), stride,
+			image->width(), image->height(),
+			image->stride(),
 			PixelFormat32bppARGB,
 			(BYTE*)image->bits()));
 	if (!gdipBmp)

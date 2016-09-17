@@ -73,6 +73,12 @@ class rp_image
 		int height(void) const;
 
 		/**
+		 * Get the number of bytes per line.
+		 * @return Bytes per line.
+		 */
+		int stride(void) const;
+
+		/**
 		 * Get the image format.
 		 * @return Image format.
 		 */
