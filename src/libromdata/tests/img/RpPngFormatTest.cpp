@@ -231,6 +231,21 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const uint8_t *pBits);
 
 		/**
+		 * Compare an rp_image's palette to a BMP palette.
+		 * @param img rp_image.
+		 * @param pBmpPalette Bitmap palette.
+		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
+		 * @param bmpColorTableSize BMP color table size. (256 for CI8, 2 for monochrome.)
+		 * @param biClrUsed Number of used colors. (If negative, check all 256 colors.)
+		 */
+		static void Compare_Palettes(
+			const rp_image *img,
+			const uint32_t *pBmpPalette,
+			const tRNS_CI8_t *pBmpAlpha = nullptr,
+			int bmpColorTableSize = 256,
+			int biClrUsed = -1);
+
+		/**
 		 * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
 		 * @param img rp_image
 		 * @param pBits Bitmap image data.
@@ -269,6 +284,21 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		static void Compare_CI8_BMP32(
 			const rp_image *img,
 			const uint8_t *pBits);
+
+		/**
+		 * Compare a CI8 rp_image to a monochrome bitmap.
+		 * @param img rp_image
+		 * @param pBits Bitmap image data.
+		 * @param pBmpPalette Bitmap palette.
+		 * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
+		 * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
+		 */
+		static void Compare_CI8_BMP1(
+			const rp_image *img,
+			const uint8_t *pBits,
+			const uint32_t *pBmpPalette,
+			const tRNS_CI8_t *pBmpAlpha = nullptr,
+			int biClrUsed = -1);
 
 	public:
 		// Image buffers.
@@ -567,6 +597,59 @@ void RpPngFormatTest::Compare_ARGB32_BMP32(
 }
 
 /**
+ * Compare an rp_image's palette to a BMP palette.
+ * @param img rp_image.
+ * @param pBmpPalette Bitmap palette.
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
+ * @param bmpColorTableSize BMP color table size. (256 for CI8, 2 for monochrome.)
+ * @param biClrUsed Number of used colors. (If negative, check all 256 colors.)
+ */
+void RpPngFormatTest::Compare_Palettes(
+	const rp_image *img,
+	const uint32_t *pBmpPalette,
+	const tRNS_CI8_t *pBmpAlpha,
+	int bmpColorTableSize,
+	int biClrUsed)
+{
+	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
+	if (biClrUsed < 0) {
+		biClrUsed = img->palette_len();
+	}
+
+	uint32_t xor_result = 0;
+	for (int i = 0; i < biClrUsed; i++, pSrcPalette++, pBmpPalette++) {
+		uint32_t bmp32 = le32_to_cpu(*pBmpPalette) & 0x00FFFFFF;
+		if (pBmpAlpha) {
+			// BMP tRNS chunk is specified.
+			bmp32 |= pBmpAlpha->alpha[i] << 24;
+		} else {
+			// No tRNS chunk. Assume the color is opaque.
+			bmp32 |= 0xFF000000;
+		}
+		xor_result |= (*pSrcPalette ^ bmp32);
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match BMP.";
+
+	// Make sure the unused colors in the rp_image are all 0.
+	if (biClrUsed < img->palette_len()) {
+		uint32_t or_result = 0;
+		for (int i = img->palette_len(); i > biClrUsed; i--, pSrcPalette++) {
+			or_result |= *pSrcPalette;
+		}
+		EXPECT_EQ(0U, or_result) << "CI8 rp_image's palette doesn't have unused entries set to 0.";
+	}
+
+	// Make sure the unused colors in the BMP are all 0.
+	if (biClrUsed < bmpColorTableSize) {
+		uint32_t or_result = 0;
+		for (int i = img->palette_len(); i > biClrUsed; i--, pBmpPalette++) {
+			or_result |= *pBmpPalette;
+		}
+		EXPECT_EQ(0U, or_result) << "BMP's palette doesn't have unused entries set to 0.";
+	}
+}
+
+/**
  * Compare a CI8 rp_image to an 8-bit CI8 bitmap.
  * @param img rp_image
  * @param pBits Bitmap image data.
@@ -590,37 +673,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 	uint32_t xor_result = 0;
 
 	// Check the palette.
-	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
-	if (biClrUsed < 0) {
-		biClrUsed = img->palette_len();
-	}
-	for (int i = 0; i < biClrUsed; i++, pSrcPalette++, pBmpPalette++) {
-		uint32_t bmp32 = le32_to_cpu(*pBmpPalette) & 0x00FFFFFF;
-		if (pBmpAlpha) {
-			// BMP tRNS chunk is specified.
-			bmp32 |= pBmpAlpha->alpha[i] << 24;
-		} else {
-			// No tRNS chunk. Assume the color is opaque.
-			bmp32 |= 0xFF000000;
-		}
-		xor_result |= (*pSrcPalette ^ bmp32);
-	}
-	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match CI8 BMP.";
-
-	// Make sure the unused colors are all 0.
-	if (biClrUsed < img->palette_len()) {
-		uint32_t or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pSrcPalette++) {
-			or_result |= *pSrcPalette;
-		}
-		EXPECT_EQ(0U, or_result) << "CI8 rp_image's palette doesn't have unused entries set to 0.";
-
-		or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pBmpPalette++) {
-			or_result |= *pBmpPalette;
-		}
-		EXPECT_EQ(0U, or_result) << "CI8 BMP's palette doesn't have unused entries set to 0.";
-	}
+	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 256, biClrUsed));
 
 	// 256-color BMP images always have an internal width that's
 	// a multiple of 8px. If the image isn't a multiple of 8px,
@@ -752,6 +805,49 @@ void RpPngFormatTest::Compare_CI8_BMP32(
 }
 
 /**
+ * Compare a CI8 rp_image to a monochrome bitmap.
+ * @param img rp_image
+ * @param pBits Bitmap image data.
+ * @param pBmpPalette Bitmap palette.
+ * @param pBmpAlpha BMP tRNS chunk from the test parameter. (If nullptr, no tRNS.)
+ * @param biClrUsed Number of used colors. (If negative, check the entire palette.)
+ */
+void RpPngFormatTest::Compare_CI8_BMP1(
+	const rp_image *img,
+	const uint8_t *pBits,
+	const uint32_t *pBmpPalette,
+	const tRNS_CI8_t *pBmpAlpha,
+	int biClrUsed)
+{
+	// BMP images are stored upside-down.
+	// TODO: 8px row alignment?
+
+	// To avoid calling EXPECT_EQ() for every single pixel,
+	// XOR the two pixels together, then OR it here.
+	// The eventual result should be 0 if the images are identical.
+	uint32_t xor_result = 0;
+
+	// Check the palette.
+	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 2, biClrUsed));
+
+	// Check the image data.
+	xor_result = 0;
+	for (int y = img->height()-1; y >= 0; y--) {
+		// The source image has 8 pixels in each byte,
+		// so we have to compare the entire line manually.
+		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		for (int x = img->width(); x > 0; x -= 8, pBits++) {
+			uint8_t mono_pxs = *pBits;
+			for (int bit = 8; bit > 0; bit--, pSrc++) {
+				xor_result |= (mono_pxs >> 7) ^ *pSrc;
+				mono_pxs <<= 1;
+			}
+		}
+	}
+	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's pixel data doesn't match monochrome BMP.";
+}
+
+/**
  * Run an RpImageLoader test.
  */
 TEST_P(RpPngFormatTest, loadTest)
@@ -879,6 +975,27 @@ TEST_P(RpPngFormatTest, loadTest)
 			// wine-1.9.18 loads xterm-256color.CI8.tRNS.png as CI8
 			// instead of as ARGB32 for some reason.
 			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP32(img.get(), pBits));
+		} else if (bih.biBitCount == 1 && bih.biCompression == BI_RGB) {
+			// Monochrome bitmap.
+
+			// NOTE: The color table does have two colors, so we should
+			// compare it to the rp_image palette.
+			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+				<< "BMP palette is larger than the rp_image palette.";
+
+			// 256-color image. Get the palette.
+			// NOTE: rp_image's palette length is always 256, which may be
+			// greater than the used colors in the BMP.
+			ASSERT_GE(img->palette_len(), (int)bih.biClrUsed)
+				<< "BMP palette is larger than the rp_image palette.";
+
+			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
+			// FIXME: This may fail on aligned architectures.
+			const uint32_t *pBmpPalette = reinterpret_cast<const uint32_t*>(
+				m_bmp_buf.data() + sizeof(BITMAPFILEHEADER) + bih.biSize);
+			const tRNS_CI8_t *pBmpAlpha = (mode.has_bmp_tRNS ? &mode.bmp_tRNS : nullptr);
+			ASSERT_NO_FATAL_FAILURE(Compare_CI8_BMP1(img.get(), pBits,
+				pBmpPalette, pBmpAlpha, bih.biClrUsed));
 		} else {
 			// Unsupported comparison.
 			ASSERT_TRUE(false) << "Image format comparison isn't supported.";
@@ -1176,6 +1293,7 @@ static const BITMAPINFOHEADER odd_width_16color_CI8_BIH =
 INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 	::testing::Values(
 		// FIXME: wine loads the PNG image as ARGB32.
+		// TODO: Use a CI4 BMP?
 		RpPngFormatTest_mode(
 			_RP("odd-width.16color.CI4.png"),
 			_RP("odd-width.16color.CI8.bmp.gz"),
@@ -1183,6 +1301,28 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 			odd_width_16color_CI8_BIH,
 			rp_image::FORMAT_CI8,
 			rp_image::FORMAT_ARGB32)
+		)
+	, test_case_suffix_generator);
+
+/** Monochrome tests. **/
+
+static const PNG_IHDR_t happy_mac_mono_IHDR =
+	{512, 342, 1, PNG_COLOR_TYPE_PALETTE, 0, 0, 0};
+
+static const BITMAPINFOHEADER happy_mac_mono_BIH =
+	{sizeof(BITMAPINFOHEADER),
+		512, 342, 1, 1, BI_RGB, 512*342/8,
+		3936, 3936, 2, 2};
+
+// happy_mac_mono PNG image tests.
+INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
+	::testing::Values(
+		RpPngFormatTest_mode(
+			_RP("happy-mac.mono.png"),
+			_RP("happy-mac.mono.bmp.gz"),
+			happy_mac_mono_IHDR,
+			happy_mac_mono_BIH,
+			rp_image::FORMAT_CI8)
 		)
 	, test_case_suffix_generator);
 

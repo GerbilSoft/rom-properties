@@ -86,6 +86,13 @@ class RpPngPrivate
 		static rp_image *gdip_CI4_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp);
 
 		/**
+		 * Copy a monochrome GDI+ bitmap to a CI8 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_mono_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp);
+
+		/**
 		 * Load a PNG image from a file.
 		 * @param file IStream wrapping an IRpFile.
 		 * @return rp_image*, or nullptr on error.
@@ -407,6 +414,97 @@ rp_image *RpPngPrivate::gdip_CI4_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
 }
 
 /**
+ * Copy a monochrome GDI+ bitmap to a CI8 rp_image.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
+ */
+rp_image *RpPngPrivate::gdip_mono_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
+{
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat1bppIndexed);
+
+	// Lock the GDI+ bitmap for processing.
+	Gdiplus::BitmapData bmpData;
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat1bppIndexed, &bmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Create the rp_image.
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_CI8);
+	if (!img || !img->isValid()) {
+		// Error creating an rp_image.
+		gdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the image, line by line.
+	// NOTE: If Stride is negative, the image is upside-down.
+	int rp_line_start, rp_line_inc, gdip_line_inc;
+	if (bmpData.Stride < 0) {
+		// Bottom-up
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
+		gdip_line_inc = -bmpData.Stride;
+	} else {
+		// Top-down
+		rp_line_start = 0;
+		rp_line_inc = 1;
+		gdip_line_inc = bmpData.Stride;
+	}
+
+	// Copy the palette.
+	int palette_size = gdipBmp->GetPaletteSize();
+	assert(palette_size > 0);
+	Gdiplus::ColorPalette *palette =
+		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(palette_size));
+	gdipBmp->GetPalette(palette, palette_size);
+
+	// Copy the palette colors.
+	// TODO: Check flags for alpha/grayscale?
+	assert((int)palette->Count > 0);
+	assert((int)palette->Count <= img->palette_len());
+	int color_count = std::min((int)palette->Count, img->palette_len());
+	memcpy(img->palette(), palette->Entries, color_count*sizeof(uint32_t));
+
+	// Zero out any remaining colors.
+	const int diff = img->palette_len() - color_count;
+	if (diff > 0) {
+		memset(img->palette() + color_count, 0, diff*sizeof(uint32_t));
+	}
+
+	// We don't need the GDI+ palette anymore.
+	free(palette);
+
+	// Copy the image data.
+	// NOTE: Divide width by eight, then add one if the image width
+	// isn't a multiple of 8, since 1bpp stores 8 pixels per byte.
+	gdip_line_inc -= (int)((bmpData.Width / 8) + (bmpData.Width % 8 != 0));
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		for (int x = bmpData.Width; x > 0; x -= 8, gdip_px++) {
+			// Each source byte has eight packed pixels.
+			uint8_t mono_pxs = *gdip_px;
+			for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, rp_px++) {
+				*rp_px = (mono_pxs >> 7);
+				mono_pxs <<= 1;
+			}
+		}
+	}
+
+	// Unlock the GDI+ bitmap.
+	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
+
+/**
  * Load a PNG image from a file.
  * @param file IStream wrapping an IRpFile.
  * @return rp_image*, or nullptr on error.
@@ -425,9 +523,11 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 	rp_image *img = nullptr;
 	switch (gdipBmp->GetPixelFormat()) {
 		case PixelFormat1bppIndexed:
-			// TODO
-			assert(false);
-			return nullptr;
+			// 1bpp paletted image. (monochrome)
+			// GDI+ on Windows XP doesn't support converting
+			// this to 8bpp, so we'll have to do it ourselves.
+			img = gdip_mono_to_rp_image_CI8(gdipBmp.get());
+			break;
 
 		case PixelFormat4bppIndexed:
 			// 4bpp paletted image.
