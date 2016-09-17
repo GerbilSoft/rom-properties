@@ -28,6 +28,7 @@ FILE(COPY ${test_images} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # RpImageLoader test.
 ADD_EXECUTABLE(RpImageLoaderTest
+	gtest_init.cpp
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
