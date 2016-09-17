@@ -45,7 +45,7 @@ namespace Gdiplus {
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
- * @return image rp_image.
+ * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
 HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
@@ -175,7 +175,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 
 /**
  * Convert an rp_image to HBITMAP. (CI8)
- * @return image rp_image. (Must be CI8.)
+ * @param image rp_image. (Must be CI8.)
  * @return HBITMAP, or nullptr on error.
  */
 HBITMAP RpImageWin32::toHBITMAP_CI8(const rp_image *image)
@@ -233,10 +233,11 @@ HBITMAP RpImageWin32::toHBITMAP_CI8(const rp_image *image)
 
 /**
  * Convert an rp_image to HBITMAP. (ARGB32)
- * @return image rp_image. (Must be ARGB32.)
+ * @param image rp_image. (Must be ARGB32.)
+ * @param bgColor Background color for images with alpha transparency.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
+HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image, COLORREF bgColor)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -260,8 +261,7 @@ HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
 	// Convert the image to HBITMAP.
 	// TODO: Allow the caller to specify a background color?
 	HBITMAP hbmpRet;
-	Gdiplus::Color bgColor(0xFFFFFFFF);
-	Gdiplus::Status status = gdipBmp->GetHBITMAP(bgColor, &hbmpRet);
+	Gdiplus::Status status = gdipBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hbmpRet);
 	if (status != Gdiplus::Status::Ok) {
 		// Error converting to HBITMAP.
 		return nullptr;
@@ -274,9 +274,10 @@ HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image)
 /**
  * Convert an rp_image to HBITMAP.
  * @return image rp_image.
+ * @param bgColor Background color for images with alpha transparency.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
+HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, COLORREF bgColor)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -291,7 +292,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image)
 			hbmpRet = toHBITMAP_CI8(image);
 			break;
 		case rp_image::FORMAT_ARGB32:
-			hbmpRet = toHBITMAP_ARGB32(image);
+			hbmpRet = toHBITMAP_ARGB32(image, bgColor);
 			break;
 		default:
 			assert(false);
