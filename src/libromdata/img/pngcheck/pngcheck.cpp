@@ -1091,13 +1091,11 @@ int pngcheck(IRpFile *fp)
   int vlc = -1, lc = -1;
   int bitdepth = 0, sampledepth = 0, ityp = 1, jtyp = 0, lace = 0, nplte = 0;
   int jbitd = 0, alphadepth = 0;
-  int did_stat = 0;
 #if 0 /* rom-properties */
+  int did_stat = 0;
   printbuf_state prbuf_state;
-#endif /* rom-properties */
   struct stat statbuf;
   static int first_file = 1;
-#if 0 /* rom-properties */
   const char *brief_warn  = color? brief_warn_color  : brief_warn_plain;
   const char *brief_OK    = color? brief_OK_color    : brief_OK_plain;
   const char *warnings_detected  = color? warnings_color : warnings_plain;
@@ -1124,7 +1122,9 @@ int pngcheck(IRpFile *fp)
   }
 #endif /* rom-properties */
 
+#if 0 /* rom-properties */
   first_file = 0;
+#endif /* rom-properties */
   png = mng = jng = 0;
 
   if (!searching) {
@@ -4691,9 +4691,9 @@ FIXME: add support for decompressing/printing zTXt
    * GRR 19990619: disabled for MNG, at least until we figure out a reasonable
    *   way to calculate the ratio; also switched to MNG-relevant stats. */
 
+#if 0 /* rom-properties */
   /* if (global_error == 0) */ {   /* GRR 20061202:  always print a summary */
     if (mng) {
-#if 0 /* rom-properties */
       if (verbose) {  /* already printed MHDR/IHDR/JHDR info */
         printf("%s in %s (%ld chunks).\n",
           global_error? warnings_detected : no_errors_detected, fname,
@@ -4713,7 +4713,6 @@ FIXME: add support for decompressing/printing zTXt
           printf(", %lu frame%s", frames, (frames == 1L)? "" : "s");
         printf(").\n");
       }
-#endif /* rom-properties */
 
     } else if (jng) {
       const char *sgn = "";
@@ -4785,6 +4784,7 @@ FIXME: add support for decompressing/printing zTXt
     }
 
   }
+#endif /* rom-properties */
 
   return global_error;
 
