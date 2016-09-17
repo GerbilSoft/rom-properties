@@ -303,6 +303,8 @@ static int png = 0;		/* it's a PNG */
 static int mng = 0;		/* it's a MNG instead of a PNG (won't work in pipe) */
 static int jng = 0;		/* it's a JNG */
 
+// FIXME: Need to use the stack or TLS in order to
+// make this function thread-safe.
 static int global_error = kOK; /* the current error status */
 static uch buffer[BS];
 
@@ -1110,6 +1112,8 @@ int pngcheck(IRpFile *fp)
   const char *no_errors_detected = color? no_err_color   : no_err_plain;
 #endif /* rom-properties */
 
+  // FIXME: Need to use the stack or TLS in order to
+  // make this function thread-safe.
   global_error = kOK;
 
 #if 0 /* rom-properties */
