@@ -46,6 +46,9 @@ IF(WIN32)
 	ADD_SUBDIRECTORY(zlib)
 ENDIF(WIN32)
 
+# MiniZip.
+ADD_SUBDIRECTORY(minizip)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake
