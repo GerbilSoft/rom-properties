@@ -134,6 +134,9 @@
 #include "../../file/IRpFile.hpp"
 using LibRomData::IRpFile;
 
+#include <memory>
+using std::unique_ptr;
+
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
@@ -196,7 +199,9 @@ void usage (FILE *fpMsg);
 static void make_crc_table (void);
 static ulg  update_crc (ulg crc, uch *buf, int len);
 #endif
-static ulg  getlong (IRpFile *fp, const char *fname, const char *where);
+#if 0 /* rom-properties */
+static ulg  getlong (FILE *fp, const char *fname, const char *where);
+#endif /* rom-properties */
 static void putlong (FILE *fpOut, ulg ul);
 #if 0 /* rom-properties */
 static void init_printbuf_state (printbuf_state *prbuf);
@@ -219,13 +224,13 @@ int  pngcheck (IRpFile *fp);
 #if 0 /* rom-properties */
 static int  pnginfile (FILE *fp, const char *fname, int ipng, int extracting);
 static void pngsearch (FILE *fp, const char *fname, int extracting);
-#endif /* rom-properties */
 static int  check_magic (uch *magic, const char *fname, int which);
 static int  check_chunk_name (const char *chunk_name, const char *fname);
 static int  check_keyword (uch *buffer, int maxsize, int *pKeylen,
                     const char *keyword_name, const char *chunkid, const char *fname);
 static int  check_text (uch *buffer, int maxsize, const char *chunkid, const char *fname);
 static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const char *fname);
+#endif
 
 #define BS 32000 /* size of read block for CRC calculation (and zlib) */
 
@@ -270,35 +275,80 @@ static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const 
 #define is_err(x)   (global_error > (x) || (!force && global_error == (x)))
 #define no_err(x)   (global_error < (x) || (force && global_error == (x)))
 
-/* Command-line flag variables */
-#if 0 /* rom-properties */
-static int verbose = 0;	/* print chunk info */
-static int quiet = 0;		/* print only error messages */
-static int printtext = 0;	/* print tEXt chunks */
-static int printpal = 0;	/* print PLTE/tRNS/hIST/sPLT contents */
-static int color = 0;		/* print with ANSI colors to spice things up */
-static int sevenbit = 0;	/* escape characters >=160 */
-#else /* rom-properties: Use default values. */
-static const int verbose = 0;		/* print chunk info */
-static const int quiet = 1;		/* print only error messages */
-static const int printtext = 0;		/* print tEXt chunks */
-static const int printpal = 0;		/* print PLTE/tRNS/hIST/sPLT contents */
-static const int color = 0;		/* print with ANSI colors to spice things up */
-static const int sevenbit = 0;		/* escape characters >=160 */
-#endif /* rom-properties */
-static int force = 0;		/* continue even if an error occurs (CRC error, etc) */
-static int check_windowbits = 1;	/* more stringent zlib stream-checking */
-static int suppress_warnings = 0;	/* don't fuss about ambiguous stuff */
-static int search = 0;		/* hunt for PNGs in the file... */
-static int extract = 0;	/* ...and extract them to arbitrary file names. */
-static int png = 0;		/* it's a PNG */
-static int mng = 0;		/* it's a MNG instead of a PNG (won't work in pipe) */
-static int jng = 0;		/* it's a JNG */
+class CPngCheck {
+IRpFile *fp;
+const char *fname;
 
-// FIXME: Need to use the stack or TLS in order to
-// make this function thread-safe.
-static int global_error = kOK; /* the current error status */
-static uch buffer[BS];
+/* Command-line flag variables */
+int verbose;		/* print chunk info */
+int quiet;		/* print only error messages */
+int printtext;		/* print tEXt chunks */
+int printpal;		/* print PLTE/tRNS/hIST/sPLT contents */
+int color;		/* print with ANSI colors to spice things up */
+int sevenbit;		/* escape characters >=160 */
+int force;		/* continue even if an error occurs (CRC error, etc) */
+int check_windowbits;	/* more stringent zlib stream-checking */
+int suppress_warnings;	/* don't fuss about ambiguous stuff */
+int search;		/* hunt for PNGs in the file... */
+int extract;		/* ...and extract them to arbitrary file names. */
+int png;		/* it's a PNG */
+int mng;		/* it's a MNG instead of a PNG (won't work in pipe) */
+int jng;		/* it's a JNG */
+
+int global_error ; 	/* the current error status */
+uch buffer[BS];
+
+#ifdef USE_ZLIB
+   int first_idat;	/* flag:  is this the first IDAT chunk? */
+   int zlib_error;	/* reset in IHDR section; used for IDAT */
+   int check_zlib;	/* validate zlib stream (just IDATs for now) */
+   unsigned zlib_windowbits;
+   uch outbuf[BS];
+   z_stream zstrm;
+   const char **pass_color;
+   const char *color_off;
+#endif
+
+ulg getlong(const char *where);
+
+int check_magic (uch *magic, int which);
+int check_chunk_name (const char *chunk_name);
+int check_keyword (uch *buffer, int maxsize, int *pKeylen,
+                   const char *keyword_name, const char *chunkid);
+int check_text (uch *buffer, int maxsize, const char *chunkid);
+int check_ascii_float (uch *buffer, int len, const char *chunkid);
+
+public:
+	explicit CPngCheck(IRpFile *fp)
+		: fp(fp)
+		, fname(nullptr)
+		, verbose(0)
+		, quiet(1)
+		, printtext(0)
+		, printpal(0)
+		, color(0)
+		, sevenbit(0)
+		, force(0)
+		, check_windowbits(1)
+		, suppress_warnings(0)
+		, search(0)
+		, extract(0)
+		, png(0)
+		, mng(0)
+		, jng(0)
+		, global_error(kOK)
+#ifdef USE_ZLIB
+		, first_idat(1)
+		, zlib_error(0)
+		, check_zlib(1)
+		, zlib_windowbits(15)
+		, pass_color(nullptr)
+		, color_off(nullptr)
+#endif /* USE_ZLIB */
+	{ }
+
+	int pngcheck(void);
+};
 
 /* what the PNG, MNG and JNG magic numbers should be */
 static const uch good_PNG_magic[8] = {137, 80, 78, 71, 13, 10, 26, 10};
@@ -343,23 +393,12 @@ static const uch latin1_text_discouraged[256] = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 
 };
 
-#ifdef USE_ZLIB
-   static int first_idat = 1;           /* flag:  is this the first IDAT chunk? */
-   static int zlib_error = 0;           /* reset in IHDR section; used for IDAT */
-   static int check_zlib = 1;           /* validate zlib stream (just IDATs for now) */
-   static unsigned zlib_windowbits = 15;
-   static uch outbuf[BS];
-   static z_stream zstrm;
-   static const char **pass_color;
-   static const char *color_off;
-#else
+static const char *inv = "INVALID";
+
+#ifndef USE_ZLIB
    static ulg crc_table[256];           /* table of CRCs of all 8-bit messages */
    static int crc_table_computed = 0;   /* flag:  has the table been computed? */
 #endif
-
-
-static const char *inv = "INVALID";
-
 
 /* PNG stuff */
 
@@ -869,7 +908,7 @@ static ulg update_crc(ulg crc, uch *buf, int len)
 
 
 
-static ulg getlong(IRpFile *fp, const char *fname, const char *where)
+ulg CPngCheck::getlong(const char *where)
 {
   ulg res = 0;
   int j;
@@ -1061,6 +1100,14 @@ int pngcheck(FILE *fp, const char *fname, int searching, FILE *fpOut)
 
 int pngcheck(IRpFile *fp)
 {
+	unique_ptr<CPngCheck> cpngcheck(new CPngCheck(fp));
+	return cpngcheck->pngcheck();
+}
+
+
+
+int CPngCheck::pngcheck(void)
+{
   const char *const fname = nullptr;	// dummy
   FILE *const fpOut = nullptr;		// dummy
   const int searching = 0;		// dummy
@@ -1143,15 +1190,15 @@ int pngcheck(IRpFile *fp)
       if (fp->read(buffer, 120) != 120 || fp->read(magic, 8) != 8) {
         printf("    cannot read past MacBinary header\n");
         set_err(kCriticalError);
-      } else if ((check = check_magic(magic, fname, DO_PNG)) == 0) {
+      } else if ((check = check_magic(magic, DO_PNG)) == 0) {
         png = 1;
         if (!quiet)
           printf("    this PNG seems to be contained in a MacBinary file\n");
-      } else if ((check = check_magic(magic, fname, DO_MNG)) == 0) {
+      } else if ((check = check_magic(magic, DO_MNG)) == 0) {
         mng = 1;
         if (!quiet)
           printf("    this MNG seems to be contained in a MacBinary file\n");
-      } else if ((check = check_magic(magic, fname, DO_JNG)) == 0) {
+      } else if ((check = check_magic(magic, DO_JNG)) == 0) {
         jng = 1;
         if (!quiet)
           printf("    this JNG seems to be contained in a MacBinary file\n");
@@ -1160,14 +1207,14 @@ int pngcheck(IRpFile *fp)
           printf("    this is neither a PNG nor JNG image nor a MNG stream\n");
         set_err(kCriticalError);
       }
-    } else if ((check = check_magic(magic, fname, DO_PNG)) == 0) {
+    } else if ((check = check_magic(magic, DO_PNG)) == 0) {
       png = 1;
     } else if (check == 1) {   /* bytes 2-4 == "PNG" but others are bad */
       set_err(kCriticalError);
     } else if (check == 2) {   /* not "PNG"; see if it's MNG or JNG instead */
-      if ((check = check_magic(magic, fname, DO_MNG)) == 0)
+      if ((check = check_magic(magic, DO_MNG)) == 0)
         mng = 1;        /* yup */
-      else if (check == 2 && (check = check_magic(magic, fname, DO_JNG)) == 0)
+      else if (check == 2 && (check = check_magic(magic, DO_JNG)) == 0)
         jng = 1;        /* yup */
       else {
         set_err(kCriticalError);
@@ -1199,7 +1246,7 @@ int pngcheck(IRpFile *fp)
         return global_error;
     }
 
-    sz = getlong(fp, fname, "chunk length");
+    sz = getlong("chunk length");
 
     if (is_err(kMajorError))  /* FIXME:  return only if !force? */
       return global_error;
@@ -1222,7 +1269,7 @@ int pngcheck(IRpFile *fp)
     chunkid[4] = '\0';
     ++num_chunks;
 
-    if (check_chunk_name(chunkid, fname) != 0) {
+    if (check_chunk_name(chunkid) != 0) {
       set_err(kMajorError);
       if (!force)
         return global_error;
@@ -2350,8 +2397,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
         printf("%s  %smust precede %cDAT\n",
                verbose? ":":fname, verbose? "":"iCCP ", have_IDAT? 'I':'J');
         set_err(kMinorError);
-      } else if (check_keyword(buffer, toread, &name_len, "profile name",
-                               chunkid, fname)) {
+      } else if (check_keyword(buffer, toread, &name_len, "profile name", chunkid)) {
         set_err(kMinorError);
       } else {
         int remainder = toread - name_len - 3;
@@ -2393,7 +2439,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
     } else if (strcmp(chunkid, "iTXt") == 0) {
       int keylen;
 
-      if (check_keyword(buffer, toread, &keylen, "keyword", chunkid, fname))
+      if (check_keyword(buffer, toread, &keylen, "keyword", chunkid))
         set_err(kMinorError);
       else {
         int compressed = 0, compr = 0, taglen = 0;
@@ -2498,8 +2544,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
       if (no_err(kMinorError)) {
         int name_len;
 
-        if (check_keyword(buffer, toread, &name_len, "calibration name",
-                          chunkid, fname))
+        if (check_keyword(buffer, toread, &name_len, "calibration name", chunkid))
           set_err(kMinorError);
         else if (sz < name_len + 15) {
           printf("%s  invalid %slength\n",
@@ -2784,10 +2829,8 @@ FIXME: make sure bit 31 (0x80000000) is 0
             printf("%s  invalid negative %svalue(s)\n",
                    verbose? ":":fname, verbose? "":"sCAL ");
             set_err(kMinorError);
-          } else if (check_ascii_float(pPixwidth, pPixheight-pPixwidth-1,
-                                       chunkid, fname) ||
-                     check_ascii_float(pPixheight, buffer+sz-pPixheight,
-                                       chunkid, fname))
+          } else if (check_ascii_float(pPixwidth, pPixheight-pPixwidth-1, chunkid) ||
+                     check_ascii_float(pPixheight, buffer+sz-pPixheight, chunkid))
           {
             set_err(kMinorError);
           }
@@ -2816,8 +2859,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
         printf("%s  %smust precede IDAT\n",
           verbose? ":":fname, verbose? "":"sPLT ");
         set_err(kMinorError);
-      } else if (check_keyword(buffer, toread, &name_len, "palette name",
-                               chunkid, fname)) {
+      } else if (check_keyword(buffer, toread, &name_len, "palette name", chunkid)) {
         set_err(kMinorError);
       } else {
         uch bps = buffer[name_len+1];
@@ -2956,7 +2998,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
       int ztxt = (chunkid[0] == 'z');
       int keylen;
 
-      if (check_keyword(buffer, toread, &keylen, "keyword", chunkid, fname))
+      if (check_keyword(buffer, toread, &keylen, "keyword", chunkid))
         set_err(kMinorError);
       else if (ztxt) {
         int compr = (uch)buffer[keylen+1];
@@ -2973,8 +3015,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
 FIXME: add support for checking zlib header bytes of zTXt (and iTXt, iCCP, etc.)
  */
       }
-      else if (check_text(buffer + keylen + 1, toread - keylen - 1, chunkid,
-                          fname)) {
+      else if (check_text(buffer + keylen + 1, toread - keylen - 1, chunkid)) {
         set_err(kMinorError);
       }
       if (no_err(kMinorError)) {
@@ -4346,7 +4387,7 @@ FIXME: add support for decompressing/printing zTXt
         int num_names = 0;
 
         while (bytes_left > 0) {
-          if (check_chunk_name((const char *)buf, fname) != 0) {
+          if (check_chunk_name((const char *)buf) != 0) {
             printf("%s  invalid chunk name to be dropped\n",
               verbose? ":":fname);
             set_err(kMinorError);
@@ -4384,7 +4425,7 @@ FIXME: add support for decompressing/printing zTXt
         printf("%s  invalid %spolarity (%u)\n",
           verbose? ":":fname, verbose? "":"DBYK ", buffer[4]);
         set_err(kMinorError);
-      } else if (check_chunk_name((const char *)buffer, fname) != 0) {
+      } else if (check_chunk_name((const char *)buffer) != 0) {
         printf("%s  invalid chunk name to be dropped\n",
           verbose? ":":fname);
         set_err(kMinorError);
@@ -4403,8 +4444,7 @@ FIXME: add support for decompressing/printing zTXt
           const char *sep;
           int keylen;
 
-          if (check_keyword(buf, bytes_left, &keylen, "keyword", chunkid,
-                            fname))
+          if (check_keyword(buf, bytes_left, &keylen, "keyword", chunkid))
             set_err(kMinorError);
           else if (keylen < bytes_left && buf[keylen] != 0) {
             /* realistically, this can never happen (due to keywordlen())... */
@@ -4456,7 +4496,7 @@ FIXME: add support for decompressing/printing zTXt
         if (verbose)
           printf("\n");
         while (bytes_left > 0) {
-          if (check_chunk_name((const char *)buf, fname) != 0) {
+          if (check_chunk_name((const char *)buf) != 0) {
             printf("%s  %slisted chunk name is invalid\n",
               verbose? ":":fname, verbose? "":"ORDR: ");
             set_err(kMinorError);
@@ -4651,7 +4691,7 @@ FIXME: add support for decompressing/printing zTXt
         crc = update_crc(crc, (uch *)buffer, toread);
       }
 
-      filecrc = getlong(fp, fname, "CRC value");
+      filecrc = getlong("CRC value");
 
       if (is_err(kMajorError))
         return global_error;
@@ -4669,7 +4709,7 @@ FIXME: add support for decompressing/printing zTXt
       /* force may result in set_err(kMajorError) or more upstream, and failing
        * to read CRC bytes here guarantees immediate downstream error when
        * attempting to read length bytes and chunk type/name bytes */
-      filecrc = getlong(fp, fname, "CRC value");
+      filecrc = getlong("CRC value");
     }
 
     if (global_error > kWarning && !force)
@@ -4900,7 +4940,7 @@ static void pngsearch(FILE *fp, const char *fname, int extracting)
  * without any restrictions.
  *
  */
-static int check_magic(uch *magic, const char *fname, int which)
+int CPngCheck::check_magic(uch *magic, int which)
 {
   int i;
   const uch *good_magic = (which == 0)? good_PNG_magic :
@@ -4962,7 +5002,7 @@ static int check_magic(uch *magic, const char *fname, int which)
 
 
 /* GRR 20061203:  now EBCDIC-safe */
-static int check_chunk_name(const char *chunk_name, const char *fname)
+int CPngCheck::check_chunk_name(const char *chunk_name)
 {
   if (isASCIIalpha((int)chunk_name[0]) && isASCIIalpha((int)chunk_name[1]) &&
       isASCIIalpha((int)chunk_name[2]) && isASCIIalpha((int)chunk_name[3]))
@@ -4981,8 +5021,8 @@ static int check_chunk_name(const char *chunk_name, const char *fname)
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
 /* keyword_name is "keyword" for most chunks, but it can instead be "name" or
  * "identifier" or whatever makes sense for the chunk in question */
-static int check_keyword(uch *buffer, int maxsize, int *pKeylen,
-                  const char *keyword_name, const char *chunkid, const char *fname)
+int CPngCheck::check_keyword(uch *buffer, int maxsize, int *pKeylen,
+                  const char *keyword_name, const char *chunkid)
 {
   int j, prev_space = 0;
   int keylen = keywordlen(buffer, maxsize);
@@ -5042,7 +5082,7 @@ static int check_keyword(uch *buffer, int maxsize, int *pKeylen,
 
 /* GRR 20070707 */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-static int check_text(uch *buffer, int maxsize, const char *chunkid, const char *fname)
+int CPngCheck::check_text(uch *buffer, int maxsize, const char *chunkid)
 {
   int j, ctrlwarn = verbose? 1 : 0;  /* print message once, only if verbose */
 
@@ -5065,7 +5105,7 @@ static int check_text(uch *buffer, int maxsize, const char *chunkid, const char 
 
 /* GRR 20061203 (used only for sCAL) */
 /* caller must do set_err(kMinorError) based on return value (0 == OK) */
-static int check_ascii_float(uch *buffer, int len, const char *chunkid, const char *fname)
+int CPngCheck::check_ascii_float(uch *buffer, int len, const char *chunkid)
 {
   uch *qq = buffer, *bufEnd = buffer + len;
   int have_sign = 0, have_integer = 0, have_dot = 0, have_fraction = 0;
