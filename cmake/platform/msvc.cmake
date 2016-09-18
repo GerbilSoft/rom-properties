@@ -25,6 +25,12 @@ UNSET(RP_STACK_CFLAG)
 #SET(CMAKE_RC_FLAGS "/NOLOGO")
 #SET(CMAKE_ASM_MASM_FLAGS "/NOLOGO")
 
+# FIXME: MSVC 2015's 32-bit masm has problems when using msbuild:
+# - The default /W3 fails for seemingly no reason. /W0 fixes it.
+# - Compilation fails due to no SAFESEH handlers in inffas32.asm.
+# NOTE: We're enabling these for all MSVC platforms, not just 32-bit.
+SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh")
+
 # Check for link-time optimization.
 IF(ENABLE_LTO)
 	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -GL")
