@@ -121,6 +121,11 @@ IF(HAVE_ZLIB)
 	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
 		PROPERTIES COMPILE_DEFINITIONS USE_ZLIB)
 ENDIF(HAVE_ZLIB)
+IF(CMAKE_COMPILER_IS_GNUCXX)
+	# Disable some warnings for pngcheck.
+	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
+		PROPERTIES COMPILE_FLAGS "-Wno-unused")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 ######################
 # Build the library. #
