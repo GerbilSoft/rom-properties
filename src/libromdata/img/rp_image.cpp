@@ -177,6 +177,15 @@ rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
 	return rp_image_private::backend_fn;
 }
 
+/**
+ * Get this image's backend object.
+ * @return Image backend object.
+ */
+const rp_image_backend *rp_image::backend(void) const
+{
+	return d->backend;
+}
+
 /** Properties. **/
 
 /**

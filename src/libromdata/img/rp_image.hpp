@@ -75,6 +75,15 @@ class rp_image
 
 	public:
 		/**
+		 * Get this image's backend object.
+		 * @return Image backend object.
+		 */
+		const rp_image_backend *backend(void) const;
+
+	public:
+		/** Properties. **/
+
+		/**
 		 * Is the image valid?
 		 * @return True if the image is valid.
 		 */
