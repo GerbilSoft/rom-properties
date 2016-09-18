@@ -82,7 +82,7 @@ bool rp_image_backend::isValid(void) const
  * Clear the width, height, stride, and format properties.
  * Used in error paths.
  * */
-void rp_image_backend::clear_propreties(void)
+void rp_image_backend::clear_properties(void)
 {
 	this->width = 0;
 	this->height = 0;

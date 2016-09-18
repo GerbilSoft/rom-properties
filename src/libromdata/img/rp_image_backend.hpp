@@ -47,7 +47,7 @@ class rp_image_backend
 		 * Clear the width, height, stride, and format properties.
 		 * Used in error paths.
 		 * */
-		void clear_propreties(void);
+		void clear_properties(void);
 
 	public:
 		int width;

@@ -52,7 +52,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	assert(data_len > 0);
 	if (data_len == 0) {
 		// Somehow we have a 0-length image...
-		clear_propreties();
+		clear_properties();
 		return;
 	}
 
@@ -60,7 +60,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	assert(data != nullptr);
 	if (!data) {
 		// Failed to allocate memory.
-		clear_propreties();
+		clear_properties();
 		return;
 	}
 
@@ -75,7 +75,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 			free(data);
 			data = nullptr;
 			data_len = 0;
-			clear_propreties();
+			clear_properties();
 			return;
 		}
 
