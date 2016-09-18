@@ -64,6 +64,7 @@ SET(libromdata_SRCS
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
+	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	img/pngcheck/pngcheck.cpp
 	)
@@ -92,6 +93,7 @@ SET(libromdata_H
 	file/RpFile.hpp
 	file/RpMemFile.hpp
 	img/rp_image.hpp
+	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/RpPng.hpp
 	)

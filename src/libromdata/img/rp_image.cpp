@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "rp_image.hpp"
+#include "rp_image_backend.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -29,70 +30,32 @@
 
 namespace LibRomData {
 
-class rp_image_private
+/** rp_image_backend_default **/
+
+class rp_image_backend_default : public rp_image_backend
 {
-	public:
-		rp_image_private(int width, int height, rp_image::Format format);
-		~rp_image_private();
+ 	public:
+		rp_image_backend_default(int width, int height, rp_image::Format format);
+		virtual ~rp_image_backend_default();
 
 	private:
-		rp_image_private(const rp_image_private &);
-		rp_image_private &operator=(const rp_image_private &);
-
-	public:
-		int width;
-		int height;
-		int stride;
-		rp_image::Format format;
-
-		// Image data.
-		void *data;
-		size_t data_len;
-
-		// Image palette.
-		uint32_t *palette;
-		int palette_len;
-		int tr_idx;
+		typedef rp_image_backend super;
+		rp_image_backend_default(const rp_image_backend_default &other);
+		rp_image_backend_default &operator=(const rp_image_backend_default &other);
 };
 
-/** rp_image_private **/
-
-rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
-	: width(0)
-	, height(0)
-	, stride(0)
-	, format(rp_image::FORMAT_NONE)
-	, data(nullptr)
-	, data_len(0)
-	, palette(nullptr)
-	, palette_len(0)
-	, tr_idx(0)
+rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
+	: super(width, height, format)
 {
-	if (width <= 0 || height <= 0 || format == rp_image::FORMAT_NONE) {
-		// Invalid image specifications.
-		return;
-	}
-
-	// Calculate the stride.
-	int stride = width;
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			//stride *= 1;
-			break;
-		case rp_image::FORMAT_ARGB32:
-			stride *= 4;
-			break;
-		default:
-			// Invalid image format.
-			assert(false);
-			return;
-	}
-
 	// Allocate memory for the image.
 	data_len = height * stride;
 	assert(data_len > 0);
 	if (data_len == 0) {
 		// Somehow we have a 0-length image...
+ 		this->width = 0;
+ 		this->height = 0;
+		this->stride = 0;
+ 		this->format = rp_image::FORMAT_NONE;
 		return;
 	}
 
@@ -100,6 +63,10 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	assert(data != nullptr);
 	if (!data) {
 		// Failed to allocate memory.
+ 		this->width = 0;
+ 		this->height = 0;
+		this->stride = 0;
+ 		this->format = rp_image::FORMAT_NONE;
 		return;
 	}
 
@@ -114,24 +81,69 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 			free(data);
 			data = nullptr;
 			data_len = 0;
+			this->width = 0;
+			this->height = 0;
+			this->stride = 0;
+			this->format = rp_image::FORMAT_NONE;
 			return;
 		}
 
 		// 256 colors allocated in the palette.
 		palette_len = 256;
 	}
+}
 
-	// Save the image attributes.
-	this->width = width;
-	this->height = height;
-	this->stride = stride;
-	this->format = format;
+rp_image_backend_default::~rp_image_backend_default()
+{
+	free(data);
+	free(palette);
+}
+
+/** rp_image_private **/
+
+class rp_image_private
+{
+	public:
+		rp_image_private(int width, int height, rp_image::Format format);
+		~rp_image_private();
+
+	private:
+		rp_image_private(const rp_image_private &other);
+		rp_image_private &operator=(const rp_image_private &other);
+
+	public:
+		static rp_image::rp_image_backend_creator_fn backend_fn;
+
+	public:
+		// Image backend.
+		rp_image_backend *backend;
+};
+
+/** rp_image_private **/
+
+rp_image::rp_image_backend_creator_fn rp_image_private::backend_fn = nullptr;
+
+rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
+{
+	if (width <= 0 || height <= 0 ||
+	    (format != rp_image::FORMAT_CI8 && format != rp_image::FORMAT_ARGB32))
+	{
+		// Invalid image specifications.
+		this->backend = new rp_image_backend_default(0, 0, rp_image::FORMAT_NONE);
+		return;
+	}
+
+	// Allocate a storage object for the image.
+	if (backend_fn != nullptr) {
+		this->backend = backend_fn(width, height, format);
+	} else {
+		this->backend = new rp_image_backend_default(width, height, format);
+	}
 }
 
 rp_image_private::~rp_image_private()
 {
-	free(data);
-	free(palette);
+	delete backend;
 }
 
 /** rp_image **/
@@ -145,6 +157,26 @@ rp_image::~rp_image()
 	delete d;
 }
 
+/** Creator function. **/
+
+/**
+ * Set the image backend creator function.
+ * @param backend Image backend creator function.
+ */
+void rp_image::setBackendCreatorFn(rp_image_backend_creator_fn backend_fn)
+{
+	rp_image_private::backend_fn = backend_fn;
+}
+
+/**
+ * Get the image backend creator function.
+ * @param backend Image backend creator function, or nullptr if the default is in use.
+ */
+rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
+{
+	return rp_image_private::backend_fn;
+}
+
 /** Properties. **/
 
 /**
@@ -153,10 +185,7 @@ rp_image::~rp_image()
  */
 bool rp_image::isValid(void) const
 {
-	return (d->width > 0 && d->height > 0 && d->stride > 0 &&
-		d->format != FORMAT_NONE &&
-		d->data && d->data_len > 0 &&
-		(d->format != FORMAT_CI8 || (d->palette && d->palette_len > 0)));
+	return d->backend->isValid();
 }
 
 /**
@@ -165,7 +194,7 @@ bool rp_image::isValid(void) const
  */
 int rp_image::width(void) const
 {
-	return d->width;
+	return d->backend->width;
 }
 
 /**
@@ -174,7 +203,7 @@ int rp_image::width(void) const
  */
 int rp_image::height(void) const
 {
-	return d->height;
+	return d->backend->height;
 }
 
 /**
@@ -183,7 +212,7 @@ int rp_image::height(void) const
  */
 int rp_image::stride(void) const
 {
-	return d->stride;
+	return d->backend->stride;
 }
 
 /**
@@ -192,7 +221,7 @@ int rp_image::stride(void) const
  */
 rp_image::Format rp_image::format(void) const
 {
-	return d->format;
+	return d->backend->format;
 }
 
 /**
@@ -201,7 +230,7 @@ rp_image::Format rp_image::format(void) const
  */
 const void *rp_image::bits(void) const
 {
-	return d->data;
+	return d->backend->data;
 }
 
 /**
@@ -211,7 +240,7 @@ const void *rp_image::bits(void) const
  */
 void *rp_image::bits(void)
 {
-	return d->data;
+	return d->backend->data;
 }
 
 /**
@@ -221,10 +250,11 @@ void *rp_image::bits(void)
  */
 const void *rp_image::scanLine(int i) const
 {
-	if (!d->data)
+	if (!d->backend->data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->stride * i);
+	return ((uint8_t*)d->backend->data) +
+		(d->backend->stride * i);
 }
 
 /**
@@ -235,10 +265,11 @@ const void *rp_image::scanLine(int i) const
  */
 void *rp_image::scanLine(int i)
 {
-	if (!d->data)
+	if (!d->backend->data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->stride * i);
+	return ((uint8_t*)d->backend->data) +
+		(d->backend->stride * i);
 }
 
 /**
@@ -248,7 +279,7 @@ void *rp_image::scanLine(int i)
  */
 size_t rp_image::data_len(void) const
 {
-	return d->data_len;
+	return d->backend->data_len;
 }
 
 /**
@@ -257,7 +288,7 @@ size_t rp_image::data_len(void) const
  */
 const uint32_t *rp_image::palette(void) const
 {
-	return d->palette;
+	return d->backend->palette;
 }
 
 /**
@@ -266,7 +297,7 @@ const uint32_t *rp_image::palette(void) const
  */
 uint32_t *rp_image::palette(void)
 {
-	return d->palette;
+	return d->backend->palette;
 }
 
 /**
@@ -275,7 +306,7 @@ uint32_t *rp_image::palette(void)
  */
 int rp_image::palette_len(void) const
 {
-	return d->palette_len;
+	return d->backend->palette_len;
 }
 
 /**
@@ -286,26 +317,27 @@ int rp_image::palette_len(void) const
  */
 int rp_image::tr_idx(void) const
 {
-	if (d->format != FORMAT_CI8)
+	if (d->backend->format != FORMAT_CI8)
 		return -1;
-	return d->tr_idx;
+
+	return d->backend->tr_idx;
 }
 
 /**
-* Set the index of the transparency color in the palette.
-* This is useful for images that use a single transparency
-* color instead of alpha transparency.
-* @param tr_idx Transparent color index.
-*/
+ * Set the index of the transparency color in the palette.
+ * This is useful for images that use a single transparency
+ * color instead of alpha transparency.
+ * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparent colors.)
+ */
 void rp_image::set_tr_idx(int tr_idx)
 {
-	assert(d->format == FORMAT_CI8);
-	assert(tr_idx >= 0 && tr_idx < d->palette_len);
+	assert(d->backend->format == FORMAT_CI8);
+	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len);
 
-	if (d->format == FORMAT_CI8 &&
-	    tr_idx >= 0 && tr_idx < d->palette_len)
+	if (d->backend->format == FORMAT_CI8 &&
+	    tr_idx >= -1 && tr_idx < d->backend->palette_len)
 	{
-		d->tr_idx = tr_idx;
+		d->backend->tr_idx = tr_idx;
 	}
 }
 
