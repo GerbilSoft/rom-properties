@@ -21,13 +21,11 @@
 
 #include "RomThumbCreator.hpp"
 #include "RpQt.hpp"
+#include "RpQImageBackend.hpp"
 
 // libcachemgr
 #include "libcachemgr/CacheManager.hpp"
 using LibCacheMgr::CacheManager;
-
-// C includes.
-#include <unistd.h>
 
 // libromdata
 #include "libromdata/RomData.hpp"
@@ -36,6 +34,9 @@ using LibCacheMgr::CacheManager;
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
+
+// C includes.
+#include <unistd.h>
 
 // C++ includes.
 #include <memory>
@@ -59,6 +60,10 @@ using std::unique_ptr;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
+		// Register RpQImageBackend.
+		// TODO: Static initializer somewhere?
+		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+
 		return new RomThumbCreator();
 	}
 }
