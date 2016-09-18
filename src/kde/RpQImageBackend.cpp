@@ -59,10 +59,6 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	// This might be larger than width*pxSize in some cases.
 	this->stride = m_qImage.bytesPerLine();
 
-	// Initialize the data and data_len members.
-	this->data = m_qImage.bits();
-	this->data_len = m_qImage.byteCount();
-
 	if (format == rp_image::FORMAT_CI8) {
 		// Initialize the palette.
 		// Note that QImage doesn't support directly
@@ -94,6 +90,26 @@ RpQImageBackend::~RpQImageBackend()
 LibRomData::rp_image_backend *RpQImageBackend::creator_fn(int width, int height, rp_image::Format format)
 {
 	return new RpQImageBackend(width, height, format);
+}
+
+void *RpQImageBackend::data(void)
+{
+	// Return the data from the QImage.
+	// Note that this may cause the QImage to
+	// detach if it has been retrieved using
+	// the getQImage() function.
+	return m_qImage.bits();
+}
+
+const void *RpQImageBackend::data(void) const
+{
+	// Return the data from the QImage.
+	return m_qImage.bits();
+}
+
+size_t RpQImageBackend::data_len(void) const
+{
+	return m_qImage.byteCount();
 }
 
 /**

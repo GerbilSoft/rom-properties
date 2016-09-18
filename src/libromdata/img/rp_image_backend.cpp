@@ -56,8 +56,6 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, height(height)
 	, stride(0)
 	, format(format)
-	, data(nullptr)
-	, data_len(0)
 	, palette(nullptr)
 	, palette_len(0)
 	, tr_idx(-1) // COMMIT NOTE: Changing default from 0 to -1.
@@ -73,7 +71,7 @@ bool rp_image_backend::isValid(void) const
 {
 	return (width > 0 && height > 0 && stride > 0 &&
 		format != rp_image::FORMAT_NONE &&
-		data && data_len > 0 &&
+		data() && data_len() > 0 &&
 		(format != rp_image::FORMAT_CI8 ||
 		 (palette && palette_len > 0)));
 }

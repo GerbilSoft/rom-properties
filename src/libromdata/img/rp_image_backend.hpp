@@ -56,8 +56,9 @@ class rp_image_backend
 		rp_image::Format format;
 
 		// Image data.
-		void *data;
-		size_t data_len;
+		virtual void *data(void) = 0;
+		virtual const void *data(void) const = 0;
+		virtual size_t data_len(void) const = 0;
 
 		// Image palette.
 		uint32_t *palette;

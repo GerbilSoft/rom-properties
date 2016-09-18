@@ -42,23 +42,45 @@ class rp_image_backend_default : public rp_image_backend
 		typedef rp_image_backend super;
 		rp_image_backend_default(const rp_image_backend_default &other);
 		rp_image_backend_default &operator=(const rp_image_backend_default &other);
+
+	public:
+		virtual void *data(void) final
+		{
+			return m_data;
+		}
+
+		virtual const void *data(void) const final
+		{
+			return m_data;
+		}
+
+		virtual size_t data_len(void) const final
+		{
+			return m_data_len;
+		}
+
+	private:
+		void *m_data;
+		size_t m_data_len;
 };
 
 rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
 	: super(width, height, format)
+	, m_data(nullptr)
+	, m_data_len(0)
 {
 	// Allocate memory for the image.
-	data_len = height * stride;
-	assert(data_len > 0);
-	if (data_len == 0) {
+	m_data_len = height * stride;
+	assert(m_data_len > 0);
+	if (m_data_len == 0) {
 		// Somehow we have a 0-length image...
 		clear_properties();
 		return;
 	}
 
-	data = malloc(data_len);
-	assert(data != nullptr);
-	if (!data) {
+	m_data = malloc(m_data_len);
+	assert(m_data != nullptr);
+	if (!m_data) {
 		// Failed to allocate memory.
 		clear_properties();
 		return;
@@ -72,9 +94,9 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		palette = (uint32_t*)calloc(256, sizeof(*palette));
 		if (!palette) {
 			// Failed to allocate memory.
-			free(data);
-			data = nullptr;
-			data_len = 0;
+			free(m_data);
+			m_data = nullptr;
+			m_data_len = 0;
 			clear_properties();
 			return;
 		}
@@ -86,7 +108,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 
 rp_image_backend_default::~rp_image_backend_default()
 {
-	free(data);
+	free(m_data);
 	free(palette);
 }
 
@@ -230,7 +252,7 @@ rp_image::Format rp_image::format(void) const
  */
 const void *rp_image::bits(void) const
 {
-	return d->backend->data;
+	return d->backend->data();
 }
 
 /**
@@ -240,7 +262,7 @@ const void *rp_image::bits(void) const
  */
 void *rp_image::bits(void)
 {
-	return d->backend->data;
+	return d->backend->data();
 }
 
 /**
@@ -250,11 +272,11 @@ void *rp_image::bits(void)
  */
 const void *rp_image::scanLine(int i) const
 {
-	if (!d->backend->data)
+	const uint8_t *data = reinterpret_cast<const uint8_t*>(d->backend->data());
+	if (!data)
 		return nullptr;
 
-	return ((uint8_t*)d->backend->data) +
-		(d->backend->stride * i);
+	return data + (d->backend->stride * i);
 }
 
 /**
@@ -265,11 +287,11 @@ const void *rp_image::scanLine(int i) const
  */
 void *rp_image::scanLine(int i)
 {
-	if (!d->backend->data)
+	uint8_t *data = reinterpret_cast<uint8_t*>(d->backend->data());
+	if (!data)
 		return nullptr;
 
-	return ((uint8_t*)d->backend->data) +
-		(d->backend->stride * i);
+	return data + (d->backend->stride * i);
 }
 
 /**
@@ -279,7 +301,7 @@ void *rp_image::scanLine(int i)
  */
 size_t rp_image::data_len(void) const
 {
-	return d->backend->data_len;
+	return d->backend->data_len();
 }
 
 /**

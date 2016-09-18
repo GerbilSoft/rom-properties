@@ -46,6 +46,12 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 		 */
 		static LibRomData::rp_image_backend *creator_fn(int width, int height, LibRomData::rp_image::Format format);
 
+		// Image data.
+		virtual void *data(void) final;
+		virtual const void *data(void) const final;
+		virtual size_t data_len(void) const final;
+
+	public:
 		/**
 		 * Get the underlying QImage.
 		 * @return QImage.
