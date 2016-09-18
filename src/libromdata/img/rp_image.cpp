@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "rp_image.hpp"
+#include "rp_image_backend.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -29,103 +30,74 @@
 
 namespace LibRomData {
 
-class rp_image_private
+/** rp_image_backend_default **/
+
+class rp_image_backend_default : public rp_image_backend
 {
-	public:
-		rp_image_private(int width, int height, rp_image::Format format);
-		~rp_image_private();
+ 	public:
+		rp_image_backend_default(int width, int height, rp_image::Format format);
+		virtual ~rp_image_backend_default();
 
 	private:
-		rp_image_private(const rp_image_private &);
-		rp_image_private &operator=(const rp_image_private &);
+		typedef rp_image_backend super;
+		rp_image_backend_default(const rp_image_backend_default &other);
+		rp_image_backend_default &operator=(const rp_image_backend_default &other);
 
 	public:
-		/**
-		 * Get the pixel size for the image format.
-		 * @return Pixel size, in bytes.
-		 */
-		int pxSize(void) const;
+		virtual void *data(void) final
+		{
+			return m_data;
+		}
 
-		int width;
-		int height;
-		rp_image::Format format;
+		virtual const void *data(void) const final
+		{
+			return m_data;
+		}
 
-		// Image data.
-		void *data;
-		size_t data_len;
+		virtual size_t data_len(void) const final
+		{
+			return m_data_len;
+		}
 
-		// Image palette.
-		uint32_t *palette;
-		int palette_len;
-		int tr_idx;
+	private:
+		void *m_data;
+		size_t m_data_len;
 };
 
-/** rp_image_private **/
-
-rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
-	: width(width)
-	, height(height)
-	, format(format)
-	, data(nullptr)
-	, data_len(0)
-	, palette(nullptr)
-	, palette_len(0)
-	, tr_idx(0)
+rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
+	: super(width, height, format)
+	, m_data(nullptr)
+	, m_data_len(0)
 {
-	if (this->width <= 0 || this->height <= 0 ||
-	    this->format == rp_image::FORMAT_NONE)
-	{
-		// Invalid image specifications.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
-		return;
-	}
-
-	int pxs = pxSize();
-	if (pxs <= 0) {
-		// Invalid image format.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
-		return;
-	}
-
 	// Allocate memory for the image.
-	data_len = width * height * pxs;
-	assert(data_len > 0);
-	if (data_len == 0) {
+	m_data_len = height * stride;
+	assert(m_data_len > 0);
+	if (m_data_len == 0) {
 		// Somehow we have a 0-length image...
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
+		clear_properties();
 		return;
 	}
 
-	data = malloc(data_len);
-	assert(data != nullptr);
-	if (!data) {
+	m_data = malloc(m_data_len);
+	assert(m_data != nullptr);
+	if (!m_data) {
 		// Failed to allocate memory.
-		this->width = 0;
-		this->height = 0;
-		this->format = rp_image::FORMAT_NONE;
+		clear_properties();
 		return;
 	}
 
 	// Do we need to allocate memory for the palette?
-	if (this->format == rp_image::FORMAT_CI8) {
+	if (format == rp_image::FORMAT_CI8) {
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
 		palette = (uint32_t*)calloc(256, sizeof(*palette));
 		if (!palette) {
 			// Failed to allocate memory.
-			this->width = 0;
-			this->height = 0;
-			this->format = rp_image::FORMAT_NONE;
-			free(data);
-			data = nullptr;
-			data_len = 0;
+			free(m_data);
+			m_data = nullptr;
+			m_data_len = 0;
+			clear_properties();
 			return;
 		}
 
@@ -134,27 +106,57 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	}
 }
 
-rp_image_private::~rp_image_private()
+rp_image_backend_default::~rp_image_backend_default()
 {
-	free(data);
+	free(m_data);
 	free(palette);
 }
 
-/**
- * Get the pixel size for the image format.
- * @return Pixel size, in bytes.
- */
-int rp_image_private::pxSize(void) const
+/** rp_image_private **/
+
+class rp_image_private
 {
-	switch (format) {
-		case rp_image::FORMAT_CI8:
-			return 1;
-		case rp_image::FORMAT_ARGB32:
-			return 4;
-		case rp_image::FORMAT_NONE:
-		default:
-			return 0;
+	public:
+		rp_image_private(int width, int height, rp_image::Format format);
+		~rp_image_private();
+
+	private:
+		rp_image_private(const rp_image_private &other);
+		rp_image_private &operator=(const rp_image_private &other);
+
+	public:
+		static rp_image::rp_image_backend_creator_fn backend_fn;
+
+	public:
+		// Image backend.
+		rp_image_backend *backend;
+};
+
+/** rp_image_private **/
+
+rp_image::rp_image_backend_creator_fn rp_image_private::backend_fn = nullptr;
+
+rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
+{
+	if (width <= 0 || height <= 0 ||
+	    (format != rp_image::FORMAT_CI8 && format != rp_image::FORMAT_ARGB32))
+	{
+		// Invalid image specifications.
+		this->backend = new rp_image_backend_default(0, 0, rp_image::FORMAT_NONE);
+		return;
 	}
+
+	// Allocate a storage object for the image.
+	if (backend_fn != nullptr) {
+		this->backend = backend_fn(width, height, format);
+	} else {
+		this->backend = new rp_image_backend_default(width, height, format);
+	}
+}
+
+rp_image_private::~rp_image_private()
+{
+	delete backend;
 }
 
 /** rp_image **/
@@ -168,6 +170,35 @@ rp_image::~rp_image()
 	delete d;
 }
 
+/** Creator function. **/
+
+/**
+ * Set the image backend creator function.
+ * @param backend Image backend creator function.
+ */
+void rp_image::setBackendCreatorFn(rp_image_backend_creator_fn backend_fn)
+{
+	rp_image_private::backend_fn = backend_fn;
+}
+
+/**
+ * Get the image backend creator function.
+ * @param backend Image backend creator function, or nullptr if the default is in use.
+ */
+rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
+{
+	return rp_image_private::backend_fn;
+}
+
+/**
+ * Get this image's backend object.
+ * @return Image backend object.
+ */
+const rp_image_backend *rp_image::backend(void) const
+{
+	return d->backend;
+}
+
 /** Properties. **/
 
 /**
@@ -176,10 +207,7 @@ rp_image::~rp_image()
  */
 bool rp_image::isValid(void) const
 {
-	return (d->width > 0 && d->height > 0 &&
-		d->format != FORMAT_NONE &&
-		d->data && d->data_len > 0 &&
-		(d->format != FORMAT_CI8 || (d->palette && d->palette_len > 0)));
+	return d->backend->isValid();
 }
 
 /**
@@ -188,7 +216,7 @@ bool rp_image::isValid(void) const
  */
 int rp_image::width(void) const
 {
-	return d->width;
+	return d->backend->width;
 }
 
 /**
@@ -197,7 +225,16 @@ int rp_image::width(void) const
  */
 int rp_image::height(void) const
 {
-	return d->height;
+	return d->backend->height;
+}
+
+/**
+ * Get the number of bytes per line.
+ * @return Bytes per line.
+ */
+int rp_image::stride(void) const
+{
+	return d->backend->stride;
 }
 
 /**
@@ -206,7 +243,7 @@ int rp_image::height(void) const
  */
 rp_image::Format rp_image::format(void) const
 {
-	return d->format;
+	return d->backend->format;
 }
 
 /**
@@ -215,7 +252,7 @@ rp_image::Format rp_image::format(void) const
  */
 const void *rp_image::bits(void) const
 {
-	return d->data;
+	return d->backend->data();
 }
 
 /**
@@ -225,7 +262,7 @@ const void *rp_image::bits(void) const
  */
 void *rp_image::bits(void)
 {
-	return d->data;
+	return d->backend->data();
 }
 
 /**
@@ -235,10 +272,11 @@ void *rp_image::bits(void)
  */
 const void *rp_image::scanLine(int i) const
 {
-	if (!d->data)
+	const uint8_t *data = reinterpret_cast<const uint8_t*>(d->backend->data());
+	if (!data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->width * i * d->pxSize());
+	return data + (d->backend->stride * i);
 }
 
 /**
@@ -249,10 +287,11 @@ const void *rp_image::scanLine(int i) const
  */
 void *rp_image::scanLine(int i)
 {
-	if (!d->data)
+	uint8_t *data = reinterpret_cast<uint8_t*>(d->backend->data());
+	if (!data)
 		return nullptr;
 
-	return ((uint8_t*)d->data) + (d->width * i * d->pxSize());
+	return data + (d->backend->stride * i);
 }
 
 /**
@@ -262,7 +301,7 @@ void *rp_image::scanLine(int i)
  */
 size_t rp_image::data_len(void) const
 {
-	return d->data_len;
+	return d->backend->data_len();
 }
 
 /**
@@ -271,7 +310,7 @@ size_t rp_image::data_len(void) const
  */
 const uint32_t *rp_image::palette(void) const
 {
-	return d->palette;
+	return d->backend->palette;
 }
 
 /**
@@ -280,7 +319,7 @@ const uint32_t *rp_image::palette(void) const
  */
 uint32_t *rp_image::palette(void)
 {
-	return d->palette;
+	return d->backend->palette;
 }
 
 /**
@@ -289,7 +328,7 @@ uint32_t *rp_image::palette(void)
  */
 int rp_image::palette_len(void) const
 {
-	return d->palette_len;
+	return d->backend->palette_len;
 }
 
 /**
@@ -300,26 +339,27 @@ int rp_image::palette_len(void) const
  */
 int rp_image::tr_idx(void) const
 {
-	if (d->format != FORMAT_CI8)
+	if (d->backend->format != FORMAT_CI8)
 		return -1;
-	return d->tr_idx;
+
+	return d->backend->tr_idx;
 }
 
 /**
-* Set the index of the transparency color in the palette.
-* This is useful for images that use a single transparency
-* color instead of alpha transparency.
-* @param tr_idx Transparent color index.
-*/
+ * Set the index of the transparency color in the palette.
+ * This is useful for images that use a single transparency
+ * color instead of alpha transparency.
+ * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparent colors.)
+ */
 void rp_image::set_tr_idx(int tr_idx)
 {
-	assert(d->format == FORMAT_CI8);
-	assert(tr_idx >= 0 && tr_idx < d->palette_len);
+	assert(d->backend->format == FORMAT_CI8);
+	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len);
 
-	if (d->format == FORMAT_CI8 &&
-	    tr_idx >= 0 && tr_idx < d->palette_len)
+	if (d->backend->format == FORMAT_CI8 &&
+	    tr_idx >= -1 && tr_idx < d->backend->palette_len)
 	{
-		d->tr_idx = tr_idx;
+		d->backend->tr_idx = tr_idx;
 	}
 }
 

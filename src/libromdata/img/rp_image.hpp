@@ -29,9 +29,10 @@
 #include <cstring>
 
 // TODO: Make this implicitly shared.
-// TODO: Make suer all classes use typedef super.
 
 namespace LibRomData {
+
+class rp_image_backend;
 
 class rp_image_private;
 class rp_image
@@ -55,6 +56,34 @@ class rp_image
 
 	public:
 		/**
+		 * rp_image_backend creator function.
+		 * May be a static member of an rp_image_backend subclass.
+		 */
+		typedef rp_image_backend* (*rp_image_backend_creator_fn)(int width, int height, rp_image::Format format);
+
+		/**
+		 * Set the image backend creator function.
+		 * @param backend Image backend creator function.
+		 */
+		static void setBackendCreatorFn(rp_image_backend_creator_fn backend_fn);
+
+		/**
+		 * Get the image backend creator function.
+		 * @param backend Image backend creator function, or nullptr if the default is in use.
+		 */
+		static rp_image_backend_creator_fn backendCreatorFn(void);
+
+	public:
+		/**
+		 * Get this image's backend object.
+		 * @return Image backend object.
+		 */
+		const rp_image_backend *backend(void) const;
+
+	public:
+		/** Properties. **/
+
+		/**
 		 * Is the image valid?
 		 * @return True if the image is valid.
 		 */
@@ -71,6 +100,12 @@ class rp_image
 		 * @return Image height.
 		 */
 		int height(void) const;
+
+		/**
+		 * Get the number of bytes per line.
+		 * @return Bytes per line.
+		 */
+		int stride(void) const;
 
 		/**
 		 * Get the image format.
@@ -143,7 +178,7 @@ class rp_image
 		 * Set the index of the transparency color in the palette.
 		 * This is useful for images that use a single transparency
 		 * color instead of alpha transparency.
-		 * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparnet colors.)
+		 * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparent colors.)
 		 */
 		void set_tr_idx(int tr_idx);
 };

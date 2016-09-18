@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * rp_image_backend.hpp: Image backend and storage classes.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,30 +19,57 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpQt.hpp"
-#include "RpQImageBackend.hpp"
+#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_RP_IMAGE_BACKEND_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_IMG_RP_IMAGE_BACKEND_HPP__
 
-// libromdata
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+#include "rp_image.hpp"
+
+namespace LibRomData {
 
 /**
- * Convert an rp_image to QImage.
- * @param image rp_image.
- * @return QImage.
+ * rp_image data storage class.
+ * This can be overridden for e.g. QImage or GDI+.
  */
-QImage rpToQImage(const rp_image *image)
+class rp_image_backend
 {
-	if (!image || !image->isValid())
-		return QImage();
+	public:
+		rp_image_backend(int width, int height, rp_image::Format format);
+		virtual ~rp_image_backend();
 
-	// We should be using the RpQImageBackend.
-	const RpQImageBackend *backend =
-		dynamic_cast<const RpQImageBackend*>(image->backend());
-	if (!backend) {
-		// Incorrect backend set.
-		return QImage();
-	}
+	private:
+		rp_image_backend(const rp_image_backend &other);
+		rp_image_backend &operator=(const rp_image_backend &other);
+	public:
+		bool isValid(void) const;
 
-	return backend->getQImage();
+	protected:
+		/**
+		 * Clear the width, height, stride, and format properties.
+		 * Used in error paths.
+		 * */
+		void clear_properties(void);
+
+	public:
+		int width;
+		int height;
+		int stride;
+		rp_image::Format format;
+
+		// Image data.
+		virtual void *data(void) = 0;
+		virtual const void *data(void) const = 0;
+		virtual size_t data_len(void) const = 0;
+
+		// Image palette.
+		uint32_t *palette;
+		int palette_len;
+		int tr_idx;
+
+	public:
+		// Subclasses can have other stuff here.
+		// Use dynamic_cast<> to access it.
+};
+
 }
+
+#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_RP_IMAGE_BACKEND_HPP__ */

@@ -1,10 +1,5 @@
 # Microsoft Visual C++
 
-# CMake has a bunch of defaults, including /Od for debug and /O2 for release.
-# Remove some default CFLAGS/CXXFLAGS.
-STRING(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-STRING(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
 # Disable useless warnings:
 # - MSVC "logo" messages
 # - C4355: 'this' used in base member initializer list (used for Qt Dpointer pattern)
@@ -15,9 +10,6 @@ SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON}")
 SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWARE")
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
-
-# Disable C++ RTTI and asynchronous exceptions.
-SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -GR- -EHsc")
 
 # Check what flag is needed for stack smashing protection.
 INCLUDE(CheckStackProtectorCompilerFlag)

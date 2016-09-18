@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
+ * ROM Properties Page shell extension. (libromdata/tests)                 *
+ * RpImageLoaderTest.cpp: RpImageLoader class test.                        *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,30 +19,32 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpQt.hpp"
-#include "RpQImageBackend.hpp"
+// Google Test
+#include "gtest/gtest.h"
 
-// libromdata
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+// zlib
+#include <zlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
- * Convert an rp_image to QImage.
- * @param image rp_image.
- * @return QImage.
+ * Test suite main function.
+ * Called by gtest_init.c.
  */
-QImage rpToQImage(const rp_image *image)
+int gtest_main(int argc, char *argv[])
 {
-	if (!image || !image->isValid())
-		return QImage();
+	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
+	fflush(nullptr);
 
-	// We should be using the RpQImageBackend.
-	const RpQImageBackend *backend =
-		dynamic_cast<const RpQImageBackend*>(image->backend());
-	if (!backend) {
-		// Incorrect backend set.
-		return QImage();
-	}
+	// Make sure the CRC32 table is initialized.
+	get_crc_table();
 
-	return backend->getQImage();
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
+
+#ifdef __cplusplus
+}
+#endif

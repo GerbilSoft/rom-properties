@@ -45,6 +45,9 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "GdiplusHelper.hpp"
 
+// pngcheck()
+#include "pngcheck/pngcheck.hpp"
+
 namespace LibRomData {
 
 class RpPngPrivate
@@ -58,6 +61,41 @@ class RpPngPrivate
 
 	public:
 		/**
+		 * Copy an ARGB32 GDI+ bitmap to an ARGB32 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_ARGB32_to_rp_image_ARGB32(Gdiplus::Bitmap *gdipBmp);
+
+		/**
+		 * Copy an ARGB32 GDI+ bitmap to a grayscale CI8 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_ARGB32_to_rp_image_CI8_grayscale(Gdiplus::Bitmap *gdipBmp);
+
+		/**
+		 * Copy a CI8 GDI+ bitmap to a CI8 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_CI8_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp);
+
+		/**
+		 * Copy a CI4 GDI+ bitmap to a CI8 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_CI4_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp);
+
+		/**
+		 * Copy a monochrome GDI+ bitmap to a CI8 rp_image.
+		 * @param gdipBmp GDI+ bitmap.
+		 * @return rp_image on success; nullptr on error.
+		 */
+		static rp_image *gdip_mono_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp);
+
+		/**
 		 * Load a PNG image from a file.
 		 * @param file IStream wrapping an IRpFile.
 		 * @return rp_image*, or nullptr on error.
@@ -68,86 +106,36 @@ class RpPngPrivate
 /** RpPngPrivate **/
 
 /**
- * Load a PNG image from a file.
- * @param file IStream wrapping an IRpFile.
- * @return rp_image*, or nullptr on error.
+ * Copy an ARGB32 GDI+ bitmap to an ARGB32 rp_image.
+ * This also works for RGB24 bitmaps.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
  */
-rp_image *RpPngPrivate::loadPng(IStream *file)
+rp_image *RpPngPrivate::gdip_ARGB32_to_rp_image_ARGB32(Gdiplus::Bitmap *gdipBmp)
 {
-	Gdiplus::Status status = Gdiplus::Status::GenericError;
-
-	// Attempt to load the image.
-	unique_ptr<Gdiplus::Bitmap> gdipBmp(Gdiplus::Bitmap::FromStream(file, FALSE));
-	if (!gdipBmp) {
-		// Could not load the image.
-		return nullptr;
-	}
-
-	// Image loaded.
-	// Convert to rp_image.
-	rp_image::Format fmt;
-	Gdiplus::PixelFormat gdipFmt;
-	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
-	size_t line_size;	// Number of image bytes per scanline.
-	bool argb32_to_grayscale = false;
-	switch (gdipBmp->GetPixelFormat()) {
-		case PixelFormat1bppIndexed:
-		case PixelFormat4bppIndexed:
-		case PixelFormat8bppIndexed:
-			// Paletted image.
-			// 1bpp and 4bpp will be converted to 8bpp by GDI+.
-			fmt = rp_image::FORMAT_CI8;
-			gdipFmt = PixelFormat8bppIndexed;
-			line_size = 1 * bmpRect.Width;
-			break;
-
-		case PixelFormat32bppARGB:
-			// If the colorspace is gray, this is actually a
-			// grayscale image, and should be converted to CI8.
-			// Reference: http://stackoverflow.com/questions/30391832/gdi-grayscale-png-loaded-as-pixelformat32bppargb
-
-			// TODO: PARGB or ARGB?
-			gdipFmt = PixelFormat32bppARGB;
-
-			if (gdipBmp->GetFlags() & Gdiplus::ImageFlagsColorSpaceGRAY) {
-				// Grayscale image.
-				// NOTE: Need to manually convert to CI8.
-				argb32_to_grayscale = true;
-				fmt = rp_image::FORMAT_CI8;
-				line_size = bmpRect.Width;
-			} else {
-				// Some other format. Use ARGB32.
-				fmt = rp_image::FORMAT_ARGB32;
-				line_size = 4 * bmpRect.Width;
-			}
-			break;
-
-		default:
-			// Convert everything else to ARGB32.
-			fmt = rp_image::FORMAT_ARGB32;
-			// TODO: PARGB or ARGB?
-			gdipFmt = PixelFormat32bppARGB;
-			line_size = 4 * bmpRect.Width;
-			break;
-	}
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat24bppRGB ||
+	       gdipBmp->GetPixelFormat() == PixelFormat32bppRGB ||
+	       gdipBmp->GetPixelFormat() == PixelFormat32bppARGB);
 
 	// Lock the GDI+ bitmap for processing.
 	Gdiplus::BitmapData bmpData;
-	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead, gdipFmt, &bmpData);
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat32bppARGB, &bmpData);
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the GDI+ bitmap.
 		return nullptr;
 	}
 
 	// Create the rp_image.
-	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height, fmt);
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_ARGB32);
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
 		return nullptr;
 	}
-
-	// TODO: Copy the palette if necessary.
 
 	// Copy the image, line by line.
 	// NOTE: If Stride is negative, the image is upside-down.
@@ -164,45 +152,426 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		gdip_line_inc = bmpData.Stride;
 	}
 
-	// TODO: Copy CI8 palettes from 256-color images.
-	if (argb32_to_grayscale) {
-		// Convert from ARGB32 to grayscale.
+	// Copy the image data.
+	const int line_size = (int)bmpData.Width * 4;
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		memcpy(rp_px, gdip_px, line_size);
+	}
 
-		// Initialize the rp_image palette.
-		uint32_t *palette = reinterpret_cast<uint32_t*>(img->palette());
-		uint32_t color = 0xFF000000;
-		for (int i = img->palette_len(); i > 0; i--, palette++) {
-			*palette = color;
-			color += 0x010101;
-		}
+	// Unlock the GDI+ bitmap.
+	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
 
-		// Downconvert the grayscale image.
-		// We'll take the least-significant byte. (blue)
-		gdip_line_inc -= (bmpData.Width * 4);
-		const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
-		for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
-		     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
-		{
-			uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
-			for (int x = bmpData.Width; x > 0; x--) {
-				*rp_px = *gdip_px;
-				rp_px++;
-				gdip_px += 4;
-			}
-		}
+/**
+ * Copy an ARGB32 GDI+ bitmap to a grayscale CI8 rp_image.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
+ */
+rp_image *RpPngPrivate::gdip_ARGB32_to_rp_image_CI8_grayscale(Gdiplus::Bitmap *gdipBmp)
+{
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat32bppARGB);
+
+	// Lock the GDI+ bitmap for processing.
+	Gdiplus::BitmapData bmpData;
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat32bppARGB, &bmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Create the rp_image.
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_CI8);
+	if (!img || !img->isValid()) {
+		// Error creating an rp_image.
+		gdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the image, line by line.
+	// NOTE: If Stride is negative, the image is upside-down.
+	int rp_line_start, rp_line_inc, gdip_line_inc;
+	if (bmpData.Stride < 0) {
+		// Bottom-up
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
+		gdip_line_inc = -bmpData.Stride;
 	} else {
-		// Copy the image data.
-		const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
-		for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
-		     rp_y += rp_line_inc, gdip_px += gdip_line_inc)
-		{
-			uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
-			memcpy(rp_px, gdip_px, line_size);
+		// Top-down
+		rp_line_start = 0;
+		rp_line_inc = 1;
+		gdip_line_inc = bmpData.Stride;
+	}
+
+	// Initialize the rp_image palette.
+	uint32_t *palette = reinterpret_cast<uint32_t*>(img->palette());
+	uint32_t color = 0xFF000000;
+	for (int i = img->palette_len(); i > 0; i--, palette++) {
+		*palette = color;
+		color += 0x010101;
+	}
+
+	// Downconvert the grayscale image.
+	// We'll take the least-significant byte. (blue)
+	gdip_line_inc -= (bmpData.Width * 4);
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		for (int x = bmpData.Width; x > 0; x--) {
+			*rp_px = *gdip_px;
+			rp_px++;
+			gdip_px += 4;
 		}
 	}
 
-	// Done reading the PNG image.
+	// Unlock the GDI+ bitmap.
 	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
+
+/**
+ * Copy a CI8 GDI+ bitmap to a CI8 rp_image.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
+ */
+rp_image *RpPngPrivate::gdip_CI8_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
+{
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat8bppIndexed);
+
+	// Lock the GDI+ bitmap for processing.
+	Gdiplus::BitmapData bmpData;
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat8bppIndexed, &bmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Create the rp_image.
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_CI8);
+	if (!img || !img->isValid()) {
+		// Error creating an rp_image.
+		gdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the image, line by line.
+	// NOTE: If Stride is negative, the image is upside-down.
+	int rp_line_start, rp_line_inc, gdip_line_inc;
+	if (bmpData.Stride < 0) {
+		// Bottom-up
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
+		gdip_line_inc = -bmpData.Stride;
+	} else {
+		// Top-down
+		rp_line_start = 0;
+		rp_line_inc = 1;
+		gdip_line_inc = bmpData.Stride;
+	}
+
+	// Copy the palette.
+	int palette_size = gdipBmp->GetPaletteSize();
+	assert(palette_size > 0);
+	Gdiplus::ColorPalette *palette =
+		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(palette_size));
+	gdipBmp->GetPalette(palette, palette_size);
+
+	// Copy the palette colors.
+	// TODO: Check flags for alpha/grayscale?
+	assert((int)palette->Count > 0);
+	assert((int)palette->Count <= img->palette_len());
+	int color_count = std::min((int)palette->Count, img->palette_len());
+	memcpy(img->palette(), palette->Entries, color_count*sizeof(uint32_t));
+
+	// Zero out any remaining colors.
+	const int diff = img->palette_len() - color_count;
+	if (diff > 0) {
+		memset(img->palette() + color_count, 0, diff*sizeof(uint32_t));
+	}
+
+	// We don't need the GDI+ palette anymore.
+	free(palette);
+
+	// Copy the image data.
+	const int line_size = (int)bmpData.Width;
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		memcpy(rp_px, gdip_px, line_size);
+	}
+
+	// Unlock the GDI+ bitmap.
+	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
+
+/**
+ * Copy a CI4 GDI+ bitmap to a CI8 rp_image.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
+ */
+rp_image *RpPngPrivate::gdip_CI4_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
+{
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat4bppIndexed);
+
+	// Lock the GDI+ bitmap for processing.
+	Gdiplus::BitmapData bmpData;
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat4bppIndexed, &bmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Create the rp_image.
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_CI8);
+	if (!img || !img->isValid()) {
+		// Error creating an rp_image.
+		gdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the image, line by line.
+	// NOTE: If Stride is negative, the image is upside-down.
+	int rp_line_start, rp_line_inc, gdip_line_inc;
+	if (bmpData.Stride < 0) {
+		// Bottom-up
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
+		gdip_line_inc = -bmpData.Stride;
+	} else {
+		// Top-down
+		rp_line_start = 0;
+		rp_line_inc = 1;
+		gdip_line_inc = bmpData.Stride;
+	}
+
+	// Copy the palette.
+	int palette_size = gdipBmp->GetPaletteSize();
+	assert(palette_size > 0);
+	Gdiplus::ColorPalette *palette =
+		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(palette_size));
+	gdipBmp->GetPalette(palette, palette_size);
+
+	// Copy the palette colors.
+	// TODO: Check flags for alpha/grayscale?
+	assert((int)palette->Count > 0);
+	assert((int)palette->Count <= img->palette_len());
+	int color_count = std::min((int)palette->Count, img->palette_len());
+	memcpy(img->palette(), palette->Entries, color_count*sizeof(uint32_t));
+
+	// Zero out any remaining colors.
+	const int diff = img->palette_len() - color_count;
+	if (diff > 0) {
+		memset(img->palette() + color_count, 0, diff*sizeof(uint32_t));
+	}
+
+	// We don't need the GDI+ palette anymore.
+	free(palette);
+
+	// Copy the image data.
+	// NOTE: Divide width by two, then add one if the image is an odd size,
+	// since we can't store a single 4bpp value by itself.
+	gdip_line_inc -= (int)((bmpData.Width / 2) + (bmpData.Width % 2));
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		for (int x = bmpData.Width; x > 0; x -= 2, gdip_px++) {
+			// Each source byte has two packed pixels.
+			rp_px[0] = *gdip_px >> 4;
+			if (x == 1) {
+				// Odd number of pixels.
+				rp_px++;
+			} else {
+				// Two or more pixels remaining.
+				rp_px[1] = *gdip_px & 0x0F;
+				rp_px += 2;
+			}
+		}
+	}
+
+	// Unlock the GDI+ bitmap.
+	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
+
+/**
+ * Copy a monochrome GDI+ bitmap to a CI8 rp_image.
+ * @param gdipBmp GDI+ bitmap.
+ * @return rp_image on success; nullptr on error.
+ */
+rp_image *RpPngPrivate::gdip_mono_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
+{
+	Gdiplus::Status status;
+	assert(gdipBmp->GetPixelFormat() == PixelFormat1bppIndexed);
+
+	// Lock the GDI+ bitmap for processing.
+	Gdiplus::BitmapData bmpData;
+	const Gdiplus::Rect bmpRect(0, 0, gdipBmp->GetWidth(), gdipBmp->GetHeight());
+	status = gdipBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeRead,
+				PixelFormat1bppIndexed, &bmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Create the rp_image.
+	rp_image *img = new rp_image((int)bmpData.Width, (int)bmpData.Height,
+				rp_image::FORMAT_CI8);
+	if (!img || !img->isValid()) {
+		// Error creating an rp_image.
+		gdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the image, line by line.
+	// NOTE: If Stride is negative, the image is upside-down.
+	int rp_line_start, rp_line_inc, gdip_line_inc;
+	if (bmpData.Stride < 0) {
+		// Bottom-up
+		rp_line_start = bmpData.Height - 1;
+		rp_line_inc = -1;
+		gdip_line_inc = -bmpData.Stride;
+	} else {
+		// Top-down
+		rp_line_start = 0;
+		rp_line_inc = 1;
+		gdip_line_inc = bmpData.Stride;
+	}
+
+	// Copy the palette.
+	int palette_size = gdipBmp->GetPaletteSize();
+	assert(palette_size > 0);
+	Gdiplus::ColorPalette *palette =
+		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(palette_size));
+	gdipBmp->GetPalette(palette, palette_size);
+
+	// Copy the palette colors.
+	// TODO: Check flags for alpha/grayscale?
+	assert((int)palette->Count > 0);
+	assert((int)palette->Count <= img->palette_len());
+	int color_count = std::min((int)palette->Count, img->palette_len());
+	memcpy(img->palette(), palette->Entries, color_count*sizeof(uint32_t));
+
+	// Zero out any remaining colors.
+	const int diff = img->palette_len() - color_count;
+	if (diff > 0) {
+		memset(img->palette() + color_count, 0, diff*sizeof(uint32_t));
+	}
+
+	// We don't need the GDI+ palette anymore.
+	free(palette);
+
+	// Copy the image data.
+	// NOTE: Divide width by eight, then add one if the image width
+	// isn't a multiple of 8, since 1bpp stores 8 pixels per byte.
+	gdip_line_inc -= (int)((bmpData.Width / 8) + (bmpData.Width % 8 != 0));
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
+	for (int rp_y = rp_line_start; rp_y < (int)bmpData.Height;
+		rp_y += rp_line_inc, gdip_px += gdip_line_inc)
+	{
+		uint8_t *rp_px = reinterpret_cast<uint8_t*>(img->scanLine(rp_y));
+		for (int x = bmpData.Width; x > 0; x -= 8, gdip_px++) {
+			// Each source byte has eight packed pixels.
+			uint8_t mono_pxs = *gdip_px;
+			for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, rp_px++) {
+				*rp_px = (mono_pxs >> 7);
+				mono_pxs <<= 1;
+			}
+		}
+	}
+
+	// Unlock the GDI+ bitmap.
+	gdipBmp->UnlockBits(&bmpData);
+	return img;
+}
+
+/**
+ * Load a PNG image from a file.
+ * @param file IStream wrapping an IRpFile.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image *RpPngPrivate::loadPng(IStream *file)
+{
+	// Attempt to load the image.
+	unique_ptr<Gdiplus::Bitmap> gdipBmp(Gdiplus::Bitmap::FromStream(file, FALSE));
+	if (!gdipBmp) {
+		// Could not load the image.
+		return nullptr;
+	}
+
+	// Image loaded.
+	// Convert to rp_image.
+	rp_image *img = nullptr;
+	switch (gdipBmp->GetPixelFormat()) {
+		case PixelFormat1bppIndexed:
+			// 1bpp paletted image. (monochrome)
+			// GDI+ on Windows XP doesn't support converting
+			// this to 8bpp, so we'll have to do it ourselves.
+			img = gdip_mono_to_rp_image_CI8(gdipBmp.get());
+			break;
+
+		case PixelFormat4bppIndexed:
+			// 4bpp paletted image.
+			// GDI+ on Windows XP doesn't support converting
+			// this to 8bpp, so we'll have to do it ourselves.
+			img = gdip_CI4_to_rp_image_CI8(gdipBmp.get());
+			break;
+
+		case PixelFormat8bppIndexed:
+			// 8bpp paletted image.
+			img = gdip_CI8_to_rp_image_CI8(gdipBmp.get());
+			break;
+
+		case PixelFormat32bppARGB:
+			// If the colorspace is gray, this is actually a
+			// grayscale image, and should be converted to CI8.
+			// Reference: http://stackoverflow.com/questions/30391832/gdi-grayscale-png-loaded-as-pixelformat32bppargb
+
+			// NOTE: GDI+ loads 256-color PNG images with tRNS chunks
+			// as if they're ARGB32, and there's no way to figure out
+			// that this conversion happened through GDI+.
+
+			// Grayscale should be converted to CI8.
+			// Grayscale+Alpha and others should be ARGB32.
+			if ((gdipBmp->GetFlags() & (Gdiplus::ImageFlagsColorSpaceGRAY | Gdiplus::ImageFlagsHasAlpha)) == Gdiplus::ImageFlagsColorSpaceGRAY) {
+				// Grayscale image without alpha transparency.
+				// NOTE: Need to manually convert to CI8.
+				img = gdip_ARGB32_to_rp_image_CI8_grayscale(gdipBmp.get());
+			} else {
+				// Some other format. Use ARGB32.
+				img = gdip_ARGB32_to_rp_image_ARGB32(gdipBmp.get());
+			}
+			break;
+
+		default:
+			// Convert everything else to ARGB32.
+			img = gdip_ARGB32_to_rp_image_ARGB32(gdipBmp.get());
+			break;
+	}
+
+	// Return the rp_image.
 	return img;
 }
 
@@ -236,6 +605,31 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 
 	// Return the image.
 	return img;
+}
+
+/**
+ * Load a PNG image from an IRpFile.
+ *
+ * This image is verified with various tools to ensure
+ * it doesn't have any errors.
+ *
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image *RpPng::load(IRpFile *file)
+{
+	// Check the image with pngcheck() first.
+	file->rewind();
+	int ret = pngcheck(file);
+	assert(ret == kOK);
+	if (ret != kOK) {
+		// PNG image has errors.
+		return nullptr;
+	}
+
+	// PNG image has been validated.
+	file->rewind();
+	return loadUnchecked(file);
 }
 
 }

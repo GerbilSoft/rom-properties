@@ -29,6 +29,11 @@ IF(NOT WIN32)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
 
+	# Check for zlib.
+	FIND_PACKAGE(ZLIB REQUIRED)
+	SET(HAVE_ZLIB ${ZLIB_FOUND})
+	SET(ZLIB_DEFINITIONS ZLIB_CONST)
+
 	# Check for libpng.
 	FIND_PACKAGE(PNG REQUIRED)
 	SET(HAVE_LIBPNG ${PNG_FOUND})
@@ -67,14 +72,17 @@ SET(libromdata_SRCS
 	DMG.cpp
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
+	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
 	img/rp_image.cpp
+	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
+	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -102,6 +110,7 @@ SET(libromdata_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	img/rp_image.hpp
+	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/RpPng.hpp
 	disc/IDiscReader.hpp
@@ -148,6 +157,16 @@ IF(ENABLE_DECRYPTION)
 			)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
+IF(HAVE_ZLIB)
+	# Enable zlib in pngcheck.
+	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
+		PROPERTIES COMPILE_DEFINITIONS USE_ZLIB)
+ENDIF(HAVE_ZLIB)
+IF(CMAKE_COMPILER_IS_GNUCXX)
+	# Disable some warnings for pngcheck.
+	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
+		PROPERTIES COMPILE_FLAGS "-Wno-unused")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 ######################
 # Build the library. #
@@ -186,6 +205,11 @@ FOREACH(_target romdata8 romdata16)
 	IF(ICONV_LIBRARY)
 		TARGET_LINK_LIBRARIES(${_target} ${ICONV_LIBRARY})
 	ENDIF(ICONV_LIBRARY)
+	IF(ZLIB_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} ${ZLIB_LIBRARIES})
+		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${ZLIB_INCLUDE_DIRS})
+		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${ZLIB_DEFINITIONS})
+	ENDIF(ZLIB_FOUND)
 	IF(PNG_FOUND)
 		TARGET_LINK_LIBRARIES(${_target} ${PNG_LIBRARY})
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${PNG_INCLUDE_DIRS})

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpPng.hpp: PNG image handler.                                           *
+ * rp_image_backend.cpp: Image backend and storage classes.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,47 +19,73 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__
+#include "rp_image_backend.hpp"
+
+// C includes (C++ namespace)
+#include <cassert>
 
 namespace LibRomData {
 
-class rp_image;
-class IRpFile;
+/** rp_image_backend **/
 
-class RpPng
+static inline int calc_stride(int width, rp_image::Format format)
 {
-	private:
-		// RpPng is a static class.
-		RpPng();
-		~RpPng();
-		RpPng(const RpPng &other);
-		RpPng &operator=(const RpPng &other);
+	assert(width > 0);
+	assert(format > rp_image::FORMAT_NONE);
+	assert(format <= rp_image::FORMAT_ARGB32);
 
-	public:
-		/**
-		 * Load a PNG image from an IRpFile.
-		 *
-		 * This image is NOT checked for issues; do not use
-		 * with untrusted images!
-		 *
-		 * @param file IRpFile to load from.
-		 * @return rp_image*, or nullptr on error.
-		 */
-		static rp_image *loadUnchecked(IRpFile *file);
+	if (width <= 0)
+		return 0;
 
-		/**
-		 * Load a PNG image from an IRpFile.
-		 *
-		 * This image is verified with various tools to ensure
-		 * it doesn't have any errors.
-		 *
-		 * @param file IRpFile to load from.
-		 * @return rp_image*, or nullptr on error.
-		 */
-		static rp_image *load(IRpFile *file);
-};
+	switch (format) {
+		case rp_image::FORMAT_CI8:
+			return width;
+		case rp_image::FORMAT_ARGB32:
+			return width * 4;
+		default:
+			// Invalid image format.
+			assert(false);
+			break;
+	}
 
+	return 0;
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__ */
+rp_image_backend::rp_image_backend(int width, int height, rp_image::Format format)
+	: width(width)
+	, height(height)
+	, stride(0)
+	, format(format)
+	, palette(nullptr)
+	, palette_len(0)
+	, tr_idx(-1) // COMMIT NOTE: Changing default from 0 to -1.
+{
+	// Calculate the stride.
+	stride = calc_stride(width, format);
+}
+
+rp_image_backend::~rp_image_backend()
+{ }
+
+bool rp_image_backend::isValid(void) const
+{
+	return (width > 0 && height > 0 && stride > 0 &&
+		format != rp_image::FORMAT_NONE &&
+		data() && data_len() > 0 &&
+		(format != rp_image::FORMAT_CI8 ||
+		 (palette && palette_len > 0)));
+}
+
+/**
+ * Clear the width, height, stride, and format properties.
+ * Used in error paths.
+ * */
+void rp_image_backend::clear_properties(void)
+{
+	this->width = 0;
+	this->height = 0;
+	this->stride = 0;
+	this->format = rp_image::FORMAT_NONE;
+}
+
+}

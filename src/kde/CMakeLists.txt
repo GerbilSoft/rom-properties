@@ -8,12 +8,14 @@ SET(rom-properties-kde_SRCS
 	RomDataView.cpp
 	RomThumbCreator.cpp
 	RpQt.cpp
+	RpQImageBackend.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomThumbCreator.hpp
 	RpQt.hpp
+	RpQImageBackend.hpp
 	)
 IF(BUILD_KDE4)
 	SET(rom-properties-kde4_SRCS

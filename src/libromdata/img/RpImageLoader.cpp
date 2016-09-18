@@ -70,8 +70,24 @@ rp_image *RpImageLoader::loadUnchecked(IRpFile *file)
  */
 rp_image *RpImageLoader::load(IRpFile *file)
 {
-	// FIXME: Actually implement checked loads.
-	return loadUnchecked(file);
+	file->rewind();
+
+	// Image magic numbers.
+	const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+
+	// Check the file header to see what kind of image this is.
+	uint8_t buf[256];
+	size_t sz = file->read(buf, sizeof(buf));
+	if (sz >= sizeof(png_magic)) {
+		// Check for PNG.
+		if (!memcmp(buf, png_magic, sizeof(png_magic))) {
+			// Found a PNG image.
+			return RpPng::load(file);
+		}
+	}
+
+	// Unsupported image format.
+	return nullptr;
 }
 
 }

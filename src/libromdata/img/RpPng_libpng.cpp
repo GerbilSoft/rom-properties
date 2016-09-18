@@ -46,6 +46,9 @@
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// pngcheck()
+#include "pngcheck/pngcheck.hpp"
+
 namespace LibRomData {
 
 class RpPngPrivate
@@ -263,11 +266,16 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			}
 			break;
 		case PNG_COLOR_TYPE_GRAY_ALPHA:
-			// FIXME: Handle grayscale images properly.
-			return nullptr;
+			// Grayscale+Alpha is handled as ARGB32.
+			// TODO: Does this work with 1, 2, and 4-bit grayscale?
+			fmt = rp_image::FORMAT_ARGB32;
+			png_set_gray_to_rgb(png_ptr);
+			break;
 		case PNG_COLOR_TYPE_PALETTE:
-			// FIXME: Verify 1, 2, and 4.
-			assert(bit_depth != 8);
+			if (bit_depth < 8) {
+				// Expand to 8-bit pixels.
+				png_set_packing(png_ptr);
+			}
 			fmt = rp_image::FORMAT_CI8;
 			break;
 		case PNG_COLOR_TYPE_RGB:
@@ -371,6 +379,31 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	return img;
+}
+
+/**
+ * Load a PNG image from an IRpFile.
+ *
+ * This image is verified with various tools to ensure
+ * it doesn't have any errors.
+ *
+ * @param file IRpFile to load from.
+ * @return rp_image*, or nullptr on error.
+ */
+rp_image *RpPng::load(IRpFile *file)
+{
+	// Check the image with pngcheck() first.
+	file->rewind();
+	int ret = pngcheck(file);
+	assert(ret == kOK);
+	if (ret != kOK) {
+		// PNG image has errors.
+		return nullptr;
+	}
+
+	// PNG image has been validated.
+	file->rewind();
+	return loadUnchecked(file);
 }
 
 }

@@ -38,32 +38,36 @@ class RpImageWin32
 	protected:
 		/**
 		 * Convert an rp_image to a HBITMAP for use as an icon mask.
-		 * @return image rp_image.
+		 * @param image rp_image.
 		 * @return HBITMAP, or nullptr on error.
 		 */
 		static HBITMAP toHBITMAP_mask(const LibRomData::rp_image *image);
 
 		/**
 		 * Convert an rp_image to HBITMAP. (CI8)
-		 * @return image rp_image. (Must be CI8.)
+		 * @param image rp_image. (Must be CI8.)
 		 * @return HBITMAP, or nullptr on error.
 		 */
 		static HBITMAP toHBITMAP_CI8(const LibRomData::rp_image *image);
 
 		/**
 		 * Convert an rp_image to HBITMAP. (ARGB32)
-		 * @return image rp_image. (Must be ARGB32.)
+		 * @param image rp_image. (Must be ARGB32.)
+		 * @param bgColor Background color for images with alpha transparency.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP_ARGB32(const LibRomData::rp_image *image);
+		static HBITMAP toHBITMAP_ARGB32(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
 
 	public:
 		/**
 		 * Convert an rp_image to HBITMAP.
-		 * @return image rp_image.
+		 * @param image rp_image.
+		 * @param bgColor Background color for images with alpha transparency.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image);
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
+
+		// FIXME: toHBITMAP() function that preserves the alpha channel.
 
 		/**
 		 * Convert an rp_image to HICON.

@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KDE5)                        *
- * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,30 +19,46 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpQt.hpp"
-#include "RpQImageBackend.hpp"
+#include "IRpFile.hpp"
 
-// libromdata
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+// C includes. (C++ namespace)
+#include <cstdio>
+
+namespace LibRomData {
 
 /**
- * Convert an rp_image to QImage.
- * @param image rp_image.
- * @return QImage.
+ * Get a single character (byte) from the file
+ * @return Character from file, or EOF on end of file or error.
  */
-QImage rpToQImage(const rp_image *image)
+int IRpFile::getc(void)
 {
-	if (!image || !image->isValid())
-		return QImage();
+	uint8_t buf;
+	size_t sz = this->read(&buf, 1);
+	return (sz == 1 ? buf : EOF);
+}
 
-	// We should be using the RpQImageBackend.
-	const RpQImageBackend *backend =
-		dynamic_cast<const RpQImageBackend*>(image->backend());
-	if (!backend) {
-		// Incorrect backend set.
-		return QImage();
+/**
+ * Un-get a single character (byte) from the file.
+ *
+ * Note that this implementation doesn't actually
+ * use a character buffer; it merely decrements the
+ * seek pointer by 1.
+ *
+ * @param c Character. (ignored!)
+ * @return 0 on success; non-zero on error.
+ */
+int IRpFile::ungetc(int c)
+{
+	((void)c);	// TODO: Don't ignore this?
+
+	// TODO: seek() overload that supports SEEK_CUR?
+	intptr_t pos = tell();
+	if (pos <= 0) {
+		// Cannot ungetc().
+		return -1;
 	}
 
-	return backend->getQImage();
+	return this->seek(pos-1);
+}
+
 }
