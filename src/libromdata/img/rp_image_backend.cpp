@@ -78,4 +78,16 @@ bool rp_image_backend::isValid(void) const
 		 (palette && palette_len > 0)));
 }
 
+/**
+ * Clear the width, height, stride, and format properties.
+ * Used in error paths.
+ * */
+void rp_image_backend::clear_propreties(void)
+{
+	this->width = 0;
+	this->height = 0;
+	this->stride = 0;
+	this->format = rp_image::FORMAT_NONE;
+}
+
 }

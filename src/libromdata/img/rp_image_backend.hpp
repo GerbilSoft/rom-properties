@@ -42,6 +42,13 @@ class rp_image_backend
 	public:
 		bool isValid(void) const;
 
+	protected:
+		/**
+		 * Clear the width, height, stride, and format properties.
+		 * Used in error paths.
+		 * */
+		void clear_propreties(void);
+
 	public:
 		int width;
 		int height;
