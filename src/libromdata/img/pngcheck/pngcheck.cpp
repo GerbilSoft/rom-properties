@@ -142,6 +142,12 @@ using std::unique_ptr;
 #include <cctype>
 #include <cstring>
 
+// rom-properties: Uncomment this to enable printf() output.
+//#define RP_PRINTF_ENABLED 1
+// rom-properties: Dummy define for data used by main() and usage().
+// DO NOT ENABLE THIS!
+//#define RP_MAIN_USAGE_ENABLED 1
+
 #ifdef __riscos
    /* not sure if this will work (fragile!), but relatively clean... */
    struct stat { long st_size; };
@@ -178,22 +184,29 @@ typedef unsigned char  uch;
 typedef unsigned short ush;
 typedef unsigned long  ulg;
 
-#if 0 /* rom-properties */
 /* printbuf state variables */
 typedef struct printbuf_state {
+#ifdef RP_PRINTF_ENABLED
   int cr;
   int lf;
   int nul;
   int control;
   int esc;
+#else
+  // Need to define at least one field.
+  uint8_t dummy;
+#endif /* RP_PRINTF_ENABLED */
 } printbuf_state;
 
+#if 0 /* rom-properties */
 /* int  main (int argc, char *argv[]); */
 void usage (FILE *fpMsg);
 #endif /* rom-properties */
 
 /* rom-properties: Disable printf(), since we don't want any console output. */
+#ifndef RP_PRINTF_ENABLED
 #define printf(fmt, ...) do { } while (0)
+#endif
 
 #ifndef USE_ZLIB
 static void make_crc_table (void);
@@ -207,14 +220,12 @@ static void putlong (FILE *fpOut, ulg ul);
 static void init_printbuf_state (printbuf_state *prbuf);
 static void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
 static void report_printbuf (printbuf_state *prbuf, const char *fname, const char *chunkid);
-#else /* rom-properties: Use dummy macros for these. */
-#define init_printbuf_state(prbuf) do { } while (0)
-#define print_buffer(prbuf, buffer, size, indent) do { } while (0)
-#define report_printbuf(prbuf, fname, chunkid) do { } while (0)
 #endif /* rom-properties */
 static int  keywordlen (uch *buffer, int maxsize);
+#ifdef RP_PRINTF_ENABLED
 static const char *getmonth (int m);
 static int  ratio (ulg uc, ulg c);
+#endif /* RP_PRINTF_ENABLED */
 static ulg  gcf (ulg a, ulg b);
 #if 0 /* rom-properties */
 // TODO: Wrapper function for compatibility?
@@ -243,7 +254,7 @@ static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const 
 #define DO_MNG  1
 #define DO_JNG  2
 
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
 /* GRR 20070704:  borrowed from GRR from/mailx hack */
 #define COLOR_NORMAL        "\033[0m"
 #define COLOR_RED_BOLD      "\033[01;31m"
@@ -260,7 +271,7 @@ static int  check_ascii_float (uch *buffer, int len, const char *chunkid, const 
 #define COLOR_CYAN          "\033[40;36m"
 #define COLOR_WHITE_BOLD    "\033[01;37m"	/* filenames, filter seps */
 #define COLOR_WHITE         "\033[40;37m"
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
 
 #define isASCIIalpha(x)     (ascii_alpha_table[x] & 0x1)
 
@@ -305,11 +316,33 @@ uch buffer[BS];
    unsigned zlib_windowbits;
    uch outbuf[BS];
    z_stream zstrm;
+#ifdef RP_PRINTF_ENABLED
    const char **pass_color;
    const char *color_off;
+#endif /* RP_PRINTF_ENABLED */
 #endif
 
 ulg getlong(const char *where);
+
+#ifdef RP_PRINTF_ENABLED
+void init_printbuf_state (printbuf_state *prbuf);
+void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent);
+void report_printbuf (printbuf_state *prbuf, const char *chunkid);
+#else /* !RP_PRINTF_ENABLED */
+static inline void init_printbuf_state (printbuf_state *prbuf) {
+	((void)prbuf);
+}
+static inline void print_buffer (printbuf_state *prbuf, uch *buffer, int size, int indent) {
+	((void)prbuf);
+	((void)buffer);
+	((void)size);
+	((void)indent);
+}
+static inline void report_printbuf (printbuf_state *prbuf, const char *chunkid) {
+	((void)prbuf);
+	((void)chunkid);
+}
+#endif /* RP_PRINTF_ENABLED */
 
 int check_magic (uch *magic, int which);
 int check_chunk_name (const char *chunk_name);
@@ -342,10 +375,22 @@ public:
 		, zlib_error(0)
 		, check_zlib(1)
 		, zlib_windowbits(15)
+#ifdef RP_PRINTF_ENABLED
 		, pass_color(nullptr)
 		, color_off(nullptr)
+#endif /* RP_PRINTF_ENABLED */
 #endif /* USE_ZLIB */
-	{ }
+	{
+#if defined(USE_ZLIB) && defined(RP_PRINTF_ENABLED)
+		// Can't use the one declared later, so we'll
+		// copy it here.
+		static const char *pass_color_disabled[] = {
+			"", "", "", "", "", "", "", ""
+		};
+		pass_color = pass_color_disabled;
+		color_off = pass_color_disabled[0];
+#endif /* USE_ZLIB && RP_PRINTF_ENABLED */
+	}
 
 	int pngcheck(void);
 };
@@ -412,7 +457,7 @@ static const char *png_type[] = {		/* IHDR, tRNS, BASI, summary */
   "RGB+alpha"
 };
 
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
 static const char *deflate_type[] = {			/* IDAT */
   "superfast",
   "fast",
@@ -430,6 +475,7 @@ static const char *zlib_error_type[] = {		/* IDAT */
   "version error"
 };
 
+#ifdef RP_MAIN_USAGE_ENABLED
 static const char *pass_color_enabled[] = {		/* IDAT */
   COLOR_NORMAL,		/* color_off */
   COLOR_WHITE,		/* using 1-based indexing */
@@ -444,6 +490,7 @@ static const char *pass_color_enabled[] = {		/* IDAT */
 static const char *pass_color_disabled[] = {		/* IDAT */
   "", "", "", "", "", "", "", ""
 };
+#endif /* RP_MAIN_USAGE_ENABLED */
 #endif /* USE_ZLIB */
 
 static const char *eqn_type[] = {			/* pCAL */
@@ -452,11 +499,11 @@ static const char *eqn_type[] = {			/* pCAL */
   "physical_value = p0 + p1 * pow(p2, (original_sample / (x1-x0)))",
   "physical_value = p0 + p1 * sinh(p2 * (original_sample - p3) / (x1-x0))"
 };
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
 
 static const int eqn_params[] = { 2, 3, 3, 4 };		/* pCAL */
 
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
 static const char *rendering_intent[] = {		/* sRGB */
   "perceptual",
   "relative colorimetric",
@@ -608,22 +655,28 @@ static const char *magnification_method[] = {		/* MAGN */
   "linear interpolation of alpha, nearest-pixel replication of color"
 };
 
+#ifdef RP_MAIN_USAGE_ENABLED
 static const char *brief_error_color = COLOR_RED_BOLD "ERROR" COLOR_NORMAL;
 static const char *brief_error_plain = "ERROR";
+#endif /* RP_MAIN_USAGE_ENABLED */
 static const char *brief_warn_color = COLOR_YELLOW_BOLD "WARN" COLOR_NORMAL;
 static const char *brief_warn_plain = "WARN";
 static const char *brief_OK_color = COLOR_GREEN_BOLD "OK" COLOR_NORMAL;
 static const char *brief_OK_plain = "OK";
 
+#ifdef RP_MAIN_USAGE_ENABLED
 static const char *errors_color = COLOR_RED_BOLD "ERRORS DETECTED" COLOR_NORMAL;
 static const char *errors_plain = "ERRORS DETECTED";
+#endif /* RP_MAIN_USAGE_ENABLED */
 static const char *warnings_color = COLOR_YELLOW_BOLD "WARNINGS DETECTED" COLOR_NORMAL;
 static const char *warnings_plain = "WARNINGS DETECTED";
 static const char *no_err_color = COLOR_GREEN_BOLD "No errors detected" COLOR_NORMAL;
 static const char *no_err_plain = "No errors detected";
+#endif /* RP_PRINTF_ENABLED */
 
 
 
+#if 0 /* rom-properties */
 int main(int argc, char *argv[])
 {
   FILE *fp;
@@ -941,12 +994,12 @@ static void putlong(FILE *fpOut, ulg ul)
 
 
 
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
 /* print out "size" characters in buffer, taking care not to print control
    chars other than whitespace, since this may open ways of attack by so-
    called ANSI-bombs */
 
-static void init_printbuf_state(printbuf_state *prbuf)
+void CPngCheck::init_printbuf_state(printbuf_state *prbuf)
 {
   prbuf->cr = 0;
   prbuf->lf = 0;
@@ -958,7 +1011,7 @@ static void init_printbuf_state(printbuf_state *prbuf)
 
 
 /* GRR EBCDIC WARNING */
-static void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
+void CPngCheck::print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
 {
   if (indent)
     printf("    ");
@@ -996,7 +1049,7 @@ static void print_buffer(printbuf_state *prbuf, uch *buf, int size, int indent)
 
 
 
-static void report_printbuf(printbuf_state *prbuf, const char *fname, const char *chunkid)
+void CPngCheck::report_printbuf(printbuf_state *prbuf, const char *chunkid)
 {
   if (prbuf->cr) {
     if (prbuf->lf) {
@@ -1019,7 +1072,7 @@ static void report_printbuf(printbuf_state *prbuf, const char *fname, const char
     set_err(kMinorError);
   }
 }
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
 
 
 
@@ -1035,6 +1088,7 @@ static int keywordlen(uch *buf, int maxsize)
 
 
 
+#ifdef RP_PRINTF_ENABLED
 static const char *getmonth(int m)
 {
   static const char *month[] = {
@@ -1065,6 +1119,7 @@ static int ratio(ulg uc, ulg c)   /* GRR 19970621:  swiped from UnZip 5.31 list.
           -((int) ((1000L*(c-uc) + (denom>>1)) / denom)));
     }                            /* ^^^^^^^^ rounding */
 }
+#endif /* RP_PRINTF_ENABLED */
 
 
 
@@ -1138,22 +1193,24 @@ int CPngCheck::pngcheck(void)
   int vlc = -1, lc = -1;
   int bitdepth = 0, sampledepth = 0, ityp = 1, jtyp = 0, lace = 0, nplte = 0;
   int jbitd = 0, alphadepth = 0;
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
   int did_stat = 0;
+#endif /* RP_PRINTF_ENABLED */
   printbuf_state prbuf_state;
+#ifdef RP_PRINTF_ENABLED
   struct stat statbuf;
-  static int first_file = 1;
+  int first_file = 1;
   const char *brief_warn  = color? brief_warn_color  : brief_warn_plain;
   const char *brief_OK    = color? brief_OK_color    : brief_OK_plain;
   const char *warnings_detected  = color? warnings_color : warnings_plain;
   const char *no_errors_detected = color? no_err_color   : no_err_plain;
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
 
   // FIXME: Need to use the stack or TLS in order to
   // make this function thread-safe.
   global_error = kOK;
 
-#if 0 /* rom-properties */
+#if RP_PRINTF_ENABLED
   if (verbose || printtext || printpal) {
     printf("%sFile: %s%s%s", first_file? "":"\n", color? COLOR_WHITE_BOLD:"",
       fname, color? COLOR_NORMAL:"");
@@ -1167,11 +1224,9 @@ int CPngCheck::pngcheck(void)
       printf(" (%ld bytes)\n", (long)statbuf.st_size);
     }
   }
-#endif /* rom-properties */
 
-#if 0 /* rom-properties */
   first_file = 0;
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
   png = mng = jng = 0;
 
   if (!searching) {
@@ -1278,7 +1333,7 @@ int CPngCheck::pngcheck(void)
     if (verbose)
       printf("  chunk %s%s%s at offset 0x%05lx, length %ld",
         color? COLOR_YELLOW:"", chunkid, color? COLOR_NORMAL:"",
-        ftell(fp)-4, sz);
+        fp->tell()-4, sz);
 
     if (is_err(kMajorError))
       return global_error;
@@ -1335,7 +1390,7 @@ int CPngCheck::pngcheck(void)
         }
         bitdepth = sampledepth = (uch)buffer[8];
         ityp = (uch)buffer[9];
-        if (ityp == 1 || ityp == 5 || ityp > sizeof(png_type)/sizeof(char*)) {
+        if (ityp == 1 || ityp == 5 || ityp > (int)(sizeof(png_type)/sizeof(char*))) {
           printf("%s  invalid %simage type (%d)\n",
             verbose? ":":fname, verbose? "":"IHDR ", ityp);
           ityp = 1; /* avoid out of range array index */
@@ -1423,10 +1478,8 @@ int CPngCheck::pngcheck(void)
       first_idat = 1;  /* flag:  next IDAT will be the first in this subimage */
       zlib_error = 0;  /* flag:  no zlib errors yet in this file */
       /* GRR 20000304:  data dump not yet compatible with interlaced images: */
-#if 0 /* rom-properties */
       if (lace && verbose > 3)  /* (FIXME eventually...or move to pngcrunch) */
         verbose = 2;
-#endif /* rom-properties */
 #endif
 
     /*------*
@@ -2422,7 +2475,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
           printf("\n    profile name = ");
           init_printbuf_state(&prbuf_state);
           print_buffer(&prbuf_state, buffer, name_len, 0);
-          report_printbuf(&prbuf_state, fname, chunkid);
+          report_printbuf(&prbuf_state, chunkid);
           printf("%scompression method = %d (%s)%scompressed profile = "
             "%ld bytes\n", (name_len > 24)? "\n    ":", ", compr,
             (compr == 0)? "deflate":"private: warning",
@@ -2495,7 +2548,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
                 sz - (keylen+3+taglen));
           }
         }
-        report_printbuf(&prbuf_state, fname, chunkid);   /* print CR/LF & NULLs info */
+        report_printbuf(&prbuf_state, chunkid);   /* print CR/LF & NULLs info */
       }
       last_is_IDAT = last_is_JDAT = 0;
 
@@ -2574,7 +2627,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
             printf("    calibration name = ");
             init_printbuf_state(&prbuf_state);
             print_buffer(&prbuf_state, buffer, name_len, 0);
-            report_printbuf(&prbuf_state, fname, chunkid);
+            report_printbuf(&prbuf_state, chunkid);
             if (toread != sz) {
               printf(
                 "\n    pngcheck INTERNAL LOGIC ERROR:  toread (%d) != sz (%ld)",
@@ -2590,7 +2643,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
               printf("\n    physical_value unit name = ");
               init_printbuf_state(&prbuf_state);
               print_buffer(&prbuf_state, pbuf, unit_len, 0);
-              report_printbuf(&prbuf_state, fname, chunkid);
+              report_printbuf(&prbuf_state, chunkid);
               printf("\n");
               pbuf += unit_len;
               remainder -= unit_len;
@@ -2618,7 +2671,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
               printf("    p%d = ", i);
               init_printbuf_state(&prbuf_state);
               print_buffer(&prbuf_state, pbuf, len, 0);
-              report_printbuf(&prbuf_state, fname, chunkid);
+              report_printbuf(&prbuf_state, chunkid);
               printf("\n");
               pbuf += len;
               remainder -= len;
@@ -2893,7 +2946,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
           printf("    sample depth = %u bits, palette name = ", bps);
           init_printbuf_state(&prbuf_state);
           print_buffer(&prbuf_state, buffer, name_len, 0);
-          report_printbuf(&prbuf_state, fname, chunkid);
+          report_printbuf(&prbuf_state, chunkid);
           printf("\n");
         }
         if (printpal && no_err(kMinorError)) {
@@ -3047,7 +3100,7 @@ FIXME: add support for decompressing/printing zTXt
         } else if (verbose) {
           printf("\n");
         }
-        report_printbuf(&prbuf_state, fname, chunkid);
+        report_printbuf(&prbuf_state, chunkid);
       }
       last_is_IDAT = last_is_JDAT = 0;
 
@@ -3388,10 +3441,8 @@ FIXME: add support for decompressing/printing zTXt
       first_idat = 1;  /* flag:  next IDAT will be the first in this subimage */
       zlib_error = 0;  /* flag:  no zlib errors yet in this file */
       /* GRR 20000304:  data dump not yet compatible with interlaced images: */
-#if 0 /* rom-properties */
       if (lace && verbose > 3)  /* (FIXME eventually...or move to pngcrunch) */
         verbose = 2;
-#endif /* rom-properties */
 #endif
 
     /*------*
@@ -3610,7 +3661,7 @@ FIXME: add support for decompressing/printing zTXt
         if (sz > 0) {
           init_printbuf_state(&prbuf_state);
           print_buffer(&prbuf_state, buffer, sz, 1);
-          report_printbuf(&prbuf_state, fname, chunkid);
+          report_printbuf(&prbuf_state, chunkid);
           printf("\n");
         }
       }
@@ -3659,7 +3710,7 @@ FIXME: add support for decompressing/printing zTXt
           verbose? ":":fname, verbose? "":"DEFI ");
         set_err(kMajorError);
       }
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
       if (verbose && no_err(kMinorError)) {
         const char *noshow = do_not_show[0];
         uch concrete = 0;
@@ -3686,7 +3737,7 @@ FIXME: add support for decompressing/printing zTXt
             LG(buffer+12), LG(buffer+16), LG(buffer+20), LG(buffer+24));
         }
       }
-#endif /* rom-properties */
+#endif /* RP_PRINTF_ENABLED */
       last_is_IDAT = last_is_JDAT = 0;
 
     /*------*
@@ -3993,7 +4044,7 @@ FIXME: add support for decompressing/printing zTXt
         }
         bitdepth = (uch)buffer[8];
         ityp = (uch)buffer[9];
-        if (ityp > sizeof(png_type)/sizeof(char*)) {
+        if (ityp > (int)(sizeof(png_type)/sizeof(char*))) {
           ityp = 1; /* avoid out of range array index */
         }
         switch (bitdepth) {
@@ -4735,7 +4786,7 @@ FIXME: add support for decompressing/printing zTXt
    * GRR 19990619: disabled for MNG, at least until we figure out a reasonable
    *   way to calculate the ratio; also switched to MNG-relevant stats. */
 
-#if 0 /* rom-properties */
+#ifdef RP_PRINTF_ENABLED
   /* if (global_error == 0) */ {   /* GRR 20061202:  always print a summary */
     if (mng) {
       if (verbose) {  /* already printed MHDR/IHDR/JHDR info */
