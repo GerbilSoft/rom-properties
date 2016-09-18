@@ -103,7 +103,7 @@ bool AesCipher::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setKey(const uint8_t *key, uint32_t len)
+int AesCipher::setKey(const uint8_t *key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
@@ -158,7 +158,7 @@ int AesCipher::setChainingMode(ChainingMode mode)
  * @param len IV length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setIV(const uint8_t *iv, uint32_t len)
+int AesCipher::setIV(const uint8_t *iv, unsigned int len)
 {
 	if (!iv || len != AES_BLOCK_SIZE) {
 		return -EINVAL;
@@ -175,7 +175,7 @@ int AesCipher::setIV(const uint8_t *iv, uint32_t len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len)
+unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0)) {
 		// Invalid parameters.
@@ -231,8 +231,8 @@ uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len)
  * @param iv_len Length of the IV.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-uint32_t AesCipher::decrypt(uint8_t *data, uint32_t data_len,
-	const uint8_t *iv, uint32_t iv_len)
+unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len,
+	const uint8_t *iv, unsigned int iv_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0) ||
 	    !iv || iv_len != AES_BLOCK_SIZE) {
