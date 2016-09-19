@@ -28,6 +28,9 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
+// C++ includes.
+#include <memory>
+
 namespace LibRomData {
 
 class RpFile : public IRpFile
@@ -62,8 +65,8 @@ class RpFile : public IRpFile
 	private:
 		typedef IRpFile super;
 	public:
-		RpFile(const RpFile &);
-		RpFile &operator=(const RpFile&);
+		RpFile(const RpFile &other);
+		RpFile &operator=(const RpFile &other);
 
 	public:
 		/**
@@ -86,8 +89,13 @@ class RpFile : public IRpFile
 
 		/**
 		 * dup() the file handle.
+		 *
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
+		 *
+		 * NOTE: The dup()'d IRpFile* does NOT have a separate
+		 * file pointer. This is due to how dup() works.
+		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
 		virtual IRpFile *dup(void) override;
@@ -140,10 +148,10 @@ class RpFile : public IRpFile
 	protected:
 #ifdef _WIN32
 		// Win32: m_file is a HANDLE.
-		void *m_file;
+		std::shared_ptr<void> m_file;
 #else
 		// Other: m_file is an stdio FILE.
-		FILE *m_file;
+		std::shared_ptr<FILE> m_file;
 #endif
 
 		FileMode m_mode;

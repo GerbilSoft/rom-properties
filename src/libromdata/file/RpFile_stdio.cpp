@@ -47,6 +47,15 @@ typedef char mode_str_t;
 
 namespace LibRomData {
 
+// Deleter for std::unique_ptr<FILE> m_file.
+struct myFile_deleter {
+	void operator()(FILE *p) const {
+		if (p != nullptr) {
+			fclose(p);
+		}
+	}
+};
+
 static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
 {
 	switch (mode) {
@@ -109,14 +118,14 @@ void RpFile::init(const rp_char *filename)
 
 #if defined(_WIN32)
 	// Windows: Use RP2W() to convert the filename to wchar_t.
-	m_file = _wfopen(RP2W_s(filename), mode_str);
+	m_file.reset(_wfopen(RP2W_s(filename), mode_str), myFile_deleter());
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames.
 #if defined(RP_UTF8)
-	m_file = fopen(filename, mode_str);
+	m_file.reset(fopen(filename, mode_str), myFile_deleter());
 #elif defined(RP_UTF16)
 	string u8_filename = rp_string_to_utf8(filename, rp_strlen(filename));
-	m_file = fopen(u8_filename.c_str(), mode_str);
+	m_file.reset(fopen(u8_filename.c_str(), mode_str), myFile_deleter());
 #endif /* RP_UTF8, RP_UTF16 */
 #endif /* _WIN32 */
 
@@ -128,9 +137,7 @@ void RpFile::init(const rp_char *filename)
 
 RpFile::~RpFile()
 {
-	if (m_file) {
-		fclose(m_file);
-	}
+	m_file.reset();
 }
 
 /**
@@ -139,51 +146,10 @@ RpFile::~RpFile()
  */
 RpFile::RpFile(const RpFile &other)
 	: IRpFile()
-	, m_file(nullptr)
+	, m_file(other.m_file)
 	, m_mode(other.m_mode)
 	, m_lastError(0)
-{
-	// TODO: Combine with assignment constructor?
-
-	if (other.m_file == nullptr) {
-		// No file to dup().
-		return;
-	}
-
-	// Get the mode string.
-	const mode_str_t *mode_str = mode_to_str(m_mode);
-	if (!mode_str) {
-		m_lastError = EINVAL;
-		return;
-	}
-
-	// dup() the file.
-	int fd_old = fileno(other.m_file);
-	if (fd_old < 0) {
-		m_lastError = errno;
-		return;
-	}
-	int fd_new = ::dup(fd_old);
-	if (fd_new < 0) {
-		m_lastError = errno;
-		return;
-	}
-
-#ifdef _WIN32
-	m_file = _wfdopen(fd_new, mode_str);
-#else
-	m_file = fdopen(fd_new, mode_str);
-#endif
-	if (!m_file) {
-		m_lastError = errno;
-		::close(fd_new);
-		return;
-	}
-
-	// Make sure we're at the beginning of the file.
-	::rewind(m_file);
-	::fflush(m_file);
-}
+{ }
 
 /**
  * Assignment operator.
@@ -192,55 +158,9 @@ RpFile::RpFile(const RpFile &other)
  */
 RpFile &RpFile::operator=(const RpFile &other)
 {
-	// TODO: Combine with copy constructor?
-
-	// If we have a file open, close it first.
-	if (m_file) {
-		fclose(m_file);
-		m_file = nullptr;
-	}
-
+	m_file = other.m_file;
 	m_mode = other.m_mode;
 	m_lastError = other.m_lastError;
-
-	if (other.m_file == nullptr) {
-		// No file to dup().
-		return *this;
-	}
-
-	// Get the mode string.
-	const mode_str_t *mode_str = mode_to_str(m_mode);
-	if (!mode_str) {
-		m_lastError = EINVAL;
-		return *this;
-	}
-
-	// dup() the file.
-	int fd_old = fileno(other.m_file);
-	if (fd_old < 0) {
-		m_lastError = errno;
-		return *this;
-	}
-	int fd_new = ::dup(fd_old);
-	if (fd_new < 0) {
-		m_lastError = errno;
-		return *this;
-	}
-
-#ifdef _WIN32
-	m_file = _wfdopen(fd_new, mode_str);
-#else
-	m_file = fdopen(fd_new, mode_str);
-#endif
-	if (!m_file) {
-		m_lastError = errno;
-		::close(fd_new);
-		return *this;
-	}
-
-	// Make sure we're at the beginning of the file.
-	::rewind(m_file);
-	::fflush(m_file);
 	return *this;
 }
 
@@ -251,7 +171,7 @@ RpFile &RpFile::operator=(const RpFile &other)
  */
 bool RpFile::isOpen(void) const
 {
-	return (m_file != nullptr);
+	return (m_file.get() != nullptr);
 }
 
 /**
@@ -287,10 +207,7 @@ IRpFile *RpFile::dup(void)
  */
 void RpFile::close(void)
 {
-	if (m_file) {
-		fclose(m_file);
-		m_file = nullptr;
-	}
+	m_file.reset();
 }
 
 /**
@@ -306,8 +223,8 @@ size_t RpFile::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	size_t ret = fread(ptr, 1, size, m_file);
-	if (ferror(m_file)) {
+	size_t ret = fread(ptr, 1, size, m_file.get());
+	if (ferror(m_file.get())) {
 		// An error occurred.
 		m_lastError = errno;
 	}
@@ -329,8 +246,8 @@ size_t RpFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
-	size_t ret = fwrite(ptr, 1, size, m_file);
-	if (ferror(m_file)) {
+	size_t ret = fwrite(ptr, 1, size, m_file.get());
+	if (ferror(m_file.get())) {
 		// An error occurred.
 		m_lastError = errno;
 	}
@@ -349,7 +266,7 @@ int RpFile::seek(int64_t pos)
 		return -1;
 	}
 
-	int ret = fseeko(m_file, pos, SEEK_SET);
+	int ret = fseeko(m_file.get(), pos, SEEK_SET);
 	if (ret != 0) {
 		m_lastError = errno;
 	}
@@ -367,7 +284,7 @@ int64_t RpFile::tell(void)
 		return -1;
 	}
 
-	return ftello(m_file);
+	return ftello(m_file.get());
 }
 
 /**
@@ -380,8 +297,8 @@ void RpFile::rewind(void)
 		return;
 	}
 
-	::rewind(m_file);
-	::fflush(m_file);	// needed for some things like gzip
+	::rewind(m_file.get());
+	::fflush(m_file.get());	// needed for some things like gzip
 }
 
 /**
@@ -398,14 +315,14 @@ int64_t RpFile::fileSize(void)
 	// TODO: Error checking?
 
 	// Save the current position.
-	int64_t cur_pos = ftello(m_file);
+	int64_t cur_pos = ftello(m_file.get());
 
 	// Seek to the end of the file and record its position.
-	fseeko(m_file, 0, SEEK_END);
-	int64_t end_pos = ftello(m_file);
+	fseeko(m_file.get(), 0, SEEK_END);
+	int64_t end_pos = ftello(m_file.get());
 
 	// Go back to the previous position.
-	fseeko(m_file, cur_pos, SEEK_SET);
+	fseeko(m_file.get(), cur_pos, SEEK_SET);
 
 	// Return the file size.
 	return end_pos;

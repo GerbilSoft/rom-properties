@@ -38,8 +38,8 @@ class IRpFile
 		virtual ~IRpFile() { }
 
 	private:
-		IRpFile(const IRpFile &);
-		IRpFile &operator=(const IRpFile&);
+		IRpFile(const IRpFile &other);
+		IRpFile &operator=(const IRpFile &other);
 
 	public:
 		/**
@@ -62,8 +62,13 @@ class IRpFile
 
 		/**
 		 * dup() the file handle.
+		 *
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
+		 *
+		 * NOTE: The dup()'d IRpFile* does NOT have a separate
+		 * file pointer. This is due to how dup() works.
+		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
 		virtual IRpFile *dup(void) = 0;

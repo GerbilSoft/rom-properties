@@ -39,6 +39,15 @@ using std::string;
 
 namespace LibRomData {
 
+// Deleter for std::unique_ptr<void> m_file.
+struct myFile_deleter {
+	void operator()(void *p) const {
+		if (p != INVALID_HANDLE_VALUE) {
+			CloseHandle(p);
+		}
+	}
+};
+
 static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, DWORD *pdwCreationDisposition)
 {
 	switch (mode) {
@@ -72,7 +81,7 @@ static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, 
  */
 RpFile::RpFile(const rp_char *filename, FileMode mode)
 	: super()
-	, m_file(INVALID_HANDLE_VALUE)
+	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -87,7 +96,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  */
 RpFile::RpFile(const rp_string &filename, FileMode mode)
 	: IRpFile()
-	, m_file(nullptr)
+	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -109,11 +118,11 @@ void RpFile::init(const rp_char *filename)
 	}
 
 	// Open the file.
-	m_file = CreateFile(RP2W_c(filename),
+	m_file.reset(CreateFile(RP2W_c(filename),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
-			nullptr);
-	if (m_file == INVALID_HANDLE_VALUE) {
+			nullptr), myFile_deleter());
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		// TODO: More extensive conversion of GetLastError() to POSIX?
 		DWORD dwError = GetLastError();
@@ -123,11 +132,7 @@ void RpFile::init(const rp_char *filename)
 }
 
 RpFile::~RpFile()
-{
-	if (m_file != INVALID_HANDLE_VALUE) {
-		CloseHandle(m_file);
-	}
-}
+{ }
 
 /**
  * Copy constructor.
@@ -135,34 +140,10 @@ RpFile::~RpFile()
  */
 RpFile::RpFile(const RpFile &other)
 	: IRpFile()
-	, m_file(nullptr)
+	, m_file(other.m_file)
 	, m_mode(other.m_mode)
 	, m_lastError(0)
-{
-	// TODO: Combine with assignment constructor?
-
-	if (other.m_file == INVALID_HANDLE_VALUE) {
-		// No file to dup().
-		return;
-	}
-
-	HANDLE hProcess = GetCurrentProcess();
-	BOOL bRet = DuplicateHandle(hProcess, other.m_file,
-			hProcess, &m_file,
-			0, FALSE, DUPLICATE_SAME_ACCESS);
-	if (bRet == 0) {
-		// An error occurred.
-		// TODO: Convert GetLastError() to POSIX?
-		m_file = INVALID_HANDLE_VALUE;
-		m_lastError = ENOMEM;
-		return;
-	}
-
-	// Make sure we're at the beginning of the file.
-	LARGE_INTEGER liSeekPos;
-	liSeekPos.QuadPart = 0;
-	SetFilePointerEx(m_file, liSeekPos, nullptr, FILE_BEGIN);
-}
+{ }
 
 /**
  * Assignment operator.
@@ -171,38 +152,9 @@ RpFile::RpFile(const RpFile &other)
  */
 RpFile &RpFile::operator=(const RpFile &other)
 {
-	// TODO: Combine with copy constructor?
-
-	// If we have a file open, close it first.
-	if (m_file != INVALID_HANDLE_VALUE) {
-		CloseHandle(m_file);
-		m_file = INVALID_HANDLE_VALUE;
-	}
-
+	m_file = other.m_file;
 	m_mode = other.m_mode;
 	m_lastError = other.m_lastError;
-
-	if (other.m_file == INVALID_HANDLE_VALUE) {
-		// No file to dup().
-		return *this;
-	}
-
-	HANDLE hProcess = GetCurrentProcess();
-	BOOL bRet = DuplicateHandle(hProcess, other.m_file,
-			hProcess, &m_file,
-			0, FALSE, DUPLICATE_SAME_ACCESS);
-	if (bRet == 0) {
-		// An error occurred.
-		// TODO: Convert GetLastError() to POSIX?
-		m_file = INVALID_HANDLE_VALUE;
-		m_lastError = ENOMEM;
-		return *this;
-	}
-
-	// Make sure we're at the beginning of the file.
-	LARGE_INTEGER liSeekPos;
-	liSeekPos.QuadPart = 0;
-	SetFilePointerEx(m_file, liSeekPos, nullptr, FILE_BEGIN);
 	return *this;
 }
 
@@ -213,7 +165,7 @@ RpFile &RpFile::operator=(const RpFile &other)
  */
 bool RpFile::isOpen(void) const
 {
-	return (m_file != INVALID_HANDLE_VALUE);
+	return (m_file.get() != INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -249,10 +201,7 @@ IRpFile *RpFile::dup(void)
  */
 void RpFile::close(void)
 {
-	if (m_file != INVALID_HANDLE_VALUE) {
-		CloseHandle(m_file);
-		m_file = INVALID_HANDLE_VALUE;
-	}
+	m_file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
 }
 
 /**
@@ -263,13 +212,13 @@ void RpFile::close(void)
  */
 size_t RpFile::read(void *ptr, size_t size)
 {
-	if (m_file == INVALID_HANDLE_VALUE) {
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	DWORD bytesRead;
-	BOOL bRet = ReadFile(m_file, ptr, (DWORD)size, &bytesRead, nullptr);
+	BOOL bRet = ReadFile(m_file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
 		// TODO: Convert GetLastError() to POSIX?
@@ -288,7 +237,7 @@ size_t RpFile::read(void *ptr, size_t size)
  */
 size_t RpFile::write(const void *ptr, size_t size)
 {
-	if (!m_file || !(m_mode & FM_WRITE)) {
+	if (m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -296,7 +245,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 	}
 
 	DWORD bytesWritten;
-	BOOL bRet = WriteFile(m_file, ptr, (DWORD)size, &bytesWritten, nullptr);
+	BOOL bRet = WriteFile(m_file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
 		// TODO: Convert GetLastError() to POSIX?
@@ -314,14 +263,14 @@ size_t RpFile::write(const void *ptr, size_t size)
  */
 int RpFile::seek(int64_t pos)
 {
-	if (m_file == INVALID_HANDLE_VALUE) {
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liSeekPos;
 	liSeekPos.QuadPart = pos;
-	BOOL bRet = SetFilePointerEx(m_file, liSeekPos, nullptr, FILE_BEGIN);
+	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
@@ -335,14 +284,14 @@ int RpFile::seek(int64_t pos)
  */
 int64_t RpFile::tell(void)
 {
-	if (!m_file) {
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = 0;
-	BOOL bRet = SetFilePointerEx(m_file, liSeekPos, &liSeekRet, FILE_CURRENT);
+	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
@@ -355,14 +304,14 @@ int64_t RpFile::tell(void)
  */
 void RpFile::rewind(void)
 {
-	if (m_file == INVALID_HANDLE_VALUE) {
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return;
 	}
 
 	LARGE_INTEGER liSeekPos;
 	liSeekPos.QuadPart = 0;
-	SetFilePointerEx(m_file, liSeekPos, nullptr, FILE_BEGIN);
+	SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
 }
 
 /**
@@ -371,13 +320,13 @@ void RpFile::rewind(void)
  */
 int64_t RpFile::fileSize(void)
 {
-	if (m_file == INVALID_HANDLE_VALUE) {
+	if (m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liFileSize;
-	BOOL bRet = GetFileSizeEx(m_file, &liFileSize);
+	BOOL bRet = GetFileSizeEx(m_file.get(), &liFileSize);
 	return (bRet != 0 ? liFileSize.QuadPart : -1);
 }
 

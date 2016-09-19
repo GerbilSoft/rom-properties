@@ -69,8 +69,13 @@ class RpMemFile : public IRpFile
 
 		/**
 		 * dup() the file handle.
+		 *
 		 * Needed because IRpFile* objects are typically
 		 * pointers, not actual instances of the object.
+		 *
+		 * NOTE: For RpMemFile, this will simply copy the
+		 * memory buffer pointer and size values.
+		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
 		virtual IRpFile *dup(void) override;
