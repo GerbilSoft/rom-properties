@@ -42,7 +42,7 @@ namespace LibRomData {
 // Deleter for std::unique_ptr<void> m_file.
 struct myFile_deleter {
 	void operator()(void *p) const {
-		if (p != INVALID_HANDLE_VALUE) {
+		if (p != nullptr && p != INVALID_HANDLE_VALUE) {
 			CloseHandle(p);
 		}
 	}
@@ -122,7 +122,7 @@ void RpFile::init(const rp_char *filename)
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr), myFile_deleter());
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		// TODO: More extensive conversion of GetLastError() to POSIX?
 		DWORD dwError = GetLastError();
@@ -165,7 +165,7 @@ RpFile &RpFile::operator=(const RpFile &other)
  */
 bool RpFile::isOpen(void) const
 {
-	return (m_file.get() != INVALID_HANDLE_VALUE);
+	return (m_file && m_file.get() != INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -212,7 +212,7 @@ void RpFile::close(void)
  */
 size_t RpFile::read(void *ptr, size_t size)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return 0;
 	}
@@ -237,7 +237,7 @@ size_t RpFile::read(void *ptr, size_t size)
  */
 size_t RpFile::write(const void *ptr, size_t size)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -263,7 +263,7 @@ size_t RpFile::write(const void *ptr, size_t size)
  */
 int RpFile::seek(int64_t pos)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -284,7 +284,7 @@ int RpFile::seek(int64_t pos)
  */
 int64_t RpFile::tell(void)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -304,7 +304,7 @@ int64_t RpFile::tell(void)
  */
 void RpFile::rewind(void)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return;
 	}
@@ -320,7 +320,7 @@ void RpFile::rewind(void)
  */
 int64_t RpFile::fileSize(void)
 {
-	if (m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
