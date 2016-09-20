@@ -113,6 +113,7 @@ typedef uint32_t uint34_rshift2_t;
  * All fields are big-endian.
  */
 #pragma pack(1)
+#define RVL_VolumeGroupTable_ADDRESS 0x40000
 typedef struct PACKED _RVL_VolumeGroupTable {
 	struct {
 		uint32_t count;		// Number of partitions in this volume group.
@@ -124,7 +125,7 @@ typedef struct PACKED _RVL_VolumeGroupTable {
 /**
  * Wii partition table entry.
  * Contains information about an individual partition.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition_table_entry
  *
  * All fields are big-endian.
  */
@@ -204,6 +205,45 @@ typedef struct PACKED _RVL_PartitionHeader {
 	// 0x2C0
 	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
+#pragma pack()
+
+/**
+ * Country indexes in RVL_RegionSetting.ratings[].
+ */
+enum RVL_RegionSetting_RatingCountry {
+	RATING_JAPAN = 0,	// CERO
+	RATING_USA = 1,		// ESRB
+	RATING_GERMANY = 3,	// USK
+	RATING_PEGI = 4,	// PEGI
+	RATING_FINLAND = 5,	// MEKU?
+	RATING_PORTUGAL = 6,	// Modified PEGI
+	RATING_BRITAIN = 7,	// BBFC
+	RATING_AUSTRALIA = 8,	// ACB
+	RATING_SOUTH_KOREA = 9,	// GRB
+};
+
+/**
+ * Region codes.
+ */
+enum RVL_RegionSetting_Region {
+	RVL_REGION_JAPAN = 0,		// Japan / Taiwan
+	RVL_REGION_USA = 1,		// USA
+	RVL_REGION_PAL = 2,		// Europe / Australia
+	RVL_REGION_SOUTH_KOREA = 4,	// South Korea
+};
+
+/**
+ * Region setting and age ratings.
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
+ * TODO: Decode age ratings into e.g. ESRB.
+ */
+#pragma pack(1)
+#define RVL_RegionSetting_ADDRESS 0x4E000
+typedef struct PACKED _RVL_RegionSetting {
+	uint32_t region;	// 0 == JPN/CHT, 1 == USA, 2 == Europe/Australia, 4 == South Korea
+	uint8_t reserved[12];
+	uint8_t ratings[0x10];	// Country-specific age ratings.
+} RVL_RegionSetting;
 #pragma pack()
 
 #ifdef __cplusplus

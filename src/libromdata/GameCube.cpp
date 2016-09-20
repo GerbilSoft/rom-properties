@@ -40,7 +40,11 @@
 #include <cstring>
 
 // C++ includes.
+#include <sstream>
+#include <string>
 #include <vector>
+using std::ostringstream;
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -87,6 +91,7 @@ class GameCubePrivate
 
 		// Disc header.
 		GCN_DiscHeader discHeader;
+		RVL_RegionSetting regionSetting;
 
 		enum WiiPartitionType {
 			PARTITION_GAME = 0,
@@ -142,7 +147,10 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 	, discReader(nullptr)
 	, wiiVgTblLoaded(false)
 	, updatePartition(nullptr)
-{ }
+{
+	// Clear the Wii region settings.
+	memset(&regionSetting, 0, sizeof(regionSetting));
+}
 
 GameCubePrivate::~GameCubePrivate()
 {
@@ -178,6 +186,14 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
+
+	// Region code.
+	// TODO: Read bi2.bin for GameCube?
+	// Wii: Compare bi2.bin to 0x4E000?
+	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
+
+	// Age rating(s). (Wii only)
+	{_RP("Age Rating"), RomFields::RFT_STRING, {nullptr}},
 
 	// Wii System Update version.
 	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
@@ -225,7 +241,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// References:
 	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
 	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
-	discReader->seek(0x40000);
+	discReader->seek(RVL_VolumeGroupTable_ADDRESS);
 	size_t size = discReader->read(&vgtbl, sizeof(vgtbl));
 	if (size != sizeof(vgtbl)) {
 		// Could not read the volume group table.
@@ -730,14 +746,92 @@ int GameCube::loadFieldData(void)
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
 		// Add dummy entries for Wii-specific fields.
-		m_fields->addData_invalid();
-		m_fields->addData_invalid();
+		m_fields->addData_invalid();	// Region code. (TODO)
+		m_fields->addData_invalid();	// Age rating(s).
+		m_fields->addData_invalid();	// System Update
+		m_fields->addData_invalid();	// Partitions
 
 		// Finished reading the field data.
 		return (int)m_fields->count();
 	}
 	
 	/** Wii-specific fields. **/
+
+	// Get the region code and age rating(s).
+	d->discReader->seek(RVL_RegionSetting_ADDRESS);
+	size_t size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
+	if (size == sizeof(d->regionSetting)) {
+		// TODO: Compare to bi2.bin?
+		const rp_char *region;
+		switch (be32_to_cpu(d->regionSetting.region)) {
+			case RVL_REGION_JAPAN:
+				region = _RP("Japan / Taiwan");
+				break;
+			case RVL_REGION_USA:
+				region = _RP("USA");
+				break;
+			case RVL_REGION_PAL:
+				region = _RP("Europe / Australia");
+				break;
+			case RVL_REGION_SOUTH_KOREA:
+				region = _RP("South Korea");
+				break;
+			default:
+				region = nullptr;
+				break;
+		}
+
+		if (region) {
+			m_fields->addData_string(region);
+		} else {
+			// Invalid region code.
+			char buf[32];
+			int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", be32_to_cpu(d->regionSetting.region));
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		}
+
+		// Age rating(s).
+		// TODO: Optimize this?
+		ostringstream oss;
+		static const char rating_organizations[16][8] = {
+			"CERO", "ESRB", "", "USK",
+			"PEGI", "MEKU", "PEGI-PT", "BBFC",
+			"ACB", "GRB", "", "",
+			"", "", "", ""
+		};
+
+		for (int i = 0; i < 16; i++) {
+			// "Ratings" value is an age.
+			// TODO: Decode to e.g. ESRB and CERO identifiers.
+			// NOTE: If >= 0x80, the game isn't rated for that region.
+			// TODO: Handle PEGI before USK?
+			if (d->regionSetting.ratings[i] != 0 &&
+			    d->regionSetting.ratings[i] < 0x80)
+			{
+				oss << rating_organizations[i] << "="
+				    << (int)d->regionSetting.ratings[i] << ", ";
+			}
+		}
+
+		string str = oss.str();
+		if (str.size() > 2) {
+			// Remove the trailing ", ".
+			str.resize(str.size() - 2);
+		}
+
+		if (!str.empty()) {
+			m_fields->addData_string(utf8_to_rp_string(str.data(), str.size()));
+		} else {
+			m_fields->addData_string(_RP("Unknown"));
+		}
+	} else {
+		// Unable to read the region settings.
+		// TODO: Show an error message?
+		m_fields->addData_invalid();	// Region code.
+		m_fields->addData_invalid();	// Age rating(s).
+	}
 
 	// Load the Wii partition tables.
 	int ret = d->loadWiiPartitionTables();
