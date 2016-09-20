@@ -465,12 +465,13 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
  */
 int GcnFst::closedir(FstDir *dirp)
 {
-	assert(d->fstDirCount > 0);
 	if (!dirp) {
-		// Invalid pointer.
-		return -EINVAL;
+		// Allow nullptr to be closed.
+		// (Same behavior as free().)
+		return 0;
 	}
 
+	assert(d->fstDirCount > 0);
 	free(dirp);
 	d->fstDirCount--;
 	return 0;
