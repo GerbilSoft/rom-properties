@@ -465,9 +465,11 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
  */
 int GcnFst::closedir(FstDir *dirp)
 {
+	// Allow nullptr to be closed in release builds.
+	// (Same behavior as free().)
+	// In debug builds, this will assert().
+	assert(dirp != nullptr);
 	if (!dirp) {
-		// Allow nullptr to be closed.
-		// (Same behavior as free().)
 		return 0;
 	}
 
