@@ -122,6 +122,12 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	static_assert(sizeof(RVL_PartitionHeader) == RVL_PartitionHeader_SIZE,
 		"sizeof(RVL_PartitionHeader) is incorrect. (Should be 0x20000)");
 
+	// Clear data set by GcnPartition in case the
+	// partition headers can't be read.
+	data_offset = -1;
+	data_size = -1;
+	partition_size = -1;
+
 	// Increment the AES common key reference counter.
 	// TODO: Atomic reference count?
 	++aes_common_refcnt;
