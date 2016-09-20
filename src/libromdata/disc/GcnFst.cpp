@@ -203,8 +203,9 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	if (!path) {
 		// Invalid path.
 		return nullptr;
-	} else if (!path[0]) {
-		// Empty path. Assume "/".
+	} else if (!path[0] || (path[0] == '/' && !path[1])) {
+		// Empty path or "/".
+		// Return the root directory.
 		return this->entry(0, nullptr);
 	}
 
@@ -228,11 +229,9 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 		return nullptr;
 	}
 
-	// Is the path root?
-	if (path8 == "/") {
-		// Root directory.
-		return fst_entry;
-	}
+	// Should not have "" or "/" here.
+	assert(!path8.empty());
+	assert(path8 != "/");
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
