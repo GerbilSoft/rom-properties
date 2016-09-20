@@ -80,6 +80,8 @@ SET(libromdata_SRCS
 	img/RpImageLoader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
+	disc/GcnPartition.cpp
+	disc/GcnPartitionPrivate.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
 	img/pngcheck/pngcheck.cpp
@@ -117,6 +119,8 @@ SET(libromdata_H
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
 	disc/IPartition.hpp
+	disc/GcnPartition.hpp
+	disc/GcnPartitionPrivate.hpp
 	disc/WiiPartition.hpp
 	disc/GcnFst.hpp
 	)
