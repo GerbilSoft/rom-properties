@@ -541,15 +541,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return GameCubePrivate::DISC_UNKNOWN;
 	}
 
-	static const uint32_t magic_wii = 0x5D1C9EA3;
-	static const uint32_t magic_gcn = 0xC2339F3D;
-
 	// Check for the magic numbers.
 	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->pHeader);
-	if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
+	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
-	} else if (gcn_header->magic_gcn == cpu_to_be32(magic_gcn)) {
+	} else if (be32_to_cpu(gcn_header->magic_gcn) == GCN_MAGIC) {
 		// GameCube disc image.
 		// TODO: Check for Triforce?
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
@@ -582,7 +579,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 			// Check for Wii magic.
 			// FIXME: GCN magic too?
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->pHeader[hdd_sector_size]);
-			if (gcn_header->magic_wii == cpu_to_be32(magic_wii)) {
+			if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
@@ -884,6 +881,9 @@ int GameCube::loadFieldData(void)
 						break;
 					case WiiPartition::ENCINIT_CIPHER_ERROR:
 						sysMenu = _RP("ERROR: Decryption library failed.");
+						break;
+					case WiiPartition::ENCINIT_INCORRECT_KEY:
+						sysMenu = _RP("ERROR: Key is incorrect.");
 						break;
 					default:
 						sysMenu = _RP("Unknown");

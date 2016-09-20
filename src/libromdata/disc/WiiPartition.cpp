@@ -287,9 +287,27 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		return encInitStatus;
 	}
 
+	// Read sector 0, which contains a disc header.
+	if (readSector(0) != 0) {
+		// Error reading sector 0.
+		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+		return encInitStatus;
+	}
+
+	// Verify that this is a Wii partition.
+	// If it isn't, the key is probably wrong.
+	const GCN_DiscHeader *discHeader =
+		reinterpret_cast<const GCN_DiscHeader*>(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET]);
+	if (be32_to_cpu(discHeader->magic_wii) != WII_MAGIC) {
+		// Invalid disc header.
+		encInitStatus = WiiPartition::ENCINIT_INCORRECT_KEY;
+		return encInitStatus;
+	}
+
 	// Cipher initialized.
 	encInitStatus = WiiPartition::ENCINIT_OK;
 	aes_title = cipher.release();
+
 	return encInitStatus;
 }
 #endif /* ENABLE_DECRYPTION */

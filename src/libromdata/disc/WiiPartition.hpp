@@ -116,6 +116,7 @@ class WiiPartition : public IPartition
 			ENCINIT_NO_KEYFILE,		// keys.conf not found.
 			ENCINIT_MISSING_KEY,		// Required key not found.
 			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
+			ENCINIT_INCORRECT_KEY,		// Key is incorrect.
 		};
 
 		/**

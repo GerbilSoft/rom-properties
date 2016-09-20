@@ -36,6 +36,8 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
+#define GCN_MAGIC 0xC2339F3D
+#define WII_MAGIC 0x5D1C9EA3
 typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// Game code. (ID6)
