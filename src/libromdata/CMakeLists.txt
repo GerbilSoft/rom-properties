@@ -101,7 +101,6 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	libwbfs.h
 	gcn_structs.h
 	DMG.hpp
 	uvector.h
@@ -119,6 +118,7 @@ SET(libromdata_H
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
+	disc/libwbfs.h
 	disc/CisoGcnReader.hpp
 	disc/ciso_gcn.h
 	disc/IPartition.hpp
