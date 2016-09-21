@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IDISCREADER_HPP__
 
+#include "config.libromdata.h"
+
 // C includes.
 #include <stdint.h>
 
@@ -42,6 +44,18 @@ class IDiscReader
 	private:
 		IDiscReader(const IDiscReader &);
 		IDiscReader &operator=(const IDiscReader&);
+
+	public:
+		/** Disc image detection functions. **/
+
+		// TODO: Move RomData::DetectInfo somewhere else and use it here?
+		/**
+		 * Is a disc image supported by this object?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const = 0;
 
 	public:
 		/**

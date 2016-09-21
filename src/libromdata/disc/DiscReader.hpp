@@ -45,6 +45,25 @@ class DiscReader : public IDiscReader
 		DiscReader &operator=(const DiscReader&);
 
 	public:
+		/** Disc image detection functions. **/
+
+		/**
+		 * Is a disc image supported by this class?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
+
+		/**
+		 * Is a disc image supported by this object?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override;
+
+	public:
 		/**
 		 * Is the disc image open?
 		 * This usually only returns false if an error occurred.

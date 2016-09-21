@@ -48,6 +48,34 @@ DiscReader::~DiscReader()
 }
 
 /**
+ * Is a disc image supported by this class?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+ */
+int DiscReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
+{
+	// DiscReader supports everything.
+	((void)pHeader);
+	((void)szHeader);
+	return 0;
+}
+
+/**
+ * Is a disc image supported by this object?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int DiscReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
+{
+	// DiscReader supports everything.
+	((void)pHeader);
+	((void)szHeader);
+	return 0;
+}
+
+/**
  * Is the disc image open?
  * This usually only returns false if an error occurred.
  * @return True if the disc image is open; false if it isn't.

@@ -529,9 +529,9 @@ GameCube::~GameCube()
 /** ROM detection functions. **/
 
 /**
- * Is a ROM image supported by this object?
+ * Is a ROM image supported by this class?
  * @param info DetectInfo containing ROM detection information.
- * @return Object-specific system ID (>= 0) if supported; -1 if not.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
  */
 int GameCube::isRomSupported_static(const DetectInfo *info)
 {
@@ -568,11 +568,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
 	}
 
-	// Check for WBFS.
-	// This is checked after the magic numbers in case some joker
+	// Check for sparse/compressed disc formats.
+	// These are checked after the magic numbers in case some joker
 	// decides to make a GCN or Wii disc image with the game ID "WBFS".
-	static const uint8_t wbfs_magic[4] = {'W', 'B', 'F', 'S'};
-	if (!memcmp(info->pHeader, wbfs_magic, sizeof(wbfs_magic))) {
+
+	// Check for WBFS.
+	if (WbfsReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
 		// Disc image is stored in "HDD" sector 1.
 		unsigned int hdd_sector_size = (1 << info->pHeader[8]);
 		if (info->szHeader >= hdd_sector_size + 0x200) {

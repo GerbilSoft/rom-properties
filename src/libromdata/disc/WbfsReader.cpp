@@ -56,6 +56,9 @@ class WbfsReaderPrivate {
 
 		/** WBFS functions. **/
 
+		// WBFS magic number.
+		static const uint8_t WBFS_MAGIC[4];
+
 		/**
 		 * Read the WBFS header.
 		 * @return Allocated wbfs_t on success; nullptr on error.
@@ -96,6 +99,9 @@ class WbfsReaderPrivate {
 };
 
 /** WbfsReaderPrivate **/
+
+// WBFS magic number.
+const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
 WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 	: file(nullptr)
@@ -169,8 +175,6 @@ static uint8_t size_to_shift(uint32_t size)
  */
 wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 {
-	static const uint8_t WBFS_MAGIC[4] = {'W', 'B', 'F', 'S'};
-
 	// Assume 512-byte sectors initially.
 	unsigned int hd_sec_sz = 512;
 	wbfs_head_t *head = (wbfs_head_t*)malloc(hd_sec_sz);
@@ -374,6 +378,46 @@ WbfsReader::WbfsReader(IRpFile *file)
 WbfsReader::~WbfsReader()
 {
 	delete d;
+}
+
+/**
+ * Is a disc image supported by this class?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+ */
+int WbfsReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
+{
+	if (szHeader < sizeof(wbfs_head_t))
+		return -1;
+
+	const wbfs_head_t *head = reinterpret_cast<const wbfs_head_t*>(pHeader);
+	if (memcmp(&head->magic, WbfsReaderPrivate::WBFS_MAGIC, sizeof(WbfsReaderPrivate::WBFS_MAGIC)) != 0) {
+		// Incorrect magic number.
+		return -1;
+	}
+
+	// Make sure the sector size is at least 512 bytes.
+	if (head->hd_sec_sz_s < 0x09) {
+		// Sector size is less than 512 bytes.
+		// This isn't possible unless you're using
+		// a Commodore 64 or an Apple ][.
+		return -1;
+	}
+
+	// This is a valid WBFS image.
+	return 0;
+}
+
+/**
+ * Is a disc image supported by this object?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
+{
+	return isDiscSupported_static(pHeader, szHeader);
 }
 
 /**
