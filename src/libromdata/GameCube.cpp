@@ -31,6 +31,7 @@
 // DiscReader
 #include "disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
+#include "disc/CisoGcnReader.hpp"
 #include "disc/WiiPartition.hpp"
 
 // C includes. (C++ namespace)
@@ -81,6 +82,7 @@ class GameCubePrivate
 			// High byte: Image format.
 			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
 			DISC_FORMAT_WBFS = (1 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_CISO = (2 << 8),	// CISO image.
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -499,6 +501,9 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_WBFS:
 				d->discReader = new WbfsReader(m_file);
 				break;
+			case GameCubePrivate::DISC_FORMAT_CISO:
+				d->discReader = new CisoGcnReader(m_file);
+				break;
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
@@ -517,6 +522,33 @@ GameCube::GameCube(IRpFile *file)
 			d->discReader = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
 			m_isValid = false;
+			return;
+		}
+
+		if (d->discType != GameCubePrivate::DISC_UNKNOWN &&
+		    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_UNKNOWN))
+		{
+			// isRomSupported() was unable to determine the
+			// system type, possibly due to format limitations.
+			// Example: CISO doesn't store a copy of the disc header
+			// in range of the data we read.
+			if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
+				// Wii disc image.
+				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
+				d->discType |=  GameCubePrivate::DISC_SYSTEM_WII;
+			} else if (be32_to_cpu(d->discHeader.magic_gcn) == GCN_MAGIC) {
+				// GameCube disc image.
+				// TODO: Check for Triforce?
+				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
+				d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
+			} else {
+				// Unknown system type.
+				delete d->discReader;
+				d->discReader = nullptr;
+				d->discType = GameCubePrivate::DISC_UNKNOWN;
+				m_isValid = false;
+				return;
+			}
 		}
 	}
 }
@@ -587,6 +619,14 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
+	// Check for CISO.
+	if (CisoGcnReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
+		// CISO format doesn't store a copy of the disc header
+		// at the beginning of the disc, so we can't check the
+		// system format here.
+		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_CISO;
+	}
+
 	// Not supported.
 	return GameCubePrivate::DISC_UNKNOWN;
 }
@@ -648,10 +688,12 @@ vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
 	// TODO: Add ".iso" later? (Too generic, though...)
 	vector<const rp_char*> ret;
-	ret.reserve(3);
+	ret.reserve(5);
 	ret.push_back(_RP(".gcm"));
 	ret.push_back(_RP(".rvm"));
 	ret.push_back(_RP(".wbfs"));
+	ret.push_back(_RP(".ciso"));
+	ret.push_back(_RP(".cso"));
 	return ret;
 }
 
