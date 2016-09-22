@@ -60,8 +60,10 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		WiiPartitionPrivate &operator=(const WiiPartitionPrivate &other);
 
 	public:
-		WiiPartition::EncInitStatus encInitStatus;
+		// Partition header.
+		RVL_PartitionHeader partitionHeader;
 
+		WiiPartition::EncInitStatus encInitStatus;
 #ifdef ENABLE_DECRYPTION
 		// AES cipher for the Common key.
 		// - Index 0: rvl-common
@@ -72,6 +74,8 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 		// AES cipher for this partition's title key.
 		AesCipher *aes_title;
+		// Decrypted title key.
+		uint8_t title_key[16];
 
 		/**
 		 * Initialize decryption.

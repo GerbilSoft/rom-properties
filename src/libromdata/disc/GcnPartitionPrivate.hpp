@@ -65,10 +65,6 @@ class GcnPartitionPrivate
 		int64_t partition_size;		// Partition size, including header and hashes.
 		int64_t data_size;		// Data size, excluding hashes.
 
-		// Partition header.
-		RVL_PartitionHeader partitionHeader;
-		uint8_t title_key[16];		// Decrypted title key.
-
 		// Filesystem table.
 		GcnFst *fst;
 		GCN_FST_Info fstInfo;
