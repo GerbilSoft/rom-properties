@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GcnFst.hpp: GameCube/Wii FST parser.                                    *
+ * IFst.hpp: File System Table interface.                                  *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,44 +19,65 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IFST_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_IFST_HPP__
 
-#include "IFst.hpp"
-#include "gcn_structs.h"
+#include "config.libromdata.h"
+
+// C includes.
+#include <stdint.h>
+
+// Directory type values.
+// Based on dirent.h from glibc-2.23.
+#include "d_type.h"
 
 namespace LibRomData {
 
-class GcnFstPrivate;
-class GcnFst : public IFst
+class IFst
 {
+	protected:
+		IFst() { }
 	public:
-		/**
-		 * Parse a GameCube FST.
-		 * @param fstData FST data.
-		 * @param len Length of fstData, in bytes.
-		 * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
-		 */
-		GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
-		virtual ~GcnFst();
+		virtual ~IFst() = 0;
 
 	private:
-		typedef IFst super;
-		GcnFst(const GcnFst &other);
-		GcnFst &operator=(const GcnFst &other);
-	private:
-		friend class GcnFstPrivate;
-		GcnFstPrivate *const d;
+		IFst(const IFst &other);
+		IFst &operator=(const IFst &other);
 
 	public:
 		/** opendir() interface. **/
+
+		struct DirEnt {
+			int64_t offset;		// Starting address.
+			int64_t size;		// File size.
+			uint8_t type;		// File type. (See d_type.h)
+			const char *name;	// Filename. (TODO: Encoding?)
+
+			// TODO: Additional placeholders?
+			int idx;		// File index.
+		};
+
+		struct Dir {
+			int dir_idx;		// Directory index in the FST.
+			DirEnt entry;		// Current FstDirEntry.
+		};
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
 		 * @return FstDir*, or nullptr on error.
 		 */
-		virtual Dir *opendir(const rp_char *path) final;
+		virtual Dir *opendir(const rp_char *path) = 0;
+
+		/**
+		 * Open a directory.
+		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @return FstDir*, or nullptr on error.
+		 */
+		inline Dir *opendir(const LibRomData::rp_string &path)
+		{
+			return opendir(path.c_str());
+		}
 
 		/**
 		 * Read a directory entry.
@@ -64,16 +85,23 @@ class GcnFst : public IFst
 		 * @return FstDirEntry*, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
-		virtual DirEnt *readdir(Dir *dirp) final;
+		virtual DirEnt *readdir(Dir *dirp) = 0;
 
 		/**
 		 * Close an opened directory.
 		 * @param dirp FstDir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int closedir(Dir *dirp) final;
+		virtual int closedir(Dir *dirp) = 0;
 };
+
+/**
+ * Both gcc and MSVC fail to compile unless we provide
+ * an empty implementation, even though the function is
+ * declared as pure-virtual.
+ */
+inline IFst::~IFst() { }
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IFst_HPP__ */

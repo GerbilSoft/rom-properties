@@ -184,9 +184,9 @@ int64_t GcnPartition::partition_size(void) const
 /**
  * Open a directory.
  * @param path	[in] Directory path. [TODO; always reads "/" right now.]
- * @return FstDir*, or nullptr on error.
+ * @return IFst::Dir*, or nullptr on error.
  */
-GcnFst::FstDir *GcnPartition::opendir(const rp_char *path)
+IFst::Dir *GcnPartition::opendir(const rp_char *path)
 {
 	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
 	if (!d->fst) {
@@ -204,10 +204,10 @@ GcnFst::FstDir *GcnPartition::opendir(const rp_char *path)
 /**
  * Read a directory entry.
  * @param dirp FstDir pointer.
- * @return FstDirEntry*, or nullptr if end of directory or on error.
+ * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (TODO: Add lastError()?)
  */
-GcnFst::FstDirEntry *GcnPartition::readdir(GcnFst::FstDir *dirp)
+IFst::DirEnt *GcnPartition::readdir(IFst::Dir *dirp)
 {
 	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
 	if (!d->fst) {
@@ -223,7 +223,7 @@ GcnFst::FstDirEntry *GcnPartition::readdir(GcnFst::FstDir *dirp)
  * @param dirp FstDir pointer.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GcnPartition::closedir(GcnFst::FstDir *dirp)
+int GcnPartition::closedir(IFst::Dir *dirp)
 {
 	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
 	if (!d->fst) {

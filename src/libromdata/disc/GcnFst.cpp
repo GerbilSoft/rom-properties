@@ -59,7 +59,7 @@ class GcnFstPrivate
 		// Offset shift.
 		uint8_t offsetShift;
 
-		// FstDir* reference counter.
+		// IFst::Dir* reference counter.
 		int fstDirCount;
 
 		/**
@@ -319,7 +319,8 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
  * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
  */
 GcnFst::GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
-	: d(new GcnFstPrivate(fstData, len, offsetShift))
+	: super()
+	, d(new GcnFstPrivate(fstData, len, offsetShift))
 { }
 
 GcnFst::~GcnFst()
@@ -328,25 +329,11 @@ GcnFst::~GcnFst()
 }
 
 /**
- * Get the number of FST entries.
- * @return Number of FST entries, or -1 on error.
- */
-int GcnFst::count(void) const
-{
-	if (!d->fstData) {
-		// No FST.
-		return -1;
-	}
-
-	return (be32_to_cpu(d->fstData[0].dir.last_entry_idx) + 1);
-}
-
-/**
  * Open a directory.
  * @param path	[in] Directory path.
- * @return FstDir*, or nullptr on error.
+ * @return IFst::Dir*, or nullptr on error.
  */
-GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
+IFst::Dir *GcnFst::opendir(const rp_char *path)
 {
 	// TODO: Ignoring path right now.
 	// Always reading the root directory.
@@ -368,7 +355,7 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 		return nullptr;
 	}
 
-	FstDir *dirp = reinterpret_cast<FstDir*>(malloc(sizeof(*dirp)));
+	IFst::Dir *dirp = reinterpret_cast<IFst::Dir*>(malloc(sizeof(*dirp)));
 	if (!dirp) {
 		// malloc() failed.
 		return nullptr;
@@ -387,17 +374,17 @@ GcnFst::FstDir *GcnFst::opendir(const rp_char *path)
 	dirp->entry.offset = 0;
 	dirp->entry.size = 0;
 
-	// Return the FstDir*.
+	// Return the IFst::Dir*.
 	return dirp;
 }
 
 /**
  * Read a directory entry.
- * @param dirp FstDir pointer.
- * @return FstDirEntry*, or nullptr if end of directory or on error.
+ * @param dirp IFst::Dir pointer.
+ * @return IFst::DirEnt*, or nullptr if end of directory or on error.
  * (End of directory does not set lastError; an error does.)
  */
-GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
+IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 {
 	if (!dirp) {
 		// No directory pointer.
@@ -460,10 +447,10 @@ GcnFst::FstDirEntry *GcnFst::readdir(FstDir *dirp)
 
 /**
  * Close an opened directory.
- * @param dirp FstDir pointer.
+ * @param dirp IFst::Dir pointer.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GcnFst::closedir(FstDir *dirp)
+int GcnFst::closedir(IFst::Dir *dirp)
 {
 	// Allow nullptr to be closed in release builds.
 	// (Same behavior as free().)

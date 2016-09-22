@@ -125,6 +125,7 @@ SET(libromdata_H
 	disc/GcnPartition.hpp
 	disc/GcnPartitionPrivate.hpp
 	disc/WiiPartition.hpp
+	disc/IFst.hpp
 	disc/GcnFst.hpp
 	)
 

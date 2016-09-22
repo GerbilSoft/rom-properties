@@ -883,9 +883,9 @@ int GameCube::loadFieldData(void)
 		const rp_char *sysMenu = nullptr;
 		if (d->updatePartition) {
 			// Find the RVL-WiiSystemmenu-v*.wad file.
-			GcnFst::FstDir *dirp = d->updatePartition->opendir(_RP("/_sys/"));
+			IFst::Dir *dirp = d->updatePartition->opendir(_RP("/_sys/"));
 			if (dirp) {
-				GcnFst::FstDirEntry *dirent;
+				IFst::DirEnt *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
 					if (dirent->name && dirent->type == DT_REG) {
 						unsigned int version;
