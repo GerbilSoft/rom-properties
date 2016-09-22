@@ -876,9 +876,7 @@ int GameCube::loadFieldData(void)
 			// TODO: Decode to e.g. ESRB and CERO identifiers.
 			// NOTE: If >= 0x80, the game isn't rated for that region.
 			// TODO: Handle PEGI before USK?
-			if (d->regionSetting.ratings[i] != 0 &&
-			    d->regionSetting.ratings[i] < 0x80)
-			{
+			if (d->regionSetting.ratings[i] < 0x80) {
 				oss << rating_organizations[i] << "="
 				    << (int)d->regionSetting.ratings[i] << ", ";
 			}
