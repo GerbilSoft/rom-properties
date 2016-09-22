@@ -62,6 +62,17 @@ typedef struct PACKED _GCN_DiscHeader {
 #pragma pack()
 
 /**
+ * GameCube region codes.
+ * Used in bi2.bin (GameCube) and RVL_RegionSetting.
+ */
+enum GCN_Region_Code {
+	GCN_REGION_JAPAN = 0,		// Japan / Taiwan
+	GCN_REGION_USA = 1,		// USA
+	GCN_REGION_PAL = 2,		// Europe / Australia
+	GCN_REGION_SOUTH_KOREA = 4,	// South Korea
+};
+
+/**
  * DVD Boot Block.
  * References:
  * - http://wiibrew.org/wiki/Wii_Disc#Decrypted
@@ -102,7 +113,7 @@ typedef struct PACKED _GCN_Boot_Info {
 	uint32_t debug_flag;		// Debug flag. (set to 3 if using CodeWarrior on GDEV)
 	uint32_t trk_location;		// Target resident kernel location.
 	uint32_t trk_size;		// Size of TRK. [FIXME: Listed as signed?]
-	uint32_t country_code;		// Country code.
+	uint32_t region_code;		// Region code. (See GCN_Region_Code.)
 	uint32_t reserved1[3];
 	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)
 	uint32_t reserved2;
@@ -260,16 +271,6 @@ enum RVL_RegionSetting_RatingCountry {
 };
 
 /**
- * Region codes.
- */
-enum RVL_RegionSetting_Region {
-	RVL_REGION_JAPAN = 0,		// Japan / Taiwan
-	RVL_REGION_USA = 1,		// USA
-	RVL_REGION_PAL = 2,		// Europe / Australia
-	RVL_REGION_SOUTH_KOREA = 4,	// South Korea
-};
-
-/**
  * Region setting and age ratings.
  * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
  * TODO: Decode age ratings into e.g. ESRB.
@@ -277,7 +278,7 @@ enum RVL_RegionSetting_Region {
 #pragma pack(1)
 #define RVL_RegionSetting_ADDRESS 0x4E000
 typedef struct PACKED _RVL_RegionSetting {
-	uint32_t region;	// 0 == JPN/CHT, 1 == USA, 2 == Europe/Australia, 4 == South Korea
+	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
 	uint8_t reserved[12];
 	uint8_t ratings[0x10];	// Country-specific age ratings.
 } RVL_RegionSetting;

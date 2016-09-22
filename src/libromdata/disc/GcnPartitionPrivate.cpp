@@ -111,7 +111,7 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	bootInfo.debug_flag	= be32_to_cpu(bootInfo.debug_flag);
 	bootInfo.trk_location	= be32_to_cpu(bootInfo.trk_location);
 	bootInfo.trk_size	= be32_to_cpu(bootInfo.trk_size);
-	bootInfo.country_code	= be32_to_cpu(bootInfo.country_code);
+	bootInfo.region_code	= be32_to_cpu(bootInfo.region_code);
 	bootInfo.dol_limit	= be32_to_cpu(bootInfo.dol_limit);
 #endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 

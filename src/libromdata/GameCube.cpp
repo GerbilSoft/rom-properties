@@ -139,6 +139,13 @@ class GameCubePrivate
 		 * @return Wii System Update version, or nullptr if unknown.
 		 */
 		static const rp_char *parseWiiSystemMenuVersion(unsigned int version);
+
+		/**
+		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
+		 * @param gcnRegion GCN region value.
+		 * @return String, or nullptr if the region value is invalid.
+		 */
+		static const rp_char *gcnRegionToString(unsigned int gcnRegion);
 };
 
 /** GameCubePrivate **/
@@ -188,15 +195,11 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-
-	// Region code.
-	// TODO: Read bi2.bin for GameCube?
-	// Wii: Compare bi2.bin to 0x4E000?
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
 
-	// Age rating(s). (Wii only)
+	/** Wii-specific fields. **/
+	// Age rating(s).
 	{_RP("Age Rating"), RomFields::RFT_STRING, {nullptr}},
-
 	// Wii System Update version.
 	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
 
@@ -451,6 +454,29 @@ const rp_char *GameCubePrivate::parseWiiSystemMenuVersion(unsigned int version)
 		// Unknown version.
 		default:	return nullptr;
 	}
+}
+
+/**
+ * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
+ * @param gcnRegion GCN region value.
+ * @return String, or nullptr if the region value is invalid.
+ */
+const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion)
+{
+	switch (gcnRegion) {
+		case GCN_REGION_JAPAN:
+			return _RP("Japan / Taiwan");
+		case GCN_REGION_USA:
+			return _RP("USA");
+		case GCN_REGION_PAL:
+			return _RP("Europe / Australia");
+		case GCN_REGION_SOUTH_KOREA:
+			return _RP("South Korea");
+		default:
+			break;
+	}
+
+	return nullptr;
 }
 
 /** GameCube **/
@@ -785,8 +811,29 @@ int GameCube::loadFieldData(void)
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
+		// GameCube region code from bi2.bin.
+		GCN_Boot_Info bootInfo;	// TODO: Store in private class?
+		d->discReader->seek(GCN_Boot_Info_ADDRESS);
+		size_t size = d->discReader->read(&bootInfo, sizeof(bootInfo));
+		if (size == sizeof(bootInfo)) {
+			const uint32_t gcnRegion = be32_to_cpu(bootInfo.region_code);
+			const rp_char *region = d->gcnRegionToString(gcnRegion);
+			if (region) {
+				m_fields->addData_string(region);
+			} else {
+				// Invalid region code.
+				char buf[32];
+				int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", gcnRegion);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+			}
+		} else {
+			// Unable to load bi2.bin.
+			m_fields->addData_string(_RP("Unknown (read error)"));
+		}
+
 		// Add dummy entries for Wii-specific fields.
-		m_fields->addData_invalid();	// Region code. (TODO)
 		m_fields->addData_invalid();	// Age rating(s).
 		m_fields->addData_invalid();	// System Update
 		m_fields->addData_invalid();	// Partitions
@@ -801,32 +848,14 @@ int GameCube::loadFieldData(void)
 	d->discReader->seek(RVL_RegionSetting_ADDRESS);
 	size_t size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
 	if (size == sizeof(d->regionSetting)) {
-		// TODO: Compare to bi2.bin?
-		const rp_char *region;
-		switch (be32_to_cpu(d->regionSetting.region)) {
-			case RVL_REGION_JAPAN:
-				region = _RP("Japan / Taiwan");
-				break;
-			case RVL_REGION_USA:
-				region = _RP("USA");
-				break;
-			case RVL_REGION_PAL:
-				region = _RP("Europe / Australia");
-				break;
-			case RVL_REGION_SOUTH_KOREA:
-				region = _RP("South Korea");
-				break;
-			default:
-				region = nullptr;
-				break;
-		}
-
+		const uint32_t gcnRegion = be32_to_cpu(d->regionSetting.region_code);
+		const rp_char *region = d->gcnRegionToString(gcnRegion);
 		if (region) {
 			m_fields->addData_string(region);
 		} else {
 			// Invalid region code.
 			char buf[32];
-			int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", be32_to_cpu(d->regionSetting.region));
+			int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", gcnRegion);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
 			m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
