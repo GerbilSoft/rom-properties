@@ -38,10 +38,13 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReade
 	, data_offset(-1)	// -1 == invalid
 	, partition_size(-1)
 	, data_size(-1)
+	, bootLoaded(false)
 	, fst(nullptr)
 {
-	static_assert(sizeof(GCN_FST_Info) == GCN_FST_Info_SIZE,
-		"sizeof(GCN_FST_Info) is incorrect. (Should be 12)");
+	static_assert(sizeof(GCN_Boot_Block) == GCN_Boot_Block_SIZE,
+		"sizeof(GCN_Boot_Block) is incorrect. (Should be 32)");
+	static_assert(sizeof(GCN_Boot_Info) == GCN_Boot_Info_SIZE,
+		"sizeof(GCN_Boot_Info) is incorrect. (Should be 48)");
 
 	if (!discReader->isOpen()) {
 		lastError = discReader->lastError();
@@ -60,6 +63,64 @@ GcnPartitionPrivate::~GcnPartitionPrivate()
 }
 
 /**
+ * Load the boot block and boot info.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GcnPartitionPrivate::loadBootBlockAndInfo(void)
+{
+	if (bootLoaded) {
+		// Already loaded.
+		return 0;
+	}
+
+	// Load the boot block and boot info.
+	int ret = q->seek(GCN_Boot_Block_ADDRESS);
+	if (ret != 0) {
+		// Seek failed.
+		return -lastError;
+	}
+
+	// TODO: Consolidate into a single read?
+	size_t size = q->read(&bootBlock, sizeof(bootBlock));
+	if (size != sizeof(bootBlock)) {
+		// bootBlock read failed.
+		lastError = EIO;
+		return -lastError;
+	}
+	size = q->read(&bootInfo, sizeof(bootInfo));
+	if (size != sizeof(bootInfo)) {
+		// bootInfo read failed.
+		lastError = EIO;
+		return -lastError;
+	}
+
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
+	// Byteswap bootBlock.
+	bootBlock.dol_offset	= be32_to_cpu(bootBlock.dol_offset);
+	bootBlock.fst_offset	= be32_to_cpu(bootBlock.fst_offset);
+	bootBlock.fst_size	= be32_to_cpu(bootBlock.fst_size);
+	bootBlock.fst_max_size	= be32_to_cpu(bootBlock.fst_max_size);
+	bootBlock.fst_mem_addr	= be32_to_cpu(bootBlock.fst_mem_addr);
+	bootBlock.user_pos	= be32_to_cpu(bootBlock.user_pos);
+	bootBlock.user_len	= be32_to_cpu(bootBlock.user_len);
+
+	// Byteswap bootInfo.
+	bootInfo.debug_mon_size	= be32_to_cpu(bootInfo.debug_mon_size);
+	bootInfo.sim_mem_size	= be32_to_cpu(bootInfo.sim_mem_size);
+	bootInfo.arg_offset	= be32_to_cpu(bootInfo.arg_offset);
+	bootInfo.debug_flag	= be32_to_cpu(bootInfo.debug_flag);
+	bootInfo.trk_location	= be32_to_cpu(bootInfo.trk_location);
+	bootInfo.trk_size	= be32_to_cpu(bootInfo.trk_size);
+	bootInfo.country_code	= be32_to_cpu(bootInfo.country_code);
+	bootInfo.dol_limit	= be32_to_cpu(bootInfo.dol_limit);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
+
+	// bootBlock and bootInfo have been loaded.
+	bootLoaded = true;
+	return 0;
+}
+
+/**
  * Load the FST.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -68,46 +129,34 @@ int GcnPartitionPrivate::loadFst(void)
 	if (fst) {
 		// FST is already loaded.
 		return 0;
+	} else if (data_offset < 0) {
+		// Partition is invalid.
+		lastError = EINVAL;
+		return -lastError;
 	}
 
-	// Load the FST info.
-	GCN_FST_Info fstInfo;
-	int ret = q->seek(GCN_FST_Info_ADDRESS);
+	// Load the boot block and boot info.
+	int ret = loadBootBlockAndInfo();
 	if (ret != 0) {
-		// Seek failed.
-		return -lastError;
+		// Error loading boot block and/or boot info.
+		return ret;
 	}
 
-	size_t size = q->read(&fstInfo, sizeof(fstInfo));
-	if (size != sizeof(fstInfo)) {
-		// fstInfo read failed.
-		lastError = EIO;
-		return -lastError;
-	}
-
-#if SYS_BYTEORDER != SYS_BIG_ENDIAN
-	// Byteswap fstInfo.
-	fstInfo.dol_offset	= be32_to_cpu(fstInfo.dol_offset);
-	fstInfo.fst_offset	= be32_to_cpu(fstInfo.fst_offset);
-	fstInfo.fst_size	= be32_to_cpu(fstInfo.fst_size);
-	fstInfo.fst_max_size	= be32_to_cpu(fstInfo.fst_max_size);
-#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
-
-	if (fstInfo.fst_size > (1048576U >> offsetShift) ||
-	    fstInfo.fst_max_size > (1048576U >> offsetShift))
+	if (bootBlock.fst_size > (1048576U >> offsetShift) ||
+	    bootBlock.fst_max_size > (1048576U >> offsetShift))
 	{
 		// Sanity check: FST larger than 1 MB is invalid.
 		// TODO: What is the actual largest FST?
 		lastError = EIO;
 		return -lastError;
-	} else if (fstInfo.fst_size > fstInfo.fst_max_size) {
+	} else if (bootBlock.fst_size > bootBlock.fst_max_size) {
 		// FST is invalid.
 		lastError = EIO;
 		return -lastError;
 	}
 
 	// Seek to the beginning of the FST.
-	ret = q->seek((int64_t)fstInfo.fst_offset << offsetShift);
+	ret = q->seek((int64_t)bootBlock.fst_offset << offsetShift);
 	if (ret != 0) {
 		// Seek failed.
 		return -lastError;
@@ -115,14 +164,14 @@ int GcnPartitionPrivate::loadFst(void)
 
 	// Read the FST.
 	// TODO: Eliminate the extra copy?
-	uint32_t fstData_len = fstInfo.fst_size << offsetShift;
+	uint32_t fstData_len = bootBlock.fst_size << offsetShift;
 	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(fstData_len));
 	if (!fstData) {
 		// malloc() failed.
 		lastError = ENOMEM;
 		return -lastError;
 	}
-	size = q->read(fstData, fstData_len);
+	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {
 		// Short read.
 		free(fstData);

@@ -65,9 +65,19 @@ class GcnPartitionPrivate
 		int64_t partition_size;		// Partition size, including header and hashes.
 		int64_t data_size;		// Data size, excluding hashes.
 
+		// Boot block and info.
+		GCN_Boot_Block bootBlock;
+		GCN_Boot_Info bootInfo;		// bi2.bin
+		bool bootLoaded;
+
+		/**
+		 * Load the boot block and boot info.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadBootBlockAndInfo(void);
+
 		// Filesystem table.
 		GcnFst *fst;
-		GCN_FST_Info fstInfo;
 
 		/**
 		 * Load the FST.

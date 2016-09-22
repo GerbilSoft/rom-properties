@@ -61,17 +61,52 @@ typedef struct PACKED _GCN_DiscHeader {
 } GCN_DiscHeader;
 #pragma pack()
 
-// FST information.
-// Located at 0x420.
+/**
+ * DVD Boot Block.
+ * References:
+ * - http://wiibrew.org/wiki/Wii_Disc#Decrypted
+ * - http://hitmen.c02.at/files/yagcd/yagcd/chap13.html
+ * - http://www.gc-forever.com/wiki/index.php?title=Apploader
+ *
+ * All fields are big-endian.
+ */
 #pragma pack(1)
-#define GCN_FST_Info_ADDRESS 0x420
-#define GCN_FST_Info_SIZE 16
-typedef struct PACKED _GCN_FST_Info {
+#define GCN_Boot_Block_ADDRESS 0x420
+#define GCN_Boot_Block_SIZE 32
+typedef struct PACKED _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
-	uint32_t fst_size;
-	uint32_t fst_max_size;
-} GCN_FST_Info;
+	uint32_t fst_size;	// FST size.
+	uint32_t fst_max_size;	// Size of biggest additional FST.
+
+	uint32_t fst_mem_addr;	// FST address in RAM.
+	uint32_t user_pos;	// Data area start. (Might be wrong; use FST.)
+	uint32_t user_len;	// Data area length. (Might be wrong; use FST.)
+	uint32_t reserved;
+} GCN_Boot_Block;
+#pragma pack()
+
+/**
+ * DVD Boot Info. (bi2.bin)
+ * Reference: http://www.gc-forever.com/wiki/index.php?title=Apploader
+ *
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+#define GCN_Boot_Info_ADDRESS 0x440
+#define GCN_Boot_Info_SIZE 48
+typedef struct PACKED _GCN_Boot_Info {
+	uint32_t debug_mon_size;	// Debug monitor size. [FIXME: Listed as signed?]
+	uint32_t sim_mem_size;		// Simulated memory size. (bytes) [FIXME: Listed as signed?]
+	uint32_t arg_offset;		// Command line arguments.
+	uint32_t debug_flag;		// Debug flag. (set to 3 if using CodeWarrior on GDEV)
+	uint32_t trk_location;		// Target resident kernel location.
+	uint32_t trk_size;		// Size of TRK. [FIXME: Listed as signed?]
+	uint32_t country_code;		// Country code.
+	uint32_t reserved1[3];
+	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)
+	uint32_t reserved2;
+} GCN_Boot_Info;
 #pragma pack()
 
 /**
