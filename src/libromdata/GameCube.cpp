@@ -874,11 +874,21 @@ int GameCube::loadFieldData(void)
 		for (int i = 0; i < 16; i++) {
 			// "Ratings" value is an age.
 			// TODO: Decode to e.g. ESRB and CERO identifiers.
-			// NOTE: If >= 0x80, the game isn't rated for that region.
 			// TODO: Handle PEGI before USK?
+
+			// NOTE: This field also contains some flags:
+			// - 0x80: Rating is unused.
+			// - 0x20: Has online play. (TODO: Check PAL and JPN)
 			if (d->regionSetting.ratings[i] < 0x80) {
 				oss << rating_organizations[i] << "="
-				    << (int)d->regionSetting.ratings[i] << ", ";
+				    << (int)(d->regionSetting.ratings[i] & 0x1F);
+				if (d->regionSetting.ratings[i] & 0x20) {
+					// Indicate online play.
+					// TODO: Explain this flag.
+					// NOTE: Unicode U+00B0, encoded as UTF-8.
+					oss << "\xC2\xB0";
+				}
+				oss << ", ";
 			}
 		}
 
