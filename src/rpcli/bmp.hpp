@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_RPCLI_BMP_HPP__
 
 #include <ostream>
-#include <libromdata/rp_image.hpp>
+#include <libromdata/img/rp_image.hpp>
 
 int rpbmp(std::ostream& os, const LibRomData::rp_image* img);
 

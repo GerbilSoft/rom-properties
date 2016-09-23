@@ -24,11 +24,11 @@
 #include <cstdlib>
 #include <cassert>
 
-#include <libromdata/RpFile.hpp>
+#include <libromdata/file/RpFile.hpp>
 #include <libromdata/RomData.hpp>
 #include <libromdata/RomDataFactory.hpp>
 #include <libromdata/TextFuncs.hpp>
-#include <libromdata/rp_image.hpp>
+#include <libromdata/img/rp_image.hpp>
 #include "bmp.hpp"
 #include "properties.hpp"
 using std::cout;
@@ -43,7 +43,7 @@ void DoFile(const char*filename, int extract, const char* outnames[]){
 		RomData *romData = RomDataFactory::getInstance(file);
 		if (romData) {
 			if(romData->isValid()){
-				cout << "-- " << romData->systemName() << " rom detected" << endl;
+				cout << "-- " << romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
 				cout << *(romData->fields()) << endl;
 				
 				int supported = romData->supportedImageTypes();
@@ -75,7 +75,7 @@ void DoFile(const char*filename, int extract, const char* outnames[]){
 					if(supported&(1<<i)){
 						auto &urls = *romData->extURLs(it);
 						for(auto s : urls)
-							cout << "-- " << RomData::getImageTypeName(it) << ": " << s << endl;
+							cout << "-- " << RomData::getImageTypeName(it) << ": " << s.url << " (cache_key: " << s.cache_key << ")" << endl;
 					}	
 				}
 			}else{

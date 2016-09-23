@@ -21,7 +21,7 @@
 
 #include "bmp.hpp"
 #include <ostream>
-#include <libromdata/rp_image.hpp>
+#include <libromdata/img/rp_image.hpp>
 #include <libromdata/byteswap.h>
 #include <libromdata/common.h>
 using std::ostream;
