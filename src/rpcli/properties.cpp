@@ -22,6 +22,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
+#include <cassert>
 #include <libromdata/RomData.hpp>
 #include <libromdata/RomFields.hpp>
 #include <libromdata/TextFuncs.hpp>
@@ -49,6 +50,24 @@ public:
 		return os << cp.str << left << setw(max(0,(signed)( cp.width - rp_strlen(cp.str) ))) << ":";
 	}
 };
+class SafeString {
+	const rp_char* str;
+	bool quotes;
+public:
+	SafeString(const rp_char* str, bool quotes=true) :str(str), quotes(quotes) {}
+	friend ostream& operator<<(ostream& os, const SafeString& cp) {
+		if (!cp.str) {
+			assert(0); // RomData should never return a null string
+			return os << "(null)";
+		}
+		if (cp.quotes) {
+			return os << "'" << cp.str << "'";
+		}
+		else {
+			return os << cp.str;
+		}
+	}
+};
 class StringField{
 	size_t width;
 	const RomFields::Desc* desc;
@@ -58,7 +77,7 @@ public:
 	friend ostream& operator<<(ostream& os,const StringField& field){
 		auto desc = field.desc;
 		auto data = field.data;
-		return os << ColonPad(field.width,desc->name) << "'" << data->str << "'";
+		return os << ColonPad(field.width,desc->name) << SafeString(data->str,true);
 	}
 };
 
@@ -144,6 +163,11 @@ ostream& operator<<(ostream& os,const RomFields& fields){
 		auto data = fields.data(i);
 		if(i) os << endl;
 		switch(desc->type){
+			case RomFields::RFT_INVALID: {
+				assert(0); // INVALID feild type
+				os << ColonPad(maxWidth, desc->name) << "INVALID";
+				break;
+			}
 			case RomFields::RFT_STRING:{
 				os << StringField(maxWidth,desc,data);
 				break;
@@ -157,6 +181,7 @@ ostream& operator<<(ostream& os,const RomFields& fields){
 				break;
 			}
 			default:{
+				assert(0); // Unknown RomFieldType
 				os << ColonPad(maxWidth,desc->name) << "NYI";
 			}
 		}
