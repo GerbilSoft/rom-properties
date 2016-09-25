@@ -65,37 +65,11 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 		return -EIO;
 	}
 
-	// Print the tree lines for the directory name.
+	// NOTE: The directory name is printed by the caller,
+	// except for the root directory.
 	if (level == 0) {
 		// Root directory.
 		os << path << endl;
-	} else {
-		for (int i = level-1; i > 0; i--) {
-			// Print the tree lines.
-			os << "\xE2\x94\x9C   ";
-		}
-
-		// Final tree line for the directory entry.
-		if (tree_lines[level-1]) {
-			// More files are present in the previous directory.
-			os << "\xE2\x94\x9C";
-		} else {
-			// No more files are present in the previous directory.
-			os << "\xE2\x94\x94";
-		}
-		os << "\xE2\x94\x80\xE2\x94\x80 ";
-
-		// Find the last slash.
-		size_t slash_pos = path.find_last_of(_RP_CHR('/'));
-		if ((slash_pos == 0 && path.size() > 1) && slash_pos != rp_string::npos) {
-			// Found the last slash.
-			os << path.substr(slash_pos + 1);
-		} else {
-			// Root directory.
-			os << path;
-		}
-
-		os << endl;
 	}
 
 	// Read the directory entries.
@@ -121,16 +95,30 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			// Subdirectory.
 			stats.dirs++;
 
+			rp_string name = dirent->name;
 			rp_string subdir = path;
 			if (path.empty() || (path[path.size()-1] != _RP_CHR('/'))) {
 				// Append a trailing slash.
 				subdir += _RP_CHR('/');
 			}
-			subdir += dirent->name;
+			subdir += name;
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);
 			tree_lines.push_back(dirent ? 1 : 0);
+
+			// Tree line for the directory entry.
+			if (dirent) {
+				// More files are present in the current directory.
+				os << "\xE2\x94\x9C";
+			} else {
+				// No more files are present in the current directory.
+				os << "\xE2\x94\x94";
+			}
+			os << "\xE2\x94\x80\xE2\x94\x80 ";
+
+			// Print the subdirectory name.
+			os << name << endl;
 
 			// Print the subdirectory.
 			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, stats);
