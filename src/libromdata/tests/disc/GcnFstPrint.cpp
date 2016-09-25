@@ -24,7 +24,6 @@
 using LibRomData::GcnFst;
 
 // C includes. (C++ namespace)
-#include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
