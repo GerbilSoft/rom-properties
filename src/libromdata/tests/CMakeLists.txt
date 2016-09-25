@@ -55,3 +55,13 @@ SET_WINDOWS_SUBSYSTEM(AesCipherTest CONSOLE)
 ADD_TEST(NAME AesCipherTest
 	COMMAND AesCipherTest
 	)
+
+# GcnFstPrint. (Not a test, but a useful program.)
+ADD_EXECUTABLE(GcnFstPrint
+	disc/FstPrint.cpp
+	disc/FstPrint.hpp
+	disc/GcnFstPrint.cpp
+	)
+TARGET_LINK_LIBRARIES(GcnFstPrint romdata8)
+DO_SPLIT_DEBUG(GcnFstPrint)
+SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
