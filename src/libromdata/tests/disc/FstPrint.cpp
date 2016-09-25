@@ -70,7 +70,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 		// Root directory.
 		os << path << endl;
 	} else {
-		for (int i = level-1; i > 0; i++) {
+		for (int i = level-1; i > 0; i--) {
 			// Print the tree lines.
 			os << "\xE2\x94\x9C   ";
 		}
