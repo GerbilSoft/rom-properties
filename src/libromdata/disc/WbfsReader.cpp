@@ -458,7 +458,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return 0;
 	}
@@ -576,7 +576,7 @@ int WbfsReader::seek(int64_t pos)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return -1;
 	}
@@ -600,7 +600,7 @@ void WbfsReader::rewind(void)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return;
 	}
@@ -617,7 +617,7 @@ int64_t WbfsReader::size(void) const
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return -1;
 	}

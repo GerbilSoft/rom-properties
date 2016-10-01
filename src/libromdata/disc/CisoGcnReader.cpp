@@ -269,6 +269,10 @@ void CisoGcnReader::clearError(void)
 size_t CisoGcnReader::read(void *ptr, size_t size)
 {
 	assert(d->file != nullptr);
+	if (!d->file) {
+		d->lastError = EBADF;
+		return -1;
+	}
 
 	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
 	size_t ret = 0;
