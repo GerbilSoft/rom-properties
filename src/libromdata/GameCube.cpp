@@ -616,6 +616,15 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 				case 'C':	// China (unofficial?)
 					ret.push_back("ZHCN");
 					break;
+
+				// Wrong region, but handle it anyway.
+				case 'E':	// USA
+					ret.push_back("US");
+					break;
+				case 'P':	// Europe (PAL)
+				default:	// All others
+					ret.push_back("EN");
+					break;
 			}
 			ret.push_back("JA");
 			break;
@@ -654,6 +663,14 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 				case 'U':	// Australia
 					ret.push_back("AU");
 					break;
+
+				// Wrong region, but handle it anyway.
+				case 'E':	// USA
+					ret.push_back("US");
+					break;
+				case 'J':	// Japan
+					ret.push_back("JA");
+					break;
 			}
 			ret.push_back("EN");
 			break;
@@ -666,6 +683,19 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 			// - N: Japanese import to USA and other NTSC regions.
 			// - Z: Prince of Persia - The Forgotten Sands (Wii)
 			// - B: Ufouria: The Saga (Virtual Console)
+			switch (idRegion) {
+				case 'E':
+				default:
+					break;
+
+				// Wrong region, but handle it anyway.
+				case 'P':	// Europe (PAL)
+					ret.push_back("EN");
+					break;
+				case 'J':	// Japan
+					ret.push_back("JA");
+					break;
+			}
 			ret.push_back("US");
 			break;
 
