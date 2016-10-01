@@ -77,6 +77,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 	: file(nullptr)
 	, lastError(0)
 	, disc_size(0)
+	, pos(-1)
 	, block_size(0)
 {
 	if (!file) {
@@ -157,6 +158,9 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 
 	// Calculate the disc size based on the highest logical block index.
 	disc_size = (int64_t)(maxLogicalBlockUsed+1) * (int64_t)block_size;
+
+	// Reset the disc position.
+	pos = 0;
 }
 
 CisoGcnReaderPrivate::~CisoGcnReaderPrivate()
