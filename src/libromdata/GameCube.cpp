@@ -95,6 +95,9 @@ class GameCubePrivate
 		GCN_DiscHeader discHeader;
 		RVL_RegionSetting regionSetting;
 
+		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
+		uint32_t gcnRegion;
+
 		enum WiiPartitionType {
 			PARTITION_GAME = 0,
 			PARTITION_UPDATE = 1,
@@ -155,6 +158,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 	: q(q)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
+	, gcnRegion(~0)
 	, wiiVgTblLoaded(false)
 	, updatePartition(nullptr)
 {
@@ -485,15 +489,17 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
 	switch (gcnRegion) {
 		case GCN_REGION_JAPAN:
 			switch (idRegion) {
-				case 'W':
-					return _RP("Taiwan (JPN)");
-				case 'K':
-				case 'T':	// South Korean with Japanese language
-				case 'Q':	// South Korean with English language
-					// FIXME: Is this combination possible?
-					return _RP("South Korea (JPN)");
+				case 'J':	// Japan
 				default:
 					return _RP("Japan");
+
+				case 'W':	// Taiwan
+					return _RP("Taiwan (JPN)");
+				case 'K':	// South Korea
+				case 'T':	// South Korea with Japanese language
+				case 'Q':	// South Korea with English language
+					// FIXME: Is this combination possible?
+					return _RP("South Korea (JPN)");
 			}
 
 		case GCN_REGION_PAL:
@@ -506,19 +512,19 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
 				default:
 					return _RP("Europe / Australia (PAL)");
 
-				case 'D':
+				case 'D':	// Germany
 					return _RP("Germany (PAL)");
-				case 'F':
+				case 'F':	// France
 					return _RP("France (PAL)");
-				case 'H':	// TODO: Find in GameTDB.
+				case 'H':	// Netherlands
 					return _RP("Netherlands (PAL)");
-				case 'I':
+				case 'I':	// Italy
 					return _RP("Italy (PAL)");
-				case 'R':
+				case 'R':	// Russia
 					return _RP("Russia (PAL)");
-				case 'S':
+				case 'S':	// Spain
 					return _RP("Spain (PAL)");
-				case 'U':	// TODO: Find in GameTDB.
+				case 'U':	// Australia
 					return _RP("Australia (PAL)");
 			}
 
@@ -642,6 +648,49 @@ GameCube::GameCube(IRpFile *file)
 				m_isValid = false;
 				return;
 			}
+		}
+
+		// Get the GCN region code. (bi2.bin or RVL_RegionSetting)
+		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+			case GameCubePrivate::DISC_SYSTEM_GCN:
+			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:	// TODO?
+				GCN_Boot_Info bootInfo;	// TODO: Save in GameCubePrivate?
+				d->discReader->seek(GCN_Boot_Info_ADDRESS);
+				size = d->discReader->read(&bootInfo, sizeof(bootInfo));
+				if (size != sizeof(bootInfo)) {
+					// Cannot read bi2.bin.
+					delete d->discReader;
+					d->discReader = nullptr;
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					m_isValid = false;
+					return;
+				}
+
+				d->gcnRegion = be32_to_cpu(bootInfo.region_code);
+				break;
+
+			case GameCubePrivate::DISC_SYSTEM_WII:
+				d->discReader->seek(RVL_RegionSetting_ADDRESS);
+				size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
+				if (size != sizeof(d->regionSetting)) {
+					// Cannot read RVL_RegionSetting.
+					delete d->discReader;
+					d->discReader = nullptr;
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					m_isValid = false;
+					return;
+				}
+
+				d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
+				break;
+
+			default:
+				// Unknown system.
+				delete d->discReader;
+				d->discReader = nullptr;
+				d->discType = GameCubePrivate::DISC_UNKNOWN;
+				m_isValid = false;
+				return;
 		}
 	}
 }
@@ -874,32 +923,25 @@ int GameCube::loadFieldData(void)
 	m_fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
 	m_fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
+	// Region code.
+	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
+	// and the region code is stored in d->gcnRegion.
+	const rp_char *region = d->gcnRegionToString(d->gcnRegion, d->discHeader.id4[3]);
+	if (region) {
+		m_fields->addData_string(region);
+	} else {
+		// Invalid region code.
+		char buf[32];
+		int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", d->gcnRegion);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	}
+
 	// The remaining fields are Wii only.
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
-		// GameCube region code from bi2.bin.
-		GCN_Boot_Info bootInfo;	// TODO: Store in private class?
-		d->discReader->seek(GCN_Boot_Info_ADDRESS);
-		size_t size = d->discReader->read(&bootInfo, sizeof(bootInfo));
-		if (size == sizeof(bootInfo)) {
-			const uint32_t gcnRegion = be32_to_cpu(bootInfo.region_code);
-			const rp_char *region = d->gcnRegionToString(gcnRegion, d->discHeader.id4[3]);
-			if (region) {
-				m_fields->addData_string(region);
-			} else {
-				// Invalid region code.
-				char buf[32];
-				int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", gcnRegion);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
-				m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-			}
-		} else {
-			// Unable to load bi2.bin.
-			m_fields->addData_string(_RP("Unknown (read error)"));
-		}
-
 		// Add dummy entries for Wii-specific fields.
 		m_fields->addData_invalid();	// Age rating(s).
 		m_fields->addData_invalid();	// System Update
@@ -911,70 +953,48 @@ int GameCube::loadFieldData(void)
 	
 	/** Wii-specific fields. **/
 
-	// Get the region code and age rating(s).
-	d->discReader->seek(RVL_RegionSetting_ADDRESS);
-	size_t size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
-	if (size == sizeof(d->regionSetting)) {
-		const uint32_t gcnRegion = be32_to_cpu(d->regionSetting.region_code);
-		const rp_char *region = d->gcnRegionToString(gcnRegion, d->discHeader.id4[3]);
-		if (region) {
-			m_fields->addData_string(region);
-		} else {
-			// Invalid region code.
-			char buf[32];
-			int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", gcnRegion);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-		}
+	// Get age rating(s).
+	// RVL_RegionSetting is loaded in the constructor.
+	// TODO: Optimize this?
+	ostringstream oss;
+	static const char rating_organizations[16][8] = {
+		"CERO", "ESRB", "", "USK",
+		"PEGI", "MEKU", "PEGI-PT", "BBFC",
+		"ACB", "GRB", "", "",
+		"", "", "", ""
+	};
 
-		// Age rating(s).
-		// TODO: Optimize this?
-		ostringstream oss;
-		static const char rating_organizations[16][8] = {
-			"CERO", "ESRB", "", "USK",
-			"PEGI", "MEKU", "PEGI-PT", "BBFC",
-			"ACB", "GRB", "", "",
-			"", "", "", ""
-		};
+	for (int i = 0; i < 16; i++) {
+		// "Ratings" value is an age.
+		// TODO: Decode to e.g. ESRB and CERO identifiers.
+		// TODO: Handle PEGI before USK?
 
-		for (int i = 0; i < 16; i++) {
-			// "Ratings" value is an age.
-			// TODO: Decode to e.g. ESRB and CERO identifiers.
-			// TODO: Handle PEGI before USK?
-
-			// NOTE: This field also contains some flags:
-			// - 0x80: Rating is unused.
-			// - 0x20: Has online play. (TODO: Check PAL and JPN)
-			if (d->regionSetting.ratings[i] < 0x80) {
-				oss << rating_organizations[i] << "="
-				    << (int)(d->regionSetting.ratings[i] & 0x1F);
-				if (d->regionSetting.ratings[i] & 0x20) {
-					// Indicate online play.
-					// TODO: Explain this flag.
-					// NOTE: Unicode U+00B0, encoded as UTF-8.
-					oss << "\xC2\xB0";
-				}
-				oss << ", ";
+		// NOTE: This field also contains some flags:
+		// - 0x80: Rating is unused.
+		// - 0x20: Has online play. (TODO: Check PAL and JPN)
+		if (d->regionSetting.ratings[i] < 0x80) {
+			oss << rating_organizations[i] << "="
+			    << (int)(d->regionSetting.ratings[i] & 0x1F);
+			if (d->regionSetting.ratings[i] & 0x20) {
+				// Indicate online play.
+				// TODO: Explain this flag.
+				// NOTE: Unicode U+00B0, encoded as UTF-8.
+				oss << "\xC2\xB0";
 			}
+			oss << ", ";
 		}
+	}
 
-		string str = oss.str();
-		if (str.size() > 2) {
-			// Remove the trailing ", ".
-			str.resize(str.size() - 2);
-		}
+	string str = oss.str();
+	if (str.size() > 2) {
+		// Remove the trailing ", ".
+		str.resize(str.size() - 2);
+	}
 
-		if (!str.empty()) {
-			m_fields->addData_string(utf8_to_rp_string(str.data(), str.size()));
-		} else {
-			m_fields->addData_string(_RP("Unknown"));
-		}
+	if (!str.empty()) {
+		m_fields->addData_string(utf8_to_rp_string(str.data(), str.size()));
 	} else {
-		// Unable to read the region settings.
-		// TODO: Show an error message?
-		m_fields->addData_invalid();	// Region code.
-		m_fields->addData_invalid();	// Age rating(s).
+		m_fields->addData_string(_RP("Unknown"));
 	}
 
 	// Load the Wii partition tables.
