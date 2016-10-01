@@ -84,7 +84,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 {
 	protected:
-		AesCipherTest() { }
+		AesCipherTest()
+			: m_cipher(nullptr) { }
 
 		virtual void SetUp(void) override;
 		virtual void TearDown(void) override;
