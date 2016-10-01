@@ -150,6 +150,19 @@ class GameCubePrivate
 		 * @return String, or nullptr if the region value is invalid.
 		 */
 		static const rp_char *gcnRegionToString(unsigned int gcnRegion, char idRegion);
+
+		/**
+		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
+		 * @param gcnRegion GCN region value.
+		 * @param idRegion Game ID region.
+		 *
+		 * NOTE: Mulitple GameTDB region codes may be returned including:
+		 * - User-specified fallback region. [TODO]
+		 * - General fallback region.
+		 *
+		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 */
+		vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
 };
 
 /** GameCubePrivate **/
@@ -500,6 +513,8 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
 				case 'Q':	// South Korea with English language
 					// FIXME: Is this combination possible?
 					return _RP("South Korea (JPN)");
+				case 'C':	// China (unofficial?)
+					return _RP("China (JPN)");
 			}
 
 		case GCN_REGION_PAL:
@@ -550,6 +565,123 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
 	}
 
 	return nullptr;
+}
+
+/**
+ * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a GameTDB region code.
+ * @param gcnRegion GCN region value.
+ * @param idRegion Game ID region.
+ *
+ * NOTE: Mulitple GameTDB region codes may be returned including:
+ * - User-specified fallback region. [TODO]
+ * - General fallback region.
+ *
+ * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ */
+vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion)
+{
+	/**
+	 * There are two region codes for GCN/Wii games:
+	 * - BI2.bin (GCN) or Age Rating (Wii)
+	 * - Game ID
+	 *
+	 * The BI2.bin code is what's actually enforced.
+	 * The Game ID may provide additional information.
+	 *
+	 * For games where the BI2.bin code matches the
+	 * game ID region, only the BI2.bin region will
+	 * be displayed. For others, if the game ID region
+	 * is known, it will be printed as text, and the
+	 * BI2.bin region will be abbreviated.
+	 *
+	 * Game ID reference:
+	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
+	 */
+	vector<const char*> ret;
+
+	switch (gcnRegion) {
+		case GCN_REGION_JAPAN:
+			switch (idRegion) {
+				case 'J':
+					break;
+
+				case 'W':	// Taiwan
+					ret.push_back("ZHTW");
+					break;
+				case 'K':
+				case 'T':	// South Korea with Japanese language
+				case 'Q':	// South Korea with English language
+					ret.push_back("KO");
+					break;
+				case 'C':	// China (unofficial?)
+					ret.push_back("ZHCN");
+					break;
+			}
+			ret.push_back("JA");
+			break;
+
+		case GCN_REGION_PAL:
+			switch (idRegion) {
+				case 'P':	// PAL
+				case 'X':	// Multi-language release
+				case 'Y':	// Multi-language release
+				case 'L':	// Japanese import to PAL regions
+				case 'M':	// Japanese import to PAL regions
+				default:
+					break;
+
+				// NOTE: No GameID code for PT.
+				// TODO: Implement user-specified fallbacks.
+
+				case 'D':	// Germany
+					ret.push_back("DE");
+					break;
+				case 'F':	// France
+					ret.push_back("FR");
+					break;
+				case 'H':	// Netherlands
+					ret.push_back("NL");
+					break;
+				case 'I':	// Italy
+					ret.push_back("NL");
+					break;
+				case 'R':	// Russia
+					ret.push_back("RU");
+					break;
+				case 'S':	// Spain
+					ret.push_back("ES");
+					break;
+				case 'U':	// Australia
+					ret.push_back("AU");
+					break;
+			}
+			ret.push_back("EN");
+			break;
+
+		// USA and South Korea regions don't have separate
+		// subregions for other countries.
+		case GCN_REGION_USA:
+			// Possible game ID regions:
+			// - E: USA
+			// - N: Japanese import to USA and other NTSC regions.
+			// - Z: Prince of Persia - The Forgotten Sands (Wii)
+			// - B: Ufouria: The Saga (Virtual Console)
+			ret.push_back("US");
+			break;
+
+		case GCN_REGION_SOUTH_KOREA:
+			// Possible game ID regions:
+			// - K: South Korea
+			// - Q: South Korea with Japanese language
+			// - T: South Korea with English language
+			ret.push_back("KO");
+			break;
+
+		default:
+			break;
+	}
+
+	return ret;
 }
 
 /** GameCube **/
@@ -1225,71 +1357,8 @@ int GameCube::loadURLs(ImageType imageType)
 			return -ENOENT;
 	}
 
-	// If PAL, fall back to EN if a language-specific
-	// image isn't available.
-	bool isPal = false;
-
-	// Determine the GameTDB region code.
-	// TODO: Use the BI2.bin code as well.
-	const char *region;
-	switch (d->discHeader.id4[3]) {
-		// PAL regions. (Europe)
-		case 'P':
-		default:
-			// TODO: Region selection for PAL?
-			// Assuming "EN" for now.
-			region = "EN";
-			isPal = false;	// No fallback needed.
-			break;
-		case 'R':	// Russia
-			region = "RU";
-			isPal = true;
-			break;
-		case 'I':	// Italy
-			region = "IT";
-			isPal = true;
-			break;
-		case 'F':	// France
-			region = "FR";
-			isPal = true;
-			break;
-		case 'S':	// Spain
-			region = "ES";
-			isPal = true;
-			break;
-		case 'D':	// Germany
-			region = "DE";
-			isPal = true;
-			break;
-
-		// NTSC regions.
-		case 'E':	// USA
-			region = "US";
-			break;
-		case 'J':	// Japan
-			region = "JA";
-			break;
-		case 'K':	// South Korea
-			region = "KO";
-			break;
-
-		// Ambiguous...
-		case 'W':
-			// FIXME: This is used for Taiwan as well as
-			// various "alternate" language packs in
-			// PAL regions.
-			region = "ZH";
-			isPal = true;
-			break;
-		case 'X':
-		case 'Y':
-		case 'Z':
-			// FIXME: This is used for "alternate" language packs
-			// in PAL regions, plus some "special" versions.
-			region = "EN";
-			isPal = false;	// TODO: Fallback to US?
-			break;
-	}
+	// Determine the GameTDB region code(s).
+	vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -1326,27 +1395,22 @@ int GameCube::loadURLs(ImageType imageType)
 		char s_discNum[16];
 		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
-			extURL.url = getURL_GameTDB("wii", s_discNum, region, id6);
-			extURL.cache_key = getCacheKey("wii", s_discNum, region, id6);
-			extURLs.push_back(extURL);
-
-			if (isPal) {
-				// Fall back to "EN" if the region-specific image wasn't found.
-				extURL.url = getURL_GameTDB("wii", s_discNum, "EN", id6);
-				extURL.cache_key = getCacheKey("wii", s_discNum, "EN", id6);
+			for (vector<const char*>::const_iterator iter = tdb_regions.begin();
+			     iter != tdb_regions.end(); ++iter)
+			{
+				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
+				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
 				extURLs.push_back(extURL);
 			}
 		}
 	}
 
 	// First disc, or not a disc scan.
-	extURL.url = getURL_GameTDB("wii", imageTypeName, region, id6);
-	extURL.cache_key = getCacheKey("wii", imageTypeName, region, id6);
-	extURLs.push_back(extURL);
-	if (isPal) {
-		// Fall back to "EN" if the region-specific image wasn't found.
-		extURL.url = getURL_GameTDB("wii", imageTypeName, "EN", id6);
-		extURL.cache_key = getCacheKey("wii", imageTypeName, "EN", id6);
+	for (vector<const char*>::const_iterator iter = tdb_regions.begin();
+	     iter != tdb_regions.end(); ++iter)
+	{
+		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
+		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
 		extURLs.push_back(extURL);
 	}
 
