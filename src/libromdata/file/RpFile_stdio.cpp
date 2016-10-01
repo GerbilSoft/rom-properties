@@ -32,6 +32,10 @@ using std::u16string;
 typedef wchar_t mode_str_t;
 #define _MODE(str) (L ##str)
 #include "RpWin32.hpp"
+
+// Needed for using "\\?\" to bypass MAX_PATH.
+using std::wstring;
+#include <cctype>
 #else
 // Other: fopen() requires an 8-bit mode string.
 typedef char mode_str_t;
@@ -118,7 +122,23 @@ void RpFile::init(const rp_char *filename)
 
 #if defined(_WIN32)
 	// Windows: Use RP2W() to convert the filename to wchar_t.
-	m_file.reset(_wfopen(RP2W_s(filename), mode_str), myFile_deleter());
+
+	// If this is an absolute path, make sure it starts with
+	// "\\?\" in order to support filenames longer than MAX_PATH.
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+
+	m_file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames.
 #if defined(RP_UTF8)
