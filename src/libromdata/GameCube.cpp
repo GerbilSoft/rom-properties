@@ -143,9 +143,10 @@ class GameCubePrivate
 		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
 		 * @param gcnRegion GCN region value.
+		 * @param idRegion Game ID region.
 		 * @return String, or nullptr if the region value is invalid.
 		 */
-		static const rp_char *gcnRegionToString(unsigned int gcnRegion);
+		static const rp_char *gcnRegionToString(unsigned int gcnRegion, char idRegion);
 };
 
 /** GameCubePrivate **/
@@ -459,19 +460,85 @@ const rp_char *GameCubePrivate::parseWiiSystemMenuVersion(unsigned int version)
 /**
  * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
  * @param gcnRegion GCN region value.
+ * @param idRegion Game ID region.
  * @return String, or nullptr if the region value is invalid.
  */
-const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion)
+const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char idRegion)
 {
+	/**
+	 * There are two region codes for GCN/Wii games:
+	 * - BI2.bin (GCN) or Age Rating (Wii)
+	 * - Game ID
+	 *
+	 * The BI2.bin code is what's actually enforced.
+	 * The Game ID may provide additional information.
+	 *
+	 * For games where the BI2.bin code matches the
+	 * game ID region, only the BI2.bin region will
+	 * be displayed. For others, if the game ID region
+	 * is known, it will be printed as text, and the
+	 * BI2.bin region will be abbreviated.
+	 *
+	 * Game ID reference:
+	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
+	 */
 	switch (gcnRegion) {
 		case GCN_REGION_JAPAN:
-			return _RP("Japan / Taiwan");
-		case GCN_REGION_USA:
-			return _RP("USA");
+			switch (idRegion) {
+				case 'W':
+					return _RP("Taiwan (JPN)");
+				case 'K':
+				case 'T':	// South Korean with Japanese language
+				case 'Q':	// South Korean with English language
+					// FIXME: Is this combination possible?
+					return _RP("South Korea (JPN)");
+				default:
+					return _RP("Japan");
+			}
+
 		case GCN_REGION_PAL:
-			return _RP("Europe / Australia");
+			switch (idRegion) {
+				case 'P':	// PAL
+				case 'X':	// Multi-language release
+				case 'Y':	// Multi-language release
+				case 'L':	// Japanese import to PAL regions
+				case 'M':	// Japanese import to PAL regions
+				default:
+					return _RP("Europe / Australia (PAL)");
+
+				case 'D':
+					return _RP("Germany (PAL)");
+				case 'F':
+					return _RP("France (PAL)");
+				case 'H':	// TODO: Find in GameTDB.
+					return _RP("Netherlands (PAL)");
+				case 'I':
+					return _RP("Italy (PAL)");
+				case 'R':
+					return _RP("Russia (PAL)");
+				case 'S':
+					return _RP("Spain (PAL)");
+				case 'U':	// TODO: Find in GameTDB.
+					return _RP("Australia (PAL)");
+			}
+
+		// USA and South Korea regions don't have separate
+		// subregions for other countries.
+		case GCN_REGION_USA:
+			// Possible game ID regions:
+			// - E: USA
+			// - N: Japanese import to USA and other NTSC regions.
+			// - Z: Prince of Persia - The Forgotten Sands (Wii)
+			// - B: Ufouria: The Saga (Virtual Console)
+			return _RP("USA");
+
 		case GCN_REGION_SOUTH_KOREA:
+			// Possible game ID regions:
+			// - K: South Korea
+			// - Q: South Korea with Japanese language
+			// - T: South Korea with English language
 			return _RP("South Korea");
+
 		default:
 			break;
 	}
@@ -817,7 +884,7 @@ int GameCube::loadFieldData(void)
 		size_t size = d->discReader->read(&bootInfo, sizeof(bootInfo));
 		if (size == sizeof(bootInfo)) {
 			const uint32_t gcnRegion = be32_to_cpu(bootInfo.region_code);
-			const rp_char *region = d->gcnRegionToString(gcnRegion);
+			const rp_char *region = d->gcnRegionToString(gcnRegion, d->discHeader.id4[3]);
 			if (region) {
 				m_fields->addData_string(region);
 			} else {
@@ -849,7 +916,7 @@ int GameCube::loadFieldData(void)
 	size_t size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
 	if (size == sizeof(d->regionSetting)) {
 		const uint32_t gcnRegion = be32_to_cpu(d->regionSetting.region_code);
-		const rp_char *region = d->gcnRegionToString(gcnRegion);
+		const rp_char *region = d->gcnRegionToString(gcnRegion, d->discHeader.id4[3]);
 		if (region) {
 			m_fields->addData_string(region);
 		} else {
@@ -1143,6 +1210,7 @@ int GameCube::loadURLs(ImageType imageType)
 	bool isPal = false;
 
 	// Determine the GameTDB region code.
+	// TODO: Use the BI2.bin code as well.
 	const char *region;
 	switch (d->discHeader.id4[3]) {
 		// PAL regions. (Europe)
