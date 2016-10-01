@@ -458,7 +458,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->file || !d->m_wbfs || d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return 0;
 	}
