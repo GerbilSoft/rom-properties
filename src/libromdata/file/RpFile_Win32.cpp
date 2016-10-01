@@ -23,9 +23,13 @@
 #include "TextFuncs.hpp"
 #include "RpWin32.hpp"
 
+// C includes. (C++ namespace)
+#include <cctype>
+
 // C++ includes.
 #include <string>
 using std::string;
+using std::wstring;
 
 // Define this symbol to get XP themes. See:
 // http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
@@ -117,8 +121,23 @@ void RpFile::init(const rp_char *filename)
 		return;
 	}
 
+	// If this is an absolute path, make sure it starts with
+	// "\\?\" in order to support filenames longer than MAX_PATH.
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+
 	// Open the file.
-	m_file.reset(CreateFile(RP2W_c(filename),
+	m_file.reset(CreateFile(filenameW.c_str(),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr), myFile_deleter());
