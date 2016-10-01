@@ -108,7 +108,7 @@ static_assert(sizeof(BITMAPINFOHEADER) == 40, "invalid struct size: BITMAPINFOHE
 #pragma pack()
 int rpbmp(std::ostream& os, const rp_image* img){
 	if(!img || !img->isValid()) return -1;
-	if (img->format() != rp_image::FORMAT_ARGB32 && img->format() != rp_image::FORMAT_ARGB32) {
+	if (img->format() != rp_image::FORMAT_ARGB32 && img->format() != rp_image::FORMAT_CI8) {
 		// Unsupported image format
 		assert(img->format() == rp_image::FORMAT_NONE); // Should be none unless new format is added
 		return -1;
