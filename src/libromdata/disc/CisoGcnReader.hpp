@@ -36,7 +36,7 @@ class CisoGcnReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		CisoGcnReader(IRpFile *file);
+		explicit CisoGcnReader(IRpFile *file);
 		virtual ~CisoGcnReader();
 
 	private:

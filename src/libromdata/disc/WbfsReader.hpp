@@ -36,7 +36,7 @@ class WbfsReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		WbfsReader(IRpFile *file);
+		explicit WbfsReader(IRpFile *file);
 		virtual ~WbfsReader();
 
 	private:

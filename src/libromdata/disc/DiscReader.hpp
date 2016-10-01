@@ -37,7 +37,7 @@ class DiscReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		DiscReader(IRpFile *file);
+		explicit DiscReader(IRpFile *file);
 		virtual ~DiscReader();
 
 	private:

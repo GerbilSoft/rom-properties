@@ -37,7 +37,7 @@ namespace LibRomData {
 
 class WbfsReaderPrivate {
 	public:
-		WbfsReaderPrivate(IRpFile *file);
+		explicit WbfsReaderPrivate(IRpFile *file);
 		~WbfsReaderPrivate();
 
 	private:

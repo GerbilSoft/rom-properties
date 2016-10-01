@@ -41,7 +41,7 @@ namespace LibRomData {
 
 class CisoGcnReaderPrivate {
 	public:
-		CisoGcnReaderPrivate(IRpFile *file);
+		explicit CisoGcnReaderPrivate(IRpFile *file);
 		~CisoGcnReaderPrivate();
 
 	private:

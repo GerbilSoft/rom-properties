@@ -45,7 +45,7 @@ class GcnPartition : public IPartition
 		GcnPartition(IDiscReader *discReader, int64_t partition_offset);
 		virtual ~GcnPartition();
 	protected:
-		GcnPartition(GcnPartitionPrivate *d);
+		explicit GcnPartition(GcnPartitionPrivate *d);
 
 	private:
 		GcnPartition(const GcnPartition &other);
