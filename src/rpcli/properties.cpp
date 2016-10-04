@@ -152,39 +152,45 @@ public:
 		return os;
 	}
 };
-ostream& operator<<(ostream& os,const RomFields& fields){
-	size_t maxWidth=0;
-	for(int i=0;i<fields.count();i++){
-		maxWidth=max(maxWidth,rp_strlen(fields.desc(i)->name));
+FieldsOutput::FieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
+std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
+	size_t maxWidth = 0;
+	for (int i = 0; i<fo.fields.count(); i++) {
+		maxWidth = max(maxWidth, rp_strlen(fo.fields.desc(i)->name));
 	}
-	maxWidth+=2;
-	for(int i=0;i<fields.count();i++){
-		auto desc = fields.desc(i);
-		auto data = fields.data(i);
-		if(i) os << endl;
-		switch(desc->type){
-			case RomFields::RFT_INVALID: {
-				assert(0); // INVALID feild type
-				os << ColonPad(maxWidth, desc->name) << "INVALID";
-				break;
-			}
-			case RomFields::RFT_STRING:{
-				os << StringField(maxWidth,desc,data);
-				break;
-			}
-			case RomFields::RomFields::RFT_BITFIELD:{
-				os << BitfieldField(maxWidth,desc,data);
-				break;
-			}
-			case RomFields::RomFields::RFT_LISTDATA:{
-				os << ListDataField(maxWidth,desc,data);
-				break;
-			}
-			default:{
-				assert(0); // Unknown RomFieldType
-				os << ColonPad(maxWidth,desc->name) << "NYI";
-			}
+	maxWidth += 2;
+	for (int i = 0; i<fo.fields.count(); i++) {
+		auto desc = fo.fields.desc(i);
+		auto data = fo.fields.data(i);
+		if (i) os << endl;
+		switch (desc->type) {
+		case RomFields::RFT_INVALID: {
+			assert(0); // INVALID field type
+			os << ColonPad(maxWidth, desc->name) << "INVALID";
+			break;
+		}
+		case RomFields::RFT_STRING: {
+			os << StringField(maxWidth, desc, data);
+			break;
+		}
+		case RomFields::RomFields::RFT_BITFIELD: {
+			os << BitfieldField(maxWidth, desc, data);
+			break;
+		}
+		case RomFields::RomFields::RFT_LISTDATA: {
+			os << ListDataField(maxWidth, desc, data);
+			break;
+		}
+		default: {
+			assert(0); // Unknown RomFieldType
+			os << ColonPad(maxWidth, desc->name) << "NYI";
+		}
 		}
 	}
+	return os;
+}
+JSONFieldsOutput::JSONFieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
+std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
+	// TODO: not done yet
 	return os;
 }

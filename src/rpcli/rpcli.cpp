@@ -44,7 +44,7 @@ void DoFile(const char*filename, int extract, const char* outnames[]){
 		if (romData) {
 			if(romData->isValid()){
 				cout << "-- " << romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
-				cout << *(romData->fields()) << endl;
+				cout << FieldsOutput(*(romData->fields())) << endl;
 				
 				int supported = romData->supportedImageTypes();
 				union{
