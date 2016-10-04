@@ -36,7 +36,7 @@ using std::cerr;
 using std::endl;
 using std::ofstream;
 using namespace LibRomData;
-void DoFile(const char*filename, int extract, const char* outnames[]){
+void DoFile(const char*filename, int extract, const char* outnames[], bool json){
 	cout << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file && file->isOpen()) {
@@ -44,7 +44,12 @@ void DoFile(const char*filename, int extract, const char* outnames[]){
 		if (romData) {
 			if(romData->isValid()){
 				cout << "-- " << romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
-				cout << FieldsOutput(*(romData->fields())) << endl;
+				if (json) {
+					cout << JSONFieldsOutput(*(romData->fields())) << endl;
+				}
+				else {
+					cout << FieldsOutput(*(romData->fields())) << endl;
+				}
 				
 				int supported = romData->supportedImageTypes();
 				union{
@@ -96,11 +101,13 @@ int main(int argc,char **argv){
 		cerr << "\t displays info about s3.gen" << endl;
 		cerr << "* rpcli -x0 icon.bmp ~/pokeb2.nds" << endl;
 		cerr << "\t extracts icon from ~/pokeb2.nds" << endl;
+		DoFile("pokeblue.gb", 0, nullptr, true);
 	}
 	
 	assert(RomData::IMG_INT_MIN == 0);
 	const char* outnames[RomData::IMG_INT_MAX+1] = {0};
-	int extract=0;
+	int extract = 0;
+	bool json = false;
 	for(int i=1;i<argc;i++){
 		if(argv[i][0] == '-'){
 			if(argv[i][1] == 'x'){
@@ -112,10 +119,13 @@ int main(int argc,char **argv){
 				outnames[num] = argv[++i];
 				extract |= 1<<num;
 			}
+			else if (argv[i][1] == 'j') {
+				json = true;
+			}
 			else cerr << "Warning: skipping unknown switch '" << argv[i][1] << "'" << endl;
 		}
 		else{
-			DoFile(argv[i], extract, outnames);
+			DoFile(argv[i], extract, outnames, json);
 			extract=0;
 		}
 	}

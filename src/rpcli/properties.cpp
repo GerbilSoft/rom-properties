@@ -162,6 +162,8 @@ std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 	for (int i = 0; i<fo.fields.count(); i++) {
 		auto desc = fo.fields.desc(i);
 		auto data = fo.fields.data(i);
+		assert(desc);
+		assert(data);
 		if (i) os << endl;
 		switch (desc->type) {
 		case RomFields::RFT_INVALID: {
@@ -189,8 +191,102 @@ std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 	}
 	return os;
 }
+
+class JSONString {
+	const rp_char* str;
+	static rp_string Replace(rp_string str, const rp_string &a, const rp_string &b) {
+		int pos = 0;
+		while ((pos = str.find(a, pos)) != rp_string::npos) {
+			str.replace(pos, a.length(), b);
+			pos += b.length();
+		}
+		return str;
+	}
+public:
+	JSONString(const rp_char* str) :str(str) {}
+	friend ostream& operator<<(ostream& os, const JSONString& js) {
+		assert(js.str);
+		if (!js.str) return os << "0"; // clever way to distinguish nullptr
+		return os << "\"" << Replace(Replace(rp_string(js.str), "\\", "\\\\"), "\"", "\\\"") << "\"";
+	}
+};
+
 JSONFieldsOutput::JSONFieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
 std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
-	// TODO: not done yet
+	// TODO: make DoFile output everything as json in json mode
+	os << "[";
+	for (int i = 0; i<fo.fields.count(); i++) {
+		if (i) os << ",";
+		auto desc = fo.fields.desc(i);
+		auto data = fo.fields.data(i);
+		assert(desc);
+		assert(data);
+		if (i) os << endl;
+		switch (desc->type) {
+		case RomFields::RFT_INVALID: {
+			assert(0); // INVALID field type
+			os << "{\"type\":\"INVALID\"}";
+			break;
+		}
+		case RomFields::RFT_STRING: {
+			os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(desc->name);
+			if (desc->str_desc) { // nullptr check is required
+				os << ",\"format\":" << desc->str_desc->formatting;
+			}
+			os << "},\"data\":" << JSONString(data->str) << "}";
+			break;
+		}
+		case RomFields::RomFields::RFT_BITFIELD: {
+			os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(desc->name);
+			assert(desc->bitfield);
+			if (desc->bitfield) {
+				os << ",\"elements\":" << desc->bitfield->elements;
+				os << ",\"elementsPerRow\":" << desc->bitfield->elemsPerRow;
+				os << ",\"names\":[";
+				for (int j = 0; j < desc->bitfield->elements; j++) {
+					if (j) os << ",";
+					os << JSONString(desc->bitfield->names[j]);
+				}
+				os << "]";
+
+			}
+			os << "},\"data\":"<<data->bitfield<<"}";
+			break;
+		}
+		case RomFields::RomFields::RFT_LISTDATA: {
+			os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(desc->name);
+			assert(desc->list_data);
+			if (desc->list_data) {
+				os << ",\"count\":" << desc->list_data->count;
+				os << ",\"names\":[";
+				for (int j = 0; j < desc->list_data->count; j++) {
+					if (j) os << ",";
+					os << JSONString(desc->list_data->names[j]);
+				}
+				os << "]";
+			}
+			os << "},\"data\":[";
+			assert(data->list_data);
+			if (data->list_data) {
+				for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
+					if (it != data->list_data->data.begin()) os << ",";
+					os << "[";
+					for (auto jt = it->begin(); jt != it->end(); ++jt) {
+						if (jt != it->begin()) os << ",";
+						os << JSONString(jt->c_str());
+					}
+					os << "]";
+				}
+			}
+			os << "]}";
+			break;
+		}
+		default: {
+			assert(0); // Unknown RomFieldType
+			os << "{\"type\":\"NYI\"}";
+		}
+		}
+	}
+	os << "]";
 	return os;
 }
