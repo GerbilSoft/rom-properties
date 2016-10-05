@@ -115,7 +115,8 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 
 	// String table is stored directly after the root entry.
 	const GCN_FST_Entry *root_entry = reinterpret_cast<const GCN_FST_Entry*>(fstData);
-	uint32_t string_table_offset = be32_to_cpu(root_entry->root_dir.file_count) * sizeof(GCN_FST_Entry);
+	const uint32_t file_count = be32_to_cpu(root_entry->root_dir.file_count);
+	uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
 	if (string_table_offset >= len) {
 		// Invalid FST length.
 		return;
@@ -134,6 +135,12 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	// Save a pointer to the string table.
 	string_table = reinterpret_cast<char*>(&fst8[string_table_offset]);
 	string_table_sz = len - string_table_offset;
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+	// Reserve space in the string table.
+	// NOTE: file_count includes the root directory entry.
+	rp_string_table.reserve(file_count - 1);
+#endif
 }
 
 GcnFstPrivate::~GcnFstPrivate()
