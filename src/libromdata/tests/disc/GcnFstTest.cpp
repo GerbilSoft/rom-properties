@@ -59,6 +59,13 @@ struct GcnFstTest_mode
 	{ }
 };
 
+/**
+ * Formatting function for GcnFstTest_mode.
+ */
+inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mode) {
+        return os << mode.fst_filename;
+};
+
 // Maximum file size for FST files.
 static const int64_t MAX_GCN_FST_FILESIZE = 1*1024*1024;
 
@@ -214,7 +221,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 	while (dirent != nullptr) {
 		// Make sure we haven't seen this filename in
 		// the current subdirectory yet.
-		EXPECT_EQ(filenames.find(dirent->name), filenames.end()) <<
+		EXPECT_TRUE(filenames.find(dirent->name) == filenames.end()) <<
 			"Directory '" << rp_string_to_utf8(subdir) << "' has duplicate filename '" << dirent->name << "'.";
 
 		// Filename has been seen now.
