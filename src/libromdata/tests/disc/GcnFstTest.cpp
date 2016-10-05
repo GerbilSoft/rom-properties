@@ -28,19 +28,21 @@
 #include "iowin32.h"
 #endif
 
-// FST
+// libromdata
+#include "TextFuncs.hpp"
+#include "uvector.h"
 #include "disc/GcnFst.hpp"
 using LibRomData::GcnFst;
-
-// uvector
-#include "uvector.h"
 
 // C includes. (C++ namespace)
 #include <cctype>
 
 // C++ includes.
+#include <sstream>
 #include <string>
+#include <unordered_set>
 using std::string;
+using std::unordered_set;
 
 namespace LibRomData { namespace Tests {
 
@@ -66,6 +68,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		GcnFstTest()
 			: ::testing::TestWithParam<GcnFstTest_mode>()
 			, m_unzFstZip(nullptr)
+			, m_fst(nullptr)
 		{ }
 
 		virtual void SetUp(void) override;
@@ -84,6 +87,13 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 
 		// FST data.
 		ao::uvector<uint8_t> m_fst_buf;
+		IFst *m_fst;
+
+		/**
+		 * Recursively check a subdirectory for duplicate filenames.
+		 * @param subdir Subdirectory path.
+		 */
+		void checkNoDuplicateFilenames(const rp_char *subdir);
 
 	public:
 		/** Test case parameters. **/
@@ -148,6 +158,9 @@ void GcnFstTest::SetUp(void)
 	// Close the Zip file.
 	unzClose(m_unzFstZip);
 	m_unzFstZip = nullptr;
+
+	// Create the GcnFst object.
+	m_fst = new GcnFst(m_fst_buf.data(), (uint32_t)m_fst_buf.size(), mode.offsetShift);
 }
 
 /**
@@ -156,6 +169,9 @@ void GcnFstTest::SetUp(void)
  */
 void GcnFstTest::TearDown(void)
 {
+	delete m_fst;
+	m_fst = nullptr;
+
 	if (m_unzFstZip) {
 		unzClose(m_unzFstZip);
 		m_unzFstZip = nullptr;
@@ -183,11 +199,42 @@ unzFile GcnFstTest::openZip(const rp_char *filename)
 }
 
 /**
+ * Recursively check a subdirectory for duplicate filenames.
+ * @param subdir Subdirectory path.
+ */
+void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
+{
+	// NOTE: IFst uses char*, not rp_char*.
+	unordered_set<string> filenames;
+
+	IFst::Dir *dirp = m_fst->opendir(subdir);
+	ASSERT_TRUE(dirp != nullptr);
+
+	IFst::DirEnt *dirent = m_fst->readdir(dirp);
+	while (dirent != nullptr) {
+		// Make sure we haven't seen this filename in
+		// the current subdirectory yet.
+		EXPECT_EQ(filenames.find(dirent->name), filenames.end()) <<
+			"Directory '" << rp_string_to_utf8(subdir) << "' has duplicate filename '" << dirent->name << "'.";
+
+		// Filename has been seen now.
+		filenames.insert(dirent->name);
+
+		// Next entry.
+		// TODO: Check subdirectories.
+		dirent = m_fst->readdir(dirp);
+	}
+
+	// End of directory.
+	m_fst->closedir(dirp);
+}
+
+/**
  * Make sure there aren't any duplicate filenames in all subdirectories.
  */
 TEST_P(GcnFstTest, noDuplicateFilenames)
 {
-	// TODO
+	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames(_RP("/")));
 }
 
 /** Test case parameters. **/
