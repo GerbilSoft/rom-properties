@@ -213,9 +213,11 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 {
 	// NOTE: IFst uses char*, not rp_char*.
 	unordered_set<string> filenames;
+	unordered_set<string> subdirs;
 
 	IFst::Dir *dirp = m_fst->opendir(subdir);
-	ASSERT_TRUE(dirp != nullptr);
+	ASSERT_TRUE(dirp != nullptr) <<
+		"Failed to open directory '" << subdir << "'.";
 
 	IFst::DirEnt *dirent = m_fst->readdir(dirp);
 	while (dirent != nullptr) {
@@ -227,9 +229,27 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 		// Filename has been seen now.
 		filenames.insert(dirent->name);
 
+		// Is this a subdirectory?
+		if (dirent->type == DT_DIR) {
+			subdirs.insert(dirent->name);
+		}
+
 		// Next entry.
-		// TODO: Check subdirectories.
 		dirent = m_fst->readdir(dirp);
+	}
+
+	// Check subdirectories.
+	for (unordered_set<string>::const_iterator iter = subdirs.begin();
+	     iter != subdirs.end(); ++iter)
+	{
+		rp_string path = subdir;
+		if (!path.empty() && path[path.size()-1] != '/') {
+			path += _RP_CHR('/');
+		}
+		// TODO: Correct encoding?
+		path += latin1_to_rp_string(iter->data(), iter->size());
+
+		checkNoDuplicateFilenames(path.c_str());
 	}
 
 	// End of directory.

@@ -200,6 +200,8 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
  */
 const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 {
+	// TODO: Combine multiple slashes together.
+
 	if (!path) {
 		// Invalid path.
 		return nullptr;
