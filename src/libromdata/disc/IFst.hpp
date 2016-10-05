@@ -64,14 +64,14 @@ class IFst
 
 		/**
 		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @param path	[in] Directory path.
 		 * @return FstDir*, or nullptr on error.
 		 */
 		virtual Dir *opendir(const rp_char *path) = 0;
 
 		/**
 		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @param path	[in] Directory path.
 		 * @return FstDir*, or nullptr on error.
 		 */
 		inline Dir *opendir(const LibRomData::rp_string &path)
