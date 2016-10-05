@@ -51,7 +51,7 @@ class IFst
 			int64_t offset;		// Starting address.
 			int64_t size;		// File size.
 			uint8_t type;		// File type. (See d_type.h)
-			const char *name;	// Filename. (TODO: Encoding?)
+			const rp_char *name;	// Filename.
 
 			// TODO: Additional placeholders?
 			int idx;		// File index.

@@ -453,7 +453,7 @@ u16string latin1_to_utf16(const char *str, size_t len)
 	return wcs;
 }
 
-#ifndef RP_WIS16
+#if defined(RP_UTF16) && !defined(RP_WIS16)
 /**
  * char16_t strlen().
  * @param wcs 16-bit string.
@@ -479,6 +479,25 @@ char16_t *u16_strdup(const char16_t *wcs)
 	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
 }
-#endif /* !RP_WIS16 */
+
+/**
+ * char16_t strcmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcmp() result.
+ */
+int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	// References:
+	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
+	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
+	while (*wcs1 && (*wcs1 == *wcs2)) {
+		wcs1++;
+		wcs2++;
+	}
+
+	return (int)(*(const unsigned short*)wcs1 - *(const unsigned short*)wcs2);
+}
+#endif /* RP_UTF16 && !RP_WIS16 */
 
 }

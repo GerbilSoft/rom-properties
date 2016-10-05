@@ -1175,7 +1175,9 @@ int GameCube::loadFieldData(void)
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
 					if (dirent->name && dirent->type == DT_REG) {
 						unsigned int version;
-						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
+						// TODO: Optimize this?
+						string u8str = rp_string_to_utf8(dirent->name);
+						int ret = sscanf(u8str.c_str(), "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
 							sysMenu = d->parseWiiSystemMenuVersion(version);
 							break;

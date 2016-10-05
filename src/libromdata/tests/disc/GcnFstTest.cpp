@@ -214,9 +214,8 @@ unzFile GcnFstTest::openZip(const rp_char *filename)
  */
 void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 {
-	// NOTE: IFst uses char*, not rp_char*.
-	unordered_set<string> filenames;
-	unordered_set<string> subdirs;
+	unordered_set<rp_string> filenames;
+	unordered_set<rp_string> subdirs;
 
 	IFst::Dir *dirp = m_fst->opendir(subdir);
 	ASSERT_TRUE(dirp != nullptr) <<
@@ -249,9 +248,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += _RP_CHR('/');
 		}
-		// TODO: Correct encoding?
-		path += latin1_to_rp_string(iter->data(), iter->size());
-
+		path += iter->c_str();
 		checkNoDuplicateFilenames(path.c_str());
 	}
 

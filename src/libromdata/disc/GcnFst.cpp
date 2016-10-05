@@ -32,7 +32,9 @@ using LibRomData::rp_string;
 
 // C++ includes.
 #include <string>
+#include <unordered_map>
 using std::string;
+using std::unordered_map;
 
 namespace LibRomData {
 
@@ -52,9 +54,13 @@ class GcnFstPrivate
 		uint32_t fstData_sz;
 
 		// String table. (Pointer into d->fstData.)
-		// String table. (malloc'd)
 		const char *string_table;
 		uint32_t string_table_sz;
+
+		// String table, converted to Unicode.
+		// - Key: String offset in the FST string table.
+		// - Value: rp_string.
+		unordered_map<uint32_t, rp_string> rp_string_table;
 
 		// Offset shift.
 		uint8_t offsetShift;
@@ -67,7 +73,7 @@ class GcnFstPrivate
 		 * @param fst_entry FST entry.
 		 * @return Name, or nullptr if an error occurred.
 		 */
-		inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
+		inline const rp_char *entry_name(const GCN_FST_Entry *fst_entry) const;
 
 		/**
 		 * Get an FST entry.
@@ -79,7 +85,7 @@ class GcnFstPrivate
 		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
 		 * @return FST entry, or nullptr on error.
 		 */
-		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+		const GCN_FST_Entry *entry(int idx, const rp_char **ppszName = nullptr) const;
 
 		/**
 		 * Find a path.
@@ -145,16 +151,31 @@ GcnFstPrivate::~GcnFstPrivate()
  * @param fst_entry FST entry.
  * @return Name, or nullptr if an error occurred.
  */
-inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
+inline const rp_char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
 {
+	// FIXME: Is returning c_str from the iterator valid?
+
 	// Get the name entry from the string table.
 	uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
-	if (offset < string_table_sz) {
-		return &string_table[offset];
+	if (offset >= string_table_sz) {
+		// Out of range.
+		return nullptr;
 	}
 
-	// Offset is out of range.
-	return nullptr;
+	// Has this name already been converted to rp_string?
+	unordered_map<uint32_t, rp_string>::const_iterator iter = rp_string_table.find(offset);
+	if (iter != rp_string_table.end()) {
+		// Name has already been converted.
+		return iter->second.c_str();
+	}
+
+	// Name has not been converted.
+	// Do the conversion now.
+	const char *str = &string_table[offset];
+	size_t len = strlen(str);	// TODO: Bounds checking.
+	rp_string rps = cp1252_sjis_to_rp_string(str, len);
+	iter = const_cast<GcnFstPrivate*>(this)->rp_string_table.insert(std::make_pair(offset, rps)).first;
+	return iter->second.c_str();
 }
 
 /**
@@ -167,7 +188,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
  * @param ppszName	[out, opt] Entry name. (Do not free this!)
  * @return FST entry, or nullptr on error.
  */
-const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
+const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const rp_char **ppszName) const
 {
 	if (!fstData || idx < 0) {
 		// No FST, or idx is invalid.
@@ -211,17 +232,17 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 		return this->entry(0, nullptr);
 	}
 
-	// Convert the path to UTF-8.
+	// Store the path as a temporary rp_string.
 	// TODO: ASCII or Latin-1 instead?
-	string path8 = rp_string_to_utf8(path, rp_strlen(path));
-	if (path8.empty()) {
+	rp_string rp_path(path);
+	if (rp_path.empty()) {
 		// Invalid path.
 		return nullptr;
 	}
 
 	// If there's a trailing slash, remove it.
-	if (path8[path8.size()-1] == '/') {
-		path8.resize(path8.size()-1);
+	if (rp_path[rp_path.size()-1] == '/') {
+		rp_path.resize(rp_path.size()-1);
 	}
 
 	// Get the root directory.
@@ -232,8 +253,8 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	}
 
 	// Should not have "" or "/" here.
-	assert(!path8.empty());
-	assert(path8 != "/");
+	assert(!rp_path.empty());
+	assert(rp_path != _RP("/"));
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
@@ -241,13 +262,13 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count);
 	size_t slash_pos = 0;
 	do {
-		size_t next_slash_pos = path8.find('/', slash_pos + 1);
-		string path_component;
+		size_t next_slash_pos = rp_path.find('/', slash_pos + 1);
+		rp_string path_component;
 		bool are_more_slashes = true;
 		if (next_slash_pos == string::npos) {
 			// No more slashes.
 			are_more_slashes = false;
-			path_component = path8.substr(slash_pos + 1);
+			path_component = rp_path.substr(slash_pos + 1);
 		} else {
 			// Found another slash.
 			int sz = (int)(next_slash_pos - slash_pos - 1);
@@ -256,7 +277,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 				slash_pos = next_slash_pos;
 				continue;
 			}
-			path_component = path8.substr(slash_pos + 1, (size_t)sz);
+			path_component = rp_path.substr(slash_pos + 1, (size_t)sz);
 		}
 
 		if (path_component.empty()) {
@@ -268,7 +289,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 		// Search this directory for a matching path component.
 		bool found = false;
 		for (; idx < last_fst_idx; idx++) {
-			const char *pName;
+			const rp_char *pName;
 			fst_entry = this->entry(idx, &pName);
 			if (!fst_entry) {
 				// Invalid path.
@@ -276,7 +297,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 			}
 
 			// TODO: Is GCN/Wii case-sensitive?
-			if (pName && !strcmp(path_component.c_str(), pName)) {
+			if (pName && !rp_strcmp(path_component.c_str(), pName)) {
 				// Found a match.
 				found = true;
 				break;
@@ -427,7 +448,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		return nullptr;
 	}
 
-	const char *pName;
+	const rp_char *pName;
 	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
 	if (!fst_entry) {
