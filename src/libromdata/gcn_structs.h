@@ -123,6 +123,8 @@ typedef struct PACKED _GCN_Boot_Info {
 /**
  * FST entry.
  * All fields are big-endian.
+ *
+ * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx13.4
  */
 #pragma pack(1)
 #define GCN_FST_Entry_SIZE 12
@@ -135,7 +137,7 @@ typedef struct PACKED _GCN_FST_Entry {
 		} root_dir;
 		struct {
 			uint32_t parent_dir_idx;	// Parent directory index.
-			uint32_t last_entry_idx;	// Index of last entry in this directory.
+			uint32_t next_offset;		// Index of the next entry in the current directory.
 		} dir;
 		struct {
 			uint32_t offset;		// File offset. (<< 2 for Wii)

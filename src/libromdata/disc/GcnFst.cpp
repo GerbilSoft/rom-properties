@@ -109,7 +109,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 
 	// String table is stored directly after the root entry.
 	const GCN_FST_Entry *root_entry = reinterpret_cast<const GCN_FST_Entry*>(fstData);
-	uint32_t string_table_offset = be32_to_cpu(root_entry->dir.last_entry_idx) * sizeof(GCN_FST_Entry);
+	uint32_t string_table_offset = be32_to_cpu(root_entry->root_dir.file_count) * sizeof(GCN_FST_Entry);
 	if (string_table_offset >= len) {
 		// Invalid FST length.
 		return;
@@ -174,7 +174,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
 		return nullptr;
 	}
 
-	// NOTE: For the root directory, last_entry_idx is number of entries.
+	// NOTE: For the root directory, next_offset is the number of entries.
 	if ((uint32_t)idx >= be32_to_cpu(fstData[0].root_dir.file_count)) {
 		// Index is out of range.
 		return nullptr;
@@ -235,7 +235,8 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 
 	// Skip the initial slash.
 	int idx = 1;	// Ignore the root directory.
-	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count) - 1;
+	// NOTE: This is the index *after* the last file.
+	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count);
 	size_t slash_pos = 0;
 	do {
 		size_t next_slash_pos = path8.find('/', slash_pos + 1);
@@ -264,7 +265,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 
 		// Search this directory for a matching path component.
 		bool found = false;
-		for (; idx <= last_fst_idx; idx++) {
+		for (; idx < last_fst_idx; idx++) {
 			const char *pName;
 			fst_entry = this->entry(idx, &pName);
 			if (!fst_entry) {
@@ -281,7 +282,10 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 
 			// If this is a directory, skip it.
 			if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
-				idx = be32_to_cpu(fst_entry->dir.last_entry_idx);
+				// NOTE: next_offset is the index *after* the
+				// last entry in the subdirectory, so we have to
+				// subtract 1 for proper enumeration.
+				idx = be32_to_cpu(fst_entry->dir.next_offset) - 1;
 			}
 		}
 
@@ -292,7 +296,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 
 		if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
 			// Directory. Save the last_fst_idx.
-			last_fst_idx = be32_to_cpu(fst_entry->dir.last_entry_idx);
+			last_fst_idx = be32_to_cpu(fst_entry->dir.next_offset);
 			idx++;
 		} else {
 			// File: Make sure there's no more slashes.
@@ -408,13 +412,15 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	if (idx != dirp->dir_idx && FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
 		// Skip over this directory.
-		idx = be32_to_cpu(fst_entry->dir.last_entry_idx) + 1;
+		idx = be32_to_cpu(fst_entry->dir.next_offset);
 	} else {
 		// Go to the next file.
 		idx++;
 	}
 
-	if (idx >= (int)be32_to_cpu(dir_fst_entry->dir.last_entry_idx)) {
+	// NOTE: next_offset is the entry index *after* the last entry,
+	// so this works for both the root directory and subdirectories.
+	if (idx >= (int)be32_to_cpu(dir_fst_entry->dir.next_offset)) {
 		// Last entry in the directory.
 		return nullptr;
 	}
