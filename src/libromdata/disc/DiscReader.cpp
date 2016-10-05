@@ -30,9 +30,17 @@
 
 namespace LibRomData {
 
+/**
+ * Construct a DiscReader with the specified file.
+ * The file is dup()'d, so the original file can be
+ * closed afterwards.
+ * @param file File to read from.
+ */
 DiscReader::DiscReader(IRpFile *file)
 	: m_file(nullptr)
 	, m_lastError(0)
+	, m_offset(0)
+	, m_length(0)
 {
 	if (!file) {
 		m_lastError = EBADF;
@@ -40,6 +48,44 @@ DiscReader::DiscReader(IRpFile *file)
 	}
 	// TODO: Propagate errors.
 	m_file = file->dup();
+	m_length = file->fileSize();
+	if (m_length < 0) {
+		m_length = 0;
+	}
+}
+
+/**
+ * Construct a DiscReader with the specified file.
+ * The file is dup()'d, so the original file can be
+ * closed afterwards.
+ * @param file File to read from.
+ * @param offset Starting offset.
+ * @param length Disc length. (-1 for "until end of file")
+ */
+DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
+	: m_file(nullptr)
+	, m_lastError(0)
+	, m_offset(0)
+	, m_length(0)
+{
+	if (!file) {
+		m_lastError = EBADF;
+		return;
+	}
+	// TODO: Propagate errors.
+	m_file = file->dup();
+
+	// Validate offset and filesize.
+	int64_t filesize = file->fileSize();
+	if (offset > filesize) {
+		offset = filesize;
+	}
+	if (length < 0 || offset + length > filesize) {
+		length = filesize - offset;
+	}
+
+	m_offset = offset;
+	m_length = length;
 }
 
 DiscReader::~DiscReader()
@@ -115,6 +161,13 @@ size_t DiscReader::read(void *ptr, size_t size)
 		m_lastError = EBADF;
 		return 0;
 	}
+
+	// Constrain size based on offset and length.
+	int64_t pos = m_file->tell();
+	if ((int64_t)(pos + size) > m_offset + m_length) {
+		size = (size_t)(m_offset + m_length - pos);
+	}
+
 	// TODO: Propagate errors.
 	return m_file->read(ptr, size);
 }
@@ -132,7 +185,7 @@ int DiscReader::seek(int64_t pos)
 		return -1;
 	}
 	// TODO: Propagate errors.
-	return m_file->seek(pos);
+	return m_file->seek(pos + m_offset);
 }
 
 /**
@@ -146,7 +199,7 @@ void DiscReader::rewind(void)
 		return;
 	}
 	// TODO: Propagate errors.
-	m_file->rewind();
+	m_file->seek(m_offset);
 }
 
 /**
@@ -161,7 +214,7 @@ int64_t DiscReader::size(void) const
 		return -1;
 	}
 	// TODO: Propagate errors.
-	return m_file->fileSize();
+	return m_length;
 }
 
 }

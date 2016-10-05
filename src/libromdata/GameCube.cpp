@@ -86,6 +86,7 @@ class GameCubePrivate
 			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
 			DISC_FORMAT_WBFS = (1 << 8),	// WBFS image. (Wii only)
 			DISC_FORMAT_CISO = (2 << 8),	// CISO image.
+			DISC_FORMAT_TGC  = (3 << 8),	// TGC (embedded disc image) (GCN only?)
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -780,6 +781,15 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_CISO:
 				d->discReader = new CisoGcnReader(m_file);
 				break;
+			case GameCubePrivate::DISC_FORMAT_TGC: {
+				// Check the TGC header for the disc offset.
+				static_assert(sizeof(GCN_TGC_Header) == GCN_TGC_Header_SIZE,
+					"GCN_TGC_Header is the wrong size. (Should be 64 bytes.)");
+				const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
+				uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
+				d->discReader = new DiscReader(m_file, gcm_offset, -1);
+				break;
+			}
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
@@ -806,8 +816,10 @@ GameCube::GameCube(IRpFile *file)
 		{
 			// isRomSupported() was unable to determine the
 			// system type, possibly due to format limitations.
-			// Example: CISO doesn't store a copy of the disc header
-			// in range of the data we read.
+			// Examples:
+			// - CISO doesn't store a copy of the disc header
+			//   in range of the data we read.
+			// - TGC has a 32 KB header before the embedded GCM.
 			if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
 				// Wii disc image.
 				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
@@ -942,6 +954,14 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_CISO;
 	}
 
+	// Check for TGC.
+	const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->pHeader);
+	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
+		// TGC images have their own 32 KB header, so we can't
+		// check the actual GCN/Wii header here.
+		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC;
+	}
+
 	// Not supported.
 	return GameCubePrivate::DISC_UNKNOWN;
 }
@@ -1003,12 +1023,13 @@ vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
 	// TODO: Add ".iso" later? (Too generic, though...)
 	vector<const rp_char*> ret;
-	ret.reserve(5);
+	ret.reserve(6);
 	ret.push_back(_RP(".gcm"));
 	ret.push_back(_RP(".rvm"));
 	ret.push_back(_RP(".wbfs"));
 	ret.push_back(_RP(".ciso"));
 	ret.push_back(_RP(".cso"));
+	ret.push_back(_RP(".tgc"));
 	return ret;
 }
 
@@ -1360,6 +1381,12 @@ int GameCube::loadURLs(ImageType imageType)
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return -ERANGE;
+	}
+
+	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
+		// TGC game IDs aren't unique, so we can't get
+		// an image URL that makes any sense.
+		return 0;
 	}
 
 	const int idx = imageType - IMG_EXT_MIN;

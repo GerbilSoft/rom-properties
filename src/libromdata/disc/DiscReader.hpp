@@ -38,6 +38,17 @@ class DiscReader : public IDiscReader
 		 * @param file File to read from.
 		 */
 		explicit DiscReader(IRpFile *file);
+
+		/**
+		 * Construct a DiscReader with the specified file.
+		 * The file is dup()'d, so the original file can be
+		 * closed afterwards.
+		 * @param file File to read from.
+		 * @param offset Starting offset.
+		 * @param length Disc length. (-1 for "until end of file")
+		 */
+		DiscReader(IRpFile *file, int64_t offset, int64_t length);
+
 		virtual ~DiscReader();
 
 	private:
@@ -111,6 +122,10 @@ class DiscReader : public IDiscReader
 	protected:
 		IRpFile *m_file;
 		int m_lastError;
+
+		// Offset/length. Useful for e.g. GameCube TGC.
+		int64_t m_offset;
+		int64_t m_length;
 };
 
 }

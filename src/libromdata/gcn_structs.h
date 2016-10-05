@@ -38,6 +38,7 @@ extern "C" {
 #pragma pack(1)
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
+#define GCN_DiscHeader_SIZE 96	/* TODO add in separate commit along with static_assert */
 typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// Game code. (ID6)
@@ -145,6 +146,34 @@ typedef struct PACKED _GCN_FST_Entry {
 		} file;
 	};
 } GCN_FST_Entry;
+#pragma pack()
+
+/**
+ * TGC header.
+ * Used on some GameCube demo discs.
+ * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx14.8
+ * TODO: Check Dolphin?
+ *
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+#define GCN_TGC_Header_SIZE 64
+#define TGC_MAGIC 0xAE0F38A2
+typedef struct PACKED _GCN_TGC_Header {
+	uint32_t tgc_magic;	// TGC magic.
+	uint32_t reserved1;	// Unknown (usually 0x00000000)
+	uint32_t header_size;	// Header size. (usually 0x8000)
+	uint32_t reserved2;	// Unknown (usually 0x00100000)
+	uint32_t fst_offset;	// Offset to FST inside the embedded GCM.
+	uint32_t fst_size;	// FST size.
+	uint32_t fst_max_size;	// Size of biggest additional FST.
+	uint32_t dol_offset;	// Offset to main.dol inside the embedded GCM.
+	uint32_t dol_size;	// main.dol size.
+	uint32_t reserved3[2];
+	uint32_t banner_offset;	// Offset to opening.bnr inside the embedded GCM.
+	uint32_t banner_size;	// opening.bnr size.
+	uint32_t reserved4[3];
+} GCN_TGC_Header;
 #pragma pack()
 
 /** Wii-specific structs. **/
