@@ -40,7 +40,10 @@ ADD_TEST(NAME RpImageLoaderTest
 	)
 
 # AesCipher test.
-ADD_EXECUTABLE(AesCipherTest AesCipherTest.cpp)
+ADD_EXECUTABLE(AesCipherTest
+	gtest_init.cpp
+	AesCipherTest.cpp
+	)
 TARGET_LINK_LIBRARIES(AesCipherTest romdata8)
 TARGET_LINK_LIBRARIES(AesCipherTest gtest)
 IF(WIN32)
@@ -58,6 +61,7 @@ ADD_TEST(NAME AesCipherTest
 
 # GcnFstPrint. (Not a test, but a useful program.)
 ADD_EXECUTABLE(GcnFstPrint
+	gtest_init.cpp
 	disc/FstPrint.cpp
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp

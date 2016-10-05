@@ -33,7 +33,7 @@ using LibRomData::GcnFst;
 using std::ostream;
 using std::ostringstream;
 
-int main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, char *argv[])
 {
 	if (argc != 2) {
 		printf("Syntax: %s fst.bin\n", argv[0]);
@@ -80,4 +80,5 @@ int main(int argc, char *argv[])
 	ostringstream oss;
 	LibRomData::fstPrint(fst, oss);
 	printf("%s", oss.str().c_str());
+	return 0;
 }

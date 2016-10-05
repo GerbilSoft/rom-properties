@@ -375,7 +375,7 @@ INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
 /**
  * Test suite main function.
  */
-int main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: AesCipher tests.\n\n");
 	fflush(nullptr);
