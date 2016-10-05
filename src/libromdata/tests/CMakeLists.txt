@@ -69,3 +69,20 @@ ADD_EXECUTABLE(GcnFstPrint
 TARGET_LINK_LIBRARIES(GcnFstPrint romdata8)
 DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
+
+# Copy the FST test files to the test directory.
+FILE(GLOB test_fst disc/*.fst.zip disc/*.txt.zip)
+FILE(COPY ${test_fst} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+# GcnFstTest.
+ADD_EXECUTABLE(GcnFstTest
+	gtest_init.cpp
+	disc/FstPrint.cpp
+	disc/FstPrint.hpp
+	disc/GcnFstTest.cpp
+	)
+TARGET_LINK_LIBRARIES(GcnFstTest romdata8)
+TARGET_LINK_LIBRARIES(GcnFstTest gtest)
+TARGET_LINK_LIBRARIES(GcnFstTest minizip ${ZLIB_LIBRARY})
+DO_SPLIT_DEBUG(GcnFstTest)
+SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
