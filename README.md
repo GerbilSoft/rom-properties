@@ -111,8 +111,10 @@ will be used for thumbnails (and icons on Windows).
 
 * Sega Mega Drive: Plain binary (\*.gen, \*.bin)
 * Nintendo DS(i): Decrypted (\*.nds)
-* Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too]
-* Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs)
+* Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too],
+  CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc)
+* Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
+  CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb)
   * \*.mb is also supported, but not currently registered on Windows due to conflicts
