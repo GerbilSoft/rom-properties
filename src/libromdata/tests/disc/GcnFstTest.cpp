@@ -32,6 +32,9 @@
 #include "TextFuncs.hpp"
 #include "uvector.h"
 #include "disc/GcnFst.hpp"
+#ifdef _WIN32
+#include "RpWin32.hpp"
+#endif
 using LibRomData::GcnFst;
 
 // C includes. (C++ namespace)
