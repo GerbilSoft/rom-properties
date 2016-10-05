@@ -30,8 +30,15 @@ using LibRomData::GcnFst;
 
 // C++ includes.
 #include <sstream>
+#include <string>
 using std::ostream;
 using std::ostringstream;
+using std::string;
+
+#ifdef _WIN32
+#include "TextFuncs.hpp"
+using std::u16string;
+#endif /* _WIN32 */
 
 extern "C" int gtest_main(int argc, char *argv[])
 {
@@ -79,6 +86,15 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// Print the FST to an ostringstream.
 	ostringstream oss;
 	LibRomData::fstPrint(fst, oss);
+	string fst_str = oss.str();
+
+#ifdef _WIN32
+	// Convert to wchar_t, then print it.
+	u16string u16str = LibRomData::utf8_to_utf16(fst_str.data(), fst_str.size());
+	wprintf(L"%s", (const wchar_t*)u16str.c_str());
+#else /* !_WIN32 */
+	// Print the FST.
 	printf("%s", oss.str().c_str());
+#endif
 	return 0;
 }
