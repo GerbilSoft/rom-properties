@@ -569,7 +569,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			read_sz = size;
 
 		// Read and decrypt the sector.
-		uint32_t blockStart = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockStart);
 
 		// Copy data from the sector.
@@ -590,7 +590,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
 
 		// Read and decrypt the sector.
-		uint32_t blockStart = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockStart);
 
 		// Copy data from the sector.
@@ -603,7 +603,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 
 		// Read and decrypt the sector.
 		assert(d->pos_7C00 % SECTOR_SIZE_DECRYPTED == 0);
-		uint32_t blockEnd = (d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
+		uint32_t blockEnd = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);
 		d->readSector(blockEnd);
 
 		// Copy data from the sector.
