@@ -14,6 +14,8 @@
 typedef uint32_t be32_t;
 typedef uint16_t be16_t;
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 #pragma pack(1)
 typedef struct PACKED wbfs_head {
         be32_t	magic;
@@ -32,6 +34,7 @@ typedef struct PACKED wbfs_disc_info {
         be16_t	wlba_table[0];
 } wbfs_disc_info_t;
 #pragma pack()
+#pragma warning(pop)
 
 //  WBFS first wbfs_sector structure:
 //
