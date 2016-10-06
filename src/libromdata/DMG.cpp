@@ -88,6 +88,9 @@ class DMGPrivate
 		static const rp_char *const dmg_feature_bitfield_names[];
 		static const RomFields::BitfieldDesc dmg_feature_bitfield;
 
+		// Monospace string formatting.
+		static const RomFields::StringDesc dmg_string_monospace;
+
 		// ROM fields.
 		static const struct RomFields::Desc dmg_fields[];
 
@@ -213,20 +216,25 @@ const RomFields::BitfieldDesc DMGPrivate::dmg_feature_bitfield = {
 	ARRAY_SIZE(dmg_feature_bitfield_names), 4, dmg_feature_bitfield_names
 };
 
+// Monospace string formatting.
+const RomFields::StringDesc DMGPrivate::dmg_string_monospace = {
+	RomFields::StringDesc::STRF_MONOSPACE
+};
+
 // ROM fields.
 const struct RomFields::Desc DMGPrivate::dmg_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("System"), RomFields::RFT_BITFIELD, {&dmg_system_bitfield}},
-	{_RP("Entry Point"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Entry Point"), RomFields::RFT_STRING, {&dmg_string_monospace}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Hardware"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Features"), RomFields::RFT_BITFIELD, {&dmg_feature_bitfield}},
 	{_RP("ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("RAM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Checksum"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {&dmg_string_monospace}},
+	{_RP("Checksum"), RomFields::RFT_STRING, {&dmg_string_monospace}},
 };
 
 /** Internal ROM data. **/
