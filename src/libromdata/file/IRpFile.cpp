@@ -52,7 +52,7 @@ int IRpFile::ungetc(int c)
 	((void)c);	// TODO: Don't ignore this?
 
 	// TODO: seek() overload that supports SEEK_CUR?
-	intptr_t pos = tell();
+	int64_t pos = tell();
 	if (pos <= 0) {
 		// Cannot ungetc().
 		return -1;
