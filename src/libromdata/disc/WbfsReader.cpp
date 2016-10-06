@@ -444,7 +444,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 			read_sz = size;
 
 		// Get the physical block number first.
-		uint16_t blockStart = (d->m_wbfs_pos / wbfs_sec_sz);
+		uint16_t blockStart = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
 		uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
 		if (physBlockStartIdx == 0) {
 			// Empty block.
@@ -497,7 +497,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 
 		// Get the physical block number first.
 		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
-		uint16_t blockEnd = (d->m_wbfs_pos / wbfs_sec_sz);
+		uint16_t blockEnd = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
 		uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
 		if (physBlockEndIdx == 0) {
 			// Empty block.
