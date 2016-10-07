@@ -109,10 +109,12 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		/** Test case parameters. **/
 
 		/**
+		 
 		 * Get the list of FST files from Gcn.fst.zip.
+		 * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
 		 * @return FST files.
 		 */
-		static std::vector<GcnFstTest_mode> ReadTestCasesFromDisk(void);
+		static std::vector<GcnFstTest_mode> ReadTestCasesFromDisk(uint8_t offsetShift);
 
 		/**
 		 * Test case suffix generator.
@@ -128,13 +130,25 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
  */
 void GcnFstTest::SetUp(void)
 {
-	// Open the Zip file.
-	m_unzFstZip = openZip(_RP("GameCube.fst.zip"));
-	ASSERT_TRUE(m_unzFstZip != nullptr) <<
-		"Could not open 'GameCube.fst.zip', check the test directory!";
-
 	// Parameterized test.
 	const GcnFstTest_mode &mode = GetParam();
+
+	// Open the Zip file.
+	const rp_char *zip_filename;
+	switch (mode.offsetShift) {
+		case 0:
+			zip_filename = _RP("GameCube.fst.zip");
+			break;
+		case 2:
+			zip_filename = _RP("Wii.fst.zip");
+			break;
+		default:
+			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
+	}
+
+	m_unzFstZip = openZip(zip_filename);
+	ASSERT_TRUE(m_unzFstZip != nullptr) <<
+		"Could not open '" << rp_string_to_utf8(zip_filename) << ", check the test directory!";
 
 	// Locate the required FST file.
 	// TODO: Always case-insensitive? (currently using OS-dependent value)
@@ -268,16 +282,31 @@ TEST_P(GcnFstTest, noDuplicateFilenames)
 
 /**
  * Get the list of FST files from Gcn.fst.zip.
+ * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
  * @return FST files.
  */
-std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(void)
+std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShift)
 {
+	// NOTE: Cannot use ASSERT_TRUE() here.
 	std::vector<GcnFstTest_mode> files;
 
 	// Open the Zip file.
-	unzFile unzFstZip = openZip(_RP("GameCube.fst.zip"));
+	const rp_char *zip_filename;
+	switch (offsetShift) {
+		case 0:
+			zip_filename = _RP("GameCube.fst.zip");
+			break;
+		case 2:
+			zip_filename = _RP("Wii.fst.zip");
+			break;
+		default:
+			EXPECT_TRUE(false) << "offsetShift is " << (int)offsetShift << "; should be either 0 or 2.";
+			return files;
+	}
+
+	unzFile unzFstZip = openZip(zip_filename);
 	EXPECT_TRUE(unzFstZip != nullptr) <<
-		"Could not open 'GameCube.fst.zip', check the test directory!";
+		"Could not open '" << rp_string_to_utf8(zip_filename) << "', check the test directory!";
 	if (!unzFstZip)
 		return files;
 
@@ -298,7 +327,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(void)
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
 		if (file_info.uncompressed_size <= MAX_GCN_FST_FILESIZE) {
 			// Add this filename to the list.
-			GcnFstTest_mode mode(filename, 0);
+			GcnFstTest_mode mode(filename, offsetShift);
 			files.push_back(mode);
 		}
 
@@ -337,8 +366,12 @@ string GcnFstTest::test_case_suffix_generator(::testing::TestParamInfo<GcnFstTes
 	return suffix;
 }
 
-INSTANTIATE_TEST_CASE_P(GcnFstTest, GcnFstTest,
-	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk())
+INSTANTIATE_TEST_CASE_P(GameCube, GcnFstTest,
+	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(0))
+	, GcnFstTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_CASE_P(Wii, GcnFstTest,
+	testing::ValuesIn(GcnFstTest::ReadTestCasesFromDisk(2))
 	, GcnFstTest::test_case_suffix_generator);
 
 } }
