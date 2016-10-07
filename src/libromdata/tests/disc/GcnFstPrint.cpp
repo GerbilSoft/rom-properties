@@ -36,7 +36,9 @@ using std::ostringstream;
 using std::string;
 
 #ifdef _WIN32
+#include <io.h>
 #include "TextFuncs.hpp"
+#include "RpWin32.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 
@@ -89,12 +91,18 @@ extern "C" int gtest_main(int argc, char *argv[])
 	string fst_str = oss.str();
 
 #ifdef _WIN32
-	// Convert to wchar_t, then print it.
-	u16string u16str = LibRomData::utf8_to_utf16(fst_str.data(), fst_str.size());
-	wprintf(L"%s", (const wchar_t*)u16str.c_str());
+	// FIXME: isatty() might not work properly on Win8+ with MinGW.
+	// Reference: https://lists.gnu.org/archive/html/bug-gnulib/2013-01/msg00007.html
+	if (isatty(fileno(stdout))) {
+		// Convert to wchar_t, then print it.
+		wprintf(L"%s", RP2W_s(fst_str));
+	} else {
+		// Writing to file. Print the original UTF-8.
+		printf("%s", fst_str.c_str());
+	}
 #else /* !_WIN32 */
 	// Print the FST.
-	printf("%s", oss.str().c_str());
+	printf("%s", fst_str.c_str());
 #endif
 	return 0;
 }
