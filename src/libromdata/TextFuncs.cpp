@@ -26,16 +26,17 @@
 #if defined(_WIN32)
 # include <windows.h>
 #elif defined(HAVE_ICONV)
+# include <byteorder.h>
+# if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#  define RP_ICONV_UTF16_ENCODING "UTF-16BE"
+# else
+#  define RP_ICONV_UTF16_ENCODING "UTF-16LE"
+# endif
 # include <iconv.h>
 # if defined(RP_UTF8)
 #  define RP_ICONV_ENCODING "UTF-8"
 # elif defined(RP_UTF16)
-#  include <byteorder.h>
-#  if SYS_BYTEORDER == SYS_BIG_ENDIAN
-#   define RP_ICONV_ENCODING "UTF-16BE"
-#  else
-#   define RP_ICONV_ENCODING "UTF-16LE"
-#  endif
+#  define RP_ICONV_ENCODING RP_ICONV_UTF16_ENCODING
 # endif
 #endif
 
@@ -355,7 +356,7 @@ u16string utf8_to_utf16(const char *str, size_t len)
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
 		u16string ret(wcs);
 		free(wcs);
@@ -388,7 +389,7 @@ string utf16_to_utf8(const char16_t *str, size_t len)
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_ENCODING, "UTF-8");
+	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
 	if (mbs) {
 		string ret(mbs);
 		free(mbs);
