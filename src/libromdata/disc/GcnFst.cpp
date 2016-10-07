@@ -389,13 +389,9 @@ IFst::Dir *GcnFst::opendir(const rp_char *path)
 		return nullptr;
 	}
 
-	IFst::Dir *dirp = reinterpret_cast<IFst::Dir*>(malloc(sizeof(*dirp)));
-	if (!dirp) {
-		// malloc() failed.
-		return nullptr;
-	}
-
+	IFst::Dir *dirp = new IFst::Dir;
 	d->fstDirCount++;
+	dirp->parent = this;
 	// TODO: Better way to get dir_idx?
 	dirp->dir_idx = (int)(fst_entry - d->fstData);
 
@@ -420,8 +416,11 @@ IFst::Dir *GcnFst::opendir(const rp_char *path)
  */
 IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 {
-	if (!dirp) {
-		// No directory pointer.
+	assert(dirp != nullptr);
+	assert(dirp->parent == this);
+	if (!dirp || dirp->parent != this) {
+		// No directory pointer, or the dirp
+		// doesn't belong to this IFst.
 		return nullptr;
 	}
 
@@ -488,16 +487,19 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
  */
 int GcnFst::closedir(IFst::Dir *dirp)
 {
-	// Allow nullptr to be closed in release builds.
-	// (Same behavior as free().)
-	// In debug builds, this will assert().
 	assert(dirp != nullptr);
+	assert(dirp->parent == this);
 	if (!dirp) {
+		// No directory pointer.
+		// In release builds, this is a no-op.
 		return 0;
+	} else if (dirp->parent != this) {
+		// The dirp doesn't belong to this IFst.
+		return -EINVAL;
 	}
 
 	assert(d->fstDirCount > 0);
-	free(dirp);
+	delete dirp;
 	d->fstDirCount--;
 	return 0;
 }

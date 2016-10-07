@@ -58,6 +58,7 @@ class IFst
 		};
 
 		struct Dir {
+			IFst *parent;		// IFst that owns this Dir.
 			int dir_idx;		// Directory index in the FST.
 			DirEnt entry;		// Current FstDirEntry.
 		};
