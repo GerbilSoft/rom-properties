@@ -44,9 +44,23 @@ using std::u16string;
 
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	if (argc != 2) {
-		printf("Syntax: %s fst.bin\n", argv[0]);
+	if (argc < 2 || argc > 3) {
+		printf("Syntax: %s fst.bin [offsetShift]\n", argv[0]);
+		printf("offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)\n");
 		return EXIT_FAILURE;
+	}
+
+	// Was an offsetShift specified?
+	uint8_t offsetShift = 0;	// Default is GameCube.
+	if (argc == 3) {
+		char *endptr = nullptr;
+		long ltmp = strtol(argv[2], &endptr, 10);
+		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
+			printf("Invalid offset shift '%s' specified.\n", argv[2]);
+			printf("offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)\n");
+			return EXIT_FAILURE;
+		}
+		offsetShift = (uint8_t)ltmp;
 	}
 
 	// Open and read the FST file.
@@ -78,8 +92,9 @@ extern "C" int gtest_main(int argc, char *argv[])
 	}
 
 	// Parse the FST.
-	// TODO: Offset shift.
-	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, 0);
+	// TODO: Validate the FST and return an error if it doesn't
+	// "look" like an FST?
+	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, offsetShift);
 	if (!fst) {
 		printf("ERROR: new GcnFst() failed.\n");
 		return EXIT_FAILURE;
