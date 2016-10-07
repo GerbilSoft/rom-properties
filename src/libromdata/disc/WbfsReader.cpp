@@ -96,13 +96,6 @@ class WbfsReaderPrivate {
 		 * @return Non-sparse size, in bytes.
 		 */
 		int64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
-
-		/**
-		 * Convert a logical block index to a physical block index.
-		 * @param block Logical block index.
-		 * @return Physical block index, or 0 for an empty block.
-		 */
-		inline uint16_t logicalBlockToPhysBlock(uint16_t block) const;
 };
 
 /** WbfsReaderPrivate **/
@@ -376,21 +369,6 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	return (int64_t)(lastBlock + 1) * (int64_t)(p->wbfs_sec_sz);
 }
 
-/**
- * Convert a logical block index to a physical block index.
- * @param block Logical block index.
- * @return Physical block index, or 0 for an empty block.
- */
-inline uint16_t WbfsReaderPrivate::logicalBlockToPhysBlock(uint16_t block) const
-{
-	assert((uint32_t)block < m_wbfs_disc->p->n_wbfs_sec_per_disc);
-	if ((uint32_t)block >= m_wbfs_disc->p->n_wbfs_sec_per_disc) {
-		// Out of range.
-		return 0;
-	}
-	return be16_to_cpu(m_wbfs_disc->header->wlba_table[block]);
-}
-
 /** WbfsReader **/
 
 WbfsReader::WbfsReader(IRpFile *file)
@@ -500,6 +478,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 
 	// Check if we're not starting on a block boundary.
 	const uint32_t wbfs_sec_sz = d->m_wbfs->wbfs_sec_sz;
+	const uint16_t *const wlba_table = d->m_wbfs_disc->header->wlba_table;
 	const uint32_t blockStartOffset = d->m_wbfs_pos % wbfs_sec_sz;
 	if (blockStartOffset != 0) {
 		// Not a block boundary.
@@ -510,7 +489,13 @@ size_t WbfsReader::read(void *ptr, size_t size)
 
 		// Get the physical block number first.
 		const uint16_t blockStart = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		const uint16_t physBlockStartIdx = d->logicalBlockToPhysBlock(blockStart);
+		assert((uint32_t)blockStart < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if ((uint32_t)blockStart >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return 0;
+		}
+
+		const uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
 		if (physBlockStartIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, read_sz);
@@ -539,8 +524,16 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	    ret += wbfs_sec_sz, d->m_wbfs_pos += wbfs_sec_sz)
 	{
 		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
+
+		// Get the physical block number first.
 		const uint16_t blockIdx = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		const uint16_t physBlockIdx = d->logicalBlockToPhysBlock(blockIdx);
+		assert((uint32_t)blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if ((uint32_t)blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return ret;
+		}
+
+		const uint16_t physBlockIdx = be16_to_cpu(wlba_table[blockIdx]);
 		if (physBlockIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, wbfs_sec_sz);
@@ -560,11 +553,17 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
 		// Not a full block.
+		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
 
 		// Get the physical block number first.
-		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
 		const uint16_t blockEnd = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		const uint16_t physBlockEndIdx = d->logicalBlockToPhysBlock(blockEnd);
+		assert((uint32_t)blockEnd < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if ((uint32_t)blockEnd >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return ret;
+		}
+
+		const uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
 		if (physBlockEndIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, size);
