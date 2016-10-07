@@ -29,11 +29,22 @@ using LibRomData::rp_string;
 // C includes.
 #include <stdint.h>
 
+#if defined(_MSC_VER) && _MSC_VER < 1700
+// MSVC 2012 added inttypes.h.
+// Older versions don't have it.
+#define PRIu64 "I64u"
+#define PRIX64 "I64X"
+#else
+#include <inttypes.h>
+#endif
+
 // C++ includes.
+#include <iomanip>
 #include <sstream>
 #include <vector>
 using std::endl;
 using std::ostream;
+using std::setw;
 using std::vector;
 
 namespace LibRomData {
@@ -133,8 +144,28 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			// File.
 			stats.files++;
 
-			// Save the filename. [TODO: other attributes]
+			// Save the filename.
 			rp_string name = dirent->name;
+
+			// Tree + name length.
+			// - Tree is 4 characters per level.
+			// - Attrs should start at column 40.
+			// TODO: Handle full-width and non-BMP Unicode characters correctly.
+			const int tree_name_length = ((level+1)*4) + 1 +
+					(int)rp_string_to_utf16(name).size();
+			int attr_spaces;
+			if (tree_name_length < 40) {
+				// Pad it to 40 columns.
+				attr_spaces = 40 - tree_name_length;
+			} else {
+				// Use the next closest multiple of 4.
+				attr_spaces = 4 - (tree_name_length % 4);
+			}
+
+			// Print the attributes. (address, size)
+			char attrs[48];
+			snprintf(attrs, sizeof(attrs), "[addr:0x%08" PRIX64 ", size:%" PRIu64 "]",
+				 dirent->offset, dirent->size);
 
 			// Check if any more entries are present.
 			dirent = fst->readdir(dirp);
@@ -147,9 +178,8 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			}
 			os << "\xE2\x94\x80\xE2\x94\x80 ";
 
-			// Print the filename.
-			// TODO: Attributes.
-			os << name << endl;
+			// Print the filename and attributes.
+			os << name << setw(attr_spaces) << ' ' << setw(0) << attrs << endl;
 		}
 	}
 
