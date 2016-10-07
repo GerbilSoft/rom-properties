@@ -69,6 +69,12 @@ class GcnFstPrivate
 		int fstDirCount;
 
 		/**
+		 * Check if an fst_entry is a directory.
+		 * @return True if this is a directory; false if it's a regular file.
+		 */
+		static inline bool is_dir(const GCN_FST_Entry *fst_entry);
+
+		/**
 		 * Get an FST entry's name.
 		 * @param fst_entry FST entry.
 		 * @return Name, or nullptr if an error occurred.
@@ -149,9 +155,14 @@ GcnFstPrivate::~GcnFstPrivate()
 	free(fstData);
 }
 
-// Extract the d_type from a file_name_type_offset.
-// TODO: Move somewhere else?
-#define FTNO_D_TYPE(ftno) ((be32_to_cpu(ftno) >> 24) == 1 ? DT_DIR : DT_REG)
+/**
+ * Check if an fst_entry is a directory.
+ * @return True if this is a directory; false if it's a regular file.
+ */
+inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
+{
+	return ((be32_to_cpu(fst_entry->file_type_name_offset) >> 24) == 1);
+}
 
 /**
  * Get an FST entry's name.
@@ -311,7 +322,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 			}
 
 			// If this is a directory, skip it.
-			if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+			if (is_dir(fst_entry)) {
 				// NOTE: next_offset is the index *after* the
 				// last entry in the subdirectory, so we have to
 				// subtract 1 for proper enumeration.
@@ -324,7 +335,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 			return nullptr;
 		}
 
-		if (FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+		if (is_dir(fst_entry)) {
 			// Directory. Save the last_fst_idx.
 			last_fst_idx = be32_to_cpu(fst_entry->dir.next_offset);
 			idx++;
@@ -383,7 +394,7 @@ IFst::Dir *GcnFst::opendir(const rp_char *path)
 		return nullptr;
 	}
 
-	if (FTNO_D_TYPE(fst_entry->file_type_name_offset) != DT_DIR) {
+	if (!d->is_dir(fst_entry)) {
 		// Not a directory.
 		// TODO: Set ENOTDIR?
 		return nullptr;
@@ -439,7 +450,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		return nullptr;
 	}
 
-	if (idx != dirp->dir_idx && FTNO_D_TYPE(fst_entry->file_type_name_offset) == DT_DIR) {
+	if (idx != dirp->dir_idx && d->is_dir(fst_entry)) {
 		// Skip over this directory.
 		idx = be32_to_cpu(fst_entry->dir.next_offset);
 	} else {
@@ -465,9 +476,10 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	}
 
 	// Save the entry information.
-	dirp->entry.type = FTNO_D_TYPE(fst_entry->file_type_name_offset);
+	const bool is_fst_dir = d->is_dir(fst_entry);
+	dirp->entry.type = is_fst_dir ? DT_DIR : DT_REG;
 	dirp->entry.name = pName;
-	if (dirp->entry.type == DT_DIR) {
+	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirp->entry.offset = 0;
 		dirp->entry.size = 0;
