@@ -233,7 +233,7 @@ const struct RomFields::Desc DMGPrivate::dmg_fields[] = {
 	{_RP("ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("RAM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {&dmg_string_monospace}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Checksum"), RomFields::RFT_STRING, {&dmg_string_monospace}},
 };
 
