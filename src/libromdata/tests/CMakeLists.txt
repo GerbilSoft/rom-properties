@@ -35,9 +35,7 @@ IF(PNG_LIBRARY)
 ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(RpImageLoaderTest)
 SET_WINDOWS_SUBSYSTEM(RpImageLoaderTest CONSOLE)
-ADD_TEST(NAME RpImageLoaderTest
-	COMMAND RpImageLoaderTest
-	)
+ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
 
 # AesCipher test.
 ADD_EXECUTABLE(AesCipherTest
@@ -55,9 +53,7 @@ IF(NETTLE_LIBRARY)
 ENDIF(NETTLE_LIBRARY)
 DO_SPLIT_DEBUG(AesCipherTest)
 SET_WINDOWS_SUBSYSTEM(AesCipherTest CONSOLE)
-ADD_TEST(NAME AesCipherTest
-	COMMAND AesCipherTest
-	)
+ADD_TEST(NAME AesCipherTest COMMAND AesCipherTest)
 
 # GcnFstPrint. (Not a test, but a useful program.)
 ADD_EXECUTABLE(GcnFstPrint
@@ -86,3 +82,4 @@ TARGET_LINK_LIBRARIES(GcnFstTest gtest)
 TARGET_LINK_LIBRARIES(GcnFstTest minizip ${ZLIB_LIBRARY})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
+ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
