@@ -18,7 +18,7 @@ configuration:
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake .
+  - appveyor.bat
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

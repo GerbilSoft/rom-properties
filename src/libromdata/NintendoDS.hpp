@@ -51,7 +51,7 @@ class NintendoDS : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		NintendoDS(IRpFile *file);
+		explicit NintendoDS(IRpFile *file);
 		virtual ~NintendoDS();
 
 	private:

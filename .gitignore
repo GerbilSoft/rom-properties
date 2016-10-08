@@ -6,7 +6,7 @@
 .directory
 
 # Build directories.
-/build*/
+/build*
 
 # KDevelop project files.
 *.kdev4

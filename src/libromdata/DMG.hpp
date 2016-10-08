@@ -46,7 +46,7 @@ class DMG : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		DMG(IRpFile *file);
+		explicit DMG(IRpFile *file);
 		virtual ~DMG();
 
 	private:

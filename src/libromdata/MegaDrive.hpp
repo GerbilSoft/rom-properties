@@ -45,7 +45,7 @@ class MegaDrive : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		MegaDrive(IRpFile *file);
+		explicit MegaDrive(IRpFile *file);
 		virtual ~MegaDrive();
 
 	private:

@@ -22,20 +22,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 
-#include "config.libromdata.h"
+#include "IFst.hpp"
 #include "gcn_structs.h"
-
-// C includes.
-#include <stdint.h>
-
-// Directory type values.
-// Based on dirent.h from glibc-2.23.
-#include "d_type.h"
 
 namespace LibRomData {
 
 class GcnFstPrivate;
-class GcnFst
+class GcnFst : public IFst
 {
 	public:
 		/**
@@ -45,9 +38,10 @@ class GcnFst
 		 * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
 		 */
 		GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
-		~GcnFst();
+		virtual ~GcnFst();
 
 	private:
+		typedef IFst super;
 		GcnFst(const GcnFst &other);
 		GcnFst &operator=(const GcnFst &other);
 	private:
@@ -55,44 +49,14 @@ class GcnFst
 		GcnFstPrivate *const d;
 
 	public:
-		/**
-		 * Get the number of FST entries.
-		 * @return Number of FST entries, or -1 on error.
-		 */
-		int count(void) const;
-
 		/** opendir() interface. **/
-		// TOOD: IFst?
-
-		struct FstDirEntry {
-			int idx;	// File index.
-			uint8_t type;	// File type. (See d_type.h)
-			const char *name;	// Filename. (TODO: Encoding?)
-			int64_t offset;		// Starting address.
-			uint32_t size;		// File size.
-		};
-
-		struct FstDir {
-			int dir_idx;		// Directory index in the FST.
-			FstDirEntry entry;	// Current FstDirEntry.
-		};
 
 		/**
 		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+		 * @param path	[in] Directory path.
 		 * @return FstDir*, or nullptr on error.
 		 */
-		FstDir *opendir(const rp_char *path);
-
-		/**
-		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
-		 * @return FstDir*, or nullptr on error.
-		 */
-		inline FstDir *opendir(const LibRomData::rp_string &path)
-		{
-			return opendir(path.c_str());
-		}
+		virtual Dir *opendir(const rp_char *path) final;
 
 		/**
 		 * Read a directory entry.
@@ -100,14 +64,14 @@ class GcnFst
 		 * @return FstDirEntry*, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
-		FstDirEntry *readdir(FstDir *dirp);
+		virtual DirEnt *readdir(Dir *dirp) final;
 
 		/**
 		 * Close an opened directory.
 		 * @param dirp FstDir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int closedir(FstDir *dirp);
+		virtual int closedir(Dir *dirp) final;
 };
 
 }

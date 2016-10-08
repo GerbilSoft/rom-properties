@@ -1,11 +1,27 @@
 PROJECT(extlib)
 
+# Set common properties for extlib targets.
+INCLUDE(SetMSVCDebugPath)
+FUNCTION(SET_EXTLIB_PROPERTIES)
+	FOREACH(_target ${ARGV})
+		IF(TARGET ${_target})
+			# Set the MSVC debug path.
+			SET_MSVC_DEBUG_PATH(${_target})
+
+			# Exclude from ALL and DEFAULT builds.
+			SET_TARGET_PROPERTIES(${_target} PROPERTIES
+				EXCLUDE_FROM_ALL TRUE
+				EXCLUDE_FROM_DEFAULT_BUILD TRUE
+				)
+		ENDIF(TARGET ${_target})
+	ENDFOREACH(_target ${ARGV})
+ENDFUNCTION(SET_EXTLIB_PROPERTIES)
+
 # zlib: Assembly optimizations.
 # TODO: Test on all archs and fix Z_PREFIX issues.
 # TODO: Add more assembly files from contrib/ besides the
 # default ones that were listed in zlib's CMakeLists.txt.
 # FIXME: Broken on AppVeyor. (MSVC 2015)
-IF(0)
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# i386/amd64. Check sizeof(void*) for the actual architecture,
@@ -28,7 +44,6 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	ENDIF()
 ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 UNSET(arch)
-ENDIF(0)
 
 # Don't install any of these libraries.
 SET(OLD_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
@@ -46,7 +61,12 @@ IF(WIN32)
 	# Enable internal zlib for Win32 only.
 	SET(ZLIB_DEFINITIONS "-DZLIB_CONST")
 	ADD_SUBDIRECTORY(zlib)
+	SET_EXTLIB_PROPERTIES(zlib)
+	SET_EXTLIB_PROPERTIES(zlibstatic)
 ENDIF(WIN32)
+
+# MiniZip.
+ADD_SUBDIRECTORY(minizip)
 
 # Google Test
 IF(BUILD_TESTING)
@@ -55,22 +75,12 @@ IF(BUILD_TESTING)
 	ADD_SUBDIRECTORY(googletest)
 
 	INCLUDE(SetMSVCDebugPath)
-	FOREACH(_target
+	SET_EXTLIB_PROPERTIES(
 		gtest gtest_main gtest_no_exception gtest_main_no_exception
 		gtest_main_no_rtti gtest_dll gtest_main_use_own_tuple
 		gmock gmock_main gmock_main_no_exception
-		gmock_main_no_rtti gmock_main_use_own_tuple)
-		IF(TARGET ${_target})
-			# Set the MSVC debug path.
-			SET_MSVC_DEBUG_PATH(${_target})
-
-			# Exclude from ALL and DEFAULT builds.
-			SET_TARGET_PROPERTIES(${_target} PROPERTIES
-				EXCLUDE_FROM_ALL TRUE
-				EXCLUDE_FROM_DEFAULT_BUILD TRUE
-				)
-		ENDIF(TARGET ${_target})
-	ENDFOREACH()
+		gmock_main_no_rtti gmock_main_use_own_tuple
+		)
 ENDIF(BUILD_TESTING)
 
 # FIXME: Probably unnecessary, since these variables

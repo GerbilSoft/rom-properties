@@ -47,7 +47,7 @@ class GameBoyAdvance : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		GameBoyAdvance(IRpFile *file);
+		explicit GameBoyAdvance(IRpFile *file);
 		virtual ~GameBoyAdvance();
 
 	private:

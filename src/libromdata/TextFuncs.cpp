@@ -26,16 +26,17 @@
 #if defined(_WIN32)
 # include <windows.h>
 #elif defined(HAVE_ICONV)
+# include <byteorder.h>
+# if SYS_BYTEORDER == SYS_BIG_ENDIAN
+#  define RP_ICONV_UTF16_ENCODING "UTF-16BE"
+# else
+#  define RP_ICONV_UTF16_ENCODING "UTF-16LE"
+# endif
 # include <iconv.h>
 # if defined(RP_UTF8)
 #  define RP_ICONV_ENCODING "UTF-8"
 # elif defined(RP_UTF16)
-#  include <byteorder.h>
-#  if SYS_BYTEORDER == SYS_BIG_ENDIAN
-#   define RP_ICONV_ENCODING "UTF-16BE"
-#  else
-#   define RP_ICONV_ENCODING "UTF-16LE"
-#  endif
+#  define RP_ICONV_ENCODING RP_ICONV_UTF16_ENCODING
 # endif
 #endif
 
@@ -258,7 +259,11 @@ std::string cp1252_sjis_to_utf8(const char *str, size_t len)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	char *mbs = rp_iconv((char*)str, len, "SHIFT-JIS", "UTF-8");
+	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
+	// References:
+	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
+	// - https://en.wikipedia.org/wiki/Wave_dash
+	char *mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
 	if (mbs) {
 		string ret(mbs);
 		free(mbs);
@@ -314,7 +319,11 @@ u16string cp1252_sjis_to_utf16(const char *str, size_t len)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
+	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
+	// References:
+	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
+	// - https://en.wikipedia.org/wiki/Wave_dash
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_ENCODING);
 	if (wcs) {
 		u16string ret(wcs);
 		free(wcs);
@@ -355,7 +364,7 @@ u16string utf8_to_utf16(const char *str, size_t len)
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_ENCODING);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
 		u16string ret(wcs);
 		free(wcs);
@@ -388,7 +397,7 @@ string utf16_to_utf8(const char16_t *str, size_t len)
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_ENCODING, "UTF-8");
+	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
 	if (mbs) {
 		string ret(mbs);
 		free(mbs);
@@ -453,7 +462,7 @@ u16string latin1_to_utf16(const char *str, size_t len)
 	return wcs;
 }
 
-#ifndef RP_WIS16
+#if defined(RP_UTF16) && !defined(RP_WIS16)
 /**
  * char16_t strlen().
  * @param wcs 16-bit string.
@@ -479,6 +488,25 @@ char16_t *u16_strdup(const char16_t *wcs)
 	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
 }
-#endif /* !RP_WIS16 */
+
+/**
+ * char16_t strcmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcmp() result.
+ */
+int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	// References:
+	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
+	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
+	while (*wcs1 && (*wcs1 == *wcs2)) {
+		wcs1++;
+		wcs2++;
+	}
+
+	return (int)(*(const unsigned short*)wcs1 - *(const unsigned short*)wcs2);
+}
+#endif /* RP_UTF16 && !RP_WIS16 */
 
 }
