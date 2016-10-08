@@ -29,7 +29,10 @@ UNSET(RP_STACK_CFLAG)
 # - The default /W3 fails for seemingly no reason. /W0 fixes it.
 # - Compilation fails due to no SAFESEH handlers in inffas32.asm.
 # NOTE: We're enabling these for all MSVC platforms, not just 32-bit.
-SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh")
+# NOTE 2: We need to cache this in order to prevent random build failures
+# caused by an empty string being cached instead.
+SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh" CACHE STRING
+     "Flags used by the assembler during all build types.")
 
 # Check for link-time optimization.
 IF(ENABLE_LTO)
