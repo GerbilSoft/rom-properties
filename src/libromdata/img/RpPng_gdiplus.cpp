@@ -217,6 +217,7 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_CI4_to_CI8(Gdiplus::Bitmap *pGdipBmp)
 		// Error getting the CI4 palette.
 		free(gdipPalette);
 		delete pGdipConvBmp;
+		pGdipBmp->UnlockBits(&bmpData);
 		return nullptr;
 	}
 
@@ -330,6 +331,7 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_mono_to_CI8(Gdiplus::Bitmap *pGdipBmp)
 		// Error getting the CI4 palette.
 		free(gdipPalette);
 		delete pGdipConvBmp;
+		pGdipBmp->UnlockBits(&bmpData);
 		return nullptr;
 	}
 
