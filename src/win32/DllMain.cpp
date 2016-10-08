@@ -42,6 +42,12 @@
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
+// rp_image backend registration.
+#include "libromdata/img/RpGdiplusBackend.hpp"
+#include "libromdata/img/rp_image.hpp"
+using LibRomData::RpGdiplusBackend;
+using LibRomData::rp_image;
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -82,6 +88,10 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Disable thread library calls, since we don't
 			// care about thread attachments.
 			DisableThreadLibraryCalls(hInstance);
+
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 			break;
 		}
 
