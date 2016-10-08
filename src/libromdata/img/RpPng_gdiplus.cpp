@@ -134,6 +134,7 @@ rp_image *RpPngPrivate::gdip_ARGB32_to_rp_image_ARGB32(Gdiplus::Bitmap *gdipBmp)
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
+		delete img;
 		return nullptr;
 	}
 
@@ -193,6 +194,7 @@ rp_image *RpPngPrivate::gdip_ARGB32_to_rp_image_CI8_grayscale(Gdiplus::Bitmap *g
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
+		delete img;
 		return nullptr;
 	}
 
@@ -265,6 +267,7 @@ rp_image *RpPngPrivate::gdip_CI8_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
+		delete img;
 		return nullptr;
 	}
 
@@ -347,6 +350,7 @@ rp_image *RpPngPrivate::gdip_CI4_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
+		delete img;
 		return nullptr;
 	}
 
@@ -442,6 +446,7 @@ rp_image *RpPngPrivate::gdip_mono_to_rp_image_CI8(Gdiplus::Bitmap *gdipBmp)
 	if (!img || !img->isValid()) {
 		// Error creating an rp_image.
 		gdipBmp->UnlockBits(&bmpData);
+		delete img;
 		return nullptr;
 	}
 
