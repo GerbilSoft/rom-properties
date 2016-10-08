@@ -510,6 +510,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// Make sure the CRC32 table is initialized.
 	get_crc_table();
 
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }

@@ -390,6 +390,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	fprintf(stderr, "LibRomData test suite: AesCipher tests.\n\n");
 	fflush(nullptr);
 
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
