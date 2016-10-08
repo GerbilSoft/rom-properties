@@ -259,8 +259,7 @@ static const rp_string &getHomeDirectory(void)
 		if (pwd_result->pw_dir[0] == 0)
 			return cache_dir;
 
-		home_dir = utf8_to_rp_string(pwd_result->pw_dir,
-			strnlen(pwd_result->pw_dir, sizeof(pwd_result->pw_dir)));
+		home_dir = utf8_to_rp_string(pwd_result->pw_dir, strlen(pwd_result->pw_dir));
 	}
 
 	return home_dir;
