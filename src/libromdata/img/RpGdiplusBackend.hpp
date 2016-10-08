@@ -50,13 +50,40 @@ namespace LibRomData {
 class RpGdiplusBackend : public rp_image_backend
 {
 	public:
+		/**
+		 * Create an RpGdiplusBackend.
+		 *
+		 * This will create an internal Gdiplus::Bitmap
+		 * with the specified parameters.
+		 *
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param format Image format.
+		 */
 		RpGdiplusBackend(int width, int height, rp_image::Format format);
+
+		/**
+		 * Create an RpGdiplusBackend using the specified Gdiplus::Bitmap.
+		 *
+		 * NOTE: This RpGdiplusBackend will take ownership of the Gdiplus::Bitmap.
+		 *
+		 * @param pGdipBmp Gdiplus::Bitmap.
+		 */
+		RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp);
+
 		virtual ~RpGdiplusBackend();
 
 	private:
 		typedef rp_image_backend super;
 		RpGdiplusBackend(const RpGdiplusBackend &other);
 		RpGdiplusBackend &operator=(const RpGdiplusBackend &other);
+
+	private:
+		/**
+		 * Initial GDI+ bitmap lock and palette initialization.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int doInitialLock(void);
 
 	public:
 		/**

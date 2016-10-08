@@ -24,6 +24,9 @@
 
 #include "RpGdiplusBackend.hpp"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -32,6 +35,16 @@
 
 namespace LibRomData {
 
+/**
+ * Create an RpGdiplusBackend.
+ *
+ * This will create an internal Gdiplus::Bitmap
+ * with the specified parameters.
+ *
+ * @param width Image width.
+ * @param height Image height.
+ * @param format Image format.
+ */
 RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
 	, m_gdipToken(0)
@@ -41,6 +54,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 {
 	// Initialize GDI+.
 	m_gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(m_gdipToken != 0);
 	if (m_gdipToken == 0)
 		return;
 
@@ -62,27 +76,11 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 	}
 	m_pGdipBmp = new Gdiplus::Bitmap(width, height, m_gdipFmt);
 
-	// Lock the bitmap.
-	// It will only be (temporarily) unlocked when converting to HBITMAP.
-	// FIXME: rp_image needs to support "stride", since GDI+ stride is
-	// not necessarily the same as width*sizeof(pixel).
-	const Gdiplus::Rect bmpRect(0, 0, width, height);
-	Gdiplus::Status status = m_pGdipBmp->LockBits(&bmpRect,
-		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
-		m_gdipFmt, &m_gdipBmpData);
-	if (status != Gdiplus::Status::Ok) {
-		// Error locking the GDI+ bitmap.
-		delete m_pGdipBmp;
-		m_pGdipBmp = nullptr;
-		m_gdipFmt = 0;
-		this->width = 0;
-		this->height = 0;
-		this->stride = 0;
-		this->format = rp_image::FORMAT_NONE;
+	// Do the initial lock.
+	if (doInitialLock() != 0)
 		return;
-	}
-	
-	if (format == rp_image::FORMAT_CI8) {
+
+	if (this->format == rp_image::FORMAT_CI8) {
 		// Initialize the palette.
 		// Note that Gdiplus::Image doesn't support directly
 		// modifying the palette, so we have to copy our
@@ -90,8 +88,82 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// is requested.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
-		if (!m_pGdipPalette) {
-			// Failed to allocate memory.
+
+		// Set this->palette to the first palette entry.
+		this->palette = reinterpret_cast<uint32_t*>(&m_pGdipPalette->Entries[0]);
+		// 256 colors allocated in the palette.
+		this->palette_len = 256;
+	}
+}
+
+/**
+ * Create an RpGdiplusBackend using the specified Gdiplus::Bitmap.
+ *
+ * NOTE: This RpGdiplusBackend will take ownership of the Gdiplus::Bitmap.
+ *
+ * @param pGdipBmp Gdiplus::Bitmap.
+ */
+RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
+	: super(0, 0, rp_image::FORMAT_NONE)
+	, m_gdipToken(0)
+	, m_pGdipBmp(pGdipBmp)
+	, m_gdipFmt(0)
+	, m_pGdipPalette(nullptr)
+{
+	assert(pGdipBmp != nullptr);
+	if (!pGdipBmp)
+		return;
+
+	// Initialize GDI+.
+	m_gdipToken = GdiplusHelper::InitGDIPlus();
+	assert(m_gdipToken != 0);
+	if (m_gdipToken == 0) {
+		delete m_pGdipBmp;
+		m_pGdipBmp = nullptr;
+		return;
+	}
+
+	// Check the pixel format.
+	m_gdipFmt = pGdipBmp->GetPixelFormat();
+	switch (m_gdipFmt) {
+		case PixelFormat8bppIndexed:
+			this->format = rp_image::FORMAT_CI8;
+			break;
+
+		case PixelFormat24bppRGB:
+		case PixelFormat32bppRGB:
+			// TODO: Is conversion needed?
+			this->format = rp_image::FORMAT_ARGB32;
+			m_gdipFmt = PixelFormat32bppRGB;
+			break;
+
+		case PixelFormat32bppARGB:
+			this->format = rp_image::FORMAT_ARGB32;
+			break;
+
+		default:
+			// Unsupported format.
+			assert(false);
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			return;
+	}
+
+	// Set the width and height.
+	this->width = pGdipBmp->GetWidth();
+	this->height = pGdipBmp->GetHeight();
+
+	// If the image has a palette, load it.
+	if (this->format == rp_image::FORMAT_CI8) {
+		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
+		// TODO: malloc(), then clear unused entries?
+		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
+
+		Gdiplus::Status status = pGdipBmp->GetPalette(m_pGdipPalette, gdipPalette_sz);
+		if (status != Gdiplus::Status::Ok) {
+			// Failed to retrieve the palette.
+			free(m_pGdipPalette);
+			m_pGdipPalette = nullptr;
 			delete m_pGdipBmp;
 			m_pGdipBmp = nullptr;
 			m_gdipFmt = 0;
@@ -108,9 +180,8 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		this->palette_len = 256;
 	}
 
-	// Set the image stride.
-	// On Windows, it might not be the same as width*pixelsize.
-	this->stride = m_gdipBmpData.Stride;
+	// Do the initial lock.
+	doInitialLock();
 }
 
 RpGdiplusBackend::~RpGdiplusBackend()
@@ -123,6 +194,39 @@ RpGdiplusBackend::~RpGdiplusBackend()
 
 	free(this->m_pGdipPalette);
 	GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
+}
+
+/**
+ * Initial GDI+ bitmap lock and palette initialization.
+ * @return 0 on success; non-zero on error.
+ */
+int RpGdiplusBackend::doInitialLock(void)
+{
+	// Lock the bitmap.
+	// It will only be (temporarily) unlocked when converting to HBITMAP.
+	// FIXME: rp_image needs to support "stride", since GDI+ stride is
+	// not necessarily the same as width*sizeof(pixel).
+	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
+	Gdiplus::Status status = m_pGdipBmp->LockBits(&bmpRect,
+		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
+		m_gdipFmt, &m_gdipBmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the GDI+ bitmap.
+		delete m_pGdipBmp;
+		m_pGdipBmp = nullptr;
+		m_gdipFmt = 0;
+		this->width = 0;
+		this->height = 0;
+		this->stride = 0;
+		this->format = rp_image::FORMAT_NONE;
+		return -1;
+	}
+
+	// Set the image stride.
+	// On Windows, it might not be the same as width*pixelsize.
+	// TODO: If Stride is negative, the image is upside-down.
+	this->stride = abs(m_gdipBmpData.Stride);
+	return 0;
 }
 
 /**
@@ -147,7 +251,7 @@ const void *RpGdiplusBackend::data(void) const
 
 size_t RpGdiplusBackend::data_len(void) const
 {
-	return m_gdipBmpData.Stride * m_gdipBmpData.Height;
+	return this->stride * this->height;
 }
 
 /**

@@ -44,7 +44,27 @@ class rp_image
 			FORMAT_ARGB32,		// 32-bit ARGB.
 		};
 
+		/**
+		 * Create an rp_image.
+		 *
+		 * If an rp_image_backend has been registered, that backend
+		 * will be used; otherwise, the defaul tbackend will be used.
+		 *
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param format Image format.
+		 */
 		rp_image(int width, int height, Format format);
+
+		/**
+		 * Create an rp_image using the specified rp_image_backend.
+		 *
+		 * NOTE: This rp_image will take ownership of the rp_image_backend.
+		 *
+		 * @param backend rp_image_backend.
+		 */
+		rp_image(rp_image_backend *backend);
+
 		~rp_image();
 
 	private:

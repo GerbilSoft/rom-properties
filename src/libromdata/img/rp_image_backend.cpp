@@ -61,7 +61,11 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, tr_idx(-1) // COMMIT NOTE: Changing default from 0 to -1.
 {
 	// Calculate the stride.
-	stride = calc_stride(width, format);
+	// NOTE: If format == FORMAT_NONE, the subclass is
+	// managing width/height/format.
+	if (format != rp_image::FORMAT_NONE) {
+		stride = calc_stride(width, format);
+	}
 }
 
 rp_image_backend::~rp_image_backend()
