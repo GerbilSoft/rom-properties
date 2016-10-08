@@ -259,7 +259,11 @@ std::string cp1252_sjis_to_utf8(const char *str, size_t len)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	char *mbs = rp_iconv((char*)str, len, "SHIFT-JIS", "UTF-8");
+	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
+	// References:
+	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
+	// - https://en.wikipedia.org/wiki/Wave_dash
+	char *mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
 	if (mbs) {
 		string ret(mbs);
 		free(mbs);
@@ -315,7 +319,11 @@ u16string cp1252_sjis_to_utf16(const char *str, size_t len)
 #elif defined(HAVE_ICONV)
 	// iconv version.
 	// Try Shift-JIS first.
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "SHIFT-JIS", RP_ICONV_ENCODING);
+	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
+	// References:
+	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
+	// - https://en.wikipedia.org/wiki/Wave_dash
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_ENCODING);
 	if (wcs) {
 		u16string ret(wcs);
 		free(wcs);
