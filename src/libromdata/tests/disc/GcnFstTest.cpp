@@ -314,7 +314,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 /**
  * Make sure there aren't any duplicate filenames in all subdirectories.
  */
-TEST_P(GcnFstTest, noDuplicateFilenames)
+TEST_P(GcnFstTest, NoDuplicateFilenames)
 {
 	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames(_RP("/")));
 }
