@@ -117,7 +117,27 @@ rp_image_backend_default::~rp_image_backend_default()
 class rp_image_private
 {
 	public:
+		/**
+		 * Create an rp_image_private.
+		 *
+		 * If an rp_image_backend has been registered, that backend
+		 * will be used; otherwise, the defaul tbackend will be used.
+		 *
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param format Image format.
+		 */
 		rp_image_private(int width, int height, rp_image::Format format);
+
+		/**
+		 * Create an rp_image_private using the specified rp_image_backend.
+		 *
+		 * NOTE: This rp_image will take ownership of the rp_image_backend.
+		 *
+		 * @param backend rp_image_backend.
+		 */
+		rp_image_private(rp_image_backend *backend);
+
 		~rp_image_private();
 
 	private:
@@ -136,6 +156,16 @@ class rp_image_private
 
 rp_image::rp_image_backend_creator_fn rp_image_private::backend_fn = nullptr;
 
+/**
+ * Create an rp_image_private.
+ *
+ * If an rp_image_backend has been registered, that backend
+ * will be used; otherwise, the defaul tbackend will be used.
+ *
+ * @param width Image width.
+ * @param height Image height.
+ * @param format Image format.
+ */
 rp_image_private::rp_image_private(int width, int height, rp_image::Format format)
 {
 	if (width <= 0 || height <= 0 ||
@@ -154,6 +184,17 @@ rp_image_private::rp_image_private(int width, int height, rp_image::Format forma
 	}
 }
 
+/**
+ * Create an rp_image_private using the specified rp_image_backend.
+ *
+ * NOTE: This rp_image will take ownership of the rp_image_backend.
+ *
+ * @param backend rp_image_backend.
+ */
+rp_image_private::rp_image_private(rp_image_backend *backend)
+	: backend(backend)
+{ }
+
 rp_image_private::~rp_image_private()
 {
 	delete backend;
@@ -161,8 +202,29 @@ rp_image_private::~rp_image_private()
 
 /** rp_image **/
 
+/**
+ * Create an rp_image.
+ *
+ * If an rp_image_backend has been registered, that backend
+ * will be used; otherwise, the defaul tbackend will be used.
+ *
+ * @param width Image width.
+ * @param height Image height.
+ * @param format Image format.
+ */
 rp_image::rp_image(int width, int height, rp_image::Format format)
 	: d(new rp_image_private(width, height, format))
+{ }
+
+/**
+ * Create an rp_image using the specified rp_image_backend.
+ *
+ * NOTE: This rp_image will take ownership of the rp_image_backend.
+ *
+ * @param backend rp_image_backend.
+ */
+rp_image::rp_image(rp_image_backend *backend)
+	: d(new rp_image_private(backend))
 { }
 
 rp_image::~rp_image()

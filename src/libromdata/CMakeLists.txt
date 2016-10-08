@@ -135,10 +135,12 @@ IF(WIN32)
 		file/RP_IStream_Win32.cpp
 		img/RpPng_gdiplus.cpp
 		img/GdiplusHelper.cpp
+		img/RpGdiplusBackend.cpp
 		)
 	SET(libromdata_OS_H
 		file/RP_IStream_Win32.hpp
 		img/GdiplusHelper.hpp
+		img/RpGdiplusBackend.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
