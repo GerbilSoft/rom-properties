@@ -161,6 +161,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 					*dest++ = pxMono;
 				}
 			}
+			break;
 		}
 
 		default:
