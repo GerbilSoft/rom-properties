@@ -69,6 +69,15 @@ class RpPngPrivate
 		static Gdiplus::Bitmap *gdip_ARGB32_to_CI8_grayscale(Gdiplus::Bitmap *pGdipBmp);
 
 		/**
+		 * Copy the palette from a CI8 (or lower) bitmap to a CI8 bitmap.
+		 * The palette will be expanded to 256 colors if necessary.
+		 * @param pGdipDestBmp Destination bitmap.
+		 * @param pGdipSrcBmp Source bitmap.
+		 * @return Gdiplus::Status code.
+		 */
+		static Gdiplus::Status copyPaletteToCI8(Gdiplus::Bitmap *pGdipDestBmp, Gdiplus::Bitmap *pGdipSrcBmp);
+
+		/**
 		 * Convert a CI4 GDI+ bitmap to CI8.
 		 * NOTE: The original bitmap is left intact.
 		 * @param pGdipBmp GDI+ bitmap.
@@ -180,6 +189,44 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_ARGB32_to_CI8_grayscale(Gdiplus::Bitmap *pGd
 }
 
 /**
+ * Copy the palette from a CI8 (or lower) bitmap to a CI8 bitmap.
+ * The palette will be expanded to 256 colors if necessary.
+ * @param pGdipDestBmp Destination bitmap.
+ * @param pGdipSrcBmp Source bitmap.
+ * @return Gdiplus::Status code.
+ */
+Gdiplus::Status RpPngPrivate::copyPaletteToCI8(Gdiplus::Bitmap *pGdipDestBmp, Gdiplus::Bitmap *pGdipSrcBmp)
+{
+	// Create a 256-color palette.
+	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
+	Gdiplus::ColorPalette *gdipPalette =
+		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(gdipPalette_sz));
+
+	// Get the source bitmap's palette.
+	int palette_size = pGdipSrcBmp->GetPaletteSize();
+	assert(palette_size > 0);
+	Gdiplus::Status status = pGdipSrcBmp->GetPalette(gdipPalette, palette_size);
+	if (status != Gdiplus::Status::Ok) {
+		// Error getting the source palette.
+		free(gdipPalette);
+		return status;
+	}
+
+	if (gdipPalette->Count < 256) {
+		// Extend the palette to 256 colors.
+		// Additional colors will be set to 0.
+		int diff = 256 - gdipPalette->Count;
+		memset(&gdipPalette->Entries[gdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
+		gdipPalette->Count = 256;
+	}
+
+	// Set the destination bitmap's palette.
+	status = pGdipDestBmp->SetPalette(gdipPalette);
+	free(gdipPalette);
+	return status;
+}
+
+/**
  * Convert a CI4 GDI+ bitmap to CI8.
  * NOTE: The original bitmap is left intact.
  * @param pGdipBmp GDI+ bitmap.
@@ -204,47 +251,23 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_CI4_to_CI8(Gdiplus::Bitmap *pGdipBmp)
 	Gdiplus::Bitmap *pGdipConvBmp = new Gdiplus::Bitmap(
 		bmpData.Width, bmpData.Height, PixelFormat8bppIndexed);
 
-	// Initialize a ColorPalette to convert the CI4 palette to CI8.
-	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-	Gdiplus::ColorPalette *gdipPalette =
-		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(gdipPalette_sz));
-
-	// Actual GDI+ palette size.
-	int palette_size = pGdipBmp->GetPaletteSize();
-	assert(palette_size > 0);
-	status = pGdipBmp->GetPalette(gdipPalette, palette_size);
-	if (status != Gdiplus::Status::Ok) {
-		// Error getting the CI4 palette.
-		free(gdipPalette);
-		delete pGdipConvBmp;
-		pGdipBmp->UnlockBits(&bmpData);
-		return nullptr;
-	}
-
-	if (gdipPalette->Count < 256) {
-		// Extend the palette to 256 colors.
-		// Additional colors will be set to 0.
-		int diff = 256 - gdipPalette->Count;
-		memset(&gdipPalette->Entries[gdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
-		gdipPalette->Count = 256;
-	}
-
-	// Set the CI8 palette.
-	status = pGdipConvBmp->SetPalette(gdipPalette);
-	free(gdipPalette);
-	if (status != Gdiplus::Status::Ok) {
-		// Error setting the CI8 palette.
-		delete pGdipConvBmp;
-		pGdipBmp->UnlockBits(&bmpData);
-		return nullptr;
-	}
-
 	// Lock the CI8 bitmap.
 	Gdiplus::BitmapData bmpConvData;
 	status = pGdipConvBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeWrite,
 				PixelFormat8bppIndexed, &bmpConvData);
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the new bitmap.
+		delete pGdipConvBmp;
+		pGdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the palette from the source image.
+	status = copyPaletteToCI8(pGdipConvBmp, pGdipBmp);
+	if (status != Gdiplus::Status::Ok) {
+		// Error copying the palette.
+		// TODO: Is UnlockBits() needed before delete?
+		pGdipConvBmp->UnlockBits(&bmpConvData);
 		delete pGdipConvBmp;
 		pGdipBmp->UnlockBits(&bmpData);
 		return nullptr;
@@ -318,47 +341,23 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_mono_to_CI8(Gdiplus::Bitmap *pGdipBmp)
 	Gdiplus::Bitmap *pGdipConvBmp = new Gdiplus::Bitmap(
 		bmpData.Width, bmpData.Height, PixelFormat8bppIndexed);
 
-	// Initialize a ColorPalette to convert the monochrome palette to CI8.
-	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-	Gdiplus::ColorPalette *gdipPalette =
-		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(gdipPalette_sz));
-
-	// Actual GDI+ palette size.
-	int palette_size = pGdipBmp->GetPaletteSize();
-	assert(palette_size > 0);
-	status = pGdipBmp->GetPalette(gdipPalette, palette_size);
-	if (status != Gdiplus::Status::Ok) {
-		// Error getting the CI4 palette.
-		free(gdipPalette);
-		delete pGdipConvBmp;
-		pGdipBmp->UnlockBits(&bmpData);
-		return nullptr;
-	}
-
-	if (gdipPalette->Count < 256) {
-		// Extend the palette to 256 colors.
-		// Additional colors will be set to 0.
-		int diff = 256 - gdipPalette->Count;
-		memset(&gdipPalette->Entries[gdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
-		gdipPalette->Count = 256;
-	}
-
-	// Set the CI8 palette.
-	status = pGdipConvBmp->SetPalette(gdipPalette);
-	free(gdipPalette);
-	if (status != Gdiplus::Status::Ok) {
-		// Error setting the CI8 palette.
-		delete pGdipConvBmp;
-		pGdipBmp->UnlockBits(&bmpData);
-		return nullptr;
-	}
-
 	// Lock the CI8 bitmap.
 	Gdiplus::BitmapData bmpConvData;
 	status = pGdipConvBmp->LockBits(&bmpRect, Gdiplus::ImageLockModeWrite,
 				PixelFormat8bppIndexed, &bmpConvData);
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the new bitmap.
+		delete pGdipConvBmp;
+		pGdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
+
+	// Copy the palette from the source image.
+	status = copyPaletteToCI8(pGdipConvBmp, pGdipBmp);
+	if (status != Gdiplus::Status::Ok) {
+		// Error copying the palette.
+		// TODO: Is UnlockBits() needed before delete?
+		pGdipConvBmp->UnlockBits(&bmpConvData);
 		delete pGdipConvBmp;
 		pGdipBmp->UnlockBits(&bmpData);
 		return nullptr;
