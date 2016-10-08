@@ -42,7 +42,6 @@ using LibRomData::rp_string;
 #include <iomanip>
 #include <sstream>
 #include <vector>
-using std::endl;
 using std::ostream;
 using std::setw;
 using std::vector;
@@ -80,7 +79,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 	// except for the root directory.
 	if (level == 0) {
 		// Root directory.
-		os << path << endl;
+		os << path << '\n';
 	}
 
 	// Read the directory entries.
@@ -129,7 +128,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			os << "\xE2\x94\x80\xE2\x94\x80 ";
 
 			// Print the subdirectory name.
-			os << name << endl;
+			os << name << '\n';
 
 			// Print the subdirectory.
 			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, stats);
@@ -179,7 +178,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			os << "\xE2\x94\x80\xE2\x94\x80 ";
 
 			// Print the filename and attributes.
-			os << name << setw(attr_spaces) << ' ' << setw(0) << attrs << endl;
+			os << name << setw(attr_spaces) << ' ' << setw(0) << attrs << '\n';
 		}
 	}
 
@@ -210,9 +209,10 @@ int fstPrint(IFst *fst, ostream &os)
 		return ret;
 	}
 
-	os << endl <<
+	os << '\n' <<
 		stats.dirs << ' ' << (stats.dirs == 1 ? "directory" : "directories") << ", " <<
-		stats.files << ' ' << (stats.files == 1 ? "file" : "files") << endl;
+		stats.files << ' ' << (stats.files == 1 ? "file" : "files") << '\n';
+	os.flush();
 	return 0;
 }
 
