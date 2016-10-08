@@ -193,8 +193,14 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	UNUSED(nIconSize);
 
 	// Make sure a filename was set by calling IPersistFile::Load().
-	if (m_filename.empty())
+	if (m_filename.empty()) {
 		return E_INVALIDARG;
+	}
+
+	// phiconLarge must be valid.
+	if (!phiconLarge) {
+		return E_INVALIDARG;
+	}
 
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
@@ -214,13 +220,33 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		return S_FALSE;
 	}
 
-	// ROM is supported. Get the internal icon.
-	// TODO: Customize for internal icon, disc/cart scan, etc.?
-	HRESULT ret = S_FALSE;
-	const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
-	if (icon) {
-		// Convert the icon to HICON.
-		HICON hIcon = RpImageWin32::toHICON(icon);
+	// ROM is supported. Get the image.
+	// TODO: Customize which ones are used per-system.
+	// For now, check EXT MEDIA, then INT ICON.
+
+	*phiconLarge = nullptr;
+	bool needs_delete = false;	// External images need manual deletion.
+	const rp_image *img = nullptr;
+
+	uint32_t imgbf = romData->supportedImageTypes();
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		needs_delete = (img != nullptr);
+	}
+
+	if (!img) {
+		// No external media scan.
+		// Try an internal image.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+		}
+	}
+
+	if (img) {
+		// Convert the image to HICON.
+		HICON hIcon = RpImageWin32::toHICON(img);
 		if (hIcon != nullptr) {
 			// Icon converted.
 			if (phiconLarge) {
@@ -233,12 +259,15 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 				// FIXME: is this valid?
 				*phiconSmall = nullptr;
 			}
+		}
 
-			ret = S_OK;
+		if (needs_delete) {
+			// Delete the image.
+			delete const_cast<rp_image*>(img);
 		}
 	}
 
-	return ret;
+	return (*phiconLarge != nullptr ? S_OK : S_FALSE);
 }
 
 /** IPersistFile **/
