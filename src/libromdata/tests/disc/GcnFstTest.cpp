@@ -77,7 +77,6 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 	protected:
 		GcnFstTest()
 			: ::testing::TestWithParam<GcnFstTest_mode>()
-			, m_unzFstZip(nullptr)
 			, m_fst(nullptr)
 		{ }
 
@@ -91,10 +90,16 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 */
 		static unzFile openZip(const rp_char *filename);
 
-	public:
-		// Zip file.
-		unzFile m_unzFstZip;
+		/**
+		 * Get a file from a Zip file.
+		 * @param zip_filename	[in] Zip filename.
+		 * @param int_filename	[in] Internal filename.
+		 * @param buf		[out] uvector buffer for the data.
+		 * @return Number of bytes read, or negative on error.
+		 */
+		static int getFileFromZip(const rp_char *filename, const char *int_filename, ao::uvector<uint8_t>& buf);
 
+	public:
 		// FST data.
 		ao::uvector<uint8_t> m_fst_buf;
 		IFst *m_fst;
@@ -110,7 +115,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 
 		/**
 		 
-		 * Get the list of FST files from Gcn.fst.zip.
+		 * Get the list of FST files from a Zip file.
 		 * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
 		 * @return FST files.
 		 */
@@ -146,42 +151,7 @@ void GcnFstTest::SetUp(void)
 			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
 	}
 
-	m_unzFstZip = openZip(zip_filename);
-	ASSERT_TRUE(m_unzFstZip != nullptr) <<
-		"Could not open '" << rp_string_to_utf8(zip_filename) << ", check the test directory!";
-
-	// Locate the required FST file.
-	// TODO: Always case-insensitive? (currently using OS-dependent value)
-	int ret = unzLocateFile(m_unzFstZip, mode.fst_filename.c_str(), 0);
-	ASSERT_EQ(UNZ_OK, ret);
-
-	// Verify the FST file size.
-	unz_file_info64 file_info;
-	ret = unzGetCurrentFileInfo64(m_unzFstZip,
-		&file_info,
-		nullptr, 0,
-		nullptr, 0,
-		nullptr, 0);
-	ASSERT_EQ(UNZ_OK, ret);
-	ASSERT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_FILESIZE);
-
-	// Open the FST file.
-	ret = unzOpenCurrentFile(m_unzFstZip);
-	ASSERT_EQ(UNZ_OK, ret);
-
-	// Read the FST file.
-	m_fst_buf.resize((size_t)file_info.uncompressed_size);
-	ret = unzReadCurrentFile(m_unzFstZip, m_fst_buf.data(), (unsigned int)m_fst_buf.size());
-	ASSERT_GT(ret, 0);
-
-	// Close the FST file.
-	// An error will occur here if the CRC is incorrect.
-	ret = unzCloseCurrentFile(m_unzFstZip);
-	ASSERT_EQ(UNZ_OK, ret);
-
-	// Close the Zip file.
-	unzClose(m_unzFstZip);
-	m_unzFstZip = nullptr;
+	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf), 0);
 
 	// Create the GcnFst object.
 	m_fst = new GcnFst(m_fst_buf.data(), (uint32_t)m_fst_buf.size(), mode.offsetShift);
@@ -195,11 +165,6 @@ void GcnFstTest::TearDown(void)
 {
 	delete m_fst;
 	m_fst = nullptr;
-
-	if (m_unzFstZip) {
-		unzClose(m_unzFstZip);
-		m_unzFstZip = nullptr;
-	}
 }
 
 /**
@@ -220,6 +185,82 @@ unzFile GcnFstTest::openZip(const rp_char *filename)
 	return unzOpen(rp_string_to_utf8(filename, rp_strlen(filename)));
 #endif
 #endif /* _WIN32 */
+}
+
+/**
+ * Get a file from a Zip file.
+ * @param zip_filename	[in] Zip filename.
+ * @param int_filename	[in] Internal filename.
+ * @param buf		[out] uvector buffer for the data.
+ * @return Number of bytes read, or negative on error.
+ */
+int GcnFstTest::getFileFromZip(const rp_char *zip_filename, const char *int_filename, ao::uvector<uint8_t>& buf)
+{
+	// Open the Zip file.
+	unzFile unz = openZip(zip_filename);
+	EXPECT_TRUE(unz != nullptr) <<
+		"Could not open '" << rp_string_to_utf8(zip_filename) << "', check the test directory!";
+	if (!unz) {
+		return -1;
+	}
+
+	// Locate the required FST file.
+	// TODO: Always case-insensitive? (currently using OS-dependent value)
+	int ret = unzLocateFile(unz, int_filename, 0);
+	EXPECT_EQ(UNZ_OK, ret);
+	if (ret != UNZ_OK) {
+		unzClose(unz);
+		return -2;
+	}
+
+	// Verify the FST file size.
+	unz_file_info64 file_info;
+	ret = unzGetCurrentFileInfo64(unz,
+		&file_info,
+		nullptr, 0,
+		nullptr, 0,
+		nullptr, 0);
+	EXPECT_EQ(UNZ_OK, ret);
+	if (ret != UNZ_OK) {
+		unzClose(unz);
+		return -3;
+	}
+	EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_FILESIZE) <<
+		"Compressed file '" << int_filename << "' is too big.";
+	if (file_info.uncompressed_size > (uLong)MAX_GCN_FST_FILESIZE) {
+		unzClose(unz);
+		return -4;
+	}
+
+	// Open the FST file.
+	ret = unzOpenCurrentFile(unz);
+	EXPECT_EQ(UNZ_OK, ret);
+	if (ret != UNZ_OK) {
+		unzClose(unz);
+		return -5;
+	}
+
+	// Read the FST file.
+	buf.resize((size_t)file_info.uncompressed_size);
+	ret = unzReadCurrentFile(unz, buf.data(), (unsigned int)buf.size());
+	EXPECT_GT(ret, 0);
+	if (ret <= 0) {
+		unzClose(unz);
+		return -6;
+	}
+
+	// Close the FST file.
+	// An error will occur here if the CRC is incorrect.
+	ret = unzCloseCurrentFile(unz);
+	EXPECT_EQ(UNZ_OK, ret);
+	if (ret != UNZ_OK) {
+		unzClose(unz);
+		return -7;
+	}
+
+	// Close the Zip file.
+	unzClose(unz);
+	return (int)file_info.uncompressed_size;
 }
 
 /**
@@ -281,7 +322,7 @@ TEST_P(GcnFstTest, noDuplicateFilenames)
 /** Test case parameters. **/
 
 /**
- * Get the list of FST files from Gcn.fst.zip.
+ * Get the list of FST files from a Zip file.
  * @param offsetShift File offset shift. (0 == GCN, 2 == Wii)
  * @return FST files.
  */
@@ -304,18 +345,19 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			return files;
 	}
 
-	unzFile unzFstZip = openZip(zip_filename);
-	EXPECT_TRUE(unzFstZip != nullptr) <<
+	unzFile unz = openZip(zip_filename);
+	EXPECT_TRUE(unz != nullptr) <<
 		"Could not open '" << rp_string_to_utf8(zip_filename) << "', check the test directory!";
-	if (!unzFstZip)
+	if (!unz) {
 		return files;
+	}
 
 	// Read the filenames.
 	int ret = UNZ_OK;
 	char filename[256];
 	unz_file_info64 file_info;
 	do {
-		ret = unzGetCurrentFileInfo64(unzFstZip,
+		ret = unzGetCurrentFileInfo64(unz,
 			&file_info,
 			filename, sizeof(filename),
 			nullptr, 0,
@@ -332,9 +374,9 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		}
 
 		// Next file.
-		ret = unzGoToNextFile(unzFstZip);
+		ret = unzGoToNextFile(unz);
 	} while (ret == UNZ_OK);
-	unzClose(unzFstZip);
+	unzClose(unz);
 
 	// Handle "end of file list" as OK.
 	if (ret == UNZ_END_OF_LIST_OF_FILE)
