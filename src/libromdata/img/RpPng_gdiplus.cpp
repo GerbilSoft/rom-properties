@@ -406,6 +406,13 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 			break;
 #endif
 
+		case PixelFormat24bppRGB:
+		case PixelFormat32bppRGB:
+			// Allow RGB24 and RGB32 to be used as-is.
+			// Gdiplus automatically converts it to ARGB32
+			// when locking the bitmap.
+			break;
+
 		case PixelFormat32bppARGB:
 			// If the colorspace is gray, this is actually a
 			// grayscale image, and should be converted to CI8.
