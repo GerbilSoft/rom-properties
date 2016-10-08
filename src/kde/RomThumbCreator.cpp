@@ -111,13 +111,13 @@ QImage RomThumbCreatorPrivate::getInternalImage(const RomData *romData, RomData:
 		return QImage();
 	}
 
-	const rp_image *image = romData->image(RomData::IMG_INT_ICON);
+	const rp_image *image = romData->image(imageType);
 	if (!image) {
 		// No image.
 		return QImage();
 	}
 
-	// Convert the icon to QImage.
+	// Convert the rp_image to QImage.
 	return rpToQImage(image);
 }
 
@@ -136,7 +136,7 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 	}
 
 	// Synchronously download from the source URLs.
-	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
+	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
 	if (!extURLs || extURLs->empty()) {
 		// No URLs.
 		return QImage();
