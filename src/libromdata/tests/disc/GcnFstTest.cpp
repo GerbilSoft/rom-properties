@@ -37,6 +37,9 @@
 #endif
 using LibRomData::GcnFst;
 
+// FST printer.
+#include "FstPrint.hpp"
+
 // C includes. (C++ namespace)
 #include <cctype>
 
@@ -44,7 +47,9 @@ using LibRomData::GcnFst;
 #include <sstream>
 #include <string>
 #include <unordered_set>
+using std::istringstream;
 using std::string;
+using std::stringstream;
 using std::unordered_set;
 
 namespace LibRomData { namespace Tests {
@@ -70,7 +75,8 @@ inline ::std::ostream& operator<<(::std::ostream& os, const GcnFstTest_mode& mod
 };
 
 // Maximum file size for FST files.
-static const int64_t MAX_GCN_FST_FILESIZE = 1*1024*1024;
+static const int MAX_GCN_FST_BIN_FILESIZE = 1024*1024;	// 1.0 MB
+static const int MAX_GCN_FST_TXT_FILESIZE = 1536*1024;	// 1.5 MB
 
 class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 {
@@ -95,9 +101,13 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * @param zip_filename	[in] Zip filename.
 		 * @param int_filename	[in] Internal filename.
 		 * @param buf		[out] uvector buffer for the data.
+		 * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
 		 * @return Number of bytes read, or negative on error.
 		 */
-		static int getFileFromZip(const rp_char *filename, const char *int_filename, ao::uvector<uint8_t>& buf);
+		static int getFileFromZip(const rp_char *filename,
+			const char *int_filename,
+			ao::uvector<uint8_t>& buf,
+			int max_filesize = MAX_GCN_FST_BIN_FILESIZE);
 
 	public:
 		// FST data.
@@ -142,16 +152,16 @@ void GcnFstTest::SetUp(void)
 	const rp_char *zip_filename;
 	switch (mode.offsetShift) {
 		case 0:
-			zip_filename = _RP("GameCube.fst.zip");
+			zip_filename = _RP("GameCube.fst.bin.zip");
 			break;
 		case 2:
-			zip_filename = _RP("Wii.fst.zip");
+			zip_filename = _RP("Wii.fst.bin.zip");
 			break;
 		default:
 			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
 	}
 
-	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf), 0);
+	ASSERT_GT(getFileFromZip(zip_filename, mode.fst_filename.c_str(), m_fst_buf, MAX_GCN_FST_BIN_FILESIZE), 0);
 
 	// Create the GcnFst object.
 	m_fst = new GcnFst(m_fst_buf.data(), (uint32_t)m_fst_buf.size(), mode.offsetShift);
@@ -192,9 +202,13 @@ unzFile GcnFstTest::openZip(const rp_char *filename)
  * @param zip_filename	[in] Zip filename.
  * @param int_filename	[in] Internal filename.
  * @param buf		[out] uvector buffer for the data.
+ * @param max_filesize	[in,opt] Maximum file size. (default is MAX_GCN_FST_BIN_FILESIZE)
  * @return Number of bytes read, or negative on error.
  */
-int GcnFstTest::getFileFromZip(const rp_char *zip_filename, const char *int_filename, ao::uvector<uint8_t>& buf)
+int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
+	const char *int_filename,
+	ao::uvector<uint8_t>& buf,
+	int max_filesize)
 {
 	// Open the Zip file.
 	unzFile unz = openZip(zip_filename);
@@ -225,9 +239,9 @@ int GcnFstTest::getFileFromZip(const rp_char *zip_filename, const char *int_file
 		unzClose(unz);
 		return -3;
 	}
-	EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_FILESIZE) <<
+	EXPECT_LE(file_info.uncompressed_size, (uLong)max_filesize) <<
 		"Compressed file '" << int_filename << "' is too big.";
-	if (file_info.uncompressed_size > (uLong)MAX_GCN_FST_FILESIZE) {
+	if (file_info.uncompressed_size > (uLong)max_filesize) {
 		unzClose(unz);
 		return -4;
 	}
@@ -319,6 +333,76 @@ TEST_P(GcnFstTest, NoDuplicateFilenames)
 	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames(_RP("/")));
 }
 
+/**
+ * Print the FST directory structure and compare it to a known-good version.
+ */
+TEST_P(GcnFstTest, FstPrint)
+{
+	// Parameterized test.
+	const GcnFstTest_mode &mode = GetParam();
+
+	// Open the Zip file.
+	const rp_char *zip_filename;
+	switch (mode.offsetShift) {
+		case 0:
+			zip_filename = _RP("GameCube.fst.txt.zip");
+			break;
+		case 2:
+			zip_filename = _RP("Wii.fst.txt.zip");
+			break;
+		default:
+			ASSERT_TRUE(false) << "offsetShift is " << (int)mode.offsetShift << "; should be either 0 or 2.";
+	}
+
+	// Replace ".bin" in the FST filename with ".txt".
+	string fst_txt_filename = mode.fst_filename;
+	ASSERT_GT(fst_txt_filename.size(), 8U) <<
+		"Internal filename '" << mode.fst_filename << "' doesn't have a '.fst.bin' extension.";
+	ASSERT_EQ(".fst.bin", fst_txt_filename.substr(fst_txt_filename.size() - 8)) <<
+		"Internal filename '" << mode.fst_filename << "' doesn't have a '.fst.bin' extension.";
+	fst_txt_filename.replace(fst_txt_filename.size() - 8, 8, ".fst.txt");
+
+	// Get the known-good FST printout.
+	ao::uvector<uint8_t> fst_txt_buf;
+	ASSERT_GT(getFileFromZip(zip_filename, fst_txt_filename.c_str(), fst_txt_buf, MAX_GCN_FST_TXT_FILESIZE), 0);
+
+	// Import the FST text into an istringstream.
+	istringstream fst_text_expected(
+		string(reinterpret_cast<const char*>(fst_txt_buf.data()), fst_txt_buf.size()));
+
+	// Print the FST.bin to a new stringstream.
+	stringstream fst_text_actual;
+	fstPrint(m_fst, fst_text_actual);
+
+	// Compare the two stringstreams.
+	// NOTE: Only Unix line endings are supported.
+	char line_buf_actual[1024], line_buf_expected[1024];
+	for (int line_num = 1; /* condition is defined in the loop */; line_num++) {
+		bool ok_actual = (bool)fst_text_actual.getline(line_buf_actual, sizeof(line_buf_actual), '\n');
+		bool ok_expected = (bool)fst_text_expected.getline(line_buf_expected, sizeof(line_buf_expected), '\n');
+		if (!ok_actual && !ok_expected) {
+			// End of both files.
+			break;
+		}
+
+		EXPECT_TRUE(ok_actual) << "Unexpected EOF in FST text generated by fstPrint().";
+		EXPECT_TRUE(ok_expected) << "Unexpected EOF in FST text from '" << fst_txt_filename << "'.";
+		if (!ok_actual || !ok_expected) {
+			// End of one of the files.
+			break;
+		}
+
+		// Compare the two strings.
+		// TODO: Eliminate one of the comparisons?
+		EXPECT_STREQ(line_buf_expected, line_buf_actual) <<
+			"Line " << line_num << " differs between fstPrint() and '" << fst_txt_filename << "'.";
+		if (strcmp(line_buf_expected, line_buf_actual) != 0) {
+			// Lines don't match.
+			break;
+		}
+	};
+}
+
 /** Test case parameters. **/
 
 /**
@@ -335,10 +419,10 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 	const rp_char *zip_filename;
 	switch (offsetShift) {
 		case 0:
-			zip_filename = _RP("GameCube.fst.zip");
+			zip_filename = _RP("GameCube.fst.bin.zip");
 			break;
 		case 2:
-			zip_filename = _RP("Wii.fst.zip");
+			zip_filename = _RP("Wii.fst.bin.zip");
 			break;
 		default:
 			EXPECT_TRUE(false) << "offsetShift is " << (int)offsetShift << "; should be either 0 or 2.";
@@ -365,9 +449,9 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 		if (ret != UNZ_OK)
 			break;
 
-		EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_FILESIZE) <<
+		EXPECT_LE(file_info.uncompressed_size, (uLong)MAX_GCN_FST_BIN_FILESIZE) <<
 			"GCN FST file '" << filename << "' is too big. (maximum size is 1 MB)";
-		if (file_info.uncompressed_size <= MAX_GCN_FST_FILESIZE) {
+		if (file_info.uncompressed_size <= (uLong)MAX_GCN_FST_BIN_FILESIZE) {
 			// Add this filename to the list.
 			GcnFstTest_mode mode(filename, offsetShift);
 			files.push_back(mode);
