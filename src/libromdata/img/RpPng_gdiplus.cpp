@@ -399,17 +399,17 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 			// this to 8bpp, so we'll have to do it ourselves.
 			gdipConvBmp = gdip_CI4_to_rp_image_CI8(gdipBmp);
 			break;
+#endif
 
 		case PixelFormat8bppIndexed:
 			// 8bpp paletted image.
 			// No conversion necessary.
 			break;
-#endif
 
 		case PixelFormat24bppRGB:
 		case PixelFormat32bppRGB:
 			// Allow RGB24 and RGB32 to be used as-is.
-			// Gdiplus automatically converts it to ARGB32
+			// GDI+ automatically converts it to ARGB32
 			// when locking the bitmap.
 			break;
 

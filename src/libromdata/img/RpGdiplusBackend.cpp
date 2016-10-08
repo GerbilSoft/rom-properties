@@ -156,10 +156,13 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	// If the image has a palette, load it.
 	if (this->format == rp_image::FORMAT_CI8) {
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-		// TODO: malloc(), then clear unused entries?
-		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
+		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
 
-		Gdiplus::Status status = pGdipBmp->GetPalette(m_pGdipPalette, gdipPalette_sz);
+		// Actual palette size.
+		int palette_size = pGdipBmp->GetPaletteSize();
+		assert(palette_size > 0);
+
+		Gdiplus::Status status = pGdipBmp->GetPalette(m_pGdipPalette, palette_size);
 		if (status != Gdiplus::Status::Ok) {
 			// Failed to retrieve the palette.
 			free(m_pGdipPalette);
@@ -172,6 +175,14 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			this->stride = 0;
 			this->format = rp_image::FORMAT_NONE;
 			return;
+		}
+
+		if (m_pGdipPalette->Count < 256) {
+			// Extend the palette to 256 colors.
+			// Additional colors will be set to 0.
+			int diff = 256 - m_pGdipPalette->Count;
+			memset(&m_pGdipPalette->Entries[m_pGdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
+			m_pGdipPalette->Count = 256;
 		}
 
 		// Set this->palette to the first palette entry.
