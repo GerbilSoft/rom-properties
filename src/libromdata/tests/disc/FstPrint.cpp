@@ -183,6 +183,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 	}
 
 	// Directory printed.
+	fst->closedir(dirp);
 	return 0;
 }
 

@@ -75,6 +75,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	int64_t filesize = ftello(f);
 	if (filesize > (16*1024*1024)) {
 		printf("ERROR: FST is too big. (Maximum of 16 MB.)\n");
+		fclose(f);
 		return EXIT_FAILURE;
 	}
 	fseek(f, 0, SEEK_SET);
@@ -83,11 +84,14 @@ extern "C" int gtest_main(int argc, char *argv[])
 	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(filesize));
 	if (!fstData) {
 		printf("ERROR: malloc(%u) failed.\n", (uint32_t)filesize);
+		fclose(f);
 		return EXIT_FAILURE;
 	}
 	size_t rd_size = fread(fstData, 1, filesize, f);
+	fclose(f);
 	if (rd_size != (size_t)filesize) {
 		printf("ERROR: Read %u bytes, expected %u bytes.\n", (uint32_t)rd_size, (uint32_t)filesize);
+		free(fstData);
 		return EXIT_FAILURE;
 	}
 
@@ -97,6 +101,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, offsetShift);
 	if (!fst) {
 		printf("ERROR: new GcnFst() failed.\n");
+		free(fstData);
 		return EXIT_FAILURE;
 	}
 
@@ -119,5 +124,9 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// Print the FST.
 	printf("%s", fst_str.c_str());
 #endif
+
+	// Cleanup.
+	delete fst;
+	free(fstData);
 	return 0;
 }
