@@ -137,14 +137,9 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// - http://stackoverflow.com/a/2901465
 
 	/**
-	 * Create a monochrome bitmap twice as tall as the image.
-	 * Top half is the AND mask; bottom half is the XOR mask.
-	 *
-	 * Icon truth table:
-	 * AND=0, XOR=0: Black
-	 * AND=0, XOR=1: White
-	 * AND=1, XOR=0: Screen (transparent)
-	 * AND=1, XOR=1: Reverse screen (inverted)
+	 * Create a monochrome bitmap to act as the icon mask.
+	 * Since the icon being masked is color, this bitmap
+	 * only contains an AND mask.
 	 *
 	 * References:
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
@@ -179,9 +174,6 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.
-
-	// XOR mask: All 0 to disable inversion.
-	memset(&pvBits[icon_sz], 0, icon_sz);
 
 	// AND mask: Parse the original image.
 	switch (image->format()) {
