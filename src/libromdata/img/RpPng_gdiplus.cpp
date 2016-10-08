@@ -261,17 +261,21 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_CI4_to_CI8(Gdiplus::Bitmap *pGdipBmp)
 	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(bmpData.Scan0);
 	uint8_t *conv_px = reinterpret_cast<uint8_t*>(bmpConvData.Scan0);
 	for (int y = (int)bmpData.Height; y > 0; y--) {
-		for (int x = bmpData.Width; x > 0; x -= 2, gdip_px++) {
+		int x;
+		for (x = bmpData.Width; x >= 2; x -= 2) {
 			// Each source byte has two packed pixels.
 			conv_px[0] = *gdip_px >> 4;
-			if (x == 1) {
-				// Odd number of pixels.
-				conv_px++;
-			} else {
-				// Two or more pixels remaining.
-				conv_px[1] = *gdip_px & 0x0F;
-				conv_px += 2;
-			}
+			conv_px[1] = *gdip_px & 0x0F;
+			conv_px += 2;
+			gdip_px++;
+		}
+
+		// Check for an odd width.
+		if (x == 1) {
+			// Odd width. Copy the last pixel.
+			*conv_px = *gdip_px >> 4;
+			conv_px++;
+			gdip_px++;
 		}
 
 		// Next line.
