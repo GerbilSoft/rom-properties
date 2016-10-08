@@ -67,7 +67,7 @@ DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
 
 # Copy the FST test files to the test directory.
-FILE(GLOB test_fst disc/*.fst.zip disc/*.txt.zip)
+FILE(GLOB test_fst disc/*.fst.bin.zip disc/*.fst.txt.zip)
 FILE(COPY ${test_fst} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 # GcnFstTest.
