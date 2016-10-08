@@ -155,10 +155,11 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 
 	// If the image has a palette, load it.
 	if (this->format == rp_image::FORMAT_CI8) {
+		// 256-color palette.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
 
-		// Actual palette size.
+		// Actual GDI+ palette size.
 		int palette_size = pGdipBmp->GetPaletteSize();
 		assert(palette_size > 0);
 
