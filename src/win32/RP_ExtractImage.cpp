@@ -31,12 +31,7 @@
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
-
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -210,37 +205,30 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		return S_FALSE;
 	}
 
-	// ROM is supported. Get the external media image.
-	// TODO: Customize for internal icon, disc/cart scan, etc.?
-	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
-	if (!extURLs || extURLs->empty()) {
-		// No external URLs.
-		// TODO: Fallback to icon?
-		return S_FALSE;
+	// ROM is supported. Get the image.
+	// TODO: Customize which ones are used per-system.
+	// For now, check EXT MEDIA, then INT ICON.
+
+	bool needs_delete = false;	// External images need manual deletion.
+	const rp_image *img = nullptr;
+
+	uint32_t imgbf = romData->supportedImageTypes();
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		needs_delete = (img != nullptr);
 	}
 
+	if (!img) {
+		// No external media scan.
+		// Try an internal image.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+		}
+	}
 
-	// Check each URL.
-	CacheManager cache;
-	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
-	     iter != extURLs->end(); ++iter)
-	{
-		const RomData::ExtURL &extURL = *iter;
-
-		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
-		if (cache_filename.empty())
-			continue;
-
-		// Attempt to load the image.
-		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
-		if (!file || !file->isOpen())
-			continue;
-
-		unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
-		if (!dl_img || !dl_img->isValid())
-			continue;
-
+	if (img) {
 		// Image loaded. Convert it to HBITMAP.
 		// NOTE: IExtractImage doesn't support alpha transparency,
 		// so blend the image with COLOR_WINDOW. This works for the
@@ -252,14 +240,12 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
 			  ((bgColor & 0xFF) << 16) |
 			  ((bgColor >> 16) & 0xFF);
-		*phBmpImage = RpImageWin32::toHBITMAP(dl_img.get(), bgColor);
-		if (!*phBmpImage) {
-			// Could not convert to HBITMAP.
-			continue;
-		}
+		*phBmpImage = RpImageWin32::toHBITMAP(img, bgColor);
 
-		// Image converted to HBITMAP successfully.
-		break;
+		if (needs_delete) {
+			// Delete the image.
+			delete const_cast<rp_image*>(img);
+		}
 	}
 
 	return (*phBmpImage != nullptr ? S_OK : E_FAIL);

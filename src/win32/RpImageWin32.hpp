@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 #define __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 
+#include "libromdata/RomData.hpp"
 namespace LibRomData {
 	class rp_image;
 }
@@ -34,6 +35,32 @@ class RpImageWin32
 	private:
 		RpImageWin32(const RpImageWin32 &);
 		RpImageWin32 &operator=(const RpImageWin32&);
+
+	public:
+		/**
+		 * Get an internal image.
+		 * NOTE: The image is owned by the RomData object;
+		 * caller must NOT delete it!
+		 *
+		 * @param romData RomData object.
+		 * @param imageType Image type.
+		 * @return Internal image, or nullptr on error.
+		 */
+		static const LibRomData::rp_image *getInternalImage(
+			const LibRomData::RomData *romData,
+			LibRomData::RomData::ImageType imageType);
+
+		/**
+		 * Get an external image.
+		 * NOTE: Caller must delete the image after use.
+		 *
+		 * @param romData RomData object.
+		 * @param imageType Image type.
+		 * @return External image, or nullptr on error.
+		 */
+		static LibRomData::rp_image *getExternalImage(
+			const LibRomData::RomData *romData,
+			LibRomData::RomData::ImageType imageType);
 
 	protected:
 		/**

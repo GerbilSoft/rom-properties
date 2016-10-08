@@ -22,8 +22,16 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
+// libromdata
+#include "libromdata/RomData.hpp"
+#include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+#include "libromdata/img/RpImageLoader.hpp"
+using namespace LibRomData;
+
+// libcachemgr
+#include "libcachemgr/CacheManager.hpp"
+using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -31,7 +39,9 @@ using LibRomData::rp_image;
 
 // C++ includes.
 #include <memory>
+#include <vector>
 using std::unique_ptr;
+using std::vector;
 
 // Gdiplus for HBITMAP conversion.
 // NOTE: Gdiplus requires min/max.
@@ -42,6 +52,73 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 #include "libromdata/img/GdiplusHelper.hpp"
+
+/**
+ * Get an internal image.
+ * NOTE: The image is owned by the RomData object;
+ * caller must NOT delete it!
+ *
+ * @param romData RomData object.
+ * @param imageType Image type.
+ * @return Internal image, or nullptr on error.
+ */
+const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::ImageType imageType)
+{
+	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
+	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
+		// Out of range.
+		return nullptr;
+	}
+
+	return romData->image(imageType);
+}
+
+/**
+ * Get an external image.
+ * NOTE: Caller must delete the image after use.
+ *
+ * @param romData RomData object.
+ * @param imageType Image type.
+ * @return External image, or nullptr on error.
+ */
+rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageType imageType)
+{
+	const vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
+	if (!extURLs || extURLs->empty()) {
+		// No URLs.
+		return nullptr;
+	}
+
+	// Check each URL.
+	CacheManager cache;
+	for (vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
+	     iter != extURLs->end(); ++iter)
+	{
+		const RomData::ExtURL &extURL = *iter;
+
+		// TODO: Have download() return the actual data and/or load the cached file.
+		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		if (cache_filename.empty())
+			continue;
+
+		// Attempt to load the image.
+		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		if (!file || !file->isOpen())
+			continue;
+
+		rp_image *dl_img = RpImageLoader::load(file.get());
+		if (dl_img && dl_img->isValid()) {
+			// Image loaded.
+			return dl_img;
+		}
+		delete dl_img;
+
+		// Try the next URL.
+	}
+
+	// Could not load any external images.
+	return nullptr;
+}
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
