@@ -308,6 +308,16 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 		// gzip file handle for .bmp.gz.
 		// Placed here so it can be freed by TearDown() if necessary.
 		gzFile m_gzBmp;
+
+	public:
+		/** Test case parameters. **/
+
+		/**
+		 * Test case suffix generator.
+		 * @param info Test parameter information.
+		 * @return Test case suffix.
+		 */
+		static string test_case_suffix_generator(const ::testing::TestParamInfo<RpPngFormatTest_mode> &info);
 };
 
 /**
@@ -1026,7 +1036,7 @@ TEST_P(RpPngFormatTest, loadTest)
  * @param info Test parameter information.
  * @return Test case suffix.
  */
-static string test_case_suffix_generator(::testing::TestParamInfo<RpPngFormatTest_mode> info)
+string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInfo<RpPngFormatTest_mode> &info)
 {
 	rp_string suffix = info.param.png_filename;
 
@@ -1124,7 +1134,7 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			gl_triangle_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 
 // gl_quad PNG IHDR chunks.
 static const PNG_IHDR_t gl_quad_RGB24_IHDR =
@@ -1196,7 +1206,7 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			gl_quad_gray_alpha_BIH,
 			rp_image::FORMAT_ARGB32)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 
 // xterm 256-color PNG IHDR chunks.
 static const PNG_IHDR_t xterm_256color_CI8_IHDR =
@@ -1256,7 +1266,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 			xterm_256color_CI8_BIH,
 			rp_image::FORMAT_CI8)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 
 // xterm 256-color PNG image tests with transparency.
 // FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
@@ -1272,7 +1282,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			xterm_256color_CI8_tRNS_bmp_tRNS,
 			rp_image::FORMAT_CI8)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 #elif defined(_WIN32)
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
@@ -1285,7 +1295,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 			rp_image::FORMAT_ARGB32,
 			rp_image::FORMAT_CI8)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 #endif
 
 /** Low color depth and odd width tests. **/
@@ -1317,7 +1327,7 @@ INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 			rp_image::FORMAT_CI8,
 			rp_image::FORMAT_ARGB32)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 
 /** Monochrome tests. **/
 
@@ -1357,6 +1367,6 @@ INSTANTIATE_TEST_CASE_P(happy_mac_mono_png, RpPngFormatTest,
 			happy_mac_mono_odd_size_BIH,
 			rp_image::FORMAT_CI8)
 		)
-	, test_case_suffix_generator);
+	, RpPngFormatTest::test_case_suffix_generator);
 
 } }

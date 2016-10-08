@@ -136,7 +136,7 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 		 * @param info Test parameter information.
 		 * @return Test case suffix.
 		 */
-		static string test_case_suffix_generator(::testing::TestParamInfo<GcnFstTest_mode> info);
+		static string test_case_suffix_generator(const ::testing::TestParamInfo<GcnFstTest_mode> &info);
 };
 
 /**
@@ -476,7 +476,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
  * @param info Test parameter information.
  * @return Test case suffix.
  */
-string GcnFstTest::test_case_suffix_generator(::testing::TestParamInfo<GcnFstTest_mode> info)
+string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<GcnFstTest_mode> &info)
 {
 	string suffix = info.param.fst_filename;
 

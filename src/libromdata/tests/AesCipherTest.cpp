@@ -118,6 +118,16 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 			const uint8_t *actual,
 			unsigned int size,
 			const char *data_type);
+
+	public:
+		/** Test case parameters. **/
+
+		/**
+		 * Test case suffix generator.
+		 * @param info Test parameter information.
+		 * @return Test case suffix.
+		 */
+		static string test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info);
 };
 
 // AES-256 encryption key.
@@ -255,7 +265,7 @@ TEST_P(AesCipherTest, decryptTest)
  * @param info Test parameter information.
  * @return Test case suffix.
  */
-static string test_case_suffix_generator(::testing::TestParamInfo<AesCipherTest_mode> info)
+string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<AesCipherTest_mode> &info)
 {
 	ostringstream oss;
 	oss << "AES_";
@@ -369,7 +379,7 @@ INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
 			sizeof(aes256cbc_ciphertext))
 		)
 
-	, test_case_suffix_generator);
+	, AesCipherTest::test_case_suffix_generator);
 } }
 
 /**
