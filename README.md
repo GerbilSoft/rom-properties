@@ -1,8 +1,14 @@
 # ROM Properties Page shell extension
 
-Work in progress; do not use unless you plan on providing feedback.
+This shell extension adds a few nice features to file browsers for managing
+video game ROM and disc images:
+* Image thumbnails, using either images built into the ROM or an external
+  database of scans.
+* Property page with information about the ROM image.
 
-For feedback, visit the Gens/GS IRC channel: [irc://irc.badnik.zone/GensGS](irc://irc.badnik.zone/GensGS)
+This is a work in progress; feedback is encouraged. To leave feedback, you
+can file an issue on GitHub, or visit the Gens/GS IRC channel:
+[irc://irc.badnik.zone/GensGS](irc://irc.badnik.zone/GensGS)
 
 Or use the Mibbit Web IRC client: http://mibbit.com/?server=irc.badnik.zone&channel=#GensGS
 
@@ -17,9 +23,9 @@ following platforms:
 ### Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
-* All: cmake, libcurl-dev, nettle-dev
-* KDE 4.x: libqt4-dev, kdelibs5-dev
-* KDE 5.x: qtbase5-dev, kio-dev
+* All: cmake libcurl-dev nettle-dev zlib1g-dev libpng-dev
+* KDE 4.x: libqt4-dev kdelibs5-dev
+* KDE 5.x: qtbase5-dev kio-dev
 
 Clone the repository, then:
 * cd rom-properties
@@ -41,8 +47,12 @@ and click Properties. If everything worked correctly, you should see a
 ### Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
-* MS Visual C++ 2010 with the Windows 7 SDK
+* Microsoft Visual C++ 2010 with the Windows 7 SDK
 * gcc-4.5 with MinGW-w64
+  * The MinGW build is currently somewhat broken, so MSVC is preferred.
+    (The property page icon doesn't show up sometimes for Nintendo DS
+     ROMs, and XP theming doesn't work because MinGW-w64 doesn't support
+     isolation awareness for COM components.)
 
 You will also need to install [CMake](https://cmake.org/download/), since the
 project uses the CMake build system.
@@ -57,9 +67,16 @@ following commands from your rom-properties repository directory:
 * regsvr32 rom-properties.dll
 
 Caveats:
-* Registering rom-properties.dll hard-codes the full path in the registry. Moving the file will break the registration.
+* Registering rom-properties.dll hard-codes the full path in the registry.
+  Moving the file will break the registration.
 * If building with MSVC, you may need to specify -G "NMake Makefiles".
-* CMake does not support building for multiple architectures at once. For Win64, a 64-bit build will work for Windows Explorer, but will not work in any 32-bit programs.
+* CMake does not support building for multiple architectures at once. For
+  Win64, a 64-bit build will work for Windows Explorer, but will not work
+  in any 32-bit programs.
+* Due to file extension conflicts, the Windows version currently only
+  registers itself for a subset of extensions. This does not include
+  .iso or .bin. A future update may change extension registration to
+  handle "all files".
 
 ## Current OS Feature Support Level
 
@@ -109,16 +126,17 @@ will be used for thumbnails (and icons on Windows).
 
 ## ROM Formats Supported
 
-* Sega Mega Drive: Plain binary (\*.gen, \*.bin)
+* Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
 * Nintendo DS(i): Decrypted (\*.nds)
-* Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [DiscEx-shrunken images work too],
+* Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
   CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc)
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
-* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb)
-  * \*.mb is also supported, but not currently registered on Windows due to conflicts
-    with AutoDesk Maya.
+* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
+
+Some file types are not currently registered on Windows due to conflicts with
+well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
 
 ## External Media Downloads
 
@@ -145,7 +163,42 @@ If you have an offline copy of the GameTDB image database, you can copy
 it to the ROM Properties Page cache directory to allow the extension to
 use the pre-downloaded version instead of downloading images as needed.
 
+## Decryption Keys
+
+Some newer formats, including Wii disc images, have encrypted sections. The
+shell extension includes decryption code for handling these images, but the
+keys are not included. To install the keys, create a text file called
+`keys.conf` in the rom-properties configuration directory:
+
+* Linux: `~/.config/rom-properties/keys.conf`
+* Windows: `%APPDATA%\rom-properties\keys.conf`
+
+The `keys.conf` file uses INI format. An example file, `keys.conf.example`,
+is included with the shell extension. This file has a list of all supported
+keys, with placeholders instead of the actual key data. For example, a
+`keys.conf` file with the supported keys for Wii looks like this:
+
+```
+[Keys]
+rvl-common=[Wii common key]
+rvl-korean=[Wii Korean key]
+```
+
+Replace the key placeholders with hexadecimal strings representing the key.
+In this example, both keys are AES-128, so the hexadecimal strings should be
+32 characters long.
+
+NOTE: If a key is incorrect, any properties dialog that uses the key to
+decrypt data will show an error message instead of the data in question.
+
 ## Credits
+
+### Developers
+
+* @GerbilSoft: Main developer.
+* @DankRank: Contributor, bug tester.
+
+### Websites
 
 * [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
   and Nintendo DSi technical information. Used for ROM format information for
@@ -157,3 +210,6 @@ use the pre-downloaded version instead of downloading images as needed.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
   Super Game Boy technical information. Used for ROM format information for
   those systems.
+* [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
+  information, plus information for other Sega systems that will be supported
+  in a future release.
