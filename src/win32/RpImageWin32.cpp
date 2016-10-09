@@ -142,6 +142,9 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	 * Since the icon being masked is color, this bitmap
 	 * only contains an AND mask.
 	 *
+	 * 1 == opaque pixel
+	 * 0 == transparent pixel
+	 *
 	 * References:
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648052%28v=vs.85%29.aspx
@@ -226,7 +229,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 					for (int px = 8; px > 0; px--, src++) {
 						// MSB == left-most pixel.
 						pxMono <<= 1;
-						pxMono |= ((*src & 0xFF000000) == 0);
+						pxMono |= ((*src & 0xFF000000) != 0);
 					}
 					*dest++ = pxMono;
 				}
@@ -299,6 +302,7 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	// Convert to HBITMAP first.
 	// TODO: Const-ness stuff.
 	// TODO: Specify a background color?
+	// TODO: Proper alpha transparency for ARGB32.
 	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP();
 	if (!hBitmap) {
 		// Error converting to HBITMAP.
