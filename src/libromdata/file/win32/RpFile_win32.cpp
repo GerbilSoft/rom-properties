@@ -89,7 +89,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  * @param mode File mode.
  */
 RpFile::RpFile(const rp_string &filename, FileMode mode)
-	: IRpFile()
+	: super()
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_mode(mode)
 	, m_lastError(0)
@@ -148,7 +148,7 @@ RpFile::~RpFile()
  * @param other Other instance.
  */
 RpFile::RpFile(const RpFile &other)
-	: IRpFile()
+	: super()
 	, m_file(other.m_file)
 	, m_mode(other.m_mode)
 	, m_lastError(0)
@@ -196,8 +196,13 @@ void RpFile::clearError(void)
 
 /**
  * dup() the file handle.
+ *
  * Needed because IRpFile* objects are typically
  * pointers, not actual instances of the object.
+ *
+ * NOTE: The dup()'d IRpFile* does NOT have a separate
+ * file pointer. This is due to how dup() works.
+ *
  * @return dup()'d file, or nullptr on error.
  */
 IRpFile *RpFile::dup(void)

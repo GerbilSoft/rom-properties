@@ -64,24 +64,24 @@ class IStreamWrapper : public IStream
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
-		IFACEMETHODIMP_(ULONG) AddRef(void) override;
-		IFACEMETHODIMP_(ULONG) Release(void) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP_(ULONG) AddRef(void) final;
+		IFACEMETHODIMP_(ULONG) Release(void) final;
 
 		// ISequentialStream
-		IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead);
-		IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten);
+		IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) final;
+		IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten) final;
 
 		// IStream
-		IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition);
-		IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize);
-		IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten);
-		IFACEMETHODIMP Commit(DWORD grfCommitFlags);
-		IFACEMETHODIMP Revert(void);
-		IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
-		IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
-		IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag);
-		IFACEMETHODIMP Clone(IStream **ppstm);
+		IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) final;
+		IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize) final;
+		IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) final;
+		IFACEMETHODIMP Commit(DWORD grfCommitFlags) final;
+		IFACEMETHODIMP Revert(void) final;
+		IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
+		IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
+		IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) final;
+		IFACEMETHODIMP Clone(IStream **ppstm) final;
 
 	private:
 		/* References of this object. */
