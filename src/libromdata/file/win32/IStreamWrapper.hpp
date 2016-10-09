@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RP_IStream_Win32.hpp: IStream wrapper for IRpFile. (Win32)              *
+ * IStreamWrapper.hpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,20 +19,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_RP_ISTREAM_WIN32_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_RP_ISTREAM_WIN32_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_FILE_WIN32_ISTREAMWRAPPER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_FILE_WIN32_ISTREAMWRAPPER_HPP__
 
 #ifndef _WIN32
-#error RP_IStream_Win32.hpp is Windows only.
+#error IStreamWrapper.hpp is Windows only.
 #endif
 
-#include "IRpFile.hpp"
-#include "../RpWin32.hpp"
+#include "../IRpFile.hpp"
+#include "../../RpWin32.hpp"
 #include <objidl.h>
 
 namespace LibRomData {
 
-class RP_IStream_Win32 : public IStream
+class IStreamWrapper : public IStream
 {
 	public:
 		/**
@@ -40,13 +40,13 @@ class RP_IStream_Win32 : public IStream
 		 * The IRpFile is dup()'d.
 		 * @param file IRpFile.
 		 */
-		RP_IStream_Win32(IRpFile *file);
-		virtual ~RP_IStream_Win32();
+		IStreamWrapper(IRpFile *file);
+		virtual ~IStreamWrapper();
 
 	private:
 		typedef IStream super;
-		RP_IStream_Win32(const RP_IStream_Win32 &other);
-		RP_IStream_Win32 &operator=(const RP_IStream_Win32 &other);
+		IStreamWrapper(const IStreamWrapper &other);
+		IStreamWrapper &operator=(const IStreamWrapper &other);
 
 	public:
 		/**
@@ -93,4 +93,4 @@ class RP_IStream_Win32 : public IStream
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_FILE_WIN32_ISTREAMWRAPPER_HPP__ */

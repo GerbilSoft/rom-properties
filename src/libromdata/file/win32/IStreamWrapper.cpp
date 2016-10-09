@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RP_IStream_Win32.hpp: IStream wrapper for IRpFile. (Win32)              *
+ * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RP_IStream_Win32.hpp"
+#include "IStreamWrapper.hpp"
 
 #if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
 /**
@@ -43,7 +43,7 @@ namespace LibRomData {
  * The IRpFile is dup()'d.
  * @param file IRpFile.
  */
-RP_IStream_Win32::RP_IStream_Win32(IRpFile *file)
+IStreamWrapper::IStreamWrapper(IRpFile *file)
 	: m_ulRefCount(1)
 {
 	if (file) {
@@ -55,7 +55,7 @@ RP_IStream_Win32::RP_IStream_Win32(IRpFile *file)
 	}
 }
 
-RP_IStream_Win32::~RP_IStream_Win32()
+IStreamWrapper::~IStreamWrapper()
 {
 	delete m_file;
 }
@@ -65,7 +65,7 @@ RP_IStream_Win32::~RP_IStream_Win32()
  * NOTE: The IRpFile is still owned by this object.
  * @return IRpFile.
  */
-IRpFile *RP_IStream_Win32::file(void) const
+IRpFile *IStreamWrapper::file(void) const
 {
 	return m_file;
 }
@@ -74,7 +74,7 @@ IRpFile *RP_IStream_Win32::file(void) const
  * Set the IRpFile.
  * @param file New IRpFile.
  */
-void RP_IStream_Win32::setFile(IRpFile *file)
+void IStreamWrapper::setFile(IRpFile *file)
 {
 	if (m_file) {
 		IRpFile *old = m_file;
@@ -94,7 +94,7 @@ void RP_IStream_Win32::setFile(IRpFile *file)
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-IFACEMETHODIMP RP_IStream_Win32::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -121,14 +121,14 @@ IFACEMETHODIMP RP_IStream_Win32::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	return NOERROR;
 }
 
-IFACEMETHODIMP_(ULONG) RP_IStream_Win32::AddRef(void)
+IFACEMETHODIMP_(ULONG) IStreamWrapper::AddRef(void)
 {
 	//InterlockedIncrement(&RP_ulTotalRefCount);	// FIXME
 	InterlockedIncrement(&m_ulRefCount);
 	return m_ulRefCount;
 }
 
-IFACEMETHODIMP_(ULONG) RP_IStream_Win32::Release(void)
+IFACEMETHODIMP_(ULONG) IStreamWrapper::Release(void)
 {
 	ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount);
 	if (ulRefCount == 0) {
@@ -143,7 +143,7 @@ IFACEMETHODIMP_(ULONG) RP_IStream_Win32::Release(void)
 /** ISequentialStream **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa380010(v=vs.85).aspx
 
-IFACEMETHODIMP RP_IStream_Win32::Read(void *pv, ULONG cb, ULONG *pcbRead)
+IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead)
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -158,7 +158,7 @@ IFACEMETHODIMP RP_IStream_Win32::Read(void *pv, ULONG cb, ULONG *pcbRead)
 	return (size == (size_t)cb ? S_OK : S_FALSE);
 }
 
-IFACEMETHODIMP RP_IStream_Win32::Write(const void *pv, ULONG cb, ULONG *pcbWritten)
+IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten)
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -176,7 +176,7 @@ IFACEMETHODIMP RP_IStream_Win32::Write(const void *pv, ULONG cb, ULONG *pcbWritt
 /** IStream **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa380034(v=vs.85).aspx
 
-IFACEMETHODIMP RP_IStream_Win32::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
+IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
 {
 	if (!m_file) {
 		return E_HANDLE;
@@ -208,7 +208,7 @@ IFACEMETHODIMP RP_IStream_Win32::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, UL
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::SetSize(ULARGE_INTEGER libNewSize)
+IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
 {
 	((void)libNewSize);
 	return E_NOTIMPL;
@@ -221,7 +221,7 @@ IFACEMETHODIMP RP_IStream_Win32::SetSize(ULARGE_INTEGER libNewSize)
  * @param pcbRead	[out,opt] Number of bytes read from the source.
  * @param pcbWritten	[out,opt] Number of bytes written to the destination.
  */
-IFACEMETHODIMP RP_IStream_Win32::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
+IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 		ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten)
 {
 	// FIXME: Totally untested.
@@ -276,27 +276,19 @@ IFACEMETHODIMP RP_IStream_Win32::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 	return hr;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::Commit(DWORD grfCommitFlags)
+IFACEMETHODIMP IStreamWrapper::Commit(DWORD grfCommitFlags)
 {
 	// NOTE: Returning S_OK, even though we're not doing anything here.
 	((void)grfCommitFlags);
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::Revert(void)
+IFACEMETHODIMP IStreamWrapper::Revert(void)
 {
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
-{
-	((void)libOffset);
-	((void)cb);
-	((void)dwLockType);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_IStream_Win32::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
+IFACEMETHODIMP IStreamWrapper::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
 {
 	((void)libOffset);
 	((void)cb);
@@ -304,7 +296,15 @@ IFACEMETHODIMP RP_IStream_Win32::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_I
 	return E_NOTIMPL;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
+IFACEMETHODIMP IStreamWrapper::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
+{
+	((void)libOffset);
+	((void)cb);
+	((void)dwLockType);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 {
 	// TODO: Initialize STATSTG on file open?
 	if (!m_file) {
@@ -341,11 +341,11 @@ IFACEMETHODIMP RP_IStream_Win32::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_IStream_Win32::Clone(IStream **ppstm)
+IFACEMETHODIMP IStreamWrapper::Clone(IStream **ppstm)
 {
 	if (!ppstm)
 		return STG_E_INVALIDPOINTER;
-	*ppstm = new RP_IStream_Win32(m_file);
+	*ppstm = new IStreamWrapper(m_file);
 	return S_OK;
 }
 

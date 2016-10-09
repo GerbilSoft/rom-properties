@@ -23,7 +23,7 @@
 #include "rp_image.hpp"
 #include "RpGdiplusBackend.hpp"
 #include "../file/IRpFile.hpp"
-#include "../file/RP_IStream_Win32.hpp"
+#include "../file/win32/IStreamWrapper.hpp"
 
 // Win32
 #include "../RpWin32.hpp"
@@ -503,7 +503,7 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	}
 
 	// Create an IStream wrapper for the IRpFile.
-	RP_IStream_Win32 *stream = new RP_IStream_Win32(file);
+	IStreamWrapper *stream = new IStreamWrapper(file);
 
 	// Call the actual PNG image reading function.
 	rp_image *img = RpPngPrivate::loadPng(stream);
