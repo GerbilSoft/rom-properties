@@ -154,6 +154,7 @@ IFACEMETHODIMP RP_IStream_Win32::Read(void *pv, ULONG cb, ULONG *pcbRead)
 		*pcbRead = (ULONG)size;
 	}
 
+	// FIXME: Return an error only if size == 0?
 	return (size == (size_t)cb ? S_OK : S_FALSE);
 }
 
@@ -168,6 +169,7 @@ IFACEMETHODIMP RP_IStream_Win32::Write(const void *pv, ULONG cb, ULONG *pcbWritt
 		*pcbWritten = (ULONG)size;
 	}
 
+	// FIXME: Return an error only if size == 0?
 	return (size == (size_t)cb ? S_OK : S_FALSE);
 }
 
@@ -212,15 +214,66 @@ IFACEMETHODIMP RP_IStream_Win32::SetSize(ULARGE_INTEGER libNewSize)
 	return E_NOTIMPL;
 }
 
+/**
+ * Copy data from this stream to another stream.
+ * @param pstm		[in] Destination stream.
+ * @param cb		[in] Number of bytes to copy.
+ * @param pcbRead	[out,opt] Number of bytes read from the source.
+ * @param pcbWritten	[out,opt] Number of bytes written to the destination.
+ */
 IFACEMETHODIMP RP_IStream_Win32::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 		ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten)
 {
-	// TODO: Implement this? Not sure if it's needed by GDI+.
-	((void)pstm);
-	((void)cb);
-	((void)pcbRead);
-	((void)pcbWritten);
-	return E_NOTIMPL;
+	// FIXME: Totally untested.
+
+	if (!m_file) {
+		// No file handle.
+		return E_HANDLE;
+	}
+
+	// Copy 4 KB at a time.
+	uint8_t buf[4096];
+	ULARGE_INTEGER totalRead, totalWritten;
+	totalRead.QuadPart = 0;
+	totalWritten.QuadPart = 0;
+
+	HRESULT hr = S_OK;
+	while (cb.QuadPart > 0) {
+		ULONG toRead = (cb.QuadPart > (ULONG)sizeof(buf) ? (ULONG)sizeof(buf) : (ULONG)cb.QuadPart);
+		size_t szRead = m_file->read(buf, toRead);
+		if (szRead == 0) {
+			// Read error.
+			hr = STG_E_READFAULT;
+			break;
+		}
+		totalRead.QuadPart += szRead;
+
+		// Write the data to the destination stream.
+		ULONG ulWritten;
+		hr = pstm->Write(buf, (ULONG)szRead, &ulWritten);
+		if (FAILED(hr)) {
+			// Write failed.
+			break;
+		}
+		totalWritten.QuadPart += ulWritten;
+
+		if ((ULONG)szRead != toRead || ulWritten != (ULONG)szRead) {
+			// EOF or out of space.
+			break;
+		}
+
+		// Next segment.
+		cb.QuadPart -= toRead;
+	}
+
+	if (pcbRead) {
+		*pcbRead = totalRead;
+	}
+	if (pcbWritten) {
+		*pcbWritten = totalWritten;
+	}
+
+	return hr;
 }
 
 IFACEMETHODIMP RP_IStream_Win32::Commit(DWORD grfCommitFlags)
@@ -290,8 +343,10 @@ IFACEMETHODIMP RP_IStream_Win32::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 
 IFACEMETHODIMP RP_IStream_Win32::Clone(IStream **ppstm)
 {
-	((void)ppstm);
-	return E_NOTIMPL;
+	if (!ppstm)
+		return STG_E_INVALIDPOINTER;
+	*ppstm = new RP_IStream_Win32(m_file);
+	return S_OK;
 }
 
 }
