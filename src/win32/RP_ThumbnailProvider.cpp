@@ -124,13 +124,11 @@ LONG RP_ThumbnailProvider::Register(void)
 	if (!hkcr_ProgID.isOpen())
 		return hkcr_ProgID.lOpenRes();
 
-#if 0
 	// Set the "Treatment" value.
 	// TODO: DWORD write function.
-	lResult = hkcr_ProgID.write(L"Treatment", 0);
+	lResult = hkcr_ProgID.write_dword(L"Treatment", 0);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
-#endif
 
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
