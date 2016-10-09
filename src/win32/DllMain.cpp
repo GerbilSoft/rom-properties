@@ -213,6 +213,9 @@ STDAPI DllUnregisterServer(void)
 	lResult = RP_ExtractImage::Unregister();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
+	lResult = RP_ShellPropSheetExt::Unregister();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
 
 	// NOTE: Do NOT unregister file types.
 	// MSDN says to leave file type mappings unchanged when uninstalling.
