@@ -182,11 +182,14 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
 	// TODO: Handle m_bmSize?
-	*phBmpImage = nullptr;
 
-	// Make sure a filename was set by calling IPersistFile::Load().
-	if (m_filename.empty())
+	// Verify parameters:
+	// - A filename must have been set by calling IPersistFile::Load().
+	// - phBmpImage must not be nullptr.
+	if (m_filename.empty() || !phBmpImage) {
 		return E_INVALIDARG;
+	}
+	*phBmpImage = nullptr;
 
 	// Get the RomData object.
 	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
