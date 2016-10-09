@@ -288,8 +288,10 @@ int RpFile::seek(int64_t pos)
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
+		return -1;
 	}
-	return (bRet == 0 ? -1 : 0);
+
+	return 0;
 }
 
 /**
@@ -309,8 +311,10 @@ int64_t RpFile::tell(void)
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
+		return -1;
 	}
-	return (bRet == 0 ? -1 : liSeekRet.QuadPart);
+
+	return liSeekRet.QuadPart;
 }
 
 /**
@@ -341,7 +345,13 @@ int64_t RpFile::fileSize(void)
 
 	LARGE_INTEGER liFileSize;
 	BOOL bRet = GetFileSizeEx(m_file.get(), &liFileSize);
-	return (bRet != 0 ? liFileSize.QuadPart : -1);
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	return liFileSize.QuadPart;
 }
 
 }
