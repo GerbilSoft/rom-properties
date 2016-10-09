@@ -67,7 +67,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 			m_gdipFmt = PixelFormat32bppARGB;
 			break;
 		default:
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			this->width = 0;
 			this->height = 0;
 			this->stride = 0;
@@ -145,7 +145,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 
 		default:
 			// Unsupported format.
-			assert(false);
+			assert(!"Unsupported Gdiplus::PixelFormat.");
 			delete m_pGdipBmp;
 			m_pGdipBmp = nullptr;
 			return;

@@ -731,7 +731,7 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 
 			default:
 				// Unsupported data type.
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				DestroyWindow(hStatic);
 				field_cy = 0;
 				break;

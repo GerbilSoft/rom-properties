@@ -238,7 +238,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 
 		default:
 			// Unsupported format.
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			break;
 	}
 

@@ -255,7 +255,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 			default:
 				// Unsupported right now.
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				delete lblDesc;
 				break;
 		}

@@ -464,7 +464,7 @@ rp_image *RpPngPrivate::loadPng(IStream *file)
 		default:
 			// Unsupported format.
 			// TODO: Convert to ARGB32.
-			assert(false);
+			assert(!"Unsupported Gdiplus::PixelFormat.");
 			return nullptr;
 	}
 

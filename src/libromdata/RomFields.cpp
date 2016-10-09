@@ -166,7 +166,7 @@ void RomFieldsPrivate::delete_data(void)
 				break;
 			default:
 				// ERROR!
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 		}
 	}
@@ -251,7 +251,7 @@ void RomFields::detach(void)
 				break;
 			default:
 				// ERROR!
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 		}
 	}

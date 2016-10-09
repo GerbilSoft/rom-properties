@@ -44,7 +44,7 @@ static inline int calc_stride(int width, rp_image::Format format)
 			return width * 4;
 		default:
 			// Invalid image format.
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			break;
 	}
 
