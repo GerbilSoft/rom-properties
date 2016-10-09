@@ -25,11 +25,10 @@
 #include "../TextFuncs.hpp"
 
 #ifdef _WIN32
-#include <windows.h>
+#include "../RpWin32.hpp"
 #include <shlobj.h>
 #include <direct.h>
 #include <sys/utime.h>
-#include "libromdata/RpWin32.hpp"
 #else
 #include <sys/stat.h>
 #include <sys/types.h>

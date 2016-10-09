@@ -36,13 +36,7 @@
 //   [Google: "CryptImportKey" (no quotes)]
 // - http://etutorials.org/Programming/secure+programming/Chapter+5.+Symmetric+Encryption/5.25+Using+Symmetric+Encryption+with+Microsoft+s+CryptoAPI/
 //   [Google: "CryptoAPI set IV" (no quotes)]
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
+#include "../RpWin32.hpp"
 #include <wincrypt.h>
 
 namespace LibRomData {

@@ -24,7 +24,7 @@
 
 // Determine which character set decoder to use.
 #if defined(_WIN32)
-# include <windows.h>
+# include "RpWin32.hpp"
 #elif defined(HAVE_ICONV)
 # include <byteorder.h>
 # if SYS_BYTEORDER == SYS_BIG_ENDIAN

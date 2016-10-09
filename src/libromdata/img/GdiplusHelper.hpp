@@ -26,7 +26,7 @@
 #error GdiplusHelper is Win32 only.
 #endif
 
-#include <windows.h>
+#include "../RpWin32.hpp"
 
 class GdiplusHelper
 {
