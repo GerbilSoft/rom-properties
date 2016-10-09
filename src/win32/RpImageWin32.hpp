@@ -70,29 +70,14 @@ class RpImageWin32
 		 */
 		static HBITMAP toHBITMAP_mask(const LibRomData::rp_image *image);
 
-		/**
-		 * Convert an rp_image to HBITMAP. (CI8)
-		 * @param image rp_image. (Must be CI8.)
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP toHBITMAP_CI8(const LibRomData::rp_image *image);
-
-		/**
-		 * Convert an rp_image to HBITMAP. (ARGB32)
-		 * @param image rp_image. (Must be ARGB32.)
-		 * @param bgColor Background color for images with alpha transparency.
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP toHBITMAP_ARGB32(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
-
 	public:
 		/**
 		 * Convert an rp_image to HBITMAP.
 		 * @param image rp_image.
-		 * @param bgColor Background color for images with alpha transparency.
+		 * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor = 0xFFFFFFFF);
 
 		// FIXME: toHBITMAP() function that preserves the alpha channel.
 

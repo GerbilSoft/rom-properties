@@ -104,9 +104,10 @@ class RpGdiplusBackend : public rp_image_backend
 		 * WARNING: This *may* invalidate pointers
 		 * previously returned by data().
 		 *
+		 * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP(void);
+		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor = 0xFFFFFFFF);
 
 	protected:
 		ULONG_PTR m_gdipToken;

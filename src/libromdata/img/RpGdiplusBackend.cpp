@@ -88,6 +88,8 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// is requested.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
+		m_pGdipPalette->Flags = 0;
+		m_pGdipPalette->Count = 256;
 
 		// Set this->palette to the first palette entry.
 		this->palette = reinterpret_cast<uint32_t*>(&m_pGdipPalette->Entries[0]);
@@ -273,9 +275,10 @@ size_t RpGdiplusBackend::data_len(void) const
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
+ * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP(void)
+HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 {
 	// TODO: Check for errors?
 
@@ -289,8 +292,8 @@ HBITMAP RpGdiplusBackend::toHBITMAP(void)
 
 	// TODO: Specify a background color?
 	HBITMAP hBitmap;
-	Gdiplus::Color bgColor(0xFFFFFFFF);
-	Gdiplus::Status status = m_pGdipBmp->GetHBITMAP(bgColor, &hBitmap);
+	Gdiplus::Status status = m_pGdipBmp->GetHBITMAP(
+		Gdiplus::Color(bgColor), &hBitmap);
 	if (status != Gdiplus::Status::Ok) {
 		// Error converting to HBITMAP.
 		hBitmap = nullptr;
