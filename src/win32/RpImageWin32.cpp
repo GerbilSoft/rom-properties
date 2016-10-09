@@ -138,9 +138,8 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// - http://stackoverflow.com/a/2901465
 
 	/**
-	 * Create a monochrome bitmap to act as the icon mask.
-	 * Since the icon being masked is color, this bitmap
-	 * only contains an AND mask.
+	 * Create a monochrome bitmap to act as the icon's AND mask.
+	 * The XOR mask is the icon data itself.
 	 *
 	 * 1 == opaque pixel
 	 * 0 == transparent pixel
