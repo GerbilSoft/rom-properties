@@ -109,7 +109,6 @@ LONG RP_ExtractImage::Register(void)
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
-	// Register as the icon handler for this ProgID.
 	// Create/open the ProgID key.
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
 	if (!hkcr_ProgID.isOpen())
