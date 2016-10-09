@@ -131,7 +131,7 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_ARGB32_to_CI8_grayscale(Gdiplus::Bitmap *pGd
 	// Initialize the grayscale palette.
 	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 	Gdiplus::ColorPalette *gdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
-	gdipPalette->Flags = 0;
+	gdipPalette->Flags = Gdiplus::PaletteFlagsGrayScale;
 	gdipPalette->Count = 256;
 	uint32_t color = 0xFF000000;
 	for (int i = 0; i < 256; i++) {
