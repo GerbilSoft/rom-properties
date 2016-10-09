@@ -211,7 +211,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		return E_INVALIDARG;
 	}
 	*phbmp = nullptr;
-	*pdwAlpha = WTSAT_UNKNOWN;	// TODO
+	*pdwAlpha = WTSAT_ARGB;
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
@@ -246,9 +246,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	if (img) {
 		// Image loaded. Convert it to HBITMAP.
-		// FIXME: RpImageWin32::toHBITMAP_alpha() to preserve
-		// the alpha channel.
-		*phbmp = RpImageWin32::toHBITMAP(img);
+		*phbmp = RpImageWin32::toHBITMAP_alpha(img);
 
 		if (needs_delete) {
 			// Delete the image.

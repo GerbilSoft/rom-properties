@@ -308,4 +308,65 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	return hBitmap;
 }
 
+/**
+ * Convert the GDI+ image to HBITMAP.
+ * Caller must delete the HBITMAP.
+ *
+ * This version preserves the alpha channel.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
+{
+	if (this->format != rp_image::FORMAT_ARGB32 ||
+	    m_pGdipBmp->GetPixelFormat() != PixelFormat32bppARGB) {
+		// No alpha transparency. Use the regular toHBITMAP().
+		// FIXME: Handle alpha transparency in CI8 images.
+		return toHBITMAP();
+	}
+
+	// Create a bitmap.
+	BITMAPINFO bmi;
+	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
+
+	// Initialize the BITMAPINFOHEADER.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
+	bmiHeader->biWidth = this->width;
+	bmiHeader->biHeight = -this->height;	// Top-down
+	bmiHeader->biPlanes = 1;
+	bmiHeader->biBitCount = 32;
+	bmiHeader->biCompression = BI_RGB;
+	bmiHeader->biSizeImage = 0;	// TODO?
+	bmiHeader->biXPelsPerMeter = 0;	// TODO
+	bmiHeader->biYPelsPerMeter = 0;	// TODO
+	bmiHeader->biClrUsed = 0;
+	bmiHeader->biClrImportant = 0;
+
+	// Create the bitmap.
+	uint8_t *pvBits;
+	HBITMAP hBitmap = CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&bmi),
+		DIB_RGB_COLORS, reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	if (!hBitmap) {
+		// Could not create the bitmap.
+		return nullptr;
+	}
+
+	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
+	// FIXME: Do we need to handle special cases for odd widths?
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(m_gdipBmpData.Scan0);
+	size_t active_px = this->width * 4;
+	for (int y = this->height; y > 0; y--) {
+		memcpy(pvBits, gdip_px, active_px);
+		pvBits += this->stride;
+		gdip_px += this->stride;
+	}
+
+	// Bitmap is ready.
+	return hBitmap;
+}
+
 }

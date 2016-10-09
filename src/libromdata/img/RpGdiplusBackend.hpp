@@ -109,6 +109,19 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor = 0xFFFFFFFF);
 
+		/**
+		 * Convert the GDI+ image to HBITMAP.
+		 * Caller must delete the HBITMAP.
+		 *
+		 * This version preserves the alpha channel.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		HBITMAP toHBITMAP_alpha(void);
+
 	protected:
 		ULONG_PTR m_gdipToken;
 		Gdiplus::Bitmap *m_pGdipBmp;

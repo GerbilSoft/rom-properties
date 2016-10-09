@@ -276,6 +276,35 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
 }
 
 /**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel.
+ * @param image rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid()) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+}
+
+/**
  * Convert an rp_image to HICON.
  * @param image rp_image.
  * @return HICON, or nullptr on error.
