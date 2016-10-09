@@ -34,6 +34,12 @@ using std::locale;
 #define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
 #endif
 
+// rp_image backend registration.
+#include "libromdata/img/RpGdiplusBackend.hpp"
+#include "libromdata/img/rp_image.hpp"
+using LibRomData::RpGdiplusBackend;
+using LibRomData::rp_image;
+
 /**
  * Enable extra security options.
  * Reference: http://msdn.microsoft.com/en-us/library/bb430720.aspx
@@ -86,6 +92,10 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	// Set Win32 security options.
 	Win32_SetSecurityOptions();
+
+	// Register RpGdiplusBackend.
+	// TODO: Static initializer somewhere?
+	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
 #endif
 
 	// Set the C and C++ locales.
