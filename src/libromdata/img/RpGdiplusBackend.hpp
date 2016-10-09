@@ -104,9 +104,9 @@ class RpGdiplusBackend : public rp_image_backend
 		 * WARNING: This *may* invalidate pointers
 		 * previously returned by data().
 		 *
-		 * @return HBITMAP.
+		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP getHBITMAP(void);
+		HBITMAP toHBITMAP(void);
 
 	protected:
 		ULONG_PTR m_gdipToken;

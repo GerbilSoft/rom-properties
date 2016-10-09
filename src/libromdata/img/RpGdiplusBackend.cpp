@@ -273,9 +273,9 @@ size_t RpGdiplusBackend::data_len(void) const
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
- * @return HBITMAP.
+ * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::getHBITMAP(void)
+HBITMAP RpGdiplusBackend::toHBITMAP(void)
 {
 	// TODO: Check for errors?
 
