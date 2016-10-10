@@ -28,6 +28,28 @@
 
 namespace LibRomData {
 
+class RpImageLoaderPrivate
+{
+	private:
+		// RpImageLoaderPrivate is a static class.
+		RpImageLoaderPrivate();
+		~RpImageLoaderPrivate();
+		RpImageLoaderPrivate(const RpImageLoaderPrivate &other);
+		RpImageLoaderPrivate &operator=(const RpImageLoaderPrivate &other);
+
+	public:
+		// Magic numbers.
+		static const uint8_t png_magic[8];
+};
+
+/** RpImageLoaderPrivate **/
+
+// Magic numbers.
+const uint8_t RpImageLoaderPrivate::png_magic[8] =
+	{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+
+/** RpImageLoader **/
+
 /**
  * Load an image from an IRpFile.
  *
@@ -41,15 +63,14 @@ rp_image *RpImageLoader::loadUnchecked(IRpFile *file)
 {
 	file->rewind();
 
-	// Image magic numbers.
-	const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
-
 	// Check the file header to see what kind of image this is.
 	uint8_t buf[256];
 	size_t sz = file->read(buf, sizeof(buf));
-	if (sz >= sizeof(png_magic)) {
+	if (sz >= sizeof(RpImageLoaderPrivate::png_magic)) {
 		// Check for PNG.
-		if (!memcmp(buf, png_magic, sizeof(png_magic))) {
+		if (!memcmp(buf, RpImageLoaderPrivate::png_magic,
+		     sizeof(RpImageLoaderPrivate::png_magic)))
+		{
 			// Found a PNG image.
 			return RpPng::loadUnchecked(file);
 		}
@@ -72,15 +93,14 @@ rp_image *RpImageLoader::load(IRpFile *file)
 {
 	file->rewind();
 
-	// Image magic numbers.
-	const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
-
 	// Check the file header to see what kind of image this is.
 	uint8_t buf[256];
 	size_t sz = file->read(buf, sizeof(buf));
-	if (sz >= sizeof(png_magic)) {
+	if (sz >= sizeof(RpImageLoaderPrivate::png_magic)) {
 		// Check for PNG.
-		if (!memcmp(buf, png_magic, sizeof(png_magic))) {
+		if (!memcmp(buf, RpImageLoaderPrivate::png_magic,
+		     sizeof(RpImageLoaderPrivate::png_magic)))
+		{
 			// Found a PNG image.
 			return RpPng::load(file);
 		}
