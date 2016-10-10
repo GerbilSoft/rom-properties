@@ -362,7 +362,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 {
 	if (size.cx <= 0 || size.cy <= 0 ||
-	    size.cx == this->width && size.cy == this->height)
+	    (size.cx == this->width && size.cy == this->height))
 	{
 		// No resize is required.
 		return toHBITMAP_alpha();

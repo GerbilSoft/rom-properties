@@ -35,6 +35,7 @@ using LibRomData::rp_string;
 #define PRIu64 "I64u"
 #define PRIX64 "I64X"
 #else
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #endif
 
