@@ -200,8 +200,6 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 
 IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
 {
-	// TODO: Handle cx?
-
 	// Verify parameters:
 	// - A stream must have been set by calling IInitializeWithStream::Initialize().
 	// - phbmp and pdwAlpha must not be nullptr.
@@ -244,7 +242,15 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	if (img) {
 		// Image loaded. Convert it to HBITMAP.
-		*phbmp = RpImageWin32::toHBITMAP_alpha(img);
+		if (cx < img->width() || cx < img->height()) {
+			// Windows will handle image shrinking by itself.
+			*phbmp = RpImageWin32::toHBITMAP_alpha(img);
+		} else {
+			// Windows will *not* enlarge the thumbnail.
+			// We'll need to do that ourselves.
+			const SIZE size = {(LONG)cx, (LONG)cx};
+			*phbmp = RpImageWin32::toHBITMAP_alpha(img, size);
+		}
 
 		if (needs_delete) {
 			// Delete the image.

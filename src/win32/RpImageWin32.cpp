@@ -278,10 +278,23 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
 /**
  * Convert an rp_image to HBITMAP.
  * This version preserves the alpha channel.
- * @param image rp_image.
+ * @param image	[in] rp_image.
  * @return HBITMAP, or nullptr on error.
  */
 HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
+{
+	const SIZE size = {0, 0};
+	return toHBITMAP_alpha(image, size);
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel and resizes the image.
+ * @param image	[in] rp_image.
+ * @param size	[in] If non-zero, resize the image to this size.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -301,7 +314,13 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
 
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
-	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	if (size.cx <= 0 || size.cy <= 0) {
+		// No resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	} else {
+		// Resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(size);
+	}
 }
 
 /**

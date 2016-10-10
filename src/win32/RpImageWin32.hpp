@@ -82,10 +82,19 @@ class RpImageWin32
 		/**
 		 * Convert an rp_image to HBITMAP.
 		 * This version preserves the alpha channel.
-		 * @param image rp_image.
+		 * @param image	[in] rp_image.
 		 * @return HBITMAP, or nullptr on error.
 		 */
 		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version preserves the alpha channel and resizes the image.
+		 * @param image	[in] rp_image.
+		 * @param size	[in] If non-zero, resize the image to this size.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size);
 
 		/**
 		 * Convert an rp_image to HICON.
