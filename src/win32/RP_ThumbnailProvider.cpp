@@ -279,7 +279,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 			if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 				// If the requested thumbnail size is an integer multiple
 				// of the image size, use nearest-neighbor scaling.
-				if ((cx % img->width() == 0) && (cx % img->height() == 0)) {
+				if ((size.cx % img->width() == 0) && (size.cy % img->height() == 0)) {
 					// Integer multiple.
 					nearest = true;
 				}
