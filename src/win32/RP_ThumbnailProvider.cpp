@@ -245,7 +245,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	if (img) {
 		// Image loaded. Convert it to HBITMAP.
-		if (cx < img->width() || cx < img->height()) {
+		if ((int)cx < img->width() || (int)cx < img->height()) {
 			// Windows will handle image shrinking by itself.
 			*phbmp = RpImageWin32::toHBITMAP_alpha(img);
 		} else {
