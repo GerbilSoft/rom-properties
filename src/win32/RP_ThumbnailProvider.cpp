@@ -251,6 +251,12 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		} else {
 			// Windows will *not* enlarge the thumbnail.
 			// We'll need to do that ourselves.
+
+			// NOTE: GameTDB uses 160px images for disc scans.
+			// Windows 7 only seems to request 256px thumbnails,
+			// so this will result in 160px being upscaled and
+			// then downscaled again.
+
 			const SIZE size = {(LONG)cx, (LONG)cx};
 			bool nearest = false;
 			if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
