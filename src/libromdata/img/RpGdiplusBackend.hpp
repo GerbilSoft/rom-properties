@@ -109,6 +109,51 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor = 0xFFFFFFFF);
 
+		/**
+		 * Convert the GDI+ image to HBITMAP.
+		 * Caller must delete the HBITMAP.
+		 *
+		 * This version preserves the alpha channel.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		HBITMAP toHBITMAP_alpha();
+
+		/**
+		 * Convert the GDI+ image to HBITMAP.
+		 * Caller must delete the HBITMAP.
+		 *
+		 * This version preserves the alpha channel.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @param size		[in] Resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest);
+
+	protected:
+		/**
+		 * Convert a locked ARGB32 GDI+ bitmap to an HBITMAP.
+		 * Alpha transparency is preserved.
+		 * @param pBmpData Gdiplus::BitmapData.
+		 * @return HBITMAP.
+		 */
+		static HBITMAP convBmpData_ARGB32(Gdiplus::BitmapData *pBmpData);
+
+		/**
+		 * Convert a locked CI8 GDI+ bitmap to an HBITMAP.
+		 * Alpha transparency is preserved.
+		 * @param pBmpData Gdiplus::BitmapData.
+		 * @return HBITMAP.
+		 */
+		HBITMAP convBmpData_CI8(Gdiplus::BitmapData *pBmpData);
+
 	protected:
 		ULONG_PTR m_gdipToken;
 		Gdiplus::Bitmap *m_pGdipBmp;

@@ -30,6 +30,10 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
+
 #include "img/rp_image.hpp"
 #include "img/GdiplusHelper.hpp"
 
@@ -300,11 +304,225 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	}
 
 	// Re-lock the bitmap.
-	const Gdiplus::Rect bmpRect(0, 0, width, height);
+	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
 	m_pGdipBmp->LockBits(&bmpRect,
 		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
 		m_gdipFmt, &m_gdipBmpData);
 
+	return hBitmap;
+}
+
+/**
+ * Convert the GDI+ image to HBITMAP.
+ * Caller must delete the HBITMAP.
+ *
+ * This version preserves the alpha channel.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
+{
+	// Convert to HBITMAP.
+	HBITMAP hBitmap = nullptr;
+	switch (this->format) {
+		case rp_image::FORMAT_ARGB32:
+			hBitmap = convBmpData_ARGB32(&m_gdipBmpData);
+			break;
+
+		case rp_image::FORMAT_CI8:
+			// Copy the local palette to the GDI+ image.
+			m_pGdipBmp->SetPalette(m_pGdipPalette);
+			hBitmap = convBmpData_CI8(&m_gdipBmpData);
+			break;
+
+		default:
+			assert(!"Unsupported rp_image::Format.");
+			break;
+	}
+
+	return hBitmap;
+}
+
+/**
+ * Convert the GDI+ image to HBITMAP.
+ * Caller must delete the HBITMAP.
+ *
+ * This version preserves the alpha channel.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @param size		[in] Resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
+{
+	if (size.cx <= 0 || size.cy <= 0 ||
+	    size.cx == this->width && size.cy == this->height)
+	{
+		// No resize is required.
+		return toHBITMAP_alpha();
+	}
+
+	// Resize the image.
+
+	// Temporarily unlock the GDI+ bitmap.
+	Gdiplus::Status status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error unlocking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	if (this->format == rp_image::FORMAT_CI8) {
+		// Copy the local palette to the GDI+ image.
+		m_pGdipBmp->SetPalette(m_pGdipPalette);
+	}
+
+	// Create a new bitmap.
+	// NOTE: We're using ARGB32 because GDI+ doesn't
+	// handle resizing on CI8 properly.
+	unique_ptr<Gdiplus::Bitmap> pResizeBmp(
+		new Gdiplus::Bitmap(size.cx, size.cy, PixelFormat32bppARGB));
+	Gdiplus::Graphics graphics(pResizeBmp.get());
+	if (nearest) {
+		// Set nearest-neighbor interpolation.
+		// TODO: What's the default?
+		graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+	}
+	graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+
+	// Re-lock the bitmap.
+	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
+	status = m_pGdipBmp->LockBits(&bmpRect,
+		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
+		m_gdipFmt, &m_gdipBmpData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error re-locking the GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Lock the resized bitmap.
+	const Gdiplus::Rect bmpResizeRect(0, 0, size.cx, size.cy);
+	Gdiplus::BitmapData bmpResizeData;
+	status = pResizeBmp->LockBits(&bmpResizeRect, Gdiplus::ImageLockModeRead,
+		PixelFormat32bppARGB, &bmpResizeData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error re-locking the resized GDI+ bitmap.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	HBITMAP hBitmap = convBmpData_ARGB32(&bmpResizeData);
+
+	// We're done here.
+	pResizeBmp->UnlockBits(&bmpResizeData);
+	return hBitmap;
+}
+
+/**
+ * Convert a locked ARGB32 GDI+ bitmap to an HBITMAP.
+ * Alpha transparency is preserved.
+ * @param pBmpData Gdiplus::BitmapData.
+ * @return HBITMAP.
+ */
+HBITMAP RpGdiplusBackend::convBmpData_ARGB32(Gdiplus::BitmapData *pBmpData)
+{
+	// Create a bitmap.
+	BITMAPINFO bmi;
+	BITMAPINFOHEADER *const bmiHeader = &bmi.bmiHeader;
+
+	// Initialize the BITMAPINFOHEADER.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
+	bmiHeader->biWidth = pBmpData->Width;
+	bmiHeader->biHeight = -(int)pBmpData->Height;	// Top-down
+	bmiHeader->biPlanes = 1;
+	bmiHeader->biBitCount = 32;
+	bmiHeader->biCompression = BI_RGB;	// TODO: BI_BITFIELDS?
+	bmiHeader->biSizeImage = 0;	// TODO?
+	bmiHeader->biXPelsPerMeter = 0;	// TODO
+	bmiHeader->biYPelsPerMeter = 0;	// TODO
+	bmiHeader->biClrUsed = 0;
+	bmiHeader->biClrImportant = 0;
+
+	// Create the bitmap.
+	uint8_t *pvBits;
+	HBITMAP hBitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS,
+		reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	if (!hBitmap) {
+		// Could not create the bitmap.
+		return nullptr;
+	}
+
+	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
+	// FIXME: Do we need to handle special cases for odd widths?
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(pBmpData->Scan0);
+	const size_t active_px_sz = pBmpData->Width * 4;
+	for (int y = (int)pBmpData->Height; y > 0; y--) {
+		memcpy(pvBits, gdip_px, active_px_sz);
+		pvBits += pBmpData->Stride;
+		gdip_px += pBmpData->Stride;
+	}
+
+	// Bitmap is ready.
+	return hBitmap;
+}
+
+/**
+ * Convert a locked CI8 GDI+ bitmap to an HBITMAP.
+ * Alpha transparency is preserved.
+ * @param pBmpData Gdiplus::BitmapData.
+ * @return HBITMAP.
+ */
+HBITMAP RpGdiplusBackend::convBmpData_CI8(Gdiplus::BitmapData *pBmpData)
+{
+	// BITMAPINFO with 256-color palette.
+	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
+	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
+	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
+
+	// Initialize the BITMAPINFOHEADER.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
+	bmiHeader->biWidth = pBmpData->Width;
+	bmiHeader->biHeight = -(int)pBmpData->Height;	// Top-down
+	bmiHeader->biPlanes = 1;
+	bmiHeader->biBitCount = 8;
+	bmiHeader->biCompression = BI_RGB;
+	bmiHeader->biSizeImage = 0;	// TODO?
+	bmiHeader->biXPelsPerMeter = 0;	// TODO
+	bmiHeader->biYPelsPerMeter = 0;	// TODO
+	bmiHeader->biClrUsed = this->palette_len;
+	bmiHeader->biClrImportant = this->palette_len;	// TODO
+
+	// Copy the palette from the image.
+	memcpy(bmi->bmiColors, this->palette, this->palette_len * sizeof(RGBQUAD));
+
+	// Create the bitmap.
+	uint8_t *pvBits;
+	HBITMAP hBitmap = CreateDIBSection(nullptr, bmi, DIB_RGB_COLORS,
+		reinterpret_cast<void**>(&pvBits), nullptr, 0);
+	free(bmi);
+	if (!hBitmap) {
+		// Could not create the bitmap.
+		return nullptr;
+	}
+
+	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
+	// FIXME: Do we need to handle special cases for odd widths?
+	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(pBmpData->Scan0);
+	const size_t active_px_sz = pBmpData->Width;
+	for (int y = (int)pBmpData->Height; y > 0; y--) {
+		memcpy(pvBits, gdip_px, active_px_sz);
+		pvBits += pBmpData->Stride;
+		gdip_px += pBmpData->Stride;
+	}
+
+	// Bitmap is ready.
 	return hBitmap;
 }
 

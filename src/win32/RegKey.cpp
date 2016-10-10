@@ -181,7 +181,7 @@ std::wstring RegKey::read(LPCWSTR lpValueName) const
 }
 
 /**
- * Write a value to this key.
+ * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
@@ -208,7 +208,7 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
 }
 
 /**
- * Write a value to this key.
+ * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
@@ -226,6 +226,27 @@ LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
 
 	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
+}
+
+/**
+ * Write a DWORD value to this key.
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * @param value Value.
+ * @return RegSetValueEx() return value.
+ */
+LONG RegKey::write_dword(LPCWSTR lpValueName, DWORD value)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
+	// Get the string length, add 1 for NULL,
+	// and multiply by sizeof(wchar_t).
+	DWORD cbData = (DWORD)sizeof(value);
+
+	return RegSetValueEx(m_hKey, lpValueName, 0, REG_DWORD,
+		reinterpret_cast<const BYTE*>(&value), cbData);
 }
 
 /**

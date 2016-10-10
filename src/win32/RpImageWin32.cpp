@@ -276,6 +276,55 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
 }
 
 /**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel.
+ * @param image	[in] rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
+{
+	const SIZE size = {0, 0};
+	return toHBITMAP_alpha(image, size, false);
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel and resizes the image.
+ * @param image		[in] rp_image.
+ * @param size		[in] If non-zero, resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid()) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	if (size.cx <= 0 || size.cy <= 0) {
+		// No resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	} else {
+		// Resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(size, nearest);
+	}
+}
+
+/**
  * Convert an rp_image to HICON.
  * @param image rp_image.
  * @return HICON, or nullptr on error.

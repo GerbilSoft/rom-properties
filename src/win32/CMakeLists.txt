@@ -10,6 +10,8 @@ SET(rom-properties-win32_SRCS
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	#DialogBuilder.cpp
+	RpFile_IStream.cpp
+	RP_ThumbnailProvider.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -21,6 +23,8 @@ SET(rom-properties-win32_H
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	#DialogBuilder.hpp
+	RpFile_IStream.hpp
+	RP_ThumbnailProvider.hpp
 	resource.h
 	)
 

@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
- * RpFile.hpp: Standard file object.                                       *
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,54 +19,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_RPFILE_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_RPFILE_HPP__
+#ifndef __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
+#define __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 
-#include "IRpFile.hpp"
-#include "libromdata/config.libromdata.h"
+#include "libromdata/file/IRpFile.hpp"
+#include "libromdata/RpWin32.hpp"
+#include <objidl.h>
 
-// C includes. (C++ namespace)
-#include <cstdio>
-
-// C++ includes.
-#include <memory>
-
-namespace LibRomData {
-
-class RpFile : public IRpFile
+class RpFile_IStream : public LibRomData::IRpFile
 {
 	public:
-		enum FileMode {
-			FM_READ = 0,		// Read-only.
-			FM_WRITE = 1,		// Read/write.
-			FM_OPEN = 0,		// Open the file. (Must exist!)
-			FM_CREATE = 2,		// Create the file. (Will overwrite!)
-
-			// Combinations.
-			FM_OPEN_READ = 0,	// Open for reading. (Must exist!)
-			FM_OPEN_WRITE = 1,	// Open for reading/writing. (Must exist!)
-			//FM_CREATE_READ = 2,	// Not valid; handled as FM_CREATE_WRITE.
-			FM_CREATE_WRITE = 3,	// Create for reading/writing. (Will overwrite!)
-		};
-
 		/**
-		 * Open a file.
-		 * NOTE: Files are always opened in binary mode.
-		 * @param filename Filename.
-		 * @param mode File mode.
+		 * Create an IRpFile using IStream* as the underlying storage mechanism.
+		 * @param pStream IStream*.
 		 */
-		RpFile(const rp_char *filename, FileMode mode);
-		RpFile(const rp_string &filename, FileMode mode);
-	private:
-		void init(const rp_char *filename);
-	public:
-		virtual ~RpFile();
+		RpFile_IStream(IStream *pStream);
+		virtual ~RpFile_IStream();
 
 	private:
-		typedef IRpFile super;
-	public:
-		RpFile(const RpFile &other);
-		RpFile &operator=(const RpFile &other);
+		typedef LibRomData::IRpFile super;
+		RpFile_IStream(const RpFile_IStream &other);
+		RpFile_IStream &operator=(const RpFile_IStream &other);
 
 	public:
 		/**
@@ -146,18 +119,8 @@ class RpFile : public IRpFile
 		virtual int64_t fileSize(void) final;
 
 	protected:
-#ifdef _WIN32
-		// Win32: m_file is a HANDLE.
-		std::shared_ptr<void> m_file;
-#else
-		// Other: m_file is an stdio FILE.
-		std::shared_ptr<FILE> m_file;
-#endif
-
-		FileMode m_mode;
+		IStream *m_pStream;
 		int m_lastError;
 };
 
-}
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__ */
+#endif /* __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__ */

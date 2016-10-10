@@ -79,7 +79,23 @@ class RpImageWin32
 		 */
 		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor = 0xFFFFFFFF);
 
-		// FIXME: toHBITMAP() function that preserves the alpha channel.
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version preserves the alpha channel.
+		 * @param image	[in] rp_image.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version preserves the alpha channel and resizes the image.
+		 * @param image		[in] rp_image.
+		 * @param size		[in] If non-zero, resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest);
 
 		/**
 		 * Convert an rp_image to HICON.

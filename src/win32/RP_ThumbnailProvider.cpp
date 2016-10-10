@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * RP_ExtractImage.hpp: IExtractImage implementation.                      *
+ * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -21,7 +21,7 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "stdafx.h"
-#include "RP_ExtractImage.hpp"
+#include "RP_ThumbnailProvider.hpp"
 #include "RegKey.hpp"
 #include "RpImageWin32.hpp"
 
@@ -31,7 +31,11 @@
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
+
+// RpFile_IStream
+#include "RpFile_IStream.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -45,19 +49,22 @@ using std::unique_ptr;
 using std::wstring;
 
 // CLSID
-const CLSID CLSID_RP_ExtractImage =
-	{0x84573bc0, 0x9502, 0x42f8, {0x80, 0x66, 0xCC, 0x52, 0x7D, 0x07, 0x79, 0xE5}};
+const CLSID CLSID_RP_ThumbnailProvider =
+	{0x4723df58, 0x463e, 0x4590, {0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a}};
 
-RP_ExtractImage::RP_ExtractImage()
+RP_ThumbnailProvider::RP_ThumbnailProvider()
+	: m_file(nullptr)
+{ }
+
+RP_ThumbnailProvider::~RP_ThumbnailProvider()
 {
-	m_bmSize.cx = 0;
-	m_bmSize.cy = 0;
+	delete m_file;
 }
 
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
-IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -70,10 +77,10 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// References:
 	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
 	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IExtractImage) {
-		*ppvObj = static_cast<IExtractImage*>(this);
-	} else if (riid == IID_IPersistFile) {
-		*ppvObj = static_cast<IPersistFile*>(this);
+	if (riid == IID_IUnknown || riid == IID_IInitializeWithStream) {
+		*ppvObj = static_cast<IInitializeWithStream*>(this);
+	} else if (riid == IID_IThumbnailProvider) {
+		*ppvObj = static_cast<IThumbnailProvider*>(this);
 	} else {
 		// Interface is not supported.
 		return E_NOINTERFACE;
@@ -88,24 +95,27 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Register(void)
+LONG RP_ThumbnailProvider::Register(void)
 {
-	static const wchar_t description[] = L"ROM Properties Page - Image Extractor";
+	static const wchar_t description[] = L"ROM Properties Page - Thumbnail Provider";
 	extern const wchar_t RP_ProgID[];
 
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
 	if (lResult <= 0)
 		return ERROR_INVALID_PARAMETER;
 
 	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
+	lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
+	// TODO: Set HKCR\CLSID\DisableProcessIsolation=REG_DWORD:1
+	// in debug builds. Otherwise, it's not possible to debug
+	// the thumbnail handler.
 
 	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractImage), description);
+	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ThumbnailProvider), description);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
@@ -114,19 +124,25 @@ LONG RP_ExtractImage::Register(void)
 	if (!hkcr_ProgID.isOpen())
 		return hkcr_ProgID.lOpenRes();
 
+	// Set the "Treatment" value.
+	// TODO: DWORD write function.
+	lResult = hkcr_ProgID.write_dword(L"Treatment", 0);
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
+
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen())
 		return hkcr_ShellEx.lOpenRes();
 	// Create/open the IExtractImage key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
-	if (!hkcr_IExtractImage.isOpen())
-		return hkcr_IExtractImage.lOpenRes();
+	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
+	if (!hkcr_IThumbnailProvider.isOpen())
+		return hkcr_IThumbnailProvider.lOpenRes();
 	// Set the default value to this CLSID.
-	lResult = hkcr_IExtractImage.write(nullptr, clsid_str);
+	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
-	hkcr_IExtractImage.close();
+	hkcr_IThumbnailProvider.close();
 	hkcr_ShellEx.close();
 
 	// COM object registered.
@@ -137,12 +153,12 @@ LONG RP_ExtractImage::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Unregister(void)
+LONG RP_ThumbnailProvider::Unregister(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
+	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID);
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
@@ -150,74 +166,70 @@ LONG RP_ExtractImage::Unregister(void)
 	return ERROR_SUCCESS;
 }
 
-/** IExtractImage **/
-// References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761848(v=vs.85).aspx
-// - http://www.codeproject.com/Articles/2887/Create-Thumbnail-Extractor-objects-for-your-MFC-do
+/** IInitializeWithStream **/
+// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761812(v=vs.85).aspx [Initialize()]
 
-IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
-	DWORD cchMax, DWORD *pdwPriority, const SIZE *prgSize,
-	DWORD dwRecClrDepth, DWORD *pdwFlags)
+IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 {
-	// TODO: If the image is cached on disk, return a filename.
+	// Ignoring grfMode for now. (always read-only)
+	((void)grfMode);
 
-	// Save the image size for later.
-	m_bmSize = *prgSize;
+	// Create an IRpFile wrapper for the IStream.
+	IRpFile *file = new RpFile_IStream(pstream);
+	if (file->lastError() != 0) {
+		// Error initializing the IRpFile.
+		delete file;
+		return E_FAIL;
+	}
 
-	// Disable the border around the thumbnail.
-	// NOTE: Might not work on Vista+.
-	*pdwFlags |= IEIFLAG_NOBORDER;
+	if (m_file) {
+		// Delete the old file first.
+		IRpFile *old_file = m_file;
+		m_file = file;
+		delete old_file;
+	} else {
+		// No old file to delete.
+		m_file = file;
+	}
 
-#ifndef NDEBUG
-	// Debug version. Don't cache images.
-	// (Windows XP and earlier.)
-	*pdwFlags |= IEIFLAG_CACHE;
-#endif /* NDEBUG */
-
-	// TODO: On Windows XP, check for IEIFLAG_ASYNC.
-	// If specified, run the thumbnailing process in the background?
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
-{
-	// TODO: Handle m_bmSize?
+/** IThumbnailProvider **/
+// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774612(v=vs.85).aspx [GetThumbnail()]
 
+IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
+{
 	// Verify parameters:
-	// - A filename must have been set by calling IPersistFile::Load().
-	// - phBmpImage must not be nullptr.
-	if (m_filename.empty() || !phBmpImage) {
+	// - A stream must have been set by calling IInitializeWithStream::Initialize().
+	// - phbmp and pdwAlpha must not be nullptr.
+	if (!m_file || !phbmp || !pdwAlpha) {
 		return E_INVALIDARG;
 	}
-	*phBmpImage = nullptr;
-
-	// Get the RomData object.
-	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		return E_FAIL;	// TODO: More specific error?
-	}
+	*phbmp = nullptr;
+	*pdwAlpha = WTSAT_ARGB;
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
-	file.reset(nullptr);	// file is dup()'d by RomData.
-
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(m_file, true));
 	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
 	}
 
-	// ROM is supported. Get the image.
 	// TODO: Customize which ones are used per-system.
 	// For now, check EXT MEDIA, then INT ICON.
 
 	bool needs_delete = false;	// External images need manual deletion.
 	const rp_image *img = nullptr;
+	uint32_t imgpf = 0;
 
+	// ROM is supported. Get the image.
 	uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
 		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
 
@@ -227,22 +239,36 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
 			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
 
 	if (img) {
 		// Image loaded. Convert it to HBITMAP.
-		// NOTE: IExtractImage doesn't support alpha transparency,
-		// so blend the image with COLOR_WINDOW. This works for the
-		// most part, at least with Windows Explorer, but the cached
-		// Thumbs.db images won't reflect color scheme changes.
-		// NOTE 2: GetSysColor() has swapped R and B channels
-		// compared to GDI+.
-		COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-		bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-			  ((bgColor & 0xFF) << 16) |
-			  ((bgColor >> 16) & 0xFF);
-		*phBmpImage = RpImageWin32::toHBITMAP(img, bgColor);
+		if ((int)cx < img->width() || (int)cx < img->height()) {
+			// Windows will handle image shrinking by itself.
+			*phbmp = RpImageWin32::toHBITMAP_alpha(img);
+		} else {
+			// Windows will *not* enlarge the thumbnail.
+			// We'll need to do that ourselves.
+
+			// NOTE: GameTDB uses 160px images for disc scans.
+			// Windows 7 only seems to request 256px thumbnails,
+			// so this will result in 160px being upscaled and
+			// then downscaled again.
+
+			const SIZE size = {(LONG)cx, (LONG)cx};
+			bool nearest = false;
+			if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
+				// If the requested thumbnail size is an integer multiple
+				// of the image size, use nearest-neighbor scaling.
+				if ((cx % img->width() == 0) && (cx % img->height() == 0)) {
+					// Integer multiple.
+					nearest = true;
+				}
+			}
+			*phbmp = RpImageWin32::toHBITMAP_alpha(img, size, nearest);
+		}
 
 		if (needs_delete) {
 			// Delete the image.
@@ -250,47 +276,5 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 		}
 	}
 
-	return (*phBmpImage != nullptr ? S_OK : E_FAIL);
-}
-
-/** IPersistFile **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
-
-IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
-{
-	*pClassID = CLSID_RP_ExtractImage;
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
-{
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
-{
-	UNUSED(dwMode);	// TODO
-
-	// pszFileName is the file being worked on.
-	m_filename = W2RP_c(pszFileName);
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
-{
-	UNUSED(pszFileName);
-	UNUSED(fRemember);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
-{
-	UNUSED(pszFileName);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
-{
-	UNUSED(ppszFileName);
-	return E_NOTIMPL;
+	return (*phbmp != nullptr ? S_OK : E_FAIL);
 }

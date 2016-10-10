@@ -93,7 +93,7 @@ class RegKey
 		std::wstring read(LPCWSTR lpValueName) const;
 
 		/**
-		 * Write a value to this key.
+		 * Write a string value to this key.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
 		 * @return RegSetValueEx() return value.
@@ -101,12 +101,20 @@ class RegKey
 		LONG write(LPCWSTR lpValueName, LPCWSTR value);
 
 		/**
-		 * Write a value to this key.
+		 * Write a string value to this key.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
 		 * @return RegSetValueEx() return value.
 		 */
 		LONG write(LPCWSTR lpValueName, const std::wstring& value);
+
+		/**
+		 * Write a DWORD value to this key.
+		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+		 * @param value Value.
+		 * @return RegSetValueEx() return value.
+		 */
+		LONG write_dword(LPCWSTR lpValueName, DWORD value);
 
 		/**
 		 * Delete a value.

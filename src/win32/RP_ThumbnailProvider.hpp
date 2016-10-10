@@ -1,0 +1,89 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
+#define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
+
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+
+#include "RP_ComBase.hpp"
+#include "libromdata/config.libromdata.h"
+
+// IThumbnailProvider
+#include "thumbcache.h"
+
+// CLSID
+extern "C" {
+	extern const CLSID CLSID_RP_ThumbnailProvider;
+}
+
+namespace LibRomData {
+	class IRpFile;
+	class rp_image;
+}
+
+// C++ includes.
+#include <string>
+
+class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
+RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvider>
+{
+	public:
+		RP_ThumbnailProvider();
+		virtual ~RP_ThumbnailProvider();
+	private:
+		typedef RP_ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+
+	public:
+		// IUnknown
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+
+	public:
+		/**
+		 * Register the COM object.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG Register(void);
+
+		/**
+		 * Unregister the COM object.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG Unregister(void);
+
+ 	protected:
+		// IRpFile IInitializeWithStream::Initialize().
+		LibRomData::IRpFile *m_file;
+
+	public:
+		// IInitializeWithStream
+		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+
+		// IThumbnailProvider
+		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) final;
+};
+
+#ifdef __CRT_UUID_DECL
+// Required for MinGW-w64 __uuidof() emulation.
+__CRT_UUID_DECL(RP_ThumbnailProvider, 0x4723df58, 0x463e, 0x4590, 0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a)
+#endif
+
+#endif /* __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__ */
