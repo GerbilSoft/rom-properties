@@ -131,10 +131,11 @@ class RpGdiplusBackend : public rp_image_backend
 		 * WARNING: This *may* invalidate pointers
 		 * previously returned by data().
 		 *
-		 * @param size	[in] Resize the image to this size.
+		 * @param size		[in] Resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP_alpha(const SIZE &size);
+		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest);
 
 	protected:
 		/**

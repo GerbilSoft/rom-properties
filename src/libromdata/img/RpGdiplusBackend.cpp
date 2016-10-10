@@ -355,10 +355,11 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
- * @param size	[in] Resize the image to this size.
+ * @param size		[in] Resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 {
 	if (size.cx <= 0 || size.cy <= 0 ||
 	    size.cx == this->width && size.cy == this->height)
@@ -387,6 +388,11 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size)
 	unique_ptr<Gdiplus::Bitmap> pResizeBmp(
 		new Gdiplus::Bitmap(size.cx, size.cy, PixelFormat32bppARGB));
 	Gdiplus::Graphics graphics(pResizeBmp.get());
+	if (nearest) {
+		// Set nearest-neighbor interpolation.
+		// TODO: What's the default?
+		graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+	}
 	graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
 
 	// Re-lock the bitmap.

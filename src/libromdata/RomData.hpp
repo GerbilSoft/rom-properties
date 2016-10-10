@@ -228,6 +228,11 @@ class RomData
 		enum ImageProcessingBF {
 			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
 			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
+
+			// If the image needs to be resized, use
+			// nearest neighbor if the new size is an
+			// integer multiple of the old size.
+			IMGPF_RESCALE_NEAREST	= (1 << 2),
 		};
 
 		/**

@@ -222,12 +222,14 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	bool needs_delete = false;	// External images need manual deletion.
 	const rp_image *img = nullptr;
+	uint32_t imgpf = 0;
 
 	// ROM is supported. Get the image.
 	uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
 		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
 
@@ -237,6 +239,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
 			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
 
@@ -249,7 +252,16 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 			// Windows will *not* enlarge the thumbnail.
 			// We'll need to do that ourselves.
 			const SIZE size = {(LONG)cx, (LONG)cx};
-			*phbmp = RpImageWin32::toHBITMAP_alpha(img, size);
+			bool nearest = false;
+			if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
+				// If the requested thumbnail size is an integer multiple
+				// of the image size, use nearest-neighbor scaling.
+				if ((cx % img->width() == 0) && (cx % img->height() == 0)) {
+					// Integer multiple.
+					nearest = true;
+				}
+			}
+			*phbmp = RpImageWin32::toHBITMAP_alpha(img, size, nearest);
 		}
 
 		if (needs_delete) {

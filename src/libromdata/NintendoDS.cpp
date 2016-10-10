@@ -616,6 +616,9 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 		return -ENOENT;
 	}
 
+	// Use nearest-neighbor scaling when resizing.
+	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+
 	// Nintendo DS ROM header.
 	const NintendoDSPrivate::NDS_RomHeader *romHeader = &d->romHeader;
 
