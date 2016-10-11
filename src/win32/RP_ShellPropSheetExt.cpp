@@ -30,6 +30,7 @@
 #include "resource.h"
 
 // libromdata
+#include "libromdata/common.h"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
@@ -59,9 +60,13 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 
 // Control base IDs.
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
-#define IDC_RFT_STRING(idx)		(0x2000 + (idx))
-#define IDC_RFT_BITFIELD(idx, bit)	(0x3000 + ((idx) * 32) + (bit))
-#define IDC_RFT_LISTDATA(idx)		(0x4000 + (idx))
+#define IDC_RFT_STRING(idx)		(0x1400 + (idx))
+#define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
+// Date/Time acts like a string widget internally.
+#define IDC_RFT_DATETIME(idx)		IDC_RFT_STRING(idx)
+
+// Bitfield is last due to multiple controls per field.
+#define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
 
 // Property for "external pointer".
 // This links the property sheet to the COM object.
@@ -300,6 +305,79 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 }
 
 /**
+ * Initialize a string field. (Also used for Date/Time.)
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = d->romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	if (!desc)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// If string data wasn't specified, get the RFT_STRING data
+	// from the RomFields::Data object.
+	int lf_count = 0;
+	wstring wstr;
+	if (!wcs) {
+		const RomFields::Data *data = fields->data(idx);
+		if (!data)
+			return 0;
+		if (desc->type != RomFields::RFT_STRING ||
+		    data->type != RomFields::RFT_STRING)
+			return 0;
+
+		// TODO: NULL string == empty string?
+		wstr = RP2W_c(data->str);
+	} else {
+		// Use the specified string.
+		wstr = wcs;
+	}
+
+	// Field height.
+	int field_cy = size.cy;
+
+	// Create a read-only EDIT widget.
+	// The STATIC control doesn't allow the user
+	// to highlight and copy data.
+	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(),
+		WS_CHILD | WS_VISIBLE | ES_READONLY,
+		pt_start.x, pt_start.y,
+		size.cx, field_cy,
+		hDlg, (HMENU)(IDC_RFT_STRING(idx)),
+		nullptr, nullptr);
+
+	// Get the default font.
+	HFONT hFont = GetWindowFont(hDlg);
+
+	// Check for any formatting options.
+	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
+		// Monospace font?
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			if (d->hFontMono != nullptr) {
+				hFont = d->hFontMono;
+			}
+		}
+	}
+
+	SetWindowFont(hDlgItem, hFont, FALSE);
+	return field_cy;
+}
+
+/**
  * Initialize a bitfield layout.
  * @param hDlg Dialog window.
  * @param pt_start Starting position, in pixels.
@@ -518,6 +596,105 @@ void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, 
 }
 
 /**
+ * Initialize a Date/Time field.
+ * This function internally calls initString().
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt::initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = d->romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	const RomFields::Data *data = fields->data(idx);
+	if (!desc || !data)
+		return 0;
+	if (desc->type != RomFields::RFT_DATETIME ||
+	    data->type != RomFields::RFT_DATETIME)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// Format the date/time using the system locale.
+	wchar_t dateTimeStr[256];
+	int start_pos = 0;
+	int cchBuf = ARRAY_SIZE(dateTimeStr);
+
+	// Convert from UNIX time to Win32 SYSTEMTIME.
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	// NOTE: This ends up converting to UTC.
+	// TODO: Handle !RFT_DATETIME_IS_UTC.
+	SYSTEMTIME st;
+	FILETIME ft;
+	int64_t ftll = (data->date_time * 10000000LL) + 116444736000000000LL;
+	ft.dwLowDateTime = (DWORD)ftll;
+	ft.dwHighDateTime = (DWORD)(ftll >> 32);
+	FileTimeToSystemTime(&ft, &st);
+
+	// At least one of Date and/or Time must be set.
+	assert((desc->date_time->flags &
+		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
+
+	if (desc->date_time->flags & RomFields::RFT_DATETIME_HAS_DATE) {
+		// Format the date.
+		int ret = GetDateFormat(
+			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+			DATE_SHORTDATE,
+			&st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		if (ret <= 0) {
+			// Error!
+			return 0;
+		}
+
+		// Adjust the buffer position.
+		// NOTE: ret includes the NULL terminator.
+		start_pos += ret-1;
+		cchBuf -= ret-1;
+	}
+
+	if (desc->date_time->flags & RomFields::RFT_DATETIME_HAS_TIME) {
+		// Format the time.
+		if (start_pos > 0 && cchBuf >= 1) {
+			// Add a space.
+			dateTimeStr[start_pos] = L' ';
+			dateTimeStr[start_pos+1] = 0;
+			start_pos++;
+			cchBuf--;
+		}
+
+		int ret = GetTimeFormat(
+			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+			0, &st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		if (ret <= 0) {
+			// Error!
+			return 0;
+		}
+
+		// Adjust the buffer position.
+		// NOTE: ret includes the NULL terminator.
+		start_pos += ret-1;
+		cchBuf -= ret-1;
+	}
+
+	if (start_pos == 0) {
+		// Empty string.
+		// Something failed...
+		return 0;
+	}
+
+	// Initialize the string.
+	return initString(hDlg, pt_start, idx, size, dateTimeStr);
+}
+
+/**
  * Initialize the dialog.
  * Called by WM_INITDIALOG.
  * @param hDlg Dialog window.
@@ -665,7 +842,6 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
-		HFONT hFontItem = hFont;
 		HWND hDlgItem;
 		switch (desc->type) {
 			case RomFields::RFT_INVALID:
@@ -674,29 +850,17 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 				field_cy = 0;
 				break;
 
-			case RomFields::RFT_STRING:
-				// Create a read-only EDIT widget.
-				// The STATIC control doesn't allow the user
-				// to highlight and copy data.
-				hDlgItem = CreateWindow(WC_EDIT, RP2W_c(data->str),
-					WS_CHILD | WS_VISIBLE | ES_READONLY,
-					pt_start.x, pt_start.y,
-					dlg_value_width, field_cy,
-					hDlg, (HMENU)(IDC_RFT_STRING(idx)),
-					nullptr, nullptr);
-
-				// Check for any formatting options.
-				if (desc->str_desc) {
-					// Monospace font?
-					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-						if (d->hFontMono != nullptr) {
-							hFontItem = d->hFontMono;
-						}
-					}
+			case RomFields::RFT_STRING: {
+				// String data.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initString(hDlg, pt_start, idx, size, nullptr);
+				if (field_cy == 0) {
+					// initString() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
 				}
-
-				SetWindowFont(hDlgItem, hFontItem, FALSE);
 				break;
+			}
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
@@ -728,6 +892,18 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 				// Initialize the ListView data.
 				initListView(hDlgItem, desc, fields->data(idx));
 				break;
+
+			case RomFields::RFT_DATETIME: {
+				// Date/Time in Unix format.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initDateTime(hDlg, pt_start, idx, size);
+				if (field_cy == 0) {
+					// initDateTime() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+			}
 
 			default:
 				// Unsupported data type.

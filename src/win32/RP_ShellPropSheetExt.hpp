@@ -78,7 +78,18 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 */
 		static LONG Unregister(void);
 
- 	protected:
+	protected:
+		/**
+		 * Initialize a string field. (Also used for Date/Time.)
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+		 * @return Field height, in pixels.
+		 */
+		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs);
+
 		/**
 		 * Initialize a bitfield layout.
 		 * @param hDlg Dialog window.
@@ -97,6 +108,17 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
 
 		/**
+		 * Initialize a Date/Time field.
+		 * This function internally calls initString().
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @return Field height, in pixels.
+		 */
+		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+
+		/**
 		 * Initialize the dialog.
 		 * Called by WM_INITDIALOG.
 		 * @param hDlg Dialog window.
@@ -111,6 +133,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		IFACEMETHODIMP AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam);
 		IFACEMETHODIMP ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam);
 
+	protected:
 		// Property sheet callback functions.
 		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
