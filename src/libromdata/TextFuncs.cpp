@@ -152,7 +152,7 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
  * @return malloc()'d UTF-8 string, or nullptr on error.
  */
 static char *rp_iconv(const char *src, int len,
-			const char *src_charset, const char *dest_charset)
+		const char *src_charset, const char *dest_charset)
 {
 	if (!src || len <= 0)
 		return nullptr;
