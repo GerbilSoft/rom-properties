@@ -137,6 +137,9 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		// Property sheet callback functions.
 		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+		// Subclass procedure for ES_MULTILINE EDIT controls.
+		static INT_PTR CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #ifdef __CRT_UUID_DECL

@@ -44,8 +44,10 @@ using namespace LibRomData;
 // C++ includes.
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::unique_ptr;
+using std::unordered_map;
 using std::wstring;
 using std::vector;
 
@@ -90,15 +92,22 @@ class RP_ShellPropSheetExt_Private
 		// ROM data.
 		LibRomData::RomData *romData;
 
+		// Property dialog hWnd.
+		HWND hDlgProps;
+
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
 		HFONT hFontMono;	// Monospaced font.
+
+		// Subclassed multiline edit controls.
+		unordered_map<HWND, WNDPROC> mapOldEditProc;
 };
 
 /** RP_ShellPropSheetExt_Private **/
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private()
 	: romData(nullptr)
+	, hDlgProps(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 {
@@ -392,7 +401,6 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 		// NOTE: Only add 5/8 of field_cy per line.
 		// FIXME: 5/8 needs adjustment...
 		field_cy += (field_cy * lf_count) * 5 / 8;
-		// FIXME: ES_MULTILINE inhibits Escape and Enter on Win7.
 		dwStyle |= ES_MULTILINE;
 	}
 
@@ -404,6 +412,18 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 
 	// Get the default font.
 	HFONT hFont = GetWindowFont(hDlg);
+
+	// Subclass multiline controls to work around Enter/Escape issues.
+	// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+	if (dwStyle & ES_MULTILINE) {
+		// Store the object pointer so we can reference it later.
+		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(this));
+
+		// Subclass the control.
+		WNDPROC oldEditProc = (WNDPROC)SetWindowLongPtr(
+			hDlgItem, GWLP_WNDPROC, (LONG_PTR)MultilineEditProc);
+		d->mapOldEditProc.insert(std::make_pair(hDlgItem, oldEditProc));
+	}
 
 	// Check for any formatting options.
 	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
@@ -1049,6 +1069,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 					// Store the object pointer with this particular page dialog.
 					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
 
+					// Save the property dialog handle for later.
+					pExt->d->hDlgProps = GetParent(hWnd);
+
 					// Initialize the dialog.
 					pExt->initDialog(hWnd);
 				}
@@ -1109,4 +1132,52 @@ UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 	}
 
 	return FALSE;
+}
+
+/**
+ * Subclass procedure for ES_MULTILINE EDIT controls.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ */
+INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+		GetProp(hWnd, EXT_POINTER_PROP));
+	if (!pExt) {
+		// No RP_ShellPropSheetExt. Can't do anything...
+		return 0;
+	}
+
+	switch (uMsg) {
+		case WM_KEYDOWN:
+			// Work around Enter/Escape issues.
+			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			switch (wParam) {
+				case VK_RETURN:
+					SendMessage(pExt->d->hDlgProps, WM_COMMAND, IDOK, 0);
+					return TRUE;
+
+				case VK_ESCAPE:
+					SendMessage(pExt->d->hDlgProps, WM_COMMAND, IDCANCEL, 0);
+					return TRUE;
+
+				default:
+					break;
+			}
+
+		default:
+			break;
+	}
+
+	// Call the original window procedure.
+	unordered_map<HWND, WNDPROC>::const_iterator iter = pExt->d->mapOldEditProc.find(hWnd);
+	if (iter != pExt->d->mapOldEditProc.end()) {
+		WNDPROC wndProc = iter->second;
+		return CallWindowProc(wndProc, hWnd, uMsg, wParam, lParam);
+	}
+
+	// Can't find the original window procedure...
+	return DefDlgProc(hWnd, uMsg, wParam, lParam);
 }
