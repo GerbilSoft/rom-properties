@@ -41,58 +41,61 @@ namespace LibRomData {
 
 /** Generic text conversion functions. **/
 
+// NOTE: All of these functions will remove trailing
+// NULL characters from strings.
+
 // TODO: #ifdef out functions that aren't used
 // in RP_UTF8 and/or RP_UTF16 builds?
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cp1252_sjis_to_utf8(const char *str, size_t len);
+std::string cp1252_sjis_to_utf8(const char *str, int len);
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-16.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string cp1252_sjis_to_utf16(const char *str, size_t len);
+std::u16string cp1252_sjis_to_utf16(const char *str, int len);
 
 /**
  * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string utf8_to_utf16(const char *str, size_t len);
+std::u16string utf8_to_utf16(const char *str, int len);
 
 /**
  * Convert UTF-16 text to UTF-8.
  * @param str UTF-16 text.
- * @param len Length of str, in characters.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string utf16_to_utf8(const char16_t *str, size_t len);
+std::string utf16_to_utf8(const char16_t *str, int len);
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-8.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string latin1_to_utf8(const char* str, size_t len);
+std::string latin1_to_utf8(const char* str, int len);
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string latin1_to_utf16(const char* str, size_t len);
+std::u16string latin1_to_utf16(const char* str, int len);
 
 /**
  * char16_t strlen().
@@ -144,10 +147,10 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 /**
  * Convert cp1252 or Shift-JIS text to rp_string.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
+static inline rp_string cp1252_sjis_to_rp_string(const char *str, int len)
 {
 #ifdef RP_UTF8
 	return cp1252_sjis_to_utf8(str, len);
@@ -159,10 +162,10 @@ static inline rp_string cp1252_sjis_to_rp_string(const char *str, size_t len)
 /**
  * Convert UTF-8 text to rp_string.
  * @param str UTF-8 text.
- * @param len Length of str.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string utf8_to_rp_string(const char *str, size_t len)
+static inline rp_string utf8_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
 	return rp_string(str, len);
@@ -181,17 +184,17 @@ static inline rp_string utf8_to_rp_string(const std::string &str)
 #if defined(RP_UTF8)
 	return str;
 #elif defined(RP_UTF16)
-	return utf8_to_utf16(str.data(), str.size());
+	return utf8_to_utf16(str.data(), (int)str.size());
 #endif
 }
 
 /**
  * Convert rp_string to UTF-8 text.
  * @param str rp_string.
- * @param len Length of str, in characters.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-static inline std::string rp_string_to_utf8(const rp_char *str, size_t len)
+static inline std::string rp_string_to_utf8(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
 	return std::string(str, len);
@@ -210,17 +213,17 @@ static inline std::string rp_string_to_utf8(const rp_string &rps)
 #if defined(RP_UTF8)
 	return rps;
 #elif defined(RP_UTF16)
-	return utf16_to_utf8(rps.data(), rps.size());
+	return utf16_to_utf8(rps.data(), (int)rps.size());
 #endif
 }
 
 /**
  * Convert UTF-16 text to rp_string.
  * @param str UTF-16 text.
- * @param len Length of str.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string utf16_to_rp_string(const char16_t *str, size_t len)
+static inline rp_string utf16_to_rp_string(const char16_t *str, int len)
 {
 #if defined(RP_UTF8)
 	return utf16_to_utf8(str, len);
@@ -246,10 +249,10 @@ static inline rp_string utf16_to_rp_string(const std::u16string &str)
 /**
  * Convert rp_string to UTF-16 text.
  * @param str rp_string.
- * @param len Length of str, in characters.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-static inline std::u16string rp_string_to_utf16(const rp_char *str, size_t len)
+static inline std::u16string rp_string_to_utf16(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
 	return utf8_to_utf16(str, len);
@@ -276,10 +279,10 @@ static inline std::u16string rp_string_to_utf16(const rp_string &rps)
  * Convert Latin-1 (ISO-8859-1) text to rp_string.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string latin1_to_rp_string(const char *str, size_t len)
+static inline rp_string latin1_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
 	return latin1_to_utf8(str, len);
