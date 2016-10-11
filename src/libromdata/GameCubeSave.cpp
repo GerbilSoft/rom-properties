@@ -537,7 +537,6 @@ int GameCubeSave::loadFieldData(void)
 		m_fields->addData_invalid();
 	} else {
 		// Add the description.
-		// NOTE: Two-line field; may not work right on Windows...
 		rp_string desc = cp1252_sjis_to_rp_string(desc_buf, 32);
 		desc += _RP_CHR('\n');
 		desc += cp1252_sjis_to_rp_string(&desc_buf[32], 32);
