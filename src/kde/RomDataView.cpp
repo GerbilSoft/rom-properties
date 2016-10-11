@@ -149,6 +149,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			continue;
 
 		QLabel *lblDesc = new QLabel(q);
+		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 		lblDesc->setText(RomDataView::tr("%1:").arg(RP2Q(desc->name)));
 
@@ -161,6 +162,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);
+				lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 				lblString->setTextFormat(Qt::PlainText);
 				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
