@@ -200,7 +200,7 @@ class RomFields
 		 * @param digits Number of leading digits. (0 for none)
 		 * @return Field index.
 		 */
-		int addData_string_numeric(uint32_t val, Base base, int digits = 0);
+		int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
 		
 		/**
 		* Add a string field formatted like a hex dump

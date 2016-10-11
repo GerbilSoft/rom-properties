@@ -32,6 +32,7 @@ using std::vector;
 #include "NintendoDS.hpp"
 #include "DMG.hpp"
 #include "GameBoyAdvance.hpp"
+#include "GameCubeSave.hpp"
 
 namespace LibRomData {
 
@@ -105,6 +106,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	CheckRomData_imgbf(NintendoDS);
 	CheckRomData(DMG);
 	CheckRomData(GameBoyAdvance);
+	CheckRomData_imgbf(GameCubeSave);
 
 	// Not supported.
 	return nullptr;
@@ -130,6 +132,7 @@ vector<const rp_char*> RomDataFactory::supportedFileExtensions(void)
 	GetFileExtensions(NintendoDS);
 	GetFileExtensions(DMG);
 	GetFileExtensions(GameBoyAdvance);
+	GetFileExtensions(GameCubeSave);
 
 	return vec;
 }
