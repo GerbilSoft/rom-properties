@@ -7,11 +7,9 @@ FUNCTION(SET_EXTLIB_PROPERTIES)
 		IF(TARGET ${_target})
 			# Set the MSVC debug path.
 			SET_MSVC_DEBUG_PATH(${_target})
-
-			# Exclude from ALL and DEFAULT builds.
+			# Exclude from ALL builds.
 			SET_TARGET_PROPERTIES(${_target} PROPERTIES
 				EXCLUDE_FROM_ALL TRUE
-				EXCLUDE_FROM_DEFAULT_BUILD TRUE
 				)
 		ENDIF(TARGET ${_target})
 	ENDFOREACH(_target ${ARGV})
