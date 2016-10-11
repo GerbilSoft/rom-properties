@@ -36,6 +36,8 @@ using LibRomData::rp_string;
 #include <vector>
 using std::vector;
 
+#include <QtCore/QDateTime>
+
 #include <QLabel>
 #include <QCheckBox>
 
@@ -252,6 +254,53 @@ void RomDataViewPrivate::updateDisplay(void)
 				treeWidget->resizeColumnToContents(count);
 
 				ui.formLayout->addRow(lblDesc, treeWidget);
+				break;
+			}
+
+			case RomFields::RFT_DATETIME: {
+				// Date/Time.
+				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+
+				QLabel *lblDateTime = new QLabel(q);
+				lblDateTime->setTextFormat(Qt::PlainText);
+				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+
+				QDateTime dateTime;
+				dateTime.setTimeSpec(
+					dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC
+						? Qt::UTC : Qt::LocalTime);
+				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
+
+				QString str;
+				switch (dateTimeDesc->flags &
+					(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
+				{
+					case RomFields::RFT_DATETIME_HAS_DATE:
+						// Date only.
+						str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_TIME:
+						// Time only.
+						str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_DATE |
+					     RomFields::RFT_DATETIME_HAS_TIME:
+						// Date and time.
+						str = dateTime.toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					default:
+						// Invalid combination.
+						assert(!"Invalid Date/Time formatting.");
+						delete lblDateTime;
+						delete lblDesc;
+						break;
+				}
+				lblDateTime->setText(str);
+
+				ui.formLayout->addRow(lblDesc, lblDateTime);
 				break;
 			}
 

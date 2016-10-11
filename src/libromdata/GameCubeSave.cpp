@@ -52,6 +52,9 @@ class GameCubeSavePrivate
 		GameCubeSavePrivate &operator=(const GameCubeSavePrivate &other);
 
 	public:
+		// Date/Time. (RFT_DATETIME)
+		static const RomFields::DateTimeDesc last_modified_dt;
+
 		// Monospace string formatting.
 		static const RomFields::StringDesc gcn_save_string_monospace;
 
@@ -72,6 +75,13 @@ GameCubeSavePrivate::GameCubeSavePrivate()
 	memset(&direntry, 0, sizeof(direntry));
 }
 
+// Last Modified timestamp.
+const RomFields::DateTimeDesc GameCubeSavePrivate::last_modified_dt = {
+	RomFields::RFT_DATETIME_HAS_DATE |
+	RomFields::RFT_DATETIME_HAS_TIME |
+	RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
+};
+
 // Monospace string formatting.
 const RomFields::StringDesc GameCubeSavePrivate::gcn_save_string_monospace = {
 	RomFields::StringDesc::STRF_MONOSPACE
@@ -84,7 +94,7 @@ const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("File Name"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Last Modified"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Last Modified"), RomFields::RFT_DATETIME, {&last_modified_dt}},
 	{_RP("Mode"), RomFields::RFT_STRING, {&gcn_save_string_monospace}},
 	{_RP("Copy Count"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Blocks"), RomFields::RFT_STRING, {nullptr}},
@@ -352,9 +362,8 @@ int GameCubeSave::loadFieldData(void)
 		m_fields->addData_string(desc);
 	}
 
-	// Last Modified time.
-	// TODO: Date/Time field type with formatting in the UI.
-	m_fields->addData_string_numeric(be32_to_cpu(d->direntry.lastmodified) + GC_UNIX_TIME_DIFF);
+	// Last Modified timestamp.
+	m_fields->addData_dateTime((int64_t)be32_to_cpu(d->direntry.lastmodified) + GC_UNIX_TIME_DIFF);
 
 	// File mode.
 	rp_char file_mode[5];
