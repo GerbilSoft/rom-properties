@@ -305,6 +305,33 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 }
 
 /**
+ * Convert UNIX line endings to DOS line endings.
+ * TODO: Move to RpWin32?
+ * @param wstr_unix	[in] wstring with UNIX line endings.
+ * @param lf_count	[out,opt] Number of LF characters found.
+ * @return wstring with DOS line endings.
+ */
+static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count = nullptr)
+{
+	// TODO: Optimize this!
+	wstring wstr_dos;
+	wstr_dos.reserve(wstr_unix.size());
+	int lf = 0;
+	for (size_t i = 0; i < wstr_unix.size(); i++) {
+		if (wstr_unix[i] == L'\n') {
+			wstr_dos += L"\r\n";
+			lf++;
+		} else {
+			wstr_dos += wstr_unix[i];
+		}
+	}
+	if (lf_count) {
+		*lf_count = lf;
+	}
+	return wstr_dos;
+}
+
+/**
  * Initialize a string field. (Also used for Date/Time.)
  * @param hDlg		[in] Dialog window.
  * @param pt_start	[in] Starting position, in pixels.
@@ -328,6 +355,10 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 	if (!desc->name || desc->name[0] == '\0')
 		return 0;
 
+	// NOTE: libromdata uses Unix-style newlines.
+	// For proper display on Windows, we have to
+	// add carriage returns.
+
 	// If string data wasn't specified, get the RFT_STRING data
 	// from the RomFields::Data object.
 	int lf_count = 0;
@@ -341,10 +372,12 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 			return 0;
 
 		// TODO: NULL string == empty string?
-		wstr = RP2W_c(data->str);
+		if (data->str) {
+			wstr = unix2dos(RP2W_s(data->str), &lf_count);
+		}
 	} else {
 		// Use the specified string.
-		wstr = wcs;
+		wstr = unix2dos(wstring(wcs), &lf_count);
 	}
 
 	// Field height.
@@ -353,8 +386,17 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 	// Create a read-only EDIT widget.
 	// The STATIC control doesn't allow the user
 	// to highlight and copy data.
-	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(),
-		WS_CHILD | WS_VISIBLE | ES_READONLY,
+	DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
+	if (lf_count > 0) {
+		// Multiple lines.
+		// NOTE: Only add 5/8 of field_cy per line.
+		// FIXME: 5/8 needs adjustment...
+		field_cy += (field_cy * lf_count) * 5 / 8;
+		// FIXME: ES_MULTILINE inhibits Escape and Enter on Win7.
+		dwStyle |= ES_MULTILINE;
+	}
+
+	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 		pt_start.x, pt_start.y,
 		size.cx, field_cy,
 		hDlg, (HMENU)(IDC_RFT_STRING(idx)),
