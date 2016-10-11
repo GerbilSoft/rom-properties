@@ -35,6 +35,7 @@
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <string>
 #include <vector>
 using std::string;
@@ -52,6 +53,8 @@ class GameCubeSavePrivate
 		GameCubeSavePrivate &operator=(const GameCubeSavePrivate &other);
 
 	public:
+		// RomFields data.
+
 		// Date/Time. (RFT_DATETIME)
 		static const RomFields::DateTimeDesc last_modified_dt;
 
@@ -64,12 +67,45 @@ class GameCubeSavePrivate
 		// Directory entry from the GCI header.
 		card_direntry direntry;
 
+		/**
+		 * Byteswap a card_direntry struct.
+		 * @param direntry card_direntry struct.
+		 * @param maxdrive_sav If true, adjust for MaxDrive.
+		 */
+		static void byteswap_direntry(card_direntry *direntry, bool maxdrive_sav);
+
+		// Save file type.
+		enum SaveType {
+			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
+
+			SAVE_TYPE_GCI = 0,	// USB Memory Adapter
+			SAVE_TYPE_GCS = 1,	// GameShark
+			SAVE_TYPE_SAV = 2,	// MaxDrive
+		};
+		int saveType;
+
+		// Data offset. This is the actual starting address
+		// of the game data, past the file-specific headers
+		// and the CARD directory entry.
+		int dataOffset;
+
+		/**
+		 * Is the specified buffer a valid CARD directory entry?
+		 * @param buffer CARD directory entry. (Must be 64 bytes.)
+		 * @param data_size Data area size. (no headers)
+		 * @param maxdrive_sav If true, adjust for MaxDrive changes.
+		 * @return True if this appears to be a valid CARD directory entry; false if not.
+		 */
+		static bool isCardDirEntry(const uint8_t *buffer, uint32_t data_size, bool maxdrive_sav);
+
 		// TODO: load image function.
 };
 
 /** GameCubeSavePrivate **/
 
 GameCubeSavePrivate::GameCubeSavePrivate()
+	: saveType(SAVE_TYPE_UNKNOWN)
+	, dataOffset(-1)
 {
 	// Clear the directory entry.
 	memset(&direntry, 0, sizeof(direntry));
@@ -99,6 +135,131 @@ const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
 	{_RP("Copy Count"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Blocks"), RomFields::RFT_STRING, {nullptr}},
 };
+
+/**
+ * Byteswap a card_direntry struct.
+ * @param direntry card_direntry struct.
+ * @param maxdrive_sav If true, adjust for MaxDrive.
+ */
+void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, bool maxdrive_sav)
+{
+	if (!maxdrive_sav) {
+		// Standard save file.
+
+		// 16-bit fields.
+		direntry->iconfmt	= be16_to_cpu(direntry->iconfmt);
+		direntry->iconspeed	= be16_to_cpu(direntry->iconspeed);
+		direntry->block		= be16_to_cpu(direntry->block);
+		direntry->length	= be16_to_cpu(direntry->length);
+		direntry->pad_01	= be16_to_cpu(direntry->pad_01);
+
+		// 32-bit fields.
+		direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
+		direntry->iconaddr	= be32_to_cpu(direntry->iconaddr);
+		direntry->commentaddr	= be32_to_cpu(direntry->commentaddr);
+	} else {
+		// MaxDrive SAV: 16-bit fields are little-endian.
+		direntry->iconfmt	= le16_to_cpu(direntry->iconfmt);
+		direntry->iconspeed	= le16_to_cpu(direntry->iconspeed);
+		direntry->block		= le16_to_cpu(direntry->block);
+		direntry->length	= le16_to_cpu(direntry->length);
+		direntry->pad_01	= le16_to_cpu(direntry->pad_01);
+
+		// 32-bit fields.
+		// NOTE lastmodified is NOT PDP-endian.
+		direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
+
+		// 32-bit PDP-endian fields.
+#define PDP_SWAP(dest, src) \
+	do { \
+		union { uint16_t w[2]; uint32_t d; } tmp; \
+		tmp.d = be32_to_cpu(src); \
+		tmp.w[0] = __swab16(tmp.w[0]); \
+		tmp.w[1] = __swab16(tmp.w[1]); \
+		(dest) = tmp.d; \
+	} while (0)
+		PDP_SWAP(direntry->iconaddr, direntry->iconaddr);
+		PDP_SWAP(direntry->commentaddr, direntry->commentaddr);
+
+		// 8-bit fields that are swapped like 16-bit fields.
+		std::swap(direntry->pad_00, direntry->bannerfmt);
+		std::swap(direntry->permission, direntry->copytimes);
+	}
+}
+
+/**
+ * Is the specified buffer a valid CARD directory entry?
+ * @param buffer CARD directory entry. (Must be 64 bytes.)
+ * @param data_size Data area size. (no headers)
+ * @param maxdrive_sav If true, adjust for MaxDrive changes.
+ * @return True if this appears to be a valid CARD directory entry; false if not.
+ */
+bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_size, bool maxdrive_sav)
+{
+	// MaxDrive SAV files use 16-bit byteswapping for non-text fields.
+	// This means PDP-endian for 32-bit fields!
+	const card_direntry *const direntry = reinterpret_cast<const card_direntry*>(buffer);
+
+	// Game ID should be alphanumeric.
+	// TODO: NDDEMO has a NULL in the game ID, but I don't think
+	// it has save files.
+	for (int i = 6-1; i >= 0; i--) {
+		if (!isalnum(direntry->id6[i])) {
+			// Non-alphanumeric character.
+			return false;
+		}
+	}
+
+	// Padding should be 0xFF.
+	if (maxdrive_sav) {
+		// MaxDrive SAV. pad_00 and bannerfmt are swappde.
+		if (direntry->bannerfmt != 0xFF) {
+			// Incorrect padding.
+			return false;
+		}
+	} else {
+		// Other formats.
+		if (direntry->pad_00 != 0xFF) {
+			// Incorrect padding.
+			return false;
+		}
+	}
+
+	if (be16_to_cpu(direntry->pad_01) != 0xFFFF) {
+		// Incorrect padding.
+		return false;
+	}
+
+	// Verify the block count.
+	unsigned int length;
+	if (maxdrive_sav) {
+		length = le16_to_cpu(direntry->length);
+	} else {
+		length = be16_to_cpu(direntry->length);
+	}
+	if (length * 8192 != data_size) {
+		// Incorrect block count.
+		return false;
+	}
+
+	// Comment and icon addresses should both be less than the file size,
+	// minus 64 bytes for the GCI header.
+	uint32_t iconaddr, commentaddr;
+	if (!maxdrive_sav) {
+		iconaddr = be32_to_cpu(direntry->iconaddr);
+		commentaddr = be32_to_cpu(direntry->commentaddr);
+	} else {
+		PDP_SWAP(iconaddr, direntry->iconaddr);
+		PDP_SWAP(commentaddr, direntry->commentaddr);
+	}
+	if (iconaddr >= data_size || commentaddr >= data_size) {
+		// Comment and/or icon are out of bounds.
+		return false;
+	}
+
+	// This appears to be a valid CARD directory entry.
+	return true;
+}
 
 /** GameCubeSave **/
 
@@ -137,13 +298,33 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	info.szHeader = sizeof(header);
 	info.ext = nullptr;	// TODO: GCI, GCS, SAV, etc?
 	info.szFile = m_file->fileSize();
-	m_isValid = (isRomSupported(&info) >= 0);
+	d->saveType = isRomSupported(&info);
 
-	if (m_isValid) {
-		// Save the directory entry for later.
-		// TODO: GCI only for now; add other types later.
-		memcpy(&d->direntry, header, sizeof(d->direntry));
+	// Save the directory entry for later.
+	uint32_t gciOffset;	// offset to GCI header
+	switch (d->saveType) {
+		case GameCubeSavePrivate::SAVE_TYPE_GCI:
+			gciOffset = 0;
+			break;
+		case GameCubeSavePrivate::SAVE_TYPE_GCS:
+			gciOffset = 0x110;
+			break;
+		case GameCubeSavePrivate::SAVE_TYPE_SAV:
+			gciOffset = 0x80;
+			break;
+		default:
+			// Unknown disc type.
+			d->saveType = GameCubeSavePrivate::SAVE_TYPE_UNKNOWN;
+			return;
 	}
+
+	m_isValid = true;
+
+	// Save the directory entry for later.
+	memcpy(&d->direntry, &header[gciOffset], sizeof(d->direntry));
+	d->byteswap_direntry(&d->direntry, (d->saveType == GameCubeSavePrivate::SAVE_TYPE_SAV));
+	// Data area offset.
+	d->dataOffset = gciOffset + 0x40;
 }
 
 GameCubeSave::~GameCubeSave()
@@ -160,57 +341,68 @@ GameCubeSave::~GameCubeSave()
  */
 int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(card_direntry)) {
+	if (!info || info->szHeader < 1024) {
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	// GCI files must be a multiple of 8 KB, plus 64 bytes.
-	if (((info->szFile - 64) % 8192) != 0) {
-		// Incorrect file size.
+	if (info->szFile > 8192*2043) {
+		// File is larger than 2043 blocks.
+		// This isn't possible on an actual memory card.
 		return -1;
 	}
 
-	// Data length, minus the GCI header.
-	const int64_t data_len = info->szFile - 64;
-
-	const card_direntry *direntry = reinterpret_cast<const card_direntry*>(info->pHeader);
-
-	// Game ID should be alphanumeric.
-	// TODO: NDDEMO has a NULL in the game ID, but I don't think
-	// it has save files.
-	for (int i = 6-1; i >= 0; i--) {
-		if (!isalnum(direntry->id6[i])) {
-			// Non-alphanumeric character.
-			return -1;
+	// Check for GCS. (GameShark)
+	static const uint8_t gcs_magic[] = {'G','C','S','A','V','E',0x01,0x00};
+	if (!memcmp(info->pHeader, gcs_magic, sizeof(gcs_magic))) {
+		// Is the size correct?
+		// GCS files are a multiple of 8 KB, plus 336 bytes:
+		// - 272 bytes: GCS-specific header.
+		// - 64 bytes: CARD directory entry.
+		// TODO: GCS has a user-specified description field and other stuff.
+		const uint32_t data_size = (uint32_t)(info->szFile - 336);
+		if (data_size % 8192 == 0) {
+			// Check the CARD directory entry.
+			if (GameCubeSavePrivate::isCardDirEntry(&info->pHeader[0x110], data_size, false)) {
+				// This is a GCS file.
+				return GameCubeSavePrivate::SAVE_TYPE_GCS;
+			}
 		}
 	}
 
-	// Padding should be 0xFF.
-	if (direntry->pad_00 != 0xFF || be16_to_cpu(direntry->pad_01) != 0xFFFF) {
-		// Incorrect padding.
-		return -1;
+	// Check for SAV. (MaxDrive)
+	static const uint8_t sav_magic[] = {'D','A','T','E','L','G','C','_','S','A','V','E',0,0,0,0};
+	if (!memcmp(info->pHeader, sav_magic, sizeof(sav_magic))) {
+		// Is the size correct?
+		// SAVE files are a multiple of 8 KB, plus 192 bytes:
+		// - 128 bytes: SAV-specific header.
+		// - 64 bytes: CARD directory entry.
+		// TODO: SAV has a copy of the description, plus other fields?
+		const uint32_t data_size = (uint32_t)(info->szFile - 192);
+		if (data_size % 8192 == 0) {
+			// Check the CARD directory entry.
+			if (GameCubeSavePrivate::isCardDirEntry(&info->pHeader[0x80], data_size, true)) {
+				// This is a GCS file.
+				return GameCubeSavePrivate::SAVE_TYPE_SAV;
+			}
+		}
 	}
 
-	// Verify the block count.
-	const unsigned int length = be16_to_cpu(direntry->length);
-	if ((int64_t)(length * 8192) != data_len) {
-		// Incorrect block count.
-		return -1;
+	// Check for GCI.
+	// GCI files are a multiple of 8 KB, plus 64 bytes:
+	// - 64 bytes: CARD directory entry.
+	const uint32_t data_size = (uint32_t)(info->szFile - 64);
+	if (data_size % 8192 == 0) {
+		// Check the CARD directory entry.
+		if (GameCubeSavePrivate::isCardDirEntry(info->pHeader, data_size, false)) {
+			// This is a GCI file.
+			return GameCubeSavePrivate::SAVE_TYPE_GCI;
+		}
 	}
 
-	// Comment and icon addresses should both be less than the file size,
-	// minus 64 bytes for the GCI header.
-	const uint32_t commentaddr = be32_to_cpu(direntry->commentaddr);
-	const uint32_t iconaddr = be32_to_cpu(direntry->iconaddr);
-	if (commentaddr >= data_len || iconaddr >= data_len) {
-		// Comment and/or icon are out of bounds.
-		return -1;
-	}
-
-	// This is a GCI file.
-	return 0;
+	// Not supported.
+	return -1;
 }
 
 /**
@@ -258,10 +450,11 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameCubeSave::supportedFileExtensions_static(void)
 {
-	// TODO: Add other save types.
 	vector<const rp_char*> ret;
-	ret.reserve(1);
-	ret.push_back(_RP(".gci"));
+	ret.reserve(3);
+	ret.push_back(_RP(".gci"));	// USB Memory Adapter
+	ret.push_back(_RP(".gcs"));	// GameShark
+	ret.push_back(_RP(".sav"));	// MaxDrive (TODO: Too generic?)
 	return ret;
 }
 
@@ -316,12 +509,12 @@ int GameCubeSave::loadFieldData(void)
 	} else if (!m_file || !m_file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid /*|| d->saveType < 0*/) {
+	} else if (!m_isValid || d->saveType < 0 || d->dataOffset < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
 
-	// Save file header is read in the constructor.
+	// Save file header is read and byteswapped in the constructor.
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -346,9 +539,8 @@ int GameCubeSave::loadFieldData(void)
 		d->direntry.filename, sizeof(d->direntry.filename)));
 
 	// Description.
-	// TODO: Handle formats other than GCI.
 	char desc_buf[64];
-	m_file->seek(64 + be32_to_cpu(d->direntry.commentaddr));
+	m_file->seek(d->dataOffset + d->direntry.commentaddr);
 	size_t size = m_file->read(desc_buf, sizeof(desc_buf));
 	if (size != sizeof(desc_buf)) {
 		// Error reading the description.
@@ -363,7 +555,7 @@ int GameCubeSave::loadFieldData(void)
 	}
 
 	// Last Modified timestamp.
-	m_fields->addData_dateTime((int64_t)be32_to_cpu(d->direntry.lastmodified) + GC_UNIX_TIME_DIFF);
+	m_fields->addData_dateTime((int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF);
 
 	// File mode.
 	rp_char file_mode[5];
@@ -377,7 +569,7 @@ int GameCubeSave::loadFieldData(void)
 	// Copy count.
 	m_fields->addData_string_numeric(d->direntry.copytimes);
 	// Blocks.
-	m_fields->addData_string_numeric(be16_to_cpu(d->direntry.length));
+	m_fields->addData_string_numeric(d->direntry.length);
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
