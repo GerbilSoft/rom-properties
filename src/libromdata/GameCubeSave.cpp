@@ -143,48 +143,30 @@ const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
  */
 void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, bool maxdrive_sav)
 {
-	if (!maxdrive_sav) {
-		// Standard save file.
-
-		// 16-bit fields.
-		direntry->iconfmt	= be16_to_cpu(direntry->iconfmt);
-		direntry->iconspeed	= be16_to_cpu(direntry->iconspeed);
-		direntry->block		= be16_to_cpu(direntry->block);
-		direntry->length	= be16_to_cpu(direntry->length);
-		direntry->pad_01	= be16_to_cpu(direntry->pad_01);
-
-		// 32-bit fields.
-		direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
-		direntry->iconaddr	= be32_to_cpu(direntry->iconaddr);
-		direntry->commentaddr	= be32_to_cpu(direntry->commentaddr);
-	} else {
-		// MaxDrive SAV: 16-bit fields are little-endian.
-		direntry->iconfmt	= le16_to_cpu(direntry->iconfmt);
-		direntry->iconspeed	= le16_to_cpu(direntry->iconspeed);
-		direntry->block		= le16_to_cpu(direntry->block);
-		direntry->length	= le16_to_cpu(direntry->length);
-		direntry->pad_01	= le16_to_cpu(direntry->pad_01);
-
-		// 32-bit fields.
-		// NOTE lastmodified is NOT PDP-endian.
-		direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
-
-		// 32-bit PDP-endian fields.
-#define PDP_SWAP(dest, src) \
-	do { \
-		union { uint16_t w[2]; uint32_t d; } tmp; \
-		tmp.d = be32_to_cpu(src); \
-		tmp.w[0] = __swab16(tmp.w[0]); \
-		tmp.w[1] = __swab16(tmp.w[1]); \
-		(dest) = tmp.d; \
-	} while (0)
-		PDP_SWAP(direntry->iconaddr, direntry->iconaddr);
-		PDP_SWAP(direntry->commentaddr, direntry->commentaddr);
-
-		// 8-bit fields that are swapped like 16-bit fields.
-		std::swap(direntry->pad_00, direntry->bannerfmt);
-		std::swap(direntry->permission, direntry->copytimes);
+	if (maxdrive_sav) {
+		// Swap 16-bit values at 0x2E through 0x40.
+		// Also 0x06 (pad_00 / bannerfmt).
+		// Reference: https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard.cpp
+		uint16_t *u16ptr = reinterpret_cast<uint16_t*>(direntry);
+		u16ptr[0x06>>2] = __swab16(u16ptr[0x06>>2]);
+		for (int i = (0x2C>>1); i < (0x40>>1); i++) {
+			u16ptr[i] = __swab16(u16ptr[i]);
+		}
 	}
+
+	// FIXME: Dolphin says GCS length field might not be accurate.
+
+	// 16-bit fields.
+	direntry->iconfmt	= be16_to_cpu(direntry->iconfmt);
+	direntry->iconspeed	= be16_to_cpu(direntry->iconspeed);
+	direntry->block		= be16_to_cpu(direntry->block);
+	direntry->length	= be16_to_cpu(direntry->length);
+	direntry->pad_01	= be16_to_cpu(direntry->pad_01);
+
+	// 32-bit fields.
+	direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
+	direntry->iconaddr	= be32_to_cpu(direntry->iconaddr);
+	direntry->commentaddr	= be32_to_cpu(direntry->commentaddr);
 }
 
 /**
@@ -244,6 +226,14 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 
 	// Comment and icon addresses should both be less than the file size,
 	// minus 64 bytes for the GCI header.
+#define PDP_SWAP(dest, src) \
+	do { \
+		union { uint16_t w[2]; uint32_t d; } tmp; \
+		tmp.d = be32_to_cpu(src); \
+		tmp.w[0] = __swab16(tmp.w[0]); \
+		tmp.w[1] = __swab16(tmp.w[1]); \
+		(dest) = tmp.d; \
+	} while (0)
 	uint32_t iconaddr, commentaddr;
 	if (!maxdrive_sav) {
 		iconaddr = be32_to_cpu(direntry->iconaddr);
