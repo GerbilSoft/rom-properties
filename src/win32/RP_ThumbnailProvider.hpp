@@ -79,6 +79,24 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 		// IThumbnailProvider
 		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) final;
+
+	protected:
+		// Thumbnail resize policy.
+		// TODO: Make this configurable.
+		enum ResizePolicy {
+			RESIZE_NONE,	// No resizing.
+
+			// Only resize images that are less than or equal to half the
+			// requested thumbnail size. This is a compromise to allow
+			// small icons like Nintendo DS icons to be enlarged while
+			// larger but not-quite 256px images like GameTDB disc scans'
+			// (160px) will remain as-is.
+			RESIZE_HALF,
+
+			// Resize all images that are smaller than the requested
+			// thumbnail size.
+			RESIZE_ALL,
+		};
 };
 
 #ifdef __CRT_UUID_DECL

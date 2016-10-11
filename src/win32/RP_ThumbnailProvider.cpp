@@ -245,8 +245,32 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	if (img) {
 		// Image loaded. Convert it to HBITMAP.
-		if ((int)cx < img->width() || (int)cx < img->height()) {
-			// Windows will handle image shrinking by itself.
+
+		// TODO: User configuration.
+		ResizePolicy resize = RESIZE_HALF;
+		bool needs_resize = false;
+
+		switch (resize) {
+			case RESIZE_NONE:
+				// No resize.
+				break;
+
+			case RESIZE_HALF:
+			default:
+				// Only resize images that are less than or equal to
+				// half requested thumbnail size.
+				needs_resize = (img->width() <= (int)(cx/2) || img->height() <= (int)(cx/2));
+				break;
+
+			case RESIZE_ALL:
+				// Resize all images that are smaller than the
+				// requested thumbnail size.
+				needs_resize = (img->width() < (int)cx || img->height() < (int)cx);
+				break;
+		}
+
+		if (!needs_resize) {
+			// No resize is necessary.
 			*phbmp = RpImageWin32::toHBITMAP_alpha(img);
 		} else {
 			// Windows will *not* enlarge the thumbnail.
