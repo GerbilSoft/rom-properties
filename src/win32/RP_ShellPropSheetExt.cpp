@@ -624,14 +624,13 @@ int RP_ShellPropSheetExt::initDateTime(HWND hDlg, const POINT &pt_start, int idx
 		return 0;
 
 	// Format the date/time using the system locale.
+	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
 	wchar_t dateTimeStr[256];
 	int start_pos = 0;
 	int cchBuf = ARRAY_SIZE(dateTimeStr);
 
 	// Convert from UNIX time to Win32 SYSTEMTIME.
 	// Reference: https://support.microsoft.com/en-us/kb/167296
-	// NOTE: This ends up converting to UTC.
-	// TODO: Handle !RFT_DATETIME_IS_UTC.
 	SYSTEMTIME st;
 	FILETIME ft;
 	int64_t ftll = (data->date_time * 10000000LL) + 116444736000000000LL;
@@ -640,10 +639,20 @@ int RP_ShellPropSheetExt::initDateTime(HWND hDlg, const POINT &pt_start, int idx
 	FileTimeToSystemTime(&ft, &st);
 
 	// At least one of Date and/or Time must be set.
-	assert((desc->date_time->flags &
+	assert((dateTimeDesc->flags &
 		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
 
-	if (desc->date_time->flags & RomFields::RFT_DATETIME_HAS_DATE) {
+	if (!(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)) {
+		// Convert to the current timezone.
+		SYSTEMTIME st_utc = st;
+		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
+		if (!ret) {
+			// Conversion failed.
+			return 0;
+		}
+	}
+
+	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_DATE) {
 		// Format the date.
 		int ret = GetDateFormat(
 			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
@@ -660,7 +669,7 @@ int RP_ShellPropSheetExt::initDateTime(HWND hDlg, const POINT &pt_start, int idx
 		cchBuf -= ret-1;
 	}
 
-	if (desc->date_time->flags & RomFields::RFT_DATETIME_HAS_TIME) {
+	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_TIME) {
 		// Format the time.
 		if (start_pos > 0 && cchBuf >= 1) {
 			// Add a space.
