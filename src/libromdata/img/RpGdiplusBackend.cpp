@@ -365,7 +365,20 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 	    (size.cx == this->width && size.cy == this->height))
 	{
 		// No resize is required.
-		return toHBITMAP_alpha();
+		// However, color conversion may be needed if
+		// the image is CI8 and has alpha transparency.
+		if (this->format == rp_image::FORMAT_CI8) {
+			if (this->tr_idx < 0 || !this->has_translucent_palette_entries()) {
+				// No translucent palette entries.
+				return toHBITMAP_alpha();
+			}
+
+			// Translucent palette entries.
+			// Color conversion is required.
+		} else {
+			// ARGB32 doesn't need color conversion.
+			return toHBITMAP_alpha();
+		}
 	}
 
 	// Resize the image.

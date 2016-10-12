@@ -92,4 +92,27 @@ void rp_image_backend::clear_properties(void)
 	this->format = rp_image::FORMAT_NONE;
 }
 
+/**
+ * Check if the palette contains alpha values other than 0 and 255.
+ * @return True if an alpha value other than 0 and 255 was found; false if not, or if ARGB32.
+ */
+bool rp_image_backend::has_translucent_palette_entries(void) const
+{
+	assert(this->format == rp_image::FORMAT_CI8);
+	if (this->format != rp_image::FORMAT_CI8)
+		return false;
+
+	const uint32_t *palette = this->palette;
+	for (int i = this->palette_len; i > 0; i--, palette++) {
+		uint8_t alpha = (*palette >> 24);
+		if (alpha != 0 && alpha != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		}
+	}
+
+	// Image does not contain alpha values other than 0 and 255.
+	return false;
+}
+
 }
