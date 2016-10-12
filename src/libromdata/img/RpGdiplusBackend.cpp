@@ -333,9 +333,20 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 			break;
 
 		case rp_image::FORMAT_CI8:
-			// Copy the local palette to the GDI+ image.
-			m_pGdipBmp->SetPalette(m_pGdipPalette);
-			hBitmap = convBmpData_CI8(&m_gdipBmpData);
+			// Color conversion may be needed if the image
+			// has alpha transparency.
+			if (this->tr_idx < 0 || !this->has_translucent_palette_entries()) {
+				// No translucent palette entries.
+				m_pGdipBmp->SetPalette(m_pGdipPalette);
+				hBitmap = convBmpData_CI8(&m_gdipBmpData);
+			} else {
+				// Translucent palette entries.
+				// Color conversion is required.
+				// NOTE: toHBITMAP_alpha_int() copies the CI8 palette,
+				// so we don't need to do that here.
+				static const SIZE size = {0, 0};
+				hBitmap = toHBITMAP_alpha_int(size, false);
+			}
 			break;
 
 		default:
@@ -365,23 +376,34 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 	    (size.cx == this->width && size.cy == this->height))
 	{
 		// No resize is required.
-		// However, color conversion may be needed if
-		// the image is CI8 and has alpha transparency.
-		if (this->format == rp_image::FORMAT_CI8) {
-			if (this->tr_idx < 0 || !this->has_translucent_palette_entries()) {
-				// No translucent palette entries.
-				return toHBITMAP_alpha();
-			}
-
-			// Translucent palette entries.
-			// Color conversion is required.
-		} else {
-			// ARGB32 doesn't need color conversion.
-			return toHBITMAP_alpha();
-		}
+		return toHBITMAP_alpha();
 	}
 
-	// Resize the image.
+	return toHBITMAP_alpha_int(size, nearest);
+}
+
+/**
+ * Convert the GDI+ image to HBITMAP.
+ * Caller must delete the HBITMAP.
+ *
+ * This is an internal function used by both variants
+ * of toHBITMAP_alpha().
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @param size		[in] Resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
+{
+	// Convert the image to ARGB32 (if necessary) and resize it.
+	if (size.cx <= 0 || size.cy <= 0) {
+		// No resizing; just color conversion.
+		size.cx = this->width;
+		size.cy = this->height;
+	}
 
 	// Temporarily unlock the GDI+ bitmap.
 	Gdiplus::Status status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);

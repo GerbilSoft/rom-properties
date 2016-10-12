@@ -325,7 +325,6 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image, const S
  */
 HICON RpImageWin32::toHICON(const rp_image *image)
 {
-	// NOTE: Alpha transparency doesn't seem to work in 256-color icons on Windows XP.
 	assert(image != nullptr);
 	if (!image || !image->isValid()) {
 		// Invalid image.
@@ -343,9 +342,7 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 
 	// Convert to HBITMAP first.
 	// TODO: Const-ness stuff.
-	// TODO: Specify a background color?
-	// TODO: Proper alpha transparency for ARGB32.
-	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP();
+	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
 	if (!hBitmap) {
 		// Error converting to HBITMAP.
 		return nullptr;
