@@ -28,6 +28,7 @@
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 #include "img/rp_image.hpp"
+#include "img/ImageDecoder.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -602,87 +603,6 @@ static inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int 
 }
 
 /**
- * Convert an RGB5A3 pixel to ARGB32.
- * @param px16 RGB5A3 pixel. (Must be host-endian.)
- * @return ARGB32 pixel.
- */
-static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16)
-{
-	uint32_t px32 = 0;
-
-	if (px16 & 0x8000) {
-		// RGB555: xRRRRRGG GGGBBBBB
-		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-		px32 |= (((px16 << 3) & 0x0000F8) | ((px16 >> 2) & 0x000007));	// B
-		px32 |= (((px16 << 6) & 0x00F800) | ((px16 << 1) & 0x000700));	// G
-		px32 |= (((px16 << 9) & 0xF80000) | ((px16 << 4) & 0x070000));	// R
-		px32 |= 0xFF000000U; // no alpha channel
-	} else {
-		// RGB4A3
-		px32 |= (((px16 & 0x000F) << 4)  |  (px16 & 0x000F));		// B
-		px32 |= (((px16 & 0x00F0) << 8)  | ((px16 & 0x00F0) << 4));	// G
-		px32 |= (((px16 & 0x0F00) << 12) | ((px16 & 0x0F00) << 8));	// R
-
-		// Calculate the alpha channel.
-		uint8_t a = ((px16 >> 7) & 0xE0);
-		a |= (a >> 3);
-		a |= (a >> 3);
-
-		// Apply the alpha channel.
-		px32 |= (a << 24);
-	}
-
-	return px32;
-}
-
-/**
- * Convert a GameCube RGB5A3 image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf RGB5A3 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)*2]
- * @return rp_image, or nullptr on error.
- */
-static rp_image *fromRGB5A3(int width, int height, const uint16_t *img_buf, int img_siz)
-{
-	// Verify parameters.
-	if (width < 0 || height < 0)
-		return nullptr;
-	if (img_siz < ((width * height) * 2))
-		return nullptr;
-
-	// RGB5A3 uses 4x4 tiles.
-	if (width % 4 != 0 || height % 4 != 0)
-		return nullptr;
-
-	// Calculate the total number of tiles.
-	const int tilesX = (width / 4);
-	const int tilesY = (height / 4);
-
-	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
-
-	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
-
-	for (int y = 0; y < tilesY; y++) {
-		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to ARGB888 manually.
-			// TODO: Optimize using pointers instead of indexes?
-			for (int i = 0; i < 4*4; i++, img_buf++) {
-				tileBuf[i] = RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
-			}
-
-			// Blit the tile to the main image buffer.
-			BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-		}
-	}
-
-	// Image has been converted.
-	return img;
-}
-
-/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
@@ -754,10 +674,10 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 	}
 
 	// Convert the icon from GCN format to ARGB32.
-	rp_image *icon = fromRGB5A3(CARD_ICON_W, CARD_ICON_H,
+	rp_image *icon = ImageDecoder::fromGcnRGB5A3(CARD_ICON_W, CARD_ICON_H,
 		reinterpret_cast<const uint16_t*>(buf), sizeof(buf));
 	if (!icon) {
-		// Error converting from RGB5A3.
+		// Error converting the icon.
 		return -EIO;
 	}
 
