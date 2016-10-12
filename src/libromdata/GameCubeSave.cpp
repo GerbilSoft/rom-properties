@@ -48,11 +48,13 @@ namespace LibRomData {
 class GameCubeSavePrivate
 {
 	public:
-		GameCubeSavePrivate();
+		GameCubeSavePrivate(GameCubeSave *q);
 
 	private:
 		GameCubeSavePrivate(const GameCubeSavePrivate &other);
 		GameCubeSavePrivate &operator=(const GameCubeSavePrivate &other);
+	private:
+		GameCubeSave *const q;
 
 	public:
 		// RomFields data.
@@ -102,13 +104,24 @@ class GameCubeSavePrivate
 		 */
 		static bool isCardDirEntry(const uint8_t *buffer, uint32_t data_size, SaveType saveType);
 
-		// TODO: load image function.
+		/**
+		 * Load the save file's icon.
+		 * @return Icon, or nullptr on error.
+		 */
+		rp_image *loadIcon(void);
+
+		/**
+		 * Load the save file's banner.
+		 * @return Banner, or nullptr on error.
+		 */
+		rp_image *loadBanner(void);
 };
 
 /** GameCubeSavePrivate **/
 
-GameCubeSavePrivate::GameCubeSavePrivate()
-	: saveType(SAVE_TYPE_UNKNOWN)
+GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q)
+	: q(q)
+	, saveType(SAVE_TYPE_UNKNOWN)
 	, dataOffset(-1)
 {
 	// Clear the directory entry.
@@ -280,6 +293,192 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 	return true;
 }
 
+/**
+ * Load the save file's icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image *GameCubeSavePrivate::loadIcon(void)
+{
+	if (!q->m_file || !q->m_isValid) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// Calculate the icon start address.
+	// The icon is located directly after the banner.
+	uint32_t iconaddr = direntry.iconaddr;
+	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
+		case CARD_BANNER_CI:
+			// CI8 banner.
+			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 1);
+			iconaddr += (256 * 2);	// RGB5A3 palette
+			break;
+		case CARD_BANNER_RGB:
+			// RGB5A3 banner.
+			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 2);
+			break;
+		default:
+			// No banner.
+			break;
+	}
+
+	// Determine the format of the first icon.
+	uint32_t iconsize, palsize, paladdr;
+	switch (direntry.iconfmt & CARD_ICON_MASK) {
+		case CARD_ICON_RGB:
+			// RGB5A3.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 2;
+			palsize = 0;
+			paladdr = 0;
+			break;
+
+		case CARD_ICON_CI_UNIQUE:
+			// CI8 with a unique palette.
+			// Palette is located immediately after the icon.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+			palsize = 256 * 2;
+			paladdr = iconaddr + iconsize;
+			break;
+
+		case CARD_ICON_CI_SHARED: {
+			// CI8 with a shared palette.
+			// Palette is located after *all* of the icons.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+			palsize = 256 * 2;
+			paladdr = iconaddr;
+			uint16_t iconfmt = direntry.iconfmt;
+			uint16_t iconspeed = direntry.iconspeed;
+			for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
+				if ((iconspeed & CARD_SPEED_MASK) == CARD_SPEED_END) {
+					// End of the icons.
+					break;
+				}
+
+				switch (iconfmt & CARD_ICON_MASK) {
+					case CARD_ICON_RGB:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 2);
+						break;
+					case CARD_ICON_CI_UNIQUE:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
+						paladdr += (256 * 2);
+						break;
+					case CARD_ICON_CI_SHARED:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
+						break;
+					default:
+						break;
+				}
+			}
+
+			// paladdr is now after all of the icons.
+			break;
+		}
+
+		default:
+			// No icon.
+			return nullptr;
+	}
+
+	// Read the icon data.
+	// NOTE: Only the first frame.
+	static const int MAX_ICON_SIZE = CARD_ICON_W * CARD_ICON_H * 2;
+	uint8_t iconbuf[MAX_ICON_SIZE];
+	q->m_file->seek(dataOffset + iconaddr);
+	size_t size = q->m_file->read(iconbuf, iconsize);
+	if (size != iconsize) {
+		// Error reading the icon data.
+		return nullptr;
+	}
+
+	// Convert the icon from GCN format to rp_image.
+	rp_image *icon = nullptr;
+	if ((direntry.iconfmt & CARD_ICON_MASK) == CARD_ICON_RGB) {
+		// GCN RGB5A3 -> ARGB32
+		icon = ImageDecoder::fromGcnRGB5A3(CARD_ICON_W, CARD_ICON_H,
+			reinterpret_cast<const uint16_t*>(iconbuf), iconsize);
+	} else {
+		// Read the palette data.
+		uint16_t palbuf[256];
+		assert(palsize == sizeof(palbuf));
+		if (palsize != sizeof(palbuf)) {
+			// Size is incorrect.
+			return nullptr;
+		}
+		q->m_file->seek(dataOffset + paladdr);
+		size = q->m_file->read(palbuf, sizeof(palbuf));
+		if (size != sizeof(palbuf)) {
+			// Error reading the palette data.
+			return nullptr;
+		}
+
+		// GCN CI8 -> CI8
+		icon = ImageDecoder::fromGcnCI8(CARD_ICON_W, CARD_ICON_H,
+			iconbuf, iconsize, palbuf, sizeof(palbuf));
+	}
+
+	return icon;
+}
+
+/**
+ * Load the save file's banner.
+ * @return Banner, or nullptr on error.
+ */
+rp_image *GameCubeSavePrivate::loadBanner(void)
+{
+	if (!q->m_file || !q->m_isValid) {
+		// Can't load the banner.
+		return nullptr;
+	}
+
+	// Banner is located at direntry.iconaddr.
+	// Determine the banner format and size.
+	uint32_t bannersize;
+	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
+		case CARD_BANNER_CI:
+			// CI8 banner.
+			bannersize = (CARD_BANNER_W * CARD_BANNER_H * 1);
+			break;
+		case CARD_BANNER_RGB:
+			bannersize = (CARD_BANNER_W * CARD_BANNER_H * 2);
+			break;
+		default:
+			// No banner.
+			return nullptr;
+	}
+
+	// Read the banner data.
+	static const int MAX_BANNER_SIZE = (CARD_BANNER_W * CARD_BANNER_H * 2);
+	uint8_t bannerbuf[MAX_BANNER_SIZE];
+	q->m_file->seek(this->dataOffset + direntry.iconaddr);
+	size_t size = q->m_file->read(bannerbuf, bannersize);
+	if (size != bannersize) {
+		// Error reading the banner data.
+		return nullptr;
+	}
+
+	rp_image *banner = nullptr;
+	if ((direntry.bannerfmt & CARD_BANNER_MASK) == CARD_BANNER_RGB) {
+		// Convert the banner from GCN RGB5A3 format to ARGB32.
+		banner = ImageDecoder::fromGcnRGB5A3(CARD_BANNER_W, CARD_BANNER_H,
+			reinterpret_cast<const uint16_t*>(bannerbuf), bannersize);
+	} else {
+		// Read the palette data.
+		uint16_t palbuf[256];
+		q->m_file->seek(this->dataOffset + direntry.iconaddr + bannersize);
+		size = q->m_file->read(palbuf, sizeof(palbuf));
+		if (size != sizeof(palbuf)) {
+			// Error reading the palette data.
+			return nullptr;
+		}
+
+		// Convert the banner from GCN CI8 format to CI8.
+		banner = ImageDecoder::fromGcnCI8(CARD_BANNER_W, CARD_BANNER_H,
+			bannerbuf, bannersize, palbuf, sizeof(palbuf));
+	}
+
+	return banner;
+}
+
 /** GameCubeSave **/
 
 /**
@@ -297,7 +496,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  */
 GameCubeSave::GameCubeSave(IRpFile *file)
 	: RomData(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
-	, d(new GameCubeSavePrivate())
+	, d(new GameCubeSavePrivate(this))
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -655,143 +854,31 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 		// File isn't open.
 		return -EBADF;
 	} else if (!m_isValid) {
-		// ROM image isn't valid.
+		// Save file isn't valid.
 		return -EIO;
 	}
 
 	// Check for supported image types.
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by DS.
-		return -ENOENT;
-	}
-
-	// Use nearest-neighbor scaling when resizing.
-	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-
-	// CARD directory entry.
-	// Constructor has already byteswapped everything.
-	const card_direntry *direntry = &d->direntry;
-
-	// Calculate the icon start address.
-	// The icon is located directly after the banner.
-	uint32_t iconaddr = direntry->iconaddr;
-	switch (direntry->bannerfmt & CARD_BANNER_MASK) {
-		case CARD_BANNER_CI:
-			// CI8 banner.
-			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 1);
-			iconaddr += (256 * 2);	// RGB5A3 palette
-			break;
-		case CARD_BANNER_RGB:
-			// RGB5A3 banner.
-			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 2);
-			break;
-		default:
-			// No banner.
-			break;
-	}
-
-	// Determine the format of the first icon.
-	uint32_t iconsize, palsize, paladdr;
-	switch (direntry->iconfmt & CARD_ICON_MASK) {
-		case CARD_ICON_RGB:
-			// RGB5A3.
-			iconsize = CARD_ICON_W * CARD_ICON_H * 2;
-			palsize = 0;
-			paladdr = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Icon.
+			m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+			m_images[imageType] = d->loadIcon();
 			break;
 
-		case CARD_ICON_CI_UNIQUE:
-			// CI8 with a unique palette.
-			// Palette is located immediately after the icon.
-			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
-			palsize = 256 * 2;
-			paladdr = iconaddr + iconsize;
+		case IMG_INT_BANNER:
+			// Banner.
+			m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+			m_images[imageType] = d->loadBanner();
 			break;
-
-		case CARD_ICON_CI_SHARED: {
-			// CI8 with a shared palette.
-			// Palette is located after *all* of the icons.
-			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
-			palsize = 256 * 2;
-			paladdr = iconaddr;
-			uint16_t iconfmt = direntry->iconfmt;
-			uint16_t iconspeed = direntry->iconspeed;
-			for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
-				if ((iconspeed & CARD_SPEED_MASK) == CARD_SPEED_END) {
-					// End of the icons.
-					break;
-				}
-
-				switch (iconfmt & CARD_ICON_MASK) {
-					case CARD_ICON_RGB:
-						paladdr += (CARD_ICON_W * CARD_ICON_H * 2);
-						break;
-					case CARD_ICON_CI_UNIQUE:
-						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
-						paladdr += (256 * 2);
-						break;
-					case CARD_ICON_CI_SHARED:
-						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
-						break;
-					default:
-						break;
-				}
-			}
-
-			// paladdr is now after all of the icons.
-			break;
-		}
 
 		default:
-			// No icon.
+			// Unsupported.
 			return -ENOENT;
 	}
 
-	// Read the icon data.
-	// NOTE: Only the first frame.
-	static const int MAX_ICON_SIZE = CARD_ICON_W * CARD_ICON_H * 2;
-	uint8_t iconbuf[MAX_ICON_SIZE];
-	m_file->seek(d->dataOffset + iconaddr);
-	size_t size = m_file->read(iconbuf, iconsize);
-	if (size != iconsize) {
-		// Error reading the icon data.
-		return -EIO;
-	}
-
-	// Convert the icon from GCN format to rp_image.
-	rp_image *icon = nullptr;
-	if ((direntry->iconfmt & CARD_ICON_MASK) == CARD_ICON_RGB) {
-		// GCN RGB5A3 -> ARGB32
-		icon = ImageDecoder::fromGcnRGB5A3(CARD_ICON_W, CARD_ICON_H,
-			reinterpret_cast<const uint16_t*>(iconbuf), iconsize);
-	} else {
-		// Read the palette data.
-		uint16_t palbuf[256];
-		assert(palsize == sizeof(palbuf));
-		if (palsize != sizeof(palbuf)) {
-			// Size is incorrect.
-			return -EIO;
-		}
-		m_file->seek(d->dataOffset + paladdr);
-		size = m_file->read(palbuf, sizeof(palbuf));
-		if (size != sizeof(palbuf)) {
-			// Error reading the palette data.
-			return -EIO;
-		}
-
-		// GCN CI8 -> CI8
-		icon = ImageDecoder::fromGcnCI8(CARD_ICON_W, CARD_ICON_H,
-			iconbuf, iconsize, palbuf, sizeof(palbuf));
-	}
-
-	if (!icon) {
-		// Error converting the icon.
-		return -EIO;
-	}
-
-	// Finished decoding the icon.
-	m_images[imageType] = icon;
-	return 0;
+	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
+	return (m_images[imageType] != nullptr ? 0 : -EIO);
 }
 
 }
