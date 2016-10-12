@@ -407,7 +407,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 
 	Gdiplus::Status status = Gdiplus::Status::GenericError;
 
-	unique_ptr<Gdiplus::Bitmap> pBmpTmp;
+	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
@@ -415,15 +415,44 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 			// Need to convert to ARGB32 first.
 			// Otherwise, the translucent entries won't show up correctly.
-			pBmpTmp.reset(convCI8toARGB32(&m_gdipBmpData, m_pGdipPalette));
-			if (!pBmpTmp) {
+			pTmpBmp.reset(convCI8toARGB32(&m_gdipBmpData, m_pGdipPalette));
+			if (!pTmpBmp) {
 				// Error converting to ARGB32.
 				return nullptr;
 			}
 		}
 	}
 
-	if (!pBmpTmp) {
+	// If the source is 32-bit ARGB and isn't being resized,
+	// we don't need a temporary image.
+	if (size.cx == this->width && size.cy == this->height) {
+		if (pTmpBmp) {
+			if (pTmpBmp->GetPixelFormat() == PixelFormat32bppARGB) {
+				// Use pTmpBmp directly.
+				const Gdiplus::Rect bmpTmpRect(0, 0, size.cx, size.cy);
+				Gdiplus::BitmapData bmpTmpData;
+				status = pTmpBmp->LockBits(&bmpTmpRect, Gdiplus::ImageLockModeRead,
+					PixelFormat32bppARGB, &bmpTmpData);
+				if (status != Gdiplus::Status::Ok) {
+					// Error re-locking the resized GDI+ bitmap.
+					return nullptr;
+				}
+
+				HBITMAP hBitmap = convBmpData_ARGB32(&bmpTmpData);
+				pTmpBmp->UnlockBits(&bmpTmpData);
+				return hBitmap;
+			}
+		} else {
+			if (m_pGdipBmp->GetPixelFormat() == PixelFormat32bppARGB) {
+				// Use m_pGdipBmp directly.
+				return convBmpData_ARGB32(&m_gdipBmpData);
+			}
+		}
+	}
+
+	// Create a new bitmap.
+
+	if (!pTmpBmp) {
 		// Temporarily unlock the GDI+ bitmap.
 		status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
 		if (status != Gdiplus::Status::Ok) {
@@ -432,7 +461,6 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		}
 	}
 
-	// Create a new bitmap.
 	// NOTE: We're using ARGB32 because GDI+ doesn't
 	// handle resizing on CI8 properly.
 	unique_ptr<Gdiplus::Bitmap> pResizeBmp(
@@ -443,15 +471,15 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		// TODO: What's the default?
 		graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
 	}
-	if (pBmpTmp) {
+	if (pTmpBmp) {
 		// Use the temporary ARGB32 bitmap.
-		graphics.DrawImage(pBmpTmp.get(), 0, 0, size.cx, size.cy);
+		graphics.DrawImage(pTmpBmp.get(), 0, 0, size.cx, size.cy);
 	} else {
 		// Use the regular bitmap.
 		graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
 	}
 
-	if (!pBmpTmp) {
+	if (!pTmpBmp) {
 		// Re-lock the bitmap.
 		const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
 		status = m_pGdipBmp->LockBits(&bmpRect,
