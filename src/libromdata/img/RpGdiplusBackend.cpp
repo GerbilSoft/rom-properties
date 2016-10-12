@@ -626,11 +626,19 @@ Gdiplus::Bitmap *RpGdiplusBackend::convCI8toARGB32(
 	const int dest_diff = (bmpArgbData.Stride / 4) - bmpArgbData.Width;
 
 	for (UINT y = bmpArgbData.Height; y > 0; y--) {
-		for (UINT x = bmpArgbData.Width; x > 0; x--) {
+		UINT x = bmpArgbData.Width;
+		for (; x > 2; x -= 2) {
+			dest[0] = pColorPalette->Entries[src[0]];
+			dest[1] = pColorPalette->Entries[src[1]];
+			dest += 2;
+			src += 2;
+		}
+		if (x == 1) {
 			*dest = pColorPalette->Entries[*src];
 			dest++;
 			src++;
 		}
+
 		dest += dest_diff;
 		src += src_diff;
 	}

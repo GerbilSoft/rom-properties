@@ -58,7 +58,7 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, format(format)
 	, palette(nullptr)
 	, palette_len(0)
-	, tr_idx(-1) // COMMIT NOTE: Changing default from 0 to -1.
+	, tr_idx(-1)
 {
 	// Calculate the stride.
 	// NOTE: If format == FORMAT_NONE, the subclass is
@@ -103,8 +103,20 @@ bool rp_image_backend::has_translucent_palette_entries(void) const
 		return false;
 
 	const uint32_t *palette = this->palette;
-	for (int i = this->palette_len; i > 0; i--, palette++) {
-		uint8_t alpha = (*palette >> 24);
+	int i = this->palette_len;
+	for (; i > 2; i -= 2, palette += 2) {
+		const uint8_t alpha1 = (palette[0] >> 24);
+		const uint8_t alpha2 = (palette[1] >> 24);
+		if (alpha1 != 0 && alpha1 != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		} else if (alpha2 != 0 && alpha2 != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		}
+	}
+	if (i == 1) {
+		const uint8_t alpha = (*palette >> 24);
 		if (alpha != 0 && alpha != 255) {
 			// Found an alpha value other than 0 and 255.
 			return true;
