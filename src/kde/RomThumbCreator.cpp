@@ -223,11 +223,13 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 
 	// TODO: Customize which ones are used per-system.
 	// For now, check EXT MEDIA, then INT ICON.
-
 	uint32_t imgbf = romData->supportedImageTypes();
+	uint32_t imgpf = 0;
+
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
 		ret_img = RomThumbCreatorPrivate::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 
 	if (ret_img.isNull()) {
@@ -236,12 +238,57 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
 			ret_img = RomThumbCreatorPrivate::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
 
 	if (ret_img.isNull()) {
 		// No image.
 		return false;
+	}
+
+	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
+		// TODO: User configuration.
+		ResizePolicy resize = RESIZE_HALF;
+		bool needs_resize = false;
+
+		switch (resize) {
+			case RESIZE_NONE:
+				// No resize.
+				break;
+
+			case RESIZE_HALF:
+			default:
+				// Only resize images that are less than or equal to
+				// half requested thumbnail size.
+				needs_resize = (ret_img.width()  <= (width/2)) ||
+					       (ret_img.height() <= (height/2));
+				break;
+
+			case RESIZE_ALL:
+				// Resize all images that are smaller than the
+				// requested thumbnail size.
+				needs_resize = (ret_img.width() < width) ||
+					       (ret_img.height() < height);
+				break;
+		}
+
+		if (needs_resize) {
+			// Maintain the correct aspect ratio.
+			const int img_w = ret_img.width();
+			const int img_h = ret_img.height();
+			QSize tmp_sz(width, height);
+			tmp_sz.scale(ret_img.size(), Qt::KeepAspectRatio);
+
+			// Only resize if the requested size is an integer multiple
+			// of the actual image size.
+			if ((tmp_sz.width() % img_w == 0) && (tmp_sz.height() % img_h == 0)) {
+				// Integer multiple.
+				// TODO: Verify how this handles non-square images.
+				ret_img = ret_img.scaled(width, height,
+					Qt::KeepAspectRatio, Qt::FastTransformation);
+			}
+		}
 	}
 
 	// Return the image.

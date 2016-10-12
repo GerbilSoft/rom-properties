@@ -55,6 +55,7 @@ RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
 	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
+	, m_fileType(FTYPE_ROM_IMAGE)
 {
 	// Clear the internal images field.
 	memset(&m_images, 0, sizeof(m_images));
@@ -96,6 +97,15 @@ void RomData::close(void)
 		delete m_file;
 		m_file = nullptr;
 	}
+}
+
+/**
+ * Get the general file type.
+ * @return General file type.
+ */
+RomData::FileType RomData::fileType(void) const
+{
+	return m_fileType;
 }
 
 /**

@@ -164,6 +164,9 @@ void RomFieldsPrivate::delete_data(void)
 				// ListData.
 				delete data.list_data;
 				break;
+			case RomFields::RFT_DATETIME:
+				// Nothing needed.
+				break;
 			default:
 				// ERROR!
 				assert(!"Unsupported RomFields::RomFieldsType.");
@@ -248,6 +251,10 @@ void RomFields::detach(void)
 			case RFT_LISTDATA:
 				// Copy the ListData.
 				data_new.list_data = new ListData(*data_old.list_data);
+				break;
+			case RFT_DATETIME:
+				// Copy the Date/Time.
+				data_new.date_time = data_old.date_time;
 				break;
 			default:
 				// ERROR!
@@ -443,6 +450,20 @@ int RomFields::addData_listData(ListData *list_data)
 	Data data;
 	data.type = RFT_LISTDATA;
 	data.list_data = list_data;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
+
+/**
+ * Add DateTime.
+ * @param date_time Date/Time.
+ * @return Field index.
+ */
+int RomFields::addData_dateTime(int64_t date_time)
+{
+	Data data;
+	data.type = RFT_DATETIME;
+	data.date_time = date_time;
 	d->data.push_back(data);
 	return (int)(d->data.size() - 1);
 }

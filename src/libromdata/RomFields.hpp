@@ -39,6 +39,7 @@ class RomFields
 			RFT_STRING,	// Basic string.
 			RFT_BITFIELD,	// Bitfield.
 			RFT_LISTDATA,	// ListData.
+			RFT_DATETIME,	// Date/Time.
 		};
 
 		// Description for String.
@@ -75,6 +76,25 @@ class RomFields
 			const rp_char *const *names;
 		};
 
+		// Display flags for RFT_DATETIME.
+		enum DateTimeFlags {
+			// Show the date value.
+			RFT_DATETIME_HAS_DATE = (1 << 0),
+
+			// Show the time value.
+			RFT_DATETIME_HAS_TIME = (1 << 1),
+
+			// Show the timestamp as UTC instead of the local timezone.
+			// This is useful for timestamps that aren't actually
+			// adjusted for the local timezone.
+			RFT_DATETIME_IS_UTC = (1 << 2),
+		};
+
+		// Description for RFT_DATETIME.
+		struct DateTimeDesc {
+			uint32_t flags;	// DateTimeFlags
+		};
+
 		// The ROM data class holds a number of customizable fields.
 		// These fields are hard-coded by the subclass and passed
 		// to the constructor.
@@ -90,6 +110,7 @@ class RomFields
 				const StringDesc *str_desc;	// May be nullptr.
 				const BitfieldDesc *bitfield;
 				const ListDataDesc *list_data;
+				const DateTimeDesc *date_time;
 			};
 		};
 
@@ -108,6 +129,7 @@ class RomFields
 				const rp_char *str;	// String data.
 				uint32_t bitfield;	// Bitfield.
 				ListData *list_data;	// ListData
+				int64_t date_time;	// Date/Time. (UNIX format)
 			};
 		};
 
@@ -200,7 +222,7 @@ class RomFields
 		 * @param digits Number of leading digits. (0 for none)
 		 * @return Field index.
 		 */
-		int addData_string_numeric(uint32_t val, Base base, int digits = 0);
+		int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
 		
 		/**
 		* Add a string field formatted like a hex dump
@@ -223,6 +245,13 @@ class RomFields
 		 * @return Field index.
 		 */
 		int addData_listData(ListData *list_data);
+
+		/**
+		 * Add DateTime.
+		 * @param date_time Date/Time.
+		 * @return Field index.
+		 */
+		int addData_dateTime(int64_t date_time);
 };
 
 }

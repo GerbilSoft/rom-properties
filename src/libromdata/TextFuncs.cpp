@@ -146,15 +146,15 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 /**
  * Convert a string from one character set to another.
  * @param src 		[in] Source string.
- * @param src_bytes_len [in] Source length, in bytes.
+ * @param len           [in] Source length, in bytes.
  * @param src_charset	[in] Source character set.
  * @param dest_charset	[in] Destination character set.
  * @return malloc()'d UTF-8 string, or nullptr on error.
  */
-static char *rp_iconv(const char *src, size_t src_bytes_len,
-			const char *src_charset, const char *dest_charset)
+static char *rp_iconv(const char *src, int len,
+		const char *src_charset, const char *dest_charset)
 {
-	if (!src || src_bytes_len == 0)
+	if (!src || len <= 0)
 		return nullptr;
 
 	if (!src_charset)
@@ -176,6 +176,7 @@ static char *rp_iconv(const char *src, size_t src_bytes_len,
 
 	// Allocate the output buffer.
 	// UTF-8 is variable length, and the largest UTF-8 character is 4 bytes long.
+	size_t src_bytes_len = (size_t)len;
 	const size_t out_bytes_len = (src_bytes_len * 4) + 4;
 	size_t out_bytes_remaining = out_bytes_len;
 	char *outbuf = (char*)malloc(out_bytes_len);
@@ -227,71 +228,105 @@ static char *rp_iconv(const char *src, size_t src_bytes_len,
 #endif /* HAVE_ICONV */
 
 /**
+ * Remove trailing NULLs from the source string by adjusting the length.
+ * If the resulting string is empty, an empty string is returned.
+ * @param return_type Return type, e.g. string or u16string.
+ * @param str String.
+ * @param len Length. (If less than 0, implicit length string.)
+ */
+#define REMOVE_TRAILING_NULLS(return_type, str, len) \
+	do { \
+		if (len >= 0) { \
+			/* Remove trailing NULLs. */ \
+			for (; len > 0; len--) { \
+				if (str[len-1] != 0) \
+					break; \
+			} \
+			\
+			if (len <= 0) { \
+				/* Empty string. */ \
+				return return_type(); \
+			} \
+		} \
+	} while (0)
+
+/**
  * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cp1252_sjis_to_utf8(const char *str, size_t len)
+string cp1252_sjis_to_utf8(const char *str, int len)
 {
+	REMOVE_TRAILING_NULLS(string, str, len);
+	string ret;
+	char *mbs = nullptr;
+
 #if defined(_WIN32)
 	// Win32 version.
 	// Attempt to convert from Shift-JIS to UTF-16.
 	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
-	if (!wcs) {
+	char16_t *wcs = W32U_mbs_to_UTF16(str, len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
+	if (!wcs || cchWcs <= 0) {
 		// Shift-JIS conversion failed.
 		// Fall back to cp1252.
-		wcs = W32U_mbs_to_UTF16(str, (int)len, 1252, &cchWcs);
+		free(wcs);
+		wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs);
 	}
 
-	if (wcs) {
+	if (wcs && cchWcs > 0) {
 		// Convert the UTF-16 to UTF-8.
 		int cbMbs;
 		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
-		free(wcs);
-		if (!mbs)
-			return string();
-		string ret(mbs, cbMbs);
-		free(mbs);
-		return ret;
+		if (mbs && cbMbs > 0) {
+			// Remove the NULL terminator if present.
+			if (mbs[cbMbs-1] == 0) {
+				cbMbs--;
+			}
+
+			ret = string(mbs, cbMbs);
+		}
 	}
+
+	free(wcs);
 #elif defined(HAVE_ICONV)
 	// iconv version.
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = strlen(str);
+	}
+
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
 	// References:
 	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
 	// - https://en.wikipedia.org/wiki/Wave_dash
-	char *mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
+	mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
 	if (mbs) {
-		string ret(mbs);
-		free(mbs);
-		return ret;
-	}
-
-	// Try cp1252.
-	mbs = rp_iconv((char*)str, len, "CP1252", "UTF-8");
-	if (mbs) {
-		string ret(mbs);
-		free(mbs);
-		return ret;
+		ret = string(mbs);
+	} else {
+		// Try cp1252.
+		mbs = rp_iconv((char*)str, len, "CP1252", "UTF-8");
+		if (mbs) {
+			ret = string(mbs);
+		}
 	}
 #else
 #error Text conversion is not available on this system.
 #endif
 
-	// Unable to convert the string.
-	return string();
+	free(mbs);
+	return ret;
 }
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-16.
  * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-u16string cp1252_sjis_to_utf16(const char *str, size_t len)
+u16string cp1252_sjis_to_utf16(const char *str, int len)
 {
 #ifdef RP_WIS16
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
@@ -299,132 +334,162 @@ u16string cp1252_sjis_to_utf16(const char *str, size_t len)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
 
+	REMOVE_TRAILING_NULLS(u16string, str, len);
+	u16string ret;
+	char16_t *wcs = nullptr;
+
 	// Attempt to convert str from Shift-JIS to UTF-16.
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
-	if (!wcs) {
+	wcs = W32U_mbs_to_UTF16(str, len, 932, &cchWcs, MB_ERR_INVALID_CHARS);
+	if (!wcs || cchWcs <= 0) {
 		// Shift-JIS conversion failed.
 		// Fall back to cp1252.
-		wcs = W32U_mbs_to_UTF16(str, (int)len, 1252, &cchWcs);
+		free(wcs);
+		wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs);
 	}
 
-	if (wcs) {
-		// Return the UTF-16 string.
-		u16string ret(reinterpret_cast<const char16_t*>(wcs), cchWcs);
-		free(wcs);
-		return ret;
+	if (wcs && cchWcs > 0) {
+		// Remove the NULL terminator if present.
+		if (wcs[cchWcs-1] == 0) {
+			cchWcs--;
+		}
+		ret = u16string(wcs, cchWcs);
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = strlen(str);
+	}
+
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
 	// References:
 	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
 	// - https://en.wikipedia.org/wiki/Wave_dash
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_ENCODING);
+	wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_ENCODING);
 	if (wcs) {
-		u16string ret(wcs);
-		free(wcs);
-		return ret;
-	}
-
-	// Try cp1252.
-	wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
-	if (wcs) {
-		u16string ret(wcs);
-		free(wcs);
-		return ret;
+		ret = u16string(wcs);
+	} else {
+		// Try cp1252.
+		wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
+		if (wcs) {
+			ret = u16string(wcs);
+		}
 	}
 #else
 #error Text conversion is not available on this system.
 #endif
 
-	// Unable to convert the string.
-	return u16string();
+	free(wcs);
+	return ret;
 }
 
 /**
  * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-u16string utf8_to_utf16(const char *str, size_t len)
+u16string utf8_to_utf16(const char *str, int len)
 {
+	REMOVE_TRAILING_NULLS(u16string, str, len);
+	u16string ret;
+	char16_t *wcs = nullptr;
+
 #if defined(_WIN32)
 	// Win32 version.
 	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, (int)len, CP_UTF8, &cchWcs);
-	if (wcs) {
-		u16string ret(wcs, cchWcs);
-		free(wcs);
-		return ret;
+	wcs = W32U_mbs_to_UTF16(str, len, CP_UTF8, &cchWcs);
+	if (wcs && cchWcs > 0) {
+		// Remove the NULL terminator if present.
+		if (wcs[cchWcs-1] == 0) {
+			cchWcs--;
+		}
+		ret = u16string(wcs, cchWcs);
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = strlen(str);
+	}
+	wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
-		u16string ret(wcs);
-		free(wcs);
-		return ret;
+		ret = u16string(wcs);
 	}
 #else
 #error Text conversion is not available on this system.
 #endif
 
-	// Unable to convert the string.
-	return u16string();
+	free(wcs);
+	return ret;
 }
 
 /**
  * Convert UTF-16 text to UTF-8.
  * @param str UTF-16 text.
- * @param len Length of str, in characters.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16_to_utf8(const char16_t *str, size_t len)
+string utf16_to_utf8(const char16_t *str, int len)
 {
+	REMOVE_TRAILING_NULLS(string, str, len);
+	string ret;
+	char *mbs = nullptr;
+
 #if defined(_WIN32)
 	// Win32 version.
 	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(str, (int)len, CP_UTF8, &cbMbs);
-	if (mbs) {
-		string ret(mbs, cbMbs);
-		free(mbs);
-		return ret;
+	mbs = W32U_UTF16_to_mbs(str, len, CP_UTF8, &cbMbs);
+	if (mbs && cbMbs > 0) {
+		// Remove the NULL terminator if present.
+		if (mbs[cbMbs-1] == 0) {
+			cbMbs--;
+		}
+		ret = string(mbs, cbMbs);
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
+	mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
 	if (mbs) {
-		string ret(mbs);
-		free(mbs);
-		return ret;
+		ret = string(mbs);
 	}
 #else
 #error Text conversion is not available on this system.
 #endif
 
-	// Unable to convert the string.
-	return string();
+	free(mbs);
+	return ret;
 }
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-8.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string latin1_to_utf8(const char* str, size_t len)
+string latin1_to_utf8(const char* str, int len)
 {
+	REMOVE_TRAILING_NULLS(string, str, len);
+	if (len < 0) {
+		// NULL-terminated string.
+		len = (int)strlen(str);
+	}
+
 	string mbs;
 	mbs.reserve(len*2);
 	for (; len > 0; len--, str++) {
 		// TODO: Optimize the branches?
-		if ((*str & 0x80) == 0) {
+		if (!*str) {
+			// NULL. End of string.
+			break;
+		} else if ((*str & 0x80) == 0) {
 			// ASCII.
 			mbs.push_back(*str);
 		} else if ((*str & 0xE0) == 0x80) {
@@ -443,11 +508,17 @@ string latin1_to_utf8(const char* str, size_t len)
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
  * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
- * @param len Length of str, in bytes.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-u16string latin1_to_utf16(const char *str, size_t len)
+u16string latin1_to_utf16(const char *str, int len)
 {
+	REMOVE_TRAILING_NULLS(u16string, str, len);
+	if (len < 0) {
+		// NULL-terminated string.
+		len = (int)strlen(str);
+	}
+
 	u16string wcs;
 	wcs.reserve(len);
 	for (; len > 0; len--, str++) {

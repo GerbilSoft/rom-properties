@@ -72,12 +72,14 @@ SET(libromdata_SRCS
 	DMG.cpp
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
+	GameCubeSave.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
+	img/ImageDecoder.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -107,6 +109,8 @@ SET(libromdata_H
 	GameBoyAdvance.hpp
 	CopierFormats.h
 	SystemRegion.hpp
+	GameCubeSave.hpp
+	gcn_card.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -114,6 +118,7 @@ SET(libromdata_H
 	img/rp_image.hpp
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
+	img/ImageDecoder.hpp
 	img/RpPng.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp

@@ -36,6 +36,8 @@ using LibRomData::rp_string;
 #include <vector>
 using std::vector;
 
+#include <QtCore/QDateTime>
+
 #include <QLabel>
 #include <QCheckBox>
 
@@ -122,19 +124,50 @@ void RomDataViewPrivate::updateDisplay(void)
 	// System name.
 	// TODO: Logo, game icon, and game title?
 	Q_Q(RomDataView);
-	rp_string systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	if (!systemName.empty()) {
-		QLabel *lblSystemName = new QLabel(q);
-		lblSystemName->setAlignment(Qt::AlignCenter);
-		lblSystemName->setTextFormat(Qt::PlainText);
-		lblSystemName->setText(RP2Q(systemName));
+	const rp_char *systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+
+	// File type.
+	const rp_char *fileType = nullptr;
+	switch (romData->fileType()) {
+		case RomData::FTYPE_ROM_IMAGE:
+			fileType = _RP("ROM Image");
+			break;
+		case RomData::FTYPE_DISC_IMAGE:
+			fileType = _RP("Disc Image");
+			break;
+		case RomData::FTYPE_SAVE_FILE:
+			fileType = _RP("Save File");
+			break;
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			fileType = nullptr;
+			break;
+	}
+
+	QString header;
+	if (systemName) {
+		header = RP2Q(systemName);
+	}
+	if (fileType) {
+		if (!header.isEmpty()) {
+			header += QChar(L' ');
+		}
+		header += RP2Q(fileType);
+	}
+
+	if (!header.isEmpty()) {
+		QLabel *lblHeader = new QLabel(q);
+		lblHeader->setAlignment(Qt::AlignCenter);
+		lblHeader->setTextFormat(Qt::PlainText);
+		lblHeader->setText(header);
 
 		// Use a bold font.
-		QFont font = lblSystemName->font();
+		QFont font = lblHeader->font();
 		font.setBold(true);
-		lblSystemName->setFont(font);
+		lblHeader->setFont(font);
 
-		ui.formLayout->addRow(lblSystemName);
+		ui.formLayout->addRow(lblHeader);
 	}
 
 	// Create the data widgets.
@@ -149,6 +182,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			continue;
 
 		QLabel *lblDesc = new QLabel(q);
+		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 		lblDesc->setText(RomDataView::tr("%1:").arg(RP2Q(desc->name)));
 
@@ -161,6 +195,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);
+				lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 				lblString->setTextFormat(Qt::PlainText);
 				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
@@ -250,6 +285,53 @@ void RomDataViewPrivate::updateDisplay(void)
 				treeWidget->resizeColumnToContents(count);
 
 				ui.formLayout->addRow(lblDesc, treeWidget);
+				break;
+			}
+
+			case RomFields::RFT_DATETIME: {
+				// Date/Time.
+				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+
+				QLabel *lblDateTime = new QLabel(q);
+				lblDateTime->setTextFormat(Qt::PlainText);
+				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+
+				QDateTime dateTime;
+				dateTime.setTimeSpec(
+					dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC
+						? Qt::UTC : Qt::LocalTime);
+				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
+
+				QString str;
+				switch (dateTimeDesc->flags &
+					(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
+				{
+					case RomFields::RFT_DATETIME_HAS_DATE:
+						// Date only.
+						str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_TIME:
+						// Time only.
+						str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_DATE |
+					     RomFields::RFT_DATETIME_HAS_TIME:
+						// Date and time.
+						str = dateTime.toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					default:
+						// Invalid combination.
+						assert(!"Invalid Date/Time formatting.");
+						delete lblDateTime;
+						delete lblDesc;
+						break;
+				}
+				lblDateTime->setText(str);
+
+				ui.formLayout->addRow(lblDesc, lblDateTime);
 				break;
 			}
 
