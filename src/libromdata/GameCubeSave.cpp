@@ -498,6 +498,9 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	: RomData(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
 	, d(new GameCubeSavePrivate(this))
 {
+	// This class handles save files.
+	m_fileType = FTYPE_SAVE_FILE;
+
 	if (!m_file) {
 		// Could not dup() the file handle.
 		return;

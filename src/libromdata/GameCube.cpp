@@ -749,6 +749,9 @@ GameCube::GameCube(IRpFile *file)
 	: RomData(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
 	, d(new GameCubePrivate(this))
 {
+	// This class handles disc images.
+	m_fileType = FTYPE_DISC_IMAGE;
+
 	if (!m_file) {
 		// Could not dup() the file handle.
 		return;

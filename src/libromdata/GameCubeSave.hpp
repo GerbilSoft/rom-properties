@@ -82,8 +82,6 @@ class GameCubeSave : public RomData
 		 */
 		virtual const rp_char *systemName(uint32_t type) const final;
 
-		// TODO: File type function. (ROM image, disc image, save file)
-
 	public:
 		/**
 		 * Get a list of all supported file extensions.

@@ -852,9 +852,39 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 
 	// System name.
 	// TODO: Logo, game icon, and game title?
-	rp_string systemName = d->romData->systemName(
+	const rp_char *systemName = d->romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	if (!systemName.empty()) {
+
+	// File type.
+	const rp_char *fileType = nullptr;
+	switch (d->romData->fileType()) {
+		case RomData::FTYPE_ROM_IMAGE:
+			fileType = _RP("ROM Image");
+			break;
+		case RomData::FTYPE_DISC_IMAGE:
+			fileType = _RP("Disc Image");
+			break;
+		case RomData::FTYPE_SAVE_FILE:
+			fileType = _RP("Save File");
+			break;
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			fileType = nullptr;
+			break;
+	}
+
+	wstring header;
+	if (systemName) {
+		header = RP2W_c(systemName);
+	}
+	if (fileType) {
+		if (!header.empty()) {
+			header += L' ';
+		}
+		header += RP2W_c(fileType);
+	}
+
+	if (!header.empty()) {
 		// Use a bold font.
 		// TODO: Delete the old font if it's already there?
 		if (!d->hFontBold) {
@@ -867,7 +897,7 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		}
 
 		const int sysName_width = dlg_value_width + descSize.cx;
-		HWND lblSystemName = CreateWindow(WC_STATIC, RP2W_s(systemName),
+		HWND lblSystemName = CreateWindow(WC_STATIC, header.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y, sysName_width, descSize.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);

@@ -124,19 +124,50 @@ void RomDataViewPrivate::updateDisplay(void)
 	// System name.
 	// TODO: Logo, game icon, and game title?
 	Q_Q(RomDataView);
-	rp_string systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	if (!systemName.empty()) {
-		QLabel *lblSystemName = new QLabel(q);
-		lblSystemName->setAlignment(Qt::AlignCenter);
-		lblSystemName->setTextFormat(Qt::PlainText);
-		lblSystemName->setText(RP2Q(systemName));
+	const rp_char *systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+
+	// File type.
+	const rp_char *fileType = nullptr;
+	switch (romData->fileType()) {
+		case RomData::FTYPE_ROM_IMAGE:
+			fileType = _RP("ROM Image");
+			break;
+		case RomData::FTYPE_DISC_IMAGE:
+			fileType = _RP("Disc Image");
+			break;
+		case RomData::FTYPE_SAVE_FILE:
+			fileType = _RP("Save File");
+			break;
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			fileType = nullptr;
+			break;
+	}
+
+	QString header;
+	if (systemName) {
+		header = RP2Q(systemName);
+	}
+	if (fileType) {
+		if (!header.isEmpty()) {
+			header += QChar(L' ');
+		}
+		header += RP2Q(fileType);
+	}
+
+	if (!header.isEmpty()) {
+		QLabel *lblHeader = new QLabel(q);
+		lblHeader->setAlignment(Qt::AlignCenter);
+		lblHeader->setTextFormat(Qt::PlainText);
+		lblHeader->setText(header);
 
 		// Use a bold font.
-		QFont font = lblSystemName->font();
+		QFont font = lblHeader->font();
 		font.setBold(true);
-		lblSystemName->setFont(font);
+		lblHeader->setFont(font);
 
-		ui.formLayout->addRow(lblSystemName);
+		ui.formLayout->addRow(lblHeader);
 	}
 
 	// Create the data widgets.

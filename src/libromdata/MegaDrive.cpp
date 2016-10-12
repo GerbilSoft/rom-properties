@@ -392,6 +392,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
 		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
 			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
+				m_fileType = FTYPE_ROM_IMAGE;
+
 				// MD header is at 0x100.
 				// Vector table is at 0.
 				memcpy(&d->vectors,    header,        sizeof(d->vectors));
@@ -399,6 +401,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+				m_fileType = FTYPE_ROM_IMAGE;
+
 				// Save the SMD header.
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
 
@@ -424,6 +428,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 			}
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
+				m_fileType = FTYPE_DISC_IMAGE;
+
 				// MCD-specific header is at 0. [TODO]
 				// MD-style header is at 0x100.
 				// No vector table is present on the disc.
@@ -431,6 +437,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
+				m_fileType = FTYPE_DISC_IMAGE;
+
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
@@ -439,6 +447,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
 			default:
+				m_fileType = FTYPE_UNKNOWN;
 				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 				break;
 		}

@@ -157,6 +157,19 @@ class RomData
 		 */
 		virtual const rp_char *systemName(uint32_t type) const = 0;
 
+		enum FileType {
+			FTYPE_UNKNOWN = 0,
+			FTYPE_ROM_IMAGE,
+			FTYPE_DISC_IMAGE,
+			FTYPE_SAVE_FILE,
+		};
+
+		/**
+		 * Get the general file type.
+		 * @return General file type.
+		 */
+		FileType fileType(void) const;
+
 		// TODO:
 		// - List of supported systems.
 		// - Get logo from current system and/or other system?
@@ -328,6 +341,9 @@ class RomData
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
 		IRpFile *m_file;		// Open file.
 		RomFields *const m_fields;	// ROM fields.
+
+		// File type. (default is FTYPE_ROM_IMAGE)
+		FileType m_fileType;
 
 		// Internal images.
 		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];
