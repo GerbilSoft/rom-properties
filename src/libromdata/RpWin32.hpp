@@ -68,7 +68,7 @@
  */
 #define RP2W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRomData::rp_string_to_utf16(str, strlen(str)).c_str()))
+		LibRomData::rp_string_to_utf16(str, -1).c_str()))
 
 /**
  * Get const wchar_t* from rp_string.
@@ -86,8 +86,7 @@
  */
 #define W2RP_c(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), \
-		wcslen(wcs)).c_str())
+		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
 
 /**
  * Get const rp_char* from std::wstring.
@@ -96,8 +95,7 @@
  */
 #define W2RP_s(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), \
-		wcs.size()).c_str())
+		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()).c_str())
 
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
@@ -108,8 +106,7 @@
  */
 #define W2RP_cs(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), \
-		wcslen(wcs)))
+		reinterpret_cast<const char16_t*>(wcs), -1))
 
 /**
  * Get rp_string from std::wstring.
@@ -118,8 +115,7 @@
  */
 #define W2RP_ss(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), \
-		wcs.size()))
+		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
 
 #elif defined(RP_UTF16)
 

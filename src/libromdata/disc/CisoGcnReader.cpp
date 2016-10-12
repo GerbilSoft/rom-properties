@@ -294,19 +294,20 @@ size_t CisoGcnReader::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = block_size - blockStartOffset;
-		if (size < read_sz)
-			read_sz = size;
+		if (size < (size_t)read_sz) {
+			read_sz = (uint32_t)size;
+		}
 
 		// Get the physical block number first.
-		uint16_t blockStart = (d->pos / block_size);
+		const unsigned int blockStart = (unsigned int)(d->pos / block_size);
 		assert(blockStart < ARRAY_SIZE(d->blockMap));
 		if (blockStart >= ARRAY_SIZE(d->blockMap)) {
 			// Out of range.
 			return 0;
 		}
 
-		uint16_t physBlockStartIdx = d->blockMap[blockStart];
-		if (physBlockStartIdx == 0xFFFF) {
+		const unsigned int physBlockStartIdx = d->blockMap[blockStart];
+		if (physBlockStartIdx >= 0xFFFF) {
 			// Empty block.
 			memset(ptr8, 0, read_sz);
 		} else {
@@ -335,15 +336,15 @@ size_t CisoGcnReader::read(void *ptr, size_t size)
 	    ret += block_size, d->pos += block_size)
 	{
 		assert(d->pos % block_size == 0);
-		uint16_t blockIdx = (d->pos / block_size);
+		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
 		assert(blockIdx < ARRAY_SIZE(d->blockMap));
 		if (blockIdx >= ARRAY_SIZE(d->blockMap)) {
 			// Out of range.
 			return ret;
 		}
 
-		uint16_t physBlockIdx = d->blockMap[blockIdx];
-		if (physBlockIdx == 0xFFFF) {
+		const unsigned int physBlockIdx = d->blockMap[blockIdx];
+		if (physBlockIdx >= 0xFFFF) {
 			// Empty block.
 			memset(ptr8, 0, block_size);
 		} else {
@@ -366,15 +367,15 @@ size_t CisoGcnReader::read(void *ptr, size_t size)
 		assert(d->pos % block_size == 0);
 
 		// Get the physical block number first.
-		uint16_t blockEnd = (d->pos / block_size);
+		const unsigned int blockEnd = (unsigned int)(d->pos / block_size);
 		assert(blockEnd < ARRAY_SIZE(d->blockMap));
 		if (blockEnd >= ARRAY_SIZE(d->blockMap)) {
 			// Out of range.
 			return ret;
 		}
 
-		uint16_t physBlockEndIdx = d->blockMap[blockEnd];
-		if (physBlockEndIdx == 0xFFFF) {
+		const unsigned int physBlockEndIdx = d->blockMap[blockEnd];
+		if (physBlockEndIdx >= 0xFFFF) {
 			// Empty block.
 			memset(ptr8, 0, size);
 		} else {

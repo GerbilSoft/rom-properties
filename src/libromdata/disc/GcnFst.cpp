@@ -190,7 +190,7 @@ inline const rp_char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) 
 	// Name has not been converted.
 	// Do the conversion now.
 	const char *str = &string_table[offset];
-	size_t len = strlen(str);	// TODO: Bounds checking.
+	int len = (int)strlen(str);	// TODO: Bounds checking.
 	rp_string rps = cp1252_sjis_to_rp_string(str, len);
 	iter = const_cast<GcnFstPrivate*>(this)->rp_string_table.insert(std::make_pair(offset, rps)).first;
 	return iter->second.c_str();

@@ -251,11 +251,12 @@ TEST_P(AesCipherTest, decryptTest)
 	// Decrypt the data.
 	vector<uint8_t> buf(mode.cipherText_len);
 	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
-	EXPECT_EQ((unsigned int)buf.size(), m_cipher->decrypt(buf.data(), buf.size()));
+	EXPECT_EQ((unsigned int)buf.size(),
+		m_cipher->decrypt(buf.data(), (unsigned int)buf.size()));
 
 	// Compare the buffer to the known plaintext.
 	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
-			buf.data(), buf.size(), "plaintext data");
+		buf.data(), (unsigned int)buf.size(), "plaintext data");
 }
 
 /** Decryption tests. **/

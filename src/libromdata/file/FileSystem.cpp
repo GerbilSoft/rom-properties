@@ -293,7 +293,7 @@ const rp_string &getCacheDirectory(void)
 	if (hr != S_OK)
 		return cache_dir;
 
-	cache_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	cache_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), -1);
 	if (cache_dir.empty())
 		return cache_dir;
 
@@ -348,7 +348,7 @@ const rp_string &getConfigDirectory(void)
 	if (hr != S_OK)
 		return config_dir;
 
-	config_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), wcslen(path));
+	config_dir = utf16_to_rp_string(reinterpret_cast<const char16_t*>(path), -1);
 	if (config_dir.empty())
 		return config_dir;
 

@@ -407,7 +407,7 @@ int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, 
 	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 		pt_start.x, pt_start.y,
 		size.cx, field_cy,
-		hDlg, (HMENU)(IDC_RFT_STRING(idx)),
+		hDlg, (HMENU)(INT_PTR)(IDC_RFT_STRING(idx)),
 		nullptr, nullptr);
 
 	// Get the default font.
@@ -560,7 +560,7 @@ int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx
 		HWND hCheckBox = CreateWindow(WC_BUTTON, RP2W_c(name),
 			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hDlg, (HMENU)(IDC_RFT_BITFIELD(idx, j)),
+			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFont, FALSE);
 
@@ -936,7 +936,7 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_LEFT,
 			curPt.x, curPt.y, descSize.cx, descSize.cy,
-			hDlg, (HMENU)(IDC_STATIC_DESC(idx)),
+			hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
 		SetWindowFont(hStatic, hFont, FALSE);
 
@@ -986,7 +986,7 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
-					hDlg, (HMENU)(IDC_RFT_LISTDATA(idx)),
+					hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 					nullptr, nullptr);
 				SetWindowFont(hDlgItem, hFont, FALSE);
 

@@ -207,8 +207,10 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 	}
 
 	// Parse the value.
-	size_t vKeys_start_pos = vKeys.size();
-	size_t vKeys_pos = vKeys_start_pos;
+	unsigned int vKeys_start_pos = (unsigned int)vKeys.size();
+	unsigned int vKeys_pos = vKeys_start_pos;
+	// Reserve space for half of the key string.
+	// Key string is ASCII hex, so two characters make up one byte.
 	vKeys.resize(vKeys.size() + (value.size() / 2));
 
 	// ASCII to HEX lookup table.

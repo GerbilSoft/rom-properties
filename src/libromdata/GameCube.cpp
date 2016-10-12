@@ -1189,7 +1189,7 @@ int GameCube::loadFieldData(void)
 	}
 
 	if (!str.empty()) {
-		m_fields->addData_string(utf8_to_rp_string(str.data(), str.size()));
+		m_fields->addData_string(utf8_to_rp_string(str.data(), (int)str.size()));
 	} else {
 		m_fields->addData_string(_RP("Unknown"));
 	}

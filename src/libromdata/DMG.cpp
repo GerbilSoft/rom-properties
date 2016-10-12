@@ -565,9 +565,8 @@ int DMG::loadFieldData(void)
 	 * 
 	 * Current method is the first one.
 	 */
-	len = strnlen(romHeader->title,(romHeader->cgbflag < 0x80 ? 16 : 15));
-	
-	
+	len = (int)strnlen(romHeader->title,(romHeader->cgbflag < 0x80 ? 16 : 15));
+
 	if ((romHeader->cgbflag&0x3F) == 0 &&		// gameid is only present when cgbflag is
 	    4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
 		m_fields->addData_string(latin1_to_rp_string(romHeader->title,std::min(len,11)));

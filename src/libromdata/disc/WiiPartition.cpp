@@ -449,8 +449,9 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = SECTOR_SIZE_DECRYPTED - blockStartOffset;
-		if (size < read_sz)
-			read_sz = size;
+		if (size < (size_t)read_sz) {
+			read_sz = (uint32_t)size;
+		}
 
 		// Read and decrypt the sector.
 		uint32_t blockStart = (uint32_t)(d->pos_7C00 / SECTOR_SIZE_DECRYPTED);

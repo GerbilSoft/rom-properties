@@ -167,7 +167,7 @@ static uint8_t size_to_shift(uint32_t size)
 	return ret-1;
 }
 
-#define ALIGN_LBA(x) (((x)+p->hd_sec_sz-1)&(~(p->hd_sec_sz-1)))
+#define ALIGN_LBA(x) (((x)+p->hd_sec_sz-1)&(~(size_t)(p->hd_sec_sz-1)))
 
 /**
  * Read the WBFS header.
@@ -251,14 +251,14 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	// Disc size.
 	p->n_wbfs_sec = p->n_wii_sec >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
 	p->n_wbfs_sec_per_disc = p->n_wii_sec_per_disc >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
-	p->disc_info_sz = ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2);
+	p->disc_info_sz = (uint16_t)ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2);
 
 	// Free blocks table.
 	p->freeblks_lba = (p->wbfs_sec_sz - p->n_wbfs_sec/8) >> p->hd_sec_sz_s;
 	p->freeblks = nullptr;
 	p->max_disc = (p->freeblks_lba-1) / (p->disc_info_sz >> p->hd_sec_sz_s);
 	if (p->max_disc > (p->hd_sec_sz - sizeof(wbfs_head_t)))
-		p->max_disc = p->hd_sec_sz - sizeof(wbfs_head_t);
+		p->max_disc = (uint16_t)(p->hd_sec_sz - sizeof(wbfs_head_t));
 
 	p->n_disc_open = 0;
 	return p;
@@ -484,18 +484,19 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = d->m_wbfs->wbfs_sec_sz - blockStartOffset;
-		if (size < read_sz)
-			read_sz = size;
+		if (size < (size_t)read_sz) {
+			read_sz = (uint32_t)size;
+		}
 
 		// Get the physical block number first.
-		const uint16_t blockStart = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		assert((uint32_t)blockStart < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
-		if ((uint32_t)blockStart >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+		const unsigned int blockStart = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockStart < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockStart >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
 			// Out of range.
 			return 0;
 		}
 
-		const uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
+		const unsigned int physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
 		if (physBlockStartIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, read_sz);
@@ -526,14 +527,14 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
 
 		// Get the physical block number first.
-		const uint16_t blockIdx = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		assert((uint32_t)blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
-		if ((uint32_t)blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+		const unsigned int blockIdx = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
 			// Out of range.
 			return ret;
 		}
 
-		const uint16_t physBlockIdx = be16_to_cpu(wlba_table[blockIdx]);
+		const unsigned int physBlockIdx = be16_to_cpu(wlba_table[blockIdx]);
 		if (physBlockIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, wbfs_sec_sz);
@@ -556,14 +557,14 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
 
 		// Get the physical block number first.
-		const uint16_t blockEnd = (uint16_t)(d->m_wbfs_pos / wbfs_sec_sz);
-		assert((uint32_t)blockEnd < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
-		if ((uint32_t)blockEnd >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+		const unsigned int blockEnd = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockEnd < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockEnd >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
 			// Out of range.
 			return ret;
 		}
 
-		const uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
+		const unsigned int physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
 		if (physBlockEndIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, size);
