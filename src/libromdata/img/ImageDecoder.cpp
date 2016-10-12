@@ -171,7 +171,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
  * @param img_buf CI4 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @param pal_buf Palette buffer.
- * @param pal_siz Size of palette data. [must be >= 0x20]
+ * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
@@ -186,7 +186,7 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	else if (img_siz < ((width * height) / 2) || pal_siz < 0x20)
 		return nullptr;
 
-	// NDS 16-color images use 4x4 tiles.
+	// NDS CI4 uses 4x4 tiles.
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
@@ -258,7 +258,7 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 	else if (img_siz < ((width * height) * 2))
 		return nullptr;
 
-	// RGB5A3 uses 4x4 tiles.
+	// GameCube RGB5A3 uses 4x4 tiles.
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
@@ -282,6 +282,70 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 
 			// Blit the tile to the main image buffer.
 			BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a GameCube CI8 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 256*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromGcnCI8(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < (width * height) || pal_siz < 256*2)
+		return nullptr;
+
+	// GameCube CI8 uses 8x4 tiles.
+	if (width % 8 != 0 || height % 4 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const int tilesX = (width / 8);
+	const int tilesY = (height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 256);
+	if (img->palette_len() < 256) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	img->set_tr_idx(-1);	// TODO: Find the transparent color.
+	for (int i = 256-1; i >= 0; i--) {
+		// GCN color format is RGB5A3.
+		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
+	}
+
+	// Tile pointer.
+	const uint8_t *tileBuf = img_buf;
+
+	for (int y = 0; y < tilesY; y++) {
+		for (int x = 0; x < tilesX; x++) {
+			// Decode the current tile.
+			BlitTile<uint8_t, 8, 4>(img, tileBuf, x, y);
+			tileBuf += (8 * 4);
 		}
 	}
 

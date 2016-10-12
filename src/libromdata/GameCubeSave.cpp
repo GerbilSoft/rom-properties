@@ -639,12 +639,6 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 	// Constructor has already byteswapped everything.
 	const card_direntry *direntry = &d->direntry;
 
-	// FIXME: Only reading RGB5A3 for now.
-	if ((direntry->iconfmt & CARD_ICON_MASK) != CARD_ICON_RGB) {
-		// Not RGB5A3.
-		return -ENOENT;
-	}
-
 	// Calculate the icon start address.
 	// The icon is located directly after the banner.
 	uint32_t iconaddr = direntry->iconaddr;
@@ -652,7 +646,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 		case CARD_BANNER_CI:
 			// CI8 banner.
 			iconaddr += (CARD_BANNER_W * CARD_BANNER_H * 1);
-			iconaddr += 0x200;	// RGB5A3 palette
+			iconaddr += (256 * 2);	// RGB5A3 palette
 			break;
 		case CARD_BANNER_RGB:
 			// RGB5A3 banner.
@@ -663,19 +657,100 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 			break;
 	}
 
+	// Determine the format of the first icon.
+	uint32_t iconsize, palsize, paladdr;
+	switch (direntry->iconfmt & CARD_ICON_MASK) {
+		case CARD_ICON_RGB:
+			// RGB5A3.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 2;
+			palsize = 0;
+			paladdr = 0;
+			break;
+
+		case CARD_ICON_CI_UNIQUE:
+			// CI8 with a unique palette.
+			// Palette is located immediately after the icon.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+			palsize = 256 * 2;
+			paladdr = iconaddr + iconsize;
+			break;
+
+		case CARD_ICON_CI_SHARED: {
+			// CI8 with a shared palette.
+			// Palette is located after *all* of the icons.
+			iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+			palsize = 256 * 2;
+			paladdr = iconaddr;
+			uint16_t iconfmt = direntry->iconfmt;
+			uint16_t iconspeed = direntry->iconspeed;
+			for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
+				if ((iconspeed & CARD_SPEED_MASK) == CARD_SPEED_END) {
+					// End of the icons.
+					break;
+				}
+
+				switch (iconfmt & CARD_ICON_MASK) {
+					case CARD_ICON_RGB:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 2);
+						break;
+					case CARD_ICON_CI_UNIQUE:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
+						paladdr += (256 * 2);
+						break;
+					case CARD_ICON_CI_SHARED:
+						paladdr += (CARD_ICON_W * CARD_ICON_H * 1);
+						break;
+					default:
+						break;
+				}
+			}
+
+			// paladdr is now after all of the icons.
+			break;
+		}
+
+		default:
+			// No icon.
+			return -ENOENT;
+	}
+
 	// Read the icon data.
 	// NOTE: Only the first frame.
-	uint8_t buf[CARD_ICON_W * CARD_ICON_H * 2];	// 32x32, RGB5A3
+	static const int MAX_ICON_SIZE = CARD_ICON_W * CARD_ICON_H * 2;
+	uint8_t iconbuf[MAX_ICON_SIZE];
 	m_file->seek(d->dataOffset + iconaddr);
-	size_t size = m_file->read(&buf, sizeof(buf));
-	if (size < sizeof(buf)) {
+	size_t size = m_file->read(iconbuf, iconsize);
+	if (size != iconsize) {
 		// Error reading the icon data.
 		return -EIO;
 	}
 
-	// Convert the icon from GCN format to ARGB32.
-	rp_image *icon = ImageDecoder::fromGcnRGB5A3(CARD_ICON_W, CARD_ICON_H,
-		reinterpret_cast<const uint16_t*>(buf), sizeof(buf));
+	// Convert the icon from GCN format to rp_image.
+	rp_image *icon = nullptr;
+	if ((direntry->iconfmt & CARD_ICON_MASK) == CARD_ICON_RGB) {
+		// GCN RGB5A3 -> ARGB32
+		icon = ImageDecoder::fromGcnRGB5A3(CARD_ICON_W, CARD_ICON_H,
+			reinterpret_cast<const uint16_t*>(iconbuf), iconsize);
+	} else {
+		// Read the palette data.
+		uint16_t palbuf[256];
+		assert(palsize == sizeof(palbuf));
+		if (palsize != sizeof(palbuf)) {
+			// Size is incorrect.
+			return -EIO;
+		}
+		m_file->seek(d->dataOffset + paladdr);
+		size = m_file->read(palbuf, sizeof(palbuf));
+		if (size != sizeof(palbuf)) {
+			// Error reading the palette data.
+			return -EIO;
+		}
+
+		// GCN CI8 -> CI8
+		icon = ImageDecoder::fromGcnCI8(CARD_ICON_W, CARD_ICON_H,
+			iconbuf, iconsize, palbuf, sizeof(palbuf));
+	}
+
 	if (!icon) {
 		// Error converting the icon.
 		return -EIO;
