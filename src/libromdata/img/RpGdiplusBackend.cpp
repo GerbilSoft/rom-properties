@@ -627,7 +627,7 @@ Gdiplus::Bitmap *RpGdiplusBackend::convCI8toARGB32(
 
 	for (UINT y = bmpArgbData.Height; y > 0; y--) {
 		UINT x = bmpArgbData.Width;
-		for (; x > 2; x -= 2) {
+		for (; x > 1; x -= 2) {
 			dest[0] = pColorPalette->Entries[src[0]];
 			dest[1] = pColorPalette->Entries[src[1]];
 			dest += 2;

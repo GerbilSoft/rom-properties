@@ -104,7 +104,7 @@ bool rp_image_backend::has_translucent_palette_entries(void) const
 
 	const uint32_t *palette = this->palette;
 	int i = this->palette_len;
-	for (; i > 2; i -= 2, palette += 2) {
+	for (; i > 1; i -= 2, palette += 2) {
 		const uint8_t alpha1 = (palette[0] >> 24);
 		const uint8_t alpha2 = (palette[1] >> 24);
 		if (alpha1 != 0 && alpha1 != 255) {
