@@ -106,6 +106,7 @@ Notes:
 | Sega Mega Drive           |       Yes      |       N/A       |       No       |
 | Nintendo DS(i)            |       Yes      |       Icon      |       No       |
 | Nintendo GameCube         |       Yes      |        No       |      Disc      |
+| Nintendo GameCube Saves   |       Yes      |       Yes       |       N/A      |
 | Nintendo Wii              |       Yes      |        No       |      Disc      |
 | Nintendo Game Boy (Color) |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
@@ -129,7 +130,7 @@ will be used for thumbnails (and icons on Windows).
 * Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
 * Nintendo DS(i): Decrypted (\*.nds)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
-  CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc)
+  CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc), save files (\*.gci, \*.gcs, \*.sav)
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
