@@ -169,7 +169,7 @@ static inline rp_string utf8_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
 	if (len < 0) {
-		len = (int)strlen(str);
+		return rp_string(str);
 	}
 	return rp_string(str, len);
 #elif defined(RP_UTF16)
@@ -201,7 +201,7 @@ static inline std::string rp_string_to_utf8(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
 	if (len < 0) {
-		len = (int)strlen(str);
+		return rp_string(str);
 	}
 	return rp_string(str, len);
 #elif defined(RP_UTF16)
@@ -235,7 +235,7 @@ static inline rp_string utf16_to_rp_string(const char16_t *str, int len)
 	return utf16_to_utf8(str, len);
 #elif defined(RP_UTF16)
 	if (len < 0) {
-		len = (int)u16_strlen(str);
+		return rp_string(str);
 	}
 	return rp_string(str, len);
 #endif
@@ -267,7 +267,7 @@ static inline std::u16string rp_string_to_utf16(const rp_char *str, int len)
 	return utf8_to_utf16(str, len);
 #elif defined(RP_UTF16)
 	if (len < 0) {
-		len = (int)u16_strlen(str);
+		return rp_string(str);
 	}
 	return rp_string(str, len);
 #endif
