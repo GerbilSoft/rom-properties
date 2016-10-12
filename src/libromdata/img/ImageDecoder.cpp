@@ -332,11 +332,16 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		return nullptr;
 	}
 
-	img->set_tr_idx(-1);	// TODO: Find the transparent color.
-	for (int i = 256-1; i >= 0; i--) {
+	int tr_idx = -1;
+	for (int i = 0; i < 256; i++) {
 		// GCN color format is RGB5A3.
 		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
+		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = i;
+		}
 	}
+	img->set_tr_idx(tr_idx);
 
 	// Tile pointer.
 	const uint8_t *tileBuf = img_buf;
