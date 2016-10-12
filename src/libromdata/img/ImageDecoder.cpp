@@ -222,8 +222,8 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// 4 tiles wide, 4 tiles tall.
 	uint8_t tileBuf[8*8];
 
-	for (int y = 0; y < 4; y++) {
-		for (int x = 0; x < 4; x++) {
+	for (int y = 0; y < tilesY; y++) {
+		for (int x = 0; x < tilesX; x++) {
 			// Convert each tile to 8-bit color manually.
 			for (int i = 0; i < 8*8; i += 2, img_buf++) {
 				tileBuf[i+0] = (*img_buf & 0x0F);
