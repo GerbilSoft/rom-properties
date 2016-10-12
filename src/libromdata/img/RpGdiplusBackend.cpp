@@ -464,7 +464,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
  * @param pBmpData Gdiplus::BitmapData.
  * @return HBITMAP.
  */
-HBITMAP RpGdiplusBackend::convBmpData_ARGB32(Gdiplus::BitmapData *pBmpData)
+HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData)
 {
 	// Create a bitmap.
 	BITMAPINFO bmi;
@@ -513,7 +513,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(Gdiplus::BitmapData *pBmpData)
  * @param pBmpData Gdiplus::BitmapData.
  * @return HBITMAP.
  */
-HBITMAP RpGdiplusBackend::convBmpData_CI8(Gdiplus::BitmapData *pBmpData)
+HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 {
 	// BITMAPINFO with 256-color palette.
 	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);

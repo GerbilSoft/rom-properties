@@ -161,7 +161,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param pBmpData Gdiplus::BitmapData.
 		 * @return HBITMAP.
 		 */
-		static HBITMAP convBmpData_ARGB32(Gdiplus::BitmapData *pBmpData);
+		static HBITMAP convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData);
 
 		/**
 		 * Convert a locked CI8 GDI+ bitmap to an HBITMAP.
@@ -169,7 +169,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param pBmpData Gdiplus::BitmapData.
 		 * @return HBITMAP.
 		 */
-		HBITMAP convBmpData_CI8(Gdiplus::BitmapData *pBmpData);
+		HBITMAP convBmpData_CI8(const Gdiplus::BitmapData *pBmpData);
 
 	protected:
 		ULONG_PTR m_gdipToken;
