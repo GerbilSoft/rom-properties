@@ -405,16 +405,31 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		size.cy = this->height;
 	}
 
-	// Temporarily unlock the GDI+ bitmap.
-	Gdiplus::Status status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
-	if (status != Gdiplus::Status::Ok) {
-		// Error unlocking the GDI+ bitmap.
-		return nullptr;
-	}
+	Gdiplus::Status status = Gdiplus::Status::GenericError;
 
+	unique_ptr<Gdiplus::Bitmap> pBmpTmp;
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
+		// TODO: Optimize has_translucent_palette_entries().
+		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
+			// Need to convert to ARGB32 first.
+			// Otherwise, the translucent entries won't show up correctly.
+			pBmpTmp.reset(convCI8toARGB32(&m_gdipBmpData, m_pGdipPalette));
+			if (!pBmpTmp) {
+				// Error converting to ARGB32.
+				return nullptr;
+			}
+		}
+	}
+
+	if (!pBmpTmp) {
+		// Temporarily unlock the GDI+ bitmap.
+		status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
+		if (status != Gdiplus::Status::Ok) {
+			// Error unlocking the GDI+ bitmap.
+			return nullptr;
+		}
 	}
 
 	// Create a new bitmap.
@@ -428,16 +443,24 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		// TODO: What's the default?
 		graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
 	}
-	graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+	if (pBmpTmp) {
+		// Use the temporary ARGB32 bitmap.
+		graphics.DrawImage(pBmpTmp.get(), 0, 0, size.cx, size.cy);
+	} else {
+		// Use the regular bitmap.
+		graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+	}
 
-	// Re-lock the bitmap.
-	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
-	status = m_pGdipBmp->LockBits(&bmpRect,
-		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
-		m_gdipFmt, &m_gdipBmpData);
-	if (status != Gdiplus::Status::Ok) {
-		// Error re-locking the GDI+ bitmap.
-		return nullptr;
+	if (!pBmpTmp) {
+		// Re-lock the bitmap.
+		const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
+		status = m_pGdipBmp->LockBits(&bmpRect,
+			Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
+			m_gdipFmt, &m_gdipBmpData);
+		if (status != Gdiplus::Status::Ok) {
+			// Error re-locking the GDI+ bitmap.
+			return nullptr;
+		}
 	}
 
 	// Lock the resized bitmap.
@@ -531,6 +554,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	bmiHeader->biSizeImage = 0;	// TODO?
 	bmiHeader->biXPelsPerMeter = 0;	// TODO
 	bmiHeader->biYPelsPerMeter = 0;	// TODO
+	// FIXME: Specify palette as a parameter?
 	bmiHeader->biClrUsed = this->palette_len;
 	bmiHeader->biClrImportant = this->palette_len;	// TODO
 
@@ -559,6 +583,68 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 
 	// Bitmap is ready.
 	return hBitmap;
+}
+
+/**
+ * Convert a locked CI8 GDI+ bitmap to an ARGB32 GDI+ bitmap.
+ * Alpha transparency is preserved.
+ * @param pBmpData Gdiplus::BitmapData.
+ * @param pColorPalette Gdiplus::ColorPalette.
+ * @return HBITMAP.
+ */
+Gdiplus::Bitmap *RpGdiplusBackend::convCI8toARGB32(
+	const Gdiplus::BitmapData *pBmpData,
+	const Gdiplus::ColorPalette *pColorPalette)
+{
+	assert(pBmpData->PixelFormat == PixelFormat8bppIndexed);
+	assert(pColorPalette->Count == 256);
+	if (pBmpData->PixelFormat != PixelFormat8bppIndexed ||
+	    pColorPalette->Count != 256)
+	{
+		return nullptr;
+	}
+
+	Gdiplus::Bitmap *pArgbBmp = new Gdiplus::Bitmap(pBmpData->Width, pBmpData->Height, PixelFormat32bppARGB);
+	if (!pArgbBmp)
+		return nullptr;
+
+	// Lock the ARGB32 bitmap.
+	const Gdiplus::Rect bmpArgbRect(0, 0, pBmpData->Width, pBmpData->Height);
+	Gdiplus::BitmapData bmpArgbData;
+	Gdiplus::Status status = pArgbBmp->LockBits(&bmpArgbRect,
+		Gdiplus::ImageLockModeWrite,
+		PixelFormat32bppARGB, &bmpArgbData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error locking the ARGB32 bitmap.
+		delete pArgbBmp;
+		return nullptr;
+	}
+
+	const uint8_t *src = reinterpret_cast<uint8_t*>(pBmpData->Scan0);
+	uint32_t *dest = reinterpret_cast<uint32_t*>(bmpArgbData.Scan0);
+	const int src_diff = pBmpData->Stride - pBmpData->Width;
+	const int dest_diff = (bmpArgbData.Stride / 4) - bmpArgbData.Width;
+
+	for (UINT y = bmpArgbData.Height; y > 0; y--) {
+		for (UINT x = bmpArgbData.Width; x > 0; x--) {
+			*dest = pColorPalette->Entries[*src];
+			dest++;
+			src++;
+		}
+		dest += dest_diff;
+		src += src_diff;
+	}
+
+	// Unlock the ARGB32 bitmap.
+	status = pArgbBmp->UnlockBits(&bmpArgbData);
+	if (status != Gdiplus::Status::Ok) {
+		// Error unlocking the GDI+ bitmap.
+		delete pArgbBmp;
+		return nullptr;
+	}
+
+	// We're done here.
+	return pArgbBmp;
 }
 
 }

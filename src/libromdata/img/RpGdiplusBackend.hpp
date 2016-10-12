@@ -171,6 +171,17 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		HBITMAP convBmpData_CI8(const Gdiplus::BitmapData *pBmpData);
 
+		/**
+		 * Convert a locked CI8 GDI+ bitmap to an ARGB32 GDI+ bitmap.
+		 * Alpha transparency is preserved.
+		 * @param pBmpData Gdiplus::BitmapData.
+		 * @param pColorPalette Gdiplus::ColorPalette.
+		 * @return HBITMAP.
+		 */
+		static Gdiplus::Bitmap *convCI8toARGB32(
+			const Gdiplus::BitmapData *pBmpData,
+			const Gdiplus::ColorPalette *pColorPalette);
+
 	protected:
 		ULONG_PTR m_gdipToken;
 		Gdiplus::Bitmap *m_pGdipBmp;
