@@ -152,7 +152,7 @@ void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, SaveType sa
 		// Also 0x06 (pad_00 / bannerfmt).
 		// Reference: https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard.cpp
 		uint16_t *u16ptr = reinterpret_cast<uint16_t*>(direntry);
-		u16ptr[0x06>>2] = __swab16(u16ptr[0x06>>2]);
+		u16ptr[0x06>>1] = __swab16(u16ptr[0x06>>1]);
 		for (int i = (0x2C>>1); i < (0x40>>1); i++) {
 			u16ptr[i] = __swab16(u16ptr[i]);
 		}
