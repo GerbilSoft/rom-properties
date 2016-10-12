@@ -186,13 +186,13 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	else if (img_siz < ((width * height) / 2) || pal_siz < 0x20)
 		return nullptr;
 
-	// NDS CI4 uses 4x4 tiles.
-	if (width % 4 != 0 || height % 4 != 0)
+	// NDS CI4 uses 8x8 tiles.
+	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 4);
-	const int tilesY = (height / 4);
+	const int tilesX = (width / 8);
+	const int tilesY = (height / 8);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
