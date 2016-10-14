@@ -298,7 +298,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 				QDateTime dateTime;
 				dateTime.setTimeSpec(
-					dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC
+					(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
 						? Qt::UTC : Qt::LocalTime);
 				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
 
