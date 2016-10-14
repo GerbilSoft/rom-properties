@@ -145,6 +145,13 @@ class GcnPartition : public IPartition
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int closedir(IFst::Dir *dirp);
+
+		/**
+		 * Open a file. (read-only)
+		 * @param filename Filename.
+		 * @return IRpFile*, or nullptr on error.
+		 */
+		IRpFile *open(const rp_char *filename);
 };
 
 }

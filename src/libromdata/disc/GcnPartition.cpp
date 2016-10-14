@@ -26,6 +26,7 @@
 #include "gcn_structs.h"
 #include "IDiscReader.hpp"
 #include "GcnFst.hpp"
+#include "PartitionFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -232,6 +233,63 @@ int GcnPartition::closedir(IFst::Dir *dirp)
 	}
 
 	return d->fst->closedir(dirp);
+}
+
+/**
+ * Open a file. (read-only)
+ * @param filename Filename.
+ * @return IRpFile*, or nullptr on error.
+ */
+IRpFile *GcnPartition::open(const rp_char *filename)
+{
+	// TODO: File reference counter.
+	// This might be difficult to do because GcnFile is a separate class.
+	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	if (!d->fst) {
+		// FST isn't loaded.
+		if (d->loadFst() != 0) {
+			// FST load failed.
+			// TODO: Errors?
+			return nullptr;
+		}
+	}
+
+	if (!filename) {
+		// No filename.
+		d->lastError = EINVAL;
+		return nullptr;
+	}
+
+	// Find the file in the FST.
+	IFst::DirEnt dirent;
+	int ret = d->fst->find_file(filename, &dirent);
+	if (ret != 0) {
+		// File not found.
+		d->lastError = ENOENT;
+		return nullptr;
+	}
+
+	// Make sure this is a regular file.
+	if (dirent.type != DT_REG) {
+		// Not a regular file.
+		d->lastError = (dirent.type == DT_DIR ? EISDIR : EPERM);
+		return nullptr;
+	}
+
+	// Make sure the file is in bounds.
+	if (dirent.offset >= d->partition_size ||
+	    dirent.offset > d->partition_size - dirent.size)
+	{
+		// File is out of bounds.
+		d->lastError = -EIO;
+		return nullptr;
+	}
+
+	// Create the PartitionFile.
+	// This is an IRpFile implementation that uses an
+	// IPartition as the reader and takes an offset
+	// and size as the file parameters.
+	return new PartitionFile(this, dirent.offset, dirent.size);
 }
 
 }

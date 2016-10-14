@@ -522,4 +522,41 @@ int GcnFst::closedir(IFst::Dir *dirp)
 	return 0;
 }
 
+
+/**
+ * Get the directory entry for the specified file.
+ * @param filename	[in] Filename.
+ * @param dirent	[out] Pointer to DirEnt buffer.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GcnFst::find_file(const rp_char *filename, DirEnt *dirent)
+{
+	if (!filename || !dirent) {
+		// Invalid parameters.
+		return -EINVAL;
+	}
+
+	const GCN_FST_Entry *fst_entry = d->find_path(filename);
+	if (!fst_entry) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Copy the relevant information to dirent.
+	const bool is_fst_dir = d->is_dir(fst_entry);
+	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
+	dirent->name = d->entry_name(fst_entry);
+	if (is_fst_dir) {
+		// offset and size are not valid for directories.
+		dirent->offset = 0;
+		dirent->size = 0;
+	} else {
+		// Save the offset and size.
+		dirent->offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << d->offsetShift);
+		dirent->size = be32_to_cpu(fst_entry->file.size);
+	}
+
+	return 0;
+}
+
 }

@@ -87,6 +87,7 @@ SET(libromdata_SRCS
 	disc/GcnPartitionPrivate.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
+	disc/PartitionFile.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -132,6 +133,7 @@ SET(libromdata_H
 	disc/WiiPartition.hpp
 	disc/IFst.hpp
 	disc/GcnFst.hpp
+	disc/PartitionFile.hpp
 	)
 
 IF(WIN32)
