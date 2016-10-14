@@ -78,6 +78,11 @@ uint16_t SystemRegion::getCountryCode(void)
 	}
 #endif
 
+	// Make sure the country code is uppercase.
+	if (cc != 0) {
+		cc &= ~0x2020;
+	}
+
 	// Country code retrieved.
 	cc_retrieved = true;
 	return cc;
