@@ -803,6 +803,8 @@ GameCube::GameCube(IRpFile *file)
 	m_isValid = (d->discType >= 0);
 	if (m_isValid) {
 		// Save the disc header for later.
+		static_assert(sizeof(GCN_DiscHeader) == GCN_DiscHeader_SIZE,
+			"GCN_DiscHeader is the wrong size. (Should be 96 bytes.)");
 		d->discReader->rewind();
 		size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
 		if (size != sizeof(d->discHeader)) {

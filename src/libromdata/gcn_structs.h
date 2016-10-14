@@ -38,7 +38,7 @@ extern "C" {
 #pragma pack(1)
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
-#define GCN_DiscHeader_SIZE 96	/* TODO add in separate commit along with static_assert */
+#define GCN_DiscHeader_SIZE 96
 typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// Game code. (ID6)
