@@ -166,6 +166,7 @@ size_t PartitionFile::read(void *ptr, size_t size)
 	if (size > 0) {
 		m_partition->clearError();
 		ret = m_partition->read(ptr, size);
+		m_pos += ret;
 		m_lastError = m_partition->lastError();
 	}
 
