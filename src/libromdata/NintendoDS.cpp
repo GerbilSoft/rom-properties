@@ -36,6 +36,7 @@
 #include <cstddef>
 
 // C++ includes.
+#include <algorithm>
 #include <vector>
 using std::vector;
 
@@ -93,8 +94,16 @@ class NintendoDSPrivate
 		NDS_RomHeader romHeader;
 
 		// Animated icon data.
-		// NOTE: The first frame is owned by the RomData superclass.
+		// NOTE: Nintendo DSi icons can have custom sequences,
+		// so the first frame isn't necessarily the first in
+		// the sequence. Hence, we return a copy of the first
+		// frame in the sequence for loadIcon().
+		// This class owns all of the icons in here, so we
+		// must delete all of them.
 		RomData::IconAnimData *iconAnimData;
+
+		// The rp_image* copy. (DO NOT DELETE THIS!)
+		rp_image *icon_first_frame;
 
 		/**
 		 * Load the ROM image's icon.
@@ -150,14 +159,19 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
 	: q(q)
 	, iconAnimData(nullptr)
+	, icon_first_frame(nullptr)
 { }
 
 NintendoDSPrivate::~NintendoDSPrivate()
 {
 	if (iconAnimData) {
-		// Delete all except the first animated icon frame.
-		// (The first frame is owned by the RomData superclass.)
-		for (int i = iconAnimData->count-1; i >= 1; i--) {
+		// NOTE: Nintendo DSi icons can have custom sequences,
+		// so the first frame isn't necessarily the first in
+		// the sequence. Hence, we return a copy of the first
+		// frame in the sequence for loadIcon().
+		// This class owns all of the icons in here, so we
+		// must delete all of them.
+		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			delete iconAnimData->frames[i];
 		}
 		delete iconAnimData;
@@ -177,7 +191,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return const_cast<rp_image*>(iconAnimData->frames[0]);
+		return icon_first_frame;
 	}
 
 	// Get the address of the icon/title information.
@@ -197,6 +211,9 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	}
 
 	// Check if a DSi animated icon is present.
+	// TODO: Some configuration option to return the standard
+	// NDS icon for the standard icon instead of the first frame
+	// of the animated DSi icon? (Except for DSiWare...)
 	if (size < sizeof(NDS_IconTitleData) ||
 	    le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
 	    le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) == 0)
@@ -261,8 +278,29 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		}
 	}
 
-	// Return the first frame.
-	return const_cast<rp_image*>(iconAnimData->frames[0]);
+	// Return a copy of first frame.
+	// TODO: rp_image assignment operator and copy constructor.
+	const rp_image *src_img = iconAnimData->frames[iconAnimData->seq_index[0]];
+	if (src_img) {
+		icon_first_frame = new rp_image(32, 32, rp_image::FORMAT_CI8);
+
+		// Copy the image data.
+		// TODO: Image stride?
+		assert(icon_first_frame->data_len() == src_img->data_len());
+		const int data_len = std::min(icon_first_frame->data_len(), src_img->data_len());
+		memcpy(icon_first_frame->bits(), src_img->bits(), data_len);
+
+		// Copy the palette.
+		assert(icon_first_frame->palette_len() > 0);
+		assert(src_img->palette_len() > 0);
+		assert(icon_first_frame->palette_len() == src_img->palette_len());
+		const int palette_len = std::min(icon_first_frame->palette_len(), src_img->palette_len());
+		if (palette_len > 0) {
+			memcpy(icon_first_frame->palette(), src_img->palette(), palette_len);
+		}
+	}
+
+	return icon_first_frame;
 }
 
 /**
