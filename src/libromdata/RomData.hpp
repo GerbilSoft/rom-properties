@@ -28,6 +28,9 @@
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -246,6 +249,11 @@ class RomData
 			// nearest neighbor if the new size is an
 			// integer multiple of the old size.
 			IMGPF_RESCALE_NEAREST	= (1 << 2),
+
+			// File supports animated icons.
+			// Call iconAnimData() to get the animated
+			// icon frames and control information.
+			IMGPF_ICON_ANIMATED	= (1 << 3),
 		};
 
 		/**
@@ -335,6 +343,45 @@ class RomData
 		 * @return Bitfield of ImageProcessingBF operations to perform.
 		 */
 		uint32_t imgpf(ImageType imageType) const;
+
+		static const int ICONANIMDATA_MAX_FRAMES = 8;
+		struct IconAnimData {
+			int count;	// Frame count.
+
+			// If true, reverse animation direction at
+			// the end instead of simply resetting.
+			// TODO: More animation types and/or enum?
+			bool bounce;
+
+			// Array of icon delays. (max 8)
+			// Delays are in milliseconds.
+			int delays[ICONANIMDATA_MAX_FRAMES];
+
+			// Array of icon frames. (max 8)
+			// Check the count field to determine
+			// how many frames are actually here.
+			// NOTE: Frames may be nullptr, in which case
+			// the previous frame should be used.
+			const rp_image *frames[ICONANIMDATA_MAX_FRAMES];
+
+			IconAnimData()
+				: count(0)
+				, bounce(false)
+			{
+				memset(delays, 0, sizeof(delays));
+				memset(frames, 0, sizeof(frames));
+			}
+		};
+
+		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const;
 
 	protected:
 		// TODO: Make a private class?

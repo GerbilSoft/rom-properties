@@ -281,4 +281,18 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	return m_imgpf[imageType];
 }
 
+/**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const RomData::IconAnimData *RomData::iconAnimData(void) const
+{
+	// No animated icon by default.
+	return nullptr;
+}
+
 }
