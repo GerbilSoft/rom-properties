@@ -112,6 +112,7 @@ SET(libromdata_H
 	SystemRegion.hpp
 	GameCubeSave.hpp
 	gcn_card.h
+	nds_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
