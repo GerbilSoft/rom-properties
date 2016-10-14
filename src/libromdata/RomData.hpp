@@ -345,19 +345,25 @@ class RomData
 		uint32_t imgpf(ImageType imageType) const;
 
 		static const int ICONANIMDATA_MAX_FRAMES = 8;
+		static const int ICONANIMDATA_MAX_SEQUENCE = 64;
+
 		struct IconAnimData {
 			int count;	// Frame count.
+			int seq_count;	// Sequence count.
 
-			// If true, reverse animation direction at
-			// the end instead of simply resetting.
-			// TODO: More animation types and/or enum?
-			bool bounce;
+			// Array of icon sequence indexes.
+			// Each entry indicates which frame to use.
+			// Check the seq_count field to determine
+			// how many indexes are actually here.
+			uint8_t seq_index[ICONANIMDATA_MAX_SEQUENCE];
 
-			// Array of icon delays. (max 8)
+			// Array of icon delays.
 			// Delays are in milliseconds.
-			int delays[ICONANIMDATA_MAX_FRAMES];
+			// NOTE: These are associated with sequence indexes,
+			// not the individual icon frames.
+			int delays[ICONANIMDATA_MAX_SEQUENCE];
 
-			// Array of icon frames. (max 8)
+			// Array of icon frames.
 			// Check the count field to determine
 			// how many frames are actually here.
 			// NOTE: Frames may be nullptr, in which case
@@ -366,8 +372,9 @@ class RomData
 
 			IconAnimData()
 				: count(0)
-				, bounce(false)
+				, seq_count(0)
 			{
+				memset(seq_index, 0, sizeof(seq_index));
 				memset(delays, 0, sizeof(delays));
 				memset(frames, 0, sizeof(frames));
 			}

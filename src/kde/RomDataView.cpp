@@ -95,13 +95,10 @@ class RomDataViewPrivate
 		// it with the Windows version.)
 		const RomData::IconAnimData *iconAnimData;
 		QPixmap iconFrames[RomData::ICONANIMDATA_MAX_FRAMES];
+		int anim_cur_seq_idx;		// Current sequence indx.
 		int anim_cur_frame;		// Current frame.
 		int anim_last_valid_frame;	// Last frame that had a valid image.
 		bool anim_running;		// Animation is running.
-		// Current animation direction:
-		// - false == forwards
-		// - true == backwards
-		bool anim_cur_direction;
 
 		/**
 		 * Create the header row.
@@ -134,10 +131,10 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
 	, iconAnimData(nullptr)
+	, anim_cur_seq_idx(0)
 	, anim_cur_frame(0)
 	, anim_last_valid_frame(0)
 	, anim_running(false)
-	, anim_cur_direction(false)
 	, displayInit(false)
 {
 	// Register RpQImageBackend.
@@ -251,6 +248,11 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
+				assert(iconAnimData->count > 1);
+				assert(iconAnimData->count <= RomData::ICONANIMDATA_MAX_FRAMES);
+				assert(iconAnimData->seq_count > 1);
+				assert(iconAnimData->seq_count <= RomData::ICONANIMDATA_MAX_SEQUENCE);
+
 				// Convert the icons to QPixmaps.
 				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
@@ -498,15 +500,15 @@ void RomDataViewPrivate::startAnimTimer(void)
 	if (anim_cur_frame >= iconAnimData->count) {
 		// Out of bounds...
 		// Reset the animation.
-		anim_cur_frame = 0;
-		anim_last_valid_frame = 0;
-		anim_cur_direction = false;
-		ui.lblIcon->setPixmap(iconFrames[0]);
+		anim_cur_seq_idx = 0;
+		anim_cur_frame = iconAnimData->seq_index[0];
+		anim_last_valid_frame = anim_cur_frame;
+		ui.lblIcon->setPixmap(iconFrames[anim_cur_frame]);
 	}
 
 	// Set a single-shot timer for the current frame.
 	anim_running = true;
-	ui.tmrIconAnim->start(iconAnimData->delays[anim_cur_frame]);
+	ui.tmrIconAnim->start(iconAnimData->delays[anim_cur_seq_idx]);
 }
 
 /**
@@ -579,39 +581,19 @@ void RomDataView::tmrIconAnim_timeout(void)
 {
 	Q_D(RomDataView);
 
-	// Go to the next frame.
-	if (!d->anim_cur_direction) {
-		// Animation is moving forwards.
-		// Check if we're at the last frame.
-		if (d->anim_cur_frame == (d->iconAnimData->count - 1)) {
-			// Last frame.
-			if (d->iconAnimData->bounce) {
-				// "Bounce" animation. Start playing backwards.
-				d->anim_cur_direction = true;
-				d->anim_cur_frame--;	// Go to the previous frame.
-			} else {
-				// "Looping" animation.
-				// Reset to frame 0.
-				d->anim_cur_frame = 0;
-			}
-		} else {
-			// Not the last frame.
-			// Go to the next frame.
-			d->anim_cur_frame++;
-		}
+	// Go to the next frame in the sequence.
+	if (d->anim_cur_seq_idx >= (d->iconAnimData->seq_count - 1)) {
+		// Last frame in the sequence.
+		d->anim_cur_seq_idx = 0;
 	} else {
-		// Animation is moving backwards. ("Bounce" animation only.)
-		// Check if we're at the first frame.
-		if (d->anim_cur_frame == 0) {
-			// First frame. Start playing forwards.
-			d->anim_cur_direction = false;
-			d->anim_cur_frame++;	// Go to the next frame.
-		} else {
-			// Not the first frame.
-			// Go to the previous frame.
-			d->anim_cur_frame--;
-		}
+		// Go to the next frame in the sequence.
+		d->anim_cur_seq_idx++;
 	}
+
+	// Get the frame number associated with this sequence index.
+	d->anim_cur_frame = d->iconAnimData->seq_index[d->anim_cur_seq_idx];
+	assert(d->anim_cur_frame >= 0);
+	assert(d->anim_cur_frame < RomData::ICONANIMDATA_MAX_FRAMES);
 
 	// Check if this frame has an icon.
 	if (!d->iconFrames[d->anim_cur_frame].isNull() &&
@@ -626,6 +608,6 @@ void RomDataView::tmrIconAnim_timeout(void)
 
 	// Set the single-shot timer.
 	if (d->anim_running) {
-		d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_frame]);
+		d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_seq_idx]);
 	}
 }

@@ -415,7 +415,6 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 
 	this->iconAnimData = new RomData::IconAnimData();
 	iconAnimData->count = 0;
-	iconAnimData->bounce = !!(direntry.bannerfmt & CARD_ANIM_MASK);
 
 	unsigned int iconaddr_cur = 0;
 	iconfmt = direntry.iconfmt;
@@ -473,6 +472,20 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 
 		iconAnimData->count++;
 	}
+
+	// Set up the icon animation sequence.
+	int idx = 0;
+	for (int i = 0; i < iconAnimData->count; i++, idx++) {
+		iconAnimData->seq_index[idx] = i;
+	}
+	if (direntry.bannerfmt & CARD_ANIM_MASK) {
+		// "Bounce" the icon.
+		for (int i = iconAnimData->count-2; i > 0; i--, idx++) {
+			iconAnimData->seq_index[idx] = i;
+			iconAnimData->delays[idx] = iconAnimData->delays[i];
+		}
+	}
+	iconAnimData->seq_count = idx;
 
 	// Return the first frame.
 	return const_cast<rp_image*>(iconAnimData->frames[0]);
