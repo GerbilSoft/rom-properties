@@ -759,8 +759,8 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN ||
 	       (discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE);
 
-	if ((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN ||
-	    (discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE)
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
+	    (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
 	{
 		// No opening.bnr.
 		return -ENOENT;
