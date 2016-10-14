@@ -148,24 +148,20 @@ size_t RpMemFile::read(void *ptr, size_t size)
 	// Convert the const void* to a const uint8_t*.
 	const uint8_t *buf = reinterpret_cast<const uint8_t*>(m_buf);
 
-	// Check if m_pos + size < m_size.
-	size_t sizeToCopy;
-	if (m_pos + size < m_size) {
-		// We can read the whole thing.
-		sizeToCopy = size;
-	} else {
+	// Check if size is in bounds.
+	if (m_pos + size > m_size) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
-		sizeToCopy = m_size - m_pos;
+		size = m_size - m_pos;
 	}
 
-	if (sizeToCopy > 0) {
+	if (size > 0) {
 		// Copy the data.
-		memcpy(ptr, &buf[m_pos], sizeToCopy);
-		m_pos += sizeToCopy;
+		memcpy(ptr, &buf[m_pos], size);
+		m_pos += size;
 	}
 
-	return sizeToCopy;
+	return size;
 }
 
 /**
