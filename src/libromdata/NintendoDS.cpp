@@ -218,7 +218,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	iconAnimData->count = 0;
 
 	// Which bitmaps are used?
-	bool bmp_used[8];
+	bool bmp_used[RomData::ICONANIMDATA_MAX_FRAMES];
 	memset(bmp_used, 0, sizeof(bmp_used));
 
 	// Parse the icon sequence.
@@ -231,28 +231,35 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		}
 
 		// Token format: (bits)
-		// - 15:    V flip (1=yes, 0=no)
-		// - 14:    H flip (1=yes, 0=no)
+		// - 15:    V flip (1=yes, 0=no) [TODO]
+		// - 14:    H flip (1=yes, 0=no) [TODO]
 		// - 13-11: Palette index.
 		// - 10-8:  Bitmap index.
 		// - 7-0:   Frame duration. (units of 60 Hz)
-		uint8_t bmp_idx = ((seq >> 8) & 7);
-		bmp_used[(seq >> 8) & 7] = true;
-		iconAnimData->seq_index[seq_idx] = bmp_idx;
+
+		// NOTE: IconAnimData doesn't support arbitrary combinations
+		// of palette and bitmap. As a workaround, we'll make each
+		// combination a unique bitmap, which means we have a maximum
+		// of 64 bitmaps.
+		uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
+		bmp_used[bmp_pal_idx] = true;
+		iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
 		iconAnimData->delays[seq_idx] = (seq & 0xFF) * 1000 / 60;
 	}
 	iconAnimData->seq_count = seq_idx;
 
 	// Convert the required bitmaps.
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < RomData::ICONANIMDATA_MAX_FRAMES; i++) {
 		if (bmp_used[i]) {
-			// FIXME: Allow arbitrary palette selection.
 			iconAnimData->count = i;
+
+			const uint8_t bmp = (i & 7);
+			const uint8_t pal = (i >> 3) & 7;
 			iconAnimData->frames[i] = ImageDecoder::fromNDS_CI4(32, 32,
-				nds_icon_title.dsi_icon_data[i],
-				sizeof(nds_icon_title.dsi_icon_data[i]),
-				nds_icon_title.dsi_icon_pal[0],
-				sizeof(nds_icon_title.dsi_icon_pal[0]));
+				nds_icon_title.dsi_icon_data[bmp],
+				sizeof(nds_icon_title.dsi_icon_data[bmp]),
+				nds_icon_title.dsi_icon_pal[pal],
+				sizeof(nds_icon_title.dsi_icon_pal[pal]));
 		}
 	}
 

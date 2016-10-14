@@ -344,7 +344,7 @@ class RomData
 		 */
 		uint32_t imgpf(ImageType imageType) const;
 
-		static const int ICONANIMDATA_MAX_FRAMES = 8;
+		static const int ICONANIMDATA_MAX_FRAMES = 64;
 		static const int ICONANIMDATA_MAX_SEQUENCE = 64;
 
 		struct IconAnimData {
