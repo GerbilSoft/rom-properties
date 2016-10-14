@@ -63,7 +63,7 @@ class rp_image
 		 *
 		 * @param backend rp_image_backend.
 		 */
-		rp_image(rp_image_backend *backend);
+		explicit rp_image(rp_image_backend *backend);
 
 		~rp_image();
 

@@ -33,7 +33,7 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * Create an IRpFile using IStream* as the underlying storage mechanism.
 		 * @param pStream IStream*.
 		 */
-		RpFile_IStream(IStream *pStream);
+		explicit RpFile_IStream(IStream *pStream);
 		virtual ~RpFile_IStream();
 
 	private:

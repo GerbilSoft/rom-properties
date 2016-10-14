@@ -48,7 +48,7 @@ namespace LibRomData {
 class GameCubeSavePrivate
 {
 	public:
-		GameCubeSavePrivate(GameCubeSave *q);
+		explicit GameCubeSavePrivate(GameCubeSave *q);
 
 	private:
 		GameCubeSavePrivate(const GameCubeSavePrivate &other);
