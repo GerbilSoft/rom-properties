@@ -39,7 +39,7 @@ class SystemRegion
 	public:
 		/**
 		 * Get the system country code. (ISO-3166)
-		 * This will always be an uppercase ASCII value.
+		 * This will always be an uppercase ASCII string.
 		 *
 		 * NOTE: Some newer country codes may use 3-character abbreviations.
 		 * The abbreviation will always be aligned towards the LSB, e.g.
@@ -48,6 +48,18 @@ class SystemRegion
 		 * @return ISO-3166 country code as a uint32_t, or 0 on error.
 		 */
 		static uint32_t getCountryCode(void);
+
+		/**
+		 * Get the system language code. (ISO-639)
+		 * This will always be a lowercase ASCII string.
+		 *
+		 * NOTE: Some newer country codes may use 3-character abbreviations.
+		 * The abbreviation will always be aligned towards the LSB, e.g.
+		 * 'en' will be 0x0000656E.
+		 *
+		 * @return ISO-639 language code as a uint32_t, or 0 on error.
+		 */
+		static uint32_t getLanguageCode(void);
 };
 
 }

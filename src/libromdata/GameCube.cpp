@@ -51,6 +51,8 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+#include "SystemRegion.hpp"
+
 namespace LibRomData {
 
 class GameCubePrivate
