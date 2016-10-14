@@ -175,12 +175,36 @@ class NintendoDSPrivate
 			uint8_t reserved4[4];
 			uint8_t reserved5[0x10];
 
-			// 0x180 [DSi header]
+			/** DSi-specific **/
+
+			// 0x180 [memory settings] [TODO]
+			uint32_t dsi_mbk[12];
+
+			// 0x1B0
 			uint32_t dsi_region;	// DSi region flags.
 
+			// 0x1B4 [TODO]
+			uint8_t dsi_reserved1[124];
+
+			// 0x230
+			uint32_t dsi_title_id;
+			uint8_t dsi_filetype;		// TODO
+			uint8_t dsi_reserved2[3];	// 0x00, 0x03, 0x00
+
+			// 0x238
+			uint32_t dsi_sd_public_sav_size;
+			uint32_t dsi_sd_private_sav_size;
+
+			// 0x240
+			uint8_t dsi_reserved3[176];
+
+			// 0x2F0
+			uint8_t age_ratings[0x10];	// Age ratings. [TODO]
+
+			// 0x300
 			// TODO: More DSi header entries.
 			// Reference: http://problemkaputt.de/gbatek.htm#dsicartridgeheader
-			uint8_t reserved_more_dsi[3708];
+			uint8_t dsi_reserved_end[3328];
 		};
 		#pragma pack()
 
@@ -217,6 +241,7 @@ class NintendoDSPrivate
 
 	public:
 		// ROM header.
+		// NOTE: Must be byteswapped on access.
 		NDS_RomHeader romHeader;
 };
 
