@@ -63,12 +63,15 @@ uint32_t SystemRegion::getCountryCode(void)
 		case 3:
 			// 2-character country code.
 			// (ret == 3 due to the NULL terminator.)
-			cc = ((locale[0] << 8) | locale[1]);
+			cc = ((toupper(locale[0]) << 8) |
+			       toupper(locale[1]));
 			break;
 		case 4:
 			// 3-character country code.
 			// (ret == 3 due to the NULL terminator.)
-			cc = ((locale[0] << 16) | (locale[1] << 8) | locale[2]);
+			cc = ((toupper(locale[0]) << 16) |
+			      (toupper(locale[1]) << 8) |
+			       toupper(locale[2]));
 			break;
 
 		default:
@@ -86,21 +89,18 @@ uint32_t SystemRegion::getCountryCode(void)
 			if (isalpha(underscore[1]) && isalpha(underscore[2])) {
 				if (!isalpha(underscore[3])) {
 					// 2-character country code.
-					cc = ((underscore[1] << 8) | underscore[2]);
+					cc = ((toupper(underscore[1]) << 8) |
+					       toupper(underscore[2]));
 				} else if (isalpha(underscore[3]) && !isalpha(underscore[4])) {
 					// 3-character country code.
-					cc = ((underscore[1] << 16) | (underscore[2] << 8) | underscore[3]);
+					cc = ((toupper(underscore[1]) << 16) |
+					      (toupper(underscore[2]) << 8) |
+					       toupper(underscore[3]));
 				}
 			}
 		}
 	}
 #endif
-
-	// Make sure the country code is uppercase.
-	// FIXME: May contain numbers...
-	if (cc != 0) {
-		cc &= ~0x2020;
-	}
 
 	// Country code retrieved.
 	cc_retrieved = true;
