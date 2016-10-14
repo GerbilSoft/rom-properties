@@ -38,10 +38,16 @@ class SystemRegion
 
 	public:
 		/**
-		 * Get the system country code. (two-character ISO-3166)
-		 * @return Two-character ISO-3166 country code as a uint16_t, or 0 on error.
+		 * Get the system country code. (ISO-3166)
+		 * This will always be an uppercase ASCII value.
+		 *
+		 * NOTE: Some newer country codes may use 3-character abbreviations.
+		 * The abbreviation will always be aligned towards the LSB, e.g.
+		 * 'US' will be 0x00005553.
+		 *
+		 * @return ISO-3166 country code as a uint32_t, or 0 on error.
 		 */
-		static uint16_t getCountryCode(void);
+		static uint32_t getCountryCode(void);
 };
 
 }
