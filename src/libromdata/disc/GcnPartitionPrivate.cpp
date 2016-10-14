@@ -180,7 +180,7 @@ int GcnPartitionPrivate::loadFst(void)
 	}
 
 	// Create the GcnFst.
-	fst = new GcnFst(fstData, fstData_len, 2);
+	fst = new GcnFst(fstData, fstData_len, offsetShift);
 	free(fstData);	// TODO: Eliminate the extra copy?
 	return 0;
 }
