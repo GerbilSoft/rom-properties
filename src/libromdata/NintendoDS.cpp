@@ -287,7 +287,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		// Copy the image data.
 		// TODO: Image stride?
 		assert(icon_first_frame->data_len() == src_img->data_len());
-		const int data_len = std::min(icon_first_frame->data_len(), src_img->data_len());
+		const size_t data_len = std::min(icon_first_frame->data_len(), src_img->data_len());
 		memcpy(icon_first_frame->bits(), src_img->bits(), data_len);
 
 		// Copy the palette.
