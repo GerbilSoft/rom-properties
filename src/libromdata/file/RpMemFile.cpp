@@ -169,20 +169,6 @@ size_t RpMemFile::read(void *ptr, size_t size)
 }
 
 /**
- * Get the file position.
- * @return File position, or -1 on error.
- */
-int64_t RpMemFile::tell(void)
-{
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return 0;
-	}
-
-	return (int64_t)m_pos;
-}
-
-/**
  * Write data to the file.
  * (NOTE: Not valid for RpMemFile; this will always return 0.)
  * @param ptr Input data buffer.
@@ -221,6 +207,20 @@ int RpMemFile::seek(int64_t pos)
 	}
 
 	return 0;
+}
+
+/**
+ * Get the file position.
+ * @return File position, or -1 on error.
+ */
+int64_t RpMemFile::tell(void)
+{
+	if (!m_buf) {
+		m_lastError = EBADF;
+		return 0;
+	}
+
+	return (int64_t)m_pos;
 }
 
 /**
