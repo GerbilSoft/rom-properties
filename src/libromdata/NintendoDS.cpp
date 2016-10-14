@@ -43,11 +43,13 @@ namespace LibRomData {
 class NintendoDSPrivate
 {
 	public:
-		NintendoDSPrivate() { }
+		explicit NintendoDSPrivate(NintendoDS *q);
 
 	private:
 		NintendoDSPrivate(const NintendoDSPrivate &other);
 		NintendoDSPrivate &operator=(const NintendoDSPrivate &other);
+	private:
+		NintendoDS *const q;
 
 	public:
 		/** RomFields **/
@@ -218,6 +220,12 @@ class NintendoDSPrivate
 	public:
 		// ROM header.
 		NDS_RomHeader romHeader;
+
+		/**
+		 * Load the ROM image's icon.
+		 * @return Icon, or nullptr on error.
+		 */
+		rp_image *loadIcon(void);
 };
 
 /** NintendoDSPrivate **/
@@ -264,6 +272,50 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	// TODO: Icon, full game title.
 };
 
+NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
+	: q(q)
+{ }
+
+/**
+ * Load the ROM image's icon.
+ * @return Icon, or nullptr on error.
+ */
+rp_image *NintendoDSPrivate::loadIcon(void)
+{
+	if (!q->m_file || !q->m_isValid) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	// Get the address of the icon/title information.
+	uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
+
+	// Read the icon data.
+	// TODO: Also store titles?
+	static_assert(sizeof(NintendoDSPrivate::NDS_IconTitleData) == NDS_IconTitleData_SIZE,
+		      "NDS_IconTitleData is not 9,152 bytes.");
+	NintendoDSPrivate::NDS_IconTitleData nds_icon_title;
+	q->m_file->seek(icon_offset);
+	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
+	// Make sure we have up to the icon plus two titles.
+	if (size < (offsetof(NintendoDSPrivate::NDS_IconTitleData, title) + 0x200)) {
+		// Error reading the icon data.
+		return nullptr;
+	}
+
+	// Convert the icon from DS format to 256-color.
+	rp_image *icon = ImageDecoder::fromNDS_CI4(32, 32,
+		nds_icon_title.icon_data, sizeof(nds_icon_title.icon_data),
+		nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
+	if (!icon) {
+		// Error converting the icon.
+		return nullptr;
+	}
+
+	// Finished decoding the icon.
+	return icon;
+}
+
 /**
  * Read a Nintendo DS ROM image.
  *
@@ -279,7 +331,7 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
  */
 NintendoDS::NintendoDS(IRpFile *file)
 	: RomData(file, NintendoDSPrivate::nds_fields, ARRAY_SIZE(NintendoDSPrivate::nds_fields))
-	, d(new NintendoDSPrivate())
+	, d(new NintendoDSPrivate(this))
 {
 	if (!m_file) {
 		// Could not dup() the file handle.
@@ -574,36 +626,10 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 
 	// Use nearest-neighbor scaling when resizing.
 	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+	m_images[imageType] = d->loadIcon();
 
-	// Nintendo DS ROM header.
-	const NintendoDSPrivate::NDS_RomHeader *romHeader = &d->romHeader;
-
-	// Get the address of the icon/title information.
-	uint32_t icon_offset = le32_to_cpu(romHeader->icon_offset);
-
-	// Read the icon data.
-	// TODO: Also store titles?
-	static_assert(sizeof(NintendoDSPrivate::NDS_IconTitleData) == NDS_IconTitleData_SIZE,
-		      "NDS_IconTitleData is not 9,152 bytes.");
-	NintendoDSPrivate::NDS_IconTitleData nds_icon_title;
-	m_file->seek(icon_offset);
-	size_t size = m_file->read(&nds_icon_title, sizeof(nds_icon_title));
-	// Make sure we have up to the icon plus two titles.
-	if (size < (offsetof(NintendoDSPrivate::NDS_IconTitleData, title) + 0x200))
-		return -EIO;
-
-	// Convert the icon from DS format to 256-color.
-	rp_image *icon = ImageDecoder::fromNDS_CI4(32, 32,
-		nds_icon_title.icon_data, sizeof(nds_icon_title.icon_data),
-		nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
-	if (!icon) {
-		// Error converting the icon.
-		return -EIO;
-	}
-
-	// Finished decoding the icon.
-	m_images[imageType] = icon;
-	return 0;
+	// TODO: -ENOENT if the file doesn't actually have an icon.
+	return (m_images[imageType] != nullptr ? 0 : -EIO);
 }
 
 }
