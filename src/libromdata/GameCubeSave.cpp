@@ -981,7 +981,9 @@ const RomData::IconAnimData *GameCubeSave::iconAnimData(void) const
 		}
 	}
 
-	if (d->iconAnimData->count <= 1) {
+	if (d->iconAnimData->count <= 1 ||
+	    d->iconAnimData->seq_count <= 1)
+	{
 		// Not an animated icon.
 		return nullptr;
 	}
