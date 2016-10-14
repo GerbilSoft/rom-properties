@@ -210,10 +210,8 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 			nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
 	}
 
-	// FIXME: DSi supports a lot of wacky stuff:
-	// - Each sequence token includes Hflip/Vflip.
-	// - Palettes and bitmaps can be mixed and matched.
-	// For now, we'll assume one palette per bitmap.
+	// Load the icon data.
+	// TODO: Only read the first frame unless specifically requested?
 	this->iconAnimData = new RomData::IconAnimData();
 	iconAnimData->count = 0;
 
