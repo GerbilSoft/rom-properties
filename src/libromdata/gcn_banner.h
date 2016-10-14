@@ -81,6 +81,16 @@ typedef struct PACKED _banner_bnr2_t
 } banner_bnr2_t;
 #pragma pack()
 
+// BNR2 languages. (Maps to GameCube language setting.)
+typedef enum {
+	GCN_PAL_LANG_ENGLISH	= 0,
+	GCN_PAL_LANG_GERMAN	= 1,
+	GCN_PAL_LANG_FRENCH	= 2,
+	GCN_PAL_LANG_SPANISH	= 3,
+	GCN_PAL_LANG_ITALIAN	= 4,
+	GCN_PAL_LANG_DUTCH	= 5,
+} GCN_PAL_Language;
+
 /**
  * WIBN (Wii Banner)
  * Reference: http://wiibrew.org/wiki/Savegame_Files
