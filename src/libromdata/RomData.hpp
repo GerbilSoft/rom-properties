@@ -162,6 +162,13 @@ class RomData
 			FTYPE_ROM_IMAGE,
 			FTYPE_DISC_IMAGE,
 			FTYPE_SAVE_FILE,
+
+			// "Embedded" disc image.
+			// Commonly seen on GameCube demo discs.
+			FTYPE_EMBEDDED_DISC_IMAGE,
+
+			// Application package, e.g. WAD, CIA.
+			FTYPE_APPLICATION_PACKAGE,
 		};
 
 		/**
