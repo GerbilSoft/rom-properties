@@ -144,6 +144,17 @@ class NintendoDS : public RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadInternalImage(ImageType imageType) final;
+
+	public:
+		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const final;
 };
 
 }

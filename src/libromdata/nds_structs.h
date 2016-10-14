@@ -127,6 +127,21 @@ typedef struct PACKED _NDS_RomHeader {
 } NDS_RomHeader;
 #pragma pack()
 
+// NDS_IconTitleData version.
+typedef enum {
+	// Original icon version.
+	NDS_ICON_VERSION_ORIGINAL	= 0x0001,
+
+	// Added Chinese title.
+	NDS_ICON_VERSION_ZH		= 0x0002,
+
+	// Added Korean title.
+	NDS_ICON_VERSION_ZH_KO		= 0x0003,
+
+	// Added DSi animated icon.
+	NDS_ICON_VERSION_DSi		= 0x0103,
+} NDS_IconTitleData_Version;
+
 /**
  * Nintendo DS icon and title struct.
  * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeicontitle

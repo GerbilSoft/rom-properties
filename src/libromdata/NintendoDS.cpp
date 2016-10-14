@@ -45,6 +45,7 @@ class NintendoDSPrivate
 {
 	public:
 		explicit NintendoDSPrivate(NintendoDS *q);
+		~NintendoDSPrivate();
 
 	private:
 		NintendoDSPrivate(const NintendoDSPrivate &other);
@@ -90,6 +91,10 @@ class NintendoDSPrivate
 	public:
 		// ROM header.
 		NDS_RomHeader romHeader;
+
+		// Animated icon data.
+		// NOTE: The first frame is owned by the RomData superclass.
+		RomData::IconAnimData *iconAnimData;
 
 		/**
 		 * Load the ROM image's icon.
@@ -144,7 +149,20 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
 	: q(q)
+	, iconAnimData(nullptr)
 { }
+
+NintendoDSPrivate::~NintendoDSPrivate()
+{
+	if (iconAnimData) {
+		// Delete all except the first animated icon frame.
+		// (The first frame is owned by the RomData superclass.)
+		for (int i = iconAnimData->count-1; i >= 1; i--) {
+			delete iconAnimData->frames[i];
+		}
+		delete iconAnimData;
+	}
+}
 
 /**
  * Load the ROM image's icon.
@@ -157,8 +175,13 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		return nullptr;
 	}
 
+	if (iconAnimData) {
+		// Icon has already been loaded.
+		return const_cast<rp_image*>(iconAnimData->frames[0]);
+	}
+
 	// Get the address of the icon/title information.
-	uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
+	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
 
 	// Read the icon data.
 	// TODO: Also store titles?
@@ -173,17 +196,68 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		return nullptr;
 	}
 
-	// Convert the icon from DS format to 256-color.
-	rp_image *icon = ImageDecoder::fromNDS_CI4(32, 32,
-		nds_icon_title.icon_data, sizeof(nds_icon_title.icon_data),
-		nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
-	if (!icon) {
-		// Error converting the icon.
-		return nullptr;
+	// Check if a DSi animated icon is present.
+	if (size < sizeof(NDS_IconTitleData) ||
+	    le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
+	    le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) == 0)
+	{
+		// Either this isn't a DSi icon/title struct (pre-v0103),
+		// or the animated icon sequence is invalid.
+
+		// Convert the NDS icon to rp_image.
+		return ImageDecoder::fromNDS_CI4(32, 32,
+			nds_icon_title.icon_data, sizeof(nds_icon_title.icon_data),
+			nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
 	}
 
-	// Finished decoding the icon.
-	return icon;
+	// FIXME: DSi supports a lot of wacky stuff:
+	// - Each sequence token includes Hflip/Vflip.
+	// - Palettes and bitmaps can be mixed and matched.
+	// For now, we'll assume one palette per bitmap.
+	this->iconAnimData = new RomData::IconAnimData();
+	iconAnimData->count = 0;
+
+	// Which bitmaps are used?
+	bool bmp_used[8];
+	memset(bmp_used, 0, sizeof(bmp_used));
+
+	// Parse the icon sequence.
+	int seq_idx;
+	for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
+		const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
+		if (seq == 0) {
+			// End of sequence.
+			break;
+		}
+
+		// Token format: (bits)
+		// - 15:    V flip (1=yes, 0=no)
+		// - 14:    H flip (1=yes, 0=no)
+		// - 13-11: Palette index.
+		// - 10-8:  Bitmap index.
+		// - 7-0:   Frame duration. (units of 60 Hz)
+		uint8_t bmp_idx = ((seq >> 8) & 7);
+		bmp_used[(seq >> 8) & 7] = true;
+		iconAnimData->seq_index[seq_idx] = bmp_idx;
+		iconAnimData->delays[seq_idx] = (seq & 0xFF) * 1000 / 60;
+	}
+	iconAnimData->seq_count = seq_idx;
+
+	// Convert the required bitmaps.
+	for (int i = 0; i < 8; i++) {
+		if (bmp_used[i]) {
+			// FIXME: Allow arbitrary palette selection.
+			iconAnimData->count = i;
+			iconAnimData->frames[i] = ImageDecoder::fromNDS_CI4(32, 32,
+				nds_icon_title.dsi_icon_data[i],
+				sizeof(nds_icon_title.dsi_icon_data[i]),
+				nds_icon_title.dsi_icon_pal[0],
+				sizeof(nds_icon_title.dsi_icon_pal[0]));
+		}
+	}
+
+	// Return the first frame.
+	return const_cast<rp_image*>(iconAnimData->frames[0]);
 }
 
 /**
@@ -497,9 +571,44 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	// Use nearest-neighbor scaling when resizing.
 	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
 	m_images[imageType] = d->loadIcon();
+	if (d->iconAnimData && d->iconAnimData->count > 1) {
+		// Animated icon.
+		m_imgpf[imageType] |= IMGPF_ICON_ANIMATED;
+	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon.
 	return (m_images[imageType] != nullptr ? 0 : -EIO);
+}
+
+/**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const RomData::IconAnimData *NintendoDS::iconAnimData(void) const
+{
+	if (!d->iconAnimData) {
+		// Load the icon.
+		if (!d->loadIcon()) {
+			// Error loading the icon.
+			return nullptr;
+		}
+		if (!d->iconAnimData) {
+			// Still no icon...
+			return nullptr;
+		}
+	}
+
+	if (d->iconAnimData->count <= 1) {
+		// Not an animated icon.
+		return nullptr;
+	}
+
+	// Return the icon animation data.
+	return d->iconAnimData;
 }
 
 }
