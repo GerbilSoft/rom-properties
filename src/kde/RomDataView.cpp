@@ -97,6 +97,7 @@ class RomDataViewPrivate
 		QPixmap iconFrames[RomData::ICONANIMDATA_MAX_FRAMES];
 		int anim_cur_frame;		// Current frame.
 		int anim_last_valid_frame;	// Last frame that had a valid image.
+		bool anim_running;		// Animation is running.
 		// Current animation direction:
 		// - false == forwards
 		// - true == backwards
@@ -135,6 +136,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, iconAnimData(nullptr)
 	, anim_cur_frame(0)
 	, anim_last_valid_frame(0)
+	, anim_running(false)
 	, anim_cur_direction(false)
 	, displayInit(false)
 {
@@ -503,6 +505,7 @@ void RomDataViewPrivate::startAnimTimer(void)
 	}
 
 	// Set a single-shot timer for the current frame.
+	anim_running = true;
 	ui.tmrIconAnim->start(iconAnimData->delays[anim_cur_frame]);
 }
 
@@ -512,6 +515,7 @@ void RomDataViewPrivate::startAnimTimer(void)
 void RomDataViewPrivate::stopAnimTimer(void)
 {
 	if (ui.tmrIconAnim) {
+		anim_running = false;
 		ui.tmrIconAnim->stop();
 	}
 }
@@ -527,16 +531,46 @@ RomDataView::RomDataView(RomData *rom, QWidget *parent)
 
 	// Update the display widgets.
 	d->updateDisplay();
-
-	// Start the animation timer.
-	// TODO: On show?
-	d->startAnimTimer();
 }
 
 RomDataView::~RomDataView()
 {
 	delete d_ptr;
 }
+
+/** QWidget overridden functions. **/
+
+/**
+ * Window has been hidden.
+ * This means that this tab has been selected.
+ * @param event QShowEvent.
+ */
+void RomDataView::showEvent(QShowEvent *event)
+{
+	// Start the icon animation.
+	Q_D(RomDataView);
+	d->startAnimTimer();
+
+	// Pass the event to the superclass.
+	super::showEvent(event);
+}
+
+/**
+ * Window has been hidden.
+ * This means that a different tab has been selected.
+ * @param event QHideEvent.
+ */
+void RomDataView::hideEvent(QHideEvent *event)
+{
+	// Stop the icon animation.
+	Q_D(RomDataView);
+	d->stopAnimTimer();
+
+	// Pass the event to the superclass.
+	super::hideEvent(event);
+}
+
+/** Widget slots. **/
 
 /**
  * Animated icon timer.
@@ -591,5 +625,7 @@ void RomDataView::tmrIconAnim_timeout(void)
 	}
 
 	// Set the single-shot timer.
-	d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_frame]);
+	if (d->anim_running) {
+		d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_frame]);
+	}
 }
