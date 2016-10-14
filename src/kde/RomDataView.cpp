@@ -40,6 +40,7 @@ using LibRomData::rp_string;
 using std::vector;
 
 #include <QtCore/QDateTime>
+#include <QtCore/QTimer>
 
 #include <QLabel>
 #include <QCheckBox>
@@ -75,15 +76,31 @@ class RomDataViewPrivate
 			QLabel *lblBanner;
 			QLabel *lblIcon;
 
+			QTimer *tmrIconAnim;
+
 			Ui()	: formLayout(nullptr)
 				, hboxHeaderRow(nullptr)
 				, lblSysInfo(nullptr)
 				, lblBanner(nullptr)
 				, lblIcon(nullptr)
+				, tmrIconAnim(nullptr)
 				{ }
 		};
 		Ui ui;
 		RomData *romData;
+
+		// Animated icon data.
+		// TODO: Animated icon helper class like
+		// in GCN MemCard Recover? (and maybe share
+		// it with the Windows version.)
+		const RomData::IconAnimData *iconAnimData;
+		QPixmap iconFrames[RomData::ICONANIMDATA_MAX_FRAMES];
+		int anim_cur_frame;		// Current frame.
+		int anim_last_valid_frame;	// Last frame that had a valid image.
+		// Current animation direction:
+		// - false == forwards
+		// - true == backwards
+		bool anim_cur_direction;
 
 		/**
 		 * Create the header row.
@@ -98,6 +115,16 @@ class RomDataViewPrivate
 		void updateDisplay(void);
 
 		bool displayInit;
+
+		/**
+		 * Start the animation timer.
+		 */
+		void startAnimTimer(void);
+
+		/**
+		 * Stop the animation timer.
+		 */
+		void stopAnimTimer(void);
 };
 
 /** RomDataViewPrivate **/
@@ -105,6 +132,10 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
+	, iconAnimData(nullptr)
+	, anim_cur_frame(0)
+	, anim_last_valid_frame(0)
+	, anim_cur_direction(false)
 	, displayInit(false)
 {
 	// Register RpQImageBackend.
@@ -114,6 +145,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
+	stopAnimTimer();
 	delete romData;
 }
 
@@ -212,6 +244,27 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 				ui.lblIcon = new QLabel(q);
 				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
 				ui.hboxHeaderRow->addWidget(ui.lblIcon);
+			}
+
+			// Get the animated icon data.
+			iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				// Convert the icons to QPixmaps.
+				iconFrames[0] = QPixmap::fromImage(img);
+				for (int i = 1; i < iconAnimData->count; i++) {
+					if (iconAnimData->frames[i]) {
+						iconFrames[i] = QPixmap::fromImage(
+							rpToQImage(iconAnimData->frames[i]));
+					}
+				}
+
+				// Create the animation timer.
+				if (!ui.tmrIconAnim) {
+					ui.tmrIconAnim = new QTimer(q);
+					ui.tmrIconAnim->setSingleShot(true);
+					QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
+							 q, SLOT(tmrIconAnim_timeout()));
+				}
 			}
 		}
 	}
@@ -430,6 +483,39 @@ void RomDataViewPrivate::updateDisplay(void)
 	}
 }
 
+/**
+ * Start the animation timer.
+ */
+void RomDataViewPrivate::startAnimTimer(void)
+{
+	if (!iconAnimData || !ui.tmrIconAnim || !ui.lblIcon) {
+		// Not an animated icon.
+		return;
+	}
+
+	if (anim_cur_frame >= iconAnimData->count) {
+		// Out of bounds...
+		// Reset the animation.
+		anim_cur_frame = 0;
+		anim_last_valid_frame = 0;
+		anim_cur_direction = false;
+		ui.lblIcon->setPixmap(iconFrames[0]);
+	}
+
+	// Set a single-shot timer for the current frame.
+	ui.tmrIconAnim->start(iconAnimData->delays[anim_cur_frame]);
+}
+
+/**
+ * Stop the animation timer.
+ */
+void RomDataViewPrivate::stopAnimTimer(void)
+{
+	if (ui.tmrIconAnim) {
+		ui.tmrIconAnim->stop();
+	}
+}
+
 /** RomDataView **/
 
 RomDataView::RomDataView(RomData *rom, QWidget *parent)
@@ -441,9 +527,69 @@ RomDataView::RomDataView(RomData *rom, QWidget *parent)
 
 	// Update the display widgets.
 	d->updateDisplay();
+
+	// Start the animation timer.
+	// TODO: On show?
+	d->startAnimTimer();
 }
 
 RomDataView::~RomDataView()
 {
 	delete d_ptr;
+}
+
+/**
+ * Animated icon timer.
+ */
+void RomDataView::tmrIconAnim_timeout(void)
+{
+	Q_D(RomDataView);
+
+	// Go to the next frame.
+	if (!d->anim_cur_direction) {
+		// Animation is moving forwards.
+		// Check if we're at the last frame.
+		if (d->anim_cur_frame == (d->iconAnimData->count - 1)) {
+			// Last frame.
+			if (d->iconAnimData->bounce) {
+				// "Bounce" animation. Start playing backwards.
+				d->anim_cur_direction = true;
+				d->anim_cur_frame--;	// Go to the previous frame.
+			} else {
+				// "Looping" animation.
+				// Reset to frame 0.
+				d->anim_cur_frame = 0;
+			}
+		} else {
+			// Not the last frame.
+			// Go to the next frame.
+			d->anim_cur_frame++;
+		}
+	} else {
+		// Animation is moving backwards. ("Bounce" animation only.)
+		// Check if we're at the first frame.
+		if (d->anim_cur_frame == 0) {
+			// First frame. Start playing forwards.
+			d->anim_cur_direction = false;
+			d->anim_cur_frame++;	// Go to the next frame.
+		} else {
+			// Not the first frame.
+			// Go to the previous frame.
+			d->anim_cur_frame--;
+		}
+	}
+
+	// Check if this frame has an icon.
+	if (!d->iconFrames[d->anim_cur_frame].isNull() &&
+	    d->anim_last_valid_frame != d->anim_cur_frame)
+	{
+		// This frame has an icon.
+		d->anim_last_valid_frame = d->anim_cur_frame;
+
+		// Update the icon.
+		d->ui.lblIcon->setPixmap(d->iconFrames[d->anim_cur_frame]);
+	}
+
+	// Set the single-shot timer.
+	d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_frame]);
 }

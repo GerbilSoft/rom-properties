@@ -43,6 +43,12 @@ class RomDataView : public QWidget
 		Q_DECLARE_PRIVATE(RomDataView)
 	private:
 		Q_DISABLE_COPY(RomDataView)
+
+	protected slots:
+		/**
+		 * Animated icon timer.
+		 */
+		void tmrIconAnim_timeout(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */
