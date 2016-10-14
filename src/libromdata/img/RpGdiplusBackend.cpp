@@ -335,7 +335,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 		case rp_image::FORMAT_CI8:
 			// Color conversion may be needed if the image
 			// has alpha transparency.
-			if (this->tr_idx < 0 || !this->has_translucent_palette_entries()) {
+			if (!this->has_translucent_palette_entries()) {
 				// No translucent palette entries.
 				m_pGdipBmp->SetPalette(m_pGdipPalette);
 				hBitmap = convBmpData_CI8(&m_gdipBmpData);
