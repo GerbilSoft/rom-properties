@@ -28,6 +28,8 @@
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
+#include "img/rp_image.hpp"
+#include "img/ImageDecoder.hpp"
 
 // DiscReader
 #include "disc/DiscReader.hpp"
@@ -236,6 +238,8 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
+
+	// TODO: GameCube opening.bnr fields.
 
 	/** Wii-specific fields. **/
 	// Age rating(s).
@@ -779,7 +783,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -EIO;
 	}
 
-	unique_ptr<IRpFile> f_opening_bnr(gcnPartition->open(_RP("opening.bnr")));
+	unique_ptr<IRpFile> f_opening_bnr(gcnPartition->open(_RP("/opening.bnr")));
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
 		return -gcnPartition->lastError();
@@ -982,11 +986,6 @@ GameCube::GameCube(IRpFile *file)
 			}
 
 			d->gcnRegion = be32_to_cpu(bootInfo.region_code);
-
-			// Load opening.bnr.
-			// FIXME: Does Triforce have opening.bnr?
-			// NOTE: Not treating a missing opening.bnr as an error.
-			d->gcn_loadOpeningBnr();
 			break;
 		}
 
@@ -1182,7 +1181,7 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
  */
 uint32_t GameCube::supportedImageTypes_static(void)
 {
-       return IMGBF_EXT_MEDIA;
+       return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA;
 }
 
 /**
@@ -1492,6 +1491,63 @@ static LibRomData::rp_string getCacheKey(const char *system, const char *type, c
 
 	// TODO: UTF-8, not Latin-1?
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image() if the image data hasn't been loaded yet.
+ * @param imageType Image type to load.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCube::loadInternalImage(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+
+	if (m_images[imageType]) {
+		// Icon *has* been loaded...
+		return 0;
+	} else if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!m_isValid) {
+		// Save file isn't valid.
+		return -EIO;
+	}
+
+	// Check for supported image types.
+	if (imageType != IMG_INT_BANNER) {
+		// Only IMG_INT_BANNER is supported by GameCube.
+		return -ENOENT;
+	}
+
+	// Load opening.bnr.
+	// FIXME: Does Triforce have opening.bnr?
+	printf("try load\n");
+	if (d->gcn_loadOpeningBnr() != 0) {
+		// Could not load opening.bnr.
+		printf("opening.bnr failed\n");
+		return -ENOENT;
+	}
+
+	// Use nearest-neighbor scaling when resizing.
+	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+
+	// Convert the banner from GameCube RGB5A3 to ARGB32.
+	rp_image *banner = ImageDecoder::fromGcnRGB5A3(
+		BANNER_IMAGE_W, BANNER_IMAGE_H,
+		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
+	if (!banner) {
+		// Error converting the banner.
+		return -EIO;
+	}
+
+	// Finished decoding the banner.
+	m_images[imageType] = banner;
+	return 0;
 }
 
 /**
