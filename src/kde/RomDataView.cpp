@@ -21,11 +21,14 @@
 
 #include "RomDataView.hpp"
 #include "RpQt.hpp"
+#include "RpQImageBackend.hpp"
 
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
+#include "libromdata/img/rp_image.hpp"
 using LibRomData::RomData;
 using LibRomData::RomFields;
+using LibRomData::rp_image;
 using LibRomData::rp_string;
 
 // C includes. (C++ namespace)
@@ -65,9 +68,28 @@ class RomDataViewPrivate
 
 			QFormLayout *formLayout;
 			// TODO: Store the field widgets?
+
+			// Header row.
+			QHBoxLayout *hboxHeaderRow;
+			QLabel *lblSysInfo;
+			QLabel *lblBanner;
+			QLabel *lblIcon;
+
+			Ui()	: formLayout(nullptr)
+				, hboxHeaderRow(nullptr)
+				, lblSysInfo(nullptr)
+				, lblBanner(nullptr)
+				, lblIcon(nullptr)
+				{ }
 		};
 		Ui ui;
 		RomData *romData;
+
+		/**
+		 * Create the header row.
+		 * @return QLayout containing the header row.
+		 */
+		QLayout *createHeaderRow(void);
 
 		/**
 		 * Update the display widgets.
@@ -84,7 +106,11 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
 	, displayInit(false)
-{ }
+{
+	// Register RpQImageBackend.
+	// TODO: Static initializer somewhere?
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+}
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
@@ -98,32 +124,20 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	formLayout = new QFormLayout(RomDataView);
 }
 
-/**
- * Update the display widgets.
- * FIXME: Allow running this multiple times?
- */
-void RomDataViewPrivate::updateDisplay(void)
+QLayout *RomDataViewPrivate::createHeaderRow(void)
 {
-	if (!romData || displayInit)
-		return;
-	displayInit = true;
-
-	// Get the fields.
-	const RomFields *fields = romData->fields();
-	if (!fields) {
-		// No fields.
-		// TODO: Show an error?
-		return;
+	Q_Q(RomDataView);
+	assert(romData != nullptr);
+	if (!romData) {
+		// No ROM data.
+		return nullptr;
 	}
-	const int count = fields->count();
 
-	// Make sure the underlying file handle is closed,
-	// since we don't need it anymore.
-	romData->close();
+	// TODO: Delete the old widgets if they're already present.
+	ui.hboxHeaderRow = new QHBoxLayout(q);
 
 	// System name.
-	// TODO: Logo, game icon, and game title?
-	Q_Q(RomDataView);
+	// TODO: System logo and/or game title?
 	const rp_char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
@@ -145,32 +159,104 @@ void RomDataViewPrivate::updateDisplay(void)
 			break;
 	}
 
-	QString header;
+	QString sysInfo;
 	if (systemName) {
-		header = RP2Q(systemName);
+		sysInfo = RP2Q(systemName);
 	}
 	if (fileType) {
-		if (!header.isEmpty()) {
-			header += QChar(L' ');
+		if (!sysInfo.isEmpty()) {
+			sysInfo += QChar(L'\n');
 		}
-		header += RP2Q(fileType);
+		sysInfo += RP2Q(fileType);
 	}
 
-	if (!header.isEmpty()) {
-		QLabel *lblHeader = new QLabel(q);
-		lblHeader->setAlignment(Qt::AlignCenter);
-		lblHeader->setTextFormat(Qt::PlainText);
-		lblHeader->setText(header);
+	if (!sysInfo.isEmpty()) {
+		ui.lblSysInfo = new QLabel(q);
+		ui.lblSysInfo->setAlignment(Qt::AlignCenter);
+		ui.lblSysInfo->setTextFormat(Qt::PlainText);
+		ui.lblSysInfo->setText(sysInfo);
 
 		// Use a bold font.
-		QFont font = lblHeader->font();
+		QFont font = ui.lblSysInfo->font();
 		font.setBold(true);
-		lblHeader->setFont(font);
+		ui.lblSysInfo->setFont(font);
 
-		ui.formLayout->addRow(lblHeader);
+		ui.hboxHeaderRow->addWidget(ui.lblSysInfo);
 	}
 
+	// Supported image types.
+	const uint32_t imgbf = romData->supportedImageTypes();
+
+	// Banner.
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Get the banner.
+		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		if (banner) {
+			QImage img = rpToQImage(banner);
+			if (!img.isNull()) {
+				ui.lblBanner = new QLabel(q);
+				ui.lblBanner->setPixmap(QPixmap::fromImage(img));
+				ui.hboxHeaderRow->addWidget(ui.lblBanner);
+			}
+		}
+	}
+
+	// Icon.
+	// TODO: Animated icon.
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Get the banner.
+		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		if (icon) {
+			QImage img = rpToQImage(icon);
+			if (!img.isNull()) {
+				ui.lblIcon = new QLabel(q);
+				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
+				ui.hboxHeaderRow->addWidget(ui.lblIcon);
+			}
+		}
+	}
+
+	// Add spacers.
+	ui.hboxHeaderRow->insertStretch(0, 1);
+	ui.hboxHeaderRow->insertStretch(-1, 1);
+	return ui.hboxHeaderRow;
+}
+
+/**
+ * Update the display widgets.
+ * FIXME: Allow running this multiple times?
+ */
+void RomDataViewPrivate::updateDisplay(void)
+{
+	if (!romData || displayInit)
+		return;
+	displayInit = true;
+
+	// Get the fields.
+	const RomFields *fields = romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
+	const int count = fields->count();
+
+	// Header row:
+	// - System name and file type.
+	//   - TODO: System logo.
+	// - Banner (if present)
+	// - Icon (if present)
+	QLayout *headerRow = createHeaderRow();
+	if (headerRow) {
+		ui.formLayout->addRow(headerRow);
+	}
+
+	// Make sure the underlying file handle is closed,
+	// since we don't need it anymore.
+	romData->close();
+
 	// Create the data widgets.
+	Q_Q(RomDataView);
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
