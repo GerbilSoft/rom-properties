@@ -709,8 +709,7 @@ vector<const rp_char*> GameCubeSave::supportedFileExtensions(void) const
  */
 uint32_t GameCubeSave::supportedImageTypes_static(void)
 {
-	// TODO: Banner.
-	return IMGBF_INT_ICON; //| IMGBF_INT_BANNER;
+	return IMGBF_INT_ICON | IMGBF_INT_BANNER;
 }
 
 /**
