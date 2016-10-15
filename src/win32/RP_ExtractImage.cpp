@@ -187,7 +187,11 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	// will lock up until all images are downloaded.
 	// NOTE: Explorer in Windows Vista and later always seems to
 	// call Extract() from a background thread.
-	return (*pdwFlags & IEIFLAG_ASYNC) ? E_PENDING : S_OK;
+
+	// FIXME: Returning E_PENDING seems to cause a crash in
+	// WinXP shell32.dll: CExtractImageTask::~CExtractImageTask.
+	//return (*pdwFlags & IEIFLAG_ASYNC) ? E_PENDING : S_OK;
+	return S_OK;
 }
 
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
