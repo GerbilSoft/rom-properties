@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesCipher_CAPI.cpp: AES-128 CBC decryption class. (Windows version)     *
+ * AesCAPI.cpp: AES decryption class using Win32 CryptoAPI.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "AesCipher.hpp"
+#include "AesCAPI.hpp"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -41,15 +41,15 @@
 
 namespace LibRomData {
 
-class AesCipherPrivate
+class AesCAPIPrivate
 {
 	public:
-		AesCipherPrivate();
-		~AesCipherPrivate();
+		AesCAPIPrivate();
+		~AesCAPIPrivate();
 
 	private:
-		AesCipherPrivate(const AesCipherPrivate &other);
-		AesCipherPrivate &operator=(const AesCipherPrivate &other);
+		AesCAPIPrivate(const AesCAPIPrivate &other);
+		AesCAPIPrivate &operator=(const AesCAPIPrivate &other);
 
 	public:
 		// CryptoAPI provider.
@@ -61,12 +61,12 @@ class AesCipherPrivate
 		HCRYPTKEY hKey;
 };
 
-/** AesCipherPrivate **/
+/** AesCAPIPrivate **/
 
-HCRYPTPROV AesCipherPrivate::hProvider = 0;
-LONG AesCipherPrivate::lRefCnt = 0;
+HCRYPTPROV AesCAPIPrivate::hProvider = 0;
+LONG AesCAPIPrivate::lRefCnt = 0;
 
-AesCipherPrivate::AesCipherPrivate()
+AesCAPIPrivate::AesCAPIPrivate()
 	: hKey(0)
 {
 	if (InterlockedIncrement(&lRefCnt) == 1) {
@@ -86,7 +86,7 @@ AesCipherPrivate::AesCipherPrivate()
 	}
 }
 
-AesCipherPrivate::~AesCipherPrivate()
+AesCAPIPrivate::~AesCAPIPrivate()
 {
 	if (hKey != 0) {
 		CryptDestroyKey(hKey);
@@ -101,22 +101,31 @@ AesCipherPrivate::~AesCipherPrivate()
 	}
 }
 
-/** AesCipher **/
+/** AesCAPI **/
 
-AesCipher::AesCipher()
-	: d(new AesCipherPrivate())
+AesCAPI::AesCAPI()
+	: d(new AesCAPIPrivate())
 { }
 
-AesCipher::~AesCipher()
+AesCAPI::~AesCAPI()
 {
 	delete d;
+}
+
+/**
+ * Get the name of the AesCipher implementation.
+ * @return Name.
+ */
+const rp_char *AesCAPI::name(void) const
+{
+	return _RP("CryptoAPI");
 }
 
 /**
  * Has the cipher been initialized properly?
  * @return True if initialized; false if not.
  */
-bool AesCipher::isInit(void) const
+bool AesCAPI::isInit(void) const
 {
 	return (d->hProvider != 0);
 }
@@ -127,15 +136,17 @@ bool AesCipher::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setKey(const uint8_t *key, unsigned int len)
+int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
 	if (!key) {
+		// No key specified.
 		return -EINVAL;
 	} else if (d->hProvider == 0) {
+		// Provider is not available.
 		return -EBADF;
 	}
 
@@ -151,6 +162,7 @@ int AesCipher::setKey(const uint8_t *key, unsigned int len)
 			alg_id = CALG_AES_256;
 			break;
 		default:
+			// Invalid key length.
 			return -EINVAL;
 	}
 
@@ -196,9 +208,10 @@ int AesCipher::setKey(const uint8_t *key, unsigned int len)
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setChainingMode(ChainingMode mode)
+int AesCAPI::setChainingMode(ChainingMode mode)
 {
 	if (d->hKey == 0) {
+		// Key hasn't been set.
 		return -EBADF;
 	}
 
@@ -230,7 +243,7 @@ int AesCipher::setChainingMode(ChainingMode mode)
  * @param len IV length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setIV(const uint8_t *iv, unsigned int len)
+int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 {
 	if (!iv || len != 16) {
 		return -EINVAL;
@@ -255,10 +268,10 @@ int AesCipher::setIV(const uint8_t *iv, unsigned int len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
+unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 {
 	if (d->hKey == 0) {
-		// Key hasn't been loaded.
+		// Key hasn't been set.
 		return 0;
 	}
 
@@ -293,14 +306,14 @@ unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
  * @param iv_len Length of the IV.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len,
+unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
-	if (d->hKey == 0) {
-		// Key hasn't been loaded.
-		return 0;
-	} else if (!iv || iv_len != 16) {
+	if (!iv || iv_len != 16) {
 		// Invalid IV.
+		return 0;
+	} else if (d->hKey == 0) {
+		// Key hasn't been set.
 		return 0;
 	}
 

@@ -42,6 +42,7 @@ IF(NOT WIN32)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
 		FIND_PACKAGE(Nettle REQUIRED)
+		SET(HAVE_NETTLE ${NETTLE_FOUND})
 
 		# Check if this is Nettle 3.x.
 		# Nettle 3.1 added version.h, which isn't available
@@ -162,19 +163,28 @@ ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
+		crypto/AesCipherFactory.cpp
 		crypto/KeyManager.cpp
 		)
 	SET(libromdata_CRYPTO_H
+		crypto/IAesCipher.hpp
 		crypto/KeyManager.hpp
-		crypto/AesCipher.hpp
 		)
 	IF(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
-			crypto/AesCipher_CAPI.cpp
+			crypto/AesCAPI.cpp
+			crypto/AesCAPI_NG.cpp
+			)
+		SET(libromdata_CRYPTO_OS_H
+			crypto/AesCAPI.hpp
+			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
-			crypto/AesCipher_nettle.cpp
+			crypto/AesNettle.cpp
+			)
+		SET(libromdata_CRYPTO_OS_H
+			crypto/AesNettle.hpp
 			)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
@@ -198,7 +208,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_CRYPTO_OS_SRCS}
+	${libromdata_CRYPTO_OS_SRCS} ${libromdata_CRYPTO_OS_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 

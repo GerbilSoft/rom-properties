@@ -22,8 +22,11 @@
 // Google Test
 #include "gtest/gtest.h"
 
+#include "../TextFuncs.hpp"
+
 // AesCipher
-#include "libromdata/crypto/AesCipher.hpp"
+#include "../crypto/AesCipherFactory.hpp"
+#include "../crypto/IAesCipher.hpp"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -43,7 +46,7 @@ namespace LibRomData { namespace Tests {
 struct AesCipherTest_mode
 {
 	// Cipher settings.
-	AesCipher::ChainingMode chainingMode;
+	IAesCipher::ChainingMode chainingMode;
 	unsigned int key_len;
 
 	// Cipher text.
@@ -51,7 +54,7 @@ struct AesCipherTest_mode
 	size_t cipherText_len;	// Cipher text length, in bytes.
 
 	AesCipherTest_mode(
-		AesCipher::ChainingMode chainingMode,
+		IAesCipher::ChainingMode chainingMode,
 		unsigned int key_len,
 		const uint8_t *cipherText, size_t cipherText_len)
 		: chainingMode(chainingMode)
@@ -67,10 +70,10 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 {
 	const char *cm_str;
 	switch (mode.chainingMode) {
-		case AesCipher::CM_ECB:
+		case IAesCipher::CM_ECB:
 			cm_str = "ECB";
 			break;
-		case AesCipher::CM_CBC:
+		case IAesCipher::CM_CBC:
 			cm_str = "CBC";
 			break;
 		default:
@@ -91,7 +94,7 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 		virtual void TearDown(void) override;
 
 	public:
-		AesCipher *m_cipher;
+		IAesCipher *m_cipher;
 
 		// AES-256 encryption key.
 		// AES-128 and AES-192 use the first
@@ -217,8 +220,18 @@ void AesCipherTest::CompareByteArrays(
  */
 void AesCipherTest::SetUp(void)
 {
-	m_cipher = new AesCipher();
+	m_cipher = AesCipherFactory::getInstance();
+	ASSERT_TRUE(m_cipher != nullptr);
 	ASSERT_TRUE(m_cipher->isInit());
+
+	static bool printed_impl = false;
+	if (!printed_impl) {
+		// Print the AesCipher implementation name.
+		const rp_char *name = m_cipher->name();
+		ASSERT_TRUE(name != nullptr);
+		printf("AesCipher implementation: %s\n", rp_string_to_utf8(name, -1).c_str());
+		printed_impl = true;
+	}
 }
 
 /**
@@ -243,7 +256,7 @@ TEST_P(AesCipherTest, decryptTest)
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
-	if (mode.chainingMode == AesCipher::CM_CBC) {
+	if (mode.chainingMode == IAesCipher::CM_CBC) {
 		// Set the IV.
 		EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
 	}
@@ -275,10 +288,10 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 
 	const char *cm_str;
 	switch (info.param.chainingMode) {
-		case AesCipher::CM_ECB:
+		case IAesCipher::CM_ECB:
 			cm_str = "ECB";
 			break;
-		case AesCipher::CM_CBC:
+		case IAesCipher::CM_CBC:
 			cm_str = "CBC";
 			break;
 		default:
@@ -359,23 +372,23 @@ static const uint8_t aes256cbc_ciphertext[64] = {
 
 INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
 	::testing::Values(
-		AesCipherTest_mode(AesCipher::CM_ECB, 16,
+		AesCipherTest_mode(IAesCipher::CM_ECB, 16,
 			aes128ecb_ciphertext,
 			sizeof(aes128ecb_ciphertext)),
-		AesCipherTest_mode(AesCipher::CM_ECB, 24,
+		AesCipherTest_mode(IAesCipher::CM_ECB, 24,
 			aes192ecb_ciphertext,
 			sizeof(aes192ecb_ciphertext)),
-		AesCipherTest_mode(AesCipher::CM_ECB, 32,
+		AesCipherTest_mode(IAesCipher::CM_ECB, 32,
 			aes256ecb_ciphertext,
 			sizeof(aes256ecb_ciphertext)),
 
-		AesCipherTest_mode(AesCipher::CM_CBC, 16,
+		AesCipherTest_mode(IAesCipher::CM_CBC, 16,
 			aes128cbc_ciphertext,
 			sizeof(aes128cbc_ciphertext)),
-		AesCipherTest_mode(AesCipher::CM_CBC, 24,
+		AesCipherTest_mode(IAesCipher::CM_CBC, 24,
 			aes192cbc_ciphertext,
 			sizeof(aes192cbc_ciphertext)),
-		AesCipherTest_mode(AesCipher::CM_CBC, 32,
+		AesCipherTest_mode(IAesCipher::CM_CBC, 32,
 			aes256cbc_ciphertext,
 			sizeof(aes256cbc_ciphertext))
 		)

@@ -1527,10 +1527,8 @@ int GameCube::loadInternalImage(ImageType imageType)
 
 	// Load opening.bnr.
 	// FIXME: Does Triforce have opening.bnr?
-	printf("try load\n");
 	if (d->gcn_loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
-		printf("opening.bnr failed\n");
 		return -ENOENT;
 	}
 

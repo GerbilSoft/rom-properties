@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesCipher.hpp: AES decryption class.                                    *
+ * AesCAPI_NG.hpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,34 +19,51 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCIPHER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCIPHER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCAPI_NG_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCAPI_NG_HPP__
 
-// C includes.
-#include <stdint.h>
+#include "IAesCipher.hpp"
 
 namespace LibRomData {
 
-class AesCipherPrivate;
-class AesCipher
+class AesCAPI_NG_Private;
+class AesCAPI_NG : public IAesCipher
 {
 	public:
-		AesCipher();
-		virtual ~AesCipher();
+		AesCAPI_NG();
+		virtual ~AesCAPI_NG();
 
 	private:
-		AesCipher(const AesCipher &);
-		AesCipher &operator=(const AesCipher &);
+		typedef IAesCipher super;
+		AesCAPI_NG(const AesCAPI_NG &other);
+		AesCAPI_NG &operator=(const AesCAPI_NG &other);
 	private:
-		friend class AesCipherPrivate;
-		AesCipherPrivate *const d;
+		friend class AesCAPI_NG_Private;
+		AesCAPI_NG_Private *const d;
 
 	public:
+		/**
+		 * Is CryptoAPI NG usable on this system?
+		 *
+		 * If CryptoAPI NG is usable, this function will load
+		 * bcrypt.dll and all required function pointers.
+		 *
+		 * @return True if this system supports CryptoAPI NG.
+		 */
+		static bool isUsable(void);
+
+	public:
+		/**
+		 * Get the name of the AesCipher implementation.
+		 * @return Name.
+		 */
+		virtual const rp_char *name(void) const final;
+
 		/**
 		 * Has the cipher been initialized properly?
 		 * @return True if initialized; false if not.
 		 */
-		virtual bool isInit(void) const;
+		virtual bool isInit(void) const final;
 
 		/**
 		 * Set the encryption key.
@@ -54,19 +71,14 @@ class AesCipher
 		 * @param len Key length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *key, unsigned int len);
-
-		enum ChainingMode {
-			CM_ECB,
-			CM_CBC,
-		};
+		virtual int setKey(const uint8_t *key, unsigned int len) final;
 
 		/**
 		 * Set the cipher chaining mode.
 		 * @param mode Cipher chaining mode.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setChainingMode(ChainingMode mode);
+		virtual int setChainingMode(ChainingMode mode) final;
 
 		/**
 		 * Set the IV.
@@ -74,7 +86,7 @@ class AesCipher
 		 * @param len IV length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *iv, unsigned int len);
+		virtual int setIV(const uint8_t *iv, unsigned int len) final;
 
 		/**
 		 * Decrypt a block of data.
@@ -82,7 +94,7 @@ class AesCipher
 		 * @param data_len Length of data block.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len);
+		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) final;
 
 		/**
 		 * Decrypt a block of data using the specified IV.
@@ -93,9 +105,9 @@ class AesCipher
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
 		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len,
-			const uint8_t *iv, unsigned int iv_len);
+			const uint8_t *iv, unsigned int iv_len) final;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCIPHER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCAPI_NG_HPP__ */

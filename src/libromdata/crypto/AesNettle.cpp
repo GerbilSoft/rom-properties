@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesCipher_nettle.cpp: AES-128 CBC decryption class. (nettle version)    *
+ * AesNettle.cpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "AesCipher.hpp"
+#include "AesNettle.hpp"
 #include "config.libromdata.h"
 
 // C includes. (C++ namespace)
@@ -32,15 +32,15 @@
 
 namespace LibRomData {
 
-class AesCipherPrivate
+class AesNettlePrivate
 {
 	public:
-		AesCipherPrivate();
-		~AesCipherPrivate() { }
+		AesNettlePrivate();
+		~AesNettlePrivate() { }
 
 	private:
-		AesCipherPrivate(const AesCipherPrivate &other);
-		AesCipherPrivate &operator=(const AesCipherPrivate &other);
+		AesNettlePrivate(const AesNettlePrivate &other);
+		AesNettlePrivate &operator=(const AesNettlePrivate &other);
 
 	public:
 		// AES context.
@@ -55,7 +55,7 @@ class AesCipherPrivate
 #endif /* HAVE_NETTLE_3 */
 		uint8_t iv[AES_BLOCK_SIZE];
 
-		AesCipher::ChainingMode chainingMode;
+		IAesCipher::ChainingMode chainingMode;
 
 #ifdef HAVE_NETTLE_3
 		// Cipher function for cbc_decrypt().
@@ -63,10 +63,10 @@ class AesCipherPrivate
 #endif /* HAVE_NETTLE_3 */
 };
 
-/** AesCipherPrivate **/
+/** AesNettlePrivate **/
 
-AesCipherPrivate::AesCipherPrivate()
-	: chainingMode(AesCipher::CM_ECB)
+AesNettlePrivate::AesNettlePrivate()
+	: chainingMode(IAesCipher::CM_ECB)
 #ifdef HAVE_NETTLE_3
 	, decrypt_fn(nullptr)
 #endif /* HAVE_NETTLE_3 */
@@ -76,22 +76,31 @@ AesCipherPrivate::AesCipherPrivate()
 	memset(iv, 0, sizeof(iv));
 }
 
-/** AesCipher **/
+/** AesNettle **/
 
-AesCipher::AesCipher()
-	: d(new AesCipherPrivate())
+AesNettle::AesNettle()
+	: d(new AesNettlePrivate())
 { }
 
-AesCipher::~AesCipher()
+AesNettle::~AesNettle()
 {
 	delete d;
+}
+
+/**
+ * Get the name of the AesCipher implementation.
+ * @return Name.
+ */
+const rp_char *AesNettle::name(void) const
+{
+	return _RP("GNU Nettle");
 }
 
 /**
  * Has the cipher been initialized properly?
  * @return True if initialized; false if not.
  */
-bool AesCipher::isInit(void) const
+bool AesNettle::isInit(void) const
 {
 	// Nettle always works.
 	return true;
@@ -103,7 +112,7 @@ bool AesCipher::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setKey(const uint8_t *key, unsigned int len)
+int AesNettle::setKey(const uint8_t *key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
@@ -142,7 +151,7 @@ int AesCipher::setKey(const uint8_t *key, unsigned int len)
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setChainingMode(ChainingMode mode)
+int AesNettle::setChainingMode(ChainingMode mode)
 {
 	if (mode < CM_ECB || mode > CM_CBC) {
 		return -EINVAL;
@@ -158,7 +167,7 @@ int AesCipher::setChainingMode(ChainingMode mode)
  * @param len IV length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setIV(const uint8_t *iv, unsigned int len)
+int AesNettle::setIV(const uint8_t *iv, unsigned int len)
 {
 	if (!iv || len != AES_BLOCK_SIZE) {
 		return -EINVAL;
@@ -175,7 +184,7 @@ int AesCipher::setIV(const uint8_t *iv, unsigned int len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
+unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0)) {
 		// Invalid parameters.
@@ -231,7 +240,7 @@ unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
  * @param iv_len Length of the IV.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len,
+unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
 	if (!data || data_len == 0 || (data_len % AES_BLOCK_SIZE != 0) ||
