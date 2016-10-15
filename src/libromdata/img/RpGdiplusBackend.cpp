@@ -53,6 +53,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 	: super(width, height, format)
 	, m_gdipToken(0)
 	, m_pGdipBmp(nullptr)
+	, m_isLocked(false)
 	, m_gdipFmt(0)
 	, m_pGdipPalette(nullptr)
 {
@@ -224,10 +225,7 @@ int RpGdiplusBackend::doInitialLock(void)
 	// It will only be (temporarily) unlocked when converting to HBITMAP.
 	// FIXME: rp_image needs to support "stride", since GDI+ stride is
 	// not necessarily the same as width*sizeof(pixel).
-	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
-	Gdiplus::Status status = m_pGdipBmp->LockBits(&bmpRect,
-		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
-		m_gdipFmt, &m_gdipBmpData);
+	Gdiplus::Status status = lock();
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the GDI+ bitmap.
 		delete m_pGdipBmp;
@@ -257,12 +255,22 @@ rp_image_backend *RpGdiplusBackend::creator_fn(int width, int height, rp_image::
 
 void *RpGdiplusBackend::data(void)
 {
+	if (!m_isLocked) {
+		// Lock the image.
+		const_cast<RpGdiplusBackend*>(this)->lock();
+	}
+
 	// Return the data from the locked GDI+ bitmap.
 	return m_gdipBmpData.Scan0;
 }
 
 const void *RpGdiplusBackend::data(void) const
 {
+	if (!m_isLocked) {
+		// Lock the image.
+		const_cast<RpGdiplusBackend*>(this)->lock();
+	}
+
 	// Return the data from the locked GDI+ bitmap.
 	return m_gdipBmpData.Scan0;
 }
@@ -270,6 +278,89 @@ const void *RpGdiplusBackend::data(void) const
 size_t RpGdiplusBackend::data_len(void) const
 {
 	return this->stride * this->height;
+}
+
+/**
+ * Lock the GDI+ bitmap.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @return Gdiplus::Status
+ */
+Gdiplus::Status RpGdiplusBackend::lock(void)
+{
+	// TODO: Recursive locks?
+	if (m_isLocked)
+		return Gdiplus::Status::Ok;
+
+	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
+	Gdiplus::Status status = m_pGdipBmp->LockBits(&bmpRect,
+		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
+		m_gdipFmt, &m_gdipBmpData);
+	if (status == Gdiplus::Status::Ok) {
+		m_isLocked = true;
+	}
+	return status;
+}
+
+/**
+ * Unlock the GDI+ bitmap.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @return Gdiplus::Status
+ */
+Gdiplus::Status RpGdiplusBackend::unlock(void)
+{
+	// TODO: Recursive locks?
+	if (!m_isLocked)
+		return Gdiplus::Status::Ok;
+
+	Gdiplus::Status status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
+	if (status == Gdiplus::Status::Ok) {
+		m_isLocked = false;
+	}
+	return status;
+}
+
+/**
+ * Duplicate the GDI+ bitmap.
+ *
+ * This function is intended to be used when drawing
+ * GDI+ bitmaps directly to a window. As such, it will
+ * automatically convert images to 32-bit ARGB in order
+ * to avoid CI8 alpha transparency artifacting.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @return Duplicated GDI+ bitmap.
+ */
+Gdiplus::Bitmap *RpGdiplusBackend::dup(void) const
+{
+	Gdiplus::Bitmap *pBmp;
+	Gdiplus::Status status;
+
+	status = const_cast<RpGdiplusBackend*>(this)->unlock();
+	if (status != Gdiplus::Status::Ok) {
+		return nullptr;
+	}
+
+	if (this->format == rp_image::FORMAT_CI8) {
+		// Copy the local palette to the GDI+ image.
+		m_pGdipBmp->SetPalette(m_pGdipPalette);
+	}
+
+	pBmp = m_pGdipBmp->Clone(0, 0, this->width, this->height, PixelFormat32bppARGB);
+	status = const_cast<RpGdiplusBackend*>(this)->lock();
+	if (status != Gdiplus::Status::Ok) {
+		delete pBmp;
+		return nullptr;
+	}
+
+	return pBmp;
 }
 
 /**
@@ -287,8 +378,8 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	// TODO: Check for errors?
 
 	// Temporarily unlock the GDI+ bitmap.
-	m_pGdipBmp->UnlockBits(&m_gdipBmpData);
-	
+	unlock();
+
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
@@ -304,11 +395,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	}
 
 	// Re-lock the bitmap.
-	const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
-	m_pGdipBmp->LockBits(&bmpRect,
-		Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
-		m_gdipFmt, &m_gdipBmpData);
-
+	lock();
 	return hBitmap;
 }
 
@@ -454,7 +541,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 
 	if (!pTmpBmp) {
 		// Temporarily unlock the GDI+ bitmap.
-		status = m_pGdipBmp->UnlockBits(&m_gdipBmpData);
+		status = unlock();
 		if (status != Gdiplus::Status::Ok) {
 			// Error unlocking the GDI+ bitmap.
 			return nullptr;
@@ -481,10 +568,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 
 	if (!pTmpBmp) {
 		// Re-lock the bitmap.
-		const Gdiplus::Rect bmpRect(0, 0, this->width, this->height);
-		status = m_pGdipBmp->LockBits(&bmpRect,
-			Gdiplus::ImageLockModeRead | Gdiplus::ImageLockModeWrite,
-			m_gdipFmt, &m_gdipBmpData);
+		status = lock();
 		if (status != Gdiplus::Status::Ok) {
 			// Error re-locking the GDI+ bitmap.
 			return nullptr;
