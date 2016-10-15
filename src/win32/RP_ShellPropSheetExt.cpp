@@ -280,7 +280,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 	int lines = 0;
 	const wchar_t *data = str.data();
 	int nl_pos_prev = -1;
-	// FIXME: Do we need to check for "\r\n"?
 	size_t nl_pos = 0;	// Assuming no NL at the start.
 	do {
 		nl_pos = str.find(L'\n', nl_pos + 1);
@@ -290,6 +289,12 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 			len = (int)(nl_pos - start);
 		} else {
 			len = (int)(str.size() - start);
+		}
+
+		// Check if a '\r' is present before the '\n'.
+		if (data[nl_pos - 1] == L'\r') {
+			// Ignore the '\r'.
+			len--;
 		}
 
 		SIZE size_cur;
@@ -656,6 +661,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 			wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
+			// TODO: Use measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			int chk_w = rect_chkbox.right + textSize.cx;
@@ -696,6 +702,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 			wstring s_name = RP2W_c(name);
 
 			// Get the width of this specific entry.
+			// TODO: Use measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
@@ -975,6 +982,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		wstring s_name = RP2W_c(desc->name);
 
 		// Get the width of this specific entry.
+		// TODO: Use measureTextSize()?
 		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 		if (textSize.cx > max_text_width) {
 			max_text_width = textSize.cx;
@@ -982,6 +990,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	}
 
 	// Add additional spacing for the ':'.
+	// TODO: Use measureTextSize()?
 	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
 	max_text_width += textSize.cx;
 
