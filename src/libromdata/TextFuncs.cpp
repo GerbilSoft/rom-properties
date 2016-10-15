@@ -38,6 +38,8 @@
 # elif defined(RP_UTF16)
 #  define RP_ICONV_ENCODING RP_ICONV_UTF16_ENCODING
 # endif
+#else
+# error Text conversion is not available on this system.
 #endif
 
 // C++ includes.
@@ -312,8 +314,6 @@ string cp1252_sjis_to_utf8(const char *str, int len)
 			ret = string(mbs);
 		}
 	}
-#else
-#error Text conversion is not available on this system.
 #endif
 
 	free(mbs);
@@ -380,8 +380,6 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 			ret = u16string(wcs);
 		}
 	}
-#else
-#error Text conversion is not available on this system.
 #endif
 
 	free(wcs);
@@ -422,8 +420,6 @@ u16string utf8_to_utf16(const char *str, int len)
 	if (wcs) {
 		ret = u16string(wcs);
 	}
-#else
-#error Text conversion is not available on this system.
 #endif
 
 	free(wcs);
@@ -459,8 +455,6 @@ string utf16_to_utf8(const char16_t *str, int len)
 	if (mbs) {
 		ret = string(mbs);
 	}
-#else
-#error Text conversion is not available on this system.
 #endif
 
 	free(mbs);
