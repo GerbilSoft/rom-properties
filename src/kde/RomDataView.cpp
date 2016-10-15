@@ -89,9 +89,6 @@ class RomDataViewPrivate
 		RomData *romData;
 
 		// Animated icon data.
-		// TODO: Animated icon helper class like
-		// in GCN MemCard Recover? (and maybe share
-		// it with the Windows version.)
 		const IconAnimData *iconAnimData;
 		QPixmap iconFrames[IconAnimData::MAX_FRAMES];
 		IconAnimHelper iconAnimHelper;
@@ -230,7 +227,6 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 	}
 
 	// Icon.
-	// TODO: Animated icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the banner.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
