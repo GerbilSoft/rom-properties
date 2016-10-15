@@ -80,6 +80,15 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 	protected:
 		/**
+		 * Create the header row.
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param size		[in] Width and height for a full-width single line label.
+		 * @return Row height, in pixels.
+		 */
+		int createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size);
+
+		/**
 		 * Initialize a string field. (Also used for Date/Time.)
 		 * @param hDlg		[in] Dialog window.
 		 * @param pt_start	[in] Starting position, in pixels.

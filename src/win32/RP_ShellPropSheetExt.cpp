@@ -101,6 +101,9 @@ class RP_ShellPropSheetExt_Private
 
 		// Subclassed multiline edit controls.
 		unordered_map<HWND, WNDPROC> mapOldEditProc;
+
+		// Header row widgets.
+		HWND lblSysInfo;
 };
 
 /** RP_ShellPropSheetExt_Private **/
@@ -110,6 +113,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private()
 	, hDlgProps(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
+	, lblSysInfo(nullptr)
 {
 	szSelectedFile[0] = 0;
 }
@@ -338,6 +342,82 @@ static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count = nullptr
 		*lf_count = lf;
 	}
 	return wstr_dos;
+}
+
+/**
+ * Create the header row.
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param size		[in] Width and height for a full-width single line label.
+ * @return Row height, in pixels.
+ */
+int RP_ShellPropSheetExt::createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size)
+{
+	if (!hDlg)
+		return 0;
+
+	// System name.
+	// TODO: Logo, game icon, and game title?
+	const rp_char *systemName = d->romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+
+	// File type.
+	const rp_char *fileType = nullptr;
+	switch (d->romData->fileType()) {
+		case RomData::FTYPE_ROM_IMAGE:
+			fileType = _RP("ROM Image");
+			break;
+		case RomData::FTYPE_DISC_IMAGE:
+			fileType = _RP("Disc Image");
+			break;
+		case RomData::FTYPE_SAVE_FILE:
+			fileType = _RP("Save File");
+			break;
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			fileType = nullptr;
+			break;
+	}
+
+	wstring sysInfo;
+	if (systemName) {
+		sysInfo = RP2W_c(systemName);
+	}
+	if (fileType) {
+		if (!sysInfo.empty()) {
+			sysInfo += L"\r\n";
+		}
+		sysInfo += RP2W_c(fileType);
+	}
+
+	// Multi-line height is size.cy * 8 / 5.
+	const int height = size.cy * 8 / 5;
+
+	if (!sysInfo.empty()) {
+		// Get the default font.
+		HFONT hFont = GetWindowFont(hDlg);
+
+		// Use a bold font.
+		// TODO: Delete the old font if it's already there?
+		if (!d->hFontBold) {
+			// Create the bold font.
+			LOGFONT lfFontBold;
+			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
+				// Adjust the font and create a new one.
+				lfFontBold.lfWeight = FW_BOLD;
+				d->hFontBold = CreateFontIndirect(&lfFontBold);
+			}
+		}
+
+		d->lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
+			WS_CHILD | WS_VISIBLE | SS_CENTER,
+			pt_start.x, pt_start.y,
+			size.cx, height,
+			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(d->lblSysInfo, (d->hFontBold ? d->hFontBold : hFont), FALSE);
+	}
+
+	return height;
 }
 
 /**
@@ -850,60 +930,9 @@ void RP_ShellPropSheetExt::initDialog(HWND hDlg)
 	GetClientRect(hDlg, &tmpRect);
 	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
 
-	// System name.
-	// TODO: Logo, game icon, and game title?
-	const rp_char *systemName = d->romData->systemName(
-		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-
-	// File type.
-	const rp_char *fileType = nullptr;
-	switch (d->romData->fileType()) {
-		case RomData::FTYPE_ROM_IMAGE:
-			fileType = _RP("ROM Image");
-			break;
-		case RomData::FTYPE_DISC_IMAGE:
-			fileType = _RP("Disc Image");
-			break;
-		case RomData::FTYPE_SAVE_FILE:
-			fileType = _RP("Save File");
-			break;
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			fileType = nullptr;
-			break;
-	}
-
-	wstring header;
-	if (systemName) {
-		header = RP2W_c(systemName);
-	}
-	if (fileType) {
-		if (!header.empty()) {
-			header += L' ';
-		}
-		header += RP2W_c(fileType);
-	}
-
-	if (!header.empty()) {
-		// Use a bold font.
-		// TODO: Delete the old font if it's already there?
-		if (!d->hFontBold) {
-			LOGFONT lfFontBold;
-			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
-				// Adjust the font and create a new one.
-				lfFontBold.lfWeight = FW_BOLD;
-				d->hFontBold = CreateFontIndirect(&lfFontBold);
-			}
-		}
-
-		const int sysName_width = dlg_value_width + descSize.cx;
-		HWND lblSystemName = CreateWindow(WC_STATIC, header.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_CENTER,
-			curPt.x, curPt.y, sysName_width, descSize.cy,
-			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSystemName, (d->hFontBold ? d->hFontBold : hFont), FALSE);
-		curPt.y += descSize.cy;
-	}
+	// Create the header row.
+	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
+	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
 
 	// Get a matching monospaced font.
 	// TODO: Delete the old font if it's already there?
