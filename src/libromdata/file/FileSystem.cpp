@@ -378,6 +378,7 @@ const rp_string &getConfigDirectory(void)
 
 /**
  * Set the modification timestamp of a file.
+ * @param filename Filename.
  * @param mtime Modification time.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -401,6 +402,60 @@ int set_mtime(const rp_string &filename, time_t mtime)
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
 	ret = utime(rp_string_to_utf8(filename).c_str(), &utbuf);
+#endif
+
+	return (ret == 0 ? 0 : -errno);
+}
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filename Filename.
+ * @param pMtime Buffer for the modification timestamp.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_mtime(const rp_string &filename, time_t *pMtime)
+{
+	if (!pMtime) {
+		return -EINVAL;
+	}
+
+	// FIXME: time_t is 32-bit on 32-bit Linux.
+	// TODO: Add a static_warning() macro?
+	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
+	int ret = 0;
+
+#ifdef _WIN32
+#if _USE_32BIT_TIME_T
+#error 32-bit time_t is not supported. Get a newer compiler.
+#endif
+	// Use GetFileTime() instead of _stati64().
+	FILETIME ft;
+	HANDLE hFile = CreateFile(RP2W_s(filename),
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!hFile) {
+		// TODO: Convert Win32 error to errno.
+		return -EIO;
+	}
+
+	FILETIME mtime;
+	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &mtime);
+	CloseHandle(hFile);
+	if (!bRet) {
+		// Error getting the file time.
+		// TODO: Convert Win32 error to errno.
+		return -EIO;
+	}
+
+	// Convert to Unix timestamp.
+	*pMtime = FileTimeToUnixTime(&mtime);
+#else /* !_WIN32 */
+	struct stat buf;
+	ret = stat(rp_string_to_utf8(filename).c_str(), &buf);
+	if (ret == 0) {
+		// stat() buffer retrieved.
+		*pMtime = buf.st_mtime;
+	}
 #endif
 
 	return (ret == 0 ? 0 : -errno);

@@ -68,11 +68,6 @@ class KeyManagerPrivate
 		 */
 		unordered_map<string, uint32_t> mapKeyNames;
 
-		// If true, a load was attempted.
-		bool loadAttempted;
-		// Return value from the first loadKeys(0 call.
-		int loadKeysRet;
-
 		/**
 		 * Process a configuration line.
 		 * @param line_buf Configuration line.
@@ -86,8 +81,13 @@ class KeyManagerPrivate
 		int loadKeys(void);
 
 		// Temporary configuration loading variables.
-		std::string cfg_curSection;
+		string cfg_curSection;
 		bool cfg_isInKeysSection;
+
+		// keys.conf status.
+		rp_string conf_filename;
+		bool conf_was_found;
+		time_t conf_mtime;
 };
 
 /** KeyManagerPrivate **/
@@ -96,12 +96,30 @@ class KeyManagerPrivate
 unique_ptr<KeyManager> KeyManagerPrivate::instance(new KeyManager());
 
 KeyManagerPrivate::KeyManagerPrivate()
-	: loadAttempted(false)
-	, loadKeysRet(0)
-	, cfg_isInKeysSection(false)
+	: cfg_isInKeysSection(false)
+	, conf_was_found(false)
+	, conf_mtime(0)
 {
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
+
+	// Configuration filename.
+	conf_filename = FileSystem::getConfigDirectory();
+	if (!conf_filename.empty()) {
+		if (conf_filename.at(conf_filename.size()-1) != _RP_CHR(DIR_SEP_CHR)) {
+			conf_filename += _RP_CHR(DIR_SEP_CHR);
+		}
+		conf_filename += _RP("keys.conf");
+	}
+
+	// Make sure the configuration directory exists.
+	// NOTE: The filename portion MUST be kept in config_path,
+	// since the last component is ignored by rmkdir().
+	int ret = FileSystem::rmkdir(conf_filename);
+	if (ret != 0) {
+		// rmkdir() failed.
+		conf_filename.clear();
+	}
 }
 
 /**
@@ -263,46 +281,20 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
  */
 int KeyManagerPrivate::loadKeys(void)
 {
-	if (loadAttempted) {
-		// loadKeys() was already called.
-		return loadKeysRet;
-	}
-
-	// Attempting to load...
-	loadAttempted = true;
-
 	// Open the configuration file.
-	rp_string config_path = FileSystem::getConfigDirectory();
-	if (config_path.empty()) {
-		// No configuration directory...
-		loadKeysRet = -ENOENT;
-		return loadKeysRet;
+	if (conf_filename.empty()) {
+		// Configuration directory is invalid...
+		return -ENOENT;
 	}
-	if (config_path.at(config_path.size()-1) != DIR_SEP_CHR)
-		config_path += DIR_SEP_CHR;
-	config_path += _RP("keys.conf");
-
-	// Make sure the directories exist.
-	// NOTE: The filename portion MUST be kept in config_path,
-	// since the last component is ignored by rmkdir().
-	int ret = FileSystem::rmkdir(config_path);
-	if (ret != 0) {
-		// rmkdir() failed.
-		loadKeysRet = ret;
-		return loadKeysRet;
-	}
-
-	// Open the configuration file.
-	unique_ptr<IRpFile> file(new RpFile(config_path, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(conf_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Error opening the file.
-		loadKeysRet = file->lastError();
-		if (loadKeysRet == 0) {
-			// Unknown error...
-			loadKeysRet = -EIO;
-		}
-		return loadKeysRet;
+		return -EIO;
 	}
+
+	// Clear the loaded keys.
+	vKeys.clear();
+	mapKeyNames.clear();
 
 	// We're not in the keys section initially.
 	cfg_curSection.clear();
@@ -381,8 +373,7 @@ int KeyManagerPrivate::loadKeys(void)
 	}
 
 	// Keys loaded.
-	loadKeysRet = 0;
-	return loadKeysRet;
+	return 0;
 }
 
 /** KeyManager **/
@@ -418,16 +409,52 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 		return -EINVAL;
 	}
 
-	if (!d->loadAttempted) {
-		// Load the keys.
+	// Check if keys.conf needs to be reloaded.
+	if (!d->conf_was_found) {
+		// keys.conf wasn't found.
+		// Try loading it again.
 		int ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
-		if (ret != 0) {
+		if (ret == 0) {
+			// Keys loaded.
+			// Get the mtime.
+			time_t mtime;
+			ret = FileSystem::get_mtime(d->conf_filename, &mtime);
+			if (ret == 0) {
+				d->conf_mtime = mtime;
+			} else {
+				// mtime error...
+				// TODO: What do we do here?
+				d->conf_mtime = 0;
+			}
+			d->conf_was_found = true;
+		} else {
 			// Key load failed.
 			return ret;
 		}
-	} else if (d->loadKeysRet != 0) {
-		// Previous key load attempt failed.
-		return d->loadKeysRet;
+	} else {
+		// Check if the timestamp has changed.
+		// NOTE: If get_mtime() failed, we'll leave everything
+		// as it is instead of clearing the loaded keys.
+		// TODO: Set a flag to ignore the previous mtime if
+		// a new file is found in case the file is swapped
+		// underneath us?
+		time_t mtime;
+		int ret = FileSystem::get_mtime(d->conf_filename, &mtime);
+		if (ret == 0) {
+			if (mtime != d->conf_mtime) {
+				// Timestmap has changed.
+				// Reload the keys.
+				ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
+				if (ret == 0) {
+					// Keys loaded.
+					d->conf_mtime = mtime;
+				} else {
+					// Key load failed.
+					d->conf_was_found = false;
+					return ret;
+				}
+			}
+		}
 	}
 
 	// Attempt to get the key from the map.
