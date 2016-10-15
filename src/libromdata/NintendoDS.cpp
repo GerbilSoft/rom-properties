@@ -93,6 +93,7 @@ class NintendoDSPrivate
 
 	public:
 		// ROM header.
+		// NOTE: Must be byteswapped on access.
 		NDS_RomHeader romHeader;
 
 		// Animated icon data.

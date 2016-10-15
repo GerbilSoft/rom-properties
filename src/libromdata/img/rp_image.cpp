@@ -136,7 +136,7 @@ class rp_image_private
 		 *
 		 * @param backend rp_image_backend.
 		 */
-		rp_image_private(rp_image_backend *backend);
+		explicit rp_image_private(rp_image_backend *backend);
 
 		~rp_image_private();
 

@@ -900,6 +900,8 @@ GameCube::GameCube(IRpFile *file)
 				d->discReader = new CisoGcnReader(m_file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_TGC: {
+				m_fileType = FTYPE_EMBEDDED_DISC_IMAGE;
+
 				// Check the TGC header for the disc offset.
 				static_assert(sizeof(GCN_TGC_Header) == GCN_TGC_Header_SIZE,
 					"GCN_TGC_Header is the wrong size. (Should be 64 bytes.)");
@@ -910,6 +912,7 @@ GameCube::GameCube(IRpFile *file)
 			}
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
+				m_fileType = FTYPE_UNKNOWN;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				break;
 		}

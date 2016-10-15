@@ -50,7 +50,7 @@ namespace LibRomData {
 class GameCubeSavePrivate
 {
 	public:
-		GameCubeSavePrivate(GameCubeSave *q);
+		explicit GameCubeSavePrivate(GameCubeSave *q);
 		~GameCubeSavePrivate();
 
 	private:

@@ -178,6 +178,12 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 		case RomData::FTYPE_SAVE_FILE:
 			fileType = _RP("Save File");
 			break;
+		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
+			fileType = _RP("Embedded Disc Image");
+			break;
+		case RomData::FTYPE_APPLICATION_PACKAGE:
+			fileType = _RP("Application Package");
+			break;
 		case RomData::FTYPE_UNKNOWN:
 		default:
 			fileType = nullptr;
@@ -433,7 +439,7 @@ void RomDataViewPrivate::updateDisplay(void)
 
 				QDateTime dateTime;
 				dateTime.setTimeSpec(
-					dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC
+					(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
 						? Qt::UTC : Qt::LocalTime);
 				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
 

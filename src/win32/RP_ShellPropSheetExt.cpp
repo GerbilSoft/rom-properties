@@ -576,6 +576,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		case RomData::FTYPE_SAVE_FILE:
 			fileType = _RP("Save File");
 			break;
+		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
+			fileType = _RP("Embedded Disc Image");
+			break;
+		case RomData::FTYPE_APPLICATION_PACKAGE:
+			fileType = _RP("Application Package");
+			break;
 		case RomData::FTYPE_UNKNOWN:
 		default:
 			fileType = nullptr;

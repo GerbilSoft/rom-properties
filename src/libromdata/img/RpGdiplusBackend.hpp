@@ -69,7 +69,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 *
 		 * @param pGdipBmp Gdiplus::Bitmap.
 		 */
-		RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp);
+		explicit RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp);
 
 		virtual ~RpGdiplusBackend();
 
