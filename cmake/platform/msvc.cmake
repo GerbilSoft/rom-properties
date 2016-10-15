@@ -4,7 +4,7 @@
 # - MSVC "logo" messages
 # - C4355: 'this' used in base member initializer list (used for Qt Dpointer pattern)
 # - MSVCRT "deprecated" functions
-SET(RP_C_FLAGS_COMMON "/nologo -wd4355 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
+SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON}")
 # NOTE: -tsaware is automatically set for Windows 2000 and later. (as of at least Visual Studio .NET 2003)
 SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWARE")
