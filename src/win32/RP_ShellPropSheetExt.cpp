@@ -62,6 +62,8 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "libromdata/img/GdiplusHelper.hpp"
 #include "libromdata/img/RpGdiplusBackend.hpp"
+#include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/img/IconAnimHelper.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -106,8 +108,9 @@ class RP_ShellPropSheetExt_Private
 		// ROM data.
 		LibRomData::RomData *romData;
 
-		// Property dialog hWnd.
-		HWND hDlgProps;
+		// Useful window handles.
+		HWND hDlgProps;		// Property dialog. (parent)
+		HWND hDlgSheet;		// Property sheet.
 
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
@@ -121,10 +124,30 @@ class RP_ShellPropSheetExt_Private
 
 		// Header row widgets.
 		HWND lblSysInfo;
+
+		// Banner.
 		unique_ptr<Gdiplus::Bitmap> pBmpBanner;
-		unique_ptr<Gdiplus::Bitmap> pBmpIcon;	// TODO: Animated.
-		Gdiplus::Rect rectBanner;
-		Gdiplus::Rect rectIcon;
+		Gdiplus::Rect gdipRectBanner;
+		RECT rectBanner;
+
+		// Animated icon data.
+		const IconAnimData *iconAnimData;
+		unique_ptr<Gdiplus::Bitmap> pIconFrames[IconAnimData::MAX_FRAMES];
+		IconAnimHelper iconAnimHelper;
+		UINT_PTR animTimerID;		// Animation timer ID. (non-zero == running)
+		int last_frame_number;		// Last frame number.
+		Gdiplus::Rect gdipRectIcon;
+		RECT rectIcon;
+
+		/**
+		 * Start the animation timer.
+		 */
+		void startAnimTimer(void);
+
+		/**
+		 * Stop the animation timer.
+		 */
+		void stopAnimTimer(void);
 
 	private:
 		/**
@@ -209,15 +232,21 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	: q(q)
 	, romData(nullptr)
 	, hDlgProps(nullptr)
+	, hDlgSheet(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, lblSysInfo(nullptr)
+	, iconAnimData(nullptr)
+	, animTimerID(0)
+	, last_frame_number(0)
 {
 	szSelectedFile[0] = 0;
 }
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
+	stopAnimTimer();
+	iconAnimHelper.setIconAnimData(nullptr);
 	delete romData;
 
 	// Delete the fonts.
@@ -232,6 +261,43 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 PCWSTR RP_ShellPropSheetExt_Private::GetSelectedFile(void) const
 {
 	return this->szSelectedFile;
+}
+
+/**
+ * Start the animation timer.
+ */
+void RP_ShellPropSheetExt_Private::startAnimTimer(void)
+{
+	if (!iconAnimData) {
+		// Not an animated icon.
+		return;
+	}
+
+	// Get the current frame information.
+	last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
+	if (delay <= 0) {
+		// Invalid delay value.
+		return;
+	}
+
+	// Set a timer for the current frame.
+	// We're using the 'd' pointer as nIDEvent.
+	animTimerID = SetTimer(hDlgSheet,
+		reinterpret_cast<UINT_PTR>(this),
+		delay,
+		RP_ShellPropSheetExt::AnimTimerProc);
+}
+
+/**
+ * Stop the animation timer.
+ */
+void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
+{
+	if (animTimerID) {
+		KillTimer(hDlgSheet, animTimerID);
+		animTimerID = 0;
+	}
 }
 
 /**
@@ -444,19 +510,37 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				pBmpIcon.reset(backend->dup_ARGB32());
-				if (pBmpIcon) {
+				pIconFrames[0].reset(backend->dup_ARGB32());
+				if (pIconFrames[0]) {
 					// Icon will be drawn in WM_PAINT via GDI+
 					// in order to handle alpha transparency.
 					if (total_widget_width > 0) {
 						total_widget_width += pt_start.x;
 					}
-					total_widget_width += pBmpIcon->GetWidth();
+					total_widget_width += pIconFrames[0]->GetWidth();
 				}
 			}
-		} else {
-			// No icon.
-			pBmpIcon.reset();
+
+			// Get the animated icon data.
+			iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				// Convert the icons to GDI+ bitmaps.
+				// TODO: Refactor this a bit...
+				for (int i = 1; i < iconAnimData->count; i++) {
+					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
+						// Duplicate the GDI+ bitmap.
+						const RpGdiplusBackend *backend =
+							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
+						assert(backend != nullptr);
+						if (backend) {
+							pIconFrames[i].reset(backend->dup_ARGB32());
+						}
+					}
+				}
+
+				// Set up the IconAnimHelper.
+				iconAnimHelper.setIconAnimData(iconAnimData);
+			}
 		}
 	}
 
@@ -479,18 +563,30 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// pBmpBanner
 	if (pBmpBanner) {
-		rectBanner = Gdiplus::Rect(curPt.x, curPt.y,
+		gdipRectBanner = Gdiplus::Rect(curPt.x, curPt.y,
 			pBmpBanner->GetWidth(),
 			pBmpBanner->GetHeight());
 		curPt.x += pBmpBanner->GetWidth() + pt_start.x;
+
+		// Convert to GDI RECT.
+		// FIXME: Verify GDI+ GetRight and GetBottom.
+		SetRect(&rectBanner,
+			gdipRectBanner.GetLeft(), gdipRectBanner.GetTop(),
+			gdipRectBanner.GetRight(), gdipRectBanner.GetBottom());
 	}
 
-	// pBmpIcon
-	if (pBmpIcon) {
-		rectIcon = Gdiplus::Rect(curPt.x, curPt.y,
-			pBmpIcon->GetWidth(),
-			pBmpIcon->GetHeight());
-		curPt.x += pBmpIcon->GetWidth() + pt_start.x;
+	// pIconFrames[0]
+	if (pIconFrames[0]) {
+		gdipRectIcon = Gdiplus::Rect(curPt.x, curPt.y,
+			pIconFrames[0]->GetWidth(),
+			pIconFrames[0]->GetHeight());
+		curPt.x += pIconFrames[0]->GetWidth() + pt_start.x;
+
+		// Convert to GDI RECT.
+		// FIXME: Verify GDI+ GetRight and GetBottom.
+		SetRect(&rectIcon,
+			gdipRectIcon.GetLeft(), gdipRectIcon.GetTop(),
+			gdipRectIcon.GetRight(), gdipRectIcon.GetBottom());
 	}
 
 	// Return the label height and some extra padding.
@@ -1370,7 +1466,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 //
 //   PURPOSE: Processes messages for the property page.
 //
-INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -1386,51 +1482,94 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
 				return TRUE;
+			RP_ShellPropSheetExt_Private *const d = pExt->d;
 
 			// Store the object pointer with this particular page dialog.
-			SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
-			// Save the property dialog handle for later.
-			pExt->d->hDlgProps = GetParent(hWnd);
+			SetProp(hDlg, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
+			// Save handles for later.
+			d->hDlgProps = GetParent(hDlg);
+			d->hDlgSheet = hDlg;
 			// Initialize the dialog.
-			pExt->d->initDialog(hWnd);
+			d->initDialog(hDlg);
 			return TRUE;
 		}
 
 		case WM_DESTROY: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				// Stop the animation timer.
+				RP_ShellPropSheetExt_Private *const d = pExt->d;
+				d->stopAnimTimer();
+			}
+
 			// Remove the EXT_POINTER_PROP property from the page. 
 			// The EXT_POINTER_PROP property stored the pointer to the 
 			// FilePropSheetExt object.
-			RemoveProp(hWnd, EXT_POINTER_PROP);
+			RemoveProp(hDlg, EXT_POINTER_PROP);
 			return TRUE;
 		}
 
 		case WM_PAINT: {
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hWnd, EXT_POINTER_PROP));
+				GetProp(hDlg, EXT_POINTER_PROP));
 			if (!pExt) {
 				// No RP_ShellPropSheetExt. Can't do anything...
 				return FALSE;
 			}
 
-			if (!pExt->d->pBmpBanner && !pExt->d->pBmpIcon) {
+			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			if (!d->pBmpBanner && !d->pIconFrames[0]) {
 				// Nothing to draw...
 				break;
 			}
 
 			PAINTSTRUCT ps;
-			HDC hDC = BeginPaint(hWnd, &ps);
+			HDC hDC = BeginPaint(hDlg, &ps);
 			Gdiplus::Graphics g(hDC);
 
-			// Draw the banner and/or icon.
-			if (pExt->d->pBmpBanner) {
-				g.DrawImage(pExt->d->pBmpBanner.get(), pExt->d->rectBanner);
-			}
-			// TODO: Animated icon.
-			if (pExt->d->pBmpIcon) {
-				g.DrawImage(pExt->d->pBmpIcon.get(), pExt->d->rectIcon);
+			// Draw the banner.
+			if (d->pBmpBanner) {
+				g.DrawImage(d->pBmpBanner.get(), d->gdipRectBanner);
 			}
 
+			// Draw the icon.
+			if (d->pIconFrames[d->last_frame_number]) {
+				g.DrawImage(d->pIconFrames[d->last_frame_number].get(),
+					d->gdipRectIcon);
+			}
+
+			// TODO: Call EndPaint().
+			EndPaint(hDlg, &ps);
+
 			return TRUE;
+		}
+
+		case WM_NOTIFY: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (!pExt) {
+				// No RP_ShellPropSheetExt. Can't do anything...
+				return FALSE;
+			}
+
+			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
+			switch (lppsn->hdr.code) {
+				case PSN_SETACTIVE:
+					d->startAnimTimer();
+					break;
+
+				case PSN_KILLACTIVE:
+					d->stopAnimTimer();
+					break;
+
+				default:
+					break;
+			}
+
+			// Continue normal processing.
+			break;
 		}
 
 		default:
@@ -1526,4 +1665,48 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, W
 
 	// Can't find the original window procedure...
 	return DefDlgProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Animated icon timer.
+ * @param hWnd
+ * @param uMsg
+ * @param idEvent
+ * @param dwTime
+ */
+void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	if (hWnd == nullptr || idEvent == 0) {
+		// Not a valid timer procedure call...
+		// - hWnd should not be nullptr.
+		// - idEvent should be the 'd' pointer.
+		return;
+	}
+
+	RP_ShellPropSheetExt_Private *d =
+		reinterpret_cast<RP_ShellPropSheetExt_Private*>(idEvent);
+
+	// Next frame.
+	int delay = 0;
+	int frame = d->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		KillTimer(hWnd, idEvent);
+		d->animTimerID = 0;
+		return;
+	}
+
+	if (frame != d->last_frame_number) {
+		// New frame number.
+		// Update the icon.
+		// FIXME: On Win7, dragging offscreen and back onscreen
+		// causes some blank lines to appear before it updates...
+		// ...and sometimes it flashes blank regardless!
+		d->last_frame_number = frame;
+		InvalidateRect(d->hDlgSheet, &d->rectIcon, TRUE);
+	}
+
+	// Update the timer.
+	// TODO: Verify that this affects the next callback.
+	SetTimer(hWnd, idEvent, delay, RP_ShellPropSheetExt::AnimTimerProc);
 }

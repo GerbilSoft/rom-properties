@@ -93,6 +93,15 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		// Subclass procedure for ES_MULTILINE EDIT controls.
 		static INT_PTR CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+		/**
+		 * Animated icon timer.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param idEvent
+		 * @param dwTime
+		 */
+		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 };
 
 #ifdef __CRT_UUID_DECL
