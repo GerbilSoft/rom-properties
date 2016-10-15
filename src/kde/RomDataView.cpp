@@ -219,7 +219,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
-		if (banner) {
+		if (banner && banner->isValid()) {
 			QImage img = rpToQImage(banner);
 			if (!img.isNull()) {
 				ui.lblBanner = new QLabel(q);
@@ -234,7 +234,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the banner.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
-		if (icon) {
+		if (icon && icon->isValid()) {
 			QImage img = rpToQImage(icon);
 			if (!img.isNull()) {
 				ui.lblIcon = new QLabel(q);
@@ -248,7 +248,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 				// Convert the icons to QPixmaps.
 				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
-					if (iconAnimData->frames[i]) {
+					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						iconFrames[i] = QPixmap::fromImage(
 							rpToQImage(iconAnimData->frames[i]));
 					}
