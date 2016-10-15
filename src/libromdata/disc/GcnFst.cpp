@@ -95,7 +95,7 @@ class GcnFstPrivate
 
 		/**
 		 * Find a path.
-		 * @param path Path.
+		 * @param path Path. (Absolute paths only!)
 		 * @return fst_entry if found, or nullptr if not.
 		 */
 		const GCN_FST_Entry *find_path(const rp_char *path) const;
@@ -234,7 +234,7 @@ const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const rp_char **ppszName) con
 
 /**
  * Find a path.
- * @param path Path.
+ * @param path Path. (Absolute paths only!)
  * @return fst_entry if found, or nullptr if not.
  */
 const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
@@ -251,8 +251,14 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	}
 
 	// Store the path as a temporary rp_string.
-	// TODO: ASCII or Latin-1 instead?
-	rp_string rp_path(path);
+	rp_string rp_path;
+	if (path[0] != 0 && path[0] != _RP_CHR('/')) {
+		// Prepend a slash.
+		// (Relative paths aren't supported.)
+		rp_path = _RP_CHR('/');
+	}
+	rp_path.append(path);
+
 	if (rp_path.empty()) {
 		// Invalid path.
 		return nullptr;
@@ -280,7 +286,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const rp_char *path) const
 	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count);
 	size_t slash_pos = 0;
 	do {
-		size_t next_slash_pos = rp_path.find('/', slash_pos + 1);
+		size_t next_slash_pos = rp_path.find(_RP_CHR('/'), slash_pos + 1);
 		rp_string path_component;
 		bool are_more_slashes = true;
 		if (next_slash_pos == string::npos) {
@@ -513,6 +519,43 @@ int GcnFst::closedir(IFst::Dir *dirp)
 	assert(d->fstDirCount > 0);
 	delete dirp;
 	d->fstDirCount--;
+	return 0;
+}
+
+
+/**
+ * Get the directory entry for the specified file.
+ * @param filename	[in] Filename.
+ * @param dirent	[out] Pointer to DirEnt buffer.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GcnFst::find_file(const rp_char *filename, DirEnt *dirent)
+{
+	if (!filename || !dirent) {
+		// Invalid parameters.
+		return -EINVAL;
+	}
+
+	const GCN_FST_Entry *fst_entry = d->find_path(filename);
+	if (!fst_entry) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Copy the relevant information to dirent.
+	const bool is_fst_dir = d->is_dir(fst_entry);
+	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
+	dirent->name = d->entry_name(fst_entry);
+	if (is_fst_dir) {
+		// offset and size are not valid for directories.
+		dirent->offset = 0;
+		dirent->size = 0;
+	} else {
+		// Save the offset and size.
+		dirent->offset = ((int64_t)be32_to_cpu(fst_entry->file.offset) << d->offsetShift);
+		dirent->size = be32_to_cpu(fst_entry->file.size);
+	}
+
 	return 0;
 }
 

@@ -22,11 +22,14 @@
 #include "GameCube.hpp"
 #include "NintendoPublishers.hpp"
 #include "gcn_structs.h"
+#include "gcn_banner.h"
 
 #include "common.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
+#include "img/rp_image.hpp"
+#include "img/ImageDecoder.hpp"
 
 // DiscReader
 #include "disc/DiscReader.hpp"
@@ -41,12 +44,16 @@
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 using std::ostringstream;
 using std::string;
+using std::unique_ptr;
 using std::vector;
+
+#include "SystemRegion.hpp"
 
 namespace LibRomData {
 
@@ -77,8 +84,8 @@ class GameCubePrivate
 
 			// Low byte: System ID.
 			DISC_SYSTEM_GCN = 0,		// GameCube disc image.
-			DISC_SYSTEM_WII = 1,		// Wii disc image.
-			DISC_SYSTEM_TRIFORCE = 2,	// Triforce disc/ROM image. [TODO]
+			DISC_SYSTEM_TRIFORCE = 1,	// Triforce disc/ROM image. [TODO]
+			DISC_SYSTEM_WII = 2,		// Wii disc image.
 			DISC_SYSTEM_UNKNOWN = 0xFF,
 			DISC_SYSTEM_MASK = 0xFF,
 
@@ -98,6 +105,11 @@ class GameCubePrivate
 		// Disc header.
 		GCN_DiscHeader discHeader;
 		RVL_RegionSetting regionSetting;
+
+		// GameCube opening.bnr.
+		// NOTE: Check gcn_opening_bnr->magic to determine
+		// how many comment fields are present.
+		banner_bnr2_t *gcn_opening_bnr;
 
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
@@ -167,6 +179,12 @@ class GameCubePrivate
 		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
 		 */
 		vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
+
+		/**
+		 * Load opening.bnr. (GameCube only)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int gcn_loadOpeningBnr(void);
 };
 
 /** GameCubePrivate **/
@@ -175,6 +193,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q)
 	: q(q)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
+	, gcn_opening_bnr(nullptr)
 	, gcnRegion(~0)
 	, wiiVgTblLoaded(false)
 	, updatePartition(nullptr)
@@ -197,6 +216,7 @@ GameCubePrivate::~GameCubePrivate()
 		}
 	}
 
+	free(gcn_opening_bnr);
 	delete discReader;
 }
 
@@ -218,6 +238,8 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
+
+	// TODO: GameCube opening.bnr fields.
 
 	/** Wii-specific fields. **/
 	// Age rating(s).
@@ -730,6 +752,99 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 	return ret;
 }
 
+/**
+ * Load opening.bnr. (GameCube only)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCubePrivate::gcn_loadOpeningBnr(void)
+{
+	assert(discReader != nullptr);
+	// TODO: Do Triforce games have opening.bnr?
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN ||
+	       (discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE);
+
+	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
+	    (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
+	{
+		// No opening.bnr.
+		return -ENOENT;
+	}
+
+	if (gcn_opening_bnr) {
+		// Banner is already loaded.
+		return 0;
+	}
+
+	// NOTE: We usually don't keep a GcnPartition open,
+	// since we don't need to access more than one file.
+	unique_ptr<GcnPartition> gcnPartition(new GcnPartition(discReader, 0));
+	if (!gcnPartition || !gcnPartition->isOpen()) {
+		// Could not open the partition.
+		return -EIO;
+	}
+
+	unique_ptr<IRpFile> f_opening_bnr(gcnPartition->open(_RP("/opening.bnr")));
+	if (!f_opening_bnr) {
+		// Error opening "opening.bnr".
+		return -gcnPartition->lastError();
+	}
+
+	// Static assertions for the banner structs.
+	static_assert(sizeof(banner_comment_t) == GCN_BANNER_COMMENT_SIZE,
+		"banner_comment_t is the wrong size. (Should be 320 bytes.)");
+	static_assert(sizeof(banner_bnr1_t) == GCN_BANNER_BNR1_SIZE,
+		"banner_bnr1_t is the wrong size. (Should be 6,496 bytes.)");
+	static_assert(sizeof(banner_bnr2_t) == GCN_BANNER_BNR2_SIZE,
+		"banner_bnr2_t is the wrong size. (Should be 8,096 bytes.)");
+
+	// Always use a BNR2 pointer.
+	// BNR1 and BNR2 have identical layouts, except
+	// BNR2 has more comment fields.
+	banner_bnr2_t *pBanner = nullptr;
+	unsigned int banner_size = 0;
+
+	// Read the magic number to determine what type of
+	// opening.bnr file this is.
+	uint32_t bnr_magic;
+	size_t size = f_opening_bnr->read(&bnr_magic, sizeof(bnr_magic));
+	if (size != sizeof(bnr_magic)) {
+		// Read error.
+		int err = f_opening_bnr->lastError();
+		return (err != 0 ? -err : -EIO);
+	}
+
+	bnr_magic = be32_to_cpu(bnr_magic);
+	switch (bnr_magic) {
+		case BANNER_MAGIC_BNR1:
+			banner_size = GCN_BANNER_BNR1_SIZE;
+			break;
+		case BANNER_MAGIC_BNR2:
+			banner_size = GCN_BANNER_BNR2_SIZE;
+			break;
+		default:
+			// Unknown magic.
+			// TODO: Better error code?
+			return -EIO;
+	}
+
+	// Load the full banner.
+	// NOTE: Magic number is loaded as host-endian.
+	pBanner = (banner_bnr2_t*)malloc(banner_size);
+	pBanner->magic = bnr_magic;
+	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
+	if (size != banner_size-4) {
+		// Read error.
+		// TODO: Allow smaller than "full" for BNR2?
+		free(pBanner);
+		int err = f_opening_bnr->lastError();
+		return (err != 0 ? -err : -EIO);
+	}
+
+	// Banner loaded.
+	gcn_opening_bnr = pBanner;
+	return 0;
+}
+
 /** GameCube **/
 
 /**
@@ -804,95 +919,101 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	m_isValid = (d->discType >= 0);
-	if (m_isValid) {
-		// Save the disc header for later.
-		d->discReader->rewind();
-		size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
-		if (size != sizeof(d->discHeader)) {
-			// Error reading the disc header.
+	if (!m_isValid) {
+		// Nothing else to do here.
+		return;
+	}
+
+	// Save the disc header for later.
+	static_assert(sizeof(GCN_DiscHeader) == GCN_DiscHeader_SIZE,
+		"GCN_DiscHeader is the wrong size. (Should be 96 bytes.)");
+	d->discReader->rewind();
+	size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
+	if (size != sizeof(d->discHeader)) {
+		// Error reading the disc header.
+		delete d->discReader;
+		d->discReader = nullptr;
+		d->discType = GameCubePrivate::DISC_UNKNOWN;
+		m_isValid = false;
+		return;
+	}
+
+	if (d->discType != GameCubePrivate::DISC_UNKNOWN &&
+	    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_UNKNOWN))
+	{
+		// isRomSupported() was unable to determine the
+		// system type, possibly due to format limitations.
+		// Examples:
+		// - CISO doesn't store a copy of the disc header
+		//   in range of the data we read.
+		// - TGC has a 32 KB header before the embedded GCM.
+		if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
+			// Wii disc image.
+			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
+			d->discType |=  GameCubePrivate::DISC_SYSTEM_WII;
+		} else if (be32_to_cpu(d->discHeader.magic_gcn) == GCN_MAGIC) {
+			// GameCube disc image.
+			// TODO: Check for Triforce?
+			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
+			d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
+		} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
+			    sizeof(GameCubePrivate::nddemo_header)))
+		{
+			// NDDEMO disc.
+			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
+			d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
+		} else {
+			// Unknown system type.
 			delete d->discReader;
 			d->discReader = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
 			m_isValid = false;
 			return;
 		}
+	}
 
-		if (d->discType != GameCubePrivate::DISC_UNKNOWN &&
-		    ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) == GameCubePrivate::DISC_SYSTEM_UNKNOWN))
-		{
-			// isRomSupported() was unable to determine the
-			// system type, possibly due to format limitations.
-			// Examples:
-			// - CISO doesn't store a copy of the disc header
-			//   in range of the data we read.
-			// - TGC has a 32 KB header before the embedded GCM.
-			if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
-				// Wii disc image.
-				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
-				d->discType |=  GameCubePrivate::DISC_SYSTEM_WII;
-			} else if (be32_to_cpu(d->discHeader.magic_gcn) == GCN_MAGIC) {
-				// GameCube disc image.
-				// TODO: Check for Triforce?
-				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
-				d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
-			} else if (!memcmp(&d->discHeader, GameCubePrivate::nddemo_header,
-				    sizeof(GameCubePrivate::nddemo_header)))
-			{
-				// NDDEMO disc.
-				d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
-				d->discType |=  GameCubePrivate::DISC_SYSTEM_GCN;
-			} else {
-				// Unknown system type.
+	// Get the GCN region code. (bi2.bin or RVL_RegionSetting)
+	switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
+		case GameCubePrivate::DISC_SYSTEM_GCN:
+		case GameCubePrivate::DISC_SYSTEM_TRIFORCE: {	// TODO?
+			GCN_Boot_Info bootInfo;	// TODO: Save in GameCubePrivate?
+			d->discReader->seek(GCN_Boot_Info_ADDRESS);
+			size = d->discReader->read(&bootInfo, sizeof(bootInfo));
+			if (size != sizeof(bootInfo)) {
+				// Cannot read bi2.bin.
 				delete d->discReader;
 				d->discReader = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				m_isValid = false;
 				return;
 			}
+
+			d->gcnRegion = be32_to_cpu(bootInfo.region_code);
+			break;
 		}
 
-		// Get the GCN region code. (bi2.bin or RVL_RegionSetting)
-		switch (d->discType & GameCubePrivate::DISC_SYSTEM_MASK) {
-			case GameCubePrivate::DISC_SYSTEM_GCN:
-			case GameCubePrivate::DISC_SYSTEM_TRIFORCE:	// TODO?
-				GCN_Boot_Info bootInfo;	// TODO: Save in GameCubePrivate?
-				d->discReader->seek(GCN_Boot_Info_ADDRESS);
-				size = d->discReader->read(&bootInfo, sizeof(bootInfo));
-				if (size != sizeof(bootInfo)) {
-					// Cannot read bi2.bin.
-					delete d->discReader;
-					d->discReader = nullptr;
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					m_isValid = false;
-					return;
-				}
-
-				d->gcnRegion = be32_to_cpu(bootInfo.region_code);
-				break;
-
-			case GameCubePrivate::DISC_SYSTEM_WII:
-				d->discReader->seek(RVL_RegionSetting_ADDRESS);
-				size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
-				if (size != sizeof(d->regionSetting)) {
-					// Cannot read RVL_RegionSetting.
-					delete d->discReader;
-					d->discReader = nullptr;
-					d->discType = GameCubePrivate::DISC_UNKNOWN;
-					m_isValid = false;
-					return;
-				}
-
-				d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
-				break;
-
-			default:
-				// Unknown system.
+		case GameCubePrivate::DISC_SYSTEM_WII:
+			d->discReader->seek(RVL_RegionSetting_ADDRESS);
+			size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
+			if (size != sizeof(d->regionSetting)) {
+				// Cannot read RVL_RegionSetting.
 				delete d->discReader;
 				d->discReader = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				m_isValid = false;
 				return;
-		}
+			}
+
+			d->gcnRegion = be32_to_cpu(d->regionSetting.region_code);
+			break;
+
+		default:
+			// Unknown system.
+			delete d->discReader;
+			d->discReader = nullptr;
+			d->discType = GameCubePrivate::DISC_UNKNOWN;
+			m_isValid = false;
+			return;
 	}
 }
 
@@ -1063,7 +1184,7 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
  */
 uint32_t GameCube::supportedImageTypes_static(void)
 {
-       return IMGBF_EXT_MEDIA;
+       return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA;
 }
 
 /**
@@ -1373,6 +1494,63 @@ static LibRomData::rp_string getCacheKey(const char *system, const char *type, c
 
 	// TODO: UTF-8, not Latin-1?
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image() if the image data hasn't been loaded yet.
+ * @param imageType Image type to load.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCube::loadInternalImage(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+
+	if (m_images[imageType]) {
+		// Icon *has* been loaded...
+		return 0;
+	} else if (!m_file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!m_isValid) {
+		// Save file isn't valid.
+		return -EIO;
+	}
+
+	// Check for supported image types.
+	if (imageType != IMG_INT_BANNER) {
+		// Only IMG_INT_BANNER is supported by GameCube.
+		return -ENOENT;
+	}
+
+	// Load opening.bnr.
+	// FIXME: Does Triforce have opening.bnr?
+	printf("try load\n");
+	if (d->gcn_loadOpeningBnr() != 0) {
+		// Could not load opening.bnr.
+		printf("opening.bnr failed\n");
+		return -ENOENT;
+	}
+
+	// Use nearest-neighbor scaling when resizing.
+	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+
+	// Convert the banner from GameCube RGB5A3 to ARGB32.
+	rp_image *banner = ImageDecoder::fromGcnRGB5A3(
+		BANNER_IMAGE_W, BANNER_IMAGE_H,
+		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
+	if (!banner) {
+		// Error converting the banner.
+		return -EIO;
+	}
+
+	// Finished decoding the banner.
+	m_images[imageType] = banner;
+	return 0;
 }
 
 /**

@@ -60,20 +60,20 @@ class IFst
 		struct Dir {
 			IFst *parent;		// IFst that owns this Dir.
 			int dir_idx;		// Directory index in the FST.
-			DirEnt entry;		// Current FstDirEntry.
+			DirEnt entry;		// Current DirEnt.
 		};
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path.
-		 * @return FstDir*, or nullptr on error.
+		 * @return Dir*, or nullptr on error.
 		 */
 		virtual Dir *opendir(const rp_char *path) = 0;
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path.
-		 * @return FstDir*, or nullptr on error.
+		 * @return Dir*, or nullptr on error.
 		 */
 		inline Dir *opendir(const LibRomData::rp_string &path)
 		{
@@ -82,18 +82,26 @@ class IFst
 
 		/**
 		 * Read a directory entry.
-		 * @param dirp FstDir pointer.
-		 * @return FstDirEntry*, or nullptr if end of directory or on error.
+		 * @param dirp Dir pointer.
+		 * @return DirEnt*, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
 		virtual DirEnt *readdir(Dir *dirp) = 0;
 
 		/**
 		 * Close an opened directory.
-		 * @param dirp FstDir pointer.
+		 * @param dirp Dir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int closedir(Dir *dirp) = 0;
+
+		/**
+		 * Get the directory entry for the specified file.
+		 * @param filename	[in] Filename.
+		 * @param dirent	[out] Pointer to DirEnt buffer.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int find_file(const rp_char *filename, DirEnt *dirent) = 0;
 };
 
 /**

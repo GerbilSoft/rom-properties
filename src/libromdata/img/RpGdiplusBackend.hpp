@@ -96,6 +96,43 @@ class RpGdiplusBackend : public rp_image_backend
 		virtual const void *data(void) const final;
 		virtual size_t data_len(void) const final;
 
+	protected:
+		/**
+		 * Lock the GDI+ bitmap.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @return Gdiplus::Status
+		 */
+		Gdiplus::Status lock(void);
+
+		/**
+		 * Unlock the GDI+ bitmap.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @return Gdiplus::Status
+		 */
+		Gdiplus::Status unlock(void);
+
+	public:
+		/**
+		 * Duplicate the GDI+ bitmap.
+		 *
+		 * This function is intended to be used when drawing
+		 * GDI+ bitmaps directly to a window. As such, it will
+		 * automatically convert images to 32-bit ARGB in order
+		 * to avoid CI8 alpha transparency artifacting.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @return Duplicated GDI+ bitmap.
+		 */
+		Gdiplus::Bitmap *dup_ARGB32(void) const;
+
 	public:
 		/**
 		 * Convert the GDI+ image to HBITMAP.
@@ -171,22 +208,12 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		HBITMAP convBmpData_CI8(const Gdiplus::BitmapData *pBmpData);
 
-		/**
-		 * Convert a locked CI8 GDI+ bitmap to an ARGB32 GDI+ bitmap.
-		 * Alpha transparency is preserved.
-		 * @param pBmpData Gdiplus::BitmapData.
-		 * @param pColorPalette Gdiplus::ColorPalette.
-		 * @return HBITMAP.
-		 */
-		static Gdiplus::Bitmap *convCI8toARGB32(
-			const Gdiplus::BitmapData *pBmpData,
-			const Gdiplus::ColorPalette *pColorPalette);
-
 	protected:
 		ULONG_PTR m_gdipToken;
 		Gdiplus::Bitmap *m_pGdipBmp;
 
 		// BitmapData for locking.
+		bool m_isLocked;
 		Gdiplus::PixelFormat m_gdipFmt;
 		Gdiplus::BitmapData m_gdipBmpData;
 

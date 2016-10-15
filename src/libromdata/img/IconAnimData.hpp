@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * SystemRegion.hpp: Get the system country code.                          *
+ * IconAnimData.hpp: Icon animation data.                                  *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,49 +19,56 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __LIBROMDATA_SYSTEMREGION_HPP__
-#define __LIBROMDATA_SYSTEMREGION_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_ICONANIMDATA_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_IMG_ICONANIMDATA_HPP__
 
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 namespace LibRomData {
 
-class SystemRegion
+class rp_image;
+
+struct IconAnimData
 {
-	private:
-		// SystemRegion is a static class.
-		SystemRegion();
-		~SystemRegion();
-		SystemRegion(const SystemRegion &other);
-		SystemRegion &operator=(const SystemRegion &other);
+	static const int MAX_FRAMES = 64;
+	static const int MAX_SEQUENCE = 64;
 
-	public:
-		/**
-		 * Get the system country code. (ISO-3166)
-		 * This will always be an uppercase ASCII string.
-		 *
-		 * NOTE: Some newer country codes may use 3-character abbreviations.
-		 * The abbreviation will always be aligned towards the LSB, e.g.
-		 * 'US' will be 0x00005553.
-		 *
-		 * @return ISO-3166 country code as a uint32_t, or 0 on error.
-		 */
-		static uint32_t getCountryCode(void);
+	int count;	// Frame count.
+	int seq_count;	// Sequence count.
 
-		/**
-		 * Get the system language code. (ISO-639)
-		 * This will always be a lowercase ASCII string.
-		 *
-		 * NOTE: Some newer country codes may use 3-character abbreviations.
-		 * The abbreviation will always be aligned towards the LSB, e.g.
-		 * 'en' will be 0x0000656E.
-		 *
-		 * @return ISO-639 language code as a uint32_t, or 0 on error.
-		 */
-		static uint32_t getLanguageCode(void);
+	// Array of icon sequence indexes.
+	// Each entry indicates which frame to use.
+	// Check the seq_count field to determine
+	// how many indexes are actually here.
+	uint8_t seq_index[MAX_SEQUENCE];
+
+	// Array of icon delays.
+	// Delays are in milliseconds.
+	// NOTE: These are associated with sequence indexes,
+	// not the individual icon frames.
+	int delays[MAX_SEQUENCE];
+
+	// Array of icon frames.
+	// Check the count field to determine
+	// how many frames are actually here.
+	// NOTE: Frames may be nullptr, in which case
+	// the previous frame should be used.
+	const rp_image *frames[MAX_FRAMES];
+
+	IconAnimData()
+		: count(0)
+		, seq_count(0)
+	{
+		memset(seq_index, 0, sizeof(seq_index));
+		memset(delays, 0, sizeof(delays));
+		memset(frames, 0, sizeof(frames));
+	}
 };
 
 }
 
-#endif /* __LIBROMDATA_SYSTEMREGION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_ICONANIMDATA_HPP__ */

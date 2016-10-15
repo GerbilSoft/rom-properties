@@ -42,13 +42,6 @@ typedef char mode_str_t;
 #define _MODE(str) (str)
 #endif
 
- // dup()
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-
 namespace LibRomData {
 
 // Deleter for std::unique_ptr<FILE> m_file.

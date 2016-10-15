@@ -80,6 +80,7 @@ SET(libromdata_SRCS
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
+	img/IconAnimHelper.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -87,6 +88,7 @@ SET(libromdata_SRCS
 	disc/GcnPartitionPrivate.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
+	disc/PartitionFile.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -111,6 +113,7 @@ SET(libromdata_H
 	SystemRegion.hpp
 	GameCubeSave.hpp
 	gcn_card.h
+	nds_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -120,6 +123,8 @@ SET(libromdata_H
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
 	img/RpPng.hpp
+	img/IconAnimData.hpp
+	img/IconAnimHelper.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
@@ -132,6 +137,7 @@ SET(libromdata_H
 	disc/WiiPartition.hpp
 	disc/IFst.hpp
 	disc/GcnFst.hpp
+	disc/PartitionFile.hpp
 	)
 
 IF(WIN32)

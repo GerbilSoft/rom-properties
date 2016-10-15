@@ -21,12 +21,14 @@
 
 #include "RomDataView.hpp"
 #include "RpQt.hpp"
+#include "RpQImageBackend.hpp"
 
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
-using LibRomData::RomData;
-using LibRomData::RomFields;
-using LibRomData::rp_string;
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/img/IconAnimHelper.hpp"
+using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -37,6 +39,7 @@ using LibRomData::rp_string;
 using std::vector;
 
 #include <QtCore/QDateTime>
+#include <QtCore/QTimer>
 
 #include <QLabel>
 #include <QCheckBox>
@@ -65,9 +68,38 @@ class RomDataViewPrivate
 
 			QFormLayout *formLayout;
 			// TODO: Store the field widgets?
+
+			// Header row.
+			QHBoxLayout *hboxHeaderRow;
+			QLabel *lblSysInfo;
+			QLabel *lblBanner;
+			QLabel *lblIcon;
+
+			QTimer *tmrIconAnim;
+
+			Ui()	: formLayout(nullptr)
+				, hboxHeaderRow(nullptr)
+				, lblSysInfo(nullptr)
+				, lblBanner(nullptr)
+				, lblIcon(nullptr)
+				, tmrIconAnim(nullptr)
+				{ }
 		};
 		Ui ui;
 		RomData *romData;
+
+		// Animated icon data.
+		const IconAnimData *iconAnimData;
+		QPixmap iconFrames[IconAnimData::MAX_FRAMES];
+		IconAnimHelper iconAnimHelper;
+		bool anim_running;		// Animation is running.
+		int last_frame_number;		// Last frame number.
+
+		/**
+		 * Create the header row.
+		 * @return QLayout containing the header row.
+		 */
+		QLayout *createHeaderRow(void);
 
 		/**
 		 * Update the display widgets.
@@ -76,6 +108,16 @@ class RomDataViewPrivate
 		void updateDisplay(void);
 
 		bool displayInit;
+
+		/**
+		 * Start the animation timer.
+		 */
+		void startAnimTimer(void);
+
+		/**
+		 * Stop the animation timer.
+		 */
+		void stopAnimTimer(void);
 };
 
 /** RomDataViewPrivate **/
@@ -83,11 +125,20 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
+	, iconAnimData(nullptr)
+	, anim_running(false)
+	, last_frame_number(0)
 	, displayInit(false)
-{ }
+{
+	// Register RpQImageBackend.
+	// TODO: Static initializer somewhere?
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+}
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
+	stopAnimTimer();
+	iconAnimHelper.setIconAnimData(nullptr);
 	delete romData;
 }
 
@@ -98,32 +149,20 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	formLayout = new QFormLayout(RomDataView);
 }
 
-/**
- * Update the display widgets.
- * FIXME: Allow running this multiple times?
- */
-void RomDataViewPrivate::updateDisplay(void)
+QLayout *RomDataViewPrivate::createHeaderRow(void)
 {
-	if (!romData || displayInit)
-		return;
-	displayInit = true;
-
-	// Get the fields.
-	const RomFields *fields = romData->fields();
-	if (!fields) {
-		// No fields.
-		// TODO: Show an error?
-		return;
+	Q_Q(RomDataView);
+	assert(romData != nullptr);
+	if (!romData) {
+		// No ROM data.
+		return nullptr;
 	}
-	const int count = fields->count();
 
-	// Make sure the underlying file handle is closed,
-	// since we don't need it anymore.
-	romData->close();
+	// TODO: Delete the old widgets if they're already present.
+	ui.hboxHeaderRow = new QHBoxLayout(q);
 
 	// System name.
-	// TODO: Logo, game icon, and game title?
-	Q_Q(RomDataView);
+	// TODO: System logo and/or game title?
 	const rp_char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
@@ -151,32 +190,128 @@ void RomDataViewPrivate::updateDisplay(void)
 			break;
 	}
 
-	QString header;
+	QString sysInfo;
 	if (systemName) {
-		header = RP2Q(systemName);
+		sysInfo = RP2Q(systemName);
 	}
 	if (fileType) {
-		if (!header.isEmpty()) {
-			header += QChar(L' ');
+		if (!sysInfo.isEmpty()) {
+			sysInfo += QChar(L'\n');
 		}
-		header += RP2Q(fileType);
+		sysInfo += RP2Q(fileType);
 	}
 
-	if (!header.isEmpty()) {
-		QLabel *lblHeader = new QLabel(q);
-		lblHeader->setAlignment(Qt::AlignCenter);
-		lblHeader->setTextFormat(Qt::PlainText);
-		lblHeader->setText(header);
+	if (!sysInfo.isEmpty()) {
+		ui.lblSysInfo = new QLabel(q);
+		ui.lblSysInfo->setAlignment(Qt::AlignCenter);
+		ui.lblSysInfo->setTextFormat(Qt::PlainText);
+		ui.lblSysInfo->setText(sysInfo);
 
 		// Use a bold font.
-		QFont font = lblHeader->font();
+		QFont font = ui.lblSysInfo->font();
 		font.setBold(true);
-		lblHeader->setFont(font);
+		ui.lblSysInfo->setFont(font);
 
-		ui.formLayout->addRow(lblHeader);
+		ui.hboxHeaderRow->addWidget(ui.lblSysInfo);
 	}
 
+	// Supported image types.
+	const uint32_t imgbf = romData->supportedImageTypes();
+
+	// Banner.
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Get the banner.
+		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		if (banner && banner->isValid()) {
+			QImage img = rpToQImage(banner);
+			if (!img.isNull()) {
+				ui.lblBanner = new QLabel(q);
+				ui.lblBanner->setPixmap(QPixmap::fromImage(img));
+				ui.hboxHeaderRow->addWidget(ui.lblBanner);
+			}
+		}
+	}
+
+	// Icon.
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Get the banner.
+		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		if (icon && icon->isValid()) {
+			QImage img = rpToQImage(icon);
+			if (!img.isNull()) {
+				ui.lblIcon = new QLabel(q);
+				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
+				ui.hboxHeaderRow->addWidget(ui.lblIcon);
+			}
+
+			// Get the animated icon data.
+			iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				// Convert the icons to QPixmaps.
+				iconFrames[0] = QPixmap::fromImage(img);
+				for (int i = 1; i < iconAnimData->count; i++) {
+					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
+						iconFrames[i] = QPixmap::fromImage(
+							rpToQImage(iconAnimData->frames[i]));
+					}
+				}
+
+				// Set up the IconAnimHelper.
+				iconAnimHelper.setIconAnimData(iconAnimData);
+				if (iconAnimHelper.isAnimated()) {
+					// Create the animation timer.
+					if (!ui.tmrIconAnim) {
+						ui.tmrIconAnim = new QTimer(q);
+						ui.tmrIconAnim->setSingleShot(true);
+						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
+								q, SLOT(tmrIconAnim_timeout()));
+					}
+				}
+			}
+		}
+	}
+
+	// Add spacers.
+	ui.hboxHeaderRow->insertStretch(0, 1);
+	ui.hboxHeaderRow->insertStretch(-1, 1);
+	return ui.hboxHeaderRow;
+}
+
+/**
+ * Update the display widgets.
+ * FIXME: Allow running this multiple times?
+ */
+void RomDataViewPrivate::updateDisplay(void)
+{
+	if (!romData || displayInit)
+		return;
+	displayInit = true;
+
+	// Get the fields.
+	const RomFields *fields = romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
+	const int count = fields->count();
+
+	// Header row:
+	// - System name and file type.
+	//   - TODO: System logo.
+	// - Banner (if present)
+	// - Icon (if present)
+	QLayout *headerRow = createHeaderRow();
+	if (headerRow) {
+		ui.formLayout->addRow(headerRow);
+	}
+
+	// Make sure the underlying file handle is closed,
+	// since we don't need it anymore.
+	romData->close();
+
 	// Create the data widgets.
+	Q_Q(RomDataView);
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -350,6 +485,40 @@ void RomDataViewPrivate::updateDisplay(void)
 	}
 }
 
+/**
+ * Start the animation timer.
+ */
+void RomDataViewPrivate::startAnimTimer(void)
+{
+	if (!iconAnimData || !ui.tmrIconAnim || !ui.lblIcon) {
+		// Not an animated icon.
+		return;
+	}
+
+	// Get the current frame information.
+	last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
+	if (delay <= 0) {
+		// Invalid delay value.
+		return;
+	}
+
+	// Set a single-shot timer for the current frame.
+	anim_running = true;
+	ui.tmrIconAnim->start(delay);
+}
+
+/**
+ * Stop the animation timer.
+ */
+void RomDataViewPrivate::stopAnimTimer(void)
+{
+	if (ui.tmrIconAnim) {
+		anim_running = false;
+		ui.tmrIconAnim->stop();
+	}
+}
+
 /** RomDataView **/
 
 RomDataView::RomDataView(RomData *rom, QWidget *parent)
@@ -366,4 +535,66 @@ RomDataView::RomDataView(RomData *rom, QWidget *parent)
 RomDataView::~RomDataView()
 {
 	delete d_ptr;
+}
+
+/** QWidget overridden functions. **/
+
+/**
+ * Window has been hidden.
+ * This means that this tab has been selected.
+ * @param event QShowEvent.
+ */
+void RomDataView::showEvent(QShowEvent *event)
+{
+	// Start the icon animation.
+	Q_D(RomDataView);
+	d->startAnimTimer();
+
+	// Pass the event to the superclass.
+	super::showEvent(event);
+}
+
+/**
+ * Window has been hidden.
+ * This means that a different tab has been selected.
+ * @param event QHideEvent.
+ */
+void RomDataView::hideEvent(QHideEvent *event)
+{
+	// Stop the icon animation.
+	Q_D(RomDataView);
+	d->stopAnimTimer();
+
+	// Pass the event to the superclass.
+	super::hideEvent(event);
+}
+
+/** Widget slots. **/
+
+/**
+ * Animated icon timer.
+ */
+void RomDataView::tmrIconAnim_timeout(void)
+{
+	Q_D(RomDataView);
+
+	// Next frame.
+	int delay = 0;
+	int frame = d->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		return;
+	}
+
+	if (frame != d->last_frame_number) {
+		// New frame number.
+		// Update the icon.
+		d->ui.lblIcon->setPixmap(d->iconFrames[frame]);
+		d->last_frame_number = frame;
+	}
+
+	// Set the single-shot timer.
+	if (d->anim_running) {
+		d->ui.tmrIconAnim->start(delay);
+	}
 }

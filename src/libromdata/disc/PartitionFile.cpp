@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpMemFile.cpp: IRpFile implementation using a memory buffer.            *
+ * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -19,51 +19,52 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpMemFile.hpp"
-
-// C includes. (C++ namespace)
-#include <cstring>
+#include "PartitionFile.hpp"
+#include "IPartition.hpp"
 
 namespace LibRomData {
 
 /**
- * Open an IRpFile backed by memory.
- * The resulting IRpFile is read-only.
- *
- * NOTE: The memory buffer is NOT copied; it must remain
- * valid as long as this object is still open.
- *
- * @param buf Memory buffer.
- * @param size Size of memory buffer.
+ * Open a file from an IPartition.
+ * NOTE: These files are read-only.
+ * @param partition IPartition object.
+ * @param offset File starting offset.
+ * @param size File size.
  */
-RpMemFile::RpMemFile(const void *buf, size_t size)
+PartitionFile::PartitionFile(IPartition *partition, int64_t offset, int64_t size)
 	: super()
-	, m_buf(buf)
-	, m_size((int64_t)size)
-	, m_pos(0)
 	, m_lastError(0)
+	, m_partition(partition)
+	, m_offset(offset)
+	, m_size(size)
+	, m_pos(0)
 {
-	if (!buf) {
-		// No buffer specified.
+	if (!partition) {
 		m_lastError = EBADF;
 	}
+
+	// TODO: Reference counting?
+}
+
+PartitionFile::~PartitionFile()
+{
+	// TODO: Reference counting?
 }
 
 /**
  * Copy constructor.
  * @param other Other instance.
  */
-RpMemFile::RpMemFile(const RpMemFile &other)
+PartitionFile::PartitionFile(const PartitionFile &other)
 	: super()
-	, m_buf(other.m_buf)
+	, m_lastError(0)
+	, m_partition(other.m_partition)
+	, m_offset(other.m_offset)
 	, m_size(other.m_size)
 	, m_pos(0)
-	, m_lastError(0)
 {
-	if (!m_buf) {
-		// No buffer specified.
-		m_lastError = EBADF;
-	}
+	// TODO: Copy m_pos? (RpMemFile doesn't.)
+	// TODO: Reference counting?
 }
 
 /**
@@ -71,14 +72,15 @@ RpMemFile::RpMemFile(const RpMemFile &other)
  * @param other Other instance.
  * @return This instance.
  */
-RpMemFile &RpMemFile::operator=(const RpMemFile &other)
+PartitionFile &PartitionFile::operator=(const PartitionFile &other)
 {
-	m_buf = other.m_buf;
+	// TODO: Reference counting?
+	m_partition = other.m_partition;
+	m_offset = other.m_offset;
 	m_size = other.m_size;
 	m_pos = 0;
 
-	// If there's no buffer specified, that's an error.
-	m_lastError = (m_buf ? 0 : EBADF);
+	m_lastError = (m_partition ? 0 : EBADF);
 	return *this;
 }
 
@@ -87,16 +89,16 @@ RpMemFile &RpMemFile::operator=(const RpMemFile &other)
  * This usually only returns false if an error occurred.
  * @return True if the file is open; false if it isn't.
  */
-bool RpMemFile::isOpen(void) const
+bool PartitionFile::isOpen(void) const
 {
-	return (m_buf != nullptr);
+	return (m_partition != nullptr);
 }
 
 /**
  * Get the last error.
  * @return Last POSIX error, or 0 if no error.
  */
-int RpMemFile::lastError(void) const
+int PartitionFile::lastError(void) const
 {
 	return m_lastError;
 }
@@ -104,7 +106,7 @@ int RpMemFile::lastError(void) const
 /**
  * Clear the last error.
  */
-void RpMemFile::clearError(void)
+void PartitionFile::clearError(void)
 {
 	m_lastError = 0;
 }
@@ -115,21 +117,22 @@ void RpMemFile::clearError(void)
  * Needed because IRpFile* objects are typically
  * pointers, not actual instances of the object.
  *
- * NOTE: For RpMemFile, this will simply copy the
- * memory buffer pointer and size values.
+ * NOTE: The dup()'d IRpFile* does NOT have a separate
+ * file pointer. This is due to how dup() works.
+ *
  * @return dup()'d file, or nullptr on error.
  */
-IRpFile *RpMemFile::dup(void)
+IRpFile *PartitionFile::dup(void)
 {
-	return new RpMemFile(*this);
+	return new PartitionFile(*this);
 }
 
 /**
  * Close the file.
  */
-void RpMemFile::close(void)
+void PartitionFile::close(void)
 {
-	m_buf = nullptr;
+	m_partition = nullptr;
 }
 
 /**
@@ -138,42 +141,48 @@ void RpMemFile::close(void)
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
  */
-size_t RpMemFile::read(void *ptr, size_t size)
+size_t PartitionFile::read(void *ptr, size_t size)
 {
-	if (!m_buf) {
+	if (!m_partition) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
-	// Convert the const void* to a const uint8_t*.
-	const uint8_t *buf = reinterpret_cast<const uint8_t*>(m_buf);
+	m_partition->clearError();
+	int iRet = m_partition->seek(m_offset + m_pos);
+	if (iRet != 0) {
+		m_lastError = m_partition->lastError();
+		return 0;
+	}
 
 	// Check if size is in bounds.
-	if (m_pos > m_size - size) {
+	if (m_pos > (int64_t)(m_size - size)) {
 		// Not enough data.
-		// Copy whatever's left in the buffer.
-		size = m_size - m_pos;
+		// Copy whatever's left in the file.
+		size = (size_t)(m_size - m_pos);
 	}
 
+	size_t ret = 0;
 	if (size > 0) {
-		// Copy the data.
-		memcpy(ptr, &buf[m_pos], size);
-		m_pos += size;
+		m_partition->clearError();
+		ret = m_partition->read(ptr, size);
+		m_pos += ret;
+		m_lastError = m_partition->lastError();
 	}
 
-	return size;
+	return ret;
 }
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
+ * (NOTE: Not valid for PartitionFile; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
  */
-size_t RpMemFile::write(const void *ptr, size_t size)
+size_t PartitionFile::write(const void *ptr, size_t size)
 {
-	// Not a valid operation for RpMemFile.
+	// Not a valid operation for PartitionFile.
 	((void)ptr);
 	((void)size);
 	m_lastError = EBADF;
@@ -185,21 +194,19 @@ size_t RpMemFile::write(const void *ptr, size_t size)
  * @param pos File position.
  * @return 0 on success; -1 on error.
  */
-int RpMemFile::seek(int64_t pos)
+int PartitionFile::seek(int64_t pos)
 {
-	if (!m_buf) {
+	if (!m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
-	// NOTE: m_pos is size_t, since it's referring to
-	// a position within a memory buffer.
 	if (pos <= 0) {
 		m_pos = 0;
-	} else if ((size_t)pos >= m_size) {
+	} else if (pos >= m_size) {
 		m_pos = m_size;
 	} else {
-		m_pos = (size_t)pos;
+		m_pos = pos;
 	}
 
 	return 0;
@@ -209,22 +216,22 @@ int RpMemFile::seek(int64_t pos)
  * Get the file position.
  * @return File position, or -1 on error.
  */
-int64_t RpMemFile::tell(void)
+int64_t PartitionFile::tell(void)
 {
-	if (!m_buf) {
+	if (!m_partition) {
 		m_lastError = EBADF;
-		return 0;
+		return -1;
 	}
 
-	return (int64_t)m_pos;
+	return m_pos;
 }
 
 /**
  * Seek to the beginning of the file.
  */
-void RpMemFile::rewind(void)
+void PartitionFile::rewind(void)
 {
-	if (!m_buf) {
+	if (!m_partition) {
 		m_lastError = EBADF;
 		return;
 	}
@@ -236,9 +243,9 @@ void RpMemFile::rewind(void)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpMemFile::fileSize(void)
+int64_t PartitionFile::fileSize(void)
 {
-	if (!m_buf) {
+	if (!m_partition) {
 		m_lastError = EBADF;
 		return -1;
 	}

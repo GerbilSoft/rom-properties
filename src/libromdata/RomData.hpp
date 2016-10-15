@@ -28,6 +28,9 @@
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -36,6 +39,7 @@ namespace LibRomData {
 
 class IRpFile;
 class rp_image;
+struct IconAnimData;
 
 class RomData
 {
@@ -253,6 +257,11 @@ class RomData
 			// nearest neighbor if the new size is an
 			// integer multiple of the old size.
 			IMGPF_RESCALE_NEAREST	= (1 << 2),
+
+			// File supports animated icons.
+			// Call iconAnimData() to get the animated
+			// icon frames and control information.
+			IMGPF_ICON_ANIMATED	= (1 << 3),
 		};
 
 		/**
@@ -342,6 +351,16 @@ class RomData
 		 * @return Bitfield of ImageProcessingBF operations to perform.
 		 */
 		uint32_t imgpf(ImageType imageType) const;
+
+		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const;
 
 	protected:
 		// TODO: Make a private class?
