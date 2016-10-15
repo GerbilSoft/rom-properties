@@ -199,6 +199,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 int AesCAPI::setChainingMode(ChainingMode mode)
 {
 	if (d->hKey == 0) {
+		// Key hasn't been set.
 		return -EBADF;
 	}
 
@@ -258,7 +259,7 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 {
 	if (d->hKey == 0) {
-		// Key hasn't been loaded.
+		// Key hasn't been set.
 		return 0;
 	}
 
@@ -296,11 +297,11 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
-	if (d->hKey == 0) {
-		// Key hasn't been loaded.
-		return 0;
-	} else if (!iv || iv_len != 16) {
+	if (!iv || iv_len != 16) {
 		// Invalid IV.
+		return 0;
+	} else if (d->hKey == 0) {
+		// Key hasn't been set.
 		return 0;
 	}
 
