@@ -160,6 +160,13 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	DWORD dwRecClrDepth, DWORD *pdwFlags)
 {
 	// TODO: If the image is cached on disk, return a filename.
+	if (!prgSize || !pdwFlags) {
+		// Invalid arguments.
+		return E_INVALIDARG;
+	} else if ((*pdwFlags & IEIFLAG_ASYNC) && !pdwPriority) {
+		// pdwPriority must be specified if IEIFLAG_ASYNC is set.
+		return E_INVALIDARG;
+	}
 
 	// Save the image size for later.
 	m_bmSize = *prgSize;
@@ -174,9 +181,13 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	*pdwFlags |= IEIFLAG_CACHE;
 #endif /* NDEBUG */
 
-	// TODO: On Windows XP, check for IEIFLAG_ASYNC.
-	// If specified, run the thumbnailing process in the background?
-	return S_OK;
+	// If IEIFLAG_ASYNC is specified, return E_PENDING to let
+	// the calling process know it can call Extract() from a
+	// background thread. If this isn't done, then Explorer
+	// will lock up until all images are downloaded.
+	// NOTE: Explorer in Windows Vista and later always seems to
+	// call Extract() from a background thread.
+	return (*pdwFlags & IEIFLAG_ASYNC) ? E_PENDING : S_OK;
 }
 
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
