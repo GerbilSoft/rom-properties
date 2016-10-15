@@ -113,6 +113,15 @@ AesCAPI::~AesCAPI()
 }
 
 /**
+ * Get the name of the AesCipher implementation.
+ * @return Name.
+ */
+const rp_char *AesCAPI::name(void) const
+{
+	return _RP("CryptoAPI");
+}
+
+/**
  * Has the cipher been initialized properly?
  * @return True if initialized; false if not.
  */

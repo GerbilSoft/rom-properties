@@ -222,6 +222,15 @@ bool AesCAPI_NG::isUsable(void)
 }
 
 /**
+ * Get the name of the AesCipher implementation.
+ * @return Name.
+ */
+const rp_char *AesCAPI_NG::name(void) const
+{
+	return _RP("CryptoAPI NG");
+}
+
+/**
  * Has the cipher been initialized properly?
  * @return True if initialized; false if not.
  */

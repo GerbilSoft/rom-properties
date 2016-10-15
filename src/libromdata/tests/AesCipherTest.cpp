@@ -22,6 +22,8 @@
 // Google Test
 #include "gtest/gtest.h"
 
+#include "../TextFuncs.hpp"
+
 // AesCipher
 #include "../crypto/AesCipherFactory.hpp"
 #include "../crypto/IAesCipher.hpp"
@@ -221,6 +223,15 @@ void AesCipherTest::SetUp(void)
 	m_cipher = AesCipherFactory::getInstance();
 	ASSERT_TRUE(m_cipher != nullptr);
 	ASSERT_TRUE(m_cipher->isInit());
+
+	static bool printed_impl = false;
+	if (!printed_impl) {
+		// Print the AesCipher implementation name.
+		const rp_char *name = m_cipher->name();
+		ASSERT_TRUE(name != nullptr);
+		printf("AesCipher implementation: %s\n", rp_string_to_utf8(name, -1).c_str());
+		printed_impl = true;
+	}
 }
 
 /**

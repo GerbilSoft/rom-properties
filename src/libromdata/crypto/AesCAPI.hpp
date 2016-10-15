@@ -43,6 +43,12 @@ class AesCAPI : public IAesCipher
 
 	public:
 		/**
+		 * Get the name of the AesCipher implementation.
+		 * @return Name.
+		 */
+		virtual const rp_char *name(void) const final;
+
+		/**
 		 * Has the cipher been initialized properly?
 		 * @return True if initialized; false if not.
 		 */

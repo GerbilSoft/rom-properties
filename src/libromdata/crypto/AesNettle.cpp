@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesNettle.cpp: AES decryption class using GNU nettle.                   *
+ * AesNettle.cpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -85,6 +85,15 @@ AesNettle::AesNettle()
 AesNettle::~AesNettle()
 {
 	delete d;
+}
+
+/**
+ * Get the name of the AesCipher implementation.
+ * @return Name.
+ */
+const rp_char *AesNettle::name(void) const
+{
+	return _RP("GNU Nettle");
 }
 
 /**

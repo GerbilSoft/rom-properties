@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_IAESCIPHER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_IAESCIPHER_HPP__
 
+#include "config.libromdata.h"
+
 // C includes.
 #include <stdint.h>
 
@@ -39,6 +41,12 @@ class IAesCipher
 		IAesCipher &operator=(const IAesCipher &other);
 
 	public:
+		/**
+		 * Get the name of the AesCipher implementation.
+		 * @return Name.
+		 */
+		virtual const rp_char *name(void) const = 0;
+
 		/**
 		 * Has the cipher been initialized properly?
 		 * @return True if initialized; false if not.
