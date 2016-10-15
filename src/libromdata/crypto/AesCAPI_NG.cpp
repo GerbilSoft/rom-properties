@@ -55,6 +55,12 @@ class AesCAPI_NG_Private
 		uint8_t *pbKeyObject;
 		ULONG cbKeyObject;
 
+		// Key data.
+		// If the cipher mode is changed, the key
+		// has to be reinitialized.
+		uint8_t key[32];
+		unsigned int key_len;
+
 		// Initialization vector.
 		// CryptoAPI NG doesn't store it in the key object,
 		// unlike the older CryptoAPI.
@@ -71,18 +77,30 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	, hKey(nullptr)
 	, pbKeyObject(nullptr)
 	, cbKeyObject(0)
+	, key_len(0)
 	, chainingMode(IAesCipher::CM_ECB)
 {
-	// Clear the IV.
+	// Clear the key and IV.
+	memset(key, 0, sizeof(key));
 	memset(iv, 0, sizeof(iv));
 
 	BCRYPT_ALG_HANDLE hAesAlg;
 	NTSTATUS status = BCryptOpenAlgorithmProvider(
 		&hAesAlg, BCRYPT_AES_ALGORITHM, nullptr, 0);
 	if (NT_SUCCESS(status)) {
-		// TODO: Can we just set this->hAesAlg
-		// in the function call?
-		this->hAesAlg = hAesAlg;
+		// Default to ECB chaining.
+		NTSTATUS status = BCryptSetProperty(
+					hAesAlg, 
+					BCRYPT_CHAINING_MODE, 
+					(PBYTE)BCRYPT_CHAIN_MODE_ECB,
+					sizeof(BCRYPT_CHAIN_MODE_ECB), 0);
+		if (NT_SUCCESS(status)) {
+			// Save the algorithm.
+			this->hAesAlg = hAesAlg;
+		} else {
+			// Error setting the chaining mode.
+			BCryptCloseAlgorithmProvider(hAesAlg, 0);
+		}
 	}
 }
 
@@ -204,13 +222,18 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 	d->cbKeyObject = cbKeyObject;
 	if (hOldKey != nullptr) {
 		// Destroy the old key.
-		BCryptDestroyKey(hKey);
+		BCryptDestroyKey(hOldKey);
 	}
 	if (pbOldKeyObject != nullptr) {
 		// Delete the old key blob.
 		free(pbOldKeyObject);
 	}
 
+	// Save the key data.
+	if (d->key != key) {
+		memcpy(d->key, key, len);
+		d->key_len = len;
+	}
 	return 0;
 }
 
@@ -226,6 +249,9 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	if (!d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
+	} else if (d->chainingMode == mode) {
+		// No change necessary.
+		return 0;
 	}
 
 	const wchar_t *szMode;
@@ -243,7 +269,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 			return -EINVAL;
 	}
 
-	// Set the cipher chaining mode.
+	// Set the cipher chaining mode on the algorithm.
 	NTSTATUS status = BCryptSetProperty(
 				d->hAesAlg, 
                                 BCRYPT_CHAINING_MODE, 
@@ -255,6 +281,10 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	}
 
 	d->chainingMode = mode;
+
+	// Re-apply the key.
+	// Otherwise, the chaining mode won't take effect.
+	setKey(d->key, d->key_len);
 	return 0;
 }
 
