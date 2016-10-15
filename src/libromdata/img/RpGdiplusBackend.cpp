@@ -114,6 +114,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 	: super(0, 0, rp_image::FORMAT_NONE)
 	, m_gdipToken(0)
 	, m_pGdipBmp(pGdipBmp)
+	, m_isLocked(false)
 	, m_gdipFmt(0)
 	, m_pGdipPalette(nullptr)
 {
