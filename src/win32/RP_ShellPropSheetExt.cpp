@@ -1075,14 +1075,9 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	int start_pos = 0;
 	int cchBuf = ARRAY_SIZE(dateTimeStr);
 
-	// Convert from UNIX time to Win32 SYSTEMTIME.
-	// Reference: https://support.microsoft.com/en-us/kb/167296
+	// Convert from Unix time to Win32 SYSTEMTIME.
 	SYSTEMTIME st;
-	FILETIME ft;
-	int64_t ftll = (data->date_time * 10000000LL) + 116444736000000000LL;
-	ft.dwLowDateTime = (DWORD)ftll;
-	ft.dwHighDateTime = (DWORD)(ftll >> 32);
-	FileTimeToSystemTime(&ft, &st);
+	UnixTimeToSystemTime(data->date_time, &st);
 
 	// At least one of Date and/or Time must be set.
 	assert((dateTimeDesc->flags &

@@ -97,15 +97,8 @@ int UrlmonDownloader::download(void)
 			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheInfoBuf);
 		bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), pCacheInfo, &cbCacheInfo);
 		if (bRet) {
-			// Convert from Win32 FILETIME to UNIX time.
-			// Reference: https://support.microsoft.com/en-us/kb/167296
-			int64_t unix_time = (int64_t)pCacheInfo->LastModifiedTime.dwLowDateTime |
-					   ((int64_t)pCacheInfo->LastModifiedTime.dwHighDateTime << 32);
-			if (unix_time >= 0) {
-				unix_time -= 116444736000000000LL;
-				unix_time /= 10000000LL;
-				m_mtime = unix_time;
-			}
+			// Convert from Win32 FILETIME to Unix time.
+			m_mtime = FileTimeToUnixTime(&pCacheInfo->LastModifiedTime);
 		}
 		free(pCacheInfoBuf);
 	}

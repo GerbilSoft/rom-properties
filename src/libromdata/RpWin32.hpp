@@ -185,4 +185,37 @@ static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
 
 #endif /* RP_UTF16 */
 
+/** Time conversion functions. **/
+
+/**
+ * Convert from Unix time to Win32 SYSTEMTIME.
+ * @param unix_time Unix time.
+ * @param pSystemTime Win32 SYSTEMTIME.
+ */
+static inline void UnixTimeToSystemTime(int64_t unix_time, SYSTEMTIME *pSystemTime)
+{
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	LARGE_INTEGER li;
+	li.QuadPart = (unix_time * 10000000LL) + 116444736000000000LL;
+
+	FILETIME ft;
+	ft.dwLowDateTime = li.LowPart;
+	ft.dwHighDateTime = (DWORD)li.HighPart;
+	FileTimeToSystemTime(&ft, pSystemTime);
+}
+
+/**
+ * Convert from Win32 FILETIME to Unix time.
+ * @param pFileTime Win32 FILETIME.
+ * @return Unix time.
+ */
+static inline int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
+{
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	LARGE_INTEGER li;
+	li.LowPart = pFileTime->dwLowDateTime;
+	li.HighPart = (LONG)pFileTime->dwHighDateTime;
+	return (li.QuadPart - 116444736000000000LL) / 10000000LL;
+}
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */
