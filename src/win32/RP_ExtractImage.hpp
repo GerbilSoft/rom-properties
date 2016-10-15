@@ -40,12 +40,12 @@ namespace LibRomData {
 #include <string>
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
+RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 {
 	public:
 		RP_ExtractImage();
 	private:
-		typedef RP_ComBase2<IExtractImage, IPersistFile> super;
+		typedef RP_ComBase2<IExtractImage2, IPersistFile> super;
 
 	public:
 		// IUnknown
@@ -77,6 +77,8 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
 			DWORD *pdwPriority, const SIZE *prgSize,
 			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
 		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
+		// IExtractImage2
+		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
 
 		// IPersist (IPersistFile base class)
 		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;

@@ -72,6 +72,8 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// - http://stackoverflow.com/a/2812938
 	if (riid == IID_IUnknown || riid == IID_IExtractImage) {
 		*ppvObj = static_cast<IExtractImage*>(this);
+	} else if (riid == IID_IExtractImage2) {
+		*ppvObj = static_cast<IExtractImage2*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
 	} else {
@@ -266,6 +268,49 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	}
 
 	return (*phBmpImage != nullptr ? S_OK : E_FAIL);
+}
+
+/** IExtractImage2 **/
+
+/**
+ * Get the timestamp of the file.
+ * @param pDateStamp	[out] Pointer to FILETIME to store the timestamp in.
+ * @return COM error code.
+ */
+IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
+{
+	if (!pDateStamp) {
+		// No FILETIME pointer specified.
+		return E_POINTER;
+	} else if (m_filename.empty()) {
+		// Filename was not set in GetLocation().
+		return E_INVALIDARG;
+	}
+
+	// open the file and get last write time
+	HANDLE hFile = CreateFile(RP2W_s(m_filename),
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!hFile) {
+		// Could not open the file.
+		// TODO: Return STG_E_FILENOTFOUND?
+		return E_FAIL;
+	}
+
+	FILETIME ftLastWriteTime;
+	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &ftLastWriteTime);
+	CloseHandle(hFile);
+	if (!bRet) {
+		// Failed to retrieve the timestamp.
+		return E_FAIL;
+	}
+
+	SYSTEMTIME stUTC, stLocal;
+	FileTimeToSystemTime(&ftLastWriteTime, &stUTC);
+	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
+
+	*pDateStamp = ftLastWriteTime;
+	return NOERROR; 
 }
 
 /** IPersistFile **/
