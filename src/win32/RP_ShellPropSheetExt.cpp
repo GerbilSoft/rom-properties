@@ -35,6 +35,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
 #include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 
@@ -50,6 +51,17 @@ using std::unique_ptr;
 using std::unordered_map;
 using std::wstring;
 using std::vector;
+
+// Gdiplus for image drawing.
+// NOTE: Gdiplus requires min/max.
+#include <algorithm>
+namespace Gdiplus {
+	using std::min;
+	using std::max;
+}
+#include <gdiplus.h>
+#include "libromdata/img/GdiplusHelper.hpp"
+#include "libromdata/img/RpGdiplusBackend.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -104,8 +116,15 @@ class RP_ShellPropSheetExt_Private
 		// Subclassed multiline edit controls.
 		unordered_map<HWND, WNDPROC> mapOldEditProc;
 
+		// GDI+ token.
+		ScopedGdiplus gdipScope;
+
 		// Header row widgets.
 		HWND lblSysInfo;
+		unique_ptr<Gdiplus::Bitmap> pBmpBanner;
+		unique_ptr<Gdiplus::Bitmap> pBmpIcon;	// TODO: Animated.
+		Gdiplus::Rect rectBanner;
+		Gdiplus::Rect rectIcon;
 
 	private:
 		/**
@@ -244,6 +263,9 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	if (!hDlg)
 		return 0;
 
+	// Total widget width.
+	int total_widget_width = 0;
+
 	// System name.
 	// TODO: Logo, game icon, and game title?
 	const rp_char *systemName = romData->systemName(
@@ -312,12 +334,66 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			// GetTextExtentPoint32() doesn't take newlines into account.
 			// Adjust the height for newlines.
 			sz_lblSysInfo.cy *= sysInfo_lines;
+			total_widget_width += sz_lblSysInfo.cx;
 		}
 	}
 
-	// Total widget width.
-	// TODO: Add icon and banner.
-	const int total_widget_width = sz_lblSysInfo.cx;
+	// Supported image types.
+	const uint32_t imgbf = romData->supportedImageTypes();
+
+	// Banner.
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Get the banner.
+		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		if (banner && banner->isValid()) {
+			// Duplicate the GDI+ bitmap.
+			const RpGdiplusBackend *backend =
+				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
+			assert(backend != nullptr);
+			if (backend) {
+				pBmpBanner.reset(backend->dup());
+				if (pBmpBanner) {
+					// Banner will be drawn in WM_PAINT via GDI+
+					// in order to handle alpha transparency.
+					if (total_widget_width > 0) {
+						total_widget_width += pt_start.x;
+					}
+					total_widget_width += pBmpBanner->GetWidth();
+				}
+			}
+		} else {
+			// No banner.
+			pBmpBanner.reset();
+		}
+	}
+
+	// Icon. (TODO: Animated icon.)
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Get the icon.
+		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		if (icon && icon->isValid()) {
+			// Duplicate the GDI+ bitmap.
+			const RpGdiplusBackend *backend =
+				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
+			assert(backend != nullptr);
+			if (backend) {
+				pBmpIcon.reset(backend->dup());
+				if (pBmpIcon) {
+					// Icon will be drawn in WM_PAINT via GDI+
+					// in order to handle alpha transparency.
+					if (total_widget_width > 0) {
+						total_widget_width += pt_start.x;
+					}
+					total_widget_width += pBmpIcon->GetWidth();
+				}
+			}
+		} else {
+			// No icon.
+			pBmpIcon.reset();
+		}
+	}
+
+	// Starting point.
 	POINT curPt = {
 		((size.cx - total_widget_width) / 2) + pt_start.x,
 		pt_start.y
@@ -334,7 +410,24 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
+	// pBmpBanner
+	if (pBmpBanner) {
+		rectBanner = Gdiplus::Rect(curPt.x, curPt.y,
+			pBmpBanner->GetWidth(),
+			pBmpBanner->GetHeight());
+		curPt.x += pBmpBanner->GetWidth() + pt_start.x;
+	}
+
+	// pBmpIcon
+	if (pBmpIcon) {
+		rectIcon = Gdiplus::Rect(curPt.x, curPt.y,
+			pBmpIcon->GetWidth(),
+			pBmpIcon->GetHeight());
+		curPt.x += pBmpIcon->GetWidth() + pt_start.x;
+	}
+
 	// Return the label height and some extra padding.
+	// TODO: Icon/banner height?
 	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
 }
 
@@ -1215,20 +1308,20 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 			// Get the pointer to the property sheet page object. This is 
 			// contained in the LPARAM of the PROPSHEETPAGE structure.
 			LPPROPSHEETPAGE pPage = reinterpret_cast<LPPROPSHEETPAGE>(lParam);
-			if (pPage) {
-				// Access the property sheet extension from property page.
-				RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
-				if (pExt) {
-					// Store the object pointer with this particular page dialog.
-					SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
+			if (!pPage)
+				return TRUE;
 
-					// Save the property dialog handle for later.
-					pExt->d->hDlgProps = GetParent(hWnd);
+			// Access the property sheet extension from property page.
+			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
+			if (!pExt)
+				return TRUE;
 
-					// Initialize the dialog.
-					pExt->d->initDialog(hWnd);
-				}
-			}
+			// Store the object pointer with this particular page dialog.
+			SetProp(hWnd, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
+			// Save the property dialog handle for later.
+			pExt->d->hDlgProps = GetParent(hWnd);
+			// Initialize the dialog.
+			pExt->d->initDialog(hWnd);
 			return TRUE;
 		}
 
@@ -1237,6 +1330,35 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 			// The EXT_POINTER_PROP property stored the pointer to the 
 			// FilePropSheetExt object.
 			RemoveProp(hWnd, EXT_POINTER_PROP);
+			return TRUE;
+		}
+
+		case WM_PAINT: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hWnd, EXT_POINTER_PROP));
+			if (!pExt) {
+				// No RP_ShellPropSheetExt. Can't do anything...
+				return FALSE;
+			}
+
+			if (!pExt->d->pBmpBanner && !pExt->d->pBmpIcon) {
+				// Nothing to draw...
+				break;
+			}
+
+			PAINTSTRUCT ps;
+			HDC hDC = BeginPaint(hWnd, &ps);
+			Gdiplus::Graphics g(hDC);
+
+			// Draw the banner and/or icon.
+			if (pExt->d->pBmpBanner) {
+				g.DrawImage(pExt->d->pBmpBanner.get(), pExt->d->rectBanner);
+			}
+			// TODO: Animated icon.
+			if (pExt->d->pBmpIcon) {
+				g.DrawImage(pExt->d->pBmpIcon.get(), pExt->d->rectIcon);
+			}
+
 			return TRUE;
 		}
 
