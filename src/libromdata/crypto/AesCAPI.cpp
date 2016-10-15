@@ -134,8 +134,10 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
 	if (!key) {
+		// No key specified.
 		return -EINVAL;
 	} else if (d->hProvider == 0) {
+		// Provider is not available.
 		return -EBADF;
 	}
 
@@ -151,6 +153,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 			alg_id = CALG_AES_256;
 			break;
 		default:
+			// Invalid key length.
 			return -EINVAL;
 	}
 
