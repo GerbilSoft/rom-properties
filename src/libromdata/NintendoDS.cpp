@@ -240,7 +240,8 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	int seq_idx;
 	for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
 		const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
-		if (seq == 0) {
+		const int delay = (seq & 0xFF);
+		if (delay == 0) {
 			// End of sequence.
 			break;
 		}
@@ -259,13 +260,6 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
 		bmp_used[bmp_pal_idx] = true;
 		iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-
-		int delay = (seq & 0xFF);
-		if (delay == 0) {
-			// TODO: Does this mean the animation ends?
-			// For now, just handle 0 as 1.
-			delay = 1;
-		}
 		iconAnimData->delays[seq_idx] = delay * 1000 / 60;
 	}
 	iconAnimData->seq_count = seq_idx;
