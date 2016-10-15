@@ -78,62 +78,6 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 */
 		static LONG Unregister(void);
 
-	protected:
-		/**
-		 * Create the header row.
-		 * @param hDlg		[in] Dialog window.
-		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param size		[in] Width and height for a full-width single line label.
-		 * @return Row height, in pixels.
-		 */
-		int createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size);
-
-		/**
-		 * Initialize a string field. (Also used for Date/Time.)
-		 * @param hDlg		[in] Dialog window.
-		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
-		 * @param size		[in] Width and height for a single line label.
-		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
-		 * @return Field height, in pixels.
-		 */
-		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs);
-
-		/**
-		 * Initialize a bitfield layout.
-		 * @param hDlg Dialog window.
-		 * @param pt_start Starting position, in pixels.
-		 * @param idx Field index.
-		 * @return Field height, in pixels.
-		 */
-		int initBitfield(HWND hDlg, const POINT &pt_start, int idx);
-
-		/**
-		 * Initialize a ListView control.
-		 * @param hWnd HWND of the ListView control.
-		 * @param desc RomFields description.
-		 * @param data RomFields data.
-		 */
-		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
-
-		/**
-		 * Initialize a Date/Time field.
-		 * This function internally calls initString().
-		 * @param hDlg		[in] Dialog window.
-		 * @param pt_start	[in] Starting position, in pixels.
-		 * @param idx		[in] Field index.
-		 * @param size		[in] Width and height for a single line label.
-		 * @return Field height, in pixels.
-		 */
-		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
-
-		/**
-		 * Initialize the dialog.
-		 * Called by WM_INITDIALOG.
-		 * @param hDlg Dialog window.
-		 */
-		void initDialog(HWND hDlg);
-
 	public:
 		// IShellExtInit
 		IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID);

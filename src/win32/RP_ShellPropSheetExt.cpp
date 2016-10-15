@@ -77,12 +77,14 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 class RP_ShellPropSheetExt_Private
 {
 	public:
-		RP_ShellPropSheetExt_Private();
+		RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
 		~RP_ShellPropSheetExt_Private();
 
 	private:
 		RP_ShellPropSheetExt_Private(const RP_ShellPropSheetExt_Private &other);
 		RP_ShellPropSheetExt_Private &operator=(const RP_ShellPropSheetExt_Private &other);
+	private:
+		RP_ShellPropSheetExt *const q;
 
 	public:
 		// Selected file.
@@ -104,12 +106,79 @@ class RP_ShellPropSheetExt_Private
 
 		// Header row widgets.
 		HWND lblSysInfo;
+
+	private:
+		/**
+		 * Convert UNIX line endings to DOS line endings.
+		 * TODO: Move to RpWin32?
+		 * @param wstr_unix	[in] wstring with UNIX line endings.
+		 * @param lf_count	[out,opt] Number of LF characters found.
+		 * @return wstring with DOS line endings.
+		 */
+		inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
+
+		/**
+		 * Create the header row.
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param size		[in] Width and height for a full-width single line label.
+		 * @return Row height, in pixels.
+		 */
+		int createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size);
+
+		/**
+		 * Initialize a string field. (Also used for Date/Time.)
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+		 * @return Field height, in pixels.
+		 */
+		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs);
+
+		/**
+		 * Initialize a bitfield layout.
+		 * @param hDlg Dialog window.
+		 * @param pt_start Starting position, in pixels.
+		 * @param idx Field index.
+		 * @return Field height, in pixels.
+		 */
+		int initBitfield(HWND hDlg, const POINT &pt_start, int idx);
+
+		/**
+		 * Initialize a ListView control.
+		 * @param hWnd HWND of the ListView control.
+		 * @param desc RomFields description.
+		 * @param data RomFields data.
+		 */
+		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
+
+		/**
+		 * Initialize a Date/Time field.
+		 * This function internally calls initString().
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @return Field height, in pixels.
+		 */
+		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+
+	public:
+		/**
+		 * Initialize the dialog.
+		 * Called by WM_INITDIALOG.
+		 * @param hDlg Dialog window.
+		 */
+		void initDialog(HWND hDlg);
 };
 
 /** RP_ShellPropSheetExt_Private **/
 
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private()
-	: romData(nullptr)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
+	: q(q)
+	, romData(nullptr)
 	, hDlgProps(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
@@ -136,10 +205,776 @@ PCWSTR RP_ShellPropSheetExt_Private::GetSelectedFile(void) const
 	return this->szSelectedFile;
 }
 
+/**
+ * Convert UNIX line endings to DOS line endings.
+ * TODO: Move to RpWin32?
+ * @param wstr_unix	[in] wstring with UNIX line endings.
+ * @param lf_count	[out,opt] Number of LF characters found.
+ * @return wstring with DOS line endings.
+ */
+inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, int *lf_count)
+{
+	// TODO: Optimize this!
+	wstring wstr_dos;
+	wstr_dos.reserve(wstr_unix.size());
+	int lf = 0;
+	for (size_t i = 0; i < wstr_unix.size(); i++) {
+		if (wstr_unix[i] == L'\n') {
+			wstr_dos += L"\r\n";
+			lf++;
+		} else {
+			wstr_dos += wstr_unix[i];
+		}
+	}
+	if (lf_count) {
+		*lf_count = lf;
+	}
+	return wstr_dos;
+}
+
+/**
+ * Create the header row.
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param size		[in] Width and height for a full-width single line label.
+ * @return Row height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size)
+{
+	if (!hDlg)
+		return 0;
+
+	// System name.
+	// TODO: Logo, game icon, and game title?
+	const rp_char *systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+
+	// File type.
+	const rp_char *fileType = nullptr;
+	switch (romData->fileType()) {
+		case RomData::FTYPE_ROM_IMAGE:
+			fileType = _RP("ROM Image");
+			break;
+		case RomData::FTYPE_DISC_IMAGE:
+			fileType = _RP("Disc Image");
+			break;
+		case RomData::FTYPE_SAVE_FILE:
+			fileType = _RP("Save File");
+			break;
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			fileType = nullptr;
+			break;
+	}
+
+	wstring sysInfo;
+	int sysInfo_lines = 1;
+	if (systemName) {
+		sysInfo = RP2W_c(systemName);
+	}
+	if (fileType) {
+		if (!sysInfo.empty()) {
+			sysInfo += L"\r\n";
+			sysInfo_lines++;
+		}
+		sysInfo += RP2W_c(fileType);
+	}
+
+	// Get the default font.
+	HFONT hFont = GetWindowFont(hDlg);
+ 
+	// Label size.
+	SIZE sz_lblSysInfo = {0, 0};
+
+	if (!sysInfo.empty()) {
+		// Use a bold font.
+		// TODO: Delete the old font if it's already there?
+		if (!hFontBold) {
+			// Create the bold font.
+			LOGFONT lfFontBold;
+			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
+				// Adjust the font and create a new one.
+				lfFontBold.lfWeight = FW_BOLD;
+				hFontBold = CreateFontIndirect(&lfFontBold);
+			}
+		}
+
+		// Determine the appropriate label size.
+		HDC hDC = GetDC(hDlg);
+		HFONT hFontOrig = SelectFont(hDC, hFont);
+		BOOL bRet = GetTextExtentPoint32(hDC, sysInfo.data(), (int)sysInfo.size(), &sz_lblSysInfo);
+		if (!bRet) {
+			// Error determining the label size.
+			// Don't draw the label.
+			sz_lblSysInfo.cx = 0;
+			sz_lblSysInfo.cy = 0;
+		} else {
+			// GetTextExtentPoint32() doesn't take newlines into account.
+			// Adjust the height for newlines.
+			sz_lblSysInfo.cy *= sysInfo_lines;
+		}
+	}
+
+	// Total widget width.
+	// TODO: Add icon and banner.
+	const int total_widget_width = sz_lblSysInfo.cx;
+	POINT curPt = {
+		((size.cx - total_widget_width) / 2) + pt_start.x,
+		pt_start.y
+	};
+
+	// lblSysInfo
+	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
+		lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
+			WS_CHILD | WS_VISIBLE | SS_CENTER,
+			curPt.x, curPt.y,
+			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
+			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(lblSysInfo, (hFontBold ? hFontBold : hFont), FALSE);
+		curPt.x += sz_lblSysInfo.cx + pt_start.x;
+	}
+
+	// Return the label height and some extra padding.
+	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
+}
+
+/**
+ * Initialize a string field. (Also used for Date/Time.)
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
+	const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	if (!desc)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// NOTE: libromdata uses Unix-style newlines.
+	// For proper display on Windows, we have to
+	// add carriage returns.
+
+	// If string data wasn't specified, get the RFT_STRING data
+	// from the RomFields::Data object.
+	int lf_count = 0;
+	wstring wstr;
+	if (!wcs) {
+		const RomFields::Data *data = fields->data(idx);
+		if (!data)
+			return 0;
+		if (desc->type != RomFields::RFT_STRING ||
+		    data->type != RomFields::RFT_STRING)
+			return 0;
+
+		// TODO: NULL string == empty string?
+		if (data->str) {
+			wstr = unix2dos(RP2W_s(data->str), &lf_count);
+		}
+	} else {
+		// Use the specified string.
+		wstr = unix2dos(wstring(wcs), &lf_count);
+	}
+
+	// Field height.
+	int field_cy = size.cy;
+
+	// Create a read-only EDIT widget.
+	// The STATIC control doesn't allow the user
+	// to highlight and copy data.
+	DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
+	if (lf_count > 0) {
+		// Multiple lines.
+		// NOTE: Only add 5/8 of field_cy per line.
+		// FIXME: 5/8 needs adjustment...
+		field_cy += (field_cy * lf_count) * 5 / 8;
+		dwStyle |= ES_MULTILINE;
+	}
+
+	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
+		pt_start.x, pt_start.y,
+		size.cx, field_cy,
+		hDlg, (HMENU)(INT_PTR)(IDC_RFT_STRING(idx)),
+		nullptr, nullptr);
+
+	// Get the default font.
+	HFONT hFont = GetWindowFont(hDlg);
+
+	// Subclass multiline controls to work around Enter/Escape issues.
+	// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+	if (dwStyle & ES_MULTILINE) {
+		// Store the object pointer so we can reference it later.
+		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
+
+		// Subclass the control.
+		WNDPROC oldEditProc = (WNDPROC)SetWindowLongPtr(
+			hDlgItem, GWLP_WNDPROC,
+			(LONG_PTR)RP_ShellPropSheetExt::MultilineEditProc);
+		mapOldEditProc.insert(std::make_pair(hDlgItem, oldEditProc));
+	}
+
+	// Check for any formatting options.
+	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
+		// Monospace font?
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			if (hFontMono != nullptr) {
+				hFont = hFontMono;
+			}
+		}
+	}
+
+	SetWindowFont(hDlgItem, hFont, FALSE);
+	return field_cy;
+}
+
+/**
+ * Initialize a bitfield layout.
+ * @param hDlg Dialog window.
+ * @param pt_start Starting position, in pixels.
+ * @param idx Field index.
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
+	const POINT &pt_start, int idx)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	const RomFields::Data *data = fields->data(idx);
+	if (!desc || !data)
+		return 0;
+	if (desc->type != RomFields::RFT_BITFIELD ||
+	    data->type != RomFields::RFT_BITFIELD)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// Checkbox size.
+	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
+	RECT rect_chkbox = {0, 0, 12+4, 11};
+	MapDialogRect(hDlg, &rect_chkbox);
+
+	// Dialog font and device context.
+	HFONT hFont = GetWindowFont(hDlg);
+	HDC hDC = GetDC(hDlg);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Create a grid of checkboxes.
+	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+
+	// Column widths for multi-row layouts.
+	// (Includes the checkbox size.)
+	std::vector<int> col_widths;
+	int row = 0, col = 0;
+	if (bitfieldDesc->elemsPerRow == 1) {
+		// Optimization: Use the entire width of the dialog.
+		// TODO: Testing; right margin.
+		RECT rectDlg;
+		GetClientRect(hDlg, &rectDlg);
+		col_widths.push_back(rectDlg.right - pt_start.x);
+	} else if (bitfieldDesc->elemsPerRow > 1) {
+		// Determine the widest entry in each column.
+		col_widths.resize(bitfieldDesc->elemsPerRow);
+		for (int j = 0; j < bitfieldDesc->elements; j++) {
+			const rp_char *name = bitfieldDesc->names[j];
+			if (!name)
+				continue;
+
+			// Make sure this is a UTF-16 string.
+			wstring s_name = RP2W_c(name);
+
+			// Get the width of this specific entry.
+			SIZE textSize;
+			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+			int chk_w = rect_chkbox.right + textSize.cx;
+			if (chk_w > col_widths[col]) {
+				col_widths[col] = chk_w;
+			}
+
+			// Next column.
+			col++;
+			if (col == bitfieldDesc->elemsPerRow) {
+				// Next row.
+				row++;
+				col = 0;
+			}
+		}
+	}
+
+	// Initial position on the dialog, in pixels.
+	POINT pt = pt_start;
+	// Subtract 0.5 DLU from the starting row.
+	RECT rect_subtract = {0, 0, 1, 1};
+	MapDialogRect(hDlg, &rect_subtract);
+	if (rect_subtract.bottom > 1) {
+		rect_subtract.bottom /= 2;
+	}
+	pt.y -= rect_subtract.bottom;
+
+	row = 0; col = 0;
+	for (int j = 0; j < bitfieldDesc->elements; j++) {
+		const rp_char *name = bitfieldDesc->names[j];
+		if (!name)
+			continue;
+
+		// Get the text size.
+		int chk_w;
+		if (bitfieldDesc->elemsPerRow == 0) {
+			// Make sure this is a UTF-16 string.
+			wstring s_name = RP2W_c(name);
+
+			// Get the width of this specific entry.
+			SIZE textSize;
+			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+			chk_w = rect_chkbox.right + textSize.cx;
+		} else {
+			if (col == bitfieldDesc->elemsPerRow) {
+				// Next row.
+				row++;
+				col = 0;
+				pt.x = pt_start.x;
+				pt.y += rect_chkbox.bottom;
+			}
+
+			// Use the largest width in the column.
+			chk_w = col_widths[col];
+		}
+
+		// FIXME: Tab ordering?
+		HWND hCheckBox = CreateWindow(WC_BUTTON, RP2W_c(name),
+			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
+			pt.x, pt.y, chk_w, rect_chkbox.bottom,
+			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
+			nullptr, nullptr);
+		SetWindowFont(hCheckBox, hFont, FALSE);
+
+		// Set the checkbox state.
+		Button_SetCheck(hCheckBox, (data->bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
+
+		// Next column.
+		pt.x += chk_w;
+		col++;
+	}
+
+	SelectFont(hDC, hFontOrig);
+	ReleaseDC(hDlg, hDC);
+
+	// Return the total number of rows times the checkbox height,
+	// plus another 0.25 of a checkbox.
+	int ret = ((row + 1) * rect_chkbox.bottom);
+	ret += (rect_chkbox.bottom / 4);
+	return ret;
+}
+
+/**
+ * Initialize a ListView control.
+ * @param hWnd HWND of the ListView control.
+ * @param desc RomFields description.
+ * @param data RomFields data.
+ */
+void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
+	const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	if (!hWnd || !desc || !data)
+		return;
+	if (desc->type != RomFields::RFT_LISTDATA ||
+	    data->type != RomFields::RFT_LISTDATA)
+		return;
+	if (!desc->name || desc->name[0] == '\0')
+		return;
+
+	// Set extended ListView styles.
+	ListView_SetExtendedListViewStyle(hWnd, LVS_EX_FULLROWSELECT);
+
+	// Insert columns.
+	// TODO: Make sure there aren't any columns to start with?
+	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+	const int count = listDataDesc->count;
+	for (int i = 0; i < count; i++) {
+		LVCOLUMN lvColumn;
+		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
+		lvColumn.fmt = LVCFMT_LEFT;
+		if (listDataDesc->names[i]) {
+			// TODO: Support for RP_UTF8?
+			// NOTE: pszText is LPWSTR, not LPCWSTR...
+			lvColumn.pszText = (LPWSTR)listDataDesc->names[i];
+		} else {
+			// Don't show this column.
+			// FIXME: Zero-width column is a bad hack...
+			lvColumn.pszText = L"";
+			lvColumn.mask |= LVCF_WIDTH;
+			lvColumn.cx = 0;
+		}
+
+		ListView_InsertColumn(hWnd, i, &lvColumn);
+	}
+
+	// Add the row data.
+	const RomFields::ListData *listData = data->list_data;
+	for (int i = 0; i < (int)listData->data.size(); i++) {
+		LVITEM lvItem;
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = i;
+
+		const vector<rp_string> &data_row = listData->data.at(i);
+		int field = 0;
+		for (vector<rp_string>::const_iterator iter = data_row.begin();
+		     iter != data_row.end(); ++iter, ++field)
+		{
+			lvItem.iSubItem = field;
+			// TODO: Support for RP_UTF8?
+			// NOTE: pszText is LPWSTR, not LPCWSTR...
+			lvItem.pszText = (LPWSTR)(*iter).c_str();
+			if (field == 0) {
+				// Field 0: Insert the item.
+				ListView_InsertItem(hWnd, &lvItem);
+			} else {
+				// Fields 1 and higher: Set the subitem.
+				ListView_SetItem(hWnd, &lvItem);
+			}
+		}
+	}
+
+	// Resize all of the columns.
+	// TODO: Do this on system theme change?
+	for (int i = 0; i < count; i++) {
+		ListView_SetColumnWidth(hWnd, i, LVSCW_AUTOSIZE_USEHEADER);
+	}
+}
+
+/**
+ * Initialize a Date/Time field.
+ * This function internally calls initString().
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
+	const POINT &pt_start, int idx, const SIZE &size)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	const RomFields::Data *data = fields->data(idx);
+	if (!desc || !data)
+		return 0;
+	if (desc->type != RomFields::RFT_DATETIME ||
+	    data->type != RomFields::RFT_DATETIME)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// Format the date/time using the system locale.
+	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+	wchar_t dateTimeStr[256];
+	int start_pos = 0;
+	int cchBuf = ARRAY_SIZE(dateTimeStr);
+
+	// Convert from UNIX time to Win32 SYSTEMTIME.
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	SYSTEMTIME st;
+	FILETIME ft;
+	int64_t ftll = (data->date_time * 10000000LL) + 116444736000000000LL;
+	ft.dwLowDateTime = (DWORD)ftll;
+	ft.dwHighDateTime = (DWORD)(ftll >> 32);
+	FileTimeToSystemTime(&ft, &st);
+
+	// At least one of Date and/or Time must be set.
+	assert((dateTimeDesc->flags &
+		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
+
+	if (!(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)) {
+		// Convert to the current timezone.
+		SYSTEMTIME st_utc = st;
+		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
+		if (!ret) {
+			// Conversion failed.
+			return 0;
+		}
+	}
+
+	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_DATE) {
+		// Format the date.
+		int ret = GetDateFormat(
+			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+			DATE_SHORTDATE,
+			&st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		if (ret <= 0) {
+			// Error!
+			return 0;
+		}
+
+		// Adjust the buffer position.
+		// NOTE: ret includes the NULL terminator.
+		start_pos += ret-1;
+		cchBuf -= ret-1;
+	}
+
+	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_TIME) {
+		// Format the time.
+		if (start_pos > 0 && cchBuf >= 1) {
+			// Add a space.
+			dateTimeStr[start_pos] = L' ';
+			dateTimeStr[start_pos+1] = 0;
+			start_pos++;
+			cchBuf--;
+		}
+
+		int ret = GetTimeFormat(
+			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
+			0, &st, nullptr, &dateTimeStr[start_pos], cchBuf);
+		if (ret <= 0) {
+			// Error!
+			return 0;
+		}
+
+		// Adjust the buffer position.
+		// NOTE: ret includes the NULL terminator.
+		start_pos += ret-1;
+		cchBuf -= ret-1;
+	}
+
+	if (start_pos == 0) {
+		// Empty string.
+		// Something failed...
+		return 0;
+	}
+
+	// Initialize the string.
+	return initString(hDlg, pt_start, idx, size, dateTimeStr);
+}
+
+/**
+ * Initialize the dialog.
+ * Called by WM_INITDIALOG.
+ * @param hDlg Dialog window.
+ */
+void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
+{
+	if (!romData) {
+		// No ROM data loaded.
+		return;
+	}
+
+	// Get the fields.
+	const RomFields *fields = romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
+	const int count = fields->count();
+
+	// Make sure we have all required window classes available.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	INITCOMMONCONTROLSEX initCommCtrl;
+	initCommCtrl.dwSize = sizeof(initCommCtrl);
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
+	// TODO: Also ICC_STANDARD_CLASSES on XP+?
+	InitCommonControlsEx(&initCommCtrl);
+
+	// Dialog font and device context.
+	HFONT hFont = GetWindowFont(hDlg);
+	HDC hDC = GetDC(hDlg);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Determine the maximum length of all field names.
+	// TODO: Line breaks?
+	int max_text_width = 0;
+	SIZE textSize;
+	for (int i = 0; i < count; i++) {
+		const RomFields::Desc *desc = fields->desc(i);
+		const RomFields::Data *data = fields->data(i);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// Make sure this is a UTF-16 string.
+		wstring s_name = RP2W_c(desc->name);
+
+		// Get the width of this specific entry.
+		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+		if (textSize.cx > max_text_width) {
+			max_text_width = textSize.cx;
+		}
+	}
+
+	// Add additional spacing for the ':'.
+	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
+	max_text_width += textSize.cx;
+
+	// Release the DC.
+	SelectFont(hDC, hFontOrig);
+	ReleaseDC(hDlg, hDC);
+
+	// Create the ROM field widgets.
+	// Each static control is max_text_width pixels wide
+	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
+	RECT tmpRect = {0, 0, 0, 8+4};
+	MapDialogRect(hDlg, &tmpRect);
+	const SIZE descSize = {max_text_width, tmpRect.bottom};
+
+	// Current position.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	tmpRect.left = 7; tmpRect.top = 7;
+	tmpRect.right = 8; tmpRect.bottom = 8;
+	MapDialogRect(hDlg, &tmpRect);
+	POINT curPt = {tmpRect.left, tmpRect.top};
+
+	// Width available for the value widget(s).
+	GetClientRect(hDlg, &tmpRect);
+	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
+
+	// Create the header row.
+	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
+	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
+
+	// Get a matching monospaced font.
+	// TODO: Delete the old font if it's already there?
+	if (!hFontMono) {
+		LOGFONT lfFontMono;
+		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) != 0) {
+			// Adjust the font and create a new one.
+			// TODO: What's the best font for this?
+			wcscpy(lfFontMono.lfFaceName, L"Lucida Console");
+			hFontMono = CreateFontIndirect(&lfFontMono);
+		}
+	}
+
+	for (int idx = 0; idx < count; idx++) {
+		const RomFields::Desc *desc = fields->desc(idx);
+		const RomFields::Data *data = fields->data(idx);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// Append a ":" to the description.
+		// TODO: Localization.
+		wstring desc_text = RP2W_c(desc->name);
+		desc_text += L':';
+
+		// Create the static text widget. (FIXME: Disable mnemonics?)
+		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
+			WS_CHILD | WS_VISIBLE | SS_LEFT,
+			curPt.x, curPt.y, descSize.cx, descSize.cy,
+			hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
+			nullptr, nullptr);
+		SetWindowFont(hStatic, hFont, FALSE);
+
+		// Create the value widget.
+		int field_cy = descSize.cy;	// Default row size.
+		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
+		HWND hDlgItem;
+		switch (desc->type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				DestroyWindow(hStatic);
+				field_cy = 0;
+				break;
+
+			case RomFields::RFT_STRING: {
+				// String data.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initString(hDlg, pt_start, idx, size, nullptr);
+				if (field_cy == 0) {
+					// initString() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+			}
+
+			case RomFields::RFT_BITFIELD:
+				// Create checkboxes starting at the current point.
+				field_cy = initBitfield(hDlg, pt_start, idx);
+				if (field_cy == 0) {
+					// initBitfield() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+
+			case RomFields::RFT_LISTDATA:
+				// Increase row height to 72 DLU.
+				// descSize is 8+4 DLU (12); 72/12 == 6
+				// FIXME: The last row seems to be cut off with the
+				// Windows XP Luna theme, but not Windows Classic...
+				field_cy *= 6;
+
+				// Create a ListView widget.
+				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
+					WC_LISTVIEW, RP2W_c(data->str),
+					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
+					pt_start.x, pt_start.y,
+					dlg_value_width, field_cy,
+					hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+					nullptr, nullptr);
+				SetWindowFont(hDlgItem, hFont, FALSE);
+
+				// Initialize the ListView data.
+				initListView(hDlgItem, desc, fields->data(idx));
+				break;
+
+			case RomFields::RFT_DATETIME: {
+				// Date/Time in Unix format.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initDateTime(hDlg, pt_start, idx, size);
+				if (field_cy == 0) {
+					// initDateTime() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+			}
+
+			default:
+				// Unsupported data type.
+				assert(!"Unsupported RomFields::RomFieldsType.");
+				DestroyWindow(hStatic);
+				field_cy = 0;
+				break;
+		}
+
+		// Next row.
+		curPt.y += field_cy;
+	}
+}
+
 /** RP_ShellPropSheetExt **/
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
-	: d(new RP_ShellPropSheetExt_Private())
+	: d(new RP_ShellPropSheetExt_Private(this))
 { }
 
 RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
@@ -307,767 +1142,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	return hr;
 }
 
-/**
- * Convert UNIX line endings to DOS line endings.
- * TODO: Move to RpWin32?
- * @param wstr_unix	[in] wstring with UNIX line endings.
- * @param lf_count	[out,opt] Number of LF characters found.
- * @return wstring with DOS line endings.
- */
-static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count = nullptr)
-{
-	// TODO: Optimize this!
-	wstring wstr_dos;
-	wstr_dos.reserve(wstr_unix.size());
-	int lf = 0;
-	for (size_t i = 0; i < wstr_unix.size(); i++) {
-		if (wstr_unix[i] == L'\n') {
-			wstr_dos += L"\r\n";
-			lf++;
-		} else {
-			wstr_dos += wstr_unix[i];
-		}
-	}
-	if (lf_count) {
-		*lf_count = lf;
-	}
-	return wstr_dos;
-}
-
-/**
- * Create the header row.
- * @param hDlg		[in] Dialog window.
- * @param pt_start	[in] Starting position, in pixels.
- * @param size		[in] Width and height for a full-width single line label.
- * @return Row height, in pixels.
- */
-int RP_ShellPropSheetExt::createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size)
-{
-	if (!hDlg)
-		return 0;
-
-	// System name.
-	// TODO: Logo, game icon, and game title?
-	const rp_char *systemName = d->romData->systemName(
-		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-
-	// File type.
-	const rp_char *fileType = nullptr;
-	switch (d->romData->fileType()) {
-		case RomData::FTYPE_ROM_IMAGE:
-			fileType = _RP("ROM Image");
-			break;
-		case RomData::FTYPE_DISC_IMAGE:
-			fileType = _RP("Disc Image");
-			break;
-		case RomData::FTYPE_SAVE_FILE:
-			fileType = _RP("Save File");
-			break;
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			fileType = nullptr;
-			break;
-	}
-
-	wstring sysInfo;
-	int sysInfo_lines = 1;
-	if (systemName) {
-		sysInfo = RP2W_c(systemName);
-	}
-	if (fileType) {
-		if (!sysInfo.empty()) {
-			sysInfo += L"\r\n";
-			sysInfo_lines++;
-		}
-		sysInfo += RP2W_c(fileType);
-	}
-
-	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
- 
-	// Label size.
-	SIZE sz_lblSysInfo = {0, 0};
-
-	if (!sysInfo.empty()) {
-		// Use a bold font.
-		// TODO: Delete the old font if it's already there?
-		if (!d->hFontBold) {
-			// Create the bold font.
-			LOGFONT lfFontBold;
-			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
-				// Adjust the font and create a new one.
-				lfFontBold.lfWeight = FW_BOLD;
-				d->hFontBold = CreateFontIndirect(&lfFontBold);
-			}
-		}
-
-		// Determine the appropriate label size.
-		HDC hDC = GetDC(hDlg);
-		HFONT hFontOrig = SelectFont(hDC, hFont);
-		BOOL bRet = GetTextExtentPoint32(hDC, sysInfo.data(), (int)sysInfo.size(), &sz_lblSysInfo);
-		if (!bRet) {
-			// Error determining the label size.
-			// Don't draw the label.
-			sz_lblSysInfo.cx = 0;
-			sz_lblSysInfo.cy = 0;
-		} else {
-			// GetTextExtentPoint32() doesn't take newlines into account.
-			// Adjust the height for newlines.
-			sz_lblSysInfo.cy *= sysInfo_lines;
-		}
-	}
-
-	// Total widget width.
-	// TODO: Add icon and banner.
-	const int total_widget_width = sz_lblSysInfo.cx;
-	POINT curPt = {
-		((size.cx - total_widget_width) / 2) + pt_start.x,
-		pt_start.y
-	};
-
-	// lblSysInfo
-	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
-		d->lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_CENTER,
-			curPt.x, curPt.y,
-			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
-			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(d->lblSysInfo, (d->hFontBold ? d->hFontBold : hFont), FALSE);
-		curPt.x += sz_lblSysInfo.cx + pt_start.x;
-	}
-
-	// Return the label height and some extra padding.
-	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
-}
-
-/**
- * Initialize a string field. (Also used for Date/Time.)
- * @param hDlg		[in] Dialog window.
- * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
- * @param size		[in] Width and height for a single line label.
- * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
- * @return Field height, in pixels.
- */
-int RP_ShellPropSheetExt::initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs)
-{
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = d->romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	if (!desc)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
-		return 0;
-
-	// NOTE: libromdata uses Unix-style newlines.
-	// For proper display on Windows, we have to
-	// add carriage returns.
-
-	// If string data wasn't specified, get the RFT_STRING data
-	// from the RomFields::Data object.
-	int lf_count = 0;
-	wstring wstr;
-	if (!wcs) {
-		const RomFields::Data *data = fields->data(idx);
-		if (!data)
-			return 0;
-		if (desc->type != RomFields::RFT_STRING ||
-		    data->type != RomFields::RFT_STRING)
-			return 0;
-
-		// TODO: NULL string == empty string?
-		if (data->str) {
-			wstr = unix2dos(RP2W_s(data->str), &lf_count);
-		}
-	} else {
-		// Use the specified string.
-		wstr = unix2dos(wstring(wcs), &lf_count);
-	}
-
-	// Field height.
-	int field_cy = size.cy;
-
-	// Create a read-only EDIT widget.
-	// The STATIC control doesn't allow the user
-	// to highlight and copy data.
-	DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
-	if (lf_count > 0) {
-		// Multiple lines.
-		// NOTE: Only add 5/8 of field_cy per line.
-		// FIXME: 5/8 needs adjustment...
-		field_cy += (field_cy * lf_count) * 5 / 8;
-		dwStyle |= ES_MULTILINE;
-	}
-
-	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
-		pt_start.x, pt_start.y,
-		size.cx, field_cy,
-		hDlg, (HMENU)(INT_PTR)(IDC_RFT_STRING(idx)),
-		nullptr, nullptr);
-
-	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
-
-	// Subclass multiline controls to work around Enter/Escape issues.
-	// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-	if (dwStyle & ES_MULTILINE) {
-		// Store the object pointer so we can reference it later.
-		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(this));
-
-		// Subclass the control.
-		WNDPROC oldEditProc = (WNDPROC)SetWindowLongPtr(
-			hDlgItem, GWLP_WNDPROC, (LONG_PTR)MultilineEditProc);
-		d->mapOldEditProc.insert(std::make_pair(hDlgItem, oldEditProc));
-	}
-
-	// Check for any formatting options.
-	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
-		// Monospace font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-			if (d->hFontMono != nullptr) {
-				hFont = d->hFontMono;
-			}
-		}
-	}
-
-	SetWindowFont(hDlgItem, hFont, FALSE);
-	return field_cy;
-}
-
-/**
- * Initialize a bitfield layout.
- * @param hDlg Dialog window.
- * @param pt_start Starting position, in pixels.
- * @param idx Field index.
- * @return Field height, in pixels.
- */
-int RP_ShellPropSheetExt::initBitfield(HWND hDlg, const POINT &pt_start, int idx)
-{
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = d->romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	const RomFields::Data *data = fields->data(idx);
-	if (!desc || !data)
-		return 0;
-	if (desc->type != RomFields::RFT_BITFIELD ||
-	    data->type != RomFields::RFT_BITFIELD)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
-		return 0;
-
-	// Checkbox size.
-	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
-	RECT rect_chkbox = {0, 0, 12+4, 11};
-	MapDialogRect(hDlg, &rect_chkbox);
-
-	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
-
-	// Create a grid of checkboxes.
-	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
-
-	// Column widths for multi-row layouts.
-	// (Includes the checkbox size.)
-	std::vector<int> col_widths;
-	int row = 0, col = 0;
-	if (bitfieldDesc->elemsPerRow == 1) {
-		// Optimization: Use the entire width of the dialog.
-		// TODO: Testing; right margin.
-		RECT rectDlg;
-		GetClientRect(hDlg, &rectDlg);
-		col_widths.push_back(rectDlg.right - pt_start.x);
-	} else if (bitfieldDesc->elemsPerRow > 1) {
-		// Determine the widest entry in each column.
-		col_widths.resize(bitfieldDesc->elemsPerRow);
-		for (int j = 0; j < bitfieldDesc->elements; j++) {
-			const rp_char *name = bitfieldDesc->names[j];
-			if (!name)
-				continue;
-
-			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_c(name);
-
-			// Get the width of this specific entry.
-			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-			int chk_w = rect_chkbox.right + textSize.cx;
-			if (chk_w > col_widths[col]) {
-				col_widths[col] = chk_w;
-			}
-
-			// Next column.
-			col++;
-			if (col == bitfieldDesc->elemsPerRow) {
-				// Next row.
-				row++;
-				col = 0;
-			}
-		}
-	}
-
-	// Initial position on the dialog, in pixels.
-	POINT pt = pt_start;
-	// Subtract 0.5 DLU from the starting row.
-	RECT rect_subtract = {0, 0, 1, 1};
-	MapDialogRect(hDlg, &rect_subtract);
-	if (rect_subtract.bottom > 1) {
-		rect_subtract.bottom /= 2;
-	}
-	pt.y -= rect_subtract.bottom;
-
-	row = 0; col = 0;
-	for (int j = 0; j < bitfieldDesc->elements; j++) {
-		const rp_char *name = bitfieldDesc->names[j];
-		if (!name)
-			continue;
-
-		// Get the text size.
-		int chk_w;
-		if (bitfieldDesc->elemsPerRow == 0) {
-			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_c(name);
-
-			// Get the width of this specific entry.
-			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-			chk_w = rect_chkbox.right + textSize.cx;
-		} else {
-			if (col == bitfieldDesc->elemsPerRow) {
-				// Next row.
-				row++;
-				col = 0;
-				pt.x = pt_start.x;
-				pt.y += rect_chkbox.bottom;
-			}
-
-			// Use the largest width in the column.
-			chk_w = col_widths[col];
-		}
-
-		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindow(WC_BUTTON, RP2W_c(name),
-			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
-			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
-			nullptr, nullptr);
-		SetWindowFont(hCheckBox, hFont, FALSE);
-
-		// Set the checkbox state.
-		Button_SetCheck(hCheckBox, (data->bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
-
-		// Next column.
-		pt.x += chk_w;
-		col++;
-	}
-
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
-
-	// Return the total number of rows times the checkbox height,
-	// plus another 0.25 of a checkbox.
-	int ret = ((row + 1) * rect_chkbox.bottom);
-	ret += (rect_chkbox.bottom / 4);
-	return ret;
-}
-
-/**
- * Initialize a ListView control.
- * @param hWnd HWND of the ListView control.
- * @param desc RomFields description.
- * @param data RomFields data.
- */
-void RP_ShellPropSheetExt::initListView(HWND hWnd, const RomFields::Desc *desc, const RomFields::Data *data)
-{
-	if (!hWnd || !desc || !data)
-		return;
-	if (desc->type != RomFields::RFT_LISTDATA ||
-	    data->type != RomFields::RFT_LISTDATA)
-		return;
-	if (!desc->name || desc->name[0] == '\0')
-		return;
-
-	// Set extended ListView styles.
-	ListView_SetExtendedListViewStyle(hWnd, LVS_EX_FULLROWSELECT);
-
-	// Insert columns.
-	// TODO: Make sure there aren't any columns to start with?
-	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
-	const int count = listDataDesc->count;
-	for (int i = 0; i < count; i++) {
-		LVCOLUMN lvColumn;
-		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
-		lvColumn.fmt = LVCFMT_LEFT;
-		if (listDataDesc->names[i]) {
-			// TODO: Support for RP_UTF8?
-			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			lvColumn.pszText = (LPWSTR)listDataDesc->names[i];
-		} else {
-			// Don't show this column.
-			// FIXME: Zero-width column is a bad hack...
-			lvColumn.pszText = L"";
-			lvColumn.mask |= LVCF_WIDTH;
-			lvColumn.cx = 0;
-		}
-
-		ListView_InsertColumn(hWnd, i, &lvColumn);
-	}
-
-	// Add the row data.
-	const RomFields::ListData *listData = data->list_data;
-	for (int i = 0; i < (int)listData->data.size(); i++) {
-		LVITEM lvItem;
-		lvItem.mask = LVIF_TEXT;
-		lvItem.iItem = i;
-
-		const vector<rp_string> &data_row = listData->data.at(i);
-		int field = 0;
-		for (vector<rp_string>::const_iterator iter = data_row.begin();
-		     iter != data_row.end(); ++iter, ++field)
-		{
-			lvItem.iSubItem = field;
-			// TODO: Support for RP_UTF8?
-			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			lvItem.pszText = (LPWSTR)(*iter).c_str();
-			if (field == 0) {
-				// Field 0: Insert the item.
-				ListView_InsertItem(hWnd, &lvItem);
-			} else {
-				// Fields 1 and higher: Set the subitem.
-				ListView_SetItem(hWnd, &lvItem);
-			}
-		}
-	}
-
-	// Resize all of the columns.
-	// TODO: Do this on system theme change?
-	for (int i = 0; i < count; i++) {
-		ListView_SetColumnWidth(hWnd, i, LVSCW_AUTOSIZE_USEHEADER);
-	}
-}
-
-/**
- * Initialize a Date/Time field.
- * This function internally calls initString().
- * @param hDlg		[in] Dialog window.
- * @param pt_start	[in] Starting position, in pixels.
- * @param idx		[in] Field index.
- * @param size		[in] Width and height for a single line label.
- * @return Field height, in pixels.
- */
-int RP_ShellPropSheetExt::initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size)
-{
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = d->romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	const RomFields::Data *data = fields->data(idx);
-	if (!desc || !data)
-		return 0;
-	if (desc->type != RomFields::RFT_DATETIME ||
-	    data->type != RomFields::RFT_DATETIME)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
-		return 0;
-
-	// Format the date/time using the system locale.
-	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
-	wchar_t dateTimeStr[256];
-	int start_pos = 0;
-	int cchBuf = ARRAY_SIZE(dateTimeStr);
-
-	// Convert from UNIX time to Win32 SYSTEMTIME.
-	// Reference: https://support.microsoft.com/en-us/kb/167296
-	SYSTEMTIME st;
-	FILETIME ft;
-	int64_t ftll = (data->date_time * 10000000LL) + 116444736000000000LL;
-	ft.dwLowDateTime = (DWORD)ftll;
-	ft.dwHighDateTime = (DWORD)(ftll >> 32);
-	FileTimeToSystemTime(&ft, &st);
-
-	// At least one of Date and/or Time must be set.
-	assert((dateTimeDesc->flags &
-		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
-
-	if (!(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)) {
-		// Convert to the current timezone.
-		SYSTEMTIME st_utc = st;
-		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
-		if (!ret) {
-			// Conversion failed.
-			return 0;
-		}
-	}
-
-	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_DATE) {
-		// Format the date.
-		int ret = GetDateFormat(
-			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-			DATE_SHORTDATE,
-			&st, nullptr, &dateTimeStr[start_pos], cchBuf);
-		if (ret <= 0) {
-			// Error!
-			return 0;
-		}
-
-		// Adjust the buffer position.
-		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
-	}
-
-	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_TIME) {
-		// Format the time.
-		if (start_pos > 0 && cchBuf >= 1) {
-			// Add a space.
-			dateTimeStr[start_pos] = L' ';
-			dateTimeStr[start_pos+1] = 0;
-			start_pos++;
-			cchBuf--;
-		}
-
-		int ret = GetTimeFormat(
-			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-			0, &st, nullptr, &dateTimeStr[start_pos], cchBuf);
-		if (ret <= 0) {
-			// Error!
-			return 0;
-		}
-
-		// Adjust the buffer position.
-		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
-	}
-
-	if (start_pos == 0) {
-		// Empty string.
-		// Something failed...
-		return 0;
-	}
-
-	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, dateTimeStr);
-}
-
-/**
- * Initialize the dialog.
- * Called by WM_INITDIALOG.
- * @param hDlg Dialog window.
- */
-void RP_ShellPropSheetExt::initDialog(HWND hDlg)
-{
-	if (!d->romData) {
-		// No ROM data loaded.
-		return;
-	}
-
-	// Get the fields.
-	const RomFields *fields = d->romData->fields();
-	if (!fields) {
-		// No fields.
-		// TODO: Show an error?
-		return;
-	}
-	const int count = fields->count();
-
-	// Make sure we have all required window classes available.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
-	INITCOMMONCONTROLSEX initCommCtrl;
-	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
-	// TODO: Also ICC_STANDARD_CLASSES on XP+?
-	InitCommonControlsEx(&initCommCtrl);
-
-	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
-
-	// Determine the maximum length of all field names.
-	// TODO: Line breaks?
-	int max_text_width = 0;
-	SIZE textSize;
-	for (int i = 0; i < count; i++) {
-		const RomFields::Desc *desc = fields->desc(i);
-		const RomFields::Data *data = fields->data(i);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
-			continue;
-
-		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_c(desc->name);
-
-		// Get the width of this specific entry.
-		GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-		if (textSize.cx > max_text_width) {
-			max_text_width = textSize.cx;
-		}
-	}
-
-	// Add additional spacing for the ':'.
-	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
-	max_text_width += textSize.cx;
-
-	// Release the DC.
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
-
-	// Create the ROM field widgets.
-	// Each static control is max_text_width pixels wide
-	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
-	RECT tmpRect = {0, 0, 0, 8+4};
-	MapDialogRect(hDlg, &tmpRect);
-	const SIZE descSize = {max_text_width, tmpRect.bottom};
-
-	// Current position.
-	// 7x7 DLU margin is recommended by the Windows UX guidelines.
-	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-	tmpRect.left = 7; tmpRect.top = 7;
-	tmpRect.right = 8; tmpRect.bottom = 8;
-	MapDialogRect(hDlg, &tmpRect);
-	POINT curPt = {tmpRect.left, tmpRect.top};
-
-	// Width available for the value widget(s).
-	GetClientRect(hDlg, &tmpRect);
-	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
-
-	// Create the header row.
-	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
-	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
-
-	// Get a matching monospaced font.
-	// TODO: Delete the old font if it's already there?
-	if (!d->hFontMono) {
-		LOGFONT lfFontMono;
-		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) != 0) {
-			// Adjust the font and create a new one.
-			// TODO: What's the best font for this?
-			wcscpy(lfFontMono.lfFaceName, L"Lucida Console");
-			d->hFontMono = CreateFontIndirect(&lfFontMono);
-		}
-	}
-
-	for (int idx = 0; idx < count; idx++) {
-		const RomFields::Desc *desc = fields->desc(idx);
-		const RomFields::Data *data = fields->data(idx);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
-			continue;
-
-		// Append a ":" to the description.
-		// TODO: Localization.
-		wstring desc_text = RP2W_c(desc->name);
-		desc_text += L':';
-
-		// Create the static text widget. (FIXME: Disable mnemonics?)
-		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_LEFT,
-			curPt.x, curPt.y, descSize.cx, descSize.cy,
-			hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
-			nullptr, nullptr);
-		SetWindowFont(hStatic, hFont, FALSE);
-
-		// Create the value widget.
-		int field_cy = descSize.cy;	// Default row size.
-		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
-		HWND hDlgItem;
-		switch (desc->type) {
-			case RomFields::RFT_INVALID:
-				// No data here.
-				DestroyWindow(hStatic);
-				field_cy = 0;
-				break;
-
-			case RomFields::RFT_STRING: {
-				// String data.
-				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initString(hDlg, pt_start, idx, size, nullptr);
-				if (field_cy == 0) {
-					// initString() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
-				break;
-			}
-
-			case RomFields::RFT_BITFIELD:
-				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, pt_start, idx);
-				if (field_cy == 0) {
-					// initBitfield() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
-				break;
-
-			case RomFields::RFT_LISTDATA:
-				// Increase row height to 72 DLU.
-				// descSize is 8+4 DLU (12); 72/12 == 6
-				// FIXME: The last row seems to be cut off with the
-				// Windows XP Luna theme, but not Windows Classic...
-				field_cy *= 6;
-
-				// Create a ListView widget.
-				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
-					WC_LISTVIEW, RP2W_c(data->str),
-					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
-					pt_start.x, pt_start.y,
-					dlg_value_width, field_cy,
-					hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
-					nullptr, nullptr);
-				SetWindowFont(hDlgItem, hFont, FALSE);
-
-				// Initialize the ListView data.
-				initListView(hDlgItem, desc, fields->data(idx));
-				break;
-
-			case RomFields::RFT_DATETIME: {
-				// Date/Time in Unix format.
-				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initDateTime(hDlg, pt_start, idx, size);
-				if (field_cy == 0) {
-					// initDateTime() failed.
-					// Remove the description label.
-					DestroyWindow(hStatic);
-				}
-				break;
-			}
-
-			default:
-				// Unsupported data type.
-				assert(!"Unsupported RomFields::RomFieldsType.");
-				DestroyWindow(hStatic);
-				field_cy = 0;
-				break;
-		}
-
-		// Next row.
-		curPt.y += field_cy;
-	}
-}
-
 /** IShellPropSheetExt **/
 
 IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam)
@@ -1152,7 +1226,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hWnd, UINT uMsg, WPARAM wPar
 					pExt->d->hDlgProps = GetParent(hWnd);
 
 					// Initialize the dialog.
-					pExt->initDialog(hWnd);
+					pExt->d->initDialog(hWnd);
 				}
 			}
 			return TRUE;
