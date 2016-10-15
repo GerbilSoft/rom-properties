@@ -759,10 +759,8 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 int GameCubePrivate::gcn_loadOpeningBnr(void)
 {
 	assert(discReader != nullptr);
-	// TODO: Do Triforce games have opening.bnr?
-	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN ||
-	       (discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_TRIFORCE);
 
+	// TODO: Do Triforce games have opening.bnr?
 	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
 	    (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
 	{
