@@ -106,8 +106,10 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 /** WiiPartitionPrivate **/
 
+#ifdef ENABLE_DECRYPTION
 IAesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
+#endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset)
 	: GcnPartitionPrivate(q, discReader, partition_offset, 2)
@@ -133,9 +135,11 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	data_size = -1;
 	partition_size = -1;
 
+#ifdef ENABLE_DECRYPTION
 	// Increment the AES common key reference counter.
 	// TODO: Atomic reference count?
 	++aes_common_refcnt;
+#endif /* ENABLE_DECRYPTION */
 
 	if (!discReader->isOpen()) {
 		lastError = discReader->lastError();
@@ -164,7 +168,9 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	data_offset     = (int64_t)be32_to_cpu(partitionHeader.data_offset) << 2;
 	data_size       = (int64_t)be32_to_cpu(partitionHeader.data_size) << 2;
 	partition_size  = data_size + ((int64_t)be32_to_cpu(partitionHeader.data_offset) << 2);
+#ifdef ENABLE_DECRYPTION
 	pos_7C00	= 0;
+#endif /* ENABLE_DECRYPTION */
 
 	// Encryption will not be initialized until
 	// read() is called.
@@ -502,8 +508,10 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	// Finished reading the data.
 	return ret;
 #else /* !ENABLE_DECRYPTION */
-	// Decryption is not enabled in this build.
-	d->lastError = ENOSYS;
+	// Decryption is not enabled.
+	((void)ptr);
+	((void)size);
+	d->lastError = EIO;
 	return 0;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -523,6 +531,7 @@ int WiiPartition::seek(int64_t pos)
 		return -1;
 	}
 
+#ifdef ENABLE_DECRYPTION
 	// Handle out-of-range cases.
 	// TODO: How does POSIX behave?
 	if (pos < 0)
@@ -532,6 +541,12 @@ int WiiPartition::seek(int64_t pos)
 	else
 		d->pos_7C00 = pos;
 	return 0;
+#else /* !ENABLE_DECRYPTION */
+	// Decryption is not enabled.
+	((void)pos);
+	d->lastError = EIO;
+	return -1;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** WiiPartition **/
