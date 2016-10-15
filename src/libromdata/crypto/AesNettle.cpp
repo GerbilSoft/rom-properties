@@ -55,7 +55,7 @@ class AesNettlePrivate
 #endif /* HAVE_NETTLE_3 */
 		uint8_t iv[AES_BLOCK_SIZE];
 
-		AesNettle::ChainingMode chainingMode;
+		IAesCipher::ChainingMode chainingMode;
 
 #ifdef HAVE_NETTLE_3
 		// Cipher function for cbc_decrypt().
@@ -66,7 +66,7 @@ class AesNettlePrivate
 /** AesNettlePrivate **/
 
 AesNettlePrivate::AesNettlePrivate()
-	: chainingMode(AesNettle::CM_ECB)
+	: chainingMode(IAesCipher::CM_ECB)
 #ifdef HAVE_NETTLE_3
 	, decrypt_fn(nullptr)
 #endif /* HAVE_NETTLE_3 */
