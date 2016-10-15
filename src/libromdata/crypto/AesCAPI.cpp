@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * AesCipher_CAPI.cpp: AES-128 CBC decryption class. (Windows version)     *
+ * AesCAPI.cpp: AES decryption class using Win32 CryptoAPI.                *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
