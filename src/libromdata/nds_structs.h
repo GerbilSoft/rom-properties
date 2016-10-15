@@ -131,7 +131,7 @@ typedef struct PACKED _NDS_RomHeader {
 
 	// 0x230
 	uint32_t dsi_title_id;
-	uint8_t dsi_filetype;		// TODO
+	uint8_t dsi_filetype;		// See DSi_FILETYPE.
 	uint8_t dsi_reserved2[3];	// 0x00, 0x03, 0x00
 
 	// 0x238
@@ -150,6 +150,18 @@ typedef struct PACKED _NDS_RomHeader {
 	uint8_t dsi_reserved_end[3328];
 } NDS_RomHeader;
 #pragma pack()
+
+/**
+ * Nintendo DSi file type.
+ */
+typedef enum {
+	DSi_FTYPE_CARTRIDGE		= 0x00,
+	DSi_FTYPE_DSiWARE		= 0x04,
+	DSi_FTYPE_SYSTEM_FUN_TOOL	= 0x05,
+	DSi_FTYPE_NONEXEC_DATA		= 0x0F,
+	DSi_FTYPE_SYSTEM_BASE_TOOL	= 0x15,
+	DSi_FTYPE_SYSTEM_MENU		= 0x17,
+} DSi_FILETYPE;
 
 // NDS_IconTitleData version.
 typedef enum {

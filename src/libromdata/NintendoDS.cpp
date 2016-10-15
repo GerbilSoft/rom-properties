@@ -147,7 +147,6 @@ const RomFields::BitfieldDesc NintendoDSPrivate::dsi_region_bitfield = {
 
 // ROM fields.
 const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
-	// TODO: Banner?
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
@@ -155,8 +154,10 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("Hardware"), RomFields::RFT_BITFIELD, {&nds_hw_bitfield}},
 	{_RP("DS Region"), RomFields::RFT_BITFIELD, {&nds_region_bitfield}},
 	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
+	// TODO: Is the field name too long?
+	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
 
-	// TODO: Icon, full game title.
+	// TODO: Full game title.
 };
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
@@ -576,12 +577,51 @@ int NintendoDS::loadFieldData(void)
 	}
 	m_fields->addData_bitfield(nds_region);
 
-	// DSi Region.
-	// Maps directly to the header field.
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
+		// DSi-specific fields.
+
+		// DSi Region.
+		// Maps directly to the header field.
 		m_fields->addData_bitfield(romHeader->dsi_region);
+
+		// DSi filetype.
+		const rp_char *filetype = nullptr;
+		switch (romHeader->dsi_filetype) {
+			case DSi_FTYPE_CARTRIDGE:
+				filetype = _RP("Cartridge");
+				break;
+			case DSi_FTYPE_DSiWARE:
+				filetype = _RP("DSiWare");
+				break;
+			case DSi_FTYPE_SYSTEM_FUN_TOOL:
+				filetype = _RP("System Fun Tool");
+				break;
+			case DSi_FTYPE_NONEXEC_DATA:
+				filetype = _RP("Non-Executable Data File");
+				break;
+			case DSi_FTYPE_SYSTEM_BASE_TOOL:
+				filetype = _RP("System Base Tool");
+				break;
+			case DSi_FTYPE_SYSTEM_MENU:
+				filetype = _RP("System Menu");
+				break;
+			default:
+				break;
+		}
+
+		if (filetype) {
+			m_fields->addData_string(filetype);
+		} else {
+			// Invalid file type.
+			char buf[32];
+			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi_filetype);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		}
 	} else {
-		// No DSi region.
+		// Hide the DSi-specific fields.
+		m_fields->addData_invalid();
 		m_fields->addData_invalid();
 	}
 
