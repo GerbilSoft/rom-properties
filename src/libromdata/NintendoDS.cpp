@@ -259,7 +259,14 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
 		bmp_used[bmp_pal_idx] = true;
 		iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-		iconAnimData->delays[seq_idx] = (seq & 0xFF) * 1000 / 60;
+
+		int delay = (seq & 0xFF);
+		if (delay == 0) {
+			// TODO: Does this mean the animation ends?
+			// For now, just handle 0 as 1.
+			delay = 1;
+		}
+		iconAnimData->delays[seq_idx] = delay * 1000 / 60;
 	}
 	iconAnimData->seq_count = seq_idx;
 
