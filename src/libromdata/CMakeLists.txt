@@ -173,9 +173,11 @@ IF(ENABLE_DECRYPTION)
 	IF(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
 			crypto/AesCAPI.cpp
+			crypto/AesCAPI_NG.cpp
 			)
 		SET(libromdata_CRYPTO_OS_H
 			crypto/AesCAPI.hpp
+			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
@@ -251,7 +253,8 @@ FOREACH(_target romdata8 romdata16)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} gdiplus)
 		IF(ENABLE_DECRYPTION)
-			TARGET_LINK_LIBRARIES(${_target} advapi32)
+			# TODO: Remove bcrypt and use LoadLibrary() instead.
+			TARGET_LINK_LIBRARIES(${_target} advapi32 bcrypt)
 		ENDIF(ENABLE_DECRYPTION)
 	ENDIF(WIN32)
 ENDFOREACH()

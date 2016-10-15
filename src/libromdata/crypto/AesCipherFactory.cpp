@@ -27,6 +27,7 @@
 // IAesCipher implementations.
 #if defined(_WIN32)
 # include "AesCAPI.hpp"
+# include "AesCAPI_NG.hpp"
 #elif defined(HAVE_NETTLE)
 # include "AesNettle.hpp"
 #endif
@@ -45,7 +46,15 @@ namespace LibRomData {
 IAesCipher *AesCipherFactory::getInstance(void)
 {
 #if defined(_WIN32)
-	// Windows: Use CryptoAPI.
+	// Windows: Use CryptoAPI NG if available.
+	// If not, fall back to CryptoAPI.
+	if (AesCAPI_NG::isUsable()) {
+		// CryptoAPI NG is available.
+		return new AesCAPI_NG();
+	}
+
+	// CryptoAPI NG is not available.
+	// Fall back to CryptoAPI.
 	return new AesCAPI();
 #elif defined(HAVE_NETTLE)
 	// Other: Use nettle.
