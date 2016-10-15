@@ -130,6 +130,10 @@ class RP_ShellPropSheetExt_Private
 
 		// Window background color.
 		COLORREF colorWinBg;
+		// XP theming.
+		typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
+		HMODULE hUxTheme_dll;
+		PFNISTHEMEACTIVE pfnIsThemeActive;
 
 		// Banner.
 		HBITMAP hbmpBanner;
@@ -255,6 +259,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontMono(nullptr)
 	, lblSysInfo(nullptr)
 	, colorWinBg(0)
+	, hUxTheme_dll(nullptr)
+	, pfnIsThemeActive(nullptr)
 	, hbmpBanner(nullptr)
 	, iconAnimData(nullptr)
 	, animTimerID(0)
@@ -262,6 +268,12 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 {
 	szSelectedFile[0] = 0;
 	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
+
+	// Attempt to get IsThemeActive() from uxtheme.dll.
+	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
+	if (hUxTheme_dll) {
+		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
+	}
 }
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
@@ -286,6 +298,11 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	}
 	if (hFontMono) {
 		DeleteFont(hFontMono);
+	}
+
+	// Close uxtheme.dll.
+	if (hUxTheme_dll) {
+		FreeLibrary(hUxTheme_dll);
 	}
 }
 
@@ -439,8 +456,13 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
 	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
 	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
-	// TODO: If theming is disabled, use COLOR_3DFACE.
-	colorWinBg = GetSysColor(COLOR_WINDOW);
+	if (pfnIsThemeActive && pfnIsThemeActive()) {
+		// Theme is active.
+		colorWinBg = GetSysColor(COLOR_WINDOW);
+	} else {
+		// Theme is not active.
+		colorWinBg = GetSysColor(COLOR_3DFACE);
+	}
 	Gdiplus::ARGB gdipBgColor =
 		   (colorWinBg & 0x00FF00) | 0xFF000000 |
 		  ((colorWinBg & 0xFF) << 16) |
