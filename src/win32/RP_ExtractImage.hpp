@@ -49,7 +49,7 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		/**
@@ -75,17 +75,17 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
 		// IExtractImage
 		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
 			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) override;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) override;
+			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
+		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
 
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 };
 
 #ifdef __CRT_UUID_DECL

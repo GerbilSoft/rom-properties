@@ -44,7 +44,7 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 {
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 	private:
 		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
 
@@ -68,19 +68,19 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 	public:
 		// IExtractIcon
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) override;
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
 		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) override;
+			UINT nIconSize) final;
 
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 };
 
 #ifdef __CRT_UUID_DECL
