@@ -128,9 +128,6 @@ class RP_ShellPropSheetExt_Private
 		// Header row widgets.
 		HWND lblSysInfo;
 
-		// Window background color.
-		COLORREF colorWinBg;
-
 		// Banner.
 		HBITMAP hbmpBanner;
 		POINT ptBanner;
@@ -252,7 +249,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, lblSysInfo(nullptr)
-	, colorWinBg(0)
 	, hbmpBanner(nullptr)
 	, iconAnimData(nullptr)
 	, animTimerID(0)
@@ -427,18 +423,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
  */
 void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 {
-	// Window background color.
-	// Static controls don't support alpha transparency (?? test),
-	// so we have to fake it.
-	// NOTE: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
-	// TODO: Get the actual background color of the window.
-	colorWinBg = GetSysColor(COLOR_WINDOW);
-	Gdiplus::ARGB gdipBgColor =
-		   (colorWinBg & 0x00FF00) | 0xFF000000 |
-		  ((colorWinBg & 0xFF) << 16) |
-		  ((colorWinBg >> 16) & 0xFF);
-
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
@@ -460,7 +444,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
+				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(true);
 			}
 		}
 	}
@@ -484,7 +468,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
+				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(true);
 			}
 
 			// Get the animated icon data.
@@ -499,7 +483,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
 						assert(backend != nullptr);
 						if (backend) {
-							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
+							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(true);
 						}
 					}
 				}
@@ -1642,24 +1626,36 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hDlg, &ps);
 
-			// Memory DC for BitBlt.
+			// Memory DC for AlphaBlend.
 			HDC hdcMem = CreateCompatibleDC(hdc);
+
+			// Reference: http://www.codeproject.com/Articles/286/Using-the-AlphaBlend-function
+			static const BLENDFUNCTION ftn = {
+				AC_SRC_OVER,	// BlendOp
+				0,		// BlendFlags
+				255,		// SourceConstantAlpha
+				AC_SRC_ALPHA	// AlphaFormat
+			};
 
 			// Draw the banner.
 			if (d->hbmpBanner) {
 				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpBanner);
-				BitBlt(hdc, d->ptBanner.x, d->ptBanner.y,
+				AlphaBlend(hdc, d->ptBanner.x, d->ptBanner.y,
 					d->szBanner.cx, d->szBanner.cy,
-					hdcMem, 0, 0, SRCCOPY);
+					hdcMem, 0, 0,
+					d->szBanner.cx, d->szBanner.cy,
+					ftn);
 				SelectBitmap(hdcMem, hbmOld);
 			}
 
 			// Draw the icon.
 			if (d->hbmpIconFrames[d->last_frame_number]) {
 				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpIconFrames[d->last_frame_number]);
-				BitBlt(hdc, d->rectIcon.left, d->rectIcon.top,
+				AlphaBlend(hdc, d->rectIcon.left, d->rectIcon.top,
 					d->szIcon.cx, d->szIcon.cy,
-					hdcMem, 0, 0, SRCCOPY);
+					hdcMem, 0, 0,
+					d->szIcon.cx, d->szIcon.cy,
+					ftn);
 				SelectBitmap(hdcMem, hbmOld);
 			}
 
@@ -1797,7 +1793,7 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 		// New frame number.
 		// Update the icon.
 		d->last_frame_number = frame;
-		InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
+		InvalidateRect(d->hDlgSheet, &d->rectIcon, TRUE);
 	}
 
 	// Update the timer.

@@ -48,7 +48,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
-TARGET_LINK_LIBRARIES(rom-properties comctl32)
+TARGET_LINK_LIBRARIES(rom-properties comctl32 msimg32)
 
 # Use the .def file for DLL exports.
 IF(MSVC)
