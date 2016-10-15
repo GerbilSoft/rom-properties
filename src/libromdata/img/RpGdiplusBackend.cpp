@@ -381,15 +381,33 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	// Temporarily unlock the GDI+ bitmap.
 	unlock();
 
+	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
+		// TODO: Optimize has_translucent_palette_entries().
+		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
+			// Need to convert to ARGB32 first.
+			// Otherwise, the translucent entries won't show up correctly.
+			pTmpBmp.reset(this->dup_ARGB32());
+			if (!pTmpBmp) {
+				// Error converting to ARGB32.
+				return nullptr;
+			}
+		}
 	}
 
 	// TODO: Specify a background color?
 	HBITMAP hBitmap;
-	Gdiplus::Status status = m_pGdipBmp->GetHBITMAP(
-		Gdiplus::Color(bgColor), &hBitmap);
+	Gdiplus::Status status;
+	if (pTmpBmp) {
+		// Use the temporary ARGB32 bitmap.
+		status = pTmpBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hBitmap);
+	} else {
+		// Use the regular bitmap.
+		status = m_pGdipBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hBitmap);
+	}
+
 	if (status != Gdiplus::Status::Ok) {
 		// Error converting to HBITMAP.
 		hBitmap = nullptr;
