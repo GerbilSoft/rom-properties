@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 
 #include "libromdata/config.libromdata.h"
+#include "Semaphore.hpp"
 
 namespace LibCacheMgr {
 
@@ -88,8 +89,10 @@ class CacheManager
 
 	protected:
 		LibRomData::rp_string m_proxyUrl;
-
 		IDownloader *m_downloader;
+
+		// Semaphore used to limit the number of simultaneous downloads.
+		static Semaphore m_dlsem;
 };
 
 }
