@@ -138,16 +138,6 @@ PCWSTR RP_ShellPropSheetExt_Private::GetSelectedFile(void) const
 
 /** RP_ShellPropSheetExt **/
 
-static inline LPWORD lpwAlign(LPWORD lpIn, ULONG_PTR dw2Power = 4)
-{
-	ULONG_PTR ul;
-
-	ul = (ULONG_PTR)lpIn;
-	ul += dw2Power-1;
-	ul &= ~(dw2Power-1);
-	return (LPWORD)ul;
-}
-
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
 	: d(new RP_ShellPropSheetExt_Private())
 { }
