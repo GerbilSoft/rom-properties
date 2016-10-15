@@ -128,15 +128,19 @@ class RP_ShellPropSheetExt_Private
 		// Header row widgets.
 		HWND lblSysInfo;
 
+		// Window background color.
+		COLORREF colorWinBg;
+
 		// Banner.
 		HBITMAP hbmpBanner;
-		HWND lblBanner;
+		POINT ptBanner;
+		SIZE szBanner;
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
 		HBITMAP hbmpIconFrames[IconAnimData::MAX_FRAMES];
-		HWND lblIcon;
-		HBITMAP hbmpPrevIcon;	// Last HBITMAP assigned to lblIcon.
+		RECT rectIcon;
+		SIZE szIcon;
 		IconAnimHelper iconAnimHelper;
 		UINT_PTR animTimerID;		// Animation timer ID. (non-zero == running)
 		int last_frame_number;		// Last frame number.
@@ -248,10 +252,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
 	, lblSysInfo(nullptr)
+	, colorWinBg(0)
 	, hbmpBanner(nullptr)
-	, lblBanner(nullptr)
-	, lblIcon(nullptr)
-	, hbmpPrevIcon(nullptr)
 	, iconAnimData(nullptr)
 	, animTimerID(0)
 	, last_frame_number(0)
@@ -431,21 +433,17 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 	// NOTE: GetSysColor() has swapped R and B channels
 	// compared to GDI+.
 	// TODO: Get the actual background color of the window.
-	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-		  ((bgColor & 0xFF) << 16) |
-		  ((bgColor >> 16) & 0xFF);
+	colorWinBg = GetSysColor(COLOR_WINDOW);
+	Gdiplus::ARGB gdipBgColor =
+		   (colorWinBg & 0x00FF00) | 0xFF000000 |
+		  ((colorWinBg & 0xFF) << 16) |
+		  ((colorWinBg >> 16) & 0xFF);
 
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner.
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
-		// Remove the current banner.
-		HBITMAP hbmpOldBanner = (HBITMAP)SendMessage(lblBanner, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)nullptr);
-		if (hbmpOldBanner != nullptr && hbmpOldBanner != hbmpBanner) {
-			DeleteObject(hbmpOldBanner);
-		}
 		// Delete the old banner.
 		if (hbmpBanner != nullptr) {
 			DeleteObject(hbmpBanner);
@@ -462,20 +460,14 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
 			}
 		}
 	}
 
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Remove the current icon.
-		HBITMAP hbmpOldIcon = (HBITMAP)SendMessage(lblIcon, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)nullptr);
-		if (hbmpOldIcon != nullptr && hbmpOldIcon != hbmpPrevIcon) {
-			DeleteObject(hbmpOldIcon);
-		}
 		// Delete the old icons.
-		hbmpPrevIcon = nullptr;
 		for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
 			if (hbmpIconFrames[i]) {
 				DeleteObject(hbmpIconFrames[i]);
@@ -492,7 +484,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
 			}
 
 			// Get the animated icon data.
@@ -507,19 +499,18 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
 						assert(backend != nullptr);
 						if (backend) {
-							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
 						}
 					}
 				}
 
 				// Set up the IconAnimHelper.
 				iconAnimHelper.setIconAnimData(iconAnimData);
+				last_frame_number = iconAnimHelper.frameNumber();
+			} else {
+				// Default to frame 0.
+				last_frame_number = 0;
 			}
-
-			// Set the first frame.
-			const int frame = (iconAnimData ? iconAnimHelper.frameNumber() : 0);
-			hbmpPrevIcon = hbmpIconFrames[frame];
-			SendMessage(lblIcon, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmpPrevIcon);
 		}
 	}
 }
@@ -668,26 +659,19 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// lblBanner
 	if (banner) {
-		lblBanner = CreateWindow(WC_STATIC, nullptr,
-			WS_CHILD | WS_VISIBLE | SS_BITMAP,
-			curPt.x, curPt.y,
-			banner->width(), banner->height(),
-			hDlg, (HMENU)(LONG_PTR)IDC_STATIC_BANNER,
-			nullptr, nullptr);
-		curPt.x += banner->width() + pt_start.x;
-
-		SendMessage(lblBanner, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmpBanner);
+		ptBanner = curPt;
+		szBanner.cx = banner->width();
+		szBanner.cy = banner->height();
+		curPt.x += szBanner.cx + pt_start.x;
 	}
 
 	// lblIcon
 	if (icon) {
-		lblIcon = CreateWindow(WC_STATIC, nullptr,
-			WS_CHILD | WS_VISIBLE | SS_BITMAP,
-			curPt.x, curPt.y,
-			icon->width(), icon->height(),
-			hDlg, (HMENU)(LONG_PTR)IDC_STATIC_ICON,
-			nullptr, nullptr);
-		curPt.x += icon->width() + pt_start.x;
+		szIcon.cx = icon->width();
+		szIcon.cy = icon->height();
+		SetRect(&rectIcon, curPt.x, curPt.y,
+			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
+		curPt.x += szIcon.cx + pt_start.x;
 	}
 
 	// Load the images.
@@ -1641,6 +1625,50 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_PAINT: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (!pExt) {
+				// No RP_ShellPropSheetExt. Can't do anything...
+				return FALSE;
+			}
+
+			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			if (!d->hbmpBanner && !d->hbmpIconFrames[0]) {
+				// Nothing to draw...
+				break;
+			}
+
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hDlg, &ps);
+
+			// Memory DC for BitBlt.
+			HDC hdcMem = CreateCompatibleDC(hdc);
+
+			// Draw the banner.
+			if (d->hbmpBanner) {
+				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpBanner);
+				BitBlt(hdc, d->ptBanner.x, d->ptBanner.y,
+					d->szBanner.cx, d->szBanner.cy,
+					hdcMem, 0, 0, SRCCOPY);
+				SelectBitmap(hdcMem, hbmOld);
+			}
+
+			// Draw the icon.
+			if (d->hbmpIconFrames[d->last_frame_number]) {
+				HBITMAP hbmOld = SelectBitmap(hdcMem, d->hbmpIconFrames[d->last_frame_number]);
+				BitBlt(hdc, d->rectIcon.left, d->rectIcon.top,
+					d->szIcon.cx, d->szIcon.cy,
+					hdcMem, 0, 0, SRCCOPY);
+				SelectBitmap(hdcMem, hbmOld);
+			}
+
+			DeleteDC(hdcMem);
+			EndPaint(hDlg, &ps);
+
+			return TRUE;
+		}
+
 		default:
 			break;
 	}
@@ -1768,22 +1796,8 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 	if (frame != d->last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		if (d->hbmpIconFrames[frame]) {
-			HBITMAP hbmpOld = (HBITMAP)SendMessage(
-				d->lblIcon, STM_SETIMAGE, IMAGE_BITMAP,
-				(LPARAM)d->hbmpIconFrames[frame]);
-			if (hbmpOld != d->hbmpPrevIcon) {
-				// Image was copied. Delete the copy.
-				// MSDN says on XP, it's only copied if the icon
-				// has alpha transparency, but on Windows 7,
-				// it seems like it's always copied.
-				// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb760782(v=vs.85).aspx
-				DeleteObject(hbmpOld);
-			}
-			d->hbmpPrevIcon = d->hbmpIconFrames[frame];
-		}
-
 		d->last_frame_number = frame;
+		InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
 	}
 
 	// Update the timer.
