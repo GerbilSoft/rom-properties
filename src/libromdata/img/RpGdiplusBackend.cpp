@@ -339,7 +339,7 @@ Gdiplus::Status RpGdiplusBackend::unlock(void)
  *
  * @return Duplicated GDI+ bitmap.
  */
-Gdiplus::Bitmap *RpGdiplusBackend::dup(void) const
+Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 {
 	Gdiplus::Bitmap *pBmp;
 	Gdiplus::Status status;
@@ -503,7 +503,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 			// Need to convert to ARGB32 first.
 			// Otherwise, the translucent entries won't show up correctly.
-			pTmpBmp.reset(this->dup());
+			pTmpBmp.reset(this->dup_ARGB32());
 			if (!pTmpBmp) {
 				// Error converting to ARGB32.
 				return nullptr;

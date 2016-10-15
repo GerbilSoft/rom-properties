@@ -131,7 +131,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 *
 		 * @return Duplicated GDI+ bitmap.
 		 */
-		Gdiplus::Bitmap *dup(void) const;
+		Gdiplus::Bitmap *dup_ARGB32(void) const;
 
 	public:
 		/**

@@ -418,7 +418,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				pBmpBanner.reset(backend->dup());
+				pBmpBanner.reset(backend->dup_ARGB32());
 				if (pBmpBanner) {
 					// Banner will be drawn in WM_PAINT via GDI+
 					// in order to handle alpha transparency.
@@ -444,7 +444,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
 			assert(backend != nullptr);
 			if (backend) {
-				pBmpIcon.reset(backend->dup());
+				pBmpIcon.reset(backend->dup_ARGB32());
 				if (pBmpIcon) {
 					// Icon will be drawn in WM_PAINT via GDI+
 					// in order to handle alpha transparency.
