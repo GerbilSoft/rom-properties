@@ -175,6 +175,7 @@ class RP_ShellPropSheetExt_Private
 		 */
 		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize);
 
+	public:
 		/**
 		 * Load the banner and icon as HBITMAPs.
 		 *
@@ -185,6 +186,7 @@ class RP_ShellPropSheetExt_Private
 		 */
 		void loadImages(HWND hDlg);
 
+	private:
 		/**
 		 * Create the header row.
 		 * @param hDlg		[in] Dialog window.
@@ -1672,6 +1674,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			EndPaint(hDlg, &ps);
 
 			return TRUE;
+		}
+
+		case WM_SYSCOLORCHANGE:
+		case WM_THEMECHANGED: {
+			// Reload the images.
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				pExt->d->loadImages(hDlg);
+			}
+			break;
 		}
 
 		default:
