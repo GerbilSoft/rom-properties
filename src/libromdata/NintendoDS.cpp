@@ -273,7 +273,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	// Convert the required bitmaps.
 	for (int i = 0; i < RomData::ICONANIMDATA_MAX_FRAMES; i++) {
 		if (bmp_used[i]) {
-			iconAnimData->count = i;
+			iconAnimData->count = i + 1;
 
 			const uint8_t bmp = (i & 7);
 			const uint8_t pal = (i >> 3) & 7;
