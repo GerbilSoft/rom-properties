@@ -217,8 +217,13 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		KeyManager::KeyData_t keyData;
 		if (keyManager->get("rvl-common", &keyData) != 0) {
 			// "rvl-common" key was not found.
-			// TODO: NO_KEYFILE if the key file is missing?
-			encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+			if (keyManager->areKeysLoaded()) {
+				// Keys were loaded, but this key is missing.
+				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+			} else {
+				// Keys were not loaded. keys.conf is missing.
+				encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
+			}
 			return encInitStatus;
 		}
 
@@ -246,8 +251,13 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	KeyManager::KeyData_t keyData;
 	if (keyManager->get("rvl-common", &keyData) != 0) {
 		// "rvl-common" key was not found.
-		// TODO: NO_KEYFILE if the key file is missing?
-		encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+		if (keyManager->areKeysLoaded()) {
+			// Keys were loaded, but this key is missing.
+			encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+		} else {
+			// Keys were not loaded. keys.conf is missing.
+			encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
+		}
 		return encInitStatus;
 	}
 

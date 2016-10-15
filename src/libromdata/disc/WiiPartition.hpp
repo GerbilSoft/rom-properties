@@ -76,7 +76,7 @@ class WiiPartition : public GcnPartition
 			ENCINIT_UNKNOWN,
 			ENCINIT_DISABLED,		// ENABLE_DECRYPTION disabled.
 			ENCINIT_INVALID_KEY_IDX,	// Invalid common key index in the disc header.
-			ENCINIT_NO_KEYFILE,		// keys.conf not found.
+			ENCINIT_NO_KEYFILE,		// keys.conf was not found.
 			ENCINIT_MISSING_KEY,		// Required key not found.
 			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
 			ENCINIT_INCORRECT_KEY,		// Key is incorrect.

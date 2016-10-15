@@ -397,6 +397,22 @@ KeyManager *KeyManager::instance(void)
 }
 
 /**
+ * Have the encryption keys been loaded yet?
+ *
+ * This function will *not* load the keys.
+ * To load the keys, call get() with the requested key name.
+ *
+ * If this function returns false after calling get(),
+ * keys.conf is probably missing.
+ *
+ * @return True if keys have been loaded; false if not.
+ */
+bool KeyManager::areKeysLoaded(void) const
+{
+	return d->conf_was_found;
+}
+
+/**
  * Get an encryption key.
  * @param keyName	[in]  Encryption key name.
  * @param pKeyData	[out] Key data struct.

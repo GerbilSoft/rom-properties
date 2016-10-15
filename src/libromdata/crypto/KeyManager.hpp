@@ -63,6 +63,19 @@ class KeyManager
 		};
 
 		/**
+		 * Have the encryption keys been loaded yet?
+		 *
+		 * This function will *not* load the keys.
+		 * To load the keys, call get() with the requested key name.
+		 *
+		 * If this function returns false after calling get(),
+		 * keys.conf is probably missing.
+		 *
+		 * @return True if keys have been loaded; false if not.
+		 */
+		bool areKeysLoaded(void) const;
+
+		/**
 		 * Get an encryption key.
 		 * @param keyName	[in]  Encryption key name.
 		 * @param pKeyData	[out] Key data struct.
