@@ -216,7 +216,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	// of the animated DSi icon? (Except for DSiWare...)
 	if (size < sizeof(NDS_IconTitleData) ||
 	    le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
-	    le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) == 0)
+	    (le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) & 0xFF) == 0)
 	{
 		// Either this isn't a DSi icon/title struct (pre-v0103),
 		// or the animated icon sequence is invalid.
