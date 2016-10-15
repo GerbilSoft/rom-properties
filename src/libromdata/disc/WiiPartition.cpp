@@ -28,7 +28,8 @@
 #include "GcnFst.hpp"
 
 #ifdef ENABLE_DECRYPTION
-#include "crypto/AesCipher.hpp"
+#include "crypto/AesCipherFactory.hpp"
+#include "crypto/IAesCipher.hpp"
 #include "crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
 
@@ -69,11 +70,11 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// - Index 0: rvl-common
 		// - Index 1: rvl-korean
 		// TODO: Dev keys?
-		static AesCipher *aes_common[2];
+		static IAesCipher *aes_common[2];
 		static int aes_common_refcnt;
 
 		// AES cipher for this partition's title key.
-		AesCipher *aes_title;
+		IAesCipher *aes_title;
 		// Decrypted title key.
 		uint8_t title_key[16];
 
@@ -105,7 +106,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 /** WiiPartitionPrivate **/
 
-AesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
+IAesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset)
@@ -199,8 +200,8 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	if (!aes_common[keyIdx]) {
 		// Initialize this key.
 		// TODO: Dev keys?
-		unique_ptr<AesCipher> cipher(new AesCipher());
-		if (!cipher->isInit()) {
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+		if (!cipher || !cipher->isInit()) {
 			// Error initializing the cipher.
 			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 			return encInitStatus;
@@ -217,7 +218,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 		// Load the common key. (CBC mode)
 		int ret = cipher->setKey(keyData.key, keyData.length);
-		ret |= cipher->setChainingMode(AesCipher::CM_CBC);
+		ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
 		if (ret != 0) {
 			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 			return encInitStatus;
@@ -228,8 +229,8 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	}
 
 	// Initialize the title key AES cipher.
-	unique_ptr<AesCipher> cipher(new AesCipher());
-	if (!cipher->isInit()) {
+	unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
@@ -263,7 +264,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}
-	if (cipher->setChainingMode(AesCipher::CM_CBC) != 0) {
+	if (cipher->setChainingMode(IAesCipher::CM_CBC) != 0) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}

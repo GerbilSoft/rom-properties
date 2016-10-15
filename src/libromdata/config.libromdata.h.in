@@ -36,6 +36,9 @@
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
 
+/* Define to 1 if we're using nettle for decryption. */
+#cmakedefine HAVE_NETTLE 1
+
 /* Define to 1 if we're using nettle and it is v3.0 or later. */
 #cmakedefine HAVE_NETTLE_3 1
 

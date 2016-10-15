@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "AesCipher.hpp"
+#include "AesCAPI.hpp"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -41,15 +41,15 @@
 
 namespace LibRomData {
 
-class AesCipherPrivate
+class AesCAPIPrivate
 {
 	public:
-		AesCipherPrivate();
-		~AesCipherPrivate();
+		AesCAPIPrivate();
+		~AesCAPIPrivate();
 
 	private:
-		AesCipherPrivate(const AesCipherPrivate &other);
-		AesCipherPrivate &operator=(const AesCipherPrivate &other);
+		AesCAPIPrivate(const AesCAPIPrivate &other);
+		AesCAPIPrivate &operator=(const AesCAPIPrivate &other);
 
 	public:
 		// CryptoAPI provider.
@@ -61,12 +61,12 @@ class AesCipherPrivate
 		HCRYPTKEY hKey;
 };
 
-/** AesCipherPrivate **/
+/** AesCAPIPrivate **/
 
-HCRYPTPROV AesCipherPrivate::hProvider = 0;
-LONG AesCipherPrivate::lRefCnt = 0;
+HCRYPTPROV AesCAPIPrivate::hProvider = 0;
+LONG AesCAPIPrivate::lRefCnt = 0;
 
-AesCipherPrivate::AesCipherPrivate()
+AesCAPIPrivate::AesCAPIPrivate()
 	: hKey(0)
 {
 	if (InterlockedIncrement(&lRefCnt) == 1) {
@@ -86,7 +86,7 @@ AesCipherPrivate::AesCipherPrivate()
 	}
 }
 
-AesCipherPrivate::~AesCipherPrivate()
+AesCAPIPrivate::~AesCAPIPrivate()
 {
 	if (hKey != 0) {
 		CryptDestroyKey(hKey);
@@ -101,13 +101,13 @@ AesCipherPrivate::~AesCipherPrivate()
 	}
 }
 
-/** AesCipher **/
+/** AesCAPI **/
 
-AesCipher::AesCipher()
-	: d(new AesCipherPrivate())
+AesCAPI::AesCAPI()
+	: d(new AesCAPIPrivate())
 { }
 
-AesCipher::~AesCipher()
+AesCAPI::~AesCAPI()
 {
 	delete d;
 }
@@ -116,7 +116,7 @@ AesCipher::~AesCipher()
  * Has the cipher been initialized properly?
  * @return True if initialized; false if not.
  */
-bool AesCipher::isInit(void) const
+bool AesCAPI::isInit(void) const
 {
 	return (d->hProvider != 0);
 }
@@ -127,7 +127,7 @@ bool AesCipher::isInit(void) const
  * @param len Key length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setKey(const uint8_t *key, unsigned int len)
+int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 {
 	// Acceptable key lengths:
 	// - 16 (AES-128)
@@ -196,7 +196,7 @@ int AesCipher::setKey(const uint8_t *key, unsigned int len)
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setChainingMode(ChainingMode mode)
+int AesCAPI::setChainingMode(ChainingMode mode)
 {
 	if (d->hKey == 0) {
 		return -EBADF;
@@ -230,7 +230,7 @@ int AesCipher::setChainingMode(ChainingMode mode)
  * @param len IV length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
-int AesCipher::setIV(const uint8_t *iv, unsigned int len)
+int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 {
 	if (!iv || len != 16) {
 		return -EINVAL;
@@ -255,7 +255,7 @@ int AesCipher::setIV(const uint8_t *iv, unsigned int len)
  * @param data_len Length of data block.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
+unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 {
 	if (d->hKey == 0) {
 		// Key hasn't been loaded.
@@ -293,7 +293,7 @@ unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len)
  * @param iv_len Length of the IV.
  * @return Number of bytes decrypted on success; 0 on error.
  */
-unsigned int AesCipher::decrypt(uint8_t *data, unsigned int data_len,
+unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
 	if (d->hKey == 0) {
