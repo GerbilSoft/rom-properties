@@ -172,6 +172,16 @@ class RP_ShellPropSheetExt_Private
 		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize);
 
 		/**
+		 * Load the banner and icon as HBITMAPs.
+		 *
+		 * This function should be called on startup and if
+		 * the window's background color changes.
+		 *
+		 * @param hDlg	[in] Dialog window.
+		 */
+		void loadImages(HWND hDlg);
+
+		/**
 		 * Create the header row.
 		 * @param hDlg		[in] Dialog window.
 		 * @param pt_start	[in] Starting position, in pixels.
@@ -406,6 +416,115 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 }
 
 /**
+ * Load the banner and icon as HBITMAPs.
+ *
+ * This function should be called on startup and if
+ * the window's background color changes.
+ *
+ * @param hDlg	[in] Dialog window.
+ */
+void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
+{
+	// Window background color.
+	// Static controls don't support alpha transparency (?? test),
+	// so we have to fake it.
+	// NOTE: GetSysColor() has swapped R and B channels
+	// compared to GDI+.
+	// TODO: Get the actual background color of the window.
+	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
+	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
+		  ((bgColor & 0xFF) << 16) |
+		  ((bgColor >> 16) & 0xFF);
+
+	// Supported image types.
+	const uint32_t imgbf = romData->supportedImageTypes();
+
+	// Banner.
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Remove the current banner.
+		HBITMAP hbmpOldBanner = (HBITMAP)SendMessage(lblBanner, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)nullptr);
+		if (hbmpOldBanner != nullptr && hbmpOldBanner != hbmpBanner) {
+			DeleteObject(hbmpOldBanner);
+		}
+		// Delete the old banner.
+		if (hbmpBanner != nullptr) {
+			DeleteObject(hbmpBanner);
+			hbmpBanner = nullptr;
+		}
+
+		// Get the banner.
+		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		if (banner && banner->isValid()) {
+			// Convert to HBITMAP using the window background color.
+			// TODO: Redo if the window background color changes.
+			// TODO: Const-ness fixes.
+			const RpGdiplusBackend *backend =
+				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
+			assert(backend != nullptr);
+			if (backend) {
+				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+			}
+		}
+	}
+
+	// Icon.
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Remove the current icon.
+		HBITMAP hbmpOldIcon = (HBITMAP)SendMessage(lblIcon, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)nullptr);
+		if (hbmpOldIcon != nullptr && hbmpOldIcon != hbmpPrevIcon) {
+			DeleteObject(hbmpOldIcon);
+		}
+		// Delete the old icons.
+		hbmpPrevIcon = nullptr;
+		for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
+			if (hbmpIconFrames[i]) {
+				DeleteObject(hbmpIconFrames[i]);
+				hbmpIconFrames[i] = nullptr;
+			}
+		}
+
+		// Get the icon.
+		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		if (icon && icon->isValid()) {
+			// Convert to HBITMAP using the window background color.
+			// TODO: Redo if the window background color changes.
+			const RpGdiplusBackend *backend =
+				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
+			assert(backend != nullptr);
+			if (backend) {
+				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+			}
+
+			// Get the animated icon data.
+			if (iconAnimData) {
+				// Convert the icons to GDI+ bitmaps.
+				// TODO: Refactor this a bit...
+				for (int i = 1; i < iconAnimData->count; i++) {
+					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
+						// Convert to HBITMAP using the window background color.
+						// TODO: Redo if the window background color changes.
+						const RpGdiplusBackend *backend =
+							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
+						assert(backend != nullptr);
+						if (backend) {
+							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+						}
+					}
+				}
+
+				// Set up the IconAnimHelper.
+				iconAnimHelper.setIconAnimData(iconAnimData);
+			}
+
+			// Set the first frame.
+			const int frame = (iconAnimData ? iconAnimHelper.frameNumber() : 0);
+			hbmpPrevIcon = hbmpIconFrames[frame];
+			SendMessage(lblIcon, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmpPrevIcon);
+		}
+	}
+}
+
+/**
  * Create the header row.
  * @param hDlg		[in] Dialog window.
  * @param pt_start	[in] Starting position, in pixels.
@@ -491,39 +610,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// Supported image types.
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Window background color.
-	// Static controls don't support alpha transparency (?? test),
-	// so we have to fake it.
-	// NOTE: GetSysColor() has swapped R and B channels
-	// compared to GDI+.
-	// TODO: Get the actual background color of the window.
-	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-		  ((bgColor & 0xFF) << 16) |
-		  ((bgColor >> 16) & 0xFF);
-
 	// Banner.
 	const rp_image *banner = nullptr;
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
-			// Convert to HBITMAP using the window background color.
-			// TODO: Redo if the window background color changes.
-			// TODO: Const-ness fixes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
-				if (hbmpBanner) {
-					// Banner will be assigned to a static control.
-					if (total_widget_width > 0) {
-						total_widget_width += pt_start.x;
-					}
-					total_widget_width += banner->width();
-				}
+			// Add the banner width.
+			// The banner will be assigned to a WC_STATIC control.
+			if (total_widget_width > 0) {
+				total_widget_width += pt_start.x;
 			}
+			total_widget_width += banner->width();
 		} else {
 			// No banner.
 			banner = nullptr;
@@ -536,43 +634,15 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the icon.
 		icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			// Convert to HBITMAP using the window background color.
-			// TODO: Redo if the window background color changes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
-				if (hbmpIconFrames[0]) {
-					// Icon will be assigned to a static control.
-					if (total_widget_width > 0) {
-						total_widget_width += pt_start.x;
-					}
-					total_widget_width += icon->width();
-				}
+			// Add the icon width.
+			// The icon will be assigned to a WC_STATIC control.
+			if (total_widget_width > 0) {
+				total_widget_width += pt_start.x;
 			}
+			total_widget_width += icon->width();
 
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
-			if (iconAnimData) {
-				// Convert the icons to GDI+ bitmaps.
-				// TODO: Refactor this a bit...
-				for (int i = 1; i < iconAnimData->count; i++) {
-					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						// Convert to HBITMAP using the window background color.
-						// TODO: Redo if the window background color changes.
-						const RpGdiplusBackend *backend =
-							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
-						assert(backend != nullptr);
-						if (backend) {
-							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
-						}
-					}
-				}
-
-				// Set up the IconAnimHelper.
-				iconAnimHelper.setIconAnimData(iconAnimData);
-			}
 		} else {
 			// No icon.
 			icon = nullptr;
@@ -618,12 +688,10 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			hDlg, (HMENU)(LONG_PTR)IDC_STATIC_ICON,
 			nullptr, nullptr);
 		curPt.x += icon->width() + pt_start.x;
-
-		// Set the first frame.
-		const int frame = (iconAnimData ? iconAnimHelper.frameNumber() : 0);
-		hbmpPrevIcon = hbmpIconFrames[frame];
-		SendMessage(lblIcon, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hbmpPrevIcon);
 	}
+
+	// Load the images.
+	loadImages(hDlg);
 
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
