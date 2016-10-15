@@ -389,6 +389,8 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 			// Need to convert to ARGB32 first.
 			// Otherwise, the translucent entries won't show up correctly.
+			// Example: SSBM GCN save icon has color fringing on Windows 7.
+			// (...but not Windows XP)
 			pTmpBmp.reset(this->dup_ARGB32());
 			if (!pTmpBmp) {
 				// Error converting to ARGB32.
