@@ -35,7 +35,7 @@ class Semaphore
 		 * Create a semaphore.
 		 * @param count Number of times the semaphore can be obtained before blocking.
 		 */
-		Semaphore(int count);
+		explicit Semaphore(int count);
 
 		/**
 		 * Delete the semaphore.
@@ -79,7 +79,7 @@ class Semaphore
 class SemaphoreLocker
 {
 	public:
-		SemaphoreLocker(Semaphore &sem)
+		explicit SemaphoreLocker(Semaphore &sem)
 			: m_sem(sem)
 		{
 			m_sem.obtain();
@@ -91,8 +91,8 @@ class SemaphoreLocker
 		}
 
 	private:
-		SemaphoreLocker(const SemaphoreLocker &);
-		SemaphoreLocker &operator=(const SemaphoreLocker &);
+		SemaphoreLocker(const SemaphoreLocker &other);
+		SemaphoreLocker &operator=(const SemaphoreLocker &other);
 
 	private:
 		Semaphore &m_sem;
