@@ -87,7 +87,7 @@ FOREACH(_target cachemgr8 cachemgr16)
 		EXCLUDE_FROM_ALL TRUE
 		)
 	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${_target} urlmon)
+		TARGET_LINK_LIBRARIES(${_target} urlmon wininet)
 	ELSE(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} ${CURL_LIBRARIES})
 	ENDIF(WIN32)
