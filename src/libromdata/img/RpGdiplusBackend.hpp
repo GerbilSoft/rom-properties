@@ -155,10 +155,9 @@ class RpGdiplusBackend : public rp_image_backend
 		 * WARNING: This *may* invalidate pointers
 		 * previously returned by data().
 		 *
-		 * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP_alpha(bool forceARGB32 = false);
+		HBITMAP toHBITMAP_alpha();
 
 		/**
 		 * Convert the GDI+ image to HBITMAP.
@@ -171,10 +170,9 @@ class RpGdiplusBackend : public rp_image_backend
 		 *
 		 * @param size		[in] Resize the image to this size.
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
-		 * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest, bool forceARGB32 = false);
+		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest);
 
 	protected:
 		/**
@@ -189,10 +187,9 @@ class RpGdiplusBackend : public rp_image_backend
 		 *
 		 * @param size		[in] Resize the image to this size.
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
-		 * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP_alpha_int(SIZE size, bool nearest, bool forceARGB32);
+		HBITMAP toHBITMAP_alpha_int(SIZE size, bool nearest);
 
 	protected:
 		/**

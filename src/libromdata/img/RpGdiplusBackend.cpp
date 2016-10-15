@@ -429,10 +429,9 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
  * WARNING: This *may* invalidate pointers
  * previously returned by data().
  *
- * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha(bool forceARGB32)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 {
 	// Convert to HBITMAP.
 	HBITMAP hBitmap = nullptr;
@@ -444,13 +443,13 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(bool forceARGB32)
 		case rp_image::FORMAT_CI8:
 			// Color conversion may be needed if the image
 			// has alpha transparency.
-			if (forceARGB32 || this->tr_idx < 0 || this->has_translucent_palette_entries()) {
+			if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 				// Translucent palette entries.
 				// Color conversion is required.
 				// NOTE: toHBITMAP_alpha_int() copies the CI8 palette,
 				// so we don't need to do that here.
 				static const SIZE size = {0, 0};
-				hBitmap = toHBITMAP_alpha_int(size, false, forceARGB32);
+				hBitmap = toHBITMAP_alpha_int(size, false);
 			} else {
 				// No translucent palette entries.
 				m_pGdipBmp->SetPalette(m_pGdipPalette);
@@ -477,19 +476,18 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(bool forceARGB32)
  *
  * @param size		[in] Resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
- * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest, bool forceARGB32)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 {
 	if (size.cx <= 0 || size.cy <= 0 ||
 	    (size.cx == this->width && size.cy == this->height))
 	{
 		// No resize is required.
-		return toHBITMAP_alpha(forceARGB32);
+		return toHBITMAP_alpha();
 	}
 
-	return toHBITMAP_alpha_int(size, nearest, forceARGB32);
+	return toHBITMAP_alpha_int(size, nearest);
 }
 
 /**
@@ -504,10 +502,9 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest, bool f
  *
  * @param size		[in] Resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
- * @param forceARGB32	[in,opt] Force CI8 to ARGB32 conversion.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest, bool forceARGB32)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 {
 	// Convert the image to ARGB32 (if necessary) and resize it.
 	if (size.cx <= 0 || size.cy <= 0) {
@@ -523,7 +520,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest, bool forc
 		// Copy the local palette to the GDI+ image.
 		m_pGdipBmp->SetPalette(m_pGdipPalette);
 		// TODO: Optimize has_translucent_palette_entries().
-		if (forceARGB32 || this->tr_idx < 0 || this->has_translucent_palette_entries()) {
+		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 			// Need to convert to ARGB32 first.
 			// Otherwise, the translucent entries won't show up correctly.
 			pTmpBmp.reset(this->dup_ARGB32());
