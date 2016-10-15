@@ -380,23 +380,25 @@ int RP_ShellPropSheetExt::createHeaderRow(HWND hDlg, const POINT &pt_start, cons
 	}
 
 	wstring sysInfo;
+	int sysInfo_lines = 1;
 	if (systemName) {
 		sysInfo = RP2W_c(systemName);
 	}
 	if (fileType) {
 		if (!sysInfo.empty()) {
 			sysInfo += L"\r\n";
+			sysInfo_lines++;
 		}
 		sysInfo += RP2W_c(fileType);
 	}
 
-	// Multi-line height is size.cy * 8 / 5.
-	const int height = size.cy * 8 / 5;
+	// Get the default font.
+	HFONT hFont = GetWindowFont(hDlg);
+ 
+	// Label size.
+	SIZE sz_lblSysInfo = {0, 0};
 
 	if (!sysInfo.empty()) {
-		// Get the default font.
-		HFONT hFont = GetWindowFont(hDlg);
-
 		// Use a bold font.
 		// TODO: Delete the old font if it's already there?
 		if (!d->hFontBold) {
@@ -409,15 +411,43 @@ int RP_ShellPropSheetExt::createHeaderRow(HWND hDlg, const POINT &pt_start, cons
 			}
 		}
 
-		d->lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_CENTER,
-			pt_start.x, pt_start.y,
-			size.cx, height,
-			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(d->lblSysInfo, (d->hFontBold ? d->hFontBold : hFont), FALSE);
+		// Determine the appropriate label size.
+		HDC hDC = GetDC(hDlg);
+		HFONT hFontOrig = SelectFont(hDC, hFont);
+		BOOL bRet = GetTextExtentPoint32(hDC, sysInfo.data(), (int)sysInfo.size(), &sz_lblSysInfo);
+		if (!bRet) {
+			// Error determining the label size.
+			// Don't draw the label.
+			sz_lblSysInfo.cx = 0;
+			sz_lblSysInfo.cy = 0;
+		} else {
+			// GetTextExtentPoint32() doesn't take newlines into account.
+			// Adjust the height for newlines.
+			sz_lblSysInfo.cy *= sysInfo_lines;
+		}
 	}
 
-	return height;
+	// Total widget width.
+	// TODO: Add icon and banner.
+	const int total_widget_width = sz_lblSysInfo.cx;
+	POINT curPt = {
+		((size.cx - total_widget_width) / 2) + pt_start.x,
+		pt_start.y
+	};
+
+	// lblSysInfo
+	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
+		d->lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
+			WS_CHILD | WS_VISIBLE | SS_CENTER,
+			curPt.x, curPt.y,
+			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
+			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(d->lblSysInfo, (d->hFontBold ? d->hFontBold : hFont), FALSE);
+		curPt.x += sz_lblSysInfo.cx + pt_start.x;
+	}
+
+	// Return the label height and some extra padding.
+	return sz_lblSysInfo.cy + (pt_start.y * 5 / 8);
 }
 
 /**
