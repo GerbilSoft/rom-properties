@@ -137,6 +137,16 @@ class RP_ShellPropSheetExt_Private
 		inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
 
 		/**
+		 * Measure text size using GDI+.
+		 * @param hWnd		[in] hWnd.
+		 * @param hFont		[in] Font.
+		 * @param str		[in] String.
+		 * @param lpSize	[out] Size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize);
+
+		/**
 		 * Create the header row.
 		 * @param hDlg		[in] Dialog window.
 		 * @param pt_start	[in] Starting position, in pixels.
@@ -252,6 +262,62 @@ inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, 
 }
 
 /**
+ * Measure text size using GDI+.
+ * @param hWnd		[in] hWnd.
+ * @param hFont		[in] Font.
+ * @param str		[in] String.
+ * @param lpSize	[out] Size.
+ * @return 0 on success; non-zero on errro.
+ */
+int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize)
+{
+	SIZE size_total = {0, 0};
+
+	HDC hDC = GetDC(hWnd);
+	HFONT hFontOrig = SelectFont(hDC, hFont);
+
+	// Handle newlines.
+	int lines = 0;
+	const wchar_t *data = str.data();
+	int nl_pos_prev = -1;
+	// FIXME: Do we need to check for "\r\n"?
+	size_t nl_pos = 0;	// Assuming no NL at the start.
+	do {
+		nl_pos = str.find(L'\n', nl_pos + 1);
+		const int start = nl_pos_prev + 1;
+		int len;
+		if (nl_pos != wstring::npos) {
+			len = (int)(nl_pos - start);
+		} else {
+			len = (int)(str.size() - start);
+		}
+
+		SIZE size_cur;
+		BOOL bRet = GetTextExtentPoint32(hDC, &data[start], len, &size_cur);
+		if (!bRet) {
+			// Something failed...
+			SelectFont(hDC, hFontOrig);
+			ReleaseDC(hWnd, hDC);
+			return -1;
+		}
+
+		if (size_cur.cx > size_total.cx) {
+			size_total.cx = size_cur.cx;
+		}
+		size_total.cy += size_cur.cy;
+
+		// Next newline.
+		nl_pos_prev = (int)nl_pos;
+	} while (nl_pos != wstring::npos);
+
+	SelectFont(hDC, hFontOrig);
+	ReleaseDC(hWnd, hDC);
+
+	*lpSize = size_total;
+	return 0;
+}
+
+/**
  * Create the header row.
  * @param hDlg		[in] Dialog window.
  * @param pt_start	[in] Starting position, in pixels.
@@ -290,14 +356,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	}
 
 	wstring sysInfo;
-	int sysInfo_lines = 1;
 	if (systemName) {
 		sysInfo = RP2W_c(systemName);
 	}
 	if (fileType) {
 		if (!sysInfo.empty()) {
 			sysInfo += L"\r\n";
-			sysInfo_lines++;
 		}
 		sysInfo += RP2W_c(fileType);
 	}
@@ -322,19 +386,17 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		}
 
 		// Determine the appropriate label size.
-		HDC hDC = GetDC(hDlg);
-		HFONT hFontOrig = SelectFont(hDC, hFont);
-		BOOL bRet = GetTextExtentPoint32(hDC, sysInfo.data(), (int)sysInfo.size(), &sz_lblSysInfo);
-		if (!bRet) {
+		int ret = measureTextSize(hDlg,
+			(hFontBold ? hFontBold : hFont),
+			sysInfo, &sz_lblSysInfo);
+		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
 			sz_lblSysInfo.cx = 0;
 			sz_lblSysInfo.cy = 0;
 		} else {
-			// GetTextExtentPoint32() doesn't take newlines into account.
-			// Adjust the height for newlines.
-			sz_lblSysInfo.cy *= sysInfo_lines;
-			total_widget_width += sz_lblSysInfo.cx;
+			// Start the total_widget_width.
+			total_widget_width = sz_lblSysInfo.cx;
 		}
 	}
 
