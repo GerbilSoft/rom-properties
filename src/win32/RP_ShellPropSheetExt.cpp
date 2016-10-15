@@ -433,6 +433,11 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 	// NOTE: GetSysColor() has swapped R and B channels
 	// compared to GDI+.
 	// TODO: Get the actual background color of the window.
+	// TODO: Use DrawThemeBackground:
+	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
+	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
+	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
+	// TODO: If theming is disabled, use COLOR_3DFACE.
 	colorWinBg = GetSysColor(COLOR_WINDOW);
 	Gdiplus::ARGB gdipBgColor =
 		   (colorWinBg & 0x00FF00) | 0xFF000000 |
