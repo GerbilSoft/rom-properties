@@ -503,7 +503,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
 			// Need to convert to ARGB32 first.
 			// Otherwise, the translucent entries won't show up correctly.
-			pTmpBmp.reset(convCI8toARGB32(&m_gdipBmpData, m_pGdipPalette));
+			pTmpBmp.reset(this->dup());
 			if (!pTmpBmp) {
 				// Error converting to ARGB32.
 				return nullptr;
@@ -696,76 +696,6 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 
 	// Bitmap is ready.
 	return hBitmap;
-}
-
-/**
- * Convert a locked CI8 GDI+ bitmap to an ARGB32 GDI+ bitmap.
- * Alpha transparency is preserved.
- * @param pBmpData Gdiplus::BitmapData.
- * @param pColorPalette Gdiplus::ColorPalette.
- * @return HBITMAP.
- */
-Gdiplus::Bitmap *RpGdiplusBackend::convCI8toARGB32(
-	const Gdiplus::BitmapData *pBmpData,
-	const Gdiplus::ColorPalette *pColorPalette)
-{
-	assert(pBmpData->PixelFormat == PixelFormat8bppIndexed);
-	assert(pColorPalette->Count == 256);
-	if (pBmpData->PixelFormat != PixelFormat8bppIndexed ||
-	    pColorPalette->Count != 256)
-	{
-		return nullptr;
-	}
-
-	Gdiplus::Bitmap *pArgbBmp = new Gdiplus::Bitmap(pBmpData->Width, pBmpData->Height, PixelFormat32bppARGB);
-	if (!pArgbBmp)
-		return nullptr;
-
-	// Lock the ARGB32 bitmap.
-	const Gdiplus::Rect bmpArgbRect(0, 0, pBmpData->Width, pBmpData->Height);
-	Gdiplus::BitmapData bmpArgbData;
-	Gdiplus::Status status = pArgbBmp->LockBits(&bmpArgbRect,
-		Gdiplus::ImageLockModeWrite,
-		PixelFormat32bppARGB, &bmpArgbData);
-	if (status != Gdiplus::Status::Ok) {
-		// Error locking the ARGB32 bitmap.
-		delete pArgbBmp;
-		return nullptr;
-	}
-
-	const uint8_t *src = reinterpret_cast<uint8_t*>(pBmpData->Scan0);
-	uint32_t *dest = reinterpret_cast<uint32_t*>(bmpArgbData.Scan0);
-	const int src_diff = pBmpData->Stride - pBmpData->Width;
-	const int dest_diff = (bmpArgbData.Stride / 4) - bmpArgbData.Width;
-
-	for (UINT y = bmpArgbData.Height; y > 0; y--) {
-		UINT x = bmpArgbData.Width;
-		for (; x > 1; x -= 2) {
-			dest[0] = pColorPalette->Entries[src[0]];
-			dest[1] = pColorPalette->Entries[src[1]];
-			dest += 2;
-			src += 2;
-		}
-		if (x == 1) {
-			*dest = pColorPalette->Entries[*src];
-			dest++;
-			src++;
-		}
-
-		dest += dest_diff;
-		src += src_diff;
-	}
-
-	// Unlock the ARGB32 bitmap.
-	status = pArgbBmp->UnlockBits(&bmpArgbData);
-	if (status != Gdiplus::Status::Ok) {
-		// Error unlocking the GDI+ bitmap.
-		delete pArgbBmp;
-		return nullptr;
-	}
-
-	// We're done here.
-	return pArgbBmp;
 }
 
 }
