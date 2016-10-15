@@ -26,10 +26,9 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/img/rp_image.hpp"
-using LibRomData::RomData;
-using LibRomData::RomFields;
-using LibRomData::rp_image;
-using LibRomData::rp_string;
+#include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/img/IconAnimHelper.hpp"
+using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -93,12 +92,11 @@ class RomDataViewPrivate
 		// TODO: Animated icon helper class like
 		// in GCN MemCard Recover? (and maybe share
 		// it with the Windows version.)
-		const RomData::IconAnimData *iconAnimData;
-		QPixmap iconFrames[RomData::ICONANIMDATA_MAX_FRAMES];
-		int anim_cur_seq_idx;		// Current sequence indx.
-		int anim_cur_frame;		// Current frame.
-		int anim_last_valid_frame;	// Last frame that had a valid image.
+		const IconAnimData *iconAnimData;
+		QPixmap iconFrames[IconAnimData::MAX_FRAMES];
+		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
+		int last_frame_number;		// Last frame number.
 
 		/**
 		 * Create the header row.
@@ -131,10 +129,8 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
 	, iconAnimData(nullptr)
-	, anim_cur_seq_idx(0)
-	, anim_cur_frame(0)
-	, anim_last_valid_frame(0)
 	, anim_running(false)
+	, last_frame_number(0)
 	, displayInit(false)
 {
 	// Register RpQImageBackend.
@@ -145,6 +141,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 RomDataViewPrivate::~RomDataViewPrivate()
 {
 	stopAnimTimer();
+	iconAnimHelper.setIconAnimData(nullptr);
 	delete romData;
 }
 
@@ -248,11 +245,6 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
-				assert(iconAnimData->count > 1);
-				assert(iconAnimData->count <= RomData::ICONANIMDATA_MAX_FRAMES);
-				assert(iconAnimData->seq_count > 1);
-				assert(iconAnimData->seq_count <= RomData::ICONANIMDATA_MAX_SEQUENCE);
-
 				// Convert the icons to QPixmaps.
 				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
@@ -262,12 +254,16 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 					}
 				}
 
-				// Create the animation timer.
-				if (!ui.tmrIconAnim) {
-					ui.tmrIconAnim = new QTimer(q);
-					ui.tmrIconAnim->setSingleShot(true);
-					QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
-							 q, SLOT(tmrIconAnim_timeout()));
+				// Set up the IconAnimHelper.
+				iconAnimHelper.setIconAnimData(iconAnimData);
+				if (iconAnimHelper.isAnimated()) {
+					// Create the animation timer.
+					if (!ui.tmrIconAnim) {
+						ui.tmrIconAnim = new QTimer(q);
+						ui.tmrIconAnim->setSingleShot(true);
+						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
+								q, SLOT(tmrIconAnim_timeout()));
+					}
 				}
 			}
 		}
@@ -497,18 +493,17 @@ void RomDataViewPrivate::startAnimTimer(void)
 		return;
 	}
 
-	if (anim_cur_frame >= iconAnimData->count) {
-		// Out of bounds...
-		// Reset the animation.
-		anim_cur_seq_idx = 0;
-		anim_cur_frame = iconAnimData->seq_index[0];
-		anim_last_valid_frame = anim_cur_frame;
-		ui.lblIcon->setPixmap(iconFrames[anim_cur_frame]);
+	// Get the current frame information.
+	last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
+	if (delay <= 0) {
+		// Invalid delay value.
+		return;
 	}
 
 	// Set a single-shot timer for the current frame.
 	anim_running = true;
-	ui.tmrIconAnim->start(iconAnimData->delays[anim_cur_seq_idx]);
+	ui.tmrIconAnim->start(delay);
 }
 
 /**
@@ -581,33 +576,23 @@ void RomDataView::tmrIconAnim_timeout(void)
 {
 	Q_D(RomDataView);
 
-	// Go to the next frame in the sequence.
-	if (d->anim_cur_seq_idx >= (d->iconAnimData->seq_count - 1)) {
-		// Last frame in the sequence.
-		d->anim_cur_seq_idx = 0;
-	} else {
-		// Go to the next frame in the sequence.
-		d->anim_cur_seq_idx++;
+	// Next frame.
+	int delay = 0;
+	int frame = d->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		return;
 	}
 
-	// Get the frame number associated with this sequence index.
-	d->anim_cur_frame = d->iconAnimData->seq_index[d->anim_cur_seq_idx];
-	assert(d->anim_cur_frame >= 0);
-	assert(d->anim_cur_frame < RomData::ICONANIMDATA_MAX_FRAMES);
-
-	// Check if this frame has an icon.
-	if (!d->iconFrames[d->anim_cur_frame].isNull() &&
-	    d->anim_last_valid_frame != d->anim_cur_frame)
-	{
-		// This frame has an icon.
-		d->anim_last_valid_frame = d->anim_cur_frame;
-
+	if (frame != d->last_frame_number) {
+		// New frame number.
 		// Update the icon.
-		d->ui.lblIcon->setPixmap(d->iconFrames[d->anim_cur_frame]);
+		d->ui.lblIcon->setPixmap(d->iconFrames[frame]);
+		d->last_frame_number = frame;
 	}
 
 	// Set the single-shot timer.
 	if (d->anim_running) {
-		d->ui.tmrIconAnim->start(d->iconAnimData->delays[d->anim_cur_seq_idx]);
+		d->ui.tmrIconAnim->start(delay);
 	}
 }

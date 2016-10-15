@@ -27,8 +27,10 @@
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
+
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
+#include "img/IconAnimData.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -107,7 +109,7 @@ class GameCubeSavePrivate
 
 		// Animated icon data.
 		// NOTE: The first frame is owned by the RomData superclass.
-		RomData::IconAnimData *iconAnimData;
+		IconAnimData *iconAnimData;
 
 		/**
 		 * Load the save file's icons.
@@ -413,7 +415,7 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 			&icondata[iconsizetotal - (256*2)]);
 	}
 
-	this->iconAnimData = new RomData::IconAnimData();
+	this->iconAnimData = new IconAnimData();
 	iconAnimData->count = 0;
 
 	unsigned int iconaddr_cur = 0;
@@ -472,6 +474,10 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 
 		iconAnimData->count++;
 	}
+
+	// NOTE: We're not deleting iconAnimData even if we only have
+	// a single icon because iconAnimData() will call loadIcon()
+	// if iconAnimData is nullptr.
 
 	// Set up the icon animation sequence.
 	int idx = 0;
@@ -967,7 +973,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const RomData::IconAnimData *GameCubeSave::iconAnimData(void) const
+const IconAnimData *GameCubeSave::iconAnimData(void) const
 {
 	if (!d->iconAnimData) {
 		// Load the icon.

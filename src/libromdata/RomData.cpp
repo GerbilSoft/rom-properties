@@ -23,6 +23,7 @@
 #include "common.h"
 #include "file/IRpFile.hpp"
 #include "img/rp_image.hpp"
+#include "img/IconAnimData.hpp"
 
 // dup()
 #ifdef _WIN32
@@ -289,7 +290,7 @@ uint32_t RomData::imgpf(ImageType imageType) const
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const RomData::IconAnimData *RomData::iconAnimData(void) const
+const IconAnimData *RomData::iconAnimData(void) const
 {
 	// No animated icon by default.
 	return nullptr;

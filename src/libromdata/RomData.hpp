@@ -39,6 +39,7 @@ namespace LibRomData {
 
 class IRpFile;
 class rp_image;
+struct IconAnimData;
 
 class RomData
 {
@@ -343,42 +344,6 @@ class RomData
 		 * @return Bitfield of ImageProcessingBF operations to perform.
 		 */
 		uint32_t imgpf(ImageType imageType) const;
-
-		static const int ICONANIMDATA_MAX_FRAMES = 64;
-		static const int ICONANIMDATA_MAX_SEQUENCE = 64;
-
-		struct IconAnimData {
-			int count;	// Frame count.
-			int seq_count;	// Sequence count.
-
-			// Array of icon sequence indexes.
-			// Each entry indicates which frame to use.
-			// Check the seq_count field to determine
-			// how many indexes are actually here.
-			uint8_t seq_index[ICONANIMDATA_MAX_SEQUENCE];
-
-			// Array of icon delays.
-			// Delays are in milliseconds.
-			// NOTE: These are associated with sequence indexes,
-			// not the individual icon frames.
-			int delays[ICONANIMDATA_MAX_SEQUENCE];
-
-			// Array of icon frames.
-			// Check the count field to determine
-			// how many frames are actually here.
-			// NOTE: Frames may be nullptr, in which case
-			// the previous frame should be used.
-			const rp_image *frames[ICONANIMDATA_MAX_FRAMES];
-
-			IconAnimData()
-				: count(0)
-				, seq_count(0)
-			{
-				memset(seq_index, 0, sizeof(seq_index));
-				memset(delays, 0, sizeof(delays));
-				memset(frames, 0, sizeof(frames));
-			}
-		};
 
 		/**
 		 * Get the animated icon data.

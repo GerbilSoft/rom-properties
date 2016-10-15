@@ -27,8 +27,10 @@
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
+
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
+#include "img/IconAnimData.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -100,7 +102,7 @@ class NintendoDSPrivate
 		// frame in the sequence for loadIcon().
 		// This class owns all of the icons in here, so we
 		// must delete all of them.
-		RomData::IconAnimData *iconAnimData;
+		IconAnimData *iconAnimData;
 
 		// The rp_image* copy. (DO NOT DELETE THIS!)
 		rp_image *icon_first_frame;
@@ -229,11 +231,11 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	this->iconAnimData = new RomData::IconAnimData();
+	this->iconAnimData = new IconAnimData();
 	iconAnimData->count = 0;
 
 	// Which bitmaps are used?
-	bool bmp_used[RomData::ICONANIMDATA_MAX_FRAMES];
+	bool bmp_used[IconAnimData::MAX_FRAMES];
 	memset(bmp_used, 0, sizeof(bmp_used));
 
 	// Parse the icon sequence.
@@ -265,7 +267,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	iconAnimData->seq_count = seq_idx;
 
 	// Convert the required bitmaps.
-	for (int i = 0; i < RomData::ICONANIMDATA_MAX_FRAMES; i++) {
+	for (int i = 0; i < IconAnimData::MAX_FRAMES; i++) {
 		if (bmp_used[i]) {
 			iconAnimData->count = i + 1;
 
@@ -278,6 +280,10 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 				sizeof(nds_icon_title.dsi_icon_pal[pal]));
 		}
 	}
+
+	// NOTE: We're not deleting iconAnimData even if we only have
+	// a single icon because iconAnimData() will call loadIcon()
+	// if iconAnimData is nullptr.
 
 	// Return a copy of first frame.
 	// TODO: rp_image assignment operator and copy constructor.
@@ -632,7 +638,7 @@ int NintendoDS::loadInternalImage(ImageType imageType)
  *
  * @return Animated icon data, or nullptr if no animated icon is present.
  */
-const RomData::IconAnimData *NintendoDS::iconAnimData(void) const
+const IconAnimData *NintendoDS::iconAnimData(void) const
 {
 	if (!d->iconAnimData) {
 		// Load the icon.
