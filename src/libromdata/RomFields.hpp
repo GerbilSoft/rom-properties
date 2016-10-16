@@ -225,13 +225,22 @@ class RomFields
 		int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
 		
 		/**
-		* Add a string field formatted like a hex dump
-		* @param buf Input bytes.
-		* @param size Byte count.
-		* @return Field index.
-		*/
+		 * Add a string field formatted like a hex dump
+		 * @param buf Input bytes.
+		 * @param size Byte count.
+		 * @return Field index.
+		 */
 		int addData_string_hexdump(const uint8_t *buf, size_t size);
-		
+
+		/**
+		 * Add a string field formatted for an address range.
+		 * @param start Start address.
+		 * @param end End address.
+		 * @param digits Number of leading digits. (default is 8 for 32-bit)
+		 * @return Field index.
+		 */
+		int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8);
+
 		/**
 		 * Add bitfield data.
 		 * @param bitfield Bitfield.

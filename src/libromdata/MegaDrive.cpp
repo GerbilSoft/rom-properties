@@ -767,22 +767,14 @@ int MegaDrive::loadFieldData(void)
 
 	if (!d->isDisc()) {
 		// ROM range.
-		// TODO: Range helper? (Can't be used for SRAM, though...)
-		char buf[32];
-		int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+		m_fields->addData_string_address_range(
 				be32_to_cpu(romHeader->rom_start),
-				be32_to_cpu(romHeader->rom_end));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				be32_to_cpu(romHeader->rom_end), 8);
 
 		// RAM range.
-		len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+		m_fields->addData_string_address_range(
 				be32_to_cpu(romHeader->ram_start),
-				be32_to_cpu(romHeader->ram_end));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				be32_to_cpu(romHeader->ram_end), 8);
 
 		// SRAM range. (TODO)
 		m_fields->addData_string(_RP(""));

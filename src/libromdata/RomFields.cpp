@@ -427,6 +427,31 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
 }
 
 /**
+ * Add a string field formatted for an address range.
+ * @param start Start address.
+ * @param end End address.
+ * @param digits Number of leading digits. (default is 8 for 32-bit)
+ * @return Field index.
+ */
+int RomFields::addData_string_address_range(uint32_t start, uint32_t end, int digits)
+{
+	// Maximum number of digits is 16. (64-bit)
+	assert(digits <= 16);
+	if (digits > 16) {
+		digits = 16;
+	}
+
+	// ROM range.
+	// TODO: Range helper? (Can't be used for SRAM, though...)
+	char buf[64];
+	int len = snprintf(buf, sizeof(buf), "0x%0*X - 0x%0*X",
+			digits, start, digits, end);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	return addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
  * Add a bitfield.
  * @param bitfield Bitfield.
  * @return Field index.
