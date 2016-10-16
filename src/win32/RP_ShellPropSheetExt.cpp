@@ -47,9 +47,11 @@ using namespace LibRomData;
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 using std::unique_ptr;
 using std::unordered_map;
+using std::unordered_set;
 using std::wstring;
 using std::vector;
 
@@ -118,6 +120,9 @@ class RP_ShellPropSheetExt_Private
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
 		HFONT hFontMono;	// Monospaced font.
+
+		// Monospaced fonts.
+		unordered_set<wstring> monospaced_fonts;
 
 		// Subclassed multiline edit controls.
 		unordered_map<HWND, WNDPROC> mapOldEditProc;
@@ -238,6 +243,23 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+
+		/**
+		 * Monospaced font enumeration procedure.
+		 * @param lpelfe Enumerated font information.
+		 * @param lpntme Font metrics.
+		 * @param FontType Font type.
+		 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+		 */
+		static int CALLBACK MonospacedFontEnumProc(
+			const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
+			DWORD FontType, LPARAM lParam);
+
+		/**
+		 * Initialize the monospaced font.
+		 * @param hFont Base font.
+		 */
+		void initMonospacedFont(HFONT hFont);
 
 	public:
 		/**
@@ -1145,6 +1167,103 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 }
 
 /**
+ * Monospaced font enumeration procedure.
+ * @param lpelfe Enumerated font information.
+ * @param lpntme Font metrics.
+ * @param FontType Font type.
+ * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+ */
+int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
+	const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
+	DWORD FontType, LPARAM lParam)
+{
+	RP_ShellPropSheetExt_Private *d =
+		reinterpret_cast<RP_ShellPropSheetExt_Private*>(lParam);
+
+	// Check the font attributes:
+	// - Must be monospaced.
+	// - Must be horizontally-oriented.
+	if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) &&
+	     lpelfe->lfFaceName[0] != '@')
+	{
+		d->monospaced_fonts.insert(lpelfe->lfFaceName);
+	}
+
+	// Continue enumeration.
+	return 1;
+}
+
+/**
+ * Initialize the monospaced font.
+ * @param hFont Base font.
+ */
+void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
+{
+	// TODO: Delete the old font if it's already there?
+	if (hFontMono || !hFont) {
+		return;
+	}
+
+	// Monospaced font should be based on the specified font.
+	LOGFONT lfFontMono;
+	if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
+		// Unable to obtain the LOGFONT.
+		return;
+	}
+
+	// Enumerate all monospaced fonts.
+	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
+	monospaced_fonts.clear();
+	monospaced_fonts.reserve(64);
+	LOGFONT lfEnumFonts;
+	memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
+	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
+	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+	HDC hdc = GetDC(nullptr);
+	EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
+		reinterpret_cast<LPARAM>(this), 0);
+	ReleaseDC(nullptr, hdc);
+
+	// Fonts to try.
+	static const wchar_t *const fonts[] = {
+                L"DejaVu Sans Mono",
+                L"Consolas",
+                L"Lucida Console",
+                L"Fixedsys Excelsior 3.01",
+                L"Fixedsys Excelsior 3.00",
+                L"Fixedsys Excelsior 3.0",
+                L"Fixedsys Excelsior 2.00",
+                L"Fixedsys Excelsior 2.0",
+                L"Fixedsys Excelsior 1.00",
+                L"Fixedsys Excelsior 1.0",
+                L"Fixedsys",
+                L"Courier New",
+	};
+
+	const wchar_t *font = nullptr;
+
+	for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
+		if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
+			// Found a font.
+			font = fonts[i];
+			break;
+		}
+	}
+
+	// We don't need the enumerated fonts anymore.
+	monospaced_fonts.clear();
+
+	if (!font) {
+		// Monospaced font not found.
+		return;
+	}
+
+	// Adjust the font and create a new one.
+	wcscpy(lfFontMono.lfFaceName, font);
+	hFontMono = CreateFontIndirect(&lfFontMono);
+}
+
+/**
  * Initialize the dialog.
  * Called by WM_INITDIALOG.
  * @param hDlg Dialog window.
@@ -1235,17 +1354,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
 	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
 
-	// Get a matching monospaced font.
-	// TODO: Delete the old font if it's already there?
-	if (!hFontMono) {
-		LOGFONT lfFontMono;
-		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) != 0) {
-			// Adjust the font and create a new one.
-			// TODO: What's the best font for this?
-			wcscpy(lfFontMono.lfFaceName, L"Lucida Console");
-			hFontMono = CreateFontIndirect(&lfFontMono);
-		}
-	}
+	// Make sure the monospaced font is initialized.
+	initMonospacedFont(hFont);
 
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Desc *desc = fields->desc(idx);
