@@ -376,6 +376,8 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	return icon_first_frame;
 }
 
+/** NintendoDS **/
+
 /**
  * Get the title index.
  * The title that most closely matches the

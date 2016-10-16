@@ -82,6 +82,7 @@ class GameCubeSavePrivate
 			SAVE_TYPE_GCS = 1,	// GameShark
 			SAVE_TYPE_SAV = 2,	// MaxDrive
 		};
+		int saveType;
 
 		/**
 		 * Byteswap a card_direntry struct.
@@ -89,9 +90,6 @@ class GameCubeSavePrivate
 		 * @param saveType Apply quirks for a specific save type.
 		 */
 		static void byteswap_direntry(card_direntry *direntry, SaveType saveType);
-
-		// Save file type.
-		int saveType;
 
 		// Data offset. This is the actual starting address
 		// of the game data, past the file-specific headers
@@ -130,28 +128,6 @@ class GameCubeSavePrivate
 
 /** GameCubeSavePrivate **/
 
-GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q)
-	: q(q)
-	, saveType(SAVE_TYPE_UNKNOWN)
-	, dataOffset(-1)
-	, iconAnimData(nullptr)
-{
-	// Clear the directory entry.
-	memset(&direntry, 0, sizeof(direntry));
-}
-
-GameCubeSavePrivate::~GameCubeSavePrivate()
-{
-	if (iconAnimData) {
-		// Delete all except the first animated icon frame.
-		// (The first frame is owned by the RomData superclass.)
-		for (int i = iconAnimData->count-1; i >= 1; i--) {
-			delete iconAnimData->frames[i];
-		}
-		delete iconAnimData;
-	}
-}
-
 // Last Modified timestamp.
 const RomFields::DateTimeDesc GameCubeSavePrivate::last_modified_dt = {
 	RomFields::RFT_DATETIME_HAS_DATE |
@@ -176,6 +152,28 @@ const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
 	{_RP("Copy Count"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Blocks"), RomFields::RFT_STRING, {nullptr}},
 };
+
+GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q)
+	: q(q)
+	, saveType(SAVE_TYPE_UNKNOWN)
+	, dataOffset(-1)
+	, iconAnimData(nullptr)
+{
+	// Clear the directory entry.
+	memset(&direntry, 0, sizeof(direntry));
+}
+
+GameCubeSavePrivate::~GameCubeSavePrivate()
+{
+	if (iconAnimData) {
+		// Delete all except the first animated icon frame.
+		// (The first frame is owned by the RomData superclass.)
+		for (int i = iconAnimData->count-1; i >= 1; i--) {
+			delete iconAnimData->frames[i];
+		}
+		delete iconAnimData;
+	}
+}
 
 /**
  * Byteswap a card_direntry struct.
@@ -612,7 +610,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 			gciOffset = 0x80;
 			break;
 		default:
-			// Unknown disc type.
+			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SAVE_TYPE_UNKNOWN;
 			return;
 	}
@@ -731,7 +729,6 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
 	static const rp_char *const sysNames[4] = {
 		// FIXME: "NGC" in Japan?
 		_RP("Nintendo GameCube"), _RP("GameCube"), _RP("GCN"), nullptr
