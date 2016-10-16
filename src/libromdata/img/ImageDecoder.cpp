@@ -662,11 +662,23 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 		return nullptr;
 	}
 
-	img->set_tr_idx(-1);	// No transparency.
-	for (int i = 16-1; i >= 0; i--) {
+	int tr_idx = -1;
+	for (int i = 0; i < 16; i++) {
 		// PS1 color format is RGB555.
-		palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		// NOTE: If the color value is $0000, it's transparent.
+		const uint16_t px16 = le16_to_cpu(pal_buf[i]);
+		if (px16 == 0) {
+			// Transparent color.
+			palette[i] = 0;
+			if (tr_idx < 0) {
+				tr_idx = i;
+			}
+		} else {
+			// Non-transparent color.
+			palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(px16);
+		}
 	}
+	img->set_tr_idx(tr_idx);
 
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
