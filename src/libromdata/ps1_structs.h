@@ -72,7 +72,7 @@ typedef struct PACKED _PS1_SC_Struct {
 	uint8_t reserved2[8];
 
 	// PlayStation icon.
-	uint16_t icon_pal[16];		// Icon palette. (RGB555?)
+	uint16_t icon_pal[16];		// Icon palette. (RGB555)
 	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 #pragma pack()

@@ -665,7 +665,6 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 	img->set_tr_idx(-1);	// No transparency.
 	for (int i = 16-1; i >= 0; i--) {
 		// PS1 color format is RGB555.
-		// TODO: Definitely RGB555, or maybe ARGB1555?
 		palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 	}
 
