@@ -22,6 +22,7 @@
 #include "MegaDrive.hpp"
 #include "MegaDrivePublishers.hpp"
 #include "MegaDriveRegions.hpp"
+#include "md_structs.h"
 #include "CopierFormats.h"
 
 #include "common.h"
@@ -88,44 +89,6 @@ class MegaDrivePrivate
 		/** Internal ROM data. **/
 
 		/**
-		 * Mega Drive ROM header.
-		 * This matches the MD ROM header format exactly.
-		 *
-		 * NOTE: Strings are NOT null-terminated!
-		 */
-		#define MD_RomHeader_SIZE 256
-		#pragma pack(1)
-		struct PACKED MD_RomHeader {
-			char system[16];
-			char copyright[16];
-			char title_domestic[48];	// Japanese ROM name.
-			char title_export[48];	// US/Europe ROM name.
-			char serial[14];
-			uint16_t checksum;
-			char io_support[16];
-
-			// ROM/RAM address information.
-			uint32_t rom_start;
-			uint32_t rom_end;
-			uint32_t ram_start;
-			uint32_t ram_end;
-
-			// Save RAM information.
-			// Info format: 'R', 'A', %1x1yz000, 0x20
-			// x == 1 for backup (SRAM), 0 for not backup
-			// yz == 10 for even addresses, 11 for odd addresses
-			uint32_t sram_info;
-			uint32_t sram_start;
-			uint32_t sram_end;
-
-			// Miscellaneous.
-			char modem_info[12];
-			char notes[40];
-			char region_codes[16];
-		};
-		#pragma pack()
-
-		/**
 		 * Parse the I/O support field.
 		 * @param io_support I/O support field.
 		 * @param size Size of io_support.
@@ -185,6 +148,7 @@ class MegaDrivePrivate
 
 	public:
 		// ROM header.
+		// NOTE: Must be byteswapped on access.
 		uint32_t vectors[64];	// Interrupt vectors. (BE32)
 		MD_RomHeader romHeader;	// ROM header.
 		SMD_Header smdHeader;	// SMD header.
@@ -372,7 +336,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	m_file->rewind();
 
 	// Read the ROM header. [0x400 bytes]
-	static_assert(sizeof(MegaDrivePrivate::MD_RomHeader) == MD_RomHeader_SIZE,
+	static_assert(sizeof(MD_RomHeader) == MD_RomHeader_SIZE,
 		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x400];
 	size_t size = m_file->read(header, sizeof(header));
@@ -738,7 +702,7 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// MD ROM header, excluding the vector table.
-	const MegaDrivePrivate::MD_RomHeader *romHeader = &d->romHeader;
+	const MD_RomHeader *romHeader = &d->romHeader;
 
 	// Read the strings from the header.
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
