@@ -430,10 +430,11 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
  * Add a string field formatted for an address range.
  * @param start Start address.
  * @param end End address.
+ * @param suffix Suffix string.
  * @param digits Number of leading digits. (default is 8 for 32-bit)
  * @return Field index.
  */
-int RomFields::addData_string_address_range(uint32_t start, uint32_t end, int digits)
+int RomFields::addData_string_address_range(uint32_t start, uint32_t end, const rp_char *suffix, int digits)
 {
 	// Maximum number of digits is 16. (64-bit)
 	assert(digits <= 16);
@@ -448,7 +449,19 @@ int RomFields::addData_string_address_range(uint32_t start, uint32_t end, int di
 			digits, start, digits, end);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
-	return addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+
+	rp_string str;
+	if (len > 0) {
+		str = latin1_to_rp_string(buf, len);
+	}
+
+	if (suffix && suffix[0] != 0) {
+		// Append a space and the specified suffix.
+		str += _RP_CHR(' ');
+		str += suffix;
+	}
+
+	return addData_string(str);
 }
 
 /**

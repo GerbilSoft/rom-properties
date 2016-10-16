@@ -236,10 +236,24 @@ class RomFields
 		 * Add a string field formatted for an address range.
 		 * @param start Start address.
 		 * @param end End address.
+		 * @param suffix Suffix string.
 		 * @param digits Number of leading digits. (default is 8 for 32-bit)
 		 * @return Field index.
 		 */
-		int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8);
+		int addData_string_address_range(uint32_t start, uint32_t end,
+					const rp_char *suffix, int digits = 8);
+
+		/**
+		 * Add a string field formatted for an address range.
+		 * @param start Start address.
+		 * @param end End address.
+		 * @param digits Number of leading digits. (default is 8 for 32-bit)
+		 * @return Field index.
+		 */
+		inline int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8)
+		{
+			return addData_string_address_range(start, end, nullptr, digits);
+		}
 
 		/**
 		 * Add bitfield data.

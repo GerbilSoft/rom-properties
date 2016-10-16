@@ -776,8 +776,36 @@ int MegaDrive::loadFieldData(void)
 				be32_to_cpu(romHeader->ram_start),
 				be32_to_cpu(romHeader->ram_end), 8);
 
-		// SRAM range. (TODO)
-		m_fields->addData_string(_RP(""));
+		// SRAM range.
+		// Info format: 'R', 'A', %1x1yz000, 0x20
+		const uint32_t sram_info = be32_to_cpu(romHeader->sram_info);
+		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
+			// SRAM is present.
+			// x == 1 for backup (SRAM), 0 for not backup
+			// yz == 10 for even addresses, 11 for odd addresses
+			// TODO: Print the 'x' bit.
+			const rp_char *suffix;
+			switch ((sram_info >> (8+3)) & 0x03) {
+				case 2:
+					suffix = _RP("(even only)");
+					break;
+				case 3:
+					suffix = _RP("(odd only)");
+					break;
+				default:
+					// TODO: Are both alternates 16-bit?
+					suffix = _RP("(16-bit)");
+					break;
+			}
+
+			m_fields->addData_string_address_range(
+					be32_to_cpu(romHeader->sram_start),
+					be32_to_cpu(romHeader->sram_end),
+					suffix, 8);
+		} else {
+			// TODO: Non-monospaced.
+			m_fields->addData_string(_RP("None"));
+		}
 	} else {
 		// ROM, RAM, and SRAM ranges are not valid in Mega CD headers.
 		m_fields->addData_invalid();
