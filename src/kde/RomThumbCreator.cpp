@@ -277,17 +277,16 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			// Maintain the correct aspect ratio.
 			const int img_w = ret_img.width();
 			const int img_h = ret_img.height();
-			QSize tmp_sz(width, height);
-			tmp_sz.scale(ret_img.size(), Qt::KeepAspectRatio);
 
-			// Only resize if the requested size is an integer multiple
-			// of the actual image size.
-			if ((tmp_sz.width() % img_w == 0) && (tmp_sz.height() % img_h == 0)) {
-				// Integer multiple.
-				// TODO: Verify how this handles non-square images.
-				ret_img = ret_img.scaled(width, height,
-					Qt::KeepAspectRatio, Qt::FastTransformation);
-			}
+			// Resize to the next highest integer multiple.
+			width -= (width % img_w);
+			height -= (height % img_h);
+
+			// Calculate the closest size while maintaining the aspect ratio.
+			QSize tmp_sz = ret_img.size();
+			tmp_sz.scale(width, height, Qt::KeepAspectRatio);
+			ret_img = ret_img.scaled(tmp_sz,
+				Qt::KeepAspectRatio, Qt::FastTransformation);
 		}
 	}
 
