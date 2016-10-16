@@ -30,6 +30,41 @@ extern "C" {
 #endif
 
 /**
+ * 68000 vector table.
+ * All fields are big-endian.
+ */
+#define M68K_VectorTable_SIZE 256
+#pragma pack(1)
+typedef struct PACKED _M68K_VectorTable {
+	union {
+		uint32_t vectors[64];
+		struct {
+			uint32_t initial_sp;
+			uint32_t initial_pc;
+			uint32_t bus_error;
+			uint32_t address_error;
+			uint32_t illegal_insn;
+			uint32_t div_by_zero;
+			uint32_t chk_insn;
+			uint32_t trapv_insn;
+			uint32_t priv_violation;
+			uint32_t trace;
+			uint32_t unimpl_insn1;
+			uint32_t unimpl_insn2;
+			uint32_t reserved1[3];
+			uint32_t uninit_interrupt;
+			uint32_t reserved2[8];
+			uint32_t interrupts[8];		// 0 == spurious
+			uint32_t trap_insns[16];	// TRAP #x
+			uint32_t reserved3[16];
+
+			// User interrupt vectors #64-255 are not included,
+			// since they overlap the MD ROM header.
+		};
+	};
+} M68K_VectorTable;
+
+/**
  * Mega Drive ROM header.
  * This matches the MD ROM header format exactly.
  *

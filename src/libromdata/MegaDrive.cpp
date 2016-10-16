@@ -149,9 +149,9 @@ class MegaDrivePrivate
 	public:
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
-		uint32_t vectors[64];	// Interrupt vectors. (BE32)
-		MD_RomHeader romHeader;	// ROM header.
-		SMD_Header smdHeader;	// SMD header.
+		M68K_VectorTable vectors;	// Interrupt vectors.
+		MD_RomHeader romHeader;		// ROM header.
+		SMD_Header smdHeader;		// SMD header.
 };
 
 /** MegaDrivePrivate **/
@@ -338,6 +338,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 	// Read the ROM header. [0x400 bytes]
 	static_assert(sizeof(MD_RomHeader) == MD_RomHeader_SIZE,
 		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
+	static_assert(sizeof(M68K_VectorTable) == M68K_VectorTable_SIZE,
+		"M68K_VectorTable is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x400];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
@@ -819,8 +821,10 @@ int MegaDrive::loadFieldData(void)
 
 	// Vectors.
 	if (!d->isDisc()) {
-		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[1]), RomFields::FB_HEX, 8);	// Entry point
-		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+		m_fields->addData_string_numeric(
+			be32_to_cpu(d->vectors.initial_pc), RomFields::FB_HEX, 8);
+		m_fields->addData_string_numeric(
+			be32_to_cpu(d->vectors.initial_sp), RomFields::FB_HEX, 8);
 	} else {
 		// Discs don't have vector tables.
 		// Add dummy entries for the vectors.
