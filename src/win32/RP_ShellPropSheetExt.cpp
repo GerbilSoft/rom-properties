@@ -1214,7 +1214,9 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 	// Enumerate all monospaced fonts.
 	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 	monospaced_fonts.clear();
+#if !defined(_MSC_VER) || _MSC_VER >= 1700	
 	monospaced_fonts.reserve(64);
+#endif
 	LOGFONT lfEnumFonts;
 	memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
 	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
