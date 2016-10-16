@@ -451,6 +451,11 @@ string utf16_to_utf8(const char16_t *str, int len)
 	}
 #elif defined(HAVE_ICONV)
 	// iconv version.
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = u16_strlen(str);
+	}
 	mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
 	if (mbs) {
 		ret = string(mbs);
@@ -527,7 +532,7 @@ u16string latin1_to_utf16(const char *str, int len)
 	return wcs;
 }
 
-#if defined(RP_UTF16) && !defined(RP_WIS16)
+#if !defined(RP_WIS16)
 /**
  * char16_t strlen().
  * @param wcs 16-bit string.
