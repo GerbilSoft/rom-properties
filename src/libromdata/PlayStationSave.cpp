@@ -19,6 +19,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+// References:
+// - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
+// - http://problemkaputt.de/psx-spx.htm
+
 #include "PlayStationSave.hpp"
 #include "ps1_structs.h"
 
@@ -122,6 +126,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 
 	// Determine how many frames need to be decoded.
 	int frames;
+	int delay;
 	switch (psvHeader.sc.icon_flag) {
 		case PS1_SC_ICON_NONE:
 		default:
@@ -132,18 +137,23 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 		case PS1_SC_ICON_ALT_STATIC:
 			// One frame.
 			frames = 1;
+			delay = 0;
 			break;
 
 		case PS1_SC_ICON_ANIM_2:
 		case PS1_SC_ICON_ALT_ANIM_2:
 			// Two frames.
+			// Icon delay is 16 PAL frames.
 			frames = 2;
+			delay = 16 * 1000 / 50;
 			break;
 
 		case PS1_SC_ICON_ANIM_3:
 		case PS1_SC_ICON_ALT_ANIM_3:
 			// Three frames.
+			// Icon delay is 11 PAL frames.
 			frames = 3;
+			delay = 11 * 1000 / 50;
 			break;
 	}
 
@@ -153,8 +163,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 
 	// Decode the icon frames.
 	for (int i = 0; i < frames; i++) {
-		// TODO: What's the correct delay?
-		iconAnimData->delays[i] = 250;
+		iconAnimData->delays[i] = delay;
 		iconAnimData->seq_index[i] = i;
 
 		// Icon format is linear 16x16 4bpp with RGB555 palette.

@@ -19,7 +19,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-// Reference: http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
+// References:
+// - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
+// - http://problemkaputt.de/psx-spx.htm
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
