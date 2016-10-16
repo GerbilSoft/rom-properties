@@ -429,7 +429,6 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 #error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	// Use GetFileTime() instead of _stati64().
-	FILETIME ft;
 	HANDLE hFile = CreateFile(RP2W_s(filename),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
