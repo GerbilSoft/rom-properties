@@ -354,6 +354,16 @@ static inline int rp_strcmp(const rp_char *str1, const rp_char *str2)
 #endif
 }
 
+#ifndef HAVE_STRNLEN
+/**
+ * String length with limit. (8-bit strings)
+ * @param str The string itself
+ * @param len Maximum length of the string
+ * @returns equivivalent to min(strlen(str), len) without buffer overruns
+ */
+size_t strnlen(const char *str, size_t len);
+#endif /* HAVE_STRNLEN */
+
 }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */

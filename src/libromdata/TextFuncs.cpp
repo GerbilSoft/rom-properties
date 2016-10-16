@@ -574,4 +574,22 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 }
 #endif /* RP_UTF16 && !RP_WIS16 */
 
+#ifndef HAVE_STRNLEN
+/**
+ * String length with limit. (8-bit strings)
+ * @param str The string itself
+ * @param len Maximum length of the string
+ * @returns equivivalent to min(strlen(str), len) without buffer overruns
+ */
+static inline size_t strnlen(const char *str, size_t len)
+{
+	size_t rv = 0;
+	for (rv = 0; rv < len; rv++) {
+		if (!*(str++))
+			break;
+	}
+	return rv;
+}
+#endif /* HAVE_STRNLEN */
+
 }

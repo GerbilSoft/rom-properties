@@ -23,6 +23,7 @@
 #include "NintendoPublishers.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
+#include "SystemRegion.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -185,6 +186,14 @@ class GameCubePrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int gcn_loadOpeningBnr(void);
+
+		/**
+		 * Get the banner_comment_t from opening.bnr.
+		 * For BNR2, this uses the comment that most
+		 * closely matches the host system language.
+		 * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
+		 */
+		const banner_comment_t *gcn_getBannerComment(void) const;
 };
 
 /** GameCubePrivate **/
@@ -239,7 +248,9 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
 
-	// TODO: GameCube opening.bnr fields.
+	/** GameCube-specific fields. **/
+	// Game information from opening.bnr.
+	{_RP("Game Info"), RomFields::RFT_STRING, {nullptr}},
 
 	/** Wii-specific fields. **/
 	// Age rating(s).
@@ -253,9 +264,6 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	// the table number, and the second digit is the
 	// partition number. (both start at 0)
 	{_RP("Partitions"), RomFields::RFT_LISTDATA, {&rvl_partitions}},
-
-	// TODO:
-	// - Region and age ratings.
 };
 
 // NDDEMO header.
@@ -843,6 +851,79 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	return 0;
 }
 
+/**
+* Get the banner_comment_t from opening.bnr.
+ * For BNR2, this uses the comment that most
+ * closely matches the host system language.
+ * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
+ */
+const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
+{
+	if (!gcn_opening_bnr) {
+		// Attempt to load opening.bnr.
+		if (const_cast<GameCubePrivate*>(this)->gcn_loadOpeningBnr() != 0) {
+			// Error loading opening.bnr.
+			return nullptr;
+		}
+
+		// Make sure it was actually loaded.
+		if (!gcn_opening_bnr) {
+			// opening.bnr was not loaded.
+			return nullptr;
+		}
+	}
+
+	// Check if this is BNR1 or BNR2.
+	// BNR2 has language-specific fields.
+	const banner_comment_t *comment = nullptr;
+	if (gcn_opening_bnr->magic == 0x424E5232) {
+		// Determine the system language.
+		switch (SystemRegion::getLanguageCode()) {
+			case 'en':
+			default:
+				// English. (default)
+				// Used if the host system language
+				// doesn't match any of the languages
+				// supported by PAL GameCubes.
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
+				break;
+
+			case 'de':
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_GERMAN];
+				break;
+			case 'fr':
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_FRENCH];
+				break;
+			case 'es':
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_SPANISH];
+				break;
+			case 'it':
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ITALIAN];
+				break;
+			case 'nl':
+				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_DUTCH];
+				break;
+		}
+
+		// If all of the language-specific fields are empty,
+		// revert to English.
+		if (comment->gamename[0] == 0 &&
+		    comment->company[0] == 0 &&
+		    comment->gamename_full[0] == 0 &&
+		    comment->company_full[0] == 0 &&
+		    comment->gamedesc[0] == 0)
+		{
+			// Revert to English.
+			comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
+		}
+	} else {
+		// BNR1 only has one banner comment.
+		comment = &gcn_opening_bnr->comments[0];
+	}
+
+	return comment;
+}
+
 /** GameCube **/
 
 /**
@@ -1257,10 +1338,73 @@ int GameCube::loadFieldData(void)
 		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
-	// The remaining fields are Wii only.
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
 	    GameCubePrivate::DISC_SYSTEM_WII)
 	{
+		// GameCube-specific fields.
+
+		// Game information from opening.bnr.
+		const banner_comment_t *comment = d->gcn_getBannerComment();
+		if (comment) {
+			// cp1252/sjis comment data.
+			// TODO: BNR2 is only cp1252.
+			string comment_data;
+			comment_data.reserve(sizeof(*comment));
+
+			// Fields are not necessarily null-terminated.
+			int field_len;
+
+			// Game name.
+			if (comment->gamename_full[0] != 0) {
+				field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+				comment_data += string(comment->gamename_full, field_len);
+				comment_data += '\n';
+			} else if (comment->gamename[0] != 0) {
+				field_len = strnlen(comment->gamename, sizeof(comment->gamename));
+				comment_data += string(comment->gamename, field_len);
+				comment_data += '\n';
+			}
+
+			// Company.
+			if (comment->company_full[0] != 0) {
+				field_len = strnlen(comment->company_full, sizeof(comment->company_full));
+				comment_data += string(comment->company_full, field_len);
+				comment_data += '\n';
+			} else if (comment->company[0] != 0) {
+				field_len = strnlen(comment->company, sizeof(comment->company));
+				comment_data += string(comment->company, field_len);
+				comment_data += '\n';
+			}
+
+			// Game description.
+			if (comment->gamedesc[0] != 0) {
+				// Add a second newline if necessary.
+				if (!comment_data.empty()) {
+					comment_data += '\n';
+				}
+
+				field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+				comment_data += string(comment->gamedesc, field_len);
+			}
+
+			// Remove trailing newlines.
+			while (!comment_data.empty() && comment_data[comment_data.size()-1] == '\n') {
+				comment_data.resize(comment_data.size()-1);
+			}
+
+			if (!comment_data.empty()) {
+				// Show the comment data.
+				m_fields->addData_string(
+					cp1252_sjis_to_rp_string(comment_data.data(), comment_data.size()));
+			} else {
+				// No comment data.
+				m_fields->addData_invalid();
+			}
+		} else {
+			// opening.bnr was not loaded.
+			m_fields->addData_invalid();
+		}
+
 		// Add dummy entries for Wii-specific fields.
 		m_fields->addData_invalid();	// Age rating(s).
 		m_fields->addData_invalid();	// System Update
@@ -1271,6 +1415,9 @@ int GameCube::loadFieldData(void)
 	}
 	
 	/** Wii-specific fields. **/
+
+	// Add a dummy entry for the "Game Info" field.
+	m_fields->addData_invalid();	// Game Info
 
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
