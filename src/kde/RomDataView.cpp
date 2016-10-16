@@ -350,6 +350,7 @@ void RomDataViewPrivate::updateDisplay(void)
 						QFont font(QLatin1String("Monospace"));
 						font.setStyleHint(QFont::TypeWriter);
 						lblString->setFont(font);
+						lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 					}
 				}
 \
@@ -434,6 +435,7 @@ void RomDataViewPrivate::updateDisplay(void)
 				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
 
 				QLabel *lblDateTime = new QLabel(q);
+				lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 				lblDateTime->setTextFormat(Qt::PlainText);
 				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 
