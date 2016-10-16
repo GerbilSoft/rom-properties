@@ -176,23 +176,6 @@ class RpGdiplusBackend : public rp_image_backend
 
 	protected:
 		/**
-		 * Convert the GDI+ image to HBITMAP.
-		 * Caller must delete the HBITMAP.
-		 *
-		 * This is an internal function used by both variants
-		 * of toHBITMAP_alpha().
-		 *
-		 * WARNING: This *may* invalidate pointers
-		 * previously returned by data().
-		 *
-		 * @param size		[in] Resize the image to this size.
-		 * @param nearest	[in] If true, use nearest-neighbor scaling.
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		HBITMAP toHBITMAP_alpha_int(SIZE size, bool nearest);
-
-	protected:
-		/**
 		 * Convert a locked ARGB32 GDI+ bitmap to an HBITMAP.
 		 * Alpha transparency is preserved.
 		 * @param pBmpData Gdiplus::BitmapData.

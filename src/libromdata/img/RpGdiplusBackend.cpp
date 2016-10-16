@@ -440,22 +440,14 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
 			hBitmap = convBmpData_ARGB32(&m_gdipBmpData);
 			break;
 
-		case rp_image::FORMAT_CI8:
-			// Color conversion may be needed if the image
-			// has alpha transparency.
-			if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
-				// Translucent palette entries.
-				// Color conversion is required.
-				// NOTE: toHBITMAP_alpha_int() copies the CI8 palette,
-				// so we don't need to do that here.
-				static const SIZE size = {0, 0};
-				hBitmap = toHBITMAP_alpha_int(size, false);
-			} else {
-				// No translucent palette entries.
-				m_pGdipBmp->SetPalette(m_pGdipPalette);
-				hBitmap = convBmpData_CI8(&m_gdipBmpData);
-			}
+		case rp_image::FORMAT_CI8: {
+			// Always convert to ARGB32.
+			// Windows will end up doing this anyway,
+			// and it doesn't really like CI8+alpha.
+			static const SIZE size = {0, 0};
+			hBitmap = toHBITMAP_alpha(size, false);
 			break;
+		}
 
 		default:
 			assert(!"Unsupported rp_image::Format.");
@@ -480,64 +472,31 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
  */
 HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 {
-	if (size.cx <= 0 || size.cy <= 0 ||
-	    (size.cx == this->width && size.cy == this->height))
-	{
-		// No resize is required.
-		return toHBITMAP_alpha();
-	}
-
-	return toHBITMAP_alpha_int(size, nearest);
-}
-
-/**
- * Convert the GDI+ image to HBITMAP.
- * Caller must delete the HBITMAP.
- *
- * This is an internal function used by both variants
- * of toHBITMAP_alpha().
- *
- * WARNING: This *may* invalidate pointers
- * previously returned by data().
- *
- * @param size		[in] Resize the image to this size.
- * @param nearest	[in] If true, use nearest-neighbor scaling.
- * @return HBITMAP, or nullptr on error.
- */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
-{
 	// Convert the image to ARGB32 (if necessary) and resize it.
-	if (size.cx <= 0 || size.cy <= 0) {
-		// No resizing; just color conversion.
-		size.cx = this->width;
-		size.cy = this->height;
-	}
-
 	Gdiplus::Status status = Gdiplus::Status::GenericError;
 
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
 	if (this->format == rp_image::FORMAT_CI8) {
-		// Copy the local palette to the GDI+ image.
-		m_pGdipBmp->SetPalette(m_pGdipPalette);
-		// TODO: Optimize has_translucent_palette_entries().
-		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
-			// Need to convert to ARGB32 first.
-			// Otherwise, the translucent entries won't show up correctly.
-			pTmpBmp.reset(this->dup_ARGB32());
-			if (!pTmpBmp) {
-				// Error converting to ARGB32.
-				return nullptr;
-			}
+		// Convert to ARGB32. Otherwise, translucent and/or
+		// transparent entries won't show up correctly.
+		// NOTE: dup_ARGB32() copies the palette to the
+		// GDI+ image, so we don't have to do that here.
+		pTmpBmp.reset(this->dup_ARGB32());
+		if (!pTmpBmp) {
+			// Error converting to ARGB32.
+			return nullptr;
 		}
 	}
 
 	// If the source is 32-bit ARGB and isn't being resized,
 	// we don't need a temporary image.
-	if (size.cx == this->width && size.cy == this->height) {
+	if ((size.cx <= 0 || size.cy <= 0) ||
+	    (size.cx == this->width && size.cy == this->height))
+	{
 		if (pTmpBmp) {
 			if (pTmpBmp->GetPixelFormat() == PixelFormat32bppARGB) {
 				// Use pTmpBmp directly.
-				const Gdiplus::Rect bmpTmpRect(0, 0, size.cx, size.cy);
+				const Gdiplus::Rect bmpTmpRect(0, 0, this->width, this->height);
 				Gdiplus::BitmapData bmpTmpData;
 				status = pTmpBmp->LockBits(&bmpTmpRect, Gdiplus::ImageLockModeRead,
 					PixelFormat32bppARGB, &bmpTmpData);
@@ -558,7 +517,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha_int(SIZE size, bool nearest)
 		}
 	}
 
-	// Create a new bitmap.
+	/** Create a new bitmap. **/
 
 	if (!pTmpBmp) {
 		// Temporarily unlock the GDI+ bitmap.
