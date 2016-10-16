@@ -253,6 +253,100 @@ static char *rp_iconv(const char *src, int len,
 	} while (0)
 
 /**
+ * Convert cp1252 text to UTF-8.
+ * @param str cp1252 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string cp1252_to_utf8(const char *str, int len)
+{
+	REMOVE_TRAILING_NULLS(string, str, len);
+	string ret;
+	char *mbs = nullptr;
+
+#if defined(_WIN32)
+	// Win32 version.
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
+	if (wcs && cchWcs > 0) {
+		// Convert the UTF-16 to UTF-8.
+		int cbMbs;
+		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
+		if (mbs && cbMbs > 0) {
+			// Remove the NULL terminator if present.
+			if (mbs[cbMbs-1] == 0) {
+				cbMbs--;
+			}
+
+			ret = string(mbs, cbMbs);
+		}
+	}
+
+	free(wcs);
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = strlen(str);
+	}
+	mbs = rp_iconv((char*)str, len, "CP1252", "UTF-8");
+	if (mbs) {
+		ret = string(mbs);
+	}
+#endif
+
+	free(mbs);
+	return ret;
+}
+
+/**
+ * Convert cp1252 text to UTF-16.
+ * @param str cp1252 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-16 string.
+ */
+u16string cp1252_to_utf16(const char *str, int len)
+{
+#ifdef RP_WIS16
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
+#else /* !RP_WIS16 */
+	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
+#endif /* RP_WIS16 */
+
+	REMOVE_TRAILING_NULLS(u16string, str, len);
+	u16string ret;
+	char16_t *wcs = nullptr;
+
+#if defined(_WIN32)
+	// Win32 version.
+	int cchWcs;
+	wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
+	if (wcs && cchWcs > 0) {
+		// Remove the NULL terminator if present.
+		if (wcs[cchWcs-1] == 0) {
+			cchWcs--;
+		}
+		ret = u16string(wcs, cchWcs);
+	}
+#elif defined(HAVE_ICONV)
+	// iconv version.
+	if (len < 0) {
+		// iconv doesn't support NULL-terminated strings directly.
+		// Get the string length.
+		len = strlen(str);
+	}
+	wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252", RP_ICONV_ENCODING);
+	if (wcs) {
+		ret = u16string(wcs);
+	}
+#endif
+
+	free(wcs);
+	return ret;
+}
+
+/**
  * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
@@ -328,12 +422,6 @@ string cp1252_sjis_to_utf8(const char *str, int len)
  */
 u16string cp1252_sjis_to_utf16(const char *str, int len)
 {
-#ifdef RP_WIS16
-	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
-#else /* !RP_WIS16 */
-	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
-#endif /* RP_WIS16 */
-
 	REMOVE_TRAILING_NULLS(u16string, str, len);
 	u16string ret;
 	char16_t *wcs = nullptr;

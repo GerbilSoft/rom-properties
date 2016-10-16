@@ -48,6 +48,22 @@ namespace LibRomData {
 // in RP_UTF8 and/or RP_UTF16 builds?
 
 /**
+ * Convert cp1252 text to UTF-8.
+ * @param str cp1252 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cp1252_to_utf8(const char *str, int len);
+
+/**
+ * Convert cp1252 text to UTF-16.
+ * @param str cp1252 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-16 string.
+ */
+std::u16string cp1252_to_utf16(const char *str, int len);
+
+/**
  * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
@@ -143,6 +159,21 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
 /** rp_string wrappers. **/
+
+/**
+ * Convert cp1252 text to rp_string.
+ * @param str cp1252 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return rp_string.
+ */
+static inline rp_string cp1252_to_rp_string(const char *str, int len)
+{
+#ifdef RP_UTF8
+	return cp1252_to_utf8(str, len);
+#else
+	return cp1252_to_utf16(str, len);
+#endif
+}
 
 /**
  * Convert cp1252 or Shift-JIS text to rp_string.

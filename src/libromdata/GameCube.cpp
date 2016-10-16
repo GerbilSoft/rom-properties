@@ -1300,8 +1300,21 @@ int GameCube::loadFieldData(void)
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
-	m_fields->addData_string(cp1252_sjis_to_rp_string(
-		d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+	switch (d->gcnRegion) {
+		case GCN_REGION_USA:
+		case GCN_REGION_PAL:
+		default:
+			// USA/PAL uses cp1252.
+			m_fields->addData_string(cp1252_to_rp_string(
+				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+			break;
+
+		case GCN_REGION_JAPAN:
+		case GCN_REGION_SOUTH_KOREA:
+			// Japan uses Shift-JIS.
+			m_fields->addData_string(cp1252_sjis_to_rp_string(
+				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+	}
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -1394,8 +1407,22 @@ int GameCube::loadFieldData(void)
 
 			if (!comment_data.empty()) {
 				// Show the comment data.
-				m_fields->addData_string(
-					cp1252_sjis_to_rp_string(comment_data.data(), comment_data.size()));
+				switch (d->gcnRegion) {
+					case GCN_REGION_USA:
+					case GCN_REGION_PAL:
+					default:
+						// USA/PAL uses cp1252.
+						m_fields->addData_string(
+							cp1252_to_rp_string(comment_data.data(), comment_data.size()));
+						break;
+
+					case GCN_REGION_JAPAN:
+					case GCN_REGION_SOUTH_KOREA:
+						// Japan uses Shift-JIS.
+						m_fields->addData_string(
+							cp1252_sjis_to_rp_string(comment_data.data(), comment_data.size()));
+						break;
+				}
 			} else {
 				// No comment data.
 				m_fields->addData_invalid();
