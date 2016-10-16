@@ -149,7 +149,7 @@ void GcnFstTest::SetUp(void)
 	const GcnFstTest_mode &mode = GetParam();
 
 	// Open the Zip file.
-	const rp_char *zip_filename;
+	const rp_char *zip_filename = nullptr;
 	switch (mode.offsetShift) {
 		case 0:
 			zip_filename = _RP("GameCube.fst.bin.zip");
@@ -342,7 +342,7 @@ TEST_P(GcnFstTest, FstPrint)
 	const GcnFstTest_mode &mode = GetParam();
 
 	// Open the Zip file.
-	const rp_char *zip_filename;
+	const rp_char *zip_filename = nullptr;
 	switch (mode.offsetShift) {
 		case 0:
 			zip_filename = _RP("GameCube.fst.txt.zip");
