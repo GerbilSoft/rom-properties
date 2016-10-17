@@ -4,6 +4,7 @@
 *.a
 *.so
 .directory
+*.kate-swp
 
 # Build directories.
 /build*
