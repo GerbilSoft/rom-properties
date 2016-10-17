@@ -90,7 +90,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Register(void)
+LONG RP_ExtractImage::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Image Extractor";
 	extern const wchar_t RP_ProgID[];
@@ -98,40 +98,67 @@ LONG RP_ExtractImage::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractImage), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
+
+	// COM object registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param progID ProgID to register under, or nullptr for the default.
+ */
+LONG RP_ExtractImage::RegisterFileType(LPCWSTR progID)
+{
+	extern const wchar_t RP_ProgID[];
+	if (!progID) {
+		// Use the default ProgID.
+		progID = RP_ProgID;
+	}
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID, KEY_WRITE, true);
 	if (!hkcr_ProgID.isOpen())
 		return hkcr_ProgID.lOpenRes();
 
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
+	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
+	}
 	// Create/open the IExtractImage key.
 	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
-	if (!hkcr_IExtractImage.isOpen())
+	if (!hkcr_IExtractImage.isOpen()) {
 		return hkcr_IExtractImage.lOpenRes();
+	}
 	// Set the default value to this CLSID.
 	lResult = hkcr_IExtractImage.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-	hkcr_IExtractImage.close();
-	hkcr_ShellEx.close();
+	}
 
-	// COM object registered.
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
@@ -139,14 +166,15 @@ LONG RP_ExtractImage::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Unregister(void)
+LONG RP_ExtractImage::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// TODO
 	return ERROR_SUCCESS;

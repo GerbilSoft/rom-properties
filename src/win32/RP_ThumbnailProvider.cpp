@@ -95,7 +95,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::Register(void)
+LONG RP_ThumbnailProvider::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Thumbnail Provider";
 	extern const wchar_t RP_ProgID[];
@@ -103,49 +103,79 @@ LONG RP_ThumbnailProvider::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
+
 	// TODO: Set HKCR\CLSID\DisableProcessIsolation=REG_DWORD:1
 	// in debug builds. Otherwise, it's not possible to debug
 	// the thumbnail handler.
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ThumbnailProvider), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
+
+	// COM object registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param progID ProgID to register under, or nullptr for the default.
+ */
+LONG RP_ThumbnailProvider::RegisterFileType(LPCWSTR progID)
+{
+	extern const wchar_t RP_ProgID[];
+	if (!progID) {
+		// Use the default ProgID.
+		progID = RP_ProgID;
+	}
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID, KEY_WRITE, true);
+	if (!hkcr_ProgID.isOpen()) {
 		return hkcr_ProgID.lOpenRes();
+	}
 
 	// Set the "Treatment" value.
 	// TODO: DWORD write function.
 	lResult = hkcr_ProgID.write_dword(L"Treatment", 0);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
+	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
+	}
 	// Create/open the IExtractImage key.
 	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
-	if (!hkcr_IThumbnailProvider.isOpen())
+	if (!hkcr_IThumbnailProvider.isOpen()) {
 		return hkcr_IThumbnailProvider.lOpenRes();
+	}
 	// Set the default value to this CLSID.
 	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-	hkcr_IThumbnailProvider.close();
-	hkcr_ShellEx.close();
+	}
 
-	// COM object registered.
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
@@ -153,14 +183,15 @@ LONG RP_ThumbnailProvider::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::Unregister(void)
+LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// TODO
 	return ERROR_SUCCESS;

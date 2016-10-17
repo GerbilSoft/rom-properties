@@ -56,13 +56,19 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 		 * Register the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Register(void);
+		static LONG RegisterCLSID(void);
+
+		/**
+		 * Register the file type handler.
+		 * @param progID ProgID to register under, or nullptr for the default.
+		 */
+		static LONG RegisterFileType(LPCWSTR progID = nullptr);
 
 		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Unregister(void);
+		static LONG UnregisterCLSID(void);
 
  	protected:
 		// ROM filename from IPersistFile::Load().

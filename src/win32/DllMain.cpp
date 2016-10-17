@@ -168,18 +168,34 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 STDAPI DllRegisterServer(void)
 {
 	// Register the COM objects.
-	LONG lResult = RP_ExtractIcon::Register();
+	LONG lResult = RP_ExtractIcon::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::Register();
+	lResult = RP_ExtractImage::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::Register();
+	lResult = RP_ShellPropSheetExt::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::Register();
+	lResult = RP_ThumbnailProvider::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
+
+	// Register file type information with the default ProgID.
+	lResult = RP_ExtractIcon::RegisterFileType();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::RegisterFileType();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ShellPropSheetExt::RegisterFileType();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::RegisterFileType();
+	if (lResult != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	// FIXME: Check all users' UserChoice and register with those ProgIDs.
 
 	// Register all supported file types and associate them
 	// with our ProgID.
@@ -208,16 +224,16 @@ STDAPI DllRegisterServer(void)
 STDAPI DllUnregisterServer(void)
 {
 	// Unregister the COM objects.
-	LONG lResult = RP_ExtractIcon::Unregister();
+	LONG lResult = RP_ExtractIcon::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::Unregister();
+	lResult = RP_ExtractImage::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::Unregister();
+	lResult = RP_ShellPropSheetExt::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::Unregister();
+	lResult = RP_ThumbnailProvider::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 

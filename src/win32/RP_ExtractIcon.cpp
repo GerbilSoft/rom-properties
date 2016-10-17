@@ -82,7 +82,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::Register(void)
+LONG RP_ExtractIcon::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
 	extern const wchar_t RP_ProgID[];
@@ -90,52 +90,80 @@ LONG RP_ExtractIcon::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractIcon), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
+
+	// COM object registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param progID ProgID to register under, or nullptr for the default.
+ */
+LONG RP_ExtractIcon::RegisterFileType(LPCWSTR progID)
+{
+	extern const wchar_t RP_ProgID[];
+	if (!progID) {
+		// Use the default ProgID.
+		progID = RP_ProgID;
+	}
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register as the icon handler for this ProgID.
 	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID, KEY_WRITE, true);
+	if (!hkcr_ProgID.isOpen()) {
 		return hkcr_ProgID.lOpenRes();
+	}
 
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
+	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
+	}
 	// Create/open the "IconHandler" key.
 	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
-	if (!hkcr_IconHandler.isOpen())
+	if (!hkcr_IconHandler.isOpen()) {
 		return hkcr_IconHandler.lOpenRes();
+	}
 	// Set the default value to this CLSID.
 	lResult = hkcr_IconHandler.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-	hkcr_IconHandler.close();
-	hkcr_ShellEx.close();
+	}
 
 	// Create/open the "DefaultIcon" key.
 	RegKey hkcr_DefaultIcon(hkcr_ProgID, L"DefaultIcon", KEY_WRITE, true);
-	if (!hkcr_DefaultIcon.isOpen())
+	if (!hkcr_DefaultIcon.isOpen()) {
 		return SELFREG_E_CLASS;
+	}
 	// Set the default value to "%1".
 	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hkcr_DefaultIcon.close();
-	hkcr_ProgID.close();
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
 
-	// COM object registered.
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
@@ -143,14 +171,15 @@ LONG RP_ExtractIcon::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::Unregister(void)
+LONG RP_ExtractIcon::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// TODO
 	return ERROR_SUCCESS;

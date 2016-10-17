@@ -1506,7 +1506,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::Register(void)
+LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Property Sheet";
 	extern const wchar_t RP_ProgID[];
@@ -1514,46 +1514,76 @@ LONG RP_ShellPropSheetExt::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ShellPropSheetExt), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
+
+	// COM object registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param progID ProgID to register under, or nullptr for the default.
+ */
+LONG RP_ShellPropSheetExt::RegisterFileType(LPCWSTR progID)
+{
+	extern const wchar_t RP_ProgID[];
+	if (!progID) {
+		// Use the default ProgID.
+		progID = RP_ProgID;
+	}
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register as a property sheet handler for this ProgID.
 	// TODO: Register for 'all' types, like the various hash extensions?
 	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID, KEY_WRITE, true);
+	if (!hkcr_ProgID.isOpen()) {
 		return hkcr_ProgID.lOpenRes();
+	}
 	// Create/open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
+	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
+	}
 	// Create/open the PropertySheetHandlers key.
 	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_WRITE, true);
-	if (!hkcr_PropertySheetHandlers.isOpen())
+	if (!hkcr_PropertySheetHandlers.isOpen()) {
 		return hkcr_PropertySheetHandlers.lOpenRes();
+	}
+
 	// Create/open the "rom-properties" property sheet handler key.
+	// NOTE: This always uses RP_ProgID[], not the specified progID.
 	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_PropSheet_RomProperties.isOpen())
+	if (!hkcr_PropSheet_RomProperties.isOpen()) {
 		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
 	// Set the default value to this CLSID.
 	lResult = hkcr_PropSheet_RomProperties.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-	hkcr_PropSheet_RomProperties.close();
-	hkcr_PropertySheetHandlers.close();
-	hkcr_ShellEx.close();
+	}
 
-	// COM object registered.
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
@@ -1561,14 +1591,15 @@ LONG RP_ShellPropSheetExt::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::Unregister(void)
+LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
 	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// TODO
 	return ERROR_SUCCESS;
