@@ -19,4 +19,4 @@ OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 
 # Install the split debug file.
-OPTION(INSTALL_DEBUG "Install the split debug file." ON)
+OPTION(INSTALL_DEBUG "Install the split debug files." ON)
