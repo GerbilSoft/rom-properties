@@ -139,3 +139,39 @@ IF(WIN32 AND MSVC)
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 ENDIF(WIN32 AND MSVC)
 ENDFUNCTION()
+
+# Add a postfix to a target's OUTPUT_NAME based on system architecture.
+FUNCTION(SET_WINDOWS_TARGET_NAME_ARCH _target)
+IF(WIN32)
+	STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+	IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+		# i386/amd64. Check sizeof(void*) for the actual architecture,
+		# since building 32-bit on 64-bit isn't considered "cross-compiling",
+		# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
+		# TODO: Optimize this, e.g. IF(MSVC AND CMAKE_CL_64)?
+		IF(MSVC)
+			# Check CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
+			IF(CMAKE_CL_64)
+				SET(RP_POSTFIX "amd64")
+			ELSE()
+				SET(RP_POSTFIX "i386")
+			ENDIF()
+		ELSE()
+			IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+				SET(RP_POSTFIX "amd64")
+			ELSE()
+				SET(RP_POSTFIX "i386")
+			ENDIF()
+		ENDIF()
+	ENDIF()
+	IF(NOT RP_POSTFIX)
+		MESSAGE(FATAL_ERROR "CPU architecture isn't configured for RP_POSTFIX.")
+	ENDIF(NOT RP_POSTFIX)
+
+	GET_TARGET_PROPERTY(RP_OUTPUT_NAME ${_target} OUTPUT_NAME)
+	IF(NOT RP_OUTPUT_NAME)
+		SET(RP_OUTPUT_NAME "${_target}")
+	ENDIF(NOT RP_OUTPUT_NAME)
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME "${RP_OUTPUT_NAME}-${RP_POSTFIX}")
+ENDIF(WIN32)
+ENDFUNCTION()
