@@ -39,6 +39,8 @@ namespace LibRomData {
 // C++ includes.
 #include <string>
 
+class RegKey;
+
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
 RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 {
@@ -57,10 +59,10 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 		/**
 		 * Register the file type handler.
-		 * @param progID ProgID to register under, or nullptr for the default.
+		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LPCWSTR progID = nullptr);
+		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
 
 		/**
 		 * Unregister the COM object.

@@ -120,16 +120,12 @@ LONG RP_ExtractImage::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param progID ProgID to register under, or nullptr for the default.
+ * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::RegisterFileType(LPCWSTR progID)
+LONG RP_ExtractImage::RegisterFileType(RegKey *pHkey_ProgID)
 {
 	extern const wchar_t RP_ProgID[];
-	if (!progID) {
-		// Use the default ProgID.
-		progID = RP_ProgID;
-	}
 
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
@@ -138,13 +134,19 @@ LONG RP_ExtractImage::RegisterFileType(LPCWSTR progID)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
-		return hkcr_ProgID.lOpenRes();
+	// Register as the image handler for this ProgID.
+	unique_ptr<RegKey> pHkcr_ProgID;
+	if (!pHkey_ProgID) {
+		// Create/open the system-wide ProgID key.
+		pHkcr_ProgID.reset(new RegKey(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true));
+		if (!pHkcr_ProgID->isOpen()) {
+			return pHkcr_ProgID->lOpenRes();
+		}
+		pHkey_ProgID = pHkcr_ProgID.get();
+	}
 
 	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
+	RegKey hkcr_ShellEx(*pHkey_ProgID, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}

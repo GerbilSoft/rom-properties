@@ -43,6 +43,8 @@ namespace LibRomData {
 // C++ includes.
 #include <string>
 
+class RegKey;
+
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
 RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvider>
 {
@@ -65,10 +67,10 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 		/**
 		 * Register the file type handler.
-		 * @param progID ProgID to register under, or nullptr for the default.
+		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LPCWSTR progID = nullptr);
+		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
 
 		/**
 		 * Unregister the COM object.

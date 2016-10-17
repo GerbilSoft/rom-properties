@@ -43,6 +43,7 @@ extern "C" {
 // C++ includes.
 #include <string>
 
+class RegKey;
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
@@ -74,10 +75,10 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		/**
 		 * Register the file type handler.
-		 * @param progID ProgID to register under, or nullptr for the default.
+		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LPCWSTR progID = nullptr);
+		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
 
 		/**
 		 * Unregister the COM object.

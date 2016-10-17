@@ -26,6 +26,12 @@
 #include <cassert>
 #include <cstring>
 
+// C++ includes.
+#include <string>
+#include <list>
+using std::wstring;
+using std::list;
+
 /**
  * Create or open a registry key.
  * @param hKeyRoot Root key.
@@ -141,11 +147,11 @@ void RegKey::close(void)
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @return String value, or empty string on error.
  */
-std::wstring RegKey::read(LPCWSTR lpValueName) const
+wstring RegKey::read(LPCWSTR lpValueName) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
-		return std::wstring();
+		return wstring();
 	}
 
 	// FIXME: Handle ERROR_MORE_DATA?
@@ -158,7 +164,7 @@ std::wstring RegKey::read(LPCWSTR lpValueName) const
 		reinterpret_cast<LPBYTE>(buf), &cbData);
 	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
 		// Either an error occurred, or this isn't REG_SZ.
-		return std::wstring();
+		return wstring();
 	}
 
 	// Convert cbData to cchData.
@@ -173,11 +179,11 @@ std::wstring RegKey::read(LPCWSTR lpValueName) const
 
 	if (cchData == 0) {
 		// No actual string data.
-		return std::wstring();
+		return wstring();
 	}
 
 	// Return the string.
-	return std::wstring(buf, cchData);
+	return wstring(buf, cchData);
 }
 
 /**
@@ -213,7 +219,7 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
  * @param value Value.
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
+LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
 {
 	if (!m_hKey) {
 		// Handle is invalid.
@@ -329,6 +335,61 @@ LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
 	}
 
 	return deleteSubKey(m_hKey, lpSubKey);
+}
+
+/**
+ * Enumerate subkeys.
+ * @param lstSubKeys List to place the subkey names in.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
+{
+	LONG lResult;
+	DWORD cSubKeys, cchMaxSubKeyLen;
+
+	// Get the number of subkeys.
+	lResult = RegQueryInfoKey(m_hKey,
+		nullptr, nullptr,	// lpClass, lpcClass
+		nullptr,		// lpReserved
+		&cSubKeys, &cchMaxSubKeyLen,
+		nullptr, nullptr,	// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// cchMaxSubKeyLen doesn't include the NULL terminator.
+	cchMaxSubKeyLen++;
+
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx says
+	// key names are limited to 255 characters, but who knows...
+	wchar_t *wbuf = reinterpret_cast<wchar_t*>(malloc(cchMaxSubKeyLen * sizeof(wchar_t)));
+
+	// Initialize the vector.
+	lstSubKeys.clear();
+
+	for (int i = 0; i < (int)cSubKeys; i++) {
+		DWORD cchName = cchMaxSubKeyLen;
+		lResult = RegEnumKeyEx(m_hKey, i,
+			wbuf, &cchName,
+			nullptr,	// lpReserved
+			nullptr,	// lpClass
+			nullptr,	// lpcClass
+			nullptr);	// lpftLastWriteTime
+		if (lResult != ERROR_SUCCESS) {
+			free(wbuf);
+			return lResult;
+		}
+
+		// Add the subkey name to the return vector.
+		// cchName contains the number of characters in the
+		// subkey name, NOT including the NULL terminator.
+		lstSubKeys.push_back(wstring(wbuf, cchName));
+	}
+
+	free(wbuf);
+	return ERROR_SUCCESS;
 }
 
 /** COM registration convenience functions. **/

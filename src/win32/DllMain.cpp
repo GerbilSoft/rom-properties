@@ -50,10 +50,14 @@ using LibRomData::RpGdiplusBackend;
 using LibRomData::rp_image;
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <vector>
-using std::wstring;
+#include <list>
+using std::list;
+using std::unique_ptr;
 using std::vector;
+using std::wstring;
 
 extern HINSTANCE g_hInstance;
 HINSTANCE g_hInstance = nullptr;
@@ -164,35 +168,124 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 
 /**
  * Register file type handlers.
- * @param progID ProgID to register under, or nullptr for the default.
+ * @param pHkey_progID ProgID key to register under, or nullptr for the default.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(LPCWSTR progID = nullptr)
+static LONG RegisterFileType(RegKey *pHkey_progID = nullptr)
 {
 	LONG lResult;
 
-	lResult = RP_ExtractIcon::RegisterFileType(progID);
+	lResult = RP_ExtractIcon::RegisterFileType(pHkey_progID);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ExtractImage::RegisterFileType(progID);
+	lResult = RP_ExtractImage::RegisterFileType(pHkey_progID);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ShellPropSheetExt::RegisterFileType(progID);
+	lResult = RP_ShellPropSheetExt::RegisterFileType(pHkey_progID);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ThumbnailProvider::RegisterFileType(progID);
+	lResult = RP_ThumbnailProvider::RegisterFileType(pHkey_progID);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
 	// All file types handlers registered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Register file type handlers for a user's overridden file association.
+ * @param sid User SID.
+ * @param ext File extension.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
+{
+	LONG lResult;
+
+	// Check if the user has already associated this file extension.
+	// TODO: Check all users.
+	wstring regPath;
+	regPath.reserve(128);
+	regPath  = sid;
+	regPath += L"\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\";
+	regPath += RP2W_c(ext);
+	regPath += L"\\UserChoice";
+
+	RegKey hkcu_UserChoice(HKEY_USERS, regPath.c_str(), KEY_READ, false);
+	if (!hkcu_UserChoice.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hkcu_UserChoice.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcu_UserChoice.lOpenRes();
+	}
+
+	// Read the user's choice.
+	wstring progID = hkcu_UserChoice.read(L"Progid");
+	if (progID.empty()) {
+		// No choice. User has the default setting.
+		return ERROR_SUCCESS;
+	}
+
+	// Check both "HKCR" and "HKU\\[sid]".
+	// It turns out they aren't identical.
+
+	// First, check HKCR.
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
+	if (!hkcr_ProgID.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hkcr_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ProgID.lOpenRes();
+	}
+	lResult = RegisterFileType(&hkcr_ProgID);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Next, check "HKU\\[sid]".
+	regPath  = sid;
+	regPath += L"\\Software\\Classes\\";
+	regPath += progID;
+	RegKey hku_ProgID(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+	if (!hku_ProgID.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hku_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hku_ProgID.lOpenRes();
+	}
+	return RegisterFileType(&hku_ProgID);
+}
+
+/**
+ * Remove HKEY_USERS subkeys from an std::list if we don't want to process them.
+ * @param subKey Subkey name.
+ * @return True to remove; false to keep.
+ */
+static inline bool process_HKU_subkey(const wstring& subKey)
+{
+	if (subKey.size() <= 16) {
+		// Subkey name is too small.
+		return true;
+	}
+
+	// Ignore "_Classes" subkeys.
+	// These are virtual subkeys that map to:
+	// HKEY_USERS\\[sid]\\Software\\Classes
+	const wchar_t *const classes_pos = subKey.c_str() + (subKey.size() - 8);
+	return (!wcsicmp(classes_pos, L"_Classes"));
 }
 
 /**
@@ -226,34 +319,41 @@ STDAPI DllRegisterServer(void)
 		return SELFREG_E_CLASS;
 	}
 
+	// Enumerate user hives.
+	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
+	if (!hku.isOpen()) {
+		return SELFREG_E_CLASS;
+	}
+	list<wstring> user_SIDs;
+	lResult = hku.enumSubKeys(user_SIDs);
+	if (lResult != ERROR_SUCCESS) {
+		return SELFREG_E_CLASS;
+	}
+	hku.close();
+
+	// Don't check user hives with names that are 16 characters or shorter.
+	// These are usually ".DEFAULT" or "well-known" SIDs.
+	user_SIDs.remove_if(process_HKU_subkey);
+
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<const rp_char*>::const_iterator iter = vec_exts.begin();
-	     iter != vec_exts.end(); ++iter)
+	vec_exts.clear();
+	vec_exts.push_back(_RP(".gci"));
+	for (vector<const rp_char*>::const_iterator ext_iter = vec_exts.begin();
+	     ext_iter != vec_exts.end(); ++ext_iter)
 	{
-		// Check if the user has already associated this file extension.
-		// TODO: Check all users.
-		wstring regPath;
-		regPath.reserve(128);
-		regPath  = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\";
-		regPath += RP2W_c(*iter);
-		regPath += L"\\UserChoice";
-
-		RegKey hkcu_UserChoice(HKEY_CURRENT_USER, regPath.c_str(), KEY_READ, false);
-		if (hkcu_UserChoice.isOpen()) {
-			// Read the user's choice.
-			wstring progID = hkcu_UserChoice.read(L"Progid");
-			if (!progID.empty()) {
-				// Register the file type handlers under this ProgID.
-				lResult = RegisterFileType(progID.c_str());
-				if (lResult != ERROR_SUCCESS) {
-					return SELFREG_E_CLASS;
-				}
+		// Register user file types if necessary.
+		for (list<wstring>::const_iterator sid_iter = user_SIDs.begin();
+		     sid_iter != user_SIDs.end(); ++sid_iter)
+		{
+			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
+			if (lResult != ERROR_SUCCESS) {
+				return SELFREG_E_CLASS;
 			}
 		}
 
-		lResult = RegKey::RegisterFileType(RP2W_c(*iter), RP_ProgID);
+		lResult = RegKey::RegisterFileType(RP2W_c(*ext_iter), RP_ProgID);
 		if (lResult != ERROR_SUCCESS) {
 			return SELFREG_E_CLASS;
 		}

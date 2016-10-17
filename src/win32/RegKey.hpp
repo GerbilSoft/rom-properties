@@ -24,6 +24,7 @@
 
 // C++ includes.
 #include <string>
+#include <list>
 
 class RegKey
 {
@@ -137,6 +138,13 @@ class RegKey
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		LONG deleteSubKey(LPCWSTR subKey);
+
+		/**
+		 * Enumerate subkeys.
+		 * @param lstSubKeys List to place the subkey names in.
+		 * @return ERROR_SUCCESS on success; WinAPI error on error.
+		 */
+		LONG enumSubKeys(std::list<std::wstring> &vSubKeys);
 
 	public:
 		/** COM registration convenience functions. **/
