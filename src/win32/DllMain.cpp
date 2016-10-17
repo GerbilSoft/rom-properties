@@ -338,8 +338,6 @@ STDAPI DllRegisterServer(void)
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
-	vec_exts.clear();
-	vec_exts.push_back(_RP(".gci"));
 	for (vector<const rp_char*>::const_iterator ext_iter = vec_exts.begin();
 	     ext_iter != vec_exts.end(); ++ext_iter)
 	{
