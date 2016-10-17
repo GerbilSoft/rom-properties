@@ -1,7 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
  * config.libromdata.h.in: LibRomData configuration. (source file)         *
- * MegaDrive.hpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
