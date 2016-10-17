@@ -14,6 +14,9 @@ SET(RP_CXXFLAG_CXX11_COMPAT ${RP_CXX11_COMPAT_HEADER})
 SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} ${RP_CXX11_COMPAT_HEADER}")
 SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} ${RP_CXXFLAG_CXX11_COMPAT}")
 
+# Write the version number to config.version.h.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
+
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(libromdata)
 ADD_SUBDIRECTORY(libcachemgr)
