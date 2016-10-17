@@ -240,7 +240,7 @@ STDAPI DllRegisterServer(void)
 		regPath += RP2W_c(*iter);
 		regPath += L"\\UserChoice";
 
-		RegKey hkcu_UserChoice(HKEY_CURRENT_USER, regPath.c_str(), KEY_READ, true);
+		RegKey hkcu_UserChoice(HKEY_CURRENT_USER, regPath.c_str(), KEY_READ, false);
 		if (hkcu_UserChoice.isOpen()) {
 			// Read the user's choice.
 			wstring progID = hkcu_UserChoice.read(L"Progid");
