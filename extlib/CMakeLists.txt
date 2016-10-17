@@ -25,20 +25,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# i386/amd64. Check sizeof(void*) for the actual architecture,
 	# since building 32-bit on 64-bit isn't considered "cross-compiling",
 	# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
-	# TODO: Optimize this, e.g. IF(MSVC AND CMAKE_CL_64)?
-	IF(MSVC)
-		# Check CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
-		IF(CMAKE_CL_64)
-			SET(AMD64 "ON")
-		ELSE()
-			SET(ASM686 "ON")
-		ENDIF()
+	# NOTE: Checking CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
+	IF(MSVC AND CMAKE_CL_64)
+		SET(AMD64 "ON")
+	ELSEIF(NOT MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+		SET(AMD64 "ON")
 	ELSE()
-		IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-			SET(AMD64 "ON")
-		ELSE()
-			SET(ASM686 "ON")
-		ENDIF()
+		SET(ASM686 "ON")
 	ENDIF()
 ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 UNSET(arch)

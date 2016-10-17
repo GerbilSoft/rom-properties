@@ -148,20 +148,13 @@ IF(WIN32)
 		# i386/amd64. Check sizeof(void*) for the actual architecture,
 		# since building 32-bit on 64-bit isn't considered "cross-compiling",
 		# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
-		# TODO: Optimize this, e.g. IF(MSVC AND CMAKE_CL_64)?
-		IF(MSVC)
-			# Check CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
-			IF(CMAKE_CL_64)
-				SET(RP_POSTFIX "amd64")
-			ELSE()
-				SET(RP_POSTFIX "i386")
-			ENDIF()
+		# NOTE: Checking CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
+		IF(MSVC AND CMAKE_CL_64)
+			SET(RP_POSTFIX "amd64")
+		ELSEIF(NOT MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+			SET(RP_POSTFIX "amd64")
 		ELSE()
-			IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-				SET(RP_POSTFIX "amd64")
-			ELSE()
-				SET(RP_POSTFIX "i386")
-			ENDIF()
+			SET(RP_POSTFIX "i386")
 		ENDIF()
 	ENDIF()
 	IF(NOT RP_POSTFIX)
