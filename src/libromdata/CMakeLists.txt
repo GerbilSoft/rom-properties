@@ -223,11 +223,16 @@ TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 
 # Common properties for romdata8 and romdata16.
 FOREACH(_target romdata8 romdata16)
+	# Include paths:
+	# - Public: Current source and binary directories.
+	# - Private: Parent source and binary directories,
+	#            and top-level binary directory for git_version.h.
 	TARGET_INCLUDE_DIRECTORIES(${_target}
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 		)
 	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES

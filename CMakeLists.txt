@@ -54,6 +54,31 @@ MACRO(DO_SPLIT_DEBUG _TARGET)
 	WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
 ENDMACRO(DO_SPLIT_DEBUG)
 
+# Git version information.
+FIND_PROGRAM(POSIX_SH sh)
+IF(POSIX_SH)
+	# sh is available.
+	# Run the git version script.
+	IF(WIN32)
+		SET(ENV{SHELLOPTS} igncr)
+	ENDIF(WIN32)
+	ADD_CUSTOM_TARGET(git_version ALL
+		${POSIX_SH} "${CMAKE_CURRENT_SOURCE_DIR}/git_version.sh"
+		-s "${CMAKE_CURRENT_SOURCE_DIR}"
+		-o "${CMAKE_CURRENT_BINARY_DIR}/git_version.h"
+		VERBATIM
+		)
+ELSE(POSIX_SH)
+	# sh isn't available.
+	# Create a blank git_version.h.
+	FILE(WRITE "${CMAKE_CURRENT_BINARY_DIR}/git_version.h"
+		"/* dummy file; POSIX sh is not available */\n")
+ENDIF(POSIX_SH)
+
+# Make sure the file is deleted on `make clean`.
+SET_PROPERTY(DIRECTORY APPEND
+	PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/git_version.h")
+
 # If no build type is set, default to "debug".
 # TODO: Default to "release"?
 IF(CMAKE_BUILD_TYPE MATCHES ^$)

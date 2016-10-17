@@ -25,8 +25,10 @@
 #include <prsht.h>
 #include "resource.h"
 
+/* program version */
 #include "config.version.h"
-//#include "git_version.h"	/* TODO */
+/* git version */
+#include "libromdata/git.h"
 
 /** Dialogs. **/
 
@@ -68,6 +70,10 @@ ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rom-properties.dll.manifest"
 
 #define RP_VS_FILEFLAGS (RP_VS_FF_DEBUG | RP_VS_FF_PRERELEASE)
 
+// TODO: The git version gets cut off on Windows 7, since it uses
+// a ListView instead of separate ListBox and Edit controls like
+// on Windows XP.
+
 /** Application version. **/
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION RP_VERSION_WIN32
@@ -85,7 +91,7 @@ BEGIN
 		BEGIN
 			//VALUE "Comments", "\0"
 			//VALUE "CompanyName", "\0"
-			VALUE "FileDescription", "ROM Properties Page shell extension " RP_VERSION_STRING "\0"
+			VALUE "FileDescription", "ROM Properties Page shell extension\0"
 			VALUE "FileVersion", "rom-properties " Win32_RC_FileVersion "\0"
 			VALUE "InternalName", "rom-properties\0"
 			VALUE "LegalCopyright", "Copyright (c) 2016 by David Korth.\0"

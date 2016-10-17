@@ -43,11 +43,16 @@ SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
 SET_WINDOWS_NO_MANIFEST(rom-properties)
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
 TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32)
