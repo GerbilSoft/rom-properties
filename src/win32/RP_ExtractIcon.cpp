@@ -113,6 +113,7 @@ LONG RP_ExtractIcon::RegisterCLSID(void)
 /**
  * Register the file type handler.
  * @param progID ProgID to register under, or nullptr for the default.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
 LONG RP_ExtractIcon::RegisterFileType(LPCWSTR progID)
 {

@@ -75,6 +75,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		/**
 		 * Register the file type handler.
 		 * @param progID ProgID to register under, or nullptr for the default.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG RegisterFileType(LPCWSTR progID = nullptr);
 
