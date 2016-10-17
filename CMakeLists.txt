@@ -62,6 +62,11 @@ ENDIF()
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)
 ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(doc)
+# NOTE: scripts currently only has Windows-specific files.
+IF(WIN32)
+	ADD_SUBDIRECTORY(scripts)
+ENDIF(WIN32)
 
 # TODO: Print build summary indicating what plugins will be built.
 # (Some other project had something like this...)
