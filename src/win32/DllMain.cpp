@@ -218,6 +218,10 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 	regPath += RP2W_c(ext);
 	regPath += L"\\UserChoice";
 
+	// FIXME: This will NOT update profiles that aren't loaded.
+	// Other profiles will need to be loaded manually, or those users
+	// will have to register the DLL themselves.
+	// Reference: http://windowsitpro.com/scripting/how-can-i-update-all-profiles-machine-even-if-theyre-not-currently-loaded
 	RegKey hkcu_UserChoice(HKEY_USERS, regPath.c_str(), KEY_READ, false);
 	if (!hkcu_UserChoice.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable.
