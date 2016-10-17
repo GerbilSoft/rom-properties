@@ -163,39 +163,68 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 }
 
 /**
+ * Register file type handlers.
+ * @param progID ProgID to register under, or nullptr for the default.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG RegisterFileType(LPCWSTR progID = nullptr)
+{
+	LONG lResult;
+
+	lResult = RP_ExtractIcon::RegisterFileType(progID);
+	if (lResult != ERROR_SUCCESS) {
+		return SELFREG_E_CLASS;
+	}
+
+	lResult = RP_ExtractImage::RegisterFileType(progID);
+	if (lResult != ERROR_SUCCESS) {
+		return SELFREG_E_CLASS;
+	}
+
+	lResult = RP_ShellPropSheetExt::RegisterFileType(progID);
+	if (lResult != ERROR_SUCCESS) {
+		return SELFREG_E_CLASS;
+	}
+
+	lResult = RP_ThumbnailProvider::RegisterFileType(progID);
+	if (lResult != ERROR_SUCCESS) {
+		return SELFREG_E_CLASS;
+	}
+
+	// All file types handlers registered.
+	return ERROR_SUCCESS;
+}
+
+/**
  * Register the DLL.
  */
 STDAPI DllRegisterServer(void)
 {
+	LONG lResult;
+
 	// Register the COM objects.
-	LONG lResult = RP_ExtractIcon::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS)
+	lResult = RP_ExtractIcon::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
+	}
 	lResult = RP_ExtractImage::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
+	}
 	lResult = RP_ShellPropSheetExt::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
+	}
 	lResult = RP_ThumbnailProvider::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
+	}
 
 	// Register file type information with the default ProgID.
-	lResult = RP_ExtractIcon::RegisterFileType();
-	if (lResult != ERROR_SUCCESS)
+	lResult = RegisterFileType(nullptr);
+	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::RegisterFileType();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::RegisterFileType();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::RegisterFileType();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-
-	// FIXME: Check all users' UserChoice and register with those ProgIDs.
+	}
 
 	// Register all supported file types and associate them
 	// with our ProgID.
@@ -203,6 +232,27 @@ STDAPI DllRegisterServer(void)
 	for (vector<const rp_char*>::const_iterator iter = vec_exts.begin();
 	     iter != vec_exts.end(); ++iter)
 	{
+		// Check if the user has already associated this file extension.
+		// TODO: Check all users.
+		wstring regPath;
+		regPath.reserve(128);
+		regPath  = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\";
+		regPath += RP2W_c(*iter);
+		regPath += L"\\UserChoice";
+
+		RegKey hkcu_UserChoice(HKEY_CURRENT_USER, regPath.c_str(), KEY_READ, true);
+		if (hkcu_UserChoice.isOpen()) {
+			// Read the user's choice.
+			wstring progID = hkcu_UserChoice.read(L"Progid");
+			if (!progID.empty()) {
+				// Register the file type handlers under this ProgID.
+				lResult = RegisterFileType(progID.c_str());
+				if (lResult != ERROR_SUCCESS) {
+					return SELFREG_E_CLASS;
+				}
+			}
+		}
+
 		// NOTE: Assuming rp_char is UTF-16.
 		static_assert(sizeof(rp_char) == sizeof(wchar_t), "rp_char != wchar_t");
 		const wchar_t *filetype = reinterpret_cast<const wchar_t*>(*iter);
