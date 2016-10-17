@@ -253,12 +253,10 @@ STDAPI DllRegisterServer(void)
 			}
 		}
 
-		// NOTE: Assuming rp_char is UTF-16.
-		static_assert(sizeof(rp_char) == sizeof(wchar_t), "rp_char != wchar_t");
-		const wchar_t *filetype = reinterpret_cast<const wchar_t*>(*iter);
-		lResult = RegKey::RegisterFileType(filetype, RP_ProgID);
-		if (lResult != ERROR_SUCCESS)
+		lResult = RegKey::RegisterFileType(RP2W_c(*iter), RP_ProgID);
+		if (lResult != ERROR_SUCCESS) {
 			return SELFREG_E_CLASS;
+		}
 	}
 
 	// Notify the shell that file associations have changed.
