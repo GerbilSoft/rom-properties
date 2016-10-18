@@ -64,20 +64,21 @@ IF(BUILD_KDE4)
 	# FIXME: KDE4's installation directories have the prefix
 	# hard-coded. This should be removed.
 	INSTALL(TARGETS rom-properties-kde4
-		LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde4.desktop"
-		DESTINATION ${SERVICES_INSTALL_DIR}
+		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca4.
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde4 PDB)
 		IF(DEBUG_FILENAME)
-			INSTALL(FILES ${DEBUG_FILENAME}
+			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
