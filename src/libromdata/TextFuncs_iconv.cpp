@@ -191,7 +191,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 	}
 
 	u16string ret;
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_ENCODING);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
 		ret = u16string(wcs);
 		free(wcs);
@@ -262,13 +262,13 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
 	// - https://en.wikipedia.org/wiki/Wave_dash
 	u16string ret;
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_ENCODING);
+	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
 		ret = u16string(wcs);
 		free(wcs);
 	} else {
 		// Try cp1252.
-		wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_ENCODING);
+		wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
 		if (wcs) {
 			ret = u16string(wcs);
 			free(wcs);
