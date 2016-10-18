@@ -143,6 +143,7 @@ SET(libromdata_H
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
+		TextFuncs_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
 		img/RpPng_gdiplus.cpp
@@ -156,6 +157,7 @@ IF(WIN32)
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
+		TextFuncs_iconv.cpp
 		file/RpFile_stdio.cpp
 		img/RpPng_libpng.cpp
 		)
