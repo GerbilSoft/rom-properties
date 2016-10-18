@@ -22,6 +22,7 @@
 #include "NintendoDS.hpp"
 #include "NintendoPublishers.hpp"
 #include "nds_structs.h"
+#include "SystemRegion.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -124,6 +125,14 @@ class NintendoDSPrivate
 		 * @return Icon, or nullptr on error.
 		 */
 		rp_image *loadIcon(void);
+
+		/**
+		 * Get the title index.
+		 * The title that most closely matches the
+		 * host system language will be selected.
+		 * @return Title index, or -1 on error.
+		 */
+		int getTitleIndex(void) const;
 };
 
 /** NintendoDSPrivate **/
@@ -159,6 +168,7 @@ const RomFields::BitfieldDesc NintendoDSPrivate::dsi_region_bitfield = {
 // ROM fields.
 const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Full Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
@@ -167,8 +177,6 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
 	// TODO: Is the field name too long?
 	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
-
-	// TODO: Full game title.
 };
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
@@ -366,6 +374,94 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	}
 
 	return icon_first_frame;
+}
+
+/**
+ * Get the title index.
+ * The title that most closely matches the
+ * host system language will be selected.
+ * @return Title index, or -1 on error.
+ */
+int NintendoDSPrivate::getTitleIndex(void) const
+{
+	if (!nds_icon_title_loaded) {
+		// Attempt to load the icon/title data.
+		if (const_cast<NintendoDSPrivate*>(this)->loadIconTitleData() != 0) {
+			// Error loading the icon/title data.
+			return -1;
+		}
+
+		// Make sure it was actually loaded.
+		if (!nds_icon_title_loaded) {
+			// Icon/title data was not loaded.
+			return -1;
+		}
+	}
+
+	// Version number check is required for ZH and KO.
+	const uint16_t version = nds_icon_title.version;
+
+	int lang = -1;
+	switch (SystemRegion::getLanguageCode()) {
+		case 'en':
+		default:
+			lang = NDS_LANG_ENGLISH;
+			break;
+		case 'ja':
+			lang = NDS_LANG_JAPANESE;
+			break;
+		case 'fr':
+			lang = NDS_LANG_FRENCH;
+			break;
+		case 'de':
+			lang = NDS_LANG_GERMAN;
+			break;
+		case 'it':
+			lang = NDS_LANG_ITALIAN;
+			break;
+		case 'es':
+			lang = NDS_LANG_SPANISH;
+			break;
+		case 'zh':
+			if (version >= NDS_ICON_VERSION_ZH) {
+				// NOTE: No distinction between
+				// Simplified and Traditional Chinese...
+				lang = NDS_LANG_CHINESE;
+			} else {
+				// No Chinese title here.
+				lang = NDS_LANG_ENGLISH;
+			}
+			break;
+		case 'ko':
+			if (version >= NDS_ICON_VERSION_ZH_KO) {
+				lang = NDS_LANG_KOREAN;
+			} else {
+				// No Korean title here.
+				lang = NDS_LANG_ENGLISH;
+			}
+			break;
+	}
+
+	// Check that the field is valid.
+	if (nds_icon_title.title[lang][0] == 0) {
+		// Not valid. Check English.
+		if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != 0) {
+			// English is valid.
+			lang = NDS_LANG_ENGLISH;
+		} else {
+			// Not valid. Check Japanese.
+			if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != 0) {
+				// Japanese is valid.
+				lang = NDS_LANG_JAPANESE;
+			} else {
+				// Not valid...
+				// TODO: Check other languages?
+				lang = -1;
+			}
+		}
+	}
+
+	return lang;
 }
 
 /**
@@ -595,6 +691,18 @@ int NintendoDS::loadFieldData(void)
 
 	// Game title.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+
+	// Full game title.
+	// TODO: Where should this go?
+	int lang = d->getTitleIndex();
+	printf("sz: %d\n", ARRAY_SIZE(d->nds_icon_title.title));
+	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
+		m_fields->addData_string(
+			utf16le_to_rp_string(d->nds_icon_title.title[lang], sizeof(d->nds_icon_title.title[lang])));
+	} else {
+		// Full game title is not available.
+		m_fields->addData_invalid();
+	}
 
 	// Game ID and publisher.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
