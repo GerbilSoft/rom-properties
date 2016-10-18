@@ -96,6 +96,11 @@ class NintendoDSPrivate
 		// NOTE: Must be byteswapped on access.
 		NDS_RomHeader romHeader;
 
+		// Icon/title data from the ROM header.
+		// NOTE: Must be byteswapped on access.
+		NDS_IconTitleData nds_icon_title;
+		bool nds_icon_title_loaded;
+
 		// Animated icon data.
 		// NOTE: Nintendo DSi icons can have custom sequences,
 		// so the first frame isn't necessarily the first in
@@ -107,6 +112,12 @@ class NintendoDSPrivate
 
 		// The rp_image* copy. (DO NOT DELETE THIS!)
 		rp_image *icon_first_frame;
+
+		/**
+		 * Load the icon/title data.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadIconTitleData(void);
 
 		/**
 		 * Load the ROM image's icon.
@@ -162,6 +173,7 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
 	: q(q)
+	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
 { }
@@ -183,6 +195,60 @@ NintendoDSPrivate::~NintendoDSPrivate()
 }
 
 /**
+ * Load the icon/title data.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NintendoDSPrivate::loadIconTitleData(void)
+{
+	assert(q->m_file != nullptr);
+
+	if (nds_icon_title_loaded) {
+		// Icon/title data is already loaded.
+		return 0;
+	}
+
+	// Get the address of the icon/title information.
+	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
+
+	// Read the icon/title data.
+	static_assert(sizeof(NDS_IconTitleData) == NDS_IconTitleData_SIZE,
+		      "NDS_IconTitleData is not 9,152 bytes.");
+	q->m_file->seek(icon_offset);
+	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
+
+	// Make sure we have the correct size based on the version.
+	if (size < sizeof(nds_icon_title.version)) {
+		// Couldn't even load the version number...
+		return -EIO;
+	}
+
+	// NOTE: Not using exact versions here, just in case...
+	unsigned int req_size = offsetof(NDS_IconTitleData, title);
+	const uint16_t version = le16_to_cpu(nds_icon_title.version);
+	if (version >= NDS_ICON_VERSION_ZH_KO) {
+		// Up to 8 titles.
+		// (Includes NDS_ICON_VERSION_DSi.)
+		req_size += sizeof(nds_icon_title.title[0]) * 8;
+	} else if (version >= NDS_ICON_VERSION_ZH) {
+		// Up to 7 titles.
+		req_size += sizeof(nds_icon_title.title[0]) * 7;
+	} else {
+		// Up to 6 titles.
+		// (Includes NDS_ICON_VERSION_ORIGINAL.)
+		req_size += sizeof(nds_icon_title.title[0]) * 6;
+	}
+
+	if (size < req_size) {
+		// Error reading the icon data.
+		return -EIO;
+	}
+
+	// Icon data loaded.
+	nds_icon_title_loaded = true;
+	return 0;
+}
+
+/**
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
@@ -198,19 +264,10 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		return icon_first_frame;
 	}
 
-	// Get the address of the icon/title information.
-	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
-
-	// Read the icon data.
-	// TODO: Also store titles?
-	static_assert(sizeof(NDS_IconTitleData) == NDS_IconTitleData_SIZE,
-		      "NDS_IconTitleData is not 9,152 bytes.");
-	NDS_IconTitleData nds_icon_title;
-	q->m_file->seek(icon_offset);
-	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
-	// Make sure we have up to the icon plus two titles.
-	if (size < (offsetof(NDS_IconTitleData, title) + 0x200)) {
-		// Error reading the icon data.
+	// Attempt to load the icon/title data.
+	int ret = loadIconTitleData();
+	if (ret != 0) {
+		// Error loading the icon/title data.
 		return nullptr;
 	}
 
@@ -218,8 +275,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	// TODO: Some configuration option to return the standard
 	// NDS icon for the standard icon instead of the first frame
 	// of the animated DSi icon? (Except for DSiWare...)
-	if (size < sizeof(NDS_IconTitleData) ||
-	    le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
+	if ( le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
 	    (le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) & 0xFF) == 0)
 	{
 		// Either this isn't a DSi icon/title struct (pre-v0103),
