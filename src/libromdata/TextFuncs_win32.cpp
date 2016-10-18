@@ -301,6 +301,10 @@ u16string utf8_to_utf16(const char *str, int len)
 	return ret;
 }
 
+#if SYS_BYTEORDER != SYS_LIL_ENDIAN
+#error TextFuncs_win32.cpp only works on little-endian architectures.
+#endif
+
 /**
  * Convert UTF-16LE text to UTF-8.
  * @param str UTF-16LE text.
