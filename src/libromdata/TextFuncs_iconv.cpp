@@ -146,6 +146,8 @@ static char *rp_iconv(const char *src, int len,
 
 /** Public text conversion functions. **/
 
+/** Code Page 1252 **/
+
 /**
  * Convert cp1252 text to UTF-8.
  * @param str cp1252 text.
@@ -203,6 +205,8 @@ u16string cp1252_to_utf16(const char *str, int len)
 
 	return ret;
 }
+
+/** Code Page 1252 + Shift-JIS (932) **/
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-8.
@@ -280,6 +284,8 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 	return ret;
 }
 
+/** UTF-8 to UTF-16 and vice-versa **/
+
 /**
  * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
@@ -307,29 +313,54 @@ u16string utf8_to_utf16(const char *str, int len)
 }
 
 /**
- * Convert UTF-16 text to UTF-8.
+ * Convert UTF-16 text to UTF-8. (INTERNAL FUNCTION)
  * @param str UTF-16 text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param encoding iconv encoding.
  * @return UTF-8 string.
  */
-string utf16_to_utf8(const char16_t *str, int len)
+static inline string utf16_to_utf8_int(const char16_t *str, int len, const char *encoding)
 {
 	REMOVE_TRAILING_NULLS(string, str, len);
 
 	if (len < 0) {
 		// iconv doesn't support NULL-terminated strings directly.
 		// Get the string length.
+		// NOTE: This works for both BE and LE, since 0x0000 is
+		// still 0x0000 when byteswapped.
 		len = u16_strlen(str);
 	}
 
 	string ret;
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), RP_ICONV_UTF16_ENCODING, "UTF-8");
+	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), encoding, "UTF-8");
 	if (mbs) {
 		ret = string(mbs);
 		free(mbs);
 	}
 
 	return ret;
+}
+
+/**
+ * Convert UTF-16LE text to UTF-8.
+ * @param str UTF-16LE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string utf16le_to_utf8(const char16_t *str, int len)
+{
+	return utf16_to_utf8_int(str, len, "UTF-16LE");
+}
+
+/**
+ * Convert UTF-16BE text to UTF-8.
+ * @param str UTF-16BE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string utf16be_to_utf8(const char16_t *str, int len)
+{
+	return utf16_to_utf8_int(str, len, "UTF-16BE");
 }
 
 }

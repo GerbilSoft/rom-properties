@@ -21,6 +21,7 @@
 
 #include "TextFuncs.hpp"
 #include "config.libromdata.h"
+#include "byteswap.h"
 
 // C includes.
 #include <stdint.h>
@@ -39,6 +40,36 @@ using std::u16string;
 namespace LibRomData {
 
 /** OS-independent text conversion functions. **/
+
+/**
+ * Byteswap and return UTF-16 text.
+ * @param str UTF-16 text to byteswap.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return Byteswapped UTF-16 string.
+ */
+u16string utf16_bswap(const char16_t *str, int len)
+{
+	if (len == 0) {
+		return u16string();
+	} else if (len < 0) {
+		// NULL-terminated string.
+		len = (int)u16_strlen(str);
+		if (len <= 0) {
+			return u16string();
+		}
+	}
+
+	// TODO: Optimize this?
+	u16string ret;
+	ret.reserve(len);
+	for (; len > 0; len--, str++) {
+		ret += __swab16(*str);
+	}
+
+	return ret;
+}
+
+/** Latin-1 (ISO-8859-1) **/
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-8.
@@ -105,6 +136,8 @@ u16string latin1_to_utf16(const char *str, int len)
 	}
 	return wcs;
 }
+
+/** Miscellaneous functions. **/
 
 #if !defined(RP_WIS16)
 /**

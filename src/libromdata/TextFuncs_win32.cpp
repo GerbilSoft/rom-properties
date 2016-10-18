@@ -134,6 +134,8 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 
 /** Public text conversion functions. **/
 
+/** Code Page 1252 **/
+
 /**
  * Convert cp1252 text to UTF-8.
  * @param str cp1252 text.
@@ -195,6 +197,8 @@ u16string cp1252_to_utf16(const char *str, int len)
 	free(wcs);
 	return ret;
 }
+
+/** Code Page 1252 + Shift-JIS (932) **/
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-8.
@@ -269,6 +273,8 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 	return ret;
 }
 
+/** UTF-8 to UTF-16 and vice-versa **/
+
 /**
  * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
@@ -296,12 +302,12 @@ u16string utf8_to_utf16(const char *str, int len)
 }
 
 /**
- * Convert UTF-16 text to UTF-8.
- * @param str UTF-16 text.
+ * Convert UTF-16LE text to UTF-8.
+ * @param str UTF-16LE text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16_to_utf8(const char16_t *str, int len)
+string utf16le_to_utf8(const char16_t *str, int len)
 {
 	REMOVE_TRAILING_NULLS(string, str, len);
 
@@ -318,6 +324,26 @@ string utf16_to_utf8(const char16_t *str, int len)
 
 	free(mbs);
 	return ret;
+}
+
+/**
+ * Convert UTF-16BE text to UTF-8.
+ * @param str UTF-16BE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+string utf16be_to_utf8(const char16_t *str, int len)
+{
+	// WideCharToMultiByte() doesn't support UTF-16BE.
+	// Byteswap the text first.
+	u16string bstr = utf16_bswap(str, len);
+	if ((int)bstr.size() != len) {
+		// Byteswap failed.
+		return string();
+	}
+
+	// Convert the byteswapped text.
+	return utf16le_to_utf8(bstr.data(), (int)bstr.size());
 }
 
 }
