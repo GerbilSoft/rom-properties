@@ -166,7 +166,8 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
 	EXPECT_EQ((const char*)cp1252_utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_to_utf8((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
 	EXPECT_EQ((const char*)cp1252_utf8_data, str);
@@ -187,7 +188,8 @@ TEST_F(TextFuncsTest, cp1252_to_utf16)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)cp1252_utf16_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_to_utf16((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)cp1252_utf16_data, str);
@@ -210,7 +212,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
 	EXPECT_EQ((const char*)cp1252_utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf8((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
 	EXPECT_EQ((const char*)cp1252_utf8_data, str);
@@ -238,7 +241,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_ascii)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_in)-1);
 	EXPECT_EQ(cp1252_in, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf8(cp1252_in, ARRAY_SIZE(cp1252_in));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_in)-1);
 	EXPECT_EQ(cp1252_in, str);
@@ -259,7 +263,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_japanese)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf8_data)-1);
 	EXPECT_EQ((const char*)sjis_utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf8((const char*)sjis_data, ARRAY_SIZE(sjis_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf8_data)-1);
 	EXPECT_EQ((const char*)sjis_utf8_data, str);
@@ -282,7 +287,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_fallback)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)cp1252_utf16_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf16((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)cp1252_utf16_data, str);
@@ -316,7 +322,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(u16_out)-1);
 	EXPECT_EQ(u16_out, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE(cp1252_in));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(u16_out)-1);
 	EXPECT_EQ(u16_out, str);
@@ -337,7 +344,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)sjis_utf16_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf16((const char*)sjis_data, ARRAY_SIZE(sjis_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)sjis_utf16_data, str);
@@ -362,7 +370,8 @@ TEST_F(TextFuncsTest, utf8_to_utf16)
 	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
 	EXPECT_EQ((const char16_t*)utf16_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = utf8_to_utf16((const char*)utf8_data, ARRAY_SIZE(utf8_data));
 	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
 	EXPECT_EQ((const char16_t*)utf16_data, str);
@@ -387,7 +396,8 @@ TEST_F(TextFuncsTest, utf16le_to_utf8)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = utf16le_to_utf8((const char16_t*)utf16le_data, (sizeof(utf16_data)/sizeof(char16_t)));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
@@ -412,7 +422,8 @@ TEST_F(TextFuncsTest, utf16be_to_utf8)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = utf16be_to_utf8((const char16_t*)utf16be_data, (sizeof(utf16_data)/sizeof(char16_t)));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
@@ -440,10 +451,69 @@ TEST_F(TextFuncsTest, utf16_to_utf8)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
 
-	// Test with explicit length and trimmed NULLs.
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
 	str = utf16_to_utf8((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
 	EXPECT_EQ((const char*)utf8_data, str);
+}
+
+/**
+ * Test utf16_bswap() with regular text and special characters.
+ * This function converts from BE to LE.
+ */
+TEST_F(TextFuncsTest, utf16_bswap_BEtoLE)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	u16string str = utf16_bswap((const char16_t*)utf16be_data, -1);
+	EXPECT_EQ(str.size(), (sizeof(utf16le_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16le_data, str);
+
+	// Test with explicit length.
+	str = utf16_bswap((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t))-1);
+	EXPECT_EQ(str.size(), (sizeof(utf16le_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16le_data, str);
+
+	// Test with explicit length and an extra NULL.
+	// NOTE: utf16_bswap does NOT trim NULLs.
+	str = utf16_bswap((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t)));
+	EXPECT_EQ(str.size(), (sizeof(utf16le_data)/sizeof(char16_t)));
+	// Remove the extra NULL before comparing.
+	str.resize(str.size()-1);
+	EXPECT_EQ((const char16_t*)utf16le_data, str);
+}
+
+/**
+ * Test utf16_bswap() with regular text and special characters.
+ * This function converts from LE to BE.
+ */
+TEST_F(TextFuncsTest, utf16_bswap_LEtoBE)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	u16string str = utf16_bswap((const char16_t*)utf16le_data, -1);
+	EXPECT_EQ(str.size(), (sizeof(utf16be_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16be_data, str);
+
+	// Test with explicit length.
+	str = utf16_bswap((const char16_t*)utf16le_data, (sizeof(utf16le_data)/sizeof(char16_t))-1);
+	EXPECT_EQ(str.size(), (sizeof(utf16be_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16be_data, str);
+
+	// Test with explicit length and an extra NULL.
+	// NOTE: utf16_bswap does NOT trim NULLs.
+	str = utf16_bswap((const char16_t*)utf16le_data, (sizeof(utf16le_data)/sizeof(char16_t)));
+	EXPECT_EQ(str.size(), (sizeof(utf16be_data)/sizeof(char16_t)));
+	// Remove the extra NULL before comparing.
+	str.resize(str.size()-1);
+	EXPECT_EQ((const char16_t*)utf16be_data, str);
 }
 
 } }
