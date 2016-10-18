@@ -334,11 +334,26 @@ string utf16le_to_utf8(const char16_t *str, int len)
  */
 string utf16be_to_utf8(const char16_t *str, int len)
 {
+	if (!str || !*str || len == 0) {
+		// Empty string.
+		return string();
+	}
+
+	// NOTE: NULL characters are NOT truncated in the
+	// byteswap function. That's done in the regular
+	// utf16le_to_utf8() function.
+
 	// WideCharToMultiByte() doesn't support UTF-16BE.
 	// Byteswap the text first.
 	u16string bstr = utf16_bswap(str, len);
-	if ((int)bstr.size() != len) {
-		// Byteswap failed.
+	if (bstr.empty()) {
+		// Error byteswapping the string...
+		return string();
+	} else if (len > 0 && len != (int)(bstr.size())) {
+		// Byteswapping failed.
+		// NOTE: Only checking if an explicit length
+		// is specified, since we don't want to
+		// call u16_strlen() here.
 		return string();
 	}
 
