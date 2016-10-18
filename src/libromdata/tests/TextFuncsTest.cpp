@@ -88,23 +88,24 @@ class TextFuncsTest : public ::testing::Test
 		 * Shift-JIS test string.
 		 *
 		 * TODO: Get a longer test string.
-		 * This string is from the JP Pokemon Colosseum (GCN) save file.
+		 * This string is from the JP Pokemon Colosseum (GCN) save file,
+		 * plus a wave dash character (8160).
 		 */
-		static const uint8_t sjis_data[34];
+		static const uint8_t sjis_data[36];
 
 		/**
 		 * Shift-JIS to UTF-8 test string.
 		 * Contains the expected result from:
 		 * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE(sjis_data))
 		 */
-		static const uint8_t sjis_utf8_data[50];
+		static const uint8_t sjis_utf8_data[53];
 
 		/**
 		 * Shift-JIS to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE(sjis_data))
 		 */
-		static const uint16_t sjis_utf16_data[18];
+		static const uint16_t sjis_utf16_data[19];
 
 		/**
 		 * UTF-8 test string.
@@ -286,6 +287,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_ascii)
 
 /**
  * Test cp1252_sjis_to_utf8() with Japanese text.
+ * This includes a wave dash character (8160).
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_japanese)
 {
@@ -402,6 +404,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 
 /**
  * Test cp1252_sjis_to_utf16() with Japanese text.
+ * This includes a wave dash character (8160).
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
 {
