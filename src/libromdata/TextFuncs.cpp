@@ -131,7 +131,7 @@ u16string latin1_to_utf16(const char *str, int len)
 			wcs.push_back(_RP_U16_CHR('?'));
 		} else {
 			// Other character.
-			wcs.push_back(*str);
+			wcs.push_back((char16_t)(uint8_t)*str);
 		}
 	}
 	return wcs;
