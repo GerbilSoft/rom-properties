@@ -57,6 +57,7 @@ IF NOT EXIST rom-properties-i386.dll (
 	ECHO Skipping 32-bit DLL unregistration.
 ) ELSE (
 	ECHO Unregistering rom-properties-i386.dll...
+	REGSVR32 /S /U rom-properties-i386.dll
 	IF ERRORLEVEL 1 (
 		ECHO ERROR: 32-bit DLL unregistration failed.
 	) ELSE (

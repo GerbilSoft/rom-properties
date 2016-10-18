@@ -63,6 +63,7 @@ IF NOT EXIST rom-properties-i386.dll (
 	ECHO This DLL is required in order to support 32-bit applications.
 ) ELSE (
 	ECHO Registering rom-properties-i386.dll for 32-bit applications...
+	REGSVR32 /S rom-properties-i386.dll
 	IF ERRORLEVEL 1 (
 		ECHO ERROR: 32-bit DLL registration failed.
 		ECHO This DLL is required in order to support 32-bit applications.
