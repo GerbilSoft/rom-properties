@@ -24,6 +24,7 @@
 
 // TextFuncs
 #include "../TextFuncs.hpp"
+#include "../byteorder.h"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -104,6 +105,47 @@ class TextFuncsTest : public ::testing::Test
 		 * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE(sjis_data))
 		 */
 		static const uint16_t sjis_utf16_data[18];
+
+		/**
+		 * UTF-8 test string.
+		 * Contains Latin-1, BMP, and SMP characters.
+		 *
+		 * This contains the same string as
+		 * utf16le_data[] and utf16be_data[].
+		 */
+		static const uint8_t utf8_data[325];
+
+		/**
+		 * UTF-16LE test string.
+		 * Contains Latin-1, BMP, and SMP characters.
+		 *
+		 * This contains the same string as
+		 * utf8_data[] and utf16be_data[].
+		 *
+		 * NOTE: This is encoded as uint8_t to prevent
+		 * byteswapping issues.
+		 */
+		static const uint8_t utf16le_data[558];
+
+		/**
+		 * UTF-16BE test string.
+		 * Contains Latin-1, BMP, and SMP characters.
+		 *
+		 * This contains the same string as
+		 * utf8_data[] and utf16le_data[].
+		 *
+		 * NOTE: This is encoded as uint8_t to prevent
+		 * byteswapping issues.
+		 */
+		static const uint8_t utf16be_data[558];
+
+		// Host-endian UTF-16 data for functions
+		// that convert to/from host-endian UTF-16.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		#define utf16_data utf16le_data
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		#define utf16_data utf16be_data
+#endif
 };
 
 // Test strings are located in TextFuncsTest_data.hpp.
@@ -299,6 +341,109 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
 	str = cp1252_sjis_to_utf16((const char*)sjis_data, ARRAY_SIZE(sjis_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)sjis_utf16_data, str);
+}
+
+/**
+ * Test utf8_to_utf16() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf8_to_utf16)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	u16string str = utf8_to_utf16((const char*)utf8_data, -1);
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+
+	// Test with explicit length.
+	str = utf8_to_utf16((const char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+
+	// Test with explicit length and trimmed NULLs.
+	str = utf8_to_utf16((const char*)utf8_data, ARRAY_SIZE(utf8_data));
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+}
+
+/**
+ * Test utf16le_to_utf8() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf16le_to_utf8)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	string str = utf16le_to_utf8((const char16_t*)utf16le_data, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length.
+	str = utf16le_to_utf8((const char16_t*)utf16le_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length and trimmed NULLs.
+	str = utf16le_to_utf8((const char16_t*)utf16le_data, (sizeof(utf16_data)/sizeof(char16_t)));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+}
+
+/**
+ * Test utf16be_to_utf8() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf16be_to_utf8)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	string str = utf16be_to_utf8((const char16_t*)utf16be_data, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length.
+	str = utf16be_to_utf8((const char16_t*)utf16be_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length and trimmed NULLs.
+	str = utf16be_to_utf8((const char16_t*)utf16be_data, (sizeof(utf16_data)/sizeof(char16_t)));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+}
+
+/**
+ * Test utf16_to_utf8() with regular text and special characters.
+ * NOTE: This is effectively the same as the utf16le_to_utf8()
+ * or utf16be_to_utf8() test, depending on system architecture.
+ * This test ensures the byteorder macros are working correctly.
+ */
+TEST_F(TextFuncsTest, utf16_to_utf8)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	string str = utf16_to_utf8((const char16_t*)utf16_data, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length.
+	str = utf16_to_utf8((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length and trimmed NULLs.
+	str = utf16_to_utf8((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
 }
 
 } }
