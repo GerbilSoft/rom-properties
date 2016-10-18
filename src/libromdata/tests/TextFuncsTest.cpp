@@ -197,7 +197,7 @@ TEST_F(TextFuncsTest, cp1252_to_utf16)
 
 /**
  * Test cp1252_sjis_to_utf8() fallback functionality.
- * These strings should be detected as cp1252 due to
+ * This string should be detected as cp1252 due to
  * Shift-JIS decoding errors.
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
@@ -217,6 +217,42 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 	str = cp1252_sjis_to_utf8((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
 	EXPECT_EQ((const char*)cp1252_utf8_data, str);
+}
+
+/**
+ * Test cp1252_sjis_to_utf8() fallback functionality.
+ * This string is incorrectly detected as Shift-JIS because
+ * all bytes are valid.
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_copyright)
+{
+	// cp1252 code point 0xA9 is the copyright symbol,
+	// but it's also halfwidth katakana "U" in Shift-JIS.
+	const uint8_t sjis_in[16] = {
+		0xA9,0x20,0x32,0x30,0x30,0x32,0x20,0x4E,
+		0x69,0x6E,0x74,0x65,0x6E,0x64,0x6F,0x00
+	};
+	const uint8_t utf8_out[18] = {
+		0xEF,0xBD,0xA9,0x20,0x32,0x30,0x30,0x32,
+		0x20,0x4E,0x69,0x6E,0x74,0x65,0x6E,0x64,
+		0x6F,0x00
+	};
+
+	// Test with implicit length.
+	string str = cp1252_sjis_to_utf8((const char*)sjis_in, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
+	EXPECT_EQ((const char*)utf8_out, str);
+
+	// Test with explicit length.
+	str = cp1252_sjis_to_utf8((const char*)sjis_in, ARRAY_SIZE(sjis_in)-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
+	EXPECT_EQ((const char*)utf8_out, str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	str = cp1252_sjis_to_utf8((const char*)sjis_in, ARRAY_SIZE(sjis_in));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
+	EXPECT_EQ((const char*)utf8_out, str);
 }
 
 /**
@@ -272,7 +308,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_japanese)
 
 /**
  * Test cp1252_sjis_to_utf16() fallback functionality.
- * These strings should be detected as cp1252 due to
+ * This strings should be detected as cp1252 due to
  * Shift-JIS decoding errors.
  */
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_fallback)
@@ -292,6 +328,41 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_fallback)
 	str = cp1252_sjis_to_utf16((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(str.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
 	EXPECT_EQ((const char16_t*)cp1252_utf16_data, str);
+}
+
+/**
+ * Test cp1252_sjis_to_utf8() fallback functionality.
+ * This string is incorrectly detected as Shift-JIS because
+ * all bytes are valid.
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
+{
+	// cp1252 code point 0xA9 is the copyright symbol,
+	// but it's also halfwidth katakana "U" in Shift-JIS.
+	const uint8_t sjis_in[16] = {
+		0xA9,0x20,0x32,0x30,0x30,0x32,0x20,0x4E,
+		0x69,0x6E,0x74,0x65,0x6E,0x64,0x6F,0x00
+	};
+	const uint16_t utf16_out[16] = {
+		0xFF69,0x0020,0x0032,0x0030,0x0030,0x0032,0x0020,0x004E,
+		0x0069,0x006E,0x0074,0x0065,0x006E,0x0064,0x006F,0x0000
+	};
+
+	// Test with implicit length.
+	u16string str = cp1252_sjis_to_utf16((const char*)sjis_in, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ((const char16_t*)utf16_out, str);
+
+	// Test with explicit length.
+	str = cp1252_sjis_to_utf16((const char*)sjis_in, ARRAY_SIZE(sjis_in)-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ((const char16_t*)utf16_out, str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	str = cp1252_sjis_to_utf16((const char*)sjis_in, ARRAY_SIZE(sjis_in));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ((const char16_t*)utf16_out, str);
 }
 
 /**
