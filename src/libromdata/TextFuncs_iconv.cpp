@@ -103,22 +103,16 @@ static char *rp_iconv(const char *src, int len,
 	char *inptr = (char*)(src);	// Input pointer.
 	char *outptr = &outbuf[0];	// Output pointer.
 
-	int success = 1;
-
+	bool success = true;
 	while (src_bytes_len > 0) {
 		if (iconv(cd, &inptr, &src_bytes_len, &outptr, &out_bytes_remaining) == (size_t)(-1)) {
 			// An error occurred while converting the string.
-			if (outptr == &outbuf[0]) {
-				// No bytes were converted.
-				success = 0;
-			} else {
-				// Some bytes were converted.
-				// Accept the string up to this point.
-				// Madou Monogatari I has a broken Shift-JIS sequence
-				// at position 9, which resulted in no conversion.
-				// (Reported by andlabs.)
-				success = 1;
-			}
+			// FIXME: Flag to indicate that we want to have
+			// a partial Shift-JIS conversion?
+			// Madou Monogatari I (MD) has a broken Shift-JIS
+			// code point, which breaks conversion.
+			// (Reported by andlabs.)
+			success = false;
 			break;
 		}
 	}
