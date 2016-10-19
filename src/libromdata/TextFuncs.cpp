@@ -182,7 +182,7 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 		wcs2++;
 	}
 
-	return (int)(*(const uint16_t*)wcs1 - *(const uint16_t*)wcs2);
+	return ((int)*wcs1 - (int)*wcs2);
 }
 #endif /* RP_UTF16 && !RP_WIS16 */
 
