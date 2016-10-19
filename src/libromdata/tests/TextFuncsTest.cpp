@@ -683,6 +683,66 @@ TEST_F(TextFuncsTest, u16_strlen)
 	EXPECT_EQ(ARRAY_SIZE(u16smp_in)-1, u16_strlen(u16smp_in));
 }
 
+/**
+ * Test u16_strdup().
+ */
+TEST_F(TextFuncsTest, u16_strdup)
+{
+	// NOTE: u16_strdup() is a wrapper for wcsdup() on Windows.
+	// On all other systems, it's a simple implementation.
+
+	// Test string.
+	static const char16_t u16_str[] = {
+		'T','h','e',' ','q','u','i','c','k',' ','b','r',
+		'o','w','n',' ','f','o','x',' ','j','u','m','p',
+		's',' ','o','v','e','r',' ','t','h','e',' ','l',
+		'a','z','y',' ','d','o','g','.',0
+	};
+
+	char16_t *u16_dup = u16_strdup(u16_str);
+	EXPECT_TRUE(u16_dup != nullptr);
+
+	// Verify the NULL terminator.
+	// If not found, u16_strlen() and u16_strcmp()
+	// may crash, so use ASSERT_EQ().
+	ASSERT_EQ(0, u16_str[ARRAY_SIZE(u16_str)-1]);
+
+	// Verify the string length.
+	EXPECT_EQ(ARRAY_SIZE(u16_str)-1, u16_strlen(u16_dup));
+
+	// Verify the string contents.
+	// NOTE: EXPECT_STREQ() supports const wchar_t*,
+	// but not const char16_t*.
+	EXPECT_EQ(0, u16_strcmp(u16_str, u16_dup));
+}
+
+/**
+ * Test u16_strcmp().
+ */
+TEST_F(TextFuncsTest, u16_strcmp)
+{
+	// NOTE: u16_strcmp() is a wrapper for wcscmp() on Windows.
+	// On all other systems, it's a simple implementation.
+
+	// Three test strings.
+	static const char16_t u16_str1[] = {'a','b','c',0};
+	static const char16_t u16_str2[] = {'a','b','d',0};
+	static const char16_t u16_str3[] = {'d','e','f',0};
+
+	// Compare strings to themselves.
+	EXPECT_EQ(0, u16_strcmp(u16_str1, u16_str1));
+	EXPECT_EQ(0, u16_strcmp(u16_str2, u16_str2));
+	EXPECT_EQ(0, u16_strcmp(u16_str3, u16_str3));
+
+	// Compare strings to each other.
+	EXPECT_LT(u16_strcmp(u16_str1, u16_str2), 0);
+	EXPECT_LT(u16_strcmp(u16_str1, u16_str3), 0);
+	EXPECT_GT(u16_strcmp(u16_str2, u16_str1), 0);
+	EXPECT_LT(u16_strcmp(u16_str2, u16_str3), 0);
+	EXPECT_GT(u16_strcmp(u16_str3, u16_str1), 0);
+	EXPECT_GT(u16_strcmp(u16_str3, u16_str2), 0);
+}
+
 } }
 
 /**
