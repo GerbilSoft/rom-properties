@@ -652,6 +652,37 @@ TEST_F(TextFuncsTest, latin1_to_utf16)
 	EXPECT_EQ(latin1_utf16_data, str);
 }
 
+/**
+ * Test u16_strlen().
+ */
+TEST_F(TextFuncsTest, u16_strlen)
+{
+	// NOTE: u16_strlen() is a wrapper for wcslen() on Windows.
+	// On all other systems, it's a simple implementation.
+
+	// Compare to 8-bit strlen() with ASCII.
+	static const char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
+	static const char16_t u16_in[] = {
+		'a','b','c','d','e','f','g','h','i','j','k','l',
+		'm','n','o','p','q','r','s','t','u','v','w','x',
+		'y','z',0
+	};
+
+	EXPECT_EQ(ARRAY_SIZE(ascii_in)-1, strlen(ascii_in));
+	EXPECT_EQ(ARRAY_SIZE(u16_in)-1, u16_strlen(u16_in));
+	EXPECT_EQ(u16_strlen(u16_in), strlen(ascii_in));
+
+	// Test u16_strlen() with SMP characters.
+	// u16_strlen() will return the number of 16-bit characters,
+	// NOT the number of code points.
+	static const char16_t u16smp_in[] = {
+		0xD83C,0xDF4C,0xD83C,0xDF59,
+		0xD83C,0xDF69,0xD83D,0xDCB5,
+		0xD83D,0xDCBE,0x0000
+	};
+	EXPECT_EQ(ARRAY_SIZE(u16smp_in)-1, u16_strlen(u16smp_in));
+}
+
 } }
 
 /**
