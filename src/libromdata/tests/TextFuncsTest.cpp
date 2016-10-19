@@ -981,6 +981,249 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_rp_string_japanese)
 #endif
 }
 
+/**
+ * Test utf8_to_rp_string() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf8_to_rp_string)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	rp_string rps = utf8_to_rp_string((const char*)utf8_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = utf8_to_rp_string((const char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = utf8_to_rp_string((const char*)utf8_data, ARRAY_SIZE(utf8_data));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+}
+
+/**
+ * Test rp_string_to_utf8() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, rp_string_to_utf8)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+#ifdef RP_UTF8
+	string str = rp_string_to_utf8((const rp_char*)utf8_data, -1);
+#else
+	string str = rp_string_to_utf8((const rp_char*)utf16_data, -1);
+#endif
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length.
+#ifdef RP_UTF8
+	str = rp_string_to_utf8((const rp_char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+#else
+	str = rp_string_to_utf8((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+#endif
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+#ifdef RP_UTF8
+	str = rp_string_to_utf8((const rp_char*)utf8_data, ARRAY_SIZE(utf8_data));
+#else
+	str = rp_string_to_utf8((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
+#endif
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, str);
+}
+
+/**
+ * Test utf16le_to_rp_string() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf16le_to_rp_string)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	rp_string rps = utf16le_to_rp_string((const char16_t*)utf16le_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = utf16le_to_rp_string((const char16_t*)utf16le_data, (sizeof(utf16le_data)/sizeof(char16_t))-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = utf16le_to_rp_string((const char16_t*)utf16le_data, (sizeof(utf16le_data)/sizeof(char16_t)));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+}
+
+/**
+ * Test utf16be_to_rp_string() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, utf16be_to_rp_string)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	rp_string rps = utf16be_to_rp_string((const char16_t*)utf16be_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = utf16be_to_rp_string((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t))-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = utf16be_to_rp_string((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t)));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+}
+
+/**
+ * Test utf16_to_rp_string() with regular text and special characters.
+ * NOTE: This is effectively the same as the utf16le_to_rp_string()
+ * or utf16be_to_rp_string() test, depending on system architecture.
+ * This test ensures the byteorder macros are working correctly.
+ */
+TEST_F(TextFuncsTest, utf16_to_rp_string)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+	rp_string rps = utf16_to_rp_string((const char16_t*)utf16_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = utf16_to_rp_string((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = utf16_to_rp_string((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+}
+
+/**
+ * Test rp_string_to_utf16() with regular text and special characters.
+ */
+TEST_F(TextFuncsTest, rp_string_to_utf16)
+{
+	// NOTE: The UTF-16 test strings are stored as
+	// uint8_t arrays in order to prevent byteswapping
+	// by the compiler.
+
+	// Test with implicit length.
+#ifdef RP_UTF8
+	u16string str = rp_string_to_utf16((const rp_char*)utf8_data, -1);
+#else
+	u16string str = rp_string_to_utf16((const rp_char*)utf16_data, -1);
+#endif
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+
+	// Test with explicit length.
+#ifdef RP_UTF8
+	str = rp_string_to_utf16((const rp_char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+#else
+	str = rp_string_to_utf16((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+#endif
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+#ifdef RP_UTF8
+	str = rp_string_to_utf16((const rp_char*)utf8_data, ARRAY_SIZE(utf8_data));
+#else
+	str = rp_string_to_utf16((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
+#endif
+	EXPECT_EQ(str.size(), (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+}
+
 } }
 
 /**
