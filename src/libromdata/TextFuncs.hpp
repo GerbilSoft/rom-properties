@@ -41,6 +41,9 @@
 // Conversions to UTF-16 always use host-endian.
 #include "byteorder.h"
 
+// Shared internal functions.
+#include "TextFuncs_int.hpp"
+
 namespace LibRomData {
 
 /** Generic text conversion functions. **/
@@ -145,9 +148,7 @@ std::u16string utf16_bswap(const char16_t *str, int len);
 static inline std::u16string utf16le_to_utf16(const char16_t *str, int len)
 {
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	if (len < 0) {
-		return std::u16string(str);
-	}
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 	return std::u16string(str, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	return utf16_bswap(str, len);
@@ -165,9 +166,7 @@ static inline std::u16string utf16be_to_utf16(const char16_t *str, int len)
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	return utf16_bswap(str, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	if (len < 0) {
-		return std::u16string(str);
-	}
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 	return std::u16string(str, len);
 #endif
 }
@@ -280,9 +279,7 @@ static inline rp_string cp1252_sjis_to_rp_string(const char *str, int len)
 static inline rp_string utf8_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
-	if (len < 0) {
-		return rp_string(str);
-	}
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(rp_string, str, len);
 	return rp_string(str, len);
 #elif defined(RP_UTF16)
 	return utf8_to_utf16(str, len);
@@ -312,10 +309,8 @@ static inline rp_string utf8_to_rp_string(const std::string &str)
 static inline std::string rp_string_to_utf8(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
-	if (len < 0) {
-		return rp_string(str);
-	}
-	return rp_string(str, len);
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::string, str, len);
+	return std::string(str, len);
 #elif defined(RP_UTF16)
 	return utf16_to_utf8(str, len);
 #endif
@@ -441,10 +436,8 @@ static inline std::u16string rp_string_to_utf16(const rp_char *str, int len)
 #if defined(RP_UTF8)
 	return utf8_to_utf16(str, len);
 #elif defined(RP_UTF16)
-	if (len < 0) {
-		return rp_string(str);
-	}
-	return rp_string(str, len);
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
+	return std::u16string(str, len);
 #endif
 }
 

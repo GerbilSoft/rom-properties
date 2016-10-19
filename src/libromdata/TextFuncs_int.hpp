@@ -75,6 +75,30 @@ namespace LibRomData {
 		} \
 	} while (0)
 
+/**
+ * Remove trailing NULLs from the source string by adjusting the length.
+ * If the resulting string is empty, an empty string is returned.
+ * This version returns the original string if the length is implicit.
+ * (Intended use is the rp_string wrapper functions.)
+ * @param return_type Return type, e.g. string or u16string.
+ * @param str String.
+ * @param len Length. (If less than 0, implicit length string.)
+ */
+#define REMOVE_TRAILING_NULLS_RP_WRAPPER(return_type, str, len) \
+	do { \
+		if (len < 0) { \
+			return return_type(str); \
+		} \
+		for (; len > 0; len--) { \
+			if (str[len-1] != 0) \
+				break; \
+		} \
+		if (len <= 0) { \
+			/* Empty string. */ \
+			return return_type(); \
+		} \
+	} while (0)
+
 }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_INT_HPP__ */
