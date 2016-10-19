@@ -26,6 +26,12 @@
 #include "../TextFuncs.hpp"
 #include "../byteorder.h"
 
+#if !defined(RP_UTF8) && !defined(RP_UTF16)
+#error Neither RP_UTF8 nor RP_UTF16 are defined.
+#elif defined(RP_UTF8) && defined(RP_UTF16)
+#error Both RP_UTF8 and RP_UTF16 are defined.
+#endif
+
 // C includes. (C++ namespace)
 #include <cstdio>
 
@@ -110,6 +116,25 @@ class TextFuncsTest : public ::testing::Test
 		static const char16_t sjis_utf16_data[19];
 
 		/**
+		 * Shift-JIS test string with a cp1252 copyright symbol. (0xA9)
+		 * This string is incorrectly detected as Shift-JIS because
+		 * all bytes are valid.
+		 */
+		static const uint8_t sjis_copyright_in[16];
+
+		/**
+		 * UTF-8 result from:
+		 * - cp1252_sjis_to_utf8(sjis_copyright_in, sizeof(sjis_copyright_in))
+		 */
+		static const uint8_t sjis_copyright_out_utf8[18];
+
+		/**
+		 * UTF-16 result from:
+		 * - cp1252_sjis_to_utf16(sjis_copyright_in, sizeof(sjis_copyright_in))
+		 */
+		static const char16_t sjis_copyright_out_utf16[16];
+
+		/**
 		 * UTF-8 test string.
 		 * Contains Latin-1, BMP, and SMP characters.
 		 *
@@ -170,6 +195,8 @@ class TextFuncsTest : public ::testing::Test
 // Test strings are located in TextFuncsTest_data.hpp.
 #include "TextFuncsTest_data.hpp"
 
+/** Code Page 1252 **/
+
 /**
  * Test cp1252_to_utf8().
  */
@@ -214,6 +241,8 @@ TEST_F(TextFuncsTest, cp1252_to_utf16)
 	EXPECT_EQ(cp1252_utf16_data, str);
 }
 
+/** Code Page 1252 + Shift-JIS (932) **/
+
 /**
  * Test cp1252_sjis_to_utf8() fallback functionality.
  * This string should be detected as cp1252 due to
@@ -247,31 +276,22 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_copyright)
 {
 	// cp1252 code point 0xA9 is the copyright symbol,
 	// but it's also halfwidth katakana "U" in Shift-JIS.
-	const uint8_t sjis_in[16] = {
-		0xA9,0x20,0x32,0x30,0x30,0x32,0x20,0x4E,
-		0x69,0x6E,0x74,0x65,0x6E,0x64,0x6F,0x00
-	};
-	const uint8_t utf8_out[18] = {
-		0xEF,0xBD,0xA9,0x20,0x32,0x30,0x30,0x32,
-		0x20,0x4E,0x69,0x6E,0x74,0x65,0x6E,0x64,
-		0x6F,0x00
-	};
 
 	// Test with implicit length.
-	string str = cp1252_sjis_to_utf8((const char*)sjis_in, -1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
-	EXPECT_EQ((const char*)utf8_out, str);
+	string str = cp1252_sjis_to_utf8((const char*)sjis_copyright_in, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf8((const char*)sjis_in, ARRAY_SIZE(sjis_in)-1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
-	EXPECT_EQ((const char*)utf8_out, str);
+	str = cp1252_sjis_to_utf8((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in)-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf8((const char*)sjis_in, ARRAY_SIZE(sjis_in));
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf8_out)-1);
-	EXPECT_EQ((const char*)utf8_out, str);
+	str = cp1252_sjis_to_utf8((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, str);
 }
 
 /**
@@ -359,30 +379,22 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
 {
 	// cp1252 code point 0xA9 is the copyright symbol,
 	// but it's also halfwidth katakana "U" in Shift-JIS.
-	const uint8_t sjis_in[16] = {
-		0xA9,0x20,0x32,0x30,0x30,0x32,0x20,0x4E,
-		0x69,0x6E,0x74,0x65,0x6E,0x64,0x6F,0x00
-	};
-	const char16_t utf16_out[16] = {
-		0xFF69,0x0020,0x0032,0x0030,0x0030,0x0032,0x0020,0x004E,
-		0x0069,0x006E,0x0074,0x0065,0x006E,0x0064,0x006F,0x0000
-	};
 
 	// Test with implicit length.
-	u16string str = cp1252_sjis_to_utf16((const char*)sjis_in, -1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
-	EXPECT_EQ(utf16_out, str);
+	u16string str = cp1252_sjis_to_utf16((const char*)sjis_copyright_in, -1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, str);
 
 	// Test with explicit length.
-	str = cp1252_sjis_to_utf16((const char*)sjis_in, ARRAY_SIZE(sjis_in)-1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
-	EXPECT_EQ(utf16_out, str);
+	str = cp1252_sjis_to_utf16((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in)-1);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = cp1252_sjis_to_utf16((const char*)sjis_in, ARRAY_SIZE(sjis_in));
-	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
-	EXPECT_EQ(utf16_out, str);
+	str = cp1252_sjis_to_utf16((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in));
+	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, str);
 }
 
 /**
@@ -396,8 +408,12 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_copyright)
 TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 {
 	static const char cp1252_in[] = "C:\\Windows\\System32";
+
+	// NOTE: Need to manually initialize the char16_t[] array
+	// due to the way _RP() is implemented for versions of
+	// MSVC older than 2015.
 	// TODO: Hex and/or _RP_CHR()?
-	static const char16_t u16_out[] = {
+	static const char16_t utf16_out[] = {
 		'C',':','\\','W','i','n','d','o',
 		'w','s','\\','S','y','s','t','e',
 		'm','3','2',0
@@ -405,19 +421,19 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_ascii)
 
 	// Test with implicit length.
 	u16string str = cp1252_sjis_to_utf16(cp1252_in, -1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(u16_out)-1);
-	EXPECT_EQ(u16_out, str);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, str);
 
 	// Test with explicit length.
 	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE(cp1252_in)-1);
-	EXPECT_EQ(str.size(), ARRAY_SIZE(u16_out)-1);
-	EXPECT_EQ(u16_out, str);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf16(cp1252_in, ARRAY_SIZE(cp1252_in));
-	EXPECT_EQ(str.size(), ARRAY_SIZE(u16_out)-1);
-	EXPECT_EQ(u16_out, str);
+	EXPECT_EQ(str.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, str);
 }
 
 /**
@@ -442,6 +458,8 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf16_japanese)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(sjis_utf16_data)-1);
 	EXPECT_EQ(sjis_utf16_data, str);
 }
+
+/** UTF-8 to UTF-16 and vice-versa **/
 
 /**
  * Test utf8_to_utf16() with regular text and special characters.
@@ -608,6 +626,8 @@ TEST_F(TextFuncsTest, utf16_bswap_LEtoBE)
 	EXPECT_EQ((const char16_t*)utf16be_data, str);
 }
 
+/** Latin-1 (ISO-8859-1) **/
+
 /**
  * Test latin1_to_utf8().
  */
@@ -651,6 +671,8 @@ TEST_F(TextFuncsTest, latin1_to_utf16)
 	EXPECT_EQ(str.size(), ARRAY_SIZE(latin1_utf16_data)-1);
 	EXPECT_EQ(latin1_utf16_data, str);
 }
+
+/** Miscellaneous functions. **/
 
 /**
  * Test u16_strlen().
@@ -741,6 +763,222 @@ TEST_F(TextFuncsTest, u16_strcmp)
 	EXPECT_LT(u16_strcmp(u16_str2, u16_str3), 0);
 	EXPECT_GT(u16_strcmp(u16_str3, u16_str1), 0);
 	EXPECT_GT(u16_strcmp(u16_str3, u16_str2), 0);
+}
+
+/** rp_string wrappers. **/
+// These functions depend on the libromdata build type.
+// NOTE: Most of these tests are copied from the above
+// tests, but have been modified to use rp_string.
+
+/**
+ * Test cp1252_to_rp_string().
+ */
+TEST_F(TextFuncsTest, cp1252_to_rp_string)
+{
+	// Test with implicit length.
+	rp_string rps = cp1252_to_rp_string((const char*)cp1252_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = cp1252_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = cp1252_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+}
+
+/**
+ * Test cp1252_sjis_to_rp_string() fallback functionality.
+ * This string should be detected as cp1252 due to
+ * Shift-JIS decoding errors.
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_rp_string_fallback)
+{
+	// Test with implicit length.
+	rp_string rps = cp1252_sjis_to_rp_string((const char*)cp1252_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = cp1252_sjis_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = cp1252_sjis_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf8_data)-1);
+	EXPECT_EQ((const char*)cp1252_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_utf16_data)-1);
+	EXPECT_EQ(cp1252_utf16_data, rps);
+#endif
+}
+
+/**
+ * Test cp1252_sjis_to_rp_string() fallback functionality.
+ * This string is incorrectly detected as Shift-JIS because
+ * all bytes are valid.
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_rp_string_copyright)
+{
+	// cp1252 code point 0xA9 is the copyright symbol,
+	// but it's also halfwidth katakana "U" in Shift-JIS.
+
+	// Test with implicit length.
+	rp_string rps = cp1252_sjis_to_rp_string((const char*)sjis_copyright_in, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, rps);
+#endif
+
+	// Test with explicit length.
+	rps = cp1252_sjis_to_rp_string((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = cp1252_sjis_to_rp_string((const char*)sjis_copyright_in, ARRAY_SIZE(sjis_copyright_in));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf8)-1);
+	EXPECT_EQ((const char*)sjis_copyright_out_utf8, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_copyright_out_utf16)-1);
+	EXPECT_EQ(sjis_copyright_out_utf16, rps);
+#endif
+}
+
+/**
+ * Test cp1252_sjis_to_rp_string() with ASCII strings.
+ * Note that backslashes will *not* be converted to
+ * yen symbols, so this should be a no-op.
+ *
+ * FIXME: Backslash may be converted to yen symbols
+ * on Windows if the system has a Japanese locale.
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_rp_string_ascii)
+{
+	static const char cp1252_in[] = "C:\\Windows\\System32";
+#ifdef RP_UTF16
+	// NOTE: Need to manually initialize the char16_t[] array
+	// due to the way _RP() is implemented for versions of
+	// MSVC older than 2015.
+	// TODO: Hex and/or _RP_CHR()?
+	static const char16_t utf16_out[] = {
+		'C',':','\\','W','i','n','d','o',
+		'w','s','\\','S','y','s','t','e',
+		'm','3','2',0
+	};
+#endif
+
+	// Test with implicit length.
+	rp_string rps = cp1252_sjis_to_rp_string(cp1252_in, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_in)-1);
+	EXPECT_EQ(cp1252_in, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, rps);
+#endif
+
+	// Test with explicit length.
+	rps = cp1252_sjis_to_rp_string(cp1252_in, ARRAY_SIZE(cp1252_in)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_in)-1);
+	EXPECT_EQ(cp1252_in, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = cp1252_sjis_to_rp_string(cp1252_in, ARRAY_SIZE(cp1252_in));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(cp1252_in)-1);
+	EXPECT_EQ(cp1252_in, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(utf16_out)-1);
+	EXPECT_EQ(utf16_out, rps);
+#endif
+}
+
+/**
+ * Test cp1252_sjis_to_rp_string() with Japanese text.
+ * This includes a wave dash character (8160).
+ */
+TEST_F(TextFuncsTest, cp1252_sjis_to_rp_string_japanese)
+{
+	// Test with implicit length.
+	rp_string rps = cp1252_sjis_to_rp_string((const char*)sjis_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf8_data)-1);
+	EXPECT_EQ((const char*)sjis_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf16_data)-1);
+	EXPECT_EQ(sjis_utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = cp1252_sjis_to_rp_string((const char*)sjis_data, ARRAY_SIZE(sjis_data)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf8_data)-1);
+	EXPECT_EQ((const char*)sjis_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf16_data)-1);
+	EXPECT_EQ(sjis_utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = cp1252_sjis_to_rp_string((const char*)sjis_data, ARRAY_SIZE(sjis_data));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf8_data)-1);
+	EXPECT_EQ((const char*)sjis_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(sjis_utf16_data)-1);
+	EXPECT_EQ(sjis_utf16_data, rps);
+#endif
 }
 
 } }
