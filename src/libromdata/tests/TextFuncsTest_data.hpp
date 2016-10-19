@@ -22,8 +22,10 @@
 #ifndef __LIBROMDATA_TESTS_TEXTFUNCSTEST_DATA_HPP__
 #define __LIBROMDATA_TESTS_TEXTFUNCSTEST_DATA_HPP__
 
-// NOTE: Test strings are unsigned in order to prevent
+// NOTE: 8-bit test strings are unsigned in order to prevent
 // narrowing conversion warnings from appearing.
+// char16_t is defined as unsigned, so this isn't a problem
+// for 16-bit strings.
 
 /**
  * cp1252 test string.
@@ -138,7 +140,7 @@ const uint8_t TextFuncsTest::cp1252_utf8_data[388] = {
  * - cp1252_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
  * - cp1252_sjis_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
  */
-const uint16_t TextFuncsTest::cp1252_utf16_data[250] =
+const char16_t TextFuncsTest::cp1252_utf16_data[250] =
 {
 	0x0001,0x0002,0x0003,0x0004,0x0005,0x0006,0x0007,0x0008,
 	0x0009,0x000A,0x000B,0x000C,0x000D,0x000E,0x000F,0x0010,
@@ -209,7 +211,7 @@ const uint8_t TextFuncsTest::sjis_utf8_data[53] = {
  * Contains the expected result from:
  * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE(sjis_data))
  */
-const uint16_t TextFuncsTest::sjis_utf16_data[19] = {
+const char16_t TextFuncsTest::sjis_utf16_data[19] = {
     0x30DD, 0x30B1, 0x30E2, 0x30F3, 0x30B3, 0x30ED, 0x30B7, 0x30A2,
     0x30E0, 0x000A, 0x30BB, 0x30FC, 0x30D6, 0x30D5, 0x30A1, 0x30A4,
     0x30EB, 0xFF5E, 0x0000
@@ -493,7 +495,7 @@ const uint8_t TextFuncsTest::latin1_utf8_data[346] = {
  * - latin1_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
  * (NOTE: Unsupported characters are replaced with '?'.)
  */
-const uint16_t TextFuncsTest::latin1_utf16_data[250] =
+const char16_t TextFuncsTest::latin1_utf16_data[250] =
 {
 	0x0001,0x0002,0x0003,0x0004,0x0005,0x0006,0x0007,0x0008,
 	0x0009,0x000A,0x000B,0x000C,0x000D,0x000E,0x000F,0x0010,
