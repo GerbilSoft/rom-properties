@@ -8,6 +8,12 @@ LIST(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
 	)
 
+# If no build type is set, default to "Debug".
+# TODO: Default to "Release"?
+IF(CMAKE_BUILD_TYPE MATCHES ^$)
+       SET(CMAKE_BUILD_TYPE "Debug")
+ENDIF()
+
 # Enable testing.
 # TODO: INCLUDE(CTest) for more advanced testing after
 # enough tests are added.
@@ -78,12 +84,6 @@ ENDIF(POSIX_SH)
 # Make sure the file is deleted on `make clean`.
 SET_PROPERTY(DIRECTORY APPEND
 	PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/git_version.h")
-
-# If no build type is set, default to "debug".
-# TODO: Default to "release"?
-IF(CMAKE_BUILD_TYPE MATCHES ^$)
-       SET(CMAKE_BUILD_TYPE "debug")
-ENDIF()
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)

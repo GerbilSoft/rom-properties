@@ -41,6 +41,51 @@ FOREACH(FLAG_TEST "-Wall" "-Wextra" "-fstrict-aliasing" "-Wno-multichar")
 	UNSET(CXXFLAG_${FLAG_TEST})
 ENDFOREACH()
 
+# Code coverage checking.
+IF(ENABLE_COVERAGE)
+	# Partially based on:
+	# https://github.com/bilke/cmake-modules/blob/master/CodeCoverage.cmake
+	# (commit 59f8ab8dded56b490dec388ac6ad449318de8779)
+	IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+		# CMake 3.0.0 added code coverage support.
+		IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
+			MESSAGE(FATAL_ERROR "clang-3.0.0 or later is required for code coverage testing.")
+		ENDIF()
+	ELSEIF(NOT CMAKE_COMPILER_IS_GNUCXX)
+		MESSAGE(FATAL_ERROR "Code coverage testing is currently only supported on gcc and clang.")
+	ENDIF()
+
+	# Don't bother checking for the coverage options.
+	# We're assuming they're always supported.
+	SET(RP_C_FLAGS_COVERAGE "--coverage -fprofile-arcs -ftest-coverage")
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")
+
+	# Link gcov to all targets.
+	SET(GCOV_LIBRARY "-lgcov")
+	FOREACH(VAR "" C_ CXX_)
+		IF(CMAKE_${VAR}STANDARD_LIBRARIES)
+			SET(CMAKE_${VAR}STANDARD_LIBRARIES "${CMAKE_${VAR}STANDARD_LIBRARIES} ${GCOV_LIBRARY}")
+		ELSE(CMAKE_${VAR}STANDARD_LIBRARIES)
+			SET(CMAKE_${VAR}STANDARD_LIBRARIES "${GCOV_LIBRARY}")
+		ENDIF(CMAKE_${VAR}STANDARD_LIBRARIES)
+	ENDFOREACH(VAR)
+
+	# Create a code coverage target.
+	FOREACH(_program gcov lcov genhtml)
+		FIND_PROGRAM(${_program}_PATH gcov)
+		IF(NOT ${_program}_PATH)
+			MESSAGE(FATAL_ERROR "${_program} not found; cannot enable code coverage testing.")
+		ENDIF(NOT ${_program}_PATH)
+		UNSET(${_program}_PATH)
+	ENDFOREACH(_program)
+
+	ADD_CUSTOM_TARGET(coverage
+		WORKING_DIRECTORY "${CMAKE_BUILD_DIR}"
+		COMMAND ${POSIX_SH} "${CMAKE_SOURCE_DIR}/scripts/lcov.sh" "${CMAKE_BUILD_TYPE}" "rom-properties" "coverage"
+		)
+ENDIF(ENABLE_COVERAGE)
+
 # Test for common LDFLAGS.
 # TODO: Doesn't work on OS X. (which means it's not really testing it!)
 IF(NOT APPLE)
