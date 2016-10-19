@@ -93,7 +93,7 @@ class KeyManagerPrivate
 /** KeyManagerPrivate **/
 
 // Singleton instance.
-unique_ptr<KeyManager> KeyManagerPrivate::instance(new KeyManager());
+unique_ptr<KeyManager> KeyManagerPrivate::instance;
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: cfg_isInKeysSection(false)
@@ -393,6 +393,10 @@ KeyManager::~KeyManager()
  */
 KeyManager *KeyManager::instance(void)
 {
+	// FIXME: Mutex?
+	if (!KeyManagerPrivate::instance) {
+		KeyManagerPrivate::instance.reset(new KeyManager());
+	}
 	return KeyManagerPrivate::instance.get();
 }
 
