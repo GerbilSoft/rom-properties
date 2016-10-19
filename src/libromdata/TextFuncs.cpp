@@ -80,11 +80,7 @@ u16string utf16_bswap(const char16_t *str, int len)
  */
 string latin1_to_utf8(const char* str, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
-	if (len < 0) {
-		// NULL-terminated string.
-		len = (int)strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
 
 	string mbs;
 	mbs.reserve(len*2);
@@ -117,11 +113,7 @@ string latin1_to_utf8(const char* str, int len)
  */
 u16string latin1_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(u16string, str, len);
-	if (len < 0) {
-		// NULL-terminated string.
-		len = (int)strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
 
 	u16string wcs;
 	wcs.reserve(len);

@@ -47,6 +47,34 @@ namespace LibRomData {
 		} \
 	} while (0)
 
+/**
+ * Remove trailing NULLs from the source string by adjusting the length.
+ * If the resulting string is empty, an empty string is returned.
+ * @param return_type Return type, e.g. string or u16string.
+ * @param strlen_fn strlen function to use if len < 0.
+ * @param str String.
+ * @param len Length. (If less than 0, implicit length string.)
+ */
+#define REMOVE_TRAILING_NULLS_STRLEN(return_type, strlen_fn, str, len) \
+	do { \
+		if (len < 0) { \
+			/* iconv doesn't support NULL-terminated strings directly. */ \
+			/* Get the string length. */ \
+			len = (int)strlen_fn(str); \
+		} else { \
+			/* Remove trailing NULLs. */ \
+			for (; len > 0; len--) { \
+				if (str[len-1] != 0) \
+					break; \
+			} \
+			\
+			if (len <= 0) { \
+				/* Empty string. */ \
+				return return_type(); \
+			} \
+		} \
+	} while (0)
+
 }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_INT_HPP__ */

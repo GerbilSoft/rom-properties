@@ -138,6 +138,7 @@ static char *rp_iconv(const char *src, int len,
 	return nullptr;
 }
 
+
 /** Public text conversion functions. **/
 
 /** Code Page 1252 **/
@@ -150,13 +151,7 @@ static char *rp_iconv(const char *src, int len,
  */
 string cp1252_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		len = strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
 
 	string ret;
 	char *mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
@@ -182,13 +177,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
 
-	REMOVE_TRAILING_NULLS(u16string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		len = strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
 
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
@@ -210,13 +199,7 @@ u16string cp1252_to_utf16(const char *str, int len)
  */
 string cp1252_sjis_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		len = strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
 
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
@@ -248,13 +231,7 @@ string cp1252_sjis_to_utf8(const char *str, int len)
  */
 u16string cp1252_sjis_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(u16string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		len = strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
 
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
@@ -288,13 +265,7 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
  */
 u16string utf8_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(u16string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		len = strlen(str);
-	}
+	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
 
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
@@ -315,15 +286,9 @@ u16string utf8_to_utf16(const char *str, int len)
  */
 static inline string utf16_to_utf8_int(const char16_t *str, int len, const char *encoding)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
-
-	if (len < 0) {
-		// iconv doesn't support NULL-terminated strings directly.
-		// Get the string length.
-		// NOTE: This works for both BE and LE, since 0x0000 is
-		// still 0x0000 when byteswapped.
-		len = u16_strlen(str);
-	}
+	// NOTE: u16_strlen() works for both BE and LE, since 0x0000 is
+	// still 0x0000 when byteswapped.
+	REMOVE_TRAILING_NULLS_STRLEN(string, u16_strlen, str, len);
 
 	string ret;
 	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), encoding, "UTF-8");

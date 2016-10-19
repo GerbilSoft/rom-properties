@@ -99,6 +99,7 @@ SET(libromdata_H
 	RomData.hpp
 	RomFields.hpp
 	TextFuncs.hpp
+	TextFuncs_int.hpp
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	MegaDriveRegions.hpp
