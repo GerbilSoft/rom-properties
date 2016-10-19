@@ -147,10 +147,11 @@ std::u16string utf16_bswap(const char16_t *str, int len);
  */
 static inline std::u16string utf16le_to_utf16(const char16_t *str, int len)
 {
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 	return std::u16string(str, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
 	return utf16_bswap(str, len);
 #endif
 }
@@ -163,10 +164,11 @@ static inline std::u16string utf16le_to_utf16(const char16_t *str, int len)
  */
 static inline std::u16string utf16be_to_utf16(const char16_t *str, int len)
 {
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
 	return utf16_bswap(str, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
 	return std::u16string(str, len);
 #endif
 }
