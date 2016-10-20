@@ -1029,6 +1029,18 @@ TEST_F(TextFuncsTest, utf8_to_rp_string)
 	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
 	EXPECT_EQ((const char16_t*)utf16_data, rps);
 #endif
+
+	// utf8_to_rp_string(const std::string &str) test.
+	string str((const char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	rps = utf8_to_rp_string(str);
+#ifdef RP_UTF8
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
 }
 
 /**
@@ -1065,6 +1077,18 @@ TEST_F(TextFuncsTest, rp_string_to_utf8)
 #else
 	str = rp_string_to_utf8((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
 #endif
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
+	EXPECT_EQ((const char*)utf8_data, str);
+
+	// rp_string_to_utf8(const rp_string &rps) test.
+#ifdef RP_UTF8
+	rp_string rps((const char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+#else /* RP_UTF16 */
+	rp_string rps((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+#endif
+	str = rp_string_to_utf8(rps);
 	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, str.size());
 	EXPECT_EQ((const char*)utf8_data, str);
 }
@@ -1108,6 +1132,18 @@ TEST_F(TextFuncsTest, utf16le_to_rp_string)
 	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
 	EXPECT_EQ((const char16_t*)utf16_data, rps);
 #endif
+
+	// utf16le_to_rp_string(const std::u16string &str) test.
+	u16string str((const char16_t*)utf16le_data, (sizeof(utf16le_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((sizeof(utf16le_data)/sizeof(char16_t))-1, str.size());
+	rps = utf16le_to_rp_string(str);
+#ifdef RP_UTF8
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
 }
 
 /**
@@ -1142,6 +1178,18 @@ TEST_F(TextFuncsTest, utf16be_to_rp_string)
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	rps = utf16be_to_rp_string((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t)));
+#ifdef RP_UTF8
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
+
+	// utf16be_to_rp_string(const std::u16string &str) test.
+	u16string str((const char16_t*)utf16be_data, (sizeof(utf16be_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((sizeof(utf16be_data)/sizeof(char16_t))-1, str.size());
+	rps = utf16be_to_rp_string(str);
 #ifdef RP_UTF8
 	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
 	EXPECT_EQ((const char*)utf8_data, rps);
@@ -1193,6 +1241,18 @@ TEST_F(TextFuncsTest, utf16_to_rp_string)
 	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
 	EXPECT_EQ((const char16_t*)utf16_data, rps);
 #endif
+
+	// utf16_to_rp_string(const std::u16string &str) test.
+	u16string str((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, str.size());
+	rps = utf16_to_rp_string(str);
+#ifdef RP_UTF8
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+	EXPECT_EQ((const char*)utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+	EXPECT_EQ((const char16_t*)utf16_data, rps);
+#endif
 }
 
 /**
@@ -1229,6 +1289,18 @@ TEST_F(TextFuncsTest, rp_string_to_utf16)
 #else
 	str = rp_string_to_utf16((const rp_char*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t)));
 #endif
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, str.size());
+	EXPECT_EQ((const char16_t*)utf16_data, str);
+
+	// rp_string_to_utf16(const rp_string &rps) test.
+#ifdef RP_UTF8
+	rp_string rps((const char*)utf8_data, ARRAY_SIZE(utf8_data)-1);
+	EXPECT_EQ(ARRAY_SIZE(utf8_data)-1, rps.size());
+#else /* RP_UTF16 */
+	rp_string rps((const char16_t*)utf16_data, (sizeof(utf16_data)/sizeof(char16_t))-1);
+	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, rps.size());
+#endif
+	str = rp_string_to_utf16(rps);
 	EXPECT_EQ((sizeof(utf16_data)/sizeof(char16_t))-1, str.size());
 	EXPECT_EQ((const char16_t*)utf16_data, str);
 }
