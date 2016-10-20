@@ -175,7 +175,53 @@ LONG RP_ExtractImage::UnregisterCLSID(void)
  */
 LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
 {
-	// TODO
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as the image handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the IExtractImage key.
+	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_READ, false);
+	if (!hkcr_IExtractImage.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_IExtractImage.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IExtractImage.lOpenRes();
+	}
+
+	// Check if the default value matches the CLSID.
+	wstring str_IExtractImage = hkcr_IExtractImage.read(nullptr);
+	if (str_IExtractImage == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_IExtractImage.close();
+		lResult = hkcr_ShellEx.deleteSubKey(L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_IExtractImage.lOpenRes();
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
