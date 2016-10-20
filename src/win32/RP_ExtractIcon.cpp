@@ -247,7 +247,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 		return hkcr_DefaultIcon.lOpenRes();
 	}
 
-	// File type handler registered.
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
