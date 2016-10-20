@@ -133,6 +133,7 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}
+
 	// Create/open the "IconHandler" key.
 	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
 	if (!hkcr_IconHandler.isOpen()) {
@@ -151,12 +152,9 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 	}
 	// Set the default value to "%1".
 	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
 
 	// File type handler registered.
-	return ERROR_SUCCESS;
+	return lResult;
 }
 
 /**
@@ -178,7 +176,78 @@ LONG RP_ExtractIcon::UnregisterCLSID(void)
  */
 LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 {
-	// TODO
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Register as the icon handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+
+	// Open the "IconHandler" key.
+	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_READ, false);
+	if (!hkcr_IconHandler.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_IconHandler.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IconHandler.lOpenRes();
+	}
+	// Check if the default value matches the CLSID.
+	wstring str_IconHandler = hkcr_IconHandler.read(nullptr);
+	if (str_IconHandler == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_IconHandler.close();
+		lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_ShellEx.lOpenRes();
+	}
+
+	// Open the "DefaultIcon" key.
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ, false);
+	if (!hkcr_DefaultIcon.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_DefaultIcon.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_DefaultIcon.lOpenRes();
+	}
+	// Check if the default value is "%1".
+	wstring str_DefaultIcon = hkcr_DefaultIcon.read(nullptr);
+	if (str_DefaultIcon == L"%1") {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_DefaultIcon.close();
+		lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_ShellEx.lOpenRes();
+	}
+
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
