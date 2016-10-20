@@ -206,8 +206,8 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Check if the default value matches the CLSID.
-	wstring str_IExtractImage = hkcr_IExtractImage.read(nullptr);
-	if (str_IExtractImage == clsid_str) {
+	wstring wstr_IExtractImage = hkcr_IExtractImage.read(nullptr);
+	if (wstr_IExtractImage == clsid_str) {
 		// Default value matches.
 		// Remove the subkey.
 		hkcr_IExtractImage.close();
@@ -216,7 +216,7 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
 			return lResult;
 		}
 	} else {
-		// Default value does not match.
+		// Default value doesn't match.
 		// We're done here.
 		return hkcr_IExtractImage.lOpenRes();
 	}

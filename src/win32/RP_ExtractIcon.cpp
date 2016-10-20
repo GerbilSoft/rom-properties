@@ -232,8 +232,8 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 		return hkcr_DefaultIcon.lOpenRes();
 	}
 	// Check if the default value is "%1".
-	wstring str_DefaultIcon = hkcr_DefaultIcon.read(nullptr);
-	if (str_DefaultIcon == L"%1") {
+	wstring wstr_DefaultIcon = hkcr_DefaultIcon.read(nullptr);
+	if (wstr_DefaultIcon == L"%1") {
 		// Default value matches.
 		// Remove the subkey.
 		hkcr_DefaultIcon.close();
@@ -242,7 +242,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 			return lResult;
 		}
 	} else {
-		// Default value does not match.
+		// Default value doesn't match.
 		// We're done here.
 		return hkcr_DefaultIcon.lOpenRes();
 	}

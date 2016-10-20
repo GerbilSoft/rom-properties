@@ -228,8 +228,8 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Check if the default value matches the CLSID.
-	wstring str_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (str_IThumbnailProvider == clsid_str) {
+	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
+	if (wstr_IThumbnailProvider == clsid_str) {
 		// Default value matches.
 		// Remove the subkey.
 		hkcr_IThumbnailProvider.close();
@@ -238,7 +238,7 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
 			return lResult;
 		}
 	} else {
-		// Default value does not match.
+		// Default value doesn't match.
 		// We're done here.
 		return hkcr_IThumbnailProvider.lOpenRes();
 	}
