@@ -428,25 +428,13 @@ bool RegKey::isKeyEmpty(void)
 
 	if (cSubKeys > 0 || cValues > 0) {
 		// We have at least one subkey or value.
+		// NOTE: The default value is included in cValues,
+		// so we don't have to check for it separately.
 		return false;
 	}
 
-	// Check the default value.
-	DWORD cbData;
-	lResult = RegQueryValueEx(m_hKey,
-			nullptr,	// lpValueName
-			nullptr,	// lpReserved
-			nullptr,	// lpType
-			nullptr,	// lpData
-			&cbData);	// lpcbData
-	if (lResult == ERROR_FILE_NOT_FOUND) {
-		// No default value.
-		return true;
-	}
-
-	// Some error occurred.
-	// TODO: Return the error?
-	return false;
+	// Key is empty.
+	return true;
 }
 
 /** COM registration convenience functions. **/
