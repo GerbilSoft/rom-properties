@@ -219,7 +219,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 	} else {
 		// Default value does not match.
 		// We're done here.
-		return hkcr_ShellEx.lOpenRes();
+		return hkcr_IconHandler.lOpenRes();
 	}
 
 	// Open the "DefaultIcon" key.
@@ -244,7 +244,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 	} else {
 		// Default value does not match.
 		// We're done here.
-		return hkcr_ShellEx.lOpenRes();
+		return hkcr_DefaultIcon.lOpenRes();
 	}
 
 	// File type handler registered.
