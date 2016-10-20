@@ -1597,6 +1597,17 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 	return ERROR_SUCCESS;
 }
 
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	// TODO
+	return ERROR_SUCCESS;
+}
+
 /** IShellExtInit **/
 
 /** IShellPropSheetExt **/

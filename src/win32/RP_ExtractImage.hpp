@@ -73,7 +73,14 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 		 */
 		static LONG UnregisterCLSID(void);
 
- 	protected:
+		/**
+		 * Unregister the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	protected:
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string m_filename;
 

@@ -190,6 +190,17 @@ LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 	return ERROR_SUCCESS;
 }
 
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	// TODO
+	return ERROR_SUCCESS;
+}
+
 /** IInitializeWithStream **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761812(v=vs.85).aspx [Initialize()]
 

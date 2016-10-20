@@ -165,11 +165,16 @@ LONG RP_ExtractImage::UnregisterCLSID(void)
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
+	return RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
+}
 
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
+{
 	// TODO
 	return ERROR_SUCCESS;
 }

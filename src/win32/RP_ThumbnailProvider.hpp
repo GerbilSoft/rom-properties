@@ -78,7 +78,14 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		 */
 		static LONG UnregisterCLSID(void);
 
- 	protected:
+		/**
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	protected:
 		// IRpFile IInitializeWithStream::Initialize().
 		LibRomData::IRpFile *m_file;
 
