@@ -228,6 +228,24 @@ static LONG UnregisterFileType(RegKey &hkey_Assoc)
 		return SELFREG_E_CLASS;
 	}
 
+	// Check if the "ShellEx" key is empty.
+	RegKey hkey_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkey_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkey_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkey_ShellEx.lOpenRes();
+	}
+
+	// Check if ShellEx is empty.
+	// TODO: Error handling.
+	if (hkey_ShellEx.isKeyEmpty()) {
+		// No subkeys. Delete this key.
+		hkey_ShellEx.close();
+		hkey_Assoc.deleteSubKey(L"ShellEx");
+	}
+
 	// All file types handlers registered.
 	return ERROR_SUCCESS;
 }
