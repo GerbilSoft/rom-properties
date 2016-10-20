@@ -185,7 +185,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Register as the icon handler for this file association.
+	// Unregister as the icon handler for this file association.
 
 	// Open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
