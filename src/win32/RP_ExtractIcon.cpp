@@ -147,7 +147,7 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 	// Create/open the "DefaultIcon" key.
 	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_WRITE, true);
 	if (!hkcr_DefaultIcon.isOpen()) {
-		return SELFREG_E_CLASS;
+		return hkcr_DefaultIcon.lOpenRes();
 	}
 	// Set the default value to "%1".
 	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
