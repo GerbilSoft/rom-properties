@@ -67,10 +67,10 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 		/**
 		 * Register the file type handler.
-		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.

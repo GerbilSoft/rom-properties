@@ -168,29 +168,29 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 
 /**
  * Register file type handlers.
- * @param pHkey_progID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(RegKey *pHkey_progID = nullptr)
+static LONG RegisterFileType(RegKey &hkey_Assoc)
 {
 	LONG lResult;
 
-	lResult = RP_ExtractIcon::RegisterFileType(pHkey_progID);
+	lResult = RP_ExtractIcon::RegisterFileType(hkey_Assoc);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ExtractImage::RegisterFileType(pHkey_progID);
+	lResult = RP_ExtractImage::RegisterFileType(hkey_Assoc);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ShellPropSheetExt::RegisterFileType(pHkey_progID);
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkey_Assoc);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ThumbnailProvider::RegisterFileType(pHkey_progID);
+	lResult = RP_ThumbnailProvider::RegisterFileType(hkey_Assoc);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
@@ -252,7 +252,7 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hkcr_ProgID.lOpenRes();
 	}
-	lResult = RegisterFileType(&hkcr_ProgID);
+	lResult = RegisterFileType(hkcr_ProgID);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -270,7 +270,7 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hku_ProgID.lOpenRes();
 	}
-	return RegisterFileType(&hku_ProgID);
+	return RegisterFileType(hku_ProgID);
 }
 
 /**
@@ -317,12 +317,6 @@ STDAPI DllRegisterServer(void)
 		return SELFREG_E_CLASS;
 	}
 
-	// Register file type information with the default ProgID.
-	lResult = RegisterFileType(nullptr);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
-
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
 	if (!hku.isOpen()) {
@@ -355,10 +349,40 @@ STDAPI DllRegisterServer(void)
 			}
 		}
 
-		lResult = RegKey::RegisterFileType(RP2W_c(*ext_iter), RP_ProgID);
+		// Register the filetype in KEY_CLASSES_ROOT and use it
+		// to register the handlers.
+		RegKey *pHkey_fileType;
+		lResult = RegKey::RegisterFileType(RP2W_c(*ext_iter), &pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) {
 			return SELFREG_E_CLASS;
 		}
+
+		// If the ProgID was previously set to RP_ProgID,
+		// unset it, since we're not using it anymore.
+		wstring progID = pHkey_fileType->read(nullptr);
+		if (progID == RP_ProgID) {
+			// Unset the ProgID.
+			lResult = pHkey_fileType->deleteValue(nullptr);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				delete pHkey_fileType;
+				return lResult;
+			}
+		}
+
+		// Register the file type handlers for this file extension.
+		lResult = RegisterFileType(*pHkey_fileType);
+		delete pHkey_fileType;
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	}
+
+	// Delete the rom-properties ProgID,
+	// since it's no longer used.
+	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+		// Error deleting the ProgID.
+		return lResult;
 	}
 
 	// Notify the shell that file associations have changed.
@@ -387,9 +411,9 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	// NOTE: Do NOT unregister file types.
-	// MSDN says to leave file type mappings unchanged when uninstalling.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/hh127451(v=vs.85).aspx
+	// FIXME: Unregister extension-specific handlers if they
+	// match our class. We're not setting ProgID because we
+	// don't actually handle opening the files themselves.
 
 	// Delete the rom-properties ProgID.
 	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);

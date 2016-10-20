@@ -397,21 +397,36 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 /**
  * Register a file type.
  * @param fileType File extension, with leading dot. (e.g. ".bin")
- * @param progID ProgID.
+ * @param pHkey_Assoc Pointer to RegKey* to store opened registry key on success. (If nullptr, key will be closed.)
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::RegisterFileType(LPCWSTR fileType, LPCWSTR progID)
+LONG RegKey::RegisterFileType(LPCWSTR fileType, RegKey **pHkey_Assoc)
 {
 	// TODO: Handle cases where the user has already selected
 	// a file association?
 
 	// Create/open the file type key.
-	RegKey hkcr_fileType(HKEY_CLASSES_ROOT, fileType, KEY_WRITE, true);
-	if (!hkcr_fileType.isOpen())
-		return hkcr_fileType.lOpenRes();
+	// If we're returning the key, we need read/write access;
+	// otherwise, we only need write access.
+	const REGSAM samDesired = (pHkey_Assoc ? KEY_READ | KEY_WRITE : KEY_WRITE);
 
-	// Set the default value to the ProgID.
-	return hkcr_fileType.write(nullptr, progID);
+	RegKey *pHkcr_fileType = new RegKey(HKEY_CLASSES_ROOT, fileType, samDesired, true);
+	if (!pHkcr_fileType->isOpen()) {
+		// Error opening the key.
+		LONG lResult = pHkcr_fileType->lOpenRes();
+		delete pHkcr_fileType;
+		return lResult;
+	}
+
+	if (pHkey_Assoc) {
+		// Return the RegKey.
+		*pHkey_Assoc = pHkcr_fileType;
+	} else {
+		// We're done using the RegKey.
+		delete pHkcr_fileType;
+	}
+
+	return ERROR_SUCCESS;
 }
 
 /**

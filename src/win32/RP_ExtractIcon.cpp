@@ -112,10 +112,10 @@ LONG RP_ExtractIcon::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::RegisterFileType(RegKey *pHkey_ProgID)
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -126,19 +126,10 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey *pHkey_ProgID)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Register as the icon handler for this ProgID.
-	unique_ptr<RegKey> pHkcr_ProgID;
-	if (!pHkey_ProgID) {
-		// Create/open the system-wide ProgID key.
-		pHkcr_ProgID.reset(new RegKey(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true));
-		if (!pHkcr_ProgID->isOpen()) {
-			return pHkcr_ProgID->lOpenRes();
-		}
-		pHkey_ProgID = pHkcr_ProgID.get();
-	}
+	// Register as the icon handler for this file association.
 
 	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(*pHkey_ProgID, L"ShellEx", KEY_WRITE, true);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}
@@ -154,7 +145,7 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey *pHkey_ProgID)
 	}
 
 	// Create/open the "DefaultIcon" key.
-	RegKey hkcr_DefaultIcon(*pHkey_ProgID, L"DefaultIcon", KEY_WRITE, true);
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_WRITE, true);
 	if (!hkcr_DefaultIcon.isOpen()) {
 		return SELFREG_E_CLASS;
 	}
