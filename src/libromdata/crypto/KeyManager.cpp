@@ -51,9 +51,6 @@ class KeyManagerPrivate
 		KeyManagerPrivate &operator=(const KeyManagerPrivate &other);
 
 	public:
-		// Singleton instance.
-		static unique_ptr<KeyManager> instance;
-
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -91,9 +88,6 @@ class KeyManagerPrivate
 };
 
 /** KeyManagerPrivate **/
-
-// Singleton instance.
-unique_ptr<KeyManager> KeyManagerPrivate::instance(new KeyManager());
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: cfg_isInKeysSection(false)
@@ -393,7 +387,9 @@ KeyManager::~KeyManager()
  */
 KeyManager *KeyManager::instance(void)
 {
-	return KeyManagerPrivate::instance.get();
+	// Singleton instance.
+	static KeyManager *const instance = new KeyManager();
+	return instance;
 }
 
 /**

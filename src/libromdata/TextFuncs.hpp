@@ -37,6 +37,13 @@
 #include <cwchar>
 #endif
 
+// System byteorder is needed for conversions from UTF-16.
+// Conversions to UTF-16 always use host-endian.
+#include "byteorder.h"
+
+// Shared internal functions.
+#include "TextFuncs_int.hpp"
+
 namespace LibRomData {
 
 /** Generic text conversion functions. **/
@@ -46,6 +53,8 @@ namespace LibRomData {
 
 // TODO: #ifdef out functions that aren't used
 // in RP_UTF8 and/or RP_UTF16 builds?
+
+/** Code Page 1252 **/
 
 /**
  * Convert cp1252 text to UTF-8.
@@ -63,6 +72,8 @@ std::string cp1252_to_utf8(const char *str, int len);
  */
 std::u16string cp1252_to_utf16(const char *str, int len);
 
+/** Code Page 1252 + Shift-JIS (932) **/
+
 /**
  * Convert cp1252 or Shift-JIS text to UTF-8.
  * @param str cp1252 or Shift-JIS text.
@@ -79,6 +90,8 @@ std::string cp1252_sjis_to_utf8(const char *str, int len);
  */
 std::u16string cp1252_sjis_to_utf16(const char *str, int len);
 
+/** UTF-8 to UTF-16 and vice-versa **/
+
 /**
  * Convert UTF-8 text to UTF-16.
  * @param str UTF-8 text.
@@ -88,12 +101,79 @@ std::u16string cp1252_sjis_to_utf16(const char *str, int len);
 std::u16string utf8_to_utf16(const char *str, int len);
 
 /**
- * Convert UTF-16 text to UTF-8.
+ * Convert UTF-16LE text to UTF-8.
+ * @param str UTF-16LE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string utf16le_to_utf8(const char16_t *str, int len);
+
+/**
+ * Convert UTF-16BE text to UTF-8.
+ * @param str UTF-16BE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string utf16be_to_utf8(const char16_t *str, int len);
+
+/**
+ * Convert UTF-16 text to UTF-8. (host-endian)
  * @param str UTF-16 text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string utf16_to_utf8(const char16_t *str, int len);
+static inline std::string utf16_to_utf8(const char16_t *str, int len)
+{
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	return utf16le_to_utf8(str, len);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	return utf16be_to_utf8(str, len);
+#endif
+}
+
+/**
+ * Byteswap and return UTF-16 text.
+ * @param str UTF-16 text to byteswap.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return Byteswapped UTF-16 string.
+ */
+std::u16string utf16_bswap(const char16_t *str, int len);
+
+/**
+ * Convert UTF-16LE text to host-endian UTF-16.
+ * @param str UTF-16LE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return Host-endian UTF-16 string.
+ */
+static inline std::u16string utf16le_to_utf16(const char16_t *str, int len)
+{
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
+	return std::u16string(str, len);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
+	return utf16_bswap(str, len);
+#endif
+}
+
+/**
+ * Convert UTF-16BE text to host-endian UTF-16.
+ * @param str UTF-16BLE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return Host-endian UTF-16 string.
+ */
+static inline std::u16string utf16be_to_utf16(const char16_t *str, int len)
+{
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
+	return utf16_bswap(str, len);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
+	return std::u16string(str, len);
+#endif
+}
+
+/** Latin-1 (ISO-8859-1) **/
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-8.
@@ -112,6 +192,8 @@ std::string latin1_to_utf8(const char* str, int len);
  * @return UTF-16 string.
  */
 std::u16string latin1_to_utf16(const char* str, int len);
+
+/** Miscellaneous functions. **/
 
 /**
  * char16_t strlen().
@@ -199,9 +281,7 @@ static inline rp_string cp1252_sjis_to_rp_string(const char *str, int len)
 static inline rp_string utf8_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
-	if (len < 0) {
-		return rp_string(str);
-	}
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(rp_string, str, len);
 	return rp_string(str, len);
 #elif defined(RP_UTF16)
 	return utf8_to_utf16(str, len);
@@ -231,10 +311,8 @@ static inline rp_string utf8_to_rp_string(const std::string &str)
 static inline std::string rp_string_to_utf8(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
-	if (len < 0) {
-		return rp_string(str);
-	}
-	return rp_string(str, len);
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::string, str, len);
+	return std::string(str, len);
 #elif defined(RP_UTF16)
 	return utf16_to_utf8(str, len);
 #endif
@@ -255,25 +333,88 @@ static inline std::string rp_string_to_utf8(const rp_string &rps)
 }
 
 /**
- * Convert UTF-16 text to rp_string.
+ * Convert UTF-16LE text to rp_string.
+ * @param str UTF-16LE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return rp_string.
+ */
+static inline rp_string utf16le_to_rp_string(const char16_t *str, int len)
+{
+#if defined(RP_UTF8)
+	return utf16le_to_utf8(str, len);
+#elif defined(RP_UTF16)
+	return utf16le_to_utf16(str, len);
+#endif
+}
+
+/**
+ * Convert UTF-16BE text to rp_string.
+ * @param str UTF-16BE text.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return rp_string.
+ */
+static inline rp_string utf16be_to_rp_string(const char16_t *str, int len)
+{
+#if defined(RP_UTF8)
+	return utf16be_to_utf8(str, len);
+#elif defined(RP_UTF16)
+	return utf16be_to_utf16(str, len);
+#endif
+}
+
+/**
+ * Convert UTF-16 text to rp_string. (host-endian)
  * @param str UTF-16 text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return rp_string.
  */
 static inline rp_string utf16_to_rp_string(const char16_t *str, int len)
 {
-#if defined(RP_UTF8)
-	return utf16_to_utf8(str, len);
-#elif defined(RP_UTF16)
-	if (len < 0) {
-		return rp_string(str);
-	}
-	return rp_string(str, len);
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	return utf16le_to_rp_string(str, len);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	return utf16be_to_rp_string(str, len);
 #endif
 }
 
 /**
- * Convert UTF-16 text to rp_string.
+ * Convert UTF-16LE text to rp_string.
+ * @param str UTF-16LE text.
+ * @return rp_string.
+ */
+static inline rp_string utf16le_to_rp_string(const std::u16string &str)
+{
+#if defined(RP_UTF8)
+	return utf16le_to_utf8(str.data(), (int)str.size());
+#elif defined(RP_UTF16)
+# if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	return str;
+# else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	return utf16le_to_utf16(str.data(), (int)str.size());
+# endif
+#endif
+}
+
+/**
+ * Convert UTF-16BE text to rp_string.
+ * @param str UTF-16BE text.
+ * @return rp_string.
+ */
+static inline rp_string utf16be_to_rp_string(const std::u16string &str)
+{
+#if defined(RP_UTF8)
+	return utf16be_to_utf8(str.data(), (int)str.size());
+#elif defined(RP_UTF16)
+# if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	return str;
+# else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	return utf16be_to_utf16(str.data(), (int)str.size());
+# endif
+#endif
+}
+
+/**
+ * Convert UTF-16 text to rp_string. (host-endian)
  * @param str UTF-16 text.
  * @return rp_string.
  */
@@ -297,10 +438,8 @@ static inline std::u16string rp_string_to_utf16(const rp_char *str, int len)
 #if defined(RP_UTF8)
 	return utf8_to_utf16(str, len);
 #elif defined(RP_UTF16)
-	if (len < 0) {
-		return rp_string(str);
-	}
-	return rp_string(str, len);
+	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
+	return std::u16string(str, len);
 #endif
 }
 

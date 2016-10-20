@@ -22,6 +22,7 @@
 #include "NintendoDS.hpp"
 #include "NintendoPublishers.hpp"
 #include "nds_structs.h"
+#include "SystemRegion.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -96,6 +97,11 @@ class NintendoDSPrivate
 		// NOTE: Must be byteswapped on access.
 		NDS_RomHeader romHeader;
 
+		// Icon/title data from the ROM header.
+		// NOTE: Must be byteswapped on access.
+		NDS_IconTitleData nds_icon_title;
+		bool nds_icon_title_loaded;
+
 		// Animated icon data.
 		// NOTE: Nintendo DSi icons can have custom sequences,
 		// so the first frame isn't necessarily the first in
@@ -109,10 +115,24 @@ class NintendoDSPrivate
 		rp_image *icon_first_frame;
 
 		/**
+		 * Load the icon/title data.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadIconTitleData(void);
+
+		/**
 		 * Load the ROM image's icon.
 		 * @return Icon, or nullptr on error.
 		 */
 		rp_image *loadIcon(void);
+
+		/**
+		 * Get the title index.
+		 * The title that most closely matches the
+		 * host system language will be selected.
+		 * @return Title index, or -1 on error.
+		 */
+		int getTitleIndex(void) const;
 };
 
 /** NintendoDSPrivate **/
@@ -148,6 +168,7 @@ const RomFields::BitfieldDesc NintendoDSPrivate::dsi_region_bitfield = {
 // ROM fields.
 const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Full Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
@@ -156,12 +177,11 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
 	// TODO: Is the field name too long?
 	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
-
-	// TODO: Full game title.
 };
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
 	: q(q)
+	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
 { }
@@ -183,6 +203,60 @@ NintendoDSPrivate::~NintendoDSPrivate()
 }
 
 /**
+ * Load the icon/title data.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NintendoDSPrivate::loadIconTitleData(void)
+{
+	assert(q->m_file != nullptr);
+
+	if (nds_icon_title_loaded) {
+		// Icon/title data is already loaded.
+		return 0;
+	}
+
+	// Get the address of the icon/title information.
+	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
+
+	// Read the icon/title data.
+	static_assert(sizeof(NDS_IconTitleData) == NDS_IconTitleData_SIZE,
+		      "NDS_IconTitleData is not 9,152 bytes.");
+	q->m_file->seek(icon_offset);
+	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
+
+	// Make sure we have the correct size based on the version.
+	if (size < sizeof(nds_icon_title.version)) {
+		// Couldn't even load the version number...
+		return -EIO;
+	}
+
+	// NOTE: Not using exact versions here, just in case...
+	unsigned int req_size = offsetof(NDS_IconTitleData, title);
+	const uint16_t version = le16_to_cpu(nds_icon_title.version);
+	if (version >= NDS_ICON_VERSION_ZH_KO) {
+		// Up to 8 titles.
+		// (Includes NDS_ICON_VERSION_DSi.)
+		req_size += sizeof(nds_icon_title.title[0]) * 8;
+	} else if (version >= NDS_ICON_VERSION_ZH) {
+		// Up to 7 titles.
+		req_size += sizeof(nds_icon_title.title[0]) * 7;
+	} else {
+		// Up to 6 titles.
+		// (Includes NDS_ICON_VERSION_ORIGINAL.)
+		req_size += sizeof(nds_icon_title.title[0]) * 6;
+	}
+
+	if (size < req_size) {
+		// Error reading the icon data.
+		return -EIO;
+	}
+
+	// Icon data loaded.
+	nds_icon_title_loaded = true;
+	return 0;
+}
+
+/**
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
@@ -198,19 +272,10 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		return icon_first_frame;
 	}
 
-	// Get the address of the icon/title information.
-	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
-
-	// Read the icon data.
-	// TODO: Also store titles?
-	static_assert(sizeof(NDS_IconTitleData) == NDS_IconTitleData_SIZE,
-		      "NDS_IconTitleData is not 9,152 bytes.");
-	NDS_IconTitleData nds_icon_title;
-	q->m_file->seek(icon_offset);
-	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
-	// Make sure we have up to the icon plus two titles.
-	if (size < (offsetof(NDS_IconTitleData, title) + 0x200)) {
-		// Error reading the icon data.
+	// Attempt to load the icon/title data.
+	int ret = loadIconTitleData();
+	if (ret != 0) {
+		// Error loading the icon/title data.
 		return nullptr;
 	}
 
@@ -218,8 +283,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	// TODO: Some configuration option to return the standard
 	// NDS icon for the standard icon instead of the first frame
 	// of the animated DSi icon? (Except for DSiWare...)
-	if (size < sizeof(NDS_IconTitleData) ||
-	    le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
+	if ( le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
 	    (le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) & 0xFF) == 0)
 	{
 		// Either this isn't a DSi icon/title struct (pre-v0103),
@@ -310,6 +374,94 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	}
 
 	return icon_first_frame;
+}
+
+/**
+ * Get the title index.
+ * The title that most closely matches the
+ * host system language will be selected.
+ * @return Title index, or -1 on error.
+ */
+int NintendoDSPrivate::getTitleIndex(void) const
+{
+	if (!nds_icon_title_loaded) {
+		// Attempt to load the icon/title data.
+		if (const_cast<NintendoDSPrivate*>(this)->loadIconTitleData() != 0) {
+			// Error loading the icon/title data.
+			return -1;
+		}
+
+		// Make sure it was actually loaded.
+		if (!nds_icon_title_loaded) {
+			// Icon/title data was not loaded.
+			return -1;
+		}
+	}
+
+	// Version number check is required for ZH and KO.
+	const uint16_t version = nds_icon_title.version;
+
+	int lang = -1;
+	switch (SystemRegion::getLanguageCode()) {
+		case 'en':
+		default:
+			lang = NDS_LANG_ENGLISH;
+			break;
+		case 'ja':
+			lang = NDS_LANG_JAPANESE;
+			break;
+		case 'fr':
+			lang = NDS_LANG_FRENCH;
+			break;
+		case 'de':
+			lang = NDS_LANG_GERMAN;
+			break;
+		case 'it':
+			lang = NDS_LANG_ITALIAN;
+			break;
+		case 'es':
+			lang = NDS_LANG_SPANISH;
+			break;
+		case 'zh':
+			if (version >= NDS_ICON_VERSION_ZH) {
+				// NOTE: No distinction between
+				// Simplified and Traditional Chinese...
+				lang = NDS_LANG_CHINESE;
+			} else {
+				// No Chinese title here.
+				lang = NDS_LANG_ENGLISH;
+			}
+			break;
+		case 'ko':
+			if (version >= NDS_ICON_VERSION_ZH_KO) {
+				lang = NDS_LANG_KOREAN;
+			} else {
+				// No Korean title here.
+				lang = NDS_LANG_ENGLISH;
+			}
+			break;
+	}
+
+	// Check that the field is valid.
+	if (nds_icon_title.title[lang][0] == 0) {
+		// Not valid. Check English.
+		if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != 0) {
+			// English is valid.
+			lang = NDS_LANG_ENGLISH;
+		} else {
+			// Not valid. Check Japanese.
+			if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != 0) {
+				// Japanese is valid.
+				lang = NDS_LANG_JAPANESE;
+			} else {
+				// Not valid...
+				// TODO: Check other languages?
+				lang = -1;
+			}
+		}
+	}
+
+	return lang;
 }
 
 /**
@@ -539,6 +691,18 @@ int NintendoDS::loadFieldData(void)
 
 	// Game title.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+
+	// Full game title.
+	// TODO: Where should this go?
+	int lang = d->getTitleIndex();
+	printf("sz: %d\n", ARRAY_SIZE(d->nds_icon_title.title));
+	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
+		m_fields->addData_string(
+			utf16le_to_rp_string(d->nds_icon_title.title[lang], sizeof(d->nds_icon_title.title[lang])));
+	} else {
+		// Full game title is not available.
+		m_fields->addData_invalid();
+	}
 
 	// Game ID and publisher.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));

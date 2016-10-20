@@ -178,6 +178,18 @@ typedef enum {
 	NDS_ICON_VERSION_DSi		= 0x0103,
 } NDS_IconTitleData_Version;
 
+// Icon/title languages.
+typedef enum {
+	NDS_LANG_JAPANESE	= 0,
+	NDS_LANG_ENGLISH	= 1,
+	NDS_LANG_FRENCH		= 2,
+	NDS_LANG_GERMAN		= 3,
+	NDS_LANG_ITALIAN	= 4,
+	NDS_LANG_SPANISH	= 5,
+	NDS_LANG_CHINESE	= 6,
+	NDS_LANG_KOREAN		= 7,
+} NDS_Language;
+
 /**
  * Nintendo DS icon and title struct.
  * Reference: http://problemkaputt.de/gbatek.htm#dscartridgeicontitle
@@ -194,7 +206,7 @@ typedef struct PACKED _NDS_IconTitleData{
 	uint8_t icon_data[0x200];	// Icon data. (32x32, 4x4 tiles, 4-bit color)
 	uint16_t icon_pal[0x10];	// Icon palette. (16-bit color; color 0 is transparent)
 
-	// [0x240] Titles. (128 characters each; UTF-16)
+	// [0x240] Titles. (128 characters each; UTF-16LE)
 	// Order: JP, EN, FR, DE, IT, ES, ZH (v0002), KR (v0003)
 	char16_t title[8][128];
 

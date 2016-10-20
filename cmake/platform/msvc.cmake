@@ -72,6 +72,11 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 	UNSET(arch)
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
 
+# TODO: Code coverage checking for MSVC?
+IF(ENABLE_COVERAGE)
+	MESSAGE(FATAL_ERROR "Code coverage testing is currently only supported on gcc and clang.")
+ENDIF(ENABLE_COVERAGE)
+
 # Debug/release flags.
 SET(RP_C_FLAGS_DEBUG			"-Zi")
 SET(RP_CXX_FLAGS_DEBUG			"-Zi")
