@@ -1660,13 +1660,9 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
 		return hkcr_PropSheet_RomProperties.lOpenRes();
 	}
 
-	// Check the PropertySheetHandlers subkey count.
-	int count = hkcr_PropertySheetHandlers.subKeyCount();
-	if (count < 0) {
-		// Some error occurred.
-		// TODO: Actual error code?
-		return SELFREG_E_CLASS;
-	} else if (count == 0) {
+	// Check if PropertySheetHandlers is empty.
+	// TODO: Error handling.
+	if (hkcr_PropertySheetHandlers.isKeyEmpty()) {
 		// No subkeys. Delete this key.
 		hkcr_PropertySheetHandlers.close();
 		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");

@@ -147,10 +147,11 @@ class RegKey
 		LONG enumSubKeys(std::list<std::wstring> &vSubKeys);
 
 		/**
-		 * Get the subkey count.
-		 * @return Subkey count, or -1 on error.
+		 * Is the key empty?
+		 * This means no values, an empty default value, and no subkey.
+		 * @return True if the key is empty; false if not or if an error occurred.
 		 */
-		int subKeyCount(void);
+		bool isKeyEmpty(void);
 
 	public:
 		/** COM registration convenience functions. **/

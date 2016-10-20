@@ -398,32 +398,55 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 }
 
 /**
- * Get the subkey count.
- * @return Subkey count, or -1 on error.
+ * Is the key empty?
+ * This means no values, an empty default value, and no subkey.
+ * @return True if the key is empty; false if not or if an error occurred.
  */
-int RegKey::subKeyCount(void)
+bool RegKey::isKeyEmpty(void)
 {
 	if (!m_hKey) {
 		// Handle is invalid.
-		return -1;
+		// TODO: Better error reporting.
+		return false;
 	}
 
 	LONG lResult;
-	DWORD cSubKeys;
+	DWORD cSubKeys, cValues;
 
 	// Get the number of subkeys.
 	lResult = RegQueryInfoKey(m_hKey,
 		nullptr, nullptr,	// lpClass, lpcClass
 		nullptr,		// lpReserved
-		&cSubKeys, nullptr,
-		nullptr, nullptr,	// lpcMaxClassLen, lpcValues
+		&cSubKeys, nullptr,	// lpcSubKeys, lpcMaxSubKeyLen
+		nullptr, &cValues,	// lpcMaxClassLen, lpcValues
 		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
 		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
 	if (lResult != ERROR_SUCCESS) {
-		return -1;
+		// TODO: Better error reporting.
+		return false;
 	}
 
-	return (int)cSubKeys;
+	if (cSubKeys > 0 || cValues > 0) {
+		// We have at least one subkey or value.
+		return false;
+	}
+
+	// Check the default value.
+	DWORD cbData;
+	lResult = RegQueryValueEx(m_hKey,
+			nullptr,	// lpValueName
+			nullptr,	// lpReserved
+			nullptr,	// lpType
+			nullptr,	// lpData
+			&cbData);	// lpcbData
+	if (lResult == ERROR_FILE_NOT_FOUND) {
+		// No default value.
+		return true;
+	}
+
+	// Some error occurred.
+	// TODO: Return the error?
+	return false;
 }
 
 /** COM registration convenience functions. **/
