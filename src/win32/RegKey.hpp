@@ -146,6 +146,12 @@ class RegKey
 		 */
 		LONG enumSubKeys(std::list<std::wstring> &vSubKeys);
 
+		/**
+		 * Get the subkey count.
+		 * @return Subkey count, or -1 on error.
+		 */
+		int subKeyCount(void);
+
 	public:
 		/** COM registration convenience functions. **/
 

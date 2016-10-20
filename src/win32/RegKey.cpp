@@ -344,6 +344,11 @@ LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
  */
 LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 {
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
 	LONG lResult;
 	DWORD cSubKeys, cchMaxSubKeyLen;
 
@@ -390,6 +395,35 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 
 	free(wbuf);
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Get the subkey count.
+ * @return Subkey count, or -1 on error.
+ */
+int RegKey::subKeyCount(void)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return -1;
+	}
+
+	LONG lResult;
+	DWORD cSubKeys;
+
+	// Get the number of subkeys.
+	lResult = RegQueryInfoKey(m_hKey,
+		nullptr, nullptr,	// lpClass, lpcClass
+		nullptr,		// lpReserved
+		&cSubKeys, nullptr,
+		nullptr, nullptr,	// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		return -1;
+	}
+
+	return (int)cSubKeys;
 }
 
 /** COM registration convenience functions. **/

@@ -1604,7 +1604,75 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
  */
 LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
 {
-	// TODO
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as a property sheet handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the PropertySheetHandlers key.
+	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
+	if (!hkcr_PropertySheetHandlers.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropertySheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropertySheetHandlers.lOpenRes();
+	}
+
+	// Open the "rom-properties" property sheet handler key.
+	// NOTE: This always uses RP_ProgID[], not the specified progID.
+	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_READ, false);
+	if (!hkcr_PropSheet_RomProperties.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropSheet_RomProperties.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+	// Check if the default value matches the CLSID.
+	wstring str_IShellPropSheetExt = hkcr_PropSheet_RomProperties.read(nullptr);
+	if (str_IShellPropSheetExt == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_PropSheet_RomProperties.close();
+		lResult = hkcr_PropertySheetHandlers.deleteSubKey(RP_ProgID);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+
+	// Check the PropertySheetHandlers subkey count.
+	int count = hkcr_PropertySheetHandlers.subKeyCount();
+	if (count < 0) {
+		// Some error occurred.
+		// TODO: Actual error code?
+		return SELFREG_E_CLASS;
+	} else if (count == 0) {
+		// No subkeys. Delete this key.
+		hkcr_PropertySheetHandlers.close();
+		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
