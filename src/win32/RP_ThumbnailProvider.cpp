@@ -237,6 +237,12 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
+
+		// Remove "Treatment" if it's present.
+		lResult = hkey_Assoc.deleteValue(L"Treatment");
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
 	} else {
 		// Default value doesn't match.
 		// We're done here.
