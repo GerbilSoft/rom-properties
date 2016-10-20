@@ -722,12 +722,19 @@ TEST_F(TextFuncsTest, u16_strdup)
 	};
 
 	char16_t *u16_dup = u16_strdup(u16_str);
-	EXPECT_TRUE(u16_dup != nullptr);
+	ASSERT_TRUE(u16_dup != nullptr);
 
 	// Verify the NULL terminator.
-	// If not found, u16_strlen() and u16_strcmp()
-	// may crash, so use ASSERT_EQ().
-	ASSERT_EQ(0, u16_str[ARRAY_SIZE(u16_str)-1]);
+	EXPECT_EQ(0, u16_str[ARRAY_SIZE(u16_str)-1]);
+	if (u16_str[ARRAY_SIZE(u16_str)-1] != 0) {
+		// NULL terminator not found.
+		// u16_strlen() and u16_strcmp() may crash,
+		// so exit early.
+		// NOTE: We can't use ASSERT_EQ() because we
+		// have to free the u16_strdup()'d string.
+		free(u16_dup);
+		return;
+	}
 
 	// Verify the string length.
 	EXPECT_EQ(ARRAY_SIZE(u16_str)-1, u16_strlen(u16_dup));
@@ -736,6 +743,8 @@ TEST_F(TextFuncsTest, u16_strdup)
 	// NOTE: EXPECT_STREQ() supports const wchar_t*,
 	// but not const char16_t*.
 	EXPECT_EQ(0, u16_strcmp(u16_str, u16_dup));
+
+	free(u16_dup);
 }
 
 /**
