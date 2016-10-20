@@ -1233,6 +1233,136 @@ TEST_F(TextFuncsTest, rp_string_to_utf16)
 	EXPECT_EQ((const char16_t*)utf16_data, str);
 }
 
+/**
+ * Test latin1_to_rp_string().
+ */
+TEST_F(TextFuncsTest, latin1_to_rp_string)
+{
+	// Test with implicit length.
+	rp_string rps = latin1_to_rp_string((const char*)cp1252_data, -1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf8_data)-1);
+	EXPECT_EQ((const char*)latin1_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf16_data)-1);
+	EXPECT_EQ(latin1_utf16_data, rps);
+#endif
+
+	// Test with explicit length.
+	rps = latin1_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data)-1);
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf8_data)-1);
+	EXPECT_EQ((const char*)latin1_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf16_data)-1);
+	EXPECT_EQ(latin1_utf16_data, rps);
+#endif
+
+	// Test with explicit length and an extra NULL.
+	// The extra NULL should be trimmed.
+	rps = latin1_to_rp_string((const char*)cp1252_data, ARRAY_SIZE(cp1252_data));
+#ifdef RP_UTF8
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf8_data)-1);
+	EXPECT_EQ((const char*)latin1_utf8_data, rps);
+#else /* RP_UTF16 */
+	EXPECT_EQ(rps.size(), ARRAY_SIZE(latin1_utf16_data)-1);
+	EXPECT_EQ(latin1_utf16_data, rps);
+#endif
+}
+
+/**
+ * Test rp_strlen().
+ */
+TEST_F(TextFuncsTest, rp_strlen)
+{
+	// Compare to 8-bit strlen() with ASCII.
+	static const char ascii_in[] = "abcdefghijklmnopqrstuvwxyz";
+	static const rp_char rpc_in[] = {
+		'a','b','c','d','e','f','g','h','i','j','k','l',
+		'm','n','o','p','q','r','s','t','u','v','w','x',
+		'y','z',0
+	};
+
+	EXPECT_EQ(ARRAY_SIZE(ascii_in)-1, strlen(ascii_in));
+	EXPECT_EQ(ARRAY_SIZE(rpc_in)-1, rp_strlen(rpc_in));
+	EXPECT_EQ(rp_strlen(rpc_in), strlen(ascii_in));
+
+	// SMP test skipped for rp_strlen().
+	// If it worked iwth u16_strlen(), it'll work with
+	// rp_strlen() in RP_UTF16, and in RP_UTF8,
+	// it'll be strlen().
+}
+
+/**
+ * Test rp_strdup().
+ */
+TEST_F(TextFuncsTest, rp_strdup)
+{
+	// Test string.
+	static const rp_char rpc_str[] = {
+		'T','h','e',' ','q','u','i','c','k',' ','b','r',
+		'o','w','n',' ','f','o','x',' ','j','u','m','p',
+		's',' ','o','v','e','r',' ','t','h','e',' ','l',
+		'a','z','y',' ','d','o','g','.',0
+	};
+
+	rp_char *rpc_dup = rp_strdup(rpc_str);
+	ASSERT_TRUE(rpc_dup != nullptr);
+
+	// Verify the NULL terminator.
+	EXPECT_EQ(0, rpc_str[ARRAY_SIZE(rpc_str)-1]);
+	if (rpc_str[ARRAY_SIZE(rpc_str)-1] != 0) {
+		// NULL terminator not found.
+		// u16_strlen() and u16_strcmp() may crash,
+		// so exit early.
+		// NOTE: We can't use ASSERT_EQ() because we
+		// have to free the u16_strdup()'d string.
+		free(rpc_dup);
+		return;
+	}
+
+	// Verify the string length.
+	EXPECT_EQ(ARRAY_SIZE(rpc_str)-1, rp_strlen(rpc_dup));
+
+	// Verify the string contents.
+	// NOTE: EXPECT_STREQ() supports const wchar_t*,
+	// but not const char16_t*.
+	EXPECT_EQ(0, rp_strcmp(rpc_str, rpc_dup));
+	free(rpc_dup);
+
+	// Test the rp_string overload.
+	rp_string rps(rpc_str, ARRAY_SIZE(rpc_str)-1);
+	EXPECT_EQ(rpc_str, rps);
+	rpc_dup = rp_strdup(rps);
+	ASSERT_TRUE(rpc_dup != nullptr);
+	EXPECT_EQ(rps, rpc_dup);
+	free(rpc_dup);
+}
+
+/**
+ * Test u16_strcmp().
+ */
+TEST_F(TextFuncsTest, rp_strcmp)
+{
+	// Three test strings.
+	static const rp_char rpc_str1[] = {'a','b','c',0};
+	static const rp_char rpc_str2[] = {'a','b','d',0};
+	static const rp_char rpc_str3[] = {'d','e','f',0};
+
+	// Compare strings to themselves.
+	EXPECT_EQ(0, rp_strcmp(rpc_str1, rpc_str1));
+	EXPECT_EQ(0, rp_strcmp(rpc_str2, rpc_str2));
+	EXPECT_EQ(0, rp_strcmp(rpc_str3, rpc_str3));
+
+	// Compare strings to each other.
+	EXPECT_LT(rp_strcmp(rpc_str1, rpc_str2), 0);
+	EXPECT_LT(rp_strcmp(rpc_str1, rpc_str3), 0);
+	EXPECT_GT(rp_strcmp(rpc_str2, rpc_str1), 0);
+	EXPECT_LT(rp_strcmp(rpc_str2, rpc_str3), 0);
+	EXPECT_GT(rp_strcmp(rpc_str3, rpc_str1), 0);
+	EXPECT_GT(rp_strcmp(rpc_str3, rpc_str2), 0);
+}
+
 } }
 
 /**
