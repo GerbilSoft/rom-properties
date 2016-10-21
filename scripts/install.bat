@@ -1,4 +1,6 @@
 @ECHO OFF
+SETLOCAL
+
 ECHO.
 "rom-properties shell extension installation script"
 ECHO.

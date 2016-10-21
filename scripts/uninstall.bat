@@ -1,4 +1,6 @@
 @ECHO OFF
+SETLOCAL
+
 ECHO.
 ECHO rom-properties shell extension uninstallation script
 ECHO.
