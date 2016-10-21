@@ -1536,10 +1536,10 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey *pHkey_ProgID)
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -1550,20 +1550,10 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey *pHkey_ProgID)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Register as a property sheet handler for this ProgID.
-	unique_ptr<RegKey> pHkcr_ProgID;
-	if (!pHkey_ProgID) {
-		// TODO: Register for 'all' types, like the various hash extensions?
-		// Create/open the system-wide ProgID key.
-		pHkcr_ProgID.reset(new RegKey(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true));
-		if (!pHkcr_ProgID->isOpen()) {
-			return pHkcr_ProgID->lOpenRes();
-		}
-		pHkey_ProgID = pHkcr_ProgID.get();
-	}
+	// Register as a property sheet handler for this file association.
 
 	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(*pHkey_ProgID, L"ShellEx", KEY_WRITE, true);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}
@@ -1604,6 +1594,81 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 	}
 
 	// TODO
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as a property sheet handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the PropertySheetHandlers key.
+	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
+	if (!hkcr_PropertySheetHandlers.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropertySheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropertySheetHandlers.lOpenRes();
+	}
+
+	// Open the "rom-properties" property sheet handler key.
+	// NOTE: This always uses RP_ProgID[], not the specified progID.
+	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_READ, false);
+	if (!hkcr_PropSheet_RomProperties.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropSheet_RomProperties.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+	// Check if the default value matches the CLSID.
+	wstring str_IShellPropSheetExt = hkcr_PropSheet_RomProperties.read(nullptr);
+	if (str_IShellPropSheetExt == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_PropSheet_RomProperties.close();
+		lResult = hkcr_PropertySheetHandlers.deleteSubKey(RP_ProgID);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+
+	// Check if PropertySheetHandlers is empty.
+	// TODO: Error handling.
+	if (hkcr_PropertySheetHandlers.isKeyEmpty()) {
+		// No subkeys. Delete this key.
+		hkcr_PropertySheetHandlers.close();
+		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 

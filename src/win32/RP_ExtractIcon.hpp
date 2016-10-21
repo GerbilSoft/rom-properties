@@ -59,10 +59,10 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 		/**
 		 * Register the file type handler.
-		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.
@@ -70,7 +70,14 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		 */
 		static LONG UnregisterCLSID(void);
 
- 	protected:
+		/**
+		 * Unregister the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	protected:
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string m_filename;
 
