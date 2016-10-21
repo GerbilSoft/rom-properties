@@ -10,9 +10,13 @@ LIST(APPEND CMAKE_MODULE_PATH
 
 # If no build type is set, default to "Debug".
 # TODO: Default to "Release"?
-IF(CMAKE_BUILD_TYPE MATCHES ^$)
-       SET(CMAKE_BUILD_TYPE "Debug")
+STRING(TOLOWER "${CMAKE_BUILD_TYPE}" TMP_BUILD_TYPE)
+IF(TMP_BUILD_TYPE STREQUAL "")
+	SET(CMAKE_BUILD_TYPE "Debug")
+ELSEIF(TMP_BUILD_TYPE MATCHES "none")
+	SET(CMAKE_BUILD_TYPE "Debug")
 ENDIF()
+UNSET(TMP_BUILD_TYPE)
 
 # Enable testing.
 # TODO: INCLUDE(CTest) for more advanced testing after
