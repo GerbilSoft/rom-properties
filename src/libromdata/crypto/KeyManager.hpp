@@ -30,15 +30,8 @@ namespace LibRomData {
 class KeyManagerPrivate;
 class KeyManager
 {
-	protected:
-		/**
-		 * KeyManager class.
-		 *
-		 * This class is a Singleton, so the caller must obtain a
-		 * pointer to the class using instance().
-		 */
-		KeyManager();
 	public:
+		KeyManager();
 		~KeyManager();
 
 	private:
@@ -50,12 +43,6 @@ class KeyManager
 		KeyManagerPrivate *const d;
 
 	public:
-		/**
-		 * Get the KeyManager instance.
-		 * @return KeyManager instance.
-		 */
-		static KeyManager *instance(void);
-
 		// Encryption key data.
 		struct KeyData_t {
 			const uint8_t *key;	// Key data.
@@ -74,6 +61,12 @@ class KeyManager
 		 * @return True if keys have been loaded; false if not.
 		 */
 		bool areKeysLoaded(void) const;
+
+		/**
+		 * Reload keys if the key configuration file has changed.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int reloadIfChanged(void);
 
 		/**
 		 * Get an encryption key.

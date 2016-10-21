@@ -190,8 +190,9 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 	// If decryption is enabled, we can load the key and enable reading.
 	// Otherwise, we can only get the partition size information.
+
 	// Initialize the Key Manager.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager keyManager;
 
 	// Initialize the common key cipher required for this disc.
 	assert(partitionHeader.ticket.common_key_index <= 1);
@@ -215,9 +216,9 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 		// Get the common key.
 		KeyManager::KeyData_t keyData;
-		if (keyManager->get("rvl-common", &keyData) != 0) {
+		if (keyManager.get("rvl-common", &keyData) != 0) {
 			// "rvl-common" key was not found.
-			if (keyManager->areKeysLoaded()) {
+			if (keyManager.areKeysLoaded()) {
 				// Keys were loaded, but this key is missing.
 				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
 			} else {
@@ -249,9 +250,9 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 	// Get the Wii common key.
 	KeyManager::KeyData_t keyData;
-	if (keyManager->get("rvl-common", &keyData) != 0) {
+	if (keyManager.get("rvl-common", &keyData) != 0) {
 		// "rvl-common" key was not found.
-		if (keyManager->areKeysLoaded()) {
+		if (keyManager.areKeysLoaded()) {
 			// Keys were loaded, but this key is missing.
 			encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
 		} else {
