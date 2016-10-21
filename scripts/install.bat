@@ -1,6 +1,6 @@
 @ECHO OFF
 ECHO.
-ECHO rom-properties shell extension installation script
+"rom-properties shell extension installation script"
 ECHO.
 IF /I "%PROCESSOR_ARCHITEW6432%" == "" (
 	ECHO PROCESSOR_ARCHITECTURE=%PROCESSOR_ARCHITECTURE%
@@ -14,7 +14,7 @@ ECHO.
 :: "net session" returns an error if not administrator.
 NET SESSION >NUL 2>&1
 IF ERRORLEVEL 1 (
-	ECHO ERROR: This batch file must be run as Administrator.
+	ECHO *** ERROR: This batch file must be run as Administrator.
 	ECHO Right-click the batch file and select "Run as Administrator".
 	PAUSE
 	EXIT /B 1
@@ -37,7 +37,7 @@ IF /I "%PROCESSOR_ARCHITECTURE%" == "AMD64" GOTO :amd64
 IF /I "%PROCESSOR_ARCHITEW6432%" == "AMD64" GOTO :amd64
 IF /I "%PROCESSOR_ARCHITECTURE%" == "x86" GOTO :i386
 
-ECHO ERROR: This CPU architecture is not supported.
+ECHO *** ERROR: This CPU architecture is not supported.
 PAUSE
 EXIT /B 1
 
@@ -54,7 +54,7 @@ IF /I "%PROCESSOR_ARCHITEW6432%" == "AMD64" (
 )
 
 IF NOT EXIST rom-properties-amd64.dll (
-	ECHO ERROR: rom-properties-amd64.dll not found.
+	ECHO *** ERROR: rom-properties-amd64.dll not found.
 	PAUSE
 	EXIT /B 1
 )
@@ -62,7 +62,7 @@ IF NOT EXIST rom-properties-amd64.dll (
 ECHO Registering rom-properties-amd64.dll for 64-bit applications...
 "%REGSVR32_64BIT%" /S rom-properties-amd64.dll
 IF ERRORLEVEL 1 (
-	ECHO ERROR: 64-bit DLL registration failed.
+	ECHO *** ERROR: 64-bit DLL registration failed.
 	PAUSE
 	EXIT /B 1
 )
@@ -70,13 +70,13 @@ ECHO 64-bit DLL registration successful.
 ECHO.
 
 IF NOT EXIST rom-properties-i386.dll (
-	ECHO WARNING: rom-properties-i386.dll not found.
+	ECHO *** WARNING: rom-properties-i386.dll not found.
 	ECHO This DLL is required in order to support 32-bit applications.
 ) ELSE (
 	ECHO Registering rom-properties-i386.dll for 32-bit applications...
 	"%REGSVR32_32BIT%" /S rom-properties-i386.dll
 	IF ERRORLEVEL 1 (
-		ECHO ERROR: 32-bit DLL registration failed.
+		ECHO *** ERROR: 32-bit DLL registration failed.
 		ECHO This DLL is required in order to support 32-bit applications.
 	) ELSE (
 		ECHO 64-bit DLL registration successful.
@@ -90,7 +90,7 @@ EXIT /B 0
 SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 
 IF NOT EXIST rom-properties-i386.dll (
-	ECHO ERROR: rom-properties-i386.dll not found.
+	ECHO *** ERROR: rom-properties-i386.dll not found.
 	PAUSE
 	EXIT /B 1
 )
@@ -98,7 +98,7 @@ IF NOT EXIST rom-properties-i386.dll (
 ECHO Registering rom-properties-i386.dll for 32-bit applications...
 "%REGSVR32_32BIT%" /S rom-properties-i386.dll
 IF ERRORLEVEL 1 (
-	ECHO ERROR: 32-bit DLL registration failed.
+	ECHO *** ERROR: 32-bit DLL registration failed.
 	PAUSE
 	EXIT /B 1
 )
