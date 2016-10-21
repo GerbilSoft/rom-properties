@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+%:
+	dh $@ --parallel -Bbuild
+
+CMAKE_OPTIONS := \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DBUILD_KDE4=ON \
+	-DBUILD_KDE5=ON
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+CMAKE_OPTIONS += -DBUILD_TESTING=ON
+endif
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(CMAKE_OPTIONS)
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	CTEST_OUTPUT_ON_FAILURE=1 $(MAKE) -C build test
+endif
