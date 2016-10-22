@@ -88,7 +88,7 @@ int UrlmonDownloader::download(void)
 	}
 
 	// Get the cache information.
-	DWORD cbCacheInfo;
+	DWORD cbCacheInfo = 0;
 	BOOL bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), nullptr, &cbCacheInfo);
 	if (bRet) {
 		uint8_t *pCacheInfoBuf =
