@@ -79,7 +79,7 @@ IF "%CMAKE_GENERATOR%" == "" (
 	PAUSE
 	EXIT /B 1
 )
-ECHO Using MSVC %MSVC_VERSION% (%MSVC_YEAR%) for packaging.
+ECHO Using MSVC %MSVC_YEAR% (%MSVC_VERSION%) for packaging.
 ECHO.
 
 :: Check for the 32-bit compiler.
