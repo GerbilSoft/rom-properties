@@ -46,11 +46,9 @@ using namespace LibRomData;
 // C++ includes.
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::unique_ptr;
-using std::unordered_map;
 using std::unordered_set;
 using std::wstring;
 using std::vector;
@@ -123,9 +121,6 @@ class RP_ShellPropSheetExt_Private
 
 		// Monospaced fonts.
 		unordered_set<wstring> monospaced_fonts;
-
-		// Subclassed multiline edit controls.
-		unordered_map<HWND, WNDPROC> mapOldEditProc;
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -804,11 +799,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		dwStyle |= ES_MULTILINE;
 	}
 
+	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(idx));
 	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 		pt_start.x, pt_start.y,
 		size.cx, field_cy,
-		hDlg, (HMENU)(INT_PTR)(IDC_RFT_STRING(idx)),
-		nullptr, nullptr);
+		hDlg, cId, nullptr, nullptr);
 
 	// Get the default font.
 	HFONT hFont = GetWindowFont(hDlg);
@@ -820,10 +815,10 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
 
 		// Subclass the control.
-		WNDPROC oldEditProc = (WNDPROC)SetWindowLongPtr(
-			hDlgItem, GWLP_WNDPROC,
-			(LONG_PTR)RP_ShellPropSheetExt::MultilineEditProc);
-		mapOldEditProc.insert(std::make_pair(hDlgItem, oldEditProc));
+		// TODO: Error handling?
+		SetWindowSubclass(hDlgItem,
+			RP_ShellPropSheetExt::MultilineEditProc,
+			(UINT_PTR)cId, (DWORD_PTR)q);
 	}
 
 	// Check for any formatting options.
@@ -1969,19 +1964,24 @@ UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 
 /**
  * Subclass procedure for ES_MULTILINE EDIT controls.
- * @param hWnd
- * @param uMsg
- * @param wParam
- * @param lParam
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	RP_ShellProSheetExt*
  */
-INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-		GetProp(hWnd, EXT_POINTER_PROP));
-	if (!pExt) {
+	if (!dwRefData) {
 		// No RP_ShellPropSheetExt. Can't do anything...
-		return 0;
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 	}
+	RP_ShellPropSheetExt *const pExt =
+		reinterpret_cast<RP_ShellPropSheetExt*>(dwRefData);
 
 	switch (uMsg) {
 		case WM_KEYDOWN:
@@ -2000,19 +2000,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, W
 					break;
 			}
 
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultilineEditProc, uIdSubclass);
+			break;
+
 		default:
 			break;
 	}
 
-	// Call the original window procedure.
-	unordered_map<HWND, WNDPROC>::const_iterator iter = pExt->d->mapOldEditProc.find(hWnd);
-	if (iter != pExt->d->mapOldEditProc.end()) {
-		WNDPROC wndProc = iter->second;
-		return CallWindowProc(wndProc, hWnd, uMsg, wParam, lParam);
-	}
-
-	// Can't find the original window procedure...
-	return DefDlgProc(hWnd, uMsg, wParam, lParam);
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /**
