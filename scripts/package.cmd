@@ -2,8 +2,8 @@
 SETLOCAL
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
-:: - CMake 2.8.12 or later
-:: - MSVC 2015 with 32-bit and 64-bit compilers
+:: - CMake 3.0.0 or later
+:: - MSVC 2010, 2012, 2013, or 2015 with 32-bit and 64-bit compilers
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 ::
@@ -13,8 +13,99 @@ ECHO.
 ECHO rom-properties packaging script for Windows
 ECHO.
 
+:: Determine the 32-bit "Program Files" directory.
+IF NOT "%ProgramFiles(x86)%" == "" (
+	SET "PRGFILES=%ProgramFiles(x86)%"
+) ELSE (
+	SET "PRGFILES=%ProgramFiles%"
+)
+
+:: Check for supported MSVC versions.
+SET MSVC_DIR=
+SET MSVC_VERSION=
+SET MSVC_YEAR=
+SET CMAKE_GENERATOR=
+SET CMAKE_TOOLSET=
+IF EXIST "%PRGFILES%\Microsoft Visual Studio 10.0\VC\bin\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 10.0"
+	SET MSVC_VERSION=10.0
+	SET MSVC_YEAR=2010
+	SET "CMAKE_GENERATOR=10 2010"
+	SET CMAKE_TOOLSET=v100
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio 11.0\VC\bin\cl.exe" (
+	SET MSVC_VERSION=11.0
+	SET MSVC_YEAR=2012
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
+	SET "CMAKE_GENERATOR=11 2012"
+	SET CMAKE_TOOLSET=v110_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio 12.0\VC\bin\cl.exe" (
+	SET MSVC_VERSION=12.0
+	SET MSVC_YEAR=2013
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 12.0"
+	SET "CMAKE_GENERATOR=12 2013"
+	SET CMAKE_TOOLSET=v120_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio 14.0\VC\bin\cl.exe" (
+	SET MSVC_VERSION=14.0
+	SET MSVC_YEAR=2015
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 14.0"
+	SET "CMAKE_GENERATOR=14 2015"
+	SET CMAKE_TOOLSET=v140_xp
+)
+
+IF "%CMAKE_GENERATOR%" == "" (
+	ECHO *** ERROR: Supported version of MSVC was not found.
+	ECHO Supported versions: 2010, 2012, 2013, 2015
+	PAUSE
+	EXIT /B 1
+)
+ECHO Using MSVC %MSVC_VERSION% (%MSVC_YEAR%) for packaging.
+ECHO.
+
+:: Check for the 32-bit compiler.
+IF NOT EXIST "%MSVC_DIR%\VC\bin\cl.exe" (
+	ECHO *** ERROR: 32-bit cl.exe was not found.
+	ECHO Please reinstall MSVC.
+	PAUSE
+	EXIT /B 1
+)
+
+:: Check for the 64-bit compiler.
+:: (either cross-compiler and native compiler)
+IF NOT EXIST "%MSVC_DIR%\VC\bin\x86_amd64\cl.exe" (
+	IF NOT EXIST "%MSVC_DIR%\VC\bin\amd64\cl.exe" (
+		ECHO *** ERROR: 64-bit cl.exe was not found.
+		ECHO Please reinstall MSVC.
+		PAUSE
+		EXIT /B 1
+	)
+)
+
+:: Check for the Windows 7 SDK. (either v7.1A or v7.0A)
+IF NOT EXIST "%PRGFILES%\Microsoft SDKs\Windows\v7.1A\Include\Windows.h" (
+	IF NOT EXIST "%PRGFILES%\Microsoft SDKs\Windows\v7.0A\Include\Windows.h" (
+		ECHO *** ERROR: Windows 7 SDK was not found.
+		ECHO Please install the Windows 7 SDK.
+		PAUSE
+		EXIT /B 1
+	)
+)
+
+:: Check for cmake.exe.
+FOR %%X IN (cmake.exe) DO (SET FOUND=%%~$PATH:X)
+IF NOT DEFINED FOUND (
+	ECHO *** ERROR: CMake was not found in PATH.
+	ECHO Please download CMake from https://cmake.org/download/
+	ECHO and make sure it's added to PATH.
+	PAUSE
+	EXIT /B 1
+)
+
 :: Check for zip.exe and unzip.exe.
-FOR %%X IN (zip.exe) do (set FOUND=%%~$PATH:X)
+SET FOUND=
+FOR %%X IN (zip.exe) DO (SET FOUND=%%~$PATH:X)
 IF NOT DEFINED FOUND (
 	ECHO *** ERROR: zip.exe was not found in PATH.
 	ECHO Please download Info-ZIP from http://www.info-zip.org/
@@ -63,7 +154,7 @@ MKDIR build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -77,7 +168,7 @@ MKDIR build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-cmake ..\.. -G "Visual Studio 14 2015 Win64" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
+cmake ..\.. -G "Visual Studio %CMAKE_GENERATOR% Win64" -DCMAKE_GENERATOR_TOOLSET=%CMAKE_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
