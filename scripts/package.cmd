@@ -207,10 +207,12 @@ unzip ..\build.amd64\*-win64.zip rom-properties-amd64.dll rom-properties-amd64.p
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Compress the debug files.
+DEL /q "..\..\%ZIP_PREFIX%-windows.debug.zip" >NUL 2>&1
 zip "..\..\%ZIP_PREFIX%-windows.debug.zip" *.pdb
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Compress everything else.
+DEL /q "..\..\%ZIP_PREFIX%-windows.zip" >NUL 2>&1
 zip -r "..\..\%ZIP_PREFIX%-windows.zip" * -x *.pdb
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
