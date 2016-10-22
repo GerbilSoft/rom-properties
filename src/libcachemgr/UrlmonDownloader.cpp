@@ -93,6 +93,10 @@ int UrlmonDownloader::download(void)
 	if (bRet) {
 		uint8_t *pCacheInfoBuf =
 			reinterpret_cast<uint8_t*>(malloc(cbCacheInfo));
+		if (!pCacheInfoBuf) {
+			// ENOMEM
+			return -ENOMEM;
+		}
 		INTERNET_CACHE_ENTRY_INFO *pCacheInfo =
 			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheInfoBuf);
 		bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), pCacheInfo, &cbCacheInfo);

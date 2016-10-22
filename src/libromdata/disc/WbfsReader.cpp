@@ -178,6 +178,10 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	// Assume 512-byte sectors initially.
 	unsigned int hd_sec_sz = 512;
 	wbfs_head_t *head = (wbfs_head_t*)malloc(hd_sec_sz);
+	if (!head) {
+		// ENOMEM
+		return nullptr;
+	}
 
 	// Read the WBFS header.
 	file->rewind();
@@ -201,6 +205,11 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 	// wbfs_t struct.
 	wbfs_t *p = (wbfs_t*)malloc(sizeof(wbfs_t));
+	if (!p) {
+		// ENOMEM
+		free(head);
+		return nullptr;
+	}
 
 	// Since this is a disc image, we don't know the HDD sector size.
 	// Use the value present in the header.
@@ -222,6 +231,11 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		hd_sec_sz = p->hd_sec_sz;
 		free(head);
 		head = (wbfs_head_t*)malloc(hd_sec_sz);
+		if (!head) {
+			// ENOMEM
+			free(p);
+			return nullptr;
+		}
 
 		// Re-read the WBFS header.
 		file->rewind();
@@ -291,18 +305,28 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
-	wbfs_head_t *const head = p->head;
+	wbfs_disc_t *disc = nullptr;
+
+	const wbfs_head_t *const head = p->head;
 	uint32_t count = 0;
 	for (uint32_t i = 0; i < p->max_disc; i++) {
 		if (head->disc_table[i]) {
 			if (count++ == index) {
 				// Found the disc table index.
 				wbfs_disc_t *disc = (wbfs_disc_t*)malloc(sizeof(wbfs_disc_t));
+				if (!disc) {
+					// ENOMEM
+					break;
+				}
 				disc->p = p;
 				disc->i = i;
 
 				// Read the disc header.
 				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
+				if (!disc->header) {
+					// ENOMEM
+					break;
+				}
 				file->seek(p->hd_sec_sz + (i*p->disc_info_sz));
 				size_t size = file->read(disc->header, p->disc_info_sz);
 				if (size != p->disc_info_sz) {
@@ -322,6 +346,12 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				return disc;
 			}
 		}
+	}
+
+	// free() disc->header and disc in case of ENOMEM.
+	if (disc) {
+		free(disc->header);
+		free(disc);
 	}
 
 	// Disc not found.

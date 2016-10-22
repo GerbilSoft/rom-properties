@@ -836,6 +836,10 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	// Load the full banner.
 	// NOTE: Magic number is loaded as host-endian.
 	pBanner = (banner_bnr2_t*)malloc(banner_size);
+	if (!pBanner) {
+		// ENOMEM
+		return -ENOMEM;
+	}
 	pBanner->magic = bnr_magic;
 	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
 	if (size != banner_size-4) {

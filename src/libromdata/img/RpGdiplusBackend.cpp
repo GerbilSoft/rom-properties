@@ -73,10 +73,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 			break;
 		default:
 			assert(!"Unsupported rp_image::Format.");
-			this->width = 0;
-			this->height = 0;
-			this->stride = 0;
-			this->format = rp_image::FORMAT_NONE;
+			clear_properties();
 			return;
 	}
 	m_pGdipBmp = new Gdiplus::Bitmap(width, height, m_gdipFmt);
@@ -93,6 +90,13 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// is requested.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
+		if (!m_pGdipPalette) {
+			// ENOMEM
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			clear_properties();
+			return;
+		}
 		m_pGdipPalette->Flags = 0;
 		m_pGdipPalette->Count = 256;
 
@@ -166,6 +170,13 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 		// 256-color palette.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
+		if (!m_pGdipPalette) {
+			// ENOMEM
+			delete m_pGdipBmp;
+			m_pGdipBmp = nullptr;
+			m_gdipFmt = 0;
+			clear_properties();
+		}
 
 		// Actual GDI+ palette size.
 		int palette_size = pGdipBmp->GetPaletteSize();
@@ -179,10 +190,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			delete m_pGdipBmp;
 			m_pGdipBmp = nullptr;
 			m_gdipFmt = 0;
-			this->width = 0;
-			this->height = 0;
-			this->stride = 0;
-			this->format = rp_image::FORMAT_NONE;
+			clear_properties();
 			return;
 		}
 
@@ -633,6 +641,10 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	// BITMAPINFO with 256-color palette.
 	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
 	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
+	if (!bmi) {
+		// ENOMEM
+		return nullptr;
+	}
 	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
