@@ -1365,6 +1365,9 @@ int GameCube::loadFieldData(void)
 			comment_data.reserve(sizeof(*comment));
 
 			// Fields are not necessarily null-terminated.
+			// NOTE: We're converting from cp1252 or Shift-JIS
+			// *after* concatenating all the strings, which is
+			// why we're using strnlen() here.
 			int field_len;
 
 			// Game name.
