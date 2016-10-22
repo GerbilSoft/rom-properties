@@ -182,6 +182,8 @@ cpack -C Release
 POPD
 
 :: Merge the ZIP files.
+ECHO.
+ECHO Creating the distribution ZIP files...
 MKDIR combined
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD combined
