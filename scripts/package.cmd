@@ -13,6 +13,24 @@ ECHO.
 ECHO rom-properties packaging script for Windows
 ECHO.
 
+:: Check for a file known to be in the top-level source directory.
+IF NOT EXIST travis.sh (
+	:: Maybe we're running from the scripts directory?
+	CD ..
+	IF NOT EXIST travis.sh (
+		ECHO *** ERROR: This batch file must be run from either the
+		ECHO top-level source directory or from the scripts directory.
+		ECHO.
+		ECHO Change to the top-level source directory and rerun this
+		ECHO batch file by typing:
+		ECHO.
+		ECHO scripts\package.cmd
+		ECHO.
+		PAUSE
+		EXIT /B 1
+	)
+)
+
 :: Determine the 32-bit "Program Files" directory.
 IF NOT "%ProgramFiles(x86)%" == "" (
 	SET "PRGFILES=%ProgramFiles(x86)%"
@@ -118,18 +136,6 @@ IF NOT DEFINED FOUND (
 	ECHO *** ERROR: unzip.exe was not found in PATH.
 	ECHO Please download Info-ZIP from http://www.info-zip.org/
 	ECHO and place zip.exe and unzip.exe in PATH.
-	PAUSE
-	EXIT /B 1
-)
-
-:: Check for a file known to be in the top-level source directory.
-IF NOT EXIST travis.sh (
-	ECHO *** ERROR: This batch file must be run from the top-level
-	ECHO source directory. Change to the top-level source directory
-	ECHO and rerun this batch file by typing:
-	ECHO.
-	ECHO scripts\package.cmd
-	ECHO.
 	PAUSE
 	EXIT /B 1
 )
