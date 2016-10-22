@@ -1369,22 +1369,22 @@ int GameCube::loadFieldData(void)
 
 			// Game name.
 			if (comment->gamename_full[0] != 0) {
-				field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+				field_len = (int)strnlen(comment->gamename_full, sizeof(comment->gamename_full));
 				comment_data += string(comment->gamename_full, field_len);
 				comment_data += '\n';
 			} else if (comment->gamename[0] != 0) {
-				field_len = strnlen(comment->gamename, sizeof(comment->gamename));
+				field_len = (int)strnlen(comment->gamename, sizeof(comment->gamename));
 				comment_data += string(comment->gamename, field_len);
 				comment_data += '\n';
 			}
 
 			// Company.
 			if (comment->company_full[0] != 0) {
-				field_len = strnlen(comment->company_full, sizeof(comment->company_full));
+				field_len = (int)strnlen(comment->company_full, sizeof(comment->company_full));
 				comment_data += string(comment->company_full, field_len);
 				comment_data += '\n';
 			} else if (comment->company[0] != 0) {
-				field_len = strnlen(comment->company, sizeof(comment->company));
+				field_len = (int)strnlen(comment->company, sizeof(comment->company));
 				comment_data += string(comment->company, field_len);
 				comment_data += '\n';
 			}
@@ -1396,7 +1396,7 @@ int GameCube::loadFieldData(void)
 					comment_data += '\n';
 				}
 
-				field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+				field_len = (int)strnlen(comment->gamedesc, sizeof(comment->gamedesc));
 				comment_data += string(comment->gamedesc, field_len);
 			}
 
@@ -1413,14 +1413,14 @@ int GameCube::loadFieldData(void)
 					default:
 						// USA/PAL uses cp1252.
 						m_fields->addData_string(
-							cp1252_to_rp_string(comment_data.data(), comment_data.size()));
+							cp1252_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 
 					case GCN_REGION_JAPAN:
 					case GCN_REGION_SOUTH_KOREA:
 						// Japan uses Shift-JIS.
 						m_fields->addData_string(
-							cp1252_sjis_to_rp_string(comment_data.data(), comment_data.size()));
+							cp1252_sjis_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 				}
 			} else {
