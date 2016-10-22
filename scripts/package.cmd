@@ -1,5 +1,5 @@
 @ECHO OFF
-SETLOCAL
+SETLOCAL ENABLEEXTENSIONS
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later
@@ -181,5 +181,47 @@ cmake --build . --config Release
 cpack -C Release
 POPD
 
-:: TODO: Merge the two packages.
+:: Merge the ZIP files.
+MKDIR combined
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+PUSHD combined
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Get the basename of the 32-bit ZIP file.
+FOR %%A IN (..\build.i386\*-win32.zip) do (set ZIP_PREFIX=%%~nxA)
+SET "ZIP_PREFIX=%ZIP_PREFIX:~0,-10%"
+IF "%ZIP_PREFIX%" == "" (
+	ECHO *** ERROR: The 32-bit ZIP file was not found.
+	ECHO Something failed in the initial packaging process...
+	PAUSE
+	EXIT /B 1
+)
+
+:: Extract the 32-bit ZIP file.
+unzip ..\build.i386\*-win32.zip
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Extract the 64-bit ZIP file.
+:: (Only the DLL and PDB.)
+unzip ..\build.amd64\*-win64.zip rom-properties-amd64.dll rom-properties-amd64.pdb
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Compress the debug files.
+zip "..\..\%ZIP_PREFIX%-windows.debug.zip" *.pdb
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Compress everything else.
+zip -r "..\..\%ZIP_PREFIX%-windows.zip" * -x *.pdb
+@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+
+:: Package merged.
+ECHO.
+ECHO *** Windows packages created. ***
+ECHO.
+ECHO The following files have been created in the top-level
+ECHO source directory:
+ECHO - %ZIP_PREFIX%-windows.zip: Standard distribution.
+ECHO - %ZIP_PREFIX%-windows.debug.zip: PDB files.
+ECHO.
+PAUSE
 EXIT /B 0
