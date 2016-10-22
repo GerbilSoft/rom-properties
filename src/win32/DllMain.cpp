@@ -123,36 +123,43 @@ STDAPI DllCanUnloadNow(void)
 
 /**
  * Get a class factory to create an object of the requested type.
- * @param rclsid CLSID of the object.
- * @param riid IID_IClassFactory.
- * @param ppvOut Pointer that receives the interface pointer requested in riid.
+ * @param rclsid	[in] CLSID of the object.
+ * @param riid		[in] IID_IClassFactory.
+ * @param ppv		[out] Pointer that receives the interface pointer requested in riid.
  * @return Error code.
  */
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
+__checkReturn
+STDAPI DllGetClassObject(__in REFCLSID rclsid, __in REFIID riid, __deref_out LPVOID FAR* ppv)
 {
-	*ppvOut = nullptr;
+	if (!ppv) {
+		// Incorrect parameters.
+		return E_INVALIDARG;
+	}
+
+	// Clear the interface pointer initially.
+	*ppv = nullptr;
 
 	// Check for supported classes.
 	HRESULT hr = E_FAIL;
 	if (IsEqualIID(rclsid, CLSID_RP_ExtractIcon)) {
 		// Create a new class factory for RP_ExtractIcon.
 		RP_ClassFactory<RP_ExtractIcon> *pCF = new RP_ClassFactory<RP_ExtractIcon>();
-		hr = pCF->QueryInterface(riid, ppvOut);
+		hr = pCF->QueryInterface(riid, ppv);
 		pCF->Release();
 	} else if (IsEqualIID(rclsid, CLSID_RP_ExtractImage)) {
 		// Create a new class factory for RP_ExtractImage.
 		RP_ClassFactory<RP_ExtractImage> *pCF = new RP_ClassFactory<RP_ExtractImage>();
-		hr = pCF->QueryInterface(riid, ppvOut);
+		hr = pCF->QueryInterface(riid, ppv);
 		pCF->Release();
 	} else if (IsEqualIID(rclsid, CLSID_RP_ShellPropSheetExt)) {
 		// Create a new class factory for RP_ShellPropSheetExt.
 		RP_ClassFactory<RP_ShellPropSheetExt> *pCF = new RP_ClassFactory<RP_ShellPropSheetExt>();
-		hr = pCF->QueryInterface(riid, ppvOut);
+		hr = pCF->QueryInterface(riid, ppv);
 		pCF->Release();
 	} else if (IsEqualIID(rclsid, CLSID_RP_ThumbnailProvider)) {
 		// Create a new class factory for RP_ThumbnailProvider.
 		RP_ClassFactory<RP_ThumbnailProvider> *pCF = new RP_ClassFactory<RP_ThumbnailProvider>();
-		hr = pCF->QueryInterface(riid, ppvOut);
+		hr = pCF->QueryInterface(riid, ppv);
 		pCF->Release();
 	} else {
 		// Class not available.
@@ -161,7 +168,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
 
 	if (hr != S_OK) {
 		// Interface not found.
-		*ppvOut = nullptr;
+		*ppv = nullptr;
 	}
 	return hr;
 }
