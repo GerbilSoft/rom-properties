@@ -3,6 +3,10 @@
 # on platform, e.g. Unix-style for Linux and most other
 # Unix systems.
 
+# NOTE: DIR_INSTALL_DOC_ROOT is for documents that should
+# be in the root of the Windows ZIP file. On other platforms,
+# it's the same as DIR_INSATLL_DOC.
+
 IF(NOT PACKAGE_NAME)
 	MESSAGE(FATAL_ERROR "PACKAGE_NAME is not set.")
 ENDIF(NOT PACKAGE_NAME)
@@ -14,6 +18,7 @@ IF(UNIX AND NOT APPLE)
 	SET(DIR_INSTALL_LIB "lib")
 	SET(DIR_INSTALL_TRANSLATIONS "share/${PACKAGE_NAME}/translations")
 	SET(DIR_INSTALL_DOC "share/doc/${PACKAGE_NAME}")
+	SET(DIR_INSTALL_DOC_ROOT "${DIR_INSTALL_DOC}")
 	SET(DIR_INSTALL_EXE_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}")
 	SET(DIR_INSTALL_DLL_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_DLL}")
 	SET(DIR_INSTALL_LIB_DEBUG "lib/debug/${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}")
@@ -31,6 +36,7 @@ ELSEIF(WIN32)
 	SET(DIR_INSTALL_LIB ".")
 	SET(DIR_INSTALL_TRANSLATIONS "translations")
 	SET(DIR_INSTALL_DOC "doc")
+	SET(DIR_INSTALL_DOC_ROOT ".")
 	SET(DIR_INSTALL_EXE_DEBUG "debug")
 	# Installing debug symbols for DLLs in the
 	# same directory as the DLL.
