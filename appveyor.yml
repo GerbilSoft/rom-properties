@@ -18,7 +18,7 @@ configuration:
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - appveyor.bat
+  - appveyor.cmd
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

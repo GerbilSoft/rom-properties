@@ -37,7 +37,7 @@ IF NOT EXIST travis.sh (
 	ECHO source directory. Change to the top-level source directory
 	ECHO and rerun this batch file by typing:
 	ECHO.
-	ECHO scripts\package.bat
+	ECHO scripts\package.cmd
 	ECHO.
 	PAUSE
 	EXIT /B 1
