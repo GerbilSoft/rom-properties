@@ -39,26 +39,33 @@ extern "C" {
  */
 #pragma pack(1)
 #define N64_RomHeader_SIZE 64
-typedef struct PACKED _N64_RomHeader {
-	union {
-		// NOTE: Technically, the first two DWORDs
-		// are initialization settings, but in practice,
-		// they're usually identical for all N64 ROMs.
-		uint8_t magic[8];
-		struct {
-			uint32_t init_pi;
-			uint32_t clockrate;
+typedef union PACKED _N64_RomHeader {
+	struct {
+		union {
+			// NOTE: Technically, the first two DWORDs
+			// are initialization settings, but in practice,
+			// they're usually identical for all N64 ROMs.
+			uint8_t magic[8];
+			struct {
+				uint32_t init_pi;
+				uint32_t clockrate;
+			};
 		};
+
+		uint32_t entrypoint;
+		uint32_t release;	// ???
+		uint64_t checksum;
+		uint8_t reserved1[8];
+		char title[0x14];	// Title. (cp932)
+		uint8_t reserved[7];
+		char id4[4];		// Game ID.
+		uint8_t revision;	// Revision.
 	};
 
-	uint32_t entrypoint;
-	uint32_t release;	// ???
-	uint64_t checksum;
-	uint8_t reserved1[8];
-	char title[0x14];	// Title. (cp932)
-	uint8_t reserved[7];
-	char id4[4];		// Game ID.
-	uint8_t revision;	// Revision.
+	// Direct access for byteswapping.
+	uint8_t u8[64];
+	uint16_t u16[64/2];
+	uint32_t u32[64/4];
 } N64_RomHeader;
 #pragma pack()
 

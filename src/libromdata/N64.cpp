@@ -134,16 +134,29 @@ N64::N64(IRpFile *file)
 	info.szFile = m_file->fileSize();
 	d->romType = isRomSupported(&info);
 
-	// TODO: Byteswapping.
 	switch (d->romType) {
 		case N64Private::ROM_TYPE_Z64:
-			// Z64 format. Convert from BE32.
-			d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
-			d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
-			d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
-			d->romHeader.release	= be32_to_cpu(d->romHeader.release);
-			d->romHeader.checksum	= be64_to_cpu(d->romHeader.checksum);
+			// Z64 format. Byteswapping will be done afterwards.
 			break;
+
+		case N64Private::ROM_TYPE_V64:
+			// V64 format. (16-bit byteswapped)
+			// Convert the header to Z64 first.
+			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u16); i++) {
+				d->romHeader.u16[i] = __swab16(d->romHeader.u16[i]);
+			}
+			break;
+
+		case N64Private::ROM_TYPE_SWAP2:
+			// swap2 format. (wordswapped)
+			// Convert the header to Z64 first.
+			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
+			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
+				d->romHeader.u32[i] = UNSWAP2(d->romHeader.u32[i]);
+			}
+			break;
+
+		case N64Private::ROM_TYPE_LE32:	// TODO
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::ROM_TYPE_UNKNOWN;
@@ -151,6 +164,13 @@ N64::N64(IRpFile *file)
 	}
 
 	m_isValid = true;
+
+	// Byteswap the header from Z64 format.
+	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
+	d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
+	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
+	d->romHeader.release	= be32_to_cpu(d->romHeader.release);
+	d->romHeader.checksum	= be64_to_cpu(d->romHeader.checksum);
 }
 
 N64::~N64()
@@ -186,10 +206,12 @@ int N64::isRomSupported_static(const DetectInfo *info)
 		{0x40,0x12,0x37,0x80,0x0F,0x00,0x00,0x00},	// le32
 	};
 
-	// TODO: Check for other formats.
-	if (!memcmp(romHeader->magic, magic[0], sizeof(magic[0]))) {
-		// Z64 format.
-		return N64Private::ROM_TYPE_Z64;
+	for (int i = 0; i < 4; i++) {
+		if (!memcmp(romHeader->magic, magic[i], sizeof(magic[i]))) {
+			// Found a matching magic number.
+			// This corresponds to N64Private::RomType.
+			return i;
+		}
 	}
 
 	// Not supported.
