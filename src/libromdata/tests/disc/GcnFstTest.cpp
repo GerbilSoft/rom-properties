@@ -86,8 +86,8 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 			, m_fst(nullptr)
 		{ }
 
-		virtual void SetUp(void) override;
-		virtual void TearDown(void) override;
+		virtual void SetUp(void) final;
+		virtual void TearDown(void) final;
 
 		/**
 		 * Open a Zip file for reading.

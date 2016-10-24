@@ -150,7 +150,7 @@ class GameCubeSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override;
+		virtual const IconAnimData *iconAnimData(void) const final;
 };
 
 }
