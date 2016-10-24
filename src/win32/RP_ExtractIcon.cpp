@@ -274,13 +274,10 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	UNUSED(cchMax);
 	UNUSED(piIndex);
 
-#ifndef NDEBUG
-	// Debug version. Don't cache icons.
+	// FIXME: Not specifying GIL_DONTCACHE causes all handled
+	// file types to show the same icon as the first one that
+	// was processed. I have no idea why.
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
-#else /* !NDEBUG */
-	// Release version. Cache icons.
-	*pwFlags = GIL_NOTFILENAME;
-#endif /* NDEBUG */
 
 	return S_OK;
 }
