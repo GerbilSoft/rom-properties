@@ -341,15 +341,18 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		HICON hIcon = RpImageWin32::toHICON(img);
 		if (hIcon != nullptr) {
 			// Icon converted.
+			bool iconWasSet = false;
 			if (phiconLarge) {
 				*phiconLarge = hIcon;
-			} else {
-				DeleteObject(hIcon);
+				iconWasSet = true;
+			}
+			if (phiconSmall) {
+				// NULL out the small icon.
+				*phiconSmall = nullptr;
 			}
 
-			if (phiconSmall) {
-				// FIXME: is this valid?
-				*phiconSmall = nullptr;
+			if (!iconWasSet) {
+				DeleteObject(hIcon);
 			}
 		}
 
