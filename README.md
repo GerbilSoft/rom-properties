@@ -1,10 +1,23 @@
 # ROM Properties Page shell extension
 
 This shell extension adds a few nice features to file browsers for managing
-video game ROM and disc images:
-* Image thumbnails, using either images built into the ROM or an external
-  database of scans.
-* Property page with information about the ROM image.
+video game ROM and disc images.
+
+## So what does it do?
+
+Got a USB hard drive with Wii disc images for USB Loader GX or the Dolphin Emulator? Now you can actually see what those discs are:
+
+![Wii disc scans on Windows 7](doc/img/rp.win7.wii-discs.png)
+
+Or maybe you're using Nintendont for GameCube:
+
+![GCN disc scans on KDE5](doc/img/rp.kde5.gcn-discs.png)
+
+How about some in-depth information on a GameCube save file? (The icon will be animated if your browser supports APNG.)
+
+![GCI properties on KDE5](doc/img/rp.kde5.GSNE8P.gci.animated.png)
+
+## Feedback
 
 This is a work in progress; feedback is encouraged. To leave feedback, you
 can file an issue on GitHub, or visit the Gens/GS IRC channel:
