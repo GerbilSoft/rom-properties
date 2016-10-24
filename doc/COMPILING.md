@@ -85,3 +85,18 @@ Caveats:
   handle "all files".
 
 See README.md for general usage information.
+
+### Building Distribution Packages
+
+The scripts/ directory has a Windows batch script, ```package.cmd```,
+that can be used to build the two distribution packages:
+* rom-properties-[version]-windows.zip: Standard distribution.
+* rom-properties-[version]-windows.debug.zip: PDB files.
+
+The script uses the installed version of MSVC (2010, 2012, 2013, or 2015)
+to build both 32-bit and 64-bit versions of the ROM Properties Page
+shell extension, and then it packages everything together.
+
+You must have CMake and Info-ZIP's zip.exe and unzip.exe in your path.
+* CMake: https://cmake.org/download/
+* Info-ZIP: http://www.info-zip.org/
