@@ -875,43 +875,6 @@ int GameCubeSave::loadFieldData(void)
 }
 
 /**
- * Blit a tile to a linear image buffer.
- * @tparam pixel	[in] Pixel type.
- * @tparam tileW	[in] Tile width.
- * @tparam tileH	[in] Tile height.
- * @param img		[out] rp_image.
- * @param tileBuf	[in] Tile buffer.
- * @param tileX		[in] Horizontal tile number.
- * @param tileY		[in] Vertical tile number.
- */
-template<typename pixel, int tileW, int tileH>
-static inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
-{
-	switch (sizeof(pixel)) {
-		case 4:
-			assert(img->format() == rp_image::FORMAT_ARGB32);
-			break;
-		case 1:
-			assert(img->format() == rp_image::FORMAT_CI8);
-			break;
-		default:
-			assert(!"Unsupported sizeof(pixel).");
-			return;
-	}
-
-	// Go to the first pixel for this tile.
-	const int stride_px = img->stride() / sizeof(pixel);
-	pixel *imgBuf = reinterpret_cast<pixel*>(img->scanLine(tileY * tileH));
-	imgBuf += (tileX * tileW);
-
-	for (int y = tileH; y > 0; y--) {
-		memcpy(imgBuf, tileBuf, (tileW * sizeof(pixel)));
-		imgBuf += stride_px;
-		tileBuf += tileW;
-	}
-}
-
-/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
