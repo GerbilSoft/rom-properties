@@ -156,7 +156,17 @@ N64::N64(IRpFile *file)
 			}
 			break;
 
-		case N64Private::ROM_TYPE_LE32:	// TODO
+		case N64Private::ROM_TYPE_LE32:
+			// LE32 format. (32-bit byteswapped)
+			// Convert the header to Z64 first.
+			// TODO: Optimize by not converting the non-text fields
+			// if the host system is little-endian?
+			// FIXME: Untested - ucon64 doesn't support it.
+			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
+				d->romHeader.u32[i] = __swab32(d->romHeader.u32[i]);
+			}
+			break;
+
 		default:
 			// Unknown ROM type.
 			d->romType = N64Private::ROM_TYPE_UNKNOWN;
