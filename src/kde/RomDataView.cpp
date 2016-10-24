@@ -367,12 +367,20 @@ void RomDataViewPrivate::updateDisplay(void)
 					const rp_char *name = bitfieldDesc->names[i];
 					if (!name)
 						continue;
-					// TODO: Prevent toggling; disable automatic alt key.
+
+					// TODO: Disable KDE's automatic mnemonic.
 					QCheckBox *checkBox = new QCheckBox(q);
 					checkBox->setText(RP2Q(name));
 					if (data->bitfield & (1 << i)) {
 						checkBox->setChecked(true);
 					}
+
+					// Disable user modifications.
+					// TODO: Prevent the initial mousebutton down from working;
+					// otherwise, it shows a partial check mark.
+					QObject::connect(checkBox, SIGNAL(toggled(bool)),
+							q, SLOT(bitfield_toggled_slot(bool)));
+
 					gridLayout->addWidget(checkBox, row, col, 1, 1);
 					col++;
 					if (col == bitfieldDesc->elemsPerRow) {
@@ -572,6 +580,20 @@ void RomDataView::hideEvent(QHideEvent *event)
 }
 
 /** Widget slots. **/
+
+/**
+ * Disable user modification of RFT_BITFIELD checkboxes.
+ */
+void RomDataView::bitfield_toggled_slot(bool checked)
+{
+	if (!checked)
+		return;
+
+	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	if (sender) {
+		sender->setChecked(false);
+	}
+}
 
 /**
  * Animated icon timer.
