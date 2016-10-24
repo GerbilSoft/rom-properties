@@ -1,5 +1,7 @@
 @ECHO OFF
 SETLOCAL ENABLEEXTENSIONS
+CD /D "%~dp0"
+
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later

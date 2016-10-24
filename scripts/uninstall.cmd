@@ -1,5 +1,6 @@
 @ECHO OFF
-SETLOCAL
+SETLOCAL ENABLEEXTENSIONS
+CD /D "%~dp0"
 
 ECHO.
 ECHO rom-properties shell extension uninstallation script

@@ -1,8 +1,9 @@
 @ECHO OFF
-SETLOCAL
+SETLOCAL ENABLEEXTENSIONS
+CD /D "%~dp0"
 
 ECHO.
-"rom-properties shell extension installation script"
+ECHO rom-properties shell extension installation script
 ECHO.
 IF /I "%PROCESSOR_ARCHITEW6432%" == "" (
 	ECHO PROCESSOR_ARCHITECTURE=%PROCESSOR_ARCHITECTURE%
@@ -81,7 +82,7 @@ IF NOT EXIST rom-properties-i386.dll (
 		ECHO *** ERROR: 32-bit DLL registration failed.
 		ECHO This DLL is required in order to support 32-bit applications.
 	) ELSE (
-		ECHO 64-bit DLL registration successful.
+		ECHO 32-bit DLL registration successful.
 	)
 )
 ECHO.
