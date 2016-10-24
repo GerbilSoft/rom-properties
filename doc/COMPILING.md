@@ -1,6 +1,6 @@
 # Compiling rom-properties
 
-### Linux
+## Linux
 
 On Ubuntu, you will need build-essential and the following development packages:
 * All: cmake libcurl-dev nettle-dev zlib1g-dev libpng-dev
@@ -32,7 +32,23 @@ If installed correctly, thumbnails should be generated for the supported
 file type. You can also right-click a file, select Properties, then click
 the "ROM Properties" tab to view more information about the ROM image.
 
-### Windows
+### Building .deb Packages
+
+You will need to install the following:
+* devscripts
+* debhelper
+
+In order to build debug symbol packages, you will need:
+* Debian: debhelper >= 9.20151219
+* Ubuntu: pkg-create-debsym
+
+In the top-level source directory, run this command:
+* ```debuild -i -us -uc -b```
+
+Assuming everything builds correctly, the .deb packages should be built in
+the directory above the top-level source directory.
+
+## Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
 * Microsoft Visual C++ 2010 with the Windows 7 SDK
