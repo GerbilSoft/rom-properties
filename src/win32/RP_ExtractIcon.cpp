@@ -48,6 +48,15 @@ using std::wstring;
 const CLSID CLSID_RP_ExtractIcon =
 	{0xe51bc107, 0xe491, 0x4b29, {0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02}};
 
+RP_ExtractIcon::RP_ExtractIcon()
+	: m_romData(nullptr)
+{ }
+
+RP_ExtractIcon::~RP_ExtractIcon()
+{
+	delete m_romData;
+}
+
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
@@ -297,22 +306,10 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		return E_INVALIDARG;
 	}
 
-	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		return E_FAIL;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
-	file.reset(nullptr);	// file is dup()'d by RomData.
-
-	if (!romData) {
+	if (!m_romData) {
 		// ROM is not supported.
-		return S_FALSE;
+		// NOTE: S_FALSE causes icon shenanigans.
+		return E_FAIL;
 	}
 
 	// ROM is supported. Get the image.
@@ -323,10 +320,10 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	bool needs_delete = false;	// External images need manual deletion.
 	const rp_image *img = nullptr;
 
-	uint32_t imgbf = romData->supportedImageTypes();
+	uint32_t imgbf = m_romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		img = RpImageWin32::getExternalImage(m_romData, RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
 
@@ -335,7 +332,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		// Try an internal image.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
-			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			img = RpImageWin32::getInternalImage(m_romData, RomData::IMG_INT_ICON);
 		}
 	}
 
@@ -362,7 +359,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		}
 	}
 
-	return (*phiconLarge != nullptr ? S_OK : S_FALSE);
+	// NOTE: S_FALSE causes icon shenanigans.
+	return (*phiconLarge != nullptr ? S_OK : E_FAIL);
 }
 
 /** IPersistFile **/
@@ -385,6 +383,23 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	m_filename = W2RP_cs(pszFileName);
+
+	// Attempt to open the ROM file.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		return E_FAIL;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	m_romData = RomDataFactory::getInstance(file.get(), true);
+	if (!m_romData) {
+		// Not supported.
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
