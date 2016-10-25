@@ -252,13 +252,13 @@ class RP_ShellPropSheetExt_Private
 			const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
 			DWORD FontType, LPARAM lParam);
 
+	public:
 		/**
 		 * Initialize the monospaced font.
 		 * @param hFont Base font.
 		 */
 		void initMonospacedFont(HFONT hFont);
 
-	public:
 		/**
 		 * Initialize the dialog.
 		 * Called by WM_INITDIALOG.
@@ -1307,6 +1307,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 	if (hFontMonoOld) {
 		DeleteFont(hFontMonoOld);
 	}
+	bPrevIsClearType = bIsClearType;
 }
 
 /**
@@ -1893,16 +1894,16 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt_Private *const d = pExt->d;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
-				case PSN_SETACTIVE:
-					d->startAnimTimer();
-					break;
+			case PSN_SETACTIVE:
+				d->startAnimTimer();
+				break;
 
-				case PSN_KILLACTIVE:
-					d->stopAnimTimer();
-					break;
+			case PSN_KILLACTIVE:
+				d->stopAnimTimer();
+				break;
 
-				default:
-					break;
+			default:
+				break;
 			}
 
 			// Continue normal processing.
@@ -1960,6 +1961,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
 				pExt->d->loadImages(hDlg);
+			}
+			break;
+		}
+
+		case WM_NCPAINT: {
+			// Update the monospaced font.
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				HFONT hFont = GetWindowFont(hDlg);
+				pExt->d->initMonospacedFont(hFont);
 			}
 			break;
 		}
