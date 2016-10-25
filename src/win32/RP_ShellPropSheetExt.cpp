@@ -117,10 +117,12 @@ class RP_ShellPropSheetExt_Private
 
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
-		HFONT hFontMono;	// Monospaced font.
-
-		// Monospaced fonts.
+		// Monospaced font.
+		HFONT hFontMono;
+		LOGFONT lfFontMono;
 		unordered_set<wstring> monospaced_fonts;
+		vector<HWND> hwndMonoControls;	// Controls using the monospaced font.
+		bool bPrevIsClearType;	// Previous ClearType setting.
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -274,6 +276,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hDlgSheet(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
+	, bPrevIsClearType(nullptr)
 	, lblSysInfo(nullptr)
 	, colorWinBg(0)
 	, hUxTheme_dll(nullptr)
@@ -827,6 +830,10 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
 			if (hFontMono != nullptr) {
 				hFont = hFontMono;
+				if (hwndMonoControls.empty()) {
+					hwndMonoControls.reserve(4);
+				}
+				hwndMonoControls.push_back(hDlgItem);
 			}
 		}
 	}
@@ -1194,70 +1201,112 @@ int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
  */
 void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 {
-	// TODO: Delete the old font if it's already there?
-	if (hFontMono || !hFont) {
+	if (!hFont) {
+		// No base font...
 		return;
 	}
 
-	// Monospaced font should be based on the specified font.
-	LOGFONT lfFontMono;
-	if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
-		// Unable to obtain the LOGFONT.
-		return;
-	}
-
-	// Enumerate all monospaced fonts.
-	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
-	monospaced_fonts.clear();
-#if !defined(_MSC_VER) || _MSC_VER >= 1700	
-	monospaced_fonts.reserve(64);
-#endif
-	LOGFONT lfEnumFonts;
-	memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
-	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
-	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
-	HDC hdc = GetDC(nullptr);
-	EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
-		reinterpret_cast<LPARAM>(this), 0);
-	ReleaseDC(nullptr, hdc);
-
-	// Fonts to try.
-	static const wchar_t *const fonts[] = {
-                L"DejaVu Sans Mono",
-                L"Consolas",
-                L"Lucida Console",
-                L"Fixedsys Excelsior 3.01",
-                L"Fixedsys Excelsior 3.00",
-                L"Fixedsys Excelsior 3.0",
-                L"Fixedsys Excelsior 2.00",
-                L"Fixedsys Excelsior 2.0",
-                L"Fixedsys Excelsior 1.00",
-                L"Fixedsys Excelsior 1.0",
-                L"Fixedsys",
-                L"Courier New",
-	};
-
-	const wchar_t *font = nullptr;
-
-	for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
-		if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
-			// Found a font.
-			font = fonts[i];
-			break;
+	// Get the current ClearType setting.
+	bool bIsClearType = false;
+	BOOL bFontSmoothing;
+	BOOL bRet = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &bFontSmoothing, 0);
+	if (bRet) {
+		UINT uiFontSmoothingType;
+		bRet = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &uiFontSmoothingType, 0);
+		if (bRet) {
+			bIsClearType = (bFontSmoothing && (uiFontSmoothingType == FE_FONTSMOOTHINGCLEARTYPE));
 		}
 	}
 
-	// We don't need the enumerated fonts anymore.
-	monospaced_fonts.clear();
+	if (hFontMono) {
+		// Font exists. Only re-create it if the ClearType setting has changed.
+		if (bIsClearType == bPrevIsClearType) {
+			// ClearType setting has not changed.
+			return;
+		}
+	} else {
+		// Font hasn't been created yet.
+		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
+			// Unable to obtain the LOGFONT.
+			return;
+		}
 
-	if (!font) {
-		// Monospaced font not found.
+		// Enumerate all monospaced fonts.
+		// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
+		monospaced_fonts.clear();
+#if !defined(_MSC_VER) || _MSC_VER >= 1700	
+		monospaced_fonts.reserve(64);
+#endif
+		LOGFONT lfEnumFonts;
+		memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
+		lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
+		lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+		HDC hdc = GetDC(nullptr);
+		EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
+			reinterpret_cast<LPARAM>(this), 0);
+		ReleaseDC(nullptr, hdc);
+
+		// Fonts to try.
+		static const wchar_t *const fonts[] = {
+			L"DejaVu Sans Mono",
+			L"Consolas",
+			L"Lucida Console",
+			L"Fixedsys Excelsior 3.01",
+			L"Fixedsys Excelsior 3.00",
+			L"Fixedsys Excelsior 3.0",
+			L"Fixedsys Excelsior 2.00",
+			L"Fixedsys Excelsior 2.0",
+			L"Fixedsys Excelsior 1.00",
+			L"Fixedsys Excelsior 1.0",
+			L"Fixedsys",
+			L"Courier New",
+		};
+
+		const wchar_t *font = nullptr;
+
+		for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
+			if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
+				// Found a font.
+				font = fonts[i];
+				break;
+			}
+		}
+
+		// We don't need the enumerated fonts anymore.
+		monospaced_fonts.clear();
+
+		if (!font) {
+			// Monospaced font not found.
+			return;
+		}
+
+		// Adjust the font and create a new one.
+		wcscpy(lfFontMono.lfFaceName, font);
+	}
+
+	// Create the monospaced font.
+	// If ClearType is enabled, use DEFAULT_QUALITY;
+	// otherwise, use NONANTIALIASED_QUALITY.
+	lfFontMono.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
+	HFONT hFontMonoNew = CreateFontIndirect(&lfFontMono);
+	if (!hFontMonoNew) {
+		// Unable to create new font.
 		return;
 	}
 
-	// Adjust the font and create a new one.
-	wcscpy(lfFontMono.lfFaceName, font);
-	hFontMono = CreateFontIndirect(&lfFontMono);
+	// Update all existing monospaced controls.
+	for (vector<HWND>::const_iterator iter = hwndMonoControls.begin();
+	     iter != hwndMonoControls.end(); ++iter)
+	{
+		SetWindowFont(*iter, hFontMonoNew, FALSE);
+	}
+
+	// Delete the old font and save the new one.
+	HFONT hFontMonoOld = hFontMono;
+	hFontMono = hFontMonoNew;
+	if (hFontMonoOld) {
+		DeleteFont(hFontMonoOld);
+	}
 }
 
 /**
