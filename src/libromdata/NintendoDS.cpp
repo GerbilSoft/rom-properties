@@ -697,7 +697,6 @@ int NintendoDS::loadFieldData(void)
 	// Full game title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
-	printf("sz: %d\n", ARRAY_SIZE(d->nds_icon_title.title));
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
 		m_fields->addData_string(
 			utf16le_to_rp_string(d->nds_icon_title.title[lang], sizeof(d->nds_icon_title.title[lang])));
