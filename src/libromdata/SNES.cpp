@@ -139,7 +139,7 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
-	if ( (romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_SRAM_ENH ||
+	if ( (romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_BATT_ENH ||
 	    ((romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
 	     (romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
 	{
@@ -469,9 +469,9 @@ int SNES::loadFieldData(void)
 
 	// Cartridge HW.
 	static const rp_char *const hw_base_tbl[16] = {
-		_RP("ROM"), _RP("ROM, RAM"), _RP("ROM, SRAM"),
-		_RP("ROM, "), _RP("ROM, RAM, "), _RP("ROM, RAM, SRAM, "),
-		_RP("ROM, SRAM, "), nullptr,
+		_RP("ROM"), _RP("ROM, RAM"), _RP("ROM, RAM, Battery"),
+		_RP("ROM, "), _RP("ROM, RAM, "), _RP("ROM, RAM, Battery, "),
+		_RP("ROM, Battery, "), nullptr,
 
 		nullptr, nullptr, nullptr, nullptr,
 		nullptr, nullptr, nullptr, nullptr

@@ -60,19 +60,18 @@ typedef enum {
 	// ROM type is split into two nybbles.
 	// ROM = standard ROM cartridge
 	// RAM = extra RAM
-	// SRAM = save RAM
+	// BATT = battery backup
 	// ENH = enhancement chip
 	// TODO: Verify with an emulator.
 
 	// Low nybble.
 	SNES_ROMTYPE_ROM		= 0x00,
 	SNES_ROMTYPE_ROM_RAM		= 0x01,
-	// NOTE: Labelled as ROM+RAM+SRAM on smwiki.
-	SNES_ROMTYPE_ROM_SRAM		= 0x02,
+	SNES_ROMTYPE_ROM_RAM_BATT	= 0x02,
 	SNES_ROMTYPE_ROM_ENH		= 0x03,
 	SNES_ROMTYPE_ROM_RAM_ENH	= 0x04,
-	SNES_ROMTYPE_ROM_RAM_SRAM_ENH	= 0x05,
-	SNES_ROMTYPE_ROM_SRAM_ENH	= 0x06,
+	SNES_ROMTYPE_ROM_RAM_BATT_ENH	= 0x05,
+	SNES_ROMTYPE_ROM_BATT_ENH	= 0x06,
 	SNES_ROMTYPE_ROM_MASK		= 0x0F,
 
 	// High nybble.
