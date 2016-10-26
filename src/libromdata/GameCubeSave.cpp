@@ -644,8 +644,9 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	if (info->szFile > 8192*2043) {
-		// File is larger than 2043 blocks.
+	if (info->szFile > ((8192*2043) + 0x110)) {
+		// File is larger than 2043 blocks, plus the size
+		// of the largest header supported.
 		// This isn't possible on an actual memory card.
 		return -1;
 	}
