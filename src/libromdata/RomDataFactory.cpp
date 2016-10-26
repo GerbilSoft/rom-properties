@@ -65,7 +65,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	file->rewind();
 	info.header.addr = 0;
 	info.header.pData = header;
-	info.header.size = file->read(header, sizeof(header));
+	info.header.size = (uint32_t)file->read(header, sizeof(header));
 	if (info.header.size == 0) {
 		// Read error.
 		return nullptr;
