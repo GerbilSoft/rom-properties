@@ -75,6 +75,7 @@ SET(libromdata_SRCS
 	SystemRegion.cpp
 	GameCubeSave.cpp
 	N64.cpp
+	SNES.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
@@ -121,6 +122,8 @@ SET(libromdata_H
 	n64_structs.h
 	dmg_structs.h
 	gba_structs.h
+	SNES.hpp
+	snes_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
