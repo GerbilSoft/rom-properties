@@ -590,9 +590,7 @@ int DMG::loadFieldData(void)
 	// Entry Point
 	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
 		// this is the "standard" way of doing the entry point
-		uint16_t entry_address;
-		memcpy((void*)&entry_address,(void*)(romHeader->entry+2),sizeof(uint16_t)); //ugly hack, but avoids aliasing warnings
-		entry_address = le16_to_cpu(entry_address);
+		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
 		m_fields->addData_string_numeric(entry_address, RomFields::FB_HEX, 4);
 	}
 	else{
