@@ -30,28 +30,28 @@ extern "C" {
 #endif
 
 /**
- * ROM makeup. (SNES_RomHeader.rom_makeup)
+ * ROM mapping. (SNES_RomHeader.rom_mapping)
  */
 typedef enum {
-	SNES_ROMMAKEUP_MASK = 0x37,
+	SNES_ROMMAPPING_MASK = 0x37,
 
 	// ROM type flags.
-	SNES_ROMMAKEUP_FLAG_ALWAYS = 0x20,	// Always set.
-	SNES_ROMMAKEUP_FLAG_LoROM = 0x00,
-	SNES_ROMMAKEUP_FLAG_HiROM = 0x01,
-	SNES_ROMMAKEUP_FLAG_SlowROM = 0x00,
-	SNES_ROMMAKEUP_FLAG_FastROM = 0x10,
-	SNES_ROMMAKEUP_FLAG_ExLoROM = 0x02,
-	SNES_ROMMAKEUP_FLAG_ExHiROM = 0x04,
+	SNES_ROMMAPPING_FLAG_ALWAYS = 0x20,	// Always set.
+	SNES_ROMMAPPING_FLAG_LoROM = 0x00,
+	SNES_ROMMAPPING_FLAG_HiROM = 0x01,
+	SNES_ROMMAPPING_FLAG_SlowROM = 0x00,
+	SNES_ROMMAPPING_FLAG_FastROM = 0x10,
+	SNES_ROMMAPPING_FLAG_ExLoROM = 0x02,
+	SNES_ROMMAPPING_FLAG_ExHiROM = 0x04,
 
 	// Standard ROM types.
-	SNES_ROMMAKEUP_LoROM = 0x20,
-	SNES_ROMMAKEUP_HiROM = 0x21,
-	SNES_ROMMAKEUP_LoROM_FastROM = 0x30,
-	SNES_ROMMAKEUP_HiROM_FastROM = 0x31,
-	SNES_ROMMAKEUP_ExLoROM = 0x32,
-	SNES_ROMMAKEUP_ExHiROM = 0x35,
-} SNES_ROM_Makeup;
+	SNES_ROMMAPPING_LoROM = 0x20,
+	SNES_ROMMAPPING_HiROM = 0x21,
+	SNES_ROMMAPPING_LoROM_FastROM = 0x30,
+	SNES_ROMMAPPING_HiROM_FastROM = 0x31,
+	SNES_ROMMAPPING_ExLoROM = 0x32,
+	SNES_ROMMAPPING_ExHiROM = 0x35,
+} SNES_ROM_Mapping;
 
 /**
  * ROM type. (SNES_RomHeader.rom_type)
@@ -112,7 +112,7 @@ typedef struct PACKED _SNES_RomHeader {
 
 	/** Standard SNES header. **/
 	char title[21];
-	uint8_t rom_makeup;		// LoROM, HiROM
+	uint8_t rom_mapping;		// LoROM, HiROM
 	uint8_t rom_type;
 	uint8_t rom_size;		// ROM size. (1024 << rom_size)
 	uint8_t sram_size;		// SRAM size. (1024 << sram_size);

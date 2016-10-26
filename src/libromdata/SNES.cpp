@@ -59,11 +59,11 @@ class SNESPrivate
 	public:
 		/**
 		 * Is the specified ROM header valid?
-		 * @param pRomHeader SNES ROM header to check.
+		 * @param romHeader SNES ROM header to check.
 		 * @param isHiROM True if the header was read from a HiROM address; false if not.
 		 * @return True if the ROM header is valid; false if not.
 		 */
-		static bool isRomHeaderValid(const SNES_RomHeader *pRomHeader, bool isHiROM);
+		static bool isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM);
 
 	public:
 		// ROM header.
@@ -77,6 +77,7 @@ class SNESPrivate
 // ROM fields.
 const struct RomFields::Desc SNESPrivate::snes_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("ROM Mapping"), RomFields::RFT_STRING, {nullptr}},
 	// TODO: More fields.
 };
 
@@ -86,43 +87,43 @@ SNESPrivate::SNESPrivate()
 
 /**
  * Is the specified ROM header valid?
- * @param pRomHeader SNES ROM header to check.
+ * @param romHeader SNES ROM header to check.
  * @param isHiROM True if the header was read from a HiROM address; false if not.
  * @return True if the ROM header is valid; false if not.
  */
-bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *pRomHeader, bool isHiROM)
+bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM)
 {
 	// Game title: Should be ASCII.
-	for (int i = 0; i < ARRAY_SIZE(pRomHeader->title); i++) {
-		if (pRomHeader->title[i] & 0x80) {
+	for (int i = 0; i < ARRAY_SIZE(romHeader->title); i++) {
+		if (romHeader->title[i] & 0x80) {
 			// Invalid character.
 			return false;
 		}
 	}
 
-	// Is the ROM makeup byte valid?
-	switch (pRomHeader->rom_makeup) {
-		case SNES_ROMMAKEUP_LoROM:
-		case SNES_ROMMAKEUP_LoROM_FastROM:
-		case SNES_ROMMAKEUP_ExLoROM:
+	// Is the ROM mapping byte valid?
+	switch (romHeader->rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+		case SNES_ROMMAPPING_LoROM_FastROM:
+		case SNES_ROMMAPPING_ExLoROM:
 			if (isHiROM) {
 				// LoROM mapping at a HiROM address.
 				// Not valid.
 				return false;
 			}
-			// Valid ROM makeup byte.
+			// Valid ROM mapping byte.
 			break;
 
-		case SNES_ROMMAKEUP_HiROM:
-		case SNES_ROMMAKEUP_HiROM_FastROM:
-		case SNES_ROMMAKEUP_ExHiROM:
+		case SNES_ROMMAPPING_HiROM:
+		case SNES_ROMMAPPING_HiROM_FastROM:
+		case SNES_ROMMAPPING_ExHiROM:
 			if (!isHiROM) {
 				// HiROM mapping at a LoROM address.
 				// Not valid.
 				return false;
 			}
 
-			// Valid ROM makeup byte.
+			// Valid ROM mapping byte.
 			break;
 
 		default:
@@ -132,29 +133,29 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *pRomHeader, bool isHiRO
 
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
-	if ( (pRomHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_SRAM_ENH ||
-	    ((pRomHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x40 &&
-	     (pRomHeader->rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
+	if ( (romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_SRAM_ENH ||
+	    ((romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x40 &&
+	     (romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
 	{
 		// Not a valid ROM type.
 		return false;
 	}
 
 	// Check the extended header.
-	if (pRomHeader->old_publisher_code == 0x33) {
+	if (romHeader->old_publisher_code == 0x33) {
 		// Extended header should be present.
 		// New publisher code and game ID must be alphanumeric.
-		if (!isalnum(pRomHeader->ext.new_publisher_code[0]) ||
-		    !isalnum(pRomHeader->ext.new_publisher_code[1]))
+		if (!isalnum(romHeader->ext.new_publisher_code[0]) ||
+		    !isalnum(romHeader->ext.new_publisher_code[1]))
 		{
 			// New publisher code is invalid.
 			return false;
 		}
 
 		// Game ID must contain alphanumeric characters or a space.
-		for (int i = 0; i < ARRAY_SIZE(pRomHeader->ext.id4); i++) {
-			if (!isalnum(pRomHeader->ext.id4[i]) &&
-			    pRomHeader->ext.id4[i] != ' ')
+		for (int i = 0; i < ARRAY_SIZE(romHeader->ext.id4); i++) {
+			if (!isalnum(romHeader->ext.id4[i]) &&
+			    romHeader->ext.id4[i] != ' ')
 			{
 				// Game ID is invalid.
 				return false;
@@ -397,6 +398,42 @@ int SNES::loadFieldData(void)
 	// TODO: Space elimination.
 	m_fields->addData_string(latin1_to_rp_string(
 		romHeader->title, sizeof(romHeader->title)));
+
+	// ROM mapping.
+	const rp_char *rom_mapping;
+	switch (romHeader->rom_mapping) {
+		case SNES_ROMMAPPING_LoROM:
+			rom_mapping = _RP("LoROM");
+			break;
+		case SNES_ROMMAPPING_HiROM:
+			rom_mapping = _RP("HiROM");
+			break;
+		case SNES_ROMMAPPING_LoROM_FastROM:
+			rom_mapping = _RP("LoROM+FastROM");
+			break;
+		case SNES_ROMMAPPING_HiROM_FastROM:
+			rom_mapping = _RP("HiROM+FastROM");
+			break;
+		case SNES_ROMMAPPING_ExLoROM:
+			rom_mapping = _RP("ExLoROM");
+			break;
+		case SNES_ROMMAPPING_ExHiROM:
+			rom_mapping = _RP("ExHiROM");
+			break;
+		default:
+			rom_mapping = nullptr;
+			break;
+	}
+	if (rom_mapping) {
+		m_fields->addData_string(rom_mapping);
+	} else {
+		// Unknown ROM mapping.
+		char buf[20];
+		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->rom_mapping);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
 
 	// TODO: Other fields.
 
