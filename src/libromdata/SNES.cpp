@@ -158,12 +158,18 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 
 		// Game ID must contain alphanumeric characters or a space.
 		for (int i = 0; i < ARRAY_SIZE(romHeader->ext.id4); i++) {
-			if (!isalnum(romHeader->ext.id4[i]) &&
-			    romHeader->ext.id4[i] != ' ')
-			{
-				// Game ID is invalid.
-				return false;
+			// ID4 should be in the format "SMWJ" or "MW  ".
+			if (isalnum(romHeader->ext.id4[i])) {
+				// Alphanumeric character.
+				continue;
+			} else if (romHeader->ext.id4[i] == ' ' && i >= 2) {
+				// Some game IDs are two characters,
+				// and the remaining characters are spaces.
+				continue;
 			}
+
+			// Invalid character.
+			return false;
 		}
 	}
 
