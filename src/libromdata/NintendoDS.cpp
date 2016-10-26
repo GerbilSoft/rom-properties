@@ -491,23 +491,24 @@ NintendoDS::NintendoDS(IRpFile *file)
 	// Read the ROM header.
 	static_assert(sizeof(NDS_RomHeader) == NDS_RomHeader_SIZE,
 		"NDS_RomHeader is not 4,096 bytes.");
-	NDS_RomHeader header;
+	NDS_RomHeader romHeader;
 	m_file->rewind();
-	size_t size = m_file->read(&header, sizeof(header));
-	if (size != sizeof(header))
+	size_t size = m_file->read(&romHeader, sizeof(romHeader));
+	if (size != sizeof(romHeader))
 		return;
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
-	info.pHeader = reinterpret_cast<const uint8_t*>(&header);
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
 	m_isValid = (isRomSupported(&info) >= 0);
 
 	if (m_isValid) {
 		// Save the header for later.
-		memcpy(&d->romHeader, &header, sizeof(d->romHeader));
+		memcpy(&d->romHeader, &romHeader, sizeof(d->romHeader));
 	}
 }
 
@@ -523,7 +524,13 @@ NintendoDS::~NintendoDS()
  */
 int NintendoDS::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(NDS_RomHeader)) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(NDS_RomHeader))
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
@@ -537,8 +544,8 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
-	const NDS_RomHeader *romHeader =
-		reinterpret_cast<const NDS_RomHeader*>(info->pHeader);
+	const NDS_RomHeader *const romHeader =
+		reinterpret_cast<const NDS_RomHeader*>(info->header.pData);
 	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		// TODO: DS vs. DSi?
@@ -689,7 +696,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// Nintendo DS ROM header.
-	const NDS_RomHeader *romHeader = &d->romHeader;
+	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));

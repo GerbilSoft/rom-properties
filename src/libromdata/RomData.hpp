@@ -89,15 +89,20 @@ class RomData
 		/** ROM detection functions. **/
 
 		/**
+		 * Header information.
+		 */
+		struct HeaderInfo {
+			uint32_t addr;		// Start address in the ROM.
+			uint32_t size;		// Length.
+			const uint8_t *pData;	// Data.
+		};
+
+		/**
 		 * ROM detection information.
 		 * Used for isRomSupported() functions.
 		 */
 		struct DetectInfo {
-			// ROM header.
-			const uint8_t *pHeader;	// ROM header.
-			size_t szHeader;	// Size of header.
-
-			// File information.
+			HeaderInfo header;	// ROM header.
 			const rp_char *ext;	// File extension, including leading '.'
 			int64_t szFile;		// File size. (Required for certain types.)
 		};

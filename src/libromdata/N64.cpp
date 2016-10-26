@@ -128,10 +128,11 @@ N64::N64(IRpFile *file)
 
 	// Check if this disc image is supported.
 	DetectInfo info;
-	info.pHeader = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.szHeader = sizeof(d->romHeader);
-	info.ext = nullptr;	// TODO
-	info.szFile = m_file->fileSize();
+	info.header.addr = 0;
+	info.header.size = sizeof(d->romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
+	info.ext = nullptr;	// Not needed for N64.
+	info.szFile = 0;	// Not needed for N64.
 	d->romType = isRomSupported(&info);
 
 	switch (d->romType) {
@@ -197,14 +198,20 @@ N64::~N64()
  */
 int N64::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(N64_RomHeader)) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(N64_RomHeader))
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
 	const N64_RomHeader *const romHeader =
-		reinterpret_cast<const N64_RomHeader*>(info->pHeader);
+		reinterpret_cast<const N64_RomHeader*>(info->header.pData);
 
 	// Check the magic number.
 	// NOTE: This technically isn't a "magic number",

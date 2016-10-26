@@ -113,8 +113,9 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
-	info.pHeader = reinterpret_cast<const uint8_t*>(&romHeader);
-	info.szHeader = sizeof(romHeader);
+	info.header.addr = 0;
+	info.header.size = sizeof(romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
 	m_isValid = (isRomSupported(&info) >= 0);
@@ -137,7 +138,13 @@ GameBoyAdvance::~GameBoyAdvance()
  */
 int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(GBA_RomHeader)) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(GBA_RomHeader))
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
@@ -150,7 +157,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	};
 
 	const GBA_RomHeader *const gba_header =
-		reinterpret_cast<const GBA_RomHeader*>(info->pHeader);
+		reinterpret_cast<const GBA_RomHeader*>(info->header.pData);
 	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		return 0;

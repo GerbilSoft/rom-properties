@@ -63,8 +63,13 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	// This should be enough to detect most systems.
 	uint8_t header[4096+256];
 	file->rewind();
-	info.szHeader = file->read(header, sizeof(header));
-	info.pHeader = header;
+	info.header.addr = 0;
+	info.header.pData = header;
+	info.header.size = file->read(header, sizeof(header));
+	if (info.header.size == 0) {
+		// Read error.
+		return nullptr;
+	}
 
 	// TODO: File extension? (Needed for .gci)
 	info.ext = nullptr;

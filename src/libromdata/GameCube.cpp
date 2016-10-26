@@ -964,8 +964,9 @@ GameCube::GameCube(IRpFile *file)
 
 	// Check if this disc image is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for GCN.
 	info.szFile = 0;	// Not needed for GCN.
 	d->discType = isRomSupported(&info);
@@ -1114,14 +1115,20 @@ GameCube::~GameCube()
  */
 int GameCube::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(GCN_DiscHeader)) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(GCN_DiscHeader))
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return GameCubePrivate::DISC_UNKNOWN;
 	}
 
 	// Check for the magic numbers.
-	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->pHeader);
+	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
 	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
@@ -1142,13 +1149,13 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// decides to make a GCN or Wii disc image with the game ID "WBFS".
 
 	// Check for WBFS.
-	if (WbfsReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
+	if (WbfsReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// Disc image is stored in "HDD" sector 1.
-		unsigned int hdd_sector_size = (1 << info->pHeader[8]);
-		if (info->szHeader >= hdd_sector_size + 0x200) {
+		unsigned int hdd_sector_size = (1 << info->header.pData[8]);
+		if (info->header.size >= hdd_sector_size + 0x200) {
 			// Check for Wii magic.
 			// FIXME: GCN magic too?
-			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->pHeader[hdd_sector_size]);
+			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
 			if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
@@ -1157,7 +1164,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for CISO.
-	if (CisoGcnReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
+	if (CisoGcnReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// CISO format doesn't store a copy of the disc header
 		// at the beginning of the disc, so we can't check the
 		// system format here.
@@ -1165,7 +1172,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for TGC.
-	const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->pHeader);
+	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
 	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
 		// TGC images have their own 32 KB header, so we can't
 		// check the actual GCN/Wii header here.

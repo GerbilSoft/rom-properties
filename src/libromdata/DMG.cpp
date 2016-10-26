@@ -30,8 +30,9 @@
 #include "file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
-#include <cstring>
+#include <cassert>
 #include <cctype>
+#include <cstring>
 
 // C++ includes.
 #include <vector>
@@ -345,8 +346,9 @@ DMG::DMG(IRpFile *file)
 
 	// Check if this ROM is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
 	m_isValid = (isRomSupported(&info) >= 0);
@@ -372,21 +374,28 @@ DMG::~DMG()
  */
 int DMG::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info)
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 0x150)
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
 		return -1;
-	
-	if (info->szHeader >= 0x150) {
-		// Check the system name.
-		const DMG_RomHeader *romHeader =
-			reinterpret_cast<const DMG_RomHeader*>(&info->pHeader[0x100]);
-		if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
-			// Found a DMG ROM.
-			if (romHeader->cgbflag & 0x80) {
-				//TODO: Make this an enum, maybe
-				return 1; // CGB supported
-			}
-			return 0;
+	}
+
+	// Check the system name.
+	const DMG_RomHeader *const romHeader =
+		reinterpret_cast<const DMG_RomHeader*>(&info->header.pData[0x100]);
+	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
+		// Found a DMG ROM.
+		if (romHeader->cgbflag & 0x80) {
+			//TODO: Make this an enum, maybe
+			return 1; // CGB supported
 		}
+		return 0;
 	}
 
 	// Not supported.
@@ -499,7 +508,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// DMG ROM header, excluding the RST table.
-	const DMG_RomHeader *romHeader = &d->romHeader;
+	const DMG_RomHeader *const romHeader = &d->romHeader;
 	
 	char buffer[64];
 	int len;

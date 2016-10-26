@@ -591,9 +591,10 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 
 	// Check if this disc image is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
-	info.ext = nullptr;
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
+	info.ext = nullptr;	// Not needed for GCN save files.
 	info.szFile = m_file->fileSize();
 	d->saveType = isRomSupported(&info);
 
@@ -638,7 +639,13 @@ GameCubeSave::~GameCubeSave()
  */
 int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < 1024) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 1024)
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
@@ -653,7 +660,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 
 	// Check for GCS. (GameShark)
 	static const uint8_t gcs_magic[] = {'G','C','S','A','V','E'};
-	if (!memcmp(info->pHeader, gcs_magic, sizeof(gcs_magic))) {
+	if (!memcmp(info->header.pData, gcs_magic, sizeof(gcs_magic))) {
 		// Is the size correct?
 		// GCS files are a multiple of 8 KB, plus 336 bytes:
 		// - 272 bytes: GCS-specific header.
@@ -663,7 +670,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->pHeader[0x110], data_size, GameCubeSavePrivate::SAVE_TYPE_GCS))
+			    &info->header.pData[0x110], data_size, GameCubeSavePrivate::SAVE_TYPE_GCS))
 			{
 				// This is a GCS file.
 				return GameCubeSavePrivate::SAVE_TYPE_GCS;
@@ -673,7 +680,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 
 	// Check for SAV. (MaxDrive)
 	static const uint8_t sav_magic[] = {'D','A','T','E','L','G','C','_','S','A','V','E',0,0,0,0};
-	if (!memcmp(info->pHeader, sav_magic, sizeof(sav_magic))) {
+	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic))) {
 		// Is the size correct?
 		// SAVE files are a multiple of 8 KB, plus 192 bytes:
 		// - 128 bytes: SAV-specific header.
@@ -683,7 +690,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->pHeader[0x80], data_size, GameCubeSavePrivate::SAVE_TYPE_SAV))
+			    &info->header.pData[0x80], data_size, GameCubeSavePrivate::SAVE_TYPE_SAV))
 			{
 				// This is a GCS file.
 				return GameCubeSavePrivate::SAVE_TYPE_SAV;
@@ -698,7 +705,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	if (data_size % 8192 == 0) {
 		// Check the CARD directory entry.
 		if (GameCubeSavePrivate::isCardDirEntry(
-		    info->pHeader, data_size, GameCubeSavePrivate::SAVE_TYPE_GCI))
+		    info->header.pData, data_size, GameCubeSavePrivate::SAVE_TYPE_GCI))
 		{
 			// This is a GCI file.
 			return GameCubeSavePrivate::SAVE_TYPE_GCI;
