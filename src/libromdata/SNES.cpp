@@ -134,7 +134,7 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 	// Is the ROM type byte valid?
 	// TODO: Check if any other types exist.
 	if ( (romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) > SNES_ROMTYPE_ROM_SRAM_ENH ||
-	    ((romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x40 &&
+	    ((romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >= 0x50 &&
 	     (romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) <= 0xD0))
 	{
 		// Not a valid ROM type.
