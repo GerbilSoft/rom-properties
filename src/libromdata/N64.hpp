@@ -45,7 +45,7 @@ class N64 : public RomData
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
-		 * @param file Open disc image.
+		 * @param file Open ROM image.
 		 */
 		explicit N64(IRpFile *file);
 		virtual ~N64();

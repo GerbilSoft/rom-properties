@@ -107,7 +107,7 @@ N64Private::N64Private()
  *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
- * @param file Open disc image.
+ * @param file Open ROM image.
  */
 N64::N64(IRpFile *file)
 	: RomData(file, N64Private::n64_fields, ARRAY_SIZE(N64Private::n64_fields))
