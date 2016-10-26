@@ -71,6 +71,7 @@ class N64Private
 
 	public:
 		// ROM header.
+		// NOTE: Fields have been byteswapped in the constructor.
 		N64_RomHeader romHeader;
 };
 
