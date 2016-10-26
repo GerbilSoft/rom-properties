@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "SNES.hpp"
+#include "NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
 
@@ -77,7 +78,10 @@ class SNESPrivate
 // ROM fields.
 const struct RomFields::Desc SNESPrivate::snes_fields[] = {
 	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("ROM Mapping"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Cartridge HW"), RomFields::RFT_STRING, {nullptr}},
 	// TODO: More fields.
 };
 
@@ -399,6 +403,26 @@ int SNES::loadFieldData(void)
 	m_fields->addData_string(latin1_to_rp_string(
 		romHeader->title, sizeof(romHeader->title)));
 
+	// Game ID.
+	// NOTE: Only valid if the old publisher code is 0x33.
+	if (romHeader->old_publisher_code == 0x33) {
+		// TODO: Space elimination.
+		m_fields->addData_string(latin1_to_rp_string(
+			romHeader->ext.id4, sizeof(romHeader->ext.id4)));
+	} else {
+		// No game ID.
+		m_fields->addData_string(_RP("Unknown"));
+	}
+
+	// Publisher.
+	const rp_char* publisher;
+	if (romHeader->old_publisher_code == 0x33) {
+		publisher = NintendoPublishers::lookup(romHeader->ext.new_publisher_code);
+	} else {
+		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
+	}
+	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
+
 	// ROM mapping.
 	const rp_char *rom_mapping;
 	switch (romHeader->rom_mapping) {
@@ -433,6 +457,39 @@ int SNES::loadFieldData(void)
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
 		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// Cartridge HW.
+	static const rp_char *const hw_base_tbl[16] = {
+		_RP("ROM"), _RP("ROM, RAM"), _RP("ROM, SRAM"),
+		_RP("ROM, "), _RP("ROM, RAM, "), _RP("ROM, RAM, SRAM, "),
+		_RP("ROM, SRAM, "), nullptr,
+
+		nullptr, nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr, nullptr
+	};
+	static const rp_char *const hw_enh_tbl[16] = {
+		_RP("DSP-1"), _RP("Super FX"), _RP("OBC-1"), _RP("SA-1"),
+		_RP("S-DD1"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
+		_RP("Unknown"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
+		_RP("Unknown"), _RP("Unknown"), _RP("Other"), _RP("Custom")
+	};
+
+	const rp_char *const hw_base = hw_base_tbl[romHeader->rom_type & SNES_ROMTYPE_ROM_MASK];
+	if (hw_base) {
+		if ((romHeader->rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
+			// Enhancement chip.
+			const rp_char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
+			rp_string rps(hw_base);
+			rps.append(hw_enh);
+			m_fields->addData_string(rps);
+		} else {
+			// No enhancement chip.
+			m_fields->addData_string(hw_base);
+		}
+	} else {
+		// Unknown cartridge HW.
+		m_fields->addData_string(_RP("Unknown"));
 	}
 
 	// TODO: Other fields.
