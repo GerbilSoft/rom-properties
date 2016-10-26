@@ -82,6 +82,8 @@ const struct RomFields::Desc SNESPrivate::snes_fields[] = {
 	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("ROM Mapping"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Cartridge HW"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	// TODO: More fields.
 };
 
@@ -478,7 +480,7 @@ int SNES::loadFieldData(void)
 		_RP("DSP-1"), _RP("Super FX"), _RP("OBC-1"), _RP("SA-1"),
 		_RP("S-DD1"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
 		_RP("Unknown"), _RP("Unknown"), _RP("Unknown"), _RP("Unknown"),
-		_RP("Unknown"), _RP("Unknown"), _RP("Other"), _RP("Custom")
+		_RP("Unknown"), _RP("Unknown"), _RP("Other"), _RP("Custom Chip")
 	};
 
 	const rp_char *const hw_base = hw_base_tbl[romHeader->rom_type & SNES_ROMTYPE_ROM_MASK];
@@ -497,6 +499,23 @@ int SNES::loadFieldData(void)
 		// Unknown cartridge HW.
 		m_fields->addData_string(_RP("Unknown"));
 	}
+
+	// Region
+	static const rp_char *const region_tbl[0x15] = {
+		_RP("Japan"), _RP("North America"), _RP("Europe"), _RP("Scandinavia"),
+		nullptr, nullptr, _RP("France"), _RP("Netherlands"),
+		_RP("Spain"), _RP("Germany"), _RP("Italy"), _RP("China"),
+		nullptr, _RP("South Korea"), _RP("All"), _RP("Canada"),
+		_RP("Brazil"), _RP("Australia"), _RP("Other"), _RP("Other"),
+		_RP("Other")
+	};
+	const rp_char *region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
+		? region_tbl[romHeader->destination_code]
+		: nullptr);
+	m_fields->addData_string(region ? region : _RP("Unknown"));
+
+	// Revision
+	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
 
 	// TODO: Other fields.
 
