@@ -246,7 +246,15 @@ SNES::SNES(IRpFile *file)
 		static const char gdsf3[] = "GAME DOCTOR SF ";
 		if (!memcmp(&smdHeader, gdsf3, sizeof(gdsf3)-1)) {
 			// Game Doctor ROM header.
-			isCopierHeader = true;;
+			isCopierHeader = true;
+		} else {
+			// Check for "SUPERUFO".
+			static const char superufo[] = "SUPERUFO";
+			const uint8_t *u8ptr = reinterpret_cast<const uint8_t*>(&smdHeader);
+			if (!memcmp(&u8ptr[8], superufo, sizeof(superufo)-8)) {
+				// Super UFO ROM header.
+				isCopierHeader = true;
+			}
 		}
 	}
 
@@ -258,11 +266,15 @@ SNES::SNES(IRpFile *file)
 		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512},
 		// Headered first.
 		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0},
+		// Super UFO.
 	};
 
 	d->header_address = 0;
 	const uint32_t *pHeaderAddress = &all_header_addresses[isCopierHeader][0];
 	for (int i = 0; i < 4; i++, pHeaderAddress++) {
+		if (*pHeaderAddress == 0)
+			break;
+
 		m_file->seek(*pHeaderAddress);
 		size = m_file->read(&d->romHeader, sizeof(d->romHeader));
 		if (size != sizeof(d->romHeader))
@@ -320,12 +332,19 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	// Check for "GAME DOCTOR SF ".
-	// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
 	if (info->header.addr == 0 && info->header.size >= 0x200) {
+		// Check for "GAME DOCTOR SF ".
+		// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
 		static const char gdsf3[] = "GAME DOCTOR SF ";
 		if (!memcmp(info->header.pData, gdsf3, sizeof(gdsf3)-1)) {
 			// Game Doctor ROM header.
+			return 0;
+		}
+
+		// Check for "SUPERUFO".
+		static const char superufo[] = "SUPERUFO";
+		if (!memcmp(&info->header.pData[8], superufo, sizeof(superufo)-8)) {
+			// Super UFO ROM header.
 			return 0;
 		}
 	}
@@ -379,11 +398,12 @@ const rp_char *SNES::systemName(uint32_t type) const
 vector<const rp_char*> SNES::supportedFileExtensions_static(void)
 {
 	vector<const rp_char*> ret;
-	ret.reserve(4);
+	ret.reserve(5);
 	ret.push_back(_RP(".smc"));
 	ret.push_back(_RP(".swc"));
 	ret.push_back(_RP(".sfc"));
 	ret.push_back(_RP(".fig"));
+	ret.push_back(_RP(".ufo"));
 	return ret;
 }
 
