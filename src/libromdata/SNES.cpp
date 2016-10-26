@@ -240,6 +240,16 @@ SNES::SNES(IRpFile *file)
 		isCopierHeader = areFieldsZero;
 	}
 
+	if (!isCopierHeader) {
+		// Check for "GAME DOCTOR SF ".
+		// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
+		static const char gdsf3[] = "GAME DOCTOR SF ";
+		if (!memcmp(&smdHeader, gdsf3, sizeof(gdsf3)-1)) {
+			// Game Doctor ROM header.
+			isCopierHeader = true;;
+		}
+	}
+
 	// Header addresses to check.
 	// If a copier header is detected, use index 1,
 	// which checks +512 offsets first.
@@ -290,9 +300,7 @@ SNES::~SNES()
 int SNES::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
-	assert(info->ext != nullptr);
-	assert(info->ext[0] != 0);
-	if (!info || !info->ext || info->ext[0] == 0) {
+	if (!info) {
 		// Either no detection information was specified,
 		// or the file extension is missing.
 		return -1;
@@ -300,12 +308,24 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
-	vector<const rp_char*> exts = supportedFileExtensions_static();
-	for (vector<const rp_char*>::const_iterator iter = exts.begin();
-	     iter != exts.end(); ++iter)
-	{
-		if (!rp_strcmp(info->ext, *iter)) {
-			// File extension is supported.
+	if (info->ext && info->ext[0] != 0) {
+		vector<const rp_char*> exts = supportedFileExtensions_static();
+		for (vector<const rp_char*>::const_iterator iter = exts.begin();
+		iter != exts.end(); ++iter)
+		{
+			if (!rp_strcmp(info->ext, *iter)) {
+				// File extension is supported.
+				return 0;
+			}
+		}
+	}
+
+	// Check for "GAME DOCTOR SF ".
+	// (UCON64 uses "GAME DOCTOR SF 3", but there's multiple versions.)
+	if (info->header.addr == 0 && info->header.size >= 0x200) {
+		static const char gdsf3[] = "GAME DOCTOR SF ";
+		if (!memcmp(info->header.pData, gdsf3, sizeof(gdsf3)-1)) {
+			// Game Doctor ROM header.
 			return 0;
 		}
 	}
