@@ -50,10 +50,18 @@ IF /I "%PROCESSOR_ARCHITEW6432%" == "AMD64" (
 	:: Running in 32-bit cmd.
 	SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 	SET "REGSVR32_64BIT=%SYSTEMROOT%\SYSNATIVE\REGSVR32.EXE"
+
+	:: Check for the MSVC 2015 runtime.
+	IF NOT EXIST "%SYSTEMROOT%\SYSTEM32\MSVCP140.DLL" GOTO :no_msvcrt
+	IF NOT EXIST "%SYSTEMROOT%\SYSNATIVE\MSVCP140.DLL" GOTO :no_msvcrt
 ) ELSE (
 	:: Running in 64-bit cmd.
 	SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSWOW64\REGSVR32.EXE"
 	SET "REGSVR32_64BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
+
+	:: Check for the MSVC 2015 runtime.
+	IF EXIST "%SYSTEMROOT%\SYSWOW64\MSVCP140.DLL" GOTO :no_msvcrt
+	IF NOT EXIST "%SYSTEMROOT%\SYSTEM32\MSVCP140.DLL" GOTO :no_msvcrt
 )
 
 IF NOT EXIST rom-properties-amd64.dll (
@@ -92,6 +100,9 @@ EXIT /B 0
 :i386
 SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 
+:: Check for the MSVC 2015 runtime.
+IF NOT EXIST "%SYSTEMROOT%\SYSTEM32\MSVCP140.DLL" GOTO :no_msvcrt
+
 IF NOT EXIST rom-properties-i386.dll (
 	ECHO *** ERROR: rom-properties-i386.dll not found.
 	PAUSE
@@ -109,3 +120,14 @@ ECHO 32-bit DLL registration successful.
 ECHO.
 PAUSE
 EXIT /B 0
+
+:no_msvcrt
+ECHO *** ERROR: MSVC 2015 runtime was not found.
+ECHO Please download and install the MSVC 2015 runtime packages from:
+ECHO https://www.microsoft.com/en-us/download/details.aspx?id=53587
+ECHO.
+ECHO NOTE: On 64-bit systems, you will need to install both the 32-bit
+ECHO and the 64-bit versions.
+ECHO.
+PAUSE
+EXIT /B 1
