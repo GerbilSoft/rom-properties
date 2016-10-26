@@ -133,7 +133,7 @@ N64::N64(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for N64.
 	info.szFile = 0;	// Not needed for N64.
-	d->romType = isRomSupported(&info);
+	d->romType = isRomSupported_static(&info);
 
 	switch (d->romType) {
 		case N64Private::ROM_TYPE_Z64:

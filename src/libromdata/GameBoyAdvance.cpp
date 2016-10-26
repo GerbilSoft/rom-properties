@@ -118,7 +118,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
-	m_isValid = (isRomSupported(&info) >= 0);
+	m_isValid = (isRomSupported_static(&info) >= 0);
 
 	if (m_isValid) {
 		// Save the ROM header.

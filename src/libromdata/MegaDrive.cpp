@@ -352,7 +352,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
-	d->romType = isRomSupported(&info);
+	d->romType = isRomSupported_static(&info);
 
 	if (d->romType >= 0) {
 		// Save the header for later.

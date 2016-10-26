@@ -351,7 +351,7 @@ DMG::DMG(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	m_isValid = (isRomSupported(&info) >= 0);
+	m_isValid = (isRomSupported_static(&info) >= 0);
 
 	if (m_isValid) {
 		// Save the header for later.

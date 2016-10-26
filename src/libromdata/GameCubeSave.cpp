@@ -596,7 +596,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for GCN save files.
 	info.szFile = m_file->fileSize();
-	d->saveType = isRomSupported(&info);
+	d->saveType = isRomSupported_static(&info);
 
 	// Save the directory entry for later.
 	uint32_t gciOffset;	// offset to GCI header

@@ -504,7 +504,7 @@ NintendoDS::NintendoDS(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
-	m_isValid = (isRomSupported(&info) >= 0);
+	m_isValid = (isRomSupported_static(&info) >= 0);
 
 	if (m_isValid) {
 		// Save the header for later.

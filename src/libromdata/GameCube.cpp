@@ -969,7 +969,7 @@ GameCube::GameCube(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for GCN.
 	info.szFile = 0;	// Not needed for GCN.
-	d->discType = isRomSupported(&info);
+	d->discType = isRomSupported_static(&info);
 
 	// TODO: DiscReaderFactory?
 	if (d->discType >= 0) {
