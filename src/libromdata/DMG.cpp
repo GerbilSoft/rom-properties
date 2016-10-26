@@ -22,6 +22,7 @@
 
 #include "DMG.hpp"
 #include "NintendoPublishers.hpp"
+#include "dmg_structs.h"
 
 #include "common.h"
 #include "byteswap.h"
@@ -77,40 +78,6 @@ class DMGPrivate
 		static const struct RomFields::Desc dmg_fields[];
 
 		/** Internal ROM data. **/
-
-		/**
-		 * Game Boy ROM header.
-		 * 
-		 * NOTE: Strings are NOT null-terminated!
-		 */
-		#define DMG_RomHeader_SIZE 80
-		#pragma pack(1)
-		struct PACKED DMG_RomHeader {
-			uint8_t entry[4];
-			uint8_t nintendo[0x30];
-
-			// There are 3 variations on the next 16 bytes:
-			// 1) title(16)
-			// 2) title(15) cgbflag(1)
-			// 3) title(11) gamecode(4) cgbflag(1)
-			// In this struct we're assuming the 2nd
-
-			char title[15]; // Padded with null
-			uint8_t cgbflag;
-
-			char new_publisher_code[2];
-			uint8_t sgbflag;
-			uint8_t cart_type;
-			uint8_t rom_size;
-			uint8_t ram_size;
-			uint8_t region;
-			uint8_t old_publisher_code;
-			uint8_t version;
-
-			uint8_t header_checksum; // checked by bootrom
-			uint16_t rom_checksum;   // checked by no one
-		};
-		#pragma pack()
 
 		// Cartridge hardware.
 		enum DMG_Hardware {
@@ -369,7 +336,7 @@ DMG::DMG(IRpFile *file)
 	m_file->rewind();
 
 	// Read the ROM header. [0x150 bytes]
-	static_assert(sizeof(DMGPrivate::DMG_RomHeader) == DMG_RomHeader_SIZE,
+	static_assert(sizeof(DMG_RomHeader) == DMG_RomHeader_SIZE,
 		"DMG_RomHeader_SIZE is not 80 bytes.");
 	uint8_t header[0x150];
 	size_t size = m_file->read(header, sizeof(header));
@@ -410,8 +377,8 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	
 	if (info->szHeader >= 0x150) {
 		// Check the system name.
-		const DMGPrivate::DMG_RomHeader *romHeader =
-			reinterpret_cast<const DMGPrivate::DMG_RomHeader*>(&info->pHeader[0x100]);
+		const DMG_RomHeader *romHeader =
+			reinterpret_cast<const DMG_RomHeader*>(&info->pHeader[0x100]);
 		if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
 			// Found a DMG ROM.
 			if (romHeader->cgbflag & 0x80) {
@@ -532,7 +499,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// DMG ROM header, excluding the RST table.
-	const DMGPrivate::DMG_RomHeader *romHeader = &d->romHeader;
+	const DMG_RomHeader *romHeader = &d->romHeader;
 	
 	char buffer[64];
 	int len;
@@ -547,15 +514,38 @@ int DMG::loadFieldData(void)
 	 * 
 	 * Current method is the first one.
 	 */
-	len = (int)strnlen(romHeader->title,(romHeader->cgbflag < 0x80 ? 16 : 15));
-
-	if ((romHeader->cgbflag&0x3F) == 0 &&		// gameid is only present when cgbflag is
-	    4 == strnlen(romHeader->title+11,4)){	// gameid is always 4 characters long
-		m_fields->addData_string(latin1_to_rp_string(romHeader->title,std::min(len,11)));
-		m_fields->addData_string(latin1_to_rp_string(romHeader->title+11,4));
-	} else{
-		m_fields->addData_string(latin1_to_rp_string(romHeader->title,len));
+	if (romHeader->cgbflag < 0x80) {
+		// Assuming 16-character title for non-CGB.
+		m_fields->addData_string(latin1_to_rp_string(romHeader->title16, sizeof(romHeader->title16)));
+		// Game ID is not present.
 		m_fields->addData_string(_RP("Unknown"));
+	} else {
+		// Check if CGB flag is present.
+		bool isGameID;
+		if ((romHeader->cgbflag & 0x3F) == 0) {
+		// Check if a Game ID is present.
+			isGameID = true;
+			for (int i = 11; i < 15; i++) {
+				if (!isalnum(romHeader->title15[i])) {
+					// Not a Game ID.
+					isGameID = false;
+					break;
+				}
+			}
+		} else {
+			// Not CGB. No Game ID.
+			isGameID = false;
+		}
+
+		if (isGameID) {
+			// Game ID is present.
+			m_fields->addData_string(latin1_to_rp_string(romHeader->title11, sizeof(romHeader->title11)));
+			m_fields->addData_string(latin1_to_rp_string(romHeader->id4, sizeof(romHeader->id4)));
+		} else {
+			// Game ID is not present.
+			m_fields->addData_string(latin1_to_rp_string(romHeader->title15, sizeof(romHeader->title15)));
+			m_fields->addData_string(_RP("Unknown"));
+		}
 	}
 
 	// System

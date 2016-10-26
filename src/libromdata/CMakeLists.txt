@@ -119,6 +119,7 @@ SET(libromdata_H
 	nds_structs.h
 	N64.hpp
 	n64_structs.h
+	dmg_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
