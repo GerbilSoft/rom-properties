@@ -78,6 +78,7 @@ static inline const mode_str_t *mode_to_str(RpFile::FileMode mode)
 RpFile::RpFile(const rp_char *filename, FileMode mode)
 	: super()
 	, m_file(nullptr)
+	, m_filename(filename)
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -93,6 +94,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 RpFile::RpFile(const rp_string &filename, FileMode mode)
 	: super()
 	, m_file(nullptr)
+	, m_filename(filename)
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -160,6 +162,7 @@ RpFile::~RpFile()
 RpFile::RpFile(const RpFile &other)
 	: super()
 	, m_file(other.m_file)
+	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
 	, m_lastError(0)
 { }
@@ -172,6 +175,7 @@ RpFile::RpFile(const RpFile &other)
 RpFile &RpFile::operator=(const RpFile &other)
 {
 	m_file = other.m_file;
+	m_filename = other.m_filename;
 	m_mode = other.m_mode;
 	m_lastError = other.m_lastError;
 	return *this;
@@ -344,6 +348,15 @@ int64_t RpFile::fileSize(void)
 
 	// Return the file size.
 	return end_pos;
+}
+
+/**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string RpFile::filename(void) const
+{
+	return m_filename;
 }
 
 }

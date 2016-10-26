@@ -71,8 +71,26 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 		return nullptr;
 	}
 
-	// TODO: File extension? (Needed for .gci)
+	// Get the file extension.
 	info.ext = nullptr;
+	rp_string filename = file->filename();
+	if (!filename.empty()) {
+		// Get the last dot position.
+		size_t dot_pos = filename.find_last_of(_RP_CHR('.'));
+		if (dot_pos != rp_string::npos) {
+			// Dot must be after the last slash.
+			// Or backslash on Windows.)
+#ifdef _WIN32
+			size_t slash_pos = filename.find_last_of(_RP("/\\"));
+#else /* !_WIN32 */
+			size_t slash_pos = filename.find_last_of(_RP('/'));
+#endif /* _WIN32 */
+			if (slash_pos == rp_string::npos || slash_pos < dot_pos) {
+				// Valid file extension.
+				info.ext = filename.c_str() + dot_pos;
+			}
+		}
+	}
 
 #define CheckRomData(sys) \
 	do { \
