@@ -120,6 +120,7 @@ SET(libromdata_H
 	N64.hpp
 	n64_structs.h
 	dmg_structs.h
+	gba_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

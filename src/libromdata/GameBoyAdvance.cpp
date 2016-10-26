@@ -21,6 +21,7 @@
 
 #include "GameBoyAdvance.hpp"
 #include "NintendoPublishers.hpp"
+#include "gba_structs.h"
 
 #include "common.h"
 #include "byteswap.h"
@@ -55,43 +56,6 @@ class GameBoyAdvancePrivate
 
 		// ROM fields.
 		static const struct RomFields::Desc gba_fields[];
-
-		/** Internal ROM data. **/
-		
-		/**
-		 * Game Boy Advance ROM header.
-		 * This matches the GBA ROM header format exactly.
-		 * Reference: http://problemkaputt.de/gbatek.htm#gbacartridgeheader
-		 *
-		 * All fields are in little-endian.
-		 *
-		 * NOTE: Strings are NOT null-terminated!
-		 */
-		#define GBA_RomHeader_SIZE 192
-		#pragma pack(1)
-		struct PACKED GBA_RomHeader {
-			union {
-				uint32_t entry_point;	// 32-bit ARM branch opcode.
-				uint8_t entry_point_bytes[4];
-			};
-			uint8_t nintendo_logo[0x9C];	// Compressed logo.
-			char title[12];
-			union {
-				char id6[6];	// Game code. (ID6)
-				struct {
-					char id4[4];		// Game code. (ID4)
-					char company[2];	// Company code.
-				};
-			};
-			uint8_t fixed_96h;	// Fixed value. (Must be 0x96)
-			uint8_t unit_code;	// 0x00 for all GBA models.
-			uint8_t device_type;	// 0x00. (bit 7 for debug?)
-			uint8_t reserved1[7];
-			uint8_t rom_version;
-			uint8_t checksum;
-			uint8_t reserved2[2];
-		};
-		#pragma pack()
 
 	public:
 		// ROM header.
@@ -139,9 +103,9 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	static_assert(sizeof(GameBoyAdvancePrivate::GBA_RomHeader) == GBA_RomHeader_SIZE,
+	static_assert(sizeof(GBA_RomHeader) == GBA_RomHeader_SIZE,
 		"GBA_RomHeader is the wrong size. (Should be 192 bytes.)");
-	GameBoyAdvancePrivate::GBA_RomHeader romHeader;
+	GBA_RomHeader romHeader;
 	m_file->rewind();
 	size_t size = m_file->read(&romHeader, sizeof(romHeader));
 	if (size != sizeof(romHeader))
@@ -173,7 +137,7 @@ GameBoyAdvance::~GameBoyAdvance()
  */
 int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(GameBoyAdvancePrivate::GBA_RomHeader)) {
+	if (!info || info->szHeader < sizeof(GBA_RomHeader)) {
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
@@ -185,8 +149,8 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
 	};
 
-	const GameBoyAdvancePrivate::GBA_RomHeader *gba_header =
-		reinterpret_cast<const GameBoyAdvancePrivate::GBA_RomHeader*>(info->pHeader);
+	const GBA_RomHeader *const gba_header =
+		reinterpret_cast<const GBA_RomHeader*>(info->pHeader);
 	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		return 0;
@@ -291,7 +255,7 @@ int GameBoyAdvance::loadFieldData(void)
 	}
 
 	// GBA ROM header.
-	const GameBoyAdvancePrivate::GBA_RomHeader *romHeader = &d->romHeader;
+	const GBA_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
 	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
