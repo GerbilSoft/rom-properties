@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * N64.hpp: Nintendo GameCube save file reader.                   *
+ * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
