@@ -540,7 +540,26 @@ int DMG::loadFieldData(void)
 		if (isGameID) {
 			// Game ID is present.
 			m_fields->addData_string(latin1_to_rp_string(romHeader->title11, sizeof(romHeader->title11)));
-			m_fields->addData_string(latin1_to_rp_string(romHeader->id4, sizeof(romHeader->id4)));
+
+			// Append the publisher code to make an ID6.
+			char id6[6];
+			memcpy(id6, romHeader->id4, 4);
+			if (romHeader->old_publisher_code == 0x33) {
+				// New publisher code.
+				id6[4] = romHeader->new_publisher_code[0];
+				id6[5] = romHeader->new_publisher_code[1];
+			} else {
+				// Old publisher code.
+				// FIXME: This probably won't ever happen,
+				// since Game ID was added *after* CGB.
+				static const char hex_lookup[16] = {
+					'0','1','2','3','4','5','6','7',
+					'8','9','A','B','C','D','E','F'
+				};
+				id6[4] = hex_lookup[romHeader->old_publisher_code >> 4];
+				id6[5] = hex_lookup[romHeader->old_publisher_code & 0x0F];
+			}
+			m_fields->addData_string(latin1_to_rp_string(id6, sizeof(id6)));
 		} else {
 			// Game ID is not present.
 			m_fields->addData_string(latin1_to_rp_string(romHeader->title15, sizeof(romHeader->title15)));
