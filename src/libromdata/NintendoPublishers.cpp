@@ -489,10 +489,12 @@ const rp_char *NintendoPublishers::lookup(const char *code)
  */
 const rp_char *NintendoPublishers::lookup_old(uint8_t code)
 {
-	char buf[8];
-	snprintf(buf, sizeof(buf), "%02X", code);
-	uint16_t code16 = ((uint8_t)(buf[0]) << 8) |
-			   (uint8_t)(buf[1]);
+	static const uint8_t hex_lookup[16] = {
+		'0','1','2','3','4','5','6','7',
+		'8','9','A','B','C','D','E','F'
+	};
+	uint16_t code16 = (hex_lookup[code >> 4] << 8) |
+			   hex_lookup[code & 0x0F];
 	return lookup(code16);
 }
 
