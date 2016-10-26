@@ -83,7 +83,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 #ifdef _WIN32
 			size_t slash_pos = filename.find_last_of(_RP("/\\"));
 #else /* !_WIN32 */
-			size_t slash_pos = filename.find_last_of(_RP('/'));
+			size_t slash_pos = filename.find_last_of(_RP_CHR('/'));
 #endif /* _WIN32 */
 			if (slash_pos == rp_string::npos || slash_pos < dot_pos) {
 				// Valid file extension.
