@@ -266,7 +266,6 @@ SNES::SNES(IRpFile *file)
 		{0x7FB0, 0xFFB0, 0x7FB0+512, 0xFFB0+512},
 		// Headered first.
 		{0x7FB0+512, 0xFFB0+512, 0x7FB0, 0xFFB0},
-		// Super UFO.
 	};
 
 	d->header_address = 0;
