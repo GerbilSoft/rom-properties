@@ -56,6 +56,22 @@ typedef struct PACKED _DC_VMS_Header {
 } DC_VMS_Header;
 #pragma pack()
 
+/**
+ * Graphic eyecatch type.
+ */
+enum DC_VMS_Eyecatch_Type {
+	DC_VMS_EYECATCH_NONE		= 0,
+	DC_VMS_EYECATCH_ARGB4444	= 1,
+	DC_VMS_EYECATCH_CI8		= 2,
+	DC_VMS_EYECATCH_CI4		= 3,
+};
+
+// Icon and eyecatch sizes.
+#define DC_VMS_ICON_W 32
+#define DC_VMS_ICON_H 32
+#define DC_VMS_EYECATCH_W 72
+#define DC_VMS_EYECATCH_H 56
+
 #ifdef __cplusplus
 }
 #endif

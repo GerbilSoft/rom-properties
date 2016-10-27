@@ -178,7 +178,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	CheckRomData_imgbf(GameCubeSave);
 	CheckRomData(N64);
 	CheckRomData(SNES);
-	CheckRomData(DreamcastSave);
+	CheckRomData_imgbf(DreamcastSave);
 
 	// Not supported.
 	return nullptr;

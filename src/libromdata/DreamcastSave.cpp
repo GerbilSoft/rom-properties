@@ -71,6 +71,9 @@ class DreamcastSavePrivate
 		// VMS header.
 		DC_VMS_Header vms_header;
 
+		// Graphic eyecatch sizes.
+		static const uint32_t eyecatch_sizes[4];
+
 		// Animated icon data.
 		// NOTE: The first frame is owned by the RomData superclass.
 		IconAnimData *iconAnimData;
@@ -107,6 +110,9 @@ const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 	{_RP("Application"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CRC"), RomFields::RFT_STRING, {&dc_save_string_monospace}},
 };
+
+// Graphic eyecatch sizes.
+const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {0, 8064, 4544, 2048};
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
@@ -148,8 +154,68 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 		return const_cast<rp_image*>(iconAnimData->frames[0]);
 	}
 
-	// TODO
-	return nullptr;
+	// Check the icon count.
+	uint16_t icon_count = le16_to_cpu(vms_header.icon_count);
+	if (icon_count == 0) {
+		// No icon.
+		return nullptr;
+	} else if (icon_count > IconAnimData::MAX_FRAMES) {
+		// Truncate the frame count.
+		icon_count = IconAnimData::MAX_FRAMES;
+	}
+
+	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
+	// Make sure the file is big enough.
+	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) + 32 + (icon_count * 512);
+	sz_reserved += le16_to_cpu(vms_header.eyecatch_type) & 3;
+	if ((int64_t)sz_reserved > q->m_file->fileSize()) {
+		// File is NOT big enough.
+		return nullptr;
+	}
+
+	// Load the palette.
+	uint16_t palette[16];
+	q->m_file->seek((uint32_t)sizeof(vms_header));
+	size_t size = q->m_file->read(palette, sizeof(palette));
+	if (size != sizeof(palette)) {
+		// Error loading the palette.
+		return nullptr;
+	}
+
+	this->iconAnimData = new IconAnimData();
+	iconAnimData->count = 0;
+
+	// Load the icons.
+	// Icons are stored contiguously immediately after the palette.
+	uint8_t icon_buf[1024/2];	// 32x32, 4bpp
+	for (int i = 0; i < icon_count; i++) {
+		size_t size = q->m_file->read(icon_buf, sizeof(icon_buf));
+		if (size != sizeof(icon_buf))
+			break;
+
+		// Icon delay. (TODO)
+		// Using 125ms for the fastest speed.
+		iconAnimData->delays[i] = 250;
+		
+		iconAnimData->frames[i] = ImageDecoder::fromDreamcastCI4(
+			DC_VMS_ICON_W, DC_VMS_ICON_H,
+			icon_buf, sizeof(icon_buf),
+			palette, sizeof(palette));
+		if (!iconAnimData->frames[i])
+			break;
+
+		// Icon loaded.
+		iconAnimData->count++;
+	}
+
+	// Set up the icon animation sequence.
+	for (int i = 0; i < iconAnimData->count; i++) {
+		iconAnimData->seq_index[i] = i;
+	}
+	iconAnimData->seq_count = iconAnimData->count;
+
+	// Return the first frame.
+	return const_cast<rp_image*>(iconAnimData->frames[0]);
 }
 
 /**
