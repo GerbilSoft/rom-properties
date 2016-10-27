@@ -222,6 +222,8 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 		return const_cast<rp_image*>(iconAnimData->frames[0]);
 	}
 
+	// TODO: Special handling for ICONDATA_VMS files.
+
 	// Check the icon count.
 	uint16_t icon_count = le16_to_cpu(vms_header.icon_count);
 	if (icon_count == 0) {
