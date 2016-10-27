@@ -70,6 +70,20 @@ class DreamcastSavePrivate
 	public:
 		// VMS header.
 		DC_VMS_Header vms_header;
+		// Header offset. (0 for standard save files; 0x200 for game files.)
+		uint32_t vms_header_offset;
+
+		// Is this a game file?
+		// TODO: Bitfield in saveType or something.
+		bool isGameFile;
+
+		/**
+		 * Read and verify the VMS header.
+		 * This function sets vms_header and vms_header_offset.
+		 * @param address Address to check.
+		 * @return True if read and verified; false if not.
+		 */
+		bool readAndVerifyVmsHeader(uint32_t address);
 
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
@@ -116,6 +130,8 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {0, 8064, 4544, 2048};
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
+	, vms_header_offset(0)
+	, isGameFile(false)
 	, iconAnimData(nullptr)
 {
 	// Clear the VMS header..
@@ -132,6 +148,58 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
 		}
 		delete iconAnimData;
 	}
+}
+
+/**
+ * Read and verify the VMS header.
+ * This function sets vms_header and vms_header_offset.
+ * @param address Address to check.
+ * @return True if read and verified; false if not.
+ */
+bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
+{
+	int ret = q->m_file->seek(address);
+	if (ret != 0)
+		return false;
+
+	DC_VMS_Header vms_header;
+	size_t size = q->m_file->read(&vms_header, sizeof(vms_header));
+	if (size != sizeof(vms_header))
+		return false;
+
+	// Validate the description fields.
+	// The description fields cannot contain any control characters
+	// other than 0x00 (NULL). In the case of a game file, the first
+	// 512 bytes is program code, so there will almost certainly be
+	// some control character.
+	// In addition, the first 8 characters of each field must not be NULL.
+	// NOTE: Need to use unsigned here.
+#define CHECK_FIELD(field) \
+	do { \
+		const uint8_t *chr = reinterpret_cast<const uint8_t*>(field); \
+		for (int i = 8; i > 0; i--, chr++) { \
+			/* First 8 characters must not be a control code or NULL. */ \
+			if (*chr < 0x20) { \
+				/* Invalid character. */ \
+				return false; \
+			} \
+		} \
+		for (int i = ARRAY_SIZE(field)-8; i > 0; i--, chr++) { \
+			/* Remaining characters must not be a control code, * \
+			 * but may be NULL.                                 */ \
+			if (*chr < 0x20 && *chr != 0) { \
+				/* Invalid character. */ \
+				return false; \
+			} \
+		} \
+	} while (0)
+	CHECK_FIELD(vms_header.vms_description);
+	CHECK_FIELD(vms_header.dc_description);
+
+	// Description fields are valid.
+	memcpy(&this->vms_header, &vms_header, sizeof(vms_header));
+	this->vms_header_offset = address;
+	return true;
 }
 
 /**
@@ -175,7 +243,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Load the palette.
 	uint16_t palette[16];
-	q->m_file->seek((uint32_t)sizeof(vms_header));
+	q->m_file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
 	size_t size = q->m_file->read(palette, sizeof(palette));
 	if (size != sizeof(palette)) {
 		// Error loading the palette.
@@ -261,14 +329,31 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	}
 
 	// TODO: VMI+VMS. Currently handling VMS only.
-
-	// Read the save file header.
 	static_assert(sizeof(DC_VMS_Header) == DC_VMS_Header_SIZE,
 		"DC_VMS_Header is the wrong size. (Should be 96 bytes.)");
-	m_file->rewind();
-	size_t size = m_file->read(&d->vms_header, sizeof(d->vms_header));
-	if (size != sizeof(d->vms_header))
-		return;
+
+	// Read the save file header.
+	// Regular save files have the header at 0x0000.
+	// Game files have the header at 0x0200.
+
+	// If the VMI file is not available, we'll use a heuristic:
+	// The description fields cannot contain any control
+	// characters other than 0x00 (NULL).
+	bool isValid = d->readAndVerifyVmsHeader(0x0000);
+	if (isValid) {
+		// Valid at 0x0000: This is a standard save file.
+		d->isGameFile = false;
+	} else {
+		isValid = d->readAndVerifyVmsHeader(0x0200);
+		if (isValid) {
+			// Valid at 0x0200: This is a game file.
+			d->isGameFile = true;
+		} else {
+			// Not valid.
+			m_file->close();
+			return;
+		}
+	}
 
 	// TODO: Verify the file extension and header fields?
 	m_isValid = true;
