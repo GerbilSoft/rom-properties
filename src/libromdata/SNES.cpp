@@ -372,13 +372,43 @@ const rp_char *SNES::systemName(uint32_t type) const
 	if (!m_isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// Bits 0-1: Type. (short, long, abbreviation)
+	// sysNames[] bitfield:
+	// - Bits 0-1: Type. (short, long, abbreviation)
+	const uint32_t idx = (type & SYSNAME_TYPE_MASK);
+
 	static const rp_char *const sysNames[4] = {
-		// FIXME: "NGC" in Japan?
 		_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	// TODO: If the destination code is an "unknown" value
+	// or "All", use the system locale.
+	const int region = d->romHeader.destination_code;
+
+	switch (region) {
+		case SNES_DEST_JAPAN: {
+			// Japan: Super Famicom
+			static const rp_char *const sysNames_JP[4] = {
+				_RP("Nintendo Super Famicom"), _RP("Super Famicom"), _RP("SFC"), nullptr
+			};
+			return sysNames_JP[idx];
+		}
+
+		case SNES_DEST_SOUTH_KOREA: {
+			// South Korea: Super Comboy
+			static const rp_char *const sysNames_KR[4] = {
+				_RP("Hyundai Super Comboy"), _RP("Super Comboy"), _RP("SCB"), nullptr
+			};
+			return sysNames_KR[idx];
+		}
+
+		default: {
+			// Worldwide: Super Nintendo
+			static const rp_char *const sysNames[4] = {
+				_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr
+			};
+			return sysNames[idx];
+		}
+	}
 }
 
 /**
