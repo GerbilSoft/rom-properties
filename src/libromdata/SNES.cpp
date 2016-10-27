@@ -23,6 +23,7 @@
 #include "NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
+#include "SystemRegion.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -374,41 +375,62 @@ const rp_char *SNES::systemName(uint32_t type) const
 
 	// sysNames[] bitfield:
 	// - Bits 0-1: Type. (short, long, abbreviation)
-	const uint32_t idx = (type & SYSNAME_TYPE_MASK);
+	// - Bits 2-3: Region.
+	uint32_t idx = (type & SYSNAME_TYPE_MASK);
 
-	static const rp_char *const sysNames[4] = {
-		_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr
+	static const rp_char *const sysNames[16] = {
+		// Japan: Super Famicom
+		_RP("Nintendo Super Famicom"), _RP("Super Famicom"), _RP("SFC"), nullptr,
+		// South Korea: Super Comboy
+		_RP("Hyundai Super Comboy"), _RP("Super Comboy"), _RP("SCB"), nullptr,
+		// Worldwide: Super NES
+		_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr,
+		// Reserved.
+		nullptr, nullptr, nullptr, nullptr
 	};
 
-	// TODO: If the destination code is an "unknown" value
-	// or "All", use the system locale.
-	const int region = d->romHeader.destination_code;
+	bool foundRegion = false;
+	switch (d->romHeader.destination_code) {
+		case SNES_DEST_JAPAN:
+			idx |= (0 << 2);
+			foundRegion = true;
+			break;
+		case SNES_DEST_SOUTH_KOREA:
+			idx |= (1 << 2);
+			foundRegion = true;
+			break;
 
-	switch (region) {
-		case SNES_DEST_JAPAN: {
-			// Japan: Super Famicom
-			static const rp_char *const sysNames_JP[4] = {
-				_RP("Nintendo Super Famicom"), _RP("Super Famicom"), _RP("SFC"), nullptr
-			};
-			return sysNames_JP[idx];
-		}
+		case SNES_DEST_ALL:
+		case SNES_DEST_OTHER_X:
+		case SNES_DEST_OTHER_Y:
+		case SNES_DEST_OTHER_Z:
+			// Use the system locale.
+			break;
 
-		case SNES_DEST_SOUTH_KOREA: {
-			// South Korea: Super Comboy
-			static const rp_char *const sysNames_KR[4] = {
-				_RP("Hyundai Super Comboy"), _RP("Super Comboy"), _RP("SCB"), nullptr
-			};
-			return sysNames_KR[idx];
-		}
+		default: 
+			if (d->romHeader.destination_code <= SNES_DEST_AUSTRALIA) {
+				idx |= (2 << 2);
+				foundRegion = true;
+			}
+			break;
+	}
 
-		default: {
-			// Worldwide: Super Nintendo
-			static const rp_char *const sysNames[4] = {
-				_RP("Super Nintendo Entertainment System"), _RP("Super NES"), _RP("SNES"), nullptr
-			};
-			return sysNames[idx];
+	if (!foundRegion) {
+		// Check the system locale.
+		switch (SystemRegion::getCountryCode()) {
+			case 'JP':
+				idx |= (0 << 2);
+				break;
+			case 'KR':
+				idx |= (1 << 2);
+				break;
+			default:
+				idx |= (2 << 2);
+				break;
 		}
 	}
+
+	return sysNames[idx];
 }
 
 /**
