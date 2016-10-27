@@ -38,6 +38,7 @@ using std::vector;
 #include "GameCubeSave.hpp"
 #include "N64.hpp"
 #include "SNES.hpp"
+#include "DreamcastSave.hpp"
 
 namespace LibRomData {
 
@@ -77,6 +78,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),
+	GetRomDataFns(DreamcastSave, true),
 	{/*nullptr,*/ nullptr, false}
 };
 
@@ -176,6 +178,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	CheckRomData_imgbf(GameCubeSave);
 	CheckRomData(N64);
 	CheckRomData(SNES);
+	CheckRomData(DreamcastSave);
 
 	// Not supported.
 	return nullptr;
