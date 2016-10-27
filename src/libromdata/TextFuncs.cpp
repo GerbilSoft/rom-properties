@@ -28,6 +28,7 @@
 
 // C includes. (C++ namespace)
 #include <cstring>
+#include <cwctype>
 
 // C++ includes.
 #include <string>
@@ -175,6 +176,25 @@ int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 	}
 
 	return ((int)*wcs1 - (int)*wcs2);
+}
+
+/**
+ * char16_t strcasecmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcasecmp() result.
+ */
+int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	// References:
+	// - http://stackoverflow.com/questions/20004458/optimized-strcmp-implementation
+	// - http://clc-wiki.net/wiki/C_standard_library%3astring.h%3astrcmp
+	while (*wcs1 && (towupper(*wcs1) == towupper(*wcs2))) {
+		wcs1++;
+		wcs2++;
+	}
+
+	return ((int)towupper(*wcs1) - (int)towupper(*wcs2));
 }
 #endif /* RP_UTF16 && !RP_WIS16 */
 

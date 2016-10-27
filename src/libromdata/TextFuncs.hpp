@@ -240,6 +240,22 @@ static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
+/**
+ * char16_t strcmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcmp() result.
+ */
+#ifdef RP_WIS16
+static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
+			  reinterpret_cast<const wchar_t*>(wcs2));
+}
+#else /* !RP_WIS16 */
+int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
+#endif /* RP_WIS16 */
+
 /** rp_string wrappers. **/
 
 /**
@@ -521,6 +537,21 @@ static inline int rp_strcmp(const rp_char *str1, const rp_char *str2)
 	return strcmp(str1, str2);
 #elif defined(RP_UTF16)
 	return u16_strcmp(str1, str2);
+#endif
+}
+
+/**
+ * strcasecmp() function for rp_char strings.
+ * @param str1 rp_string 1.
+ * @param str2 rp_string 2.
+ * @return strcasecmp() result.
+ */
+static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
+{
+#if defined(RP_UTF8)
+	return strcasecmp(str1, str2);
+#elif defined(RP_UTF16)
+	return u16_strcasecmp(str1, str2);
 #endif
 }
 
