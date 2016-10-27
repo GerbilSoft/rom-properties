@@ -24,7 +24,9 @@
 #include "common.h"
 
 // C++ includes.
+#include <unordered_map>
 #include <vector>
+using std::unordered_map;
 using std::vector;
 
 // RomData subclasses.
@@ -186,21 +188,38 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
  */
 vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 {
-	vector<ExtInfo> vec;
-	ExtInfo extInfo;
+	// In order to handle multiple RomData subclasses
+	// that support the same extensions, we're using
+	// an unordered_map. If any of the handlers for a
+	// given extension support thumbnails, then the
+	// thumbnail handlers will be registered.
+	unordered_map<const rp_char*, bool> exts;
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		vector<const rp_char*> sys_vec = fns->supportedFileExtensions();
-		vec.reserve(vec.size() + sys_vec.size());
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+		exts.reserve(exts.size() + sys_vec.size());
+#endif
 		for (vector<const rp_char*>::const_iterator iter = sys_vec.begin();
 		     iter != sys_vec.end(); ++iter)
 		{
-			extInfo.ext = *iter; \
-			extInfo.hasThumbnail = fns->hasThumbnail;
-			vec.push_back(extInfo);
+			exts[*iter] |= fns->hasThumbnail;
 		}
+	}
+
+	// Convert to vector<ExtInfo>.
+	vector<ExtInfo> vec;
+	vec.reserve(exts.size());
+
+	ExtInfo extInfo;
+	for (unordered_map<const rp_char*, bool>::const_iterator iter = exts.begin();
+	     iter != exts.end(); ++iter)
+	{
+		extInfo.ext = iter->first;
+		extInfo.hasThumbnail = iter->second;
+		vec.push_back(extInfo);
 	}
 
 	return vec;
