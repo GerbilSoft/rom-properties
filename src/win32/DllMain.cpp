@@ -176,30 +176,46 @@ STDAPI DllGetClassObject(__in REFCLSID rclsid, __in REFIID riid, __deref_out LPV
 /**
  * Register file type handlers.
  * @param hkey_Assoc File association key to register under.
+ * @param hasThumbnail If true, associate thumbnail handlers.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(RegKey &hkey_Assoc)
+static LONG RegisterFileType(RegKey &hkey_Assoc, bool hasThumbnail)
 {
 	LONG lResult;
-
-	lResult = RP_ExtractIcon::RegisterFileType(hkey_Assoc);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
-
-	lResult = RP_ExtractImage::RegisterFileType(hkey_Assoc);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
 
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkey_Assoc);
 	if (lResult != ERROR_SUCCESS) {
 		return SELFREG_E_CLASS;
 	}
 
-	lResult = RP_ThumbnailProvider::RegisterFileType(hkey_Assoc);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
+	if (hasThumbnail) {
+		lResult = RP_ExtractIcon::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
+		lResult = RP_ExtractImage::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
+		lResult = RP_ThumbnailProvider::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
+	} else {
+		// No thumbnail handlers.
+		// Unregister the handlers if they were previously registered.
+		lResult = RP_ExtractIcon::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
+		lResult = RP_ExtractImage::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
+		lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) {
+			return SELFREG_E_CLASS;
+		}
 	}
 
 	// All file types handlers registered.
@@ -297,13 +313,13 @@ static wstring GetUserFileAssoc(const wstring &sid, const rp_char *ext)
 /**
  * Register file type handlers for a user's overridden file association.
  * @param sid User SID.
- * @param ext File extension.
+ * @param ext_info File extension information.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
+static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
 {
 	// Get the ProgID.
-	wstring progID = GetUserFileAssoc(sid, ext);
+	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
 		// No ProgID.
 		return ERROR_SUCCESS;
@@ -323,7 +339,7 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hkcr_ProgID.lOpenRes();
 	}
-	lResult = RegisterFileType(hkcr_ProgID);
+	lResult = RegisterFileType(hkcr_ProgID, ext_info.hasThumbnail);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -343,19 +359,19 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hku_ProgID.lOpenRes();
 	}
-	return RegisterFileType(hku_ProgID);
+	return RegisterFileType(hku_ProgID, ext_info.hasThumbnail);
 }
 
 /**
  * Unregister file type handlers for a user's overridden file association.
  * @param sid User SID.
- * @param ext File extension.
+ * @param ext_info File extension information.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG UnregisterUserFileType(const wstring &sid, const rp_char *ext)
+static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
 {
 	// Get the ProgID.
-	wstring progID = GetUserFileAssoc(sid, ext);
+	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
 		// No ProgID.
 		return ERROR_SUCCESS;
@@ -460,8 +476,8 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file types and associate them
 	// with our ProgID.
-	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<const rp_char*>::const_iterator ext_iter = vec_exts.begin();
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	for (vector<RomDataFactory::ExtInfo>::const_iterator ext_iter = vec_exts.begin();
 	     ext_iter != vec_exts.end(); ++ext_iter)
 	{
 		// Register user file types if necessary.
@@ -477,7 +493,7 @@ STDAPI DllRegisterServer(void)
 		// Register the filetype in KEY_CLASSES_ROOT and use it
 		// to register the handlers.
 		RegKey *pHkey_fileType;
-		lResult = RegKey::RegisterFileType(RP2W_c(*ext_iter), &pHkey_fileType);
+		lResult = RegKey::RegisterFileType(RP2W_c(ext_iter->ext), &pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) {
 			return SELFREG_E_CLASS;
 		}
@@ -495,7 +511,7 @@ STDAPI DllRegisterServer(void)
 		}
 
 		// Register the file type handlers for this file extension.
-		lResult = RegisterFileType(*pHkey_fileType);
+		lResult = RegisterFileType(*pHkey_fileType, ext_iter->hasThumbnail);
 		delete pHkey_fileType;
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
@@ -554,8 +570,8 @@ STDAPI DllUnregisterServer(void)
 
 	// Register all supported file types and associate them
 	// with our ProgID.
-	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<const rp_char*>::const_iterator ext_iter = vec_exts.begin();
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	for (vector<RomDataFactory::ExtInfo>::const_iterator ext_iter = vec_exts.begin();
 	     ext_iter != vec_exts.end(); ++ext_iter)
 	{
 		// Unregister user file types if necessary.
@@ -569,7 +585,7 @@ STDAPI DllUnregisterServer(void)
 		}
 
 		// Open the file type key if it's present.
-		RegKey hkey_fileType(HKEY_CLASSES_ROOT, RP2W_c(*ext_iter), KEY_READ | KEY_WRITE, false);
+		RegKey hkey_fileType(HKEY_CLASSES_ROOT, RP2W_c(ext_iter->ext), KEY_READ | KEY_WRITE, false);
 		if (!hkey_fileType.isOpen()) {
 			// Not open...
 			if (hkey_fileType.lOpenRes() == ERROR_FILE_NOT_FOUND) {

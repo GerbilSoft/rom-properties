@@ -142,26 +142,34 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 /**
  * Get all supported file extensions.
  * Used for Win32 COM registration.
- * @return All supported file extensions, including the leading dot
+ * @return All supported file extensions, including the leading dot.
  */
-vector<const rp_char*> RomDataFactory::supportedFileExtensions(void)
+vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 {
-	vector<const rp_char*> vec;
+	vector<ExtInfo> vec;
+	ExtInfo extInfo;
 
-#define GetFileExtensions(sys) \
+#define GetFileExtensions(sys, thumbnail) \
 	do { \
 		vector<const rp_char*> sys_vec = sys::supportedFileExtensions_static(); \
-		vec.insert(vec.end(), sys_vec.begin(), sys_vec.end()); \
+		vec.reserve(vec.size() + sys_vec.size()); \
+		for (vector<const rp_char*>::const_iterator iter = sys_vec.begin(); \
+		     iter != sys_vec.end(); ++iter) \
+		{ \
+			extInfo.ext = *iter; \
+			extInfo.hasThumbnail = thumbnail; \
+			vec.push_back(extInfo); \
+		} \
 	} while (0)
 
-	GetFileExtensions(MegaDrive);
-	GetFileExtensions(GameCube);
-	GetFileExtensions(NintendoDS);
-	GetFileExtensions(DMG);
-	GetFileExtensions(GameBoyAdvance);
-	GetFileExtensions(GameCubeSave);
-	GetFileExtensions(N64);
-	GetFileExtensions(SNES);
+	GetFileExtensions(MegaDrive, false);
+	GetFileExtensions(GameCube, true);
+	GetFileExtensions(NintendoDS, true);
+	GetFileExtensions(DMG, false);
+	GetFileExtensions(GameBoyAdvance, false);
+	GetFileExtensions(GameCubeSave, true);
+	GetFileExtensions(N64, false);
+	GetFileExtensions(SNES, false);
 
 	return vec;
 }
