@@ -293,33 +293,46 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	}
 
 	// Load the palette.
-	uint16_t palette[16];
+	union { uint16_t u16[16]; uint32_t u32[8]; } palette;
 	q->m_file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
-	size_t size = q->m_file->read(palette, sizeof(palette));
+	size_t size = q->m_file->read(palette.u16, sizeof(palette.u16));
 	if (size != sizeof(palette)) {
 		// Error loading the palette.
 		return nullptr;
 	}
 
+	if (this->saveType == SAVE_TYPE_DCI) {
+		// Apply 32-bit byteswapping to the palette.
+		// TODO: Use an IRpFile subclass that automatically byteswaps
+		// instead of doing manual byteswapping here?
+		__byte_swap_32_array(palette.u32, sizeof(palette.u32));
+	}
+
 	this->iconAnimData = new IconAnimData();
 	iconAnimData->count = 0;
 
-	// Load the icons.
+	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
-	uint8_t icon_buf[1024/2];	// 32x32, 4bpp
+	union { uint8_t u8[1024/2]; uint32_t u32[1024/2/4]; } icon_buf;
 	for (int i = 0; i < icon_count; i++) {
-		size_t size = q->m_file->read(icon_buf, sizeof(icon_buf));
-		if (size != sizeof(icon_buf))
+		size_t size = q->m_file->read(icon_buf.u8, sizeof(icon_buf.u8));
+		if (size != sizeof(icon_buf.u8))
 			break;
 
-		// Icon delay. (TODO)
-		// Using 125ms for the fastest speed.
+		if (this->saveType == SAVE_TYPE_DCI) {
+			// Apply 32-bit byteswapping to the palette.
+			// TODO: Use an IRpFile subclass that automatically byteswaps
+			// instead of doing manual byteswapping here?
+			__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
+		}
+
+		// Icon delay. (TODO: Map DC speed to milliseconds?)
 		iconAnimData->delays[i] = 250;
 		
 		iconAnimData->frames[i] = ImageDecoder::fromDreamcastCI4(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
-			icon_buf, sizeof(icon_buf),
-			palette, sizeof(palette));
+			icon_buf.u8, sizeof(icon_buf.u8),
+			palette.u16, sizeof(palette.u16));
 		if (!iconAnimData->frames[i])
 			break;
 
