@@ -36,6 +36,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 
 // C++ includes.
 #include <algorithm>
@@ -60,6 +61,9 @@ class DreamcastSavePrivate
 
 	public:
 		// RomFields data.
+
+		// Date/Time. (RFT_DATETIME)
+		static const RomFields::DateTimeDesc ctime_dt;
 
 		// Monospace string formatting.
 		static const RomFields::StringDesc dc_save_string_monospace;
@@ -107,6 +111,9 @@ class DreamcastSavePrivate
 		DC_VMI_Header vmi_header;
 		// Directory entry.
 		DC_VMS_DirEnt vms_dirent;
+		// Creation time. Converted from binary or BCD,
+		// depending on if we loaded a VMI or DCI.
+		time_t ctime;
 
 		// Is this a game file?
 		// TODO: Bitfield in saveType or something.
@@ -146,6 +153,13 @@ class DreamcastSavePrivate
 
 /** DreamcastSavePrivate **/
 
+// Last Modified timestamp.
+const RomFields::DateTimeDesc DreamcastSavePrivate::ctime_dt = {
+	RomFields::RFT_DATETIME_HAS_DATE |
+	RomFields::RFT_DATETIME_HAS_TIME |
+	RomFields::RFT_DATETIME_IS_UTC	// Dreamcast doesn't support timezones.
+};
+
 // Monospace string formatting.
 const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_monospace = {
 	RomFields::StringDesc::STRF_MONOSPACE
@@ -157,7 +171,14 @@ const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 	// TODO: Bold+Red?
 	{_RP("Warning"), RomFields::RFT_STRING, {nullptr}},
 
-	// TODO: VMI fields.
+	// TODO: VMI-specific fields.
+
+	// VMS directory entry fields.
+	{_RP("File Type"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Copy Protect"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Filename"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Creation Time"), RomFields::RFT_DATETIME, {&ctime_dt}},
+	// TODO: Size, header address?
 
 	// VMS fields.
 	{_RP("VMS Description"), RomFields::RFT_STRING, {nullptr}},
@@ -175,6 +196,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	, loaded_headers(0)
 	, data_area_offset(0)
 	, vms_header_offset(0)
+	, ctime(0)
 	, isGameFile(false)
 	, iconAnimData(nullptr)
 {
@@ -458,6 +480,39 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			m_file->close();
 			return;
 		}
+
+		// Convert the BCD time to Unix time.
+		// NOTE: struct tm has some oddities:
+		// - tm_year: year - 1900
+		// - tm_mon: 0 == January
+		struct tm dctime;
+		dctime.tm_year = ((d->vms_dirent.ctime.century >> 4) * 1000) +
+				 ((d->vms_dirent.ctime.century & 0x0F) * 100) +
+				 ((d->vms_dirent.ctime.year >> 4) * 10) +
+				  (d->vms_dirent.ctime.year & 0x0F) - 1900;
+		dctime.tm_mon  = ((d->vms_dirent.ctime.month >> 4) * 10) +
+				  (d->vms_dirent.ctime.month & 0x0F) - 1;
+		dctime.tm_mday = ((d->vms_dirent.ctime.mday >> 4) * 10) +
+				  (d->vms_dirent.ctime.mday & 0x0F);
+		dctime.tm_hour = ((d->vms_dirent.ctime.hour >> 4) * 10) +
+				  (d->vms_dirent.ctime.hour & 0x0F);
+		dctime.tm_min  = ((d->vms_dirent.ctime.minute >> 4) * 10) +
+				  (d->vms_dirent.ctime.minute & 0x0F);
+		dctime.tm_sec  = ((d->vms_dirent.ctime.second >> 4) * 10) +
+				  (d->vms_dirent.ctime.second & 0x0F);
+		// tm_wday and tm_yday are output variables.
+		dctime.tm_wday = 0;
+		dctime.tm_yday = 0;
+		dctime.tm_isdst = 0;
+
+		// FIXME: Handle ctime conversion errors.
+#ifdef _WIN32
+		// MSVCRT-specific version.
+		d->ctime = _mkgmtime(&dctime);
+#else /* !_WIN32 */
+		// FIXME: Might not be available on some systems.
+		d->ctime = timegm(&dctime);
+#endif
 	} else {
 		// If the VMI file is not available, we'll use a heuristic:
 		// The description fields cannot contain any control
@@ -673,8 +728,92 @@ int DreamcastSave::loadFieldData(void)
 			break;
 	}
 
-	// TODO: VMI header and/or directory entry?
+	// File type.
+	const rp_char *filetype;
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
+		// Use the type from the directory entry.
+		switch (d->vms_dirent.filetype) {
+			case DC_VMS_DIRENT_FTYPE_NONE:
+				filetype = _RP("None");
+				break;
+			case DC_VMS_DIRENT_FTYPE_DATA:
+				filetype = _RP("Save Data");
+				break;
+			case DC_VMS_DIRENT_FTYPE_GAME:
+				filetype = _RP("VMU Game");
+				break;
+			default:
+				filetype = nullptr;
+				break;
+		}
+	} else {
+		// Determine the type based on the VMS header offset.
+		switch (d->vms_header_offset) {
+			case 0x0000:
+				filetype = _RP("Save Data");
+				break;
+			case 0x0200:
+				filetype = _RP("VMU Game");
+				break;
+			default:
+				filetype = nullptr;
+				break;
+		}
+	}
 
+	// TODO: VMI header.
+
+	if (filetype) {
+		m_fields->addData_string(filetype);
+	} else {
+		// Unknown file type.
+		char buf[20];
+		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.filetype);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// DC VMS directory entry.
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
+		// Copy protection.
+		const rp_char *protect;
+		switch (d->vms_dirent.protect) {
+			case DC_VMS_DIRENT_PROTECT_COPY_OK:
+				protect = _RP("Copy OK");
+				break;
+			case DC_VMS_DIRENT_PROTECT_COPY_PROTECTED:
+				protect = _RP("Copy Protected");
+				break;
+			default:
+				protect = nullptr;
+				break;
+		}
+
+		if (filetype) {
+			m_fields->addData_string(protect);
+		} else {
+			// Unknown file type.
+			char buf[20];
+			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.protect);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		}
+
+		// Filename.
+		// TODO: Latin1 or Shift-JIS?
+		m_fields->addData_string(latin1_to_rp_string(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
+
+		// Creation time.
+		// FIXME: Handle ctime conversion errors.
+		m_fields->addData_dateTime(d->ctime);
+	} else {
+		// Directory entry is missing.
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	}
 	// DC VMS header.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
 		const DC_VMS_Header *const vms_header = &d->vms_header;
