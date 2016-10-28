@@ -46,16 +46,23 @@ extern "C" {
  */
 #define DC_VMS_Header_SIZE 96
 #pragma pack(1)
-typedef struct PACKED _DC_VMS_Header {
-	char vms_description[16];	// Shift-JIS; space-padded.
-	char dc_description[32];	// Shift-JIS; space-padded.
-	char application[16];		// Shift-JIS; NULL-padded.
-	uint16_t icon_count;
-	uint16_t icon_anim_speed;
-	uint16_t eyecatch_type;
-	uint16_t crc;
-	uint32_t data_size;		// Ignored for game files.
-	uint8_t reserved[20];
+typedef union PACKED _DC_VMS_Header {
+	struct {
+		char vms_description[16];	// Shift-JIS; space-padded.
+		char dc_description[32];	// Shift-JIS; space-padded.
+		char application[16];		// Shift-JIS; NULL-padded.
+		uint16_t icon_count;
+		uint16_t icon_anim_speed;
+		uint16_t eyecatch_type;
+		uint16_t crc;
+		uint32_t data_size;		// Ignored for game files.
+		uint8_t reserved[20];
+	};
+
+	// DCI is 32-bit byteswapped.
+	// We need a 32-bit accessor in order to
+	// avoid strict aliasing issues.
+	uint32_t dci_dword[96/4];
 
 	// Icon palette and icon bitmaps are located
 	// immediately after the VMS header, followed

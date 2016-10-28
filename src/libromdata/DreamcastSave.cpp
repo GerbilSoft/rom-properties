@@ -68,6 +68,16 @@ class DreamcastSavePrivate
 		static const struct RomFields::Desc dc_save_fields[];
 
 	public:
+		// Save file type.
+		// Applies to the main file, e.g. VMS or DCI.
+		enum SaveType {
+			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
+
+			SAVE_TYPE_VMS = 0,	// VMS file
+			SAVE_TYPE_DCI = 1,	// DCI (Nexus)
+		};
+		int saveType;
+
 		// Which headers do we have loaded?
 		enum DC_LoadedHeaders {
 			// VMS data. Present in .VMS and .DCI files.
@@ -81,11 +91,12 @@ class DreamcastSavePrivate
 		};
 		uint32_t loaded_headers;
 
+		/** NOTE: Fields have been byteswapped when loaded. **/
 		// VMS header.
 		DC_VMS_Header vms_header;
 		// Header offset. (0 for standard save files; 0x200 for game files.)
 		uint32_t vms_header_offset;
-		// VMI header.
+		// VMI header. (TODO)
 		DC_VMI_Header vmi_header;
 		// Directory entry.
 		DC_VMS_DirEnt vms_dirent;
@@ -153,6 +164,7 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {0, 8064, 4544, 2048};
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
+	, saveType(SAVE_TYPE_UNKNOWN)
 	, loaded_headers(0)
 	, vms_header_offset(0)
 	, isGameFile(false)
@@ -221,6 +233,19 @@ bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	CHECK_FIELD(vms_header.dc_description);
 
 	// Description fields are valid.
+
+	// If DCI, the entire vms_header must be 32-bit byteswapped first.
+	if (this->saveType == SAVE_TYPE_DCI) {
+		__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.dci_dword));
+	}
+
+	// Byteswap the fields.
+	vms_header.icon_count      = le16_to_cpu(vms_header.icon_count);
+	vms_header.icon_anim_speed = le16_to_cpu(vms_header.icon_anim_speed);
+	vms_header.eyecatch_type   = le16_to_cpu(vms_header.eyecatch_type);
+	vms_header.crc             = le16_to_cpu(vms_header.crc);
+	vms_header.data_size       = le32_to_cpu(vms_header.data_size);
+
 	memcpy(&this->vms_header, &vms_header, sizeof(vms_header));
 	this->vms_header_offset = address;
 	return true;
@@ -249,7 +274,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	// TODO: Special handling for ICONDATA_VMS files.
 
 	// Check the icon count.
-	uint16_t icon_count = le16_to_cpu(vms_header.icon_count);
+	uint16_t icon_count = vms_header.icon_count;
 	if (icon_count == 0) {
 		// No icon.
 		return nullptr;
@@ -261,7 +286,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
 	// Make sure the file is big enough.
 	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) + 32 + (icon_count * 512);
-	sz_reserved += le16_to_cpu(vms_header.eyecatch_type) & 3;
+	sz_reserved += vms_header.eyecatch_type & 3;
 	if ((int64_t)sz_reserved > q->m_file->fileSize()) {
 		// File is NOT big enough.
 		return nullptr;
@@ -362,6 +387,29 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
 		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
 
+	// Offset to the data area.
+	// This is 0 for VMS, 32 for DCI.
+	uint32_t data_area_offset = 0;
+
+	// Determine the VMS save type by checking the file size.
+	// Standard VMS is always a multiple of 512.
+	// DCI is a multiple of 512, plus 32 bytes.
+	int64_t fileSize = m_file->fileSize();
+	if (fileSize % 512 == 0) {
+		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
+		data_area_offset = 0;
+	} else if ((fileSize - 32) % 512 == 0) {
+		d->saveType = DreamcastSavePrivate::SAVE_TYPE_DCI;
+		data_area_offset = 32;
+		// TODO: Load the file header and don't use the
+		// VMS header heuristic.
+	} else {
+		// Not valid.
+		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
+		m_file->close();
+		return;
+	}
+
 	// Read the save file header.
 	// Regular save files have the header at 0x0000.
 	// Game files have the header at 0x0200.
@@ -369,13 +417,13 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// If the VMI file is not available, we'll use a heuristic:
 	// The description fields cannot contain any control
 	// characters other than 0x00 (NULL).
-	bool isValid = d->readAndVerifyVmsHeader(0x0000);
+	bool isValid = d->readAndVerifyVmsHeader(data_area_offset + 0x0000);
 	if (isValid) {
 		// Valid at 0x0000: This is a standard save file.
 		d->isGameFile = false;
 		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 	} else {
-		isValid = d->readAndVerifyVmsHeader(0x0200);
+		isValid = d->readAndVerifyVmsHeader(data_area_offset + 0x0200);
 		if (isValid) {
 			// Valid at 0x0200: This is a game file.
 			d->isGameFile = true;
@@ -409,29 +457,40 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 	if (!info) {
 		// Either no detection information was specified,
 		// or the file extension is missing.
-		return -1;
+		return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
 	}
 
 	// TODO: Handle ".vmi" files.
 
-	// VMS files don't have a magic number.
-	// Make sure the extension is ".vms" and the size
-	// is a multiple of 512.
-	if (info->szFile % 512 != 0) {
-		// Incorrect file size.
-		return -1;
-	}
-
-	if (info->ext && info->ext[0] != 0) {
+	if (info->szFile % 512 == 0) {
+		// File size is correct for VMS files.
 		// Check the file extension.
 		if (!rp_strcasecmp(info->ext, _RP(".vms"))) {
 			// It's a match!
-			return 0;
+			return DreamcastSavePrivate::SAVE_TYPE_VMS;
+		}
+	}
+
+	// DCI files have the 32-byte directory entry,
+	// followed by 32-bit byteswapped data.
+	if ((info->szFile - 32) % 512 == 0) {
+		// File size is correct for DCI files.
+		// Check the first byte. (Should be 0x00, 0x33, or 0xCC.)
+		if (info->header.addr == 0 && info->header.size >= 32) {
+			const uint8_t *const pData = info->header.pData;
+			if (*pData == 0x00 || *pData == 0x33 || *pData == 0xCC) {
+				// First byte is correct.
+				// Check the file extension.
+				if (!rp_strcasecmp(info->ext, _RP(".dci"))) {
+					// It's a match!
+					return DreamcastSavePrivate::SAVE_TYPE_DCI;
+				}
+			}
 		}
 	}
 
 	// Not supported.
-	return -1;
+	return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;;
 }
 
 /**
@@ -478,9 +537,10 @@ const rp_char *DreamcastSave::systemName(uint32_t type) const
 vector<const rp_char*> DreamcastSave::supportedFileExtensions_static(void)
 {
 	vector<const rp_char*> ret;
-	ret.reserve(1);
+	ret.reserve(2);
 	ret.push_back(_RP(".vms"));
-	// TODO: ".vmi", ".dcs"?
+	ret.push_back(_RP(".dci"));
+	// TODO: ".vmi"?
 	return ret;
 }
 
@@ -584,7 +644,7 @@ int DreamcastSave::loadFieldData(void)
 
 		// CRC.
 		// NOTE: Seems to be 0 for all of the SA2 theme files.
-		m_fields->addData_string_numeric(le16_to_cpu(vms_header->crc), RomFields::FB_HEX, 4);
+		m_fields->addData_string_numeric(vms_header->crc, RomFields::FB_HEX, 4);
 	} else {
 		// VMS is missing.
 		m_fields->addData_invalid();
