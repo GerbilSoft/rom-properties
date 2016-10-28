@@ -91,6 +91,13 @@ class DreamcastSavePrivate
 		};
 		uint32_t loaded_headers;
 
+		// Offset in the main file to the data area.
+		// - VMS: 0
+		// - DCI: 32
+		uint32_t data_area_offset;
+		static const uint32_t DATA_AREA_OFFSET_VMS = 0;
+		static const uint32_t DATA_AREA_OFFSET_DCI = 32;
+
 		/** NOTE: Fields have been byteswapped when loaded. **/
 		// VMS header.
 		DC_VMS_Header vms_header;
@@ -166,6 +173,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, loaded_headers(0)
+	, data_area_offset(0)
 	, vms_header_offset(0)
 	, isGameFile(false)
 	, iconAnimData(nullptr)
@@ -400,22 +408,35 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
 		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
 
-	// Offset to the data area.
-	// This is 0 for VMS, 32 for DCI.
-	uint32_t data_area_offset = 0;
-
 	// Determine the VMS save type by checking the file size.
 	// Standard VMS is always a multiple of 512.
 	// DCI is a multiple of 512, plus 32 bytes.
 	int64_t fileSize = m_file->fileSize();
 	if (fileSize % 512 == 0) {
+		// VMS file.
+		// TODO: Load the VMI file.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
-		data_area_offset = 0;
+		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 	} else if ((fileSize - 32) % 512 == 0) {
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_DCI;
-		data_area_offset = 32;
-		// TODO: Load the file header and don't use the
-		// VMS header heuristic.
+		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_DCI;
+
+		// Load the directory entry.
+		m_file->rewind();
+		size_t size = m_file->read(&d->vms_dirent, sizeof(d->vms_dirent));
+		if (size != sizeof(d->vms_dirent)) {
+			// Read error.
+			m_file->close();
+			return;
+		}
+
+		// Byteswap the directory entry.
+		d->vms_dirent.address     = le16_to_cpu(d->vms_dirent.address);
+		d->vms_dirent.size        = le16_to_cpu(d->vms_dirent.size);
+		d->vms_dirent.header_addr = le16_to_cpu(d->vms_dirent.header_addr);
+
+		d->isGameFile = !!(d->vms_dirent.filetype == DC_VMS_DIRENT_FTYPE_GAME);
+		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
@@ -426,25 +447,37 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Read the save file header.
 	// Regular save files have the header at 0x0000.
 	// Game files have the header at 0x0200.
-
-	// If the VMI file is not available, we'll use a heuristic:
-	// The description fields cannot contain any control
-	// characters other than 0x00 (NULL).
-	bool isValid = d->readAndVerifyVmsHeader(data_area_offset + 0x0000);
-	if (isValid) {
-		// Valid at 0x0000: This is a standard save file.
-		d->isGameFile = false;
-		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
-	} else {
-		isValid = d->readAndVerifyVmsHeader(data_area_offset + 0x0200);
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
+		// Use the header address specified in the directory entry.
+		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset + d->vms_dirent.header_addr);
 		if (isValid) {
-			// Valid at 0x0200: This is a game file.
-			d->isGameFile = true;
+			// Valid VMS header.
 			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 		} else {
 			// Not valid.
 			m_file->close();
 			return;
+		}
+	} else {
+		// If the VMI file is not available, we'll use a heuristic:
+		// The description fields cannot contain any control
+		// characters other than 0x00 (NULL).
+		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset + 0x0000);
+		if (isValid) {
+			// Valid at 0x0000: This is a standard save file.
+			d->isGameFile = false;
+			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+		} else {
+			isValid = d->readAndVerifyVmsHeader(d->data_area_offset + 0x0200);
+			if (isValid) {
+				// Valid at 0x0200: This is a game file.
+				d->isGameFile = true;
+				d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+			} else {
+				// Not valid.
+				m_file->close();
+				return;
+			}
 		}
 	}
 
