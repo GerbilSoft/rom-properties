@@ -60,6 +60,7 @@ CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 SET(libromdata_SRCS
+	byteswap.c
 	TextFuncs.cpp
 	RomData.cpp
 	RomFields.cpp
