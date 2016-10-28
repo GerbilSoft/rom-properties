@@ -36,6 +36,9 @@
 extern "C" {
 #endif
 
+// VMS blocks are 512 bytes.
+#define DC_VMS_BLOCK_SIZE 512
+
 /**
  * Dreamcast VMS header. (.vms files)
  * Reference: http://mc.pp.se/dc/vms/fileheader.html

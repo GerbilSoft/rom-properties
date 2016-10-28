@@ -469,11 +469,12 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	}
 
 	// Read the save file header.
-	// Regular save files have the header at 0x0000.
-	// Game files have the header at 0x0200.
+	// Regular save files have the header in block 0.
+	// Game files have the header in block 1.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// Use the header address specified in the directory entry.
-		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset + d->vms_dirent.header_addr);
+		bool isValid = d->readAndVerifyVmsHeader(
+			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
 		if (isValid) {
 			// Valid VMS header.
 			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
@@ -519,15 +520,15 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		// If the VMI file is not available, we'll use a heuristic:
 		// The description fields cannot contain any control
 		// characters other than 0x00 (NULL).
-		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset + 0x0000);
+		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset);
 		if (isValid) {
-			// Valid at 0x0000: This is a standard save file.
+			// Valid in block 0: This is a standard save file.
 			d->isGameFile = false;
 			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 		} else {
-			isValid = d->readAndVerifyVmsHeader(d->data_area_offset + 0x0200);
+			isValid = d->readAndVerifyVmsHeader(d->data_area_offset + DC_VMS_BLOCK_SIZE);
 			if (isValid) {
-				// Valid at 0x0200: This is a game file.
+				// Valid in block 1: This is a game file.
 				d->isGameFile = true;
 				d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 			} else {
@@ -751,10 +752,10 @@ int DreamcastSave::loadFieldData(void)
 	} else {
 		// Determine the type based on the VMS header offset.
 		switch (d->vms_header_offset) {
-			case 0x0000:
+			case 0:
 				filetype = _RP("Save Data");
 				break;
-			case 0x0200:
+			case DC_VMS_BLOCK_SIZE:
 				filetype = _RP("VMU Game");
 				break;
 			default:
