@@ -200,8 +200,10 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	, isGameFile(false)
 	, iconAnimData(nullptr)
 {
-	// Clear the VMS header..
+	// Clear the various structs.
 	memset(&vms_header, 0, sizeof(vms_header));
+	memset(&vmi_header, 0, sizeof(vmi_header));
+	memset(&vms_dirent, 0, sizeof(vms_dirent));
 }
 
 DreamcastSavePrivate::~DreamcastSavePrivate()
