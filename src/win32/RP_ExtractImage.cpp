@@ -74,6 +74,8 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		*ppvObj = static_cast<IExtractImage*>(this);
 	} else if (riid == IID_IExtractImage2) {
 		*ppvObj = static_cast<IExtractImage2*>(this);
+	} else if (riid == IID_IPersist) {
+		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
 	} else {

@@ -75,6 +75,8 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// - http://stackoverflow.com/a/2812938
 	if (riid == IID_IUnknown || riid == IID_IExtractIcon) {
 		*ppvObj = static_cast<IExtractIcon*>(this);
+	} else if (riid == IID_IPersist) {
+		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
 	} else {
