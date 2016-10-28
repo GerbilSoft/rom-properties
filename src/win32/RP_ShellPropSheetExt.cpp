@@ -1525,7 +1525,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
 		return E_INVALIDARG;
-	*ppvObj = NULL;
 
 	// Check if this interface is supported.
 	// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -1539,6 +1538,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		*ppvObj = static_cast<IShellPropSheetExt*>(this);
 	} else {
 		// Interface is not supported.
+		*ppvObj = nullptr;
 		return E_NOINTERFACE;
 	}
 
