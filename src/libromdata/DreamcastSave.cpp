@@ -68,10 +68,27 @@ class DreamcastSavePrivate
 		static const struct RomFields::Desc dc_save_fields[];
 
 	public:
+		// Which headers do we have loaded?
+		enum DC_LoadedHeaders {
+			// VMS data. Present in .VMS and .DCI files.
+			DC_HAVE_VMS = (1 << 0),
+
+			// VMI header. Present in .VMI files only.
+			DC_HAVE_VMI = (1 << 1),
+
+			// Directory entry. Present in .VMI and .DCI files.
+			DC_HAVE_DIR_ENTRY = (1 << 2),
+		};
+		uint32_t loaded_headers;
+
 		// VMS header.
 		DC_VMS_Header vms_header;
 		// Header offset. (0 for standard save files; 0x200 for game files.)
 		uint32_t vms_header_offset;
+		// VMI header.
+		DC_VMI_Header vmi_header;
+		// Directory entry.
+		DC_VMS_DirEnt vms_dirent;
 
 		// Is this a game file?
 		// TODO: Bitfield in saveType or something.
@@ -118,7 +135,13 @@ const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_monospace = {
 
 // Save file fields.
 const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
+	// Generic warning field for e.g. VMS with no VMI.
+	// TODO: Bold+Red?
+	{_RP("Warning"), RomFields::RFT_STRING, {nullptr}},
+
 	// TODO: VMI fields.
+
+	// VMS fields.
 	{_RP("VMS Description"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("DC Description"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Application"), RomFields::RFT_STRING, {nullptr}},
@@ -130,6 +153,7 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {0, 8064, 4544, 2048};
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
+	, loaded_headers(0)
 	, vms_header_offset(0)
 	, isGameFile(false)
 	, iconAnimData(nullptr)
@@ -333,6 +357,10 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// TODO: VMI+VMS. Currently handling VMS only.
 	static_assert(sizeof(DC_VMS_Header) == DC_VMS_Header_SIZE,
 		"DC_VMS_Header is the wrong size. (Should be 96 bytes.)");
+	static_assert(sizeof(DC_VMI_Header) == DC_VMI_Header_SIZE,
+		"DC_VMI_Header is the wrong size. (Should be 108 bytes.)");
+	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
+		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
 
 	// Read the save file header.
 	// Regular save files have the header at 0x0000.
@@ -345,11 +373,13 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	if (isValid) {
 		// Valid at 0x0000: This is a standard save file.
 		d->isGameFile = false;
+		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 	} else {
 		isValid = d->readAndVerifyVmsHeader(0x0200);
 		if (isValid) {
 			// Valid at 0x0200: This is a game file.
 			d->isGameFile = true;
+			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
 		} else {
 			// Not valid.
 			m_file->close();
@@ -508,22 +538,60 @@ int DreamcastSave::loadFieldData(void)
 		return -EIO;
 	}
 
+	// NOTE: DCI files have a directory entry, but not the
+	// extra VMI information.
+	switch (d->loaded_headers) {
+		case DreamcastSavePrivate::DC_HAVE_VMS |
+		     DreamcastSavePrivate::DC_HAVE_VMI:
+		case DreamcastSavePrivate::DC_HAVE_VMS |
+		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+		case DreamcastSavePrivate::DC_HAVE_VMS |
+		     DreamcastSavePrivate::DC_HAVE_VMI |
+		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+			// VMS and the directory entry are present.
+			// Hide the "warning" field.
+			m_fields->addData_invalid();
+			break;
+
+		case DreamcastSavePrivate::DC_HAVE_VMI:
+		case DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+		case DreamcastSavePrivate::DC_HAVE_VMI |
+		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+			// VMS is missing.
+			m_fields->addData_string(_RP("The VMS file was not found."));
+			break;
+
+		case DreamcastSavePrivate::DC_HAVE_VMS:
+			// VMI is missing.
+			m_fields->addData_string(_RP("The VMI file was not found."));
+			break;
+	}
+
+	// TODO: VMI header and/or directory entry?
+
 	// DC VMS header.
-	// TODO: VMI header?
-	const DC_VMS_Header *const vms_header = &d->vms_header;
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
+		const DC_VMS_Header *const vms_header = &d->vms_header;
 
-	// VMS description.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->vms_description, sizeof(vms_header->vms_description)));
+		// VMS description.
+		m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->vms_description, sizeof(vms_header->vms_description)));
 
-	// DC description.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->dc_description, sizeof(vms_header->dc_description)));
+		// DC description.
+		m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->dc_description, sizeof(vms_header->dc_description)));
 
-	// Application.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->application, sizeof(vms_header->application)));
+		// Application.
+		m_fields->addData_string(cp1252_sjis_to_rp_string(vms_header->application, sizeof(vms_header->application)));
 
-	// CRC.
-	// NOTE: Seems to be 0 for all of the SA2 theme files.
-	m_fields->addData_string_numeric(le16_to_cpu(vms_header->crc), RomFields::FB_HEX, 4);
+		// CRC.
+		// NOTE: Seems to be 0 for all of the SA2 theme files.
+		m_fields->addData_string_numeric(le16_to_cpu(vms_header->crc), RomFields::FB_HEX, 4);
+	} else {
+		// VMS is missing.
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	}
 
 	// Finished reading the field data.
 	return (int)m_fields->count();

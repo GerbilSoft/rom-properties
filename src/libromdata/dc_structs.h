@@ -19,6 +19,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+/**
+ * References:
+ * - http://mc.pp.se/dc/vms/fileheader.html
+ * - http://mc.pp.se/dc/vms/vmi.html
+ * - http://mc.pp.se/dc/vms/flashmem.html
+ */
+
 #ifndef __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_DC_STRUCTS_H__
 
@@ -59,18 +66,127 @@ typedef struct PACKED _DC_VMS_Header {
 /**
  * Graphic eyecatch type.
  */
-enum DC_VMS_Eyecatch_Type {
+typedef enum {
 	DC_VMS_EYECATCH_NONE		= 0,
 	DC_VMS_EYECATCH_ARGB4444	= 1,
 	DC_VMS_EYECATCH_CI8		= 2,
 	DC_VMS_EYECATCH_CI4		= 3,
-};
+} DC_VMS_Eyecatch_Type;
 
 // Icon and eyecatch sizes.
 #define DC_VMS_ICON_W 32
 #define DC_VMS_ICON_H 32
 #define DC_VMS_EYECATCH_W 72
 #define DC_VMS_EYECATCH_H 56
+
+/**
+ * Dreamcast VMI header. (.vmi files)
+ * Reference: http://mc.pp.se/dc/vms/fileheader.html
+ *
+ * All fields are in little-endian.
+ *
+ * NOTE: Strings are NOT null-terminated!
+ */
+#define DC_VMI_Header_SIZE 108
+#pragma pack(1)
+typedef struct PACKED _DC_VMI_Header {
+	// Very primitive checksum.
+	// First four bytes of vms_resource_name,
+	// ANDed with 0x53454741 ("SEGA").
+	uint8_t checksum[4];
+
+	char description[32];		// Shift-JIS; NULL-padded.
+	char copyright[32];		// Shift-JIS; NULL-padded.
+
+	// Creation time. (standard binary values)
+	struct {
+		uint16_t year;		// Year (exact value)
+		uint8_t month;		// Month (1-12)
+		uint8_t mday;		// Day of month (1-31)
+		uint8_t hour;		// Hour (0-23)
+		uint8_t minute;		// Minute (0-59)
+		uint8_t second;		// Second (0-59)
+		uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
+	} ctime;
+
+	uint16_t vmi_version;		// VMI version. (0)
+	uint16_t file_number;		// File number. (1)
+	char vms_resource_name[8];	// .VMS filename, without the ".VMS".
+	char vms_filename[12];		// Filename on the VMU.
+	uint16_t mode;			// See DC_VMI_Mode.
+	uint16_t reserved;		// Set to 0.
+	uint32_t filesize;		// .VMS file size, in bytes.
+} DC_VMI_Header;
+#pragma pack()
+
+/**
+ * DC_VMI_Header.mode
+ */
+typedef enum {
+	// Copy protection.
+	DC_VMI_MODE_COPY_OK      = (0 << 0),
+	DC_VMI_MODE_COPY_PROTECT = (1 << 0),
+	DC_VMI_MODE_COPY_MASK    = (1 << 0),
+
+	// File type.
+	DC_VMI_MODE_FTYPE_DATA = (0 << 1),
+	DC_VMI_MODE_FTYPE_GAME = (1 << 1),
+	DC_VMI_MODE_FTYPE_MASK = (1 << 1),
+} DC_VMI_Mode;
+
+/**
+ * Dreamcast VMS directory entry.
+ * Found at the top of DCI files and in the directory
+ * table of raw VMU dumps.
+ *
+ * Reference: http://mc.pp.se/dc/vms/flashmem.html
+ *
+ * All fields are in little-endian.
+ *
+ * NOTE: Strings are NOT null-terminated!
+ */
+#define DC_VMS_DirEnt_SIZE 32
+#pragma pack(1)
+typedef struct PACKED _DC_VMS_DirEnt {
+	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
+	uint8_t protect;	// See DC_VMS_DirEnt_Protect.
+	uint16_t address;	// First block number.
+	char filename[12];
+
+	// Creation time. (BCD)
+	struct {
+		uint8_t century;	// Century.
+		uint8_t year;		// Year.
+		uint8_t month;		// Month (1-12)
+		uint8_t mday;		// Day of month (1-31)
+		uint8_t hour;		// Hour (0-23)
+		uint8_t minute;		// Minute (0-59)
+		uint8_t second;		// Second (0-59)
+		uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
+	} ctime;
+
+	uint16_t size;		// Size, in blocks.
+	uint16_t header_addr;	// Offset of header (in blocks) from file start.
+	uint8_t reserved[4];	// Reserved. (all zero)
+} DC_VMS_DirEnt;
+#pragma pack()
+
+/**
+ * DC_VMS_DirEnt.filetype
+ */
+typedef enum {
+	DC_VMS_DIRENT_FTYPE_NONE = 0x00,
+	DC_VMS_DIRENT_FTYPE_DATA = 0x33,
+	DC_VMS_DIRENT_FTYPE_GAME = 0xCC,
+} DC_VMS_DirEnt_FType;
+
+/**
+ * DC_VMS_DirEnt.protect
+ */
+typedef enum {
+	DC_VMS_DIRENT_PROTECT_COPY_OK        = 0x00,
+	DC_VMS_DIRENT_PROTECT_COPY_PROTECTED = 0xFF,
+} DC_VMS_DirEnt_Protect;
 
 #ifdef __cplusplus
 }
