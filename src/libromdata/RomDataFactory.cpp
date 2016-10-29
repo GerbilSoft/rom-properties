@@ -23,6 +23,16 @@
 #include "file/RpFile.hpp"
 #include "common.h"
 
+// Implicit conversions of lambda expressions to function pointers
+// is supported in MSVC 2012 and gcc-4.5.
+// TODO: CMake test instead?
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#define HAVE_LAMBDA_AS_FUNCTION_POINTER
+#else
+// Use std::function instead.
+#include <functional>
+#endif
+
 // C++ includes.
 #include <unordered_map>
 #include <vector>
@@ -56,19 +66,30 @@ class RomDataFactoryPrivate
 		RomDataFactoryPrivate &operator=(const RomDataFactoryPrivate &other);
 
 	public:
-		// FIXME: Put isRomSupported() here.
-		// Can't do that right now due to lack of 'new' functions.
-		//typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
+		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
 		typedef vector<const rp_char*> (*pFnSupportedFileExtensions)(void);
 
+#ifdef HAVE_LAMBDA_AS_FUNCTION_POINTER
+		typedef RomData* (*pFnNewRomData)(IRpFile *file);
+#else
+		typedef std::function<RomData*(IRpFile*)> pFnNewRomData;
+#endif
+
 		struct RomDataFns {
-			//pFnIsRomSupported isRomSupported;
+			pFnIsRomSupported isRomSupported;
+			pFnNewRomData newRomData;
 			pFnSupportedFileExtensions supportedFileExtensions;
 			bool hasThumbnail;
 		};
 
+// MSVC 2010 complains if we don't specify the full namespace
+// for the RomData subclass in the lambda expression.
 #define GetRomDataFns(sys, thumbnail) \
-	{/*sys::isRomSupported_static,*/ sys::supportedFileExtensions_static, thumbnail}
+	{sys::isRomSupported_static, \
+	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
+	 sys::supportedFileExtensions_static, \
+	 thumbnail}
+
 		static const RomDataFns romDataFns[];
 
 		/**
@@ -91,7 +112,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(DreamcastSave, true),
-	{/*nullptr,*/ nullptr, false}
+	{nullptr, nullptr, nullptr, false}
 };
 
 /**
@@ -264,48 +285,26 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 		delete romData;
 	}
 
-#define CheckRomData(sys) \
-	do { \
-		if (thumbnail) { \
-			/* This RomData class doesn't support any images. */ \
-			break; \
-		} \
-		if (sys::isRomSupported_static(&info) >= 0) { \
-			RomData *romData = new sys(file); \
-			if (romData->isValid()) \
-				return romData; \
-			\
-			/* Not actually supported. */ \
-			delete romData; \
-		} \
-	} while (0)
+	const RomDataFactoryPrivate::RomDataFns *fns =
+		&RomDataFactoryPrivate::romDataFns[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		if (thumbnail && !fns->hasThumbnail) {
+			// Thumbnail is requested, but this RomData class
+			// doesn't support any images.
+			continue;
+		}
 
-#define CheckRomData_imgbf(sys) \
-	do { \
-		if (sys::isRomSupported_static(&info) >= 0) { \
-			if (thumbnail) { \
-				/* Check if at least one image type is supported. */ \
-				if (sys::supportedImageTypes_static() == 0) \
-					break; \
-			} \
-			RomData *romData = new sys(file); \
-			if (romData->isValid()) \
-				return romData; \
-			\
-			/* Not actually supported. */ \
-			delete romData; \
-		} \
-	} while (0)
+		if (fns->isRomSupported(&info) >= 0) {
+			RomData *romData = fns->newRomData(file);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
 
-	CheckRomData(MegaDrive);
-	CheckRomData_imgbf(GameCube);
-	CheckRomData_imgbf(NintendoDS);
-	CheckRomData(DMG);
-	CheckRomData(GameBoyAdvance);
-	CheckRomData_imgbf(GameCubeSave);
-	CheckRomData(N64);
-	CheckRomData(SNES);
-	CheckRomData_imgbf(DreamcastSave);
+			// Not actually supported.
+			delete romData;
+		}
+	}
 
 	// Not supported.
 	return nullptr;
