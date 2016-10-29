@@ -174,7 +174,9 @@ const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 	// TODO: Bold+Red?
 	{_RP("Warning"), RomFields::RFT_STRING, {nullptr}},
 
-	// TODO: VMI-specific fields.
+	// VMI fields.
+	{_RP("VMI Description"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("VMI Copyright"), RomFields::RFT_STRING, {nullptr}},
 
 	// VMS directory entry fields.
 	{_RP("File Type"), RomFields::RFT_STRING, {nullptr}},
@@ -907,7 +909,17 @@ int DreamcastSave::loadFieldData(void)
 		}
 	}
 
-	// TODO: VMI header.
+	// DC VMI header.
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMI) {
+		m_fields->addData_string(
+			cp1252_sjis_to_rp_string(d->vmi_header.description, sizeof(d->vmi_header.description)));
+		m_fields->addData_string(
+			cp1252_sjis_to_rp_string(d->vmi_header.copyright, sizeof(d->vmi_header.copyright)));
+	} else {
+		// VMI is missing.
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	}
 
 	if (filetype) {
 		m_fields->addData_string(filetype);
