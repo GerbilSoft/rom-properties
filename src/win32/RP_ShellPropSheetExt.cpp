@@ -117,13 +117,16 @@ class RP_ShellPropSheetExt_Private
 
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
-		// Monospaced font.
-		HFONT hFontMono;
+		HFONT hFontMono;	// Monospaced font.
+
+		// Monospaced font details.
 		LOGFONT lfFontMono;
 		unordered_set<wstring> monospaced_fonts;
 		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
-		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
 		bool bPrevIsClearType;	// Previous ClearType setting.
+
+		// Controls that need to be drawn using red text.
+		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -633,11 +636,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	SIZE sz_lblSysInfo = {0, 0};
 
 	if (!sysInfo.empty()) {
-		// Use a bold font.
-		if (!hFontBold) {
-			initBoldFont(hFont);
-		}
-
 		// Determine the appropriate label size.
 		int ret = measureTextSize(hDlg,
 			(hFontBold ? hFontBold : hFont),
@@ -839,11 +837,6 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// "Warning" font?
 		// TODO: Support monospace+warning?
 		else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
-			// Use a bold font.
-			if (!hFontBold) {
-				initBoldFont(hFont);
-			}
-
 			if (hFontBold) {
 				hFont = hFontBold;
 				hwndWarningControls.insert(hDlgItem);
@@ -1385,6 +1378,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	HDC hDC = GetDC(hDlg);
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
+	// Initialize the bold and monospaced fonts.
+	initBoldFont(hFont);
+	initMonospacedFont(hFont);
+
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
 	int max_text_width = 0;
@@ -1443,9 +1440,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Create the header row.
 	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
 	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
-
-	// Make sure the monospaced font is initialized.
-	initMonospacedFont(hFont);
 
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Desc *desc = fields->desc(idx);
