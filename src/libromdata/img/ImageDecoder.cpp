@@ -187,7 +187,7 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 /** ImageDecoder **/
 
 /**
- * Convert a Nintendo DS 16-color + palette image to rp_image.
+ * Convert a Nintendo DS CI4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -436,9 +436,11 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 	// Convert one line at a time. (CI4 -> CI8)
 	for (int y = 0; y < height; y++) {
 		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x -= 2, img_buf++, px_dest += 2) {
+		for (int x = width; x > 0; x -= 2) {
 			px_dest[0] = (*img_buf >> 4);
 			px_dest[1] = (*img_buf & 0x0F);
+			img_buf++;
+			px_dest += 2;
 		}
 	}
 
@@ -499,6 +501,42 @@ rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
 		memcpy(px_dest, img_buf, width);
 		px_dest += stride;
 		img_buf += width;
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast ARGB4444 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ARGB4444 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
+	const uint16_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	if (!img_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) * 2))
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// Convert one line at a time. (ARGB4444 -> ARGB32)
+	for (int y = 0; y < height; y++) {
+		uint32_t *px_dest = reinterpret_cast<uint32_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x--) {
+			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*px_dest);
+			img_buf++;
+			px_dest++;
+		}
 	}
 
 	// Image has been converted.

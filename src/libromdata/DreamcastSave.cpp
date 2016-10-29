@@ -549,6 +549,15 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 			img = nullptr;
 			break;
 
+		case DC_VMS_EYECATCH_ARGB4444: {
+			// ARGB4444 eyecatch.
+			// FIXME: Completely untested.
+			img = ImageDecoder::fromDreamcastARGB4444(
+				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
+				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
+			break;
+		}
+
 		case DC_VMS_EYECATCH_CI8: {
 			// CI8 eyecatch.
 			// TODO: Needs more testing.
