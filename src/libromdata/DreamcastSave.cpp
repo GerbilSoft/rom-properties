@@ -210,7 +210,12 @@ const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 };
 
 // Graphic eyecatch sizes.
-const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {0, 8064, 4544, 2048};
+const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
+	0,	// DC_VMS_EYECATCH_NONE
+	DC_VMS_EYECATCH_ARGB4444_DATA_SIZE,
+	DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE,
+	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
+};
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
@@ -418,7 +423,9 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
 	// Make sure the file is big enough.
-	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) + 32 + (icon_count * 512);
+	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) +
+		DC_VMS_ICON_PALETTE_SIZE +
+		(icon_count * DC_VMS_ICON_DATA_SIZE);
 	sz_reserved += vms_header.eyecatch_type & 3;
 	if ((int64_t)sz_reserved > q->m_file->fileSize()) {
 		// File is NOT big enough.
@@ -426,7 +433,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	}
 
 	// Load the palette.
-	union { uint16_t u16[16]; uint32_t u32[8]; } palette;
+	union { uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2]; uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4]; } palette;
 	q->m_file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
 	size_t size = q->m_file->read(palette.u16, sizeof(palette.u16));
 	if (size != sizeof(palette)) {
@@ -446,7 +453,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
-	union { uint8_t u8[1024/2]; uint32_t u32[1024/2/4]; } icon_buf;
+	union { uint8_t u8[DC_VMS_ICON_DATA_SIZE]; uint32_t u32[DC_VMS_ICON_DATA_SIZE/4]; } icon_buf;
 	for (int i = 0; i < icon_count; i++) {
 		size_t size = q->m_file->read(icon_buf.u8, sizeof(icon_buf.u8));
 		if (size != sizeof(icon_buf.u8))
@@ -531,6 +538,18 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		"DC_VMI_Header is the wrong size. (Should be 108 bytes.)");
 	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
 		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
+
+	static_assert(DC_VMS_ICON_PALETTE_SIZE == 32,
+		"DC_VMS_ICON_PALETTE_SIZE is wrong. (Should be 32.)");
+	static_assert(DC_VMS_ICON_DATA_SIZE == 512,
+		"DC_VMS_ICON_DATA_SIZE is wrong. (Should be 512.)");
+
+	static_assert(DC_VMS_EYECATCH_ARGB4444_DATA_SIZE == 8064,
+		"DC_VMS_EYECATCH_ARGB4444_DATA_SIZE is wrong. (Should be 8,064.)");
+	static_assert(DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE == 4544,
+		"DC_VMS_EYECATCH_CI8_PALETTE_SIZE + DC_VMS_EYECATCH_CI8_DATA_SIZE is wrong. (Should be 4,544.)");
+	static_assert(DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE == 2048,
+		"DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE is wrong. (Should be 2,048.)");
 
 	// Determine the VMS save type by checking the file size.
 	// Standard VMS is always a multiple of DC_VMS_BLOCK_SIZE.
