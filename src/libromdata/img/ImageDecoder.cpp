@@ -153,9 +153,10 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		px32 |= 0xFF000000U; // no alpha channel
 	} else {
 		// RGB4A3
-		px32 |= (((px16 & 0x000F) << 4)  |  (px16 & 0x000F));		// B
-		px32 |= (((px16 & 0x00F0) << 8)  | ((px16 & 0x00F0) << 4));	// G
-		px32 |= (((px16 & 0x0F00) << 12) | ((px16 & 0x0F00) << 8));	// R
+		px32  =  (px16 & 0x000F);	// B
+		px32 |= ((px16 & 0x00F0) << 4);	// G
+		px32 |= ((px16 & 0x0F00) << 8);	// R
+		px32 |= (px32 << 4);		// Copy to the top nybble.
 
 		// Calculate the alpha channel.
 		uint8_t a = ((px16 >> 7) & 0xE0);
