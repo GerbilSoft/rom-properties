@@ -503,8 +503,65 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 		return nullptr;
 	}
 
-	// TODO
-	return nullptr;
+	// Determine the eyecatch size.
+	if (vms_header.eyecatch_type == DC_VMS_EYECATCH_NONE ||
+	    vms_header.eyecatch_type > DC_VMS_EYECATCH_CI4)
+	{
+		// No eyecatch.
+		return nullptr;
+	}
+
+	const unsigned int eyecatch_size = eyecatch_sizes[vms_header.eyecatch_type];
+
+	// Skip over the icons.
+	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
+	// Make sure the file is big enough.
+	const uint32_t sz_icons = (uint32_t)sizeof(vms_header) +
+		DC_VMS_ICON_PALETTE_SIZE +
+		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
+	if ((int64_t)sz_icons + eyecatch_size > q->m_file->fileSize()) {
+		// File is NOT big enough.
+		return nullptr;
+	}
+
+	// Load the eyecatch data.
+	uint8_t *data = reinterpret_cast<uint8_t*>(malloc(eyecatch_size));
+	q->m_file->seek(vms_header_offset + sz_icons);
+	size_t size = q->m_file->read(data, eyecatch_size);
+	if (size != eyecatch_size) {
+		// Error loading the eyecatch data.
+		return nullptr;
+	}
+
+	if (this->saveType == SAVE_TYPE_DCI) {
+		// Apply 32-bit byteswapping to the eyecatch data.
+		// TODO: Use an IRpFile subclass that automatically byteswaps
+		// instead of doing manual byteswapping here?
+		__byte_swap_32_array((uint32_t*)data, eyecatch_size);
+	}
+
+	// Convert the eycatch to rp_image.
+	rp_image *img;
+	switch (vms_header.eyecatch_type) {
+		case DC_VMS_EYECATCH_NONE:
+		default:
+			// Invalid eyecatch type.
+			img = nullptr;
+			break;
+
+		case DC_VMS_EYECATCH_CI4: {
+			// CI4 eyecatch.
+			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
+			img = ImageDecoder::fromDreamcastCI4(
+				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
+				image_buf, DC_VMS_EYECATCH_CI4_DATA_SIZE,
+				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);
+			break;
+		}
+	}
+
+	free(data);
+	return img;
 }
 
 /** DreamcastSave **/
