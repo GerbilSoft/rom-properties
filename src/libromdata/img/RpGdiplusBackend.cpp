@@ -540,18 +540,27 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
 	// handle resizing on CI8 properly.
 	unique_ptr<Gdiplus::Bitmap> pResizeBmp(
 		new Gdiplus::Bitmap(size.cx, size.cy, PixelFormat32bppARGB));
-	Gdiplus::Graphics graphics(pResizeBmp.get());
+	Gdiplus::Graphics g(pResizeBmp.get());
+
+	// Always use PixelOffsetModeHalf.
+	// When interpolating, this results in higher-quality
+	// anti-aliasing. When using nearest-neighbor, this
+	// fixes an issue that causes the scaled image to be
+	// shifted to the top-left by 1px.
+	g.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
+
 	if (nearest) {
 		// Set nearest-neighbor interpolation.
 		// TODO: What's the default?
-		graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+		g.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
 	}
+
 	if (pTmpBmp) {
 		// Use the temporary ARGB32 bitmap.
-		graphics.DrawImage(pTmpBmp.get(), 0, 0, size.cx, size.cy);
+		g.DrawImage(pTmpBmp.get(), 0, 0, size.cx, size.cy);
 	} else {
 		// Use the regular bitmap.
-		graphics.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+		g.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
 	}
 
 	if (!pTmpBmp) {
