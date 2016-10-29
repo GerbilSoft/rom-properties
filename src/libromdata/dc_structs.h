@@ -89,6 +89,9 @@ typedef enum {
 #define DC_VMS_EYECATCH_W 72
 #define DC_VMS_EYECATCH_H 56
 
+// Filename length.
+#define DC_VMS_FILENAME_LENGTH 12
+
 /**
  * Dreamcast VMI header. (.vmi files)
  * Reference: http://mc.pp.se/dc/vms/fileheader.html
@@ -122,7 +125,7 @@ typedef struct PACKED _DC_VMI_Header {
 	uint16_t vmi_version;		// VMI version. (0)
 	uint16_t file_number;		// File number. (1)
 	char vms_resource_name[8];	// .VMS filename, without the ".VMS".
-	char vms_filename[12];		// Filename on the VMU.
+	char vms_filename[DC_VMS_FILENAME_LENGTH];	// Filename on the VMU.
 	uint16_t mode;			// See DC_VMI_Mode.
 	uint16_t reserved;		// Set to 0.
 	uint32_t filesize;		// .VMS file size, in bytes.
@@ -134,9 +137,9 @@ typedef struct PACKED _DC_VMI_Header {
  */
 typedef enum {
 	// Copy protection.
-	DC_VMI_MODE_COPY_OK      = (0 << 0),
-	DC_VMI_MODE_COPY_PROTECT = (1 << 0),
-	DC_VMI_MODE_COPY_MASK    = (1 << 0),
+	DC_VMI_MODE_PROTECT_COPY_OK        = (0 << 0),
+	DC_VMI_MODE_PROTECT_COPY_PROTECTED = (1 << 0),
+	DC_VMI_MODE_PROTECT_MASK           = (1 << 0),
 
 	// File type.
 	DC_VMI_MODE_FTYPE_DATA = (0 << 1),
@@ -161,7 +164,7 @@ typedef struct PACKED _DC_VMS_DirEnt {
 	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
 	uint8_t protect;	// See DC_VMS_DirEnt_Protect.
 	uint16_t address;	// First block number.
-	char filename[12];
+	char filename[DC_VMS_FILENAME_LENGTH];
 
 	// Creation time. (BCD)
 	struct {

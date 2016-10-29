@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "RomDataFactory.hpp"
-#include "file/IRpFile.hpp"
+#include "file/RpFile.hpp"
 #include "common.h"
 
 // C++ includes.
@@ -67,7 +67,16 @@ class RomDataFactoryPrivate
 #define GetRomDataFns(sys, thumbnail) \
 	{/*sys::isRomSupported_static,*/ sys::supportedFileExtensions_static, thumbnail}
 		static const RomDataFns romDataFns[];
+
+		/**
+		 * Attempt to open the other file in a Dreamcast .VMS+.VMI pair.
+		 * @param file One opened file in the .VMS+.VMI pair.
+		 * @return DreamcastSave if valid; nullptr if not.
+		 */
+		static RomData *openDreamcastVMSandVMI(IRpFile *file);
 };
+
+/** RomDataFactoryPrivate **/
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(MegaDrive, false),
@@ -81,6 +90,106 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(DreamcastSave, true),
 	{/*nullptr,*/ nullptr, false}
 };
+
+/**
+ * Attempt to open the other file in a Dreamcast .VMS+.VMI pair.
+ * @param file One opened file in the .VMS+.VMI pair.
+ * @return DreamcastSave if valid; nullptr if not.
+ */
+RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
+{
+	// We're assuming the file extension was already checked.
+	// VMI files are always 108 bytes;
+	// VMS files are always a multiple of 512 bytes.
+	int64_t filesize = file->fileSize();
+	bool has_dc_vms = (filesize % 512 == 0);
+	bool has_dc_vmi = (filesize == 108);
+	if (!(has_dc_vms ^ has_dc_vmi)) {
+		// Can't be none or both...
+		return nullptr;
+	}
+
+	// Determine which file we should look for.
+	IRpFile *vms_file;
+	IRpFile *vmi_file;
+	IRpFile **other_file;	// Points to vms_file or vmi_file.
+	int ext_idx;
+
+	// File extensions.
+	// Lowercase versions are only used on non-Windows platforms
+	// due to case-sensitive file systems.
+#ifdef _WIN32
+	const rp_char *const exts[4] = {_RP(".VMI"), nullptr, _RP(".VMS"), nullptr};
+#else /* !_WIN32 */
+	const rp_char *const exts[4] = {_RP(".VMI"), _RP(".vmi"), _RP(".VMS"), _RP(".vms")};
+#endif
+
+	if (has_dc_vms) {
+		// We have the VMS file.
+		// Find the VMI file.
+		vms_file = file;
+		vmi_file = nullptr;
+		other_file = &vmi_file;
+		ext_idx = 0;
+	} else /*if (has_dc_vmi)*/ {
+		// We have the VMI file.
+		// Find the VMS file.
+		vms_file = nullptr;
+		vmi_file = file;
+		other_file = &vms_file;
+		ext_idx = 2;
+	}
+
+	// Attempt to open the other file in the pair.
+	// TODO: Verify length.
+	// TODO: For .vmi, check the VMS resource name?
+	const rp_string filename = file->filename();
+	rp_string other_filename = filename.substr(0, filename.size() - 4);
+	other_filename += exts[ext_idx];
+	IRpFile *test_file = new RpFile(other_filename, RpFile::FM_OPEN_READ);
+	if (!test_file->isOpen()) {
+		// Error opening the other file.
+		delete test_file;
+#ifdef _WIN32
+		// Windows uses case-insensitive filenames,
+		// so we're done here.
+		test_file = nullptr;
+#else /* !_WIN32 */
+		// Try again with a lowercase extension.
+		// (Non-Windows platforms only.)
+		other_filename.resize(other_filename.size() - 4);
+		other_filename += exts[ext_idx + 1];
+		test_file = new RpFile(other_filename, RpFile::FM_OPEN_READ);
+		if (!test_file->isOpen()) {
+			// Still can't open the other file.
+			delete other_file;
+			other_file = nullptr;
+		}
+#endif
+	}
+
+	if (!test_file) {
+		// Can't open the other file.
+		return nullptr;
+	}
+
+	*other_file = test_file;
+
+	// Attempt to create a DreamcastSave using both the
+	// VMS and VMI files.
+	DreamcastSave *dcSave = new DreamcastSave(vms_file, vmi_file);
+	delete *other_file;	// Not needed anymore.
+	if (!dcSave->isValid()) {
+		// Not valid.
+		delete dcSave;
+		return nullptr;
+	}
+
+	// DreamcastSave opened.
+	return dcSave;
+}
+
+/** RomDataFactory **/
 
 /**
  * Create a RomData class for the specified ROM file.
@@ -118,7 +227,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 
 	// Get the file extension.
 	info.ext = nullptr;
-	rp_string filename = file->filename();
+	const rp_string filename = file->filename();
 	if (!filename.empty()) {
 		// Get the last dot position.
 		size_t dot_pos = filename.find_last_of(_RP_CHR('.'));
@@ -135,6 +244,19 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 				info.ext = filename.c_str() + dot_pos;
 			}
 		}
+	}
+
+	// Special handling for Dreamcast .VMS+.VMI pairs.
+	if (!rp_strcasecmp(info.ext, _RP(".vms")) || !rp_strcasecmp(info.ext, _RP(".vmi"))) {
+		// Dreamcast .VMS+.VMI pair.
+		// Attempt to open the other file in the pair.
+		RomData *romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
+		if (romData && romData->isValid()) {
+			// .VMS+.VMI pair opened.
+			return romData;
+		}
+		// Not a .VMS+.VMI pair.
+		delete romData;
 	}
 
 #define CheckRomData(sys) \

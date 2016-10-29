@@ -95,6 +95,9 @@ class DreamcastSavePrivate
 		};
 		uint32_t loaded_headers;
 
+		// VMI save file. (for .VMI+.VMS or .VMI standalone)
+		IRpFile *vmi_file;
+
 		// Offset in the main file to the data area.
 		// - VMS: 0
 		// - DCI: 32
@@ -194,6 +197,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 	: q(q)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, loaded_headers(0)
+	, vmi_file(nullptr)
 	, data_area_offset(0)
 	, vms_header_offset(0)
 	, ctime(0)
@@ -208,6 +212,8 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q)
 
 DreamcastSavePrivate::~DreamcastSavePrivate()
 {
+	delete vmi_file;
+
 	if (iconAnimData) {
 		// Delete all except the first animated icon frame.
 		// (The first frame is owned by the RomData superclass.)
@@ -400,7 +406,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 /** DreamcastSave **/
 
 /**
- * Read a Nintendo Dreamcast save file.
+ * Read a Sega Dreamcast save file.
  *
  * A save file must be opened by the caller. The file handle
  * will be dup()'d and must be kept open in order to load
@@ -408,7 +414,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
  *
  * To close the file, either delete this object or call close().
  *
- * NOTE: Check isValid() to determine if this is a valid ROM.
+ * NOTE: Check isValid() to determine if this is a valid save file.
  *
  * @param file Open disc image.
  */
@@ -424,7 +430,6 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		return;
 	}
 
-	// TODO: VMI+VMS. Currently handling VMS only.
 	static_assert(sizeof(DC_VMS_Header) == DC_VMS_Header_SIZE,
 		"DC_VMS_Header is the wrong size. (Should be 96 bytes.)");
 	static_assert(sizeof(DC_VMI_Header) == DC_VMI_Header_SIZE,
@@ -438,7 +443,6 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	int64_t fileSize = m_file->fileSize();
 	if (fileSize % 512 == 0) {
 		// VMS file.
-		// TODO: Load the VMI file.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 	} else if ((fileSize - 32) % 512 == 0) {
@@ -543,6 +547,145 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	m_isValid = true;
 }
 
+/**
+ * Read a Sega Dreamcast save file. (.VMI+.VMS pair)
+ *
+ * This constructor requires two files:
+ * - .VMS file (main save file)
+ * - .VMI file (directory entry)
+ *
+ * Both files will be dup()'d.
+ * The .VMS file will be used as the main file for the RomData class.
+ *
+ * To close the files, either delete this object or call close().
+ * NOTE: Check isValid() to determine if this is a valid save file.
+ *
+ * @param vms_file Open .VMS save file.
+ * @param vmi_file Open .VMI save file.
+ */
+DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
+	: RomData(vms_file, DreamcastSavePrivate::dc_save_fields, ARRAY_SIZE(DreamcastSavePrivate::dc_save_fields))
+	, d(new DreamcastSavePrivate(this))
+{
+	// This class handles save files.
+	m_fileType = FTYPE_SAVE_FILE;
+
+	if (!m_file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
+	// dup() the VMI file.
+	d->vmi_file = vmi_file->dup();
+	if (!d->vmi_file) {
+		// Could not dup() the VMI file.
+		m_file->close();
+		return;
+	}
+
+	// Sanity check:
+	// - VMS file should be a multiple of 512 bytes.
+	// - VMI file should be 108 bytes.
+	int64_t vms_fileSize = m_file->fileSize();
+	int64_t vmi_fileSize = d->vmi_file->fileSize();
+	if ((vms_fileSize % 512 != 0) || vmi_fileSize != DC_VMI_Header_SIZE) {
+		// Invalid files.
+		m_file->close();
+		delete d->vmi_file;
+		d->vmi_file = nullptr;
+		return;
+	}
+
+	// Initialize the save type and data area offset.
+	d->saveType = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
+	d->data_area_offset = 0;
+
+	// Read the VMI header.
+	d->vmi_file->rewind();
+	size_t size = d->vmi_file->read(&d->vmi_header, sizeof(d->vmi_header));
+	if (size != sizeof(d->vmi_header)) {
+		// Read error.
+		m_file->close();
+		delete d->vmi_file;
+		d->vmi_file = nullptr;
+		return;
+	}
+
+	// Byteswap the VMI header.
+	d->vmi_header.ctime.year  = le16_to_cpu(d->vmi_header.ctime.year);
+	d->vmi_header.vmi_version = le16_to_cpu(d->vmi_header.vmi_version);
+	d->vmi_header.mode        = le16_to_cpu(d->vmi_header.mode);
+	d->vmi_header.reserved    = le16_to_cpu(d->vmi_header.reserved);
+	d->vmi_header.filesize    = le32_to_cpu(d->vmi_header.filesize);
+	d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMI;
+
+	// Convert the VMI time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm dctime;
+	dctime.tm_year = d->vmi_header.ctime.year - 1900;
+	dctime.tm_mon  = d->vmi_header.ctime.month - 1;
+	dctime.tm_mday = d->vmi_header.ctime.mday;
+	dctime.tm_hour = d->vmi_header.ctime.hour;
+	dctime.tm_min  = d->vmi_header.ctime.minute;
+	dctime.tm_sec  = d->vmi_header.ctime.second;
+	// tm_wday and tm_yday are output variables.
+	dctime.tm_wday = 0;
+	dctime.tm_yday = 0;
+	dctime.tm_isdst = 0;
+
+	// FIXME: Handle ctime conversion errors.
+#ifdef _WIN32
+	// MSVCRT-specific version.
+	d->ctime = _mkgmtime(&dctime);
+#else /* !_WIN32 */
+	// FIXME: Might not be available on some systems.
+	d->ctime = timegm(&dctime);
+#endif
+
+	// File size, in blocks.
+	const unsigned int blocks = (unsigned int)(vms_fileSize / DC_VMS_BLOCK_SIZE);
+
+	// Convert to a directory entry.
+	if (d->vmi_header.mode & DC_VMI_MODE_FTYPE_MASK) {
+		// Game file.
+		d->vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_GAME;
+		d->vms_dirent.header_addr = 1;
+	} else {
+		// Data file.
+		d->vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_DATA;
+		d->vms_dirent.header_addr = 0;
+	}
+	d->vms_dirent.protect = (d->vmi_header.mode & DC_VMI_MODE_PROTECT_MASK
+					? DC_VMS_DIRENT_PROTECT_COPY_OK
+					: DC_VMS_DIRENT_PROTECT_COPY_PROTECTED);
+	d->vms_dirent.address = 200 - blocks;	// Fake starting address.
+	memcpy(d->vms_dirent.filename, d->vmi_header.vms_filename, DC_VMS_FILENAME_LENGTH);
+	// TODO: Convert the timestamp to BCD?
+	d->vms_dirent.size = blocks;
+	memset(d->vms_dirent.reserved, 0, sizeof(d->vms_dirent.reserved));
+	d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
+
+	// Load the VMS header.
+	// Use the header address specified in the directory entry.
+	bool isValid = d->readAndVerifyVmsHeader(
+		d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
+	if (isValid) {
+		// Valid VMS header.
+		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+	} else {
+		// Not valid.
+		m_file->close();
+		delete d->vmi_file;
+		d->vmi_file = nullptr;
+		return;
+	}
+
+	// TODO: Verify the file extension and header fields?
+	m_isValid = true;
+}
+
 DreamcastSave::~DreamcastSave()
 {
 	delete d;
@@ -641,10 +784,10 @@ const rp_char *DreamcastSave::systemName(uint32_t type) const
 vector<const rp_char*> DreamcastSave::supportedFileExtensions_static(void)
 {
 	vector<const rp_char*> ret;
-	ret.reserve(2);
+	ret.reserve(3);
 	ret.push_back(_RP(".vms"));
+	ret.push_back(_RP(".vmi"));
 	ret.push_back(_RP(".dci"));
-	// TODO: ".vmi"?
 	return ret;
 }
 

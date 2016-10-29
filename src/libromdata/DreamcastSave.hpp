@@ -43,11 +43,30 @@ class DreamcastSave : public RomData
 		 *
 		 * To close the file, either delete this object or call close().
 		 *
-		 * NOTE: Check isValid() to determine if this is a valid ROM.
+		 * NOTE: Check isValid() to determine if this is a valid save file.
 		 *
-		 * @param file Open disc image.
+		 * @param file Open save file.
 		 */
 		explicit DreamcastSave(IRpFile *file);
+
+		/**
+		 * Read a Sega Dreamcast save file. (.VMI+.VMS pair)
+		 *
+		 * This constructor requires two files:
+		 * - .VMS file (main save file)
+		 * - .VMI file (directory entry)
+		 *
+		 * Both files will be dup()'d.
+		 * The .VMS file will be used as the main file for the RomData class.
+		 *
+		 * To close the files, either delete this object or call close().
+		 * NOTE: Check isValid() to determine if this is a valid save file.
+		 *
+		 * @param vms_file Open .VMS save file.
+		 * @param vmi_file Open .VMI save file.
+		 */
+		DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file);
+
 		virtual ~DreamcastSave();
 
 	private:
