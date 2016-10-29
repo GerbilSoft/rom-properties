@@ -213,25 +213,57 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Get the banner.
+		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			const QSize min_img_size(32, 32);
+			bool needs_resize = false;
+			QSize new_size;
+
 			QImage img = rpToQImage(icon);
 			if (!img.isNull()) {
+				// TODO: Adjust minimum size for DPI.
+				QSize img_size = img.size();
+				while (img_size.width() < min_img_size.width() &&
+				       img_size.height() < min_img_size.height())
+				{
+					// Increase by integer multiples until
+					// the icon is at least 32x32.
+					// TODO: Constrain to 32x32?
+					img_size.setWidth(img_size.width() + img.width());
+					img_size.setHeight(img_size.height() + img.height());
+				}
+				if (img_size != img.size()) {
+					// Resize is required.
+					new_size = img_size;
+					needs_resize = true;
+				}
+
 				ui.lblIcon = new QLabel(q);
-				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
+				if (needs_resize) {
+					iconFrames[0] = QPixmap::fromImage(img.scaled(
+						new_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+				} else {
+					iconFrames[0] = QPixmap::fromImage(img);
+				}
+				ui.lblIcon->setPixmap(iconFrames[0]);
 				ui.hboxHeaderRow->addWidget(ui.lblIcon);
 			}
 
 			// Get the animated icon data.
+			// TODO: Skip if the first frame is nullptr?
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
-				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						iconFrames[i] = QPixmap::fromImage(
-							rpToQImage(iconAnimData->frames[i]));
+						QImage img = rpToQImage(iconAnimData->frames[i]);
+						if (needs_resize) {
+							iconFrames[i] = QPixmap::fromImage(img.scaled(
+								new_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+						} else {
+							iconFrames[i] = QPixmap::fromImage(img);
+						}
 					}
 				}
 
