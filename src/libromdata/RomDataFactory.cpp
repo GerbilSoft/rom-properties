@@ -162,8 +162,8 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 		test_file = new RpFile(other_filename, RpFile::FM_OPEN_READ);
 		if (!test_file->isOpen()) {
 			// Still can't open the other file.
-			delete other_file;
-			other_file = nullptr;
+			delete test_file;
+			test_file = nullptr;
 		}
 #endif
 	}
