@@ -77,8 +77,9 @@ class DreamcastSavePrivate
 		enum SaveType {
 			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
 
-			SAVE_TYPE_VMS = 0,	// VMS file
+			SAVE_TYPE_VMS = 0,	// VMS file (also .VMI+.VMS)
 			SAVE_TYPE_DCI = 1,	// DCI (Nexus)
+			SAVE_TYPE_VMI = 2,	// VMI file (standalone)
 		};
 		int saveType;
 
@@ -95,7 +96,8 @@ class DreamcastSavePrivate
 		};
 		uint32_t loaded_headers;
 
-		// VMI save file. (for .VMI+.VMS or .VMI standalone)
+		// VMI save file. (for .VMI+.VMS)
+		// NOTE: Standalone VMI uses q->m_file.
 		IRpFile *vmi_file;
 
 		// Offset in the main file to the data area.
@@ -129,6 +131,13 @@ class DreamcastSavePrivate
 		 * @return True if read and verified; false if not.
 		 */
 		bool readAndVerifyVmsHeader(uint32_t address);
+
+		/**
+		 * Read the VMI header from the specified file.
+		 * @param vmi_file VMI file.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readVmiHeader(IRpFile *vmi_file);
 
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
@@ -292,6 +301,82 @@ bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 }
 
 /**
+ * Read the VMI header from the specified file.
+ * @param vmi_file VMI file.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
+{
+	// NOTE: vmi_file shadows this->vmi_file.
+
+	// Read the VMI header.
+	vmi_file->rewind();
+	size_t size = vmi_file->read(&vmi_header, sizeof(vmi_header));
+	if (size != sizeof(vmi_header)) {
+		// Read error.
+		int lastError = vmi_file->lastError();
+		return (lastError != 0 ? -lastError : -EIO);
+	}
+
+	// Byteswap the VMI header.
+	vmi_header.ctime.year  = le16_to_cpu(vmi_header.ctime.year);
+	vmi_header.vmi_version = le16_to_cpu(vmi_header.vmi_version);
+	vmi_header.mode        = le16_to_cpu(vmi_header.mode);
+	vmi_header.reserved    = le16_to_cpu(vmi_header.reserved);
+	vmi_header.filesize    = le32_to_cpu(vmi_header.filesize);
+	loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMI;
+
+	// Convert the VMI time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm dctime;
+	dctime.tm_year = vmi_header.ctime.year - 1900;
+	dctime.tm_mon  = vmi_header.ctime.month - 1;
+	dctime.tm_mday = vmi_header.ctime.mday;
+	dctime.tm_hour = vmi_header.ctime.hour;
+	dctime.tm_min  = vmi_header.ctime.minute;
+	dctime.tm_sec  = vmi_header.ctime.second;
+	// tm_wday and tm_yday are output variables.
+	dctime.tm_wday = 0;
+	dctime.tm_yday = 0;
+	dctime.tm_isdst = 0;
+
+	// FIXME: Handle ctime conversion errors.
+#ifdef _WIN32
+	// MSVCRT-specific version.
+	ctime = _mkgmtime(&dctime);
+#else /* !_WIN32 */
+	// FIXME: Might not be available on some systems.
+	ctime = timegm(&dctime);
+#endif
+
+	// File size, in blocks.
+	const unsigned int blocks = (vmi_header.filesize / DC_VMS_BLOCK_SIZE);
+
+	// Convert to a directory entry.
+	if (vmi_header.mode & DC_VMI_MODE_FTYPE_MASK) {
+		// Game file.
+		vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_GAME;
+		vms_dirent.header_addr = 1;
+	} else {
+		// Data file.
+		vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_DATA;
+		vms_dirent.header_addr = 0;
+	}
+	vms_dirent.protect = (vmi_header.mode & DC_VMI_MODE_PROTECT_MASK
+					? DC_VMS_DIRENT_PROTECT_COPY_OK
+					: DC_VMS_DIRENT_PROTECT_COPY_PROTECTED);
+	vms_dirent.address = 200 - blocks;	// Fake starting address.
+	memcpy(vms_dirent.filename, vmi_header.vms_filename, DC_VMS_FILENAME_LENGTH);
+	// TODO: Convert the timestamp to BCD?
+	vms_dirent.size = blocks;
+	memset(vms_dirent.reserved, 0, sizeof(vms_dirent.reserved));
+	loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
+	return 0;
+}
+
+/**
  * Load the save file's icons.
  *
  * This will load all of the animated icon frames,
@@ -440,14 +525,14 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
 
 	// Determine the VMS save type by checking the file size.
-	// Standard VMS is always a multiple of 512.
-	// DCI is a multiple of 512, plus 32 bytes.
+	// Standard VMS is always a multiple of DC_VMS_BLOCK_SIZE.
+	// DCI is a multiple of DC_VMS_BLOCK_SIZE, plus 32 bytes.
 	int64_t fileSize = m_file->fileSize();
-	if (fileSize % 512 == 0) {
+	if (fileSize % DC_VMS_BLOCK_SIZE == 0) {
 		// VMS file.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
-	} else if ((fileSize - 32) % 512 == 0) {
+	} else if ((fileSize - 32) % DC_VMS_BLOCK_SIZE == 0) {
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_DCI;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_DCI;
 
@@ -467,6 +552,22 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 
 		d->isGameFile = !!(d->vms_dirent.filetype == DC_VMS_DIRENT_FTYPE_GAME);
 		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
+	} else if (fileSize == sizeof(DC_VMI_Header)) {
+		// Standalone VMI file.
+		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMI;
+		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
+
+		// Load the VMI header.
+		int ret = d->readVmiHeader(m_file);
+		if (ret != 0) {
+			// Read error.
+			m_file->close();
+			return;
+		}
+
+		// Nothing else to do here for standalone VMI files.
+		m_isValid = true;
+		return;
 	} else {
 		// Not valid.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
@@ -602,72 +703,17 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	d->saveType = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
 	d->data_area_offset = 0;
 
-	// Read the VMI header.
-	d->vmi_file->rewind();
-	size_t size = d->vmi_file->read(&d->vmi_header, sizeof(d->vmi_header));
-	if (size != sizeof(d->vmi_header)) {
-		// Read error.
+	// Read the VMI header and copy it to the directory entry.
+	// TODO: Verify that the file size from vmi_header matches
+	// the actual VMS file size? (also vms_dirent.address)
+	int ret = d->readVmiHeader(d->vmi_file);
+	if (ret != 0) {
+		// Error reading the VMI header.
 		m_file->close();
 		delete d->vmi_file;
 		d->vmi_file = nullptr;
 		return;
 	}
-
-	// Byteswap the VMI header.
-	d->vmi_header.ctime.year  = le16_to_cpu(d->vmi_header.ctime.year);
-	d->vmi_header.vmi_version = le16_to_cpu(d->vmi_header.vmi_version);
-	d->vmi_header.mode        = le16_to_cpu(d->vmi_header.mode);
-	d->vmi_header.reserved    = le16_to_cpu(d->vmi_header.reserved);
-	d->vmi_header.filesize    = le32_to_cpu(d->vmi_header.filesize);
-	d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMI;
-
-	// Convert the VMI time to Unix time.
-	// NOTE: struct tm has some oddities:
-	// - tm_year: year - 1900
-	// - tm_mon: 0 == January
-	struct tm dctime;
-	dctime.tm_year = d->vmi_header.ctime.year - 1900;
-	dctime.tm_mon  = d->vmi_header.ctime.month - 1;
-	dctime.tm_mday = d->vmi_header.ctime.mday;
-	dctime.tm_hour = d->vmi_header.ctime.hour;
-	dctime.tm_min  = d->vmi_header.ctime.minute;
-	dctime.tm_sec  = d->vmi_header.ctime.second;
-	// tm_wday and tm_yday are output variables.
-	dctime.tm_wday = 0;
-	dctime.tm_yday = 0;
-	dctime.tm_isdst = 0;
-
-	// FIXME: Handle ctime conversion errors.
-#ifdef _WIN32
-	// MSVCRT-specific version.
-	d->ctime = _mkgmtime(&dctime);
-#else /* !_WIN32 */
-	// FIXME: Might not be available on some systems.
-	d->ctime = timegm(&dctime);
-#endif
-
-	// File size, in blocks.
-	const unsigned int blocks = (unsigned int)(vms_fileSize / DC_VMS_BLOCK_SIZE);
-
-	// Convert to a directory entry.
-	if (d->vmi_header.mode & DC_VMI_MODE_FTYPE_MASK) {
-		// Game file.
-		d->vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_GAME;
-		d->vms_dirent.header_addr = 1;
-	} else {
-		// Data file.
-		d->vms_dirent.filetype = DC_VMS_DIRENT_FTYPE_DATA;
-		d->vms_dirent.header_addr = 0;
-	}
-	d->vms_dirent.protect = (d->vmi_header.mode & DC_VMI_MODE_PROTECT_MASK
-					? DC_VMS_DIRENT_PROTECT_COPY_OK
-					: DC_VMS_DIRENT_PROTECT_COPY_PROTECTED);
-	d->vms_dirent.address = 200 - blocks;	// Fake starting address.
-	memcpy(d->vms_dirent.filename, d->vmi_header.vms_filename, DC_VMS_FILENAME_LENGTH);
-	// TODO: Convert the timestamp to BCD?
-	d->vms_dirent.size = blocks;
-	memset(d->vms_dirent.reserved, 0, sizeof(d->vms_dirent.reserved));
-	d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
 
 	// Load the VMS header.
 	// Use the header address specified in the directory entry.
@@ -709,7 +755,14 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 		return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
 	}
 
-	// TODO: Handle ".vmi" files.
+	if (info->szFile == 108) {
+		// File size is correct for VMI files.
+		// Check the file extension.
+		if (!rp_strcasecmp(info->ext, _RP(".vmi"))) {
+			// It's a match!
+			return DreamcastSavePrivate::SAVE_TYPE_VMI;
+		}
+	}
 
 	if (info->szFile % 512 == 0) {
 		// File size is correct for VMS files.
