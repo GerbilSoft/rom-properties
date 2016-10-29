@@ -19,25 +19,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+
 #include "RomDataFactory.hpp"
 #include "file/RpFile.hpp"
 #include "common.h"
-
-// Implicit conversions of lambda expressions to function pointers
-// is supported in MSVC 2012 and gcc-4.5.
-// TODO: CMake test instead?
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-#define HAVE_LAMBDA_AS_FUNCTION_POINTER
-#else
-// Use std::function instead.
-#include <functional>
-#endif
 
 // C++ includes.
 #include <unordered_map>
 #include <vector>
 using std::unordered_map;
 using std::vector;
+
+#ifndef HAVE_LAMBDA_AS_FUNCTION_POINTER
+// Using std::function<> if lambdas cannot be
+// cast to function pointers.
+#include <functional>
+#endif
 
 // RomData subclasses.
 #include "MegaDrive.hpp"

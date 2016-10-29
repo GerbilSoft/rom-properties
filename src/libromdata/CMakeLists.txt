@@ -56,6 +56,10 @@ ENDIF(NOT WIN32)
 INCLUDE(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
 
+# Check if non-capturing lambda functions can be cast to function pointers.
+INCLUDE(CheckCXX11LambdaAsFunctionPointer)
+CHECK_CXX11_LAMBDA_AS_FUNCTION_POINTER(HAVE_LAMBDA_AS_FUNCTION_POINTER)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 

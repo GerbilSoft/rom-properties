@@ -41,6 +41,9 @@
 /* Define to 1 if we're using nettle and it is v3.0 or later. */
 #cmakedefine HAVE_NETTLE_3 1
 
+/* Define to 1 if lambda functions can be cast to function pointers. */
+#cmakedefine HAVE_LAMBDA_AS_FUNCTION_POINTER 1
+
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
