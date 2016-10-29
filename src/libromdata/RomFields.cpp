@@ -230,7 +230,7 @@ void RomFields::detach(void)
 	// Need to detach.
 	RomFieldsPrivate *d_new = new RomFieldsPrivate(d->fields, d->count);
 	RomFieldsPrivate *d_old = d;
-	d_new->data.reserve(d_old->data.size());
+	d_new->data.resize(d_old->data.size());
 	for (int i = (int)(d_old->data.size() - 1); i >= 0; i--) {
 		const Data &data_old = d_old->data.at(i);
 		Data &data_new = d_new->data.at(i);
