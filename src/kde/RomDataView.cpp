@@ -167,28 +167,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
 	// File type.
-	const rp_char *fileType = nullptr;
-	switch (romData->fileType()) {
-		case RomData::FTYPE_ROM_IMAGE:
-			fileType = _RP("ROM Image");
-			break;
-		case RomData::FTYPE_DISC_IMAGE:
-			fileType = _RP("Disc Image");
-			break;
-		case RomData::FTYPE_SAVE_FILE:
-			fileType = _RP("Save File");
-			break;
-		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
-			fileType = _RP("Embedded Disc Image");
-			break;
-		case RomData::FTYPE_APPLICATION_PACKAGE:
-			fileType = _RP("Application Package");
-			break;
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			fileType = nullptr;
-			break;
-	}
+	const rp_char *const fileType = romData->fileType_string();
 
 	QString sysInfo;
 	if (systemName) {

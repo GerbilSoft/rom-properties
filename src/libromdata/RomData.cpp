@@ -110,6 +110,31 @@ RomData::FileType RomData::fileType(void) const
 }
 
 /**
+ * Get the general file type as a string.
+ * @return General file type as a string, or nullptr if unknown.
+ */
+const rp_char *RomData::fileType_string(void) const
+{
+	switch (m_fileType) {
+		case RomData::FTYPE_ROM_IMAGE:
+			return _RP("ROM Image");
+		case RomData::FTYPE_DISC_IMAGE:
+			return _RP("Disc Image");
+		case RomData::FTYPE_SAVE_FILE:
+			return _RP("Save File");
+		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
+			return _RP("Embedded Disc Image");
+		case RomData::FTYPE_APPLICATION_PACKAGE:
+			return _RP("Application Package");
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			break;
+	}
+
+	return nullptr;
+}
+
+/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */

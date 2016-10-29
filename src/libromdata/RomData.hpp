@@ -186,6 +186,12 @@ class RomData
 		 */
 		FileType fileType(void) const;
 
+		/**
+		 * Get the general file type as a string.
+		 * @return General file type as a string, or nullptr if unknown.
+		 */
+		const rp_char *fileType_string(void) const;
+
 		// TODO:
 		// - List of supported systems.
 		// - Get logo from current system and/or other system?
