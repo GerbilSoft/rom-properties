@@ -165,6 +165,16 @@ class DreamcastSavePrivate
 		rp_image *loadIcon(void);
 
 		/**
+		 * Load the icon from an ICONDATA_VMS file.
+		 *
+		 * If a color icon is present, that will be loaded.
+		 * Otherwise, the monochrome icon will be loaded.
+		 *
+		 * @return Icon, or nullptr on error.
+		 */
+		rp_image *loadIcon_ICONDATA_VMS(void);
+
+		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
@@ -310,6 +320,11 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 		if (this->saveType == SAVE_TYPE_DCI) {
 			__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
 		}
+
+		// Byteswap the fields.
+		vms_header.icondata_vms.mono_icon_addr = le32_to_cpu(vms_header.icondata_vms.mono_icon_addr);
+		vms_header.icondata_vms.color_icon_addr = le32_to_cpu(vms_header.icondata_vms.color_icon_addr);
+
 		memcpy(&this->vms_header.icondata_vms, &vms_header.icondata_vms, sizeof(vms_header.icondata_vms));
 		this->vms_header_offset = address;
 		return DC_IS_ICONDATA_VMS;
@@ -432,7 +447,10 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 		return const_cast<rp_image*>(iconAnimData->frames[0]);
 	}
 
-	// TODO: Special handling for ICONDATA_VMS files.
+	if (loaded_headers & DC_IS_ICONDATA_VMS) {
+		// Special handling for ICONDATA_VMS.
+		return loadIcon_ICONDATA_VMS();
+	}
 
 	// Check the icon count.
 	uint16_t icon_count = vms_header.icon_count;
@@ -513,6 +531,83 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Return the first frame.
 	return const_cast<rp_image*>(iconAnimData->frames[0]);
+}
+
+/**
+ * Load the icon from an ICONDATA_VMS file.
+ *
+ * If a color icon is present, that will be loaded.
+ * Otherwise, the monochrome icon will be loaded.
+ *
+ * @return Icon, or nullptr on error.
+ */
+rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
+{
+	if (!q->m_file || !q->m_isValid) {
+		// Can't load the icon.
+		return nullptr;
+	}
+
+	if (iconAnimData) {
+		// Icon has already been loaded.
+		return const_cast<rp_image*>(iconAnimData->frames[0]);
+	}
+
+	if (!(loaded_headers & DC_IS_ICONDATA_VMS)) {
+		// Not ICONDATA_VMS.
+		return nullptr;
+	}
+
+	// Do we have a color icon?
+	if (vms_header.icondata_vms.color_icon_addr >= sizeof(vms_header.icondata_vms)) {
+		// We have a color icon.
+
+		// Load the palette.
+		union { uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2]; uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4]; } palette;
+		q->m_file->seek(vms_header_offset + vms_header.icondata_vms.color_icon_addr);
+		size_t size = q->m_file->read(palette.u16, sizeof(palette.u16));
+		if (size != sizeof(palette)) {
+			// Error loading the palette.
+			return nullptr;
+		}
+
+		if (this->saveType == SAVE_TYPE_DCI) {
+			// Apply 32-bit byteswapping to the palette.
+			// TODO: Use an IRpFile subclass that automatically byteswaps
+			// instead of doing manual byteswapping here?
+			__byte_swap_32_array(palette.u32, sizeof(palette.u32));
+		}
+
+		// Load the icon data.
+		union { uint8_t u8[DC_VMS_ICON_DATA_SIZE]; uint32_t u32[DC_VMS_ICON_DATA_SIZE/4]; } icon_buf;
+		size = q->m_file->read(icon_buf.u8, sizeof(icon_buf.u8));
+		if (size != sizeof(icon_buf.u8)) {
+			// Error loading the icon data.
+			return nullptr;
+		}
+
+		if (this->saveType == SAVE_TYPE_DCI) {
+			// Apply 32-bit byteswapping to the palette.
+			// TODO: Use an IRpFile subclass that automatically byteswaps
+			// instead of doing manual byteswapping here?
+			__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
+		}
+
+		// Convert the icon to rp_image.
+		rp_image *img = ImageDecoder::fromDreamcastCI4(
+			DC_VMS_ICON_W, DC_VMS_ICON_H,
+			icon_buf.u8, sizeof(icon_buf.u8),
+			palette.u16, sizeof(palette.u16));
+		if (img) {
+			// Icon converted successfully.
+			return img;
+		}
+	}
+
+	// We don't have a color icon.
+	// Load the monochrome icon.
+	// TODO
+	return nullptr;
 }
 
 /**
@@ -722,19 +817,16 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Regular save files have the header in block 0.
 	// Game files have the header in block 1.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
-		// Load the VMS header if it isn't ICONDATA_VMS.
-		if (!(d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS)) {
-			// Use the header address specified in the directory entry.
-			unsigned int headerLoaded = d->readAndVerifyVmsHeader(
-				d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
-			if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
-				// Valid VMS header.
-				d->loaded_headers |= headerLoaded;
-			} else {
-				// Not valid.
-				m_file->close();
-				return;
-			}
+		// Use the header address specified in the directory entry.
+		unsigned int headerLoaded = d->readAndVerifyVmsHeader(
+			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
+		if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
+			// Valid VMS header.
+			d->loaded_headers |= headerLoaded;
+		} else {
+			// Not valid.
+			m_file->close();
+			return;
 		}
 
 		// Convert the BCD time to Unix time.
