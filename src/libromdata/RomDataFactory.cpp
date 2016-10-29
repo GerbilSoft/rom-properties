@@ -40,6 +40,9 @@ using std::vector;
 #include "SNES.hpp"
 #include "DreamcastSave.hpp"
 
+// Special case for Dreamcast save files.
+#include "dc_structs.h"
+
 namespace LibRomData {
 
 class RomDataFactoryPrivate
@@ -99,11 +102,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 {
 	// We're assuming the file extension was already checked.
+	// VMS files are always a multiple of 512 bytes,
+	// or 160 bytes for some monochrome ICONDATA_VMS.
 	// VMI files are always 108 bytes;
-	// VMS files are always a multiple of 512 bytes.
 	int64_t filesize = file->fileSize();
-	bool has_dc_vms = (filesize % 512 == 0);
-	bool has_dc_vmi = (filesize == 108);
+	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
+			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
+	bool has_dc_vmi = (filesize == DC_VMI_Header_SIZE);
 	if (!(has_dc_vms ^ has_dc_vmi)) {
 		// Can't be none or both...
 		return nullptr;

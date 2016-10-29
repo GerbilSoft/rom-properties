@@ -39,6 +39,31 @@ extern "C" {
 // VMS blocks are 512 bytes.
 #define DC_VMS_BLOCK_SIZE 512
 
+/** ICONDATA_VMS **/
+
+// Some monochrome ICONDATA_VMS files are only 160 bytes.
+// TODO: Is there an equivalent for color icons?
+#define DC_VMS_ICONDATA_MONO_MINSIZE 160
+
+/**
+ * ICONDATA_VMS header.
+ * Found at the top of .VMS files used as VMU icons.
+ *
+ * Reference: http://mc.pp.se/dc/vms/icondata.html
+ *s
+ * All fields are in little-endian.
+ */
+#define DC_VMS_ICONDATA_Header_SIZE 24
+#pragma pack(1)
+typedef struct PACKED _DC_VMS_ICONDATA_Header {
+	char vms_description[16];	// Shift-JIS; space-padded.
+	uint32_t mono_icon_addr;	// Address of monochrome icon.
+	uint32_t color_icon_addr;	// Address of color icon.
+} DC_VMS_ICONDATA_Header;
+#pragma pack()
+
+/** VMS header **/
+
 /**
  * Dreamcast VMS header. (.vms files)
  * Reference: http://mc.pp.se/dc/vms/fileheader.html
@@ -61,6 +86,7 @@ typedef union PACKED _DC_VMS_Header {
 		uint32_t data_size;		// Ignored for game files.
 		uint8_t reserved[20];
 	};
+	DC_VMS_ICONDATA_Header icondata_vms;	// ICONDATA_VMS header.
 
 	// DCI is 32-bit byteswapped.
 	// We need a 32-bit accessor in order to

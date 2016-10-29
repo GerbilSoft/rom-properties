@@ -88,6 +88,8 @@ class DreamcastSavePrivate
 
 		// Which headers do we have loaded?
 		enum DC_LoadedHeaders {
+			DC_HAVE_UNKNOWN = 0,
+
 			// VMS data. Present in .VMS and .DCI files.
 			DC_HAVE_VMS = (1 << 0),
 
@@ -96,6 +98,9 @@ class DreamcastSavePrivate
 
 			// Directory entry. Present in .VMI and .DCI files.
 			DC_HAVE_DIR_ENTRY = (1 << 2),
+
+			// ICONDATA_VMS.
+			DC_IS_ICONDATA_VMS = (1 << 3),
 		};
 		uint32_t loaded_headers;
 
@@ -131,9 +136,9 @@ class DreamcastSavePrivate
 		 * Read and verify the VMS header.
 		 * This function sets vms_header and vms_header_offset.
 		 * @param address Address to check.
-		 * @return True if read and verified; false if not.
+		 * @return DC_LoadedHeaders flag if read and verified; 0 if not.
 		 */
-		bool readAndVerifyVmsHeader(uint32_t address);
+		unsigned int readAndVerifyVmsHeader(uint32_t address);
 
 		/**
 		 * Read the VMI header from the specified file.
@@ -252,18 +257,18 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
  * Read and verify the VMS header.
  * This function sets vms_header and vms_header_offset.
  * @param address Address to check.
- * @return True if read and verified; false if not.
+ * @return DC_LoadedHeaders flag if read and verified; 0 if not.
  */
-bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
+unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 {
 	int ret = q->m_file->seek(address);
 	if (ret != 0)
-		return false;
+		return DC_HAVE_UNKNOWN;
 
 	DC_VMS_Header vms_header;
 	size_t size = q->m_file->read(&vms_header, sizeof(vms_header));
 	if (size != sizeof(vms_header))
-		return false;
+		return DC_HAVE_UNKNOWN;
 
 	// Validate the description fields.
 	// The description fields cannot contain any control characters
@@ -279,7 +284,7 @@ bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 			/* First 8 characters must not be a control code or NULL. */ \
 			if (*chr < 0x20) { \
 				/* Invalid character. */ \
-				return false; \
+				return DC_HAVE_UNKNOWN; \
 			} \
 		} \
 		for (int i = ARRAY_SIZE(field)-8; i > 0; i--, chr++) { \
@@ -287,11 +292,29 @@ bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 			 * but may be NULL.                                 */ \
 			if (*chr < 0x20 && *chr != 0) { \
 				/* Invalid character. */ \
-				return false; \
+				return DC_HAVE_UNKNOWN; \
 			} \
 		} \
 	} while (0)
 	CHECK_FIELD(vms_header.vms_description);
+
+	// Check for ICONDATA_VMS.
+	// Monochrome icon is usually within the first 256 bytes
+	// of the start of the file.
+	if (vms_header.dc_description[0] >= DC_VMS_ICONDATA_Header_SIZE &&
+	    vms_header.dc_description[1] == 0 &&
+	    vms_header.dc_description[2] == 0 &&
+	    vms_header.dc_description[3] == 0)
+	{
+		// This is probably ICONDATA_VMS.
+		if (this->saveType == SAVE_TYPE_DCI) {
+			__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
+		}
+		memcpy(&this->vms_header.icondata_vms, &vms_header.icondata_vms, sizeof(vms_header.icondata_vms));
+		this->vms_header_offset = address;
+		return DC_IS_ICONDATA_VMS;
+	}
+
 	CHECK_FIELD(vms_header.dc_description);
 
 	// Description fields are valid.
@@ -310,7 +333,7 @@ bool DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 
 	memcpy(&this->vms_header, &vms_header, sizeof(vms_header));
 	this->vms_header_offset = address;
-	return true;
+	return DC_HAVE_VMS;
 }
 
 /**
@@ -617,6 +640,8 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		"DC_VMI_Header is the wrong size. (Should be 108 bytes.)");
 	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
 		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
+	static_assert(sizeof(DC_VMS_ICONDATA_Header) == DC_VMS_ICONDATA_Header_SIZE,
+		"DC_VMS_ICONDATA_Header is the wrong size. (Should be 24 bytes.)");
 
 	static_assert(DC_VMS_ICON_PALETTE_SIZE == 32,
 		"DC_VMS_ICON_PALETTE_SIZE is wrong. (Should be 32.)");
@@ -633,12 +658,18 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Determine the VMS save type by checking the file size.
 	// Standard VMS is always a multiple of DC_VMS_BLOCK_SIZE.
 	// DCI is a multiple of DC_VMS_BLOCK_SIZE, plus 32 bytes.
+	// NOTE: May be DC_VMS_ICONDATA_MONO_MINSIZE for ICONDATA_VMS.
 	int64_t fileSize = m_file->fileSize();
-	if (fileSize % DC_VMS_BLOCK_SIZE == 0) {
+	if (fileSize % DC_VMS_BLOCK_SIZE == 0 ||
+	    fileSize == DC_VMS_ICONDATA_MONO_MINSIZE)
+	{
 		// VMS file.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMS;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_VMS;
-	} else if ((fileSize - 32) % DC_VMS_BLOCK_SIZE == 0) {
+	}
+	else if ((fileSize - 32) % DC_VMS_BLOCK_SIZE == 0 ||
+		 (fileSize - 32) == DC_VMS_ICONDATA_MONO_MINSIZE)
+	{
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_DCI;
 		d->data_area_offset = DreamcastSavePrivate::DATA_AREA_OFFSET_DCI;
 
@@ -658,6 +689,12 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 
 		d->isGameFile = !!(d->vms_dirent.filetype == DC_VMS_DIRENT_FTYPE_GAME);
 		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
+
+		// Is this ICONDATA_VMS?
+		if (!strncmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
+			// This is ICONDATA_VMS.
+			d->loaded_headers |= DreamcastSavePrivate::DC_IS_ICONDATA_VMS;
+		}
 	} else if (fileSize == sizeof(DC_VMI_Header)) {
 		// Standalone VMI file.
 		d->saveType = DreamcastSavePrivate::SAVE_TYPE_VMI;
@@ -685,16 +722,19 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Regular save files have the header in block 0.
 	// Game files have the header in block 1.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
-		// Use the header address specified in the directory entry.
-		bool isValid = d->readAndVerifyVmsHeader(
-			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
-		if (isValid) {
-			// Valid VMS header.
-			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
-		} else {
-			// Not valid.
-			m_file->close();
-			return;
+		// Load the VMS header if it isn't ICONDATA_VMS.
+		if (!(d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS)) {
+			// Use the header address specified in the directory entry.
+			unsigned int headerLoaded = d->readAndVerifyVmsHeader(
+				d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
+			if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
+				// Valid VMS header.
+				d->loaded_headers |= headerLoaded;
+			} else {
+				// Not valid.
+				m_file->close();
+				return;
+			}
 		}
 
 		// Convert the BCD time to Unix time.
@@ -733,17 +773,17 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		// If the VMI file is not available, we'll use a heuristic:
 		// The description fields cannot contain any control
 		// characters other than 0x00 (NULL).
-		bool isValid = d->readAndVerifyVmsHeader(d->data_area_offset);
-		if (isValid) {
+		unsigned int headerLoaded = d->readAndVerifyVmsHeader(d->data_area_offset);
+		if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
 			// Valid in block 0: This is a standard save file.
 			d->isGameFile = false;
-			d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+			d->loaded_headers |= headerLoaded;
 		} else {
-			isValid = d->readAndVerifyVmsHeader(d->data_area_offset + DC_VMS_BLOCK_SIZE);
-			if (isValid) {
+			headerLoaded = d->readAndVerifyVmsHeader(d->data_area_offset + DC_VMS_BLOCK_SIZE);
+			if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
 				// Valid in block 1: This is a game file.
 				d->isGameFile = true;
-				d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+				d->loaded_headers |= headerLoaded;
 			} else {
 				// Not valid.
 				m_file->close();
@@ -793,12 +833,15 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	}
 
 	// Sanity check:
-	// - VMS file should be a multiple of 512 bytes.
+	// - VMS file should be a multiple of 512 bytes,
+	//   or 160 bytes for some monochrome ICONDATA_VMS.
 	// - VMI file should be 108 bytes.
 	int64_t vms_fileSize = m_file->fileSize();
 	int64_t vmi_fileSize = d->vmi_file->fileSize();
-	if ((vms_fileSize % 512 != 0) || vmi_fileSize != DC_VMI_Header_SIZE) {
-		// Invalid files.
+	if (((vms_fileSize % 512 != 0) && vms_fileSize != DC_VMS_ICONDATA_MONO_MINSIZE) ||
+	      vmi_fileSize != DC_VMI_Header_SIZE)
+	{
+		// Invalid file(s).
 		m_file->close();
 		delete d->vmi_file;
 		d->vmi_file = nullptr;
@@ -821,19 +864,25 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 		return;
 	}
 
-	// Load the VMS header.
-	// Use the header address specified in the directory entry.
-	bool isValid = d->readAndVerifyVmsHeader(
-		d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
-	if (isValid) {
-		// Valid VMS header.
-		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMS;
+	// Is this ICONDATA_VMS?
+	if (!strncmp(d->vms_dirent.filename, "ICONDATA_VMS", sizeof(d->vms_dirent.filename))) {
+		// This is ICONDATA_VMS.
+		d->loaded_headers |= DreamcastSavePrivate::DC_IS_ICONDATA_VMS;
 	} else {
-		// Not valid.
-		m_file->close();
-		delete d->vmi_file;
-		d->vmi_file = nullptr;
-		return;
+		// Load the VMS header.
+		// Use the header address specified in the directory entry.
+		unsigned int headerLoaded = d->readAndVerifyVmsHeader(
+			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
+		if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
+			// Valid VMS header.
+			d->loaded_headers |= headerLoaded;
+		} else {
+			// Not valid.
+			m_file->close();
+			delete d->vmi_file;
+			d->vmi_file = nullptr;
+			return;
+		}
 	}
 
 	// TODO: Verify the file extension and header fields?
@@ -870,7 +919,9 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
-	if (info->szFile % 512 == 0) {
+	if ((info->szFile % DC_VMS_BLOCK_SIZE == 0) ||
+	    (info->szFile == DC_VMS_ICONDATA_MONO_MINSIZE))
+	{
 		// File size is correct for VMS files.
 		// Check the file extension.
 		if (!rp_strcasecmp(info->ext, _RP(".vms"))) {
@@ -881,7 +932,9 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 
 	// DCI files have the 32-byte directory entry,
 	// followed by 32-bit byteswapped data.
-	if ((info->szFile - 32) % 512 == 0) {
+	if (((info->szFile - 32) % 512 == 0) ||
+	    ((info->szFile - 32) == DC_VMS_ICONDATA_MONO_MINSIZE))
+	{
 		// File size is correct for DCI files.
 		// Check the first byte. (Should be 0x00, 0x33, or 0xCC.)
 		if (info->header.addr == 0 && info->header.size >= 32) {
@@ -1016,6 +1069,13 @@ int DreamcastSave::loadFieldData(void)
 		case DreamcastSavePrivate::DC_HAVE_VMS |
 		     DreamcastSavePrivate::DC_HAVE_VMI |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS |
+		     DreamcastSavePrivate::DC_HAVE_VMI:
+		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS |
+		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
+		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS |
+		     DreamcastSavePrivate::DC_HAVE_VMI |
+		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 			// VMS and the directory entry are present.
 			// Hide the "warning" field.
 			m_fields->addData_invalid();
@@ -1030,14 +1090,24 @@ int DreamcastSave::loadFieldData(void)
 			break;
 
 		case DreamcastSavePrivate::DC_HAVE_VMS:
+		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS:
 			// VMI is missing.
 			m_fields->addData_string(_RP("The VMI file was not found."));
+			break;
+
+		default:
+			// Should not happen...
+			assert(!"DreamcastSave: Unrecognized VMS/VMI combination.");
+			m_fields->addData_string(_RP("Unrecognized VMS/VMI combination."));
 			break;
 	}
 
 	// File type.
 	const rp_char *filetype;
-	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
+	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
+		// ICONDATA_VMS
+		filetype = _RP("Icon Data");
+	} else if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// Use the type from the directory entry.
 		switch (d->vms_dirent.filetype) {
 			case DC_VMS_DIRENT_FTYPE_NONE:
@@ -1131,8 +1201,21 @@ int DreamcastSave::loadFieldData(void)
 		m_fields->addData_invalid();
 		m_fields->addData_invalid();
 	}
-	// DC VMS header.
-	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
+
+	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
+		// DC ICONDATA_VMS header.
+		const DC_VMS_ICONDATA_Header *const icondata_vms = &d->vms_header.icondata_vms;
+
+		// VMS description.
+		m_fields->addData_string(cp1252_sjis_to_rp_string(icondata_vms->vms_description, sizeof(icondata_vms->vms_description)));
+
+		// Other VMS fields aren't used here.
+		// TODO: Indicate if both a mono and color icon are present?
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	} else if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
+		// DC VMS header.
 		const DC_VMS_Header *const vms_header = &d->vms_header;
 
 		// VMS description.
