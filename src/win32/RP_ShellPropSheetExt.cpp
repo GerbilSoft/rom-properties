@@ -824,19 +824,14 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 	// Check for any formatting options.
 	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
-		// Monospace font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-			if (hFontMono) {
-				hFont = hFontMono;
-				if (hwndMonoControls.empty()) {
-					hwndMonoControls.reserve(4);
-				}
-				hwndMonoControls.push_back(hDlgItem);
-			}
-		}
-		// "Warning" font?
-		// TODO: Support monospace+warning?
-		else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
+		// Preferring STRF_WARNING.
+		assert((desc->str_desc->formatting &
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING)) !=
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING));
+
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+			// "Warning" font.
 			if (hFontBold) {
 				hFont = hFontBold;
 				hwndWarningControls.insert(hDlgItem);
@@ -847,6 +842,15 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 					SetWindowFont(hStatic, hFont, FALSE);
 					hwndWarningControls.insert(hStatic);
 				}
+			}
+		} else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			// Monospaced font.
+			if (hFontMono) {
+				hFont = hFontMono;
+				if (hwndMonoControls.empty()) {
+					hwndMonoControls.reserve(4);
+				}
+				hwndMonoControls.push_back(hDlgItem);
 			}
 		}
 	}
