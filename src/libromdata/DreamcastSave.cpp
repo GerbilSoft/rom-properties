@@ -311,10 +311,11 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	// Check for ICONDATA_VMS.
 	// Monochrome icon is usually within the first 256 bytes
 	// of the start of the file.
-	if (vms_header.dc_description[0] >= DC_VMS_ICONDATA_Header_SIZE &&
-	    vms_header.dc_description[1] == 0 &&
-	    vms_header.dc_description[2] == 0 &&
-	    vms_header.dc_description[3] == 0)
+	if ((loaded_headers & DC_IS_ICONDATA_VMS) ||
+	    (vms_header.dc_description[0] >= DC_VMS_ICONDATA_Header_SIZE &&
+	     vms_header.dc_description[1] == 0 &&
+	     vms_header.dc_description[2] == 0 &&
+	     vms_header.dc_description[3] == 0))
 	{
 		// This is probably ICONDATA_VMS.
 		if (this->saveType == SAVE_TYPE_DCI) {
