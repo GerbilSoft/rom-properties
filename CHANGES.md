@@ -7,6 +7,9 @@
     Currently only supports text fields.
   * Super NES ROM images: Headered and non-headered images.
     Currently only supports text fields.
+  * Sega Dreamcast save files: .VMS, .VMI, .VMS+.VMI, and .DCI formats.
+    Supports text fields, icons, and the graphic eyecatch (as the banner).
+    ICONDATA_VMS files are also supported.
 
 * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
   properties page.
