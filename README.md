@@ -91,6 +91,7 @@ Notes:
 |           System          | Properties Tab | Internal Images | External Scans |
 |:-------------------------:|:--------------:|:---------------:|:--------------:|
 | Sega Mega Drive           |       Yes      |       N/A       |       No       |
+| Sega Dreamcast Saves      |       Yes      |   Icon, Banner  |       No       |
 | Nintendo DS(i)            |       Yes      |       Icon      |       No       |
 | Nintendo GameCube         |       Yes      |      Banner     |      Disc      |
 | Nintendo GameCube Saves   |       Yes      |       Icon      |       N/A      |
@@ -115,6 +116,7 @@ will be used for thumbnails (and icons on Windows).
 ## ROM Formats Supported
 
 * Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
+* Sega Dreamcast: Save files (\*.vmi, \*.vms, \*.dci)
 * Nintendo DS(i): Decrypted (\*.nds)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
   CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc), save files (\*.gci, \*.gcs, \*.sav)

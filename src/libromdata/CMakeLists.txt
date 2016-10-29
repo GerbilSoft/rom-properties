@@ -60,6 +60,7 @@ CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 SET(libromdata_SRCS
+	byteswap.c
 	TextFuncs.cpp
 	RomData.cpp
 	RomFields.cpp
@@ -76,6 +77,7 @@ SET(libromdata_SRCS
 	GameCubeSave.cpp
 	N64.cpp
 	SNES.cpp
+	DreamcastSave.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
@@ -124,6 +126,8 @@ SET(libromdata_H
 	gba_structs.h
 	SNES.hpp
 	snes_structs.h
+	DreamcastSave.hpp
+	dc_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

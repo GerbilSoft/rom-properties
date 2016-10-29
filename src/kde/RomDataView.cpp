@@ -352,6 +352,15 @@ void RomDataViewPrivate::updateDisplay(void)
 						lblString->setFont(font);
 						lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 					}
+
+					// "Warning" font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+						// Only expecting a maximum of one "Warning" per ROM,
+						// so we're initializing this here.
+						const QString css = QLatin1String("color: #F00; font-weight: bold;");
+						lblDesc->setStyleSheet(css);
+						lblString->setStyleSheet(css);
+					}
 				}
 \
 				ui.formLayout->addRow(lblDesc, lblString);

@@ -193,6 +193,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 					const uint8_t *src = reinterpret_cast<const uint8_t*>(image->scanLine(y));
 					for (int x = image->width(); x > 0; x -= 8) {
 						uint8_t pxMono = 0;
+						// TODO: Unroll this loop?
 						for (int px = 8; px > 0; px--, src++) {
 							// MSB == left-most pixel.
 							pxMono <<= 1;

@@ -117,12 +117,16 @@ class RP_ShellPropSheetExt_Private
 
 		// Fonts.
 		HFONT hFontBold;	// Bold font.
-		// Monospaced font.
-		HFONT hFontMono;
+		HFONT hFontMono;	// Monospaced font.
+
+		// Monospaced font details.
 		LOGFONT lfFontMono;
 		unordered_set<wstring> monospaced_fonts;
-		vector<HWND> hwndMonoControls;	// Controls using the monospaced font.
+		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
 		bool bPrevIsClearType;	// Previous ClearType setting.
+
+		// Controls that need to be drawn using red text.
+		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -240,6 +244,12 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+
+		/**
+		 * Initialize the bold font.
+		 * @param hFont Base font.
+		 */
+		void initBoldFont(HFONT hFont);
 
 		/**
 		 * Monospaced font enumeration procedure.
@@ -626,18 +636,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	SIZE sz_lblSysInfo = {0, 0};
 
 	if (!sysInfo.empty()) {
-		// Use a bold font.
-		// TODO: Delete the old font if it's already there?
-		if (!hFontBold) {
-			// Create the bold font.
-			LOGFONT lfFontBold;
-			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
-				// Adjust the font and create a new one.
-				lfFontBold.lfWeight = FW_BOLD;
-				hFontBold = CreateFontIndirect(&lfFontBold);
-			}
-		}
-
 		// Determine the appropriate label size.
 		int ret = measureTextSize(hDlg,
 			(hFontBold ? hFontBold : hFont),
@@ -826,9 +824,28 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 	// Check for any formatting options.
 	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
-		// Monospace font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-			if (hFontMono != nullptr) {
+		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
+		// Preferring STRF_WARNING.
+		assert((desc->str_desc->formatting &
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING)) !=
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING));
+
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+			// "Warning" font.
+			if (hFontBold) {
+				hFont = hFontBold;
+				hwndWarningControls.insert(hDlgItem);
+
+				// Set the font of the description control.
+				HWND hStatic = GetDlgItem(hDlg, IDC_STATIC_DESC(idx));
+				if (hStatic) {
+					SetWindowFont(hStatic, hFont, FALSE);
+					hwndWarningControls.insert(hStatic);
+				}
+			}
+		} else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			// Monospaced font.
+			if (hFontMono) {
 				hFont = hFontMono;
 				if (hwndMonoControls.empty()) {
 					hwndMonoControls.reserve(4);
@@ -1196,6 +1213,27 @@ int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
 }
 
 /**
+ * Initialize the bold font.
+ * @param hFont Base font.
+ */
+void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
+{
+	if (!hFont || hFontBold) {
+		// No base font, or the bold font
+		// is already initialized.
+		return;
+	}
+
+	// Create the bold font.
+	LOGFONT lfFontBold;
+	if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
+		// Adjust the font and create a new one.
+		lfFontBold.lfWeight = FW_BOLD;
+		hFontBold = CreateFontIndirect(&lfFontBold);
+	}
+}
+
+/**
  * Initialize the monospaced font.
  * @param hFont Base font.
  */
@@ -1344,6 +1382,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	HDC hDC = GetDC(hDlg);
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
+	// Initialize the bold and monospaced fonts.
+	initBoldFont(hFont);
+	initMonospacedFont(hFont);
+
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
 	int max_text_width = 0;
@@ -1360,6 +1402,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Make sure this is a UTF-16 string.
 		wstring s_name = RP2W_c(desc->name);
+
+		// TODO: Handle STRF_WARNING?
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
@@ -1400,9 +1444,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Create the header row.
 	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
 	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
-
-	// Make sure the monospaced font is initialized.
-	initMonospacedFont(hFont);
 
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Desc *desc = fields->desc(idx);
@@ -1972,6 +2013,19 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			if (pExt) {
 				HFONT hFont = GetWindowFont(hDlg);
 				pExt->d->initMonospacedFont(hFont);
+			}
+			break;
+		}
+
+		case WM_CTLCOLORSTATIC: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				if (pExt->d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) != pExt->d->hwndWarningControls.end()) {
+					// Set the "Warning" color.
+					HDC hdc = reinterpret_cast<HDC>(wParam);
+					SetTextColor(hdc, RGB(255, 0, 0));
+				}
 			}
 			break;
 		}

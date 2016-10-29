@@ -39,7 +39,7 @@ class ImageDecoder
 
 	public:
 		/**
-		 * Convert a Nintendo DS 16-color + palette image to rp_image.
+		 * Convert a Nintendo DS CI4 image to rp_image.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI4 image buffer.
@@ -76,6 +76,56 @@ class ImageDecoder
 		static rp_image *fromGcnCI8(int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
+
+		/**
+		 * Convert a Dreamcast CI4 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf CI4 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @param pal_buf Palette buffer.
+		 * @param pal_siz Size of palette data. [must be >= 16*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastCI4(int width, int height,
+			const uint8_t *img_buf, int img_siz,
+			const uint16_t *pal_buf, int pal_siz);
+
+		/**
+		 * Convert a Dreamcast CI8 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf CI8 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @param pal_buf Palette buffer.
+		 * @param pal_siz Size of palette data. [must be >= 256*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastCI8(int width, int height,
+			const uint8_t *img_buf, int img_siz,
+			const uint16_t *pal_buf, int pal_siz);
+
+		/**
+		 * Convert a Dreamcast ARGB4444 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ARGB4444 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastARGB4444(int width, int height,
+			const uint16_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a Dreamcast monochrome image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf Monochrome image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/8]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastMono(int width, int height,
+			const uint8_t *img_buf, int img_siz);
 };
 
 }
