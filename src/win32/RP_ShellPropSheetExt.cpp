@@ -1057,9 +1057,7 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
 
 		const vector<rp_string> &data_row = listData->data.at(i);
 		int field = 0;
-		for (vector<rp_string>::const_iterator iter = data_row.begin();
-		     iter != data_row.end(); ++iter, ++field)
-		{
+		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
 			lvItem.iSubItem = field;
 			// TODO: Support for RP_UTF8?
 			// NOTE: pszText is LPWSTR, not LPCWSTR...
@@ -1333,9 +1331,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 	}
 
 	// Update all existing monospaced controls.
-	for (vector<HWND>::const_iterator iter = hwndMonoControls.begin();
-	     iter != hwndMonoControls.end(); ++iter)
-	{
+	for (auto iter = hwndMonoControls.cbegin(); iter != hwndMonoControls.cend(); ++iter) {
 		SetWindowFont(*iter, hFontMonoNew, FALSE);
 	}
 

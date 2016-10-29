@@ -92,9 +92,7 @@ rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageT
 
 	// Check each URL.
 	CacheManager cache;
-	for (vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
-	     iter != extURLs->end(); ++iter)
-	{
+	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
 		// TODO: Have download() return the actual data and/or load the cached file.

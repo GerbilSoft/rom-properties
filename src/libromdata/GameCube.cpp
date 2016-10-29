@@ -218,9 +218,7 @@ GameCubePrivate::~GameCubePrivate()
 	// Delete partition objects in wiiVgTbl[].
 	// TODO: Check wiiVgTblLoaded?
 	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
-		for (std::vector<WiiPartEntry>::iterator iter = wiiVgTbl[i].begin();
-		     iter != wiiVgTbl[i].end(); ++iter)
-		{
+		for (auto iter = wiiVgTbl[i].begin(); iter != wiiVgTbl[i].end(); ++iter) {
 			delete iter->partition;
 		}
 	}
@@ -1833,9 +1831,7 @@ int GameCube::loadURLs(ImageType imageType)
 		char s_discNum[16];
 		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
-			for (vector<const char*>::const_iterator iter = tdb_regions.begin();
-			     iter != tdb_regions.end(); ++iter)
-			{
+			for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
 				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
 				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
 				extURLs.push_back(extURL);
@@ -1844,8 +1840,7 @@ int GameCube::loadURLs(ImageType imageType)
 	}
 
 	// First disc, or not a disc scan.
-	for (vector<const char*>::const_iterator iter = tdb_regions.begin();
-	     iter != tdb_regions.end(); ++iter)
+	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter)
 	{
 		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
 		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);

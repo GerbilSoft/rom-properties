@@ -477,13 +477,9 @@ STDAPI DllRegisterServer(void)
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<RomDataFactory::ExtInfo>::const_iterator ext_iter = vec_exts.begin();
-	     ext_iter != vec_exts.end(); ++ext_iter)
-	{
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register user file types if necessary.
-		for (list<wstring>::const_iterator sid_iter = user_SIDs.begin();
-		     sid_iter != user_SIDs.end(); ++sid_iter)
-		{
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) {
 				return SELFREG_E_CLASS;
@@ -571,13 +567,9 @@ STDAPI DllUnregisterServer(void)
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<RomDataFactory::ExtInfo>::const_iterator ext_iter = vec_exts.begin();
-	     ext_iter != vec_exts.end(); ++ext_iter)
-	{
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Unregister user file types if necessary.
-		for (list<wstring>::const_iterator sid_iter = user_SIDs.begin();
-		     sid_iter != user_SIDs.end(); ++sid_iter)
-		{
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) {
 				return SELFREG_E_CLASS;

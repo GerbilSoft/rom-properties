@@ -322,9 +322,7 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
 		vector<const rp_char*> exts = supportedFileExtensions_static();
-		for (vector<const rp_char*>::const_iterator iter = exts.begin();
-		     iter != exts.end(); ++iter)
-		{
+		for (auto iter = exts.cbegin(); iter != exts.cend(); ++iter) {
 			if (!rp_strcasecmp(info->ext, *iter)) {
 				// File extension is supported.
 				return 0;

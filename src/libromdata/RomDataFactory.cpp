@@ -332,9 +332,7 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 		exts.reserve(exts.size() + sys_vec.size());
 #endif
-		for (vector<const rp_char*>::const_iterator iter = sys_vec.begin();
-		     iter != sys_vec.end(); ++iter)
-		{
+		for (auto iter = sys_vec.cbegin(); iter != sys_vec.cend(); ++iter) {
 			exts[*iter] |= fns->hasThumbnail;
 		}
 	}
@@ -344,9 +342,7 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	vec.reserve(exts.size());
 
 	ExtInfo extInfo;
-	for (unordered_map<const rp_char*, bool>::const_iterator iter = exts.begin();
-	     iter != exts.end(); ++iter)
-	{
+	for (auto iter = exts.cbegin(); iter != exts.cend(); ++iter) {
 		extInfo.ext = iter->first;
 		extInfo.hasThumbnail = iter->second;
 		vec.push_back(extInfo);

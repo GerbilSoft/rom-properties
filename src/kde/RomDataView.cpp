@@ -430,9 +430,7 @@ void RomDataViewPrivate::updateDisplay(void)
 					const vector<rp_string> &data_row = listData->data.at(i);
 					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
 					int field = 0;
-					for (vector<rp_string>::const_iterator iter = data_row.begin();
-					     iter != data_row.end(); ++iter, ++field)
-					{
+					for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
 						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
 					}
 				}

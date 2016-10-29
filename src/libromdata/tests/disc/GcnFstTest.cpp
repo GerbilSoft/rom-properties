@@ -310,9 +310,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 	}
 
 	// Check subdirectories.
-	for (unordered_set<string>::const_iterator iter = subdirs.begin();
-	     iter != subdirs.end(); ++iter)
-	{
+	for (auto iter = subdirs.cbegin(); iter != subdirs.cend(); ++iter) {
 		rp_string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += _RP_CHR('/');
