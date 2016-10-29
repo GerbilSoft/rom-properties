@@ -549,6 +549,17 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 			img = nullptr;
 			break;
 
+		case DC_VMS_EYECATCH_CI8: {
+			// CI8 eyecatch.
+			// TODO: Needs more testing.
+			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
+			img = ImageDecoder::fromDreamcastCI8(
+				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
+				image_buf, DC_VMS_EYECATCH_CI8_DATA_SIZE,
+				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
+			break;
+		}
+
 		case DC_VMS_EYECATCH_CI4: {
 			// CI4 eyecatch.
 			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;

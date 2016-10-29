@@ -381,7 +381,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 }
 
 /**
- * Convert a Dreamcast 16-color + palette image to rp_image.
+ * Convert a Dreamcast CI4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -433,13 +433,72 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
 
-	// Convert one line at a time.
+	// Convert one line at a time. (CI4 -> CI8)
 	for (int y = 0; y < height; y++) {
 		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x -= 2, img_buf++, px_dest += 2) {
 			px_dest[0] = (*img_buf >> 4);
 			px_dest[1] = (*img_buf & 0x0F);
 		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast CI8 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 256*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < (width * height) || pal_siz < 256*2)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 256);
+	if (img->palette_len() < 256) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 256; i++) {
+		// Dreamcast color format is ARGB4444.
+		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = i;
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// Copy one line at a time. (CI8 -> CI8)
+	uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->bits());
+	const int stride = img->stride();
+	for (int y = height; y > 0; y--) {
+		memcpy(px_dest, img_buf, width);
+		px_dest += stride;
+		img_buf += width;
 	}
 
 	// Image has been converted.
