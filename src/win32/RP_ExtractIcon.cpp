@@ -271,28 +271,33 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761852(v=vs.85).aspx
+	if (!pszIconFile || !piIndex || cchMax == 0) {
+		return E_INVALIDARG;
+	}
 	UNUSED(uFlags);
-	UNUSED(pszIconFile);
-	UNUSED(cchMax);
-	UNUSED(piIndex);
 
-	// FIXME: Not specifying GIL_DONTCACHE causes all handled
-	// file types to show the same icon as the first one that
-	// was processed. I have no idea why.
+	// NOTE: If caching is enabled and we don't set pszIconFile
+	// and piIndex, all icons for files handled by rom-properties
+	// will be the first file Explorer hands off to the extension.
+	//
+	// If we enable caching and set pszIconFile and piIndex, it
+	// effectively disables caching anyway, since it ends up
+	// calling Extract() the first time a file is encountered
+	// in an Explorer session.
+	//
+	// TODO: Implement our own icon caching?
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
-
 	return S_OK;
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
-	// NOTE: pszFile should be nullptr here.
-	// TODO: Fail if it's not nullptr?
-
-	// TODO: Use nIconSize?
+	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	UNUSED(pszFile);
 	UNUSED(nIconIndex);
+
+	// TODO: Use nIconSize?
 	UNUSED(nIconSize);
 
 	// Make sure a filename was set by calling IPersistFile::Load().
