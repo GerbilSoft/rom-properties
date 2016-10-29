@@ -196,7 +196,7 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
  * @param file Open ROM image.
  */
 SNES::SNES(IRpFile *file)
-	: RomData(file, SNESPrivate::snes_fields, ARRAY_SIZE(SNESPrivate::snes_fields))
+	: super(file, SNESPrivate::snes_fields, ARRAY_SIZE(SNESPrivate::snes_fields))
 	, d(new SNESPrivate())
 {
 	if (!m_file) {

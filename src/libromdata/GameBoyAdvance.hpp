@@ -51,8 +51,9 @@ class GameBoyAdvance : public RomData
 		virtual ~GameBoyAdvance();
 
 	private:
-		GameBoyAdvance(const GameBoyAdvance &);
-		GameBoyAdvance &operator=(const GameBoyAdvance &);
+		typedef RomData super;
+		GameBoyAdvance(const GameBoyAdvance &other);
+		GameBoyAdvance &operator=(const GameBoyAdvance &other);
 
 	private:
 		friend class GameBoyAdvancePrivate;

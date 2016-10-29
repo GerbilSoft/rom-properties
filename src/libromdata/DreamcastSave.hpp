@@ -70,8 +70,9 @@ class DreamcastSave : public RomData
 		virtual ~DreamcastSave();
 
 	private:
-		DreamcastSave(const DreamcastSave &);
-		DreamcastSave &operator=(const DreamcastSave &);
+		typedef RomData super;
+		DreamcastSave(const DreamcastSave &other);
+		DreamcastSave &operator=(const DreamcastSave &other);
 
 	private:
 		friend class DreamcastSavePrivate;

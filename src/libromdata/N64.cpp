@@ -111,7 +111,7 @@ N64Private::N64Private()
  * @param file Open ROM image.
  */
 N64::N64(IRpFile *file)
-	: RomData(file, N64Private::n64_fields, ARRAY_SIZE(N64Private::n64_fields))
+	: super(file, N64Private::n64_fields, ARRAY_SIZE(N64Private::n64_fields))
 	, d(new N64Private())
 {
 	if (!m_file) {

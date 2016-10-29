@@ -322,7 +322,7 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: RomData(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
+	: super(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
 	, d(new MegaDrivePrivate())
 {
 	// TODO: Only validate that this is an MD ROM here.

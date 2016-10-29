@@ -323,7 +323,7 @@ const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
  * @param file Open ROM file.
  */
 DMG::DMG(IRpFile *file)
-	: RomData(file, DMGPrivate::dmg_fields, ARRAY_SIZE(DMGPrivate::dmg_fields))
+	: super(file, DMGPrivate::dmg_fields, ARRAY_SIZE(DMGPrivate::dmg_fields))
 	, d(new DMGPrivate())
 {
 	// TODO: Only validate that this is an DMG ROM here.

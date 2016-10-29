@@ -40,8 +40,10 @@ class CisoGcnReader : public IDiscReader
 		virtual ~CisoGcnReader();
 
 	private:
+		typedef IDiscReader super;
 		CisoGcnReader(const CisoGcnReader &);
 		CisoGcnReader &operator=(const CisoGcnReader &);
+
 	private:
 		friend class CisoGcnReaderPrivate;
 		CisoGcnReaderPrivate *const d;

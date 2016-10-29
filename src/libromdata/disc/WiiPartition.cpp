@@ -57,6 +57,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		virtual ~WiiPartitionPrivate();
 
 	private:
+		typedef GcnPartitionPrivate super;
 		WiiPartitionPrivate(const WiiPartitionPrivate &other);
 		WiiPartitionPrivate &operator=(const WiiPartitionPrivate &other);
 
@@ -112,7 +113,7 @@ int WiiPartitionPrivate::aes_common_refcnt = 0;
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset)
-	: GcnPartitionPrivate(q, discReader, partition_offset, 2)
+	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
 	, aes_title(nullptr)
@@ -400,7 +401,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
  * @param partition_offset Partition start offset.
  */
 WiiPartition::WiiPartition(IDiscReader *discReader, int64_t partition_offset)
-	: GcnPartition(new WiiPartitionPrivate(this, discReader, partition_offset))
+	: super(new WiiPartitionPrivate(this, discReader, partition_offset))
 { }
 
 WiiPartition::~WiiPartition()

@@ -55,6 +55,7 @@ class GameCube : public RomData
 		virtual ~GameCube();
 
 	private:
+		typedef RomData super;
 		GameCube(const GameCube &other);
 		GameCube &operator=(const GameCube &other);
 

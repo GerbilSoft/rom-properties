@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GameCube.hpp: Nintendo GameCube and Wii disc image reader.              *
+ * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -942,7 +942,7 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
  * @param file Open disc image.
  */
 GameCube::GameCube(IRpFile *file)
-	: RomData(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
+	: super(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
 	, d(new GameCubePrivate(this))
 {
 	// This class handles disc images.

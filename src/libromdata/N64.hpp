@@ -51,8 +51,9 @@ class N64 : public RomData
 		virtual ~N64();
 
 	private:
-		N64(const N64 &);
-		N64 &operator=(const N64 &);
+		typedef RomData super;
+		N64(const N64 &other);
+		N64 &operator=(const N64 &other);
 
 	private:
 		friend class N64Private;

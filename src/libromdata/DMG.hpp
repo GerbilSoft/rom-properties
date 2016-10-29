@@ -50,8 +50,9 @@ class DMG : public RomData
 		virtual ~DMG();
 
 	private:
-		DMG(const DMG &);
-		DMG &operator=(const DMG &);
+		typedef RomData super;
+		DMG(const DMG &other);
+		DMG &operator=(const DMG &other);
 
 	private:
 		friend class DMGPrivate;

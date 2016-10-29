@@ -571,7 +571,7 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
  * @param file Open disc image.
  */
 GameCubeSave::GameCubeSave(IRpFile *file)
-	: RomData(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
+	: super(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
 	, d(new GameCubeSavePrivate(this))
 {
 	// This class handles save files.

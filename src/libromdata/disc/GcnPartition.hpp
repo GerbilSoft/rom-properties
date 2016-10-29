@@ -48,8 +48,10 @@ class GcnPartition : public IPartition
 		explicit GcnPartition(GcnPartitionPrivate *d);
 
 	private:
+		typedef IPartition super;
 		GcnPartition(const GcnPartition &other);
 		GcnPartition &operator=(const GcnPartition &other);
+
 	protected:
 		friend class GcnPartitionPrivate;
 		GcnPartitionPrivate *const d_ptr;

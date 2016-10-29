@@ -51,8 +51,9 @@ class GameCubeSave : public RomData
 		virtual ~GameCubeSave();
 
 	private:
-		GameCubeSave(const GameCubeSave &);
-		GameCubeSave &operator=(const GameCubeSave &);
+		typedef RomData super;
+		GameCubeSave(const GameCubeSave &other);
+		GameCubeSave &operator=(const GameCubeSave &other);
 
 	private:
 		friend class GameCubeSavePrivate;

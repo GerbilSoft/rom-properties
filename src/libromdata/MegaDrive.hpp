@@ -49,8 +49,9 @@ class MegaDrive : public RomData
 		virtual ~MegaDrive();
 
 	private:
-		MegaDrive(const MegaDrive &);
-		MegaDrive &operator=(const MegaDrive &);
+		typedef RomData super;
+		MegaDrive(const MegaDrive &other);
+		MegaDrive &operator=(const MegaDrive &other);
 
 	private:
 		friend class MegaDrivePrivate;

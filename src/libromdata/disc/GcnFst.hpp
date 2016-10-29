@@ -44,6 +44,7 @@ class GcnFst : public IFst
 		typedef IFst super;
 		GcnFst(const GcnFst &other);
 		GcnFst &operator=(const GcnFst &other);
+
 	private:
 		friend class GcnFstPrivate;
 		GcnFstPrivate *const d;

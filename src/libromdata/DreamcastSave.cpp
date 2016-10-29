@@ -778,7 +778,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
  * @param file Open disc image.
  */
 DreamcastSave::DreamcastSave(IRpFile *file)
-	: RomData(file, DreamcastSavePrivate::dc_save_fields, ARRAY_SIZE(DreamcastSavePrivate::dc_save_fields))
+	: super(file, DreamcastSavePrivate::dc_save_fields, ARRAY_SIZE(DreamcastSavePrivate::dc_save_fields))
 	, d(new DreamcastSavePrivate(this))
 {
 	// This class handles save files.

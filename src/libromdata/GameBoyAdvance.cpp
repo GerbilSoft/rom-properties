@@ -94,7 +94,7 @@ const struct RomFields::Desc GameBoyAdvancePrivate::gba_fields[] = {
  * @param file Open ROM image.
  */
 GameBoyAdvance::GameBoyAdvance(IRpFile *file)
-	: RomData(file, GameBoyAdvancePrivate::gba_fields, ARRAY_SIZE(GameBoyAdvancePrivate::gba_fields))
+	: super(file, GameBoyAdvancePrivate::gba_fields, ARRAY_SIZE(GameBoyAdvancePrivate::gba_fields))
 	, d(new GameBoyAdvancePrivate())
 {
 	if (!m_file) {

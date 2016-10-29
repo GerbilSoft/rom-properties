@@ -51,8 +51,9 @@ class SNES : public RomData
 		virtual ~SNES();
 
 	private:
-		SNES(const SNES &);
-		SNES &operator=(const SNES &);
+		typedef RomData super;
+		SNES(const SNES &other);
+		SNES &operator=(const SNES &other);
 
 	private:
 		friend class SNESPrivate;

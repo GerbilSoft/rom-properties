@@ -480,7 +480,7 @@ int NintendoDSPrivate::getTitleIndex(void) const
  * @param file Open ROM image.
  */
 NintendoDS::NintendoDS(IRpFile *file)
-	: RomData(file, NintendoDSPrivate::nds_fields, ARRAY_SIZE(NintendoDSPrivate::nds_fields))
+	: super(file, NintendoDSPrivate::nds_fields, ARRAY_SIZE(NintendoDSPrivate::nds_fields))
 	, d(new NintendoDSPrivate(this))
 {
 	if (!m_file) {
