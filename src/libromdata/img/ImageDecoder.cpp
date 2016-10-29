@@ -115,6 +115,43 @@ inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
 }
 
 /**
+ * Blit a CI4 tile to a CI8 rp_image.
+ * NOTE: Left pixel is the least significant nybble.
+ * NOTE: No bounds checking is done.
+ * @tparam tileW	[in] Tile width.
+ * @tparam tileH	[in] Tile height.
+ * @param img		[out] rp_image.
+ * @param tileBuf	[in] Tile buffer.
+ * @param tileX		[in] Horizontal tile number.
+ * @param tileY		[in] Vertical tile number.
+ */
+template<int tileW, int tileH>
+inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tileX, int tileY)
+{
+	assert(img->format() == rp_image::FORMAT_CI8);
+	assert(img->width() % 2 == 0);
+	assert(tileW % 2 == 0);
+
+	// Go to the first pixel for this tile.
+	uint8_t *imgBuf = reinterpret_cast<uint8_t*>(img->scanLine(tileY * tileH));
+	imgBuf += (tileX * tileW);
+
+	const int stride_px_adj = img->stride() - tileW;
+	for (int y = tileH; y > 0; y--) {
+		// Expand CI4 pixels to CI8 before writing.
+		for (int x = tileW; x > 0; x -= 2) {
+			imgBuf[0] = (*tileBuf & 0x0F);
+			imgBuf[1] = (*tileBuf >> 4);
+			imgBuf += 2;
+			tileBuf++;
+		}
+
+		// Next line.
+		imgBuf += stride_px_adj;
+	}
+}
+
+/**
  * Convert an RGB555 pixel to ARGB32.
  * @param px16 RGB555 pixel.
  * @return ARGB32 pixel.
@@ -241,21 +278,11 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
 
-	// 2 bytes = 4 pixels
-	// Image is composed of 8x8px tiles.
-	// 4 tiles wide, 4 tiles tall.
-	uint8_t tileBuf[8*8];
-
 	for (int y = 0; y < tilesY; y++) {
 		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to 8-bit color manually.
-			for (int i = 0; i < 8*8; i += 2, img_buf++) {
-				tileBuf[i+0] = (*img_buf & 0x0F);
-				tileBuf[i+1] = (*img_buf >> 4);
-			}
-
 			// Blit the tile to the main image buffer.
-			BlitTile<uint8_t, 8, 8>(img, tileBuf, x, y);
+			BlitTile_CI4_LeftLSN<8, 8>(img, img_buf, x, y);
+			img_buf += ((8 * 8) / 2);
 		}
 	}
 
