@@ -1,4 +1,7 @@
 # Microsoft Visual C++
+IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16.0")
+	MESSAGE(FATAL_ERROR "MSVC 2010 (10.0) or later is required.")
+ENDIF()
 
 # Disable useless warnings:
 # - MSVC "logo" messages

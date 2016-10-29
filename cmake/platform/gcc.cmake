@@ -1,4 +1,14 @@
 # gcc (and other Unix-like compilers, e.g. MinGW)
+IF(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+	# FIXME: May need later than 2.9.
+	IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "2.9")
+		MESSAGE(FATAL_ERROR "clang-2.9 or later is required.")
+	ENDIF()
+ELSEIF(CMAKE_COMPILER_IS_GNUCXX)
+	IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.5")
+		MESSAGE(FATAL_ERROR "gcc-4.5 or later is required.")
+	ENDIF()
+ENDIF()
 
 # Compiler flag modules.
 INCLUDE(CheckCCompilerFlag)
