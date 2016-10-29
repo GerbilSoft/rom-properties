@@ -68,6 +68,9 @@ class DreamcastSavePrivate
 		// Monospace string formatting.
 		static const RomFields::StringDesc dc_save_string_monospace;
 
+		// "Warning" string formatting.
+		static const RomFields::StringDesc dc_save_string_warning;
+
 		// RomFields data.
 		static const struct RomFields::Desc dc_save_fields[];
 
@@ -177,11 +180,16 @@ const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_monospace = {
 	RomFields::StringDesc::STRF_MONOSPACE
 };
 
+// "Warning" string formatting.
+const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_warning = {
+	RomFields::StringDesc::STRF_WARNING
+};
+
 // Save file fields.
 const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 	// Generic warning field for e.g. VMS with no VMI.
 	// TODO: Bold+Red?
-	{_RP("Warning"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Warning"), RomFields::RFT_STRING, {&dc_save_string_warning}},
 
 	// VMI fields.
 	{_RP("VMI Description"), RomFields::RFT_STRING, {nullptr}},
