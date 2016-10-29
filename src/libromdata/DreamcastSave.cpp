@@ -646,9 +646,28 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	}
 
 	// Convert the icon to rp_image.
-	return ImageDecoder::fromDreamcastMono(
+	rp_image *img = ImageDecoder::fromDreamcastMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
 		icon_buf.u8, sizeof(icon_buf.u8));
+	if (img) {
+		// Adjust the palette to use a more
+		// VMU-like color scheme.
+		assert(img->palette_len() >= 2);
+		if (img->palette_len() < 2) {
+			// Can't adjust the palette...
+			// Just return it as-is.
+			return img;
+		}
+
+		uint32_t *palette = img->palette();
+		assert(palette != nullptr);
+		if (palette) {
+			palette[0] = 0xFF8CCEAD;	// Green
+			palette[1] = 0xFF081884;	// Blue
+		}
+	}
+
+	return img;
 }
 
 /**
