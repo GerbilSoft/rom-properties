@@ -420,7 +420,7 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 	}
 
 	int tr_idx = -1;
-	for (int i = 0; i < 256; i++) {
+	for (int i = 0; i < 16; i++) {
 		// Dreamcast color format is ARGB4444.
 		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
 		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
