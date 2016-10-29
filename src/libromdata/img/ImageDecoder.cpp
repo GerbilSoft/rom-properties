@@ -543,4 +543,57 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a Dreamcast monochrome image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf Monochrome image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	if (!img_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) / 8))
+		return nullptr;
+
+	// Monochrome width must be a multiple of eight.
+	if (width % 8 != 0)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Set a default monochrome palette.
+	uint32_t *palette = img->palette();
+	palette[0] = 0xFFFFFFFF;	// white
+	palette[1] = 0xFF000000;	// black
+	img->set_tr_idx(-1);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert one line at a time. (monochrome -> CI8)
+	for (int y = 0; y < height; y++) {
+		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x -= 8) {
+			uint8_t pxMono = *img_buf++;
+			// TODO: Unroll this loop?
+			for (int bit = 8; bit > 0; bit--, px_dest++) {
+				// MSB == left-most pixel.
+				*px_dest = (pxMono >> 7);
+				pxMono <<= 1;
+			}
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
 }

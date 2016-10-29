@@ -39,12 +39,6 @@ extern "C" {
 // VMS blocks are 512 bytes.
 #define DC_VMS_BLOCK_SIZE 512
 
-/** ICONDATA_VMS **/
-
-// Some monochrome ICONDATA_VMS files are only 160 bytes.
-// TODO: Is there an equivalent for color icons?
-#define DC_VMS_ICONDATA_MONO_MINSIZE 160
-
 /**
  * ICONDATA_VMS header.
  * Found at the top of .VMS files used as VMU icons.
@@ -114,6 +108,11 @@ typedef enum {
 #define DC_VMS_ICON_H 32
 #define DC_VMS_EYECATCH_W 72
 #define DC_VMS_EYECATCH_H 56
+
+// Some monochrome ICONDATA_VMS files are only 160 bytes.
+// TODO: Is there an equivalent for color icons?
+#define DC_VMS_ICONDATA_MONO_MINSIZE 160
+#define DC_VMS_ICONDATA_MONO_ICON_SIZE ((DC_VMS_ICON_W * DC_VMS_ICON_H) / 8)
 
 // Icon and eyecatch data sizes.
 #define DC_VMS_ICON_PALETTE_SIZE (16 * 2)

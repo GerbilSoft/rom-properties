@@ -115,6 +115,17 @@ class ImageDecoder
 		 */
 		static rp_image *fromDreamcastARGB4444(int width, int height,
 			const uint16_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a Dreamcast monochrome image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf Monochrome image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/8]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastMono(int width, int height,
+			const uint8_t *img_buf, int img_siz);
 };
 
 }
