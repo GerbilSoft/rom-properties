@@ -426,7 +426,9 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	uint32_t sz_reserved = (uint32_t)sizeof(vms_header) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(icon_count * DC_VMS_ICON_DATA_SIZE);
-	sz_reserved += vms_header.eyecatch_type & 3;
+	if (vms_header.eyecatch_type <= 3) {
+		sz_reserved += eyecatch_sizes[vms_header.eyecatch_type];
+	}
 	if ((int64_t)sz_reserved > q->m_file->fileSize()) {
 		// File is NOT big enough.
 		return nullptr;
