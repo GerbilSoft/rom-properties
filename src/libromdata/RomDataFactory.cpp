@@ -69,8 +69,8 @@ class RomDataFactoryPrivate
 		static const RomDataFns romDataFns[];
 
 		/**
-		 * Attempt to open the other file in a Dreamcast .VMS+.VMI pair.
-		 * @param file One opened file in the .VMS+.VMI pair.
+		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
+		 * @param file One opened file in the .VMI+.VMS pair.
 		 * @return DreamcastSave if valid; nullptr if not.
 		 */
 		static RomData *openDreamcastVMSandVMI(IRpFile *file);
@@ -92,8 +92,8 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 };
 
 /**
- * Attempt to open the other file in a Dreamcast .VMS+.VMI pair.
- * @param file One opened file in the .VMS+.VMI pair.
+ * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
+ * @param file One opened file in the .VMI+.VMS pair.
  * @return DreamcastSave if valid; nullptr if not.
  */
 RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
@@ -246,16 +246,16 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 		}
 	}
 
-	// Special handling for Dreamcast .VMS+.VMI pairs.
+	// Special handling for Dreamcast .VMI+.VMS pairs.
 	if (!rp_strcasecmp(info.ext, _RP(".vms")) || !rp_strcasecmp(info.ext, _RP(".vmi"))) {
-		// Dreamcast .VMS+.VMI pair.
+		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
 		RomData *romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
 		if (romData && romData->isValid()) {
-			// .VMS+.VMI pair opened.
+			// .VMI+.VMS pair opened.
 			return romData;
 		}
-		// Not a .VMS+.VMI pair.
+		// Not a .VMI+.VMS pair.
 		delete romData;
 	}
 
