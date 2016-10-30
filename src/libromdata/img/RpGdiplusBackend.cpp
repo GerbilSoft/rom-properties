@@ -386,9 +386,6 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 {
 	// TODO: Check for errors?
 
-	// Temporarily unlock the GDI+ bitmap.
-	unlock();
-
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
@@ -415,7 +412,9 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 		status = pTmpBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hBitmap);
 	} else {
 		// Use the regular bitmap.
+		unlock();
 		status = m_pGdipBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hBitmap);
+		lock();
 	}
 
 	if (status != Gdiplus::Status::Ok) {
@@ -424,7 +423,6 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 	}
 
 	// Re-lock the bitmap.
-	lock();
 	return hBitmap;
 }
 
