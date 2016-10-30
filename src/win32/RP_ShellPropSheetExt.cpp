@@ -190,7 +190,7 @@ class RP_ShellPropSheetExt_Private
 		/**
 		 * Load the banner and icon as HBITMAPs.
 		 *
-		 * This function should be called on startup and if
+		 * This function should bee called on startup and if
 		 * the window's background color changes.
 		 *
 		 * @param hDlg	[in] Dialog window.
@@ -198,6 +198,12 @@ class RP_ShellPropSheetExt_Private
 		void loadImages(HWND hDlg);
 
 	private:
+		/**
+		 * Increase an image's size to the minimum size, if necesary.
+		 * @param sz Image size.
+		 */
+		void incSizeToMinimum(SIZE &sz);
+
 		/**
 		 * Create the header row.
 		 * @param hDlg		[in] Dialog window.
@@ -515,7 +521,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (banner && banner->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor);
+			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, true);
 		}
 	}
 
@@ -534,7 +540,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (icon && icon->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor);
+			hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
 
 			// Get the animated icon data.
 			if (iconAnimData) {
@@ -544,7 +550,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.
-						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor);
+						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, true);
 					}
 				}
 
@@ -557,6 +563,33 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 			}
 		}
 	}
+}
+
+/**
+ * Increase an image's size to the minimum size, if necesary.
+ * @param sz Image size.
+ */
+void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
+{
+	// Minimum image size.
+	// If images are smaller, they will be resized.
+	// TODO: Adjust minimum size for DPI.
+	static const SIZE min_img_size = {32, 32};
+
+	if (sz.cx >= min_img_size.cx && sz.cx >= min_img_size.cy) {
+		// No resize necessary.
+		return;
+	}
+
+	// Resize the image.
+	SIZE orig_sz = sz;
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		sz.cx += orig_sz.cx;
+		sz.cy += orig_sz.cy;
+	} while (sz.cx < min_img_size.cx && sz.cy < min_img_size.cy);
 }
 
 /**
@@ -624,12 +657,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the banner.
 		banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
+			szBanner.cx = banner->width();
+			szBanner.cy = banner->height();
+			incSizeToMinimum(szBanner);
+
 			// Add the banner width.
 			// The banner will be assigned to a WC_STATIC control.
 			if (total_widget_width > 0) {
 				total_widget_width += pt_start.x;
 			}
-			total_widget_width += banner->width();
+			total_widget_width += szBanner.cx;
 		} else {
 			// No banner.
 			banner = nullptr;
@@ -642,12 +679,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the icon.
 		icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			szIcon.cx = icon->width();
+			szIcon.cy = icon->height();
+			incSizeToMinimum(szIcon);
+
 			// Add the icon width.
 			// The icon will be assigned to a WC_STATIC control.
 			if (total_widget_width > 0) {
 				total_widget_width += pt_start.x;
 			}
-			total_widget_width += icon->width();
+			total_widget_width += szIcon.cx;
 
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
@@ -677,15 +718,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// lblBanner
 	if (banner) {
 		ptBanner = curPt;
-		szBanner.cx = banner->width();
-		szBanner.cy = banner->height();
 		curPt.x += szBanner.cx + pt_start.x;
 	}
 
 	// lblIcon
 	if (icon) {
-		szIcon.cx = icon->width();
-		szIcon.cy = icon->height();
 		SetRect(&rectIcon, curPt.x, curPt.y,
 			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
 		curPt.x += szIcon.cx + pt_start.x;

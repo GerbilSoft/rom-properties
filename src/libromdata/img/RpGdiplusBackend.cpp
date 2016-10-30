@@ -385,7 +385,6 @@ Gdiplus::Bitmap *RpGdiplusBackend::dup_ARGB32(void) const
 HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 {
 	// TODO: Check for errors?
-
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local palette to the GDI+ image.
@@ -419,10 +418,103 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
 
 	if (status != Gdiplus::Status::Ok) {
 		// Error converting to HBITMAP.
-		hBitmap = nullptr;
+		return nullptr;
 	}
 
 	// Re-lock the bitmap.
+	return hBitmap;
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * Caller must delete the HBITMAP.
+ *
+ * This version resizes the image.
+ *
+ * WARNING: This *may* invalidate pointers
+ * previously returned by data().
+ *
+ * @param image		[in] rp_image.
+ * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+ * @param size		[in] If non-zero, resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest)
+{
+	// If the source isn't being resized,
+	// we don't need a temporary image.
+	if ((size.cx <= 0 || size.cy <= 0) ||
+	    (size.cx == this->width && size.cy == this->height))
+	{
+		// No resize necessary.
+		return toHBITMAP(bgColor);
+	}
+
+	// TODO: Check for errors?
+	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
+	if (this->format == rp_image::FORMAT_CI8) {
+		// Copy the local palette to the GDI+ image.
+		m_pGdipBmp->SetPalette(m_pGdipPalette);
+		// TODO: Optimize has_translucent_palette_entries().
+		if (this->tr_idx < 0 || this->has_translucent_palette_entries()) {
+			// Need to convert to ARGB32 first.
+			// Otherwise, the translucent entries won't show up correctly.
+			// Example: SSBM GCN save icon has color fringing on Windows 7.
+			// (...but not Windows XP)
+			pTmpBmp.reset(this->dup_ARGB32());
+			if (!pTmpBmp) {
+				// Error converting to ARGB32.
+				return nullptr;
+			}
+		}
+	}
+
+	// TODO: Specify a background color?
+	HBITMAP hBitmap;
+	Gdiplus::Status status;
+
+	// NOTE: We're using ARGB32 because GDI+ doesn't
+	// handle resizing on CI8 properly.
+	unique_ptr<Gdiplus::Bitmap> pResizeBmp(
+		new Gdiplus::Bitmap(size.cx, size.cy, PixelFormat32bppARGB));
+	Gdiplus::Graphics g(pResizeBmp.get());
+
+	// Always use PixelOffsetModeHalf.
+	// When interpolating, this results in higher-quality
+	// anti-aliasing. When using nearest-neighbor, this
+	// fixes an issue that causes the scaled image to be
+	// shifted to the top-left by 1px.
+	g.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
+
+	if (nearest) {
+		// Set nearest-neighbor interpolation.
+		// TODO: What's the default?
+		g.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+	}
+
+	if (pTmpBmp) {
+		// Use the temporary ARGB32 bitmap.
+		status = g.DrawImage(pTmpBmp.get(), 0, 0, size.cx, size.cy);
+	} else {
+		// Use the regular bitmap.
+		unlock();
+		status = g.DrawImage(m_pGdipBmp, 0, 0, size.cx, size.cy);
+		lock();
+	}
+
+	if (status != Gdiplus::Status::Ok) {
+		// Error drawing to Graphics.
+		return nullptr;
+	}
+
+	// Convert the resized bitmap to HBITMAP.
+	status = pResizeBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hBitmap);
+	if (status != Gdiplus::Status::Ok) {
+		// Error converting to HBITMAP.
+		return nullptr;
+	}
+
 	return hBitmap;
 }
 
