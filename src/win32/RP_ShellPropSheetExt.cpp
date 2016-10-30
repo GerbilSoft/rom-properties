@@ -544,7 +544,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.
-						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(icon, gdipBgColor);
+						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor);
 					}
 				}
 
