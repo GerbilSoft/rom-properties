@@ -146,8 +146,15 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648052%28v=vs.85%29.aspx
 	 */
-	const int width8 = (image->width() + 8) & ~8;	// Round up to 8px width.
-	const int icon_sz = width8 * image->height() / 8;
+
+	// NOTE: Monochrome bitmaps have a stride of 32px. (4 bytes)
+	const int width = image->width();
+	// Stride adjustment per line, in bytes.
+	const int stride = ((width + 31) & 32) / 8;
+	// (Difference between used bytes and unused bytes.)
+	const int stride_adj = (width % 32 == 0 ? 0 : ((32 - (width % 32)) / 8));
+	// Icon size. (stride * height)
+	const int icon_sz = stride * image->height();
 
 	BITMAPINFO bmi;
 	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
@@ -155,7 +162,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// Initialize the BITMAPINFOHEADER.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
-	bmiHeader->biWidth = width8;
+	bmiHeader->biWidth = width;
 	bmiHeader->biHeight = image->height();	// FIXME: Top-down isn't working for monochrome...
 	bmiHeader->biPlanes = 1;
 	bmiHeader->biBitCount = 1;
@@ -180,29 +187,28 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	switch (image->format()) {
 		case rp_image::FORMAT_CI8: {
 			// Get the transparent color index.
-			// FIXME: Handle images that aren't a multiple of 8px wide.
-			assert(image->width() % 8 == 0);
-
 			int tr_idx = image->tr_idx();
-			if (tr_idx >= 0) {
+			if (0 && tr_idx >= 0) {
 				// Find all pixels matching tr_idx.
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
 					const uint8_t *src = reinterpret_cast<const uint8_t*>(image->scanLine(y));
-					for (int x = image->width(); x > 0; x -= 8) {
+					for (int x = width; x > 0; x -= 8) {
 						uint8_t pxMono = 0;
-						// TODO: Unroll this loop?
-						for (int px = 8; px > 0; px--, src++) {
+						for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 							// MSB == left-most pixel.
 							pxMono <<= 1;
 							pxMono |= (*src != tr_idx);
 						}
 						*dest++ = pxMono;
 					}
+					// Next line.
+					dest += stride_adj;
 				}
 			} else {
 				// tr_idx isn't set. This means the image is either
 				// fully opaque or it has alpha transparency.
+				// TODO: Only set pixels within the used area? (stride_adj)
 				memset(pvBits, 0xFF, icon_sz);
 			}
 			break;
@@ -211,6 +217,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 		case rp_image::FORMAT_ARGB32: {
 			// Find all pixels with a 0 alpha channel.
 			// FIXME: Needs testing.
+			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
 				const uint32_t *src = reinterpret_cast<const uint32_t*>(image->scanLine(y));
@@ -218,13 +225,15 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 				assert(image->width() % 8 == 0);
 				for (int x = image->width(); x > 0; x -= 8) {
 					uint8_t pxMono = 0;
-					for (int px = 8; px > 0; px--, src++) {
+					for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 						// MSB == left-most pixel.
 						pxMono <<= 1;
 						pxMono |= ((*src & 0xFF000000) != 0);
 					}
 					*dest++ = pxMono;
 				}
+				// Next line.
+				dest += stride_adj;
 			}
 			break;
 		}
@@ -381,6 +390,7 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	}
 
 	// Convert the image to an icon mask.
+	// FIXME: Use the resized icon?
 	HBITMAP hbmMask = toHBITMAP_mask(image);
 	if (!hbmMask) {
 		DeleteObject(hBitmap);
