@@ -97,6 +97,7 @@ class PlayStationSavePrivate
 // TODO: Add more.
 const struct RomFields::Desc PlayStationSavePrivate::ps1_fields[] = {
 	{_RP("Filename"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Description"), RomFields::RFT_STRING, {nullptr}},
 };
 
 PlayStationSavePrivate::PlayStationSavePrivate()
@@ -396,9 +397,13 @@ int PlayStationSave::loadFieldData(void)
 	// PSV (PS1 on PS3) save file header.
 	const PS1_PSV_Header *psvHeader = &d->psvHeader;
 
-	// Filename
+	// Filename.
 	m_fields->addData_string(
 		cp1252_sjis_to_rp_string(psvHeader->filename, sizeof(psvHeader->filename)));
+
+	// Description.
+	m_fields->addData_string(
+		cp1252_sjis_to_rp_string(psvHeader->sc.title, sizeof(psvHeader->sc.title)));
 
 	// TODO: Moar fields.
 
