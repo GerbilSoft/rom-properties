@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RegKey.hpp"
+#include "RpImageWin32.hpp"
 #include "resource.h"
 
 // libromdata
@@ -514,13 +515,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (banner && banner->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			// TODO: Const-ness fixes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-			}
+			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor);
 		}
 	}
 
@@ -539,12 +534,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (icon && icon->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-			}
+			hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor);
 
 			// Get the animated icon data.
 			if (iconAnimData) {
@@ -554,12 +544,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.
-						const RpGdiplusBackend *backend =
-							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
-						assert(backend != nullptr);
-						if (backend) {
-							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-						}
+						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(icon, gdipBgColor);
 					}
 				}
 
