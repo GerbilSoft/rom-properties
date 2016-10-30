@@ -82,6 +82,7 @@ SET(libromdata_SRCS
 	N64.cpp
 	SNES.cpp
 	DreamcastSave.cpp
+	PlayStationSave.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
@@ -122,6 +123,7 @@ SET(libromdata_H
 	CopierFormats.h
 	SystemRegion.hpp
 	GameCubeSave.hpp
+	PlayStationSave.hpp
 	gcn_card.h
 	nds_structs.h
 	N64.hpp

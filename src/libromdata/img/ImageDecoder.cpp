@@ -625,4 +625,75 @@ rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a PlayStation CI4 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 16*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0 || (width % 2) != 0)
+		return nullptr;
+	else if (img_siz < ((width * height) / 2) || pal_siz < 16*2)
+		return nullptr;
+
+	// PS1 CI4 is linear. No tiles.
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 16);
+	if (img->palette_len() < 16) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 16; i++) {
+		// PS1 color format is RGB555.
+		// NOTE: If the color value is $0000, it's transparent.
+		const uint16_t px16 = le16_to_cpu(pal_buf[i]);
+		if (px16 == 0) {
+			// Transparent color.
+			palette[i] = 0;
+			if (tr_idx < 0) {
+				tr_idx = i;
+			}
+		} else {
+			// Non-transparent color.
+			palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(px16);
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert from CI4 to CI8.
+	for (int y = 0; y < height; y++) {
+		uint8_t *dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x -= 2, dest += 2, img_buf++) {
+			dest[0] = (*img_buf & 0x0F);
+			dest[1] = (*img_buf >> 4);
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
 }

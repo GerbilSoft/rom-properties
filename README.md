@@ -98,6 +98,7 @@ Notes:
 | Nintendo Wii              |       Yes      |        No       |      Disc      |
 | Nintendo Game Boy (Color) |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
+| Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -113,7 +114,7 @@ Notes:
 There will eventually be a configuration window for setting which image
 will be used for thumbnails (and icons on Windows).
 
-## ROM Formats Supported
+## File Types Supported
 
 * Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
 * Sega Dreamcast: Save files (\*.vmi, \*.vms, \*.dci)
@@ -124,6 +125,7 @@ will be used for thumbnails (and icons on Windows).
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
+* Sony PlayStation: Save files (\*.psv)
 
 Some file types are not currently registered on Windows due to conflicts with
 well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
@@ -203,3 +205,7 @@ decrypt data will show an error message instead of the data in question.
 * [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
   information, plus information for other Sega systems that will be supported
   in a future release.
+* [PS3 Developer wiki](http://www.psdevwiki.com/ps3/) for information on the
+  "PS1 on PS3" save file format.
+* [Nocash PSX Specification Reference](http://problemkaputt.de/psx-spx.htm)
+  for more information on PS1 save files.

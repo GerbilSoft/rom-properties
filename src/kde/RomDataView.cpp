@@ -118,6 +118,15 @@ class RomDataViewPrivate
 		 * Stop the animation timer.
 		 */
 		void stopAnimTimer(void);
+
+		/**
+		 * Convert a QImage to QPixmap.
+		 * Automatically resizes the QImage if it's smaller
+		 * than the minimum size.
+		 * @param img QImage.
+		 * @return QPixmap.
+		 */
+		QPixmap imgToPixmap(const QImage &img);
 };
 
 /** RomDataViewPrivate **/
@@ -147,6 +156,41 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	// Only the formLayout is initialized here.
 	// Everything else is initialized in updateDisplay.
 	formLayout = new QFormLayout(RomDataView);
+}
+
+/**
+ * Convert a QImage to QPixmap.
+ * Automatically resizes the QImage if it's smaller
+ * than the minimum size.
+ * @param img QImage.
+ * @return QPixmap.
+ */
+QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
+{
+	// Minimum image size.
+	// If images are smaller, they will be resized.
+	// TODO: Adjust minimum size for DPI.
+	const QSize min_img_size(32, 32);
+
+	if (img.width() >= min_img_size.width() &&
+	    img.height() >= min_img_size.height())
+	{
+		// No resize necessary.
+		return QPixmap::fromImage(img);
+	}
+
+	// Resize the image.
+	QSize img_size = img.size();
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		img_size.setWidth(img_size.width() + img.width());
+		img_size.setHeight(img_size.height() + img.height());
+	} while (img_size.width() < min_img_size.width() &&
+		 img_size.height() < min_img_size.height());
+
+	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
 }
 
 QLayout *RomDataViewPrivate::createHeaderRow(void)
@@ -205,7 +249,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			QImage img = rpToQImage(banner);
 			if (!img.isNull()) {
 				ui.lblBanner = new QLabel(q);
-				ui.lblBanner->setPixmap(QPixmap::fromImage(img));
+				ui.lblBanner->setPixmap(imgToPixmap(img));
 				ui.hboxHeaderRow->addWidget(ui.lblBanner);
 			}
 		}
@@ -213,25 +257,28 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Get the banner.
+		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			QImage img = rpToQImage(icon);
 			if (!img.isNull()) {
 				ui.lblIcon = new QLabel(q);
-				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
+				iconFrames[0] = imgToPixmap(img);
+				ui.lblIcon->setPixmap(iconFrames[0]);
 				ui.hboxHeaderRow->addWidget(ui.lblIcon);
 			}
 
 			// Get the animated icon data.
+			// TODO: Skip if the first frame is nullptr?
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
-				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						iconFrames[i] = QPixmap::fromImage(
-							rpToQImage(iconAnimData->frames[i]));
+						QImage img = rpToQImage(iconAnimData->frames[i]);
+						if (!img.isNull()) {
+							iconFrames[i] = imgToPixmap(img);
+						}
 					}
 				}
 

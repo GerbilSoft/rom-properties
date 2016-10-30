@@ -73,11 +73,23 @@ class RpImageWin32
 	public:
 		/**
 		 * Convert an rp_image to HBITMAP.
-		 * @param image rp_image.
-		 * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
+		 * @param image		[in] rp_image.
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor = 0xFFFFFFFF);
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version resizes the image.
+		 * @param image		[in] rp_image.
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+		 * @param size		[in] If non-zero, resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor,
+					const SIZE &size, bool nearest);
 
 		/**
 		 * Convert an rp_image to HBITMAP.
