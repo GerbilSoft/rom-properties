@@ -22,6 +22,7 @@
 #include "MegaDrive.hpp"
 #include "MegaDrivePublishers.hpp"
 #include "MegaDriveRegions.hpp"
+#include "md_structs.h"
 #include "CopierFormats.h"
 
 #include "common.h"
@@ -88,44 +89,6 @@ class MegaDrivePrivate
 		/** Internal ROM data. **/
 
 		/**
-		 * Mega Drive ROM header.
-		 * This matches the MD ROM header format exactly.
-		 *
-		 * NOTE: Strings are NOT null-terminated!
-		 */
-		#define MD_RomHeader_SIZE 256
-		#pragma pack(1)
-		struct PACKED MD_RomHeader {
-			char system[16];
-			char copyright[16];
-			char title_domestic[48];	// Japanese ROM name.
-			char title_export[48];	// US/Europe ROM name.
-			char serial[14];
-			uint16_t checksum;
-			char io_support[16];
-
-			// ROM/RAM address information.
-			uint32_t rom_start;
-			uint32_t rom_end;
-			uint32_t ram_start;
-			uint32_t ram_end;
-
-			// Save RAM information.
-			// Info format: 'R', 'A', %1x1yz000, 0x20
-			// x == 1 for backup (SRAM), 0 for not backup
-			// yz == 10 for even addresses, 11 for odd addresses
-			uint32_t sram_info;
-			uint32_t sram_start;
-			uint32_t sram_end;
-
-			// Miscellaneous.
-			char modem_info[12];
-			char notes[40];
-			char region_codes[16];
-		};
-		#pragma pack()
-
-		/**
 		 * Parse the I/O support field.
 		 * @param io_support I/O support field.
 		 * @param size Size of io_support.
@@ -185,9 +148,10 @@ class MegaDrivePrivate
 
 	public:
 		// ROM header.
-		uint32_t vectors[64];	// Interrupt vectors. (BE32)
-		MD_RomHeader romHeader;	// ROM header.
-		SMD_Header smdHeader;	// SMD header.
+		// NOTE: Must be byteswapped on access.
+		M68K_VectorTable vectors;	// Interrupt vectors.
+		MD_RomHeader romHeader;		// ROM header.
+		SMD_Header smdHeader;		// SMD header.
 };
 
 /** MegaDrivePrivate **/
@@ -358,7 +322,7 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: RomData(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
+	: super(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
 	, d(new MegaDrivePrivate())
 {
 	// TODO: Only validate that this is an MD ROM here.
@@ -372,8 +336,10 @@ MegaDrive::MegaDrive(IRpFile *file)
 	m_file->rewind();
 
 	// Read the ROM header. [0x400 bytes]
-	static_assert(sizeof(MegaDrivePrivate::MD_RomHeader) == MD_RomHeader_SIZE,
+	static_assert(sizeof(MD_RomHeader) == MD_RomHeader_SIZE,
 		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
+	static_assert(sizeof(M68K_VectorTable) == M68K_VectorTable_SIZE,
+		"M68K_VectorTable is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x400];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
@@ -381,17 +347,20 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 	// Check if this ROM is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
-	d->romType = isRomSupported(&info);
+	d->romType = isRomSupported_static(&info);
 
 	if (d->romType >= 0) {
 		// Save the header for later.
 		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
 		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
 			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
+				m_fileType = FTYPE_ROM_IMAGE;
+
 				// MD header is at 0x100.
 				// Vector table is at 0.
 				memcpy(&d->vectors,    header,        sizeof(d->vectors));
@@ -399,6 +368,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
+				m_fileType = FTYPE_ROM_IMAGE;
+
 				// Save the SMD header.
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
 
@@ -424,6 +395,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 			}
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
+				m_fileType = FTYPE_DISC_IMAGE;
+
 				// MCD-specific header is at 0. [TODO]
 				// MD-style header is at 0x100.
 				// No vector table is present on the disc.
@@ -431,6 +404,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
+				m_fileType = FTYPE_DISC_IMAGE;
+
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
 				// No vector table is present on the disc.
@@ -439,6 +414,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
 			default:
+				m_fileType = FTYPE_UNKNOWN;
 				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 				break;
 		}
@@ -466,11 +442,20 @@ MegaDrive::~MegaDrive()
  */
 int MegaDrive::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info)
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 0x200)
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
 		return -1;
+	}
 
 	// ROM header.
-	const uint8_t *const pHeader = info->pHeader;
+	const uint8_t *const pHeader = info->header.pData;
 
 	// Magic strings.
 	static const char sega_magic[4] = {'S','E','G','A'};
@@ -487,7 +472,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{{'S','E','G','A',' ','G','E','N','E','S','I','S',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
-	if (info->szHeader >= 0x200) {
+	if (info->header.size >= 0x200) {
 		// Check for Sega CD.
 		// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
 		// "BIN/2048", and "BIN/2352". I don't think that's
@@ -504,7 +489,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Check for SMD format. (Mega Drive only)
-		if (info->szHeader >= 0x300) {
+		if (info->header.size >= 0x300) {
 			// Check if "SEGA" is in the header in the correct place
 			// for a plain binary ROM.
 			if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
@@ -679,15 +664,16 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
  */
 vector<const rp_char*> MegaDrive::supportedFileExtensions_static(void)
 {
-	// NOTE: Not including ".md" due to conflicts with Markdown.
-	// TODO: Add ".bin" later? (Too generic, though...)
-	vector<const rp_char*> ret;
-	ret.reserve(4);
-	ret.push_back(_RP(".gen"));
-	ret.push_back(_RP(".smd"));
-	ret.push_back(_RP(".32x"));
-	ret.push_back(_RP(".pco"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gen"), _RP(".smd"),
+		_RP(".32x"), _RP(".pco"),
+
+		// TODO: Add the following:
+		// - .md (conflicts with Markdown)
+		// - .bin (too generic)
+		// - .iso (Mega CD; too generic)
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**
@@ -729,7 +715,7 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// MD ROM header, excluding the vector table.
-	const MegaDrivePrivate::MD_RomHeader *romHeader = &d->romHeader;
+	const MD_RomHeader *romHeader = &d->romHeader;
 
 	// Read the strings from the header.
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
@@ -794,25 +780,45 @@ int MegaDrive::loadFieldData(void)
 
 	if (!d->isDisc()) {
 		// ROM range.
-		// TODO: Range helper? (Can't be used for SRAM, though...)
-		char buf[32];
-		int len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+		m_fields->addData_string_address_range(
 				be32_to_cpu(romHeader->rom_start),
-				be32_to_cpu(romHeader->rom_end));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				be32_to_cpu(romHeader->rom_end), 8);
 
 		// RAM range.
-		len = snprintf(buf, sizeof(buf), "0x%08X - 0x%08X",
+		m_fields->addData_string_address_range(
 				be32_to_cpu(romHeader->ram_start),
-				be32_to_cpu(romHeader->ram_end));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				be32_to_cpu(romHeader->ram_end), 8);
 
-		// SRAM range. (TODO)
-		m_fields->addData_string(_RP(""));
+		// SRAM range.
+		// Info format: 'R', 'A', %1x1yz000, 0x20
+		const uint32_t sram_info = be32_to_cpu(romHeader->sram_info);
+		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
+			// SRAM is present.
+			// x == 1 for backup (SRAM), 0 for not backup
+			// yz == 10 for even addresses, 11 for odd addresses
+			// TODO: Print the 'x' bit.
+			const rp_char *suffix;
+			switch ((sram_info >> (8+3)) & 0x03) {
+				case 2:
+					suffix = _RP("(even only)");
+					break;
+				case 3:
+					suffix = _RP("(odd only)");
+					break;
+				default:
+					// TODO: Are both alternates 16-bit?
+					suffix = _RP("(16-bit)");
+					break;
+			}
+
+			m_fields->addData_string_address_range(
+					be32_to_cpu(romHeader->sram_start),
+					be32_to_cpu(romHeader->sram_end),
+					suffix, 8);
+		} else {
+			// TODO: Non-monospaced.
+			m_fields->addData_string(_RP("None"));
+		}
 	} else {
 		// ROM, RAM, and SRAM ranges are not valid in Mega CD headers.
 		m_fields->addData_invalid();
@@ -826,8 +832,10 @@ int MegaDrive::loadFieldData(void)
 
 	// Vectors.
 	if (!d->isDisc()) {
-		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[1]), RomFields::FB_HEX, 8);	// Entry point
-		m_fields->addData_string_numeric(be32_to_cpu(d->vectors[0]), RomFields::FB_HEX, 8);	// Initial SP
+		m_fields->addData_string_numeric(
+			be32_to_cpu(d->vectors.initial_pc), RomFields::FB_HEX, 8);
+		m_fields->addData_string_numeric(
+			be32_to_cpu(d->vectors.initial_sp), RomFields::FB_HEX, 8);
 	} else {
 		// Discs don't have vector tables.
 		// Add dummy entries for the vectors.

@@ -25,15 +25,11 @@
 // zlib
 #include <zlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Test suite main function.
  * Called by gtest_init.c.
  */
-int gtest_main(int argc, char *argv[])
+extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
 	fflush(nullptr);
@@ -41,10 +37,7 @@ int gtest_main(int argc, char *argv[])
 	// Make sure the CRC32 table is initialized.
 	get_crc_table();
 
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,0 +1,355 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * N64.cpp: Nintendo 64 ROM image reader.                                  *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#include "N64.hpp"
+#include "n64_structs.h"
+
+#include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
+#include "file/IRpFile.hpp"
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cctype>
+#include <cstdio>
+#include <cstring>
+
+// C++ includes.
+#include <algorithm>
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
+
+namespace LibRomData {
+
+class N64Private
+{
+	public:
+		N64Private();
+
+	private:
+		N64Private(const N64Private &other);
+		N64Private &operator=(const N64Private &other);
+
+	public:
+		// Monospace string formatting.
+		static const RomFields::StringDesc n64_string_monospace;
+
+		// RomFields data.
+		static const struct RomFields::Desc n64_fields[];
+
+		// ROM image type.
+		enum RomType {
+			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
+
+			ROM_TYPE_Z64 = 0,	// Z64 format
+			ROM_TYPE_V64 = 1,	// V64 format
+			ROM_TYPE_SWAP2 = 2,	// swap2 format
+			ROM_TYPE_LE32 = 3,	// LE32 format
+		};
+		int romType;
+
+	public:
+		// ROM header.
+		// NOTE: Fields have been byteswapped in the constructor.
+		N64_RomHeader romHeader;
+};
+
+/** N64Private **/
+
+// Monospace string formatting.
+const RomFields::StringDesc N64Private::n64_string_monospace = {
+	RomFields::StringDesc::STRF_MONOSPACE
+};
+
+// ROM fields.
+const struct RomFields::Desc N64Private::n64_fields[] = {
+	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Entry Point"), RomFields::RFT_STRING, {&n64_string_monospace}},
+	{_RP("Checksum"), RomFields::RFT_STRING, {&n64_string_monospace}},
+};
+
+N64Private::N64Private()
+	: romType(ROM_TYPE_UNKNOWN)
+{ }
+
+/** N64 **/
+
+/**
+ * Read a Nintendo 64 ROM image.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open ROM image.
+ */
+N64::N64(IRpFile *file)
+	: super(file, N64Private::n64_fields, ARRAY_SIZE(N64Private::n64_fields))
+	, d(new N64Private())
+{
+	if (!m_file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
+	// Read the ROM image header.
+	static_assert(sizeof(N64_RomHeader) == N64_RomHeader_SIZE,
+		"N64_RomHeader is not 64 bytes.");
+	m_file->rewind();
+	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	if (size != sizeof(d->romHeader))
+		return;
+
+	// Check if this disc image is supported.
+	DetectInfo info;
+	info.header.addr = 0;
+	info.header.size = sizeof(d->romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
+	info.ext = nullptr;	// Not needed for N64.
+	info.szFile = 0;	// Not needed for N64.
+	d->romType = isRomSupported_static(&info);
+
+	switch (d->romType) {
+		case N64Private::ROM_TYPE_Z64:
+			// Z64 format. Byteswapping will be done afterwards.
+			break;
+
+		case N64Private::ROM_TYPE_V64:
+			// V64 format. (16-bit byteswapped)
+			// Convert the header to Z64 first.
+			__byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
+			break;
+
+		case N64Private::ROM_TYPE_SWAP2:
+			// swap2 format. (wordswapped)
+			// Convert the header to Z64 first.
+			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
+			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
+				d->romHeader.u32[i] = UNSWAP2(d->romHeader.u32[i]);
+			}
+			break;
+
+		case N64Private::ROM_TYPE_LE32:
+			// LE32 format. (32-bit byteswapped)
+			// Convert the header to Z64 first.
+			// TODO: Optimize by not converting the non-text fields
+			// if the host system is little-endian?
+			// FIXME: Untested - ucon64 doesn't support it.
+			__byte_swap_32_array(d->romHeader.u32, sizeof(d->romHeader.u32));
+			break;
+
+		default:
+			// Unknown ROM type.
+			d->romType = N64Private::ROM_TYPE_UNKNOWN;
+			return;
+	}
+
+	m_isValid = true;
+
+	// Byteswap the header from Z64 format.
+	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
+	d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
+	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
+	d->romHeader.release	= be32_to_cpu(d->romHeader.release);
+	d->romHeader.checksum	= be64_to_cpu(d->romHeader.checksum);
+}
+
+N64::~N64()
+{
+	delete d;
+}
+
+/** ROM detection functions. **/
+
+/**
+ * Is a ROM image supported by this class?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int N64::isRomSupported_static(const DetectInfo *info)
+{
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(N64_RomHeader))
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		return -1;
+	}
+
+	const N64_RomHeader *const romHeader =
+		reinterpret_cast<const N64_RomHeader*>(info->header.pData);
+
+	// Check the magic number.
+	// NOTE: This technically isn't a "magic number",
+	// but it appears to be the same for all N64 ROMs.
+	static const uint8_t magic[4][8] = {
+		{0x80,0x37,0x12,0x40,0x00,0x00,0x00,0x0F},	// Z64
+		{0x37,0x80,0x40,0x12,0x00,0x00,0x0F,0x00},	// V64
+		{0x12,0x40,0x80,0x37,0x00,0x0F,0x00,0x00},	// swap2
+		{0x40,0x12,0x37,0x80,0x0F,0x00,0x00,0x00},	// le32
+	};
+
+	for (int i = 0; i < 4; i++) {
+		if (!memcmp(romHeader->magic, magic[i], sizeof(magic[i]))) {
+			// Found a matching magic number.
+			// This corresponds to N64Private::RomType.
+			return i;
+		}
+	}
+
+	// Not supported.
+	return -1;
+}
+
+/**
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int N64::isRomSupported(const DetectInfo *info) const
+{
+	return isRomSupported_static(info);
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
+ */
+const rp_char *N64::systemName(uint32_t type) const
+{
+	if (!m_isValid || !isSystemNameTypeValid(type))
+		return nullptr;
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	static const rp_char *const sysNames[4] = {
+		// FIXME: "NGC" in Japan?
+		_RP("Nintendo 64"), _RP("Nintendo 64"), _RP("N64"), nullptr
+	};
+
+	return sysNames[type & SYSNAME_TYPE_MASK];
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions do not include the leading dot,
+ * e.g. "bin" instead of ".bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> N64::supportedFileExtensions_static(void)
+{
+	static const rp_char *const exts[] = {
+		_RP(".z64"), _RP(".n64"), _RP(".v64"),
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions do not include the leading dot,
+ * e.g. "bin" instead of ".bin".
+ *
+ * NOTE 2: The strings in the std::vector should *not*
+ * be freed by the caller.
+ *
+ * @return List of all supported file extensions.
+ */
+vector<const rp_char*> N64::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
+}
+
+/**
+ * Load field data.
+ * Called by RomData::fields() if the field data hasn't been loaded yet.
+ * @return Number of fields read on success; negative POSIX error code on error.
+ */
+int N64::loadFieldData(void)
+{
+	if (m_fields->isDataLoaded()) {
+		// Field data *has* been loaded...
+		return 0;
+	} else if (!m_file || !m_file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!m_isValid || d->romType < 0) {
+		// Unknown save file type.
+		return -EIO;
+	}
+
+	// ROM file header is read and byteswapped in the constructor.
+	const N64_RomHeader *const romHeader = &d->romHeader;
+
+	// Title.
+	// TODO: Space elimination.
+	m_fields->addData_string(cp1252_sjis_to_rp_string(
+		romHeader->title, sizeof(romHeader->title)));
+
+	// Game ID.
+	// Replace any non-printable characters with underscores.
+	char id4[5];
+	for (int i = 0; i < 4; i++) {
+		id4[i] = (isprint(romHeader->id4[i])
+			? romHeader->id4[i]
+			: '_');
+	}
+	id4[4] = 0;
+	m_fields->addData_string(latin1_to_rp_string(id4, 4));
+
+	// Revision.
+	m_fields->addData_string_numeric(romHeader->revision, RomFields::FB_DEC, 2);
+
+	// Entry point.
+	m_fields->addData_string_numeric(romHeader->entrypoint, RomFields::FB_HEX, 8);
+
+	// Checksum.
+	m_fields->addData_string_hexdump(
+		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
+		sizeof(romHeader->checksum));
+
+	// Finished reading the field data.
+	return (int)m_fields->count();
+}
+
+}

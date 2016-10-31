@@ -2882,8 +2882,8 @@ FIXME: make sure bit 31 (0x80000000) is 0
             printf("%s  invalid negative %svalue(s)\n",
                    verbose? ":":fname, verbose? "":"sCAL ");
             set_err(kMinorError);
-          } else if (check_ascii_float(pPixwidth, pPixheight-pPixwidth-1, chunkid) ||
-                     check_ascii_float(pPixheight, buffer+sz-pPixheight, chunkid))
+          } else if (check_ascii_float(pPixwidth, (int)(pPixheight-pPixwidth-1), chunkid) ||
+                     check_ascii_float(pPixheight, (int)(buffer+sz-pPixheight), chunkid))
           {
             set_err(kMinorError);
           }
@@ -3480,7 +3480,7 @@ FIXME: add support for decompressing/printing zTXt
             ++p;  /* skip over null */
             ++found_null;
           }
-          bytes_left = sz - (p-buffer);   /* FIXME:  is sz big enough? */
+          bytes_left = (int)(sz - (p-buffer));   /* FIXME:  is sz big enough? */
           if (bytes_left == 0 && found_null) {
             printf("    invalid trailing NULL byte\n");
             set_err(kMinorError);
@@ -3615,7 +3615,7 @@ FIXME: add support for decompressing/printing zTXt
               }
             } else
               printf("\n");
-            bytes_left = sz - (p-buffer);   /* FIXME:  is sz big enough? */
+            bytes_left = (int)(sz - (p-buffer));   /* FIXME:  is sz big enough? */
             // name must match that in corresponding SEEK/FRAM/eXPI chunk, or
             // be omitted if unnamed segment (not checked!)
             if (bytes_left) {
@@ -3634,7 +3634,7 @@ FIXME: add support for decompressing/printing zTXt
               } while (++p < buffer + sz);
               if (have_name)
                 printf("\n");
-              bytes_left = sz - (p-buffer);   /* FIXME:  is sz big enough? */
+              bytes_left = (int)(sz - (p-buffer));   /* FIXME:  is sz big enough? */
             }
           } /* end while (bytes_left > 0) */
         }
@@ -4728,7 +4728,7 @@ FIXME: add support for decompressing/printing zTXt
         sz -= toread;
         toread = (sz > BS)? BS:sz;
 
-        data_read = fp->read(buffer, toread);
+        data_read = (int)fp->read(buffer, toread);
         if (fpOut != NULL)
           (void)fwrite(buffer, 1, data_read, fpOut);
 

@@ -21,12 +21,14 @@
 
 #include "RomDataView.hpp"
 #include "RpQt.hpp"
+#include "RpQImageBackend.hpp"
 
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
-using LibRomData::RomData;
-using LibRomData::RomFields;
-using LibRomData::rp_string;
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/img/IconAnimHelper.hpp"
+using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -35,6 +37,9 @@ using LibRomData::rp_string;
 // C++ includes.
 #include <vector>
 using std::vector;
+
+#include <QtCore/QDateTime>
+#include <QtCore/QTimer>
 
 #include <QLabel>
 #include <QCheckBox>
@@ -63,9 +68,38 @@ class RomDataViewPrivate
 
 			QFormLayout *formLayout;
 			// TODO: Store the field widgets?
+
+			// Header row.
+			QHBoxLayout *hboxHeaderRow;
+			QLabel *lblSysInfo;
+			QLabel *lblBanner;
+			QLabel *lblIcon;
+
+			QTimer *tmrIconAnim;
+
+			Ui()	: formLayout(nullptr)
+				, hboxHeaderRow(nullptr)
+				, lblSysInfo(nullptr)
+				, lblBanner(nullptr)
+				, lblIcon(nullptr)
+				, tmrIconAnim(nullptr)
+				{ }
 		};
 		Ui ui;
 		RomData *romData;
+
+		// Animated icon data.
+		const IconAnimData *iconAnimData;
+		QPixmap iconFrames[IconAnimData::MAX_FRAMES];
+		IconAnimHelper iconAnimHelper;
+		bool anim_running;		// Animation is running.
+		int last_frame_number;		// Last frame number.
+
+		/**
+		 * Create the header row.
+		 * @return QLayout containing the header row.
+		 */
+		QLayout *createHeaderRow(void);
 
 		/**
 		 * Update the display widgets.
@@ -74,6 +108,25 @@ class RomDataViewPrivate
 		void updateDisplay(void);
 
 		bool displayInit;
+
+		/**
+		 * Start the animation timer.
+		 */
+		void startAnimTimer(void);
+
+		/**
+		 * Stop the animation timer.
+		 */
+		void stopAnimTimer(void);
+
+		/**
+		 * Convert a QImage to QPixmap.
+		 * Automatically resizes the QImage if it's smaller
+		 * than the minimum size.
+		 * @param img QImage.
+		 * @return QPixmap.
+		 */
+		QPixmap imgToPixmap(const QImage &img);
 };
 
 /** RomDataViewPrivate **/
@@ -81,11 +134,20 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData)
+	, iconAnimData(nullptr)
+	, anim_running(false)
+	, last_frame_number(0)
 	, displayInit(false)
-{ }
+{
+	// Register RpQImageBackend.
+	// TODO: Static initializer somewhere?
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+}
 
 RomDataViewPrivate::~RomDataViewPrivate()
 {
+	stopAnimTimer();
+	iconAnimHelper.setIconAnimData(nullptr);
 	delete romData;
 }
 
@@ -94,6 +156,151 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	// Only the formLayout is initialized here.
 	// Everything else is initialized in updateDisplay.
 	formLayout = new QFormLayout(RomDataView);
+}
+
+/**
+ * Convert a QImage to QPixmap.
+ * Automatically resizes the QImage if it's smaller
+ * than the minimum size.
+ * @param img QImage.
+ * @return QPixmap.
+ */
+QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
+{
+	// Minimum image size.
+	// If images are smaller, they will be resized.
+	// TODO: Adjust minimum size for DPI.
+	const QSize min_img_size(32, 32);
+
+	if (img.width() >= min_img_size.width() &&
+	    img.height() >= min_img_size.height())
+	{
+		// No resize necessary.
+		return QPixmap::fromImage(img);
+	}
+
+	// Resize the image.
+	QSize img_size = img.size();
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		img_size.setWidth(img_size.width() + img.width());
+		img_size.setHeight(img_size.height() + img.height());
+	} while (img_size.width() < min_img_size.width() &&
+		 img_size.height() < min_img_size.height());
+
+	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+}
+
+QLayout *RomDataViewPrivate::createHeaderRow(void)
+{
+	Q_Q(RomDataView);
+	assert(romData != nullptr);
+	if (!romData) {
+		// No ROM data.
+		return nullptr;
+	}
+
+	// TODO: Delete the old widgets if they're already present.
+	ui.hboxHeaderRow = new QHBoxLayout(q);
+
+	// System name.
+	// TODO: System logo and/or game title?
+	const rp_char *systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+
+	// File type.
+	const rp_char *const fileType = romData->fileType_string();
+
+	QString sysInfo;
+	if (systemName) {
+		sysInfo = RP2Q(systemName);
+	}
+	if (fileType) {
+		if (!sysInfo.isEmpty()) {
+			sysInfo += QChar(L'\n');
+		}
+		sysInfo += RP2Q(fileType);
+	}
+
+	if (!sysInfo.isEmpty()) {
+		ui.lblSysInfo = new QLabel(q);
+		ui.lblSysInfo->setAlignment(Qt::AlignCenter);
+		ui.lblSysInfo->setTextFormat(Qt::PlainText);
+		ui.lblSysInfo->setText(sysInfo);
+
+		// Use a bold font.
+		QFont font = ui.lblSysInfo->font();
+		font.setBold(true);
+		ui.lblSysInfo->setFont(font);
+
+		ui.hboxHeaderRow->addWidget(ui.lblSysInfo);
+	}
+
+	// Supported image types.
+	const uint32_t imgbf = romData->supportedImageTypes();
+
+	// Banner.
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Get the banner.
+		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
+		if (banner && banner->isValid()) {
+			QImage img = rpToQImage(banner);
+			if (!img.isNull()) {
+				ui.lblBanner = new QLabel(q);
+				ui.lblBanner->setPixmap(imgToPixmap(img));
+				ui.hboxHeaderRow->addWidget(ui.lblBanner);
+			}
+		}
+	}
+
+	// Icon.
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Get the icon.
+		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
+		if (icon && icon->isValid()) {
+			QImage img = rpToQImage(icon);
+			if (!img.isNull()) {
+				ui.lblIcon = new QLabel(q);
+				iconFrames[0] = imgToPixmap(img);
+				ui.lblIcon->setPixmap(iconFrames[0]);
+				ui.hboxHeaderRow->addWidget(ui.lblIcon);
+			}
+
+			// Get the animated icon data.
+			// TODO: Skip if the first frame is nullptr?
+			iconAnimData = romData->iconAnimData();
+			if (iconAnimData) {
+				// Convert the icons to QPixmaps.
+				for (int i = 1; i < iconAnimData->count; i++) {
+					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
+						QImage img = rpToQImage(iconAnimData->frames[i]);
+						if (!img.isNull()) {
+							iconFrames[i] = imgToPixmap(img);
+						}
+					}
+				}
+
+				// Set up the IconAnimHelper.
+				iconAnimHelper.setIconAnimData(iconAnimData);
+				if (iconAnimHelper.isAnimated()) {
+					// Create the animation timer.
+					if (!ui.tmrIconAnim) {
+						ui.tmrIconAnim = new QTimer(q);
+						ui.tmrIconAnim->setSingleShot(true);
+						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
+								q, SLOT(tmrIconAnim_timeout()));
+					}
+				}
+			}
+		}
+	}
+
+	// Add spacers.
+	ui.hboxHeaderRow->insertStretch(0, 1);
+	ui.hboxHeaderRow->insertStretch(-1, 1);
+	return ui.hboxHeaderRow;
 }
 
 /**
@@ -115,29 +322,22 @@ void RomDataViewPrivate::updateDisplay(void)
 	}
 	const int count = fields->count();
 
+	// Header row:
+	// - System name and file type.
+	//   - TODO: System logo.
+	// - Banner (if present)
+	// - Icon (if present)
+	QLayout *headerRow = createHeaderRow();
+	if (headerRow) {
+		ui.formLayout->addRow(headerRow);
+	}
+
 	// Make sure the underlying file handle is closed,
 	// since we don't need it anymore.
 	romData->close();
 
-	// System name.
-	// TODO: Logo, game icon, and game title?
-	Q_Q(RomDataView);
-	rp_string systemName = romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	if (!systemName.empty()) {
-		QLabel *lblSystemName = new QLabel(q);
-		lblSystemName->setAlignment(Qt::AlignCenter);
-		lblSystemName->setTextFormat(Qt::PlainText);
-		lblSystemName->setText(RP2Q(systemName));
-
-		// Use a bold font.
-		QFont font = lblSystemName->font();
-		font.setBold(true);
-		lblSystemName->setFont(font);
-
-		ui.formLayout->addRow(lblSystemName);
-	}
-
 	// Create the data widgets.
+	Q_Q(RomDataView);
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -149,6 +349,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			continue;
 
 		QLabel *lblDesc = new QLabel(q);
+		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 		lblDesc->setText(RomDataView::tr("%1:").arg(RP2Q(desc->name)));
 
@@ -161,6 +362,7 @@ void RomDataViewPrivate::updateDisplay(void)
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);
+				lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 				lblString->setTextFormat(Qt::PlainText);
 				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 				if (data->str) {
@@ -174,6 +376,16 @@ void RomDataViewPrivate::updateDisplay(void)
 						QFont font(QLatin1String("Monospace"));
 						font.setStyleHint(QFont::TypeWriter);
 						lblString->setFont(font);
+						lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+					}
+
+					// "Warning" font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+						// Only expecting a maximum of one "Warning" per ROM,
+						// so we're initializing this here.
+						const QString css = QLatin1String("color: #F00; font-weight: bold;");
+						lblDesc->setStyleSheet(css);
+						lblString->setStyleSheet(css);
 					}
 				}
 \
@@ -190,12 +402,20 @@ void RomDataViewPrivate::updateDisplay(void)
 					const rp_char *name = bitfieldDesc->names[i];
 					if (!name)
 						continue;
-					// TODO: Prevent toggling; disable automatic alt key.
+
+					// TODO: Disable KDE's automatic mnemonic.
 					QCheckBox *checkBox = new QCheckBox(q);
 					checkBox->setText(RP2Q(name));
 					if (data->bitfield & (1 << i)) {
 						checkBox->setChecked(true);
 					}
+
+					// Disable user modifications.
+					// TODO: Prevent the initial mousebutton down from working;
+					// otherwise, it shows a partial check mark.
+					QObject::connect(checkBox, SIGNAL(toggled(bool)),
+							q, SLOT(bitfield_toggled_slot(bool)));
+
 					gridLayout->addWidget(checkBox, row, col, 1, 1);
 					col++;
 					if (col == bitfieldDesc->elemsPerRow) {
@@ -236,9 +456,7 @@ void RomDataViewPrivate::updateDisplay(void)
 					const vector<rp_string> &data_row = listData->data.at(i);
 					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
 					int field = 0;
-					for (vector<rp_string>::const_iterator iter = data_row.begin();
-					     iter != data_row.end(); ++iter, ++field)
-					{
+					for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
 						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
 					}
 				}
@@ -253,20 +471,102 @@ void RomDataViewPrivate::updateDisplay(void)
 				break;
 			}
 
+			case RomFields::RFT_DATETIME: {
+				// Date/Time.
+				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+
+				QLabel *lblDateTime = new QLabel(q);
+				lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+				lblDateTime->setTextFormat(Qt::PlainText);
+				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+
+				QDateTime dateTime;
+				dateTime.setTimeSpec(
+					(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
+						? Qt::UTC : Qt::LocalTime);
+				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
+
+				QString str;
+				switch (dateTimeDesc->flags &
+					(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
+				{
+					case RomFields::RFT_DATETIME_HAS_DATE:
+						// Date only.
+						str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_TIME:
+						// Time only.
+						str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_DATE |
+					     RomFields::RFT_DATETIME_HAS_TIME:
+						// Date and time.
+						str = dateTime.toString(Qt::DefaultLocaleShortDate);
+						break;
+
+					default:
+						// Invalid combination.
+						assert(!"Invalid Date/Time formatting.");
+						delete lblDateTime;
+						delete lblDesc;
+						break;
+				}
+				lblDateTime->setText(str);
+
+				ui.formLayout->addRow(lblDesc, lblDateTime);
+				break;
+			}
+
 			default:
 				// Unsupported right now.
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				delete lblDesc;
 				break;
 		}
 	}
 }
 
+/**
+ * Start the animation timer.
+ */
+void RomDataViewPrivate::startAnimTimer(void)
+{
+	if (!iconAnimData || !ui.tmrIconAnim || !ui.lblIcon) {
+		// Not an animated icon.
+		return;
+	}
+
+	// Get the current frame information.
+	last_frame_number = iconAnimHelper.frameNumber();
+	const int delay = iconAnimHelper.frameDelay();
+	if (delay <= 0) {
+		// Invalid delay value.
+		return;
+	}
+
+	// Set a single-shot timer for the current frame.
+	anim_running = true;
+	ui.tmrIconAnim->start(delay);
+}
+
+/**
+ * Stop the animation timer.
+ */
+void RomDataViewPrivate::stopAnimTimer(void)
+{
+	if (ui.tmrIconAnim) {
+		anim_running = false;
+		ui.tmrIconAnim->stop();
+	}
+}
+
 /** RomDataView **/
 
-RomDataView::RomDataView(RomData *rom, QWidget *parent)
+RomDataView::RomDataView(RomData *romData, QWidget *parent)
 	: super(parent)
-	, d_ptr(new RomDataViewPrivate(this, rom))
+	, d_ptr(new RomDataViewPrivate(this, romData))
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
@@ -278,4 +578,80 @@ RomDataView::RomDataView(RomData *rom, QWidget *parent)
 RomDataView::~RomDataView()
 {
 	delete d_ptr;
+}
+
+/** QWidget overridden functions. **/
+
+/**
+ * Window has been hidden.
+ * This means that this tab has been selected.
+ * @param event QShowEvent.
+ */
+void RomDataView::showEvent(QShowEvent *event)
+{
+	// Start the icon animation.
+	Q_D(RomDataView);
+	d->startAnimTimer();
+
+	// Pass the event to the superclass.
+	super::showEvent(event);
+}
+
+/**
+ * Window has been hidden.
+ * This means that a different tab has been selected.
+ * @param event QHideEvent.
+ */
+void RomDataView::hideEvent(QHideEvent *event)
+{
+	// Stop the icon animation.
+	Q_D(RomDataView);
+	d->stopAnimTimer();
+
+	// Pass the event to the superclass.
+	super::hideEvent(event);
+}
+
+/** Widget slots. **/
+
+/**
+ * Disable user modification of RFT_BITFIELD checkboxes.
+ */
+void RomDataView::bitfield_toggled_slot(bool checked)
+{
+	if (!checked)
+		return;
+
+	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	if (sender) {
+		sender->setChecked(false);
+	}
+}
+
+/**
+ * Animated icon timer.
+ */
+void RomDataView::tmrIconAnim_timeout(void)
+{
+	Q_D(RomDataView);
+
+	// Next frame.
+	int delay = 0;
+	int frame = d->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		return;
+	}
+
+	if (frame != d->last_frame_number) {
+		// New frame number.
+		// Update the icon.
+		d->ui.lblIcon->setPixmap(d->iconFrames[frame]);
+		d->last_frame_number = frame;
+	}
+
+	// Set the single-shot timer.
+	if (d->anim_running) {
+		d->ui.tmrIconAnim->start(delay);
+	}
 }

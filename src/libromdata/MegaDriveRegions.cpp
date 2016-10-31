@@ -123,7 +123,7 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(uint32_t
 	}
 
 	// Get the country code.
-	uint16_t cc = SystemRegion::getCountryCode();
+	const uint32_t cc = SystemRegion::getCountryCode();
 
 	// Check for a single-region ROM.
 	switch (md_region) {

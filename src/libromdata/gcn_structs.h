@@ -36,6 +36,9 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
+#define GCN_MAGIC 0xC2339F3D
+#define WII_MAGIC 0x5D1C9EA3
+#define GCN_DiscHeader_SIZE 96
 typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// Game code. (ID6)
@@ -59,22 +62,70 @@ typedef struct PACKED _GCN_DiscHeader {
 } GCN_DiscHeader;
 #pragma pack()
 
-// FST information.
-// Located at 0x420.
+/**
+ * GameCube region codes.
+ * Used in bi2.bin (GameCube) and RVL_RegionSetting.
+ */
+enum GCN_Region_Code {
+	GCN_REGION_JAPAN = 0,		// Japan / Taiwan
+	GCN_REGION_USA = 1,		// USA
+	GCN_REGION_PAL = 2,		// Europe / Australia
+	GCN_REGION_SOUTH_KOREA = 4,	// South Korea
+};
+
+/**
+ * DVD Boot Block.
+ * References:
+ * - http://wiibrew.org/wiki/Wii_Disc#Decrypted
+ * - http://hitmen.c02.at/files/yagcd/yagcd/chap13.html
+ * - http://www.gc-forever.com/wiki/index.php?title=Apploader
+ *
+ * All fields are big-endian.
+ */
 #pragma pack(1)
-#define GCN_FST_Info_ADDRESS 0x420
-#define GCN_FST_Info_SIZE 16
-typedef struct PACKED _GCN_FST_Info {
+#define GCN_Boot_Block_ADDRESS 0x420
+#define GCN_Boot_Block_SIZE 32
+typedef struct PACKED _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
-	uint32_t fst_size;
-	uint32_t fst_max_size;
-} GCN_FST_Info;
+	uint32_t fst_size;	// FST size.
+	uint32_t fst_max_size;	// Size of biggest additional FST.
+
+	uint32_t fst_mem_addr;	// FST address in RAM.
+	uint32_t user_pos;	// Data area start. (Might be wrong; use FST.)
+	uint32_t user_len;	// Data area length. (Might be wrong; use FST.)
+	uint32_t reserved;
+} GCN_Boot_Block;
+#pragma pack()
+
+/**
+ * DVD Boot Info. (bi2.bin)
+ * Reference: http://www.gc-forever.com/wiki/index.php?title=Apploader
+ *
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+#define GCN_Boot_Info_ADDRESS 0x440
+#define GCN_Boot_Info_SIZE 48
+typedef struct PACKED _GCN_Boot_Info {
+	uint32_t debug_mon_size;	// Debug monitor size. [FIXME: Listed as signed?]
+	uint32_t sim_mem_size;		// Simulated memory size. (bytes) [FIXME: Listed as signed?]
+	uint32_t arg_offset;		// Command line arguments.
+	uint32_t debug_flag;		// Debug flag. (set to 3 if using CodeWarrior on GDEV)
+	uint32_t trk_location;		// Target resident kernel location.
+	uint32_t trk_size;		// Size of TRK. [FIXME: Listed as signed?]
+	uint32_t region_code;		// Region code. (See GCN_Region_Code.)
+	uint32_t reserved1[3];
+	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)
+	uint32_t reserved2;
+} GCN_Boot_Info;
 #pragma pack()
 
 /**
  * FST entry.
  * All fields are big-endian.
+ *
+ * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx13.4
  */
 #pragma pack(1)
 #define GCN_FST_Entry_SIZE 12
@@ -87,7 +138,7 @@ typedef struct PACKED _GCN_FST_Entry {
 		} root_dir;
 		struct {
 			uint32_t parent_dir_idx;	// Parent directory index.
-			uint32_t last_entry_idx;	// Index of last entry in this directory.
+			uint32_t next_offset;		// Index of the next entry in the current directory.
 		} dir;
 		struct {
 			uint32_t offset;		// File offset. (<< 2 for Wii)
@@ -95,6 +146,34 @@ typedef struct PACKED _GCN_FST_Entry {
 		} file;
 	};
 } GCN_FST_Entry;
+#pragma pack()
+
+/**
+ * TGC header.
+ * Used on some GameCube demo discs.
+ * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx14.8
+ * TODO: Check Dolphin?
+ *
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+#define GCN_TGC_Header_SIZE 64
+#define TGC_MAGIC 0xAE0F38A2
+typedef struct PACKED _GCN_TGC_Header {
+	uint32_t tgc_magic;	// TGC magic.
+	uint32_t reserved1;	// Unknown (usually 0x00000000)
+	uint32_t header_size;	// Header size. (usually 0x8000)
+	uint32_t reserved2;	// Unknown (usually 0x00100000)
+	uint32_t fst_offset;	// Offset to FST inside the embedded GCM.
+	uint32_t fst_size;	// FST size.
+	uint32_t fst_max_size;	// Size of biggest additional FST.
+	uint32_t dol_offset;	// Offset to main.dol inside the embedded GCM.
+	uint32_t dol_size;	// main.dol size.
+	uint32_t reserved3[2];
+	uint32_t banner_offset;	// Offset to opening.bnr inside the embedded GCM.
+	uint32_t banner_size;	// opening.bnr size.
+	uint32_t reserved4[3];
+} GCN_TGC_Header;
 #pragma pack()
 
 /** Wii-specific structs. **/
@@ -113,6 +192,7 @@ typedef uint32_t uint34_rshift2_t;
  * All fields are big-endian.
  */
 #pragma pack(1)
+#define RVL_VolumeGroupTable_ADDRESS 0x40000
 typedef struct PACKED _RVL_VolumeGroupTable {
 	struct {
 		uint32_t count;		// Number of partitions in this volume group.
@@ -124,7 +204,7 @@ typedef struct PACKED _RVL_VolumeGroupTable {
 /**
  * Wii partition table entry.
  * Contains information about an individual partition.
- * Reference: http://wiibrew.org/wiki/Wii_Disc#Partitions_information
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition_table_entry
  *
  * All fields are big-endian.
  */
@@ -204,6 +284,35 @@ typedef struct PACKED _RVL_PartitionHeader {
 	// 0x2C0
 	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
+#pragma pack()
+
+/**
+ * Country indexes in RVL_RegionSetting.ratings[].
+ */
+enum RVL_RegionSetting_RatingCountry {
+	RATING_JAPAN = 0,	// CERO
+	RATING_USA = 1,		// ESRB
+	RATING_GERMANY = 3,	// USK
+	RATING_PEGI = 4,	// PEGI
+	RATING_FINLAND = 5,	// MEKU?
+	RATING_PORTUGAL = 6,	// Modified PEGI
+	RATING_BRITAIN = 7,	// BBFC
+	RATING_AUSTRALIA = 8,	// ACB
+	RATING_SOUTH_KOREA = 9,	// GRB
+};
+
+/**
+ * Region setting and age ratings.
+ * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
+ * TODO: Decode age ratings into e.g. ESRB.
+ */
+#pragma pack(1)
+#define RVL_RegionSetting_ADDRESS 0x4E000
+typedef struct PACKED _RVL_RegionSetting {
+	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
+	uint8_t reserved[12];
+	uint8_t ratings[0x10];	// Country-specific age ratings.
+} RVL_RegionSetting;
 #pragma pack()
 
 #ifdef __cplusplus

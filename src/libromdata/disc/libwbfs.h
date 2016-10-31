@@ -4,6 +4,11 @@
 #ifndef LIBWBFS_H
 #define LIBWBFS_H
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4200)
+#endif
+
 #include "common.h"
 #include <stdint.h>
 
@@ -101,5 +106,9 @@ typedef struct wbfs_disc_s
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif

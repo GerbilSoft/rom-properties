@@ -37,7 +37,7 @@ namespace LibRomData {
 
 class WbfsReaderPrivate {
 	public:
-		WbfsReaderPrivate(IRpFile *file);
+		explicit WbfsReaderPrivate(IRpFile *file);
 		~WbfsReaderPrivate();
 
 	private:
@@ -55,6 +55,9 @@ class WbfsReaderPrivate {
 		int64_t m_wbfs_pos;		// Read position in m_wbfs_disc.
 
 		/** WBFS functions. **/
+
+		// WBFS magic number.
+		static const uint8_t WBFS_MAGIC[4];
 
 		/**
 		 * Read the WBFS header.
@@ -92,10 +95,13 @@ class WbfsReaderPrivate {
 		 * @param disc wbfs_disc_t struct.
 		 * @return Non-sparse size, in bytes.
 		 */
-		int64_t getWbfsDiscSize(const wbfs_disc_t *disc);
+		int64_t getWbfsDiscSize(const wbfs_disc_t *disc) const;
 };
 
 /** WbfsReaderPrivate **/
+
+// WBFS magic number.
+const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
 WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 	: file(nullptr)
@@ -161,7 +167,7 @@ static uint8_t size_to_shift(uint32_t size)
 	return ret-1;
 }
 
-#define ALIGN_LBA(x) (((x)+p->hd_sec_sz-1)&(~(p->hd_sec_sz-1)))
+#define ALIGN_LBA(x) (((x)+p->hd_sec_sz-1)&(~(size_t)(p->hd_sec_sz-1)))
 
 /**
  * Read the WBFS header.
@@ -169,11 +175,13 @@ static uint8_t size_to_shift(uint32_t size)
  */
 wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 {
-	static const uint8_t WBFS_MAGIC[4] = {'W', 'B', 'F', 'S'};
-
 	// Assume 512-byte sectors initially.
 	unsigned int hd_sec_sz = 512;
 	wbfs_head_t *head = (wbfs_head_t*)malloc(hd_sec_sz);
+	if (!head) {
+		// ENOMEM
+		return nullptr;
+	}
 
 	// Read the WBFS header.
 	file->rewind();
@@ -197,6 +205,11 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 	// wbfs_t struct.
 	wbfs_t *p = (wbfs_t*)malloc(sizeof(wbfs_t));
+	if (!p) {
+		// ENOMEM
+		free(head);
+		return nullptr;
+	}
 
 	// Since this is a disc image, we don't know the HDD sector size.
 	// Use the value present in the header.
@@ -218,6 +231,11 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 		hd_sec_sz = p->hd_sec_sz;
 		free(head);
 		head = (wbfs_head_t*)malloc(hd_sec_sz);
+		if (!head) {
+			// ENOMEM
+			free(p);
+			return nullptr;
+		}
 
 		// Re-read the WBFS header.
 		file->rewind();
@@ -247,14 +265,14 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 	// Disc size.
 	p->n_wbfs_sec = p->n_wii_sec >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
 	p->n_wbfs_sec_per_disc = p->n_wii_sec_per_disc >> (p->wbfs_sec_sz_s - p->wii_sec_sz_s);
-	p->disc_info_sz = ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2);
+	p->disc_info_sz = (uint16_t)ALIGN_LBA(sizeof(wbfs_disc_info_t) + p->n_wbfs_sec_per_disc*2);
 
 	// Free blocks table.
 	p->freeblks_lba = (p->wbfs_sec_sz - p->n_wbfs_sec/8) >> p->hd_sec_sz_s;
 	p->freeblks = nullptr;
 	p->max_disc = (p->freeblks_lba-1) / (p->disc_info_sz >> p->hd_sec_sz_s);
 	if (p->max_disc > (p->hd_sec_sz - sizeof(wbfs_head_t)))
-		p->max_disc = p->hd_sec_sz - sizeof(wbfs_head_t);
+		p->max_disc = (uint16_t)(p->hd_sec_sz - sizeof(wbfs_head_t));
 
 	p->n_disc_open = 0;
 	return p;
@@ -287,18 +305,28 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
-	wbfs_head_t *const head = p->head;
+	wbfs_disc_t *disc = nullptr;
+
+	const wbfs_head_t *const head = p->head;
 	uint32_t count = 0;
 	for (uint32_t i = 0; i < p->max_disc; i++) {
 		if (head->disc_table[i]) {
 			if (count++ == index) {
 				// Found the disc table index.
 				wbfs_disc_t *disc = (wbfs_disc_t*)malloc(sizeof(wbfs_disc_t));
+				if (!disc) {
+					// ENOMEM
+					break;
+				}
 				disc->p = p;
 				disc->i = i;
 
 				// Read the disc header.
 				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
+				if (!disc->header) {
+					// ENOMEM
+					break;
+				}
 				file->seek(p->hd_sec_sz + (i*p->disc_info_sz));
 				size_t size = file->read(disc->header, p->disc_info_sz);
 				if (size != p->disc_info_sz) {
@@ -318,6 +346,12 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				return disc;
 			}
 		}
+	}
+
+	// free() disc->header and disc in case of ENOMEM.
+	if (disc) {
+		free(disc->header);
+		free(disc);
 	}
 
 	// Disc not found.
@@ -349,7 +383,7 @@ void WbfsReaderPrivate::closeWbfsDisc(wbfs_disc_t *disc)
  * @param disc wbfs_disc_t struct.
  * @return Non-sparse size, in bytes.
  */
-int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc)
+int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 {
 	// Find the last block that's used on the disc.
 	// NOTE: This is in WBFS blocks, not Wii blocks.
@@ -374,6 +408,46 @@ WbfsReader::WbfsReader(IRpFile *file)
 WbfsReader::~WbfsReader()
 {
 	delete d;
+}
+
+/**
+ * Is a disc image supported by this class?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+ */
+int WbfsReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
+{
+	if (szHeader < sizeof(wbfs_head_t))
+		return -1;
+
+	const wbfs_head_t *head = reinterpret_cast<const wbfs_head_t*>(pHeader);
+	if (memcmp(&head->magic, WbfsReaderPrivate::WBFS_MAGIC, sizeof(WbfsReaderPrivate::WBFS_MAGIC)) != 0) {
+		// Incorrect magic number.
+		return -1;
+	}
+
+	// Make sure the sector size is at least 512 bytes.
+	if (head->hd_sec_sz_s < 0x09) {
+		// Sector size is less than 512 bytes.
+		// This isn't possible unless you're using
+		// a Commodore 64 or an Apple ][.
+		return -1;
+	}
+
+	// This is a valid WBFS image.
+	return 0;
+}
+
+/**
+ * Is a disc image supported by this object?
+ * @param pHeader Disc image header.
+ * @param szHeader Size of header.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int WbfsReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
+{
+	return isDiscSupported_static(pHeader, szHeader);
 }
 
 /**
@@ -414,7 +488,7 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return 0;
 	}
@@ -440,12 +514,19 @@ size_t WbfsReader::read(void *ptr, size_t size)
 		// Not a block boundary.
 		// Read the end of the block.
 		uint32_t read_sz = d->m_wbfs->wbfs_sec_sz - blockStartOffset;
-		if (size < read_sz)
-			read_sz = size;
+		if (size < (size_t)read_sz) {
+			read_sz = (uint32_t)size;
+		}
 
 		// Get the physical block number first.
-		uint16_t blockStart = (d->m_wbfs_pos / wbfs_sec_sz);
-		uint16_t physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
+		const unsigned int blockStart = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockStart < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockStart >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return 0;
+		}
+
+		const unsigned int physBlockStartIdx = be16_to_cpu(wlba_table[blockStart]);
 		if (physBlockStartIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, read_sz);
@@ -474,7 +555,16 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	    ret += wbfs_sec_sz, d->m_wbfs_pos += wbfs_sec_sz)
 	{
 		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
-		uint16_t physBlockIdx = be16_to_cpu(wlba_table[d->m_wbfs_pos / wbfs_sec_sz]);
+
+		// Get the physical block number first.
+		const unsigned int blockIdx = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockIdx < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockIdx >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return ret;
+		}
+
+		const unsigned int physBlockIdx = be16_to_cpu(wlba_table[blockIdx]);
 		if (physBlockIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, wbfs_sec_sz);
@@ -494,11 +584,17 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	// Check if we still have data left. (not a full block)
 	if (size > 0) {
 		// Not a full block.
+		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
 
 		// Get the physical block number first.
-		assert(d->m_wbfs_pos % wbfs_sec_sz == 0);
-		uint16_t blockEnd = (d->m_wbfs_pos / wbfs_sec_sz);
-		uint16_t physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
+		const unsigned int blockEnd = (unsigned int)(d->m_wbfs_pos / wbfs_sec_sz);
+		assert(blockEnd < d->m_wbfs_disc->p->n_wbfs_sec_per_disc);
+		if (blockEnd >= d->m_wbfs_disc->p->n_wbfs_sec_per_disc) {
+			// Out of range.
+			return ret;
+		}
+
+		const unsigned int physBlockEndIdx = be16_to_cpu(wlba_table[blockEnd]);
 		if (physBlockEndIdx == 0) {
 			// Empty block.
 			memset(ptr8, 0, size);
@@ -532,7 +628,7 @@ int WbfsReader::seek(int64_t pos)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return -1;
 	}
@@ -556,7 +652,7 @@ void WbfsReader::rewind(void)
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return;
 	}
@@ -573,7 +669,7 @@ int64_t WbfsReader::size(void) const
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
-	if (!d->m_wbfs_disc) {
+	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
 		d->lastError = EBADF;
 		return -1;
 	}

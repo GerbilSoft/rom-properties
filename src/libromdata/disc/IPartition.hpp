@@ -34,8 +34,25 @@ class IPartition : public IDiscReader
 		virtual ~IPartition() = 0;
 
 	private:
+		typedef IDiscReader super;
 		IPartition(const IPartition &other);
 		IPartition &operator=(const IPartition &other);
+
+	public:
+		/** IDiscReader **/
+
+		/**
+		 * isDiscSupported() is not handled by IPartition.
+		 * TODO: Maybe implement it to determine if the partition type is supported?
+		 * TODO: Move to IPartition.cpp?
+		 * @return -1
+		 */
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final
+		{
+			((void)pHeader);
+			((void)szHeader);
+			return -1;
+		}
 
 	public:
 		/**

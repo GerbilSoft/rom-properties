@@ -136,8 +136,6 @@ if(NOT MINGW)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-	# rom-properties: cmake-2.8.4 is required for nasm.
-	#cmake_minimum_required(VERSION 2.8.4)
 	if(ASM686)
 		set(ZLIB_ASMS contrib/asm686/match.S)
 	elseif (AMD64)
@@ -157,8 +155,6 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CX
 endif()
 
 if(MSVC)
-	# rom-properties: cmake-2.6.3 is required for masm.
-	#cmake_minimum_required(VERSION 2.6.3)
 	if(ASM686)
 		ENABLE_LANGUAGE(ASM_MASM)
 		set(ZLIB_ASMS
@@ -225,21 +221,6 @@ target_compile_definitions(zlibstatic PUBLIC -DZLIB_CONST)
 TARGET_INCLUDE_DIRECTORIES(zlibstatic
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	)
-
-# rom-properties: Set the MSVC debug path.
-INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(zlib)
-SET_MSVC_DEBUG_PATH(zlibstatic)
-
-# rom-properties: Exclude from ALL and DEFAULT builds.
-SET_TARGET_PROPERTIES(zlib PROPERTIES
-	EXCLUDE_FROM_ALL TRUE
-	EXCLUDE_FROM_DEFAULT_BUILD TRUE
-	)
-SET_TARGET_PROPERTIES(zlibstatic PROPERTIES
-	EXCLUDE_FROM_ALL TRUE
-	EXCLUDE_FROM_DEFAULT_BUILD TRUE
 	)
 
 if(NOT CYGWIN)

@@ -10,6 +10,8 @@ SET(rom-properties-win32_SRCS
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	#DialogBuilder.cpp
+	RpFile_IStream.cpp
+	RP_ThumbnailProvider.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -21,6 +23,8 @@ SET(rom-properties-win32_H
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	#DialogBuilder.hpp
+	RpFile_IStream.hpp
+	RP_ThumbnailProvider.hpp
 	resource.h
 	)
 
@@ -28,20 +32,27 @@ SET(rom-properties-win32_H
 # Build the plugin. #
 #####################
 
+# DLL filename will have an architecture-specific postfix.
 # FIXME: Build both Win32 and Win64 DLLs?
 ADD_LIBRARY(rom-properties MODULE
 		${rom-properties-win32_SRCS}
 		${rom-properties-win32_H}
 		)
+SET_WINDOWS_TARGET_NAME_ARCH(rom-properties)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
 SET_WINDOWS_NO_MANIFEST(rom-properties)
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
 TARGET_INCLUDE_DIRECTORIES(rom-properties
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32)
@@ -64,7 +75,29 @@ IF(RP_DLL_FLAGS)
 		SET(RP_LINK_FLAGS "${RP_DLL_FLAGS}")
 	ENDIF()
 	SET_TARGET_PROPERTIES(rom-properties PROPERTIES LINK_FLAGS "${RP_LINK_FLAGS}")
+	UNSET(RP_LINK_FLAGS)
 ENDIF(RP_DLL_FLAGS)
 
 UNSET(RP_DLL_FLAGS)
-UNSET(RP_LINK_FLAGS)
+
+#################
+# Installation. #
+#################
+
+INCLUDE(DirInstallPaths)
+
+INSTALL(TARGETS rom-properties
+	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
+	ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+	COMPONENT "dll"
+	)
+IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties PDB)
+	INSTALL(FILES "${DEBUG_FILENAME}"
+		DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+		COMPONENT "debug"
+		)
+	UNSET(DEBUG_FILENAME)
+ENDIF(INSTALL_DEBUG)

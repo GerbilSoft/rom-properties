@@ -26,6 +26,12 @@
 #include <cassert>
 #include <cstring>
 
+// C++ includes.
+#include <string>
+#include <list>
+using std::wstring;
+using std::list;
+
 /**
  * Create or open a registry key.
  * @param hKeyRoot Root key.
@@ -141,11 +147,11 @@ void RegKey::close(void)
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @return String value, or empty string on error.
  */
-std::wstring RegKey::read(LPCWSTR lpValueName) const
+wstring RegKey::read(LPCWSTR lpValueName) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
-		return std::wstring();
+		return wstring();
 	}
 
 	// FIXME: Handle ERROR_MORE_DATA?
@@ -158,7 +164,7 @@ std::wstring RegKey::read(LPCWSTR lpValueName) const
 		reinterpret_cast<LPBYTE>(buf), &cbData);
 	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
 		// Either an error occurred, or this isn't REG_SZ.
-		return std::wstring();
+		return wstring();
 	}
 
 	// Convert cbData to cchData.
@@ -173,15 +179,15 @@ std::wstring RegKey::read(LPCWSTR lpValueName) const
 
 	if (cchData == 0) {
 		// No actual string data.
-		return std::wstring();
+		return wstring();
 	}
 
 	// Return the string.
-	return std::wstring(buf, cchData);
+	return wstring(buf, cchData);
 }
 
 /**
- * Write a value to this key.
+ * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
@@ -208,12 +214,12 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
 }
 
 /**
- * Write a value to this key.
+ * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
+LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
 {
 	if (!m_hKey) {
 		// Handle is invalid.
@@ -226,6 +232,27 @@ LONG RegKey::write(LPCWSTR lpValueName, const std::wstring& value)
 
 	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
 		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
+}
+
+/**
+ * Write a DWORD value to this key.
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * @param value Value.
+ * @return RegSetValueEx() return value.
+ */
+LONG RegKey::write_dword(LPCWSTR lpValueName, DWORD value)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
+	// Get the string length, add 1 for NULL,
+	// and multiply by sizeof(wchar_t).
+	DWORD cbData = (DWORD)sizeof(value);
+
+	return RegSetValueEx(m_hKey, lpValueName, 0, REG_DWORD,
+		reinterpret_cast<const BYTE*>(&value), cbData);
 }
 
 /**
@@ -310,26 +337,141 @@ LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
 	return deleteSubKey(m_hKey, lpSubKey);
 }
 
+/**
+ * Enumerate subkeys.
+ * @param lstSubKeys List to place the subkey names in.
+ * @return ERROR_SUCCESS on success; WinAPI error on error.
+ */
+LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
+	LONG lResult;
+	DWORD cSubKeys, cchMaxSubKeyLen;
+
+	// Get the number of subkeys.
+	lResult = RegQueryInfoKey(m_hKey,
+		nullptr, nullptr,	// lpClass, lpcClass
+		nullptr,		// lpReserved
+		&cSubKeys, &cchMaxSubKeyLen,
+		nullptr, nullptr,	// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// cchMaxSubKeyLen doesn't include the NULL terminator.
+	cchMaxSubKeyLen++;
+
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx says
+	// key names are limited to 255 characters, but who knows...
+	wchar_t *wbuf = reinterpret_cast<wchar_t*>(malloc(cchMaxSubKeyLen * sizeof(wchar_t)));
+
+	// Initialize the vector.
+	lstSubKeys.clear();
+
+	for (int i = 0; i < (int)cSubKeys; i++) {
+		DWORD cchName = cchMaxSubKeyLen;
+		lResult = RegEnumKeyEx(m_hKey, i,
+			wbuf, &cchName,
+			nullptr,	// lpReserved
+			nullptr,	// lpClass
+			nullptr,	// lpcClass
+			nullptr);	// lpftLastWriteTime
+		if (lResult != ERROR_SUCCESS) {
+			free(wbuf);
+			return lResult;
+		}
+
+		// Add the subkey name to the return vector.
+		// cchName contains the number of characters in the
+		// subkey name, NOT including the NULL terminator.
+		lstSubKeys.push_back(wstring(wbuf, cchName));
+	}
+
+	free(wbuf);
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Is the key empty?
+ * This means no values, an empty default value, and no subkey.
+ * @return True if the key is empty; false if not or if an error occurred.
+ */
+bool RegKey::isKeyEmpty(void)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		// TODO: Better error reporting.
+		return false;
+	}
+
+	LONG lResult;
+	DWORD cSubKeys, cValues;
+
+	// Get the number of subkeys.
+	lResult = RegQueryInfoKey(m_hKey,
+		nullptr, nullptr,	// lpClass, lpcClass
+		nullptr,		// lpReserved
+		&cSubKeys, nullptr,	// lpcSubKeys, lpcMaxSubKeyLen
+		nullptr, &cValues,	// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		// TODO: Better error reporting.
+		return false;
+	}
+
+	if (cSubKeys > 0 || cValues > 0) {
+		// We have at least one subkey or value.
+		// NOTE: The default value is included in cValues,
+		// so we don't have to check for it separately.
+		return false;
+	}
+
+	// Key is empty.
+	return true;
+}
+
 /** COM registration convenience functions. **/
 
 /**
  * Register a file type.
  * @param fileType File extension, with leading dot. (e.g. ".bin")
- * @param progID ProgID.
+ * @param pHkey_Assoc Pointer to RegKey* to store opened registry key on success. (If nullptr, key will be closed.)
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::RegisterFileType(LPCWSTR fileType, LPCWSTR progID)
+LONG RegKey::RegisterFileType(LPCWSTR fileType, RegKey **pHkey_Assoc)
 {
 	// TODO: Handle cases where the user has already selected
 	// a file association?
 
 	// Create/open the file type key.
-	RegKey hkcr_fileType(HKEY_CLASSES_ROOT, fileType, KEY_WRITE, true);
-	if (!hkcr_fileType.isOpen())
-		return hkcr_fileType.lOpenRes();
+	// If we're returning the key, we need read/write access;
+	// otherwise, we only need write access.
+	const REGSAM samDesired = (pHkey_Assoc ? KEY_READ | KEY_WRITE : KEY_WRITE);
 
-	// Set the default value to the ProgID.
-	return hkcr_fileType.write(nullptr, progID);
+	RegKey *pHkcr_fileType = new RegKey(HKEY_CLASSES_ROOT, fileType, samDesired, true);
+	if (!pHkcr_fileType->isOpen()) {
+		// Error opening the key.
+		LONG lResult = pHkcr_fileType->lOpenRes();
+		delete pHkcr_fileType;
+		return lResult;
+	}
+
+	if (pHkey_Assoc) {
+		// Return the RegKey.
+		*pHkey_Assoc = pHkcr_fileType;
+	} else {
+		// We're done using the RegKey.
+		delete pHkcr_fileType;
+	}
+
+	return ERROR_SUCCESS;
 }
 
 /**

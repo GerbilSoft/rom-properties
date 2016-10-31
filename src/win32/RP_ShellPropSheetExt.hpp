@@ -43,6 +43,7 @@ extern "C" {
 // C++ includes.
 #include <string>
 
+class RegKey;
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
@@ -63,57 +64,59 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		/**
 		 * Register the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Register(void);
+		static LONG RegisterCLSID(void);
+
+		/**
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Unregister(void);
-
- 	protected:
-		/**
-		 * Initialize a bitfield layout.
-		 * @param hDlg Dialog window.
-		 * @param pt_start Starting position, in pixels.
-		 * @param idx Field index.
-		 * @return Field height, in pixels.
-		 */
-		int initBitfield(HWND hDlg, const POINT &pt_start, int idx);
+		static LONG UnregisterCLSID(void);
 
 		/**
-		 * Initialize a ListView control.
-		 * @param hWnd HWND of the ListView control.
-		 * @param desc RomFields description.
-		 * @param data RomFields data.
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
-
-		/**
-		 * Initialize the dialog.
-		 * Called by WM_INITDIALOG.
-		 * @param hDlg Dialog window.
-		 */
-		void initDialog(HWND hDlg);
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
 	public:
 		// IShellExtInit
-		IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID);
+		IFACEMETHODIMP Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT pDataObj, HKEY hKeyProgID) final;
 
 		// IShellPropSheetExt
-		IFACEMETHODIMP AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam);
-		IFACEMETHODIMP ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam);
+		IFACEMETHODIMP AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, LPARAM lParam) final;
+		IFACEMETHODIMP ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam) final;
 
+	protected:
 		// Property sheet callback functions.
 		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+		// Subclass procedure for ES_MULTILINE EDIT controls.
+		static LRESULT CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		/**
+		 * Animated icon timer.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param idEvent
+		 * @param dwTime
+		 */
+		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 };
 
 #ifdef __CRT_UUID_DECL

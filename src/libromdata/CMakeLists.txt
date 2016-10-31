@@ -42,6 +42,7 @@ IF(NOT WIN32)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
 		FIND_PACKAGE(Nettle REQUIRED)
+		SET(HAVE_NETTLE ${NETTLE_FOUND})
 
 		# Check if this is Nettle 3.x.
 		# Nettle 3.1 added version.h, which isn't available
@@ -55,10 +56,15 @@ ENDIF(NOT WIN32)
 INCLUDE(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
 
+# Check if non-capturing lambda functions can be cast to function pointers.
+INCLUDE(CheckCXX11LambdaAsFunctionPointer)
+CHECK_CXX11_LAMBDA_AS_FUNCTION_POINTER(HAVE_LAMBDA_AS_FUNCTION_POINTER)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 SET(libromdata_SRCS
+	byteswap.c
 	TextFuncs.cpp
 	RomData.cpp
 	RomFields.cpp
@@ -72,16 +78,27 @@ SET(libromdata_SRCS
 	DMG.cpp
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
+	GameCubeSave.cpp
+	N64.cpp
+	SNES.cpp
+	DreamcastSave.cpp
+	PlayStationSave.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
+	img/ImageDecoder.cpp
+	img/IconAnimHelper.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
+	disc/CisoGcnReader.cpp
+	disc/GcnPartition.cpp
+	disc/GcnPartitionPrivate.cpp
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
+	disc/PartitionFile.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -91,6 +108,7 @@ SET(libromdata_H
 	RomData.hpp
 	RomFields.hpp
 	TextFuncs.hpp
+	TextFuncs_int.hpp
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	MegaDriveRegions.hpp
@@ -98,13 +116,24 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	libwbfs.h
 	gcn_structs.h
 	DMG.hpp
 	uvector.h
 	GameBoyAdvance.hpp
 	CopierFormats.h
 	SystemRegion.hpp
+	GameCubeSave.hpp
+	PlayStationSave.hpp
+	gcn_card.h
+	nds_structs.h
+	N64.hpp
+	n64_structs.h
+	dmg_structs.h
+	gba_structs.h
+	SNES.hpp
+	snes_structs.h
+	DreamcastSave.hpp
+	dc_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -112,28 +141,44 @@ SET(libromdata_H
 	img/rp_image.hpp
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
+	img/ImageDecoder.hpp
 	img/RpPng.hpp
+	img/IconAnimData.hpp
+	img/IconAnimHelper.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
+	disc/libwbfs.h
+	disc/CisoGcnReader.hpp
+	disc/ciso_gcn.h
 	disc/IPartition.hpp
+	disc/GcnPartition.hpp
+	disc/GcnPartitionPrivate.hpp
 	disc/WiiPartition.hpp
+	disc/IFst.hpp
 	disc/GcnFst.hpp
+	disc/PartitionFile.hpp
 	)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		file/RpFile_Win32.cpp
-		file/RP_IStream_Win32.cpp
+		RpWin32.hpp
+		RpWin32_sdk.h
+		TextFuncs_win32.cpp
+		file/win32/RpFile_win32.cpp
+		file/win32/IStreamWrapper.cpp
 		img/RpPng_gdiplus.cpp
 		img/GdiplusHelper.cpp
+		img/RpGdiplusBackend.cpp
 		)
 	SET(libromdata_OS_H
-		file/RP_IStream_Win32.hpp
+		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
+		img/RpGdiplusBackend.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
+		TextFuncs_iconv.cpp
 		file/RpFile_stdio.cpp
 		img/RpPng_libpng.cpp
 		)
@@ -141,19 +186,28 @@ ENDIF(WIN32)
 
 IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
+		crypto/AesCipherFactory.cpp
 		crypto/KeyManager.cpp
 		)
 	SET(libromdata_CRYPTO_H
+		crypto/IAesCipher.hpp
 		crypto/KeyManager.hpp
-		crypto/AesCipher.hpp
 		)
 	IF(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
-			crypto/AesCipher_CAPI.cpp
+			crypto/AesCAPI.cpp
+			crypto/AesCAPI_NG.cpp
+			)
+		SET(libromdata_CRYPTO_OS_H
+			crypto/AesCAPI.hpp
+			crypto/AesCAPI_NG.hpp
 			)
 	ELSE(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
-			crypto/AesCipher_nettle.cpp
+			crypto/AesNettle.cpp
+			)
+		SET(libromdata_CRYPTO_OS_H
+			crypto/AesNettle.hpp
 			)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
@@ -177,7 +231,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_CRYPTO_OS_SRCS}
+	${libromdata_CRYPTO_OS_SRCS} ${libromdata_CRYPTO_OS_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 
@@ -192,15 +246,20 @@ TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 
 # Common properties for romdata8 and romdata16.
 FOREACH(_target romdata8 romdata16)
+	# Include paths:
+	# - Public: Current source and binary directories.
+	# - Private: Parent source and binary directories,
+	#            and top-level binary directory for git_version.h.
 	TARGET_INCLUDE_DIRECTORIES(${_target}
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 		)
+	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES
 		EXCLUDE_FROM_ALL TRUE
-		EXCLUDE_FROM_DEFAULT_BUILD TRUE
 		)
 	IF(ICONV_LIBRARY)
 		TARGET_LINK_LIBRARIES(${_target} ${ICONV_LIBRARY})

@@ -41,6 +41,7 @@ using std::string;
 
 // Windows includes.
 #include <urlmon.h>
+#include <wininet.h>
 
 namespace LibCacheMgr {
 
@@ -84,6 +85,26 @@ int UrlmonDownloader::download(void)
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		return -1;
+	}
+
+	// Get the cache information.
+	DWORD cbCacheEntryInfo = 0;
+	BOOL bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), nullptr, &cbCacheEntryInfo);
+	if (bRet) {
+		uint8_t *pCacheEntryInfoBuf =
+			reinterpret_cast<uint8_t*>(malloc(cbCacheEntryInfo));
+		if (!pCacheEntryInfoBuf) {
+			// ENOMEM
+			return -ENOMEM;
+		}
+		INTERNET_CACHE_ENTRY_INFO *pCacheEntryInfo =
+			reinterpret_cast<INTERNET_CACHE_ENTRY_INFO*>(pCacheEntryInfoBuf);
+		bRet = GetUrlCacheEntryInfo(RP2W_s(m_url), pCacheEntryInfo, &cbCacheEntryInfo);
+		if (bRet) {
+			// Convert from Win32 FILETIME to Unix time.
+			m_mtime = FileTimeToUnixTime(&pCacheEntryInfo->LastModifiedTime);
+		}
+		free(pCacheEntryInfoBuf);
 	}
 
 	// Read the file into the data buffer.

@@ -26,6 +26,9 @@
 #include "libromdata/img/rp_image.hpp"
 using LibRomData::rp_image;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 /**
  * Convert an rp_image to QImage.
  * @param image rp_image.
@@ -39,6 +42,7 @@ QImage rpToQImage(const rp_image *image)
 	// We should be using the RpQImageBackend.
 	const RpQImageBackend *backend =
 		dynamic_cast<const RpQImageBackend*>(image->backend());
+	assert(backend != nullptr);
 	if (!backend) {
 		// Incorrect backend set.
 		return QImage();

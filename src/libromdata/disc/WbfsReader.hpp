@@ -36,7 +36,7 @@ class WbfsReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		WbfsReader(IRpFile *file);
+		explicit WbfsReader(IRpFile *file);
 		virtual ~WbfsReader();
 
 	private:
@@ -47,23 +47,42 @@ class WbfsReader : public IDiscReader
 		WbfsReaderPrivate *const d;
 
 	public:
+		/** Disc image detection functions. **/
+
+		/**
+		 * Is a disc image supported by this class?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
+
+		/**
+		 * Is a disc image supported by this object?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
+
+	public:
 		/**
 		 * Is the disc image open?
 		 * This usually only returns false if an error occurred.
 		 * @return True if the disc image is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override;
+		virtual bool isOpen(void) const final;
 
 		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		virtual int lastError(void) const override;
+		virtual int lastError(void) const final;
 
 		/**
 		 * Clear the last error.
 		 */
-		virtual void clearError(void) override;
+		virtual void clearError(void) final;
 
 		/**
 		 * Read data from the disc image.
@@ -71,25 +90,25 @@ class WbfsReader : public IDiscReader
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) final;
 
 		/**
 		 * Set the disc image position.
 		 * @param pos Disc image position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		virtual int seek(int64_t pos) final;
 
 		/**
 		 * Seek to the beginning of the disc image.
 		 */
-		virtual void rewind(void) override;
+		virtual void rewind(void) final;
 
 		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) const override;
+		virtual int64_t size(void) const final;
 };
 
 }

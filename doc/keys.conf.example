@@ -1,0 +1,22 @@
+# Example encryption key configuration file for the
+# rom-properties shell extension.
+[Keys]
+
+######## Nintendo Wii ########
+
+# Common key. This is required in order to decrypt
+# retail Wii disc images.
+rvl-common=
+
+# Korean common key. This is used by Korean games.
+rvl-korean=
+
+# SD keys. These are used to decrypt save files
+# that have been copied to an SD card.
+rvl-sd-aes=
+rvl-sd-iv=
+rvl-sd-md5=
+
+# RVT common key. This is used by development systems
+# for prototype RVT-R discs.
+rvt-common=

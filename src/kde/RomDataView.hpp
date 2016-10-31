@@ -43,6 +43,36 @@ class RomDataView : public QWidget
 		Q_DECLARE_PRIVATE(RomDataView)
 	private:
 		Q_DISABLE_COPY(RomDataView)
+
+	protected:
+		/** QWidget overridden functions. **/
+
+		/**
+		 * Window has been hidden.
+		 * This means that this tab has been selected.
+		 * @param event QShowEvent.
+		 */
+		virtual void showEvent(QShowEvent *event) final;
+
+		/**
+		 * Window has been hidden.
+		 * This means that a different tab has been selected.
+		 * @param event QHideEvent.
+		 */
+		virtual void hideEvent(QHideEvent *event) final;
+
+	protected slots:
+		/** Widget slots. **/
+
+		/**
+		 * Disable user modification of RFT_BITFIELD checkboxes.
+		 */
+		void bitfield_toggled_slot(bool checked);
+
+		/**
+		 * Animated icon timer.
+		 */
+		void tmrIconAnim_timeout(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

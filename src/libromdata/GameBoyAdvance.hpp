@@ -47,12 +47,13 @@ class GameBoyAdvance : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		GameBoyAdvance(IRpFile *file);
+		explicit GameBoyAdvance(IRpFile *file);
 		virtual ~GameBoyAdvance();
 
 	private:
-		GameBoyAdvance(const GameBoyAdvance &);
-		GameBoyAdvance &operator=(const GameBoyAdvance &);
+		typedef RomData super;
+		GameBoyAdvance(const GameBoyAdvance &other);
+		GameBoyAdvance &operator=(const GameBoyAdvance &other);
 
 	private:
 		friend class GameBoyAdvancePrivate;
@@ -73,14 +74,14 @@ class GameBoyAdvance : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const override;
+		virtual int isRomSupported(const DetectInfo *info) const final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const override;
+		virtual const rp_char *systemName(uint32_t type) const final;
 
 	public:
 		/**
@@ -111,7 +112,7 @@ class GameBoyAdvance : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
 	protected:
 		/**
@@ -119,7 +120,7 @@ class GameBoyAdvance : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) override;
+		virtual int loadFieldData(void) final;
 };
 
 }

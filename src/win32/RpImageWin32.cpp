@@ -22,8 +22,17 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
+// libromdata
+#include "libromdata/RomData.hpp"
+#include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+#include "libromdata/img/RpImageLoader.hpp"
+#include "libromdata/img/RpGdiplusBackend.hpp"
+using namespace LibRomData;
+
+// libcachemgr
+#include "libcachemgr/CacheManager.hpp"
+using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -31,7 +40,9 @@ using LibRomData::rp_image;
 
 // C++ includes.
 #include <memory>
+#include <vector>
 using std::unique_ptr;
+using std::vector;
 
 // Gdiplus for HBITMAP conversion.
 // NOTE: Gdiplus requires min/max.
@@ -42,6 +53,71 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 #include "libromdata/img/GdiplusHelper.hpp"
+
+/**
+ * Get an internal image.
+ * NOTE: The image is owned by the RomData object;
+ * caller must NOT delete it!
+ *
+ * @param romData RomData object.
+ * @param imageType Image type.
+ * @return Internal image, or nullptr on error.
+ */
+const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::ImageType imageType)
+{
+	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
+	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
+		// Out of range.
+		return nullptr;
+	}
+
+	return romData->image(imageType);
+}
+
+/**
+ * Get an external image.
+ * NOTE: Caller must delete the image after use.
+ *
+ * @param romData RomData object.
+ * @param imageType Image type.
+ * @return External image, or nullptr on error.
+ */
+rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageType imageType)
+{
+	const vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
+	if (!extURLs || extURLs->empty()) {
+		// No URLs.
+		return nullptr;
+	}
+
+	// Check each URL.
+	CacheManager cache;
+	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
+		const RomData::ExtURL &extURL = *iter;
+
+		// TODO: Have download() return the actual data and/or load the cached file.
+		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		if (cache_filename.empty())
+			continue;
+
+		// Attempt to load the image.
+		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		if (!file || !file->isOpen())
+			continue;
+
+		rp_image *dl_img = RpImageLoader::load(file.get());
+		if (dl_img && dl_img->isValid()) {
+			// Image loaded.
+			return dl_img;
+		}
+		delete dl_img;
+
+		// Try the next URL.
+	}
+
+	// Could not load any external images.
+	return nullptr;
+}
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -60,21 +136,25 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// - http://stackoverflow.com/a/2901465
 
 	/**
-	 * Create a monochrome bitmap twice as tall as the image.
-	 * Top half is the AND mask; bottom half is the XOR mask.
+	 * Create a monochrome bitmap to act as the icon's AND mask.
+	 * The XOR mask is the icon data itself.
 	 *
-	 * Icon truth table:
-	 * AND=0, XOR=0: Black
-	 * AND=0, XOR=1: White
-	 * AND=1, XOR=0: Screen (transparent)
-	 * AND=1, XOR=1: Reverse screen (inverted)
+	 * 1 == opaque pixel
+	 * 0 == transparent pixel
 	 *
 	 * References:
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
 	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648052%28v=vs.85%29.aspx
 	 */
-	const int width8 = (image->width() + 8) & ~8;	// Round up to 8px width.
-	const int icon_sz = width8 * image->height() / 8;
+
+	// NOTE: Monochrome bitmaps have a stride of 32px. (4 bytes)
+	const int width = image->width();
+	// Stride adjustment per line, in bytes.
+	const int stride = ((width + 31) & 32) / 8;
+	// (Difference between used bytes and unused bytes.)
+	const int stride_adj = (width % 32 == 0 ? 0 : ((32 - (width % 32)) / 8));
+	// Icon size. (stride * height)
+	const int icon_sz = stride * image->height();
 
 	BITMAPINFO bmi;
 	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
@@ -82,7 +162,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// Initialize the BITMAPINFOHEADER.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
-	bmiHeader->biWidth = width8;
+	bmiHeader->biWidth = width;
 	bmiHeader->biHeight = image->height();	// FIXME: Top-down isn't working for monochrome...
 	bmiHeader->biPlanes = 1;
 	bmiHeader->biBitCount = 1;
@@ -103,41 +183,32 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 	// NOTE: Windows doesn't support top-down for monochrome icons,
 	// so this is vertically flipped.
 
-	// XOR mask: All 0 to disable inversion.
-	memset(&pvBits[icon_sz], 0, icon_sz);
-
 	// AND mask: Parse the original image.
 	switch (image->format()) {
 		case rp_image::FORMAT_CI8: {
 			// Get the transparent color index.
 			int tr_idx = image->tr_idx();
-			if (tr_idx < 0) {
-				// tr_idx isn't set.
-				// FIXME: This means the image has alpha transparency,
-				// so it should be converted to ARGB32.
-				DeleteObject(hBitmap);
-				return nullptr;
-			}
-
-			if (tr_idx >= 0) {
+			if (0 && tr_idx >= 0) {
 				// Find all pixels matching tr_idx.
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
 					const uint8_t *src = reinterpret_cast<const uint8_t*>(image->scanLine(y));
-					// FIXME: Handle images that aren't a multiple of 8px wide.
-					assert(image->width() % 8 == 0);
-					for (int x = image->width(); x > 0; x -= 8) {
+					for (int x = width; x > 0; x -= 8) {
 						uint8_t pxMono = 0;
-						for (int px = 8; px > 0; px--, src++) {
+						for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 							// MSB == left-most pixel.
 							pxMono <<= 1;
 							pxMono |= (*src != tr_idx);
 						}
 						*dest++ = pxMono;
 					}
+					// Next line.
+					dest += stride_adj;
 				}
 			} else {
-				// No transparent color.
+				// tr_idx isn't set. This means the image is either
+				// fully opaque or it has alpha transparency.
+				// TODO: Only set pixels within the used area? (stride_adj)
 				memset(pvBits, 0xFF, icon_sz);
 			}
 			break;
@@ -146,6 +217,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 		case rp_image::FORMAT_ARGB32: {
 			// Find all pixels with a 0 alpha channel.
 			// FIXME: Needs testing.
+			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
 				const uint32_t *src = reinterpret_cast<const uint32_t*>(image->scanLine(y));
@@ -153,153 +225,138 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 				assert(image->width() % 8 == 0);
 				for (int x = image->width(); x > 0; x -= 8) {
 					uint8_t pxMono = 0;
-					for (int px = 8; px > 0; px--, src++) {
+					for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
 						// MSB == left-most pixel.
 						pxMono <<= 1;
-						pxMono |= ((*src & 0xFF000000) == 0);
+						pxMono |= ((*src & 0xFF000000) != 0);
 					}
 					*dest++ = pxMono;
 				}
+				// Next line.
+				dest += stride_adj;
 			}
+			break;
 		}
 
 		default:
 			// Unsupported format.
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			break;
 	}
 
 	// Return the bitmap.
 	return hBitmap;
-}
-
-/**
- * Convert an rp_image to HBITMAP. (CI8)
- * @param image rp_image. (Must be CI8.)
- * @return HBITMAP, or nullptr on error.
- */
-HBITMAP RpImageWin32::toHBITMAP_CI8(const rp_image *image)
-{
-	assert(image != nullptr);
-	assert(image->isValid());
-	if (!image || !image->isValid())
-		return nullptr;
-	assert(image->format() == rp_image::FORMAT_CI8);
-	if (image->format() != rp_image::FORMAT_CI8)
-		return nullptr;
-
-	// References:
-	// - http://stackoverflow.com/questions/2886831/win32-c-c-load-image-from-memory-buffer
-	// - http://stackoverflow.com/a/2901465
-
-	// BITMAPINFO with 256-color palette.
-	const size_t szBmi = sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD)*256);
-	BITMAPINFO *bmi = (BITMAPINFO*)malloc(szBmi);
-	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
-
-	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
-	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
-	bmiHeader->biWidth = image->width();
-	bmiHeader->biHeight = -image->height();	// negative for top-down
-	bmiHeader->biPlanes = 1;
-	bmiHeader->biBitCount = 8;
-	bmiHeader->biCompression = BI_RGB;
-	bmiHeader->biSizeImage = 0;
-	bmiHeader->biXPelsPerMeter = 0;	// TODO
-	bmiHeader->biYPelsPerMeter = 0;	// TODO
-	bmiHeader->biClrUsed = image->palette_len();
-	bmiHeader->biClrImportant = bmiHeader->biClrUsed;	// TODO?
-
-	// Copy the palette from the image.
-	memcpy(bmi->bmiColors, image->palette(), bmiHeader->biClrUsed * sizeof(RGBQUAD));
-
-	// Create the bitmap.
-	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, bmi, DIB_RGB_COLORS,
-		reinterpret_cast<void**>(&pvBits), nullptr, 0);
-	if (!hBitmap) {
-		free(bmi);
-		return nullptr;
-	}
-
-	// Copy the data from the rp_image into the bitmap.
-	memcpy(pvBits, image->bits(), image->data_len());
-
-	// Return the bitmap.
-	free(bmi);
-	return hBitmap;
-}
-
-/**
- * Convert an rp_image to HBITMAP. (ARGB32)
- * @param image rp_image. (Must be ARGB32.)
- * @param bgColor Background color for images with alpha transparency.
- * @return HBITMAP, or nullptr on error.
- */
-HBITMAP RpImageWin32::toHBITMAP_ARGB32(const rp_image *image, COLORREF bgColor)
-{
-	assert(image != nullptr);
-	assert(image->isValid());
-	if (!image || !image->isValid())
-		return nullptr;
-	assert(image->format() == rp_image::FORMAT_ARGB32);
-	if (image->format() != rp_image::FORMAT_ARGB32)
-		return nullptr;
-
-	// NOTE: Gdiplus requires non-const BYTE*.
-	ScopedGdiplus gdip;
-	unique_ptr<Gdiplus::Bitmap> gdipBmp(
-		new Gdiplus::Bitmap(
-			image->width(), image->height(),
-			image->stride(),
-			PixelFormat32bppARGB,
-			(BYTE*)image->bits()));
-	if (!gdipBmp)
-		return nullptr;
-
-	// Convert the image to HBITMAP.
-	// TODO: Allow the caller to specify a background color?
-	HBITMAP hbmpRet;
-	Gdiplus::Status status = gdipBmp->GetHBITMAP(Gdiplus::Color(bgColor), &hbmpRet);
-	if (status != Gdiplus::Status::Ok) {
-		// Error converting to HBITMAP.
-		return nullptr;
-	}
-
-	// Converted to HBITMAP.
-	return hbmpRet;
 }
 
 /**
  * Convert an rp_image to HBITMAP.
  * @return image rp_image.
- * @param bgColor Background color for images with alpha transparency.
+ * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, COLORREF bgColor)
+HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
-	if (!image || !image->isValid())
+	if (!image || !image->isValid()) {
+		// Invalid image.
 		return nullptr;
-
-	HBITMAP hbmpRet = nullptr;
-	switch (image->format()) {
-		case rp_image::FORMAT_CI8:
-			// FIXME: If the palette has any alpha-transparent colors,
-			// use GDI+ and convert to ARGB32.
-			hbmpRet = toHBITMAP_CI8(image);
-			break;
-		case rp_image::FORMAT_ARGB32:
-			hbmpRet = toHBITMAP_ARGB32(image, bgColor);
-			break;
-		default:
-			assert(false);
-			break;
 	}
 
-	return hbmpRet;
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor);
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * This version resizes the image.
+ * @param image		[in] rp_image.
+ * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+ * @param size		[in] If non-zero, resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor,
+				const SIZE &size, bool nearest)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid()) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(bgColor, size, nearest);
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel.
+ * @param image	[in] rp_image.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
+{
+	const SIZE size = {0, 0};
+	return toHBITMAP_alpha(image, size, false);
+}
+
+/**
+ * Convert an rp_image to HBITMAP.
+ * This version preserves the alpha channel and resizes the image.
+ * @param image		[in] rp_image.
+ * @param size		[in] If non-zero, resize the image to this size.
+ * @param nearest	[in] If true, use nearest-neighbor scaling.
+ * @return HBITMAP, or nullptr on error.
+ */
+HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest)
+{
+	assert(image != nullptr);
+	assert(image->isValid());
+	if (!image || !image->isValid()) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	if (size.cx <= 0 || size.cy <= 0) {
+		// No resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	} else {
+		// Resize is required.
+		return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha(size, nearest);
+	}
 }
 
 /**
@@ -309,17 +366,31 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, COLORREF bgColor)
  */
 HICON RpImageWin32::toHICON(const rp_image *image)
 {
-	// NOTE: Alpha transparency doesn't seem to work in 256-color icons on Windows XP.
 	assert(image != nullptr);
-	if (!image || !image->isValid())
+	if (!image || !image->isValid()) {
+		// Invalid image.
 		return nullptr;
+	}
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *backend =
+		dynamic_cast<const RpGdiplusBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
 
 	// Convert to HBITMAP first.
-	HBITMAP hBitmap = toHBITMAP(image);
-	if (!hBitmap)
+	// TODO: Const-ness stuff.
+	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	if (!hBitmap) {
+		// Error converting to HBITMAP.
 		return nullptr;
+	}
 
 	// Convert the image to an icon mask.
+	// FIXME: Use the resized icon?
 	HBITMAP hbmMask = toHBITMAP_mask(image);
 	if (!hbmMask) {
 		DeleteObject(hBitmap);

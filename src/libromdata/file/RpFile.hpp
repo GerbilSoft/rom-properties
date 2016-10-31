@@ -74,18 +74,18 @@ class RpFile : public IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override;
+		virtual bool isOpen(void) const final;
 
 		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		virtual int lastError(void) const override;
+		virtual int lastError(void) const final;
 
 		/**
 		 * Clear the last error.
 		 */
-		virtual void clearError(void) override;
+		virtual void clearError(void) final;
 
 		/**
 		 * dup() the file handle.
@@ -98,12 +98,12 @@ class RpFile : public IRpFile
 		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
-		virtual IRpFile *dup(void) override;
+		virtual IRpFile *dup(void) final;
 
 		/**
 		 * Close the file.
 		 */
-		virtual void close(void) override;
+		virtual void close(void) final;
 
 		/**
 		 * Read data from the file.
@@ -111,7 +111,7 @@ class RpFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) final;
 
 		/**
 		 * Write data to the file.
@@ -119,31 +119,37 @@ class RpFile : public IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
-		virtual size_t write(const void *ptr, size_t size) override;
+		virtual size_t write(const void *ptr, size_t size) final;
 
 		/**
 		 * Set the file position.
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		virtual int seek(int64_t pos) final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		virtual int64_t tell(void) override;
+		virtual int64_t tell(void) final;
 
 		/**
 		 * Seek to the beginning of the file.
 		 */
-		virtual void rewind(void) override;
+		virtual void rewind(void) final;
 
 		/**
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		virtual int64_t fileSize(void) override;
+		virtual int64_t fileSize(void) final;
+
+		/**
+		 * Get the filename.
+		 * @return Filename. (May be empty if the filename is not available.)
+		 */
+		virtual rp_string filename(void) const final;
 
 	protected:
 #ifdef _WIN32
@@ -154,6 +160,7 @@ class RpFile : public IRpFile
 		std::shared_ptr<FILE> m_file;
 #endif
 
+		rp_string m_filename;
 		FileMode m_mode;
 		int m_lastError;
 };

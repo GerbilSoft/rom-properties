@@ -28,6 +28,9 @@
 // C includes.
 #include <stdint.h>
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 // C++ includes.
 #include <string>
 #include <vector>
@@ -36,6 +39,7 @@ namespace LibRomData {
 
 class IRpFile;
 class rp_image;
+struct IconAnimData;
 
 class RomData
 {
@@ -85,15 +89,20 @@ class RomData
 		/** ROM detection functions. **/
 
 		/**
+		 * Header information.
+		 */
+		struct HeaderInfo {
+			uint32_t addr;		// Start address in the ROM.
+			uint32_t size;		// Length.
+			const uint8_t *pData;	// Data.
+		};
+
+		/**
 		 * ROM detection information.
 		 * Used for isRomSupported() functions.
 		 */
 		struct DetectInfo {
-			// ROM header.
-			const uint8_t *pHeader;	// ROM header.
-			size_t szHeader;	// Size of header.
-
-			// File information.
+			HeaderInfo header;	// ROM header.
 			const rp_char *ext;	// File extension, including leading '.'
 			int64_t szFile;		// File size. (Required for certain types.)
 		};
@@ -156,6 +165,32 @@ class RomData
 		 * @return System name, or nullptr if type is invalid.
 		 */
 		virtual const rp_char *systemName(uint32_t type) const = 0;
+
+		enum FileType {
+			FTYPE_UNKNOWN = 0,
+			FTYPE_ROM_IMAGE,
+			FTYPE_DISC_IMAGE,
+			FTYPE_SAVE_FILE,
+
+			// "Embedded" disc image.
+			// Commonly seen on GameCube demo discs.
+			FTYPE_EMBEDDED_DISC_IMAGE,
+
+			// Application package, e.g. WAD, CIA.
+			FTYPE_APPLICATION_PACKAGE,
+		};
+
+		/**
+		 * Get the general file type.
+		 * @return General file type.
+		 */
+		FileType fileType(void) const;
+
+		/**
+		 * Get the general file type as a string.
+		 * @return General file type as a string, or nullptr if unknown.
+		 */
+		const rp_char *fileType_string(void) const;
 
 		// TODO:
 		// - List of supported systems.
@@ -228,6 +263,16 @@ class RomData
 		enum ImageProcessingBF {
 			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
 			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
+
+			// If the image needs to be resized, use
+			// nearest neighbor if the new size is an
+			// integer multiple of the old size.
+			IMGPF_RESCALE_NEAREST	= (1 << 2),
+
+			// File supports animated icons.
+			// Call iconAnimData() to get the animated
+			// icon frames and control information.
+			IMGPF_ICON_ANIMATED	= (1 << 3),
 		};
 
 		/**
@@ -324,12 +369,25 @@ class RomData
 		 * @return String containing user-friendly name of an image type.
 		 */
 		static const rp_char *getImageTypeName(ImageType imageType);
+		
+		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const;
 
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
 		IRpFile *m_file;		// Open file.
 		RomFields *const m_fields;	// ROM fields.
+
+		// File type. (default is FTYPE_ROM_IMAGE)
+		FileType m_fileType;
 
 		// Internal images.
 		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];

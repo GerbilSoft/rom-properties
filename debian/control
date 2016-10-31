@@ -1,0 +1,41 @@
+Source: rom-properties
+Section: games
+Priority: optional
+Maintainer: David Korth <gerbilsoft@gerbilsoft.com>
+Build-Depends:
+ debhelper (>= 9),
+ cmake (>= 2.8.12),
+ dpkg-dev (>= 1.17.17),
+ extra-cmake-modules (>= 0.0.11),
+ libcurl-dev,
+ libpng-dev,
+ libqt4-dev,
+ kdelibs5-dev,
+ kio-dev,
+ nettle-dev,
+ qtbase5-dev,
+ zlib1g-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/GerbilSoft/rom-properties
+Vcs-Git: https://github.com/GerbilSoft/rom-properties
+Vcs-Browser: https://github.com/GerbilSoft/rom-properties
+
+Package: rom-properties-kde4
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the KDE 4 version.
+
+Package: rom-properties-kde5
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the KDE 5 version.

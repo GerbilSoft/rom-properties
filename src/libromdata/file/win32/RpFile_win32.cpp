@@ -19,23 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpFile.hpp"
+#include "../RpFile.hpp"
 #include "TextFuncs.hpp"
 #include "RpWin32.hpp"
+
+// C includes. (C++ namespace)
+#include <cctype>
 
 // C++ includes.
 #include <string>
 using std::string;
-
-// Define this symbol to get XP themes. See:
-// http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
-// for more info. Note that as of May 2006, the page says the symbols should
-// be called "SIDEBYSIDE_COMMONCONTROLS" but the headers in my SDKs in VC 6 & 7
-// don't reference that symbol. If ISOLATION_AWARE_ENABLED doesn't work for you,
-// try changing it to SIDEBYSIDE_COMMONCONTROLS
-#define ISOLATION_AWARE_ENABLED 1
-
-#include <windows.h>
+using std::wstring;
 
 namespace LibRomData {
 
@@ -82,6 +76,7 @@ static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, 
 RpFile::RpFile(const rp_char *filename, FileMode mode)
 	: super()
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
+	, m_filename(filename)
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -95,8 +90,9 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  * @param mode File mode.
  */
 RpFile::RpFile(const rp_string &filename, FileMode mode)
-	: IRpFile()
+	: super()
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
+	, m_filename(filename)
 	, m_mode(mode)
 	, m_lastError(0)
 {
@@ -117,8 +113,23 @@ void RpFile::init(const rp_char *filename)
 		return;
 	}
 
+	// If this is an absolute path, make sure it starts with
+	// "\\?\" in order to support filenames longer than MAX_PATH.
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+
 	// Open the file.
-	m_file.reset(CreateFile(RP2W_c(filename),
+	m_file.reset(CreateFile(filenameW.c_str(),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr), myFile_deleter());
@@ -139,8 +150,9 @@ RpFile::~RpFile()
  * @param other Other instance.
  */
 RpFile::RpFile(const RpFile &other)
-	: IRpFile()
+	: super()
 	, m_file(other.m_file)
+	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
 	, m_lastError(0)
 { }
@@ -153,6 +165,7 @@ RpFile::RpFile(const RpFile &other)
 RpFile &RpFile::operator=(const RpFile &other)
 {
 	m_file = other.m_file;
+	m_filename = other.m_filename;
 	m_mode = other.m_mode;
 	m_lastError = other.m_lastError;
 	return *this;
@@ -187,8 +200,13 @@ void RpFile::clearError(void)
 
 /**
  * dup() the file handle.
+ *
  * Needed because IRpFile* objects are typically
  * pointers, not actual instances of the object.
+ *
+ * NOTE: The dup()'d IRpFile* does NOT have a separate
+ * file pointer. This is due to how dup() works.
+ *
  * @return dup()'d file, or nullptr on error.
  */
 IRpFile *RpFile::dup(void)
@@ -274,8 +292,10 @@ int RpFile::seek(int64_t pos)
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
+		return -1;
 	}
-	return (bRet == 0 ? -1 : 0);
+
+	return 0;
 }
 
 /**
@@ -295,8 +315,10 @@ int64_t RpFile::tell(void)
 	if (bRet == 0) {
 		// TODO: Convert GetLastError() to POSIX?
 		m_lastError = EIO;
+		return -1;
 	}
-	return (bRet == 0 ? -1 : liSeekRet.QuadPart);
+
+	return liSeekRet.QuadPart;
 }
 
 /**
@@ -327,7 +349,22 @@ int64_t RpFile::fileSize(void)
 
 	LARGE_INTEGER liFileSize;
 	BOOL bRet = GetFileSizeEx(m_file.get(), &liFileSize);
-	return (bRet != 0 ? liFileSize.QuadPart : -1);
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	return liFileSize.QuadPart;
+}
+
+/**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string RpFile::filename(void) const
+{
+	return m_filename;
 }
 
 }

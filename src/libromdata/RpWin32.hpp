@@ -26,6 +26,8 @@
 #error RpWin32.hpp should only be included in Windows builds.
 #endif
 
+#include "RpWin32_sdk.h"
+
 /** Windows-specific wrappers for wchar_t. **/
 
 /**
@@ -42,8 +44,6 @@
 
 #include "libromdata/TextFuncs.hpp"
 
-#include <windows.h>
-
 #if defined(RP_UTF8)
 
 /**
@@ -53,7 +53,7 @@
  */
 #define RP2W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRomData::rp_string_to_utf16(str, strlen(str)).c_str()))
+		LibRomData::rp_string_to_utf16(str, -1).c_str()))
 
 /**
  * Get const wchar_t* from rp_string.
@@ -71,8 +71,7 @@
  */
 #define W2RP_c(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), \
-		wcslen(wcs)).c_str())
+		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
 
 /**
  * Get const rp_char* from std::wstring.
@@ -81,8 +80,7 @@
  */
 #define W2RP_s(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), \
-		wcs.size()).c_str())
+		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()).c_str())
 
 // FIXME: In-place conversion of std::u16string to std::wstring?
 
@@ -93,8 +91,7 @@
  */
 #define W2RP_cs(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs), \
-		wcslen(wcs)))
+		reinterpret_cast<const char16_t*>(wcs), -1))
 
 /**
  * Get rp_string from std::wstring.
@@ -103,8 +100,7 @@
  */
 #define W2RP_ss(wcs) \
 	(LibRomData::utf16_to_rp_string( \
-		reinterpret_cast<const char16_t*>(wcs.data()), \
-		wcs.size()))
+		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
 
 #elif defined(RP_UTF16)
 
@@ -173,5 +169,38 @@ static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
 }
 
 #endif /* RP_UTF16 */
+
+/** Time conversion functions. **/
+
+/**
+ * Convert from Unix time to Win32 SYSTEMTIME.
+ * @param unix_time Unix time.
+ * @param pSystemTime Win32 SYSTEMTIME.
+ */
+static inline void UnixTimeToSystemTime(int64_t unix_time, SYSTEMTIME *pSystemTime)
+{
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	LARGE_INTEGER li;
+	li.QuadPart = (unix_time * 10000000LL) + 116444736000000000LL;
+
+	FILETIME ft;
+	ft.dwLowDateTime = li.LowPart;
+	ft.dwHighDateTime = (DWORD)li.HighPart;
+	FileTimeToSystemTime(&ft, pSystemTime);
+}
+
+/**
+ * Convert from Win32 FILETIME to Unix time.
+ * @param pFileTime Win32 FILETIME.
+ * @return Unix time.
+ */
+static inline int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
+{
+	// Reference: https://support.microsoft.com/en-us/kb/167296
+	LARGE_INTEGER li;
+	li.LowPart = pFileTime->dwLowDateTime;
+	li.HighPart = (LONG)pFileTime->dwHighDateTime;
+	return (li.QuadPart - 116444736000000000LL) / 10000000LL;
+}
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */

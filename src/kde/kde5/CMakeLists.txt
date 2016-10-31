@@ -4,6 +4,10 @@ PROJECT(rom-properties-kde5)
 # Find KDE5 Extra CMake Modules.
 FIND_PACKAGE(ECM 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
+	# Don't add KDE tests to the CTest build.
+	SET(KDE_SKIP_TEST_SETTINGS TRUE)
+
+	# Include KDE5 CMake modules.
 	LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 	INCLUDE(KDEInstallDirs)
 	INCLUDE(KDECMakeSettings)
@@ -91,21 +95,21 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
 
 IF(BUILD_KDE5)
 	INSTALL(TARGETS rom-properties-kde5
-		LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR}
+		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	# Services are installed in /usr/share/kservices5/
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde5.desktop"
-		DESTINATION ${SERVICES_INSTALL_DIR}
+		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca5?
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde5 PDB)
 		IF(DEBUG_FILENAME)
-			INSTALL(FILES ${DEBUG_FILENAME}
+			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)

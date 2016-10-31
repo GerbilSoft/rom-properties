@@ -22,19 +22,21 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
-#include "IPartition.hpp"
+#include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
 namespace LibRomData {
 
 class WiiPartitionPrivate;
-class WiiPartition : public IPartition
+class WiiPartition : public GcnPartition
 {
 	public:
 		/**
 		 * Construct a WiiPartition with the specified IDiscReader.
+		 *
 		 * NOTE: The IDiscReader *must* remain valid while this
 		 * WiiPartition is open.
+		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
 		 */
@@ -42,32 +44,17 @@ class WiiPartition : public IPartition
 		~WiiPartition();
 
 	private:
-		WiiPartition(const WiiPartition &);
-		WiiPartition &operator=(const WiiPartition &);
-	private:
+		typedef GcnPartition super;
+		WiiPartition(const WiiPartition &other);
+		WiiPartition &operator=(const WiiPartition &other);
+
+	protected:
 		friend class WiiPartitionPrivate;
-		WiiPartitionPrivate *const d;
+		// d_ptr is used from the subclass.
+		//WiiPartitionPrivate *const d_ptr;
 
 	public:
 		/** IDiscReader **/
-
-		/**
-		 * Is the partition open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the partition is open; false if it isn't.
-		 */
-		virtual bool isOpen(void) const override;
-
-		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const override;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) override;
 
 		/**
 		 * Read data from the partition.
@@ -75,36 +62,14 @@ class WiiPartition : public IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) final;
 
 		/**
 		 * Set the partition position.
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
-
-		/**
-		 * Seek to the beginning of the partition.
-		 */
-		virtual void rewind(void) override;
-
-		/**
-		 * Get the data size.
-		 * This size does not include the partition header,
-		 * and it's adjusted to exclude hashes.
-		 * @return Data size, or -1 on error.
-		 */
-		virtual int64_t size(void) const override;
-
-		/** IPartition **/
-
-		/**
-		 * Get the partition size.
-		 * This size includes the partition header and hashes.
-		 * @return Partition size, or -1 on error.
-		 */
-		virtual int64_t partition_size(void) const override;
+		virtual int seek(int64_t pos) final;
 
 		/** WiiPartition **/
 
@@ -113,9 +78,10 @@ class WiiPartition : public IPartition
 			ENCINIT_UNKNOWN,
 			ENCINIT_DISABLED,		// ENABLE_DECRYPTION disabled.
 			ENCINIT_INVALID_KEY_IDX,	// Invalid common key index in the disc header.
-			ENCINIT_NO_KEYFILE,		// keys.conf not found.
+			ENCINIT_NO_KEYFILE,		// keys.conf was not found.
 			ENCINIT_MISSING_KEY,		// Required key not found.
 			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
+			ENCINIT_INCORRECT_KEY,		// Key is incorrect.
 		};
 
 		/**
@@ -123,40 +89,6 @@ class WiiPartition : public IPartition
 		 * @return Encryption initialization status.
 		 */
 		EncInitStatus encInitStatus(void) const;
-
-		/** GcnFst wrapper functions. **/
-
-		/**
-		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
-		 * @return FstDir*, or nullptr on error.
-		 */
-		GcnFst::FstDir *opendir(const rp_char *path);
-
-		/**
-		 * Open a directory.
-		 * @param path	[in] Directory path. [TODO; always reads "/" right now.]
-		 * @return FstDir*, or nullptr on error.
-		 */
-		inline GcnFst::FstDir *opendir(const LibRomData::rp_string &path)
-		{
-			return opendir(path.c_str());
-		}
-
-		/**
-		 * Read a directory entry.
-		 * @param dirp FstDir pointer.
-		 * @return FstDirEntry*, or nullptr if end of directory or on error.
-		 * (TODO: Add lastError()?)
-		 */
-		GcnFst::FstDirEntry *readdir(GcnFst::FstDir *dirp);
-
-		/**
-		 * Close an opened directory.
-		 * @param dirp FstDir pointer.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int closedir(GcnFst::FstDir *dirp);
 };
 
 }

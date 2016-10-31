@@ -3,6 +3,9 @@ PROJECT(libcachemgr)
 # Cache Manager for downloading and caching external images.
 # TODO: Make network access optional?
 
+# Find the system threading library.
+FIND_PACKAGE(Threads REQUIRED)
+
 SET(libcachemgr_SRCS
 	IDownloader.cpp
 	CacheManager.cpp
@@ -35,6 +38,22 @@ IF(WIN32)
 		)
 ENDIF(WIN32)
 
+# Threading implementation.
+SET(libcachemgr_THREAD_H
+	Semaphore.hpp
+	)
+IF(CMAKE_USE_WIN32_THREADS_INIT)
+	SET(libcachemgr_THREAD_SRCS
+		SemaphoreWin32.cpp
+		)
+ELSEIF(CMAKE_USE_PTHREADS_INIT)
+	SET(libcachemgr_THREAD_SRCS
+		SemaphorePosix.cpp
+		)
+ELSE()
+	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
+ENDIF()
+
 ######################
 # Build the library. #
 ######################
@@ -43,6 +62,7 @@ ENDIF(WIN32)
 ADD_LIBRARY(cachemgr8 STATIC
 	${libcachemgr_SRCS} ${libcachemgr_H}
 	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
+	${libcachemgr_THREAD_SRCS} ${libcachemgr_THREAD_H}
 	)
 TARGET_LINK_LIBRARIES(cachemgr8 romdata8)
 
@@ -50,6 +70,7 @@ TARGET_LINK_LIBRARIES(cachemgr8 romdata8)
 ADD_LIBRARY(cachemgr16 STATIC
 	${libcachemgr_SRCS} ${libcachemgr_H}
 	${libcachemgr_OS_SRCS} ${libcachemgr_OS_H}
+	${libcachemgr_THREAD_SRCS} ${libcachemgr_THREAD_H}
 	)
 TARGET_LINK_LIBRARIES(cachemgr16 romdata16)
 
@@ -61,15 +82,18 @@ FOREACH(_target cachemgr8 cachemgr16)
 		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		)
+	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES
 		EXCLUDE_FROM_ALL TRUE
-		EXCLUDE_FROM_DEFAULT_BUILD TRUE
 		)
 	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${_target} urlmon)
+		TARGET_LINK_LIBRARIES(${_target} urlmon wininet)
 	ELSE(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} ${CURL_LIBRARIES})
 	ENDIF(WIN32)
+	IF(CMAKE_THREAD_LIBS_INIT)
+		TARGET_LINK_LIBRARIES(${_target} ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 ENDFOREACH()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.

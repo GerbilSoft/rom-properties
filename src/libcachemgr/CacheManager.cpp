@@ -19,6 +19,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#ifdef _WIN32
+#include "stdafx.h"
+#endif
 #include "CacheManager.hpp"
 
 #include "libromdata/TextFuncs.hpp"
@@ -31,8 +34,6 @@ using namespace LibRomData::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
-#include <windows.h>
-#include <shlobj.h>
 #include "libromdata/RpWin32.hpp"
 #endif /* _WIN32 */
 
@@ -56,6 +57,11 @@ using std::string;
 #endif
 
 namespace LibCacheMgr {
+
+// Semaphore used to limit the number of simultaneous downloads.
+// TODO: Determine the best number of simultaneous downloads.
+// TODO: Test this on XP with IEIFLAG_ASYNC.
+Semaphore CacheManager::m_dlsem(2);
 
 CacheManager::CacheManager()
 {
@@ -169,6 +175,8 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  */
 LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_string &cache_key)
 {
+	SemaphoreLocker locker(m_dlsem);
+
 	// Check the main cache key.
 	rp_string cache_filename = getCacheFilename(cache_key);
 	if (cache_filename.empty()) {

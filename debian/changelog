@@ -1,0 +1,5 @@
+rom-properties (0.8) xenial; urgency=medium
+
+  * Initial release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 23 Oct 2016 22:38:03 -0400

@@ -48,6 +48,15 @@ using std::wstring;
 const CLSID CLSID_RP_ExtractIcon =
 	{0xe51bc107, 0xe491, 0x4b29, {0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02}};
 
+RP_ExtractIcon::RP_ExtractIcon()
+	: m_romData(nullptr)
+{ }
+
+RP_ExtractIcon::~RP_ExtractIcon()
+{
+	delete m_romData;
+}
+
 /** IUnknown **/
 // Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
 
@@ -56,7 +65,6 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
 		return E_INVALIDARG;
-	*ppvObj = NULL;
 
 	// Check if this interface is supported.
 	// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -66,10 +74,13 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// - http://stackoverflow.com/a/2812938
 	if (riid == IID_IUnknown || riid == IID_IExtractIcon) {
 		*ppvObj = static_cast<IExtractIcon*>(this);
+	} else if (riid == IID_IPersist) {
+		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
 	} else {
 		// Interface is not supported.
+		*ppvObj = nullptr;
 		return E_NOINTERFACE;
 	}
 
@@ -82,7 +93,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::Register(void)
+LONG RP_ExtractIcon::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
 	extern const wchar_t RP_ProgID[];
@@ -90,69 +101,164 @@ LONG RP_ExtractIcon::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractIcon), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-
-	// Register as the icon handler for this ProgID.
-	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
-		return hkcr_ProgID.lOpenRes();
-
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
-		return hkcr_ShellEx.lOpenRes();
-	// Create/open the "IconHandler" key.
-	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
-	if (!hkcr_IconHandler.isOpen())
-		return hkcr_IconHandler.lOpenRes();
-	// Set the default value to this CLSID.
-	lResult = hkcr_IconHandler.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
-		return lResult;
-	hkcr_IconHandler.close();
-	hkcr_ShellEx.close();
-
-	// Create/open the "DefaultIcon" key.
-	RegKey hkcr_DefaultIcon(hkcr_ProgID, L"DefaultIcon", KEY_WRITE, true);
-	if (!hkcr_DefaultIcon.isOpen())
-		return SELFREG_E_CLASS;
-	// Set the default value to "%1".
-	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
-	hkcr_DefaultIcon.close();
-	hkcr_ProgID.close();
+	}
 
 	// COM object registered.
 	return ERROR_SUCCESS;
 }
 
 /**
+ * Register the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Register as the icon handler for this file association.
+
+	// Create/open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
+	if (!hkcr_ShellEx.isOpen()) {
+		return hkcr_ShellEx.lOpenRes();
+	}
+
+	// Create/open the "IconHandler" key.
+	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
+	if (!hkcr_IconHandler.isOpen()) {
+		return hkcr_IconHandler.lOpenRes();
+	}
+	// Set the default value to this CLSID.
+	lResult = hkcr_IconHandler.write(nullptr, clsid_str);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Create/open the "DefaultIcon" key.
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_WRITE, true);
+	if (!hkcr_DefaultIcon.isOpen()) {
+		return hkcr_DefaultIcon.lOpenRes();
+	}
+	// Set the default value to "%1".
+	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
+
+	// File type handler registered.
+	return lResult;
+}
+
+/**
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::Unregister(void)
+LONG RP_ExtractIcon::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
-		return lResult;
+	return RegKey::UnregisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID);
+}
 
-	// TODO
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as the icon handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+
+	// Open the "IconHandler" key.
+	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_READ, false);
+	if (!hkcr_IconHandler.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_IconHandler.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IconHandler.lOpenRes();
+	}
+	// Check if the default value matches the CLSID.
+	wstring str_IconHandler = hkcr_IconHandler.read(nullptr);
+	if (str_IconHandler == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_IconHandler.close();
+		lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_IconHandler.lOpenRes();
+	}
+
+	// Open the "DefaultIcon" key.
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ, false);
+	if (!hkcr_DefaultIcon.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_DefaultIcon.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_DefaultIcon.lOpenRes();
+	}
+	// Check if the default value is "%1".
+	wstring wstr_DefaultIcon = hkcr_DefaultIcon.read(nullptr);
+	if (wstr_DefaultIcon == L"%1") {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_DefaultIcon.close();
+		lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value doesn't match.
+		// We're done here.
+		return hkcr_DefaultIcon.lOpenRes();
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
@@ -165,80 +271,103 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761852(v=vs.85).aspx
+	if (!pszIconFile || !piIndex || cchMax == 0) {
+		return E_INVALIDARG;
+	}
 	UNUSED(uFlags);
-	UNUSED(pszIconFile);
-	UNUSED(cchMax);
-	UNUSED(piIndex);
 
-#ifndef NDEBUG
-	// Debug version. Don't cache icons.
+	// NOTE: If caching is enabled and we don't set pszIconFile
+	// and piIndex, all icons for files handled by rom-properties
+	// will be the first file Explorer hands off to the extension.
+	//
+	// If we enable caching and set pszIconFile and piIndex, it
+	// effectively disables caching anyway, since it ends up
+	// calling Extract() the first time a file is encountered
+	// in an Explorer session.
+	//
+	// TODO: Implement our own icon caching?
 	*pwFlags = GIL_NOTFILENAME | GIL_DONTCACHE;
-#else /* !NDEBUG */
-	// Release version. Cache icons.
-	*pwFlags = GIL_NOTFILENAME;
-#endif /* NDEBUG */
-
 	return S_OK;
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
-	// NOTE: pszFile should be nullptr here.
-	// TODO: Fail if it's not nullptr?
-
-	// TODO: Use nIconSize?
+	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	UNUSED(pszFile);
 	UNUSED(nIconIndex);
+
+	// TODO: Use nIconSize?
 	UNUSED(nIconSize);
 
 	// Make sure a filename was set by calling IPersistFile::Load().
-	if (m_filename.empty())
+	if (m_filename.empty()) {
 		return E_INVALIDARG;
+	}
 
-	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
+	// phiconLarge must be valid.
+	if (!phiconLarge) {
+		return E_INVALIDARG;
+	}
+
+	if (!m_romData) {
+		// ROM is not supported.
+		// NOTE: S_FALSE causes icon shenanigans.
 		return E_FAIL;
 	}
 
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
-	file.reset(nullptr);	// file is dup()'d by RomData.
+	// ROM is supported. Get the image.
+	// TODO: Customize which ones are used per-system.
+	// For now, check EXT MEDIA, then INT ICON.
 
-	if (!romData) {
-		// ROM is not supported.
-		return S_FALSE;
+	*phiconLarge = nullptr;
+	bool needs_delete = false;	// External images need manual deletion.
+	const rp_image *img = nullptr;
+
+	uint32_t imgbf = m_romData->supportedImageTypes();
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		img = RpImageWin32::getExternalImage(m_romData, RomData::IMG_EXT_MEDIA);
+		needs_delete = (img != nullptr);
 	}
 
-	// ROM is supported. Get the internal icon.
-	// TODO: Customize for internal icon, disc/cart scan, etc.?
-	HRESULT ret = S_FALSE;
-	const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
-	if (icon) {
-		// Convert the icon to HICON.
-		HICON hIcon = RpImageWin32::toHICON(icon);
-		if (hIcon != nullptr) {
-			// Icon converted.
-			if (phiconLarge) {
-				*phiconLarge = hIcon;
-			} else {
-				DeleteObject(hIcon);
-			}
-
-			if (phiconSmall) {
-				// FIXME: is this valid?
-				*phiconSmall = nullptr;
-			}
-
-			ret = S_OK;
+	if (!img) {
+		// No external media scan.
+		// Try an internal image.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			img = RpImageWin32::getInternalImage(m_romData, RomData::IMG_INT_ICON);
 		}
 	}
 
-	return ret;
+	if (img) {
+		// Convert the image to HICON.
+		HICON hIcon = RpImageWin32::toHICON(img);
+		if (hIcon != nullptr) {
+			// Icon converted.
+			bool iconWasSet = false;
+			if (phiconLarge) {
+				*phiconLarge = hIcon;
+				iconWasSet = true;
+			}
+			if (phiconSmall) {
+				// NULL out the small icon.
+				*phiconSmall = nullptr;
+			}
+
+			if (!iconWasSet) {
+				DeleteObject(hIcon);
+			}
+		}
+
+		if (needs_delete) {
+			// Delete the image.
+			delete const_cast<rp_image*>(img);
+		}
+	}
+
+	// NOTE: S_FALSE causes icon shenanigans.
+	return (*phiconLarge != nullptr ? S_OK : E_FAIL);
 }
 
 /** IPersistFile **/
@@ -261,6 +390,23 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	m_filename = W2RP_cs(pszFileName);
+
+	// Attempt to open the ROM file.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		return E_FAIL;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	m_romData = RomDataFactory::getInstance(file.get(), true);
+	if (!m_romData) {
+		// Not supported.
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 

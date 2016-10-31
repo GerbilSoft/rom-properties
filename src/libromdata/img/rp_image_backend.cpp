@@ -44,7 +44,7 @@ static inline int calc_stride(int width, rp_image::Format format)
 			return width * 4;
 		default:
 			// Invalid image format.
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			break;
 	}
 
@@ -58,10 +58,14 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, format(format)
 	, palette(nullptr)
 	, palette_len(0)
-	, tr_idx(-1) // COMMIT NOTE: Changing default from 0 to -1.
+	, tr_idx(-1)
 {
 	// Calculate the stride.
-	stride = calc_stride(width, format);
+	// NOTE: If format == FORMAT_NONE, the subclass is
+	// managing width/height/format.
+	if (format != rp_image::FORMAT_NONE) {
+		stride = calc_stride(width, format);
+	}
 }
 
 rp_image_backend::~rp_image_backend()
@@ -86,6 +90,41 @@ void rp_image_backend::clear_properties(void)
 	this->height = 0;
 	this->stride = 0;
 	this->format = rp_image::FORMAT_NONE;
+}
+
+/**
+ * Check if the palette contains alpha values other than 0 and 255.
+ * @return True if an alpha value other than 0 and 255 was found; false if not, or if ARGB32.
+ */
+bool rp_image_backend::has_translucent_palette_entries(void) const
+{
+	assert(this->format == rp_image::FORMAT_CI8);
+	if (this->format != rp_image::FORMAT_CI8)
+		return false;
+
+	const uint32_t *palette = this->palette;
+	int i = this->palette_len;
+	for (; i > 1; i -= 2, palette += 2) {
+		const uint8_t alpha1 = (palette[0] >> 24);
+		const uint8_t alpha2 = (palette[1] >> 24);
+		if (alpha1 != 0 && alpha1 != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		} else if (alpha2 != 0 && alpha2 != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		}
+	}
+	if (i == 1) {
+		const uint8_t alpha = (*palette >> 24);
+		if (alpha != 0 && alpha != 255) {
+			// Found an alpha value other than 0 and 255.
+			return true;
+		}
+	}
+
+	// Image does not contain alpha values other than 0 and 255.
+	return false;
 }
 
 }

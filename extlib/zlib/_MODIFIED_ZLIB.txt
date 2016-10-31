@@ -2,7 +2,7 @@ This copy of zlib-1.2.8 is a modified version of the original.
 
 The following changes have been made to the original:
 
-- Non-CMake build infratsructure has been removed.
+- Non-CMake build infrastructure has been removed.
 
 - CMakeLists.txt has been edited to prevent building the Win32 resource
   data when being built as a shared library.

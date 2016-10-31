@@ -34,17 +34,24 @@ extern "C" {
 
 namespace LibRomData {
 	class rp_image;
+	class RomData;
 }
 
 // C++ includes.
 #include <string>
 
+class RegKey;
+
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
 RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 {
 	public:
+		RP_ExtractIcon();
+		virtual ~RP_ExtractIcon();
+
+	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 	private:
 		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
 
@@ -53,34 +60,50 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		 * Register the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Register(void);
+		static LONG RegisterCLSID(void);
+
+		/**
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Unregister(void);
+		static LONG UnregisterCLSID(void);
 
- 	protected:
+		/**
+		 * Unregister the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	protected:
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string m_filename;
+		// RomData object. Loaded in IPersistFile::Load().
+		LibRomData::RomData *m_romData;
 
 	public:
 		// IExtractIcon
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) override;
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
 		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) override;
+			UINT nIconSize) final;
 
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 };
 
 #ifdef __CRT_UUID_DECL

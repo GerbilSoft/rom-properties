@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 #define __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 
+#include "libromdata/RomData.hpp"
 namespace LibRomData {
 	class rp_image;
 }
@@ -35,6 +36,32 @@ class RpImageWin32
 		RpImageWin32(const RpImageWin32 &);
 		RpImageWin32 &operator=(const RpImageWin32&);
 
+	public:
+		/**
+		 * Get an internal image.
+		 * NOTE: The image is owned by the RomData object;
+		 * caller must NOT delete it!
+		 *
+		 * @param romData RomData object.
+		 * @param imageType Image type.
+		 * @return Internal image, or nullptr on error.
+		 */
+		static const LibRomData::rp_image *getInternalImage(
+			const LibRomData::RomData *romData,
+			LibRomData::RomData::ImageType imageType);
+
+		/**
+		 * Get an external image.
+		 * NOTE: Caller must delete the image after use.
+		 *
+		 * @param romData RomData object.
+		 * @param imageType Image type.
+		 * @return External image, or nullptr on error.
+		 */
+		static LibRomData::rp_image *getExternalImage(
+			const LibRomData::RomData *romData,
+			LibRomData::RomData::ImageType imageType);
+
 	protected:
 		/**
 		 * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -43,31 +70,44 @@ class RpImageWin32
 		 */
 		static HBITMAP toHBITMAP_mask(const LibRomData::rp_image *image);
 
-		/**
-		 * Convert an rp_image to HBITMAP. (CI8)
-		 * @param image rp_image. (Must be CI8.)
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP toHBITMAP_CI8(const LibRomData::rp_image *image);
-
-		/**
-		 * Convert an rp_image to HBITMAP. (ARGB32)
-		 * @param image rp_image. (Must be ARGB32.)
-		 * @param bgColor Background color for images with alpha transparency.
-		 * @return HBITMAP, or nullptr on error.
-		 */
-		static HBITMAP toHBITMAP_ARGB32(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
-
 	public:
 		/**
 		 * Convert an rp_image to HBITMAP.
-		 * @param image rp_image.
-		 * @param bgColor Background color for images with alpha transparency.
+		 * @param image		[in] rp_image.
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, COLORREF bgColor = 0xFFFFFFFF);
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor);
 
-		// FIXME: toHBITMAP() function that preserves the alpha channel.
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version resizes the image.
+		 * @param image		[in] rp_image.
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+		 * @param size		[in] If non-zero, resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor,
+					const SIZE &size, bool nearest);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version preserves the alpha channel.
+		 * @param image	[in] rp_image.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * This version preserves the alpha channel and resizes the image.
+		 * @param image		[in] rp_image.
+		 * @param size		[in] If non-zero, resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest);
 
 		/**
 		 * Convert an rp_image to HICON.

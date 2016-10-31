@@ -37,12 +37,42 @@ class DiscReader : public IDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		DiscReader(IRpFile *file);
+		explicit DiscReader(IRpFile *file);
+
+		/**
+		 * Construct a DiscReader with the specified file.
+		 * The file is dup()'d, so the original file can be
+		 * closed afterwards.
+		 * @param file File to read from.
+		 * @param offset Starting offset.
+		 * @param length Disc length. (-1 for "until end of file")
+		 */
+		DiscReader(IRpFile *file, int64_t offset, int64_t length);
+
 		virtual ~DiscReader();
 
 	private:
 		DiscReader(const DiscReader &);
 		DiscReader &operator=(const DiscReader&);
+
+	public:
+		/** Disc image detection functions. **/
+
+		/**
+		 * Is a disc image supported by this class?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
+
+		/**
+		 * Is a disc image supported by this object?
+		 * @param pHeader Disc image header.
+		 * @param szHeader Size of header.
+		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 */
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override;
 
 	public:
 		/**
@@ -92,6 +122,10 @@ class DiscReader : public IDiscReader
 	protected:
 		IRpFile *m_file;
 		int m_lastError;
+
+		// Offset/length. Useful for e.g. GameCube TGC.
+		int64_t m_offset;
+		int64_t m_length;
 };
 
 }

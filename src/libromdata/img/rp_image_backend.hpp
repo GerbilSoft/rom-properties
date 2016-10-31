@@ -49,6 +49,12 @@ class rp_image_backend
 		 * */
 		void clear_properties(void);
 
+		/**
+		 * Check if the palette contains alpha values other than 0 and 255.
+		 * @return True if an alpha value other than 0 and 255 was found; false if not, or if ARGB32.
+		 */
+		bool has_translucent_palette_entries(void) const;
+
 	public:
 		int width;
 		int height;

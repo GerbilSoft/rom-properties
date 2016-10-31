@@ -40,7 +40,7 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 			qfmt = QImage::Format_ARGB32;
 			break;
 		default:
-			assert(false);
+			assert(!"Unsupported rp_image::Format.");
 			this->width = 0;
 			this->height = 0;
 			this->stride = 0;
