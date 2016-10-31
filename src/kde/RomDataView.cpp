@@ -564,9 +564,9 @@ void RomDataViewPrivate::stopAnimTimer(void)
 
 /** RomDataView **/
 
-RomDataView::RomDataView(RomData *rom, QWidget *parent)
+RomDataView::RomDataView(RomData *romData, QWidget *parent)
 	: super(parent)
-	, d_ptr(new RomDataViewPrivate(this, rom))
+	, d_ptr(new RomDataViewPrivate(this, romData))
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
