@@ -7,7 +7,6 @@ video game ROM and disc images.
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)
 
-https://api.travis-ci.org/GerbilSoft/rom-properties.svg?branch=feature/PlayStation.save-file.v2
 ## So what does it do?
 
 Got a USB hard drive with Wii disc images for USB Loader GX or the Dolphin Emulator? Now you can actually see what those discs are:
