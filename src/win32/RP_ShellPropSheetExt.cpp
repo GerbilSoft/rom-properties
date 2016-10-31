@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RegKey.hpp"
+#include "RpImageWin32.hpp"
 #include "resource.h"
 
 // libromdata
@@ -46,11 +47,9 @@ using namespace LibRomData;
 // C++ includes.
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using std::unique_ptr;
-using std::unordered_map;
 using std::unordered_set;
 using std::wstring;
 using std::vector;
@@ -121,11 +120,14 @@ class RP_ShellPropSheetExt_Private
 		HFONT hFontBold;	// Bold font.
 		HFONT hFontMono;	// Monospaced font.
 
-		// Monospaced fonts.
+		// Monospaced font details.
+		LOGFONT lfFontMono;
 		unordered_set<wstring> monospaced_fonts;
+		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
+		bool bPrevIsClearType;	// Previous ClearType setting.
 
-		// Subclassed multiline edit controls.
-		unordered_map<HWND, WNDPROC> mapOldEditProc;
+		// Controls that need to be drawn using red text.
+		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -188,7 +190,7 @@ class RP_ShellPropSheetExt_Private
 		/**
 		 * Load the banner and icon as HBITMAPs.
 		 *
-		 * This function should be called on startup and if
+		 * This function should bee called on startup and if
 		 * the window's background color changes.
 		 *
 		 * @param hDlg	[in] Dialog window.
@@ -196,6 +198,12 @@ class RP_ShellPropSheetExt_Private
 		void loadImages(HWND hDlg);
 
 	private:
+		/**
+		 * Increase an image's size to the minimum size, if necesary.
+		 * @param sz Image size.
+		 */
+		void incSizeToMinimum(SIZE &sz);
+
 		/**
 		 * Create the header row.
 		 * @param hDlg		[in] Dialog window.
@@ -245,6 +253,12 @@ class RP_ShellPropSheetExt_Private
 		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
 
 		/**
+		 * Initialize the bold font.
+		 * @param hFont Base font.
+		 */
+		void initBoldFont(HFONT hFont);
+
+		/**
 		 * Monospaced font enumeration procedure.
 		 * @param lpelfe Enumerated font information.
 		 * @param lpntme Font metrics.
@@ -255,13 +269,13 @@ class RP_ShellPropSheetExt_Private
 			const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
 			DWORD FontType, LPARAM lParam);
 
+	public:
 		/**
 		 * Initialize the monospaced font.
 		 * @param hFont Base font.
 		 */
 		void initMonospacedFont(HFONT hFont);
 
-	public:
 		/**
 		 * Initialize the dialog.
 		 * Called by WM_INITDIALOG.
@@ -279,6 +293,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hDlgSheet(nullptr)
 	, hFontBold(nullptr)
 	, hFontMono(nullptr)
+	, bPrevIsClearType(nullptr)
 	, lblSysInfo(nullptr)
 	, colorWinBg(0)
 	, hUxTheme_dll(nullptr)
@@ -506,13 +521,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (banner && banner->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			// TODO: Const-ness fixes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(banner->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpBanner = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-			}
+			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, true);
 		}
 	}
 
@@ -531,12 +540,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		if (icon && icon->isValid()) {
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
-			const RpGdiplusBackend *backend =
-				dynamic_cast<const RpGdiplusBackend*>(icon->backend());
-			assert(backend != nullptr);
-			if (backend) {
-				hbmpIconFrames[0] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-			}
+			hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
 
 			// Get the animated icon data.
 			if (iconAnimData) {
@@ -546,12 +550,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.
-						const RpGdiplusBackend *backend =
-							dynamic_cast<const RpGdiplusBackend*>(iconAnimData->frames[i]->backend());
-						assert(backend != nullptr);
-						if (backend) {
-							hbmpIconFrames[i] = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(gdipBgColor);
-						}
+						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, true);
 					}
 				}
 
@@ -564,6 +563,33 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 			}
 		}
 	}
+}
+
+/**
+ * Increase an image's size to the minimum size, if necesary.
+ * @param sz Image size.
+ */
+void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
+{
+	// Minimum image size.
+	// If images are smaller, they will be resized.
+	// TODO: Adjust minimum size for DPI.
+	static const SIZE min_img_size = {32, 32};
+
+	if (sz.cx >= min_img_size.cx && sz.cx >= min_img_size.cy) {
+		// No resize necessary.
+		return;
+	}
+
+	// Resize the image.
+	SIZE orig_sz = sz;
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		sz.cx += orig_sz.cx;
+		sz.cy += orig_sz.cy;
+	} while (sz.cx < min_img_size.cx && sz.cy < min_img_size.cy);
 }
 
 /**
@@ -587,28 +613,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
 	// File type.
-	const rp_char *fileType = nullptr;
-	switch (romData->fileType()) {
-		case RomData::FTYPE_ROM_IMAGE:
-			fileType = _RP("ROM Image");
-			break;
-		case RomData::FTYPE_DISC_IMAGE:
-			fileType = _RP("Disc Image");
-			break;
-		case RomData::FTYPE_SAVE_FILE:
-			fileType = _RP("Save File");
-			break;
-		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
-			fileType = _RP("Embedded Disc Image");
-			break;
-		case RomData::FTYPE_APPLICATION_PACKAGE:
-			fileType = _RP("Application Package");
-			break;
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			fileType = nullptr;
-			break;
-	}
+	const rp_char *const fileType = romData->fileType_string();
 
 	wstring sysInfo;
 	if (systemName) {
@@ -628,18 +633,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	SIZE sz_lblSysInfo = {0, 0};
 
 	if (!sysInfo.empty()) {
-		// Use a bold font.
-		// TODO: Delete the old font if it's already there?
-		if (!hFontBold) {
-			// Create the bold font.
-			LOGFONT lfFontBold;
-			if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
-				// Adjust the font and create a new one.
-				lfFontBold.lfWeight = FW_BOLD;
-				hFontBold = CreateFontIndirect(&lfFontBold);
-			}
-		}
-
 		// Determine the appropriate label size.
 		int ret = measureTextSize(hDlg,
 			(hFontBold ? hFontBold : hFont),
@@ -664,12 +657,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the banner.
 		banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
+			szBanner.cx = banner->width();
+			szBanner.cy = banner->height();
+			incSizeToMinimum(szBanner);
+
 			// Add the banner width.
 			// The banner will be assigned to a WC_STATIC control.
 			if (total_widget_width > 0) {
 				total_widget_width += pt_start.x;
 			}
-			total_widget_width += banner->width();
+			total_widget_width += szBanner.cx;
 		} else {
 			// No banner.
 			banner = nullptr;
@@ -682,12 +679,16 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the icon.
 		icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			szIcon.cx = icon->width();
+			szIcon.cy = icon->height();
+			incSizeToMinimum(szIcon);
+
 			// Add the icon width.
 			// The icon will be assigned to a WC_STATIC control.
 			if (total_widget_width > 0) {
 				total_widget_width += pt_start.x;
 			}
-			total_widget_width += icon->width();
+			total_widget_width += szIcon.cx;
 
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
@@ -717,15 +718,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	// lblBanner
 	if (banner) {
 		ptBanner = curPt;
-		szBanner.cx = banner->width();
-		szBanner.cy = banner->height();
 		curPt.x += szBanner.cx + pt_start.x;
 	}
 
 	// lblIcon
 	if (icon) {
-		szIcon.cx = icon->width();
-		szIcon.cy = icon->height();
 		SetRect(&rectIcon, curPt.x, curPt.y,
 			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
 		curPt.x += szIcon.cx + pt_start.x;
@@ -804,11 +801,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		dwStyle |= ES_MULTILINE;
 	}
 
+	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(idx));
 	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 		pt_start.x, pt_start.y,
 		size.cx, field_cy,
-		hDlg, (HMENU)(INT_PTR)(IDC_RFT_STRING(idx)),
-		nullptr, nullptr);
+		hDlg, cId, nullptr, nullptr);
 
 	// Get the default font.
 	HFONT hFont = GetWindowFont(hDlg);
@@ -820,18 +817,41 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
 
 		// Subclass the control.
-		WNDPROC oldEditProc = (WNDPROC)SetWindowLongPtr(
-			hDlgItem, GWLP_WNDPROC,
-			(LONG_PTR)RP_ShellPropSheetExt::MultilineEditProc);
-		mapOldEditProc.insert(std::make_pair(hDlgItem, oldEditProc));
+		// TODO: Error handling?
+		SetWindowSubclass(hDlgItem,
+			RP_ShellPropSheetExt::MultilineEditProc,
+			(UINT_PTR)cId, (DWORD_PTR)q);
 	}
 
 	// Check for any formatting options.
 	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
-		// Monospace font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-			if (hFontMono != nullptr) {
+		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
+		// Preferring STRF_WARNING.
+		assert((desc->str_desc->formatting &
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING)) !=
+			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING));
+
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+			// "Warning" font.
+			if (hFontBold) {
+				hFont = hFontBold;
+				hwndWarningControls.insert(hDlgItem);
+
+				// Set the font of the description control.
+				HWND hStatic = GetDlgItem(hDlg, IDC_STATIC_DESC(idx));
+				if (hStatic) {
+					SetWindowFont(hStatic, hFont, FALSE);
+					hwndWarningControls.insert(hStatic);
+				}
+			}
+		} else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			// Monospaced font.
+			if (hFontMono) {
 				hFont = hFontMono;
+				if (hwndMonoControls.empty()) {
+					hwndMonoControls.reserve(4);
+				}
+				hwndMonoControls.push_back(hDlgItem);
 			}
 		}
 	}
@@ -1038,9 +1058,7 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
 
 		const vector<rp_string> &data_row = listData->data.at(i);
 		int field = 0;
-		for (vector<rp_string>::const_iterator iter = data_row.begin();
-		     iter != data_row.end(); ++iter, ++field)
-		{
+		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
 			lvItem.iSubItem = field;
 			// TODO: Support for RP_UTF8?
 			// NOTE: pszText is LPWSTR, not LPCWSTR...
@@ -1194,75 +1212,137 @@ int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
 }
 
 /**
+ * Initialize the bold font.
+ * @param hFont Base font.
+ */
+void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
+{
+	if (!hFont || hFontBold) {
+		// No base font, or the bold font
+		// is already initialized.
+		return;
+	}
+
+	// Create the bold font.
+	LOGFONT lfFontBold;
+	if (GetObject(hFont, sizeof(lfFontBold), &lfFontBold) != 0) {
+		// Adjust the font and create a new one.
+		lfFontBold.lfWeight = FW_BOLD;
+		hFontBold = CreateFontIndirect(&lfFontBold);
+	}
+}
+
+/**
  * Initialize the monospaced font.
  * @param hFont Base font.
  */
 void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 {
-	// TODO: Delete the old font if it's already there?
-	if (hFontMono || !hFont) {
+	if (!hFont) {
+		// No base font...
 		return;
 	}
 
-	// Monospaced font should be based on the specified font.
-	LOGFONT lfFontMono;
-	if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
-		// Unable to obtain the LOGFONT.
-		return;
-	}
-
-	// Enumerate all monospaced fonts.
-	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
-	monospaced_fonts.clear();
-#if !defined(_MSC_VER) || _MSC_VER >= 1700	
-	monospaced_fonts.reserve(64);
-#endif
-	LOGFONT lfEnumFonts;
-	memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
-	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
-	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
-	HDC hdc = GetDC(nullptr);
-	EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
-		reinterpret_cast<LPARAM>(this), 0);
-	ReleaseDC(nullptr, hdc);
-
-	// Fonts to try.
-	static const wchar_t *const fonts[] = {
-                L"DejaVu Sans Mono",
-                L"Consolas",
-                L"Lucida Console",
-                L"Fixedsys Excelsior 3.01",
-                L"Fixedsys Excelsior 3.00",
-                L"Fixedsys Excelsior 3.0",
-                L"Fixedsys Excelsior 2.00",
-                L"Fixedsys Excelsior 2.0",
-                L"Fixedsys Excelsior 1.00",
-                L"Fixedsys Excelsior 1.0",
-                L"Fixedsys",
-                L"Courier New",
-	};
-
-	const wchar_t *font = nullptr;
-
-	for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
-		if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
-			// Found a font.
-			font = fonts[i];
-			break;
+	// Get the current ClearType setting.
+	bool bIsClearType = false;
+	BOOL bFontSmoothing;
+	BOOL bRet = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &bFontSmoothing, 0);
+	if (bRet) {
+		UINT uiFontSmoothingType;
+		bRet = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &uiFontSmoothingType, 0);
+		if (bRet) {
+			bIsClearType = (bFontSmoothing && (uiFontSmoothingType == FE_FONTSMOOTHINGCLEARTYPE));
 		}
 	}
 
-	// We don't need the enumerated fonts anymore.
-	monospaced_fonts.clear();
+	if (hFontMono) {
+		// Font exists. Only re-create it if the ClearType setting has changed.
+		if (bIsClearType == bPrevIsClearType) {
+			// ClearType setting has not changed.
+			return;
+		}
+	} else {
+		// Font hasn't been created yet.
+		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
+			// Unable to obtain the LOGFONT.
+			return;
+		}
 
-	if (!font) {
-		// Monospaced font not found.
+		// Enumerate all monospaced fonts.
+		// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
+		monospaced_fonts.clear();
+#if !defined(_MSC_VER) || _MSC_VER >= 1700	
+		monospaced_fonts.reserve(64);
+#endif
+		LOGFONT lfEnumFonts;
+		memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
+		lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
+		lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+		HDC hdc = GetDC(nullptr);
+		EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
+			reinterpret_cast<LPARAM>(this), 0);
+		ReleaseDC(nullptr, hdc);
+
+		// Fonts to try.
+		static const wchar_t *const fonts[] = {
+			L"DejaVu Sans Mono",
+			L"Consolas",
+			L"Lucida Console",
+			L"Fixedsys Excelsior 3.01",
+			L"Fixedsys Excelsior 3.00",
+			L"Fixedsys Excelsior 3.0",
+			L"Fixedsys Excelsior 2.00",
+			L"Fixedsys Excelsior 2.0",
+			L"Fixedsys Excelsior 1.00",
+			L"Fixedsys Excelsior 1.0",
+			L"Fixedsys",
+			L"Courier New",
+		};
+
+		const wchar_t *font = nullptr;
+
+		for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
+			if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
+				// Found a font.
+				font = fonts[i];
+				break;
+			}
+		}
+
+		// We don't need the enumerated fonts anymore.
+		monospaced_fonts.clear();
+
+		if (!font) {
+			// Monospaced font not found.
+			return;
+		}
+
+		// Adjust the font and create a new one.
+		wcscpy(lfFontMono.lfFaceName, font);
+	}
+
+	// Create the monospaced font.
+	// If ClearType is enabled, use DEFAULT_QUALITY;
+	// otherwise, use NONANTIALIASED_QUALITY.
+	lfFontMono.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
+	HFONT hFontMonoNew = CreateFontIndirect(&lfFontMono);
+	if (!hFontMonoNew) {
+		// Unable to create new font.
 		return;
 	}
 
-	// Adjust the font and create a new one.
-	wcscpy(lfFontMono.lfFaceName, font);
-	hFontMono = CreateFontIndirect(&lfFontMono);
+	// Update all existing monospaced controls.
+	for (auto iter = hwndMonoControls.cbegin(); iter != hwndMonoControls.cend(); ++iter) {
+		SetWindowFont(*iter, hFontMonoNew, FALSE);
+	}
+
+	// Delete the old font and save the new one.
+	HFONT hFontMonoOld = hFontMono;
+	hFontMono = hFontMonoNew;
+	if (hFontMonoOld) {
+		DeleteFont(hFontMonoOld);
+	}
+	bPrevIsClearType = bIsClearType;
 }
 
 /**
@@ -1299,6 +1379,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	HDC hDC = GetDC(hDlg);
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
+	// Initialize the bold and monospaced fonts.
+	initBoldFont(hFont);
+	initMonospacedFont(hFont);
+
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
 	int max_text_width = 0;
@@ -1315,6 +1399,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Make sure this is a UTF-16 string.
 		wstring s_name = RP2W_c(desc->name);
+
+		// TODO: Handle STRF_WARNING?
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?
@@ -1355,9 +1441,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Create the header row.
 	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
 	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
-
-	// Make sure the monospaced font is initialized.
-	initMonospacedFont(hFont);
 
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Desc *desc = fields->desc(idx);
@@ -1480,7 +1563,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
 		return E_INVALIDARG;
-	*ppvObj = NULL;
 
 	// Check if this interface is supported.
 	// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -1494,6 +1576,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		*ppvObj = static_cast<IShellPropSheetExt*>(this);
 	} else {
 		// Interface is not supported.
+		*ppvObj = nullptr;
 		return E_NOINTERFACE;
 	}
 
@@ -1536,10 +1619,10 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey *pHkey_ProgID)
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -1550,20 +1633,10 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey *pHkey_ProgID)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Register as a property sheet handler for this ProgID.
-	unique_ptr<RegKey> pHkcr_ProgID;
-	if (!pHkey_ProgID) {
-		// TODO: Register for 'all' types, like the various hash extensions?
-		// Create/open the system-wide ProgID key.
-		pHkcr_ProgID.reset(new RegKey(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true));
-		if (!pHkcr_ProgID->isOpen()) {
-			return pHkcr_ProgID->lOpenRes();
-		}
-		pHkey_ProgID = pHkcr_ProgID.get();
-	}
+	// Register as a property sheet handler for this file association.
 
 	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(*pHkey_ProgID, L"ShellEx", KEY_WRITE, true);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}
@@ -1604,6 +1677,81 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 	}
 
 	// TODO
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as a property sheet handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the PropertySheetHandlers key.
+	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
+	if (!hkcr_PropertySheetHandlers.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropertySheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropertySheetHandlers.lOpenRes();
+	}
+
+	// Open the "rom-properties" property sheet handler key.
+	// NOTE: This always uses RP_ProgID[], not the specified progID.
+	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_READ, false);
+	if (!hkcr_PropSheet_RomProperties.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_PropSheet_RomProperties.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+	// Check if the default value matches the CLSID.
+	wstring str_IShellPropSheetExt = hkcr_PropSheet_RomProperties.read(nullptr);
+	if (str_IShellPropSheetExt == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_PropSheet_RomProperties.close();
+		lResult = hkcr_PropertySheetHandlers.deleteSubKey(RP_ProgID);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value does not match.
+		// We're done here.
+		return hkcr_PropSheet_RomProperties.lOpenRes();
+	}
+
+	// Check if PropertySheetHandlers is empty.
+	// TODO: Error handling.
+	if (hkcr_PropertySheetHandlers.isKeyEmpty()) {
+		// No subkeys. Delete this key.
+		hkcr_PropertySheetHandlers.close();
+		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
@@ -1784,16 +1932,16 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt_Private *const d = pExt->d;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
-				case PSN_SETACTIVE:
-					d->startAnimTimer();
-					break;
+			case PSN_SETACTIVE:
+				d->startAnimTimer();
+				break;
 
-				case PSN_KILLACTIVE:
-					d->stopAnimTimer();
-					break;
+			case PSN_KILLACTIVE:
+				d->stopAnimTimer();
+				break;
 
-				default:
-					break;
+			default:
+				break;
 			}
 
 			// Continue normal processing.
@@ -1855,6 +2003,30 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_NCPAINT: {
+			// Update the monospaced font.
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				HFONT hFont = GetWindowFont(hDlg);
+				pExt->d->initMonospacedFont(hFont);
+			}
+			break;
+		}
+
+		case WM_CTLCOLORSTATIC: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (pExt) {
+				if (pExt->d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) != pExt->d->hwndWarningControls.end()) {
+					// Set the "Warning" color.
+					HDC hdc = reinterpret_cast<HDC>(wParam);
+					SetTextColor(hdc, RGB(255, 0, 0));
+				}
+			}
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -1904,19 +2076,24 @@ UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 
 /**
  * Subclass procedure for ES_MULTILINE EDIT controls.
- * @param hWnd
- * @param uMsg
- * @param wParam
- * @param lParam
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	RP_ShellProSheetExt*
  */
-INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-		GetProp(hWnd, EXT_POINTER_PROP));
-	if (!pExt) {
+	if (!dwRefData) {
 		// No RP_ShellPropSheetExt. Can't do anything...
-		return 0;
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 	}
+	RP_ShellPropSheetExt *const pExt =
+		reinterpret_cast<RP_ShellPropSheetExt*>(dwRefData);
 
 	switch (uMsg) {
 		case WM_KEYDOWN:
@@ -1935,19 +2112,17 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::MultilineEditProc(HWND hWnd, UINT uMsg, W
 					break;
 			}
 
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MultilineEditProc, uIdSubclass);
+			break;
+
 		default:
 			break;
 	}
 
-	// Call the original window procedure.
-	unordered_map<HWND, WNDPROC>::const_iterator iter = pExt->d->mapOldEditProc.find(hWnd);
-	if (iter != pExt->d->mapOldEditProc.end()) {
-		WNDPROC wndProc = iter->second;
-		return CallWindowProc(wndProc, hWnd, uMsg, wParam, lParam);
-	}
-
-	// Can't find the original window procedure...
-	return DefDlgProc(hWnd, uMsg, wParam, lParam);
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /**

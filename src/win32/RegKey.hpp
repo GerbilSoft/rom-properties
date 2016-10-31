@@ -146,16 +146,23 @@ class RegKey
 		 */
 		LONG enumSubKeys(std::list<std::wstring> &vSubKeys);
 
+		/**
+		 * Is the key empty?
+		 * This means no values, an empty default value, and no subkey.
+		 * @return True if the key is empty; false if not or if an error occurred.
+		 */
+		bool isKeyEmpty(void);
+
 	public:
 		/** COM registration convenience functions. **/
 
 		/**
-		 * Register a file type.
-		 * @param fileType File extension, with leading dot. (e.g. ".bin")
-		 * @param progID ProgID.
-		 * @return ERROR_SUCCESS on success; WinAPI error on error.
-		 */
-		static LONG RegisterFileType(LPCWSTR fileType, LPCWSTR progID);
+		* Register a file type.
+		* @param fileType File extension, with leading dot. (e.g. ".bin")
+		* @param pHkey_Assoc Pointer to RegKey* to store opened registry key on success. (If nullptr, key will be closed.)
+		* @return ERROR_SUCCESS on success; WinAPI error on error.
+		*/
+		static LONG RegisterFileType(LPCWSTR fileType, RegKey **pHkey_Assoc);
 
 		/**
 		 * Register a COM object in this DLL.

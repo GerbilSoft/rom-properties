@@ -56,10 +56,15 @@ ENDIF(NOT WIN32)
 INCLUDE(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
 
+# Check if non-capturing lambda functions can be cast to function pointers.
+INCLUDE(CheckCXX11LambdaAsFunctionPointer)
+CHECK_CXX11_LAMBDA_AS_FUNCTION_POINTER(HAVE_LAMBDA_AS_FUNCTION_POINTER)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libromdata.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libromdata.h")
 
 SET(libromdata_SRCS
+	byteswap.c
 	TextFuncs.cpp
 	RomData.cpp
 	RomFields.cpp
@@ -74,6 +79,10 @@ SET(libromdata_SRCS
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
 	GameCubeSave.cpp
+	N64.cpp
+	SNES.cpp
+	DreamcastSave.cpp
+	PlayStationSave.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
@@ -100,6 +109,7 @@ SET(libromdata_H
 	RomData.hpp
 	RomFields.hpp
 	TextFuncs.hpp
+	TextFuncs_int.hpp
 	MegaDrive.hpp
 	MegaDrivePublishers.hpp
 	MegaDriveRegions.hpp
@@ -114,8 +124,17 @@ SET(libromdata_H
 	CopierFormats.h
 	SystemRegion.hpp
 	GameCubeSave.hpp
+	PlayStationSave.hpp
 	gcn_card.h
 	nds_structs.h
+	N64.hpp
+	n64_structs.h
+	dmg_structs.h
+	gba_structs.h
+	SNES.hpp
+	snes_structs.h
+	DreamcastSave.hpp
+	dc_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -145,6 +164,9 @@ SET(libromdata_H
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
+		RpWin32.hpp
+		RpWin32_sdk.h
+		TextFuncs_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
 		img/RpPng_gdiplus.cpp
@@ -158,6 +180,7 @@ IF(WIN32)
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
+		TextFuncs_iconv.cpp
 		file/RpFile_stdio.cpp
 		img/RpPng_libpng.cpp
 		)

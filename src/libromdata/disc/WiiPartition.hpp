@@ -44,8 +44,10 @@ class WiiPartition : public GcnPartition
 		~WiiPartition();
 
 	private:
+		typedef GcnPartition super;
 		WiiPartition(const WiiPartition &other);
 		WiiPartition &operator=(const WiiPartition &other);
+
 	protected:
 		friend class WiiPartitionPrivate;
 		// d_ptr is used from the subclass.

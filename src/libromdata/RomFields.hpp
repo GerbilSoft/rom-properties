@@ -47,6 +47,10 @@ class RomFields
 			enum StringFormat {
 				// Print the string using a monospaced font.
 				STRF_MONOSPACE	= (1 << 0),
+
+				// Print the string using a "warning" font.
+				// (usually bold and red)
+				STRF_WARNING	= (1 << 1),
 			};
 
 			// Custom formatting options.

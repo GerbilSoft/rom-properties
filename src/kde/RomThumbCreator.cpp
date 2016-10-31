@@ -143,9 +143,7 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 	}
 
 	CacheManager cache;
-	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
-	     iter != extURLs->end(); ++iter)
-	{
+	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
 		// Check if a proxy is required for this URL.

@@ -57,21 +57,22 @@ uint32_t SystemRegion::getCountryCode(void)
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.
+	// FIXME: Non-ASCII locale names will break!
 	wchar_t locale[16];
 	int ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, locale, ARRAY_SIZE(locale));
 	switch (ret) {
 		case 3:
 			// 2-character country code.
 			// (ret == 3 due to the NULL terminator.)
-			cc = ((toupper(locale[0]) << 8) |
-			       toupper(locale[1]));
+			cc = (((towupper(locale[0]) & 0xFF) << 8) |
+			       (towupper(locale[1]) & 0xFF));
 			break;
 		case 4:
 			// 3-character country code.
 			// (ret == 3 due to the NULL terminator.)
-			cc = ((toupper(locale[0]) << 16) |
-			      (toupper(locale[1]) << 8) |
-			       toupper(locale[2]));
+			cc = (((towupper(locale[0]) & 0xFF) << 16) |
+			      ((towupper(locale[1]) & 0xFF) << 8) |
+			       (towupper(locale[2]) & 0xFF));
 			break;
 
 		default:
@@ -132,21 +133,22 @@ uint32_t SystemRegion::getLanguageCode(void)
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// NOTE: LOCALE_SISO639LANGNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.
+	// FIXME: Non-ASCII locale names will break!
 	wchar_t locale[16];
 	int ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, locale, ARRAY_SIZE(locale));
 	switch (ret) {
 		case 3:
 			// 2-character language code.
 			// (ret == 3 due to the NULL terminator.)
-			lc = ((tolower(locale[0]) << 8) |
-			       tolower(locale[1]));
+			lc = (((towlower(locale[0]) & 0xFF) << 8) |
+			       (towlower(locale[1]) & 0xFF));
 			break;
 		case 4:
 			// 3-character language code.
 			// (ret == 3 due to the NULL terminator.)
-			lc = ((tolower(locale[0]) << 16) |
-			      (tolower(locale[1]) << 8) |
-			       tolower(locale[2]));
+			lc = (((towlower(locale[0]) & 0xFF) << 16) |
+			      ((towlower(locale[1]) & 0xFF) << 8) |
+			       (towlower(locale[2]) & 0xFF));
 			break;
 
 		default:

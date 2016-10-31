@@ -26,20 +26,7 @@
 #error RpWin32.hpp should only be included in Windows builds.
 #endif
 
-// Define this symbol to get XP themes. See:
-// http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
-// for more info. Note that as of May 2006, the page says the symbols should
-// be called "SIDEBYSIDE_COMMONCONTROLS" but the headers in my SDKs in VC 6 & 7
-// don't reference that symbol. If ISOLATION_AWARE_ENABLED doesn't work for you,
-// try changing it to SIDEBYSIDE_COMMONCONTROLS
-#define ISOLATION_AWARE_ENABLED 1
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
+#include "RpWin32_sdk.h"
 
 /** Windows-specific wrappers for wchar_t. **/
 
@@ -56,8 +43,6 @@
  */
 
 #include "libromdata/TextFuncs.hpp"
-
-#include <windows.h>
 
 #if defined(RP_UTF8)
 

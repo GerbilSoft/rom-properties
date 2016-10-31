@@ -118,8 +118,15 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 */
 		virtual int64_t fileSize(void) final;
 
+		/**
+		 * Get the filename.
+		 * @return Filename. (May be empty if the filename is not available.)
+		 */
+		LibRomData::rp_string filename(void) const;
+
 	protected:
 		IStream *m_pStream;
+		LibRomData::rp_string m_filename;
 		int m_lastError;
 };
 

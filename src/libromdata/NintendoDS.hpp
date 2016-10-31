@@ -55,8 +55,9 @@ class NintendoDS : public RomData
 		virtual ~NintendoDS();
 
 	private:
-		NintendoDS(const NintendoDS &);
-		NintendoDS &operator=(const NintendoDS &);
+		typedef RomData super;
+		NintendoDS(const NintendoDS &other);
+		NintendoDS &operator=(const NintendoDS &other);
 
 	private:
 		friend class NintendoDSPrivate;

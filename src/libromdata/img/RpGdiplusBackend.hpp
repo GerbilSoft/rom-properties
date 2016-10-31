@@ -141,10 +141,27 @@ class RpGdiplusBackend : public rp_image_backend
 		 * WARNING: This *may* invalidate pointers
 		 * previously returned by data().
 		 *
-		 * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor = 0xFFFFFFFF);
+		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor);
+
+		/**
+		 * Convert an rp_image to HBITMAP.
+		 * Caller must delete the HBITMAP.
+		 *
+		 * This version resizes the image.
+		 *
+		 * WARNING: This *may* invalidate pointers
+		 * previously returned by data().
+		 *
+		 * @param image		[in] rp_image.
+		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
+		 * @param size		[in] If non-zero, resize the image to this size.
+		 * @param nearest	[in] If true, use nearest-neighbor scaling.
+		 * @return HBITMAP, or nullptr on error.
+		 */
+		HBITMAP toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest);
 
 		/**
 		 * Convert the GDI+ image to HBITMAP.

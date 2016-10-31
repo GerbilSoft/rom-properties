@@ -123,76 +123,76 @@ STDAPI DllCanUnloadNow(void)
 
 /**
  * Get a class factory to create an object of the requested type.
- * @param rclsid CLSID of the object.
- * @param riid IID_IClassFactory.
- * @param ppvOut Pointer that receives the interface pointer requested in riid.
+ * @param rclsid	[in] CLSID of the object.
+ * @param riid		[in] IID_IClassFactory.
+ * @param ppv		[out] Pointer that receives the interface pointer requested in riid.
  * @return Error code.
  */
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppvOut)
+__checkReturn
+STDAPI DllGetClassObject(__in REFCLSID rclsid, __in REFIID riid, __deref_out LPVOID FAR* ppv)
 {
-	*ppvOut = nullptr;
+	if (!ppv) {
+		// Incorrect parameters.
+		return E_INVALIDARG;
+	}
+
+	// Clear the interface pointer initially.
+	*ppv = nullptr;
 
 	// Check for supported classes.
 	HRESULT hr = E_FAIL;
-	if (IsEqualIID(rclsid, CLSID_RP_ExtractIcon)) {
-		// Create a new class factory for RP_ExtractIcon.
-		RP_ClassFactory<RP_ExtractIcon> *pCF = new RP_ClassFactory<RP_ExtractIcon>();
-		hr = pCF->QueryInterface(riid, ppvOut);
-		pCF->Release();
-	} else if (IsEqualIID(rclsid, CLSID_RP_ExtractImage)) {
-		// Create a new class factory for RP_ExtractImage.
-		RP_ClassFactory<RP_ExtractImage> *pCF = new RP_ClassFactory<RP_ExtractImage>();
-		hr = pCF->QueryInterface(riid, ppvOut);
-		pCF->Release();
-	} else if (IsEqualIID(rclsid, CLSID_RP_ShellPropSheetExt)) {
-		// Create a new class factory for RP_ShellPropSheetExt.
-		RP_ClassFactory<RP_ShellPropSheetExt> *pCF = new RP_ClassFactory<RP_ShellPropSheetExt>();
-		hr = pCF->QueryInterface(riid, ppvOut);
-		pCF->Release();
-	} else if (IsEqualIID(rclsid, CLSID_RP_ThumbnailProvider)) {
-		// Create a new class factory for RP_ThumbnailProvider.
-		RP_ClassFactory<RP_ThumbnailProvider> *pCF = new RP_ClassFactory<RP_ThumbnailProvider>();
-		hr = pCF->QueryInterface(riid, ppvOut);
-		pCF->Release();
-	} else {
+#define CHECK_INTERFACE(Interface) \
+	if (IsEqualIID(rclsid, CLSID_##Interface)) { \
+		/* Create a new class factory for this Interface. */ \
+		RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
+		hr = pCF->QueryInterface(riid, ppv); \
+		pCF->Release(); \
+	}
+	CHECK_INTERFACE(RP_ExtractIcon)
+	else CHECK_INTERFACE(RP_ExtractImage)
+	else CHECK_INTERFACE(RP_ShellPropSheetExt)
+	else CHECK_INTERFACE(RP_ThumbnailProvider)
+	else {
 		// Class not available.
 		hr = CLASS_E_CLASSNOTAVAILABLE;
 	}
 
 	if (hr != S_OK) {
 		// Interface not found.
-		*ppvOut = nullptr;
+		*ppv = nullptr;
 	}
 	return hr;
 }
 
 /**
  * Register file type handlers.
- * @param pHkey_progID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
+ * @param hasThumbnail If true, associate thumbnail handlers.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(RegKey *pHkey_progID = nullptr)
+static LONG RegisterFileType(RegKey &hkey_Assoc, bool hasThumbnail)
 {
 	LONG lResult;
 
-	lResult = RP_ExtractIcon::RegisterFileType(pHkey_progID);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkey_Assoc);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	lResult = RP_ExtractImage::RegisterFileType(pHkey_progID);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
-
-	lResult = RP_ShellPropSheetExt::RegisterFileType(pHkey_progID);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
-
-	lResult = RP_ThumbnailProvider::RegisterFileType(pHkey_progID);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
+	if (hasThumbnail) {
+		lResult = RP_ExtractIcon::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		lResult = RP_ExtractImage::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		lResult = RP_ThumbnailProvider::RegisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	} else {
+		// No thumbnail handlers.
+		// Unregister the handlers if they were previously registered.
+		lResult = RP_ExtractIcon::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		lResult = RP_ExtractImage::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_Assoc);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
 	// All file types handlers registered.
@@ -200,15 +200,53 @@ static LONG RegisterFileType(RegKey *pHkey_progID = nullptr)
 }
 
 /**
- * Register file type handlers for a user's overridden file association.
- * @param sid User SID.
- * @param ext File extension.
+ * Unregister file type handlers.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
+static LONG UnregisterFileType(RegKey &hkey_Assoc)
 {
 	LONG lResult;
 
+	lResult = RP_ExtractIcon::UnregisterFileType(hkey_Assoc);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ExtractImage::UnregisterFileType(hkey_Assoc);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkey_Assoc);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_Assoc);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Check if the "ShellEx" key is empty.
+	RegKey hkey_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkey_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkey_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkey_ShellEx.lOpenRes();
+	}
+
+	// Check if ShellEx is empty.
+	// TODO: Error handling.
+	if (hkey_ShellEx.isKeyEmpty()) {
+		// No subkeys. Delete this key.
+		hkey_ShellEx.close();
+		hkey_Assoc.deleteSubKey(L"ShellEx");
+	}
+
+	// All file types handlers registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Get the user's overriden file association for the given file extension.
+ * @param sid User SID.
+ * @param ext File extension.
+ * @return Overridden file association ProgID, or empty string if none.
+ */
+static wstring GetUserFileAssoc(const wstring &sid, const rp_char *ext)
+{
 	// Check if the user has already associated this file extension.
 	// TODO: Check all users.
 	wstring regPath;
@@ -227,20 +265,35 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
 		if (hkcu_UserChoice.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+			return wstring();
 		}
-		return hkcu_UserChoice.lOpenRes();
+		// TODO: Return an error.
+		//return hkcu_UserChoice.lOpenRes();
+		return wstring();
 	}
 
 	// Read the user's choice.
-	wstring progID = hkcu_UserChoice.read(L"Progid");
+	return hkcu_UserChoice.read(L"Progid");
+}
+
+/**
+ * Register file type handlers for a user's overridden file association.
+ * @param sid User SID.
+ * @param ext_info File extension information.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
+{
+	// Get the ProgID.
+	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
 	if (progID.empty()) {
-		// No choice. User has the default setting.
+		// No ProgID.
 		return ERROR_SUCCESS;
 	}
 
 	// Check both "HKCR" and "HKU\\[sid]".
 	// It turns out they aren't identical.
+	LONG lResult;
 
 	// First, check HKCR.
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
@@ -252,12 +305,14 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hkcr_ProgID.lOpenRes();
 	}
-	lResult = RegisterFileType(&hkcr_ProgID);
+	lResult = RegisterFileType(hkcr_ProgID, ext_info.hasThumbnail);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
 	// Next, check "HKU\\[sid]".
+	wstring regPath;
+	regPath.reserve(128);
 	regPath  = sid;
 	regPath += L"\\Software\\Classes\\";
 	regPath += progID;
@@ -270,7 +325,57 @@ static LONG RegisterUserFileType(const wstring &sid, const rp_char *ext)
 		}
 		return hku_ProgID.lOpenRes();
 	}
-	return RegisterFileType(&hku_ProgID);
+	return RegisterFileType(hku_ProgID, ext_info.hasThumbnail);
+}
+
+/**
+ * Unregister file type handlers for a user's overridden file association.
+ * @param sid User SID.
+ * @param ext_info File extension information.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::ExtInfo &ext_info)
+{
+	// Get the ProgID.
+	wstring progID = GetUserFileAssoc(sid, ext_info.ext);
+	if (progID.empty()) {
+		// No ProgID.
+		return ERROR_SUCCESS;
+	}
+
+	// Check both "HKCR" and "HKU\\[sid]".
+	// It turns out they aren't identical.
+	LONG lResult;
+
+	// First, check HKCR.
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
+	if (!hkcr_ProgID.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hkcr_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ProgID.lOpenRes();
+	}
+	lResult = UnregisterFileType(hkcr_ProgID);
+	if (lResult != ERROR_SUCCESS) return lResult;
+
+	// Next, check "HKU\\[sid]".
+	wstring regPath;
+	regPath.reserve(128);
+	regPath  = sid;
+	regPath += L"\\Software\\Classes\\";
+	regPath += progID;
+	RegKey hku_ProgID(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+	if (!hku_ProgID.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hku_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hku_ProgID.lOpenRes();
+	}
+	return UnregisterFileType(hku_ProgID);
 }
 
 /**
@@ -301,38 +406,20 @@ STDAPI DllRegisterServer(void)
 
 	// Register the COM objects.
 	lResult = RP_ExtractIcon::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ShellPropSheetExt::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::RegisterCLSID();
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
-
-	// Register file type information with the default ProgID.
-	lResult = RegisterFileType(nullptr);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
-	if (!hku.isOpen()) {
-		return SELFREG_E_CLASS;
-	}
+	if (!hku.isOpen()) return SELFREG_E_CLASS;
 	list<wstring> user_SIDs;
 	lResult = hku.enumSubKeys(user_SIDs);
-	if (lResult != ERROR_SUCCESS) {
-		return SELFREG_E_CLASS;
-	}
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	hku.close();
 
 	// Don't check user hives with names that are 16 characters or shorter.
@@ -341,24 +428,44 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file types and associate them
 	// with our ProgID.
-	vector<const rp_char*> vec_exts = RomDataFactory::supportedFileExtensions();
-	for (vector<const rp_char*>::const_iterator ext_iter = vec_exts.begin();
-	     ext_iter != vec_exts.end(); ++ext_iter)
-	{
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register user file types if necessary.
-		for (list<wstring>::const_iterator sid_iter = user_SIDs.begin();
-		     sid_iter != user_SIDs.end(); ++sid_iter)
-		{
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
-			if (lResult != ERROR_SUCCESS) {
+			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		}
+
+		// Register the filetype in KEY_CLASSES_ROOT and use it
+		// to register the handlers.
+		RegKey *pHkey_fileType;
+		lResult = RegKey::RegisterFileType(RP2W_c(ext_iter->ext), &pHkey_fileType);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+		// If the ProgID was previously set to RP_ProgID,
+		// unset it, since we're not using it anymore.
+		wstring progID = pHkey_fileType->read(nullptr);
+		if (progID == RP_ProgID) {
+			// Unset the ProgID.
+			lResult = pHkey_fileType->deleteValue(nullptr);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				delete pHkey_fileType;
 				return SELFREG_E_CLASS;
 			}
 		}
 
-		lResult = RegKey::RegisterFileType(RP2W_c(*ext_iter), RP_ProgID);
-		if (lResult != ERROR_SUCCESS) {
-			return SELFREG_E_CLASS;
-		}
+		// Register the file type handlers for this file extension.
+		lResult = RegisterFileType(*pHkey_fileType, ext_iter->hasThumbnail);
+		delete pHkey_fileType;
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
+
+	// Delete the rom-properties ProgID,
+	// since it's no longer used.
+	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+		// Error deleting the ProgID.
+		return SELFREG_E_CLASS;
 	}
 
 	// Notify the shell that file associations have changed.
@@ -375,26 +482,71 @@ STDAPI DllUnregisterServer(void)
 {
 	// Unregister the COM objects.
 	LONG lResult = RP_ExtractIcon::UnregisterCLSID();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ExtractImage::UnregisterCLSID();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ShellPropSheetExt::UnregisterCLSID();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterCLSID();
-	if (lResult != ERROR_SUCCESS)
-		return SELFREG_E_CLASS;
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// NOTE: Do NOT unregister file types.
-	// MSDN says to leave file type mappings unchanged when uninstalling.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/hh127451(v=vs.85).aspx
+	// Enumerate user hives.
+	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
+	if (!hku.isOpen()) return SELFREG_E_CLASS;
+	list<wstring> user_SIDs;
+	lResult = hku.enumSubKeys(user_SIDs);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	hku.close();
 
-	// Delete the rom-properties ProgID.
+	// Don't check user hives with names that are 16 characters or shorter.
+	// These are usually ".DEFAULT" or "well-known" SIDs.
+	user_SIDs.remove_if(process_HKU_subkey);
+
+	// Register all supported file types and associate them
+	// with our ProgID.
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+		// Unregister user file types if necessary.
+		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
+			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
+			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		}
+
+		// Open the file type key if it's present.
+		RegKey hkey_fileType(HKEY_CLASSES_ROOT, RP2W_c(ext_iter->ext), KEY_READ | KEY_WRITE, false);
+		if (!hkey_fileType.isOpen()) {
+			// Not open...
+			if (hkey_fileType.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+				// Key not found. Continue.
+				continue;
+			}
+			// Other error.
+			return hkey_fileType.lOpenRes();
+		}
+
+		// If the ProgID was previously set to RP_ProgID,
+		// unset it, since we're not using it anymore.
+		wstring progID = hkey_fileType.read(nullptr);
+		if (progID == RP_ProgID) {
+			// Unset the ProgID.
+			lResult = hkey_fileType.deleteValue(nullptr);
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return SELFREG_E_CLASS;
+			}
+		}
+
+		// Unregister the file type handlers for this file extension.
+		lResult = UnregisterFileType(hkey_fileType);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
+
+	// Delete the rom-properties ProgID,
+	// since it's no longer used.
 	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
-		return lResult;
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+		// Error deleting the ProgID.
+		return SELFREG_E_CLASS;
+	}
 
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx

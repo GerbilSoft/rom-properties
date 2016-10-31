@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GameCube.hpp: Nintendo GameCube and Wii disc image reader.              *
+ * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
@@ -218,9 +218,7 @@ GameCubePrivate::~GameCubePrivate()
 	// Delete partition objects in wiiVgTbl[].
 	// TODO: Check wiiVgTblLoaded?
 	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
-		for (std::vector<WiiPartEntry>::iterator iter = wiiVgTbl[i].begin();
-		     iter != wiiVgTbl[i].end(); ++iter)
-		{
+		for (auto iter = wiiVgTbl[i].begin(); iter != wiiVgTbl[i].end(); ++iter) {
 			delete iter->partition;
 		}
 	}
@@ -836,6 +834,10 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	// Load the full banner.
 	// NOTE: Magic number is loaded as host-endian.
 	pBanner = (banner_bnr2_t*)malloc(banner_size);
+	if (!pBanner) {
+		// ENOMEM
+		return -ENOMEM;
+	}
 	pBanner->magic = bnr_magic;
 	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
 	if (size != banner_size-4) {
@@ -940,7 +942,7 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
  * @param file Open disc image.
  */
 GameCube::GameCube(IRpFile *file)
-	: RomData(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
+	: super(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
 	, d(new GameCubePrivate(this))
 {
 	// This class handles disc images.
@@ -960,11 +962,12 @@ GameCube::GameCube(IRpFile *file)
 
 	// Check if this disc image is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for GCN.
 	info.szFile = 0;	// Not needed for GCN.
-	d->discType = isRomSupported(&info);
+	d->discType = isRomSupported_static(&info);
 
 	// TODO: DiscReaderFactory?
 	if (d->discType >= 0) {
@@ -1110,14 +1113,20 @@ GameCube::~GameCube()
  */
 int GameCube::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < sizeof(GCN_DiscHeader)) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(GCN_DiscHeader))
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return GameCubePrivate::DISC_UNKNOWN;
 	}
 
 	// Check for the magic numbers.
-	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->pHeader);
+	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
 	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
@@ -1138,13 +1147,13 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// decides to make a GCN or Wii disc image with the game ID "WBFS".
 
 	// Check for WBFS.
-	if (WbfsReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
+	if (WbfsReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// Disc image is stored in "HDD" sector 1.
-		unsigned int hdd_sector_size = (1 << info->pHeader[8]);
-		if (info->szHeader >= hdd_sector_size + 0x200) {
+		unsigned int hdd_sector_size = (1 << info->header.pData[8]);
+		if (info->header.size >= hdd_sector_size + 0x200) {
 			// Check for Wii magic.
 			// FIXME: GCN magic too?
-			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->pHeader[hdd_sector_size]);
+			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
 			if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
@@ -1153,7 +1162,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for CISO.
-	if (CisoGcnReader::isDiscSupported_static(info->pHeader, info->szHeader) >= 0) {
+	if (CisoGcnReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// CISO format doesn't store a copy of the disc header
 		// at the beginning of the disc, so we can't check the
 		// system format here.
@@ -1161,7 +1170,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for TGC.
-	const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->pHeader);
+	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
 	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
 		// TGC images have their own 32 KB header, so we can't
 		// check the actual GCN/Wii header here.
@@ -1227,16 +1236,12 @@ const rp_char *GameCube::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
-	// TODO: Add ".iso" later? (Too generic, though...)
-	vector<const rp_char*> ret;
-	ret.reserve(6);
-	ret.push_back(_RP(".gcm"));
-	ret.push_back(_RP(".rvm"));
-	ret.push_back(_RP(".wbfs"));
-	ret.push_back(_RP(".ciso"));
-	ret.push_back(_RP(".cso"));
-	ret.push_back(_RP(".tgc"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gcm"), _RP(".rvm"), _RP(".wbfs"),
+		_RP(".ciso"), _RP(".cso"), _RP(".tgc"),
+		//_RP(".iso"),	// TODO: Enable this?
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**
@@ -1365,26 +1370,29 @@ int GameCube::loadFieldData(void)
 			comment_data.reserve(sizeof(*comment));
 
 			// Fields are not necessarily null-terminated.
+			// NOTE: We're converting from cp1252 or Shift-JIS
+			// *after* concatenating all the strings, which is
+			// why we're using strnlen() here.
 			int field_len;
 
 			// Game name.
 			if (comment->gamename_full[0] != 0) {
-				field_len = strnlen(comment->gamename_full, sizeof(comment->gamename_full));
+				field_len = (int)strnlen(comment->gamename_full, sizeof(comment->gamename_full));
 				comment_data += string(comment->gamename_full, field_len);
 				comment_data += '\n';
 			} else if (comment->gamename[0] != 0) {
-				field_len = strnlen(comment->gamename, sizeof(comment->gamename));
+				field_len = (int)strnlen(comment->gamename, sizeof(comment->gamename));
 				comment_data += string(comment->gamename, field_len);
 				comment_data += '\n';
 			}
 
 			// Company.
 			if (comment->company_full[0] != 0) {
-				field_len = strnlen(comment->company_full, sizeof(comment->company_full));
+				field_len = (int)strnlen(comment->company_full, sizeof(comment->company_full));
 				comment_data += string(comment->company_full, field_len);
 				comment_data += '\n';
 			} else if (comment->company[0] != 0) {
-				field_len = strnlen(comment->company, sizeof(comment->company));
+				field_len = (int)strnlen(comment->company, sizeof(comment->company));
 				comment_data += string(comment->company, field_len);
 				comment_data += '\n';
 			}
@@ -1396,7 +1404,7 @@ int GameCube::loadFieldData(void)
 					comment_data += '\n';
 				}
 
-				field_len = strnlen(comment->gamedesc, sizeof(comment->gamedesc));
+				field_len = (int)strnlen(comment->gamedesc, sizeof(comment->gamedesc));
 				comment_data += string(comment->gamedesc, field_len);
 			}
 
@@ -1413,14 +1421,14 @@ int GameCube::loadFieldData(void)
 					default:
 						// USA/PAL uses cp1252.
 						m_fields->addData_string(
-							cp1252_to_rp_string(comment_data.data(), comment_data.size()));
+							cp1252_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 
 					case GCN_REGION_JAPAN:
 					case GCN_REGION_SOUTH_KOREA:
 						// Japan uses Shift-JIS.
 						m_fields->addData_string(
-							cp1252_sjis_to_rp_string(comment_data.data(), comment_data.size()));
+							cp1252_sjis_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 				}
 			} else {
@@ -1819,9 +1827,7 @@ int GameCube::loadURLs(ImageType imageType)
 		char s_discNum[16];
 		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
-			for (vector<const char*>::const_iterator iter = tdb_regions.begin();
-			     iter != tdb_regions.end(); ++iter)
-			{
+			for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
 				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
 				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
 				extURLs.push_back(extURL);
@@ -1830,8 +1836,7 @@ int GameCube::loadURLs(ImageType imageType)
 	}
 
 	// First disc, or not a disc scan.
-	for (vector<const char*>::const_iterator iter = tdb_regions.begin();
-	     iter != tdb_regions.end(); ++iter)
+	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter)
 	{
 		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
 		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);

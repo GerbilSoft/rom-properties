@@ -322,7 +322,7 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: RomData(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
+	: super(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
 	, d(new MegaDrivePrivate())
 {
 	// TODO: Only validate that this is an MD ROM here.
@@ -347,11 +347,12 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 	// Check if this ROM is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
-	d->romType = isRomSupported(&info);
+	d->romType = isRomSupported_static(&info);
 
 	if (d->romType >= 0) {
 		// Save the header for later.
@@ -441,11 +442,20 @@ MegaDrive::~MegaDrive()
  */
 int MegaDrive::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info)
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 0x200)
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
 		return -1;
+	}
 
 	// ROM header.
-	const uint8_t *const pHeader = info->pHeader;
+	const uint8_t *const pHeader = info->header.pData;
 
 	// Magic strings.
 	static const char sega_magic[4] = {'S','E','G','A'};
@@ -462,7 +472,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		{{'S','E','G','A',' ','G','E','N','E','S','I','S',' ',' ',' ',' '}, MegaDrivePrivate::ROM_SYSTEM_MD},
 	};
 
-	if (info->szHeader >= 0x200) {
+	if (info->header.size >= 0x200) {
 		// Check for Sega CD.
 		// TODO: Gens/GS II lists "ISO/2048", "ISO/2352",
 		// "BIN/2048", and "BIN/2352". I don't think that's
@@ -479,7 +489,7 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Check for SMD format. (Mega Drive only)
-		if (info->szHeader >= 0x300) {
+		if (info->header.size >= 0x300) {
 			// Check if "SEGA" is in the header in the correct place
 			// for a plain binary ROM.
 			if (memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic)) != 0 &&
@@ -654,15 +664,16 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
  */
 vector<const rp_char*> MegaDrive::supportedFileExtensions_static(void)
 {
-	// NOTE: Not including ".md" due to conflicts with Markdown.
-	// TODO: Add ".bin" later? (Too generic, though...)
-	vector<const rp_char*> ret;
-	ret.reserve(4);
-	ret.push_back(_RP(".gen"));
-	ret.push_back(_RP(".smd"));
-	ret.push_back(_RP(".32x"));
-	ret.push_back(_RP(".pco"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gen"), _RP(".smd"),
+		_RP(".32x"), _RP(".pco"),
+
+		// TODO: Add the following:
+		// - .md (conflicts with Markdown)
+		// - .bin (too generic)
+		// - .iso (Mega CD; too generic)
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

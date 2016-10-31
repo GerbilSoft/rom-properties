@@ -85,3 +85,26 @@ TARGET_LINK_LIBRARIES(GcnFstTest minizip ${ZLIB_LIBRARY})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
+
+# TextFuncsTest. (libromdata8)
+ADD_EXECUTABLE(TextFuncsTest8
+	gtest_init.cpp
+	TextFuncsTest.cpp
+	)
+TARGET_LINK_LIBRARIES(TextFuncsTest8 romdata8)
+TARGET_LINK_LIBRARIES(TextFuncsTest8 gtest)
+DO_SPLIT_DEBUG(TextFuncsTest8)
+SET_WINDOWS_SUBSYSTEM(TextFuncsTest8 CONSOLE)
+ADD_TEST(NAME TextFuncsTest8 COMMAND TextFuncsTest8)
+
+# TextFuncsTest. (libromdata16)
+ADD_EXECUTABLE(TextFuncsTest16
+	gtest_init.cpp
+	TextFuncsTest.cpp
+	TextFuncsTest_data.hpp
+	)
+TARGET_LINK_LIBRARIES(TextFuncsTest16 romdata16)
+TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
+DO_SPLIT_DEBUG(TextFuncsTest16)
+SET_WINDOWS_SUBSYSTEM(TextFuncsTest16 CONSOLE)
+ADD_TEST(NAME TextFuncsTest16 COMMAND TextFuncsTest16)

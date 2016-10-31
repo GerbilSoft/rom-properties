@@ -51,8 +51,9 @@ class GameCubeSave : public RomData
 		virtual ~GameCubeSave();
 
 	private:
-		GameCubeSave(const GameCubeSave &);
-		GameCubeSave &operator=(const GameCubeSave &);
+		typedef RomData super;
+		GameCubeSave(const GameCubeSave &other);
+		GameCubeSave &operator=(const GameCubeSave &other);
 
 	private:
 		friend class GameCubeSavePrivate;
@@ -150,7 +151,7 @@ class GameCubeSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override;
+		virtual const IconAnimData *iconAnimData(void) const final;
 };
 
 }

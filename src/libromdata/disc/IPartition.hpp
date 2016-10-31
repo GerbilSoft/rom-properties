@@ -34,6 +34,7 @@ class IPartition : public IDiscReader
 		virtual ~IPartition() = 0;
 
 	private:
+		typedef IDiscReader super;
 		IPartition(const IPartition &other);
 		IPartition &operator=(const IPartition &other);
 

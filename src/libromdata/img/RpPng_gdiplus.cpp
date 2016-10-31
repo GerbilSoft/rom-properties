@@ -131,6 +131,12 @@ Gdiplus::Bitmap *RpPngPrivate::gdip_ARGB32_to_CI8_grayscale(Gdiplus::Bitmap *pGd
 	// Initialize the grayscale palette.
 	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 	Gdiplus::ColorPalette *gdipPalette = (Gdiplus::ColorPalette*)malloc(gdipPalette_sz);
+	if (!gdipPalette) {
+		// ENOMEM
+		delete pGdipConvBmp;
+		pGdipBmp->UnlockBits(&bmpData);
+		return nullptr;
+	}
 	gdipPalette->Flags = Gdiplus::PaletteFlagsGrayScale;
 	gdipPalette->Count = 256;
 	uint32_t color = 0xFF000000;
@@ -201,6 +207,10 @@ Gdiplus::Status RpPngPrivate::copyPaletteToCI8(Gdiplus::Bitmap *pGdipDestBmp, Gd
 	size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 	Gdiplus::ColorPalette *gdipPalette =
 		reinterpret_cast<Gdiplus::ColorPalette*>(malloc(gdipPalette_sz));
+	if (!gdipPalette) {
+		// ENOMEM
+		return Gdiplus::Status::OutOfMemory;
+	}
 
 	// Get the source bitmap's palette.
 	int palette_size = pGdipSrcBmp->GetPaletteSize();

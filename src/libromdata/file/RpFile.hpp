@@ -145,6 +145,12 @@ class RpFile : public IRpFile
 		 */
 		virtual int64_t fileSize(void) final;
 
+		/**
+		 * Get the filename.
+		 * @return Filename. (May be empty if the filename is not available.)
+		 */
+		virtual rp_string filename(void) const final;
+
 	protected:
 #ifdef _WIN32
 		// Win32: m_file is a HANDLE.
@@ -154,6 +160,7 @@ class RpFile : public IRpFile
 		std::shared_ptr<FILE> m_file;
 #endif
 
+		rp_string m_filename;
 		FileMode m_mode;
 		int m_lastError;
 };

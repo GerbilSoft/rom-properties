@@ -86,8 +86,8 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 			, m_fst(nullptr)
 		{ }
 
-		virtual void SetUp(void) override;
-		virtual void TearDown(void) override;
+		virtual void SetUp(void) final;
+		virtual void TearDown(void) final;
 
 		/**
 		 * Open a Zip file for reading.
@@ -310,9 +310,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 	}
 
 	// Check subdirectories.
-	for (unordered_set<string>::const_iterator iter = subdirs.begin();
-	     iter != subdirs.end(); ++iter)
-	{
+	for (auto iter = subdirs.cbegin(); iter != subdirs.cend(); ++iter) {
 		rp_string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += _RP_CHR('/');

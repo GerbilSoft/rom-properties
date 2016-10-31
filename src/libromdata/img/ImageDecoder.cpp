@@ -65,6 +65,13 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an ARGB4444 pixel to ARGB32. (Dreamcast)
+		 * @param px16 ARGB4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
 };
 
 /** ImageDecoderPrivate **/
@@ -108,6 +115,43 @@ inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
 }
 
 /**
+ * Blit a CI4 tile to a CI8 rp_image.
+ * NOTE: Left pixel is the least significant nybble.
+ * NOTE: No bounds checking is done.
+ * @tparam tileW	[in] Tile width.
+ * @tparam tileH	[in] Tile height.
+ * @param img		[out] rp_image.
+ * @param tileBuf	[in] Tile buffer.
+ * @param tileX		[in] Horizontal tile number.
+ * @param tileY		[in] Vertical tile number.
+ */
+template<int tileW, int tileH>
+inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tileX, int tileY)
+{
+	assert(img->format() == rp_image::FORMAT_CI8);
+	assert(img->width() % 2 == 0);
+	assert(tileW % 2 == 0);
+
+	// Go to the first pixel for this tile.
+	uint8_t *imgBuf = reinterpret_cast<uint8_t*>(img->scanLine(tileY * tileH));
+	imgBuf += (tileX * tileW);
+
+	const int stride_px_adj = img->stride() - tileW;
+	for (int y = tileH; y > 0; y--) {
+		// Expand CI4 pixels to CI8 before writing.
+		for (int x = tileW; x > 0; x -= 2) {
+			imgBuf[0] = (*tileBuf & 0x0F);
+			imgBuf[1] = (*tileBuf >> 4);
+			imgBuf += 2;
+			tileBuf++;
+		}
+
+		// Next line.
+		imgBuf += stride_px_adj;
+	}
+}
+
+/**
  * Convert an RGB555 pixel to ARGB32.
  * @param px16 RGB555 pixel.
  * @return ARGB32 pixel.
@@ -146,9 +190,10 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 		px32 |= 0xFF000000U; // no alpha channel
 	} else {
 		// RGB4A3
-		px32 |= (((px16 & 0x000F) << 4)  |  (px16 & 0x000F));		// B
-		px32 |= (((px16 & 0x00F0) << 8)  | ((px16 & 0x00F0) << 4));	// G
-		px32 |= (((px16 & 0x0F00) << 12) | ((px16 & 0x0F00) << 8));	// R
+		px32  =  (px16 & 0x000F);	// B
+		px32 |= ((px16 & 0x00F0) << 4);	// G
+		px32 |= ((px16 & 0x0F00) << 8);	// R
+		px32 |= (px32 << 4);		// Copy to the top nybble.
 
 		// Calculate the alpha channel.
 		uint8_t a = ((px16 >> 7) & 0xE0);
@@ -162,10 +207,26 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 	return px32;
 }
 
+/**
+ * Convert an ARGB4444 pixel to ARGB32. (Dreamcast)
+ * @param px16 ARGB4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
+{
+	uint32_t px32;
+	px32  =  (px16 & 0x000F);		// B
+	px32 |= ((px16 & 0x00F0) << 4);		// G
+	px32 |= ((px16 & 0x0F00) << 8);		// R
+	px32 |= ((px16 & 0xF000) << 12);	// A
+	px32 |= (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
 /** ImageDecoder **/
 
 /**
- * Convert a Nintendo DS 16-color + palette image to rp_image.
+ * Convert a Nintendo DS CI4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -217,21 +278,11 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
 
-	// 2 bytes = 4 pixels
-	// Image is composed of 8x8px tiles.
-	// 4 tiles wide, 4 tiles tall.
-	uint8_t tileBuf[8*8];
-
 	for (int y = 0; y < tilesY; y++) {
 		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to 8-bit color manually.
-			for (int i = 0; i < 8*8; i += 2, img_buf++) {
-				tileBuf[i+0] = (*img_buf & 0x0F);
-				tileBuf[i+1] = (*img_buf >> 4);
-			}
-
 			// Blit the tile to the main image buffer.
-			BlitTile<uint8_t, 8, 8>(img, tileBuf, x, y);
+			BlitTile_CI4_LeftLSN<8, 8>(img, img_buf, x, y);
+			img_buf += ((8 * 8) / 2);
 		}
 	}
 
@@ -351,6 +402,293 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 			// Decode the current tile.
 			BlitTile<uint8_t, 8, 4>(img, tileBuf, x, y);
 			tileBuf += (8 * 4);
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast CI4 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI4 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 16*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) / 2) || pal_siz < 0x20)
+		return nullptr;
+
+	// CI4 width must be a multiple of two.
+	if (width % 2 != 0)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 16);
+	if (img->palette_len() < 16) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 16; i++) {
+		// Dreamcast color format is ARGB4444.
+		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = i;
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert one line at a time. (CI4 -> CI8)
+	for (int y = 0; y < height; y++) {
+		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x -= 2) {
+			px_dest[0] = (*img_buf >> 4);
+			px_dest[1] = (*img_buf & 0x0F);
+			img_buf++;
+			px_dest += 2;
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast CI8 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 256*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < (width * height) || pal_siz < 256*2)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 256);
+	if (img->palette_len() < 256) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 256; i++) {
+		// Dreamcast color format is ARGB4444.
+		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = i;
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// Copy one line at a time. (CI8 -> CI8)
+	uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->bits());
+	const int stride = img->stride();
+	for (int y = height; y > 0; y--) {
+		memcpy(px_dest, img_buf, width);
+		px_dest += stride;
+		img_buf += width;
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast ARGB4444 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ARGB4444 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
+	const uint16_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	if (!img_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) * 2))
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// Convert one line at a time. (ARGB4444 -> ARGB32)
+	for (int y = 0; y < height; y++) {
+		uint32_t *px_dest = reinterpret_cast<uint32_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x--) {
+			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*px_dest);
+			img_buf++;
+			px_dest++;
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast monochrome image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf Monochrome image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	if (!img_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) / 8))
+		return nullptr;
+
+	// Monochrome width must be a multiple of eight.
+	if (width % 8 != 0)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Set a default monochrome palette.
+	uint32_t *palette = img->palette();
+	palette[0] = 0xFFFFFFFF;	// white
+	palette[1] = 0xFF000000;	// black
+	img->set_tr_idx(-1);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert one line at a time. (monochrome -> CI8)
+	for (int y = 0; y < height; y++) {
+		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x -= 8) {
+			uint8_t pxMono = *img_buf++;
+			// TODO: Unroll this loop?
+			for (int bit = 8; bit > 0; bit--, px_dest++) {
+				// MSB == left-most pixel.
+				*px_dest = (pxMono >> 7);
+				pxMono <<= 1;
+			}
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a PlayStation CI4 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf CI8 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/2]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 16*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
+{
+	// Verify parameters.
+	if (!img_buf || !pal_buf)
+		return nullptr;
+	else if (width < 0 || height < 0 || (width % 2) != 0)
+		return nullptr;
+	else if (img_siz < ((width * height) / 2) || pal_siz < 16*2)
+		return nullptr;
+
+	// PS1 CI4 is linear. No tiles.
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+
+	// Convert the palette.
+	// TODO: Optimize using pointers instead of indexes?
+	uint32_t *palette = img->palette();
+	assert(img->palette_len() >= 16);
+	if (img->palette_len() < 16) {
+		// Not enough colors...
+		delete img;
+		return nullptr;
+	}
+
+	int tr_idx = -1;
+	for (int i = 0; i < 16; i++) {
+		// PS1 color format is RGB555.
+		// NOTE: If the color value is $0000, it's transparent.
+		const uint16_t px16 = le16_to_cpu(pal_buf[i]);
+		if (px16 == 0) {
+			// Transparent color.
+			palette[i] = 0;
+			if (tr_idx < 0) {
+				tr_idx = i;
+			}
+		} else {
+			// Non-transparent color.
+			palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(px16);
+		}
+	}
+	img->set_tr_idx(tr_idx);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert from CI4 to CI8.
+	for (int y = 0; y < height; y++) {
+		uint8_t *dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x -= 2, dest += 2, img_buf++) {
+			dest[0] = (*img_buf & 0x0F);
+			dest[1] = (*img_buf >> 4);
 		}
 	}
 

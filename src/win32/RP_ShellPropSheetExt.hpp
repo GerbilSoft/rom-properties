@@ -75,16 +75,23 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		/**
 		 * Register the file type handler.
-		 * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey *pHkey_ProgID = nullptr);
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterCLSID(void);
+
+		/**
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
 	public:
 		// IShellExtInit
@@ -100,7 +107,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		// Subclass procedure for ES_MULTILINE EDIT controls.
-		static INT_PTR CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static LRESULT CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 		/**
 		 * Animated icon timer.

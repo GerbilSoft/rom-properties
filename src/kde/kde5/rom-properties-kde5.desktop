@@ -10,8 +10,8 @@ X-KDE-ServiceTypes=KPropertiesDialog/Plugin,ThumbCreator
 X-KDE-Protocol=file
 
 # NOTE: all/all doesn't work; use application/octet-stream.
-# TODO: Add actual MIME types.
-MimeType=application/octet-stream;
+# TODO: Remove application/octet-stream and only use more-specific types?
+MimeType=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;
 
 # ThumbCreator settings.
 CacheThumbnail=true

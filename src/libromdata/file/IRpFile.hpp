@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
 
+#include <config.libromdata.h>
+
 // C includes.
 #include <stdint.h>
 
@@ -117,6 +119,12 @@ class IRpFile
 		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) = 0;
+
+		/**
+		 * Get the filename.
+		 * @return Filename. (May be empty if the filename is not available.)
+		 */
+		virtual rp_string filename(void) const;
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/

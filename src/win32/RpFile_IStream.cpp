@@ -24,6 +24,7 @@
 // libromdata
 #include "libromdata/file/IRpFile.hpp"
 using LibRomData::IRpFile;
+using LibRomData::rp_string;
 
 // C++ includes.
 #include <string>
@@ -277,4 +278,33 @@ int64_t RpFile_IStream::fileSize(void)
 
 	// TODO: Make sure cbSize is valid?
 	return (int64_t)statstg.cbSize.QuadPart;
+}
+
+/**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string RpFile_IStream::filename(void) const
+{
+	if (m_filename.empty()) {
+		// Get the filename.
+		// FIXME: This does NOT have the full path; only the
+		// file portion is included. This is enough for the
+		// file extension.
+		STATSTG statstg;
+		HRESULT hr = m_pStream->Stat(&statstg, STATFLAG_DEFAULT);
+		if (FAILED(hr)) {
+			// Stat() failed.
+			return rp_string();
+		}
+
+		if (statstg.pwcsName) {
+			// Save the filename.
+			const_cast<RpFile_IStream*>(this)->m_filename = W2RP_c(statstg.pwcsName);
+			CoTaskMemFree(statstg.pwcsName);
+		}
+	}
+
+	// Return the filename.
+	return m_filename;
 }

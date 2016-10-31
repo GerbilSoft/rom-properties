@@ -59,12 +59,21 @@ class RomDataFactory
 		 */
 		static RomData *getInstance(IRpFile *file, bool thumbnail = false);
 
+		struct ExtInfo {
+			const rp_char *ext;
+			bool hasThumbnail;
+		};
+
 		/**
 		 * Get all supported file extensions.
 		 * Used for Win32 COM registration.
-		 * @return All supported file extensions, including the leading dot
+		 *
+		 * NOTE: The return value is a struct that includes a flag
+		 * indicating if the file type handler supports thumbnails.
+		 *
+		 * @return All supported file extensions, including the leading dot.
 		 */
-		static std::vector<const rp_char*> supportedFileExtensions(void);
+		static std::vector<ExtInfo> supportedFileExtensions(void);
 };
 
 }

@@ -65,6 +65,11 @@ class RomDataView : public QWidget
 		/** Widget slots. **/
 
 		/**
+		 * Disable user modification of RFT_BITFIELD checkboxes.
+		 */
+		void bitfield_toggled_slot(bool checked);
+
+		/**
 		 * Animated icon timer.
 		 */
 		void tmrIconAnim_timeout(void);

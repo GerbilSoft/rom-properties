@@ -27,6 +27,18 @@
 namespace LibRomData {
 
 /**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string IRpFile::filename(void) const
+{
+	// Default is no filename.
+	// TODO: Return const reference?
+	// TODO: Pure virtual function.
+	return rp_string();
+}
+
+/**
  * Get a single character (byte) from the file
  * @return Character from file, or EOF on end of file or error.
  */

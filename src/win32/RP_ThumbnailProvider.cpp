@@ -69,7 +69,6 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
 		return E_INVALIDARG;
-	*ppvObj = NULL;
 
 	// Check if this interface is supported.
 	// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -83,6 +82,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		*ppvObj = static_cast<IThumbnailProvider*>(this);
 	} else {
 		// Interface is not supported.
+		*ppvObj = nullptr;
 		return E_NOINTERFACE;
 	}
 
@@ -129,10 +129,10 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param pHkey_ProgID ProgID key to register under, or nullptr for the default.
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey *pHkey_ProgID)
+LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -143,26 +143,17 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey *pHkey_ProgID)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Register as the thumbnail handler for this ProgID.
-	unique_ptr<RegKey> pHkcr_ProgID;
-	if (!pHkey_ProgID) {
-		// Create/open the system-wide ProgID key.
-		pHkcr_ProgID.reset(new RegKey(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true));
-		if (!pHkcr_ProgID->isOpen()) {
-			return pHkcr_ProgID->lOpenRes();
-		}
-		pHkey_ProgID = pHkcr_ProgID.get();
-	}
+	// Register as the thumbnail handler for this file association.
 
 	// Set the "Treatment" value.
 	// TODO: DWORD write function.
-	lResult = pHkey_ProgID->write_dword(L"Treatment", 0);
+	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
 	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(*pHkey_ProgID, L"ShellEx", KEY_WRITE, true);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
 	if (!hkcr_ShellEx.isOpen()) {
 		return hkcr_ShellEx.lOpenRes();
 	}
@@ -196,6 +187,69 @@ LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 	}
 
 	// TODO
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as the thumbnail handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the IThumbnailProvider key.
+	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_READ, false);
+	if (!hkcr_IThumbnailProvider.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_IThumbnailProvider.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IThumbnailProvider.lOpenRes();
+	}
+
+	// Check if the default value matches the CLSID.
+	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
+	if (wstr_IThumbnailProvider == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_IThumbnailProvider.close();
+		lResult = hkcr_ShellEx.deleteSubKey(L"{E357FCCD-A995-4576-B01F-234630154E96}");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+
+		// Remove "Treatment" if it's present.
+		lResult = hkey_Assoc.deleteValue(L"Treatment");
+		if (lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+	} else {
+		// Default value doesn't match.
+		// We're done here.
+		return hkcr_IThumbnailProvider.lOpenRes();
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 

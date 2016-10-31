@@ -62,7 +62,7 @@ ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rom-properties.dll.manifest"
 #else
 # define RP_VS_FF_DEBUG 0
 #endif
-#ifdef RP_VERSION_DEVEL
+#if RP_VERSION_DEVEL != 0
 # define RP_VS_FF_PRERELEASE VS_FF_PRERELEASE
 #else
 # define RP_VS_FF_PRERELEASE 0

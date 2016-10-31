@@ -118,6 +118,15 @@ class RomDataViewPrivate
 		 * Stop the animation timer.
 		 */
 		void stopAnimTimer(void);
+
+		/**
+		 * Convert a QImage to QPixmap.
+		 * Automatically resizes the QImage if it's smaller
+		 * than the minimum size.
+		 * @param img QImage.
+		 * @return QPixmap.
+		 */
+		QPixmap imgToPixmap(const QImage &img);
 };
 
 /** RomDataViewPrivate **/
@@ -149,6 +158,41 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	formLayout = new QFormLayout(RomDataView);
 }
 
+/**
+ * Convert a QImage to QPixmap.
+ * Automatically resizes the QImage if it's smaller
+ * than the minimum size.
+ * @param img QImage.
+ * @return QPixmap.
+ */
+QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
+{
+	// Minimum image size.
+	// If images are smaller, they will be resized.
+	// TODO: Adjust minimum size for DPI.
+	const QSize min_img_size(32, 32);
+
+	if (img.width() >= min_img_size.width() &&
+	    img.height() >= min_img_size.height())
+	{
+		// No resize necessary.
+		return QPixmap::fromImage(img);
+	}
+
+	// Resize the image.
+	QSize img_size = img.size();
+	do {
+		// Increase by integer multiples until
+		// the icon is at least 32x32.
+		// TODO: Constrain to 32x32?
+		img_size.setWidth(img_size.width() + img.width());
+		img_size.setHeight(img_size.height() + img.height());
+	} while (img_size.width() < min_img_size.width() &&
+		 img_size.height() < min_img_size.height());
+
+	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
+}
+
 QLayout *RomDataViewPrivate::createHeaderRow(void)
 {
 	Q_Q(RomDataView);
@@ -167,28 +211,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 
 	// File type.
-	const rp_char *fileType = nullptr;
-	switch (romData->fileType()) {
-		case RomData::FTYPE_ROM_IMAGE:
-			fileType = _RP("ROM Image");
-			break;
-		case RomData::FTYPE_DISC_IMAGE:
-			fileType = _RP("Disc Image");
-			break;
-		case RomData::FTYPE_SAVE_FILE:
-			fileType = _RP("Save File");
-			break;
-		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
-			fileType = _RP("Embedded Disc Image");
-			break;
-		case RomData::FTYPE_APPLICATION_PACKAGE:
-			fileType = _RP("Application Package");
-			break;
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			fileType = nullptr;
-			break;
-	}
+	const rp_char *const fileType = romData->fileType_string();
 
 	QString sysInfo;
 	if (systemName) {
@@ -226,7 +249,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			QImage img = rpToQImage(banner);
 			if (!img.isNull()) {
 				ui.lblBanner = new QLabel(q);
-				ui.lblBanner->setPixmap(QPixmap::fromImage(img));
+				ui.lblBanner->setPixmap(imgToPixmap(img));
 				ui.hboxHeaderRow->addWidget(ui.lblBanner);
 			}
 		}
@@ -234,25 +257,28 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
-		// Get the banner.
+		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			QImage img = rpToQImage(icon);
 			if (!img.isNull()) {
 				ui.lblIcon = new QLabel(q);
-				ui.lblIcon->setPixmap(QPixmap::fromImage(img));
+				iconFrames[0] = imgToPixmap(img);
+				ui.lblIcon->setPixmap(iconFrames[0]);
 				ui.hboxHeaderRow->addWidget(ui.lblIcon);
 			}
 
 			// Get the animated icon data.
+			// TODO: Skip if the first frame is nullptr?
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
-				iconFrames[0] = QPixmap::fromImage(img);
 				for (int i = 1; i < iconAnimData->count; i++) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						iconFrames[i] = QPixmap::fromImage(
-							rpToQImage(iconAnimData->frames[i]));
+						QImage img = rpToQImage(iconAnimData->frames[i]);
+						if (!img.isNull()) {
+							iconFrames[i] = imgToPixmap(img);
+						}
 					}
 				}
 
@@ -352,6 +378,15 @@ void RomDataViewPrivate::updateDisplay(void)
 						lblString->setFont(font);
 						lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 					}
+
+					// "Warning" font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+						// Only expecting a maximum of one "Warning" per ROM,
+						// so we're initializing this here.
+						const QString css = QLatin1String("color: #F00; font-weight: bold;");
+						lblDesc->setStyleSheet(css);
+						lblString->setStyleSheet(css);
+					}
 				}
 \
 				ui.formLayout->addRow(lblDesc, lblString);
@@ -367,12 +402,20 @@ void RomDataViewPrivate::updateDisplay(void)
 					const rp_char *name = bitfieldDesc->names[i];
 					if (!name)
 						continue;
-					// TODO: Prevent toggling; disable automatic alt key.
+
+					// TODO: Disable KDE's automatic mnemonic.
 					QCheckBox *checkBox = new QCheckBox(q);
 					checkBox->setText(RP2Q(name));
 					if (data->bitfield & (1 << i)) {
 						checkBox->setChecked(true);
 					}
+
+					// Disable user modifications.
+					// TODO: Prevent the initial mousebutton down from working;
+					// otherwise, it shows a partial check mark.
+					QObject::connect(checkBox, SIGNAL(toggled(bool)),
+							q, SLOT(bitfield_toggled_slot(bool)));
+
 					gridLayout->addWidget(checkBox, row, col, 1, 1);
 					col++;
 					if (col == bitfieldDesc->elemsPerRow) {
@@ -413,9 +456,7 @@ void RomDataViewPrivate::updateDisplay(void)
 					const vector<rp_string> &data_row = listData->data.at(i);
 					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
 					int field = 0;
-					for (vector<rp_string>::const_iterator iter = data_row.begin();
-					     iter != data_row.end(); ++iter, ++field)
-					{
+					for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
 						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
 					}
 				}
@@ -523,9 +564,9 @@ void RomDataViewPrivate::stopAnimTimer(void)
 
 /** RomDataView **/
 
-RomDataView::RomDataView(RomData *rom, QWidget *parent)
+RomDataView::RomDataView(RomData *romData, QWidget *parent)
 	: super(parent)
-	, d_ptr(new RomDataViewPrivate(this, rom))
+	, d_ptr(new RomDataViewPrivate(this, romData))
 {
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
@@ -572,6 +613,20 @@ void RomDataView::hideEvent(QHideEvent *event)
 }
 
 /** Widget slots. **/
+
+/**
+ * Disable user modification of RFT_BITFIELD checkboxes.
+ */
+void RomDataView::bitfield_toggled_slot(bool checked)
+{
+	if (!checked)
+		return;
+
+	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	if (sender) {
+		sender->setChecked(false);
+	}
+}
 
 /**
  * Animated icon timer.

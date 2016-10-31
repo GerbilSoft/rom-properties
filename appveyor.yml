@@ -1,3 +1,6 @@
+# AppVeyor configuration file.
+version: '0.8.1.{build}'
+
 # Build worker image (VM template)
 image: Visual Studio 2015
 
@@ -18,7 +21,7 @@ configuration:
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - appveyor.bat
+  - appveyor.cmd
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

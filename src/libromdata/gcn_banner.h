@@ -123,17 +123,27 @@ typedef enum {
 	(BANNER_WIBN_STRUCT_SIZE + ((icons)*BANNER_WIBN_ICON_SIZE))
 
 #pragma pack(1)
-typedef struct PACKED _banner_wibn_t
-{
+typedef struct PACKED _wii_savegame_header_t {
 	uint32_t magic;			// BANNER_MAGIC_WIBN
 	uint32_t flags;
 	uint16_t iconDelay;		// Similar to GCN.
 	uint8_t reserved[22];
 	uint16_t gameTitle[32];		// Game title. (UTF-16 BE)
 	uint16_t gameSubTitle[32];	// Game subtitle. (UTF-16 BE)
-	uint16_t banner[0x6000>>1];	// Banner image. (192x64, RGB5A3)
-	uint16_t icon[8][0x1200>>1];	// Icons. (48x48, RGB5A3) [optional]
-} banner_wibn_t;
+} wii_savegame_header_t;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct PACKED _wii_savegame_banner_t {
+	uint16_t banner[BANNER_WIBN_IMAGE_W*BANNER_WIBN_IMAGE_H];	// Banner image. (192x64, RGB5A3)
+	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];		// Main icon. (48x48, RGB5A3)
+} wii_savegame_banner_t;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct PACKED _wii_savegame_icon_t {
+	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];	// Additional icon. (48x48, RGB5A3) [optional]
+} wii_savegame_icon_t;
 #pragma pack()
 
 #ifdef __cplusplus

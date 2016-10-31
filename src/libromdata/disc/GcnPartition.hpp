@@ -48,8 +48,10 @@ class GcnPartition : public IPartition
 		explicit GcnPartition(GcnPartitionPrivate *d);
 
 	private:
+		typedef IPartition super;
 		GcnPartition(const GcnPartition &other);
 		GcnPartition &operator=(const GcnPartition &other);
+
 	protected:
 		friend class GcnPartitionPrivate;
 		GcnPartitionPrivate *const d_ptr;
@@ -62,18 +64,18 @@ class GcnPartition : public IPartition
 		 * This usually only returns false if an error occurred.
 		 * @return True if the partition is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const override;
+		virtual bool isOpen(void) const final;
 
 		/**
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		virtual int lastError(void) const override;
+		virtual int lastError(void) const final;
 
 		/**
 		 * Clear the last error.
 		 */
-		virtual void clearError(void) override;
+		virtual void clearError(void) final;
 
 		/**
 		 * Read data from the partition.
@@ -93,7 +95,7 @@ class GcnPartition : public IPartition
 		/**
 		 * Seek to the beginning of the partition.
 		 */
-		virtual void rewind(void) override;
+		virtual void rewind(void) final;
 
 		/**
 		 * Get the data size.
@@ -101,7 +103,7 @@ class GcnPartition : public IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		virtual int64_t size(void) const override;
+		virtual int64_t size(void) const final;
 
 		/** IPartition **/
 
@@ -110,7 +112,7 @@ class GcnPartition : public IPartition
 		 * This size includes the partition header and hashes.
 		 * @return Partition size, or -1 on error.
 		 */
-		virtual int64_t partition_size(void) const override;
+		virtual int64_t partition_size(void) const final;
 
 		/** IFst wrapper functions. **/
 

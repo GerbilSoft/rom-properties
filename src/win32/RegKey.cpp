@@ -344,6 +344,11 @@ LONG RegKey::deleteSubKey(LPCWSTR lpSubKey)
  */
 LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 {
+	if (!m_hKey) {
+		// Handle is invalid.
+		return ERROR_INVALID_HANDLE;
+	}
+
 	LONG lResult;
 	DWORD cSubKeys, cchMaxSubKeyLen;
 
@@ -392,26 +397,81 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 	return ERROR_SUCCESS;
 }
 
+/**
+ * Is the key empty?
+ * This means no values, an empty default value, and no subkey.
+ * @return True if the key is empty; false if not or if an error occurred.
+ */
+bool RegKey::isKeyEmpty(void)
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		// TODO: Better error reporting.
+		return false;
+	}
+
+	LONG lResult;
+	DWORD cSubKeys, cValues;
+
+	// Get the number of subkeys.
+	lResult = RegQueryInfoKey(m_hKey,
+		nullptr, nullptr,	// lpClass, lpcClass
+		nullptr,		// lpReserved
+		&cSubKeys, nullptr,	// lpcSubKeys, lpcMaxSubKeyLen
+		nullptr, &cValues,	// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,	// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr);	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		// TODO: Better error reporting.
+		return false;
+	}
+
+	if (cSubKeys > 0 || cValues > 0) {
+		// We have at least one subkey or value.
+		// NOTE: The default value is included in cValues,
+		// so we don't have to check for it separately.
+		return false;
+	}
+
+	// Key is empty.
+	return true;
+}
+
 /** COM registration convenience functions. **/
 
 /**
  * Register a file type.
  * @param fileType File extension, with leading dot. (e.g. ".bin")
- * @param progID ProgID.
+ * @param pHkey_Assoc Pointer to RegKey* to store opened registry key on success. (If nullptr, key will be closed.)
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::RegisterFileType(LPCWSTR fileType, LPCWSTR progID)
+LONG RegKey::RegisterFileType(LPCWSTR fileType, RegKey **pHkey_Assoc)
 {
 	// TODO: Handle cases where the user has already selected
 	// a file association?
 
 	// Create/open the file type key.
-	RegKey hkcr_fileType(HKEY_CLASSES_ROOT, fileType, KEY_WRITE, true);
-	if (!hkcr_fileType.isOpen())
-		return hkcr_fileType.lOpenRes();
+	// If we're returning the key, we need read/write access;
+	// otherwise, we only need write access.
+	const REGSAM samDesired = (pHkey_Assoc ? KEY_READ | KEY_WRITE : KEY_WRITE);
 
-	// Set the default value to the ProgID.
-	return hkcr_fileType.write(nullptr, progID);
+	RegKey *pHkcr_fileType = new RegKey(HKEY_CLASSES_ROOT, fileType, samDesired, true);
+	if (!pHkcr_fileType->isOpen()) {
+		// Error opening the key.
+		LONG lResult = pHkcr_fileType->lOpenRes();
+		delete pHkcr_fileType;
+		return lResult;
+	}
+
+	if (pHkey_Assoc) {
+		// Return the RegKey.
+		*pHkey_Assoc = pHkcr_fileType;
+	} else {
+		// We're done using the RegKey.
+		delete pHkcr_fileType;
+	}
+
+	return ERROR_SUCCESS;
 }
 
 /**

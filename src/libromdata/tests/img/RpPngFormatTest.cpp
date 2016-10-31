@@ -190,8 +190,8 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			, m_gzBmp(nullptr)
 		{ }
 
-		virtual void SetUp(void) override;
-		virtual void TearDown(void) override;
+		virtual void SetUp(void) final;
+		virtual void TearDown(void) final;
 
 	public:
 		/**

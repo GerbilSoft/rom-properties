@@ -50,8 +50,9 @@ class DMG : public RomData
 		virtual ~DMG();
 
 	private:
-		DMG(const DMG &);
-		DMG &operator=(const DMG &);
+		typedef RomData super;
+		DMG(const DMG &other);
+		DMG &operator=(const DMG &other);
 
 	private:
 		friend class DMGPrivate;
@@ -72,14 +73,14 @@ class DMG : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const override;
+		virtual int isRomSupported(const DetectInfo *info) const final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const override;
+		virtual const rp_char *systemName(uint32_t type) const final;
 
 	public:
 		/**
@@ -110,7 +111,7 @@ class DMG : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
 	protected:
 		/**
@@ -118,7 +119,7 @@ class DMG : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) override;
+		virtual int loadFieldData(void) final;
 };
 
 }

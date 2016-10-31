@@ -51,9 +51,6 @@ class KeyManagerPrivate
 		KeyManagerPrivate &operator=(const KeyManagerPrivate &other);
 
 	public:
-		// Singleton instance.
-		static unique_ptr<KeyManager> instance;
-
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -91,9 +88,6 @@ class KeyManagerPrivate
 };
 
 /** KeyManagerPrivate **/
-
-// Singleton instance.
-unique_ptr<KeyManager> KeyManagerPrivate::instance(new KeyManager());
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: cfg_isInKeysSection(false)
@@ -388,15 +382,6 @@ KeyManager::~KeyManager()
 }
 
 /**
- * Get the KeyManager instance.
- * @return KeyManager instance.
- */
-KeyManager *KeyManager::instance(void)
-{
-	return KeyManagerPrivate::instance.get();
-}
-
-/**
  * Have the encryption keys been loaded yet?
  *
  * This function will *not* load the keys.
@@ -413,23 +398,17 @@ bool KeyManager::areKeysLoaded(void) const
 }
 
 /**
- * Get an encryption key.
- * @param keyName	[in]  Encryption key name.
- * @param pKeyData	[out] Key data struct.
+ * Reload keys if the key configuration file has changed.
  * @return 0 on success; negative POSIX error code on error.
  */
-int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
+int KeyManager::reloadIfChanged(void)
 {
-	if (!keyName || !pKeyData) {
-		// Invalid parameters.
-		return -EINVAL;
-	}
+	int ret = 0;
 
-	// Check if keys.conf needs to be reloaded.
 	if (!d->conf_was_found) {
 		// keys.conf wasn't found.
 		// Try loading it again.
-		int ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
+		ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
 		if (ret == 0) {
 			// Keys loaded.
 			// Get the mtime.
@@ -443,9 +422,6 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 				d->conf_mtime = 0;
 			}
 			d->conf_was_found = true;
-		} else {
-			// Key load failed.
-			return ret;
 		}
 	} else {
 		// Check if the timestamp has changed.
@@ -467,11 +443,31 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 				} else {
 					// Key load failed.
 					d->conf_was_found = false;
-					return ret;
+					// Existing keys are still OK.
+					ret = 0;
 				}
 			}
 		}
 	}
+
+	return ret;
+}
+
+/**
+ * Get an encryption key.
+ * @param keyName	[in]  Encryption key name.
+ * @param pKeyData	[out] Key data struct.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
+{
+	if (!keyName || !pKeyData) {
+		// Invalid parameters.
+		return -EINVAL;
+	}
+
+	// Check if keys.conf needs to be reloaded.
+	const_cast<KeyManager*>(this)->reloadIfChanged();
 
 	// Attempt to get the key from the map.
 	unordered_map<string, uint32_t>::const_iterator iter = d->mapKeyNames.find(keyName);

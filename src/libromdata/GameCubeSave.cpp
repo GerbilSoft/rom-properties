@@ -82,6 +82,7 @@ class GameCubeSavePrivate
 			SAVE_TYPE_GCS = 1,	// GameShark
 			SAVE_TYPE_SAV = 2,	// MaxDrive
 		};
+		int saveType;
 
 		/**
 		 * Byteswap a card_direntry struct.
@@ -89,9 +90,6 @@ class GameCubeSavePrivate
 		 * @param saveType Apply quirks for a specific save type.
 		 */
 		static void byteswap_direntry(card_direntry *direntry, SaveType saveType);
-
-		// Save file type.
-		int saveType;
 
 		// Data offset. This is the actual starting address
 		// of the game data, past the file-specific headers
@@ -130,28 +128,6 @@ class GameCubeSavePrivate
 
 /** GameCubeSavePrivate **/
 
-GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q)
-	: q(q)
-	, saveType(SAVE_TYPE_UNKNOWN)
-	, dataOffset(-1)
-	, iconAnimData(nullptr)
-{
-	// Clear the directory entry.
-	memset(&direntry, 0, sizeof(direntry));
-}
-
-GameCubeSavePrivate::~GameCubeSavePrivate()
-{
-	if (iconAnimData) {
-		// Delete all except the first animated icon frame.
-		// (The first frame is owned by the RomData superclass.)
-		for (int i = iconAnimData->count-1; i >= 1; i--) {
-			delete iconAnimData->frames[i];
-		}
-		delete iconAnimData;
-	}
-}
-
 // Last Modified timestamp.
 const RomFields::DateTimeDesc GameCubeSavePrivate::last_modified_dt = {
 	RomFields::RFT_DATETIME_HAS_DATE |
@@ -176,6 +152,28 @@ const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
 	{_RP("Copy Count"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Blocks"), RomFields::RFT_STRING, {nullptr}},
 };
+
+GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q)
+	: q(q)
+	, saveType(SAVE_TYPE_UNKNOWN)
+	, dataOffset(-1)
+	, iconAnimData(nullptr)
+{
+	// Clear the directory entry.
+	memset(&direntry, 0, sizeof(direntry));
+}
+
+GameCubeSavePrivate::~GameCubeSavePrivate()
+{
+	if (iconAnimData) {
+		// Delete all except the first animated icon frame.
+		// (The first frame is owned by the RomData superclass.)
+		for (int i = iconAnimData->count-1; i >= 1; i--) {
+			delete iconAnimData->frames[i];
+		}
+		delete iconAnimData;
+	}
+}
 
 /**
  * Byteswap a card_direntry struct.
@@ -573,7 +571,7 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
  * @param file Open disc image.
  */
 GameCubeSave::GameCubeSave(IRpFile *file)
-	: RomData(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
+	: super(file, GameCubeSavePrivate::gcn_save_fields, ARRAY_SIZE(GameCubeSavePrivate::gcn_save_fields))
 	, d(new GameCubeSavePrivate(this))
 {
 	// This class handles save files.
@@ -593,11 +591,12 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 
 	// Check if this disc image is supported.
 	DetectInfo info;
-	info.pHeader = header;
-	info.szHeader = sizeof(header);
-	info.ext = nullptr;
+	info.header.addr = 0;
+	info.header.size = sizeof(header);
+	info.header.pData = reinterpret_cast<const uint8_t*>(header);
+	info.ext = nullptr;	// Not needed for GCN save files.
 	info.szFile = m_file->fileSize();
-	d->saveType = isRomSupported(&info);
+	d->saveType = isRomSupported_static(&info);
 
 	// Save the directory entry for later.
 	uint32_t gciOffset;	// offset to GCI header
@@ -612,7 +611,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 			gciOffset = 0x80;
 			break;
 		default:
-			// Unknown disc type.
+			// Unknown save type.
 			d->saveType = GameCubeSavePrivate::SAVE_TYPE_UNKNOWN;
 			return;
 	}
@@ -640,21 +639,28 @@ GameCubeSave::~GameCubeSave()
  */
 int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info || info->szHeader < 1024) {
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < 1024)
+	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	if (info->szFile > 8192*2043) {
-		// File is larger than 2043 blocks.
+	if (info->szFile > ((8192*2043) + 0x110)) {
+		// File is larger than 2043 blocks, plus the size
+		// of the largest header supported.
 		// This isn't possible on an actual memory card.
 		return -1;
 	}
 
 	// Check for GCS. (GameShark)
 	static const uint8_t gcs_magic[] = {'G','C','S','A','V','E'};
-	if (!memcmp(info->pHeader, gcs_magic, sizeof(gcs_magic))) {
+	if (!memcmp(info->header.pData, gcs_magic, sizeof(gcs_magic))) {
 		// Is the size correct?
 		// GCS files are a multiple of 8 KB, plus 336 bytes:
 		// - 272 bytes: GCS-specific header.
@@ -664,7 +670,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->pHeader[0x110], data_size, GameCubeSavePrivate::SAVE_TYPE_GCS))
+			    &info->header.pData[0x110], data_size, GameCubeSavePrivate::SAVE_TYPE_GCS))
 			{
 				// This is a GCS file.
 				return GameCubeSavePrivate::SAVE_TYPE_GCS;
@@ -674,7 +680,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 
 	// Check for SAV. (MaxDrive)
 	static const uint8_t sav_magic[] = {'D','A','T','E','L','G','C','_','S','A','V','E',0,0,0,0};
-	if (!memcmp(info->pHeader, sav_magic, sizeof(sav_magic))) {
+	if (!memcmp(info->header.pData, sav_magic, sizeof(sav_magic))) {
 		// Is the size correct?
 		// SAVE files are a multiple of 8 KB, plus 192 bytes:
 		// - 128 bytes: SAV-specific header.
@@ -684,7 +690,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 		if (data_size % 8192 == 0) {
 			// Check the CARD directory entry.
 			if (GameCubeSavePrivate::isCardDirEntry(
-			    &info->pHeader[0x80], data_size, GameCubeSavePrivate::SAVE_TYPE_SAV))
+			    &info->header.pData[0x80], data_size, GameCubeSavePrivate::SAVE_TYPE_SAV))
 			{
 				// This is a GCS file.
 				return GameCubeSavePrivate::SAVE_TYPE_SAV;
@@ -699,7 +705,7 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 	if (data_size % 8192 == 0) {
 		// Check the CARD directory entry.
 		if (GameCubeSavePrivate::isCardDirEntry(
-		    info->pHeader, data_size, GameCubeSavePrivate::SAVE_TYPE_GCI))
+		    info->header.pData, data_size, GameCubeSavePrivate::SAVE_TYPE_GCI))
 		{
 			// This is a GCI file.
 			return GameCubeSavePrivate::SAVE_TYPE_GCI;
@@ -731,7 +737,6 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
-	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
 	static const rp_char *const sysNames[4] = {
 		// FIXME: "NGC" in Japan?
 		_RP("Nintendo GameCube"), _RP("GameCube"), _RP("GCN"), nullptr
@@ -755,12 +760,12 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameCubeSave::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".gci"));	// USB Memory Adapter
-	ret.push_back(_RP(".gcs"));	// GameShark
-	ret.push_back(_RP(".sav"));	// MaxDrive (TODO: Too generic?)
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gci"),	// USB Memory Adapter
+		_RP(".gcs"),	// GameShark
+		_RP(".sav"),	// MaxDrive (TODO: Too generic?)
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**
@@ -875,43 +880,6 @@ int GameCubeSave::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
-}
-
-/**
- * Blit a tile to a linear image buffer.
- * @tparam pixel	[in] Pixel type.
- * @tparam tileW	[in] Tile width.
- * @tparam tileH	[in] Tile height.
- * @param img		[out] rp_image.
- * @param tileBuf	[in] Tile buffer.
- * @param tileX		[in] Horizontal tile number.
- * @param tileY		[in] Vertical tile number.
- */
-template<typename pixel, int tileW, int tileH>
-static inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
-{
-	switch (sizeof(pixel)) {
-		case 4:
-			assert(img->format() == rp_image::FORMAT_ARGB32);
-			break;
-		case 1:
-			assert(img->format() == rp_image::FORMAT_CI8);
-			break;
-		default:
-			assert(!"Unsupported sizeof(pixel).");
-			return;
-	}
-
-	// Go to the first pixel for this tile.
-	const int stride_px = img->stride() / sizeof(pixel);
-	pixel *imgBuf = reinterpret_cast<pixel*>(img->scanLine(tileY * tileH));
-	imgBuf += (tileX * tileW);
-
-	for (int y = tileH; y > 0; y--) {
-		memcpy(imgBuf, tileBuf, (tileW * sizeof(pixel)));
-		imgBuf += stride_px;
-		tileBuf += tileW;
-	}
 }
 
 /**
