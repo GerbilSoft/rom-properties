@@ -23,39 +23,13 @@
 #define __ROMPROPERTIES_WIN32_STDAFX_H__
 
 #ifndef _WIN32
-#error stdafx.h is Windows only
+#error stdafx.h is Windows only.
 #endif
 
-// Show a warning if one of the macros isn't defined in CMake.
-#ifndef WINVER
-#pragma message("WINVER not defined; defaulting to 0x0500.")
-#define WINVER		0x0500
-#endif
-#ifndef _WIN32_WINNT
-#pragma message("_WIN32_WINNT not defined; defaulting to 0x0500.")
-#define _WIN32_WINNT	0x0500
-#endif
-#ifndef _WIN32_IE
-#pragma message("_WIN32_IE not defined; defaulting to 0x0500.")
-#define _WIN32_IE	0x0500
-#endif
+// Windows SDK defines and includes.
+#include "libromdata/RpWin32_sdk.h"
 
-// Define this symbol to get XP themes. See:
-// http://msdn.microsoft.com/library/en-us/dnwxp/html/xptheming.asp
-// for more info. Note that as of May 2006, the page says the symbols should
-// be called "SIDEBYSIDE_COMMONCONTROLS" but the headers in my SDKs in VC 6 & 7
-// don't reference that symbol. If ISOLATION_AWARE_ENABLED doesn't work for you,
-// try changing it to SIDEBYSIDE_COMMONCONTROLS
-#define ISOLATION_AWARE_ENABLED 1
-
-// Win32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
+// Additional Windows headers.
 #include <windows.h>
 #include <windowsx.h>
 #include <olectl.h>

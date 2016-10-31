@@ -51,12 +51,13 @@ class GameCube : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		GameCube(IRpFile *file);
+		explicit GameCube(IRpFile *file);
 		virtual ~GameCube();
 
 	private:
-		GameCube(const GameCube &);
-		GameCube &operator=(const GameCube &);
+		typedef RomData super;
+		GameCube(const GameCube &other);
+		GameCube &operator=(const GameCube &other);
 
 	private:
 		friend class GameCubePrivate;
@@ -77,13 +78,14 @@ class GameCube : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const override;
+		virtual int isRomSupported(const DetectInfo *info) const final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemName enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const override;
+		virtual const rp_char *systemName(uint32_t type) const final;
 
 	public:
 		/**
@@ -114,7 +116,7 @@ class GameCube : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
 		/**
 		 * Get a bitfield of image types this class can retrieve.
@@ -126,7 +128,7 @@ class GameCube : public RomData
 		 * Get a bitfield of image types this class can retrieve.
 		 * @return Bitfield of supported image types. (ImageTypesBF)
 		 */
-		virtual uint32_t supportedImageTypes(void) const override;
+		virtual uint32_t supportedImageTypes(void) const final;
 
 	protected:
 		/**
@@ -134,7 +136,15 @@ class GameCube : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) override;
+		virtual int loadFieldData(void) final;
+
+		/**
+		 * Load an internal image.
+		 * Called by RomData::image() if the image data hasn't been loaded yet.
+		 * @param imageType Image type to load.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadInternalImage(ImageType imageType) final;
 
 		/**
 		 * Load URLs for an external media type.
@@ -142,7 +152,7 @@ class GameCube : public RomData
 		 * @param imageType Image type to load.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadURLs(ImageType imageType) override;
+		virtual int loadURLs(ImageType imageType) final;
 };
 
 }

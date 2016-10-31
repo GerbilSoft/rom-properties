@@ -39,32 +39,48 @@ namespace LibRomData {
 // C++ includes.
 #include <string>
 
+class RegKey;
+
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
+RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 {
 	public:
 		RP_ExtractImage();
 	private:
-		typedef RP_ComBase2<IExtractImage, IPersistFile> super;
+		typedef RP_ComBase2<IExtractImage2, IPersistFile> super;
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
 	public:
 		/**
 		 * Register the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Register(void);
+		static LONG RegisterCLSID(void);
+
+		/**
+		 * Register the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the COM object.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Unregister(void);
+		static LONG UnregisterCLSID(void);
 
- 	protected:
+		/**
+		 * Unregister the file type handler.
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	protected:
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string m_filename;
 
@@ -75,17 +91,19 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage, IPersistFile>
 		// IExtractImage
 		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
 			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) override;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) override;
+			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
+		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
+		// IExtractImage2
+		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
 
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) override;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) override;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override;
+		IFACEMETHODIMP IsDirty(void) final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 };
 
 #ifdef __CRT_UUID_DECL

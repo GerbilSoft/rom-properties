@@ -64,7 +64,7 @@ class CurlDownloader : public IDownloader
 		 * Download the file.
 		 * @return 0 on success; non-zero on error. [TODO: HTTP error codes?]
 		 */
-		virtual int download(void) override;
+		virtual int download(void) final;
 };
 
 }

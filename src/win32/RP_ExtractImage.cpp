@@ -28,14 +28,10 @@
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/rp_image.hpp"
-#include "libromdata/RpFile.hpp"
 #include "libromdata/RpWin32.hpp"
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
-
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -45,18 +41,8 @@ using LibCacheMgr::CacheManager;
 // C++ includes.
 #include <memory>
 #include <string>
-using std::auto_ptr;
+using std::unique_ptr;
 using std::wstring;
-
-// Gdiplus for PNG decoding.
-// TODO: Use libpng and/or GDI+ in rp_image?
-// NOTE: Gdiplus requires min/max.
-#include <algorithm>
-namespace Gdiplus {
-	using std::min;
-	using std::max;
-}
-#include <gdiplus.h>
 
 // CLSID
 const CLSID CLSID_RP_ExtractImage =
@@ -76,7 +62,6 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
 		return E_INVALIDARG;
-	*ppvObj = NULL;
 
 	// Check if this interface is supported.
 	// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -86,10 +71,15 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// - http://stackoverflow.com/a/2812938
 	if (riid == IID_IUnknown || riid == IID_IExtractImage) {
 		*ppvObj = static_cast<IExtractImage*>(this);
+	} else if (riid == IID_IExtractImage2) {
+		*ppvObj = static_cast<IExtractImage2*>(this);
+	} else if (riid == IID_IPersist) {
+		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
 	} else {
 		// Interface is not supported.
+		*ppvObj = nullptr;
 		return E_NOINTERFACE;
 	}
 
@@ -102,7 +92,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Register(void)
+LONG RP_ExtractImage::RegisterCLSID(void)
 {
 	static const wchar_t description[] = L"ROM Properties Page - Image Extractor";
 	extern const wchar_t RP_ProgID[];
@@ -110,41 +100,61 @@ LONG RP_ExtractImage::Register(void)
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0)
+	if (lResult <= 0) {
 		return ERROR_INVALID_PARAMETER;
+	}
 
 	// Register the COM object.
 	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
+	}
 
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ExtractImage), description);
-	if (lResult != ERROR_SUCCESS)
+	if (lResult != ERROR_SUCCESS) {
 		return lResult;
-
-	// Register as the icon handler for this ProgID.
-	// Create/open the ProgID key.
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_ProgID.isOpen())
-		return hkcr_ProgID.lOpenRes();
-
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ProgID, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen())
-		return hkcr_ShellEx.lOpenRes();
-	// Create/open the IExtractImage key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
-	if (!hkcr_IExtractImage.isOpen())
-		return hkcr_IExtractImage.lOpenRes();
-	// Set the default value to this CLSID.
-	lResult = hkcr_IExtractImage.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS)
-		return lResult;
-	hkcr_IExtractImage.close();
-	hkcr_ShellEx.close();
+	}
 
 	// COM object registered.
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractImage::RegisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Register as the image handler for this file association.
+
+	// Create/open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
+	if (!hkcr_ShellEx.isOpen()) {
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Create/open the IExtractImage key.
+	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
+	if (!hkcr_IExtractImage.isOpen()) {
+		return hkcr_IExtractImage.lOpenRes();
+	}
+	// Set the default value to this CLSID.
+	lResult = hkcr_IExtractImage.write(nullptr, clsid_str);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// File type handler registered.
 	return ERROR_SUCCESS;
 }
 
@@ -152,16 +162,68 @@ LONG RP_ExtractImage::Register(void)
  * Unregister the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::Unregister(void)
+LONG RP_ExtractImage::UnregisterCLSID(void)
 {
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
-	if (lResult != ERROR_SUCCESS)
-		return lResult;
+	return RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
+}
 
-	// TODO
+/**
+ * Unregister the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
+{
+	extern const wchar_t RP_ProgID[];
+
+	// Convert the CLSID to a string.
+	wchar_t clsid_str[48];	// maybe only 40 is needed?
+	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
+	if (lResult <= 0) {
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Unregister as the image handler for this file association.
+
+	// Open the "ShellEx" key.
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	if (!hkcr_ShellEx.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ShellEx.lOpenRes();
+	}
+	// Open the IExtractImage key.
+	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_READ, false);
+	if (!hkcr_IExtractImage.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_IExtractImage.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IExtractImage.lOpenRes();
+	}
+
+	// Check if the default value matches the CLSID.
+	wstring wstr_IExtractImage = hkcr_IExtractImage.read(nullptr);
+	if (wstr_IExtractImage == clsid_str) {
+		// Default value matches.
+		// Remove the subkey.
+		hkcr_IExtractImage.close();
+		lResult = hkcr_ShellEx.deleteSubKey(L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}");
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Default value doesn't match.
+		// We're done here.
+		return hkcr_IExtractImage.lOpenRes();
+	}
+
+	// File type handler unregistered.
 	return ERROR_SUCCESS;
 }
 
@@ -175,6 +237,13 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	DWORD dwRecClrDepth, DWORD *pdwFlags)
 {
 	// TODO: If the image is cached on disk, return a filename.
+	if (!prgSize || !pdwFlags) {
+		// Invalid arguments.
+		return E_INVALIDARG;
+	} else if ((*pdwFlags & IEIFLAG_ASYNC) && !pdwPriority) {
+		// pdwPriority must be specified if IEIFLAG_ASYNC is set.
+		return E_INVALIDARG;
+	}
 
 	// Save the image size for later.
 	m_bmSize = *prgSize;
@@ -189,8 +258,16 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	*pdwFlags |= IEIFLAG_CACHE;
 #endif /* NDEBUG */
 
-	// TODO: On Windows XP, check for IEIFLAG_ASYNC.
-	// If specified, run the thumbnailing process in the background?
+	// If IEIFLAG_ASYNC is specified, return E_PENDING to let
+	// the calling process know it can call Extract() from a
+	// background thread. If this isn't done, then Explorer
+	// will lock up until all images are downloaded.
+	// NOTE: Explorer in Windows Vista and later always seems to
+	// call Extract() from a background thread.
+
+	// FIXME: Returning E_PENDING seems to cause a crash in
+	// WinXP shell32.dll: CExtractImageTask::~CExtractImageTask.
+	//return (*pdwFlags & IEIFLAG_ASYNC) ? E_PENDING : S_OK;
 	return S_OK;
 }
 
@@ -198,85 +275,117 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
 	// TODO: Handle m_bmSize?
 
-	// Make sure a filename was set by calling IPersistFile::Load().
-	if (m_filename.empty())
+	// Verify parameters:
+	// - A filename must have been set by calling IPersistFile::Load().
+	// - phBmpImage must not be nullptr.
+	if (m_filename.empty() || !phBmpImage) {
 		return E_INVALIDARG;
+	}
+	*phBmpImage = nullptr;
 
 	// Get the RomData object.
-	IRpFile *file = new RpFile(m_filename, RpFile::FM_OPEN_READ);
+	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
-		delete file;
 		return E_FAIL;	// TODO: More specific error?
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	auto_ptr<RomData> romData(RomDataFactory::getInstance(file, true));
-	delete file;	// file is dup()'d by RomData.
+	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
+	file.reset(nullptr);	// file is dup()'d by RomData.
 
-	if (!romData.get()) {
+	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
 	}
 
-	// ROM is supported. Get the external media image.
-	// TODO: Customize for internal icon, disc/cart scan, etc.?
-	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(RomData::IMG_EXT_MEDIA);
-	if (!extURLs || extURLs->empty()) {
-		// No external URLs.
-		// TODO: Fallback to icon?
-		return S_FALSE;
+	// ROM is supported. Get the image.
+	// TODO: Customize which ones are used per-system.
+	// For now, check EXT MEDIA, then INT ICON.
+
+	bool needs_delete = false;	// External images need manual deletion.
+	const rp_image *img = nullptr;
+
+	uint32_t imgbf = romData->supportedImageTypes();
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		needs_delete = (img != nullptr);
 	}
 
-	// Initialize GDI+.
-	// TODO: Do this when RP_ExtractImage is instantiated?
-	Gdiplus::GdiplusStartupInput gdipSI;
-	gdipSI.GdiplusVersion = 1;
-	gdipSI.DebugEventCallback = nullptr;
-	gdipSI.SuppressBackgroundThread = FALSE;
-	gdipSI.SuppressExternalCodecs = FALSE;
-	ULONG_PTR gdipToken;
-	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
-	if (status != Gdiplus::Status::Ok) {
-		// Failed to initialize GDI+.
+	if (!img) {
+		// No external media scan.
+		// Try an internal image.
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			// Internal icon.
+			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+		}
+	}
+
+	if (img) {
+		// Image loaded. Convert it to HBITMAP.
+		// NOTE: IExtractImage doesn't support alpha transparency,
+		// so blend the image with COLOR_WINDOW. This works for the
+		// most part, at least with Windows Explorer, but the cached
+		// Thumbs.db images won't reflect color scheme changes.
+		// NOTE 2: GetSysColor() has swapped R and B channels
+		// compared to GDI+.
+		COLORREF bgColor = GetSysColor(COLOR_WINDOW);
+		bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
+			  ((bgColor & 0xFF) << 16) |
+			  ((bgColor >> 16) & 0xFF);
+		*phBmpImage = RpImageWin32::toHBITMAP(img, bgColor);
+
+		if (needs_delete) {
+			// Delete the image.
+			delete const_cast<rp_image*>(img);
+		}
+	}
+
+	return (*phBmpImage != nullptr ? S_OK : E_FAIL);
+}
+
+/** IExtractImage2 **/
+
+/**
+ * Get the timestamp of the file.
+ * @param pDateStamp	[out] Pointer to FILETIME to store the timestamp in.
+ * @return COM error code.
+ */
+IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
+{
+	if (!pDateStamp) {
+		// No FILETIME pointer specified.
+		return E_POINTER;
+	} else if (m_filename.empty()) {
+		// Filename was not set in GetLocation().
+		return E_INVALIDARG;
+	}
+
+	// open the file and get last write time
+	HANDLE hFile = CreateFile(RP2W_s(m_filename),
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!hFile) {
+		// Could not open the file.
+		// TODO: Return STG_E_FILENOTFOUND?
 		return E_FAIL;
 	}
 
-	// Check each URL.
-	CacheManager cache;
-	status = Gdiplus::Status::GenericError;
-	for (std::vector<RomData::ExtURL>::const_iterator iter = extURLs->begin();
-	     iter != extURLs->end(); ++iter)
-	{
-		const RomData::ExtURL &extURL = *iter;
-
-		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
-		if (cache_filename.empty())
-			continue;
-
-		// Attempt to load the image.
-		// TODO: libpng in rp_image? For now, using Gdiplus.
-		Gdiplus::Bitmap *gdipBmp = Gdiplus::Bitmap::FromFile(RP2W_s(cache_filename), FALSE);
-		if (!gdipBmp)
-			continue;
-
-		// Image loaded.
-		Gdiplus::Color bgColor(0xFFFFFFFF);
-		status = gdipBmp->GetHBITMAP(bgColor, phBmpImage);
-		delete gdipBmp;
-		if (status == Gdiplus::Status::Ok) {
-			// Converted to HBITMAP successfully.
-			break;
-		}
-
-		// Try the next one...
+	FILETIME ftLastWriteTime;
+	BOOL bRet = GetFileTime(hFile, nullptr, nullptr, &ftLastWriteTime);
+	CloseHandle(hFile);
+	if (!bRet) {
+		// Failed to retrieve the timestamp.
+		return E_FAIL;
 	}
 
-	// Shut down GDI+.
-	Gdiplus::GdiplusShutdown(gdipToken);
+	SYSTEMTIME stUTC, stLocal;
+	FileTimeToSystemTime(&ftLastWriteTime, &stUTC);
+	SystemTimeToTzSpecificLocalTime(nullptr, &stUTC, &stLocal);
 
-	return (status == Gdiplus::Status::Ok ? S_OK : E_FAIL);
+	*pDateStamp = ftLastWriteTime;
+	return NOERROR; 
 }
 
 /** IPersistFile **/

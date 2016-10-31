@@ -24,10 +24,12 @@
 
 #include "TextFuncs.hpp"
 #include "RomFields.hpp"
-#include "IRpFile.hpp"
 
 // C includes.
 #include <stdint.h>
+
+// C includes. (C++ namespace)
+#include <cstring>
 
 // C++ includes.
 #include <string>
@@ -35,7 +37,10 @@
 
 namespace LibRomData {
 
+class IRpFile;
 class rp_image;
+struct IconAnimData;
+
 class RomData
 {
 	protected:
@@ -84,15 +89,20 @@ class RomData
 		/** ROM detection functions. **/
 
 		/**
+		 * Header information.
+		 */
+		struct HeaderInfo {
+			uint32_t addr;		// Start address in the ROM.
+			uint32_t size;		// Length.
+			const uint8_t *pData;	// Data.
+		};
+
+		/**
 		 * ROM detection information.
 		 * Used for isRomSupported() functions.
 		 */
 		struct DetectInfo {
-			// ROM header.
-			const uint8_t *pHeader;	// ROM header.
-			size_t szHeader;	// Size of header.
-
-			// File information.
+			HeaderInfo header;	// ROM header.
 			const rp_char *ext;	// File extension, including leading '.'
 			int64_t szFile;		// File size. (Required for certain types.)
 		};
@@ -104,12 +114,83 @@ class RomData
 		 */
 		virtual int isRomSupported(const DetectInfo *info) const = 0;
 
+		enum SystemNameType {
+			/**
+			 * The SystemNameType enum is a bitfield.
+			 *
+			 * Type:
+			 * - Long: Full company and system name.
+			 * - Short: System name only.
+			 * - Abbreviation: System initials.
+			 *
+			 * Region:
+			 * - Generic: Most well-known name for the system.
+			 * - ROM Local: Localized version based on the ROM region.
+			 *   If a ROM is multi-region, the name is selected based
+			 *   on the current system locale.
+			 */
+
+			SYSNAME_TYPE_LONG		= (0 << 0),
+			SYSNAME_TYPE_SHORT		= (1 << 0),
+			SYSNAME_TYPE_ABBREVIATION	= (2 << 0),
+			SYSNAME_TYPE_MASK		= (3 << 0),
+
+			SYSNAME_REGION_GENERIC		= (0 << 2),
+			SYSNAME_REGION_ROM_LOCAL	= (1 << 2),
+			SYSNAME_REGION_MASK		= (1 << 2),
+		};
+
+	protected:
+		/**
+		 * Is a SystemNameType bitfield value valid?
+		 * @param type Bitfield containing SystemNameType values.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool isSystemNameTypeValid(uint32_t type)
+		{
+			// Check for an invalid SYSNAME_TYPE.
+			if ((type & SYSNAME_TYPE_MASK) > SYSNAME_TYPE_ABBREVIATION)
+				return false;
+			// Check for any unsupported bits.
+			if ((type & ~(SYSNAME_REGION_MASK | SYSNAME_TYPE_MASK)) != 0)
+				return false;
+			// Type is valid.
+			return true;
+		}
+
+	public:
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * TODO: Parameter for long or short name, or region?
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemNameType enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const = 0;
+		virtual const rp_char *systemName(uint32_t type) const = 0;
+
+		enum FileType {
+			FTYPE_UNKNOWN = 0,
+			FTYPE_ROM_IMAGE,
+			FTYPE_DISC_IMAGE,
+			FTYPE_SAVE_FILE,
+
+			// "Embedded" disc image.
+			// Commonly seen on GameCube demo discs.
+			FTYPE_EMBEDDED_DISC_IMAGE,
+
+			// Application package, e.g. WAD, CIA.
+			FTYPE_APPLICATION_PACKAGE,
+		};
+
+		/**
+		 * Get the general file type.
+		 * @return General file type.
+		 */
+		FileType fileType(void) const;
+
+		/**
+		 * Get the general file type as a string.
+		 * @return General file type as a string, or nullptr if unknown.
+		 */
+		const rp_char *fileType_string(void) const;
 
 		// TODO:
 		// - List of supported systems.
@@ -182,6 +263,16 @@ class RomData
 		enum ImageProcessingBF {
 			IMGPF_CDROM_120MM	= (1 << 0),	// Apply a 120mm CD-ROM transparency mask.
 			IMGPF_CDROM_80MM	= (1 << 1),	// Apply an 80mm CD-ROM transparency mask.
+
+			// If the image needs to be resized, use
+			// nearest neighbor if the new size is an
+			// integer multiple of the old size.
+			IMGPF_RESCALE_NEAREST	= (1 << 2),
+
+			// File supports animated icons.
+			// Call iconAnimData() to get the animated
+			// icon frames and control information.
+			IMGPF_ICON_ANIMATED	= (1 << 3),
 		};
 
 		/**
@@ -272,11 +363,24 @@ class RomData
 		 */
 		uint32_t imgpf(ImageType imageType) const;
 
+		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const;
+
 	protected:
 		// TODO: Make a private class?
 		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
 		IRpFile *m_file;		// Open file.
 		RomFields *const m_fields;	// ROM fields.
+
+		// File type. (default is FTYPE_ROM_IMAGE)
+		FileType m_fileType;
 
 		// Internal images.
 		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];
@@ -289,7 +393,7 @@ class RomData
 		std::vector<ExtURL> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
 
 		// Image processing flags.
-		uint32_t m_imgpf[IMG_EXT_MAX];
+		uint32_t m_imgpf[IMG_EXT_MAX+1];
 };
 
 }

@@ -1,27 +1,52 @@
 # Microsoft Visual C++
-
-# CMake has a bunch of defaults, including /Od for debug and /O2 for release.
-# Remove some default CFLAGS/CXXFLAGS.
-STRING(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-STRING(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16.0")
+	MESSAGE(FATAL_ERROR "MSVC 2010 (10.0) or later is required.")
+ENDIF()
 
 # Disable useless warnings:
 # - MSVC "logo" messages
 # - C4355: 'this' used in base member initializer list (used for Qt Dpointer pattern)
 # - MSVCRT "deprecated" functions
-SET(RP_C_FLAGS_COMMON "-nologo -wd4355 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
+SET(RP_C_FLAGS_COMMON "/nologo /wd4355 /wd4482 -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE")
 SET(RP_CXX_FLAGS_COMMON "${RP_C_FLAGS_COMMON}")
 # NOTE: -tsaware is automatically set for Windows 2000 and later. (as of at least Visual Studio .NET 2003)
-SET(RP_EXE_LINKER_FLAGS_COMMON "-nologo /manifest:no -dynamicbase -nxcompat -largeaddressaware")
+SET(RP_EXE_LINKER_FLAGS_COMMON "/NOLOGO /DYNAMICBASE /NXCOMPAT /LARGEADDRESSAWARE")
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 
-# Disable C++ RTTI and asynchronous exceptions.
-SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -GR- -EHsc")
+# Check what flag is needed for stack smashing protection.
+INCLUDE(CheckStackProtectorCompilerFlag)
+CHECK_STACK_PROTECTOR_COMPILER_FLAG(RP_STACK_CFLAG)
+SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_STACK_CFLAG}")
+UNSET(RP_STACK_CFLAG)
+
+# Test for "/sdl".
+INCLUDE(CheckCCompilerFlag)
+FOREACH(FLAG_TEST "-sdl")
+	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST})
+	IF(CFLAG_${FLAG_TEST})
+		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CFLAG_${FLAG_TEST})
+	UNSET(CFLAG_${FLAG_TEST})
+ENDFOREACH()
 
 # Disable the RC and MASM "logo".
-SET(CMAKE_RC_FLAGS "-nologo")
-SET(CMAKE_ASM_MASM_FLAGS "-nologo")
+# FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,
+# since CMake already sets /NOLOGO there.
+# - Also disabling /NOLOGO for MASM just in case.
+#SET(CMAKE_RC_FLAGS "/NOLOGO")
+#SET(CMAKE_ASM_MASM_FLAGS "/NOLOGO")
+
+# FIXME: MSVC 2015's 32-bit masm has problems when using msbuild:
+# - The default /W3 fails for seemingly no reason. /W0 fixes it.
+# - Compilation fails due to no SAFESEH handlers in inffas32.asm.
+# NOTE: We're enabling these for all MSVC platforms, not just 32-bit.
+# NOTE 2: We need to cache this in order to prevent random build failures
+# caused by an empty string being cached instead.
+SET(CMAKE_ASM_MASM_FLAGS "/W0 /safeseh" CACHE STRING
+     "Flags used by the assembler during all build types.")
 
 # Check for link-time optimization.
 IF(ENABLE_LTO)
@@ -50,14 +75,19 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 	UNSET(arch)
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
 
+# TODO: Code coverage checking for MSVC?
+IF(ENABLE_COVERAGE)
+	MESSAGE(FATAL_ERROR "Code coverage testing is currently only supported on gcc and clang.")
+ENDIF(ENABLE_COVERAGE)
+
 # Debug/release flags.
 SET(RP_C_FLAGS_DEBUG			"-Zi")
 SET(RP_CXX_FLAGS_DEBUG			"-Zi")
-SET(RP_EXE_LINKER_FLAGS_DEBUG		 "-debug -incremental")
+SET(RP_EXE_LINKER_FLAGS_DEBUG		 "/DEBUG /INCREMENTAL")
 SET(RP_SHARED_LINKER_FLAGS_DEBUG 	"${RP_EXE_LINKER_FLAGS_DEBUG}")
 SET(RP_MODULE_LINKER_FLAGS_DEBUG 	"${RP_EXE_LINKER_FLAGS_DEBUG}")
 SET(RP_C_FLAGS_RELEASE			"-Zi")
 SET(RP_CXX_FLAGS_RELEASE		"-Zi")
-SET(RP_EXE_LINKER_FLAGS_RELEASE		"-debug -incremental:no -opt:icf,ref")
+SET(RP_EXE_LINKER_FLAGS_RELEASE		"/DEBUG /INCREMENTAL:NO /OPT:ICF,REF")
 SET(RP_SHARED_LINKER_FLAGS_RELEASE	"${RP_EXE_LINKER_FLAGS_RELEASE}")
 SET(RP_MODULE_LINKER_FLAGS_RELEASE	"${RP_EXE_LINKER_FLAGS_RELEASE}")

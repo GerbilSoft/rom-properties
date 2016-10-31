@@ -1,0 +1,34 @@
+# AppVeyor configuration file.
+version: '0.8.1.{build}'
+
+# Build worker image (VM template)
+image: Visual Studio 2015
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# clone directory
+clone_folder: c:\projects\rom-properties
+
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+before_build:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - appveyor.cmd
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - msbuild ALL_BUILD.vcxproj
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - ctest -V -C %CONFIGURATION%
+
+# TODO: Automatic packaging?

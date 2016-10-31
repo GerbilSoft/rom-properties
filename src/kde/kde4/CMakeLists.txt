@@ -56,43 +56,30 @@ ENDIF(BUILD_KDE4)
 SET(CMAKE_C_FLAGS_RELEASE   "-DQT_NO_DEBUG ${CMAKE_C_FLAGS_RELEASE}")
 SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
 
-# Qt options:
-# - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
-# - Disable implicit QString ASCII casts.
-# - Use strict iterators.
-ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
-	-DQT_USE_FAST_OPERATOR_PLUS
-	-DQT_USE_QSTRINGBUILDER
-	-DQT_NO_CAST_FROM_ASCII
-	-DQT_NO_CAST_TO_ASCII
-	-DQT_STRICT_ITERATORS
-	)
-
 #######################
 # Install the plugin. #
 #######################
 
 IF(BUILD_KDE4)
-	# FIXME: Determine the correct plugin path.
-	# NOTE: Debian multiarch still uses /usr/lib/kde4.
-	# Fedora 64-bit uses /usr/lib64/kde4. (/usr/lib is 32-bit)
-	SET(KDE4_PLUGIN_DIRECTORY "lib/kde4")
+	# FIXME: KDE4's installation directories have the prefix
+	# hard-coded. This should be removed.
 	INSTALL(TARGETS rom-properties-kde4
-		LIBRARY DESTINATION ${KDE4_PLUGIN_DIRECTORY}
+		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde4.desktop"
-		DESTINATION "share/kde4/services"
+		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca4.
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde4 PDB)
 		IF(DEBUG_FILENAME)
-			INSTALL(FILES ${DEBUG_FILENAME}
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KDE4_PLUGIN_DIRECTORY}"
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

@@ -19,24 +19,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#ifdef _WIN32
+#include "stdafx.h"
+#endif
 #include "CacheManager.hpp"
 
 #include "libromdata/TextFuncs.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/file/FileSystem.hpp"
 using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
+using namespace LibRomData::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <shlobj.h>
 #include "libromdata/RpWin32.hpp"
 #endif /* _WIN32 */
 
@@ -47,7 +44,9 @@ using LibRomData::RpFile;
 #endif /* !_WIN32 */
 
 // C++ includes.
+#include <memory>
 #include <string>
+using std::unique_ptr;
 using std::string;
 
 // TODO: DownloaderFactory?
@@ -57,11 +56,12 @@ using std::string;
 #include "CurlDownloader.hpp"
 #endif
 
-// File system wrapper functions.
-#include "FileSystem.hpp"
-using namespace LibCacheMgr::FileSystem;
-
 namespace LibCacheMgr {
+
+// Semaphore used to limit the number of simultaneous downloads.
+// TODO: Determine the best number of simultaneous downloads.
+// TODO: Test this on XP with IEIFLAG_ASYNC.
+Semaphore CacheManager::m_dlsem(2);
 
 CacheManager::CacheManager()
 {
@@ -125,7 +125,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
-	rp_string cache_filename = FileSystem::getCacheDirectory();
+	rp_string cache_filename = getCacheDirectory();
 
 	if (cache_filename.empty())
 		return rp_string();
@@ -175,6 +175,8 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  */
 LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_string &cache_key)
 {
+	SemaphoreLocker locker(m_dlsem);
+
 	// Check the main cache key.
 	rp_string cache_filename = getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
@@ -213,28 +215,28 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 	int ret = m_downloader->download();
 
 	// Write the file to the cache.
-	IRpFile *file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
+	unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_CREATE_WRITE));
 
-	if (ret != 0) {
-		// Error downloading the file.
+	if (ret != 0 || !file || !file->isOpen()) {
+		// Error downloading the file, or error opening
+		// the file in the local cache.
+
 		// TODO: Only keep a negative cache if it's a 404.
 		// Keep the cached file as a 0-byte file to indicate
 		// a "negative" hit, but return an empty filename.
-		file->close();
-		delete file;
+
 		return rp_string();
 	}
 
 	// Write the file.
 	file->write((void*)m_downloader->data(), m_downloader->dataSize());
 	file->close();
-	delete file;
 
 	// Set the file's mtime if it was obtained by the downloader.
 	// TODO: IRpFile::set_mtime()?
 	time_t mtime = m_downloader->mtime();
 	if (mtime >= 0) {
-		FileSystem::set_mtime(cache_filename, mtime);
+		set_mtime(cache_filename, mtime);
 	}
 
 	// Return the cache filename.

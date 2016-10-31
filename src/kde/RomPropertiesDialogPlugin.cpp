@@ -32,8 +32,12 @@
 #include "RpQt.hpp"
 
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RpFile.hpp"
+#include "libromdata/file/RpFile.hpp"
 using namespace LibRomData;
+
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
 
 RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
 	: super(props)
@@ -52,20 +56,17 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 		if (!filename.isEmpty()) {
 			// TODO: RpQFile wrapper.
 			// For now, using RpFile, which is an stdio wrapper.
-			IRpFile *file = new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ);
+			unique_ptr<IRpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
 			if (file && file->isOpen()) {
 				// Get the appropriate RomData class for this ROM.
-				RomData *romData = RomDataFactory::getInstance(file);
+				// file is dup()'d by RomData.
+				RomData *romData = RomDataFactory::getInstance(file.get());
 				if (romData) {
 					// ROM is supported. Show the properties.
 					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
 				}
 			}
-
-			// RomData classes dup() the file, so
-			// we can close the original one.
-			delete file;
 		}
 	}
 }

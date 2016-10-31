@@ -20,10 +20,14 @@
  ***************************************************************************/
 
 #include "RpQt.hpp"
+#include "RpQImageBackend.hpp"
 
 // libromdata
-#include "libromdata/rp_image.hpp"
+#include "libromdata/img/rp_image.hpp"
 using LibRomData::rp_image;
+
+// C includes. (C++ namespace)
+#include <cassert>
 
 /**
  * Convert an rp_image to QImage.
@@ -35,34 +39,14 @@ QImage rpToQImage(const rp_image *image)
 	if (!image || !image->isValid())
 		return QImage();
 
-	// Determine the QImage format.
-	QImage::Format fmt;
-	switch (image->format()) {
-		case rp_image::FORMAT_CI8:
-			fmt = QImage::Format_Indexed8;
-			break;
-		case rp_image::FORMAT_ARGB32:
-			fmt = QImage::Format_ARGB32;
-			break;
-		default:
-			fmt = QImage::Format_Invalid;
-			break;
-	}
-	if (fmt == QImage::Format_Invalid)
+	// We should be using the RpQImageBackend.
+	const RpQImageBackend *backend =
+		dynamic_cast<const RpQImageBackend*>(image->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
 		return QImage();
-
-	QImage img(image->width(), image->height(), fmt);
-
-	// Copy the image data.
-	memcpy(img.bits(), image->bits(), image->data_len());
-
-	// Copy the palette data, if necessary.
-	if (fmt == QImage::Format_Indexed8) {
-		QVector<QRgb> palette(image->palette_len());
-		memcpy(palette.data(), image->palette(), image->palette_len()*sizeof(QRgb));
-		img.setColorTable(palette);
 	}
 
-	// Image converted successfully.
-	return img;
+	return backend->getQImage();
 }

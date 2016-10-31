@@ -4,14 +4,34 @@ PROJECT(rom-properties-kde5)
 # Find KDE5 Extra CMake Modules.
 FIND_PACKAGE(ECM 0.0.11 NO_MODULE)
 IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
+	# Don't add KDE tests to the CTest build.
+	SET(KDE_SKIP_TEST_SETTINGS TRUE)
+
+	# Include KDE5 CMake modules.
 	LIST(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 	INCLUDE(KDEInstallDirs)
 	INCLUDE(KDECMakeSettings)
 	INCLUDE(KDECompilerSettings)
+
 	# Find Qt5.
 	SET(Qt5_NO_LINK_QTMAIN 1)
 	FIND_PACKAGE(Qt5 COMPONENTS Core Gui Widgets)
 	IF(Qt5Core_FOUND AND Qt5Gui_FOUND AND Qt5Widgets_FOUND)
+		# FIXME: Some systems some have the correct value for PLUGIN_INSTALL_DIR.
+		#
+		# Ubuntu:
+		# - Expected: lib/${DEB_HOST_MULTIARCH}/qt5/plugins
+		# - Actual:   lib/${DEB_HOST_MULTIARCH}/plugins
+		#
+		# Gentoo:
+		# - Expected: lib64/qt5/plugins
+		# - Actual:   lib64/plugins
+		#
+		# Fix this by using "${LIB_INSTALL_DIR}/qt5/plugins".
+		#
+		SET(PLUGIN_INSTALL_DIR "${LIB_INSTALL_DIR}/qt5/plugins")
+		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
+
 		# Find KDE5. (TODO: Version?)
 		FIND_PACKAGE(KF5 COMPONENTS KIO)
 		IF(NOT KF5KIO_FOUND)
@@ -69,44 +89,28 @@ ENDIF(BUILD_KDE5)
 SET(CMAKE_C_FLAGS_RELEASE   "-DQT_NO_DEBUG ${CMAKE_C_FLAGS_RELEASE}")
 SET(CMAKE_CXX_FLAGS_RELEASE "-DQT_NO_DEBUG ${CMAKE_CXX_FLAGS_RELEASE}")
 
-# Qt options:
-# - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
-# - Disable implicit QString ASCII casts.
-# - Use strict iterators.
-ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
-	-DQT_USE_FAST_OPERATOR_PLUS
-	-DQT_USE_QSTRINGBUILDER
-	-DQT_NO_CAST_FROM_ASCII
-	-DQT_NO_CAST_TO_ASCII
-	-DQT_STRICT_ITERATORS
-	)
-
 #######################
 # Install the plugin. #
 #######################
 
 IF(BUILD_KDE5)
-	# FIXME: Determine the correct plugin path.
-	# On Kubuntu 16.04, it's /usr/lib/x86_64-linux-gnu/qt5/plugins/
-	#SET(KDE5_PLUGIN_DIRECTORY "lib/x86_64-linux-gnu/qt5/plugins")
-	SET(KDE5_PLUGIN_DIRECTORY "lib64/qt5/plugins")
 	INSTALL(TARGETS rom-properties-kde5
-		LIBRARY DESTINATION ${KDE5_PLUGIN_DIRECTORY}
+		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	# Services are installed in /usr/share/kservices5/
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/rom-properties-kde5.desktop"
-		DESTINATION "share/kservices5"
+		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
 	# FIXME: Run kbuildsycoca5?
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde5 PDB)
 		IF(DEBUG_FILENAME)
-			INSTALL(FILES ${DEBUG_FILENAME}
-				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KDE5_PLUGIN_DIRECTORY}"
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

@@ -45,12 +45,13 @@ class MegaDrive : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		MegaDrive(IRpFile *file);
+		explicit MegaDrive(IRpFile *file);
 		virtual ~MegaDrive();
 
 	private:
-		MegaDrive(const MegaDrive &);
-		MegaDrive &operator=(const MegaDrive &);
+		typedef RomData super;
+		MegaDrive(const MegaDrive &other);
+		MegaDrive &operator=(const MegaDrive &other);
 
 	private:
 		friend class MegaDrivePrivate;
@@ -71,13 +72,14 @@ class MegaDrive : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const override;
+		virtual int isRomSupported(const DetectInfo *info) const final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemName enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const override;
+		virtual const rp_char *systemName(uint32_t type) const final;
 
 	public:
 		/**
@@ -108,7 +110,7 @@ class MegaDrive : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
 	protected:
 		/**
@@ -116,7 +118,7 @@ class MegaDrive : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) override;
+		virtual int loadFieldData(void) final;
 };
 
 }

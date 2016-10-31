@@ -20,8 +20,10 @@
  ***************************************************************************/
 
 #include "RomData.hpp"
-#include "rp_image.hpp"
 #include "common.h"
+#include "file/IRpFile.hpp"
+#include "img/rp_image.hpp"
+#include "img/IconAnimData.hpp"
 
 // dup()
 #ifdef _WIN32
@@ -54,6 +56,7 @@ RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
 	: m_isValid(false)
 	, m_file(nullptr)
 	, m_fields(new RomFields(fields, count))
+	, m_fileType(FTYPE_ROM_IMAGE)
 {
 	// Clear the internal images field.
 	memset(&m_images, 0, sizeof(m_images));
@@ -95,6 +98,40 @@ void RomData::close(void)
 		delete m_file;
 		m_file = nullptr;
 	}
+}
+
+/**
+ * Get the general file type.
+ * @return General file type.
+ */
+RomData::FileType RomData::fileType(void) const
+{
+	return m_fileType;
+}
+
+/**
+ * Get the general file type as a string.
+ * @return General file type as a string, or nullptr if unknown.
+ */
+const rp_char *RomData::fileType_string(void) const
+{
+	switch (m_fileType) {
+		case RomData::FTYPE_ROM_IMAGE:
+			return _RP("ROM Image");
+		case RomData::FTYPE_DISC_IMAGE:
+			return _RP("Disc Image");
+		case RomData::FTYPE_SAVE_FILE:
+			return _RP("Save File");
+		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
+			return _RP("Embedded Disc Image");
+		case RomData::FTYPE_APPLICATION_PACKAGE:
+			return _RP("Application Package");
+		case RomData::FTYPE_UNKNOWN:
+		default:
+			break;
+	}
+
+	return nullptr;
 }
 
 /**
@@ -268,6 +305,20 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return 0;
 	return m_imgpf[imageType];
+}
+
+/**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const IconAnimData *RomData::iconAnimData(void) const
+{
+	// No animated icon by default.
+	return nullptr;
 }
 
 }

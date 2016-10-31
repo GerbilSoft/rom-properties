@@ -150,6 +150,9 @@ void RomFieldsPrivate::delete_data(void)
 	for (int i = (int)(data.size() - 1); i >= 0; i--) {
 		const RomFields::Data &data = this->data.at(i);
 		switch (data.type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				break;
 			case RomFields::RFT_STRING:
 				// Allocated string. Free it.
 				free((rp_char*)data.str);
@@ -161,9 +164,12 @@ void RomFieldsPrivate::delete_data(void)
 				// ListData.
 				delete data.list_data;
 				break;
+			case RomFields::RFT_DATETIME:
+				// Nothing needed.
+				break;
 			default:
 				// ERROR!
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 		}
 	}
@@ -224,12 +230,16 @@ void RomFields::detach(void)
 	// Need to detach.
 	RomFieldsPrivate *d_new = new RomFieldsPrivate(d->fields, d->count);
 	RomFieldsPrivate *d_old = d;
-	d_new->data.reserve(d_old->data.size());
+	d_new->data.resize(d_old->data.size());
 	for (int i = (int)(d_old->data.size() - 1); i >= 0; i--) {
 		const Data &data_old = d_old->data.at(i);
 		Data &data_new = d_new->data.at(i);
 		data_new.type = data_old.type;
 		switch (data_old.type) {
+			case RFT_INVALID:
+				// No data here.
+				data_new.str = nullptr;
+				break;
 			case RFT_STRING:
 				// Duplicate the string.
 				data_new.str = rp_strdup(data_old.str);
@@ -241,9 +251,14 @@ void RomFields::detach(void)
 			case RFT_LISTDATA:
 				// Copy the ListData.
 				data_new.list_data = new ListData(*data_old.list_data);
+				break;
+			case RFT_DATETIME:
+				// Copy the Date/Time.
+				data_new.date_time = data_old.date_time;
+				break;
 			default:
 				// ERROR!
-				assert(false);
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 		}
 	}
@@ -304,6 +319,20 @@ bool RomFields::isDataLoaded(void) const
 /** Convenience functions for RomData subclasses. **/
 
 /**
+ * Add invalid field data.
+ * This effectively hides the field.
+ * @return Field index.
+ */
+int RomFields::addData_invalid(void)
+{
+	Data data;
+	data.type = RFT_INVALID;
+	data.str = nullptr;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
+
+/**
  * Add string field data.
  * @param str String.
  * @return Field index.
@@ -358,7 +387,7 @@ int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 
-	rp_string str = (len > 0 ? ascii_to_rp_string(buf, len) : _RP(""));
+	rp_string str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	return addData_string(str);
 }
 
@@ -398,6 +427,44 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
 }
 
 /**
+ * Add a string field formatted for an address range.
+ * @param start Start address.
+ * @param end End address.
+ * @param suffix Suffix string.
+ * @param digits Number of leading digits. (default is 8 for 32-bit)
+ * @return Field index.
+ */
+int RomFields::addData_string_address_range(uint32_t start, uint32_t end, const rp_char *suffix, int digits)
+{
+	// Maximum number of digits is 16. (64-bit)
+	assert(digits <= 16);
+	if (digits > 16) {
+		digits = 16;
+	}
+
+	// ROM range.
+	// TODO: Range helper? (Can't be used for SRAM, though...)
+	char buf[64];
+	int len = snprintf(buf, sizeof(buf), "0x%0*X - 0x%0*X",
+			digits, start, digits, end);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+
+	rp_string str;
+	if (len > 0) {
+		str = latin1_to_rp_string(buf, len);
+	}
+
+	if (suffix && suffix[0] != 0) {
+		// Append a space and the specified suffix.
+		str += _RP_CHR(' ');
+		str += suffix;
+	}
+
+	return addData_string(str);
+}
+
+/**
  * Add a bitfield.
  * @param bitfield Bitfield.
  * @return Field index.
@@ -421,6 +488,20 @@ int RomFields::addData_listData(ListData *list_data)
 	Data data;
 	data.type = RFT_LISTDATA;
 	data.list_data = list_data;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
+
+/**
+ * Add DateTime.
+ * @param date_time Date/Time.
+ * @return Field index.
+ */
+int RomFields::addData_dateTime(int64_t date_time)
+{
+	Data data;
+	data.type = RFT_DATETIME;
+	data.date_time = date_time;
 	d->data.push_back(data);
 	return (int)(d->data.size() - 1);
 }

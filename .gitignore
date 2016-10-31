@@ -4,9 +4,10 @@
 *.a
 *.so
 .directory
+*.kate-swp
 
 # Build directories.
-/build*/
+/build*
 
 # KDevelop project files.
 *.kdev4

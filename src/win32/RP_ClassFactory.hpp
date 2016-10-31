@@ -57,12 +57,11 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		IFACEMETHODIMP_(ULONG) Release(void) { return RP_ComBase::Release(); }
 		#endif
 
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObj)
 				return E_INVALIDARG;
-			*ppvObj = NULL;
 
 			// Check if this interface is supported.
 			// NOTE: static_cast<> is required due to vtable shenanigans.
@@ -74,6 +73,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 				*ppvObj = static_cast<IClassFactory*>(this);
 			} else {
 				// Interface is not supported.
+				*ppvObj = nullptr;
 				return E_NOINTERFACE;
 			}
 
@@ -84,7 +84,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 
 		/** IClassFactory **/
 
-		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) override
+		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) final
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
@@ -109,7 +109,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 			return hr;
 		}
 
-		IFACEMETHODIMP LockServer(BOOL fLock) override
+		IFACEMETHODIMP LockServer(BOOL fLock) final
 		{
 			// Not implemented.
 			UNUSED(fLock);

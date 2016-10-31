@@ -12,8 +12,14 @@ ELSEIF(WIN32)
 	SET(BUILD_WIN32 ON)
 ENDIF()
 
+# Enable decryption for newer ROM and disc images.
+OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
+
 # Split debug information into a separate file.
-OPTION(SPLIT_DEBUG "Split debug information into a separate file." 1)
+OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 
 # Install the split debug file.
-OPTION(INSTALL_DEBUG "Install the split debug file." 1)
+OPTION(INSTALL_DEBUG "Install the split debug files." ON)
+
+# Enable coverage checking. (gcc/clang only)
+OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
