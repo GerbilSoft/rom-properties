@@ -635,10 +635,10 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
  */
 vector<const rp_char*> NintendoDS::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(1);
-	ret.push_back(_RP(".nds"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".nds"),
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

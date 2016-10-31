@@ -461,14 +461,11 @@ const rp_char *DMG::systemName(uint32_t type) const
  */
 vector<const rp_char*> DMG::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".gb"));
-	ret.push_back(_RP(".sgb"));
-	ret.push_back(_RP(".sgb2"));
-	ret.push_back(_RP(".gbc"));
-	ret.push_back(_RP(".cgb"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gb"), _RP(".sgb"), _RP(".sgb2"),
+		_RP(".gbc"), _RP(".cgb")
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

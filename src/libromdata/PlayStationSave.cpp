@@ -334,10 +334,11 @@ const rp_char *PlayStationSave::systemName(uint32_t type) const
  */
 vector<const rp_char*> PlayStationSave::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(1);
-	ret.push_back(_RP(".psv"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".psv"),
+		// TOOD: More formats?
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

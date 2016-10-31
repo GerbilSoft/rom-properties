@@ -1149,12 +1149,10 @@ const rp_char *DreamcastSave::systemName(uint32_t type) const
  */
 vector<const rp_char*> DreamcastSave::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".vms"));
-	ret.push_back(_RP(".vmi"));
-	ret.push_back(_RP(".dci"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".vms"), _RP(".vmi"), _RP(".dci")
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

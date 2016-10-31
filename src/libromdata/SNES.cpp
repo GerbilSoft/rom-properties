@@ -446,14 +446,11 @@ const rp_char *SNES::systemName(uint32_t type) const
  */
 vector<const rp_char*> SNES::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(5);
-	ret.push_back(_RP(".smc"));
-	ret.push_back(_RP(".swc"));
-	ret.push_back(_RP(".sfc"));
-	ret.push_back(_RP(".fig"));
-	ret.push_back(_RP(".ufo"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".smc"), _RP(".swc"), _RP(".sfc"),
+		_RP(".fig"), _RP(".ufo"),
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

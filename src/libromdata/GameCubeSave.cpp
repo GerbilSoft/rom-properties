@@ -760,12 +760,12 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameCubeSave::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".gci"));	// USB Memory Adapter
-	ret.push_back(_RP(".gcs"));	// GameShark
-	ret.push_back(_RP(".sav"));	// MaxDrive (TODO: Too generic?)
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gci"),	// USB Memory Adapter
+		_RP(".gcs"),	// GameShark
+		_RP(".sav"),	// MaxDrive (TODO: Too generic?)
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

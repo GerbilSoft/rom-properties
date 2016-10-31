@@ -217,12 +217,11 @@ const rp_char *GameBoyAdvance::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameBoyAdvance::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(2);
-	ret.push_back(_RP(".gba"));
-	ret.push_back(_RP(".agb"));
-	//ret.push_back(_RP(".mb"));	// TODO: Enable this?
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gba"), _RP(".agb"),
+		//_RP(".mb"),	// TODO: Enable this?
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

@@ -276,12 +276,10 @@ const rp_char *N64::systemName(uint32_t type) const
  */
 vector<const rp_char*> N64::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".z64"));	// Z64
-	ret.push_back(_RP(".n64"));
-	ret.push_back(_RP(".v64"));	// Doctor V64
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".z64"), _RP(".n64"), _RP(".v64"),
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**

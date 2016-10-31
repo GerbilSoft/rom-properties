@@ -1236,16 +1236,12 @@ const rp_char *GameCube::systemName(uint32_t type) const
  */
 vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 {
-	// TODO: Add ".iso" later? (Too generic, though...)
-	vector<const rp_char*> ret;
-	ret.reserve(6);
-	ret.push_back(_RP(".gcm"));
-	ret.push_back(_RP(".rvm"));
-	ret.push_back(_RP(".wbfs"));
-	ret.push_back(_RP(".ciso"));
-	ret.push_back(_RP(".cso"));
-	ret.push_back(_RP(".tgc"));
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".gcm"), _RP(".rvm"), _RP(".wbfs"),
+		_RP(".ciso"), _RP(".cso"), _RP(".tgc"),
+		//_RP(".iso"),	// TODO: Enable this?
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**
