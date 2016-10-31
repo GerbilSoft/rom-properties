@@ -132,6 +132,7 @@ SET(libromdata_H
 	n64_structs.h
 	dmg_structs.h
 	gba_structs.h
+	vb_structs.h
 	SNES.hpp
 	snes_structs.h
 	DreamcastSave.hpp

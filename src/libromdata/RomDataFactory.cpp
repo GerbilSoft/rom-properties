@@ -108,6 +108,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(NintendoDS, true),
 	GetRomDataFns(DMG, false),
 	GetRomDataFns(GameBoyAdvance, false),
+	GetRomDataFns(VirtualBoy, false),
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),

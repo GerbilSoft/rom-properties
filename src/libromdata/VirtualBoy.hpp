@@ -31,13 +31,10 @@
 
 namespace LibRomData {
 
+class VirtualBoyPrivate;
 class VirtualBoy : public RomData
 {
 	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * Read a Virtual Boy ROM.
 		 *
@@ -49,12 +46,18 @@ class VirtualBoy : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		VirtualBoy(IRpFile *file);
+		explicit VirtualBoy(IRpFile *file);
+		virtual ~VirtualBoy();
 
 	private:
-		VirtualBoy(const VirtualBoy &);
-		VirtualBoy &operator=(const VirtualBoy &);
-
+		typedef RomData super;
+		VirtualBoy(const VirtualBoy &other);
+		VirtualBoy &operator=(const VirtualBoy &other);
+	
+	private:
+		friend class VirtualBoyPrivate;
+		VirtualBoyPrivate *const d;
+		
 	public:
 		/** ROM detection functions. **/
 
@@ -70,13 +73,14 @@ class VirtualBoy : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const override;
+		virtual int isRomSupported(const DetectInfo *info) const final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * @return System name, or nullptr if not supported.
+		 * @param type System name type. (See the SystemName enum.)
+		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(void) const override;
+		virtual const rp_char *systemName(uint32_t type) const final;
 
 	public:
 		/**
@@ -107,7 +111,7 @@ class VirtualBoy : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
 	protected:
 		/**
@@ -115,7 +119,7 @@ class VirtualBoy : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) override;
+		virtual int loadFieldData(void) final;
 };
 
 }
