@@ -219,8 +219,6 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
 
 	// Read the icon/title data.
-	static_assert(sizeof(NDS_IconTitleData) == NDS_IconTitleData_SIZE,
-		      "NDS_IconTitleData is not 9,152 bytes.");
 	q->m_file->seek(icon_offset);
 	size_t size = q->m_file->read(&nds_icon_title, sizeof(nds_icon_title));
 
@@ -489,8 +487,6 @@ NintendoDS::NintendoDS(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	static_assert(sizeof(NDS_RomHeader) == NDS_RomHeader_SIZE,
-		"NDS_RomHeader is not 4,096 bytes.");
 	NDS_RomHeader romHeader;
 	m_file->rewind();
 	size_t size = m_file->read(&romHeader, sizeof(romHeader));

@@ -985,8 +985,6 @@ GameCube::GameCube(IRpFile *file)
 				m_fileType = FTYPE_EMBEDDED_DISC_IMAGE;
 
 				// Check the TGC header for the disc offset.
-				static_assert(sizeof(GCN_TGC_Header) == GCN_TGC_Header_SIZE,
-					"GCN_TGC_Header is the wrong size. (Should be 64 bytes.)");
 				const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
 				uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
 				d->discReader = new DiscReader(m_file, gcm_offset, -1);
@@ -1007,8 +1005,6 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	// Save the disc header for later.
-	static_assert(sizeof(GCN_DiscHeader) == GCN_DiscHeader_SIZE,
-		"GCN_DiscHeader is the wrong size. (Should be 96 bytes.)");
 	d->discReader->rewind();
 	size = d->discReader->read(&d->discHeader, sizeof(d->discHeader));
 	if (size != sizeof(d->discHeader)) {

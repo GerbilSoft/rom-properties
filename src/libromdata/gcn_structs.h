@@ -38,7 +38,6 @@ extern "C" {
 #pragma pack(1)
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
-#define GCN_DiscHeader_SIZE 96
 typedef struct PACKED _GCN_DiscHeader {
 	union {
 		char id6[6];	// Game code. (ID6)
@@ -61,6 +60,8 @@ typedef struct PACKED _GCN_DiscHeader {
 	char game_title[64];		// Game title.
 } GCN_DiscHeader;
 #pragma pack()
+static_assert(sizeof(GCN_DiscHeader) == 96,
+	"GCN_DiscHeader_SIZE is not 96 bytes.");
 
 /**
  * GameCube region codes.
@@ -84,7 +85,6 @@ enum GCN_Region_Code {
  */
 #pragma pack(1)
 #define GCN_Boot_Block_ADDRESS 0x420
-#define GCN_Boot_Block_SIZE 32
 typedef struct PACKED _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
@@ -97,6 +97,8 @@ typedef struct PACKED _GCN_Boot_Block {
 	uint32_t reserved;
 } GCN_Boot_Block;
 #pragma pack()
+static_assert(sizeof(GCN_Boot_Block) == 32,
+	"GCN_Boot_Block_SIZE is not 32 bytes.");
 
 /**
  * DVD Boot Info. (bi2.bin)
@@ -106,7 +108,6 @@ typedef struct PACKED _GCN_Boot_Block {
  */
 #pragma pack(1)
 #define GCN_Boot_Info_ADDRESS 0x440
-#define GCN_Boot_Info_SIZE 48
 typedef struct PACKED _GCN_Boot_Info {
 	uint32_t debug_mon_size;	// Debug monitor size. [FIXME: Listed as signed?]
 	uint32_t sim_mem_size;		// Simulated memory size. (bytes) [FIXME: Listed as signed?]
@@ -120,6 +121,8 @@ typedef struct PACKED _GCN_Boot_Info {
 	uint32_t reserved2;
 } GCN_Boot_Info;
 #pragma pack()
+static_assert(sizeof(GCN_Boot_Info) == 48,
+	"GCN_Boot_Info_SIZE is not 48 bytes.");
 
 /**
  * FST entry.
@@ -128,7 +131,6 @@ typedef struct PACKED _GCN_Boot_Info {
  * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx13.4
  */
 #pragma pack(1)
-#define GCN_FST_Entry_SIZE 12
 typedef struct PACKED _GCN_FST_Entry {
 	uint32_t file_type_name_offset;	// MSB = type; low 24 bits = name offset
 	union {
@@ -147,6 +149,8 @@ typedef struct PACKED _GCN_FST_Entry {
 	};
 } GCN_FST_Entry;
 #pragma pack()
+static_assert(sizeof(GCN_FST_Entry) == 12,
+	"GCN_FST_Entry_SIZE is not 12 bytes.");
 
 /**
  * TGC header.
@@ -157,7 +161,6 @@ typedef struct PACKED _GCN_FST_Entry {
  * All fields are big-endian.
  */
 #pragma pack(1)
-#define GCN_TGC_Header_SIZE 64
 #define TGC_MAGIC 0xAE0F38A2
 typedef struct PACKED _GCN_TGC_Header {
 	uint32_t tgc_magic;	// TGC magic.
@@ -175,6 +178,8 @@ typedef struct PACKED _GCN_TGC_Header {
 	uint32_t reserved4[3];
 } GCN_TGC_Header;
 #pragma pack()
+static_assert(sizeof(GCN_TGC_Header) == 64,
+	"GCN_TGC_Header_SIZE is not 64 bytes.");
 
 /** Wii-specific structs. **/
 
@@ -224,19 +229,19 @@ typedef struct PACKED _RVL_PartitionTableEntry {
  * Time limit structs for Wii ticket.
  * Reference: http://wiibrew.org/wiki/Ticket
  */
-#define RVL_TimeLimit_SIZE 8
 #pragma pack(1)
 typedef struct PACKED _RVL_TimeLimit {
 	uint32_t enable;	// 1 == enable; 0 == disable
 	uint32_t seconds;	// Time limit, in seconds.
 } RVL_TimeLimit;
 #pragma pack()
+static_assert(sizeof(RVL_TimeLimit) == 8,
+	"RVL_TimeLimit_SIZE is not 64 bytes.");
 
 /**
  * Wii ticket.
  * Reference: http://wiibrew.org/wiki/Ticket
  */
-#define RVL_Ticket_SIZE 0x2A4
 #pragma pack(1)
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
@@ -264,12 +269,13 @@ typedef struct PACKED _RVL_Ticket {
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 #pragma pack()
+static_assert(sizeof(RVL_Ticket) == 0x2A4,
+	"RVL_Ticket_SIZE is not 64 bytes.");
 
 /**
  * Wii partition header.
  * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition
  */
-#define RVL_PartitionHeader_SIZE 0x20000
 #pragma pack(1)
 typedef struct PACKED _RVL_PartitionHeader {
 	RVL_Ticket ticket;			// [0x000]
@@ -285,6 +291,8 @@ typedef struct PACKED _RVL_PartitionHeader {
 	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
 #pragma pack()
+static_assert(sizeof(RVL_PartitionHeader) == 0x20000,
+	"RVL_PartitionHeader_SIZE is not 0x20000 bytes.");
 
 /**
  * Country indexes in RVL_RegionSetting.ratings[].

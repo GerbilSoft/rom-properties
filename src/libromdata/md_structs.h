@@ -33,7 +33,6 @@ extern "C" {
  * 68000 vector table.
  * All fields are big-endian.
  */
-#define M68K_VectorTable_SIZE 256
 #pragma pack(1)
 typedef struct PACKED _M68K_VectorTable {
 	union {
@@ -63,6 +62,8 @@ typedef struct PACKED _M68K_VectorTable {
 		};
 	};
 } M68K_VectorTable;
+static_assert(sizeof(M68K_VectorTable) == 256,
+	"M68K_VectorTable_SIZE is not 256 bytes.");
 
 /**
  * Mega Drive ROM header.
@@ -71,7 +72,6 @@ typedef struct PACKED _M68K_VectorTable {
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#define MD_RomHeader_SIZE 256
 #pragma pack(1)
 typedef struct PACKED _MD_RomHeader {
 	// Titles may be encoded in either
@@ -104,6 +104,8 @@ typedef struct PACKED _MD_RomHeader {
 	char region_codes[16];
 } MD_RomHeader;
 #pragma pack()
+static_assert(sizeof(MD_RomHeader) == 256,
+	"MD_RomHeader_SIZE is not 256 bytes.");
 
 #ifdef __cplusplus
 }

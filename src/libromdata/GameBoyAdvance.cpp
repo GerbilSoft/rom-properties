@@ -103,8 +103,6 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	static_assert(sizeof(GBA_RomHeader) == GBA_RomHeader_SIZE,
-		"GBA_RomHeader is the wrong size. (Should be 192 bytes.)");
 	GBA_RomHeader romHeader;
 	m_file->rewind();
 	size_t size = m_file->read(&romHeader, sizeof(romHeader));

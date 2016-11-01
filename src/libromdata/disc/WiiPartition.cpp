@@ -123,13 +123,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	, encInitStatus(WiiPartition::ENCINIT_DISABLED)
 #endif /* ENABLE_DECRYPTION */
 {
-	static_assert(sizeof(RVL_TimeLimit) == RVL_TimeLimit_SIZE,
-		"sizeof(RVL_TimeLimit) is incorrect. (Should be 8)");
-	static_assert(sizeof(RVL_Ticket) == RVL_Ticket_SIZE,
-		"sizeof(RVL_Ticket) is incorrect. (Should be 0x2A4)");
-	static_assert(sizeof(RVL_PartitionHeader) == RVL_PartitionHeader_SIZE,
-		"sizeof(RVL_PartitionHeader) is incorrect. (Should be 0x20000)");
-
 	// Clear data set by GcnPartition in case the
 	// partition headers can't be read.
 	data_offset = -1;

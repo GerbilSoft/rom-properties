@@ -38,7 +38,6 @@ extern "C" {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define GBA_RomHeader_SIZE 192
 #pragma pack(1)
 struct PACKED GBA_RomHeader {
 	union {
@@ -63,6 +62,8 @@ struct PACKED GBA_RomHeader {
 	uint8_t reserved2[2];
 };
 #pragma pack()
+static_assert(sizeof(GBA_RomHeader) == 192,
+	"GBA_RomHeader_SIZE is not 192 bytes.");
 
 #ifdef __cplusplus
 }

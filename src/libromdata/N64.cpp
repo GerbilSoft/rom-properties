@@ -120,8 +120,6 @@ N64::N64(IRpFile *file)
 	}
 
 	// Read the ROM image header.
-	static_assert(sizeof(N64_RomHeader) == N64_RomHeader_SIZE,
-		"N64_RomHeader is not 64 bytes.");
 	m_file->rewind();
 	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))

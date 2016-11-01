@@ -38,7 +38,6 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-#define VB_RomHeader_SIZE 32
 #pragma pack(1)
 typedef struct PACKED _VB_RomHeader {
 	char title[21];
@@ -48,6 +47,8 @@ typedef struct PACKED _VB_RomHeader {
 	uint8_t version;
 } VB_RomHeader;
 #pragma pack()
+static_assert(sizeof(VB_RomHeader) == 32,
+	"VB_RomHeader_SIZE is not 32 bytes.");
 
 #ifdef __cplusplus
 }

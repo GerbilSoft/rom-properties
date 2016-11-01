@@ -111,9 +111,6 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	, offsetShift(offsetShift)
 	, fstDirCount(0)
 {
-	static_assert(sizeof(GCN_FST_Entry) == GCN_FST_Entry_SIZE,
-		"sizeof(GCN_FST_Entry) is incorrect. (Should be 12)");
-
 	if (len < sizeof(GCN_FST_Entry)) {
 		// Invalid FST length.
 		return;

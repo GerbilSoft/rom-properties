@@ -38,7 +38,6 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
-#define NDS_RomHeader_SIZE 4096
 typedef struct PACKED _NDS_RomHeader {
 	char title[12];
 	union {
@@ -150,7 +149,8 @@ typedef struct PACKED _NDS_RomHeader {
 	uint8_t dsi_reserved_end[3328];
 } NDS_RomHeader;
 #pragma pack()
-
+static_assert(sizeof(NDS_RomHeader) == 4096,
+	"NDS_RomHeader_SIZE is not 4096 bytes.");
 /**
  * Nintendo DSi file type.
  */
@@ -196,7 +196,6 @@ typedef enum {
  *
  * All fields are little-endian.
  */
-#define NDS_IconTitleData_SIZE 9152
 #pragma pack(1)
 typedef struct PACKED _NDS_IconTitleData{
 	uint16_t version;		// known values: 0x0001, 0x0002, 0x0003, 0x0103
@@ -220,6 +219,8 @@ typedef struct PACKED _NDS_IconTitleData{
 	uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 } NDS_IconTitleData;
 #pragma pack()
+static_assert(sizeof(NDS_IconTitleData) == 9152,
+	"NDS_IconTitleData_SIZE is not 9152 bytes.");
 
 #ifdef __cplusplus
 }

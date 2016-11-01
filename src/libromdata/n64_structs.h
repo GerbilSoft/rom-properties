@@ -38,7 +38,6 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
-#define N64_RomHeader_SIZE 64
 typedef union PACKED _N64_RomHeader {
 	struct {
 		union {
@@ -68,6 +67,8 @@ typedef union PACKED _N64_RomHeader {
 	uint32_t u32[64/4];
 } N64_RomHeader;
 #pragma pack()
+static_assert(sizeof(N64_RomHeader) == 64,
+	"N64_RomHeader_SIZE is not 64 bytes.");
 
 #ifdef __cplusplus
 }

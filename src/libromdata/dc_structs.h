@@ -47,14 +47,16 @@ extern "C" {
  *s
  * All fields are in little-endian.
  */
-#define DC_VMS_ICONDATA_Header_SIZE 24
 #pragma pack(1)
+#define DC_VMS_ICONDATA_Header_SIZE 24
 typedef struct PACKED _DC_VMS_ICONDATA_Header {
 	char vms_description[16];	// Shift-JIS; space-padded.
 	uint32_t mono_icon_addr;	// Address of monochrome icon.
 	uint32_t color_icon_addr;	// Address of color icon.
 } DC_VMS_ICONDATA_Header;
 #pragma pack()
+static_assert(sizeof(DC_VMS_ICONDATA_Header) == 24,
+	"DC_VMS_ICONDATA_Header_SIZE is not 24 bytes.");
 
 /** VMS header **/
 
@@ -66,7 +68,6 @@ typedef struct PACKED _DC_VMS_ICONDATA_Header {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define DC_VMS_Header_SIZE 96
 #pragma pack(1)
 typedef union PACKED _DC_VMS_Header {
 	struct {
@@ -92,6 +93,8 @@ typedef union PACKED _DC_VMS_Header {
 	// by the eyecatch (if present).
 } DC_VMS_Header;
 #pragma pack()
+static_assert(sizeof(DC_VMS_Header) == 96,
+	"DC_VMS_Header_SIZE is not 96 bytes.");
 
 /**
  * Graphic eyecatch type.
@@ -134,8 +137,8 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define DC_VMI_Header_SIZE 108
 #pragma pack(1)
+#define DC_VMI_Header_SIZE 108
 typedef struct PACKED _DC_VMI_Header {
 	// Very primitive checksum.
 	// First four bytes of vms_resource_name,
@@ -165,6 +168,8 @@ typedef struct PACKED _DC_VMI_Header {
 	uint32_t filesize;		// .VMS file size, in bytes.
 } DC_VMI_Header;
 #pragma pack()
+static_assert(sizeof(DC_VMI_Header) == 108,
+	"DC_VMI_Header_SIZE is not 108 bytes.");
 
 /**
  * DC_VMI_Header.mode
@@ -217,6 +222,8 @@ typedef struct PACKED _DC_VMS_DirEnt {
 	uint8_t reserved[4];	// Reserved. (all zero)
 } DC_VMS_DirEnt;
 #pragma pack()
+static_assert(sizeof(DC_VMS_DirEnt) == 32,
+	"DC_VMS_DirEnt_SIZE is not 32 bytes.");
 
 /**
  * DC_VMS_DirEnt.filetype

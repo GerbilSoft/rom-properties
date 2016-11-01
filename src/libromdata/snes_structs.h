@@ -98,7 +98,6 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define SNES_RomHeader_SIZE 80
 #pragma pack(1)
 typedef struct PACKED _SNES_RomHeader {
 	/** Extended header is only present if old_publisher_code == 0x33. **/
@@ -151,6 +150,8 @@ typedef struct PACKED _SNES_RomHeader {
 	} vectors;
 } SNES_RomHeader;
 #pragma pack()
+static_assert(sizeof(SNES_RomHeader) == 80,
+	"SNES_RomHeader_SIZE is not 80 bytes.");
 
 /**
  * SNES destination codes.

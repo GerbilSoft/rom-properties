@@ -133,8 +133,6 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	m_file->seek(filesize-0x220);
 
 	// Read the header. [0x20 bytes]
-	static_assert(sizeof(VB_RomHeader) == VB_RomHeader_SIZE,
-		"VB_RomHeader_SIZE is not 32 bytes.");
 	uint8_t header[0x20];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
