@@ -60,8 +60,7 @@ typedef struct PACKED _GCN_DiscHeader {
 	char game_title[64];		// Game title.
 } GCN_DiscHeader;
 #pragma pack()
-static_assert(sizeof(GCN_DiscHeader) == 96,
-	"GCN_DiscHeader_SIZE is not 96 bytes.");
+ASSERT_STRUCT(GCN_DiscHeader, 96);
 
 /**
  * GameCube region codes.
@@ -97,8 +96,7 @@ typedef struct PACKED _GCN_Boot_Block {
 	uint32_t reserved;
 } GCN_Boot_Block;
 #pragma pack()
-static_assert(sizeof(GCN_Boot_Block) == 32,
-	"GCN_Boot_Block_SIZE is not 32 bytes.");
+ASSERT_STRUCT(GCN_Boot_Block, 32);
 
 /**
  * DVD Boot Info. (bi2.bin)
@@ -121,8 +119,7 @@ typedef struct PACKED _GCN_Boot_Info {
 	uint32_t reserved2;
 } GCN_Boot_Info;
 #pragma pack()
-static_assert(sizeof(GCN_Boot_Info) == 48,
-	"GCN_Boot_Info_SIZE is not 48 bytes.");
+ASSERT_STRUCT(GCN_Boot_Info, 48);
 
 /**
  * FST entry.
@@ -149,8 +146,7 @@ typedef struct PACKED _GCN_FST_Entry {
 	};
 } GCN_FST_Entry;
 #pragma pack()
-static_assert(sizeof(GCN_FST_Entry) == 12,
-	"GCN_FST_Entry_SIZE is not 12 bytes.");
+ASSERT_STRUCT(GCN_FST_Entry, 12);
 
 /**
  * TGC header.
@@ -178,8 +174,7 @@ typedef struct PACKED _GCN_TGC_Header {
 	uint32_t reserved4[3];
 } GCN_TGC_Header;
 #pragma pack()
-static_assert(sizeof(GCN_TGC_Header) == 64,
-	"GCN_TGC_Header_SIZE is not 64 bytes.");
+ASSERT_STRUCT(GCN_TGC_Header, 64);
 
 /** Wii-specific structs. **/
 
@@ -235,8 +230,7 @@ typedef struct PACKED _RVL_TimeLimit {
 	uint32_t seconds;	// Time limit, in seconds.
 } RVL_TimeLimit;
 #pragma pack()
-static_assert(sizeof(RVL_TimeLimit) == 8,
-	"RVL_TimeLimit_SIZE is not 64 bytes.");
+ASSERT_STRUCT(RVL_TimeLimit, 8);
 
 /**
  * Wii ticket.
@@ -269,8 +263,7 @@ typedef struct PACKED _RVL_Ticket {
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
 #pragma pack()
-static_assert(sizeof(RVL_Ticket) == 0x2A4,
-	"RVL_Ticket_SIZE is not 64 bytes.");
+ASSERT_STRUCT(RVL_Ticket, 0x2A4);
 
 /**
  * Wii partition header.
@@ -291,8 +284,7 @@ typedef struct PACKED _RVL_PartitionHeader {
 	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
 #pragma pack()
-static_assert(sizeof(RVL_PartitionHeader) == 0x20000,
-	"RVL_PartitionHeader_SIZE is not 0x20000 bytes.");
+ASSERT_STRUCT(RVL_PartitionHeader, 0x20000);
 
 /**
  * Country indexes in RVL_RegionSetting.ratings[].

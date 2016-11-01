@@ -79,8 +79,7 @@ typedef struct PACKED _DMG_RomHeader {
 	uint16_t rom_checksum;   // checked by no one
 } DMG_RomHeader;
 #pragma pack()
-static_assert(sizeof(DMG_RomHeader) == 80,
-	"DMG_RomHeader_SIZE is not 80 bytes.");
+ASSERT_STRUCT(DMG_RomHeader, 80);
 
 #ifdef __cplusplus
 }

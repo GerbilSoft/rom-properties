@@ -62,8 +62,7 @@ struct PACKED GBA_RomHeader {
 	uint8_t reserved2[2];
 };
 #pragma pack()
-static_assert(sizeof(GBA_RomHeader) == 192,
-	"GBA_RomHeader_SIZE is not 192 bytes.");
+ASSERT_STRUCT(GBA_RomHeader, 192);
 
 #ifdef __cplusplus
 }

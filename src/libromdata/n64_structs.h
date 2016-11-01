@@ -67,8 +67,7 @@ typedef union PACKED _N64_RomHeader {
 	uint32_t u32[64/4];
 } N64_RomHeader;
 #pragma pack()
-static_assert(sizeof(N64_RomHeader) == 64,
-	"N64_RomHeader_SIZE is not 64 bytes.");
+ASSERT_STRUCT(N64_RomHeader, 64);
 
 #ifdef __cplusplus
 }

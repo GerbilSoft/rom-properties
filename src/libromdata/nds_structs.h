@@ -149,8 +149,8 @@ typedef struct PACKED _NDS_RomHeader {
 	uint8_t dsi_reserved_end[3328];
 } NDS_RomHeader;
 #pragma pack()
-static_assert(sizeof(NDS_RomHeader) == 4096,
-	"NDS_RomHeader_SIZE is not 4096 bytes.");
+ASSERT_STRUCT(NDS_RomHeader, 4096);
+
 /**
  * Nintendo DSi file type.
  */
@@ -219,8 +219,7 @@ typedef struct PACKED _NDS_IconTitleData{
 	uint16_t dsi_icon_seq[0x40];		// Icon animation sequence.
 } NDS_IconTitleData;
 #pragma pack()
-static_assert(sizeof(NDS_IconTitleData) == 9152,
-	"NDS_IconTitleData_SIZE is not 9152 bytes.");
+ASSERT_STRUCT(NDS_IconTitleData, 9152);
 
 #ifdef __cplusplus
 }

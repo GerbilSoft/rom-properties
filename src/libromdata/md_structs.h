@@ -62,8 +62,7 @@ typedef struct PACKED _M68K_VectorTable {
 		};
 	};
 } M68K_VectorTable;
-static_assert(sizeof(M68K_VectorTable) == 256,
-	"M68K_VectorTable_SIZE is not 256 bytes.");
+ASSERT_STRUCT(M68K_VectorTable, 256);
 
 /**
  * Mega Drive ROM header.
@@ -104,8 +103,7 @@ typedef struct PACKED _MD_RomHeader {
 	char region_codes[16];
 } MD_RomHeader;
 #pragma pack()
-static_assert(sizeof(MD_RomHeader) == 256,
-	"MD_RomHeader_SIZE is not 256 bytes.");
+ASSERT_STRUCT(MD_RomHeader, 256);
 
 #ifdef __cplusplus
 }

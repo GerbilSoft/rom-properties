@@ -47,8 +47,7 @@ typedef struct PACKED _VB_RomHeader {
 	uint8_t version;
 } VB_RomHeader;
 #pragma pack()
-static_assert(sizeof(VB_RomHeader) == 32,
-	"VB_RomHeader_SIZE is not 32 bytes.");
+ASSERT_STRUCT(VB_RomHeader, 32);
 
 #ifdef __cplusplus
 }

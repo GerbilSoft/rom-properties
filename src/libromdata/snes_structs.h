@@ -150,8 +150,7 @@ typedef struct PACKED _SNES_RomHeader {
 	} vectors;
 } SNES_RomHeader;
 #pragma pack()
-static_assert(sizeof(SNES_RomHeader) == 80,
-	"SNES_RomHeader_SIZE is not 80 bytes.");
+ASSERT_STRUCT(SNES_RomHeader, 80);
 
 /**
  * SNES destination codes.

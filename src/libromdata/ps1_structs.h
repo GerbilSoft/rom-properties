@@ -78,8 +78,7 @@ typedef struct PACKED _PS1_SC_Struct {
 	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 #pragma pack()
-static_assert(sizeof(PS1_SC_Struct) == 512,
-	"PS1_SC_Struct_SIZE is not 512 bytes.");
+ASSERT_STRUCT(PS1_SC_Struct, 512);
 
 /**
  * PSV save format. (PS1 on PS3)
@@ -114,8 +113,7 @@ typedef struct PACKED _PS1_PSV_Header {
 	PS1_SC_Struct sc;
 } PS1_PSV_Header;
 #pragma pack()
-static_assert(sizeof(PS1_PSV_Header) == 0x84 + 512,
-	"PS1_PSV_Header_SIZE is not 644 bytes.");
+ASSERT_STRUCT(PS1_PSV_Header, 0x84 + 512);
 
 #ifdef __cplusplus
 }
