@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 
 #include "libromdata/img/rp_image_backend.hpp"
+#include <QtCore/QVector>
 #include <QtGui/QImage>
 
 /**
@@ -60,6 +61,7 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 
 	protected:
 		QImage m_qImage;
+		QVector<QRgb> m_qPalette;
 };
 
 #endif /* __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__ */
