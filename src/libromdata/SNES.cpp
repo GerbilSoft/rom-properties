@@ -500,9 +500,17 @@ int SNES::loadFieldData(void)
 	// Game ID.
 	// NOTE: Only valid if the old publisher code is 0x33.
 	if (romHeader->old_publisher_code == 0x33) {
-		// TODO: Space elimination.
-		m_fields->addData_string(latin1_to_rp_string(
-			romHeader->ext.id4, sizeof(romHeader->ext.id4)));
+		string id6(romHeader->ext.id4, sizeof(romHeader->ext.id4));
+		if (romHeader->ext.id4[2] == ' ' && romHeader->ext.id4[3] == ' ') {
+			// Two-character ID.
+			// Don't append the publisher.
+			id6.resize(2);
+		} else {
+			// Four-character ID.
+			// Append the publisher.
+			id6 += string(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
+		}
+		m_fields->addData_string(latin1_to_rp_string(id6.data(), id6.size()));
 	} else {
 		// No game ID.
 		m_fields->addData_string(_RP("Unknown"));
