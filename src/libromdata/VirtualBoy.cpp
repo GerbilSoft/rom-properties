@@ -217,7 +217,7 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// 0x220 before the end of the file.
 	if (info->szFile < 0x220)
 		return -1;
-	const uint32_t header_addr_expected = (info->szFile - 0x220);
+	const uint32_t header_addr_expected = (uint32_t)(info->szFile - 0x220);
 	if (info->header.addr > header_addr_expected)
 		return -1;
 	else if (info->header.addr + info->header.size < header_addr_expected + 0x20)
