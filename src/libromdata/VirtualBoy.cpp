@@ -62,6 +62,13 @@ class VirtualBoyPrivate
 		static bool inline isJISX0201(unsigned char c);
 		
 		/**
+		 * Is character a valid Publisher ID character?
+		 * @param c The character
+		 * @return Wether or not character is valid
+		 */
+		static bool inline isPublisherID(char c);
+
+		/**
 		 * Is character a valid Game ID character?
 		 * @param c The character
 		 * @return Wether or not character is valid
@@ -98,8 +105,25 @@ bool inline VirtualBoyPrivate::isJISX0201(unsigned char c){
  * @param c The character
  * @return Wether or not character is valid
  */
-bool inline VirtualBoyPrivate::isGameID(char c){
+bool inline VirtualBoyPrivate::isPublisherID(char c){
+	// Valid characters:
+	// - Uppercase letters
+	// - Digits
 	return (isupper(c) || isdigit(c));
+}
+
+/**
+ * Is character a valid Game ID character?
+ * @param c The character
+ * @return Wether or not character is valid
+ */
+bool inline VirtualBoyPrivate::isGameID(char c){
+	// Valid characters:
+	// - Uppercase letters
+	// - Digits
+	// - Space (' ')
+	// - Hyphen ('-')
+	return (isupper(c) || isdigit(c) || c == ' ' || c == '-');
 }
 
 /** VirtualBoy **/
@@ -211,23 +235,38 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// 4) ROM version is always 0, but let's not count on that.
 	// 5) And, obviously, the publisher is always valid, but again let's not rely on this
 	// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
-	if (romHeader->title[20] ||
-	    romHeader->gameid[0] != 'V' ||
-	    (romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E'))
-	{
+	if (romHeader->title[20] != 0) {
+		// title[20] is not NULL.
 		return -1;
 	}
 
-	for (int i = 0; i < 20; i++) {
+	// Make sure the title is valid JIS X 0201.
+	for (int i = ARRAY_SIZE(romHeader->title)-2-1; i >= 0; i--) {
 		if (!VirtualBoyPrivate::isJISX0201(romHeader->title[i])) {
+			// Invalid title character.
 			return -1;
 		}
 	}
-	if (!VirtualBoyPrivate::isGameID(romHeader->gameid[1]) ||
-	    !VirtualBoyPrivate::isGameID(romHeader->gameid[2]))
+
+	// NOTE: Game ID is VxxJ or VxxE for retail ROMs,
+	// but homebrew ROMs can have anything here.
+	// Valid characters:
+	// - Uppercase letters
+	// - Digits
+	// - Space (' ') [not for publisher]
+	// - Hyphen ('-') [not for publisher]
+	if (!VirtualBoyPrivate::isPublisherID(romHeader->publisher[0]) ||
+	    !VirtualBoyPrivate::isPublisherID(romHeader->publisher[1]))
 	{
-		// Not a valid game ID.
+		// Invalid publisher ID.
 		return -1;
+	}
+
+	for (int i = ARRAY_SIZE(romHeader->gameid)-1; i >= 0; i--) {
+		if (!VirtualBoyPrivate::isGameID(romHeader->gameid[i])) {
+			// Invalid game ID.
+			return -1;
+		}
 	}
 
 	// Looks like a Virtual Boy ROM.
