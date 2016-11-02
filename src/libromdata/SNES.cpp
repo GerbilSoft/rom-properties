@@ -229,7 +229,7 @@ SNES::SNES(IRpFile *file)
 			}
 		}
 		if (!areFieldsZero) {
-			for (int i = ARRAY_SIZE(smdHeader.reserved2); i >= 0; i--) {
+			for (int i = ARRAY_SIZE(smdHeader.reserved2)-1; i >= 0; i--) {
 				if (smdHeader.reserved2[i] != 0) {
 					areFieldsZero = false;
 					break;
