@@ -262,11 +262,6 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	static_assert(sizeof(PS1_PSV_Header) == PS1_PSV_Header_SIZE,
-		"PS1_PSV_Header is the wrong size. (Should be 644 bytes.)");
-	static_assert(sizeof(PS1_SC_Struct) == PS1_SC_Struct_SIZE,
-		"PS1_SC_Struct is the wrong size. (Should be 512 bytes.)");
-
 	const PS1_PSV_Header *saveHeader =
 		reinterpret_cast<const PS1_PSV_Header*>(info->header.pData);
 

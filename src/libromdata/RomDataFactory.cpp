@@ -42,6 +42,7 @@ using std::vector;
 #include "GameCube.hpp"
 #include "NintendoDS.hpp"
 #include "DMG.hpp"
+#include "VirtualBoy.hpp"
 #include "GameBoyAdvance.hpp"
 #include "GameCubeSave.hpp"
 #include "N64.hpp"
@@ -107,6 +108,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
 	GetRomDataFns(NintendoDS, true),
 	GetRomDataFns(DMG, false),
 	GetRomDataFns(GameBoyAdvance, false),
+	GetRomDataFns(VirtualBoy, false),
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),

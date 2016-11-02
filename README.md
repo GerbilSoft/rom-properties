@@ -102,6 +102,7 @@ Notes:
 | Nintendo Wii              |       Yes      |        No       |      Disc      |
 | Nintendo Game Boy (Color) |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
+| Nintendo Virtual Boy      |       Yes      |       N/A       |       No       |
 | Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
 
 Notes:
@@ -129,6 +130,7 @@ will be used for thumbnails (and icons on Windows).
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
+* Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
 
 Some file types are not currently registered on Windows due to conflicts with
@@ -206,6 +208,9 @@ decrypt data will show an error message instead of the data in question.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
   Super Game Boy technical information. Used for ROM format information for
   those systems.
+* [Virtual Boy Programmers Manual](http://www.goliathindustries.com/vb/download/vbprog.pdf):
+  Virtual Boy technical information. Used for ROM format information for that
+  system.
 * [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
   information, plus information for other Sega systems that will be supported
   in a future release.

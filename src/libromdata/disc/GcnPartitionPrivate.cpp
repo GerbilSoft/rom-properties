@@ -41,11 +41,6 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReade
 	, bootLoaded(false)
 	, fst(nullptr)
 {
-	static_assert(sizeof(GCN_Boot_Block) == GCN_Boot_Block_SIZE,
-		"sizeof(GCN_Boot_Block) is incorrect. (Should be 32)");
-	static_assert(sizeof(GCN_Boot_Info) == GCN_Boot_Info_SIZE,
-		"sizeof(GCN_Boot_Info) is incorrect. (Should be 48)");
-
 	if (!discReader->isOpen()) {
 		lastError = discReader->lastError();
 		return;

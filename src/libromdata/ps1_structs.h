@@ -56,7 +56,6 @@ typedef enum {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
-#define PS1_SC_Struct_SIZE 512
 #define PS1_SC_MAGIC "SC"
 typedef struct PACKED _PS1_SC_Struct {
 	char magic[2];		// Magic. ("SC")
@@ -79,6 +78,7 @@ typedef struct PACKED _PS1_SC_Struct {
 	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 #pragma pack()
+ASSERT_STRUCT(PS1_SC_Struct, 512);
 
 /**
  * PSV save format. (PS1 on PS3)
@@ -87,7 +87,6 @@ typedef struct PACKED _PS1_SC_Struct {
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
-#define PS1_PSV_Header_SIZE (0x84 + PS1_SC_Struct_SIZE)
 typedef struct PACKED _PS1_PSV_Header {
 	char magic[8];		// Magic. ("\0VSP\0\0\0\0")
 	uint8_t key_seed[20];	// Key seed.
@@ -114,6 +113,7 @@ typedef struct PACKED _PS1_PSV_Header {
 	PS1_SC_Struct sc;
 } PS1_PSV_Header;
 #pragma pack()
+ASSERT_STRUCT(PS1_PSV_Header, 0x84 + 512);
 
 #ifdef __cplusplus
 }

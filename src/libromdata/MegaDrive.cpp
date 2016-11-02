@@ -336,10 +336,6 @@ MegaDrive::MegaDrive(IRpFile *file)
 	m_file->rewind();
 
 	// Read the ROM header. [0x400 bytes]
-	static_assert(sizeof(MD_RomHeader) == MD_RomHeader_SIZE,
-		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
-	static_assert(sizeof(M68K_VectorTable) == M68K_VectorTable_SIZE,
-		"M68K_VectorTable is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x400];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))

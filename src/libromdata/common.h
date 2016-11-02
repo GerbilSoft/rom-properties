@@ -41,4 +41,11 @@
 #define PACKED
 #endif
 
+/**
+ * static_asserts size of a structure
+ * Also defines a constant of form StructName_SIZE
+ */
+#define ASSERT_STRUCT(st,sz) enum { st##_SIZE = (sz), }; \
+	static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_COMMON_H__ */

@@ -337,8 +337,6 @@ DMG::DMG(IRpFile *file)
 	m_file->rewind();
 
 	// Read the ROM header. [0x150 bytes]
-	static_assert(sizeof(DMG_RomHeader) == DMG_RomHeader_SIZE,
-		"DMG_RomHeader_SIZE is not 80 bytes.");
 	uint8_t header[0x150];
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))

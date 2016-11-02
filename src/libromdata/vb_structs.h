@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * dmg_structs.h: Game Boy (DMG/CGB/SGB) data structures.                  *
+ * dmg_structs.h: Virtual Boy (DMG/CGB/SGB) data structures.               *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  * Copyright (c) 2016 by Egor.                                             *
@@ -20,8 +20,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
+#ifndef __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__
+#define __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__
 
 #include "common.h"
 #include <stdint.h>
@@ -31,58 +31,26 @@ extern "C" {
 #endif
 
 /**
- * Game Boy ROM header.
+ * Virtual Boy ROM header.
  * This matches the ROM header format exactly.
  * References:
- * - http://problemkaputt.de/pandocs.htm#thecartridgeheader
- * - http://gbdev.gg8.se/wiki/articles/The_Cartridge_Header
+ * - http://www.goliathindustries.com/vb/download/vbprog.pdf page 9
  * 
  * NOTE: Strings are NOT null-terminated!
  */
 #pragma pack(1)
-typedef struct PACKED _DMG_RomHeader {
-	uint8_t entry[4];
-	uint8_t nintendo[0x30];
-
-	/**
-	 * There are 3 variations on the next 16 bytes:
-	 * 1) title(16)
-	 * 2) title(15) cgbflag(1)
-	 * 3) title(11) gamecode(4) cgbflag(1)
-	 *
-	 * In all three cases, title is NULL-padded.
-	 */
-	union {
-		char title16[16];
-		struct {
-			union {
-				char title15[15];
-				struct {
-					char title11[11];
-					char id4[4];
-				};
-			};
-			uint8_t cgbflag;
-		};
-	};
-
-	char new_publisher_code[2];
-	uint8_t sgbflag;
-	uint8_t cart_type;
-	uint8_t rom_size;
-	uint8_t ram_size;
-	uint8_t region;
-	uint8_t old_publisher_code;
+typedef struct PACKED _VB_RomHeader {
+	char title[21];
+	uint8_t reserved[4];
+	char publisher[2];
+	char gameid[4];
 	uint8_t version;
-
-	uint8_t header_checksum; // checked by bootrom
-	uint16_t rom_checksum;   // checked by no one
-} DMG_RomHeader;
+} VB_RomHeader;
 #pragma pack()
-ASSERT_STRUCT(DMG_RomHeader, 80);
+ASSERT_STRUCT(VB_RomHeader, 32);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__ */

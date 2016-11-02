@@ -789,15 +789,6 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		return;
 	}
 
-	static_assert(sizeof(DC_VMS_Header) == DC_VMS_Header_SIZE,
-		"DC_VMS_Header is the wrong size. (Should be 96 bytes.)");
-	static_assert(sizeof(DC_VMI_Header) == DC_VMI_Header_SIZE,
-		"DC_VMI_Header is the wrong size. (Should be 108 bytes.)");
-	static_assert(sizeof(DC_VMS_DirEnt) == DC_VMS_DirEnt_SIZE,
-		"DC_VMS_DirEnt is the wrong size. (Should be 32 bytes.)");
-	static_assert(sizeof(DC_VMS_ICONDATA_Header) == DC_VMS_ICONDATA_Header_SIZE,
-		"DC_VMS_ICONDATA_Header is the wrong size. (Should be 24 bytes.)");
-
 	static_assert(DC_VMS_ICON_PALETTE_SIZE == 32,
 		"DC_VMS_ICON_PALETTE_SIZE is wrong. (Should be 32.)");
 	static_assert(DC_VMS_ICON_DATA_SIZE == 512,
