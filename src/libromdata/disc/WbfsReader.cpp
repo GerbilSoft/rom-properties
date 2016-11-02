@@ -305,8 +305,6 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
-	wbfs_disc_t *disc = nullptr;
-
 	const wbfs_head_t *const head = p->head;
 	uint32_t count = 0;
 	for (uint32_t i = 0; i < p->max_disc; i++) {
@@ -316,7 +314,7 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				wbfs_disc_t *disc = (wbfs_disc_t*)malloc(sizeof(wbfs_disc_t));
 				if (!disc) {
 					// ENOMEM
-					break;
+					return nullptr;
 				}
 				disc->p = p;
 				disc->i = i;
@@ -325,7 +323,8 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
 				if (!disc->header) {
 					// ENOMEM
-					break;
+					free(disc);
+					return nullptr;
 				}
 				file->seek(p->hd_sec_sz + (i*p->disc_info_sz));
 				size_t size = file->read(disc->header, p->disc_info_sz);
@@ -346,12 +345,6 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				return disc;
 			}
 		}
-	}
-
-	// free() disc->header and disc in case of ENOMEM.
-	if (disc) {
-		free(disc->header);
-		free(disc);
 	}
 
 	// Disc not found.
