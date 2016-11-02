@@ -151,6 +151,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			if (png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr) != PNG_INFO_tRNS) {
 				// No tRNS chunk.
 				trans = nullptr;
+				num_trans = 0;
 			}
 
 			// Combine the 24-bit RGB palette with the transparency information.
@@ -158,12 +159,13 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 				i > 0; i--, img_palette++, png_palette++)
 			{
 				uint32_t color = (png_palette->blue << 0) |
-							(png_palette->green << 8) |
-							(png_palette->red << 16);
-				if (trans && num_trans > 0) {
+						 (png_palette->green << 8) |
+						 (png_palette->red << 16);
+				if (num_trans > 0) {
 					// Copy the transparency information.
 					color |= (*trans << 24);
 					num_trans--;
+					trans++;
 				} else {
 					// No transparency information.
 					// Assume the color is opaque.
@@ -176,11 +178,8 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			if (num_palette < img->palette_len()) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-num_palette;
-				i > 0; i--, img_palette++)
-				{
-					*img_palette = 0;
-				}
+				const int diff = img->palette_len() - num_palette;
+				memset(img_palette, 0, diff * sizeof(*img_palette));
 			}
 			break;
 
@@ -201,11 +200,8 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			if (img->palette_len() > 256) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-256; i > 0;
-					i--, img_palette++)
-				{
-					*img_palette = 0;
-				}
+				const int diff = img->palette_len() - 256;
+				memset(img_palette, 0, diff * sizeof(*img_palette));
 			}
 			break;
 
