@@ -252,11 +252,11 @@ static const rp_string &getHomeDirectory(void)
 		int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
 		if (ret != 0 || !pwd_result) {
 			// getpwuid_r() failed.
-			return cache_dir;
+			return home_dir;
 		}
 
 		if (pwd_result->pw_dir[0] == 0)
-			return cache_dir;
+			return home_dir;
 
 		home_dir = utf8_to_rp_string(pwd_result->pw_dir, strlen(pwd_result->pw_dir));
 	}
