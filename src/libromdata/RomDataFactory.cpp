@@ -273,7 +273,10 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	}
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.
-	if (!rp_strcasecmp(info.ext, _RP(".vms")) || !rp_strcasecmp(info.ext, _RP(".vmi"))) {
+	if (info.ext != nullptr &&
+	    (!rp_strcasecmp(info.ext, _RP(".vms")) ||
+	     !rp_strcasecmp(info.ext, _RP(".vmi"))))
+	{
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
 		RomData *romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
