@@ -249,7 +249,7 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 		// FST isn't loaded.
 		if (d->loadFst() != 0) {
 			// FST load failed.
-			// TODO: Errors?
+			d->lastError = EIO;
 			return nullptr;
 		}
 	}
@@ -281,7 +281,7 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 	    dirent.offset > d->partition_size - dirent.size)
 	{
 		// File is out of bounds.
-		d->lastError = -EIO;
+		d->lastError = EIO;
 		return nullptr;
 	}
 
