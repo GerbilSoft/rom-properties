@@ -122,8 +122,6 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	, d(new VirtualBoyPrivate())
 	
 {
-	// TODO: Only validate that this is an Virtual Boy ROM here.
-	// Load fields elsewhere.
 	if (!m_file) {
 		// Could not dup() the file handle.
 		return;
@@ -131,11 +129,16 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 
 	// Seek to the beginning of the header.
 	int64_t filesize = m_file->fileSize();
-	if(filesize<0x220) return; // too small
-	m_file->seek(filesize-0x220);
+	// File must be at least 0x220 bytes,
+	// and cannot be larger than 16 MB.
+	if (filesize < 0x220 || filesize > (16*1024*1024)) {
+		// File size is out of range.
+		return;
+	}
 
 	// Read the header. [0x20 bytes]
 	uint8_t header[0x20];
+	m_file->seek(filesize-0x220);
 	size_t size = m_file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
@@ -147,7 +150,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
-	m_isValid = isRomSupported(&info)>=0;
+	m_isValid = (isRomSupported(&info) >= 0);
 
 	if (m_isValid) {
 		// Save the header for later.
@@ -172,14 +175,25 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
-	assert(info->header.addr == info->szFile - 0x220);
-	if (!info || !info->header.pData ||
-		info->header.addr != info->szFile - 0x220 ||
-		info->header.size < 0x20)
+	if (!info || !info->header.pData)
 		return -1;
 
+	// VirtualBoy header is located at
+	// 0x220 before the end of the file.
+	if (info->szFile < 0x220)
+		return -1;
+	const uint32_t header_addr_expected = (info->szFile - 0x220);
+	if (info->header.addr > header_addr_expected)
+		return -1;
+	else if (info->header.addr + info->header.size < header_addr_expected + 0x20)
+		return -1;
+
+	// Determine the offset.
+	const unsigned int offset = header_addr_expected - info->header.addr;
+
+	// Get the ROM header.
 	const VB_RomHeader *romHeader =
-		reinterpret_cast<const VB_RomHeader*>(info->header.pData);
+		reinterpret_cast<const VB_RomHeader*>(&info->header.pData[offset]);
 	switch(info->szFile){
 		// NOTE: there are only 3 types of rom in existance: 512KiB, 1MiB, and 2MiB.
 		case 0x80000:

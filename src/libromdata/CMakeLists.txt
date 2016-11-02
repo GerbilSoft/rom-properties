@@ -76,7 +76,6 @@ SET(libromdata_SRCS
 	NintendoPublishers.cpp
 	RomDataFactory.cpp
 	DMG.cpp
-	VirtualBoy.cpp
 	GameBoyAdvance.cpp
 	SystemRegion.cpp
 	GameCubeSave.cpp
@@ -84,6 +83,7 @@ SET(libromdata_SRCS
 	SNES.cpp
 	DreamcastSave.cpp
 	PlayStationSave.cpp
+	VirtualBoy.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem.cpp
@@ -117,28 +117,28 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	gcn_structs.h
 	DMG.hpp
-	VirtualBoy.hpp
 	uvector.h
 	GameBoyAdvance.hpp
 	CopierFormats.h
 	SystemRegion.hpp
 	GameCubeSave.hpp
 	PlayStationSave.hpp
+	N64.hpp
+	SNES.hpp
+	DreamcastSave.hpp
+	VirtualBoy.hpp
+	md_structs.h
+	gcn_structs.h
 	gcn_card.h
 	nds_structs.h
-	N64.hpp
 	n64_structs.h
 	dmg_structs.h
 	gba_structs.h
-	vb_structs.h
-	md_structs.h
 	ps1_structs.h
-	SNES.hpp
 	snes_structs.h
-	DreamcastSave.hpp
 	dc_structs.h
+	vb_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

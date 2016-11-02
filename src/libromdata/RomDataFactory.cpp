@@ -75,6 +75,11 @@ class RomDataFactoryPrivate
 		typedef std::function<RomData*(IRpFile*)> pFnNewRomData;
 #endif
 
+		enum RomDataFlags {
+			// RomData class supports images.
+			RDF_HAS_THUMBNAIL	= (1 << 0),
+		};
+
 		struct RomDataFns {
 			pFnIsRomSupported isRomSupported;
 			pFnNewRomData newRomData;
@@ -84,13 +89,17 @@ class RomDataFactoryPrivate
 
 // MSVC 2010 complains if we don't specify the full namespace
 // for the RomData subclass in the lambda expression.
-#define GetRomDataFns(sys, thumbnail) \
+#define GetRomDataFns(sys, hasThumbnail) \
 	{sys::isRomSupported_static, \
 	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
 	 sys::supportedFileExtensions_static, \
-	 thumbnail}
+	 hasThumbnail}
 
-		static const RomDataFns romDataFns[];
+		// RomData subclasses that use a header.
+		static const RomDataFns romDataFns_header[];
+
+		// RomData subclasses that use a footer.
+		static const RomDataFns romDataFns_footer[];
 
 		/**
 		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
@@ -102,18 +111,22 @@ class RomDataFactoryPrivate
 
 /** RomDataFactoryPrivate **/
 
-const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns[] = {
+const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header[] = {
 	GetRomDataFns(MegaDrive, false),
 	GetRomDataFns(GameCube, true),
 	GetRomDataFns(NintendoDS, true),
 	GetRomDataFns(DMG, false),
 	GetRomDataFns(GameBoyAdvance, false),
-	GetRomDataFns(VirtualBoy, false),
 	GetRomDataFns(GameCubeSave, true),
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(DreamcastSave, true),
 	GetRomDataFns(PlayStationSave, true),
+	{nullptr, nullptr, nullptr, false}
+};
+
+const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
+	GetRomDataFns(VirtualBoy, false),
 	{nullptr, nullptr, nullptr, false}
 };
 
@@ -290,13 +303,69 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 		delete romData;
 	}
 
+	// Check RomData subclasses that take a header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns[0];
+		&RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		if (thumbnail && !fns->hasThumbnail) {
 			// Thumbnail is requested, but this RomData class
 			// doesn't support any images.
 			continue;
+		}
+
+		if (fns->isRomSupported(&info) >= 0) {
+			RomData *romData = fns->newRomData(file);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
+
+			// Not actually supported.
+			delete romData;
+		}
+	}
+
+	// Check RomData subclasses that take a footer.
+	if (info.szFile > (1LL << 30)) {
+		// No subclasses that expect footers support
+		// files larger than 1 GB.
+		return nullptr;
+	}
+
+	bool readFooter = false;
+	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		if (thumbnail && !fns->hasThumbnail) {
+			// Thumbnail is requested, but this RomData class
+			// doesn't support any images.
+			continue;
+		}
+
+		// Do we have a matching extension?
+		// FIXME: Instead of hard-coded, check supportedFileExtensions.
+		// Currently only supports VirtualBoy.
+		if (!info.ext || rp_strcasecmp(info.ext, _RP(".vb")) != 0) {
+			// Extension doesn't match.
+			continue;
+		}
+
+		// Make sure we've read the footer.
+		if (!readFooter) {
+			static const int footer_size = 1024;
+			if (info.szFile > footer_size) {
+				info.header.addr = (uint32_t)(info.szFile - footer_size);
+				int ret = file->seek(info.header.addr);
+				if (ret != 0) {
+					// Seek error.
+					return nullptr;
+				}
+				info.header.size = (uint32_t)file->read(header, footer_size);
+				if (info.header.size == 0) {
+					// Read error.
+					return nullptr;
+				}
+			}
+			readFooter = true;
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
@@ -330,7 +399,18 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	unordered_map<const rp_char*, bool> exts;
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
-		&RomDataFactoryPrivate::romDataFns[0];
+		&RomDataFactoryPrivate::romDataFns_header[0];
+	for (; fns->supportedFileExtensions != nullptr; fns++) {
+		vector<const rp_char*> sys_vec = fns->supportedFileExtensions();
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+		exts.reserve(exts.size() + sys_vec.size());
+#endif
+		for (auto iter = sys_vec.cbegin(); iter != sys_vec.cend(); ++iter) {
+			exts[*iter] |= fns->hasThumbnail;
+		}
+	}
+
+	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
 		vector<const rp_char*> sys_vec = fns->supportedFileExtensions();
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
