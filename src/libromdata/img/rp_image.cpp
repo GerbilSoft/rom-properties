@@ -59,15 +59,35 @@ class rp_image_backend_default : public rp_image_backend
 			return m_data_len;
 		}
 
+		virtual uint32_t *palette(void) final
+		{
+			return m_palette;
+		}
+
+		virtual const uint32_t *palette(void) const final
+		{
+			return m_palette;
+		}
+
+		virtual int palette_len(void) const final
+		{
+			return m_palette_len;
+		}
+
 	private:
 		void *m_data;
 		size_t m_data_len;
+
+		uint32_t *m_palette;
+		int m_palette_len;
 };
 
 rp_image_backend_default::rp_image_backend_default(int width, int height, rp_image::Format format)
 	: super(width, height, format)
 	, m_data(nullptr)
 	, m_data_len(0)
+	, m_palette(nullptr)
+	, m_palette_len(0)
 {
 	// Allocate memory for the image.
 	m_data_len = height * stride;
@@ -91,8 +111,8 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
-		palette = (uint32_t*)calloc(256, sizeof(*palette));
-		if (!palette) {
+		m_palette = (uint32_t*)calloc(256, sizeof(*m_palette));
+		if (!m_palette) {
 			// Failed to allocate memory.
 			free(m_data);
 			m_data = nullptr;
@@ -102,14 +122,14 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		}
 
 		// 256 colors allocated in the palette.
-		palette_len = 256;
+		m_palette_len = 256;
 	}
 }
 
 rp_image_backend_default::~rp_image_backend_default()
 {
 	free(m_data);
-	free(palette);
+	free(m_palette);
 }
 
 /** rp_image_private **/
@@ -370,18 +390,18 @@ size_t rp_image::data_len(void) const
  * Get the image palette.
  * @return Pointer to image palette, or nullptr if not a paletted image.
  */
-const uint32_t *rp_image::palette(void) const
+uint32_t *rp_image::palette(void)
 {
-	return d->backend->palette;
+	return d->backend->palette();
 }
 
 /**
  * Get the image palette.
  * @return Pointer to image palette, or nullptr if not a paletted image.
  */
-uint32_t *rp_image::palette(void)
+const uint32_t *rp_image::palette(void) const
 {
-	return d->backend->palette;
+	return d->backend->palette();
 }
 
 /**
@@ -390,7 +410,7 @@ uint32_t *rp_image::palette(void)
  */
 int rp_image::palette_len(void) const
 {
-	return d->backend->palette_len;
+	return d->backend->palette_len();
 }
 
 /**
@@ -416,10 +436,10 @@ int rp_image::tr_idx(void) const
 void rp_image::set_tr_idx(int tr_idx)
 {
 	assert(d->backend->format == FORMAT_CI8);
-	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len);
+	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len());
 
 	if (d->backend->format == FORMAT_CI8 &&
-	    tr_idx >= -1 && tr_idx < d->backend->palette_len)
+	    tr_idx >= -1 && tr_idx < d->backend->palette_len())
 	{
 		d->backend->tr_idx = tr_idx;
 	}

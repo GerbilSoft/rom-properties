@@ -99,11 +99,6 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		}
 		m_pGdipPalette->Flags = 0;
 		m_pGdipPalette->Count = 256;
-
-		// Set this->palette to the first palette entry.
-		this->palette = reinterpret_cast<uint32_t*>(&m_pGdipPalette->Entries[0]);
-		// 256 colors allocated in the palette.
-		this->palette_len = 256;
 	}
 }
 
@@ -201,11 +196,6 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			memset(&m_pGdipPalette->Entries[m_pGdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
 			m_pGdipPalette->Count = 256;
 		}
-
-		// Set this->palette to the first palette entry.
-		this->palette = reinterpret_cast<uint32_t*>(&m_pGdipPalette->Entries[0]);
-		// 256 colors allocated in the palette.
-		this->palette_len = 256;
 	}
 
 	// Do the initial lock.
@@ -287,6 +277,27 @@ const void *RpGdiplusBackend::data(void) const
 size_t RpGdiplusBackend::data_len(void) const
 {
 	return this->stride * this->height;
+}
+
+uint32_t *RpGdiplusBackend::palette(void)
+{
+	if (!m_pGdipPalette)
+		return nullptr;
+	return reinterpret_cast<uint32_t*>(m_pGdipPalette->Entries);
+}
+
+const uint32_t *RpGdiplusBackend::palette(void) const
+{
+	if (!m_pGdipPalette)
+		return nullptr;
+	return reinterpret_cast<const uint32_t*>(m_pGdipPalette->Entries);
+}
+
+int RpGdiplusBackend::palette_len(void) const
+{
+	if (!m_pGdipPalette)
+		return 0;
+	return (int)m_pGdipPalette->Count;
 }
 
 /**
@@ -737,11 +748,11 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	bmiHeader->biXPelsPerMeter = 0;	// TODO
 	bmiHeader->biYPelsPerMeter = 0;	// TODO
 	// FIXME: Specify palette as a parameter?
-	bmiHeader->biClrUsed = this->palette_len;
-	bmiHeader->biClrImportant = this->palette_len;	// TODO
+	bmiHeader->biClrUsed = m_pGdipPalette->Count;
+	bmiHeader->biClrImportant = m_pGdipPalette->Count;	// TODO
 
 	// Copy the palette from the image.
-	memcpy(bmi->bmiColors, this->palette, this->palette_len * sizeof(RGBQUAD));
+	memcpy(bmi->bmiColors, m_pGdipPalette->Entries, m_pGdipPalette->Count * sizeof(RGBQUAD));
 
 	// Create the bitmap.
 	uint8_t *pvBits;

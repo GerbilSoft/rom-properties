@@ -67,8 +67,9 @@ class rp_image_backend
 		virtual size_t data_len(void) const = 0;
 
 		// Image palette.
-		uint32_t *palette;
-		int palette_len;
+		virtual uint32_t *palette(void) = 0;
+		virtual const uint32_t *palette(void) const = 0;
+		virtual int palette_len(void) const = 0;
 		int tr_idx;
 
 	public:

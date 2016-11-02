@@ -61,29 +61,8 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 
 	if (format == rp_image::FORMAT_CI8) {
 		// Initialize the palette.
-		// TODO: Make palette() an accessor that calls
-		// m_qPalette.data()?
 		m_qPalette.resize(256);
-		this->palette = m_qPalette.data();
-		if (!this->palette) {
-			// Failed to allocate memory.
-			clear_properties();
-			m_qImage = QImage();
-			m_qPalette.clear();
-			return;
-		}
-
-		// 256 colors allocated in the palette.
-		this->palette_len = 256;
 	}
-}
-
-RpQImageBackend::~RpQImageBackend()
-{
-	// NOTE: We're not freeing anything here.
-	// this->palette is pointing to m_qPalette.data(),
-	// which is automatically freed.
-	this->palette = nullptr;
 }
 
 /**
@@ -112,6 +91,29 @@ const void *RpQImageBackend::data(void) const
 size_t RpQImageBackend::data_len(void) const
 {
 	return m_qImage.byteCount();
+}
+
+uint32_t *RpQImageBackend::palette(void)
+{
+	// Return the current palette.
+	// Note that this may cause the QVector to
+	// detach if it has been used by the
+	// getQImage() function.
+	if (m_qPalette.isEmpty())
+		return nullptr;
+	return m_qPalette.data();
+}
+
+const uint32_t *RpQImageBackend::palette(void) const
+{
+	if (m_qPalette.isEmpty())
+		return nullptr;
+	return m_qPalette.constData();
+}
+
+int RpQImageBackend::palette_len(void) const
+{
+	return m_qPalette.size();
 }
 
 /**

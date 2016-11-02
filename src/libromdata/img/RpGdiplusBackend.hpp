@@ -96,6 +96,11 @@ class RpGdiplusBackend : public rp_image_backend
 		virtual const void *data(void) const final;
 		virtual size_t data_len(void) const final;
 
+		// Image palette.
+		virtual uint32_t *palette(void) final;
+		virtual const uint32_t *palette(void) const final;
+		virtual int palette_len(void) const final;
+
 	protected:
 		/**
 		 * Lock the GDI+ bitmap.
