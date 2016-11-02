@@ -128,7 +128,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Seek to the beginning of the header.
-	int64_t filesize = m_file->fileSize();
+	const int64_t filesize = m_file->fileSize();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
@@ -136,27 +136,21 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 		return;
 	}
 
-	// Read the header. [0x20 bytes]
-	uint8_t header[0x20];
-	m_file->seek(filesize-0x220);
-	size_t size = m_file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	// Read the ROM header.
+	const unsigned int header_addr = (unsigned int)(filesize - 0x220);
+	m_file->seek(header_addr);
+	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	if (size != sizeof(d->romHeader))
 		return;
 
-	// Check if this ROM is supported.
+	// Make sure this is actually a Virtual Boy ROM.
 	DetectInfo info;
-	info.header.addr = filesize-0x220;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
+	info.header.addr = header_addr;
+	info.header.size = sizeof(d->romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
 	m_isValid = (isRomSupported(&info) >= 0);
-
-	if (m_isValid) {
-		// Save the header for later.
-		// TODO: Save the vector table?
-		memcpy(&d->romHeader, header, sizeof(d->romHeader));
-	}
 }
 
 VirtualBoy::~VirtualBoy()
@@ -178,7 +172,22 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	if (!info || !info->header.pData)
 		return -1;
 
-	// VirtualBoy header is located at
+	// File size constraints:
+	// - Must be at least 16 KB.
+	// - Cannot be larger than 16 MB.
+	// - Must be a power of two.
+	// NOTE: The only retail ROMs were 512 KB, 1 MB, and 2 MB,
+	// but the system supports up to 16 MB, and some homebrew
+	// is less than 512 KB.
+	if (info->szFile < 16*1024 ||
+	    info->szFile > 16*1024*1024 ||
+	    ((info->szFile & (info->szFile - 1)) != 0))
+	{
+		// File size is not valid.
+		return -1;
+	}
+
+	// Virtual Boy header is located at
 	// 0x220 before the end of the file.
 	if (info->szFile < 0x220)
 		return -1;
@@ -194,41 +203,35 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 	// Get the ROM header.
 	const VB_RomHeader *romHeader =
 		reinterpret_cast<const VB_RomHeader*>(&info->header.pData[offset]);
-	switch(info->szFile){
-		// NOTE: there are only 3 types of rom in existance: 512KiB, 1MiB, and 2MiB.
-		case 0x80000:
-		case 0x100000:
-		case 0x200000:
-			// NOTE: The following is true for every Virtual Boy ROM:
-			// 1) First 20 bytes of title are non-control JIS X 0201 characters (padded with space if needed)
-			// 2) 21th byte is a null
-			// 3) Game ID is either VxxJ (for Japan) or VxxE (for USA) (xx are alphanumeric uppercase characters)
-			// 4) ROM version is always 0, but let's not count on that.
-			// 5) And, obviously, the publisher is always valid, but again let's not rely on this
-			// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
-			if (romHeader->title[20] ||
-			    romHeader->gameid[0] != 'V' ||
-			    (romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E'))
-			{
-				return -1;
-			}
 
-			for (int i=0;i<20;i++) {
-				if (!VirtualBoyPrivate::isJISX0201(romHeader->title[i])) {
-					return -1;
-				}
-			}
-			if (!VirtualBoyPrivate::isGameID(romHeader->gameid[1]) ||
-			    !VirtualBoyPrivate::isGameID(romHeader->gameid[2]))
-			{
-				// Not a valid game ID.
-				return -1;
-			}
-			return 0;
+	// NOTE: The following is true for every Virtual Boy ROM:
+	// 1) First 20 bytes of title are non-control JIS X 0201 characters (padded with space if needed)
+	// 2) 21th byte is a null
+	// 3) Game ID is either VxxJ (for Japan) or VxxE (for USA) (xx are alphanumeric uppercase characters)
+	// 4) ROM version is always 0, but let's not count on that.
+	// 5) And, obviously, the publisher is always valid, but again let's not rely on this
+	// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
+	if (romHeader->title[20] ||
+	    romHeader->gameid[0] != 'V' ||
+	    (romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E'))
+	{
+		return -1;
 	}
-	
-	// Not supported.
-	return -1;
+
+	for (int i = 0; i < 20; i++) {
+		if (!VirtualBoyPrivate::isJISX0201(romHeader->title[i])) {
+			return -1;
+		}
+	}
+	if (!VirtualBoyPrivate::isGameID(romHeader->gameid[1]) ||
+	    !VirtualBoyPrivate::isGameID(romHeader->gameid[2]))
+	{
+		// Not a valid game ID.
+		return -1;
+	}
+
+	// Looks like a Virtual Boy ROM.
+	return 0;
 }
 
 /**
