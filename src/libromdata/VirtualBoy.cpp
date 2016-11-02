@@ -35,8 +35,10 @@
 #include <cctype>
 
 // C++ includes.
-#include <vector>
 #include <algorithm>
+#include <string>
+#include <vector>
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -371,10 +373,12 @@ int VirtualBoy::loadFieldData(void)
 	// Title
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
 
-	// Game ID
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->gameid,sizeof(romHeader->gameid)));
+	// Game ID and publisher.
+	string id6(romHeader->gameid, sizeof(romHeader->gameid));
+	id6 += string(romHeader->publisher, sizeof(romHeader->publisher));
+	m_fields->addData_string(latin1_to_rp_string(id6.data(), id6.size()));
 
-	// Publisher
+	// Look up the publisher.
 	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
 	m_fields->addData_string(publisher?publisher:_RP("Unknown"));
 
