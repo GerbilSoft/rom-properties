@@ -41,7 +41,8 @@ using std::vector;
 
 namespace LibRomData {
 
-class VirtualBoyPrivate{
+class VirtualBoyPrivate
+{
 	public:
 		VirtualBoyPrivate() { }
 
@@ -71,6 +72,7 @@ class VirtualBoyPrivate{
 		// ROM header.
 		VB_RomHeader romHeader;
 };
+
 /** VirtualBoyPrivate **/
 
 // ROM fields.
@@ -87,8 +89,8 @@ const struct RomFields::Desc VirtualBoyPrivate::vb_fields[] = {
  * @param c The character
  * @return Wether or not character is valid
  */
-static bool inline isJISX0201(unsigned char c){
-	return (c>=' ' && c<='~') || (c>0xA0 && c<0xE0);
+bool inline VirtualBoyPrivate::isJISX0201(unsigned char c){
+	return (c >= ' ' && c <= '~') || (c > 0xA0 && c < 0xE0);
 }
 
 /**
@@ -96,8 +98,8 @@ static bool inline isJISX0201(unsigned char c){
  * @param c The character
  * @return Wether or not character is valid
  */
-static bool inline isGameID(char c){
-	return (c>='A' && c<='Z') || (c>='0' && c<='9');
+bool inline VirtualBoyPrivate::isGameID(char c){
+	return (isupper(c) || isdigit(c));
 }
 
 /** VirtualBoy **/
@@ -146,7 +148,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
 	m_isValid = isRomSupported(&info)>=0;
-	
+
 	if (m_isValid) {
 		// Save the header for later.
 		// TODO: Save the vector table?
@@ -175,7 +177,7 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 		info->header.addr != info->szFile - 0x220 ||
 		info->header.size < 0x20)
 		return -1;
-	
+
 	const VB_RomHeader *romHeader =
 		reinterpret_cast<const VB_RomHeader*>(info->header.pData);
 	switch(info->szFile){
@@ -190,15 +192,22 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 			// 4) ROM version is always 0, but let's not count on that.
 			// 5) And, obviously, the publisher is always valid, but again let's not rely on this
 			// NOTE: We're supporting all no-intro ROMs except for "Space Pinball (Unknown) (Proto).vb" as it doesn't have a valid header at all
-			if(romHeader->title[20] || romHeader->gameid[0] != 'V' || ( romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E' )){
+			if (romHeader->title[20] ||
+			    romHeader->gameid[0] != 'V' ||
+			    (romHeader->gameid[3] != 'J' && romHeader->gameid[3] != 'E'))
+			{
 				return -1;
 			}
-			for(int i=0;i<20;i++){
-				if(!isJISX0201(romHeader->title[i])){
+
+			for (int i=0;i<20;i++) {
+				if (!VirtualBoyPrivate::isJISX0201(romHeader->title[i])) {
 					return -1;
 				}
 			}
-			if(!isGameID(romHeader->gameid[1]) || !isGameID(romHeader->gameid[2])){
+			if (!VirtualBoyPrivate::isGameID(romHeader->gameid[1]) ||
+			    !VirtualBoyPrivate::isGameID(romHeader->gameid[2]))
+			{
+				// Not a valid game ID.
 				return -1;
 			}
 			return 0;
@@ -226,14 +235,14 @@ const rp_char *VirtualBoy::systemName(uint32_t type) const
 {
 	if (!m_isValid || !isSystemNameTypeValid(type))
 		return nullptr;
-	
+
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"VirtualBoy::systemName() array index optimization needs to be updated.");
 	
 	static const rp_char *const sysNames[4] = {
 		_RP("Nintendo Virtual Boy"), _RP("Virtual Boy"), _RP("VB"), nullptr,
 	};
-	
+
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
@@ -302,20 +311,20 @@ int VirtualBoy::loadFieldData(void)
 
 	// Virtual Boy ROM header, excluding the vector table.
 	const VB_RomHeader *const romHeader = &d->romHeader;
-	
+
 	// Title
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
-	
+
 	// Game ID
 	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->gameid,sizeof(romHeader->gameid)));
-	
+
 	// Publisher
 	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
 	m_fields->addData_string(publisher?publisher:_RP("Unknown"));
-	
+
 	// Revision
 	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
-	
+
 	// Region
 	const rp_char* region;
 	switch(romHeader->gameid[3]){
@@ -330,7 +339,7 @@ int VirtualBoy::loadFieldData(void)
 			break;
 	}
 	m_fields->addData_string(region);
-	
+
 	return (int)m_fields->count();
 }
 
