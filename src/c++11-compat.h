@@ -29,7 +29,11 @@
 #define CXX11_COMPAT_NULLPTR
 #define CXX11_COMPAT_OVERRIDE
 #define CXX11_COMPAT_CHARTYPES
+
+// static_assert() is present in C11.
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
 #define CXX11_COMPAT_STATIC_ASSERT
+#endif
 #endif /* !__cplusplus */
 
 /** Compiler-specific headers. **/
