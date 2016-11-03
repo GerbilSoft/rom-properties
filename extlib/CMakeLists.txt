@@ -48,13 +48,25 @@ SET(SKIP_INSTALL_HEADERS ON)
 SET(SKIP_INSTALL_FILES ON)
 SET(SKIP_INSTALL_ALL ON)
 
-IF(WIN32)
-	# Enable internal zlib for Win32 only.
-	SET(ZLIB_DEFINITIONS "-DZLIB_CONST")
+# FIXME: Build static libraries with -fpic/-fPIC on Linux.
+
+IF(USE_INTERNAL_ZLIB)
+	# Use the internal copy of zlib. (statically-linked)
 	ADD_SUBDIRECTORY(zlib)
 	SET_EXTLIB_PROPERTIES(zlib)
 	SET_EXTLIB_PROPERTIES(zlibstatic)
-ENDIF(WIN32)
+ENDIF(USE_INTERNAL_ZLIB)
+
+IF(USE_INTERNAL_PNG)
+	# Use the internal copy of libpng. (statically-linked)
+	SET(PNG_SHARED OFF)
+	SET(PNG_STATIC ON)
+	SET(PNG_TESTS OFF)
+	SET(PNG_DEBUG OFF)
+	ADD_SUBDIRECTORY(libpng)
+	SET_EXTLIB_PROPERTIES(png)
+	SET_EXTLIB_PROPERTIES(png_static)
+ENDIF(USE_INTERNAL_PNG)
 
 # MiniZip.
 ADD_SUBDIRECTORY(minizip)

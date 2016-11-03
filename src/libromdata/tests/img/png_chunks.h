@@ -27,7 +27,7 @@
 
 #include "libromdata/config.libromdata.h"
 
-#ifndef HAVE_LIBPNG
+#ifndef HAVE_PNG
 // libpng isn't available, so we have to define
 // various libpng constants here.
 // (Copied from libpng-1.6.21's png.h.)
@@ -48,7 +48,7 @@
 #define PNG_COLOR_TYPE_RGBA  PNG_COLOR_TYPE_RGB_ALPHA
 #define PNG_COLOR_TYPE_GA  PNG_COLOR_TYPE_GRAY_ALPHA
 
-#endif /* HAVE_LIBPNG */
+#endif /* HAVE_PNG */
 
 // PNG magic.
 static const uint8_t PNG_magic[8] = {0x89,'P','N','G','\r','\n',0x1A,'\n'};

@@ -27,9 +27,9 @@
 #include "png_chunks.h"
 #include "bmp.h"
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 #include <png.h>
-#endif /* HAVE_LIBPNG */
+#endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
 #if (ZLIB_VER_MAJOR > 1) || \
@@ -1219,7 +1219,7 @@ static const BITMAPINFOHEADER xterm_256color_CI8_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
 		3936, 3936, 253, 253};
-#if defined(HAVE_LIBPNG)
+#if defined(HAVE_PNG)
 static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
@@ -1234,7 +1234,7 @@ static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
 #error Missing xterm-256color.CI8.tRNS.png test case.
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 // tRNS chunk for CI8.tRNS BMPs.
 static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 	0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -1254,7 +1254,7 @@ static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 }};
-#endif /* HAVE_LIBPNG */
+#endif /* HAVE_PNG */
 
 // xterm 256-color PNG image tests.
 INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
@@ -1271,7 +1271,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 // xterm 256-color PNG image tests with transparency.
 // FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
 // https://connect.microsoft.com/VisualStudio/Feedback/Details/2084691
-#if defined(HAVE_LIBPNG)
+#if defined(HAVE_PNG)
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(

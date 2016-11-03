@@ -4,8 +4,9 @@ PROJECT(rom-properties)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 LIST(APPEND CMAKE_MODULE_PATH
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+	"${CMAKE_SOURCE_DIR}/cmake/macros"
+	"${CMAKE_SOURCE_DIR}/cmake/modules"
+	"${CMAKE_SOURCE_DIR}/cmake/libs"
 	)
 
 # If no build type is set, default to "Debug".
@@ -88,6 +89,10 @@ ENDIF(POSIX_SH)
 # Make sure the file is deleted on `make clean`.
 SET_PROPERTY(DIRECTORY APPEND
 	PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/git_version.h")
+
+# Check for required libraries.
+INCLUDE(CheckZLIB)
+INCLUDE(CheckPNG)
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)

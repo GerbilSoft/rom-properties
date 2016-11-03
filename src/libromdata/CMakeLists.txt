@@ -29,15 +29,6 @@ IF(NOT WIN32)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
 
-	# Check for zlib.
-	FIND_PACKAGE(ZLIB REQUIRED)
-	SET(HAVE_ZLIB ${ZLIB_FOUND})
-	SET(ZLIB_DEFINITIONS ZLIB_CONST)
-
-	# Check for libpng.
-	FIND_PACKAGE(PNG REQUIRED)
-	SET(HAVE_LIBPNG ${PNG_FOUND})
-
 	IF(ENABLE_DECRYPTION)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
@@ -51,6 +42,8 @@ IF(NOT WIN32)
 		CHECK_SYMBOL_EXISTS(aes128_set_decrypt_key "nettle/aes.h" HAVE_NETTLE_3)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
+
+# ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
 # Check for C library functions.
 INCLUDE(CheckFunctionExists)

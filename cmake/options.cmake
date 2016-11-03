@@ -12,6 +12,19 @@ ELSEIF(WIN32)
 	SET(BUILD_WIN32 ON)
 ENDIF()
 
+# ZLIB and libpng.
+# Internal versions are always used on Windows.
+IF(WIN32)
+	SET(USE_INTERNAL_ZLIB ON)
+	SET(USE_INTERNAL_PNG ON)
+ELSE(WIN32)
+	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
+	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
+ENDIF()
+
+# TODO: If APNG export is added, verify that system libpng
+# supports APNG.
+
 # Enable decryption for newer ROM and disc images.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
