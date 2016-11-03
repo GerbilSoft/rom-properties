@@ -149,7 +149,8 @@ size_t RpMemFile::read(void *ptr, size_t size)
 	const uint8_t *buf = reinterpret_cast<const uint8_t*>(m_buf);
 
 	// Check if size is in bounds.
-	if (m_pos > m_size - size) {
+	// NOTE: Need to use a signed comparison here.
+	if ((int64_t)m_pos > ((int64_t)m_size - (int64_t)size)) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
 		size = m_size - m_pos;
