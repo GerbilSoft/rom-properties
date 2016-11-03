@@ -31,7 +31,12 @@ DO_SPLIT_DEBUG(RpImageLoaderTest)
 SET_WINDOWS_SUBSYSTEM(RpImageLoaderTest CONSOLE)
 ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
 
-# Copy the reference images to the test directory.
+# Copy the reference images to:
+# - bin/tests/ (TODO: Subdirectory?)
+# - ${CMAKE_CURRENT_BINARY_DIR}
+# NOTE: Although the test executable is in bin/tests, CTest still
+# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
+# Hence, we have to copy the files to both places.
 FILE(GLOB test_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img" img/*.png img/*.bmp.gz)
 FOREACH(test_image ${test_images})
 	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
@@ -39,6 +44,12 @@ FOREACH(test_image ${test_images})
 		ARGS -E copy_if_different
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/${test_image}"
 			"$<TARGET_FILE_DIR:RpImageLoaderTest>/${test_image}"
+		)
+	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/${test_image}"
+			"${CMAKE_CURRENT_BINARY_DIR}/${test_image}"
 		)
 ENDFOREACH(test_image test_images)
 
