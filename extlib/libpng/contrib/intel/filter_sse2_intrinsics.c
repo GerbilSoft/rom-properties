@@ -41,7 +41,7 @@ static __m128i load3(const void* p) {
    /* We'll load 2 bytes, then 1 byte,
     * then mask them together, and finally load into SSE.
     */
-   const png_uint_16* p01 = p;
+   const png_uint_16* p01 = (const png_uint_16*)p;
    const png_byte*    p2  = (const png_byte*)(p01+1);
 
    png_uint_32 v012 = (png_uint_32)(*p01)
@@ -56,7 +56,7 @@ static void store3(void* p, __m128i v) {
    png_uint_32 v012;
    store4(&v012, v);
 
-   png_uint_16* p01 = p;
+   png_uint_16* p01 = (png_uint_16*)p;
    png_byte*    p2  = (png_byte*)(p01+1);
    *p01 = v012;
    *p2  = v012 >> 16;

@@ -380,6 +380,35 @@ set(libpng_sources
   pngwtran.c
   pngwutil.c
 )
+
+# rom-properties: Enable Intel SSE2 optimizations on x86.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	SET(libpng_sources
+		${libpng_sources}
+		contrib/intel/filter_sse2_intrinsics.c
+		contrib/intel/intel_init.c
+		)
+	ADD_DEFINITIONS(-DPNG_INTEL_SSE)
+	# Enable SSE2 for filter_sse2_intrinsics.c only.
+	# NOTE: SSE2 is always enabled on AMD64.
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSE2_FLAG "/arch:SSE2")
+		IF(MSVC_VERSION LESS 1900)
+			# NOTE: We have to compile as C++ in versions
+			# of MSVC older than 2015 due to declarations
+			# of variables after code.
+			SET_SOURCE_FILES_PROPERTIES(contrib/intel/filter_sse2_intrinsics.c
+				PROPERTIES LANGUAGE CXX)
+		ENDIF(MSVC_VERSION LESS 1900)
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSE2_FLAG "-msse2")
+	ENDIF()
+	SET_SOURCE_FILES_PROPERTIES(contrib/intel/filter_sse2_intrinsics.c
+		APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+
 set(pngtest_sources
   pngtest.c
 )
