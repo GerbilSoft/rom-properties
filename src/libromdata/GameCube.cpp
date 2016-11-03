@@ -1208,8 +1208,8 @@ const rp_char *GameCube::systemName(uint32_t type) const
 	static const rp_char *const sysNames[16] = {
 		// FIXME: "NGC" in Japan?
 		_RP("Nintendo GameCube"), _RP("GameCube"), _RP("GCN"), nullptr,
-		_RP("Nintendo Wii"), _RP("Wii"), _RP("Wii"), nullptr,
 		_RP("Nintendo/Sega/Namco Triforce"), _RP("Triforce"), _RP("TF"), nullptr,
+		_RP("Nintendo Wii"), _RP("Wii"), _RP("Wii"), nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
 
