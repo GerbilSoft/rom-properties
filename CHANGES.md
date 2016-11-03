@@ -10,6 +10,7 @@
   * Sega Dreamcast save files: .VMS, .VMI, .VMS+.VMI, and .DCI formats.
     Supports text fields, icons, and the graphic eyecatch (as the banner).
     ICONDATA_VMS files are also supported.
+  * Nintendo Virtual Boy ROM images: .VB format.
 
 * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
   properties page.
