@@ -84,6 +84,7 @@ SET(libromdata_SRCS
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
+	img/RpPng.cpp
 	img/IconAnimHelper.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -165,7 +166,6 @@ IF(WIN32)
 		TextFuncs_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
-		img/RpPng_gdiplus.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
 		)
@@ -178,7 +178,6 @@ ELSE(WIN32)
 	SET(libromdata_OS_SRCS
 		TextFuncs_iconv.cpp
 		file/RpFile_stdio.cpp
-		img/RpPng_libpng.cpp
 		)
 ENDIF(WIN32)
 
