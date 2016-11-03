@@ -19,6 +19,14 @@ ELSEIF(TMP_BUILD_TYPE MATCHES "none")
 ENDIF()
 UNSET(TMP_BUILD_TYPE)
 
+# Put all the binaries and libraries into a single directory.
+# NOTE: CACHE INTERNAL is required in order to get this to work
+# for KDE5 for some reason. (and maybe that's why KDE4 did this
+# layout by default?)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" CACHE INTERNAL "Put all binaries in a single directory.")
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put all libraries in a single directory.")
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put all archives in a single directory.")
+
 # Enable testing.
 # TODO: INCLUDE(CTest) for more advanced testing after
 # enough tests are added.

@@ -12,10 +12,6 @@ IF(NOT WIN32)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
 
-# Copy the reference images to the test directory.
-FILE(GLOB test_images img/*.png img/*.bmp.gz)
-FILE(COPY ${test_images} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-
 # RpImageLoader test.
 ADD_EXECUTABLE(RpImageLoaderTest
 	gtest_init.cpp
@@ -34,6 +30,17 @@ ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(RpImageLoaderTest)
 SET_WINDOWS_SUBSYSTEM(RpImageLoaderTest CONSOLE)
 ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
+
+# Copy the reference images to the test directory.
+FILE(GLOB test_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img" img/*.png img/*.bmp.gz)
+FOREACH(test_image ${test_images})
+	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/${test_image}"
+			"$<TARGET_FILE_DIR:RpImageLoaderTest>/${test_image}"
+		)
+ENDFOREACH(test_image test_images)
 
 IF(ENABLE_DECRYPTION)
 	# AesCipher test.

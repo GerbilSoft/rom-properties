@@ -679,6 +679,8 @@ if(PNG_TESTS AND PNG_SHARED)
   png_add_test(NAME pngimage-full COMMAND pngimage OPTIONS --exhaustive --list-combos --log FILES ${PNGSUITE_PNGS})
 endif()
 
+# rom-properties: Disable these tools.
+IF(0)
 if(PNG_SHARED)
   add_executable(pngfix ${pngfix_sources})
   target_link_libraries(pngfix png)
@@ -688,6 +690,7 @@ if(PNG_SHARED)
   target_link_libraries(png-fix-itxt ${ZLIB_LIBRARY} ${M_LIBRARY})
   list(APPEND PNG_BIN_TARGETS png-fix-itxt)
 endif()
+ENDIF(0)
 
 # Ensure the CMAKE_LIBRARY_OUTPUT_DIRECTORY is set
 IF(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)

@@ -51,18 +51,25 @@ SET(SKIP_INSTALL_ALL ON)
 # FIXME: Build static libraries with -fpic/-fPIC on Linux.
 
 IF(USE_INTERNAL_ZLIB)
-	# Use the internal copy of zlib. (statically-linked)
+	# Use the internal copy of zlib.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
 	ADD_SUBDIRECTORY(zlib)
 	SET_EXTLIB_PROPERTIES(zlib)
 	SET_EXTLIB_PROPERTIES(zlibstatic)
 ENDIF(USE_INTERNAL_ZLIB)
 
 IF(USE_INTERNAL_PNG)
-	# Use the internal copy of libpng. (statically-linked)
-	SET(PNG_SHARED OFF)
-	SET(PNG_STATIC ON)
-	SET(PNG_TESTS OFF)
-	SET(PNG_DEBUG OFF)
+	# Use the internal copy of libpng.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	IF(WIN32 OR APPLE)
+		SET(PNG_SHARED ON)
+		SET(PNG_STATIC OFF)
+	ELSE()
+		SET(PNG_SHARED ON)
+		SET(PNG_STATIC OFF)
+	ENDIF()
 	ADD_SUBDIRECTORY(libpng)
 	SET_EXTLIB_PROPERTIES(png)
 	SET_EXTLIB_PROPERTIES(png_static)
