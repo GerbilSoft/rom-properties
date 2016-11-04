@@ -67,17 +67,6 @@ class GcnPartition : public IPartition
 		virtual bool isOpen(void) const final;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const final;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) final;
-
-		/**
 		 * Read data from the partition.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
@@ -103,7 +92,7 @@ class GcnPartition : public IPartition
 		 * and it's adjusted to exclude hashes.
 		 * @return Data size, or -1 on error.
 		 */
-		virtual int64_t size(void) const final;
+		virtual int64_t size(void) final;
 
 		/** IPartition **/
 

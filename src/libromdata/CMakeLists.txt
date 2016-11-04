@@ -86,6 +86,7 @@ SET(libromdata_SRCS
 	img/ImageDecoder.cpp
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
+	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp

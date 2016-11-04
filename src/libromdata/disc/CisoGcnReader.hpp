@@ -76,17 +76,6 @@ class CisoGcnReader : public IDiscReader
 		virtual bool isOpen(void) const final;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const final;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) final;
-
-		/**
 		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
@@ -110,7 +99,7 @@ class CisoGcnReader : public IDiscReader
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) const final;
+		virtual int64_t size(void) final;
 };
 
 }

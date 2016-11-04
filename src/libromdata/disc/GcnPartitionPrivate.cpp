@@ -30,8 +30,7 @@ namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReader,
 	int64_t partition_offset, uint8_t offsetShift)
-	: q(q)
-	, lastError(0)
+	: q_ptr(q)
 	, offsetShift(offsetShift)
 	, discReader(discReader)
 	, partition_offset(partition_offset)
@@ -42,7 +41,7 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReade
 	, fst(nullptr)
 {
 	if (!discReader->isOpen()) {
-		lastError = discReader->lastError();
+		q->m_lastError = discReader->lastError();
 		return;
 	}
 
@@ -69,24 +68,25 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	}
 
 	// Load the boot block and boot info.
+	GcnPartition *q = reinterpret_cast<GcnPartition*>(q_ptr);
 	int ret = q->seek(GCN_Boot_Block_ADDRESS);
 	if (ret != 0) {
 		// Seek failed.
-		return -lastError;
+		return -q->m_lastError;
 	}
 
 	// TODO: Consolidate into a single read?
 	size_t size = q->read(&bootBlock, sizeof(bootBlock));
 	if (size != sizeof(bootBlock)) {
 		// bootBlock read failed.
-		lastError = EIO;
-		return -lastError;
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	}
 	size = q->read(&bootInfo, sizeof(bootInfo));
 	if (size != sizeof(bootInfo)) {
 		// bootInfo read failed.
-		lastError = EIO;
-		return -lastError;
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	}
 
 #if SYS_BYTEORDER != SYS_BIG_ENDIAN
@@ -121,13 +121,14 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
  */
 int GcnPartitionPrivate::loadFst(void)
 {
+	GcnPartition *q = reinterpret_cast<GcnPartition*>(q_ptr);
 	if (fst) {
 		// FST is already loaded.
 		return 0;
 	} else if (data_offset < 0) {
 		// Partition is invalid.
-		lastError = EINVAL;
-		return -lastError;
+		q->m_lastError = EINVAL;
+		return -q->m_lastError;
 	}
 
 	// Load the boot block and boot info.
@@ -142,19 +143,19 @@ int GcnPartitionPrivate::loadFst(void)
 	{
 		// Sanity check: FST larger than 1 MB is invalid.
 		// TODO: What is the actual largest FST?
-		lastError = EIO;
-		return -lastError;
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	} else if (bootBlock.fst_size > bootBlock.fst_max_size) {
 		// FST is invalid.
-		lastError = EIO;
-		return -lastError;
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	}
 
 	// Seek to the beginning of the FST.
 	ret = q->seek((int64_t)bootBlock.fst_offset << offsetShift);
 	if (ret != 0) {
 		// Seek failed.
-		return -lastError;
+		return -q->m_lastError;
 	}
 
 	// Read the FST.
@@ -163,15 +164,15 @@ int GcnPartitionPrivate::loadFst(void)
 	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(fstData_len));
 	if (!fstData) {
 		// malloc() failed.
-		lastError = ENOMEM;
-		return -lastError;
+		q->m_lastError = ENOMEM;
+		return -q->m_lastError;
 	}
 	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {
 		// Short read.
 		free(fstData);
-		lastError = -EIO;
-		return -lastError;
+		q->m_lastError = EIO;
+		return -q->m_lastError;
 	}
 
 	// Create the GcnFst.

@@ -136,25 +136,25 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 #endif /* ENABLE_DECRYPTION */
 
 	if (!discReader->isOpen()) {
-		lastError = discReader->lastError();
+		q->m_lastError = discReader->lastError();
 		return;
 	}
 
 	// Read the partition header.
 	if (discReader->seek(partition_offset) != 0) {
-		lastError = discReader->lastError();
+		q->m_lastError = discReader->lastError();
 		return;
 	}
 	size_t size = discReader->read(&partitionHeader, sizeof(partitionHeader));
 	if (size != sizeof(partitionHeader)) {
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
 	// Make sure the signature type is correct.
 	if (be32_to_cpu(partitionHeader.ticket.signature_type) != RVL_SIGNATURE_TYPE_RSA2048) {
 		// TODO: Better error?
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -352,9 +352,10 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	int64_t sector_addr = partition_offset + data_offset;
 	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
 
+	WiiPartition *q = reinterpret_cast<WiiPartition*>(q_ptr);
 	int ret = discReader->seek(sector_addr);
 	if (ret != 0) {
-		lastError = discReader->lastError();
+		q->m_lastError = discReader->lastError();
 		return ret;
 	}
 
@@ -362,7 +363,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	if (sz != SECTOR_SIZE_ENCRYPTED) {
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return -1;
 	}
 
@@ -372,7 +373,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	{
 		// sector_buf may be invalid.
 		this->sector_num = ~0;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return -1;
 	}
 
@@ -414,7 +415,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader || !d->discReader->isOpen()) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return 0;
 	}
 
@@ -426,8 +427,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			if (d->initDecryption() != WiiPartition::ENCINIT_OK) {
 				// Decryption could not be initialized.
 				// TODO: Better error?
-				d->lastError = EIO;
-				return -d->lastError;
+				m_lastError = EIO;
+				return -m_lastError;
 			}
 			break;
 
@@ -438,8 +439,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 		default:
 			// Decryption failed to initialize.
 			// TODO: Better error?
-			d->lastError = EIO;
-			return -d->lastError;
+			m_lastError = EIO;
+			return -m_lastError;
 	}
 
 	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
@@ -516,7 +517,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	// Decryption is not enabled.
 	((void)ptr);
 	((void)size);
-	d->lastError = EIO;
+	m_lastError = EIO;
 	return 0;
 #endif /* ENABLE_DECRYPTION */
 }
@@ -532,7 +533,7 @@ int WiiPartition::seek(int64_t pos)
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 
@@ -549,7 +550,7 @@ int WiiPartition::seek(int64_t pos)
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled.
 	((void)pos);
-	d->lastError = EIO;
+	m_lastError = EIO;
 	return -1;
 #endif /* ENABLE_DECRYPTION */
 }
