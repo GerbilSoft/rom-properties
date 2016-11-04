@@ -331,8 +331,7 @@ void RpPngFormatTest::SetUp(void)
 		<< rp_string_to_utf8(mode.png_filename);
 
 	// Open the gzipped BMP image file being tested.
-	path = _RP("png_data");
-	path += _RP_CHR(DIR_SEP_CHR);
+	path.resize(9);	// Back to "png_data/".
 	path += mode.bmp_gz_filename;
 	m_gzBmp = gzopen(rp_string_to_utf8(path).c_str(), "rb");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
