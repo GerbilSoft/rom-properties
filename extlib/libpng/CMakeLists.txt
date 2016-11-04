@@ -760,6 +760,9 @@ if(PNG_SHARED)
     CLEAN_DIRECT_OUTPUT 1)
 endif()
 
+# rom-properties: Disable EXPORT, since it causes problems
+# when building DLLs for Windows
+IF(0)
 # If CMake > 2.4.x, we set a variable used below to export
 # targets to an export file.
 # TODO: Use VERSION_GREATER after our cmake_minimum_required >= 2.6.2
@@ -768,16 +771,22 @@ if(CMAKE_MAJOR_VERSION GREATER 1 AND CMAKE_MINOR_VERSION GREATER 4)
 elseif(CMAKE_MAJOR_VERSION GREATER 2) # future proof
   set(PNG_EXPORT_RULE EXPORT libpng)
 endif()
+ENDIF(0)
 
 # INSTALL
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
+  # rom-properties:
+  # - Disabled installation of import libraries.
+  # - Use the correct RUNTIME destination.
   install(TARGETS ${PNG_LIB_TARGETS}
       ${PNG_EXPORT_RULE}
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      RUNTIME DESTINATION ${INSTALL_BIN_DIR}
+      #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
+  # rom-properties: Disable this stuff.
+  IF(0)
   if(PNG_SHARED)
     # Create a symlink for libpng.dll.a => libpng16.dll.a on Cygwin
     if(CYGWIN OR MINGW)
@@ -802,7 +811,8 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libpng${CMAKE_STATIC_LIBRARY_SUFFIX}
          DESTINATION ${CMAKE_INSTALL_LIBDIR})
     endif(NOT WIN32 OR CYGWIN OR MINGW)
- endif()
+  endif()
+  ENDIF(0)
 endif()
 
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL )

@@ -251,10 +251,13 @@ elseif(BUILD_SHARED_LIBS AND WIN32)
 endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
-    install(TARGETS zlib zlibstatic
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
+    # rom-properties:
+    # - Removed zlibstatic from INSTALL().
+    # - Disabled installation of import libraries.
+    install(TARGETS zlib
+        RUNTIME DESTINATION "${INSTALL_BIN_DIR}" )
+        #ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+        #LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL )
     install(FILES ${ZLIB_PUBLIC_HDRS} DESTINATION "${INSTALL_INC_DIR}")
