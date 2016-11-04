@@ -34,7 +34,10 @@ SET(rom-properties-win32_H
 
 # DLL filename will have an architecture-specific postfix.
 # FIXME: Build both Win32 and Win64 DLLs?
-ADD_LIBRARY(rom-properties MODULE
+# NOTE: MODULE results in the .dll being placed in
+# the 'lib' directory. Use SHARED instead.
+# TODO: Disable building of import libraries.
+ADD_LIBRARY(rom-properties SHARED
 		${rom-properties-win32_SRCS}
 		${rom-properties-win32_H}
 		)
