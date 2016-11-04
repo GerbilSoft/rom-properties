@@ -32,24 +32,24 @@ SET_WINDOWS_SUBSYSTEM(RpImageLoaderTest CONSOLE)
 ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
 
 # Copy the reference images to:
-# - bin/tests/ (TODO: Subdirectory?)
-# - ${CMAKE_CURRENT_BINARY_DIR}
-# NOTE: Although the test executable is in bin/tests, CTest still
+# - bin/png_data/ (TODO: Subdirectory?)
+# - ${CMAKE_CURRENT_BINARY_DIR}/png_data/
+# NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FILE(GLOB test_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img" img/*.png img/*.bmp.gz)
+FILE(GLOB test_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
 FOREACH(test_image ${test_images})
 	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/${test_image}"
-			"$<TARGET_FILE_DIR:RpImageLoaderTest>/${test_image}"
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
+			"$<TARGET_FILE_DIR:RpImageLoaderTest>/png_data/${test_image}"
 		)
 	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/${test_image}"
-			"${CMAKE_CURRENT_BINARY_DIR}/${test_image}"
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
+			"${CMAKE_CURRENT_BINARY_DIR}/png_data/${test_image}"
 		)
 ENDFOREACH(test_image test_images)
 
@@ -84,10 +84,6 @@ TARGET_LINK_LIBRARIES(GcnFstPrint romdata8)
 DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
 
-# Copy the FST test files to the test directory.
-FILE(GLOB test_fst disc/*.fst.bin.zip disc/*.fst.txt.zip)
-FILE(COPY ${test_fst} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-
 # GcnFstTest.
 ADD_EXECUTABLE(GcnFstTest
 	gtest_init.cpp
@@ -101,6 +97,28 @@ TARGET_LINK_LIBRARIES(GcnFstTest minizip ${ZLIB_LIBRARY})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
+
+# Copy the reference FSTs to:
+# - bin/fst_data/ (TODO: Subdirectory?)
+# - ${CMAKE_CURRENT_BINARY_DIR}/fst_data/
+# NOTE: Although the test executable is in bin/, CTest still
+# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
+# Hence, we have to copy the files to both places.
+FILE(GLOB test_fsts RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data" disc/fst_data/*.zip)
+FOREACH(test_fst ${test_fsts})
+	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
+			"$<TARGET_FILE_DIR:GcnFstTest>/fst_data/${test_fst}"
+		)
+	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
+			"${CMAKE_CURRENT_BINARY_DIR}/fst_data/${test_fst}"
+		)
+ENDFOREACH(test_fst test_fsts)
 
 # TextFuncsTest. (libromdata8)
 ADD_EXECUTABLE(TextFuncsTest8

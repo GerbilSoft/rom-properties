@@ -49,6 +49,7 @@
 
 #include "file/RpFile.hpp"
 #include "file/RpMemFile.hpp"
+#include "file/FileSystem.hpp"
 #include "img/rp_image.hpp"
 #include "img/RpImageLoader.hpp"
 
@@ -311,7 +312,10 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	unique_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
+	rp_string path = _RP("png_data");
+	path += _RP_CHR(DIR_SEP_CHR);
+	path += mode.png_filename;
+	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
 	ASSERT_TRUE(file->isOpen());
 
@@ -327,7 +331,10 @@ void RpPngFormatTest::SetUp(void)
 		<< rp_string_to_utf8(mode.png_filename);
 
 	// Open the gzipped BMP image file being tested.
-	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "rb");
+	path = _RP("png_data");
+	path += _RP_CHR(DIR_SEP_CHR);
+	path += mode.bmp_gz_filename;
+	m_gzBmp = gzopen(rp_string_to_utf8(path).c_str(), "rb");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
 		<< rp_string_to_utf8(mode.bmp_gz_filename);
 
