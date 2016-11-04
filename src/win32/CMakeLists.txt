@@ -32,7 +32,6 @@ SET(rom-properties-win32_H
 # Build the plugin. #
 #####################
 
-# DLL filename will have an architecture-specific postfix.
 # FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
 # the 'lib' directory. Use SHARED instead.
@@ -41,7 +40,6 @@ ADD_LIBRARY(rom-properties SHARED
 		${rom-properties-win32_SRCS}
 		${rom-properties-win32_H}
 		)
-SET_WINDOWS_TARGET_NAME_ARCH(rom-properties)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
