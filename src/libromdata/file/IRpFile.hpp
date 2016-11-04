@@ -35,7 +35,7 @@ namespace LibRomData {
 class IRpFile
 {
 	protected:
-		IRpFile() { }
+		IRpFile();
 	public:
 		virtual ~IRpFile() { }
 
@@ -55,12 +55,12 @@ class IRpFile
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		virtual int lastError(void) const = 0;
+		int lastError(void) const;
 
 		/**
 		 * Clear the last error.
 		 */
-		virtual void clearError(void) = 0;
+		void clearError(void);
 
 		/**
 		 * dup() the file handle.
@@ -112,7 +112,10 @@ class IRpFile
 		/**
 		 * Seek to the beginning of the file.
 		 */
-		virtual void rewind(void) = 0;
+		inline void rewind(void)
+		{
+			this->seek(0);
+		}
 
 		/**
 		 * Get the file size.
@@ -124,7 +127,7 @@ class IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual rp_string filename(void) const;
+		virtual rp_string filename(void) const = 0;
 
 	public:
 		/** Convenience functions implemented for all IRpFile classes. **/
@@ -146,6 +149,9 @@ class IRpFile
 		 * @return 0 on success; non-zero on error.
 		 */
 		int ungetc(int c);
+
+	protected:
+		int m_lastError;
 };
 
 }

@@ -108,11 +108,6 @@ class RpFile_IStream : public LibRomData::IRpFile
 		virtual int64_t tell(void) final;
 
 		/**
-		 * Seek to the beginning of the file.
-		 */
-		virtual void rewind(void) final;
-
-		/**
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */

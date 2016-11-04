@@ -80,7 +80,6 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_file(nullptr)
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename);
 }
@@ -96,7 +95,6 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_file(nullptr)
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename.c_str());
 }
@@ -164,7 +162,6 @@ RpFile::RpFile(const RpFile &other)
 	, m_file(other.m_file)
 	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
-	, m_lastError(0)
 { }
 
 /**
@@ -189,23 +186,6 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	return (m_file.get() != nullptr);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -292,6 +272,7 @@ int RpFile::seek(int64_t pos)
 	if (ret != 0) {
 		m_lastError = errno;
 	}
+	::fflush(m_file.get());	// needed for some things like gzip
 	return ret;
 }
 
@@ -307,20 +288,6 @@ int64_t RpFile::tell(void)
 	}
 
 	return ftello(m_file.get());
-}
-
-/**
- * Seek to the beginning of the file.
- */
-void RpFile::rewind(void)
-{
-	if (!m_file) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	::rewind(m_file.get());
-	::fflush(m_file.get());	// needed for some things like gzip
 }
 
 /**

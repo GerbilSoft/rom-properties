@@ -33,7 +33,6 @@ namespace LibRomData {
  */
 PartitionFile::PartitionFile(IPartition *partition, int64_t offset, int64_t size)
 	: super()
-	, m_lastError(0)
 	, m_partition(partition)
 	, m_offset(offset)
 	, m_size(size)
@@ -57,7 +56,6 @@ PartitionFile::~PartitionFile()
  */
 PartitionFile::PartitionFile(const PartitionFile &other)
 	: super()
-	, m_lastError(0)
 	, m_partition(other.m_partition)
 	, m_offset(other.m_offset)
 	, m_size(other.m_size)
@@ -92,23 +90,6 @@ PartitionFile &PartitionFile::operator=(const PartitionFile &other)
 bool PartitionFile::isOpen(void) const
 {
 	return (m_partition != nullptr);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int PartitionFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void PartitionFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -227,19 +208,6 @@ int64_t PartitionFile::tell(void)
 }
 
 /**
- * Seek to the beginning of the file.
- */
-void PartitionFile::rewind(void)
-{
-	if (!m_partition) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	m_pos = 0;
-}
-
-/**
  * Get the file size.
  * @return File size, or negative on error.
  */
@@ -251,6 +219,16 @@ int64_t PartitionFile::fileSize(void)
 	}
 
 	return m_size;
+}
+
+/**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string PartitionFile::filename(void) const
+{
+	// TODO: Implement this.
+	return rp_string();
 }
 
 }

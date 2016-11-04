@@ -241,21 +241,6 @@ int64_t RpFile_IStream::tell(void)
 }
 
 /**
- * Seek to the beginning of the file.
- */
-void RpFile_IStream::rewind(void)
-{
-	if (!m_pStream) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	LARGE_INTEGER dlibMove;
-	dlibMove.QuadPart = 0;
-	m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
-}
-
-/**
  * Get the file size.
  * @return File size, or negative on error.
  */

@@ -78,7 +78,6 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename);
 }
@@ -94,7 +93,6 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename.c_str());
 }
@@ -154,7 +152,6 @@ RpFile::RpFile(const RpFile &other)
 	, m_file(other.m_file)
 	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
-	, m_lastError(0)
 { }
 
 /**
@@ -179,23 +176,6 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	return (m_file && m_file.get() != INVALID_HANDLE_VALUE);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -319,21 +299,6 @@ int64_t RpFile::tell(void)
 	}
 
 	return liSeekRet.QuadPart;
-}
-
-/**
- * Seek to the beginning of the file.
- */
-void RpFile::rewind(void)
-{
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	LARGE_INTEGER liSeekPos;
-	liSeekPos.QuadPart = 0;
-	SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
 }
 
 /**

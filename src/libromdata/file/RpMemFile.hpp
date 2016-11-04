@@ -57,17 +57,6 @@ class RpMemFile : public IRpFile
 		virtual bool isOpen(void) const final;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const final;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) final;
-
-		/**
 		 * dup() the file handle.
 		 *
 		 * Needed because IRpFile* objects are typically
@@ -116,21 +105,21 @@ class RpMemFile : public IRpFile
 		virtual int64_t tell(void) final;
 
 		/**
-		 * Seek to the beginning of the file.
-		 */
-		virtual void rewind(void) final;
-
-		/**
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
 		virtual int64_t fileSize(void) final;
 
+		/**
+		 * Get the filename.
+		 * @return Filename. (May be empty if the filename is not available.)
+		 */
+		virtual rp_string filename(void) const final;
+
 	protected:
 		const void *m_buf;	// Memory buffer.
 		size_t m_size;		// Size of memory buffer.
 		size_t m_pos;		// Current position.
-		int m_lastError;
 };
 
 }
