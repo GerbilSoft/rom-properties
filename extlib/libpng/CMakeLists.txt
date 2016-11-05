@@ -435,9 +435,11 @@ if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif(MSVC)
 
-if(PNG_DEBUG)
-  add_definitions(-DPNG_DEBUG)
-endif()
+# rom-properties: Add -DPNG_DEBUG=0 in debug builds.
+#if(PNG_DEBUG)
+#  add_definitions(-DPNG_DEBUG)
+#endif()
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DPNG_DEBUG=0")
 
 # NOW BUILD OUR TARGET
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ZLIB_INCLUDE_DIR})
@@ -445,6 +447,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${ZLIB_INCLUDE_DIR})
 unset(PNG_LIB_TARGETS)
 
 if(PNG_SHARED)
+  # rom-properties: Add the resource script on Windows.
+  IF(WIN32)
+    SET(libpng_sources ${libpng_sources} scripts/pngwin.rc)
+  ENDIF(WIN32)
   add_library(png SHARED ${libpng_sources})
   set(PNG_LIB_TARGETS png)
   set_target_properties(png PROPERTIES OUTPUT_NAME ${PNG_LIB_NAME})
