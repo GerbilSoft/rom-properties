@@ -157,7 +157,7 @@ CHDIR pkg_windows
 
 :: Compile the 32-bit version.
 ECHO.
-ECHO Compiling 32-bit rom-properties-i386.dll...
+ECHO Compiling 32-bit rom-properties.dll...
 MKDIR build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.i386
@@ -171,7 +171,7 @@ POPD
 
 :: Compile the 64-bit version.
 ECHO.
-ECHO Compiling 64-bit rom-properties-amd64.dll...
+ECHO Compiling 64-bit rom-properties.dll...
 MKDIR build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.amd64
