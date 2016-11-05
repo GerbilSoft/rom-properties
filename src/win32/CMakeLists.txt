@@ -87,10 +87,13 @@ UNSET(RP_DLL_FLAGS)
 
 INCLUDE(DirInstallPaths)
 
+# NOTE: Don't install libraries.
+# That installs the import library, which isn't used
+# for shell extensions.
 INSTALL(TARGETS rom-properties
 	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
-	ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
 	COMPONENT "dll"
 	)
 IF(INSTALL_DEBUG)

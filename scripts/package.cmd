@@ -206,13 +206,13 @@ unzip ..\build.i386\*-win32.zip
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Extract the 64-bit ZIP file.
-:: (Only the DLL and PDB.)
-unzip ..\build.amd64\*-win64.zip rom-properties-amd64.dll rom-properties-amd64.pdb
+:: (Only the architecture-specific directory.)
+unzip ..\build.amd64\*-win64.zip amd64/*
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Compress the debug files.
 DEL /q "..\..\%ZIP_PREFIX%-windows.debug.zip" >NUL 2>&1
-zip "..\..\%ZIP_PREFIX%-windows.debug.zip" *.pdb
+zip "..\..\%ZIP_PREFIX%-windows.debug.zip" i386/*.pdb amd64/*.pdb
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Compress everything else.
