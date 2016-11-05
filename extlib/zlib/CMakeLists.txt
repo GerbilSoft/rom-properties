@@ -228,6 +228,10 @@ TARGET_INCLUDE_DIRECTORIES(zlibstatic
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	)
 
+# rom-properties: Split debug functionality.
+DO_SPLIT_DEBUG(zlib)
+DO_SPLIT_DEBUG(zlibstatic)
+
 if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version
     # encoded into their final filename.  We disable this on Cygwin because
@@ -254,10 +258,21 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
     # rom-properties:
     # - Removed zlibstatic from INSTALL().
     # - Disabled installation of import libraries.
+    # - Install PDB files.
     install(TARGETS zlib
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}" )
         #ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
         #LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
+    IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	INCLUDE(DirInstallPaths)
+	GET_TARGET_PROPERTY(DEBUG_FILENAME zlib PDB)
+	INSTALL(FILES "${DEBUG_FILENAME}"
+		DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+		COMPONENT "debug"
+		)
+	UNSET(DEBUG_FILENAME)
+     ENDIF(INSTALL_DEBUG)
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL )
     install(FILES ${ZLIB_PUBLIC_HDRS} DESTINATION "${INSTALL_INC_DIR}")

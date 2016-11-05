@@ -453,11 +453,10 @@ if(PNG_SHARED)
     # msvc does not append 'lib' - do it here to have consistent name
     set_target_properties(png PROPERTIES PREFIX "lib")
     set_target_properties(png PROPERTIES IMPORT_PREFIX "lib")
-    # rom-properties: Set MSVC debug path.
-    INCLUDE(SetMSVCDebugPath)
-    SET_MSVC_DEBUG_PATH(png)
   endif()
   target_link_libraries(png ${ZLIB_LIBRARY} ${M_LIBRARY})
+  # rom-properties: Split debug functionality.
+  DO_SPLIT_DEBUG(png)
 
   if(UNIX AND AWK)
     if(HAVE_LD_VERSION_SCRIPT)
@@ -491,11 +490,10 @@ if(PNG_STATIC)
   if(MSVC)
     # msvc does not append 'lib' - do it here to have consistent name
     set_target_properties(png_static PROPERTIES PREFIX "lib")
-    # rom-properties: Set MSVC debug path.
-    INCLUDE(SetMSVCDebugPath)
-    SET_MSVC_DEBUG_PATH(png_static)
   endif()
   target_link_libraries(png_static ${ZLIB_LIBRARY} ${M_LIBRARY})
+  # rom-properties: Split debug functionality.
+  DO_SPLIT_DEBUG(png)
 endif()
 
 if(PNG_FRAMEWORK)
@@ -778,12 +776,25 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
   # rom-properties:
   # - Disabled installation of import libraries.
   # - Use the correct RUNTIME destination.
+  # - Install PDB files.
   install(TARGETS ${PNG_LIB_TARGETS}
       ${PNG_EXPORT_RULE}
       RUNTIME DESTINATION ${INSTALL_BIN_DIR}
       #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	INCLUDE(DirInstallPaths)
+	IF(PNG_SHARED)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME png PDB)
+		INSTALL(FILES "${DEBUG_FILENAME}"
+			DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+			COMPONENT "debug"
+			)
+		UNSET(DEBUG_FILENAME)
+	ENDIF(PNG_SHARED)
+  ENDIF(INSTALL_DEBUG)
 
   # rom-properties: Disable this stuff.
   IF(0)
