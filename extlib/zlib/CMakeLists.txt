@@ -251,7 +251,10 @@ if(UNIX)
    endif()
 elseif(BUILD_SHARED_LIBS AND WIN32)
     # Creates zlib1.dll when building shared library version
-    set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
+    # rom-properties: MSVC builds: Append to POSTFIX instead of setting SUFFIX.
+    #set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
+    SET_TARGET_PROPERTIES(zlib PROPERTIES DEBUG_POSTFIX "1${CMAKE_DEBUG_POSTFIX}")
+    SET_TARGET_PROPERTIES(zlib PROPERTIES RELEASE_POSTFIX "1${CMAKE_RELEASE_POSTFIX}")
 endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
