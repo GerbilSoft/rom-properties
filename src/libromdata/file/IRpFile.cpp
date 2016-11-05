@@ -26,16 +26,25 @@
 
 namespace LibRomData {
 
+IRpFile::IRpFile()
+	: m_lastError(0)
+{ }
+
 /**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
+ * Get the last error.
+ * @return Last POSIX error, or 0 if no error.
  */
-rp_string IRpFile::filename(void) const
+int IRpFile::lastError(void) const
 {
-	// Default is no filename.
-	// TODO: Return const reference?
-	// TODO: Pure virtual function.
-	return rp_string();
+	return m_lastError;
+}
+
+/**
+ * Clear the last error.
+ */
+void IRpFile::clearError(void)
+{
+	m_lastError = 0;
 }
 
 /**

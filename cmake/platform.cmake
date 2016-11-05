@@ -139,32 +139,3 @@ IF(WIN32 AND MSVC)
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 ENDIF(WIN32 AND MSVC)
 ENDFUNCTION()
-
-# Add a postfix to a target's OUTPUT_NAME based on system architecture.
-FUNCTION(SET_WINDOWS_TARGET_NAME_ARCH _target)
-IF(WIN32)
-	STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-	IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-		# i386/amd64. Check sizeof(void*) for the actual architecture,
-		# since building 32-bit on 64-bit isn't considered "cross-compiling",
-		# so CMAKE_SYSTEM_PROCESSOR might not be accurate.
-		# NOTE: Checking CMAKE_CL_64 instead of sizeof(void*) for MSVC builds.
-		IF(MSVC AND CMAKE_CL_64)
-			SET(TMP_POSTFIX "amd64")
-		ELSEIF(NOT MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-			SET(TMP_POSTFIX "amd64")
-		ELSE()
-			SET(TMP_POSTFIX "i386")
-		ENDIF()
-	ENDIF()
-	IF(NOT TMP_POSTFIX)
-		MESSAGE(FATAL_ERROR "SET_WINDOWS_TARGET_NAME_ARCH(): CPU architecture isn't supported.")
-	ENDIF(NOT TMP_POSTFIX)
-
-	GET_TARGET_PROPERTY(TMP_OUTPUT_NAME ${_target} OUTPUT_NAME)
-	IF(NOT TMP_OUTPUT_NAME)
-		SET(TMP_OUTPUT_NAME "${_target}")
-	ENDIF(NOT TMP_OUTPUT_NAME)
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME "${TMP_OUTPUT_NAME}-${TMP_POSTFIX}")
-ENDIF(WIN32)
-ENDFUNCTION()

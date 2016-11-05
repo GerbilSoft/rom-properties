@@ -78,7 +78,6 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename);
 }
@@ -94,7 +93,6 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename.c_str());
 }
@@ -154,7 +152,6 @@ RpFile::RpFile(const RpFile &other)
 	, m_file(other.m_file)
 	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
-	, m_lastError(0)
 { }
 
 /**
@@ -179,23 +176,6 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	return (m_file && m_file.get() != INVALID_HANDLE_VALUE);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -322,19 +302,57 @@ int64_t RpFile::tell(void)
 }
 
 /**
- * Seek to the beginning of the file.
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
  */
-void RpFile::rewind(void)
+int RpFile::truncate(int64_t size)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
 		m_lastError = EBADF;
-		return;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
 	}
 
-	LARGE_INTEGER liSeekPos;
-	liSeekPos.QuadPart = 0;
-	SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
+	// Set the requested end of file, and
+	// get the current file position.
+	LARGE_INTEGER liSeekPos, liSeekRet;
+	liSeekPos.QuadPart = size;
+	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Truncate the file.
+	bRet = SetEndOfFile(m_file.get());
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Restore the original position if it was
+	// less than the new size.
+	if (liSeekRet.QuadPart < size) {
+		bRet = SetFilePointerEx(m_file.get(), liSeekRet, nullptr, FILE_BEGIN);
+		if (bRet == 0) {
+			// TODO: Convert GetLastError() to POSIX?
+			m_lastError = EIO;
+			return -1;
+		}
+	}
+
+	// File truncated.
+	return 0;
 }
+
+/** File properties. **/
 
 /**
  * Get the file size.

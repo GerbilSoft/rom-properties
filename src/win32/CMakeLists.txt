@@ -32,13 +32,14 @@ SET(rom-properties-win32_H
 # Build the plugin. #
 #####################
 
-# DLL filename will have an architecture-specific postfix.
 # FIXME: Build both Win32 and Win64 DLLs?
-ADD_LIBRARY(rom-properties MODULE
+# NOTE: MODULE results in the .dll being placed in
+# the 'lib' directory. Use SHARED instead.
+# TODO: Disable building of import libraries.
+ADD_LIBRARY(rom-properties SHARED
 		${rom-properties-win32_SRCS}
 		${rom-properties-win32_H}
 		)
-SET_WINDOWS_TARGET_NAME_ARCH(rom-properties)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
@@ -80,16 +81,35 @@ ENDIF(RP_DLL_FLAGS)
 
 UNSET(RP_DLL_FLAGS)
 
+# Delay-load ZLIB and LIBPNG.
+# NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
+# have different names in Debug and Release builds.
+# FIXME: The rom-properties DLL directory is *not* in the
+# DLL search path, so these delay loads fail.
+# TODO: SetDllDirectory() temporarily for XP, and
+# AddDllDirectory() on Windows Vista+?
+#IF(USE_INTERNAL_ZLIB_DLL)
+#	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1d.dll")
+#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1.dll")
+#ENDIF(USE_INTERNAL_ZLIB_DLL)
+#IF(USE_INTERNAL_PNG_DLL)
+	#SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16d.dll")
+#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16.dll")
+#ENDIF(USE_INTERNAL_PNG_DLL)
+
 #################
 # Installation. #
 #################
 
 INCLUDE(DirInstallPaths)
 
+# NOTE: Don't install libraries.
+# That installs the import library, which isn't used
+# for shell extensions.
 INSTALL(TARGETS rom-properties
 	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
 	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
-	ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
 	COMPONENT "dll"
 	)
 IF(INSTALL_DEBUG)

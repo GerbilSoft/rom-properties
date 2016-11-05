@@ -41,16 +41,17 @@ namespace LibRomData {
 
 class CisoGcnReaderPrivate {
 	public:
-		explicit CisoGcnReaderPrivate(IRpFile *file);
+		CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file);
 		~CisoGcnReaderPrivate();
 
 	private:
 		CisoGcnReaderPrivate(const CisoGcnReaderPrivate &other);
 		CisoGcnReaderPrivate &operator=(const CisoGcnReaderPrivate &other);
+	private:
+		CisoGcnReader *const q;
 
 	public:
 		IRpFile *file;
-		int lastError;
 
 		int64_t disc_size;	// Virtual disc image size.
 		int64_t pos;		// Read position.
@@ -73,15 +74,15 @@ const char CisoGcnReaderPrivate::CISO_MAGIC[4] = {'C','I','S','O'};
 
 /** CisoGcnReaderPrivate **/
 
-CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
-	: file(nullptr)
-	, lastError(0)
+CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
+	: q(q)
+	, file(nullptr)
 	, disc_size(0)
 	, pos(-1)
 	, block_size(0)
 {
 	if (!file) {
-		lastError = EBADF;
+		q->m_lastError = EBADF;
 		return;
 	}
 	this->file = file->dup();
@@ -95,7 +96,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 		// Error reading the CISO header.
 		delete this->file;
 		this->file = nullptr;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -104,7 +105,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 		// Invalid magic.
 		delete this->file;
 		this->file = nullptr;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -126,7 +127,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 		// the CISO header size.
 		delete this->file;
 		this->file = nullptr;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -151,7 +152,7 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(IRpFile *file)
 				// Invalid entry.
 				delete this->file;
 				this->file = nullptr;
-				lastError = EIO;
+				q->m_lastError = EIO;
 				return;
 		}
 	}
@@ -171,7 +172,7 @@ CisoGcnReaderPrivate::~CisoGcnReaderPrivate()
 /** CisoGcn **/
 
 CisoGcnReader::CisoGcnReader(IRpFile *file)
-	: d(new CisoGcnReaderPrivate(file))
+	: d(new CisoGcnReaderPrivate(this, file))
 { }
 
 CisoGcnReader::~CisoGcnReader()
@@ -244,23 +245,6 @@ bool CisoGcnReader::isOpen(void) const
 }
 
 /**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int CisoGcnReader::lastError(void) const
-{
-	return d->lastError;
-}
-
-/**
- * Clear the last error.
- */
-void CisoGcnReader::clearError(void)
-{
-	d->lastError = 0;
-}
-
-/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -270,7 +254,7 @@ size_t CisoGcnReader::read(void *ptr, size_t size)
 {
 	assert(d->file != nullptr);
 	if (!d->file) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 
@@ -408,7 +392,7 @@ int CisoGcnReader::seek(int64_t pos)
 {
 	assert(d->file != nullptr);
 	if (!d->file) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 
@@ -430,7 +414,7 @@ void CisoGcnReader::rewind(void)
 {
 	assert(d->file != nullptr);
 	if (!d->file) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return;
 	}
 
@@ -441,11 +425,11 @@ void CisoGcnReader::rewind(void)
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */
-int64_t CisoGcnReader::size(void) const
+int64_t CisoGcnReader::size(void)
 {
 	assert(d->file != nullptr);
 	if (!d->file) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 

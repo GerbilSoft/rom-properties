@@ -41,7 +41,6 @@ RpMemFile::RpMemFile(const void *buf, size_t size)
 	, m_buf(buf)
 	, m_size((int64_t)size)
 	, m_pos(0)
-	, m_lastError(0)
 {
 	if (!buf) {
 		// No buffer specified.
@@ -58,7 +57,6 @@ RpMemFile::RpMemFile(const RpMemFile &other)
 	, m_buf(other.m_buf)
 	, m_size(other.m_size)
 	, m_pos(0)
-	, m_lastError(0)
 {
 	if (!m_buf) {
 		// No buffer specified.
@@ -90,23 +88,6 @@ RpMemFile &RpMemFile::operator=(const RpMemFile &other)
 bool RpMemFile::isOpen(void) const
 {
 	return (m_buf != nullptr);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpMemFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpMemFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -149,7 +130,8 @@ size_t RpMemFile::read(void *ptr, size_t size)
 	const uint8_t *buf = reinterpret_cast<const uint8_t*>(m_buf);
 
 	// Check if size is in bounds.
-	if (m_pos > m_size - size) {
+	// NOTE: Need to use a signed comparison here.
+	if ((int64_t)m_pos > ((int64_t)m_size - (int64_t)size)) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
 		size = m_size - m_pos;
@@ -220,17 +202,20 @@ int64_t RpMemFile::tell(void)
 }
 
 /**
- * Seek to the beginning of the file.
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
  */
-void RpMemFile::rewind(void)
+int RpMemFile::truncate(int64_t size)
 {
-	if (!m_buf) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	m_pos = 0;
+	// Not supported.
+	// TODO: Writable RpMemFile?
+	((void)size);
+	m_lastError = ENOTSUP;
+	return -1;
 }
+
+/** File properties. **/
 
 /**
  * Get the file size.
@@ -244,6 +229,16 @@ int64_t RpMemFile::fileSize(void)
 	}
 
 	return m_size;
+}
+
+/**
+ * Get the filename.
+ * @return Filename. (May be empty if the filename is not available.)
+ */
+rp_string RpMemFile::filename(void) const
+{
+	// TODO: Implement this?
+	return rp_string();
 }
 
 }

@@ -27,9 +27,9 @@
 #include "png_chunks.h"
 #include "bmp.h"
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 #include <png.h>
-#endif /* HAVE_LIBPNG */
+#endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
 #if (ZLIB_VER_MAJOR > 1) || \
@@ -49,6 +49,7 @@
 
 #include "file/RpFile.hpp"
 #include "file/RpMemFile.hpp"
+#include "file/FileSystem.hpp"
 #include "img/rp_image.hpp"
 #include "img/RpImageLoader.hpp"
 
@@ -61,29 +62,6 @@
 #include <string>
 using std::string;
 using std::unique_ptr;
-
-// Google Test ColoredPrintf() wrapper.
-// Reference: http://stackoverflow.com/questions/16491675/how-to-send-custom-message-in-google-c-testing-framework
-namespace testing { namespace internal {
-	enum GTestColor {
-		COLOR_DEFAULT,
-		COLOR_RED,
-		COLOR_GREEN,
-		COLOR_YELLOW
-	};
-
-	extern void ColoredPrintf(GTestColor color, const char* fmt, ...)
-#ifdef __GNUC__
-		__attribute__ ((format (printf, 2, 3)))
-#endif /* __GNUC__ */
-		;
-} }
-
-#define PRINTF(...) \
-	do { \
-		testing::internal::ColoredPrintf(testing::internal::COLOR_GREEN, "[          ] "); \
-		testing::internal::ColoredPrintf(testing::internal::COLOR_YELLOW, __VA_ARGS__); \
-	} while(0)
 
 namespace LibRomData { namespace Tests {
 
@@ -104,10 +82,7 @@ struct RpPngFormatTest_mode
 	PNG_IHDR_t ihdr;		// FIXME: Making this const& causes problems.
 	BITMAPINFOHEADER bih;		// FIXME: Making this const& causes problems.
 	tRNS_CI8_t bmp_tRNS;		// FIXME: Making this const& causes problems.
-
-	// Expected rp_image format.
-	rp_image::Format rp_format;	// Expected format.
-	rp_image::Format rp_format_alt;	// Alternate expected format.
+	rp_image::Format rp_format;	// Expected rp_image format.
 
 	bool has_bmp_tRNS;		// Set if bmp_tRNS is specified in the constructor.
 
@@ -119,15 +94,13 @@ struct RpPngFormatTest_mode
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
 		const tRNS_CI8_t &bmp_tRNS,
-		rp_image::Format rp_format,
-		rp_image::Format rp_format_alt = rp_image::FORMAT_NONE)
+		rp_image::Format rp_format)
 		: png_filename(png_filename)
 		, bmp_gz_filename(bmp_gz_filename)
 		, ihdr(ihdr)
 		, bih(bih)
 		, bmp_tRNS(bmp_tRNS)
 		, rp_format(rp_format)
-		, rp_format_alt(rp_format_alt)
 		, has_bmp_tRNS(true)
 	{ }
 
@@ -136,14 +109,12 @@ struct RpPngFormatTest_mode
 		const rp_char *bmp_gz_filename,
 		const PNG_IHDR_t &ihdr,
 		const BITMAPINFOHEADER &bih,
-		rp_image::Format rp_format,
-		rp_image::Format rp_format_alt = rp_image::FORMAT_NONE)
+		rp_image::Format rp_format)
 		: png_filename(png_filename)
 		, bmp_gz_filename(bmp_gz_filename)
 		, ihdr(ihdr)
 		, bih(bih)
 		, rp_format(rp_format)
-		, rp_format_alt(rp_format_alt)
 		, has_bmp_tRNS(false)
 	{
 		// No tRNS chunk for the BMP image.
@@ -157,7 +128,6 @@ struct RpPngFormatTest_mode
 		, ihdr(other.ihdr)
 		, bih(other.bih)
 		, rp_format(other.rp_format)
-		, rp_format_alt(other.rp_format_alt)
 		, has_bmp_tRNS(other.has_bmp_tRNS)
 	{
 		memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
@@ -172,7 +142,6 @@ struct RpPngFormatTest_mode
 		bih = other.bih;
 		memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
 		rp_format = other.rp_format;
-		rp_format_alt = other.rp_format_alt;
 		has_bmp_tRNS = other.has_bmp_tRNS;
 		return *this;
 	}
@@ -343,7 +312,10 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	unique_ptr<IRpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
+	rp_string path = _RP("png_data");
+	path += _RP_CHR(DIR_SEP_CHR);
+	path += mode.png_filename;
+	unique_ptr<IRpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file.get() != nullptr);
 	ASSERT_TRUE(file->isOpen());
 
@@ -359,7 +331,9 @@ void RpPngFormatTest::SetUp(void)
 		<< rp_string_to_utf8(mode.png_filename);
 
 	// Open the gzipped BMP image file being tested.
-	m_gzBmp = gzopen(rp_string_to_utf8(mode.bmp_gz_filename).c_str(), "rb");
+	path.resize(9);	// Back to "png_data/".
+	path += mode.bmp_gz_filename;
+	m_gzBmp = gzopen(rp_string_to_utf8(path).c_str(), "rb");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
 		<< rp_string_to_utf8(mode.bmp_gz_filename);
 
@@ -915,27 +889,7 @@ TEST_P(RpPngFormatTest, loadTest)
 	EXPECT_EQ((int)mode.ihdr.height, img->height()) << "rp_image height is incorrect.";
 
 	// Check the image format.
-	if (mode.rp_format == img->format() ||
-	    (mode.rp_format_alt != rp_image::FORMAT_NONE &&
-	     mode.rp_format_alt == img->format()))
-	{
-		// Image format is correct.
-		if (mode.rp_format != img->format()) {
-			// Using the alternate format.
-			// Reference: http://stackoverflow.com/questions/16491675/how-to-send-custom-message-in-google-c-testing-framework
-			PRINTF("img->format() == %d\n", img->format());
-			PRINTF("rp_format == %d, rp_format_alt == %d\n", mode.rp_format, mode.rp_format_alt);
-			PRINTF("PNG filename: %s\n", rp_string_to_utf8(mode.png_filename).c_str());
-			PRINTF("WARNING: Using alternate image format.\n");
-			PRINTF("WARNING: PNG implementation may be broken.\n");
-		}
-	} else {
-		// Image format is incorrect.
-		EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
-		if (mode.rp_format_alt != rp_image::FORMAT_NONE) {
-			EXPECT_EQ(mode.rp_format_alt, img->format()) << "rp_image alternate format is incorrect.";
-		}
-	}
+	EXPECT_EQ(mode.rp_format, img->format()) << "rp_image format is incorrect.";
 
 	// Load and verify the bitmap headers.
 	BITMAPFILEHEADER bfh;
@@ -1123,10 +1077,7 @@ INSTANTIATE_TEST_CASE_P(gl_triangle_png, RpPngFormatTest,
 			_RP("gl_triangle.gray.bmp.gz"),
 			gl_triangle_gray_IHDR,
 			gl_triangle_gray_BIH,
-			rp_image::FORMAT_CI8,
-			// wine-1.9.18 and AppVeyor add an alpha channel
-			// to grayscale images for some reason.
-			rp_image::FORMAT_ARGB32),
+			rp_image::FORMAT_CI8),
 		RpPngFormatTest_mode(
 			_RP("gl_triangle.gray.alpha.png"),
 			_RP("gl_triangle.gray.alpha.bmp.gz"),
@@ -1195,10 +1146,7 @@ INSTANTIATE_TEST_CASE_P(gl_quad_png, RpPngFormatTest,
 			_RP("gl_quad.gray.bmp.gz"),
 			gl_quad_gray_IHDR,
 			gl_quad_gray_BIH,
-			rp_image::FORMAT_CI8,
-			// wine-1.9.18 and AppVeyor add an alpha channel
-			// to grayscale images for some reason.
-			rp_image::FORMAT_ARGB32),
+			rp_image::FORMAT_CI8),
 		RpPngFormatTest_mode(
 			_RP("gl_quad.gray.alpha.png"),
 			_RP("gl_quad.gray.alpha.bmp.gz"),
@@ -1219,7 +1167,7 @@ static const BITMAPINFOHEADER xterm_256color_CI8_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
 		3936, 3936, 253, 253};
-#if defined(HAVE_LIBPNG)
+#if defined(HAVE_PNG)
 static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_BIH =
 	{sizeof(BITMAPINFOHEADER),
 		608, 720, 1, 8, BI_RGB, 608*720,
@@ -1234,7 +1182,7 @@ static const BITMAPINFOHEADER xterm_256color_CI8_tRNS_gdip_BIH =
 #error Missing xterm-256color.CI8.tRNS.png test case.
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 // tRNS chunk for CI8.tRNS BMPs.
 static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 	0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -1254,7 +1202,7 @@ static const tRNS_CI8_t xterm_256color_CI8_tRNS_bmp_tRNS = {{
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 }};
-#endif /* HAVE_LIBPNG */
+#endif /* HAVE_PNG */
 
 // xterm 256-color PNG image tests.
 INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
@@ -1271,7 +1219,7 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_png, RpPngFormatTest,
 // xterm 256-color PNG image tests with transparency.
 // FIXME: MSVC (2010, others) doesn't support #if/#endif within macros.
 // https://connect.microsoft.com/VisualStudio/Feedback/Details/2084691
-#if defined(HAVE_LIBPNG)
+#if defined(HAVE_PNG)
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
 		RpPngFormatTest_mode(
@@ -1286,14 +1234,12 @@ INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 #elif defined(_WIN32)
 INSTANTIATE_TEST_CASE_P(xterm_256color_tRNS_png, RpPngFormatTest,
 	::testing::Values(
-		// GDI+ converts PNG_COLOR_TYPE_PALETTE + tRNS to ARGB32.
 		RpPngFormatTest_mode(
 			_RP("xterm-256color.CI8.tRNS.png"),
 			_RP("xterm-256color.CI8.tRNS.gdip.bmp.gz"),
 			xterm_256color_CI8_tRNS_IHDR,
 			xterm_256color_CI8_tRNS_gdip_BIH,
-			rp_image::FORMAT_ARGB32,
-			rp_image::FORMAT_CI8)
+			rp_image::FORMAT_ARGB32)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 #endif
@@ -1317,15 +1263,13 @@ static const BITMAPINFOHEADER odd_width_16color_CI8_BIH =
 // odd-width_16color PNG image tests.
 INSTANTIATE_TEST_CASE_P(odd_width_16color_png, RpPngFormatTest,
 	::testing::Values(
-		// FIXME: wine loads the PNG image as ARGB32.
 		// TODO: Use a CI4 BMP?
 		RpPngFormatTest_mode(
 			_RP("odd-width.16color.CI4.png"),
 			_RP("odd-width.16color.CI8.bmp.gz"),
 			odd_width_16color_CI4_IHDR,
 			odd_width_16color_CI8_BIH,
-			rp_image::FORMAT_CI8,
-			rp_image::FORMAT_ARGB32)
+			rp_image::FORMAT_CI8)
 		)
 	, RpPngFormatTest::test_case_suffix_generator);
 

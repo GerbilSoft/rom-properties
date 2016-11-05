@@ -37,7 +37,7 @@ class IRpFile;
 class IDiscReader
 {
 	protected:
-		IDiscReader() { }
+		IDiscReader();
 	public:
 		virtual ~IDiscReader() = 0;
 
@@ -69,12 +69,12 @@ class IDiscReader
 		 * Get the last error.
 		 * @return Last POSIX error, or 0 if no error.
 		 */
-		virtual int lastError(void) const = 0;
+		int lastError(void) const;
 
 		/**
 		 * Clear the last error.
 		 */
-		virtual void clearError(void) = 0;
+		void clearError(void);
 
 		/**
 		 * Read data from the disc image.
@@ -100,7 +100,10 @@ class IDiscReader
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) const = 0;
+		virtual int64_t size(void) = 0;
+
+	protected:
+		int m_lastError;
 };
 
 /**

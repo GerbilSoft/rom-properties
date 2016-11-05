@@ -77,17 +77,6 @@ class RpFile : public IRpFile
 		virtual bool isOpen(void) const final;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const final;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) final;
-
-		/**
 		 * dup() the file handle.
 		 *
 		 * Needed because IRpFile* objects are typically
@@ -135,9 +124,14 @@ class RpFile : public IRpFile
 		virtual int64_t tell(void) final;
 
 		/**
-		 * Seek to the beginning of the file.
+		 * Truncate the file.
+		 * @param size New size. (default is 0)
+		 * @return 0 on success; -1 on error.
 		 */
-		virtual void rewind(void) final;
+		virtual int truncate(int64_t size = 0) final;
+
+	public:
+		/** File properties. **/
 
 		/**
 		 * Get the file size.
@@ -162,7 +156,6 @@ class RpFile : public IRpFile
 
 		rp_string m_filename;
 		FileMode m_mode;
-		int m_lastError;
 };
 
 }

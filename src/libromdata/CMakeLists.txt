@@ -29,15 +29,6 @@ IF(NOT WIN32)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
 
-	# Check for zlib.
-	FIND_PACKAGE(ZLIB REQUIRED)
-	SET(HAVE_ZLIB ${ZLIB_FOUND})
-	SET(ZLIB_DEFINITIONS ZLIB_CONST)
-
-	# Check for libpng.
-	FIND_PACKAGE(PNG REQUIRED)
-	SET(HAVE_LIBPNG ${PNG_FOUND})
-
 	IF(ENABLE_DECRYPTION)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
@@ -51,6 +42,8 @@ IF(NOT WIN32)
 		CHECK_SYMBOL_EXISTS(aes128_set_decrypt_key "nettle/aes.h" HAVE_NETTLE_3)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
+
+# ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
 # Check for C library functions.
 INCLUDE(CheckFunctionExists)
@@ -91,7 +84,9 @@ SET(libromdata_SRCS
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
+	img/RpPng.cpp
 	img/IconAnimHelper.cpp
+	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -172,7 +167,6 @@ IF(WIN32)
 		TextFuncs_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
-		img/RpPng_gdiplus.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
 		)
@@ -185,7 +179,6 @@ ELSE(WIN32)
 	SET(libromdata_OS_SRCS
 		TextFuncs_iconv.cpp
 		file/RpFile_stdio.cpp
-		img/RpPng_libpng.cpp
 		)
 ENDIF(WIN32)
 

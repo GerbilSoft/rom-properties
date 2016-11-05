@@ -64,14 +64,14 @@ IF /I "%PROCESSOR_ARCHITEW6432%" == "AMD64" (
 	IF NOT EXIST "%SYSTEMROOT%\SYSTEM32\MSVCP140.DLL" GOTO :no_msvcrt
 )
 
-IF NOT EXIST rom-properties-amd64.dll (
-	ECHO *** ERROR: rom-properties-amd64.dll not found.
+IF NOT EXIST amd64\rom-properties.dll (
+	ECHO *** ERROR: amd64\rom-properties.dll not found.
 	PAUSE
 	EXIT /B 1
 )
 
-ECHO Registering rom-properties-amd64.dll for 64-bit applications...
-"%REGSVR32_64BIT%" /S rom-properties-amd64.dll
+ECHO Registering 64-bit rom-properties.dll...
+"%REGSVR32_64BIT%" /S amd64\rom-properties.dll
 IF ERRORLEVEL 1 (
 	ECHO *** ERROR: 64-bit DLL registration failed.
 	PAUSE
@@ -80,12 +80,12 @@ IF ERRORLEVEL 1 (
 ECHO 64-bit DLL registration successful.
 ECHO.
 
-IF NOT EXIST rom-properties-i386.dll (
-	ECHO *** WARNING: rom-properties-i386.dll not found.
+IF NOT EXIST i386\rom-properties.dll (
+	ECHO *** WARNING: i386\rom-properties.dll not found.
 	ECHO This DLL is required in order to support 32-bit applications.
 ) ELSE (
-	ECHO Registering rom-properties-i386.dll for 32-bit applications...
-	"%REGSVR32_32BIT%" /S rom-properties-i386.dll
+	ECHO Registering 32-bit rom-properties.dll for 32-bit applications...
+	"%REGSVR32_32BIT%" /S i386\rom-properties.dll
 	IF ERRORLEVEL 1 (
 		ECHO *** ERROR: 32-bit DLL registration failed.
 		ECHO This DLL is required in order to support 32-bit applications.
@@ -103,14 +103,14 @@ SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 :: Check for the MSVC 2015 runtime.
 IF NOT EXIST "%SYSTEMROOT%\SYSTEM32\MSVCP140.DLL" GOTO :no_msvcrt
 
-IF NOT EXIST rom-properties-i386.dll (
-	ECHO *** ERROR: rom-properties-i386.dll not found.
+IF NOT EXIST i386\rom-properties.dll (
+	ECHO *** ERROR: i386\rom-properties.dll not found.
 	PAUSE
 	EXIT /B 1
 )
 
-ECHO Registering rom-properties-i386.dll for 32-bit applications...
-"%REGSVR32_32BIT%" /S rom-properties-i386.dll
+ECHO Registering 32-bit rom-properties.dll for 32-bit applications...
+"%REGSVR32_32BIT%" /S i386\rom-properties.dll
 IF ERRORLEVEL 1 (
 	ECHO *** ERROR: 32-bit DLL registration failed.
 	PAUSE
