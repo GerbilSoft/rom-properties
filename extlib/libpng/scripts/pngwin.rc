@@ -29,7 +29,8 @@
 #  define PNG_LIBPNG_VERSIONINFO_COMMENTS PNG_USER_VERSIONINFO_COMMENTS
 #endif
 
-#if defined(PNG_DEBUG) && (PNG_DEBUG > 0)
+/* rom-properties: Append "D" even if PNG_DEBUG is 0. */
+#if defined(PNG_DEBUG) /*&& (PNG_DEBUG > 0)*/
 #  define VS_DEBUG VS_FF_DEBUG
 #  ifndef PNG_LIBPNG_DLLFNAME_POSTFIX
 #    define PNG_LIBPNG_DLLFNAME_POSTFIX "D"
@@ -87,7 +88,7 @@ BEGIN
 #ifdef PNG_USER_VERSIONINFO_COMPANYNAME
       VALUE "CompanyName", PNG_USER_VERSIONINFO_COMPANYNAME "\000"
 #endif /* PNG_USER_VERSIONINFO_COMPANYNAME */
-      VALUE "FileDescription", "PNG image compression library\000"
+      VALUE "FileDescription", "PNG image compression library (with APNG patch)\000"
       VALUE "FileVersion", PNG_LIBPNG_VER_STRING "\000"
       VALUE "InternalName", PNG_LIBPNG_DLLFNAME QUOTE(PNG_LIBPNG_VER_DLLNUM) PNG_LIBPNG_DLLFNAME_POSTFIX " (Windows 32 bit)\000"
       VALUE "LegalCopyright", "\251 1998-2016 Glenn Randers-Pehrson et al.\000"
@@ -98,7 +99,7 @@ BEGIN
 #ifdef PNG_USER_PRIVATEBUILD
       VALUE "PrivateBuild", PNG_USER_PRIVATEBUILD "\000"
 #endif /* PNG_USER_PRIVATEBUILD */
-      VALUE "ProductName", "LibPNG\000"
+      VALUE "ProductName", "LibPNG + APNG\000"
       VALUE "ProductVersion", "1\000"
 #ifdef PNG_LIBPNG_SPECIALBUILD
       VALUE "SpecialBuild", PNG_LIBPNG_SPECIALBUILD "\000"
