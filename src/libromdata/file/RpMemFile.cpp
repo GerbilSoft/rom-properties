@@ -202,6 +202,22 @@ int64_t RpMemFile::tell(void)
 }
 
 /**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int RpMemFile::truncate(int64_t size)
+{
+	// Not supported.
+	// TODO: Writable RpMemFile?
+	((void)size);
+	m_lastError = ENOTSUP;
+	return -1;
+}
+
+/** File properties. **/
+
+/**
  * Get the file size.
  * @return File size, or negative on error.
  */

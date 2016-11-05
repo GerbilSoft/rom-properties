@@ -32,14 +32,19 @@ using std::u16string;
 typedef wchar_t mode_str_t;
 #define _MODE(str) (L ##str)
 #include "RpWin32.hpp"
-
 // Needed for using "\\?\" to bypass MAX_PATH.
 using std::wstring;
 #include <cctype>
-#else
+// _chsize()
+#include <io.h>
+
+#else /* !_WIN32 */
+
 // Other: fopen() requires an 8-bit mode string.
 typedef char mode_str_t;
 #define _MODE(str) (str)
+// ftruncate()
+#include <unistd.h>
 #endif
 
 namespace LibRomData {
@@ -289,6 +294,58 @@ int64_t RpFile::tell(void)
 
 	return ftello(m_file.get());
 }
+
+/**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int RpFile::truncate(int64_t size)
+{
+	if (!m_file || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
+	}
+
+	// Get the current position.
+	int64_t pos = ftello(m_file.get());
+	if (pos < 0) {
+		m_lastError = errno;
+		return -1;
+	}
+
+	// Truncate the file.
+	fflush(m_file.get());
+#ifdef _WIN32
+	int ret = _chsize_s(fileno(m_file.get()), size);
+#else
+	int ret = ftruncate(fileno(m_file.get()), size);
+#endif
+	if (ret != 0) {
+		m_lastError = errno;
+		return -1;
+	}
+
+	// If the previous position was past the new
+	// file size, reset the pointer.
+	if (pos > size) {
+		ret = fseeko(m_file.get(), size, SEEK_SET);
+		if (ret != 0) {
+			m_lastError = errno;
+			return -1;
+		}
+	}
+
+	// File truncated.
+	return 0;
+}
+
+/** File properties. **/
 
 /**
  * Get the file size.

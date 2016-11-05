@@ -108,6 +108,16 @@ class RpFile_IStream : public LibRomData::IRpFile
 		virtual int64_t tell(void) final;
 
 		/**
+		 * Truncate the file.
+		 * @param size New size. (default is 0)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int truncate(int64_t size = 0) final;
+
+	public:
+		/** File properties. **/
+
+		/**
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */

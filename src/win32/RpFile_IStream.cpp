@@ -184,7 +184,7 @@ size_t RpFile_IStream::write(const void *ptr, size_t size)
 	HRESULT hr = m_pStream->Write(ptr, (ULONG)size, &cbWritten);
 	if (FAILED(hr)) {
 		// An error occurred.
-		// TODO: Convert GetLastError() to POSIX?
+		// TODO: Convert HRESULT to POSIX?
 		m_lastError = EIO;
 		return 0;
 	}
@@ -232,13 +232,68 @@ int64_t RpFile_IStream::tell(void)
 	dlibMove.QuadPart = 0;
 	HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, &ulibNewPosition);
 	if (FAILED(hr)) {
-		// TODO: Convert GetLastError() to POSIX?
+		// TODO: Convert HRESULT to POSIX?
 		m_lastError = EIO;
 		return -1;
 	}
 
 	return (int64_t)ulibNewPosition.QuadPart;
 }
+
+/**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int RpFile_IStream::truncate(int64_t size)
+{
+	// TODO: Needs testing.
+	if (!m_pStream) {
+		m_lastError = EBADF;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
+	}
+
+	// Get the current stream position.
+	LARGE_INTEGER dlibMove;
+	ULARGE_INTEGER ulibNewPosition;
+	dlibMove.QuadPart = 0;
+	HRESULT hr = m_pStream->Seek(dlibMove, STREAM_SEEK_CUR, &ulibNewPosition);
+	if (FAILED(hr)) {
+		// TODO: Convert HRESULT to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Truncate the stream.
+	ULARGE_INTEGER ulibNewSize;
+	ulibNewSize.QuadPart = (uint64_t)size;
+	hr = m_pStream->SetSize(ulibNewSize);
+	if (FAILED(hr)) {
+		// TODO: Convert HRESULT to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// If the previous position was past the new
+	// stream size, reset the pointer.
+	if (ulibNewPosition.QuadPart > ulibNewSize.QuadPart) {
+		dlibMove.QuadPart = size;
+		hr = m_pStream->Seek(dlibMove, STREAM_SEEK_SET, nullptr);
+		if (FAILED(hr)) {
+			// TODO: Convert HRESULT to POSIX?
+			m_lastError = EIO;
+			return -1;
+		}
+	}
+
+	// Stream truncated.
+	return 0;
+}
+
+/** File properties. **/
 
 /**
  * Get the file size.

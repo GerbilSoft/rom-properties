@@ -208,6 +208,21 @@ int64_t PartitionFile::tell(void)
 }
 
 /**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int PartitionFile::truncate(int64_t size)
+{
+	// Not supported.
+	((void)size);
+	m_lastError = ENOTSUP;
+	return -m_lastError;
+}
+
+/** File properties. **/
+
+/**
  * Get the file size.
  * @return File size, or negative on error.
  */

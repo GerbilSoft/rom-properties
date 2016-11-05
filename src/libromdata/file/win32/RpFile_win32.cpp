@@ -302,6 +302,59 @@ int64_t RpFile::tell(void)
 }
 
 /**
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
+ */
+int RpFile::truncate(int64_t size)
+{
+	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
+		m_lastError = EBADF;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
+	}
+
+	// Set the requested end of file, and
+	// get the current file position.
+	LARGE_INTEGER liSeekPos, liSeekRet;
+	liSeekPos.QuadPart = size;
+	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Truncate the file.
+	bRet = SetEndOfFile(m_file.get());
+	if (bRet == 0) {
+		// TODO: Convert GetLastError() to POSIX?
+		m_lastError = EIO;
+		return -1;
+	}
+
+	// Restore the original position if it was
+	// less than the new size.
+	if (liSeekRet.QuadPart < size) {
+		bRet = SetFilePointerEx(m_file.get(), liSeekRet, nullptr, FILE_BEGIN);
+		if (bRet == 0) {
+			// TODO: Convert GetLastError() to POSIX?
+			m_lastError = EIO;
+			return -1;
+		}
+	}
+
+	// File truncated.
+	return 0;
+}
+
+/** File properties. **/
+
+/**
  * Get the file size.
  * @return File size, or negative on error.
  */
