@@ -58,6 +58,28 @@ class RpPng
 		 * @return rp_image*, or nullptr on error.
 		 */
 		static rp_image *load(IRpFile *file);
+
+		/**
+		 * Save an image in PNG format to an IRpFile.
+		 * IRpFile must be open for writing.
+		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param file IRpFile to write to.
+		 * @param img rp_image to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(IRpFile *file, const rp_image *img);
+
+		/**
+		 * Save an image in PNG format to a file.
+		 *
+		 * @param filename Destination filename.
+		 * @param img rp_image to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(const rp_char *filename, const rp_image *img);
 };
 
 }
