@@ -133,9 +133,7 @@ void RpFile::init(const rp_char *filename)
 			nullptr), myFile_deleter());
 	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
-		// TODO: More extensive conversion of GetLastError() to POSIX?
-		DWORD dwError = GetLastError();
-		m_lastError = (dwError == ERROR_FILE_NOT_FOUND ? ENOENT : EIO);
+		m_lastError = w32err_to_posix(GetLastError());
 		return;
 	}
 }
@@ -219,8 +217,7 @@ size_t RpFile::read(void *ptr, size_t size)
 	BOOL bRet = ReadFile(m_file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return 0;
 	}
 
@@ -246,8 +243,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 	BOOL bRet = WriteFile(m_file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return 0;
 	}
 
@@ -270,8 +266,7 @@ int RpFile::seek(int64_t pos)
 	liSeekPos.QuadPart = pos;
 	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
 	if (bRet == 0) {
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
@@ -293,8 +288,7 @@ int64_t RpFile::tell(void)
 	liSeekPos.QuadPart = 0;
 	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (bRet == 0) {
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
@@ -324,16 +318,14 @@ int RpFile::truncate(int64_t size)
 	liSeekPos.QuadPart = size;
 	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (bRet == 0) {
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
 	// Truncate the file.
 	bRet = SetEndOfFile(m_file.get());
 	if (bRet == 0) {
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
@@ -342,8 +334,7 @@ int RpFile::truncate(int64_t size)
 	if (liSeekRet.QuadPart < size) {
 		bRet = SetFilePointerEx(m_file.get(), liSeekRet, nullptr, FILE_BEGIN);
 		if (bRet == 0) {
-			// TODO: Convert GetLastError() to POSIX?
-			m_lastError = EIO;
+			m_lastError = w32err_to_posix(GetLastError());
 			return -1;
 		}
 	}
@@ -368,8 +359,7 @@ int64_t RpFile::fileSize(void)
 	LARGE_INTEGER liFileSize;
 	BOOL bRet = GetFileSizeEx(m_file.get(), &liFileSize);
 	if (bRet == 0) {
-		// TODO: Convert GetLastError() to POSIX?
-		m_lastError = EIO;
+		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 

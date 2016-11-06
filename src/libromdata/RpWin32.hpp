@@ -28,6 +28,17 @@
 
 #include "RpWin32_sdk.h"
 
+namespace LibRomData {
+
+/**
+ * Convert a Win32 error code to a POSIX error code.
+ * @param w32err Win32 error code.
+ * @return Positive POSIX error code. (If no equivalent is found, default is EINVAL.)
+ */
+int w32err_to_posix(DWORD w32err);
+
+}
+
 /** Windows-specific wrappers for wchar_t. **/
 
 /**

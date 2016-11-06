@@ -271,8 +271,8 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {
-		// TODO: Convert Win32 error to errno.
-		return -EIO;
+		// Error opening the file.
+		return -w32err_to_posix(GetLastError());
 	}
 
 	FILETIME mtime;
@@ -280,8 +280,7 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 	CloseHandle(hFile);
 	if (!bRet) {
 		// Error getting the file time.
-		// TODO: Convert Win32 error to errno.
-		return -EIO;
+		return -w32err_to_posix(GetLastError());
 	}
 
 	// Convert to Unix timestamp.
@@ -318,19 +317,7 @@ int delete_file(const rp_char *filename)
 	BOOL bRet = DeleteFile(filenameW.c_str());
 	if (!bRet) {
 		// Error deleting file.
-		DWORD err = GetLastError();
-		switch (err) {
-			case ERROR_FILE_NOT_FOUND:
-				ret = -ENOENT;
-				break;
-			case ERROR_ACCESS_DENIED:
-				ret = -EACCES;
-				break;
-			default:
-				// TODO: General Win32 to POSIX error conversion function.
-				ret = -EIO;
-				break;
-		}
+		ret = -w32err_to_posix(GetLastError());
 	}
 
 	return ret;

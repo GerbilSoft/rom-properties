@@ -161,8 +161,7 @@ SET(libromdata_H
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		RpWin32.hpp
-		RpWin32_sdk.h
+		RpWin32.cpp
 		TextFuncs_win32.cpp
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
@@ -171,6 +170,8 @@ IF(WIN32)
 		img/RpGdiplusBackend.cpp
 		)
 	SET(libromdata_OS_H
+		RpWin32.hpp
+		RpWin32_sdk.h
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
