@@ -23,6 +23,7 @@
 
 #include "RpPng.hpp"
 #include "rp_image.hpp"
+#include "IconAnimData.hpp"
 #include "../file/RpFile.hpp"
 #include "../file/FileSystem.hpp"
 
@@ -681,7 +682,7 @@ int RpPng::save(IRpFile *file, const rp_image *img)
  */
 int RpPng::save(const rp_char *filename, const rp_image *img)
 {
-	if (!filename || !img)
+	if (!filename || filename[0] == 0 || !img)
 		return -EINVAL;
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_CREATE_WRITE));
@@ -700,6 +701,71 @@ int RpPng::save(const rp_char *filename, const rp_image *img)
 		FileSystem::delete_file(filename);
 	}
 	return ret;
+}
+
+/**
+ * Save an animated image in APNG format to an IRpFile.
+ * IRpFile must be open for writing.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * returned. The caller should then save the image
+ * as a standard PNG file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param file IRpFile to write to.
+ * @param iconAnimData Animated image data to save.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
+{
+	if (!file || !iconAnimData)
+		return -EINVAL;
+
+	// If we have a single image, save it as a regular PNG.
+	if (iconAnimData->seq_count == 1) {
+		// Single image.
+		return save(file, iconAnimData->frames[iconAnimData->seq_index[0]]);
+	}
+
+	// FIXME: APNG support.
+	return -ENOTSUP;
+}
+
+/**
+ * Save an animated image in APNG format to a file.
+ * IRpFile must be open for writing.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * returned. The caller should then save the image
+ * as a standard PNG file.
+ *
+ * @param filename Destination filename.
+ * @param iconAnimData Animated image data to save.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPng::save(const rp_char *filename, const IconAnimData *iconAnimData)
+{
+	if (!filename || filename[0] == 0 || !iconAnimData)
+		return -EINVAL;
+
+	// If we have a single image, save it as a regular PNG.
+	if (iconAnimData->seq_count == 1) {
+		// Single image.
+		return save(filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
+	}
+
+	// FIXME: APNG support.
+	return -ENOTSUP;
 }
 
 }
