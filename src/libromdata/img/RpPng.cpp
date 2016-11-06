@@ -24,6 +24,7 @@
 #include "RpPng.hpp"
 #include "rp_image.hpp"
 #include "../file/RpFile.hpp"
+#include "../file/FileSystem.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -692,7 +693,13 @@ int RpPng::save(const rp_char *filename, const rp_image *img)
 		return -err;
 	}
 
-	return save(file.get(), img);
+	int ret = save(file.get(), img);
+	if (ret != 0) {
+		// PNG write failed. Remove the file.
+		file.reset();
+		FileSystem::delete_file(filename);
+	}
+	return ret;
 }
 
 }

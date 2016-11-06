@@ -29,6 +29,7 @@
 #include <shlobj.h>
 #include <direct.h>
 #include <sys/utime.h>
+#include <cwctype>
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -458,6 +459,60 @@ int get_mtime(const rp_string &filename, time_t *pMtime)
 #endif
 
 	return (ret == 0 ? 0 : -errno);
+}
+
+/**
+ * Delete a file.
+ * @param filename Filename.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int delete_file(const rp_char *filename)
+{
+	if (!filename || filename[0] == 0)
+		return -EINVAL;
+	int ret = 0;
+
+#ifdef _WIN32
+	// If this is an absolute path, make sure it starts with
+	// "\\?\" in order to support filenames longer than MAX_PATH.
+	wstring filenameW;
+	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
+	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += RP2W_c(filename);
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = RP2W_c(filename);
+	}
+
+	BOOL bRet = DeleteFile(filenameW.c_str());
+	if (!bRet) {
+		// Error deleting file.
+		DWORD err = GetLastError();
+		switch (err) {
+			case ERROR_FILE_NOT_FOUND:
+				ret = -ENOENT;
+				break;
+			case ERROR_ACCESS_DENIED:
+				ret = -EACCES;
+				break;
+			default:
+				// TODO: General Win32 to POSIX error conversion function.
+				ret = -EIO;
+				break;
+		}
+	}
+#else
+	if (unlink(rp_string_to_utf8(filename).c_str()) != 0) {
+		// Error deleting file.
+		ret = -errno;
+	}
+#endif
+
+	return ret;
 }
 
 } }
