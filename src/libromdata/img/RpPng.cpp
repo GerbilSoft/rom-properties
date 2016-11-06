@@ -367,6 +367,7 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	}
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
+		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 		return nullptr;
 	}
 
