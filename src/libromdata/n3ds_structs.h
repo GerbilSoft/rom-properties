@@ -19,6 +19,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+// References:
+// - https://www.3dbrew.org/wiki/SMDH
+// - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
+
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 
