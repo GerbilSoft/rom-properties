@@ -240,11 +240,11 @@ inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 	// NOTE: px16 has already been byteswapped.
 	uint32_t px32;
 
-	// BGR555: BBBBBGGG GGGRRRRR
+	// RGB555: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 17) & 0x070000))) |	// Red
+	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
 	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
 
 	// No alpha channel.
 	px32 |= 0xFF000000U;
