@@ -66,12 +66,12 @@ ASSERT_STRUCT(GCN_DiscHeader, 96);
  * GameCube region codes.
  * Used in bi2.bin (GameCube) and RVL_RegionSetting.
  */
-enum GCN_Region_Code {
+typedef enum {
 	GCN_REGION_JAPAN = 0,		// Japan / Taiwan
 	GCN_REGION_USA = 1,		// USA
 	GCN_REGION_PAL = 2,		// Europe / Australia
 	GCN_REGION_SOUTH_KOREA = 4,	// South Korea
-};
+} GCN_Region_Code;
 
 /**
  * DVD Boot Block.
@@ -289,7 +289,7 @@ ASSERT_STRUCT(RVL_PartitionHeader, 0x20000);
 /**
  * Country indexes in RVL_RegionSetting.ratings[].
  */
-enum RVL_RegionSetting_RatingCountry {
+typedef enum {
 	RATING_JAPAN = 0,	// CERO
 	RATING_USA = 1,		// ESRB
 	RATING_GERMANY = 3,	// USK
@@ -299,7 +299,7 @@ enum RVL_RegionSetting_RatingCountry {
 	RATING_BRITAIN = 7,	// BBFC
 	RATING_AUSTRALIA = 8,	// AGCB
 	RATING_SOUTH_KOREA = 9,	// GRB
-};
+} RVL_RegionSetting_RatingCountry;
 
 /**
  * Region setting and age ratings.
