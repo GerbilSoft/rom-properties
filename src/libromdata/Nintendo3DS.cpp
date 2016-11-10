@@ -75,10 +75,8 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// SMDH header.
 		// NOTE: Must be byteswapped on access.
 		N3DS_SMDH_Header_t smdh_header;
-		N3DS_SMDH_Icon_t smdh_icon;
 		// TODO: Bitflags.
 		bool has_smdh_header;
-		bool has_smdh_icon;
 
 		/**
 		 * Load the ROM image's icon.
@@ -104,11 +102,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file, n3ds_fields, ARRAY_SIZE(n3ds_fields))
 	, romType(ROM_TYPE_UNKNOWN)
 	, has_smdh_header(false)
-	, has_smdh_icon(false)
 {
 	// Clear the SMDH header.
 	memset(&smdh_header, 0, sizeof(smdh_header));
-	memset(&smdh_icon, 0, sizeof(smdh_icon));
 }
 
 /**
@@ -117,14 +113,48 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
  */
 rp_image *Nintendo3DSPrivate::loadIcon(void)
 {
-	if (!has_smdh_icon) {
-		// SMDH isn't loaded.
+	if (!file || !isValid) {
 		// Can't load the icon.
 		return nullptr;
 	}
 
-	// TODO
-	return nullptr;
+	// TODO: Small icon?
+
+	// Load the SMDH icon data structure first.
+	// How to load this depends on the file type.
+	N3DS_SMDH_Icon_t smdh_icon;
+	switch (romType) {
+		case ROM_TYPE_SMDH: {
+			// SMDH file. The icon is located
+			// immediately after the SMDH header.
+			int ret = file->seek(sizeof(smdh_header));
+			if (ret != 0) {
+				// Seek failed.
+				return nullptr;
+			}
+			size_t size = file->read(&smdh_icon, sizeof(smdh_icon));
+			if (size != sizeof(smdh_icon)) {
+				// Read failed.
+				return nullptr;
+			}
+
+			// SMDH icon loaded.
+			break;
+		}
+
+		default:
+			// Unsupported...
+			return nullptr;
+	}
+
+	// Convert the large icon to rp_image.
+	// NOTE: Assuming RGB565 format.
+	// 3dbrew.org says it could be any of various formats,
+	// but only RGB565 has been used so far.
+	// Reference: https://www.3dbrew.org/wiki/SMDH#Icon_graphics
+	return ImageDecoder::fromN3DSTiledRGB565(
+		N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
+		smdh_icon.large, sizeof(smdh_icon.large));
 }
 
 /** Nintendo3DS **/
@@ -175,6 +205,11 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	switch (d->romType) {
 		case Nintendo3DSPrivate::ROM_TYPE_SMDH:
 			// SMDH header.
+			if (info.szFile < (int64_t)(sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t))) {
+				// File is too small.
+				return;
+			}
+
 			d->file->rewind();
 			size = d->file->read(&d->smdh_header, sizeof(d->smdh_header));
 			if (size != sizeof(d->smdh_header)) {
@@ -182,16 +217,10 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 				d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
 				return;
 			}
-			size = d->file->read(&d->smdh_icon, sizeof(d->smdh_icon));
-			if (size != sizeof(d->smdh_icon)) {
-				// Error reading the SMDH icon.
-				d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
-				return;
-			}
 
+			// SMDH icon data will be read in loadIcon().
 			d->fileType = FTYPE_ICON_FILE;
 			d->has_smdh_header = true;
-			d->has_smdh_icon = true;
 			break;
 
 		default:
