@@ -54,6 +54,7 @@ using std::vector;
 #include "NES.hpp"
 #include "WiiU.hpp"
 #include "EXE.hpp"
+#include "Nintendo3DS.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -78,11 +79,6 @@ class RomDataFactoryPrivate
 #else
 		typedef std::function<RomData*(IRpFile*)> pFnNewRomData;
 #endif
-
-		enum RomDataFlags {
-			// RomData class supports images.
-			RDF_HAS_THUMBNAIL	= (1 << 0),
-		};
 
 		struct RomDataFns {
 			pFnIsRomSupported isRomSupported;
@@ -129,6 +125,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Amiibo, true),
 	GetRomDataFns(NES, false),
 	GetRomDataFns(WiiU, true),
+	GetRomDataFns(Nintendo3DS, true),
 
 	// NOTE: EXE has a 16-bit magic number,
 	// so it should go at the end.

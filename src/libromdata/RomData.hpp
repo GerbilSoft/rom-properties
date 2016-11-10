@@ -215,6 +215,8 @@ class RomData
 			FTYPE_DLL,			// Dynamic Link Library
 			FTYPE_DEVICE_DRIVER,		// Device driver
 			FTYPE_RESOURCE_LIBRARY,		// Resource library
+			FTYPE_ICON_FILE,		// Icon file, e.g. SMDH.
+			FTYPE_BANNER_FILE,		// Banner file, e.g. GameCube opening.bnr.
 
 			FTYPE_LAST			// End of FileType.
 		};
