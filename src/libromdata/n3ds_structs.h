@@ -22,6 +22,7 @@
 // References:
 // - https://www.3dbrew.org/wiki/SMDH
 // - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
+// - https://3dbrew.org/wiki/3DSX_Format
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
@@ -169,6 +170,36 @@ typedef struct PACKED _N3DS_SMDH_Icon_t {
 } N3DS_SMDH_Icon_t;
 #pragma pack()
 ASSERT_STRUCT(N3DS_SMDH_Icon_t, 0x1680);
+
+/**
+ * Nintendo 3DS Homebrew Application header. (.3dsx)
+ * Reference: https://3dbrew.org/wiki/3DSX_Format
+ *
+ * All fields are little-endian.
+ */
+#define N3DS_3DSX_HEADER_MAGIC "3DSX"
+#define N3DS_3DSX_STANDARD_HEADER_SIZE 32
+#define N3DS_3DSX_EXTENDED_HEADER_SIZE 44
+#pragma pack(1)
+typedef struct PACKED _N3DS_3DSX_Header_t {
+	// Standard header.
+	char magic[4];			// "3DSX"
+	uint16_t header_size;		// Header size.
+	uint16_t reloc_header_size;	// Relocation header size.
+	uint32_t format_version;
+	uint32_t flags;
+	uint32_t code_segment_size;
+	uint32_t rodata_segment_size;
+	uint32_t data_segment_size;	// Includes BSS.
+	uint32_t bss_segment_size;
+
+	// Extended header. (only valid if header_size > 32)
+	uint32_t smdh_offset;
+	uint32_t smdh_size;
+	uint32_t romfs_offset;
+} N3DS_3DSX_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
 
 #ifdef __cplusplus
 }

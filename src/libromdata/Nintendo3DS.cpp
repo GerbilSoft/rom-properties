@@ -66,17 +66,22 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
 
 			ROM_TYPE_SMDH    = 0,	// SMDH
-			ROM_TYPE_CCI     = 1,	// CCI/3DS (cartridge dump)
-			ROM_TYPE_eMMC    = 2,	// eMMC dump
-			ROM_TYPE_CIA     = 3,	// CIA
+			ROM_TYPE_3DSX    = 1,	// 3DSX (homebrew)
+			ROM_TYPE_CCI     = 2,	// CCI/3DS (cartridge dump)
+			ROM_TYPE_eMMC    = 3,	// eMMC dump
+			ROM_TYPE_CIA     = 4,	// CIA
 		};
 		int romType;
 
 		// SMDH header.
 		// NOTE: Must be byteswapped on access.
 		N3DS_SMDH_Header_t smdh_header;
-		// TODO: Bitflags.
-		bool has_smdh_header;
+		bool has_smdh_header;	// TODO: Bitflags.
+
+		// 3DSX header.
+		// NOTE: Must be byteswapped on access.
+		N3DS_3DSX_Header_t hb3dsx_header;
+		bool has_3dsx_header;	// TODO: Bitflags.
 
 		/**
 		 * Load the ROM image's icon.
@@ -102,9 +107,11 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file, n3ds_fields, ARRAY_SIZE(n3ds_fields))
 	, romType(ROM_TYPE_UNKNOWN)
 	, has_smdh_header(false)
+	, has_3dsx_header(false)
 {
-	// Clear the SMDH header.
+	// Clear the various headers.
 	memset(&smdh_header, 0, sizeof(smdh_header));
+	memset(&hb3dsx_header, 0, sizeof(hb3dsx_header));
 }
 
 /**
@@ -122,16 +129,43 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 
 	// Load the SMDH icon data structure first.
 	// How to load this depends on the file type.
+	// In all cases, the icon is located immediately
+	// after the SMDH header.
 	N3DS_SMDH_Icon_t smdh_icon;
 	switch (romType) {
 		case ROM_TYPE_SMDH: {
-			// SMDH file. The icon is located
-			// immediately after the SMDH header.
+			// SMDH file. Absolute addressing works absolutely.
 			int ret = file->seek(sizeof(smdh_header));
 			if (ret != 0) {
 				// Seek failed.
 				return nullptr;
 			}
+
+			size_t size = file->read(&smdh_icon, sizeof(smdh_icon));
+			if (size != sizeof(smdh_icon)) {
+				// Read failed.
+				return nullptr;
+			}
+
+			// SMDH icon loaded.
+			break;
+		}
+
+		case ROM_TYPE_3DSX: {
+			// 3DSX file. SMDH is included only if we have
+			// an extended header.
+			if (le32_to_cpu(hb3dsx_header.header_size) <= N3DS_3DSX_STANDARD_HEADER_SIZE) {
+				// No extended header.
+				return nullptr;
+			}
+
+			// Seek to the start of the SMDH icon.
+			int ret = file->seek(le32_to_cpu(hb3dsx_header.smdh_offset) + sizeof(smdh_header));
+			if (ret != 0) {
+				// Seek failed.
+				return nullptr;
+			}
+
 			size_t size = file->read(&smdh_icon, sizeof(smdh_icon));
 			if (size != sizeof(smdh_icon)) {
 				// Read failed.
@@ -223,6 +257,27 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			d->has_smdh_header = true;
 			break;
 
+		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
+			// Save the 3DSX header for later.
+			memcpy(&d->hb3dsx_header, header, sizeof(d->hb3dsx_header));
+			d->has_3dsx_header = true;
+			d->fileType = FTYPE_HOMEBREW;
+
+			// 3DSX files may or may not have a built-in SMDH.
+			if (le32_to_cpu(d->hb3dsx_header.header_size) > N3DS_3DSX_STANDARD_HEADER_SIZE) {
+				// We have a built-in SMDH.
+				int ret = d->file->seek(le32_to_cpu(d->hb3dsx_header.smdh_offset));
+				if (ret == 0) {
+					// Read the SMDH header.
+					size = d->file->read(&d->smdh_header, sizeof(d->smdh_header));
+					if (size == sizeof(d->smdh_header)) {
+						// SMDH header read successfully.
+						d->has_smdh_header = true;
+					}
+				}
+			}
+			break;
+
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
@@ -259,6 +314,18 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	{
 		// We have an SMDH file.
 		return Nintendo3DSPrivate::ROM_TYPE_SMDH;
+	}
+
+	// Check for 3DSX.
+	if (!memcmp(info->header.pData, N3DS_3DSX_HEADER_MAGIC, 4) &&
+	    info->szFile >= (int64_t)sizeof(N3DS_3DSX_Header_t))
+	{
+		// We have a 3DSX file.
+		// NOTE: sizeof(N3DS_3DSX_Header_t) includes the
+		// extended header, but that's fine, since a .3DSX
+		// file with just the standard header and nothing
+		// else is rather useless.
+		return Nintendo3DSPrivate::ROM_TYPE_3DSX;
 	}
 
 	// Not supported.
