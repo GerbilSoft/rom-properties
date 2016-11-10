@@ -562,7 +562,7 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 	for (int y = 0; y < height; y++) {
 		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*px_dest);
+			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
 			img_buf++;
 			px_dest++;
 		}
