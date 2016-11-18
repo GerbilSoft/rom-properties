@@ -23,6 +23,7 @@
 // - https://www.3dbrew.org/wiki/SMDH
 // - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
 // - https://3dbrew.org/wiki/3DSX_Format
+// - https://3dbrew.org/wiki/CIA
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
@@ -200,6 +201,51 @@ typedef struct PACKED _N3DS_3DSX_Header_t {
 } N3DS_3DSX_Header_t;
 #pragma pack()
 ASSERT_STRUCT(N3DS_3DSX_Header_t, 44);
+
+/**
+ * Nintendo 3DS Installable Archive. (.cia)
+ * Reference: https://www.3dbrew.org/wiki/CIA
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_CIA_Header_t {
+	uint32_t header_size;	// Usually 0x2020.
+	uint16_t type;
+	uint16_t version;
+	uint32_t cert_chain_size;
+	uint32_t ticket_size;
+	uint32_t tmd_size;
+	uint32_t meta_size;	// SMDH at the end of the file if non-zero.
+	uint64_t content_size;
+	uint8_t content_index[0x2000];	// TODO
+} N3DS_CIA_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_CIA_Header_t, 0x2020);
+
+// Order of sections within CIA file:
+// - CIA header
+// - Certificate chain
+// - Ticket
+// - TMD
+// - Content
+// - Meta (optional)
+
+/**
+ * CIA: Meta section header.
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_CIA_Meta_Header_t {
+	uint64_t tid_dep_list[48];	// Title ID dependency list.
+	uint8_t reserved1[0x180];
+	uint32_t core_version;
+	uint8_t reserved2[0xFC];
+
+	// Meta header is followed by an SMDH.
+} N3DS_CIA_Meta_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
 
 #ifdef __cplusplus
 }
