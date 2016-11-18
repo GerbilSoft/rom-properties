@@ -74,20 +74,34 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		};
 		int romType;
 
+		// What stuff do we have?
+		enum HeadersPresent {
+			HEADER_NONE	= 0,
+
+			// The following headers are not exclusive,
+			// so one or more can be present.
+			HEADER_SMDH	= (1 << 0),
+
+			// The following headers are mutually exclusive.
+			HEADER_3DSX	= (1 << 1),
+			HEADER_CIA	= (1 << 2),
+		};
+		uint32_t headers_loaded;	// HeadersPresent
+
 		// SMDH header.
 		// NOTE: Must be byteswapped on access.
 		N3DS_SMDH_Header_t smdh_header;
-		bool has_smdh_header;	// TODO: Bitflags.
 
-		// 3DSX header.
-		// NOTE: Must be byteswapped on access.
-		N3DS_3DSX_Header_t hb3dsx_header;
-		bool has_3dsx_header;	// TODO: Bitflags.
+		// Mutually-exclusive headers.
+		union {
+			// 3DSX header.
+			// NOTE: Must be byteswapped on access.
+			N3DS_3DSX_Header_t hb3dsx_header;
 
-		// CIA header.
-		// NOTE: Must be byteswapped on access.
-		N3DS_CIA_Header_t cia_header;
-		bool has_cia_header;	// TODO: Bitflags.
+			// CIA header.
+			// NOTE: Must be byteswapped on access.
+			N3DS_CIA_Header_t cia_header;
+		} mxh;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -123,14 +137,11 @@ const struct RomFields::Desc Nintendo3DSPrivate::n3ds_fields[] = {
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file, n3ds_fields, ARRAY_SIZE(n3ds_fields))
 	, romType(ROM_TYPE_UNKNOWN)
-	, has_smdh_header(false)
-	, has_3dsx_header(false)
-	, has_cia_header(false)
+	, headers_loaded(0)
 {
 	// Clear the various headers.
 	memset(&smdh_header, 0, sizeof(smdh_header));
-	memset(&hb3dsx_header, 0, sizeof(hb3dsx_header));
-	memset(&cia_header, 0, sizeof(cia_header));
+	memset(&mxh, 0, sizeof(mxh));
 }
 
 /**
@@ -156,7 +167,7 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 		case ROM_TYPE_SMDH: {
 			// SMDH file. Absolute addressing works absolutely.
 			// NOTE: SMDH header should have been loaded by the constructor.
-			if (!has_smdh_header) {
+			if (!(headers_loaded & HEADER_SMDH)) {
 				// SMDH header wasn't loaded...
 				return nullptr;
 			}
@@ -165,21 +176,21 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 		}
 
 		case ROM_TYPE_3DSX: {
-			if (!has_smdh_header) {
+			if (!(headers_loaded & HEADER_SMDH)) {
 				// 3DSX file. SMDH is included only if we have
 				// an extended header.
 				// NOTE: 3DSX header should have been loaded by the constructor.
-				if (!has_3dsx_header) {
+				if (!(headers_loaded & HEADER_3DSX)) {
 					// 3DSX header wasn't loaded...
 					return nullptr;
 				}
-				if (le32_to_cpu(hb3dsx_header.header_size) <= N3DS_3DSX_STANDARD_HEADER_SIZE) {
+				if (le32_to_cpu(mxh.hb3dsx_header.header_size) <= N3DS_3DSX_STANDARD_HEADER_SIZE) {
 					// No extended header.
 					return nullptr;
 				}
 
 				// Read the SMDH header.
-				int ret = file->seek(le32_to_cpu(hb3dsx_header.smdh_offset));
+				int ret = file->seek(le32_to_cpu(mxh.hb3dsx_header.smdh_offset));
 				if (ret != 0) {
 					// Seek error.
 					return nullptr;
@@ -191,7 +202,7 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 				    !memcmp(smdh_header.magic, N3DS_SMDH_HEADER_MAGIC, sizeof(smdh_header.magic)))
 				{
 					// SMDH header read successfully.
-					has_smdh_header = true;
+					headers_loaded |= HEADER_SMDH;
 				} else {
 					// Could not read the SMDH header.
 					return nullptr;
@@ -199,7 +210,7 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 			}
 
 			// SMDH icon is located past the SMDH header.
-			smdh_icon_address = (uint32_t)(le32_to_cpu(hb3dsx_header.smdh_offset) + sizeof(smdh_header));
+			smdh_icon_address = (uint32_t)(le32_to_cpu(mxh.hb3dsx_header.smdh_offset) + sizeof(smdh_header));
 			break;
 		}
 
@@ -214,26 +225,26 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 			// the FBI program prefer?
 
 			// NOTE: CIA header should have been loaded by the constructor.
-			if (!has_cia_header) {
+			if (!(headers_loaded & HEADER_CIA)) {
 				// CIA header wasn't loaded...
 				return nullptr;
 			}
 
 			// FBI's meta section is 15,040 bytes, but the SMDH header
 			// and icon only take up 14,016 bytes.
-			if (le32_to_cpu(cia_header.meta_size) < (uint32_t)(sizeof(smdh_header) + sizeof(smdh_icon))) {
+			if (le32_to_cpu(mxh.cia_header.meta_size) < (uint32_t)(sizeof(smdh_header) + sizeof(smdh_icon))) {
 				// Meta section is either not present or too small.
 				return nullptr;
 			}
 
 			// Determine the SMDH starting address.
-			uint32_t addr = toNext64(le32_to_cpu(cia_header.header_size)) +
-					toNext64(le32_to_cpu(cia_header.cert_chain_size)) +
-					toNext64(le32_to_cpu(cia_header.ticket_size)) +
-					toNext64(le32_to_cpu(cia_header.tmd_size)) +
-					toNext64(le32_to_cpu((uint32_t)cia_header.content_size)) +
+			uint32_t addr = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
+					toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
 					(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
-			if (!has_smdh_header) {
+			if (!(headers_loaded & HEADER_SMDH)) {
 				int ret = file->seek(addr);
 				if (ret != 0) {
 					// Seek failed.
@@ -246,7 +257,7 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 				    !memcmp(smdh_header.magic, N3DS_SMDH_HEADER_MAGIC, sizeof(smdh_header.magic)))
 				{
 					// SMDH header read successfully.
-					has_smdh_header = true;
+					headers_loaded |= HEADER_SMDH;
 				} else {
 					// Could not read the SMDH header.
 					return nullptr;
@@ -354,35 +365,20 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 
 			// SMDH icon data will be read in loadIcon().
 			d->fileType = FTYPE_ICON_FILE;
-			d->has_smdh_header = true;
+			d->headers_loaded |= Nintendo3DSPrivate::HEADER_SMDH;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_3DSX:
 			// Save the 3DSX header for later.
-			memcpy(&d->hb3dsx_header, header, sizeof(d->hb3dsx_header));
-			d->has_3dsx_header = true;
-			d->fileType = FTYPE_HOMEBREW;
-
-			// 3DSX files may or may not have a built-in SMDH.
-			if (le32_to_cpu(d->hb3dsx_header.header_size) > N3DS_3DSX_STANDARD_HEADER_SIZE) {
-				// We have a built-in SMDH.
-				int ret = d->file->seek(le32_to_cpu(d->hb3dsx_header.smdh_offset));
-				if (ret == 0) {
-					// Read the SMDH header.
-					size = d->file->read(&d->smdh_header, sizeof(d->smdh_header));
-					if (size == sizeof(d->smdh_header)) {
-						// SMDH header read successfully.
-						d->has_smdh_header = true;
-					}
-				}
-			}
+			memcpy(&d->mxh.hb3dsx_header, header, sizeof(d->mxh.hb3dsx_header));
+			d->headers_loaded |= Nintendo3DSPrivate::HEADER_3DSX;
 			d->fileType = FTYPE_HOMEBREW;
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_CIA:
 			// Save the CIA header for later.
-			memcpy(&d->cia_header, header, sizeof(d->cia_header));
-			d->has_cia_header = true;
+			memcpy(&d->mxh.cia_header, header, sizeof(d->mxh.cia_header));
+			d->headers_loaded |= Nintendo3DSPrivate::HEADER_CIA;
 			d->fileType = FTYPE_APPLICATION_PACKAGE;
 			break;
 
@@ -580,7 +576,7 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	if (d->has_smdh_header) {
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
 		// SMDH header.
 		// TODO: Get the system language.
 		d->fields->addData_string(utf16le_to_rp_string(
