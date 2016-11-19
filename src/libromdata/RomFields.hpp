@@ -51,6 +51,15 @@ class RomFields
 				// Print the string using a "warning" font.
 				// (usually bold and red)
 				STRF_WARNING	= (1 << 1),
+
+				// "Credits" field.
+				// Used for providing credits for an external database.
+				// This field disables highlighting and enables links
+				// using HTML-style "<a>" tags. This field is also
+				// always shown at the bottom of the dialog and with
+				// center-aligned text.
+				// NOTE: Maximum of one STRF_CREDITS per RomData subclass.
+				STRF_CREDITS	= (1 << 2),
 			};
 
 			// Custom formatting options.

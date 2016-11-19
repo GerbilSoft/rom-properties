@@ -126,6 +126,8 @@ const rp_char *RomData::fileType_string(void) const
 			return _RP("Embedded Disc Image");
 		case RomData::FTYPE_APPLICATION_PACKAGE:
 			return _RP("Application Package");
+		case RomData::FTYPE_NFC_DUMP:
+			return _RP("NFC Dump");
 		case RomData::FTYPE_UNKNOWN:
 		default:
 			break;

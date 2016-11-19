@@ -128,6 +128,8 @@ class RP_ShellPropSheetExt_Private
 
 		// Controls that need to be drawn using red text.
 		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
+		// SysLink controls.
+		unordered_set<HWND> hwndSysLinkControls;
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -177,7 +179,7 @@ class RP_ShellPropSheetExt_Private
 		inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
 
 		/**
-		 * Measure text size using GDI+.
+		 * Measure text size using GDI.
 		 * @param hWnd		[in] hWnd.
 		 * @param hFont		[in] Font.
 		 * @param str		[in] String.
@@ -788,42 +790,22 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 	// Field height.
 	int field_cy = size.cy;
-
-	// Create a read-only EDIT widget.
-	// The STATIC control doesn't allow the user
-	// to highlight and copy data.
-	DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
 	if (lf_count > 0) {
 		// Multiple lines.
 		// NOTE: Only add 5/8 of field_cy per line.
 		// FIXME: 5/8 needs adjustment...
 		field_cy += (field_cy * lf_count) * 5 / 8;
-		dwStyle |= ES_MULTILINE;
 	}
 
+	// Dialog item.
 	const HMENU cId = (HMENU)(INT_PTR)(IDC_RFT_STRING(idx));
-	HWND hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
-		pt_start.x, pt_start.y,
-		size.cx, field_cy,
-		hDlg, cId, nullptr, nullptr);
+	HWND hDlgItem;
 
 	// Get the default font.
 	HFONT hFont = GetWindowFont(hDlg);
 
-	// Subclass multiline controls to work around Enter/Escape issues.
-	// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-	if (dwStyle & ES_MULTILINE) {
-		// Store the object pointer so we can reference it later.
-		SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
-
-		// Subclass the control.
-		// TODO: Error handling?
-		SetWindowSubclass(hDlgItem,
-			RP_ShellPropSheetExt::MultilineEditProc,
-			(UINT_PTR)cId, (DWORD_PTR)q);
-	}
-
 	// Check for any formatting options.
+	bool isWarning = false, isMonospace = false;
 	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
 		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
 		// Preferring STRF_WARNING.
@@ -835,8 +817,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 			// "Warning" font.
 			if (hFontBold) {
 				hFont = hFontBold;
-				hwndWarningControls.insert(hDlgItem);
-
+				isWarning = true;
 				// Set the font of the description control.
 				HWND hStatic = GetDlgItem(hDlg, IDC_STATIC_DESC(idx));
 				if (hStatic) {
@@ -848,15 +829,88 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 			// Monospaced font.
 			if (hFontMono) {
 				hFont = hFontMono;
-				if (hwndMonoControls.empty()) {
-					hwndMonoControls.reserve(4);
-				}
-				hwndMonoControls.push_back(hDlgItem);
+				isMonospace = true;
 			}
 		}
 	}
 
-	SetWindowFont(hDlgItem, hFont, FALSE);
+	if (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS) {
+		// Align to the bottom of the dialog and center-align the text.
+		// 7x7 DLU margin is recommended by the Windows UX guidelines.
+		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+		RECT tmpRect = {7, 7, 8, 8};
+		MapDialogRect(hDlg, &tmpRect);
+		RECT winRect;
+		GetClientRect(hDlg, &winRect);
+
+		// Create a SysLink widget.
+		// SysLink allows the user to click a link and
+		// open a webpage. It does NOT allow highlighting.
+		// TODO: SysLink + EDIT?
+		// FIXME: Centered text alignment?
+		hDlgItem = CreateWindow(WC_LINK, wstr.c_str(),
+			WS_CHILD | WS_VISIBLE,
+			0, 0, 0, 0,	// will be adjusted afterwards
+			hDlg, cId, nullptr, nullptr);
+		// There should be a maximum of one STRF_CREDITS per RomData subclass.
+		assert(hwndSysLinkControls.empty());
+		hwndSysLinkControls.insert(hDlgItem);
+		SetWindowFont(hDlgItem, hFont, FALSE);
+
+		// NOTE: We can't use measureTextSize() because that includes
+		// the HTML markup. Use LM_GETIDEALSIZE after the control is
+		// created, then adjust the position.
+		const int maxWidth = winRect.right - (tmpRect.left * 2);
+		SIZE szText;
+		SendMessage(hDlgItem, LM_GETIDEALSIZE, (WPARAM)maxWidth, (LPARAM)&szText);
+
+		// Determine the position.
+		const int x = (((winRect.right - (tmpRect.left * 2)) - szText.cx) / 2) + tmpRect.left;
+		const int y = winRect.bottom - tmpRect.top - szText.cy;
+		// Set the position and size.
+		SetWindowPos(hDlgItem, 0, x, y, szText.cx, szText.cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+		// Clear field_cy so the description widget won't show up
+		// and the "normal" area will be empty.
+		field_cy = 0;
+	} else {
+		// Create a read-only EDIT widget.
+		// The STATIC control doesn't allow the user
+		// to highlight and copy data.
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
+		if (lf_count > 0) {
+			// Multiple lines.
+			dwStyle |= ES_MULTILINE;
+		}
+		hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
+			pt_start.x, pt_start.y,
+			size.cx, field_cy,
+			hDlg, cId, nullptr, nullptr);
+		SetWindowFont(hDlgItem, hFont, FALSE);
+
+		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
+		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+		if (dwStyle & ES_MULTILINE) {
+			// Store the object pointer so we can reference it later.
+			SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
+
+			// Subclass the control.
+			// TODO: Error handling?
+			SetWindowSubclass(hDlgItem,
+				RP_ShellPropSheetExt::MultilineEditProc,
+				(UINT_PTR)cId, (DWORD_PTR)q);
+		}
+	}
+
+	// Save the control in the appropriate set, if necessary.
+	if (isWarning) {
+		hwndWarningControls.insert(hDlgItem);
+	}
+	if (isMonospace) {
+		hwndMonoControls.push_back(hDlgItem);
+	}
+
 	return field_cy;
 }
 
@@ -1370,7 +1424,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES;
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
@@ -1435,8 +1489,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	POINT curPt = {tmpRect.left, tmpRect.top};
 
 	// Width available for the value widget(s).
-	GetClientRect(hDlg, &tmpRect);
-	const int dlg_value_width = tmpRect.right - (curPt.x * 2) - descSize.cx;
+	RECT dlgRect;
+	GetClientRect(hDlg, &dlgRect);
+	LONG x = GetDialogBaseUnits();
+	const int dlg_value_width = dlgRect.right - (curPt.x * 2) - descSize.cx;
 
 	// Create the header row.
 	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
@@ -1932,16 +1988,30 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt_Private *const d = pExt->d;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
-			case PSN_SETACTIVE:
-				d->startAnimTimer();
-				break;
+				case PSN_SETACTIVE:
+					d->startAnimTimer();
+					break;
 
-			case PSN_KILLACTIVE:
-				d->stopAnimTimer();
-				break;
+				case PSN_KILLACTIVE:
+					d->stopAnimTimer();
+					break;
 
-			default:
-				break;
+				case NM_CLICK:
+				case NM_RETURN: {
+					// Check if this is a SysLink control.
+					if (pExt->d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
+					    pExt->d->hwndSysLinkControls.end())
+					{
+						// It's a SysLink control.
+						// Open the URL.
+						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
+						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					}
+					break;
+				}
+
+				default:
+					break;
 			}
 
 			// Continue normal processing.
@@ -2018,7 +2088,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
-				if (pExt->d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) != pExt->d->hwndWarningControls.end()) {
+				if (pExt->d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
+				    pExt->d->hwndWarningControls.end())
+				{
 					// Set the "Warning" color.
 					HDC hdc = reinterpret_cast<HDC>(wParam);
 					SetTextColor(hdc, RGB(255, 0, 0));

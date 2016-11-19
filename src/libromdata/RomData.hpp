@@ -178,6 +178,9 @@ class RomData
 
 			// Application package, e.g. WAD, CIA.
 			FTYPE_APPLICATION_PACKAGE,
+
+			// NFC dump, e.g. amiibo.
+			FTYPE_NFC_DUMP,
 		};
 
 		/**

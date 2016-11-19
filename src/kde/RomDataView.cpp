@@ -66,6 +66,7 @@ class RomDataViewPrivate
 		struct Ui {
 			void setupUi(QWidget *RomDataView);
 
+			QVBoxLayout *vboxLayout;
 			QFormLayout *formLayout;
 			// TODO: Store the field widgets?
 
@@ -153,9 +154,20 @@ RomDataViewPrivate::~RomDataViewPrivate()
 
 void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 {
-	// Only the formLayout is initialized here.
+	// Only the layouts are initialized here.
 	// Everything else is initialized in updateDisplay.
-	formLayout = new QFormLayout(RomDataView);
+
+	// Main layout is a QVBoxLayout.
+	// This allows for the credits row to be separate.
+	vboxLayout = new QVBoxLayout(RomDataView);
+	// Zero the margins for the QVBoxLayout, since usually
+	// only the QFormLayout is present.
+	QMargins margins(0, 0, 0, 0);
+	vboxLayout->setContentsMargins(margins);
+
+	// Create the QFormLayout.
+	formLayout = new QFormLayout();
+	vboxLayout->addLayout(formLayout, 1);
 }
 
 /**
@@ -338,6 +350,9 @@ void RomDataViewPrivate::updateDisplay(void)
 
 	// Create the data widgets.
 	Q_Q(RomDataView);
+#ifndef NDEBUG
+	bool hasStrfCredits = false;
+#endif
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -362,11 +377,26 @@ void RomDataViewPrivate::updateDisplay(void)
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);
-				lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-				lblString->setTextFormat(Qt::PlainText);
-				lblString->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
-				if (data->str) {
-					lblString->setText(RP2Q(data->str));
+				lblString->setTextInteractionFlags(
+					Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
+					Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
+				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+					// Credits text. Enable formatting and center text.
+					lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+					lblString->setTextFormat(Qt::RichText);
+					lblString->setOpenExternalLinks(true);
+					if (data->str) {
+						// Replace newlines with "<br/>".
+						QString text = RP2Q(data->str).replace(QChar(L'\n'), QLatin1String("<br/>"));
+						lblString->setText(text);
+					}
+				} else {
+					// Standard text with no formatting.
+					lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+					lblString->setTextFormat(Qt::PlainText);
+					if (data->str) {
+						lblString->setText(RP2Q(data->str));
+					}
 				}
 
 				// Check for any formatting options.
@@ -389,7 +419,32 @@ void RomDataViewPrivate::updateDisplay(void)
 					}
 				}
 
-				ui.formLayout->addRow(lblDesc, lblString);
+				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+					// Credits row goes at the end.
+					// There should be a maximum of one STRF_CREDITS per RomData subclass.
+#ifndef NDEBUG
+					assert(hasStrfCredits == false);
+					hasStrfCredits = true;
+#endif
+					// Credits row.
+					ui.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
+
+					// Set the bottom margin to match the QFormLayout.
+					// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
+					// TODO: Verify this.
+					QMargins margins = ui.formLayout->contentsMargins();
+					margins.setLeft(0);
+					margins.setRight(0);
+					margins.setTop(0);
+					margins.setBottom(99);
+					ui.vboxLayout->setContentsMargins(margins);
+
+					// No description field.
+					delete lblDesc;
+				} else {
+					// Standard string row.
+					ui.formLayout->addRow(lblDesc, lblString);
+				}
 				break;
 			}
 
@@ -398,15 +453,15 @@ void RomDataViewPrivate::updateDisplay(void)
 				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
 				QGridLayout *gridLayout = new QGridLayout();
 				int row = 0, col = 0;
-				for (int i = 0; i < bitfieldDesc->elements; i++) {
-					const rp_char *name = bitfieldDesc->names[i];
+				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
+					const rp_char *name = bitfieldDesc->names[bit];
 					if (!name)
 						continue;
 
 					// TODO: Disable KDE's automatic mnemonic.
 					QCheckBox *checkBox = new QCheckBox(q);
 					checkBox->setText(RP2Q(name));
-					if (data->bitfield & (1 << i)) {
+					if (data->bitfield & (1 << bit)) {
 						checkBox->setChecked(true);
 					}
 
