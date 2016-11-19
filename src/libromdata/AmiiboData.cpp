@@ -1700,13 +1700,10 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 55, 9, _RP("Roy")},			// 0x0252
 	{ 56, 9, _RP("Ryu")},			// 0x0253
 
-	// Unused [0x0254-0x0256]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0254,0x0255
-	{  0, 0, nullptr},			// 0x0256
-
-	// Kirby [0x0257]
-	// NOTE: Most Kirby amiibos use the SSB series ID.
-	// Only those not present in SSB use the Kirby series ID.
+	// Kirby [0x0254-0x0257]
+	{  0, 0, _RP("Kirby")},			// 0x0254
+	{  0, 0, _RP("Meta Knight")},		// 0x0255
+	{  0, 0, _RP("King Dedede")},		// 0x0256
 	{  0, 0, _RP("Waddle Dee")},		// 0x0257
 
 	// SSB: Special amiibo [0x0258]
