@@ -1943,7 +1943,7 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
 
 	// Check for variants.
 	uint8_t variant_id = (char_id >> 8) & 0xFF;
-	if (!res->variants) {
+	if (!res->variants || res->variants_size == 0) {
 		if (variant_id == 0) {
 			// No variants, and variant ID is 0.
 			return res->name;
@@ -1954,8 +1954,19 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
 		return nullptr;
 	}
 
-	// TODO: Variant handling.
-	return (res ? res->name : nullptr);
+	// Do a linear search in the variant array.
+	// (Linear instead of binary because the largest
+	// variant array is 4 elements.)
+	const AmiiboDataPrivate::char_variant_t *variant = res->variants;
+	for (int i = res->variants_size; i > 0; i--, variant++) {
+		if (variant->variant_id == variant_id) {
+			// Found the variant.
+			return variant->name;
+		}
+	}
+
+	// Variant not found.
+	return nullptr;
 }
 
 /**
