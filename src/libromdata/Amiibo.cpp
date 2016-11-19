@@ -50,6 +50,9 @@ class AmiiboPrivate
 	public:
 		/** RomFields **/
 
+		// Monospace string formatting.
+		static const RomFields::StringDesc nfp_string_monospace;
+
 		// Credits string formatting.
 		static const RomFields::StringDesc nfp_string_credits;
 
@@ -72,6 +75,11 @@ class AmiiboPrivate
 
 /** AmiiboPrivate **/
 
+// Monospace string formatting.
+const RomFields::StringDesc AmiiboPrivate::nfp_string_monospace = {
+	RomFields::StringDesc::STRF_MONOSPACE
+};
+
 // Credits string formatting.
 const RomFields::StringDesc AmiiboPrivate::nfp_string_credits = {
 	RomFields::StringDesc::STRF_CREDITS
@@ -80,10 +88,10 @@ const RomFields::StringDesc AmiiboPrivate::nfp_string_credits = {
 // ROM fields.
 const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	// NTAG215 data.
-	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {&nfp_string_monospace}},
 
 	// TODO: amiibo data.
-	{_RP("amiibo ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
 
 	// Credits
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
