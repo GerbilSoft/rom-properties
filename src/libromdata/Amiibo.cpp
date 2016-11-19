@@ -83,6 +83,7 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {nullptr}},
 
 	// TODO: amiibo data.
+	{_RP("amiibo ID"), RomFields::RFT_STRING, {nullptr}},
 
 	// Credits
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
@@ -335,17 +336,31 @@ int Amiibo::loadFieldData(void)
 	// Verify the check bytes.
 	// TODO: Show calculated check bytes?
 	uint8_t cb0, cb1;
+	int len;
 	if (d->calcCheckBytes(d->nfpData.serial, &cb0, &cb1)) {
 		// Check bytes are valid.
-		snprintf(pBuf, sizeof(buf) - (7*2), " (check bytes: %02X %02X)",
+		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check bytes: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
 	} else {
 		// Check bytes are NOT valid.
-		snprintf(pBuf, sizeof(buf) - (7*2), " (INVALID check bytes: %02X %02X)",
+		len = snprintf(pBuf, sizeof(buf) - (7*2), " (INVALID check bytes: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
 	}
 
-	m_fields->addData_string(latin1_to_rp_string(buf, -1));
+	len += (7*2);
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+
+	// amiibo ID.
+	// Represents the character and amiibo series.
+	// TODO: Link to http://amiibo.life/nfc/%08X-%08X
+	len = snprintf(buf, sizeof(buf), "%08X-%08X",
+		 be32_to_cpu(d->nfpData.char_id),
+		 be32_to_cpu(d->nfpData.amiibo_id));
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 	// TODO: NFP data.
 
