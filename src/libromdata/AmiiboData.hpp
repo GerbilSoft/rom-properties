@@ -44,6 +44,14 @@ class AmiiboData
 		static const rp_char *lookup_char_series_name(uint32_t char_id);
 
 		/**
+		 * Look up a character's name.
+		 * @param char_id Character ID. (Page 21) [must be host-endian]
+		 * @return Character name. (If variant, the variant name is used.)
+		 * If an invalid character ID or variant, nullptr is returned.
+		 */
+		static const rp_char *lookup_char_name(uint32_t char_id);
+
+		/**
 		 * Look up an amiibo series name.
 		 * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
 		 * @return Series name, or nullptr if not found.

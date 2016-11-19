@@ -93,7 +93,10 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 
 	// TODO: More amiibo data.
 	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
+
 	{_RP("Character Series"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Character Name"), RomFields::RFT_STRING, {nullptr}},
+
 	{_RP("amiibo Series"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("amiibo Name"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("amiibo Wave #"), RomFields::RFT_STRING, {nullptr}},
@@ -391,6 +394,10 @@ int Amiibo::loadFieldData(void)
 	// Character series.
 	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
 	m_fields->addData_string(char_series ? char_series : _RP("Unknown"));
+
+	// Character name.
+	const rp_char *const char_name = AmiiboData::lookup_char_name(char_id);
+	m_fields->addData_string(char_name ? char_name : _RP("Unknown"));
 
 	// amiibo series.
 	const rp_char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);

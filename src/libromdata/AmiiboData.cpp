@@ -106,6 +106,14 @@ class AmiiboDataPrivate {
 		// Character IDs.
 		static const char_id_t char_ids[];
 
+		/**
+		 * char_id_t bsearch() comparison function.
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int char_id_t_compar(const void *a, const void *b);
+
 		/** Page 22 (raw offset 0x58): amiibo series **/
 
 		// amiibo series names.
@@ -985,6 +993,21 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Shovel Knight (character series = 0x35C)
 	{0x35C0, _RP("Shovel Knight"), nullptr, 0},
 };
+
+/**
+ * char_id_t bsearch() comparison function.
+ * @param a
+ * @param b
+ * @return
+ */
+int AmiiboDataPrivate::char_id_t_compar(const void *a, const void *b)
+{
+	uint16_t id1 = reinterpret_cast<const char_id_t*>(a)->char_id;
+	uint16_t id2 = reinterpret_cast<const char_id_t*>(b)->char_id;
+	if (id1 < id2) return -1;
+	if (id1 > id2) return 1;
+	return 0;
+}
 
 /** Page 22 (byte 0x5C): amiibo series **/
 
@@ -1896,6 +1919,46 @@ const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 }
 
 /**
+ * Look up a character's name.
+ * @param char_id Character ID. (Page 21) [must be host-endian]
+ * @return Character name. (If variant, the variant name is used.)
+ * If an invalid character ID or variant, nullptr is returned.
+ */
+const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
+{
+	const uint16_t id = (char_id >> 16) & 0xFFFF;
+
+	// Do a binary search.
+	const AmiiboDataPrivate::char_id_t key = {id, nullptr, nullptr, 0};
+	const AmiiboDataPrivate::char_id_t *res =
+		reinterpret_cast<const AmiiboDataPrivate::char_id_t*>(bsearch(&key,
+			AmiiboDataPrivate::char_ids,
+			ARRAY_SIZE(AmiiboDataPrivate::char_ids),
+			sizeof(AmiiboDataPrivate::char_id_t),
+			AmiiboDataPrivate::char_id_t_compar));
+	if (!res) {
+		// Character ID not found.
+		return nullptr;
+	}
+
+	// Check for variants.
+	uint8_t variant_id = (char_id >> 8) & 0xFF;
+	if (!res->variants) {
+		if (variant_id == 0) {
+			// No variants, and variant ID is 0.
+			return res->name;
+		}
+
+		// No variants, but the variant ID is non-zero.
+		// Invalid char_id.
+		return nullptr;
+	}
+
+	// TODO: Variant handling.
+	return (res ? res->name : nullptr);
+}
+
+/**
  * Look up an amiibo series name.
  * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
  * @return amiibo series name, or nullptr if not found.
@@ -1926,7 +1989,6 @@ const rp_char *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pR
 		return nullptr;
 	}
 
-	printf("id: %04X\n", id);
 	const AmiiboDataPrivate::amiibo_id_t *const amiibo = &AmiiboDataPrivate::amiibo_ids[id];
 	if (pReleaseNo) {
 		*pReleaseNo = amiibo->release_no;
