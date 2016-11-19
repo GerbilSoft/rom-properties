@@ -1899,9 +1899,9 @@ const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	static_assert(sizeof(AmiiboDataPrivate::char_series_names)/sizeof(AmiiboDataPrivate::char_series_names[0]) == 0x360/4,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == 0x360/4,
 		"char_series_names[] is out of sync with the amiibo ID list.");
-	static_assert(sizeof(AmiiboDataPrivate::amiibo_ids)/sizeof(AmiiboDataPrivate::amiibo_ids[0]) == 0x031F,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x031F,
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
