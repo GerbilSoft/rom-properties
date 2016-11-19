@@ -95,6 +95,9 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
 	{_RP("Character Series"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("amiibo Series"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("amiibo Name"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("amiibo Wave #"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("amiibo Release #"), RomFields::RFT_STRING, {nullptr}},
 
 	// Credits
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
@@ -386,12 +389,34 @@ int Amiibo::loadFieldData(void)
 	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
 
 	// Character series.
-	const rp_char *char_series = AmiiboData::lookup_char_series_name(char_id);
+	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
 	m_fields->addData_string(char_series ? char_series : _RP("Unknown"));
 
 	// amiibo series.
-	const rp_char *amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
+	const rp_char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
 	m_fields->addData_string(amiibo_series ? amiibo_series : _RP("Unknown"));
+
+	// amiibo name, wave number, and release number.
+	int wave_no, release_no;
+	const rp_char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
+	if (amiibo_name) {
+		m_fields->addData_string(amiibo_name);
+		if (wave_no != 0) {
+			m_fields->addData_string_numeric(wave_no);
+		} else {
+			m_fields->addData_invalid();
+		}
+		if (release_no != 0) {
+			m_fields->addData_string_numeric(release_no);
+		} else {
+			m_fields->addData_invalid();
+		}
+	} else {
+		// Unknown name.
+		m_fields->addData_string(_RP("Unknown"));
+		m_fields->addData_invalid();
+		m_fields->addData_invalid();
+	}
 
 	// Credits.
 	m_fields->addData_string(

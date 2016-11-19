@@ -45,10 +45,19 @@ class AmiiboData
 
 		/**
 		 * Look up an amiibo series name.
-		 * @param amiibo_id Amiibo ID. (Page 22) [must be host-endian]
+		 * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
 		 * @return Series name, or nullptr if not found.
 		 */
 		static const rp_char *lookup_amiibo_series_name(uint32_t amiibo_id);
+
+		/**
+		 * Look up an amiibo's series identification.
+		 * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
+		 * @param pReleaseNo	[out,opt] Release number within series.
+		 * @param pWaveNo	[out,opt] Wave number within series.
+		 * @return amiibo series name, or nullptr if not found.
+		 */
+		static const rp_char *lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo, int *pWaveNo);
 };
 
 }

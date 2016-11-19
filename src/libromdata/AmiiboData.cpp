@@ -118,7 +118,7 @@ class AmiiboDataPrivate {
 		// so we can use a single array for all series.
 		struct amiibo_id_t {
 			uint16_t release_no;	// Release number. (0 for no ordering)
-			uint8_t wave;		// Wave number.
+			uint8_t wave_no;	// Wave number.
 			const rp_char *name;	// Character name.
 		};
 		static const amiibo_id_t amiibo_ids[];
@@ -1886,6 +1886,9 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == 0x360/4,
+		"char_series_names[] is out of sync with the amiibo ID list.");
+
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
 	if (series_id >= ARRAY_SIZE(AmiiboDataPrivate::char_series_names))
 		return nullptr;
@@ -1894,13 +1897,11 @@ const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 
 /**
  * Look up an amiibo series name.
- * @param amiibo_id Amiibo ID. (Page 22) [must be host-endian]
+ * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
  * @return amiibo series name, or nullptr if not found.
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == 0x360/4,
-		"char_series_names[] is out of sync with the amiibo ID list.");
 	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x031F,
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
@@ -1908,6 +1909,33 @@ const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	if (series_id >= ARRAY_SIZE(AmiiboDataPrivate::amiibo_series_names))
 		return nullptr;
 	return AmiiboDataPrivate::amiibo_series_names[series_id];
+}
+
+/**
+ * Look up an amiibo's series identification.
+ * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
+ * @param pReleaseNo	[out,opt] Release number within series.
+ * @param pWaveNo	[out,opt] Wave number within series.
+ * @return amiibo series name, or nullptr if not found.
+ */
+const rp_char *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo, int *pWaveNo)
+{
+	const unsigned int id = (amiibo_id >> 16) & 0xFFFF;
+	if (id >= ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids)) {
+		// ID is out of range.
+		return nullptr;
+	}
+
+	printf("id: %04X\n", id);
+	const AmiiboDataPrivate::amiibo_id_t *const amiibo = &AmiiboDataPrivate::amiibo_ids[id];
+	if (pReleaseNo) {
+		*pReleaseNo = amiibo->release_no;
+	}
+	if (pWaveNo) {
+		*pWaveNo = amiibo->wave_no;
+	}
+
+	return amiibo->name;
 }
 
 }
