@@ -353,11 +353,13 @@ int Amiibo::loadFieldData(void)
 	int len;
 	if (d->calcCheckBytes(d->nfpData.serial, &cb0, &cb1)) {
 		// Check bytes are valid.
-		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check bytes: %02X %02X)",
+		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
 	} else {
 		// Check bytes are NOT valid.
-		len = snprintf(pBuf, sizeof(buf) - (7*2), " (INVALID check bytes: %02X %02X)",
+		// NOTE: Shouldn't show up anymore because invalid
+		// serial numbers are discarded in isRomSupported_static().
+		len = snprintf(pBuf, sizeof(buf) - (7*2), " (check ERR: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
 	}
 
