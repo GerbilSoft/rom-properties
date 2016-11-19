@@ -883,7 +883,9 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		}
 	}
 
-	if (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS) {
+	if (desc->type == RomFields::RFT_STRING && desc->str_desc &&
+	    (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS))
+	{
 		// Align to the bottom of the dialog and center-align the text.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
