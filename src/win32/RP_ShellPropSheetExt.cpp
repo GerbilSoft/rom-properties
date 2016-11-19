@@ -186,7 +186,19 @@ class RP_ShellPropSheetExt_Private
 		 * @param lpSize	[out] Size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize);
+		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
+
+		/**
+		 * Measure text size using GDI.
+		 * This version removes HTML-style tags before
+		 * calling the regular measureTextSize() function.
+		 * @param hWnd		[in] hWnd.
+		 * @param hFont		[in] Font.
+		 * @param str		[in] String.
+		 * @param lpSize	[out] Size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 	public:
 		/**
@@ -418,11 +430,11 @@ inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, 
  * Measure text size using GDI.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param str		[in] String.
+ * @param wstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on errro.
  */
-int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &str, LPSIZE lpSize)
+int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
 {
 	SIZE size_total = {0, 0};
 
@@ -431,17 +443,17 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 
 	// Handle newlines.
 	int lines = 0;
-	const wchar_t *data = str.data();
+	const wchar_t *data = wstr.data();
 	int nl_pos_prev = -1;
 	size_t nl_pos = 0;	// Assuming no NL at the start.
 	do {
-		nl_pos = str.find(L'\n', nl_pos + 1);
+		nl_pos = wstr.find(L'\n', nl_pos + 1);
 		const int start = nl_pos_prev + 1;
 		int len;
 		if (nl_pos != wstring::npos) {
 			len = (int)(nl_pos - start);
 		} else {
-			len = (int)(str.size() - start);
+			len = (int)(wstr.size() - start);
 		}
 
 		// Check if a '\r' is present before the '\n'.
@@ -473,6 +485,43 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 
 	*lpSize = size_total;
 	return 0;
+}
+
+/**
+ * Measure text size using GDI.
+ * This version removes HTML-style tags before
+ * calling the regular measureTextSize() function.
+ * @param hWnd		[in] hWnd.
+ * @param hFont		[in] Font.
+ * @param wstr		[in] String.
+ * @param lpSize	[out] Size.
+ * @return 0 on success; non-zero on error.
+ */
+int RP_ShellPropSheetExt_Private::measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
+{
+	// Remove HTML-style tags.
+	// NOTE: This is a very simplistic version.
+	wstring nwstr;
+	nwstr.reserve(wstr.size());
+
+	int lbrackets = 0;
+	for (int i = 0; i < (int)wstr.size(); i++) {
+		if (wstr[i] == '<') {
+			// Starting bracket.
+			lbrackets++;
+		} else if (wstr[i] == '>') {
+			// Ending bracket.
+			assert(lbrackets > 0);
+			lbrackets--;
+		}
+
+		if (lbrackets == 0) {
+			// Not currently in a tag.
+			nwstr += wstr[i];
+		}
+	}
+
+	return measureTextSize(hWnd, hFont, nwstr, lpSize);
 }
 
 /**
@@ -858,11 +907,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		SetWindowFont(hDlgItem, hFont, FALSE);
 
 		// NOTE: We can't use measureTextSize() because that includes
-		// the HTML markup. Use LM_GETIDEALSIZE after the control is
-		// created, then adjust the position.
-		const int maxWidth = winRect.right - (tmpRect.left * 2);
+		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
+		// Use a wrapper measureTextSizeLink() that removes HTML-like
+		// tags and then calls measureTextSize().
 		SIZE szText;
-		SendMessage(hDlgItem, LM_GETIDEALSIZE, (WPARAM)maxWidth, (LPARAM)&szText);
+		measureTextSizeLink(hDlg, hFont, wstr, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - (tmpRect.left * 2)) - szText.cx) / 2) + tmpRect.left;
