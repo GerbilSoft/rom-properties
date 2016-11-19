@@ -209,6 +209,12 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
+	// Low byte of amiibo_id must be 0x02.
+	if ((be32_to_cpu(nfpData->amiibo_id) & 0xFF) != 0x02) {
+		// Incorrect amiibo ID.
+		return -1;
+	}
+
 	// This is an amiibo.
 	return 0;
 }
