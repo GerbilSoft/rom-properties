@@ -21,6 +21,7 @@
 
 #include "Amiibo.hpp"
 #include "nfp_structs.h"
+#include "AmiiboData.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -90,8 +91,10 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	// NTAG215 data.
 	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {&nfp_string_monospace}},
 
-	// TODO: amiibo data.
+	// TODO: More amiibo data.
 	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
+	{_RP("Character Series"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("amiibo Series"), RomFields::RFT_STRING, {nullptr}},
 
 	// Credits
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
@@ -378,7 +381,17 @@ int Amiibo::loadFieldData(void)
 		len = (int)sizeof(buf);
 	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-	// TODO: NFP data.
+	// NFP data.
+	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
+	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
+
+	// Character series.
+	const rp_char *char_series = AmiiboData::lookup_char_series_name(char_id);
+	m_fields->addData_string(char_series ? char_series : _RP("Unknown"));
+
+	// amiibo series.
+	const rp_char *amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
+	m_fields->addData_string(amiibo_series ? amiibo_series : _RP("Unknown"));
 
 	// Credits.
 	m_fields->addData_string(

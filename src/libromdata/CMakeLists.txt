@@ -78,6 +78,7 @@ SET(libromdata_SRCS
 	PlayStationSave.cpp
 	VirtualBoy.cpp
 	Amiibo.cpp
+	AmiiboData.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
@@ -124,6 +125,7 @@ SET(libromdata_H
 	DreamcastSave.hpp
 	VirtualBoy.hpp
 	Amiibo.hpp
+	AmiiboData.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
