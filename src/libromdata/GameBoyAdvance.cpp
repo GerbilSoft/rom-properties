@@ -103,25 +103,19 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	GBA_RomHeader romHeader;
 	m_file->rewind();
-	size_t size = m_file->read(&romHeader, sizeof(romHeader));
-	if (size != sizeof(romHeader))
+	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	if (size != sizeof(d->romHeader))
 		return;
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
+	info.header.size = sizeof(d->romHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
 	m_isValid = (isRomSupported_static(&info) >= 0);
-
-	if (m_isValid) {
-		// Save the ROM header.
-		memcpy(&d->romHeader, &romHeader, sizeof(d->romHeader));
-	}
 }
 
 GameBoyAdvance::~GameBoyAdvance()
