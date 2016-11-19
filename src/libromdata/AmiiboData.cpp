@@ -1100,9 +1100,9 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 1, _RP("Inkling Squid")},		// 0x0040
 
 	// Yarn Yoshi [0x0041-0x0043]
-	{  1, 0, _RP("Green Yarn Yoshi")},	// 0x0041
-	{  1, 0, _RP("Pink Yarn Yoshi")},	// 0x0042
-	{  1, 0, _RP("Light Blue Yarn Yoshi")},	// 0x0043
+	{  0, 0, _RP("Green Yarn Yoshi")},	// 0x0041
+	{  0, 0, _RP("Pink Yarn Yoshi")},	// 0x0042
+	{  0, 0, _RP("Light Blue Yarn Yoshi")},	// 0x0043
 
 	// Animal Crossing Cards: Series 1 [0x0044-0x00A7]
 	{  1, 1, _RP("Isabelle")},		// 0x0044
@@ -1608,7 +1608,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 51, 7, _RP("Mewtwo")},		// 0x023D
 
 	// Yarn Yoshi: Mega Yarn Yoshi [0x023E]
-	{  1, 0, _RP("Mega Yarn Yoshi")},	// 0x023E
+	{  0, 0, _RP("Mega Yarn Yoshi")},	// 0x023E
 
 	// Animal Crossing Figurines: Wave 1 [0x023F-0x0246]
 	{  0, 1, _RP("Isabelle")},		// 0x023F
