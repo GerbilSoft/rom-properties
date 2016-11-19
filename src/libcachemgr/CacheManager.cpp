@@ -25,11 +25,13 @@
 #include "CacheManager.hpp"
 
 #include "libromdata/TextFuncs.hpp"
+#include "libromdata/RomData.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/file/FileSystem.hpp"
 using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
+using LibRomData::RomData;
 using namespace LibRomData::FileSystem;
 
 // Windows includes.
@@ -111,7 +113,7 @@ void CacheManager::setProxyUrl(const rp_char *proxyUrl)
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
  */
-void CacheManager::setProxyUrl(const LibRomData::rp_string &proxyUrl)
+void CacheManager::setProxyUrl(const rp_string &proxyUrl)
 {
 	m_proxyUrl = proxyUrl;
 }
@@ -121,7 +123,7 @@ void CacheManager::setProxyUrl(const LibRomData::rp_string &proxyUrl)
  * @param cache_key Cache key.
  * @return Cache filename, or empty string on error.
  */
-rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
@@ -161,6 +163,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 
 /**
  * Download a file.
+ *
  * @param url URL.
  * @param cache_key Cache key.
  *
@@ -171,9 +174,11 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  * the last time it was requested, an empty string will be
  * returned, and a zero-byte file will be stored in the cache.
  *
- * @return Absolute path to cached file.
+ * @return Absolute path to the cached file.
  */
-LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_string &cache_key)
+rp_string CacheManager::download(
+	const rp_string &url,
+	const rp_string &cache_key)
 {
 	SemaphoreLocker locker(m_dlsem);
 
@@ -213,6 +218,125 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 	m_downloader->setUrl(url);
 	m_downloader->setProxyUrl(m_proxyUrl);
 	int ret = m_downloader->download();
+
+	// Write the file to the cache.
+	unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_CREATE_WRITE));
+
+	if (ret != 0 || !file || !file->isOpen()) {
+		// Error downloading the file, or error opening
+		// the file in the local cache.
+
+		// TODO: Only keep a negative cache if it's a 404.
+		// Keep the cached file as a 0-byte file to indicate
+		// a "negative" hit, but return an empty filename.
+		return rp_string();
+	}
+
+	// Write the file.
+	file->write((void*)m_downloader->data(), m_downloader->dataSize());
+	file->close();
+
+	// Set the file's mtime if it was obtained by the downloader.
+	// TODO: IRpFile::set_mtime()?
+	time_t mtime = m_downloader->mtime();
+	if (mtime >= 0) {
+		set_mtime(cache_filename, mtime);
+	}
+
+	// Return the cache filename.
+	return cache_filename;
+}
+
+/**
+ * Download and scrape an HTML file for an image URL, then download the image.
+ *
+ * This is required for some external sources that don't
+ * have easily-accessible image URLs, but do have them
+ * embedded in HTML pages.
+ *
+ * @param url		[in] HTML page to download and scrape.
+ * @param cache_key	[in] Cache key for the downloaded image.
+ * @param romData	[in] RomData class that will scrape the URL.
+ *
+ * If the file is present in the cache, the cached version
+ * will be retrieved. Otherwise, the file will be downloaded.
+ *
+ * If the file was not found on the server, or it was not found
+ * the last time it was requested, an empty string will be
+ * returned, and a zero-byte file will be stored in the cache.
+ *
+ * @return Absolute path to the cached file.
+ */
+rp_string CacheManager::downloadAndScrape(
+	const rp_string &url,
+	const rp_string &cache_key,
+	const RomData *romData)
+{
+	SemaphoreLocker locker(m_dlsem);
+
+	// Check the main cache key.
+	rp_string cache_filename = getCacheFilename(cache_key);
+	if (cache_filename.empty()) {
+		// Error obtaining the cache key filename.
+		return rp_string();
+	}
+
+	// Check if the file already exists.
+	if (!access(cache_filename, R_OK)) {
+		// File exists.
+		// Is it larger than 0 bytes?
+		int64_t sz = filesize(cache_filename);
+		if (sz == 0) {
+			// File is 0 bytes, which indicates it didn't exist
+			// on the server.
+			return rp_string();
+		} else if (sz > 0) {
+			// File is larger than 0 bytes, which indicates
+			// it was cached successfully.
+			return cache_filename;
+		}
+	}
+
+	// Check if the URL is blank.
+	// This is allowed for some databases that are only available offline.
+	if (url.empty()) {
+		// Blank URL. Don't try to download anything.
+		// Don't mark the file as unavailable by creating a
+		// 0-byte dummy file, either.
+		return rp_string();
+	}
+
+	// TODO: Keep-alive cURL connections (one per server)?
+	// TODO: Separate proxy URL for HTML and image?
+	m_downloader->setProxyUrl(m_proxyUrl);
+
+	// Download the HTML file for scraping.
+	m_downloader->setUrl(url);
+	int ret = m_downloader->download();
+	if (ret != 0) {
+		// Error downloading the HTML file.
+
+		// Write a 0-byte negative cache file.
+		IRpFile *file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
+		delete file;
+		return rp_string();
+	}
+
+	// Scrape the URL.
+	rp_string img_url = romData->scrapeImageURL(
+		(const char*)m_downloader->data(), m_downloader->dataSize());
+	if (img_url.empty()) {
+		// No image URL.
+
+		// Write a 0-byte negative cache file.
+		IRpFile *file = new RpFile(cache_filename, RpFile::FM_CREATE_WRITE);
+		delete file;
+		return rp_string();
+	}
+
+	// Download the image file.
+	m_downloader->setUrl(img_url);
+	ret = m_downloader->download();
 
 	// Write the file to the cache.
 	unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_CREATE_WRITE));
