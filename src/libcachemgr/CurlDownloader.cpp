@@ -205,6 +205,9 @@ int CurlDownloader::download(void)
 	// Set options for curl's "easy" mode.
 	curl_easy_setopt(curl, CURLOPT_URL, url8.c_str());
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
+	// Redirection is required for http://amiibo.life/nfc/%08X-%08X
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+	// Header and data functions.
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);

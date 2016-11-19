@@ -114,6 +114,18 @@ class Amiibo : public RomData
 		 */
 		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
 
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		static uint32_t supportedImageTypes_static(void);
+
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		virtual uint32_t supportedImageTypes(void) const final;
+
 	protected:
 		/**
 		 * Load field data.
@@ -121,6 +133,24 @@ class Amiibo : public RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadFieldData(void) final;
+
+		/**
+		 * Load URLs for an external media type.
+		 * Called by RomData::extURL() if the URLs haven't been loaded yet.
+		 * @param imageType Image type to load.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadURLs(ImageType imageType) final;
+
+	public:
+		/**
+		 * Scrape an image URL from a downloaded HTML page.
+		 * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
+		 * @param html HTML data.
+		 * @param size Size of HTML data.
+		 * @return Image URL, or empty string if not found or not supported.
+		 */
+		virtual rp_string scrapeImageURL(const char *html, size_t size) const final;
 };
 
 }

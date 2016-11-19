@@ -142,6 +142,9 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 		return QImage();
 	}
 
+	// Image processing flags.
+	uint32_t imgpf = romData->imgpf(imageType);
+
 	CacheManager cache;
 	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
@@ -158,7 +161,56 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		rp_string cache_filename;
+		if (imgpf & RomData::IMGPF_EXTURL_NEEDS_HTML_SCRAPING) {
+			// The downloaded file is an HTML file that
+			// needs to be scraped for the actual image URL.
+
+			// TODO: Query the cache manager to see if the cached image
+			// is present before attempting to download anything.
+
+			// FIXME: Don't download the HTML file to the cache.
+			rp_string html_cache_key = extURL.cache_key;
+			html_cache_key += _RP(".html");
+			rp_string html_filename = cache.download(extURL.url, html_cache_key);
+			if (html_filename.empty()) {
+				// HTML file failed to download.
+				continue;
+			}
+
+			// Attempt to load the HTML file.
+			rp_string img_url;
+			unique_ptr<IRpFile> html_file(new RpFile(html_filename, RpFile::FM_OPEN_READ));
+			if (html_file && html_file->isOpen()) {
+				size_t szBuf = (size_t)html_file->fileSize();
+				char *buf = (char*)malloc(szBuf);
+				if (!buf) {
+					// Unable to allocate memory.
+					continue;
+				}
+				size_t szRead = html_file->read(buf, szBuf);
+				if (szRead != szBuf) {
+					// Error reading data.
+					free(buf);
+					continue;
+				}
+
+				// Scrape the actual image URL.
+				img_url = romData->scrapeImageURL(buf, szBuf);
+				free(buf);
+			}
+
+			if (img_url.empty()) {
+				// No image URL.
+				continue;
+			}
+
+			// Download the scraped image URL.
+			cache_filename = cache.download(img_url, extURL.cache_key);
+		} else {
+			// Standard image download.
+			cache_filename = cache.download(extURL.url, extURL.cache_key);
+		}
 		if (cache_filename.empty())
 			continue;
 

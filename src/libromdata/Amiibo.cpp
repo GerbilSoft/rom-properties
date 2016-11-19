@@ -320,6 +320,24 @@ vector<const rp_char*> Amiibo::supportedFileExtensions(void) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Amiibo::supportedImageTypes_static(void)
+{
+       return IMGBF_EXT_MEDIA;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Amiibo::supportedImageTypes(void) const
+{
+       return supportedImageTypes_static();
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -431,6 +449,117 @@ int Amiibo::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)m_fields->count();
+}
+
+/**
+ * Load URLs for an external media type.
+ * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * @param imageType Image type to load.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Amiibo::loadURLs(ImageType imageType)
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+
+	const int idx = imageType - IMG_EXT_MIN;
+	std::vector<ExtURL> &extURLs = m_extURLs[idx];
+	if (!extURLs.empty()) {
+		// URLs *have* been loaded...
+		return 0;
+	} else if (!m_file || !m_file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!m_isValid) {
+		// Invalid file.
+		return -EIO;
+	}
+
+	// Only the "media" scan is supported.
+	// Note that "media" refers to a photo of
+	// the figure and/or card.
+	if (imageType != IMG_EXT_MEDIA) {
+		// Unsupported image type.
+		return -ENOENT;
+	}
+
+	// URL: http://amiibo.life/nfc/[Page21]-[Page22]
+	// Replace Page21 and Page22 with %08X printouts of
+	// the amiibo ID. This will return an HTML page that
+	// needs to be scraped for the actual image URL.
+	m_imgpf[imageType] = IMGPF_EXTURL_NEEDS_HTML_SCRAPING;
+
+	ExtURL extURL;
+
+	// Cache key. (amiibo ID)
+	// TODO: "amiibo/" or "nfp/"?
+	char amiibo_id_str[32];
+	int len = snprintf(amiibo_id_str, sizeof(amiibo_id_str), "amiibo/%08X-%08X",
+		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
+	if (len > (int)sizeof(amiibo_id_str))
+		len = (int)sizeof(amiibo_id_str);
+	if (len <= 0) {
+		// Invalid NFC ID.
+		return -EINVAL;
+	}
+	extURL.cache_key = latin1_to_rp_string(amiibo_id_str, len);
+	extURL.cache_key += _RP(".png");
+
+	// URL.
+	char url_str[64];
+	len = snprintf(url_str, sizeof(url_str), "http://amiibo.life/nfc/%.17s", &amiibo_id_str[7]);
+	if (len > (int)sizeof(url_str))
+		len = (int)sizeof(url_str);
+	if (len <= 0) {
+		// Invalid URL.
+		return -EINVAL;
+	}
+	extURL.url = latin1_to_rp_string(url_str, len);
+
+	// Add the URL and we're done.
+	extURLs.push_back(extURL);
+	return (extURLs.empty() ? -ENOENT : 0);
+}
+
+/**
+ * Scrape an image URL from a downloaded HTML page.
+ * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
+ * @param html HTML data.
+ * @param size Size of HTML data.
+ * @return Image URL, or empty string if not found or not supported.
+ */
+rp_string Amiibo::scrapeImageURL(const char *html, size_t size) const
+{
+	// amiibo.life pages have a meta tag that looks like:
+	// <meta property="og:image" content="[URL]" />
+	// Search for this tag and use the URL as the image.
+
+	// FIXME: memmem() is not available on some platforms.
+	static const char meta_og_image[] = "<meta property=\"og:image\" content=\"";
+	const char *meta = (const char*)memmem(html, size, meta_og_image, sizeof(meta_og_image)-1);
+	if (!meta) {
+		// Tag not found.
+		return rp_string();
+	}
+
+	// Go to the end of the needle string.
+	meta += (sizeof(meta_og_image)-1);
+
+	// Find the ending quotes.
+	size_t sz_rem = size - (meta - html);
+	const char *endq = (const char*)memchr(meta, '"', sz_rem);
+	if (!endq) {
+		// End quotes not found.
+		return rp_string();
+	}
+
+	// Found the end quotes.
+	// TODO: urldecode?
+	rp_string imgURL = utf8_to_rp_string(meta, (int)(endq - meta));
+	return imgURL;
 }
 
 }
