@@ -824,7 +824,11 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x04D0, _RP("Frita"), nullptr, 0},
 	{0x04D1, _RP("Muffy"), nullptr, 0},
 	{0x04D2, _RP("Pietro"), nullptr, 0},
-	{0x04D3, _RP("Étoile"), nullptr, 0},
+#ifdef RP_UTF16
+	{0x04D3, _RP("\u00C9toile"), nullptr, 0},
+#else /* RP_UTF8 */
+	{0x04D3, _RP("\xC3\x89toile"), nullptr, 0},
+#endif
 	{0x04DD, _RP("Peanut"), nullptr, 0},
 	{0x04DE, _RP("Blaire"), nullptr, 0},
 	{0x04DF, _RP("Filbert"), nullptr, 0},
@@ -1126,7 +1130,13 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 23, 1, _RP("Cheri")},			// 0x005A
 	{ 24, 1, _RP("Kyle")},			// 0x005B
 	{ 25, 1, _RP("Al")},			// 0x005C
-	{ 26, 1, _RP("Renée")},			// 0x005D
+#ifdef RP_UTF16
+	{ 26, 1, _RP("Ren\u00E9e")},		// 0x005D
+#else /* RP_UTF8 */
+	// FIXME: MSVC 2010 interprets \xA9e as 2718 because
+	// it's too dumb to realize \x takes *two* nybbles.
+	{ 26, 1, _RP("Ren\303\251e")},		// 0x005D
+#endif
 	{ 27, 1, _RP("Lopez")},			// 0x005E
 	{ 28, 1, _RP("Jambette")},		// 0x005F
 	{ 29, 1, _RP("Rasher")},		// 0x0060
@@ -1837,7 +1847,11 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Animal Crossing x Sanrio Series
 	{  1, 6, _RP("Rilla")},			// 0x0319
 	{  2, 6, _RP("Marty")},			// 0x031A
-	{  3, 6, _RP("Étoile")},		// 0x031B
+#ifdef RP_UTF16
+	{  3, 6, _RP("\u00C9toile")},		// 0x031B
+#else /* RP_UTF8 */
+	{  3, 6, _RP("\xC3\x89toile")},		// 0x031B
+#endif
 	{  4, 6, _RP("Chai")},			// 0x031C
 	{  5, 6, _RP("Chelsea")},		// 0x031D
 	{  6, 6, _RP("Toby")},			// 0x031E
