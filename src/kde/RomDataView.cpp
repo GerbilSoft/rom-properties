@@ -203,7 +203,7 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 	}
 
 	// TODO: Delete the old widgets if they're already present.
-	ui.hboxHeaderRow = new QHBoxLayout(q);
+	ui.hboxHeaderRow = new QHBoxLayout();
 
 	// System name.
 	// TODO: System logo and/or game title?
@@ -388,7 +388,7 @@ void RomDataViewPrivate::updateDisplay(void)
 						lblString->setStyleSheet(css);
 					}
 				}
-\
+
 				ui.formLayout->addRow(lblDesc, lblString);
 				break;
 			}
