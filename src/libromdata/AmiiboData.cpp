@@ -101,6 +101,14 @@ class AmiiboDataPrivate {
 		static const char_variant_t ac_redd_variants[];
 		static const char_variant_t ac_dr_shrunk_variants[];
 		static const char_variant_t ac_lottie_variants[];
+		// Animal Crossing x Sanrio all have variant type 0x01.
+		static const char_variant_t ac_marty_variants[];
+		static const char_variant_t ac_chelsea_variants[];
+		static const char_variant_t ac_chai_variants[];
+		static const char_variant_t ac_rilla_variants[];
+		static const char_variant_t ac_toby_variants[];
+		static const char_variant_t ac_etoile_variants[];
+		// Monster Hunter
 		static const char_variant_t mh_rathalos_variants[];
 
 		// Character IDs.
@@ -399,6 +407,30 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_lottie_variants[] 
 	{0x01, _RP("Lottie (Series 4)")},
 };
 
+// Animal Crossing x Sanrio all have variant type 0x01.
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_marty_variants[] = {
+	{0x01, _RP("Marty (Sanrio)")},
+};
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_chelsea_variants[] = {
+	{0x01, _RP("Chelsea (Sanrio)")},
+};
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_chai_variants[] = {
+	{0x01, _RP("Chai (Sanrio)")},
+};
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_rilla_variants[] = {
+	{0x01, _RP("Rilla (Sanrio)")},
+};
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_toby_variants[] = {
+	{0x01, _RP("Toby (Sanrio)")},
+};
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_etoile_variants[] = {
+#ifdef RP_UTF16
+	{0x01, _RP("\u00C9toile")},
+#else /* RP_UTF8 */
+	{0x01, _RP("\xC3\x89toile")},
+#endif
+};
+
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_rathalos_variants[] = {
 	{0x00, _RP("One-Eyed Rathalos and Rider")},	// NOTE: not actually assigned.
 	{0x01, _RP("One-Eyed Rathalos and Rider (Male)")},
@@ -563,7 +595,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x028C, _RP("Chester"), nullptr, 0},
 	{0x028D, _RP("Barold"), nullptr, 0},
 	{0x028E, _RP("Tammy"), nullptr, 0},
-	{0x028F, _RP("Marty"), nullptr, 0},
+	{0x028F, _RP("Marty"), ac_marty_variants, ARRAY_SIZE(ac_marty_variants)},
 	{0x0299, _RP("Goose"), nullptr, 0},
 	{0x029A, _RP("Benedict"), nullptr, 0},
 	{0x029B, _RP("Egbert"), nullptr, 0},
@@ -593,7 +625,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x02DD, _RP("Beau"), nullptr, 0},
 	{0x02DE, _RP("Diana"), nullptr, 0},
 	{0x02DF, _RP("Erik"), nullptr, 0},
-	{0x02E0, _RP("Chelsea"), nullptr, 0},
+	{0x02E0, _RP("Chelsea"), ac_chelsea_variants, ARRAY_SIZE(ac_chelsea_variants)},
 	{0x02EA, _RP("Goldie"), nullptr, 0},	// amiibo Festival variant is in Page 22, amiibo series.
 	{0x02EB, _RP("Butch"), nullptr, 0},
 	{0x02EC, _RP("Lucky"), nullptr, 0},
@@ -637,7 +669,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x032A, _RP("Ellie"), nullptr, 0},
 	{0x032C, _RP("Tucker"), nullptr, 0},
 	{0x032D, _RP("Tia"), nullptr, 0},
-	{0x032E, _RP("Chai"), nullptr, 0},
+	{0x032E, _RP("Chai"), ac_chai_variants, ARRAY_SIZE(ac_chai_variants)},
 	{0x0338, _RP("Lily"), nullptr, 0},
 	{0x0339, _RP("Ribbot"), nullptr, 0},
 	{0x033A, _RP("Frobert"), nullptr, 0},
@@ -668,7 +700,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0371, _RP("Al"), nullptr, 0},
 	{0x0372, _RP("Rocket"), nullptr, 0},
 	{0x0373, _RP("Hans"), nullptr, 0},
-	{0x0374, _RP("Rilla"), nullptr, 0},
+	{0x0374, _RP("Rilla"), ac_rilla_variants, ARRAY_SIZE(ac_rilla_variants)},
 	{0x037E, _RP("Hamlet"), nullptr, 0},
 	{0x037F, _RP("Apple"), nullptr, 0},
 	{0x0380, _RP("Graham"), nullptr, 0},
@@ -809,7 +841,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x04A5, _RP("Bonbon"), nullptr, 0},
 	{0x04A6, _RP("Cole"), nullptr, 0},
 	{0x04A7, _RP("Mira"), nullptr, 0},
-	{0x04A8, _RP("Toby"), nullptr, 0},
+	{0x04A8, _RP("Toby"), ac_toby_variants, ARRAY_SIZE(ac_toby_variants)},
 	{0x04B2, _RP("Tank"), nullptr, 0},
 	{0x04B3, _RP("Rhonda"), nullptr, 0},
 	{0x04B4, _RP("Spike"), nullptr, 0},
@@ -833,9 +865,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x04D1, _RP("Muffy"), nullptr, 0},
 	{0x04D2, _RP("Pietro"), nullptr, 0},
 #ifdef RP_UTF16
-	{0x04D3, _RP("\u00C9toile"), nullptr, 0},
+	{0x04D3, _RP("\u00C9toile"), ac_etoile_variants, ARRAY_SIZE(ac_etoile_variants)},
 #else /* RP_UTF8 */
-	{0x04D3, _RP("\xC3\x89toile"), nullptr, 0},
+	{0x04D3, _RP("\xC3\x89toile"), ac_etoile_variants, ARRAY_SIZE(ac_etoile_variants)},
 #endif
 	{0x04DD, _RP("Peanut"), nullptr, 0},
 	{0x04DE, _RP("Blaire"), nullptr, 0},
