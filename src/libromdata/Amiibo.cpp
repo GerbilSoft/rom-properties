@@ -59,6 +59,15 @@ class AmiiboPrivate
 	public:
 		// NFC data. (TODO)
 		NFP_Data_t nfpData;
+
+		/**
+		 * Calculate the check bytes from an NTAG215 serial number.
+		 * @param serial	[in] NTAG215 serial number. (9 bytes)
+		 * @param pCb0		[out] Check byte 0. (calculated)
+		 * @param pCb1		[out] Check byte 1. (calculated)
+		 * @return True if the serial number has valid check bytes; false if not.
+		 */
+		static bool calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1);
 };
 
 /** AmiiboPrivate **/
@@ -78,6 +87,23 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	// Credits
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
 };
+
+/**
+ * Calculate the check bytes from an NTAG215 serial number.
+ * @param serial	[in] NTAG215 serial number. (9 bytes)
+ * @param pCb0		[out] Check byte 0. (calculated)
+ * @param pCb1		[out] Check byte 1. (calculated)
+ * @return True if the serial number has valid check bytes; false if not.
+ */
+bool AmiiboPrivate::calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1)
+{
+	// Check Byte 0 = CT ^ SN0 ^ SN1 ^ SN2
+	// Check Byte 1 = SN3 ^ SN4 ^ SN5 ^ SN6
+	// NTAG215 uses Cascade Level 2, so CT = 0x88.
+	*pCb0 = 0x88 ^ serial[0] ^ serial[1] ^ serial[2];
+	*pCb1 = serial[4] ^ serial[5] ^ serial[6] ^ serial[7];
+	return (*pCb0 == serial[3] && *pCb1 == serial[8]);
+}
 
 /** Amiibo **/
 
@@ -148,8 +174,18 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// Check the "must match" values.
 	const NFP_Data_t *nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);
+
+	// Validate the UID check bytes.
+	uint8_t cb0, cb1;
+	if (!AmiiboPrivate::calcCheckBytes(nfpData->serial, &cb0, &cb1)) {
+		// Check bytes are invalid.
+		// These are read-only, so something went wrong
+		// when the tag was being dumped.
+		return -1;
+	}
+
+	// Check the "must match" values.
 	static const uint8_t lock_header[2] = {0x0F, 0xE0};
 	static const uint8_t cap_container[4] = {0xF1, 0x10, 0xFF, 0xEE};
 	static const uint8_t lock_footer[3] = {0x01, 0x00, 0x0F};
@@ -280,13 +316,7 @@ int Amiibo::loadFieldData(void)
 	// NTAG215 data.
 
 	// Serial number.
-	// Check Byte 0 = CT ^ SN0 ^ SN1 ^ SN2
-	// Check Byte 1 = SN3 ^ SN4 ^ SN5 ^ SN6
-	// NTAG215 uses Cascade Level 2, so CT = 0x88.
-	const uint8_t cb0 = 0x88 ^ d->nfpData.serial[0] ^
-		d->nfpData.serial[1] ^ d->nfpData.serial[2];
-	const uint8_t cb1 = d->nfpData.serial[4] ^
-		d->nfpData.serial[5] ^ d->nfpData.serial[6] ^ d->nfpData.serial[7];
+
 	// Convert the 7-byte serial number to ASCII.
 	static const uint8_t hex_lookup[16] = {
 		'0','1','2','3','4','5','6','7',
@@ -303,15 +333,13 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// Verify the check bytes.
-	if (cb0 == d->nfpData.serial[3] &&
-	    cb1 == d->nfpData.serial[8])
-	{
+	// TODO: Show calculated check bytes?
+	uint8_t cb0, cb1;
+	if (d->calcCheckBytes(d->nfpData.serial, &cb0, &cb1)) {
 		// Check bytes are valid.
 		snprintf(pBuf, sizeof(buf) - (7*2), " (check bytes: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
-	}
-	else
-	{
+	} else {
 		// Check bytes are NOT valid.
 		snprintf(pBuf, sizeof(buf) - (7*2), " (INVALID check bytes: %02X %02X)",
 			d->nfpData.serial[3], d->nfpData.serial[8]);
