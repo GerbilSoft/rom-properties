@@ -44,7 +44,7 @@ extern "C" {
  * Found at the top of .VMS files used as VMU icons.
  *
  * Reference: http://mc.pp.se/dc/vms/icondata.html
- *s
+ *
  * All fields are in little-endian.
  */
 #pragma pack(1)
