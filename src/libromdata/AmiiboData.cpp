@@ -1133,9 +1133,7 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::splatoon_seri
 // Animal Crossing (amiibo series = 0x05)
 // NOTE: Includes cards and figurines. (Figurines are not numbered.)
 const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] = {
-	/** Cards **/
-
-	// Series 1
+	// Cards: Series 1
 	{0x0044,   1, 1, _RP("Isabelle")},
 	{0x0045,   2, 1, _RP("Tom Nook")},
 	{0x0046,   3, 1, _RP("DJ KK")},
@@ -1237,7 +1235,7 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] =
 	{0x00A6,  99, 1, _RP("Molly")},
 	{0x00A7, 100, 1, _RP("Walker")},
 
-	// Series 2
+	// Cards: Series 2
 	{0x00A8, 101, 2, _RP("K.K. Slider")},
 	{0x00A9, 102, 2, _RP("Reese")},
 	{0x00AA, 103, 2, _RP("Kicks")},
@@ -1339,7 +1337,7 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] =
 	{0x010A, 199, 2, _RP("Big Top")},
 	{0x010B, 200, 2, _RP("Rocket")},
 
-	// Series 3
+	// Cards: Series 3
 	{0x010C, 201, 3, _RP("Rover")},
 	{0x010D, 202, 3, _RP("Blathers")},
 	{0x010E, 203, 3, _RP("Tom Nook")},
@@ -1441,7 +1439,7 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] =
 	{0x016E, 299, 3, _RP("Francine")},
 	{0x016F, 300, 3, _RP("Chrissy")},
 
-	// Series 4
+	// Cards: Series 4
 	{0x0170, 301, 4, _RP("Isabelle")},
 	{0x0171, 302, 4, _RP("Brewster")},
 	{0x0172, 303, 4, _RP("Katrina")},
@@ -1550,6 +1548,27 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] =
 	{0x01D7, 404, 5, _RP("Rosie (amiibo Festival)")},
 	{0x01D8, 405, 5, _RP("K.K. Slider (Parfait)")},
 
+	// Figurines: Wave 1
+	{0x023F,   0, 1, _RP("Isabelle")},
+	{0x0240,   0, 1, _RP("K.K. Slider")},
+	{0x0241,   0, 1, _RP("Mabel")},
+	{0x0242,   0, 1, _RP("Tom Nook")},
+	{0x0243,   0, 1, _RP("Digby")},
+	{0x0244,   0, 1, _RP("Lottie")},
+	{0x0245,   0, 1, _RP("Reese")},
+	{0x0246,   0, 1, _RP("Cyrus")},
+	// Figurines: Wave 2
+	{0x0247,   0, 2, _RP("Blathers")},
+	{0x0248,   0, 2, _RP("Celeste")},
+	{0x0249,   0, 2, _RP("Resetti")},
+	{0x024A,   0, 2, _RP("Kicks")},
+	// Figurines: Wave 4 (out of order)
+	{0x024B,   0, 4, _RP("Isabelle (Summer Outfit)")},
+	// Figurines: Wave 3
+	{0x024C,   0, 3, _RP("Rover")},
+	{0x024D,   0, 3, _RP("Timmy & Tommy")},
+	{0x024E,   0, 3, _RP("Kapp'n")},
+
 	// Welcome Amiibo Series
 	//{0xXXXX,   1, 7, _RP("Vivian")},
 	{0x02E8,   2, 7, _RP("Hopkins")},
@@ -1609,29 +1628,6 @@ const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] =
 	{0x031C,   4, 6, _RP("Chai")},
 	{0x031D,   5, 6, _RP("Chelsea")},
 	{0x031E,   6, 6, _RP("Toby")},
-
-	/** Figurines **/
-
-	// Wave 1
-	{0x023F,   0, 1, _RP("Isabelle")},
-	{0x0240,   0, 1, _RP("K.K. Slider")},
-	{0x0241,   0, 1, _RP("Mabel")},
-	{0x0242,   0, 1, _RP("Tom Nook")},
-	{0x0243,   0, 1, _RP("Digby")},
-	{0x0244,   0, 1, _RP("Lottie")},
-	{0x0245,   0, 1, _RP("Reese")},
-	{0x0246,   0, 1, _RP("Cyrus")},
-	// Wave 2
-	{0x0247,   0, 2, _RP("Blathers")},
-	{0x0248,   0, 2, _RP("Celeste")},
-	{0x0249,   0, 2, _RP("Resetti")},
-	{0x024A,   0, 2, _RP("Kicks")},
-	// Wave 4 (out of order)
-	{0x024B,   0, 4, _RP("Isabelle (Summer Outfit)")},
-	// Wave 3
-	{0x024C,   0, 3, _RP("Rover")},
-	{0x024D,   0, 3, _RP("Timmy & Tommy")},
-	{0x024E,   0, 3, _RP("Kapp'n")},
 };
 
 // Super Mario Bros. 30th Anniversary (amiibo series = 0x06)
