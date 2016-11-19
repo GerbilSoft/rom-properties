@@ -43,7 +43,7 @@ namespace LibRomData {
  *         identifiers reserved.
  * - vv: Character variation.
  * - tt: Type. 00 = figure, 01 == card, 02 == plush (yarn)
- * - aaaa: amiibo ID within amiibo series.
+ * - aaaa: amiibo ID. (Unique across all amiibo.)
  * - SS: amiibo series.
  * - 02: Always 02.
  */
@@ -71,7 +71,7 @@ class AmiiboDataPrivate {
 		// Character IDs.
 		// Sparse array, since we're using the series + character value here.
 		// Sorted by series + character value.
-		struct char_ids_t {
+		struct char_id_t {
 			uint16_t char_id;		// Character ID. (Includes series ID.) [high 16 bits of page 21]
 			const rp_char *name;		// Character name. (same as variant 0)
 			const char_variant_t *variants;	// Array of variants, if any.
@@ -104,42 +104,24 @@ class AmiiboDataPrivate {
 		static const char_variant_t mh_rathalos_variants[];
 
 		// Character IDs.
-		static const char_ids_t char_ids[];
+		static const char_id_t char_ids[];
 
 		/** Page 22 (raw offset 0x58): amiibo series **/
 
-		// amiibo character ID per series.
-		// Sparse array, since some games have discontiguous ranges.
-		// Sorted by amiibo_id.
-		struct amiibo_id_per_series_t {
-			uint16_t amiibo_id;	// aaaa
+		// amiibo series names.
+		// Array index = SS
+		static const rp_char *const amiibo_series_names[];
+
+		// amiibo IDs.
+		// Index is the amiibo ID. (aaaa)
+		// NOTE: amiibo ID is unique across *all* amiibo,
+		// so we can use a single array for all series.
+		struct amiibo_id_t {
 			uint16_t release_no;	// Release number. (0 for no ordering)
 			uint8_t wave;		// Wave number.
 			const rp_char *name;	// Character name.
 		};
-
-		static const amiibo_id_per_series_t ssb_series[];
-		static const amiibo_id_per_series_t smb_series[];
-		static const amiibo_id_per_series_t chibi_robo_series[];
-		static const amiibo_id_per_series_t yarn_yoshi_series[];
-		static const amiibo_id_per_series_t splatoon_series[];
-		static const amiibo_id_per_series_t ac_series[];
-		static const amiibo_id_per_series_t smb_30th_series[];
-		static const amiibo_id_per_series_t skylanders_series[];
-		static const amiibo_id_per_series_t tloz_series[];
-		static const amiibo_id_per_series_t shovel_knight_series[];
-		static const amiibo_id_per_series_t kirby_series[];
-		static const amiibo_id_per_series_t pokken_series[];
-		static const amiibo_id_per_series_t mh_series[];
-
-		// All amiibo IDs per series.
-		// Array index = SS
-		struct amiibo_series_t {
-			const rp_char *name;
-			const amiibo_id_per_series_t *series;
-			int count;	// Number of elements in series.
-		};
-		static const amiibo_series_t amiibo_series[];
+		static const amiibo_id_t amiibo_ids[];
 };
 
 /** Page 21 (raw offset 0x54): Character series **/
@@ -416,7 +398,7 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_rathalos_variants[
 };
 
 // Character IDs.
-const AmiiboDataPrivate::char_ids_t AmiiboDataPrivate::char_ids[] = {
+const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Super Mario Bros. (character series = 0x000)
 	{0x0000, _RP("Mario"), smb_mario_variants, ARRAY_SIZE(smb_mario_variants)},
 	{0x0001, _RP("Luigi"), nullptr, 0},
@@ -1002,726 +984,883 @@ const AmiiboDataPrivate::char_ids_t AmiiboDataPrivate::char_ids[] = {
 
 /** Page 22 (byte 0x5C): amiibo series **/
 
-// amiibo character ID per series.
-// Sparse array, since some games have discontiguous ranges.
-// Sorted by amiibo_id.
-
-// Super Smash Bros. (amiibo series = 0x00)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ssb_series[] = {
-	// Wave 1
-	{0x0000,   1, 1, _RP("Mario")},
-	{0x0001,   2, 1, _RP("Peach")},
-	{0x0002,   3, 1, _RP("Yoshi")},
-	{0x0003,   4, 1, _RP("Donkey Kong")},
-	{0x0004,   5, 1, _RP("Link")},
-	{0x0005,   6, 1, _RP("Fox")},
-	{0x0006,   7, 1, _RP("Samus")},
-	{0x0007,   8, 1, _RP("Wii Fit Trainer")},
-	{0x0008,   9, 1, _RP("Villager")},
-	{0x0009,  10, 1, _RP("Pikachu")},
-	{0x000A,  11, 1, _RP("Kirby")},
-	{0x000B,  12, 1, _RP("Marth")},
-	// Wave 2
-	{0x000C,  15, 2, _RP("Luigi")},
-	{0x000D,  14, 2, _RP("Diddy Kong")},
-	{0x000E,  13, 2, _RP("Zelda")},
-	{0x000F,  16, 2, _RP("Little Mac")},
-	{0x0010,  17, 2, _RP("Pit")},
-	{0x0011,  21, 3, _RP("Lucario")},	// Wave 3 (out of order)
-	{0x0012,  18, 2, _RP("Captain Falcon")},
-	// Waves 3+
-	{0x0013,  19, 3, _RP("Rosalina & Luma")},
-	{0x0014,  20, 3, _RP("Bowser")},
-	{0x0015,  43, 6, _RP("Bowser Jr.")},
-	{0x0016,  22, 3, _RP("Toon Link")},
-	{0x0017,  23, 3, _RP("Sheik")},
-	{0x0018,  24, 3, _RP("Ike")},
-	{0x0019,  42, 6, _RP("Dr. Mario")},
-	{0x001A,  32, 4, _RP("Wario")},
-	{0x001B,  41, 6, _RP("Ganondorf")},
-	{0x001C,  52, 7, _RP("Falco")},
-	{0x001D,  40, 6, _RP("Zero Suit Samus")},
-	{0x001E,  44, 6, _RP("Olimar")},
-	{0x001F,  38, 5, _RP("Palutena")},
-	{0x0020,  39, 5, _RP("Dark Pit")},
-	{0x0021,  48, 7, _RP("Mii Brawler")},
-	{0x0022,  49, 7, _RP("Mii Swordfighter")},
-	{0x0023,  50, 7, _RP("Mii Gunner")},
-	{0x0024,  33, 4, _RP("Charizard")},
-	{0x0025,  36, 4, _RP("Greninja")},
-	{0x0026,  37, 4, _RP("Jigglypuff")},
-	{0x0027,  29, 3, _RP("Meta Knight")},
-	{0x0028,  28, 3, _RP("King Dedede")},
-	{0x0029,  31, 4, _RP("Lucina")},
-	{0x002A,  30, 4, _RP("Robin")},
-	{0x002B,  25, 3, _RP("Shulk")},
-	{0x002C,  34, 4, _RP("Ness")},
-	{0x002D,  45, 6, _RP("Mr. Game & Watch")},
-	{0x002E,  54, 9, _RP("R.O.B. (Famicom)")},	// FIXME: Localized release numbers.
-	{0x002F,  47, 6, _RP("Duck Hunt")},
-	{0x0030,  26, 3, _RP("Sonic")},
-	{0x0031,  27, 3, _RP("Mega Man")},
-	{0x0032,  35, 4, _RP("Pac-Man")},
-	{0x0033,  46, 6, _RP("R.O.B. (NES)")},		// FIXME: Localized release numbers.
-	// DLC characters (Waves 7+)
-	{0x023D,  51, 7, _RP("Mewtwo")},
-	{0x0251,  53, 8, _RP("Lucas")},
-	{0x0252,  55, 9, _RP("Roy")},
-	{0x0253,  56, 9, _RP("Ryu")},
-	// Special amiibo
-	{0x0258,   0, 0, _RP("Mega Man (Gold Edition)")},
-
-	// TODO: Not available yet.
-	//{0x02xx,  57, 10, _RP("Bayonetta")},
-	//{0x02xx,  58, 10, _RP("Cloud")},
-	//{0x02xx,  59, 10, _RP("Corrin")},
-};
-
-// Super Mario Bros. (amiibo series = 0x01)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::smb_series[] = {
-	// Wave 1
-	{0x0034,   1, 1, _RP("Mario")},
-	{0x0035,   4, 1, _RP("Luigi")},
-	{0x0036,   2, 1, _RP("Peach")},
-	{0x0037,   5, 1, _RP("Yoshi")},
-	{0x0038,   3, 1, _RP("Toad")},
-	{0x0039,   6, 1, _RP("Bowser")},
-	// Wave 1: Special Editions
-	{0x003C,   7, 1, _RP("Mario (Gold Edition)")},
-	{0x003D,   8, 1, _RP("Mario (Silver Edition)")},
-	// Wave 2
-	{0x0262,  12, 2, _RP("Rosalina")},
-	{0x0263,   9, 2, _RP("Wario")},
-	{0x0264,  13, 2, _RP("Donkey Kong")},
-	{0x0265,  14, 2, _RP("Diddy Kong")},
-	{0x0266,  11, 2, _RP("Daisy")},
-	{0x0267,  10, 2, _RP("Waluigi")},
-	{0x0268,  15, 2, _RP("Boo")},
-};
-
-// Chibi-Robo! (amiibo series = 0x02)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::chibi_robo_series[] = {
-	{0x003A,   0, 0, _RP("Chibi Robo")},
-};
-
-// Yarn Yoshi (amiibo series = 0x03)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::yarn_yoshi_series[] = {
-	{0x0041,   1, 0, _RP("Green Yarn Yoshi")},
-	{0x0042,   1, 0, _RP("Pink Yarn Yoshi")},
-	{0x0043,   1, 0, _RP("Light Blue Yarn Yoshi")},
-	{0x023E,   1, 0, _RP("Mega Yarn Yoshi")},
-#if 0
-	// TODO: Not released yet.
-	{0xXXXX,   1, 0, _RP("Poochy")},
+// amiibo series names.
+// Array index = SS
+const rp_char *const AmiiboDataPrivate::amiibo_series_names[] = {
+	_RP("Super Smash Bros."),			// 0x00
+	_RP("Super Mario Bros."),			// 0x01
+	_RP("Chibi Robo!"),				// 0x02
+	_RP("Yarn Yoshi"),				// 0x03
+	_RP("Splatoon"),				// 0x04
+	_RP("Animal Crossing"),				// 0x05
+	_RP("Super Mario Bros. 30th Anniversary"),	// 0x06
+	_RP("Skylanders"),				// 0x07
+	nullptr,					// 0x08
+	_RP("The Legend of Zelda"),			// 0x09
+	_RP("Shovel Knight"),				// 0x0A
+	nullptr,					// 0x0B
+	_RP("Kirby"),					// 0x0C
+#ifdef RP_UTF16
+	_RP("Pokk\u00E9n Tournament"), 			// 0x0D
+#else /* RP_UTF8 */
+	_RP("Pokk\xC3\xA9n Tournament"),		// 0x0D
 #endif
+	nullptr,					// 0x0E
+	_RP("Monster Hunter"),				// 0x0F
 };
 
-// Splatoon (amiibo series = 0x04)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::splatoon_series[] = {
-	// Wave 1
-	{0x003E,   0, 1, _RP("Inkling Girl")},
-	{0x003F,   0, 1, _RP("Inkling Boy")},
-	{0x0040,   0, 1, _RP("Inkling Squid")},
-	// Wave 2
-	{0x025D,   0, 2, _RP("Callie")},
-	{0x025E,   0, 2, _RP("Marie")},
-	{0x025F,   0, 2, _RP("Inkling Girl (Lime Green)")},
-	{0x0260,   0, 2, _RP("Inkling Boy (Purple)")},
-	{0x0261,   0, 2, _RP("Inkling Squid (Orange)")},
-};
+// amiibo IDs.
+// Index is the amiibo ID. (aaaa)
+// NOTE: amiibo ID is unique across *all* amiibo,
+// so we can use a single array for all series.
+const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
+	// SSB: Wave 1 [0x0000-0x000B]
+	{  1, 1, _RP("Mario")},			// 0x0000
+	{  2, 1, _RP("Peach")},			// 0x0001
+	{  3, 1, _RP("Yoshi")},			// 0x0002
+	{  4, 1, _RP("Donkey Kong")},		// 0x0003
+	{  5, 1, _RP("Link")},			// 0x0004
+	{  6, 1, _RP("Fox")},			// 0x0005
+	{  7, 1, _RP("Samus")},			// 0x0006
+	{  8, 1, _RP("Wii Fit Trainer")},	// 0x0007
+	{  9, 1, _RP("Villager")},		// 0x0008
+	{ 10, 1, _RP("Pikachu")},		// 0x0009
+	{ 11, 1, _RP("Kirby")},			// 0x000A
+	{ 12, 1, _RP("Marth")},			// 0x000B
 
-// Animal Crossing (amiibo series = 0x05)
-// NOTE: Includes cards and figurines. (Figurines are not numbered.)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::ac_series[] = {
-	// Cards: Series 1
-	{0x0044,   1, 1, _RP("Isabelle")},
-	{0x0045,   2, 1, _RP("Tom Nook")},
-	{0x0046,   3, 1, _RP("DJ KK")},
-	{0x0047,   4, 1, _RP("Sable")},
-	{0x0048,   5, 1, _RP("Kapp'n")},
-	{0x0049,   6, 1, _RP("Resetti")},
-	{0x004A,   7, 1, _RP("Joan")},
-	{0x004B,   8, 1, _RP("Timmy")},
-	{0x004C,   9, 1, _RP("Digby")},
-	{0x004D,  10, 1, _RP("Pascal")},
-	{0x004E,  11, 1, _RP("Harriet")},
-	{0x004F,  12, 1, _RP("Redd")},
-	{0x0050,  13, 1, _RP("Sahara")},
-	{0x0051,  14, 1, _RP("Luna")},
-	{0x0052,  15, 1, _RP("Tortimer")},
-	{0x0053,  16, 1, _RP("Lyle")},
-	{0x0054,  17, 1, _RP("Lottie")},
-	{0x0055,  18, 1, _RP("Bob")},
-	{0x0056,  19, 1, _RP("Fauna")},
-	{0x0057,  20, 1, _RP("Curt")},
-	{0x0058,  21, 1, _RP("Portia")},
-	{0x0059,  22, 1, _RP("Leonardo")},
-	{0x005A,  23, 1, _RP("Cheri")},
-	{0x005B,  24, 1, _RP("Kyle")},
-	{0x005C,  25, 1, _RP("Al")},
-	{0x005D,  26, 1, _RP("Renée")},
-	{0x005E,  27, 1, _RP("Lopez")},
-	{0x005F,  28, 1, _RP("Jambette")},
-	{0x0060,  29, 1, _RP("Rasher")},
-	{0x0061,  30, 1, _RP("Tiffany")},
-	{0x0062,  31, 1, _RP("Sheldon")},
-	{0x0063,  32, 1, _RP("Bluebear")},
-	{0x0064,  33, 1, _RP("Bill")},
-	{0x0065,  34, 1, _RP("Kiki")},
-	{0x0066,  35, 1, _RP("Deli")},
-	{0x0067,  36, 1, _RP("Alli")},
-	{0x0068,  37, 1, _RP("Kabuki")},
-	{0x0069,  38, 1, _RP("Patty")},
-	{0x006A,  39, 1, _RP("Jitters")},
-	{0x006B,  40, 1, _RP("Gigi")},
-	{0x006C,  41, 1, _RP("Quillson")},
-	{0x006D,  42, 1, _RP("Marcie")},
-	{0x006E,  43, 1, _RP("Puck")},
-	{0x006F,  44, 1, _RP("Shari")},
-	{0x0070,  45, 1, _RP("Octavian")},
-	{0x0071,  46, 1, _RP("Winnie")},
-	{0x0072,  47, 1, _RP("Knox")},
-	{0x0073,  48, 1, _RP("Sterling")},
-	{0x0074,  49, 1, _RP("Bonbon")},
-	{0x0075,  50, 1, _RP("Punchy")},
-	{0x0076,  51, 1, _RP("Opal")},
-	{0x0077,  52, 1, _RP("Poppy")},
-	{0x0078,  53, 1, _RP("Limberg")},
-	{0x0079,  54, 1, _RP("Deena")},
-	{0x007A,  55, 1, _RP("Snake")},
-	{0x007B,  56, 1, _RP("Bangle")},
-	{0x007C,  57, 1, _RP("Phil")},
-	{0x007D,  58, 1, _RP("Monique")},
-	{0x007E,  59, 1, _RP("Nate")},
-	{0x007F,  60, 1, _RP("Samson")},
-	{0x0080,  61, 1, _RP("Tutu")},
-	{0x0081,  62, 1, _RP("T-Bone")},
-	{0x0082,  63, 1, _RP("Mint")},
-	{0x0083,  64, 1, _RP("Pudge")},
-	{0x0084,  65, 1, _RP("Midge")},
-	{0x0085,  66, 1, _RP("Gruff")},
-	{0x0086,  67, 1, _RP("Flurry")},
-	{0x0087,  68, 1, _RP("Clyde")},
-	{0x0088,  69, 1, _RP("Bella")},
-	{0x0089,  70, 1, _RP("Biff")},
-	{0x008A,  71, 1, _RP("Yuka")},
-	{0x008B,  72, 1, _RP("Lionel")},
-	{0x008C,  73, 1, _RP("Flo")},
-	{0x008D,  74, 1, _RP("Cobb")},
-	{0x008E,  75, 1, _RP("Amelia")},
-	{0x008F,  76, 1, _RP("Jeremiah")},
-	{0x0090,  77, 1, _RP("Cherry")},
-	{0x0091,  78, 1, _RP("Rosco")},
-	{0x0092,  79, 1, _RP("Truffles")},
-	{0x0093,  80, 1, _RP("Eugene")},
-	{0x0094,  81, 1, _RP("Eunice")},
-	{0x0095,  82, 1, _RP("Goose")},
-	{0x0096,  83, 1, _RP("Annalisa")},
-	{0x0097,  84, 1, _RP("Benjamin")},
-	{0x0098,  85, 1, _RP("Pancetti")},
-	{0x0099,  86, 1, _RP("Chief")},
-	{0x009A,  87, 1, _RP("Bunnie")},
-	{0x009B,  88, 1, _RP("Clay")},
-	{0x009C,  89, 1, _RP("Diana")},
-	{0x009D,  90, 1, _RP("Axel")},
-	{0x009E,  91, 1, _RP("Muffy")},
-	{0x009F,  92, 1, _RP("Henry")},
-	{0x00A0,  93, 1, _RP("Bertha")},
-	{0x00A1,  94, 1, _RP("Cyrano")},
-	{0x00A2,  95, 1, _RP("Peanut")},
-	{0x00A3,  96, 1, _RP("Cole")},
-	{0x00A4,  97, 1, _RP("Willow")},
-	{0x00A5,  98, 1, _RP("Roald")},
-	{0x00A6,  99, 1, _RP("Molly")},
-	{0x00A7, 100, 1, _RP("Walker")},
+	// SSB: Wave 2 [0x000C-0x0012]
+	{ 15, 2, _RP("Luigi")},			// 0x000C
+	{ 14, 2, _RP("Diddy Kong")},		// 0x000D
+	{ 13, 2, _RP("Zelda")},			// 0x000E
+	{ 16, 2, _RP("Little Mac")},		// 0x000F
+	{ 17, 2, _RP("Pit")},			// 0x0010
+	{ 21, 3, _RP("Lucario")},		// 0x0011 (Wave 3, out of order)
+	{ 18, 2, _RP("Captain Falcon")},	// 0x0012
 
-	// Cards: Series 2
-	{0x00A8, 101, 2, _RP("K.K. Slider")},
-	{0x00A9, 102, 2, _RP("Reese")},
-	{0x00AA, 103, 2, _RP("Kicks")},
-	{0x00AB, 104, 2, _RP("Labelle")},
-	{0x00AC, 105, 2, _RP("Copper")},
-	{0x00AD, 106, 2, _RP("Booker")},
-	{0x00AE, 107, 2, _RP("Katie")},
-	{0x00AF, 108, 2, _RP("Tommy")},
-	{0x00B0, 109, 2, _RP("Porter")},
-	{0x00B1, 110, 2, _RP("Lelia")},
-	{0x00B2, 111, 2, _RP("Dr. Shrunk")},
-	{0x00B3, 112, 2, _RP("Don Resetti")},
-	{0x00B4, 113, 2, _RP("Isabelle (Autumn Outfit)")},
-	{0x00B5, 114, 2, _RP("Blanca")},
-	{0x00B6, 115, 2, _RP("Nat")},
-	{0x00B7, 116, 2, _RP("Chip")},
-	{0x00B8, 117, 2, _RP("Jack")},
-	{0x00B9, 118, 2, _RP("Poncho")},
-	{0x00BA, 119, 2, _RP("Felicity")},
-	{0x00BB, 120, 2, _RP("Ozzie")},
-	{0x00BC, 121, 2, _RP("Tia")},
-	{0x00BD, 122, 2, _RP("Lucha")},
-	{0x00BE, 123, 2, _RP("Fuchsia")},
-	{0x00BF, 124, 2, _RP("Harry")},
-	{0x00C0, 125, 2, _RP("Gwen")},
-	{0x00C1, 126, 2, _RP("Coach")},
-	{0x00C2, 127, 2, _RP("Kitt")},
-	{0x00C3, 128, 2, _RP("Tom")},
-	{0x00C4, 129, 2, _RP("Tipper")},
-	{0x00C5, 130, 2, _RP("Prince")},
-	{0x00C6, 131, 2, _RP("Pate")},
-	{0x00C7, 132, 2, _RP("Vladimir")},
-	{0x00C8, 133, 2, _RP("Savannah")},
-	{0x00C9, 134, 2, _RP("Kidd")},
-	{0x00CA, 135, 2, _RP("Phoebe")},
-	{0x00CB, 136, 2, _RP("Egbert")},
-	{0x00CC, 137, 2, _RP("Cookie")},
-	{0x00CD, 138, 2, _RP("Sly")},
-	{0x00CE, 139, 2, _RP("Blaire")},
-	{0x00CF, 140, 2, _RP("Avery")},
-	{0x00D0, 141, 2, _RP("Nana")},
-	{0x00D1, 142, 2, _RP("Peck")},
-	{0x00D2, 143, 2, _RP("Olivia")},
-	{0x00D3, 144, 2, _RP("Cesar")},
-	{0x00D4, 145, 2, _RP("Carmen")},
-	{0x00D5, 146, 2, _RP("Rodney")},
-	{0x00D6, 147, 2, _RP("Scoot")},
-	{0x00D7, 148, 2, _RP("Whitney")},
-	{0x00D8, 149, 2, _RP("Broccolo")},
-	{0x00D9, 150, 2, _RP("Coco")},
-	{0x00DA, 151, 2, _RP("Groucho")},
-	{0x00DB, 152, 2, _RP("Wendy")},
-	{0x00DC, 153, 2, _RP("Alfonso")},
-	{0x00DD, 154, 2, _RP("Rhonda")},
-	{0x00DE, 155, 2, _RP("Butch")},
-	{0x00DF, 156, 2, _RP("Gabi")},
-	{0x00E0, 157, 2, _RP("Moose")},
-	{0x00E1, 158, 2, _RP("Timbra")},
-	{0x00E2, 159, 2, _RP("Zell")},
-	{0x00E3, 160, 2, _RP("Pekoe")},
-	{0x00E4, 161, 2, _RP("Teddy")},
-	{0x00E5, 162, 2, _RP("Mathilda")},
-	{0x00E6, 163, 2, _RP("Ed")},
-	{0x00E7, 164, 2, _RP("Bianca")},
-	{0x00E8, 165, 2, _RP("Filbert")},
-	{0x00E9, 166, 2, _RP("Kitty")},
-	{0x00EA, 167, 2, _RP("Beau")},
-	{0x00EB, 168, 2, _RP("Nan")},
-	{0x00EC, 169, 2, _RP("Bud")},
-	{0x00ED, 170, 2, _RP("Ruby")},
-	{0x00EE, 171, 2, _RP("Benedict")},
-	{0x00EF, 172, 2, _RP("Agnes")},
-	{0x00F0, 173, 2, _RP("Julian")},
-	{0x00F1, 174, 2, _RP("Bettina")},
-	{0x00F2, 175, 2, _RP("Jay")},
-	{0x00F3, 176, 2, _RP("Sprinkle")},
-	{0x00F4, 177, 2, _RP("Flip")},
-	{0x00F5, 178, 2, _RP("Hugh")},
-	{0x00F6, 179, 2, _RP("Hopper")},
-	{0x00F7, 180, 2, _RP("Pecan")},
-	{0x00F8, 181, 2, _RP("Drake")},
-	{0x00F9, 182, 2, _RP("Alice")},
-	{0x00FA, 183, 2, _RP("Camofrog")},
-	{0x00FB, 184, 2, _RP("Anicotti")},
-	{0x00FC, 185, 2, _RP("Chops")},
-	{0x00FD, 186, 2, _RP("Charlise")},
-	{0x00FE, 187, 2, _RP("Vic")},
-	{0x00FF, 188, 2, _RP("Ankha")},
-	{0x0100, 189, 2, _RP("Drift")},
-	{0x0101, 190, 2, _RP("Vesta")},
-	{0x0102, 191, 2, _RP("Marcel")},
-	{0x0103, 192, 2, _RP("Pango")},
-	{0x0104, 193, 2, _RP("Keaton")},
-	{0x0105, 194, 2, _RP("Gladys")},
-	{0x0106, 195, 2, _RP("Hamphrey")},
-	{0x0107, 196, 2, _RP("Freya")},
-	{0x0108, 197, 2, _RP("Kid Cat")},
-	{0x0109, 198, 2, _RP("Agent S")},
-	{0x010A, 199, 2, _RP("Big Top")},
-	{0x010B, 200, 2, _RP("Rocket")},
+	// Waves 3+ [0x0013-0x0033]
+	{ 19, 3, _RP("Rosalina & Luma")},	// 0x0013
+	{ 20, 3, _RP("Bowser")},		// 0x0014
+	{ 43, 6, _RP("Bowser Jr.")},		// 0x0015
+	{ 22, 3, _RP("Toon Link")},		// 0x0016
+	{ 23, 3, _RP("Sheik")},			// 0x0017
+	{ 24, 3, _RP("Ike")},			// 0x0018
+	{ 42, 6, _RP("Dr. Mario")},		// 0x0019
+	{ 32, 4, _RP("Wario")},			// 0x001A
+	{ 41, 6, _RP("Ganondorf")},		// 0x001B
+	{ 52, 7, _RP("Falco")},			// 0x001C
+	{ 40, 6, _RP("Zero Suit Samus")},	// 0x001D
+	{ 44, 6, _RP("Olimar")},		// 0x001E
+	{ 38, 5, _RP("Palutena")},		// 0x001F
+	{ 39, 5, _RP("Dark Pit")},		// 0x0020
+	{ 48, 7, _RP("Mii Brawler")},		// 0x0021
+	{ 49, 7, _RP("Mii Swordfighter")},	// 0x0022
+	{ 50, 7, _RP("Mii Gunner")},		// 0x0023
+	{ 33, 4, _RP("Charizard")},		// 0x0024
+	{ 36, 4, _RP("Greninja")},		// 0x0025
+	{ 37, 4, _RP("Jigglypuff")},		// 0x0026
+	{ 29, 3, _RP("Meta Knight")},		// 0x0027
+	{ 28, 3, _RP("King Dedede")},		// 0x0028
+	{ 31, 4, _RP("Lucina")},		// 0x0029
+	{ 30, 4, _RP("Robin")},			// 0x002A
+	{ 25, 3, _RP("Shulk")},			// 0x002B
+	{ 34, 4, _RP("Ness")},			// 0x002C
+	{ 45, 6, _RP("Mr. Game & Watch")},	// 0x002D
+	{ 54, 9, _RP("R.O.B. (Famicom)")},	// 0x002E (FIXME: Localized release numbers.)
+	{ 47, 6, _RP("Duck Hunt")},		// 0x002F
+	{ 26, 3, _RP("Sonic")},			// 0x0030
+	{ 27, 3, _RP("Mega Man")},		// 0x0031
+	{ 35, 4, _RP("Pac-Man")},		// 0x0032
+	{ 46, 6, _RP("R.O.B. (NES)")},		// 0x0033 (FIXME: Localized release numbers.)
 
-	// Cards: Series 3
-	{0x010C, 201, 3, _RP("Rover")},
-	{0x010D, 202, 3, _RP("Blathers")},
-	{0x010E, 203, 3, _RP("Tom Nook")},
-	{0x010F, 204, 3, _RP("Pelly")},
-	{0x0110, 205, 3, _RP("Phyllis")},
-	{0x0111, 206, 3, _RP("Pete")},
-	{0x0112, 207, 3, _RP("Mabel")},
-	{0x0113, 208, 3, _RP("Leif")},
-	{0x0114, 209, 3, _RP("Wendell")},
-	{0x0115, 210, 3, _RP("Cyrus")},
-	{0x0116, 211, 3, _RP("Grams")},
-	{0x0117, 212, 3, _RP("Timmy")},
-	{0x0118, 213, 3, _RP("Digby")},
-	{0x0119, 214, 3, _RP("Don Resetti")},
-	{0x011A, 215, 3, _RP("Isabelle")},
-	{0x011B, 216, 3, _RP("Franklin")},
-	{0x011C, 217, 3, _RP("Jingle")},
-	{0x011D, 218, 3, _RP("Lily")},
-	{0x011E, 219, 3, _RP("Anchovy")},
-	{0x011F, 220, 3, _RP("Tabby")},
-	{0x0120, 221, 3, _RP("Kody")},
-	{0x0121, 222, 3, _RP("Miranda")},
-	{0x0122, 223, 3, _RP("Del")},
-	{0x0123, 224, 3, _RP("Paula")},
-	{0x0124, 225, 3, _RP("Ken")},
-	{0x0125, 226, 3, _RP("Mitzi")},
-	{0x0126, 227, 3, _RP("Rodeo")},
-	{0x0127, 228, 3, _RP("Bubbles")},
-	{0x0128, 229, 3, _RP("Cousteau")},
-	{0x0129, 230, 3, _RP("Velma")},
-	{0x012A, 231, 3, _RP("Elvis")},
-	{0x012B, 232, 3, _RP("Canberra")},
-	{0x012C, 233, 3, _RP("Colton")},
-	{0x012D, 234, 3, _RP("Marina")},
-	{0x012E, 235, 3, _RP("Spork/Crackle")},
-	{0x012F, 236, 3, _RP("Freckles")},
-	{0x0130, 237, 3, _RP("Bam")},
-	{0x0131, 238, 3, _RP("Friga")},
-	{0x0132, 239, 3, _RP("Ricky")},
-	{0x0133, 240, 3, _RP("Deirdre")},
-	{0x0134, 241, 3, _RP("Hans")},
-	{0x0135, 242, 3, _RP("Chevre")},
-	{0x0136, 243, 3, _RP("Drago")},
-	{0x0137, 244, 3, _RP("Tangy")},
-	{0x0138, 245, 3, _RP("Mac")},
-	{0x0139, 246, 3, _RP("Eloise")},
-	{0x013A, 247, 3, _RP("Wart Jr.")},
-	{0x013B, 248, 3, _RP("Hazel")},
-	{0x013C, 249, 3, _RP("Beardo")},
-	{0x013D, 250, 3, _RP("Ava")},
-	{0x013E, 251, 3, _RP("Chester")},
-	{0x013F, 252, 3, _RP("Merry")},
-	{0x0140, 253, 3, _RP("Genji")},
-	{0x0141, 254, 3, _RP("Greta")},
-	{0x0142, 255, 3, _RP("Wolfgang")},
-	{0x0143, 256, 3, _RP("Diva")},
-	{0x0144, 257, 3, _RP("Klaus")},
-	{0x0145, 258, 3, _RP("Daisy")},
-	{0x0146, 259, 3, _RP("Stinky")},
-	{0x0147, 260, 3, _RP("Tammi")},
-	{0x0148, 261, 3, _RP("Tucker")},
-	{0x0149, 262, 3, _RP("Blanche")},
-	{0x014A, 263, 3, _RP("Gaston")},
-	{0x014B, 264, 3, _RP("Marshal")},
-	{0x014C, 265, 3, _RP("Gala")},
-	{0x014D, 266, 3, _RP("Joey")},
-	{0x014E, 267, 3, _RP("Pippy")},
-	{0x014F, 268, 3, _RP("Buck")},
-	{0x0150, 269, 3, _RP("Bree")},
-	{0x0151, 270, 3, _RP("Rooney")},
-	{0x0152, 271, 3, _RP("Curlos")},
-	{0x0153, 272, 3, _RP("Skye")},
-	{0x0154, 273, 3, _RP("Moe")},
-	{0x0155, 274, 3, _RP("Flora")},
-	{0x0156, 275, 3, _RP("Hamlet")},
-	{0x0157, 276, 3, _RP("Astrid")},
-	{0x0158, 277, 3, _RP("Monty")},
-	{0x0159, 278, 3, _RP("Dora")},
-	{0x015A, 279, 3, _RP("Biskit")},
-	{0x015B, 280, 3, _RP("Victoria")},
-	{0x015C, 281, 3, _RP("Lyman")},
-	{0x015D, 282, 3, _RP("Violet")},
-	{0x015E, 283, 3, _RP("Frank")},
-	{0x015F, 284, 3, _RP("Chadder")},
-	{0x0160, 285, 3, _RP("Merengue")},
-	{0x0161, 286, 3, _RP("Cube")},
-	{0x0162, 287, 3, _RP("Claudia")},
-	{0x0163, 288, 3, _RP("Curly")},
-	{0x0164, 289, 3, _RP("Boomer")},
-	{0x0165, 290, 3, _RP("Caroline")},
-	{0x0166, 291, 3, _RP("Sparro")},
-	{0x0167, 292, 3, _RP("Baabara")},
-	{0x0168, 293, 3, _RP("Rolf")},
-	{0x0169, 294, 3, _RP("Maple")},
-	{0x016A, 295, 3, _RP("Antonio")},
-	{0x016B, 296, 3, _RP("Soleil")},
-	{0x016C, 297, 3, _RP("Apollo")},
-	{0x016D, 298, 3, _RP("Derwin")},
-	{0x016E, 299, 3, _RP("Francine")},
-	{0x016F, 300, 3, _RP("Chrissy")},
+	// SMB: Wave 1 [0x0034-0x0039]
+	{  1, 1, _RP("Mario")},			// 0x0034
+	{  4, 1, _RP("Luigi")},			// 0x0035
+	{  2, 1, _RP("Peach")},			// 0x0036
+	{  5, 1, _RP("Yoshi")},			// 0x0037
+	{  3, 1, _RP("Toad")},			// 0x0038
+	{  6, 1, _RP("Bowser")},		// 0x0039
 
-	// Cards: Series 4
-	{0x0170, 301, 4, _RP("Isabelle")},
-	{0x0171, 302, 4, _RP("Brewster")},
-	{0x0172, 303, 4, _RP("Katrina")},
-	{0x0173, 304, 4, _RP("Phineas")},
-	{0x0174, 305, 4, _RP("Celeste")},
-	{0x0175, 306, 4, _RP("Tommy")},
-	{0x0176, 307, 4, _RP("Gracie")},
-	{0x0177, 308, 4, _RP("Leilani")},
-	{0x0178, 309, 4, _RP("Resetti")},
-	{0x0179, 310, 4, _RP("Timmy")},
-	{0x017A, 311, 4, _RP("Lottie")},
-	{0x017B, 312, 4, _RP("Shrunk")},
-	{0x017C, 313, 4, _RP("Pave")},
-	{0x017D, 314, 4, _RP("Gulliver")},
-	{0x017E, 315, 4, _RP("Redd")},
-	{0x017F, 316, 4, _RP("Zipper")},
-	{0x0180, 317, 4, _RP("Goldie")},
-	{0x0181, 318, 4, _RP("Stitches")},
-	{0x0182, 319, 4, _RP("Pinky")},
-	{0x0183, 320, 4, _RP("Mott")},
-	{0x0184, 321, 4, _RP("Mallary")},
-	{0x0185, 322, 4, _RP("Rocco")},
-	{0x0186, 323, 4, _RP("Katt")},
-	{0x0187, 324, 4, _RP("Graham")},
-	{0x0188, 325, 4, _RP("Peaches")},
-	{0x0189, 326, 4, _RP("Dizzy")},
-	{0x018A, 327, 4, _RP("Penelope")},
-	{0x018B, 328, 4, _RP("Boone")},
-	{0x018C, 329, 4, _RP("Broffina")},
-	{0x018D, 330, 4, _RP("Croque")},
-	{0x018E, 331, 4, _RP("Pashmina")},
-	{0x018F, 332, 4, _RP("Shep")},
-	{0x0190, 333, 4, _RP("Lolly")},
-	{0x0191, 334, 4, _RP("Erik")},
-	{0x0192, 335, 4, _RP("Dotty")},
-	{0x0193, 336, 4, _RP("Pierce")},
-	{0x0194, 337, 4, _RP("Queenie")},
-	{0x0195, 338, 4, _RP("Fang")},
-	{0x0196, 339, 4, _RP("Frita")},
-	{0x0197, 340, 4, _RP("Tex")},
-	{0x0198, 341, 4, _RP("Melba")},
-	{0x0199, 342, 4, _RP("Bones")},
-	{0x019A, 343, 4, _RP("Anabelle")},
-	{0x019B, 344, 4, _RP("Rudy")},
-	{0x019C, 345, 4, _RP("Naomi")},
-	{0x019D, 346, 4, _RP("Peewee")},
-	{0x019E, 347, 4, _RP("Tammy")},
-	{0x019F, 348, 4, _RP("Olaf")},
-	{0x01A0, 349, 4, _RP("Lucy")},
-	{0x01A1, 350, 4, _RP("Elmer")},
-	{0x01A2, 351, 4, _RP("Puddles")},
-	{0x01A3, 352, 4, _RP("Rory")},
-	{0x01A4, 353, 4, _RP("Elise")},
-	{0x01A5, 354, 4, _RP("Walt")},
-	{0x01A6, 355, 4, _RP("Mira")},
-	{0x01A7, 356, 4, _RP("Pietro")},
-	{0x01A8, 357, 4, _RP("Aurora")},
-	{0x01A9, 358, 4, _RP("Papi")},
-	{0x01AA, 359, 4, _RP("Apple")},
-	{0x01AB, 360, 4, _RP("Rod")},
-	{0x01AC, 361, 4, _RP("Purrl")},
-	{0x01AD, 362, 4, _RP("Static")},
-	{0x01AE, 363, 4, _RP("Celia")},
-	{0x01AF, 364, 4, _RP("Zucker")},
-	{0x01B0, 365, 4, _RP("Peggy")},
-	{0x01B1, 366, 4, _RP("Ribbot")},
-	{0x01B2, 367, 4, _RP("Annalise")},
-	{0x01B3, 368, 4, _RP("Chow")},
-	{0x01B4, 369, 4, _RP("Sylvia")},
-	{0x01B5, 370, 4, _RP("Jacques")},
-	{0x01B6, 371, 4, _RP("Sally")},
-	{0x01B7, 372, 4, _RP("Doc")},
-	{0x01B8, 373, 4, _RP("Pompom")},
-	{0x01B9, 374, 4, _RP("Tank")},
-	{0x01BA, 375, 4, _RP("Becky")},
-	{0x01BB, 376, 4, _RP("Rizzo")},
-	{0x01BC, 377, 4, _RP("Sydney")},
-	{0x01BD, 378, 4, _RP("Barold")},
-	{0x01BE, 379, 4, _RP("Nibbles")},
-	{0x01BF, 380, 4, _RP("Kevin")},
-	{0x01C0, 381, 4, _RP("Gloria")},
-	{0x01C1, 382, 4, _RP("Lobo")},
-	{0x01C2, 383, 4, _RP("Hippeux")},
-	{0x01C3, 384, 4, _RP("Margie")},
-	{0x01C4, 385, 4, _RP("Lucky")},
-	{0x01C5, 386, 4, _RP("Rosie")},
-	{0x01C6, 387, 4, _RP("Rowan")},
-	{0x01C7, 388, 4, _RP("Maelle")},
-	{0x01C8, 389, 4, _RP("Bruce")},
-	{0x01C9, 390, 4, _RP("OHare")},
-	{0x01CA, 391, 4, _RP("Gayle")},
-	{0x01CB, 392, 4, _RP("Cranston")},
-	{0x01CC, 393, 4, _RP("Frobert")},
-	{0x01CD, 394, 4, _RP("Grizzly")},
-	{0x01CE, 395, 4, _RP("Cally")},
-	{0x01CF, 396, 4, _RP("Simon")},
-	{0x01D0, 397, 4, _RP("Iggly")},
-	{0x01D1, 398, 4, _RP("Angus")},
-	{0x01D2, 399, 4, _RP("Twiggy")},
-	{0x01D3, 400, 4, _RP("Robin")},
+	// Chibi-Robo!
+	{  0, 0, _RP("Chibi Robo")},		// 0x003A
 
-	// Character Parfait, Amiibo Festival
-	{0x01D4, 401, 5, _RP("Isabelle (Parfait)")},
-	{0x01D5, 402, 5, _RP("Goldie (amiibo Festival)")},
-	{0x01D6, 403, 5, _RP("Stitches (amiibo Festival)")},
-	{0x01D7, 404, 5, _RP("Rosie (amiibo Festival)")},
-	{0x01D8, 405, 5, _RP("K.K. Slider (Parfait)")},
+	// Unused [0x003B]
+	{  0, 0, nullptr},			// 0x003B
 
-	// Figurines: Wave 1
-	{0x023F,   0, 1, _RP("Isabelle")},
-	{0x0240,   0, 1, _RP("K.K. Slider")},
-	{0x0241,   0, 1, _RP("Mabel")},
-	{0x0242,   0, 1, _RP("Tom Nook")},
-	{0x0243,   0, 1, _RP("Digby")},
-	{0x0244,   0, 1, _RP("Lottie")},
-	{0x0245,   0, 1, _RP("Reese")},
-	{0x0246,   0, 1, _RP("Cyrus")},
-	// Figurines: Wave 2
-	{0x0247,   0, 2, _RP("Blathers")},
-	{0x0248,   0, 2, _RP("Celeste")},
-	{0x0249,   0, 2, _RP("Resetti")},
-	{0x024A,   0, 2, _RP("Kicks")},
-	// Figurines: Wave 4 (out of order)
-	{0x024B,   0, 4, _RP("Isabelle (Summer Outfit)")},
-	// Figurines: Wave 3
-	{0x024C,   0, 3, _RP("Rover")},
-	{0x024D,   0, 3, _RP("Timmy & Tommy")},
-	{0x024E,   0, 3, _RP("Kapp'n")},
+	// SMB: Wave 1: Special Editions [0x003C-0x003D]
+	{  7, 1, _RP("Mario (Gold Edition)")},	// 0x003C
+	{  8, 1, _RP("Mario (Silver Edition)")},// 0x003D
 
-	// Welcome Amiibo Series
-	//{0xXXXX,   1, 7, _RP("Vivian")},
-	{0x02E8,   2, 7, _RP("Hopkins")},
-	{0x02E9,   3, 7, _RP("June")},
-	//{0xXXXX,   4, 7, _RP("Piper")},
-	{0x02EB,   5, 7, _RP("Paolo")},
-	{0x02EC,   6, 7, _RP("Hornsby")},
-	//{0xXXXX,   7, 7, _RP("Stella")},
-	{0x02EE,   8, 7, _RP("Tybalt")},
-	//{0xXXXX,   9, 7, _RP("Huck")},
-	{0x02F0,  10, 7, _RP("Sylvana")},
-	//{0xXXXX,  11, 7, _RP("Boris")},
-	{0x02F2,  12, 7, _RP("Wade")},
-	{0x02F3,  13, 7, _RP("Carrie")},
-	//{0xXXXX,  14, 7, _RP("Ketchup")},
-	//{0xXXXX,  15, 7, _RP("Rex")},
-	{0x02F6,  16, 7, _RP("Stu")},
-	{0x02F7,  17, 7, _RP("Ursala")},
-	{0x02F8,  18, 7, _RP("Jacob")},
-	{0x02F9,  19, 7, _RP("Maddie")},
-	//{0xXXXX,  20, 7, _RP("Billy")},
-	{0x02FB,  21, 7, _RP("Boyd")},
-	//{0xXXXX,  22, 7, _RP("Bitty")},
-	//{0xXXXX,  23, 7, _RP("Maggie")},
-	{0x02FE,  24, 7, _RP("Murphy")},
-	{0x02FF,  25, 7, _RP("Plucky")},
-	{0x0300,  26, 7, _RP("Sandy")},
-	{0x0301,  27, 7, _RP("Claude")},
-	{0x0302,  28, 7, _RP("Raddle")},
-	//{0xXXXX,  29, 7, _RP("Julia")},
-	//{0xXXXX,  30, 7, _RP("Louie")},
-	{0x0305,  31, 7, _RP("Bea")},
-	{0x0306,  32, 7, _RP("Admiral")},
-	{0x0307,  33, 7, _RP("Ellie")},
-	{0x0308,  34, 7, _RP("Boots")},
-	//{0xXXXX,  35, 7, _RP("Weber")},
-	{0x030A,  36, 7, _RP("Candi")},
-	{0x030B,  37, 7, _RP("Leopold")},
-	{0x030C,  38, 7, _RP("Spike")},
-	//{0xXXXX,  39, 7, _RP("Cashmere")},
-	//{0xXXXX,  40, 7, _RP("Tad")},
-	//{0xXXXX,  41, 7, _RP("Norma")},
-	//{0xXXXX,  42, 7, _RP("Gonzo")},
-	//{0xXXXX,  43, 7, _RP("Sprocket")},
-	{0x0312,  44, 7, _RP("Snooty")},
-	//{0xXXXX,  45, 7, _RP("Olive")},
-	{0x0314,  46, 7, _RP("Dobie")},
-	{0x0315,  47, 7, _RP("Buzz")},
-	{0x0316,  48, 7, _RP("Cleo")},
-	//{0xXXXX,  49, 7, _RP("Ike")},
-	{0x0318,  50, 7, _RP("Tasha")},
+	// Splatoon: Wave 1 [0x003E-0x0040]
+	{  0, 1, _RP("Inkling Girl")},		// 0x003E
+	{  0, 1, _RP("Inkling Boy")},		// 0x003F
+	{  0, 1, _RP("Inkling Squid")},		// 0x0040
 
-	// Animal Crossing x Sanrio Series
-	{0x0319,   1, 6, _RP("Rilla")},
-	{0x031A,   2, 6, _RP("Marty")},
-	{0x031B,   3, 6, _RP("Étoile")},
-	{0x031C,   4, 6, _RP("Chai")},
-	{0x031D,   5, 6, _RP("Chelsea")},
-	{0x031E,   6, 6, _RP("Toby")},
-};
+	// Yarn Yoshi [0x0041-0x0043]
+	{  1, 0, _RP("Green Yarn Yoshi")},	// 0x0041
+	{  1, 0, _RP("Pink Yarn Yoshi")},	// 0x0042
+	{  1, 0, _RP("Light Blue Yarn Yoshi")},	// 0x0043
 
-// Super Mario Bros. 30th Anniversary (amiibo series = 0x06)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::smb_30th_series[] = {
-	{0x0238,   1, 1, _RP("8-bit Mario (Classic Color)")},
-	{0x0239,   2, 1, _RP("8-bit Mario (Modern Color)")},
-};
+	// Animal Crossing Cards: Series 1 [0x0044-0x00A7]
+	{  1, 1, _RP("Isabelle")},		// 0x0044
+	{  2, 1, _RP("Tom Nook")},		// 0x0045
+	{  3, 1, _RP("DJ KK")},			// 0x0046
+	{  4, 1, _RP("Sable")},			// 0x0047
+	{  5, 1, _RP("Kapp'n")},		// 0x0048
+	{  6, 1, _RP("Resetti")},		// 0x0049
+	{  7, 1, _RP("Joan")},			// 0x004A
+	{  8, 1, _RP("Timmy")},			// 0x004B
+	{  9, 1, _RP("Digby")},			// 0x004C
+	{ 10, 1, _RP("Pascal")},		// 0x004D
+	{ 11, 1, _RP("Harriet")},		// 0x004E
+	{ 12, 1, _RP("Redd")},			// 0x004F
+	{ 13, 1, _RP("Sahara")},		// 0x0050
+	{ 14, 1, _RP("Luna")},			// 0x0051
+	{ 15, 1, _RP("Tortimer")},		// 0x0052
+	{ 16, 1, _RP("Lyle")},			// 0x0053
+	{ 17, 1, _RP("Lottie")},		// 0x0054
+	{ 18, 1, _RP("Bob")},			// 0x0055
+	{ 19, 1, _RP("Fauna")},			// 0x0056
+	{ 20, 1, _RP("Curt")},			// 0x0057
+	{ 21, 1, _RP("Portia")},		// 0x0058
+	{ 22, 1, _RP("Leonardo")},		// 0x0059
+	{ 23, 1, _RP("Cheri")},			// 0x005A
+	{ 24, 1, _RP("Kyle")},			// 0x005B
+	{ 25, 1, _RP("Al")},			// 0x005C
+	{ 26, 1, _RP("Renée")},			// 0x005D
+	{ 27, 1, _RP("Lopez")},			// 0x005E
+	{ 28, 1, _RP("Jambette")},		// 0x005F
+	{ 29, 1, _RP("Rasher")},		// 0x0060
+	{ 30, 1, _RP("Tiffany")},		// 0x0061
+	{ 31, 1, _RP("Sheldon")},		// 0x0062
+	{ 32, 1, _RP("Bluebear")},		// 0x0063
+	{ 33, 1, _RP("Bill")},			// 0x0064
+	{ 34, 1, _RP("Kiki")},			// 0x0065
+	{ 35, 1, _RP("Deli")},			// 0x0066
+	{ 36, 1, _RP("Alli")},			// 0x0067
+	{ 37, 1, _RP("Kabuki")},		// 0x0068
+	{ 38, 1, _RP("Patty")},			// 0x0069
+	{ 39, 1, _RP("Jitters")},		// 0x006A
+	{ 40, 1, _RP("Gigi")},			// 0x006B
+	{ 41, 1, _RP("Quillson")},		// 0x006C
+	{ 42, 1, _RP("Marcie")},		// 0x006D
+	{ 43, 1, _RP("Puck")},			// 0x006E
+	{ 44, 1, _RP("Shari")},			// 0x006F
+	{ 45, 1, _RP("Octavian")},		// 0x0070
+	{ 46, 1, _RP("Winnie")},		// 0x0071
+	{ 47, 1, _RP("Knox")},			// 0x0072
+	{ 48, 1, _RP("Sterling")},		// 0x0073
+	{ 49, 1, _RP("Bonbon")},		// 0x0074
+	{ 50, 1, _RP("Punchy")},		// 0x0075
+	{ 51, 1, _RP("Opal")},			// 0x0076
+	{ 52, 1, _RP("Poppy")},			// 0x0077
+	{ 53, 1, _RP("Limberg")},		// 0x0078
+	{ 54, 1, _RP("Deena")},			// 0x0079
+	{ 55, 1, _RP("Snake")},			// 0x007A
+	{ 56, 1, _RP("Bangle")},		// 0x007B
+	{ 57, 1, _RP("Phil")},			// 0x007C
+	{ 58, 1, _RP("Monique")},		// 0x007D
+	{ 59, 1, _RP("Nate")},			// 0x007E
+	{ 60, 1, _RP("Samson")},		// 0x007F
+	{ 61, 1, _RP("Tutu")},			// 0x0080
+	{ 62, 1, _RP("T-Bone")},		// 0x0081
+	{ 63, 1, _RP("Mint")},			// 0x0082
+	{ 64, 1, _RP("Pudge")},			// 0x0083
+	{ 65, 1, _RP("Midge")},			// 0x0084
+	{ 66, 1, _RP("Gruff")},			// 0x0085
+	{ 67, 1, _RP("Flurry")},		// 0x0086
+	{ 68, 1, _RP("Clyde")},			// 0x0087
+	{ 69, 1, _RP("Bella")},			// 0x0088
+	{ 70, 1, _RP("Biff")},			// 0x0089
+	{ 71, 1, _RP("Yuka")},			// 0x008A
+	{ 72, 1, _RP("Lionel")},		// 0x008B
+	{ 73, 1, _RP("Flo")},			// 0x008C
+	{ 74, 1, _RP("Cobb")},			// 0x008D
+	{ 75, 1, _RP("Amelia")},		// 0x008E
+	{ 76, 1, _RP("Jeremiah")},		// 0x008F
+	{ 77, 1, _RP("Cherry")},		// 0x0090
+	{ 78, 1, _RP("Rosco")},			// 0x0091
+	{ 79, 1, _RP("Truffles")},		// 0x0092
+	{ 80, 1, _RP("Eugene")},		// 0x0093
+	{ 81, 1, _RP("Eunice")},		// 0x0094
+	{ 82, 1, _RP("Goose")},			// 0x0095
+	{ 83, 1, _RP("Annalisa")},		// 0x0096
+	{ 84, 1, _RP("Benjamin")},		// 0x0097
+	{ 85, 1, _RP("Pancetti")},		// 0x0098
+	{ 86, 1, _RP("Chief")},			// 0x0099
+	{ 87, 1, _RP("Bunnie")},		// 0x009A
+	{ 88, 1, _RP("Clay")},			// 0x009B
+	{ 89, 1, _RP("Diana")},			// 0x009C
+	{ 90, 1, _RP("Axel")},			// 0x009D
+	{ 91, 1, _RP("Muffy")},			// 0x009E
+	{ 92, 1, _RP("Henry")},			// 0x009F
+	{ 93, 1, _RP("Bertha")},		// 0x00A0
+	{ 94, 1, _RP("Cyrano")},		// 0x00A1
+	{ 95, 1, _RP("Peanut")},		// 0x00A2
+	{ 96, 1, _RP("Cole")},			// 0x00A3
+	{ 97, 1, _RP("Willow")},		// 0x00A4
+	{ 98, 1, _RP("Roald")},			// 0x00A5
+	{ 99, 1, _RP("Molly")},			// 0x00A6
+	{100, 1, _RP("Walker")},		// 0x00A7
 
-// Skylanders Series (amiibo series = 0x07)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::skylanders_series[] = {
-	{0x023A,   1, 0, _RP("Hammer Slam Bowser")},
-	{0x023B,   2, 0, _RP("Turbo Charge Donkey Kong")},
+	// Animal Crossing Cards: Series 2 [0x00A8-0x010B]
+	{101, 2, _RP("K.K. Slider")},		// 0x00A8
+	{102, 2, _RP("Reese")},			// 0x00A9
+	{103, 2, _RP("Kicks")},			// 0x00AA
+	{104, 2, _RP("Labelle")},		// 0x00AB
+	{105, 2, _RP("Copper")},		// 0x00AC
+	{106, 2, _RP("Booker")},		// 0x00AD
+	{107, 2, _RP("Katie")},			// 0x00AE
+	{108, 2, _RP("Tommy")},			// 0x00AF
+	{109, 2, _RP("Porter")},		// 0x00B0
+	{110, 2, _RP("Lelia")},			// 0x00B1
+	{111, 2, _RP("Dr. Shrunk")},		// 0x00B2
+	{112, 2, _RP("Don Resetti")},		// 0x00B3
+	{113, 2, _RP("Isabelle (Autumn Outfit)")},// 0x00B4
+	{114, 2, _RP("Blanca")},		// 0x00B5
+	{115, 2, _RP("Nat")},			// 0x00B6
+	{116, 2, _RP("Chip")},			// 0x00B7
+	{117, 2, _RP("Jack")},			// 0x00B8
+	{118, 2, _RP("Poncho")},		// 0x00B9
+	{119, 2, _RP("Felicity")},		// 0x00BA
+	{120, 2, _RP("Ozzie")},			// 0x00BB
+	{121, 2, _RP("Tia")},			// 0x00BC
+	{122, 2, _RP("Lucha")},			// 0x00BD
+	{123, 2, _RP("Fuchsia")},		// 0x00BE
+	{124, 2, _RP("Harry")},			// 0x00BF
+	{125, 2, _RP("Gwen")},			// 0x00C0
+	{126, 2, _RP("Coach")},			// 0x00C1
+	{127, 2, _RP("Kitt")},			// 0x00C2
+	{128, 2, _RP("Tom")},			// 0x00C3
+	{129, 2, _RP("Tipper")},		// 0x00C4
+	{130, 2, _RP("Prince")},		// 0x00C5
+	{131, 2, _RP("Pate")},			// 0x00C6
+	{132, 2, _RP("Vladimir")},		// 0x00C7
+	{133, 2, _RP("Savannah")},		// 0x00C8
+	{134, 2, _RP("Kidd")},			// 0x00C9
+	{135, 2, _RP("Phoebe")},		// 0x00CA
+	{136, 2, _RP("Egbert")},		// 0x00CB
+	{137, 2, _RP("Cookie")},		// 0x00CC
+	{138, 2, _RP("Sly")},			// 0x00CD
+	{139, 2, _RP("Blaire")},		// 0x00CE
+	{140, 2, _RP("Avery")},			// 0x00CF
+	{141, 2, _RP("Nana")},			// 0x00D0
+	{142, 2, _RP("Peck")},			// 0x00D1
+	{143, 2, _RP("Olivia")},		// 0x00D2
+	{144, 2, _RP("Cesar")},			// 0x00D3
+	{145, 2, _RP("Carmen")},		// 0x00D4
+	{146, 2, _RP("Rodney")},		// 0x00D5
+	{147, 2, _RP("Scoot")},			// 0x00D6
+	{148, 2, _RP("Whitney")},		// 0x00D7
+	{149, 2, _RP("Broccolo")},		// 0x00D8
+	{150, 2, _RP("Coco")},			// 0x00D9
+	{151, 2, _RP("Groucho")},		// 0x00DA
+	{152, 2, _RP("Wendy")},			// 0x00DB
+	{153, 2, _RP("Alfonso")},		// 0x00DC
+	{154, 2, _RP("Rhonda")},		// 0x00DD
+	{155, 2, _RP("Butch")},			// 0x00DE
+	{156, 2, _RP("Gabi")},			// 0x00DF
+	{157, 2, _RP("Moose")},			// 0x00E0
+	{158, 2, _RP("Timbra")},		// 0x00E1
+	{159, 2, _RP("Zell")},			// 0x00E2
+	{160, 2, _RP("Pekoe")},			// 0x00E3
+	{161, 2, _RP("Teddy")},			// 0x00E4
+	{162, 2, _RP("Mathilda")},		// 0x00E5
+	{163, 2, _RP("Ed")},			// 0x00E6
+	{164, 2, _RP("Bianca")},		// 0x00E7
+	{165, 2, _RP("Filbert")},		// 0x00E8
+	{166, 2, _RP("Kitty")},			// 0x00E9
+	{167, 2, _RP("Beau")},			// 0x00EA
+	{168, 2, _RP("Nan")},			// 0x00EB
+	{169, 2, _RP("Bud")},			// 0x00EC
+	{170, 2, _RP("Ruby")},			// 0x00ED
+	{171, 2, _RP("Benedict")},		// 0x00EE
+	{172, 2, _RP("Agnes")},			// 0x00EF
+	{173, 2, _RP("Julian")},		// 0x00F0
+	{174, 2, _RP("Bettina")},		// 0x00F1
+	{175, 2, _RP("Jay")},			// 0x00F2
+	{176, 2, _RP("Sprinkle")},		// 0x00F3
+	{177, 2, _RP("Flip")},			// 0x00F4
+	{178, 2, _RP("Hugh")},			// 0x00F5
+	{179, 2, _RP("Hopper")},		// 0x00F6
+	{180, 2, _RP("Pecan")},			// 0x00F7
+	{181, 2, _RP("Drake")},			// 0x00F8
+	{182, 2, _RP("Alice")},			// 0x00F9
+	{183, 2, _RP("Camofrog")},		// 0x00FA
+	{184, 2, _RP("Anicotti")},		// 0x00FB
+	{185, 2, _RP("Chops")},			// 0x00FC
+	{186, 2, _RP("Charlise")},		// 0x00FD
+	{187, 2, _RP("Vic")},			// 0x00FE
+	{188, 2, _RP("Ankha")},			// 0x00FF
+	{189, 2, _RP("Drift")},			// 0x0100
+	{190, 2, _RP("Vesta")},			// 0x0101
+	{191, 2, _RP("Marcel")},		// 0x0102
+	{192, 2, _RP("Pango")},			// 0x0103
+	{193, 2, _RP("Keaton")},		// 0x0104
+	{194, 2, _RP("Gladys")},		// 0x0105
+	{195, 2, _RP("Hamphrey")},		// 0x0106
+	{196, 2, _RP("Freya")},			// 0x0107
+	{197, 2, _RP("Kid Cat")},		// 0x0108
+	{198, 2, _RP("Agent S")},		// 0x0109
+	{199, 2, _RP("Big Top")},		// 0x010A
+	{200, 2, _RP("Rocket")},		// 0x010B
+
+	// Animal Crossing Cards: Series 3 [0x010C-0x016F]
+	{201, 3, _RP("Rover")},			// 0x010C
+	{202, 3, _RP("Blathers")},		// 0x010D
+	{203, 3, _RP("Tom Nook")},		// 0x010E
+	{204, 3, _RP("Pelly")},			// 0x010F
+	{205, 3, _RP("Phyllis")},		// 0x0110
+	{206, 3, _RP("Pete")},			// 0x0111
+	{207, 3, _RP("Mabel")},			// 0x0112
+	{208, 3, _RP("Leif")},			// 0x0113
+	{209, 3, _RP("Wendell")},		// 0x0114
+	{210, 3, _RP("Cyrus")},			// 0x0115
+	{211, 3, _RP("Grams")},			// 0x0116
+	{212, 3, _RP("Timmy")},			// 0x0117
+	{213, 3, _RP("Digby")},			// 0x0118
+	{214, 3, _RP("Don Resetti")},		// 0x0119
+	{215, 3, _RP("Isabelle")},		// 0x011A
+	{216, 3, _RP("Franklin")},		// 0x011B
+	{217, 3, _RP("Jingle")},		// 0x011C
+	{218, 3, _RP("Lily")},			// 0x011D
+	{219, 3, _RP("Anchovy")},		// 0x011E
+	{220, 3, _RP("Tabby")},			// 0x011F
+	{221, 3, _RP("Kody")},			// 0x0120
+	{222, 3, _RP("Miranda")},		// 0x0121
+	{223, 3, _RP("Del")},			// 0x0122
+	{224, 3, _RP("Paula")},			// 0x0123
+	{225, 3, _RP("Ken")},			// 0x0124
+	{226, 3, _RP("Mitzi")},			// 0x0125
+	{227, 3, _RP("Rodeo")},			// 0x0126
+	{228, 3, _RP("Bubbles")},		// 0x0127
+	{229, 3, _RP("Cousteau")},		// 0x0128
+	{230, 3, _RP("Velma")},			// 0x0129
+	{231, 3, _RP("Elvis")},			// 0x012A
+	{232, 3, _RP("Canberra")},		// 0x012B
+	{233, 3, _RP("Colton")},		// 0x012C
+	{234, 3, _RP("Marina")},		// 0x012D
+	{235, 3, _RP("Spork/Crackle")},		// 0x012E
+	{236, 3, _RP("Freckles")},		// 0x012F
+	{237, 3, _RP("Bam")},			// 0x0130
+	{238, 3, _RP("Friga")},			// 0x0131
+	{239, 3, _RP("Ricky")},			// 0x0132
+	{240, 3, _RP("Deirdre")},		// 0x0133
+	{241, 3, _RP("Hans")},			// 0x0134
+	{242, 3, _RP("Chevre")},		// 0x0135
+	{243, 3, _RP("Drago")},			// 0x0136
+	{244, 3, _RP("Tangy")},			// 0x0137
+	{245, 3, _RP("Mac")},			// 0x0138
+	{246, 3, _RP("Eloise")},		// 0x0139
+	{247, 3, _RP("Wart Jr.")},		// 0x013A
+	{248, 3, _RP("Hazel")},			// 0x013B
+	{249, 3, _RP("Beardo")},		// 0x013C
+	{250, 3, _RP("Ava")},			// 0x013D
+	{251, 3, _RP("Chester")},		// 0x013E
+	{252, 3, _RP("Merry")},			// 0x013F
+	{253, 3, _RP("Genji")},			// 0x0140
+	{254, 3, _RP("Greta")},			// 0x0141
+	{255, 3, _RP("Wolfgang")},		// 0x0142
+	{256, 3, _RP("Diva")},			// 0x0143
+	{257, 3, _RP("Klaus")},			// 0x0144
+	{258, 3, _RP("Daisy")},			// 0x0145
+	{259, 3, _RP("Stinky")},		// 0x0146
+	{260, 3, _RP("Tammi")},			// 0x0147
+	{261, 3, _RP("Tucker")},		// 0x0148
+	{262, 3, _RP("Blanche")},		// 0x0149
+	{263, 3, _RP("Gaston")},		// 0x014A
+	{264, 3, _RP("Marshal")},		// 0x014B
+	{265, 3, _RP("Gala")},			// 0x014C
+	{266, 3, _RP("Joey")},			// 0x014D
+	{267, 3, _RP("Pippy")},			// 0x014E
+	{268, 3, _RP("Buck")},			// 0x014F
+	{269, 3, _RP("Bree")},			// 0x0150
+	{270, 3, _RP("Rooney")},		// 0x0151
+	{271, 3, _RP("Curlos")},		// 0x0152
+	{272, 3, _RP("Skye")},			// 0x0153
+	{273, 3, _RP("Moe")},			// 0x0154
+	{274, 3, _RP("Flora")},			// 0x0155
+	{275, 3, _RP("Hamlet")},		// 0x0156
+	{276, 3, _RP("Astrid")},		// 0x0157
+	{277, 3, _RP("Monty")},			// 0x0158
+	{278, 3, _RP("Dora")},			// 0x0159
+	{279, 3, _RP("Biskit")},		// 0x015A
+	{280, 3, _RP("Victoria")},		// 0x015B
+	{281, 3, _RP("Lyman")},			// 0x015C
+	{282, 3, _RP("Violet")},		// 0x015D
+	{283, 3, _RP("Frank")},			// 0x015E
+	{284, 3, _RP("Chadder")},		// 0x015F
+	{285, 3, _RP("Merengue")},		// 0x0160
+	{286, 3, _RP("Cube")},			// 0x0161
+	{287, 3, _RP("Claudia")},		// 0x0162
+	{288, 3, _RP("Curly")},			// 0x0163
+	{289, 3, _RP("Boomer")},		// 0x0164
+	{290, 3, _RP("Caroline")},		// 0x0165
+	{291, 3, _RP("Sparro")},		// 0x0166
+	{292, 3, _RP("Baabara")},		// 0x0167
+	{293, 3, _RP("Rolf")},			// 0x0168
+	{294, 3, _RP("Maple")},			// 0x0169
+	{295, 3, _RP("Antonio")},		// 0x016A
+	{296, 3, _RP("Soleil")},		// 0x016B
+	{297, 3, _RP("Apollo")},		// 0x016C
+	{298, 3, _RP("Derwin")},		// 0x016D
+	{299, 3, _RP("Francine")},		// 0x016E
+	{300, 3, _RP("Chrissy")},		// 0x016F
+
+	// Animal Crossing Cards: Series 4 [0x0170-0x01D3]
+	{301, 4, _RP("Isabelle")},		// 0x0170
+	{302, 4, _RP("Brewster")},		// 0x0171
+	{303, 4, _RP("Katrina")},		// 0x0172
+	{304, 4, _RP("Phineas")},		// 0x0173
+	{305, 4, _RP("Celeste")},		// 0x0174
+	{306, 4, _RP("Tommy")},			// 0x0175
+	{307, 4, _RP("Gracie")},		// 0x0176
+	{308, 4, _RP("Leilani")},		// 0x0177
+	{309, 4, _RP("Resetti")},		// 0x0178
+	{310, 4, _RP("Timmy")},			// 0x0179
+	{311, 4, _RP("Lottie")},		// 0x017A
+	{312, 4, _RP("Shrunk")},		// 0x017B
+	{313, 4, _RP("Pave")},			// 0x017C
+	{314, 4, _RP("Gulliver")},		// 0x017D
+	{315, 4, _RP("Redd")},			// 0x017E
+	{316, 4, _RP("Zipper")},		// 0x017F
+	{317, 4, _RP("Goldie")},		// 0x0180
+	{318, 4, _RP("Stitches")},		// 0x0181
+	{319, 4, _RP("Pinky")},			// 0x0182
+	{320, 4, _RP("Mott")},			// 0x0183
+	{321, 4, _RP("Mallary")},		// 0x0184
+	{322, 4, _RP("Rocco")},			// 0x0185
+	{323, 4, _RP("Katt")},			// 0x0186
+	{324, 4, _RP("Graham")},		// 0x0187
+	{325, 4, _RP("Peaches")},		// 0x0188
+	{326, 4, _RP("Dizzy")},			// 0x0189
+	{327, 4, _RP("Penelope")},		// 0x018A
+	{328, 4, _RP("Boone")},			// 0x018B
+	{329, 4, _RP("Broffina")},		// 0x018C
+	{330, 4, _RP("Croque")},		// 0x018D
+	{331, 4, _RP("Pashmina")},		// 0x018E
+	{332, 4, _RP("Shep")},			// 0x018F
+	{333, 4, _RP("Lolly")},			// 0x0190
+	{334, 4, _RP("Erik")},			// 0x0191
+	{335, 4, _RP("Dotty")},			// 0x0192
+	{336, 4, _RP("Pierce")},		// 0x0193
+	{337, 4, _RP("Queenie")},		// 0x0194
+	{338, 4, _RP("Fang")},			// 0x0195
+	{339, 4, _RP("Frita")},			// 0x0196
+	{340, 4, _RP("Tex")},			// 0x0197
+	{341, 4, _RP("Melba")},			// 0x0198
+	{342, 4, _RP("Bones")},			// 0x0199
+	{343, 4, _RP("Anabelle")},		// 0x019A
+	{344, 4, _RP("Rudy")},			// 0x019B
+	{345, 4, _RP("Naomi")},			// 0x019C
+	{346, 4, _RP("Peewee")},		// 0x019D
+	{347, 4, _RP("Tammy")},			// 0x019E
+	{348, 4, _RP("Olaf")},			// 0x019F
+	{349, 4, _RP("Lucy")},			// 0x01A0
+	{350, 4, _RP("Elmer")},			// 0x01A1
+	{351, 4, _RP("Puddles")},		// 0x01A2
+	{352, 4, _RP("Rory")},			// 0x01A3
+	{353, 4, _RP("Elise")},			// 0x01A4
+	{354, 4, _RP("Walt")},			// 0x01A5
+	{355, 4, _RP("Mira")},			// 0x01A6
+	{356, 4, _RP("Pietro")},		// 0x01A7
+	{357, 4, _RP("Aurora")},		// 0x01A8
+	{358, 4, _RP("Papi")},			// 0x01A9
+	{359, 4, _RP("Apple")},			// 0x01AA
+	{360, 4, _RP("Rod")},			// 0x01AB
+	{361, 4, _RP("Purrl")},			// 0x01AC
+	{362, 4, _RP("Static")},		// 0x01AD
+	{363, 4, _RP("Celia")},			// 0x01AE
+	{364, 4, _RP("Zucker")},		// 0x01AF
+	{365, 4, _RP("Peggy")},			// 0x01B0
+	{366, 4, _RP("Ribbot")},		// 0x01B1
+	{367, 4, _RP("Annalise")},		// 0x01B2
+	{368, 4, _RP("Chow")},			// 0x01B3
+	{369, 4, _RP("Sylvia")},		// 0x01B4
+	{370, 4, _RP("Jacques")},		// 0x01B5
+	{371, 4, _RP("Sally")},			// 0x01B6
+	{372, 4, _RP("Doc")},			// 0x01B7
+	{373, 4, _RP("Pompom")},		// 0x01B8
+	{374, 4, _RP("Tank")},			// 0x01B9
+	{375, 4, _RP("Becky")},			// 0x01BA
+	{376, 4, _RP("Rizzo")},			// 0x01BB
+	{377, 4, _RP("Sydney")},		// 0x01BC
+	{378, 4, _RP("Barold")},		// 0x01BD
+	{379, 4, _RP("Nibbles")},		// 0x01BE
+	{380, 4, _RP("Kevin")},			// 0x01BF
+	{381, 4, _RP("Gloria")},		// 0x01C0
+	{382, 4, _RP("Lobo")},			// 0x01C1
+	{383, 4, _RP("Hippeux")},		// 0x01C2
+	{384, 4, _RP("Margie")},		// 0x01C3
+	{385, 4, _RP("Lucky")},			// 0x01C4
+	{386, 4, _RP("Rosie")},			// 0x01C5
+	{387, 4, _RP("Rowan")},			// 0x01C6
+	{388, 4, _RP("Maelle")},		// 0x01C7
+	{389, 4, _RP("Bruce")},			// 0x01C8
+	{390, 4, _RP("OHare")},			// 0x01C9
+	{391, 4, _RP("Gayle")},			// 0x01CA
+	{392, 4, _RP("Cranston")},		// 0x01CB
+	{393, 4, _RP("Frobert")},		// 0x01CC
+	{394, 4, _RP("Grizzly")},		// 0x01CD
+	{395, 4, _RP("Cally")},			// 0x01CE
+	{396, 4, _RP("Simon")},			// 0x01CF
+	{397, 4, _RP("Iggly")},			// 0x01D0
+	{398, 4, _RP("Angus")},			// 0x01D1
+	{399, 4, _RP("Twiggy")},		// 0x01D2
+	{400, 4, _RP("Robin")},			// 0x01D3
+
+	// Animal Crossing: Character Parfait, Amiibo Festival
+	{401, 5, _RP("Isabelle (Parfait)")},		// 0x01D4
+	{402, 5, _RP("Goldie (amiibo Festival)")},	// 0x01D5
+	{403, 5, _RP("Stitches (amiibo Festival)")},	// 0x01D6
+	{404, 5, _RP("Rosie (amiibo Festival)")},	// 0x01D7
+	{405, 5, _RP("K.K. Slider (Parfait)")},		// 0x01D8
+
+	// Unused [0x01D9-0x01DF]
+	{  0, 0, nullptr},			// 0x01D9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01DA,0x01DB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01DC,0x01DD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01DE,0x01DF
+
+	// Unused [0x01E0-0x01EF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01E0,0x01E1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01E2,0x01E3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01E4,0x01E5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01E6,0x01E7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01E8,0x01E9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01EA,0x01EB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01EC,0x01ED
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01EE,0x01EF
+
+	// Unused [0x01F0-0x01FF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01F0,0x01E1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01F2,0x01F3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01F4,0x01F5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01F6,0x01F7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01F8,0x01F9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01FA,0x01FB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01FC,0x01FD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x01FE,0x01FF
+
+	// Unused [0x0200-0x020F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0200,0x0201
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0202,0x0203
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0204,0x0205
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0206,0x0207
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0208,0x0209
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x020A,0x020B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x020C,0x020D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x020E,0x020F
+
+	// Unused [0x0210-0x021F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0210,0x0211
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0212,0x0213
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0214,0x0215
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0216,0x0217
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0218,0x0219
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x021A,0x021B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x021C,0x021D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x021E,0x021F
+
+	// Unused [0x0220-0x022F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0220,0x0221
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0222,0x0223
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0224,0x0225
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0226,0x0227
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0228,0x0229
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x022A,0x022B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x022C,0x022D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x022E,0x022F
+
+	// Unused [0x0230-0x0237]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0230,0x0231
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0232,0x0233
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0234,0x0235
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0236,0x0237
+
+	// SMB 30th Anniversary [0x0238-0x0239]
+	{  1, 1, _RP("8-bit Mario (Classic Color)")},	// 0x0238
+	{  2, 1, _RP("8-bit Mario (Modern Color)")},	// 0x0239
+
+	// Skylanders Series [0x023A-0x023B]
+	{  1, 0, _RP("Hammer Slam Bowser")},		// 0x023A
+	{  2, 0, _RP("Turbo Charge Donkey Kong")},	// 0x023B
 #if 0
 	// NOTE: Cannot distinguish between regular and dark
 	// variants in amiibo mode.
-	{0x023A,   3, 0, _RP("Dark Hammer Slam Bowser")},
-	{0x023B,   4, 0, _RP("Dark Turbo Charge Donkey Kong")},
+	{  3, 0, _RP("Dark Hammer Slam Bowser")},	// 0x023A
+	{  4, 0, _RP("Dark Turbo Charge Donkey Kong")},	// 0x023B
 #endif
-};
 
-// The Legend of Zelda (amiibo series = 0x09)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::tloz_series[] = {
-	// Twilight Princess
-	{0x024F,   0, 1, _RP("Midna & Wolf Link")},
+	// Unused [0x023C]
+	{  0, 0, nullptr},			// 0x023C
+
+	// SSB: Mewtwo (Wave 7) [0x023D]
+	{ 51, 7, _RP("Mewtwo")},		// 0x023D
+
+	// Yarn Yoshi: Mega Yarn Yoshi [0x023E]
+	{  1, 0, _RP("Mega Yarn Yoshi")},	// 0x023E
+
+	// Animal Crossing Figurines: Wave 1 [0x023F-0x0246]
+	{  0, 1, _RP("Isabelle")},		// 0x023F
+	{  0, 1, _RP("K.K. Slider")},		// 0x0240
+	{  0, 1, _RP("Mabel")},			// 0x0241
+	{  0, 1, _RP("Tom Nook")},		// 0x0242
+	{  0, 1, _RP("Digby")},			// 0x0243
+	{  0, 1, _RP("Lottie")},		// 0x0244
+	{  0, 1, _RP("Reese")},			// 0x0245
+	{  0, 1, _RP("Cyrus")},			// 0x0246
+
+	// Animal Crossing Figurines: Wave 2 [0x0247-0x024A]
+	{  0, 2, _RP("Blathers")},		// 0x0247
+	{  0, 2, _RP("Celeste")},		// 0x0248
+	{  0, 2, _RP("Resetti")},		// 0x0249
+	{  0, 2, _RP("Kicks")},			// 0x024A
+
+	// Animal Crossing Figurines: Wave 4 (out of order) [0x024B]
+	{  0, 4, _RP("Isabelle (Summer Outfit)")},// 0x024B
+
+	// Animal Crossing Figurines: Wave 3 [0x024C-0x024E]
+	{  0, 3, _RP("Rover")},			// 0x024C
+	{  0, 3, _RP("Timmy & Tommy")},		// 0x024D
+	{  0, 3, _RP("Kapp'n")},		// 0x024E
+
+	// The Legend of Zelda: Twilight Princess [0x024F]
+	{  0, 1, _RP("Midna & Wolf Link")},	// 0x024F
+
+	// Shovel Knight [0x0250]
+	{  0, 0, _RP("Shovel Knight")},		// 0x0250
+
+	// SSB: DLC characters (Waves 8+)
+	{ 53, 8, _RP("Lucas")},			// 0x0251
+	{ 55, 9, _RP("Roy")},			// 0x0252
+	{ 56, 9, _RP("Ryu")},			// 0x0253
+
+	// Unused [0x0254-0x0256]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0254,0x0255
+	{  0, 0, nullptr},			// 0x0256
+
+	// Kirby [0x0257]
+	// NOTE: Most Kirby amiibos use the SSB series ID.
+	// Only those not present in SSB use the Kirby series ID.
+	{  0, 0, _RP("Waddle Dee")},		// 0x0257
+
+	// SSB: Special amiibo [0x0258]
+	{  0, 0, _RP("Mega Man (Gold Edition)")},// 0x0258
+
+	// Unused [0x0259-0x025B]
+	{  0, 0, nullptr},			// 0x0259
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x025A,0x025B
+
+	// Pokkén Tournament [0x025C]
+	{  0, 0, _RP("Shadow Mewtwo")},		// 0x025C
+
+	// Splatoon: Wave 2 [0x025D-0x0261]
+	{  0, 2, _RP("Callie")},		// 0x025D
+	{  0, 2, _RP("Marie")},			// 0x025E
+	{  0, 2, _RP("Inkling Girl (Lime Green)")},// 0x025F
+	{  0, 2, _RP("Inkling Boy (Purple)")},	// 0x0260
+	{  0, 2, _RP("Inkling Squid (Orange)")},// 0x0261
+
+	// SMB: Wave 2 [0x0262-0x0268]
+	{ 12, 2, _RP("Rosalina")},		// 0x0262
+	{  9, 2, _RP("Wario")},			// 0x0263
+	{ 13, 2, _RP("Donkey Kong")},		// 0x0264
+	{ 14, 2, _RP("Diddy Kong")},		// 0x0265
+	{ 11, 2, _RP("Daisy")},			// 0x0266
+	{ 10, 2, _RP("Waluigi")},		// 0x0267
+	{ 15, 2, _RP("Boo")},			// 0x0268
+
+	// Unused [0x0269-0x026F]
+	{  0, 0, nullptr},			// 0x0269
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026A,0x026B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026C,0x026D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026E,0x026F
+
+	// Unused [0x0270-0x027F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0270,0x0271
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0272,0x0273
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0274,0x0275
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0276,0x0277
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0278,0x0279
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027A,0x027B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027C,0x027D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027E,0x027F
+
+	// Unused [0x0280-0x028F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0280,0x0281
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0282,0x0283
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0284,0x0285
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0286,0x0287
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0288,0x0289
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028A,0x028B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028C,0x028D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028E,0x028F
+
+	// Unused [0x0290-0x029F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0290,0x0291
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0292,0x0293
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0294,0x0295
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0296,0x0297
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0298,0x0299
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029A,0x029B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029C,0x029D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029E,0x029F
+
+	// Unused [0x02A0-0x02AF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A0,0x02A1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A2,0x02A3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A4,0x02A5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A6,0x02A7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A8,0x02A9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AA,0x02AB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AC,0x02AD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AE,0x02AF
+
+	// Unused [0x02B0-0x02BF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B0,0x02B1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B2,0x02B3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B4,0x02B5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B6,0x02B7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B8,0x02B9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BA,0x02BB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BC,0x02BD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BE,0x02BF
+
+	// Unused [0x02C0-0x02CF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C0,0x02C1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C2,0x02C3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C4,0x02C5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C6,0x02C7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C8,0x02C9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02CA,0x02CB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02CC,0x02CD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02CE,0x02CF
+
+	// Unused [0x02D0-0x02DF]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02D0,0x02D1
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02D2,0x02D3
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02D4,0x02D5
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02D6,0x02D7
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02D8,0x02D9
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02DA,0x02DB
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02DC,0x02DD
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02DE,0x02DF
+
+	// Unused [0x02E1]
+	{  0, 0, nullptr},			// 0x02E1
+
+	// Monster Hunter [0x02E1-0x02E3]
+	{  2, 1, _RP("One-Eyed Rathalos and Rider (Female)")},	// 0x02E1
+	{  1, 1, _RP("One-Eyed Rathalos and Rider (Male)")},	// 0x02E2
+	{  3, 1, _RP("Nabiru")},				// 0x02E3
+	// TODO: Not released yet.
+	//{  4, 2, _RP("Rathian and Cheval")},	// 0x02E4
+	{  0, 0, nullptr},
+	//{  5, 2, _RP("Barioth and Ayuria")},	// 0x02E5
+	{  0, 0, nullptr},
+	//{  6, 2, _RP("Qurupeco and Dan")},	// 0x02E6
+	{  0, 0, nullptr},
+
+	// Animal Crossing: Welcome Amiibo Series [0x02E8-0x031E]
+	// NOTE: Remove placeholders when cards are made available.
+	//{  1, 7, _RP("Vivian")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{  2, 7, _RP("Hopkins")},		// 0x02E8
+	{  3, 7, _RP("June")},			// 0x02E9
+	//{  4, 7, _RP("Piper")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{  5, 7, _RP("Paolo")},			// 0x02EB
+	{  6, 7, _RP("Hornsby")},		// 0x02EC
+	//{  7, 7, _RP("Stella")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{  8, 7, _RP("Tybalt")},		// 0x02EE
+	//{  9, 7, _RP("Huck")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 10, 7, _RP("Sylvana")},		// 0x02F0
+	//{ 11, 7, _RP("Boris")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 12, 7, _RP("Wade")},			// 0x02F2
+	{ 13, 7, _RP("Carrie")},		// 0x02F3
+	//{ 14, 7, _RP("Ketchup")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 15, 7, _RP("Rex")},			// 0xXXXX
+	{  0, 0, nullptr},
+	{ 16, 7, _RP("Stu")},			// 0x02F6
+	{ 17, 7, _RP("Ursala")},		// 0x02F7
+	{ 18, 7, _RP("Jacob")},			// 0x02F8
+	{ 19, 7, _RP("Maddie")},		// 0x02F9
+	//{ 20, 7, _RP("Billy")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 21, 7, _RP("Boyd")},			// 0x02FB
+	//{ 22, 7, _RP("Bitty")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 23, 7, _RP("Maggie")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 24, 7, _RP("Murphy")},		// 0x02FE
+	{ 25, 7, _RP("Plucky")},		// 0x02FF
+	{ 26, 7, _RP("Sandy")},			// 0x0300
+	{ 27, 7, _RP("Claude")},		// 0x0301
+	{ 28, 7, _RP("Raddle")},		// 0x0302
+	//{ 29, 7, _RP("Julia")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 30, 7, _RP("Louie")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 31, 7, _RP("Bea")},			// 0x0305
+	{ 32, 7, _RP("Admiral")},		// 0x0306
+	{ 33, 7, _RP("Ellie")},			// 0x0307
+	{ 34, 7, _RP("Boots")},			// 0x0308
+	//{ 35, 7, _RP("Weber")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 36, 7, _RP("Candi")},			// 0x030A
+	{ 37, 7, _RP("Leopold")},		// 0x030B
+	{ 38, 7, _RP("Spike")},			// 0x030C
+	//{ 39, 7, _RP("Cashmere")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 40, 7, _RP("Tad")},			// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 41, 7, _RP("Norma")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 42, 7, _RP("Gonzo")},		// 0xXXXX
+	{  0, 0, nullptr},
+	//{ 43, 7, _RP("Sprocket")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 44, 7, _RP("Snooty")},		// 0x0312
+	//{ 45, 7, _RP("Olive")},		// 0xXXXX
+	{  0, 0, nullptr},
+	{ 46, 7, _RP("Dobie")},			// 0x0314
+	{ 47, 7, _RP("Buzz")},			// 0x0315
+	{ 48, 7, _RP("Cleo")},			// 0x0316
+	//{ 49, 7, _RP("Ike")},			// 0xXXXX
+	{  0, 0, nullptr},
+	{ 50, 7, _RP("Tasha")},			// 0x0318
+
+	// Animal Crossing x Sanrio Series
+	{  1, 6, _RP("Rilla")},			// 0x0319
+	{  2, 6, _RP("Marty")},			// 0x031A
+	{  3, 6, _RP("Étoile")},		// 0x031B
+	{  4, 6, _RP("Chai")},			// 0x031C
+	{  5, 6, _RP("Chelsea")},		// 0x031D
+	{  6, 6, _RP("Toby")},			// 0x031E
 
 #if 0
 	// TODO: Not released yet.
+
+	// SSB: DLC characters.
+	{ 57, 10, _RP("Bayonetta")},			// 0x0xxx
+	{ 58, 10, _RP("Cloud")},			// 0x0xxx
+	{ 59, 10, _RP("Corrin")},			// 0x0xxx
 
 	// The Legend of Zelda: 30th Anniversary Series
-	{0x0250,   0, 2, _RP("Link (8-bit)")},
-	{0x0251,   0, 2, _RP("Link (Ocarina of Time)")},
-	{0x0252,   0, 2, _RP("Toon Link (The Wind Waker)")},
-	{0x0253,   0, 2, _RP("Zelda (The Wind Waker)")},
+	{  0, 2, _RP("Link (8-bit)")},			// 0x0xxx
+	{  0, 2, _RP("Link (Ocarina of Time)")},	// 0x0xxx
+	{  0, 2, _RP("Toon Link (The Wind Waker)")},	// 0x0xxx
+	{  0, 2, _RP("Zelda (The Wind Waker)")},	// 0x0xxx
 
 	// The Legend of Zelda: Breath of the Wild Series
-	{0x0254,   0, 3, _RP("Link (Archer)")},
-	{0x0254,   0, 3, _RP("Link (Rider)")},
-	{0x0254,   0, 3, _RP("Guardian")},
+	{  0, 3, _RP("Link (Archer)")},			// 0x0xxx
+	{  0, 3, _RP("Link (Rider)")},			// 0x0xxx
+	{  0, 3, _RP("Guardian")},			// 0x0xxx
 #endif
-};
-
-// Shovel Knight (amiibo series = 0x0A)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::shovel_knight_series[] = {
-	{0x0250,   0, 0, _RP("Shovel Knight")},
-};
-
-// Kirby (amiibo series = 0x0C)
-// NOTE: Most Kirby amiibos use the SSB series ID.
-// Only those not present in SSB use the Kirby series ID.
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::kirby_series[] = {
-	{0x0257,   0, 0, _RP("Waddle Dee")},
-};
-
-// Pokkén Tournament (amiibo series = 0x0D)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::pokken_series[] = {
-	{0x025C,   0, 0, _RP("Shadow Mewtwo")},
-};
-
-// Monster Hunter (amiibo series = 0x0F)
-const AmiiboDataPrivate::amiibo_id_per_series_t AmiiboDataPrivate::mh_series[] = {
-	{0x02E1,   2, 1, _RP("One-Eyed Rathalos and Rider (Female)")},
-	{0x02E2,   1, 1, _RP("One-Eyed Rathalos and Rider (Male)")},
-	{0x02E3,   3, 1, _RP("Nabiru")},
-#if 0
-	// TODO: Not released yet.
-	{0x02E4,   4, 2, _RP("Rathian and Cheval")},
-	{0x02E5,   5, 2, _RP("Barioth and Ayuria")},
-	{0x02E6,   6, 2, _RP("Qurupeco and Dan")},
-#endif
-};
-
-// All amiibo IDs per series.
-// Array index = SS
-const AmiiboDataPrivate::amiibo_series_t AmiiboDataPrivate::amiibo_series[] = {
-	{_RP("Super Smash Bros."), ssb_series, ARRAY_SIZE(ssb_series)},				// 0x00
-	{_RP("Super Mario Bros."), smb_series, ARRAY_SIZE(smb_series)},				// 0x01
-	{_RP("Chibi Robo!"), chibi_robo_series, ARRAY_SIZE(chibi_robo_series)},			// 0x02
-	{_RP("Yarn Yoshi"), yarn_yoshi_series, ARRAY_SIZE(yarn_yoshi_series)},			// 0x03
-	{_RP("Splatoon"), splatoon_series, ARRAY_SIZE(splatoon_series)},			// 0x04
-	{_RP("Animal Crossing"), ac_series, ARRAY_SIZE(ac_series)},				// 0x05
-	{_RP("Super Mario Bros. 30th Anniversary"), smb_30th_series, ARRAY_SIZE(smb_30th_series)},// 0x06
-	{_RP("Skylanders"), skylanders_series, ARRAY_SIZE(skylanders_series)},			// 0x07
-	{nullptr, nullptr, 0},									// 0x08
-	{_RP("The Legend of Zelda"), tloz_series, ARRAY_SIZE(tloz_series)},			// 0x09
-	{_RP("Shovel Knight"), shovel_knight_series, ARRAY_SIZE(shovel_knight_series)}, 	// 0x0A
-	{nullptr, nullptr, 0},									// 0x0B
-	{_RP("Kirby"), kirby_series, ARRAY_SIZE(kirby_series)},					// 0x0C
-#ifdef RP_UTF16
-	{_RP("Pokk\u00E9n Tournament"), pokken_series, ARRAY_SIZE(pokken_series)},		// 0x0D
-#else /* RP_UTF8 */
-	{_RP("Pokk\xC3\xA9n Tournament"), pokken_series, ARRAY_SIZE(pokken_series)},		// 0x0D
-#endif
-	{nullptr, nullptr, 0},									// 0x0E
-	{_RP("Monster Hunter"), mh_series, ARRAY_SIZE(mh_series)},				// 0x0F
 };
 
 /** AmiiboData **/
@@ -1746,10 +1885,15 @@ const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
+	static_assert(sizeof(AmiiboDataPrivate::char_series_names)/sizeof(AmiiboDataPrivate::char_series_names[0]) == 0x360/4,
+		"char_series_names[] is out of sync with the amiibo ID list.");
+	static_assert(sizeof(AmiiboDataPrivate::amiibo_ids)/sizeof(AmiiboDataPrivate::amiibo_ids[0]) == 0x031F,
+		"amiibo_ids[] is out of sync with the amiibo ID list.");
+
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
-	if (series_id >= ARRAY_SIZE(AmiiboDataPrivate::amiibo_series))
+	if (series_id >= ARRAY_SIZE(AmiiboDataPrivate::amiibo_series_names))
 		return nullptr;
-	return AmiiboDataPrivate::amiibo_series[series_id].name;
+	return AmiiboDataPrivate::amiibo_series_names[series_id];
 }
 
 }
