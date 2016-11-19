@@ -135,6 +135,7 @@ SET(libromdata_H
 	snes_structs.h
 	dc_structs.h
 	vb_structs.h
+	nfp_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

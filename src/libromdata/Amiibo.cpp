@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "Amiibo.hpp"
+#include "nfp_structs.h"
 
 #include "common.h"
 #include "byteswap.h"
@@ -57,7 +58,7 @@ class AmiiboPrivate
 
 	public:
 		// NFC data. (TODO)
-		//NFP_Data nfpData;
+		NFP_Data_t nfpData;
 };
 
 /** AmiiboPrivate **/
@@ -69,6 +70,9 @@ const RomFields::StringDesc AmiiboPrivate::nfp_string_credits = {
 
 // ROM fields.
 const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
+	// NTAG215 data.
+	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {nullptr}},
+
 	// TODO: amiibo data.
 
 	// Credits
@@ -102,30 +106,20 @@ Amiibo::Amiibo(IRpFile *file)
 		return;
 	}
 
-	// TODO: Verify the NFP data.
-	m_isValid = true;
-#if 0
-	// Read the ROM header.
-	GBA_RomHeader romHeader;
+	// Read the NFC data.
 	m_file->rewind();
-	size_t size = m_file->read(&romHeader, sizeof(romHeader));
-	if (size != sizeof(romHeader))
+	size_t size = m_file->read(&d->nfpData, sizeof(d->nfpData));
+	if (size != sizeof(d->nfpData))
 		return;
 
-	// Check if this ROM image is supported.
+	// Check if the NFC data is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&romHeader);
-	info.ext = nullptr;	// Not needed for GBA.
-	info.szFile = 0;	// Not needed for GBA.
+	info.header.size = sizeof(d->nfpData);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nfpData);
+	info.ext = nullptr;	// Not needed for NFP.
+	info.szFile = m_file->fileSize();
 	m_isValid = (isRomSupported_static(&info) >= 0);
-
-	if (m_isValid) {
-		// Save the ROM header.
-		memcpy(&d->romHeader, &romHeader, sizeof(d->romHeader));
-	}
-#endif
 }
 
 Amiibo::~Amiibo()
@@ -154,7 +148,31 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// TODO: Verify the file.
+	// Check the "must match" values.
+	const NFP_Data_t *nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);
+	static const uint8_t lock_header[2] = {0x0F, 0xE0};
+	static const uint8_t cap_container[4] = {0xF1, 0x10, 0xFF, 0xEE};
+	static const uint8_t lock_footer[3] = {0x01, 0x00, 0x0F};
+	static const uint8_t cfg0[4] = {0x00, 0x00, 0x00, 0x04};
+	static const uint8_t cfg1[4] = {0x5F, 0x00, 0x00, 0x00};
+
+	static_assert(sizeof(nfpData->lock_header)   == sizeof(lock_header),   "lock_header is the wrong size.");
+	static_assert(sizeof(nfpData->cap_container) == sizeof(cap_container), "cap_container is the wrong size.");
+	static_assert(sizeof(nfpData->lock_footer)   == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
+	static_assert(sizeof(nfpData->cfg0)          == sizeof(cfg0),          "cfg0 is the wrong size.");
+	static_assert(sizeof(nfpData->cfg1)          == sizeof(cfg1),          "cfg1 is the wrong size.");
+
+	if (memcmp(nfpData->lock_header,   lock_header,   sizeof(lock_header)) != 0 ||
+	    memcmp(nfpData->cap_container, cap_container, sizeof(cap_container)) != 0 ||
+	    memcmp(nfpData->lock_footer,   lock_footer,   sizeof(lock_footer)) != 0 ||
+	    memcmp(nfpData->cfg0,          cfg0,          sizeof(cfg0)) != 0 ||
+	    memcmp(nfpData->cfg1,          cfg1,          sizeof(cfg1)) != 0)
+	{
+		// Not an amiibo.
+		return -1;
+	}
+
+	// This is an amiibo.
 	return 0;
 }
 
@@ -259,7 +277,49 @@ int Amiibo::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: Actual NFC data.
+	// NTAG215 data.
+
+	// Serial number.
+	// Check Byte 0 = CT ^ SN0 ^ SN1 ^ SN2
+	// Check Byte 1 = SN3 ^ SN4 ^ SN5 ^ SN6
+	// NTAG215 uses Cascade Level 2, so CT = 0x88.
+	const uint8_t cb0 = 0x88 ^ d->nfpData.serial[0] ^
+		d->nfpData.serial[1] ^ d->nfpData.serial[2];
+	const uint8_t cb1 = d->nfpData.serial[4] ^
+		d->nfpData.serial[5] ^ d->nfpData.serial[6] ^ d->nfpData.serial[7];
+	// Convert the 7-byte serial number to ASCII.
+	static const uint8_t hex_lookup[16] = {
+		'0','1','2','3','4','5','6','7',
+		'8','9','A','B','C','D','E','F'
+	};
+	char buf[64]; char *pBuf = buf;
+	for (int i = 0; i < 8; i++, pBuf += 2) {
+		if (i == 3) {
+			// Byte 3 is CB0.
+			i++;
+		}
+		pBuf[0] = hex_lookup[d->nfpData.serial[i] >> 4];
+		pBuf[1] = hex_lookup[d->nfpData.serial[i] & 0x0F];
+	}
+
+	// Verify the check bytes.
+	if (cb0 == d->nfpData.serial[3] &&
+	    cb1 == d->nfpData.serial[8])
+	{
+		// Check bytes are valid.
+		snprintf(pBuf, sizeof(buf) - (7*2), " (check bytes: %02X %02X)",
+			d->nfpData.serial[3], d->nfpData.serial[8]);
+	}
+	else
+	{
+		// Check bytes are NOT valid.
+		snprintf(pBuf, sizeof(buf) - (7*2), " (INVALID check bytes: %02X %02X)",
+			d->nfpData.serial[3], d->nfpData.serial[8]);
+	}
+
+	m_fields->addData_string(latin1_to_rp_string(buf, -1));
+
+	// TODO: NFP data.
 
 	// Credits.
 	m_fields->addData_string(
