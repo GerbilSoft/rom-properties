@@ -1289,6 +1289,9 @@ int CPngCheck::pngcheck(void)
   // This used to be at the beginning of the zlib code,
   // but we can't use 'static' because this function
   // needs to be reentrant and thread-safe.
+  // NOTE: uch *p must be initialized; otherwise, MSVC 2015
+  // release builds fail due to potential use of an uninitialized
+  // variable. (/sdl option)
   uch *p = nullptr;   /* always points to next filter byte */
   int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
   long cur_width, cur_linebytes;
