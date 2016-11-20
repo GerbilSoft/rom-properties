@@ -1887,10 +1887,10 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
 #ifdef USE_ZLIB
       if (check_zlib && !zlib_error) {
-        static uch *p;   /* always points to next filter byte */
-        static int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
-        static long cur_width, cur_linebytes;
-        static long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
+        uch *p;   /* always points to next filter byte */
+        int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
+        long cur_width, cur_linebytes;
+        long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
         uch *eod;
         int err=Z_OK;
 
