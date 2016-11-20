@@ -555,6 +555,10 @@ static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
 #endif
 }
 
+}
+
+/** Reimplementations of libc functions that aren't present on this system. **/
+
 #ifndef HAVE_STRNLEN
 /**
  * String length with limit. (8-bit strings)
@@ -562,9 +566,8 @@ static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
  * @param len Maximum length of the string
  * @returns equivivalent to min(strlen(str), len) without buffer overruns
  */
+extern "C"
 size_t strnlen(const char *str, size_t len);
 #endif /* HAVE_STRNLEN */
-
-}
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */
