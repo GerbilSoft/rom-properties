@@ -1285,6 +1285,18 @@ int CPngCheck::pngcheck(void)
 
   /*-------------------- BEGINNING OF IMMENSE WHILE-LOOP --------------------*/
 
+#ifdef USE_ZLIB
+  // This used to be at the beginning of the zlib code,
+  // but we can't use 'static' because this function
+  // needs to be reentrant and thread-safe.
+  uch *p = nullptr;   /* always points to next filter byte */
+  int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
+  long cur_width, cur_linebytes;
+  long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
+  uch *eod;
+  int err=Z_OK;
+#endif
+
   while ((c = fp->getc()) != EOF) {
     fp->ungetc(c);
 
@@ -1887,13 +1899,9 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
 #ifdef USE_ZLIB
       if (check_zlib && !zlib_error) {
-        uch *p;   /* always points to next filter byte */
-        int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
-        long cur_width, cur_linebytes;
-        long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
-        uch *eod;
-        int err=Z_OK;
-
+        // Variables moved outside of the 'while' loop.
+        // We can't use 'static' here because that's not
+        // reentrant or thread-safe.
         zstrm.next_in = buffer;
         zstrm.avail_in = toread;
 
