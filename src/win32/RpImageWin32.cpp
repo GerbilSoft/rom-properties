@@ -232,8 +232,6 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
 				const uint32_t *src = reinterpret_cast<const uint32_t*>(image->scanLine(y));
-				// FIXME: Handle images that aren't a multiple of 8px wide.
-				assert(image->width() % 8 == 0);
 				for (int x = image->width(); x > 0; x -= 8) {
 					uint8_t pxMono = 0;
 					for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
