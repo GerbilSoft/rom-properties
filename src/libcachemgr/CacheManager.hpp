@@ -93,31 +93,6 @@ class CacheManager
 			const LibRomData::rp_string &url,
 			const LibRomData::rp_string &cache_key);
 
-		/**
-		 * Download and scrape an HTML file for an image URL, then download the image.
-		 *
-		 * This is required for some external sources that don't
-		 * have easily-accessible image URLs, but do have them
-		 * embedded in HTML pages.
-		 *
-		 * @param url		[in] HTML page to download and scrape.
-		 * @param cache_key	[in] Cache key for the downloaded image.
-		 * @param romData	[in] RomData class that will scrape the URL.
-		 *
-		 * If the file is present in the cache, the cached version
-		 * will be retrieved. Otherwise, the file will be downloaded.
-		 *
-		 * If the file was not found on the server, or it was not found
-		 * the last time it was requested, an empty string will be
-		 * returned, and a zero-byte file will be stored in the cache.
-		 *
-		 * @return Absolute path to the cached file.
-		 */
-		LibRomData::rp_string downloadAndScrape(
-			const LibRomData::rp_string &url,
-			const LibRomData::rp_string &cache_key,
-			const LibRomData::RomData *romData);
-
 	protected:
 		LibRomData::rp_string m_proxyUrl;
 		IDownloader *m_downloader;

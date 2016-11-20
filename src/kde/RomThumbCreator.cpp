@@ -161,15 +161,7 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename;
-		if (imgpf & RomData::IMGPF_EXTURL_NEEDS_HTML_SCRAPING) {
-			// The downloaded file is an HTML file that
-			// needs to be scraped for the actual image URL.
-			cache_filename = cache.downloadAndScrape(extURL.url, extURL.cache_key, romData);
-		} else {
-			// Standard image download.
-			cache_filename = cache.download(extURL.url, extURL.cache_key);
-		}
+		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
 		if (cache_filename.empty())
 			continue;
 

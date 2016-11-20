@@ -276,12 +276,6 @@ class RomData
 			// Call iconAnimData() to get the animated
 			// icon frames and control information.
 			IMGPF_ICON_ANIMATED	= (1 << 3),
-
-			// ExtURL is not easily determined, but can
-			// be scraped from an HTML page. After downloading
-			// the ExtURL, call scrapeImageURL() with the
-			// HTML data to get the actual image URL.
-			IMGPF_EXTURL_NEEDS_HTML_SCRAPING = (1 << 4),
 		};
 
 		/**
