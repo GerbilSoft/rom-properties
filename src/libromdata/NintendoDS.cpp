@@ -775,7 +775,7 @@ int NintendoDS::loadFieldData(void)
 			m_fields->addData_string(filetype);
 		} else {
 			// Invalid file type.
-			char buf[32];
+			char buf[24];
 			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi_filetype);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
