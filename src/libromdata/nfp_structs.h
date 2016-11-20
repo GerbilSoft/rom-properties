@@ -91,6 +91,15 @@ typedef struct PACKED _NFP_Data_t {
 #pragma pack()
 ASSERT_STRUCT(NFP_Data_t, 540);
 
+/**
+ * amiibo type. (low byte of char_id)
+ */
+typedef enum {
+	NFP_TYPE_FIGURINE	= 0x00,
+	NFP_TYPE_CARD		= 0x01,
+	NFP_TYPE_YARN		= 0x02,
+} NFP_Type_t;
+
 #ifdef __cplusplus
 }
 #endif

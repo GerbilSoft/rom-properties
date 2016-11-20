@@ -93,6 +93,7 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 
 	// TODO: More amiibo data.
 	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
+	{_RP("amiibo Type"), RomFields::RFT_STRING, {nullptr}},
 
 	{_RP("Character Series"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Character Name"), RomFields::RFT_STRING, {nullptr}},
@@ -395,19 +396,44 @@ int Amiibo::loadFieldData(void)
 		len = (int)sizeof(buf);
 	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
+	// NFP data.
+	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
+	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
+
 	// amiibo ID.
 	// Represents the character and amiibo series.
 	// TODO: Link to http://amiibo.life/nfc/%08X-%08X
-	len = snprintf(buf, sizeof(buf), "%08X-%08X",
-		 be32_to_cpu(d->nfpData.char_id),
-		 be32_to_cpu(d->nfpData.amiibo_id));
+	len = snprintf(buf, sizeof(buf), "%08X-%08X", char_id, amiibo_id);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
 	m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
-	// NFP data.
-	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
-	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
+	// amiibo type.
+	const rp_char *type = nullptr;
+	switch (char_id & 0xFF) {
+		case NFP_TYPE_FIGURINE:
+			type = _RP("Figurine");
+			break;
+		case NFP_TYPE_CARD:
+			type = _RP("Card");
+			break;
+		case NFP_TYPE_YARN:
+			type = _RP("Yarn");
+			break;
+		default:
+			break;
+	}
+
+	if (type) {
+		m_fields->addData_string(type);
+	} else {
+		// Invalid amiibo type.
+		char buf[24];
+		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (char_id & 0xFF));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	}
 
 	// Character series.
 	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
