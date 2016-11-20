@@ -951,11 +951,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0741, _RP("Dark Pit"), nullptr, 0},
 	{0x0742, _RP("Palutena"), nullptr, 0},
 
-	// Splatoon (character series = 0x080)
-	{0x0800, _RP("Inkling"), splatoon_inkling_variants, ARRAY_SIZE(splatoon_inkling_variants)},
-	{0x0801, _RP("Callie"), nullptr, 0},
-	{0x0801, _RP("Marie"), nullptr, 0},
-
 	// Classic Nintendo (character series = 0x078)
 	{0x0780, _RP("Mr. Game & Watch"), nullptr, 0},
 	{0x0781, _RP("R.O.B."), nullptr, 0},	// NES/Famicom variant is in Page 22, amiibo series.
@@ -965,6 +960,11 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x07C0, _RP("Mii Brawler"), nullptr, 0},
 	{0x07C1, _RP("Mii Swordfighter"), nullptr, 0},
 	{0x07C2, _RP("Mii Gunner"), nullptr, 0},
+
+	// Splatoon (character series = 0x080)
+	{0x0800, _RP("Inkling"), splatoon_inkling_variants, ARRAY_SIZE(splatoon_inkling_variants)},
+	{0x0801, _RP("Callie"), nullptr, 0},
+	{0x0801, _RP("Marie"), nullptr, 0},
 
 	// Pokémon (character series = 0x190 - 0x1BC)
 	{0x1900+  6, _RP("Charizard"), nullptr, 0},
