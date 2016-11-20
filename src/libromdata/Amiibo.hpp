@@ -141,16 +141,6 @@ class Amiibo : public RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadURLs(ImageType imageType) final;
-
-	public:
-		/**
-		 * Scrape an image URL from a downloaded HTML page.
-		 * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
-		 * @param html HTML data.
-		 * @param size Size of HTML data.
-		 * @return Image URL, or empty string if not found or not supported.
-		 */
-		virtual rp_string scrapeImageURL(const char *html, size_t size) const final;
 };
 
 }

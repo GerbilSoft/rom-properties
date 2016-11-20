@@ -512,12 +512,6 @@ int Amiibo::loadURLs(ImageType imageType)
 		return -ENOENT;
 	}
 
-	// URL: http://amiibo.life/nfc/[Page21]-[Page22]
-	// Replace Page21 and Page22 with %08X printouts of
-	// the amiibo ID. This will return an HTML page that
-	// needs to be scraped for the actual image URL.
-	m_imgpf[imageType] = IMGPF_EXTURL_NEEDS_HTML_SCRAPING;
-
 	ExtURL extURL;
 
 	// Cache key. (amiibo ID)
@@ -535,8 +529,9 @@ int Amiibo::loadURLs(ImageType imageType)
 	extURL.cache_key += _RP(".png");
 
 	// URL.
+	// Format: http://amiibo.life/nfc/[Page21]-[Page22]/image
 	char url_str[64];
-	len = snprintf(url_str, sizeof(url_str), "http://amiibo.life/nfc/%.17s", &amiibo_id_str[7]);
+	len = snprintf(url_str, sizeof(url_str), "http://amiibo.life/nfc/%.17s/image", &amiibo_id_str[7]);
 	if (len > (int)sizeof(url_str))
 		len = (int)sizeof(url_str);
 	if (len <= 0) {
@@ -548,44 +543,6 @@ int Amiibo::loadURLs(ImageType imageType)
 	// Add the URL and we're done.
 	extURLs.push_back(extURL);
 	return (extURLs.empty() ? -ENOENT : 0);
-}
-
-/**
- * Scrape an image URL from a downloaded HTML page.
- * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
- * @param html HTML data.
- * @param size Size of HTML data.
- * @return Image URL, or empty string if not found or not supported.
- */
-rp_string Amiibo::scrapeImageURL(const char *html, size_t size) const
-{
-	// amiibo.life pages have a meta tag that looks like:
-	// <meta property="og:image" content="[URL]" />
-	// Search for this tag and use the URL as the image.
-
-	// FIXME: memmem() is not available on some platforms.
-	static const char meta_og_image[] = "<meta property=\"og:image\" content=\"";
-	const char *meta = (const char*)memmem(html, size, meta_og_image, sizeof(meta_og_image)-1);
-	if (!meta) {
-		// Tag not found.
-		return rp_string();
-	}
-
-	// Go to the end of the needle string.
-	meta += (sizeof(meta_og_image)-1);
-
-	// Find the ending quotes.
-	size_t sz_rem = size - (meta - html);
-	const char *endq = (const char*)memchr(meta, '"', sz_rem);
-	if (!endq) {
-		// End quotes not found.
-		return rp_string();
-	}
-
-	// Found the end quotes.
-	// TODO: urldecode?
-	rp_string imgURL = utf8_to_rp_string(meta, (int)(endq - meta));
-	return imgURL;
 }
 
 }
