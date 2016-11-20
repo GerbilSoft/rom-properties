@@ -570,4 +570,18 @@ extern "C"
 size_t strnlen(const char *str, size_t len);
 #endif /* HAVE_STRNLEN */
 
+#ifndef HAVE_MEMMEM
+/**
+ * Locate a substring in a block of memory.
+ * @param haystack Block to search.
+ * @param haystacklen Size of haystack.
+ * @param needle Substring to find.
+ * @param needlelen Size of needle.
+ * @return Substring if found, or nullptr if not.
+ */
+extern "C"
+void *memmem(const void *haystack, size_t haystacklen,
+	     const void *needle, size_t needlelen);
+#endif
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */

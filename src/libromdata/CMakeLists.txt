@@ -48,6 +48,7 @@ ENDIF(NOT WIN32)
 # Check for C library functions.
 INCLUDE(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
+CHECK_FUNCTION_EXISTS(memmem HAVE_MEMMEM)
 
 # Check if non-capturing lambda functions can be cast to function pointers.
 INCLUDE(CheckCXX11LambdaAsFunctionPointer)

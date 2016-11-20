@@ -219,3 +219,39 @@ size_t strnlen(const char *str, size_t len)
 	return rv;
 }
 #endif /* HAVE_STRNLEN */
+
+#ifndef HAVE_MEMMEM
+/**
+ * Locate a substring in a block of memory.
+ * @param haystack Block to search.
+ * @param haystacklen Size of haystack.
+ * @param needle Substring to find.
+ * @param needlelen Size of needle.
+ * @return Substring if found, or nullptr if not.
+ */
+void *memmem(const void *haystack, size_t haystacklen,
+	     const void *needle, size_t needlelen)
+{
+	// References:
+	// - http://stackoverflow.com/questions/2188914/c-searching-for-a-string-in-a-file
+	// - http://stackoverflow.com/a/2188951
+	int needle_first;
+	const uint8_t *p = (const uint8_t*)haystack;
+	size_t plen = haystacklen;
+
+	if (!needlelen)
+		return nullptr;
+
+	needle_first = *(const uint8_t*)needle;
+	while (plen >= needlelen && (p = (const uint8_t*)memchr(p, needle_first, plen - needlelen + 1))) {
+		if (!memcmp(p, needle, needlelen))
+			return (void*)p;
+
+		p++;
+		plen = haystacklen - (p - (const uint8_t*)haystack);
+	}
+
+	// Substring not found.
+	return nullptr;
+}
+#endif
