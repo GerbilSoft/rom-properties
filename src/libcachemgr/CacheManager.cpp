@@ -42,6 +42,7 @@ using namespace LibRomData::FileSystem;
 // POSIX includes.
 #ifndef _WIN32
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #endif /* !_WIN32 */
 
@@ -196,8 +197,35 @@ rp_string CacheManager::download(
 		int64_t sz = filesize(cache_filename);
 		if (sz == 0) {
 			// File is 0 bytes, which indicates it didn't exist
-			// on the server.
-			return rp_string();
+			// on the server. If the file is older than a week,
+			// try to redownload it.
+			// TODO: Configurable time.
+			// TODO: How should we handle errors?
+			time_t filetime;
+			if (get_mtime(cache_filename, &filetime) != 0)
+				return rp_string();
+#ifdef _WIN32
+			SYSTEMTIME systime;
+			GetSystemTime(&systime);
+			int64_t unixtime = SystemTimeToUnixTime(&systime);
+			if ((unixtime - filetime) < (86400*7)) {
+				// Less than a week old.
+				return rp_string();
+			}
+#else /* !_WIN32 */
+			struct timeval systime;
+			if (gettimeofday(&systime, nullptr) != 0)
+				return rp_string();
+			if ((systime.tv_sec - filetime) < (86400*7)) {
+				// Less than a week old.
+				return rp_string();
+			}
+#endif /* _WIN32 */
+
+			// More than a week old.
+			// Delete the cache file and redownload it.
+			if (delete_file(cache_filename.c_str()) != 0)
+				return rp_string();
 		} else if (sz > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
