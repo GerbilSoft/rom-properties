@@ -147,7 +147,7 @@ class AmiiboDataPrivate {
  * Array index == sss, rshifted by 2.
  */
 const rp_char *const AmiiboDataPrivate::char_series_names[] = {
-	_RP("Mario"),			// 0x000
+	_RP("Super Mario Bros."),	// 0x000
 	nullptr,			// 0x004
 	nullptr,			// 0x008
 	nullptr,			// 0x00C
