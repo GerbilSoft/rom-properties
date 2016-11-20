@@ -142,6 +142,9 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
 		return QImage();
 	}
 
+	// Image processing flags.
+	const uint32_t imgpf = romData->imgpf(imageType);
+
 	CacheManager cache;
 	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;

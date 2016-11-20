@@ -126,6 +126,8 @@ const rp_char *RomData::fileType_string(void) const
 			return _RP("Embedded Disc Image");
 		case RomData::FTYPE_APPLICATION_PACKAGE:
 			return _RP("Application Package");
+		case RomData::FTYPE_NFC_DUMP:
+			return _RP("NFC Dump");
 		case RomData::FTYPE_UNKNOWN:
 		default:
 			break;
@@ -282,6 +284,21 @@ const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
 		return nullptr;
 	const int idx = imageType - IMG_EXT_MIN;
 	return &m_extURLs[idx];
+}
+
+/**
+ * Scrape an image URL from a downloaded HTML page.
+ * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
+ * @param html HTML data.
+ * @param size Size of HTML data.
+ * @return Image URL, or empty string if not found or not supported.
+ */
+rp_string RomData::scrapeImageURL(const char *html, size_t size) const
+{
+	// Not supported in the base class.
+	((void)html);
+	((void)size);
+	return rp_string();
 }
 
 /**

@@ -11,11 +11,21 @@
     Supports text fields, icons, and the graphic eyecatch (as the banner).
     ICONDATA_VMS files are also supported.
   * Nintendo Virtual Boy ROM images: .VB format.
+  * Nintendo amiibo NFC dumps: 540-byte .bin files. (On Windows, the .bin
+    extension is not currently registered; alternatives are .nfc and .nfp)
 
 * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
   properties page.
 
-* NintendoDS: Parse and display age ratings.
+* libpng is now used on all platforms. Previously, GDI+'s PNG loader was
+  used on Windows, and it had some odd quirks like loading grayscale images
+  as 32-bit ARGB instead of paletted.
+
+* (Windows) zlib and libpng are now compiled as DLLs instead of being
+  statically linked.
+
+* pngcheck: Fixed a race condition that could result in crashes if more
+  than one thread attempted to load a PNG image at the same time.
 
 * Various optimizations and bug fixes.
 

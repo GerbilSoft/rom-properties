@@ -178,6 +178,9 @@ class RomData
 
 			// Application package, e.g. WAD, CIA.
 			FTYPE_APPLICATION_PACKAGE,
+
+			// NFC dump, e.g. amiibo.
+			FTYPE_NFC_DUMP,
 		};
 
 		/**
@@ -351,6 +354,15 @@ class RomData
 		 * @return List of URLs and cache keys, or nullptr if the ROM doesn't have one.
 		 */
 		const std::vector<ExtURL> *extURLs(ImageType imageType) const;
+
+		/**
+		 * Scrape an image URL from a downloaded HTML page.
+		 * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
+		 * @param html HTML data.
+		 * @param size Size of HTML data.
+		 * @return Image URL, or empty string if not found or not supported.
+		 */
+		virtual rp_string scrapeImageURL(const char *html, size_t size) const;
 
 		/**
 		 * Get image processing flags.

@@ -214,4 +214,16 @@ static inline int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
 	return (li.QuadPart - 116444736000000000LL) / 10000000LL;
 }
 
+/**
+ * Convert from Win32 SYSTEMTIME to Unix time.
+ * @param pFileTime Win32 SYSTEMTIME.
+ * @return Unix time.
+ */
+static inline int64_t SystemTimeToUnixTime(const SYSTEMTIME *pSystemTime)
+{
+	FILETIME fileTime;
+	SystemTimeToFileTime(pSystemTime, &fileTime);
+	return FileTimeToUnixTime(&fileTime);
+}
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */

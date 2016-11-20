@@ -104,6 +104,7 @@ Notes:
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
 | Nintendo Virtual Boy      |       Yes      |       N/A       |       No       |
 | Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
+| Nintendo amiibo           |       Yes      |        No       |      Media     |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -115,6 +116,8 @@ Notes:
   for GameCube and Wii.
   * "No" indicates no database is currently available for this system.
   * Anything else indicates what types of images are available.
+  * For amiibo, "media" refers to the amiibo object, which may be a figurine,
+    a card, or a plush.
 
 There will eventually be a configuration window for setting which image
 will be used for thumbnails (and icons on Windows).
@@ -132,18 +135,19 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
 * Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
+* Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
 
 Some file types are not currently registered on Windows due to conflicts with
 well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
 
 ## External Media Downloads
 
-Currently, two systems (GameCube and Wii) support the use of external media
-scans through GameTDB.com. The current release of the ROM Properties Page shell
-extension will always attempt to download images from GameTDB.com if thumbnail
-preview is enabled and a valid GameCube or Wii disc image is present in the
-current directory. An option to disable automatic downloads will be added in
-a future version.
+Certain parsers support the use of external media scans through an online
+database, e.g. GameTDB.com. The current release of the ROM Properties Page
+shell extension will always attempt to download images from GameTDB.com if
+thumbnail preview is enabled in the file browser and a supported file is
+present in the current directory. An option to disable automatic downloads
+will be added in a future version.
 
 Downloaded images are cached to the following directory:
 * Linux: `~/.cache/rom-properties/`
@@ -195,6 +199,7 @@ decrypt data will show an error message instead of the data in question.
 
 * @GerbilSoft: Main developer.
 * @DankRank: Contributor, bug tester.
+* @CheatFreak: Bug tester, amiibo support.
 
 ### Websites
 
@@ -218,3 +223,5 @@ decrypt data will show an error message instead of the data in question.
   "PS1 on PS3" save file format.
 * [Nocash PSX Specification Reference](http://problemkaputt.de/psx-spx.htm)
   for more information on PS1 save files.
+* [amiibo.life](http://amiibo.life): Database of Nintendo amiibo figurines,
+  cards, and plushes. Used for automatic downloading of amiibo images.

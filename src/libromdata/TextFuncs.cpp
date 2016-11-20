@@ -198,6 +198,10 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 }
 #endif /* RP_UTF16 && !RP_WIS16 */
 
+}
+
+/** Reimplementations of libc functions that aren't present on this system. **/
+
 #ifndef HAVE_STRNLEN
 /**
  * String length with limit. (8-bit strings)
@@ -205,7 +209,7 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
  * @param len Maximum length of the string
  * @returns equivivalent to min(strlen(str), len) without buffer overruns
  */
-static inline size_t strnlen(const char *str, size_t len)
+size_t strnlen(const char *str, size_t len)
 {
 	size_t rv = 0;
 	for (rv = 0; rv < len; rv++) {
@@ -215,5 +219,3 @@ static inline size_t strnlen(const char *str, size_t len)
 	return rv;
 }
 #endif /* HAVE_STRNLEN */
-
-}
