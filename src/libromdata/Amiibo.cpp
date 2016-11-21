@@ -195,6 +195,12 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 
 	const NFP_Data_t *nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);
 
+	// UID must start with 0x04.
+	if (nfpData->serial[0] != 0x04) {
+		// Invalid UID.
+		return -1;
+	}
+
 	// Validate the UID check bytes.
 	uint8_t cb0, cb1;
 	if (!AmiiboPrivate::calcCheckBytes(nfpData->serial, &cb0, &cb1)) {
