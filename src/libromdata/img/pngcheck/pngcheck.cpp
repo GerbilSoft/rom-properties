@@ -1293,10 +1293,10 @@ int CPngCheck::pngcheck(void)
   // release builds fail due to potential use of an uninitialized
   // variable. (/sdl option)
   uch *p = nullptr;   /* always points to next filter byte */
-  int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
-  long cur_width, cur_linebytes;
-  long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
-  uch *eod;
+  int cur_y = 0, cur_pass = 0, cur_xoff = 0, cur_yoff = 0, cur_xskip = 0, cur_yskip = 0;
+  long cur_width = 0, cur_linebytes = 0;
+  long numfilt = 0, numfilt_this_block = 0, numfilt_total = 0, numfilt_pass[7] = {0, 0, 0, 0, 0, 0, 0};
+  uch *eod = nullptr;
   int err=Z_OK;
 #endif
 
