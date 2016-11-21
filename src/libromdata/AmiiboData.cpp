@@ -89,6 +89,7 @@ class AmiiboDataPrivate {
 		static const char_variant_t tloz_ganondorf_variants[];
 		static const char_variant_t metroid_samus_variants[];
 		static const char_variant_t pikmin_olimar_variants[];
+		static const char_variant_t mii_variants[];
 		static const char_variant_t splatoon_inkling_variants[];
 		static const char_variant_t ac_isabelle_variants[];
 		static const char_variant_t ac_kk_slider_variants[];
@@ -332,6 +333,12 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::metroid_samus_variant
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::pikmin_olimar_variants[] = {
 	{0x00, nullptr},	// TODO
 	{0x01, _RP("Olimar")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mii_variants[] = {
+	{0x00, _RP("Mii Brawler")},
+	{0x01, _RP("Mii Swordfighter")},
+	{0x02, _RP("Mii Gunner")},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_inkling_variants[] = {
@@ -957,9 +964,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0782, _RP("Duck Hunt"), nullptr, 0},
 
 	// Mii (character series = 0x07C)
-	{0x07C0, _RP("Mii Brawler"), nullptr, 0},
-	{0x07C1, _RP("Mii Swordfighter"), nullptr, 0},
-	{0x07C2, _RP("Mii Gunner"), nullptr, 0},
+	{0x07C0, _RP("Mii Brawler"), mii_variants, ARRAY_SIZE(mii_variants)},
 
 	// Splatoon (character series = 0x080)
 	{0x0800, _RP("Inkling"), splatoon_inkling_variants, ARRAY_SIZE(splatoon_inkling_variants)},
