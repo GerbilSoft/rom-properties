@@ -2119,7 +2119,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
             sz -= toread;
             toread = (sz > BS)? BS:sz;
-            if ((data_read = fp->read(buffer, toread)) != toread) {
+            if ((data_read = (int)fp->read(buffer, toread)) != toread) {
               printf("\nEOF while reading %s data\n", chunkid);
               set_err(kCriticalError);
               return global_error;

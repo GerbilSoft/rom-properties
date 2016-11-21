@@ -510,7 +510,7 @@ int SNES::loadFieldData(void)
 			// Append the publisher.
 			id6 += string(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
 		}
-		m_fields->addData_string(latin1_to_rp_string(id6.data(), id6.size()));
+		m_fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
 	} else {
 		// No game ID.
 		m_fields->addData_string(_RP("Unknown"));

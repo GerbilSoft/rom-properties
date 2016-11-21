@@ -376,7 +376,7 @@ int VirtualBoy::loadFieldData(void)
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6 += string(romHeader->publisher, sizeof(romHeader->publisher));
-	m_fields->addData_string(latin1_to_rp_string(id6.data(), id6.size()));
+	m_fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
 
 	// Look up the publisher.
 	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
