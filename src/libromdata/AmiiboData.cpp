@@ -552,6 +552,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x022F, _RP("Anchovy"), nullptr, 0},
 	{0x0230, _RP("Twiggy"), nullptr, 0},
 	{0x0231, _RP("Jitters"), nullptr, 0},
+	{0x0232, _RP("Piper"), nullptr, 0},
 	{0x0233, _RP("Admiral"), nullptr, 0},
 	{0x0235, _RP("Midge"), nullptr, 0},
 	{0x0238, _RP("Jacob"), nullptr, 0},
@@ -662,6 +663,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x030F, _RP("Derwin"), nullptr, 0},
 	{0x0310, _RP("Drake"), nullptr, 0},
 	{0x0311, _RP("Scoot"), nullptr, 0},
+	{0x0312, _RP("Weber"), nullptr, 0},
 	{0x0313, _RP("Miranda"), nullptr, 0},
 	{0x0316, _RP("Gloria"), nullptr, 0},
 	{0x0317, _RP("Molly"), nullptr, 0},
@@ -685,6 +687,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x033D, _RP("Wart Jr."), nullptr, 0},
 	{0x033E, _RP("Puddles"), nullptr, 0},
 	{0x033F, _RP("Jeremiah"), nullptr, 0},
+	{0x0341, _RP("Tad"), nullptr, 0},
 	{0x0342, _RP("Cousteau"), nullptr, 0},
 	{0x0344, _RP("Prince"), nullptr, 0},
 	{0x0345, _RP("Jambette"), nullptr, 0},
@@ -695,6 +698,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x034B, _RP("Henry"), nullptr, 0},
 	{0x0356, _RP("Chevre"), nullptr, 0},
 	{0x0357, _RP("Nan"), nullptr, 0},
+	{0x0358, _RP("Billy"), nullptr, 0},
 	{0x035A, _RP("Gruff"), nullptr, 0},
 	{0x035C, _RP("Velma"), nullptr, 0},
 	{0x035D, _RP("Kidd"), nullptr, 0},
@@ -740,6 +744,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x03BD, _RP("Alice"), nullptr, 0},
 	{0x03BE, _RP("Melba"), nullptr, 0},
 	{0x03BF, _RP("Sydney"), nullptr, 0},
+	{0x03C0, _RP("Gonzo"), nullptr, 0},
 	{0x03C1, _RP("Ozzie"), nullptr, 0},
 	{0x03C4, _RP("Canberra"), nullptr, 0},
 	{0x03C5, _RP("Lyman"), nullptr, 0},
@@ -787,6 +792,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0436, _RP("Queenie"), nullptr, 0},
 	{0x0437, _RP("Gladys"), nullptr, 0},
 	{0x0438, _RP("Sandy"), nullptr, 0},
+	{0x0439, _RP("Sprocket"), nullptr, 0},
+	{0x043B, _RP("Julia"), nullptr, 0},
 	{0x043C, _RP("Cranston"), nullptr, 0},
 	{0x043D, _RP("Phil"), nullptr, 0},
 	{0x043E, _RP("Blanche"), nullptr, 0},
@@ -822,6 +829,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x047C, _RP("Lucy"), nullptr, 0},
 	{0x047D, _RP("Spork/Crackle"), nullptr, 0},
 	{0x0480, _RP("Cobb"), nullptr, 0},
+	{0x0481, _RP("Boris"), nullptr, 0},
+	{0x0482, _RP("Maggie"), nullptr, 0},
 	{0x0483, _RP("Peggy"), nullptr, 0},
 	{0x0485, _RP("Gala"), nullptr, 0},
 	{0x0486, _RP("Chops"), nullptr, 0},
@@ -864,6 +873,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x04C5, _RP("Vesta"), nullptr, 0},
 	{0x04C6, _RP("Baabara"), nullptr, 0},
 	{0x04C7, _RP("Eunice"), nullptr, 0},
+	{0x04C8, _RP("Stella"), nullptr, 0},
 	{0x04CC, _RP("Willow"), nullptr, 0},
 	{0x04CD, _RP("Curlos"), nullptr, 0},
 	{0x04CE, _RP("Wendy"), nullptr, 0},
@@ -908,30 +918,20 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x050F, _RP("Dobie"), nullptr, 0},
 	{0x0510, _RP("Freya"), nullptr, 0},
 	{0x0511, _RP("Fang"), nullptr, 0},
+	{0x0513, _RP("Vivian"), nullptr, 0},
 	{0x0514, _RP("Skye"), nullptr, 0},
 	{0x0515, _RP("Kyle"), nullptr, 0},
 #if 0
 	// TODO: Unknown.
-	{0xXXXX, _RP("Billy"), nullptr, 0},
 	{0xXXXX, _RP("Bitty"), nullptr, 0},
-	{0xXXXX, _RP("Boris"), nullptr, 0},
 	{0xXXXX, _RP("Cashmere"), nullptr, 0},
-	{0xXXXX, _RP("Gonzo"), nullptr, 0},
 	{0xXXXX, _RP("Huck"), nullptr, 0},
 	{0xXXXX, _RP("Ike"), nullptr, 0},
-	{0xXXXX, _RP("Julia"), nullptr, 0},
 	{0xXXXX, _RP("Ketchup"), nullptr, 0},
 	{0xXXXX, _RP("Louie"), nullptr, 0},
-	{0xXXXX, _RP("Maggie"), nullptr, 0},
 	{0xXXXX, _RP("Norma"), nullptr, 0},
 	{0xXXXX, _RP("Olive"), nullptr, 0},
-	{0xXXXX, _RP("Piper"), nullptr, 0},
 	{0xXXXX, _RP("Rex"), nullptr, 0},
-	{0xXXXX, _RP("Sprocket"), nullptr, 0},
-	{0xXXXX, _RP("Stella"), nullptr, 0},
-	{0xXXXX, _RP("Tad"), nullptr, 0},
-	{0xXXXX, _RP("Vivian"), nullptr, 0},
-	{0xXXXX, _RP("Weber"), nullptr, 0},
 #endif
 
 	// Star Fox (character series = 0x058)
@@ -1830,22 +1830,18 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// Animal Crossing: Welcome Amiibo Series [0x02E8-0x031E]
 	// NOTE: Remove placeholders when cards are made available.
-	//{  1, 7, _RP("Vivian")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{  1, 7, _RP("Vivian")},		// 0x02E7
 	{  2, 7, _RP("Hopkins")},		// 0x02E8
 	{  3, 7, _RP("June")},			// 0x02E9
-	//{  4, 7, _RP("Piper")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{  4, 7, _RP("Piper")},			// 0x02EA
 	{  5, 7, _RP("Paolo")},			// 0x02EB
 	{  6, 7, _RP("Hornsby")},		// 0x02EC
-	//{  7, 7, _RP("Stella")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{  7, 7, _RP("Stella")},		// 0x02ED
 	{  8, 7, _RP("Tybalt")},		// 0x02EE
 	//{  9, 7, _RP("Huck")},		// 0xXXXX
 	{  0, 0, nullptr},
 	{ 10, 7, _RP("Sylvana")},		// 0x02F0
-	//{ 11, 7, _RP("Boris")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 11, 7, _RP("Boris")},			// 0x02F1
 	{ 12, 7, _RP("Wade")},			// 0x02F2
 	{ 13, 7, _RP("Carrie")},		// 0x02F3
 	//{ 14, 7, _RP("Ketchup")},		// 0xXXXX
@@ -1856,41 +1852,34 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 17, 7, _RP("Ursala")},		// 0x02F7
 	{ 18, 7, _RP("Jacob")},			// 0x02F8
 	{ 19, 7, _RP("Maddie")},		// 0x02F9
-	//{ 20, 7, _RP("Billy")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 20, 7, _RP("Billy")},			// 0x02FA
 	{ 21, 7, _RP("Boyd")},			// 0x02FB
 	//{ 22, 7, _RP("Bitty")},		// 0xXXXX
 	{  0, 0, nullptr},
-	//{ 23, 7, _RP("Maggie")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 23, 7, _RP("Maggie")},		// 0x02FD
 	{ 24, 7, _RP("Murphy")},		// 0x02FE
 	{ 25, 7, _RP("Plucky")},		// 0x02FF
 	{ 26, 7, _RP("Sandy")},			// 0x0300
 	{ 27, 7, _RP("Claude")},		// 0x0301
 	{ 28, 7, _RP("Raddle")},		// 0x0302
-	//{ 29, 7, _RP("Julia")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 29, 7, _RP("Julia")},			// 0x0303
 	//{ 30, 7, _RP("Louie")},		// 0xXXXX
 	{  0, 0, nullptr},
 	{ 31, 7, _RP("Bea")},			// 0x0305
 	{ 32, 7, _RP("Admiral")},		// 0x0306
 	{ 33, 7, _RP("Ellie")},			// 0x0307
 	{ 34, 7, _RP("Boots")},			// 0x0308
-	//{ 35, 7, _RP("Weber")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 35, 7, _RP("Weber")},			// 0x0309
 	{ 36, 7, _RP("Candi")},			// 0x030A
 	{ 37, 7, _RP("Leopold")},		// 0x030B
 	{ 38, 7, _RP("Spike")},			// 0x030C
 	//{ 39, 7, _RP("Cashmere")},		// 0xXXXX
 	{  0, 0, nullptr},
-	//{ 40, 7, _RP("Tad")},			// 0xXXXX
-	{  0, 0, nullptr},
+	{ 40, 7, _RP("Tad")},			// 0x030E
 	//{ 41, 7, _RP("Norma")},		// 0xXXXX
 	{  0, 0, nullptr},
-	//{ 42, 7, _RP("Gonzo")},		// 0xXXXX
-	{  0, 0, nullptr},
-	//{ 43, 7, _RP("Sprocket")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 42, 7, _RP("Gonzo")},			// 0x0310
+	{ 43, 7, _RP("Sprocket")},		// 0x0311
 	{ 44, 7, _RP("Snooty")},		// 0x0312
 	//{ 45, 7, _RP("Olive")},		// 0xXXXX
 	{  0, 0, nullptr},
