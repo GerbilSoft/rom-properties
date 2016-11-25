@@ -703,7 +703,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 	}
 
 	// Load the eyecatch data.
-	uint8_t *data = reinterpret_cast<uint8_t*>(malloc(eyecatch_size));
+	uint8_t *data = static_cast<uint8_t*>(malloc(eyecatch_size));
 	q->m_file->seek(vms_header_offset + sz_icons);
 	size_t size = q->m_file->read(data, eyecatch_size);
 	if (size != eyecatch_size) {

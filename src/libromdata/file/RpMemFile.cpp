@@ -127,7 +127,7 @@ size_t RpMemFile::read(void *ptr, size_t size)
 	}
 
 	// Convert the const void* to a const uint8_t*.
-	const uint8_t *buf = reinterpret_cast<const uint8_t*>(m_buf);
+	const uint8_t *buf = static_cast<const uint8_t*>(m_buf);
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.

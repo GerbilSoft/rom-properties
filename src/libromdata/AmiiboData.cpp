@@ -1039,8 +1039,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
  */
 int AmiiboDataPrivate::char_id_t_compar(const void *a, const void *b)
 {
-	uint16_t id1 = reinterpret_cast<const char_id_t*>(a)->char_id;
-	uint16_t id2 = reinterpret_cast<const char_id_t*>(b)->char_id;
+	uint16_t id1 = static_cast<const char_id_t*>(a)->char_id;
+	uint16_t id2 = static_cast<const char_id_t*>(b)->char_id;
 	if (id1 < id2) return -1;
 	if (id1 > id2) return 1;
 	return 0;
@@ -1954,7 +1954,7 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
 	// Do a binary search.
 	const AmiiboDataPrivate::char_id_t key = {id, nullptr, nullptr, 0};
 	const AmiiboDataPrivate::char_id_t *res =
-		reinterpret_cast<const AmiiboDataPrivate::char_id_t*>(bsearch(&key,
+		static_cast<const AmiiboDataPrivate::char_id_t*>(bsearch(&key,
 			AmiiboDataPrivate::char_ids,
 			ARRAY_SIZE(AmiiboDataPrivate::char_ids),
 			sizeof(AmiiboDataPrivate::char_id_t),

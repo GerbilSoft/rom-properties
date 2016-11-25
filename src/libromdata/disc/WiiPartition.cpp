@@ -352,7 +352,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	int64_t sector_addr = partition_offset + data_offset;
 	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
 
-	WiiPartition *q = reinterpret_cast<WiiPartition*>(q_ptr);
+	WiiPartition *q = static_cast<WiiPartition*>(q_ptr);
 	int ret = discReader->seek(sector_addr);
 	if (ret != 0) {
 		q->m_lastError = discReader->lastError();
@@ -411,7 +411,7 @@ WiiPartition::~WiiPartition()
  */
 size_t WiiPartition::read(void *ptr, size_t size)
 {
-	WiiPartitionPrivate *d = reinterpret_cast<WiiPartitionPrivate*>(d_ptr);
+	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader || !d->discReader->isOpen()) {
@@ -443,7 +443,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
 			return -m_lastError;
 	}
 
-	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 	size_t ret = 0;
 
 	// Are we already at the end of the file?
@@ -529,7 +529,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
  */
 int WiiPartition::seek(int64_t pos)
 {
-	WiiPartitionPrivate *d = reinterpret_cast<WiiPartitionPrivate*>(d_ptr);
+	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {
@@ -564,7 +564,7 @@ int WiiPartition::seek(int64_t pos)
 WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 {
 	// TODO: Errors?
-	const WiiPartitionPrivate *d = reinterpret_cast<const WiiPartitionPrivate*>(d_ptr);
+	const WiiPartitionPrivate *d = static_cast<const WiiPartitionPrivate*>(d_ptr);
 	return d->encInitStatus;
 }
 

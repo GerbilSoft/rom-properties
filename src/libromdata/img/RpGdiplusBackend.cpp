@@ -707,7 +707,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// FIXME: Do we need to handle special cases for odd widths?
-	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(pBmpData->Scan0);
+	const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
 	const size_t active_px_sz = pBmpData->Width * 4;
 	for (int y = (int)pBmpData->Height; y > 0; y--) {
 		memcpy(pvBits, gdip_px, active_px_sz);
@@ -766,7 +766,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 
 	// Copy the data from the GDI+ bitmap to the HBITMAP directly.
 	// FIXME: Do we need to handle special cases for odd widths?
-	const uint8_t *gdip_px = reinterpret_cast<const uint8_t*>(pBmpData->Scan0);
+	const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
 	const size_t active_px_sz = pBmpData->Width;
 	for (int y = (int)pBmpData->Height; y > 0; y--) {
 		memcpy(pvBits, gdip_px, active_px_sz);

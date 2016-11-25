@@ -389,8 +389,8 @@ const MegaDrivePublishers::ThirdPartyList MegaDrivePublishers::ms_thirdPartyList
  */
 int MegaDrivePublishers::compar(const void *a, const void *b)
 {
-	unsigned int code1 = reinterpret_cast<const ThirdPartyList*>(a)->t_code;
-	unsigned int code2 = reinterpret_cast<const ThirdPartyList*>(b)->t_code;
+	unsigned int code1 = static_cast<const ThirdPartyList*>(a)->t_code;
+	unsigned int code2 = static_cast<const ThirdPartyList*>(b)->t_code;
 	if (code1 < code2) return -1;
 	if (code1 > code2) return 1;
 	return 0;
@@ -406,7 +406,7 @@ const rp_char *MegaDrivePublishers::lookup(unsigned int code)
 	// Do a binary search.
 	const ThirdPartyList key = {code, nullptr};
 	const ThirdPartyList *res =
-		reinterpret_cast<const ThirdPartyList*>(bsearch(&key,
+		static_cast<const ThirdPartyList*>(bsearch(&key,
 			ms_thirdPartyList, ARRAY_SIZE(ms_thirdPartyList)-1,
 			sizeof(ThirdPartyList), compar));
 	return (res ? res->publisher : nullptr);

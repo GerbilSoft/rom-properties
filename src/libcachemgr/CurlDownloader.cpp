@@ -62,7 +62,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
 	// - http://stackoverflow.com/a/1636415
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
-	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
+	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nmemb;
 
@@ -103,7 +103,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_HEADERFUNCTION.html
 
 	// TODO: Add support for non-HTTP protocols?
-	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
+	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nitems;
 

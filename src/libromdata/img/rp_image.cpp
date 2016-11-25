@@ -354,7 +354,7 @@ void *rp_image::bits(void)
  */
 const void *rp_image::scanLine(int i) const
 {
-	const uint8_t *data = reinterpret_cast<const uint8_t*>(d->backend->data());
+	const uint8_t *data = static_cast<const uint8_t*>(d->backend->data());
 	if (!data)
 		return nullptr;
 
@@ -369,7 +369,7 @@ const void *rp_image::scanLine(int i) const
  */
 void *rp_image::scanLine(int i)
 {
-	uint8_t *data = reinterpret_cast<uint8_t*>(d->backend->data());
+	uint8_t *data = static_cast<uint8_t*>(d->backend->data());
 	if (!data)
 		return nullptr;
 

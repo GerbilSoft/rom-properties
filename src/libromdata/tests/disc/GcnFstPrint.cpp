@@ -81,7 +81,7 @@ extern "C" int gtest_main(int argc, char *argv[])
 	fseek(f, 0, SEEK_SET);
 
 	// Read the FST into memory.
-	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(filesize));
+	uint8_t *fstData = static_cast<uint8_t*>(malloc(filesize));
 	if (!fstData) {
 		printf("ERROR: malloc(%u) failed.\n", (uint32_t)filesize);
 		fclose(f);

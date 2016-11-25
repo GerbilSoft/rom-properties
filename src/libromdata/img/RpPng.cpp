@@ -145,7 +145,7 @@ class RpPngPrivate
 void RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = reinterpret_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 
@@ -171,7 +171,7 @@ void RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_
 void RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = reinterpret_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 
@@ -187,7 +187,7 @@ void RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png
 void RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = reinterpret_cast<IRpFile*>(png_get_io_ptr(png_ptr));
+	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
 	if (!file)
 		return;
 
@@ -411,7 +411,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Initialize the rp_image and the row pointers array.
 	img = new rp_image(width, height, fmt);
 	for (int y = height-1; y >= 0; y--) {
-		row_pointers[y] = reinterpret_cast<png_byte*>(img->scanLine(y));
+		row_pointers[y] = static_cast<png_byte*>(img->scanLine(y));
 	}
 
 	// Read the image.
@@ -537,7 +537,7 @@ int RpPngPrivate::savePng(png_structp png_ptr, png_infop info_ptr, const rp_imag
 
 	// Initialize the rp_image and the row pointers array.
 	for (int y = height-1; y >= 0; y--) {
-		row_pointers[y] = reinterpret_cast<const png_byte*>(img->scanLine(y));
+		row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
 	}
 
 	// Write the image data.

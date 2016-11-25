@@ -175,7 +175,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 
 	// Create the bitmap.
 	uint8_t *pvBits;
-	HBITMAP hBitmap = CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&bmi),
+	HBITMAP hBitmap = CreateDIBSection(nullptr, static_cast<BITMAPINFO*>(&bmi),
 		DIB_RGB_COLORS, reinterpret_cast<void**>(&pvBits), nullptr, 0);
 	if (!hBitmap)
 		return nullptr;
@@ -192,7 +192,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 				// Find all pixels matching tr_idx.
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
-					const uint8_t *src = reinterpret_cast<const uint8_t*>(image->scanLine(y));
+					const uint8_t *src = static_cast<const uint8_t*>(image->scanLine(y));
 					for (int x = width; x > 0; x -= 8) {
 						uint8_t pxMono = 0;
 						for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {
@@ -220,7 +220,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 			memset(pvBits, 0xFF, icon_sz);
 			uint8_t *dest = pvBits;
 			for (int y = image->height()-1; y >= 0; y--) {
-				const uint32_t *src = reinterpret_cast<const uint32_t*>(image->scanLine(y));
+				const uint32_t *src = static_cast<const uint32_t*>(image->scanLine(y));
 				for (int x = image->width(); x > 0; x -= 8) {
 					uint8_t pxMono = 0;
 					for (int bit = (x >= 8 ? 8 : x); bit > 0; bit--, src++) {

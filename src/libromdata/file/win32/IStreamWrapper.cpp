@@ -32,11 +32,11 @@ using std::wstring;
  */
 static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
 {
-	return (ULONG)(InterlockedIncrement(reinterpret_cast<LONG volatile*>(Addend)));
+	return (ULONG)(InterlockedIncrement(static_cast<LONG volatile*>(Addend)));
 }
 static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 {
-	return (ULONG)(InterlockedDecrement(reinterpret_cast<LONG volatile*>(Addend)));
+	return (ULONG)(InterlockedDecrement(static_cast<LONG volatile*>(Addend)));
 }
 #endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
 
@@ -353,7 +353,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		// TODO: RP2W_ss() that returns a wstring?
 		wstring filename = RP2W_s(m_file->filename());
 		const size_t sz = (filename.size() + 1) * sizeof(wchar_t);
-		pstatstg->pwcsName = reinterpret_cast<LPOLESTR>(CoTaskMemAlloc(sz));
+		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
 		if (!pstatstg->pwcsName) {
 			return E_OUTOFMEMORY;
 		}

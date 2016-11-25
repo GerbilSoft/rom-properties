@@ -118,8 +118,8 @@ static const errmap w32_to_posix[] = {
  */
 static int errmap_compar(const void *a, const void *b)
 {
-	DWORD err1 = reinterpret_cast<const errmap*>(a)->w32;
-	DWORD err2 = reinterpret_cast<const errmap*>(b)->w32;
+	DWORD err1 = static_cast<const errmap*>(a)->w32;
+	DWORD err2 = static_cast<const errmap*>(b)->w32;
 	if (err1 < err2) return -1;
 	if (err1 > err2) return 1;
 	return 0;
@@ -134,7 +134,7 @@ int w32err_to_posix(DWORD w32err)
 {
 	// Check the error code table.
 	const errmap key = {w32err, 0};
-	const errmap *entry = reinterpret_cast<const errmap*>(bsearch(&key,
+	const errmap *entry = static_cast<const errmap*>(bsearch(&key,
 			w32_to_posix, ARRAY_SIZE(w32_to_posix),
 			sizeof(errmap), errmap_compar));
 	if (entry) {

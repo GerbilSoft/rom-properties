@@ -68,7 +68,7 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	}
 
 	// Load the boot block and boot info.
-	GcnPartition *q = reinterpret_cast<GcnPartition*>(q_ptr);
+	GcnPartition *q = static_cast<GcnPartition*>(q_ptr);
 	int ret = q->seek(GCN_Boot_Block_ADDRESS);
 	if (ret != 0) {
 		// Seek failed.
@@ -121,7 +121,7 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
  */
 int GcnPartitionPrivate::loadFst(void)
 {
-	GcnPartition *q = reinterpret_cast<GcnPartition*>(q_ptr);
+	GcnPartition *q = static_cast<GcnPartition*>(q_ptr);
 	if (fst) {
 		// FST is already loaded.
 		return 0;
@@ -161,7 +161,7 @@ int GcnPartitionPrivate::loadFst(void)
 	// Read the FST.
 	// TODO: Eliminate the extra copy?
 	uint32_t fstData_len = bootBlock.fst_size << offsetShift;
-	uint8_t *fstData = reinterpret_cast<uint8_t*>(malloc(fstData_len));
+	uint8_t *fstData = static_cast<uint8_t*>(malloc(fstData_len));
 	if (!fstData) {
 		// malloc() failed.
 		q->m_lastError = ENOMEM;

@@ -533,7 +533,7 @@ void RpPngFormatTest::Compare_ARGB32_BMP24(
 		// NOTE: We're reading the individual bytes from the BMP.
 		// BMP uses little-endian, so the Blue channel is first.
 		// FIXME: This may fail on aligned architectures.
-		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		const uint32_t *pSrc = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits += 3) {
 			// Convert the BMP's 24-bit pixel to 32-bit.
 			uint32_t bmp32 = pBits[0] | pBits[1] << 8 | pBits[2] << 16;
@@ -570,7 +570,7 @@ void RpPngFormatTest::Compare_ARGB32_BMP32(
 	for (int y = img->height()-1; y >= 0; y--) {
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		// BMP uses little-endian, so byteswapping is needed.
-		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		const uint32_t *pSrc = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBmp32++) {
 			const uint32_t pxBmp = le32_to_cpu(*pBmp32);
 			xor_result |= (*pSrc ^ pxBmp);
@@ -595,7 +595,7 @@ void RpPngFormatTest::Compare_Palettes(
 	int bmpColorTableSize,
 	int biClrUsed)
 {
-	const uint32_t *pSrcPalette = reinterpret_cast<const uint32_t*>(img->palette());
+	const uint32_t *pSrcPalette = static_cast<const uint32_t*>(img->palette());
 	if (biClrUsed < 0) {
 		biClrUsed = img->palette_len();
 	}
@@ -673,7 +673,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 	for (int y = img->height()-1; y >= 0; y--) {
 		// Do a full memcmp() instead of xoring bytes, since
 		// each pixel is a single byte.
-		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		const uint8_t *pSrc = static_cast<const uint8_t*>(img->scanLine(y));
 		xor_result |= memcmp(pSrc, pBits, width);
 		pBits += width;
 
@@ -723,7 +723,7 @@ void RpPngFormatTest::Compare_ARGB32_BMP8(
 	xor_result = 0;
 	for (int y = img->height()-1; y >= 0; y--) {
 		// Compare 32-bit rp_image data to 8-bit BMP data.
-		const uint32_t *pSrc = reinterpret_cast<const uint32_t*>(img->scanLine(y));
+		const uint32_t *pSrc = static_cast<const uint32_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBits++) {
 			// Look up the 24-bit color entry from the bitmap's palette.
 			uint32_t bmp32 = le32_to_cpu(pBmpPalette[*pBits]);
@@ -774,7 +774,7 @@ void RpPngFormatTest::Compare_CI8_BMP32(
 	xor_result = 0;
 	for (int y = img->height()-1; y >= 0; y--) {
 		// Compare 8-bit rp_image data to 24-bit BMP data.
-		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		const uint8_t *pSrc = static_cast<const uint8_t*>(img->scanLine(y));
 		for (int x = img->width()-1; x >= 0; x--, pSrc++, pBmp32++) {
 			// Look up the 32-bit palette entry from the rp_image.
 			const uint32_t src32 = pSrcPalette[*pSrc];
@@ -827,7 +827,7 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 	for (int y = img->height()-1; y >= 0; y--) {
 		// The source image has 8 pixels in each byte,
 		// so we have to compare the entire line manually.
-		const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(img->scanLine(y));
+		const uint8_t *pSrc = static_cast<const uint8_t*>(img->scanLine(y));
 		for (int x = img->width(); x > 0; x -= 8, pBits++) {
 			uint8_t mono_pxs = *pBits;
 			for (int bit = (x > 8 ? 8 : x); bit > 0; bit--, pSrc++) {

@@ -443,8 +443,8 @@ const NintendoPublishers::ThirdPartyList NintendoPublishers::ms_thirdPartyList[]
  */
 int NintendoPublishers::compar(const void *a, const void *b)
 {
-	uint16_t code1 = reinterpret_cast<const ThirdPartyList*>(a)->code;
-	uint16_t code2 = reinterpret_cast<const ThirdPartyList*>(b)->code;
+	uint16_t code1 = static_cast<const ThirdPartyList*>(a)->code;
+	uint16_t code2 = static_cast<const ThirdPartyList*>(b)->code;
 	if (code1 < code2) return -1;
 	if (code1 > code2) return 1;
 	return 0;
@@ -460,7 +460,7 @@ const rp_char *NintendoPublishers::lookup(uint16_t code)
 	// Do a binary search.
 	const ThirdPartyList key = {code, nullptr};
 	const ThirdPartyList *res =
-		reinterpret_cast<const ThirdPartyList*>(bsearch(&key,
+		static_cast<const ThirdPartyList*>(bsearch(&key,
 			ms_thirdPartyList, ARRAY_SIZE(ms_thirdPartyList)-1,
 			sizeof(ThirdPartyList), compar));
 	return (res ? res->publisher : nullptr);

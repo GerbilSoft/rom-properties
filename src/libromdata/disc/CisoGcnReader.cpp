@@ -258,7 +258,7 @@ size_t CisoGcnReader::read(void *ptr, size_t size)
 		return -1;
 	}
 
-	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 	size_t ret = 0;
 
 	// Are we already at the end of the disc?
