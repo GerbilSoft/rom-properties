@@ -90,9 +90,6 @@ rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageT
 		return nullptr;
 	}
 
-	// Image processing flags.
-	const uint32_t imgpf = romData->imgpf(imageType);
-
 	// Check each URL.
 	CacheManager cache;
 	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
