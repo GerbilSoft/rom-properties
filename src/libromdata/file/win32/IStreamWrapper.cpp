@@ -25,21 +25,6 @@
 #include <string>
 using std::wstring;
 
-#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
-/**
- * MinGW-w64 only defines ULONG overloads for the various atomic functions
- * if _WIN32_WINNT > 0x0502.
- */
-static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
-{
-	return (ULONG)(InterlockedIncrement(static_cast<LONG volatile*>(Addend)));
-}
-static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
-{
-	return (ULONG)(InterlockedDecrement(static_cast<LONG volatile*>(Addend)));
-}
-#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
-
 namespace LibRomData {
 
 /**

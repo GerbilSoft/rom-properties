@@ -226,4 +226,28 @@ static inline int64_t SystemTimeToUnixTime(const SYSTEMTIME *pSystemTime)
 	return FileTimeToUnixTime(&fileTime);
 }
 
+#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
+/**
+ * MinGW-w64 only defines ULONG overloads for the various atomic functions
+ * if _WIN32_WINNT > 0x0502.
+ */
+static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedIncrement(static_cast<LONG volatile*>(Addend)));
+}
+static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedDecrement(static_cast<LONG volatile*>(Addend)));
+}
+#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
+
+#ifdef _MSC_VER
+#define UUID_ATTR(str) __declspec(uuid(str))
+#else /* !_MSC_VER */
+// UUID attribute is not supported by gcc-5.2.0.
+#define UUID_ATTR(str)
+#endif /* _MSC_VER */
+
+#define UNUSED(x) ((void)x)
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */
