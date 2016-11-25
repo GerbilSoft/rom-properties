@@ -206,7 +206,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 	}
 
 	const char *value = equals_pos + 1;
-	int value_len = end - 1 - equals_pos;
+	int value_len = (int)(end - 1 - equals_pos);
 	if (value[0] == 0 || (value_len % 2 != 0)) {
 		// Key is either empty, or is an odd length.
 		// (Odd length means half a byte...)
