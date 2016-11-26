@@ -16,9 +16,9 @@ only_commits:
   files:
     - appveyor.cmd
     - appveyor.yml
-    - **/CMakeLists.txt
-    - **/*.cmd
-    - **/*.sh
+    - '**/CMakeLists.txt'
+    - '**/*.cmd'
+    - '**/*.sh'
     - extlib/**/*
     - src/**/*
 
