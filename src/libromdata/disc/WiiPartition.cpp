@@ -65,7 +65,10 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// Partition header.
 		RVL_PartitionHeader partitionHeader;
 
+		// Encryption status.
 		WiiPartition::EncInitStatus encInitStatus;
+		WiiPartition::EncKey encKey;
+
 #ifdef ENABLE_DECRYPTION
 		// AES cipher for the Common key.
 		// - Index 0: rvl-common
@@ -78,6 +81,12 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		IAesCipher *aes_title;
 		// Decrypted title key.
 		uint8_t title_key[16];
+
+		/**
+		 * Determine the encryption key used by this partition.
+		 * @return encKey.
+		 */
+		WiiPartition::EncKey getEncKey(void) const;
 
 		/**
 		 * Initialize decryption.
@@ -116,6 +125,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
+	, encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, aes_title(nullptr)
 	, pos_7C00(-1)
 	, sector_num(~0)
@@ -172,6 +182,29 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 
 #ifdef ENABLE_DECRYPTION
 /**
+ * Determine the encryption key used by this partition.
+ * @return encKey.
+ */
+WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void) const
+{
+	if (partition_size < 0) {
+		// Error loading the partition header.
+		return WiiPartition::ENCKEY_UNKNOWN;
+	}
+
+	// Check the ticket to determine the common key index.
+	assert(partitionHeader.ticket.common_key_index <= 1);
+	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
+	if (keyIdx > 1) {
+		// Invalid common key index.
+		return WiiPartition::ENCKEY_UNKNOWN;
+	}
+
+	// keyIdx maps to encKey directly.
+	return (WiiPartition::EncKey)keyIdx;
+}
+
+/**
  * Initialize decryption.
  * @return EncInitStatus.
  */
@@ -188,17 +221,33 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	// Initialize the Key Manager.
 	KeyManager keyManager;
 
-	// Initialize the common key cipher required for this disc.
-	assert(partitionHeader.ticket.common_key_index <= 1);
-	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
-	if (keyIdx > 1) {
-		// Invalid common key index.
+	// Determine the required encryption key.
+	encKey = getEncKey();
+	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
+		// Invalid encryption key.
 		encInitStatus = WiiPartition::ENCINIT_INVALID_KEY_IDX;
 		return encInitStatus;
 	}
 
+	// Determine the encryption key name.
+	const char *key_name;
+	switch (encKey) {
+		case WiiPartition::ENCKEY_COMMON:
+			// Wii common key.
+			key_name = "rvl-common";
+			break;
+		case WiiPartition::ENCKEY_KOREAN:
+			// Korean key.
+			key_name = "rvl-korean";
+			break;
+		default:
+			// Unknown key...
+			encInitStatus = WiiPartition::ENCINIT_INVALID_KEY_IDX;
+			return encInitStatus;
+	}
+
 	// TODO: Mutex?
-	if (!aes_common[keyIdx]) {
+	if (!aes_common[encKey]) {
 		// Initialize this key.
 		// TODO: Dev keys?
 		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
@@ -210,8 +259,8 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 		// Get the common key.
 		KeyManager::KeyData_t keyData;
-		if (keyManager.get("rvl-common", &keyData) != 0) {
-			// "rvl-common" key was not found.
+		if (keyManager.get(key_name, &keyData) != 0) {
+			// Common key was not found.
 			if (keyManager.areKeysLoaded()) {
 				// Keys were loaded, but this key is missing.
 				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
@@ -231,7 +280,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		}
 
 		// Save the cipher as the common instance.
-		aes_common[keyIdx] = cipher.release();
+		aes_common[encKey] = cipher.release();
 	}
 
 	// Initialize the title key AES cipher.
@@ -239,20 +288,6 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return encInitStatus;
-	}
-
-	// Get the Wii common key.
-	KeyManager::KeyData_t keyData;
-	if (keyManager.get("rvl-common", &keyData) != 0) {
-		// "rvl-common" key was not found.
-		if (keyManager.areKeysLoaded()) {
-			// Keys were loaded, but this key is missing.
-			encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
-		} else {
-			// Keys were not loaded. keys.conf is missing.
-			encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
-		}
 		return encInitStatus;
 	}
 
@@ -265,7 +300,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 	// Decrypt the title key.
 	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
-	if (aes_common[keyIdx]->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
+	if (aes_common[encKey]->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}
@@ -566,6 +601,17 @@ WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 	// TODO: Errors?
 	const WiiPartitionPrivate *d = static_cast<const WiiPartitionPrivate*>(d_ptr);
 	return d->encInitStatus;
+}
+
+/**
+ * Get the encryption key in use.
+ * @return Encryption key in use.
+ */
+WiiPartition::EncKey WiiPartition::encKey(void) const
+{
+	// TODO: Errors?
+	const WiiPartitionPrivate *d = static_cast<const WiiPartitionPrivate*>(d_ptr);
+	return d->getEncKey();
 }
 
 }

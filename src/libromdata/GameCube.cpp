@@ -229,7 +229,7 @@ GameCubePrivate::~GameCubePrivate()
 
 // Wii partition table.
 const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
-	_RP("#"), _RP("Type"), _RP("Size")
+	_RP("#"), _RP("Type"), _RP("Key"), _RP("Size")
 };
 
 const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
@@ -1611,6 +1611,22 @@ int GameCube::loadFieldData(void)
 					}
 				}
 				data_row.push_back(str);
+
+				// Encryption key.
+				const rp_char *key_name;
+				switch (entry.partition->encKey()) {
+					case WiiPartition::ENCKEY_UNKNOWN:
+					default:
+						key_name = _RP("Unknown");
+						break;
+					case WiiPartition::ENCKEY_COMMON:
+						key_name = _RP("Retail");
+						break;
+					case WiiPartition::ENCKEY_KOREAN:
+						key_name = _RP("Korean");
+						break;
+				}
+				data_row.push_back(key_name);
 
 				// Partition size.
 				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
