@@ -249,7 +249,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF //F
 	};
 
-	for (; value_len > 0; value_len -= 2, vKeys_pos++, value++, value += 2) {
+	for (; value_len > 0; value_len -= 2, vKeys_pos++, value += 2) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
 		char chr0 = ascii_to_hex[(uint8_t)value[0]];
