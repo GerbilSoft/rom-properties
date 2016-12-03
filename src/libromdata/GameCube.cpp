@@ -1465,6 +1465,8 @@ int GameCube::loadFieldData(void)
 		// "Ratings" value is an age.
 		// TODO: Decode to e.g. ESRB and CERO identifiers.
 		// TODO: Handle PEGI before USK?
+		if (rating_organizations[i][0] == 0)
+			continue;
 
 		// NOTE: This field also contains some flags:
 		// - 0x80: Rating is unused.
