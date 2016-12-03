@@ -1627,6 +1627,9 @@ int GameCube::loadFieldData(void)
 					case WiiPartition::ENCKEY_KOREAN:
 						key_name = _RP("Korean");
 						break;
+					case WiiPartition::ENCKEY_DEBUG:
+						key_name = _RP("Debug");
+						break;
 				}
 				data_row.push_back(key_name);
 

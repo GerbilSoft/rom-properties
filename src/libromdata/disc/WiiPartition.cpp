@@ -71,10 +71,11 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// AES cipher for the Common key.
-		// - Index 0: rvl-common
-		// - Index 1: rvl-korean
+		// - Index 0: rvl-common (retail)
+		// - Index 1: rvl-korean (Korean)
+		// - Index 2: rvt-debug  (debug)
 		// TODO: Dev keys?
-		static IAesCipher *aes_common[2];
+		static IAesCipher *aes_common[3];
 		static int aes_common_refcnt;
 
 		// AES cipher for this partition's title key.
@@ -117,7 +118,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 /** WiiPartitionPrivate **/
 
 #ifdef ENABLE_DECRYPTION
-IAesCipher *WiiPartitionPrivate::aes_common[2] = {nullptr, nullptr};
+IAesCipher *WiiPartitionPrivate::aes_common[3] = {nullptr, nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
 #endif /* ENABLE_DECRYPTION */
 
@@ -192,16 +193,26 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void) const
 		return WiiPartition::ENCKEY_UNKNOWN;
 	}
 
-	// Check the ticket to determine the common key index.
 	assert(partitionHeader.ticket.common_key_index <= 1);
 	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
-	if (keyIdx > 1) {
-		// Invalid common key index.
-		return WiiPartition::ENCKEY_UNKNOWN;
+	WiiPartition::EncKey ret = WiiPartition::ENCKEY_UNKNOWN;
+
+	// Check the issuer to determine Retail vs. Debug.
+	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
+	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
+		// Debug issuer. Use the debug key for keyIdx == 0.
+		if (keyIdx == 0) {
+			ret = WiiPartition::ENCKEY_DEBUG;
+		}
+	} else {
+		// Assuming Retail issuer.
+		if (keyIdx <= 1) {
+			// keyIdx maps to encKey directly for retail.
+			ret = (WiiPartition::EncKey)keyIdx;
+		}
 	}
 
-	// keyIdx maps to encKey directly.
-	return (WiiPartition::EncKey)keyIdx;
+	return ret;
 }
 
 /**
@@ -239,6 +250,10 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		case WiiPartition::ENCKEY_KOREAN:
 			// Korean key.
 			key_name = "rvl-korean";
+			break;
+		case WiiPartition::ENCKEY_DEBUG:
+			// Debug key. (RVT-R)
+			key_name = "rvt-debug";
 			break;
 		default:
 			// Unknown key...
@@ -360,6 +375,8 @@ WiiPartitionPrivate::~WiiPartitionPrivate()
 		aes_common[0] = nullptr;
 		delete aes_common[1];
 		aes_common[1] = nullptr;
+		delete aes_common[2];
+		aes_common[2] = nullptr;
 	}
 #endif /* ENABLE_DECRYPTION */
 }
