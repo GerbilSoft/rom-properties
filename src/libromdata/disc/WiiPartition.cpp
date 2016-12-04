@@ -68,16 +68,19 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// Encryption status.
 		WiiPartition::EncInitStatus encInitStatus;
 
+	public:
 		/**
 		 * Determine the encryption key used by this partition.
 		 * @return encKey.
 		 */
-		WiiPartition::EncKey getEncKey(void) const;
+		WiiPartition::EncKey getEncKey(void);
 
-#ifdef ENABLE_DECRYPTION
+	private:
 		// Encryption key in use.
-		WiiPartition::EncKey encKey;
+		WiiPartition::EncKey m_encKey;
 
+	public:
+#ifdef ENABLE_DECRYPTION
 		// AES cipher for the Common key.
 		// - Index 0: rvl-common (retail)
 		// - Index 1: rvl-korean (Korean)
@@ -128,12 +131,13 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	: super(q, discReader, partition_offset, 2)
 #ifdef ENABLE_DECRYPTION
 	, encInitStatus(WiiPartition::ENCINIT_UNKNOWN)
-	, encKey(WiiPartition::ENCKEY_UNKNOWN)
+	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
 	, aes_title(nullptr)
 	, pos_7C00(-1)
 	, sector_num(~0)
 #else /* !ENABLE_DECRYPTION */
 	, encInitStatus(WiiPartition::ENCINIT_DISABLED)
+	, m_encKey(WiiPartition::ENCKEY_UNKNOWN)
 #endif /* ENABLE_DECRYPTION */
 {
 	// Clear data set by GcnPartition in case the
@@ -187,33 +191,38 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
  * Determine the encryption key used by this partition.
  * @return encKey.
  */
-WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void) const
+WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void)
 {
+	if (m_encKey > WiiPartition::ENCKEY_UNKNOWN) {
+		// Encryption key has already been determined.
+		return m_encKey;
+	}
+
+	m_encKey = WiiPartition::ENCKEY_UNKNOWN;
 	if (partition_size < 0) {
 		// Error loading the partition header.
-		return WiiPartition::ENCKEY_UNKNOWN;
+		return m_encKey;
 	}
 
 	assert(partitionHeader.ticket.common_key_index <= 1);
 	const uint8_t keyIdx = partitionHeader.ticket.common_key_index;
-	WiiPartition::EncKey ret = WiiPartition::ENCKEY_UNKNOWN;
 
 	// Check the issuer to determine Retail vs. Debug.
 	static const char issuer_rvt[] = "Root-CA00000002-XS00000006";
 	if (!memcmp(partitionHeader.ticket.signature_issuer, issuer_rvt, sizeof(issuer_rvt))) {
 		// Debug issuer. Use the debug key for keyIdx == 0.
 		if (keyIdx == 0) {
-			ret = WiiPartition::ENCKEY_DEBUG;
+			m_encKey = WiiPartition::ENCKEY_DEBUG;
 		}
 	} else {
 		// Assuming Retail issuer.
 		if (keyIdx <= 1) {
 			// keyIdx maps to encKey directly for retail.
-			ret = (WiiPartition::EncKey)keyIdx;
+			m_encKey = (WiiPartition::EncKey)keyIdx;
 		}
 	}
 
-	return ret;
+	return m_encKey;
 }
 
 #ifdef ENABLE_DECRYPTION
@@ -235,7 +244,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	KeyManager keyManager;
 
 	// Determine the required encryption key.
-	encKey = getEncKey();
+	const WiiPartition::EncKey encKey = getEncKey();
 	if (encKey <= WiiPartition::ENCKEY_UNKNOWN) {
 		// Invalid encryption key.
 		encInitStatus = WiiPartition::ENCINIT_INVALID_KEY_IDX;
@@ -629,7 +638,7 @@ WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 WiiPartition::EncKey WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
-	const WiiPartitionPrivate *d = static_cast<const WiiPartitionPrivate*>(d_ptr);
+	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
 	return d->getEncKey();
 }
 
