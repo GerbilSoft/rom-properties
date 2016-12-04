@@ -67,9 +67,17 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 		// Encryption status.
 		WiiPartition::EncInitStatus encInitStatus;
-		WiiPartition::EncKey encKey;
+
+		/**
+		 * Determine the encryption key used by this partition.
+		 * @return encKey.
+		 */
+		WiiPartition::EncKey getEncKey(void) const;
 
 #ifdef ENABLE_DECRYPTION
+		// Encryption key in use.
+		WiiPartition::EncKey encKey;
+
 		// AES cipher for the Common key.
 		// - Index 0: rvl-common (retail)
 		// - Index 1: rvl-korean (Korean)
@@ -82,12 +90,6 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		IAesCipher *aes_title;
 		// Decrypted title key.
 		uint8_t title_key[16];
-
-		/**
-		 * Determine the encryption key used by this partition.
-		 * @return encKey.
-		 */
-		WiiPartition::EncKey getEncKey(void) const;
 
 		/**
 		 * Initialize decryption.
@@ -181,7 +183,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	// read() is called.
 }
 
-#ifdef ENABLE_DECRYPTION
 /**
  * Determine the encryption key used by this partition.
  * @return encKey.
@@ -215,6 +216,7 @@ WiiPartition::EncKey WiiPartitionPrivate::getEncKey(void) const
 	return ret;
 }
 
+#ifdef ENABLE_DECRYPTION
 /**
  * Initialize decryption.
  * @return EncInitStatus.
