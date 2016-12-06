@@ -615,6 +615,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x02A6, _RP("Ken"), nullptr, 0},
 	{0x02B1, _RP("Patty"), nullptr, 0},
 	{0x02B2, _RP("Tipper"), nullptr, 0},
+	{0x02B7, _RP("Norma"), nullptr, 0},
 	{0x02B8, _RP("Naomi"), nullptr, 0},
 	{0x02C3, _RP("Alfonso"), nullptr, 0},
 	{0x02C4, _RP("Alli"), nullptr, 0},
@@ -759,6 +760,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x03DB, _RP("Marcie"), nullptr, 0},
 	{0x03E6, _RP("Bud"), nullptr, 0},
 	{0x03E7, _RP("Elvis"), nullptr, 0},
+	{0x03E8, _RP("Rex"), nullptr, 0},
 	{0x03EA, _RP("Leopold"), nullptr, 0},
 	{0x03EC, _RP("Mott"), nullptr, 0},
 	{0x03ED, _RP("Rory"), nullptr, 0},
@@ -929,9 +931,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0xXXXX, _RP("Ike"), nullptr, 0},
 	{0xXXXX, _RP("Ketchup"), nullptr, 0},
 	{0xXXXX, _RP("Louie"), nullptr, 0},
-	{0xXXXX, _RP("Norma"), nullptr, 0},
 	{0xXXXX, _RP("Olive"), nullptr, 0},
-	{0xXXXX, _RP("Rex"), nullptr, 0},
 #endif
 
 	// Star Fox (character series = 0x058)
@@ -1838,24 +1838,20 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  6, 7, _RP("Hornsby")},		// 0x02EC
 	{  7, 7, _RP("Stella")},		// 0x02ED
 	{  8, 7, _RP("Tybalt")},		// 0x02EE
-	//{  9, 7, _RP("Huck")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{  9, 7, _RP("Huck")},			// 0x02EF
 	{ 10, 7, _RP("Sylvana")},		// 0x02F0
 	{ 11, 7, _RP("Boris")},			// 0x02F1
 	{ 12, 7, _RP("Wade")},			// 0x02F2
 	{ 13, 7, _RP("Carrie")},		// 0x02F3
-	//{ 14, 7, _RP("Ketchup")},		// 0xXXXX
-	{  0, 0, nullptr},
-	//{ 15, 7, _RP("Rex")},			// 0xXXXX
-	{  0, 0, nullptr},
+	{ 14, 7, _RP("Ketchup")},		// 0x02F4
+	{ 15, 7, _RP("Rex")},			// 0x02F5
 	{ 16, 7, _RP("Stu")},			// 0x02F6
 	{ 17, 7, _RP("Ursala")},		// 0x02F7
 	{ 18, 7, _RP("Jacob")},			// 0x02F8
 	{ 19, 7, _RP("Maddie")},		// 0x02F9
 	{ 20, 7, _RP("Billy")},			// 0x02FA
 	{ 21, 7, _RP("Boyd")},			// 0x02FB
-	//{ 22, 7, _RP("Bitty")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 22, 7, _RP("Bitty")},			// 0x02FC
 	{ 23, 7, _RP("Maggie")},		// 0x02FD
 	{ 24, 7, _RP("Murphy")},		// 0x02FE
 	{ 25, 7, _RP("Plucky")},		// 0x02FF
@@ -1863,8 +1859,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 27, 7, _RP("Claude")},		// 0x0301
 	{ 28, 7, _RP("Raddle")},		// 0x0302
 	{ 29, 7, _RP("Julia")},			// 0x0303
-	//{ 30, 7, _RP("Louie")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 30, 7, _RP("Louie")},			// 0x0304
 	{ 31, 7, _RP("Bea")},			// 0x0305
 	{ 32, 7, _RP("Admiral")},		// 0x0306
 	{ 33, 7, _RP("Ellie")},			// 0x0307
@@ -1873,21 +1868,17 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 36, 7, _RP("Candi")},			// 0x030A
 	{ 37, 7, _RP("Leopold")},		// 0x030B
 	{ 38, 7, _RP("Spike")},			// 0x030C
-	//{ 39, 7, _RP("Cashmere")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 39, 7, _RP("Cashmere")},		// 0x030D
 	{ 40, 7, _RP("Tad")},			// 0x030E
-	//{ 41, 7, _RP("Norma")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 41, 7, _RP("Norma")},			// 0x030F
 	{ 42, 7, _RP("Gonzo")},			// 0x0310
 	{ 43, 7, _RP("Sprocket")},		// 0x0311
 	{ 44, 7, _RP("Snooty")},		// 0x0312
-	//{ 45, 7, _RP("Olive")},		// 0xXXXX
-	{  0, 0, nullptr},
+	{ 45, 7, _RP("Olive")},			// 0x0313
 	{ 46, 7, _RP("Dobie")},			// 0x0314
 	{ 47, 7, _RP("Buzz")},			// 0x0315
 	{ 48, 7, _RP("Cleo")},			// 0x0316
-	//{ 49, 7, _RP("Ike")},			// 0xXXXX
-	{  0, 0, nullptr},
+	{ 49, 7, _RP("Ike")},			// 0x0317
 	{ 50, 7, _RP("Tasha")},			// 0x0318
 
 	// Animal Crossing x Sanrio Series
@@ -1902,6 +1893,45 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  5, 6, _RP("Chelsea")},		// 0x031D
 	{  6, 6, _RP("Toby")},			// 0x031E
 
+	// Unused [0x031F-0x32F]
+	{  0, 0, nullptr},			// 0x031F
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0320,0x0321
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0322,0x0323
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0324,0x0325
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0326,0x0327
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0328,0x0329
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x032A,0x032B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x032C,0x032D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x032E,0x032F
+
+	// Unused [0x0330-0x33F]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0330,0x0331
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0332,0x0333
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0334,0x0335
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0336,0x0337
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0338,0x0339
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x033A,0x033B
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x033C,0x033D
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x033E,0x033F
+
+	// Unused [0x0340-0x34A]
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0340,0x0341
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0342,0x0343
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0344,0x0345
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0346,0x0347
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0348,0x0349
+	{  0, 0, nullptr},			// 0x034A
+
+	// The Legend of Zelda: 30th Anniversary Series
+	{  0, 2, _RP("Link (Ocarina of Time)")},	// 0x034B
+	{  0, 0, nullptr},				// 0x034C
+	{  0, 0, nullptr},				// 0x034D
+	{  0, 0, nullptr},				// 0x034E
+	{  0, 2, _RP("Link (8-bit)")},			// 0x034F
+	{  0, 2, _RP("Toon Link (The Wind Waker)")},	// 0x0350
+	{  0, 0, nullptr},				// 0x0351
+	{  0, 2, _RP("Zelda (The Wind Waker)")},	// 0x0352
+
 #if 0
 	// TODO: Not released yet.
 
@@ -1909,12 +1939,6 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 57, 10, _RP("Bayonetta")},			// 0x0xxx
 	{ 58, 10, _RP("Cloud")},			// 0x0xxx
 	{ 59, 10, _RP("Corrin")},			// 0x0xxx
-
-	// The Legend of Zelda: 30th Anniversary Series
-	{  0, 2, _RP("Link (8-bit)")},			// 0x0xxx
-	{  0, 2, _RP("Link (Ocarina of Time)")},	// 0x0xxx
-	{  0, 2, _RP("Toon Link (The Wind Waker)")},	// 0x0xxx
-	{  0, 2, _RP("Zelda (The Wind Waker)")},	// 0x0xxx
 
 	// The Legend of Zelda: Breath of the Wild Series
 	{  0, 3, _RP("Link (Archer)")},			// 0x0xxx
@@ -1999,7 +2023,7 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x031F,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x0353,
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
