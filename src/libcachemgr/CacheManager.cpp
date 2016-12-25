@@ -181,10 +181,49 @@ rp_string CacheManager::download(
 	const rp_string &url,
 	const rp_string &cache_key)
 {
+	rp_string filter_cache_key = cache_key;
+	bool foundSlash = true;
+	int dotCount = 0;
+	for (int i = (int)filter_cache_key.size()-1; i >= 0; i--) {
+		// Don't allow control characters,
+		// invalid FAT32 characters, or dots.
+		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+		static const uint8_t valid_ascii_tbl[] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
+			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, // 0x20 (", *, .)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x50 (\\)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
+		};
+		unsigned int chr = (unsigned int)filter_cache_key[i];
+		if (chr < 0x80 && !valid_ascii_tbl[chr]) {
+			// Invalid character.
+			filter_cache_key[i] = _RP_CHR('_');
+		}
+
+		// Check for "../" (or ".." at the end of the cache key).
+		if (foundSlash && chr == '.') {
+			dotCount++;
+			if (dotCount >= 2) {
+				// Invalid cache key.
+				return rp_string();
+			}
+		} else if (chr == '/') {
+			foundSlash = true;
+			dotCount = 0;
+		} else {
+			foundSlash = false;
+		}
+	}
+
 	SemaphoreLocker locker(m_dlsem);
 
 	// Check the main cache key.
-	rp_string cache_filename = getCacheFilename(cache_key);
+	rp_string cache_filename = getCacheFilename(filter_cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
 		return rp_string();
@@ -204,6 +243,7 @@ rp_string CacheManager::download(
 			time_t filetime;
 			if (get_mtime(cache_filename, &filetime) != 0)
 				return rp_string();
+
 #ifdef _WIN32
 			SYSTEMTIME systime;
 			GetSystemTime(&systime);
