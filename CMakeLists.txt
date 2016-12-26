@@ -58,19 +58,21 @@ SET(VERSION_STRING_WIN32 "${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${V
 # Split Debug macro.
 # Also sets the image version for Windows builds.
 INCLUDE(Win32ImageVersionLinkerFlags)
-MACRO(DO_SPLIT_DEBUG _TARGET)
-	# Split debug information.
-	INCLUDE(SetMSVCDebugPath)
-	SET_MSVC_DEBUG_PATH(${_TARGET})
-	IF(SPLIT_DEBUG)
-		INCLUDE(SplitDebugInformation)
-		SPLIT_DEBUG_INFORMATION(${_TARGET})
-	ENDIF(SPLIT_DEBUG)
-	# Set image version.
-	# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
-	# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
-	# so "1.3" will actually be "1.03".
-	WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+MACRO(DO_SPLIT_DEBUG _target)
+	IF(TARGET ${_target})
+		# Split debug information.
+		INCLUDE(SetMSVCDebugPath)
+		SET_MSVC_DEBUG_PATH(${_target})
+		IF(SPLIT_DEBUG)
+			INCLUDE(SplitDebugInformation)
+			SPLIT_DEBUG_INFORMATION(${_target})
+		ENDIF(SPLIT_DEBUG)
+		# Set image version.
+		# Subprojects can override ${VERSION_MAJOR} and ${VERSION_MINOR}.
+		# FIXME: If minor version is e.g. "3", Windows interprets it as "03",
+		# so "1.3" will actually be "1.03".
+		WIN32_IMAGE_VERSION_LINKER_FLAGS(${VERSION_MAJOR} ${VERSION_MINOR})
+	ENDIF(TARGET ${_target})
 ENDMACRO(DO_SPLIT_DEBUG)
 
 # Git version information.

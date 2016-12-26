@@ -5,8 +5,6 @@ INCLUDE(SetMSVCDebugPath)
 FUNCTION(SET_EXTLIB_PROPERTIES)
 	FOREACH(_target ${ARGV})
 		IF(TARGET ${_target})
-			# Set the MSVC debug path.
-			SET_MSVC_DEBUG_PATH(${_target})
 			# Exclude from ALL builds.
 			SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 		ENDIF(TARGET ${_target})

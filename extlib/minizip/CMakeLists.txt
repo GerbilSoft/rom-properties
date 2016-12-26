@@ -41,11 +41,6 @@ TARGET_INCLUDE_DIRECTORIES(minizip
 	)
 TARGET_COMPILE_DEFINITIONS(minizip PRIVATE ZLIB_CONST)
 
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(minizip PROPERTIES
-	EXCLUDE_FROM_ALL TRUE
-	)
-
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
 	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
