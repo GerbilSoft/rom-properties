@@ -17,16 +17,6 @@ SET(rom-properties-kde_H
 	RpQt.hpp
 	RpQImageBackend.hpp
 	)
-IF(BUILD_KDE4)
-	SET(rom-properties-kde4_SRCS
-		RomPropertiesDialogPluginFactoryKDE4.cpp
-		)
-ENDIF(BUILD_KDE4)
-IF(BUILD_KDE5)
-	SET(rom-properties-kde5_SRCS
-		RomPropertiesDialogPluginFactoryKDE5.cpp
-		)
-ENDIF(BUILD_KDE5)
 
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)
