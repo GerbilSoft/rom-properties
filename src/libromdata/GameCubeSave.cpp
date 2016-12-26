@@ -855,9 +855,28 @@ int GameCubeSave::loadFieldData(void)
 		m_fields->addData_invalid();
 	} else {
 		// Add the description.
-		rp_string desc = cp1252_sjis_to_rp_string(desc_buf, 32);
+		// NOTE: Some games have garbage after the first NULL byte
+		// in the two description fields, which prevents the rest
+		// of the field from being displayed.
+
+		// Check for a NULL byte in the game description.
+		int desc_len = 32;
+		const char *null_pos = static_cast<const char*>(memchr(desc_buf, 0, 32));
+		if (null_pos) {
+			// Found a NULL byte.
+			desc_len = (int)(null_pos - desc_buf);
+		}
+		rp_string desc = cp1252_sjis_to_rp_string(desc_buf, desc_len);
 		desc += _RP_CHR('\n');
-		desc += cp1252_sjis_to_rp_string(&desc_buf[32], 32);
+
+		// Check for a NULL byte in the file description.
+		null_pos = static_cast<const char*>(memchr(&desc_buf[32], 0, 32));
+		if (null_pos) {
+			// Found a NULL byte.
+			desc_len = (int)(null_pos - desc_buf - 32);
+		}
+		desc += cp1252_sjis_to_rp_string(&desc_buf[32], desc_len);
+
 		m_fields->addData_string(desc);
 	}
 
