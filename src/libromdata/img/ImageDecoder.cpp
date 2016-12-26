@@ -219,7 +219,7 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 	px32 |= ((px16 & 0x00F0) << 4);		// G
 	px32 |= ((px16 & 0x0F00) << 8);		// R
 	px32 |= ((px16 & 0xF000) << 12);	// A
-	px32 |= (px32 << 4);			// Copy to the top nybble.
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
 	return px32;
 }
 
@@ -325,7 +325,7 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 
 	for (int y = 0; y < tilesY; y++) {
 		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to ARGB888 manually.
+			// Convert each tile to ARGB32 manually.
 			// TODO: Optimize using pointers instead of indexes?
 			for (int i = 0; i < 4*4; i++, img_buf++) {
 				tileBuf[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
