@@ -50,7 +50,16 @@
 
 /* nullptr: Represents a NULL pointer. NULL == 0 */
 #ifdef CXX11_COMPAT_NULLPTR
-#define nullptr 0
+# if defined __GNUG__ && \
+    (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))
+#  define nullptr (__null)
+# else
+#  if !defined(__cplusplus)
+#   define nullptr ((void*)0)
+#  else
+#   define nullptr (0)
+#  endif
+# endif
 #endif
 
 /* static_assert(): Compile-time assertions. */
