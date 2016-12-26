@@ -8,9 +8,7 @@ FUNCTION(SET_EXTLIB_PROPERTIES)
 			# Set the MSVC debug path.
 			SET_MSVC_DEBUG_PATH(${_target})
 			# Exclude from ALL builds.
-			SET_TARGET_PROPERTIES(${_target} PROPERTIES
-				EXCLUDE_FROM_ALL TRUE
-				)
+			SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 		ENDIF(TARGET ${_target})
 	ENDFOREACH(_target ${ARGV})
 ENDFUNCTION(SET_EXTLIB_PROPERTIES)
@@ -19,7 +17,6 @@ ENDFUNCTION(SET_EXTLIB_PROPERTIES)
 # TODO: Test on all archs and fix Z_PREFIX issues.
 # TODO: Add more assembly files from contrib/ besides the
 # default ones that were listed in zlib's CMakeLists.txt.
-# FIXME: Broken on AppVeyor. (MSVC 2015)
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	# i386/amd64. Check sizeof(void*) for the actual architecture,
