@@ -183,6 +183,10 @@ static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
 
 /** Time conversion functions. **/
 
+// Macros from MinGW-w64's gettimeofday.c.
+#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
+#define HECTONANOSEC_PER_SEC 10000000LL
+
 /**
  * Convert from Unix time to Win32 SYSTEMTIME.
  * @param unix_time Unix time.
@@ -192,7 +196,7 @@ static inline void UnixTimeToSystemTime(int64_t unix_time, SYSTEMTIME *pSystemTi
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	LARGE_INTEGER li;
-	li.QuadPart = (unix_time * 10000000LL) + 116444736000000000LL;
+	li.QuadPart = (unix_time * HECTONANOSEC_PER_SEC) + FILETIME_1970;
 
 	FILETIME ft;
 	ft.dwLowDateTime = li.LowPart;
@@ -211,7 +215,7 @@ static inline int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
 	LARGE_INTEGER li;
 	li.LowPart = pFileTime->dwLowDateTime;
 	li.HighPart = (LONG)pFileTime->dwHighDateTime;
-	return (li.QuadPart - 116444736000000000LL) / 10000000LL;
+	return (li.QuadPart - FILETIME_1970) / HECTONANOSEC_PER_SEC;
 }
 
 /**
@@ -253,13 +257,24 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 /** C99/POSIX replacement functions. **/
 
 #ifdef _MSC_VER
-// MSVC doesn't have struct timeval or gettimeofday().
+// MSVC doesn't have gettimeofday().
+// NOTE: MSVC does have struct timeval in winsock.h,
+// but it uses long, which is 32-bit.
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define timeval rp_timeval
 struct timeval {
 	time_t   tv_sec;	// seconds
 	uint32_t tv_usec;	// microseconds
+};
+
+#define timezone rp_timezone
+struct timezone {
+	int tz_minuteswest;	// minutes west of Greenwich
+	int tz_dsttime;		// type of DST correction
 };
 
 int gettimeofday(struct timeval *tv, struct timezone *tz);

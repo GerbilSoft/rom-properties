@@ -163,25 +163,36 @@ int w32err_to_posix(DWORD w32err)
 // MSVC doesn't have struct timeval or gettimeofday().
 int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
+	union {
+		uint64_t ns100;	// Time since 1/1/1601 in 100ns units.
+		FILETIME ft;
+	} _now;
+	TIME_ZONE_INFORMATION TimeZoneInformation;
+	DWORD tzi;
+
 	if (tz) {
-		// tz isn't supported.
-		errno = EFAULT;
-		return -1;
+		// Get the timezone information.
+		if ((tzi = GetTimeZoneInformation(&TimeZoneInformation)) != TIME_ZONE_ID_INVALID) {
+			tz->tz_minuteswest = TimeZoneInformation.Bias;
+			if (tzi == TIME_ZONE_ID_DAYLIGHT) {
+				tz->tz_dsttime = 1;
+			} else {
+				tz->tz_dsttime = 0;
+			}
+		} else {
+			tz->tz_minuteswest = 0;
+			tz->tz_dsttime = 0;
+		}
 	}
 
-	SYSTEMTIME systime;
-	FILETIME fileTime;
-	GetSystemTime(&systime);
-	SystemTimeToFileTime(&systime, &fileTime);
+	if (tv) {
+		GetSystemTimeAsFileTime(&_now.ft);	// 100ns units since 1/1/1601
+		// Windows XP's accuract seems to be ~125,000ns == 125us == 0.125ms
+		_now.ns100 -= FILETIME_1970;
+		tv->tv_sec = _now.ns100 / HECTONANOSEC_PER_SEC;			// seconds since 1/1/1970
+		tv->tv_usec = (_now.ns100 % HECTONANOSEC_PER_SEC) / 10LL;	// microseconds
+	}
 
-	// Convert to Unix time while preserving the microseconds.
-	LARGE_INTEGER li;
-	li.LowPart = fileTime.dwLowDateTime;
-	li.HighPart = (LONG)fileTime.dwHighDateTime;
-	uint64_t ft = li.QuadPart;
-	li.QuadPart -= 116444736000000000LL;
-	tv->tv_sec = li.QuadPart / 10000000LL;
-	tv->tv_usec = (li.QuadPart % 10000000LL) / 10LL;
 	return 0;
 }
 #endif /* _MSC_VER */
