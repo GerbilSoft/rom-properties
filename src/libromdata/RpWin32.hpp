@@ -250,4 +250,22 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 
 #define UNUSED(x) ((void)x)
 
+/** C99/POSIX replacement functions. **/
+
+#ifdef _MSC_VER
+// MSVC doesn't have struct timeval or gettimeofday().
+#ifdef __cplusplus
+extern "C" {
+#endif
+struct timeval {
+	time_t   tv_sec;	// seconds
+	uint32_t tv_usec;	// microseconds
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+#ifdef __cplusplus
+}
+#endif
+#endif /* _MSC_VER */
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */

@@ -156,3 +156,32 @@ int w32err_to_posix(DWORD w32err)
 }
 
 }
+
+/** C99/POSIX replacement functions. **/
+
+#ifdef _MSC_VER
+// MSVC doesn't have struct timeval or gettimeofday().
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+	if (tz) {
+		// tz isn't supported.
+		errno = EFAULT;
+		return -1;
+	}
+
+	SYSTEMTIME systime;
+	FILETIME fileTime;
+	GetSystemTime(&systime);
+	SystemTimeToFileTime(&systime, &fileTime);
+
+	// Convert to Unix time while preserving the microseconds.
+	LARGE_INTEGER li;
+	li.LowPart = fileTime.dwLowDateTime;
+	li.HighPart = (LONG)fileTime.dwHighDateTime;
+	uint64_t ft = li.QuadPart;
+	li.QuadPart -= 116444736000000000LL;
+	tv->tv_sec = li.QuadPart / 10000000LL;
+	tv->tv_usec = (li.QuadPart % 10000000LL) / 10LL;
+	return 0;
+}
+#endif /* _MSC_VER */

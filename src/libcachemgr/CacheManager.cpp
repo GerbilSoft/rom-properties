@@ -244,15 +244,6 @@ rp_string CacheManager::download(
 			if (get_mtime(cache_filename, &filetime) != 0)
 				return rp_string();
 
-#ifdef _WIN32
-			SYSTEMTIME systime;
-			GetSystemTime(&systime);
-			int64_t unixtime = SystemTimeToUnixTime(&systime);
-			if ((unixtime - filetime) < (86400*7)) {
-				// Less than a week old.
-				return rp_string();
-			}
-#else /* !_WIN32 */
 			struct timeval systime;
 			if (gettimeofday(&systime, nullptr) != 0)
 				return rp_string();
@@ -260,7 +251,6 @@ rp_string CacheManager::download(
 				// Less than a week old.
 				return rp_string();
 			}
-#endif /* _WIN32 */
 
 			// More than a week old.
 			// Delete the cache file and redownload it.
