@@ -5,7 +5,7 @@
 
 # NOTE: DIR_INSTALL_DOC_ROOT is for documents that should
 # be in the root of the Windows ZIP file. On other platforms,
-# it's the same as DIR_INSATLL_DOC.
+# it's the same as DIR_INSTALL_DOC.
 
 IF(NOT PACKAGE_NAME)
 	MESSAGE(FATAL_ERROR "PACKAGE_NAME is not set.")
