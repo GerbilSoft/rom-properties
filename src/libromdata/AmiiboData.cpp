@@ -111,6 +111,9 @@ class AmiiboDataPrivate {
 		static const char_variant_t ac_etoile_variants[];
 		// Monster Hunter
 		static const char_variant_t mh_rathalos_variants[];
+		static const char_variant_t mh_rathian_cheval_variants[];
+		static const char_variant_t mh_barioth_ayuria_variants[];
+		static const char_variant_t mh_qurupeco_dan_variants[];
 
 		// Character IDs.
 		static const char_id_t char_ids[];
@@ -439,9 +442,24 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_etoile_variants[] 
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_rathalos_variants[] = {
-	{0x00, _RP("One-Eyed Rathalos and Rider")},	// NOTE: not actually assigned.
+	{0x00, _RP("One-Eyed Rathalos and Rider")},	// NOTE: Not actually assigned.
 	{0x01, _RP("One-Eyed Rathalos and Rider (Male)")},
 	{0x02, _RP("One-Eyed Rathalos and Rider (Female)")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_rathian_cheval_variants[] = {
+	{0x00, _RP("Rathian and Cheval")},	// NOTE: Not actually assigned.
+	{0x01, _RP("Rathian and Cheval")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_barioth_ayuria_variants[] = {
+	{0x00, _RP("Barioth and Ayuria")},	// NOTE: Not actually assigned.
+	{0x01, _RP("Barioth and Ayuria")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mh_qurupeco_dan_variants[] = {
+	{0x00, _RP("Qurupeco and Dan")},	// NOTE: Not actually assigned.
+	{0x01, _RP("Qurupeco and Dan")},
 };
 
 // Character IDs.
@@ -1016,12 +1034,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Monster Hunter (character series = 0x350)
 	{0x3500, _RP("One-Eyed Rathalos and Rider"), mh_rathalos_variants, ARRAY_SIZE(mh_rathalos_variants)},
 	{0x3501, _RP("Nabiru"), nullptr, 0},
-#if 0
-	// TODO: Not assigned.
-	{0x3502, _RP("Rathian and Cheval"), nullptr, 0},
-	{0x3503, _RP("Barioth and Ayuria"), nullptr, 0},
-	{0x3504, _RP("Qurupeco and Dan"), nullptr, 0},
-#endif
+	{0x3502, _RP("Rathian and Cheval"), mh_rathian_cheval_variants, ARRAY_SIZE(mh_rathian_cheval_variants)},
+	{0x3503, _RP("Barioth and Ayuria"), mh_barioth_ayuria_variants, ARRAY_SIZE(mh_barioth_ayuria_variants)},
+	{0x3504, _RP("Qurupeco and Dan"), mh_qurupeco_dan_variants, ARRAY_SIZE(mh_qurupeco_dan_variants)},
 
 	// Shovel Knight (character series = 0x35C)
 	{0x35C0, _RP("Shovel Knight"), nullptr, 0},
@@ -1812,17 +1827,13 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// Unused [0x02E1]
 	{  0, 0, nullptr},			// 0x02E1
 
-	// Monster Hunter [0x02E1-0x02E3]
+	// Monster Hunter [0x02E1-0x02E6]
 	{  2, 1, _RP("One-Eyed Rathalos and Rider (Female)")},	// 0x02E1
 	{  1, 1, _RP("One-Eyed Rathalos and Rider (Male)")},	// 0x02E2
 	{  3, 1, _RP("Nabiru")},				// 0x02E3
-	// TODO: Not released yet.
-	//{  4, 2, _RP("Rathian and Cheval")},	// 0x02E4
-	{  0, 0, nullptr},
-	//{  5, 2, _RP("Barioth and Ayuria")},	// 0x02E5
-	{  0, 0, nullptr},
-	//{  6, 2, _RP("Qurupeco and Dan")},	// 0x02E6
-	{  0, 0, nullptr},
+	{  4, 2, _RP("Rathian and Cheval")},			// 0x02E4
+	{  5, 2, _RP("Barioth and Ayuria")},			// 0x02E5
+	{  6, 2, _RP("Qurupeco and Dan")},			// 0x02E6
 
 	// Animal Crossing: Welcome Amiibo Series [0x02E8-0x031E]
 	{  1, 7, _RP("Vivian")},		// 0x02E7
