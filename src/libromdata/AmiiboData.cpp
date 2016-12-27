@@ -486,7 +486,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x018D, _RP("Rover"), nullptr, 0},
 	{0x018E, _RP("Resetti"), ac_resetti_variants, ARRAY_SIZE(ac_resetti_variants)},
 	{0x018F, _RP("Don Resetti"), ac_don_resetti_variants, ARRAY_SIZE(ac_don_resetti_variants)},
-	{0x018F, _RP("Don Resetti"), nullptr, 0},
 	{0x0190, _RP("Brewster"), nullptr, 0},
 	{0x0191, _RP("Harriet"), nullptr, 0},
 	{0x0192, _RP("Blathers"), nullptr, 0},
