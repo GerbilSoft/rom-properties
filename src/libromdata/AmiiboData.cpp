@@ -544,6 +544,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x021C, _RP("Ursala"), nullptr, 0},
 	{0x021D, _RP("Grizzly"), nullptr, 0},
 	{0x021E, _RP("Paula"), nullptr, 0},
+	{0x021F, _RP("Ike"), nullptr, 0},
 	{0x0220, _RP("Charlise"), nullptr, 0},
 	{0x0221, _RP("Beardo"), nullptr, 0},
 	{0x0222, _RP("Klaus"), nullptr, 0},
@@ -597,6 +598,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0282, _RP("Stitches"), nullptr, 0},	// amiibo Festival variant is in Page 22, amiibo series.
 	{0x0283, _RP("Vladimir"), nullptr, 0},
 	{0x0284, _RP("Murphy"), nullptr, 0},
+	{0x0286, _RP("Olive"), nullptr, 0},
 	{0x0287, _RP("Cheri"), nullptr, 0},
 	{0x028A, _RP("June"), nullptr, 0},
 	{0x028B, _RP("Pekoe"), nullptr, 0},
@@ -666,6 +668,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0311, _RP("Scoot"), nullptr, 0},
 	{0x0312, _RP("Weber"), nullptr, 0},
 	{0x0313, _RP("Miranda"), nullptr, 0},
+	{0x0314, _RP("Ketchup"), nullptr, 0},
 	{0x0316, _RP("Gloria"), nullptr, 0},
 	{0x0317, _RP("Molly"), nullptr, 0},
 	{0x0318, _RP("Quillson"), nullptr, 0},
@@ -690,6 +693,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x033F, _RP("Jeremiah"), nullptr, 0},
 	{0x0341, _RP("Tad"), nullptr, 0},
 	{0x0342, _RP("Cousteau"), nullptr, 0},
+	{0x0343, _RP("Huck"), nullptr, 0},
 	{0x0344, _RP("Prince"), nullptr, 0},
 	{0x0345, _RP("Jambette"), nullptr, 0},
 	{0x0347, _RP("Raddle"), nullptr, 0},
@@ -707,6 +711,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0369, _RP("Cesar"), nullptr, 0},
 	{0x036A, _RP("Peewee"), nullptr, 0},
 	{0x036B, _RP("Boone"), nullptr, 0},
+	{0x036D, _RP("Louie"), nullptr, 0},
 	{0x036E, _RP("Boyd"), nullptr, 0},
 	{0x0370, _RP("Violet"), nullptr, 0},
 	{0x0371, _RP("Al"), nullptr, 0},
@@ -725,6 +730,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0392, _RP("Bubbles"), nullptr, 0},
 	{0x0393, _RP("Bertha"), nullptr, 0},
 	{0x0394, _RP("Biff"), nullptr, 0},
+	{0x0395, _RP("Bitty"), nullptr, 0},
 	{0x0398, _RP("Harry"), nullptr, 0},
 	{0x0399, _RP("Hippeux"), nullptr, 0},
 	{0x03A4, _RP("Buck"), nullptr, 0},
@@ -876,6 +882,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x04C6, _RP("Baabara"), nullptr, 0},
 	{0x04C7, _RP("Eunice"), nullptr, 0},
 	{0x04C8, _RP("Stella"), nullptr, 0},
+	{0x04C9, _RP("Cashmere"), nullptr, 0},
 	{0x04CC, _RP("Willow"), nullptr, 0},
 	{0x04CD, _RP("Curlos"), nullptr, 0},
 	{0x04CE, _RP("Wendy"), nullptr, 0},
@@ -923,16 +930,6 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0513, _RP("Vivian"), nullptr, 0},
 	{0x0514, _RP("Skye"), nullptr, 0},
 	{0x0515, _RP("Kyle"), nullptr, 0},
-#if 0
-	// TODO: Unknown.
-	{0xXXXX, _RP("Bitty"), nullptr, 0},
-	{0xXXXX, _RP("Cashmere"), nullptr, 0},
-	{0xXXXX, _RP("Huck"), nullptr, 0},
-	{0xXXXX, _RP("Ike"), nullptr, 0},
-	{0xXXXX, _RP("Ketchup"), nullptr, 0},
-	{0xXXXX, _RP("Louie"), nullptr, 0},
-	{0xXXXX, _RP("Olive"), nullptr, 0},
-#endif
 
 	// Star Fox (character series = 0x058)
 	{0x0580, _RP("Fox"), nullptr, 0},
@@ -1829,7 +1826,6 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 0, nullptr},
 
 	// Animal Crossing: Welcome Amiibo Series [0x02E8-0x031E]
-	// NOTE: Remove placeholders when cards are made available.
 	{  1, 7, _RP("Vivian")},		// 0x02E7
 	{  2, 7, _RP("Hopkins")},		// 0x02E8
 	{  3, 7, _RP("June")},			// 0x02E9
