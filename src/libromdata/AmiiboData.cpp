@@ -352,7 +352,7 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_isabelle_variants[
 	{0x00, _RP("Isabelle (Summer Outfit)")},
 	{0x01, _RP("Isabelle (Autumn Outfit)")},
 	// TODO: How are these ones different?
-	{0x01, _RP("Isabelle (Series 3)")},
+	{0x03, _RP("Isabelle (Series 4)")},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_kk_slider_variants[] = {
