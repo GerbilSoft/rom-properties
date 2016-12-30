@@ -5,6 +5,7 @@
 # Revised by Roger Lowman, 2009-2010
 # Revised by Clifford Yapp, 2011-2012
 # Revised by Roger Leigh, 2016
+# Revised by Andreas Franek, 2016
 
 # This code is released under the libpng license.
 # For conditions of distribution and use, see the disclaimer
@@ -46,7 +47,7 @@ ENDIF(0)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_RELEASE 26)
+set(PNGLIB_RELEASE 27)
 set(PNGLIB_NAME libpng${PNGLIB_MAJOR}${PNGLIB_MINOR})
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_RELEASE})
 
@@ -88,6 +89,35 @@ ENDIF(0)
 
 set(PNG_PREFIX "" CACHE STRING "Prefix to add to the API function names")
 set(DFA_XTRA "" CACHE FILEPATH "File containing extra configuration settings")
+
+# set definitions and sources for arm
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
+  set(PNG_ARM_NEON_POSSIBLE_VALUES check on off)
+  set(PNG_ARM_NEON "check" CACHE STRING "Enable ARM NEON optimizations:
+     check: (default) use internal checking code;
+     off: disable the optimizations;
+     on: turn on unconditionally.")
+  set_property(CACHE PNG_ARM_NEON PROPERTY STRINGS
+     ${PNG_ARM_NEON_POSSIBLE_VALUES})
+  list(FIND PNG_ARM_NEON_POSSIBLE_VALUES ${PNG_ARM_NEON} index)
+  if(index EQUAL -1)
+    message(FATAL_ERROR
+      " PNG_ARM_NEON must be one of [${PNG_ARM_NEON_POSSIBLE_VALUES}]")
+  elseif(NOT ${PNG_ARM_NEON} STREQUAL "no")
+    set(libpng_arm_sources
+      arm/arm_init.c
+      arm/filter_neon.S
+      arm/filter_neon_intrinsics.c)
+      
+    if(${PNG_ARM_NEON} STREQUAL "on")
+      add_definitions(-DPNG_ARM_NEON_OPT=2)
+    elseif(${PNG_ARM_NEON} STREQUAL "check")
+      add_definitions(-DPNG_ARM_NEON_CHECK_SUPPORTED)
+    endif()
+  else()
+    add_definitions(-DPNG_ARM_NEON_OPT=0)
+  endif()
+endif()
 
 # SET LIBNAME
 set(PNG_LIB_NAME png${PNGLIB_MAJOR}${PNGLIB_MINOR})
@@ -379,6 +409,7 @@ set(libpng_sources
   pngwrite.c
   pngwtran.c
   pngwutil.c
+  ${libpng_arm_sources}
 )
 
 # rom-properties: Enable Intel SSE2 optimizations on x86.
@@ -758,7 +789,7 @@ endif(NOT WIN32 OR CYGWIN OR MINGW)
 # SET UP LINKS
 if(PNG_SHARED)
   set_target_properties(png PROPERTIES
-#   VERSION 16.${PNGLIB_RELEASE}.1.6.26
+#   VERSION 16.${PNGLIB_RELEASE}.1.6.27
     VERSION 16.${PNGLIB_RELEASE}.0
     SOVERSION 16
     CLEAN_DIRECT_OUTPUT 1)
