@@ -215,22 +215,25 @@ set_target_properties(zlib PROPERTIES SOVERSION 1)
 add_definitions(${ZLIB_DEFINITIONS})
 
 # rom-properties: Set target definitions.
-#target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
+target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
 target_compile_definitions(zlibstatic PUBLIC -DZLIB_CONST)
 
 # rom-properties: Set include directories.
-#TARGET_INCLUDE_DIRECTORIES(zlib
-#	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-#		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-#	)
+TARGET_INCLUDE_DIRECTORIES(zlib
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	)
 TARGET_INCLUDE_DIRECTORIES(zlibstatic
 	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	)
 
 # rom-properties: Split debug functionality.
+# NOTE: Do NOT use DO_SPLIT_DEBUG on static library targets,
+# since it results in the entire thing being split out on Linux.
 DO_SPLIT_DEBUG(zlib)
-DO_SPLIT_DEBUG(zlibstatic)
+INCLUDE(SetMSVCDebugPath)
+SET_MSVC_DEBUG_PATH(zlibstatic)
 
 if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version
