@@ -1,0 +1,43 @@
+# Find ThunarX libraries and headers. (GTK+ 2.x version)
+# If found, the following variables will be defined:
+# - THUNARX2_FOUND: System has ThunarX.
+# - THUNARX2_INCLUDE_DIRS: ThunarX include directories.
+# - THUNARX2_LIBRARIES: ThunarX libraries.
+# - THUNARX2_DEFINITIONS: Compiler switches required for using ThunarX.
+#
+# In addition, a target Xfce::thunarx-2 will be created with all of
+# these definitions.
+#
+# Reference: https://cmake.org/Wiki/CMake:How_To_Find_Libraries
+#
+
+FIND_PACKAGE(PkgConfig)
+IF(PkgConfig_FOUND)
+	PKG_CHECK_MODULES(PC_THUNARX2 QUIET thunarx-2)
+	SET(THUNARX2_DEFINITIONS ${PC_THUNARX_CFLAGS_OTHER})
+
+	FIND_PATH(THUNARX2_INCLUDE_DIR thunarx/thunarx.h
+		HINTS ${PC_THUNARX2_INCLUDEDIR} ${PC_THUNARX2_INCLUDE_DIRS})
+	FIND_LIBRARY(THUNARX2_LIBRARY NAMES thunarx-2 libthunarx-2
+		HINTS ${PC_THUNARX2_LIBDIR} ${PC_THUNARX2_LIBRARY_DIRS})
+
+	# Handle the QUIETLY and REQUIRED arguments and set LIBXML2_FOUND to TRUE
+	# if all listed variables are TRUE.
+	INCLUDE(FindPackageHandleStandardArgs)
+	FIND_PACKAGE_HANDLE_STANDARD_ARGS(THUNARX2 DEFAULT_MSG THUNARX2_LIBRARY THUNARX2_INCLUDE_DIR)
+	MARK_AS_ADVANCED(THUNARX2_INCLUDE_DIR THUNARX2_LIBRARY)
+
+	SET(THUNARX2_LIBRARIES ${THUNARX2_LIBRARY})
+	SET(THUNARX2_INCLUDE_DIRS ${THUNARX2_INCLUDE_DIR})
+
+	# Create the library target.
+	IF(THUNARX2_FOUND)
+		ADD_LIBRARY(Xfce::thunarx-2 UNKNOWN IMPORTED)
+		SET_TARGET_PROPERTIES(Xfce::thunarx-2 PROPERTIES
+			INTERFACE_INCLUDE_DIRECTORIES "${THUNARX2_INCLUDE_DIRS}")
+		SET_TARGET_PROPERTIES(Xfce::thunarx-2 PROPERTIES
+			IMPORTED_LOCATION "${THUNARX2_LIBRARY}")
+		SET_TARGET_PROPERTIES(Xfce::thunarx-2 PROPERTIES
+			COMPILE_DEFINITIONS "${THUNARX2_DEFINITIONS}")
+	ENDIF(THUNARX2_FOUND)
+ENDIF(PkgConfig_FOUND)
