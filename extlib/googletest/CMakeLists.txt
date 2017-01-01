@@ -10,7 +10,9 @@ option(BUILD_GTEST "Builds the googletest subproject" OFF)
 option(BUILD_GMOCK "Builds the googlemock subproject" ON)
 
 # rom-properties: Enable policy CMP0063 for visibility properties.
-CMAKE_POLICY(SET CMP0063 NEW)
+IF(NOT CMAKE_VERSION VERSION_LESS 3.3.0)
+	CMAKE_POLICY(SET CMP0063 NEW)
+ENDIF(NOT CMAKE_VERSION VERSION_LESS 3.3.0)
 
 if(BUILD_GMOCK)
   add_subdirectory( googlemock )
