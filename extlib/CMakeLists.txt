@@ -31,6 +31,11 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 UNSET(arch)
 
+# FIXME: zlib-1.2.9's asm optimizations break on 32-bit Windows...
+# Reference:  https://github.com/madler/zlib/issues/41
+UNSET(AMD64)
+UNSET(ASM686)
+
 # Don't install any of these libraries by default.
 # zlib and libpng will be installed if they're
 # built as shared libraries.
