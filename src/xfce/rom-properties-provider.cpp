@@ -22,6 +22,13 @@
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
 
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomDataFactory.hpp"
+using LibRomData::RpFile;
+using LibRomData::RomData;
+using LibRomData::RomDataFactory;
+
 static void   rom_properties_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
 static GList *rom_properties_provider_get_pages			(ThunarxPropertyPageProvider      *renamer_provider,
 								 GList                            *files);
@@ -63,17 +70,17 @@ rom_properties_provider_page_provider_init(ThunarxPropertyPageProviderIface *ifa
 static GList*
 rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
 {
-	GList *pages = NULL;
+	GList *pages = nullptr;
 	GList *file;
 	ThunarxFileInfo *info;
 	((void)page_provider);
 
 	if (g_list_length(files) != 1) 
-		return NULL;
+		return nullptr;
 
 	file = g_list_first(files);
-	if (G_UNLIKELY(file == NULL))
-		return NULL;
+	if (G_UNLIKELY(file == nullptr))
+		return nullptr;
 
 	info = THUNARX_FILE_INFO(file->data);
 
@@ -98,18 +105,31 @@ rom_properties_get_file_supported(ThunarxFileInfo *info)
 	gchar *filename;
 	gboolean supported = FALSE;
 
-	g_return_val_if_fail(info != NULL || THUNARX_IS_FILE_INFO (info), FALSE);
+	g_return_val_if_fail(info != nullptr || THUNARX_IS_FILE_INFO (info), FALSE);
 
 	// TODO: Support for gvfs.
 	uri = thunarx_file_info_get_uri(info);
-	filename = g_filename_from_uri(uri, NULL, NULL);
-	g_free (uri);
+	filename = g_filename_from_uri(uri, nullptr, nullptr);
+	g_free(uri);
 
-	if (G_UNLIKELY (filename == NULL))
+	if (G_UNLIKELY(filename == nullptr))
 		return FALSE;
 
-	// TODO: Check RomDataFactory::isRomSupported().
-	g_free (filename);
+	// TODO: Check file extensions and/or MIME types?
 
-	return TRUE;
+	// Open the ROM file.
+	RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
+	if (file->isOpen()) {
+		// Is this ROM file supported?
+		// NOTE: We have to create an instance here in order to
+		// prevent false positives caused by isRomSupported()
+		// saying "yes" while new RomData() says "no".
+		RomData *romData = RomDataFactory::getInstance(file, false);
+		supported = (romData != nullptr);
+		delete romData;
+		delete file;
+	}
+
+	g_free(filename);
+	return supported;
 }
