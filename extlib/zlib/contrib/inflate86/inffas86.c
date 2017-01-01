@@ -97,7 +97,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
 /*116   72 */ unsigned status;          /*          set when state chng*/
     } ar;
 
-/* Gens/GS II: Added a check for __x86_64__ . */
+/* rom-properties: Added a check for __x86_64__ . */
 #if defined( __GNUC__ ) && (defined( __amd64__ ) || defined( __x86_64__ )) && ! defined( __i386 )
 #define PAD_AVAIL_IN 6
 #define PAD_AVAIL_OUT 258
@@ -132,7 +132,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
         ar.bits += 8;
     }
 
-/* Gens/GS II: Added a check for __x86_64__ . */
+/* rom-properties: Added a check for __x86_64__ . */
 #if defined( __GNUC__ ) && (defined( __amd64__ ) || defined( __x86_64__ )) && ! defined( __i386 )
     __asm__ __volatile__ (
 "        leaq    %0, %%rax\n"
