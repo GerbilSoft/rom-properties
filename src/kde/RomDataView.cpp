@@ -564,13 +564,18 @@ void RomDataViewPrivate::updateDisplay(void)
 					default:
 						// Invalid combination.
 						assert(!"Invalid Date/Time formatting.");
-						delete lblDateTime;
-						delete lblDesc;
 						break;
 				}
-				lblDateTime->setText(str);
 
-				ui.formLayout->addRow(lblDesc, lblDateTime);
+				if (!str.isEmpty()) {
+					lblDateTime->setText(str);
+					ui.formLayout->addRow(lblDesc, lblDateTime);
+				} else {
+					// Invalid date/time.
+					delete lblDateTime;
+					delete lblDesc;
+				}
+
 				break;
 			}
 
