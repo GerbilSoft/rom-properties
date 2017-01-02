@@ -415,7 +415,6 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 
 			case RomFields::RFT_STRING: {
 				// String type.
-				// TODO: String formatting options.
 				GtkWidget *lblString = gtk_label_new(nullptr);
 				gtk_label_set_use_underline(GTK_LABEL(lblString), false);
 				gtk_widget_show(lblString);
@@ -476,6 +475,65 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 					// Standard string row.
 					gtk_table_attach(GTK_TABLE(page->table), lblString, 1, 2, i, i+1,
 						GTK_FILL, GTK_FILL, 0, 0);
+				}
+
+				break;
+			}
+
+			case RomFields::RFT_DATETIME: {
+				// Date/Time.
+				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+
+				GtkWidget *lblDateTime = gtk_label_new(nullptr);
+				gtk_label_set_use_underline(GTK_LABEL(lblDateTime), false);
+				gtk_label_set_selectable(GTK_LABEL(lblDateTime), TRUE);
+				gtk_label_set_justify(GTK_LABEL(lblDateTime), GTK_JUSTIFY_LEFT);
+				gtk_misc_set_alignment(GTK_MISC(lblDateTime), 0.0f, 0.0f);
+				gtk_widget_show(lblDateTime);
+
+				GDateTime *dateTime;
+				if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
+					dateTime = g_date_time_new_from_unix_utc(data->date_time);
+				} else {
+					dateTime = g_date_time_new_from_unix_local(data->date_time);
+				}
+
+				gchar *str = nullptr;
+				switch (dateTimeDesc->flags &
+					(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
+				{
+					case RomFields::RFT_DATETIME_HAS_DATE:
+						// Date only.
+						str = g_date_time_format(dateTime, "%x");
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_TIME:
+						// Time only.
+						str = g_date_time_format(dateTime, "%X");
+						break;
+
+					case RomFields::RFT_DATETIME_HAS_DATE |
+					     RomFields::RFT_DATETIME_HAS_TIME:
+						// Date and time.
+						str = g_date_time_format(dateTime, "%x %X");
+						break;
+
+					default:
+						// Invalid combination.
+						assert(!"Invalid Date/Time formatting.");
+						break;
+				}
+				g_date_time_unref(dateTime);
+
+				if (str) {
+					gtk_label_set_text(GTK_LABEL(lblDateTime), str);
+					gtk_table_attach(GTK_TABLE(page->table), lblDateTime, 1, 2, i, i+1,
+						GTK_FILL, GTK_FILL, 0, 0);
+					g_free(str);
+				} else {
+					// Invalid date/time.
+					gtk_widget_destroy(lblDateTime);
+					gtk_widget_destroy(lblDesc);
 				}
 
 				break;
