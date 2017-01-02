@@ -79,6 +79,16 @@ class RomDataPrivate
 
 		// Image processing flags.
 		uint32_t imgpf[RomData::IMG_EXT_MAX+1];
+
+	public:
+		/** Convenience functions. **/
+
+		/**
+		 * Format a file size.
+		 * @param fileSize File size.
+		 * @return Formatted file size.
+		 */
+		static rp_string formatFileSize(int64_t fileSize);
 };
 
 }
