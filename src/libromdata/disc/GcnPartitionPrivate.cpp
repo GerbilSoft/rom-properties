@@ -68,7 +68,7 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	}
 
 	// Load the boot block and boot info.
-	GcnPartition *q = static_cast<GcnPartition*>(q_ptr);
+	RP_Q(GcnPartition);
 	int ret = q->seek(GCN_Boot_Block_ADDRESS);
 	if (ret != 0) {
 		// Seek failed.
@@ -121,7 +121,7 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
  */
 int GcnPartitionPrivate::loadFst(void)
 {
-	GcnPartition *q = static_cast<GcnPartition*>(q_ptr);
+	RP_Q(GcnPartition);
 	if (fst) {
 		// FST is already loaded.
 		return 0;

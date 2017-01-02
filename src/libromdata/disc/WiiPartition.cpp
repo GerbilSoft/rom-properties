@@ -415,7 +415,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 	int64_t sector_addr = partition_offset + data_offset;
 	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
 
-	WiiPartition *q = static_cast<WiiPartition*>(q_ptr);
+	RP_Q(WiiPartition);
 	int ret = discReader->seek(sector_addr);
 	if (ret != 0) {
 		q->m_lastError = discReader->lastError();
@@ -474,7 +474,7 @@ WiiPartition::~WiiPartition()
  */
 size_t WiiPartition::read(void *ptr, size_t size)
 {
-	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
+	RP_D(WiiPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader || !d->discReader->isOpen()) {
@@ -592,7 +592,7 @@ size_t WiiPartition::read(void *ptr, size_t size)
  */
 int WiiPartition::seek(int64_t pos)
 {
-	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
+	RP_D(WiiPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {
@@ -627,7 +627,7 @@ int WiiPartition::seek(int64_t pos)
 WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 {
 	// TODO: Errors?
-	const WiiPartitionPrivate *d = static_cast<const WiiPartitionPrivate*>(d_ptr);
+	RP_D(const WiiPartition);
 	return d->encInitStatus;
 }
 
@@ -638,7 +638,7 @@ WiiPartition::EncInitStatus WiiPartition::encInitStatus(void) const
 WiiPartition::EncKey WiiPartition::encKey(void) const
 {
 	// TODO: Errors?
-	WiiPartitionPrivate *d = static_cast<WiiPartitionPrivate*>(d_ptr);
+	RP_D(WiiPartition);
 	return d->getEncKey();
 }
 

@@ -80,7 +80,7 @@ GcnPartition::GcnPartition(GcnPartitionPrivate *d)
  */
 bool GcnPartition::isOpen(void) const
 {
-	const GcnPartitionPrivate *d = static_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return (d->discReader && d->discReader->isOpen());
 }
 
@@ -92,7 +92,7 @@ bool GcnPartition::isOpen(void) const
  */
 size_t GcnPartition::read(void *ptr, size_t size)
 {
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader || !d->discReader->isOpen()) {
@@ -112,7 +112,7 @@ size_t GcnPartition::read(void *ptr, size_t size)
  */
 int GcnPartition::seek(int64_t pos)
 {
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {
@@ -141,7 +141,7 @@ void GcnPartition::rewind(void)
 int64_t GcnPartition::size(void)
 {
 	// TODO: Errors?
-	const GcnPartitionPrivate *d = static_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return d->data_size;
 }
 
@@ -155,7 +155,7 @@ int64_t GcnPartition::size(void)
 int64_t GcnPartition::partition_size(void) const
 {
 	// TODO: Errors?
-	const GcnPartitionPrivate *d = static_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return d->partition_size;
 }
 
@@ -170,7 +170,7 @@ int64_t GcnPartition::partition_size(void) const
  */
 IFst::Dir *GcnPartition::opendir(const rp_char *path)
 {
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// FST isn't loaded.
 		if (d->loadFst() != 0) {
@@ -191,7 +191,7 @@ IFst::Dir *GcnPartition::opendir(const rp_char *path)
  */
 IFst::DirEnt *GcnPartition::readdir(IFst::Dir *dirp)
 {
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// TODO: Errors?
 		return nullptr;
@@ -207,7 +207,7 @@ IFst::DirEnt *GcnPartition::readdir(IFst::Dir *dirp)
  */
 int GcnPartition::closedir(IFst::Dir *dirp)
 {
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// TODO: Errors?
 		return -EBADF;
@@ -225,7 +225,7 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.
-	GcnPartitionPrivate *d = static_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// FST isn't loaded.
 		if (d->loadFst() != 0) {
