@@ -71,13 +71,13 @@ access on Windows Vista and later.
 
 ## Current OS Feature Support Level
 
-|     Platform     | Properties Tab | Thumbnails | Icons |
-|------------------|:--------------:|:----------:|:-----:|
-| KDE 4.x          |       Yes      |     Yes    |  N/A  |
-| KDE 5.x          |       Yes      |     Yes    |  N/A  |
-| XFCE (Thunar)    |       No       |     No     |  N/A  |
-| GNOME (Nautilus) |       No       |     No     |  N/A  |
-| Windows          |       Yes      |     Yes    |  Yes  |
+|     Platform     | Properties Tab | Thumbnails |
+|------------------|:--------------:|:----------:|
+| KDE 4.x          |       Yes      |     Yes    |
+| KDE 5.x          |       Yes      |     Yes    |
+| XFCE (Thunar)    |       Yes      |     No     |
+| GNOME (Nautilus) |       No       |     No     |
+| Windows          |       Yes      |     Yes    |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
@@ -85,10 +85,9 @@ Notes:
 * The XFCE and GNOME file managers both use a similar interface for generating
   thumbnails, but with a different metadata file. Hence, once thumbnail support
   is implemented for one of them, it will also be implemented for the other.
-* Windows supports separate icon and thumbnail handlers, which is why a
-  separate "icon" feature is listed. Linux desktop environments generally
-  use the file's MIME type to determine the icon, so custom icons are always
-  implemented using the thumbnail interface.
+* Windows supports separate icon and thumbnail handlers. Linux desktop
+  environments generally use the file's MIME type to determine the icon, so
+  custom icons are always implemented using the thumbnail interface.
 
 ## Current ROM Feature Support Level
 

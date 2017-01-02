@@ -14,7 +14,10 @@ Build-Depends:
  kio-dev,
  nettle-dev,
  qtbase5-dev,
- zlib1g-dev
+ zlib1g-dev,
+ libglib2.0-dev,
+ libgtk2.0-dev,
+ libthunarx-2-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
@@ -39,3 +42,13 @@ Description: ROM Properties Page shell extension
  including Nintendo GameCube and Wii.
  .
  This package contains the KDE 5 version.
+
+Package: rom-properties-xfce
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the XFCE version.

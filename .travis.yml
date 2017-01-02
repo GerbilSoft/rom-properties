@@ -19,6 +19,9 @@ addons:
       - libqt4-dev
       - kdelibs5-dev
       - nettle-dev
+      - libglib2.0-dev
+      - libgtk2.0-dev
+      - libthunarx-2-dev
 
 # Run the build script.
 script: ./travis.sh

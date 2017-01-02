@@ -2,6 +2,10 @@
 
 ## v0.9-beta2 (unreleased)
 
+* New features:
+  * New XFCE frontend. Currently only implements the property page.
+    Thumbnailing will be implemented before release.
+
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
     Currently only supports text fields.

@@ -286,8 +286,9 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
 				for (int i = 1; i < iconAnimData->count; i++) {
-					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						QImage img = rpToQImage(iconAnimData->frames[i]);
+					const rp_image *const frame = iconAnimData->frames[i];
+					if (frame && frame->isValid()) {
+						QImage img = rpToQImage(frame);
 						if (!img.isNull()) {
 							iconFrames[i] = imgToPixmap(img);
 						}
@@ -377,9 +378,6 @@ void RomDataViewPrivate::updateDisplay(void)
 			case RomFields::RFT_STRING: {
 				// String type.
 				QLabel *lblString = new QLabel(q);
-				lblString->setTextInteractionFlags(
-					Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
-					Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
 				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
 					// Credits text. Enable formatting and center text.
 					lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -392,6 +390,9 @@ void RomDataViewPrivate::updateDisplay(void)
 					}
 				} else {
 					// Standard text with no formatting.
+					lblString->setTextInteractionFlags(
+						Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
+						Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
 					lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 					lblString->setTextFormat(Qt::PlainText);
 					if (data->str) {
@@ -564,13 +565,18 @@ void RomDataViewPrivate::updateDisplay(void)
 					default:
 						// Invalid combination.
 						assert(!"Invalid Date/Time formatting.");
-						delete lblDateTime;
-						delete lblDesc;
 						break;
 				}
-				lblDateTime->setText(str);
 
-				ui.formLayout->addRow(lblDesc, lblDateTime);
+				if (!str.isEmpty()) {
+					lblDateTime->setText(str);
+					ui.formLayout->addRow(lblDesc, lblDateTime);
+				} else {
+					// Invalid date/time.
+					delete lblDateTime;
+					delete lblDesc;
+				}
+
 				break;
 			}
 
