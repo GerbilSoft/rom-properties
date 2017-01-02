@@ -218,6 +218,12 @@ rom_properties_page_finalize(GObject *object)
 		g_source_remove(page->tmrIconAnim);
 	}
 
+	// Clear some widget variables to ensure that
+	// rom_properties_page_set_file() doesn't try to do stuff.
+	page->hboxHeaderRow = nullptr;
+	page->table = nullptr;
+	page->lblCredits = nullptr;
+
 	// Free the file reference.
 	// This also deletes romData and iconFrames.
 	rom_properties_page_set_file(page, nullptr);
@@ -341,11 +347,17 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 		g_signal_connect(G_OBJECT(file), "changed", G_CALLBACK(rom_properties_page_file_changed), page);
 	} else {
 		// Hide the header row and delete the table.
-		gtk_widget_hide(page->hboxHeaderRow);
-		gtk_widget_destroy(page->table);
-		page->table = nullptr;
-		gtk_widget_destroy(page->lblCredits);
-		page->lblCredits = nullptr;
+		if (page->hboxHeaderRow) {
+			gtk_widget_hide(page->hboxHeaderRow);
+		}
+		if (page->table) {
+			gtk_widget_destroy(page->table);
+			page->table = nullptr;
+		}
+		if (page->lblCredits) {
+			gtk_widget_destroy(page->lblCredits);
+			page->lblCredits = nullptr;
+		}
 	}
 }
 
