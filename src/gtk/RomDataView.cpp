@@ -37,8 +37,10 @@ using namespace LibRomData;
 
 // C++ includes.
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 // References:
@@ -123,6 +125,9 @@ struct _RomDataView {
 	// Icon animation timer.
 	guint		tmrIconAnim;
 	int		last_delay;		// Last delay value.
+
+	// Bitfield checkboxes.
+	unordered_map<GtkWidget*, gboolean> *mapBitfields;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -175,6 +180,7 @@ rom_data_view_init(RomDataView *page)
 	page->lblCredits = nullptr;
 	page->last_frame_number = 0;
 	page->iconAnimHelper = new IconAnimHelper();
+	page->mapBitfields = new unordered_map<GtkWidget*, gboolean>();
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -253,6 +259,7 @@ rom_data_view_finalize(GObject *object)
 
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
+	delete page->mapBitfields;
 
 	(*G_OBJECT_CLASS(rom_data_view_parent_class)->finalize)(object);
 }
@@ -368,10 +375,15 @@ rom_data_view_set_filename(RomDataView	*page,
 	if (G_LIKELY(!page->filename.empty())) {
 		rom_data_view_filename_changed(page->filename.c_str(), page);
 	} else {
-		// Hide the header row and delete the table.
+		// Hide the header row
 		if (page->hboxHeaderRow) {
 			gtk_widget_hide(page->hboxHeaderRow);
 		}
+
+		// Clear the bitfield checkboxes map.
+		page->mapBitfields->clear();
+
+		// Delete the table and "credits" label.
 		if (page->table) {
 			gtk_widget_destroy(page->table);
 			page->table = nullptr;
@@ -495,6 +507,9 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Initialize the header row.
 	rom_data_view_init_header_row(page);
+
+	// Clear the bitfield checkboxes map.
+	page->mapBitfields->clear();
 
 	// Delete the table if it's already present.
 	if (page->table) {
@@ -667,13 +682,16 @@ rom_data_view_update_display(RomDataView *page)
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), TRUE);
 					}
 
+					// Save the bitfield checkbox in the map.
+					page->mapBitfields->insert(std::make_pair(checkBox, !!(data->bitfield & (1 << bit))));
+
 					// Disable user modifications.
 					// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 					// emitted for both user and program modifications, so we have to
 					// connect this signal *after* setting the initial value.
 					g_signal_connect(checkBox, "toggled",
 						reinterpret_cast<GCallback>(checkbox_no_toggle_signal_handler),
-						nullptr);
+						page);
 
 					gtk_table_attach(GTK_TABLE(gridBitfield), checkBox, col, col+1, row, row+1,
 						GTK_FILL, GTK_FILL, 0, 0);
@@ -850,14 +868,27 @@ rom_data_view_load_rom_data(gpointer data)
 
 /** Signal handlers. **/
 
+/**
+ * Prevent bitfield checkboxes from being toggled.
+ * @param togglebutton Bitfield checkbox.
+ * @param user_data RomDataView*.
+ */
 static void
 checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 				  gpointer		 user_data)
 {
 	((void)user_data);
-	if (gtk_toggle_button_get_active(togglebutton)) {
-		// Uncheck this box.
-		gtk_toggle_button_set_active(togglebutton, FALSE);
+	RomDataView *page = static_cast<RomDataView*>(user_data);
+
+	// Check if this GtkToggleButton is present in the map.
+	auto iter = page->mapBitfields->find(GTK_WIDGET(togglebutton));
+	if (iter != page->mapBitfields->end()) {
+		// Check if the status is correct.
+		gboolean status = iter->second;
+		if (gtk_toggle_button_get_active(togglebutton) != status) {
+			// Toggle this box.
+			gtk_toggle_button_set_active(togglebutton, status);
+		}
 	}
 }
 
