@@ -40,8 +40,9 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 
 	// NOTE: GdkPixbuf's convenience functions don't do a
 	// deep copy, so we can't use them directly.
-	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE,
-		8, img->width(), img->height());
+	const int width = img->width();
+	const int height = img->height();
+	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
 	assert(pixbuf != nullptr);
 	if (!pixbuf)
 		return nullptr;
@@ -50,12 +51,15 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 		case rp_image::FORMAT_ARGB32: {
 			// Copy the image data directly.
 			uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-			const int stride = gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest);
-			const int height = img->height();
-			const int bytesPerLine = img->width() * sizeof(*dest);
-			for (int y = 0; y < height; y++, dest += stride) {
+			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
+			for (int y = 0; y < height; y++, dest += strideDiff) {
 				const uint32_t *src = static_cast<const uint32_t*>(img->scanLine(y));
-				memcpy(dest, src, bytesPerLine);
+				for (int x = width; x > 0; x--, dest++, src++) {
+					// Swap the R and B channels.
+					*dest =  (*src & 0xFF00FF00) |
+						((*src & 0x00FF0000) >> 16) |
+						((*src & 0x000000FF) << 16);
+				}
 			}
 			break;
 		}
