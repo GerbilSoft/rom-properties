@@ -117,7 +117,7 @@ struct _RomDataView {
 	const IconAnimData *iconAnimData;
 	// TODO: GdkPixmap or cairo_surface_t?
 	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
-	IconAnimHelper	iconAnimHelper;
+	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.
 
 	// Icon animation timer.
@@ -174,6 +174,7 @@ rom_data_view_init(RomDataView *page)
 	page->table = nullptr;
 	page->lblCredits = nullptr;
 	page->last_frame_number = 0;
+	page->iconAnimHelper = new IconAnimHelper();
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -249,6 +250,9 @@ rom_data_view_finalize(GObject *object)
 	// Free the file reference.
 	// This also deletes romData and iconFrames.
 	rom_data_view_set_filename(page, nullptr);
+
+	// Delete the C++ objects.
+	delete page->iconAnimHelper;
 
 	(*G_OBJECT_CLASS(rom_data_view_parent_class)->finalize)(object);
 }
@@ -474,7 +478,7 @@ rom_data_view_init_header_row(RomDataView *page)
 				}
 
 				// Set up the IconAnimHelper.
-				page->iconAnimHelper.setIconAnimData(page->iconAnimData);
+				page->iconAnimHelper->setIconAnimData(page->iconAnimData);
 				// Icon animation timer is set in startAnimTimer().
 			}
 		}
@@ -864,14 +868,14 @@ checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
  */
 static void start_anim_timer(RomDataView *page)
 {
-	if (!page->iconAnimData || !page->iconAnimHelper.isAnimated()) {
+	if (!page->iconAnimData || !page->iconAnimHelper->isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
 
 	// Get the current frame information.
-	page->last_frame_number = page->iconAnimHelper.frameNumber();
-	const int delay = page->iconAnimHelper.frameDelay();
+	page->last_frame_number = page->iconAnimHelper->frameNumber();
+	const int delay = page->iconAnimHelper->frameDelay();
 	if (delay <= 0) {
 		// Invalid delay value.
 		return;
@@ -905,7 +909,7 @@ static gboolean anim_timer_func(RomDataView *page)
 {
 	// Next frame.
 	int delay = 0;
-	int frame = page->iconAnimHelper.nextFrame(&delay);
+	int frame = page->iconAnimHelper->nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		return FALSE;
