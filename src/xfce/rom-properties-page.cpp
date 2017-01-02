@@ -21,6 +21,19 @@
 
 #include "rom-properties-page.hpp"
 
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomFields.hpp"
+#include "libromdata/RomDataFactory.hpp"
+using LibRomData::RpFile;
+using LibRomData::RomData;
+using LibRomData::RomDataFactory;
+using LibRomData::RomFields;
+
+// C++ includes.
+#include <string>
+using std::string;
+
 // References:
 // - audio-tags plugin
 // - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
@@ -56,6 +69,9 @@ struct _RomPropertiesPageClass {
 // XFCE property page.
 struct _RomPropertiesPage {
 	ThunarxPropertyPage __parent__;
+
+	// ROM data.
+	RomData		*romData;
 
 	/* Widgets */
 	GtkWidget	*table;
@@ -102,6 +118,9 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 static void
 rom_properties_page_init(RomPropertiesPage *page)
 {
+	// No ROM data initially.
+	page->romData = nullptr;
+
 	// NOTE: GTK+3 adds halign/valign properties.
 	// For GTK+2, we have to use a VBox.
 	GtkWidget *vboxMain = gtk_vbox_new(FALSE, 8);
@@ -121,6 +140,13 @@ rom_properties_page_init(RomPropertiesPage *page)
 	gtk_box_pack_start(GTK_BOX(hboxHeaderRow), page->lblSysInfo, TRUE, TRUE, 0);
 	gtk_widget_show(page->lblSysInfo);
 
+	// Make lblSysInfo bold.
+	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+	pango_attr_list_insert(attr_lst, attr);
+	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
+	pango_attr_list_unref(attr_lst);
+
 	// Table layout.
 	page->table = gtk_table_new(1, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(vboxMain), page->table, TRUE, TRUE, 0);
@@ -137,8 +163,12 @@ rom_properties_page_finalize(GObject *object)
 		g_source_remove(page->changed_idle);
 	}
 
+	// Delete the RomData object.
+	delete page->romData;
+	page->romData = nullptr;
+
 	/* Free file reference */
-	rom_properties_page_set_file(page, NULL);
+	rom_properties_page_set_file(page, nullptr);
 
 	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
 }
@@ -146,7 +176,7 @@ rom_properties_page_finalize(GObject *object)
 RomPropertiesPage*
 rom_properties_page_new(void)
 {
-	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(g_object_new(TYPE_ROM_PROPERTIES_PAGE, NULL));
+	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
 	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), "ROM Properties");
 	return page;
 }
@@ -201,7 +231,7 @@ rom_properties_page_set_property(GObject	*object,
 ThunarxFileInfo*
 rom_properties_page_get_file(RomPropertiesPage *page)
 {
-	g_return_val_if_fail(IS_ROM_PROPERTIES_PAGE(page), NULL);
+	g_return_val_if_fail(IS_ROM_PROPERTIES_PAGE(page), nullptr);
 	return page->file;
 }
 
@@ -217,25 +247,31 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 				 ThunarxFileInfo	*file)
 {
 	g_return_if_fail(IS_ROM_PROPERTIES_PAGE(page));
-	g_return_if_fail(file == NULL || THUNARX_IS_FILE_INFO(file));
+	g_return_if_fail(file == nullptr || THUNARX_IS_FILE_INFO(file));
 
 	/* Check if we already use this file */
 	if (G_UNLIKELY(page->file == file))
 		return;
 
 	/* Disconnect from the previous file (if any) */
-	if (G_LIKELY(page->file != NULL))
+	if (G_LIKELY(page->file != nullptr))
 	{
 		g_signal_handlers_disconnect_by_func(G_OBJECT(page->file),
 			reinterpret_cast<gpointer>(rom_properties_page_file_changed), page);
 		g_object_unref(G_OBJECT(page->file));
+
+		// TODO: Delete data widgets.
+
+		// Delete the existing RomData object.
+		delete page->romData;
+		page->romData = nullptr;
 	}
 
 	/* Assign the value */
 	page->file = file;
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(file != NULL))
+	if (G_LIKELY(file != nullptr))
 	{
 		/* Take a reference on the info file */
 		g_object_ref(G_OBJECT(page->file));
@@ -261,22 +297,51 @@ rom_properties_page_file_changed(ThunarxFileInfo	*file,
 static gboolean
 rom_properties_page_load_rom_data(gpointer data)
 {
-	RomPropertiesPage *page = ROM_PROPERTIES_PAGE (data);
-	gchar *uri;
-	gchar *filename;
-
-	g_return_val_if_fail(page != NULL || IS_ROM_PROPERTIES_PAGE(page), FALSE);
-	g_return_val_if_fail(page->file != NULL || THUNARX_IS_FILE_INFO(page->file), FALSE);
+	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(data);
+	g_return_val_if_fail(page != nullptr || IS_ROM_PROPERTIES_PAGE(page), FALSE);
+	g_return_val_if_fail(page->file != nullptr || THUNARX_IS_FILE_INFO(page->file), FALSE);
 
 	/* Determine filename */
-	uri = thunarx_file_info_get_uri(page->file);
-	filename = g_filename_from_uri(uri, NULL, NULL);
-
-	// TODO: Load RomData.
-
-	/* Free strings */
-	g_free(filename);
+	gchar *uri = thunarx_file_info_get_uri(page->file);
+	gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
 	g_free(uri);
+
+	// Open the ROM file.
+	// TODO: gvfs support.
+	if (G_LIKELY(filename)) {
+		// Open the ROM file.
+		RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
+		if (file->isOpen()) {
+			// Create the RomData object.
+			page->romData = RomDataFactory::getInstance(file, false);
+
+			if (page->romData) {
+				// TODO: Create widgets.
+				// For now, just showing system information.
+				const rp_char *const systemName = page->romData->systemName(
+					RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+				const rp_char *const fileType = page->romData->fileType_string();
+
+				string sysInfo;
+				sysInfo.reserve(128);
+				if (systemName) {
+					sysInfo = systemName;
+				}
+				if (fileType) {
+					if (!sysInfo.empty()) {
+						sysInfo += '\n';
+					}
+					sysInfo += fileType;
+				}
+
+				gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
+			} else {
+				gtk_label_set_text(GTK_LABEL(page->lblSysInfo), "No ROM data!");
+			}
+		}
+		delete file;
+	}
+	g_free(filename);
 
 	/* Reset timeout */
 	page->changed_idle = 0;
