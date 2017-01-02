@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * RomData-view.cpp: RomData viewer widget.                                *
+ * RomDataView.cpp: RomData viewer widget.                                 *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
