@@ -480,6 +480,57 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 				break;
 			}
 
+			case RomFields::RFT_BITFIELD: {
+				// Bitfield type. Create a grid of checkboxes.
+				// TODO: Description label needs some padding on the top...
+				const RomFields::BitfieldDesc *const bitfieldDesc = desc->bitfield;
+
+				// Determine the total number of rows and columns.
+				int totalRows, totalCols;
+				if (bitfieldDesc->elemsPerRow == 0) {
+					// All elements are in one row.
+					totalCols = bitfieldDesc->elements;
+					totalRows = 1;
+				} else {
+					// Multiple rows.
+					totalCols = bitfieldDesc->elemsPerRow;
+					totalRows = bitfieldDesc->elements / bitfieldDesc->elemsPerRow;
+					if ((bitfieldDesc->elements % bitfieldDesc->elemsPerRow) > 0) {
+						totalRows++;
+					}
+				}
+				GtkWidget *gridBitfield = gtk_table_new(totalRows, totalCols, FALSE);
+				//gtk_table_set_row_spacings(GTK_TABLE(gridBitfield), 2);
+				//gtk_table_set_col_spacings(GTK_TABLE(gridBitfield), 8);
+				gtk_widget_show(gridBitfield);
+
+				int row = 0, col = 0;
+				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
+					const rp_char *name = bitfieldDesc->names[bit];
+					if (!name)
+						continue;
+
+					GtkWidget *checkBox = gtk_check_button_new_with_label(name);
+					gtk_widget_show(checkBox);
+					if (data->bitfield & (1 << bit)) {
+						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), TRUE);
+					}
+
+					// TODO: Disable user modifications.
+					gtk_table_attach(GTK_TABLE(gridBitfield), checkBox, col, col+1, row, row+1,
+						GTK_FILL, GTK_FILL, 0, 0);
+					col++;
+					if (col == bitfieldDesc->elemsPerRow) {
+						row++;
+						col = 0;
+					}
+				}
+
+				gtk_table_attach(GTK_TABLE(page->table), gridBitfield, 1, 2, i, i+1,
+					GTK_FILL, GTK_FILL, 0, 0);
+				break;
+			}
+
 			case RomFields::RFT_DATETIME: {
 				// Date/Time.
 				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
