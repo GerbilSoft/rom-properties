@@ -30,6 +30,9 @@ using LibRomData::RomData;
 using LibRomData::RomDataFactory;
 using LibRomData::RomFields;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <string>
 using std::string;
@@ -55,10 +58,9 @@ static void	rom_properties_page_set_property	(GObject		*object,
 							 GParamSpec		*pspec);
 static void	rom_properties_page_file_changed	(ThunarxFileInfo	*file,
 							 RomPropertiesPage      *page);
-// TODO: Implement these.
-static gboolean	rom_properties_page_activate            (RomPropertiesPage	*page);
-static gboolean	rom_properties_page_info_activate       (GtkAction		*action,
-							 RomPropertiesPage	*page);
+
+static void	rom_properties_page_init_header_row	(RomPropertiesPage	*page);
+static void	rom_properties_page_update_display	(RomPropertiesPage	*page);
 static gboolean	rom_properties_page_load_rom_data	(gpointer		 data);
 
 // XFCE property page class.
@@ -70,10 +72,8 @@ struct _RomPropertiesPageClass {
 struct _RomPropertiesPage {
 	ThunarxPropertyPage __parent__;
 
-	// ROM data.
-	RomData		*romData;
-
 	/* Widgets */
+	GtkWidget	*vboxMain;
 	GtkWidget	*table;
 
 	/* Timeouts */
@@ -86,7 +86,8 @@ struct _RomPropertiesPage {
 	/* Properties */
 	ThunarxFileInfo	*file;
 
-	// TODO: ROM Properties wigdets.
+	// ROM data.
+	RomData		*romData;
 };
 
 // FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -94,6 +95,15 @@ struct _RomPropertiesPage {
 //THUNARX_DEFINE_TYPE(RomPropertiesPage, rom_properties_page, THUNARX_TYPE_PROPERTY_PAGE);
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
 	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
+
+static inline void make_label_bold(GtkLabel *label)
+{
+	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+	pango_attr_list_insert(attr_lst, attr);
+	gtk_label_set_attributes(label, attr_lst);
+	pango_attr_list_unref(attr_lst);
+}
 
 static void
 rom_properties_page_class_init(RomPropertiesPageClass *klass)
@@ -120,17 +130,18 @@ rom_properties_page_init(RomPropertiesPage *page)
 {
 	// No ROM data initially.
 	page->romData = nullptr;
+	page->table = nullptr;
 
 	// NOTE: GTK+3 adds halign/valign properties.
 	// For GTK+2, we have to use a VBox.
-	GtkWidget *vboxMain = gtk_vbox_new(FALSE, 8);
-	gtk_container_add(GTK_CONTAINER(page), vboxMain);
-	gtk_widget_show(vboxMain);
+	page->vboxMain = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(page), page->vboxMain);
+	gtk_widget_show(page->vboxMain);
 
 	// Header row.
 	// TODO: Update with RomData.
 	GtkWidget *hboxHeaderRow = gtk_hbox_new(FALSE, 8);
-	gtk_box_pack_start(GTK_BOX(vboxMain), hboxHeaderRow, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page->vboxMain), hboxHeaderRow, FALSE, FALSE, 0);
 	gtk_widget_show(hboxHeaderRow);
 
 	// System information.
@@ -141,16 +152,9 @@ rom_properties_page_init(RomPropertiesPage *page)
 	gtk_widget_show(page->lblSysInfo);
 
 	// Make lblSysInfo bold.
-	PangoAttrList *attr_lst = pango_attr_list_new();
-	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-	pango_attr_list_insert(attr_lst, attr);
-	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
-	pango_attr_list_unref(attr_lst);
+	make_label_bold(GTK_LABEL(page->lblSysInfo));
 
-	// Table layout.
-	page->table = gtk_table_new(1, 2, FALSE);
-	gtk_box_pack_start(GTK_BOX(vboxMain), page->table, TRUE, TRUE, 0);
-	gtk_widget_show(page->table);
+	// Table layout is created in rom_properties_page_update_display().
 }
 
 static void
@@ -294,6 +298,133 @@ rom_properties_page_file_changed(ThunarxFileInfo	*file,
 	}
 }
 
+static void
+rom_properties_page_init_header_row(RomPropertiesPage *page)
+{
+	// Initialize the header row.
+	// TODO: Icon, banner.
+	assert(page != nullptr);
+
+	// NOTE: romData might be nullptr in some cases.
+	//assert(page->romData != nullptr);
+	if (!page->romData) {
+		// No ROM data.
+		// Hide the widgets.
+		gtk_widget_hide(page->lblSysInfo);
+		return;
+	}
+
+	// TODO: Create widgets.
+	// For now, just showing system information.
+	const rp_char *const systemName = page->romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const rp_char *const fileType = page->romData->fileType_string();
+
+	string sysInfo;
+	sysInfo.reserve(128);
+	if (systemName) {
+		sysInfo = systemName;
+	}
+	if (fileType) {
+		if (!sysInfo.empty()) {
+			sysInfo += '\n';
+		}
+		sysInfo += fileType;
+	}
+
+	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
+}
+
+static void
+rom_properties_page_update_display(RomPropertiesPage *page)
+{
+	assert(page != nullptr);
+
+	// Initialize the header row.
+	rom_properties_page_init_header_row(page);
+
+	// Delete the table if it's already present.
+	if (page->table) {
+		gtk_widget_destroy(page->table);
+		page->table = nullptr;
+	}
+
+	if (!page->romData) {
+		// No ROM data...
+		return;
+	}
+
+	// Get the fields.
+	const RomFields *fields = page->romData->fields();
+	if (!fields) {
+		// No fields.
+		// TODO: Show an error?
+		return;
+	}
+	const int count = fields->count();
+
+	// Create the table.
+	page->table = gtk_table_new(count, 2, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(page->table), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(page->table), 8);
+	gtk_container_set_border_width(GTK_CONTAINER(page->table), 8);
+	gtk_box_pack_start(GTK_BOX(page->vboxMain), page->table, FALSE, FALSE, 0);
+	gtk_widget_show(page->table);
+
+	// Create the data widgets.
+	// TODO: Types other than RFT_STRING.
+	for (int i = 0; i < count; i++) {
+		const RomFields::Desc *desc = fields->desc(i);
+		const RomFields::Data *data = fields->data(i);
+		if (!desc || !data)
+			continue;
+		if (desc->type != data->type)
+			continue;
+		if (!desc->name || desc->name[0] == '\0')
+			continue;
+
+		// TODO: Localization.
+		std::string gtkdesc = desc->name;
+		gtkdesc += ':';
+
+		GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
+		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
+		gtk_label_set_justify(GTK_LABEL(lblDesc), GTK_JUSTIFY_RIGHT);
+		make_label_bold(GTK_LABEL(lblDesc));
+		gtk_table_attach(GTK_TABLE(page->table), lblDesc, 0, 1, i, i+1,
+			GTK_FILL, GTK_FILL, 0, 0);
+		gtk_misc_set_alignment(GTK_MISC(lblDesc), 1.0f, 0.0f);
+		gtk_widget_show(lblDesc);
+
+		switch (desc->type) {
+			case RomFields::RFT_INVALID:
+				// No data here.
+				gtk_widget_destroy(lblDesc);
+				break;
+
+			case RomFields::RFT_STRING: {
+				// String type.
+				// TODO: String formatting options.
+				GtkWidget *lblString = gtk_label_new(data->str);
+				gtk_label_set_selectable(GTK_LABEL(lblString), TRUE);
+				gtk_label_set_use_underline(GTK_LABEL(lblString), false);
+				gtk_misc_set_alignment(GTK_MISC(lblString), 0.0f, 0.0f);
+				gtk_table_attach(GTK_TABLE(page->table), lblString, 1, 2, i, i+1,
+					GTK_FILL, GTK_FILL, 0, 0);
+				gtk_widget_show(lblString);
+				break;
+			}
+
+			default:
+				// TODO: Other types.
+				// Unsupported right now.
+				//assert(!"Unsupported RomFields::RomFieldsType.");
+				gtk_widget_destroy(lblDesc);
+				break;
+		}
+	}
+}
+
 static gboolean
 rom_properties_page_load_rom_data(gpointer data)
 {
@@ -315,29 +446,8 @@ rom_properties_page_load_rom_data(gpointer data)
 			// Create the RomData object.
 			page->romData = RomDataFactory::getInstance(file, false);
 
-			if (page->romData) {
-				// TODO: Create widgets.
-				// For now, just showing system information.
-				const rp_char *const systemName = page->romData->systemName(
-					RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-				const rp_char *const fileType = page->romData->fileType_string();
-
-				string sysInfo;
-				sysInfo.reserve(128);
-				if (systemName) {
-					sysInfo = systemName;
-				}
-				if (fileType) {
-					if (!sysInfo.empty()) {
-						sysInfo += '\n';
-					}
-					sysInfo += fileType;
-				}
-
-				gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
-			} else {
-				gtk_label_set_text(GTK_LABEL(page->lblSysInfo), "No ROM data!");
-			}
+			// Update the display widgets.
+			rom_properties_page_update_display(page);
 		}
 		delete file;
 	}
