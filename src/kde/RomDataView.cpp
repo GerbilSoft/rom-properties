@@ -286,8 +286,9 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
 				for (int i = 1; i < iconAnimData->count; i++) {
-					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
-						QImage img = rpToQImage(iconAnimData->frames[i]);
+					const rp_image *const frame = iconAnimData->frames[i];
+					if (frame && frame->isValid()) {
+						QImage img = rpToQImage(frame);
 						if (!img.isNull()) {
 							iconFrames[i] = imgToPixmap(img);
 						}
