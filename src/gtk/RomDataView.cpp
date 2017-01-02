@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-page.cpp: ThunarX Properties Page.                       *
+ * ROM Properties Page shell extension. (GTK+ common)                      *
+ * RomData-view.cpp: RomData viewer widget.                                *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "rom-properties-page.hpp"
+#include "RomDataView.hpp"
 #include "GdkImageConv.hpp"
 
 #include "libromdata/common.h"
@@ -48,45 +48,44 @@ using std::vector;
 /* Property identifiers */
 enum {
 	PROP_0,
-	PROP_FILE,
+	PROP_FILENAME,
 };
 
-static void	rom_properties_page_finalize(GObject *object);
-static void	rom_properties_page_get_property        (GObject		*object,
-							 guint			 prop_id,
-							 GValue			*value,
-							 GParamSpec		*pspec);
-static void	rom_properties_page_set_property	(GObject		*object,
-							 guint			 prop_id,
-							 const GValue		*value,
-							 GParamSpec		*pspec);
-static void	rom_properties_page_file_changed	(ThunarxFileInfo	*file,
-							 RomPropertiesPage      *page);
+static void	rom_data_view_finalize		(GObject	*object);
+static void	rom_data_view_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
+static void	rom_data_view_set_property	(GObject	*object,
+						 guint		 prop_id,
+						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	rom_data_view_filename_changed	(const gchar 	*filename,
+						 RomDataView	*page);
 
-static void	rom_properties_page_init_header_row	(RomPropertiesPage	*page);
-static void	rom_properties_page_update_display	(RomPropertiesPage	*page);
-static gboolean	rom_properties_page_load_rom_data	(gpointer		 data);
+static void	rom_data_view_init_header_row	(RomDataView	*page);
+static void	rom_data_view_update_display	(RomDataView	*page);
+static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
 
 /** Signal handlers. **/
-static void	checkbox_no_toggle_signal_handler	(GtkToggleButton	*togglebutton,
-							 gpointer		 user_data);
+static void	checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
+						  gpointer		 user_data);
 
 /** Icon animation timer. **/
-static void	start_anim_timer(RomPropertiesPage *page);
-static void	stop_anim_timer (RomPropertiesPage *page);
-static gboolean	anim_timer_func (RomPropertiesPage *page);
+static void	start_anim_timer(RomDataView *page);
+static void	stop_anim_timer (RomDataView *page);
+static gboolean	anim_timer_func (RomDataView *page);
 
 // XFCE property page class.
-struct _RomPropertiesPageClass {
-	ThunarxPropertyPageClass __parent__;
+struct _RomDataViewClass {
+	GtkVBoxClass __parent__;
 };
 
 // XFCE property page.
-struct _RomPropertiesPage {
-	ThunarxPropertyPage __parent__;
+struct _RomDataView {
+	GtkVBox __parent__;
 
 	/* Widgets */
-	GtkWidget	*vboxMain;
 	GtkWidget	*table;
 	GtkWidget	*lblCredits;
 
@@ -100,8 +99,8 @@ struct _RomPropertiesPage {
 	GtkWidget	*imgBanner;
 	// TODO: Icon and banner.
 
-	/* Properties */
-	ThunarxFileInfo	*file;
+	// Filename.
+	string		filename;
 
 	// ROM data.
 	RomData		*romData;
@@ -118,11 +117,11 @@ struct _RomPropertiesPage {
 	int		last_delay;		// Last delay value.
 };
 
-// FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
+// FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-//THUNARX_DEFINE_TYPE(RomPropertiesPage, rom_properties_page, THUNARX_TYPE_PROPERTY_PAGE);
-THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
-	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
+//G_DEFINE_TYPE(RomDataView, rom_data_view, THUNARX_TYPE_PROPERTY_PAGE);
+G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
+	GTK_TYPE_VBOX, static_cast<GTypeFlags>(0), {});
 
 static inline void make_label_bold(GtkLabel *label)
 {
@@ -134,27 +133,27 @@ static inline void make_label_bold(GtkLabel *label)
 }
 
 static void
-rom_properties_page_class_init(RomPropertiesPageClass *klass)
+rom_data_view_class_init(RomDataViewClass *klass)
 {
 	GObjectClass *gobject_class;
 
-	gobject_class = G_OBJECT_CLASS (klass);
-	gobject_class->finalize = rom_properties_page_finalize;
-	gobject_class->get_property = rom_properties_page_get_property;
-	gobject_class->set_property = rom_properties_page_set_property;
+	gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->finalize = rom_data_view_finalize;
+	gobject_class->get_property = rom_data_view_get_property;
+	gobject_class->set_property = rom_data_view_set_property;
 
 	/**
-	 * RomPropertiesPage:file:
+	 * RomDataView:filename:
 	 *
-	 * The #ThunarxFileInfo modified on this page.
+	 * The filename modified on this page.
 	 **/
-	g_object_class_install_property(gobject_class, PROP_FILE,
-		g_param_spec_object("file", "file", "file",
-			THUNARX_TYPE_FILE_INFO, G_PARAM_READWRITE));
+	g_object_class_install_property(gobject_class, PROP_FILENAME,
+		g_param_spec_string("filename", "filename", "filename",
+			"", G_PARAM_READWRITE));
 }
 
 static void
-rom_properties_page_init(RomPropertiesPage *page)
+rom_data_view_init(RomDataView *page)
 {
 	// No ROM data initially.
 	page->romData = nullptr;
@@ -166,20 +165,17 @@ rom_properties_page_init(RomPropertiesPage *page)
 	page->tmrIconAnim = 0;
 	page->last_delay = 0;
 
-	// NOTE: GTK+3 adds halign/valign properties.
-	// For GTK+2, we have to use a VBox.
-	page->vboxMain = gtk_vbox_new(FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(page), page->vboxMain);
-	gtk_widget_show(page->vboxMain);
+	// Base class is GtkVBox.
 
 	// Center-align the header row.
 	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
-	gtk_box_pack_start(GTK_BOX(page->vboxMain), centerAlign, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(page), centerAlign, FALSE, FALSE, 0);
 	gtk_widget_show(centerAlign);
 
 	// Header row.
 	page->hboxHeaderRow = gtk_hbox_new(FALSE, 8);
 	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow);
+	gtk_widget_show(page->hboxHeaderRow);
 
 	// System information.
 	page->lblSysInfo = gtk_label_new(nullptr);
@@ -199,13 +195,13 @@ rom_properties_page_init(RomPropertiesPage *page)
 	// Make lblSysInfo bold.
 	make_label_bold(GTK_LABEL(page->lblSysInfo));
 
-	// Table layout is created in rom_properties_page_update_display().
+	// Table layout is created in rom_data_view_update_display().
 }
 
 static void
-rom_properties_page_finalize(GObject *object)
+rom_data_view_finalize(GObject *object)
 {
-	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
+	RomDataView *page = ROM_DATA_VIEW(object);
 
 	/* Unregister the changed_idle */
 	if (G_UNLIKELY(page->changed_idle != 0)) {
@@ -219,37 +215,35 @@ rom_properties_page_finalize(GObject *object)
 	}
 
 	// Clear some widget variables to ensure that
-	// rom_properties_page_set_file() doesn't try to do stuff.
+	// rom_data_view_set_filename() doesn't try to do stuff.
 	page->hboxHeaderRow = nullptr;
 	page->table = nullptr;
 	page->lblCredits = nullptr;
 
 	// Free the file reference.
 	// This also deletes romData and iconFrames.
-	rom_properties_page_set_file(page, nullptr);
+	rom_data_view_set_filename(page, nullptr);
 
-	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
+	(*G_OBJECT_CLASS(rom_data_view_parent_class)->finalize)(object);
 }
 
-RomPropertiesPage*
-rom_properties_page_new(void)
+GtkWidget*
+rom_data_view_new(void)
 {
-	RomPropertiesPage *page = static_cast<RomPropertiesPage*>(g_object_new(TYPE_ROM_PROPERTIES_PAGE, nullptr));
-	thunarx_property_page_set_label(THUNARX_PROPERTY_PAGE(page), "ROM Properties");
-	return page;
+	return static_cast<GtkWidget*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
 }
 
 static void
-rom_properties_page_get_property(GObject	*object,
-				 guint		 prop_id,
-				 GValue		*value,
-				 GParamSpec	*pspec)
+rom_data_view_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
 {
-	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
+	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILE:
-			g_value_set_object(value, rom_properties_page_get_file(page));
+		case PROP_FILENAME:
+			g_value_set_string(value, rom_data_view_get_filename(page));
 			break;
 
 		default:
@@ -259,16 +253,16 @@ rom_properties_page_get_property(GObject	*object,
 }
 
 static void
-rom_properties_page_set_property(GObject	*object,
-				 guint		 prop_id,
-				 const GValue	*value,
-				 GParamSpec	*pspec)
+rom_data_view_set_property(GObject	*object,
+			   guint	 prop_id,
+			   const GValue	*value,
+			   GParamSpec	*pspec)
 {
-	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
+	RomDataView *page = ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FILE:
-			rom_properties_page_set_file(page, static_cast<ThunarxFileInfo*>(g_value_get_object(value)));
+		case PROP_FILENAME:
+			rom_data_view_set_filename(page, g_value_get_string(value));
 			break;
 
 		default:
@@ -278,45 +272,43 @@ rom_properties_page_set_property(GObject	*object,
 }
 
 /**
- * rom_properties_page_get_file:
- * @page : a #RomPropertiesPage.
+ * rom_data_view_get_filename:
+ * @page : a #RomDataView.
  *
- * Returns the current #ThunarxFileInfo
- * for the @page.
+ * Returns the current filename for the @page.
  *
  * Return value: the file associated with this property page.
  **/
-ThunarxFileInfo*
-rom_properties_page_get_file(RomPropertiesPage *page)
+const gchar*
+rom_data_view_get_filename(RomDataView *page)
 {
-	g_return_val_if_fail(IS_ROM_PROPERTIES_PAGE(page), nullptr);
-	return page->file;
+	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), nullptr);
+	return page->filename.c_str();
 }
 
 /**
- * rom_properties_page_set_file:
- * @page : a #RomPropertiesPage.
+ * rom_data_view_set_filename:
+ * @page : a #RomDataView.
  * @file : a #ThunarxFileInfo
  *
- * Sets the #ThunarxFileInfo for this @page.
+ * Sets the filename for this @page.
  **/
 void
-rom_properties_page_set_file	(RomPropertiesPage	*page,
-				 ThunarxFileInfo	*file)
+rom_data_view_set_filename(RomDataView	*page,
+			   const gchar	*file)
 {
-	g_return_if_fail(IS_ROM_PROPERTIES_PAGE(page));
-	g_return_if_fail(file == nullptr || THUNARX_IS_FILE_INFO(file));
+	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 
 	/* Check if we already use this file */
-	if (G_UNLIKELY(page->file == file))
+	if (G_UNLIKELY(page->filename.empty() && !file))
+		return;
+	if (G_UNLIKELY(file != nullptr && page->filename == file))
 		return;
 
 	/* Disconnect from the previous file (if any) */
-	if (G_LIKELY(page->file != nullptr))
+	if (G_LIKELY(!page->filename.empty()))
 	{
-		g_signal_handlers_disconnect_by_func(G_OBJECT(page->file),
-			reinterpret_cast<gpointer>(rom_properties_page_file_changed), page);
-		g_object_unref(G_OBJECT(page->file));
+		page->filename.clear();
 
 		// NULL out iconAnimData.
 		// (This is owned by the RomData object.)
@@ -336,15 +328,15 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 	}
 
 	/* Assign the value */
-	page->file = file;
+	if (!file) {
+		page->filename.clear();
+	} else {
+		page->filename = file;
+	}
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(file != nullptr)) {
-		/* Take a reference on the info file */
-		g_object_ref(G_OBJECT(page->file));
-
-		rom_properties_page_file_changed(file, page);
-		g_signal_connect(G_OBJECT(file), "changed", G_CALLBACK(rom_properties_page_file_changed), page);
+	if (G_LIKELY(!page->filename.empty())) {
+		rom_data_view_filename_changed(page->filename.c_str(), page);
 	} else {
 		// Hide the header row and delete the table.
 		if (page->hboxHeaderRow) {
@@ -362,20 +354,20 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 }
 
 static void
-rom_properties_page_file_changed(ThunarxFileInfo	*file,
-				 RomPropertiesPage	*page)
+rom_data_view_filename_changed(const gchar	*file,
+			       RomDataView	*page)
 {
-	g_return_if_fail(THUNARX_IS_FILE_INFO(file));
-	g_return_if_fail(IS_ROM_PROPERTIES_PAGE(page));
-	g_return_if_fail(page->file == file);
+	g_return_if_fail(file != nullptr);
+	g_return_if_fail(IS_ROM_DATA_VIEW(page));
+	g_return_if_fail(page->filename == file);
 
 	if (page->changed_idle == 0) {
-		page->changed_idle = g_idle_add(rom_properties_page_load_rom_data, page);
+		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
 	}
 }
 
 static void
-rom_properties_page_init_header_row(RomPropertiesPage *page)
+rom_data_view_init_header_row(RomDataView *page)
 {
 	// Initialize the header row.
 	// TODO: Icon, banner.
@@ -467,12 +459,12 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 }
 
 static void
-rom_properties_page_update_display(RomPropertiesPage *page)
+rom_data_view_update_display(RomDataView *page)
 {
 	assert(page != nullptr);
 
 	// Initialize the header row.
-	rom_properties_page_init_header_row(page);
+	rom_data_view_init_header_row(page);
 
 	// Delete the table if it's already present.
 	if (page->table) {
@@ -505,7 +497,7 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 	gtk_table_set_row_spacings(GTK_TABLE(page->table), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(page->table), 8);
 	gtk_container_set_border_width(GTK_CONTAINER(page->table), 8);
-	gtk_box_pack_start(GTK_BOX(page->vboxMain), page->table, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(page), page->table, FALSE, FALSE, 0);
 	gtk_widget_show(page->table);
 
 	// Create the data widgets.
@@ -596,7 +588,7 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 #endif
 
 					// Credits row.
-					gtk_box_pack_end(GTK_BOX(page->vboxMain), lblString, FALSE, FALSE, 0);
+					gtk_box_pack_end(GTK_BOX(page), lblString, FALSE, FALSE, 0);
 
 					// No description field.
 					gtk_widget_destroy(lblDesc);
@@ -796,32 +788,26 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 }
 
 static gboolean
-rom_properties_page_load_rom_data(gpointer data)
+rom_data_view_load_rom_data(gpointer data)
 {
-	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(data);
-	g_return_val_if_fail(page != nullptr || IS_ROM_PROPERTIES_PAGE(page), FALSE);
-	g_return_val_if_fail(page->file != nullptr || THUNARX_IS_FILE_INFO(page->file), FALSE);
-
-	/* Determine filename */
-	gchar *uri = thunarx_file_info_get_uri(page->file);
-	gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
-	g_free(uri);
+	RomDataView *page = ROM_DATA_VIEW(data);
+	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), FALSE);
+	g_return_val_if_fail(!page->filename.empty(), FALSE);
 
 	// Open the ROM file.
 	// TODO: gvfs support.
-	if (G_LIKELY(filename)) {
+	if (G_LIKELY(!page->filename.empty())) {
 		// Open the ROM file.
-		RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
+		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			// Create the RomData object.
 			page->romData = RomDataFactory::getInstance(file, false);
 
 			// Update the display widgets.
-			rom_properties_page_update_display(page);
+			rom_data_view_update_display(page);
 		}
 		delete file;
 	}
-	g_free(filename);
 
 	// Start the animation timer.
 	// TODO: Start/stop on window show/hide?
@@ -850,7 +836,7 @@ checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 /**
  * Start the animation timer.
  */
-static void start_anim_timer(RomPropertiesPage *page)
+static void start_anim_timer(RomDataView *page)
 {
 	if (!page->iconAnimData || !page->iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
@@ -877,7 +863,7 @@ static void start_anim_timer(RomPropertiesPage *page)
 /**
  * Stop the animation timer.
  */
-static void stop_anim_timer(RomPropertiesPage *page)
+static void stop_anim_timer(RomDataView *page)
 {
 	if (page->tmrIconAnim > 0) {
 		g_source_remove(page->tmrIconAnim);
@@ -889,7 +875,7 @@ static void stop_anim_timer(RomPropertiesPage *page)
 /**
  * Animated icon timer.
  */
-static gboolean anim_timer_func(RomPropertiesPage *page)
+static gboolean anim_timer_func(RomDataView *page)
 {
 	// Next frame.
 	int delay = 0;

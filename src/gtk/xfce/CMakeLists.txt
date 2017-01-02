@@ -17,17 +17,21 @@ ELSE(GTK2_FOUND)
 	SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
 ENDIF(GTK2_FOUND)
 
-# Sources and headers.
+# Sources and headers. (GTK+ common)
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_H "${rom-properties-gtk_H}")
+
+# Sources and headers. (XFCE-specific)
 SET(rom-properties-xfce_SRCS
+	${rom-properties-xfce_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp
 	rom-properties-page.cpp
-	GdkImageConv.cpp
 	)
 SET(rom-properties-xfce_H
+	${rom-properties-xfce_H}
 	rom-properties-provider.hpp
 	rom-properties-page.hpp
-	GdkImageConv.hpp
 	)
 
 IF(BUILD_XFCE)
@@ -41,8 +45,8 @@ IF(BUILD_XFCE)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce romdata8 cachemgr8)
 
