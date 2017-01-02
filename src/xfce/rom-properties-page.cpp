@@ -20,12 +20,15 @@
  ***************************************************************************/
 
 #include "rom-properties-page.hpp"
+#include "GdkImageConv.hpp"
 
 #include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::rp_string;
+using LibRomData::rp_image;
 using LibRomData::RpFile;
 using LibRomData::RomData;
 using LibRomData::RomDataFactory;
@@ -88,7 +91,10 @@ struct _RomPropertiesPage {
 	guint		changed_idle;
 
 	// Header row.
+	GtkWidget	*hboxHeaderRow;
 	GtkWidget	*lblSysInfo;
+	GtkWidget	*imgIcon;
+	GtkWidget	*imgBanner;
 	// TODO: Icon and banner.
 
 	/* Properties */
@@ -149,16 +155,21 @@ rom_properties_page_init(RomPropertiesPage *page)
 
 	// Header row.
 	// TODO: Update with RomData.
-	GtkWidget *hboxHeaderRow = gtk_hbox_new(FALSE, 8);
-	gtk_box_pack_start(GTK_BOX(page->vboxMain), hboxHeaderRow, FALSE, FALSE, 0);
-	gtk_widget_show(hboxHeaderRow);
+	page->hboxHeaderRow = gtk_hbox_new(FALSE, 8);
+	gtk_box_pack_start(GTK_BOX(page->vboxMain), page->hboxHeaderRow, FALSE, FALSE, 0);
+
+	// FIXME: Center the system information.
 
 	// System information.
 	page->lblSysInfo = gtk_label_new("System information\nwill go here.");
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
 	gtk_misc_set_alignment(GTK_MISC(page->lblSysInfo), 0.5f, 0.0f);
-	gtk_box_pack_start(GTK_BOX(hboxHeaderRow), page->lblSysInfo, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo, FALSE, FALSE, 0);
 	gtk_widget_show(page->lblSysInfo);
+
+	// Banner.
+	page->imgBanner = gtk_image_new();
+	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgBanner, FALSE, FALSE, 0);
 
 	// Make lblSysInfo bold.
 	make_label_bold(GTK_LABEL(page->lblSysInfo));
@@ -319,12 +330,11 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 	if (!page->romData) {
 		// No ROM data.
 		// Hide the widgets.
-		gtk_widget_hide(page->lblSysInfo);
+		gtk_widget_hide(page->hboxHeaderRow);
 		return;
 	}
 
-	// TODO: Create widgets.
-	// For now, just showing system information.
+	// System name and file type.
 	const rp_char *const systemName = page->romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const rp_char *const fileType = page->romData->fileType_string();
@@ -342,6 +352,27 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 	}
 
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
+
+	// Supported image types.
+	const uint32_t imgbf = page->romData->supportedImageTypes();
+
+	// Banner.
+	gtk_widget_hide(page->imgBanner);
+	if (imgbf & RomData::IMGBF_INT_BANNER) {
+		// Get the banner.
+		const rp_image *banner = page->romData->image(RomData::IMG_INT_BANNER);
+		if (banner && banner->isValid()) {
+			GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(banner);
+			if (pixbuf) {
+				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgBanner), pixbuf);
+				g_object_unref(pixbuf);
+				gtk_widget_show(page->imgBanner);
+			}
+		}
+	}
+
+	// Show the header row.
+	gtk_widget_show(page->hboxHeaderRow);
 }
 
 static void

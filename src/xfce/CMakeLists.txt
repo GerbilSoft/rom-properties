@@ -22,10 +22,12 @@ SET(rom-properties-xfce_SRCS
 	rom-properties-plugin.c
 	rom-properties-provider.cpp
 	rom-properties-page.cpp
+	GdkImageConv.cpp
 	)
 SET(rom-properties-xfce_H
 	rom-properties-provider.hpp
 	rom-properties-page.hpp
+	GdkImageConv.hpp
 	)
 
 IF(BUILD_XFCE)
