@@ -41,6 +41,8 @@ typedef struct _RomPropertiesPage	RomPropertiesPage;
 
 /* these two functions are implemented automatically by the THUNARX_DEFINE_TYPE macro */
 GType			rom_properties_page_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
+void			rom_properties_page_register_type	(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
+
 RomPropertiesPage	*rom_properties_page_new		(void) G_GNUC_CONST G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 ThunarxFileInfo		*rom_properties_page_get_file		(RomPropertiesPage	*page) G_GNUC_INTERNAL;

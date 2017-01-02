@@ -36,7 +36,10 @@ typedef struct _RomDataView		RomDataView;
 #define IS_ROM_DATA_VIEW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_ROM_DATA_VIEW))
 #define ROM_DATA_VIEW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_ROM_DATA_VIEW, RomDataViewClass))
 
+/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
 GType		rom_data_view_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
+void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
+
 GtkWidget	*rom_data_view_new		(void) G_GNUC_CONST G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 const gchar	*rom_data_view_get_filename	(RomDataView	*page) G_GNUC_INTERNAL;
