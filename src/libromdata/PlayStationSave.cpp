@@ -201,7 +201,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	: super(new PlayStationSavePrivate(this, file))
 {
 	// This class handles save files.
-	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	RP_D(PlayStationSave);
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
@@ -301,7 +301,7 @@ int PlayStationSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *PlayStationSave::systemName(uint32_t type) const
 {
-	const PlayStationSavePrivate *const d = static_cast<const PlayStationSavePrivate*>(d_ptr);
+	RP_D(const PlayStationSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -379,7 +379,7 @@ uint32_t PlayStationSave::supportedImageTypes(void) const
  */
 int PlayStationSave::loadFieldData(void)
 {
-	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	RP_D(PlayStationSave);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -422,7 +422,7 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	RP_D(PlayStationSave);
 	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
@@ -462,7 +462,7 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *PlayStationSave::iconAnimData(void) const
 {
-	const PlayStationSavePrivate *const d = static_cast<const PlayStationSavePrivate*>(d_ptr);
+	RP_D(const PlayStationSave);
 	if (!d->iconAnimData) {
 		// Load the icon.
 		if (!const_cast<PlayStationSavePrivate*>(d)->loadIcon()) {

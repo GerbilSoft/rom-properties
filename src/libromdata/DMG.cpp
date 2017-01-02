@@ -334,7 +334,7 @@ DMG::DMG(IRpFile *file)
 {
 	// TODO: Only validate that this is an DMG ROM here.
 	// Load fields elsewhere.
-	DMGPrivate *const d = static_cast<DMGPrivate*>(d_ptr);
+	RP_D(DMG);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -419,7 +419,7 @@ int DMG::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *DMG::systemName(uint32_t type) const
 {
-	const DMGPrivate *const d = static_cast<const DMGPrivate*>(d_ptr);
+	RP_D(const DMG);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -494,7 +494,7 @@ vector<const rp_char*> DMG::supportedFileExtensions(void) const
  */
 int DMG::loadFieldData(void)
 {
-	DMGPrivate *const d = static_cast<DMGPrivate*>(d_ptr);
+	RP_D(DMG);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;

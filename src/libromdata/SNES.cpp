@@ -202,7 +202,7 @@ bool SNESPrivate::isRomHeaderValid(const SNES_RomHeader *romHeader, bool isHiROM
 SNES::SNES(IRpFile *file)
 	: super(new SNESPrivate(this, file))
 {
-	SNESPrivate *const d = static_cast<SNESPrivate*>(d_ptr);
+	RP_D(SNES);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -367,7 +367,7 @@ int SNES::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *SNES::systemName(uint32_t type) const
 {
-	const SNESPrivate *const d = static_cast<const SNESPrivate*>(d_ptr);
+	RP_D(const SNES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -478,7 +478,7 @@ vector<const rp_char*> SNES::supportedFileExtensions(void) const
  */
 int SNES::loadFieldData(void)
 {
-	SNESPrivate *const d = static_cast<SNESPrivate*>(d_ptr);
+	RP_D(SNES);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;

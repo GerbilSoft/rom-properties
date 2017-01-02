@@ -150,7 +150,7 @@ Amiibo::Amiibo(IRpFile *file)
 	: super(new AmiiboPrivate(this, file))
 {
 	// This class handles NFC dumps.
-	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+	RP_D(Amiibo);
 	d->fileType = FTYPE_NFC_DUMP;
 
 	if (!d->file) {
@@ -262,7 +262,7 @@ int Amiibo::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *Amiibo::systemName(uint32_t type) const
 {
-	const AmiiboPrivate *const d = static_cast<const AmiiboPrivate*>(d_ptr);
+	RP_D(const Amiibo);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -354,7 +354,7 @@ uint32_t Amiibo::supportedImageTypes(void) const
  */
 int Amiibo::loadFieldData(void)
 {
-	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+	RP_D(Amiibo);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -501,7 +501,7 @@ int Amiibo::loadURLs(ImageType imageType)
 		return -ERANGE;
 	}
 
-	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+	RP_D(Amiibo);
 
 	const int idx = imageType - IMG_EXT_MIN;
 	std::vector<ExtURL> &extURLs = d->extURLs[idx];

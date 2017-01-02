@@ -782,7 +782,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	: super(new DreamcastSavePrivate(this, file))
 {
 	// This class handles save files.
-	DreamcastSavePrivate *const d = static_cast<DreamcastSavePrivate*>(d_ptr);
+	RP_D(DreamcastSave);
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
@@ -960,7 +960,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	: super(new DreamcastSavePrivate(this, vms_file))
 {
 	// This class handles save files.
-	DreamcastSavePrivate *const d = static_cast<DreamcastSavePrivate*>(d_ptr);
+	RP_D(DreamcastSave);
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
@@ -1110,7 +1110,7 @@ int DreamcastSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *DreamcastSave::systemName(uint32_t type) const
 {
-	const DreamcastSavePrivate *const d = static_cast<const DreamcastSavePrivate*>(d_ptr);
+	RP_D(const DreamcastSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -1186,7 +1186,7 @@ uint32_t DreamcastSave::supportedImageTypes(void) const
  */
 int DreamcastSave::loadFieldData(void)
 {
-	DreamcastSavePrivate *const d = static_cast<DreamcastSavePrivate*>(d_ptr);
+	RP_D(DreamcastSave);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -1395,7 +1395,7 @@ int DreamcastSave::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	DreamcastSavePrivate *const d = static_cast<DreamcastSavePrivate*>(d_ptr);
+	RP_D(DreamcastSave);
 	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
@@ -1444,7 +1444,7 @@ int DreamcastSave::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *DreamcastSave::iconAnimData(void) const
 {
-	const DreamcastSavePrivate *const d = static_cast<const DreamcastSavePrivate*>(d_ptr);
+	RP_D(const DreamcastSave);
 	if (!d->iconAnimData) {
 		// Load the icon.
 		if (!const_cast<DreamcastSavePrivate*>(d)->loadIcon()) {

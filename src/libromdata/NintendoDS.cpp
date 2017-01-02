@@ -481,7 +481,7 @@ int NintendoDSPrivate::getTitleIndex(void) const
 NintendoDS::NintendoDS(IRpFile *file)
 	: super(new NintendoDSPrivate(this, file))
 {
-	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	RP_D(NintendoDS);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -559,7 +559,7 @@ int NintendoDS::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *NintendoDS::systemName(uint32_t type) const
 {
-	const NintendoDSPrivate *const d = static_cast<const NintendoDSPrivate*>(d_ptr);
+	RP_D(const NintendoDS);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -671,7 +671,7 @@ uint32_t NintendoDS::supportedImageTypes(void) const
  */
 int NintendoDS::loadFieldData(void)
 {
-	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	RP_D(NintendoDS);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -803,7 +803,7 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	RP_D(NintendoDS);
 	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
@@ -843,7 +843,7 @@ int NintendoDS::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *NintendoDS::iconAnimData(void) const
 {
-	const NintendoDSPrivate *const d = static_cast<const NintendoDSPrivate*>(d_ptr);
+	RP_D(const NintendoDS);
 	if (!d->iconAnimData) {
 		// Load the icon.
 		if (!const_cast<NintendoDSPrivate*>(d)->loadIcon()) {

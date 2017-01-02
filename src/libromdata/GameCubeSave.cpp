@@ -575,7 +575,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	: super(new GameCubeSavePrivate(this, file))
 {
 	// This class handles save files.
-	GameCubeSavePrivate *const d = static_cast<GameCubeSavePrivate*>(d_ptr);
+	RP_D(GameCubeSave);
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
@@ -729,7 +729,7 @@ int GameCubeSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameCubeSave::systemName(uint32_t type) const
 {
-	const GameCubeSavePrivate *const d = static_cast<const GameCubeSavePrivate*>(d_ptr);
+	RP_D(const GameCubeSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -808,7 +808,7 @@ uint32_t GameCubeSave::supportedImageTypes(void) const
  */
 int GameCubeSave::loadFieldData(void)
 {
-	GameCubeSavePrivate *const d = static_cast<GameCubeSavePrivate*>(d_ptr);
+	RP_D(GameCubeSave);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -913,7 +913,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	GameCubeSavePrivate *const d = static_cast<GameCubeSavePrivate*>(d_ptr);
+	RP_D(GameCubeSave);
 	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
@@ -962,7 +962,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *GameCubeSave::iconAnimData(void) const
 {
-	const GameCubeSavePrivate *const d = static_cast<const GameCubeSavePrivate*>(d_ptr);
+	RP_D(const GameCubeSave);
 	if (!d->iconAnimData) {
 		// Load the icon.
 		if (!const_cast<GameCubeSavePrivate*>(d)->loadIcon()) {

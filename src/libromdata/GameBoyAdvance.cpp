@@ -103,7 +103,7 @@ GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
 GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	: super(new GameBoyAdvancePrivate(this, file))
 {
-	GameBoyAdvancePrivate *const d = static_cast<GameBoyAdvancePrivate*>(d_ptr);
+	RP_D(GameBoyAdvance);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -178,7 +178,7 @@ int GameBoyAdvance::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameBoyAdvance::systemName(uint32_t type) const
 {
-	const GameBoyAdvancePrivate *const d = static_cast<const GameBoyAdvancePrivate*>(d_ptr);
+	RP_D(const GameBoyAdvance);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -244,7 +244,7 @@ vector<const rp_char*> GameBoyAdvance::supportedFileExtensions(void) const
  */
 int GameBoyAdvance::loadFieldData(void)
 {
-	GameBoyAdvancePrivate *const d = static_cast<GameBoyAdvancePrivate*>(d_ptr);
+	RP_D(GameBoyAdvance);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;

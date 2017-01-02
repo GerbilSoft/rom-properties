@@ -154,7 +154,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
 VirtualBoy::VirtualBoy(IRpFile *file)
 	: super(new VirtualBoyPrivate(this, file))
 {
-	VirtualBoyPrivate *const d = static_cast<VirtualBoyPrivate*>(d_ptr);
+	RP_D(VirtualBoy);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -293,7 +293,7 @@ int VirtualBoy::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *VirtualBoy::systemName(uint32_t type) const
 {
-	const VirtualBoyPrivate *const d = static_cast<const VirtualBoyPrivate*>(d_ptr);
+	RP_D(const VirtualBoy);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -359,7 +359,7 @@ vector<const rp_char*> VirtualBoy::supportedFileExtensions(void) const
  */
 int VirtualBoy::loadFieldData(void)
 {
-	VirtualBoyPrivate *const d = static_cast<VirtualBoyPrivate*>(d_ptr);
+	RP_D(VirtualBoy);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;

@@ -133,7 +133,7 @@ RomData::~RomData()
  */
 bool RomData::isValid(void) const
 {
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	return d->isValid;
 }
 
@@ -142,7 +142,7 @@ bool RomData::isValid(void) const
  */
 void RomData::close(void)
 {
-	RomDataPrivate *const d = static_cast<RomDataPrivate*>(d_ptr);
+	RP_D(RomData);
 	delete d->file;
 	d->file = nullptr;
 }
@@ -153,7 +153,7 @@ void RomData::close(void)
  */
 RomData::FileType RomData::fileType(void) const
 {
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	return d->fileType;
 }
 
@@ -163,7 +163,7 @@ RomData::FileType RomData::fileType(void) const
  */
 const rp_char *RomData::fileType_string(void) const
 {
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	switch (d->fileType) {
 		case RomData::FTYPE_ROM_IMAGE:
 			return _RP("ROM Image");
@@ -237,7 +237,7 @@ int RomData::loadURLs(ImageType imageType)
  */
 const RomFields *RomData::fields(void) const
 {
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	if (!d->fields->isDataLoaded()) {
 		// Data has not been loaded.
 		// Load it now.
@@ -262,7 +262,7 @@ int RomData::verifyImageTypeLoaded(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	int ret = 0;
 	if (imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX) {
 		// This is an internal image.
@@ -311,7 +311,7 @@ const rp_image *RomData::image(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_INT_MIN;
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	return d->images[idx];
 }
 
@@ -335,7 +335,7 @@ const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_EXT_MIN;
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	return &d->extURLs[idx];
 }
 
@@ -374,7 +374,7 @@ uint32_t RomData::imgpf(ImageType imageType) const
 
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return 0;
-	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	RP_D(const RomData);
 	return d->imgpf[imageType];
 }
 

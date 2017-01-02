@@ -117,7 +117,7 @@ N64Private::N64Private(N64 *q, IRpFile *file)
 N64::N64(IRpFile *file)
 	: super(new N64Private(this, file))
 {
-	N64Private *const d = static_cast<N64Private*>(d_ptr);
+	RP_D(N64);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -246,7 +246,7 @@ int N64::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *N64::systemName(uint32_t type) const
 {
-	const N64Private *const d = static_cast<const N64Private*>(d_ptr);
+	RP_D(const N64);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -305,7 +305,7 @@ vector<const rp_char*> N64::supportedFileExtensions(void) const
  */
 int N64::loadFieldData(void)
 {
-	N64Private *const d = static_cast<N64Private*>(d_ptr);
+	RP_D(N64);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;

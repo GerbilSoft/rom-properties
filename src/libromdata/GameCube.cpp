@@ -945,7 +945,7 @@ GameCube::GameCube(IRpFile *file)
 	: super(new GameCubePrivate(this, file))
 {
 	// This class handles disc images.
-	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	RP_D(GameCube);
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
@@ -1189,7 +1189,7 @@ int GameCube::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameCube::systemName(uint32_t type) const
 {
-	const GameCubePrivate *const d = static_cast<const GameCubePrivate*>(d_ptr);
+	RP_D(const GameCube);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -1279,7 +1279,7 @@ uint32_t GameCube::supportedImageTypes(void) const
  */
 int GameCube::loadFieldData(void)
 {
-	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	RP_D(GameCube);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
@@ -1704,7 +1704,7 @@ int GameCube::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	RP_D(GameCube);
 	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
@@ -1760,7 +1760,7 @@ int GameCube::loadURLs(ImageType imageType)
 		return -ERANGE;
 	}
 
-	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	RP_D(GameCube);
 	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.

@@ -330,7 +330,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 {
 	// TODO: Only validate that this is an MD ROM here.
 	// Load fields elsewhere.
-	MegaDrivePrivate *const d = static_cast<MegaDrivePrivate*>(d_ptr);
+	RP_D(MegaDrive);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -537,7 +537,7 @@ int MegaDrive::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *MegaDrive::systemName(uint32_t type) const
 {
-	const MegaDrivePrivate *const d = static_cast<const MegaDrivePrivate*>(d_ptr);
+	RP_D(const MegaDrive);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
@@ -697,7 +697,7 @@ vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
  */
 int MegaDrive::loadFieldData(void)
 {
-	MegaDrivePrivate *const d = static_cast<MegaDrivePrivate*>(d_ptr);
+	RP_D(MegaDrive);
 	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
