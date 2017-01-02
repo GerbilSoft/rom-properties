@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "RomData.hpp"
+#include "RomData_p.hpp"
+
 #include "common.h"
 #include "file/IRpFile.hpp"
 #include "img/rp_image.hpp"
@@ -37,6 +39,50 @@
 
 namespace LibRomData {
 
+/** RomDataPrivate **/
+
+/**
+ * Initialize a RomDataPrivate storage class.
+ *
+ * @param q RomData class.
+ * @param file ROM file.
+ * @param fields Array of ROM Field descriptions.
+ * @param count Number of ROM Field descriptions.
+ */
+RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count)
+	: q_ptr(q)
+	, isValid(false)
+	, file(nullptr)
+	, fields(new RomFields(fields, count))
+	, fileType(RomData::FTYPE_ROM_IMAGE)
+{
+	// Clear the internal images field.
+	memset(&images, 0, sizeof(images));
+	memset(&imgpf, 0, sizeof(imgpf));
+
+	if (!file)
+		return;
+
+	// dup() the file.
+	this->file = file->dup();
+}
+
+RomDataPrivate::~RomDataPrivate()
+{
+	delete fields;
+
+	// Delete the internal images.
+	for (int i = ARRAY_SIZE(images)-1; i >= 0; i--) {
+		delete images[i];
+	}
+
+	// Close the file if it's still open.
+	delete this->file;
+	this->file = nullptr;
+}
+
+/** RomData **/
+
 /**
  * ROM data base class.
  *
@@ -53,31 +99,32 @@ namespace LibRomData {
  * @param count Number of ROM Field descriptions.
  */
 RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
-	: m_isValid(false)
-	, m_file(nullptr)
-	, m_fields(new RomFields(fields, count))
-	, m_fileType(FTYPE_ROM_IMAGE)
-{
-	// Clear the internal images field.
-	memset(&m_images, 0, sizeof(m_images));
-	memset(&m_imgpf, 0, sizeof(m_imgpf));
+	: d_ptr(new RomDataPrivate(this, file, fields, count))
+{ }
 
-	if (!file)
-		return;
-
-	// dup() the file.
-	m_file = file->dup();
-}
+/**
+ * ROM data base class.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * In addition, subclasses must pass an array of RomFieldDesc structs
+ * using an allocated RomDataPrivate subclass.
+ *
+ * @param d RomDataPrivate subclass.
+ */
+RomData::RomData(RomDataPrivate *d)
+	: d_ptr(d)
+{ }
 
 RomData::~RomData()
 {
-	this->close();
-	delete m_fields;
-
-	// Delete the internal images.
-	for (int i = ARRAY_SIZE(m_images)-1; i >= 0; i--) {
-		delete m_images[i];
-	}
+	delete d_ptr;
 }
 
 /**
@@ -86,7 +133,8 @@ RomData::~RomData()
  */
 bool RomData::isValid(void) const
 {
-	return m_isValid;
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	return d->isValid;
 }
 
 /**
@@ -94,10 +142,9 @@ bool RomData::isValid(void) const
  */
 void RomData::close(void)
 {
-	if (m_file) {
-		delete m_file;
-		m_file = nullptr;
-	}
+	RomDataPrivate *const d = static_cast<RomDataPrivate*>(d_ptr);
+	delete d->file;
+	d->file = nullptr;
 }
 
 /**
@@ -106,7 +153,8 @@ void RomData::close(void)
  */
 RomData::FileType RomData::fileType(void) const
 {
-	return m_fileType;
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	return d->fileType;
 }
 
 /**
@@ -115,7 +163,8 @@ RomData::FileType RomData::fileType(void) const
  */
 const rp_char *RomData::fileType_string(void) const
 {
-	switch (m_fileType) {
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	switch (d->fileType) {
 		case RomData::FTYPE_ROM_IMAGE:
 			return _RP("ROM Image");
 		case RomData::FTYPE_DISC_IMAGE:
@@ -188,14 +237,15 @@ int RomData::loadURLs(ImageType imageType)
  */
 const RomFields *RomData::fields(void) const
 {
-	if (!m_fields->isDataLoaded()) {
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	if (!d->fields->isDataLoaded()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
 		if (ret < 0)
 			return nullptr;
 	}
-	return m_fields;
+	return d->fields;
 }
 
 /**
@@ -212,12 +262,13 @@ int RomData::verifyImageTypeLoaded(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
 	int ret = 0;
 	if (imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX) {
 		// This is an internal image.
 		// Make sure it's loaded.
 		const int idx = imageType - IMG_INT_MIN;
-		if (!m_images[idx]) {
+		if (!d->images[idx]) {
 			// Internal image has not been loaded.
 			// Load it now.
 			ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
@@ -226,7 +277,7 @@ int RomData::verifyImageTypeLoaded(ImageType imageType) const
 		// This is an external image.
 		// Make sure the URL is loaded.
 		const int idx = imageType - IMG_EXT_MIN;
-		if (m_extURLs[idx].empty()) {
+		if (d->extURLs[idx].empty()) {
 			// List of URLs has not been loaded.
 			// Load it now.
 			ret = const_cast<RomData*>(this)->loadURLs(imageType);
@@ -260,7 +311,8 @@ const rp_image *RomData::image(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_INT_MIN;
-	return m_images[idx];
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	return d->images[idx];
 }
 
 /**
@@ -283,7 +335,8 @@ const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_EXT_MIN;
-	return &m_extURLs[idx];
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	return &d->extURLs[idx];
 }
 
 /**
@@ -321,7 +374,8 @@ uint32_t RomData::imgpf(ImageType imageType) const
 
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return 0;
-	return m_imgpf[imageType];
+	const RomDataPrivate *const d = static_cast<const RomDataPrivate*>(d_ptr);
+	return d->imgpf[imageType];
 }
 
 /**

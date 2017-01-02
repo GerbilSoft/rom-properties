@@ -21,6 +21,8 @@
  ***************************************************************************/
 
 #include "VirtualBoy.hpp"
+#include "RomData_p.hpp"
+
 #include "NintendoPublishers.hpp"
 #include "vb_structs.h"
 
@@ -148,13 +150,13 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	, d(new VirtualBoyPrivate())
 	
 {
-	if (!m_file) {
+	if (!d_ptr->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Seek to the beginning of the header.
-	const int64_t filesize = m_file->fileSize();
+	const int64_t filesize = d_ptr->file->fileSize();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {
@@ -164,8 +166,8 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 
 	// Read the ROM header.
 	const unsigned int header_addr = (unsigned int)(filesize - 0x220);
-	m_file->seek(header_addr);
-	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	d_ptr->file->seek(header_addr);
+	size_t size = d_ptr->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
 		return;
 
@@ -176,7 +178,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for Virtual Boy.
 	info.szFile = filesize;
-	m_isValid = (isRomSupported(&info) >= 0);
+	d_ptr->isValid = (isRomSupported(&info) >= 0);
 }
 
 VirtualBoy::~VirtualBoy()
@@ -291,7 +293,7 @@ int VirtualBoy::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *VirtualBoy::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	static_assert(SYSNAME_TYPE_MASK == 3,
@@ -356,13 +358,13 @@ vector<const rp_char*> VirtualBoy::supportedFileExtensions(void) const
  */
 int VirtualBoy::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	if (d_ptr->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file || !m_file->isOpen()) {
+	} else if (!d_ptr->file || !d_ptr->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d_ptr->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -371,19 +373,19 @@ int VirtualBoy::loadFieldData(void)
 	const VB_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
+	d_ptr->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
 
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6 += string(romHeader->publisher, sizeof(romHeader->publisher));
-	m_fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
+	d_ptr->fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
 
 	// Look up the publisher.
 	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
-	m_fields->addData_string(publisher?publisher:_RP("Unknown"));
+	d_ptr->fields->addData_string(publisher?publisher:_RP("Unknown"));
 
 	// Revision
-	m_fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
+	d_ptr->fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
 	const rp_char* region;
@@ -398,9 +400,9 @@ int VirtualBoy::loadFieldData(void)
 			region = _RP("Unknown");
 			break;
 	}
-	m_fields->addData_string(region);
+	d_ptr->fields->addData_string(region);
 
-	return (int)m_fields->count();
+	return (int)d_ptr->fields->count();
 }
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -41,13 +41,10 @@ class IRpFile;
 class rp_image;
 struct IconAnimData;
 
+class RomDataPrivate;
 class RomData
 {
 	protected:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * ROM data base class.
 		 *
@@ -65,13 +62,35 @@ class RomData
 		 * @param fields Array of ROM Field descriptions.
 		 * @param count Number of ROM Field descriptions.
 		 */
-		RomData(IRpFile *file, const RomFields::Desc *fields, int count);
+		RomData(IRpFile* file, const RomFields::Desc* fields, int count);
+
+		/**
+		 * ROM data base class.
+		 *
+		 * A ROM file must be opened by the caller. The file handle
+		 * will be dup()'d and must be kept open in order to load
+		 * data from the ROM.
+		 *
+		 * To close the file, either delete this object or call close().
+		 *
+		 * NOTE: Check isValid() to determine if this is a valid ROM.
+		 *
+		 * In addition, subclasses must pass an array of RomFieldDesc structs
+		 * using an allocated RomDataPrivate subclass.
+		 *
+		 * @param d RomDataPrivate subclass.
+		 */
+		explicit RomData(RomDataPrivate *d);
+
 	public:
 		virtual ~RomData();
 
 	private:
 		RomData(const RomData &);
 		RomData &operator=(const RomData &);
+	protected:
+		friend class RomDataPrivate;
+		RomDataPrivate *const d_ptr;
 
 	public:
 		/**
@@ -384,28 +403,6 @@ class RomData
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
 		virtual const IconAnimData *iconAnimData(void) const;
-
-	protected:
-		// TODO: Make a private class?
-		bool m_isValid;			// Subclass must set this to true if the ROM is valid.
-		IRpFile *m_file;		// Open file.
-		RomFields *const m_fields;	// ROM fields.
-
-		// File type. (default is FTYPE_ROM_IMAGE)
-		FileType m_fileType;
-
-		// Internal images.
-		rp_image *m_images[IMG_INT_MAX - IMG_INT_MIN + 1];
-
-		// Lists of URLs and cache keys for external media types.
-		// Each vector contains a list of URLs for the given
-		// media type, in priority order. ([0] == highest priority)
-		// This is done to allow for multiple quality levels.
-		// TODO: Allow the user to customize quality levels?
-		std::vector<ExtURL> m_extURLs[IMG_EXT_MAX - IMG_EXT_MIN + 1];
-
-		// Image processing flags.
-		uint32_t m_imgpf[IMG_EXT_MAX+1];
 };
 
 }

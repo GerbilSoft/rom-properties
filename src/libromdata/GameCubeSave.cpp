@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "GameCubeSave.hpp"
+#include "RomData_p.hpp"
+
 #include "NintendoPublishers.hpp"
 #include "gcn_card.h"
 
@@ -325,7 +327,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  */
 rp_image *GameCubeSavePrivate::loadIcon(void)
 {
-	if (!q->m_file || !q->m_isValid) {
+	if (!q->d_ptr->file || !q->d_ptr->isValid) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -398,8 +400,8 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
 	uint8_t *icondata = (uint8_t*)malloc(iconsizetotal);
-	q->m_file->seek(dataOffset + iconaddr);
-	size_t size = q->m_file->read(icondata, iconsizetotal);
+	q->d_ptr->file->seek(dataOffset + iconaddr);
+	size_t size = q->d_ptr->file->read(icondata, iconsizetotal);
 	if (size != iconsizetotal) {
 		// Error reading the icon data.
 		free(icondata);
@@ -501,7 +503,7 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
  */
 rp_image *GameCubeSavePrivate::loadBanner(void)
 {
-	if (!q->m_file || !q->m_isValid) {
+	if (!q->d_ptr->file || !q->d_ptr->isValid) {
 		// Can't load the banner.
 		return nullptr;
 	}
@@ -525,8 +527,8 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
 	// Read the banner data.
 	static const int MAX_BANNER_SIZE = (CARD_BANNER_W * CARD_BANNER_H * 2);
 	uint8_t bannerbuf[MAX_BANNER_SIZE];
-	q->m_file->seek(this->dataOffset + direntry.iconaddr);
-	size_t size = q->m_file->read(bannerbuf, bannersize);
+	q->d_ptr->file->seek(this->dataOffset + direntry.iconaddr);
+	size_t size = q->d_ptr->file->read(bannerbuf, bannersize);
 	if (size != bannersize) {
 		// Error reading the banner data.
 		return nullptr;
@@ -540,8 +542,8 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
 	} else {
 		// Read the palette data.
 		uint16_t palbuf[256];
-		q->m_file->seek(this->dataOffset + direntry.iconaddr + bannersize);
-		size = q->m_file->read(palbuf, sizeof(palbuf));
+		q->d_ptr->file->seek(this->dataOffset + direntry.iconaddr + bannersize);
+		size = q->d_ptr->file->read(palbuf, sizeof(palbuf));
 		if (size != sizeof(palbuf)) {
 			// Error reading the palette data.
 			return nullptr;
@@ -575,17 +577,17 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	, d(new GameCubeSavePrivate(this))
 {
 	// This class handles save files.
-	m_fileType = FTYPE_SAVE_FILE;
+	d_ptr->fileType = FTYPE_SAVE_FILE;
 
-	if (!m_file) {
+	if (!d_ptr->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the save file header.
 	uint8_t header[1024];
-	m_file->rewind();
-	size_t size = m_file->read(&header, sizeof(header));
+	d_ptr->file->rewind();
+	size_t size = d_ptr->file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -595,7 +597,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	info.header.size = sizeof(header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for GCN save files.
-	info.szFile = m_file->fileSize();
+	info.szFile = d_ptr->file->fileSize();
 	d->saveType = isRomSupported_static(&info);
 
 	// Save the directory entry for later.
@@ -616,7 +618,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 			return;
 	}
 
-	m_isValid = true;
+	d_ptr->isValid = true;
 
 	// Save the directory entry for later.
 	memcpy(&d->direntry, &header[gciOffset], sizeof(d->direntry));
@@ -733,7 +735,7 @@ int GameCubeSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameCubeSave::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
@@ -811,13 +813,13 @@ uint32_t GameCubeSave::supportedImageTypes(void) const
  */
 int GameCubeSave::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	if (d_ptr->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file || !m_file->isOpen()) {
+	} else if (!d_ptr->file || !d_ptr->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid || d->saveType < 0 || d->dataOffset < 0) {
+	} else if (!d_ptr->isValid || d->saveType < 0 || d->dataOffset < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -834,25 +836,25 @@ int GameCubeSave::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	m_fields->addData_string(latin1_to_rp_string(id6, 6));
+	d_ptr->fields->addData_string(latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->direntry.company);
-	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d_ptr->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// Filename.
 	// TODO: Remove trailing nulls and/or spaces.
 	// (Implicit length version of cp1252_sjis_to_rp_string()?)
-	m_fields->addData_string(cp1252_sjis_to_rp_string(
+	d_ptr->fields->addData_string(cp1252_sjis_to_rp_string(
 		d->direntry.filename, sizeof(d->direntry.filename)));
 
 	// Description.
 	char desc_buf[64];
-	m_file->seek(d->dataOffset + d->direntry.commentaddr);
-	size_t size = m_file->read(desc_buf, sizeof(desc_buf));
+	d_ptr->file->seek(d->dataOffset + d->direntry.commentaddr);
+	size_t size = d_ptr->file->read(desc_buf, sizeof(desc_buf));
 	if (size != sizeof(desc_buf)) {
 		// Error reading the description.
-		m_fields->addData_invalid();
+		d_ptr->fields->addData_invalid();
 	} else {
 		// Add the description.
 		// NOTE: Some games have garbage after the first NULL byte
@@ -877,11 +879,11 @@ int GameCubeSave::loadFieldData(void)
 		}
 		desc += cp1252_sjis_to_rp_string(&desc_buf[32], desc_len);
 
-		m_fields->addData_string(desc);
+		d_ptr->fields->addData_string(desc);
 	}
 
 	// Last Modified timestamp.
-	m_fields->addData_dateTime((int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF);
+	d_ptr->fields->addData_dateTime((int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF);
 
 	// File mode.
 	rp_char file_mode[5];
@@ -890,15 +892,15 @@ int GameCubeSave::loadFieldData(void)
 	file_mode[2] = ((d->direntry.permission & CARD_ATTRIB_NOCOPY) ? _RP_CHR('C') : _RP_CHR('-'));
 	file_mode[3] = ((d->direntry.permission & CARD_ATTRIB_PUBLIC) ? _RP_CHR('P') : _RP_CHR('-'));
 	file_mode[4] = 0;
-	m_fields->addData_string(file_mode);
+	d_ptr->fields->addData_string(file_mode);
 
 	// Copy count.
-	m_fields->addData_string_numeric(d->direntry.copytimes);
+	d_ptr->fields->addData_string_numeric(d->direntry.copytimes);
 	// Blocks.
-	m_fields->addData_string_numeric(d->direntry.length);
+	d_ptr->fields->addData_string_numeric(d->direntry.length);
 
 	// Finished reading the field data.
-	return (int)m_fields->count();
+	return (int)d_ptr->fields->count();
 }
 
 /**
@@ -914,13 +916,13 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	if (m_images[imageType]) {
+	if (d_ptr->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	} else if (!m_file) {
+	} else if (!d_ptr->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d_ptr->isValid) {
 		// Save file isn't valid.
 		return -EIO;
 	}
@@ -929,18 +931,18 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 	switch (imageType) {
 		case IMG_INT_ICON:
 			// Icon.
-			m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-			m_images[imageType] = d->loadIcon();
+			d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+			d_ptr->images[imageType] = d->loadIcon();
 			if (d->iconAnimData && d->iconAnimData->count > 1) {
 				// Animated icon.
-				m_imgpf[imageType] |= IMGPF_ICON_ANIMATED;
+				d_ptr->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
 			}
 			break;
 
 		case IMG_INT_BANNER:
 			// Banner.
-			m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-			m_images[imageType] = d->loadBanner();
+			d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+			d_ptr->images[imageType] = d->loadBanner();
 			break;
 
 		default:
@@ -949,7 +951,7 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (m_images[imageType] != nullptr ? 0 : -EIO);
+	return (d_ptr->images[imageType] != nullptr ? 0 : -EIO);
 }
 
 /**

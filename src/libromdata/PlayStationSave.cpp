@@ -24,6 +24,8 @@
 // - http://problemkaputt.de/psx-spx.htm
 
 #include "PlayStationSave.hpp"
+#include "RomData_p.hpp"
+
 #include "ps1_structs.h"
 
 #include "common.h"
@@ -198,17 +200,17 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	, d(new PlayStationSavePrivate())
 {
 	// This class handles save files.
-	m_fileType = FTYPE_SAVE_FILE;
+	d_ptr->fileType = FTYPE_SAVE_FILE;
 
-	if (!m_file) {
+	if (!d_ptr->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the save file header.
 	uint8_t header[1024];
-	m_file->rewind();
-	size_t size = m_file->read(&header, sizeof(header));
+	d_ptr->file->rewind();
+	size_t size = d_ptr->file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -234,7 +236,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			return;
 	}
 
-	m_isValid = true;
+	d_ptr->isValid = true;
 }
 
 PlayStationSave::~PlayStationSave()
@@ -302,7 +304,7 @@ int PlayStationSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *PlayStationSave::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
@@ -379,13 +381,13 @@ uint32_t PlayStationSave::supportedImageTypes(void) const
  */
 int PlayStationSave::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	if (d_ptr->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file) {
+	} else if (!d_ptr->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d_ptr->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -394,17 +396,17 @@ int PlayStationSave::loadFieldData(void)
 	const PS1_PSV_Header *psvHeader = &d->psvHeader;
 
 	// Filename.
-	m_fields->addData_string(
+	d_ptr->fields->addData_string(
 		cp1252_sjis_to_rp_string(psvHeader->filename, sizeof(psvHeader->filename)));
 
 	// Description.
-	m_fields->addData_string(
+	d_ptr->fields->addData_string(
 		cp1252_sjis_to_rp_string(psvHeader->sc.title, sizeof(psvHeader->sc.title)));
 
 	// TODO: Moar fields.
 
 	// Finished reading the field data.
-	return (int)m_fields->count();
+	return (int)d_ptr->fields->count();
 }
 
 /**
@@ -420,13 +422,13 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	if (m_images[imageType]) {
+	if (d_ptr->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	} else if (!m_file) {
+	} else if (!d_ptr->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d_ptr->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -438,15 +440,15 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
 	}
 
 	// Use nearest-neighbor scaling when resizing.
-	m_imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	m_images[imageType] = d->loadIcon();
+	d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+	d_ptr->images[imageType] = d->loadIcon();
 	if (d->iconAnimData && d->iconAnimData->count > 1) {
 		// Animated icon.
-		m_imgpf[imageType] |= IMGPF_ICON_ANIMATED;
+		d_ptr->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (m_images[imageType] != nullptr ? 0 : -EIO);
+	return (d_ptr->images[imageType] != nullptr ? 0 : -EIO);
 }
 
 /**

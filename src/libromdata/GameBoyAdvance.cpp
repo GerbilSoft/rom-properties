@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "GameBoyAdvance.hpp"
+#include "RomData_p.hpp"
+
 #include "NintendoPublishers.hpp"
 #include "gba_structs.h"
 
@@ -97,14 +99,14 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	: super(file, GameBoyAdvancePrivate::gba_fields, ARRAY_SIZE(GameBoyAdvancePrivate::gba_fields))
 	, d(new GameBoyAdvancePrivate())
 {
-	if (!m_file) {
+	if (!d_ptr->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the ROM header.
-	m_file->rewind();
-	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	d_ptr->file->rewind();
+	size_t size = d_ptr->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
 		return;
 
@@ -115,7 +117,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
-	m_isValid = (isRomSupported_static(&info) >= 0);
+	d_ptr->isValid = (isRomSupported_static(&info) >= 0);
 }
 
 GameBoyAdvance::~GameBoyAdvance()
@@ -176,7 +178,7 @@ int GameBoyAdvance::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameBoyAdvance::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// GBA has the same name worldwide, so we can
@@ -241,13 +243,13 @@ vector<const rp_char*> GameBoyAdvance::supportedFileExtensions(void) const
  */
 int GameBoyAdvance::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	if (d_ptr->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file) {
+	} else if (!d_ptr->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d_ptr->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -256,30 +258,30 @@ int GameBoyAdvance::loadFieldData(void)
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
-	m_fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
-	m_fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
-	m_fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d_ptr->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// ROM version.
-	m_fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
+	d_ptr->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
 	if (romHeader->entry_point_bytes[3] == 0xEA) {
 		// Unconditional branch instruction.
 		const uint32_t entry_point = (le32_to_cpu(romHeader->entry_point) & 0xFFFFFF) << 2;
-		m_fields->addData_string_numeric(entry_point, RomFields::FB_HEX, 8);
+		d_ptr->fields->addData_string_numeric(entry_point, RomFields::FB_HEX, 8);
 	} else {
 		// Non-standard entry point instruction.
-		m_fields->addData_string_hexdump(romHeader->entry_point_bytes, 4);
+		d_ptr->fields->addData_string_hexdump(romHeader->entry_point_bytes, 4);
 	}
 
 	// Finished reading the field data.
-	return (int)m_fields->count();
+	return (int)d_ptr->fields->count();
 }
 
 }
