@@ -179,7 +179,11 @@ rom_data_view_init(RomDataView *page)
 	page->tmrIconAnim = 0;
 	page->last_delay = 0;
 
-	// Base class is GtkVBox.
+	/**
+	 * Base class is:
+	 * - GTK+ 2.x: GtkVBox
+	 * - GTK+ 3.x: GtkBox
+	 */
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Header row.
