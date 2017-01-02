@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-provider.cpp: ThunarX Provider Definiton.                *
+ * rom-properties-provider.cpp: ThunarX Provider Definition.               *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-plugin.c: ThunarX Plugin Definiton.                      *
+ * rom-properties-plugin.c: ThunarX Plugin Definition.                     *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
