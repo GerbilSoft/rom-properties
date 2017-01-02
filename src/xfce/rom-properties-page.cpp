@@ -75,6 +75,7 @@ struct _RomPropertiesPage {
 	/* Widgets */
 	GtkWidget	*vboxMain;
 	GtkWidget	*table;
+	GtkWidget	*lblCredits;
 
 	/* Timeouts */
 	guint		changed_idle;
@@ -131,6 +132,7 @@ rom_properties_page_init(RomPropertiesPage *page)
 	// No ROM data initially.
 	page->romData = nullptr;
 	page->table = nullptr;
+	page->lblCredits = nullptr;
 
 	// NOTE: GTK+3 adds halign/valign properties.
 	// For GTK+2, we have to use a VBox.
@@ -349,6 +351,12 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 		page->table = nullptr;
 	}
 
+	// Delete the credits label if it's already present.
+	if (page->lblCredits) {
+		gtk_widget_destroy(page->lblCredits);
+		page->lblCredits = nullptr;
+	}
+
 	if (!page->romData) {
 		// No ROM data...
 		return;
@@ -373,6 +381,9 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 
 	// Create the data widgets.
 	// TODO: Types other than RFT_STRING.
+#ifndef NDEBUG
+	bool hasStrfCredits = false;
+#endif
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -405,13 +416,68 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 			case RomFields::RFT_STRING: {
 				// String type.
 				// TODO: String formatting options.
-				GtkWidget *lblString = gtk_label_new(data->str);
-				gtk_label_set_selectable(GTK_LABEL(lblString), TRUE);
+				GtkWidget *lblString = gtk_label_new(nullptr);
 				gtk_label_set_use_underline(GTK_LABEL(lblString), false);
-				gtk_misc_set_alignment(GTK_MISC(lblString), 0.0f, 0.0f);
-				gtk_table_attach(GTK_TABLE(page->table), lblString, 1, 2, i, i+1,
-					GTK_FILL, GTK_FILL, 0, 0);
 				gtk_widget_show(lblString);
+
+				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+					// Credits text. Enable formatting and center alignment.
+					gtk_label_set_justify(GTK_LABEL(lblString), GTK_JUSTIFY_CENTER);
+					gtk_misc_set_alignment(GTK_MISC(lblString), 0.5f, 0.0f);
+					if (data->str) {
+						// NOTE: Pango markup does not support <br/>.
+						// It uses standard newlines for line breaks.
+						gtk_label_set_markup(GTK_LABEL(lblString), data->str);
+					}
+				} else {
+					// Standard text with no formatting.
+					gtk_label_set_selectable(GTK_LABEL(lblString), TRUE);
+					gtk_label_set_justify(GTK_LABEL(lblString), GTK_JUSTIFY_LEFT);
+					gtk_misc_set_alignment(GTK_MISC(lblString), 0.0f, 0.0f);
+					gtk_label_set_text(GTK_LABEL(lblString), data->str);
+				}
+
+				// Check for any formatting options.
+				if (desc->str_desc) {
+					PangoAttrList *attr_lst = pango_attr_list_new();
+
+					// Monospace font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+						PangoAttribute *attr = pango_attr_family_new("monospace");
+						pango_attr_list_insert(attr_lst, attr);
+					}
+
+					// "Warning" font?
+					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+						PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+						pango_attr_list_insert(attr_lst, attr);
+						attr = pango_attr_foreground_new(65535, 0, 0);
+						pango_attr_list_insert(attr_lst, attr);
+					}
+
+					gtk_label_set_attributes(GTK_LABEL(lblString), attr_lst);
+					pango_attr_list_unref(attr_lst);
+				}
+
+				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+					// Credits row goes at the end.
+					// There should be a maximum of one STRF_CREDITS per RomData subclass.
+#ifndef NDEBUG
+					assert(hasStrfCredits == false);
+					hasStrfCredits = true;
+#endif
+
+					// Credits row.
+					gtk_box_pack_end(GTK_BOX(page->vboxMain), lblString, FALSE, FALSE, 0);
+
+					// No description field.
+					gtk_widget_destroy(lblDesc);
+				} else {
+					// Standard string row.
+					gtk_table_attach(GTK_TABLE(page->table), lblString, 1, 2, i, i+1,
+						GTK_FILL, GTK_FILL, 0, 0);
+				}
+
 				break;
 			}
 
