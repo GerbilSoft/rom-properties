@@ -25,6 +25,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/RomDataFactory.hpp"
+using LibRomData::rp_string;
 using LibRomData::RpFile;
 using LibRomData::RomData;
 using LibRomData::RomDataFactory;
@@ -35,7 +36,9 @@ using LibRomData::RomFields;
 
 // C++ includes.
 #include <string>
+#include <vector>
 using std::string;
+using std::vector;
 
 // References:
 // - audio-tags plugin
@@ -527,6 +530,67 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 				}
 
 				gtk_table_attach(GTK_TABLE(page->table), gridBitfield, 1, 2, i, i+1,
+					GTK_FILL, GTK_FILL, 0, 0);
+				break;
+			}
+
+			case RomFields::RFT_LISTDATA: {
+				// ListData type. Create a QTreeWidget.
+				const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+				const int count = listDataDesc->count;
+				GType *types = new GType[listDataDesc->count];
+				for (int i = 0; i < count; i++) {
+					types[i] = G_TYPE_STRING;
+				}
+				GtkListStore *listStore = gtk_list_store_newv(count, types);
+				delete[] types;
+
+				// Add the row data.
+				const RomFields::ListData *listData = data->list_data;
+				for (int i = 0; i < (int)listData->data.size(); i++) {
+					const vector<rp_string> &data_row = listData->data.at(i);
+					GtkTreeIter treeIter;
+					gtk_list_store_insert_before(listStore, &treeIter, nullptr);
+					int field = 0;
+					for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
+						gtk_list_store_set(listStore, &treeIter, field, iter->c_str(), -1);
+					}
+				}
+
+				// Scroll area for the GtkTreeView.
+				GtkWidget *scrollArea = gtk_scrolled_window_new(nullptr, nullptr);
+				gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea),
+						GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+				gtk_widget_show(scrollArea);
+
+				// Create the GtkTreeView.
+				GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(listStore));
+				gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView), TRUE);
+				gtk_widget_show(treeView);
+				//treeWidget->setRootIsDecorated(false);
+				//treeWidget->setUniformRowHeights(true);
+				gtk_container_add(GTK_CONTAINER(scrollArea), treeView);
+
+				// Set up the column names.
+				for (int i = 0; i < count; i++) {
+					if (listDataDesc->names[i]) {
+						GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+						GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+							listDataDesc->names[i], renderer,
+							"text", i, nullptr);
+						gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
+					}
+				}
+
+				// Set a minimum height for the scroll area.
+				// TODO: Adjust for DPI, and/or use a font size?
+				// TODO: Force maximum horizontal width somehow?
+				gtk_widget_set_size_request(scrollArea, -1, 128);
+
+				// Resize the columns to fit the contents.
+				// TODO: Save list stores to be deleted later?
+				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
+				gtk_table_attach(GTK_TABLE(page->table), scrollArea, 1, 2, i, i+1,
 					GTK_FILL, GTK_FILL, 0, 0);
 				break;
 			}
