@@ -66,6 +66,10 @@ static void	rom_properties_page_init_header_row	(RomPropertiesPage	*page);
 static void	rom_properties_page_update_display	(RomPropertiesPage	*page);
 static gboolean	rom_properties_page_load_rom_data	(gpointer		 data);
 
+/** Signal handlers. **/
+static void	checkbox_no_toggle_signal_handler	(GtkToggleButton	*togglebutton,
+							 gpointer		 user_data);
+
 // XFCE property page class.
 struct _RomPropertiesPageClass {
 	ThunarxPropertyPageClass __parent__;
@@ -519,7 +523,14 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 						gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), TRUE);
 					}
 
-					// TODO: Disable user modifications.
+					// Disable user modifications.
+					// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
+					// emitted for both user and program modifications, so we have to
+					// connect this signal *after* setting the initial value.
+					g_signal_connect(checkBox, "toggled",
+						reinterpret_cast<GCallback>(checkbox_no_toggle_signal_handler),
+						nullptr);
+
 					gtk_table_attach(GTK_TABLE(gridBitfield), checkBox, col, col+1, row, row+1,
 						GTK_FILL, GTK_FILL, 0, 0);
 					col++;
@@ -695,4 +706,18 @@ rom_properties_page_load_rom_data(gpointer data)
 	page->changed_idle = 0;
 
 	return FALSE;
+}
+
+/** Signal handlers. **/
+
+static void
+checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
+				  gpointer		 user_data)
+{
+	printf("quack\n");
+	((void)user_data);
+	if (gtk_toggle_button_get_active(togglebutton)) {
+		// Uncheck this box.
+		gtk_toggle_button_set_active(togglebutton, FALSE);
+	}
 }
