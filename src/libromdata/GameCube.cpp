@@ -60,18 +60,16 @@ using std::vector;
 
 namespace LibRomData {
 
-class GameCubePrivate
+class GameCubePrivate : public RomDataPrivate
 {
 	public:
-		explicit GameCubePrivate(GameCube *q);
-		~GameCubePrivate();
+		GameCubePrivate(GameCube *q, IRpFile *file);
+		virtual ~GameCubePrivate();
 
 	private:
+		typedef RomDataPrivate super;
 		GameCubePrivate(const GameCubePrivate &other);
 		GameCubePrivate &operator=(const GameCubePrivate &other);
-
-	private:
-		GameCube *const q;
 
 	public:
 		// RomFields data.
@@ -200,35 +198,6 @@ class GameCubePrivate
 
 /** GameCubePrivate **/
 
-GameCubePrivate::GameCubePrivate(GameCube *q)
-	: q(q)
-	, discType(DISC_UNKNOWN)
-	, discReader(nullptr)
-	, gcn_opening_bnr(nullptr)
-	, gcnRegion(~0)
-	, wiiVgTblLoaded(false)
-	, updatePartition(nullptr)
-{
-	// Clear the Wii region settings.
-	memset(&regionSetting, 0, sizeof(regionSetting));
-}
-
-GameCubePrivate::~GameCubePrivate()
-{
-	updatePartition = nullptr;
-
-	// Delete partition objects in wiiVgTbl[].
-	// TODO: Check wiiVgTblLoaded?
-	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
-		for (auto iter = wiiVgTbl[i].begin(); iter != wiiVgTbl[i].end(); ++iter) {
-			delete iter->partition;
-		}
-	}
-
-	free(gcn_opening_bnr);
-	delete discReader;
-}
-
 // Wii partition table.
 const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
 	_RP("#"), _RP("Type"), _RP("Key"), _RP("Size")
@@ -278,6 +247,35 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
+GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
+	: super(q, file, gcn_fields, ARRAY_SIZE(gcn_fields))
+	, discType(DISC_UNKNOWN)
+	, discReader(nullptr)
+	, gcn_opening_bnr(nullptr)
+	, gcnRegion(~0)
+	, wiiVgTblLoaded(false)
+	, updatePartition(nullptr)
+{
+	// Clear the Wii region settings.
+	memset(&regionSetting, 0, sizeof(regionSetting));
+}
+
+GameCubePrivate::~GameCubePrivate()
+{
+	updatePartition = nullptr;
+
+	// Delete partition objects in wiiVgTbl[].
+	// TODO: Check wiiVgTblLoaded?
+	for (int i = ARRAY_SIZE(wiiVgTbl)-1; i >= 0; i--) {
+		for (auto iter = wiiVgTbl[i].begin(); iter != wiiVgTbl[i].end(); ++iter) {
+			delete iter->partition;
+		}
+	}
+
+	free(gcn_opening_bnr);
+	delete discReader;
+}
+
 /**
  * Load the Wii volume group and partition tables.
  * Partition tables are loaded into wiiVgTbl[].
@@ -288,7 +286,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	if (wiiVgTblLoaded) {
 		// Partition tables have already been loaded.
 		return 0;
-	} else if (!q->d_ptr->file || !q->d_ptr->file->isOpen()) {
+	} else if (!this->file || !this->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
@@ -944,21 +942,21 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
  * @param file Open disc image.
  */
 GameCube::GameCube(IRpFile *file)
-	: super(file, GameCubePrivate::gcn_fields, ARRAY_SIZE(GameCubePrivate::gcn_fields))
-	, d(new GameCubePrivate(this))
+	: super(new GameCubePrivate(this, file))
 {
 	// This class handles disc images.
-	d_ptr->fileType = FTYPE_DISC_IMAGE;
+	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	d->fileType = FTYPE_DISC_IMAGE;
 
-	if (!d_ptr->file) {
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the disc header.
 	uint8_t header[4096+256];
-	d_ptr->file->rewind();
-	size_t size = d_ptr->file->read(&header, sizeof(header));
+	d->file->rewind();
+	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -975,33 +973,33 @@ GameCube::GameCube(IRpFile *file)
 	if (d->discType >= 0) {
 		switch (d->discType & GameCubePrivate::DISC_FORMAT_MASK) {
 			case GameCubePrivate::DISC_FORMAT_RAW:
-				d->discReader = new DiscReader(d_ptr->file);
+				d->discReader = new DiscReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_WBFS:
-				d->discReader = new WbfsReader(d_ptr->file);
+				d->discReader = new WbfsReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_CISO:
-				d->discReader = new CisoGcnReader(d_ptr->file);
+				d->discReader = new CisoGcnReader(d->file);
 				break;
 			case GameCubePrivate::DISC_FORMAT_TGC: {
-				d_ptr->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
+				d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
 
 				// Check the TGC header for the disc offset.
 				const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
 				uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
-				d->discReader = new DiscReader(d_ptr->file, gcm_offset, -1);
+				d->discReader = new DiscReader(d->file, gcm_offset, -1);
 				break;
 			}
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
-				d_ptr->fileType = FTYPE_UNKNOWN;
+				d->fileType = FTYPE_UNKNOWN;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
 				break;
 		}
 	}
 
-	d_ptr->isValid = (d->discType >= 0);
-	if (!d_ptr->isValid) {
+	d->isValid = (d->discType >= 0);
+	if (!d->isValid) {
 		// Nothing else to do here.
 		return;
 	}
@@ -1014,7 +1012,7 @@ GameCube::GameCube(IRpFile *file)
 		delete d->discReader;
 		d->discReader = nullptr;
 		d->discType = GameCubePrivate::DISC_UNKNOWN;
-		d_ptr->isValid = false;
+		d->isValid = false;
 		return;
 	}
 
@@ -1047,7 +1045,7 @@ GameCube::GameCube(IRpFile *file)
 			delete d->discReader;
 			d->discReader = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d_ptr->isValid = false;
+			d->isValid = false;
 			return;
 		}
 	}
@@ -1064,7 +1062,7 @@ GameCube::GameCube(IRpFile *file)
 				delete d->discReader;
 				d->discReader = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
-				d_ptr->isValid = false;
+				d->isValid = false;
 				return;
 			}
 
@@ -1080,7 +1078,7 @@ GameCube::GameCube(IRpFile *file)
 				delete d->discReader;
 				d->discReader = nullptr;
 				d->discType = GameCubePrivate::DISC_UNKNOWN;
-				d_ptr->isValid = false;
+				d->isValid = false;
 				return;
 			}
 
@@ -1092,14 +1090,9 @@ GameCube::GameCube(IRpFile *file)
 			delete d->discReader;
 			d->discReader = nullptr;
 			d->discType = GameCubePrivate::DISC_UNKNOWN;
-			d_ptr->isValid = false;
+			d->isValid = false;
 			return;
 	}
-}
-
-GameCube::~GameCube()
-{
-	delete d;
 }
 
 /** ROM detection functions. **/
@@ -1196,7 +1189,8 @@ int GameCube::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameCube::systemName(uint32_t type) const
 {
-	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
+	const GameCubePrivate *const d = static_cast<const GameCubePrivate*>(d_ptr);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// GCN, Wii, and Triforce have the same name worldwide, so we can
@@ -1285,13 +1279,14 @@ uint32_t GameCube::supportedImageTypes(void) const
  */
 int GameCube::loadFieldData(void)
 {
-	if (d_ptr->fields->isDataLoaded()) {
+	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file || !d_ptr->file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid || d->discType < 0) {
+	} else if (!d->isValid || d->discType < 0) {
 		// Unknown disc type.
 		return -EIO;
 	}
@@ -1308,14 +1303,14 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_PAL:
 		default:
 			// USA/PAL uses cp1252.
-			d_ptr->fields->addData_string(cp1252_to_rp_string(
+			d->fields->addData_string(cp1252_to_rp_string(
 				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
 			break;
 
 		case GCN_REGION_JAPAN:
 		case GCN_REGION_SOUTH_KOREA:
 			// Japan uses Shift-JIS.
-			d_ptr->fields->addData_string(cp1252_sjis_to_rp_string(
+			d->fields->addData_string(cp1252_sjis_to_rp_string(
 				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
 	}
 
@@ -1329,29 +1324,29 @@ int GameCube::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d_ptr->fields->addData_string(latin1_to_rp_string(id6, 6));
+	d->fields->addData_string(latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
-	d_ptr->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// Other fields.
-	d_ptr->fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
-	d_ptr->fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
+	d->fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
+	d->fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
 
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
 	const rp_char *region = d->gcnRegionToString(d->gcnRegion, d->discHeader.id4[3]);
 	if (region) {
-		d_ptr->fields->addData_string(region);
+		d->fields->addData_string(region);
 	} else {
 		// Invalid region code.
 		char buf[32];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", d->gcnRegion);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d_ptr->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
@@ -1418,39 +1413,39 @@ int GameCube::loadFieldData(void)
 					case GCN_REGION_PAL:
 					default:
 						// USA/PAL uses cp1252.
-						d_ptr->fields->addData_string(
+						d->fields->addData_string(
 							cp1252_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 
 					case GCN_REGION_JAPAN:
 					case GCN_REGION_SOUTH_KOREA:
 						// Japan uses Shift-JIS.
-						d_ptr->fields->addData_string(
+						d->fields->addData_string(
 							cp1252_sjis_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 				}
 			} else {
 				// No comment data.
-				d_ptr->fields->addData_invalid();
+				d->fields->addData_invalid();
 			}
 		} else {
 			// opening.bnr was not loaded.
-			d_ptr->fields->addData_invalid();
+			d->fields->addData_invalid();
 		}
 
 		// Add dummy entries for Wii-specific fields.
-		d_ptr->fields->addData_invalid();	// Age rating(s).
-		d_ptr->fields->addData_invalid();	// System Update
-		d_ptr->fields->addData_invalid();	// Partitions
+		d->fields->addData_invalid();	// Age rating(s).
+		d->fields->addData_invalid();	// System Update
+		d->fields->addData_invalid();	// Partitions
 
 		// Finished reading the field data.
-		return (int)d_ptr->fields->count();
+		return (int)d->fields->count();
 	}
 	
 	/** Wii-specific fields. **/
 
 	// Add a dummy entry for the "Game Info" field.
-	d_ptr->fields->addData_invalid();	// Game Info
+	d->fields->addData_invalid();	// Game Info
 
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
@@ -1493,9 +1488,9 @@ int GameCube::loadFieldData(void)
 	}
 
 	if (!str.empty()) {
-		d_ptr->fields->addData_string(utf8_to_rp_string(str.data(), (int)str.size()));
+		d->fields->addData_string(utf8_to_rp_string(str.data(), (int)str.size()));
 	} else {
-		d_ptr->fields->addData_string(_RP("Unknown"));
+		d->fields->addData_string(_RP("Unknown"));
 	}
 
 	// Load the Wii partition tables.
@@ -1528,7 +1523,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		if (sysMenu) {
-			d_ptr->fields->addData_string(sysMenu);
+			d->fields->addData_string(sysMenu);
 		} else {
 			// TODO: Show specific errors if the system menu WAD wasn't found.
 			// Missing encryption key, etc.
@@ -1561,7 +1556,7 @@ int GameCube::loadFieldData(void)
 				}
 			}
 
-			d_ptr->fields->addData_string(sysMenu);
+			d->fields->addData_string(sysMenu);
 		}
 
 		// Partition table.
@@ -1644,16 +1639,16 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Add the partitions list data.
-		d_ptr->fields->addData_listData(partitions);
+		d->fields->addData_listData(partitions);
 	} else {
 		// Could not load partition tables.
 		// FIXME: Show an error? For now, add dummy fields.
-		d_ptr->fields->addData_invalid();		// Update
-		d_ptr->fields->addData_invalid();		// Partitions
+		d->fields->addData_invalid();		// Update
+		d->fields->addData_invalid();		// Partitions
 	}
 
 	// Finished reading the field data.
-	return (int)d_ptr->fields->count();
+	return (int)d->fields->count();
 }
 
 /**
@@ -1709,13 +1704,14 @@ int GameCube::loadInternalImage(ImageType imageType)
 		return -ERANGE;
 	}
 
-	if (d_ptr->images[imageType]) {
+	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
+	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// Save file isn't valid.
 		return -EIO;
 	}
@@ -1734,7 +1730,7 @@ int GameCube::loadInternalImage(ImageType imageType)
 	}
 
 	// Use nearest-neighbor scaling when resizing.
-	d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
 
 	// Convert the banner from GameCube RGB5A3 to ARGB32.
 	rp_image *banner = ImageDecoder::fromGcnRGB5A3(
@@ -1746,7 +1742,7 @@ int GameCube::loadInternalImage(ImageType imageType)
 	}
 
 	// Finished decoding the banner.
-	d_ptr->images[imageType] = banner;
+	d->images[imageType] = banner;
 	return 0;
 }
 
@@ -1764,6 +1760,7 @@ int GameCube::loadURLs(ImageType imageType)
 		return -ERANGE;
 	}
 
+	GameCubePrivate *const d = static_cast<GameCubePrivate*>(d_ptr);
 	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.
@@ -1771,11 +1768,11 @@ int GameCube::loadURLs(ImageType imageType)
 	}
 
 	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d_ptr->extURLs[idx];
+	std::vector<ExtURL> &extURLs = d->extURLs[idx];
 	if (!extURLs.empty()) {
 		// URLs *have* been loaded...
 		return 0;
-	} else if (!d_ptr->file || !d_ptr->file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (d->discType < 0) {
@@ -1832,7 +1829,7 @@ int GameCube::loadURLs(ImageType imageType)
 
 	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
 	// alpha transparency. Hence, no image processing is required.
-	d_ptr->imgpf[imageType] = 0;
+	d->imgpf[imageType] = 0;
 
 	// Current extURL.
 	ExtURL extURL;

@@ -46,15 +46,12 @@ class PlayStationSave : public RomData
 		 * @param file Open ROM image.
 		 */
 		explicit PlayStationSave(IRpFile *file);
-		virtual ~PlayStationSave();
 
 	private:
+		typedef RomData super;
+		friend class PlayStationSavePrivate;
 		PlayStationSave(const PlayStationSave &other);
 		PlayStationSave &operator=(const PlayStationSave &other);
-
-	private:
-		friend class PlayStationSavePrivate;
-		PlayStationSavePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

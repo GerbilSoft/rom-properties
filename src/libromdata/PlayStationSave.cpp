@@ -49,12 +49,13 @@ using std::vector;
 
 namespace LibRomData {
 
-class PlayStationSavePrivate
+class PlayStationSavePrivate : public RomDataPrivate
 {
 	public:
-		PlayStationSavePrivate();
+		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);
 
 	private:
+		typedef RomDataPrivate super;
 		PlayStationSavePrivate(const PlayStationSavePrivate &other);
 		PlayStationSavePrivate &operator=(const PlayStationSavePrivate &other);
 
@@ -102,8 +103,9 @@ const struct RomFields::Desc PlayStationSavePrivate::ps1_fields[] = {
 	{_RP("Description"), RomFields::RFT_STRING, {nullptr}},
 };
 
-PlayStationSavePrivate::PlayStationSavePrivate()
-	: saveType(SAVE_TYPE_UNKNOWN)
+PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
+	: super(q, file, ps1_fields, ARRAY_SIZE(ps1_fields))
+	, saveType(SAVE_TYPE_UNKNOWN)
 	, iconAnimData(nullptr)
 { }
 
@@ -196,21 +198,21 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
  * @param file Open ROM image.
  */
 PlayStationSave::PlayStationSave(IRpFile *file)
-	: RomData(file, PlayStationSavePrivate::ps1_fields, ARRAY_SIZE(PlayStationSavePrivate::ps1_fields))
-	, d(new PlayStationSavePrivate())
+	: super(new PlayStationSavePrivate(this, file))
 {
 	// This class handles save files.
-	d_ptr->fileType = FTYPE_SAVE_FILE;
+	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	d->fileType = FTYPE_SAVE_FILE;
 
-	if (!d_ptr->file) {
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the save file header.
 	uint8_t header[1024];
-	d_ptr->file->rewind();
-	size_t size = d_ptr->file->read(&header, sizeof(header));
+	d->file->rewind();
+	size_t size = d->file->read(&header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -236,12 +238,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			return;
 	}
 
-	d_ptr->isValid = true;
-}
-
-PlayStationSave::~PlayStationSave()
-{
-	delete d;
+	d->isValid = true;
 }
 
 /**
@@ -304,7 +301,8 @@ int PlayStationSave::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *PlayStationSave::systemName(uint32_t type) const
 {
-	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
+	const PlayStationSavePrivate *const d = static_cast<const PlayStationSavePrivate*>(d_ptr);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
@@ -381,13 +379,14 @@ uint32_t PlayStationSave::supportedImageTypes(void) const
  */
 int PlayStationSave::loadFieldData(void)
 {
-	if (d_ptr->fields->isDataLoaded()) {
+	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -396,17 +395,17 @@ int PlayStationSave::loadFieldData(void)
 	const PS1_PSV_Header *psvHeader = &d->psvHeader;
 
 	// Filename.
-	d_ptr->fields->addData_string(
+	d->fields->addData_string(
 		cp1252_sjis_to_rp_string(psvHeader->filename, sizeof(psvHeader->filename)));
 
 	// Description.
-	d_ptr->fields->addData_string(
+	d->fields->addData_string(
 		cp1252_sjis_to_rp_string(psvHeader->sc.title, sizeof(psvHeader->sc.title)));
 
 	// TODO: Moar fields.
 
 	// Finished reading the field data.
-	return (int)d_ptr->fields->count();
+	return (int)d->fields->count();
 }
 
 /**
@@ -422,13 +421,15 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	if (d_ptr->images[imageType]) {
+
+	PlayStationSavePrivate *const d = static_cast<PlayStationSavePrivate*>(d_ptr);
+	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -440,15 +441,15 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
 	}
 
 	// Use nearest-neighbor scaling when resizing.
-	d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	d_ptr->images[imageType] = d->loadIcon();
+	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+	d->images[imageType] = d->loadIcon();
 	if (d->iconAnimData && d->iconAnimData->count > 1) {
 		// Animated icon.
-		d_ptr->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
+		d->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (d_ptr->images[imageType] != nullptr ? 0 : -EIO);
+	return (d->images[imageType] != nullptr ? 0 : -EIO);
 }
 
 /**
@@ -461,9 +462,10 @@ int PlayStationSave::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *PlayStationSave::iconAnimData(void) const
 {
+	const PlayStationSavePrivate *const d = static_cast<const PlayStationSavePrivate*>(d_ptr);
 	if (!d->iconAnimData) {
 		// Load the icon.
-		if (!d->loadIcon()) {
+		if (!const_cast<PlayStationSavePrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
 			return nullptr;
 		}

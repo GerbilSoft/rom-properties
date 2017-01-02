@@ -34,10 +34,6 @@ class GameCubePrivate;
 class GameCube : public RomData
 {
 	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * Read a Nintendo GameCube or Wii disc image.
 		 *
@@ -52,16 +48,12 @@ class GameCube : public RomData
 		 * @param file Open disc image.
 		 */
 		explicit GameCube(IRpFile *file);
-		virtual ~GameCube();
 
 	private:
 		typedef RomData super;
+		friend class GameCubePrivate;
 		GameCube(const GameCube &other);
 		GameCube &operator=(const GameCube &other);
-
-	private:
-		friend class GameCubePrivate;
-		GameCubePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

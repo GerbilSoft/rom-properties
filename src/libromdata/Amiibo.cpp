@@ -41,12 +41,13 @@ using std::vector;
 
 namespace LibRomData {
 
-class AmiiboPrivate
+class AmiiboPrivate : public RomDataPrivate
 {
 	public:
-		AmiiboPrivate() { }
+		AmiiboPrivate(Amiibo *q, IRpFile *file);
 
 	private:
+		typedef RomDataPrivate super;
 		AmiiboPrivate(const AmiiboPrivate &other);
 		AmiiboPrivate &operator=(const AmiiboPrivate &other);
 
@@ -109,6 +110,10 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
 };
 
+AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
+	: super(q, file, nfp_fields, ARRAY_SIZE(nfp_fields))
+{ }
+
 /**
  * Calculate the check bytes from an NTAG215 serial number.
  * @param serial	[in] NTAG215 serial number. (9 bytes)
@@ -142,20 +147,20 @@ bool AmiiboPrivate::calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t
  * @param file Open NFC dump.
  */
 Amiibo::Amiibo(IRpFile *file)
-	: super(file, AmiiboPrivate::nfp_fields, ARRAY_SIZE(AmiiboPrivate::nfp_fields))
-	, d(new AmiiboPrivate())
+	: super(new AmiiboPrivate(this, file))
 {
 	// This class handles NFC dumps.
-	d_ptr->fileType = FTYPE_NFC_DUMP;
+	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+	d->fileType = FTYPE_NFC_DUMP;
 
-	if (!d_ptr->file) {
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the NFC data.
-	d_ptr->file->rewind();
-	size_t size = d_ptr->file->read(&d->nfpData, sizeof(d->nfpData));
+	d->file->rewind();
+	size_t size = d->file->read(&d->nfpData, sizeof(d->nfpData));
 	if (size != sizeof(d->nfpData))
 		return;
 
@@ -165,13 +170,8 @@ Amiibo::Amiibo(IRpFile *file)
 	info.header.size = sizeof(d->nfpData);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nfpData);
 	info.ext = nullptr;	// Not needed for NFP.
-	info.szFile = d_ptr->file->fileSize();
-	d_ptr->isValid = (isRomSupported_static(&info) >= 0);
-}
-
-Amiibo::~Amiibo()
-{
-	delete d;
+	info.szFile = d->file->fileSize();
+	d->isValid = (isRomSupported_static(&info) >= 0);
 }
 
 /**
@@ -262,7 +262,8 @@ int Amiibo::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *Amiibo::systemName(uint32_t type) const
 {
-	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
+	const AmiiboPrivate *const d = static_cast<const AmiiboPrivate*>(d_ptr);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// The "correct" name is "Nintendo Figurine Platform".
@@ -353,13 +354,14 @@ uint32_t Amiibo::supportedImageTypes(void) const
  */
 int Amiibo::loadFieldData(void)
 {
-	if (d_ptr->fields->isDataLoaded()) {
+	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -402,7 +404,7 @@ int Amiibo::loadFieldData(void)
 	len += (7*2);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
-	d_ptr->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 	// NFP data.
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
@@ -414,7 +416,7 @@ int Amiibo::loadFieldData(void)
 	len = snprintf(buf, sizeof(buf), "%08X-%08X", char_id, amiibo_id);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
-	d_ptr->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 	// amiibo type.
 	const rp_char *type = nullptr;
@@ -433,56 +435,56 @@ int Amiibo::loadFieldData(void)
 	}
 
 	if (type) {
-		d_ptr->fields->addData_string(type);
+		d->fields->addData_string(type);
 	} else {
 		// Invalid amiibo type.
 		char buf[24];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (char_id & 0xFF));
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d_ptr->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
 	// Character series.
 	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
-	d_ptr->fields->addData_string(char_series ? char_series : _RP("Unknown"));
+	d->fields->addData_string(char_series ? char_series : _RP("Unknown"));
 
 	// Character name.
 	const rp_char *const char_name = AmiiboData::lookup_char_name(char_id);
-	d_ptr->fields->addData_string(char_name ? char_name : _RP("Unknown"));
+	d->fields->addData_string(char_name ? char_name : _RP("Unknown"));
 
 	// amiibo series.
 	const rp_char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
-	d_ptr->fields->addData_string(amiibo_series ? amiibo_series : _RP("Unknown"));
+	d->fields->addData_string(amiibo_series ? amiibo_series : _RP("Unknown"));
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
 	const rp_char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
-		d_ptr->fields->addData_string(amiibo_name);
+		d->fields->addData_string(amiibo_name);
 		if (wave_no != 0) {
-			d_ptr->fields->addData_string_numeric(wave_no);
+			d->fields->addData_string_numeric(wave_no);
 		} else {
-			d_ptr->fields->addData_invalid();
+			d->fields->addData_invalid();
 		}
 		if (release_no != 0) {
-			d_ptr->fields->addData_string_numeric(release_no);
+			d->fields->addData_string_numeric(release_no);
 		} else {
-			d_ptr->fields->addData_invalid();
+			d->fields->addData_invalid();
 		}
 	} else {
 		// Unknown name.
-		d_ptr->fields->addData_string(_RP("Unknown"));
-		d_ptr->fields->addData_invalid();
-		d_ptr->fields->addData_invalid();
+		d->fields->addData_string(_RP("Unknown"));
+		d->fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Credits.
-	d_ptr->fields->addData_string(
+	d->fields->addData_string(
 		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\n the Unofficial amiibo Database."));
 
 	// Finished reading the field data.
-	return (int)d_ptr->fields->count();
+	return (int)d->fields->count();
 }
 
 /**
@@ -499,15 +501,17 @@ int Amiibo::loadURLs(ImageType imageType)
 		return -ERANGE;
 	}
 
+	AmiiboPrivate *const d = static_cast<AmiiboPrivate*>(d_ptr);
+
 	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d_ptr->extURLs[idx];
+	std::vector<ExtURL> &extURLs = d->extURLs[idx];
 	if (!extURLs.empty()) {
 		// URLs *have* been loaded...
 		return 0;
-	} else if (!d_ptr->file || !d_ptr->file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// Invalid file.
 		return -EIO;
 	}

@@ -47,17 +47,16 @@ using std::vector;
 
 namespace LibRomData {
 
-class NintendoDSPrivate
+class NintendoDSPrivate : public RomDataPrivate
 {
 	public:
-		explicit NintendoDSPrivate(NintendoDS *q);
-		~NintendoDSPrivate();
+		NintendoDSPrivate(NintendoDS *q, IRpFile *file);
+		virtual ~NintendoDSPrivate();
 
 	private:
+		typedef RomDataPrivate super;
 		NintendoDSPrivate(const NintendoDSPrivate &other);
 		NintendoDSPrivate &operator=(const NintendoDSPrivate &other);
-	private:
-		NintendoDS *const q;
 
 	public:
 		/** RomFields **/
@@ -181,8 +180,8 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
 };
 
-NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q)
-	: q(q)
+NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
+	: super(q, file, nds_fields, ARRAY_SIZE(nds_fields))
 	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
@@ -210,7 +209,7 @@ NintendoDSPrivate::~NintendoDSPrivate()
  */
 int NintendoDSPrivate::loadIconTitleData(void)
 {
-	assert(q->d_ptr->file != nullptr);
+	assert(this->file != nullptr);
 
 	if (nds_icon_title_loaded) {
 		// Icon/title data is already loaded.
@@ -221,8 +220,8 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
 
 	// Read the icon/title data.
-	q->d_ptr->file->seek(icon_offset);
-	size_t size = q->d_ptr->file->read(&nds_icon_title, sizeof(nds_icon_title));
+	this->file->seek(icon_offset);
+	size_t size = this->file->read(&nds_icon_title, sizeof(nds_icon_title));
 
 	// Make sure we have the correct size based on the version.
 	if (size < sizeof(nds_icon_title.version)) {
@@ -262,7 +261,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
  */
 rp_image *NintendoDSPrivate::loadIcon(void)
 {
-	if (!q->d_ptr->file || !q->d_ptr->isValid) {
+	if (!this->file || !this->isValid) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -480,17 +479,17 @@ int NintendoDSPrivate::getTitleIndex(void) const
  * @param file Open ROM image.
  */
 NintendoDS::NintendoDS(IRpFile *file)
-	: super(file, NintendoDSPrivate::nds_fields, ARRAY_SIZE(NintendoDSPrivate::nds_fields))
-	, d(new NintendoDSPrivate(this))
+	: super(new NintendoDSPrivate(this, file))
 {
-	if (!d_ptr->file) {
+	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the ROM header.
-	d_ptr->file->rewind();
-	size_t size = d_ptr->file->read(&d->romHeader, sizeof(d->romHeader));
+	d->file->rewind();
+	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
 		return;
 
@@ -501,12 +500,7 @@ NintendoDS::NintendoDS(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
-	d_ptr->isValid = (isRomSupported_static(&info) >= 0);
-}
-
-NintendoDS::~NintendoDS()
-{
-	delete d;
+	d->isValid = (isRomSupported_static(&info) >= 0);
 }
 
 /**
@@ -565,7 +559,8 @@ int NintendoDS::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *NintendoDS::systemName(uint32_t type) const
 {
-	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
+	const NintendoDSPrivate *const d = static_cast<const NintendoDSPrivate*>(d_ptr);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// NDS/DSi are mostly the same worldwide, except for China.
@@ -676,13 +671,14 @@ uint32_t NintendoDS::supportedImageTypes(void) const
  */
 int NintendoDS::loadFieldData(void)
 {
-	if (d_ptr->fields->isDataLoaded()) {
+	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -691,28 +687,28 @@ int NintendoDS::loadFieldData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
-	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Full game title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
-		d_ptr->fields->addData_string(
+		d->fields->addData_string(
 			utf16le_to_rp_string(d->nds_icon_title.title[lang], sizeof(d->nds_icon_title.title[lang])));
 	} else {
 		// Full game title is not available.
-		d_ptr->fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Game ID and publisher.
-	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d_ptr->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// ROM version.
-	d_ptr->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
+	d->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
@@ -722,7 +718,7 @@ int NintendoDS::loadFieldData(void)
 		// 0x01 is invalid. Assume DS.
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
-	d_ptr->fields->addData_bitfield(hw_type);
+	d->fields->addData_bitfield(hw_type);
 
 	// TODO: Combine DS Region and DSi Region into one bitfield?
 
@@ -739,14 +735,14 @@ int NintendoDS::loadFieldData(void)
 		// Note that the Sonic Colors demo has 0x02 here.
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
 	}
-	d_ptr->fields->addData_bitfield(nds_region);
+	d->fields->addData_bitfield(nds_region);
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
 
 		// DSi Region.
 		// Maps directly to the header field.
-		d_ptr->fields->addData_bitfield(romHeader->dsi_region);
+		d->fields->addData_bitfield(romHeader->dsi_region);
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
@@ -774,23 +770,23 @@ int NintendoDS::loadFieldData(void)
 		}
 
 		if (filetype) {
-			d_ptr->fields->addData_string(filetype);
+			d->fields->addData_string(filetype);
 		} else {
 			// Invalid file type.
 			char buf[24];
 			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi_filetype);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
-			d_ptr->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 		}
 	} else {
 		// Hide the DSi-specific fields.
-		d_ptr->fields->addData_invalid();
-		d_ptr->fields->addData_invalid();
+		d->fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Finished reading the field data.
-	return (int)d_ptr->fields->count();
+	return (int)d->fields->count();
 }
 
 /**
@@ -806,13 +802,15 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 		// ImageType is out of range.
 		return -ERANGE;
 	}
-	if (d_ptr->images[imageType]) {
+
+	NintendoDSPrivate *const d = static_cast<NintendoDSPrivate*>(d_ptr);
+	if (d->images[imageType]) {
 		// Icon *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -824,15 +822,15 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	}
 
 	// Use nearest-neighbor scaling when resizing.
-	d_ptr->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	d_ptr->images[imageType] = d->loadIcon();
+	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
+	d->images[imageType] = d->loadIcon();
 	if (d->iconAnimData && d->iconAnimData->count > 1) {
 		// Animated icon.
-		d_ptr->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
+		d->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (d_ptr->images[imageType] != nullptr ? 0 : -EIO);
+	return (d->images[imageType] != nullptr ? 0 : -EIO);
 }
 
 /**
@@ -845,9 +843,10 @@ int NintendoDS::loadInternalImage(ImageType imageType)
  */
 const IconAnimData *NintendoDS::iconAnimData(void) const
 {
+	const NintendoDSPrivate *const d = static_cast<const NintendoDSPrivate*>(d_ptr);
 	if (!d->iconAnimData) {
 		// Load the icon.
-		if (!d->loadIcon()) {
+		if (!const_cast<NintendoDSPrivate*>(d)->loadIcon()) {
 			// Error loading the icon.
 			return nullptr;
 		}

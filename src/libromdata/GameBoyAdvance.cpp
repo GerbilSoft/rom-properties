@@ -41,12 +41,13 @@ using std::vector;
 
 namespace LibRomData {
 
-class GameBoyAdvancePrivate
+class GameBoyAdvancePrivate : public RomDataPrivate
 {
 	public:
-		GameBoyAdvancePrivate() { }
+		GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file);
 
 	private:
+		typedef RomDataPrivate super;
 		GameBoyAdvancePrivate(const GameBoyAdvancePrivate &other);
 		GameBoyAdvancePrivate &operator=(const GameBoyAdvancePrivate &other);
 
@@ -80,6 +81,10 @@ const struct RomFields::Desc GameBoyAdvancePrivate::gba_fields[] = {
 	{_RP("Entry Point"), RomFields::RFT_STRING, {&gba_string_monospace}},
 };
 
+GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
+	: super(q, file, gba_fields, ARRAY_SIZE(gba_fields))
+{ }
+
 /** GameBoyAdvance **/
 
 /**
@@ -96,17 +101,17 @@ const struct RomFields::Desc GameBoyAdvancePrivate::gba_fields[] = {
  * @param file Open ROM image.
  */
 GameBoyAdvance::GameBoyAdvance(IRpFile *file)
-	: super(file, GameBoyAdvancePrivate::gba_fields, ARRAY_SIZE(GameBoyAdvancePrivate::gba_fields))
-	, d(new GameBoyAdvancePrivate())
+	: super(new GameBoyAdvancePrivate(this, file))
 {
-	if (!d_ptr->file) {
+	GameBoyAdvancePrivate *const d = static_cast<GameBoyAdvancePrivate*>(d_ptr);
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the ROM header.
-	d_ptr->file->rewind();
-	size_t size = d_ptr->file->read(&d->romHeader, sizeof(d->romHeader));
+	d->file->rewind();
+	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
 		return;
 
@@ -117,12 +122,7 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for GBA.
 	info.szFile = 0;	// Not needed for GBA.
-	d_ptr->isValid = (isRomSupported_static(&info) >= 0);
-}
-
-GameBoyAdvance::~GameBoyAdvance()
-{
-	delete d;
+	d->isValid = (isRomSupported_static(&info) >= 0);
 }
 
 /**
@@ -178,7 +178,8 @@ int GameBoyAdvance::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *GameBoyAdvance::systemName(uint32_t type) const
 {
-	if (!d_ptr->isValid || !isSystemNameTypeValid(type))
+	const GameBoyAdvancePrivate *const d = static_cast<const GameBoyAdvancePrivate*>(d_ptr);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// GBA has the same name worldwide, so we can
@@ -243,13 +244,14 @@ vector<const rp_char*> GameBoyAdvance::supportedFileExtensions(void) const
  */
 int GameBoyAdvance::loadFieldData(void)
 {
-	if (d_ptr->fields->isDataLoaded()) {
+	GameBoyAdvancePrivate *const d = static_cast<GameBoyAdvancePrivate*>(d_ptr);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!d_ptr->file) {
+	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d_ptr->isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -258,30 +260,30 @@ int GameBoyAdvance::loadFieldData(void)
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
-	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
-	d_ptr->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d_ptr->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
 	// ROM version.
-	d_ptr->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
+	d->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Entry point.
 	if (romHeader->entry_point_bytes[3] == 0xEA) {
 		// Unconditional branch instruction.
 		const uint32_t entry_point = (le32_to_cpu(romHeader->entry_point) & 0xFFFFFF) << 2;
-		d_ptr->fields->addData_string_numeric(entry_point, RomFields::FB_HEX, 8);
+		d->fields->addData_string_numeric(entry_point, RomFields::FB_HEX, 8);
 	} else {
 		// Non-standard entry point instruction.
-		d_ptr->fields->addData_string_hexdump(romHeader->entry_point_bytes, 4);
+		d->fields->addData_string_hexdump(romHeader->entry_point_bytes, 4);
 	}
 
 	// Finished reading the field data.
-	return (int)d_ptr->fields->count();
+	return (int)d->fields->count();
 }
 
 }

@@ -46,16 +46,12 @@ class MegaDrive : public RomData
 		 * @param file Open ROM file.
 		 */
 		explicit MegaDrive(IRpFile *file);
-		virtual ~MegaDrive();
 
 	private:
 		typedef RomData super;
+		friend class MegaDrivePrivate;
 		MegaDrive(const MegaDrive &other);
 		MegaDrive &operator=(const MegaDrive &other);
-
-	private:
-		friend class MegaDrivePrivate;
-		MegaDrivePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

@@ -47,16 +47,12 @@ class DMG : public RomData
 		 * @param file Open ROM file.
 		 */
 		explicit DMG(IRpFile *file);
-		virtual ~DMG();
 
 	private:
 		typedef RomData super;
+		friend class DMGPrivate;
 		DMG(const DMG &other);
 		DMG &operator=(const DMG &other);
-
-	private:
-		friend class DMGPrivate;
-		DMGPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

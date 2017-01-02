@@ -67,16 +67,11 @@ class DreamcastSave : public RomData
 		 */
 		DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file);
 
-		virtual ~DreamcastSave();
-
 	private:
 		typedef RomData super;
+		friend class DreamcastSavePrivate;
 		DreamcastSave(const DreamcastSave &other);
 		DreamcastSave &operator=(const DreamcastSave &other);
-
-	private:
-		friend class DreamcastSavePrivate;
-		DreamcastSavePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

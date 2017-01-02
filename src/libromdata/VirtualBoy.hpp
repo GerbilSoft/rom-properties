@@ -36,7 +36,7 @@ class VirtualBoy : public RomData
 {
 	public:
 		/**
-		 * Read a Virtual Boy ROM.
+		 * Read a Virtual Boy ROM image.
 		 *
 		 * A ROM file must be opened by the caller. The file handle
 		 * will be dup()'d and must be kept open in order to load
@@ -47,16 +47,12 @@ class VirtualBoy : public RomData
 		 * @param file Open ROM file.
 		 */
 		explicit VirtualBoy(IRpFile *file);
-		virtual ~VirtualBoy();
 
 	private:
 		typedef RomData super;
+		friend class VirtualBoyPrivate;
 		VirtualBoy(const VirtualBoy &other);
 		VirtualBoy &operator=(const VirtualBoy &other);
-	
-	private:
-		friend class VirtualBoyPrivate;
-		VirtualBoyPrivate *const d;
 		
 	public:
 		/** ROM detection functions. **/

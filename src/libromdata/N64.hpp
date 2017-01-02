@@ -48,16 +48,12 @@ class N64 : public RomData
 		 * @param file Open ROM image.
 		 */
 		explicit N64(IRpFile *file);
-		virtual ~N64();
 
 	private:
 		typedef RomData super;
+		friend class N64Private;
 		N64(const N64 &other);
 		N64 &operator=(const N64 &other);
-
-	private:
-		friend class N64Private;
-		N64Private *const d;
 
 	public:
 		/** ROM detection functions. **/

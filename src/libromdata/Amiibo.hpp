@@ -48,16 +48,12 @@ class Amiibo : public RomData
 		 * @param file Open NFC dump.
 		 */
 		explicit Amiibo(IRpFile *file);
-		virtual ~Amiibo();
 
 	private:
 		typedef RomData super;
+		friend class AmiiboPrivate;
 		Amiibo(const Amiibo &other);
 		Amiibo &operator=(const Amiibo &other);
-
-	private:
-		friend class AmiiboPrivate;
-		AmiiboPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/
