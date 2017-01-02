@@ -56,6 +56,8 @@ ENDIF(BUILD_XFCE)
 #######################
 
 IF(BUILD_XFCE)
+	# FIXME: ${THUNARX2_EXTENSIONS_DIR} always uses the system prefix.
+	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
 	INSTALL(TARGETS rom-properties-xfce
 		LIBRARY DESTINATION "${THUNARX2_EXTENSIONS_DIR}"
 		COMPONENT "plugin"
