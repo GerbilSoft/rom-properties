@@ -4,6 +4,7 @@
 # - THUNARX2_INCLUDE_DIRS: ThunarX include directories.
 # - THUNARX2_LIBRARIES: ThunarX libraries.
 # - THUNARX2_DEFINITIONS: Compiler switches required for using ThunarX.
+# - THUNARX2_EXTENSIONS_DIR: Extensions directory. (for installation)
 #
 # In addition, a target Xfce::thunarx-2 will be created with all of
 # these definitions.
@@ -39,5 +40,11 @@ IF(PkgConfig_FOUND)
 			IMPORTED_LOCATION "${THUNARX2_LIBRARY}")
 		SET_TARGET_PROPERTIES(Xfce::thunarx-2 PROPERTIES
 			COMPILE_DEFINITIONS "${THUNARX2_DEFINITIONS}")
+
+		# Extensions directory.
+		PKG_GET_VARIABLE(THUNARX2_EXTENSIONS_DIR thunarx-2 extensionsdir)
+		IF(NOT THUNARX2_EXTENSIONS_DIR)
+			MESSAGE(FATAL_ERROR "THUNARX2_EXTENSIONS_DIR isn't set.")
+		ENDIF(NOT THUNARX2_EXTENSIONS_DIR)
 	ENDIF(THUNARX2_FOUND)
 ENDIF(PkgConfig_FOUND)

@@ -48,3 +48,26 @@ IF(BUILD_XFCE)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce Xfce::thunarx-2 ${GTK2_LIBRARIES})
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS} -DG_LOG_DOMAIN=\"rom-properties-xfce\")
 ENDIF(BUILD_XFCE)
+
+#######################
+# Install the plugin. #
+#######################
+
+IF(BUILD_XFCE)
+	INSTALL(TARGETS rom-properties-xfce
+		LIBRARY DESTINATION "${THUNARX2_EXTENSIONS_DIR}"
+		COMPONENT "plugin"
+		)
+
+	# Check if a split debug file should be installed.
+	IF(INSTALL_DEBUG)
+		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-xfce PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${THUNARX2_EXTENSIONS_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+	ENDIF(INSTALL_DEBUG)
+ENDIF(BUILD_XFCE)
