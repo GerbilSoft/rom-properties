@@ -473,6 +473,9 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 		iconAnimData->count++;
 	}
 
+	// Free the icon data.
+	free(icondata);
+
 	// NOTE: We're not deleting iconAnimData even if we only have
 	// a single icon because iconAnimData() will call loadIcon()
 	// if iconAnimData is nullptr.
