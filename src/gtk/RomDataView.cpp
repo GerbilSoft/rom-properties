@@ -78,12 +78,20 @@ static gboolean	anim_timer_func (RomDataView *page);
 
 // XFCE property page class.
 struct _RomDataViewClass {
+#if GTK_CHECK_VERSION(3,0,0)
+	GtkBoxClass __parent__;
+#else
 	GtkVBoxClass __parent__;
+#endif
 };
 
 // XFCE property page.
 struct _RomDataView {
+#if GTK_CHECK_VERSION(3,0,0)
+	GtkBox __parent__;
+#else
 	GtkVBox __parent__;
+#endif
 
 	/* Widgets */
 	GtkWidget	*table;
@@ -119,9 +127,15 @@ struct _RomDataView {
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-//G_DEFINE_TYPE(RomDataView, rom_data_view, THUNARX_TYPE_PROPERTY_PAGE);
+#if GTK_CHECK_VERSION(3,0,0)
+//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_BOX);
+G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
+	GTK_TYPE_BOX, static_cast<GTypeFlags>(0), {});
+#else
+//G_DEFINE_TYPE(RomDataView, rom_data_view, GTK_TYPE_VBOX);
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 	GTK_TYPE_VBOX, static_cast<GTypeFlags>(0), {});
+#endif
 
 static inline void make_label_bold(GtkLabel *label)
 {
@@ -167,6 +181,14 @@ rom_data_view_init(RomDataView *page)
 
 	// Base class is GtkVBox.
 
+#if GTK_CHECK_VERSION(3,0,0)
+	// Header row.
+	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+	// TODO: Needs testing.
+	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
+	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow, FALSE, FALSE, 0);
+	gtk_widget_show(page->hboxHeaderRow);
+#else
 	// Center-align the header row.
 	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 	gtk_box_pack_start(GTK_BOX(page), centerAlign, FALSE, FALSE, 0);
@@ -176,11 +198,11 @@ rom_data_view_init(RomDataView *page)
 	page->hboxHeaderRow = gtk_hbox_new(FALSE, 8);
 	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow);
 	gtk_widget_show(page->hboxHeaderRow);
+#endif
 
 	// System information.
 	page->lblSysInfo = gtk_label_new(nullptr);
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
-	gtk_misc_set_alignment(GTK_MISC(page->lblSysInfo), 0.5f, 0.0f);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo, FALSE, FALSE, 0);
 	gtk_widget_show(page->lblSysInfo);
 
