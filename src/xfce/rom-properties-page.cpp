@@ -599,7 +599,6 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 				gtk_widget_set_size_request(scrollArea, -1, 128);
 
 				// Resize the columns to fit the contents.
-				// TODO: Save list stores to be deleted later?
 				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
 				gtk_table_attach(GTK_TABLE(page->table), scrollArea, 1, 2, i, i+1,
 					GTK_FILL, GTK_FILL, 0, 0);
