@@ -22,17 +22,15 @@
 #include "rom-properties-page.hpp"
 #include "GdkImageConv.hpp"
 
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
+#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/RomDataFactory.hpp"
-using LibRomData::rp_string;
-using LibRomData::rp_image;
-using LibRomData::RpFile;
-using LibRomData::RomData;
-using LibRomData::RomDataFactory;
-using LibRomData::RomFields;
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/img/IconAnimHelper.hpp"
+using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -102,6 +100,12 @@ struct _RomPropertiesPage {
 
 	// ROM data.
 	RomData		*romData;
+
+	// Animated icon data.
+	const IconAnimData *iconAnimData;
+	// TODO: GdkPixmap or cairo_surface_t?
+	GdkPixbuf *iconFrames[IconAnimData::MAX_FRAMES];
+	IconAnimHelper iconAnimHelper;
 };
 
 // FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -171,6 +175,10 @@ rom_properties_page_init(RomPropertiesPage *page)
 	page->imgBanner = gtk_image_new();
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgBanner, FALSE, FALSE, 0);
 
+	// Icon.
+	page->imgIcon = gtk_image_new();
+	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->imgIcon, FALSE, FALSE, 0);
+
 	// Make lblSysInfo bold.
 	make_label_bold(GTK_LABEL(page->lblSysInfo));
 
@@ -187,11 +195,8 @@ rom_properties_page_finalize(GObject *object)
 		g_source_remove(page->changed_idle);
 	}
 
-	// Delete the RomData object.
-	delete page->romData;
-	page->romData = nullptr;
-
-	/* Free file reference */
+	// Free the file reference.
+	// This also deletes romData and iconFrames.
 	rom_properties_page_set_file(page, nullptr);
 
 	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
@@ -286,9 +291,21 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 
 		// TODO: Delete data widgets.
 
+		// NULL out iconAnimData.
+		// (This is owned by the RomData object.)
+		page->iconAnimData = nullptr;
+
 		// Delete the existing RomData object.
 		delete page->romData;
 		page->romData = nullptr;
+
+		// Delete the icon frames.
+		for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
+			if (page->iconFrames[i]) {
+				g_object_unref(page->iconFrames[i]);
+				page->iconFrames[i] = nullptr;
+			}
+		}
 	}
 
 	/* Assign the value */
@@ -367,6 +384,51 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgBanner), pixbuf);
 				g_object_unref(pixbuf);
 				gtk_widget_show(page->imgBanner);
+			}
+		}
+	}
+
+	// Icon.
+	gtk_widget_hide(page->imgIcon);
+	if (imgbf & RomData::IMGBF_INT_ICON) {
+		// Get the icon.
+		const rp_image *icon = page->romData->image(RomData::IMG_INT_ICON);
+		if (icon && icon->isValid()) {
+			GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
+			if (pixbuf) {
+				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), pixbuf);
+				page->iconFrames[0] = pixbuf;
+				gtk_widget_show(page->imgIcon);
+			}
+
+			// Get the animated icon data.
+			// TODO: Skip if the first frame is nullptr?
+			page->iconAnimData = page->romData->iconAnimData();
+			if (page->iconAnimData) {
+				// Convert the icons to QPixmaps.
+				for (int i = 1; i < page->iconAnimData->count; i++) {
+					if (page->iconAnimData->frames[i] && page->iconAnimData->frames[i]->isValid()) {
+						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
+						if (pixbuf) {
+							page->iconFrames[i] = pixbuf;
+						}
+					}
+				}
+
+				// Set up the IconAnimHelper.
+				page->iconAnimHelper.setIconAnimData(page->iconAnimData);
+				if (page->iconAnimHelper.isAnimated()) {
+					// Create the animation timer.
+					// TODO: Port to GLib.
+#if 0
+					if (!ui.tmrIconAnim) {
+						ui.tmrIconAnim = new QTimer(q);
+						ui.tmrIconAnim->setSingleShot(true);
+						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
+								q, SLOT(tmrIconAnim_timeout()));
+					}
+#endif
+				}
 			}
 		}
 	}
