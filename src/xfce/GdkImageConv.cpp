@@ -49,7 +49,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
-			// Copy the image data directly.
+			// Copy the image data.
 			uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
 			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
 			for (int y = 0; y < height; y++, dest += strideDiff) {
@@ -64,8 +64,41 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 			break;
 		}
 
+		case rp_image::FORMAT_CI8: {
+			const uint32_t *src_pal = img->palette();
+			const int src_pal_len = img->palette_len();
+			assert(src_pal != nullptr);
+			assert(src_pal_len > 0);
+			if (!src_pal || src_pal_len <= 0)
+				break;
+
+			// Get the palette.
+			uint32_t palette[256];
+			for (int i = 0; i < src_pal_len; i++, src_pal++) {
+				// Swap the R and B channels in the palette.
+				palette[i] =  (*src_pal & 0xFF00FF00) |
+					     ((*src_pal & 0x00FF0000) >> 16) |
+					     ((*src_pal & 0x000000FF) << 16);
+			}
+			if (src_pal_len < 256) {
+				memset(&palette[src_pal_len], 0, (256 - src_pal_len) * sizeof(uint32_t));
+			}
+
+			// Copy the image data.
+			uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
+			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
+			for (int y = 0; y < height; y++, dest += strideDiff) {
+				const uint8_t *src = static_cast<const uint8_t*>(img->scanLine(y));
+				for (int x = width; x > 0; x--, dest++, src++) {
+					*dest = palette[*src];
+				}
+			}
+			break;
+		}
+
 		default:
-			// TODO
+			// Unsupported image format.
+			assert(!"Unsupported rp_image::Format.");
 			g_object_unref(pixbuf);
 			pixbuf = nullptr;
 			break;
