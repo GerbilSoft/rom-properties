@@ -172,10 +172,14 @@ rom_properties_page_init(RomPropertiesPage *page)
 	gtk_container_add(GTK_CONTAINER(page), page->vboxMain);
 	gtk_widget_show(page->vboxMain);
 
+	// Center-align the header row.
+	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
+	gtk_box_pack_start(GTK_BOX(page->vboxMain), centerAlign, FALSE, FALSE, 0);
+	gtk_widget_show(centerAlign);
+
 	// Header row.
-	// TODO: Update with RomData.
 	page->hboxHeaderRow = gtk_hbox_new(FALSE, 8);
-	gtk_box_pack_start(GTK_BOX(page->vboxMain), page->hboxHeaderRow, FALSE, FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow);
 
 	// FIXME: Center the system information.
 
