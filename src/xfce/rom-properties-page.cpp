@@ -655,9 +655,8 @@ rom_properties_page_update_display(RomPropertiesPage *page)
 			}
 
 			default:
-				// TODO: Other types.
 				// Unsupported right now.
-				//assert(!"Unsupported RomFields::RomFieldsType.");
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				gtk_widget_destroy(lblDesc);
 				break;
 		}
