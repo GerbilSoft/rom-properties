@@ -71,6 +71,11 @@ static gboolean	rom_properties_page_load_rom_data	(gpointer		 data);
 static void	checkbox_no_toggle_signal_handler	(GtkToggleButton	*togglebutton,
 							 gpointer		 user_data);
 
+/** Icon animation timer. **/
+static void	start_anim_timer(RomPropertiesPage *page);
+static void	stop_anim_timer (RomPropertiesPage *page);
+static gboolean	anim_timer_func (RomPropertiesPage *page);
+
 // XFCE property page class.
 struct _RomPropertiesPageClass {
 	ThunarxPropertyPageClass __parent__;
@@ -104,8 +109,13 @@ struct _RomPropertiesPage {
 	// Animated icon data.
 	const IconAnimData *iconAnimData;
 	// TODO: GdkPixmap or cairo_surface_t?
-	GdkPixbuf *iconFrames[IconAnimData::MAX_FRAMES];
-	IconAnimHelper iconAnimHelper;
+	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
+	IconAnimHelper	iconAnimHelper;
+	int		last_frame_number;	// Last frame number.
+
+	// Icon animation timer.
+	guint		tmrIconAnim;
+	int		last_delay;		// Last delay value.
 };
 
 // FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -150,6 +160,11 @@ rom_properties_page_init(RomPropertiesPage *page)
 	page->romData = nullptr;
 	page->table = nullptr;
 	page->lblCredits = nullptr;
+	page->last_frame_number = 0;
+
+	// Animation timer.
+	page->tmrIconAnim = 0;
+	page->last_delay = 0;
 
 	// NOTE: GTK+3 adds halign/valign properties.
 	// For GTK+2, we have to use a VBox.
@@ -193,6 +208,12 @@ rom_properties_page_finalize(GObject *object)
 	/* Unregister the changed_idle */
 	if (G_UNLIKELY(page->changed_idle != 0)) {
 		g_source_remove(page->changed_idle);
+	}
+
+	// Delete the timer.
+	if (page->tmrIconAnim > 0) {
+		// TODO: Make sure there's no race conditions...
+		g_source_remove(page->tmrIconAnim);
 	}
 
 	// Free the file reference.
@@ -407,8 +428,9 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 			if (page->iconAnimData) {
 				// Convert the icons to QPixmaps.
 				for (int i = 1; i < page->iconAnimData->count; i++) {
-					if (page->iconAnimData->frames[i] && page->iconAnimData->frames[i]->isValid()) {
-						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
+					const rp_image *const frame = page->iconAnimData->frames[i];
+					if (frame && frame->isValid()) {
+						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(frame);
 						if (pixbuf) {
 							page->iconFrames[i] = pixbuf;
 						}
@@ -417,18 +439,7 @@ rom_properties_page_init_header_row(RomPropertiesPage *page)
 
 				// Set up the IconAnimHelper.
 				page->iconAnimHelper.setIconAnimData(page->iconAnimData);
-				if (page->iconAnimHelper.isAnimated()) {
-					// Create the animation timer.
-					// TODO: Port to GLib.
-#if 0
-					if (!ui.tmrIconAnim) {
-						ui.tmrIconAnim = new QTimer(q);
-						ui.tmrIconAnim->setSingleShot(true);
-						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
-								q, SLOT(tmrIconAnim_timeout()));
-					}
-#endif
-				}
+				// Icon animation timer is set in startAnimTimer().
 			}
 		}
 	}
@@ -794,9 +805,12 @@ rom_properties_page_load_rom_data(gpointer data)
 	}
 	g_free(filename);
 
-	/* Reset timeout */
-	page->changed_idle = 0;
+	// Start the animation timer.
+	// TODO: Start/stop on window show/hide?
+	start_anim_timer(page);
 
+	// Clear the timeout.
+	page->changed_idle = 0;
 	return FALSE;
 }
 
@@ -806,10 +820,80 @@ static void
 checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 				  gpointer		 user_data)
 {
-	printf("quack\n");
 	((void)user_data);
 	if (gtk_toggle_button_get_active(togglebutton)) {
 		// Uncheck this box.
 		gtk_toggle_button_set_active(togglebutton, FALSE);
 	}
+}
+
+/** Icon animation timer. **/
+
+/**
+ * Start the animation timer.
+ */
+static void start_anim_timer(RomPropertiesPage *page)
+{
+	if (!page->iconAnimData || !page->iconAnimHelper.isAnimated()) {
+		// Not an animated icon.
+		return;
+	}
+
+	// Get the current frame information.
+	page->last_frame_number = page->iconAnimHelper.frameNumber();
+	const int delay = page->iconAnimHelper.frameDelay();
+	if (delay <= 0) {
+		// Invalid delay value.
+		return;
+	}
+
+	// Stop the animation timer.
+	stop_anim_timer(page);
+
+	// Set a timer for the current frame.
+	page->last_delay = delay;
+	page->tmrIconAnim = g_timeout_add(delay,
+		reinterpret_cast<GSourceFunc>(anim_timer_func), page);
+}
+
+/**
+ * Stop the animation timer.
+ */
+static void stop_anim_timer(RomPropertiesPage *page)
+{
+	if (page->tmrIconAnim > 0) {
+		g_source_remove(page->tmrIconAnim);
+		page->tmrIconAnim = 0;
+		page->last_delay = 0;
+	}
+}
+
+/**
+ * Animated icon timer.
+ */
+static gboolean anim_timer_func(RomPropertiesPage *page)
+{
+	// Next frame.
+	int delay = 0;
+	int frame = page->iconAnimHelper.nextFrame(&delay);
+	if (delay <= 0 || frame < 0) {
+		// Invalid frame...
+		return FALSE;
+	}
+
+	if (frame != page->last_frame_number) {
+		// New frame number.
+		// Update the icon.
+		gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), page->iconFrames[frame]);
+		page->last_frame_number = frame;
+	}
+
+	// Set a new timer and unset the current one.
+	if (page->last_delay != delay) {
+		page->last_delay = delay;
+		page->tmrIconAnim = g_timeout_add(delay,
+			reinterpret_cast<GSourceFunc>(anim_timer_func), page);
+		return FALSE;
+	}
+	return TRUE;
 }
