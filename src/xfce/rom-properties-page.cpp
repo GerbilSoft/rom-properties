@@ -181,10 +181,8 @@ rom_properties_page_init(RomPropertiesPage *page)
 	page->hboxHeaderRow = gtk_hbox_new(FALSE, 8);
 	gtk_container_add(GTK_CONTAINER(centerAlign), page->hboxHeaderRow);
 
-	// FIXME: Center the system information.
-
 	// System information.
-	page->lblSysInfo = gtk_label_new("System information\nwill go here.");
+	page->lblSysInfo = gtk_label_new(nullptr);
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
 	gtk_misc_set_alignment(GTK_MISC(page->lblSysInfo), 0.5f, 0.0f);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo, FALSE, FALSE, 0);
@@ -314,8 +312,6 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 			reinterpret_cast<gpointer>(rom_properties_page_file_changed), page);
 		g_object_unref(G_OBJECT(page->file));
 
-		// TODO: Delete data widgets.
-
 		// NULL out iconAnimData.
 		// (This is owned by the RomData object.)
 		page->iconAnimData = nullptr;
@@ -337,13 +333,19 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 	page->file = file;
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(file != nullptr))
-	{
+	if (G_LIKELY(file != nullptr)) {
 		/* Take a reference on the info file */
 		g_object_ref(G_OBJECT(page->file));
 
 		rom_properties_page_file_changed(file, page);
 		g_signal_connect(G_OBJECT(file), "changed", G_CALLBACK(rom_properties_page_file_changed), page);
+	} else {
+		// Hide the header row and delete the table.
+		gtk_widget_hide(page->hboxHeaderRow);
+		gtk_widget_destroy(page->table);
+		page->table = nullptr;
+		gtk_widget_destroy(page->lblCredits);
+		page->lblCredits = nullptr;
 	}
 }
 
