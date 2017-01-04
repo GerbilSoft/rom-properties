@@ -30,12 +30,10 @@ SET(rom-properties-gnome_SRCS
 	${rom-properties-gnome_SRCS}
 	rom-properties-plugin.c
 	rom-properties-provider.cpp
-	rom-properties-page.cpp
 	)
 SET(rom-properties-gnome_H
 	${rom-properties-gnome_H}
 	rom-properties-provider.hpp
-	rom-properties-page.hpp
 	)
 
 IF(BUILD_GNOME)

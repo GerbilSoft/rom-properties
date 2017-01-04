@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "rom-properties-provider.hpp"
-#include "rom-properties-page.hpp"
 
 // GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
 // This doesn't work when we use symbol visibility settings.
@@ -49,7 +48,6 @@ nautilus_module_initialize(GTypeModule *module)
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
 	rom_properties_provider_register_type_ext(module);
-	rom_properties_page_register_type_ext(module);
 
 	/* Setup the plugin provider type list */
 	type_list[0] = TYPE_ROM_PROPERTIES_PROVIDER;

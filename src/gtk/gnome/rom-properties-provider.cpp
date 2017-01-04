@@ -29,7 +29,6 @@
  */
 
 #include "rom-properties-provider.hpp"
-#include "rom-properties-page.hpp"
 
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/RomData.hpp"
@@ -37,6 +36,8 @@
 using LibRomData::RpFile;
 using LibRomData::RomData;
 using LibRomData::RomDataFactory;
+
+#include "../RomDataView.hpp"
 
 static void   rom_properties_provider_page_provider_init	(NautilusPropertyPageProviderIface	*iface);
 static GList *rom_properties_provider_get_pages			(NautilusPropertyPageProvider		*provider,
@@ -105,22 +106,32 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 	info = NAUTILUS_FILE_INFO(file->data);
 
 	if (G_LIKELY(rom_properties_get_file_supported(info))) {
-		// Create the ROM Properties page.
-		// NOTE: Unlike the Xfce/Thunar version,
-		// RomPropertiesPage is NOT derived from
-		// NautilusPropertyPage.
-		RomPropertiesPage *page = static_cast<RomPropertiesPage*>(
-			g_object_new(rom_properties_page_get_type(), nullptr));
-		rom_properties_page_set_file(page, info);
+		// Get the filename.
+		gchar *uri = nautilus_file_info_get_uri(info);
+		gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
+		g_free(uri);
 
-		// Create the actual NautilusPropertyPage.
-		NautilusPropertyPage *real_page = nautilus_property_page_new(
+		// Create the RomDataView.
+		// NOTE: Unlike the Xfce/Thunar version, we don't
+		// need to subclass NautilusPropertyPage. Instead,
+		// we create a NautilusPropertyPage and add a
+		// RomDataView widget to it.
+		// TODO: GNOME uses left-aligned, non-bold description labels.
+		// TODO: Add some extra padding to the top...
+		GtkWidget *romDataView = static_cast<GtkWidget*>(
+			g_object_new(rom_data_view_get_type(), nullptr));
+		rom_data_view_set_filename(ROM_DATA_VIEW(romDataView), filename);
+		gtk_widget_show(romDataView);
+		g_free(filename);
+
+		// Create the NautilusPropertyPage.
+		NautilusPropertyPage *page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
 			gtk_label_new("ROM Properties"),
-			GTK_WIDGET(page));
+			romDataView);
 
 		/* Add the page to the pages provided by this plugin */
-		pages = g_list_prepend(pages, real_page);
+		pages = g_list_prepend(pages, page);
 	}
 
 	return pages;
