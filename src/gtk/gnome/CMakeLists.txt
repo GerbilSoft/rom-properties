@@ -2,24 +2,24 @@ PROJECT(rom-properties-gnome)
 
 # GNOME (Nautilus) frontend for rom-properties.
 
-# TODO: Minimum GTK+ 3.x version?
-FIND_PACKAGE(GLib2)
+# TODO: Minimum versions?
+FIND_PACKAGE(GLib2 2.16.0)
 FIND_PACKAGE(GdkPixbuf2)
-FIND_PACKAGE(GTK3)
-IF(GLIB2_FOUND AND GDKPIXBUF2_FOUND AND GTK3_FOUND)
+FIND_PACKAGE(GTK3 3.0.0)
+IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
-	# TODO: Make sure it's 3.x.
-	FIND_PACKAGE(LibNautilusExtension)
-	IF(NOT LIBNAUTILUSEXTENSION_FOUND)
+	# TODO: Minimum version, and ensure it's 3, not 4?
+	FIND_PACKAGE(LibNautilusExtension 3.0.0)
+	IF(NOT LibNautilusExtension_FOUND)
 		# Nautilus extension library was not found.
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-	ENDIF(NOT LIBNAUTILUSEXTENSION_FOUND)
-ELSE(GLIB2_FOUND AND GDKPIXBUF2_FOUND AND GTK3_FOUND)
+	ENDIF(NOT LibNautilusExtension_FOUND)
+ELSE(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLIB2_FOUND AND GDKPIXBUF2_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS "${rom-properties-gtk_SRCS}")
@@ -64,10 +64,10 @@ ENDIF(BUILD_GNOME)
 
 # TODO: Update for GNOME.
 IF(BUILD_GNOME)
-	# FIXME: ${LIBNAUTILUSEXTENSION_EXTENSION_DIR} always uses the system prefix.
+	# FIXME: ${LibNautilusExtension_EXTENSION_DIR} always uses the system prefix.
 	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
 	INSTALL(TARGETS rom-properties-gnome
-		LIBRARY DESTINATION "${LIBNAUTILUSEXTENSION_EXTENSION_DIR}"
+		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
@@ -77,7 +77,7 @@ IF(BUILD_GNOME)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-gnome PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${LIBNAUTILUSEXTENSION_EXTENSION_DIR}"
+				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
