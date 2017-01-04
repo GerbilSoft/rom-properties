@@ -101,7 +101,6 @@ int main(int argc,char **argv){
 		cerr << "\t displays info about s3.gen" << endl;
 		cerr << "* rpcli -x0 icon.bmp ~/pokeb2.nds" << endl;
 		cerr << "\t extracts icon from ~/pokeb2.nds" << endl;
-		DoFile("pokeblue.gb", 0, nullptr, true);
 	}
 	
 	assert(RomData::IMG_INT_MIN == 0);
