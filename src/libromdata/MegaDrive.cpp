@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "MegaDrive.hpp"
+#include "RomData_p.hpp"
+
 #include "MegaDrivePublishers.hpp"
 #include "MegaDriveRegions.hpp"
 #include "md_structs.h"
@@ -44,12 +46,13 @@ using std::vector;
 
 namespace LibRomData {
 
-class MegaDrivePrivate
+class MegaDrivePrivate : public RomDataPrivate
 {
 	public:
-		MegaDrivePrivate();
+		MegaDrivePrivate(MegaDrive *q, IRpFile *file);
 
 	private:
+		typedef RomDataPrivate super;
 		MegaDrivePrivate(const MegaDrivePrivate &other);
 		MegaDrivePrivate &operator=(const MegaDrivePrivate &other);
 
@@ -156,11 +159,6 @@ class MegaDrivePrivate
 
 /** MegaDrivePrivate **/
 
-MegaDrivePrivate::MegaDrivePrivate()
-	: romType(ROM_UNKNOWN)
-	, md_region(0)
-{ }
-
 // I/O support bitfield.
 const rp_char *const MegaDrivePrivate::md_io_bitfield_names[] = {
 	_RP("Joypad"), _RP("6-button"), _RP("SMS Joypad"),
@@ -206,6 +204,12 @@ const struct RomFields::Desc MegaDrivePrivate::md_fields[] = {
 	{_RP("Entry Point"), RomFields::RFT_STRING, {&md_string_monospace}},
 	{_RP("Initial SP"), RomFields::RFT_STRING, {&md_string_monospace}}
 };
+
+MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
+	: super(q, file, md_fields, ARRAY_SIZE(md_fields))
+	, romType(ROM_UNKNOWN)
+	, md_region(0)
+{ }
 
 /** Internal ROM data. **/
 
@@ -322,26 +326,22 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: super(file, MegaDrivePrivate::md_fields, ARRAY_SIZE(MegaDrivePrivate::md_fields))
-	, d(new MegaDrivePrivate())
+	: super(new MegaDrivePrivate(this, file))
 {
 	// TODO: Only validate that this is an MD ROM here.
 	// Load fields elsewhere.
-	if (!m_file) {
+	RP_D(MegaDrive);
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Seek to the beginning of the file.
-	m_file->rewind();
+	d->file->rewind();
 
 	// Read the ROM header. [0x400 bytes]
-	static_assert(sizeof(MD_RomHeader) == MD_RomHeader_SIZE,
-		"MD_RomHeader_SIZE is the wrong size. (Should be 256 bytes.)");
-	static_assert(sizeof(M68K_VectorTable) == M68K_VectorTable_SIZE,
-		"M68K_VectorTable is the wrong size. (Should be 256 bytes.)");
 	uint8_t header[0x400];
-	size_t size = m_file->read(header, sizeof(header));
+	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
 
@@ -349,7 +349,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for MD.
 	info.szFile = 0;	// Not needed for MD.
 	d->romType = isRomSupported_static(&info);
@@ -359,7 +359,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 		// TODO (remove before committing): Does gcc/msvc optimize this into a jump table?
 		switch (d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) {
 			case MegaDrivePrivate::ROM_FORMAT_CART_BIN:
-				m_fileType = FTYPE_ROM_IMAGE;
+				d->fileType = FTYPE_ROM_IMAGE;
 
 				// MD header is at 0x100.
 				// Vector table is at 0.
@@ -368,7 +368,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_CART_SMD: {
-				m_fileType = FTYPE_ROM_IMAGE;
+				d->fileType = FTYPE_ROM_IMAGE;
 
 				// Save the SMD header.
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
@@ -376,8 +376,8 @@ MegaDrive::MegaDrive(IRpFile *file)
 				// First bank needs to be deinterleaved.
 				uint8_t smd_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
 				uint8_t bin_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
-				m_file->seek(512);
-				size = m_file->read(smd_data, sizeof(smd_data));
+				d->file->seek(512);
+				size = d->file->read(smd_data, sizeof(smd_data));
 				if (size != sizeof(smd_data)) {
 					// Short read. ROM is invalid.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
@@ -395,7 +395,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 			}
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2048:
-				m_fileType = FTYPE_DISC_IMAGE;
+				d->fileType = FTYPE_DISC_IMAGE;
 
 				// MCD-specific header is at 0. [TODO]
 				// MD-style header is at 0x100.
@@ -404,7 +404,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				break;
 
 			case MegaDrivePrivate::ROM_FORMAT_DISC_2352:
-				m_fileType = FTYPE_DISC_IMAGE;
+				d->fileType = FTYPE_DISC_IMAGE;
 
 				// MCD-specific header is at 0x10. [TODO]
 				// MD-style header is at 0x110.
@@ -414,23 +414,18 @@ MegaDrive::MegaDrive(IRpFile *file)
 
 			case MegaDrivePrivate::ROM_FORMAT_UNKNOWN:
 			default:
-				m_fileType = FTYPE_UNKNOWN;
+				d->fileType = FTYPE_UNKNOWN;
 				d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 				break;
 		}
 	}
 
-	m_isValid = (d->romType >= 0);
-	if (m_isValid) {
+	d->isValid = (d->romType >= 0);
+	if (d->isValid) {
 		// Parse the MD region code.
 		d->md_region = MegaDriveRegions::parseRegionCodes(
 			d->romHeader.region_codes, sizeof(d->romHeader.region_codes));
 	}
-}
-
-MegaDrive::~MegaDrive()
-{
-	delete d;
 }
 
 /** ROM detection functions. **/
@@ -542,7 +537,8 @@ int MegaDrive::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *MegaDrive::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	RP_D(const MegaDrive);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// FIXME: Lots of system names and regions to check.
@@ -701,15 +697,16 @@ vector<const rp_char*> MegaDrive::supportedFileExtensions(void) const
  */
 int MegaDrive::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	RP_D(MegaDrive);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file || !m_file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		// NOTE: We already loaded the header,
 		// so *maybe* this is okay?
 		return -EBADF;
-	} else if (!m_isValid) {
+	} else if (!d->isValid) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -718,8 +715,8 @@ int MegaDrive::loadFieldData(void)
 	const MD_RomHeader *romHeader = &d->romHeader;
 
 	// Read the strings from the header.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
+	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
+	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -750,42 +747,42 @@ int MegaDrive::loadFieldData(void)
 
 	if (publisher) {
 		// Publisher identified.
-		m_fields->addData_string(publisher);
+		d->fields->addData_string(publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
 		char buf[16];
 		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		m_fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	} else {
 		// Unknown publisher.
-		m_fields->addData_string(_RP("Unknown"));
+		d->fields->addData_string(_RP("Unknown"));
 	}
 
 	// Titles, serial number, and checksum.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
-	m_fields->addData_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
+	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
+	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
+	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
 	if (!d->isDisc()) {
-		m_fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
+		d->fields->addData_string_numeric(be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4);
 	} else {
 		// Checksum is not valid in Mega CD headers.
-		m_fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Parse I/O support.
 	uint32_t io_support = d->parseIOSupport(romHeader->io_support, sizeof(romHeader->io_support));
-	m_fields->addData_bitfield(io_support);
+	d->fields->addData_bitfield(io_support);
 
 	if (!d->isDisc()) {
 		// ROM range.
-		m_fields->addData_string_address_range(
+		d->fields->addData_string_address_range(
 				be32_to_cpu(romHeader->rom_start),
 				be32_to_cpu(romHeader->rom_end), 8);
 
 		// RAM range.
-		m_fields->addData_string_address_range(
+		d->fields->addData_string_address_range(
 				be32_to_cpu(romHeader->ram_start),
 				be32_to_cpu(romHeader->ram_end), 8);
 
@@ -811,40 +808,40 @@ int MegaDrive::loadFieldData(void)
 					break;
 			}
 
-			m_fields->addData_string_address_range(
+			d->fields->addData_string_address_range(
 					be32_to_cpu(romHeader->sram_start),
 					be32_to_cpu(romHeader->sram_end),
 					suffix, 8);
 		} else {
 			// TODO: Non-monospaced.
-			m_fields->addData_string(_RP("None"));
+			d->fields->addData_string(_RP("None"));
 		}
 	} else {
 		// ROM, RAM, and SRAM ranges are not valid in Mega CD headers.
-		m_fields->addData_invalid();
-		m_fields->addData_invalid();
-		m_fields->addData_invalid();
+		d->fields->addData_invalid();
+		d->fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Region codes.
 	// TODO: Validate the Mega CD security program?
-	m_fields->addData_bitfield(d->md_region);
+	d->fields->addData_bitfield(d->md_region);
 
 	// Vectors.
 	if (!d->isDisc()) {
-		m_fields->addData_string_numeric(
+		d->fields->addData_string_numeric(
 			be32_to_cpu(d->vectors.initial_pc), RomFields::FB_HEX, 8);
-		m_fields->addData_string_numeric(
+		d->fields->addData_string_numeric(
 			be32_to_cpu(d->vectors.initial_sp), RomFields::FB_HEX, 8);
 	} else {
 		// Discs don't have vector tables.
 		// Add dummy entries for the vectors.
-		m_fields->addData_invalid();
-		m_fields->addData_invalid();
+		d->fields->addData_invalid();
+		d->fields->addData_invalid();
 	}
 
 	// Finished reading the field data.
-	return (int)m_fields->count();
+	return (int)d->fields->count();
 }
 
 }

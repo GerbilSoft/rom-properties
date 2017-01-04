@@ -25,6 +25,10 @@
 #include "libromdata/config.libromdata.h"
 #include "Semaphore.hpp"
 
+namespace LibRomData {
+	class RomData;
+}
+
 namespace LibCacheMgr {
 
 class IDownloader;
@@ -72,6 +76,7 @@ class CacheManager
 	public:
 		/**
 		 * Download a file.
+		 *
 		 * @param url URL.
 		 * @param cache_key Cache key.
 		 *
@@ -82,10 +87,11 @@ class CacheManager
 		 * the last time it was requested, an empty string will be
 		 * returned, and a zero-byte file will be stored in the cache.
 		 *
-		 * @return Absolute path to cached file.
+		 * @return Absolute path to the cached file.
 		 */
-		LibRomData::rp_string download(const LibRomData::rp_string &url,
-				const LibRomData::rp_string &cache_key);
+		LibRomData::rp_string download(
+			const LibRomData::rp_string &url,
+			const LibRomData::rp_string &cache_key);
 
 	protected:
 		LibRomData::rp_string m_proxyUrl;

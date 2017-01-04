@@ -188,9 +188,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 	HCRYPTKEY hNewKey;
 	if (!CryptImportKey(d->hProvider, (BYTE*)&blob, blobSize, 0, 0, &hNewKey)) {
 		// Error loading the key.
-		// TODO: Specific error?
-		DWORD err = GetLastError();
-		return -EIO;
+		return -w32err_to_posix(GetLastError());
 	}
 
 	// Key loaded successfully.
@@ -230,8 +228,7 @@ int AesCAPI::setChainingMode(ChainingMode mode)
 	// Set the cipher chaining mode.
 	if (!CryptSetKeyParam(d->hKey, KP_MODE, (BYTE*)&dwMode, 0)) {
 		// Error setting CBC mode.
-		// TODO: Specific error?
-		return -EIO;
+		return -w32err_to_posix(GetLastError());
 	}
 
 	return 0;
@@ -255,8 +252,7 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 	// Set the IV.
 	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
 		// Error setting the IV.
-		// TODO: Specific error?
-		return -EIO;
+		return -w32err_to_posix(GetLastError());
 	}
 
 	return 0;

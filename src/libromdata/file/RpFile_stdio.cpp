@@ -32,14 +32,19 @@ using std::u16string;
 typedef wchar_t mode_str_t;
 #define _MODE(str) (L ##str)
 #include "RpWin32.hpp"
-
 // Needed for using "\\?\" to bypass MAX_PATH.
 using std::wstring;
 #include <cctype>
-#else
+// _chsize()
+#include <io.h>
+
+#else /* !_WIN32 */
+
 // Other: fopen() requires an 8-bit mode string.
 typedef char mode_str_t;
 #define _MODE(str) (str)
+// ftruncate()
+#include <unistd.h>
 #endif
 
 namespace LibRomData {
@@ -80,7 +85,6 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_file(nullptr)
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename);
 }
@@ -96,7 +100,6 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_file(nullptr)
 	, m_filename(filename)
 	, m_mode(mode)
-	, m_lastError(0)
 {
 	init(filename.c_str());
 }
@@ -164,7 +167,6 @@ RpFile::RpFile(const RpFile &other)
 	, m_file(other.m_file)
 	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
-	, m_lastError(0)
 { }
 
 /**
@@ -189,23 +191,6 @@ RpFile &RpFile::operator=(const RpFile &other)
 bool RpFile::isOpen(void) const
 {
 	return (m_file.get() != nullptr);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpFile::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
@@ -292,6 +277,7 @@ int RpFile::seek(int64_t pos)
 	if (ret != 0) {
 		m_lastError = errno;
 	}
+	::fflush(m_file.get());	// needed for some things like gzip
 	return ret;
 }
 
@@ -310,18 +296,56 @@ int64_t RpFile::tell(void)
 }
 
 /**
- * Seek to the beginning of the file.
+ * Truncate the file.
+ * @param size New size. (default is 0)
+ * @return 0 on success; -1 on error.
  */
-void RpFile::rewind(void)
+int RpFile::truncate(int64_t size)
 {
-	if (!m_file) {
+	if (!m_file || !(m_mode & FM_WRITE)) {
+		// Either the file isn't open,
+		// or it's read-only.
 		m_lastError = EBADF;
-		return;
+		return -1;
+	} else if (size < 0) {
+		m_lastError = EINVAL;
+		return -1;
 	}
 
-	::rewind(m_file.get());
-	::fflush(m_file.get());	// needed for some things like gzip
+	// Get the current position.
+	int64_t pos = ftello(m_file.get());
+	if (pos < 0) {
+		m_lastError = errno;
+		return -1;
+	}
+
+	// Truncate the file.
+	fflush(m_file.get());
+#ifdef _WIN32
+	int ret = _chsize_s(fileno(m_file.get()), size);
+#else
+	int ret = ftruncate(fileno(m_file.get()), size);
+#endif
+	if (ret != 0) {
+		m_lastError = errno;
+		return -1;
+	}
+
+	// If the previous position was past the new
+	// file size, reset the pointer.
+	if (pos > size) {
+		ret = fseeko(m_file.get(), size, SEEK_SET);
+		if (ret != 0) {
+			m_lastError = errno;
+			return -1;
+		}
+	}
+
+	// File truncated.
+	return 0;
 }
+
+/** File properties. **/
 
 /**
  * Get the file size.

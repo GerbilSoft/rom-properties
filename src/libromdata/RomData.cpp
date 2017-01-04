@@ -20,22 +20,150 @@
  ***************************************************************************/
 
 #include "RomData.hpp"
+#include "RomData_p.hpp"
+
 #include "common.h"
 #include "file/IRpFile.hpp"
 #include "img/rp_image.hpp"
 #include "img/IconAnimData.hpp"
 
-// dup()
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-
 // C includes. (C++ namespace)
 #include <cassert>
 
 namespace LibRomData {
+
+/** RomDataPrivate **/
+
+/**
+ * Initialize a RomDataPrivate storage class.
+ *
+ * @param q RomData class.
+ * @param file ROM file.
+ * @param fields Array of ROM Field descriptions.
+ * @param count Number of ROM Field descriptions.
+ */
+RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count)
+	: q_ptr(q)
+	, isValid(false)
+	, file(nullptr)
+	, fields(new RomFields(fields, count))
+	, fileType(RomData::FTYPE_ROM_IMAGE)
+{
+	// Clear the internal images field.
+	memset(&images, 0, sizeof(images));
+	memset(&imgpf, 0, sizeof(imgpf));
+
+	if (!file)
+		return;
+
+	// dup() the file.
+	this->file = file->dup();
+}
+
+RomDataPrivate::~RomDataPrivate()
+{
+	delete fields;
+
+	// Delete the internal images.
+	for (int i = ARRAY_SIZE(images)-1; i >= 0; i--) {
+		delete images[i];
+	}
+
+	// Close the file if it's still open.
+	delete this->file;
+	this->file = nullptr;
+}
+
+/** Convenience functions. **/
+
+static inline int calc_frac_part(int64_t size, int64_t mask)
+{
+	float f = (float)(size & (mask - 1)) / (float)mask;
+	int frac_part = (int)(f * 1000.0f);
+
+	// MSVC added round() and roundf() in MSVC 2013.
+	// Use our own rounding code instead.
+	int round_adj = (frac_part % 10 > 5);
+	frac_part /= 10;
+	frac_part += round_adj;
+	return frac_part;
+}
+
+/**
+ * Format a file size.
+ * @param size File size.
+ * @return Formatted file size.
+ */
+rp_string RomDataPrivate::formatFileSize(int64_t size)
+{
+	// TODO: Thousands formatting?
+	char buf[64];
+
+	const char *suffix;
+	// frac_part is always 0 to 100.
+	// If whole_part >= 10, frac_part is divided by 10.
+	int whole_part, frac_part;
+
+	// TODO: Optimize this?
+	// TODO: Localize this?
+	if (size < 0) {
+		// Invalid size. Print the value as-is.
+		suffix = "";
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 10)) {
+		suffix = (size == 1 ? " byte" : " bytes");
+		whole_part = (int)size;
+		frac_part = 0;
+	} else if (size < (2LL << 20)) {
+		suffix = " KB";
+		whole_part = (int)(size >> 10);
+		frac_part = calc_frac_part(size, (1LL << 10));
+	} else if (size < (2LL << 30)) {
+		suffix = " MB";
+		whole_part = (int)(size >> 20);
+		frac_part = calc_frac_part(size, (1LL << 20));
+	} else if (size < (2LL << 40)) {
+		suffix = " GB";
+		whole_part = (int)(size >> 30);
+		frac_part = calc_frac_part(size, (1LL << 30));
+	} else if (size < (2LL << 50)) {
+		suffix = " TB";
+		whole_part = (int)(size >> 40);
+		frac_part = calc_frac_part(size, (1LL << 40));
+	} else if (size < (2LL << 60)) {
+		suffix = " PB";
+		whole_part = (int)(size >> 50);
+		frac_part = calc_frac_part(size, (1LL << 50));
+	} else /*if (size < (2ULL << 70))*/ {
+		suffix = " EB";
+		whole_part = (int)(size >> 60);
+		frac_part = calc_frac_part(size, (1LL << 60));
+	}
+
+	int len;
+	if (size < (2LL << 10)) {
+		// Bytes or negative value. No fractional part.
+		len = snprintf(buf, sizeof(buf), "%d%s", whole_part, suffix);
+	} else {
+		// TODO: Localized decimal point?
+		int frac_digits = 2;
+		if (whole_part >= 10) {
+			int round_adj = (frac_part % 10 > 5);
+			frac_part /= 10;
+			frac_part += round_adj;
+			frac_digits = 1;
+		}
+		len = snprintf(buf, sizeof(buf), "%d.%0*d%s",
+			whole_part, frac_digits, frac_part, suffix);
+	}
+
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/** RomData **/
 
 /**
  * ROM data base class.
@@ -53,31 +181,32 @@ namespace LibRomData {
  * @param count Number of ROM Field descriptions.
  */
 RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
-	: m_isValid(false)
-	, m_file(nullptr)
-	, m_fields(new RomFields(fields, count))
-	, m_fileType(FTYPE_ROM_IMAGE)
-{
-	// Clear the internal images field.
-	memset(&m_images, 0, sizeof(m_images));
-	memset(&m_imgpf, 0, sizeof(m_imgpf));
+	: d_ptr(new RomDataPrivate(this, file, fields, count))
+{ }
 
-	if (!file)
-		return;
-
-	// dup() the file.
-	m_file = file->dup();
-}
+/**
+ * ROM data base class.
+ *
+ * A ROM file must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * In addition, subclasses must pass an array of RomFieldDesc structs
+ * using an allocated RomDataPrivate subclass.
+ *
+ * @param d RomDataPrivate subclass.
+ */
+RomData::RomData(RomDataPrivate *d)
+	: d_ptr(d)
+{ }
 
 RomData::~RomData()
 {
-	this->close();
-	delete m_fields;
-
-	// Delete the internal images.
-	for (int i = ARRAY_SIZE(m_images)-1; i >= 0; i--) {
-		delete m_images[i];
-	}
+	delete d_ptr;
 }
 
 /**
@@ -86,7 +215,8 @@ RomData::~RomData()
  */
 bool RomData::isValid(void) const
 {
-	return m_isValid;
+	RP_D(const RomData);
+	return d->isValid;
 }
 
 /**
@@ -94,10 +224,9 @@ bool RomData::isValid(void) const
  */
 void RomData::close(void)
 {
-	if (m_file) {
-		delete m_file;
-		m_file = nullptr;
-	}
+	RP_D(RomData);
+	delete d->file;
+	d->file = nullptr;
 }
 
 /**
@@ -106,7 +235,8 @@ void RomData::close(void)
  */
 RomData::FileType RomData::fileType(void) const
 {
-	return m_fileType;
+	RP_D(const RomData);
+	return d->fileType;
 }
 
 /**
@@ -115,7 +245,8 @@ RomData::FileType RomData::fileType(void) const
  */
 const rp_char *RomData::fileType_string(void) const
 {
-	switch (m_fileType) {
+	RP_D(const RomData);
+	switch (d->fileType) {
 		case RomData::FTYPE_ROM_IMAGE:
 			return _RP("ROM Image");
 		case RomData::FTYPE_DISC_IMAGE:
@@ -126,6 +257,8 @@ const rp_char *RomData::fileType_string(void) const
 			return _RP("Embedded Disc Image");
 		case RomData::FTYPE_APPLICATION_PACKAGE:
 			return _RP("Application Package");
+		case RomData::FTYPE_NFC_DUMP:
+			return _RP("NFC Dump");
 		case RomData::FTYPE_UNKNOWN:
 		default:
 			break;
@@ -186,14 +319,15 @@ int RomData::loadURLs(ImageType imageType)
  */
 const RomFields *RomData::fields(void) const
 {
-	if (!m_fields->isDataLoaded()) {
+	RP_D(const RomData);
+	if (!d->fields->isDataLoaded()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
 		if (ret < 0)
 			return nullptr;
 	}
-	return m_fields;
+	return d->fields;
 }
 
 /**
@@ -210,12 +344,13 @@ int RomData::verifyImageTypeLoaded(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
+	RP_D(const RomData);
 	int ret = 0;
 	if (imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX) {
 		// This is an internal image.
 		// Make sure it's loaded.
 		const int idx = imageType - IMG_INT_MIN;
-		if (!m_images[idx]) {
+		if (!d->images[idx]) {
 			// Internal image has not been loaded.
 			// Load it now.
 			ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
@@ -224,7 +359,7 @@ int RomData::verifyImageTypeLoaded(ImageType imageType) const
 		// This is an external image.
 		// Make sure the URL is loaded.
 		const int idx = imageType - IMG_EXT_MIN;
-		if (m_extURLs[idx].empty()) {
+		if (d->extURLs[idx].empty()) {
 			// List of URLs has not been loaded.
 			// Load it now.
 			ret = const_cast<RomData*>(this)->loadURLs(imageType);
@@ -258,7 +393,8 @@ const rp_image *RomData::image(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_INT_MIN;
-	return m_images[idx];
+	RP_D(const RomData);
+	return d->images[idx];
 }
 
 /**
@@ -281,7 +417,23 @@ const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return nullptr;
 	const int idx = imageType - IMG_EXT_MIN;
-	return &m_extURLs[idx];
+	RP_D(const RomData);
+	return &d->extURLs[idx];
+}
+
+/**
+ * Scrape an image URL from a downloaded HTML page.
+ * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
+ * @param html HTML data.
+ * @param size Size of HTML data.
+ * @return Image URL, or empty string if not found or not supported.
+ */
+rp_string RomData::scrapeImageURL(const char *html, size_t size) const
+{
+	// Not supported in the base class.
+	((void)html);
+	((void)size);
+	return rp_string();
 }
 
 /**
@@ -304,7 +456,8 @@ uint32_t RomData::imgpf(ImageType imageType) const
 
 	if (verifyImageTypeLoaded(imageType) != 0)
 		return 0;
-	return m_imgpf[imageType];
+	RP_D(const RomData);
+	return d->imgpf[imageType];
 }
 
 static const rp_char *image_type_names[]={

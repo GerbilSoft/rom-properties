@@ -83,17 +83,6 @@ class DiscReader : public IDiscReader
 		virtual bool isOpen(void) const override;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const override;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) override;
-
-		/**
 		 * Read data from the disc image.
 		 * @param ptr Output data buffer.
 		 * @param size Amount of data to read, in bytes.
@@ -117,11 +106,10 @@ class DiscReader : public IDiscReader
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */
-		virtual int64_t size(void) const override;
+		virtual int64_t size(void) override;
 
 	protected:
 		IRpFile *m_file;
-		int m_lastError;
 
 		// Offset/length. Useful for e.g. GameCube TGC.
 		int64_t m_offset;

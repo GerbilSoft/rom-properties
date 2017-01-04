@@ -41,11 +41,10 @@ class GcnPartitionPrivate
 	private:
 		GcnPartitionPrivate(const GcnPartitionPrivate &other);
 		GcnPartitionPrivate &operator=(const GcnPartitionPrivate &other);
-	private:
-		GcnPartition *const q;
+	protected:
+		GcnPartition *const q_ptr;
 
 	public:
-		int lastError;		// Last error code.
 		uint8_t offsetShift;	// GCN == 0, Wii == 2
 
 		IDiscReader *discReader;

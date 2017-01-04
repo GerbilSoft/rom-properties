@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 
 #include "libromdata/img/rp_image_backend.hpp"
+#include <QtCore/QVector>
 #include <QtGui/QImage>
 
 /**
@@ -33,7 +34,6 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 {
 	public:
 		RpQImageBackend(int width, int height, LibRomData::rp_image::Format format);
-		virtual ~RpQImageBackend();
 
 	private:
 		typedef LibRomData::rp_image_backend super;
@@ -51,6 +51,11 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 		virtual const void *data(void) const final;
 		virtual size_t data_len(void) const final;
 
+		// Image palette.
+		virtual uint32_t *palette(void) final;
+		virtual const uint32_t *palette(void) const final;
+		virtual int palette_len(void) const final;
+
 	public:
 		/**
 		 * Get the underlying QImage.
@@ -60,6 +65,7 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 
 	protected:
 		QImage m_qImage;
+		QVector<QRgb> m_qPalette;
 };
 
 #endif /* __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__ */

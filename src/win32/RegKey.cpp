@@ -369,7 +369,7 @@ LONG RegKey::enumSubKeys(list<wstring> &lstSubKeys)
 
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx says
 	// key names are limited to 255 characters, but who knows...
-	wchar_t *wbuf = reinterpret_cast<wchar_t*>(malloc(cchMaxSubKeyLen * sizeof(wchar_t)));
+	wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchMaxSubKeyLen * sizeof(wchar_t)));
 
 	// Initialize the vector.
 	lstSubKeys.clear();

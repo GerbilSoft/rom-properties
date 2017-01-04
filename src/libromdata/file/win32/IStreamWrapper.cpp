@@ -21,20 +21,9 @@
 
 #include "IStreamWrapper.hpp"
 
-#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
-/**
- * MinGW-w64 only defines ULONG overloads for the various atomic functions
- * if _WIN32_WINNT > 0x0502.
- */
-static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
-{
-	return (ULONG)(InterlockedIncrement(reinterpret_cast<LONG volatile*>(Addend)));
-}
-static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
-{
-	return (ULONG)(InterlockedDecrement(reinterpret_cast<LONG volatile*>(Addend)));
-}
-#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
+// C++ includes.
+#include <string>
+using std::wstring;
 
 namespace LibRomData {
 
@@ -210,8 +199,37 @@ IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULAR
 
 IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
 {
-	((void)libNewSize);
-	return E_NOTIMPL;
+	if (!m_file) {
+		return E_HANDLE;
+	}
+
+	int64_t size = (int64_t)libNewSize.QuadPart;
+	if (size < 0) {
+		// Out of bounds.
+		return STG_E_INVALIDFUNCTION;
+	}
+
+	int ret = m_file->truncate(size);
+	HRESULT hr = S_OK;
+	if (ret != 0) {
+		switch (m_file->lastError()) {
+			case ENOSPC:
+				hr = STG_E_MEDIUMFULL;
+				break;
+			case EIO:
+				hr = STG_E_INVALIDFUNCTION;
+				break;
+
+			case ENOTSUP:	// NOT STG_E_INVALIDFUNCTION;
+					// that's for "size not supported".
+			default:
+				// Unknown...
+				hr = E_FAIL;
+				break;
+		}
+	}
+
+	return S_OK;
 }
 
 /**
@@ -314,13 +332,22 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 	if (grfStatFlag & STATFLAG_NONAME) {
 		pstatstg->pwcsName = nullptr;
 	} else {
-		// FIXME: Store the filename in IRpFile?
-		pstatstg->pwcsName = nullptr;
+		// Copy the filename
+		// TODO: Is nullptr for empty filename allowed?
+		// For now, we'll just return an empty name.
+		// TODO: RP2W_ss() that returns a wstring?
+		wstring filename = RP2W_s(m_file->filename());
+		const size_t sz = (filename.size() + 1) * sizeof(wchar_t);
+		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
+		if (!pstatstg->pwcsName) {
+			return E_OUTOFMEMORY;
+		}
+		memcpy(pstatstg->pwcsName, filename.c_str(), sz);
 	}
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
 
-	int64_t fileSize = m_file->fileSize();;
+	int64_t fileSize = m_file->fileSize();
 	pstatstg->cbSize.QuadPart = (fileSize > 0 ? fileSize : 0);
 
 	// No timestamps are available...

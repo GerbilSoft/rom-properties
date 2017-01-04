@@ -29,15 +29,6 @@ IF(NOT WIN32)
 		MESSAGE(FATAL_ERROR "iconv() not found, cannot continue.")
 	ENDIF(NOT HAVE_ICONV)
 
-	# Check for zlib.
-	FIND_PACKAGE(ZLIB REQUIRED)
-	SET(HAVE_ZLIB ${ZLIB_FOUND})
-	SET(ZLIB_DEFINITIONS ZLIB_CONST)
-
-	# Check for libpng.
-	FIND_PACKAGE(PNG REQUIRED)
-	SET(HAVE_LIBPNG ${PNG_FOUND})
-
 	IF(ENABLE_DECRYPTION)
 		# TODO: Show warning if not found, and recommend
 		# setting -DENABLE_DECRYPTION=Off?
@@ -51,6 +42,8 @@ IF(NOT WIN32)
 		CHECK_SYMBOL_EXISTS(aes128_set_decrypt_key "nettle/aes.h" HAVE_NETTLE_3)
 	ENDIF(ENABLE_DECRYPTION)
 ENDIF(NOT WIN32)
+
+# ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
 # Check for C library functions.
 INCLUDE(CheckFunctionExists)
@@ -83,14 +76,18 @@ SET(libromdata_SRCS
 	SNES.cpp
 	DreamcastSave.cpp
 	PlayStationSave.cpp
+	VirtualBoy.cpp
+	Amiibo.cpp
+	AmiiboData.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
-	file/FileSystem.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
+	img/RpPng.cpp
 	img/IconAnimHelper.cpp
+	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -116,7 +113,6 @@ SET(libromdata_H
 	NintendoDS.hpp
 	NintendoPublishers.hpp
 	RomDataFactory.hpp
-	gcn_structs.h
 	DMG.hpp
 	uvector.h
 	GameBoyAdvance.hpp
@@ -124,16 +120,24 @@ SET(libromdata_H
 	SystemRegion.hpp
 	GameCubeSave.hpp
 	PlayStationSave.hpp
+	N64.hpp
+	SNES.hpp
+	DreamcastSave.hpp
+	VirtualBoy.hpp
+	Amiibo.hpp
+	AmiiboData.hpp
+	md_structs.h
+	gcn_structs.h
 	gcn_card.h
 	nds_structs.h
-	N64.hpp
 	n64_structs.h
 	dmg_structs.h
 	gba_structs.h
-	SNES.hpp
+	ps1_structs.h
 	snes_structs.h
-	DreamcastSave.hpp
 	dc_structs.h
+	vb_structs.h
+	nfp_structs.h
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -162,16 +166,17 @@ SET(libromdata_H
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		RpWin32.hpp
-		RpWin32_sdk.h
+		RpWin32.cpp
 		TextFuncs_win32.cpp
+		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
 		file/win32/IStreamWrapper.cpp
-		img/RpPng_gdiplus.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
 		)
 	SET(libromdata_OS_H
+		RpWin32.hpp
+		RpWin32_sdk.h
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
@@ -179,8 +184,8 @@ IF(WIN32)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
 		TextFuncs_iconv.cpp
+		file/FileSystem_posix.cpp
 		file/RpFile_stdio.cpp
-		img/RpPng_libpng.cpp
 		)
 ENDIF(WIN32)
 

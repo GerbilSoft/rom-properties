@@ -38,7 +38,6 @@ namespace LibRomData {
  */
 DiscReader::DiscReader(IRpFile *file)
 	: m_file(nullptr)
-	, m_lastError(0)
 	, m_offset(0)
 	, m_length(0)
 {
@@ -64,7 +63,6 @@ DiscReader::DiscReader(IRpFile *file)
  */
 DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 	: m_file(nullptr)
-	, m_lastError(0)
 	, m_offset(0)
 	, m_length(0)
 {
@@ -132,23 +130,6 @@ bool DiscReader::isOpen(void) const
 }
 
 /**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int DiscReader::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void DiscReader::clearError(void)
-{
-	m_lastError = 0;
-}
-
-/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -206,11 +187,11 @@ void DiscReader::rewind(void)
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */
-int64_t DiscReader::size(void) const
+int64_t DiscReader::size(void)
 {
 	assert(m_file != nullptr);
 	if (!m_file) {
-		const_cast<DiscReader*>(this)->m_lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 	// TODO: Propagate errors.

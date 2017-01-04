@@ -281,7 +281,7 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 		return -ENOMEM;
 	}
 
-	uint8_t *pbKeyObject = reinterpret_cast<uint8_t*>(malloc(cbKeyObject));
+	uint8_t *pbKeyObject = static_cast<uint8_t*>(malloc(cbKeyObject));
 	if (!pbKeyObject) {
 		return -ENOMEM;
 	}

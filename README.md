@@ -71,13 +71,13 @@ access on Windows Vista and later.
 
 ## Current OS Feature Support Level
 
-|     Platform     | Properties Tab | Thumbnails | Icons |
-|------------------|:--------------:|:----------:|:-----:|
-| KDE 4.x          |       Yes      |     Yes    |  N/A  |
-| KDE 5.x          |       Yes      |     Yes    |  N/A  |
-| XFCE (Thunar)    |       No       |     No     |  N/A  |
-| GNOME (Nautilus) |       No       |     No     |  N/A  |
-| Windows          |       Yes      |     Yes    |  Yes  |
+|     Platform     | Properties Tab | Thumbnails |
+|------------------|:--------------:|:----------:|
+| KDE 4.x          |       Yes      |     Yes    |
+| KDE 5.x          |       Yes      |     Yes    |
+| XFCE (Thunar)    |       Yes      |     No     |
+| GNOME (Nautilus) |       No       |     No     |
+| Windows          |       Yes      |     Yes    |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
@@ -85,10 +85,9 @@ Notes:
 * The XFCE and GNOME file managers both use a similar interface for generating
   thumbnails, but with a different metadata file. Hence, once thumbnail support
   is implemented for one of them, it will also be implemented for the other.
-* Windows supports separate icon and thumbnail handlers, which is why a
-  separate "icon" feature is listed. Linux desktop environments generally
-  use the file's MIME type to determine the icon, so custom icons are always
-  implemented using the thumbnail interface.
+* Windows supports separate icon and thumbnail handlers. Linux desktop
+  environments generally use the file's MIME type to determine the icon, so
+  custom icons are always implemented using the thumbnail interface.
 
 ## Current ROM Feature Support Level
 
@@ -102,7 +101,9 @@ Notes:
 | Nintendo Wii              |       Yes      |        No       |      Disc      |
 | Nintendo Game Boy (Color) |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
+| Nintendo Virtual Boy      |       Yes      |       N/A       |       No       |
 | Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
+| Nintendo amiibo           |       Yes      |        No       |      Media     |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -114,6 +115,8 @@ Notes:
   for GameCube and Wii.
   * "No" indicates no database is currently available for this system.
   * Anything else indicates what types of images are available.
+  * For amiibo, "media" refers to the amiibo object, which may be a figurine,
+    a card, or a plush.
 
 There will eventually be a configuration window for setting which image
 will be used for thumbnails (and icons on Windows).
@@ -129,19 +132,21 @@ will be used for thumbnails (and icons on Windows).
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
+* Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
+* Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
 
 Some file types are not currently registered on Windows due to conflicts with
 well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
 
 ## External Media Downloads
 
-Currently, two systems (GameCube and Wii) support the use of external media
-scans through GameTDB.com. The current release of the ROM Properties Page shell
-extension will always attempt to download images from GameTDB.com if thumbnail
-preview is enabled and a valid GameCube or Wii disc image is present in the
-current directory. An option to disable automatic downloads will be added in
-a future version.
+Certain parsers support the use of external media scans through an online
+database, e.g. GameTDB.com. The current release of the ROM Properties Page
+shell extension will always attempt to download images from GameTDB.com if
+thumbnail preview is enabled in the file browser and a supported file is
+present in the current directory. An option to disable automatic downloads
+will be added in a future version.
 
 Downloaded images are cached to the following directory:
 * Linux: `~/.cache/rom-properties/`
@@ -193,6 +198,7 @@ decrypt data will show an error message instead of the data in question.
 
 * @GerbilSoft: Main developer.
 * @DankRank: Contributor, bug tester.
+* @CheatFreak: Bug tester, amiibo support.
 
 ### Websites
 
@@ -206,6 +212,9 @@ decrypt data will show an error message instead of the data in question.
 * [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
   Super Game Boy technical information. Used for ROM format information for
   those systems.
+* [Virtual Boy Programmers Manual](http://www.goliathindustries.com/vb/download/vbprog.pdf):
+  Virtual Boy technical information. Used for ROM format information for that
+  system.
 * [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
   information, plus information for other Sega systems that will be supported
   in a future release.
@@ -213,3 +222,5 @@ decrypt data will show an error message instead of the data in question.
   "PS1 on PS3" save file format.
 * [Nocash PSX Specification Reference](http://problemkaputt.de/psx-spx.htm)
   for more information on PS1 save files.
+* [amiibo.life](http://amiibo.life): Database of Nintendo amiibo figurines,
+  cards, and plushes. Used for automatic downloading of amiibo images.

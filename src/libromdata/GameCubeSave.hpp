@@ -48,16 +48,12 @@ class GameCubeSave : public RomData
 		 * @param file Open disc image.
 		 */
 		explicit GameCubeSave(IRpFile *file);
-		virtual ~GameCubeSave();
 
 	private:
 		typedef RomData super;
+		friend class GameCubeSavePrivate;
 		GameCubeSave(const GameCubeSave &other);
 		GameCubeSave &operator=(const GameCubeSave &other);
-
-	private:
-		friend class GameCubeSavePrivate;
-		GameCubeSavePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

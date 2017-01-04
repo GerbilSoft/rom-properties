@@ -34,10 +34,6 @@ class NintendoDSPrivate;
 class NintendoDS : public RomData
 {
 	public:
-		// TODO: Some abstraction to read the file directory
-		// using a wrapper around FILE*, QFile, etc.
-		// For now, just check the header.
-
 		/**
 		 * Read a Nintendo DS ROM image.
 		 *
@@ -52,16 +48,12 @@ class NintendoDS : public RomData
 		 * @param file Open ROM image.
 		 */
 		explicit NintendoDS(IRpFile *file);
-		virtual ~NintendoDS();
 
 	private:
 		typedef RomData super;
+		friend class NintendoDSPrivate;
 		NintendoDS(const NintendoDS &other);
 		NintendoDS &operator=(const NintendoDS &other);
-
-	private:
-		friend class NintendoDSPrivate;
-		NintendoDSPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

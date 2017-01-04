@@ -122,6 +122,13 @@ int set_mtime(const rp_string &filename, time_t mtime);
  */
 int get_mtime(const rp_string &filename, time_t *pMtime);
 
+/**
+ * Delete a file.
+ * @param filename Filename.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int delete_file(const rp_char *filename);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_FILESYSTEM_HPP__ */

@@ -61,27 +61,8 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 
 	if (format == rp_image::FORMAT_CI8) {
 		// Initialize the palette.
-		// Note that QImage doesn't support directly
-		// modifying the palette, so we have to copy
-		// our palette data every time the underlying
-		// QImage is requested.
-		this->palette = (uint32_t*)calloc(256, sizeof(*palette));
-		if (!this->palette) {
-			// Failed to allocate memory.
-			clear_properties();
-			m_qImage = QImage();
-			return;
-		}
-
-		// 256 colors allocated in the palette.
-		this->palette_len = 256;
+		m_qPalette.resize(256);
 	}
-}
-
-RpQImageBackend::~RpQImageBackend()
-{
-	// NOTE: data is pointing to QImage::bits(), so don't free it.
-	free(this->palette);
 }
 
 /**
@@ -112,6 +93,29 @@ size_t RpQImageBackend::data_len(void) const
 	return m_qImage.byteCount();
 }
 
+uint32_t *RpQImageBackend::palette(void)
+{
+	// Return the current palette.
+	// Note that this may cause the QVector to
+	// detach if it has been used by the
+	// getQImage() function.
+	if (m_qPalette.isEmpty())
+		return nullptr;
+	return m_qPalette.data();
+}
+
+const uint32_t *RpQImageBackend::palette(void) const
+{
+	if (m_qPalette.isEmpty())
+		return nullptr;
+	return m_qPalette.constData();
+}
+
+int RpQImageBackend::palette_len(void) const
+{
+	return m_qPalette.size();
+}
+
 /**
  * Get the underlying QImage.
  * @return QImage.
@@ -120,10 +124,7 @@ QImage RpQImageBackend::getQImage(void) const
 {
 	if (this->format == rp_image::FORMAT_CI8) {
 		// Copy the local color table to the QImage.
-		// TODO: Optimize by not initializing?
-		QVector<QRgb> colorTable(this->palette_len);
-		memcpy(colorTable.data(), this->palette, this->palette_len * sizeof(*palette));
-		const_cast<RpQImageBackend*>(this)->m_qImage.setColorTable(colorTable);
+		const_cast<RpQImageBackend*>(this)->m_qImage.setColorTable(m_qPalette);
 	}
 
 	return m_qImage;

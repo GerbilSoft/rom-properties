@@ -27,7 +27,7 @@
 #endif /* __cplusplus */
 
 /* Define to 1 if you have libpng. */
-#cmakedefine HAVE_LIBPNG 1
+#cmakedefine HAVE_PNG 1
 
 /* Define to 1 if you have the `strnlen' function. */
 #cmakedefine HAVE_STRNLEN 1

@@ -62,7 +62,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	// - http://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
 	// - http://stackoverflow.com/a/1636415
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
-	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
+	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nmemb;
 
@@ -103,7 +103,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_HEADERFUNCTION.html
 
 	// TODO: Add support for non-HTTP protocols?
-	CurlDownloader *curlDL = reinterpret_cast<CurlDownloader*>(userdata);
+	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
 	size_t len = size * nitems;
 
@@ -205,6 +205,11 @@ int CurlDownloader::download(void)
 	// Set options for curl's "easy" mode.
 	curl_easy_setopt(curl, CURLOPT_URL, url8.c_str());
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
+	// Fail on HTTP errors. (>= 400)
+	curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+	// Redirection is required for http://amiibo.life/nfc/%08X-%08X
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+	// Header and data functions.
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);

@@ -48,16 +48,12 @@ class GameBoyAdvance : public RomData
 		 * @param file Open ROM image.
 		 */
 		explicit GameBoyAdvance(IRpFile *file);
-		virtual ~GameBoyAdvance();
 
 	private:
 		typedef RomData super;
+		friend class GameBoyAdvancePrivate;
 		GameBoyAdvance(const GameBoyAdvance &other);
 		GameBoyAdvance &operator=(const GameBoyAdvance &other);
-
-	private:
-		friend class GameBoyAdvancePrivate;
-		GameBoyAdvancePrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

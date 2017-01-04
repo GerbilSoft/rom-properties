@@ -14,6 +14,6 @@ The following changes have been made to the original:
 To obtain the original minizip-1.1, visit
 http://www.winimage.com/zLibDll/minizip.html
 
-NOTE: Some changes were imported from zlib-1.2.8's copy of
-minizip-1.1. To obtain a copy of zlib-1.2.8, visit the zlib
+NOTE: Some changes were imported from zlib-1.2.9's copy of
+minizip-1.1. To obtain a copy of zlib-1.2.9, visit the zlib
 website at http://www.zlib.net/ .

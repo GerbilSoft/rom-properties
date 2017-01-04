@@ -44,10 +44,9 @@ extern "C" {
  * Found at the top of .VMS files used as VMU icons.
  *
  * Reference: http://mc.pp.se/dc/vms/icondata.html
- *s
+ *
  * All fields are in little-endian.
  */
-#define DC_VMS_ICONDATA_Header_SIZE 24
 #pragma pack(1)
 typedef struct PACKED _DC_VMS_ICONDATA_Header {
 	char vms_description[16];	// Shift-JIS; space-padded.
@@ -55,6 +54,7 @@ typedef struct PACKED _DC_VMS_ICONDATA_Header {
 	uint32_t color_icon_addr;	// Address of color icon.
 } DC_VMS_ICONDATA_Header;
 #pragma pack()
+ASSERT_STRUCT(DC_VMS_ICONDATA_Header, 24);
 
 /** VMS header **/
 
@@ -66,7 +66,6 @@ typedef struct PACKED _DC_VMS_ICONDATA_Header {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define DC_VMS_Header_SIZE 96
 #pragma pack(1)
 typedef union PACKED _DC_VMS_Header {
 	struct {
@@ -92,6 +91,7 @@ typedef union PACKED _DC_VMS_Header {
 	// by the eyecatch (if present).
 } DC_VMS_Header;
 #pragma pack()
+ASSERT_STRUCT(DC_VMS_Header, 96);
 
 /**
  * Graphic eyecatch type.
@@ -134,7 +134,6 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define DC_VMI_Header_SIZE 108
 #pragma pack(1)
 typedef struct PACKED _DC_VMI_Header {
 	// Very primitive checksum.
@@ -165,6 +164,7 @@ typedef struct PACKED _DC_VMI_Header {
 	uint32_t filesize;		// .VMS file size, in bytes.
 } DC_VMI_Header;
 #pragma pack()
+ASSERT_STRUCT(DC_VMI_Header, 108);
 
 /**
  * DC_VMI_Header.mode
@@ -192,7 +192,6 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#define DC_VMS_DirEnt_SIZE 32
 #pragma pack(1)
 typedef struct PACKED _DC_VMS_DirEnt {
 	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
@@ -217,6 +216,7 @@ typedef struct PACKED _DC_VMS_DirEnt {
 	uint8_t reserved[4];	// Reserved. (all zero)
 } DC_VMS_DirEnt;
 #pragma pack()
+ASSERT_STRUCT(DC_VMS_DirEnt, 32);
 
 /**
  * DC_VMS_DirEnt.filetype

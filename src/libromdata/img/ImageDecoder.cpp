@@ -104,7 +104,7 @@ inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
 
 	// Go to the first pixel for this tile.
 	const int stride_px = img->stride() / sizeof(pixel);
-	pixel *imgBuf = reinterpret_cast<pixel*>(img->scanLine(tileY * tileH));
+	pixel *imgBuf = static_cast<pixel*>(img->scanLine(tileY * tileH));
 	imgBuf += (tileX * tileW);
 
 	for (int y = tileH; y > 0; y--) {
@@ -133,7 +133,7 @@ inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tile
 	assert(tileW % 2 == 0);
 
 	// Go to the first pixel for this tile.
-	uint8_t *imgBuf = reinterpret_cast<uint8_t*>(img->scanLine(tileY * tileH));
+	uint8_t *imgBuf = static_cast<uint8_t*>(img->scanLine(tileY * tileH));
 	imgBuf += (tileX * tileW);
 
 	const int stride_px_adj = img->stride() - tileW;
@@ -219,7 +219,7 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 	px32 |= ((px16 & 0x00F0) << 4);		// G
 	px32 |= ((px16 & 0x0F00) << 8);		// R
 	px32 |= ((px16 & 0xF000) << 12);	// A
-	px32 |= (px32 << 4);			// Copy to the top nybble.
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
 	return px32;
 }
 
@@ -325,7 +325,7 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 
 	for (int y = 0; y < tilesY; y++) {
 		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to ARGB888 manually.
+			// Convert each tile to ARGB32 manually.
 			// TODO: Optimize using pointers instead of indexes?
 			for (int i = 0; i < 4*4; i++, img_buf++) {
 				tileBuf[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
@@ -464,7 +464,7 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 
 	// Convert one line at a time. (CI4 -> CI8)
 	for (int y = 0; y < height; y++) {
-		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x -= 2) {
 			px_dest[0] = (*img_buf >> 4);
 			px_dest[1] = (*img_buf & 0x0F);
@@ -524,7 +524,7 @@ rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
 	img->set_tr_idx(tr_idx);
 
 	// Copy one line at a time. (CI8 -> CI8)
-	uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->bits());
+	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	const int stride = img->stride();
 	for (int y = height; y > 0; y--) {
 		memcpy(px_dest, img_buf, width);
@@ -560,7 +560,7 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 
 	// Convert one line at a time. (ARGB4444 -> ARGB32)
 	for (int y = 0; y < height; y++) {
-		uint32_t *px_dest = reinterpret_cast<uint32_t*>(img->scanLine(y));
+		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x--) {
 			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*px_dest);
 			img_buf++;
@@ -609,7 +609,7 @@ rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
 
 	// Convert one line at a time. (monochrome -> CI8)
 	for (int y = 0; y < height; y++) {
-		uint8_t *px_dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x -= 8) {
 			uint8_t pxMono = *img_buf++;
 			// TODO: Unroll this loop?
@@ -685,7 +685,7 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 
 	// Convert from CI4 to CI8.
 	for (int y = 0; y < height; y++) {
-		uint8_t *dest = reinterpret_cast<uint8_t*>(img->scanLine(y));
+		uint8_t *dest = static_cast<uint8_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x -= 2, dest += 2, img_buf++) {
 			dest[0] = (*img_buf & 0x0F);
 			dest[1] = (*img_buf >> 4);

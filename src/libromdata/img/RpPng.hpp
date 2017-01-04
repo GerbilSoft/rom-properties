@@ -24,8 +24,9 @@
 
 namespace LibRomData {
 
-class rp_image;
 class IRpFile;
+class rp_image;
+struct IconAnimData;
 
 class RpPng
 {
@@ -58,6 +59,67 @@ class RpPng
 		 * @return rp_image*, or nullptr on error.
 		 */
 		static rp_image *load(IRpFile *file);
+
+		/**
+		 * Save an image in PNG format to an IRpFile.
+		 * IRpFile must be open for writing.
+		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param file IRpFile to write to.
+		 * @param img rp_image to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(IRpFile *file, const rp_image *img);
+
+		/**
+		 * Save an image in PNG format to a file.
+		 *
+		 * @param filename Destination filename.
+		 * @param img rp_image to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(const rp_char *filename, const rp_image *img);
+
+		/**
+		 * Save an animated image in APNG format to an IRpFile.
+		 * IRpFile must be open for writing.
+		 *
+		 * If the animated image contains a single frame,
+		 * a standard PNG image will be written.
+		 *
+		 * NOTE: If the image has multiple frames and APNG
+		 * write support is unavailable, -ENOTSUP will be
+		 * returned. The caller should then save the image
+		 * as a standard PNG file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param file IRpFile to write to.
+		 * @param iconAnimData Animated image data to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(IRpFile *file, const IconAnimData *iconAnimData);
+
+		/**
+		 * Save an animated image in APNG format to a file.
+		 * IRpFile must be open for writing.
+		 *
+		 * If the animated image contains a single frame,
+		 * a standard PNG image will be written.
+		 *
+		 * NOTE: If the image has multiple frames and APNG
+		 * write support is unavailable, -ENOTSUP will be
+		 * returned. The caller should then save the image
+		 * as a standard PNG file.
+		 *
+		 * @param filename Destination filename.
+		 * @param iconAnimData Animated image data to save.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int save(const rp_char *filename, const IconAnimData *iconAnimData);
 };
 
 }

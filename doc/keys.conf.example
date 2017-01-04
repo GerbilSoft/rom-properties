@@ -17,6 +17,6 @@ rvl-sd-aes=
 rvl-sd-iv=
 rvl-sd-md5=
 
-# RVT common key. This is used by development systems
+# RVT-R debug key. This is used by development systems
 # for prototype RVT-R discs.
-rvt-common=
+rvt-debug=

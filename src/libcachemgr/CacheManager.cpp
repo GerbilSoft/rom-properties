@@ -25,11 +25,13 @@
 #include "CacheManager.hpp"
 
 #include "libromdata/TextFuncs.hpp"
+#include "libromdata/RomData.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/file/FileSystem.hpp"
 using LibRomData::rp_string;
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
+using LibRomData::RomData;
 using namespace LibRomData::FileSystem;
 
 // Windows includes.
@@ -40,6 +42,7 @@ using namespace LibRomData::FileSystem;
 // POSIX includes.
 #ifndef _WIN32
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #endif /* !_WIN32 */
 
@@ -111,7 +114,7 @@ void CacheManager::setProxyUrl(const rp_char *proxyUrl)
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
  */
-void CacheManager::setProxyUrl(const LibRomData::rp_string &proxyUrl)
+void CacheManager::setProxyUrl(const rp_string &proxyUrl)
 {
 	m_proxyUrl = proxyUrl;
 }
@@ -121,7 +124,7 @@ void CacheManager::setProxyUrl(const LibRomData::rp_string &proxyUrl)
  * @param cache_key Cache key.
  * @return Cache filename, or empty string on error.
  */
-rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
 {
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
@@ -161,6 +164,7 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
 
 /**
  * Download a file.
+ *
  * @param url URL.
  * @param cache_key Cache key.
  *
@@ -171,14 +175,55 @@ rp_string CacheManager::getCacheFilename(const LibRomData::rp_string &cache_key)
  * the last time it was requested, an empty string will be
  * returned, and a zero-byte file will be stored in the cache.
  *
- * @return Absolute path to cached file.
+ * @return Absolute path to the cached file.
  */
-LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_string &cache_key)
+rp_string CacheManager::download(
+	const rp_string &url,
+	const rp_string &cache_key)
 {
+	rp_string filter_cache_key = cache_key;
+	bool foundSlash = true;
+	int dotCount = 0;
+	for (int i = (int)filter_cache_key.size()-1; i >= 0; i--) {
+		// Don't allow control characters,
+		// invalid FAT32 characters, or dots.
+		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+		static const uint8_t valid_ascii_tbl[] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
+			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, // 0x20 (", *, .)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x50 (\\)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
+		};
+		unsigned int chr = (unsigned int)filter_cache_key[i];
+		if (chr < 0x80 && !valid_ascii_tbl[chr]) {
+			// Invalid character.
+			filter_cache_key[i] = _RP_CHR('_');
+		}
+
+		// Check for "../" (or ".." at the end of the cache key).
+		if (foundSlash && chr == '.') {
+			dotCount++;
+			if (dotCount >= 2) {
+				// Invalid cache key.
+				return rp_string();
+			}
+		} else if (chr == '/') {
+			foundSlash = true;
+			dotCount = 0;
+		} else {
+			foundSlash = false;
+		}
+	}
+
 	SemaphoreLocker locker(m_dlsem);
 
 	// Check the main cache key.
-	rp_string cache_filename = getCacheFilename(cache_key);
+	rp_string cache_filename = getCacheFilename(filter_cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
 		return rp_string();
@@ -191,8 +236,26 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 		int64_t sz = filesize(cache_filename);
 		if (sz == 0) {
 			// File is 0 bytes, which indicates it didn't exist
-			// on the server.
-			return rp_string();
+			// on the server. If the file is older than a week,
+			// try to redownload it.
+			// TODO: Configurable time.
+			// TODO: How should we handle errors?
+			time_t filetime;
+			if (get_mtime(cache_filename, &filetime) != 0)
+				return rp_string();
+
+			struct timeval systime;
+			if (gettimeofday(&systime, nullptr) != 0)
+				return rp_string();
+			if ((systime.tv_sec - filetime) < (86400*7)) {
+				// Less than a week old.
+				return rp_string();
+			}
+
+			// More than a week old.
+			// Delete the cache file and redownload it.
+			if (delete_file(cache_filename.c_str()) != 0)
+				return rp_string();
 		} else if (sz > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was cached successfully.
@@ -224,7 +287,6 @@ LibRomData::rp_string CacheManager::download(const rp_string &url, const rp_stri
 		// TODO: Only keep a negative cache if it's a 404.
 		// Keep the cached file as a 0-byte file to indicate
 		// a "negative" hit, but return an empty filename.
-
 		return rp_string();
 	}
 

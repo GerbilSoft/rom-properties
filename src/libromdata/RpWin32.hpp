@@ -28,6 +28,17 @@
 
 #include "RpWin32_sdk.h"
 
+namespace LibRomData {
+
+/**
+ * Convert a Win32 error code to a POSIX error code.
+ * @param w32err Win32 error code.
+ * @return Positive POSIX error code. (If no equivalent is found, default is EINVAL.)
+ */
+int w32err_to_posix(DWORD w32err);
+
+}
+
 /** Windows-specific wrappers for wchar_t. **/
 
 /**
@@ -172,6 +183,10 @@ static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
 
 /** Time conversion functions. **/
 
+// Macros from MinGW-w64's gettimeofday.c.
+#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
+#define HECTONANOSEC_PER_SEC 10000000LL
+
 /**
  * Convert from Unix time to Win32 SYSTEMTIME.
  * @param unix_time Unix time.
@@ -181,7 +196,7 @@ static inline void UnixTimeToSystemTime(int64_t unix_time, SYSTEMTIME *pSystemTi
 {
 	// Reference: https://support.microsoft.com/en-us/kb/167296
 	LARGE_INTEGER li;
-	li.QuadPart = (unix_time * 10000000LL) + 116444736000000000LL;
+	li.QuadPart = (unix_time * HECTONANOSEC_PER_SEC) + FILETIME_1970;
 
 	FILETIME ft;
 	ft.dwLowDateTime = li.LowPart;
@@ -200,7 +215,72 @@ static inline int64_t FileTimeToUnixTime(const FILETIME *pFileTime)
 	LARGE_INTEGER li;
 	li.LowPart = pFileTime->dwLowDateTime;
 	li.HighPart = (LONG)pFileTime->dwHighDateTime;
-	return (li.QuadPart - 116444736000000000LL) / 10000000LL;
+	return (li.QuadPart - FILETIME_1970) / HECTONANOSEC_PER_SEC;
 }
+
+/**
+ * Convert from Win32 SYSTEMTIME to Unix time.
+ * @param pFileTime Win32 SYSTEMTIME.
+ * @return Unix time.
+ */
+static inline int64_t SystemTimeToUnixTime(const SYSTEMTIME *pSystemTime)
+{
+	FILETIME fileTime;
+	SystemTimeToFileTime(pSystemTime, &fileTime);
+	return FileTimeToUnixTime(&fileTime);
+}
+
+#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
+/**
+ * MinGW-w64 only defines ULONG overloads for the various atomic functions
+ * if _WIN32_WINNT > 0x0502.
+ */
+static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedIncrement(static_cast<LONG volatile*>(Addend)));
+}
+static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedDecrement(static_cast<LONG volatile*>(Addend)));
+}
+#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
+
+#ifdef _MSC_VER
+#define UUID_ATTR(str) __declspec(uuid(str))
+#else /* !_MSC_VER */
+// UUID attribute is not supported by gcc-5.2.0.
+#define UUID_ATTR(str)
+#endif /* _MSC_VER */
+
+#define UNUSED(x) ((void)x)
+
+/** C99/POSIX replacement functions. **/
+
+#ifdef _MSC_VER
+// MSVC doesn't have gettimeofday().
+// NOTE: MSVC does have struct timeval in winsock.h,
+// but it uses long, which is 32-bit.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define timeval rp_timeval
+struct timeval {
+	time_t   tv_sec;	// seconds
+	uint32_t tv_usec;	// microseconds
+};
+
+#define timezone rp_timezone
+struct timezone {
+	int tz_minuteswest;	// minutes west of Greenwich
+	int tz_dsttime;		// type of DST correction
+};
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+#ifdef __cplusplus
+}
+#endif
+#endif /* _MSC_VER */
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_HPP__ */

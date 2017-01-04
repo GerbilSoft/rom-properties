@@ -205,8 +205,9 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		chr = end - 1;
 	}
 
-	string value(equals_pos + 1, end - 1 - equals_pos);
-	if (value.empty() || (value.size() % 2 != 0)) {
+	const char *value = equals_pos + 1;
+	int value_len = (int)(end - 1 - equals_pos);
+	if (value[0] == 0 || (value_len % 2 != 0)) {
 		// Key is either empty, or is an odd length.
 		// (Odd length means half a byte...)
 		return;
@@ -223,7 +224,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 	unsigned int vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
-	vKeys.resize(vKeys.size() + (value.size() / 2));
+	vKeys.resize(vKeys.size() + (value_len / 2));
 
 	// ASCII to HEX lookup table.
 	// Reference: http://codereview.stackexchange.com/questions/22757/char-hex-string-to-byte-array
@@ -248,12 +249,11 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF //F
 	};
 
-	chr = value.data();
-	for (int i = (int)value.size(); i > 0; i -= 2, vKeys_pos++, chr += 2) {
+	for (; value_len > 0; value_len -= 2, vKeys_pos++, value += 2) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
-		char chr0 = ascii_to_hex[(uint8_t)chr[0]];
-		char chr1 = ascii_to_hex[(uint8_t)chr[1]];
+		char chr0 = ascii_to_hex[(uint8_t)value[0]];
+		char chr1 = ascii_to_hex[(uint8_t)value[1]];
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
 			vKeys.resize(vKeys_start_pos);

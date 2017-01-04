@@ -341,6 +341,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	}
 
 	if (img) {
+		// TODO: If the image is non-square, make it square.
 		// Convert the image to HICON.
 		HICON hIcon = RpImageWin32::toHICON(img);
 		if (hIcon != nullptr) {

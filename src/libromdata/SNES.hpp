@@ -48,16 +48,12 @@ class SNES : public RomData
 		 * @param file Open ROM image.
 		 */
 		explicit SNES(IRpFile *file);
-		virtual ~SNES();
 
 	private:
 		typedef RomData super;
+		friend class SNESPrivate;
 		SNES(const SNES &other);
 		SNES &operator=(const SNES &other);
-
-	private:
-		friend class SNESPrivate;
-		SNESPrivate *const d;
 
 	public:
 		/** ROM detection functions. **/

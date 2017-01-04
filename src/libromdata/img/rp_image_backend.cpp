@@ -56,8 +56,6 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, height(height)
 	, stride(0)
 	, format(format)
-	, palette(nullptr)
-	, palette_len(0)
 	, tr_idx(-1)
 {
 	// Calculate the stride.
@@ -77,7 +75,7 @@ bool rp_image_backend::isValid(void) const
 		format != rp_image::FORMAT_NONE &&
 		data() && data_len() > 0 &&
 		(format != rp_image::FORMAT_CI8 ||
-		 (palette && palette_len > 0)));
+		 (palette() && palette_len() > 0)));
 }
 
 /**
@@ -102,8 +100,11 @@ bool rp_image_backend::has_translucent_palette_entries(void) const
 	if (this->format != rp_image::FORMAT_CI8)
 		return false;
 
-	const uint32_t *palette = this->palette;
-	int i = this->palette_len;
+	const uint32_t *palette = this->palette();
+	int i = this->palette_len();
+	assert(palette != nullptr);
+	assert(i > 0);
+
 	for (; i > 1; i -= 2, palette += 2) {
 		const uint8_t alpha1 = (palette[0] >> 24);
 		const uint8_t alpha2 = (palette[1] >> 24);

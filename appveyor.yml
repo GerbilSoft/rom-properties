@@ -11,6 +11,17 @@ init:
 # clone directory
 clone_folder: c:\projects\rom-properties
 
+# Don't build if source files aren't modified.
+only_commits:
+  files:
+    - appveyor.cmd
+    - appveyor.yml
+    - '**/CMakeLists.txt'
+    - '**/*.cmd'
+    - '**/*.sh'
+    - extlib/**/*
+    - src/**/*
+
 platform:
   - x86
   - x64

@@ -1285,6 +1285,21 @@ int CPngCheck::pngcheck(void)
 
   /*-------------------- BEGINNING OF IMMENSE WHILE-LOOP --------------------*/
 
+#ifdef USE_ZLIB
+  // This used to be at the beginning of the zlib code,
+  // but we can't use 'static' because this function
+  // needs to be reentrant and thread-safe.
+  // NOTE: uch *p must be initialized; otherwise, MSVC 2015
+  // release builds fail due to potential use of an uninitialized
+  // variable. (/sdl option)
+  uch *p = nullptr;   /* always points to next filter byte */
+  int cur_y = 0, cur_pass = 0, cur_xoff = 0, cur_yoff = 0, cur_xskip = 0, cur_yskip = 0;
+  long cur_width = 0, cur_linebytes = 0;
+  long numfilt = 0, numfilt_this_block = 0, numfilt_total = 0, numfilt_pass[7] = {0, 0, 0, 0, 0, 0, 0};
+  uch *eod = nullptr;
+  int err=Z_OK;
+#endif
+
   while ((c = fp->getc()) != EOF) {
     fp->ungetc(c);
 
@@ -1887,13 +1902,9 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
 #ifdef USE_ZLIB
       if (check_zlib && !zlib_error) {
-        static uch *p;   /* always points to next filter byte */
-        static int cur_y, cur_pass, cur_xoff, cur_yoff, cur_xskip, cur_yskip;
-        static long cur_width, cur_linebytes;
-        static long numfilt, numfilt_this_block, numfilt_total, numfilt_pass[7];
-        uch *eod;
-        int err=Z_OK;
-
+        // Variables moved outside of the 'while' loop.
+        // We can't use 'static' here because that's not
+        // reentrant or thread-safe.
         zstrm.next_in = buffer;
         zstrm.avail_in = toread;
 
@@ -2108,7 +2119,7 @@ FIXME: make sure bit 31 (0x80000000) is 0
 
             sz -= toread;
             toread = (sz > BS)? BS:sz;
-            if ((data_read = fp->read(buffer, toread)) != toread) {
+            if ((data_read = (int)fp->read(buffer, toread)) != toread) {
               printf("\nEOF while reading %s data\n", chunkid);
               set_err(kCriticalError);
               return global_error;

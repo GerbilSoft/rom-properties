@@ -37,16 +37,17 @@ namespace LibRomData {
 
 class WbfsReaderPrivate {
 	public:
-		explicit WbfsReaderPrivate(IRpFile *file);
+		WbfsReaderPrivate(WbfsReader *q, IRpFile *file);
 		~WbfsReaderPrivate();
 
 	private:
 		WbfsReaderPrivate(const WbfsReaderPrivate &other);
 		WbfsReaderPrivate &operator=(const WbfsReaderPrivate &other);
+	private:
+		WbfsReader *const q;
 
 	public:
 		IRpFile *file;
-		int lastError;
 		int64_t disc_size;		// Virtual disc image size.
 
 		// WBFS structs.
@@ -103,16 +104,16 @@ class WbfsReaderPrivate {
 // WBFS magic number.
 const uint8_t WbfsReaderPrivate::WBFS_MAGIC[4] = {'W','B','F','S'};
 
-WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
-	: file(nullptr)
-	, lastError(0)
+WbfsReaderPrivate::WbfsReaderPrivate(WbfsReader *q, IRpFile *file)
+	: q(q)
+	, file(nullptr)
 	, disc_size(0)
 	, m_wbfs(nullptr)
 	, m_wbfs_disc(nullptr)
 	, m_wbfs_pos(0)
 {
 	if (!file) {
-		lastError = EBADF;
+		q->m_lastError = EBADF;
 		return;
 	}
 	this->file = file->dup();
@@ -123,7 +124,7 @@ WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 		// Error reading the WBFS header.
 		delete this->file;
 		this->file = nullptr;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -135,7 +136,7 @@ WbfsReaderPrivate::WbfsReaderPrivate(IRpFile *file)
 		m_wbfs = nullptr;
 		delete this->file;
 		this->file = nullptr;
-		lastError = EIO;
+		q->m_lastError = EIO;
 		return;
 	}
 
@@ -305,8 +306,6 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 {
 	// Based on libwbfs.c's wbfs_open_disc()
 	// and wbfs_get_disc_info().
-	wbfs_disc_t *disc = nullptr;
-
 	const wbfs_head_t *const head = p->head;
 	uint32_t count = 0;
 	for (uint32_t i = 0; i < p->max_disc; i++) {
@@ -316,7 +315,7 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				wbfs_disc_t *disc = (wbfs_disc_t*)malloc(sizeof(wbfs_disc_t));
 				if (!disc) {
 					// ENOMEM
-					break;
+					return nullptr;
 				}
 				disc->p = p;
 				disc->i = i;
@@ -325,7 +324,8 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				disc->header = (wbfs_disc_info_t*)malloc(p->disc_info_sz);
 				if (!disc->header) {
 					// ENOMEM
-					break;
+					free(disc);
+					return nullptr;
 				}
 				file->seek(p->hd_sec_sz + (i*p->disc_info_sz));
 				size_t size = file->read(disc->header, p->disc_info_sz);
@@ -346,12 +346,6 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 				return disc;
 			}
 		}
-	}
-
-	// free() disc->header and disc in case of ENOMEM.
-	if (disc) {
-		free(disc->header);
-		free(disc);
 	}
 
 	// Disc not found.
@@ -402,7 +396,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 /** WbfsReader **/
 
 WbfsReader::WbfsReader(IRpFile *file)
-	: d(new WbfsReaderPrivate(file))
+	: d(new WbfsReaderPrivate(this, file))
 { }
 
 WbfsReader::~WbfsReader()
@@ -461,23 +455,6 @@ bool WbfsReader::isOpen(void) const
 }
 
 /**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int WbfsReader::lastError(void) const
-{
-	return d->lastError;
-}
-
-/**
- * Clear the last error.
- */
-void WbfsReader::clearError(void)
-{
-	d->lastError = 0;
-}
-
-/**
  * Read data from the disc image.
  * @param ptr Output data buffer.
  * @param size Amount of data to read, in bytes.
@@ -489,11 +466,11 @@ size_t WbfsReader::read(void *ptr, size_t size)
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
 	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return 0;
 	}
 
-	uint8_t *ptr8 = reinterpret_cast<uint8_t*>(ptr);
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 	size_t ret = 0;
 
 	// Are we already at the end of the file?
@@ -629,7 +606,7 @@ int WbfsReader::seek(int64_t pos)
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
 	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 
@@ -653,7 +630,7 @@ void WbfsReader::rewind(void)
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
 	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return;
 	}
 
@@ -664,13 +641,13 @@ void WbfsReader::rewind(void)
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */
-int64_t WbfsReader::size(void) const
+int64_t WbfsReader::size(void)
 {
 	assert(d->file != nullptr);
 	assert(d->m_wbfs != nullptr);
 	assert(d->m_wbfs_disc != nullptr);
 	if (!d->file || !d->m_wbfs || !d->m_wbfs_disc) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 

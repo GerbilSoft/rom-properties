@@ -30,6 +30,7 @@
 
 // libromdata
 #include "TextFuncs.hpp"
+#include "file/FileSystem.hpp"
 #include "uvector.h"
 #include "disc/GcnFst.hpp"
 #ifdef _WIN32
@@ -184,15 +185,20 @@ void GcnFstTest::TearDown(void)
  */
 unzFile GcnFstTest::openZip(const rp_char *filename)
 {
+	// Prepend fst_data.
+	rp_string path = _RP("fst_data");
+	path += _RP_CHR(DIR_SEP_CHR);
+	path += filename;
+
 #ifdef _WIN32
 	zlib_filefunc64_def ffunc;
 	fill_win32_filefunc64W(&ffunc);
-	return unzOpen2_64(RP2W_c(filename), &ffunc);
+	return unzOpen2_64(RP2W_s(path), &ffunc);
 #else /* !_WIN32 */
 #ifdef RP_UTF8
-	return unzOpen(filename);
+	return unzOpen(path.c_str());
 #else /* RP_UTF16 */
-	return unzOpen(rp_string_to_utf8(filename, rp_strlen(filename)));
+	return unzOpen(rp_string_to_utf8(path));
 #endif
 #endif /* _WIN32 */
 }

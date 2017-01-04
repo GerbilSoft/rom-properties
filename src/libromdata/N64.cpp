@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "N64.hpp"
+#include "RomData_p.hpp"
+
 #include "n64_structs.h"
 
 #include "common.h"
@@ -42,12 +44,13 @@ using std::vector;
 
 namespace LibRomData {
 
-class N64Private
+class N64Private : public RomDataPrivate
 {
 	public:
-		N64Private();
+		N64Private(N64 *q, IRpFile *file);
 
 	private:
+		typedef RomDataPrivate super;
 		N64Private(const N64Private &other);
 		N64Private &operator=(const N64Private &other);
 
@@ -91,8 +94,9 @@ const struct RomFields::Desc N64Private::n64_fields[] = {
 	{_RP("Checksum"), RomFields::RFT_STRING, {&n64_string_monospace}},
 };
 
-N64Private::N64Private()
-	: romType(ROM_TYPE_UNKNOWN)
+N64Private::N64Private(N64 *q, IRpFile *file)
+	: super(q, file, n64_fields, ARRAY_SIZE(n64_fields))
+	, romType(ROM_TYPE_UNKNOWN)
 { }
 
 /** N64 **/
@@ -111,19 +115,17 @@ N64Private::N64Private()
  * @param file Open ROM image.
  */
 N64::N64(IRpFile *file)
-	: super(file, N64Private::n64_fields, ARRAY_SIZE(N64Private::n64_fields))
-	, d(new N64Private())
+	: super(new N64Private(this, file))
 {
-	if (!m_file) {
+	RP_D(N64);
+	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
 
 	// Read the ROM image header.
-	static_assert(sizeof(N64_RomHeader) == N64_RomHeader_SIZE,
-		"N64_RomHeader is not 64 bytes.");
-	m_file->rewind();
-	size_t size = m_file->read(&d->romHeader, sizeof(d->romHeader));
+	d->file->rewind();
+	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
 	if (size != sizeof(d->romHeader))
 		return;
 
@@ -171,7 +173,7 @@ N64::N64(IRpFile *file)
 			return;
 	}
 
-	m_isValid = true;
+	d->isValid = true;
 
 	// Byteswap the header from Z64 format.
 	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
@@ -179,11 +181,6 @@ N64::N64(IRpFile *file)
 	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
 	d->romHeader.release	= be32_to_cpu(d->romHeader.release);
 	d->romHeader.checksum	= be64_to_cpu(d->romHeader.checksum);
-}
-
-N64::~N64()
-{
-	delete d;
 }
 
 /** ROM detection functions. **/
@@ -249,7 +246,8 @@ int N64::isRomSupported(const DetectInfo *info) const
  */
 const rp_char *N64::systemName(uint32_t type) const
 {
-	if (!m_isValid || !isSystemNameTypeValid(type))
+	RP_D(const N64);
+	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
 	// Bits 0-1: Type. (short, long, abbreviation)
@@ -307,13 +305,14 @@ vector<const rp_char*> N64::supportedFileExtensions(void) const
  */
 int N64::loadFieldData(void)
 {
-	if (m_fields->isDataLoaded()) {
+	RP_D(N64);
+	if (d->fields->isDataLoaded()) {
 		// Field data *has* been loaded...
 		return 0;
-	} else if (!m_file || !m_file->isOpen()) {
+	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!m_isValid || d->romType < 0) {
+	} else if (!d->isValid || d->romType < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
@@ -323,7 +322,7 @@ int N64::loadFieldData(void)
 
 	// Title.
 	// TODO: Space elimination.
-	m_fields->addData_string(cp1252_sjis_to_rp_string(
+	d->fields->addData_string(cp1252_sjis_to_rp_string(
 		romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
@@ -335,21 +334,21 @@ int N64::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	m_fields->addData_string(latin1_to_rp_string(id4, 4));
+	d->fields->addData_string(latin1_to_rp_string(id4, 4));
 
 	// Revision.
-	m_fields->addData_string_numeric(romHeader->revision, RomFields::FB_DEC, 2);
+	d->fields->addData_string_numeric(romHeader->revision, RomFields::FB_DEC, 2);
 
 	// Entry point.
-	m_fields->addData_string_numeric(romHeader->entrypoint, RomFields::FB_HEX, 8);
+	d->fields->addData_string_numeric(romHeader->entrypoint, RomFields::FB_HEX, 8);
 
 	// Checksum.
-	m_fields->addData_string_hexdump(
+	d->fields->addData_string_hexdump(
 		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
 		sizeof(romHeader->checksum));
 
 	// Finished reading the field data.
-	return (int)m_fields->count();
+	return (int)d->fields->count();
 }
 
 }

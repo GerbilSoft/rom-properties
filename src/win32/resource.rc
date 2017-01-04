@@ -33,7 +33,10 @@
 /** Dialogs. **/
 
 // Generic property sheet.
-IDD_PROPERTY_SHEET DIALOGEX 0, 0, PROP_MED_CXDLG, PROP_MED_CYDLG
+// FIXME: PROP_MED_CYDLG (215) is too small on Win7.
+// 215 vertical DLUs = 349px
+// Property sheet is ~404px, which is 249 DLUs.
+IDD_PROPERTY_SHEET DIALOGEX 0, 0, PROP_MED_CXDLG, 249
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE 0
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0

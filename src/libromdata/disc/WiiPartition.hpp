@@ -89,6 +89,20 @@ class WiiPartition : public GcnPartition
 		 * @return Encryption initialization status.
 		 */
 		EncInitStatus encInitStatus(void) const;
+
+		// Encryption key in use.
+		enum EncKey {
+			ENCKEY_UNKNOWN = -1,
+			ENCKEY_COMMON = 0,	// Wii common key
+			ENCKEY_KOREAN = 1,	// Korean key
+			ENCKEY_DEBUG = 2,	// RVT-R debug key
+		};
+
+		/**
+		 * Get the encryption key in use.
+		 * @return Encryption key in use.
+		 */
+		EncKey encKey(void) const;
 };
 
 }

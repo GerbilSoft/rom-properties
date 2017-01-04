@@ -50,14 +50,14 @@ IF /I "%PROCESSOR_ARCHITEW6432%" == "AMD64" (
 	SET "REGSVR32_64BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 )
 
-IF NOT EXIST rom-properties-amd64.dll (
-	ECHO *** ERROR: rom-properties-amd64.dll not found.
+IF NOT EXIST amd64\rom-properties.dll (
+	ECHO *** ERROR: amd64\rom-properties.dll not found.
 	PAUSE
 	EXIT /B 1
 )
 
-ECHO Unregistering rom-properties-amd64.dll...
-"%REGSVR32_64BIT%" /S /U rom-properties-amd64.dll
+ECHO Unregistering 64-bit rom-properties.dll...
+"%REGSVR32_64BIT%" /S /U amd64\rom-properties.dll
 IF ERRORLEVEL 1 (
 	ECHO *** ERROR: 64-bit DLL unregistration failed.
 	PAUSE
@@ -66,12 +66,12 @@ IF ERRORLEVEL 1 (
 ECHO 64-bit DLL unregistration successful.
 ECHO.
 
-IF NOT EXIST rom-properties-i386.dll (
-	ECHO *** WARNING: rom-properties-i386.dll not found.
+IF NOT EXIST i386\rom-properties.dll (
+	ECHO *** WARNING: i386\rom-properties.dll not found.
 	ECHO Skipping 32-bit DLL unregistration.
 ) ELSE (
-	ECHO Unregistering rom-properties-i386.dll...
-	"%REGSVR32_32BIT%" /S /U rom-properties-i386.dll
+	ECHO Unregistering 32-bit rom-properties.dll...
+	"%REGSVR32_32BIT%" /S /U i386\rom-properties.dll
 	IF ERRORLEVEL 1 (
 		ECHO *** ERROR: 32-bit DLL unregistration failed.
 	) ELSE (
@@ -85,14 +85,14 @@ EXIT /B 0
 :i386
 SET "REGSVR32_32BIT=%SYSTEMROOT%\SYSTEM32\REGSVR32.EXE"
 
-IF NOT EXIST rom-properties-i386.dll (
-	ECHO *** ERROR: rom-properties-i386.dll not found.
+IF NOT EXIST i386\rom-properties.dll (
+	ECHO *** ERROR: i386\rom-properties.dll not found.
 	PAUSE
 	EXIT /B 1
 )
 
-ECHO Unregistering rom-properties-i386.dll...
-"%REGSVR32_32BIT%" /S /U rom-properties-i386.dll
+ECHO Unregistering 32-bit rom-properties.dll...
+"%REGSVR32_32BIT%" /S /U i386\rom-properties.dll
 IF ERRORLEVEL 1 (
 	ECHO *** ERROR: 32-bit DLL unregistration failed.
 	PAUSE

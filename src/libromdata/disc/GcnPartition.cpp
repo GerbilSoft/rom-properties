@@ -80,27 +80,8 @@ GcnPartition::GcnPartition(GcnPartitionPrivate *d)
  */
 bool GcnPartition::isOpen(void) const
 {
-	const GcnPartitionPrivate *d = reinterpret_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return (d->discReader && d->discReader->isOpen());
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int GcnPartition::lastError(void) const
-{
-	const GcnPartitionPrivate *d = reinterpret_cast<const GcnPartitionPrivate*>(d_ptr);
-	return d->lastError;
-}
-
-/**
- * Clear the last error.
- */
-void GcnPartition::clearError(void)
-{
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
-	d->lastError = 0;
 }
 
 /**
@@ -111,11 +92,11 @@ void GcnPartition::clearError(void)
  */
 size_t GcnPartition::read(void *ptr, size_t size)
 {
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader || !d->discReader->isOpen()) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return 0;
 	}
 
@@ -131,11 +112,11 @@ size_t GcnPartition::read(void *ptr, size_t size)
  */
 int GcnPartition::seek(int64_t pos)
 {
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	assert(d->discReader != nullptr);
 	assert(d->discReader->isOpen());
 	if (!d->discReader ||  !d->discReader->isOpen()) {
-		d->lastError = EBADF;
+		m_lastError = EBADF;
 		return -1;
 	}
 
@@ -157,10 +138,10 @@ void GcnPartition::rewind(void)
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t GcnPartition::size(void) const
+int64_t GcnPartition::size(void)
 {
 	// TODO: Errors?
-	const GcnPartitionPrivate *d = reinterpret_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return d->data_size;
 }
 
@@ -174,7 +155,7 @@ int64_t GcnPartition::size(void) const
 int64_t GcnPartition::partition_size(void) const
 {
 	// TODO: Errors?
-	const GcnPartitionPrivate *d = reinterpret_cast<const GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	return d->partition_size;
 }
 
@@ -189,7 +170,7 @@ int64_t GcnPartition::partition_size(void) const
  */
 IFst::Dir *GcnPartition::opendir(const rp_char *path)
 {
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// FST isn't loaded.
 		if (d->loadFst() != 0) {
@@ -210,7 +191,7 @@ IFst::Dir *GcnPartition::opendir(const rp_char *path)
  */
 IFst::DirEnt *GcnPartition::readdir(IFst::Dir *dirp)
 {
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// TODO: Errors?
 		return nullptr;
@@ -226,7 +207,7 @@ IFst::DirEnt *GcnPartition::readdir(IFst::Dir *dirp)
  */
 int GcnPartition::closedir(IFst::Dir *dirp)
 {
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// TODO: Errors?
 		return -EBADF;
@@ -244,19 +225,19 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 {
 	// TODO: File reference counter.
 	// This might be difficult to do because GcnFile is a separate class.
-	GcnPartitionPrivate *d = reinterpret_cast<GcnPartitionPrivate*>(d_ptr);
+	RP_D(GcnPartition);
 	if (!d->fst) {
 		// FST isn't loaded.
 		if (d->loadFst() != 0) {
 			// FST load failed.
-			// TODO: Errors?
+			m_lastError = EIO;
 			return nullptr;
 		}
 	}
 
 	if (!filename) {
 		// No filename.
-		d->lastError = EINVAL;
+		m_lastError = EINVAL;
 		return nullptr;
 	}
 
@@ -265,14 +246,14 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 	int ret = d->fst->find_file(filename, &dirent);
 	if (ret != 0) {
 		// File not found.
-		d->lastError = ENOENT;
+		m_lastError = ENOENT;
 		return nullptr;
 	}
 
 	// Make sure this is a regular file.
 	if (dirent.type != DT_REG) {
 		// Not a regular file.
-		d->lastError = (dirent.type == DT_DIR ? EISDIR : EPERM);
+		m_lastError = (dirent.type == DT_DIR ? EISDIR : EPERM);
 		return nullptr;
 	}
 
@@ -281,7 +262,7 @@ IRpFile *GcnPartition::open(const rp_char *filename)
 	    dirent.offset > d->partition_size - dirent.size)
 	{
 		// File is out of bounds.
-		d->lastError = -EIO;
+		m_lastError = EIO;
 		return nullptr;
 	}
 

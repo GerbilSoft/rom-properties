@@ -40,7 +40,7 @@ class IStreamWrapper : public IStream
 		 * The IRpFile is dup()'d.
 		 * @param file IRpFile.
 		 */
-		IStreamWrapper(IRpFile *file);
+		explicit IStreamWrapper(IRpFile *file);
 		virtual ~IStreamWrapper();
 
 	private:

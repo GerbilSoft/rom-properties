@@ -39,7 +39,6 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-#define DMG_RomHeader_SIZE 80
 #pragma pack(1)
 typedef struct PACKED _DMG_RomHeader {
 	uint8_t entry[4];
@@ -80,6 +79,7 @@ typedef struct PACKED _DMG_RomHeader {
 	uint16_t rom_checksum;   // checked by no one
 } DMG_RomHeader;
 #pragma pack()
+ASSERT_STRUCT(DMG_RomHeader, 80);
 
 #ifdef __cplusplus
 }
