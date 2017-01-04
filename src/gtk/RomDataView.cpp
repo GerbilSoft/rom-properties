@@ -110,7 +110,7 @@ struct _RomDataView {
 	// TODO: Icon and banner.
 
 	// Filename.
-	string		filename;
+	gchar		*filename;
 
 	// ROM data.
 	RomData		*romData;
@@ -175,6 +175,7 @@ static void
 rom_data_view_init(RomDataView *page)
 {
 	// No ROM data initially.
+	page->filename = nullptr;
 	page->romData = nullptr;
 	page->table = nullptr;
 	page->lblCredits = nullptr;
@@ -257,6 +258,9 @@ rom_data_view_finalize(GObject *object)
 	// This also deletes romData and iconFrames.
 	rom_data_view_set_filename(page, nullptr);
 
+	// Free the filename.
+	g_free(page->filename);
+
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
 	delete page->mapBitfields;
@@ -320,32 +324,30 @@ const gchar*
 rom_data_view_get_filename(RomDataView *page)
 {
 	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), nullptr);
-	return page->filename.c_str();
+	return page->filename;
 }
 
 /**
  * rom_data_view_set_filename:
  * @page : a #RomDataView.
- * @file : a #ThunarxFileInfo
+ * @filename : a filename.
  *
  * Sets the filename for this @page.
  **/
 void
 rom_data_view_set_filename(RomDataView	*page,
-			   const gchar	*file)
+			   const gchar	*filename)
 {
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 
 	/* Check if we already use this file */
-	if (G_UNLIKELY(page->filename.empty() && !file))
-		return;
-	if (G_UNLIKELY(file != nullptr && page->filename == file))
+	if (G_UNLIKELY(!g_strcmp0(page->filename, filename)))
 		return;
 
 	/* Disconnect from the previous file (if any) */
-	if (G_LIKELY(!page->filename.empty()))
-	{
-		page->filename.clear();
+	if (G_LIKELY(page->filename != nullptr)) {
+		g_free(page->filename);
+		page->filename = nullptr;
 
 		// NULL out iconAnimData.
 		// (This is owned by the RomData object.)
@@ -365,15 +367,11 @@ rom_data_view_set_filename(RomDataView	*page,
 	}
 
 	/* Assign the value */
-	if (!file) {
-		page->filename.clear();
-	} else {
-		page->filename = file;
-	}
+	page->filename = g_strdup(filename);
 
 	/* Connect to the new file (if any) */
-	if (G_LIKELY(!page->filename.empty())) {
-		rom_data_view_filename_changed(page->filename.c_str(), page);
+	if (G_LIKELY(page->filename != nullptr)) {
+		rom_data_view_filename_changed(page->filename, page);
 	} else {
 		// Hide the header row
 		if (page->hboxHeaderRow) {
@@ -396,12 +394,12 @@ rom_data_view_set_filename(RomDataView	*page,
 }
 
 static void
-rom_data_view_filename_changed(const gchar	*file,
+rom_data_view_filename_changed(const gchar	*filename,
 			       RomDataView	*page)
 {
-	g_return_if_fail(file != nullptr);
+	g_return_if_fail(filename != nullptr);
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
-	g_return_if_fail(page->filename == file);
+	g_return_if_fail(!g_strcmp0(page->filename, filename));
 
 	if (page->changed_idle == 0) {
 		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
@@ -840,11 +838,11 @@ rom_data_view_load_rom_data(gpointer data)
 {
 	RomDataView *page = ROM_DATA_VIEW(data);
 	g_return_val_if_fail(page != nullptr || IS_ROM_DATA_VIEW(page), FALSE);
-	g_return_val_if_fail(!page->filename.empty(), FALSE);
+	g_return_val_if_fail(page->filename != nullptr, FALSE);
 
 	// Open the ROM file.
 	// TODO: gvfs support.
-	if (G_LIKELY(!page->filename.empty())) {
+	if (G_LIKELY(page->filename != nullptr)) {
 		// Open the ROM file.
 		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
