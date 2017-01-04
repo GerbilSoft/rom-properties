@@ -194,6 +194,9 @@ rom_data_view_init(RomDataView *page)
 	 */
 
 #if GTK_CHECK_VERSION(3,0,0)
+	// Make this a VBox.
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(page), GTK_ORIENTATION_VERTICAL);
+
 	// Header row.
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	// TODO: Needs testing.
