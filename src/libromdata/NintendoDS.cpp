@@ -278,6 +278,11 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		return nullptr;
 	}
 
+	// Load the icon data.
+	// TODO: Only read the first frame unless specifically requested?
+	this->iconAnimData = new IconAnimData();
+	iconAnimData->count = 0;
+
 	// Check if a DSi animated icon is present.
 	// TODO: Some configuration option to return the standard
 	// NDS icon for the standard icon instead of the first frame
@@ -289,60 +294,58 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		// or the animated icon sequence is invalid.
 
 		// Convert the NDS icon to rp_image.
-		return ImageDecoder::fromNDS_CI4(32, 32,
+		iconAnimData->frames[0] = ImageDecoder::fromNDS_CI4(32, 32,
 			nds_icon_title.icon_data, sizeof(nds_icon_title.icon_data),
 			nds_icon_title.icon_pal,  sizeof(nds_icon_title.icon_pal));
-	}
+		iconAnimData->count = 1;
+	} else {
+		// Animated icon is present.
 
-	// Load the icon data.
-	// TODO: Only read the first frame unless specifically requested?
-	this->iconAnimData = new IconAnimData();
-	iconAnimData->count = 0;
+		// Which bitmaps are used?
+		bool bmp_used[IconAnimData::MAX_FRAMES];
+		memset(bmp_used, 0, sizeof(bmp_used));
 
-	// Which bitmaps are used?
-	bool bmp_used[IconAnimData::MAX_FRAMES];
-	memset(bmp_used, 0, sizeof(bmp_used));
+		// Parse the icon sequence.
+		int seq_idx;
+		for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
+			const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
+			const int delay = (seq & 0xFF);
+			if (delay == 0) {
+				// End of sequence.
+				break;
+			}
 
-	// Parse the icon sequence.
-	int seq_idx;
-	for (seq_idx = 0; seq_idx < ARRAY_SIZE(nds_icon_title.dsi_icon_seq); seq_idx++) {
-		const uint16_t seq = le16_to_cpu(nds_icon_title.dsi_icon_seq[seq_idx]);
-		const int delay = (seq & 0xFF);
-		if (delay == 0) {
-			// End of sequence.
-			break;
+			// Token format: (bits)
+			// - 15:    V flip (1=yes, 0=no) [TODO]
+			// - 14:    H flip (1=yes, 0=no) [TODO]
+			// - 13-11: Palette index.
+			// - 10-8:  Bitmap index.
+			// - 7-0:   Frame duration. (units of 60 Hz)
+
+			// NOTE: IconAnimData doesn't support arbitrary combinations
+			// of palette and bitmap. As a workaround, we'll make each
+			// combination a unique bitmap, which means we have a maximum
+			// of 64 bitmaps.
+			uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
+			bmp_used[bmp_pal_idx] = true;
+			iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
+			iconAnimData->delays[seq_idx] = delay * 1000 / 60;
 		}
+		iconAnimData->seq_count = seq_idx;
 
-		// Token format: (bits)
-		// - 15:    V flip (1=yes, 0=no) [TODO]
-		// - 14:    H flip (1=yes, 0=no) [TODO]
-		// - 13-11: Palette index.
-		// - 10-8:  Bitmap index.
-		// - 7-0:   Frame duration. (units of 60 Hz)
+		// Convert the required bitmaps.
+		for (int i = 0; i < IconAnimData::MAX_FRAMES; i++) {
+			if (bmp_used[i]) {
+				iconAnimData->count = i + 1;
 
-		// NOTE: IconAnimData doesn't support arbitrary combinations
-		// of palette and bitmap. As a workaround, we'll make each
-		// combination a unique bitmap, which means we have a maximum
-		// of 64 bitmaps.
-		uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
-		bmp_used[bmp_pal_idx] = true;
-		iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-		iconAnimData->delays[seq_idx] = delay * 1000 / 60;
-	}
-	iconAnimData->seq_count = seq_idx;
-
-	// Convert the required bitmaps.
-	for (int i = 0; i < IconAnimData::MAX_FRAMES; i++) {
-		if (bmp_used[i]) {
-			iconAnimData->count = i + 1;
-
-			const uint8_t bmp = (i & 7);
-			const uint8_t pal = (i >> 3) & 7;
-			iconAnimData->frames[i] = ImageDecoder::fromNDS_CI4(32, 32,
-				nds_icon_title.dsi_icon_data[bmp],
-				sizeof(nds_icon_title.dsi_icon_data[bmp]),
-				nds_icon_title.dsi_icon_pal[pal],
-				sizeof(nds_icon_title.dsi_icon_pal[pal]));
+				const uint8_t bmp = (i & 7);
+				const uint8_t pal = (i >> 3) & 7;
+				iconAnimData->frames[i] = ImageDecoder::fromNDS_CI4(32, 32,
+					nds_icon_title.dsi_icon_data[bmp],
+					sizeof(nds_icon_title.dsi_icon_data[bmp]),
+					nds_icon_title.dsi_icon_pal[pal],
+					sizeof(nds_icon_title.dsi_icon_pal[pal]));
+			}
 		}
 	}
 
