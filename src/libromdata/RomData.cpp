@@ -462,13 +462,14 @@ uint32_t RomData::imgpf(ImageType imageType) const
 
 static const rp_char *image_type_names[]={
 	// Internal
-	_RP("Internal icon"),		// IMG_INT_ICON
-	_RP("Internal banner"),		// IMG_INT_BANNER
-	_RP("Internal media scan"),	// IMG_INT_MEDIA
+	_RP("Internal icon"),					// IMG_INT_ICON
+	_RP("Internal banner"),					// IMG_INT_BANNER
+	_RP("Internal media scan"),				// IMG_INT_MEDIA
 	// External
-	_RP("External media scan"),	// IMG_EXT_MEDIA
-	_RP("External box scan"),	// IMG_EXT_BOX
-	
+	_RP("External media scan"),				// IMG_EXT_MEDIA
+	_RP("External box scan"),				// IMG_EXT_BOX
+	_RP("External box scan (both sides)"),	// IMG_EXT_BOX_FULL
+	_RP("External box scan (3D version)"),	// IMG_EXT_BOX_3D
 };
 /**
 * Get name of an image type
@@ -476,6 +477,7 @@ static const rp_char *image_type_names[]={
 * @return String containing user-friendly name of an image type.
 */
 const rp_char *RomData::getImageTypeName(ImageType imageType) {
+	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1, "Outdated image_type_names");
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		return nullptr;
