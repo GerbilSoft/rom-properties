@@ -63,7 +63,7 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 }
 
 G_MODULE_EXPORT void
-thunar_extension_shutdown (void)
+thunar_extension_shutdown(void)
 {
 #ifdef G_ENABLE_DEBUG
 	g_message("Shutting down rom-properties-xfce extension");

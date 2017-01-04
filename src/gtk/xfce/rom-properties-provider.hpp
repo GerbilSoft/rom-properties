@@ -32,7 +32,7 @@ G_BEGIN_DECLS;
 typedef struct _RomPropertiesProviderClass	RomPropertiesProviderClass;
 typedef struct _RomPropertiesProvider		RomPropertiesProvider;
 
-#define TYPE_ROM_PROPERTIES_PROVIDER		(rom_properties_provider_get_type ())
+#define TYPE_ROM_PROPERTIES_PROVIDER		(rom_properties_provider_get_type())
 #define ROM_PROPERTIES_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_ROM_PROPERTIES_PROVIDER, RomPropertiesProvider))
 #define ROM_PROPERTIES_PROVIDER_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_ROM_PROPERTIES_PROVIDER, RomPropertiesProviderClass))
 #define IS_ROM_PROPERTIES_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_ROM_PROPERTIES_PROVIDER))

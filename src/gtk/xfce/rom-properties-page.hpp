@@ -32,7 +32,7 @@ G_BEGIN_DECLS;
 typedef struct _RomPropertiesPageClass	RomPropertiesPageClass;
 typedef struct _RomPropertiesPage	RomPropertiesPage;
 
-#define TYPE_ROM_PROPERTIES_PAGE            (rom_properties_page_get_type ())
+#define TYPE_ROM_PROPERTIES_PAGE            (rom_properties_page_get_type())
 #define ROM_PROPERTIES_PAGE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_ROM_PROPERTIES_PAGE, RomPropertiesPage))
 #define ROM_PROPERTIES_PAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_ROM_PROPERTIES_PAGE, RomPropertiesPageClass))
 #define IS_ROM_PROPERTIES_PAGE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_ROM_PROPERTIES_PAGE))
