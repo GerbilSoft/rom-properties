@@ -1,6 +1,6 @@
 PROJECT(rom-properties-xfce)
 
-# XFCE frontend for rom-properties.
+# XFCE (Thunar) frontend for rom-properties.
 
 # TODO: Minimum GTK+ 2.x version?
 FIND_PACKAGE(GTK2 COMPONENTS gtk)
