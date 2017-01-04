@@ -57,7 +57,7 @@ public:
 	SafeString(const rp_char* str, bool quotes=true) :str(str), quotes(quotes) {}
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
-			assert(0); // RomData should never return a null string
+			//assert(0); // RomData should never return a null string // disregard that
 			return os << "(null)";
 		}
 		if (cp.quotes) {
@@ -152,6 +152,48 @@ public:
 		return os;
 	}
 };
+
+class DateTimeField {
+	size_t width;
+	const RomFields::Desc* desc;
+	const RomFields::Data* data;
+public:
+	DateTimeField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data) :width(width), desc(desc), data(data) {}
+	friend ostream& operator<<(ostream& os, const DateTimeField& field) {
+		auto desc = field.desc;
+		auto data = field.data;
+
+		assert(desc->date_time);
+		auto flags = desc->date_time->flags;
+
+		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
+		
+		tm timestamp;
+		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
+			timestamp = *gmtime((time_t*)&data->date_time);
+		}
+		else {
+			timestamp = *localtime((time_t*)&data->date_time);
+		}
+
+		static const char *formats[4] = {
+			"Invalid DateTime",
+			"%x", // Date
+			"%X", // Time
+			"%x %X", // Date Time
+		};
+
+		char str[128];
+
+		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_MASK], &timestamp);
+		
+		os << str;
+		
+		return os;
+	}
+};
+
+
 FieldsOutput::FieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
 std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 	size_t maxWidth = 0;
@@ -167,7 +209,7 @@ std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		if (i) os << endl;
 		switch (desc->type) {
 		case RomFields::RFT_INVALID: {
-			assert(0); // INVALID field type
+			assert(!"INVALID field type");
 			os << ColonPad(maxWidth, desc->name) << "INVALID";
 			break;
 		}
@@ -183,8 +225,12 @@ std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 			os << ListDataField(maxWidth, desc, data);
 			break;
 		}
+		case RomFields::RomFields::RFT_DATETIME: {
+			os << DateTimeField(maxWidth, desc, data);
+			break;
+		}
 		default: {
-			assert(0); // Unknown RomFieldType
+			assert(!"Unknown RomFieldType");
 			os << ColonPad(maxWidth, desc->name) << "NYI";
 		}
 		}
@@ -195,7 +241,7 @@ std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 class JSONString {
 	const rp_char* str;
 	static rp_string Replace(rp_string str, const rp_string &a, const rp_string &b) {
-		int pos = 0;
+		size_t pos = 0;
 		while ((pos = str.find(a, pos)) != rp_string::npos) {
 			str.replace(pos, a.length(), b);
 			pos += b.length();
@@ -205,9 +251,17 @@ class JSONString {
 public:
 	JSONString(const rp_char* str) :str(str) {}
 	friend ostream& operator<<(ostream& os, const JSONString& js) {
-		assert(js.str);
+		//assert(js.str); // not all strings can't be null, apparently
 		if (!js.str) return os << "0"; // clever way to distinguish nullptr
-		return os << "\"" << Replace(Replace(rp_string(js.str), "\\", "\\\\"), "\"", "\\\"") << "\"";
+		rp_string escaped = rp_string(js.str);
+		escaped = Replace(escaped, "\\", "\\\\");
+		escaped = Replace(escaped, "\"", "\\\"");
+		escaped = Replace(escaped, "\b", "\\b");
+		escaped = Replace(escaped, "\f", "\\f");
+		escaped = Replace(escaped, "\t", "\\t");
+		escaped = Replace(escaped, "\n", "\\n");
+		escaped = Replace(escaped, "\r", "\\r");
+		return os << "\"" << escaped << "\"";
 	}
 };
 
@@ -281,9 +335,18 @@ std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
 			os << "]}";
 			break;
 		}
+		case RomFields::RFT_DATETIME: {
+			os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(desc->name);
+			assert(desc->date_time);
+			if (desc->date_time) {
+				os << ",\"flags\":" << desc->date_time->flags;
+			}
+			os << "},\"data\":" << data->date_time << "}";
+			break;
+		}
 		default: {
-			assert(0); // Unknown RomFieldType
-			os << "{\"type\":\"NYI\"}";
+			assert(!"Unknown RomFieldType");
+			os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(desc->name) << "}}";
 		}
 		}
 	}
