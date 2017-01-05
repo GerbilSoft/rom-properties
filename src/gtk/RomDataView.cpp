@@ -582,7 +582,11 @@ rom_data_view_update_display(RomDataView *page)
 				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
 					// Credits text. Enable formatting and center alignment.
 					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
+#if GTK_CHECK_VERSION(3,0,0)
+					gtk_widget_set_halign(widget, GTK_ALIGN_CENTER);
+#else
 					gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f);
+#endif
 					if (data->str) {
 						// NOTE: Pango markup does not support <br/>.
 						// It uses standard newlines for line breaks.
@@ -592,7 +596,11 @@ rom_data_view_update_display(RomDataView *page)
 					// Standard text with no formatting.
 					gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
 					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+#if GTK_CHECK_VERSION(3,0,0)
+					gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
 					gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
+#endif
 					gtk_label_set_text(GTK_LABEL(widget), data->str);
 				}
 
@@ -775,8 +783,12 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_label_set_use_underline(GTK_LABEL(widget), false);
 				gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
 				gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-				gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
 				gtk_widget_show(widget);
+#if GTK_CHECK_VERSION(3,0,0)
+				gtk_widget_set_halign(widget, GTK_ALIGN_START);
+#else
+				gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
+#endif
 
 				GDateTime *dateTime;
 				if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
@@ -850,7 +862,11 @@ rom_data_view_update_display(RomDataView *page)
 #if GTK_CHECK_VERSION(3,0,0)
 			// TODO: GTK_FILL
 			gtk_widget_set_halign(lblDesc, GTK_ALIGN_END);
+			gtk_widget_set_valign(lblDesc, GTK_ALIGN_START);
 			gtk_grid_attach(GTK_GRID(page->table), lblDesc, 0, i, 1, 1);
+
+			// Widget halign is set above.
+			gtk_widget_set_valign(widget, GTK_ALIGN_START);
 			gtk_grid_attach(GTK_GRID(page->table), widget, 1, i, 1, 1);
 #else
 			gtk_misc_set_alignment(GTK_MISC(lblDesc), 1.0f, 0.0f);
