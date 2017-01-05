@@ -54,6 +54,7 @@ enum {
 	PROP_LAST
 };
 
+static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
 static void	rom_data_view_get_property	(GObject	*object,
 						 guint		 prop_id,
@@ -151,6 +152,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	GObjectClass *gobject_class;
 
 	gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->dispose = rom_data_view_dispose;
 	gobject_class->finalize = rom_data_view_finalize;
 	gobject_class->get_property = rom_data_view_get_property;
 	gobject_class->set_property = rom_data_view_set_property;
@@ -240,30 +242,39 @@ rom_data_view_init(RomDataView *page)
 }
 
 static void
-rom_data_view_finalize(GObject *object)
+rom_data_view_dispose(GObject *object)
 {
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	/* Unregister the changed_idle */
 	if (G_UNLIKELY(page->changed_idle != 0)) {
 		g_source_remove(page->changed_idle);
+		page->changed_idle = 0;
 	}
 
 	// Delete the timer.
 	if (page->tmrIconAnim > 0) {
 		// TODO: Make sure there's no race conditions...
 		g_source_remove(page->tmrIconAnim);
+		page->tmrIconAnim = 0;
 	}
 
-	// Clear some widget variables to ensure that
-	// rom_data_view_set_filename() doesn't try to do stuff.
-	page->hboxHeaderRow = nullptr;
-	page->table = nullptr;
-	page->lblCredits = nullptr;
+	// Delete the icon frames.
+	for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {
+		if (page->iconFrames[i]) {
+			g_object_unref(page->iconFrames[i]);
+			page->iconFrames[i] = nullptr;
+		}
+	}
 
-	// Free the file reference.
-	// This also deletes romData and iconFrames.
-	rom_data_view_set_filename(page, nullptr);
+	// Call the superclass dispose() function.
+	(*G_OBJECT_CLASS(rom_data_view_parent_class)->dispose)(object);
+}
+
+static void
+rom_data_view_finalize(GObject *object)
+{
+	RomDataView *page = ROM_DATA_VIEW(object);
 
 	// Free the filename.
 	g_free(page->filename);
@@ -272,6 +283,10 @@ rom_data_view_finalize(GObject *object)
 	delete page->iconAnimHelper;
 	delete page->mapBitfields;
 
+	// Delete romData.
+	delete page->romData;
+
+	// Call the superclass finalize() function.
 	(*G_OBJECT_CLASS(rom_data_view_parent_class)->finalize)(object);
 }
 

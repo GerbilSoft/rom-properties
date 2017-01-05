@@ -44,7 +44,8 @@ enum {
 	PROP_LAST
 };
 
-static void	rom_properties_page_finalize(GObject *object);
+static void	rom_properties_page_dispose		(GObject		*object);
+static void	rom_properties_page_finalize		(GObject		*object);
 static void	rom_properties_page_get_property        (GObject		*object,
 							 guint			 prop_id,
 							 GValue			*value,
@@ -86,6 +87,7 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 	GObjectClass *gobject_class;
 
 	gobject_class = G_OBJECT_CLASS (klass);
+	gobject_class->dispose = rom_properties_page_dispose;
 	gobject_class->finalize = rom_properties_page_finalize;
 	gobject_class->get_property = rom_properties_page_get_property;
 	gobject_class->set_property = rom_properties_page_set_property;
@@ -111,8 +113,25 @@ rom_properties_page_init(RomPropertiesPage *page)
 }
 
 static void
+rom_properties_page_dispose(GObject *object)
+{
+	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
+
+	// Unreference the file.
+	// NOTE: Might not be needed, but Nautilus 3.x does this.
+	if (page->file) {
+		g_object_unref(page->file);
+		page->file = nullptr;
+	}
+
+	// Call the superclass dispose() function.
+	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose)(object);
+}
+
+static void
 rom_properties_page_finalize(GObject *object)
 {
+	// Call the superclass finalize() function.
 	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
 }
 
