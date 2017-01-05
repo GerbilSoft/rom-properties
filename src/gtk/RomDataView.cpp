@@ -51,6 +51,7 @@ using std::vector;
 enum {
 	PROP_0,
 	PROP_FILENAME,
+	PROP_LAST
 };
 
 static void	rom_data_view_finalize		(GObject	*object);
@@ -142,14 +143,7 @@ G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 	GTK_TYPE_VBOX, static_cast<GTypeFlags>(0), {});
 #endif
 
-static inline void make_label_bold(GtkLabel *label)
-{
-	PangoAttrList *attr_lst = pango_attr_list_new();
-	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-	pango_attr_list_insert(attr_lst, attr);
-	gtk_label_set_attributes(label, attr_lst);
-	pango_attr_list_unref(attr_lst);
-}
+static GParamSpec *properties[PROP_LAST];
 
 static void
 rom_data_view_class_init(RomDataViewClass *klass)
@@ -164,11 +158,22 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	/**
 	 * RomDataView:filename:
 	 *
-	 * The filename modified on this page.
+	 * The name of the file being displayed on this page.
 	 **/
-	g_object_class_install_property(gobject_class, PROP_FILENAME,
-		g_param_spec_string("filename", "filename", "filename",
-			"", G_PARAM_READWRITE));
+	properties[PROP_FILENAME] = g_param_spec_string(
+		"filename", "filename", "filename",
+		"", G_PARAM_READWRITE);
+	g_object_class_install_property(gobject_class, PROP_FILENAME, properties[PROP_FILENAME]);
+}
+
+static inline void
+make_label_bold(GtkLabel *label)
+{
+	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+	pango_attr_list_insert(attr_lst, attr);
+	gtk_label_set_attributes(label, attr_lst);
+	pango_attr_list_unref(attr_lst);
 }
 
 static void

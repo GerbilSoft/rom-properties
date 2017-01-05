@@ -41,6 +41,7 @@ using std::vector;
 enum {
 	PROP_0,
 	PROP_FILE,
+	PROP_LAST
 };
 
 static void	rom_properties_page_finalize(GObject *object);
@@ -77,6 +78,8 @@ struct _RomPropertiesPage {
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
 	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
 
+static GParamSpec *properties[PROP_LAST];
+
 static void
 rom_properties_page_class_init(RomPropertiesPageClass *klass)
 {
@@ -90,11 +93,12 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 	/**
 	 * RomPropertiesPage:file:
 	 *
-	 * The #ThunarxFileInfo modified on this page.
+	 * The #ThunarxFileInfo being displayed on this page.
 	 **/
-	g_object_class_install_property(gobject_class, PROP_FILE,
-		g_param_spec_object("file", "file", "file",
-			THUNARX_TYPE_FILE_INFO, G_PARAM_READWRITE));
+	properties[PROP_FILE] = g_param_spec_object(
+		"file", "file", "file",
+		THUNARX_TYPE_FILE_INFO, G_PARAM_READWRITE);
+	g_object_class_install_property(gobject_class, PROP_FILE, properties[PROP_FILE]);
 }
 
 static void
