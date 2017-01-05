@@ -218,6 +218,9 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 		// Clear the file.
 		rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), nullptr);
 	}
+
+	// File has been changed.
+	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_FILE]);
 }
 
 static void

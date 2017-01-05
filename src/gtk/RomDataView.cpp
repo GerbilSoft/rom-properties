@@ -398,6 +398,9 @@ rom_data_view_set_filename(RomDataView	*page,
 			page->lblCredits = nullptr;
 		}
 	}
+
+	// Filename has been changed.
+	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_FILENAME]);
 }
 
 static void
