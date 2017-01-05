@@ -15,7 +15,7 @@ SET(rom-properties-gtk_H
 	)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
-FIND_PACKAGE(GLib2 2.16.0)
+FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
 IF(NOT GLib2_FOUND OR NOT GdkPixbuf2_FOUND)
 	# Cannot build any GTK+ frontends.
@@ -25,7 +25,7 @@ ENDIF(NOT GLib2_FOUND OR NOT GdkPixbuf2_FOUND)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
-	# TODO: Minimum GTK+ 2.x version?
+	# GTK2 minimum is 2.0.0, so no version check is needed.
 	FIND_PACKAGE(GTK2 COMPONENTS gtk)
 	IF(GTK2_FOUND)
 		ADD_SUBDIRECTORY(xfce)
@@ -36,8 +36,8 @@ ENDIF(BUILD_GTK2)
 
 # Build GTK+ 3.x frontends.
 IF(BUILD_GTK3)
-	# TODO: Minimum GTK+ 3.x version?
-	FIND_PACKAGE(GTK3 3.0.0)
+	# GTK3 minimum is 3.0.0, so no version check is needed.
+	FIND_PACKAGE(GTK3)
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gnome)
 	ELSE(GTK3_FOUND)

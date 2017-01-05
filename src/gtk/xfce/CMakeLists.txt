@@ -2,9 +2,9 @@ PROJECT(rom-properties-xfce)
 
 # XFCE (Thunar) frontend for rom-properties.
 
-# TODO: Minimum GTK+ 2.x version?
-FIND_PACKAGE(GLib2)
+FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
+# GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 COMPONENTS gtk)
 IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# Find the ThunarX 2 library.

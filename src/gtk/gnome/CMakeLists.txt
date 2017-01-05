@@ -2,10 +2,10 @@ PROJECT(rom-properties-gnome)
 
 # GNOME (Nautilus) frontend for rom-properties.
 
-# TODO: Minimum versions?
-FIND_PACKAGE(GLib2 2.16.0)
+FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
-FIND_PACKAGE(GTK3 3.0.0)
+# GTK3 minimum is 3.0.0, so no version check is needed.
+FIND_PACKAGE(GTK3)
 IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
