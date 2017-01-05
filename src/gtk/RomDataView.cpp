@@ -500,6 +500,16 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_widget_show(page->hboxHeaderRow);
 }
 
+#if GTK_CHECK_VERSION(3,0,0)
+#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_START)
+#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_CENTER)
+#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_END)
+#else
+#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
+#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f)
+#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 1.0f, 0.0f)
+#endif
+
 static void
 rom_data_view_update_display(RomDataView *page)
 {
@@ -582,11 +592,7 @@ rom_data_view_update_display(RomDataView *page)
 				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
 					// Credits text. Enable formatting and center alignment.
 					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
-#if GTK_CHECK_VERSION(3,0,0)
-					gtk_widget_set_halign(widget, GTK_ALIGN_CENTER);
-#else
-					gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f);
-#endif
+					GTK_WIDGET_HALIGN_CENTER(widget);
 					if (data->str) {
 						// NOTE: Pango markup does not support <br/>.
 						// It uses standard newlines for line breaks.
@@ -596,11 +602,7 @@ rom_data_view_update_display(RomDataView *page)
 					// Standard text with no formatting.
 					gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
 					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-#if GTK_CHECK_VERSION(3,0,0)
-					gtk_widget_set_halign(widget, GTK_ALIGN_START);
-#else
-					gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
-#endif
+					GTK_WIDGET_HALIGN_LEFT(widget);
 					gtk_label_set_text(GTK_LABEL(widget), data->str);
 				}
 
@@ -784,11 +786,7 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
 				gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 				gtk_widget_show(widget);
-#if GTK_CHECK_VERSION(3,0,0)
-				gtk_widget_set_halign(widget, GTK_ALIGN_START);
-#else
-				gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
-#endif
+				GTK_WIDGET_HALIGN_LEFT(widget);
 
 				GDateTime *dateTime;
 				if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
