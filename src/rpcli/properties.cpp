@@ -26,35 +26,36 @@
 #include <libromdata/RomData.hpp>
 #include <libromdata/RomFields.hpp>
 #include <libromdata/TextFuncs.hpp>
+#include <libromdata/img/rp_image.hpp>
 using std::setw;
 using std::left;
 using std::ostream;
 using std::max;
 using std::endl;
 using namespace LibRomData;
-class Pad{
+class Pad {
 	size_t width;
 public:
-	Pad(size_t width):width(width){}
-	friend ostream& operator<<(ostream& os,const Pad& pad){
+	Pad(size_t width) :width(width) {}
+	friend ostream& operator<<(ostream& os, const Pad& pad) {
 		return os << setw(pad.width) << "";
 	}
-	
+
 };
-class ColonPad{
+class ColonPad {
 	size_t width;
 	const rp_char* str;
 public:
-	ColonPad(size_t width,const rp_char* str):width(width),str(str){}
-	friend ostream& operator<<(ostream& os,const ColonPad& cp){
-		return os << cp.str << left << setw(max(0,(signed)( cp.width - rp_strlen(cp.str) ))) << ":";
+	ColonPad(size_t width, const rp_char* str) :width(width), str(str) {}
+	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
+		return os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ":";
 	}
 };
 class SafeString {
 	const rp_char* str;
 	bool quotes;
 public:
-	SafeString(const rp_char* str, bool quotes=true) :str(str), quotes(quotes) {}
+	SafeString(const rp_char* str, bool quotes = true) :str(str), quotes(quotes) {}
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
 			//assert(0); // RomData should never return a null string // disregard that
@@ -68,41 +69,41 @@ public:
 		}
 	}
 };
-class StringField{
+class StringField {
 	size_t width;
 	const RomFields::Desc* desc;
 	const RomFields::Data* data;
 public:
-	StringField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const StringField& field){
+	StringField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data) :width(width), desc(desc), data(data) {}
+	friend ostream& operator<<(ostream& os, const StringField& field) {
 		auto desc = field.desc;
 		auto data = field.data;
-		return os << ColonPad(field.width,desc->name) << SafeString(data->str,true);
+		return os << ColonPad(field.width, desc->name) << SafeString(data->str, true);
 	}
 };
 
-class BitfieldField{
+class BitfieldField {
 	size_t width;
 	const RomFields::Desc* desc;
 	const RomFields::Data* data;
 public:
-	BitfieldField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const BitfieldField& field){
+	BitfieldField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data) :width(width), desc(desc), data(data) {}
+	friend ostream& operator<<(ostream& os, const BitfieldField& field) {
 		auto desc = field.desc;
 		auto data = field.data;
-		
+
 		int perRow = desc->bitfield->elemsPerRow ? desc->bitfield->elemsPerRow : 4;
-		
+
 		size_t *colSize = new size_t[perRow]();
-		for(int i=0;i<desc->bitfield->elements;i++){
-			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]),colSize[i%perRow]);
+		for (int i = 0; i < desc->bitfield->elements; i++) {
+			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]), colSize[i%perRow]);
 		}
-		
-		os << ColonPad(field.width,desc->name); // ColonPad sets std::left
-		
-		for(int i=0;i<desc->bitfield->elements;i++){
-			if(i && i%perRow == 0) os << endl << Pad(field.width);
-			os << " [" << (data->bitfield & (1<<i) ? '*' : ' ') << "] " <<
+
+		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
+
+		for (int i = 0; i < desc->bitfield->elements; i++) {
+			if (i && i%perRow == 0) os << endl << Pad(field.width);
+			os << " [" << (data->bitfield & (1 << i) ? '*' : ' ') << "] " <<
 				setw(colSize[i%perRow]) << desc->bitfield->names[i];
 		}
 		delete[] colSize;
@@ -110,40 +111,40 @@ public:
 	}
 };
 
-class ListDataField{
+class ListDataField {
 	size_t width;
 	const RomFields::Desc* desc;
 	const RomFields::Data* data;
 public:
-	ListDataField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data):width(width),desc(desc),data(data){}
-	friend ostream& operator<<(ostream& os,const ListDataField& field){
+	ListDataField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data) :width(width), desc(desc), data(data) {}
+	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto desc = field.desc;
 		auto data = field.data;
-		
+
 		size_t *colSize = new size_t[desc->list_data->count]();
 		size_t totalWidth = desc->list_data->count + 1;
-		for(int i=0;i<desc->list_data->count;i++){
-			colSize[i] = rp_strlen(desc->list_data->names[i]); 
+		for (int i = 0; i < desc->list_data->count; i++) {
+			colSize[i] = rp_strlen(desc->list_data->names[i]);
 		}
-		for(auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it){
-			int i=0;
-			for(auto jt = it->begin(); jt != it->end(); ++jt){
-				colSize[i] = max(jt->length(),colSize[i]);
+		for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
+			int i = 0;
+			for (auto jt = it->begin(); jt != it->end(); ++jt) {
+				colSize[i] = max(jt->length(), colSize[i]);
 				i++;
 			}
 		}
-		
-		os << ColonPad(field.width,desc->name); // ColonPad sets std::left
-		
-		for(int i=0;i<desc->list_data->count;i++){
+
+		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
+
+		for (int i = 0; i < desc->list_data->count; i++) {
 			totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 			os << "|" << setw(colSize[i]) << desc->list_data->names[i];
 		}
-		os << "|" << endl << Pad(field.width) << rp_string(totalWidth,'-');
-		for(auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it){
-			int i=0;
+		os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
+		for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
+			int i = 0;
 			os << endl << Pad(field.width);
-			for(auto jt = it->begin(); jt != it->end(); ++jt){
+			for (auto jt = it->begin(); jt != it->end(); ++jt) {
 				os << "|" << setw(colSize[i++]) << *jt;
 			}
 			os << "|";
@@ -167,7 +168,7 @@ public:
 		auto flags = desc->date_time->flags;
 
 		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
-		
+
 		tm timestamp;
 		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
 			timestamp = *gmtime((time_t*)&data->date_time);
@@ -186,57 +187,60 @@ public:
 		char str[128];
 
 		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_MASK], &timestamp);
-		
+
 		os << str;
-		
+
 		return os;
 	}
 };
 
-
-FieldsOutput::FieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
-std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
-	size_t maxWidth = 0;
-	for (int i = 0; i<fo.fields.count(); i++) {
-		maxWidth = max(maxWidth, rp_strlen(fo.fields.desc(i)->name));
+class FieldsOutput {
+	const RomFields& fields;
+public:
+	FieldsOutput(const RomFields& fields) :fields(fields) {}
+	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
+		size_t maxWidth = 0;
+		for (int i = 0; i < fo.fields.count(); i++) {
+			maxWidth = max(maxWidth, rp_strlen(fo.fields.desc(i)->name));
+		}
+		maxWidth += 2;
+		for (int i = 0; i < fo.fields.count(); i++) {
+			auto desc = fo.fields.desc(i);
+			auto data = fo.fields.data(i);
+			assert(desc);
+			assert(data);
+			if (i) os << endl;
+			switch (desc->type) {
+			case RomFields::RFT_INVALID: {
+				assert(!"INVALID field type");
+				os << ColonPad(maxWidth, desc->name) << "INVALID";
+				break;
+			}
+			case RomFields::RFT_STRING: {
+				os << StringField(maxWidth, desc, data);
+				break;
+			}
+			case RomFields::RomFields::RFT_BITFIELD: {
+				os << BitfieldField(maxWidth, desc, data);
+				break;
+			}
+			case RomFields::RomFields::RFT_LISTDATA: {
+				os << ListDataField(maxWidth, desc, data);
+				break;
+			}
+			case RomFields::RomFields::RFT_DATETIME: {
+				os << DateTimeField(maxWidth, desc, data);
+				break;
+			}
+			default: {
+				assert(!"Unknown RomFieldType");
+				os << ColonPad(maxWidth, desc->name) << "NYI";
+			}
+			}
+		}
+		return os;
 	}
-	maxWidth += 2;
-	for (int i = 0; i<fo.fields.count(); i++) {
-		auto desc = fo.fields.desc(i);
-		auto data = fo.fields.data(i);
-		assert(desc);
-		assert(data);
-		if (i) os << endl;
-		switch (desc->type) {
-		case RomFields::RFT_INVALID: {
-			assert(!"INVALID field type");
-			os << ColonPad(maxWidth, desc->name) << "INVALID";
-			break;
-		}
-		case RomFields::RFT_STRING: {
-			os << StringField(maxWidth, desc, data);
-			break;
-		}
-		case RomFields::RomFields::RFT_BITFIELD: {
-			os << BitfieldField(maxWidth, desc, data);
-			break;
-		}
-		case RomFields::RomFields::RFT_LISTDATA: {
-			os << ListDataField(maxWidth, desc, data);
-			break;
-		}
-		case RomFields::RomFields::RFT_DATETIME: {
-			os << DateTimeField(maxWidth, desc, data);
-			break;
-		}
-		default: {
-			assert(!"Unknown RomFieldType");
-			os << ColonPad(maxWidth, desc->name) << "NYI";
-		}
-		}
-	}
-	return os;
-}
+};
 
 class JSONString {
 	const rp_char* str;
@@ -265,91 +269,177 @@ public:
 	}
 };
 
-JSONFieldsOutput::JSONFieldsOutput(const LibRomData::RomFields& fields) :fields(fields) {}
-std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
-	// TODO: make DoFile output everything as json in json mode
-	os << "[";
-	for (int i = 0; i<fo.fields.count(); i++) {
-		if (i) os << ",";
-		auto desc = fo.fields.desc(i);
-		auto data = fo.fields.data(i);
-		assert(desc);
-		assert(data);
-		if (i) os << endl;
-		switch (desc->type) {
-		case RomFields::RFT_INVALID: {
-			assert(0); // INVALID field type
-			os << "{\"type\":\"INVALID\"}";
-			break;
-		}
-		case RomFields::RFT_STRING: {
-			os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(desc->name);
-			if (desc->str_desc) { // nullptr check is required
-				os << ",\"format\":" << desc->str_desc->formatting;
+class JSONFieldsOutput {
+	const RomFields& fields;
+public:
+	JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
+	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
+		// TODO: make DoFile output everything as json in json mode
+		os << "[";
+		for (int i = 0; i < fo.fields.count(); i++) {
+			if (i) os << ",";
+			auto desc = fo.fields.desc(i);
+			auto data = fo.fields.data(i);
+			assert(desc);
+			assert(data);
+			if (i) os << endl;
+			switch (desc->type) {
+			case RomFields::RFT_INVALID: {
+				assert(0); // INVALID field type
+				os << "{\"type\":\"INVALID\"}";
+				break;
 			}
-			os << "},\"data\":" << JSONString(data->str) << "}";
-			break;
-		}
-		case RomFields::RomFields::RFT_BITFIELD: {
-			os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(desc->name);
-			assert(desc->bitfield);
-			if (desc->bitfield) {
-				os << ",\"elements\":" << desc->bitfield->elements;
-				os << ",\"elementsPerRow\":" << desc->bitfield->elemsPerRow;
-				os << ",\"names\":[";
-				for (int j = 0; j < desc->bitfield->elements; j++) {
-					if (j) os << ",";
-					os << JSONString(desc->bitfield->names[j]);
+			case RomFields::RFT_STRING: {
+				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(desc->name);
+				if (desc->str_desc) { // nullptr check is required
+					os << ",\"format\":" << desc->str_desc->formatting;
 				}
-				os << "]";
+				os << "},\"data\":" << JSONString(data->str) << "}";
+				break;
+			}
+			case RomFields::RomFields::RFT_BITFIELD: {
+				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(desc->name);
+				assert(desc->bitfield);
+				if (desc->bitfield) {
+					os << ",\"elements\":" << desc->bitfield->elements;
+					os << ",\"elementsPerRow\":" << desc->bitfield->elemsPerRow;
+					os << ",\"names\":[";
+					for (int j = 0; j < desc->bitfield->elements; j++) {
+						if (j) os << ",";
+						os << JSONString(desc->bitfield->names[j]);
+					}
+					os << "]";
 
-			}
-			os << "},\"data\":"<<data->bitfield<<"}";
-			break;
-		}
-		case RomFields::RomFields::RFT_LISTDATA: {
-			os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(desc->name);
-			assert(desc->list_data);
-			if (desc->list_data) {
-				os << ",\"count\":" << desc->list_data->count;
-				os << ",\"names\":[";
-				for (int j = 0; j < desc->list_data->count; j++) {
-					if (j) os << ",";
-					os << JSONString(desc->list_data->names[j]);
 				}
-				os << "]";
+				os << "},\"data\":" << data->bitfield << "}";
+				break;
 			}
-			os << "},\"data\":[";
-			assert(data->list_data);
-			if (data->list_data) {
-				for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
-					if (it != data->list_data->data.begin()) os << ",";
-					os << "[";
-					for (auto jt = it->begin(); jt != it->end(); ++jt) {
-						if (jt != it->begin()) os << ",";
-						os << JSONString(jt->c_str());
+			case RomFields::RomFields::RFT_LISTDATA: {
+				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(desc->name);
+				assert(desc->list_data);
+				if (desc->list_data) {
+					os << ",\"count\":" << desc->list_data->count;
+					os << ",\"names\":[";
+					for (int j = 0; j < desc->list_data->count; j++) {
+						if (j) os << ",";
+						os << JSONString(desc->list_data->names[j]);
 					}
 					os << "]";
 				}
+				os << "},\"data\":[";
+				assert(data->list_data);
+				if (data->list_data) {
+					for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
+						if (it != data->list_data->data.begin()) os << ",";
+						os << "[";
+						for (auto jt = it->begin(); jt != it->end(); ++jt) {
+							if (jt != it->begin()) os << ",";
+							os << JSONString(jt->c_str());
+						}
+						os << "]";
+					}
+				}
+				os << "]}";
+				break;
 			}
-			os << "]}";
-			break;
-		}
-		case RomFields::RFT_DATETIME: {
-			os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(desc->name);
-			assert(desc->date_time);
-			if (desc->date_time) {
-				os << ",\"flags\":" << desc->date_time->flags;
+			case RomFields::RFT_DATETIME: {
+				os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(desc->name);
+				assert(desc->date_time);
+				if (desc->date_time) {
+					os << ",\"flags\":" << desc->date_time->flags;
+				}
+				os << "},\"data\":" << data->date_time << "}";
+				break;
 			}
-			os << "},\"data\":" << data->date_time << "}";
-			break;
+			default: {
+				assert(!"Unknown RomFieldType");
+				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(desc->name) << "}}";
+			}
+			}
 		}
-		default: {
-			assert(!"Unknown RomFieldType");
-			os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(desc->name) << "}}";
-		}
+		os << "]";
+		return os;
+	}
+};
+
+
+
+ROMOutput::ROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) { }
+std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
+	auto romdata = fo.romdata;
+	os << "-- " << romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
+	return os << FieldsOutput(*(romdata->fields()));
+
+	int supported = romdata->supportedImageTypes();
+
+	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+		if (supported&(1 << i)) {
+			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << endl;
+			auto image = romdata->image((RomData::ImageType)i);
+			if (image && image->isValid()) {
+				os << "   Format : " << rp_image::getFormatName(image->format()) << endl;
+				os << "   Size   : " << image->width() << " x " << image->height() << endl;
+			}
 		}
 	}
-	os << "]";
-	return os;
+
+	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
+		if (supported&(1 << i)) {
+			auto &urls = *romdata->extURLs((RomData::ImageType)i);
+			for (auto s : urls)
+				os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << ": " << s.url << " (cache_key: " << s.cache_key << ")" << endl;
+		}
+	}
+}
+
+JSONROMOutput::JSONROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) {}
+std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
+	auto romdata = fo.romdata;
+	assert(romdata && romdata->isValid());
+
+	os << "{\"system\":" << JSONString(romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC));
+	os << ",\"filetype\":" << JSONString(romdata->fileType_string());
+	os << ",\"fields\":" << JSONFieldsOutput(*(romdata->fields()));
+
+	int supported = romdata->supportedImageTypes();
+
+	os << ",\"imgint\":[";
+	bool first = true;
+	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+		if (supported&(1 << i)) {
+			if (first) first = false;
+			else os << ",";
+
+			os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
+			auto image = romdata->image((RomData::ImageType)i);
+			if (image && image->isValid()) {
+				os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
+				os << ",\"size\":[" << image->width() << "," << image->height() << "]";
+			}
+			os << "}";
+		}
+	}
+
+	os << "],\"imgext\":[";
+	first = true;
+	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
+		if (supported&(1 << i)) {
+			if (first) first = false;
+			else os << ",";
+
+			os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
+			os << ",\"exturls\":[";
+			bool firsturl = true;
+			auto &urls = *romdata->extURLs((RomData::ImageType)i);
+			for (auto s : urls) {
+				if (firsturl) firsturl = false;
+				else os << ",";
+
+				os << "{\"url\":" << JSONString(s.url.c_str());
+				os << ",\"cache_key\":" << JSONString(s.cache_key.c_str()) << "}";
+			}
+			os << "]}";
+		}
+	}
+	return os << "]}";
 }

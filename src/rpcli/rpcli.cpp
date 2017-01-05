@@ -37,59 +37,47 @@ using std::endl;
 using std::ofstream;
 using namespace LibRomData;
 void DoFile(const char*filename, int extract, const char* outnames[], bool json){
-	cout << "== Reading file '" << filename << "'..." << endl;
+	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file && file->isOpen()) {
 		RomData *romData = RomDataFactory::getInstance(file);
 		if (romData) {
 			if(romData->isValid()){
-				cout << "-- " << romData->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
+
 				if (json) {
-					cout << JSONFieldsOutput(*(romData->fields())) << endl;
+					cerr << "-- Outputting json data" << endl;
+					cout << JSONROMOutput(romData) << endl;
 				}
 				else {
-					cout << FieldsOutput(*(romData->fields())) << endl;
+					cerr << ROMOutput(romData) << endl;
 				}
 				
 				int supported = romData->supportedImageTypes();
-				union{
-					int i;
-					RomData::ImageType it;
-				};
-				for(i=RomData::IMG_INT_MIN; i<=RomData::IMG_INT_MAX; i++){
-					if(supported&(1<<i)){
-						cout << "-- " << RomData::getImageTypeName(it) << " is present (use -x" << i << " to extract)" << endl;
-						auto image = romData->image(it);
-						if(image && image->isValid()){
-							cout << "   Format : " << rp_image::getFormatName(image->format()) << endl;
-							cout << "   Size   : " << image->width() << " x " << image->height() << endl;
+				for(int i=RomData::IMG_INT_MIN; i<=RomData::IMG_INT_MAX; i++){
+					if(supported & extract & (1<<i)){
+						auto image = romData->image((RomData::ImageType)i);
+						cerr << "-- Extracting " << RomData::getImageTypeName((RomData::ImageType)i) << " into '" << outnames[i] << "'" << endl;
+						ofstream file(outnames[i],std::ios::out | std::ios::binary);
+						if(!file.is_open()){
+							cerr << "-- Couldn't create file " << outnames[i] << endl;
+							continue;
 						}
-						if(extract&(1<<i)){
-							cout << "-- Extracting " << RomData::getImageTypeName(it) << " into '" << outnames[i] << "'" << endl;
-							ofstream file(outnames[i],std::ios::out | std::ios::binary);
-							if(!file.is_open()){
-								cout << "-- Couldn't create file " << outnames[i] << endl;
-								continue;
-							}
-							rpbmp(file,image);
-							file.close();
-						}
+						rpbmp(file,image);
+						file.close();
 					}
 				}
-				for(i=RomData::IMG_EXT_MIN; i<=RomData::IMG_EXT_MAX; i++){
-					if(supported&(1<<i)){
-						auto &urls = *romData->extURLs(it);
-						for(auto s : urls)
-							cout << "-- " << RomData::getImageTypeName(it) << ": " << s.url << " (cache_key: " << s.cache_key << ")" << endl;
-					}	
-				}
 			}else{
-				cout << "-- Rom is not supported" << endl;
+				cerr << "-- Rom is not supported" << endl;
+				if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 			}			
 			romData->close();
+		}else {
+			cerr << "-- Unknown error" << endl;
+			if (json) cout << "{\"error\":\"unknown error\"}" << endl;
 		}
 	}else{
-		cout << "-- Couldn't open file..." << endl;
+		cerr << "-- Couldn't open file..." << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\"}" << endl;
 	}
 	delete file;
 }
@@ -107,6 +95,12 @@ int main(int argc,char **argv){
 	const char* outnames[RomData::IMG_INT_MAX+1] = {0};
 	int extract = 0;
 	bool json = false;
+	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
+		if (argv[i][0] == '-' && argv[i][1] == 'j') {
+			json = true;
+		}
+	}
+
 	for(int i=1;i<argc;i++){
 		if(argv[i][0] == '-'){
 			if(argv[i][1] == 'x'){
@@ -119,7 +113,7 @@ int main(int argc,char **argv){
 				extract |= 1<<num;
 			}
 			else if (argv[i][1] == 'j') {
-				json = true;
+				// do nothing
 			}
 			else cerr << "Warning: skipping unknown switch '" << argv[i][1] << "'" << endl;
 		}

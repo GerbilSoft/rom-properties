@@ -22,18 +22,19 @@
 #ifndef __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 #define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 #include <ostream>
-#include <libromdata/RomFields.hpp>
+#include <libromdata/RomData.hpp>
 
-class FieldsOutput{
-	const LibRomData::RomFields& fields;
+class ROMOutput{
+	const LibRomData::RomData* romdata;
 public:
-	FieldsOutput(const LibRomData::RomFields& fields);
-	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo);
+	ROMOutput(const LibRomData::RomData* romdata);
+	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
-class JSONFieldsOutput {
-	const LibRomData::RomFields& fields;
+
+class JSONROMOutput {
+	const LibRomData::RomData* romdata;
 public:
-	JSONFieldsOutput(const LibRomData::RomFields& fields);
-	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo);
+	JSONROMOutput(const LibRomData::RomData* romdata);
+	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 };
 #endif /* __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__ */
