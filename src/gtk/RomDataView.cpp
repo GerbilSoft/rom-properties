@@ -96,7 +96,7 @@ struct _RomDataView {
 #endif
 
 	/* Widgets */
-	GtkWidget	*table;
+	GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
 	GtkWidget	*lblCredits;
 
 	/* Timeouts */
@@ -199,7 +199,6 @@ rom_data_view_init(RomDataView *page)
 
 	// Header row.
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	// TODO: Needs testing.
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow, FALSE, FALSE, 0);
 	gtk_widget_show(page->hboxHeaderRow);
@@ -538,10 +537,17 @@ rom_data_view_update_display(RomDataView *page)
 	}
 	const int count = fields->count();
 
-	// Create the table.
+#if GTK_CHECK_VERSION(3,0,0)
+	// Create the GtkGrid.
+	page->table = gtk_grid_new();
+	gtk_grid_set_row_spacing(GTK_GRID(page->table), 2);
+	gtk_grid_set_column_spacing(GTK_GRID(page->table), 8);
+#else
+	// Create the GtkTable.
 	page->table = gtk_table_new(count, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(page->table), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(page->table), 8);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(page->table), 8);
 	gtk_box_pack_start(GTK_BOX(page), page->table, FALSE, FALSE, 0);
 	gtk_widget_show(page->table);
@@ -561,46 +567,33 @@ rom_data_view_update_display(RomDataView *page)
 		if (!desc->name || desc->name[0] == '\0')
 			continue;
 
-		// TODO: Localization.
-		std::string gtkdesc = desc->name;
-		gtkdesc += ':';
-
-		GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
-		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
-		gtk_label_set_justify(GTK_LABEL(lblDesc), GTK_JUSTIFY_RIGHT);
-		make_label_bold(GTK_LABEL(lblDesc));
-		gtk_table_attach(GTK_TABLE(page->table), lblDesc, 0, 1, i, i+1,
-			GTK_FILL, GTK_FILL, 0, 0);
-		gtk_misc_set_alignment(GTK_MISC(lblDesc), 1.0f, 0.0f);
-		gtk_widget_show(lblDesc);
-
+		GtkWidget *widget = nullptr;
 		switch (desc->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
-				gtk_widget_destroy(lblDesc);
 				break;
 
 			case RomFields::RFT_STRING: {
 				// String type.
-				GtkWidget *lblString = gtk_label_new(nullptr);
-				gtk_label_set_use_underline(GTK_LABEL(lblString), false);
-				gtk_widget_show(lblString);
+				widget = gtk_label_new(nullptr);
+				gtk_label_set_use_underline(GTK_LABEL(widget), false);
+				gtk_widget_show(widget);
 
 				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
 					// Credits text. Enable formatting and center alignment.
-					gtk_label_set_justify(GTK_LABEL(lblString), GTK_JUSTIFY_CENTER);
-					gtk_misc_set_alignment(GTK_MISC(lblString), 0.5f, 0.0f);
+					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
+					gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f);
 					if (data->str) {
 						// NOTE: Pango markup does not support <br/>.
 						// It uses standard newlines for line breaks.
-						gtk_label_set_markup(GTK_LABEL(lblString), data->str);
+						gtk_label_set_markup(GTK_LABEL(widget), data->str);
 					}
 				} else {
 					// Standard text with no formatting.
-					gtk_label_set_selectable(GTK_LABEL(lblString), TRUE);
-					gtk_label_set_justify(GTK_LABEL(lblString), GTK_JUSTIFY_LEFT);
-					gtk_misc_set_alignment(GTK_MISC(lblString), 0.0f, 0.0f);
-					gtk_label_set_text(GTK_LABEL(lblString), data->str);
+					gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+					gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+					gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
+					gtk_label_set_text(GTK_LABEL(widget), data->str);
 				}
 
 				// Check for any formatting options.
@@ -621,7 +614,7 @@ rom_data_view_update_display(RomDataView *page)
 						pango_attr_list_insert(attr_lst, attr);
 					}
 
-					gtk_label_set_attributes(GTK_LABEL(lblString), attr_lst);
+					gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
 					pango_attr_list_unref(attr_lst);
 				}
 
@@ -634,14 +627,12 @@ rom_data_view_update_display(RomDataView *page)
 #endif
 
 					// Credits row.
-					gtk_box_pack_end(GTK_BOX(page), lblString, FALSE, FALSE, 0);
+					gtk_box_pack_end(GTK_BOX(page), widget, FALSE, FALSE, 0);
 
-					// No description field.
-					gtk_widget_destroy(lblDesc);
-				} else {
-					// Standard string row.
-					gtk_table_attach(GTK_TABLE(page->table), lblString, 1, 2, i, i+1,
-						GTK_FILL, GTK_FILL, 0, 0);
+					// NULL out widget to hide the description field.
+					// NOTE: Not destroying the widget since we still
+					// need it to be displayed.
+					widget = nullptr;
 				}
 
 				break;
@@ -666,10 +657,11 @@ rom_data_view_update_display(RomDataView *page)
 						totalRows++;
 					}
 				}
-				GtkWidget *gridBitfield = gtk_table_new(totalRows, totalCols, FALSE);
-				//gtk_table_set_row_spacings(GTK_TABLE(gridBitfield), 2);
-				//gtk_table_set_col_spacings(GTK_TABLE(gridBitfield), 8);
-				gtk_widget_show(gridBitfield);
+				// TODO: GtkGrid on GTK+ 3.x.
+				widget = gtk_table_new(totalRows, totalCols, FALSE);
+				//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
+				//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
+				gtk_widget_show(widget);
 
 				int row = 0, col = 0;
 				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
@@ -694,7 +686,7 @@ rom_data_view_update_display(RomDataView *page)
 						reinterpret_cast<GCallback>(checkbox_no_toggle_signal_handler),
 						page);
 
-					gtk_table_attach(GTK_TABLE(gridBitfield), checkBox, col, col+1, row, row+1,
+					gtk_table_attach(GTK_TABLE(widget), checkBox, col, col+1, row, row+1,
 						GTK_FILL, GTK_FILL, 0, 0);
 					col++;
 					if (col == bitfieldDesc->elemsPerRow) {
@@ -703,8 +695,6 @@ rom_data_view_update_display(RomDataView *page)
 					}
 				}
 
-				gtk_table_attach(GTK_TABLE(page->table), gridBitfield, 1, 2, i, i+1,
-					GTK_FILL, GTK_FILL, 0, 0);
 				break;
 			}
 
@@ -732,10 +722,10 @@ rom_data_view_update_display(RomDataView *page)
 				}
 
 				// Scroll area for the GtkTreeView.
-				GtkWidget *scrollArea = gtk_scrolled_window_new(nullptr, nullptr);
-				gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea),
+				widget = gtk_scrolled_window_new(nullptr, nullptr);
+				gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 						GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-				gtk_widget_show(scrollArea);
+				gtk_widget_show(widget);
 
 				// Create the GtkTreeView.
 				GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(listStore));
@@ -743,7 +733,7 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_widget_show(treeView);
 				//treeWidget->setRootIsDecorated(false);
 				//treeWidget->setUniformRowHeights(true);
-				gtk_container_add(GTK_CONTAINER(scrollArea), treeView);
+				gtk_container_add(GTK_CONTAINER(widget), treeView);
 
 				// Set up the column names.
 				for (int i = 0; i < count; i++) {
@@ -759,12 +749,10 @@ rom_data_view_update_display(RomDataView *page)
 				// Set a minimum height for the scroll area.
 				// TODO: Adjust for DPI, and/or use a font size?
 				// TODO: Force maximum horizontal width somehow?
-				gtk_widget_set_size_request(scrollArea, -1, 128);
+				gtk_widget_set_size_request(widget, -1, 128);
 
 				// Resize the columns to fit the contents.
 				gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
-				gtk_table_attach(GTK_TABLE(page->table), scrollArea, 1, 2, i, i+1,
-					GTK_FILL, GTK_FILL, 0, 0);
 				break;
 			}
 
@@ -772,12 +760,12 @@ rom_data_view_update_display(RomDataView *page)
 				// Date/Time.
 				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
 
-				GtkWidget *lblDateTime = gtk_label_new(nullptr);
-				gtk_label_set_use_underline(GTK_LABEL(lblDateTime), false);
-				gtk_label_set_selectable(GTK_LABEL(lblDateTime), TRUE);
-				gtk_label_set_justify(GTK_LABEL(lblDateTime), GTK_JUSTIFY_LEFT);
-				gtk_misc_set_alignment(GTK_MISC(lblDateTime), 0.0f, 0.0f);
-				gtk_widget_show(lblDateTime);
+				widget = gtk_label_new(nullptr);
+				gtk_label_set_use_underline(GTK_LABEL(widget), false);
+				gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+				gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+				gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f);
+				gtk_widget_show(widget);
 
 				GDateTime *dateTime;
 				if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
@@ -814,14 +802,12 @@ rom_data_view_update_display(RomDataView *page)
 				g_date_time_unref(dateTime);
 
 				if (str) {
-					gtk_label_set_text(GTK_LABEL(lblDateTime), str);
-					gtk_table_attach(GTK_TABLE(page->table), lblDateTime, 1, 2, i, i+1,
-						GTK_FILL, GTK_FILL, 0, 0);
+					gtk_label_set_text(GTK_LABEL(widget), str);
 					g_free(str);
 				} else {
 					// Invalid date/time.
-					gtk_widget_destroy(lblDateTime);
-					gtk_widget_destroy(lblDesc);
+					gtk_widget_destroy(widget);
+					widget = nullptr;
 				}
 
 				break;
@@ -830,8 +816,38 @@ rom_data_view_update_display(RomDataView *page)
 			default:
 				// Unsupported right now.
 				assert(!"Unsupported RomFields::RomFieldsType.");
-				gtk_widget_destroy(lblDesc);
 				break;
+		}
+
+		if (widget) {
+			// Add the widget to the table.
+
+			// TODO: Localization.
+			std::string gtkdesc = desc->name;
+			gtkdesc += ':';
+
+			// Description label.
+			GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
+			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
+			gtk_label_set_justify(GTK_LABEL(lblDesc), GTK_JUSTIFY_RIGHT);
+			// TODO: Only make it bold on XFCE.
+			make_label_bold(GTK_LABEL(lblDesc));
+			gtk_widget_show(lblDesc);
+
+			// Value widget.
+			// TODO: Left-align for GNOME; right-align for XFCE.
+#if GTK_CHECK_VERSION(3,0,0)
+			// TODO: GTK_FILL
+			gtk_widget_set_halign(lblDesc, GTK_ALIGN_END);
+			gtk_grid_attach(GTK_GRID(page->table), lblDesc, 0, i, 1, 1);
+			gtk_grid_attach(GTK_GRID(page->table), widget, 1, i, 1, 1);
+#else
+			gtk_misc_set_alignment(GTK_MISC(lblDesc), 1.0f, 0.0f);
+			gtk_table_attach(GTK_TABLE(page->table), lblDesc, 0, 1, i, i+1,
+				GTK_FILL, GTK_FILL, 0, 0);
+			gtk_table_attach(GTK_TABLE(page->table), widget, 1, 2, i, i+1,
+				GTK_FILL, GTK_FILL, 0, 0);
+#endif
 		}
 	}
 }
