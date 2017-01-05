@@ -643,6 +643,11 @@ rom_data_view_update_display(RomDataView *page)
 				// TODO: Description label needs some padding on the top...
 				const RomFields::BitfieldDesc *const bitfieldDesc = desc->bitfield;
 
+#if GTK_CHECK_VERSION(3,0,0)
+				widget = gtk_grid_new();
+				//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
+				//gtk_grid_set_column_spacings(GTK_TABLE(widget), 8);
+#else
 				// Determine the total number of rows and columns.
 				int totalRows, totalCols;
 				if (bitfieldDesc->elemsPerRow == 0) {
@@ -657,10 +662,11 @@ rom_data_view_update_display(RomDataView *page)
 						totalRows++;
 					}
 				}
-				// TODO: GtkGrid on GTK+ 3.x.
+
 				widget = gtk_table_new(totalRows, totalCols, FALSE);
 				//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 				//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
+#endif
 				gtk_widget_show(widget);
 
 				int row = 0, col = 0;
@@ -686,8 +692,13 @@ rom_data_view_update_display(RomDataView *page)
 						reinterpret_cast<GCallback>(checkbox_no_toggle_signal_handler),
 						page);
 
+#if GTK_CHECK_VERSION(3,0,0)
+					// TODO: GTK_FILL
+					gtk_grid_attach(GTK_GRID(widget), checkBox, col, row, 1, 1);
+#else
 					gtk_table_attach(GTK_TABLE(widget), checkBox, col, col+1, row, row+1,
 						GTK_FILL, GTK_FILL, 0, 0);
+#endif
 					col++;
 					if (col == bitfieldDesc->elemsPerRow) {
 						row++;
