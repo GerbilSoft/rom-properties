@@ -99,7 +99,8 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 	 **/
 	properties[PROP_FILE] = g_param_spec_object(
 		"file", "File", "ThunarxFileInfo of the ROM image being displayed.",
-		THUNARX_TYPE_FILE_INFO, G_PARAM_READWRITE);
+		THUNARX_TYPE_FILE_INFO,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 	g_object_class_install_property(gobject_class, PROP_FILE, properties[PROP_FILE]);
 }
 
