@@ -292,11 +292,11 @@ int64_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 	struct tm dctime;
 
 	dctime.tm_year = vmi_tm->year - 1900;
-	dctime.tm_mon  = vmi_tm->month - 1;
+	dctime.tm_mon  = vmi_tm->mon - 1;
 	dctime.tm_mday = vmi_tm->mday;
 	dctime.tm_hour = vmi_tm->hour;
-	dctime.tm_min  = vmi_tm->minute;
-	dctime.tm_sec  = vmi_tm->second;
+	dctime.tm_min  = vmi_tm->min;
+	dctime.tm_sec  = vmi_tm->sec;
 
 	// tm_wday and tm_yday are output variables.
 	dctime.tm_wday = 0;
@@ -335,16 +335,16 @@ int64_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *v
 			 ((vms_bcd_tm->century & 0x0F) * 100) +
 			 ((vms_bcd_tm->year >> 4) * 10) +
 			  (vms_bcd_tm->year & 0x0F) - 1900;
-	dctime.tm_mon  = ((vms_bcd_tm->month >> 4) * 10) +
-			  (vms_bcd_tm->month & 0x0F) - 1;
+	dctime.tm_mon  = ((vms_bcd_tm->mon >> 4) * 10) +
+			  (vms_bcd_tm->mon & 0x0F) - 1;
 	dctime.tm_mday = ((vms_bcd_tm->mday >> 4) * 10) +
 			  (vms_bcd_tm->mday & 0x0F);
 	dctime.tm_hour = ((vms_bcd_tm->hour >> 4) * 10) +
 			  (vms_bcd_tm->hour & 0x0F);
-	dctime.tm_min  = ((vms_bcd_tm->minute >> 4) * 10) +
-			  (vms_bcd_tm->minute & 0x0F);
-	dctime.tm_sec  = ((vms_bcd_tm->second >> 4) * 10) +
-			  (vms_bcd_tm->second & 0x0F);
+	dctime.tm_min  = ((vms_bcd_tm->min >> 4) * 10) +
+			  (vms_bcd_tm->min & 0x0F);
+	dctime.tm_sec  = ((vms_bcd_tm->sec >> 4) * 10) +
+			  (vms_bcd_tm->sec & 0x0F);
 
 	// tm_wday and tm_yday are output variables.
 	dctime.tm_wday = 0;

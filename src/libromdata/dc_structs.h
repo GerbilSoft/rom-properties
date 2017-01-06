@@ -137,11 +137,11 @@ typedef enum {
 #pragma pack(1)
 typedef struct PACKED _DC_VMI_Timestamp {
 	uint16_t year;		// Year (exact value)
-	uint8_t month;		// Month (1-12)
+	uint8_t mon;		// Month (1-12)
 	uint8_t mday;		// Day of month (1-31)
 	uint8_t hour;		// Hour (0-23)
-	uint8_t minute;		// Minute (0-59)
-	uint8_t second;		// Second (0-59)
+	uint8_t min;		// Minute (0-59)
+	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
 } DC_VMI_Timestamp;
 #pragma pack(0)
@@ -201,11 +201,11 @@ typedef enum {
 typedef struct PACKED _DC_VMS_BCD_Timestamp {
 	uint8_t century;	// Century.
 	uint8_t year;		// Year.
-	uint8_t month;		// Month (1-12)
+	uint8_t mon;		// Month (1-12)
 	uint8_t mday;		// Day of month (1-31)
 	uint8_t hour;		// Hour (0-23)
-	uint8_t minute;		// Minute (0-59)
-	uint8_t second;		// Second (0-59)
+	uint8_t min;		// Minute (0-59)
+	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
 } DC_VMS_BCD_Timestamp;
 #pragma pack()
