@@ -76,7 +76,7 @@ void DoFile(const char*filename, int extract, const char* outnames[], bool json)
 			if (json) cout << "{\"error\":\"unknown error\"}" << endl;
 		}
 	}else{
-		cerr << "-- Couldn't open file..." << endl;
+		cerr << "-- Couldn't open file... : " << strerror(file->lastError()) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\"}" << endl;
 	}
 	delete file;
