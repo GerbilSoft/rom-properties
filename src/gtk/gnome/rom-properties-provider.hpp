@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (XFCE)                             *
- * rom-properties-provider.hpp: ThunarX Provider Definition.               *
+ * ROM Properties Page shell extension. (GNOME)                            *
+ * rom-properties-provider.hpp: Nautilus Provider Definition.              *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -19,15 +19,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_XFCE_ROM_PROPERTIES_PROVIDER_HPP__
-#define __ROMPROPERTIES_XFCE_ROM_PROPERTIES_PROVIDER_HPP__
+#ifndef __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
+#define __ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__
 
-#include <glib.h>
+#include <libnautilus-extension/nautilus-property-page-provider.h>
 
 G_BEGIN_DECLS;
-
-// NOTE: thunarx.h doesn't have extern "C" set up properly everywhere.
-#include <thunarx/thunarx.h>
 
 typedef struct _RomPropertiesProviderClass	RomPropertiesProviderClass;
 typedef struct _RomPropertiesProvider		RomPropertiesProvider;
@@ -39,11 +36,13 @@ typedef struct _RomPropertiesProvider		RomPropertiesProvider;
 #define IS_ROM_PROPERTIES_PROVIDER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_ROM_PROPERTIES_PROVIDER))
 #define ROM_PROPERTIES_PROVIDER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_ROM_PROPERTIES_PROVIDER, RomPropertiesProviderClass))
 
+/* these two functions are implemented automatically by the G_DEFINE_DYNAMIC_TYPE macro */
 GType		rom_properties_provider_get_type	(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		rom_properties_provider_register_type	(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
+/* NOTE: G_DEFINE_DYNAMIC_TYPE() declares the actual function as static. */
+void		rom_properties_provider_register_type_ext(GTypeModule *module) G_GNUC_INTERNAL;
 
-gboolean	rom_properties_get_file_supported	(ThunarxFileInfo *info) G_GNUC_INTERNAL;
+gboolean	rom_properties_get_file_supported	(NautilusFileInfo *info) G_GNUC_INTERNAL;
 
 G_END_DECLS;
 
-#endif /* !__ROMPROPERTIES_XFCE_ROM_PROPERTIES_PROVIDER_HPP__ */
+#endif /* !__ROMPROPERTIES_GNOME_ROM_PROPERTIES_PROVIDER_HPP__ */

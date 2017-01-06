@@ -41,9 +41,11 @@ using std::vector;
 enum {
 	PROP_0,
 	PROP_FILE,
+	PROP_LAST
 };
 
-static void	rom_properties_page_finalize(GObject *object);
+static void	rom_properties_page_dispose		(GObject		*object);
+static void	rom_properties_page_finalize		(GObject		*object);
 static void	rom_properties_page_get_property        (GObject		*object,
 							 guint			 prop_id,
 							 GValue			*value,
@@ -77,12 +79,15 @@ struct _RomPropertiesPage {
 THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesPage, rom_properties_page,
 	THUNARX_TYPE_PROPERTY_PAGE, static_cast<GTypeFlags>(0), {});
 
+static GParamSpec *properties[PROP_LAST];
+
 static void
 rom_properties_page_class_init(RomPropertiesPageClass *klass)
 {
 	GObjectClass *gobject_class;
 
 	gobject_class = G_OBJECT_CLASS (klass);
+	gobject_class->dispose = rom_properties_page_dispose;
 	gobject_class->finalize = rom_properties_page_finalize;
 	gobject_class->get_property = rom_properties_page_get_property;
 	gobject_class->set_property = rom_properties_page_set_property;
@@ -90,11 +95,13 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 	/**
 	 * RomPropertiesPage:file:
 	 *
-	 * The #ThunarxFileInfo modified on this page.
+	 * The #ThunarxFileInfo being displayed on this page.
 	 **/
-	g_object_class_install_property(gobject_class, PROP_FILE,
-		g_param_spec_object("file", "file", "file",
-			THUNARX_TYPE_FILE_INFO, G_PARAM_READWRITE));
+	properties[PROP_FILE] = g_param_spec_object(
+		"file", "File", "ThunarxFileInfo of the ROM image being displayed.",
+		THUNARX_TYPE_FILE_INFO,
+		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+	g_object_class_install_property(gobject_class, PROP_FILE, properties[PROP_FILE]);
 }
 
 static void
@@ -102,13 +109,31 @@ rom_properties_page_init(RomPropertiesPage *page)
 {
 	// Initialize the RomDataView.
 	page->romDataView = rom_data_view_new();
+	rom_data_view_set_desc_format_type(ROM_DATA_VIEW(page->romDataView), RP_DFT_XFCE);
 	gtk_container_add(GTK_CONTAINER(page), page->romDataView);
 	gtk_widget_show(page->romDataView);
 }
 
 static void
+rom_properties_page_dispose(GObject *object)
+{
+	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
+
+	// Unreference the file.
+	// NOTE: Might not be needed, but Nautilus 3.x does this.
+	if (page->file) {
+		g_object_unref(page->file);
+		page->file = nullptr;
+	}
+
+	// Call the superclass dispose() function.
+	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose)(object);
+}
+
+static void
 rom_properties_page_finalize(GObject *object)
 {
+	// Call the superclass finalize() function.
 	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
 }
 
@@ -214,6 +239,9 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 		// Clear the file.
 		rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), nullptr);
 	}
+
+	// File has been changed.
+	g_object_notify_by_pspec(G_OBJECT(page), properties[PROP_FILE]);
 }
 
 static void
