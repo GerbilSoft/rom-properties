@@ -133,6 +133,7 @@ class DreamcastSavePrivate : public RomDataPrivate
 		int64_t ctime;
 
 		// Time conversion functions.
+		static int64_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
 		static int64_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
 
 		// Is this a game file?
@@ -268,6 +269,48 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
 		}
 		delete iconAnimData;
 	}
+}
+
+/**
+ * Convert a VMI timestamp to Unix time.
+ * @param vmi_tm VMI BCD timestamp.
+ * @return Unix time, or -1 if an error occurred.
+ *
+ * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+ * not likely to be valid for Dreamcast, since Dreamcast
+ * was released in 1998.
+ *
+ * NOTE: vmi_tm->year must have been byteswapped prior to
+ * calling this function.
+ */
+int64_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
+{
+	// Convert the VMI time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm dctime;
+
+	dctime.tm_year = vmi_tm->year - 1900;
+	dctime.tm_mon  = vmi_tm->month - 1;
+	dctime.tm_mday = vmi_tm->mday;
+	dctime.tm_hour = vmi_tm->hour;
+	dctime.tm_min  = vmi_tm->minute;
+	dctime.tm_sec  = vmi_tm->second;
+
+	// tm_wday and tm_yday are output variables.
+	dctime.tm_wday = 0;
+	dctime.tm_yday = 0;
+	dctime.tm_isdst = 0;
+
+	// If conversion fails, d->ctime will be set to -1.
+#ifdef _WIN32
+	// MSVCRT-specific version.
+	return _mkgmtime(&dctime);
+#else /* !_WIN32 */
+	// FIXME: Might not be available on some systems.
+	return timegm(&dctime);
+#endif
 }
 
 /**
@@ -434,29 +477,7 @@ int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
 	loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMI;
 
 	// Convert the VMI time to Unix time.
-	// NOTE: struct tm has some oddities:
-	// - tm_year: year - 1900
-	// - tm_mon: 0 == January
-	struct tm dctime;
-	dctime.tm_year = vmi_header.ctime.year - 1900;
-	dctime.tm_mon  = vmi_header.ctime.month - 1;
-	dctime.tm_mday = vmi_header.ctime.mday;
-	dctime.tm_hour = vmi_header.ctime.hour;
-	dctime.tm_min  = vmi_header.ctime.minute;
-	dctime.tm_sec  = vmi_header.ctime.second;
-	// tm_wday and tm_yday are output variables.
-	dctime.tm_wday = 0;
-	dctime.tm_yday = 0;
-	dctime.tm_isdst = 0;
-
-	// FIXME: Handle ctime conversion errors.
-#ifdef _WIN32
-	// MSVCRT-specific version.
-	ctime = _mkgmtime(&dctime);
-#else /* !_WIN32 */
-	// FIXME: Might not be available on some systems.
-	ctime = timegm(&dctime);
-#endif
+	this->ctime = vmi_to_unix_time(&vmi_header.ctime);
 
 	// File size, in blocks.
 	const unsigned int blocks = (vmi_header.filesize / DC_VMS_BLOCK_SIZE);
@@ -938,7 +959,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			return;
 		}
 
-		// Convert the BCD time to Unix time.
+		// Convert the VMS BCD time to Unix time.
 		d->ctime = d->vms_bcd_to_unix_time(&d->vms_dirent.ctime);
 	} else {
 		// If the VMI file is not available, we'll use a heuristic:
