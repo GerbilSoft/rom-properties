@@ -369,7 +369,7 @@ ROMOutput::ROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	os << "-- " << romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
-	return os << FieldsOutput(*(romdata->fields()));
+	os << FieldsOutput(*(romdata->fields()));
 
 	int supported = romdata->supportedImageTypes();
 
@@ -394,6 +394,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 				os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << ": " << s.url << " (cache_key: " << s.cache_key << ")" << endl;
 		}
 	}
+	return os;
 }
 
 JSONROMOutput::JSONROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) {}
