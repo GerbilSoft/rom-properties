@@ -51,7 +51,7 @@ using namespace LibRomData;
 void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool json, uint32_t bmp, const char *fn_iconanim){
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
-	if (file && file->isOpen()) {
+	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::getInstance(file);
 		if (romData) {
 			if(romData->isValid()){
