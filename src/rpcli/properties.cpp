@@ -380,6 +380,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			if (image && image->isValid()) {
 				os << "   Format : " << rp_image::getFormatName(image->format()) << endl;
 				os << "   Size   : " << image->width() << " x " << image->height() << endl;
+				if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
+					os << "   Animated icon present (use -a to extract)" << endl;
+				}
 			}
 		}
 	}
