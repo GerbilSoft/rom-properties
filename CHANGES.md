@@ -3,8 +3,16 @@
 ## v0.9-beta2 (unreleased)
 
 * New features:
-  * New XFCE frontend. Currently only implements the property page.
-    Thumbnailing will be implemented before release.
+  * New GTK+ frontends for XFCE's Thunar file manager (using GTK+ 2.x)
+    and GNOME's Nautilus file manager (using GTK+ 3.x). These currently
+    only implement the property page. Thumbnailing will be implemented
+    before release.
+    * While the GTK+ frontends share code, they are packaged separately in
+      order to reduce dependencies on GNOME-only and XFCE-only systems.
+  * Negative image caching for online databases (that is, caching the "this
+    image does not exist" result) now expires after one week. This allows
+    the image to be retrieved if it has since been uploaded to the database
+    without manually clearing the local cache.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
