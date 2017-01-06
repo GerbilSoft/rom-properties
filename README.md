@@ -71,13 +71,13 @@ access on Windows Vista and later.
 
 ## Current OS Feature Support Level
 
-|     Platform     | Properties Tab | Thumbnails |
-|------------------|:--------------:|:----------:|
-| KDE 4.x          |       Yes      |     Yes    |
-| KDE 5.x          |       Yes      |     Yes    |
-| XFCE (Thunar)    |       Yes      |     No     |
-| GNOME (Nautilus) |       No       |     No     |
-| Windows          |       Yes      |     Yes    |
+|      Platform      | Properties Tab | Thumbnails |
+|--------------------|:--------------:|:----------:|
+| KDE 4.x            |       Yes      |     Yes    |
+| KDE 5.x            |       Yes      |     Yes    |
+| XFCE (Thunar)      |       Yes      |     No     |
+| GNOME 3 (Nautilus) |       Yes      |     No     |
+| Windows            |       Yes      |     Yes    |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
