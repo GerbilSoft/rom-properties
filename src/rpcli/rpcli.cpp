@@ -100,7 +100,8 @@ int main(int argc,char **argv){
 			json = true;
 		}
 	}
-
+	if (json) cout << "[";
+	bool first = true;
 	for(int i=1;i<argc;i++){
 		if(argv[i][0] == '-'){
 			if(argv[i][1] == 'x'){
@@ -118,9 +119,12 @@ int main(int argc,char **argv){
 			else cerr << "Warning: skipping unknown switch '" << argv[i][1] << "'" << endl;
 		}
 		else{
+			if (first) first = false;
+			else if (json) cout << "," << endl;
 			DoFile(argv[i], extract, outnames, json);
 			extract=0;
 		}
 	}
+	if (json) cout << "]";
 	return 0;
 }
