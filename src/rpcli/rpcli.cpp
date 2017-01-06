@@ -30,6 +30,7 @@
 #include <libromdata/TextFuncs.hpp>
 #include <libromdata/img/rp_image.hpp>
 #include <libromdata/img/RpPng.hpp>
+#include <libromdata/img/IconAnimData.hpp>
 #include "bmp.hpp"
 #include "properties.hpp"
 using std::cout;
@@ -45,9 +46,9 @@ using namespace LibRomData;
 * @param outnames Target filenames for extracting ImageTypes
 * @param json Is program running in json mode?
 * @param bmp Bitmask: should an image be extracted as png (0) or bmp (1)?
-* @param iconanim Target filename for extracting IconAnimData. nullptr = don't extract
+* @param fn_iconanim Target filename for extracting IconAnimData. nullptr = don't extract
 */
-void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool json, uint32_t bmp, const char *iconanim){
+void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool json, uint32_t bmp, const char *fn_iconanim){
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file && file->isOpen()) {
@@ -81,6 +82,22 @@ void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool
 						}				
 					}
 				}
+
+				auto iconAnimData = romData->iconAnimData();
+				if (fn_iconanim && iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0){
+					cerr << "-- Extracting animated icon into " << fn_iconanim << endl;
+					int errcode;
+					if (errcode = RpPng::save(fn_iconanim, iconAnimData)) {
+						if (errcode == -ENOTSUP) {
+							cerr << "-- APNG not supported, extracting only the first frame" << endl;
+							// falling back to outputting the first frame
+							errcode = RpPng::save(fn_iconanim, iconAnimData->frames[iconAnimData->seq_index[0]]);
+						}
+						if (errcode) {
+							cerr << "-- Couldn't create file " << fn_iconanim << " : " << strerror(-errcode) << endl;
+						}
+					}
+				}
 			}else{
 				cerr << "-- Rom is not supported" << endl;
 				if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
@@ -111,7 +128,7 @@ int main(int argc,char **argv){
 	const char* outnames[RomData::IMG_INT_MAX+1] = {0};
 	uint32_t extract = 0, bmp = 0;
 	bool json = false;
-	const char* iconanim = nullptr;
+	const char* fn_iconanim = nullptr;
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == '-' && argv[i][1] == 'j') {
@@ -136,7 +153,7 @@ int main(int argc,char **argv){
 				break;
 			}
 			case 'a':
-				iconanim = argv[++i];
+				fn_iconanim = argv[++i];
 				break;
 			case 'j': // do nothing
 				break;
@@ -148,9 +165,9 @@ int main(int argc,char **argv){
 		else{
 			if (first) first = false;
 			else if (json) cout << "," << endl;
-			DoFile(argv[i], extract, outnames, json, bmp, iconanim);
+			DoFile(argv[i], extract, outnames, json, bmp, fn_iconanim);
 			extract = bmp = 0;
-			iconanim = nullptr;
+			fn_iconanim = nullptr;
 		}
 	}
 	if (json) cout << "]";
