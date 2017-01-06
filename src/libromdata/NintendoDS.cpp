@@ -451,7 +451,7 @@ int NintendoDSPrivate::getTitleIndex(void) const
 			lang = NDS_LANG_ENGLISH;
 		} else {
 			// Not valid. Check Japanese.
-			if (nds_icon_title.title[NDS_LANG_ENGLISH][0] != 0) {
+			if (nds_icon_title.title[NDS_LANG_JAPANESE][0] != 0) {
 				// Japanese is valid.
 				lang = NDS_LANG_JAPANESE;
 			} else {
