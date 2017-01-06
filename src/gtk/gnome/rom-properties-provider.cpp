@@ -120,6 +120,7 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		// TODO: Add some extra padding to the top...
 		GtkWidget *romDataView = static_cast<GtkWidget*>(
 			g_object_new(rom_data_view_get_type(), nullptr));
+		rom_data_view_set_desc_format_type(ROM_DATA_VIEW(romDataView), RP_DFT_GNOME);
 		rom_data_view_set_filename(ROM_DATA_VIEW(romDataView), filename);
 		gtk_widget_show(romDataView);
 		g_free(filename);

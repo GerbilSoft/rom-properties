@@ -109,6 +109,7 @@ rom_properties_page_init(RomPropertiesPage *page)
 {
 	// Initialize the RomDataView.
 	page->romDataView = rom_data_view_new();
+	rom_data_view_set_desc_format_type(ROM_DATA_VIEW(page->romDataView), RP_DFT_XFCE);
 	gtk_container_add(GTK_CONTAINER(page), page->romDataView);
 	gtk_widget_show(page->romDataView);
 }
