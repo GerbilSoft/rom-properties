@@ -22,6 +22,7 @@
 #include "bmp.hpp"
 #include <cassert>
 #include <ostream>
+#include <fstream>
 #include <libromdata/img/rp_image.hpp>
 #include <libromdata/byteswap.h>
 #include <libromdata/common.h>
@@ -134,4 +135,12 @@ int rpbmp(std::ostream& os, const rp_image* img){
 	
 	os.write((const char*)img->bits(),img->data_len());
 	return 0;
+}
+
+int rpbmp(const rp_char *filename, const LibRomData::rp_image* img) {
+	std::ofstream file(filename, std::ios::out | std::ios::binary);
+	if (!file.is_open()) {
+		return -1;
+	}
+	return rpbmp(file, img);
 }
