@@ -27,6 +27,7 @@
 #include <libromdata/RomFields.hpp>
 #include <libromdata/TextFuncs.hpp>
 #include <libromdata/img/rp_image.hpp>
+#include <libromdata/img/IconAnimData.hpp>
 using std::setw;
 using std::left;
 using std::ostream;
@@ -415,6 +416,27 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			if (image && image->isValid()) {
 				os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
 				os << ",\"size\":[" << image->width() << "," << image->height() << "]";
+				int ppf = romdata->imgpf((RomData::ImageType) i);
+				if (ppf) {
+					os << ",\"postprocessing\":" << ppf;
+				}
+				if (ppf & RomData::IMGPF_ICON_ANIMATED) {
+					auto animdata = romdata->iconAnimData();
+					if (animdata) {
+						os << ",\"frames\":" << animdata->count;
+						os << ",\"sequence\":[";
+						for (int i = 0; i < animdata->seq_count; i++) {
+							if (i) os << ",";
+							os << (unsigned)animdata->seq_index[i];
+						}
+						os << "],\"delay\":[";
+						for (int i = 0; i < animdata->seq_count; i++) {
+							if (i) os << ",";
+							os << animdata->delays[i];
+						}
+						os << "]";
+					}
+				}
 			}
 			os << "}";
 		}
@@ -428,6 +450,11 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			else os << ",";
 
 			os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
+			int ppf = romdata->imgpf((RomData::ImageType) i);
+			if (ppf) {
+				os << ",\"postprocessing\":" << ppf;
+			}
+			// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
 			os << ",\"exturls\":[";
 			bool firsturl = true;
 			auto &urls = *romdata->extURLs((RomData::ImageType)i);
