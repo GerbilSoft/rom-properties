@@ -163,8 +163,8 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	 * The name of the file being displayed on this page.
 	 **/
 	properties[PROP_FILENAME] = g_param_spec_string(
-		"filename", "filename", "filename",
-		"", G_PARAM_READWRITE);
+		"filename", "Filename", "Filename of the ROM image being displayed.",
+		nullptr, G_PARAM_READWRITE);
 	g_object_class_install_property(gobject_class, PROP_FILENAME, properties[PROP_FILENAME]);
 }
 
