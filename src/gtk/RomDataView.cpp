@@ -38,9 +38,11 @@ using namespace LibRomData;
 // C++ includes.
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 using std::string;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 // References:
@@ -135,6 +137,7 @@ struct _RomDataView {
 	// Description labels.
 	RpDescFormatType	desc_format_type;
 	GSList			*lstDescLabels;
+	unordered_set<GtkWidget*>	*setDescLabelIsWarning;
 
 	// Bitfield checkboxes.
 	unordered_map<GtkWidget*, gboolean> *mapBitfields;
@@ -194,15 +197,27 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 /**
  * Set the label format type.
+ * @param page RomDataView.
  * @param label GtkLabel.
  * @param desc_format_type Format type.
  */
 static inline void
-set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
+set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_format_type)
 {
 	PangoAttrList *attr_lst = pango_attr_list_new();
 	PangoAttribute *attr;
 
+	auto iter = page->setDescLabelIsWarning->find(GTK_WIDGET(label));
+	const bool is_warning = (iter != page->setDescLabelIsWarning->end());
+	if (is_warning) {
+		// Use the "Warning" format.
+		PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+		pango_attr_list_insert(attr_lst, attr);
+		attr = pango_attr_foreground_new(65535, 0, 0);
+		pango_attr_list_insert(attr_lst, attr);
+	}
+
+	// Check for DE-specific formatting.
 	switch (desc_format_type) {
 		case RP_DFT_XFCE:
 		default:
@@ -217,9 +232,11 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 			gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f);
 #endif
 
-			// Text style: Bold
-			attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
-			pango_attr_list_insert(attr_lst, attr);
+			if (!is_warning) {
+				// Text style: Bold
+				attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+				pango_attr_list_insert(attr_lst, attr);
+			}
 			break;
 
 		case RP_DFT_GNOME:
@@ -254,6 +271,7 @@ rom_data_view_init(RomDataView *page)
 	page->iconAnimHelper = new IconAnimHelper();
 	page->desc_format_type = RP_DFT_XFCE;
 	page->lstDescLabels = nullptr;
+	page->setDescLabelIsWarning = new unordered_set<GtkWidget*>();
 	page->mapBitfields = new unordered_map<GtkWidget*, gboolean>();
 
 	// Animation timer.
@@ -353,8 +371,12 @@ rom_data_view_finalize(GObject *object)
 	// Free the filename.
 	g_free(page->filename);
 
+	// Clear the description labels list.
+	g_slist_free(page->lstDescLabels);
+
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
+	delete page->setDescLabelIsWarning;
 	delete page->mapBitfields;
 
 	// Delete romData.
@@ -483,11 +505,10 @@ rom_data_view_set_filename(RomDataView	*page,
 			gtk_widget_hide(page->hboxHeaderRow);
 		}
 
-		// Clear the description labels list.
+		// Clear the various widget references.
 		g_slist_free(page->lstDescLabels);
 		page->lstDescLabels = nullptr;
-
-		// Clear the bitfield checkboxes map.
+		page->setDescLabelIsWarning->clear();
 		page->mapBitfields->clear();
 
 		// Delete the table and "credits" label.
@@ -552,7 +573,7 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 	for (GSList *label = page->lstDescLabels;
 	     label != nullptr; label = g_slist_next(label))
 	{
-		set_label_format_type(GTK_LABEL(label->data), desc_format_type);
+		set_label_format_type(page, GTK_LABEL(label->data), desc_format_type);
 	}
 }
 
@@ -666,7 +687,10 @@ rom_data_view_update_display(RomDataView *page)
 	// Initialize the header row.
 	rom_data_view_init_header_row(page);
 
-	// Clear the bitfield checkboxes map.
+	// Clear the various widget references.
+	g_slist_free(page->lstDescLabels);
+	page->lstDescLabels = nullptr;
+	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
 
 	// Delete the table if it's already present.
@@ -726,6 +750,7 @@ rom_data_view_update_display(RomDataView *page)
 			continue;
 
 		GtkWidget *widget = nullptr;
+		bool make_desc_warning = false;
 		switch (desc->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
@@ -770,6 +795,7 @@ rom_data_view_update_display(RomDataView *page)
 						pango_attr_list_insert(attr_lst, attr);
 						attr = pango_attr_foreground_new(65535, 0, 0);
 						pango_attr_list_insert(attr_lst, attr);
+						make_desc_warning = true;
 					}
 
 					gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
@@ -998,9 +1024,13 @@ rom_data_view_update_display(RomDataView *page)
 			// Description label.
 			GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
-			set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
 			gtk_widget_show(lblDesc);
 			page->lstDescLabels = g_slist_prepend(page->lstDescLabels, lblDesc);
+			if (make_desc_warning) {
+				// Description label should use the "warning" style.
+				page->setDescLabelIsWarning->insert(lblDesc);
+			}
+			set_label_format_type(page, GTK_LABEL(lblDesc), page->desc_format_type);
 
 			// Value widget.
 			// TODO: Left-align for GNOME; right-align for XFCE.
