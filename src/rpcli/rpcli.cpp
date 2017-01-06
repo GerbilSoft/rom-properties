@@ -150,6 +150,7 @@ int main(int argc,char **argv){
 				outnames[num] = argv[++i];
 				extract |= 1 << num;
 				if (isbmp) bmp |= 1 << num;
+				else bmp &= ~( 1 << num );
 				break;
 			}
 			case 'a':
