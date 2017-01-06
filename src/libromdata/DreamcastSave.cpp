@@ -125,9 +125,15 @@ class DreamcastSavePrivate : public RomDataPrivate
 		DC_VMI_Header vmi_header;
 		// Directory entry.
 		DC_VMS_DirEnt vms_dirent;
+
 		// Creation time. Converted from binary or BCD,
 		// depending on if we loaded a VMI or DCI.
-		time_t ctime;
+		// If the original value is invalid, this will
+		// be set to -1.
+		int64_t ctime;
+
+		// Time conversion functions.
+		static int64_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
 
 		// Is this a game file?
 		// TODO: Bitfield in saveType or something.
@@ -240,7 +246,7 @@ DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
 	, vmi_file(nullptr)
 	, data_area_offset(0)
 	, vms_header_offset(0)
-	, ctime(0)
+	, ctime(-1)
 	, isGameFile(false)
 	, iconAnimData(nullptr)
 {
@@ -262,6 +268,54 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
 		}
 		delete iconAnimData;
 	}
+}
+
+/**
+ * Convert a VMS BCD timestamp to Unix time.
+ * @param vms_bcd_tm VMS BCD timestamp.
+ * @return Unix time, or -1 if an error occurred.
+ *
+ * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+ * not likely to be valid for Dreamcast, since Dreamcast
+ * was released in 1998.
+ */
+int64_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm)
+{
+	// Convert the VMS BCD time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	struct tm dctime;
+
+	// TODO: Check for invalid BCD values.
+	dctime.tm_year = ((vms_bcd_tm->century >> 4) * 1000) +
+			 ((vms_bcd_tm->century & 0x0F) * 100) +
+			 ((vms_bcd_tm->year >> 4) * 10) +
+			  (vms_bcd_tm->year & 0x0F) - 1900;
+	dctime.tm_mon  = ((vms_bcd_tm->month >> 4) * 10) +
+			  (vms_bcd_tm->month & 0x0F) - 1;
+	dctime.tm_mday = ((vms_bcd_tm->mday >> 4) * 10) +
+			  (vms_bcd_tm->mday & 0x0F);
+	dctime.tm_hour = ((vms_bcd_tm->hour >> 4) * 10) +
+			  (vms_bcd_tm->hour & 0x0F);
+	dctime.tm_min  = ((vms_bcd_tm->minute >> 4) * 10) +
+			  (vms_bcd_tm->minute & 0x0F);
+	dctime.tm_sec  = ((vms_bcd_tm->second >> 4) * 10) +
+			  (vms_bcd_tm->second & 0x0F);
+
+	// tm_wday and tm_yday are output variables.
+	dctime.tm_wday = 0;
+	dctime.tm_yday = 0;
+	dctime.tm_isdst = 0;
+
+	// If conversion fails, d->ctime will be set to -1.
+#ifdef _WIN32
+	// MSVCRT-specific version.
+	return _mkgmtime(&dctime);
+#else /* !_WIN32 */
+	// FIXME: Might not be available on some systems.
+	return timegm(&dctime);
+#endif
 }
 
 /**
@@ -865,6 +919,9 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		return;
 	}
 
+	// TODO: Load both VMI and VMS timestamps?
+	// Currently, only the VMS timestamp is loaded.
+
 	// Read the save file header.
 	// Regular save files have the header in block 0.
 	// Game files have the header in block 1.
@@ -882,37 +939,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 		}
 
 		// Convert the BCD time to Unix time.
-		// NOTE: struct tm has some oddities:
-		// - tm_year: year - 1900
-		// - tm_mon: 0 == January
-		struct tm dctime;
-		dctime.tm_year = ((d->vms_dirent.ctime.century >> 4) * 1000) +
-				 ((d->vms_dirent.ctime.century & 0x0F) * 100) +
-				 ((d->vms_dirent.ctime.year >> 4) * 10) +
-				  (d->vms_dirent.ctime.year & 0x0F) - 1900;
-		dctime.tm_mon  = ((d->vms_dirent.ctime.month >> 4) * 10) +
-				  (d->vms_dirent.ctime.month & 0x0F) - 1;
-		dctime.tm_mday = ((d->vms_dirent.ctime.mday >> 4) * 10) +
-				  (d->vms_dirent.ctime.mday & 0x0F);
-		dctime.tm_hour = ((d->vms_dirent.ctime.hour >> 4) * 10) +
-				  (d->vms_dirent.ctime.hour & 0x0F);
-		dctime.tm_min  = ((d->vms_dirent.ctime.minute >> 4) * 10) +
-				  (d->vms_dirent.ctime.minute & 0x0F);
-		dctime.tm_sec  = ((d->vms_dirent.ctime.second >> 4) * 10) +
-				  (d->vms_dirent.ctime.second & 0x0F);
-		// tm_wday and tm_yday are output variables.
-		dctime.tm_wday = 0;
-		dctime.tm_yday = 0;
-		dctime.tm_isdst = 0;
-
-		// FIXME: Handle ctime conversion errors.
-#ifdef _WIN32
-		// MSVCRT-specific version.
-		d->ctime = _mkgmtime(&dctime);
-#else /* !_WIN32 */
-		// FIXME: Might not be available on some systems.
-		d->ctime = timegm(&dctime);
-#endif
+		d->ctime = d->vms_bcd_to_unix_time(&d->vms_dirent.ctime);
 	} else {
 		// If the VMI file is not available, we'll use a heuristic:
 		// The description fields cannot contain any control
@@ -1332,7 +1359,7 @@ int DreamcastSave::loadFieldData(void)
 		d->fields->addData_string(latin1_to_rp_string(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
 		// Creation time.
-		// FIXME: Handle ctime conversion errors.
+		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addData_dateTime(d->ctime);
 	} else {
 		// Directory entry is missing.

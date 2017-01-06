@@ -127,6 +127,26 @@ typedef enum {
 #define DC_VMS_FILENAME_LENGTH 12
 
 /**
+ * Dreamcast VMI timestamp.
+ * Values are stored in binary format.
+ *
+ * Reference: http://mc.pp.se/dc/vms/fileheader.html
+ *
+ * All fields are in little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _DC_VMI_Timestamp {
+	uint16_t year;		// Year (exact value)
+	uint8_t month;		// Month (1-12)
+	uint8_t mday;		// Day of month (1-31)
+	uint8_t hour;		// Hour (0-23)
+	uint8_t minute;		// Minute (0-59)
+	uint8_t second;		// Second (0-59)
+	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
+} DC_VMI_Timestamp;
+#pragma pack(0)
+
+/**
  * Dreamcast VMI header. (.vmi files)
  * Reference: http://mc.pp.se/dc/vms/fileheader.html
  *
@@ -144,17 +164,7 @@ typedef struct PACKED _DC_VMI_Header {
 	char description[32];		// Shift-JIS; NULL-padded.
 	char copyright[32];		// Shift-JIS; NULL-padded.
 
-	// Creation time. (standard binary values)
-	struct {
-		uint16_t year;		// Year (exact value)
-		uint8_t month;		// Month (1-12)
-		uint8_t mday;		// Day of month (1-31)
-		uint8_t hour;		// Hour (0-23)
-		uint8_t minute;		// Minute (0-59)
-		uint8_t second;		// Second (0-59)
-		uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
-	} ctime;
-
+	DC_VMI_Timestamp ctime;		// Creation time.
 	uint16_t vmi_version;		// VMI version. (0)
 	uint16_t file_number;		// File number. (1)
 	char vms_resource_name[8];	// .VMS filename, without the ".VMS".
@@ -182,6 +192,25 @@ typedef enum {
 } DC_VMI_Mode;
 
 /**
+ * Dreamcast VMS BCD timestamp.
+ * Values are stored in BCD format.
+ *
+ * Reference: http://mc.pp.se/dc/vms/flashmem.html
+ */
+#pragma pack(1)
+typedef struct PACKED _DC_VMS_BCD_Timestamp {
+	uint8_t century;	// Century.
+	uint8_t year;		// Year.
+	uint8_t month;		// Month (1-12)
+	uint8_t mday;		// Day of month (1-31)
+	uint8_t hour;		// Hour (0-23)
+	uint8_t minute;		// Minute (0-59)
+	uint8_t second;		// Second (0-59)
+	uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
+} DC_VMS_BCD_Timestamp;
+#pragma pack()
+
+/**
  * Dreamcast VMS directory entry.
  * Found at the top of DCI files and in the directory
  * table of raw VMU dumps.
@@ -199,18 +228,7 @@ typedef struct PACKED _DC_VMS_DirEnt {
 	uint16_t address;	// First block number.
 	char filename[DC_VMS_FILENAME_LENGTH];
 
-	// Creation time. (BCD)
-	struct {
-		uint8_t century;	// Century.
-		uint8_t year;		// Year.
-		uint8_t month;		// Month (1-12)
-		uint8_t mday;		// Day of month (1-31)
-		uint8_t hour;		// Hour (0-23)
-		uint8_t minute;		// Minute (0-59)
-		uint8_t second;		// Second (0-59)
-		uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
-	} ctime;
-
+	DC_VMS_BCD_Timestamp ctime;	// Creation time. (BCD)
 	uint16_t size;		// Size, in blocks.
 	uint16_t header_addr;	// Offset of header (in blocks) from file start.
 	uint8_t reserved[4];	// Reserved. (all zero)
