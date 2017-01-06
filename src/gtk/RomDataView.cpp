@@ -135,8 +135,8 @@ struct _RomDataView {
 	int		last_delay;		// Last delay value.
 
 	// Description labels.
-	RpDescFormatType	desc_format_type;
-	GSList			*lstDescLabels;
+	RpDescFormatType		desc_format_type;
+	vector<GtkWidget*>		*vecDescLabels;
 	unordered_set<GtkWidget*>	*setDescLabelIsWarning;
 
 	// Bitfield checkboxes.
@@ -270,7 +270,7 @@ rom_data_view_init(RomDataView *page)
 	page->last_frame_number = 0;
 	page->iconAnimHelper = new IconAnimHelper();
 	page->desc_format_type = RP_DFT_XFCE;
-	page->lstDescLabels = nullptr;
+	page->vecDescLabels = new vector<GtkWidget*>();
 	page->setDescLabelIsWarning = new unordered_set<GtkWidget*>();
 	page->mapBitfields = new unordered_map<GtkWidget*, gboolean>();
 
@@ -355,9 +355,10 @@ rom_data_view_dispose(GObject *object)
 		}
 	}
 
-	// Clear the description labels list.
-	g_slist_free(page->lstDescLabels);
-	page->lstDescLabels = nullptr;
+	// Clear the widget reference containers.
+	page->vecDescLabels->clear();
+	page->setDescLabelIsWarning->clear();
+	page->mapBitfields->clear();
 
 	// Call the superclass dispose() function.
 	(*G_OBJECT_CLASS(rom_data_view_parent_class)->dispose)(object);
@@ -371,11 +372,9 @@ rom_data_view_finalize(GObject *object)
 	// Free the filename.
 	g_free(page->filename);
 
-	// Clear the description labels list.
-	g_slist_free(page->lstDescLabels);
-
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
+	delete page->vecDescLabels;
 	delete page->setDescLabelIsWarning;
 	delete page->mapBitfields;
 
@@ -506,8 +505,7 @@ rom_data_view_set_filename(RomDataView	*page,
 		}
 
 		// Clear the various widget references.
-		g_slist_free(page->lstDescLabels);
-		page->lstDescLabels = nullptr;
+		page->vecDescLabels->clear();
 		page->setDescLabelIsWarning->clear();
 		page->mapBitfields->clear();
 
@@ -570,10 +568,10 @@ rom_data_view_desc_format_type_changed(RpDescFormatType	desc_format_type,
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
-	for (GSList *label = page->lstDescLabels;
-	     label != nullptr; label = g_slist_next(label))
+	for (auto iter = page->vecDescLabels->cbegin();
+	     iter != page->vecDescLabels->cend(); ++iter)
 	{
-		set_label_format_type(page, GTK_LABEL(label->data), desc_format_type);
+		set_label_format_type(page, GTK_LABEL(*iter), desc_format_type);
 	}
 }
 
@@ -688,8 +686,7 @@ rom_data_view_update_display(RomDataView *page)
 	rom_data_view_init_header_row(page);
 
 	// Clear the various widget references.
-	g_slist_free(page->lstDescLabels);
-	page->lstDescLabels = nullptr;
+	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
 
@@ -733,6 +730,9 @@ rom_data_view_update_display(RomDataView *page)
 	gtk_container_set_border_width(GTK_CONTAINER(page->table), 8);
 	gtk_box_pack_start(GTK_BOX(page), page->table, FALSE, FALSE, 0);
 	gtk_widget_show(page->table);
+
+	// Reserve enough space for vecDescLabels.
+	page->vecDescLabels->reserve(count);
 
 	// Create the data widgets.
 	// TODO: Types other than RFT_STRING.
@@ -852,6 +852,9 @@ rom_data_view_update_display(RomDataView *page)
 				//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
 #endif
 				gtk_widget_show(widget);
+
+				// Reserve space in the bitfield widget map.
+				page->mapBitfields->reserve(page->mapBitfields->size() + bitfieldDesc->elements);
 
 				int row = 0, col = 0;
 				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
@@ -1025,7 +1028,7 @@ rom_data_view_update_display(RomDataView *page)
 			GtkWidget *lblDesc = gtk_label_new(gtkdesc.c_str());
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
-			page->lstDescLabels = g_slist_prepend(page->lstDescLabels, lblDesc);
+			page->vecDescLabels->push_back(lblDesc);
 			if (make_desc_warning) {
 				// Description label should use the "warning" style.
 				page->setDescLabelIsWarning->insert(lblDesc);
