@@ -23,6 +23,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
+#include <vector>
 
 #include <libromdata/file/RpFile.hpp>
 #include <libromdata/RomData.hpp>
@@ -39,22 +40,89 @@ using std::endl;
 using std::ofstream;
 using namespace LibRomData;
 
+struct ExtractParam {
+	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+	bool is_bmp; // If true, extract as BMP, otherwise as PNG. n/a for iconAnimData
+	const char* filename; // Target filename. Can be null due to argv[argc]
+};
+
+/**
+* Extracts images from romdata
+* @param romData RomData containing the images
+* @param extract Vector of image extraction parameters
+*/
+void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
+	int supported = romData->supportedImageTypes();
+	for (auto it = extract.begin(); it != extract.end(); ++it) {
+		if (!it->filename) continue;
+		bool found = false;
+		
+		if (it->image_type >= 0 && supported & (1 << it->image_type)) {
+			// normal image
+			auto image = romData->image((RomData::ImageType)it->image_type);
+			if (image && image->isValid()) {
+				found = true;
+				cerr << "-- Extracting " << RomData::getImageTypeName((RomData::ImageType)it->image_type) << " into '" << it->filename << "'" << endl;
+				if (it->is_bmp) {
+					if (rpbmp(it->filename, image)) {
+						cerr << "   Couldn't create file " << it->filename << endl;
+					}
+					else cerr << "   Done" << endl;
+				}
+				else {
+					int errcode;
+					if (errcode = RpPng::save(it->filename, image)) {
+						cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
+					}
+					else cerr << "   Done" << endl;
+				}
+			}
+		}
+
+		else if (it->image_type == -1) {
+			// iconAnimData image
+			auto iconAnimData = romData->iconAnimData();
+			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
+				found = true;
+				cerr << "-- Extracting animated icon into " << it->filename << endl;
+				int errcode;
+				if (errcode = RpPng::save(it->filename, iconAnimData)) {
+					if (errcode == -ENOTSUP) {
+						cerr << "   APNG not supported, extracting only the first frame" << endl;
+						// falling back to outputting the first frame
+						errcode = RpPng::save(it->filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
+					}
+					if (errcode) {
+						cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
+					}
+					else cerr << "   Done" << endl;
+				}
+			}
+		}
+		if (!found) {
+			if (it->image_type == -1) {
+				cerr << "-- Animated icon not found" << endl;
+			}
+			else {
+				cerr << "-- Image '" << RomData::getImageTypeName((RomData::ImageType)it->image_type) << "' not found" << endl;
+			}
+		}
+	}
+}
+
 /**
 * Shows info about file
 * @param filename ROM filename
-* @param extract Bitmask: which ImageTypes should be extracted
-* @param outnames Target filenames for extracting ImageTypes
 * @param json Is program running in json mode?
-* @param bmp Bitmask: should an image be extracted as png (0) or bmp (1)?
-* @param fn_iconanim Target filename for extracting IconAnimData. nullptr = don't extract
+* @param extract Vector of image extraction parameters
 */
-void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool json, uint32_t bmp, const char *fn_iconanim){
+void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::getInstance(file);
 		if (romData) {
-			if(romData->isValid()){
+			if (romData->isValid()) {
 
 				if (json) {
 					cerr << "-- Outputting json data" << endl;
@@ -63,41 +131,8 @@ void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool
 				else {
 					cerr << ROMOutput(romData) << endl;
 				}
-				
-				int supported = romData->supportedImageTypes();
-				for(int i=RomData::IMG_INT_MIN; i<=RomData::IMG_INT_MAX; i++){
-					if(supported & extract & (1<<i)){
-						auto image = romData->image((RomData::ImageType)i);
-						cerr << "-- Extracting " << RomData::getImageTypeName((RomData::ImageType)i) << " into '" << outnames[i] << "'" << endl;
-						if (bmp & (1 << i)) {
-							if (rpbmp(outnames[i], image)) {
-								cerr << "-- Couldn't create file " << outnames[i] << endl;
-							}
-						}
-						else {
-							int errcode;
-							if (errcode = RpPng::save(outnames[i], image)) {
-								cerr << "-- Couldn't create file " << outnames[i] << " : " << strerror(-errcode) << endl;
-							}
-						}				
-					}
-				}
 
-				auto iconAnimData = romData->iconAnimData();
-				if (fn_iconanim && iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0){
-					cerr << "-- Extracting animated icon into " << fn_iconanim << endl;
-					int errcode;
-					if (errcode = RpPng::save(fn_iconanim, iconAnimData)) {
-						if (errcode == -ENOTSUP) {
-							cerr << "-- APNG not supported, extracting only the first frame" << endl;
-							// falling back to outputting the first frame
-							errcode = RpPng::save(fn_iconanim, iconAnimData->frames[iconAnimData->seq_index[0]]);
-						}
-						if (errcode) {
-							cerr << "-- Couldn't create file " << fn_iconanim << " : " << strerror(-errcode) << endl;
-						}
-					}
-				}
+				ExtractImages(romData, extract);
 			}else{
 				cerr << "-- Rom is not supported" << endl;
 				if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
@@ -113,6 +148,7 @@ void DoFile(const char *filename, uint32_t extract, const char *outnames[], bool
 	}
 	delete file;
 }
+
 int main(int argc,char **argv){
 	if(argc<2){
 		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
@@ -125,10 +161,8 @@ int main(int argc,char **argv){
 	
 	assert(RomData::IMG_INT_MIN == 0);
 	// DoFile parameters
-	const char* outnames[RomData::IMG_INT_MAX+1] = {0};
-	uint32_t extract = 0, bmp = 0;
 	bool json = false;
-	const char* fn_iconanim = nullptr;
+	std::vector<ExtractParam> extract;
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
 		if (argv[i][0] == '-' && argv[i][1] == 'j') {
@@ -141,21 +175,26 @@ int main(int argc,char **argv){
 		if(argv[i][0] == '-'){
 			switch (argv[i][1]) {
 			case 'x': {
-				bool isbmp = argv[i][2] == 'b';
-				long num = atol(argv[i] + (isbmp ? 3 : 2));
+				ExtractParam ep;
+				ep.is_bmp = argv[i][2] == 'b';
+				long num = atol(argv[i] + (ep.is_bmp ? 3 : 2));
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
 					cerr << "Warning: skipping unknown image type " << num << endl;
 					i++; continue;
 				}
-				outnames[num] = argv[++i];
-				extract |= 1 << num;
-				if (isbmp) bmp |= 1 << num;
-				else bmp &= ~( 1 << num );
+				ep.image_type = num;
+				ep.filename = argv[++i];
+				extract.push_back(ep);
 				break;
 			}
-			case 'a':
-				fn_iconanim = argv[++i];
+			case 'a': {
+				ExtractParam ep;
+				ep.image_type = -1;
+				ep.is_bmp = false;
+				ep.filename = argv[++i];
+				extract.push_back(ep);
 				break;
+			}
 			case 'j': // do nothing
 				break;
 			default:
@@ -166,9 +205,8 @@ int main(int argc,char **argv){
 		else{
 			if (first) first = false;
 			else if (json) cout << "," << endl;
-			DoFile(argv[i], extract, outnames, json, bmp, fn_iconanim);
-			extract = bmp = 0;
-			fn_iconanim = nullptr;
+			DoFile(argv[i], json, extract);
+			extract.clear();
 		}
 	}
 	if (json) cout << "]";
