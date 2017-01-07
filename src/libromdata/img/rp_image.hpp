@@ -25,9 +25,6 @@
 // C includes.
 #include <stdint.h>
 
-// C includes. (C++ namespace)
-#include <cstring>
-
 // rp_char
 #include "config.libromdata.h"
 
