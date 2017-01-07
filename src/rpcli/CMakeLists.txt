@@ -81,3 +81,28 @@ TARGET_INCLUDE_DIRECTORIES(rpcli
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rpcli romdata8)
+
+#################
+# Installation. #
+#################
+
+INCLUDE(DirInstallPaths)
+
+# NOTE: Don't install libraries.
+# That installs the import library, which isn't used
+# for shell extensions.
+INSTALL(TARGETS rpcli
+	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
+	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+	COMPONENT "program"
+	)
+IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	GET_TARGET_PROPERTY(DEBUG_FILENAME rpcli PDB)
+	INSTALL(FILES "${DEBUG_FILENAME}"
+		DESTINATION "${DIR_INSTALL_EXE_DEBUG}"
+		COMPONENT "debug"
+		)
+	UNSET(DEBUG_FILENAME)
+ENDIF(INSTALL_DEBUG)
