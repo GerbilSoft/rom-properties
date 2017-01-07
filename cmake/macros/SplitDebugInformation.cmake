@@ -12,8 +12,7 @@
 #   executable. (Wine ignores it and works fine!)
 #
 IF(NOT MSVC)
-	# CMake automatically finds objcopy and strip as
-	# part of its toolchain initialization.
+	INCLUDE(CMakeFindBinUtils)
 	IF(NOT CMAKE_OBJCOPY)
 		MESSAGE(WARNING "'objcopy' was not found; debug information will not be split.")
 	ELSEIF(NOT CMAKE_STRIP)
