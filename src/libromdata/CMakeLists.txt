@@ -79,6 +79,7 @@ SET(libromdata_SRCS
 	VirtualBoy.cpp
 	Amiibo.cpp
 	AmiiboData.cpp
+	WiiSystemMenuVersion.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
@@ -126,6 +127,7 @@ SET(libromdata_H
 	VirtualBoy.hpp
 	Amiibo.hpp
 	AmiiboData.hpp
+	WiiSystemMenuVersion.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h

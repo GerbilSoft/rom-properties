@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -23,6 +23,7 @@
 #include "RomData_p.hpp"
 
 #include "NintendoPublishers.hpp"
+#include "WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
 #include "SystemRegion.hpp"
@@ -145,13 +146,6 @@ class GameCubePrivate : public RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadWiiPartitionTables(void);
-
-		/**
-		 * Parse the Wii System Update version.
-		 * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
-		 * @return Wii System Update version, or nullptr if unknown.
-		 */
-		static const rp_char *parseWiiSystemMenuVersion(unsigned int version);
 
 		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to a string.
@@ -352,75 +346,6 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Done reading the partition tables.
 	return 0;
-}
-
-/**
- * Parse the Wii System Update version.
- * @param version Version from the RVL-WiiSystemmenu-v*.wad filename.
- * @return Wii System Update version, or nullptr if unknown.
- */
-const rp_char *GameCubePrivate::parseWiiSystemMenuVersion(unsigned int version)
-{
-	switch (version) {
-		// Wii
-		// Reference: http://wiiubrew.org/wiki/Title_database
-		case 33:	return _RP("1.0");
-		case 97:	return _RP("2.0U");
-		case 128:	return _RP("2.0J");
-		case 130:	return _RP("2.0E");
-		case 162:	return _RP("2.1E");
-		case 192:	return _RP("2.2J");
-		case 193:	return _RP("2.2U");
-		case 194:	return _RP("2.2E");
-		case 224:	return _RP("3.0J");
-		case 225:	return _RP("3.0U");
-		case 226:	return _RP("3.0E");
-		case 256:	return _RP("3.1J");
-		case 257:	return _RP("3.1U");
-		case 258:	return _RP("3.1E");
-		case 288:	return _RP("3.2J");
-		case 289:	return _RP("3.2U");
-		case 290:	return _RP("3.2E");
-		case 326:	return _RP("3.3K");
-		case 352:	return _RP("3.3J");
-		case 353:	return _RP("3.3U");
-		case 354:	return _RP("3.3E");
-		case 384:	return _RP("3.4J");
-		case 385:	return _RP("3.4U");
-		case 386:	return _RP("3.4E");
-		case 390:	return _RP("3.5K");
-		case 416:	return _RP("4.0J");
-		case 417:	return _RP("4.0U");
-		case 418:	return _RP("4.0E");
-		case 448:	return _RP("4.1J");
-		case 449:	return _RP("4.1U");
-		case 450:	return _RP("4.1E");
-		case 454:	return _RP("4.1K");
-		case 480:	return _RP("4.2J");
-		case 481:	return _RP("4.2U");
-		case 482:	return _RP("4.2E");
-		case 483:	return _RP("4.2K");
-		case 512:	return _RP("4.3J");
-		case 513:	return _RP("4.3U");
-		case 514:	return _RP("4.3E");
-		case 518:	return _RP("4.3K");
-
-		// vWii
-		// References:
-		// - http://wiiubrew.org/wiki/Title_database
-		// - https://yls8.mtheall.com/ninupdates/reports.php
-		// NOTE: These are all listed as 4.3.
-		// NOTE 2: vWii also has 512, 513, and 514.
-		case 544:	return _RP("4.3J");
-		case 545:	return _RP("4.3U");
-		case 546:	return _RP("4.3E");
-		case 608:	return _RP("4.3J");
-		case 609:	return _RP("4.3U");
-		case 610:	return _RP("4.3E");
-
-		// Unknown version.
-		default:	return nullptr;
-	}
 }
 
 /**
@@ -1418,7 +1343,7 @@ int GameCube::loadFieldData(void)
 						string u8str = rp_string_to_utf8(dirent->name);
 						int ret = sscanf(u8str.c_str(), "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
-							sysMenu = d->parseWiiSystemMenuVersion(version);
+							sysMenu = WiiSystemMenuVersion::lookup(version);
 							break;
 						}
 					}
