@@ -109,10 +109,6 @@ class RP_ShellPropSheetExt_Private
 		RP_ShellPropSheetExt *const q_ptr;
 
 	public:
-		// Selected file.
-		wchar_t szSelectedFile[MAX_PATH];
-		PCWSTR GetSelectedFile(void) const;
-
 		// ROM data.
 		LibRomData::RomData *romData;
 
@@ -321,7 +317,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, animTimerID(0)
 	, last_frame_number(0)
 {
-	szSelectedFile[0] = 0;
 	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
@@ -361,11 +356,6 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hUxTheme_dll) {
 		FreeLibrary(hUxTheme_dll);
 	}
-}
-
-PCWSTR RP_ShellPropSheetExt_Private::GetSelectedFile(void) const
-{
-	return this->szSelectedFile;
 }
 
 /**
@@ -1889,38 +1879,46 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	// The pDataObj pointer contains the objects being acted upon. In this 
 	// example, we get an HDROP handle for enumerating the selected files and 
 	// folders.
-	if (SUCCEEDED(pDataObj->GetData(&fe, &stm))) {
-		// Get an HDROP handle.
-		HDROP hDrop = static_cast<HDROP>(GlobalLock(stm.hGlobal));
-		if (hDrop != NULL) {
-			// Determine how many files are involved in this operation. This 
-			// code sample displays the custom context menu item when only 
-			// one file is selected. 
-			UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-			if (nFiles == 1) {
-				// Get the path of the file.
-				RP_D(RP_ShellPropSheetExt);
-				if (0 != DragQueryFile(hDrop, 0, d->szSelectedFile, 
-				    ARRAYSIZE(d->szSelectedFile)))
-				{
-					// Open the file.
-					unique_ptr<IRpFile> file(new RpFile(
-						rp_string(W2RP_c(d->szSelectedFile)),
-						RpFile::FM_OPEN_READ));
-					if (file && file->isOpen()) {
-						// Get the appropriate RomData class for this ROM.
-						// file is dup()'d by RomData.
-						d->romData = RomDataFactory::getInstance(file.get());
-						hr = (d->romData != nullptr ? S_OK : E_FAIL);
-					}
+	if (FAILED(pDataObj->GetData(&fe, &stm)))
+		return E_FAIL;
+
+	// Get an HDROP handle.
+	HDROP hDrop = static_cast<HDROP>(GlobalLock(stm.hGlobal));
+	if (!hDrop) {
+		ReleaseStgMedium(&stm);
+		return E_FAIL;
+	}
+
+	// Determine how many files are involved in this operation. This
+	// code sample displays the custom context menu item when only
+	// one file is selected.
+	UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	if (nFiles == 1) {
+		// Get the path of the file.
+		UINT cchFilename = DragQueryFile(hDrop, 0, nullptr, 0);
+		if (cchFilename > 0) {
+			cchFilename++;	// Add one for the NULL terminator.
+			wchar_t *filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
+			cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
+			if (cchFilename > 0) {
+				// Open the file.
+				unique_ptr<IRpFile> file(new RpFile(
+					W2RP_cl(filename, cchFilename),
+					RpFile::FM_OPEN_READ));
+				if (file && file->isOpen()) {
+					// Get the appropriate RomData class for this ROM.
+					// file is dup()'d by RomData.
+					RP_D(RP_ShellPropSheetExt);
+					d->romData = RomDataFactory::getInstance(file.get());
+					hr = (d->romData != nullptr ? S_OK : E_FAIL);
 				}
 			}
-
-			GlobalUnlock(stm.hGlobal);
+			free(filename);
 		}
-
-		ReleaseStgMedium(&stm);
 	}
+
+	GlobalUnlock(stm.hGlobal);
+	ReleaseStgMedium(&stm);
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.
