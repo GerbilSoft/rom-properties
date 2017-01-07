@@ -31,6 +31,7 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 #ifdef HAVE_GMTIME_S
 	return (gmtime_s(result, timep) == 0 ? result : NULL);
 #else /* !HAVE_GMTIME_S */
+	// cppcheck-suppress gmtimeCalled
 	struct tm *tm = gmtime(timep);
 	if (!tm)
 		return nullptr;
@@ -46,6 +47,7 @@ static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 #ifdef HAVE_LOCALTIME_S
 	return (localtime_s(result, timep) == 0 ? result : NULL);
 #else /* !HAVE_LOCALTIME_S */
+	// cppcheck-suppress localtimeCalled
 	struct tm *tm = localtime(timep);
 	if (tm && result) {
 		*result = *tm;
