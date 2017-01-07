@@ -1909,8 +1909,19 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 					// Get the appropriate RomData class for this ROM.
 					// file is dup()'d by RomData.
 					RP_D(RP_ShellPropSheetExt);
-					d->romData = RomDataFactory::getInstance(file.get());
-					hr = (d->romData != nullptr ? S_OK : E_FAIL);
+					RomData *romData = RomDataFactory::getInstance(file.get());
+					if (romData) {
+						// Make sure the existing RomData is unreferenced.
+						// TODO: If the filename matches, don't reopen?
+						if (d->romData) {
+							d->romData->unref();
+						}
+						d->romData = romData;
+						hr = S_OK;
+					} else {
+						// Could not open the RomData object.
+						hr = E_FAIL;
+					}
 				}
 			}
 			free(filename);
