@@ -44,6 +44,7 @@ namespace LibRomData {
  */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count)
 	: q_ptr(q)
+	, ref_count(1)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields(fields, count))
@@ -207,6 +208,33 @@ RomData::RomData(RomDataPrivate *d)
 RomData::~RomData()
 {
 	delete d_ptr;
+}
+
+/**
+ * Take a reference to this RomData* object.
+ * @return this
+ */
+LibRomData::RomData *RomData::ref(void)
+{
+	// TODO: Atomic addition.
+	RP_D(RomData);
+	++d->ref_count;
+	return this;
+}
+
+/**
+ * Unreference this RomData* object.
+ * If ref_count reaches 0, the RomData* object is deleted.
+ */
+void RomData::unref(void)
+{
+	// TODO: Atomic subtraction.
+	RP_D(RomData);
+	assert(d->ref_count > 0);
+	if (--d->ref_count <= 0) {
+		// All references removed.
+		delete this;
+	}
 }
 
 /**

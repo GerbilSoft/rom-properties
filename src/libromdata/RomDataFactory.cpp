@@ -297,12 +297,16 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 		// Dreamcast .VMI+.VMS pair.
 		// Attempt to open the other file in the pair.
 		RomData *romData = RomDataFactoryPrivate::openDreamcastVMSandVMI(file);
-		if (romData && romData->isValid()) {
-			// .VMI+.VMS pair opened.
-			return romData;
+		if (romData) {
+			if (romData->isValid()) {
+				// .VMI+.VMS pair opened.
+				return romData;
+			}
+			// Not a .VMI+.VMS pair.
+			romData->unref();
 		}
+
 		// Not a .VMI+.VMS pair.
-		delete romData;
 	}
 
 	// Check RomData subclasses that take a header.
@@ -323,7 +327,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 			}
 
 			// Not actually supported.
-			delete romData;
+			romData->unref();
 		}
 	}
 
@@ -378,7 +382,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 			}
 
 			// Not actually supported.
-			delete romData;
+			romData->unref();
 		}
 	}
 

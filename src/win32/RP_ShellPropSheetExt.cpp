@@ -331,7 +331,9 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 {
 	stopAnimTimer();
 	iconAnimHelper.setIconAnimData(nullptr);
-	delete romData;
+	if (romData) {
+		romData->unref();
+	}
 
 	// Delete the banner and icon frames.
 	if (hbmpBanner) {
@@ -1376,7 +1378,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 		// Enumerate all monospaced fonts.
 		// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
 		monospaced_fonts.clear();
-#if !defined(_MSC_VER) || _MSC_VER >= 1700	
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
 		monospaced_fonts.reserve(64);
 #endif
 		LOGFONT lfEnumFonts;

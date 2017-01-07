@@ -147,7 +147,7 @@ class RomDataViewPrivate
 
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
-	, romData(romData)
+	, romData(romData->ref())
 	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
@@ -161,7 +161,9 @@ RomDataViewPrivate::~RomDataViewPrivate()
 {
 	stopAnimTimer();
 	iconAnimHelper.setIconAnimData(nullptr);
-	delete romData;
+	if (romData) {
+		romData->unref();
+	}
 }
 
 void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
@@ -816,6 +818,10 @@ RomData *RomDataView::romData(void) const
 
 /**
  * Set the current RomData object.
+ *
+ * If a RomData object is already set, it is unref()'d.
+ * The new RomData object is ref()'d when set.
+ *
  * @return RomData object.
  */
 void RomDataView::setRomData(LibRomData::RomData *romData)
@@ -832,7 +838,10 @@ void RomDataView::setRomData(LibRomData::RomData *romData)
 		d->last_frame_number = 0;
 	}
 
-	d->romData = romData;
+	if (d->romData) {
+		d->romData->unref();
+	}
+	d->romData = romData->ref();
 	d->initDisplayWidgets();
 
 	if (romData != nullptr && prevAnimTimerRunning) {

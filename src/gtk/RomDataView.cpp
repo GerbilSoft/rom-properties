@@ -378,8 +378,10 @@ rom_data_view_finalize(GObject *object)
 	delete page->setDescLabelIsWarning;
 	delete page->mapBitfields;
 
-	// Delete romData.
-	delete page->romData;
+	// Unreference romData.
+	if (page->romData) {
+		page->romData->unref();
+	}
 
 	// Call the superclass finalize() function.
 	(*G_OBJECT_CLASS(rom_data_view_parent_class)->finalize)(object);
@@ -479,9 +481,11 @@ rom_data_view_set_filename(RomDataView	*page,
 		// (This is owned by the RomData object.)
 		page->iconAnimData = nullptr;
 
-		// Delete the existing RomData object.
-		delete page->romData;
-		page->romData = nullptr;
+		// Unreference the existing RomData object.
+		if (page->romData) {
+			page->romData->unref();
+			page->romData = nullptr;
+		}
 
 		// Delete the icon frames.
 		for (int i = ARRAY_SIZE(page->iconFrames)-1; i >= 0; i--) {

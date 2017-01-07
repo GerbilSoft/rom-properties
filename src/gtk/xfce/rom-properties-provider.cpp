@@ -125,8 +125,10 @@ rom_properties_get_file_supported(ThunarxFileInfo *info)
 		// prevent false positives caused by isRomSupported()
 		// saying "yes" while new RomData() says "no".
 		RomData *romData = RomDataFactory::getInstance(file, false);
-		supported = (romData != nullptr);
-		delete romData;
+		if (romData != nullptr) {
+			supported = TRUE;
+			romData->unref();
+		}
 		delete file;
 	}
 

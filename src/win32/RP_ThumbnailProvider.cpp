@@ -298,7 +298,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(m_file, true));
+	RomData *romData = RomDataFactory::getInstance(m_file, true);
 	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
@@ -315,7 +315,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	uint32_t imgbf = romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		img = RpImageWin32::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		img = RpImageWin32::getExternalImage(romData, RomData::IMG_EXT_MEDIA);
 		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
@@ -325,7 +325,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		// Try an internal image.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
-			img = RpImageWin32::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			img = RpImageWin32::getInternalImage(romData, RomData::IMG_INT_ICON);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
@@ -404,5 +404,6 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 		}
 	}
 
+	romData->unref();
 	return (*phbmp != nullptr ? S_OK : E_FAIL);
 }

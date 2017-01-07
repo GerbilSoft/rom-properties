@@ -82,7 +82,11 @@ class RomData
 		 */
 		explicit RomData(RomDataPrivate *d);
 
-	public:
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
 		virtual ~RomData();
 
 	private:
@@ -91,6 +95,19 @@ class RomData
 	protected:
 		friend class RomDataPrivate;
 		RomDataPrivate *const d_ptr;
+
+	public:
+		/**
+		 * Take a reference to this RomData* object.
+		 * @return this
+		 */
+		RomData *ref(void);
+
+		/**
+		 * Unreference this RomData* object.
+		 * If ref_count reaches 0, the RomData* object is deleted.
+		 */
+		void unref(void);
 
 	public:
 		/**

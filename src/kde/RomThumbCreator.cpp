@@ -212,7 +212,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	unique_ptr<RomData> romData(RomDataFactory::getInstance(file.get(), true));
+	RomData *romData = RomDataFactory::getInstance(file.get(), true);
 	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
@@ -226,7 +226,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		ret_img = RomThumbCreatorPrivate::getExternalImage(romData.get(), RomData::IMG_EXT_MEDIA);
+		ret_img = RomThumbCreatorPrivate::getExternalImage(romData, RomData::IMG_EXT_MEDIA);
 		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 
@@ -235,13 +235,14 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 		// Try an internal image.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
-			ret_img = RomThumbCreatorPrivate::getInternalImage(romData.get(), RomData::IMG_INT_ICON);
+			ret_img = RomThumbCreatorPrivate::getInternalImage(romData, RomData::IMG_INT_ICON);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
 
 	if (ret_img.isNull()) {
 		// No image.
+		romData->unref();
 		return false;
 	}
 
@@ -289,6 +290,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	}
 
 	// Return the image.
+	romData->unref();
 	img = ret_img;
 	return true;
 }

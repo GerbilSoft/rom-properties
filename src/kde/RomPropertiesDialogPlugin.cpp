@@ -65,6 +65,10 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 					// ROM is supported. Show the properties.
 					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
+
+					// RomDataView takes a reference to the RomData object.
+					// We don't need to hold on to it.
+					romData->unref();
 				}
 			}
 		}

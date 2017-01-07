@@ -89,6 +89,10 @@ class RomDataView : public QWidget
 	public slots:
 		/**
 		 * Set the current RomData object.
+		 *
+		 * If a RomData object is already set, it is unref()'d.
+		 * The new RomData object is ref()'d when set.
+		 *
 		 * @return RomData object.
 		 */
 		void setRomData(LibRomData::RomData *romData);

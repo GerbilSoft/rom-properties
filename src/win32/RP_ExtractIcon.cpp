@@ -54,7 +54,9 @@ RP_ExtractIcon::RP_ExtractIcon()
 
 RP_ExtractIcon::~RP_ExtractIcon()
 {
-	delete m_romData;
+	if (m_romData) {
+		m_romData->unref();
+	}
 }
 
 /** IUnknown **/
