@@ -26,6 +26,8 @@ ELSEIF(WIN32)
 	SET(BUILD_WIN32 ON)
 ENDIF()
 
+OPTION(BUILD_CLI "Build the `rpcli` command line program." ON)
+
 # ZLIB and libpng.
 # Internal versions are always used on Windows.
 IF(WIN32)
