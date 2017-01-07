@@ -92,6 +92,10 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // This links the property sheet to the COM object.
 #define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
 
+/** RP_ShellPropSheetExt_Private **/
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
+
 class RP_ShellPropSheetExt_Private
 {
 	public:
@@ -102,7 +106,7 @@ class RP_ShellPropSheetExt_Private
 		RP_ShellPropSheetExt_Private(const RP_ShellPropSheetExt_Private &other);
 		RP_ShellPropSheetExt_Private &operator=(const RP_ShellPropSheetExt_Private &other);
 	private:
-		RP_ShellPropSheetExt *const q;
+		RP_ShellPropSheetExt *const q_ptr;
 
 	public:
 		// Selected file.
@@ -301,7 +305,7 @@ class RP_ShellPropSheetExt_Private
 /** RP_ShellPropSheetExt_Private **/
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
-	: q(q)
+	: q_ptr(q)
 	, romData(nullptr)
 	, hDlgProps(nullptr)
 	, hDlgSheet(nullptr)
@@ -946,13 +950,13 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		if (dwStyle & ES_MULTILINE) {
 			// Store the object pointer so we can reference it later.
-			SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q));
+			SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q_ptr));
 
 			// Subclass the control.
 			// TODO: Error handling?
 			SetWindowSubclass(hDlgItem,
 				RP_ShellPropSheetExt::MultilineEditProc,
-				(UINT_PTR)cId, (DWORD_PTR)q);
+				(UINT_PTR)cId, (DWORD_PTR)q_ptr);
 		}
 	}
 
@@ -1656,12 +1660,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 /** RP_ShellPropSheetExt **/
 
 RP_ShellPropSheetExt::RP_ShellPropSheetExt()
-	: d(new RP_ShellPropSheetExt_Private(this))
+	: d_ptr(new RP_ShellPropSheetExt_Private(this))
 { }
 
 RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /** IUnknown **/
@@ -1895,6 +1899,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 			UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
 			if (nFiles == 1) {
 				// Get the path of the file.
+				RP_D(RP_ShellPropSheetExt);
 				if (0 != DragQueryFile(hDrop, 0, d->szSelectedFile, 
 				    ARRAYSIZE(d->szSelectedFile)))
 				{
@@ -2002,7 +2007,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
 				return TRUE;
-			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
 			// Store the object pointer with this particular page dialog.
 			SetProp(hDlg, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
@@ -2024,7 +2029,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
 				// Stop the animation timer.
-				RP_ShellPropSheetExt_Private *const d = pExt->d;
+				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 				d->stopAnimTimer();
 			}
 
@@ -2043,7 +2048,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
 				case PSN_SETACTIVE:
@@ -2057,8 +2062,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case NM_CLICK:
 				case NM_RETURN: {
 					// Check if this is a SysLink control.
-					if (pExt->d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
-					    pExt->d->hwndSysLinkControls.end())
+					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+					if (d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
+					    d->hwndSysLinkControls.end())
 					{
 						// It's a SysLink control.
 						// Open the URL.
@@ -2084,7 +2090,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d;
+			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			if (!d->hbmpBanner && !d->hbmpIconFrames[0]) {
 				// Nothing to draw...
 				break;
@@ -2126,7 +2132,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
-				pExt->d->loadImages(hDlg);
+				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+				d->loadImages(hDlg);
 			}
 			break;
 		}
@@ -2136,8 +2143,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
+				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 				HFONT hFont = GetWindowFont(hDlg);
-				pExt->d->initMonospacedFont(hFont);
+				d->initMonospacedFont(hFont);
 			}
 			break;
 		}
@@ -2146,8 +2154,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
-				if (pExt->d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
-				    pExt->d->hwndWarningControls.end())
+				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+				if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
+				    d->hwndWarningControls.end())
 				{
 					// Set the "Warning" color.
 					HDC hdc = reinterpret_cast<HDC>(wParam);
@@ -2226,21 +2235,23 @@ LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
 		reinterpret_cast<RP_ShellPropSheetExt*>(dwRefData);
 
 	switch (uMsg) {
-		case WM_KEYDOWN:
+		case WM_KEYDOWN: {
 			// Work around Enter/Escape issues.
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
+			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			switch (wParam) {
 				case VK_RETURN:
-					SendMessage(pExt->d->hDlgProps, WM_COMMAND, IDOK, 0);
+					SendMessage(d->hDlgProps, WM_COMMAND, IDOK, 0);
 					return TRUE;
 
 				case VK_ESCAPE:
-					SendMessage(pExt->d->hDlgProps, WM_COMMAND, IDCANCEL, 0);
+					SendMessage(d->hDlgProps, WM_COMMAND, IDCANCEL, 0);
 					return TRUE;
 
 				default:
 					break;
 			}
+		}
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.

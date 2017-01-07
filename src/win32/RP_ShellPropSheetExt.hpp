@@ -52,15 +52,14 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 	public:
 		RP_ShellPropSheetExt();
 		virtual ~RP_ShellPropSheetExt();
-	private:
-		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
 
 	private:
-		friend class RP_ShellPropSheetExt_Private;
-		RP_ShellPropSheetExt_Private *const d;
-	private:
+		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
 		RP_ShellPropSheetExt(const RP_ShellPropSheetExt &other);
 		RP_ShellPropSheetExt&operator=(const RP_ShellPropSheetExt &other);
+	private:
+		friend class RP_ShellPropSheetExt_Private;
+		RP_ShellPropSheetExt_Private *const d_ptr;
 
 	public:
 		// IUnknown
