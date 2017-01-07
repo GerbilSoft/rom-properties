@@ -28,14 +28,14 @@
 class ROMOutput{
 	const LibRomData::RomData* romdata;
 public:
-	ROMOutput(const LibRomData::RomData* romdata);
+	explicit ROMOutput(const LibRomData::RomData* romdata);
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
 	const LibRomData::RomData* romdata;
 public:
-	JSONROMOutput(const LibRomData::RomData* romdata);
+	explicit JSONROMOutput(const LibRomData::RomData* romdata);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 };
 

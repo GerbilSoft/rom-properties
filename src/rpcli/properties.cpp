@@ -37,7 +37,7 @@ using namespace LibRomData;
 class Pad {
 	size_t width;
 public:
-	Pad(size_t width) :width(width) {}
+	explicit Pad(size_t width) :width(width) {}
 	friend ostream& operator<<(ostream& os, const Pad& pad) {
 		return os << setw(pad.width) << "";
 	}
@@ -198,7 +198,7 @@ public:
 class FieldsOutput {
 	const RomFields& fields;
 public:
-	FieldsOutput(const RomFields& fields) :fields(fields) {}
+	explicit FieldsOutput(const RomFields& fields) :fields(fields) {}
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		for (int i = 0; i < fo.fields.count(); i++) {
@@ -254,7 +254,7 @@ class JSONString {
 		return str;
 	}
 public:
-	JSONString(const rp_char* str) :str(str) {}
+	explicit JSONString(const rp_char* str) :str(str) {}
 	friend ostream& operator<<(ostream& os, const JSONString& js) {
 		//assert(js.str); // not all strings can't be null, apparently
 		if (!js.str) return os << "0"; // clever way to distinguish nullptr
@@ -273,7 +273,7 @@ public:
 class JSONFieldsOutput {
 	const RomFields& fields;
 public:
-	JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
+	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
 	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
 		// TODO: make DoFile output everything as json in json mode
 		os << "[";
