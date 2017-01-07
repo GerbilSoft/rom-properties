@@ -28,23 +28,31 @@
 #ifndef HAVE_GMTIME_R
 static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 {
+#ifdef HAVE_GMTIME_S
+	return (gmtime_s(result, timep) == 0 ? result : NULL);
+#else /* !HAVE_GMTIME_S */
 	struct tm *tm = gmtime(timep);
 	if (!tm)
 		return nullptr;
 	*result = *tm;
 	return result;
+#endif /* GMTIME_S */
 }
 #endif /* HAVE_GMTIME_R */
 
 #ifndef HAVE_LOCALTIME_R
 static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
+#ifdef HAVE_LOCALTIME_S
+	return (localtime_s(result, timep) == 0 ? result : NULL);
+#else /* !HAVE_LOCALTIME_S */
 	struct tm *tm = localtime(timep);
 	if (tm && result) {
 		*result = *tm;
 		return result;
 	}
 	return nullptr;
+#endif /* HAVE_LOCALTIME_S */
 }
 #endif /* HAVE_LOCALTIME_R */
 
