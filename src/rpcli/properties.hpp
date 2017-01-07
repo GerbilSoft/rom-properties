@@ -21,8 +21,9 @@
 
 #ifndef __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 #define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
+
 #include <ostream>
-#include <libromdata/RomData.hpp>
+#include "libromdata/RomData.hpp"
 
 class ROMOutput{
 	const LibRomData::RomData* romdata;
@@ -37,4 +38,5 @@ public:
 	JSONROMOutput(const LibRomData::RomData* romdata);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 };
+
 #endif /* __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__ */
