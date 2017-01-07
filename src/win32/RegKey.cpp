@@ -154,14 +154,27 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		return wstring();
 	}
 
-	// FIXME: Handle ERROR_MORE_DATA?
-	// We're only handling pathnames and CLSIDs,
-	// so MAX_PATH should be sufficient.
-	wchar_t buf[MAX_PATH+1];
-	DWORD cbData = (DWORD)sizeof(buf);
-	DWORD dwType;
-	LONG lResult = RegQueryValueEx(m_hKey, lpValueName, nullptr, &dwType,
-		reinterpret_cast<LPBYTE>(buf), &cbData);
+	// Determine the required buffer size.
+	DWORD cbData, dwType;
+	LONG lResult = RegQueryValueEx(m_hKey,
+		lpValueName,	// lpValueName
+		nullptr,	// lpReserved
+		&dwType,	// lpType
+		nullptr,	// lpData
+		&cbData);	// lpcbData
+	if (lResult != ERROR_SUCCESS || cbData == 0 || dwType != REG_SZ) {
+		// Either an error occurred, or this isn't REG_SZ.
+		return wstring();
+	}
+
+	// Allocate a buffer and get the data.
+	wchar_t *wbuf = static_cast<wchar_t*>(malloc(cbData));
+	lResult = RegQueryValueEx(m_hKey,
+		lpValueName,	// lpValueName
+		nullptr,	// lpReserved
+		&dwType,	// lpType
+		(LPBYTE)wbuf,	// lpData
+		&cbData);	// lpcbData
 	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
 		// Either an error occurred, or this isn't REG_SZ.
 		return wstring();
@@ -169,11 +182,11 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 
 	// Convert cbData to cchData.
 	assert(cbData % 2 == 0);
-	DWORD cchData = cbData / sizeof(buf[0]);
+	DWORD cchData = cbData / sizeof(wbuf[0]);
 
 	// Check for NULL terminators.
 	for (; cchData > 0; cchData--) {
-		if (buf[cchData-1] != 0)
+		if (wbuf[cchData-1] != 0)
 			break;
 	}
 
@@ -183,7 +196,9 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 	}
 
 	// Return the string.
-	return wstring(buf, cchData);
+	wstring wstr(wbuf, cchData);
+	free(wbuf);
+	return wstr;
 }
 
 /**
@@ -209,8 +224,12 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
 		cbData = (DWORD)((wcslen(value) + 1) * sizeof(wchar_t));
 	}
 
-	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
-		reinterpret_cast<const BYTE*>(value), cbData);
+	return RegSetValueEx(m_hKey,
+		lpValueName,		// lpValueName
+		0,			// Reserved
+		REG_SZ,			// dwType
+		(const BYTE*)value,	// lpData
+		cbData);		// cbData
 }
 
 /**
@@ -230,8 +249,12 @@ LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
 	// and multiply by sizeof(wchar_t).
 	DWORD cbData = (DWORD)((value.size() + 1) * sizeof(wchar_t));
 
-	return RegSetValueEx(m_hKey, lpValueName, 0, REG_SZ,
-		reinterpret_cast<const BYTE*>(value.c_str()), cbData);
+	return RegSetValueEx(m_hKey,
+		lpValueName,			// lpValueName
+		0,				// Reserved
+		REG_SZ,				// dwType
+		(const BYTE*)value.c_str(),	// lpData
+		cbData);			// cbData
 }
 
 /**
@@ -251,8 +274,12 @@ LONG RegKey::write_dword(LPCWSTR lpValueName, DWORD value)
 	// and multiply by sizeof(wchar_t).
 	DWORD cbData = (DWORD)sizeof(value);
 
-	return RegSetValueEx(m_hKey, lpValueName, 0, REG_DWORD,
-		reinterpret_cast<const BYTE*>(&value), cbData);
+	return RegSetValueEx(m_hKey,
+		lpValueName,		// lpValueName
+		0,			// Reserved
+		REG_DWORD,		// dwType
+		(const BYTE*)&value,	// lpData
+		cbData);		// cbData
 }
 
 /**
