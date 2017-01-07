@@ -18,22 +18,31 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
+
 #include "properties.hpp"
+#include "config.rpcli.h"
+
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
 #include <cassert>
-#include <libromdata/RomData.hpp>
-#include <libromdata/RomFields.hpp>
-#include <libromdata/TextFuncs.hpp>
-#include <libromdata/img/rp_image.hpp>
-#include <libromdata/img/IconAnimData.hpp>
 using std::setw;
 using std::left;
 using std::ostream;
 using std::max;
 using std::endl;
+
+#include <libromdata/RomData.hpp>
+#include <libromdata/RomFields.hpp>
+#include <libromdata/TextFuncs.hpp>
+#include <libromdata/img/rp_image.hpp>
+#include <libromdata/img/IconAnimData.hpp>
 using namespace LibRomData;
+
+// Time functions, with workaround for systems
+// that don't have reentrant versions.
+#include "time_r.h"
+
 class Pad {
 	size_t width;
 public:
@@ -170,12 +179,21 @@ public:
 
 		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
 
-		tm timestamp;
+		// FIXME: This may result in truncated times on 32-bit Linux.
+		struct tm timestamp;
+		struct tm *ret;
+		time_t date_time = (time_t)data->date_time;
 		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
-			timestamp = *gmtime((time_t*)&data->date_time);
+			ret = gmtime_r(&date_time, &timestamp);
 		}
 		else {
-			timestamp = *localtime((time_t*)&data->date_time);
+			ret = localtime_r(&date_time, &timestamp);
+		}
+
+		if (!ret) {
+			// gmtime_r() or localtime_r() failed.
+			os << "Invalid DateTime";
+			return os;
 		}
 
 		static const char *formats[4] = {
@@ -186,9 +204,7 @@ public:
 		};
 
 		char str[128];
-
 		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_MASK], &timestamp);
-
 		os << str;
 
 		return os;

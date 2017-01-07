@@ -1,5 +1,13 @@
 PROJECT(rom-properties-rpcli)
 
+# Check for reentrant functions.
+INCLUDE(CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(gmtime_r HAVE_GMTIME_R)
+CHECK_FUNCTION_EXISTS(localtime_r HAVE_LOCALTIME_R)
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
+
 # Sources and headers.
 SET(rom-properties-rpcli_SRCS
 	rpcli.cpp
