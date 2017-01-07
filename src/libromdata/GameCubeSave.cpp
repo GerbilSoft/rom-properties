@@ -22,7 +22,7 @@
 #include "GameCubeSave.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 
 #include "common.h"

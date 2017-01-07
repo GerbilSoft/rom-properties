@@ -23,7 +23,7 @@
 #include "DMG.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
 #include "common.h"

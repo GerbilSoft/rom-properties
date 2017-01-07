@@ -23,7 +23,7 @@
 #include "RomData_p.hpp"
 
 #include "nfp_structs.h"
-#include "AmiiboData.hpp"
+#include "data/AmiiboData.hpp"
 
 #include "common.h"
 #include "byteswap.h"

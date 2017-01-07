@@ -22,7 +22,7 @@
 #include "MegaDrive.hpp"
 #include "RomData_p.hpp"
 
-#include "MegaDrivePublishers.hpp"
+#include "data/MegaDrivePublishers.hpp"
 #include "MegaDriveRegions.hpp"
 #include "md_structs.h"
 #include "CopierFormats.h"

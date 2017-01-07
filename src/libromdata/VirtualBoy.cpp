@@ -23,7 +23,7 @@
 #include "VirtualBoy.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "vb_structs.h"
 
 #include "common.h"

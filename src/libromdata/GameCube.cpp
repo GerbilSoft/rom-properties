@@ -22,8 +22,8 @@
 #include "GameCube.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
-#include "WiiSystemMenuVersion.hpp"
+#include "data/NintendoPublishers.hpp"
+#include "data/WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
 #include "SystemRegion.hpp"

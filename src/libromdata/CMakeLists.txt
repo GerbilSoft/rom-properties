@@ -62,11 +62,9 @@ SET(libromdata_SRCS
 	RomData.cpp
 	RomFields.cpp
 	MegaDrive.cpp
-	MegaDrivePublishers.cpp
 	MegaDriveRegions.cpp
 	GameCube.cpp
 	NintendoDS.cpp
-	NintendoPublishers.cpp
 	RomDataFactory.cpp
 	DMG.cpp
 	GameBoyAdvance.cpp
@@ -78,8 +76,10 @@ SET(libromdata_SRCS
 	PlayStationSave.cpp
 	VirtualBoy.cpp
 	Amiibo.cpp
-	AmiiboData.cpp
-	WiiSystemMenuVersion.cpp
+	data/MegaDrivePublishers.cpp
+	data/NintendoPublishers.cpp
+	data/AmiiboData.cpp
+	data/WiiSystemMenuVersion.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
@@ -108,11 +108,9 @@ SET(libromdata_H
 	TextFuncs.hpp
 	TextFuncs_int.hpp
 	MegaDrive.hpp
-	MegaDrivePublishers.hpp
 	MegaDriveRegions.hpp
 	GameCube.hpp
 	NintendoDS.hpp
-	NintendoPublishers.hpp
 	RomDataFactory.hpp
 	DMG.hpp
 	uvector.h
@@ -126,8 +124,6 @@ SET(libromdata_H
 	DreamcastSave.hpp
 	VirtualBoy.hpp
 	Amiibo.hpp
-	AmiiboData.hpp
-	WiiSystemMenuVersion.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -140,6 +136,10 @@ SET(libromdata_H
 	dc_structs.h
 	vb_structs.h
 	nfp_structs.h
+	data/MegaDrivePublishers.hpp
+	data/NintendoPublishers.hpp
+	data/AmiiboData.hpp
+	data/WiiSystemMenuVersion.hpp
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp

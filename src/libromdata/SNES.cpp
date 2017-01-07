@@ -22,7 +22,7 @@
 #include "SNES.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
 #include "SystemRegion.hpp"

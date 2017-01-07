@@ -22,7 +22,7 @@
 #include "GameBoyAdvance.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "gba_structs.h"
 
 #include "common.h"

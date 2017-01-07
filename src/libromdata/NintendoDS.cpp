@@ -22,7 +22,7 @@
 #include "NintendoDS.hpp"
 #include "RomData_p.hpp"
 
-#include "NintendoPublishers.hpp"
+#include "data/NintendoPublishers.hpp"
 #include "nds_structs.h"
 #include "SystemRegion.hpp"
 

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * MegaDrivePublishers.cpp: Sega Mega Drive third-party publishers list.    *
+ * MegaDrivePublishers.cpp: Sega Mega Drive third-party publishers list.   *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
  *                                                                         *
