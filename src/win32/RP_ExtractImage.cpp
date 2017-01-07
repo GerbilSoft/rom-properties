@@ -26,6 +26,7 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
+#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
@@ -48,10 +49,40 @@ using std::wstring;
 const CLSID CLSID_RP_ExtractImage =
 	{0x84573bc0, 0x9502, 0x42f8, {0x80, 0x66, 0xCC, 0x52, 0x7D, 0x07, 0x79, 0xE5}};
 
-RP_ExtractImage::RP_ExtractImage()
+/** RP_ExtractImage_Private **/
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define RP_ExtractImagePrivate RP_ExtractImage_Private
+
+class RP_ExtractImage_Private
 {
-	m_bmSize.cx = 0;
-	m_bmSize.cy = 0;
+	public:
+		RP_ExtractImage_Private() { }
+
+	private:
+		RP_ExtractImage_Private(const RP_ExtractImage_Private &other);
+		RP_ExtractImage_Private &operator=(const RP_ExtractImage_Private &other);
+
+	public:
+		// ROM filename from IPersistFile::Load().
+		rp_string filename;
+
+		// Requested thumbnail size from IExtractImage::GetLocation().
+		SIZE bmSize;
+};
+
+/** RP_ExtractImage **/
+
+RP_ExtractImage::RP_ExtractImage()
+	: d_ptr(new RP_ExtractImage_Private())
+{
+	RP_D(RP_ExtractImage);
+	d->bmSize.cx = 0;
+	d->bmSize.cy = 0;
+}
+
+RP_ExtractImage::~RP_ExtractImage()
+{
+	delete d_ptr;
 }
 
 /** IUnknown **/
@@ -246,7 +277,8 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 	}
 
 	// Save the image size for later.
-	m_bmSize = *prgSize;
+	RP_D(RP_ExtractImage);
+	d->bmSize = *prgSize;
 
 	// Disable the border around the thumbnail.
 	// NOTE: Might not work on Vista+.
@@ -273,18 +305,19 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
-	// TODO: Handle m_bmSize?
+	// TODO: Handle d->bmSize?
 
 	// Verify parameters:
 	// - A filename must have been set by calling IPersistFile::Load().
 	// - phBmpImage must not be nullptr.
-	if (m_filename.empty() || !phBmpImage) {
+	RP_D(RP_ExtractImage);
+	if (d->filename.empty() || !phBmpImage) {
 		return E_INVALIDARG;
 	}
 	*phBmpImage = nullptr;
 
 	// Get the RomData object.
-	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		return E_FAIL;	// TODO: More specific error?
 	}
@@ -355,16 +388,17 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
  */
 IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 {
+	RP_D(RP_ExtractImage);
 	if (!pDateStamp) {
 		// No FILETIME pointer specified.
 		return E_POINTER;
-	} else if (m_filename.empty()) {
+	} else if (d->filename.empty()) {
 		// Filename was not set in GetLocation().
 		return E_INVALIDARG;
 	}
 
 	// open the file and get last write time
-	HANDLE hFile = CreateFile(RP2W_s(m_filename),
+	HANDLE hFile = CreateFile(RP2W_s(d->filename),
 		GENERIC_READ, FILE_SHARE_READ, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (!hFile) {
@@ -411,7 +445,8 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	UNUSED(dwMode);	// TODO
 
 	// pszFileName is the file being worked on.
-	m_filename = W2RP_c(pszFileName);
+	RP_D(RP_ExtractImage);
+	d->filename = W2RP_c(pszFileName);
 	return S_OK;
 }
 

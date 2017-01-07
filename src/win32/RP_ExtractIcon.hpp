@@ -37,10 +37,8 @@ namespace LibRomData {
 	class RomData;
 }
 
-// C++ includes.
-#include <string>
-
 class RegKey;
+class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
 RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
@@ -49,11 +47,17 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		RP_ExtractIcon();
 		virtual ~RP_ExtractIcon();
 
+	private:
+		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
+		RP_ExtractIcon(const RP_ExtractIcon &other);
+		RP_ExtractIcon &operator=(const RP_ExtractIcon &other);
+	private:
+		friend class RP_ExtractIcon_Private;
+		RP_ExtractIcon_Private *const d_ptr;
+
 	public:
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
-	private:
-		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
 
 	public:
 		/**
@@ -81,12 +85,6 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
-
-	protected:
-		// ROM filename from IPersistFile::Load().
-		LibRomData::rp_string m_filename;
-		// RomData object. Loaded in IPersistFile::Load().
-		LibRomData::RomData *m_romData;
 
 	public:
 		// IExtractIcon

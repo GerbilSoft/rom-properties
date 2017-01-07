@@ -26,6 +26,7 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
+#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
@@ -48,15 +49,48 @@ using std::wstring;
 const CLSID CLSID_RP_ExtractIcon =
 	{0xe51bc107, 0xe491, 0x4b29, {0xa6, 0xa3, 0x2a, 0x43, 0x09, 0x25, 0x98, 0x02}};
 
+/** RP_ExtractIcon_Private **/
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define RP_ExtractIconPrivate RP_ExtractIcon_Private
+
+class RP_ExtractIcon_Private
+{
+	public:
+		RP_ExtractIcon_Private();
+		~RP_ExtractIcon_Private();
+
+	private:
+		RP_ExtractIcon_Private(const RP_ExtractIcon_Private &other);
+		RP_ExtractIcon_Private &operator=(const RP_ExtractIcon_Private &other);
+
+	public:
+		// ROM filename from IPersistFile::Load().
+		rp_string filename;
+
+		// RomData object. Loaded in IPersistFile::Load().
+		LibRomData::RomData *romData;
+};
+
+RP_ExtractIcon_Private::RP_ExtractIcon_Private()
+	: romData(nullptr)
+{ }
+
+RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
+{
+	if (romData) {
+		romData->unref();
+	}
+}
+
+/** RP_ExtractIcon **/
+
 RP_ExtractIcon::RP_ExtractIcon()
-	: m_romData(nullptr)
+	: d_ptr(new RP_ExtractIcon_Private())
 { }
 
 RP_ExtractIcon::~RP_ExtractIcon()
 {
-	if (m_romData) {
-		m_romData->unref();
-	}
+	delete d_ptr;
 }
 
 /** IUnknown **/
@@ -303,7 +337,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	UNUSED(nIconSize);
 
 	// Make sure a filename was set by calling IPersistFile::Load().
-	if (m_filename.empty()) {
+	RP_D(RP_ExtractIcon);
+	if (d->filename.empty()) {
 		return E_INVALIDARG;
 	}
 
@@ -312,7 +347,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		return E_INVALIDARG;
 	}
 
-	if (!m_romData) {
+	if (!d->romData) {
 		// ROM is not supported.
 		// NOTE: S_FALSE causes icon shenanigans.
 		return E_FAIL;
@@ -326,10 +361,10 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	bool needs_delete = false;	// External images need manual deletion.
 	const rp_image *img = nullptr;
 
-	uint32_t imgbf = m_romData->supportedImageTypes();
+	uint32_t imgbf = d->romData->supportedImageTypes();
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		img = RpImageWin32::getExternalImage(m_romData, RomData::IMG_EXT_MEDIA);
+		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
 
@@ -338,7 +373,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		// Try an internal image.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
-			img = RpImageWin32::getInternalImage(m_romData, RomData::IMG_INT_ICON);
+			img = RpImageWin32::getInternalImage(d->romData, RomData::IMG_INT_ICON);
 		}
 	}
 
@@ -394,21 +429,29 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
 	UNUSED(dwMode);	// TODO
 
+	// If we already have a RomData object, unref() it first.
+	RP_D(RP_ExtractIcon);
+	if (d->romData) {
+		d->romData->unref();
+		d->romData = nullptr;
+	}
+
 	// pszFileName is the file being worked on.
-	m_filename = W2RP_cs(pszFileName);
+	// TODO: If the file was already loaded, don't reload it.
+	d->filename = W2RP_cs(pszFileName);
 
 	// Attempt to open the ROM file.
 	// TODO: RpQFile wrapper.
 	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(m_filename, RpFile::FM_OPEN_READ));
+	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		return E_FAIL;
 	}
 
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	m_romData = RomDataFactory::getInstance(file.get(), true);
-	if (!m_romData) {
+	d->romData = RomDataFactory::getInstance(file.get(), true);
+	if (!d->romData) {
 		// Not supported.
 		return E_FAIL;
 	}

@@ -36,18 +36,23 @@ namespace LibRomData {
 	class rp_image;
 }
 
-// C++ includes.
-#include <string>
-
 class RegKey;
+class RP_ExtractImage_Private;
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
 RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 {
 	public:
 		RP_ExtractImage();
+		virtual ~RP_ExtractImage();
+
 	private:
 		typedef RP_ComBase2<IExtractImage2, IPersistFile> super;
+		RP_ExtractImage(const RP_ExtractImage &other);
+		RP_ExtractImage &operator=(const RP_ExtractImage &other);
+	private:
+		friend class RP_ExtractImage_Private;
+		RP_ExtractImage_Private *const d_ptr;
 
 	public:
 		// IUnknown
@@ -79,13 +84,6 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
-
-	protected:
-		// ROM filename from IPersistFile::Load().
-		LibRomData::rp_string m_filename;
-
-		// Requested thumbnail size from IExtractImage::GetLocation().
-		SIZE m_bmSize;
 
 	public:
 		// IExtractImage
