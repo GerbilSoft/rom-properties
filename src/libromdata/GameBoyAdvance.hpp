@@ -49,6 +49,13 @@ class GameBoyAdvance : public RomData
 		 */
 		explicit GameBoyAdvance(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~GameBoyAdvance() { }
+
 	private:
 		typedef RomData super;
 		friend class GameBoyAdvancePrivate;

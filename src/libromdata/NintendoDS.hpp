@@ -49,6 +49,13 @@ class NintendoDS : public RomData
 		 */
 		explicit NintendoDS(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~NintendoDS() { }
+
 	private:
 		typedef RomData super;
 		friend class NintendoDSPrivate;

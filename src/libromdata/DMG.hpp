@@ -48,6 +48,13 @@ class DMG : public RomData
 		 */
 		explicit DMG(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~DMG() { }
+
 	private:
 		typedef RomData super;
 		friend class DMGPrivate;

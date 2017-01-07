@@ -49,6 +49,13 @@ class Amiibo : public RomData
 		 */
 		explicit Amiibo(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~Amiibo() { }
+
 	private:
 		typedef RomData super;
 		friend class AmiiboPrivate;

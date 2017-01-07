@@ -49,6 +49,13 @@ class SNES : public RomData
 		 */
 		explicit SNES(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~SNES() { }
+
 	private:
 		typedef RomData super;
 		friend class SNESPrivate;

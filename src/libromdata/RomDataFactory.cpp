@@ -224,7 +224,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	delete *other_file;	// Not needed anymore.
 	if (!dcSave->isValid()) {
 		// Not valid.
-		delete dcSave;
+		dcSave->unref();
 		return nullptr;
 	}
 
@@ -430,7 +430,7 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	// Convert to vector<ExtInfo>.
 	vector<ExtInfo> vec;
 	vec.reserve(exts.size());
-
+	
 	ExtInfo extInfo;
 	for (auto iter = exts.cbegin(); iter != exts.cend(); ++iter) {
 		extInfo.ext = iter->first;

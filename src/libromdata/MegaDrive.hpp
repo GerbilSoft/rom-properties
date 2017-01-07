@@ -47,6 +47,13 @@ class MegaDrive : public RomData
 		 */
 		explicit MegaDrive(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~MegaDrive() { }
+
 	private:
 		typedef RomData super;
 		friend class MegaDrivePrivate;

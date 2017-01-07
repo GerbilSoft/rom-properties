@@ -47,6 +47,13 @@ class PlayStationSave : public RomData
 		 */
 		explicit PlayStationSave(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~PlayStationSave() { }
+
 	private:
 		typedef RomData super;
 		friend class PlayStationSavePrivate;

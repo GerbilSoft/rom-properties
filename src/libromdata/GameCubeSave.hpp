@@ -49,6 +49,13 @@ class GameCubeSave : public RomData
 		 */
 		explicit GameCubeSave(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~GameCubeSave() { }
+
 	private:
 		typedef RomData super;
 		friend class GameCubeSavePrivate;

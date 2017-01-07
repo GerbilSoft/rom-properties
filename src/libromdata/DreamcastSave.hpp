@@ -67,6 +67,13 @@ class DreamcastSave : public RomData
 		 */
 		DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~DreamcastSave() { }
+
 	private:
 		typedef RomData super;
 		friend class DreamcastSavePrivate;

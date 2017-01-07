@@ -49,6 +49,13 @@ class N64 : public RomData
 		 */
 		explicit N64(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~N64() { }
+
 	private:
 		typedef RomData super;
 		friend class N64Private;

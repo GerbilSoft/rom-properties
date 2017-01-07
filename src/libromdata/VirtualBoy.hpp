@@ -48,6 +48,13 @@ class VirtualBoy : public RomData
 		 */
 		explicit VirtualBoy(IRpFile *file);
 
+	protected:
+		/**
+		 * RomData destructor is protected.
+		 * Use unref() instead.
+		 */
+		virtual ~VirtualBoy() { }
+
 	private:
 		typedef RomData super;
 		friend class VirtualBoyPrivate;
