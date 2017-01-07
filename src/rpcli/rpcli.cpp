@@ -70,8 +70,8 @@ void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
 					else cerr << "   Done" << endl;
 				}
 				else {
-					int errcode;
-					if (errcode = RpPng::save(it->filename, image)) {
+					int errcode = RpPng::save(it->filename, image);
+					if (errcode != 0) {
 						cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
 					}
 					else cerr << "   Done" << endl;
@@ -85,18 +85,16 @@ void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
 				cerr << "-- Extracting animated icon into " << it->filename << endl;
-				int errcode;
-				if (errcode = RpPng::save(it->filename, iconAnimData)) {
-					if (errcode == -ENOTSUP) {
-						cerr << "   APNG not supported, extracting only the first frame" << endl;
-						// falling back to outputting the first frame
-						errcode = RpPng::save(it->filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
-					}
-					if (errcode) {
-						cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
-					}
-					else cerr << "   Done" << endl;
+				int errcode = RpPng::save(it->filename, iconAnimData);
+				if (errcode == -ENOTSUP) {
+					cerr << "   APNG not supported, extracting only the first frame" << endl;
+					// falling back to outputting the first frame
+					errcode = RpPng::save(it->filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
+				if (errcode != 0) {
+					cerr << "   Couldn't create file " << it->filename << " : " << strerror(-errcode) << endl;
+				}
+				else cerr << "   Done" << endl;
 			}
 		}
 		if (!found) {
