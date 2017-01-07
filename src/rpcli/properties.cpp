@@ -221,15 +221,15 @@ public:
 				os << StringField(maxWidth, desc, data);
 				break;
 			}
-			case RomFields::RomFields::RFT_BITFIELD: {
+			case RomFields::RFT_BITFIELD: {
 				os << BitfieldField(maxWidth, desc, data);
 				break;
 			}
-			case RomFields::RomFields::RFT_LISTDATA: {
+			case RomFields::RFT_LISTDATA: {
 				os << ListDataField(maxWidth, desc, data);
 				break;
 			}
-			case RomFields::RomFields::RFT_DATETIME: {
+			case RomFields::RFT_DATETIME: {
 				os << DateTimeField(maxWidth, desc, data);
 				break;
 			}
@@ -298,7 +298,7 @@ public:
 				os << "},\"data\":" << JSONString(data->str) << "}";
 				break;
 			}
-			case RomFields::RomFields::RFT_BITFIELD: {
+			case RomFields::RFT_BITFIELD: {
 				os << "{\"type\":\"BITFIELD\",\"desc\":{\"name\":" << JSONString(desc->name);
 				assert(desc->bitfield);
 				if (desc->bitfield) {
@@ -315,7 +315,7 @@ public:
 				os << "},\"data\":" << data->bitfield << "}";
 				break;
 			}
-			case RomFields::RomFields::RFT_LISTDATA: {
+			case RomFields::RFT_LISTDATA: {
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(desc->name);
 				assert(desc->list_data);
 				if (desc->list_data) {
@@ -390,8 +390,11 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (supported&(1 << i)) {
 			auto &urls = *romdata->extURLs((RomData::ImageType)i);
-			for (auto s : urls)
-				os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << ": " << s.url << " (cache_key: " << s.cache_key << ")" << endl;
+			for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
+				os << "-- " <<
+					RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
+					" (cache_key: " << iter->cache_key << ")" << endl;
+			}
 		}
 	}
 	return os;
@@ -462,12 +465,12 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			os << ",\"exturls\":[";
 			bool firsturl = true;
 			auto &urls = *romdata->extURLs((RomData::ImageType)i);
-			for (auto s : urls) {
+			for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
 				if (firsturl) firsturl = false;
 				else os << ",";
 
-				os << "{\"url\":" << JSONString(s.url.c_str());
-				os << ",\"cache_key\":" << JSONString(s.cache_key.c_str()) << "}";
+				os << "{\"url\":" << JSONString(iter->url.c_str());
+				os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
 			}
 			os << "]}";
 		}
