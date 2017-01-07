@@ -2011,6 +2011,11 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hDlgSheet = hDlg;
 			// Initialize the dialog.
 			d->initDialog(hDlg);
+
+			// Make sure the underlying file handle is closed,
+			// since we don't need it once the RomData has been
+			// loaded by RomDataView.
+			d->romData->close();
 			return TRUE;
 		}
 

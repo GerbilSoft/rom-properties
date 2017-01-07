@@ -419,10 +419,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	}
 	const int count = fields->count();
 
-	// Make sure the underlying file handle is closed,
-	// since we don't need it anymore.
-	romData->close();
-
 	// Create the data widgets.
 	Q_Q(RomDataView);
 #ifndef NDEBUG

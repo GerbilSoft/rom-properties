@@ -1076,6 +1076,11 @@ rom_data_view_load_rom_data(gpointer data)
 
 			// Update the display widgets.
 			rom_data_view_update_display(page);
+
+			// Make sure the underlying file handle is closed,
+			// since we don't need it once the RomData has been
+			// loaded by RomDataView.
+			page->romData->close();
 		}
 		delete file;
 	}

@@ -66,6 +66,11 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 					RomDataView *romDataView = new RomDataView(romData, props);
 					props->addPage(romDataView, tr("ROM Properties"));
 
+					// Make sure the underlying file handle is closed,
+					// since we don't need it once the RomData has been
+					// loaded by RomDataView.
+					romData->close();
+
 					// RomDataView takes a reference to the RomData object.
 					// We don't need to hold on to it.
 					romData->unref();
