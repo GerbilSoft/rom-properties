@@ -85,6 +85,16 @@ int w32err_to_posix(DWORD w32err);
 		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
 
 /**
+ * Get const rp_char* from const wchar_t*.
+ * @param wcs const wchar_t*
+ * @param len Length of wcs.
+ * @return const rp_char*
+ */
+#define W2RP_cl(wcs, len) \
+	(LibRomData::utf16_to_rp_string( \
+		reinterpret_cast<const char16_t*>(wcs), len).c_str())
+
+/**
  * Get const rp_char* from std::wstring.
  * @param wcs std::wstring
  * @return const rp_char*
@@ -142,6 +152,18 @@ static inline const wchar_t *RP2W_s(const LibRomData::rp_string &rps)
  */
 static inline const rp_char *W2RP_c(const wchar_t *wcs)
 {
+	return reinterpret_cast<const rp_char*>(wcs);
+}
+
+/**
+ * Get const rp_char* from const wchar_t*.
+ * @param wcs const wchar_t*
+ * @param len Length of wcs.
+ * @return const rp_char*
+ */
+static inline const rp_char *W2RP_cl(const wchar_t *wcs, int len)
+{
+	((void)len);
 	return reinterpret_cast<const rp_char*>(wcs);
 }
 
