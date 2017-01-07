@@ -104,7 +104,7 @@ public:
 
 		for (int i = 0; i < desc->bitfield->elements; i++) {
 			if (i && i%perRow == 0) os << endl << Pad(field.width);
-			os << " [" << (data->bitfield & (1 << i) ? '*' : ' ') << "] " <<
+			os << " [" << ((data->bitfield & (1 << i)) ? '*' : ' ') << "] " <<
 				setw(colSize[i%perRow]) << desc->bitfield->names[i];
 		}
 		delete[] colSize;
