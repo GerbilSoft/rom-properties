@@ -40,10 +40,11 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
 	struct tm *tm = localtime(timep);
-	if (!tm)
-		return nullptr;
-	*result = *tm;
-	return result;
+	if (tm && result) {
+		*result = *tm;
+		return result;
+	}
+	return nullptr;
 }
 #endif /* HAVE_LOCALTIME_R */
 
