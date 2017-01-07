@@ -378,6 +378,9 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 
 IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
 {
+	if (!pClassID) {
+		return E_FAIL;
+	}
 	*pClassID = CLSID_RP_ExtractIcon;
 	return S_OK;
 }

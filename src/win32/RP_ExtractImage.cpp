@@ -394,6 +394,9 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 
 IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
 {
+	if (!pClassID) {
+		return E_FAIL;
+	}
 	*pClassID = CLSID_RP_ExtractImage;
 	return S_OK;
 }
