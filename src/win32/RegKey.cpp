@@ -327,10 +327,34 @@ LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey)
 		return lResult;
 	}
 
+	// Get the maximum subkey name length.
+	DWORD cMaxSubKeyLen;
+	lResult = RegQueryInfoKey(hSubKey,
+		nullptr, nullptr,		// lpClass, lpcClass
+		nullptr,			// lpReserved
+		nullptr, &cMaxSubKeyLen,	// lpcSubKeys, lpcMaxSubKeyLen
+		nullptr, nullptr,		// lpcMaxClassLen, lpcValues
+		nullptr, nullptr,		// lpcMaxValueNameLen, lpcMaxValueLen
+		nullptr, nullptr)	;	// lpcbSecurityDescriptor, lpftLastWriteTime
+	if (lResult != ERROR_SUCCESS) {
+		RegCloseKey(hSubKey);
+		return lResult;
+	}
+
+	// cMaxSubKeyLen doesn't include the NULL terminator, so add one.
+	++cMaxSubKeyLen;
+	wchar_t *szName = static_cast<wchar_t*>(malloc(cMaxSubKeyLen * sizeof(wchar_t)));
+
 	// Enumerate the keys.
-	wchar_t szName[MAX_PATH];
-	DWORD dwSize = (DWORD)(sizeof(szName)/sizeof(szName[0]));
-	lResult = RegEnumKeyEx(hSubKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+	DWORD dwSize = cMaxSubKeyLen;
+	lResult = RegEnumKeyEx(hSubKey,
+		0,		// dwIndex
+		szName,		// lpName
+		&dwSize,	// lpcName
+		nullptr,	// lpReserved
+		nullptr,	// lpClass
+		nullptr,	// lpcClass
+		nullptr);	// lpftLastWriteTime
 	if (lResult == ERROR_SUCCESS) {
 		do {
 			// Recurse through this subkey.
@@ -338,11 +362,19 @@ LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCWSTR lpSubKey)
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
 				break;
 
-			dwSize = MAX_PATH;
-			lResult = RegEnumKeyEx(hSubKey, 0, szName, &dwSize, nullptr, nullptr, nullptr, nullptr);
+			// Next subkey.
+			dwSize = cMaxSubKeyLen;
+			lResult = RegEnumKeyEx(hSubKey,
+				0,		// dwIndex
+				szName,		// lpName
+				&dwSize,	// lpcName
+				nullptr,	// lpReserved
+				nullptr,	// lpClass
+				nullptr,	// lpcClass
+				nullptr);	// lpftLastWriteTime
 		} while (lResult == ERROR_SUCCESS);
 	}
-
+	free(szName);
 	RegCloseKey(hSubKey);
 
 	// Try to delete the key again.
