@@ -217,6 +217,9 @@ class RomData
 
 			// NFC dump, e.g. amiibo.
 			FTYPE_NFC_DUMP,
+
+			// End of FileType.
+			FTYPE_LAST
 		};
 
 		/**
@@ -417,7 +420,7 @@ class RomData
 		 * @return String containing user-friendly name of an image type.
 		 */
 		static const rp_char *getImageTypeName(ImageType imageType);
-		
+
 		/**
 		 * Get the animated icon data.
 		 *
