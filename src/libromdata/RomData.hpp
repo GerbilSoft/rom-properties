@@ -412,6 +412,13 @@ class RomData
 		uint32_t imgpf(ImageType imageType) const;
 
 		/**
+		 * Get name of an image type
+		 * @param imageType Image type.
+		 * @return String containing user-friendly name of an image type.
+		 */
+		static const rp_char *getImageTypeName(ImageType imageType);
+		
+		/**
 		 * Get the animated icon data.
 		 *
 		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this

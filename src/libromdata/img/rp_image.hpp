@@ -28,6 +28,7 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
+#include "TextFuncs.hpp"
 // TODO: Make this implicitly shared.
 
 namespace LibRomData {
@@ -201,6 +202,13 @@ class rp_image
 		 * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparent colors.)
 		 */
 		void set_tr_idx(int tr_idx);
+		
+		/**
+		 * Get name of a format
+		 * @param format Format.
+		 * @return String containing user-friendly name of a format.
+		 */
+		static const rp_char *getFormatName(Format format);
 };
 
 }

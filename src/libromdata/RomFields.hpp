@@ -97,6 +97,8 @@ class RomFields
 			// Show the time value.
 			RFT_DATETIME_HAS_TIME = (1 << 1),
 
+			RFT_DATETIME_HAS_DATETIME_MASK = RFT_DATETIME_HAS_DATE | RFT_DATETIME_HAS_TIME,
+
 			// Show the timestamp as UTC instead of the local timezone.
 			// This is useful for timestamps that aren't actually
 			// adjusted for the local timezone.
