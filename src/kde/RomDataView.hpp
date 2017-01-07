@@ -22,19 +22,22 @@
 #ifndef __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__
 #define __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__
 
+#include <QtCore/QMetaType>
 #include <QWidget>
 
-namespace LibRomData {
-	class RomData;
-}
+#include "libromdata/RomData.hpp"
+Q_DECLARE_METATYPE(LibRomData::RomData*)
 
 class RomDataViewPrivate;
 class RomDataView : public QWidget
 {
 	Q_OBJECT
 
+	Q_PROPERTY(LibRomData::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
+
 	public:
-		RomDataView(LibRomData::RomData *romData, QWidget *parent = 0);
+		explicit RomDataView(QWidget *parent = 0);
+		explicit RomDataView(LibRomData::RomData *romData, QWidget *parent = 0);
 		virtual ~RomDataView();
 
 	private:
@@ -73,6 +76,29 @@ class RomDataView : public QWidget
 		 * Animated icon timer.
 		 */
 		void tmrIconAnim_timeout(void);
+
+		/** Properties. **/
+
+	public:
+		/**
+		 * Get the current RomData object.
+		 * @return RomData object.
+		 */
+		LibRomData::RomData *romData(void) const;
+
+	public slots:
+		/**
+		 * Set the current RomData object.
+		 * @return RomData object.
+		 */
+		void setRomData(LibRomData::RomData *romData);
+
+	signals:
+		/**
+		 * The RomData object has been changed.
+		 * @param romData New RomData object.
+		 */
+		void romDataChanged(LibRomData::RomData *romData);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

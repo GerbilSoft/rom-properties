@@ -67,8 +67,6 @@ class RomDataViewPrivate
 			void setupUi(QWidget *RomDataView);
 
 			QVBoxLayout *vboxLayout;
-			QFormLayout *formLayout;
-			// TODO: Store the field widgets?
 
 			// Header row.
 			QHBoxLayout *hboxHeaderRow;
@@ -76,15 +74,25 @@ class RomDataViewPrivate
 			QLabel *lblBanner;
 			QLabel *lblIcon;
 
+			// Form layout.
+			QFormLayout *formLayout;
+			QLabel *lblCredits;
+
 			QTimer *tmrIconAnim;
 
-			Ui()	: formLayout(nullptr)
+			Ui()	: vboxLayout(nullptr)
 				, hboxHeaderRow(nullptr)
 				, lblSysInfo(nullptr)
 				, lblBanner(nullptr)
 				, lblIcon(nullptr)
+				, formLayout(nullptr)
+				, lblCredits(nullptr)
 				, tmrIconAnim(nullptr)
 				{ }
+			~Ui() {
+				// hboxHeaderRow may need to be deleted.
+				delete hboxHeaderRow;
+			}
 		};
 		Ui ui;
 		RomData *romData;
@@ -97,18 +105,23 @@ class RomDataViewPrivate
 		int last_frame_number;		// Last frame number.
 
 		/**
-		 * Create the header row.
-		 * @return QLayout containing the header row.
+		 * Initialize the header row widgets.
+		 * The widgets must have already been created by ui.setupUi().
 		 */
-		QLayout *createHeaderRow(void);
+		void initHeaderRow(void);
 
 		/**
-		 * Update the display widgets.
-		 * FIXME: Allow running this multiple times?
+		 * Clear a QLayout.
+		 * @param layout QLayout.
 		 */
-		void updateDisplay(void);
+		static void clearLayout(QLayout *layout);
 
-		bool displayInit;
+		/**
+		 * Initialize the display widgets.
+		 * If the widgets already exist, they will
+		 * be deleted and recreated.
+		 */
+		void initDisplayWidgets(void);
 
 		/**
 		 * Start the animation timer.
@@ -138,7 +151,6 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
-	, displayInit(false)
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -154,8 +166,9 @@ RomDataViewPrivate::~RomDataViewPrivate()
 
 void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 {
-	// Only the layouts are initialized here.
-	// Everything else is initialized in updateDisplay.
+	// Only the layouts and header row widgets are initialized here.
+	// Header row data is initialized in initHeaderRow().
+	// Field widgets are initialized in initDisplayWidgets().
 
 	// Main layout is a QVBoxLayout.
 	// This allows for the credits row to be separate.
@@ -165,9 +178,35 @@ void RomDataViewPrivate::Ui::setupUi(QWidget *RomDataView)
 	QMargins margins(0, 0, 0, 0);
 	vboxLayout->setContentsMargins(margins);
 
-	// Create the QFormLayout.
-	formLayout = new QFormLayout();
-	vboxLayout->addLayout(formLayout, 1);
+	// Create the header row widgets.
+	hboxHeaderRow = new QHBoxLayout();
+	vboxLayout->addLayout(hboxHeaderRow);
+
+	// Header row: System information.
+	lblSysInfo = new QLabel(RomDataView);
+	lblSysInfo->hide();
+	lblSysInfo->setAlignment(Qt::AlignCenter);
+	lblSysInfo->setTextFormat(Qt::PlainText);
+	hboxHeaderRow->addWidget(lblSysInfo);
+
+	// Use a bold font.
+	QFont font = lblSysInfo->font();
+	font.setBold(true);
+	lblSysInfo->setFont(font);
+
+	// Header row: Banner and icon.
+	lblBanner = new QLabel(RomDataView);
+	lblBanner->hide();
+	hboxHeaderRow->addWidget(lblBanner);
+	lblIcon = new QLabel(RomDataView);
+	lblIcon->hide();
+	hboxHeaderRow->addWidget(lblIcon);
+
+	// Header row: Add spacers.
+	hboxHeaderRow->insertStretch(0, 1);
+	hboxHeaderRow->insertStretch(-1, 1);
+
+	// formLayout is created in initDisplayWidgets().
 }
 
 /**
@@ -205,17 +244,20 @@ QPixmap RomDataViewPrivate::imgToPixmap(const QImage &img)
 	return QPixmap::fromImage(img.scaled(img_size, Qt::KeepAspectRatio, Qt::FastTransformation));
 }
 
-QLayout *RomDataViewPrivate::createHeaderRow(void)
+/**
+ * Initialize the header row widgets.
+ * The widgets must have already been created by ui.setupUi().
+ */
+void RomDataViewPrivate::initHeaderRow(void)
 {
 	Q_Q(RomDataView);
-	assert(romData != nullptr);
 	if (!romData) {
 		// No ROM data.
-		return nullptr;
+		ui.lblSysInfo->hide();
+		ui.lblBanner->hide();
+		ui.lblIcon->hide();
+		return;
 	}
-
-	// TODO: Delete the old widgets if they're already present.
-	ui.hboxHeaderRow = new QHBoxLayout();
 
 	// System name.
 	// TODO: System logo and/or game title?
@@ -237,17 +279,10 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 	}
 
 	if (!sysInfo.isEmpty()) {
-		ui.lblSysInfo = new QLabel(q);
-		ui.lblSysInfo->setAlignment(Qt::AlignCenter);
-		ui.lblSysInfo->setTextFormat(Qt::PlainText);
 		ui.lblSysInfo->setText(sysInfo);
-
-		// Use a bold font.
-		QFont font = ui.lblSysInfo->font();
-		font.setBold(true);
-		ui.lblSysInfo->setFont(font);
-
-		ui.hboxHeaderRow->addWidget(ui.lblSysInfo);
+		ui.lblSysInfo->show();
+	} else {
+		ui.lblSysInfo->hide();
 	}
 
 	// Supported image types.
@@ -260,9 +295,10 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 		if (banner && banner->isValid()) {
 			QImage img = rpToQImage(banner);
 			if (!img.isNull()) {
-				ui.lblBanner = new QLabel(q);
 				ui.lblBanner->setPixmap(imgToPixmap(img));
-				ui.hboxHeaderRow->addWidget(ui.lblBanner);
+				ui.lblBanner->show();
+			} else {
+				ui.lblBanner->hide();
 			}
 		}
 	}
@@ -274,10 +310,11 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 		if (icon && icon->isValid()) {
 			QImage img = rpToQImage(icon);
 			if (!img.isNull()) {
-				ui.lblIcon = new QLabel(q);
 				iconFrames[0] = imgToPixmap(img);
 				ui.lblIcon->setPixmap(iconFrames[0]);
-				ui.hboxHeaderRow->addWidget(ui.lblIcon);
+				ui.lblIcon->show();
+			} else {
+				ui.lblIcon->hide();
 			}
 
 			// Get the animated icon data.
@@ -298,6 +335,8 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 				// Set up the IconAnimHelper.
 				iconAnimHelper.setIconAnimData(iconAnimData);
 				if (iconAnimHelper.isAnimated()) {
+					// Initialize the animation.
+					last_frame_number = 0;
 					// Create the animation timer.
 					if (!ui.tmrIconAnim) {
 						ui.tmrIconAnim = new QTimer(q);
@@ -309,22 +348,65 @@ QLayout *RomDataViewPrivate::createHeaderRow(void)
 			}
 		}
 	}
-
-	// Add spacers.
-	ui.hboxHeaderRow->insertStretch(0, 1);
-	ui.hboxHeaderRow->insertStretch(-1, 1);
-	return ui.hboxHeaderRow;
 }
 
 /**
- * Update the display widgets.
- * FIXME: Allow running this multiple times?
+ * Clear a QLayout.
+ * @param layout QLayout.
  */
-void RomDataViewPrivate::updateDisplay(void)
+void RomDataViewPrivate::clearLayout(QLayout *layout)
 {
-	if (!romData || displayInit)
+	// References:
+	// - http://doc.qt.io/qt-4.8/qlayout.html#takeAt
+	// - http://stackoverflow.com/questions/4857188/clearing-a-layout-in-qt
+
+	if (!layout)
 		return;
-	displayInit = true;
+	
+	while (!layout->isEmpty()) {
+		QLayoutItem *item = layout->takeAt(0);
+		if (item->layout()) {
+			// This also handles QSpacerItem.
+			// NOTE: If this is a layout, item->layout() returns 'this'.
+			// We only want to delete the sub-item if it's a widget.
+			clearLayout(item->layout());
+		} else if (item->widget()) {
+			// Delete the widget.
+			delete item->widget();
+		}
+		delete item;
+	}
+}
+
+/**
+ * Initialize the display widgets.
+ * If the widgets already exist, they will
+ * be deleted and recreated.
+ */
+void RomDataViewPrivate::initDisplayWidgets(void)
+{
+	// Delete the credits label if it's present.
+	delete ui.lblCredits;
+	ui.lblCredits = nullptr;
+
+	// Delete the form layout if it's present.
+	if (ui.formLayout) {
+		clearLayout(ui.formLayout);
+		delete ui.formLayout;
+		ui.formLayout = nullptr;
+	}
+
+	// Initialize the header row.
+	initHeaderRow();
+
+	if (!romData) {
+		// No ROM data to display.
+		return;
+	}
+
+	// Create the QFormLayout.
+	ui.formLayout = new QFormLayout();
+	ui.vboxLayout->addLayout(ui.formLayout, 1);
 
 	// Get the fields.
 	const RomFields *fields = romData->fields();
@@ -334,16 +416,6 @@ void RomDataViewPrivate::updateDisplay(void)
 		return;
 	}
 	const int count = fields->count();
-
-	// Header row:
-	// - System name and file type.
-	//   - TODO: System logo.
-	// - Banner (if present)
-	// - Icon (if present)
-	QLayout *headerRow = createHeaderRow();
-	if (headerRow) {
-		ui.formLayout->addRow(headerRow);
-	}
 
 	// Make sure the underlying file handle is closed,
 	// since we don't need it anymore.
@@ -439,6 +511,9 @@ void RomDataViewPrivate::updateDisplay(void)
 					margins.setTop(0);
 					margins.setBottom(99);
 					ui.vboxLayout->setContentsMargins(margins);
+
+					// Save this as the credits label.
+					ui.lblCredits = lblString;
 
 					// No description field.
 					delete lblDesc;
@@ -625,6 +700,16 @@ void RomDataViewPrivate::stopAnimTimer(void)
 
 /** RomDataView **/
 
+RomDataView::RomDataView(QWidget *parent)
+	: super(parent)
+	, d_ptr(new RomDataViewPrivate(this, nullptr))
+{
+	Q_D(RomDataView);
+	d->ui.setupUi(this);
+
+	// No display widgets to initialize...
+}
+
 RomDataView::RomDataView(RomData *romData, QWidget *parent)
 	: super(parent)
 	, d_ptr(new RomDataViewPrivate(this, romData))
@@ -632,8 +717,8 @@ RomDataView::RomDataView(RomData *romData, QWidget *parent)
 	Q_D(RomDataView);
 	d->ui.setupUi(this);
 
-	// Update the display widgets.
-	d->updateDisplay();
+	// Initialize the display widgets.
+	d->initDisplayWidgets();
 }
 
 RomDataView::~RomDataView()
@@ -715,4 +800,45 @@ void RomDataView::tmrIconAnim_timeout(void)
 	if (d->anim_running) {
 		d->ui.tmrIconAnim->start(delay);
 	}
+}
+
+/** Properties. **/
+
+/**
+ * Get the current RomData object.
+ * @return RomData object.
+ */
+RomData *RomDataView::romData(void) const
+{
+	Q_D(const RomDataView);
+	return d->romData;
+}
+
+/**
+ * Set the current RomData object.
+ * @return RomData object.
+ */
+void RomDataView::setRomData(LibRomData::RomData *romData)
+{
+	Q_D(RomDataView);
+	if (d->romData == romData)
+		return;
+
+	bool prevAnimTimerRunning = d->anim_running;
+	if (prevAnimTimerRunning) {
+		// Animation is running.
+		// Stop it temporarily and reset the frame number.
+		d->stopAnimTimer();
+		d->last_frame_number = 0;
+	}
+
+	d->romData = romData;
+	d->initDisplayWidgets();
+
+	if (romData != nullptr && prevAnimTimerRunning) {
+		// Restart the animation timer.
+		d->startAnimTimer();
+	}
+
+	emit romDataChanged(romData);
 }
