@@ -144,7 +144,7 @@ typedef struct PACKED _DC_VMI_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
 } DC_VMI_Timestamp;
-#pragma pack(0)
+#pragma pack()
 
 /**
  * Dreamcast VMI header. (.vmi files)
