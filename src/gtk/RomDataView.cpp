@@ -205,7 +205,6 @@ static inline void
 set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_format_type)
 {
 	PangoAttrList *attr_lst = pango_attr_list_new();
-	PangoAttribute *attr;
 
 	auto iter = page->setDescLabelIsWarning->find(GTK_WIDGET(label));
 	const bool is_warning = (iter != page->setDescLabelIsWarning->end());
@@ -234,7 +233,7 @@ set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_
 
 			if (!is_warning) {
 				// Text style: Bold
-				attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
+				PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
 				pango_attr_list_insert(attr_lst, attr);
 			}
 			break;
