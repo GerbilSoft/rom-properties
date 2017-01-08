@@ -177,6 +177,7 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		&cbData);	// lpcbData
 	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
 		// Either an error occurred, or this isn't REG_SZ.
+		free(wbuf);
 		return wstring();
 	}
 
@@ -192,6 +193,7 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 
 	if (cchData == 0) {
 		// No actual string data.
+		free(wbuf);
 		return wstring();
 	}
 
