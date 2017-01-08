@@ -127,7 +127,7 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 					cout << JSONROMOutput(romData) << endl;
 				}
 				else {
-					cerr << ROMOutput(romData) << endl;
+					cout << ROMOutput(romData) << endl;
 				}
 
 				ExtractImages(romData, extract);
