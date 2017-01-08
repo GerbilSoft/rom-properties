@@ -47,9 +47,9 @@ ELSEIF(WIN32)
 	# Win32-style install paths.
 	# Files are installed relative to root, since the
 	# program is run out of its own directory.
-	SET(DIR_INSTALL_EXE ".")
-	SET(DIR_INSTALL_DLL ".")
-	SET(DIR_INSTALL_LIB ".")
+	SET(DIR_INSTALL_EXE "${arch}")
+	SET(DIR_INSTALL_DLL "${arch}")
+	SET(DIR_INSTALL_LIB "${arch}")
 	SET(DIR_INSTALL_TRANSLATIONS "translations")
 	SET(DIR_INSTALL_DOC "doc")
 	SET(DIR_INSTALL_DOC_ROOT ".")
