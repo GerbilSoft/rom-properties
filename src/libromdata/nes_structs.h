@@ -30,17 +30,22 @@
 extern "C" {
 #endif
 
-#define NES_PRG_BANK_SIZE 16384
-#define NES_CHR_BANK_SIZE 8192
+// Bank sizes for iNES.
+#define INES_PRG_BANK_SIZE 16384
+#define INES_CHR_BANK_SIZE 8192
+
+// Bank sizes for TNES.
+#define TNES_PRG_BANK_SIZE 8192
+#define TNES_CHR_BANK_SIZE 8192
 
 /**
- * NES ROM header.
+ * iNES ROM header.
  * References:
  * - https://wiki.nesdev.com/w/index.php/INES
  * - https://wiki.nesdev.com/w/index.php/NES_2.0
  */
 #pragma pack(1)
-struct PACKED NES_RomHeader {
+typedef struct PACKED _INES_RomHeader {
 	uint8_t magic[4];	// "NES\x1A"
 	uint8_t prg_banks;	// # of 16 KB PRG ROM banks.
 	uint8_t chr_banks;	// # of 8 KB CHR ROM banks.
@@ -58,7 +63,7 @@ struct PACKED NES_RomHeader {
 		} ines;
 		struct {
 			uint8_t mapper_hi2;
-			uint8_t rom_size_hi;
+			uint8_t prg_banks_hi;
 			uint8_t prg_ram_size;	// logarithmic
 			uint8_t vram_size;	// logarithmic
 			uint8_t tv_mode;	// 12
@@ -67,40 +72,40 @@ struct PACKED NES_RomHeader {
 	};
 
 	uint8_t reserved[2];
-};
+} INES_RomHeader;
 #pragma pack()
-ASSERT_STRUCT(NES_RomHeader, 16);
+ASSERT_STRUCT(INES_RomHeader, 16);
 
 // mapper_lo flags.
-enum NES_Mapper_LO {
+enum INES_Mapper_LO {
 	// Mirroring.
-	NES_F6_MIRROR_HORI = 0,
-	NES_F6_MIRROR_VERT = (1 << 0),
-	NES_F6_MIRROR_FOUR = (1 << 3),
+	INES_F6_MIRROR_HORI = 0,
+	INES_F6_MIRROR_VERT = (1 << 0),
+	INES_F6_MIRROR_FOUR = (1 << 3),
 
 	// Battery/trainer.
-	NES_F6_BATTERY = (1 << 1),
-	NES_F6_TRAINER = (1 << 2),
+	INES_F6_BATTERY = (1 << 1),
+	INES_F6_TRAINER = (1 << 2),
 
 	// Mapper low nybble.
-	NES_F6_MAPPER_MASK = 0xF0,
-	NES_F6_MAPPER_SHIFT = 4,
+	INES_F6_MAPPER_MASK = 0xF0,
+	INES_F6_MAPPER_SHIFT = 4,
 };
 
 // mapper_hi flags.
-enum NES_Mapper_HI {
+enum INES_Mapper_HI {
 	// Hardware.
-	NES_F7_VS	= (1 << 0),
-	NES_F7_PC10	= (1 << 1),
+	INES_F7_VS	= (1 << 0),
+	INES_F7_PC10	= (1 << 1),
 
 	// NES 2.0 identification.
-	NES_F7_NES2_MASK = (1 << 3) | (1 << 2),
-	NES_F7_NES2_INES_VAL = 0,
-	NES_F7_NES2_NES2_VAL = (1 << 3),
+	INES_F7_NES2_MASK = (1 << 3) | (1 << 2),
+	INES_F7_NES2_INES_VAL = 0,
+	INES_F7_NES2_NES2_VAL = (1 << 3),
 
 	// Mapper high nybble.
-	NES_F7_MAPPER_MASK = 0xF0,
-	NES_F7_MAPPER_SHIFT = 4,
+	INES_F7_MAPPER_MASK = 0xF0,
+	INES_F7_MAPPER_SHIFT = 4,
 };
 
 // NES 2.0 stuff
@@ -122,8 +127,26 @@ enum NES2_TV_Mode {
 	NES2_F12_REGION = (1 << 1) | (1 << 0),
 };
 
+/**
+ * TNES ROM header.
+ * Used with Nintendo 3DS Virtual Console games.
+ */
+#pragma pack(1)
+typedef struct PACKED _TNES_RomHeader {
+	uint8_t magic[4];	// "TNES"
+	uint8_t mapper;
+	uint8_t prg_banks;	// # of 8 KB PRG ROM banks.
+	uint8_t chr_banks;	// # of 8 KB CHR ROM banks.
+	uint8_t wram;		// 00 == no; 01 == yes
+	uint8_t mirroring;	// 00 == none; 01 == horizontal; 02 == vertical
+	uint8_t vram;		// 00 == no; 01 == yes
+	uint8_t reserved[6];
+} TNES_RomHeader;
+#pragma pack()
+ASSERT_STRUCT(TNES_RomHeader, 16);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_NDS_STRUCTS_H__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_NES_STRUCTS_H__ */

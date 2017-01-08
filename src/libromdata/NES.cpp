@@ -69,13 +69,18 @@ class NESPrivate : public RomDataPrivate
 			ROM_TYPE_OLD_INES = 0,	// Archaic iNES format
 			ROM_TYPE_INES = 1,	// iNES format
 			ROM_TYPE_NES2 = 2,	// NES 2.0 format
-			// TODO: TNES, FDS, maybe UNIF?
+			ROM_TYPE_TNES = 3,	// TNES (Nintendo 3DS Virtual Console)
+
+			// TODO: Other VC, FDS, maybe UNIF?
 		};
 		int romType;
 
 	public:
 		// ROM header.
-		NES_RomHeader romHeader;
+		union {
+			INES_RomHeader ines;
+			TNES_RomHeader tnes;
+		} header;
 
 		/**
 		 * Format PRG/CHR ROM bank sizes, in KB.
@@ -101,6 +106,7 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 	{_RP("Format"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Mapper"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Submapper"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("TNES Mapper"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
 };
@@ -109,8 +115,8 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
 	: super(q, file, nes_fields, ARRAY_SIZE(nes_fields))
 	, romType(ROM_TYPE_UNKNOWN)
 {
-	// Clear the ROM header struct.
-	memset(&romHeader, 0, sizeof(romHeader));
+	// Clear the ROM header structs.
+	memset(&header, 0, sizeof(header));
 }
 
 /**
@@ -159,8 +165,8 @@ NES::NES(IRpFile *file)
 	// Seek to the beginning of the header.
 	d->file->rewind();
 
-	// Read the ROM header. [0x10 bytes]
-	uint8_t header[0x10];
+	// Read the ROM header. [16 bytes]
+	uint8_t header[16];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
@@ -178,8 +184,13 @@ NES::NES(IRpFile *file)
 		case NESPrivate::ROM_TYPE_OLD_INES:
 		case NESPrivate::ROM_TYPE_INES:
 		case NESPrivate::ROM_TYPE_NES2:
-			// 16-byte iNES-style ROM header.
-			memcpy(&d->romHeader, header, sizeof(d->romHeader));
+			// iNES-style ROM header.
+			memcpy(&d->header.ines, header, sizeof(d->header.ines));
+			break;
+
+		case NESPrivate::ROM_TYPE_TNES:
+			// TNES ROM header.
+			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
 
 		default:
@@ -205,26 +216,27 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(NES_RomHeader))
+	    info->header.size < 16)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
 		return -1;
 	}
 
-	// Check the system name.
-	const NES_RomHeader *romHeader =
-		reinterpret_cast<const NES_RomHeader*>(info->header.pData);
-	if (!memcmp(romHeader->magic, "NES\x1A", sizeof(romHeader->magic))) {
+	// Check for iNES.
+	const INES_RomHeader *inesHeader =
+		reinterpret_cast<const INES_RomHeader*>(info->header.pData);
+	static const uint8_t ines_magic[4] = {'N', 'E', 'S', 0x1A};
+	if (!memcmp(inesHeader->magic, ines_magic, sizeof(inesHeader->magic))) {
 		// Found an iNES ROM header.
 		// Check for NES 2.0.
-		if ((romHeader->mapper_hi & 0x0C) == 0x08) {
+		if ((inesHeader->mapper_hi & 0x0C) == 0x08) {
 			// May be NES 2.0
 			// Verify the ROM size.
-			int64_t size = sizeof(NES_RomHeader) +
-				(romHeader->prg_banks * NES_PRG_BANK_SIZE) +
-				(romHeader->chr_banks * NES_CHR_BANK_SIZE) +
-				((romHeader->nes2.rom_size_hi << 8) * NES_PRG_BANK_SIZE);
+			int64_t size = sizeof(INES_RomHeader) +
+				(inesHeader->prg_banks * INES_PRG_BANK_SIZE) +
+				(inesHeader->chr_banks * INES_CHR_BANK_SIZE) +
+				((inesHeader->nes2.prg_banks_hi << 8) * INES_PRG_BANK_SIZE);
 			if (size <= info->szFile) {
 				// This is an NES 2.0 header.
 				return NESPrivate::ROM_TYPE_NES2;
@@ -232,7 +244,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		}
 
 		// Not NES 2.0.
-		if ((romHeader->mapper_hi & 0x0C) == 0x00) {
+		if ((inesHeader->mapper_hi & 0x0C) == 0x00) {
 			// May be iNES.
 			// TODO: Optimize this check?
 			if (info->header.pData[12] == 0 &&
@@ -247,6 +259,16 @@ int NES::isRomSupported_static(const DetectInfo *info)
 
 		// Archaic iNES format.
 		return NESPrivate::ROM_TYPE_OLD_INES;
+	}
+
+	// Check for TNES.
+	const TNES_RomHeader *tnesHeader =
+		reinterpret_cast<const TNES_RomHeader*>(info->header.pData);
+	static const uint8_t tnes_magic[4] = {'T', 'N', 'E', 'S'};
+	if (!memcmp(tnesHeader->magic, tnes_magic, sizeof(tnesHeader->magic))) {
+		// Found a TNES ROM header.
+		// TODO: Verify ROM size?
+		return NESPrivate::ROM_TYPE_TNES;
 	}
 
 	// Not supported.
@@ -346,29 +368,50 @@ int NES::loadFieldData(void)
 	}
 
 	// NES ROM header
-	const NES_RomHeader *romHeader = &d->romHeader;
 
 	// Determine stuff based on the ROM format.
 	const rp_char *rom_format;
 	int mapper = -1;
 	int submapper = -1;
+	int tnes_mapper = -1;
+	unsigned int prg_rom_size = 0;
+	unsigned int chr_rom_size = 0;
 	switch (d->romType) {
 		case NESPrivate::ROM_TYPE_OLD_INES:
 			rom_format = _RP("Archaic iNES");
-			mapper = (romHeader->mapper_lo >> 4);
+			mapper = (d->header.ines.mapper_lo >> 4);
+			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
+			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
+
 		case NESPrivate::ROM_TYPE_INES:
 			rom_format = _RP("iNES");
-			mapper = (romHeader->mapper_lo >> 4) |
-				 (romHeader->mapper_hi & 0xF0);
+			mapper = (d->header.ines.mapper_lo >> 4) |
+				 (d->header.ines.mapper_hi & 0xF0);
+			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
+			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
+
 		case NESPrivate::ROM_TYPE_NES2:
 			rom_format = _RP("NES 2.0");
-			mapper = (romHeader->mapper_lo >> 4) |
-				 (romHeader->mapper_hi & 0xF0) |
-				 ((romHeader->nes2.mapper_hi2 & 0x0F) << 8);
-			submapper = (romHeader->nes2.mapper_hi2 >> 4);
+			mapper = (d->header.ines.mapper_lo >> 4) |
+				 (d->header.ines.mapper_hi & 0xF0) |
+				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
+			submapper = (d->header.ines.nes2.mapper_hi2 >> 4);
+			prg_rom_size = ((d->header.ines.prg_banks +
+					(d->header.ines.nes2.prg_banks_hi << 8))
+					* INES_PRG_BANK_SIZE);
+			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
+
+		case NESPrivate::ROM_TYPE_TNES:
+			rom_format = _RP("TNES (Nintendo 3DS Virtual Console)");
+			mapper = 0;	// TODO: Look up the correct mapper.
+			tnes_mapper = d->header.tnes.mapper;
+			prg_rom_size = d->header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
+			chr_rom_size = d->header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
+			break;
+
 		default:
 			rom_format = _RP("Unknown");
 			break;
@@ -380,6 +423,7 @@ int NES::loadFieldData(void)
 		// Invalid mapper.
 		d->fields->addData_invalid();	// Mapper
 		d->fields->addData_invalid();	// Submapper
+		d->fields->addData_invalid();	// TNES Mapper
 		d->fields->addData_invalid();	// PRG ROM Size
 		d->fields->addData_invalid();	// CHR ROM Size
 		return (int)d->fields->count();
@@ -397,14 +441,26 @@ int NES::loadFieldData(void)
 		d->fields->addData_invalid();
 	}
 
-	// ROM sizes.
-	unsigned int prg_rom_size = romHeader->prg_banks * NES_PRG_BANK_SIZE;
-	if (d->romType == NESPrivate::ROM_TYPE_NES2) {
-		// Extended ROM size.
-		prg_rom_size += ((romHeader->nes2.rom_size_hi << 8) * NES_PRG_BANK_SIZE);
+	if (tnes_mapper >= 0) {
+		// TNES mapper.
+		// TODO: Look up the name.
+		d->fields->addData_string_numeric(tnes_mapper, RomFields::FB_DEC);
+	} else {
+		// Not TNES.
+		d->fields->addData_invalid();
 	}
-	d->fields->addData_string(d->formatBankSizeKB(prg_rom_size));
-	d->fields->addData_string(d->formatBankSizeKB(romHeader->chr_banks * NES_CHR_BANK_SIZE));
+
+	// ROM sizes.
+	if (prg_rom_size > 0) {
+		d->fields->addData_string(d->formatBankSizeKB(prg_rom_size));
+	} else {
+		d->fields->addData_invalid();
+	}
+	if (chr_rom_size > 0) {
+		d->fields->addData_string(d->formatBankSizeKB(chr_rom_size));
+	} else {
+		d->fields->addData_invalid();
+	}
 
 	// TODO: More fields.
 	return (int)d->fields->count();
