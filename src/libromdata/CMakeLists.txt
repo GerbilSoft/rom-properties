@@ -137,6 +137,7 @@ SET(libromdata_H
 	dc_structs.h
 	vb_structs.h
 	nfp_structs.h
+	nes_structs.h
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp

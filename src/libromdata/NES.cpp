@@ -24,6 +24,7 @@
 #include "RomData_p.hpp"
 
 #include "data/NintendoPublishers.hpp"
+#include "nes_structs.h"
 
 #include "common.h"
 #include "byteswap.h"
@@ -59,70 +60,6 @@ class NESPrivate : public RomDataPrivate
 
 		// ROM fields.
 		static const struct RomFields::Desc nes_fields[];
-
-		/** Internal ROM data. **/
-
-		/**
-		 * NES ROM header.
-		 *
-		 * NOTE: Strings are NOT null-terminated!
-		 */
-#define NES_RomHeader_SIZE 16
-#pragma pack(1)
-		struct PACKED NES_RomHeader {
-			uint8_t magic[4]; // "NES\x1A"
-			uint8_t prgrom;
-			uint8_t chrrom;
-			uint8_t flags6;
-			uint8_t flags7;
-			uint8_t flags8;
-			uint8_t flags9;
-			uint8_t flags10;
-			uint8_t flags11;
-			uint8_t flags12;
-			uint8_t flags13;
-			uint8_t unused[2];
-		};
-		static_assert(sizeof(NESPrivate::NES_RomHeader) == NES_RomHeader_SIZE,
-			"iNES_RomHeader_SIZE is not 16 bytes.");
-#pragma pack()
-		enum NES_Flags6 {
-			NES_F6_MIRROR_HORI = 0,
-			NES_F6_MIRROR_VERT = (1 << 0),
-			NES_F6_MIRROR_FOUR = (1 << 3),
-			NES_F6_BATTERY = (1 << 1),
-			NES_F6_TRAINER = (1 << 2),
-			NES_F6_MAPPER_MASK = 0xF0,
-			NES_F6_MAPPER_SHIFT = 4,
-		};
-		enum NES_Flags7 {
-			NES_F7_VS = (1 << 0),
-			NES_F7_PC10 = (1 << 1),
-			NES_F7_NES2_MASK = (1 << 3) | (1 << 2),
-			NES_F7_NES2_INES_VAL = 0,
-			NES_F7_NES2_NES2_VAL = (1 << 3),
-			NES_F7_MAPPER_MASK = 0xF0,
-			NES_F7_MAPPER_SHIFT = 4,
-		};
-
-		// NES 2.0 stuff
-		// Not gonna make enums for those:
-		// Byte 8 - Mapper variant
-		//   top nibble = submapper, bottom nibble = mapper plane
-		// Byte 9 - Rom size upper bits
-		//   top = CROM, bottom = PROM
-		// Byte 10 - pram
-		//   top = battery pram, bottom = normal pram
-		// Byte 11 - cram
-		//   top = battery cram, bottom = normal cram
-		// Byte 13 - vs unisystem
-		//   top = vs mode, bottom = ppu version
-		enum NES2_Flags12 {
-			NES2_F12_NTSC = 0,
-			NES2_F12_PAL = (1 << 0),
-			NES2_F12_DUAL = (1 << 1),
-			NES2_F12_REGION = (1 << 1) | (1 << 0),
-		};
 
 	public:
 		// ROM header.
@@ -214,8 +151,8 @@ int NES::isRomSupported_static(const DetectInfo *info)
 
 	if (info->header.size >= 0x10) {
 		// Check the system name.
-		const NESPrivate::NES_RomHeader *romHeader =
-			reinterpret_cast<const NESPrivate::NES_RomHeader*>(info->header.pData);
+		const NES_RomHeader *romHeader =
+			reinterpret_cast<const NES_RomHeader*>(info->header.pData);
 		if (!memcmp(romHeader->magic, "NES\x1A", sizeof(romHeader->magic))) {
 			// Found a NES ROM.
 			// TODO: return different thingy on NES 2.0 -Egor
@@ -320,7 +257,7 @@ int NES::loadFieldData(void)
 	}
 
 	// NES ROM header
-	const NESPrivate::NES_RomHeader *romHeader = &d->romHeader;
+	const NES_RomHeader *romHeader = &d->romHeader;
 
 	char buffer[64];
 	int len;
