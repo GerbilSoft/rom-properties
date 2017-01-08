@@ -116,7 +116,7 @@ void IconAnimHelper::reset(void)
 		m_seq_idx = 0;
 		m_frame = m_iconAnimData->seq_index[0];
 		m_delay = m_iconAnimData->delays[0].ms;
-		m_last_valid_frame = 0;
+		m_last_valid_frame = m_frame;
 	} else {
 		// No animation.
 		m_seq_idx = 0;

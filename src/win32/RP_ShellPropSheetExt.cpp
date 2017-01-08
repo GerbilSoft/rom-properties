@@ -585,15 +585,11 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			// Convert to HBITMAP using the window background color.
-			// TODO: Redo if the window background color changes.
-			hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
-
 			// Get the animated icon data.
 			if (iconAnimData) {
 				// Convert the icons to GDI+ bitmaps.
 				// TODO: Refactor this a bit...
-				for (int i = 1; i < iconAnimData->count; i++) {
+				for (int i = 0; i < iconAnimData->count; i++) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.
@@ -604,9 +600,15 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 				// Set up the IconAnimHelper.
 				iconAnimHelper.setIconAnimData(iconAnimData);
 				last_frame_number = iconAnimHelper.frameNumber();
+
+				// Icon animation timer is set in startAnimTimer().
 			} else {
-				// Default to frame 0.
+				// Not an animated icon.
 				last_frame_number = 0;
+
+				// Convert to HBITMAP using the window background color.
+				// TODO: Redo if the window background color changes.
+				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
 			}
 		}
 	}

@@ -637,19 +637,11 @@ rom_data_view_init_header_row(RomDataView *page)
 		// Get the icon.
 		const rp_image *icon = page->romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
-			if (pixbuf) {
-				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), pixbuf);
-				page->iconFrames[0] = pixbuf;
-				gtk_widget_show(page->imgIcon);
-			}
-
-			// Get the animated icon data.
-			// TODO: Skip if the first frame is nullptr?
+			// Is this an animated icon?
 			page->iconAnimData = page->romData->iconAnimData();
 			if (page->iconAnimData) {
-				// Convert the icons to QPixmaps.
-				for (int i = 1; i < page->iconAnimData->count; i++) {
+				// Convert the icons to GdkPixbuf.
+				for (int i = 0; i < page->iconAnimData->count; i++) {
 					const rp_image *const frame = page->iconAnimData->frames[i];
 					if (frame && frame->isValid()) {
 						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(frame);
@@ -661,7 +653,24 @@ rom_data_view_init_header_row(RomDataView *page)
 
 				// Set up the IconAnimHelper.
 				page->iconAnimHelper->setIconAnimData(page->iconAnimData);
+				// Initialize the animation.
+				page->last_frame_number = iconAnimHelper.frameNumber();
+
+				// Show the first frame.
+				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon),
+					page->iconFrames[page->last_frame_number]);
+				gtk_widget_show(page->imgIcon);
+
 				// Icon animation timer is set in startAnimTimer().
+			} else {
+				// Not an animated icon.
+				page->last_frame_number = 0;
+				GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(icon);
+				if (pixbuf) {
+					gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon), pixbuf);
+					page->iconFrames[0] = pixbuf;
+					gtk_widget_show(page->imgIcon);
+				}
 			}
 		}
 	}
