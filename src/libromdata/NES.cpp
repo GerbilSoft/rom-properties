@@ -175,6 +175,7 @@ NES::NES(IRpFile *file)
 	d->romType = isRomSupported_static(&info);
 
 	switch (d->romType) {
+		case NESPrivate::ROM_TYPE_OLD_INES:
 		case NESPrivate::ROM_TYPE_INES:
 		case NESPrivate::ROM_TYPE_NES2:
 			// 16-byte iNES-style ROM header.
