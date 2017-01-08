@@ -269,28 +269,50 @@ public:
 
 class JSONString {
 	const rp_char* str;
-	static rp_string Replace(rp_string str, const rp_string &a, const rp_string &b) {
-		size_t pos = 0;
-		while ((pos = str.find(a, pos)) != rp_string::npos) {
-			str.replace(pos, a.length(), b);
-			pos += b.length();
-		}
-		return str;
-	}
 public:
 	explicit JSONString(const rp_char* str) :str(str) {}
 	friend ostream& operator<<(ostream& os, const JSONString& js) {
 		//assert(js.str); // not all strings can't be null, apparently
-		if (!js.str) return os << "0"; // clever way to distinguish nullptr
-		rp_string escaped = rp_string(js.str);
-		escaped = Replace(escaped, "\\", "\\\\");
-		escaped = Replace(escaped, "\"", "\\\"");
-		escaped = Replace(escaped, "\b", "\\b");
-		escaped = Replace(escaped, "\f", "\\f");
-		escaped = Replace(escaped, "\t", "\\t");
-		escaped = Replace(escaped, "\n", "\\n");
-		escaped = Replace(escaped, "\r", "\\r");
-		return os << "\"" << escaped << "\"";
+		if (!js.str) {
+			// NULL string.
+			// Print "0" to indicate this.
+			return os << "0";
+		}
+
+		// Certain characters need to be escaped.
+		const rp_char *str = js.str;
+		rp_string escaped;
+		escaped.reserve(rp_strlen(str));
+		for (; *str != 0; str++) {
+			switch (*str) {
+				case '\\':
+					escaped += _RP("\\\\");
+					break;
+				case '"':
+					escaped += _RP("\\");
+					break;
+				case '\b':
+					escaped += _RP("\\b");
+					break;
+				case '\f':
+					escaped += _RP("\\f");
+					break;
+				case '\t':
+					escaped += _RP("\\t");
+					break;
+				case '\n':
+					escaped += _RP("\\n");
+					break;
+				case '\r':
+					escaped += _RP("\\r");
+					break;
+				default:
+					escaped += *str;
+					break;
+			}
+		}
+
+		return os << '"' << escaped << '"';
 	}
 };
 
