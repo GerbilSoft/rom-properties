@@ -287,6 +287,7 @@ const rp_char *RomData::fileType_string(void) const
 		_RP("Embedded Disc Image"),	// FTYPE_EMBEDDED_DISC_IMAGE
 		_RP("Application Package"),	// FTYPE_APPLICATION_PACKAGE
 		_RP("NFC Dump"),		// FTYPE_NFC_DUMP
+		_RP("Disk Image"),		// FTYPE_DISK_IMAGE
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
