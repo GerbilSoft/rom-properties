@@ -228,7 +228,7 @@ const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
 	// VMS fields.
 	{_RP("VMS Description"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("DC Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Application"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Game Title"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CRC"), RomFields::RFT_STRING, {&dc_save_string_monospace}},
 };
 
@@ -534,7 +534,8 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	if (icon_count == 0) {
 		// No icon.
 		return nullptr;
-	} else if (icon_count > IconAnimData::MAX_FRAMES) {
+	} else if (icon_count > 3) {
+		// VMU files have a maximum of 3 frames.
 		// Truncate the frame count.
 		icon_count = IconAnimData::MAX_FRAMES;
 	}
@@ -574,6 +575,9 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	this->iconAnimData = new IconAnimData();
 	iconAnimData->count = 0;
 
+	// icon_anim_speed is in units of 1/30th of a second.
+	const int delay = (vms_header.icon_anim_speed * 100) / 30;
+
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
 	union {
@@ -592,9 +596,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 			__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
 		}
 
-		// Icon delay. (TODO: Map DC speed to milliseconds?)
-		iconAnimData->delays[i] = 250;
-		
+		iconAnimData->delays[i] = delay;
 		iconAnimData->frames[i] = ImageDecoder::fromDreamcastCI4(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			icon_buf.u8, sizeof(icon_buf.u8),
@@ -1425,7 +1427,10 @@ int DreamcastSave::loadFieldData(void)
 		// DC description.
 		d->fields->addData_string(cp1252_sjis_to_rp_string(vms_header->dc_description, sizeof(vms_header->dc_description)));
 
-		// Application.
+		// Game Title.
+		// NOTE: This is used as the "sort key" on DC file management,
+		// and occasionally has control codes.
+		// TODO: EScape the control codes.
 		d->fields->addData_string(cp1252_sjis_to_rp_string(vms_header->application, sizeof(vms_header->application)));
 
 		// CRC.
