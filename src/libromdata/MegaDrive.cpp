@@ -710,7 +710,7 @@ int MegaDrive::loadFieldData(void)
 		// NOTE: We already loaded the header,
 		// so *maybe* this is okay?
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}

@@ -1255,7 +1255,7 @@ int DreamcastSave::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->saveType < 0) {
 		// Unknown save file type.
 		return -EIO;
 	}
