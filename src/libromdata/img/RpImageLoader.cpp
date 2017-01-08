@@ -26,6 +26,9 @@
 // Image loaders.
 #include "RpPng.hpp"
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 namespace LibRomData {
 
 class RpImageLoaderPrivate

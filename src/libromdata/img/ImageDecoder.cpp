@@ -25,6 +25,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 namespace LibRomData {
 

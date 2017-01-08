@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -21,6 +21,8 @@
 
 #include "rp_image.hpp"
 #include "rp_image_backend.hpp"
+
+#include "common.h"
 
 // C includes.
 #include <stdlib.h>
@@ -443,6 +445,28 @@ void rp_image::set_tr_idx(int tr_idx)
 	{
 		d->backend->tr_idx = tr_idx;
 	}
+}
+
+/**
+* Get the name of a format
+* @param format Format.
+* @return String containing the user-friendly name of a format.
+*/
+const rp_char *rp_image::getFormatName(Format format){
+	assert(format >= FORMAT_NONE && format < FORMAT_LAST);
+	if (format < FORMAT_NONE || format >= FORMAT_LAST) {
+		return nullptr;
+	}
+
+	static const rp_char *format_names[] = {
+		_RP("None"),
+		_RP("CI8"),
+		_RP("ARGB32"),
+	};
+	static_assert(ARRAY_SIZE(format_names) == FORMAT_LAST,
+		"format_names[] needs to be updated.");
+
+	return format_names[format];
 }
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -25,8 +25,8 @@
 // C includes.
 #include <stdint.h>
 
-// C includes. (C++ namespace)
-#include <cstring>
+// rp_char
+#include "config.libromdata.h"
 
 // TODO: Make this implicitly shared.
 
@@ -42,6 +42,8 @@ class rp_image
 			FORMAT_NONE,		// No image.
 			FORMAT_CI8,		// Color index, 8-bit palette.
 			FORMAT_ARGB32,		// 32-bit ARGB.
+
+			FORMAT_LAST		// End of Format.
 		};
 
 		/**
@@ -201,6 +203,13 @@ class rp_image
 		 * @param tr_idx Transparent color index. (Set to -1 if the palette has alpha transparent colors.)
 		 */
 		void set_tr_idx(int tr_idx);
+
+		/**
+		 * Get the name of a format
+		 * @param format Format.
+		 * @return String containing the user-friendly name of a format.
+		 */
+		static const rp_char *getFormatName(Format format);
 };
 
 }

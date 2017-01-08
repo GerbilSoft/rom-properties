@@ -64,3 +64,13 @@ Description: ROM Properties Page shell extension
  including Nintendo GameCube and Wii.
  .
  This package contains the Nautilus (GNOME 3, Unity) version.
+
+Package: rom-properties-cli
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the command line version.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth                                  *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -274,25 +274,24 @@ RomData::FileType RomData::fileType(void) const
 const rp_char *RomData::fileType_string(void) const
 {
 	RP_D(const RomData);
-	switch (d->fileType) {
-		case RomData::FTYPE_ROM_IMAGE:
-			return _RP("ROM Image");
-		case RomData::FTYPE_DISC_IMAGE:
-			return _RP("Disc Image");
-		case RomData::FTYPE_SAVE_FILE:
-			return _RP("Save File");
-		case RomData::FTYPE_EMBEDDED_DISC_IMAGE:
-			return _RP("Embedded Disc Image");
-		case RomData::FTYPE_APPLICATION_PACKAGE:
-			return _RP("Application Package");
-		case RomData::FTYPE_NFC_DUMP:
-			return _RP("NFC Dump");
-		case RomData::FTYPE_UNKNOWN:
-		default:
-			break;
+	assert(d->fileType >= FTYPE_UNKNOWN && d->fileType < FTYPE_LAST);
+	if (d->fileType <= FTYPE_UNKNOWN || d->fileType >= FTYPE_LAST) {
+		return nullptr;
 	}
 
-	return nullptr;
+	static const rp_char *const fileType_names[] = {
+		nullptr,			// FTYPE_UNKNOWN
+		_RP("ROM Image"),		// FTYPE_ROM_IMAGE
+		_RP("Disc Image"),		// FTYPE_DISC_IMAGE
+		_RP("Save File"),		// FTYPE_SAVE_FILE
+		_RP("Embedded Disc Image"),	// FTYPE_EMBEDDED_DISC_IMAGE
+		_RP("Application Package"),	// FTYPE_APPLICATION_PACKAGE
+		_RP("NFC Dump"),		// FTYPE_NFC_DUMP
+	};
+	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
+		"fileType_names[] needs to be updated.");
+
+	return fileType_names[d->fileType];
 }
 
 /**
@@ -486,6 +485,34 @@ uint32_t RomData::imgpf(ImageType imageType) const
 		return 0;
 	RP_D(const RomData);
 	return d->imgpf[imageType];
+}
+
+/**
+* Get name of an image type
+* @param imageType Image type.
+* @return String containing user-friendly name of an image type.
+*/
+const rp_char *RomData::getImageTypeName(ImageType imageType) {
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		return nullptr;
+	}
+
+	static const rp_char *const image_type_names[] = {
+		// Internal
+		_RP("Internal icon"),			// IMG_INT_ICON
+		_RP("Internal banner"),			// IMG_INT_BANNER
+		_RP("Internal media scan"),		// IMG_INT_MEDIA
+		// External
+		_RP("External media scan"),		// IMG_EXT_MEDIA
+		_RP("External box scan"),		// IMG_EXT_BOX
+		_RP("External box scan (both sides)"),	// IMG_EXT_BOX_FULL
+		_RP("External box scan (3D version)"),	// IMG_EXT_BOX_3D
+	};
+	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1,
+		"image_type_names[] needs to be updated.");
+
+	return image_type_names[imageType];
 }
 
 /**

@@ -217,6 +217,9 @@ class RomData
 
 			// NFC dump, e.g. amiibo.
 			FTYPE_NFC_DUMP,
+
+			// End of FileType.
+			FTYPE_LAST
 		};
 
 		/**
@@ -410,6 +413,13 @@ class RomData
 		 * @return Bitfield of ImageProcessingBF operations to perform.
 		 */
 		uint32_t imgpf(ImageType imageType) const;
+
+		/**
+		 * Get name of an image type
+		 * @param imageType Image type.
+		 * @return String containing user-friendly name of an image type.
+		 */
+		static const rp_char *getImageTypeName(ImageType imageType);
 
 		/**
 		 * Get the animated icon data.
