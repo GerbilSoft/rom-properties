@@ -188,7 +188,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
 		case rp_image::FORMAT_CI8: {
 			// Get the transparent color index.
 			int tr_idx = image->tr_idx();
-			if (0 && tr_idx >= 0) {
+			if (tr_idx >= 0) {
 				// Find all pixels matching tr_idx.
 				uint8_t *dest = pvBits;
 				for (int y = image->height()-1; y >= 0; y--) {
