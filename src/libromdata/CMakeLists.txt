@@ -76,6 +76,7 @@ SET(libromdata_SRCS
 	PlayStationSave.cpp
 	VirtualBoy.cpp
 	Amiibo.cpp
+	NES.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -98,7 +99,6 @@ SET(libromdata_SRCS
 	disc/GcnFst.cpp
 	disc/PartitionFile.cpp
 	img/pngcheck/pngcheck.cpp
-	iNES.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -166,7 +166,7 @@ SET(libromdata_H
 	disc/IFst.hpp
 	disc/GcnFst.hpp
 	disc/PartitionFile.hpp
-	iNES.hpp
+	NES.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
