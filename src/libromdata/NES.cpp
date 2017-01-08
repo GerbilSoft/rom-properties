@@ -73,7 +73,8 @@ class NESPrivate : public RomDataPrivate
 			ROM_TYPE_TNES = 3,	// TNES (Nintendo 3DS Virtual Console)
 
 			ROM_TYPE_FDS = 4,	// Famicom Disk System
-			ROM_TYPE_FDS_TNES = 5,	// Famicom Disk System (TNES / TDS)
+			ROM_TYPE_FDS_FWNES = 5,	// Famicom Disk System (with fwNES header)
+			ROM_TYPE_FDS_TNES = 6,	// Famicom Disk System (TNES / TDS)
 
 			// TODO: Other VC, FDS, maybe UNIF?
 		};
@@ -86,7 +87,10 @@ class NESPrivate : public RomDataPrivate
 			// TNES + FDS is possible, though.
 			union {
 				INES_RomHeader ines;
-				FDS_DiskHeader fds;
+				struct {
+					FDS_DiskHeader_fwNES fds_fwNES;
+					FDS_DiskHeader fds;
+				};
 			};
 			TNES_RomHeader tnes;
 		} header;
@@ -204,23 +208,18 @@ NES::NES(IRpFile *file)
 			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS: {
+		case NESPrivate::ROM_TYPE_FDS:
 			// FDS disk image.
 			d->fileType = FTYPE_DISK_IMAGE;
-
-			// Check if an fwNES header is present.
-			const FDS_DiskHeader_fwNES *fwNESHeader =
-				reinterpret_cast<const FDS_DiskHeader_fwNES*>(header);
-			static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
-			if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic))) {
-				// fwNES header is present.
-				memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
-			} else {
-				// fwNES header is not present.
-				memcpy(&d->header.fds, header, sizeof(d->header.fds));
-			}
+			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
-		}
+
+		case NESPrivate::ROM_TYPE_FDS_FWNES:
+			// FDS disk image, with fwNES header.
+			d->fileType = FTYPE_DISK_IMAGE;
+			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
+			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
+			break;
 
 		case NESPrivate::ROM_TYPE_FDS_TNES:
 			// FDS disk image. (TNES/TDS format)
@@ -314,28 +313,34 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for FDS.
-	const FDS_DiskHeader *fdsHeader;
+	static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
+	static const uint8_t fds_magic[] = {'*','N','I','N','T','E','N','D','O','-','H','V','C','*'};
 
 	// Check for headered FDS.
 	const FDS_DiskHeader_fwNES *fwNESHeader =
 		reinterpret_cast<const FDS_DiskHeader_fwNES*>(info->header.pData);
-	static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
 	if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic))) {
 		// fwNES header is present.
 		// TODO: Check required NULL bytes.
 		// For now, assume this is correct.
-		fdsHeader = reinterpret_cast<const FDS_DiskHeader*>(&info->header.pData[16]);
+		const FDS_DiskHeader *fdsHeader =
+			reinterpret_cast<const FDS_DiskHeader*>(&info->header.pData[16]);
+		if (fdsHeader->block_code == 0x01 &&
+		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
+		{
+			// This is an FDS disk image.
+			return NESPrivate::ROM_TYPE_FDS_FWNES;
+		}
 	} else {
 		// fwNES header is not present.
-		fdsHeader = reinterpret_cast<const FDS_DiskHeader*>(info->header.pData);
-	}
-
-	static const uint8_t fds_magic[] = {'*','N','I','N','T','E','N','D','O','-','H','V','C','*'};
-	if (fdsHeader->block_code == 0x01 &&
-	    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
-	{
-		// This is an FDS disk image.
-		return NESPrivate::ROM_TYPE_FDS;
+		const FDS_DiskHeader *fdsHeader =
+			reinterpret_cast<const FDS_DiskHeader*>(info->header.pData);
+		if (fdsHeader->block_code == 0x01 &&
+		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
+		{
+			// This is an FDS disk image.
+			return NESPrivate::ROM_TYPE_FDS;
+		}
 	}
 
 	// Not supported.
@@ -384,6 +389,7 @@ const rp_char *NES::systemName(uint32_t type) const
 		}
 
 		case NESPrivate::ROM_TYPE_FDS:
+		case NESPrivate::ROM_TYPE_FDS_FWNES:
 		case NESPrivate::ROM_TYPE_FDS_TNES: {
 			static const rp_char *const sysNames_FDS[] = {
 				_RP("Nintendo Famicom Disk System"),
@@ -504,14 +510,16 @@ int NES::loadFieldData(void)
 			chr_rom_size = d->header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
 			break;
 
+		// NOTE: FDS fields are handled later.
+		// We're just obtaining the ROM format name here.
 		case NESPrivate::ROM_TYPE_FDS:
 			rom_format = _RP("FDS disk image");
-			// TODO: More fields.
 			break;
-
+		case NESPrivate::ROM_TYPE_FDS_FWNES:
+			rom_format = _RP("FDS disk image (with fwNES header)");
+			break;
 		case NESPrivate::ROM_TYPE_FDS_TNES:
 			rom_format = _RP("TDS (Nintendo 3DS Virtual Console)");
-			// TODO: More fields.
 			break;
 
 		default:
