@@ -38,9 +38,13 @@ ENDMACRO(CHECK_FUNCTION_EXISTS_OR_INLINE VARIABLE)
 # FIXME: CHECK_SYMBOL_EXISTS() works for macros like in MSVC,
 # but fails with inline functions like in MinGW-w64.
 CHECK_FUNCTION_EXISTS_OR_INLINE(gmtime_r "time.h" "time_t tm; gmtime_r(&tm, NULL);" HAVE_GMTIME_R)
-CHECK_FUNCTION_EXISTS_OR_INLINE(gmtime_s "time.h" "time_t tm; gmtime_s(NULL, &tm);" HAVE_GMTIME_S)
+IF(NOT HAVE_GMTIME_R)
+	CHECK_FUNCTION_EXISTS_OR_INLINE(gmtime_s "time.h" "time_t tm; gmtime_s(NULL, &tm);" HAVE_GMTIME_S)
+ENDIF(NOT HAVE_GMTIME_R)
 CHECK_FUNCTION_EXISTS_OR_INLINE(localtime_r "time.h" "time_t tm; localtime_r(&tm, NULL);" HAVE_LOCALTIME_R)
-CHECK_FUNCTION_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
+IF(NOT HAVE_LOCALTIME_R)
+	CHECK_FUNCTION_EXISTS_OR_INLINE(localtime_s "time.h" "time_t tm; localtime_s(NULL, &tm);" HAVE_LOCALTIME_S)
+ENDIF(NOT HAVE_LOCALTIME_R)
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rpcli.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rpcli.h")
