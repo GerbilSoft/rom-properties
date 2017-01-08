@@ -640,10 +640,6 @@ int RpPngPrivate::saveAPng(png_structp png_ptr, png_infop info_ptr, const IconAn
 		if (!img)
 			break;
 
-		// TODO: iconAnimData should store numer/denom.
-		const int iconDelay = iconAnimData->delays[i];
-		static const int iconDelayDenom = 1000;
-
 		// Initialize the row pointers array.
 		for (int y = height-1; y >= 0; y--) {
 			row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
@@ -652,7 +648,8 @@ int RpPngPrivate::saveAPng(png_structp png_ptr, png_infop info_ptr, const IconAn
 		// Frame header.
 		png_write_frame_head(png_ptr, info_ptr, (png_bytepp)row_pointers,
 				width, height, 0, 0,		// width, height, x offset, y offset
-				iconDelay, iconDelayDenom,	// delay numerator and denominator
+				iconAnimData->delays[i].numer,
+				iconAnimData->delays[i].denom,
 				PNG_DISPOSE_OP_NONE,
 				PNG_BLEND_OP_SOURCE);
 

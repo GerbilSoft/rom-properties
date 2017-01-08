@@ -421,14 +421,18 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 	iconfmt = direntry.iconfmt;
 	iconspeed = direntry.iconspeed;
 	for (int i = 0; i < CARD_MAXICONS; i++, iconfmt >>= 2, iconspeed >>= 2) {
-		if ((iconspeed & CARD_SPEED_MASK) == CARD_SPEED_END) {
+		const int delay = (iconspeed & CARD_SPEED_MASK);
+		if (delay == CARD_SPEED_END) {
 			// End of the icons.
 			break;
 		}
 
 		// Icon delay.
 		// Using 125ms for the fastest speed.
-		iconAnimData->delays[i] = (iconspeed & CARD_SPEED_MASK) * 125;
+		// TODO: Verify this?
+		iconAnimData->delays[i].numer = (uint16_t)delay;
+		iconAnimData->delays[i].denom = 8;
+		iconAnimData->delays[i].ms = delay * 125;
 
 		switch (iconfmt & CARD_ICON_MASK) {
 			case CARD_ICON_RGB: {

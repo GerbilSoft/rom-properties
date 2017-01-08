@@ -134,7 +134,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 
 	// Determine how many frames need to be decoded.
 	int frames;
-	int delay;
+	int delay;	// in PAL frames
 	switch (psvHeader.sc.icon_flag) {
 		case PS1_SC_ICON_NONE:
 		default:
@@ -153,7 +153,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 			// Two frames.
 			// Icon delay is 16 PAL frames.
 			frames = 2;
-			delay = 16 * 1000 / 50;
+			delay = 16;
 			break;
 
 		case PS1_SC_ICON_ANIM_3:
@@ -161,7 +161,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 			// Three frames.
 			// Icon delay is 11 PAL frames.
 			frames = 3;
-			delay = 11 * 1000 / 50;
+			delay = 11;
 			break;
 	}
 
@@ -171,7 +171,9 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 
 	// Decode the icon frames.
 	for (int i = 0; i < frames; i++) {
-		iconAnimData->delays[i] = delay;
+		iconAnimData->delays[i].numer = delay;
+		iconAnimData->delays[i].denom = 50;
+		iconAnimData->delays[i].ms = (delay * 1000 / 50);
 		iconAnimData->seq_index[i] = i;
 
 		// Icon format is linear 16x16 4bpp with RGB555 palette.

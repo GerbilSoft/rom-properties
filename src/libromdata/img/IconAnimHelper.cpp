@@ -115,7 +115,7 @@ void IconAnimHelper::reset(void)
 		assert(m_iconAnimData->seq_count <= IconAnimData::MAX_SEQUENCE);
 		m_seq_idx = 0;
 		m_frame = m_iconAnimData->seq_index[0];
-		m_delay = m_iconAnimData->delays[0];
+		m_delay = m_iconAnimData->delays[0].ms;
 		m_last_valid_frame = 0;
 	} else {
 		// No animation.
@@ -153,7 +153,7 @@ int IconAnimHelper::nextFrame(int *pDelay)
 	assert(m_frame < IconAnimData::MAX_FRAMES);
 
 	// Get the frame delay. (TODO: Must be > 0?)
-	m_delay = m_iconAnimData->delays[m_seq_idx];
+	m_delay = m_iconAnimData->delays[m_seq_idx].ms;
 	if (pDelay) {
 		*pDelay = m_delay;
 	}

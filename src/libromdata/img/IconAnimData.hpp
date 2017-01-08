@@ -46,11 +46,17 @@ struct IconAnimData
 	// how many indexes are actually here.
 	uint8_t seq_index[MAX_SEQUENCE];
 
+	struct delay_t {
+		uint16_t numer;	// Numerator.
+		uint16_t denom;	// Denominator.
+		// TODO: Keep precalculated milliseconds here?
+		int ms;		// Precalculated milliseconds.
+	};
+
 	// Array of icon delays.
-	// Delays are in milliseconds.
 	// NOTE: These are associated with sequence indexes,
 	// not the individual icon frames.
-	int delays[MAX_SEQUENCE];
+	delay_t delays[MAX_SEQUENCE];
 
 	// Array of icon frames.
 	// Check the count field to determine
