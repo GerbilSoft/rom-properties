@@ -158,6 +158,22 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(gba_header->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
 		// Nintendo logo is present at the correct location.
 		return 0;
+	} else if (gba_header->fixed_96h == 0x96 && gba_header->device_type == 0x00) {
+		// This may be an expansion cartridge for a DS game.
+		// These cartridges don't have the logo data, so they
+		// aren't bootable as a GBA game.
+
+		// Verify the header checksum.
+		uint8_t chk = 0;
+		for (int i = 0xA0; i <= 0xBC; i++) {
+			chk -= info->header.pData[i];
+		}
+		chk -= 0x19;
+		if (chk == gba_header->checksum) {
+			// Header checksum is correct.
+			// TODO: Indicate that this cartridge isn't bootable?
+			return 0;
+		}
 	}
 
 	// Not supported.
