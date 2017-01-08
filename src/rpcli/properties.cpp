@@ -518,7 +518,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 						os << "],\"delay\":[";
 						for (int i = 0; i < animdata->seq_count; i++) {
 							if (i) os << ",";
-							os << animdata->delays[i];
+							os << animdata->delays[i].ms;
 						}
 						os << "]";
 					}

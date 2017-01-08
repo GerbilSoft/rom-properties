@@ -29,6 +29,12 @@
 /* Define to 1 if you have libpng. */
 #cmakedefine HAVE_PNG 1
 
+/* Define to 1 if we're using the internal copy of libpng. */
+#cmakedefine USE_INTERNAL_PNG 1
+
+/* Define to 1 if we're using the internal copy of libpng as a DLL. */
+#cmakedefine USE_INTERNAL_PNG_DLL 1
+
 /* Define to 1 if you have the `strnlen' function. */
 #cmakedefine HAVE_STRNLEN 1
 

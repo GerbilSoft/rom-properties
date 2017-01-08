@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__
 
+#include "config.libromdata.h"
+
 namespace LibRomData {
 
 class IRpFile;

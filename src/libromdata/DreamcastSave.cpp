@@ -576,7 +576,10 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	iconAnimData->count = 0;
 
 	// icon_anim_speed is in units of 1/30th of a second.
-	const int delay = (vms_header.icon_anim_speed * 100) / 30;
+	const IconAnimData::delay_t delay = {
+		vms_header.icon_anim_speed, 30,
+		(vms_header.icon_anim_speed * 100) / 30
+	};
 
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
@@ -755,7 +758,9 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	this->iconAnimData = new IconAnimData();
 	iconAnimData->count = 1;
 	iconAnimData->seq_index[0] = 0;
-	iconAnimData->delays[0] = 0;
+	iconAnimData->delays[0].numer = 0;
+	iconAnimData->delays[0].denom = 0;
+	iconAnimData->delays[0].ms = 0;
 	iconAnimData->frames[0] = img;
 
 	// Return the ICONDATA_VMS image.

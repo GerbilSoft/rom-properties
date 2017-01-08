@@ -310,21 +310,11 @@ void RomDataViewPrivate::initHeaderRow(void)
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			QImage img = rpToQImage(icon);
-			if (!img.isNull()) {
-				iconFrames[0] = imgToPixmap(img);
-				ui.lblIcon->setPixmap(iconFrames[0]);
-				ui.lblIcon->show();
-			} else {
-				ui.lblIcon->hide();
-			}
-
-			// Get the animated icon data.
-			// TODO: Skip if the first frame is nullptr?
+			// Is this an animated icon?
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
-				for (int i = 1; i < iconAnimData->count; i++) {
+				for (int i = 0; i < iconAnimData->count; i++) {
 					const rp_image *const frame = iconAnimData->frames[i];
 					if (frame && frame->isValid()) {
 						QImage img = rpToQImage(frame);
@@ -338,7 +328,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 				iconAnimHelper.setIconAnimData(iconAnimData);
 				if (iconAnimHelper.isAnimated()) {
 					// Initialize the animation.
-					last_frame_number = 0;
+					last_frame_number = iconAnimHelper.frameNumber();
 					// Create the animation timer.
 					if (!ui.tmrIconAnim) {
 						ui.tmrIconAnim = new QTimer(q);
@@ -346,6 +336,23 @@ void RomDataViewPrivate::initHeaderRow(void)
 						QObject::connect(ui.tmrIconAnim, SIGNAL(timeout()),
 								q, SLOT(tmrIconAnim_timeout()));
 					}
+				}
+
+				// Show the first frame.
+				ui.lblIcon->setPixmap(iconFrames[iconAnimHelper.frameNumber()]);
+				ui.lblIcon->show();
+
+				// Icon animation timer is set in startAnimTimer().
+			} else {
+				// Not an animated icon.
+				last_frame_number = 0;
+				QImage img = rpToQImage(icon);
+				if (!img.isNull()) {
+					iconFrames[0] = imgToPixmap(img);
+					ui.lblIcon->setPixmap(iconFrames[0]);
+					ui.lblIcon->show();
+				} else {
+					ui.lblIcon->hide();
 				}
 			}
 		}

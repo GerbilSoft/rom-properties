@@ -333,7 +333,9 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 			uint8_t bmp_pal_idx = ((seq >> 8) & 0x3F);
 			bmp_used[bmp_pal_idx] = true;
 			iconAnimData->seq_index[seq_idx] = bmp_pal_idx;
-			iconAnimData->delays[seq_idx] = delay * 1000 / 60;
+			iconAnimData->delays[seq_idx].numer = (uint16_t)delay;
+			iconAnimData->delays[seq_idx].denom = 60;
+			iconAnimData->delays[seq_idx].ms = delay * 1000 / 60;
 		}
 		iconAnimData->seq_count = seq_idx;
 
