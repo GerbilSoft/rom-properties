@@ -129,7 +129,7 @@ N64::N64(IRpFile *file)
 	if (size != sizeof(d->romHeader))
 		return;
 
-	// Check if this disc image is supported.
+	// Check if this ROM image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(d->romHeader);
