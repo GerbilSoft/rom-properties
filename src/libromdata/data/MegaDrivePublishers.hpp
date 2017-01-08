@@ -46,7 +46,6 @@ class MegaDrivePublishers
 		};
 		static const ThirdPartyList ms_thirdPartyList[];
 
-	public:
 		/**
 		 * Comparison function for bsearch().
 		 * @param a
@@ -55,6 +54,7 @@ class MegaDrivePublishers
 		 */
 		static int compar(const void *a, const void *b);
 
+	public:
 		/**
 		 * Look up a company code.
 		 * @param code Company code.

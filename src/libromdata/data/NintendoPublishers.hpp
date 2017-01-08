@@ -48,7 +48,7 @@ class NintendoPublishers
 		};
 		static const ThirdPartyList ms_thirdPartyList[];
 
-	public:
+	private:
 		/**
 		 * Comparison function for bsearch().
 		 * @param a
@@ -57,6 +57,7 @@ class NintendoPublishers
 		 */
 		static int compar(const void *a, const void *b);
 
+	public:
 		/**
 		 * Look up a company code.
 		 * @param code Company code.
