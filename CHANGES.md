@@ -13,6 +13,9 @@
     image does not exist" result) now expires after one week. This allows
     the image to be retrieved if it has since been uploaded to the database
     without manually clearing the local cache.
+  * New command line frontend `rpcli`. This frontend lists the ROM information
+    that would normally be displayed on the property page. It also has options
+    for extracting internal images and downloading external images.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
