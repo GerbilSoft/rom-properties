@@ -30,43 +30,75 @@ namespace LibRomData {
 const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	// Mappers 0-9
 	{_RP("NROM")},
-	{_RP("MMC1")},
+	{_RP("SxROM (MMC1)")},
 	{_RP("UxROM")},
 	{_RP("CNROM")},
-	{_RP("MMC3")},
-	{_RP("MMC5")},
+	{_RP("TxROM (MMC3, MMC6)")},
+	{_RP("ExROM (MMC5)")},
 	{_RP("FFE #6")},
 	{_RP("AxROM")},
 	{_RP("FFE #8")},
-	{_RP("MMC2")},
+	{_RP("PxROM (MMC2)")},
 
 	// Mappers 10-19
-	{_RP("MMC4")},
-	{_RP("COLORDREAMS")},
+	{_RP("FxROM (MMC4)")},
+	{_RP("Color Dreams")},
 	{_RP("MMC3 clone")}, // this is also marked as another FFE mapper. conflict?
 	{_RP("CPROM")},
 	{_RP("MMC3 clone")},
-	{_RP("Multicart")},
+	{_RP("Multicart (unlicensed)")},
 	{_RP("FCG-x")},
 	{_RP("FFE #17")},
 	{_RP("Jaleco SS88006")},
 	{_RP("Namco 129/163")},
 
 	// Mappers 20-29
-	{_RP("FDS")}, // this isn't actually used, as FDS roms are stored in their own format.
-	{_RP("VRC4a/c")},
+	{_RP("Famicom Disk System")}, // this isn't actually used, as FDS roms are stored in their own format.
+	{_RP("VRC4a, VRC4c")},
 	{_RP("VRC2a")},
-	{_RP("VRC4e/f - VRC2b")},
+	{_RP("VRC4e, VRC4f, VRC2b")},
 	{_RP("VRC6a")},
-	{_RP("VRC4b")},
+	{_RP("VRC4b, VRC4d")},
 	{_RP("VRC6b")},
 	{_RP("VRC4 variant")}, //investigate
 	{_RP("Multicart/Homebrew")},
 	{_RP("Homebrew")},
 
-	// Mappers 30-31
+	// Mappers 30-39
 	{_RP("UNROM 512 (Homebrew)")},
 	{_RP("NSF (Homebrew)")},
+	{_RP("Irem G-101")},
+	{_RP("Taito TC0190")},
+	{_RP("BNROM, NINA-001")},
+	{_RP("JY Company subset")},
+	{_RP("TXC PCB 01-22000-400")},
+	{_RP("MMC3 multicart (official)")},
+	{_RP("GNROM variant")},
+	{_RP("BNROM variant")},
+
+	// Mappers 40-49
+	{_RP("CD4020 (FDS conversion) (unlicensed)")},
+	{_RP("Caltron 6-in-1")},
+	{_RP("FDS conversion (unlicensed)")},
+	{_RP("FDS conversion (unlicensed)")},
+	{_RP("MMC3 clone")},
+	{_RP("MMC3 multicart (unlicensed)")},
+	{_RP("Rumble Station")},
+	{_RP("MMC multicart (official)")},
+	{_RP("Taito TC0690")},
+	{_RP("MMC3 multicart (unlicensed)")},
+
+	// Mappers 50-59
+	{_RP("FDS conversion (unlicensed)")},
+	{nullptr},
+	{_RP("MMC3 clone")},
+	{nullptr},
+	{_RP("Novel Diamond")},	// conflicting information
+	{nullptr},
+	{nullptr},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{nullptr},
 };
 
 /**
