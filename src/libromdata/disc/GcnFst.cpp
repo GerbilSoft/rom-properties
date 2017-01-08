@@ -126,7 +126,8 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	}
 
 	// Copy the FST data.
-	uint8_t *fst8 = static_cast<uint8_t*>(malloc(len+1));
+	fstData_sz = len + 1;
+	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz));
 	if (!fst8) {
 		// Could not allocate memory for the FST.
 		return;
