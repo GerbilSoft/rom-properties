@@ -81,6 +81,7 @@ SET(libromdata_SRCS
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
 	data/WiiSystemMenuVersion.cpp
+	data/NESMappers.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
@@ -142,6 +143,7 @@ SET(libromdata_H
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
 	data/WiiSystemMenuVersion.hpp
+	data/NESMappers.hpp
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
