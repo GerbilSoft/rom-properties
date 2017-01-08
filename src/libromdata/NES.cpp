@@ -32,6 +32,7 @@
 #include "file/IRpFile.hpp"
 
  // C includes. (C++ namespace)
+#include <cassert>
 #include <cstring>
 #include <cctype>
 
@@ -61,10 +62,20 @@ class NESPrivate : public RomDataPrivate
 		// ROM fields.
 		static const struct RomFields::Desc nes_fields[];
 
+		// ROM image type.
+		enum RomType {
+			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
+
+			ROM_TYPE_OLD_INES = 0,	// Archaic iNES format
+			ROM_TYPE_INES = 1,	// iNES format
+			ROM_TYPE_NES2 = 2,	// NES 2.0 format
+			// TODO: TNES, FDS
+		};
+		int romType;
+
 	public:
 		// ROM header.
 		NES_RomHeader romHeader;
-		bool isNes2;
 };
 
 /** NESPrivate **/
@@ -81,7 +92,7 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
 	: super(q, file, nes_fields, ARRAY_SIZE(nes_fields))
-	, isNes2(false)
+	, romType(ROM_TYPE_UNKNOWN)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -106,7 +117,6 @@ NES::NES(IRpFile *file)
 	: super(new NESPrivate(this, file))
 {
 	RP_D(NES);
-	d->isNes2 = false; // TODO: nes2.0 -Egor
 
 	if (!d->file) {
 		// Could not dup() the file handle.
@@ -122,19 +132,29 @@ NES::NES(IRpFile *file)
 	if (size != sizeof(header))
 		return;
 
-	// Check if this ROM is supported.
+	// Check if this ROM image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for NES.
-	info.szFile = 0;	// TODO: Maybe this is needed for NES 2.0 -Egor
-	d->isValid = (isRomSupported(&info) >= 0);
+	info.szFile = d->file->fileSize();
+	d->romType = isRomSupported_static(&info);
 
-	if (d->isValid) {
-		// Save the header for later.
-		memcpy(&d->romHeader, header, sizeof(d->romHeader));
+	switch (d->romType) {
+		case NESPrivate::ROM_TYPE_INES:
+		case NESPrivate::ROM_TYPE_NES2:
+			// 16-byte iNES-style ROM header.
+			memcpy(&d->romHeader, header, sizeof(d->romHeader));
+			break;
+
+		default:
+			// Unknown ROM type.
+			d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+			return;
 	}
+
+	d->isValid = true;
 }
 
 /** ROM detection functions. **/
@@ -146,18 +166,53 @@ NES::NES(IRpFile *file)
  */
 int NES::isRomSupported_static(const DetectInfo *info)
 {
-	if (!info)
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(NES_RomHeader))
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
 		return -1;
+	}
 
-	if (info->header.size >= 0x10) {
-		// Check the system name.
-		const NES_RomHeader *romHeader =
-			reinterpret_cast<const NES_RomHeader*>(info->header.pData);
-		if (!memcmp(romHeader->magic, "NES\x1A", sizeof(romHeader->magic))) {
-			// Found a NES ROM.
-			// TODO: return different thingy on NES 2.0 -Egor
-			return 0;
+	// Check the system name.
+	const NES_RomHeader *romHeader =
+		reinterpret_cast<const NES_RomHeader*>(info->header.pData);
+	if (!memcmp(romHeader->magic, "NES\x1A", sizeof(romHeader->magic))) {
+		// Found an iNES ROM header.
+		// Check for NES 2.0.
+		if ((romHeader->mapper_hi & 0x0C) == 0x08) {
+			// May be NES 2.0
+			// Verify the ROM size.
+			int64_t size = sizeof(NES_RomHeader) +
+				(romHeader->prg_banks * 16384) +
+				(romHeader->chr_banks * 8192) +
+				((romHeader->nes2.rom_size_hi << 8) * 16384);
+			if (size <= info->szFile) {
+				// This is an NES 2.0 header.
+				return NESPrivate::ROM_TYPE_NES2;
+			}
 		}
+
+		// Not NES 2.0.
+		if ((romHeader->mapper_hi & 0x0C) == 0x00) {
+			// May be iNES.
+			// TODO: Optimize this check?
+			if (info->header.pData[12] == 0 &&
+			    info->header.pData[13] == 0 &&
+			    info->header.pData[14] == 0 &&
+			    info->header.pData[15] == 0)
+			{
+				// Definitely iNES.
+				return NESPrivate::ROM_TYPE_INES;
+			}
+		}
+
+		// Archaic iNES format.
+		return NESPrivate::ROM_TYPE_OLD_INES;
 	}
 
 	// Not supported.
@@ -259,16 +314,7 @@ int NES::loadFieldData(void)
 	// NES ROM header
 	const NES_RomHeader *romHeader = &d->romHeader;
 
-	char buffer[64];
-	int len;
-	// TODO: do everything -Egor
-	if (!d->isNes2) {
-		// Old iNES
-		
-	}
-	else {
-		// NES 2.0
-	}
+	// TODO: Do everything.
 	return (int)d->fields->count();
 }
 

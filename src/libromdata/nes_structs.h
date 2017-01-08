@@ -36,9 +36,9 @@ extern "C" {
  */
 #pragma pack(1)
 struct PACKED NES_RomHeader {
-	uint8_t magic[4]; // "NES\x1A"
-	uint8_t prgrom;
-	uint8_t chrrom;
+	uint8_t magic[4];	// "NES\x1A"
+	uint8_t prg_banks;	// # of 16 KB PRG ROM banks.
+	uint8_t chr_banks;	// # of 8 KB CHR ROM banks.
 
 	// Mapper values. Each byte has one
 	// nybble, plus HW information.
