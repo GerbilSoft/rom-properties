@@ -1370,13 +1370,12 @@ int DreamcastSave::loadFieldData(void)
 		const rp_char *protect;
 		switch (d->vms_dirent.protect) {
 			case DC_VMS_DIRENT_PROTECT_COPY_OK:
+			default:
+				// TODO: Show the value if it isn't 0x00?
 				protect = _RP("Copy OK");
 				break;
 			case DC_VMS_DIRENT_PROTECT_COPY_PROTECTED:
 				protect = _RP("Copy Protected");
-				break;
-			default:
-				protect = nullptr;
 				break;
 		}
 
