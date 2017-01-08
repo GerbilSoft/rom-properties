@@ -837,7 +837,7 @@ void RomDataView::setRomData(LibRomData::RomData *romData)
 	if (d->romData) {
 		d->romData->unref();
 	}
-	d->romData = romData->ref();
+	d->romData = (romData ? romData->ref() : nullptr);
 	d->initDisplayWidgets();
 
 	if (romData != nullptr && prevAnimTimerRunning) {
