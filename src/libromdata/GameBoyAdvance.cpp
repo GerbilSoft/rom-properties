@@ -32,6 +32,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cctype>
 #include <cstring>
 #include <cstddef>
 
@@ -62,9 +63,10 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 
 	public:
 		enum RomType {
-			ROM_UNKNOWN	= -1,	// Unknown ROM type.
-			ROM_GBA		= 0,	// Standard GBA ROM.
-			ROM_NDS_EXP	= 1,	// Non-bootable NDS expansion ROM.
+			ROM_UNKNOWN		= -1,	// Unknown ROM type.
+			ROM_GBA			= 0,	// Standard GBA ROM.
+			ROM_GBA_PASSTHRU	= 1,	// Unlicensed GBA pass-through cartridge.
+			ROM_NDS_EXP		= 2,	// Non-bootable NDS expansion ROM.
 		};
 
 		// ROM type.
@@ -183,8 +185,18 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 		chk -= 0x19;
 		if (chk == gba_header->checksum) {
 			// Header checksum is correct.
-			// TODO: Indicate that this cartridge isn't bootable?
-			return GameBoyAdvancePrivate::ROM_NDS_EXP;
+			// This is either a Nintendo DS expansion cartridge
+			// or an unlicensed pass-through cartridge, e.g.
+			// "Action Replay".
+
+			// The entry point for expansion cartridges is 0xFFFFFFFF.
+			if (le32_to_cpu(gba_header->entry_point) == 0xFFFFFFFF) {
+				// This is a Nintendo DS expansion cartridge.
+				return GameBoyAdvancePrivate::ROM_NDS_EXP;
+			} else {
+				// This is an unlicensed pass-through cartridge.
+				return GameBoyAdvancePrivate::ROM_GBA_PASSTHRU;
+			}
 		}
 	}
 
@@ -293,8 +305,17 @@ int GameBoyAdvance::loadFieldData(void)
 	// Game title.
 	d->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
-	// Game ID and publisher.
-	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	// Game ID.
+	// Replace any non-printable characters with underscores.
+	// (Action Replay has ID6 "\0\0\0\001".)
+	char id6[7];
+	for (int i = 0; i < 6; i++) {
+		id6[i] = (isprint(romHeader->id6[i])
+			? romHeader->id6[i]
+			: '_');
+	}
+	id6[6] = 0;
+	d->fields->addData_string(latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
@@ -306,6 +327,7 @@ int GameBoyAdvance::loadFieldData(void)
 	// Entry point.
 	switch (d->romType) {
 		case GameBoyAdvancePrivate::ROM_GBA:
+		case GameBoyAdvancePrivate::ROM_GBA_PASSTHRU:
 			if (romHeader->entry_point_bytes[3] == 0xEA) {
 				// Unconditional branch instruction.
 				const uint32_t entry_point = (le32_to_cpu(romHeader->entry_point) & 0xFFFFFF) << 2;
