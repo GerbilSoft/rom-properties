@@ -7,6 +7,7 @@ On Ubuntu, you will need build-essential and the following development packages:
 * KDE 4.x: libqt4-dev kdelibs5-dev
 * KDE 5.x: qtbase5-dev kio-dev
 * XFCE: libglib2.0-dev libgtk2.0-dev libthunarx-2-dev
+* GNOME: libgtk-3-dev libnautilus-extension-dev
 
 Clone the repository, then:
 * cd rom-properties
