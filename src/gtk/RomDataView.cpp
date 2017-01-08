@@ -654,7 +654,7 @@ rom_data_view_init_header_row(RomDataView *page)
 				// Set up the IconAnimHelper.
 				page->iconAnimHelper->setIconAnimData(page->iconAnimData);
 				// Initialize the animation.
-				page->last_frame_number = iconAnimHelper.frameNumber();
+				page->last_frame_number = page->iconAnimHelper->frameNumber();
 
 				// Show the first frame.
 				gtk_image_set_from_pixbuf(GTK_IMAGE(page->imgIcon),
