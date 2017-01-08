@@ -81,8 +81,13 @@ class NESPrivate : public RomDataPrivate
 
 	public:
 		// ROM header.
-		union {
-			INES_RomHeader ines;
+		struct {
+			// iNES and FDS are mutually exclusive.
+			// TNES + FDS is possible, though.
+			union {
+				INES_RomHeader ines;
+				FDS_DiskHeader fds;
+			};
 			TNES_RomHeader tnes;
 		} header;
 
@@ -169,8 +174,8 @@ NES::NES(IRpFile *file)
 	// Seek to the beginning of the header.
 	d->file->rewind();
 
-	// Read the ROM header. [16 bytes]
-	uint8_t header[16];
+	// Read the ROM header. [128 bytes]
+	uint8_t header[128];
 	size_t size = d->file->read(header, sizeof(header));
 	if (size != sizeof(header))
 		return;
@@ -199,11 +204,23 @@ NES::NES(IRpFile *file)
 			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS:
+		case NESPrivate::ROM_TYPE_FDS: {
 			// FDS disk image.
-			// TODO: Add header.
 			d->fileType = FTYPE_DISK_IMAGE;
+
+			// Check if an fwNES header is present.
+			const FDS_DiskHeader_fwNES *fwNESHeader =
+				reinterpret_cast<const FDS_DiskHeader_fwNES*>(header);
+			static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
+			if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic))) {
+				// fwNES header is present.
+				memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
+			} else {
+				// fwNES header is not present.
+				memcpy(&d->header.fds, header, sizeof(d->header.fds));
+			}
 			break;
+		}
 
 		case NESPrivate::ROM_TYPE_FDS_TNES:
 			// FDS disk image. (TNES/TDS format)
@@ -245,7 +262,7 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	// Check for iNES.
 	const INES_RomHeader *inesHeader =
 		reinterpret_cast<const INES_RomHeader*>(info->header.pData);
-	static const uint8_t ines_magic[4] = {'N', 'E', 'S', 0x1A};
+	static const uint8_t ines_magic[4] = {'N','E','S',0x1A};
 	if (!memcmp(inesHeader->magic, ines_magic, sizeof(inesHeader->magic))) {
 		// Found an iNES ROM header.
 		// Check for NES 2.0.
@@ -283,16 +300,42 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	// Check for TNES.
 	const TNES_RomHeader *tnesHeader =
 		reinterpret_cast<const TNES_RomHeader*>(info->header.pData);
-	static const uint8_t tnes_magic[4] = {'T', 'N', 'E', 'S'};
+	static const uint8_t tnes_magic[4] = {'T','N','E','S'};
 	if (!memcmp(tnesHeader->magic, tnes_magic, sizeof(tnesHeader->magic))) {
 		// Found a TNES ROM header.
 		if (tnesHeader->mapper == TNES_MAPPER_FDS) {
 			// This is an FDS game.
+			// TODO: Validate the FDS header?
 			return NESPrivate::ROM_TYPE_FDS_TNES;
 		}
 
 		// TODO: Verify ROM size?
 		return NESPrivate::ROM_TYPE_TNES;
+	}
+
+	// Check for FDS.
+	const FDS_DiskHeader *fdsHeader;
+
+	// Check for headered FDS.
+	const FDS_DiskHeader_fwNES *fwNESHeader =
+		reinterpret_cast<const FDS_DiskHeader_fwNES*>(info->header.pData);
+	static const uint8_t fwNES_magic[4] = {'F','D','S',0x1A};
+	if (!memcmp(fwNESHeader->magic, fwNES_magic, sizeof(fwNESHeader->magic))) {
+		// fwNES header is present.
+		// TODO: Check required NULL bytes.
+		// For now, assume this is correct.
+		fdsHeader = reinterpret_cast<const FDS_DiskHeader*>(&info->header.pData[16]);
+	} else {
+		// fwNES header is not present.
+		fdsHeader = reinterpret_cast<const FDS_DiskHeader*>(info->header.pData);
+	}
+
+	static const uint8_t fds_magic[] = {'*','N','I','N','T','E','N','D','O','-','H','V','C','*'};
+	if (fdsHeader->block_code == 0x01 &&
+	    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
+	{
+		// This is an FDS disk image.
+		return NESPrivate::ROM_TYPE_FDS;
 	}
 
 	// Not supported.

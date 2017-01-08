@@ -30,6 +30,13 @@
 extern "C" {
 #endif
 
+/**
+ * References:
+ * - https://wiki.nesdev.com/w/index.php/INES
+ * - https://wiki.nesdev.com/w/index.php/NES_2.0
+ * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System
+ */
+
 // Bank sizes for iNES.
 #define INES_PRG_BANK_SIZE 16384
 #define INES_CHR_BANK_SIZE 8192
@@ -38,12 +45,6 @@ extern "C" {
 #define TNES_PRG_BANK_SIZE 8192
 #define TNES_CHR_BANK_SIZE 8192
 
-/**
- * iNES ROM header.
- * References:
- * - https://wiki.nesdev.com/w/index.php/INES
- * - https://wiki.nesdev.com/w/index.php/NES_2.0
- */
 #pragma pack(1)
 typedef struct PACKED _INES_RomHeader {
 	uint8_t magic[4];	// "NES\x1A"
@@ -161,6 +162,63 @@ enum TNES_Mapper {
 
 	TNES_MAPPER_FDS		= 100,
 };
+
+/**
+ * Famicom Disk System header.
+ */
+#pragma pack(1)
+typedef struct PACKED _FDS_DiskHeader {
+	uint8_t block_code;	// 0x01
+	uint8_t magic[14];	// "*NINTENDO-HVC*"
+	uint8_t publisher_code;	// Old publisher code format
+	char game_id[3];	// 3-character game ID.
+	char game_type;		// Game type. (See FDS_Game_Type.)
+	uint8_t revision;	// Revision.
+	uint8_t side_number;	// Side number.
+	uint8_t disk_number;	// Disk number.
+	uint8_t disk_type;	// Disk type. (See FDS_Disk_Type.)
+	uint8_t unknown1;
+	uint8_t boot_read_file_code;	// File number to read on startup.
+	uint8_t unknown2[5];	// 0xFF 0xFF 0xFF 0xFF 0xFF
+	uint8_t mfr_date[3];	// Manufacturing date.
+	uint8_t country_code;	// Country code. (0x49 == Japan)
+	uint8_t unknown3[9];
+	uint8_t rw_date[3];	// "Rewritten disk" date.
+	uint8_t unknown4[2];
+	uint16_t disk_writer_serial;	// Disk Writer serial number.
+	uint8_t unknown5;
+	uint8_t disk_rewrite_count;	// Stored in BCD format. $00 = original
+	uint8_t actual_disk_side;
+	uint8_t unknown6;
+	uint8_t price;
+	uint16_t crc;
+} FDS_DiskHeader;
+#pragma pack()
+ASSERT_STRUCT(FDS_DiskHeader, 58);
+
+typedef enum {
+	FDS_GTYPE_NORMAL	= ' ',
+	FDS_GTYPE_EVENT		= 'E',
+	FDS_GTYPE_REDUCTION	= 'R',	// Sale!!!
+} FDS_Game_Type;
+
+typedef enum {
+	FDS_DTYPE_FMC	= 0,	// FMC ("normal card")
+	FDS_DTYPE_FSC	= 1,	// FSC ("card with shutter")
+} FDS_Disk_type;
+
+/**
+ * fwNES FDS header.
+ * If present, it's placed before the regular FDS header.
+ */
+#pragma pack(1)
+typedef struct PACKED _FDS_DiskHeader_fwNES {
+	uint8_t magic[4];	// "FDS\x1A"
+	uint8_t disk_sides;	// Number of disk sides.
+	uint8_t reserved[11];	// Zero filled.
+} FDS_DiskHeader_fwNES;
+#pragma pack()
+ASSERT_STRUCT(FDS_DiskHeader_fwNES, 16);
 
 #ifdef __cplusplus
 }
