@@ -22,15 +22,18 @@
 #include "properties.hpp"
 #include "config.rpcli.h"
 
-#include <iostream>
-#include <algorithm>
-#include <iomanip>
 #include <cassert>
-using std::setw;
-using std::left;
-using std::ostream;
-using std::max;
+
+#include <algorithm>
+#include <iostream>
+#include <iomanip>
+#include <memory>
 using std::endl;
+using std::left;
+using std::max;
+using std::ostream;
+using std::setw;
+using std::unique_ptr;
 
 #include <libromdata/RomData.hpp>
 #include <libromdata/RomFields.hpp>
@@ -127,7 +130,7 @@ public:
 
 		int perRow = desc->bitfield->elemsPerRow ? desc->bitfield->elemsPerRow : 4;
 
-		size_t *colSize = new size_t[perRow]();
+		unique_ptr<size_t[]> colSize(new size_t[perRow]());
 		for (int i = 0; i < desc->bitfield->elements; i++) {
 			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]), colSize[i%perRow]);
 		}
@@ -140,7 +143,6 @@ public:
 			os << " [" << ((data->bitfield & (1 << i)) ? '*' : ' ') << "] " <<
 				setw(colSize[i%perRow]) << desc->bitfield->names[i];
 		}
-		delete[] colSize;
 		return os;
 	}
 };
@@ -155,7 +157,7 @@ public:
 		auto desc = field.desc;
 		auto data = field.data;
 
-		size_t *colSize = new size_t[desc->list_data->count]();
+		unique_ptr<size_t[]> colSize(new size_t[desc->list_data->count]());
 		size_t totalWidth = desc->list_data->count + 1;
 		for (int i = 0; i < desc->list_data->count; i++) {
 			colSize[i] = rp_strlen(desc->list_data->names[i]);
@@ -183,7 +185,6 @@ public:
 			}
 			os << "|";
 		}
-		delete[] colSize;
 		return os;
 	}
 };
