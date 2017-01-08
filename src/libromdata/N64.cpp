@@ -313,7 +313,7 @@ int N64::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid || d->romType < 0) {
-		// Unknown save file type.
+		// Unknown ROM image type.
 		return -EIO;
 	}
 

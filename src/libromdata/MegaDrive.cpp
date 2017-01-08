@@ -711,7 +711,7 @@ int MegaDrive::loadFieldData(void)
 		// so *maybe* this is okay?
 		return -EBADF;
 	} else if (!d->isValid || d->romType < 0) {
-		// ROM image isn't valid.
+		// Unknown ROM image type.
 		return -EIO;
 	}
 
