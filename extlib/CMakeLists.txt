@@ -70,6 +70,12 @@ IF(USE_INTERNAL_ZLIB)
 ENDIF(USE_INTERNAL_ZLIB)
 
 IF(USE_INTERNAL_PNG)
+	IF(USE_INTERNAL_ZLIB)
+		# Using internal ZLIB.
+		# Don't search for ZLIB using FIND_PACKAGE().
+		SET(PNG_BUILD_ZLIB ON)
+	ENDIF(USE_INTERNAL_ZLIB)
+
 	# Use the internal copy of libpng.
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
