@@ -33,10 +33,11 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 #else /* !HAVE_GMTIME_S */
 	// cppcheck-suppress gmtimeCalled
 	struct tm *tm = gmtime(timep);
-	if (!tm)
-		return nullptr;
-	*result = *tm;
-	return result;
+	if (tm && result) {
+		*result = *tm;
+		return result;
+	}
+	return nullptr;
 #endif /* GMTIME_S */
 }
 #endif /* HAVE_GMTIME_R */
