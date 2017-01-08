@@ -69,13 +69,24 @@ class NESPrivate : public RomDataPrivate
 			ROM_TYPE_OLD_INES = 0,	// Archaic iNES format
 			ROM_TYPE_INES = 1,	// iNES format
 			ROM_TYPE_NES2 = 2,	// NES 2.0 format
-			// TODO: TNES, FDS
+			// TODO: TNES, FDS, maybe UNIF?
 		};
 		int romType;
 
 	public:
 		// ROM header.
 		NES_RomHeader romHeader;
+
+		/**
+		 * Format PRG/CHR ROM bank sizes, in KB.
+		 *
+		 * This function expects the size to be a multiple of 1024,
+		 * so it doesn't do any fractional rounding or printing.
+		 *
+		 * @param size File size.
+		 * @return Formatted file size.
+		 */
+		static inline rp_string formatBankSizeKB(unsigned int size);
 };
 
 /** NESPrivate **/
@@ -86,8 +97,12 @@ const RomFields::StringDesc NESPrivate::nes_string_monospace = {
 };
 
 // ROM fields.
-// TODO: Add them!
 const struct RomFields::Desc NESPrivate::nes_fields[] = {
+	{_RP("Format"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Mapper"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Submapper"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
 };
 
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
@@ -96,6 +111,24 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Format PRG/CHR ROM bank sizes, in KB.
+ *
+ * This function expects the size to be a multiple of 1024,
+ * so it doesn't do any fractional rounding or printing.
+ *
+ * @param size File size.
+ * @return Formatted file size.
+ */
+inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
+{
+	char buf[32];
+	int len = snprintf(buf, sizeof(buf), "%u KB", (size / 1024));
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
 /** NES **/
@@ -188,9 +221,9 @@ int NES::isRomSupported_static(const DetectInfo *info)
 			// May be NES 2.0
 			// Verify the ROM size.
 			int64_t size = sizeof(NES_RomHeader) +
-				(romHeader->prg_banks * 16384) +
-				(romHeader->chr_banks * 8192) +
-				((romHeader->nes2.rom_size_hi << 8) * 16384);
+				(romHeader->prg_banks * NES_PRG_BANK_SIZE) +
+				(romHeader->chr_banks * NES_CHR_BANK_SIZE) +
+				((romHeader->nes2.rom_size_hi << 8) * NES_PRG_BANK_SIZE);
 			if (size <= info->szFile) {
 				// This is an NES 2.0 header.
 				return NESPrivate::ROM_TYPE_NES2;
@@ -314,7 +347,65 @@ int NES::loadFieldData(void)
 	// NES ROM header
 	const NES_RomHeader *romHeader = &d->romHeader;
 
-	// TODO: Do everything.
+	// Determine stuff based on the ROM format.
+	const rp_char *rom_format;
+	int mapper = -1;
+	int submapper = -1;
+	switch (d->romType) {
+		case NESPrivate::ROM_TYPE_OLD_INES:
+			rom_format = _RP("Archaic iNES");
+			mapper = (romHeader->mapper_lo >> 4);
+			break;
+		case NESPrivate::ROM_TYPE_INES:
+			rom_format = _RP("iNES");
+			mapper = (romHeader->mapper_lo >> 4) |
+				 (romHeader->mapper_hi & 0xF0);
+			break;
+		case NESPrivate::ROM_TYPE_NES2:
+			rom_format = _RP("NES 2.0");
+			mapper = (romHeader->mapper_lo >> 4) |
+				 (romHeader->mapper_hi & 0xF0) |
+				 ((romHeader->nes2.mapper_hi2 & 0x0F) << 8);
+			submapper = (romHeader->nes2.mapper_hi2 >> 4);
+			break;
+		default:
+			rom_format = _RP("Unknown");
+			break;
+	}
+
+	// Display the fields.
+	d->fields->addData_string(rom_format);
+	if (mapper < 0) {
+		// Invalid mapper.
+		d->fields->addData_invalid();	// Mapper
+		d->fields->addData_invalid();	// Submapper
+		d->fields->addData_invalid();	// PRG ROM Size
+		d->fields->addData_invalid();	// CHR ROM Size
+		return (int)d->fields->count();
+	}
+
+	// Mapper.
+	// TODO: Look up the mapper description.
+	d->fields->addData_string_numeric(mapper, RomFields::FB_DEC);
+
+	if (submapper >= 0) {
+		// Submapper. (NES 2.0 only)
+		d->fields->addData_string_numeric(submapper, RomFields::FB_DEC);
+	} else {
+		// No submapper.
+		d->fields->addData_invalid();
+	}
+
+	// ROM sizes.
+	unsigned int prg_rom_size = romHeader->prg_banks * NES_PRG_BANK_SIZE;
+	if (d->romType == NESPrivate::ROM_TYPE_NES2) {
+		// Extended ROM size.
+		prg_rom_size += ((romHeader->nes2.rom_size_hi << 8) * NES_PRG_BANK_SIZE);
+	}
+	d->fields->addData_string(d->formatBankSizeKB(prg_rom_size));
+	d->fields->addData_string(d->formatBankSizeKB(romHeader->chr_banks * NES_CHR_BANK_SIZE));
+
+	// TODO: More fields.
 	return (int)d->fields->count();
 }
 

@@ -30,9 +30,14 @@
 extern "C" {
 #endif
 
+#define NES_PRG_BANK_SIZE 16384
+#define NES_CHR_BANK_SIZE 8192
+
 /**
  * NES ROM header.
- * Reference: https://wiki.nesdev.com/w/index.php/INES
+ * References:
+ * - https://wiki.nesdev.com/w/index.php/INES
+ * - https://wiki.nesdev.com/w/index.php/NES_2.0
  */
 #pragma pack(1)
 struct PACKED NES_RomHeader {
