@@ -185,7 +185,11 @@ NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
 	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
-{ }
+{
+	// Clear the various structs.
+	memset(&romHeader, 0, sizeof(romHeader));
+	memset(&nds_icon_title, 0, sizeof(nds_icon_title));
+}
 
 NintendoDSPrivate::~NintendoDSPrivate()
 {

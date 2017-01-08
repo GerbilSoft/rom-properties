@@ -81,6 +81,9 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	, pos(-1)
 	, block_size(0)
 {
+	// Clear the CISO header struct.
+	memset(&cisoHeader, 0, sizeof(cisoHeader));
+
 	if (!file) {
 		q->m_lastError = EBADF;
 		return;

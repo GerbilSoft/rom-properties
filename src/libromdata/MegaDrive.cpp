@@ -209,7 +209,11 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	: super(q, file, md_fields, ARRAY_SIZE(md_fields))
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
-{ }
+{
+	// Clear the various structs.
+	memset(&romHeader, 0, sizeof(romHeader));
+	memset(&smdHeader, 0, sizeof(smdHeader));
+}
 
 /** Internal ROM data. **/
 

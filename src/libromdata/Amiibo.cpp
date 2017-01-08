@@ -112,7 +112,10 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 
 AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
 	: super(q, file, nfp_fields, ARRAY_SIZE(nfp_fields))
-{ }
+{
+	// Clear the NFP data struct.
+	memset(&nfpData, 0, sizeof(nfpData));
+}
 
 /**
  * Calculate the check bytes from an NTAG215 serial number.

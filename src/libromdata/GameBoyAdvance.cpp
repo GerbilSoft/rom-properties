@@ -83,7 +83,10 @@ const struct RomFields::Desc GameBoyAdvancePrivate::gba_fields[] = {
 
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
 	: super(q, file, gba_fields, ARRAY_SIZE(gba_fields))
-{ }
+{
+	// Clear the ROM header struct.
+	memset(&romHeader, 0, sizeof(romHeader));
+}
 
 /** GameBoyAdvance **/
 

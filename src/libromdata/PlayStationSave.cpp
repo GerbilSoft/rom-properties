@@ -107,7 +107,10 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 	: super(q, file, ps1_fields, ARRAY_SIZE(ps1_fields))
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, iconAnimData(nullptr)
-{ }
+{
+	// Clear the save header struct.
+	memset(&psvHeader, 0, sizeof(psvHeader));
+}
 
 /**
  * Load the save file's icons.

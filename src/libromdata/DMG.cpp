@@ -257,7 +257,10 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file, dmg_fields, ARRAY_SIZE(dmg_fields))
-{ }
+{
+	// Clear the ROM header struct.
+	memset(&romHeader, 0, sizeof(romHeader));
+}
 
 /**
  * Get a dmg_cart_type struct describing a cartridge type byte.

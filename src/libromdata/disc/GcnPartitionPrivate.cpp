@@ -26,6 +26,9 @@
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
 
+// C includes. (C++ namespace)
+#include <cstring>
+
 namespace LibRomData {
 
 GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReader,
@@ -40,6 +43,10 @@ GcnPartitionPrivate::GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReade
 	, bootLoaded(false)
 	, fst(nullptr)
 {
+	// Clear the various structs.
+	memset(&bootBlock, 0, sizeof(bootBlock));
+	memset(&bootInfo, 0, sizeof(bootInfo));
+
 	if (!discReader->isOpen()) {
 		q->m_lastError = discReader->lastError();
 		return;

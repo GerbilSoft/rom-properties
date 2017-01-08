@@ -99,7 +99,10 @@ const struct RomFields::Desc VirtualBoyPrivate::vb_fields[] = {
 
 VirtualBoyPrivate::VirtualBoyPrivate(VirtualBoy *q, IRpFile *file)
 	: super(q, file, vb_fields, ARRAY_SIZE(vb_fields))
-{ }
+{
+	// Clear the ROM header struct.
+	memset(&romHeader, 0, sizeof(romHeader));
+}
 
 /**
  * Is character a valid JIS X 0201 codepoint?

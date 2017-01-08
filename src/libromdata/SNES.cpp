@@ -94,7 +94,10 @@ const struct RomFields::Desc SNESPrivate::snes_fields[] = {
 SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
 	: super(q, file, snes_fields, ARRAY_SIZE(snes_fields))
 	, header_address(0)
-{ }
+{
+	// Clear the ROM header struct.
+	memset(&romHeader, 0, sizeof(romHeader));
+}
 
 /**
  * Is the specified ROM header valid?

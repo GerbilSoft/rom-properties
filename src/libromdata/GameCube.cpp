@@ -243,7 +243,8 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, wiiVgTblLoaded(false)
 	, updatePartition(nullptr)
 {
-	// Clear the Wii region settings.
+	// Clear the various structs.
+	memset(&discHeader, 0, sizeof(discHeader));
 	memset(&regionSetting, 0, sizeof(regionSetting));
 }
 

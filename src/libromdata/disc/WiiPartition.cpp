@@ -146,6 +146,9 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	data_size = -1;
 	partition_size = -1;
 
+	// Clear the partition header struct.
+	memset(&partitionHeader, 0, sizeof(partitionHeader));
+
 #ifdef ENABLE_DECRYPTION
 	// Increment the AES common key reference counter.
 	// TODO: Atomic reference count?
