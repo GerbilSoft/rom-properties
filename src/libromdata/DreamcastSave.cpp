@@ -537,7 +537,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	} else if (icon_count > 3) {
 		// VMU files have a maximum of 3 frames.
 		// Truncate the frame count.
-		icon_count = IconAnimData::MAX_FRAMES;
+		icon_count = 3;
 	}
 
 	// Sanity check: Each icon is 512 bytes, plus a 32-byte palette.
