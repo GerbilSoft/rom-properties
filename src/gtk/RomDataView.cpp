@@ -1079,7 +1079,9 @@ rom_data_view_load_rom_data(gpointer data)
 			// Make sure the underlying file handle is closed,
 			// since we don't need it once the RomData has been
 			// loaded by RomDataView.
-			page->romData->close();
+			if (page->romData) {
+				page->romData->close();
+			}
 		}
 		delete file;
 	}
