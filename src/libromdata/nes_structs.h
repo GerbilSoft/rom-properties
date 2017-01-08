@@ -145,6 +145,23 @@ typedef struct PACKED _TNES_RomHeader {
 #pragma pack()
 ASSERT_STRUCT(TNES_RomHeader, 16);
 
+/**
+ * TNES mappers.
+ */
+enum TNES_Mapper {
+	TNES_MAPPER_NROM	= 0,
+	TNES_MAPPER_SxROM	= 1,
+	TNES_MAPPER_PxROM	= 2,
+	TNES_MAPPER_TxROM	= 3,
+	TNES_MAPPER_FxROM	= 4,
+	TNES_MAPPER_ExROM	= 5,
+	TNES_MAPPER_UxROM	= 6,
+	TNES_MAPPER_CNROM	= 7,
+	TNES_MAPPER_AxROM	= 9,
+
+	TNES_MAPPER_FDS		= 100,
+};
+
 #ifdef __cplusplus
 }
 #endif
