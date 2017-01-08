@@ -606,6 +606,10 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 		iconAnimData->count++;
 	}
 
+	// NOTE: We're not deleting iconAnimData even if we only have
+	// a single icon because iconAnimData() will call loadIcon()
+	// if iconAnimData is nullptr.
+
 	// Set up the icon animation sequence.
 	for (int i = 0; i < iconAnimData->count; i++) {
 		iconAnimData->seq_index[i] = i;
@@ -743,6 +747,16 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		}
 	}
 
+	// NOTE: We need to set up iconAnimData in order to ensure
+	// this icon is deleted when the DreamcastSave is deleted.
+
+	this->iconAnimData = new IconAnimData();
+	iconAnimData->count = 1;
+	iconAnimData->seq_index[0] = 0;
+	iconAnimData->delays[0] = 0;
+	iconAnimData->frames[0] = img;
+
+	// Return the ICONDATA_VMS image.
 	return img;
 }
 
