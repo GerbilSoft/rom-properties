@@ -221,12 +221,17 @@ public:
 			maxWidth = max(maxWidth, rp_strlen(fo.fields.desc(i)->name));
 		}
 		maxWidth += 2;
+		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
 			auto desc = fo.fields.desc(i);
 			auto data = fo.fields.data(i);
 			assert(desc);
 			assert(data);
-			if (i) os << endl;
+			if (desc->type != data->type)
+				continue;
+
+			if (printed_first)
+				os << endl;
 			switch (desc->type) {
 			case RomFields::RFT_INVALID: {
 				assert(!"INVALID field type");
@@ -252,8 +257,11 @@ public:
 			default: {
 				assert(!"Unknown RomFieldType");
 				os << ColonPad(maxWidth, desc->name) << "NYI";
+				break;
 			}
 			}
+
+			printed_first = true;
 		}
 		return os;
 	}
@@ -293,13 +301,18 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
 		// TODO: make DoFile output everything as json in json mode
 		os << "[";
+		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
-			if (i) os << ",";
 			auto desc = fo.fields.desc(i);
 			auto data = fo.fields.data(i);
 			assert(desc);
 			assert(data);
-			if (i) os << endl;
+			if (desc->type != data->type)
+				continue;
+
+			if (printed_first)
+				os << "," << endl;
+
 			switch (desc->type) {
 			case RomFields::RFT_INVALID: {
 				assert(0); // INVALID field type
@@ -371,8 +384,11 @@ public:
 			default: {
 				assert(!"Unknown RomFieldType");
 				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(desc->name) << "}}";
+				break;
 			}
 			}
+
+			printed_first = true;
 		}
 		os << "]";
 		return os;
