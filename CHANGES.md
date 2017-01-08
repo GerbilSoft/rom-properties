@@ -26,20 +26,28 @@
   * Nintendo amiibo NFC dumps: 540-byte .bin files. (On Windows, the .bin
     extension is not currently registered; alternatives are .nfc and .nfp)
 
-* (Windows) Fixed anti-aliasing issues with monospaced fonts on the
-  properties page.
+* Changes to existing systems:
+  * GameCube: Fixed accidental swapping of Triforce and Wii system names.
+  * GameCube: Some save files have an embedded NULL byte in the description
+    field. This caused the description to get truncated. This case is now
+    handled. (Example: "Baten Kaitos Origins" save files.)
+  * Wii: Added support for RVT-R debug discs. The encryption key used for
+    each partition is now displayed in the partition listing.
+  * Game Boy Advance: Some ROM images that are intended for use as expansion
+    packs for Nintendo DS games weren't recognized because they don't have
+    the Nintendo logo data. These ROM images are now detected and marked
+    as non-bootable Nintendo DS expansions.
 
-* libpng is now used on all platforms. Previously, GDI+'s PNG loader was
-  used on Windows, and it had some odd quirks like loading grayscale images
-  as 32-bit ARGB instead of paletted.
-
-* (Windows) zlib and libpng are now compiled as DLLs instead of being
-  statically linked.
-
-* pngcheck: Fixed a race condition that could result in crashes if more
-  than one thread attempted to load a PNG image at the same time.
-
-* Various optimizations and bug fixes.
+* Other changes:
+  * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
+    properties page.
+  * libpng is now used on all platforms. Previously, GDI+'s PNG loader was
+    used on Windows, and it had some odd quirks like loading grayscale images
+    as 32-bit ARGB instead of paletted.
+  * (Windows) zlib and libpng are now compiled as DLLs instead of being
+    statically linked.
+  * pngcheck: Fixed a race condition that could result in crashes if more
+    than one thread attempted to load a PNG image at the same time.
 
 ## v0.8.1 (Windows only) (released 2016/10/24)
 
