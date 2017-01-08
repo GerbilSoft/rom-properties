@@ -167,9 +167,10 @@ SET(libromdata_H
 	disc/PartitionFile.hpp
 	)
 
-IF(USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL)
+IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(libromdata_SRCS ${libromdata_SRCS} img/APNG_dlopen.c)
-ENDIF(USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL)
+	SET(libromdata_NEEDS_DL 1)
+ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
@@ -270,9 +271,15 @@ FOREACH(_target romdata8 romdata16)
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 		)
 	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(${_target} PROPERTIES
-		EXCLUDE_FROM_ALL TRUE
-		)
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
+	# Link in libdl if it's required for dlopen()
+	# and we have a component that uses it.
+	IF(libromdata_NEEDS_DL AND CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(${_target} ${CMAKE_DL_LIBS})
+	ENDIF(libromdata_NEEDS_DL AND CMAKE_DL_LIBS)
+
+	# Other libraries.
 	IF(ICONV_LIBRARY)
 		TARGET_LINK_LIBRARIES(${_target} ${ICONV_LIBRARY})
 	ENDIF(ICONV_LIBRARY)
