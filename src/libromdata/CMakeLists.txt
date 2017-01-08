@@ -151,6 +151,7 @@ SET(libromdata_H
 	img/RpPng.hpp
 	img/IconAnimData.hpp
 	img/IconAnimHelper.hpp
+	img/APNG_dlopen.h
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
@@ -165,6 +166,10 @@ SET(libromdata_H
 	disc/GcnFst.hpp
 	disc/PartitionFile.hpp
 	)
+
+IF(USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL)
+	SET(libromdata_SRCS ${libromdata_SRCS} img/APNG_dlopen.c)
+ENDIF(USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS

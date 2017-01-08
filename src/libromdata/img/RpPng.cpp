@@ -27,6 +27,9 @@
 #include "../file/RpFile.hpp"
 #include "../file/FileSystem.hpp"
 
+// APNG
+#include "APNG_dlopen.h"
+
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -925,6 +928,13 @@ int RpPng::save(const rp_char *filename, const IconAnimData *iconAnimData)
 		return save(filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 	}
 
+	// Load APNG.
+	int apng_ret = APNG_ref();
+	if (apng_ret != 0) {
+		// Error loading APNG.
+		return -ENOTSUP;
+	}
+
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_CREATE_WRITE));
 	if (!file->isOpen()) {
 		// Error opening the file.
@@ -940,6 +950,8 @@ int RpPng::save(const rp_char *filename, const IconAnimData *iconAnimData)
 		file.reset();
 		FileSystem::delete_file(filename);
 	}
+
+	APNG_unref();
 	return ret;
 }
 
