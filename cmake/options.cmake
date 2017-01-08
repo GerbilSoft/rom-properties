@@ -47,6 +47,10 @@ OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 
 # Install the split debug file.
 OPTION(INSTALL_DEBUG "Install the split debug files." ON)
+IF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
+	# Cannot install debug files if we're not splitting them.
+	SET(INSTALL_DEBUG OFF CACHE "Install the split debug files." INTERNAL FORCE)
+ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 
 # Enable coverage checking. (gcc/clang only)
 OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
