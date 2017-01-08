@@ -95,6 +95,13 @@ class NESPrivate : public RomDataPrivate
 		 * @return Formatted file size.
 		 */
 		static inline rp_string formatBankSizeKB(unsigned int size);
+
+		/**
+		 * Convert a TNES mapper number to iNES.
+		 * @param tnes_mapper TNES mapper number.
+		 * @return iNES mapper number, or -1 if unknown.
+		 */
+		static int tnesMapperToInesMapper(int tnes_mapper);
 };
 
 /** NESPrivate **/
@@ -138,6 +145,32 @@ inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Convert a TNES mapper number to iNES.
+ * @param tnes_mapper TNES mapper number.
+ * @return iNES mapper number, or -1 if unknown.
+ */
+int NESPrivate::tnesMapperToInesMapper(int tnes_mapper)
+{
+	int8_t ines_mappers[10] = {
+		0,	// TNES 0 = NROM
+		1,	// TNES 1 = SxROM (MMC1)
+		9,	// TNES 2 = PxROM (MMC2)
+		4,	// TNES 3 = TxROM (MMC3)
+		10,	// TNES 4 = FxROM (MMC4)
+		5,	// TNES 5 = ExROM (MMC5)
+		2,	// TNES 6 = UxROM
+		3,	// TNES 7 = CNROM
+		-1,	// TNES 8 = undefined
+		7,	// TNES 9 = AxROM
+	};
+	if (tnes_mapper < 0 || tnes_mapper >= ARRAY_SIZE(ines_mappers)) {
+		// Undefined TNES mapper.
+		return -1;
+	}
+	return ines_mappers[tnes_mapper];
 }
 
 /** NES **/
@@ -455,6 +488,7 @@ int NES::loadFieldData(void)
 		case NESPrivate::ROM_TYPE_TNES:
 			rom_format = _RP("TNES (Nintendo 3DS Virtual Console)");
 			tnes_mapper = d->header.tnes.mapper;
+			mapper = d->tnesMapperToInesMapper(tnes_mapper);
 			prg_rom_size = d->header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
 			break;
