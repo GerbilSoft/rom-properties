@@ -58,7 +58,11 @@ class ColonPad {
 public:
 	ColonPad(size_t width, const rp_char* str) :width(width), str(str) {}
 	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
-		return os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ":";
+		std::ios oldState(nullptr);
+		oldState.copyfmt(os);
+		os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ":";
+		os.copyfmt(oldState);
+		return os;
 	}
 };
 class SafeString {
@@ -109,14 +113,17 @@ public:
 			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]), colSize[i%perRow]);
 		}
 
-		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
-
+		os << ColonPad(field.width, desc->name);
+		std::ios oldState(nullptr);
+		oldState.copyfmt(os);
+		os << left;
 		for (int i = 0; i < desc->bitfield->elements; i++) {
 			if (i && i%perRow == 0) os << endl << Pad(field.width);
 			os << " [" << ((data->bitfield & (1 << i)) ? '*' : ' ') << "] " <<
 				setw(colSize[i%perRow]) << desc->bitfield->names[i];
 		}
 		delete[] colSize;
+		os.copyfmt(oldState);
 		return os;
 	}
 };
@@ -144,8 +151,9 @@ public:
 			}
 		}
 
-		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
-
+		os << ColonPad(field.width, desc->name);
+		std::ios oldState(nullptr);
+		oldState.copyfmt(os);
 		for (int i = 0; i < desc->list_data->count; i++) {
 			totalWidth += colSize[i]; // this could be in a separate loop, but whatever
 			os << "|" << setw(colSize[i]) << desc->list_data->names[i];
@@ -160,6 +168,7 @@ public:
 			os << "|";
 		}
 		delete[] colSize;
+		os.copyfmt(oldState);
 		return os;
 	}
 };
@@ -177,7 +186,11 @@ public:
 		assert(desc->date_time);
 		auto flags = desc->date_time->flags;
 
-		os << ColonPad(field.width, desc->name); // ColonPad sets std::left
+		os << ColonPad(field.width, desc->name);
+
+		std::ios oldState(nullptr);
+		oldState.copyfmt(os);
+		os << left;
 
 		// FIXME: This may result in truncated times on 32-bit Linux.
 		struct tm timestamp;
@@ -207,6 +220,7 @@ public:
 		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_MASK], &timestamp);
 		os << str;
 
+		os.copyfmt(oldState);
 		return os;
 	}
 };
