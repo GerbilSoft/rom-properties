@@ -159,6 +159,49 @@ int64_t GcnPartition::partition_size(void) const
 	return d->partition_size;
 }
 
+/**
+ * Get the used partition size.
+ * This size includes the partition header and hashes,
+ * but does not include "empty" sectors.
+ * @return Used partition size, or -1 on error.
+ */
+int64_t GcnPartition::partition_size_used(void) const
+{
+	RP_D(const GcnPartition);
+	int ret = const_cast<GcnPartitionPrivate*>(d)->loadBootBlockAndInfo();
+	if (ret != 0) {
+		// Error loading the boot block.
+		return -1;
+	}
+	if (!d->fst) {
+		// FST isn't loaded.
+		if (const_cast<GcnPartitionPrivate*>(d)->loadFst() != 0) {
+			// FST load failed.
+			// TODO: Errors?
+			return -1;
+		}
+	}
+
+	// FST offset and size.
+	int64_t size = (d->bootBlock.fst_offset + d->bootBlock.fst_size) << d->offsetShift;
+	
+	// Get the FST used size.
+	size += d->fst->totalUsedSize();
+
+	// Add the difference between partition and data sizes.
+	size += (d->partition_size - d->data_size);
+
+	// FIXME: Handle the hashes size correctly on Wii. For now, use a
+	// quick and dirty hack.
+	if (d->offsetShift == 2) {
+		// Multiply the size by 31/32.
+		size = (size * 32) / 31;
+	}
+
+	// We're done here.
+	return size;
+}
+
 /** GcnPartition **/
 
 /** GcnFst wrapper functions. **/

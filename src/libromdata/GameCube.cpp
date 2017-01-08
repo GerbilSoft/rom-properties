@@ -187,7 +187,7 @@ class GameCubePrivate : public RomDataPrivate
 
 // Wii partition table.
 const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
-	_RP("#"), _RP("Type"), _RP("Key"), _RP("Size")
+	_RP("#"), _RP("Type"), _RP("Key"), _RP("Used Size"), _RP("Total Size")
 };
 
 const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
@@ -1460,6 +1460,9 @@ int GameCube::loadFieldData(void)
 						break;
 				}
 				data_row.push_back(key_name);
+
+				// Used size.
+				data_row.push_back(d->formatFileSize(entry.partition->partition_size_used()));
 
 				// Partition size.
 				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));

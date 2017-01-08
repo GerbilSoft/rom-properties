@@ -87,7 +87,7 @@ enum GCN_Region_Code {
 typedef struct PACKED _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
 	uint32_t fst_offset;	// NOTE: 34-bit RSH2 on Wii.
-	uint32_t fst_size;	// FST size.
+	uint32_t fst_size;	// FST size. (NOTE: 34-bit RSH2 on Wii.)
 	uint32_t fst_max_size;	// Size of biggest additional FST.
 
 	uint32_t fst_mem_addr;	// FST address in RAM.

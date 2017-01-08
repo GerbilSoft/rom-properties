@@ -81,6 +81,17 @@ class GcnFst : public IFst
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int find_file(const rp_char *filename, DirEnt *dirent) final;
+
+	public:
+		/**
+		 * Get the total size of all files.
+		 *
+		 * This is a shortcut function that reads the FST
+		 * directly instead of using opendir().
+		 *
+		 * @return Size of all files, in bytes. (-1 on error)
+		 */
+		int64_t totalUsedSize(void) const;
 };
 
 }

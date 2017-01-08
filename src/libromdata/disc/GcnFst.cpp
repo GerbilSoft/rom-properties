@@ -557,4 +557,34 @@ int GcnFst::find_file(const rp_char *filename, DirEnt *dirent)
 	return 0;
 }
 
+/**
+ * Get the total size of all files.
+ *
+ * This is a shortcut function that reads the FST
+ * directly instead of using opendir().
+ *
+ * @return Size of all files, in bytes. (-1 on error)
+ */
+int64_t GcnFst::totalUsedSize(void) const
+{
+	if (!d->fstData) {
+		// No FST...
+		return -1;
+	}
+
+	int64_t total_size = 0;
+	const GCN_FST_Entry *entry = d->fstData;
+	uint32_t file_count = be32_to_cpu(entry->root_dir.file_count);
+	entry++;
+
+	// NOTE: file_count includes the root directory entry,
+	// which should be skipped.
+	for (; file_count > 1; file_count--, entry++) {
+		if (d->is_dir(entry))
+			continue;
+		total_size += (int64_t)be32_to_cpu(entry->file.size);
+	}
+	return total_size;
+}
+
 }

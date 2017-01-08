@@ -103,6 +103,14 @@ class GcnPartition : public IPartition
 		 */
 		virtual int64_t partition_size(void) const final;
 
+		/**
+		 * Get the used partition size.
+		 * This size includes the partition header and hashes,
+		 * but does not include "empty" sectors.
+		 * @return Used partition size, or -1 on error.
+		 */
+		virtual int64_t partition_size_used(void) const final;
+
 		/** IFst wrapper functions. **/
 
 		/**
