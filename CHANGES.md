@@ -37,6 +37,8 @@
     packs for Nintendo DS games weren't recognized because they don't have
     the Nintendo logo data. These ROM images are now detected and marked
     as non-bootable Nintendo DS expansions.
+  * Nintendo DS: Fixed an issue where the first frame of animated icons was
+    not selected correctly. (Example: "Four Swords Adventures".)
 
 * Other changes:
   * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
