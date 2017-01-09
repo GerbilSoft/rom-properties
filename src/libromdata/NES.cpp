@@ -295,11 +295,27 @@ NES::NES(IRpFile *file)
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS_TNES:
+		case NESPrivate::ROM_TYPE_FDS_TNES: {
 			// FDS disk image. (TNES/TDS format)
-			// TODO: Add header.
+			int sret = d->file->seek(0x2010);
+			if (sret != 0) {
+				// Seek error.
+				d->fileType = FTYPE_UNKNOWN;
+				d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+				return;
+			}
+
+			size_t szret = d->file->read(&d->header.fds, sizeof(d->header.fds));
+			if (szret != sizeof(d->header.fds)) {
+				// Error reading the FDS header.
+				d->fileType = FTYPE_UNKNOWN;
+				d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+				return;
+			}
+
 			d->fileType = FTYPE_DISK_IMAGE;
 			break;
+		}
 
 		default:
 			// Unknown ROM type.
