@@ -1214,6 +1214,11 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	if (!desc->name || desc->name[0] == '\0')
 		return 0;
 
+	if (data->date_time == -1) {
+		// Invalid date/time.
+		return initString(hDlg, pt_start, idx, size, L"Unknown");
+	}
+
 	// Format the date/time using the system locale.
 	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
 	assert(dateTimeDesc != nullptr);

@@ -980,6 +980,12 @@ rom_data_view_update_display(RomDataView *page)
 				gtk_widget_show(widget);
 				GTK_WIDGET_HALIGN_LEFT(widget);
 
+				if (data->date_time == -1) {
+					// Invalid date/time.
+					gtk_label_set_text(GTK_LABEL(widget), "Unknown");
+					break;
+				}
+
 				GDateTime *dateTime;
 				if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
 					dateTime = g_date_time_new_from_unix_utc(data->date_time);

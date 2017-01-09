@@ -210,6 +210,12 @@ public:
 		os << ColonPad(field.width, desc->name);
 		StreamStateSaver state(os);
 
+		if (data->date_time == -1) {
+			// Invalid date/time.
+			os << "Unknown";
+			return os;
+		}
+
 		// FIXME: This may result in truncated times on 32-bit Linux.
 		struct tm timestamp;
 		struct tm *ret;

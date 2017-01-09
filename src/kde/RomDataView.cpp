@@ -619,6 +619,13 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				lblDateTime->setTextFormat(Qt::PlainText);
 				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
 
+				if (data->date_time == -1) {
+					// Invalid date/time.
+					lblDateTime->setText(RomDataView::tr("Unknown"));
+					ui.formLayout->addRow(lblDesc, lblDateTime);
+					break;
+				}
+
 				QDateTime dateTime;
 				dateTime.setTimeSpec(
 					(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
