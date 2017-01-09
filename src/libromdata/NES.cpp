@@ -151,6 +151,7 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 	{_RP("TNES Mapper"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Mirroring"), RomFields::RFT_STRING, {nullptr}},
 
 	// FDS-specific fields.
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
@@ -760,6 +761,9 @@ int NES::loadFieldData(void)
 
 	// Check for FDS fields.
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
+		// Ignore fields that aren't valid for FDS.
+		d->fields->addData_invalid();	// Mirroring
+
 		char buf[64];
 		int len;
 
@@ -786,7 +790,25 @@ int NES::loadFieldData(void)
 		int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
 		d->fields->addData_dateTime(mfr_date);
 	} else {
-		// No FDS fields.
+		// Add non-FDS fields.
+
+		// Mirroring.
+		// TODO: Detect mappers that have programmable mirroring.
+		const rp_char *mirroring;
+		if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
+			// Four screens using extra VRAM.
+			mirroring = _RP("Four Screens");
+		} else {
+			// TODO: There should be a "one screen" option...
+			if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
+				mirroring = _RP("Vertical");
+			} else {
+				mirroring = _RP("Horizontal");
+			}
+		}
+		d->fields->addData_string(mirroring);
+
+		// Skip FDS fields.
 		d->fields->addData_invalid();	// Game ID
 		d->fields->addData_invalid();	// Publisher
 		d->fields->addData_invalid();	// Revision
