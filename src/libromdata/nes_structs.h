@@ -78,7 +78,7 @@ typedef struct PACKED _INES_RomHeader {
 ASSERT_STRUCT(INES_RomHeader, 16);
 
 // mapper_lo flags.
-enum INES_Mapper_LO {
+typedef enum {
 	// Mirroring.
 	INES_F6_MIRROR_HORI = 0,
 	INES_F6_MIRROR_VERT = (1 << 0),
@@ -91,10 +91,10 @@ enum INES_Mapper_LO {
 	// Mapper low nybble.
 	INES_F6_MAPPER_MASK = 0xF0,
 	INES_F6_MAPPER_SHIFT = 4,
-};
+} INES_Mapper_LO;
 
 // mapper_hi flags.
-enum INES_Mapper_HI {
+typedef enum {
 	// Hardware.
 	INES_F7_SYSTEM_VS	= (1 << 0),
 	INES_F7_SYSTEM_PC10	= (1 << 1),
@@ -108,7 +108,7 @@ enum INES_Mapper_HI {
 	// Mapper high nybble.
 	INES_F7_MAPPER_MASK = 0xF0,
 	INES_F7_MAPPER_SHIFT = 4,
-};
+} INES_Mapper_HI;
 
 // NES 2.0 stuff
 // Not gonna make enums for those:
@@ -122,12 +122,12 @@ enum INES_Mapper_HI {
 //   top = battery cram, bottom = normal cram
 // Byte 13 - vs unisystem
 //   top = vs mode, bottom = ppu version
-enum NES2_TV_Mode {
+typedef enum {
 	NES2_F12_NTSC = 0,
 	NES2_F12_PAL = (1 << 0),
 	NES2_F12_DUAL = (1 << 1),
 	NES2_F12_REGION = (1 << 1) | (1 << 0),
-};
+} NES2_TV_Mode;
 
 /**
  * TNES ROM header.
@@ -150,7 +150,7 @@ ASSERT_STRUCT(TNES_RomHeader, 16);
 /**
  * TNES mappers.
  */
-enum TNES_Mapper {
+typedef enum {
 	TNES_MAPPER_NROM	= 0,
 	TNES_MAPPER_SxROM	= 1,
 	TNES_MAPPER_PxROM	= 2,
@@ -162,7 +162,16 @@ enum TNES_Mapper {
 	TNES_MAPPER_AxROM	= 9,
 
 	TNES_MAPPER_FDS		= 100,
-};
+} TNES_Mapper;
+
+/**
+ * TNES mirroring.
+ */
+typedef enum {
+	TNES_MIRRORING_PROGRAMMABLE	= 0,	// Programmable
+	TNES_MIRRORING_HORIZONTAL	= 1,	// Horizontal
+	TNES_MIRRORING_VERTICAL		= 2,	// Vertical
+} TNES_Mirroring;
 
 /**
  * 3-byte BCD date stamp.

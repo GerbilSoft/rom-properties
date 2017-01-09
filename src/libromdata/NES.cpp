@@ -793,20 +793,55 @@ int NES::loadFieldData(void)
 		// Add non-FDS fields.
 
 		// Mirroring.
-		// TODO: Detect mappers that have programmable mirroring.
-		const rp_char *mirroring;
-		if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
-			// Four screens using extra VRAM.
-			mirroring = _RP("Four Screens");
-		} else {
-			// TODO: There should be a "one screen" option...
-			if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
-				mirroring = _RP("Vertical");
-			} else {
-				mirroring = _RP("Horizontal");
-			}
+		const rp_char *mirroring = nullptr;
+		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
+			case NESPrivate::ROM_FORMAT_OLD_INES:
+			case NESPrivate::ROM_FORMAT_INES:
+			case NESPrivate::ROM_FORMAT_NES2:
+				// TODO: Detect mappers that have programmable mirroring.
+				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
+					// Four screens using extra VRAM.
+					mirroring = _RP("Four Screens");
+				} else {
+					// TODO: There should be a "one screen" option...
+					if (d->header.ines.mapper_lo & INES_F6_MIRROR_VERT) {
+						mirroring = _RP("Vertical");
+					} else {
+						mirroring = _RP("Horizontal");
+					}
+				}
+				break;
+
+			case NESPrivate::ROM_FORMAT_TNES:
+				switch (d->header.tnes.mirroring) {
+					case TNES_MIRRORING_PROGRAMMABLE:
+						// Zelda II uses TxROM (MMC1), which has
+						// programmable mirroring. Its mirroring
+						// byte is set to 0x00.
+						mirroring = _RP("Programmable");
+						break;
+					case TNES_MIRRORING_HORIZONTAL:
+						mirroring = _RP("Horizontal");
+						break;
+					case TNES_MIRRORING_VERTICAL:
+						mirroring = _RP("Vertical");
+						break;
+					default:
+						mirroring = _RP("Unknown");
+						break;
+				}
+				break;
+
+			default:
+				break;
 		}
-		d->fields->addData_string(mirroring);
+
+		if (mirroring) {
+			d->fields->addData_string(mirroring);
+		} else {
+			// No mirroring data.
+			d->fields->addData_invalid();
+		}
 
 		// Skip FDS fields.
 		d->fields->addData_invalid();	// Game ID
