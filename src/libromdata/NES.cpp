@@ -799,6 +799,7 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
 				// TODO: Detect mappers that have programmable mirroring.
+				// TODO: Also One Screen, e.g. AxROM.
 				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
 					// Four screens using extra VRAM.
 					mirroring = _RP("Four Screens");
@@ -815,10 +816,13 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_TNES:
 				switch (d->header.tnes.mirroring) {
 					case TNES_MIRRORING_PROGRAMMABLE:
-						// Zelda II uses TxROM (MMC1), which has
-						// programmable mirroring. Its mirroring
-						// byte is set to 0x00.
-						mirroring = _RP("Programmable");
+						// For all mappers except AxROM, this is programmable.
+						// For AxROM, this is One Screen.
+						if (tnes_mapper == TNES_MAPPER_AxROM) {
+							mirroring = _RP("One Screen");
+						} else {
+							mirroring = _RP("Programmable");
+						}
 						break;
 					case TNES_MIRRORING_HORIZONTAL:
 						mirroring = _RP("Horizontal");
