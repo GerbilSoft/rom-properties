@@ -64,7 +64,9 @@ class AmiiboPrivate : public RomDataPrivate
 		static const struct RomFields::Desc nfp_fields[];
 
 	public:
-		// NFC data. (TODO)
+		// NFC data.
+		// TODO: Use nfpSize to determine an "nfpType" value?
+		int nfpSize;		// NFP_File_Size
 		NFP_Data_t nfpData;
 
 		/**
@@ -112,6 +114,7 @@ const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
 
 AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
 	: super(q, file, nfp_fields, ARRAY_SIZE(nfp_fields))
+	, nfpSize(0)
 {
 	// Clear the NFP data struct.
 	memset(&nfpData, 0, sizeof(nfpData));
@@ -164,8 +167,28 @@ Amiibo::Amiibo(IRpFile *file)
 	// Read the NFC data.
 	d->file->rewind();
 	size_t size = d->file->read(&d->nfpData, sizeof(d->nfpData));
-	if (size != sizeof(d->nfpData))
-		return;
+	switch (size) {
+		case NFP_FILE_NO_PW:	// Missing password bytes.
+			// Zero out the password bytes.
+			memset(d->nfpData.pwd, 0, sizeof(d->nfpData.pwd));
+			memset(d->nfpData.pack, 0, sizeof(d->nfpData.pack));
+			memset(d->nfpData.rfui, 0, sizeof(d->nfpData.rfui));
+
+			// fall-through
+		case NFP_FILE_STANDARD:	// Standard dump.
+			// Zero out the extended dump section.
+			memset(d->nfpData.extended, 0, sizeof(d->nfpData.extended));
+
+			// fall-through
+		case NFP_FILE_EXTENDED:	// Extended dump.
+			// Size is valid.
+			d->nfpSize = (int)size;
+			break;
+
+		default:
+			// Unsupported file size.
+			return;
+	}
 
 	// Check if the NFC data is supported.
 	DetectInfo info;
@@ -188,14 +211,29 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.pData != nullptr);
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
-	    info->header.addr != 0 ||
-	    info->header.size < 540 ||
-	    info->szFile != 540)
+	    info->header.addr != 0)
 	{
 		// Either no detection information was specified,
 		// the header is too small, or the file is the
 		// wrong size.
 		return -1;
+	}
+
+	// Check the file size.
+	// Three file sizes are possible.
+	switch (info->szFile) {
+		case NFP_FILE_NO_PW:	// Missing password bytes.
+		case NFP_FILE_STANDARD:	// Standard dump.
+		case NFP_FILE_EXTENDED:	// Extended dump.
+			if (info->header.size < info->szFile) {
+				// Not enough data is available.
+				return -1;
+			}
+			break;
+
+		default:
+			// Unsupported file size.
+			return -1;
 	}
 
 	const NFP_Data_t *nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);

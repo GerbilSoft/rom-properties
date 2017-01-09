@@ -37,6 +37,15 @@ extern "C" {
 #endif
 
 /**
+ * Amiibo binary file sizes.
+ */
+typedef enum {
+	NFP_FILE_STANDARD	= 540,
+	NFP_FILE_NO_PW		= 532,
+	NFP_FILE_EXTENDED	= 572,
+} NFP_File_Size;
+
+/**
  * NTAG215 structure for Nintendo Figurine Platform.
  * Reference: https://www.3dbrew.org/wiki/Amiibo
  *
@@ -87,9 +96,13 @@ typedef struct PACKED _NFP_Data_t {
 	uint8_t pwd[4];			// [0x85,RO]
 	uint8_t pack[2];		// [0x86,RO]
 	uint8_t rfui[2];		// [0x87,RO]
+
+	// Extra data present in extended dumps.
+	// TODO: What is this data?
+	uint8_t extended[32];
 } NFP_Data_t;
 #pragma pack()
-ASSERT_STRUCT(NFP_Data_t, 540);
+ASSERT_STRUCT(NFP_Data_t, 572);
 
 /**
  * amiibo type. (low byte of char_id)
