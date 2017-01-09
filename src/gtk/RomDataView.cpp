@@ -838,6 +838,7 @@ rom_data_view_update_display(RomDataView *page)
 				// Bitfield type. Create a grid of checkboxes.
 				// TODO: Description label needs some padding on the top...
 				const RomFields::BitfieldDesc *const bitfieldDesc = desc->bitfield;
+				assert(bitfieldDesc != nullptr);
 
 #if GTK_CHECK_VERSION(3,0,0)
 				widget = gtk_grid_new();
@@ -911,6 +912,7 @@ rom_data_view_update_display(RomDataView *page)
 			case RomFields::RFT_LISTDATA: {
 				// ListData type. Create a QTreeWidget.
 				const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+				assert(listDataDesc != nullptr);
 				const int count = listDataDesc->count;
 				GType *types = new GType[listDataDesc->count];
 				for (int i = 0; i < count; i++) {
@@ -969,6 +971,7 @@ rom_data_view_update_display(RomDataView *page)
 			case RomFields::RFT_DATETIME: {
 				// Date/Time.
 				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+				assert(dateTimeDesc != nullptr);
 
 				widget = gtk_label_new(nullptr);
 				gtk_label_set_use_underline(GTK_LABEL(widget), false);
