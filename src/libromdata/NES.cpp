@@ -679,7 +679,7 @@ int NES::loadFieldData(void)
 		case NESPrivate::ROM_TYPE_FDS_TNES: {
 			// Game ID.
 			// TODO: Check for invalid characters?
-			len = snprintf(buf, sizeof(buf), "%s%.3s",
+			len = snprintf(buf, sizeof(buf), "%s-%.3s",
 				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
 				d->header.fds.game_id);
 			if (len > (int)sizeof(buf))
