@@ -25,6 +25,7 @@
 
 #include "data/NintendoPublishers.hpp"
 #include "data/NESMappers.hpp"
+#include "SystemRegion.hpp"
 #include "nes_structs.h"
 
 #include "common.h"
@@ -501,11 +502,36 @@ const rp_char *NES::systemName(uint32_t type) const
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
 			static const rp_char *const sysNames_NES[] = {
+				// NES (International)
 				_RP("Nintendo Entertainment System"),
 				_RP("Nintendo Entertainment System"),
-				_RP("NES"), nullptr
+				_RP("NES"), nullptr,
+
+				// Famicom (Japan)
+				_RP("Nintendo Famicom"),
+				_RP("Famicom"),
+				_RP("FC"), nullptr,
+
+				// Hyundai Comboy (South Korea)
+				_RP("Hyundai Comboy"),
+				_RP("Comboy"),
+				_RP("CB"), nullptr,
 			};
-			return sysNames_NES[idx];
+
+			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
+				// Use the international name.
+				return sysNames_NES[idx];
+			}
+
+			// Get the system region.
+			switch (SystemRegion::getCountryCode()) {
+				case 'JP':
+					return sysNames_NES[idx + 4];
+				case 'KR':
+					return sysNames_NES[idx + 8];
+				default:
+					return sysNames_NES[idx];
+			}
 		}
 
 		case NESPrivate::ROM_SYSTEM_FDS: {
