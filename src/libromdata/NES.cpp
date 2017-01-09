@@ -371,9 +371,18 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				((inesHeader->nes2.prg_banks_hi << 8) * INES_PRG_BANK_SIZE);
 			if (size <= info->szFile) {
 				// This is an NES 2.0 header.
-				// TODO: Check VS/PC10.
-				return NESPrivate::ROM_FORMAT_NES2 |
-				       NESPrivate::ROM_SYSTEM_NES;
+				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
+					case INES_F7_SYSTEM_VS:
+						return NESPrivate::ROM_FORMAT_NES2 |
+						       NESPrivate::ROM_SYSTEM_VS;
+					case INES_F7_SYSTEM_PC10:
+						return NESPrivate::ROM_FORMAT_NES2 |
+						       NESPrivate::ROM_SYSTEM_PC10;
+					default:
+						// TODO: What if both are set?
+						return NESPrivate::ROM_FORMAT_NES2 |
+						       NESPrivate::ROM_SYSTEM_NES;
+				}
 			}
 		}
 
@@ -387,9 +396,18 @@ int NES::isRomSupported_static(const DetectInfo *info)
 			    info->header.pData[15] == 0)
 			{
 				// Definitely iNES.
-				// TODO: Check VS/PC10.
-				return NESPrivate::ROM_FORMAT_INES |
-				       NESPrivate::ROM_SYSTEM_NES;
+				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
+					case INES_F7_SYSTEM_VS:
+						return NESPrivate::ROM_FORMAT_INES |
+						       NESPrivate::ROM_SYSTEM_VS;
+					case INES_F7_SYSTEM_PC10:
+						return NESPrivate::ROM_FORMAT_INES |
+						       NESPrivate::ROM_SYSTEM_PC10;
+					default:
+						// TODO: What if both are set?
+						return NESPrivate::ROM_FORMAT_INES |
+						       NESPrivate::ROM_SYSTEM_NES;
+				}
 			}
 		}
 

@@ -96,8 +96,9 @@ enum INES_Mapper_LO {
 // mapper_hi flags.
 enum INES_Mapper_HI {
 	// Hardware.
-	INES_F7_VS	= (1 << 0),
-	INES_F7_PC10	= (1 << 1),
+	INES_F7_SYSTEM_VS	= (1 << 0),
+	INES_F7_SYSTEM_PC10	= (1 << 1),
+	INES_F7_SYSTEM_MASK	= (INES_F7_SYSTEM_VS | INES_F7_SYSTEM_PC10),
 
 	// NES 2.0 identification.
 	INES_F7_NES2_MASK = (1 << 3) | (1 << 2),
