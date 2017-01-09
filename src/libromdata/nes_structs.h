@@ -164,6 +164,18 @@ enum TNES_Mapper {
 };
 
 /**
+ * 3-byte BCD date stamp.
+ */
+#pragma pack(1)
+typedef struct PACKED _FDS_BCD_DateStamp {
+	uint8_t year;	// Add 1925 to this.
+	uint8_t mon;	// 1-12
+	uint8_t mday;	// 1-31
+} FDS_BCD_DateStamp;
+#pragma pack()
+ASSERT_STRUCT(FDS_BCD_DateStamp, 3);
+
+/**
  * Famicom Disk System header.
  */
 #pragma pack(1)
@@ -179,11 +191,11 @@ typedef struct PACKED _FDS_DiskHeader {
 	uint8_t disk_type;	// Disk type. (See FDS_Disk_Type.)
 	uint8_t unknown1;
 	uint8_t boot_read_file_code;	// File number to read on startup.
-	uint8_t unknown2[5];	// 0xFF 0xFF 0xFF 0xFF 0xFF
-	uint8_t mfr_date[3];	// Manufacturing date.
-	uint8_t country_code;	// Country code. (0x49 == Japan)
+	uint8_t unknown2[5];		// 0xFF 0xFF 0xFF 0xFF 0xFF
+	FDS_BCD_DateStamp mfr_date;	// Manufacturing date.
+	uint8_t country_code;		// Country code. (0x49 == Japan)
 	uint8_t unknown3[9];
-	uint8_t rw_date[3];	// "Rewritten disk" date.
+	FDS_BCD_DateStamp rw_date;	// "Rewritten disk" date.
 	uint8_t unknown4[2];
 	uint16_t disk_writer_serial;	// Disk Writer serial number.
 	uint8_t unknown5;

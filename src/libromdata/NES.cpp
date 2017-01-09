@@ -36,6 +36,7 @@
 #include <cassert>
 #include <cstring>
 #include <cctype>
+#include <ctime>
 
  // C++ includes.
 #include <vector>
@@ -59,6 +60,9 @@ class NESPrivate : public RomDataPrivate
 
 		// Monospace string formatting.
 		static const RomFields::StringDesc nes_string_monospace;
+
+		// Manufacturing date. (RFT_DATETIME)
+		static const RomFields::DateTimeDesc mfr_date_dt;
 
 		// ROM fields.
 		static const struct RomFields::Desc nes_fields[];
@@ -105,6 +109,17 @@ class NESPrivate : public RomDataPrivate
 		 * @return Formatted file size.
 		 */
 		static inline rp_string formatBankSizeKB(unsigned int size);
+
+		/**
+		 * Convert an FDS BCD datestamp to Unix time.
+		 * @param fds_bcd_ds FDS BCD datestamp.
+		 * @return Unix time, or -1 if an error occurred.
+		 *
+		 * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+		 * not likely to be valid for Dreamcast, since Dreamcast
+		 * was released in 1998.
+		 */
+		static int64_t fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds);
 };
 
 /** NESPrivate **/
@@ -112,6 +127,12 @@ class NESPrivate : public RomDataPrivate
 // Monospace string formatting.
 const RomFields::StringDesc NESPrivate::nes_string_monospace = {
 	RomFields::StringDesc::STRF_MONOSPACE
+};
+
+// M
+const RomFields::DateTimeDesc NESPrivate::mfr_date_dt = {
+	RomFields::RFT_DATETIME_HAS_DATE |
+	RomFields::RFT_DATETIME_IS_UTC	// Date only.
 };
 
 // ROM fields.
@@ -122,6 +143,13 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 	{_RP("TNES Mapper"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
+
+	// FDS-specific fields.
+	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Manufacturing Date"), RomFields::RFT_DATETIME, {&mfr_date_dt}},
+	// TODO: Disk Writer fields.
 };
 
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
@@ -148,6 +176,52 @@ inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Convert an FDS BCD datestamp to Unix time.
+ * @param fds_bcd_ds FDS BCD datestamp.
+ * @return Unix time, or -1 if an error occurred.
+ *
+ * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
+ * not likely to be valid for Dreamcast, since Dreamcast
+ * was released in 1998.
+ */
+int64_t NESPrivate::fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds)
+{
+	// Convert the VMI time to Unix time.
+	// NOTE: struct tm has some oddities:
+	// - tm_year: year - 1900
+	// - tm_mon: 0 == January
+	if ((fds_bcd_ds->year == 0 &&
+	     fds_bcd_ds->mon == 0 &&
+	     fds_bcd_ds->mday == 0) ||
+	    (fds_bcd_ds->year == 0xFF &&
+	     fds_bcd_ds->mon == 0xFF &&
+	     fds_bcd_ds->mday == 0xFF))
+	{
+		// Invalid date.
+		return -1;
+	}
+
+	struct tm fdstime = { };
+
+	// TODO: Check for invalid BCD values.
+	fdstime.tm_year = ((fds_bcd_ds->year >> 4) * 10) +
+			   (fds_bcd_ds->year & 0x0F) + 1925 - 1900;
+	fdstime.tm_mon  = ((fds_bcd_ds->mon >> 4) * 10) +
+			   (fds_bcd_ds->mon & 0x0F) - 1;
+	fdstime.tm_mday = ((fds_bcd_ds->mday >> 4) * 10) +
+			   (fds_bcd_ds->mday & 0x0F);
+
+	// If conversion fails, d->ctime will be set to -1.
+#ifdef _WIN32
+	// MSVCRT-specific version.
+	return _mkgmtime(&fdstime);
+#else /* !_WIN32 */
+	// FIXME: Might not be available on some systems.
+	return timegm(&fdstime);
+#endif
 }
 
 /** NES **/
@@ -594,6 +668,47 @@ int NES::loadFieldData(void)
 		d->fields->addData_string(d->formatBankSizeKB(chr_rom_size));
 	} else {
 		d->fields->addData_invalid();
+	}
+
+	// Check for FDS fields.
+	char buf[64];
+	int len;
+	switch (d->romType) {
+		case NESPrivate::ROM_TYPE_FDS:
+		case NESPrivate::ROM_TYPE_FDS_FWNES:
+		case NESPrivate::ROM_TYPE_FDS_TNES: {
+			// Game ID.
+			// TODO: Check for invalid characters?
+			len = snprintf(buf, sizeof(buf), "%s%.3s",
+				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
+				d->header.fds.game_id);
+			if (len > (int)sizeof(buf))
+				len = (int)sizeof(buf);
+			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+			// Publisher.
+			// NOTE: Verify that the FDS list matches NintendoPublishers.
+			// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
+			const rp_char* publisher =
+				NintendoPublishers::lookup_old(d->header.fds.publisher_code);
+			d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+
+			// Revision.
+			d->fields->addData_string_numeric(d->header.fds.revision, RomFields::FB_DEC, 2);
+
+			// Manufacturing Date.
+			int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
+			d->fields->addData_dateTime(mfr_date);
+			break;
+		}
+
+		default:
+			// No FDS fields.
+			d->fields->addData_invalid();	// Game ID
+			d->fields->addData_invalid();	// Publisher
+			d->fields->addData_invalid();	// Revision
+			d->fields->addData_invalid();	// Manufacturing Date
+			break;
 	}
 
 	// TODO: More fields.
