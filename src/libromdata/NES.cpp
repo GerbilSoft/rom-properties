@@ -69,18 +69,25 @@ class NESPrivate : public RomDataPrivate
 
 		// ROM image type.
 		enum RomType {
-			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
+			ROM_UNKNOWN = -1,		// Unknown ROM type.
 
-			ROM_TYPE_OLD_INES = 0,	// Archaic iNES format
-			ROM_TYPE_INES = 1,	// iNES format
-			ROM_TYPE_NES2 = 2,	// NES 2.0 format
-			ROM_TYPE_TNES = 3,	// TNES (Nintendo 3DS Virtual Console)
+			ROM_FORMAT_OLD_INES = 0,	// Archaic iNES format
+			ROM_FORMAT_INES = 1,		// iNES format
+			ROM_FORMAT_NES2 = 2,		// NES 2.0 format
+			ROM_FORMAT_TNES = 3,		// TNES (Nintendo 3DS Virtual Console)
+			ROM_FORMAT_FDS = 4,		// Famicom Disk System
+			ROM_FORMAT_FDS_FWNES = 5,	// Famicom Disk System (with fwNES header)
+			ROM_FORMAT_FDS_TNES = 6,	// Famicom Disk System (TNES / TDS)
+			ROM_FORMAT_UNKNOWN = 0xFF,
+			ROM_FORMAT_MASK = 0xFF,
 
-			ROM_TYPE_FDS = 4,	// Famicom Disk System
-			ROM_TYPE_FDS_FWNES = 5,	// Famicom Disk System (with fwNES header)
-			ROM_TYPE_FDS_TNES = 6,	// Famicom Disk System (TNES / TDS)
-
-			// TODO: Other VC, FDS, maybe UNIF?
+			ROM_SYSTEM_NES = (0 << 8),	// NES / Famicom
+			ROM_SYSTEM_FDS = (1 << 8),	// Famicom Disk System
+			ROM_SYSTEM_VS = (2 << 8),	// VS. System
+			ROM_SYSTEM_PC10 = (3 << 8),	// PlayChoice-10
+			ROM_SYSTEM_UNKNOWN = (0xFF << 8),
+			ROM_SYSTEM_MASK = (0xFF << 8),
+			// TODO: Other VC formats, maybe UNIF?
 		};
 		int romType;
 
@@ -154,7 +161,7 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
 	: super(q, file, nes_fields, ARRAY_SIZE(nes_fields))
-	, romType(ROM_TYPE_UNKNOWN)
+	, romType(ROM_UNKNOWN)
 {
 	// Clear the ROM header structs.
 	memset(&header, 0, sizeof(header));
@@ -267,41 +274,41 @@ NES::NES(IRpFile *file)
 	info.szFile = d->file->fileSize();
 	d->romType = isRomSupported_static(&info);
 
-	switch (d->romType) {
-		case NESPrivate::ROM_TYPE_OLD_INES:
-		case NESPrivate::ROM_TYPE_INES:
-		case NESPrivate::ROM_TYPE_NES2:
+	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
+		case NESPrivate::ROM_FORMAT_INES:
+		case NESPrivate::ROM_FORMAT_NES2:
 			// iNES-style ROM header.
 			d->fileType = FTYPE_ROM_IMAGE;
 			memcpy(&d->header.ines, header, sizeof(d->header.ines));
 			break;
 
-		case NESPrivate::ROM_TYPE_TNES:
+		case NESPrivate::ROM_FORMAT_TNES:
 			// TNES ROM header.
 			d->fileType = FTYPE_ROM_IMAGE;
 			memcpy(&d->header.tnes, header, sizeof(d->header.tnes));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS:
+		case NESPrivate::ROM_FORMAT_FDS:
 			// FDS disk image.
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds, header, sizeof(d->header.fds));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS_FWNES:
+		case NESPrivate::ROM_FORMAT_FDS_FWNES:
 			// FDS disk image, with fwNES header.
 			d->fileType = FTYPE_DISK_IMAGE;
 			memcpy(&d->header.fds_fwNES, header, sizeof(d->header.fds_fwNES));
 			memcpy(&d->header.fds, &header[16], sizeof(d->header.fds));
 			break;
 
-		case NESPrivate::ROM_TYPE_FDS_TNES: {
+		case NESPrivate::ROM_FORMAT_FDS_TNES: {
 			// FDS disk image. (TNES/TDS format)
 			int sret = d->file->seek(0x2010);
 			if (sret != 0) {
 				// Seek error.
 				d->fileType = FTYPE_UNKNOWN;
-				d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
 			}
 
@@ -309,7 +316,7 @@ NES::NES(IRpFile *file)
 			if (szret != sizeof(d->header.fds)) {
 				// Error reading the FDS header.
 				d->fileType = FTYPE_UNKNOWN;
-				d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;
 			}
 
@@ -320,7 +327,7 @@ NES::NES(IRpFile *file)
 		default:
 			// Unknown ROM type.
 			d->fileType = FTYPE_UNKNOWN;
-			d->romType = NESPrivate::ROM_TYPE_UNKNOWN;
+			d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 			return;
 	}
 
@@ -364,7 +371,9 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				((inesHeader->nes2.prg_banks_hi << 8) * INES_PRG_BANK_SIZE);
 			if (size <= info->szFile) {
 				// This is an NES 2.0 header.
-				return NESPrivate::ROM_TYPE_NES2;
+				// TODO: Check VS/PC10.
+				return NESPrivate::ROM_FORMAT_NES2 |
+				       NESPrivate::ROM_SYSTEM_NES;
 			}
 		}
 
@@ -378,12 +387,15 @@ int NES::isRomSupported_static(const DetectInfo *info)
 			    info->header.pData[15] == 0)
 			{
 				// Definitely iNES.
-				return NESPrivate::ROM_TYPE_INES;
+				// TODO: Check VS/PC10.
+				return NESPrivate::ROM_FORMAT_INES |
+				       NESPrivate::ROM_SYSTEM_NES;
 			}
 		}
 
 		// Archaic iNES format.
-		return NESPrivate::ROM_TYPE_OLD_INES;
+		return NESPrivate::ROM_FORMAT_OLD_INES |
+		       NESPrivate::ROM_SYSTEM_NES;
 	}
 
 	// Check for TNES.
@@ -395,11 +407,13 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		if (tnesHeader->mapper == TNES_MAPPER_FDS) {
 			// This is an FDS game.
 			// TODO: Validate the FDS header?
-			return NESPrivate::ROM_TYPE_FDS_TNES;
+			return NESPrivate::ROM_FORMAT_FDS_TNES |
+			       NESPrivate::ROM_SYSTEM_FDS;
 		}
 
 		// TODO: Verify ROM size?
-		return NESPrivate::ROM_TYPE_TNES;
+		return NESPrivate::ROM_FORMAT_TNES |
+		       NESPrivate::ROM_SYSTEM_NES;
 	}
 
 	// Check for FDS.
@@ -419,7 +433,8 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
 		{
 			// This is an FDS disk image.
-			return NESPrivate::ROM_TYPE_FDS_FWNES;
+			return NESPrivate::ROM_FORMAT_FDS_FWNES |
+			       NESPrivate::ROM_SYSTEM_FDS;
 		}
 	} else {
 		// fwNES header is not present.
@@ -429,7 +444,8 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		    !memcmp(fdsHeader->magic, fds_magic, sizeof(fdsHeader->magic)))
 		{
 			// This is an FDS disk image.
-			return NESPrivate::ROM_TYPE_FDS;
+			return NESPrivate::ROM_FORMAT_FDS |
+			       NESPrivate::ROM_SYSTEM_FDS;
 		}
 	}
 
@@ -463,13 +479,9 @@ const rp_char *NES::systemName(uint32_t type) const
 		"NES::systemName() array index optimization needs to be updated.");
 
 	uint32_t idx = (type & SYSNAME_TYPE_MASK);
-	switch (d->romType) {
-		case NESPrivate::ROM_TYPE_OLD_INES:
-		case NESPrivate::ROM_TYPE_INES:
-		case NESPrivate::ROM_TYPE_NES2:
-		case NESPrivate::ROM_TYPE_TNES:
+	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
+		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			// TODO: PC10, VS System.
 			static const rp_char *const sysNames_NES[] = {
 				_RP("Nintendo Entertainment System"),
 				_RP("Nintendo Entertainment System"),
@@ -478,15 +490,31 @@ const rp_char *NES::systemName(uint32_t type) const
 			return sysNames_NES[idx];
 		}
 
-		case NESPrivate::ROM_TYPE_FDS:
-		case NESPrivate::ROM_TYPE_FDS_FWNES:
-		case NESPrivate::ROM_TYPE_FDS_TNES: {
+		case NESPrivate::ROM_SYSTEM_FDS: {
 			static const rp_char *const sysNames_FDS[] = {
 				_RP("Nintendo Famicom Disk System"),
 				_RP("Famicom Disk System"),
 				_RP("FDS"), nullptr
 			};
 			return sysNames_FDS[idx];
+		}
+
+		case NESPrivate::ROM_SYSTEM_VS: {
+			static const rp_char *const sysNames_VS[] = {
+				_RP("Nintendo VS. System"),
+				_RP("VS. System"),
+				_RP("VS"), nullptr
+			};
+			return sysNames_VS[idx];
+		}
+
+		case NESPrivate::ROM_SYSTEM_PC10: {
+			static const rp_char *const sysNames_PC10[] = {
+				_RP("Nintendo PlayChoice-10"),
+				_RP("PlayChoice-10"),
+				_RP("PC10"), nullptr
+			};
+			return sysNames_PC10[idx];
 		}
 	};
 
@@ -564,15 +592,15 @@ int NES::loadFieldData(void)
 	int tnes_mapper = -1;
 	unsigned int prg_rom_size = 0;
 	unsigned int chr_rom_size = 0;
-	switch (d->romType) {
-		case NESPrivate::ROM_TYPE_OLD_INES:
+	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
+		case NESPrivate::ROM_FORMAT_OLD_INES:
 			rom_format = _RP("Archaic iNES");
 			mapper = (d->header.ines.mapper_lo >> 4);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
 
-		case NESPrivate::ROM_TYPE_INES:
+		case NESPrivate::ROM_FORMAT_INES:
 			rom_format = _RP("iNES");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
@@ -580,7 +608,7 @@ int NES::loadFieldData(void)
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
 
-		case NESPrivate::ROM_TYPE_NES2:
+		case NESPrivate::ROM_FORMAT_NES2:
 			rom_format = _RP("NES 2.0");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0) |
@@ -592,7 +620,7 @@ int NES::loadFieldData(void)
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			break;
 
-		case NESPrivate::ROM_TYPE_TNES:
+		case NESPrivate::ROM_FORMAT_TNES:
 			rom_format = _RP("TNES (Nintendo 3DS Virtual Console)");
 			tnes_mapper = d->header.tnes.mapper;
 			mapper = NESMappers::tnesMapperToInesMapper(tnes_mapper);
@@ -602,13 +630,13 @@ int NES::loadFieldData(void)
 
 		// NOTE: FDS fields are handled later.
 		// We're just obtaining the ROM format name here.
-		case NESPrivate::ROM_TYPE_FDS:
+		case NESPrivate::ROM_FORMAT_FDS:
 			rom_format = _RP("FDS disk image");
 			break;
-		case NESPrivate::ROM_TYPE_FDS_FWNES:
+		case NESPrivate::ROM_FORMAT_FDS_FWNES:
 			rom_format = _RP("FDS disk image (with fwNES header)");
 			break;
-		case NESPrivate::ROM_TYPE_FDS_TNES:
+		case NESPrivate::ROM_FORMAT_FDS_TNES:
 			rom_format = _RP("TDS (Nintendo 3DS Virtual Console)");
 			break;
 
@@ -687,44 +715,38 @@ int NES::loadFieldData(void)
 	}
 
 	// Check for FDS fields.
-	char buf[64];
-	int len;
-	switch (d->romType) {
-		case NESPrivate::ROM_TYPE_FDS:
-		case NESPrivate::ROM_TYPE_FDS_FWNES:
-		case NESPrivate::ROM_TYPE_FDS_TNES: {
-			// Game ID.
-			// TODO: Check for invalid characters?
-			len = snprintf(buf, sizeof(buf), "%s-%.3s",
-				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
-				d->header.fds.game_id);
-			if (len > (int)sizeof(buf))
-				len = (int)sizeof(buf);
-			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
+		char buf[64];
+		int len;
 
-			// Publisher.
-			// NOTE: Verify that the FDS list matches NintendoPublishers.
-			// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
-			const rp_char* publisher =
-				NintendoPublishers::lookup_old(d->header.fds.publisher_code);
-			d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+		// Game ID.
+		// TODO: Check for invalid characters?
+		len = snprintf(buf, sizeof(buf), "%s-%.3s",
+			(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
+			d->header.fds.game_id);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
-			// Revision.
-			d->fields->addData_string_numeric(d->header.fds.revision, RomFields::FB_DEC, 2);
+		// Publisher.
+		// NOTE: Verify that the FDS list matches NintendoPublishers.
+		// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
+		const rp_char* publisher =
+			NintendoPublishers::lookup_old(d->header.fds.publisher_code);
+		d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
 
-			// Manufacturing Date.
-			int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
-			d->fields->addData_dateTime(mfr_date);
-			break;
-		}
+		// Revision.
+		d->fields->addData_string_numeric(d->header.fds.revision, RomFields::FB_DEC, 2);
 
-		default:
-			// No FDS fields.
-			d->fields->addData_invalid();	// Game ID
-			d->fields->addData_invalid();	// Publisher
-			d->fields->addData_invalid();	// Revision
-			d->fields->addData_invalid();	// Manufacturing Date
-			break;
+		// Manufacturing Date.
+		int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
+		d->fields->addData_dateTime(mfr_date);
+	} else {
+		// No FDS fields.
+		d->fields->addData_invalid();	// Game ID
+		d->fields->addData_invalid();	// Publisher
+		d->fields->addData_invalid();	// Revision
+		d->fields->addData_invalid();	// Manufacturing Date
 	}
 
 	// TODO: More fields.
