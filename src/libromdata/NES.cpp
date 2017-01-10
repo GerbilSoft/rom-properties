@@ -88,6 +88,9 @@ class NESPrivate : public RomDataPrivate
 			ROM_SYSTEM_PC10 = (3 << 8),	// PlayChoice-10
 			ROM_SYSTEM_UNKNOWN = (0xFF << 8),
 			ROM_SYSTEM_MASK = (0xFF << 8),
+
+			// Special flags. (bitfield)
+			ROM_SPECIAL_WIIU_VC = (1 << 16),	// Wii U VC (modified iNES)
 			// TODO: Other VC formats, maybe UNIF?
 		};
 		int romType;
@@ -361,8 +364,15 @@ int NES::isRomSupported_static(const DetectInfo *info)
 	const INES_RomHeader *inesHeader =
 		reinterpret_cast<const INES_RomHeader*>(info->header.pData);
 	static const uint8_t ines_magic[4] = {'N','E','S',0x1A};
-	if (!memcmp(inesHeader->magic, ines_magic, sizeof(inesHeader->magic))) {
+	if (!memcmp(inesHeader->magic, ines_magic, 3) &&
+	    (inesHeader->magic[3] == 0x1A || inesHeader->magic[3] == 0x00))
+	{
 		// Found an iNES ROM header.
+		// If the fourth byte is 0x00, it's Wii U VC.
+		int romType = (inesHeader->magic[3] == 0x00)
+				? NESPrivate::ROM_SPECIAL_WIIU_VC
+				: 0;
+
 		// Check for NES 2.0.
 		if ((inesHeader->mapper_hi & 0x0C) == 0x08) {
 			// May be NES 2.0
@@ -375,16 +385,20 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				// This is an NES 2.0 header.
 				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
 					case INES_F7_SYSTEM_VS:
-						return NESPrivate::ROM_FORMAT_NES2 |
-						       NESPrivate::ROM_SYSTEM_VS;
+						romType |= NESPrivate::ROM_FORMAT_NES2 |
+							   NESPrivate::ROM_SYSTEM_VS;
+						break;
 					case INES_F7_SYSTEM_PC10:
-						return NESPrivate::ROM_FORMAT_NES2 |
-						       NESPrivate::ROM_SYSTEM_PC10;
+						romType |= NESPrivate::ROM_FORMAT_NES2 |
+							   NESPrivate::ROM_SYSTEM_PC10;
+						break;
 					default:
 						// TODO: What if both are set?
-						return NESPrivate::ROM_FORMAT_NES2 |
-						       NESPrivate::ROM_SYSTEM_NES;
+						romType |= NESPrivate::ROM_FORMAT_NES2 |
+							   NESPrivate::ROM_SYSTEM_NES;
+						break;
 				}
+				return romType;
 			}
 		}
 
@@ -400,22 +414,27 @@ int NES::isRomSupported_static(const DetectInfo *info)
 				// Definitely iNES.
 				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
 					case INES_F7_SYSTEM_VS:
-						return NESPrivate::ROM_FORMAT_INES |
-						       NESPrivate::ROM_SYSTEM_VS;
+						romType |= NESPrivate::ROM_FORMAT_INES |
+							   NESPrivate::ROM_SYSTEM_VS;
+						break;
 					case INES_F7_SYSTEM_PC10:
-						return NESPrivate::ROM_FORMAT_INES |
-						       NESPrivate::ROM_SYSTEM_PC10;
+						romType |= NESPrivate::ROM_FORMAT_INES |
+							   NESPrivate::ROM_SYSTEM_PC10;
+						break;
 					default:
 						// TODO: What if both are set?
-						return NESPrivate::ROM_FORMAT_INES |
-						       NESPrivate::ROM_SYSTEM_NES;
+						romType |= NESPrivate::ROM_FORMAT_INES |
+							   NESPrivate::ROM_SYSTEM_NES;
+						break;
 				}
+				return romType;
 			}
 		}
 
 		// Archaic iNES format.
-		return NESPrivate::ROM_FORMAT_OLD_INES |
-		       NESPrivate::ROM_SYSTEM_NES;
+		romType |= NESPrivate::ROM_FORMAT_OLD_INES |
+			   NESPrivate::ROM_SYSTEM_NES;
+		return romType;
 	}
 
 	// Check for TNES.
@@ -691,8 +710,25 @@ int NES::loadFieldData(void)
 			break;
 	}
 
+	if (d->romType & NESPrivate::ROM_SPECIAL_WIIU_VC) {
+		// Wii U Virtual Console.
+		const int romFormat = (d->romType & NESPrivate::ROM_FORMAT_MASK);
+		assert(romFormat >= NESPrivate::ROM_FORMAT_OLD_INES);
+		assert(romFormat <= NESPrivate::ROM_FORMAT_NES2);
+		if (romFormat >= NESPrivate::ROM_FORMAT_OLD_INES &&
+		    romFormat <= NESPrivate::ROM_FORMAT_NES2)
+		{
+			rp_string str = rom_format;
+			str += _RP(" (Wii U Virtual Console)");
+			d->fields->addData_string(str);
+		} else {
+			d->fields->addData_string(rom_format);
+		}
+	} else {
+		d->fields->addData_string(rom_format);
+	}
+
 	// Display the fields.
-	d->fields->addData_string(rom_format);
 	if (!romOK) {
 		// Invalid mapper.
 		d->fields->addData_invalid();	// Mapper
