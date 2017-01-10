@@ -151,6 +151,78 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{_RP("Irem TAM-S1")},
 	{nullptr},
 	{_RP("CNROM (Vs. System)")},
+
+	// Mappers 100-109
+	{_RP("MMC3 variant (hacked ROMs)")},	// Also used for UNIF
+	{_RP("Jaleco JF-10 (misdump)")},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("Nintendo World Championships 1990")},
+	{nullptr},
+	{_RP("Magic Dragon")},
+	{nullptr},
+	{nullptr},
+
+	// Mappers 110-119
+	{nullptr},
+	{_RP("Cheapocabra GT-ROM 512k flash board")},	// Membler Industries
+	{_RP("Namcot 118 variant")},
+	{_RP("NINA-03/06 multicart")},
+	{nullptr},
+	{_RP("MMC3 clone (Carson)")},
+	{_RP("Copy-protected bootleg mapper")},
+	{nullptr},
+	{_RP("TxSROM")},
+	{_RP("TQROM")},
+
+	// Mappers 120-129
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+
+	// Mappers 130-139
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("Sachen Jovial Race")},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("Sachen 8259D")},
+	{_RP("Sachen 8259B")},
+	{_RP("Sachen 8259C")},
+
+	// Mappers 140-149
+	{_RP("Jaleco JF-11, JF-14 (GNROM variant)")},
+	{_RP("Sachen 8259A")},
+	{nullptr},
+	{_RP("Copy-protected NROM")},
+	{_RP("Death Race (Color Dreams variant)")},
+	{_RP("Sidewinder (CNROM clone)")},
+	{_RP("Galactic Crusader (NINA-06 clone)")},
+	{_RP("Sachen Challenge of the Dragon")},
+	{_RP("NINA-06 variant")},
+	{_RP("SA-0036 (CNROM clone)")},
+
+	// Mappers 150-159
+	{_RP("Sachen 74LS374N (corrected)")},
+	{_RP("VRC1 (Vs. System)")},
+	{nullptr},
+	{_RP("Bandai LZ93D50 with SRAM")},
+	{_RP("NAMCOT-3453")},
+	{_RP("MMC1A")},
+	{_RP("DIS23C01")},
+	{_RP("Datach Joint ROM System")},
+	{_RP("Tengen 800037")},
+	{_RP("Bandai LZ93D50 with 24C01")},
 };
 
 /**
@@ -160,7 +232,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
  */
 const rp_char *NESMappers::lookup_ines(int mapper)
 {
-	ASSERT_STRUCT(ms_mapperList, (100 * sizeof(NESMappers::MapperList)));
+	ASSERT_STRUCT(ms_mapperList, (160 * sizeof(NESMappers::MapperList)));
 	if (mapper < 0 || mapper >= ARRAY_SIZE(ms_mapperList)) {
 		// Mapper number is out of range.
 		return nullptr;
