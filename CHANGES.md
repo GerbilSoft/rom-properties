@@ -40,6 +40,9 @@
     packs for Nintendo DS games weren't recognized because they don't have
     the Nintendo logo data. These ROM images are now detected and marked
     as non-bootable Nintendo DS expansions.
+  * Game Boy Advance: Fixed the entry point. The value was off by 8 bytes
+    due to the way branches are handled in the ARM pipeline. The branch
+    offset is also signed, so it could be negative (though this is unlikely).
   * Nintendo DS: Fixed an issue where the first frame of animated icons was
     not selected correctly. (Example: "Four Swords Adventures".)
 
