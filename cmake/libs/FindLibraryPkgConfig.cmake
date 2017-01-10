@@ -81,6 +81,17 @@ FUNCTION(FIND_LIBRARY_PKG_CONFIG _prefix _pkgconf _include _library _target)
 			PKG_GET_VARIABLE(${_prefix}_EXTENSION_DIR ${_pkgconf} extensiondir)
 			PKG_GET_VARIABLE(${_prefix}_EXTENSIONS_DIR ${_pkgconf} extensionsdir)
 
+			# Replace hard-coded prefixes.
+			IF(NOT PC_${_prefix}_PREFIX STREQUAL CMAKE_INSTALL_PREFIX)
+				STRING(LENGTH "${PC_${_prefix}_PREFIX}" pc_LEN)
+				FOREACH(VAR EXTENSION_DIR EXTENSIONS_DIR)
+					IF(${_prefix}_${VAR})
+						STRING(SUBSTRING "${${_prefix}_${VAR}}" ${pc_LEN} -1 pc_SUB)
+						SET(${_prefix}_${VAR} "${CMAKE_INSTALL_PREFIX}${pc_SUB}")
+					ENDIF()
+				ENDFOREACH()
+			ENDIF()
+
 			# Export variables.
 			FOREACH(VAR FOUND INCLUDE_DIRS LIBRARY LIBRARIES DEFINITIONS EXTENSION_DIR EXTENSIONS_DIR VERSION)
 				SET(${_prefix}_${VAR} ${${_prefix}_${VAR}} PARENT_SCOPE)
