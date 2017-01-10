@@ -26,6 +26,10 @@ namespace LibRomData {
 
 /**
  * iNES mapper list.
+ * TODO: Add more fields:
+ * - Publisher name (separate from mapper)
+ * - Programmable mirroring
+ * - Extra VRAM for 4 screens
  */
 const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	// Mappers 0-9
@@ -99,6 +103,54 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{_RP("Multicart (unlicensed)")},
 	{_RP("Multicart (unlicensed)")},
 	{nullptr},
+
+	// Mappers 60-69
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{nullptr},
+	{_RP("Tengen RAMBO-1")},
+	{_RP("Irem H3001")},
+	{_RP("GxROM, MHROM")},
+	{_RP("Sunsoft-3")},
+	{_RP("Sunsoft-4")},
+	{_RP("Sunsoft FME-7")},
+
+	// Mappers 70-79
+	{_RP("Family Trainer")},
+	{_RP("Codemasters (UNROM clone)")},
+	{_RP("Jaleco JF-17")},
+	{_RP("Konami VRC3")},
+	{_RP("MMC3 clone")},
+	{_RP("Konami VRC1")},
+	{_RP("Namcot 108 variant")},
+	{nullptr},
+	{nullptr},
+	{_RP("NINA-03, NINA-06")},
+
+	// Mappers 80-89
+	{_RP("Taito X1-005")},
+	{nullptr},
+	{_RP("Taito X1-017")},
+	{_RP("Cony Soft")},
+	{_RP("PC-SMB2J")},
+	{_RP("Konami VRC7")},
+	{_RP("Jaleco JF-13")},
+	{nullptr},
+	{_RP("Namcot 118 variant")},
+	{_RP("Sunsoft-2 (Sunsoft-3 board)")},	
+
+	// Mappers 90-99
+	{_RP("JY Company (simple)")},
+	{nullptr},
+	{nullptr},
+	{_RP("Sunsoft-2 (Sunsoft-3R board)")},
+	{_RP("HVC-UN1ROM")},
+	{_RP("NAMCOT-3425")},
+	{_RP("Oeka Kids")},
+	{_RP("Irem TAM-S1")},
+	{nullptr},
+	{_RP("CNROM (Vs. System)")},
 };
 
 /**
@@ -108,6 +160,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
  */
 const rp_char *NESMappers::lookup_ines(int mapper)
 {
+	ASSERT_STRUCT(ms_mapperList, (100 * sizeof(NESMappers::MapperList)));
 	if (mapper < 0 || mapper >= ARRAY_SIZE(ms_mapperList)) {
 		// Mapper number is out of range.
 		return nullptr;
