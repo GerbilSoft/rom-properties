@@ -330,7 +330,13 @@ int GameBoyAdvance::loadFieldData(void)
 		case GameBoyAdvancePrivate::ROM_GBA_PASSTHRU:
 			if (romHeader->entry_point_bytes[3] == 0xEA) {
 				// Unconditional branch instruction.
-				const uint32_t entry_point = (le32_to_cpu(romHeader->entry_point) & 0xFFFFFF) << 2;
+				// NOTE: Due to pipelining, the actual branch is 2 words
+				// after the specified branch offset.
+				uint32_t entry_point = ((le32_to_cpu(romHeader->entry_point) + 2) & 0xFFFFFF) << 2;
+				// Handle signed values.
+				if (entry_point & 0x02000000) {
+					entry_point |= 0xFC000000;
+				}
 				d->fields->addData_string_numeric(entry_point, RomFields::FB_HEX, 8);
 			} else {
 				// Non-standard entry point instruction.
