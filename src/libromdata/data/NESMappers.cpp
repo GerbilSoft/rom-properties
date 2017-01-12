@@ -88,7 +88,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{_RP("MMC3 clone")},
 	{_RP("MMC3 multicart (unlicensed)")},
 	{_RP("Rumble Station")},
-	{_RP("MMC multicart (official)")},
+	{_RP("MMC3 multicart (official)")},
 	{_RP("Taito TC0690")},
 	{_RP("MMC3 multicart (unlicensed)")},
 
@@ -141,7 +141,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{_RP("Sunsoft-2 (Sunsoft-3 board)")},	
 
 	// Mappers 90-99
-	{_RP("JY Company (simple)")},
+	{_RP("JY Company (simple nametable control)")},
 	{nullptr},
 	{nullptr},
 	{_RP("Sunsoft-2 (Sunsoft-3R board)")},
@@ -158,7 +158,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{nullptr},
 	{nullptr},
 	{nullptr},
-	{_RP("Nintendo World Championships 1990")},
+	{_RP("NES-EVENT (Nintendo World Championships 1990)")},
 	{nullptr},
 	{_RP("Magic Dragon")},
 	{nullptr},
@@ -223,6 +223,122 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
 	{_RP("Datach Joint ROM System")},
 	{_RP("Tengen 800037")},
 	{_RP("Bandai LZ93D50 with 24C01")},
+
+	// Mappers 160-169
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("Nanjing")},
+	{nullptr},
+	{nullptr},
+	{_RP("SUBOR")},
+	{_RP("SUBOR")},
+	{_RP("Racermate Challenge 2")},
+	{_RP("Yuxing")},
+
+	// Mappers 170-179
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("Multicart (unlicensed)")},
+	{nullptr},
+	{_RP("WaiXing (BMCFK23C?)")},
+	{nullptr},
+	{_RP("Education / WaiXing / HengGe")},
+	{nullptr},
+
+	// Mappers 180-189
+	{_RP("Crazy Climber (UNROM clone)")},
+	{nullptr},
+	{_RP("MMC3 variant")},
+	{_RP("Suikan Pipe (VRC4e clone)")},
+	{_RP("Sunsoft-1")},
+	{_RP("CNROM with weak copy protection")},
+	{_RP("Study Box")},
+	{nullptr},
+	{_RP("Bandai Karaoke Studio")},
+	{_RP("Thunder Warrior (MMC3 clone)")},
+
+	// Mappers 190-199
+	{nullptr},
+	{_RP("MMC3 clone")},
+	{_RP("MMC3 clone")},
+	{_RP("NTDEC TC-112")},
+	{_RP("MMC3 clone")},	// same as 195 on NES 2.0
+	{_RP("MMC3 clone")},	// same as 194 on NES 2.0
+	{_RP("MMC3 clone")},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+
+	// Mappers 200-209
+	{_RP("Multicart (unlicensed)")},
+	{_RP("NROM-256 multicart (unlicensed)")},
+	{_RP("150-in-1 multicart (unlicensed)")},
+	{_RP("35-in-1 multicart (unlicensed)")},
+	{nullptr},
+	{_RP("MMC3 multicart (unlicensed)")},
+	{_RP("DxROM (Tengen MIMIC-1, Namcot 118)")},
+	{_RP("Fudou Myouou Den")},
+	{nullptr},
+	{_RP("JY Company (MMC2/MMC4 clone)")},
+
+	// Mappers 210-219
+	{_RP("Namcot 175, 340")},
+	{_RP("JY Company (extended nametable control)")},
+	{nullptr},
+	{nullptr},
+	{nullptr},
+	{_RP("MMC3 clone")},
+	{nullptr},
+	{nullptr},
+	{_RP("Magic Floor (homebrew)")},
+	{_RP("UNL A9746")},
+
+	// Mappers 220-229
+	{_RP("Summer Carnival '92 - Recca")},
+	{nullptr},
+	{_RP("CTC-31 (VRC2 + 74xx)")},
+	{nullptr},
+	{nullptr},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Active Enterprises")},
+	{_RP("BMC 31-IN-1")},
+
+	// Mappers 230-239
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Codemasters")},
+	{_RP("Multicart (unlicensed)")},
+	{_RP("Maxi 15 multicart")},
+	{nullptr},
+	{nullptr},
+	{_RP("Teletubbies 420-in-1 multicart")},
+	{nullptr},
+	{nullptr},
+
+	// Mappers 240-249
+	{_RP("Multicart (unlicensed)")},
+	{_RP("BNROM (similar to 034)")},
+	{_RP("Unlicensed")},
+	{_RP("Sachen 74LS374N")},
+	{nullptr},
+	{_RP("MMC3 clone")},
+	{_RP("Feng Shen Bang - Zhu Lu Zhi Zhan")},
+	{nullptr},
+	{_RP("Incorrect assignment (should be 115)")},
+	{nullptr},
+
+	// Mappers 250-255
+	{_RP("Nitra (MMC3 clone)")},
+	{nullptr},
+	{_RP("WaiXing - Sangokushi")},
+	{nullptr},
+	{_RP("Pikachu Y2K of crypted ROMs")},
+	{nullptr},
 };
 
 /**
@@ -232,7 +348,7 @@ const NESMappers::MapperList NESMappers::ms_mapperList[] = {
  */
 const rp_char *NESMappers::lookup_ines(int mapper)
 {
-	ASSERT_STRUCT(ms_mapperList, (160 * sizeof(NESMappers::MapperList)));
+	ASSERT_STRUCT(ms_mapperList, (256 * sizeof(NESMappers::MapperList)));
 	if (mapper < 0 || mapper >= ARRAY_SIZE(ms_mapperList)) {
 		// Mapper number is out of range.
 		return nullptr;
