@@ -54,11 +54,11 @@ class ImageDecoderPrivate
 		static inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY);
 
 		/**
-		 * Convert an RGB555 pixel to ARGB32.
-		 * @param px16 RGB555 pixel.
+		 * Convert a BGR555 pixel to ARGB32.
+		 * @param px16 BGR555 pixel.
 		 * @return ARGB32 pixel.
 		 */
-		static inline uint32_t RGB555_to_ARGB32(uint16_t px16);
+		static inline uint32_t BGR555_to_ARGB32(uint16_t px16);
 
 		/**
 		 * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
@@ -153,11 +153,11 @@ inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tile
 }
 
 /**
- * Convert an RGB555 pixel to ARGB32.
- * @param px16 RGB555 pixel.
+ * Convert a BGR555 pixel to ARGB32.
+ * @param px16 BGR555 pixel.
  * @return ARGB32 pixel.
  */
-inline uint32_t ImageDecoderPrivate::RGB555_to_ARGB32(uint16_t px16)
+inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 {
 	// NOTE: px16 has already been byteswapped.
 	uint32_t px32;
@@ -183,7 +183,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 	uint32_t px32 = 0;
 
 	if (px16 & 0x8000) {
-		// RGB555: xRRRRRGG GGGBBBBB
+		// BGR555: xRRRRRGG GGGBBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 		px32 |= (((px16 << 3) & 0x0000F8) | ((px16 >> 2) & 0x000007));	// B
 		px32 |= (((px16 << 6) & 0x00F800) | ((px16 << 1) & 0x000700));	// G
@@ -273,7 +273,7 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	img->set_tr_idx(0);
 	for (int i = 1; i < 16; i++) {
 		// NDS color format is BGR555.
-		palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 	}
 
 	// NOTE: rp_image initializes the palette to 0,
@@ -665,7 +665,7 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 
 	int tr_idx = -1;
 	for (int i = 0; i < 16; i++) {
-		// PS1 color format is RGB555.
+		// PS1 color format is BGR555.
 		// NOTE: If the color value is $0000, it's transparent.
 		const uint16_t px16 = le16_to_cpu(pal_buf[i]);
 		if (px16 == 0) {
@@ -676,7 +676,7 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 			}
 		} else {
 			// Non-transparent color.
-			palette[i] = ImageDecoderPrivate::RGB555_to_ARGB32(px16);
+			palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(px16);
 		}
 	}
 	img->set_tr_idx(tr_idx);
