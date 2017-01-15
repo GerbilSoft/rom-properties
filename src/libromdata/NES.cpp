@@ -155,6 +155,7 @@ const struct RomFields::Desc NESPrivate::nes_fields[] = {
 	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Mirroring"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("VS. PPU"), RomFields::RFT_STRING, {nullptr}},
 
 	// FDS-specific fields.
 	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
@@ -736,6 +737,13 @@ int NES::loadFieldData(void)
 		d->fields->addData_invalid();	// TNES Mapper
 		d->fields->addData_invalid();	// PRG ROM Size
 		d->fields->addData_invalid();	// CHR ROM Size
+		d->fields->addData_invalid();	// Mirroring
+		d->fields->addData_invalid();	// VS. PPU
+		// FDS fields
+		d->fields->addData_invalid();	// Game ID
+		d->fields->addData_invalid();	// Publisher
+		d->fields->addData_invalid();	// Revision
+		d->fields->addData_invalid();	// Manufacturing Date
 		return (int)d->fields->count();
 	}
 
@@ -799,6 +807,7 @@ int NES::loadFieldData(void)
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
 		// Ignore fields that aren't valid for FDS.
 		d->fields->addData_invalid();	// Mirroring
+		d->fields->addData_invalid();	// VS. PPU
 
 		char buf[64];
 		int len;
@@ -828,12 +837,13 @@ int NES::loadFieldData(void)
 	} else {
 		// Add non-FDS fields.
 
-		// Mirroring.
 		const rp_char *mirroring = nullptr;
+		const rp_char *vs_ppu = nullptr;
 		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 			case NESPrivate::ROM_FORMAT_OLD_INES:
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
+				// Mirroring.
 				// TODO: Detect mappers that have programmable mirroring.
 				// TODO: Also One Screen, e.g. AxROM.
 				if (d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR) {
@@ -847,9 +857,29 @@ int NES::loadFieldData(void)
 						mirroring = _RP("Horizontal");
 					}
 				}
+
+				if ((d->romType & (NESPrivate::ROM_FORMAT_MASK | NESPrivate::ROM_SYSTEM_MASK)) ==
+				    (NESPrivate::ROM_FORMAT_NES2 | NESPrivate::ROM_SYSTEM_VS))
+				{
+					// Check the VS. PPU type.
+					static const rp_char *vs_ppu_types[16] = {
+						_RP("RP2C03B"), _RP("RP2C03G"),
+						_RP("RP2C04-0001"), _RP("RP2C04-0002"),
+						_RP("RP2C04-0003"), _RP("RP2C04-0004"),
+						_RP("RP2C03B"), _RP("RP2C03C"),
+						_RP("RP2C05-01"), _RP("RP2C05-02"),
+						_RP("RP2C05-03"), _RP("RP2C05-04"),
+						_RP("RP2C05-05"), nullptr,
+						nullptr, nullptr
+					};
+					vs_ppu = vs_ppu_types[d->header.ines.nes2.vs_hw & 0x0F];
+
+					// TODO: VS. copy protection hardware?
+				}
 				break;
 
 			case NESPrivate::ROM_FORMAT_TNES:
+				// Mirroring.
 				switch (d->header.tnes.mirroring) {
 					case TNES_MIRRORING_PROGRAMMABLE:
 						// For all mappers except AxROM, this is programmable.
@@ -880,6 +910,13 @@ int NES::loadFieldData(void)
 			d->fields->addData_string(mirroring);
 		} else {
 			// No mirroring data.
+			d->fields->addData_invalid();
+		}
+
+		if (vs_ppu) {
+			d->fields->addData_string(vs_ppu);
+		} else {
+			// No VS. PPU.
 			d->fields->addData_invalid();
 		}
 

@@ -68,7 +68,7 @@ typedef struct PACKED _INES_RomHeader {
 			uint8_t prg_ram_size;	// logarithmic
 			uint8_t vram_size;	// logarithmic
 			uint8_t tv_mode;	// 12
-			uint8_t vs_ppu_variant;
+			uint8_t vs_hw;
 		} nes2;
 	};
 
