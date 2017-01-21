@@ -76,10 +76,12 @@ SET(libromdata_SRCS
 	PlayStationSave.cpp
 	VirtualBoy.cpp
 	Amiibo.cpp
+	NES.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
 	data/WiiSystemMenuVersion.cpp
+	data/NESMappers.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	img/rp_image.cpp
@@ -136,10 +138,12 @@ SET(libromdata_H
 	dc_structs.h
 	vb_structs.h
 	nfp_structs.h
+	nes_structs.h
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
 	data/WiiSystemMenuVersion.hpp
+	data/NESMappers.hpp
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -165,6 +169,7 @@ SET(libromdata_H
 	disc/IFst.hpp
 	disc/GcnFst.hpp
 	disc/PartitionFile.hpp
+	NES.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

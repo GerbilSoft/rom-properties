@@ -1,8 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * MegaDrivePublishers.hpp: Sega Mega Drive third-party publishers list.   *
+ * NESMappers.hpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2017 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -18,51 +19,39 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
+ 
+#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
-
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
 
 namespace LibRomData {
 
-class MegaDrivePublishers
+class NESMappers
 {
 	private:
-		MegaDrivePublishers();
-		~MegaDrivePublishers();
+		NESMappers();
+		~NESMappers();
 	private:
-		MegaDrivePublishers(const MegaDrivePublishers &);
-		MegaDrivePublishers &operator=(const MegaDrivePublishers &);
-
-	private:
-		/**
-		 * Sega Mega Drive third-party publisher list.
-		 * Reference: http://segaretro.org/Third-party_T-series_codes
-		 */
-		struct ThirdPartyList {
-			unsigned int t_code;
-			const rp_char *publisher;
-		};
-		static const ThirdPartyList ms_thirdPartyList[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int compar(const void *a, const void *b);
+		NESMappers(const NESMappers &);
+		NESMappers &operator=(const NESMappers &);
 
 	public:
 		/**
-		 * Look up a company code.
-		 * @param code Company code.
-		 * @return Publisher, or nullptr if not found.
+		 * Look up an iNES mapper number.
+		 * @param mapper Mapper number.
+		 * @return Mapper name, or nullptr if not found.
 		 */
-		static const rp_char *lookup(unsigned int code);
+		static const rp_char *lookup_ines(int mapper);
+
+		/**
+		 * Convert a TNES mapper number to iNES.
+		 * @param tnes_mapper TNES mapper number.
+		 * @return iNES mapper number, or -1 if unknown.
+		 */
+		static int tnesMapperToInesMapper(int tnes_mapper);
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_NESMAPPERS_HPP__ */

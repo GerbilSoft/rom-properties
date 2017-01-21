@@ -1002,6 +1002,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 
 	// Create a grid of checkboxes.
 	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+	assert(bitfieldDesc != nullptr);
 
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
@@ -1132,6 +1133,7 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
 	// Insert columns.
 	// TODO: Make sure there aren't any columns to start with?
 	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+	assert(listDataDesc != nullptr);
 	const int count = listDataDesc->count;
 	for (int i = 0; i < count; i++) {
 		LVCOLUMN lvColumn;
@@ -1212,8 +1214,14 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	if (!desc->name || desc->name[0] == '\0')
 		return 0;
 
+	if (data->date_time == -1) {
+		// Invalid date/time.
+		return initString(hDlg, pt_start, idx, size, L"Unknown");
+	}
+
 	// Format the date/time using the system locale.
 	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+	assert(dateTimeDesc != nullptr);
 	wchar_t dateTimeStr[256];
 	int start_pos = 0;
 	int cchBuf = ARRAY_SIZE(dateTimeStr);

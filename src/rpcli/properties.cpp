@@ -128,20 +128,22 @@ public:
 		auto desc = field.desc;
 		auto data = field.data;
 
-		int perRow = desc->bitfield->elemsPerRow ? desc->bitfield->elemsPerRow : 4;
+		auto bitfieldDesc = desc->bitfield;
+		assert(bitfieldDesc != nullptr);
+		int perRow = bitfieldDesc->elemsPerRow ? bitfieldDesc->elemsPerRow : 4;
 
 		unique_ptr<size_t[]> colSize(new size_t[perRow]());
-		for (int i = 0; i < desc->bitfield->elements; i++) {
-			colSize[i%perRow] = max(rp_strlen(desc->bitfield->names[i]), colSize[i%perRow]);
+		for (int i = 0; i < bitfieldDesc->elements; i++) {
+			colSize[i%perRow] = max(rp_strlen(bitfieldDesc->names[i]), colSize[i%perRow]);
 		}
 
 		os << ColonPad(field.width, desc->name);
 		StreamStateSaver state(os);
 		os << left;
-		for (int i = 0; i < desc->bitfield->elements; i++) {
+		for (int i = 0; i < bitfieldDesc->elements; i++) {
 			if (i && i%perRow == 0) os << endl << Pad(field.width);
 			os << " [" << ((data->bitfield & (1 << i)) ? '*' : ' ') << "] " <<
-				setw(colSize[i%perRow]) << desc->bitfield->names[i];
+				setw(colSize[i%perRow]) << bitfieldDesc->names[i];
 		}
 		return os;
 	}
@@ -157,10 +159,13 @@ public:
 		auto desc = field.desc;
 		auto data = field.data;
 
-		unique_ptr<size_t[]> colSize(new size_t[desc->list_data->count]());
-		size_t totalWidth = desc->list_data->count + 1;
-		for (int i = 0; i < desc->list_data->count; i++) {
-			colSize[i] = rp_strlen(desc->list_data->names[i]);
+		auto listDataDesc = desc->list_data;
+		assert(listDataDesc != nullptr);
+
+		unique_ptr<size_t[]> colSize(new size_t[listDataDesc->count]());
+		size_t totalWidth = listDataDesc->count + 1;
+		for (int i = 0; i < listDataDesc->count; i++) {
+			colSize[i] = rp_strlen(listDataDesc->names[i]);
 		}
 		for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
 			int i = 0;
@@ -172,9 +177,9 @@ public:
 
 		os << ColonPad(field.width, desc->name);
 		StreamStateSaver state(os);
-		for (int i = 0; i < desc->list_data->count; i++) {
+		for (int i = 0; i < listDataDesc->count; i++) {
 			totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-			os << "|" << setw(colSize[i]) << desc->list_data->names[i];
+			os << "|" << setw(colSize[i]) << listDataDesc->names[i];
 		}
 		os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
 		for (auto it = data->list_data->data.begin(); it != data->list_data->data.end(); ++it) {
@@ -199,11 +204,17 @@ public:
 		auto desc = field.desc;
 		auto data = field.data;
 
-		assert(desc->date_time);
+		assert(desc->date_time != nullptr);
 		auto flags = desc->date_time->flags;
 
 		os << ColonPad(field.width, desc->name);
 		StreamStateSaver state(os);
+
+		if (data->date_time == -1) {
+			// Invalid date/time.
+			os << "Unknown";
+			return os;
+		}
 
 		// FIXME: This may result in truncated times on 32-bit Linux.
 		struct tm timestamp;

@@ -50,6 +50,7 @@ using std::vector;
 #include "DreamcastSave.hpp"
 #include "PlayStationSave.hpp"
 #include "Amiibo.hpp"
+#include "NES.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -124,6 +125,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(DreamcastSave, true),
 	GetRomDataFns(PlayStationSave, true),
 	GetRomDataFns(Amiibo, true),
+	GetRomDataFns(NES, false),
 	{nullptr, nullptr, nullptr, false}
 };
 

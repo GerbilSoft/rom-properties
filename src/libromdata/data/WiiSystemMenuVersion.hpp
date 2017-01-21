@@ -49,7 +49,7 @@ class WiiSystemMenuVersion
 		};
 		static const SysVersionList ms_sysVersionList[];
 
-	public:
+	private:
 		/**
 		 * Comparison function for bsearch().
 		 * @param a
@@ -58,6 +58,7 @@ class WiiSystemMenuVersion
 		 */
 		static int compar(const void *a, const void *b);
 
+	public:
 		/**
 		 * Look up a Wii System Menu version.
 		 * @param version Version number.

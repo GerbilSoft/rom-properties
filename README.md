@@ -91,19 +91,20 @@ Notes:
 
 ## Current ROM Feature Support Level
 
-|           System          | Properties Tab | Internal Images | External Scans |
-|:-------------------------:|:--------------:|:---------------:|:--------------:|
-| Sega Mega Drive           |       Yes      |       N/A       |       No       |
-| Sega Dreamcast Saves      |       Yes      |   Icon, Banner  |       No       |
-| Nintendo DS(i)            |       Yes      |       Icon      |       No       |
-| Nintendo GameCube         |       Yes      |      Banner     |      Disc      |
-| Nintendo GameCube Saves   |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii              |       Yes      |        No       |      Disc      |
-| Nintendo Game Boy (Color) |       Yes      |       N/A       |       No       |
-| Nintendo Game Boy Advance |       Yes      |       N/A       |       No       |
-| Nintendo Virtual Boy      |       Yes      |       N/A       |       No       |
-| Sony PlayStation Saves    |       Yes      |       Icon      |       N/A      |
-| Nintendo amiibo           |       Yes      |        No       |      Media     |
+|             System            | Properties Tab | Internal Images | External Scans |
+|:-----------------------------:|:--------------:|:---------------:|:--------------:|
+| Sega Mega Drive               |       Yes      |       N/A       |       No       |
+| Sega Dreamcast Saves          |       Yes      |   Icon, Banner  |       No       |
+| Nintendo DS(i)                |       Yes      |       Icon      |       No       |
+| Nintendo GameCube             |       Yes      |      Banner     |      Disc      |
+| Nintendo GameCube Saves       |       Yes      |       Icon      |       N/A      |
+| Nintendo Wii                  |       Yes      |        No       |      Disc      |
+| Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
+| Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
+| Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
+| Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
+| Nintendo amiibo               |       Yes      |        No       |      Media     |
+| Nintendo Entertainment System |       Yes      |       N/A       |       No
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -135,6 +136,8 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
+* Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds),
+  3DS Virtual Console dumps (\*.tds)
 
 Some file types are not currently registered on Windows due to conflicts with
 well-known file types, e.g. \*.bin, \*.iso, and \*.mb.

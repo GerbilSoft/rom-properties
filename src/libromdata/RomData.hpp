@@ -204,8 +204,14 @@ class RomData
 
 		enum FileType {
 			FTYPE_UNKNOWN = 0,
+
+			// ROM image.
 			FTYPE_ROM_IMAGE,
+
+			// Optical disc image.
 			FTYPE_DISC_IMAGE,
+
+			// Save file.
 			FTYPE_SAVE_FILE,
 
 			// "Embedded" disc image.
@@ -217,6 +223,9 @@ class RomData
 
 			// NFC dump, e.g. amiibo.
 			FTYPE_NFC_DUMP,
+
+			// Floppy and/or hard disk image.
+			FTYPE_DISK_IMAGE,
 
 			// End of FileType.
 			FTYPE_LAST

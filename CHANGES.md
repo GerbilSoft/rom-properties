@@ -28,6 +28,8 @@
   * Nintendo Virtual Boy ROM images: .VB format.
   * Nintendo amiibo NFC dumps: 540-byte .bin files. (On Windows, the .bin
     extension is not currently registered; alternatives are .nfc and .nfp)
+  * Nintendo Entertainment System: iNES, FDS, and TNES/TDS (3DS Virtual
+    Console) formats are supported.
 
 * Changes to existing systems:
   * GameCube: Fixed accidental swapping of Triforce and Wii system names.

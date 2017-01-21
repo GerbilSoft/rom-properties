@@ -145,7 +145,11 @@ class RomFields
 				const rp_char *str;	// String data.
 				uint32_t bitfield;	// Bitfield.
 				ListData *list_data;	// ListData
-				int64_t date_time;	// Date/Time. (UNIX format)
+
+				// Date/Time. (UNIX format)
+				// NOTE: -1 is used to indicate
+				// an invalid date/time.
+				int64_t date_time;
 			};
 		};
 

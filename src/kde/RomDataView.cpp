@@ -532,6 +532,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			case RomFields::RFT_BITFIELD: {
 				// Bitfield type. Create a grid of checkboxes.
 				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+				assert(bitfieldDesc != nullptr);
 				QGridLayout *gridLayout = new QGridLayout();
 				int row = 0, col = 0;
 				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
@@ -566,6 +567,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			case RomFields::RFT_LISTDATA: {
 				// ListData type. Create a QTreeWidget.
 				const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+				assert(listDataDesc != nullptr);
 				QTreeWidget *treeWidget = new QTreeWidget(q);
 				treeWidget->setRootIsDecorated(false);
 				treeWidget->setUniformRowHeights(true);
@@ -610,11 +612,19 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			case RomFields::RFT_DATETIME: {
 				// Date/Time.
 				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+				assert(dateTimeDesc != nullptr);
 
 				QLabel *lblDateTime = new QLabel(q);
 				lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 				lblDateTime->setTextFormat(Qt::PlainText);
 				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+
+				if (data->date_time == -1) {
+					// Invalid date/time.
+					lblDateTime->setText(RomDataView::tr("Unknown"));
+					ui.formLayout->addRow(lblDesc, lblDateTime);
+					break;
+				}
 
 				QDateTime dateTime;
 				dateTime.setTimeSpec(
