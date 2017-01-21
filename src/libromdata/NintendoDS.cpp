@@ -628,6 +628,7 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".nds"),
+		_RP(".dsi"),
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
