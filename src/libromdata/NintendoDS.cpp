@@ -225,20 +225,23 @@ int NintendoDSPrivate::loadIconTitleData(void)
 		return -EIO;
 	}
 
-	// NOTE: Not using exact versions here, just in case...
-	unsigned int req_size = offsetof(NDS_IconTitleData, title);
-	const uint16_t version = le16_to_cpu(nds_icon_title.version);
-	if (version >= NDS_ICON_VERSION_ZH_KO) {
-		// Up to 8 titles.
-		// (Includes NDS_ICON_VERSION_DSi.)
-		req_size += sizeof(nds_icon_title.title[0]) * 8;
-	} else if (version >= NDS_ICON_VERSION_ZH) {
-		// Up to 7 titles.
-		req_size += sizeof(nds_icon_title.title[0]) * 7;
-	} else {
-		// Up to 6 titles.
-		// (Includes NDS_ICON_VERSION_ORIGINAL.)
-		req_size += sizeof(nds_icon_title.title[0]) * 6;
+	unsigned int req_size;
+	switch (nds_icon_title.version) {
+		case NDS_ICON_VERSION_ORIGINAL:
+			req_size = NDS_ICON_SIZE_ORIGINAL;
+			break;
+		case NDS_ICON_VERSION_ZH:
+			req_size = NDS_ICON_SIZE_ZH;
+			break;
+		case NDS_ICON_VERSION_ZH_KO:
+			req_size = NDS_ICON_SIZE_ZH_KO;
+			break;
+		case NDS_ICON_VERSION_DSi:
+			req_size = NDS_ICON_SIZE_DSi;
+			break;
+		default:
+			// Invalid version number.
+			return -EIO;
 	}
 
 	if (size < req_size) {
