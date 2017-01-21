@@ -79,14 +79,6 @@ class NintendoDSPrivate : public RomDataPrivate
 		static const RomFields::BitfieldDesc nds_region_bitfield;
 
 		// DSi region. (RFT_BITFIELD)
-		enum DSi_Region {
-			DSi_REGION_JAPAN	= (1 << 0),
-			DSi_REGION_USA		= (1 << 1),
-			DSi_REGION_EUROPE	= (1 << 2),
-			DSi_REGION_AUSTRALIA	= (1 << 3),
-			DSi_REGION_CHINA	= (1 << 4),
-			DSi_REGION_SKOREA	= (1 << 5),
-		};
 		static const rp_char *const dsi_region_bitfield_names[];
 		static const RomFields::BitfieldDesc dsi_region_bitfield;
 
@@ -596,7 +588,7 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
 		// DSi-exclusive game.
 		idx |= (1 << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((d->romHeader.dsi_region & NintendoDSPrivate::DSi_REGION_CHINA) ||
+			if ((d->romHeader.dsi.region_code & DSi_REGION_CHINA) ||
 			    (d->romHeader.nds_region & 0x80))
 			{
 				// iQue DSi.
@@ -751,11 +743,11 @@ int NintendoDS::loadFieldData(void)
 
 		// DSi Region.
 		// Maps directly to the header field.
-		d->fields->addData_bitfield(romHeader->dsi_region);
+		d->fields->addData_bitfield(romHeader->dsi.region_code);
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
-		switch (romHeader->dsi_filetype) {
+		switch (romHeader->dsi.filetype) {
 			case DSi_FTYPE_CARTRIDGE:
 				filetype = _RP("Cartridge");
 				break;
@@ -783,7 +775,7 @@ int NintendoDS::loadFieldData(void)
 		} else {
 			// Invalid file type.
 			char buf[24];
-			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi_filetype);
+			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi.filetype);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
 			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));

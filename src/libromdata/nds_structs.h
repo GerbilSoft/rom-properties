@@ -118,38 +118,104 @@ typedef struct PACKED _NDS_RomHeader {
 	uint8_t reserved5[0x10];
 
 	/** DSi-specific **/
+	struct {
+		// 0x180 [memory settings]
+		uint32_t global_mbk[5];		// Global MBK1..MBK5 settings.
+		uint32_t arm9_mbk[3];		// Local ARM9 MBK6..MBK8 settings.
+		uint32_t arm7_mbk[3];		// Local ARM7 MBK6..MBK8 settings.
+		uint8_t arm9_mbk9_master[3];	// Global MBK9 setting, WRAM slot master.
+		uint8_t unknown;		// Usually 0x03, but System Menu has 0xFC, System Settings has 0x00.
 
-	// 0x180 [memory settings] [TODO]
-	uint32_t dsi_mbk[12];
+		// 0x1B0
+		uint32_t region_code;		// DSi region code. (See DSi_Region.)
+		uint32_t access_control;	// ???
+		uint32_t arm7_scfg_mask;
+		uint8_t reserved1[3];		// Unknown flags. (always 0)
+		uint8_t flags;			// Usually 0x01. (Browser: 0x0B) (bit 2: custom icon: 0=normal, 1=banner.sav)
 
-	// 0x1B0
-	uint32_t dsi_region;	// DSi region flags.
+		// 0x1C0
+		struct {
+			uint32_t rom_offset;	// Usually 0xXX03000h, where XX is the 1MB boundary after the NDS area.
+			uint32_t reserved;	// Zero-filled.
+			uint32_t load_address;
+			uint32_t size;
+		} arm9i;
+		struct {
+			uint32_t rom_offset;
+			uint32_t param_addr;	// Pointer to base address where structures are passed to the title.
+			uint32_t load_address;
+			uint32_t size;
+		} arm7i;
 
-	// 0x1B4 [TODO]
-	uint8_t dsi_reserved1[124];
+		// 0x1E0 [digest offsets]
+		struct {
+			uint32_t ntr_region_offset;	// Usually the same as ARM9 rom_offset, 0x0004000
+			uint32_t ntr_region_length;
+			uint32_t twl_region_offset;	// Usually the same as ARM9i rom_offset, 0xXX03000
+			uint32_t twl_region_length;
+			uint32_t sector_hashtable_offset;	// SHA1 HMACs on all sectors
+			uint32_t sector_hashtable_length;	// in the above NTR+TWL regions.
+			uint32_t block_hashtable_offset;	// SHA1 HMACs on each N entries
+			uint32_t block_hashtable_length;	// in the above Sector Hashtable.
+			uint32_t sector_size;			// e.g. 0x400 bytes per sector
+			uint32_t block_sector_count;		// e.g. 0x20 sectors per block
+		} digest;
 
-	// 0x230
-	uint32_t dsi_title_id;
-	uint8_t dsi_filetype;		// See DSi_FILETYPE.
-	uint8_t dsi_reserved2[3];	// 0x00, 0x03, 0x00
+		// 0x208
+		uint32_t icon_title_size;	// Size of icon/title. (usually 0x23C0)
+		uint32_t reserved2;		// 00 00 01 00
+		uint32_t total_used_rom_size;	// *INCLUDING* DSi area
+		uint32_t reserved3[3];		// 00 00 00 00; 84 D0 04 00; 2C 05 00 00
 
-	// 0x238
-	uint32_t dsi_sd_public_sav_size;
-	uint32_t dsi_sd_private_sav_size;
+		// 0x220
+		uint32_t modcrypt1_offset;	// Usually the same as ARM9i rom_offset, 0xXX03000
+		uint32_t modcrypt1_size;	// Usually min(0x4000, ARM9i ((size + 0x0F) & ~0x0F))
+		uint32_t modcrypt2_offset;	// 0 for none
+		uint32_t modcrypt2_size;	// 0 for none
 
-	// 0x240
-	uint8_t dsi_reserved3[176];
+		// 0x230
+		uint32_t title_id;		// Title ID low. (reversed game ID)
+		uint8_t filetype;		// See DSi_FileType.
+		uint8_t reserved4[3];		// 00 03 00
 
-	// 0x2F0
-	uint8_t age_ratings[0x10];	// Age ratings. [TODO]
+		// 0x238
+		uint32_t sd_public_sav_size;
+		uint32_t sd_private_sav_size;
 
-	// 0x300
-	// TODO: More DSi header entries.
-	// Reference: http://problemkaputt.de/gbatek.htm#dsicartridgeheader
-	uint8_t dsi_reserved_end[3328];
+		// 0x240
+		uint8_t reserved5[176];		// Zero-filled
+
+		// 0x2F0
+		uint8_t age_ratings[0x10];	// Age ratings. [TODO]
+
+		// 0x300
+		uint8_t sha1_hmac_arm9[20];	// SHA1 HMAC of ARM9 (with encrypted secure area)
+		uint8_t sha1_hmac_arm7[20];	// SHA1 HMAC of ARM7
+		uint8_t sha1_hmac_digest_master[20];
+		uint8_t sha1_hmac_icon_title[20];
+		uint8_t sha1_hmac_arm9i[20];	// decrypted
+		uint8_t sha1_hmac_arm7i[20];	// decrypted
+		uint8_t reserved6[40];
+		uint8_t sha1_hmac_arm9_nosecure[20];	// SHA1 HMAC of ARM9 without 16 KB secure area
+		uint8_t reserved7[2636];
+		uint8_t debug_args[0x180];	// Zero and unchecked on retail; used for arguments on debug.
+		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
+	} dsi;
 } NDS_RomHeader;
 #pragma pack()
 ASSERT_STRUCT(NDS_RomHeader, 4096);
+
+/**
+ * Nintendo DSi region code.
+ */
+typedef enum {
+	DSi_REGION_JAPAN	= (1 << 0),
+	DSi_REGION_USA		= (1 << 1),
+	DSi_REGION_EUROPE	= (1 << 2),
+	DSi_REGION_AUSTRALIA	= (1 << 3),
+	DSi_REGION_CHINA	= (1 << 4),
+	DSi_REGION_SKOREA	= (1 << 5),
+} DSi_Region;
 
 /**
  * Nintendo DSi file type.
@@ -161,22 +227,23 @@ typedef enum {
 	DSi_FTYPE_NONEXEC_DATA		= 0x0F,
 	DSi_FTYPE_SYSTEM_BASE_TOOL	= 0x15,
 	DSi_FTYPE_SYSTEM_MENU		= 0x17,
-} DSi_FILETYPE;
+} DSi_FileType;
 
 // NDS_IconTitleData version.
 typedef enum {
-	// Original icon version.
-	NDS_ICON_VERSION_ORIGINAL	= 0x0001,
-
-	// Added Chinese title.
-	NDS_ICON_VERSION_ZH		= 0x0002,
-
-	// Added Korean title.
-	NDS_ICON_VERSION_ZH_KO		= 0x0003,
-
-	// Added DSi animated icon.
-	NDS_ICON_VERSION_DSi		= 0x0103,
+	NDS_ICON_VERSION_ORIGINAL	= 0x0001,	// Original
+	NDS_ICON_VERSION_ZH		= 0x0002,	// +ZHCN
+	NDS_ICON_VERSION_ZH_KO		= 0x0003,	// +KO
+	NDS_ICON_VERSION_DSi		= 0x0103,	// +DSi
 } NDS_IconTitleData_Version;
+
+// NDS_IconTitleData sizes.
+typedef enum {
+	NDS_ICON_SIZE_ORIGINAL		= 0x0840,	// Original
+	NDS_ICON_SIZE_ZH		= 0x0940,	// +ZHCN
+	NDS_ICON_SIZE_ZH_KO		= 0x0A40,	// +KO
+	NDS_ICON_SIZE_DSi		= 0x23C0,	// +DSi
+} NDS_IconTitleData_Size;
 
 // Icon/title languages.
 typedef enum {
