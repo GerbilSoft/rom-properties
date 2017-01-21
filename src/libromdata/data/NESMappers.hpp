@@ -36,17 +36,6 @@ class NESMappers
 		NESMappers(const NESMappers &);
 		NESMappers &operator=(const NESMappers &);
 
-	private:
-		/**
-		 * iNES mapper list.
-		 */
-		struct MapperList {
-			const rp_char *name;
-			// TODO: Add manufacturers.
-			//const rp_char *manufacturer;
-		};
-		static const MapperList ms_mapperList[];
-
 	public:
 		/**
 		 * Look up an iNES mapper number.

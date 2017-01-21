@@ -836,7 +836,6 @@ int NES::loadFieldData(void)
 		d->fields->addData_dateTime(mfr_date);
 	} else {
 		// Add non-FDS fields.
-
 		const rp_char *mirroring = nullptr;
 		const rp_char *vs_ppu = nullptr;
 		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
