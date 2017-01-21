@@ -1,9 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
  * config.libromdata.h.in: Version information. (source file)              *
- * MegaDrive.hpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -29,5 +28,17 @@
 #define RP_VERSION_PATCH @VERSION_PATCH@
 #define RP_VERSION_DEVEL @VERSION_DEVEL@
 #define RP_VERSION_STRING "@VERSION_STRING@"
+
+/* Package dscription. */
+#define RP_DESCRIPTION "@DESCRIPTION@"
+
+/* Package name. */
+#define RP_PACKAGE_NAME "@PACKAGE_NAME@"
+
+/* Author. */
+#define RP_AUTHOR "@AUTHOR@"
+
+/* Installation prefix. */
+#define CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
 #endif /* __ROMPROPERTIES_CONFIG_VERSION_H__ */
