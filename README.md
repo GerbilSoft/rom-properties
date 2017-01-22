@@ -136,7 +136,7 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
-* Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds),
+* Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
   3DS Virtual Console dumps (\*.tds)
 
 Some file types are not currently registered on Windows due to conflicts with
