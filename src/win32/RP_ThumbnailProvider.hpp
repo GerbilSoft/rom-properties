@@ -51,8 +51,14 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 	public:
 		RP_ThumbnailProvider();
 		virtual ~RP_ThumbnailProvider();
+
 	private:
 		typedef RP_ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+		RP_ThumbnailProvider(const RP_ThumbnailProvider &other);
+		RP_ThumbnailProvider &operator=(const RP_ThumbnailProvider &other);
+	private:
+		friend class RP_ThumbnailProvider_Private;
+		RP_ThumbnailProvider_Private *const d_ptr;
 
 	public:
 		// IUnknown

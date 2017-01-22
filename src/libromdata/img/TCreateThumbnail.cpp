@@ -147,7 +147,7 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 	bool useHeight = (rw <= tgt_size.width);
 
 	if (useHeight) {
-		rs_size.width = rw;
+		rs_size.width = (int)rw;
 		rs_size.height = tgt_size.height;
 	} else {
 		rs_size.height = (int)(((int64_t)tgt_size.width * (int64_t)rs_size.height) / (int64_t)rs_size.width);
@@ -239,6 +239,30 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 
 	// Image retrieved successfully.
 	return RPCT_SUCCESS;
+}
+
+/**
+ * Create a thumbnail for the specified ROM file.
+ * @param file		[in] Open IRpFile object.
+ * @param max_size	[in] Maximum image size.
+ * @param ret_img	[out] Return image.
+ * @return 0 on success; non-zero on error.
+ */
+template<typename ImgClass>
+int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int max_size, ImgClass &ret_img)
+{
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	RomData *romData = RomDataFactory::getInstance(file, true);
+	if (!romData) {
+		// ROM is not supported.
+		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+	}
+
+	// Call the actual function.
+	int ret = getThumbnail(romData, max_size, ret_img);
+	romData->unref();
+	return ret;
 }
 
 /**

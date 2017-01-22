@@ -26,6 +26,7 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
+#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
@@ -33,6 +34,10 @@
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
+
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
@@ -52,12 +57,168 @@ using std::wstring;
 const CLSID CLSID_RP_ThumbnailProvider =
 	{0x4723df58, 0x463e, 0x4590, {0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a}};
 
+/** RP_ExtractIcon_Private **/
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define RP_ThumbnailProviderPrivate RP_ThumbnailProvider_Private
+
+class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
+{
+	public:
+		RP_ThumbnailProvider_Private() { }
+
+	private:
+		typedef TCreateThumbnail<HBITMAP> super;
+		RP_ThumbnailProvider_Private(const RP_ThumbnailProvider &other);
+		RP_ThumbnailProvider_Private &operator=(const RP_ThumbnailProvider &other);
+
+	public:
+		/** TCreateThumbnail functions. **/
+
+		/**
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
+		 */
+		virtual HBITMAP rpImageToImgClass(const rp_image *img) const final;
+
+		/**
+		 * Wrapper function to check if an ImgClass is valid.
+		 * @param imgClass ImgClass
+		 * @return True if valid; false if not.
+		 */
+		virtual bool isImgClassValid(const HBITMAP &imgClass) const final;
+
+		/**
+		 * Wrapper function to get a "null" ImgClass.
+		 * @return "Null" ImgClass.
+		 */
+		virtual HBITMAP getNullImgClass(void) const final;
+
+		/**
+		 * Free an ImgClass object.
+		 * This may be no-op for e.g. HBITMAP.
+		 * @param imgClass ImgClass object.
+		 */
+		virtual void freeImgClass(const HBITMAP &imgClass) const final;
+
+		/**
+		 * Get an ImgClass's size.
+		 * @param imgClass ImgClass object.
+		 * @retrun Size.
+		 */
+		virtual ImgSize getImgSize(const HBITMAP &imgClass) const final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
+
+		/**
+		 * Get the proxy for the specified URL.
+		 * @return Proxy, or empty string if no proxy is needed.
+		 */
+		virtual rp_string proxyForUrl(const rp_string &url) const final;
+};
+
+/** RP_ThumbnailProvider_Private **/
+
+/**
+ * Wrapper function to convert rp_image* to ImgClass.
+ * @param img rp_image
+ * @return ImgClass.
+ */
+HBITMAP RP_ThumbnailProvider_Private::rpImageToImgClass(const rp_image *img) const
+{
+	return RpImageWin32::toHBITMAP_alpha(img);
+}
+
+/**
+ * Wrapper function to check if an ImgClass is valid.
+ * @param imgClass ImgClass
+ * @return True if valid; false if not.
+ */
+bool RP_ThumbnailProvider_Private::isImgClassValid(const HBITMAP &imgClass) const
+{
+	return (imgClass != nullptr);
+}
+
+/**
+ * Wrapper function to get a "null" ImgClass.
+ * @return "Null" ImgClass.
+ */
+HBITMAP RP_ThumbnailProvider_Private::getNullImgClass(void) const
+{
+	return nullptr;
+}
+
+/**
+ * Free an ImgClass object.
+ * This may be no-op for e.g. HBITMAP.
+ * @param imgClass ImgClass object.
+ */
+void RP_ThumbnailProvider_Private::freeImgClass(const HBITMAP &imgClass) const
+{
+	DeleteObject(imgClass);
+}
+
+/**
+ * Get an ImgClass's size.
+ * @param imgClass ImgClass object.
+ * @retrun Size.
+ */
+RP_ThumbnailProvider_Private::ImgSize RP_ThumbnailProvider_Private::getImgSize(const HBITMAP &imgClass) const
+{
+	BITMAP bm;
+	if (GetObject(imgClass, sizeof(bm), &bm) == 0) {
+		// Error retrieving the bitmap information.
+		static const ImgSize sz = {0, 0};
+		return sz;
+	}
+
+	const ImgSize sz = {bm.bmWidth, bm.bmHeight};
+	return sz;
+}
+
+/**
+ * Rescale an ImgClass using nearest-neighbor scaling.
+ * @param imgClass ImgClass object.
+ * @param sz New size.
+ * @return Rescaled ImgClass.
+ */
+HBITMAP RP_ThumbnailProvider_Private::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
+{
+	// TODO!!!
+	return nullptr;
+#if 0
+	return imgClass.scaled(sz.width, sz.height,
+		Qt::KeepAspectRatio, Qt::FastTransformation);
+#endif
+}
+
+/**
+ * Get the proxy for the specified URL.
+ * @return Proxy, or empty string if no proxy is needed.
+ */
+rp_string RP_ThumbnailProvider_Private::proxyForUrl(const rp_string &url) const
+{
+	// libcachemgr uses urlmon on Windows, which
+	// always uses the system proxy.
+	return rp_string();
+}
+
+/** RP_ThumbnailProvider **/
+
 RP_ThumbnailProvider::RP_ThumbnailProvider()
-	: m_file(nullptr)
+	: d_ptr(new RP_ThumbnailProvider_Private())
+	, m_file(nullptr)
 { }
 
 RP_ThumbnailProvider::~RP_ThumbnailProvider()
 {
+	delete d_ptr;
 	delete m_file;
 }
 
@@ -296,6 +457,10 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*phbmp = nullptr;
 	*pdwAlpha = WTSAT_ARGB;
 
+	RP_D(RP_ThumbnailProvider);
+	int ret = d->getThumbnail(m_file, cx, *phbmp);
+	return (ret == 0 ? S_OK : S_FALSE);
+#if 0
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	RomData *romData = RomDataFactory::getInstance(m_file, true);
@@ -406,4 +571,5 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 
 	romData->unref();
 	return (*phbmp != nullptr ? S_OK : E_FAIL);
+#endif
 }

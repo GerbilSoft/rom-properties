@@ -120,6 +120,15 @@ class TCreateThumbnail
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
+		 * @param file		[in] Open IRpFile object.
+		 * @param max_size	[in] Maximum image size.
+		 * @param ret_img	[out] Return image.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int getThumbnail(IRpFile *file, int max_size, ImgClass &ret_img);
+
+		/**
+		 * Create a thumbnail for the specified ROM file.
 		 * @param filename	[in] ROM file.
 		 * @param max_size	[in] Maximum image size.
 		 * @param ret_img	[out] Return image.
