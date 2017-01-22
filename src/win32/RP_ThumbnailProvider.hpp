@@ -91,10 +91,6 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
-	protected:
-		// IRpFile IInitializeWithStream::Initialize().
-		LibRomData::IRpFile *m_file;
-
 	public:
 		// IInitializeWithStream
 		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;

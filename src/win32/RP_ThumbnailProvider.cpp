@@ -64,7 +64,8 @@ const CLSID CLSID_RP_ThumbnailProvider =
 class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 {
 	public:
-		RP_ThumbnailProvider_Private() { }
+		RP_ThumbnailProvider_Private();
+		virtual ~RP_ThumbnailProvider_Private();
 
 	private:
 		typedef TCreateThumbnail<HBITMAP> super;
@@ -72,6 +73,9 @@ class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 		RP_ThumbnailProvider_Private &operator=(const RP_ThumbnailProvider &other);
 
 	public:
+		// IRpFile IInitializeWithStream::Initialize().
+		IRpFile *file;
+
 		/** TCreateThumbnail functions. **/
 
 		/**
@@ -124,6 +128,15 @@ class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 };
 
 /** RP_ThumbnailProvider_Private **/
+
+RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()
+	: file(nullptr)
+{ }
+
+RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
+{
+	delete file;
+}
 
 /**
  * Wrapper function to convert rp_image* to ImgClass.
@@ -213,13 +226,11 @@ rp_string RP_ThumbnailProvider_Private::proxyForUrl(const rp_string &url) const
 
 RP_ThumbnailProvider::RP_ThumbnailProvider()
 	: d_ptr(new RP_ThumbnailProvider_Private())
-	, m_file(nullptr)
 { }
 
 RP_ThumbnailProvider::~RP_ThumbnailProvider()
 {
 	delete d_ptr;
-	delete m_file;
 }
 
 /** IUnknown **/
@@ -430,14 +441,15 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 		return E_FAIL;
 	}
 
-	if (m_file) {
+	RP_D(RP_ThumbnailProvider);
+	if (d->file) {
 		// Delete the old file first.
-		IRpFile *old_file = m_file;
-		m_file = file;
+		IRpFile *old_file = d->file;
+		d->file = file;
 		delete old_file;
 	} else {
 		// No old file to delete.
-		m_file = file;
+		d->file = file;
 	}
 
 	return S_OK;
@@ -451,19 +463,19 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	// Verify parameters:
 	// - A stream must have been set by calling IInitializeWithStream::Initialize().
 	// - phbmp and pdwAlpha must not be nullptr.
-	if (!m_file || !phbmp || !pdwAlpha) {
+	RP_D(RP_ThumbnailProvider);
+	if (!d->file || !phbmp || !pdwAlpha) {
 		return E_INVALIDARG;
 	}
 	*phbmp = nullptr;
 	*pdwAlpha = WTSAT_ARGB;
 
-	RP_D(RP_ThumbnailProvider);
-	int ret = d->getThumbnail(m_file, cx, *phbmp);
+	int ret = d->getThumbnail(d->file, cx, *phbmp);
 	return (ret == 0 ? S_OK : S_FALSE);
 #if 0
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::getInstance(m_file, true);
+	RomData *romData = RomDataFactory::getInstance(d->file, true);
 	if (!romData) {
 		// ROM is not supported.
 		return S_FALSE;
