@@ -1147,7 +1147,6 @@ rom_data_view_update_display(RomDataView *page)
 			continue;
 
 		GtkWidget *widget = nullptr;
-		bool make_desc_warning = false;
 		switch (desc->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
@@ -1191,7 +1190,11 @@ rom_data_view_update_display(RomDataView *page)
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
 			page->vecDescLabels->push_back(lblDesc);
-			if (make_desc_warning) {
+
+			// Check if this is an RFT_STRING with warning set.
+			if (desc && desc->type == RomFields::RFT_STRING && desc->str_desc &&
+			    desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING)
+			{
 				// Description label should use the "warning" style.
 				page->setDescLabelIsWarning->insert(lblDesc);
 			}
