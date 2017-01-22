@@ -36,7 +36,7 @@ using LibCacheMgr::CacheManager;
 using namespace LibRomData;
 
 // TCreateThumbnail is a templated class,
-// so we have to #include the cpp file here.
+// so we have to #include the .cpp file here.
 #include "libromdata/img/TCreateThumbnail.cpp"
 
 // C includes.
