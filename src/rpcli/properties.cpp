@@ -272,7 +272,7 @@ public:
 			}
 			printedOne = true;
 
-			const char *abbrev = RomData::ageRatingAbbrev(i);
+			const char *abbrev = RomFields::ageRatingAbbrev(i);
 			if (abbrev) {
 				os << abbrev;
 			} else {
@@ -281,29 +281,7 @@ public:
 				os << i;
 			}
 			os << '=';
-
-			// TODO: Decode numeric ratings based on organization.
-			if (rating & RomFields::AGEBF_PROHIBITED) {
-				// Prohibited.
-				// TODO: Better description?
-				os << "No";
-			} else if (rating & RomFields::AGEBF_PENDING) {
-				// Rating is pending.
-				os << "RP";
-			} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-				// No age restriction.
-				os << "All";
-			} else {
-				// Use the age rating.
-				os << (rating & RomFields::AGEBF_MIN_AGE_MASK);
-			}
-
-			if (rating & RomFields::AGEBF_ONLINE_PLAY) {
-				// Rating may change during online play.
-				// TODO: Add a description of this somewhere.
-				// NOTE: Unicode U+00B0, encoded as UTF-8.
-				os << "\xC2\xB0";
-			}
+			os << RomFields::ageRatingDecode(i, rating);
 		}
 
 		return os;
@@ -523,7 +501,7 @@ public:
 					printedOne = true;
 
 					os << "{\"name\":";
-					const char *abbrev = RomData::ageRatingAbbrev(i);
+					const char *abbrev = RomFields::ageRatingAbbrev(i);
 					if (abbrev) {
 						os << '"' << abbrev << '"';
 					} else {
@@ -531,28 +509,9 @@ public:
 						// Use the numeric index.
 						os << i;
 					}
-					os << ",\"rating\":\"";
-
-					// TODO: Decode numeric ratings based on organization.
-					if (rating & RomFields::AGEBF_PENDING) {
-						// Rating is pending.
-						os << "RP";
-					} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-						// No age restriction.
-						os << "All";
-					} else {
-						// Use the age rating.
-						os << (rating & RomFields::AGEBF_MIN_AGE_MASK);
-					}
-					os << '"';
-
-					if (rating & RomFields::AGEBF_ONLINE_PLAY) {
-						// Rating may change during online play.
-						// TODO: Add a description of this somewhere.
-						// NOTE: Unicode U+00B0, encoded as UTF-8.
-						os << ",\"online\":true";
-					}
-					os << '}';
+					os << ",\"rating\":\""
+					   << RomFields::ageRatingDecode(i, rating)
+					   << "\"}";
 				}
 				os << "]}";
 				break;

@@ -726,7 +726,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 			str += QLatin1String(", ");
 		}
 
-		const char *abbrev = RomData::ageRatingAbbrev(i);
+		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
 			str += QLatin1String(abbrev);
 		} else {
@@ -735,28 +735,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 			str += QString::number(i);
 		}
 		str += QChar(L'=');
-
-		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PROHIBITED) {
-			// Prohibited.
-			// TODO: Better description?
-			str += QLatin1String("No");
-		} else if (rating & RomFields::AGEBF_PENDING) {
-			// Rating is pending.
-			str += QLatin1String("RP");
-		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-			// No age restriction.
-			str += QLatin1String("All");
-		} else {
-			// Use the age rating.
-			str += QString::number(rating & RomFields::AGEBF_MIN_AGE_MASK);
-		}
-
-		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
-			// Rating may change during online play.
-			// TODO: Add a description of this somewhere.
-			str += QChar(0x00B0);
-		}
+		str += RP2Q(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
 	}
 
 	Q_Q(RomDataView);

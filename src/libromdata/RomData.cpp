@@ -296,35 +296,6 @@ const rp_char *RomData::fileType_string(void) const
 }
 
 /**
- * Get the abbreviation of an age rating association.
- * (TODO: Full name function?)
- * @param idx Index.
- * @return Abbreviation (in ASCII), or nullptr if invalid.
- */
-const char *RomData::ageRatingAbbrev(int idx)
-{
-	static const char abbrevs[16][8] = {
-		"CERO", "ESRB", "",        "USK",
-		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",   "",
-		"", "", "", ""
-	};
-
-	assert(idx >= 0 && idx < ARRAY_SIZE(abbrevs));
-	if (idx < 0 || idx >= ARRAY_SIZE(abbrevs)) {
-		// Index is out of range.
-		return nullptr;
-	}
-
-	const char *ret = abbrevs[idx];
-	if (ret[0] == 0) {
-		// Empty string. Return nullptr instead.
-		ret = nullptr;
-	}
-	return ret;
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */

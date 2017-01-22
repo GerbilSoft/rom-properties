@@ -238,6 +238,28 @@ class RomFields
 		void detach(void);
 
 	public:
+		/**
+		 * Get the abbreviation of an age rating organization.
+		 * (TODO: Full name function?)
+		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @return Abbreviation (in ASCII), or nullptr if invalid.
+		 */
+		static const char *ageRatingAbbrev(int country);
+
+		/**
+		 * Decode an age rating into a human-readable string.
+		 * This does not include the name of the rating organization.
+		 *
+		 * NOTE: The returned string is in UTF-8 in order to
+		 * be able to use special characters.
+		 *
+		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @param rating Rating value.
+		 * @return Human-readable string, or empty string if the rating isn't active.
+		 */
+		static std::string ageRatingDecode(int country, uint16_t rating);
+
+	public:
 		/** Convenience functions for RomData subclasses. **/
 
 		/**

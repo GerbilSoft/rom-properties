@@ -247,14 +247,6 @@ class RomData
 		// - List of supported systems.
 		// - Get logo from current system and/or other system?
 
-		/**
-		 * Get the abbreviation of an age rating association.
-		 * (TODO: Full name function?)
-		 * @param idx Index.
-		 * @return Abbreviation (in ASCII), or nullptr if invalid.
-		 */
-		static const char *ageRatingAbbrev(int idx);
-
 	public:
 		/** Class-specific functions that can be used even if isValid() is false. **/
 

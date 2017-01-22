@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "RomFields.hpp"
+
+#include "common.h"
 #include "TextFuncs.hpp"
 
 // C includes.
@@ -31,7 +33,11 @@
 #include <cstring>
 
 // C++ includes.
+#include <sstream>
+#include <string>
 #include <vector>
+using std::ostringstream;
+using std::string;
 using std::vector;
 
 namespace LibRomData {
@@ -275,6 +281,139 @@ void RomFields::detach(void)
 	// Detached.
 	d = d_new;
 	d_old->unref();
+}
+
+/**
+ * Get the abbreviation of an age rating organization.
+ * (TODO: Full name function?)
+ * @param country Rating country. (See AgeRatingCountry.)
+ * @return Abbreviation (in ASCII), or nullptr if invalid.
+ */
+const char *RomFields::ageRatingAbbrev(int country)
+{
+	static const char abbrevs[16][8] = {
+		"CERO", "ESRB", "",        "USK",
+		"PEGI", "MEKU", "PEGI-PT", "BBFC",
+		"ACB",  "GRB",  "CGSRR",   "",
+		"", "", "", ""
+	};
+
+	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
+	if (country < 0 || country >= ARRAY_SIZE(abbrevs)) {
+		// Index is out of range.
+		return nullptr;
+	}
+
+	const char *ret = abbrevs[country];
+	if (ret[0] == 0) {
+		// Empty string. Return nullptr instead.
+		ret = nullptr;
+	}
+	return ret;
+}
+
+/**
+ * Decode an age rating into a human-readable string.
+ * This does not include the name of the rating organization.
+ *
+ * NOTE: The returned string is in UTF-8 in order to
+ * be able to use special characters.
+ *
+ * @param country Rating country. (See AgeRatingsCountry.)
+ * @param rating Rating value.
+ * @return Human-readable string, or empty string if the rating isn't active.
+ */
+string RomFields::ageRatingDecode(int country, uint16_t rating)
+{
+	if (!(rating & AGEBF_ACTIVE)) {
+		// Rating isn't active.
+		return string();
+	}
+
+	ostringstream oss;
+
+	// Check for special statuses.
+	if (rating & RomFields::AGEBF_PROHIBITED) {
+		// Prohibited.
+		// TODO: Better description?
+		oss << "No";
+	} else if (rating & RomFields::AGEBF_PENDING) {
+		// Rating is pending.
+		oss << "RP";
+	} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
+		// No age restriction.
+		oss << "All";
+	} else {
+		// Use the age rating.
+		// TODO: Verify these.
+		switch (country) {
+			case AGE_JAPAN:
+				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
+					case 0:
+						oss << "A";
+						break;
+					case 12:
+						oss << "B";
+						break;
+					case 15:
+						oss << "C";
+						break;
+					case 17:
+						oss << "D";
+						break;
+					case 18:
+						oss << "Z";
+						break;
+					default:
+						// Unknown rating. Show the numeric value.
+						oss << (rating & AGEBF_MIN_AGE_MASK);
+						break;
+				}
+				break;
+
+			case AGE_USA:
+				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
+					case 3:
+						oss << "eC";
+						break;
+					case 6:
+						oss << "E";
+						break;
+					case 10:
+						oss << "E10+";
+						break;
+					case 13:
+						oss << "T";
+						break;
+					case 17:
+						oss << "M";
+						break;
+					case 18:
+						oss << "AO";
+						break;
+					default:
+						// Unknown rating. Show the numeric value.
+						oss << (rating & AGEBF_MIN_AGE_MASK);
+						break;
+				}
+				break;
+
+			default:
+				// No special handling for this country.
+				// Show the numeric value.
+				oss << (rating & AGEBF_MIN_AGE_MASK);
+				break;
+		}
+	}
+
+	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
+		// Rating may change during online play.
+		// TODO: Add a description of this somewhere.
+		// NOTE: Unicode U+00B0, encoded as UTF-8.
+		oss << "\xC2\xB0";
+	}
+
+	return oss.str();
 }
 
 /** Field accessors. **/

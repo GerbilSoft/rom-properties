@@ -1034,7 +1034,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 			oss << ", ";
 		}
 
-		const char *abbrev = RomData::ageRatingAbbrev(i);
+		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
 			oss << abbrev;
 		} else {
@@ -1042,30 +1042,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 			// Use the numeric index.
 			oss << i;
 		}
-		oss << '=';
-
-		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PROHIBITED) {
-			// Prohibited.
-			// TODO: Better description?
-			oss << "No";
-		} else if (rating & RomFields::AGEBF_PENDING) {
-			// Rating is pending.
-			oss << "RP";
-		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-			// No age restriction.
-			oss << "All";
-		} else {
-			// Use the age rating.
-			oss << (rating & RomFields::AGEBF_MIN_AGE_MASK);
-		}
-
-		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
-			// Rating may change during online play.
-			// TODO: Add a description of this somewhere.
-			// NOTE: Unicode U+00B0, encoded as UTF-8.
-			oss << "\xC2\xB0";
-		}
+		oss << '=' << RomFields::ageRatingDecode(i, rating);
 	}
 
 	GtkWidget *widget = gtk_label_new(nullptr);
