@@ -955,7 +955,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// Create a read-only EDIT widget.
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
-		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY;
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
 		if (lf_count > 0) {
 			// Multiple lines.
 			dwStyle |= ES_MULTILINE;
