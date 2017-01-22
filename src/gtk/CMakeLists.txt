@@ -8,10 +8,12 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
 	GdkImageConv.cpp
+	CreateThumbnail.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
+	CreateThumbnail.hpp
 	)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
