@@ -235,27 +235,38 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
+		 * @param desc		[in] RomFields::Desc
+		 * @param data		[in] RomFields::Data
 		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
 		 * @return Field height, in pixels.
 		 */
-		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs);
+		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data,
+			LPCWSTR wcs);
 
 		/**
 		 * Initialize a bitfield layout.
-		 * @param hDlg Dialog window.
-		 * @param pt_start Starting position, in pixels.
-		 * @param idx Field index.
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param desc		[in] RomFields::Desc
+		 * @param data		[in] RomFields::Data
 		 * @return Field height, in pixels.
 		 */
-		int initBitfield(HWND hDlg, const POINT &pt_start, int idx);
+		int initBitfield(HWND hDlg, const POINT &pt_start, int idx,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize a ListView control.
-		 * @param hWnd HWND of the ListView control.
-		 * @param desc RomFields description.
-		 * @param data RomFields data.
+		 * @param hWnd		[in] HWND of the ListView control.
+		 * @param desc		[in] RomFields::Desc
+		 * @param data		[in] RomFields::Data
 		 */
-		void initListView(HWND hWnd, const LibRomData::RomFields::Desc *desc, const LibRomData::RomFields::Data *data);
+		void initListView(HWND hWnd,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -264,9 +275,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
+		 * @param desc		[in] RomFields::Desc
+		 * @param data		[in] RomFields::Data
 		 * @return Field height, in pixels.
 		 */
-		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize an Age Ratings field.
@@ -275,9 +290,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
+		 * @param desc		[in] RomFields::Desc
+		 * @param data		[in] RomFields::Data
 		 * @return Field height, in pixels.
 		 */
-		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize the bold font.
@@ -804,21 +823,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
+ * @param desc		[in] RomFields::Desc
+ * @param data		[in] RomFields::Data
  * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
-	const POINT &pt_start, int idx, const SIZE &size, LPCWSTR wcs)
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data,
+	LPCWSTR wcs)
 {
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	if (!desc)
+	if (!hDlg || !desc)
 		return 0;
 	if (!desc->name || desc->name[0] == '\0')
 		return 0;
@@ -832,7 +848,6 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 	int lf_count = 0;
 	wstring wstr;
 	if (!wcs) {
-		const RomFields::Data *data = fields->data(idx);
 		if (!data)
 			return 0;
 		if (desc->type != RomFields::RFT_STRING ||
@@ -978,24 +993,19 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 /**
  * Initialize a bitfield layout.
- * @param hDlg Dialog window.
- * @param pt_start Starting position, in pixels.
- * @param idx Field index.
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param desc		[in] RomFields::Desc
+ * @param data		[in] RomFields::Data
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
-	const POINT &pt_start, int idx)
+	const POINT &pt_start, int idx,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	const RomFields::Data *data = fields->data(idx);
-	if (!desc || !data)
+	if (!hDlg || !desc || !data)
 		return 0;
 	if (desc->type != RomFields::RFT_BITFIELD ||
 	    data->type != RomFields::RFT_BITFIELD)
@@ -1125,12 +1135,13 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 
 /**
  * Initialize a ListView control.
- * @param hWnd HWND of the ListView control.
- * @param desc RomFields description.
- * @param data RomFields data.
+ * @param hWnd		[in] HWND of the ListView control.
+ * @param desc		[in] RomFields::Desc
+ * @param data		[in] RomFields::Data
  */
 void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
-	const RomFields::Desc *desc, const RomFields::Data *data)
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	if (!hWnd || !desc || !data)
 		return;
@@ -1205,21 +1216,16 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
+ * @param desc		[in] RomFields::Desc
+ * @param data		[in] RomFields::Data
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
-	const POINT &pt_start, int idx, const SIZE &size)
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	const RomFields::Data *data = fields->data(idx);
-	if (!desc || !data)
+	if (!hDlg || !desc || !data)
 		return 0;
 	if (desc->type != RomFields::RFT_DATETIME ||
 	    data->type != RomFields::RFT_DATETIME)
@@ -1229,7 +1235,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 
 	if (data->date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, pt_start, idx, size, L"Unknown");
+		return initString(hDlg, pt_start, idx, size, desc, data, L"Unknown");
 	}
 
 	// Format the date/time using the system locale.
@@ -1305,7 +1311,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, dateTimeStr);
+	return initString(hDlg, pt_start, idx, size, desc, data, dateTimeStr);
 }
 
 /**
@@ -1315,21 +1321,16 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
+ * @param desc		[in] RomFields::Desc
+ * @param data		[in] RomFields::Data
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
-	const POINT &pt_start, int idx, const SIZE &size)
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
-	if (!hDlg)
-		return 0;
-
-	const RomFields *fields = romData->fields();
-	if (!fields)
-		return 0;
-
-	const RomFields::Desc *desc = fields->desc(idx);
-	const RomFields::Data *data = fields->data(idx);
-	if (!desc || !data)
+	if (!hDlg || !desc || !data)
 		return 0;
 	if (desc->type != RomFields::RFT_AGE_RATINGS ||
 	    data->type != RomFields::RFT_AGE_RATINGS)
@@ -1381,7 +1382,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, woss.str().c_str());
+	return initString(hDlg, pt_start, idx, size, desc, data, woss.str().c_str());
 }
 
 /**
@@ -1681,7 +1682,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_STRING: {
 				// String data.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initString(hDlg, pt_start, idx, size, nullptr);
+				field_cy = initString(hDlg, pt_start, idx, size, desc, data, nullptr);
 				if (field_cy == 0) {
 					// initString() failed.
 					// Remove the description label.
@@ -1692,7 +1693,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, pt_start, idx);
+				field_cy = initBitfield(hDlg, pt_start, idx, desc, data);
 				if (field_cy == 0) {
 					// initBitfield() failed.
 					// Remove the description label.
@@ -1718,13 +1719,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				SetWindowFont(hDlgItem, hFont, FALSE);
 
 				// Initialize the ListView data.
-				initListView(hDlgItem, desc, fields->data(idx));
+				initListView(hDlgItem, desc, data);
 				break;
 
 			case RomFields::RFT_DATETIME: {
 				// Date/Time in Unix format.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initDateTime(hDlg, pt_start, idx, size);
+				field_cy = initDateTime(hDlg, pt_start, idx, size, desc, data);
 				if (field_cy == 0) {
 					// initDateTime() failed.
 					// Remove the description label.
@@ -1736,7 +1737,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_AGE_RATINGS: {
 				// Age Ratings field.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initAgeRatings(hDlg, pt_start, idx, size);
+				field_cy = initAgeRatings(hDlg, pt_start, idx, size, desc, data);
 				if (field_cy == 0) {
 					// initAgeRatings() failed.
 					// Remove the description label.
