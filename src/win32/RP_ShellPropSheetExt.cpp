@@ -99,7 +99,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 class RP_ShellPropSheetExt_Private
 {
 	public:
-		RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
+		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
 		~RP_ShellPropSheetExt_Private();
 
 	private:
@@ -438,7 +438,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
 	// Handle newlines.
-	int lines = 0;
 	const wchar_t *data = wstr.data();
 	int nl_pos_prev = -1;
 	size_t nl_pos = 0;	// Assuming no NL at the start.
