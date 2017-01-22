@@ -1351,7 +1351,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 			woss << L", ";
 		}
 
-		const char *abbrev = RomData::ageRatingAbbrev(i);
+		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
 			woss << RP2W_s(latin1_to_rp_string(abbrev, -1));
 		} else {
