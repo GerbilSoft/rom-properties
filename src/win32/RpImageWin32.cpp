@@ -450,10 +450,11 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	// TODO: Copy the palette for 8-bit.
 
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183402(v=vs.85).aspx
+	const int height = abs(bm.bmHeight);
 	BITMAPINFOHEADER bi;
 	bi.biSize = sizeof(bi);
 	bi.biWidth = bm.bmWidth;
-	bi.biHeight = bm.bmHeight;
+	bi.biHeight = -height;	// Ensure the image is top-down.
 	bi.biPlanes = 1;
 	bi.biBitCount = bm.bmBitsPixel;
 	bi.biCompression = BI_RGB;
@@ -465,7 +466,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// Allocate memory for the bitmap.
 	const int src_stride = ((bm.bmWidth * bi.biBitCount + 31) / 32) * 4;
-	const DWORD dwBmpSize = src_stride * bm.bmHeight;
+	const DWORD dwBmpSize = src_stride * height;
 	uint8_t *pBits = static_cast<uint8_t*>(malloc(dwBmpSize));
 	if (!pBits) {
 		// malloc() failed.
@@ -474,7 +475,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// Get the DIBits.
 	HDC hDC = GetDC(nullptr);
-	int dib_ret = GetDIBits(hDC, hBitmap, 0, bm.bmHeight, pBits, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+	int dib_ret = GetDIBits(hDC, hBitmap, 0, height, pBits, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 	ReleaseDC(nullptr, hDC);
 	if (!dib_ret) {
 		// GetDIBits() failed.
@@ -483,15 +484,17 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	}
 
 	// Copy the data into a new rp_image.
-	rp_image *img = new rp_image(bm.bmWidth, bm.bmHeight, format);
+	rp_image *img = new rp_image(bm.bmWidth, height, format);
 
 	// TODO: Copy the palette for 8-bit.
+
+	// The image might be upside-down.
 
 	// Copy the image data.
 	const uint8_t *src = pBits;
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
 	const int dest_stride = img->stride();
-	for (int y = bm.bmHeight; y > 0; y--) {
+	for (int y = height; y > 0; y--) {
 		memcpy(dest, src, copy_len);
 		src += src_stride;
 		dest += dest_stride;
