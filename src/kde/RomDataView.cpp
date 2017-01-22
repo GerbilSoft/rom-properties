@@ -154,6 +154,14 @@ class RomDataViewPrivate
 		void initDateTime(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
 
 		/**
+		 * Initialize an Age Ratings field.
+		 * @param lblDesc Description label.
+		 * @param desc RomFields::Desc
+		 * @param data RomFields::Data
+		 */
+		void initAgeRatings(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+
+		/**
 		 * Initialize the display widgets.
 		 * If the widgets already exist, they will
 		 * be deleted and recreated.
@@ -672,6 +680,70 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Desc *de
 }
 
 /**
+ * Initialize an Age Ratings field.
+ * @param lblDesc Description label.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ */
+void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	// Age ratings.
+	Q_UNUSED(desc);
+
+	// Convert the age ratings field to a string.
+	QString str;
+	str.reserve(64);
+
+	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+		const uint16_t rating = data->age_ratings[i];
+		if (!(rating & RomFields::AGEBF_ACTIVE))
+			continue;
+
+		if (!str.isEmpty()) {
+			// Append a comma.
+			str += QLatin1String(", ");
+		}
+
+		const char *abbrev = RomData::ageRatingAbbrev(i);
+		if (abbrev) {
+			str += QLatin1String(abbrev);
+		} else {
+			// Invalid age rating.
+			// Use the numeric index.
+			str += QString::number(i);
+		}
+		str += QChar(L'=');
+
+		// TODO: Decode numeric ratings based on organization.
+		if (rating & RomFields::AGEBF_PENDING) {
+			// Rating is pending.
+			str += QLatin1String("RP");
+		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
+			// No age restriction.
+			str += QLatin1String("All");
+		} else {
+			// Use the age rating.
+			str += QString::number(rating & RomFields::AGEBF_MIN_AGE_MASK);
+		}
+
+		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
+			// Rating may change during online play.
+			// TODO: Add a description of this somewhere.
+			str += QChar(0x00B0);
+		}
+	}
+
+	Q_Q(RomDataView);
+	QLabel *lblAgeRatings = new QLabel(q);
+	lblAgeRatings->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+	lblAgeRatings->setTextFormat(Qt::PlainText);
+	lblAgeRatings->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+	lblAgeRatings->setText(str);
+
+	ui.formLayout->addRow(lblDesc, lblAgeRatings);
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -748,6 +820,10 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 			case RomFields::RFT_DATETIME:
 				initDateTime(lblDesc, desc, data);
+				break;
+
+			case RomFields::RFT_AGE_RATINGS:
+				initAgeRatings(lblDesc, desc, data);
 				break;
 
 			default:

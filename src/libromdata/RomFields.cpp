@@ -167,6 +167,10 @@ void RomFieldsPrivate::delete_data(void)
 			case RomFields::RFT_DATETIME:
 				// Nothing needed.
 				break;
+			case RomFields::RFT_AGE_RATINGS:
+				// Age ratings.
+				free(data.age_ratings);
+				break;
 			default:
 				// ERROR!
 				assert(!"Unsupported RomFields::RomFieldsType.");
@@ -250,11 +254,16 @@ void RomFields::detach(void)
 				break;
 			case RFT_LISTDATA:
 				// Copy the ListData.
-				data_new.list_data = new ListData(*data_old.list_data);
+				data_new.list_data = new ListData(*(data_old.list_data));
 				break;
 			case RFT_DATETIME:
 				// Copy the Date/Time.
 				data_new.date_time = data_old.date_time;
+				break;
+			case RFT_AGE_RATINGS:
+				// Copy the age ratings.
+				data_new.age_ratings = static_cast<uint16_t*>(malloc(AGE_MAX*sizeof(uint16_t)));
+				memcpy(data_new.age_ratings, data_old.age_ratings, AGE_MAX*sizeof(uint16_t));
 				break;
 			default:
 				// ERROR!
@@ -502,6 +511,21 @@ int RomFields::addData_dateTime(int64_t date_time)
 	Data data;
 	data.type = RFT_DATETIME;
 	data.date_time = date_time;
+	d->data.push_back(data);
+	return (int)(d->data.size() - 1);
+}
+
+/**
+ * Add age ratings.
+ * @param age_ratings Age ratings array. (uint16_t[16])
+ * @return Field index.
+ */
+int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
+{
+	Data data;
+	data.type = RFT_AGE_RATINGS;
+	data.age_ratings = static_cast<uint16_t*>(malloc(AGE_MAX*sizeof(uint16_t)));
+	memcpy(data.age_ratings, age_ratings, AGE_MAX*sizeof(uint16_t));
 	d->data.push_back(data);
 	return (int)(d->data.size() - 1);
 }
