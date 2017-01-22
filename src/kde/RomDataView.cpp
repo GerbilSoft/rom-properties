@@ -127,7 +127,9 @@ class RomDataViewPrivate
 		 * @param desc RomFields::Desc
 		 * @param data RomFields::Data
 		 */
-		void initString(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+		void initString(QLabel *lblDesc,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize a bitfield.
@@ -135,7 +137,9 @@ class RomDataViewPrivate
 		 * @param desc RomFields::Desc
 		 * @param data RomFields::Data
 		 */
-		void initBitfield(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+		void initBitfield(QLabel *lblDesc,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize a list data field.
@@ -143,7 +147,9 @@ class RomDataViewPrivate
 		 * @param desc RomFields::Desc
 		 * @param data RomFields::Data
 		 */
-		void initListData(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+		void initListData(QLabel *lblDesc,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -151,7 +157,9 @@ class RomDataViewPrivate
 		 * @param desc RomFields::Desc
 		 * @param data RomFields::Data
 		 */
-		void initDateTime(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+		void initDateTime(QLabel *lblDesc,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize an Age Ratings field.
@@ -159,7 +167,9 @@ class RomDataViewPrivate
 		 * @param desc RomFields::Desc
 		 * @param data RomFields::Data
 		 */
-		void initAgeRatings(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+		void initAgeRatings(QLabel *lblDesc,
+			const RomFields::Desc *desc,
+			const RomFields::Data *data);
 
 		/**
 		 * Initialize the display widgets.
@@ -441,7 +451,9 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
  * @param desc RomFields::Desc
  * @param data RomFields::Data
  */
-void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+void RomDataViewPrivate::initString(QLabel *lblDesc,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// String type.
 	Q_Q(RomDataView);
@@ -525,7 +537,9 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Desc *desc
  * @param desc RomFields::Desc
  * @param data RomFields::Data
  */
-void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	Q_Q(RomDataView);
@@ -568,7 +582,9 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Desc *de
  * @param desc RomFields::Desc
  * @param data RomFields::Data
  */
-void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+void RomDataViewPrivate::initListData(QLabel *lblDesc,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// ListData type. Create a QTreeWidget.
 	Q_Q(RomDataView);
@@ -620,7 +636,9 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Desc *de
  * @param desc RomFields::Desc
  * @param data RomFields::Data
  */
-void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+void RomDataViewPrivate::initDateTime(QLabel *lblDesc,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// Date/Time.
 	Q_Q(RomDataView);
@@ -687,7 +705,9 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Desc *de
  * @param desc RomFields::Desc
  * @param data RomFields::Data
  */
-void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// Age ratings.
 	Q_UNUSED(desc);
