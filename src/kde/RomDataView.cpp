@@ -104,6 +104,11 @@ class RomDataViewPrivate
 		bool anim_running;		// Animation is running.
 		int last_frame_number;		// Last frame number.
 
+#ifndef NDEBUG
+		// DEBUG: Ensure we only have one STRF_CREDITS field.
+		bool hasStrfCredits;
+#endif
+
 		/**
 		 * Initialize the header row widgets.
 		 * The widgets must have already been created by ui.setupUi().
@@ -115,6 +120,38 @@ class RomDataViewPrivate
 		 * @param layout QLayout.
 		 */
 		static void clearLayout(QLayout *layout);
+
+		/**
+		 * Initialize a string field.
+		 * @param lblDesc Description label.
+		 * @param desc RomFields::Desc
+		 * @param data RomFields::Data
+		 */
+		void initString(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+
+		/**
+		 * Initialize a bitfield.
+		 * @param lblDesc Description label.
+		 * @param desc RomFields::Desc
+		 * @param data RomFields::Data
+		 */
+		void initBitfield(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+
+		/**
+		 * Initialize a list data field.
+		 * @param lblDesc Description label.
+		 * @param desc RomFields::Desc
+		 * @param data RomFields::Data
+		 */
+		void initListData(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
+
+		/**
+		 * Initialize a Date/Time field.
+		 * @param lblDesc Description label.
+		 * @param desc RomFields::Desc
+		 * @param data RomFields::Data
+		 */
+		void initDateTime(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data);
 
 		/**
 		 * Initialize the display widgets.
@@ -151,6 +188,7 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
+	, hasStrfCredits(false)
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -388,6 +426,252 @@ void RomDataViewPrivate::clearLayout(QLayout *layout)
 }
 
 /**
+ * Initialize a string field.
+ * @param lblDesc Description label.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ */
+void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	// String type.
+	Q_Q(RomDataView);
+	QLabel *lblString = new QLabel(q);
+	if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+		// Credits text. Enable formatting and center text.
+		lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+		lblString->setTextFormat(Qt::RichText);
+		lblString->setOpenExternalLinks(true);
+		if (data->str) {
+			// Replace newlines with "<br/>".
+			QString text = RP2Q(data->str).replace(QChar(L'\n'), QLatin1String("<br/>"));
+			lblString->setText(text);
+		}
+	} else {
+		// Standard text with no formatting.
+		lblString->setTextInteractionFlags(
+			Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
+			Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
+		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+		lblString->setTextFormat(Qt::PlainText);
+		if (data->str) {
+			lblString->setText(RP2Q(data->str));
+		}
+	}
+
+	// Check for any formatting options.
+	if (desc->str_desc) {
+		// Monospace font?
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+			QFont font(QLatin1String("Monospace"));
+			font.setStyleHint(QFont::TypeWriter);
+			lblString->setFont(font);
+			lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+		}
+
+		// "Warning" font?
+		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+			// Only expecting a maximum of one "Warning" per ROM,
+			// so we're initializing this here.
+			const QString css = QLatin1String("color: #F00; font-weight: bold;");
+			lblDesc->setStyleSheet(css);
+			lblString->setStyleSheet(css);
+		}
+	}
+
+	if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+		// Credits row goes at the end.
+		// There should be a maximum of one STRF_CREDITS per RomData subclass.
+#ifndef NDEBUG
+		assert(hasStrfCredits == false);
+		hasStrfCredits = true;
+#endif
+		// Credits row.
+		ui.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
+
+		// Set the bottom margin to match the QFormLayout.
+		// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
+		// TODO: Verify this.
+		QMargins margins = ui.formLayout->contentsMargins();
+		margins.setLeft(0);
+		margins.setRight(0);
+		margins.setTop(0);
+		margins.setBottom(99);
+		ui.vboxLayout->setContentsMargins(margins);
+
+		// Save this as the credits label.
+		ui.lblCredits = lblString;
+
+		// No description field.
+		delete lblDesc;
+	} else {
+		// Standard string row.
+		ui.formLayout->addRow(lblDesc, lblString);
+	}
+}
+
+/**
+ * Initialize a bitfield.
+ * @param lblDesc Description label.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ */
+void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	// Bitfield type. Create a grid of checkboxes.
+	Q_Q(RomDataView);
+	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
+	assert(bitfieldDesc != nullptr);
+
+	QGridLayout *gridLayout = new QGridLayout();
+	int row = 0, col = 0;
+	for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
+		const rp_char *name = bitfieldDesc->names[bit];
+		if (!name)
+			continue;
+
+		// TODO: Disable KDE's automatic mnemonic.
+		QCheckBox *checkBox = new QCheckBox(q);
+		checkBox->setText(RP2Q(name));
+		if (data->bitfield & (1 << bit)) {
+			checkBox->setChecked(true);
+		}
+
+		// Disable user modifications.
+		// TODO: Prevent the initial mousebutton down from working;
+		// otherwise, it shows a partial check mark.
+		QObject::connect(checkBox, SIGNAL(toggled(bool)),
+				 q, SLOT(bitfield_toggled_slot(bool)));
+
+		gridLayout->addWidget(checkBox, row, col, 1, 1);
+		col++;
+		if (col == bitfieldDesc->elemsPerRow) {
+			row++;
+			col = 0;
+		}
+	}
+	ui.formLayout->addRow(lblDesc, gridLayout);
+}
+
+/**
+ * Initialize a list data field.
+ * @param lblDesc Description label.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ */
+void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	// ListData type. Create a QTreeWidget.
+	Q_Q(RomDataView);
+	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
+	assert(listDataDesc != nullptr);
+	QTreeWidget *treeWidget = new QTreeWidget(q);
+	treeWidget->setRootIsDecorated(false);
+	treeWidget->setUniformRowHeights(true);
+
+	// Set up the column names.
+	const int count = listDataDesc->count;
+	treeWidget->setColumnCount(count);
+	QStringList columnNames;
+	columnNames.reserve(count);
+	for (int i = 0; i < count; i++) {
+		if (listDataDesc->names[i]) {
+			columnNames.append(RP2Q(listDataDesc->names[i]));
+		} else {
+			// Don't show this column.
+			columnNames.append(QString());
+			treeWidget->setColumnHidden(i, true);
+		}
+	}
+	treeWidget->setHeaderLabels(columnNames);
+
+	// Add the row data.
+	const RomFields::ListData *listData = data->list_data;
+	for (int i = 0; i < (int)listData->data.size(); i++) {
+		const vector<rp_string> &data_row = listData->data.at(i);
+		QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
+		int field = 0;
+		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
+			treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
+		}
+	}
+
+	// Resize the columns to fit the contents.
+	for (int i = 0; i < count; i++) {
+		treeWidget->resizeColumnToContents(i);
+	}
+	treeWidget->resizeColumnToContents(count);
+
+	ui.formLayout->addRow(lblDesc, treeWidget);
+}
+
+/**
+ * Initialize a Date/Time field.
+ * @param lblDesc Description label.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ */
+void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Desc *desc, const RomFields::Data *data)
+{
+	// Date/Time.
+	Q_Q(RomDataView);
+	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
+	assert(dateTimeDesc != nullptr);
+
+	QLabel *lblDateTime = new QLabel(q);
+	lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+	lblDateTime->setTextFormat(Qt::PlainText);
+	lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
+
+	if (data->date_time == -1) {
+		// Invalid date/time.
+		lblDateTime->setText(RomDataView::tr("Unknown"));
+		ui.formLayout->addRow(lblDesc, lblDateTime);
+		return;
+	}
+
+	QDateTime dateTime;
+	dateTime.setTimeSpec(
+		(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
+			? Qt::UTC : Qt::LocalTime);
+	dateTime.setMSecsSinceEpoch(data->date_time * 1000);
+
+	QString str;
+	switch (dateTimeDesc->flags &
+		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
+	{
+		case RomFields::RFT_DATETIME_HAS_DATE:
+			// Date only.
+			str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
+			break;
+
+		case RomFields::RFT_DATETIME_HAS_TIME:
+			// Time only.
+			str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
+			break;
+
+		case RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME:
+			// Date and time.
+			str = dateTime.toString(Qt::DefaultLocaleShortDate);
+			break;
+
+		default:
+			// Invalid combination.
+			assert(!"Invalid Date/Time formatting.");
+			break;
+	}
+
+	if (!str.isEmpty()) {
+		lblDateTime->setText(str);
+		ui.formLayout->addRow(lblDesc, lblDateTime);
+	} else {
+		// Invalid date/time.
+		delete lblDateTime;
+		delete lblDesc;
+	}
+}
+
+/**
  * Initialize the display widgets.
  * If the widgets already exist, they will
  * be deleted and recreated.
@@ -397,6 +681,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// Delete the credits label if it's present.
 	delete ui.lblCredits;
 	ui.lblCredits = nullptr;
+	hasStrfCredits = false;
 
 	// Delete the form layout if it's present.
 	if (ui.formLayout) {
@@ -428,9 +713,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 
 	// Create the data widgets.
 	Q_Q(RomDataView);
-#ifndef NDEBUG
-	bool hasStrfCredits = false;
-#endif
 	for (int i = 0; i < count; i++) {
 		const RomFields::Desc *desc = fields->desc(i);
 		const RomFields::Data *data = fields->data(i);
@@ -452,223 +734,21 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				delete lblDesc;
 				break;
 
-			case RomFields::RFT_STRING: {
-				// String type.
-				QLabel *lblString = new QLabel(q);
-				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
-					// Credits text. Enable formatting and center text.
-					lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-					lblString->setTextFormat(Qt::RichText);
-					lblString->setOpenExternalLinks(true);
-					if (data->str) {
-						// Replace newlines with "<br/>".
-						QString text = RP2Q(data->str).replace(QChar(L'\n'), QLatin1String("<br/>"));
-						lblString->setText(text);
-					}
-				} else {
-					// Standard text with no formatting.
-					lblString->setTextInteractionFlags(
-						Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
-						Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
-					lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-					lblString->setTextFormat(Qt::PlainText);
-					if (data->str) {
-						lblString->setText(RP2Q(data->str));
-					}
-				}
-
-				// Check for any formatting options.
-				if (desc->str_desc) {
-					// Monospace font?
-					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
-						QFont font(QLatin1String("Monospace"));
-						font.setStyleHint(QFont::TypeWriter);
-						lblString->setFont(font);
-						lblString->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-					}
-
-					// "Warning" font?
-					if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
-						// Only expecting a maximum of one "Warning" per ROM,
-						// so we're initializing this here.
-						const QString css = QLatin1String("color: #F00; font-weight: bold;");
-						lblDesc->setStyleSheet(css);
-						lblString->setStyleSheet(css);
-					}
-				}
-
-				if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
-					// Credits row goes at the end.
-					// There should be a maximum of one STRF_CREDITS per RomData subclass.
-#ifndef NDEBUG
-					assert(hasStrfCredits == false);
-					hasStrfCredits = true;
-#endif
-					// Credits row.
-					ui.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
-
-					// Set the bottom margin to match the QFormLayout.
-					// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
-					// TODO: Verify this.
-					QMargins margins = ui.formLayout->contentsMargins();
-					margins.setLeft(0);
-					margins.setRight(0);
-					margins.setTop(0);
-					margins.setBottom(99);
-					ui.vboxLayout->setContentsMargins(margins);
-
-					// Save this as the credits label.
-					ui.lblCredits = lblString;
-
-					// No description field.
-					delete lblDesc;
-				} else {
-					// Standard string row.
-					ui.formLayout->addRow(lblDesc, lblString);
-				}
+			case RomFields::RFT_STRING:
+				initString(lblDesc, desc, data);
 				break;
-			}
 
-			case RomFields::RFT_BITFIELD: {
-				// Bitfield type. Create a grid of checkboxes.
-				const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
-				assert(bitfieldDesc != nullptr);
-				QGridLayout *gridLayout = new QGridLayout();
-				int row = 0, col = 0;
-				for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
-					const rp_char *name = bitfieldDesc->names[bit];
-					if (!name)
-						continue;
-
-					// TODO: Disable KDE's automatic mnemonic.
-					QCheckBox *checkBox = new QCheckBox(q);
-					checkBox->setText(RP2Q(name));
-					if (data->bitfield & (1 << bit)) {
-						checkBox->setChecked(true);
-					}
-
-					// Disable user modifications.
-					// TODO: Prevent the initial mousebutton down from working;
-					// otherwise, it shows a partial check mark.
-					QObject::connect(checkBox, SIGNAL(toggled(bool)),
-							q, SLOT(bitfield_toggled_slot(bool)));
-
-					gridLayout->addWidget(checkBox, row, col, 1, 1);
-					col++;
-					if (col == bitfieldDesc->elemsPerRow) {
-						row++;
-						col = 0;
-					}
-				}
-				ui.formLayout->addRow(lblDesc, gridLayout);
+			case RomFields::RFT_BITFIELD:
+				initBitfield(lblDesc, desc, data);
 				break;
-			}
 
-			case RomFields::RFT_LISTDATA: {
-				// ListData type. Create a QTreeWidget.
-				const RomFields::ListDataDesc *listDataDesc = desc->list_data;
-				assert(listDataDesc != nullptr);
-				QTreeWidget *treeWidget = new QTreeWidget(q);
-				treeWidget->setRootIsDecorated(false);
-				treeWidget->setUniformRowHeights(true);
-
-				// Set up the column names.
-				const int count = listDataDesc->count;
-				treeWidget->setColumnCount(count);
-				QStringList columnNames;
-				columnNames.reserve(count);
-				for (int i = 0; i < count; i++) {
-					if (listDataDesc->names[i]) {
-						columnNames.append(RP2Q(listDataDesc->names[i]));
-					} else {
-						// Don't show this column.
-						columnNames.append(QString());
-						treeWidget->setColumnHidden(i, true);
-					}
-				}
-				treeWidget->setHeaderLabels(columnNames);
-
-				// Add the row data.
-				const RomFields::ListData *listData = data->list_data;
-				for (int i = 0; i < (int)listData->data.size(); i++) {
-					const vector<rp_string> &data_row = listData->data.at(i);
-					QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
-					int field = 0;
-					for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
-						treeWidgetItem->setData(field, Qt::DisplayRole, RP2Q(*iter));
-					}
-				}
-
-				// Resize the columns to fit the contents.
-				for (int i = 0; i < count; i++) {
-					treeWidget->resizeColumnToContents(i);
-				}
-				treeWidget->resizeColumnToContents(count);
-
-				ui.formLayout->addRow(lblDesc, treeWidget);
+			case RomFields::RFT_LISTDATA:
+				initListData(lblDesc, desc, data);
 				break;
-			}
 
-			case RomFields::RFT_DATETIME: {
-				// Date/Time.
-				const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
-				assert(dateTimeDesc != nullptr);
-
-				QLabel *lblDateTime = new QLabel(q);
-				lblDateTime->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-				lblDateTime->setTextFormat(Qt::PlainText);
-				lblDateTime->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse);
-
-				if (data->date_time == -1) {
-					// Invalid date/time.
-					lblDateTime->setText(RomDataView::tr("Unknown"));
-					ui.formLayout->addRow(lblDesc, lblDateTime);
-					break;
-				}
-
-				QDateTime dateTime;
-				dateTime.setTimeSpec(
-					(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)
-						? Qt::UTC : Qt::LocalTime);
-				dateTime.setMSecsSinceEpoch(data->date_time * 1000);
-
-				QString str;
-				switch (dateTimeDesc->flags &
-					(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
-				{
-					case RomFields::RFT_DATETIME_HAS_DATE:
-						// Date only.
-						str = dateTime.date().toString(Qt::DefaultLocaleShortDate);
-						break;
-
-					case RomFields::RFT_DATETIME_HAS_TIME:
-						// Time only.
-						str = dateTime.time().toString(Qt::DefaultLocaleShortDate);
-						break;
-
-					case RomFields::RFT_DATETIME_HAS_DATE |
-					     RomFields::RFT_DATETIME_HAS_TIME:
-						// Date and time.
-						str = dateTime.toString(Qt::DefaultLocaleShortDate);
-						break;
-
-					default:
-						// Invalid combination.
-						assert(!"Invalid Date/Time formatting.");
-						break;
-				}
-
-				if (!str.isEmpty()) {
-					lblDateTime->setText(str);
-					ui.formLayout->addRow(lblDesc, lblDateTime);
-				} else {
-					// Invalid date/time.
-					delete lblDateTime;
-					delete lblDesc;
-				}
-
+			case RomFields::RFT_DATETIME:
+				initDateTime(lblDesc, desc, data);
 				break;
-			}
 
 			default:
 				// Unsupported right now.
