@@ -103,7 +103,7 @@ class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 		 * This may be no-op for e.g. HBITMAP.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(const HBITMAP &imgClass) const final;
+		virtual void freeImgClass(HBITMAP &imgClass) const final;
 
 		/**
 		 * Get an ImgClass's size.
@@ -172,7 +172,7 @@ HBITMAP RP_ThumbnailProvider_Private::getNullImgClass(void) const
  * This may be no-op for e.g. HBITMAP.
  * @param imgClass ImgClass object.
  */
-void RP_ThumbnailProvider_Private::freeImgClass(const HBITMAP &imgClass) const
+void RP_ThumbnailProvider_Private::freeImgClass(HBITMAP &imgClass) const
 {
 	DeleteObject(imgClass);
 }

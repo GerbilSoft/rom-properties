@@ -112,7 +112,7 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * This may be no-op for e.g. QImage.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(const QImage &imgClass) const final;
+		virtual void freeImgClass(QImage &imgClass) const final;
 
 		/**
 		 * Get an ImgClass's size.
@@ -172,7 +172,7 @@ QImage RomThumbCreatorPrivate::getNullImgClass(void) const
  * This may be no-op for e.g. QImage.
  * @param imgClass ImgClass object.
  */
-void RomThumbCreatorPrivate::freeImgClass(const QImage &imgClass) const
+void RomThumbCreatorPrivate::freeImgClass(QImage &imgClass) const
 {
 	// Nothing to do here...
 	Q_UNUSED(imgClass)

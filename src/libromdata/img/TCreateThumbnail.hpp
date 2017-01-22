@@ -181,7 +181,7 @@ class TCreateThumbnail
 		 * This may be no-op for e.g. QImage.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(const ImgClass &imgClass) const = 0;
+		virtual void freeImgClass(ImgClass &imgClass) const = 0;
 
 		/**
 		 * Get an ImgClass's size.
