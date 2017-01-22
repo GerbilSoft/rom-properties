@@ -247,6 +247,47 @@ public:
 	}
 };
 
+class AgeRatingsField {
+	size_t width;
+	const RomFields::Desc* desc;
+	const RomFields::Data* data;
+public:
+	AgeRatingsField(size_t width, const RomFields::Desc* desc, const RomFields::Data* data) :width(width), desc(desc), data(data) {}
+	friend ostream& operator<<(ostream& os, const AgeRatingsField& field) {
+		auto desc = field.desc;
+		auto data = field.data;
+
+		os << ColonPad(field.width, desc->name);
+		StreamStateSaver state(os);
+
+		bool printedOne = false;
+		for (int i = 0; i < RomFields::AGE_MAX; i++) {
+			const uint16_t rating = data->age_ratings[i];
+			if (!(rating & RomFields::AGEBF_ACTIVE))
+				continue;
+
+			if (printedOne) {
+				// Append a comma.
+				os << ", ";
+			}
+			printedOne = true;
+
+			const char *abbrev = RomFields::ageRatingAbbrev(i);
+			if (abbrev) {
+				os << abbrev;
+			} else {
+				// Invalid age rating.
+				// Use the numeric index.
+				os << i;
+			}
+			os << '=';
+			os << RomFields::ageRatingDecode(i, rating);
+		}
+
+		return os;
+	}
+};
+
 class FieldsOutput {
 	const RomFields& fields;
 public:
@@ -288,6 +329,10 @@ public:
 			}
 			case RomFields::RFT_DATETIME: {
 				os << DateTimeField(maxWidth, desc, data);
+				break;
+			}
+			case RomFields::RFT_AGE_RATINGS: {
+				os << AgeRatingsField(maxWidth, desc, data);
 				break;
 			}
 			default: {
@@ -439,6 +484,39 @@ public:
 				os << "},\"data\":" << data->date_time << "}";
 				break;
 			}
+			case RomFields::RFT_AGE_RATINGS: {
+				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(desc->name);
+				os << "},\"data\":[";
+
+				bool printedOne = false;
+				for (int i = 0; i < RomFields::AGE_MAX; i++) {
+					const uint16_t rating = data->age_ratings[i];
+					if (!(rating & RomFields::AGEBF_ACTIVE))
+						continue;
+
+					if (printedOne) {
+						// Append a comma.
+						os << ",";
+					}
+					printedOne = true;
+
+					os << "{\"name\":";
+					const char *abbrev = RomFields::ageRatingAbbrev(i);
+					if (abbrev) {
+						os << '"' << abbrev << '"';
+					} else {
+						// Invalid age rating.
+						// Use the numeric index.
+						os << i;
+					}
+					os << ",\"rating\":\""
+					   << RomFields::ageRatingDecode(i, rating)
+					   << "\"}";
+				}
+				os << "]}";
+				break;
+			}
+
 			default: {
 				assert(!"Unknown RomFieldType");
 				os << "{\"type\":\"NYI\",\"desc\":{\"name\":" << JSONString(desc->name) << "}}";

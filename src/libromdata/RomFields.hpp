@@ -35,11 +35,12 @@ class RomFields
 	public:
 		// ROM field types.
 		enum RomFieldType {
-			RFT_INVALID,	// Invalid. (skips the field)
-			RFT_STRING,	// Basic string.
-			RFT_BITFIELD,	// Bitfield.
-			RFT_LISTDATA,	// ListData.
-			RFT_DATETIME,	// Date/Time.
+			RFT_INVALID,		// Invalid. (skips the field)
+			RFT_STRING,		// Basic string.
+			RFT_BITFIELD,		// Bitfield.
+			RFT_LISTDATA,		// ListData.
+			RFT_DATETIME,		// Date/Time.
+			RFT_AGE_RATINGS,	// Age ratings.
 		};
 
 		// Description for String.
@@ -150,7 +151,38 @@ class RomFields
 				// NOTE: -1 is used to indicate
 				// an invalid date/time.
 				int64_t date_time;
+
+				// Age ratings. (pointer to uint16_t[16])
+				// See AgeRatingsCountry for field indexes.
+				uint16_t *age_ratings;
 			};
+		};
+
+		// Age Ratings indexes.
+		// These correspond to Wii and/or 3DS fields.
+		enum AgeRatingsCountry {
+			AGE_JAPAN	= 0,	// Japan (CERO)
+			AGE_USA		= 1,	// USA (ESRB)
+			AGE_GERMANY	= 3,	// Germany (USK)
+			AGE_EUROPE	= 4,	// Europe (PEGI)
+			AGE_FINLAND	= 5,	// Finland (MEKU)
+			AGE_PORTUGAL	= 6,	// Portugal (PEGI-PT)
+			AGE_ENGLAND	= 7,	// England (BBFC)
+			AGE_AUSTRALIA	= 8,	// Australia (AGCB)
+			AGE_SOUTH_KOREA	= 9,	// South Korea (GRB)
+			AGE_TAIWAN	= 10,	// Taiwan (CGSRR)
+
+			AGE_MAX		= 16	// Maximum number of age rating fields
+		};
+
+		// Age Ratings bitfields.
+		enum AgeRatingsBitfield {
+			AGEBF_MIN_AGE_MASK	= 0x001F,	// Low 5 bits indicate the minimum age.
+			AGEBF_ACTIVE		= 0x0020,	// Rating is only valid if this is set.
+			AGEBF_PENDING		= 0x0040,	// Rating is pending.
+			AGEBF_NO_RESTRICTION	= 0x0080,	// No age restriction.
+			AGEBF_ONLINE_PLAY	= 0x0100,	// Rating may change due to online play.
+			AGEBF_PROHIBITED	= 0x0200,	// Game is specifically prohibited.
 		};
 
 	public:
@@ -204,6 +236,28 @@ class RomFields
 		 * TODO: Move to RomFieldsPrivate?
 		 */
 		void detach(void);
+
+	public:
+		/**
+		 * Get the abbreviation of an age rating organization.
+		 * (TODO: Full name function?)
+		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @return Abbreviation (in ASCII), or nullptr if invalid.
+		 */
+		static const char *ageRatingAbbrev(int country);
+
+		/**
+		 * Decode an age rating into a human-readable string.
+		 * This does not include the name of the rating organization.
+		 *
+		 * NOTE: The returned string is in UTF-8 in order to
+		 * be able to use special characters.
+		 *
+		 * @param country Rating country. (See AgeRatingsCountry.)
+		 * @param rating Rating value.
+		 * @return Human-readable string, or empty string if the rating isn't active.
+		 */
+		static std::string ageRatingDecode(int country, uint16_t rating);
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
@@ -295,6 +349,13 @@ class RomFields
 		 * @return Field index.
 		 */
 		int addData_dateTime(int64_t date_time);
+
+		/**
+		 * Add age ratings.
+		 * @param age_ratings Age ratings array. (uint16_t[16])
+		 * @return Field index.
+		 */
+		int addData_ageRatings(uint16_t age_ratings[AGE_MAX]);
 };
 
 }

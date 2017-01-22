@@ -210,7 +210,7 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 
 	/** Wii-specific fields. **/
 	// Age rating(s).
-	{_RP("Age Rating"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Age Rating"), RomFields::RFT_AGE_RATINGS, {nullptr}},
 	// Wii System Update version.
 	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
 
@@ -1280,49 +1280,37 @@ int GameCube::loadFieldData(void)
 
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
-	// TODO: Optimize this?
-	ostringstream oss;
-	static const char rating_organizations[16][8] = {
-		"CERO", "ESRB", "", "USK",
-		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB", "GRB", "", "",
-		"", "", "", ""
-	};
+	// Note that not all 16 fields are present on GCN,
+	// though the fields do match exactly, so no
+	// mapping is necessary.
+	uint16_t age_ratings[RomFields::AGE_MAX] = { };
+	// Valid ratings: 0-1, 3-9
+	static const uint16_t valid_ratings = 0x3FB;
 
-	for (int i = 0; i < 16; i++) {
-		// "Ratings" value is an age.
-		// TODO: Decode to e.g. ESRB and CERO identifiers.
-		// TODO: Handle PEGI before USK?
-		if (rating_organizations[i][0] == 0)
+	for (int i = RomFields::AGE_MAX-1; i > 0; i--) {
+		if (!(valid_ratings & (1 << i))) {
+			// Rating is not applicable for GameCube.
 			continue;
+		}
 
-		// NOTE: This field also contains some flags:
-		// - 0x80: Rating is unused.
-		// - 0x20: Has online play. (TODO: Check PAL and JPN)
-		if (d->regionSetting.ratings[i] < 0x80) {
-			oss << rating_organizations[i] << "="
-			    << (int)(d->regionSetting.ratings[i] & 0x1F);
-			if (d->regionSetting.ratings[i] & 0x20) {
-				// Indicate online play.
-				// TODO: Explain this flag.
-				// NOTE: Unicode U+00B0, encoded as UTF-8.
-				oss << "\xC2\xB0";
-			}
-			oss << ", ";
+		// GCN ratings field:
+		// - 0x1F: Age rating.
+		// - 0x20: Has online play if set.
+		// - 0x80: Unused if set.
+		const uint8_t rvl_rating = d->regionSetting.ratings[i];
+		if (rvl_rating & 0x80) {
+			// Rating is unused.
+			continue;
+		}
+		// Set active | age value.
+		age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
+
+		// Is "rating may change during online play" set?
+		if (rvl_rating & 0x20) {
+			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
 		}
 	}
-
-	string str = oss.str();
-	if (str.size() > 2) {
-		// Remove the trailing ", ".
-		str.resize(str.size() - 2);
-	}
-
-	if (!str.empty()) {
-		d->fields->addData_string(utf8_to_rp_string(str.data(), (int)str.size()));
-	} else {
-		d->fields->addData_string(_RP("Unknown"));
-	}
+	d->fields->addData_ageRatings(age_ratings);
 
 	// Load the Wii partition tables.
 	int ret = d->loadWiiPartitionTables();
