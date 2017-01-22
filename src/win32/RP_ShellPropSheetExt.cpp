@@ -46,9 +46,11 @@ using namespace LibRomData;
 
 // C++ includes.
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
+using std::wostringstream;
 using std::unique_ptr;
 using std::unordered_set;
 using std::wstring;
@@ -265,6 +267,17 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
+
+		/**
+		 * Initialize an Age Ratings field.
+		 * This function internally calls initString().
+		 * @param hDlg		[in] Dialog window.
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a single line label.
+		 * @return Field height, in pixels.
+		 */
+		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size);
 
 		/**
 		 * Initialize the bold font.
@@ -1296,6 +1309,82 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 }
 
 /**
+ * Initialize an Age Ratings field.
+ * This function internally calls initString().
+ * @param hDlg		[in] Dialog window.
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a single line label.
+ * @return Field height, in pixels.
+ */
+int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
+	const POINT &pt_start, int idx, const SIZE &size)
+{
+	if (!hDlg)
+		return 0;
+
+	const RomFields *fields = romData->fields();
+	if (!fields)
+		return 0;
+
+	const RomFields::Desc *desc = fields->desc(idx);
+	const RomFields::Data *data = fields->data(idx);
+	if (!desc || !data)
+		return 0;
+	if (desc->type != RomFields::RFT_AGE_RATINGS ||
+	    data->type != RomFields::RFT_AGE_RATINGS)
+		return 0;
+	if (!desc->name || desc->name[0] == '\0')
+		return 0;
+
+	// Convert the age ratings field to a string.
+	wostringstream woss;
+	bool printedOne = false;
+	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+		const uint16_t rating = data->age_ratings[i];
+		if (!(rating & RomFields::AGEBF_ACTIVE))
+			continue;
+
+		if (printedOne) {
+			// Append a comma.
+			woss << L", ";
+		}
+
+		const char *abbrev = RomData::ageRatingAbbrev(i);
+		if (abbrev) {
+			woss << RP2W_s(latin1_to_rp_string(abbrev, -1));
+		} else {
+			// Invalid age rating.
+			// Use the numeric index.
+			woss << i;
+		}
+		woss << L'=';
+
+		// TODO: Decode numeric ratings based on organization.
+		if (rating & RomFields::AGEBF_PENDING) {
+			// Rating is pending.
+			woss << L"RP";
+		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
+			// No age restriction.
+			woss << L"All";
+		} else {
+			// Use the age rating.
+			woss << (rating & RomFields::AGEBF_MIN_AGE_MASK);
+		}
+
+		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
+			// Rating may change during online play.
+			// TODO: Add a description of this somewhere.
+			// NOTE: Unicode U+00B0, encoded as UTF-8.
+			woss << (wchar_t)0x00B0;
+		}
+	}
+
+	// Initialize the string.
+	return initString(hDlg, pt_start, idx, size, woss.str().c_str());
+}
+
+/**
  * Monospaced font enumeration procedure.
  * @param lpelfe Enumerated font information.
  * @param lpntme Font metrics.
@@ -1638,6 +1727,18 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				field_cy = initDateTime(hDlg, pt_start, idx, size);
 				if (field_cy == 0) {
 					// initDateTime() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				}
+				break;
+			}
+
+			case RomFields::RFT_AGE_RATINGS: {
+				// Age Ratings field.
+				SIZE size = {dlg_value_width, field_cy};
+				field_cy = initAgeRatings(hDlg, pt_start, idx, size);
+				if (field_cy == 0) {
+					// initAgeRatings() failed.
 					// Remove the description label.
 					DestroyWindow(hStatic);
 				}
