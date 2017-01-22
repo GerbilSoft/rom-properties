@@ -1,4 +1,4 @@
-This copy of zlib-1.2.10 is a modified version of the original.
+This copy of zlib-1.2.11 is a modified version of the original.
 
 The following changes have been made to the original:
 
@@ -10,7 +10,7 @@ The following changes have been made to the original:
 - Example binaries are no longer built.
 
 - The OF() and ON() macros have been renamed to _Z_OF() and _Z_ON().
-  Based on Gentoo's zlib-1.2.10 patches.
+  Based on Gentoo's zlib-1.2.11 patches.
 
 - contrib/ has been stripped of everything but asm-optimized functions.
 
@@ -25,4 +25,4 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
-To obtain the original zlib-1.2.10, visit http://www.zlib.net .
+To obtain the original zlib-1.2.11, visit http://www.zlib.net .
