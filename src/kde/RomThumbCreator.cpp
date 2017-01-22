@@ -75,33 +75,75 @@ extern "C" {
 	}
 }
 
-/** RomThumbCreator **/
-
-/**
- * Create a thumbnail for a ROM image.
- * @param path Local pathname of the ROM image.
- * @param width Requested width.
- * @param height Requested height.
- * @param img Target image.
- * @return True if a thumbnail was created; false if not.
- */
-bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
+class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 {
-	// Assuming width and height are the same.
-	// TODO: What if they aren't?
-	Q_UNUSED(height);
-	int ret = getThumbnail(Q2RP(path), width, img);
-	return (ret == 0);
-}
+	public:
+		RomThumbCreatorPrivate() { }
 
-/** TCreateThumbnail functions. **/
+	private:
+		typedef TCreateThumbnail<QImage> super;
+		Q_DISABLE_COPY(RomThumbCreatorPrivate)
+
+	public:
+		/** TCreateThumbnail functions. **/
+
+		/**
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
+		 */
+		virtual QImage rpImageToImgClass(const rp_image *img) const final;
+
+		/**
+		 * Wrapper function to check if an ImgClass is valid.
+		 * @param imgClass ImgClass
+		 * @return True if valid; false if not.
+		 */
+		virtual bool isImgClassValid(const QImage &imgClass) const final;
+
+		/**
+		 * Wrapper function to get a "null" ImgClass.
+		 * @return "Null" ImgClass.
+		 */
+		virtual QImage getNullImgClass(void) const final;
+
+		/**
+		 * Free an ImgClass object.
+		 * This may be no-op for e.g. QImage.
+		 * @param imgClass ImgClass object.
+		 */
+		virtual void freeImgClass(const QImage &imgClass) const final;
+
+		/**
+		 * Get an ImgClass's size.
+		 * @param imgClass ImgClass object.
+		 * @retrun Size.
+		 */
+		virtual ImgSize getImgSize(const QImage &imgClass) const final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+
+		/**
+		 * Get the proxy for the specified URL.
+		 * @return Proxy, or empty string if no proxy is needed.
+		 */
+		virtual rp_string proxyForUrl(const rp_string &url) const final;
+};
+
+/** RomThumbCreatorPrivate **/
 
 /**
  * Wrapper function to convert rp_image* to ImgClass.
  * @param img rp_image
  * @return ImgClass.
  */
-QImage RomThumbCreator::rpImageToImgClass(const rp_image *img) const
+QImage RomThumbCreatorPrivate::rpImageToImgClass(const rp_image *img) const
 {
 	return rpToQImage(img);
 }
@@ -111,7 +153,7 @@ QImage RomThumbCreator::rpImageToImgClass(const rp_image *img) const
  * @param imgClass ImgClass
  * @return True if valid; false if not.
  */
-bool RomThumbCreator::isImgClassValid(const QImage &imgClass) const
+bool RomThumbCreatorPrivate::isImgClassValid(const QImage &imgClass) const
 {
 	return !imgClass.isNull();
 }
@@ -120,7 +162,7 @@ bool RomThumbCreator::isImgClassValid(const QImage &imgClass) const
  * Wrapper function to get a "null" ImgClass.
  * @return "Null" ImgClass.
  */
-QImage RomThumbCreator::getNullImgClass(void) const
+QImage RomThumbCreatorPrivate::getNullImgClass(void) const
 {
 	return QImage();
 }
@@ -130,7 +172,7 @@ QImage RomThumbCreator::getNullImgClass(void) const
  * This may be no-op for e.g. QImage.
  * @param imgClass ImgClass object.
  */
-void RomThumbCreator::freeImgClass(const QImage &imgClass) const
+void RomThumbCreatorPrivate::freeImgClass(const QImage &imgClass) const
 {
 	// Nothing to do here...
 	Q_UNUSED(imgClass)
@@ -141,7 +183,7 @@ void RomThumbCreator::freeImgClass(const QImage &imgClass) const
  * @param imgClass ImgClass object.
  * @retrun Size.
  */
-RomThumbCreator::ImgSize RomThumbCreator::getImgSize(const QImage &imgClass) const
+RomThumbCreatorPrivate::ImgSize RomThumbCreatorPrivate::getImgSize(const QImage &imgClass) const
 {
 	ImgSize sz = {imgClass.width(), imgClass.height()};
 	return sz;
@@ -153,7 +195,7 @@ RomThumbCreator::ImgSize RomThumbCreator::getImgSize(const QImage &imgClass) con
  * @param sz New size.
  * @return Rescaled ImgClass.
  */
-QImage RomThumbCreator::rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const
+QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const
 {
 	return imgClass.scaled(sz.width, sz.height,
 		Qt::KeepAspectRatio, Qt::FastTransformation);
@@ -163,7 +205,7 @@ QImage RomThumbCreator::rescaleImgClass(const QImage &imgClass, const ImgSize &s
  * Get the proxy for the specified URL.
  * @return Proxy, or empty string if no proxy is needed.
  */
-rp_string RomThumbCreator::proxyForUrl(const rp_string &url) const
+rp_string RomThumbCreatorPrivate::proxyForUrl(const rp_string &url) const
 {
 	QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(url)));
 	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
@@ -173,4 +215,34 @@ rp_string RomThumbCreator::proxyForUrl(const rp_string &url) const
 
 	// Proxy is required..
 	return Q2RP(proxy);
+}
+
+/** RomThumbCreator **/
+
+RomThumbCreator::RomThumbCreator()
+	: d_ptr(new RomThumbCreatorPrivate())
+{ }
+
+RomThumbCreator::~RomThumbCreator()
+{
+	delete d_ptr;
+}
+
+/**
+ * Create a thumbnail for a ROM image.
+ * @param path Local pathname of the ROM image.
+ * @param width Requested width.
+ * @param height Requested height.
+ * @param img Target image.
+ * @return True if a thumbnail was created; false if not.
+ */
+bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
+{
+	Q_UNUSED(height);
+
+	// Assuming width and height are the same.
+	// TODO: What if they aren't?
+	Q_D(RomThumbCreator);
+	int ret = d->getThumbnail(Q2RP(path), width, img);
+	return (ret == 0);
 }

@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 #define __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 
+#include <QtCore/qglobal.h>
 #include <kio/thumbcreator.h>
 class QUrl;
 
@@ -33,64 +34,21 @@ namespace LibRomData {
 	class rp_image;
 }
 
-class RomThumbCreator : public ThumbCreator, public LibRomData::TCreateThumbnail<QImage>
+class RomThumbCreatorPrivate;
+class RomThumbCreator : public ThumbCreator
 {
+	public:
+		RomThumbCreator();
+		virtual ~RomThumbCreator();
+
 	public:
 		virtual bool create(const QString &path, int width, int height, QImage &img) final;
 
 	private:
 		typedef ThumbCreator super;
-
-	protected:
-		/** TCreateThumbnail functions. **/
-
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		virtual QImage rpImageToImgClass(const LibRomData::rp_image *img) const final;
-
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		virtual bool isImgClassValid(const QImage &imgClass) const final;
-
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		virtual QImage getNullImgClass(void) const final;
-
-		/**
-		 * Free an ImgClass object.
-		 * This may be no-op for e.g. QImage.
-		 * @param imgClass ImgClass object.
-		 */
-		virtual void freeImgClass(const QImage &imgClass) const final;
-
-		/**
-		 * Get an ImgClass's size.
-		 * @param imgClass ImgClass object.
-		 * @retrun Size.
-		 */
-		virtual ImgSize getImgSize(const QImage &imgClass) const final;
-
-		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @return Rescaled ImgClass.
-		 */
-		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
-
-		/**
-		 * Get the proxy for the specified URL.
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const final;
+		RomThumbCreatorPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(RomThumbCreator)
+		Q_DISABLE_COPY(RomThumbCreator)
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */
