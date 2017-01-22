@@ -33,37 +33,6 @@
 G_BEGIN_DECLS;
 
 /**
- * rp_create_thumbnail() errors.
- */
-typedef enum {
-	RPCT_SUCCESS			= 0,
-	RPCT_DLL_ERROR			= 1,	// Cannot load the shared library.
-	RPCT_SOURCE_FILE_ERROR		= 2,	// Cannot open the source file.
-	RPCT_SOURCE_FILE_NOT_SUPPORTED	= 3,	// Source file isn't supported.
-	RPCT_SOURCE_FILE_NO_IMAGE	= 4,	// Source file has no image.
-	RPCT_OUTPUT_FILE_FAILED		= 5,	// Failed to save the output file.
-} RpCreateThumbnailError;
-
-// Thumbnail nearest-neighbor upscaling policy.
-// TODO: Make this configurable.
-// TODO: Combine with win32/RP_ThumbnailProvider and kde/RomThumbCreator.
-// (originally called ResizePolicy)
-typedef enum {
-	RESIZE_UP_NONE,	// No resizing.
-
-	// Only resize images that are less than or equal to half the
-	// requested thumbnail size. This is a compromise to allow
-	// small icons like Nintendo DS icons to be enlarged while
-	// larger but not-quite 256px images like GameTDB disc scans'
-	// (160px) will remain as-is.
-	RESIZE_UP_HALF,
-
-	// Resize all images that are smaller than the requested
-	// thumbnail size.
-	RESIZE_UP_ALL,
-} ResizeNearestUpPolicy;
-
-/**
  * Thumbnail creator function for wrapper programs.
  * @param source_file Source file. (UTF-8)
  * @param output_file Output file. (UTF-8)
