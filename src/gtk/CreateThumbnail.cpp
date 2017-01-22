@@ -119,35 +119,39 @@ GdkPixbuf *CreateThumbnailPrivate::getInternalImage(const RomData *romData, RomD
  */
 GdkPixbuf *CreateThumbnailPrivate::getExternalImage(const RomData *romData, RomData::ImageType imageType)
 {
-	return nullptr;
-#if 0
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
 		// Out of range.
-		return QImage();
+		return nullptr;
 	}
 
 	// Synchronously download from the source URLs.
 	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
 	if (!extURLs || extURLs->empty()) {
 		// No URLs.
-		return QImage();
+		return nullptr;
 	}
+
+	// Use the GIO proxy resolver to look up proxies.
+	GProxyResolver *proxy_resolver = g_proxy_resolver_get_default();
 
 	CacheManager cache;
 	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
-		// Check if a proxy is required for this URL.
 		// TODO: Optimizations.
-		QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(extURL.url)));
-		if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
-			// No proxy.
-			cache.setProxyUrl(nullptr);
-		} else {
-			// Proxy is specified.
-			cache.setProxyUrl(Q2RP(proxy));
+		// TODO: Support multiple proxies?
+		gchar **proxies = g_proxy_resolver_lookup(proxy_resolver, extURL.url.c_str(), nullptr, nullptr);
+		gchar *proxy = nullptr;
+		if (proxies) {
+			// Check if the first proxy is "direct://".
+			if (strcmp(proxies[0], "direct://") != 0) {
+				// Not direct access. Use this proxy.
+				proxy = proxies[0];
+			}
 		}
+		cache.setProxyUrl(proxy);
+		g_strfreev(proxies);
 
 		// TODO: Have download() return the actual data and/or load the cached file.
 		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
@@ -160,19 +164,18 @@ GdkPixbuf *CreateThumbnailPrivate::getExternalImage(const RomData *romData, RomD
 			unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
 			if (dl_img && dl_img->isValid()) {
 				// Image loaded successfully.
-				QImage qdl_img = rpToQImage(dl_img.get());
-				if (!qdl_img.isNull()) {
+				GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(dl_img.get());
+				if (pixbuf) {
 					// Image converted successfully.
 					// TODO: Width/height and transparency processing?
-					return qdl_img;
+					return pixbuf;
 				}
 			}
 		}
 	}
 
 	// No image.
-	return QImage();
-#endif
+	return nullptr;
 }
 
 /**
