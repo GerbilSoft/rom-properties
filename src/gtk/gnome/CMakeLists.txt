@@ -1,12 +1,12 @@
 PROJECT(rom-properties-gnome)
 
 # GNOME (Nautilus) frontend for rom-properties.
-
 FIND_PACKAGE(GLib2 2.26.0)
+FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
 # GTK3 minimum is 3.0.0, so no version check is needed.
 FIND_PACKAGE(GTK3)
-IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
@@ -15,11 +15,11 @@ IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
 	ENDIF(NOT LibNautilusExtension_FOUND)
-ELSE(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS "${rom-properties-gtk_SRCS}")
@@ -56,7 +56,7 @@ IF(BUILD_GNOME)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome romdata8 cachemgr8)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::glib2)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")
 
 	# Thumbnail wrapper program.

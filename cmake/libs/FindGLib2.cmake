@@ -18,5 +18,5 @@ FIND_LIBRARY_PKG_CONFIG(GLib2
 	glib-2.0	# pkgconfig
 	glib.h		# header
 	glib-2.0	# library
-	GLib2::glib2	# imported target
+	GLib2::glib	# imported target
 	)
