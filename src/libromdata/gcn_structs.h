@@ -297,7 +297,7 @@ enum RVL_RegionSetting_RatingCountry {
 	RATING_FINLAND = 5,	// MEKU?
 	RATING_PORTUGAL = 6,	// Modified PEGI
 	RATING_BRITAIN = 7,	// BBFC
-	RATING_AUSTRALIA = 8,	// ACB
+	RATING_AUSTRALIA = 8,	// AGCB
 	RATING_SOUTH_KOREA = 9,	// GRB
 };
 

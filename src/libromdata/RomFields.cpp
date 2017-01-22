@@ -294,7 +294,7 @@ const char *RomFields::ageRatingAbbrev(int country)
 	static const char abbrevs[16][8] = {
 		"CERO", "ESRB", "",        "USK",
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"ACB",  "GRB",  "CGSRR",   "",
+		"AGCB", "GRB",  "CGSRR",   "",
 		"", "", "", ""
 	};
 
@@ -390,6 +390,30 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 						break;
 					case 18:
 						oss << "AO";
+						break;
+					default:
+						// Unknown rating. Show the numeric value.
+						oss << (rating & AGEBF_MIN_AGE_MASK);
+						break;
+				}
+				break;
+
+			case AGE_AUSTRALIA:
+				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
+					case 0:
+						oss << "G";
+						break;
+					case 7:
+						oss << "PG";
+						break;
+					case 14:
+						oss << "M";
+						break;
+					case 15:
+						oss << "MA15+";
+						break;
+					case 18:
+						oss << "R18+";
 						break;
 					default:
 						// Unknown rating. Show the numeric value.
