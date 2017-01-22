@@ -1,0 +1,48 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+         "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!-- Reference: https://wiki.gnome.org/action/show/DraftSpecs/ThumbnailerSpec?action=show&redirect=ThumbnailerSpec -->
+ <node name="/com/company/Thumbnailer1">
+  <interface name="org.freedesktop.thumbnails.SpecializedThumbnailer1">
+
+    <!-- Request to create a thumbnail. -->
+    <method name="Queue">
+      <arg type="s" name="uri" direction="in" />
+      <arg type="s" name="mime_type" direction="in" />
+      <arg type="s" name="flavor" direction="in" />
+      <arg type="b" name="urgent" direction="in" />
+      <arg type="u" name="handle" direction="out">
+        <annotation name="org.freedesktop.DBus.GLib.ReturnVal" value=""/>
+      </arg>
+    </method>
+ 
+    <!-- Cancel/Dequeue thumbnail requests. -->
+    <method name="Dequeue">
+      <arg type="u" name="handle" direction="in" />
+    </method>
+
+    <!-- Thumbnail is ready for use. -->
+    <signal name="Ready">
+      <arg type="u" name="handle" />
+      <arg type="s" name="uri" />
+    </signal>
+
+    <!-- Enqueued request is started to be processed. -->
+    <signal name="Started">
+      <arg type="u" name="handle" />
+    </signal>
+
+    <!-- Enqueued request is completed. -->
+    <signal name="Finished">
+      <arg type="u" name="handle" />
+    </signal>
+
+    <!-- Error occurred. -->
+    <signal name="Error">
+      <arg type="u" name="handle" />
+      <arg type="s" name="failed_uri" />
+      <arg type="i" name="error_code" />
+      <arg type="s" name="message" />
+    </signal>
+
+  </interface>
+</node>

@@ -4,9 +4,10 @@ PROJECT(rom-properties-xfce)
 FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
+FIND_PACKAGE(DBusGLib)
 # GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 COMPONENTS gtk)
-IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND AND DBusGLib_FOUND)
 	# Find the ThunarX 2 library.
 	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
@@ -14,11 +15,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 		# Disable the XFCE frontend.
 		SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
 	ENDIF(NOT ThunarX2_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND AND DBusGLib_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
 	SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND AND DBusGLib_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS "${rom-properties-gtk_SRCS}")
@@ -35,6 +36,24 @@ SET(rom-properties-xfce_H
 	${rom-properties-xfce_H}
 	rom-properties-provider.hpp
 	rom-properties-page.hpp
+	)
+
+# D-Bus bindings for the thumbnailer.
+ADD_CUSTOM_COMMAND(
+	OUTPUT rp-thumbnail-server-bindings.h
+	COMMAND "${GLIB_DBUS_BINDING_TOOL}" --prefix=rp_thumbnail --mode=glib-server
+		"${CMAKE_CURRENT_SOURCE_DIR}/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml"
+		> rp-thumbnail-server-bindings.h
+	DEPENDS org.freedesktop.thumbnails.SpecializedThumbnailer1.xml
+	VERBATIM
+	)
+
+SET(rp-thumbnail-dbus_SRCS
+	rp-thumbnail-dbus.cpp
+	)
+SET(rp-thumbnail-dbus_H
+	rp-thumbnail-dbus.hpp
+	${CMAKE_CURRENT_BINARY_DIR}/rp-thumbnail-server-bindings.h
 	)
 
 IF(BUILD_XFCE)
@@ -57,6 +76,23 @@ IF(BUILD_XFCE)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce ${GTK2_LIBRARIES} GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS} -DG_LOG_DOMAIN=\"rom-properties-xfce\")
+
+	# D-Bus thumbnailer.
+	ADD_EXECUTABLE(rp-thumbnailer-dbus
+		${rp-thumbnail-dbus_SRCS}
+		${rp-thumbnail-dbus_H}
+		)
+	DO_SPLIT_DEBUG(rp-thumbnailer-dbus)
+	TARGET_INCLUDE_DIRECTORIES(rp-thumbnailer-dbus
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+		)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus romdata8 cachemgr8)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GdkPixbuf2::gdkpixbuf2 GLib2::dbus GLib2::gobject GLib2::glib)
 ENDIF(BUILD_XFCE)
 
 #######################
