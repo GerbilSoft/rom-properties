@@ -283,7 +283,11 @@ public:
 			os << '=';
 
 			// TODO: Decode numeric ratings based on organization.
-			if (rating & RomFields::AGEBF_PENDING) {
+			if (rating & RomFields::AGEBF_PROHIBITED) {
+				// Prohibited.
+				// TODO: Better description?
+				os << "No";
+			} else if (rating & RomFields::AGEBF_PENDING) {
 				// Rating is pending.
 				os << "RP";
 			} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {

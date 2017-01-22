@@ -1045,7 +1045,11 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 		oss << '=';
 
 		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PENDING) {
+		if (rating & RomFields::AGEBF_PROHIBITED) {
+			// Prohibited.
+			// TODO: Better description?
+			oss << "No";
+		} else if (rating & RomFields::AGEBF_PENDING) {
 			// Rating is pending.
 			oss << "RP";
 		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {

@@ -1362,7 +1362,11 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 		woss << L'=';
 
 		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PENDING) {
+		if (rating & RomFields::AGEBF_PROHIBITED) {
+			// Prohibited.
+			// TODO: Better description?
+			woss << L"No";
+		} else if (rating & RomFields::AGEBF_PENDING) {
 			// Rating is pending.
 			woss << L"RP";
 		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {

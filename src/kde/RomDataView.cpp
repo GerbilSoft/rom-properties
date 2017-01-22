@@ -737,7 +737,11 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 		str += QChar(L'=');
 
 		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PENDING) {
+		if (rating & RomFields::AGEBF_PROHIBITED) {
+			// Prohibited.
+			// TODO: Better description?
+			str += QLatin1String("No");
+		} else if (rating & RomFields::AGEBF_PENDING) {
 			// Rating is pending.
 			str += QLatin1String("RP");
 		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
