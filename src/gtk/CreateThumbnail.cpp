@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "CreateThumbnail.hpp"
+#include "GdkImageConv.hpp"
 
 // libcachemgr
 #include "libcachemgr/CacheManager.hpp"
@@ -94,23 +95,20 @@ class CreateThumbnailPrivate
  */
 GdkPixbuf *CreateThumbnailPrivate::getInternalImage(const RomData *romData, RomData::ImageType imageType)
 {
-	return nullptr;
-#if 0
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
 		// Out of range.
-		return QImage();
+		return nullptr;
 	}
 
 	const rp_image *image = romData->image(imageType);
 	if (!image) {
 		// No image.
-		return QImage();
+		return nullptr;
 	}
 
-	// Convert the rp_image to QImage.
-	return rpToQImage(image);
-#endif
+	// Convert the rp_image to GdkPixbuf.
+	return GdkImageConv::rp_image_to_GdkPixbuf(image);
 }
 
 /**
@@ -330,5 +328,5 @@ int rp_create_thumbnail(const char *source_file, const char *output_file, int ma
 
 	g_object_unref(ret_img);
 	romData->unref();
-	return true;
+	return ret;
 }
