@@ -41,8 +41,6 @@ G_BEGIN_DECLS;
  */
 G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS;
 
 #endif /* __ROMPROPERTIES_GTK_CREATETHUMBNAIL_HPP__ */
