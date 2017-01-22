@@ -127,8 +127,8 @@ class NESPrivate : public RomDataPrivate
 		 * @return Unix time, or -1 if an error occurred.
 		 *
 		 * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
-		 * not likely to be valid for Dreamcast, since Dreamcast
-		 * was released in 1998.
+		 * not likely to be valid for NES/Famicom, since the Famicom
+		 * was released in 1983.
 		 */
 		static int64_t fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds);
 };
@@ -197,8 +197,8 @@ inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
  * @return Unix time, or -1 if an error occurred.
  *
  * NOTE: -1 is a valid Unix timestamp (1970/01/01), but is
- * not likely to be valid for Dreamcast, since Dreamcast
- * was released in 1998.
+ * not likely to be valid for NES/Famicom, since the Famicom
+ * was released in 1983.
  */
 int64_t NESPrivate::fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds)
 {
@@ -604,9 +604,19 @@ vector<const rp_char*> NES::supportedFileExtensions_static(void)
 {
 	vector<const rp_char*> ret;
 	ret.reserve(3);
-	ret.push_back(_RP(".nes"));
-	ret.push_back(_RP(".fds"));
-	ret.push_back(_RP(".tds"));
+	ret.push_back(_RP(".nes"));	// iNES
+	ret.push_back(_RP(".fds"));	// Famicom Disk System
+	ret.push_back(_RP(".qd"));	// Animal Crossing
+	ret.push_back(_RP(".tds"));	// FDS on 3DS Virtual Console
+
+	// NOTE: .fds is missing block checksums.
+	// .qd has block checksums, as does .tds (which is basically
+	// a 16-byte header, FDS BIOS, and a .qd file).
+
+	// This isn't too important right now because we're only
+	// reading the header, but we'll need to take it into
+	// account if file access is added.
+
 	return ret;
 }
 
