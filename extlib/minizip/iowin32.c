@@ -28,9 +28,12 @@
 
 // see Include/shared/winapifamily.h in the Windows Kit
 #if defined(WINAPI_FAMILY_PARTITION) && (!(defined(IOWIN32_USING_WINRT_API)))
-#if WINAPI_FAMILY_ONE_PARTITION(WINAPI_FAMILY, WINAPI_PARTITION_APP)
-#define IOWIN32_USING_WINRT_API 1
-#endif
+# ifndef WINAPI_FAMILY_ONE_PARTITION
+#  define WINAPI_FAMILY_ONE_PARTITION(PartitionSet, Partition) ((WINAPI_FAMILY & PartitionSet) == Partition)
+# endif
+# if WINAPI_FAMILY_ONE_PARTITION(WINAPI_FAMILY, WINAPI_PARTITION_APP)
+#  define IOWIN32_USING_WINRT_API 1
+# endif
 #endif
 
 voidpf  ZCALLBACK win32_open_file_func  _MZ_OF((voidpf opaque, const char* filename, int mode));
