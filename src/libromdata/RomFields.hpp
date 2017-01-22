@@ -182,6 +182,7 @@ class RomFields
 			AGEBF_PENDING		= 0x0040,	// Rating is pending.
 			AGEBF_NO_RESTRICTION	= 0x0080,	// No age restriction.
 			AGEBF_ONLINE_PLAY	= 0x0100,	// Rating may change due to online play.
+			AGEBF_PROHIBITED	= 0x0200,	// Game is specifically prohibited.
 		};
 
 	public:

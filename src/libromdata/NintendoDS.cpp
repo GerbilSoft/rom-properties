@@ -167,9 +167,12 @@ const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Hardware"), RomFields::RFT_BITFIELD, {&nds_hw_bitfield}},
 	{_RP("DS Region"), RomFields::RFT_BITFIELD, {&nds_region_bitfield}},
+
+	/** DSi-specific fields. **/
 	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
 	// TODO: Is the field name too long?
 	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
+	{_RP("Age Rating"), RomFields::RFT_AGE_RATINGS, {nullptr}},
 };
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
@@ -784,10 +787,46 @@ int NintendoDS::loadFieldData(void)
 				len = sizeof(buf);
 			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 		}
+
+		// Age rating(s).
+		// Note that not all 16 fields are present on DSi,
+		// though the fields do match exactly, so no
+		// mapping is necessary.
+		uint16_t age_ratings[RomFields::AGE_MAX] = { };
+		// Valid ratings: 0-1, 3-9
+		// TODO: Not sure if Finland is valid for DSi.
+		static const uint16_t valid_ratings = 0x3FB;
+
+		for (int i = RomFields::AGE_MAX-1; i > 0; i--) {
+			if (!(valid_ratings & (1 << i))) {
+				// Rating is not applicable for GameCube.
+				continue;
+			}
+
+			// DSi ratings field:
+			// - 0x1F: Age rating.
+			// - 0x40: Prohibited in area. (TODO: Verify)
+			// - 0x80: Rating is valid if set.
+			const uint8_t dsi_rating = romHeader->dsi.age_ratings[i];
+			if (!(dsi_rating & 0x80)) {
+				// Rating is unused.
+				continue;
+			}
+
+			// Set active | age value.
+			age_ratings[i] = RomFields::AGEBF_ACTIVE | (dsi_rating & 0x1F);
+
+			// Is the game prohibited?
+			if (dsi_rating & 0x40) {
+				age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
+			}
+		}
+		d->fields->addData_ageRatings(age_ratings);
 	} else {
 		// Hide the DSi-specific fields.
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
+		d->fields->addData_invalid();	// DSi Region
+		d->fields->addData_invalid();	// DSi ROM Type
+		d->fields->addData_invalid();	// Age Rating
 	}
 
 	// Finished reading the field data.
