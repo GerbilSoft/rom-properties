@@ -412,3 +412,92 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	DeleteObject(hbmMask);
 	return hIcon;
 }
+
+/**
+ * Convert an HBITMAP to rp_image.
+ * @param hBitmap HBITMAP.
+ * @return rp_image.
+ */
+rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
+{
+	BITMAP bm;
+	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
+		// GetObject() failed.
+		return nullptr;
+	}
+
+	// Determine the image format.
+	rp_image::Format format;
+	int copy_len;
+	switch (bm.bmBitsPixel) {
+		case 8:
+			assert(!"fromHBITMAP() doesn't support 8bpp yet.");
+			return nullptr;
+#if 0
+			format = rp_image::FORMAT_CI8;
+			copy_len = bm.bmWidth;
+			break;
+#endif
+		case 32:
+			format = rp_image::FORMAT_ARGB32;
+			copy_len = bm.bmWidth * 4;
+			break;
+		default:
+			assert(!"Unsupported HBITMAP bmBitsPixel value.");
+			return nullptr;
+	}
+
+	// TODO: Copy the palette for 8-bit.
+
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183402(v=vs.85).aspx
+	BITMAPINFOHEADER bi;
+	bi.biSize = sizeof(bi);
+	bi.biWidth = bm.bmWidth;
+	bi.biHeight = bm.bmHeight;
+	bi.biPlanes = 1;
+	bi.biBitCount = bm.bmBitsPixel;
+	bi.biCompression = BI_RGB;
+	bi.biSizeImage = 0;
+	bi.biXPelsPerMeter = 0;
+	bi.biYPelsPerMeter = 0;
+	bi.biClrUsed = 0;	// TODO for 8-bit
+	bi.biClrImportant = 0;	// TODO for 8-bit
+
+	// Allocate memory for the bitmap.
+	const int src_stride = ((bm.bmWidth * bi.biBitCount + 31) / 32) * 4;
+	const DWORD dwBmpSize = src_stride * bm.bmHeight;
+	uint8_t *pBits = static_cast<uint8_t*>(malloc(dwBmpSize));
+	if (!pBits) {
+		// malloc() failed.
+		return nullptr;
+	}
+
+	// Get the DIBits.
+	HDC hDC = GetDC(nullptr);
+	int dib_ret = GetDIBits(hDC, hBitmap, 0, bm.bmHeight, pBits, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+	ReleaseDC(nullptr, hDC);
+	if (!dib_ret) {
+		// GetDIBits() failed.
+		free(pBits);
+		return nullptr;
+	}
+
+	// Copy the data into a new rp_image.
+	rp_image *img = new rp_image(bm.bmWidth, bm.bmHeight, format);
+
+	// TODO: Copy the palette for 8-bit.
+
+	// Copy the image data.
+	const uint8_t *src = pBits;
+	uint8_t *dest = static_cast<uint8_t*>(img->bits());
+	const int dest_stride = img->stride();
+	for (int y = bm.bmHeight; y > 0; y--) {
+		memcpy(dest, src, copy_len);
+		src += src_stride;
+		dest += dest_stride;
+	}
+	free(pBits);
+
+	// rp_image created.
+	return img;
+}

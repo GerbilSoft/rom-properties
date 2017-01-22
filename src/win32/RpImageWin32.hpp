@@ -115,6 +115,13 @@ class RpImageWin32
 		 * @return HICON, or nullptr on error.
 		 */
 		static HICON toHICON(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an HBITMAP to rp_image.
+		 * @param hBitmap HBITMAP.
+		 * @return rp_image.
+		 */
+		static LibRomData::rp_image *fromHBITMAP(HBITMAP hBitmap);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__ */
