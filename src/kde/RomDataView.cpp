@@ -196,7 +196,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
+#ifndef NDEBUG
 	, hasStrfCredits(false)
+#endif
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -753,7 +755,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// Delete the credits label if it's present.
 	delete ui.lblCredits;
 	ui.lblCredits = nullptr;
+#ifndef NDEBUG
 	hasStrfCredits = false;
+#endif
 
 	// Delete the form layout if it's present.
 	if (ui.formLayout) {
