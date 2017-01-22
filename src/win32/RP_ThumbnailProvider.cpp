@@ -76,6 +76,7 @@ class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 		// IRpFile IInitializeWithStream::Initialize().
 		IRpFile *file;
 
+	public:
 		/** TCreateThumbnail functions. **/
 
 		/**
