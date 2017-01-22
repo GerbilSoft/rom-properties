@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "RomFields.hpp"
+
+#include "common.h"
 #include "TextFuncs.hpp"
 
 // C includes.
@@ -44,8 +46,7 @@ class RomFieldsPrivate
 		~RomFieldsPrivate();	// call unref() instead
 
 	private:
-		RomFieldsPrivate(const RomFieldsPrivate &other);
-		RomFieldsPrivate &operator=(const RomFieldsPrivate &other);
+		RP_DISABLE_COPY(RomFieldsPrivate)
 
 	public:
 		/** Reference count functions. **/

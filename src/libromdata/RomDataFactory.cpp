@@ -64,8 +64,7 @@ class RomDataFactoryPrivate
 		~RomDataFactoryPrivate();
 
 	private:
-		RomDataFactoryPrivate(const RomDataFactoryPrivate &other);
-		RomDataFactoryPrivate &operator=(const RomDataFactoryPrivate &other);
+		RP_DISABLE_COPY(RomDataFactoryPrivate)
 
 	public:
 		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);

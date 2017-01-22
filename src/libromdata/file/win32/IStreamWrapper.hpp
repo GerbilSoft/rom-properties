@@ -45,8 +45,7 @@ class IStreamWrapper : public IStream
 
 	private:
 		typedef IStream super;
-		IStreamWrapper(const IStreamWrapper &other);
-		IStreamWrapper &operator=(const IStreamWrapper &other);
+		RP_DISABLE_COPY(IStreamWrapper)
 
 	public:
 		/**

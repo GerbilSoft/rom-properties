@@ -40,8 +40,7 @@ class WbfsReader : public IDiscReader
 		virtual ~WbfsReader();
 
 	private:
-		WbfsReader(const WbfsReader &);
-		WbfsReader &operator=(const WbfsReader &);
+		RP_DISABLE_COPY(WbfsReader)
 	private:
 		friend class WbfsReaderPrivate;
 		WbfsReaderPrivate *const d;

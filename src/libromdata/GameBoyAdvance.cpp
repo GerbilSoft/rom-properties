@@ -49,8 +49,7 @@ class GameBoyAdvancePrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		GameBoyAdvancePrivate(const GameBoyAdvancePrivate &other);
-		GameBoyAdvancePrivate &operator=(const GameBoyAdvancePrivate &other);
+		RP_DISABLE_COPY(GameBoyAdvancePrivate)
 
 	public:
 		/** RomFields **/

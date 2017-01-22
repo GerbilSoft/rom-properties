@@ -39,8 +39,7 @@ class GcnPartitionPrivate
 		virtual ~GcnPartitionPrivate();
 
 	private:
-		GcnPartitionPrivate(const GcnPartitionPrivate &other);
-		GcnPartitionPrivate &operator=(const GcnPartitionPrivate &other);
+		RP_DISABLE_COPY(GcnPartitionPrivate)
 	protected:
 		GcnPartition *const q_ptr;
 

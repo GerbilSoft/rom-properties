@@ -41,8 +41,7 @@ class CisoGcnReader : public IDiscReader
 
 	private:
 		typedef IDiscReader super;
-		CisoGcnReader(const CisoGcnReader &);
-		CisoGcnReader &operator=(const CisoGcnReader &);
+		RP_DISABLE_COPY(CisoGcnReader)
 
 	private:
 		friend class CisoGcnReaderPrivate;

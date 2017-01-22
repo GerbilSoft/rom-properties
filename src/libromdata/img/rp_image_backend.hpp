@@ -37,8 +37,7 @@ class rp_image_backend
 		virtual ~rp_image_backend();
 
 	private:
-		rp_image_backend(const rp_image_backend &other);
-		rp_image_backend &operator=(const rp_image_backend &other);
+		RP_DISABLE_COPY(rp_image_backend)
 	public:
 		bool isValid(void) const;
 

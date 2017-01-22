@@ -22,7 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_NINTENDOPUBLISHERS_HPP__
 
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -32,8 +33,7 @@ class NintendoPublishers
 		NintendoPublishers();
 		~NintendoPublishers();
 	private:
-		NintendoPublishers(const NintendoPublishers &);
-		NintendoPublishers &operator=(const NintendoPublishers &);
+		RP_DISABLE_COPY(NintendoPublishers)
 
 	private:
 		/**

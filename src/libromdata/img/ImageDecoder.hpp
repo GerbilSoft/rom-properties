@@ -22,6 +22,9 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IMG_IMAGEDECODER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IMG_IMAGEDECODER_HPP__
 
+#include "common.h"
+
+// C includes.
 #include <stdint.h>
 
 namespace LibRomData {
@@ -34,8 +37,7 @@ class ImageDecoder
 		// ImageDecoder is a static class.
 		ImageDecoder();
 		~ImageDecoder();
-		ImageDecoder(const ImageDecoder &other);
-		ImageDecoder &operator=(const ImageDecoder &other);
+		RP_DISABLE_COPY(ImageDecoder)
 
 	public:
 		/**

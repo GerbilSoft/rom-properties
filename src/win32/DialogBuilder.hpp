@@ -29,6 +29,7 @@
 #include <cstring>
 
 // rp_string
+#include "libromdata/common.h"
 #include "libromdata/TextFuncs.hpp"
 #include "libromdata/RpWin32.hpp"
 
@@ -49,8 +50,7 @@ class DialogBuilder
 		~DialogBuilder();
 
 	private:
-		DialogBuilder(const DialogBuilder &);
-		DialogBuilder &operator=(const DialogBuilder &);
+		RP_DISABLE_COPY(DialogBuilder)
 
 	private:
 		/** DLGTEMPLATEEX helper functions. **/

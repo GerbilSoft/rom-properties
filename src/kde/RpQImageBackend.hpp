@@ -37,8 +37,7 @@ class RpQImageBackend : public LibRomData::rp_image_backend
 
 	private:
 		typedef LibRomData::rp_image_backend super;
-		RpQImageBackend(const RpQImageBackend &other);
-		RpQImageBackend &operator=(const RpQImageBackend &other);
+		Q_DISABLE_COPY(RpQImageBackend)
 
 	public:
 		/**

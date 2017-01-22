@@ -89,8 +89,7 @@ class TCreateThumbnail
 		TCreateThumbnail();
 		virtual ~TCreateThumbnail();
 	private:
-		TCreateThumbnail(const TCreateThumbnail &other);
-		TCreateThumbnail &operator=(const TCreateThumbnail &other);
+		RP_DISABLE_COPY(TCreateThumbnail)
 
 	public:
 		/**

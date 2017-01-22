@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
 #include "Semaphore.hpp"
 
 namespace LibRomData {
@@ -39,8 +40,7 @@ class CacheManager
 		~CacheManager();
 
 	private:
-		CacheManager(const CacheManager &);
-		CacheManager &operator=(const CacheManager &);
+		RP_DISABLE_COPY(CacheManager)
 
 	public:
 		/** Proxy server functions. **/

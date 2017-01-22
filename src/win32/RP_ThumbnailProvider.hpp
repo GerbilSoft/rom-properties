@@ -22,10 +22,11 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 
-// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-
-#include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
+
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+#include "RP_ComBase.hpp"
 
 // IThumbnailProvider
 #include "thumbcache.h"
@@ -55,8 +56,7 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 	private:
 		typedef RP_ComBase2<IInitializeWithStream, IThumbnailProvider> super;
-		RP_ThumbnailProvider(const RP_ThumbnailProvider &other);
-		RP_ThumbnailProvider &operator=(const RP_ThumbnailProvider &other);
+		RP_DISABLE_COPY(RP_ThumbnailProvider)
 	private:
 		friend class RP_ThumbnailProvider_Private;
 		RP_ThumbnailProvider_Private *const d_ptr;

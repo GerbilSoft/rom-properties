@@ -58,8 +58,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 	private:
 		typedef GcnPartitionPrivate super;
-		WiiPartitionPrivate(const WiiPartitionPrivate &other);
-		WiiPartitionPrivate &operator=(const WiiPartitionPrivate &other);
+		RP_DISABLE_COPY(WiiPartitionPrivate)
 
 	public:
 		// Partition header.

@@ -22,10 +22,11 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 
-// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-
-#include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
+
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+#include "RP_ComBase.hpp"
 
 // CLSID
 extern "C" {
@@ -49,8 +50,7 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 	private:
 		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
-		RP_ExtractIcon(const RP_ExtractIcon &other);
-		RP_ExtractIcon &operator=(const RP_ExtractIcon &other);
+		RP_DISABLE_COPY(RP_ExtractIcon)
 	private:
 		friend class RP_ExtractIcon_Private;
 		RP_ExtractIcon_Private *const d_ptr;

@@ -66,8 +66,7 @@ class RpPngPrivate
 		// RpPngPrivate is a static class.
 		RpPngPrivate();
 		~RpPngPrivate();
-		RpPngPrivate(const RpPngPrivate &other);
-		RpPngPrivate &operator=(const RpPngPrivate &other);
+		RP_DISABLE_COPY(RpPngPrivate)
 
 	public:
 		/** I/O functions. **/

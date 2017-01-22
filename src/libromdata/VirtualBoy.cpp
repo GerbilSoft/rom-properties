@@ -52,8 +52,7 @@ class VirtualBoyPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		VirtualBoyPrivate(const VirtualBoyPrivate &other);
-		VirtualBoyPrivate &operator=(const VirtualBoyPrivate &other);
+		RP_DISABLE_COPY(VirtualBoyPrivate)
 
 	public:
 		/** RomFields **/

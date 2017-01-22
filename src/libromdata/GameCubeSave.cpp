@@ -57,8 +57,7 @@ class GameCubeSavePrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		GameCubeSavePrivate(const GameCubeSavePrivate &other);
-		GameCubeSavePrivate &operator=(const GameCubeSavePrivate &other);
+		RP_DISABLE_COPY(GameCubeSavePrivate)
 
 	public:
 		// RomFields data.

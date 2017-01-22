@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
 
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
 
 #include <stdint.h>
 
@@ -41,8 +42,7 @@ class IDownloader
 		virtual ~IDownloader();
 
 	private:
-		IDownloader(const IDownloader &);
-		IDownloader &operator=(const IDownloader &);
+		RP_DISABLE_COPY(IDownloader)
 
 	public:
 		/** Properties. **/

@@ -59,8 +59,7 @@ class SNES : public RomData
 	private:
 		typedef RomData super;
 		friend class SNESPrivate;
-		SNES(const SNES &other);
-		SNES &operator=(const SNES &other);
+		RP_DISABLE_COPY(SNES)
 
 	public:
 		/** ROM detection functions. **/

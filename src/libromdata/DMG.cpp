@@ -26,7 +26,6 @@
 #include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
-#include "common.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
@@ -50,8 +49,7 @@ class DMGPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		DMGPrivate(const DMGPrivate &other);
-		DMGPrivate &operator=(const DMGPrivate &other);
+		RP_DISABLE_COPY(DMGPrivate)
 
 	public:
 		/** RomFields **/

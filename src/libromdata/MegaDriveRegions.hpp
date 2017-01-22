@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEREGIONS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEREGIONS_HPP__
 
+#include "common.h"
+
 // C includes.
 #include <stdint.h>
 
@@ -33,8 +35,7 @@ class MegaDriveRegions
 		// MegaDriveRegions is a static class.
 		MegaDriveRegions();
 		~MegaDriveRegions();
-		MegaDriveRegions(const MegaDriveRegions &other);
-		MegaDriveRegions &operator=(const MegaDriveRegions &other);
+		RP_DISABLE_COPY(MegaDriveRegions)
 
 	public:
 		// Region code bitfields.

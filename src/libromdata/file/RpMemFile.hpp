@@ -45,8 +45,8 @@ class RpMemFile : public IRpFile
 	private:
 		typedef IRpFile super;
 	public:
-		RpMemFile(const RpMemFile &);
-		RpMemFile &operator=(const RpMemFile&);
+		RpMemFile(const RpMemFile &other);
+		RpMemFile &operator=(const RpMemFile &other);
 
 	public:
 		/**

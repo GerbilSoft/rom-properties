@@ -24,7 +24,6 @@
 
 #include "dc_structs.h"
 
-#include "common.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
@@ -57,8 +56,7 @@ class DreamcastSavePrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		DreamcastSavePrivate(const DreamcastSavePrivate &other);
-		DreamcastSavePrivate &operator=(const DreamcastSavePrivate &other);
+		RP_DISABLE_COPY(DreamcastSavePrivate)
 
 	public:
 		// RomFields data.

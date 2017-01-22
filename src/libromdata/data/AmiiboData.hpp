@@ -22,7 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_AMIIBODATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_AMIIBODATA_HPP__
 
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -32,8 +33,7 @@ class AmiiboData
 		// Static class.
 		AmiiboData();
 		~AmiiboData();
-		AmiiboData(const AmiiboData &);
-		AmiiboData &operator=(const AmiiboData &);
+		RP_DISABLE_COPY(AmiiboData)
 
 	public:
 		/**

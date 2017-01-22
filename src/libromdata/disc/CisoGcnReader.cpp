@@ -45,8 +45,7 @@ class CisoGcnReaderPrivate {
 		~CisoGcnReaderPrivate();
 
 	private:
-		CisoGcnReaderPrivate(const CisoGcnReaderPrivate &other);
-		CisoGcnReaderPrivate &operator=(const CisoGcnReaderPrivate &other);
+		RP_DISABLE_COPY(CisoGcnReaderPrivate)
 	private:
 		CisoGcnReader *const q;
 

@@ -26,7 +26,6 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
-#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
@@ -69,8 +68,7 @@ class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
 
 	private:
 		typedef TCreateThumbnail<HBITMAP> super;
-		RP_ThumbnailProvider_Private(const RP_ThumbnailProvider &other);
-		RP_ThumbnailProvider_Private &operator=(const RP_ThumbnailProvider &other);
+		RP_DISABLE_COPY(RP_ThumbnailProvider_Private)
 
 	public:
 		// IRpFile IInitializeWithStream::Initialize().

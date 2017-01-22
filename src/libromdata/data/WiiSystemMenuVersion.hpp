@@ -22,7 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WIISYSTEMMENUVERSION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WIISYSTEMMENUVERSION_HPP__
 
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -32,8 +33,7 @@ class WiiSystemMenuVersion
 		WiiSystemMenuVersion();
 		~WiiSystemMenuVersion();
 	private:
-		WiiSystemMenuVersion(const WiiSystemMenuVersion &);
-		WiiSystemMenuVersion &operator=(const WiiSystemMenuVersion &);
+		RP_DISABLE_COPY(WiiSystemMenuVersion)
 
 	private:
 		/**

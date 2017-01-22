@@ -42,8 +42,7 @@ class rp_image_backend_default : public rp_image_backend
 
 	private:
 		typedef rp_image_backend super;
-		rp_image_backend_default(const rp_image_backend_default &other);
-		rp_image_backend_default &operator=(const rp_image_backend_default &other);
+		RP_DISABLE_COPY(rp_image_backend_default)
 
 	public:
 		virtual void *data(void) final

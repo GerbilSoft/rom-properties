@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCIPHERFACTORY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_AESCIPHERFACTORY_HPP__
 
+#include "common.h"
+
 namespace LibRomData {
 
 class IAesCipher;
@@ -31,8 +33,7 @@ class AesCipherFactory
 		AesCipherFactory();
 		~AesCipherFactory();
 	private:
-		AesCipherFactory(const AesCipherFactory &other);
-		AesCipherFactory &operator=(const AesCipherFactory &other);
+		RP_DISABLE_COPY(AesCipherFactory)
 
 	public:
 		/**

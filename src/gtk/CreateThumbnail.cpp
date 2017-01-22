@@ -27,8 +27,10 @@
 using LibCacheMgr::CacheManager;
 
 // libromdata
+#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/RpImageLoader.hpp"
@@ -64,8 +66,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 
 	private:
 		typedef TCreateThumbnail<PGDKPIXBUF> super;
-		CreateThumbnailPrivate(const CreateThumbnailPrivate &other);
-		CreateThumbnailPrivate &operator=(const CreateThumbnailPrivate &other);
+		RP_DISABLE_COPY(CreateThumbnailPrivate)
 
 	private:
 		GProxyResolver *proxy_resolver;

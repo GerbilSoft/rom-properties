@@ -22,7 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IRPFILE_HPP__
 
-#include <config.libromdata.h>
+#include "config.libromdata.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -40,8 +41,7 @@ class IRpFile
 		virtual ~IRpFile() { }
 
 	private:
-		IRpFile(const IRpFile &other);
-		IRpFile &operator=(const IRpFile &other);
+		RP_DISABLE_COPY(IRpFile)
 
 	public:
 		/**

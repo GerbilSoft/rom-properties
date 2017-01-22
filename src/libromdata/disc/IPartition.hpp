@@ -35,8 +35,7 @@ class IPartition : public IDiscReader
 
 	private:
 		typedef IDiscReader super;
-		IPartition(const IPartition &other);
-		IPartition &operator=(const IPartition &other);
+		RP_DISABLE_COPY(IPartition)
 
 	public:
 		/** IDiscReader **/

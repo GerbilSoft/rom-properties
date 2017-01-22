@@ -53,8 +53,7 @@ class RomDataPrivate
 		virtual ~RomDataPrivate();
 
 	private:
-		RomDataPrivate(const RomDataPrivate &other);
-		RomDataPrivate &operator=(const RomDataPrivate &other);
+		RP_DISABLE_COPY(RomDataPrivate)
 	protected:
 		friend class RomData;
 		RomData *const q_ptr;

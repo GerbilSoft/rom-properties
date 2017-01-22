@@ -51,8 +51,7 @@ class N64Private : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		N64Private(const N64Private &other);
-		N64Private &operator=(const N64Private &other);
+		RP_DISABLE_COPY(N64Private)
 
 	public:
 		// Monospace string formatting.

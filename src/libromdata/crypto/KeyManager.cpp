@@ -47,8 +47,7 @@ class KeyManagerPrivate
 		KeyManagerPrivate();
 
 	private:
-		KeyManagerPrivate(const KeyManagerPrivate &other);
-		KeyManagerPrivate &operator=(const KeyManagerPrivate &other);
+		RP_DISABLE_COPY(KeyManagerPrivate)
 
 	public:
 		// Encryption key data.

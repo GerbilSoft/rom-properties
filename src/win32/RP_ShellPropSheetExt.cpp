@@ -31,7 +31,6 @@
 #include "resource.h"
 
 // libromdata
-#include "libromdata/common.h"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
@@ -103,8 +102,7 @@ class RP_ShellPropSheetExt_Private
 		~RP_ShellPropSheetExt_Private();
 
 	private:
-		RP_ShellPropSheetExt_Private(const RP_ShellPropSheetExt_Private &other);
-		RP_ShellPropSheetExt_Private &operator=(const RP_ShellPropSheetExt_Private &other);
+		RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
 	private:
 		RP_ShellPropSheetExt *const q_ptr;
 

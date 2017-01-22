@@ -22,6 +22,8 @@
 #ifndef __LIBROMDATA_SYSTEMREGION_HPP__
 #define __LIBROMDATA_SYSTEMREGION_HPP__
 
+#include "common.h"
+
 // C includes.
 #include <stdint.h>
 
@@ -33,8 +35,7 @@ class SystemRegion
 		// SystemRegion is a static class.
 		SystemRegion();
 		~SystemRegion();
-		SystemRegion(const SystemRegion &other);
-		SystemRegion &operator=(const SystemRegion &other);
+		RP_DISABLE_COPY(SystemRegion)
 
 	public:
 		/**

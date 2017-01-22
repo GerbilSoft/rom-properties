@@ -54,8 +54,7 @@ class SNESPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		SNESPrivate(const SNESPrivate &other);
-		SNESPrivate &operator=(const SNESPrivate &other);
+		RP_DISABLE_COPY(SNESPrivate)
 
 	public:
 		// RomFields data.

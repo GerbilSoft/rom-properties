@@ -37,8 +37,7 @@ class RpImageLoaderPrivate
 		// RpImageLoaderPrivate is a static class.
 		RpImageLoaderPrivate();
 		~RpImageLoaderPrivate();
-		RpImageLoaderPrivate(const RpImageLoaderPrivate &other);
-		RpImageLoaderPrivate &operator=(const RpImageLoaderPrivate &other);
+		RP_DISABLE_COPY(RpImageLoaderPrivate)
 
 	public:
 		// Magic numbers.

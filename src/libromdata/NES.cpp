@@ -53,8 +53,7 @@ class NESPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		NESPrivate(const NESPrivate &other);
-		NESPrivate &operator=(const NESPrivate &other);
+		RP_DISABLE_COPY(NESPrivate)
 
 	public:
 		/** RomFields **/

@@ -33,8 +33,7 @@ class RpImageWin32
 		RpImageWin32();
 		~RpImageWin32();
 	private:
-		RpImageWin32(const RpImageWin32 &);
-		RpImageWin32 &operator=(const RpImageWin32&);
+		RP_DISABLE_COPY(RpImageWin32)
 
 	public:
 		/**

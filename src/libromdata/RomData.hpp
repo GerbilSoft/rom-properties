@@ -22,8 +22,9 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATA_HPP__
 
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
 #include "RomFields.hpp"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -90,8 +91,7 @@ class RomData
 		virtual ~RomData();
 
 	private:
-		RomData(const RomData &);
-		RomData &operator=(const RomData &);
+		RP_DISABLE_COPY(RomData)
 	protected:
 		friend class RomDataPrivate;
 		RomDataPrivate *const d_ptr;

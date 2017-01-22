@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "NESMappers.hpp"
-#include "common.h"
 
 namespace LibRomData {
 
@@ -36,8 +35,7 @@ class NESMappersPrivate
 		// Static class.
 		NESMappersPrivate();
 		~NESMappersPrivate();
-		NESMappersPrivate(const NESMappersPrivate &other);
-		NESMappersPrivate &operator=(const NESMappersPrivate &other);
+		RP_DISABLE_COPY(NESMappersPrivate)
 
 	public:
 		// iNES mapper list.

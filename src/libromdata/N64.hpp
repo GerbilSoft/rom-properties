@@ -59,8 +59,7 @@ class N64 : public RomData
 	private:
 		typedef RomData super;
 		friend class N64Private;
-		N64(const N64 &other);
-		N64 &operator=(const N64 &other);
+		RP_DISABLE_COPY(N64)
 
 	public:
 		/** ROM detection functions. **/

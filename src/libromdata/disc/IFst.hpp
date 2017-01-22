@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_IFST_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -41,8 +42,7 @@ class IFst
 		virtual ~IFst() = 0;
 
 	private:
-		IFst(const IFst &other);
-		IFst &operator=(const IFst &other);
+		RP_DISABLE_COPY(IFst)
 
 	public:
 		/** opendir() interface. **/

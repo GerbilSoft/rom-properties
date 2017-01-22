@@ -25,7 +25,6 @@
 #include "nfp_structs.h"
 #include "data/AmiiboData.hpp"
 
-#include "common.h"
 #include "byteswap.h"
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
@@ -48,8 +47,7 @@ class AmiiboPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		AmiiboPrivate(const AmiiboPrivate &other);
-		AmiiboPrivate &operator=(const AmiiboPrivate &other);
+		RP_DISABLE_COPY(AmiiboPrivate)
 
 	public:
 		/** RomFields **/

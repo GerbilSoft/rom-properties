@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_WIN32_REGKEY_HPP__
 #define __ROMPROPERTIES_WIN32_REGKEY_HPP__
 
+#include "common.h"
+
 // C++ includes.
 #include <string>
 #include <list>
@@ -50,8 +52,7 @@ class RegKey
 		~RegKey();
 
 	private:
-		RegKey(const RegKey &);
-		RegKey &operator=(const RegKey &);
+		RP_DISABLE_COPY(RegKey)
 
 	public:
 		/**

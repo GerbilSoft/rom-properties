@@ -57,8 +57,7 @@ class MegaDrive : public RomData
 	private:
 		typedef RomData super;
 		friend class MegaDrivePrivate;
-		MegaDrive(const MegaDrive &other);
-		MegaDrive &operator=(const MegaDrive &other);
+		RP_DISABLE_COPY(MegaDrive)
 
 	public:
 		/** ROM detection functions. **/

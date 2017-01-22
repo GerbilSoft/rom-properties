@@ -26,6 +26,7 @@
 #error GdiplusHelper is Win32 only.
 #endif
 
+#include "common.h"
 #include "../RpWin32.hpp"
 
 class GdiplusHelper
@@ -34,8 +35,7 @@ class GdiplusHelper
 		// GdiplusHelper is a static class.
 		GdiplusHelper();
 		~GdiplusHelper();
-		GdiplusHelper(const GdiplusHelper &other);
-		GdiplusHelper &operator=(const GdiplusHelper &other);
+		RP_DISABLE_COPY(GdiplusHelper)
 
 	public:
 		/**
@@ -76,8 +76,7 @@ class ScopedGdiplus
 		}
 
 	private:
-		ScopedGdiplus(const ScopedGdiplus &other);
-		ScopedGdiplus &operator=(const ScopedGdiplus &other);
+		RP_DISABLE_COPY(ScopedGdiplus);
 
 	protected:
 		ULONG_PTR m_gdipToken;

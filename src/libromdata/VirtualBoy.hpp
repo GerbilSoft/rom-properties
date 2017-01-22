@@ -58,8 +58,7 @@ class VirtualBoy : public RomData
 	private:
 		typedef RomData super;
 		friend class VirtualBoyPrivate;
-		VirtualBoy(const VirtualBoy &other);
-		VirtualBoy &operator=(const VirtualBoy &other);
+		RP_DISABLE_COPY(VirtualBoy)
 		
 	public:
 		/** ROM detection functions. **/

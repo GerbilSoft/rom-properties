@@ -35,8 +35,7 @@ class CurlDownloader : public IDownloader
 
 	private:
 		typedef IDownloader super;
-		CurlDownloader(const CurlDownloader &);
-		CurlDownloader &operator=(const CurlDownloader &);
+		RP_DISABLE_COPY(CurlDownloader)
 
 	protected:
 		/**
