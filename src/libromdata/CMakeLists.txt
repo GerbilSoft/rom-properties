@@ -90,6 +90,7 @@ SET(libromdata_SRCS
 	img/ImageDecoder.cpp
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
+	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -156,6 +157,7 @@ SET(libromdata_H
 	img/IconAnimData.hpp
 	img/IconAnimHelper.hpp
 	img/APNG_dlopen.h
+	img/TCreateThumbnail.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp

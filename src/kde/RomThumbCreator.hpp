@@ -28,11 +28,12 @@ class QUrl;
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KDE5.)
 
+#include "libromdata/img/TCreateThumbnail.hpp"
 namespace LibRomData {
 	class rp_image;
 }
 
-class RomThumbCreator : public ThumbCreator
+class RomThumbCreator : public ThumbCreator, public LibRomData::TCreateThumbnail<QImage>
 {
 	public:
 		virtual bool create(const QString &path, int width, int height, QImage &img) final;
@@ -41,30 +42,55 @@ class RomThumbCreator : public ThumbCreator
 		typedef ThumbCreator super;
 
 	protected:
+		/** TCreateThumbnail functions. **/
+
 		/**
-		 * Download an image from a URL.
-		 * @param url URL.
-		 * @return QImage, or invalid QImage if an error occurred.
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
 		 */
-		QImage download(const QString &url);
+		virtual QImage rpImageToImgClass(const LibRomData::rp_image *img) const final;
 
-		// Thumbnail resize policy.
-		// TODO: Make this configurable.
-		// TODO: Combine with RP_ThumbnailProvider.
-		enum ResizePolicy {
-			RESIZE_NONE,	// No resizing.
+		/**
+		 * Wrapper function to check if an ImgClass is valid.
+		 * @param imgClass ImgClass
+		 * @return True if valid; false if not.
+		 */
+		virtual bool isImgClassValid(const QImage &imgClass) const final;
 
-			// Only resize images that are less than or equal to half the
-			// requested thumbnail size. This is a compromise to allow
-			// small icons like Nintendo DS icons to be enlarged while
-			// larger but not-quite 256px images like GameTDB disc scans'
-			// (160px) will remain as-is.
-			RESIZE_HALF,
+		/**
+		 * Wrapper function to get a "null" ImgClass.
+		 * @return "Null" ImgClass.
+		 */
+		virtual QImage getNullImgClass(void) const final;
 
-			// Resize all images that are smaller than the requested
-			// thumbnail size.
-			RESIZE_ALL,
-		};
+		/**
+		 * Free an ImgClass object.
+		 * This may be no-op for e.g. QImage.
+		 * @param imgClass ImgClass object.
+		 */
+		virtual void freeImgClass(const QImage &imgClass) const final;
+
+		/**
+		 * Get an ImgClass's size.
+		 * @param imgClass ImgClass object.
+		 * @retrun Size.
+		 */
+		virtual ImgSize getImgSize(const QImage &imgClass) const final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+
+		/**
+		 * Get the proxy for the specified URL.
+		 * @return Proxy, or empty string if no proxy is needed.
+		 */
+		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const final;
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */
