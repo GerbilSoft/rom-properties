@@ -36,10 +36,12 @@ using namespace LibRomData;
 #include <cassert>
 
 // C++ includes.
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+using std::ostringstream;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -706,7 +708,9 @@ rom_data_view_init_header_row(RomDataView *page)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page, const RomFields::Desc *desc, const RomFields::Data *data)
+rom_data_view_init_string(RomDataView *page,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
@@ -780,7 +784,9 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Desc *desc, const 
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_bitfield(RomDataView *page, const RomFields::Desc *desc, const RomFields::Data *data)
+rom_data_view_init_bitfield(RomDataView *page,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
@@ -864,7 +870,9 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Desc *desc, cons
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Desc *desc, const RomFields::Data *data)
+rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// ListData type. Create a GtkListStore for the data.
 	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
@@ -933,7 +941,9 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::De
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Desc *desc, const RomFields::Data *data)
+rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page,
+	const RomFields::Desc *desc,
+	const RomFields::Data *data)
 {
 	// Date/Time.
 	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
@@ -994,6 +1004,74 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::De
 		gtk_widget_destroy(widget);
 		widget = nullptr;
 	}
+	return widget;
+}
+
+/**
+ * Initialize an Age Ratings field.
+ * @param page RomDataView object.
+ * @param desc RomFields::Desc
+ * @param data RomFields::Data
+ * @return Display widget, or nullptr on error.
+ */
+static GtkWidget*
+rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
+	G_GNUC_UNUSED const RomFields::Desc *desc,
+	const RomFields::Data *data)
+{
+	// Age ratings.
+
+	// Convert the age ratings field to a string.
+	ostringstream oss;
+	bool printedOne = false;
+	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+		const uint16_t rating = data->age_ratings[i];
+		if (!(rating & RomFields::AGEBF_ACTIVE))
+			continue;
+
+		if (printedOne) {
+			// Append a comma.
+			oss << ", ";
+		}
+
+		const char *abbrev = RomData::ageRatingAbbrev(i);
+		if (abbrev) {
+			oss << abbrev;
+		} else {
+			// Invalid age rating.
+			// Use the numeric index.
+			oss << i;
+		}
+		oss << '=';
+
+		// TODO: Decode numeric ratings based on organization.
+		if (rating & RomFields::AGEBF_PENDING) {
+			// Rating is pending.
+			oss << "RP";
+		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
+			// No age restriction.
+			oss << "All";
+		} else {
+			// Use the age rating.
+			oss << (rating & RomFields::AGEBF_MIN_AGE_MASK);
+		}
+
+		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
+			// Rating may change during online play.
+			// TODO: Add a description of this somewhere.
+			// NOTE: Unicode U+00B0, encoded as UTF-8.
+			oss << "\xC2\xB0";
+		}
+	}
+
+	GtkWidget *widget = gtk_label_new(nullptr);
+	gtk_label_set_use_underline(GTK_LABEL(widget), false);
+	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+	gtk_widget_show(widget);
+	GTK_WIDGET_HALIGN_LEFT(widget);
+
+	gtk_label_set_text(GTK_LABEL(widget), oss.str().c_str());
 	return widget;
 }
 
@@ -1089,6 +1167,10 @@ rom_data_view_update_display(RomDataView *page)
 
 			case RomFields::RFT_DATETIME:
 				widget = rom_data_view_init_datetime(page, desc, data);
+				break;
+
+			case RomFields::RFT_AGE_RATINGS:
+				widget = rom_data_view_init_age_ratings(page, desc, data);
 				break;
 
 			default:
