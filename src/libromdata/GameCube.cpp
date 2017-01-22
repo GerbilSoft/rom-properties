@@ -1303,7 +1303,7 @@ int GameCube::loadFieldData(void)
 			continue;
 		}
 		// Set active | age value.
-		age_ratings[i] = 0x20 | (rvl_rating & 0x1F);
+		age_ratings[i] = RomFields::AGEBF_ACTIVE | (rvl_rating & 0x1F);
 
 		// Is "rating may change during online play" set?
 		if (rvl_rating & 0x20) {
