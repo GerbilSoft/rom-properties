@@ -268,7 +268,7 @@ int rp_create_thumbnail(const char *source_file, const char *output_file, int ma
 	if (!ret_img) {
 		// No image.
 		romData->unref();
-		return false;
+		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// TODO: If image is larger than maximum_size, resize down.
