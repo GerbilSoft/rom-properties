@@ -646,6 +646,18 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCWSTR progID)
 	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
 		return lResult;
 
+	// Open the approved shell extensions key.
+	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+		KEY_WRITE, false);
+	if (!hklm_Approved.isOpen())
+		return hklm_Approved.lOpenRes();
+
+	// Remove the value for the specified CLSID.
+	lResult = hklm_Approved.deleteValue(clsid_str);
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return lResult;
+
 	// TODO: Check progID and remove CLSID if it's present.
 	return ERROR_SUCCESS;
 }
