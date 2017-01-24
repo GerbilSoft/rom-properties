@@ -76,15 +76,15 @@ access on Windows Vista and later.
 | KDE 4.x            |       Yes      |     Yes    |
 | KDE 5.x            |       Yes      |     Yes    |
 | XFCE (Thunar)      |       Yes      |     No     |
-| GNOME 3 (Nautilus) |       Yes      |     No     |
+| GNOME 3 (Nautilus) |       Yes      |     Yes    |
 | Windows            |       Yes      |     Yes    |
 
 Notes:
 * The KDE 4.x and 5.x plugins share most of the code. The only differences
   are in the plugin interface (due to automoc issues) and the .desktop file.
-* The XFCE and GNOME file managers both use a similar interface for generating
-  thumbnails, but with a different metadata file. Hence, once thumbnail support
-  is implemented for one of them, it will also be implemented for the other.
+* Similarly, the GNOME and XFCE property page plugins also share most of the
+  code. The main difference here is the interface to the specific property
+  page object for each file browser.
 * Windows supports separate icon and thumbnail handlers. Linux desktop
   environments generally use the file's MIME type to determine the icon, so
   custom icons are always implemented using the thumbnail interface.
