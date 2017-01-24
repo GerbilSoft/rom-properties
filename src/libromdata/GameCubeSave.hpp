@@ -59,8 +59,7 @@ class GameCubeSave : public RomData
 	private:
 		typedef RomData super;
 		friend class GameCubeSavePrivate;
-		GameCubeSave(const GameCubeSave &other);
-		GameCubeSave &operator=(const GameCubeSave &other);
+		RP_DISABLE_COPY(GameCubeSave)
 
 	public:
 		/** ROM detection functions. **/

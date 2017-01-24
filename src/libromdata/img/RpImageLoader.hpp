@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IMG_RPIMAGELOADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IMG_RPIMAGELOADER_HPP__
 
+#include "common.h"
+
 namespace LibRomData {
 
 class rp_image;
@@ -33,8 +35,7 @@ class RpImageLoader
 		// RpImageLoader is a static class.
 		RpImageLoader();
 		~RpImageLoader();
-		RpImageLoader(const RpImageLoader &other);
-		RpImageLoader &operator=(const RpImageLoader &other);
+		RP_DISABLE_COPY(RpImageLoader)
 
 	public:
 		/**

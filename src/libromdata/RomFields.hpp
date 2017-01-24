@@ -22,10 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMFIELDS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMFIELDS_HPP__
 
+#include "config.libromdata.h"
+
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include "TextFuncs.hpp"
 
 namespace LibRomData {
 

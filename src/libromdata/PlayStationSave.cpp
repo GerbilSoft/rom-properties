@@ -56,8 +56,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		PlayStationSavePrivate(const PlayStationSavePrivate &other);
-		PlayStationSavePrivate &operator=(const PlayStationSavePrivate &other);
+		RP_DISABLE_COPY(PlayStationSavePrivate)
 
 	public:
 		/** RomFields **/

@@ -49,8 +49,7 @@ class GcnPartition : public IPartition
 
 	private:
 		typedef IPartition super;
-		GcnPartition(const GcnPartition &other);
-		GcnPartition &operator=(const GcnPartition &other);
+		RP_DISABLE_COPY(GcnPartition)
 
 	protected:
 		friend class GcnPartitionPrivate;

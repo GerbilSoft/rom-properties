@@ -52,8 +52,7 @@ class DiscReader : public IDiscReader
 		virtual ~DiscReader();
 
 	private:
-		DiscReader(const DiscReader &);
-		DiscReader &operator=(const DiscReader&);
+		RP_DISABLE_COPY(DiscReader)
 
 	public:
 		/** Disc image detection functions. **/

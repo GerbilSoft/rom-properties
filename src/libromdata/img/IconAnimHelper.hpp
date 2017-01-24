@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_IMG_ICONANIMHELPER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_IMG_ICONANIMHELPER_HPP__
 
+#include "common.h"
+
 namespace LibRomData {
 
 struct IconAnimData;
@@ -33,8 +35,7 @@ class IconAnimHelper
 		explicit IconAnimHelper(const IconAnimData *iconAnimData);
 
 	private:
-		IconAnimHelper(const IconAnimHelper &other);
-		IconAnimHelper &operator=(const IconAnimHelper &other);
+		RP_DISABLE_COPY(IconAnimHelper);
 
 	public:
 		/**

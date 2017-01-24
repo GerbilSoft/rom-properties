@@ -55,8 +55,7 @@ class NintendoDSPrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		NintendoDSPrivate(const NintendoDSPrivate &other);
-		NintendoDSPrivate &operator=(const NintendoDSPrivate &other);
+		RP_DISABLE_COPY(NintendoDSPrivate)
 
 	public:
 		/** RomFields **/

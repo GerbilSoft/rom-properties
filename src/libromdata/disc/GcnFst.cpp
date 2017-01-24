@@ -45,8 +45,7 @@ class GcnFstPrivate
 		~GcnFstPrivate();
 
 	private:
-		GcnFstPrivate(const GcnFstPrivate &other);
-		GcnFstPrivate &operator=(const GcnFstPrivate &other);
+		RP_DISABLE_COPY(GcnFstPrivate)
 
 	public:
 		// FST data.

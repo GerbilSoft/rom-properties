@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 // C++ includes.
 #include <vector>
@@ -38,8 +39,7 @@ class RomDataFactory
 		RomDataFactory();
 		~RomDataFactory();
 	private:
-		RomDataFactory(const RomDataFactory &);
-		RomDataFactory &operator=(const RomDataFactory &);
+		RP_DISABLE_COPY(RomDataFactory)
 
 	public:
 		/**

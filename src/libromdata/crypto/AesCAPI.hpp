@@ -35,8 +35,7 @@ class AesCAPI : public IAesCipher
 
 	private:
 		typedef IAesCipher super;
-		AesCAPI(const AesCAPI &other);
-		AesCAPI &operator=(const AesCAPI &other);
+		RP_DISABLE_COPY(AesCAPI)
 	private:
 		friend class AesCAPIPrivate;
 		AesCAPIPrivate *const d;

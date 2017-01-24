@@ -22,10 +22,11 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 
-// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-
-#include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
+
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+#include "RP_ComBase.hpp"
 
 // IThumbnailProvider
 #include "thumbcache.h"
@@ -44,6 +45,7 @@ namespace LibRomData {
 #include <string>
 
 class RegKey;
+class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
 RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvider>
@@ -51,8 +53,13 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 	public:
 		RP_ThumbnailProvider();
 		virtual ~RP_ThumbnailProvider();
+
 	private:
 		typedef RP_ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+		RP_DISABLE_COPY(RP_ThumbnailProvider)
+	private:
+		friend class RP_ThumbnailProvider_Private;
+		RP_ThumbnailProvider_Private *const d_ptr;
 
 	public:
 		// IUnknown
@@ -84,10 +91,6 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
-
-	protected:
-		// IRpFile IInitializeWithStream::Initialize().
-		LibRomData::IRpFile *m_file;
 
 	public:
 		// IInitializeWithStream

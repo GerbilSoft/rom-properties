@@ -57,8 +57,7 @@ class PlayStationSave : public RomData
 	private:
 		typedef RomData super;
 		friend class PlayStationSavePrivate;
-		PlayStationSave(const PlayStationSave &other);
-		PlayStationSave &operator=(const PlayStationSave &other);
+		RP_DISABLE_COPY(PlayStationSave)
 
 	public:
 		/** ROM detection functions. **/

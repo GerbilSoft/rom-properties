@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "AmiiboData.hpp"
-#include "common.h"
 
 namespace LibRomData {
 
@@ -53,8 +52,7 @@ class AmiiboDataPrivate {
 		// Static class.
 		AmiiboDataPrivate();
 		~AmiiboDataPrivate();
-		AmiiboDataPrivate(const AmiiboDataPrivate &other);
-		AmiiboDataPrivate &operator=(const AmiiboDataPrivate &other);
+		RP_DISABLE_COPY(AmiiboDataPrivate)
 
 	public:
 		/** Page 21 (raw offset 0x54): Character series **/

@@ -8,20 +8,23 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 SET(rom-properties-gtk_SRCS
 	RomDataView.cpp
 	GdkImageConv.cpp
+	CreateThumbnail.cpp
 	)
 SET(rom-properties-gtk_H
 	RomDataView.hpp
 	GdkImageConv.hpp
+	CreateThumbnail.hpp
 	)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 2.26.0)
+FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
-IF(NOT GLib2_FOUND OR NOT GdkPixbuf2_FOUND)
+IF(NOT GLib2_FOUND OR NOT GObject2_FOUND OR NOT GdkPixbuf2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF)
 	SET(BUILD_GTK3 OFF)
-ENDIF(NOT GLib2_FOUND OR NOT GdkPixbuf2_FOUND)
+ENDIF(NOT GLib2_FOUND OR NOT GObject2_FOUND OR NOT GdkPixbuf2_FOUND)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)

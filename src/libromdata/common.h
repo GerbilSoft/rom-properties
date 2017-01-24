@@ -52,6 +52,17 @@
 // RP equivalents of Q_D() and Q_Q().
 #define RP_D(klass) klass##Private *const d = static_cast<klass##Private*>(d_ptr)
 #define RP_Q(klass) klass *const q = static_cast<klass*>(q_ptr)
+
+// RP equivalent of Q_DISABLE_COPY().
+#if __cplusplus >= 201103L
+#define RP_DISABLE_COPY(klass) \
+	klass(const klass &) = delete; \
+	klass &operator=(const klass &) = delete;
+#else
+#define RP_DISABLE_COPY(klass) \
+	klass(const klass &); \
+	klass &operator=(const klass &);
+#endif
 #endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_COMMON_H__ */

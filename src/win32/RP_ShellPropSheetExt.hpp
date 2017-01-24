@@ -22,14 +22,14 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 #define __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 
+#include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
+
 // References:
 // - http://www.codeproject.com/Articles/338268/COM-in-C
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 // - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
-
 #include "RP_ComBase.hpp"
-#include "libromdata/config.libromdata.h"
-#include "libromdata/RomFields.hpp"
 
 namespace LibRomData {
 	class RomData;
@@ -55,8 +55,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 	private:
 		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
-		RP_ShellPropSheetExt(const RP_ShellPropSheetExt &other);
-		RP_ShellPropSheetExt&operator=(const RP_ShellPropSheetExt &other);
+		RP_DISABLE_COPY(RP_ShellPropSheetExt)
 	private:
 		friend class RP_ShellPropSheetExt_Private;
 		RP_ShellPropSheetExt_Private *const d_ptr;

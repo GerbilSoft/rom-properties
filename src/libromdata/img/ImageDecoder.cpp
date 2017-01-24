@@ -35,8 +35,7 @@ class ImageDecoderPrivate
 		// ImageDecoderPrivate is a static class.
 		ImageDecoderPrivate();
 		~ImageDecoderPrivate();
-		ImageDecoderPrivate(const ImageDecoderPrivate &other);
-		ImageDecoderPrivate &operator=(const ImageDecoderPrivate &other);
+		RP_DISABLE_COPY(ImageDecoderPrivate)
 
 	public:
 		/**

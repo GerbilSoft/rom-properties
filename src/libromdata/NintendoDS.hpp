@@ -59,8 +59,7 @@ class NintendoDS : public RomData
 	private:
 		typedef RomData super;
 		friend class NintendoDSPrivate;
-		NintendoDS(const NintendoDS &other);
-		NintendoDS &operator=(const NintendoDS &other);
+		RP_DISABLE_COPY(NintendoDS)
 
 	public:
 		/** ROM detection functions. **/

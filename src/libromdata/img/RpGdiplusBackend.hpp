@@ -75,8 +75,7 @@ class RpGdiplusBackend : public rp_image_backend
 
 	private:
 		typedef rp_image_backend super;
-		RpGdiplusBackend(const RpGdiplusBackend &other);
-		RpGdiplusBackend &operator=(const RpGdiplusBackend &other);
+		RP_DISABLE_COPY(RpGdiplusBackend)
 
 	private:
 		/**

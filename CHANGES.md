@@ -5,8 +5,8 @@
 * New features:
   * New GTK+ frontends for XFCE's Thunar file manager (using GTK+ 2.x)
     and GNOME's Nautilus file manager (using GTK+ 3.x). These currently
-    only implement the property page. Thumbnailing will be implemented
-    before release.
+    only implement the property page. Thumbnailing for Nautilus has been
+    implemented. Thumbnailing for Thunar will be added later.
     * While the GTK+ frontends share code, they are packaged separately in
       order to reduce dependencies on GNOME-only and XFCE-only systems.
   * Negative image caching for online databases (that is, caching the "this

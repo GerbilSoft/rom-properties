@@ -22,11 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_RP_IMAGE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_RP_IMAGE_HPP__
 
+#include "config.libromdata.h"
+#include "common.h"
+
 // C includes.
 #include <stdint.h>
-
-// rp_char
-#include "config.libromdata.h"
 
 // TODO: Make this implicitly shared.
 
@@ -73,8 +73,7 @@ class rp_image
 		friend class rp_image_private;
 		rp_image_private *const d;
 	private:
-		rp_image(const rp_image &);
-		rp_image &operator=(const rp_image &);
+		RP_DISABLE_COPY(rp_image)
 
 	public:
 		/**

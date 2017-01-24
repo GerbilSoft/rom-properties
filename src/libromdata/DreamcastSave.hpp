@@ -77,8 +77,7 @@ class DreamcastSave : public RomData
 	private:
 		typedef RomData super;
 		friend class DreamcastSavePrivate;
-		DreamcastSave(const DreamcastSave &other);
-		DreamcastSave &operator=(const DreamcastSave &other);
+		RP_DISABLE_COPY(DreamcastSave)
 
 	public:
 		/** ROM detection functions. **/

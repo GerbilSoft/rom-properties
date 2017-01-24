@@ -35,8 +35,7 @@ class AesNettle : public IAesCipher
 
 	private:
 		typedef IAesCipher super;
-		AesNettle(const AesNettle &other);
-		AesNettle &operator=(const AesNettle &other);
+		RP_DISABLE_COPY(AesNettle)
 	private:
 		friend class AesNettlePrivate;
 		AesNettlePrivate *const d;

@@ -39,8 +39,7 @@ class AesNettlePrivate
 		~AesNettlePrivate() { }
 
 	private:
-		AesNettlePrivate(const AesNettlePrivate &other);
-		AesNettlePrivate &operator=(const AesNettlePrivate &other);
+		RP_DISABLE_COPY(AesNettlePrivate)
 
 	public:
 		// AES context.

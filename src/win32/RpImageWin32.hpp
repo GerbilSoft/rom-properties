@@ -33,8 +33,7 @@ class RpImageWin32
 		RpImageWin32();
 		~RpImageWin32();
 	private:
-		RpImageWin32(const RpImageWin32 &);
-		RpImageWin32 &operator=(const RpImageWin32&);
+		RP_DISABLE_COPY(RpImageWin32)
 
 	public:
 		/**
@@ -115,6 +114,13 @@ class RpImageWin32
 		 * @return HICON, or nullptr on error.
 		 */
 		static HICON toHICON(const LibRomData::rp_image *image);
+
+		/**
+		 * Convert an HBITMAP to rp_image.
+		 * @param hBitmap HBITMAP.
+		 * @return rp_image.
+		 */
+		static LibRomData::rp_image *fromHBITMAP(HBITMAP hBitmap);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__ */

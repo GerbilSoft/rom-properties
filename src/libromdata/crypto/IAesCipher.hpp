@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_IAESCIPHER_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -37,8 +38,7 @@ class IAesCipher
 		virtual ~IAesCipher() = 0;
 
 	private:
-		IAesCipher(const IAesCipher &other);
-		IAesCipher &operator=(const IAesCipher &other);
+		RP_DISABLE_COPY(IAesCipher)
 
 	public:
 		/**

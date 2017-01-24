@@ -26,7 +26,6 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
-#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
@@ -60,8 +59,7 @@ class RP_ExtractIcon_Private
 		~RP_ExtractIcon_Private();
 
 	private:
-		RP_ExtractIcon_Private(const RP_ExtractIcon_Private &other);
-		RP_ExtractIcon_Private &operator=(const RP_ExtractIcon_Private &other);
+		RP_DISABLE_COPY(RP_ExtractIcon_Private)
 
 	public:
 		// ROM filename from IPersistFile::Load().

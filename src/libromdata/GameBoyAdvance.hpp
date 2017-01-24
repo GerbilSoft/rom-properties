@@ -59,8 +59,7 @@ class GameBoyAdvance : public RomData
 	private:
 		typedef RomData super;
 		friend class GameBoyAdvancePrivate;
-		GameBoyAdvance(const GameBoyAdvance &other);
-		GameBoyAdvance &operator=(const GameBoyAdvance &other);
+		RP_DISABLE_COPY(GameBoyAdvance)
 
 	public:
 		/** ROM detection functions. **/

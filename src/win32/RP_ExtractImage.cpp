@@ -26,13 +26,16 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
-#include "libromdata/common.h"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
+
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,14 +56,15 @@ const CLSID CLSID_RP_ExtractImage =
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ExtractImagePrivate RP_ExtractImage_Private
 
-class RP_ExtractImage_Private
+class RP_ExtractImage_Private : public TCreateThumbnail<HBITMAP>
 {
 	public:
-		RP_ExtractImage_Private() { }
+		RP_ExtractImage_Private();
+		virtual ~RP_ExtractImage_Private();
 
 	private:
-		RP_ExtractImage_Private(const RP_ExtractImage_Private &other);
-		RP_ExtractImage_Private &operator=(const RP_ExtractImage_Private &other);
+		typedef TCreateThumbnail<HBITMAP> super;
+		RP_DISABLE_COPY(RP_ExtractImage_Private)
 
 	public:
 		// ROM filename from IPersistFile::Load().
@@ -68,7 +72,179 @@ class RP_ExtractImage_Private
 
 		// Requested thumbnail size from IExtractImage::GetLocation().
 		SIZE bmSize;
+
+	public:
+		/** TCreateThumbnail functions. **/
+
+		/**
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
+		 */
+		virtual HBITMAP rpImageToImgClass(const rp_image *img) const final;
+
+		/**
+		 * Wrapper function to check if an ImgClass is valid.
+		 * @param imgClass ImgClass
+		 * @return True if valid; false if not.
+		 */
+		virtual bool isImgClassValid(const HBITMAP &imgClass) const final;
+
+		/**
+		 * Wrapper function to get a "null" ImgClass.
+		 * @return "Null" ImgClass.
+		 */
+		virtual HBITMAP getNullImgClass(void) const final;
+
+		/**
+		 * Free an ImgClass object.
+		 * This may be no-op for e.g. HBITMAP.
+		 * @param imgClass ImgClass object.
+		 */
+		virtual void freeImgClass(HBITMAP &imgClass) const final;
+
+		/**
+		 * Get an ImgClass's size.
+		 * @param imgClass ImgClass object.
+		 * @retrun Size.
+		 */
+		virtual ImgSize getImgSize(const HBITMAP &imgClass) const final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
+
+		/**
+		 * Get the proxy for the specified URL.
+		 * @return Proxy, or empty string if no proxy is needed.
+		 */
+		virtual rp_string proxyForUrl(const rp_string &url) const final;
 };
+
+/** RP_ExtractImage_Private **/
+
+RP_ExtractImage_Private::RP_ExtractImage_Private()
+{
+	bmSize.cx = 0;
+	bmSize.cy = 0;
+}
+
+RP_ExtractImage_Private::~RP_ExtractImage_Private()
+{ }
+
+/**
+ * Wrapper function to convert rp_image* to ImgClass.
+ * @param img rp_image
+ * @return ImgClass.
+ */
+HBITMAP RP_ExtractImage_Private::rpImageToImgClass(const rp_image *img) const
+{
+	// NOTE: IExtractImage doesn't support alpha transparency,
+	// so blend the image with COLOR_WINDOW. This works for the
+	// most part, at least with Windows Explorer, but the cached
+	// Thumbs.db images won't reflect color scheme changes.
+	// NOTE 2: GetSysColor() has swapped R and B channels
+	// compared to GDI+.
+	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
+	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
+		  ((bgColor & 0xFF) << 16) |
+		  ((bgColor >> 16) & 0xFF);
+	return RpImageWin32::toHBITMAP(img, bgColor);
+}
+
+/**
+ * Wrapper function to check if an ImgClass is valid.
+ * @param imgClass ImgClass
+ * @return True if valid; false if not.
+ */
+bool RP_ExtractImage_Private::isImgClassValid(const HBITMAP &imgClass) const
+{
+	return (imgClass != nullptr);
+}
+
+/**
+ * Wrapper function to get a "null" ImgClass.
+ * @return "Null" ImgClass.
+ */
+HBITMAP RP_ExtractImage_Private::getNullImgClass(void) const
+{
+	return nullptr;
+}
+
+/**
+ * Free an ImgClass object.
+ * This may be no-op for e.g. HBITMAP.
+ * @param imgClass ImgClass object.
+ */
+void RP_ExtractImage_Private::freeImgClass(HBITMAP &imgClass) const
+{
+	DeleteObject(imgClass);
+}
+
+/**
+ * Get an ImgClass's size.
+ * @param imgClass ImgClass object.
+ * @retrun Size.
+ */
+RP_ExtractImage_Private::ImgSize RP_ExtractImage_Private::getImgSize(const HBITMAP &imgClass) const
+{
+	BITMAP bm;
+	if (GetObject(imgClass, sizeof(bm), &bm) == 0) {
+		// Error retrieving the bitmap information.
+		static const ImgSize sz = {0, 0};
+		return sz;
+	}
+
+	const ImgSize sz = {bm.bmWidth, bm.bmHeight};
+	return sz;
+}
+
+/**
+ * Rescale an ImgClass using nearest-neighbor scaling.
+ * @param imgClass ImgClass object.
+ * @param sz New size.
+ * @return Rescaled ImgClass.
+ */
+HBITMAP RP_ExtractImage_Private::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
+{
+	// Convert the HBITMAP to rp_image.
+	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
+	if (!img) {
+		// Error converting to rp_image.
+		return nullptr;
+	}
+
+	// NOTE: IExtractImage doesn't support alpha transparency,
+	// so blend the image with COLOR_WINDOW. This works for the
+	// most part, at least with Windows Explorer, but the cached
+	// Thumbs.db images won't reflect color scheme changes.
+	// NOTE 2: GetSysColor() has swapped R and B channels
+	// compared to GDI+.
+	COLORREF bgColor = GetSysColor(COLOR_WINDOW);
+	bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
+		  ((bgColor & 0xFF) << 16) |
+		  ((bgColor >> 16) & 0xFF);
+
+	// Resize the image.
+	// TODO: "nearest" parameter.
+	const SIZE win_sz = {sz.width, sz.height};
+	return RpImageWin32::toHBITMAP(img.get(), bgColor, win_sz, true);
+}
+
+/**
+ * Get the proxy for the specified URL.
+ * @return Proxy, or empty string if no proxy is needed.
+ */
+rp_string RP_ExtractImage_Private::proxyForUrl(const rp_string &url) const
+{
+	// libcachemgr uses urlmon on Windows, which
+	// always uses the system proxy.
+	return rp_string();
+}
 
 /** RP_ExtractImage **/
 
@@ -305,8 +481,6 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
-	// TODO: Handle d->bmSize?
-
 	// Verify parameters:
 	// - A filename must have been set by calling IPersistFile::Load().
 	// - phBmpImage must not be nullptr.
@@ -316,67 +490,10 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	}
 	*phBmpImage = nullptr;
 
-	// Get the RomData object.
-	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		return E_FAIL;	// TODO: More specific error?
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::getInstance(file.get(), true);
-	file.reset(nullptr);	// file is dup()'d by RomData.
-
-	if (!romData) {
-		// ROM is not supported.
-		return S_FALSE;
-	}
-
-	// ROM is supported. Get the image.
-	// TODO: Customize which ones are used per-system.
-	// For now, check EXT MEDIA, then INT ICON.
-
-	bool needs_delete = false;	// External images need manual deletion.
-	const rp_image *img = nullptr;
-
-	uint32_t imgbf = romData->supportedImageTypes();
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		img = RpImageWin32::getExternalImage(romData, RomData::IMG_EXT_MEDIA);
-		needs_delete = (img != nullptr);
-	}
-
-	if (!img) {
-		// No external media scan.
-		// Try an internal image.
-		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
-			img = RpImageWin32::getInternalImage(romData, RomData::IMG_INT_ICON);
-		}
-	}
-
-	if (img) {
-		// Image loaded. Convert it to HBITMAP.
-		// NOTE: IExtractImage doesn't support alpha transparency,
-		// so blend the image with COLOR_WINDOW. This works for the
-		// most part, at least with Windows Explorer, but the cached
-		// Thumbs.db images won't reflect color scheme changes.
-		// NOTE 2: GetSysColor() has swapped R and B channels
-		// compared to GDI+.
-		COLORREF bgColor = GetSysColor(COLOR_WINDOW);
-		bgColor = (bgColor & 0x00FF00) | 0xFF000000 |
-			  ((bgColor & 0xFF) << 16) |
-			  ((bgColor >> 16) & 0xFF);
-		*phBmpImage = RpImageWin32::toHBITMAP(img, bgColor);
-
-		if (needs_delete) {
-			// Delete the image.
-			delete const_cast<rp_image*>(img);
-		}
-	}
-
-	romData->unref();
-	return (*phBmpImage != nullptr ? S_OK : E_FAIL);
+	// NOTE: Using width only. (TODO: both width/height?)
+	int ret = d->getThumbnail(d->filename.c_str(), d->bmSize.cx, *phBmpImage);
+	// TODO: More specific error?
+	return (ret == 0 ? S_OK : E_FAIL);
 }
 
 /** IExtractImage2 **/

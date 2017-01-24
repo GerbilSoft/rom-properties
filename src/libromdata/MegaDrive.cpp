@@ -53,8 +53,7 @@ class MegaDrivePrivate : public RomDataPrivate
 
 	private:
 		typedef RomDataPrivate super;
-		MegaDrivePrivate(const MegaDrivePrivate &other);
-		MegaDrivePrivate &operator=(const MegaDrivePrivate &other);
+		RP_DISABLE_COPY(MegaDrivePrivate)
 
 	public:
 		/** RomFields **/

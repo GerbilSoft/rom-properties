@@ -22,10 +22,11 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__
 
-// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-
-#include "RP_ComBase.hpp"
 #include "libromdata/config.libromdata.h"
+#include "libromdata/common.h"
+
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+#include "RP_ComBase.hpp"
 
 // CLSID
 extern "C" {
@@ -48,8 +49,7 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 
 	private:
 		typedef RP_ComBase2<IExtractImage2, IPersistFile> super;
-		RP_ExtractImage(const RP_ExtractImage &other);
-		RP_ExtractImage &operator=(const RP_ExtractImage &other);
+		RP_DISABLE_COPY(RP_ExtractImage)
 	private:
 		friend class RP_ExtractImage_Private;
 		RP_ExtractImage_Private *const d_ptr;

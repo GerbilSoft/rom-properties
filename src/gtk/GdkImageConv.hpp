@@ -25,6 +25,7 @@
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
 
+#include "libromdata/common.h"
 namespace LibRomData {
 	struct rp_image;
 }
@@ -36,8 +37,7 @@ class GdkImageConv
 		// Static class.
 		GdkImageConv();
 		~GdkImageConv();
-		GdkImageConv(const GdkImageConv &);
-		GdkImageConv &operator=(const GdkImageConv &);
+		RP_DISABLE_COPY(GdkImageConv)
 
 	public:
 		/**

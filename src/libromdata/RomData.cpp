@@ -22,7 +22,7 @@
 #include "RomData.hpp"
 #include "RomData_p.hpp"
 
-#include "common.h"
+#include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 #include "img/rp_image.hpp"
 #include "img/IconAnimData.hpp"

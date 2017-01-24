@@ -59,8 +59,7 @@ class Amiibo : public RomData
 	private:
 		typedef RomData super;
 		friend class AmiiboPrivate;
-		Amiibo(const Amiibo &other);
-		Amiibo &operator=(const Amiibo &other);
+		RP_DISABLE_COPY(Amiibo)
 
 	public:
 		/** ROM detection functions. **/

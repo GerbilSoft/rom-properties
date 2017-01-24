@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "MegaDrivePublishers.hpp"
-#include "common.h"
 
 #include <stdlib.h>
 

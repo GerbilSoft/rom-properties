@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 #define __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__
 
+#include <QtCore/qglobal.h>
 #include <kio/thumbcreator.h>
 class QUrl;
 
@@ -32,39 +33,21 @@ namespace LibRomData {
 	class rp_image;
 }
 
+class RomThumbCreatorPrivate;
 class RomThumbCreator : public ThumbCreator
 {
+	public:
+		RomThumbCreator();
+		virtual ~RomThumbCreator();
+
 	public:
 		virtual bool create(const QString &path, int width, int height, QImage &img) final;
 
 	private:
 		typedef ThumbCreator super;
-
-	protected:
-		/**
-		 * Download an image from a URL.
-		 * @param url URL.
-		 * @return QImage, or invalid QImage if an error occurred.
-		 */
-		QImage download(const QString &url);
-
-		// Thumbnail resize policy.
-		// TODO: Make this configurable.
-		// TODO: Combine with RP_ThumbnailProvider.
-		enum ResizePolicy {
-			RESIZE_NONE,	// No resizing.
-
-			// Only resize images that are less than or equal to half the
-			// requested thumbnail size. This is a compromise to allow
-			// small icons like Nintendo DS icons to be enlarged while
-			// larger but not-quite 256px images like GameTDB disc scans'
-			// (160px) will remain as-is.
-			RESIZE_HALF,
-
-			// Resize all images that are smaller than the requested
-			// thumbnail size.
-			RESIZE_ALL,
-		};
+		RomThumbCreatorPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(RomThumbCreator)
+		Q_DISABLE_COPY(RomThumbCreator)
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMTHUMBCREATOR_HPP__ */

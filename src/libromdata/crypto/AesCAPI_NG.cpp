@@ -45,8 +45,7 @@ class AesCAPI_NG_Private
 		~AesCAPI_NG_Private();
 
 	private:
-		AesCAPI_NG_Private(const AesCAPI_NG_Private &other);
-		AesCAPI_NG_Private &operator=(const AesCAPI_NG_Private &other);
+		RP_DISABLE_COPY(AesCAPI_NG_Private)
 
 	public:
 		/** bcrypt.dll handle and function pointers. **/

@@ -42,8 +42,7 @@ class GcnFst : public IFst
 
 	private:
 		typedef IFst super;
-		GcnFst(const GcnFst &other);
-		GcnFst &operator=(const GcnFst &other);
+		RP_DISABLE_COPY(GcnFst)
 
 	private:
 		friend class GcnFstPrivate;

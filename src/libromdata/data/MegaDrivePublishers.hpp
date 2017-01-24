@@ -22,7 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
 
-#include "TextFuncs.hpp"
+#include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -32,8 +33,7 @@ class MegaDrivePublishers
 		MegaDrivePublishers();
 		~MegaDrivePublishers();
 	private:
-		MegaDrivePublishers(const MegaDrivePublishers &);
-		MegaDrivePublishers &operator=(const MegaDrivePublishers &);
+		RP_DISABLE_COPY(MegaDrivePublishers)
 
 	private:
 		/**

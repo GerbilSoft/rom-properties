@@ -1,12 +1,12 @@
 PROJECT(rom-properties-gnome)
 
 # GNOME (Nautilus) frontend for rom-properties.
-
 FIND_PACKAGE(GLib2 2.26.0)
+FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
 # GTK3 minimum is 3.0.0, so no version check is needed.
 FIND_PACKAGE(GTK3)
-IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# Find the Nautilus extension library.
 	# TODO: Minimum version, and ensure it's 3, not 4?
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
@@ -15,11 +15,11 @@ IF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 		# Disable the GNOME frontend.
 		SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
 	ENDIF(NOT LibNautilusExtension_FOUND)
-ELSE(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 	# GTK+ 3.x (or required dependencies) were not found.
 	# Disable the GNOME frontend.
 	SET(BUILD_GNOME OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLib2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS "${rom-properties-gtk_SRCS}")
@@ -35,6 +35,10 @@ SET(rom-properties-gnome_H
 	${rom-properties-gnome_H}
 	rom-properties-provider.hpp
 	)
+
+# Process the .thumbnailer file.
+INCLUDE(DirInstallPaths)
+CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer)
 
 IF(BUILD_GNOME)
 	ADD_LIBRARY(rom-properties-gnome MODULE
@@ -52,8 +56,25 @@ IF(BUILD_GNOME)
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome romdata8 cachemgr8)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::glib2)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")
+
+	# Thumbnail wrapper program.
+	ADD_EXECUTABLE(rp-thumbnail rp-thumbnail.c)
+	DO_SPLIT_DEBUG(rp-thumbnail)
+	TARGET_INCLUDE_DIRECTORIES(rp-thumbnail
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+		)
+
+	# Link in libdl if it's required for dlopen().
+	IF(CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(rp-thumbnail ${CMAKE_DL_LIBS})
+	ENDIF(CMAKE_DL_LIBS)
 ENDIF(BUILD_GNOME)
 
 #######################
@@ -62,10 +83,16 @@ ENDIF(BUILD_GNOME)
 
 # TODO: Update for GNOME.
 IF(BUILD_GNOME)
-	# FIXME: ${LibNautilusExtension_EXTENSION_DIR} always uses the system prefix.
-	# This should be adjusted to ${CMAKE_INSTALL_PREFIX}.
 	INSTALL(TARGETS rom-properties-gnome
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
+		COMPONENT "plugin"
+		)
+	INSTALL(TARGETS rp-thumbnail
+		RUNTIME DESTINATION "${DIR_INSTALL_LIBEXEC}"
+		COMPONENT "plugin"
+		)
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
 		COMPONENT "plugin"
 		)
 
@@ -76,6 +103,14 @@ IF(BUILD_GNOME)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME rp-thumbnail PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${DIR_INSTALL_LIBEXEC}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

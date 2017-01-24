@@ -24,6 +24,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -33,8 +34,7 @@ class NESMappers
 		NESMappers();
 		~NESMappers();
 	private:
-		NESMappers(const NESMappers &);
-		NESMappers &operator=(const NESMappers &);
+		RP_DISABLE_COPY(NESMappers)
 
 	public:
 		/**

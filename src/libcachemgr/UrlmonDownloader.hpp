@@ -35,8 +35,7 @@ class UrlmonDownloader : public IDownloader
 
 	private:
 		typedef IDownloader super;
-		UrlmonDownloader(const UrlmonDownloader &);
-		UrlmonDownloader &operator=(const UrlmonDownloader &);
+		RP_DISABLE_COPY(UrlmonDownloader)
 
 	public:
 		/**

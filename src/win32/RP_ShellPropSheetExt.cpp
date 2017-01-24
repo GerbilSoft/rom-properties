@@ -31,7 +31,6 @@
 #include "resource.h"
 
 // libromdata
-#include "libromdata/common.h"
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
@@ -101,12 +100,11 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 class RP_ShellPropSheetExt_Private
 {
 	public:
-		RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
+		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q);
 		~RP_ShellPropSheetExt_Private();
 
 	private:
-		RP_ShellPropSheetExt_Private(const RP_ShellPropSheetExt_Private &other);
-		RP_ShellPropSheetExt_Private &operator=(const RP_ShellPropSheetExt_Private &other);
+		RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
 	private:
 		RP_ShellPropSheetExt *const q_ptr;
 
@@ -470,7 +468,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
 	// Handle newlines.
-	int lines = 0;
 	const wchar_t *data = wstr.data();
 	int nl_pos_prev = -1;
 	size_t nl_pos = 0;	// Assuming no NL at the start.

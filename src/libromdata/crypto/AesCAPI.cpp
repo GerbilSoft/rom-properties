@@ -48,8 +48,7 @@ class AesCAPIPrivate
 		~AesCAPIPrivate();
 
 	private:
-		AesCAPIPrivate(const AesCAPIPrivate &other);
-		AesCAPIPrivate &operator=(const AesCAPIPrivate &other);
+		RP_DISABLE_COPY(AesCAPIPrivate)
 
 	public:
 		// CryptoAPI provider.

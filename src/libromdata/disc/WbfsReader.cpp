@@ -41,8 +41,7 @@ class WbfsReaderPrivate {
 		~WbfsReaderPrivate();
 
 	private:
-		WbfsReaderPrivate(const WbfsReaderPrivate &other);
-		WbfsReaderPrivate &operator=(const WbfsReaderPrivate &other);
+		RP_DISABLE_COPY(WbfsReaderPrivate)
 	private:
 		WbfsReader *const q;
 

@@ -45,8 +45,7 @@ class WiiPartition : public GcnPartition
 
 	private:
 		typedef GcnPartition super;
-		WiiPartition(const WiiPartition &other);
-		WiiPartition &operator=(const WiiPartition &other);
+		RP_DISABLE_COPY(WiiPartition)
 
 	protected:
 		friend class WiiPartitionPrivate;

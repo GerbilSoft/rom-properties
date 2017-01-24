@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_SEMAPHORE_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_SEMAPHORE_HPP__
 
+#include "libromdata/common.h"
+
 #ifndef _WIN32
 #include <semaphore.h>
 #endif
@@ -44,8 +46,7 @@ class Semaphore
 		~Semaphore();
 
 	private:
-		Semaphore(const Semaphore &);
-		Semaphore &operator=(const Semaphore &);
+		RP_DISABLE_COPY(Semaphore)
 
 	public:
 		/**
@@ -91,8 +92,7 @@ class SemaphoreLocker
 		}
 
 	private:
-		SemaphoreLocker(const SemaphoreLocker &other);
-		SemaphoreLocker &operator=(const SemaphoreLocker &other);
+		RP_DISABLE_COPY(SemaphoreLocker)
 
 	private:
 		Semaphore &m_sem;

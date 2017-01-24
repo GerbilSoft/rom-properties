@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_IMG_RPPNG_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -36,8 +37,7 @@ class RpPng
 		// RpPng is a static class.
 		RpPng();
 		~RpPng();
-		RpPng(const RpPng &other);
-		RpPng &operator=(const RpPng &other);
+		RP_DISABLE_COPY(RpPng)
 
 	public:
 		/**

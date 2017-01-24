@@ -30,10 +30,12 @@ using LibCacheMgr::CacheManager;
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
+
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
 
 // C includes.
 #include <unistd.h>
@@ -45,8 +47,6 @@ using namespace LibRomData;
 #include <memory>
 using std::unique_ptr;
 
-#include <QLabel>
-#include <QtCore/QBuffer>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 
@@ -71,118 +71,158 @@ extern "C" {
 	}
 }
 
-class RomThumbCreatorPrivate
+class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 {
+	public:
+		RomThumbCreatorPrivate() { }
+
 	private:
-		// RomThumbCreatorPrivate is a static class.
-		RomThumbCreatorPrivate();
-		~RomThumbCreatorPrivate();
+		typedef TCreateThumbnail<QImage> super;
 		Q_DISABLE_COPY(RomThumbCreatorPrivate)
 
 	public:
-		/**
-		 * Get an internal image.
-		 * @param romData RomData object.
-		 * @param imageType Image type.
-		 * @return Internal image, or null QImage on error.
-		 */
-		static QImage getInternalImage(const RomData *romData, RomData::ImageType imageType);
+		/** TCreateThumbnail functions. **/
 
 		/**
-		 * Get an external image.
-		 * @param romData RomData object.
-		 * @param imageType Image type.
-		 * @return External image, or null QImage on error.
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
 		 */
-		static QImage getExternalImage(const RomData *romData, RomData::ImageType imageType);
+		virtual QImage rpImageToImgClass(const rp_image *img) const final;
+
+		/**
+		 * Wrapper function to check if an ImgClass is valid.
+		 * @param imgClass ImgClass
+		 * @return True if valid; false if not.
+		 */
+		virtual bool isImgClassValid(const QImage &imgClass) const final;
+
+		/**
+		 * Wrapper function to get a "null" ImgClass.
+		 * @return "Null" ImgClass.
+		 */
+		virtual QImage getNullImgClass(void) const final;
+
+		/**
+		 * Free an ImgClass object.
+		 * This may be no-op for e.g. QImage.
+		 * @param imgClass ImgClass object.
+		 */
+		virtual void freeImgClass(QImage &imgClass) const final;
+
+		/**
+		 * Get an ImgClass's size.
+		 * @param imgClass ImgClass object.
+		 * @retrun Size.
+		 */
+		virtual ImgSize getImgSize(const QImage &imgClass) const final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+
+		/**
+		 * Get the proxy for the specified URL.
+		 * @return Proxy, or empty string if no proxy is needed.
+		 */
+		virtual rp_string proxyForUrl(const rp_string &url) const final;
 };
 
+/** RomThumbCreatorPrivate **/
+
 /**
- * Get an internal image.
- * @param romData RomData object.
- * @param imageType Image type.
- * @return Internal image, or null QImage on error.
+ * Wrapper function to convert rp_image* to ImgClass.
+ * @param img rp_image
+ * @return ImgClass.
  */
-QImage RomThumbCreatorPrivate::getInternalImage(const RomData *romData, RomData::ImageType imageType)
+QImage RomThumbCreatorPrivate::rpImageToImgClass(const rp_image *img) const
 {
-	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
-	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
-		// Out of range.
-		return QImage();
-	}
-
-	const rp_image *image = romData->image(imageType);
-	if (!image) {
-		// No image.
-		return QImage();
-	}
-
-	// Convert the rp_image to QImage.
-	return rpToQImage(image);
+	return rpToQImage(img);
 }
 
 /**
- * Get an external image.
- * @param romData RomData object.
- * @param imageType Image type.
- * @return External image, or null QImage on error.
+ * Wrapper function to check if an ImgClass is valid.
+ * @param imgClass ImgClass
+ * @return True if valid; false if not.
  */
-QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData::ImageType imageType)
+bool RomThumbCreatorPrivate::isImgClassValid(const QImage &imgClass) const
 {
-	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
-	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
-		// Out of range.
-		return QImage();
-	}
+	return !imgClass.isNull();
+}
 
-	// Synchronously download from the source URLs.
-	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
-	if (!extURLs || extURLs->empty()) {
-		// No URLs.
-		return QImage();
-	}
-
-	CacheManager cache;
-	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
-		const RomData::ExtURL &extURL = *iter;
-
-		// Check if a proxy is required for this URL.
-		// TODO: Optimizations.
-		QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(extURL.url)));
-		if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
-			// No proxy.
-			cache.setProxyUrl(nullptr);
-		} else {
-			// Proxy is specified.
-			cache.setProxyUrl(Q2RP(proxy));
-		}
-
-		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
-		if (cache_filename.empty())
-			continue;
-
-		// Attempt to load the image.
-		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
-		if (file && file->isOpen()) {
-			unique_ptr<rp_image> dl_img(RpImageLoader::load(file.get()));
-			if (dl_img && dl_img->isValid()) {
-				// Image loaded successfully.
-				QImage qdl_img = rpToQImage(dl_img.get());
-				if (!qdl_img.isNull()) {
-					// Image converted successfully.
-					// TODO: Width/height and transparency processing?
-					return qdl_img;
-				}
-			}
-		}
-	}
-
-	// No image.
+/**
+ * Wrapper function to get a "null" ImgClass.
+ * @return "Null" ImgClass.
+ */
+QImage RomThumbCreatorPrivate::getNullImgClass(void) const
+{
 	return QImage();
 }
 
+/**
+ * Free an ImgClass object.
+ * This may be no-op for e.g. QImage.
+ * @param imgClass ImgClass object.
+ */
+void RomThumbCreatorPrivate::freeImgClass(QImage &imgClass) const
+{
+	// Nothing to do here...
+	Q_UNUSED(imgClass)
+}
+
+/**
+ * Get an ImgClass's size.
+ * @param imgClass ImgClass object.
+ * @retrun Size.
+ */
+RomThumbCreatorPrivate::ImgSize RomThumbCreatorPrivate::getImgSize(const QImage &imgClass) const
+{
+	ImgSize sz = {imgClass.width(), imgClass.height()};
+	return sz;
+}
+
+/**
+ * Rescale an ImgClass using nearest-neighbor scaling.
+ * @param imgClass ImgClass object.
+ * @param sz New size.
+ * @return Rescaled ImgClass.
+ */
+QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const
+{
+	return imgClass.scaled(sz.width, sz.height,
+		Qt::KeepAspectRatio, Qt::FastTransformation);
+}
+
+/**
+ * Get the proxy for the specified URL.
+ * @return Proxy, or empty string if no proxy is needed.
+ */
+rp_string RomThumbCreatorPrivate::proxyForUrl(const rp_string &url) const
+{
+	QString proxy = KProtocolManager::proxyForUrl(QUrl(RP2Q(url)));
+	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
+		// No proxy.
+		return rp_string();
+	}
+
+	// Proxy is required..
+	return Q2RP(proxy);
+}
+
 /** RomThumbCreator **/
+
+RomThumbCreator::RomThumbCreator()
+	: d_ptr(new RomThumbCreatorPrivate())
+{ }
+
+RomThumbCreator::~RomThumbCreator()
+{
+	delete d_ptr;
+}
 
 /**
  * Create a thumbnail for a ROM image.
@@ -194,103 +234,11 @@ QImage RomThumbCreatorPrivate::getExternalImage(const RomData *romData, RomData:
  */
 bool RomThumbCreator::create(const QString &path, int width, int height, QImage &img)
 {
-	Q_UNUSED(width);
 	Q_UNUSED(height);
 
-	// Return value.
-	// NOTE: Not modifying img unless we have a valid value.
-	QImage ret_img;
-
-	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(Q2RP(path), RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		// Could not open the file.
-		return false;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	RomData *romData = RomDataFactory::getInstance(file.get(), true);
-	file.reset(nullptr);	// file is dup()'d by RomData.
-	if (!romData) {
-		// ROM is not supported.
-		return false;
-	}
-
-	// TODO: Customize which ones are used per-system.
-	// For now, check EXT MEDIA, then INT ICON.
-	uint32_t imgbf = romData->supportedImageTypes();
-	uint32_t imgpf = 0;
-
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		ret_img = RomThumbCreatorPrivate::getExternalImage(romData, RomData::IMG_EXT_MEDIA);
-		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
-	}
-
-	if (ret_img.isNull()) {
-		// No external media scan.
-		// Try an internal image.
-		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
-			ret_img = RomThumbCreatorPrivate::getInternalImage(romData, RomData::IMG_INT_ICON);
-			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
-		}
-	}
-
-	if (ret_img.isNull()) {
-		// No image.
-		romData->unref();
-		return false;
-	}
-
-	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
-		// TODO: User configuration.
-		ResizePolicy resize = RESIZE_HALF;
-		bool needs_resize = false;
-
-		switch (resize) {
-			case RESIZE_NONE:
-				// No resize.
-				break;
-
-			case RESIZE_HALF:
-			default:
-				// Only resize images that are less than or equal to
-				// half requested thumbnail size.
-				needs_resize = (ret_img.width()  <= (width/2)) ||
-					       (ret_img.height() <= (height/2));
-				break;
-
-			case RESIZE_ALL:
-				// Resize all images that are smaller than the
-				// requested thumbnail size.
-				needs_resize = (ret_img.width() < width) ||
-					       (ret_img.height() < height);
-				break;
-		}
-
-		if (needs_resize) {
-			// Maintain the correct aspect ratio.
-			const int img_w = ret_img.width();
-			const int img_h = ret_img.height();
-
-			// Resize to the next highest integer multiple.
-			width -= (width % img_w);
-			height -= (height % img_h);
-
-			// Calculate the closest size while maintaining the aspect ratio.
-			QSize tmp_sz = ret_img.size();
-			tmp_sz.scale(width, height, Qt::KeepAspectRatio);
-			ret_img = ret_img.scaled(tmp_sz,
-				Qt::KeepAspectRatio, Qt::FastTransformation);
-		}
-	}
-
-	// Return the image.
-	romData->unref();
-	img = ret_img;
-	return true;
+	// Assuming width and height are the same.
+	// TODO: What if they aren't?
+	Q_D(RomThumbCreator);
+	int ret = d->getThumbnail(Q2RP(path), width, img);
+	return (ret == 0);
 }

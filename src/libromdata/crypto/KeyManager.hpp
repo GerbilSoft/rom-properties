@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
+#include "common.h"
+
 // C includes.
 #include <stdint.h>
 
@@ -35,8 +37,7 @@ class KeyManager
 		~KeyManager();
 
 	private:
-		KeyManager(const KeyManager &other);
-		KeyManager &operator=(const KeyManager &other);
+		RP_DISABLE_COPY(KeyManager)
 
 	private:
 		friend class KeyManagerPrivate;

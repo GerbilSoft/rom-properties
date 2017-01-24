@@ -58,8 +58,7 @@ class DMG : public RomData
 	private:
 		typedef RomData super;
 		friend class DMGPrivate;
-		DMG(const DMG &other);
-		DMG &operator=(const DMG &other);
+		RP_DISABLE_COPY(DMG)
 
 	public:
 		/** ROM detection functions. **/

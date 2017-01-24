@@ -1,0 +1,8 @@
+[Thumbnailer Entry]
+# Thumbnailer entry for Nautilus. (GNOME 3)
+# Reference: https://developer.gnome.org/gnome-desktop3/stable/GnomeDesktopThumbnailFactory.html
+Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/rp-thumbnail -s %s %i %o
+
+# NOTE: all/all doesn't work; use application/octet-stream.
+# TODO: Remove application/octet-stream and only use more-specific types?
+MimeType=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;
