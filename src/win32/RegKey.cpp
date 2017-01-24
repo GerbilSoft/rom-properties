@@ -563,6 +563,14 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
+#ifndef NDEBUG
+	// Debug build: Disable process isolation to make debugging easier.
+	hkcr_Obj_CLSID.write_dword(L"DisableProcessIsolation", 1);
+#else
+	// Release build: Enable process isolation for increased robustness.
+	hkcr_Obj_CLSID.deleteValue(L"DisableProcessIsolation");
+#endif
+
 	// Create an InprocServer32 subkey.
 	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, L"InprocServer32", KEY_WRITE, true);
 	if (!hkcr_InprocServer32.isOpen())
