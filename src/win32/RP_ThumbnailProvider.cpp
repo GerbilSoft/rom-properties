@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -34,10 +34,6 @@
 #include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
 
-// TCreateThumbnail is a templated class,
-// so we have to #include the .cpp file here.
-#include "libromdata/img/TCreateThumbnail.cpp"
-
 // RpFile_IStream
 #include "RpFile_IStream.hpp"
 
@@ -56,75 +52,12 @@ using std::wstring;
 const CLSID CLSID_RP_ThumbnailProvider =
 	{0x4723df58, 0x463e, 0x4590, {0x8f, 0x4a, 0x8d, 0x9d, 0xd4, 0xf4, 0x35, 0x5a}};
 
-/** RP_ExtractIcon_Private **/
-// Workaround for RP_D() expecting the no-underscore naming convention.
-#define RP_ThumbnailProviderPrivate RP_ThumbnailProvider_Private
+/** RP_ThumbnailProvider_Private **/
+#include "RP_ThumbnailProvider_p.hpp"
 
-class RP_ThumbnailProvider_Private : public TCreateThumbnail<HBITMAP>
-{
-	public:
-		RP_ThumbnailProvider_Private();
-		virtual ~RP_ThumbnailProvider_Private();
-
-	private:
-		typedef TCreateThumbnail<HBITMAP> super;
-		RP_DISABLE_COPY(RP_ThumbnailProvider_Private)
-
-	public:
-		// IRpFile IInitializeWithStream::Initialize().
-		IRpFile *file;
-
-	public:
-		/** TCreateThumbnail functions. **/
-
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		virtual HBITMAP rpImageToImgClass(const rp_image *img) const final;
-
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		virtual bool isImgClassValid(const HBITMAP &imgClass) const final;
-
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		virtual HBITMAP getNullImgClass(void) const final;
-
-		/**
-		 * Free an ImgClass object.
-		 * This may be no-op for e.g. HBITMAP.
-		 * @param imgClass ImgClass object.
-		 */
-		virtual void freeImgClass(HBITMAP &imgClass) const final;
-
-		/**
-		 * Get an ImgClass's size.
-		 * @param imgClass ImgClass object.
-		 * @retrun Size.
-		 */
-		virtual ImgSize getImgSize(const HBITMAP &imgClass) const final;
-
-		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @return Rescaled ImgClass.
-		 */
-		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
-
-		/**
-		 * Get the proxy for the specified URL.
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const final;
-};
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
 
 /** RP_ThumbnailProvider_Private **/
 
@@ -265,168 +198,6 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Make sure we count this reference.
 	AddRef();
 	return NOERROR;
-}
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::RegisterCLSID(void)
-{
-	static const wchar_t description[] = L"ROM Properties Page - Thumbnail Provider";
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO: Set HKCR\CLSID\DisableProcessIsolation=REG_DWORD:1
-	// in debug builds. Otherwise, it's not possible to debug
-	// the thumbnail handler.
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ThumbnailProvider), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
-
-/**
- * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkey_Assoc)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Register as the thumbnail handler for this file association.
-
-	// Set the "Treatment" value.
-	// TODO: DWORD write function.
-	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Create/open the IExtractImage key.
-	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
-	if (!hkcr_IThumbnailProvider.isOpen()) {
-		return hkcr_IThumbnailProvider.lOpenRes();
-	}
-	// Set the default value to this CLSID.
-	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// File type handler registered.
-	return ERROR_SUCCESS;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::UnregisterCLSID(void)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
-}
-
-/**
- * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Unregister as the thumbnail handler for this file association.
-
-	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
-	if (!hkcr_ShellEx.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Open the IThumbnailProvider key.
-	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_READ, false);
-	if (!hkcr_IThumbnailProvider.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_IThumbnailProvider.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_IThumbnailProvider.lOpenRes();
-	}
-
-	// Check if the default value matches the CLSID.
-	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (wstr_IThumbnailProvider == clsid_str) {
-		// Default value matches.
-		// Remove the subkey.
-		hkcr_IThumbnailProvider.close();
-		lResult = hkcr_ShellEx.deleteSubKey(L"{E357FCCD-A995-4576-B01F-234630154E96}");
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-
-		// Remove "Treatment" if it's present.
-		lResult = hkey_Assoc.deleteValue(L"Treatment");
-		if (lResult != ERROR_FILE_NOT_FOUND) {
-			return lResult;
-		}
-	} else {
-		// Default value doesn't match.
-		// We're done here.
-		return hkcr_IThumbnailProvider.lOpenRes();
-	}
-
-	// File type handler unregistered.
-	return ERROR_SUCCESS;
 }
 
 /** IInitializeWithStream **/

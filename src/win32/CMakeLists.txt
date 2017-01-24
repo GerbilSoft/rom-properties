@@ -8,11 +8,14 @@ SET(rom-properties-win32_SRCS
 	RP_ExtractIcon_Register.cpp
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
+	RP_ExtractImage_Register.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
+	RP_ShellPropSheetExt_Register.cpp
 	#DialogBuilder.cpp
 	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
+	RP_ThumbnailProvider_Register.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -22,11 +25,13 @@ SET(rom-properties-win32_H
 	RP_ClassFactory.hpp
 	RP_ComBase.hpp
 	RP_ExtractImage.hpp
+	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	#DialogBuilder.hpp
 	RpFile_IStream.hpp
 	RP_ThumbnailProvider.hpp
+	RP_ThumbnailProvider_p.hpp
 	resource.h
 	)
 
