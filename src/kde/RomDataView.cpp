@@ -25,6 +25,7 @@
 
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/IconAnimData.hpp"
 #include "libromdata/img/IconAnimHelper.hpp"
