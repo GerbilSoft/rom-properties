@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_NES_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_NES_HPP__z
+#define __ROMPROPERTIES_LIBROMDATA_NES_HPP__
 
 #include <stdint.h>
 #include <string>
