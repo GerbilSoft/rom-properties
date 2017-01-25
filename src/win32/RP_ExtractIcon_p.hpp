@@ -58,6 +58,17 @@ class RP_ExtractIcon_Private
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG RegisterFileType(RegKey &hkey_Assoc, bool progID_mode);
+
+		/**
+		 * Unregister the file type handler.
+		 *
+		 * Internal version; this only unregisters for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to unregister under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */

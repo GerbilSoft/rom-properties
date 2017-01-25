@@ -224,10 +224,14 @@ LONG RP_ExtractIcon::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
+ *
+ * Internal version; this only unregisters for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to unregister under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
+LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -240,66 +244,125 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkey_Assoc)
 
 	// Unregister as the icon handler for this file association.
 
-	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
-	if (!hkcr_ShellEx.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ShellEx.lOpenRes();
-	}
-
-	// Open the "IconHandler" key.
-	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_READ, false);
-	if (!hkcr_IconHandler.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_IconHandler.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_IconHandler.lOpenRes();
-	}
-	// Check if the default value matches the CLSID.
-	wstring str_IconHandler = hkcr_IconHandler.read(nullptr);
-	if (str_IconHandler == clsid_str) {
-		// Default value matches.
-		// Remove the subkey.
-		hkcr_IconHandler.close();
-		lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-	} else {
-		// Default value does not match.
-		// We're done here.
-		return hkcr_IconHandler.lOpenRes();
-	}
-
 	// Open the "DefaultIcon" key.
-	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ, false);
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ|KEY_WRITE, false);
 	if (!hkcr_DefaultIcon.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
 		if (hkcr_DefaultIcon.lOpenRes() == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
 		return hkcr_DefaultIcon.lOpenRes();
 	}
-	// Check if the default value is "%1".
-	wstring wstr_DefaultIcon = hkcr_DefaultIcon.read(nullptr);
-	if (wstr_DefaultIcon == L"%1") {
-		// Default value matches.
-		// Remove the subkey.
-		hkcr_DefaultIcon.close();
-		lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
+
+	// Open the "ShellEx\\IconHandler" key.
+	RegKey hkcr_IconHandler(hkey_Assoc, L"ShellEx\\IconHandler", KEY_READ|KEY_WRITE, false);
+	if (!hkcr_IconHandler.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		if (hkcr_IconHandler.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_IconHandler.lOpenRes();
+	}
+
+	// Check if DefaultIcon is "%1" and IconHandler is our CLSID.
+	wstring defaultIcon = hkcr_DefaultIcon.read(nullptr);
+	wstring iconHandler = hkcr_IconHandler.read(nullptr);
+	if (defaultIcon != L"%1" || iconHandler != clsid_str) {
+		// Not our DefaultIcon or IconHandler.
+		// We're done here.
+		return ERROR_SUCCESS;
+	}
+
+	// Restore the fallbacks if we have any.
+	DWORD dwTypeDefaultIcon, dwTypeIconHandler;
+	defaultIcon.clear();
+	iconHandler.clear();
+	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);
+	if (hkcr_RP_Fallback.isOpen()) {
+		// Read the fallbacks.
+		defaultIcon = hkcr_RP_Fallback.read(L"DefaultIcon", &dwTypeDefaultIcon);
+		iconHandler = hkcr_RP_Fallback.read(L"IconHandler", &dwTypeIconHandler);
+	}
+
+	if (!defaultIcon.empty()) {
+		// Restore the DefaultIcon.
+		lResult = hkcr_DefaultIcon.write(nullptr, defaultIcon, dwTypeDefaultIcon);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
-		// Default value doesn't match.
-		// We're done here.
-		return hkcr_DefaultIcon.lOpenRes();
+		// Delete the DefaultIcon.
+		hkcr_DefaultIcon.close();
+		hkey_Assoc.deleteSubKey(L"DefaultIcon");
+	}
+
+	if (!iconHandler.empty()) {
+		// Restore the IconHandler.
+		lResult = hkcr_DefaultIcon.write(nullptr, iconHandler, dwTypeIconHandler);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// Delete the IconHandler.
+		hkcr_IconHandler.close();
+		hkey_Assoc.deleteSubKey(L"IconHandler");
+	}
+
+	// Remove the fallbacks.
+	lResult = hkcr_RP_Fallback.deleteValue(L"DefaultIcon");
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+		return lResult;
+	}
+	lResult = hkcr_RP_Fallback.deleteValue(L"IconHandler");
+	if (lResult == ERROR_FILE_NOT_FOUND) {
+		lResult = ERROR_SUCCESS;
 	}
 
 	// File type handler unregistered.
-	return ERROR_SUCCESS;
+	return lResult;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(HKEY_CLASSES_ROOT, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
+	// Unregister the main association.
+	LONG lResult = RP_ExtractIcon_Private::UnregisterFileType(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			} else {
+				return hkcr_ProgID.lOpenRes();
+			}
+		}
+		lResult = RP_ExtractIcon_Private::UnregisterFileType(hkcr_ProgID);
+	}
+
+	// File type handler unregistered.
+	return lResult;
 }

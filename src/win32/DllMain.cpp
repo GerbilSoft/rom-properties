@@ -209,57 +209,100 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	} else {
 		// No thumbnail handlers.
 		// Unregister the handlers if they were previously registered.
-		// TODO: Use hkcr+ext instead of pHkey_fileType.
-		lResult = RP_ExtractIcon::UnregisterFileType(*pHkey_fileType);
+		lResult = RP_ExtractIcon::UnregisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+		// TODO: Use hkcr+ext instead of pHkey_fileType.
 		lResult = RP_ExtractImage::UnregisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		lResult = RP_ThumbnailProvider::UnregisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
-	// All file types handlers registered.
+	// All file type handlers registered.
 	delete pHkey_fileType;
 	return ERROR_SUCCESS;
 }
 
 /**
  * Unregister file type handlers.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT, or user-specific Classes key.
+ * @param extInfo RomDataFactory::ExtInfo
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG UnregisterFileType(RegKey &hkey_Assoc)
+static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInfo)
 {
 	LONG lResult;
 
-	lResult = RP_ExtractIcon::UnregisterFileType(hkey_Assoc);
+	// Open the file type key if it's present.
+	wstring ext = RP2W_c(extInfo.ext);
+	RegKey hkey_fileType(hkcr, ext.c_str(), KEY_READ|KEY_WRITE, false);
+	if (!hkey_fileType.isOpen()) {
+		// Not open...
+		if (hkey_fileType.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			// Key not found.
+			return ERROR_SUCCESS;
+		}
+		// Other error.
+		return hkey_fileType.lOpenRes();
+	}
+
+	// If the ProgID was previously set to RP_ProgID,
+	// unset it, since we're not using it anymore.
+	wstring progID = hkey_fileType.read(nullptr);
+	if (progID == RP_ProgID) {
+		// Unset the ProgID.
+		lResult = hkey_fileType.deleteValue(nullptr);
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+	}
+
+	// Unregister all classes.
+	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ExtractImage::UnregisterFileType(hkey_Assoc);
+	// TODO: Use hkcr+ext instead of hkey_fileType.
+	lResult = RP_ExtractImage::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkey_Assoc);
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_Assoc);
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Check if the "ShellEx" key is empty.
-	RegKey hkey_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
-	if (!hkey_ShellEx.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkey_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+	RegKey hkey_ShellEx(hkey_fileType, L"ShellEx", KEY_READ, false);
+	if (hkey_ShellEx.isOpen()) {
+		// Check if ShellEx is empty.
+		// TODO: Error handling.
+		if (hkey_ShellEx.isKeyEmpty()) {
+			// No subkeys. Delete this key.
+			hkey_ShellEx.close();
+			hkey_fileType.deleteSubKey(L"ShellEx");
 		}
-		return hkey_ShellEx.lOpenRes();
+	} else {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkey_ShellEx.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hkey_ShellEx.lOpenRes();
+		}
 	}
 
-	// Check if ShellEx is empty.
-	// TODO: Error handling.
-	if (hkey_ShellEx.isKeyEmpty()) {
-		// No subkeys. Delete this key.
-		hkey_ShellEx.close();
-		hkey_Assoc.deleteSubKey(L"ShellEx");
+	// Check if the "RP_Fallback" key is empty.
+	RegKey hkcr_RP_Fallback(hkey_fileType, L"RP_Fallback", KEY_READ, false);
+	if (hkcr_RP_Fallback.isOpen()) {
+		// Check if RP_Fallback is empty.
+		// TODO: Error handling.
+		if (hkcr_RP_Fallback.isKeyEmpty()) {
+			// No subkeys. Delete this key.
+			hkcr_RP_Fallback.close();
+			hkey_fileType.deleteSubKey(L"RP_Fallback");
+		}
+	} else {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		if (hkcr_RP_Fallback.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hkcr_RP_Fallback.lOpenRes();
+		}
 	}
 
-	// All file types handlers registered.
+	// All file type handlers unregistered.
 	return ERROR_SUCCESS;
 }
 
@@ -317,7 +360,6 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 
 	// Check both "HKCR" and "HKU\\[sid]".
 	// It turns out they aren't identical.
-	LONG lResult;
 
 	// First, check HKCR.
 	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
@@ -326,25 +368,25 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 		return hkcr.lOpenRes();
 	}
 
-	// Does HKCR\\progID exist?
-	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
-	if (!hkcr_ProgID.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable.
-		// Anything else is an error.
-		if (hkcr_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ProgID.lOpenRes();
-	}
-
 	// Use an ExtInfo with the progID instead of the extension.
 	const RomDataFactory::ExtInfo progID_info = {
 		(const rp_char*)progID.c_str(),
 		ext_info.hasThumbnail
 	};
-	lResult = RegisterFileType(hkcr, progID_info);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
+
+	// Does HKCR\\progID exist?
+	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
+	if (hkcr_ProgID.isOpen()) {
+		LONG lResult = RegisterFileType(hkcr, progID_info);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// ERROR_FILE_NOT_FOUND is acceptable.
+		// Anything else is an error.
+		if (hkcr_ProgID.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hkcr_ProgID.lOpenRes();
+		}
 	}
 
 	// Next, check "HKU\\[sid]".
@@ -353,15 +395,20 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	regPath  = sid;
 	regPath += L"\\Software\\Classes";
 	RegKey hku_cr(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
-	if (!hku_cr.isOpen()) {
+	if (hku_cr.isOpen()) {
+		LONG lResult = RegisterFileType(hku_cr, progID_info);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hku_cr.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hku_cr.lOpenRes();
 		}
-		return hku_cr.lOpenRes();
 	}
-	return RegisterFileType(hku_cr, progID_info);
+
+	return ERROR_SUCCESS;
 }
 
 /**
@@ -381,37 +428,55 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 
 	// Check both "HKCR" and "HKU\\[sid]".
 	// It turns out they aren't identical.
-	LONG lResult;
 
 	// First, check HKCR.
+	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
+	if (!hkcr.isOpen()) {
+		// Error opening HKEY_CLASSES_ROOT.
+		return hkcr.lOpenRes();
+	}
+
+	// Use an ExtInfo with the progID instead of the extension.
+	const RomDataFactory::ExtInfo progID_info = {
+		(const rp_char*)progID.c_str(),
+		ext_info.hasThumbnail
+	};
+
+	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
-	if (!hkcr_ProgID.isOpen()) {
+	if (hkcr_ProgID.isOpen()) {
+		LONG lResult = UnregisterFileType(hkcr, progID_info);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hkcr_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (hkcr_ProgID.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hkcr_ProgID.lOpenRes();
 		}
-		return hkcr_ProgID.lOpenRes();
 	}
-	lResult = UnregisterFileType(hkcr_ProgID);
-	if (lResult != ERROR_SUCCESS) return lResult;
 
 	// Next, check "HKU\\[sid]".
 	wstring regPath;
 	regPath.reserve(128);
 	regPath  = sid;
 	regPath += L"\\Software\\Classes\\";
-	regPath += progID;
-	RegKey hku_ProgID(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
-	if (!hku_ProgID.isOpen()) {
+	RegKey hku_cr(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+	if (hku_cr.isOpen()) {
+		LONG lResult = UnregisterFileType(hku_cr, progID_info);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hku_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
+		if (hku_cr.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+			return hku_cr.lOpenRes();
 		}
-		return hku_ProgID.lOpenRes();
 	}
-	return UnregisterFileType(hku_ProgID);
+
+	return ERROR_SUCCESS;
 }
 
 /**
@@ -479,7 +544,7 @@ STDAPI DllRegisterServer(void)
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 
-		// Register the file extension globally.
+		// Register the file type handlers for this file extension globally.
 		lResult = RegisterFileType(hkcr, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
@@ -526,9 +591,15 @@ STDAPI DllUnregisterServer(void)
 	// These are usually ".DEFAULT" or "well-known" SIDs.
 	user_SIDs.remove_if(process_HKU_subkey);
 
-	// Register all supported file types and associate them
-	// with our ProgID.
-	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	// Open HKEY_CLASSES_ROOT.
+	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
+	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
+
+	// Unegister all supported file types.
+	vector<RomDataFactory::ExtInfo> vec_exts;// = RomDataFactory::supportedFileExtensions();
+	// DEBUG: Adding ".iso" to the list for testing.
+	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
+	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Unregister user file types if necessary.
 		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
@@ -536,31 +607,8 @@ STDAPI DllUnregisterServer(void)
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 
-		// Open the file type key if it's present.
-		RegKey hkey_fileType(HKEY_CLASSES_ROOT, RP2W_c(ext_iter->ext), KEY_READ | KEY_WRITE, false);
-		if (!hkey_fileType.isOpen()) {
-			// Not open...
-			if (hkey_fileType.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-				// Key not found. Continue.
-				continue;
-			}
-			// Other error.
-			return hkey_fileType.lOpenRes();
-		}
-
-		// If the ProgID was previously set to RP_ProgID,
-		// unset it, since we're not using it anymore.
-		wstring progID = hkey_fileType.read(nullptr);
-		if (progID == RP_ProgID) {
-			// Unset the ProgID.
-			lResult = hkey_fileType.deleteValue(nullptr);
-			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-				return SELFREG_E_CLASS;
-			}
-		}
-
-		// Unregister the file type handlers for this file extension.
-		lResult = UnregisterFileType(hkey_fileType);
+		// Unregister the file type handlers for this file extension globally.
+		lResult = UnregisterFileType(hkcr, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
