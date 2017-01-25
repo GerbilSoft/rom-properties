@@ -6,6 +6,7 @@ SET(rom-properties-win32_SRCS
 	RegKey.cpp
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
+	RP_ExtractIcon_Fallback.cpp
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
 	RP_ExtractImage_Register.cpp

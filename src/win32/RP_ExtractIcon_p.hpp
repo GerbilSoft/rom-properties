@@ -69,6 +69,25 @@ class RP_ExtractIcon_Private
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	private:
+		/**
+		 * Fallback icon handler function. (internal)
+		 * @param hkey_Assoc File association key to check.
+		 * @param phiconLarge Large icon.
+		 * @param phiconSmall Small icon.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge, HICON *phiconSmall);
+
+	public:
+		/**
+		 * Fallback icon handler function.
+		 * @param phiconLarge Large icon.
+		 * @param phiconSmall Small icon.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		LONG Fallback(HICON *phiconLarge, HICON *phiconSmall);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */

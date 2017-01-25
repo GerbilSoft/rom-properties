@@ -154,9 +154,10 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	}
 
 	if (!d->romData) {
-		// ROM is not supported.
+		// ROM is not supported. Use the fallback.
+		LONG lResult = d->Fallback(phiconLarge, phiconSmall);
 		// NOTE: S_FALSE causes icon shenanigans.
-		return E_FAIL;
+		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
 	}
 
 	// ROM is supported. Get the image.
@@ -210,7 +211,15 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 		}
 	}
 
+	if (!*phiconLarge) {
+		// No icon. Try the fallback.
+		LONG lResult = d->Fallback(phiconLarge, phiconSmall);
+		// NOTE: S_FALSE causes icon shenanigans.
+		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
+	}
+
 	// NOTE: S_FALSE causes icon shenanigans.
+	// TODO: Always return success here due to fallback?
 	return (*phiconLarge != nullptr ? S_OK : E_FAIL);
 }
 
@@ -257,11 +266,11 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	d->romData = RomDataFactory::getInstance(file.get(), true);
-	if (!d->romData) {
-		// Not supported.
-		return E_FAIL;
-	}
 
+	// NOTE: Since this is the registered icon handler
+	// for the file type, we have to implement our own
+	// fallbacks for unsupported files. Hence, we'll
+	// continue even if d->romData is nullptr;
 	return S_OK;
 }
 
