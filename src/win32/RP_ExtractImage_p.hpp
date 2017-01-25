@@ -22,7 +22,6 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_P_HPP__
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_P_HPP__
 
-#include <stdafx.h>
 #include "RP_ExtractImage.hpp"
 #include "libromdata/img/TCreateThumbnail.hpp"
 

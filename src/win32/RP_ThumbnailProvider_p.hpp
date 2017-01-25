@@ -1,7 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider_p.hpp: IThumbnailProvider implementation.          *
- * (PRIVATE CLASS)
+ * (PRIVATE CLASS)                                                         *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -23,7 +23,6 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_P_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_P_HPP__
 
-#include <stdafx.h>
 #include "RP_ThumbnailProvider.hpp"
 #include "libromdata/img/TCreateThumbnail.hpp"
 
