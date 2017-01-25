@@ -46,7 +46,8 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge
 	}
 
 	// Get the DefaultIcon key.
-	wstring defaultIcon = hkey_RP_Fallback.read(L"DefaultIcon");
+	DWORD dwType;
+	wstring defaultIcon = hkey_RP_Fallback.read(L"DefaultIcon", &dwType);
 	if (defaultIcon.empty()) {
 		// No default icon.
 		return ERROR_FILE_NOT_FOUND;
@@ -81,6 +82,22 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge
 	} else {
 		// Assume the default icon index.
 		nIconIndex = 0;
+	}
+
+	// If the registry key type is REG_EXPAND_SZ, expand it.
+	// TODO: Move to RegKey?
+	if (dwType == REG_EXPAND_SZ) {
+		// cchExpand includes the NULL terminator.
+		DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
+		if (cchExpand == 0) {
+			// Error expanding the strings.
+			return GetLastError();
+		}
+
+		wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
+		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
+		defaultIcon = wstring(wbuf, cchExpand-1);
+		free(wbuf);
 	}
 
 	// Extract the icon.
