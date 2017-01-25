@@ -255,6 +255,8 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
+		// No need to delete subkeys from the ProgID later.
+		progID.clear();
 	}
 
 	// Unregister all classes.
@@ -271,7 +273,7 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	// Delete keys if they're empty.
 	static const wchar_t *const keysToDel[] = {L"ShellEx", L"RP_Fallback"};
 	for (int i = ARRAY_SIZE(keysToDel)-1; i >= 0; i--) {
-		// Check if the key key is empty.
+		// Check if the key is empty.
 		RegKey hkey_del(hkey_fileType, keysToDel[i], KEY_READ, false);
 		if (!hkey_del.isOpen())
 			continue;
@@ -282,6 +284,27 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 			// No subkeys. Delete this key.
 			hkey_del.close();
 			hkey_fileType.deleteSubKey(keysToDel[i]);
+		}
+	}
+
+	// Is a custom ProgID registered?
+	// If so, we should check for empty keys there, too.
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkey_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		for (int i = ARRAY_SIZE(keysToDel)-1; i >= 0; i--) {
+			// Check if the key is empty.
+			RegKey hkey_del(hkey_ProgID, keysToDel[i], KEY_READ, false);
+			if (!hkey_del.isOpen())
+				continue;
+
+			// Check if the key is empty.
+			// TODO: Error handling.
+			if (hkey_del.isKeyEmpty()) {
+				// No subkeys. Delete this key.
+				hkey_del.close();
+				hkey_ProgID.deleteSubKey(keysToDel[i]);
+			}
 		}
 	}
 
