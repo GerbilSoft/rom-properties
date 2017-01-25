@@ -141,7 +141,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 			}
 		} else {
 			// Save the DefaultIcon.
-			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon);
+			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
