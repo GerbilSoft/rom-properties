@@ -268,37 +268,25 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	// Check if the "ShellEx" key is empty.
-	RegKey hkey_ShellEx(hkey_fileType, L"ShellEx", KEY_READ, false);
-	if (hkey_ShellEx.isOpen()) {
-		// Check if ShellEx is empty.
-		// TODO: Error handling.
-		if (hkey_ShellEx.isKeyEmpty()) {
-			// No subkeys. Delete this key.
-			hkey_ShellEx.close();
-			hkey_fileType.deleteSubKey(L"ShellEx");
-		}
-	} else {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkey_ShellEx.lOpenRes() != ERROR_FILE_NOT_FOUND) {
-			return hkey_ShellEx.lOpenRes();
-		}
-	}
+	// Delete keys if they're empty.
+	static const wchar_t *const keysToDel[] = {L"ShellEx", L"RP_Fallback"};
+	for (int i = ARRAY_SIZE(keysToDel)-1; i >= 0; i--) {
+		// Check if the key key is empty.
+		RegKey hkey_del(hkey_fileType, keysToDel[i], KEY_READ, false);
+		if (!hkey_del.isOpen())
+			continue;
 
-	// Check if the "RP_Fallback" key is empty.
-	RegKey hkcr_RP_Fallback(hkey_fileType, L"RP_Fallback", KEY_READ, false);
-	if (hkcr_RP_Fallback.isOpen()) {
-		// Check if RP_Fallback is empty.
+		// Check if the key is empty.
 		// TODO: Error handling.
-		if (hkcr_RP_Fallback.isKeyEmpty()) {
+		if (hkey_del.isKeyEmpty()) {
 			// No subkeys. Delete this key.
-			hkcr_RP_Fallback.close();
-			hkey_fileType.deleteSubKey(L"RP_Fallback");
-		}
-	} else {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_RP_Fallback.lOpenRes() != ERROR_FILE_NOT_FOUND) {
-			return hkcr_RP_Fallback.lOpenRes();
+			hkey_del.close();
+			hkey_fileType.deleteSubKey(keysToDel[i]);
+		} else {
+			// ERROR_FILE_NOT_FOUND is acceptable here.
+			if (hkey_del.lOpenRes() != ERROR_FILE_NOT_FOUND) {
+				return hkey_del.lOpenRes();
+			}
 		}
 	}
 
