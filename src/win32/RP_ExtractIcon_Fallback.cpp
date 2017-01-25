@@ -126,23 +126,20 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	// PrivateExtractIcons() is published as of Windows XP SP1,
 	// but it's "officially" private.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
-	UINT uRet;
-	uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex, LOWORD(nIconSize), LOWORD(nIconSize), phiconLarge, nullptr, 1, 0);
-	if (uRet != 1) {
-		*phiconLarge = nullptr;
-	}
-
-	uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex, HIWORD(nIconSize), HIWORD(nIconSize), phiconSmall, nullptr, 1, 0);
-	if (uRet != 1) {
-		*phiconSmall = nullptr;
-	}
-
-	if (!*phiconLarge && !*phiconSmall) {
+	// TODO: Verify that hIcons[x] is NULL if only one size is found.
+	// TODO: Verify which icon is extracted.
+	// TODO: What if the size isn't found?
+	HICON hIcons[2];
+	UINT uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex,
+			nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+	if (uRet == 0) {
 		// No icons were extracted.
 		return ERROR_FILE_NOT_FOUND;
 	}
 
 	// At least one icon was extracted.
+	*phiconLarge = hIcons[0];
+	*phiconSmall = hIcons[1];
 	return ERROR_SUCCESS;
 }
 
