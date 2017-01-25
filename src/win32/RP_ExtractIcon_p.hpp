@@ -45,6 +45,19 @@ class RP_ExtractIcon_Private
 
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRomData::RomData *romData;
+
+	public:
+		/**
+		 * Register the file type handler.
+		 *
+		 * Internal version; this only registers for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to register under.
+		 * @param progID If true, don't set DefaultIcon if it's empty. (ProgID mode)
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc, bool progID_mode);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */

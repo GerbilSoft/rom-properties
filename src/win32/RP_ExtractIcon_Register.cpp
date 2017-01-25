@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include "RP_ExtractIcon.hpp"
+#include "RP_ExtractIcon_p.hpp"
+
 #include "RegKey.hpp"
 
 // C++ includes.
@@ -62,13 +64,16 @@ LONG RP_ExtractIcon::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
+ *
+ * Internal version; this only registers for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
  * @param hkey_Assoc File association key to register under.
+ * @param progID If true, don't set DefaultIcon if it's empty. (ProgID mode)
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
+LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mode)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -78,30 +83,122 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 
 	// Register as the icon handler for this file association.
 
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
+	// Create/open the "DefaultIcon" key.
+	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ|KEY_WRITE, !progID_mode);
+	if (!hkcr_DefaultIcon.isOpen()) {
+		if (progID_mode && lResult == ERROR_FILE_NOT_FOUND) {
+			// No DefaultIcon.
+			return ERROR_SUCCESS;
+		}
+		return hkcr_DefaultIcon.lOpenRes();
 	}
 
-	// Create/open the "IconHandler" key.
-	RegKey hkcr_IconHandler(hkcr_ShellEx, L"IconHandler", KEY_WRITE, true);
+	// Create/open the "ShellEx\\IconHandler" key.
+	RegKey hkcr_IconHandler(hkey_Assoc, L"ShellEx\\IconHandler", KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IconHandler.isOpen()) {
 		return hkcr_IconHandler.lOpenRes();
 	}
-	// Set the default value to this CLSID.
+
+	// Is a custom IconHandler already registered?
+	DWORD dwTypeDefaultIcon, dwTypeIconHandler;
+	wstring defaultIcon = hkcr_DefaultIcon.read(nullptr, &dwTypeDefaultIcon);
+	wstring iconHandler = hkcr_IconHandler.read(nullptr, &dwTypeIconHandler);
+	if (progID_mode && defaultIcon.empty()) {
+		// ProgID mode, and no default icon.
+		// Nothing to do here.
+		return ERROR_SUCCESS;
+	} else if (defaultIcon == L"%1") {
+		// "%1" == use IconHandler
+		if (iconHandler != clsid_str) {
+			// Something else is registered.
+			// Copy it to the fallback key.
+			RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+			if (!hkcr_RP_Fallback.isOpen()) {
+				return hkcr_RP_Fallback.lOpenRes();
+			}
+			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+			lResult = hkcr_RP_Fallback.write(L"IconHandler", iconHandler, dwTypeIconHandler);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		}
+	} else {
+		// Not an icon handler.
+		// Copy it to the fallback key.
+		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+		if (!hkcr_RP_Fallback.isOpen()) {
+			return hkcr_RP_Fallback.lOpenRes();
+		}
+		if (defaultIcon.empty()) {
+			// No DefaultIcon.
+			// Delete it if it's present.
+			lResult = hkcr_RP_Fallback.deleteValue(L"DefaultIcon");
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+		} else {
+			// Save the DefaultIcon.
+			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		}
+
+		// Delete IconHandler if it's present.
+		lResult = hkcr_RP_Fallback.deleteValue(L"IconHandler");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+	}
+
+	// Set the IconHandler to this CLSID.
 	lResult = hkcr_IconHandler.write(nullptr, clsid_str);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
-	// Create/open the "DefaultIcon" key.
-	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_WRITE, true);
-	if (!hkcr_DefaultIcon.isOpen()) {
-		return hkcr_DefaultIcon.lOpenRes();
-	}
-	// Set the default value to "%1".
+	// Set the DefaultIcon to "%1".
 	lResult = hkcr_DefaultIcon.write(nullptr, L"%1");
+
+	// File type handler registered.
+	return lResult;
+}
+
+/**
+ * Register the file type handler.
+ * @param hkey_Assoc File association key to register under.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
+{
+	// Register the main association.
+	LONG lResult = RP_ExtractIcon_Private::RegisterFileType(hkey_Assoc, false);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkey_Assoc.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		// TODO: Get the correct top-level registry key.
+		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			} else {
+				return hkcr_ProgID.lOpenRes();
+			}
+		}
+		lResult = RP_ExtractIcon_Private::RegisterFileType(hkcr_ProgID, true);
+	}
 
 	// File type handler registered.
 	return lResult;

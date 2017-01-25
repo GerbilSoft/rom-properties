@@ -428,7 +428,10 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file types and associate them
 	// with our ProgID.
-	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
+	vector<RomDataFactory::ExtInfo> vec_exts;// = RomDataFactory::supportedFileExtensions();
+	// DEBUG: Adding ".iso" to the list for testing.
+	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
+	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register user file types if necessary.
 		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
