@@ -89,26 +89,30 @@ class RegKey
 
 		/**
 		 * Read a string value from a key. (REG_SZ)
-		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+		 * NOTE: REG_EXPAND_SZ values are NOT expanded.
+		 * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+		 * @param lpType	[out,opt] Variable to store the key type in. (REG_SZ or REG_EXPAND_SZ)
 		 * @return String value, or empty string on error.
 		 */
-		std::wstring read(LPCWSTR lpValueName) const;
+		std::wstring read(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
 
 		/**
 		 * Write a string value to this key.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
+		 * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCWSTR lpValueName, LPCWSTR value);
+		LONG write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType = REG_SZ);
 
 		/**
 		 * Write a string value to this key.
 		 * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
 		 * @param value Value.
+		 * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
 		 * @return RegSetValueEx() return value.
 		 */
-		LONG write(LPCWSTR lpValueName, const std::wstring& value);
+		LONG write(LPCWSTR lpValueName, const std::wstring& value, DWORD dwType = REG_SZ);
 
 		/**
 		 * Write a DWORD value to this key.

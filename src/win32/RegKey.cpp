@@ -143,11 +143,13 @@ void RegKey::close(void)
 /** Basic registry access functions. **/
 
 /**
- * Read a string value from a key. (REG_SZ)
- * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * Read a string value from a key. (REG_SZ or REG_EXPAND_SZ)
+ * NOTE: REG_EXPAND_SZ values are NOT expanded.
+ * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_SZ or REG_EXPAND_SZ)
  * @return String value, or empty string on error.
  */
-wstring RegKey::read(LPCWSTR lpValueName) const
+wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
@@ -162,8 +164,13 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		&dwType,	// lpType
 		nullptr,	// lpData
 		&cbData);	// lpcbData
-	if (lResult != ERROR_SUCCESS || cbData == 0 || dwType != REG_SZ) {
-		// Either an error occurred, or this isn't REG_SZ.
+	if (lResult != ERROR_SUCCESS || cbData == 0 ||
+	    (dwType != REG_SZ && dwType != REG_EXPAND_SZ))
+	{
+		// Either an error occurred, or this isn't REG_SZ or REG_EXPAND_SZ.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
 	}
 
@@ -175,10 +182,19 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		&dwType,	// lpType
 		(LPBYTE)wbuf,	// lpData
 		&cbData);	// lpcbData
-	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
-		// Either an error occurred, or this isn't REG_SZ.
+	if (lResult != ERROR_SUCCESS ||
+	    (dwType != REG_SZ && dwType != REG_EXPAND_SZ)) {
+		// Either an error occurred, or this isn't REG_SZ or REG_EXPAND_SZ.
 		free(wbuf);
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
+	}
+
+	// Save the key type.
+	if (lpType) {
+		*lpType = dwType;
 	}
 
 	// Convert cbData to cchData.
@@ -207,10 +223,12 @@ wstring RegKey::read(LPCWSTR lpValueName) const
  * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
+ * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
+LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType)
 {
+	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
 	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
@@ -238,10 +256,12 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
  * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
+ * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
+LONG RegKey::write(LPCWSTR lpValueName, const wstring& value, DWORD dwType)
 {
+	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
 	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
@@ -254,7 +274,7 @@ LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
 	return RegSetValueEx(m_hKey,
 		lpValueName,			// lpValueName
 		0,				// Reserved
-		REG_SZ,				// dwType
+		dwType,				// dwType
 		(const BYTE*)value.c_str(),	// lpData
 		cbData);			// cbData
 }
