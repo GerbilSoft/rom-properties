@@ -123,54 +123,26 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		free(wbuf);
 	}
 
-	// Get the icon resource.
-	// TODO: LOAD_LIBRARY_AS_IMAGE_RESOURCE is Vista+.
-	// TODO: Verify that this is a DLL; it might be a standalone .ico.
-	// TODO: What about EXE?
-	HMODULE hModule = LoadLibraryEx(defaultIcon.c_str(), nullptr,
-		LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
-	if (!hModule) {
-		return GetLastError();
+	// PrivateExtractIcons() is published as of Windows XP SP1,
+	// but it's "officially" private.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+	UINT uRet;
+	uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex, LOWORD(nIconSize), LOWORD(nIconSize), phiconLarge, nullptr, 1, 0);
+	if (uRet != 1) {
+		*phiconLarge = nullptr;
 	}
 
-	LPTSTR lpszName;	// resource ID
-	if (nIconIndex < 0)  {
-		// nIconIndex is a resource ID.
-		lpszName = MAKEINTRESOURCE(-nIconIndex);
-	} else {
-		// nIconIndex is an index.
-		// TODO: Look up the resource table IDs directly?
-		// References:
-		// - http://source.winehq.org/git/wine.git/blob/274a82b33c2907a2d28a50ba6919711cfabf1b20:/dlls/user32/exticon.c#l254
-		// - http://www.jose.it-berater.org/smfforum/index.php?topic=3424.0
-		FBEnumState fbEnumState = {nIconIndex, 0, nullptr};
-		EnumResourceNames(hModule, RT_GROUP_ICON,
-			Fallback_EnumResNameProc, (LPARAM)&fbEnumState);
-		// NOTE: EnumResourceNames() returns FALSE if the
-		// enumeration was stopped early, so we should only
-		// check fbEnumState.lpszName.
-		if (!fbEnumState.lpszName) {
-			// Either EnumResourceNames() failed,
-			// or the specified icon was not found.
-			return GetLastError();
-		}
-
-		// fbEnumState.lpszName contains the resource ID.
-		lpszName = fbEnumState.lpszName;
+	uRet = PrivateExtractIcons(defaultIcon.c_str(), nIconIndex, HIWORD(nIconSize), HIWORD(nIconSize), phiconSmall, nullptr, 1, 0);
+	if (uRet != 1) {
+		*phiconSmall = nullptr;
 	}
 
-	// Get the icons.
-	HICON hiconLarge = (HICON)LoadImage(hModule, lpszName, IMAGE_ICON, LOWORD(nIconSize), LOWORD(nIconSize), 0);
-	HICON hiconSmall = (HICON)LoadImage(hModule, lpszName, IMAGE_ICON, HIWORD(nIconSize), HIWORD(nIconSize), 0);
-	FreeLibrary(hModule);
-	if (!hiconLarge && !hiconSmall) {
-		// No icons...
-		// TODO: Better error?
+	if (!*phiconLarge && !*phiconSmall) {
+		// No icons were extracted.
 		return ERROR_FILE_NOT_FOUND;
 	}
 
-	*phiconLarge = hiconLarge;
-	*phiconSmall = hiconSmall;
+	// At least one icon was extracted.
 	return ERROR_SUCCESS;
 }
 
