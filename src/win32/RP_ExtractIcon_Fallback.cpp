@@ -87,10 +87,10 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	if (comma != wstring::npos) {
 		// Found the comma.
 		if (comma > 0 && comma < defaultIcon.size()-1) {
-			wchar_t *str_end;
+			wchar_t *endptr;
 			errno = 0;
-			nIconIndex = (int)wcstol(&defaultIcon[comma+1], &str_end, 10);
-			if (errno == ERANGE || *str_end != 0) {
+			nIconIndex = (int)wcstol(&defaultIcon[comma+1], &endptr, 10);
+			if (errno == ERANGE || *endptr != 0) {
 				// strtol() failed.
 				// DefaultIcon is invalid.
 				return ERROR_FILE_NOT_FOUND;
