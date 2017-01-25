@@ -176,7 +176,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
 	// Open the file extension key.
-	RegKey hkcr_ext(HKEY_CLASSES_ROOT, ext, KEY_READ|KEY_WRITE, true);
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
 	if (!hkcr_ext.isOpen()) {
 		return hkcr_ext.lOpenRes();
 	}
@@ -193,7 +193,7 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 	wstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
-		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
 		if (!hkcr_ProgID.isOpen()) {
 			lResult = hkcr_ProgID.lOpenRes();
 			if (lResult == ERROR_FILE_NOT_FOUND) {
@@ -333,7 +333,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
 	// Open the file extension key.
-	RegKey hkcr_ext(HKEY_CLASSES_ROOT, ext, KEY_READ|KEY_WRITE, true);
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
 	if (!hkcr_ext.isOpen()) {
 		return hkcr_ext.lOpenRes();
 	}
@@ -350,7 +350,7 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	wstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
-		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
 		if (!hkcr_ProgID.isOpen()) {
 			lResult = hkcr_ProgID.lOpenRes();
 			if (lResult == ERROR_FILE_NOT_FOUND) {
