@@ -80,7 +80,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge
 		defaultIcon.resize(comma);
 	} else {
 		// Assume the default icon index.
-		nIconIndex = 1;
+		nIconIndex = 0;
 	}
 
 	// Extract the icon.
