@@ -139,8 +139,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	UNUSED(pszFile);
 	UNUSED(nIconIndex);
 
-	// TODO: Use nIconSize?
-	UNUSED(nIconSize);
+	// TODO: Use nIconSize outside of fallback?
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractIcon);
@@ -155,7 +154,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 
 	if (!d->romData) {
 		// ROM is not supported. Use the fallback.
-		LONG lResult = d->Fallback(phiconLarge, phiconSmall);
+		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
 		// NOTE: S_FALSE causes icon shenanigans.
 		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
 	}
@@ -213,7 +212,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 
 	if (!*phiconLarge) {
 		// No icon. Try the fallback.
-		LONG lResult = d->Fallback(phiconLarge, phiconSmall);
+		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
 		// NOTE: S_FALSE causes icon shenanigans.
 		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
 	}

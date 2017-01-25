@@ -31,13 +31,36 @@
 using std::wstring;
 
 /**
+ * EnumResourceNames() callback function.
+ * @param hModule
+ * @param lpszType
+ * @param lpszName
+ * @param lParam
+ */
+BOOL CALLBACK RP_ExtractIcon_Private::Fallback_EnumResNameProc(HMODULE hModule,
+	LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
+{
+	FBEnumState *fbEnumState = (FBEnumState*)lParam;
+	if (fbEnumState->iIndexSearch == fbEnumState->iIndexCurrent) {
+		// Found the resource!
+		fbEnumState->lpszName = lpszName;
+		return FALSE;
+	}
+	// Keep going.
+	fbEnumState->iIndexCurrent++;
+	return TRUE;
+}
+
+/**
  * Fallback icon handler function. (internal)
  * @param hkey_Assoc File association key to check.
  * @param phiconLarge Large icon.
  * @param phiconSmall Small icon.
+ * @param nIconSize Icon sizes.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge, HICON *phiconSmall)
+LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
+	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
 	// Is RP_Fallback present?
 	RegKey hkey_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ, false);
@@ -100,15 +123,55 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge
 		free(wbuf);
 	}
 
-	// Extract the icon.
-	UINT uResult = ExtractIconEx(defaultIcon.c_str(), nIconIndex, phiconLarge, phiconSmall, 1);
-	if (uResult == 1 || uResult == 2) {
-		// Either the large, small, or both icons
-		// have been extracted.
-		return ERROR_SUCCESS;
+	// Get the icon resource.
+	// TODO: LOAD_LIBRARY_AS_IMAGE_RESOURCE is Vista+.
+	// TODO: Verify that this is a DLL; it might be a standalone .ico.
+	// TODO: What about EXE?
+	HMODULE hModule = LoadLibraryEx(defaultIcon.c_str(), nullptr,
+		LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+	if (!hModule) {
+		return GetLastError();
 	}
-	// No icons extracted.
-	return ERROR_FILE_NOT_FOUND;
+
+	LPTSTR lpszName;	// resource ID
+	if (nIconIndex < 0)  {
+		// nIconIndex is a resource ID.
+		lpszName = MAKEINTRESOURCE(-nIconIndex);
+	} else {
+		// nIconIndex is an index.
+		// TODO: Look up the resource table IDs directly?
+		// References:
+		// - http://source.winehq.org/git/wine.git/blob/274a82b33c2907a2d28a50ba6919711cfabf1b20:/dlls/user32/exticon.c#l254
+		// - http://www.jose.it-berater.org/smfforum/index.php?topic=3424.0
+		FBEnumState fbEnumState = {nIconIndex, 0, nullptr};
+		EnumResourceNames(hModule, RT_GROUP_ICON,
+			Fallback_EnumResNameProc, (LPARAM)&fbEnumState);
+		// NOTE: EnumResourceNames() returns FALSE if the
+		// enumeration was stopped early, so we should only
+		// check fbEnumState.lpszName.
+		if (!fbEnumState.lpszName) {
+			// Either EnumResourceNames() failed,
+			// or the specified icon was not found.
+			return GetLastError();
+		}
+
+		// fbEnumState.lpszName contains the resource ID.
+		lpszName = fbEnumState.lpszName;
+	}
+
+	// Get the icons.
+	HICON hiconLarge = (HICON)LoadImage(hModule, lpszName, IMAGE_ICON, LOWORD(nIconSize), LOWORD(nIconSize), 0);
+	HICON hiconSmall = (HICON)LoadImage(hModule, lpszName, IMAGE_ICON, HIWORD(nIconSize), HIWORD(nIconSize), 0);
+	FreeLibrary(hModule);
+	if (!hiconLarge && !hiconSmall) {
+		// No icons...
+		// TODO: Better error?
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	*phiconLarge = hiconLarge;
+	*phiconSmall = hiconSmall;
+	return ERROR_SUCCESS;
 }
 
 /**
@@ -117,7 +180,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge
  * @param phiconSmall Small icon.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall)
+LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
 	// TODO: Check HKCU first.
 
@@ -148,7 +211,7 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall)
 		// TODO: Get the correct top-level registry key.
 		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ, false);
 		if (hkcr_ProgID.isOpen()) {
-			LONG lResult = Fallback_int(hkcr_ProgID, phiconLarge, phiconSmall);
+			LONG lResult = Fallback_int(hkcr_ProgID, phiconLarge, phiconSmall, nIconSize);
 			if (lResult == ERROR_SUCCESS) {
 				// ProgID icon extracted.
 				return lResult;
@@ -157,5 +220,5 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall)
 	}
 
 	// Extract the icon from the filetype key.
-	return Fallback_int(hkey_Assoc, phiconLarge, phiconSmall);
+	return Fallback_int(hkey_Assoc, phiconLarge, phiconSmall, nIconSize);
 }

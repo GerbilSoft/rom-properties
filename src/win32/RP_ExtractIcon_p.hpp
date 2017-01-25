@@ -71,23 +71,42 @@ class RP_ExtractIcon_Private
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
 	private:
+		struct FBEnumState {
+			int iIndexSearch;
+			int iIndexCurrent;
+			LPTSTR lpszName;
+		};
+
+		/**
+		 * EnumResourceNames() callback function.
+		 * @param hModule
+		 * @param lpszType
+		 * @param lpszName
+		 * @param lParam Pointer to FBEnumState.
+		 */
+		static BOOL CALLBACK Fallback_EnumResNameProc(HMODULE hModule,
+			LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+
 		/**
 		 * Fallback icon handler function. (internal)
 		 * @param hkey_Assoc File association key to check.
 		 * @param phiconLarge Large icon.
 		 * @param phiconSmall Small icon.
+		 * @param nIconSize Icon sizes.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Fallback_int(RegKey &hkey_Assoc, HICON *phiconLarge, HICON *phiconSmall);
+		static LONG Fallback_int(RegKey &hkey_Assoc,
+			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 	public:
 		/**
 		 * Fallback icon handler function.
 		 * @param phiconLarge Large icon.
 		 * @param phiconSmall Small icon.
+		 * @param nIconSize Icon sizes.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG Fallback(HICON *phiconLarge, HICON *phiconSmall);
+		LONG Fallback(HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */
