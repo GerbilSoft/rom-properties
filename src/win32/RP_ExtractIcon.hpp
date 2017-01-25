@@ -68,10 +68,11 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 		/**
 		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.

@@ -141,7 +141,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 			}
 		} else {
 			// Save the DefaultIcon.
-			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
+			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
@@ -169,13 +169,20 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 
 /**
  * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
+LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
+	// Open the file extension key.
+	RegKey hkcr_ext(HKEY_CLASSES_ROOT, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Register the main association.
-	LONG lResult = RP_ExtractIcon_Private::RegisterFileType(hkey_Assoc, false);
+	LONG lResult = RP_ExtractIcon_Private::RegisterFileType(hkcr_ext, false);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -183,10 +190,9 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkey_Assoc)
 	// Is a custom ProgID registered?
 	// If so, and it has a DefaultIcon registered,
 	// we'll need to update the custom ProgID.
-	wstring progID = hkey_Assoc.read(nullptr);
+	wstring progID = hkcr_ext.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
-		// TODO: Get the correct top-level registry key.
 		RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_READ|KEY_WRITE, false);
 		if (!hkcr_ProgID.isOpen()) {
 			lResult = hkcr_ProgID.lOpenRes();

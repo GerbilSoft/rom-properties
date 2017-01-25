@@ -166,36 +166,60 @@ STDAPI DllGetClassObject(__in REFCLSID rclsid, __in REFIID riid, __deref_out LPV
 
 /**
  * Register file type handlers.
- * @param hkey_Assoc File association key to register under.
- * @param hasThumbnail If true, associate thumbnail handlers.
+ * @param hkcr HKEY_CLASSES_ROOT, or user-specific Classes key.
+ * @param extInfo RomDataFactory::ExtInfo
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-static LONG RegisterFileType(RegKey &hkey_Assoc, bool hasThumbnail)
+static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInfo)
 {
 	LONG lResult;
 
-	lResult = RP_ShellPropSheetExt::RegisterFileType(hkey_Assoc);
+	// Register the filetype in HKCR.
+	wstring ext = RP2W_c(extInfo.ext);
+	RegKey *pHkey_fileType;
+	lResult = RegKey::RegisterFileType(ext.c_str(), &pHkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
-	if (hasThumbnail) {
-		lResult = RP_ExtractIcon::RegisterFileType(hkey_Assoc);
+	// If the ProgID was previously set to RP_ProgID,
+	// unset it, since we're not using it anymore.
+	wstring progID = pHkey_fileType->read(nullptr);
+	if (progID == RP_ProgID) {
+		// Unset the ProgID.
+		lResult = pHkey_fileType->deleteValue(nullptr);
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			delete pHkey_fileType;
+			return SELFREG_E_CLASS;
+		}
+	}
+
+	// Register the property page handler.
+	// TODO: Use hkcr+ext instead of pHkey_fileType.
+	lResult = RP_ShellPropSheetExt::RegisterFileType(*pHkey_fileType);
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	if (extInfo.hasThumbnail) {
+		// Register the thumbnail handlers.
+		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ExtractImage::RegisterFileType(hkey_Assoc);
+		// TODO: Use hkcr+ext instead of pHkey_fileType.
+		lResult = RP_ExtractImage::RegisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ThumbnailProvider::RegisterFileType(hkey_Assoc);
+		lResult = RP_ThumbnailProvider::RegisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	} else {
 		// No thumbnail handlers.
 		// Unregister the handlers if they were previously registered.
-		lResult = RP_ExtractIcon::UnregisterFileType(hkey_Assoc);
+		// TODO: Use hkcr+ext instead of pHkey_fileType.
+		lResult = RP_ExtractIcon::UnregisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ExtractImage::UnregisterFileType(hkey_Assoc);
+		lResult = RP_ExtractImage::UnregisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_Assoc);
+		lResult = RP_ThumbnailProvider::UnregisterFileType(*pHkey_fileType);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
 	// All file types handlers registered.
+	delete pHkey_fileType;
 	return ERROR_SUCCESS;
 }
 
@@ -296,6 +320,13 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	LONG lResult;
 
 	// First, check HKCR.
+	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
+	if (!hkcr.isOpen()) {
+		// Error opening HKEY_CLASSES_ROOT.
+		return hkcr.lOpenRes();
+	}
+
+	// Does HKCR\\progID exist?
 	RegKey hkcr_ProgID(HKEY_CLASSES_ROOT, progID.c_str(), KEY_WRITE, false);
 	if (!hkcr_ProgID.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable.
@@ -305,7 +336,13 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 		}
 		return hkcr_ProgID.lOpenRes();
 	}
-	lResult = RegisterFileType(hkcr_ProgID, ext_info.hasThumbnail);
+
+	// Use an ExtInfo with the progID instead of the extension.
+	const RomDataFactory::ExtInfo progID_info = {
+		(const rp_char*)progID.c_str(),
+		ext_info.hasThumbnail
+	};
+	lResult = RegisterFileType(hkcr, progID_info);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -314,18 +351,17 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	wstring regPath;
 	regPath.reserve(128);
 	regPath  = sid;
-	regPath += L"\\Software\\Classes\\";
-	regPath += progID;
-	RegKey hku_ProgID(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
-	if (!hku_ProgID.isOpen()) {
+	regPath += L"\\Software\\Classes";
+	RegKey hku_cr(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+	if (!hku_cr.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
-		if (hku_ProgID.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		if (hku_cr.lOpenRes() == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hku_ProgID.lOpenRes();
+		return hku_cr.lOpenRes();
 	}
-	return RegisterFileType(hku_ProgID, ext_info.hasThumbnail);
+	return RegisterFileType(hku_cr, progID_info);
 }
 
 /**
@@ -426,6 +462,10 @@ STDAPI DllRegisterServer(void)
 	// These are usually ".DEFAULT" or "well-known" SIDs.
 	user_SIDs.remove_if(process_HKU_subkey);
 
+	// Open HKEY_CLASSES_ROOT.
+	RegKey hkcr(HKEY_CLASSES_ROOT, nullptr, KEY_READ|KEY_WRITE, false);
+	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
+
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<RomDataFactory::ExtInfo> vec_exts;// = RomDataFactory::supportedFileExtensions();
@@ -439,27 +479,8 @@ STDAPI DllRegisterServer(void)
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 
-		// Register the filetype in KEY_CLASSES_ROOT and use it
-		// to register the handlers.
-		RegKey *pHkey_fileType;
-		lResult = RegKey::RegisterFileType(RP2W_c(ext_iter->ext), &pHkey_fileType);
-		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-
-		// If the ProgID was previously set to RP_ProgID,
-		// unset it, since we're not using it anymore.
-		wstring progID = pHkey_fileType->read(nullptr);
-		if (progID == RP_ProgID) {
-			// Unset the ProgID.
-			lResult = pHkey_fileType->deleteValue(nullptr);
-			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-				delete pHkey_fileType;
-				return SELFREG_E_CLASS;
-			}
-		}
-
-		// Register the file type handlers for this file extension.
-		lResult = RegisterFileType(*pHkey_fileType, ext_iter->hasThumbnail);
-		delete pHkey_fileType;
+		// Register the file extension globally.
+		lResult = RegisterFileType(hkcr, *ext_iter);
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
