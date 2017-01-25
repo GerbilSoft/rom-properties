@@ -103,10 +103,13 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 	DWORD dwTypeDefaultIcon, dwTypeIconHandler;
 	wstring defaultIcon = hkcr_DefaultIcon.read(nullptr, &dwTypeDefaultIcon);
 	wstring iconHandler = hkcr_IconHandler.read(nullptr, &dwTypeIconHandler);
-	if (progID_mode && defaultIcon.empty()) {
-		// ProgID mode, and no default icon.
-		// Nothing to do here.
-		return ERROR_SUCCESS;
+	if (defaultIcon.empty()) {
+		// No default icon, so nothing to back up.
+		// TODO: Back up IconHandler if it's set?
+		if (progID_mode) {
+			// ProgID mode. We're done here.
+			return ERROR_SUCCESS;
+		}
 	} else if (defaultIcon == L"%1") {
 		// "%1" == use IconHandler
 		if (iconHandler != clsid_str) {
