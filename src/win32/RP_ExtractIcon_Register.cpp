@@ -300,14 +300,17 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 	if (!iconHandler.empty()) {
 		// Restore the IconHandler.
-		lResult = hkcr_DefaultIcon.write(nullptr, iconHandler, dwTypeIconHandler);
+		lResult = hkcr_IconHandler.write(nullptr, iconHandler, dwTypeIconHandler);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
-		// Delete the IconHandler.
-		hkcr_IconHandler.close();
-		hkey_Assoc.deleteSubKey(L"IconHandler");
+		// Open the "ShellEx" key.
+		RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
+		if (hkcr_ShellEx.isOpen()) {
+			// Delete the IconHandler.
+			hkcr_ShellEx.deleteSubKey(L"IconHandler");
+		}
 	}
 
 	// Remove the fallbacks.
