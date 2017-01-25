@@ -269,6 +269,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Check if DefaultIcon is "%1" and IconHandler is our CLSID.
 	wstring defaultIcon = hkcr_DefaultIcon.read(nullptr);
 	wstring iconHandler = hkcr_IconHandler.read(nullptr);
+	// FIXME: Restore if iconHandler matches, even if defaultIcon doesn't.
 	if (defaultIcon != L"%1" || iconHandler != clsid_str) {
 		// Not our DefaultIcon or IconHandler.
 		// We're done here.
