@@ -282,11 +282,6 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 			// No subkeys. Delete this key.
 			hkey_del.close();
 			hkey_fileType.deleteSubKey(keysToDel[i]);
-		} else {
-			// ERROR_FILE_NOT_FOUND is acceptable here.
-			if (hkey_del.lOpenRes() != ERROR_FILE_NOT_FOUND) {
-				return hkey_del.lOpenRes();
-			}
 		}
 	}
 
