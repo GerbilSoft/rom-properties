@@ -31,6 +31,149 @@
 using std::wstring;
 
 /**
+ * Use IExtractIconW from a fallback icon handler.
+ * @param pExtractIconW Pointer to IExtractIconW interface.
+ * @param phiconLarge Large icon.
+ * @param phiconSmall Small icon.
+ * @param nIconSize Icon sizes.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
+	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+{
+	// COM smart pointer.
+	_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
+
+	// Get the IPersistFile interface.
+	IPersistFilePtr pPersistFile;
+	HRESULT hr = pExtractIconW->QueryInterface(IID_IPersistFile, (LPVOID*)&pPersistFile);
+	if (FAILED(hr)) {
+		// Failed to get the IPersistFile interface.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// Load the file.
+	// TODO: Proper string conversion.
+	hr = pPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
+	if (FAILED(hr)) {
+		// Failed to load the file.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// Get the icon location.
+	wchar_t szIconFileW[MAX_PATH];
+	int nIconIndex;
+	UINT wFlags;
+	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
+	hr = pExtractIconW->GetIconLocation(0, szIconFileW, ARRAY_SIZE(szIconFileW), &nIconIndex, &wFlags);
+	if (FAILED(hr)) {
+		// GetIconLocation() failed.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	if (wFlags & GIL_NOTFILENAME) {
+		// Icon is not available on disk.
+		// Use IExtractIcon::Extract().
+		hr = pExtractIconW->Extract(szIconFileW, nIconIndex, phiconLarge, phiconSmall, nIconSize);
+		return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
+	} else {
+		// Icon is available on disk.
+
+		// PrivateExtractIcons() is published as of Windows XP SP1,
+		// but it's "officially" private.
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+		// TODO: Verify that hIcons[x] is NULL if only one size is found.
+		// TODO: Verify which icon is extracted.
+		// TODO: What if the size isn't found?
+		HICON hIcons[2];
+		UINT uRet = PrivateExtractIconsW(szIconFileW, nIconIndex,
+				nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+		if (uRet == 0) {
+			// No icons were extracted.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		// At least one icon was extracted.
+		*phiconLarge = hIcons[0];
+		*phiconSmall = hIcons[1];
+	}
+	return ERROR_SUCCESS;
+}
+
+/**
+ * Use IExtractIconA from an old fallback icon handler.
+ * @param pExtractIconA Pointer to IExtractIconW interface.
+ * @param phiconLarge Large icon.
+ * @param phiconSmall Small icon.
+ * @param nIconSize Icon sizes.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
+	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+{
+	// TODO: Verify that LPCOLESTR is still Unicode in IExtractIconA.
+	// TODO: Needs testing.
+
+	// COM smart pointer.
+	_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
+
+	// Get the IPersistFile interface.
+	IPersistFilePtr pPersistFile;
+	HRESULT hr = pExtractIconA->QueryInterface(IID_IPersistFile, (LPVOID*)&pPersistFile);
+	if (FAILED(hr)) {
+		// Failed to get the IPersistFile interface.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// Load the file.
+	// TODO: Proper string conversion.
+	hr = pPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
+	if (FAILED(hr)) {
+		// Failed to load the file.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// Get the icon location.
+	char szIconFileA[MAX_PATH];
+	int nIconIndex;
+	UINT wFlags;
+	// TODO: Handle S_FALSE with GIL_DEFAULTICON?
+	hr = pExtractIconA->GetIconLocation(0, szIconFileA, ARRAY_SIZE(szIconFileA), &nIconIndex, &wFlags);
+	if (FAILED(hr)) {
+		// GetIconLocation() failed.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	if (wFlags & GIL_NOTFILENAME) {
+		// Icon is not available on disk.
+		// Use IExtractIcon::Extract().
+		hr = pExtractIconA->Extract(szIconFileA, nIconIndex, phiconLarge, phiconSmall, nIconSize);
+		return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
+	} else {
+		// Icon is available on disk.
+
+		// PrivateExtractIcons() is published as of Windows XP SP1,
+		// but it's "officially" private.
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648075(v=vs.85).aspx
+		// TODO: Verify that hIcons[x] is NULL if only one size is found.
+		// TODO: Verify which icon is extracted.
+		// TODO: What if the size isn't found?
+		HICON hIcons[2];
+		UINT uRet = PrivateExtractIconsA(szIconFileA, nIconIndex,
+				nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+		if (uRet == 0) {
+			// No icons were extracted.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		// At least one icon was extracted.
+		*phiconLarge = hIcons[0];
+		*phiconSmall = hIcons[1];
+	}
+	return ERROR_SUCCESS;
+}
+
+/**
  * Fallback icon handler function. (internal)
  * @param hkey_Assoc File association key to check.
  * @param phiconLarge Large icon.
@@ -50,7 +193,6 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	// Get the DefaultIcon key.
 	DWORD dwType;
 	wstring defaultIcon = hkey_RP_Fallback.read(L"DefaultIcon", &dwType);
-	int nIconIndex;
 	if (defaultIcon.empty()) {
 		// No default icon.
 		return ERROR_FILE_NOT_FOUND;
@@ -69,95 +211,87 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 			return ERROR_FILE_NOT_FOUND;
 		}
 
-		// COM smart pointers.
-		_COM_SMARTPTR_TYPEDEF(IExtractIcon, IID_IExtractIcon);
-		_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
-
-		IExtractIconPtr pFbExtractIcon;
-		hr = CoCreateInstance(clsidIconHandler, nullptr, CLSCTX_INPROC_SERVER, IID_IExtractIcon, (LPVOID*)&pFbExtractIcon);
+		// Get the class object.
+		_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
+		IClassFactoryPtr pCF;
+		hr = CoGetClassObject(clsidIconHandler, CLSCTX_INPROC_SERVER, nullptr, IID_IClassFactory, (LPVOID*)&pCF);
 		if (FAILED(hr)) {
-			// Failed to create the fallback handler.
+			// Failed to get the IClassFactory.
 			return ERROR_FILE_NOT_FOUND;
 		}
 
-		// Get the IPersistFile interface.
-		IPersistFilePtr pFbPersistFile;
-		hr = pFbExtractIcon->QueryInterface(IID_IPersistFile, (LPVOID*)&pFbPersistFile);
-		if (FAILED(hr)) {
-			// Failed to get the IPersistFile interface.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		// Load the file.
-		// TODO: Proper string conversion.
-		hr = pFbPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
-		if (FAILED(hr)) {
-			// Failed to load the file.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		// Get the icon location.
-		wchar_t szIconFile[MAX_PATH];
-		UINT wFlags;
-		// TODO: Handle S_FALSE with GIL_DEFAULTICON?
-		hr = pFbExtractIcon->GetIconLocation(0, szIconFile, ARRAY_SIZE(szIconFile), &nIconIndex, &wFlags);
-		if (FAILED(hr)) {
-			// GetIconLocation() failed.
-			return ERROR_FILE_NOT_FOUND;
-		}
-
-		if (wFlags & GIL_NOTFILENAME) {
-			// Icon is not available on disk.
-			// Use IExtractIcon::Extract().
-			hr = pFbExtractIcon->Extract(szIconFile, nIconIndex, phiconLarge, phiconSmall, nIconSize);
-			return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
+		// Try getting the IExtractIconW interface.
+		IExtractIconW *pExtractIconW;
+		hr = pCF->CreateInstance(nullptr, IID_IExtractIconW, (LPVOID*)&pExtractIconW);
+		if (SUCCEEDED(hr)) {
+			// Extract the icon.
+			LONG lResult = DoExtractIconW(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
+			pExtractIconW->Release();
+			return lResult;
 		} else {
-			// Icon is available on disk.
-			defaultIcon = szIconFile;
-		}
-	} else {
-		// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
-		// TODO: Can the filename be quoted?
-		// TODO: Better error codes?
-		size_t comma = defaultIcon.find_last_of(L',');
-		if (comma != wstring::npos) {
-			// Found the comma.
-			if (comma > 0 && comma < defaultIcon.size()-1) {
-				wchar_t *endptr;
-				errno = 0;
-				nIconIndex = (int)wcstol(&defaultIcon[comma+1], &endptr, 10);
-				if (errno == ERANGE || *endptr != 0) {
-					// strtol() failed.
-					// DefaultIcon is invalid.
-					return ERROR_FILE_NOT_FOUND;
-				}
+			// Try getting the IExtractIconA interface.
+			IExtractIconA *pExtractIconA;
+			hr = pCF->CreateInstance(nullptr, IID_IExtractIconA, (LPVOID*)&pExtractIconA);
+			if (SUCCEEDED(hr)) {
+				// Extract the icon.
+				LONG lResult = DoExtractIconA(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
+				pExtractIconA->Release();
+				return lResult;
 			} else {
-				// Comma is the last character.
+				// Failed to get an IExtractIcon interface from the fallback class.
 				return ERROR_FILE_NOT_FOUND;
 			}
-
-			// Remove the comma portion.
-			defaultIcon.resize(comma);
-		} else {
-			// Assume the default icon index.
-			nIconIndex = 0;
 		}
 
-		// If the registry key type is REG_EXPAND_SZ, expand it.
-		// TODO: Move to RegKey?
-		if (dwType == REG_EXPAND_SZ) {
-			// cchExpand includes the NULL terminator.
-			DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
-			if (cchExpand == 0) {
-				// Error expanding the strings.
-				return GetLastError();
+		// Should not get here...
+		return ERROR_INVALID_FUNCTION;
+	}
+
+	// DefaultIcon is set but IconHandler isn't, which means
+	// the file's icon is stored as an icon resource.
+
+	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+	// TODO: Can the filename be quoted?
+	// TODO: Better error codes?
+	int nIconIndex;
+	size_t comma = defaultIcon.find_last_of(L',');
+	if (comma != wstring::npos) {
+		// Found the comma.
+		if (comma > 0 && comma < defaultIcon.size()-1) {
+			wchar_t *endptr;
+			errno = 0;
+			nIconIndex = (int)wcstol(&defaultIcon[comma+1], &endptr, 10);
+			if (errno == ERANGE || *endptr != 0) {
+				// strtol() failed.
+				// DefaultIcon is invalid.
+				return ERROR_FILE_NOT_FOUND;
 			}
-
-			wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
-			cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
-			defaultIcon = wstring(wbuf, cchExpand-1);
-			free(wbuf);
+		} else {
+			// Comma is the last character.
+			return ERROR_FILE_NOT_FOUND;
 		}
+
+		// Remove the comma portion.
+		defaultIcon.resize(comma);
+	} else {
+		// Assume the default icon index.
+		nIconIndex = 0;
+	}
+
+	// If the registry key type is REG_EXPAND_SZ, expand it.
+	// TODO: Move to RegKey?
+	if (dwType == REG_EXPAND_SZ) {
+		// cchExpand includes the NULL terminator.
+		DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
+		if (cchExpand == 0) {
+			// Error expanding the strings.
+			return GetLastError();
+		}
+
+		wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
+		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
+		defaultIcon = wstring(wbuf, cchExpand-1);
+		free(wbuf);
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,

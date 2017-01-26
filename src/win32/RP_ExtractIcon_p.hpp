@@ -72,6 +72,28 @@ class RP_ExtractIcon_Private
 
 	private:
 		/**
+		 * Use IExtractIconW from a fallback icon handler.
+		 * @param pExtractIconW Pointer to IExtractIconW interface.
+		 * @param phiconLarge Large icon.
+		 * @param phiconSmall Small icon.
+		 * @param nIconSize Icon sizes.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		LONG DoExtractIconW(IExtractIconW *pExtractIconW,
+			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+
+		/**
+		 * Use IExtractIconA from an old fallback icon handler.
+		 * @param pExtractIconA Pointer to IExtractIconW interface.
+		 * @param phiconLarge Large icon.
+		 * @param phiconSmall Small icon.
+		 * @param nIconSize Icon sizes.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		LONG DoExtractIconA(IExtractIconA *pExtractIconA,
+			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+
+		/**
 		 * Fallback icon handler function. (internal)
 		 * @param hkey_Assoc File association key to check.
 		 * @param phiconLarge Large icon.
