@@ -46,7 +46,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
-	HRESULT hr = pExtractIconW->QueryInterface(IID_IPersistFile, (LPVOID*)&pPersistFile);
+	HRESULT hr = pExtractIconW->QueryInterface(IID_PPV_ARGS(&pPersistFile));
 	if (FAILED(hr)) {
 		// Failed to get the IPersistFile interface.
 		return ERROR_FILE_NOT_FOUND;
@@ -119,7 +119,7 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
-	HRESULT hr = pExtractIconA->QueryInterface(IID_IPersistFile, (LPVOID*)&pPersistFile);
+	HRESULT hr = pExtractIconA->QueryInterface(IID_PPV_ARGS(&pPersistFile));
 	if (FAILED(hr)) {
 		// Failed to get the IPersistFile interface.
 		return ERROR_FILE_NOT_FOUND;
@@ -214,7 +214,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		// Get the class object.
 		_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
 		IClassFactoryPtr pCF;
-		hr = CoGetClassObject(clsidIconHandler, CLSCTX_INPROC_SERVER, nullptr, IID_IClassFactory, (LPVOID*)&pCF);
+		hr = CoGetClassObject(clsidIconHandler, CLSCTX_INPROC_SERVER, nullptr, IID_PPV_ARGS(&pCF));
 		if (FAILED(hr) || !pCF) {
 			// Failed to get the IClassFactory.
 			return ERROR_FILE_NOT_FOUND;
@@ -222,7 +222,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 		// Try getting the IExtractIconW interface.
 		IExtractIconW *pExtractIconW;
-		hr = pCF->CreateInstance(nullptr, IID_IExtractIconW, (LPVOID*)&pExtractIconW);
+		hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconW));
 		if (SUCCEEDED(hr) && pExtractIconW) {
 			// Extract the icon.
 			LONG lResult = DoExtractIconW(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
@@ -231,7 +231,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		} else {
 			// Try getting the IExtractIconA interface.
 			IExtractIconA *pExtractIconA;
-			hr = pCF->CreateInstance(nullptr, IID_IExtractIconA, (LPVOID*)&pExtractIconA);
+			hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pExtractIconA));
 			if (SUCCEEDED(hr) && pExtractIconA) {
 				// Extract the icon.
 				LONG lResult = DoExtractIconA(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
