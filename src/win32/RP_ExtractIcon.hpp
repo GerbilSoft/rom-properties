@@ -42,14 +42,14 @@ class RegKey;
 class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-RP_ExtractIcon : public RP_ComBase2<IPersistFile, IExtractIcon>
+RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 {
 	public:
 		RP_ExtractIcon();
 		virtual ~RP_ExtractIcon();
 
 	private:
-		typedef RP_ComBase2<IPersistFile, IExtractIcon> super;
+		typedef RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA> super;
 		RP_DISABLE_COPY(RP_ExtractIcon)
 	private:
 		friend class RP_ExtractIcon_Private;
@@ -98,10 +98,17 @@ RP_ExtractIcon : public RP_ComBase2<IPersistFile, IExtractIcon>
 		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
 		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
 
-		// IExtractIcon
-		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
+		// IExtractIconW
+		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPWSTR pszIconFile,
 			UINT cchMax, int *piIndex, UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
+		IFACEMETHODIMP Extract(LPCWSTR pszFile, UINT nIconIndex,
+			HICON *phiconLarge, HICON *phiconSmall,
+			UINT nIconSize) final;
+
+		// IExtractIconA
+		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPSTR pszIconFile,
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(LPCSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
 			UINT nIconSize) final;
 };

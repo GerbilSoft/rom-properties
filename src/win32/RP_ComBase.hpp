@@ -87,4 +87,8 @@ template<class I1, class I2>
 class RP_ComBase2 : public I1, public I2
 	RP_COMBASE_IMPL(RP_ComBase2);
 
+template<class I1, class I2, class I3>
+class RP_ComBase3 : public I1, public I2, public I3
+	RP_COMBASE_IMPL(RP_ComBase3);
+
 #endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__ */

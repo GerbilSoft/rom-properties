@@ -91,8 +91,10 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
-	} else if (riid == IID_IExtractIcon) {
-		*ppvObj = static_cast<IExtractIcon*>(this);
+	} else if (riid == IID_IExtractIconW) {
+		*ppvObj = static_cast<IExtractIconW*>(this);
+	} else if (riid == IID_IExtractIconA) {
+		*ppvObj = static_cast<IExtractIconA*>(this);
 	} else {
 		// Interface is not supported.
 		*ppvObj = nullptr;
@@ -174,11 +176,11 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
 	return E_NOTIMPL;
 }
 
-/** IExtractIcon **/
+/** IExtractIconW **/
 // Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
 
 IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
-	LPTSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
+	LPWSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
@@ -205,10 +207,12 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	return S_OK;
 }
 
-IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
+IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
+	// TODO: Validate them to make sure they're the same values
+	// we returned in GetIconLocation()?
 	UNUSED(pszFile);
 	UNUSED(nIconIndex);
 
@@ -293,4 +297,31 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	// NOTE: S_FALSE causes icon shenanigans.
 	// TODO: Always return success here due to fallback?
 	return (*phiconLarge != nullptr ? S_OK : E_FAIL);
+}
+
+/** IExtractIconA **/
+// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761854(v=vs.85).aspx
+
+IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
+	LPSTR pszIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
+{
+	// NOTE: pszIconFile is always blanked out in the IExtractIconW
+	// interface, so no conversion is necessary. We still need a
+	// temporary buffer, though.
+	if (!pszIconFile || !piIndex || cchMax == 0) {
+		// We're still expecting valid parameters...
+		return E_INVALIDARG;
+	}
+	wchar_t buf[16];
+	HRESULT hr = GetIconLocation(uFlags, buf, ARRAY_SIZE(buf), piIndex, pwFlags);
+	pszIconFile[0] = 0;	// Blank it out.
+	return hr;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::Extract(LPCSTR pszFile, UINT nIconIndex,
+	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+{
+	// NOTE: The IExtractIconW interface doesn't use pszFile,
+	// so no conversion is necessary.
+	return Extract(L"", nIconIndex, phiconLarge, phiconSmall, nIconSize);
 }
