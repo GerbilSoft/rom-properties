@@ -41,14 +41,14 @@ class RegKey;
 class RP_ExtractImage_Private;
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
+RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
 {
 	public:
 		RP_ExtractImage();
 		virtual ~RP_ExtractImage();
 
 	private:
-		typedef RP_ComBase2<IExtractImage2, IPersistFile> super;
+		typedef RP_ComBase2<IPersistFile, IExtractImage> super;
 		RP_DISABLE_COPY(RP_ExtractImage)
 	private:
 		friend class RP_ExtractImage_Private;
@@ -86,14 +86,6 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
 	public:
-		// IExtractImage
-		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
-			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
-		// IExtractImage2
-		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
-
 		// IPersist (IPersistFile base class)
 		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
@@ -102,6 +94,14 @@ RP_ExtractImage : public RP_ComBase2<IExtractImage2, IPersistFile>
 		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
 		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
 		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+
+		// IExtractImage
+		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
+			DWORD *pdwPriority, const SIZE *prgSize,
+			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
+		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
+		// IExtractImage2
+		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
 };
 
 #ifdef __CRT_UUID_DECL

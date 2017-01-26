@@ -203,14 +203,14 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// References:
 	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
 	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IExtractImage) {
-		*ppvObj = static_cast<IExtractImage*>(this);
-	} else if (riid == IID_IExtractImage2) {
-		*ppvObj = static_cast<IExtractImage2*>(this);
-	} else if (riid == IID_IPersist) {
+	if (riid == IID_IUnknown || riid == IID_IPersist) {
 		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
+	} else if (riid == IID_IExtractImage) {
+		*ppvObj = static_cast<IExtractImage*>(this);
+	} else if (riid == IID_IExtractImage2) {
+		*ppvObj = static_cast<IExtractImage2*>(this);
 	} else {
 		// Interface is not supported.
 		*ppvObj = nullptr;
@@ -220,6 +220,52 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Make sure we count this reference.
 	AddRef();
 	return NOERROR;
+}
+
+/** IPersistFile **/
+// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
+
+IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
+{
+	if (!pClassID) {
+		return E_FAIL;
+	}
+	*pClassID = CLSID_RP_ExtractImage;
+	return S_OK;
+}
+
+IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
+{
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
+{
+	UNUSED(dwMode);	// TODO
+
+	// pszFileName is the file being worked on.
+	RP_D(RP_ExtractImage);
+	d->filename = W2RP_c(pszFileName);
+	return S_OK;
+}
+
+IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
+{
+	UNUSED(pszFileName);
+	UNUSED(fRemember);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
+{
+	UNUSED(pszFileName);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
+{
+	UNUSED(ppszFileName);
+	return E_NOTIMPL;
 }
 
 /** IExtractImage **/
@@ -326,50 +372,4 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(FILETIME *pDateStamp)
 
 	*pDateStamp = ftLastWriteTime;
 	return NOERROR; 
-}
-
-/** IPersistFile **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
-
-IFACEMETHODIMP RP_ExtractImage::GetClassID(CLSID *pClassID)
-{
-	if (!pClassID) {
-		return E_FAIL;
-	}
-	*pClassID = CLSID_RP_ExtractImage;
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
-{
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
-{
-	UNUSED(dwMode);	// TODO
-
-	// pszFileName is the file being worked on.
-	RP_D(RP_ExtractImage);
-	d->filename = W2RP_c(pszFileName);
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
-{
-	UNUSED(pszFileName);
-	UNUSED(fRemember);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
-{
-	UNUSED(pszFileName);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
-{
-	UNUSED(ppszFileName);
-	return E_NOTIMPL;
 }
