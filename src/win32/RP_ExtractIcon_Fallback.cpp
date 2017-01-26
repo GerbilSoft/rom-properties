@@ -215,7 +215,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
 		IClassFactoryPtr pCF;
 		hr = CoGetClassObject(clsidIconHandler, CLSCTX_INPROC_SERVER, nullptr, IID_IClassFactory, (LPVOID*)&pCF);
-		if (FAILED(hr)) {
+		if (FAILED(hr) || !pCF) {
 			// Failed to get the IClassFactory.
 			return ERROR_FILE_NOT_FOUND;
 		}
@@ -223,7 +223,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		// Try getting the IExtractIconW interface.
 		IExtractIconW *pExtractIconW;
 		hr = pCF->CreateInstance(nullptr, IID_IExtractIconW, (LPVOID*)&pExtractIconW);
-		if (SUCCEEDED(hr)) {
+		if (SUCCEEDED(hr) && pExtractIconW) {
 			// Extract the icon.
 			LONG lResult = DoExtractIconW(pExtractIconW, phiconLarge, phiconSmall, nIconSize);
 			pExtractIconW->Release();
@@ -232,7 +232,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 			// Try getting the IExtractIconA interface.
 			IExtractIconA *pExtractIconA;
 			hr = pCF->CreateInstance(nullptr, IID_IExtractIconA, (LPVOID*)&pExtractIconA);
-			if (SUCCEEDED(hr)) {
+			if (SUCCEEDED(hr) && pExtractIconA) {
 				// Extract the icon.
 				LONG lResult = DoExtractIconA(pExtractIconA, phiconLarge, phiconSmall, nIconSize);
 				pExtractIconA->Release();
