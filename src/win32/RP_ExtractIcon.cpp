@@ -87,12 +87,12 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// References:
 	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
 	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IExtractIcon) {
-		*ppvObj = static_cast<IExtractIcon*>(this);
-	} else if (riid == IID_IPersist) {
+	if (riid == IID_IUnknown || riid == IID_IPersist) {
 		*ppvObj = static_cast<IPersist*>(this);
 	} else if (riid == IID_IPersistFile) {
 		*ppvObj = static_cast<IPersistFile*>(this);
+	} else if (riid == IID_IExtractIcon) {
+		*ppvObj = static_cast<IExtractIcon*>(this);
 	} else {
 		// Interface is not supported.
 		*ppvObj = nullptr;
@@ -102,6 +102,76 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	// Make sure we count this reference.
 	AddRef();
 	return NOERROR;
+}
+
+/** IPersistFile **/
+// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
+
+IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
+{
+	if (!pClassID) {
+		return E_FAIL;
+	}
+	*pClassID = CLSID_RP_ExtractIcon;
+	return S_OK;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
+{
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
+{
+	UNUSED(dwMode);	// TODO
+
+	// If we already have a RomData object, unref() it first.
+	RP_D(RP_ExtractIcon);
+	if (d->romData) {
+		d->romData->unref();
+		d->romData = nullptr;
+	}
+
+	// pszFileName is the file being worked on.
+	// TODO: If the file was already loaded, don't reload it.
+	d->filename = W2RP_cs(pszFileName);
+
+	// Attempt to open the ROM file.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		return E_FAIL;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	d->romData = RomDataFactory::getInstance(file.get(), true);
+
+	// NOTE: Since this is the registered icon handler
+	// for the file type, we have to implement our own
+	// fallbacks for unsupported files. Hence, we'll
+	// continue even if d->romData is nullptr;
+	return S_OK;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
+{
+	UNUSED(pszFileName);
+	UNUSED(fRemember);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
+{
+	UNUSED(pszFileName);
+	return E_NOTIMPL;
+}
+
+IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
+{
+	UNUSED(ppszFileName);
+	return E_NOTIMPL;
 }
 
 /** IExtractIcon **/
@@ -223,74 +293,4 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCTSTR pszFile, UINT nIconIndex,
 	// NOTE: S_FALSE causes icon shenanigans.
 	// TODO: Always return success here due to fallback?
 	return (*phiconLarge != nullptr ? S_OK : E_FAIL);
-}
-
-/** IPersistFile **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144067(v=vs.85).aspx#unknown_28177
-
-IFACEMETHODIMP RP_ExtractIcon::GetClassID(CLSID *pClassID)
-{
-	if (!pClassID) {
-		return E_FAIL;
-	}
-	*pClassID = CLSID_RP_ExtractIcon;
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
-{
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
-{
-	UNUSED(dwMode);	// TODO
-
-	// If we already have a RomData object, unref() it first.
-	RP_D(RP_ExtractIcon);
-	if (d->romData) {
-		d->romData->unref();
-		d->romData = nullptr;
-	}
-
-	// pszFileName is the file being worked on.
-	// TODO: If the file was already loaded, don't reload it.
-	d->filename = W2RP_cs(pszFileName);
-
-	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
-	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		return E_FAIL;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::getInstance(file.get(), true);
-
-	// NOTE: Since this is the registered icon handler
-	// for the file type, we have to implement our own
-	// fallbacks for unsupported files. Hence, we'll
-	// continue even if d->romData is nullptr;
-	return S_OK;
-}
-
-IFACEMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
-{
-	UNUSED(pszFileName);
-	UNUSED(fRemember);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
-{
-	UNUSED(pszFileName);
-	return E_NOTIMPL;
-}
-
-IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
-{
-	UNUSED(ppszFileName);
-	return E_NOTIMPL;
 }

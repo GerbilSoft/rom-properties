@@ -42,14 +42,14 @@ class RegKey;
 class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
+RP_ExtractIcon : public RP_ComBase2<IPersistFile, IExtractIcon>
 {
 	public:
 		RP_ExtractIcon();
 		virtual ~RP_ExtractIcon();
 
 	private:
-		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
+		typedef RP_ComBase2<IPersistFile, IExtractIcon> super;
 		RP_DISABLE_COPY(RP_ExtractIcon)
 	private:
 		friend class RP_ExtractIcon_Private;
@@ -89,13 +89,6 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 	public:
-		// IExtractIcon
-		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
-			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) final;
-
 		// IPersist (IPersistFile base class)
 		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
@@ -104,6 +97,13 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
 		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
 		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+
+		// IExtractIcon
+		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
+			HICON *phiconLarge, HICON *phiconSmall,
+			UINT nIconSize) final;
 };
 
 #ifdef __CRT_UUID_DECL
