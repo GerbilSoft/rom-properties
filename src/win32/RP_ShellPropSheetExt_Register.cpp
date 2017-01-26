@@ -62,11 +62,14 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only registers for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -77,19 +80,13 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
-	if (!hkcr_ext.isOpen()) {
-		return hkcr_ext.lOpenRes();
-	}
-
 	// Register as a property sheet handler for this file association.
 
 	// Create/open the "ShellEx\\PropertySheetHandlers\\rom-properties" key.
 	// NOTE: This will recursively create the keys if necessary.
 	wstring keyname = L"ShellEx\\PropertySheetHandlers\\";
 	keyname += RP_ProgID;
-	RegKey hkcr_PropSheet(hkcr_ext, keyname.c_str(), KEY_WRITE, true);
+	RegKey hkcr_PropSheet(hkey_Assoc, keyname.c_str(), KEY_WRITE, true);
 	if (!hkcr_PropSheet.isOpen()) {
 		return hkcr_PropSheet.lOpenRes();
 	}
@@ -101,6 +98,49 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// File type handler registered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
+	// Register the main association.
+	LONG lResult = RegisterFileType_int(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			} else {
+				return hkcr_ProgID.lOpenRes();
+			}
+		}
+		lResult = RegisterFileType_int(hkcr_ProgID);
+	}
+
+	// File type handler registered.
+	return lResult;
 }
 
 /**
@@ -123,11 +163,14 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only unregisters for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to unregister under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -138,21 +181,10 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_READ, false);
-	if (!hkcr_ext.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		// In that case, it means we aren't registered.
-		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ext.lOpenRes();
-	}
-
 	// Unregister as a property sheet handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
@@ -206,4 +238,47 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// File type handler unregistered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
+	// Unregister the main association.
+	LONG lResult = UnregisterFileType_int(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			} else {
+				return hkcr_ProgID.lOpenRes();
+			}
+		}
+		lResult = UnregisterFileType_int(hkcr_ProgID);
+	}
+
+	// File type handler unregistered.
+	return lResult;
 }
