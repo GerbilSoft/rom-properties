@@ -94,6 +94,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 	}
 
 	// Create/open the "ShellEx\\IconHandler" key.
+	// NOTE: This will recursively create the keys if necessary.
 	RegKey hkcr_IconHandler(hkey_Assoc, L"ShellEx\\IconHandler", KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IconHandler.isOpen()) {
 		return hkcr_IconHandler.lOpenRes();
