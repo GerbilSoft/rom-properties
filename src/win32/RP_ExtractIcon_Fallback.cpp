@@ -99,6 +99,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		// Get the icon location.
 		wchar_t szIconFile[MAX_PATH];
 		UINT wFlags;
+		// TODO: Handle S_FALSE with GIL_DEFAULTICON?
 		hr = pFbExtractIcon->GetIconLocation(0, szIconFile, ARRAY_SIZE(szIconFile), &nIconIndex, &wFlags);
 		if (FAILED(hr)) {
 			// GetIconLocation() failed.
