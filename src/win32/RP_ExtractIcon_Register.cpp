@@ -318,12 +318,18 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Remove the fallbacks.
-	lResult = hkcr_RP_Fallback.deleteValue(L"DefaultIcon");
-	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
-		return lResult;
+	if (hkcr_RP_Fallback.isOpen()) {
+		lResult = hkcr_RP_Fallback.deleteValue(L"DefaultIcon");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+		lResult = hkcr_RP_Fallback.deleteValue(L"IconHandler");
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			lResult = ERROR_SUCCESS;
+		}
 	}
-	lResult = hkcr_RP_Fallback.deleteValue(L"IconHandler");
-	if (lResult == ERROR_FILE_NOT_FOUND) {
+	else {
+		// Clear lResult.
 		lResult = ERROR_SUCCESS;
 	}
 
