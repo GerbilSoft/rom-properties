@@ -95,7 +95,7 @@ class RP_ExtractIcon_Private
 		 * @param nIconSize Icon sizes.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG Fallback_int(RegKey &hkey_Assoc,
+		LONG Fallback_int(RegKey &hkey_Assoc,
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 	public:

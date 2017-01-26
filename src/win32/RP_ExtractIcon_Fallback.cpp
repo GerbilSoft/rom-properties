@@ -71,56 +71,113 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	// Get the DefaultIcon key.
 	DWORD dwType;
 	wstring defaultIcon = hkey_RP_Fallback.read(L"DefaultIcon", &dwType);
+	int nIconIndex;
 	if (defaultIcon.empty()) {
 		// No default icon.
 		return ERROR_FILE_NOT_FOUND;
 	} else if (defaultIcon == L"%1") {
-		// TODO: Forward to another COM object.
-		return ERROR_FILE_NOT_FOUND;
-	}
-
-	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
-	// TODO: Can the filename be quoted?
-	// TODO: Better error codes?
-	int nIconIndex;
-	size_t comma = defaultIcon.find_last_of(L',');
-	if (comma != wstring::npos) {
-		// Found the comma.
-		if (comma > 0 && comma < defaultIcon.size()-1) {
-			wchar_t *endptr;
-			errno = 0;
-			nIconIndex = (int)wcstol(&defaultIcon[comma+1], &endptr, 10);
-			if (errno == ERANGE || *endptr != 0) {
-				// strtol() failed.
-				// DefaultIcon is invalid.
-				return ERROR_FILE_NOT_FOUND;
-			}
-		} else {
-			// Comma is the last character.
+		// Forward to the IconHandler.
+		wstring iconHandler = hkey_RP_Fallback.read(L"IconHandler");
+		if (iconHandler.empty()) {
+			// No IconHandler.
 			return ERROR_FILE_NOT_FOUND;
 		}
 
-		// Remove the comma portion.
-		defaultIcon.resize(comma);
-	} else {
-		// Assume the default icon index.
-		nIconIndex = 0;
-	}
-
-	// If the registry key type is REG_EXPAND_SZ, expand it.
-	// TODO: Move to RegKey?
-	if (dwType == REG_EXPAND_SZ) {
-		// cchExpand includes the NULL terminator.
-		DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
-		if (cchExpand == 0) {
-			// Error expanding the strings.
-			return GetLastError();
+		CLSID clsidIconHandler;
+		HRESULT hr = CLSIDFromString(iconHandler.c_str(), &clsidIconHandler);
+		if (FAILED(hr)) {
+			// Failed to convert the CLSID from string.
+			return ERROR_FILE_NOT_FOUND;
 		}
 
-		wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
-		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
-		defaultIcon = wstring(wbuf, cchExpand-1);
-		free(wbuf);
+		// COM smart pointers.
+		_COM_SMARTPTR_TYPEDEF(IExtractIcon, IID_IExtractIcon);
+		_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
+
+		IExtractIconPtr pFbExtractIcon;
+		hr = CoCreateInstance(clsidIconHandler, nullptr, CLSCTX_INPROC_SERVER, IID_IExtractIcon, (LPVOID*)&pFbExtractIcon);
+		if (FAILED(hr)) {
+			// Failed to create the fallback handler.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		// Get the IPersistFile interface.
+		IPersistFilePtr pFbPersistFile;
+		hr = pFbExtractIcon->QueryInterface(IID_IPersistFile, (LPVOID*)&pFbPersistFile);
+		if (FAILED(hr)) {
+			// Failed to get the IPersistFile interface.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		// Load the file.
+		// TODO: Proper string conversion.
+		hr = pFbPersistFile->Load((LPCOLESTR)this->filename.c_str(), STGM_READ);
+		if (FAILED(hr)) {
+			// Failed to load the file.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		// Get the icon location.
+		wchar_t szIconFile[MAX_PATH];
+		UINT wFlags;
+		hr = pFbExtractIcon->GetIconLocation(0, szIconFile, ARRAY_SIZE(szIconFile), &nIconIndex, &wFlags);
+		if (FAILED(hr)) {
+			// GetIconLocation() failed.
+			return ERROR_FILE_NOT_FOUND;
+		}
+
+		if (wFlags & GIL_NOTFILENAME) {
+			// Icon is not available on disk.
+			// Use IExtractIcon::Extract().
+			hr = pFbExtractIcon->Extract(szIconFile, nIconIndex, phiconLarge, phiconSmall, nIconSize);
+			return (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_FILE_NOT_FOUND);
+		} else {
+			// Icon is available on disk.
+			defaultIcon = szIconFile;
+		}
+	} else {
+		// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+		// TODO: Can the filename be quoted?
+		// TODO: Better error codes?
+		size_t comma = defaultIcon.find_last_of(L',');
+		if (comma != wstring::npos) {
+			// Found the comma.
+			if (comma > 0 && comma < defaultIcon.size()-1) {
+				wchar_t *endptr;
+				errno = 0;
+				nIconIndex = (int)wcstol(&defaultIcon[comma+1], &endptr, 10);
+				if (errno == ERANGE || *endptr != 0) {
+					// strtol() failed.
+					// DefaultIcon is invalid.
+					return ERROR_FILE_NOT_FOUND;
+				}
+			} else {
+				// Comma is the last character.
+				return ERROR_FILE_NOT_FOUND;
+			}
+
+			// Remove the comma portion.
+			defaultIcon.resize(comma);
+		} else {
+			// Assume the default icon index.
+			nIconIndex = 0;
+		}
+
+		// If the registry key type is REG_EXPAND_SZ, expand it.
+		// TODO: Move to RegKey?
+		if (dwType == REG_EXPAND_SZ) {
+			// cchExpand includes the NULL terminator.
+			DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
+			if (cchExpand == 0) {
+				// Error expanding the strings.
+				return GetLastError();
+			}
+
+			wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
+			cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
+			defaultIcon = wstring(wbuf, cchExpand-1);
+			free(wbuf);
+		}
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
