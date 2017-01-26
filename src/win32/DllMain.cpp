@@ -193,8 +193,7 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 	}
 
 	// Register the property page handler.
-	// TODO: Use hkcr+ext instead of pHkey_fileType.
-	lResult = RP_ShellPropSheetExt::RegisterFileType(*pHkey_fileType);
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	if (extInfo.hasThumbnail) {
@@ -265,7 +264,7 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	// TODO: Use hkcr+ext instead of hkey_fileType.
 	lResult = RP_ExtractImage::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkey_fileType);
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_fileType);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;

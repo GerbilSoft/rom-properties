@@ -62,10 +62,11 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkey_Assoc)
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -76,27 +77,24 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Register as a property sheet handler for this file association.
 
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Create/open the PropertySheetHandlers key.
-	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_WRITE, true);
-	if (!hkcr_PropertySheetHandlers.isOpen()) {
-		return hkcr_PropertySheetHandlers.lOpenRes();
-	}
-
-	// Create/open the "rom-properties" property sheet handler key.
-	// NOTE: This always uses RP_ProgID[], not the specified progID.
-	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_PropSheet_RomProperties.isOpen()) {
-		return hkcr_PropSheet_RomProperties.lOpenRes();
+	// Create/open the "ShellEx\\PropertySheetHandlers\\rom-properties" key.
+	// NOTE: This will recursively create the keys if necessary.
+	wstring keyname = L"ShellEx\\PropertySheetHandlers\\";
+	keyname += RP_ProgID;
+	RegKey hkcr_PropSheet(hkcr_ext, keyname.c_str(), KEY_WRITE, true);
+	if (!hkcr_PropSheet.isOpen()) {
+		return hkcr_PropSheet.lOpenRes();
 	}
 	// Set the default value to this CLSID.
-	lResult = hkcr_PropSheet_RomProperties.write(nullptr, clsid_str);
+	lResult = hkcr_PropSheet.write(nullptr, clsid_str);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -125,10 +123,11 @@ LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
 	extern const wchar_t RP_ProgID[];
 
@@ -139,10 +138,21 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ, false);
+	if (!hkcr_ext.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Unregister as a property sheet handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
@@ -150,47 +160,47 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
 		}
 		return hkcr_ShellEx.lOpenRes();
 	}
-	// Open the PropertySheetHandlers key.
-	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
-	if (!hkcr_PropertySheetHandlers.isOpen()) {
+
+	// Open the "ShellEx\\PropertySheetHandlers" key.
+	RegKey hkcr_PropSheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
+	if (!hkcr_PropSheetHandlers.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropertySheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		if (hkcr_PropSheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_PropertySheetHandlers.lOpenRes();
+		return hkcr_PropSheetHandlers.lOpenRes();
 	}
 
 	// Open the "rom-properties" property sheet handler key.
-	// NOTE: This always uses RP_ProgID[], not the specified progID.
-	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_READ, false);
-	if (!hkcr_PropSheet_RomProperties.isOpen()) {
+	RegKey hkcr_PropSheet(hkcr_PropSheetHandlers, RP_ProgID, KEY_READ, false);
+	if (!hkcr_PropSheet.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropSheet_RomProperties.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		if (hkcr_PropSheet.lOpenRes() == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_PropSheet_RomProperties.lOpenRes();
+		return hkcr_PropSheet.lOpenRes();
 	}
 	// Check if the default value matches the CLSID.
-	wstring str_IShellPropSheetExt = hkcr_PropSheet_RomProperties.read(nullptr);
-	if (str_IShellPropSheetExt == clsid_str) {
+	wstring str_PropSheetCLSID = hkcr_PropSheet.read(nullptr);
+	if (str_PropSheetCLSID == clsid_str) {
 		// Default value matches.
 		// Remove the subkey.
-		hkcr_PropSheet_RomProperties.close();
-		lResult = hkcr_PropertySheetHandlers.deleteSubKey(RP_ProgID);
+		hkcr_PropSheet.close();
+		lResult = hkcr_PropSheetHandlers.deleteSubKey(RP_ProgID);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
 		// Default value does not match.
 		// We're done here.
-		return hkcr_PropSheet_RomProperties.lOpenRes();
+		return ERROR_SUCCESS;
 	}
 
 	// Check if PropertySheetHandlers is empty.
 	// TODO: Error handling.
-	if (hkcr_PropertySheetHandlers.isKeyEmpty()) {
+	if (hkcr_PropSheetHandlers.isKeyEmpty()) {
 		// No subkeys. Delete this key.
-		hkcr_PropertySheetHandlers.close();
+		hkcr_PropSheetHandlers.close();
 		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
 	}
 
