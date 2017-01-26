@@ -31,27 +31,6 @@
 using std::wstring;
 
 /**
- * EnumResourceNames() callback function.
- * @param hModule
- * @param lpszType
- * @param lpszName
- * @param lParam
- */
-BOOL CALLBACK RP_ExtractIcon_Private::Fallback_EnumResNameProc(HMODULE hModule,
-	LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam)
-{
-	FBEnumState *fbEnumState = (FBEnumState*)lParam;
-	if (fbEnumState->iIndexSearch == fbEnumState->iIndexCurrent) {
-		// Found the resource!
-		fbEnumState->lpszName = lpszName;
-		return FALSE;
-	}
-	// Keep going.
-	fbEnumState->iIndexCurrent++;
-	return TRUE;
-}
-
-/**
  * Fallback icon handler function. (internal)
  * @param hkey_Assoc File association key to check.
  * @param phiconLarge Large icon.

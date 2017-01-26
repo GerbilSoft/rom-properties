@@ -71,22 +71,6 @@ class RP_ExtractIcon_Private
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
 
 	private:
-		struct FBEnumState {
-			int iIndexSearch;
-			int iIndexCurrent;
-			LPTSTR lpszName;
-		};
-
-		/**
-		 * EnumResourceNames() callback function.
-		 * @param hModule
-		 * @param lpszType
-		 * @param lpszName
-		 * @param lParam Pointer to FBEnumState.
-		 */
-		static BOOL CALLBACK Fallback_EnumResNameProc(HMODULE hModule,
-			LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
-
 		/**
 		 * Fallback icon handler function. (internal)
 		 * @param hkey_Assoc File association key to check.
