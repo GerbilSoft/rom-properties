@@ -190,6 +190,12 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	}
 	UNUSED(uFlags);
 
+	// If the file wasn't set via IPersistFile::Load(), that's an error.
+	RP_D(RP_ExtractIcon);
+	if (d->filename.empty()) {
+		return E_UNEXPECTED;
+	}
+
 	// NOTE: If caching is enabled and we don't set pszIconFile
 	// and piIndex, all icons for files handled by rom-properties
 	// will be the first file Explorer hands off to the extension.
@@ -221,7 +227,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractIcon);
 	if (d->filename.empty()) {
-		return E_INVALIDARG;
+		return E_UNEXPECTED;
 	}
 
 	// phiconLarge must be valid.
