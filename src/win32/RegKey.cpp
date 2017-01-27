@@ -271,10 +271,14 @@ DWORD RegKey::read_dword(LPCWSTR lpValueName, LPDWORD lpType) const
  */
 LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType)
 {
+	assert(m_hKey != nullptr);
 	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
 	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
+	} else if (dwType != REG_SZ && dwType != REG_EXPAND_SZ) {
+		// Invalid type.
+		return ERROR_INVALID_PARAMETER;
 	}
 
 	DWORD cbData;
@@ -304,10 +308,14 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType)
  */
 LONG RegKey::write(LPCWSTR lpValueName, const wstring& value, DWORD dwType)
 {
+	assert(m_hKey != nullptr);
 	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
 	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
+	} else if (dwType != REG_SZ && dwType != REG_EXPAND_SZ) {
+		// Invalid type.
+		return ERROR_INVALID_PARAMETER;
 	}
 
 	// Get the string length, add 1 for NULL,
