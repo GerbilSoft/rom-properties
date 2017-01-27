@@ -101,7 +101,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 	wstring iconHandler = hkcr_IconHandler.read(nullptr, &dwTypeIconHandler);
 	if (defaultIcon == L"%1") {
 		// "%1" == use IconHandler
-		if (iconHandler != clsid_str) {
+		if (dwTypeIconHandler != 0 && iconHandler != clsid_str) {
 			// Something else is registered.
 			// Copy it to the fallback key.
 			RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
