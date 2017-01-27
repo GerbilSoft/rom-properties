@@ -62,13 +62,12 @@ LONG RP_ExtractImage::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::RegisterFileType(RegKey &hkey_Assoc)
+LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -76,15 +75,17 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Register as the image handler for this file association.
 
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Create/open the IExtractImage key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
+	// Create/open the "ShellEx\\{IID_IExtractImage}" key.
+	// NOTE: This will recursively create the keys if necessary.
+	RegKey hkcr_IExtractImage(hkcr_ext, L"ShellEx\\{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
 	if (!hkcr_IExtractImage.isOpen()) {
 		return hkcr_IExtractImage.lOpenRes();
 	}
@@ -112,13 +113,12 @@ LONG RP_ExtractImage::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
+LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -126,10 +126,21 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ, false);
+	if (!hkcr_ext.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Unregister as the image handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
@@ -157,10 +168,6 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkey_Assoc)
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
-	} else {
-		// Default value doesn't match.
-		// We're done here.
-		return hkcr_IExtractImage.lOpenRes();
 	}
 
 	// File type handler unregistered.

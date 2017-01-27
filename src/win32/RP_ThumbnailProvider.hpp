@@ -74,10 +74,11 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 		/**
 		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -86,11 +87,12 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		static LONG UnregisterCLSID(void);
 
 		/**
-		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * Unregister the file type handler.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IInitializeWithStream

@@ -191,6 +191,7 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 			return SELFREG_E_CLASS;
 		}
 	}
+	delete pHkey_fileType;
 
 	// Register the property page handler.
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, ext.c_str());
@@ -200,25 +201,22 @@ static LONG RegisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extInf
 		// Register the thumbnail handlers.
 		lResult = RP_ExtractIcon::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		// TODO: Use hkcr+ext instead of pHkey_fileType.
-		lResult = RP_ExtractImage::RegisterFileType(*pHkey_fileType);
+		lResult = RP_ExtractImage::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ThumbnailProvider::RegisterFileType(*pHkey_fileType);
+		lResult = RP_ThumbnailProvider::RegisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	} else {
 		// No thumbnail handlers.
 		// Unregister the handlers if they were previously registered.
 		lResult = RP_ExtractIcon::UnregisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		// TODO: Use hkcr+ext instead of pHkey_fileType.
-		lResult = RP_ExtractImage::UnregisterFileType(*pHkey_fileType);
+		lResult = RP_ExtractImage::UnregisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-		lResult = RP_ThumbnailProvider::UnregisterFileType(*pHkey_fileType);
+		lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, ext.c_str());
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
 	// All file type handlers registered.
-	delete pHkey_fileType;
 	return ERROR_SUCCESS;
 }
 
@@ -261,12 +259,11 @@ static LONG UnregisterFileType(RegKey &hkcr, const RomDataFactory::ExtInfo &extI
 	// Unregister all classes.
 	lResult = RP_ExtractIcon::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	// TODO: Use hkcr+ext instead of hkey_fileType.
-	lResult = RP_ExtractImage::UnregisterFileType(hkey_fileType);
+	lResult = RP_ExtractImage::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
-	lResult = RP_ThumbnailProvider::UnregisterFileType(hkey_fileType);
+	lResult = RP_ThumbnailProvider::UnregisterFileType(hkcr, ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Delete keys if they're empty.

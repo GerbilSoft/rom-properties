@@ -66,13 +66,12 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkey_Assoc)
+LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -80,22 +79,23 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Register as the thumbnail handler for this file association.
 
 	// Set the "Treatment" value.
-	// TODO: DWORD write function.
-	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
+	lResult = hkcr_ext.write_dword(L"Treatment", 0);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Create/open the IThumbnailProvider key.
-	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
+	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
+	// NOTE: This will recursively create the keys if necessary.
+	RegKey hkcr_IThumbnailProvider(hkcr_ext, L"ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
 		return hkcr_IThumbnailProvider.lOpenRes();
 	}
@@ -129,13 +129,12 @@ LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	extern const wchar_t RP_ProgID[];
-
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
 	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
@@ -143,10 +142,21 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
 		return ERROR_INVALID_PARAMETER;
 	}
 
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
+	if (!hkcr_ext.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return hkcr_ext.lOpenRes();
+	}
+
 	// Unregister as the thumbnail handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
@@ -176,14 +186,10 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkey_Assoc)
 		}
 
 		// Remove "Treatment" if it's present.
-		lResult = hkey_Assoc.deleteValue(L"Treatment");
-		if (lResult != ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_ext.deleteValue(L"Treatment");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
-	} else {
-		// Default value doesn't match.
-		// We're done here.
-		return hkcr_IThumbnailProvider.lOpenRes();
 	}
 
 	// File type handler unregistered.
