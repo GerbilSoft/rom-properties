@@ -132,14 +132,12 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 
 	// Set the IThumbnailProvider to this CLSID.
 	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
-	lResult = ERROR_SUCCESS;
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
 	// Set the "Treatment" value.
 	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
-	lResult = ERROR_SUCCESS;
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
