@@ -36,6 +36,14 @@ SET(rom-properties-win32_H
 	resource.h
 	)
 
+# Precompiled headers.
+# NOTE: Only enabling PCH for MSVC builds.
+IF(MSVC)
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-win32_PCH_SRC stdafx.cpp)
+	SET(rom-properties-win32_PCH_H stdafx.h)
+ENDIF(MSVC)
+
 #####################
 # Build the plugin. #
 #####################
@@ -45,9 +53,17 @@ SET(rom-properties-win32_H
 # the 'lib' directory. Use SHARED instead.
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(rom-properties SHARED
-		${rom-properties-win32_SRCS}
-		${rom-properties-win32_H}
+	${rom-properties-win32_PCH_SRC}
+	${rom-properties-win32_PCH_H}
+	${rom-properties-win32_SRCS}
+	${rom-properties-win32_H}
+	)
+# NOTE: Only enabling PCH for MSVC.
+IF(MSVC)
+	ADD_PRECOMPILED_HEADER(rom-properties ${rom-properties-win32_PCH_H}
+		SOURCE_CXX ${rom-properties-win32_PCH_SRC}
 		)
+ENDIF(MSVC)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)
