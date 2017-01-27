@@ -332,7 +332,7 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	size_t bslashpos = filename.find_last_of(L'\\');
 	if (dotpos == wstring::npos ||
 	    dotpos >= filename.size()-1 ||
-	    dotpos <= bslashpos)
+	    (bslashpos != wstring::npos && dotpos <= bslashpos))
 	{
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;
