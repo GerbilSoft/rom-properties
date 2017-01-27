@@ -1775,29 +1775,12 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 
 IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	// Check if this interface is supported.
-	// NOTE: static_cast<> is required due to vtable shenanigans.
-	// Also, IID_IUnknown must always return the same pointer.
-	// References:
-	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
-	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IShellExtInit) {
-		*ppvObj = static_cast<IShellExtInit*>(this);
-	} else if (riid == IID_IShellPropSheetExt) {
-		*ppvObj = static_cast<IShellPropSheetExt*>(this);
-	} else {
-		// Interface is not supported.
-		*ppvObj = nullptr;
-		return E_NOINTERFACE;
-	}
-
-	// Make sure we count this reference.
-	AddRef();
-	return NOERROR;
+	static const QITAB rgqit[] = {
+		QITABENT(RP_ShellPropSheetExt, IShellExtInit),
+		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
+		{ 0 }
+	};
+	return pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellExtInit **/

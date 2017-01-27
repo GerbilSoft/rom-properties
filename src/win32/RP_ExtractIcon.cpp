@@ -77,33 +77,14 @@ RP_ExtractIcon::~RP_ExtractIcon()
 
 IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	// Check if this interface is supported.
-	// NOTE: static_cast<> is required due to vtable shenanigans.
-	// Also, IID_IUnknown must always return the same pointer.
-	// References:
-	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
-	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IPersist) {
-		*ppvObj = static_cast<IPersist*>(this);
-	} else if (riid == IID_IPersistFile) {
-		*ppvObj = static_cast<IPersistFile*>(this);
-	} else if (riid == IID_IExtractIconW) {
-		*ppvObj = static_cast<IExtractIconW*>(this);
-	} else if (riid == IID_IExtractIconA) {
-		*ppvObj = static_cast<IExtractIconA*>(this);
-	} else {
-		// Interface is not supported.
-		*ppvObj = nullptr;
-		return E_NOINTERFACE;
-	}
-
-	// Make sure we count this reference.
-	AddRef();
-	return NOERROR;
+	static const QITAB rgqit[] = {
+		QITABENT(RP_ExtractIcon, IPersist),
+		QITABENT(RP_ExtractIcon, IPersistFile),
+		QITABENT(RP_ExtractIcon, IExtractIconW),
+		QITABENT(RP_ExtractIcon, IExtractIconA),
+		{ 0 }
+	};
+	return pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IPersistFile **/

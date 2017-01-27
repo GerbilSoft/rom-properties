@@ -30,6 +30,14 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
+// QISearch()
+extern "C" {
+typedef HRESULT (WINAPI *PFNQISEARCH)(void *that, LPCQITAB pqit, REFIID riid, void **ppv);
+extern PFNQISEARCH pQISearch;
+void incRpGlobalRefCount(void);
+void decRpGlobalRefCount(void);
+}
+
 #include "libromdata/RpWin32.hpp"
 
 // References of all objects.
@@ -53,7 +61,7 @@ static inline bool RP_ComBase_isReferenced(void)
 	public: \
 		name() : m_ulRefCount(1) \
 		{ \
-			InterlockedIncrement(&RP_ulTotalRefCount); \
+			incRpGlobalRefCount(); \
 		} \
 		virtual ~name() { } \
 	\
@@ -61,7 +69,7 @@ static inline bool RP_ComBase_isReferenced(void)
 		/** IUnknown **/ \
 		IFACEMETHODIMP_(ULONG) AddRef(void) final \
 		{ \
-			InterlockedIncrement(&RP_ulTotalRefCount); \
+			incRpGlobalRefCount(); \
 			InterlockedIncrement(&m_ulRefCount); \
 			return m_ulRefCount; \
 		} \
@@ -73,8 +81,7 @@ static inline bool RP_ComBase_isReferenced(void)
 				/* No more references. */ \
 				delete this; \
 			} \
-			\
-			InterlockedDecrement(&RP_ulTotalRefCount); \
+			decRpGlobalRefCount(); \
 			return ulRefCount; \
 		} \
 }

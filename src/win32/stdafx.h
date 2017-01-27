@@ -37,5 +37,6 @@
 #include <shlobj.h>
 #include <shellapi.h>
 #include <comdef.h>
+#include <shlwapi.h>
 
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */
