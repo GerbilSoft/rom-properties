@@ -93,7 +93,9 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 		// FIXME: If an IExtractImage fallback interface is present
 		// and IThumbnailProvider is not, or the IThumbnailProvider
 		// class doesn't support IInitializeWithStream, don't register
-		// the IThumbnailProvider interface.
+		// the IThumbnailProvider interface. Windows Explorer won't
+		// try the IExtractImage interface if IThumbnailProvider exists,
+		// even if IThumbnailProvider fails.
 
 		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
 		if (!hkcr_RP_Fallback.isOpen()) {
