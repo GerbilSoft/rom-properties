@@ -17,6 +17,7 @@ SET(rom-properties-win32_SRCS
 	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
+	RP_ThumbnailProvider_Fallback.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H

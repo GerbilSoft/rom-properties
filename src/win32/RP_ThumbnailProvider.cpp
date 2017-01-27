@@ -63,10 +63,14 @@ const CLSID CLSID_RP_ThumbnailProvider =
 
 RP_ThumbnailProvider_Private::RP_ThumbnailProvider_Private()
 	: file(nullptr)
+	, pstream(nullptr)
+	, grfMode(0)
 { }
 
 RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 {
+	// pstream is owned by file,
+	// so don't Release() it here.
 	delete file;
 }
 
@@ -204,6 +208,8 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 		// Delete the old file first.
 		IRpFile *old_file = d->file;
 		d->file = file;
+		d->pstream = pstream;
+		d->grfMode = grfMode;
 		delete old_file;
 	} else {
 		// No old file to delete.
@@ -229,5 +235,9 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*pdwAlpha = WTSAT_ARGB;
 
 	int ret = d->getThumbnail(d->file, cx, *phbmp);
-	return (ret == 0 ? S_OK : S_FALSE);
+	if (ret != 0) {
+		// ROM is not supported. Use the fallback.
+		return d->Fallback(cx, phbmp, pdwAlpha);
+	}
+	return S_OK;
 }

@@ -47,8 +47,12 @@ class RP_ThumbnailProvider_Private : public LibRomData::TCreateThumbnail<HBITMAP
 		RP_DISABLE_COPY(RP_ThumbnailProvider_Private)
 
 	public:
-		// IRpFile IInitializeWithStream::Initialize().
+		// Set by IInitializeWithStream::Initialize().
 		LibRomData::IRpFile *file;
+		// IStream* used by the IRpFile.
+		// NOTE: Do NOT Release() this; RpFile_IStream handles it.
+		IStream *pstream;
+		DWORD grfMode;
 
 	public:
 		/**
@@ -72,6 +76,28 @@ class RP_ThumbnailProvider_Private : public LibRomData::TCreateThumbnail<HBITMAP
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	private:
+		/**
+		 * Fallback thumbnail handler function. (internal)
+		 * @param hkey_Assoc File association key to check.
+		 * @param cx
+		 * @param phbmp
+		 * @param pdwAlpha
+		 * @return HRESULT.
+		 */
+		HRESULT Fallback_int(RegKey &hkey_Assoc,
+			UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha);
+
+	public:
+		/**
+		 * Fallback thumbnail handler function.
+		 * @param cx
+		 * @param phbmp
+		 * @param pdwAlpha
+		 * @return HRESULT.
+		 */
+		HRESULT Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha);
 
 	public:
 		/** TCreateThumbnail functions. **/
