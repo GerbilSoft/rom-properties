@@ -75,10 +75,9 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
  * Called by the public version multiple times if a ProgID is registered.
  *
  * @param hkey_Assoc File association key to register under.
- * @param progID If true, don't set {IID_IThumbnailProvider} if it's empty. (ProgID mode)
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mode)
+LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 {
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
@@ -91,31 +90,16 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc, bool pro
 
 	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
 	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IThumbnailProvider(hkey_Assoc, L"ShellEx\\" IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, !progID_mode);
+	RegKey hkcr_IThumbnailProvider(hkey_Assoc, L"ShellEx\\" IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
-		lResult = hkcr_IThumbnailProvider.lOpenRes();
-		if (progID_mode && lResult == ERROR_FILE_NOT_FOUND) {
-			// No {IID_IThumbnailProvider}.
-			return ERROR_SUCCESS;
-		}
-		return lResult;
+		return hkcr_IThumbnailProvider.lOpenRes();
 	}
-
-	DWORD dwType;
-	DWORD x = hkey_Assoc.read_dword(L"Something1", &dwType);
-	x = hkey_Assoc.read_dword(L"Something2", &dwType);
 
 	// Is a custom IThumbnailProvider already registered?
 	DWORD dwTypeTreatment;
 	wstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
 	DWORD treatment = hkey_Assoc.read_dword(L"Treatment", &dwTypeTreatment);
-	if (clsid_reg.empty()) {
-		// No IThumbnailProvider, so nothing to back up.
-		if (progID_mode) {
-			// ProgID mode. We're done here.
-			return ERROR_SUCCESS;
-		}
-	} else if (clsid_reg != clsid_str) {
+	if (!clsid_reg.empty() && clsid_reg != clsid_str) {
 		// Something else is registered.
 		// Copy it to the fallback key.
 		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
@@ -142,14 +126,20 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc, bool pro
 		}
 	}
 
+	// NOTE: We're not skipping this even if the CLSID
+	// is correct, just in case some setting needs to
+	// be refreshed.
+
 	// Set the IThumbnailProvider to this CLSID.
 	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
+	lResult = ERROR_SUCCESS;
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
 	// Set the "Treatment" value.
 	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
+	lResult = ERROR_SUCCESS;
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -173,7 +163,7 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 	}
 
 	// Register the main association.
-	LONG lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ext, false);
+	LONG lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ext);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -193,7 +183,7 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 			}
 			return lResult;
 		}
-		lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ProgID, true);
+		lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ProgID);
 	}
 
 	// File type handler registered.

@@ -54,10 +54,9 @@ class RP_ExtractIcon_Private
 		 * Called by the public version multiple times if a ProgID is registered.
 		 *
 		 * @param hkey_Assoc File association key to register under.
-		 * @param progID If true, don't set DefaultIcon if it's empty. (ProgID mode)
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc, bool progID_mode);
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
