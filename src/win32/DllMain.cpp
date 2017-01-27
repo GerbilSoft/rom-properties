@@ -540,15 +540,15 @@ STDAPI DllRegisterServer(void)
 	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
 	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+		// Register the file type handlers for this file extension globally.
+		lResult = RegisterFileType(hkcr, *ext_iter);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 		// Register user file types if necessary.
 		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 			lResult = RegisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
-
-		// Register the file type handlers for this file extension globally.
-		lResult = RegisterFileType(hkcr, *ext_iter);
-		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
 	// Delete the rom-properties ProgID,
@@ -603,15 +603,15 @@ STDAPI DllUnregisterServer(void)
 	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
 	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
+		// Unregister the file type handlers for this file extension globally.
+		lResult = UnregisterFileType(hkcr, *ext_iter);
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 		// Unregister user file types if necessary.
 		for (auto sid_iter = user_SIDs.cbegin(); sid_iter != user_SIDs.cend(); ++sid_iter) {
 			lResult = UnregisterUserFileType(*sid_iter, *ext_iter);
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
-
-		// Unregister the file type handlers for this file extension globally.
-		lResult = UnregisterFileType(hkcr, *ext_iter);
-		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
 	// Delete the rom-properties ProgID,
