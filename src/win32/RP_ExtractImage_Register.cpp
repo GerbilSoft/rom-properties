@@ -143,19 +143,21 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_ShellEx.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_ShellEx.lOpenRes();
+		return lResult;
 	}
 	// Open the IExtractImage key.
 	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_READ, false);
 	if (!hkcr_IExtractImage.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_IExtractImage.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_IExtractImage.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_IExtractImage.lOpenRes();
+		return lResult;
 	}
 
 	// Check if the default value matches the CLSID.
