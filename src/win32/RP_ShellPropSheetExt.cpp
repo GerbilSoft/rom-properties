@@ -1357,29 +1357,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 			woss << i;
 		}
 		woss << L'=';
-
-		// TODO: Decode numeric ratings based on organization.
-		if (rating & RomFields::AGEBF_PROHIBITED) {
-			// Prohibited.
-			// TODO: Better description?
-			woss << L"No";
-		} else if (rating & RomFields::AGEBF_PENDING) {
-			// Rating is pending.
-			woss << L"RP";
-		} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
-			// No age restriction.
-			woss << L"All";
-		} else {
-			// Use the age rating.
-			woss << (rating & RomFields::AGEBF_MIN_AGE_MASK);
-		}
-
-		if (rating & RomFields::AGEBF_ONLINE_PLAY) {
-			// Rating may change during online play.
-			// TODO: Add a description of this somewhere.
-			// NOTE: Unicode U+00B0, encoded as UTF-8.
-			woss << (wchar_t)0x00B0;
-		}
+		woss << RP2W_s(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
 	}
 
 	// Initialize the string.
