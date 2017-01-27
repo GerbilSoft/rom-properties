@@ -330,8 +330,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
 		}
-	}
-	else {
+	} else {
 		// Clear lResult.
 		lResult = ERROR_SUCCESS;
 	}
