@@ -30,7 +30,8 @@
 #include <string>
 using std::wstring;
 
-#define IID_IThumbnailProvider_String TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
+#define IID_IThumbnailProvider_String		TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
+#define CLSID_RP_ThumbnailProvider_String	TEXT("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
 
 /**
  * Register the COM object.
@@ -41,15 +42,8 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
 	static const wchar_t description[] = L"ROM Properties Page - Thumbnail Provider";
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
+	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ThumbnailProvider), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -79,13 +73,6 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
  */
 LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 {
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register as the thumbnail handler for this file association.
 
 	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
@@ -99,14 +86,14 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 	DWORD dwTypeTreatment;
 	wstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
 	DWORD treatment = hkey_Assoc.read_dword(L"Treatment", &dwTypeTreatment);
-	if (!clsid_reg.empty() && clsid_reg != clsid_str) {
+	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ThumbnailProvider_String) {
 		// Something else is registered.
 		// Copy it to the fallback key.
 		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
 		if (!hkcr_RP_Fallback.isOpen()) {
 			return hkcr_RP_Fallback.lOpenRes();
 		}
-		lResult = hkcr_RP_Fallback.write(L"IThumbnailProvider", clsid_reg);
+		LONG lResult = hkcr_RP_Fallback.write(L"IThumbnailProvider", clsid_reg);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -131,7 +118,7 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 	// be refreshed.
 
 	// Set the IThumbnailProvider to this CLSID.
-	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
+	LONG lResult = hkcr_IThumbnailProvider.write(nullptr, CLSID_RP_ThumbnailProvider_String);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -217,20 +204,13 @@ LONG RP_ThumbnailProvider::UnregisterCLSID(void)
  */
 LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ThumbnailProvider), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Unregister as the thumbnail handler for this file association.
 
 	// Open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_ShellEx.lOpenRes();
+		LONG lResult = hkcr_ShellEx.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -241,7 +221,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_IThumbnailProvider.lOpenRes();
+		LONG lResult = hkcr_IThumbnailProvider.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -250,7 +230,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 	// Check if the default value matches the CLSID.
 	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (wstr_IThumbnailProvider != clsid_str) {
+	if (wstr_IThumbnailProvider != CLSID_RP_ThumbnailProvider_String) {
 		// Not our IThumbnailProvider.
 		// We're done here.
 		return ERROR_SUCCESS;
@@ -269,7 +249,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 	if (!clsid_reg.empty()) {
 		// Restore the IThumbnailProvider.
-		lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_reg);
+		LONG lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_reg);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -291,7 +271,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		// No IThumbnailProvider to restore.
 		// Remove the current one.
 		hkcr_IThumbnailProvider.close();
-		lResult = hkcr_ShellEx.deleteSubKey(IID_IThumbnailProvider_String);
+		LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IThumbnailProvider_String);
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
@@ -304,6 +284,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Remove the fallbacks.
+	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
 		lResult = hkcr_RP_Fallback.deleteValue(L"ThumbnailProvider");
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
@@ -313,13 +294,10 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
 		}
-	} else {
-		// Clear lResult.
-		lResult = ERROR_SUCCESS;
 	}
 
 	// File type handler unregistered.
-	return ERROR_SUCCESS;
+	return lResult;
 }
 
 /**

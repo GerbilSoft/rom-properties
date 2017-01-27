@@ -28,6 +28,8 @@
 #include <string>
 using std::wstring;
 
+#define CLSID_RP_ShellPropSheetExt_String	TEXT("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
+
 /**
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
@@ -37,15 +39,8 @@ LONG RP_ShellPropSheetExt::RegisterCLSID(void)
 	static const wchar_t description[] = L"ROM Properties Page - Property Sheet";
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
+	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -73,13 +68,6 @@ LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register as a property sheet handler for this file association.
 
 	// Create/open the "ShellEx\\PropertySheetHandlers\\rom-properties" key.
@@ -90,8 +78,9 @@ LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
 	if (!hkcr_PropSheet.isOpen()) {
 		return hkcr_PropSheet.lOpenRes();
 	}
+
 	// Set the default value to this CLSID.
-	lResult = hkcr_PropSheet.write(nullptr, clsid_str);
+	LONG lResult = hkcr_PropSheet.write(nullptr, CLSID_RP_ShellPropSheetExt_String);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -173,20 +162,13 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Unregister as a property sheet handler for this file association.
 
 	// Open the "ShellEx" key.
 	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_ShellEx.lOpenRes();
+		LONG lResult = hkcr_ShellEx.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -197,7 +179,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	RegKey hkcr_PropSheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
 	if (!hkcr_PropSheetHandlers.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_PropSheetHandlers.lOpenRes();
+		LONG lResult = hkcr_PropSheetHandlers.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -208,7 +190,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	RegKey hkcr_PropSheet(hkcr_PropSheetHandlers, RP_ProgID, KEY_READ, false);
 	if (!hkcr_PropSheet.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_PropSheet.lOpenRes();
+		LONG lResult = hkcr_PropSheet.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -216,11 +198,11 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	}
 	// Check if the default value matches the CLSID.
 	wstring str_PropSheetCLSID = hkcr_PropSheet.read(nullptr);
-	if (str_PropSheetCLSID == clsid_str) {
+	if (str_PropSheetCLSID == CLSID_RP_ShellPropSheetExt_String) {
 		// Default value matches.
 		// Remove the subkey.
 		hkcr_PropSheet.close();
-		lResult = hkcr_PropSheetHandlers.deleteSubKey(RP_ProgID);
+		LONG lResult = hkcr_PropSheetHandlers.deleteSubKey(RP_ProgID);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -235,7 +217,10 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	if (hkcr_PropSheetHandlers.isKeyEmpty()) {
 		// No subkeys. Delete this key.
 		hkcr_PropSheetHandlers.close();
-		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+		LONG lResult = hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
 	}
 
 	// File type handler unregistered.

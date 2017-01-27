@@ -30,6 +30,8 @@
 #include <string>
 using std::wstring;
 
+#define CLSID_RP_ExtractIcon_String	TEXT("{E51BC107-E491-4B29-A6A3-2A4309259802}")
+
 /**
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
@@ -39,15 +41,8 @@ LONG RP_ExtractIcon::RegisterCLSID(void)
 	static const wchar_t description[] = L"ROM Properties Page - Icon Extractor";
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
+	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractIcon), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -73,13 +68,6 @@ LONG RP_ExtractIcon::RegisterCLSID(void)
  */
 LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 {
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register as the icon handler for this file association.
 
 	// Create/open the "DefaultIcon" key.
@@ -101,14 +89,14 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 	wstring iconHandler = hkcr_IconHandler.read(nullptr, &dwTypeIconHandler);
 	if (defaultIcon == L"%1") {
 		// "%1" == use IconHandler
-		if (dwTypeIconHandler != 0 && iconHandler != clsid_str) {
+		if (dwTypeIconHandler != 0 && iconHandler != CLSID_RP_ExtractIcon_String) {
 			// Something else is registered.
 			// Copy it to the fallback key.
 			RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
 			if (!hkcr_RP_Fallback.isOpen()) {
 				return hkcr_RP_Fallback.lOpenRes();
 			}
-			lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
+			LONG lResult = hkcr_RP_Fallback.write(L"DefaultIcon", defaultIcon, dwTypeDefaultIcon);
 			if (lResult != ERROR_SUCCESS) {
 				return lResult;
 			}
@@ -124,6 +112,8 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 		if (!hkcr_RP_Fallback.isOpen()) {
 			return hkcr_RP_Fallback.lOpenRes();
 		}
+
+		LONG lResult;
 		if (defaultIcon.empty()) {
 			// No DefaultIcon.
 			// Delete it if it's present.
@@ -151,7 +141,7 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc)
 	// be refreshed.
 
 	// Set the IconHandler to this CLSID.
-	lResult = hkcr_IconHandler.write(nullptr, clsid_str);
+	LONG lResult = hkcr_IconHandler.write(nullptr, CLSID_RP_ExtractIcon_String);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -230,13 +220,6 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractIcon), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Unregister as the icon handler for this file association.
 
 	// Open the "DefaultIcon" key.
@@ -244,7 +227,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	if (!hkcr_DefaultIcon.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
-		lResult = hkcr_DefaultIcon.lOpenRes();
+		LONG lResult = hkcr_DefaultIcon.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -256,7 +239,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	if (!hkcr_IconHandler.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
-		lResult = hkcr_DefaultIcon.lOpenRes();
+		LONG lResult = hkcr_DefaultIcon.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -267,7 +250,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	wstring defaultIcon = hkcr_DefaultIcon.read(nullptr);
 	wstring iconHandler = hkcr_IconHandler.read(nullptr);
 	// FIXME: Restore if iconHandler matches, even if defaultIcon doesn't.
-	if (defaultIcon != L"%1" || iconHandler != clsid_str) {
+	if (defaultIcon != L"%1" || iconHandler != CLSID_RP_ExtractIcon_String) {
 		// Not our DefaultIcon or IconHandler.
 		// We're done here.
 		return ERROR_SUCCESS;
@@ -286,14 +269,14 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 	if (!defaultIcon.empty()) {
 		// Restore the DefaultIcon.
-		lResult = hkcr_DefaultIcon.write(nullptr, defaultIcon, dwTypeDefaultIcon);
+		LONG lResult = hkcr_DefaultIcon.write(nullptr, defaultIcon, dwTypeDefaultIcon);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
 	} else {
 		// Delete the DefaultIcon.
 		hkcr_DefaultIcon.close();
-		lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
+		LONG lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
@@ -301,7 +284,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 
 	if (!iconHandler.empty()) {
 		// Restore the IconHandler.
-		lResult = hkcr_IconHandler.write(nullptr, iconHandler, dwTypeIconHandler);
+		LONG lResult = hkcr_IconHandler.write(nullptr, iconHandler, dwTypeIconHandler);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
@@ -312,7 +295,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 			// Delete the IconHandler.
 			// FIXME: Windows 7 isn't properly deleting this in some cases...
 			// (".3gp" extension; owned by WMP11)
-			lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
+			LONG lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
 			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 				return lResult;
 			}
@@ -320,6 +303,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Remove the fallbacks.
+	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
 		lResult = hkcr_RP_Fallback.deleteValue(L"DefaultIcon");
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
@@ -329,9 +313,6 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			lResult = ERROR_SUCCESS;
 		}
-	} else {
-		// Clear lResult.
-		lResult = ERROR_SUCCESS;
 	}
 
 	// File type handler unregistered.

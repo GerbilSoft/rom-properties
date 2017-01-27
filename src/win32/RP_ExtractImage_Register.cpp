@@ -28,6 +28,9 @@
 #include <string>
 using std::wstring;
 
+#define IID_IExtractImage_String	TEXT("{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}")
+#define CLSID_RP_ExtractImage_String	TEXT("{84573BC0-9502-42F8-8066-CC527D0779E5}")
+
 /**
  * Register the COM object.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
@@ -37,15 +40,8 @@ LONG RP_ExtractImage::RegisterCLSID(void)
 	static const wchar_t description[] = L"ROM Properties Page - Image Extractor";
 	extern const wchar_t RP_ProgID[];
 
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
+	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ExtractImage), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -68,13 +64,6 @@ LONG RP_ExtractImage::RegisterCLSID(void)
  */
 LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
 	if (!hkcr_ext.isOpen()) {
@@ -85,12 +74,13 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// Create/open the "ShellEx\\{IID_IExtractImage}" key.
 	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IExtractImage(hkcr_ext, L"ShellEx\\{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_WRITE, true);
+	RegKey hkcr_IExtractImage(hkcr_ext, L"ShellEx\\" IID_IExtractImage_String, KEY_WRITE, true);
 	if (!hkcr_IExtractImage.isOpen()) {
 		return hkcr_IExtractImage.lOpenRes();
 	}
+
 	// Set the default value to this CLSID.
-	lResult = hkcr_IExtractImage.write(nullptr, clsid_str);
+	LONG lResult = hkcr_IExtractImage.write(nullptr, CLSID_RP_ExtractImage_String);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
@@ -119,13 +109,6 @@ LONG RP_ExtractImage::UnregisterCLSID(void)
  */
 LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ExtractImage), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ, false);
 	if (!hkcr_ext.isOpen()) {
@@ -143,17 +126,17 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_ShellEx.lOpenRes();
+		LONG lResult = hkcr_ShellEx.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
 		return lResult;
 	}
 	// Open the IExtractImage key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}", KEY_READ, false);
+	RegKey hkcr_IExtractImage(hkcr_ShellEx, IID_IExtractImage_String, KEY_READ, false);
 	if (!hkcr_IExtractImage.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		lResult = hkcr_IExtractImage.lOpenRes();
+		LONG lResult = hkcr_IExtractImage.lOpenRes();
 		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
@@ -162,11 +145,11 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// Check if the default value matches the CLSID.
 	wstring wstr_IExtractImage = hkcr_IExtractImage.read(nullptr);
-	if (wstr_IExtractImage == clsid_str) {
+	if (wstr_IExtractImage == CLSID_RP_ExtractImage_String) {
 		// Default value matches.
 		// Remove the subkey.
 		hkcr_IExtractImage.close();
-		lResult = hkcr_ShellEx.deleteSubKey(L"{BB2E617C-0920-11D1-9A0B-00C04FC2D6C1}");
+		LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IExtractImage_String);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
