@@ -22,11 +22,15 @@
 
 #include "stdafx.h"
 #include "RP_ThumbnailProvider.hpp"
+#include "RP_ThumbnailProvider_p.hpp"
+
 #include "RegKey.hpp"
 
 // C++ includes.
 #include <string>
 using std::wstring;
+
+#define IID_IThumbnailProvider_String TEXT("{E357FCCD-A995-4576-B01F-234630154E96}")
 
 /**
  * Register the COM object.
@@ -66,11 +70,15 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only registers for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to register under.
+ * @param progID If true, don't set {IID_IThumbnailProvider} if it's empty. (ProgID mode)
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mode)
 {
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
@@ -79,34 +87,117 @@ LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
-	if (!hkcr_ext.isOpen()) {
-		return hkcr_ext.lOpenRes();
-	}
-
 	// Register as the thumbnail handler for this file association.
 
-	// Set the "Treatment" value.
-	lResult = hkcr_ext.write_dword(L"Treatment", 0);
+	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
+	// NOTE: This will recursively create the keys if necessary.
+	RegKey hkcr_IThumbnailProvider(hkey_Assoc, L"ShellEx\\" IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, !progID_mode);
+	if (!hkcr_IThumbnailProvider.isOpen()) {
+		lResult = hkcr_IThumbnailProvider.lOpenRes();
+		if (progID_mode && lResult == ERROR_FILE_NOT_FOUND) {
+			// No {IID_IThumbnailProvider}.
+			return ERROR_SUCCESS;
+		}
+		return lResult;
+	}
+
+	DWORD dwType;
+	DWORD x = hkey_Assoc.read_dword(L"Something1", &dwType);
+	x = hkey_Assoc.read_dword(L"Something2", &dwType);
+
+	// Is a custom IThumbnailProvider already registered?
+	DWORD dwTypeTreatment;
+	wstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
+	DWORD treatment = hkey_Assoc.read_dword(L"Treatment", &dwTypeTreatment);
+	if (clsid_reg.empty()) {
+		// No IThumbnailProvider, so nothing to back up.
+		if (progID_mode) {
+			// ProgID mode. We're done here.
+			return ERROR_SUCCESS;
+		}
+	} else if (clsid_reg != clsid_str) {
+		// Something else is registered.
+		// Copy it to the fallback key.
+		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+		if (!hkcr_RP_Fallback.isOpen()) {
+			return hkcr_RP_Fallback.lOpenRes();
+		}
+		lResult = hkcr_RP_Fallback.write(L"IThumbnailProvider", clsid_reg);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+
+		if (dwTypeTreatment == REG_DWORD) {
+			// Copy the treatment value.
+			lResult = hkcr_RP_Fallback.write_dword(L"Treatment", treatment);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		} else {
+			// Delete the Treatment value if it's there.
+			lResult = hkcr_RP_Fallback.deleteValue(L"Treatment");
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+		}
+	}
+
+	// Set the IThumbnailProvider to this CLSID.
+	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
-	// Create/open the "ShellEx\\{IID_IThumbnailProvider}" key.
-	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IThumbnailProvider(hkcr_ext, L"ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}", KEY_WRITE, true);
-	if (!hkcr_IThumbnailProvider.isOpen()) {
-		return hkcr_IThumbnailProvider.lOpenRes();
-	}
-	// Set the default value to this CLSID.
-	lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_str);
+	// Set the "Treatment" value.
+	lResult = hkey_Assoc.write_dword(L"Treatment", 0);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}
 
 	// File type handler registered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ThumbnailProvider::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
+	// Register the main association.
+	LONG lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ext, false);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			}
+			return lResult;
+		}
+		lResult = RP_ThumbnailProvider_Private::RegisterFileType(hkcr_ProgID, true);
+	}
+
+	// File type handler registered.
+	return lResult;
 }
 
 /**
@@ -147,10 +238,11 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	if (!hkcr_ext.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
-		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_ext.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_ext.lOpenRes();
+		return lResult;
 	}
 
 	// Unregister as the thumbnail handler for this file association.
@@ -159,19 +251,21 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_ShellEx.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_ShellEx.lOpenRes();
+		return lResult;
 	}
 	// Open the IThumbnailProvider key.
 	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_READ, false);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_IThumbnailProvider.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_IThumbnailProvider.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_IThumbnailProvider.lOpenRes();
+		return lResult;
 	}
 
 	// Check if the default value matches the CLSID.

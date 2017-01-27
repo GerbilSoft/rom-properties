@@ -88,13 +88,21 @@ class RegKey
 		/** Basic registry access functions. **/
 
 		/**
-		 * Read a string value from a key. (REG_SZ)
+		 * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
 		 * NOTE: REG_EXPAND_SZ values are NOT expanded.
 		 * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
-		 * @param lpType	[out,opt] Variable to store the key type in. (REG_SZ or REG_EXPAND_SZ)
-		 * @return String value, or empty string on error.
+		 * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
+		 * @return String value, or empty string on error. (check lpType)
 		 */
 		std::wstring read(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
+
+		/**
+		 * Read a DWORD value from a key. (REG_DWORD)
+		 * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+		 * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE or REG_DWORD)
+		 * @return DWORD value, or 0 on error. (check lpType)
+		 */
+		DWORD read_dword(LPCWSTR lpValueName, LPDWORD lpType = nullptr) const;
 
 		/**
 		 * Write a string value to this key.

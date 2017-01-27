@@ -51,6 +51,30 @@ class RP_ThumbnailProvider_Private : public LibRomData::TCreateThumbnail<HBITMAP
 		LibRomData::IRpFile *file;
 
 	public:
+		/**
+		 * Register the file type handler.
+		 *
+		 * Internal version; this only registers for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to register under.
+		 * @param progID If true, don't set DefaultIcon if it's empty. (ProgID mode)
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc, bool progID_mode);
+
+		/**
+		 * Unregister the file type handler.
+		 *
+		 * Internal version; this only unregisters for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to unregister under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	public:
 		/** TCreateThumbnail functions. **/
 
 		/**

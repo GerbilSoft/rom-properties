@@ -143,16 +143,19 @@ void RegKey::close(void)
 /** Basic registry access functions. **/
 
 /**
- * Read a string value from a key. (REG_SZ or REG_EXPAND_SZ)
+ * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
  * NOTE: REG_EXPAND_SZ values are NOT expanded.
  * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
- * @param lpType	[out,opt] Variable to store the key type in. (REG_SZ or REG_EXPAND_SZ)
- * @return String value, or empty string on error.
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
+ * @return String value, or empty string on error. (check lpType)
  */
 wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
 	}
 
@@ -217,6 +220,46 @@ wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 	wstring wstr(wbuf, cchData);
 	free(wbuf);
 	return wstr;
+}
+
+/**
+ * Read a DWORD value from a key. (REG_DWORD)
+ * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE or REG_DWORD)
+ * @return DWORD value, or 0 on error. (check lpType)
+ */
+DWORD RegKey::read_dword(LPCWSTR lpValueName, LPDWORD lpType) const
+{
+	if (!m_hKey) {
+		// Handle is invalid.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
+		return 0;
+	}
+
+	// Get the DWORD.
+	DWORD data, cbData, dwType;
+	cbData = sizeof(data);
+	LONG lResult = RegQueryValueEx(m_hKey,
+		lpValueName,	// lpValueName
+		nullptr,	// lpReserved
+		&dwType,	// lpType
+		(LPBYTE)&data,	// lpData
+		&cbData);	// lpcbData
+	if (lResult != ERROR_SUCCESS || cbData == 0 || dwType != REG_DWORD) {
+		// Either an error occurred, or this isn't REG_DWORD.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
+		return 0;
+	}
+
+	// Return the DWORD.
+	if (lpType) {
+		*lpType = dwType;
+	}
+	return data;
 }
 
 /**
