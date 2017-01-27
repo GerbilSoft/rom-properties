@@ -31,7 +31,7 @@
 // CLSID
 extern const CLSID CLSID_RP_ExtractImage;
 
-class RP_ExtractImage_Private : public TCreateThumbnail<HBITMAP>
+class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 {
 	public:
 		RP_ExtractImage_Private();
@@ -56,7 +56,7 @@ class RP_ExtractImage_Private : public TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual HBITMAP rpImageToImgClass(const rp_image *img) const final;
+		virtual HBITMAP rpImageToImgClass(const LibRomData::rp_image *img) const final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -97,7 +97,7 @@ class RP_ExtractImage_Private : public TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const final;
+		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_P_HPP__ */
