@@ -293,7 +293,10 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	} else {
 		// Delete the DefaultIcon.
 		hkcr_DefaultIcon.close();
-		hkey_Assoc.deleteSubKey(L"DefaultIcon");
+		lResult = hkey_Assoc.deleteSubKey(L"DefaultIcon");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
 	}
 
 	if (!iconHandler.empty()) {
@@ -307,7 +310,12 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 		RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, false);
 		if (hkcr_ShellEx.isOpen()) {
 			// Delete the IconHandler.
-			hkcr_ShellEx.deleteSubKey(L"IconHandler");
+			// FIXME: Windows 7 isn't properly deleting this in some cases...
+			// (".3gp" extension; owned by WMP11)
+			lResult = hkcr_ShellEx.deleteSubKey(L"IconHandler");
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
 		}
 	}
 
