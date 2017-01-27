@@ -210,11 +210,14 @@ LONG RP_ThumbnailProvider::UnregisterCLSID(void)
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only unregisters for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to unregister under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
 	// Convert the CLSID to a string.
 	wchar_t clsid_str[48];	// maybe only 40 is needed?
@@ -223,22 +226,10 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
-	if (!hkcr_ext.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		// In that case, it means we aren't registered.
-		lResult = hkcr_ext.lOpenRes();
-		if (lResult == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return lResult;
-	}
-
 	// Unregister as the thumbnail handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		lResult = hkcr_ShellEx.lOpenRes();
@@ -247,8 +238,9 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 		}
 		return lResult;
 	}
-	// Open the IThumbnailProvider key.
-	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, L"{E357FCCD-A995-4576-B01F-234630154E96}", KEY_READ, false);
+
+	// Open the {IID_IThumbnailProvider} key.
+	RegKey hkcr_IThumbnailProvider(hkcr_ShellEx, IID_IThumbnailProvider_String, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_IThumbnailProvider.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		lResult = hkcr_IThumbnailProvider.lOpenRes();
@@ -260,22 +252,122 @@ LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// Check if the default value matches the CLSID.
 	wstring wstr_IThumbnailProvider = hkcr_IThumbnailProvider.read(nullptr);
-	if (wstr_IThumbnailProvider == clsid_str) {
-		// Default value matches.
-		// Remove the subkey.
-		hkcr_IThumbnailProvider.close();
-		lResult = hkcr_ShellEx.deleteSubKey(L"{E357FCCD-A995-4576-B01F-234630154E96}");
+	if (wstr_IThumbnailProvider != clsid_str) {
+		// Not our IThumbnailProvider.
+		// We're done here.
+		return ERROR_SUCCESS;
+	}
+
+	// Restore the fallbacks if we have any.
+	wstring clsid_reg;
+	DWORD dwTypeTreatment = 0;
+	DWORD treatment = 0;
+	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);
+	if (hkcr_RP_Fallback.isOpen()) {
+		// Read the fallbacks.
+		clsid_reg = hkcr_RP_Fallback.read(L"IThumbnailProvider");
+		treatment = hkcr_RP_Fallback.read_dword(L"Treatment", &dwTypeTreatment);
+	}
+
+	if (!clsid_reg.empty()) {
+		// Restore the IThumbnailProvider.
+		lResult = hkcr_IThumbnailProvider.write(nullptr, clsid_reg);
 		if (lResult != ERROR_SUCCESS) {
 			return lResult;
 		}
+		// Restore the "Treatment" value.
+		if (dwTypeTreatment == REG_DWORD) {
+			lResult = hkey_Assoc.write_dword(L"Treatment", treatment);
+			if (lResult != ERROR_SUCCESS) {
+				return lResult;
+			}
+		} else {
+			// No "Treatment" value to restore.
+			// Delete the current one if it's present.
+			lResult = hkey_Assoc.deleteValue(L"Treatment");
+			if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+				return lResult;
+			}
+		}
+	} else {
+		// No IThumbnailProvider to restore.
+		// Remove the current one.
+		hkcr_IThumbnailProvider.close();
+		lResult = hkcr_ShellEx.deleteSubKey(IID_IThumbnailProvider_String);
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
 
-		// Remove "Treatment" if it's present.
-		lResult = hkcr_ext.deleteValue(L"Treatment");
+		// Remove the "Treatment" value if it's present.
+		lResult = hkey_Assoc.deleteValue(L"Treatment");
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
 	}
 
+	// Remove the fallbacks.
+	if (hkcr_RP_Fallback.isOpen()) {
+		lResult = hkcr_RP_Fallback.deleteValue(L"ThumbnailProvider");
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
+			return lResult;
+		}
+		lResult = hkcr_RP_Fallback.deleteValue(L"Treatment");
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			lResult = ERROR_SUCCESS;
+		}
+	} else {
+		// Clear lResult.
+		lResult = ERROR_SUCCESS;
+	}
+
 	// File type handler unregistered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ThumbnailProvider::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
+	if (!hkcr_ext.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		LONG lResult = hkcr_ext.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return lResult;
+	}
+
+	// Unregister the main association.
+	LONG lResult = RP_ThumbnailProvider_Private::UnregisterFileType(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			}
+			return lResult;
+		}
+		lResult = RP_ThumbnailProvider_Private::UnregisterFileType(hkcr_ProgID);
+	}
+
+	// File type handler unregistered.
+	return lResult;
 }
