@@ -251,9 +251,15 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 {
 	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_ext.isOpen()) {
-		return hkcr_ext.lOpenRes();
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		LONG lResult = hkcr_ext.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return lResult;
 	}
 
 	// Unregister the main association.
