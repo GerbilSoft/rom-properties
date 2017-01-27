@@ -86,11 +86,12 @@ LONG RP_ExtractIcon_Private::RegisterFileType(RegKey &hkey_Assoc, bool progID_mo
 	// Create/open the "DefaultIcon" key.
 	RegKey hkcr_DefaultIcon(hkey_Assoc, L"DefaultIcon", KEY_READ|KEY_WRITE, !progID_mode);
 	if (!hkcr_DefaultIcon.isOpen()) {
+		lResult = hkcr_DefaultIcon.lOpenRes();
 		if (progID_mode && lResult == ERROR_FILE_NOT_FOUND) {
 			// No DefaultIcon.
 			return ERROR_SUCCESS;
 		}
-		return hkcr_DefaultIcon.lOpenRes();
+		return lResult;
 	}
 
 	// Create/open the "ShellEx\\IconHandler" key.
@@ -203,9 +204,8 @@ LONG RP_ExtractIcon::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 			if (lResult == ERROR_FILE_NOT_FOUND) {
 				// ProgID not found. This is okay.
 				return ERROR_SUCCESS;
-			} else {
-				return hkcr_ProgID.lOpenRes();
 			}
+			return lResult;
 		}
 		lResult = RP_ExtractIcon_Private::RegisterFileType(hkcr_ProgID, true);
 	}
@@ -253,10 +253,11 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	if (!hkcr_DefaultIcon.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
-		if (hkcr_DefaultIcon.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_DefaultIcon.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_DefaultIcon.lOpenRes();
+		return lResult;
 	}
 
 	// Open the "ShellEx\\IconHandler" key.
@@ -264,10 +265,11 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	if (!hkcr_IconHandler.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		// In that case, it means we aren't registered.
-		if (hkcr_IconHandler.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_DefaultIcon.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_IconHandler.lOpenRes();
+		return lResult;
 	}
 
 	// Check if DefaultIcon is "%1" and IconHandler is our CLSID.
@@ -370,9 +372,8 @@ LONG RP_ExtractIcon::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 			if (lResult == ERROR_FILE_NOT_FOUND) {
 				// ProgID not found. This is okay.
 				return ERROR_SUCCESS;
-			} else {
-				return hkcr_ProgID.lOpenRes();
 			}
+			return lResult;
 		}
 		lResult = RP_ExtractIcon_Private::UnregisterFileType(hkcr_ProgID);
 	}

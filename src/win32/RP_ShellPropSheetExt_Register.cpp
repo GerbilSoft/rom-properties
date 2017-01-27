@@ -132,9 +132,8 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 			if (lResult == ERROR_FILE_NOT_FOUND) {
 				// ProgID not found. This is okay.
 				return ERROR_SUCCESS;
-			} else {
-				return hkcr_ProgID.lOpenRes();
 			}
+			return lResult;
 		}
 		lResult = RegisterFileType_int(hkcr_ProgID);
 	}
@@ -187,30 +186,33 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_ShellEx.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_ShellEx.lOpenRes();
+		return lResult;
 	}
 
 	// Open the "ShellEx\\PropertySheetHandlers" key.
 	RegKey hkcr_PropSheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
 	if (!hkcr_PropSheetHandlers.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropSheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_PropSheetHandlers.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_PropSheetHandlers.lOpenRes();
+		return lResult;
 	}
 
 	// Open the "rom-properties" property sheet handler key.
 	RegKey hkcr_PropSheet(hkcr_PropSheetHandlers, RP_ProgID, KEY_READ, false);
 	if (!hkcr_PropSheet.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropSheet.lOpenRes() == ERROR_FILE_NOT_FOUND) {
+		lResult = hkcr_PropSheet.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
 			return ERROR_SUCCESS;
 		}
-		return hkcr_PropSheet.lOpenRes();
+		return lResult;
 	}
 	// Check if the default value matches the CLSID.
 	wstring str_PropSheetCLSID = hkcr_PropSheet.read(nullptr);
@@ -272,9 +274,8 @@ LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 			if (lResult == ERROR_FILE_NOT_FOUND) {
 				// ProgID not found. This is okay.
 				return ERROR_SUCCESS;
-			} else {
-				return hkcr_ProgID.lOpenRes();
 			}
+			return lResult;
 		}
 		lResult = UnregisterFileType_int(hkcr_ProgID);
 	}
