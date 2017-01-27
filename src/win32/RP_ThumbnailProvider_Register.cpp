@@ -89,6 +89,12 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ThumbnailProvider_String) {
 		// Something else is registered.
 		// Copy it to the fallback key.
+
+		// FIXME: If an IExtractImage fallback interface is present
+		// and IThumbnailProvider is not, or the IThumbnailProvider
+		// class doesn't support IInitializeWithStream, don't register
+		// the IThumbnailProvider interface.
+
 		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
 		if (!hkcr_RP_Fallback.isOpen()) {
 			return hkcr_RP_Fallback.lOpenRes();
