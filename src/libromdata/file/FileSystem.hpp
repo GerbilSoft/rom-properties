@@ -130,6 +130,16 @@ int get_mtime(const rp_string &filename, time_t *pMtime);
 int delete_file(const rp_char *filename);
 
 /**
+ * Delete a file.
+ * @param filename Filename.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int delete_file(const rp_string &filename)
+{
+	return delete_file(filename.c_str());
+}
+
+/**
  * Get the file extension from a filename or pathname.
  * @param filename Filename.
  * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
