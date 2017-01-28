@@ -48,10 +48,6 @@ LONG RP_ThumbnailProvider::RegisterCLSID(void)
 		return lResult;
 	}
 
-	// TODO: Set HKCR\CLSID\DisableProcessIsolation=REG_DWORD:1
-	// in debug builds. Otherwise, it's not possible to debug
-	// the thumbnail handler.
-
 	// Register as an "approved" shell extension.
 	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ThumbnailProvider), description);
 	if (lResult != ERROR_SUCCESS) {
