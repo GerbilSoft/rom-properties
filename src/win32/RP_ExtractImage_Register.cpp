@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include "RP_ExtractImage.hpp"
+#include "RP_ExtractImage_p.hpp"
+
 #include "RegKey.hpp"
 
 // C++ includes.
@@ -58,28 +60,44 @@ LONG RP_ExtractImage::RegisterCLSID(void)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only registers for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to register under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ExtractImage_Private::RegisterFileType(RegKey &hkey_Assoc)
 {
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_WRITE, true);
-	if (!hkcr_ext.isOpen()) {
-		return hkcr_ext.lOpenRes();
-	}
-
 	// Register as the image handler for this file association.
 
 	// Create/open the "ShellEx\\{IID_IExtractImage}" key.
 	// NOTE: This will recursively create the keys if necessary.
-	RegKey hkcr_IExtractImage(hkcr_ext, L"ShellEx\\" IID_IExtractImage_String, KEY_WRITE, true);
+	RegKey hkcr_IExtractImage(hkey_Assoc, L"ShellEx\\" IID_IExtractImage_String, KEY_READ|KEY_WRITE, true);
 	if (!hkcr_IExtractImage.isOpen()) {
 		return hkcr_IExtractImage.lOpenRes();
 	}
 
-	// Set the default value to this CLSID.
+	// Is a custom IExtractImage already registered?
+	wstring clsid_reg = hkcr_IExtractImage.read(nullptr);
+	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ExtractImage_String) {
+		// Something else is registered.
+		// Copy it to the fallback key.
+		RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_WRITE, true);
+		if (!hkcr_RP_Fallback.isOpen()) {
+			return hkcr_RP_Fallback.lOpenRes();
+		}
+		LONG lResult = hkcr_RP_Fallback.write(L"IExtractImage", clsid_reg);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	}
+
+	// NOTE: We're not skipping this even if the CLSID
+	// is correct, just in case some setting needs to
+	// be refreshed.
+
+	// Set the IExtractImage to this CLSID.
 	LONG lResult = hkcr_IExtractImage.write(nullptr, CLSID_RP_ExtractImage_String);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
@@ -87,6 +105,48 @@ LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// File type handler registered.
 	return ERROR_SUCCESS;
+}
+
+/**
+ * Register the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractImage::RegisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
+	if (!hkcr_ext.isOpen()) {
+		return hkcr_ext.lOpenRes();
+	}
+
+	// Register the main association.
+	LONG lResult = RP_ExtractImage_Private::RegisterFileType(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			}
+			return lResult;
+		}
+		lResult = RP_ExtractImage_Private::RegisterFileType(hkcr_ProgID);
+	}
+
+	// File type handler registered.
+	return lResult;
 }
 
 /**
@@ -98,32 +158,30 @@ LONG RP_ExtractImage::UnregisterCLSID(void)
 	extern const wchar_t RP_ProgID[];
 
 	// Unegister the COM object.
-	return RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
+	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ExtractImage), RP_ProgID);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// TODO
+	return ERROR_SUCCESS;
 }
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ *
+ * Internal version; this only unregisters for a single Classes key.
+ * Called by the public version multiple times if a ProgID is registered.
+ *
+ * @param hkey_Assoc File association key to unregister under.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+LONG RP_ExtractImage_Private::UnregisterFileType(RegKey &hkey_Assoc)
 {
-	// Open the file extension key.
-	RegKey hkcr_ext(hkcr, ext, KEY_READ, false);
-	if (!hkcr_ext.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		// In that case, it means we aren't registered.
-		if (hkcr_ext.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ext.lOpenRes();
-	}
-
 	// Unregister as the image handler for this file association.
 
 	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkcr_ext, L"ShellEx", KEY_READ, false);
+	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
 	if (!hkcr_ShellEx.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_ShellEx.lOpenRes();
@@ -132,8 +190,9 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 		}
 		return lResult;
 	}
-	// Open the IExtractImage key.
-	RegKey hkcr_IExtractImage(hkcr_ShellEx, IID_IExtractImage_String, KEY_READ, false);
+
+	// Open the {IID_IExtractImage} key.
+	RegKey hkcr_IExtractImage(hkcr_ShellEx, IID_IExtractImage_String, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_IExtractImage.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable here.
 		LONG lResult = hkcr_IExtractImage.lOpenRes();
@@ -145,16 +204,93 @@ LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
 
 	// Check if the default value matches the CLSID.
 	wstring wstr_IExtractImage = hkcr_IExtractImage.read(nullptr);
-	if (wstr_IExtractImage == CLSID_RP_ExtractImage_String) {
-		// Default value matches.
-		// Remove the subkey.
+	if (wstr_IExtractImage != CLSID_RP_ExtractImage_String) {
+		// Not our IExtractImage.
+		// We're done here.
+		return ERROR_SUCCESS;
+	}
+
+	// Restore the fallbacks if we have any.
+	wstring clsid_reg;
+	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);
+	if (hkcr_RP_Fallback.isOpen()) {
+		// Read the fallback.
+		clsid_reg = hkcr_RP_Fallback.read(L"IExtractImage");
+	}
+
+	if (!clsid_reg.empty()) {
+		// Restore the IExtractImage.
+		LONG lResult = hkcr_IExtractImage.write(nullptr, clsid_reg);
+		if (lResult != ERROR_SUCCESS) {
+			return lResult;
+		}
+	} else {
+		// No IExtractImage to restore.
+		// Remove the current one.
 		hkcr_IExtractImage.close();
 		LONG lResult = hkcr_ShellEx.deleteSubKey(IID_IExtractImage_String);
-		if (lResult != ERROR_SUCCESS) {
+		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
 	}
 
+	// Remove the fallbacks.
+	LONG lResult = ERROR_SUCCESS;
+	if (hkcr_RP_Fallback.isOpen()) {
+		lResult = hkcr_RP_Fallback.deleteValue(L"IExtractImage");
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			lResult = ERROR_SUCCESS;
+		}
+	}
+
 	// File type handler unregistered.
-	return ERROR_SUCCESS;
+	return lResult;
+}
+
+/**
+ * Unregister the file type handler.
+ * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext File extension, including the leading dot.
+ * @return ERROR_SUCCESS on success; Win32 error code on error.
+ */
+LONG RP_ExtractImage::UnregisterFileType(RegKey &hkcr, LPCWSTR ext)
+{
+	// Open the file extension key.
+	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
+	if (!hkcr_ext.isOpen()) {
+		// ERROR_FILE_NOT_FOUND is acceptable here.
+		// In that case, it means we aren't registered.
+		LONG lResult = hkcr_ext.lOpenRes();
+		if (lResult == ERROR_FILE_NOT_FOUND) {
+			return ERROR_SUCCESS;
+		}
+		return lResult;
+	}
+
+	// Unregister the main association.
+	LONG lResult = RP_ExtractImage_Private::UnregisterFileType(hkcr_ext);
+	if (lResult != ERROR_SUCCESS) {
+		return lResult;
+	}
+
+	// Is a custom ProgID registered?
+	// If so, and it has a DefaultIcon registered,
+	// we'll need to update the custom ProgID.
+	wstring progID = hkcr_ext.read(nullptr);
+	if (!progID.empty()) {
+		// Custom ProgID is registered.
+		RegKey hkcr_ProgID(hkcr, progID.c_str(), KEY_READ|KEY_WRITE, false);
+		if (!hkcr_ProgID.isOpen()) {
+			lResult = hkcr_ProgID.lOpenRes();
+			if (lResult == ERROR_FILE_NOT_FOUND) {
+				// ProgID not found. This is okay.
+				return ERROR_SUCCESS;
+			}
+			return lResult;
+		}
+		lResult = RP_ExtractImage_Private::UnregisterFileType(hkcr_ProgID);
+	}
+
+	// File type handler unregistered.
+	return lResult;
 }

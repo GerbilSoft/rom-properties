@@ -49,6 +49,29 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		SIZE bmSize;
 
 	public:
+		/**
+		 * Register the file type handler.
+		 *
+		 * Internal version; this only registers for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType(RegKey &hkey_Assoc);
+
+		/**
+		 * Unregister the file type handler.
+		 *
+		 * Internal version; this only unregisters for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to unregister under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	public:
 		/** TCreateThumbnail functions. **/
 
 		/**
