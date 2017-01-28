@@ -208,14 +208,15 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 		// Delete the old file first.
 		IRpFile *old_file = d->file;
 		d->file = file;
-		d->pstream = pstream;
-		d->grfMode = grfMode;
 		delete old_file;
 	} else {
 		// No old file to delete.
 		d->file = file;
 	}
 
+	// Save the IStream and grfMode.
+	d->pstream = pstream;
+	d->grfMode = grfMode;
 	return S_OK;
 }
 

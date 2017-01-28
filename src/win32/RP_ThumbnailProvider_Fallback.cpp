@@ -98,7 +98,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 	// Try getting the IThumbnailProvider interface.
 	_COM_SMARTPTR_TYPEDEF(IThumbnailProvider, IID_IThumbnailProvider);
 	IThumbnailProviderPtr pThumbnailProvider;
-	hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pThumbnailProvider));
+	hr = pInitializeWithStream->QueryInterface(IID_PPV_ARGS(&pThumbnailProvider));
 	if (FAILED(hr) || !pThumbnailProvider) {
 		// Failed to get the IThumbnailProvider.
 		return hr;
