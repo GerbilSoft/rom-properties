@@ -10,6 +10,7 @@ SET(rom-properties-win32_SRCS
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
 	RP_ExtractImage_Register.cpp
+	RP_ExtractImage_Fallback.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	RP_ShellPropSheetExt_Register.cpp

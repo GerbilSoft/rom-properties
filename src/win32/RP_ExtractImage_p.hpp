@@ -45,8 +45,10 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string filename;
 
-		// Requested thumbnail size from IExtractImage::GetLocation().
-		SIZE bmSize;
+		// Data from IExtractImage::GetLocation().
+		SIZE rgSize;
+		DWORD dwRecClrDepth;
+		DWORD dwFlags;
 
 	public:
 		/**
@@ -70,6 +72,23 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+
+	private:
+		/**
+		 * Fallback image handler function. (internal)
+		 * @param hkey_Assoc File association key to check.
+		 * @param phBmpImage
+		 * @return HRESULT.
+		 */
+		HRESULT Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmpImage);
+
+	public:
+		/**
+		 * Fallback image handler function.
+		 * @param phBmpImage
+		 * @return HRESULT.
+		 */
+		HRESULT Fallback(HBITMAP *phBmpImage);
 
 	public:
 		/** TCreateThumbnail functions. **/

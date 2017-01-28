@@ -55,9 +55,11 @@ const CLSID CLSID_RP_ExtractImage =
 #include "libromdata/img/TCreateThumbnail.cpp"
 
 RP_ExtractImage_Private::RP_ExtractImage_Private()
+	: dwRecClrDepth(0)
+	, dwFlags(0)
 {
-	bmSize.cx = 0;
-	bmSize.cy = 0;
+	rgSize.cx = 0;
+	rgSize.cy = 0;
 }
 
 RP_ExtractImage_Private::~RP_ExtractImage_Private()
@@ -177,11 +179,7 @@ rp_string RP_ExtractImage_Private::proxyForUrl(const rp_string &url) const
 
 RP_ExtractImage::RP_ExtractImage()
 	: d_ptr(new RP_ExtractImage_Private())
-{
-	RP_D(RP_ExtractImage);
-	d->bmSize.cx = 0;
-	d->bmSize.cy = 0;
-}
+{ }
 
 RP_ExtractImage::~RP_ExtractImage()
 {
@@ -263,13 +261,20 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 		// Invalid arguments.
 		return E_INVALIDARG;
 	} else if ((*pdwFlags & IEIFLAG_ASYNC) && !pdwPriority) {
+		// NOTE: On Windows XP, pdwPriority must not be NULL,
+		// even if IEIFLAG_ASYNC isn't set. Later versions
+		// simply ignore this parameter, so we're only checking
+		// it if IEIFLAG_ASYNC is set.
+
 		// pdwPriority must be specified if IEIFLAG_ASYNC is set.
 		return E_INVALIDARG;
 	}
 
 	// Save the image size for later.
 	RP_D(RP_ExtractImage);
-	d->bmSize = *prgSize;
+	d->rgSize = *prgSize;
+	d->dwRecClrDepth = dwRecClrDepth;
+	d->dwFlags = *pdwFlags;
 
 	// Disable the border around the thumbnail.
 	// NOTE: Might not work on Vista+.
@@ -306,9 +311,12 @@ IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 	*phBmpImage = nullptr;
 
 	// NOTE: Using width only. (TODO: both width/height?)
-	int ret = d->getThumbnail(d->filename.c_str(), d->bmSize.cx, *phBmpImage);
-	// TODO: More specific error?
-	return (ret == 0 ? S_OK : E_FAIL);
+	int ret = d->getThumbnail(d->filename.c_str(), d->rgSize.cx, *phBmpImage);
+	if (ret != 0) {
+		// ROM is not supported. Use the fallback.
+		return d->Fallback(phBmpImage);
+	}
+	return S_OK;
 }
 
 /** IExtractImage2 **/
