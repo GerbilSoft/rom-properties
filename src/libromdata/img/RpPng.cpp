@@ -427,6 +427,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 
 	// Read the image.
 	png_read_image(png_ptr, row_pointers);
+	png_free(png_ptr, row_pointers);
 
 	// If CI8, read the palette.
 	if (fmt == rp_image::FORMAT_CI8) {
@@ -543,8 +544,9 @@ int RpPngPrivate::savePng(png_structp png_ptr, png_infop info_ptr, const rp_imag
 
 	// Allocate the row pointers.
 	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
-	if (!row_pointers)
+	if (!row_pointers) {
 		return -ENOMEM;
+	}
 
 	// Initialize the row pointers array.
 	for (int y = height-1; y >= 0; y--) {
@@ -553,6 +555,7 @@ int RpPngPrivate::savePng(png_structp png_ptr, png_infop info_ptr, const rp_imag
 
 	// Write the image data.
 	png_write_image(png_ptr, (png_bytepp)row_pointers);
+	png_free(png_ptr, row_pointers);
 
 	// Finished writing.
 	png_write_end(png_ptr, info_ptr);
@@ -634,8 +637,9 @@ int RpPngPrivate::saveAPng(png_structp png_ptr, png_infop info_ptr, const IconAn
 
 	// Allocate the row pointers.
 	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
-	if (!row_pointers)
+	if (!row_pointers) {
 		return -ENOMEM;
+	}
 
 	for (int i = 0; i < iconAnimData->seq_count; i++) {
 		const rp_image *img = iconAnimData->frames[iconAnimData->seq_index[i]];
@@ -662,6 +666,8 @@ int RpPngPrivate::saveAPng(png_structp png_ptr, png_infop info_ptr, const IconAn
 		// Frame tail.
 		png_write_frame_tail(png_ptr, info_ptr);
 	}
+
+	png_free(png_ptr, row_pointers);
 
 	// Finished writing.
 	png_write_end(png_ptr, info_ptr);
