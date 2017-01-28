@@ -149,12 +149,12 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 		if (hkcr_ProgID.isOpen()) {
 			HRESULT hr = Fallback_int(hkcr_ProgID, cx, phbmp, pdwAlpha);
 			if (SUCCEEDED(hr)) {
-				// ProgID icon extracted.
+				// ProgID thumbnail extracted.
 				return hr;
 			}
 		}
 	}
 
-	// Extract the icon from the filetype key.
+	// Extract the thumbnail from the filetype key.
 	return Fallback_int(hkey_Assoc, cx, phbmp, pdwAlpha);
 }
