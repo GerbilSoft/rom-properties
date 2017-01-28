@@ -536,7 +536,6 @@ STDAPI DllRegisterServer(void)
 	// Register all supported file types and associate them
 	// with our ProgID.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
 		lResult = RegisterFileType(hkcr, *ext_iter);
@@ -597,7 +596,6 @@ STDAPI DllUnregisterServer(void)
 
 	// Unegister all supported file types.
 	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
-	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Unregister the file type handlers for this file extension globally.
 		lResult = UnregisterFileType(hkcr, *ext_iter);
