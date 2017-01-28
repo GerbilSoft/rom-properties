@@ -26,6 +26,7 @@
 
 // libromdata
 #include "libromdata/file/RpFile.hpp"
+#include "libromdata/file/FileSystem.hpp"
 using namespace LibRomData;
 
 #include "RegKey.hpp"
@@ -124,18 +125,14 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 	if (filename.empty()) {
 		return E_INVALIDARG;
 	}
-	size_t dotpos = filename.find_last_of(L'.');
-	size_t bslashpos = filename.find_last_of(L'\\');
-	if (dotpos == wstring::npos ||
-	    dotpos >= filename.size()-1 ||
-	    (bslashpos != wstring::npos && dotpos <= bslashpos))
-	{
+	const rp_char *file_ext = FileSystem::file_ext(filename);
+	if (!file_ext) {
 		// Invalid or missing file extension.
 		return E_INVALIDARG;
 	}
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, RP2W_c(&filename[dotpos]), KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, RP2W_c(file_ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}
