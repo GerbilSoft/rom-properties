@@ -1347,6 +1347,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 			// Append a comma.
 			woss << L", ";
 		}
+		printedOne = true;
 
 		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {

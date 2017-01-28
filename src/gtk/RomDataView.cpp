@@ -1033,6 +1033,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 			// Append a comma.
 			oss << ", ";
 		}
+		printedOne = true;
 
 		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
