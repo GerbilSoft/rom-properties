@@ -324,16 +324,12 @@ const rp_char *VirtualBoy::systemName(uint32_t type) const
  */
 vector<const rp_char*> VirtualBoy::supportedFileExtensions_static(void)
 {
-	// FIXME: ".vb" can't be associated until we
-	// implement fallbacks, since it conflicts
-	// with VB.NET source files.
-#if 0
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
 	static const rp_char *const exts[] = {
-		_RP(".vb")
+		_RP(".vb")	// Visual Basic .NET source files
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
-#endif
-	return vector<const rp_char*>();
 }
 
 /**

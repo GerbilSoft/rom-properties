@@ -1061,7 +1061,10 @@ vector<const rp_char*> GameCube::supportedFileExtensions_static(void)
 	static const rp_char *const exts[] = {
 		_RP(".gcm"), _RP(".rvm"), _RP(".wbfs"),
 		_RP(".ciso"), _RP(".cso"), _RP(".tgc"),
-		//_RP(".iso"),	// TODO: Enable this?
+
+		// NOTE: May cause conflicts on Windows
+		// if fallback handling isn't working.
+		_RP(".iso"),
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }

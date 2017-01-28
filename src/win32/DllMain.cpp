@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllMain.cpp: DLL entry point and COM registration handler.              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -535,9 +535,7 @@ STDAPI DllRegisterServer(void)
 
 	// Register all supported file types and associate them
 	// with our ProgID.
-	vector<RomDataFactory::ExtInfo> vec_exts;// = RomDataFactory::supportedFileExtensions();
-	// DEBUG: Adding ".iso" to the list for testing.
-	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
 	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Register the file type handlers for this file extension globally.
@@ -598,9 +596,7 @@ STDAPI DllUnregisterServer(void)
 	if (!hkcr.isOpen()) return SELFREG_E_CLASS;
 
 	// Unegister all supported file types.
-	vector<RomDataFactory::ExtInfo> vec_exts;// = RomDataFactory::supportedFileExtensions();
-	// DEBUG: Adding ".iso" to the list for testing.
-	RomDataFactory::ExtInfo iso_ext = {_RP(".iso"), true};
+	vector<RomDataFactory::ExtInfo> vec_exts = RomDataFactory::supportedFileExtensions();
 	vec_exts.push_back(iso_ext);
 	for (auto ext_iter = vec_exts.cbegin(); ext_iter != vec_exts.cend(); ++ext_iter) {
 		// Unregister the file type handlers for this file extension globally.

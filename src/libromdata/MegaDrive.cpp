@@ -667,10 +667,11 @@ vector<const rp_char*> MegaDrive::supportedFileExtensions_static(void)
 		_RP(".gen"), _RP(".smd"),
 		_RP(".32x"), _RP(".pco"),
 
-		// TODO: Add the following:
-		// - .md (conflicts with Markdown)
-		// - .bin (too generic)
-		// - .iso (Mega CD; too generic)
+		// NOTE: These extensions may cause conflicts on
+		// Windows if fallback handling isn't working.
+		_RP(".md"),	// conflicts with Markdown
+		_RP(".bin"),	// too generic
+		_RP(".iso"),	// too generic
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
