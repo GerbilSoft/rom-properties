@@ -294,7 +294,7 @@ LONG RP_ThumbnailProvider_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	// Remove the fallbacks.
 	LONG lResult = ERROR_SUCCESS;
 	if (hkcr_RP_Fallback.isOpen()) {
-		lResult = hkcr_RP_Fallback.deleteValue(L"ThumbnailProvider");
+		lResult = hkcr_RP_Fallback.deleteValue(L"IThumbnailProvider");
 		if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND) {
 			return lResult;
 		}
