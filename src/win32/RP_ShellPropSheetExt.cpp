@@ -346,7 +346,11 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, animTimerID(0)
 	, last_frame_number(0)
 {
+	memset(&lfFontMono, 0, sizeof(lfFontMono));
 	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
+	memset(&ptBanner, 0, sizeof(ptBanner));
+	memset(&rectIcon, 0, sizeof(rectIcon));
+	memset(&szIcon, 0, sizeof(szIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
