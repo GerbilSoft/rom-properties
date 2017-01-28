@@ -2351,6 +2351,7 @@ LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
 				default:
 					break;
 			}
+			break;
 		}
 
 		case WM_NCDESTROY:
