@@ -90,8 +90,9 @@ public:
 class SafeString {
 	const rp_char* str;
 	bool quotes;
+	size_t width;
 public:
-	SafeString(const rp_char* str, bool quotes = true) :str(str), quotes(quotes) {}
+	SafeString(const rp_char* str, bool quotes = true, size_t width=0) :str(str), quotes(quotes), width(width) {}
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
 			//assert(0); // RomData should never return a null string // disregard that
@@ -101,7 +102,11 @@ public:
 		rp_string escaped;
 		escaped.reserve(rp_strlen(cp.str));
 		for (const rp_char* str = cp.str; *str != 0; str++) {
-			if (*str < 0x20) {
+			if (cp.width && *str == '\n') {
+				escaped += '\n';
+				escaped += rp_string( cp.width + (cp.quotes?1:0) , ' ');
+			}
+			else if (*str < 0x20) {
 				// HACK: this piece of code encodes U+2400 through U+241F in UTF-8
 				// this relies on the fact that rpcli is compiled with romdata8.
 				// And yes, you have to use numerics instead of literals, because
@@ -131,7 +136,7 @@ public:
 	friend ostream& operator<<(ostream& os, const StringField& field) {
 		auto desc = field.desc;
 		auto data = field.data;
-		return os << ColonPad(field.width, desc->name) << SafeString(data->str, true);
+		return os << ColonPad(field.width, desc->name) << SafeString(data->str, true, field.width);
 	}
 };
 
