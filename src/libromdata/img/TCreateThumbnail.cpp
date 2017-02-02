@@ -54,12 +54,16 @@ TCreateThumbnail<ImgClass>::~TCreateThumbnail()
 
 /**
  * Get an internal image.
- * @param romData RomData object.
- * @param imageType Image type.
+ * @param romData	[in] RomData object.
+ * @param imageType	[in] Image type.
+ * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
  * @return Internal image, or null ImgClass on error.
  */
 template<typename ImgClass>
-ImgClass TCreateThumbnail<ImgClass>::getInternalImage(const RomData *romData, RomData::ImageType imageType)
+ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
+	const RomData *romData,
+	RomData::ImageType imageType,
+	ImgSize *pOutSize)
 {
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
@@ -74,17 +78,30 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(const RomData *romData, Ro
 	}
 
 	// Convert the rp_image to ImgClass.
-	return rpImageToImgClass(image);
+	ImgClass ret_img = rpImageToImgClass(image);
+	if (isImgClassValid(ret_img)) {
+		// Image converted successfully.
+		if (pOutSize) {
+			// Get the image size.
+			pOutSize->width = image->width();
+			pOutSize->height = image->height();
+		}
+	}
+	return ret_img;
 }
 
 /**
  * Get an external image.
- * @param romData RomData object.
- * @param imageType Image type.
+ * @param romData	[in] RomData object.
+ * @param imageType	[in] Image type.
+ * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
  * @return External image, or null ImgClass on error.
  */
 template<typename ImgClass>
-ImgClass TCreateThumbnail<ImgClass>::getExternalImage(const RomData *romData, RomData::ImageType imageType)
+ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
+	const RomData *romData,
+	RomData::ImageType imageType,
+	ImgSize *pOutSize)
 {
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
@@ -120,7 +137,12 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(const RomData *romData, Ro
 				ImgClass ret_img = rpImageToImgClass(dl_img.get());
 				if (isImgClassValid(ret_img)) {
 					// Image converted successfully.
-					// TODO: Width/height and transparency processing?
+					if (pOutSize) {
+						// Get the image size.
+						pOutSize->width = dl_img->width();
+						pOutSize->height = dl_img->height();
+					}
+					// TODO: Transparency processing?
 					return ret_img;
 				}
 			}
@@ -169,10 +191,11 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 	// For now, check EXT MEDIA, then INT ICON.
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
+	ImgSize img_sz;
 
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA);
+		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, &img_sz);
 		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 
@@ -181,7 +204,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 		// Try an internal image.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
-			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON);
+			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 		}
 	}
@@ -196,7 +219,6 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 		// TODO: User configuration.
 		ResizeNearestUpPolicy resize_up = RESIZE_UP_HALF;
 		bool needs_resize_up = false;
-		const ImgSize img_sz = getImgSize(ret_img);
 
 		switch (resize_up) {
 			case RESIZE_UP_NONE:

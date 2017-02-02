@@ -93,20 +93,34 @@ class TCreateThumbnail
 
 	public:
 		/**
+		 * Image size struct.
+		 */
+		struct ImgSize {
+			int width;
+			int height;
+		};
+
+		/**
 		 * Get an internal image.
-		 * @param romData RomData object.
-		 * @param imageType Image type.
+		 * @param romData	[in] RomData object.
+		 * @param imageType	[in] Image type.
+		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
 		 * @return Internal image, or null ImgClass on error.
 		 */
-		ImgClass getInternalImage(const RomData *romData, RomData::ImageType imageType);
+		ImgClass getInternalImage(const RomData *romData,
+			RomData::ImageType imageType,
+			ImgSize *pOutSize);
 
 		/**
 		 * Get an external image.
-		 * @param romData RomData object.
-		 * @param imageType Image type.
+		 * @param romData	[in] RomData object.
+		 * @param imageType	[in] Image type.
+		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
 		 * @return External image, or null ImgClass on error.
 		 */
-		ImgClass getExternalImage(const RomData *romData, RomData::ImageType imageType);
+		ImgClass getExternalImage(const RomData *romData,
+			RomData::ImageType imageType,
+			ImgSize *pOutSize);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -136,14 +150,6 @@ class TCreateThumbnail
 		int getThumbnail(const rp_char *filename, int max_size, ImgClass &ret_img);
 
 	protected:
-		/**
-		 * Image size struct.
-		 */
-		struct ImgSize {
-			int width;
-			int height;
-		};
-
 		/**
 		 * Rescale a size while maintaining the aspect ratio.
 		 * Based on Qt 4.8's QSize::scale().
@@ -181,13 +187,6 @@ class TCreateThumbnail
 		 * @param imgClass ImgClass object.
 		 */
 		virtual void freeImgClass(ImgClass &imgClass) const = 0;
-
-		/**
-		 * Get an ImgClass's size.
-		 * @param imgClass ImgClass object.
-		 * @retrun Size.
-		 */
-		virtual ImgSize getImgSize(const ImgClass &imgClass) const = 0;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.

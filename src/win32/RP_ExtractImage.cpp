@@ -115,24 +115,6 @@ void RP_ExtractImage_Private::freeImgClass(HBITMAP &imgClass) const
 }
 
 /**
- * Get an ImgClass's size.
- * @param imgClass ImgClass object.
- * @retrun Size.
- */
-RP_ExtractImage_Private::ImgSize RP_ExtractImage_Private::getImgSize(const HBITMAP &imgClass) const
-{
-	BITMAP bm;
-	if (GetObject(imgClass, sizeof(bm), &bm) == 0) {
-		// Error retrieving the bitmap information.
-		static const ImgSize sz = {0, 0};
-		return sz;
-	}
-
-	const ImgSize sz = {bm.bmWidth, bm.bmHeight};
-	return sz;
-}
-
-/**
  * Rescale an ImgClass using nearest-neighbor scaling.
  * @param imgClass ImgClass object.
  * @param sz New size.

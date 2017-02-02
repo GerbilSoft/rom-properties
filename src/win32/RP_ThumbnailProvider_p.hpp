@@ -130,13 +130,6 @@ class RP_ThumbnailProvider_Private : public LibRomData::TCreateThumbnail<HBITMAP
 		virtual void freeImgClass(HBITMAP &imgClass) const final;
 
 		/**
-		 * Get an ImgClass's size.
-		 * @param imgClass ImgClass object.
-		 * @retrun Size.
-		 */
-		virtual ImgSize getImgSize(const HBITMAP &imgClass) const final;
-
-		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.

@@ -102,13 +102,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		virtual void freeImgClass(PGDKPIXBUF &imgClass) const final;
 
 		/**
-		 * Get an ImgClass's size.
-		 * @param imgClass ImgClass object.
-		 * @retrun Size.
-		 */
-		virtual ImgSize getImgSize(const PGDKPIXBUF &imgClass) const final;
-
-		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
 		 * @param imgClass ImgClass object.
 		 * @param sz New size.
@@ -164,20 +157,6 @@ PGDKPIXBUF CreateThumbnailPrivate::getNullImgClass(void) const
 void CreateThumbnailPrivate::freeImgClass(PGDKPIXBUF &imgClass) const
 {
 	g_object_unref(imgClass);
-}
-
-/**
- * Get an ImgClass's size.
- * @param imgClass ImgClass object.
- * @retrun Size.
- */
-CreateThumbnailPrivate::ImgSize CreateThumbnailPrivate::getImgSize(const PGDKPIXBUF &imgClass) const
-{
-	const ImgSize sz = {
-		gdk_pixbuf_get_width(imgClass),
-		gdk_pixbuf_get_height(imgClass),
-	};
-	return sz;
 }
 
 /**
