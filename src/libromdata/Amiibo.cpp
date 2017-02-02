@@ -340,7 +340,10 @@ const rp_char *Amiibo::systemName(uint32_t type) const
 vector<const rp_char*> Amiibo::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
-		//_RP(".bin"),	// TODO: Enable this?
+		// NOTE: These extensions may cause conflicts on
+		// Windows if fallback handling isn't working.
+		_RP(".bin"),	// too generic
+
 		// NOTE: The following extensions are listed
 		// for testing purposes on Windows, and may
 		// be removed later.

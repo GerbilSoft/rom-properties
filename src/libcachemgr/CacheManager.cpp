@@ -254,7 +254,7 @@ rp_string CacheManager::download(
 
 			// More than a week old.
 			// Delete the cache file and redownload it.
-			if (delete_file(cache_filename.c_str()) != 0)
+			if (delete_file(cache_filename) != 0)
 				return rp_string();
 		} else if (sz > 0) {
 			// File is larger than 0 bytes, which indicates

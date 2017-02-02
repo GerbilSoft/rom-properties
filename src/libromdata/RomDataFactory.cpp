@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.hpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -21,9 +21,10 @@
 
 #include "config.libromdata.h"
 
+#include "common.h"
 #include "RomDataFactory.hpp"
 #include "file/RpFile.hpp"
-#include "common.h"
+#include "file/FileSystem.hpp"
 
 // C++ includes.
 #include <unordered_map>
@@ -273,21 +274,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	info.ext = nullptr;
 	const rp_string filename = file->filename();
 	if (!filename.empty()) {
-		// Get the last dot position.
-		size_t dot_pos = filename.find_last_of(_RP_CHR('.'));
-		if (dot_pos != rp_string::npos) {
-			// Dot must be after the last slash.
-			// Or backslash on Windows.)
-#ifdef _WIN32
-			size_t slash_pos = filename.find_last_of(_RP("/\\"));
-#else /* !_WIN32 */
-			size_t slash_pos = filename.find_last_of(_RP_CHR('/'));
-#endif /* _WIN32 */
-			if (slash_pos == rp_string::npos || slash_pos < dot_pos) {
-				// Valid file extension.
-				info.ext = filename.c_str() + dot_pos;
-			}
-		}
+		info.ext = FileSystem::file_ext(filename);
 	}
 
 	// Special handling for Dreamcast .VMI+.VMS pairs.

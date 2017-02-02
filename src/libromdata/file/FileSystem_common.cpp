@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * stdafx.h: Common definitions and includes for COM.                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,25 +19,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_STDAFX_H__
-#define __ROMPROPERTIES_WIN32_STDAFX_H__
+#include "FileSystem.hpp"
 
-#ifndef _WIN32
-#error stdafx.h is Windows only.
-#endif
+namespace LibRomData { namespace FileSystem {
 
-// Windows SDK defines and includes.
-#include "libromdata/RpWin32_sdk.h"
+/**
+ * Get the file extension from a filename or pathname.
+ * @param filename Filename.
+ * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
+ */
+const rp_char *file_ext(const rp_string &filename)
+{
+	size_t dotpos = filename.find_last_of(_RP_CHR('.'));
+	size_t slashpos = filename.find_last_of(_RP_CHR(DIR_SEP_CHR));
+	if (dotpos == rp_string::npos ||
+	    dotpos >= filename.size()-1 ||
+	    (slashpos != rp_string::npos && dotpos <= slashpos))
+	{
+		// Invalid or missing file extension.
+		return nullptr;
+	}
 
-// Additional Windows headers.
-#include <windows.h>
-#include <windowsx.h>
-#include <olectl.h>
-#include <commctrl.h>
-#include <shlobj.h>
-#include <shellapi.h>
-#include <shlwapi.h>
-#include <comdef.h>
-#include <shlwapi.h>
+	// Return the file extension. (pointer to within the filename)
+	return &filename[dotpos];
+}
 
-#endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */
+} }

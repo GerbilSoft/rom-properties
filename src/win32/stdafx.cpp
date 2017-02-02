@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * stdafx.h: Common definitions and includes for COM.                      *
+ * stdafx.cpp: Common definitions and includes for COM.                    *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,25 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_STDAFX_H__
-#define __ROMPROPERTIES_WIN32_STDAFX_H__
+// stdafx.cpp : source file that includes just the standard includes
+// hidecon.pch will be the pre-compiled header
+// stdafx.obj will contain the pre-compiled type information
 
-#ifndef _WIN32
-#error stdafx.h is Windows only.
-#endif
+#include "stdafx.h"
 
-// Windows SDK defines and includes.
-#include "libromdata/RpWin32_sdk.h"
-
-// Additional Windows headers.
-#include <windows.h>
-#include <windowsx.h>
-#include <olectl.h>
-#include <commctrl.h>
-#include <shlobj.h>
-#include <shellapi.h>
-#include <shlwapi.h>
-#include <comdef.h>
-#include <shlwapi.h>
-
-#endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */
+// TODO: reference any additional headers you need in STDAFX.H
+// and not in this file

@@ -30,6 +30,14 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
+// QISearch()
+extern "C" {
+typedef HRESULT (WINAPI *PFNQISEARCH)(void *that, LPCQITAB pqit, REFIID riid, void **ppv);
+extern PFNQISEARCH pQISearch;
+void incRpGlobalRefCount(void);
+void decRpGlobalRefCount(void);
+}
+
 #include "libromdata/RpWin32.hpp"
 
 // References of all objects.
@@ -53,7 +61,7 @@ static inline bool RP_ComBase_isReferenced(void)
 	public: \
 		name() : m_ulRefCount(1) \
 		{ \
-			InterlockedIncrement(&RP_ulTotalRefCount); \
+			incRpGlobalRefCount(); \
 		} \
 		virtual ~name() { } \
 	\
@@ -61,7 +69,7 @@ static inline bool RP_ComBase_isReferenced(void)
 		/** IUnknown **/ \
 		IFACEMETHODIMP_(ULONG) AddRef(void) final \
 		{ \
-			InterlockedIncrement(&RP_ulTotalRefCount); \
+			incRpGlobalRefCount(); \
 			InterlockedIncrement(&m_ulRefCount); \
 			return m_ulRefCount; \
 		} \
@@ -73,8 +81,7 @@ static inline bool RP_ComBase_isReferenced(void)
 				/* No more references. */ \
 				delete this; \
 			} \
-			\
-			InterlockedDecrement(&RP_ulTotalRefCount); \
+			decRpGlobalRefCount(); \
 			return ulRefCount; \
 		} \
 }
@@ -86,5 +93,9 @@ class RP_ComBase : public I
 template<class I1, class I2>
 class RP_ComBase2 : public I1, public I2
 	RP_COMBASE_IMPL(RP_ComBase2);
+
+template<class I1, class I2, class I3>
+class RP_ComBase3 : public I1, public I2, public I3
+	RP_COMBASE_IMPL(RP_ComBase3);
 
 #endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__ */

@@ -42,14 +42,14 @@ class RegKey;
 class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
-RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
+RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 {
 	public:
 		RP_ExtractIcon();
 		virtual ~RP_ExtractIcon();
 
 	private:
-		typedef RP_ComBase2<IExtractIcon, IPersistFile> super;
+		typedef RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA> super;
 		RP_DISABLE_COPY(RP_ExtractIcon)
 	private:
 		friend class RP_ExtractIcon_Private;
@@ -68,10 +68,11 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 		/**
 		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -81,19 +82,13 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 
 		/**
 		 * Unregister the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 	public:
-		// IExtractIcon
-		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPTSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(LPCTSTR pszFile, UINT nIconIndex,
-			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) final;
-
 		// IPersist (IPersistFile base class)
 		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
 		// IPersistFile
@@ -102,6 +97,20 @@ RP_ExtractIcon : public RP_ComBase2<IExtractIcon, IPersistFile>
 		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
 		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
 		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+
+		// IExtractIconW
+		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPWSTR pszIconFile,
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(LPCWSTR pszFile, UINT nIconIndex,
+			HICON *phiconLarge, HICON *phiconSmall,
+			UINT nIconSize) final;
+
+		// IExtractIconA
+		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPSTR pszIconFile,
+			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(LPCSTR pszFile, UINT nIconIndex,
+			HICON *phiconLarge, HICON *phiconSmall,
+			UINT nIconSize) final;
 };
 
 #ifdef __CRT_UUID_DECL

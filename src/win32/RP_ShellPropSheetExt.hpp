@@ -64,6 +64,29 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
 
+	private:
+		/**
+		 * Register the file type handler.
+		 *
+		 * Internal version; this only registers for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to register under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG RegisterFileType_int(RegKey &hkey_Assoc);
+
+		/**
+		 * Unregister the file type handler.
+		 *
+		 * Internal version; this only unregisters for a single Classes key.
+		 * Called by the public version multiple times if a ProgID is registered.
+		 *
+		 * @param hkey_Assoc File association key to unregister under.
+		 * @return ERROR_SUCCESS on success; Win32 error code on error.
+		 */
+		static LONG UnregisterFileType_int(RegKey &hkey_Assoc);
+
 	public:
 		/**
 		 * Register the COM object.
@@ -73,10 +96,11 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		/**
 		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -85,11 +109,12 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		static LONG UnregisterCLSID(void);
 
 		/**
-		 * Register the file type handler.
-		 * @param hkey_Assoc File association key to register under.
+		 * Unregister the file type handler.
+		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
+		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IShellExtInit

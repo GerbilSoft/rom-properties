@@ -143,14 +143,19 @@ void RegKey::close(void)
 /** Basic registry access functions. **/
 
 /**
- * Read a string value from a key. (REG_SZ)
- * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
- * @return String value, or empty string on error.
+ * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
+ * NOTE: REG_EXPAND_SZ values are NOT expanded.
+ * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
+ * @return String value, or empty string on error. (check lpType)
  */
-wstring RegKey::read(LPCWSTR lpValueName) const
+wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
 	}
 
@@ -162,8 +167,13 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		&dwType,	// lpType
 		nullptr,	// lpData
 		&cbData);	// lpcbData
-	if (lResult != ERROR_SUCCESS || cbData == 0 || dwType != REG_SZ) {
-		// Either an error occurred, or this isn't REG_SZ.
+	if (lResult != ERROR_SUCCESS || cbData == 0 ||
+	    (dwType != REG_SZ && dwType != REG_EXPAND_SZ))
+	{
+		// Either an error occurred, or this isn't REG_SZ or REG_EXPAND_SZ.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
 	}
 
@@ -175,10 +185,19 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 		&dwType,	// lpType
 		(LPBYTE)wbuf,	// lpData
 		&cbData);	// lpcbData
-	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
-		// Either an error occurred, or this isn't REG_SZ.
+	if (lResult != ERROR_SUCCESS ||
+	    (dwType != REG_SZ && dwType != REG_EXPAND_SZ)) {
+		// Either an error occurred, or this isn't REG_SZ or REG_EXPAND_SZ.
 		free(wbuf);
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
 		return wstring();
+	}
+
+	// Save the key type.
+	if (lpType) {
+		*lpType = dwType;
 	}
 
 	// Convert cbData to cchData.
@@ -204,16 +223,62 @@ wstring RegKey::read(LPCWSTR lpValueName) const
 }
 
 /**
- * Write a string value to this key.
- * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
- * @param value Value.
- * @return RegSetValueEx() return value.
+ * Read a DWORD value from a key. (REG_DWORD)
+ * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE or REG_DWORD)
+ * @return DWORD value, or 0 on error. (check lpType)
  */
-LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
+DWORD RegKey::read_dword(LPCWSTR lpValueName, LPDWORD lpType) const
 {
 	if (!m_hKey) {
 		// Handle is invalid.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
+		return 0;
+	}
+
+	// Get the DWORD.
+	DWORD data, cbData, dwType;
+	cbData = sizeof(data);
+	LONG lResult = RegQueryValueEx(m_hKey,
+		lpValueName,	// lpValueName
+		nullptr,	// lpReserved
+		&dwType,	// lpType
+		(LPBYTE)&data,	// lpData
+		&cbData);	// lpcbData
+	if (lResult != ERROR_SUCCESS || cbData == 0 || dwType != REG_DWORD) {
+		// Either an error occurred, or this isn't REG_DWORD.
+		if (lpType) {
+			*lpType = REG_NONE;
+		}
+		return 0;
+	}
+
+	// Return the DWORD.
+	if (lpType) {
+		*lpType = dwType;
+	}
+	return data;
+}
+
+/**
+ * Write a string value to this key.
+ * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
+ * @param value Value.
+ * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
+ * @return RegSetValueEx() return value.
+ */
+LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value, DWORD dwType)
+{
+	assert(m_hKey != nullptr);
+	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
+	if (!m_hKey) {
+		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
+	} else if (dwType != REG_SZ && dwType != REG_EXPAND_SZ) {
+		// Invalid type.
+		return ERROR_INVALID_PARAMETER;
 	}
 
 	DWORD cbData;
@@ -238,13 +303,19 @@ LONG RegKey::write(LPCWSTR lpValueName, LPCWSTR value)
  * Write a string value to this key.
  * @param lpValueName Value name. (Use nullptr or an empty string for the default value.)
  * @param value Value.
+ * @param dwType Key type. (REG_SZ or REG_EXPAND_SZ)
  * @return RegSetValueEx() return value.
  */
-LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
+LONG RegKey::write(LPCWSTR lpValueName, const wstring& value, DWORD dwType)
 {
+	assert(m_hKey != nullptr);
+	assert(dwType == REG_SZ || dwType == REG_EXPAND_SZ);
 	if (!m_hKey) {
 		// Handle is invalid.
 		return ERROR_INVALID_HANDLE;
+	} else if (dwType != REG_SZ && dwType != REG_EXPAND_SZ) {
+		// Invalid type.
+		return ERROR_INVALID_PARAMETER;
 	}
 
 	// Get the string length, add 1 for NULL,
@@ -254,7 +325,7 @@ LONG RegKey::write(LPCWSTR lpValueName, const wstring& value)
 	return RegSetValueEx(m_hKey,
 		lpValueName,			// lpValueName
 		0,				// Reserved
-		REG_SZ,				// dwType
+		dwType,				// dwType
 		(const BYTE*)value.c_str(),	// lpData
 		cbData);			// cbData
 }
@@ -563,6 +634,18 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCWSTR progID, LPCWSTR descript
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
 
+#ifndef NDEBUG
+	// Debug build: Disable process isolation to make debugging easier.
+	lResult = hkcr_Obj_CLSID.write_dword(L"DisableProcessIsolation", 1);
+	if (lResult != ERROR_SUCCESS)
+		return lResult;
+#else
+	// Release build: Enable process isolation for increased robustness.
+	lResult = hkcr_Obj_CLSID.deleteValue(L"DisableProcessIsolation");
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return lResult;
+#endif
+
 	// Create an InprocServer32 subkey.
 	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, L"InprocServer32", KEY_WRITE, true);
 	if (!hkcr_InprocServer32.isOpen())
@@ -635,6 +718,18 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCWSTR progID)
 	// NOTE: deleteSubKey() may return ERROR_FILE_NOT_FOUND,
 	// which indicates the object was already unregistered.
 	lResult = hkcr_CLSID.deleteSubKey(clsid_str);
+	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
+		return lResult;
+
+	// Open the approved shell extensions key.
+	RegKey hklm_Approved(HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+		KEY_WRITE, false);
+	if (!hklm_Approved.isOpen())
+		return hklm_Approved.lOpenRes();
+
+	// Remove the value for the specified CLSID.
+	lResult = hklm_Approved.deleteValue(clsid_str);
 	if (lResult != ERROR_SUCCESS && lResult != ERROR_FILE_NOT_FOUND)
 		return lResult;
 

@@ -84,6 +84,7 @@ SET(libromdata_SRCS
 	data/NESMappers.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
+	file/FileSystem_common.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
 	img/RpImageLoader.cpp

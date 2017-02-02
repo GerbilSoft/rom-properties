@@ -5,28 +5,46 @@ SET(rom-properties-win32_SRCS
 	DllMain.cpp
 	RegKey.cpp
 	RP_ExtractIcon.cpp
+	RP_ExtractIcon_Register.cpp
+	RP_ExtractIcon_Fallback.cpp
 	RP_ComBase.cpp
 	RP_ExtractImage.cpp
+	RP_ExtractImage_Register.cpp
+	RP_ExtractImage_Fallback.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
+	RP_ShellPropSheetExt_Register.cpp
 	#DialogBuilder.cpp
 	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
+	RP_ThumbnailProvider_Register.cpp
+	RP_ThumbnailProvider_Fallback.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
 	RP_ExtractIcon.hpp
+	RP_ExtractIcon_p.hpp
 	RP_ClassFactory.hpp
 	RP_ComBase.hpp
 	RP_ExtractImage.hpp
+	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	#DialogBuilder.hpp
 	RpFile_IStream.hpp
 	RP_ThumbnailProvider.hpp
+	RP_ThumbnailProvider_p.hpp
 	resource.h
 	)
+
+# Precompiled headers.
+# NOTE: Only enabling PCH for MSVC builds.
+IF(MSVC)
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-win32_PCH_SRC stdafx.cpp)
+	SET(rom-properties-win32_PCH_H stdafx.h)
+ENDIF(MSVC)
 
 #####################
 # Build the plugin. #
@@ -37,9 +55,17 @@ SET(rom-properties-win32_H
 # the 'lib' directory. Use SHARED instead.
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(rom-properties SHARED
-		${rom-properties-win32_SRCS}
-		${rom-properties-win32_H}
+	${rom-properties-win32_PCH_SRC}
+	${rom-properties-win32_PCH_H}
+	${rom-properties-win32_SRCS}
+	${rom-properties-win32_H}
+	)
+# NOTE: Only enabling PCH for MSVC.
+IF(MSVC)
+	ADD_PRECOMPILED_HEADER(rom-properties ${rom-properties-win32_PCH_H}
+		SOURCE_CXX ${rom-properties-win32_PCH_SRC}
 		)
+ENDIF(MSVC)
 SET_TARGET_PROPERTIES(rom-properties PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rom-properties)
 SET_WINDOWS_SUBSYSTEM(rom-properties WIN32)

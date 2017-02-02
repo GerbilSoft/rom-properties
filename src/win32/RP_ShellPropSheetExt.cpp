@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * RP_ShellPropSheetExt.hpp: IShellPropSheetExt implementation.            *
+ * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,7 +26,6 @@
 
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
-#include "RegKey.hpp"
 #include "RpImageWin32.hpp"
 #include "resource.h"
 
@@ -347,7 +346,11 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, animTimerID(0)
 	, last_frame_number(0)
 {
+	memset(&lfFontMono, 0, sizeof(lfFontMono));
 	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
+	memset(&ptBanner, 0, sizeof(ptBanner));
+	memset(&rectIcon, 0, sizeof(rectIcon));
+	memset(&szIcon, 0, sizeof(szIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
 	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
@@ -1755,199 +1758,12 @@ RP_ShellPropSheetExt::~RP_ShellPropSheetExt()
 
 IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	// Check if this interface is supported.
-	// NOTE: static_cast<> is required due to vtable shenanigans.
-	// Also, IID_IUnknown must always return the same pointer.
-	// References:
-	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
-	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_IShellExtInit) {
-		*ppvObj = static_cast<IShellExtInit*>(this);
-	} else if (riid == IID_IShellPropSheetExt) {
-		*ppvObj = static_cast<IShellPropSheetExt*>(this);
-	} else {
-		// Interface is not supported.
-		*ppvObj = nullptr;
-		return E_NOINTERFACE;
-	}
-
-	// Make sure we count this reference.
-	AddRef();
-	return NOERROR;
-}
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::RegisterCLSID(void)
-{
-	static const wchar_t description[] = L"ROM Properties Page - Property Sheet";
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Register the COM object.
-	lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ShellPropSheetExt), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
-
-/**
- * Register the file type handler.
- * @param hkey_Assoc File association key to register under.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkey_Assoc)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Register as a property sheet handler for this file association.
-
-	// Create/open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_WRITE, true);
-	if (!hkcr_ShellEx.isOpen()) {
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Create/open the PropertySheetHandlers key.
-	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_WRITE, true);
-	if (!hkcr_PropertySheetHandlers.isOpen()) {
-		return hkcr_PropertySheetHandlers.lOpenRes();
-	}
-
-	// Create/open the "rom-properties" property sheet handler key.
-	// NOTE: This always uses RP_ProgID[], not the specified progID.
-	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_WRITE, true);
-	if (!hkcr_PropSheet_RomProperties.isOpen()) {
-		return hkcr_PropSheet_RomProperties.lOpenRes();
-	}
-	// Set the default value to this CLSID.
-	lResult = hkcr_PropSheet_RomProperties.write(nullptr, clsid_str);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// File type handler registered.
-	return ERROR_SUCCESS;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
-}
-
-/**
- * Unregister the file type handler.
- * @param hkey_Assoc File association key to register under.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkey_Assoc)
-{
-	extern const wchar_t RP_ProgID[];
-
-	// Convert the CLSID to a string.
-	wchar_t clsid_str[48];	// maybe only 40 is needed?
-	LONG lResult = StringFromGUID2(__uuidof(RP_ShellPropSheetExt), clsid_str, sizeof(clsid_str)/sizeof(clsid_str[0]));
-	if (lResult <= 0) {
-		return ERROR_INVALID_PARAMETER;
-	}
-
-	// Unregister as a property sheet handler for this file association.
-
-	// Open the "ShellEx" key.
-	RegKey hkcr_ShellEx(hkey_Assoc, L"ShellEx", KEY_READ, false);
-	if (!hkcr_ShellEx.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_ShellEx.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_ShellEx.lOpenRes();
-	}
-	// Open the PropertySheetHandlers key.
-	RegKey hkcr_PropertySheetHandlers(hkcr_ShellEx, L"PropertySheetHandlers", KEY_READ, false);
-	if (!hkcr_PropertySheetHandlers.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropertySheetHandlers.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_PropertySheetHandlers.lOpenRes();
-	}
-
-	// Open the "rom-properties" property sheet handler key.
-	// NOTE: This always uses RP_ProgID[], not the specified progID.
-	RegKey hkcr_PropSheet_RomProperties(hkcr_PropertySheetHandlers, RP_ProgID, KEY_READ, false);
-	if (!hkcr_PropSheet_RomProperties.isOpen()) {
-		// ERROR_FILE_NOT_FOUND is acceptable here.
-		if (hkcr_PropSheet_RomProperties.lOpenRes() == ERROR_FILE_NOT_FOUND) {
-			return ERROR_SUCCESS;
-		}
-		return hkcr_PropSheet_RomProperties.lOpenRes();
-	}
-	// Check if the default value matches the CLSID.
-	wstring str_IShellPropSheetExt = hkcr_PropSheet_RomProperties.read(nullptr);
-	if (str_IShellPropSheetExt == clsid_str) {
-		// Default value matches.
-		// Remove the subkey.
-		hkcr_PropSheet_RomProperties.close();
-		lResult = hkcr_PropertySheetHandlers.deleteSubKey(RP_ProgID);
-		if (lResult != ERROR_SUCCESS) {
-			return lResult;
-		}
-	} else {
-		// Default value does not match.
-		// We're done here.
-		return hkcr_PropSheet_RomProperties.lOpenRes();
-	}
-
-	// Check if PropertySheetHandlers is empty.
-	// TODO: Error handling.
-	if (hkcr_PropertySheetHandlers.isKeyEmpty()) {
-		// No subkeys. Delete this key.
-		hkcr_PropertySheetHandlers.close();
-		hkcr_ShellEx.deleteSubKey(L"PropertySheetHandlers");
-	}
-
-	// File type handler unregistered.
-	return ERROR_SUCCESS;
+	static const QITAB rgqit[] = {
+		QITABENT(RP_ShellPropSheetExt, IShellExtInit),
+		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
+		{ 0 }
+	};
+	return pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellExtInit **/

@@ -256,7 +256,10 @@ vector<const rp_char*> GameBoyAdvance::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".gba"), _RP(".agb"),
-		//_RP(".mb"),	// TODO: Enable this?
+
+		// NOTE: These extensions may cause conflicts on
+		// Windows if fallback handling isn't working.
+		_RP(".mb"),	// AutoDesk Maya binary scene file
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
