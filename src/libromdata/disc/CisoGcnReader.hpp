@@ -68,24 +68,17 @@ class CisoGcnReader : public SparseDiscReader
 
 		/**
 		 * Read the specified block.
-		 * This will read an entire block.
-		 * @param blockIdx	[in] Block index.
-		 * @param ptr		[out] Output data buffer.
-		 * @param size		[in] Amount of data to read, in bytes. (Must be equal to the block size!)
-		 * @return Number of bytes read, or -1 if the block index is invalid.
-		 */
-		virtual int readBlock(uint32_t blockIdx, void *ptr, size_t size) override final;
-
-		/**
-		 * Read part of the specified block.
-		 * This will read `size` bytes starting at `pos` bytes from the start of the block.
+		 *
+		 * This can read either a full block or a partial block.
+		 * For a full block, set pos = 0 and size = block_size.
+		 *
 		 * @param blockIdx	[in] Block index.
 		 * @param ptr		[out] Output data buffer.
 		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual int readPartialBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
+		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
 };
 
 }

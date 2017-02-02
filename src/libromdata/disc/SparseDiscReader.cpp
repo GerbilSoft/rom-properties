@@ -124,7 +124,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		}
 
 		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
-		int rd = this->readPartialBlock(blockIdx, ptr8, blockStartOffset, read_sz);
+		int rd = this->readBlock(blockIdx, ptr8, blockStartOffset, read_sz);
 		if (rd < 0 || rd != (int)read_sz) {
 			// Error reading the data.
 			return (rd > 0 ? rd : 0);
@@ -144,7 +144,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 	{
 		assert(d->pos % block_size == 0);
 		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
-		int rd = this->readBlock(blockIdx, ptr8, block_size);
+		int rd = this->readBlock(blockIdx, ptr8, 0, block_size);
 		if (rd < 0 || rd != (int)block_size) {
 			// Error reading the data.
 			return (rd > 0 ? rd : 0);
@@ -158,7 +158,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 
 		// Read the start of the block.
 		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
-		int rd = this->readPartialBlock(blockIdx, ptr8, 0, size);
+		int rd = this->readBlock(blockIdx, ptr8, 0, size);
 		if (rd < 0 || rd != (int)size) {
 			// Error reading the data.
 			return (rd > 0 ? rd : 0);
