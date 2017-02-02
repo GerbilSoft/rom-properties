@@ -101,6 +101,7 @@ SET(libromdata_SRCS
 	disc/WiiPartition.cpp
 	disc/GcnFst.cpp
 	disc/PartitionFile.cpp
+	disc/SparseDiscReader.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -172,6 +173,8 @@ SET(libromdata_H
 	disc/IFst.hpp
 	disc/GcnFst.hpp
 	disc/PartitionFile.hpp
+	disc/SparseDiscReader.hpp
+	disc/SparseDiscReader_p.hpp
 	NES.hpp
 	)
 

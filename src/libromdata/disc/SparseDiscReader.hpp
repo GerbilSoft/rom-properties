@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
+ * SparseDiscReader.hpp: Disc reader base class for disc image formats     *
+ * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +20,66 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_SPARSEDISCREADER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_SPARSEDISCREADER_HPP__
 
-#include "SparseDiscReader.hpp"
+#include "IDiscReader.hpp"
 
 namespace LibRomData {
 
-class CisoGcnReaderPrivate;
-class CisoGcnReader : public SparseDiscReader
+class SparseDiscReaderPrivate;
+class SparseDiscReader : public IDiscReader
 {
+	protected:
+		SparseDiscReader(SparseDiscReaderPrivate *d);
 	public:
-		/**
-		 * Construct a CisoGcnReader with the specified file.
-		 * The file is dup()'d, so the original file can be
-		 * closed afterwards.
-		 * @param file File to read from.
-		 */
-		explicit CisoGcnReader(IRpFile *file);
+		virtual ~SparseDiscReader();
 
 	private:
-		typedef SparseDiscReader super;
-		RP_DISABLE_COPY(CisoGcnReader)
-	private:
-		friend class CisoGcnReaderPrivate;
+		typedef IDiscReader super;
+		RP_DISABLE_COPY(SparseDiscReader)
+	protected:
+		friend class SparseDiscReaderPrivate;
+		SparseDiscReaderPrivate *const d_ptr;
 
 	public:
-		/** Disc image detection functions. **/
+		/** IDiscReader functions. **/
 
 		/**
-		 * Is a disc image supported by this class?
-		 * @param pHeader Disc image header.
-		 * @param szHeader Size of header.
-		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 * Is the disc image open?
+		 * This usually only returns false if an error occurred.
+		 * @return True if the disc image is open; false if it isn't.
 		 */
-		static int isDiscSupported_static(const uint8_t *pHeader, size_t szHeader);
+		virtual bool isOpen(void) const override final;
 
 		/**
-		 * Is a disc image supported by this object?
-		 * @param pHeader Disc image header.
-		 * @param szHeader Size of header.
-		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
+		 * Read data from the disc image.
+		 * @param ptr Output data buffer.
+		 * @param size Amount of data to read, in bytes.
+		 * @return Number of bytes read.
 		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final;
+		virtual size_t read(void *ptr, size_t size) override final;
+
+		/**
+		 * Set the disc image position.
+		 * @param pos disc image position.
+		 * @return 0 on success; -1 on error.
+		 */
+		virtual int seek(int64_t pos) override final;
+
+		/**
+		 * Seek to the beginning of the disc image.
+		 */
+		virtual void rewind(void) override final;
+
+		/**
+		 * Get the disc image size.
+		 * @return Disc image size, or -1 on error.
+		 */
+		virtual int64_t size(void) override final;
 
 	protected:
-		/** SparseDiscReader functions. **/
+		/** Virtual functions for SparseDiscReader subclasses. **/
 
 		/**
 		 * Read the specified block.
@@ -74,7 +89,7 @@ class CisoGcnReader : public SparseDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be equal to the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual int readBlock(uint32_t blockIdx, void *ptr, size_t size) override final;
+		virtual int readBlock(uint32_t blockIdx, void *ptr, size_t size) = 0;
 
 		/**
 		 * Read part of the specified block.
@@ -85,9 +100,9 @@ class CisoGcnReader : public SparseDiscReader
 		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
 		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual int readPartialBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
+		virtual int readPartialBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) = 0;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_SPARSEDISCREADER_HPP__ */

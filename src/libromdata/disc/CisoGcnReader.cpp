@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoGcnReader.hpp: GameCube/Wii CISO disc image reader.                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -24,6 +24,7 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
 #include "CisoGcnReader.hpp"
+#include "SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
 #include "byteswap.h"
@@ -39,55 +40,46 @@
 
 namespace LibRomData {
 
-class CisoGcnReaderPrivate {
+class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 	public:
 		CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file);
-		~CisoGcnReaderPrivate();
 
 	private:
+		typedef SparseDiscReaderPrivate super;
 		RP_DISABLE_COPY(CisoGcnReaderPrivate)
-	private:
-		CisoGcnReader *const q;
 
 	public:
-		IRpFile *file;
-
-		int64_t disc_size;	// Virtual disc image size.
-		int64_t pos;		// Read position.
-
 		// CISO magic.
 		static const char CISO_MAGIC[4];
 
 		// CISO header.
 		CISOHeader cisoHeader;
-		uint32_t block_size;
 
 		// Block map.
 		// 0x0000 == first block after CISO header.
 		// 0xFFFF == empty block.
 		uint16_t blockMap[CISO_MAP_SIZE];
+
+		// Index of the last used block.
+		int maxLogicalBlockUsed;
 };
+
+/** CisoGcnReaderPrivate **/
 
 // CISO magic.
 const char CisoGcnReaderPrivate::CISO_MAGIC[4] = {'C','I','S','O'};
 
-/** CisoGcnReaderPrivate **/
-
 CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
-	: q(q)
-	, file(nullptr)
-	, disc_size(0)
-	, pos(-1)
-	, block_size(0)
+	: super(q, file)
+	, maxLogicalBlockUsed(-1)
 {
 	// Clear the CISO header struct.
 	memset(&cisoHeader, 0, sizeof(cisoHeader));
 
-	if (!file) {
-		q->m_lastError = EBADF;
+	if (!this->file) {
+		// File could not be dup()'d.
 		return;
 	}
-	this->file = file->dup();
 
 	// Read the CISO header.
 	static_assert(sizeof(CISOHeader) == CISO_HEADER_SIZE,
@@ -138,7 +130,6 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 
 	// Parse the CISO block map.
 	uint16_t physBlockIdx = 0;
-	int maxLogicalBlockUsed = -1;
 	for (int i = 0; i < ARRAY_SIZE(cisoHeader.map); i++) {
 		switch (cisoHeader.map[i]) {
 			case 0:
@@ -166,21 +157,11 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	pos = 0;
 }
 
-CisoGcnReaderPrivate::~CisoGcnReaderPrivate()
-{
-	delete file;
-}
-
-/** CisoGcn **/
+/** CisoGcnReader **/
 
 CisoGcnReader::CisoGcnReader(IRpFile *file)
-	: d(new CisoGcnReaderPrivate(this, file))
+	: super(new CisoGcnReaderPrivate(this, file))
 { }
-
-CisoGcnReader::~CisoGcnReader()
-{
-	delete d;
-}
 
 /**
  * Is a disc image supported by this class?
@@ -205,7 +186,7 @@ int CisoGcnReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 	// - Minimum: CISO_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: CISO_BLOCK_SIZE_MAX (16 MB, 1 << 24)
 	const uint32_t *pHeader32 = reinterpret_cast<const uint32_t*>(pHeader);
-	const uint32_t block_size = le32_to_cpu(pHeader32[1]);
+	const unsigned int block_size = le32_to_cpu(pHeader32[1]);
 	bool isPow2 = false;
 	for (unsigned int i = 15; i <= 24; i++) {
 		if (block_size == (1U << i)) {
@@ -236,206 +217,106 @@ int CisoGcnReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) cons
 	return isDiscSupported_static(pHeader, szHeader);
 }
 
-/**
- * Is the disc image open?
- * This usually only returns false if an error occurred.
- * @return True if the disc image is open; false if it isn't.
- */
-bool CisoGcnReader::isOpen(void) const
-{
-	return (d->file != nullptr);
-}
+/** SparseDiscReader functions. **/
 
 /**
- * Read data from the disc image.
- * @param ptr Output data buffer.
- * @param size Amount of data to read, in bytes.
- * @return Number of bytes read.
+ * Read the specified block.
+ * This will read an entire block.
+ * @param blockIdx	[in] Block index.
+ * @param ptr		[out] Output data buffer.
+ * @param size		[in] Amount of data to read, in bytes. (Must be equal to the block size!)
+ * @return Number of bytes read, or -1 if the block index is invalid.
  */
-size_t CisoGcnReader::read(void *ptr, size_t size)
+int CisoGcnReader::readBlock(uint32_t blockIdx, void *ptr, size_t size)
 {
-	assert(d->file != nullptr);
-	if (!d->file) {
-		m_lastError = EBADF;
+	// Read block 'blockIdx'. (full block)
+	// NOTE: This can only be called by SparseDiscReader,
+	// so the main assertions are already checked there.
+	RP_D(CisoGcnReader);
+	assert(size == d->block_size);
+	if (size != d->block_size) {
+		// Cannot read anything other than the block size here.
 		return -1;
 	}
 
-	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
-	size_t ret = 0;
-
-	// Are we already at the end of the disc?
-	if (d->pos >= d->disc_size)
-		return 0;
-
-	// Make sure d->pos + size <= d->disc_size.
-	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->disc_size) {
-		size = (size_t)(d->disc_size - d->pos);
+	// Get the physical block number first.
+	// TODO: Check against maxLogicalBlockUsed?
+	assert(blockIdx < ARRAY_SIZE(d->blockMap));
+	if (blockIdx >= ARRAY_SIZE(d->blockMap)) {
+		// Out of range.
+		return -1;
 	}
 
-	// Check if we're not starting on a block boundary.
-	const uint32_t block_size = d->block_size;
-	const uint32_t blockStartOffset = d->pos % block_size;
-	if (blockStartOffset != 0) {
-		// Not a block boundary.
-		// Read the end of the block.
-		uint32_t read_sz = block_size - blockStartOffset;
-		if (size < (size_t)read_sz) {
-			read_sz = (uint32_t)size;
-		}
-
-		// Get the physical block number first.
-		const unsigned int blockStart = (unsigned int)(d->pos / block_size);
-		assert(blockStart < ARRAY_SIZE(d->blockMap));
-		if (blockStart >= ARRAY_SIZE(d->blockMap)) {
-			// Out of range.
-			return 0;
-		}
-
-		const unsigned int physBlockStartIdx = d->blockMap[blockStart];
-		if (physBlockStartIdx >= 0xFFFF) {
-			// Empty block.
-			memset(ptr8, 0, read_sz);
-		} else {
-			// Seek to the physical block address.
-			int64_t physBlockStartAddr = sizeof(d->cisoHeader) +
-				((int64_t)physBlockStartIdx * block_size);
-			d->file->seek(physBlockStartAddr + blockStartOffset);
-			// Read read_sz bytes.
-			size_t rd = d->file->read(ptr8, read_sz);
-			if (rd != read_sz) {
-				// Error reading the data.
-				return rd;
-			}
-		}
-
-		// Starting block read.
-		size -= read_sz;
-		ptr8 += read_sz;
-		ret += read_sz;
-		d->pos += read_sz;
+	const unsigned int physBlockIdx = d->blockMap[blockIdx];
+	if (physBlockIdx >= 0xFFFF) {
+		// Empty block.
+		memset(ptr, 0, size);
+		return (int)size;
 	}
 
-	// Read entire blocks.
-	for (; size >= block_size;
-	    size -= block_size, ptr8 += block_size,
-	    ret += block_size, d->pos += block_size)
+	// Go to the block.
+	const int64_t phys_pos = sizeof(d->cisoHeader) + ((int64_t)physBlockIdx * d->block_size);
+	int ret = d->file->seek(phys_pos);
+	if (ret != 0) {
+		// Seek failed.
+		return -1;
+	}
+
+	// Read the block.
+	return (int)d->file->read(ptr, size);
+}
+
+/**
+ * Read part of the specified block.
+ * This will read `size` bytes starting at `pos` bytes from the start of the block.
+ * @param blockIdx	[in] Block number.
+ * @param ptr		[out] Output data buffer.
+ * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+ * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+ * @return Number of bytes read, or -1 if the block index is invalid.
+ */
+int CisoGcnReader::readPartialBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
+{
+	// Read 'size' bytes of block 'blockIdx', starting at 'pos'.
+	// NOTE: This can only be called by SparseDiscReader,
+	// so the main assertions are already checked there.
+	RP_D(CisoGcnReader);
+	assert(pos >= 0 && pos < (int)d->block_size);
+	assert(size <= d->block_size);
+	// TODO: Make sure overflow doesn't occur.
+	assert((int64_t)(pos + size) < (int64_t)d->block_size);
+	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
+	    (int64_t)(pos + size) >= (int64_t)d->block_size)
 	{
-		assert(d->pos % block_size == 0);
-		const unsigned int blockIdx = (unsigned int)(d->pos / block_size);
-		assert(blockIdx < ARRAY_SIZE(d->blockMap));
-		if (blockIdx >= ARRAY_SIZE(d->blockMap)) {
-			// Out of range.
-			return ret;
-		}
-
-		const unsigned int physBlockIdx = d->blockMap[blockIdx];
-		if (physBlockIdx >= 0xFFFF) {
-			// Empty block.
-			memset(ptr8, 0, block_size);
-		} else {
-			// Seek to the physical block address.
-			int64_t physBlockAddr = sizeof(d->cisoHeader) +
-				((int64_t)physBlockIdx * block_size);
-			d->file->seek(physBlockAddr);
-			// Read one block worth of data.
-			size_t rd = d->file->read(ptr8, block_size);
-			if (rd != block_size) {
-				// Error reading the data.
-				return rd + ret;
-			}
-		}
-	}
-
-	// Check if we still have data left. (not a full block)
-	if (size > 0) {
-		// Not a full block.
-		assert(d->pos % block_size == 0);
-
-		// Get the physical block number first.
-		const unsigned int blockEnd = (unsigned int)(d->pos / block_size);
-		assert(blockEnd < ARRAY_SIZE(d->blockMap));
-		if (blockEnd >= ARRAY_SIZE(d->blockMap)) {
-			// Out of range.
-			return ret;
-		}
-
-		const unsigned int physBlockEndIdx = d->blockMap[blockEnd];
-		if (physBlockEndIdx >= 0xFFFF) {
-			// Empty block.
-			memset(ptr8, 0, size);
-		} else {
-			// Seek to the physical block address.
-			int64_t physBlockEndAddr = sizeof(d->cisoHeader) +
-				((int64_t)physBlockEndIdx * block_size);
-			d->file->seek(physBlockEndAddr);
-			// Read size bytes.
-			size_t rd = d->file->read(ptr8, size);
-			if (rd != size) {
-				// Error reading the data.
-				return rd + ret;
-			}
-		}
-
-		ret += size;
-		d->pos += size;
-	}
-
-	// Finished reading the data.
-	return ret;
-}
-
-/**
- * Set the disc image position.
- * @param pos Disc image position.
- * @return 0 on success; -1 on error.
- */
-int CisoGcnReader::seek(int64_t pos)
-{
-	assert(d->file != nullptr);
-	if (!d->file) {
-		m_lastError = EBADF;
+		// pos+size is out of range.
 		return -1;
 	}
 
-	// Handle out-of-range cases.
-	// TODO: How does POSIX behave?
-	if (pos < 0)
-		d->pos = 0;
-	else if (pos >= d->disc_size)
-		d->pos = d->disc_size;
-	else
-		d->pos = pos;
-	return 0;
-}
-
-/**
- * Seek to the beginning of the disc image.
- */
-void CisoGcnReader::rewind(void)
-{
-	assert(d->file != nullptr);
-	if (!d->file) {
-		m_lastError = EBADF;
-		return;
-	}
-
-	d->pos = 0;
-}
-
-/**
- * Get the disc image size.
- * @return Disc image size, or -1 on error.
- */
-int64_t CisoGcnReader::size(void)
-{
-	assert(d->file != nullptr);
-	if (!d->file) {
-		m_lastError = EBADF;
+	// Get the physical block number first.
+	// TODO: Check against maxLogicalBlockUsed?
+	assert(blockIdx < ARRAY_SIZE(d->blockMap));
+	if (blockIdx >= ARRAY_SIZE(d->blockMap)) {
+		// Out of range.
 		return -1;
 	}
 
-	return d->disc_size;
+	const unsigned int physBlockIdx = d->blockMap[blockIdx];
+	if (physBlockIdx >= 0xFFFF) {
+		// Empty block.
+		memset(ptr, 0, size);
+		return (int)size;
+	}
+
+	// Go to the block.
+	const int64_t phys_pos = sizeof(d->cisoHeader) + ((int64_t)physBlockIdx * d->block_size) + pos;
+	int ret = d->file->seek(phys_pos);
+	if (ret != 0) {
+		// Seek failed.
+		return -1;
+	}
+
+	// Read the first 'size' bytes of the block.
+	return (int)d->file->read(ptr, size);
 }
 
 }
