@@ -1,3 +1,6 @@
+; rom-properties exports
+LIBRARY
+
 EXPORTS
 	DllCanUnloadNow		PRIVATE
 	DllGetClassObject	PRIVATE
