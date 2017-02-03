@@ -145,7 +145,7 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// VMS files are always a multiple of 512 bytes,
 	// or 160 bytes for some monochrome ICONDATA_VMS.
 	// VMI files are always 108 bytes;
-	int64_t filesize = file->fileSize();
+	int64_t filesize = file->size();
 	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
 			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
 	bool has_dc_vmi = (filesize == DC_VMI_Header_SIZE);
@@ -256,7 +256,7 @@ RomData *RomDataFactory::getInstance(IRpFile *file, bool thumbnail)
 	RomData::DetectInfo info;
 
 	// Get the file size.
-	info.szFile = file->fileSize();
+	info.szFile = file->size();
 
 	// Read 4,096+256 bytes from the ROM header.
 	// This should be enough to detect most systems.

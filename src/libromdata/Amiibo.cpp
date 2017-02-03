@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -194,7 +194,7 @@ Amiibo::Amiibo(IRpFile *file)
 	info.header.size = sizeof(d->nfpData);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nfpData);
 	info.ext = nullptr;	// Not needed for NFP.
-	info.szFile = d->file->fileSize();
+	info.szFile = d->file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 }
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -602,7 +602,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	info.header.size = sizeof(header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for GCN save files.
-	info.szFile = d->file->fileSize();
+	info.szFile = d->file->size();
 	d->saveType = isRomSupported_static(&info);
 
 	// Save the directory entry for later.

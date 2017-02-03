@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachemgr)                      *
  * UrlmonDownloader.cpp: urlmon-based file downloader.                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -109,7 +109,7 @@ int UrlmonDownloader::download(void)
 
 	// Read the file into the data buffer.
 	// TODO: malloc()'d buffer to prevent initialization?
-	int64_t fileSize = file->fileSize();
+	const int64_t fileSize = file->size();
 	m_data.resize((size_t)fileSize);
 	size_t ret = file->read(m_data.data(), (size_t)fileSize);
 	if (ret != fileSize) {

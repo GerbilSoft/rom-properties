@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -47,7 +47,7 @@ DiscReader::DiscReader(IRpFile *file)
 	}
 	// TODO: Propagate errors.
 	m_file = file->dup();
-	m_length = file->fileSize();
+	m_length = file->size();
 	if (m_length < 0) {
 		m_length = 0;
 	}
@@ -74,7 +74,7 @@ DiscReader::DiscReader(IRpFile *file, int64_t offset, int64_t length)
 	m_file = file->dup();
 
 	// Validate offset and filesize.
-	int64_t filesize = file->fileSize();
+	const int64_t filesize = file->size();
 	if (offset > filesize) {
 		offset = filesize;
 	}

@@ -300,7 +300,7 @@ int RpFile_IStream::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpFile_IStream::fileSize(void)
+int64_t RpFile_IStream::size(void)
 {
 	if (!m_pStream) {
 		m_lastError = EBADF;

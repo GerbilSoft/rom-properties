@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DreamcastSave.cpp: Sega Dreamcast save file reader.                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -546,7 +546,7 @@ rp_image *DreamcastSavePrivate::loadIcon(void)
 	if (vms_header.eyecatch_type <= 3) {
 		sz_reserved += eyecatch_sizes[vms_header.eyecatch_type];
 	}
-	if ((int64_t)sz_reserved > this->file->fileSize()) {
+	if ((int64_t)sz_reserved > this->file->size()) {
 		// File is NOT big enough.
 		return nullptr;
 	}
@@ -792,7 +792,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 	const uint32_t sz_icons = (uint32_t)sizeof(vms_header) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
-	if ((int64_t)sz_icons + eyecatch_size > this->file->fileSize()) {
+	if ((int64_t)sz_icons + eyecatch_size > this->file->size()) {
 		// File is NOT big enough.
 		return nullptr;
 	}
@@ -900,7 +900,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Standard VMS is always a multiple of DC_VMS_BLOCK_SIZE.
 	// DCI is a multiple of DC_VMS_BLOCK_SIZE, plus 32 bytes.
 	// NOTE: May be DC_VMS_ICONDATA_MONO_MINSIZE for ICONDATA_VMS.
-	int64_t fileSize = d->file->fileSize();
+	int64_t fileSize = d->file->size();
 	if (fileSize % DC_VMS_BLOCK_SIZE == 0 ||
 	    fileSize == DC_VMS_ICONDATA_MONO_MINSIZE)
 	{
@@ -1047,8 +1047,8 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	// - VMS file should be a multiple of 512 bytes,
 	//   or 160 bytes for some monochrome ICONDATA_VMS.
 	// - VMI file should be 108 bytes.
-	int64_t vms_fileSize = d->file->fileSize();
-	int64_t vmi_fileSize = d->vmi_file->fileSize();
+	int64_t vms_fileSize = d->file->size();
+	int64_t vmi_fileSize = d->vmi_file->size();
 	if (((vms_fileSize % 512 != 0) && vms_fileSize != DC_VMS_ICONDATA_MONO_MINSIZE) ||
 	      vmi_fileSize != DC_VMI_Header_SIZE)
 	{

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Virtual Boy ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  * Copyright (c) 2016 by Egor.                                             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
@@ -163,7 +163,7 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Seek to the beginning of the header.
-	const int64_t filesize = d->file->fileSize();
+	const int64_t filesize = d->file->size();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
 	if (filesize < 0x220 || filesize > (16*1024*1024)) {

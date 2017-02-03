@@ -221,7 +221,7 @@ int RpMemFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t RpMemFile::fileSize(void)
+int64_t RpMemFile::size(void)
 {
 	if (!m_buf) {
 		m_lastError = EBADF;

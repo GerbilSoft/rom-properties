@@ -276,7 +276,7 @@ NES::NES(IRpFile *file)
 	info.header.size = sizeof(header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for NES.
-	info.szFile = d->file->fileSize();
+	info.szFile = d->file->size();
 	d->romType = isRomSupported_static(&info);
 
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -182,7 +182,7 @@ IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULAR
 			m_file->seek(pos);
 			break;
 		case STREAM_SEEK_END:
-			pos = m_file->fileSize();
+			pos = m_file->size();
 			pos += dlibMove.QuadPart;
 			m_file->seek(pos);
 			break;
@@ -347,7 +347,7 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
 
-	int64_t fileSize = m_file->fileSize();
+	const int64_t fileSize = m_file->size();
 	pstatstg->cbSize.QuadPart = (fileSize > 0 ? fileSize : 0);
 
 	// No timestamps are available...

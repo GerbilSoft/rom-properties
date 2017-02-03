@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -226,7 +226,7 @@ int PartitionFile::truncate(int64_t size)
  * Get the file size.
  * @return File size, or negative on error.
  */
-int64_t PartitionFile::fileSize(void)
+int64_t PartitionFile::size(void)
 {
 	if (!m_partition) {
 		m_lastError = EBADF;

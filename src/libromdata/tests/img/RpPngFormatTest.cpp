@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -320,10 +320,10 @@ void RpPngFormatTest::SetUp(void)
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
-	ASSERT_LE(file->fileSize(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
+	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
 
 	// Read the PNG image into memory.
-	size_t pngSize = (size_t)file->fileSize();
+	const size_t pngSize = (size_t)file->size();
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
