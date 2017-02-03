@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomThumbCreator.hpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -41,7 +41,7 @@ class RomThumbCreator : public ThumbCreator
 		virtual ~RomThumbCreator();
 
 	public:
-		virtual bool create(const QString &path, int width, int height, QImage &img) final;
+		virtual bool create(const QString &path, int width, int height, QImage &img) override final;
 
 	private:
 		typedef ThumbCreator super;

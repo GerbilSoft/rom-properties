@@ -47,7 +47,7 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
-		virtual bool isOpen(void) const final;
+		virtual bool isOpen(void) const override final;
 
 		/**
 		 * dup() the file handle.
@@ -60,12 +60,12 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 *
 		 * @return dup()'d file, or nullptr on error.
 		 */
-		virtual IRpFile *dup(void) final;
+		virtual IRpFile *dup(void) override final;
 
 		/**
 		 * Close the file.
 		 */
-		virtual void close(void) final;
+		virtual void close(void) override final;
 
 		/**
 		 * Read data from the file.
@@ -73,7 +73,7 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) final;
+		virtual size_t read(void *ptr, size_t size) override final;
 
 		/**
 		 * Write data to the file.
@@ -81,27 +81,27 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes written.
 		 */
-		virtual size_t write(const void *ptr, size_t size) final;
+		virtual size_t write(const void *ptr, size_t size) override final;
 
 		/**
 		 * Set the file position.
 		 * @param pos File position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) final;
+		virtual int seek(int64_t pos) override final;
 
 		/**
 		 * Get the file position.
 		 * @return File position, or -1 on error.
 		 */
-		virtual int64_t tell(void) final;
+		virtual int64_t tell(void) override final;
 
 		/**
 		 * Truncate the file.
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int truncate(int64_t size = 0) final;
+		virtual int truncate(int64_t size = 0) override final;
 
 	public:
 		/** File properties. **/
@@ -110,13 +110,13 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
-		virtual int64_t size(void) final;
+		virtual int64_t size(void) override final;
 
 		/**
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		LibRomData::rp_string filename(void) const;
+		virtual LibRomData::rp_string filename(void) const override final;
 
 	protected:
 		IStream *m_pStream;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -56,7 +56,7 @@ RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
 
 	public:
 		/**
@@ -89,21 +89,21 @@ RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
 
 	public:
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) override final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+		IFACEMETHODIMP IsDirty(void) override final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override final;
 
 		// IExtractImage
 		IFACEMETHODIMP GetLocation(LPWSTR pszPathBuffer, DWORD cchMax,
 			DWORD *pdwPriority, const SIZE *prgSize,
-			DWORD dwRecClrDepth, DWORD *pdwFlags) final;
-		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) final;
+			DWORD dwRecClrDepth, DWORD *pdwFlags) override final;
+		IFACEMETHODIMP Extract(HBITMAP *phBmpImage) override final;
 		// IExtractImage2
-		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) final;
+		IFACEMETHODIMP GetDateStamp(FILETIME *pDateStamp) override final;
 };
 
 #ifdef __CRT_UUID_DECL

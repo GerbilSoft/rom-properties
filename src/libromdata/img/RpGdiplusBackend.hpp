@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -91,14 +91,14 @@ class RpGdiplusBackend : public rp_image_backend
 		static rp_image_backend *creator_fn(int width, int height, rp_image::Format format);
 
 		// Image data.
-		virtual void *data(void) final;
-		virtual const void *data(void) const final;
-		virtual size_t data_len(void) const final;
+		virtual void *data(void) override final;
+		virtual const void *data(void) const override final;
+		virtual size_t data_len(void) const override final;
 
 		// Image palette.
-		virtual uint32_t *palette(void) final;
-		virtual const uint32_t *palette(void) const final;
-		virtual int palette_len(void) const final;
+		virtual uint32_t *palette(void) override final;
+		virtual const uint32_t *palette(void) const override final;
+		virtual int palette_len(void) const override final;
 
 	protected:
 		/**

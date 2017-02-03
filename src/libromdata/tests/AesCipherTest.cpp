@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -90,8 +90,8 @@ class AesCipherTest : public ::testing::TestWithParam<AesCipherTest_mode>
 		AesCipherTest()
 			: m_cipher(nullptr) { }
 
-		virtual void SetUp(void) final;
-		virtual void TearDown(void) final;
+		virtual void SetUp(void) override final;
+		virtual void TearDown(void) override final;
 
 	public:
 		IAesCipher *m_cipher;

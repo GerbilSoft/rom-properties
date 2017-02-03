@@ -57,7 +57,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		IFACEMETHODIMP_(ULONG) Release(void) { return RP_ComBase::Release(); }
 		#endif
 
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) final
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) override final
 		{
 			if (!ppvObject) {
 				return E_POINTER;
@@ -78,7 +78,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 
 		/** IClassFactory **/
 
-		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) final
+		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) override final
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
@@ -103,7 +103,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 			return hr;
 		}
 
-		IFACEMETHODIMP LockServer(BOOL fLock) final
+		IFACEMETHODIMP LockServer(BOOL fLock) override final
 		{
 			// Not implemented.
 			UNUSED(fLock);

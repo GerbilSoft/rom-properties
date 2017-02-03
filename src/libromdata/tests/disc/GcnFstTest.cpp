@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -87,8 +87,8 @@ class GcnFstTest : public ::testing::TestWithParam<GcnFstTest_mode>
 			, m_fst(nullptr)
 		{ }
 
-		virtual void SetUp(void) final;
-		virtual void TearDown(void) final;
+		virtual void SetUp(void) override final;
+		virtual void TearDown(void) override final;
 
 		/**
 		 * Open a Zip file for reading.

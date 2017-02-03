@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -63,7 +63,7 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
 
 	public:
 		/**
@@ -96,10 +96,10 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 
 	public:
 		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) override final;
 
 		// IThumbnailProvider
-		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) final;
+		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) override final;
 
 	protected:
 		// Thumbnail resize policy.

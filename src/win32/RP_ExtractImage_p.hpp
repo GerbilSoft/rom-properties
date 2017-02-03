@@ -98,27 +98,27 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual HBITMAP rpImageToImgClass(const LibRomData::rp_image *img) const final;
+		virtual HBITMAP rpImageToImgClass(const LibRomData::rp_image *img) const override final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		virtual bool isImgClassValid(const HBITMAP &imgClass) const final;
+		virtual bool isImgClassValid(const HBITMAP &imgClass) const override final;
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		virtual HBITMAP getNullImgClass(void) const final;
+		virtual HBITMAP getNullImgClass(void) const override final;
 
 		/**
 		 * Free an ImgClass object.
 		 * This may be no-op for e.g. HBITMAP.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(HBITMAP &imgClass) const final;
+		virtual void freeImgClass(HBITMAP &imgClass) const override final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -126,13 +126,13 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const final;
+		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override final;
 
 		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const final;
+		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const override final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_P_HPP__ */

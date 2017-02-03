@@ -79,27 +79,27 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual PGDKPIXBUF rpImageToImgClass(const rp_image *img) const final;
+		virtual PGDKPIXBUF rpImageToImgClass(const rp_image *img) const override final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		virtual bool isImgClassValid(const PGDKPIXBUF &imgClass) const final;
+		virtual bool isImgClassValid(const PGDKPIXBUF &imgClass) const override final;
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		virtual PGDKPIXBUF getNullImgClass(void) const final;
+		virtual PGDKPIXBUF getNullImgClass(void) const override final;
 
 		/**
 		 * Free an ImgClass object.
 		 * This may be no-op for e.g. PGDKPIXBUF.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(PGDKPIXBUF &imgClass) const final;
+		virtual void freeImgClass(PGDKPIXBUF &imgClass) const override final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -107,13 +107,13 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const final;
+		virtual PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const override final;
 
 		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const final;
+		virtual rp_string proxyForUrl(const rp_string &url) const override final;
 };
 
 CreateThumbnailPrivate::CreateThumbnailPrivate()

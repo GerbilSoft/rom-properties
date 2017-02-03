@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -74,14 +74,14 @@ class PlayStationSave : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const final;
+		virtual int isRomSupported(const DetectInfo *info) const override final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const final;
+		virtual const rp_char *systemName(uint32_t type) const override final;
 
 	public:
 		/**
@@ -112,7 +112,7 @@ class PlayStationSave : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override final;
 
 		/**
 		 * Get a bitfield of image types this class can retrieve.
@@ -124,7 +124,7 @@ class PlayStationSave : public RomData
 		 * Get a bitfield of image types this class can retrieve.
 		 * @return Bitfield of supported image types. (ImageTypesBF)
 		 */
-		virtual uint32_t supportedImageTypes(void) const final;
+		virtual uint32_t supportedImageTypes(void) const override final;
 
 	protected:
 		/**
@@ -132,7 +132,7 @@ class PlayStationSave : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) final;
+		virtual int loadFieldData(void) override final;
 
 		/**
 		 * Load an internal image.
@@ -140,7 +140,7 @@ class PlayStationSave : public RomData
 		 * @param imageType Image type to load.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType) final;
+		virtual int loadInternalImage(ImageType imageType) override final;
 
 	public:
 		/**
@@ -151,7 +151,7 @@ class PlayStationSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const final;
+		virtual const IconAnimData *iconAnimData(void) const override final;
 };
 
 }

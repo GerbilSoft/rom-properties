@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDrive.hpp: Sega Mega Drive ROM reader.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -74,14 +74,14 @@ class MegaDrive : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const final;
+		virtual int isRomSupported(const DetectInfo *info) const override final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const final;
+		virtual const rp_char *systemName(uint32_t type) const override final;
 
 	public:
 		/**
@@ -112,7 +112,7 @@ class MegaDrive : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override final;
 
 	protected:
 		/**
@@ -120,7 +120,7 @@ class MegaDrive : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) final;
+		virtual int loadFieldData(void) override final;
 };
 
 }

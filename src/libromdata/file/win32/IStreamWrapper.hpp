@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IStreamWrapper.hpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -63,24 +63,24 @@ class IStreamWrapper : public IStream
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
-		IFACEMETHODIMP_(ULONG) AddRef(void) final;
-		IFACEMETHODIMP_(ULONG) Release(void) final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
+		IFACEMETHODIMP_(ULONG) AddRef(void) override final;
+		IFACEMETHODIMP_(ULONG) Release(void) override final;
 
 		// ISequentialStream
-		IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) final;
-		IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten) final;
+		IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) override final;
+		IFACEMETHODIMP Write(const void *pv, ULONG cb, ULONG *pcbWritten) override final;
 
 		// IStream
-		IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) final;
-		IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize) final;
-		IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) final;
-		IFACEMETHODIMP Commit(DWORD grfCommitFlags) final;
-		IFACEMETHODIMP Revert(void) final;
-		IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
-		IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) final;
-		IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) final;
-		IFACEMETHODIMP Clone(IStream **ppstm) final;
+		IFACEMETHODIMP Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) override final;
+		IFACEMETHODIMP SetSize(ULARGE_INTEGER libNewSize) override final;
+		IFACEMETHODIMP CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) override final;
+		IFACEMETHODIMP Commit(DWORD grfCommitFlags) override final;
+		IFACEMETHODIMP Revert(void) override final;
+		IFACEMETHODIMP LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) override final;
+		IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) override final;
+		IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) override final;
+		IFACEMETHODIMP Clone(IStream **ppstm) override final;
 
 	private:
 		/* References of this object. */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AesCAPI.hpp: AES decryption class using Win32 CryptoAPI.                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -45,13 +45,13 @@ class AesCAPI : public IAesCipher
 		 * Get the name of the AesCipher implementation.
 		 * @return Name.
 		 */
-		virtual const rp_char *name(void) const final;
+		virtual const rp_char *name(void) const override final;
 
 		/**
 		 * Has the cipher been initialized properly?
 		 * @return True if initialized; false if not.
 		 */
-		virtual bool isInit(void) const final;
+		virtual bool isInit(void) const override final;
 
 		/**
 		 * Set the encryption key.
@@ -59,14 +59,14 @@ class AesCAPI : public IAesCipher
 		 * @param len Key length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setKey(const uint8_t *key, unsigned int len) final;
+		virtual int setKey(const uint8_t *key, unsigned int len) override final;
 
 		/**
 		 * Set the cipher chaining mode.
 		 * @param mode Cipher chaining mode.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setChainingMode(ChainingMode mode) final;
+		virtual int setChainingMode(ChainingMode mode) override final;
 
 		/**
 		 * Set the IV.
@@ -74,7 +74,7 @@ class AesCAPI : public IAesCipher
 		 * @param len IV length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int setIV(const uint8_t *iv, unsigned int len) final;
+		virtual int setIV(const uint8_t *iv, unsigned int len) override final;
 
 		/**
 		 * Decrypt a block of data.
@@ -82,7 +82,7 @@ class AesCAPI : public IAesCipher
 		 * @param data_len Length of data block.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
-		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) final;
+		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) override final;
 
 		/**
 		 * Decrypt a block of data using the specified IV.
@@ -93,7 +93,7 @@ class AesCAPI : public IAesCipher
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
 		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len,
-			const uint8_t *iv, unsigned int iv_len) final;
+			const uint8_t *iv, unsigned int iv_len) override final;
 };
 
 }

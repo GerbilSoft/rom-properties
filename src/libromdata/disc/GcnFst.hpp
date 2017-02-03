@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.hpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -56,7 +56,7 @@ class GcnFst : public IFst
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		virtual Dir *opendir(const rp_char *path) final;
+		virtual Dir *opendir(const rp_char *path) override final;
 
 		/**
 		 * Read a directory entry.
@@ -64,14 +64,14 @@ class GcnFst : public IFst
 		 * @return DirEnt*, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
-		virtual DirEnt *readdir(Dir *dirp) final;
+		virtual DirEnt *readdir(Dir *dirp) override final;
 
 		/**
 		 * Close an opened directory.
 		 * @param dirp Dir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int closedir(Dir *dirp) final;
+		virtual int closedir(Dir *dirp) override final;
 
 		/**
 		 * Get the directory entry for the specified file.
@@ -79,7 +79,7 @@ class GcnFst : public IFst
 		 * @param dirent	[out] Pointer to DirEnt buffer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int find_file(const rp_char *filename, DirEnt *dirent) final;
+		virtual int find_file(const rp_char *filename, DirEnt *dirent) override final;
 
 	public:
 		/**

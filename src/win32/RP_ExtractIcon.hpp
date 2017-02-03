@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -57,7 +57,7 @@ RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 
 	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
 
 	public:
 		/**
@@ -90,27 +90,27 @@ RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 
 	public:
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
+		IFACEMETHODIMP GetClassID(CLSID *pClassID) override final;
 		// IPersistFile
-		IFACEMETHODIMP IsDirty(void) final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+		IFACEMETHODIMP IsDirty(void) override final;
+		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) override final;
+		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) override final;
+		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) override final;
+		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) override final;
 
 		// IExtractIconW
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPWSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+			UINT cchMax, int *piIndex, UINT *pwFlags) override final;
 		IFACEMETHODIMP Extract(LPCWSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) final;
+			UINT nIconSize) override final;
 
 		// IExtractIconA
 		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
+			UINT cchMax, int *piIndex, UINT *pwFlags) override final;
 		IFACEMETHODIMP Extract(LPCSTR pszFile, UINT nIconIndex,
 			HICON *phiconLarge, HICON *phiconSmall,
-			UINT nIconSize) final;
+			UINT nIconSize) override final;
 };
 
 #ifdef __CRT_UUID_DECL

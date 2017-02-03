@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KDE5)                        *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -88,27 +88,27 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual QImage rpImageToImgClass(const rp_image *img) const final;
+		virtual QImage rpImageToImgClass(const rp_image *img) const override final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
 		 * @param imgClass ImgClass
 		 * @return True if valid; false if not.
 		 */
-		virtual bool isImgClassValid(const QImage &imgClass) const final;
+		virtual bool isImgClassValid(const QImage &imgClass) const override final;
 
 		/**
 		 * Wrapper function to get a "null" ImgClass.
 		 * @return "Null" ImgClass.
 		 */
-		virtual QImage getNullImgClass(void) const final;
+		virtual QImage getNullImgClass(void) const override final;
 
 		/**
 		 * Free an ImgClass object.
 		 * This may be no-op for e.g. QImage.
 		 * @param imgClass ImgClass object.
 		 */
-		virtual void freeImgClass(QImage &imgClass) const final;
+		virtual void freeImgClass(QImage &imgClass) const override final;
 
 		/**
 		 * Rescale an ImgClass using nearest-neighbor scaling.
@@ -116,13 +116,13 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const final;
+		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const override final;
 
 		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const final;
+		virtual rp_string proxyForUrl(const rp_string &url) const override final;
 };
 
 /** RomThumbCreatorPrivate **/

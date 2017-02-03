@@ -45,32 +45,32 @@ class rp_image_backend_default : public rp_image_backend
 		RP_DISABLE_COPY(rp_image_backend_default)
 
 	public:
-		virtual void *data(void) final
+		virtual void *data(void) override final
 		{
 			return m_data;
 		}
 
-		virtual const void *data(void) const final
+		virtual const void *data(void) const override final
 		{
 			return m_data;
 		}
 
-		virtual size_t data_len(void) const final
+		virtual size_t data_len(void) const override final
 		{
 			return m_data_len;
 		}
 
-		virtual uint32_t *palette(void) final
+		virtual uint32_t *palette(void) override final
 		{
 			return m_palette;
 		}
 
-		virtual const uint32_t *palette(void) const final
+		virtual const uint32_t *palette(void) const override final
 		{
 			return m_palette;
 		}
 
-		virtual int palette_len(void) const final
+		virtual int palette_len(void) const override final
 		{
 			return m_palette_len;
 		}
