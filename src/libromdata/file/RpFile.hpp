@@ -58,7 +58,7 @@ class RpFile : public IRpFile
 		RpFile(const rp_char *filename, FileMode mode);
 		RpFile(const rp_string &filename, FileMode mode);
 	private:
-		void init(const rp_char *filename);
+		void init(void);
 	public:
 		virtual ~RpFile();
 

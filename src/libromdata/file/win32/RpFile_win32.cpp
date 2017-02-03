@@ -79,7 +79,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_filename(filename)
 	, m_mode(mode)
 {
-	init(filename);
+	init();
 }
 
 /**
@@ -94,14 +94,14 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_filename(filename)
 	, m_mode(mode)
 {
-	init(filename.c_str());
+	init();
 }
 
 /**
  * Common initialization function for RpFile's constructors.
- * @param filename Filename.
+ * Filename must be set in m_filename.
  */
-void RpFile::init(const rp_char *filename)
+void RpFile::init(void)
 {
 	// Determine the file mode.
 	DWORD dwDesiredAccess, dwCreationDisposition;
@@ -114,16 +114,17 @@ void RpFile::init(const rp_char *filename)
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
 	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	if (m_filename.size() > 3 &&
+	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
+	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += RP2W_c(filename);
+		filenameW += RP2W_s(m_filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_c(filename);
+		filenameW = RP2W_s(m_filename);
 	}
 
 	// Open the file.

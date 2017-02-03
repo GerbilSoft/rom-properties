@@ -86,7 +86,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
 	, m_filename(filename)
 	, m_mode(mode)
 {
-	init(filename);
+	init();
 }
 
 /**
@@ -101,14 +101,14 @@ RpFile::RpFile(const rp_string &filename, FileMode mode)
 	, m_filename(filename)
 	, m_mode(mode)
 {
-	init(filename.c_str());
+	init();
 }
 
 /**
  * Common initialization function for RpFile's constructors.
- * @param filename Filename.
+ * Filename must be set in m_filename.
  */
-void RpFile::init(const rp_char *filename)
+void RpFile::init(void)
 {
 	const mode_str_t *mode_str = mode_to_str(m_mode);
 	if (!mode_str) {
@@ -124,25 +124,26 @@ void RpFile::init(const rp_char *filename)
 	// If this is an absolute path, make sure it starts with
 	// "\\?\" in order to support filenames longer than MAX_PATH.
 	wstring filenameW;
-	if (iswascii(filename[0]) && iswalpha(filename[0]) &&
-	    filename[1] == _RP_CHR(':') && filename[2] == _RP_CHR('\\'))
+	if (m_filename.size() > 3 &&
+	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
+	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += RP2W_c(filename);
+		filenameW += RP2W_s(m_filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_c(filename);
+		filenameW = RP2W_s(m_filename);
 	}
 
 	m_file.reset(_wfopen(filenameW.c_str(), mode_str), myFile_deleter());
 #else /* !_WIN32 */
 	// Linux: Use UTF-8 filenames.
 #if defined(RP_UTF8)
-	m_file.reset(fopen(filename, mode_str), myFile_deleter());
+	m_file.reset(fopen(m_filename.c_str(), mode_str), myFile_deleter());
 #elif defined(RP_UTF16)
-	string u8_filename = rp_string_to_utf8(filename, rp_strlen(filename));
+	string u8_filename = rp_string_to_utf8(m_filename);
 	m_file.reset(fopen(u8_filename.c_str(), mode_str), myFile_deleter());
 #endif /* RP_UTF8, RP_UTF16 */
 #endif /* _WIN32 */
