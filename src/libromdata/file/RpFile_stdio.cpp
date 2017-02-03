@@ -167,7 +167,9 @@ RpFile::RpFile(const RpFile &other)
 	, m_file(other.m_file)
 	, m_filename(other.m_filename)
 	, m_mode(other.m_mode)
-{ }
+{
+	m_lastError = other.m_lastError;
+}
 
 /**
  * Assignment operator.

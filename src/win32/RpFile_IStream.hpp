@@ -50,17 +50,6 @@ class RpFile_IStream : public LibRomData::IRpFile
 		virtual bool isOpen(void) const final;
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
-		 */
-		virtual int lastError(void) const final;
-
-		/**
-		 * Clear the last error.
-		 */
-		virtual void clearError(void) final;
-
-		/**
 		 * dup() the file handle.
 		 *
 		 * Needed because IRpFile* objects are typically
@@ -132,7 +121,6 @@ class RpFile_IStream : public LibRomData::IRpFile
 	protected:
 		IStream *m_pStream;
 		LibRomData::rp_string m_filename;
-		int m_lastError;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__ */

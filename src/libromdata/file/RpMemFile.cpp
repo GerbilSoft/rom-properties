@@ -58,10 +58,8 @@ RpMemFile::RpMemFile(const RpMemFile &other)
 	, m_size(other.m_size)
 	, m_pos(0)
 {
-	if (!m_buf) {
-		// No buffer specified.
-		m_lastError = EBADF;
-	}
+	// If there's no buffer specified, that's an error.
+	m_lastError = (m_buf ? other.m_lastError : EBADF);
 }
 
 /**
@@ -76,7 +74,7 @@ RpMemFile &RpMemFile::operator=(const RpMemFile &other)
 	m_pos = 0;
 
 	// If there's no buffer specified, that's an error.
-	m_lastError = (m_buf ? 0 : EBADF);
+	m_lastError = (m_buf ? other.m_lastError : EBADF);
 	return *this;
 }
 

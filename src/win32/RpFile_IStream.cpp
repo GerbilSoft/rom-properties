@@ -38,7 +38,6 @@ using std::string;
 RpFile_IStream::RpFile_IStream(IStream *pStream)
 	: super()
 	, m_pStream(pStream)
-	, m_lastError(0)
 {
 	pStream->AddRef();
 }
@@ -57,10 +56,10 @@ RpFile_IStream::~RpFile_IStream()
 RpFile_IStream::RpFile_IStream(const RpFile_IStream &other)
 	: super()
 	, m_pStream(other.m_pStream)
-	, m_lastError(other.m_lastError)
 {
 	// TODO: Combine with assignment constructor?
 	m_pStream->AddRef();
+	m_lastError = other.m_lastError;
 
 	// Nothing else to do, since we can't actually
 	// clone the stream.
@@ -96,23 +95,6 @@ RpFile_IStream &RpFile_IStream::operator=(const RpFile_IStream &other)
 bool RpFile_IStream::isOpen(void) const
 {
 	return (m_pStream != nullptr);
-}
-
-/**
- * Get the last error.
- * @return Last POSIX error, or 0 if no error.
- */
-int RpFile_IStream::lastError(void) const
-{
-	return m_lastError;
-}
-
-/**
- * Clear the last error.
- */
-void RpFile_IStream::clearError(void)
-{
-	m_lastError = 0;
 }
 
 /**
