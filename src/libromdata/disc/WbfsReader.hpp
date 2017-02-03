@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WbfsReader.hpp: WBFS disc image reader.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,12 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 
-#include "IDiscReader.hpp"
+#include "SparseDiscReader.hpp"
 
 namespace LibRomData {
 
 class WbfsReaderPrivate;
-class WbfsReader : public IDiscReader
+class WbfsReader : public SparseDiscReader
 {
 	public:
 		/**
@@ -37,13 +37,12 @@ class WbfsReader : public IDiscReader
 		 * @param file File to read from.
 		 */
 		explicit WbfsReader(IRpFile *file);
-		virtual ~WbfsReader();
 
 	private:
+		typedef SparseDiscReader super;
 		RP_DISABLE_COPY(WbfsReader)
 	private:
 		friend class WbfsReaderPrivate;
-		WbfsReaderPrivate *const d;
 
 	public:
 		/** Disc image detection functions. **/
@@ -62,41 +61,24 @@ class WbfsReader : public IDiscReader
 		 * @param szHeader Size of header.
 		 * @return Class-specific disc format ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const final;
+		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final;
 
-	public:
-		/**
-		 * Is the disc image open?
-		 * This usually only returns false if an error occurred.
-		 * @return True if the disc image is open; false if it isn't.
-		 */
-		virtual bool isOpen(void) const final;
+	protected:
+		/** SparseDiscReader functions. **/
 
 		/**
-		 * Read data from the disc image.
-		 * @param ptr Output data buffer.
-		 * @param size Amount of data to read, in bytes.
-		 * @return Number of bytes read.
+		 * Read the specified block.
+		 *
+		 * This can read either a full block or a partial block.
+		 * For a full block, set pos = 0 and size = block_size.
+		 *
+		 * @param blockIdx	[in] Block index.
+		 * @param ptr		[out] Output data buffer.
+		 * @param pos		[in] Starting position. (Must be >= 0 and <= the block size!)
+		 * @param size		[in] Amount of data to read, in bytes. (Must be <= the block size!)
+		 * @return Number of bytes read, or -1 if the block index is invalid.
 		 */
-		virtual size_t read(void *ptr, size_t size) final;
-
-		/**
-		 * Set the disc image position.
-		 * @param pos Disc image position.
-		 * @return 0 on success; -1 on error.
-		 */
-		virtual int seek(int64_t pos) final;
-
-		/**
-		 * Seek to the beginning of the disc image.
-		 */
-		virtual void rewind(void) final;
-
-		/**
-		 * Get the disc image size.
-		 * @return Disc image size, or -1 on error.
-		 */
-		virtual int64_t size(void) final;
+		virtual int readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size) override final;
 };
 
 }
