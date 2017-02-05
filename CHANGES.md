@@ -16,6 +16,9 @@
   * New command line frontend `rpcli`. This frontend lists the ROM information
     that would normally be displayed on the property page. It also has options
     for extracting internal images and downloading external images.
+  * The Windows version now registers for "common" file extensions, e.g. ".bin"
+    and ".iso". The previous handlers are saved as fallbacks. If rom-properties
+    cannot handle one of these files, the fallback handler is used.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
@@ -38,6 +41,7 @@
     handled. (Example: "Baten Kaitos Origins" save files.)
   * Wii: Added support for RVT-R debug discs. The encryption key used for
     each partition is now displayed in the partition listing.
+  * Wii: Show the game title from opening.bnr.
   * Game Boy Advance: Some ROM images that are intended for use as expansion
     packs for Nintendo DS games weren't recognized because they don't have
     the Nintendo logo data. These ROM images are now detected and marked
@@ -47,6 +51,7 @@
     offset is also signed, so it could be negative (though this is unlikely).
   * Nintendo DS: Fixed an issue where the first frame of animated icons was
     not selected correctly. (Example: "Four Swords Adventures".)
+  * Nintendo DS: Show age ratings for DSi-enhanced and DSi-exclusive games.
 
 * Other changes:
   * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
