@@ -31,7 +31,7 @@ class SparseDiscReaderPrivate;
 class SparseDiscReader : public IDiscReader
 {
 	protected:
-		SparseDiscReader(SparseDiscReaderPrivate *d);
+		explicit SparseDiscReader(SparseDiscReaderPrivate *d);
 	public:
 		virtual ~SparseDiscReader();
 
