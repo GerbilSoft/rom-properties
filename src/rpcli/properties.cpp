@@ -105,17 +105,11 @@ public:
 			if (cp.width && *str == '\n') {
 				escaped += '\n';
 				escaped += rp_string( cp.width + (cp.quotes?1:0) , ' ');
-			}
-			else if (*str < 0x20) {
-				// HACK: this piece of code encodes U+2400 through U+241F in UTF-8
-				// this relies on the fact that rpcli is compiled with romdata8.
-				// And yes, you have to use numerics instead of literals, because
-				// \xE2\x90 would be interpreted as \u00E2\u0090.
-				escaped += (rp_char)0xe2;
-				escaped += (rp_char)0x90;
-				escaped += (rp_char)(0x80+*str);
-			}
-			else {
+			} else if ((unsigned char)*str < 0x20) {
+				// Encode control characters using U+2400 through U+241F.
+				escaped += "\xE2\x90";
+				escaped += (rp_char)(0x80 + (unsigned char)*str);
+			} else {
 				escaped += *str;
 			}
 		}
