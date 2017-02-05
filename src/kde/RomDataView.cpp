@@ -739,6 +739,11 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc,
 		str += RP2Q(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
 	}
 
+	if (str.isEmpty()) {
+		// No age ratings.
+		str = QLatin1String("None");
+	}
+
 	Q_Q(RomDataView);
 	QLabel *lblAgeRatings = new QLabel(q);
 	lblAgeRatings->setAlignment(Qt::AlignLeft | Qt::AlignTop);

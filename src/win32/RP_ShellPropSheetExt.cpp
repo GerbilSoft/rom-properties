@@ -1364,6 +1364,11 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 		woss << RP2W_s(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
 	}
 
+	if (!printedOne) {
+		// No age ratings.
+		woss << L"None";
+	}
+
 	// Initialize the string.
 	return initString(hDlg, pt_start, idx, size, desc, data, woss.str().c_str());
 }

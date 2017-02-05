@@ -1046,6 +1046,11 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 		oss << '=' << RomFields::ageRatingDecode(i, rating);
 	}
 
+	if (!printedOne) {
+		// No age ratings.
+		oss << "None";
+	}
+
 	GtkWidget *widget = gtk_label_new(nullptr);
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
