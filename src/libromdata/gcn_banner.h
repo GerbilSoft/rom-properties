@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * gcn_structs.h: Nintendo GameCube and Wii banner structures.             *
+ * gcn_banner.h: Nintendo GameCube and Wii banner structures.              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -48,6 +48,7 @@ extern "C" {
 // Banner comment.
 #pragma pack(1)
 #define GCN_BANNER_COMMENT_SIZE 0x140
+#pragma pack(1)
 typedef struct PACKED _banner_comment_t
 {
 	char gamename[0x20];
@@ -56,6 +57,8 @@ typedef struct PACKED _banner_comment_t
 	char company_full[0x40];
 	char gamedesc[0x80];
 } banner_comment_t;
+#pragma pack()
+ASSERT_STRUCT(banner_comment_t, GCN_BANNER_COMMENT_SIZE);
 
 // BNR1
 #pragma pack(1)
@@ -68,6 +71,7 @@ typedef struct PACKED _banner_bnr1_t
 	banner_comment_t comment;
 } banner_bnr1_t;
 #pragma pack()
+ASSERT_STRUCT(banner_bnr1_t, GCN_BANNER_BNR1_SIZE);
 
 // BNR2
 #pragma pack(1)
@@ -80,6 +84,7 @@ typedef struct PACKED _banner_bnr2_t
 	banner_comment_t comments[6];
 } banner_bnr2_t;
 #pragma pack()
+ASSERT_STRUCT(banner_bnr2_t, GCN_BANNER_BNR2_SIZE);
 
 // BNR2 languages. (Maps to GameCube language setting.)
 typedef enum {
@@ -117,6 +122,7 @@ typedef enum {
 #define BANNER_WIBN_ICON_H 48
 
 // Struct size.
+#define BANNER_WIBN_IMAGE_SIZE 24576
 #define BANNER_WIBN_ICON_SIZE 0x1200
 #define BANNER_WIBN_STRUCT_SIZE 24736
 #define BANNER_WIBN_STRUCT_SIZE_ICONS(icons) \
@@ -132,6 +138,7 @@ typedef struct PACKED _wii_savegame_header_t {
 	uint16_t gameSubTitle[32];	// Game subtitle. (UTF-16 BE)
 } wii_savegame_header_t;
 #pragma pack()
+ASSERT_STRUCT(wii_savegame_header_t, 160);
 
 #pragma pack(1)
 typedef struct PACKED _wii_savegame_banner_t {
@@ -139,12 +146,14 @@ typedef struct PACKED _wii_savegame_banner_t {
 	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];		// Main icon. (48x48, RGB5A3)
 } wii_savegame_banner_t;
 #pragma pack()
+ASSERT_STRUCT(wii_savegame_banner_t, BANNER_WIBN_IMAGE_SIZE+BANNER_WIBN_ICON_SIZE);
 
 #pragma pack(1)
 typedef struct PACKED _wii_savegame_icon_t {
 	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];	// Additional icon. (48x48, RGB5A3) [optional]
 } wii_savegame_icon_t;
 #pragma pack()
+ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
 
 #ifdef __cplusplus
 }

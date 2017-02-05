@@ -623,14 +623,6 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -gcnPartition->lastError();
 	}
 
-	// Static assertions for the banner structs.
-	static_assert(sizeof(banner_comment_t) == GCN_BANNER_COMMENT_SIZE,
-		"banner_comment_t is the wrong size. (Should be 320 bytes.)");
-	static_assert(sizeof(banner_bnr1_t) == GCN_BANNER_BNR1_SIZE,
-		"banner_bnr1_t is the wrong size. (Should be 6,496 bytes.)");
-	static_assert(sizeof(banner_bnr2_t) == GCN_BANNER_BNR2_SIZE,
-		"banner_bnr2_t is the wrong size. (Should be 8,096 bytes.)");
-
 	// Always use a BNR2 pointer.
 	// BNR1 and BNR2 have identical layouts, except
 	// BNR2 has more comment fields.
