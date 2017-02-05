@@ -155,6 +155,45 @@ typedef struct PACKED _wii_savegame_icon_t {
 #pragma pack()
 ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
 
+// IMET magic number.
+#define WII_IMET_MAGIC 0x494D4554	/* 'IMET' */
+
+/**
+ * IMET (Wii opening.bnr header)
+ * This contains the game title.
+ * Reference: http://wiibrew.org/wiki/Opening.bnr#banner.bin_and_icon.bin
+ *
+ * All fields are big-endian.
+ */
+#pragma pack(1)
+typedef struct _wii_imet_t {
+	uint8_t zeroes1[64];
+	uint32_t magic;		// "IMET"
+	uint32_t hashsize;	// Hash length
+	uint32_t unknown;
+	uint32_t sizes[3];	// icon.bin, banner.bin, sound.bin
+	uint32_t flag1;
+	char16_t names[10][42];	// UTF-16BE: JP,EN,DE,FR,ES,IT,NL,xx,xx,KO
+	uint8_t zeroes2[588];
+	uint8_t md5[16];	// MD5 of 0 to 'hashsize' in the header.
+				// This field is all 0 when calculating.
+} wii_imet_t;
+#pragma pack()
+ASSERT_STRUCT(wii_imet_t, 1536);
+
+// Wii languages. (Maps to IMET indexes.)
+typedef enum {
+	WII_LANG_JAPANESE	= 0,
+	WII_LANG_ENGLISH	= 1,
+	WII_LANG_GERMAN		= 2,
+	WII_LANG_FRENCH		= 3,
+	WII_LANG_SPANISH	= 4,
+	WII_LANG_ITALIAN	= 5,
+	WII_LANG_DUTCH		= 6,
+	// 7 and 8 are unknown. (Chinese?)
+	WII_LANG_KOREAN		= 9,
+} Wii_Language;
+
 #ifdef __cplusplus
 }
 #endif

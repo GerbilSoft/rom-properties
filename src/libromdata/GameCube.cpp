@@ -112,6 +112,9 @@ class GameCubePrivate : public RomDataPrivate
 		// how many comment fields are present.
 		banner_bnr2_t *gcn_opening_bnr;
 
+		// Wii opening.bnr. (IMET section)
+		wii_imet_t *wii_opening_bnr;
+
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
 
@@ -135,9 +138,9 @@ class GameCubePrivate : public RomDataPrivate
 		WiiPartTable wiiVgTbl[4];	// Volume group table.
 		bool wiiVgTblLoaded;
 
-		// Update partition.
-		// Points to entry within WiiParttable.
+		// Pointers to specific partitions within WiiPartTable.
 		WiiPartition *updatePartition;
+		WiiPartition *gamePartition;
 
 		/**
 		 * Load the Wii volume group and partition tables.
@@ -167,6 +170,7 @@ class GameCubePrivate : public RomDataPrivate
 		 */
 		vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
 
+	public:
 		/**
 		 * Load opening.bnr. (GameCube only)
 		 * @return 0 on success; negative POSIX error code on error.
@@ -174,12 +178,26 @@ class GameCubePrivate : public RomDataPrivate
 		int gcn_loadOpeningBnr(void);
 
 		/**
-		 * Get the banner_comment_t from opening.bnr.
+		 * Load opening.bnr. (Wii only)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int wii_loadOpeningBnr(void);
+
+		/**
+		 * Get the banner_comment_t from opening.bnr. (GameCube version)
 		 * For BNR2, this uses the comment that most
 		 * closely matches the host system language.
 		 * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
 		 */
 		const banner_comment_t *gcn_getBannerComment(void) const;
+
+		/**
+		 * Get the game name from opening.bnr. (Wii version)
+		 * This uses the name that most closely matches
+		 * the host system language.
+		 * @return Game name, or empty string if opening.bnr was not loaded.
+		 */
+		rp_string wii_getBannerName(void) const;
 };
 
 /** GameCubePrivate **/
@@ -202,8 +220,6 @@ const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
 	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
 	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
-
-	/** GameCube-specific fields. **/
 	// Game information from opening.bnr.
 	{_RP("Game Info"), RomFields::RFT_STRING, {nullptr}},
 
@@ -238,9 +254,11 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcn_opening_bnr(nullptr)
+	, wii_opening_bnr(nullptr)
 	, gcnRegion(~0)
 	, wiiVgTblLoaded(false)
 	, updatePartition(nullptr)
+	, gamePartition(nullptr)
 {
 	// Clear the various structs.
 	memset(&discHeader, 0, sizeof(discHeader));
@@ -250,6 +268,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 GameCubePrivate::~GameCubePrivate()
 {
 	updatePartition = nullptr;
+	gamePartition = nullptr;
 
 	// Delete partition objects in wiiVgTbl[].
 	// TODO: Check wiiVgTblLoaded?
@@ -260,6 +279,7 @@ GameCubePrivate::~GameCubePrivate()
 	}
 
 	free(gcn_opening_bnr);
+	free(wii_opening_bnr);
 	delete discReader;
 }
 
@@ -340,6 +360,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 			if (entry.type == PARTITION_UPDATE && !updatePartition) {
 				// System Update partition.
 				updatePartition = entry.partition;
+			} else if (entry.type == PARTITION_GAME && !gamePartition) {
+				// Game partition.
+				gamePartition = entry.partition;
 			}
 		}
 	}
@@ -589,19 +612,20 @@ vector<const char*> GameCubePrivate::gcnRegionToGameTDB(unsigned int gcnRegion, 
 }
 
 /**
- * Load opening.bnr. (GameCube only)
+ * Load opening.bnr. (GameCube version)
  * @return 0 on success; negative POSIX error code on error.
  */
 int GameCubePrivate::gcn_loadOpeningBnr(void)
 {
 	assert(discReader != nullptr);
-
-	// TODO: Do Triforce games have opening.bnr?
-	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
-	    (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
+	if (!discReader) {
+		return -EIO;
+	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN &&
+		   (discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_TRIFORCE)
 	{
-		// No opening.bnr.
-		return -ENOENT;
+		// Not supported.
+		// TODO: Do Triforce games have opening.bnr?
+		return -ENOTSUP;
 	}
 
 	if (gcn_opening_bnr) {
@@ -670,13 +694,70 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return (err != 0 ? -err : -EIO);
 	}
 
-	// Banner loaded.
+	// Banner is loaded.
 	gcn_opening_bnr = pBanner;
 	return 0;
 }
 
 /**
-* Get the banner_comment_t from opening.bnr.
+ * Load opening.bnr. (Wii version)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int GameCubePrivate::wii_loadOpeningBnr(void)
+{
+	assert(discReader != nullptr);
+	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
+	if (!discReader) {
+		return -EIO;
+	} else if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
+		// Not supported.
+		return -ENOTSUP;
+	}
+
+	if (wii_opening_bnr) {
+		// Banner is already loaded.
+		return 0;
+	}
+
+	if (!gamePartition) {
+		// No game partition...
+		return -ENOENT;
+	}
+
+	unique_ptr<IRpFile> f_opening_bnr(gamePartition->open(_RP("/opening.bnr")));
+	if (!f_opening_bnr) {
+		// Error opening "opening.bnr".
+		return -gamePartition->lastError();
+	}
+
+	// Read the IMET struct.
+	wii_imet_t *pBanner = static_cast<wii_imet_t*>(malloc(sizeof(*pBanner)));
+	if (!pBanner) {
+		return -ENOMEM;
+	}
+	size_t size = f_opening_bnr->read(pBanner, sizeof(*pBanner));
+	if (size != sizeof(*pBanner)) {
+		// Read error.
+		free(pBanner);
+		int err = f_opening_bnr->lastError();
+		return (err != 0 ? -err : -EIO);
+	}
+
+	// Verify the IMET magic.
+	if (be32_to_cpu(pBanner->magic) != WII_IMET_MAGIC) {
+		// Magic is incorrect.
+		// TODO: Better error code?
+		free(pBanner);
+		return -EIO;
+	}
+
+	// Banner is loaded.
+	wii_opening_bnr = pBanner;
+	return 0;
+}
+
+/**
+ * Get the banner_comment_t from opening.bnr.
  * For BNR2, this uses the comment that most
  * closely matches the host system language.
  * @return banner_comment_t, or nullptr if opening.bnr was not loaded.
@@ -700,7 +781,7 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 	// Check if this is BNR1 or BNR2.
 	// BNR2 has language-specific fields.
 	const banner_comment_t *comment = nullptr;
-	if (gcn_opening_bnr->magic == 0x424E5232) {
+	if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR2) {
 		// Determine the system language.
 		switch (SystemRegion::getLanguageCode()) {
 			case 'en':
@@ -740,12 +821,79 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 			// Revert to English.
 			comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
 		}
-	} else {
+	} else /*if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR1)*/ {
 		// BNR1 only has one banner comment.
 		comment = &gcn_opening_bnr->comments[0];
 	}
 
 	return comment;
+}
+
+/**
+ * Get the game name from opening.bnr. (Wii version)
+ * This uses the name that most closely matches
+ * the host system language.
+ * @return Game name, or empty string if opening.bnr was not loaded.
+ */
+rp_string GameCubePrivate::wii_getBannerName(void) const
+{
+	if (!wii_opening_bnr) {
+		// Attempt to load opening.bnr.
+		if (const_cast<GameCubePrivate*>(this)->wii_loadOpeningBnr() != 0) {
+			// Error loading opening.bnr.
+			return rp_string();
+		}
+
+		// Make sure it was actually loaded.
+		if (!wii_opening_bnr) {
+			// opening.bnr was not loaded.
+			return rp_string();
+		}
+	}
+
+	// Determine the system language.
+	const char16_t *game_name;
+	switch (SystemRegion::getLanguageCode()) {
+		case 'en':
+		default:
+			// English. (default)
+			// Used if the host system language doesn't match
+			// any of the languages supported by Wii.
+			game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+			break;
+
+		case 'ja':
+			game_name = wii_opening_bnr->names[WII_LANG_JAPANESE];
+			break;
+		case 'de':
+			game_name = wii_opening_bnr->names[WII_LANG_GERMAN];
+			break;
+		case 'fr':
+			game_name = wii_opening_bnr->names[WII_LANG_FRENCH];
+			break;
+		case 'es':
+			game_name = wii_opening_bnr->names[WII_LANG_SPANISH];
+			break;
+		case 'it':
+			game_name = wii_opening_bnr->names[WII_LANG_ITALIAN];
+			break;
+		case 'nl':
+			game_name = wii_opening_bnr->names[WII_LANG_DUTCH];
+			break;
+		case 'ko':
+			game_name = wii_opening_bnr->names[WII_LANG_KOREAN];
+			break;
+	}
+
+	// If the language-specific name is empty,
+	// revert to English.
+	if (game_name[0] == 0) {
+		// Revert to English.
+		game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+	}
+
+	// Convert from UTF-16BE.
+	return utf16be_to_rp_string(game_name, ARRAY_SIZE(wii_opening_bnr->names[0]));
 }
 
 /** GameCube **/
@@ -1269,8 +1417,20 @@ int GameCube::loadFieldData(void)
 	
 	/** Wii-specific fields. **/
 
-	// Add a dummy entry for the "Game Info" field.
-	d->fields->addData_invalid();	// Game Info
+	// Load the Wii partition tables.
+	int wiiPtLoaded = d->loadWiiPartitionTables();
+
+	// Get the game name from opening.bnr.
+	rp_string game_name;
+	if (wiiPtLoaded == 0) {
+		game_name = d->wii_getBannerName();
+	}
+	if (!game_name.empty()) {
+		d->fields->addData_string(game_name);
+	} else {
+		// opening.bnr could not be loaded.
+		d->fields->addData_invalid();
+	}
 
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
@@ -1306,9 +1466,8 @@ int GameCube::loadFieldData(void)
 	}
 	d->fields->addData_ageRatings(age_ratings);
 
-	// Load the Wii partition tables.
-	int ret = d->loadWiiPartitionTables();
-	if (ret == 0) {
+	// Display the Wii partition tables.
+	if (wiiPtLoaded == 0) {
 		// Wii partition tables loaded.
 		// Convert them to RFT_LISTDATA for display purposes.
 
@@ -1538,7 +1697,7 @@ int GameCube::loadInternalImage(ImageType imageType)
 		return -ENOENT;
 	}
 
-	// Load opening.bnr.
+	// Load opening.bnr. (GCN/Triforce only)
 	// FIXME: Does Triforce have opening.bnr?
 	if (d->gcn_loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
