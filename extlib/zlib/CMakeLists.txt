@@ -228,10 +228,11 @@ TARGET_INCLUDE_DIRECTORIES(zlibstatic
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	)
 
-# rom-properties: Split debug functionality.
+# rom-properties: Split debug functionality; Windows subsystem.
 # NOTE: Do NOT use DO_SPLIT_DEBUG on static library targets,
 # since it results in the entire thing being split out on Linux.
 DO_SPLIT_DEBUG(zlib)
+SET_WINDOWS_SUBSYSTEM(zlib WIN32)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(zlibstatic)
 

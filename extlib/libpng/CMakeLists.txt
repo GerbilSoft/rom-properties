@@ -497,8 +497,9 @@ if(PNG_SHARED)
     set_target_properties(png PROPERTIES IMPORT_PREFIX "lib")
   endif()
   target_link_libraries(png ${ZLIB_LIBRARY} ${M_LIBRARY})
-  # rom-properties: Split debug functionality.
+  # rom-properties: Split debug functionality; Windows subsystem.
   DO_SPLIT_DEBUG(png)
+  SET_WINDOWS_SUBSYSTEM(png WIN32)
 
   if(UNIX AND AWK)
     if(HAVE_LD_VERSION_SCRIPT)
@@ -534,8 +535,9 @@ if(PNG_STATIC)
     set_target_properties(png_static PROPERTIES PREFIX "lib")
   endif()
   target_link_libraries(png_static ${ZLIB_LIBRARY} ${M_LIBRARY})
-  # rom-properties: Split debug functionality.
+  # rom-properties: Split debug functionality; Windows subsystem.
   DO_SPLIT_DEBUG(png)
+  SET_WINDOWS_SUBSYSTEM(png WIN32)
 endif()
 
 if(PNG_FRAMEWORK)
