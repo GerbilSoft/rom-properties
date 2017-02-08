@@ -48,6 +48,8 @@ class GcnFstPrivate
 		RP_DISABLE_COPY(GcnFstPrivate)
 
 	public:
+		bool hasErrors;
+
 		// FST data.
 		GCN_FST_Entry *fstData;
 		uint32_t fstData_sz;
@@ -103,7 +105,8 @@ class GcnFstPrivate
 /** GcnFstPrivate **/
 
 GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
-	: fstData(nullptr)
+	: hasErrors(false)
+	, fstData(nullptr)
 	, fstData_sz(len + 1)
 	, string_table(nullptr)
 	, string_table_sz(0)
@@ -112,6 +115,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 {
 	if (len < sizeof(GCN_FST_Entry)) {
 		// Invalid FST length.
+		hasErrors = true;
 		return;
 	}
 
@@ -123,12 +127,14 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 		// - 1 file means it only has a root directory.
 		// - 0 files isn't possible.
 		// - Can't have more than fstData_sz / sizeof(GCN_FST_Entry) files.
+		hasErrors = true;
 		return;
 	}
 
 	uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
 	if (string_table_offset >= len) {
 		// Invalid FST length.
+		hasErrors = true;
 		return;
 	}
 
@@ -136,6 +142,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz));
 	if (!fst8) {
 		// Could not allocate memory for the FST.
+		hasErrors = true;
 		return;
 	}
 	fst8[len] = 0; // Make sure the string table is NULL-terminated.
@@ -384,6 +391,26 @@ GcnFst::~GcnFst()
 }
 
 /**
+ * Is the FST open?
+ * @return True if open; false if not.
+ */
+bool GcnFst::isOpen(void) const
+{
+	return (d->string_table != nullptr);
+}
+
+/**
+ * Have any errors been detected in the FST?
+ * @return True if yes; false if no.
+ */
+bool GcnFst::hasErrors(void) const
+{
+	return d->hasErrors;
+}
+
+/** opendir() interface. **/
+
+/**
  * Open a directory.
  * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
@@ -478,11 +505,15 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	const rp_char *pName;
 	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
-	if (!fst_entry || !pName) {
+	if (!fst_entry) {
 		// No more entries.
-		// If !pName, the filename is invalid,
-		// which means the directory structure
-		// is probably broken.
+		dirp->entry.type = 0;
+		dirp->entry.name = nullptr;
+		return nullptr;
+	} else if (!pName) {
+		// Invalid directory entry.
+		// Stop processing the directory.
+		d->hasErrors = true;
 		dirp->entry.type = 0;
 		dirp->entry.name = nullptr;
 		return nullptr;

@@ -99,8 +99,8 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
 	GcnFst *fst = new GcnFst(fstData, (uint32_t)filesize, offsetShift);
-	if (!fst) {
-		printf("ERROR: new GcnFst() failed.\n");
+	if (!fst->isOpen()) {
+		printf("*** ERROR: Could not open a GcnFst.\n");
 		free(fstData);
 		return EXIT_FAILURE;
 	}
@@ -124,6 +124,10 @@ extern "C" int gtest_main(int argc, char *argv[])
 	// Print the FST.
 	printf("%s", fst_str.c_str());
 #endif
+
+	if (fst->hasErrors()) {
+		printf("\n*** WARNING: FST has errors and may be unusable.\n");
+	}
 
 	// Cleanup.
 	delete fst;

@@ -49,6 +49,19 @@ class GcnFst : public IFst
 		GcnFstPrivate *const d;
 
 	public:
+		/**
+		 * Is the FST open?
+		 * @return True if open; false if not.
+		 */
+		virtual bool isOpen(void) const override final;
+
+		/**
+		 * Have any errors been detected in the FST?
+		 * @return True if yes; false if no.
+		 */
+		virtual bool hasErrors(void) const override final;
+
+	public:
 		/** opendir() interface. **/
 
 		/**

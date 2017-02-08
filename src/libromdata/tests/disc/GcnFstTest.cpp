@@ -166,6 +166,7 @@ void GcnFstTest::SetUp(void)
 
 	// Create the GcnFst object.
 	m_fst = new GcnFst(m_fst_buf.data(), (uint32_t)m_fst_buf.size(), mode.offsetShift);
+	ASSERT_TRUE(m_fst->isOpen());
 }
 
 /**
@@ -335,6 +336,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const rp_char *subdir)
 TEST_P(GcnFstTest, NoDuplicateFilenames)
 {
 	ASSERT_NO_FATAL_FAILURE(checkNoDuplicateFilenames(_RP("/")));
+	EXPECT_FALSE(m_fst->hasErrors());
 }
 
 /**
@@ -405,6 +407,7 @@ TEST_P(GcnFstTest, FstPrint)
 			break;
 		}
 	};
+	EXPECT_FALSE(m_fst->hasErrors());
 }
 
 /** Test case parameters. **/
