@@ -830,12 +830,11 @@ rom_data_view_init_bitfield(RomDataView *page,
 
 		GtkWidget *checkBox = gtk_check_button_new_with_label(name);
 		gtk_widget_show(checkBox);
-		if (data->bitfield & (1 << bit)) {
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), TRUE);
-		}
+		gboolean value = !!(data->bitfield & (1 << bit));
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox in the map.
-		page->mapBitfields->insert(std::make_pair(checkBox, !!(data->bitfield & (1 << bit))));
+		page->mapBitfields->insert(std::make_pair(checkBox, value));
 
 		// Disable user modifications.
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
