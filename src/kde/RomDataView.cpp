@@ -36,7 +36,9 @@ using namespace LibRomData;
 #include <cstdio>
 
 // C++ includes.
+#include <unordered_map>
 #include <vector>
+using std::unordered_map;
 using std::vector;
 
 #include <QtCore/QDateTime>
@@ -97,6 +99,10 @@ class RomDataViewPrivate
 		};
 		Ui ui;
 		RomData *romData;
+
+		// Map of bitfield checkboxes to their values.
+		// Used to prevent the user from changing the values.
+		unordered_map<QAbstractButton*, bool> mapBitfields;
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
@@ -557,9 +563,11 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 		// TODO: Disable KDE's automatic mnemonic.
 		QCheckBox *checkBox = new QCheckBox(q);
 		checkBox->setText(RP2Q(name));
-		if (data->bitfield & (1 << bit)) {
-			checkBox->setChecked(true);
-		}
+		bool value = !!(data->bitfield & (1 << bit));
+		checkBox->setChecked(value);
+
+		// Save the bitfield checkbox in the map.
+		mapBitfields.insert(std::make_pair(checkBox, value));
 
 		// Disable user modifications.
 		// TODO: Prevent the initial mousebutton down from working;
@@ -775,6 +783,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		ui.formLayout = nullptr;
 	}
 
+	// Clear the bitfields map.
+	mapBitfields.clear();
+
 	// Initialize the header row.
 	initHeaderRow();
 
@@ -949,12 +960,19 @@ void RomDataView::hideEvent(QHideEvent *event)
  */
 void RomDataView::bitfield_toggled_slot(bool checked)
 {
-	if (!checked)
+	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	if (!sender)
 		return;
 
-	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
-	if (sender) {
-		sender->setChecked(false);
+	Q_D(RomDataView);
+	auto iter = d->mapBitfields.find(sender);
+	if (iter != d->mapBitfields.end()) {
+		// Check if the status is correct.
+		bool value = iter->second;
+		if (checked != value) {
+			// Toggle this box.
+			sender->setChecked(!checked);
+		}
 	}
 }
 
