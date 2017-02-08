@@ -104,7 +104,7 @@ class GcnFstPrivate
 
 GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 	: fstData(nullptr)
-	, fstData_sz(0)
+	, fstData_sz(len + 1)
 	, string_table(nullptr)
 	, string_table_sz(0)
 	, offsetShift(offsetShift)
@@ -118,6 +118,14 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	// String table is stored directly after the root entry.
 	const GCN_FST_Entry *root_entry = reinterpret_cast<const GCN_FST_Entry*>(fstData);
 	const uint32_t file_count = be32_to_cpu(root_entry->root_dir.file_count);
+	if (file_count <= 1 || file_count > (fstData_sz / sizeof(GCN_FST_Entry))) {
+		// Sanity check: File count is invalid.
+		// - 1 file means it only has a root directory.
+		// - 0 files isn't possible.
+		// - Can't have more than fstData_sz / sizeof(GCN_FST_Entry) files.
+		return;
+	}
+
 	uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
 	if (string_table_offset >= len) {
 		// Invalid FST length.
@@ -125,7 +133,6 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	}
 
 	// Copy the FST data.
-	fstData_sz = len + 1;
 	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz));
 	if (!fst8) {
 		// Could not allocate memory for the FST.
@@ -471,8 +478,11 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	const rp_char *pName;
 	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
-	if (!fst_entry) {
+	if (!fst_entry || !pName) {
 		// No more entries.
+		// If !pName, the filename is invalid,
+		// which means the directory structure
+		// is probably broken.
 		dirp->entry.type = 0;
 		dirp->entry.name = nullptr;
 		return nullptr;
