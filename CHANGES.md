@@ -41,6 +41,7 @@
     handled. (Example: "Baten Kaitos Origins" save files.)
   * Wii: Added support for RVT-R debug discs. The encryption key used for
     each partition is now displayed in the partition listing.
+  * Wii: Show the used size of each partition in addition to the total size.
   * Wii: Show the game title from opening.bnr.
   * Game Boy Advance: Some ROM images that are intended for use as expansion
     packs for Nintendo DS games weren't recognized because they don't have
