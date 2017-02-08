@@ -510,8 +510,8 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		dirp->entry.type = 0;
 		dirp->entry.name = nullptr;
 		return nullptr;
-	} else if (!pName) {
-		// Invalid directory entry.
+	} else if (!pName || pName[0] == 0) {
+		// Empty or NULL name. This is invalid.
 		// Stop processing the directory.
 		d->hasErrors = true;
 		dirp->entry.type = 0;

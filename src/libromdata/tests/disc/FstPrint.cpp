@@ -86,6 +86,11 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 	// Read the directory entries.
 	IFst::DirEnt *dirent = fst->readdir(dirp);
 	while (dirent != nullptr) {
+		if (!dirent->name || dirent->name[0] == 0) {
+			// Empty name...
+			continue;
+		}
+
 		// Print the tree lines.
 		for (int i = 0; i < level; i++)
 		{
