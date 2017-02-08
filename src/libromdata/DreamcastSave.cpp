@@ -1110,7 +1110,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 {
 	assert(info != nullptr);
-	if (!info) {
+	if (!info || !info->ext) {
 		// Either no detection information was specified,
 		// or the file extension is missing.
 		return DreamcastSavePrivate::SAVE_TYPE_UNKNOWN;
