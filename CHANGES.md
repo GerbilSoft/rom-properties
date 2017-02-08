@@ -1,6 +1,6 @@
 # Changes
 
-## v0.9-beta2 (unreleased)
+## v0.9-beta2 (released 2017/02/07)
 
 * New features:
   * New GTK+ frontends for XFCE's Thunar file manager (using GTK+ 2.x)
