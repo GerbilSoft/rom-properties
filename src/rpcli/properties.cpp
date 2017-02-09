@@ -185,10 +185,6 @@ public:
 		if (!listDataDesc.names) {
 			return os << "[ERROR: No list field names.]";
 		}
-		assert(romField->data.list_data != nullptr);
-		if (!romField->data.list_data) {
-			return os << "[ERROR: No list data.]";
-		}
 
 		const size_t fieldCount = listDataDesc.names->size();
 		unique_ptr<size_t[]> colSize(new size_t[fieldCount]());
@@ -213,15 +209,18 @@ public:
 			os << "|" << setw(colSize[i]) << listDataDesc.names->at(i);
 		}
 		os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
-		for (auto it = romField->data.list_data->begin();
-		     it != romField->data.list_data->end(); ++it)
-		{
-			int i = 0;
-			os << endl << Pad(field.width);
-			for (auto jt = it->begin(); jt != it->end(); ++jt) {
-				os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
+		assert(romField->data.list_data != nullptr);
+		if (romField->data.list_data) {
+			for (auto it = romField->data.list_data->begin();
+			     it != romField->data.list_data->end(); ++it)
+			{
+				int i = 0;
+				os << endl << Pad(field.width);
+				for (auto jt = it->begin(); jt != it->end(); ++jt) {
+					os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
+				}
+				os << "|";
 			}
-			os << "|";
 		}
 		return os;
 	}
