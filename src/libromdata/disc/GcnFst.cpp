@@ -490,8 +490,8 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	if (idx != dirp->dir_idx && d->is_dir(fst_entry)) {
 		// Skip over this directory.
 		int next_idx = be32_to_cpu(fst_entry->dir.next_offset);
-		if (next_idx < idx) {
-			// Seeking backwards?
+		if (next_idx <= idx) {
+			// Seeking backwards? (or looping to the same entry)
 			d->hasErrors = true;
 			return nullptr;
 		}
