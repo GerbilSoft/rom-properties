@@ -427,7 +427,7 @@ class JSONFieldsOutput {
 public:
 	explicit JSONFieldsOutput(const RomFields& fields) :fields(fields) {}
 	friend std::ostream& operator<<(std::ostream& os, const JSONFieldsOutput& fo) {
-		os << "[";
+		os << "[\n";
 		bool printed_first = false;
 		for (int i = 0; i < fo.fields.count(); i++) {
 			auto romField = fo.fields.field(i);
@@ -624,7 +624,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	int supported = romdata->supportedImageTypes();
 
-	os << ",\"imgint\":[";
+	os << ",\n\"imgint\":[";
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
 		if (supported&(1 << i)) {
@@ -662,7 +662,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 	}
 
-	os << "],\"imgext\":[";
+	os << "],\n\"imgext\":[";
 	first = true;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (supported&(1 << i)) {
