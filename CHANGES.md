@@ -57,6 +57,9 @@
 * Other changes:
   * (Windows) Fixed anti-aliasing issues with monospaced fonts on the
     properties page.
+  * (Windows) Fixed an incorrect half-pixel offset with some resized
+    thumbnails, which resulted in the thumbnails "shifting" when Explorer
+    switched from icons to thumbnails.
   * libpng is now used on all platforms. Previously, GDI+'s PNG loader was
     used on Windows, and it had some odd quirks like loading grayscale images
     as 32-bit ARGB instead of paletted.
