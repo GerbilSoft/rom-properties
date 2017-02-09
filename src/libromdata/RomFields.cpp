@@ -805,8 +805,8 @@ int RomFields::addData_dateTime(int64_t date_time)
 
 	// RFT_DATETIME
 	Field &field = d->fields.at(d->dataCount);
-	assert(field.type == RFT_BITFIELD);
-	if (field.type != RFT_BITFIELD) {
+	assert(field.type == RFT_DATETIME);
+	if (field.type != RFT_DATETIME) {
 		field.isValid = false;
 		field.data.generic = 0;
 	} else {
