@@ -26,6 +26,7 @@
 #include "common.h"
 
 #include <stdint.h>
+#include <array>
 #include <string>
 #include <vector>
 
@@ -187,13 +188,67 @@ class RomFields
 			AGEBF_PROHIBITED	= 0x0200,	// Game is specifically prohibited.
 		};
 
+		// ROM field struct.
+		// Dynamically allocated.
+		struct Field {
+			rp_string name;		// Field name.
+			RomFieldType type;	// ROM field type.
+			bool isValid;		// True if this field has valid data.
+
+			// Field description.
+			union _desc {
+				uint32_t flags;	// Generic flags. (string, date)
+
+				struct _bitfield {
+					// Number of bits to check. (must be 1-32)
+					int elements;
+					// Bit flags per row. (3 or 4 is usually good)
+					int elemsPerRow;
+					// Bit flag names.
+					// Must be a vector of at least 'elements' strings.
+					// If a name is nullptr, that element is skipped.
+					const std::vector<rp_string> *names;
+				} bitfield;
+				struct _list_data {
+					// List field names. (headers)
+					// Must be a vector of at least 'fields' strings.
+					// If a name is nullptr, that field is skipped.
+					const std::vector<rp_string> *names;
+				} list_data;
+			} desc;
+
+			// Field data.
+			union _data {
+				// Generic data for NULL.
+				uint64_t generic;
+
+				// RFT_STRING
+				const rp_string *str;
+
+				// RFT_BITFIELD
+				uint32_t bitfield;
+
+				// RFT_LISTDATA
+				const std::vector<std::vector<rp_string> > *list_data;
+
+				// RFT_DATETIME (UNIX format)
+				// NOTE: -1 is used to indicate
+				// an invalid date/time.
+				int64_t date_time;
+
+				// RFT_AGE_RATINGS
+				// See AgeRatingsCountry for field indexes.
+				const std::array<uint16_t, 16> *age_ratings;
+			} data;
+		};
+
 	public:
 		/**
 		 * Initialize a ROM Fields class.
-		 * @param fields Array of fields.
+		 * @param desc Array of field descriptions.
 		 * @param count Number of fields.
 		 */
-		DEPRECATED RomFields(const Desc *fields, int count);
+		DEPRECATED RomFields(const Desc *desc, int count);
 		~RomFields();
 	public:
 		RomFields(const RomFields &other);
@@ -213,24 +268,18 @@ class RomFields
 		int count(void) const;
 
 		/**
-		 * Get a ROM field description.
+		 * Get a ROM field.
 		 * @param idx Field index.
 		 * @return ROM field, or nullptr if the index is invalid.
 		 */
-		const Desc *desc(int idx) const;
-
-		/**
-		 * Get the data for a ROM field.
-		 * @param idx Field index.
-		 * @return ROM field data, or nullptr if the index is invalid.
-		 */
-		const Data *data(int idx) const;
+		const Field *field(int idx) const;
 
 		/**
 		 * Is data loaded?
+		 * TODO: Rename to empty() after porting to the new addField() functions.
 		 * @return True if m_data has at least one row; false if m_data is nullptr or empty.
 		 */
-		bool isDataLoaded(void) const;
+		DEPRECATED bool isDataLoaded(void) const;
 
 	private:
 		/**
@@ -297,7 +346,7 @@ class RomFields
 		 * @param val Numeric value.
 		 * @param base Base. If not decimal, a prefix will be added.
 		 * @param digits Number of leading digits. (0 for none)
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
 		
@@ -305,7 +354,7 @@ class RomFields
 		 * Add a string field formatted like a hex dump
 		 * @param buf Input bytes.
 		 * @param size Byte count.
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_string_hexdump(const uint8_t *buf, size_t size);
 
@@ -315,7 +364,7 @@ class RomFields
 		 * @param end End address.
 		 * @param suffix Suffix string.
 		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_string_address_range(uint32_t start, uint32_t end,
 					const rp_char *suffix, int digits = 8);
@@ -325,7 +374,7 @@ class RomFields
 		 * @param start Start address.
 		 * @param end End address.
 		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED inline int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8)
 		{
@@ -335,28 +384,28 @@ class RomFields
 		/**
 		 * Add bitfield data.
 		 * @param bitfield Bitfield.
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_bitfield(uint32_t bitfield);
 
 		/**
 		 * Add ListData.
 		 * @param list_data ListData. (must be allocated with new)
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_listData(ListData *list_data);
 
 		/**
 		 * Add DateTime.
 		 * @param date_time Date/Time.
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_dateTime(int64_t date_time);
 
 		/**
 		 * Add age ratings.
 		 * @param age_ratings Age ratings array. (uint16_t[16])
-		 * @return Field index.
+		 * @return Field index, or -1 on error.
 		 */
 		DEPRECATED int addData_ageRatings(uint16_t age_ratings[AGE_MAX]);
 };

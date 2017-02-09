@@ -33,9 +33,11 @@
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <sstream>
 #include <string>
 #include <vector>
+using std::array;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -45,7 +47,8 @@ namespace LibRomData {
 class RomFieldsPrivate
 {
 	public:
-		RomFieldsPrivate(const RomFields::Desc *fields, int count);
+		RomFieldsPrivate();
+		RomFieldsPrivate(const RomFields::Desc *desc, int count);
 	private:
 		~RomFieldsPrivate();	// call unref() instead
 
@@ -77,23 +80,11 @@ class RomFieldsPrivate
 		int refCount;
 
 	public:
-		// ROM field descriptions.
-		const RomFields::Desc *const fields;
-		const int count;
+		// ROM field structs.
+		vector<RomFields::Field> fields;
 
-		/**
-		 * ROM field data.
-		 *
-		 * This must be filled in by a RomData class using the
-		 * convenience functions.
-		 *
-		 * NOTE: Strings are *copied* into this vector (to prevent
-		 * std::string issues) and are deleted by the destructor.
-		 *
-		 * NOTE: This RomFieldsPrivate object is shared by all
-		 * instances of this RomFields until detach().
-		 */
-		vector<RomFields::Data> data;
+		// Data counter for the old-style addField*() functions.
+		int dataCount;
 
 		/**
 		 * Deletes allocated strings in this->data.
@@ -103,11 +94,90 @@ class RomFieldsPrivate
 
 /** RomFieldsPrivate **/
 
-RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *fields, int count)
+RomFieldsPrivate::RomFieldsPrivate()
 	: refCount(1)
-	, fields(fields)
-	, count(count)
+	, dataCount(0)
 { }
+
+// DEPRECATED: Conversion of old-style desc to new fields.
+RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *desc, int count)
+	: refCount(1)
+	, dataCount(0)
+{
+	// Initialize fields.
+	fields.resize(count);
+	for (int i = 0; i < count; i++, desc++) {
+		RomFields::Field &field = fields.at(i);
+		field.name = desc->name;
+		field.type = desc->type;
+		field.isValid = false;
+
+		switch (field.type) {
+			case RomFields::RFT_STRING: {
+				if (!desc->str_desc) {
+					field.desc.flags = 0;
+				} else {
+					field.desc.flags = desc->str_desc->formatting;
+				}
+				break;
+			}
+
+			case RomFields::RFT_BITFIELD: {
+				assert(desc->bitfield != nullptr);
+				if (!desc->bitfield)
+					break;
+				field.desc.bitfield.elements = desc->bitfield->elements;
+				field.desc.bitfield.elemsPerRow = desc->bitfield->elemsPerRow;
+
+				// Copy the flag names.
+				vector<rp_string> *names = new vector<rp_string>();
+				const int count = desc->bitfield->elements;
+				names->reserve(count);
+				for (int i = 0; i < count; i++) {
+					const rp_char *const name_src = desc->bitfield->names[i];
+					names->push_back(name_src ? rp_string(name_src) : rp_string());
+				}
+				field.desc.bitfield.names = names;
+				break;
+			}
+
+			case RomFields::RFT_LISTDATA: {
+				assert(desc->list_data != nullptr);
+				if (!desc->list_data)
+					break;
+
+				// Copy the list field names.
+				vector<rp_string> *names = new vector<rp_string>();
+				const int count = desc->list_data->count;
+				names->reserve(count);
+				for (int i = 0; i < count; i++) {
+					const rp_char *const name_src = desc->list_data->names[i];
+					names->push_back(name_src ? rp_string(name_src) : rp_string());
+				}
+				field.desc.list_data.names = names;
+				break;
+			}
+
+			case RomFields::RFT_DATETIME: {
+				if (!desc->date_time) {
+					field.desc.flags = 0;
+				} else {
+					field.desc.flags = desc->date_time->flags;
+				}
+				break;
+			}
+
+			case RomFields::RFT_AGE_RATINGS: {
+				// No formatting for age ratings.
+				break;
+			}
+
+			default:
+				assert(!"Unsupported RomFields::RomFieldsType.");
+				break;
+		}
+	}
+}
 
 RomFieldsPrivate::~RomFieldsPrivate()
 {
@@ -151,30 +221,32 @@ inline bool RomFieldsPrivate::isShared(void) const
  */
 void RomFieldsPrivate::delete_data(void)
 {
-	// Delete all of the allocated strings in this->data.
-	for (int i = (int)(data.size() - 1); i >= 0; i--) {
-		const RomFields::Data &data = this->data.at(i);
-		switch (data.type) {
+	// Delete all of the allocated strings in this->fields.
+	for (int i = (int)(fields.size() - 1); i >= 0; i--) {
+		RomFields::Field &field = this->fields.at(i);
+		if (!field.isValid) {
+			// No data here.
+			continue;
+		}
+
+		switch (field.type) {
 			case RomFields::RFT_INVALID:
+			case RomFields::RFT_DATETIME:
 				// No data here.
 				break;
+
 			case RomFields::RFT_STRING:
-				// Allocated string. Free it.
-				free((rp_char*)data.str);
+				delete const_cast<rp_string*>(field.data.str);
 				break;
 			case RomFields::RFT_BITFIELD:
-				// Nothing needed.
+				delete const_cast<vector<rp_string>*>(field.desc.bitfield.names);
 				break;
 			case RomFields::RFT_LISTDATA:
-				// ListData.
-				delete data.list_data;
-				break;
-			case RomFields::RFT_DATETIME:
-				// Nothing needed.
+				delete const_cast<vector<rp_string>*>(field.desc.list_data.names);
+				delete const_cast<vector<vector<rp_string> >*>(field.data.list_data);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				// Age ratings.
-				free(data.age_ratings);
+				delete const_cast<array<uint16_t, 16>*>(field.data.age_ratings);
 				break;
 			default:
 				// ERROR!
@@ -183,8 +255,8 @@ void RomFieldsPrivate::delete_data(void)
 		}
 	}
 
-	// Clear the data vector.
-	this->data.clear();
+	// Clear the fields vector.
+	this->fields.clear();
 }
 
 /** RomFields **/
@@ -237,38 +309,66 @@ void RomFields::detach(void)
 	}
 
 	// Need to detach.
-	RomFieldsPrivate *d_new = new RomFieldsPrivate(d->fields, d->count);
+	RomFieldsPrivate *d_new = new RomFieldsPrivate();
 	RomFieldsPrivate *d_old = d;
-	d_new->data.resize(d_old->data.size());
-	for (int i = (int)(d_old->data.size() - 1); i >= 0; i--) {
-		const Data &data_old = d_old->data.at(i);
-		Data &data_new = d_new->data.at(i);
-		data_new.type = data_old.type;
-		switch (data_old.type) {
+	d_new->fields.resize(d_old->fields.size());
+	for (int i = (int)(d_old->fields.size() - 1); i >= 0; i--) {
+		const Field &field_old = d_old->fields.at(i);
+		Field &field_new = d_new->fields.at(i);
+		field_new.name = field_old.name;
+		field_new.type = field_old.type;
+		field_new.isValid = field_old.isValid;
+		if (!field_old.isValid) {
+			// No data here.
+			field_new.desc.flags = 0;
+			field_new.data.generic = 0;
+			continue;
+		}
+
+		switch (field_old.type) {
 			case RFT_INVALID:
-				// No data here.
-				data_new.str = nullptr;
+				// No data here
+				field_new.isValid = false;
+				field_new.desc.flags = 0;
+				field_new.data.generic = 0;
 				break;
 			case RFT_STRING:
-				// Duplicate the string.
-				data_new.str = rp_strdup(data_old.str);
+				field_new.desc.flags = field_old.desc.flags;
+				if (field_old.data.str) {
+					field_new.data.str = new rp_string(*field_old.data.str);
+				} else {
+					field_new.data.str = nullptr;
+				}
 				break;
 			case RFT_BITFIELD:
-				// Copy the bitfield.
-				data_new.bitfield = data_old.bitfield;
+				field_new.desc.bitfield.elements = field_old.desc.bitfield.elements;
+				field_new.desc.bitfield.elemsPerRow = field_old.desc.bitfield.elemsPerRow;
+				if (field_old.desc.bitfield.names) {
+					field_new.desc.bitfield.names = new vector<rp_string>(*field_old.desc.bitfield.names);
+				} else {
+					field_new.desc.bitfield.names = nullptr;
+				}
+				field_new.data.bitfield = field_old.data.bitfield;
 				break;
 			case RFT_LISTDATA:
 				// Copy the ListData.
-				data_new.list_data = new ListData(*(data_old.list_data));
+				if (field_old.desc.list_data.names) {
+					field_new.desc.list_data.names = new vector<rp_string>(*field_old.desc.list_data.names);
+				} else {
+					field_new.desc.list_data.names = nullptr;
+				}
+				if (field_old.data.list_data) {
+					field_new.data.list_data = new vector<vector<rp_string> >(*field_old.data.list_data);
+				} else {
+					field_new.data.list_data = nullptr;
+				}
 				break;
 			case RFT_DATETIME:
-				// Copy the Date/Time.
-				data_new.date_time = data_old.date_time;
+				field_new.desc.flags = field_old.desc.flags;
+				field_new.data.date_time = field_old.data.date_time;
 				break;
 			case RFT_AGE_RATINGS:
-				// Copy the age ratings.
-				data_new.age_ratings = static_cast<uint16_t*>(malloc(AGE_MAX*sizeof(uint16_t)));
-				memcpy(data_new.age_ratings, data_old.age_ratings, AGE_MAX*sizeof(uint16_t));
+				field_new.data.age_ratings = field_old.data.age_ratings;
 				break;
 			default:
 				// ERROR!
@@ -447,44 +547,29 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
  */
 int RomFields::count(void) const
 {
-	return d->count;
+	return (int)d->fields.size();
 }
 
 /**
  * Get a ROM field.
+ * @param idx Field index.
  * @return ROM field, or nullptr if the index is invalid.
  */
-const RomFields::Desc *RomFields::desc(int idx) const
+const RomFields::Field *RomFields::field(int idx) const
 {
-	if (idx < 0 || idx >= d->count)
+	if (idx < 0 || idx >= (int)d->fields.size())
 		return nullptr;
 	return &d->fields[idx];
 }
 
 /**
- * Get the data for a ROM field.
- * @param idx Field index.
- * @return ROM field data, or nullptr if the index is invalid.
- */
-const RomFields::Data *RomFields::data(int idx) const
-{
-	if (idx < 0 || idx >= d->count ||
-	    idx >= (int)d->data.size())
-	{
-		// Index out of range; or, the index is in range,
-		// but no data is available.
-		return nullptr;
-	}
-	return &d->data.at(idx);
-}
-
-/**
  * Is data loaded?
+ * TODO: Rename to empty() after porting to the new addField() functions.
  * @return True if m_data has at least one row; false if m_data is nullptr or empty.
  */
 bool RomFields::isDataLoaded(void) const
 {
-	return (!d->data.empty());
+	return (d->dataCount > 0);
 }
 
 /** Convenience functions for RomData subclasses. **/
@@ -492,43 +577,67 @@ bool RomFields::isDataLoaded(void) const
 /**
  * Add invalid field data.
  * This effectively hides the field.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_invalid(void)
 {
-	Data data;
-	data.type = RFT_INVALID;
-	data.str = nullptr;
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	Field &field = d->fields.at(d->dataCount);
+	field.isValid = false;
+	field.data.generic = 0;
+	return d->dataCount++;
 }
 
 /**
  * Add string field data.
  * @param str String.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_string(const rp_char *str)
 {
-	Data data;
-	data.type = RFT_STRING;
-	data.str = (str ? rp_strdup(str) : nullptr);
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_STRING
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_STRING);
+	// TODO: Null string == empty string?
+	if (field.type != RFT_STRING || !str) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		field.data.str = new rp_string(str);
+		field.isValid = true;
+	}
+	return d->dataCount++;
 }
 
 /**
  * Add string field data.
  * @param str String.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_string(const rp_string &str)
 {
-	Data data;
-	data.type = RFT_STRING;
-	data.str = rp_strdup(str);
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_STRING
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_STRING);
+	if (field.type != RFT_STRING) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		field.data.str = new rp_string(str);
+		field.isValid = true;
+	}
+	return d->dataCount++;
 }
 
 /**
@@ -536,7 +645,7 @@ int RomFields::addData_string(const rp_string &str)
  * @param val Numeric value.
  * @param base Base. If not decimal, a prefix will be added.
  * @param digits Number of leading digits. (0 for none)
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 {
@@ -566,7 +675,7 @@ int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
  * Add a string field formatted like a hex dump
  * @param buf Input bytes.
  * @param size Byte count.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
 {
@@ -603,7 +712,7 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
  * @param end End address.
  * @param suffix Suffix string.
  * @param digits Number of leading digits. (default is 8 for 32-bit)
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_string_address_range(uint32_t start, uint32_t end, const rp_char *suffix, int digits)
 {
@@ -638,58 +747,98 @@ int RomFields::addData_string_address_range(uint32_t start, uint32_t end, const 
 /**
  * Add a bitfield.
  * @param bitfield Bitfield.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_bitfield(uint32_t bitfield)
 {
-	Data data;
-	data.type = RFT_BITFIELD;
-	data.bitfield = bitfield;
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_BITFIELD
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_BITFIELD);
+	if (field.type != RFT_BITFIELD) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		field.data.bitfield = bitfield;
+		field.isValid = true;
+	}
+	return d->dataCount++;
 }
 
 /**
  * Add ListData.
  * @param list_data ListData. (must be allocated with new)
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_listData(ListData *list_data)
 {
-	Data data;
-	data.type = RFT_LISTDATA;
-	data.list_data = list_data;
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_LISTDATA
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_LISTDATA);
+	if (field.type != RFT_LISTDATA || !list_data) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		field.data.list_data = new vector<vector<rp_string> >(list_data->data);
+	}
+	return d->dataCount++;
 }
 
 /**
  * Add DateTime.
  * @param date_time Date/Time.
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_dateTime(int64_t date_time)
 {
-	Data data;
-	data.type = RFT_DATETIME;
-	data.date_time = date_time;
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_DATETIME
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_BITFIELD);
+	if (field.type != RFT_BITFIELD) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		field.data.date_time = date_time;
+		field.isValid = true;
+	}
+	return d->dataCount++;
 }
 
 /**
  * Add age ratings.
  * @param age_ratings Age ratings array. (uint16_t[16])
- * @return Field index.
+ * @return Field index, or -1 on error.
  */
 int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 {
-	Data data;
-	data.type = RFT_AGE_RATINGS;
-	data.age_ratings = static_cast<uint16_t*>(malloc(AGE_MAX*sizeof(uint16_t)));
-	memcpy(data.age_ratings, age_ratings, AGE_MAX*sizeof(uint16_t));
-	d->data.push_back(data);
-	return (int)(d->data.size() - 1);
+	assert(d->dataCount < d->fields.size());
+	if (d->dataCount >= d->fields.size())
+		return -1;
+
+	// RFT_AGE_RATINGS
+	Field &field = d->fields.at(d->dataCount);
+	assert(field.type == RFT_AGE_RATINGS);
+	if (field.type != RFT_AGE_RATINGS) {
+		field.isValid = false;
+		field.data.generic = 0;
+	} else {
+		array<uint16_t, 16> *tmp = new array<uint16_t, 16>();
+		memcpy(tmp->data(), age_ratings, sizeof(uint16_t)*AGE_MAX);
+		field.data.age_ratings = tmp;
+		field.isValid = true;
+	}
+	return d->dataCount++;
 }
 
 }
