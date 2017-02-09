@@ -287,8 +287,9 @@ public:
 		StreamStateSaver state(os);
 
 		bool printedOne = false;
+		auto age_ratings = romField->data.age_ratings;
 		for (int i = 0; i < RomFields::AGE_MAX; i++) {
-			const uint16_t rating = romField->data.age_ratings->at(i);
+			const uint16_t rating = age_ratings->at(i);
 			if (!(rating & RomFields::AGEBF_ACTIVE))
 				continue;
 
