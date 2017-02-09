@@ -189,7 +189,7 @@ public:
 		const size_t fieldCount = listDataDesc.names->size();
 		unique_ptr<size_t[]> colSize(new size_t[fieldCount]());
 		size_t totalWidth = fieldCount + 1;
-		for (int i = 0; i < fieldCount; i++) {
+		for (int i = (int)fieldCount - 1; i >= 0; i--) {
 			colSize[i] = listDataDesc.names->at(i).size();
 		}
 		for (auto it = romField->data.list_data->begin();
