@@ -286,8 +286,14 @@ public:
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
 
-		bool printedOne = false;
 		auto age_ratings = romField->data.age_ratings;
+		assert(age_ratings != nullptr);
+		if (!age_ratings) {
+			os << "Unknown";
+			return os;
+		}
+
+		bool printedOne = false;
 		for (int i = 0; i < RomFields::AGE_MAX; i++) {
 			const uint16_t rating = age_ratings->at(i);
 			if (!(rating & RomFields::AGEBF_ACTIVE))
@@ -525,15 +531,15 @@ public:
 				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
 				   << "},\"data\":";
 
-				assert(romField->data.age_ratings != nullptr);
-				if (!romField->data.age_ratings) {
+				auto age_ratings = romField->data.age_ratings;
+				assert(age_ratings != nullptr);
+				if (!age_ratings) {
 					os << "\"ERROR\"}";
 					break;
 				}
 
 				os << '[';
 				bool printedOne = false;
-				auto age_ratings = romField->data.age_ratings;
 				for (int i = 0; i < RomFields::AGE_MAX; i++) {
 					const uint16_t rating = age_ratings->at(i);
 					if (!(rating & RomFields::AGEBF_ACTIVE))
