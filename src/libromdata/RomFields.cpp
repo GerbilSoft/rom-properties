@@ -787,6 +787,7 @@ int RomFields::addData_listData(ListData *list_data)
 		field.data.generic = 0;
 	} else {
 		field.data.list_data = new vector<vector<rp_string> >(list_data->data);
+		field.isValid = true;
 	}
 	return d->dataCount++;
 }
