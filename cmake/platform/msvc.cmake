@@ -33,6 +33,11 @@ FOREACH(FLAG_TEST "-sdl")
 	UNSET(CFLAG_${FLAG_TEST})
 ENDFOREACH()
 
+# Disable warning C4996 (deprecated), then re-enable it.
+# Otherwise, it gets handled as an error due to /sdl.
+SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
+SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
+
 # Disable the RC and MASM "logo".
 # FIXME: Setting CMAKE_RC_FLAGS causes msbuild to fail,
 # since CMake already sets /NOLOGO there.

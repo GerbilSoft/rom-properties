@@ -63,7 +63,7 @@ class RomData
 		 * @param fields Array of ROM Field descriptions.
 		 * @param count Number of ROM Field descriptions.
 		 */
-		RomData(IRpFile* file, const RomFields::Desc* fields, int count);
+		DEPRECATED RomData(IRpFile* file, const RomFields::Desc* fields, int count);
 
 		/**
 		 * ROM data base class.

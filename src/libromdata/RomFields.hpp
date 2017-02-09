@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_ROMFIELDS_HPP__
 
 #include "config.libromdata.h"
+#include "common.h"
 
 #include <stdint.h>
 #include <string>
@@ -192,7 +193,7 @@ class RomFields
 		 * @param fields Array of fields.
 		 * @param count Number of fields.
 		 */
-		RomFields(const Desc *fields, int count);
+		DEPRECATED RomFields(const Desc *fields, int count);
 		~RomFields();
 	public:
 		RomFields(const RomFields &other);
@@ -262,27 +263,28 @@ class RomFields
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
+		/** OLD versions for statically-allocated fields. **/
 
 		/**
 		 * Add invalid field data.
 		 * This effectively hides the field.
 		 * @return Field index.
 		 */
-		int addData_invalid(void);
+		DEPRECATED int addData_invalid(void);
 
 		/**
 		 * Add string field data.
 		 * @param str String.
 		 * @return Field index.
 		 */
-		int addData_string(const rp_char *str);
+		DEPRECATED int addData_string(const rp_char *str);
 
 		/**
 		 * Add string field data.
 		 * @param str String.
 		 * @return Field index.
 		 */
-		int addData_string(const rp_string &str);
+		DEPRECATED int addData_string(const rp_string &str);
 
 		enum Base {
 			FB_DEC,
@@ -297,7 +299,7 @@ class RomFields
 		 * @param digits Number of leading digits. (0 for none)
 		 * @return Field index.
 		 */
-		int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
+		DEPRECATED int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
 		
 		/**
 		 * Add a string field formatted like a hex dump
@@ -305,7 +307,7 @@ class RomFields
 		 * @param size Byte count.
 		 * @return Field index.
 		 */
-		int addData_string_hexdump(const uint8_t *buf, size_t size);
+		DEPRECATED int addData_string_hexdump(const uint8_t *buf, size_t size);
 
 		/**
 		 * Add a string field formatted for an address range.
@@ -315,7 +317,7 @@ class RomFields
 		 * @param digits Number of leading digits. (default is 8 for 32-bit)
 		 * @return Field index.
 		 */
-		int addData_string_address_range(uint32_t start, uint32_t end,
+		DEPRECATED int addData_string_address_range(uint32_t start, uint32_t end,
 					const rp_char *suffix, int digits = 8);
 
 		/**
@@ -325,7 +327,7 @@ class RomFields
 		 * @param digits Number of leading digits. (default is 8 for 32-bit)
 		 * @return Field index.
 		 */
-		inline int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8)
+		DEPRECATED inline int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8)
 		{
 			return addData_string_address_range(start, end, nullptr, digits);
 		}
@@ -335,28 +337,28 @@ class RomFields
 		 * @param bitfield Bitfield.
 		 * @return Field index.
 		 */
-		int addData_bitfield(uint32_t bitfield);
+		DEPRECATED int addData_bitfield(uint32_t bitfield);
 
 		/**
 		 * Add ListData.
 		 * @param list_data ListData. (must be allocated with new)
 		 * @return Field index.
 		 */
-		int addData_listData(ListData *list_data);
+		DEPRECATED int addData_listData(ListData *list_data);
 
 		/**
 		 * Add DateTime.
 		 * @param date_time Date/Time.
 		 * @return Field index.
 		 */
-		int addData_dateTime(int64_t date_time);
+		DEPRECATED int addData_dateTime(int64_t date_time);
 
 		/**
 		 * Add age ratings.
 		 * @param age_ratings Age ratings array. (uint16_t[16])
 		 * @return Field index.
 		 */
-		int addData_ageRatings(uint16_t age_ratings[AGE_MAX]);
+		DEPRECATED int addData_ageRatings(uint16_t age_ratings[AGE_MAX]);
 };
 
 }
