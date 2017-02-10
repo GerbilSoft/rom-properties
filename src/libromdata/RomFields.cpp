@@ -83,7 +83,8 @@ class RomFieldsPrivate
 		// ROM field structs.
 		vector<RomFields::Field> fields;
 
-		// Data counter for the old-style addField*() functions.
+		// Data counter for the old-style addData*() functions.
+		// TODO: Remove this once addData*() is removed.
 		int dataCount;
 
 		/**
@@ -96,7 +97,7 @@ class RomFieldsPrivate
 
 RomFieldsPrivate::RomFieldsPrivate()
 	: refCount(1)
-	, dataCount(0)
+	, dataCount(-1)
 { }
 
 // DEPRECATED: Conversion of old-style desc to new fields.
@@ -260,6 +261,15 @@ void RomFieldsPrivate::delete_data(void)
 }
 
 /** RomFields **/
+
+/**
+ * Initialize a ROM Fields class.
+ * @param fields Array of fields.
+ * @param count Number of fields.
+ */
+RomFields::RomFields()
+	: d(new RomFieldsPrivate())
+{ }
 
 /**
  * Initialize a ROM Fields class.
@@ -547,7 +557,12 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
  */
 int RomFields::count(void) const
 {
-	return (int)d->fields.size();
+	if (d->dataCount < 0) {
+		// NEW allocation method.
+		return (int)d->fields.size();
+	}
+	// OLD allocation method. (DEPRECATED)
+	return d->dataCount;
 }
 
 /**
@@ -569,10 +584,16 @@ const RomFields::Field *RomFields::field(int idx) const
  */
 bool RomFields::isDataLoaded(void) const
 {
+	if (d->dataCount < 0) {
+		// NEW allocation method.
+		return !d->fields.empty();
+	}
+	// OLD allocation method. (DEPRECATED)
 	return (d->dataCount > 0);
 }
 
 /** Convenience functions for RomData subclasses. **/
+/** OLD versions for statically-allocated fields. **/
 
 /**
  * Add invalid field data.
@@ -581,8 +602,8 @@ bool RomFields::isDataLoaded(void) const
  */
 int RomFields::addData_invalid(void)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	Field &field = d->fields.at(d->dataCount);
@@ -598,8 +619,8 @@ int RomFields::addData_invalid(void)
  */
 int RomFields::addData_string(const rp_char *str)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_STRING
@@ -623,8 +644,8 @@ int RomFields::addData_string(const rp_char *str)
  */
 int RomFields::addData_string(const rp_string &str)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_STRING
@@ -751,8 +772,8 @@ int RomFields::addData_string_address_range(uint32_t start, uint32_t end, const 
  */
 int RomFields::addData_bitfield(uint32_t bitfield)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_BITFIELD
@@ -775,8 +796,8 @@ int RomFields::addData_bitfield(uint32_t bitfield)
  */
 int RomFields::addData_listData(ListData *list_data)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_LISTDATA
@@ -799,8 +820,8 @@ int RomFields::addData_listData(ListData *list_data)
  */
 int RomFields::addData_dateTime(int64_t date_time)
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_DATETIME
@@ -823,8 +844,8 @@ int RomFields::addData_dateTime(int64_t date_time)
  */
 int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 {
-	assert(d->dataCount < d->fields.size());
-	if (d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
 		return -1;
 
 	// RFT_AGE_RATINGS
@@ -840,6 +861,315 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 		field.isValid = true;
 	}
 	return d->dataCount++;
+}
+
+/** Convenience functions for RomData subclasses. **/
+/** NEW versions for dynamically-allocated fields. **/
+
+/**
+ * Reserve space for fields.
+ * @param n Desired capacity.
+ */
+void RomFields::reserve(int n)
+{
+	if (n > 0) {
+		d->fields.reserve(n);
+	}
+}
+
+/**
+ * Add string field data.
+ * @param name Field name.
+ * @param str String.
+ * @param flags Formatting flags.
+ * @return Field index.
+ */
+int RomFields::addField_string(const rp_char *name, const rp_char *str, int flags)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_STRING
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	field.name = (name ? rp_string(name) : rp_string());
+	field.type = RFT_STRING;
+	field.desc.flags = flags;
+	field.data.str = (str ? new rp_string(str) : nullptr);
+	field.isValid = (name != nullptr);
+	return idx;
+}
+
+/**
+ * Add string field data.
+ * @param name Field name.
+ * @param str String.
+ * @param flags Formatting flags.
+ * @return Field index.
+ */
+int RomFields::addField_string(const rp_char *name, const rp_string &str, int flags)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_STRING
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+	field.name = rp_string(name);
+	field.type = RFT_STRING;
+	field.desc.flags = flags;
+	field.data.str = (!str.empty() ? new rp_string(str) : nullptr);
+	field.isValid = true;
+	return idx;
+}
+
+/**
+ * Add string field data using a numeric value.
+ * @param name Field name.
+ * @param val Numeric value.
+ * @param base Base. If not decimal, a prefix will be added.
+ * @param digits Number of leading digits. (0 for none)
+ * @param flags Formatting flags.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base base, int digits, int flags)
+{
+	char buf[32];
+	int len;
+	switch (base) {
+		case FB_DEC:
+		default:
+			len = snprintf(buf, sizeof(buf), "%0*u", digits, val);
+			break;
+		case FB_HEX:
+			len = snprintf(buf, sizeof(buf), "0x%0*X", digits, val);
+			break;
+		case FB_OCT:
+			len = snprintf(buf, sizeof(buf), "0%0*o", digits, val);
+			break;
+	}
+
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+
+	rp_string str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	return addField_string(name, str, flags);
+}
+
+/**
+ * Add a string field formatted like a hex dump
+ * @param name Field name.
+ * @param buf Input bytes.
+ * @param size Byte count.
+ * @param flags Formatting flags.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, size_t size, int flags)
+{
+	if (size == 0) {
+		return addField_string(name, nullptr);
+	}
+
+	// Reserve 3 characters per byte.
+	// (Two hex digits, plus one space.)
+	rp_string rps;
+	rps.resize(size * 3);
+	size_t rps_pos = 0;
+
+	// Temporary snprintf buffer.
+	char hexbuf[8];
+	for (; size > 0; size--, buf++, rps_pos += 3) {
+		snprintf(hexbuf, sizeof(hexbuf), "%02X ", *buf);
+		rps[rps_pos+0] = hexbuf[0];
+		rps[rps_pos+1] = hexbuf[1];
+		rps[rps_pos+2] = hexbuf[2];
+	}
+
+	// Remove the trailing space.
+	if (rps.size() > 0) {
+		rps.resize(rps.size() - 1);
+	}
+
+	return addField_string(name, rps, flags);
+}
+
+/**
+ * Add a string field formatted for an address range.
+ * @param name Field name.
+ * @param start Start address.
+ * @param end End address.
+ * @param suffix Suffix string.
+ * @param digits Number of leading digits. (default is 8 for 32-bit)
+ * @param flags Formatting flags.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_string_address_range(const rp_char *name,
+	uint32_t start, uint32_t end,
+	const rp_char *suffix, int digits, int flags)
+{
+	// Maximum number of digits is 16. (64-bit)
+	assert(digits <= 16);
+	if (digits > 16) {
+		digits = 16;
+	}
+
+	// ROM range.
+	// TODO: Range helper? (Can't be used for SRAM, though...)
+	char buf[64];
+	int len = snprintf(buf, sizeof(buf), "0x%0*X - 0x%0*X",
+			digits, start, digits, end);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+
+	rp_string str;
+	if (len > 0) {
+		str = latin1_to_rp_string(buf, len);
+	}
+
+	if (suffix && suffix[0] != 0) {
+		// Append a space and the specified suffix.
+		str += _RP_CHR(' ');
+		str += suffix;
+	}
+
+	return addField_string(name, str, flags);
+}
+
+/**
+ * Add bitfield data.
+ * NOTE: This object takes ownership of the vector.
+ * @param name Field name.
+ * @param bit_names Bit names.
+ * @param elemsPerRow Number of elements per row.
+ * @param bitfield Bitfield.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_bitfield(const rp_char *name,
+	const std::vector<rp_string> *bit_names,
+	int elemsPerRow, uint32_t bitfield)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_BITFIELD
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	assert(bit_names != nullptr);
+	if (!name || !bit_names)
+		return -1;
+	field.name = rp_string(name);
+	field.type = RFT_BITFIELD;
+	field.desc.bitfield.elements = (int)bit_names->size();	// TODO: Remove this.
+	field.desc.bitfield.elemsPerRow = elemsPerRow;
+	field.desc.bitfield.names = bit_names;
+	field.data.bitfield = bitfield;
+	field.isValid = true;
+	return idx;
+}
+
+/**
+ * Add ListData.
+ * NOTE: This object takes ownership of the two vectors.
+ * @param name Field name.
+ * @param headers Vector of column names.
+ * @param list_data ListData.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_listData(const rp_char *name,
+	const std::vector<rp_string> *headers,
+	const std::vector<std::vector<rp_string> > *list_data)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_LISTDATA
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	assert(headers != nullptr);
+	if (!name || !headers)
+		return -1;
+	field.name = rp_string(name);
+	field.type = RFT_LISTDATA;
+	field.desc.list_data.names = headers;
+	field.data.list_data = list_data;
+	field.isValid = true;
+	return idx;
+}
+
+/**
+ * Add DateTime.
+ * @param name Field name.
+ * @param date_time Date/Time.
+ * @param flags Date/Time flags.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int flags)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_DATETIME
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	if (!name)
+		return -1;
+	field.name = rp_string(name);
+	field.type = RFT_DATETIME;
+	field.desc.flags = flags;
+	field.data.date_time = date_time;
+	field.isValid = true;
+	return idx;
+}
+
+/**
+ * Add age ratings.
+ * NOTE: This object takes ownership of the array.
+ * @param name Field name.
+ * @param age_ratings Pointer to age ratings array.
+ * @return Field index, or -1 on error.
+ */
+int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, 16> *age_ratings)
+{
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	// RFT_AGE_RATINGS
+	int idx = (int)d->fields.size();
+	d->fields.resize(idx+1);
+	Field &field = d->fields.at(idx);
+
+	assert(name != nullptr);
+	assert(age_ratings != nullptr);
+	if (!name || !age_ratings)
+		return -1;
+	field.name = rp_string(name);
+	field.type = RFT_AGE_RATINGS;
+	field.data.age_ratings = age_ratings;
+	field.isValid = true;
+	return idx;
 }
 
 }

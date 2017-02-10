@@ -57,13 +57,9 @@ class RomData
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
-		 * In addition, subclasses must pass an array of RomFieldDesc structs.
-		 *
 		 * @param file ROM file.
-		 * @param fields Array of ROM Field descriptions.
-		 * @param count Number of ROM Field descriptions.
 		 */
-		DEPRECATED RomData(IRpFile* file, const RomFields::Desc* fields, int count);
+		RomData(IRpFile* file);
 
 		/**
 		 * ROM data base class.
@@ -75,9 +71,6 @@ class RomData
 		 * To close the file, either delete this object or call close().
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
-		 *
-		 * In addition, subclasses must pass an array of RomFieldDesc structs
-		 * using an allocated RomDataPrivate subclass.
 		 *
 		 * @param d RomDataPrivate subclass.
 		 */
