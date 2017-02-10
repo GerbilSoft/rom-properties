@@ -10,7 +10,7 @@ cmake .. \
 	-DBUILD_KDE4=ON \
 	-DBUILD_KDE5=OFF \
 	-DBUILD_XFCE=ON \
-	-DBUILD_GNOME=ON
+	-DBUILD_GNOME=ON \
 	|| exit 1
 # Build UTF-8 and UTF-16 libraries for testing purposes.
 make romdata8 romdata16 cachemgr8 cachemgr16 || RET=1
