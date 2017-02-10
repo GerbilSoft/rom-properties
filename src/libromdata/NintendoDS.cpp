@@ -694,21 +694,23 @@ int NintendoDS::loadFieldData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
-	d->fields->addData_string(latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
+	d->fields->addData_string(
+		latin1_to_rp_string(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
 	// Full game title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
 		d->fields->addData_string(
-			utf16le_to_rp_string(d->nds_icon_title.title[lang], sizeof(d->nds_icon_title.title[lang])));
+			utf16le_to_rp_string(d->nds_icon_title.title[lang],
+				ARRAY_SIZE(d->nds_icon_title.title[lang])));
 	} else {
 		// Full game title is not available.
 		d->fields->addData_invalid();
 	}
 
 	// Game ID and publisher.
-	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, sizeof(romHeader->id6)));
+	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
