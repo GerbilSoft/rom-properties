@@ -1,5 +1,10 @@
 # Changes
 
+## v1.0 (unreleased)
+
+* Bug fixes:
+  * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
+
 ## v0.9-beta2 (released 2017/02/07)
 
 * New features:
