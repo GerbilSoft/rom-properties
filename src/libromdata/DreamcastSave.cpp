@@ -491,8 +491,8 @@ int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
 		vms_dirent.header_addr = 0;
 	}
 	vms_dirent.protect = (vmi_header.mode & DC_VMI_MODE_PROTECT_MASK
-					? DC_VMS_DIRENT_PROTECT_COPY_OK
-					: DC_VMS_DIRENT_PROTECT_COPY_PROTECTED);
+					? DC_VMS_DIRENT_PROTECT_COPY_PROTECTED
+					: DC_VMS_DIRENT_PROTECT_COPY_OK);
 	vms_dirent.address = 200 - blocks;	// Fake starting address.
 	memcpy(vms_dirent.filename, vmi_header.vms_filename, DC_VMS_FILENAME_LENGTH);
 	// TODO: Convert the timestamp to BCD?
