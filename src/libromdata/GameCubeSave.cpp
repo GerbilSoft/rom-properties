@@ -62,15 +62,6 @@ class GameCubeSavePrivate : public RomDataPrivate
 	public:
 		// RomFields data.
 
-		// Date/Time. (RFT_DATETIME)
-		static const RomFields::DateTimeDesc last_modified_dt;
-
-		// Monospace string formatting.
-		static const RomFields::StringDesc gcn_save_string_monospace;
-
-		// RomFields data.
-		static const struct RomFields::Desc gcn_save_fields[];
-
 		// Directory entry from the GCI header.
 		card_direntry direntry;
 
@@ -128,33 +119,8 @@ class GameCubeSavePrivate : public RomDataPrivate
 
 /** GameCubeSavePrivate **/
 
-// Last Modified timestamp.
-const RomFields::DateTimeDesc GameCubeSavePrivate::last_modified_dt = {
-	RomFields::RFT_DATETIME_HAS_DATE |
-	RomFields::RFT_DATETIME_HAS_TIME |
-	RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
-};
-
-// Monospace string formatting.
-const RomFields::StringDesc GameCubeSavePrivate::gcn_save_string_monospace = {
-	RomFields::StringDesc::STRF_MONOSPACE
-};
-
-// Save file fields.
-const struct RomFields::Desc GameCubeSavePrivate::gcn_save_fields[] = {
-	// TODO: Banner?
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("File Name"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Last Modified"), RomFields::RFT_DATETIME, {&last_modified_dt}},
-	{_RP("Mode"), RomFields::RFT_STRING, {&gcn_save_string_monospace}},
-	{_RP("Copy Count"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Blocks"), RomFields::RFT_STRING, {nullptr}},
-};
-
 GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
-	: super(q, file, gcn_save_fields, ARRAY_SIZE(gcn_save_fields))
+	: super(q, file)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, dataOffset(-1)
 	, iconAnimData(nullptr)
@@ -827,6 +793,7 @@ int GameCubeSave::loadFieldData(void)
 	}
 
 	// Save file header is read and byteswapped in the constructor.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -838,26 +805,25 @@ int GameCubeSave::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addData_string(latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->direntry.company);
-	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string(_RP("Publisher"),
+		publisher ? publisher : _RP("Unknown"));
 
 	// Filename.
 	// TODO: Remove trailing nulls and/or spaces.
 	// (Implicit length version of cp1252_sjis_to_rp_string()?)
-	d->fields->addData_string(cp1252_sjis_to_rp_string(
-		d->direntry.filename, sizeof(d->direntry.filename)));
+	d->fields->addField_string(_RP("File Name"),
+		cp1252_sjis_to_rp_string(
+			d->direntry.filename, sizeof(d->direntry.filename)));
 
 	// Description.
 	char desc_buf[64];
 	d->file->seek(d->dataOffset + d->direntry.commentaddr);
 	size_t size = d->file->read(desc_buf, sizeof(desc_buf));
-	if (size != sizeof(desc_buf)) {
-		// Error reading the description.
-		d->fields->addData_invalid();
-	} else {
+	if (size == sizeof(desc_buf)) {
 		// Add the description.
 		// NOTE: Some games have garbage after the first NULL byte
 		// in the two description fields, which prevents the rest
@@ -881,11 +847,16 @@ int GameCubeSave::loadFieldData(void)
 		}
 		desc += cp1252_sjis_to_rp_string(&desc_buf[32], desc_len);
 
-		d->fields->addData_string(desc);
+		d->fields->addField_string(_RP("Description"), desc);
 	}
 
 	// Last Modified timestamp.
-	d->fields->addData_dateTime((int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF);
+	d->fields->addField_dateTime(_RP("Last Modified"),
+		(int64_t)d->direntry.lastmodified + GC_UNIX_TIME_DIFF,
+		RomFields::RFT_DATETIME_HAS_DATE |
+		RomFields::RFT_DATETIME_HAS_TIME |
+		RomFields::RFT_DATETIME_IS_UTC	// GameCube doesn't support timezones.
+		);
 
 	// File mode.
 	rp_char file_mode[5];
@@ -894,12 +865,12 @@ int GameCubeSave::loadFieldData(void)
 	file_mode[2] = ((d->direntry.permission & CARD_ATTRIB_NOCOPY) ? _RP_CHR('C') : _RP_CHR('-'));
 	file_mode[3] = ((d->direntry.permission & CARD_ATTRIB_PUBLIC) ? _RP_CHR('P') : _RP_CHR('-'));
 	file_mode[4] = 0;
-	d->fields->addData_string(file_mode);
+	d->fields->addField_string(_RP("Mode"), file_mode, RomFields::STRF_MONOSPACE);
 
 	// Copy count.
-	d->fields->addData_string_numeric(d->direntry.copytimes);
+	d->fields->addField_string_numeric(_RP("Copy Count"), d->direntry.copytimes);
 	// Blocks.
-	d->fields->addData_string_numeric(d->direntry.length);
+	d->fields->addField_string_numeric(_RP("Blocks"), d->direntry.length);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
