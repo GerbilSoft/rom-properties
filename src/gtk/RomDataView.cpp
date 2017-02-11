@@ -129,6 +129,7 @@ struct _RomDataView {
 	// Animated icon data.
 	const IconAnimData *iconAnimData;
 	// TODO: GdkPixmap or cairo_surface_t?
+	// TODO: Use std::array<>?
 	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
 	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.

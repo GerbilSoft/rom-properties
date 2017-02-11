@@ -36,8 +36,10 @@ using namespace LibRomData;
 #include <cstdio>
 
 // C++ includes.
+#include <array>
 #include <unordered_map>
 #include <vector>
+using std::array;
 using std::unordered_map;
 using std::vector;
 
@@ -106,7 +108,7 @@ class RomDataViewPrivate
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
-		QPixmap iconFrames[IconAnimData::MAX_FRAMES];
+		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
 		int last_frame_number;		// Last frame number.

@@ -303,8 +303,8 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		// Animated icon is present.
 
 		// Which bitmaps are used?
-		bool bmp_used[IconAnimData::MAX_FRAMES];
-		memset(bmp_used, 0, sizeof(bmp_used));
+		std::array<bool, IconAnimData::MAX_FRAMES> bmp_used;
+		bmp_used.fill(false);
 
 		// Parse the icon sequence.
 		int seq_idx;
@@ -337,7 +337,7 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 		iconAnimData->seq_count = seq_idx;
 
 		// Convert the required bitmaps.
-		for (int i = 0; i < IconAnimData::MAX_FRAMES; i++) {
+		for (int i = 0; i < (int)bmp_used.size(); i++) {
 			if (bmp_used[i]) {
 				iconAnimData->count = i + 1;
 

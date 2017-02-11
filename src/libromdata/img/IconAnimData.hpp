@@ -28,6 +28,10 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
+// C++ includes.
+#include <array>
+#include <cstdio>
+
 namespace LibRomData {
 
 class rp_image;
@@ -44,7 +48,7 @@ struct IconAnimData
 	// Each entry indicates which frame to use.
 	// Check the seq_count field to determine
 	// how many indexes are actually here.
-	uint8_t seq_index[MAX_SEQUENCE];
+	std::array<uint8_t, MAX_SEQUENCE> seq_index;
 
 	struct delay_t {
 		uint16_t numer;	// Numerator.
@@ -56,22 +60,26 @@ struct IconAnimData
 	// Array of icon delays.
 	// NOTE: These are associated with sequence indexes,
 	// not the individual icon frames.
-	delay_t delays[MAX_SEQUENCE];
+	std::array<delay_t, MAX_SEQUENCE> delays;
 
 	// Array of icon frames.
 	// Check the count field to determine
 	// how many frames are actually here.
 	// NOTE: Frames may be nullptr, in which case
 	// the previous frame should be used.
-	const rp_image *frames[MAX_FRAMES];
+	std::array<const rp_image*, MAX_FRAMES> frames;
 
 	IconAnimData()
 		: count(0)
 		, seq_count(0)
 	{
-		memset(seq_index, 0, sizeof(seq_index));
-		memset(delays, 0, sizeof(delays));
-		memset(frames, 0, sizeof(frames));
+		seq_index.fill(0);
+		frames.fill(0);
+
+		// MSVC 2010 doesn't support initializer lists,
+		// so create a dummy struct.
+		static const delay_t zero_delay = {0, 0, 0};
+		delays.fill(zero_delay);
 	}
 };
 

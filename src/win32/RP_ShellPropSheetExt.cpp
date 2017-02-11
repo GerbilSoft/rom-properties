@@ -43,14 +43,15 @@ using namespace LibRomData;
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
-using std::wostringstream;
 using std::unique_ptr;
 using std::unordered_set;
+using std::wostringstream;
 using std::wstring;
 using std::vector;
 
@@ -150,7 +151,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
-		HBITMAP hbmpIconFrames[IconAnimData::MAX_FRAMES];
+		std::array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
 		RECT rectIcon;
 		SIZE szIcon;
 		IconAnimHelper iconAnimHelper;
@@ -335,7 +336,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, last_frame_number(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
+	hbmpIconFrames.fill(nullptr);
 	memset(&ptBanner, 0, sizeof(ptBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
 	memset(&szIcon, 0, sizeof(szIcon));
@@ -359,7 +360,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
+	for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
 		if (hbmpIconFrames[i]) {
 			DeleteObject(hbmpIconFrames[i]);
 		}
@@ -595,7 +596,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Delete the old icons.
-		for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
+		for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
 			if (hbmpIconFrames[i]) {
 				DeleteObject(hbmpIconFrames[i]);
 				hbmpIconFrames[i] = nullptr;
