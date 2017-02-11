@@ -732,12 +732,8 @@ int MegaDrive::loadFieldData(void)
 		_RP("Paddle"), _RP("Floppy Drive"), _RP("CD-ROM"),
 		_RP("Activator"), _RP("Mega Mouse")
 	};
-	vector<rp_string> *v_io_bitfield_names = new vector<rp_string>();
-	v_io_bitfield_names->reserve(ARRAY_SIZE(io_bitfield_names));
-	for (int i = 0; i < ARRAY_SIZE(io_bitfield_names); i++) {
-		v_io_bitfield_names->push_back(rp_string(io_bitfield_names[i]));
-	}
-
+	vector<rp_string> *v_io_bitfield_names = RomFields::strArrayToVector(
+		io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
 	// Parse I/O support.
 	uint32_t io_support = d->parseIOSupport(romHeader->io_support, sizeof(romHeader->io_support));
 	d->fields->addField_bitfield(_RP("I/O Support"),
@@ -788,18 +784,13 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// Region code.
+	// TODO: Validate the Mega CD security program?
 	static const rp_char *const region_code_bitfield_names[] = {
 		_RP("Japan"), _RP("Asia"),
 		_RP("USA"), _RP("Europe")
 	};
-	vector<rp_string> *v_region_code_bitfield_names = new vector<rp_string>();
-	v_region_code_bitfield_names->reserve(ARRAY_SIZE(region_code_bitfield_names));
-	for (int i = 0; i < ARRAY_SIZE(region_code_bitfield_names); i++) {
-		v_region_code_bitfield_names->push_back(rp_string(region_code_bitfield_names[i]));
-	}
-
-	// Region codes.
-	// TODO: Validate the Mega CD security program?
+	vector<rp_string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
+		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(_RP("Region Code"),
 		v_region_code_bitfield_names, 0, d->md_region);
 

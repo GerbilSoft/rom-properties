@@ -445,6 +445,17 @@ class RomFields
 		void reserve(int n);
 
 		/**
+		 * Convert an array of rp_char strings to a vector of rp_string.
+		 * This can be used for addField_bitfield() and addField_listData().
+		 * @param strArray Array of strings.
+		 * @param count Number of strings, or -1 for a NULL-terminated array.
+		 * NOTE: The array will be terminated at NULL regardless of count,
+		 * so a -1 count is only useful if the size isn't known.
+		 * @return Allocated std::vector<rp_string>.
+		 */
+		static std::vector<rp_string> *strArrayToVector(const rp_char *const *strArray, int count = -1);
+
+		/**
 		 * Add string field data.
 		 * @param name Field name.
 		 * @param str String.

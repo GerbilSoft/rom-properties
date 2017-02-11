@@ -34,6 +34,7 @@
 
 // C++ includes.
 #include <array>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -875,6 +876,31 @@ void RomFields::reserve(int n)
 	if (n > 0) {
 		d->fields.reserve(n);
 	}
+}
+
+/**
+ * Convert an array of rp_char strings to a vector of rp_string.
+ * This can be used for addField_bitfield() and addField_listData().
+ * @param strArray Array of strings.
+ * @param count Number of strings, or -1 for a NULL-terminated array.
+ * NOTE: The array will be terminated at NULL regardless of count,
+ * so a -1 count is only useful if the size isn't known.
+ * @return Allocated std::vector<rp_string>.
+ */
+std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArray, int count)
+{
+	std::vector<rp_string> *pVec = new std::vector<rp_string>();
+	if (count < 0) {
+		count = std::numeric_limits<int>::max();
+	} else {
+		pVec->reserve(count);
+	}
+
+	for (; strArray != nullptr && count > 0; strArray++, count--) {
+		pVec->push_back(rp_string(*strArray));
+	}
+
+	return pVec;
 }
 
 /**
