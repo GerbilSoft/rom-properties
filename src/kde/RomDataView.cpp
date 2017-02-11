@@ -39,7 +39,6 @@ using namespace LibRomData;
 #include <array>
 #include <unordered_map>
 #include <vector>
-using std::array;
 using std::unordered_map;
 using std::vector;
 
