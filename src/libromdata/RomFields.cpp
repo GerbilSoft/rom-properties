@@ -1011,8 +1011,7 @@ int RomFields::addField_string_address_range(const rp_char *name,
 		digits = 16;
 	}
 
-	// ROM range.
-	// TODO: Range helper? (Can't be used for SRAM, though...)
+	// Address range.
 	char buf[64];
 	int len = snprintf(buf, sizeof(buf), "0x%0*X - 0x%0*X",
 			digits, start, digits, end);
