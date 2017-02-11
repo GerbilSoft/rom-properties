@@ -384,29 +384,6 @@ class RomFields
 		DEPRECATED int addData_string_hexdump(const uint8_t *buf, size_t size);
 
 		/**
-		 * Add a string field formatted for an address range.
-		 * @param start Start address.
-		 * @param end End address.
-		 * @param suffix Suffix string.
-		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_string_address_range(uint32_t start, uint32_t end,
-					const rp_char *suffix, int digits = 8);
-
-		/**
-		 * Add a string field formatted for an address range.
-		 * @param start Start address.
-		 * @param end End address.
-		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED inline int addData_string_address_range(uint32_t start, uint32_t end, int digits = 8)
-		{
-			return addData_string_address_range(start, end, nullptr, digits);
-		}
-
-		/**
 		 * Add bitfield data.
 		 * @param bitfield Bitfield.
 		 * @return Field index, or -1 on error.
