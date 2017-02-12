@@ -65,8 +65,6 @@ class NintendoDSPrivate : public RomDataPrivate
 			DS_HW_DS	= (1 << 0),
 			DS_HW_DSi	= (1 << 1),
 		};
-		static const rp_char *nds_hw_bitfield_names[];
-		static const RomFields::BitfieldDesc nds_hw_bitfield;
 
 		// DS region. (RFT_BITFIELD)
 		enum NDS_Region {
@@ -74,15 +72,6 @@ class NintendoDSPrivate : public RomDataPrivate
 			NDS_REGION_SKOREA	= (1 << 1),
 			NDS_REGION_CHINA	= (1 << 2),
 		};
-		static const rp_char *const nds_region_bitfield_names[];
-		static const RomFields::BitfieldDesc nds_region_bitfield;
-
-		// DSi region. (RFT_BITFIELD)
-		static const rp_char *const dsi_region_bitfield_names[];
-		static const RomFields::BitfieldDesc dsi_region_bitfield;
-
-		// ROM fields.
-		static const struct RomFields::Desc nds_fields[];
 
 	public:
 		// ROM header.
@@ -129,53 +118,8 @@ class NintendoDSPrivate : public RomDataPrivate
 
 /** NintendoDSPrivate **/
 
-// Hardware bitfield.
-const rp_char *NintendoDSPrivate::nds_hw_bitfield_names[] = {
-	_RP("Nintendo DS"), _RP("Nintendo DSi")
-};
-
-const RomFields::BitfieldDesc NintendoDSPrivate::nds_hw_bitfield = {
-	ARRAY_SIZE(nds_hw_bitfield_names), 2, nds_hw_bitfield_names
-};
-
-// DS region bitfield.
-const rp_char *const NintendoDSPrivate::nds_region_bitfield_names[] = {
-	_RP("Region-Free"), _RP("South Korea"), _RP("China")
-};
-
-const RomFields::BitfieldDesc NintendoDSPrivate::nds_region_bitfield = {
-	ARRAY_SIZE(nds_region_bitfield_names), 3, nds_region_bitfield_names
-};
-
-// DSi region bitfield.
-const rp_char *const NintendoDSPrivate::dsi_region_bitfield_names[] = {
-	_RP("Japan"), _RP("USA"), _RP("Europe"),
-	_RP("Australia"), _RP("China"), _RP("South Korea")
-};
-
-const RomFields::BitfieldDesc NintendoDSPrivate::dsi_region_bitfield = {
-	ARRAY_SIZE(dsi_region_bitfield_names), 3, dsi_region_bitfield_names
-};
-
-// ROM fields.
-const struct RomFields::Desc NintendoDSPrivate::nds_fields[] = {
-	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Full Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Hardware"), RomFields::RFT_BITFIELD, {&nds_hw_bitfield}},
-	{_RP("DS Region"), RomFields::RFT_BITFIELD, {&nds_region_bitfield}},
-
-	/** DSi-specific fields. **/
-	{_RP("DSi Region"), RomFields::RFT_BITFIELD, {&dsi_region_bitfield}},
-	// TODO: Is the field name too long?
-	{_RP("DSi ROM Type"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Age Rating"), RomFields::RFT_AGE_RATINGS, {nullptr}},
-};
-
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
-	: super(q, file, nds_fields, ARRAY_SIZE(nds_fields))
+	: super(q, file)
 	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
@@ -694,30 +638,30 @@ int NintendoDS::loadFieldData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Game title.
-	d->fields->addData_string(
+	d->fields->addField_string(_RP("Title"),
 		latin1_to_rp_string(romHeader->title, ARRAY_SIZE(romHeader->title)));
 
 	// Full game title.
 	// TODO: Where should this go?
 	int lang = d->getTitleIndex();
 	if (lang >= 0 && lang < ARRAY_SIZE(d->nds_icon_title.title)) {
-		d->fields->addData_string(
+		d->fields->addField_string(_RP("Full Title"),
 			utf16le_to_rp_string(d->nds_icon_title.title[lang],
 				ARRAY_SIZE(d->nds_icon_title.title[lang])));
-	} else {
-		// Full game title is not available.
-		d->fields->addData_invalid();
 	}
 
 	// Game ID and publisher.
-	d->fields->addData_string(latin1_to_rp_string(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
+	d->fields->addField_string(_RP("Game ID"),
+		latin1_to_rp_string(romHeader->id6, ARRAY_SIZE(romHeader->id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(romHeader->company);
-	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string(_RP("Publisher"),
+		publisher ? publisher : _RP("Unknown"));
 
 	// ROM version.
-	d->fields->addData_string_numeric(romHeader->rom_version, RomFields::FB_DEC, 2);
+	d->fields->addField_string_numeric(_RP("Revision"),
+		romHeader->rom_version, RomFields::FB_DEC, 2);
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
@@ -727,7 +671,14 @@ int NintendoDS::loadFieldData(void)
 		// 0x01 is invalid. Assume DS.
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
-	d->fields->addData_bitfield(hw_type);
+
+	static const rp_char *const hw_bitfield_names[] = {
+		_RP("Nintendo DS"), _RP("Nintendo DSi")
+	};
+	vector<rp_string> *v_hw_bitfield_names = RomFields::strArrayToVector(
+		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
+	d->fields->addField_bitfield(_RP("Hardware"),
+		v_hw_bitfield_names, 0, hw_type);
 
 	// TODO: Combine DS Region and DSi Region into one bitfield?
 
@@ -744,14 +695,28 @@ int NintendoDS::loadFieldData(void)
 		// Note that the Sonic Colors demo has 0x02 here.
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
 	}
-	d->fields->addData_bitfield(nds_region);
+
+	static const rp_char *const nds_region_bitfield_names[] = {
+		_RP("Region-Free"), _RP("South Korea"), _RP("China")
+	};
+	vector<rp_string> *v_nds_region_bitfield_names = RomFields::strArrayToVector(
+		nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+	d->fields->addField_bitfield(_RP("DS Region"),
+		v_nds_region_bitfield_names, 0, nds_region);
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
 
 		// DSi Region.
 		// Maps directly to the header field.
-		d->fields->addData_bitfield(romHeader->dsi.region_code);
+		static const rp_char *const dsi_region_bitfield_names[] = {
+			_RP("Japan"), _RP("USA"), _RP("Europe"),
+			_RP("Australia"), _RP("China"), _RP("South Korea")
+		};
+		vector<rp_string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector(
+			dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+		d->fields->addField_bitfield(_RP("DSi Region"),
+			v_dsi_region_bitfield_names, 3, romHeader->dsi.region_code);
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
@@ -779,21 +744,22 @@ int NintendoDS::loadFieldData(void)
 		}
 
 		if (filetype) {
-			d->fields->addData_string(filetype);
+			d->fields->addField_string(_RP("DSi ROM Type"), filetype);
 		} else {
 			// Invalid file type.
 			char buf[24];
 			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi.filetype);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
-			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+			d->fields->addField_string(_RP("DSi ROM Type"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 		}
 
 		// Age rating(s).
 		// Note that not all 16 fields are present on DSi,
 		// though the fields do match exactly, so no
 		// mapping is necessary.
-		uint16_t age_ratings[RomFields::AGE_MAX] = { };
+		std::array<uint16_t, RomFields::AGE_MAX> age_ratings;
 		// Valid ratings: 0-1, 3-9
 		// TODO: Not sure if Finland is valid for DSi.
 		static const uint16_t valid_ratings = 0x3FB;
@@ -801,6 +767,7 @@ int NintendoDS::loadFieldData(void)
 		for (int i = RomFields::AGE_MAX-1; i > 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
 				// Rating is not applicable for GameCube.
+				age_ratings[i] = 0;
 				continue;
 			}
 
@@ -811,6 +778,7 @@ int NintendoDS::loadFieldData(void)
 			const uint8_t dsi_rating = romHeader->dsi.age_ratings[i];
 			if (!(dsi_rating & 0x80)) {
 				// Rating is unused.
+				age_ratings[i] = 0;
 				continue;
 			}
 
@@ -822,12 +790,7 @@ int NintendoDS::loadFieldData(void)
 				age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
 			}
 		}
-		d->fields->addData_ageRatings(age_ratings);
-	} else {
-		// Hide the DSi-specific fields.
-		d->fields->addData_invalid();	// DSi Region
-		d->fields->addData_invalid();	// DSi ROM Type
-		d->fields->addData_invalid();	// Age Rating
+		d->fields->addField_ageRatings(_RP("Age Ratings"), age_ratings);
 	}
 
 	// Finished reading the field data.
