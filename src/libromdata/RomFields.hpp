@@ -207,6 +207,9 @@ class RomFields
 			AGEBF_PROHIBITED	= 0x0200,	// Game is specifically prohibited.
 		};
 
+		// Age Ratings type.
+		typedef std::array<uint16_t, AGE_MAX> age_ratings_t;
+
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
@@ -258,7 +261,7 @@ class RomFields
 
 				// RFT_AGE_RATINGS
 				// See AgeRatingsCountry for field indexes.
-				const std::array<uint16_t, 16> *age_ratings;
+				const age_ratings_t *age_ratings;
 			} data;
 		};
 
@@ -549,8 +552,7 @@ class RomFields
 		 * @param age_ratings Pointer to age ratings array.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_ageRatings(const rp_char *name,
-			const std::array<uint16_t, AGE_MAX> &age_ratings);
+		int addField_ageRatings(const rp_char *name, const age_ratings_t &age_ratings);
 };
 
 }

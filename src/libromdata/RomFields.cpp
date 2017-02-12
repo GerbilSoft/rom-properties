@@ -247,7 +247,7 @@ void RomFieldsPrivate::delete_data(void)
 				delete const_cast<vector<vector<rp_string> >*>(field.data.list_data);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				delete const_cast<std::array<uint16_t, RomFields::AGE_MAX>*>(field.data.age_ratings);
+				delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
 				break;
 			default:
 				// ERROR!
@@ -817,7 +817,7 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 		field.isValid = false;
 		field.data.generic = 0;
 	} else {
-		std::array<uint16_t, AGE_MAX> *tmp = new std::array<uint16_t, AGE_MAX>();
+		age_ratings_t *tmp = new age_ratings_t;
 		memcpy(tmp->data(), age_ratings, sizeof(uint16_t)*tmp->size());
 		field.data.age_ratings = tmp;
 		field.isValid = true;
@@ -1136,7 +1136,7 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
  * @param age_ratings Pointer to age ratings array.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, AGE_MAX> &age_ratings)
+int RomFields::addField_ageRatings(const rp_char *name, const age_ratings_t &age_ratings)
 {
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
@@ -1152,7 +1152,7 @@ int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_
 		return -1;
 	field.name = rp_string(name);
 	field.type = RFT_AGE_RATINGS;
-	field.data.age_ratings = new std::array<uint16_t, AGE_MAX>(age_ratings);
+	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.isValid = true;
 	return idx;
 }

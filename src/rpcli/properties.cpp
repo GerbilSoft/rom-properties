@@ -286,7 +286,7 @@ public:
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
 
-		auto age_ratings = romField->data.age_ratings;
+		const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
 		assert(age_ratings != nullptr);
 		if (!age_ratings) {
 			os << "Unknown";
@@ -531,7 +531,7 @@ public:
 				os << "{\"type\":\"AGE_RATINGS\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
 				   << "},\"data\":";
 
-				auto age_ratings = romField->data.age_ratings;
+				const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
 				assert(age_ratings != nullptr);
 				if (!age_ratings) {
 					os << "\"ERROR\"}";

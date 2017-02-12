@@ -1029,7 +1029,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 	gtk_widget_show(widget);
 	GTK_WIDGET_HALIGN_LEFT(widget);
 
-	auto age_ratings = field->data.age_ratings;
+	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.

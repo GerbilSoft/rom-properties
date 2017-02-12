@@ -761,7 +761,7 @@ int NintendoDS::loadFieldData(void)
 		// Note that not all 16 fields are present on DSi,
 		// though the fields do match exactly, so no
 		// mapping is necessary.
-		std::array<uint16_t, RomFields::AGE_MAX> age_ratings;
+		RomFields::age_ratings_t age_ratings;
 		// Valid ratings: 0-1, 3-9
 		// TODO: Not sure if Finland is valid for DSi.
 		static const uint16_t valid_ratings = 0x3FB;

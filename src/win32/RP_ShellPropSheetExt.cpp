@@ -1308,7 +1308,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	if (field->type != RomFields::RFT_AGE_RATINGS)
 		return 0;
 
-	auto age_ratings = field->data.age_ratings;
+	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
