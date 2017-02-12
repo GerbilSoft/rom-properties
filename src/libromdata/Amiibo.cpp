@@ -480,7 +480,7 @@ int Amiibo::loadFieldData(void)
 
 	// Credits.
 	d->fields->addField_string(_RP("Credits"),
-		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\n the Unofficial amiibo Database."),
+		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\nthe Unofficial amiibo Database."),
 		RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
