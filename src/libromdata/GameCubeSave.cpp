@@ -815,7 +815,7 @@ int GameCubeSave::loadFieldData(void)
 	// Filename.
 	// TODO: Remove trailing nulls and/or spaces.
 	// (Implicit length version of cp1252_sjis_to_rp_string()?)
-	d->fields->addField_string(_RP("File Name"),
+	d->fields->addField_string(_RP("Filename"),
 		cp1252_sjis_to_rp_string(
 			d->direntry.filename, sizeof(d->direntry.filename)));
 
