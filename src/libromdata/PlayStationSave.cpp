@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -59,12 +59,6 @@ class PlayStationSavePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(PlayStationSavePrivate)
 
 	public:
-		/** RomFields **/
-
-		// ROM fields.
-		static const struct RomFields::Desc ps1_fields[];
-
-	public:
 		// Save file type.
 		enum SaveType {
 			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
@@ -95,15 +89,8 @@ class PlayStationSavePrivate : public RomDataPrivate
 
 /** PlayStationSavePrivate **/
 
-// ROM fields.
-// TODO: Add more.
-const struct RomFields::Desc PlayStationSavePrivate::ps1_fields[] = {
-	{_RP("Filename"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Description"), RomFields::RFT_STRING, {nullptr}},
-};
-
 PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
-	: super(q, file, ps1_fields, ARRAY_SIZE(ps1_fields))
+	: super(q, file)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, iconAnimData(nullptr)
 {
@@ -397,13 +384,14 @@ int PlayStationSave::loadFieldData(void)
 
 	// PSV (PS1 on PS3) save file header.
 	const PS1_PSV_Header *psvHeader = &d->psvHeader;
+	d->fields->reserve(2);	// Maximum of 2 fields.
 
 	// Filename.
-	d->fields->addData_string(
+	d->fields->addField_string(_RP("Filename"),
 		cp1252_sjis_to_rp_string(psvHeader->filename, sizeof(psvHeader->filename)));
 
 	// Description.
-	d->fields->addData_string(
+	d->fields->addField_string(_RP("Description"),
 		cp1252_sjis_to_rp_string(psvHeader->sc.title, sizeof(psvHeader->sc.title)));
 
 	// TODO: Moar fields.

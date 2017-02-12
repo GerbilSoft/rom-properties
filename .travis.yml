@@ -10,7 +10,8 @@ sudo: required
 dist: trusty
 
 # Build dependencies.
-# NOTE: KF5 is not available on Ubuntu 14.04.
+# NOTE: KF5 is not available on Ubuntu 14.04,
+# so we can't build the KDE5 plugin.
 addons:
   apt:
     packages:
@@ -22,6 +23,8 @@ addons:
       - libglib2.0-dev
       - libgtk2.0-dev
       - libthunarx-2-dev
+      - libgtk-3-dev
+      - libnautilus-extension-dev
 
 # Run the build script.
 script: ./travis.sh

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -57,10 +57,6 @@ class SNESPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(SNESPrivate)
 
 	public:
-		// RomFields data.
-		static const struct RomFields::Desc snes_fields[];
-
-	public:
 		/**
 		 * Is the specified ROM header valid?
 		 * @param romHeader SNES ROM header to check.
@@ -78,20 +74,8 @@ class SNESPrivate : public RomDataPrivate
 
 /** SNESPrivate **/
 
-// ROM fields.
-const struct RomFields::Desc SNESPrivate::snes_fields[] = {
-	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("ROM Mapping"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Cartridge HW"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	// TODO: More fields.
-};
-
 SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
-	: super(q, file, snes_fields, ARRAY_SIZE(snes_fields))
+	: super(q, file)
 	, header_address(0)
 {
 	// Clear the ROM header struct.
@@ -494,11 +478,12 @@ int SNES::loadFieldData(void)
 
 	// ROM file header is read and byteswapped in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
+	d->fields->reserve(7); // Maximum of 7 fields.
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addData_string(latin1_to_rp_string(
-		romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string(_RP("Title"),
+		latin1_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
 	// NOTE: Only valid if the old publisher code is 0x33.
@@ -513,10 +498,11 @@ int SNES::loadFieldData(void)
 			// Append the publisher.
 			id6 += string(romHeader->ext.new_publisher_code, sizeof(romHeader->ext.new_publisher_code));
 		}
-		d->fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
+		d->fields->addField_string(_RP("Game ID"),
+			latin1_to_rp_string(id6.data(), (int)id6.size()));
 	} else {
 		// No game ID.
-		d->fields->addData_string(_RP("Unknown"));
+		d->fields->addField_string(_RP("Game ID"), _RP("Unknown"));
 	}
 
 	// Publisher.
@@ -526,7 +512,7 @@ int SNES::loadFieldData(void)
 	} else {
 		publisher = NintendoPublishers::lookup_old(romHeader->old_publisher_code);
 	}
-	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string(_RP("Publisher"), publisher ? publisher : _RP("Unknown"));
 
 	// ROM mapping.
 	const rp_char *rom_mapping;
@@ -554,14 +540,15 @@ int SNES::loadFieldData(void)
 			break;
 	}
 	if (rom_mapping) {
-		d->fields->addData_string(rom_mapping);
+		d->fields->addField_string(_RP("ROM Mapping"), rom_mapping);
 	} else {
 		// Unknown ROM mapping.
 		char buf[20];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->rom_mapping);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		d->fields->addField_string(_RP("ROM Mapping"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 	}
 
 	// Cartridge HW.
@@ -587,14 +574,14 @@ int SNES::loadFieldData(void)
 			const rp_char *const hw_enh = hw_enh_tbl[(romHeader->rom_type & SNES_ROMTYPE_ENH_MASK) >> 4];
 			rp_string rps(hw_base);
 			rps.append(hw_enh);
-			d->fields->addData_string(rps);
+			d->fields->addField_string(_RP("Cartridge HW"), rps);
 		} else {
 			// No enhancement chip.
-			d->fields->addData_string(hw_base);
+			d->fields->addField_string(_RP("Cartridge HW"), hw_base);
 		}
 	} else {
 		// Unknown cartridge HW.
-		d->fields->addData_string(_RP("Unknown"));
+		d->fields->addField_string(_RP("Cartridge HW"), _RP("Unknown"));
 	}
 
 	// Region
@@ -609,10 +596,11 @@ int SNES::loadFieldData(void)
 	const rp_char *region = (romHeader->destination_code < ARRAY_SIZE(region_tbl)
 		? region_tbl[romHeader->destination_code]
 		: nullptr);
-	d->fields->addData_string(region ? region : _RP("Unknown"));
+	d->fields->addField_string(_RP("Region"), region ? region : _RP("Unknown"));
 
 	// Revision
-	d->fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
+	d->fields->addField_string_numeric(_RP("Revision"),
+		romHeader->version, RomFields::FB_DEC, 2);
 
 	// TODO: Other fields.
 

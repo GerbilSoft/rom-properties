@@ -65,4 +65,13 @@
 #endif
 #endif /* __cplusplus */
 
+// Deprecated function attribute.
+#if defined(__GNUC__)
+#define DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#define DEPRECATED
+#endif
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_COMMON_H__ */

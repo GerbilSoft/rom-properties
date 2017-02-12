@@ -4,6 +4,7 @@
 
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
+  * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
 
 ## v0.9-beta2 (released 2017/02/07)
 

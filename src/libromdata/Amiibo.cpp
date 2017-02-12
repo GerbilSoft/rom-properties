@@ -50,18 +50,6 @@ class AmiiboPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(AmiiboPrivate)
 
 	public:
-		/** RomFields **/
-
-		// Monospace string formatting.
-		static const RomFields::StringDesc nfp_string_monospace;
-
-		// Credits string formatting.
-		static const RomFields::StringDesc nfp_string_credits;
-
-		// ROM fields.
-		static const struct RomFields::Desc nfp_fields[];
-
-	public:
 		// NFC data.
 		// TODO: Use nfpSize to determine an "nfpType" value?
 		int nfpSize;		// NFP_File_Size
@@ -79,39 +67,8 @@ class AmiiboPrivate : public RomDataPrivate
 
 /** AmiiboPrivate **/
 
-// Monospace string formatting.
-const RomFields::StringDesc AmiiboPrivate::nfp_string_monospace = {
-	RomFields::StringDesc::STRF_MONOSPACE
-};
-
-// Credits string formatting.
-const RomFields::StringDesc AmiiboPrivate::nfp_string_credits = {
-	RomFields::StringDesc::STRF_CREDITS
-};
-
-// ROM fields.
-const struct RomFields::Desc AmiiboPrivate::nfp_fields[] = {
-	// NTAG215 data.
-	{_RP("NTAG215 serial"), RomFields::RFT_STRING, {&nfp_string_monospace}},
-
-	// TODO: More amiibo data.
-	{_RP("amiibo ID"), RomFields::RFT_STRING, {&nfp_string_monospace}},
-	{_RP("amiibo Type"), RomFields::RFT_STRING, {nullptr}},
-
-	{_RP("Character Series"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Character Name"), RomFields::RFT_STRING, {nullptr}},
-
-	{_RP("amiibo Series"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("amiibo Name"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("amiibo Wave #"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("amiibo Release #"), RomFields::RFT_STRING, {nullptr}},
-
-	// Credits
-	{_RP("Credits"), RomFields::RFT_STRING, {&nfp_string_credits}},
-};
-
 AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
-	: super(q, file, nfp_fields, ARRAY_SIZE(nfp_fields))
+	: super(q, file)
 	, nfpSize(0)
 {
 	// Clear the NFP data struct.
@@ -409,6 +366,7 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// NTAG215 data.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Serial number.
 
@@ -446,7 +404,9 @@ int Amiibo::loadFieldData(void)
 	len += (7*2);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
-	d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	d->fields->addField_string(_RP("NTAG215 Serial"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP(""),
+		RomFields::STRF_MONOSPACE);
 
 	// NFP data.
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
@@ -458,7 +418,9 @@ int Amiibo::loadFieldData(void)
 	len = snprintf(buf, sizeof(buf), "%08X-%08X", char_id, amiibo_id);
 	if (len > (int)sizeof(buf))
 		len = (int)sizeof(buf);
-	d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	d->fields->addField_string(_RP("amiibo ID"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP(""),
+		RomFields::STRF_MONOSPACE);
 
 	// amiibo type.
 	const rp_char *type = nullptr;
@@ -477,53 +439,49 @@ int Amiibo::loadFieldData(void)
 	}
 
 	if (type) {
-		d->fields->addData_string(type);
+		d->fields->addField_string(_RP("amiibo Type"), type);
 	} else {
 		// Invalid amiibo type.
 		char buf[24];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (char_id & 0xFF));
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		d->fields->addField_string(_RP("amiibo Type"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
 	// Character series.
 	const rp_char *const char_series = AmiiboData::lookup_char_series_name(char_id);
-	d->fields->addData_string(char_series ? char_series : _RP("Unknown"));
+	d->fields->addField_string(_RP("Character Series"),
+		char_series ? char_series : _RP("Unknown"));
 
 	// Character name.
 	const rp_char *const char_name = AmiiboData::lookup_char_name(char_id);
-	d->fields->addData_string(char_name ? char_name : _RP("Unknown"));
+	d->fields->addField_string(_RP("Character Name"),
+		char_name ? char_name : _RP("Unknown"));
 
 	// amiibo series.
 	const rp_char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
-	d->fields->addData_string(amiibo_series ? amiibo_series : _RP("Unknown"));
+	d->fields->addField_string(_RP("amiibo Series"),
+		amiibo_series ? amiibo_series : _RP("Unknown"));
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
 	const rp_char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
-		d->fields->addData_string(amiibo_name);
+		d->fields->addField_string(_RP("amiibo Name"), amiibo_name);
 		if (wave_no != 0) {
-			d->fields->addData_string_numeric(wave_no);
-		} else {
-			d->fields->addData_invalid();
+			d->fields->addField_string_numeric(_RP("amiibo Wave #"), wave_no);
 		}
 		if (release_no != 0) {
-			d->fields->addData_string_numeric(release_no);
-		} else {
-			d->fields->addData_invalid();
+			d->fields->addField_string_numeric(_RP("amiibo Release #"), release_no);
 		}
-	} else {
-		// Unknown name.
-		d->fields->addData_string(_RP("Unknown"));
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
 	}
 
 	// Credits.
-	d->fields->addData_string(
-		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\n the Unofficial amiibo Database."));
+	d->fields->addField_string(_RP("Credits"),
+		_RP("amiibo images provided by <a href=\"http://amiibo.life/\">amiibo.life</a>,\nthe Unofficial amiibo Database."),
+		RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();

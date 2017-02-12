@@ -59,21 +59,6 @@ class DreamcastSavePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(DreamcastSavePrivate)
 
 	public:
-		// RomFields data.
-
-		// Date/Time. (RFT_DATETIME)
-		static const RomFields::DateTimeDesc ctime_dt;
-
-		// Monospace string formatting.
-		static const RomFields::StringDesc dc_save_string_monospace;
-
-		// "Warning" string formatting.
-		static const RomFields::StringDesc dc_save_string_warning;
-
-		// RomFields data.
-		static const struct RomFields::Desc dc_save_fields[];
-
-	public:
 		// Save file type.
 		// Applies to the main file, e.g. VMS or DCI.
 		enum SaveType {
@@ -189,47 +174,6 @@ class DreamcastSavePrivate : public RomDataPrivate
 
 /** DreamcastSavePrivate **/
 
-// Last Modified timestamp.
-const RomFields::DateTimeDesc DreamcastSavePrivate::ctime_dt = {
-	RomFields::RFT_DATETIME_HAS_DATE |
-	RomFields::RFT_DATETIME_HAS_TIME |
-	RomFields::RFT_DATETIME_IS_UTC	// Dreamcast doesn't support timezones.
-};
-
-// Monospace string formatting.
-const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_monospace = {
-	RomFields::StringDesc::STRF_MONOSPACE
-};
-
-// "Warning" string formatting.
-const RomFields::StringDesc DreamcastSavePrivate::dc_save_string_warning = {
-	RomFields::StringDesc::STRF_WARNING
-};
-
-// Save file fields.
-const struct RomFields::Desc DreamcastSavePrivate::dc_save_fields[] = {
-	// Generic warning field for e.g. VMS with no VMI.
-	// TODO: Bold+Red?
-	{_RP("Warning"), RomFields::RFT_STRING, {&dc_save_string_warning}},
-
-	// VMI fields.
-	{_RP("VMI Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("VMI Copyright"), RomFields::RFT_STRING, {nullptr}},
-
-	// VMS directory entry fields.
-	{_RP("File Type"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Copy Protect"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Filename"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Creation Time"), RomFields::RFT_DATETIME, {&ctime_dt}},
-	// TODO: Size, header address?
-
-	// VMS fields.
-	{_RP("VMS Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("DC Description"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Game Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("CRC"), RomFields::RFT_STRING, {&dc_save_string_monospace}},
-};
-
 // Graphic eyecatch sizes.
 const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 	0,	// DC_VMS_EYECATCH_NONE
@@ -239,7 +183,7 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 };
 
 DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
-	: super(q, file, dc_save_fields, ARRAY_SIZE(dc_save_fields))
+	: super(q, file)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, loaded_headers(0)
 	, vmi_file(nullptr)
@@ -1265,11 +1209,14 @@ int DreamcastSave::loadFieldData(void)
 		return -EIO;
 	}
 
+	// TODO: The "Warning" field is not shown if all fields are shown.
+	d->fields->reserve(11);	// Maximum of 11 fields.
+
 	// NOTE: DCI files have a directory entry, but not the
 	// extra VMI information.
 	switch (d->loaded_headers) {
 		case DreamcastSavePrivate::DC_HAVE_VMS |
-		     DreamcastSavePrivate::DC_HAVE_VMI:
+			DreamcastSavePrivate::DC_HAVE_VMI:
 		case DreamcastSavePrivate::DC_HAVE_VMS |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 		case DreamcastSavePrivate::DC_HAVE_VMS |
@@ -1283,8 +1230,7 @@ int DreamcastSave::loadFieldData(void)
 		     DreamcastSavePrivate::DC_HAVE_VMI |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 			// VMS and the directory entry are present.
-			// Hide the "warning" field.
-			d->fields->addData_invalid();
+			// Don't show the "warning" field.
 			break;
 
 		case DreamcastSavePrivate::DC_HAVE_VMI:
@@ -1292,20 +1238,36 @@ int DreamcastSave::loadFieldData(void)
 		case DreamcastSavePrivate::DC_HAVE_VMI |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 			// VMS is missing.
-			d->fields->addData_string(_RP("The VMS file was not found."));
+			d->fields->addField_string(_RP("Warning"),
+				_RP("The VMS file was not found."),
+				RomFields::STRF_WARNING);
 			break;
 
 		case DreamcastSavePrivate::DC_HAVE_VMS:
 		case DreamcastSavePrivate::DC_IS_ICONDATA_VMS:
 			// VMI is missing.
-			d->fields->addData_string(_RP("The VMI file was not found."));
+			d->fields->addField_string(_RP("Warning"),
+				_RP("The VMI file was not found."),
+				RomFields::STRF_WARNING);
 			break;
 
 		default:
 			// Should not happen...
 			assert(!"DreamcastSave: Unrecognized VMS/VMI combination.");
-			d->fields->addData_string(_RP("Unrecognized VMS/VMI combination."));
+			d->fields->addField_string(_RP("Warning"),
+				_RP("Unrecognized VMS/VMI combination."),
+				RomFields::STRF_WARNING);
 			break;
+	}
+
+	// DC VMI header.
+	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMI) {
+		d->fields->addField_string(_RP("VMI Description"),
+			cp1252_sjis_to_rp_string(
+				d->vmi_header.description, sizeof(d->vmi_header.description)));
+		d->fields->addField_string(_RP("VMI Copyright"),
+			cp1252_sjis_to_rp_string(
+				d->vmi_header.copyright, sizeof(d->vmi_header.copyright)));
 	}
 
 	// File type.
@@ -1344,27 +1306,16 @@ int DreamcastSave::loadFieldData(void)
 		}
 	}
 
-	// DC VMI header.
-	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMI) {
-		d->fields->addData_string(
-			cp1252_sjis_to_rp_string(d->vmi_header.description, sizeof(d->vmi_header.description)));
-		d->fields->addData_string(
-			cp1252_sjis_to_rp_string(d->vmi_header.copyright, sizeof(d->vmi_header.copyright)));
-	} else {
-		// VMI is missing.
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-	}
-
 	if (filetype) {
-		d->fields->addData_string(filetype);
+		d->fields->addField_string(_RP("File Type"), filetype);
 	} else {
 		// Unknown file type.
 		char buf[20];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.filetype);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		d->fields->addField_string(_RP("File Type"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 	}
 
 	// DC VMS directory entry.
@@ -1383,28 +1334,29 @@ int DreamcastSave::loadFieldData(void)
 		}
 
 		if (filetype) {
-			d->fields->addData_string(protect);
+			d->fields->addField_string(_RP("Copy Protect"), protect);
 		} else {
 			// Unknown file type.
 			char buf[20];
 			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.protect);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
-			d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			d->fields->addField_string(_RP("Copy Protect"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 		}
 
 		// Filename.
 		// TODO: Latin1 or Shift-JIS?
-		d->fields->addData_string(latin1_to_rp_string(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
+		d->fields->addField_string(_RP("Filename"),
+			latin1_to_rp_string(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
 		// Creation time.
 		// TODO: Interpret dateTime of -1 as "error"?
-		d->fields->addData_dateTime(d->ctime);
-	} else {
-		// Directory entry is missing.
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
+		d->fields->addField_dateTime(_RP("Creation Time"), d->ctime,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME |
+			RomFields::RFT_DATETIME_IS_UTC  // Dreamcast doesn't support timezones.
+		);
 	}
 
 	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
@@ -1412,38 +1364,39 @@ int DreamcastSave::loadFieldData(void)
 		const DC_VMS_ICONDATA_Header *const icondata_vms = &d->vms_header.icondata_vms;
 
 		// VMS description.
-		d->fields->addData_string(cp1252_sjis_to_rp_string(icondata_vms->vms_description, sizeof(icondata_vms->vms_description)));
+		d->fields->addField_string(_RP("VMS Description"),
+			cp1252_sjis_to_rp_string(
+				icondata_vms->vms_description, sizeof(icondata_vms->vms_description)));
 
 		// Other VMS fields aren't used here.
 		// TODO: Indicate if both a mono and color icon are present?
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
 	} else if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
 		// DC VMS header.
 		const DC_VMS_Header *const vms_header = &d->vms_header;
 
 		// VMS description.
-		d->fields->addData_string(cp1252_sjis_to_rp_string(vms_header->vms_description, sizeof(vms_header->vms_description)));
+		d->fields->addField_string(_RP("VMS Description"),
+			cp1252_sjis_to_rp_string(
+				vms_header->vms_description, sizeof(vms_header->vms_description)));
 
 		// DC description.
-		d->fields->addData_string(cp1252_sjis_to_rp_string(vms_header->dc_description, sizeof(vms_header->dc_description)));
+		d->fields->addField_string(_RP("DC Description"),
+			cp1252_sjis_to_rp_string(
+				vms_header->dc_description, sizeof(vms_header->dc_description)));
 
 		// Game Title.
 		// NOTE: This is used as the "sort key" on DC file management,
 		// and occasionally has control codes.
-		// TODO: EScape the control codes.
-		d->fields->addData_string(cp1252_sjis_to_rp_string(vms_header->application, sizeof(vms_header->application)));
+		// TODO: Escape the control codes.
+		d->fields->addField_string(_RP("Game Title"),
+			cp1252_sjis_to_rp_string(
+				vms_header->application, sizeof(vms_header->application)));
 
 		// CRC.
 		// NOTE: Seems to be 0 for all of the SA2 theme files.
-		d->fields->addData_string_numeric(vms_header->crc, RomFields::FB_HEX, 4);
-	} else {
-		// VMS is missing.
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
+		d->fields->addField_string_numeric(_RP("CRC"),
+			vms_header->crc, RomFields::FB_HEX, 4,
+			RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.

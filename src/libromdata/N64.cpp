@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -54,12 +54,6 @@ class N64Private : public RomDataPrivate
 		RP_DISABLE_COPY(N64Private)
 
 	public:
-		// Monospace string formatting.
-		static const RomFields::StringDesc n64_string_monospace;
-
-		// RomFields data.
-		static const struct RomFields::Desc n64_fields[];
-
 		// ROM image type.
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
@@ -79,22 +73,8 @@ class N64Private : public RomDataPrivate
 
 /** N64Private **/
 
-// Monospace string formatting.
-const RomFields::StringDesc N64Private::n64_string_monospace = {
-	RomFields::StringDesc::STRF_MONOSPACE
-};
-
-// ROM fields.
-const struct RomFields::Desc N64Private::n64_fields[] = {
-	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Entry Point"), RomFields::RFT_STRING, {&n64_string_monospace}},
-	{_RP("Checksum"), RomFields::RFT_STRING, {&n64_string_monospace}},
-};
-
 N64Private::N64Private(N64 *q, IRpFile *file)
-	: super(q, file, n64_fields, ARRAY_SIZE(n64_fields))
+	: super(q, file)
 	, romType(ROM_TYPE_UNKNOWN)
 { }
 
@@ -318,11 +298,13 @@ int N64::loadFieldData(void)
 
 	// ROM file header is read and byteswapped in the constructor.
 	const N64_RomHeader *const romHeader = &d->romHeader;
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addData_string(cp1252_sjis_to_rp_string(
-		romHeader->title, sizeof(romHeader->title)));
+	d->fields->addField_string(_RP("Title"),
+		cp1252_sjis_to_rp_string(
+			romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -333,18 +315,21 @@ int N64::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addData_string(latin1_to_rp_string(id4, 4));
+	d->fields->addField_string(_RP("Game ID"),
+		latin1_to_rp_string(id4, 4));
 
 	// Revision.
-	d->fields->addData_string_numeric(romHeader->revision, RomFields::FB_DEC, 2);
+	d->fields->addField_string_numeric(_RP("Revision"),
+		romHeader->revision, RomFields::FB_DEC, 2);
 
 	// Entry point.
-	d->fields->addData_string_numeric(romHeader->entrypoint, RomFields::FB_HEX, 8);
+	d->fields->addField_string_numeric(_RP("Entry Point"),
+		romHeader->entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 
 	// Checksum.
-	d->fields->addData_string_hexdump(
+	d->fields->addField_string_hexdump(_RP("Checksum"),
 		reinterpret_cast<const uint8_t*>(&romHeader->checksum),
-		sizeof(romHeader->checksum));
+		sizeof(romHeader->checksum), RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();

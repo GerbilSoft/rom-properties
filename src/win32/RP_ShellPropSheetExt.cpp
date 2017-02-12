@@ -43,14 +43,15 @@ using namespace LibRomData;
 #include <cstring>
 
 // C++ includes.
+#include <array>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
-using std::wostringstream;
 using std::unique_ptr;
 using std::unordered_set;
+using std::wostringstream;
 using std::wstring;
 using std::vector;
 
@@ -150,7 +151,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
-		HBITMAP hbmpIconFrames[IconAnimData::MAX_FRAMES];
+		std::array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
 		RECT rectIcon;
 		SIZE szIcon;
 		IconAnimHelper iconAnimHelper;
@@ -232,38 +233,30 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
-		 * @param desc		[in] RomFields::Desc
-		 * @param data		[in] RomFields::Data
+		 * @param field		[in] RomFields::Field
 		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
 		 * @return Field height, in pixels.
 		 */
 		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Desc *desc,
-			const RomFields::Data *data,
-			LPCWSTR wcs);
+			const RomFields::Field *field, LPCWSTR wcs);
 
 		/**
 		 * Initialize a bitfield layout.
 		 * @param hDlg		[in] Dialog window.
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
-		 * @param desc		[in] RomFields::Desc
-		 * @param data		[in] RomFields::Data
+		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
 		int initBitfield(HWND hDlg, const POINT &pt_start, int idx,
-			const RomFields::Desc *desc,
-			const RomFields::Data *data);
+			const RomFields::Field *field);
 
 		/**
 		 * Initialize a ListView control.
 		 * @param hWnd		[in] HWND of the ListView control.
-		 * @param desc		[in] RomFields::Desc
-		 * @param data		[in] RomFields::Data
+		 * @param field		[in] RomFields::Field
 		 */
-		void initListView(HWND hWnd,
-			const RomFields::Desc *desc,
-			const RomFields::Data *data);
+		void initListView(HWND hWnd, const RomFields::Field *field);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -272,13 +265,11 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
-		 * @param desc		[in] RomFields::Desc
-		 * @param data		[in] RomFields::Data
+		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Desc *desc,
-			const RomFields::Data *data);
+			const RomFields::Field *field);
 
 		/**
 		 * Initialize an Age Ratings field.
@@ -287,13 +278,11 @@ class RP_ShellPropSheetExt_Private
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
-		 * @param desc		[in] RomFields::Desc
-		 * @param data		[in] RomFields::Data
+		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
 		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
-			const RomFields::Desc *desc,
-			const RomFields::Data *data);
+			const RomFields::Field *field);
 
 		/**
 		 * Initialize the bold font.
@@ -347,7 +336,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, last_frame_number(0)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
-	memset(hbmpIconFrames, 0, sizeof(hbmpIconFrames));
+	hbmpIconFrames.fill(nullptr);
 	memset(&ptBanner, 0, sizeof(ptBanner));
 	memset(&rectIcon, 0, sizeof(rectIcon));
 	memset(&szIcon, 0, sizeof(szIcon));
@@ -371,7 +360,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	if (hbmpBanner) {
 		DeleteObject(hbmpBanner);
 	}
-	for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
+	for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
 		if (hbmpIconFrames[i]) {
 			DeleteObject(hbmpIconFrames[i]);
 		}
@@ -607,7 +596,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 	// Icon.
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Delete the old icons.
-		for (int i = ARRAY_SIZE(hbmpIconFrames)-1; i >= 0; i--) {
+		for (int i = (int)(hbmpIconFrames.size())-1; i >= 0; i--) {
 			if (hbmpIconFrames[i]) {
 				DeleteObject(hbmpIconFrames[i]);
 				hbmpIconFrames[i] = nullptr;
@@ -823,20 +812,15 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
- * @param desc		[in] RomFields::Desc
- * @param data		[in] RomFields::Data
+ * @param field		[in] RomFields::Field
  * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data,
-	LPCWSTR wcs)
+	const RomFields::Field *field, LPCWSTR wcs)
 {
-	if (!hDlg || !desc)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
+	if (!hDlg || !field)
 		return 0;
 
 	// NOTE: libromdata uses Unix-style newlines.
@@ -844,19 +828,16 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 	// add carriage returns.
 
 	// If string data wasn't specified, get the RFT_STRING data
-	// from the RomFields::Data object.
+	// from the RomFields::Field object.
 	int lf_count = 0;
 	wstring wstr;
 	if (!wcs) {
-		if (!data)
-			return 0;
-		if (desc->type != RomFields::RFT_STRING ||
-		    data->type != RomFields::RFT_STRING)
+		if (field->type != RomFields::RFT_STRING)
 			return 0;
 
 		// TODO: NULL string == empty string?
-		if (data->str) {
-			wstr = unix2dos(RP2W_s(data->str), &lf_count);
+		if (field->data.str) {
+			wstr = unix2dos(RP2W_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
@@ -881,14 +862,14 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
-	if (desc->type == RomFields::RFT_STRING && desc->str_desc) {
+	if (field->type == RomFields::RFT_STRING) {
 		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
 		// Preferring STRF_WARNING.
-		assert((desc->str_desc->formatting &
-			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING)) !=
-			(RomFields::StringDesc::STRF_MONOSPACE | RomFields::StringDesc::STRF_WARNING));
+		assert((field->desc.flags &
+			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING)) !=
+			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING));
 
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+		if (field->desc.flags & RomFields::STRF_WARNING) {
 			// "Warning" font.
 			if (hFontBold) {
 				hFont = hFontBold;
@@ -900,7 +881,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 					hwndWarningControls.insert(hStatic);
 				}
 			}
-		} else if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+		} else if (field->desc.flags & RomFields::STRF_MONOSPACE) {
 			// Monospaced font.
 			if (hFontMono) {
 				hFont = hFontMono;
@@ -909,8 +890,8 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		}
 	}
 
-	if (desc->type == RomFields::RFT_STRING && desc->str_desc &&
-	    (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS))
+	if (field->type == RomFields::RFT_STRING &&
+	    (field->desc.flags & RomFields::STRF_CREDITS))
 	{
 		// Align to the bottom of the dialog and center-align the text.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -996,21 +977,16 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
  * @param hDlg		[in] Dialog window.
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
- * @param desc		[in] RomFields::Desc
- * @param data		[in] RomFields::Data
+ * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	const POINT &pt_start, int idx,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+	const RomFields::Field *field)
 {
-	if (!hDlg || !desc || !data)
+	if (!hDlg || !field)
 		return 0;
-	if (desc->type != RomFields::RFT_BITFIELD ||
-	    data->type != RomFields::RFT_BITFIELD)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
+	if (field->type != RomFields::RFT_BITFIELD)
 		return 0;
 
 	// Checkbox size.
@@ -1024,29 +1000,32 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
 	// Create a grid of checkboxes.
-	const RomFields::BitfieldDesc *bitfieldDesc = desc->bitfield;
-	assert(bitfieldDesc != nullptr);
+	const auto &bitfieldDesc = field->desc.bitfield;
+	int count = bitfieldDesc.elements;
+	assert(count <= (int)bitfieldDesc.names->size());
+	if (count > (int)bitfieldDesc.names->size()) {
+		count = (int)bitfieldDesc.names->size();
+	}
 
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
 	std::vector<int> col_widths;
 	int row = 0, col = 0;
-	if (bitfieldDesc->elemsPerRow == 1) {
+	if (bitfieldDesc.elemsPerRow == 1) {
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
 		RECT rectDlg;
 		GetClientRect(hDlg, &rectDlg);
 		col_widths.push_back(rectDlg.right - pt_start.x);
-	} else if (bitfieldDesc->elemsPerRow > 1) {
+	} else if (bitfieldDesc.elemsPerRow > 1) {
 		// Determine the widest entry in each column.
-		col_widths.resize(bitfieldDesc->elemsPerRow);
-		for (int j = 0; j < bitfieldDesc->elements; j++) {
-			const rp_char *name = bitfieldDesc->names[j];
-			if (!name)
+		col_widths.resize(bitfieldDesc.elemsPerRow);
+		for (int j = 0; j < count; j++) {
+			const rp_string &name = bitfieldDesc.names->at(j);
+			if (name.empty())
 				continue;
-
 			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_c(name);
+			wstring s_name = RP2W_s(name);
 
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
@@ -1059,7 +1038,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 
 			// Next column.
 			col++;
-			if (col == bitfieldDesc->elemsPerRow) {
+			if (col == bitfieldDesc.elemsPerRow) {
 				// Next row.
 				row++;
 				col = 0;
@@ -1078,24 +1057,23 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	pt.y -= rect_subtract.bottom;
 
 	row = 0; col = 0;
-	for (int j = 0; j < bitfieldDesc->elements; j++) {
-		const rp_char *name = bitfieldDesc->names[j];
-		if (!name)
+	for (int j = 0; j < count; j++) {
+		const rp_string &name = bitfieldDesc.names->at(j);
+		if (name.empty())
 			continue;
+		// Make sure this is a UTF-16 string.
+		wstring s_name = RP2W_s(name);
 
 		// Get the text size.
 		int chk_w;
-		if (bitfieldDesc->elemsPerRow == 0) {
-			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_c(name);
-
+		if (bitfieldDesc.elemsPerRow == 0) {
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
-			if (col == bitfieldDesc->elemsPerRow) {
+			if (col == bitfieldDesc.elemsPerRow) {
 				// Next row.
 				row++;
 				col = 0;
@@ -1108,7 +1086,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		}
 
 		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindow(WC_BUTTON, RP2W_c(name),
+		HWND hCheckBox = CreateWindow(WC_BUTTON, s_name.c_str(),
 			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1116,7 +1094,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		SetWindowFont(hCheckBox, hFont, FALSE);
 
 		// Set the checkbox state.
-		Button_SetCheck(hCheckBox, (data->bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
+		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
 
 		// Next column.
 		pt.x += chk_w;
@@ -1136,37 +1114,37 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 /**
  * Initialize a ListView control.
  * @param hWnd		[in] HWND of the ListView control.
- * @param desc		[in] RomFields::Desc
- * @param data		[in] RomFields::Data
+ * @param field		[in] RomFields::Field
  */
-void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Field *field)
 {
-	if (!hWnd || !desc || !data)
+	if (!hWnd || !field)
 		return;
-	if (desc->type != RomFields::RFT_LISTDATA ||
-	    data->type != RomFields::RFT_LISTDATA)
+	if (field->type != RomFields::RFT_LISTDATA)
 		return;
-	if (!desc->name || desc->name[0] == '\0')
+
+	const auto &listDataDesc = field->desc.list_data;
+	assert(listDataDesc.names != nullptr);
+	if (!listDataDesc.names) {
+		// No column names...
 		return;
+	}
 
 	// Set extended ListView styles.
 	ListView_SetExtendedListViewStyle(hWnd, LVS_EX_FULLROWSELECT);
 
 	// Insert columns.
 	// TODO: Make sure there aren't any columns to start with?
-	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
-	assert(listDataDesc != nullptr);
-	const int count = listDataDesc->count;
+	const int count = (int)listDataDesc.names->size();
 	for (int i = 0; i < count; i++) {
 		LVCOLUMN lvColumn;
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
-		if (listDataDesc->names[i]) {
+		const rp_string &name = listDataDesc.names->at(i);
+		if (!name.empty()) {
 			// TODO: Support for RP_UTF8?
 			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			lvColumn.pszText = (LPWSTR)listDataDesc->names[i];
+			lvColumn.pszText = (LPWSTR)(name.c_str());
 		} else {
 			// Don't show this column.
 			// FIXME: Zero-width column is a bad hack...
@@ -1179,25 +1157,29 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
 	}
 
 	// Add the row data.
-	const RomFields::ListData *listData = data->list_data;
-	for (int i = 0; i < (int)listData->data.size(); i++) {
-		LVITEM lvItem;
-		lvItem.mask = LVIF_TEXT;
-		lvItem.iItem = i;
+	auto list_data = field->data.list_data;
+	assert(list_data != nullptr);
+	if (list_data) {
+		const int count = (int)list_data->size();
+		for (int i = 0; i < count; i++) {
+			LVITEM lvItem;
+			lvItem.mask = LVIF_TEXT;
+			lvItem.iItem = i;
 
-		const vector<rp_string> &data_row = listData->data.at(i);
-		int field = 0;
-		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
-			lvItem.iSubItem = field;
-			// TODO: Support for RP_UTF8?
-			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			lvItem.pszText = (LPWSTR)(*iter).c_str();
-			if (field == 0) {
-				// Field 0: Insert the item.
-				ListView_InsertItem(hWnd, &lvItem);
-			} else {
-				// Fields 1 and higher: Set the subitem.
-				ListView_SetItem(hWnd, &lvItem);
+			const vector<rp_string> &data_row = list_data->at(i);
+			int col = 0;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
+				lvItem.iSubItem = col;
+				// TODO: Support for RP_UTF8?
+				// NOTE: pszText is LPWSTR, not LPCWSTR...
+				lvItem.pszText = (LPWSTR)iter->c_str();
+				if (col == 0) {
+					// Column 0: Insert the item.
+					ListView_InsertItem(hWnd, &lvItem);
+				} else {
+					// Columns 1 and higher: Set the subitem.
+					ListView_SetItem(hWnd, &lvItem);
+				}
 			}
 		}
 	}
@@ -1216,44 +1198,37 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
- * @param desc		[in] RomFields::Desc
- * @param data		[in] RomFields::Data
+ * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+	const RomFields::Field *field)
 {
-	if (!hDlg || !desc || !data)
+	if (!hDlg || !field)
 		return 0;
-	if (desc->type != RomFields::RFT_DATETIME ||
-	    data->type != RomFields::RFT_DATETIME)
-		return 0;
-	if (!desc->name || desc->name[0] == '\0')
+	if (field->type != RomFields::RFT_DATETIME)
 		return 0;
 
-	if (data->date_time == -1) {
+	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, pt_start, idx, size, desc, data, L"Unknown");
+		return initString(hDlg, pt_start, idx, size, field, L"Unknown");
 	}
 
 	// Format the date/time using the system locale.
-	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
-	assert(dateTimeDesc != nullptr);
 	wchar_t dateTimeStr[256];
 	int start_pos = 0;
 	int cchBuf = ARRAY_SIZE(dateTimeStr);
 
 	// Convert from Unix time to Win32 SYSTEMTIME.
 	SYSTEMTIME st;
-	UnixTimeToSystemTime(data->date_time, &st);
+	UnixTimeToSystemTime(field->data.date_time, &st);
 
 	// At least one of Date and/or Time must be set.
-	assert((dateTimeDesc->flags &
+	assert((field->desc.flags &
 		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
 
-	if (!(dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC)) {
+	if (!(field->desc.flags & RomFields::RFT_DATETIME_IS_UTC)) {
 		// Convert to the current timezone.
 		SYSTEMTIME st_utc = st;
 		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
@@ -1263,7 +1238,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 		}
 	}
 
-	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_DATE) {
+	if (field->desc.flags & RomFields::RFT_DATETIME_HAS_DATE) {
 		// Format the date.
 		int ret = GetDateFormat(
 			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
@@ -1280,7 +1255,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 		cchBuf -= ret-1;
 	}
 
-	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_HAS_TIME) {
+	if (field->desc.flags & RomFields::RFT_DATETIME_HAS_TIME) {
 		// Format the time.
 		if (start_pos > 0 && cchBuf >= 1) {
 			// Add a space.
@@ -1311,7 +1286,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, desc, data, dateTimeStr);
+	return initString(hDlg, pt_start, idx, size, field, dateTimeStr);
 }
 
 /**
@@ -1321,28 +1296,30 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
- * @param desc		[in] RomFields::Desc
- * @param data		[in] RomFields::Data
+ * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	const POINT &pt_start, int idx, const SIZE &size,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+	const RomFields::Field *field)
 {
-	if (!hDlg || !desc || !data)
+	if (!hDlg || !field)
 		return 0;
-	if (desc->type != RomFields::RFT_AGE_RATINGS ||
-	    data->type != RomFields::RFT_AGE_RATINGS)
+	if (field->type != RomFields::RFT_AGE_RATINGS)
 		return 0;
-	if (!desc->name || desc->name[0] == '\0')
-		return 0;
+
+	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
+	assert(age_ratings != nullptr);
+	if (!age_ratings) {
+		// No age ratings data.
+		return initString(hDlg, pt_start, idx, size, field, L"ERROR");
+	}
 
 	// Convert the age ratings field to a string.
 	wostringstream woss;
 	bool printedOne = false;
-	for (int i = 0; i < RomFields::AGE_MAX; i++) {
-		const uint16_t rating = data->age_ratings[i];
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
+		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
@@ -1370,7 +1347,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, desc, data, woss.str().c_str());
+	return initString(hDlg, pt_start, idx, size, field, woss.str().c_str());
 }
 
 /**
@@ -1577,17 +1554,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	int max_text_width = 0;
 	SIZE textSize;
 	for (int i = 0; i < count; i++) {
-		const RomFields::Desc *desc = fields->desc(i);
-		const RomFields::Data *data = fields->data(i);
-		if (!desc || !data)
+		const RomFields::Field *field = fields->field(i);
+		assert(field != nullptr);
+		if (!field || !field->isValid)
 			continue;
-		if (desc->type != data->type)
+		if (field->name.empty())
 			continue;
-		if (!desc->name || desc->name[0] == '\0')
-			continue;
-
 		// Make sure this is a UTF-16 string.
-		wstring s_name = RP2W_c(desc->name);
+		wstring s_name = RP2W_s(field->name);
 
 		// TODO: Handle STRF_WARNING?
 
@@ -1634,18 +1608,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
 
 	for (int idx = 0; idx < count; idx++) {
-		const RomFields::Desc *desc = fields->desc(idx);
-		const RomFields::Data *data = fields->data(idx);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
+		const RomFields::Field *field = fields->field(idx);
+		assert(field != nullptr);
+		if (!field || !field->isValid)
 			continue;
 
 		// Append a ":" to the description.
 		// TODO: Localization.
-		wstring desc_text = RP2W_c(desc->name);
+		wstring desc_text = RP2W_s(field->name);
 		desc_text += L':';
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
@@ -1660,7 +1630,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
 		HWND hDlgItem;
-		switch (desc->type) {
+		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				DestroyWindow(hStatic);
@@ -1670,7 +1640,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_STRING: {
 				// String data.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initString(hDlg, pt_start, idx, size, desc, data, nullptr);
+				field_cy = initString(hDlg, pt_start, idx, size, field, nullptr);
 				if (field_cy == 0) {
 					// initString() failed.
 					// Remove the description label.
@@ -1681,7 +1651,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, pt_start, idx, desc, data);
+				field_cy = initBitfield(hDlg, pt_start, idx, field);
 				if (field_cy == 0) {
 					// initBitfield() failed.
 					// Remove the description label.
@@ -1689,7 +1659,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				}
 				break;
 
-			case RomFields::RFT_LISTDATA:
+			case RomFields::RFT_LISTDATA: {
+				assert(field->desc.list_data.names != nullptr);
+				if (!field->desc.list_data.names) {
+					// No column names...
+					break;
+				}
+
 				// Increase row height to 72 DLU.
 				// descSize is 8+4 DLU (12); 72/12 == 6
 				// FIXME: The last row seems to be cut off with the
@@ -1698,7 +1674,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 				// Create a ListView widget.
 				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
-					WC_LISTVIEW, RP2W_c(data->str),
+					WC_LISTVIEW, nullptr,
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
@@ -1707,13 +1683,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				SetWindowFont(hDlgItem, hFont, FALSE);
 
 				// Initialize the ListView data.
-				initListView(hDlgItem, desc, data);
+				initListView(hDlgItem, field);
 				break;
+			}
 
 			case RomFields::RFT_DATETIME: {
 				// Date/Time in Unix format.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initDateTime(hDlg, pt_start, idx, size, desc, data);
+				field_cy = initDateTime(hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initDateTime() failed.
 					// Remove the description label.
@@ -1725,7 +1702,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_AGE_RATINGS: {
 				// Age Ratings field.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initAgeRatings(hDlg, pt_start, idx, size, desc, data);
+				field_cy = initAgeRatings(hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initAgeRatings() failed.
 					// Remove the description label.

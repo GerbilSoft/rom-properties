@@ -42,6 +42,33 @@ namespace LibRomData {
  * @param fields Array of ROM Field descriptions.
  * @param count Number of ROM Field descriptions.
  */
+RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
+	: q_ptr(q)
+	, ref_count(1)
+	, isValid(false)
+	, file(nullptr)
+	, fields(new RomFields())
+	, fileType(RomData::FTYPE_ROM_IMAGE)
+{
+	// Clear the internal images field.
+	memset(&images, 0, sizeof(images));
+	memset(&imgpf, 0, sizeof(imgpf));
+
+	if (!file)
+		return;
+
+	// dup() the file.
+	this->file = file->dup();
+}
+
+/**
+ * Initialize a RomDataPrivate storage class.
+ *
+ * @param q RomData class.
+ * @param file ROM file.
+ * @param fields Array of ROM Field descriptions.
+ * @param count Number of ROM Field descriptions.
+ */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count)
 	: q_ptr(q)
 	, ref_count(1)
@@ -181,8 +208,8 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
  * @param fields Array of ROM Field descriptions.
  * @param count Number of ROM Field descriptions.
  */
-RomData::RomData(IRpFile *file, const RomFields::Desc *fields, int count)
-	: d_ptr(new RomDataPrivate(this, file, fields, count))
+RomData::RomData(IRpFile *file)
+	: d_ptr(new RomDataPrivate(this, file))
 { }
 
 /**

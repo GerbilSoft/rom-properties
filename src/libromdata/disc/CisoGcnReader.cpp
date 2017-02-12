@@ -38,6 +38,10 @@
 #include <cerrno>
 #include <cstring>
 
+// C++ includes.
+#include <array>
+using std::array;
+
 namespace LibRomData {
 
 class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
@@ -58,7 +62,7 @@ class CisoGcnReaderPrivate : public SparseDiscReaderPrivate {
 		// Block map.
 		// 0x0000 == first block after CISO header.
 		// 0xFFFF == empty block.
-		uint16_t blockMap[CISO_MAP_SIZE];
+		std::array<uint16_t, CISO_MAP_SIZE> blockMap;
 
 		// Index of the last used block.
 		int maxLogicalBlockUsed;
@@ -126,11 +130,11 @@ CisoGcnReaderPrivate::CisoGcnReaderPrivate(CisoGcnReader *q, IRpFile *file)
 	}
 
 	// Clear the CISO block map initially.
-	memset(&blockMap, 0xFF, sizeof(blockMap));
+	blockMap.fill(0xFFFF);
 
 	// Parse the CISO block map.
 	uint16_t physBlockIdx = 0;
-	for (int i = 0; i < ARRAY_SIZE(cisoHeader.map); i++) {
+	for (int i = 0; i < (int)blockMap.size(); i++) {
 		switch (cisoHeader.map[i]) {
 			case 0:
 				// Empty block.
@@ -250,8 +254,8 @@ int CisoGcnReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 	// Get the physical block number first.
 	// TODO: Check against maxLogicalBlockUsed?
-	assert(blockIdx < ARRAY_SIZE(d->blockMap));
-	if (blockIdx >= ARRAY_SIZE(d->blockMap)) {
+	assert(blockIdx < d->blockMap.size());
+	if (blockIdx >= d->blockMap.size()) {
 		// Out of range.
 		return -1;
 	}

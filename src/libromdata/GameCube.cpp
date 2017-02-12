@@ -72,11 +72,6 @@ class GameCubePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameCubePrivate)
 
 	public:
-		// RomFields data.
-		static const rp_char *const rvl_partitions_names[];
-		static const RomFields::ListDataDesc rvl_partitions;
-		static const struct RomFields::Desc gcn_fields[];
-
 		// NDDEMO header.
 		static const uint8_t nddemo_header[64];
 
@@ -202,41 +197,6 @@ class GameCubePrivate : public RomDataPrivate
 
 /** GameCubePrivate **/
 
-// Wii partition table.
-const rp_char *const GameCubePrivate::rvl_partitions_names[] = {
-	_RP("#"), _RP("Type"), _RP("Key"), _RP("Used Size"), _RP("Total Size")
-};
-
-const struct RomFields::ListDataDesc GameCubePrivate::rvl_partitions = {
-	ARRAY_SIZE(rvl_partitions_names), rvl_partitions_names
-};
-
-// ROM fields.
-const struct RomFields::Desc GameCubePrivate::gcn_fields[] = {
-	// TODO: Banner?
-	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Disc #"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Region"), RomFields::RFT_STRING, {nullptr}},
-	// Game information from opening.bnr.
-	{_RP("Game Info"), RomFields::RFT_STRING, {nullptr}},
-
-	/** Wii-specific fields. **/
-	// Age rating(s).
-	{_RP("Age Rating"), RomFields::RFT_AGE_RATINGS, {nullptr}},
-	// Wii System Update version.
-	{_RP("Update"), RomFields::RFT_STRING, {nullptr}},
-
-	// Wii partition table.
-	// NOTE: Actually a table of tables, so we'll use
-	// 0p0-style numbering, where the first digit is
-	// the table number, and the second digit is the
-	// partition number. (both start at 0)
-	{_RP("Partitions"), RomFields::RFT_LISTDATA, {&rvl_partitions}},
-};
-
 // NDDEMO header.
 const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x30, 0x30, 0x00, 0x45, 0x30, 0x31, 0x00, 0x00,
@@ -250,7 +210,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 };
 
 GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
-	: super(q, file, gcn_fields, ARRAY_SIZE(gcn_fields))
+	: super(q, file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcn_opening_bnr(nullptr)
@@ -1265,6 +1225,8 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Disc header is read in the constructor.
+	// TODO: Reserve fewer fields for GCN?
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// TODO: Trim the titles. (nulls, spaces)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
@@ -1276,15 +1238,18 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_PAL:
 		default:
 			// USA/PAL uses cp1252.
-			d->fields->addData_string(cp1252_to_rp_string(
-				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+			d->fields->addField_string(_RP("Title"),
+				cp1252_to_rp_string(
+					d->discHeader.game_title, sizeof(d->discHeader.game_title)));
 			break;
 
 		case GCN_REGION_JAPAN:
 		case GCN_REGION_SOUTH_KOREA:
 			// Japan uses Shift-JIS.
-			d->fields->addData_string(cp1252_sjis_to_rp_string(
-				d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+			d->fields->addField_string(_RP("Title"),
+				cp1252_sjis_to_rp_string(
+					d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+			break;
 	}
 
 	// Game ID.
@@ -1297,29 +1262,33 @@ int GameCube::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addData_string(latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
-	d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+	d->fields->addField_string(_RP("Publisher"),
+		publisher ? publisher : _RP("Unknown"));
 
 	// Other fields.
-	d->fields->addData_string_numeric(d->discHeader.disc_number+1, RomFields::FB_DEC);
-	d->fields->addData_string_numeric(d->discHeader.revision, RomFields::FB_DEC, 2);
+	d->fields->addField_string_numeric(_RP("Disc #"),
+		d->discHeader.disc_number+1, RomFields::FB_DEC);
+	d->fields->addField_string_numeric(_RP("Revision"),
+		d->discHeader.revision, RomFields::FB_DEC, 2);
 
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
 	const rp_char *region = d->gcnRegionToString(d->gcnRegion, d->discHeader.id4[3]);
 	if (region) {
-		d->fields->addData_string(region);
+		d->fields->addField_string(_RP("Region"), region);
 	} else {
 		// Invalid region code.
 		char buf[32];
 		int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", d->gcnRegion);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
-		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		d->fields->addField_string(_RP("Region"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
@@ -1386,30 +1355,19 @@ int GameCube::loadFieldData(void)
 					case GCN_REGION_PAL:
 					default:
 						// USA/PAL uses cp1252.
-						d->fields->addData_string(
+						d->fields->addField_string(_RP("Game Info"),
 							cp1252_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 
 					case GCN_REGION_JAPAN:
 					case GCN_REGION_SOUTH_KOREA:
 						// Japan uses Shift-JIS.
-						d->fields->addData_string(
+						d->fields->addField_string(_RP("Game Info"),
 							cp1252_sjis_to_rp_string(comment_data.data(), (int)comment_data.size()));
 						break;
 				}
-			} else {
-				// No comment data.
-				d->fields->addData_invalid();
 			}
-		} else {
-			// opening.bnr was not loaded.
-			d->fields->addData_invalid();
 		}
-
-		// Add dummy entries for Wii-specific fields.
-		d->fields->addData_invalid();	// Age rating(s).
-		d->fields->addData_invalid();	// System Update
-		d->fields->addData_invalid();	// Partitions
 
 		// Finished reading the field data.
 		return (int)d->fields->count();
@@ -1421,15 +1379,11 @@ int GameCube::loadFieldData(void)
 	int wiiPtLoaded = d->loadWiiPartitionTables();
 
 	// Get the game name from opening.bnr.
-	rp_string game_name;
 	if (wiiPtLoaded == 0) {
-		game_name = d->wii_getBannerName();
-	}
-	if (!game_name.empty()) {
-		d->fields->addData_string(game_name);
-	} else {
-		// opening.bnr could not be loaded.
-		d->fields->addData_invalid();
+		rp_string game_name = d->wii_getBannerName();
+		if (!game_name.empty()) {
+			d->fields->addField_string(_RP("Game Info"), game_name);
+		}
 	}
 
 	// Get age rating(s).
@@ -1437,13 +1391,14 @@ int GameCube::loadFieldData(void)
 	// Note that not all 16 fields are present on GCN,
 	// though the fields do match exactly, so no
 	// mapping is necessary.
-	uint16_t age_ratings[RomFields::AGE_MAX] = { };
+	RomFields::age_ratings_t age_ratings;
 	// Valid ratings: 0-1, 3-9
 	static const uint16_t valid_ratings = 0x3FB;
 
-	for (int i = RomFields::AGE_MAX-1; i > 0; i--) {
+	for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
 		if (!(valid_ratings & (1 << i))) {
 			// Rating is not applicable for GameCube.
+			age_ratings[i] = 0;
 			continue;
 		}
 
@@ -1454,6 +1409,7 @@ int GameCube::loadFieldData(void)
 		const uint8_t rvl_rating = d->regionSetting.ratings[i];
 		if (rvl_rating & 0x80) {
 			// Rating is unused.
+			age_ratings[i] = 0;
 			continue;
 		}
 		// Set active | age value.
@@ -1464,7 +1420,7 @@ int GameCube::loadFieldData(void)
 			age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
 		}
 	}
-	d->fields->addData_ageRatings(age_ratings);
+	d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
 
 	// Display the Wii partition tables.
 	if (wiiPtLoaded == 0) {
@@ -1494,11 +1450,7 @@ int GameCube::loadFieldData(void)
 			}
 		}
 
-		if (sysMenu) {
-			d->fields->addData_string(sysMenu);
-		} else {
-			// TODO: Show specific errors if the system menu WAD wasn't found.
-			// Missing encryption key, etc.
+		if (!sysMenu) {
 			if (!d->updatePartition) {
 				sysMenu = _RP("None");
 			} else {
@@ -1527,19 +1479,26 @@ int GameCube::loadFieldData(void)
 						break;
 				}
 			}
-
-			d->fields->addData_string(sysMenu);
 		}
+		d->fields->addField_string(_RP("Update"), sysMenu);
 
 		// Partition table.
-		RomFields::ListData *partitions = new RomFields::ListData();
+		auto partitions = new std::vector<std::vector<rp_string> >();
+		int partition_count = 0;
+		for (int i = 0; i < 4; i++) {
+			partition_count += (int)d->wiiVgTbl[i].size();
+		}
+		partitions->resize(partition_count);
 
-		vector<rp_string> data_row;     // Temporary storage for each partition entry.
+		partition_count = 0;
 		for (int i = 0; i < 4; i++) {
 			const int count = (int)d->wiiVgTbl[i].size();
-			for (int j = 0; j < count; j++) {
+			for (int j = 0; j < count; j++, partition_count++) {
+				vector<rp_string> &data_row = partitions->at(partition_count);
+				data_row.reserve(5);	// 5 fields per row.
+
+				// Partition entry.
 				const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
-				data_row.clear();
 
 				// Partition number.
 				char buf[16];
@@ -1607,19 +1566,22 @@ int GameCube::loadFieldData(void)
 
 				// Partition size.
 				data_row.push_back(d->formatFileSize(entry.partition->partition_size()));
-
-				// Add the partition information to the ListData.
-				partitions->data.push_back(data_row);
 			}
 		}
 
+		// Fields.
+		static const rp_char *const partitions_names[] = {
+			_RP("#"), _RP("Type"), _RP("Key"),
+			_RP("Used Size"), _RP("Total Size")
+		};
+		vector<rp_string> *v_partitions_names = RomFields::strArrayToVector(
+			partitions_names, ARRAY_SIZE(partitions_names));
+
 		// Add the partitions list data.
-		d->fields->addData_listData(partitions);
+		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
 	} else {
 		// Could not load partition tables.
-		// FIXME: Show an error? For now, add dummy fields.
-		d->fields->addData_invalid();		// Update
-		d->fields->addData_invalid();		// Partitions
+		// FIXME: Show an error?
 	}
 
 	// Finished reading the field data.

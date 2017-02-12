@@ -55,10 +55,6 @@ class VirtualBoyPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(VirtualBoyPrivate)
 
 	public:
-		/** RomFields **/
-		static const struct RomFields::Desc vb_fields[];
-	
-	public:
 		/**
 		 * Is character a valid JIS X 0201 codepoint?
 		 * @param c The character
@@ -87,17 +83,8 @@ class VirtualBoyPrivate : public RomDataPrivate
 
 /** VirtualBoyPrivate **/
 
-// ROM fields.
-const struct RomFields::Desc VirtualBoyPrivate::vb_fields[] = {
-	{_RP("Title"), RomFields::RFT_STRING, nullptr},
-	{_RP("Game ID"), RomFields::RFT_STRING, nullptr},
-	{_RP("Publisher"), RomFields::RFT_STRING, nullptr},
-	{_RP("Revision"), RomFields::RFT_STRING, nullptr},
-	{_RP("Region"), RomFields::RFT_STRING, nullptr},
-};
-
 VirtualBoyPrivate::VirtualBoyPrivate(VirtualBoy *q, IRpFile *file)
-	: super(q, file, vb_fields, ARRAY_SIZE(vb_fields))
+	: super(q, file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -371,25 +358,30 @@ int VirtualBoy::loadFieldData(void)
 
 	// Virtual Boy ROM header, excluding the vector table.
 	const VB_RomHeader *const romHeader = &d->romHeader;
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields->addData_string(cp1252_sjis_to_rp_string(romHeader->title,sizeof(romHeader->title)));
+	d->fields->addField_string(_RP("Title"),
+		cp1252_sjis_to_rp_string(romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
 	id6 += string(romHeader->publisher, sizeof(romHeader->publisher));
-	d->fields->addData_string(latin1_to_rp_string(id6.data(), (int)id6.size()));
+	d->fields->addField_string(_RP("Game ID"),
+		latin1_to_rp_string(id6.data(), (int)id6.size()));
 
 	// Look up the publisher.
 	const rp_char* publisher = NintendoPublishers::lookup(romHeader->publisher);
-	d->fields->addData_string(publisher?publisher:_RP("Unknown"));
+	d->fields->addField_string(_RP("Publisher"),
+		publisher ? publisher : _RP("Unknown"));
 
 	// Revision
-	d->fields->addData_string_numeric(romHeader->version, RomFields::FB_DEC, 2);
+	d->fields->addField_string_numeric(_RP("Revision"),
+		romHeader->version, RomFields::FB_DEC, 2);
 
 	// Region
 	const rp_char* region;
-	switch(romHeader->gameid[3]){
+	switch (romHeader->gameid[3]) {
 		case 'J':
 			region = _RP("Japan");
 			break;
@@ -400,7 +392,7 @@ int VirtualBoy::loadFieldData(void)
 			region = _RP("Unknown");
 			break;
 	}
-	d->fields->addData_string(region);
+	d->fields->addField_string(_RP("Region"), region);
 
 	return (int)d->fields->count();
 }

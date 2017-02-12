@@ -23,6 +23,7 @@
 #include "GdkImageConv.hpp"
 
 #include "libromdata/common.h"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
 #include "libromdata/RomDataFactory.hpp"
@@ -128,6 +129,7 @@ struct _RomDataView {
 	// Animated icon data.
 	const IconAnimData *iconAnimData;
 	// TODO: GdkPixmap or cairo_surface_t?
+	// TODO: Use std::array<>?
 	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
 	IconAnimHelper	*iconAnimHelper;
 	int		last_frame_number;	// Last frame number.
@@ -703,49 +705,48 @@ rom_data_view_init_header_row(RomDataView *page)
 /**
  * Initialize a string field.
  * @param page RomDataView object.
- * @param desc RomFields::Desc
- * @param data RomFields::Data
+ * @param field RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_widget_show(widget);
 
-	if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+	if (field->desc.flags & RomFields::STRF_CREDITS) {
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
 		GTK_WIDGET_HALIGN_CENTER(widget);
-		if (data->str) {
+		if (field->data.str) {
 			// NOTE: Pango markup does not support <br/>.
 			// It uses standard newlines for line breaks.
-			gtk_label_set_markup(GTK_LABEL(widget), data->str);
+			gtk_label_set_markup(GTK_LABEL(widget), rp_string_to_utf8(*(field->data.str)).c_str());
 		}
 	} else {
 		// Standard text with no formatting.
 		gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
-		gtk_label_set_text(GTK_LABEL(widget), data->str);
+		if (field->data.str) {
+			gtk_label_set_text(GTK_LABEL(widget), rp_string_to_utf8(*(field->data.str)).c_str());
+		}
 	}
 
 	// Check for any formatting options.
-	if (desc->str_desc) {
+	if (field->desc.flags != 0) {
 		PangoAttrList *attr_lst = pango_attr_list_new();
 
 		// Monospace font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_MONOSPACE) {
+		if (field->desc.flags & RomFields::STRF_MONOSPACE) {
 			PangoAttribute *attr = pango_attr_family_new("monospace");
 			pango_attr_list_insert(attr_lst, attr);
 		}
 
 		// "Warning" font?
-		if (desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING) {
+		if (field->desc.flags & RomFields::STRF_WARNING) {
 			PangoAttribute *attr = pango_attr_weight_new(PANGO_WEIGHT_HEAVY);
 			pango_attr_list_insert(attr_lst, attr);
 			attr = pango_attr_foreground_new(65535, 0, 0);
@@ -756,7 +757,7 @@ rom_data_view_init_string(RomDataView *page,
 		pango_attr_list_unref(attr_lst);
 	}
 
-	if (desc->str_desc && (desc->str_desc->formatting & RomFields::StringDesc::STRF_CREDITS)) {
+	if (field->desc.flags & RomFields::STRF_CREDITS) {
 		// Credits row goes at the end.
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 #ifndef NDEBUG
@@ -779,19 +780,15 @@ rom_data_view_init_string(RomDataView *page,
 /**
  * Initialize a bitfield.
  * @param page RomDataView object.
- * @param desc RomFields::Desc
- * @param data RomFields::Data
+ * @param field RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_bitfield(RomDataView *page,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
-	const RomFields::BitfieldDesc *const bitfieldDesc = desc->bitfield;
-	assert(bitfieldDesc != nullptr);
+	const auto &bitfieldDesc = field->desc.bitfield;
 
 #if GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *widget = gtk_grid_new();
@@ -800,15 +797,15 @@ rom_data_view_init_bitfield(RomDataView *page,
 #else
 	// Determine the total number of rows and columns.
 	int totalRows, totalCols;
-	if (bitfieldDesc->elemsPerRow == 0) {
+	if (bitfieldDesc.elemsPerRow == 0) {
 		// All elements are in one row.
-		totalCols = bitfieldDesc->elements;
+		totalCols = bitfieldDesc.elements;
 		totalRows = 1;
 	} else {
 		// Multiple rows.
-		totalCols = bitfieldDesc->elemsPerRow;
-		totalRows = bitfieldDesc->elements / bitfieldDesc->elemsPerRow;
-		if ((bitfieldDesc->elements % bitfieldDesc->elemsPerRow) > 0) {
+		totalCols = bitfieldDesc.elemsPerRow;
+		totalRows = bitfieldDesc.elements / bitfieldDesc.elemsPerRow;
+		if ((bitfieldDesc.elements % bitfieldDesc.elemsPerRow) > 0) {
 			totalRows++;
 		}
 	}
@@ -820,17 +817,23 @@ rom_data_view_init_bitfield(RomDataView *page,
 	gtk_widget_show(widget);
 
 	// Reserve space in the bitfield widget map.
-	page->mapBitfields->reserve(page->mapBitfields->size() + bitfieldDesc->elements);
+	page->mapBitfields->reserve(page->mapBitfields->size() + bitfieldDesc.elements);
+
+	int count = bitfieldDesc.elements;
+	assert(count <= (int)bitfieldDesc.names->size());
+	if (count > (int)bitfieldDesc.names->size()) {
+		count = (int)bitfieldDesc.names->size();
+	}
 
 	int row = 0, col = 0;
-	for (int bit = 0; bit < bitfieldDesc->elements; bit++) {
-		const rp_char *name = bitfieldDesc->names[bit];
-		if (!name)
+	for (int bit = 0; bit < count; bit++) {
+		const rp_string &name = bitfieldDesc.names->at(bit);
+		if (name.empty())
 			continue;
 
-		GtkWidget *checkBox = gtk_check_button_new_with_label(name);
+		GtkWidget *checkBox = gtk_check_button_new_with_label(rp_string_to_utf8(name).c_str());
 		gtk_widget_show(checkBox);
-		gboolean value = !!(data->bitfield & (1 << bit));
+		gboolean value = !!(field->data.bitfield & (1 << bit));
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox in the map.
@@ -852,7 +855,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 			GTK_FILL, GTK_FILL, 0, 0);
 #endif
 		col++;
-		if (col == bitfieldDesc->elemsPerRow) {
+		if (col == bitfieldDesc.elemsPerRow) {
 			row++;
 			col = 0;
 		}
@@ -864,20 +867,23 @@ rom_data_view_init_bitfield(RomDataView *page,
 /**
  * Initialize a list data field.
  * @param page RomDataView object.
- * @param desc RomFields::Desc
- * @param data RomFields::Data
+ * @param field RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// ListData type. Create a GtkListStore for the data.
-	const RomFields::ListDataDesc *listDataDesc = desc->list_data;
-	assert(listDataDesc != nullptr);
-	const int count = listDataDesc->count;
-	GType *types = new GType[listDataDesc->count];
+	const auto &listDataDesc = field->desc.list_data;
+	assert(listDataDesc.names != nullptr);
+	if (!listDataDesc.names) {
+		// No column names...
+		return nullptr;
+	}
+
+	// Set up the column names.
+	const int count = (int)listDataDesc.names->size();
+	GType *types = new GType[count];
 	for (int i = 0; i < count; i++) {
 		types[i] = G_TYPE_STRING;
 	}
@@ -885,14 +891,19 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page,
 	delete[] types;
 
 	// Add the row data.
-	const RomFields::ListData *listData = data->list_data;
-	for (int i = 0; i < (int)listData->data.size(); i++) {
-		const vector<rp_string> &data_row = listData->data.at(i);
-		GtkTreeIter treeIter;
-		gtk_list_store_insert_before(listStore, &treeIter, nullptr);
-		int field = 0;
-		for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++field) {
-			gtk_list_store_set(listStore, &treeIter, field, iter->c_str(), -1);
+	auto list_data = field->data.list_data;
+	assert(list_data != nullptr);
+	if (list_data) {
+		const int count = (int)list_data->size();
+		for (int i = 0; i < count; i++) {
+			const vector<rp_string> &data_row = list_data->at(i);
+			GtkTreeIter treeIter;
+			gtk_list_store_insert_before(listStore, &treeIter, nullptr);
+			int col = 0;
+			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
+				gtk_list_store_set(listStore, &treeIter,
+					col, rp_string_to_utf8(*iter).c_str(), -1);
+			}
 		}
 	}
 
@@ -912,10 +923,11 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page,
 
 	// Set up the column names.
 	for (int i = 0; i < count; i++) {
-		if (listDataDesc->names[i]) {
+		const rp_string &name = listDataDesc.names->at(i);
+		if (!name.empty()) {
 			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
-				listDataDesc->names[i], renderer,
+				rp_string_to_utf8(name).c_str(), renderer,
 				"text", i, nullptr);
 			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 		}
@@ -935,19 +947,13 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page,
 /**
  * Initialize a Date/Time field.
  * @param page RomDataView object.
- * @param desc RomFields::Desc
- * @param data RomFields::Data
+ * @param field RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page,
-	const RomFields::Desc *desc,
-	const RomFields::Data *data)
+rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Date/Time.
-	const RomFields::DateTimeDesc *const dateTimeDesc = desc->date_time;
-	assert(dateTimeDesc != nullptr);
-
 	GtkWidget *widget = gtk_label_new(nullptr);
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
@@ -955,21 +961,21 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page,
 	gtk_widget_show(widget);
 	GTK_WIDGET_HALIGN_LEFT(widget);
 
-	if (data->date_time == -1) {
+	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		gtk_label_set_text(GTK_LABEL(widget), "Unknown");
 		return widget;
 	}
 
 	GDateTime *dateTime;
-	if (dateTimeDesc->flags & RomFields::RFT_DATETIME_IS_UTC) {
-		dateTime = g_date_time_new_from_unix_utc(data->date_time);
+	if (field->desc.flags & RomFields::RFT_DATETIME_IS_UTC) {
+		dateTime = g_date_time_new_from_unix_utc(field->data.date_time);
 	} else {
-		dateTime = g_date_time_new_from_unix_local(data->date_time);
+		dateTime = g_date_time_new_from_unix_local(field->data.date_time);
 	}
 
 	gchar *str = nullptr;
-	switch (dateTimeDesc->flags &
+	switch (field->desc.flags &
 		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME))
 	{
 		case RomFields::RFT_DATETIME_HAS_DATE:
@@ -1009,22 +1015,33 @@ rom_data_view_init_datetime(G_GNUC_UNUSED RomDataView *page,
 /**
  * Initialize an Age Ratings field.
  * @param page RomDataView object.
- * @param desc RomFields::Desc
- * @param data RomFields::Data
+ * @param field RomFields::Field
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
-	G_GNUC_UNUSED const RomFields::Desc *desc,
-	const RomFields::Data *data)
+rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields::Field *field)
 {
 	// Age ratings.
+	GtkWidget *widget = gtk_label_new(nullptr);
+	gtk_label_set_use_underline(GTK_LABEL(widget), false);
+	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
+	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
+	gtk_widget_show(widget);
+	GTK_WIDGET_HALIGN_LEFT(widget);
+
+	const RomFields::age_ratings_t *age_ratings = field->data.age_ratings;
+	assert(age_ratings != nullptr);
+	if (!age_ratings) {
+		// No age ratings data.
+		gtk_label_set_text(GTK_LABEL(widget), "ERROR");
+		return widget;
+	}
 
 	// Convert the age ratings field to a string.
 	ostringstream oss;
 	bool printedOne = false;
-	for (int i = 0; i < RomFields::AGE_MAX; i++) {
-		const uint16_t rating = data->age_ratings[i];
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
+		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
@@ -1049,13 +1066,6 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page,
 		// No age ratings.
 		oss << "None";
 	}
-
-	GtkWidget *widget = gtk_label_new(nullptr);
-	gtk_label_set_use_underline(GTK_LABEL(widget), false);
-	gtk_label_set_selectable(GTK_LABEL(widget), TRUE);
-	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-	gtk_widget_show(widget);
-	GTK_WIDGET_HALIGN_LEFT(widget);
 
 	gtk_label_set_text(GTK_LABEL(widget), oss.str().c_str());
 	return widget;
@@ -1123,39 +1133,35 @@ rom_data_view_update_display(RomDataView *page)
 
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
-		const RomFields::Desc *desc = fields->desc(i);
-		const RomFields::Data *data = fields->data(i);
-		if (!desc || !data)
-			continue;
-		if (desc->type != data->type)
-			continue;
-		if (!desc->name || desc->name[0] == '\0')
+		const RomFields::Field *field = fields->field(i);
+		assert(field != nullptr);
+		if (!field || !field->isValid)
 			continue;
 
 		GtkWidget *widget = nullptr;
-		switch (desc->type) {
+		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, desc, data);
+				widget = rom_data_view_init_string(page, field);
 				break;
 
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, desc, data);
+				widget = rom_data_view_init_bitfield(page, field);
 				break;
 
 			case RomFields::RFT_LISTDATA:
-				widget = rom_data_view_init_listdata(page, desc, data);
+				widget = rom_data_view_init_listdata(page, field);
 				break;
 
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, desc, data);
+				widget = rom_data_view_init_datetime(page, field);
 				break;
 
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, desc, data);
+				widget = rom_data_view_init_age_ratings(page, field);
 				break;
 
 			default:
@@ -1168,7 +1174,7 @@ rom_data_view_update_display(RomDataView *page)
 			// Add the widget to the table.
 
 			// TODO: Localization.
-			std::string gtkdesc = desc->name;
+			std::string gtkdesc = rp_string_to_utf8(field->name);
 			gtkdesc += ':';
 
 			// Description label.
@@ -1178,8 +1184,8 @@ rom_data_view_update_display(RomDataView *page)
 			page->vecDescLabels->push_back(lblDesc);
 
 			// Check if this is an RFT_STRING with warning set.
-			if (desc && desc->type == RomFields::RFT_STRING && desc->str_desc &&
-			    desc->str_desc->formatting & RomFields::StringDesc::STRF_WARNING)
+			if (field->type == RomFields::RFT_STRING &&
+			    field->desc.flags & RomFields::STRF_WARNING)
 			{
 				// Description label should use the "warning" style.
 				page->setDescLabelIsWarning->insert(lblDesc);
