@@ -72,6 +72,8 @@
     statically linked.
   * pngcheck: Fixed a race condition that could result in crashes if more
     than one thread attempted to load a PNG image at the same time.
+  * Age ratings for CERO, ESRB, and AGCB are now converted to their official
+    names instead of being displayed as numbers.
 
 ## v0.8.1 (Windows only) (released 2016/10/24)
 
