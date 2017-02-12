@@ -562,13 +562,6 @@ const rp_char *NES::systemName(uint32_t type) const
  */
 vector<const rp_char*> NES::supportedFileExtensions_static(void)
 {
-	vector<const rp_char*> ret;
-	ret.reserve(3);
-	ret.push_back(_RP(".nes"));	// iNES
-	ret.push_back(_RP(".fds"));	// Famicom Disk System
-	ret.push_back(_RP(".qd"));	// Animal Crossing
-	ret.push_back(_RP(".tds"));	// FDS on 3DS Virtual Console
-
 	// NOTE: .fds is missing block checksums.
 	// .qd has block checksums, as does .tds (which is basically
 	// a 16-byte header, FDS BIOS, and a .qd file).
@@ -577,7 +570,13 @@ vector<const rp_char*> NES::supportedFileExtensions_static(void)
 	// reading the header, but we'll need to take it into
 	// account if file access is added.
 
-	return ret;
+	static const rp_char *const exts[] = {
+		_RP(".nes"),	// iNES
+		_RP(".fds"),	// Famicom Disk System
+		_RP(".qd"),	// FDS (Animal Crossing)
+		_RP(".tds"),	// FDS (3DS Virtual Console)
+	};
+	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
 
 /**
