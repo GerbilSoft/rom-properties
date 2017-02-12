@@ -766,7 +766,7 @@ int NintendoDS::loadFieldData(void)
 		// TODO: Not sure if Finland is valid for DSi.
 		static const uint16_t valid_ratings = 0x3FB;
 
-		for (int i = RomFields::AGE_MAX-1; i >= 0; i--) {
+		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
 				// Rating is not applicable for GameCube.
 				age_ratings[i] = 0;

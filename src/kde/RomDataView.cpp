@@ -720,7 +720,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	// Convert the age ratings field to a string.
 	QString str;
 	str.reserve(64);
-	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;

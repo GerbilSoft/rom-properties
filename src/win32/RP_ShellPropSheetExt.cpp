@@ -1318,7 +1318,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	// Convert the age ratings field to a string.
 	wostringstream woss;
 	bool printedOne = false;
-	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;

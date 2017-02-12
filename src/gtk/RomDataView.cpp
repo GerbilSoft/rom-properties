@@ -1040,7 +1040,7 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 	// Convert the age ratings field to a string.
 	ostringstream oss;
 	bool printedOne = false;
-	for (int i = 0; i < RomFields::AGE_MAX; i++) {
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;

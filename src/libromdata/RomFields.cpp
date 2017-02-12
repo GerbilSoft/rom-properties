@@ -38,7 +38,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-using std::array;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -248,7 +247,7 @@ void RomFieldsPrivate::delete_data(void)
 				delete const_cast<vector<vector<rp_string> >*>(field.data.list_data);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				delete const_cast<array<uint16_t, RomFields::AGE_MAX>*>(field.data.age_ratings);
+				delete const_cast<std::array<uint16_t, RomFields::AGE_MAX>*>(field.data.age_ratings);
 				break;
 			default:
 				// ERROR!
@@ -818,8 +817,8 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 		field.isValid = false;
 		field.data.generic = 0;
 	} else {
-		array<uint16_t, AGE_MAX> *tmp = new array<uint16_t, AGE_MAX>();
-		memcpy(tmp->data(), age_ratings, sizeof(uint16_t)*AGE_MAX);
+		std::array<uint16_t, AGE_MAX> *tmp = new std::array<uint16_t, AGE_MAX>();
+		memcpy(tmp->data(), age_ratings, sizeof(uint16_t)*tmp->size());
 		field.data.age_ratings = tmp;
 		field.isValid = true;
 	}
