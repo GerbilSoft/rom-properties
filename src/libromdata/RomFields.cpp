@@ -1132,12 +1132,12 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
 
 /**
  * Add age ratings.
- * NOTE: This object takes ownership of the array.
+ * The array is copied into the RomFields struct.
  * @param name Field name.
  * @param age_ratings Pointer to age ratings array.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, AGE_MAX> *age_ratings)
+int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, AGE_MAX> &age_ratings)
 {
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
@@ -1149,12 +1149,11 @@ int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_
 	Field &field = d->fields.at(idx);
 
 	assert(name != nullptr);
-	assert(age_ratings != nullptr);
-	if (!name || !age_ratings)
+	if (!name)
 		return -1;
 	field.name = rp_string(name);
 	field.type = RFT_AGE_RATINGS;
-	field.data.age_ratings = age_ratings;
+	field.data.age_ratings = new std::array<uint16_t, AGE_MAX>(age_ratings);
 	field.isValid = true;
 	return idx;
 }

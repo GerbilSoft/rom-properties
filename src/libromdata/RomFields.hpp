@@ -544,13 +544,13 @@ class RomFields
 
 		/**
 		 * Add age ratings.
-		 * NOTE: This object takes ownership of the array.
+		 * The array is copied into the RomFields struct.
 		 * @param name Field name.
 		 * @param age_ratings Pointer to age ratings array.
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_ageRatings(const rp_char *name,
-			const std::array<uint16_t, AGE_MAX> *age_ratings);
+			const std::array<uint16_t, AGE_MAX> &age_ratings);
 };
 
 }
