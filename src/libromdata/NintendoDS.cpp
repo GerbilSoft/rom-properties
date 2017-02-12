@@ -792,7 +792,7 @@ int NintendoDS::loadFieldData(void)
 				age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
 			}
 		}
-		d->fields->addField_ageRatings(_RP("Age Ratings"), age_ratings);
+		d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
 	}
 
 	// Finished reading the field data.
