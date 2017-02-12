@@ -1,5 +1,10 @@
 # Changes
 
+## v1.0 (unreleased)
+
+* Bug fixes:
+  * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
+
 ## v0.9-beta2 (released 2017/02/07)
 
 * New features:
