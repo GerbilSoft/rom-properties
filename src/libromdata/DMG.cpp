@@ -554,7 +554,7 @@ int DMG::loadFieldData(void)
 	vector<rp_string> *v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(_RP("System"),
-		v_system_bitfield_names, 4, dmg_system);
+		v_system_bitfield_names, 0, dmg_system);
 
 	// Entry Point
 	if(romHeader->entry[0] == 0 && romHeader->entry[1] == 0xC3){
@@ -589,7 +589,7 @@ int DMG::loadFieldData(void)
 	vector<rp_string> *v_feature_bitfield_names = RomFields::strArrayToVector(
 		feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields->addField_bitfield(_RP("Features"),
-		v_feature_bitfield_names, 4, DMGPrivate::CartType(romHeader->cart_type).features);
+		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	char buf[64];
 	int len;
