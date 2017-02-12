@@ -248,7 +248,7 @@ void RomFieldsPrivate::delete_data(void)
 				delete const_cast<vector<vector<rp_string> >*>(field.data.list_data);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				delete const_cast<array<uint16_t, 16>*>(field.data.age_ratings);
+				delete const_cast<array<uint16_t, RomFields::AGE_MAX>*>(field.data.age_ratings);
 				break;
 			default:
 				// ERROR!
@@ -603,8 +603,8 @@ bool RomFields::isDataLoaded(void) const
  */
 int RomFields::addData_invalid(void)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	Field &field = d->fields.at(d->dataCount);
@@ -620,8 +620,8 @@ int RomFields::addData_invalid(void)
  */
 int RomFields::addData_string(const rp_char *str)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_STRING
@@ -645,8 +645,8 @@ int RomFields::addData_string(const rp_char *str)
  */
 int RomFields::addData_string(const rp_string &str)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_STRING
@@ -735,8 +735,8 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
  */
 int RomFields::addData_bitfield(uint32_t bitfield)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_BITFIELD
@@ -759,8 +759,8 @@ int RomFields::addData_bitfield(uint32_t bitfield)
  */
 int RomFields::addData_listData(ListData *list_data)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_LISTDATA
@@ -783,8 +783,8 @@ int RomFields::addData_listData(ListData *list_data)
  */
 int RomFields::addData_dateTime(int64_t date_time)
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_DATETIME
@@ -807,8 +807,8 @@ int RomFields::addData_dateTime(int64_t date_time)
  */
 int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 {
-	assert(d->dataCount >= 0 && d->dataCount < d->fields.size());
-	if (d->dataCount < 0 || d->dataCount >= d->fields.size())
+	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
+	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
 
 	// RFT_AGE_RATINGS
@@ -818,7 +818,7 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 		field.isValid = false;
 		field.data.generic = 0;
 	} else {
-		array<uint16_t, 16> *tmp = new array<uint16_t, 16>();
+		array<uint16_t, AGE_MAX> *tmp = new array<uint16_t, AGE_MAX>();
 		memcpy(tmp->data(), age_ratings, sizeof(uint16_t)*AGE_MAX);
 		field.data.age_ratings = tmp;
 		field.isValid = true;
@@ -1137,7 +1137,7 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
  * @param age_ratings Pointer to age ratings array.
  * @return Field index, or -1 on error.
  */
-int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, 16> *age_ratings)
+int RomFields::addField_ageRatings(const rp_char *name, const std::array<uint16_t, AGE_MAX> *age_ratings)
 {
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)

@@ -549,7 +549,8 @@ class RomFields
 		 * @param age_ratings Pointer to age ratings array.
 		 * @return Field index, or -1 on error.
 		 */
-		int addField_ageRatings(const rp_char *name, const std::array<uint16_t, 16> *age_ratings);
+		int addField_ageRatings(const rp_char *name,
+			const std::array<uint16_t, AGE_MAX> *age_ratings);
 };
 
 }
