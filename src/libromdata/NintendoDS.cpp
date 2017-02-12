@@ -636,6 +636,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Game title.
 	d->fields->addField_string(_RP("Title"),
@@ -743,6 +744,7 @@ int NintendoDS::loadFieldData(void)
 				break;
 		}
 
+		// TODO: Is the field name too long?
 		if (filetype) {
 			d->fields->addField_string(_RP("DSi ROM Type"), filetype);
 		} else {

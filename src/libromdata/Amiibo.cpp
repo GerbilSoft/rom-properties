@@ -366,7 +366,7 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// NTAG215 data.
-	d->fields->reserve(10); // Maximum of 10 fields.
+	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Serial number.
 
