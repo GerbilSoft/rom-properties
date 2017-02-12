@@ -58,15 +58,6 @@ class NESPrivate : public RomDataPrivate
 	public:
 		/** RomFields **/
 
-		// Monospace string formatting.
-		static const RomFields::StringDesc nes_string_monospace;
-
-		// Manufacturing date. (RFT_DATETIME)
-		static const RomFields::DateTimeDesc mfr_date_dt;
-
-		// ROM fields.
-		static const struct RomFields::Desc nes_fields[];
-
 		// ROM image type.
 		enum RomType {
 			ROM_UNKNOWN = -1,		// Unknown ROM type.
@@ -134,38 +125,8 @@ class NESPrivate : public RomDataPrivate
 
 /** NESPrivate **/
 
-// Monospace string formatting.
-const RomFields::StringDesc NESPrivate::nes_string_monospace = {
-	RomFields::StringDesc::STRF_MONOSPACE
-};
-
-// M
-const RomFields::DateTimeDesc NESPrivate::mfr_date_dt = {
-	RomFields::RFT_DATETIME_HAS_DATE |
-	RomFields::RFT_DATETIME_IS_UTC	// Date only.
-};
-
-// ROM fields.
-const struct RomFields::Desc NESPrivate::nes_fields[] = {
-	{_RP("Format"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Mapper"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Submapper"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("TNES Mapper"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("PRG ROM Size"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("CHR ROM Size"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Mirroring"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("VS. PPU"), RomFields::RFT_STRING, {nullptr}},
-
-	// FDS-specific fields.
-	{_RP("Game ID"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Revision"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Manufacturing Date"), RomFields::RFT_DATETIME, {&mfr_date_dt}},
-	// TODO: Disk Writer fields.
-};
-
 NESPrivate::NESPrivate(NES *q, IRpFile *file)
-	: super(q, file, nes_fields, ARRAY_SIZE(nes_fields))
+	: super(q, file)
 	, romType(ROM_UNKNOWN)
 {
 	// Clear the ROM header structs.
@@ -656,7 +617,10 @@ int NES::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NES ROM header
+	// NES ROM header.
+	// TODO: Reduce the maximum by removing fields that
+	// aren't usable on NES and aren't usable on FDS?
+	d->fields->reserve(12);  // Maximum of 12 fields.
 
 	// Determine stuff based on the ROM format.
 	const rp_char *rom_format;
@@ -730,29 +694,17 @@ int NES::loadFieldData(void)
 		{
 			rp_string str = rom_format;
 			str += _RP(" (Wii U Virtual Console)");
-			d->fields->addData_string(str);
+			d->fields->addField_string(_RP("Format"), str);
 		} else {
-			d->fields->addData_string(rom_format);
+			d->fields->addField_string(_RP("Format"), rom_format);
 		}
 	} else {
-		d->fields->addData_string(rom_format);
+		d->fields->addField_string(_RP("Format"), rom_format);
 	}
 
 	// Display the fields.
 	if (!romOK) {
 		// Invalid mapper.
-		d->fields->addData_invalid();	// Mapper
-		d->fields->addData_invalid();	// Submapper
-		d->fields->addData_invalid();	// TNES Mapper
-		d->fields->addData_invalid();	// PRG ROM Size
-		d->fields->addData_invalid();	// CHR ROM Size
-		d->fields->addData_invalid();	// Mirroring
-		d->fields->addData_invalid();	// VS. PPU
-		// FDS fields
-		d->fields->addData_invalid();	// Game ID
-		d->fields->addData_invalid();	// Publisher
-		d->fields->addData_invalid();	// Revision
-		d->fields->addData_invalid();	// Manufacturing Date
 		return (int)d->fields->count();
 	}
 
@@ -770,54 +722,43 @@ int NES::loadFieldData(void)
 			s_mapper += _RP(" - ");
 			s_mapper += mapper_name;
 		}
-		d->fields->addData_string(s_mapper);
+		d->fields->addField_string(_RP("Mapper"), s_mapper);
 	} else {
-		// No mapper.
+		// No mapper. If this isn't TNES,
+		// then it's probably an FDS image.
 		if (tnes_mapper >= 0) {
 			// This has a TNES mapper.
 			// It *should* map to an iNES mapper...
-			d->fields->addData_string(_RP("MISSING TNES MAPPING"));
-		} else {
-			// No mapper. Probably an FDS image.
-			d->fields->addData_invalid();
+			d->fields->addField_string(_RP("Mapper"), _RP("MISSING TNES MAPPING"));
 		}
 	}
 
 	if (submapper >= 0) {
 		// Submapper. (NES 2.0 only)
-		d->fields->addData_string_numeric(submapper, RomFields::FB_DEC);
-	} else {
-		// No submapper.
-		d->fields->addData_invalid();
+		// TODO: String version?
+		d->fields->addField_string_numeric(_RP("Submapper"),
+			submapper, RomFields::FB_DEC);
 	}
 
 	if (tnes_mapper >= 0) {
 		// TNES mapper.
 		// TODO: Look up the name.
-		d->fields->addData_string_numeric(tnes_mapper, RomFields::FB_DEC);
-	} else {
-		// Not TNES.
-		d->fields->addData_invalid();
+		d->fields->addField_string_numeric(_RP("TNES Mapper"),
+			tnes_mapper, RomFields::FB_DEC);
 	}
 
 	// ROM sizes.
 	if (prg_rom_size > 0) {
-		d->fields->addData_string(d->formatBankSizeKB(prg_rom_size));
-	} else {
-		d->fields->addData_invalid();
+		d->fields->addField_string(_RP("PRG ROM Size"),
+			d->formatBankSizeKB(prg_rom_size));
 	}
 	if (chr_rom_size > 0) {
-		d->fields->addData_string(d->formatBankSizeKB(chr_rom_size));
-	} else {
-		d->fields->addData_invalid();
+		d->fields->addField_string(_RP("CHR ROM Size"),
+			d->formatBankSizeKB(chr_rom_size));
 	}
 
 	// Check for FDS fields.
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
-		// Ignore fields that aren't valid for FDS.
-		d->fields->addData_invalid();	// Mirroring
-		d->fields->addData_invalid();	// VS. PPU
-
 		char buf[64];
 		int len;
 
@@ -828,21 +769,29 @@ int NES::loadFieldData(void)
 			d->header.fds.game_id);
 		if (len > (int)sizeof(buf))
 			len = (int)sizeof(buf);
-		d->fields->addData_string(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		d->fields->addField_string(_RP("Game ID"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 		// Publisher.
 		// NOTE: Verify that the FDS list matches NintendoPublishers.
 		// https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
 		const rp_char* publisher =
 			NintendoPublishers::lookup_old(d->header.fds.publisher_code);
-		d->fields->addData_string(publisher ? publisher : _RP("Unknown"));
+		d->fields->addField_string(_RP("Publisher"),
+			publisher ? publisher : _RP("Unknown"));
 
 		// Revision.
-		d->fields->addData_string_numeric(d->header.fds.revision, RomFields::FB_DEC, 2);
+		d->fields->addField_string_numeric(_RP("Revision"),
+			d->header.fds.revision, RomFields::FB_DEC, 2);
 
 		// Manufacturing Date.
 		int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
-		d->fields->addData_dateTime(mfr_date);
+		d->fields->addField_dateTime(_RP("Manufacturing Date"), mfr_date,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_IS_UTC  // Date only.
+		);
+
+		// TODO: Disk Writer fields.
 	} else {
 		// Add non-FDS fields.
 		const rp_char *mirroring = nullptr;
@@ -915,24 +864,11 @@ int NES::loadFieldData(void)
 		}
 
 		if (mirroring) {
-			d->fields->addData_string(mirroring);
-		} else {
-			// No mirroring data.
-			d->fields->addData_invalid();
+			d->fields->addField_string(_RP("Mirroring"), mirroring);
 		}
-
 		if (vs_ppu) {
-			d->fields->addData_string(vs_ppu);
-		} else {
-			// No VS. PPU.
-			d->fields->addData_invalid();
+			d->fields->addField_string(_RP("VS. PPU"), vs_ppu);
 		}
-
-		// Skip FDS fields.
-		d->fields->addData_invalid();	// Game ID
-		d->fields->addData_invalid();	// Publisher
-		d->fields->addData_invalid();	// Revision
-		d->fields->addData_invalid();	// Manufacturing Date
 	}
 
 	// TODO: More fields.
