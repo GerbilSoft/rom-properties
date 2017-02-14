@@ -516,6 +516,12 @@ int EXE::loadFieldData(void)
 			d->fields->addField_bitfield(_RP("PE Flags"),
 				v_pe_flags_names, 3, pe_flags);
 
+                       // NOTE: 3 columns is too wide for DLL Flags on Windows.
+#ifdef _WIN32
+			static const int dll_flags_columns = 2;
+#else
+			static const int dll_flags_columns = 3;
+#endif	
 			// DLL flags. (characteristics)
 			static const rp_char *const dll_flags_names[] = {
 				nullptr, nullptr, nullptr,
@@ -528,7 +534,7 @@ int EXE::loadFieldData(void)
 			vector<rp_string> *v_dll_flags_names = RomFields::strArrayToVector(
 				dll_flags_names, ARRAY_SIZE(dll_flags_names));
 			d->fields->addField_bitfield(_RP("DLL Flags"),
-				v_dll_flags_names, 3, dll_flags);
+				v_dll_flags_names, dll_flags_columns, dll_flags);
 			break;
 		}
 
