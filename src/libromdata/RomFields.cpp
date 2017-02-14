@@ -869,7 +869,12 @@ std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArr
 	}
 
 	for (; strArray != nullptr && count > 0; strArray++, count--) {
-		pVec->push_back(rp_string(*strArray));
+		if (*strArray) {
+			pVec->push_back(rp_string(*strArray));
+		} else {
+			// nullptr. Handle as an empty string.
+			pVec->push_back(rp_string());
+		}
 	}
 
 	return pVec;
