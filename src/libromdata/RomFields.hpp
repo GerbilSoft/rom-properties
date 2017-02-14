@@ -284,7 +284,7 @@ class RomFields
 
 	private:
 		friend class RomFieldsPrivate;
-		RomFieldsPrivate *d;
+		RomFieldsPrivate *d_ptr;
 
 	public:
 		/** Field accessors. **/

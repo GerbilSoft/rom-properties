@@ -268,7 +268,7 @@ void RomFieldsPrivate::delete_data(void)
  * @param count Number of fields.
  */
 RomFields::RomFields()
-	: d(new RomFieldsPrivate())
+	: d_ptr(new RomFieldsPrivate())
 { }
 
 /**
@@ -277,12 +277,12 @@ RomFields::RomFields()
  * @param count Number of fields.
  */
 RomFields::RomFields(const Desc *fields, int count)
-	: d(new RomFieldsPrivate(fields, count))
+	: d_ptr(new RomFieldsPrivate(fields, count))
 { }
 
 RomFields::~RomFields()
 {
-	d->unref();
+	d_ptr->unref();
 }
 
 /**
@@ -290,7 +290,7 @@ RomFields::~RomFields()
  * @param other Other instance.
  */
 RomFields::RomFields(const RomFields &other)
-	: d(other.d->ref())
+	: d_ptr(other.d_ptr->ref())
 { }
 
 /**
@@ -300,8 +300,8 @@ RomFields::RomFields(const RomFields &other)
  */
 RomFields &RomFields::operator=(const RomFields &other)
 {
-	RomFieldsPrivate *d_old = this->d;
-	this->d = other.d->ref();
+	RomFieldsPrivate *d_old = this->d_ptr;
+	this->d_ptr = other.d_ptr->ref();
 	d_old->unref();
 	return *this;
 }
@@ -312,7 +312,7 @@ RomFields &RomFields::operator=(const RomFields &other)
  */
 void RomFields::detach(void)
 {
-	if (!d->isShared()) {
+	if (!d_ptr->isShared()) {
 		// Only one reference.
 		// Nothing to detach from.
 		return;
@@ -320,7 +320,7 @@ void RomFields::detach(void)
 
 	// Need to detach.
 	RomFieldsPrivate *d_new = new RomFieldsPrivate();
-	RomFieldsPrivate *d_old = d;
+	RomFieldsPrivate *d_old = d_ptr;
 	d_new->fields.resize(d_old->fields.size());
 	for (int i = (int)(d_old->fields.size() - 1); i >= 0; i--) {
 		const Field &field_old = d_old->fields.at(i);
@@ -388,7 +388,7 @@ void RomFields::detach(void)
 	}
 
 	// Detached.
-	d = d_new;
+	d_ptr = d_new;
 	d_old->unref();
 }
 
@@ -557,6 +557,7 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
  */
 int RomFields::count(void) const
 {
+	RP_D(RomFields);
 	if (d->dataCount < 0) {
 		// NEW allocation method.
 		return (int)d->fields.size();
@@ -572,6 +573,7 @@ int RomFields::count(void) const
  */
 const RomFields::Field *RomFields::field(int idx) const
 {
+	RP_D(RomFields);
 	if (idx < 0 || idx >= (int)d->fields.size())
 		return nullptr;
 	return &d->fields[idx];
@@ -584,6 +586,7 @@ const RomFields::Field *RomFields::field(int idx) const
  */
 bool RomFields::isDataLoaded(void) const
 {
+	RP_D(RomFields);
 	if (d->dataCount < 0) {
 		// NEW allocation method.
 		return !d->fields.empty();
@@ -602,6 +605,7 @@ bool RomFields::isDataLoaded(void) const
  */
 int RomFields::addData_invalid(void)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -619,6 +623,7 @@ int RomFields::addData_invalid(void)
  */
 int RomFields::addData_string(const rp_char *str)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -644,6 +649,7 @@ int RomFields::addData_string(const rp_char *str)
  */
 int RomFields::addData_string(const rp_string &str)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -734,6 +740,7 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
  */
 int RomFields::addData_bitfield(uint32_t bitfield)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -758,6 +765,7 @@ int RomFields::addData_bitfield(uint32_t bitfield)
  */
 int RomFields::addData_listData(ListData *list_data)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -782,6 +790,7 @@ int RomFields::addData_listData(ListData *list_data)
  */
 int RomFields::addData_dateTime(int64_t date_time)
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -806,6 +815,7 @@ int RomFields::addData_dateTime(int64_t date_time)
  */
 int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 {
+	RP_D(RomFields);
 	assert(d->dataCount >= 0 && d->dataCount < (int)d->fields.size());
 	if (d->dataCount < 0 || d->dataCount >= (int)d->fields.size())
 		return -1;
@@ -835,6 +845,7 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 void RomFields::reserve(int n)
 {
 	if (n > 0) {
+		RP_D(RomFields);
 		d->fields.reserve(n);
 	}
 }
@@ -873,6 +884,7 @@ std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArr
  */
 int RomFields::addField_string(const rp_char *name, const rp_char *str, int flags)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
@@ -900,6 +912,7 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, int flag
  */
 int RomFields::addField_string(const rp_char *name, const rp_string &str, int flags)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
@@ -1044,6 +1057,7 @@ int RomFields::addField_bitfield(const rp_char *name,
 	const std::vector<rp_string> *bit_names,
 	int elemsPerRow, uint32_t bitfield)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
@@ -1079,6 +1093,7 @@ int RomFields::addField_listData(const rp_char *name,
 	const std::vector<rp_string> *headers,
 	const std::vector<std::vector<rp_string> > *list_data)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
@@ -1109,6 +1124,7 @@ int RomFields::addField_listData(const rp_char *name,
  */
 int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int flags)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
@@ -1138,6 +1154,7 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
  */
 int RomFields::addField_ageRatings(const rp_char *name, const age_ratings_t &age_ratings)
 {
+	RP_D(RomFields);
 	assert(d->dataCount < 0);
 	if (d->dataCount >= 0)
 		return -1;
