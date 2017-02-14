@@ -172,7 +172,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	}
 
 	unsigned int req_size;
-	switch (nds_icon_title.version) {
+	switch (le16_to_cpu(nds_icon_title.version)) {
 		case NDS_ICON_VERSION_ORIGINAL:
 			req_size = NDS_ICON_SIZE_ORIGINAL;
 			break;
@@ -350,7 +350,7 @@ int NintendoDSPrivate::getTitleIndex(void) const
 	}
 
 	// Version number check is required for ZH and KO.
-	const uint16_t version = nds_icon_title.version;
+	const uint16_t version = le16_to_cpu(nds_icon_title.version);
 
 	int lang = -1;
 	switch (SystemRegion::getLanguageCode()) {
@@ -537,7 +537,7 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
 		// DSi-exclusive game.
 		idx |= (1 << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((d->romHeader.dsi.region_code & DSi_REGION_CHINA) ||
+			if ((le32_to_cpu(d->romHeader.dsi.region_code) & DSi_REGION_CHINA) ||
 			    (d->romHeader.nds_region & 0x80))
 			{
 				// iQue DSi.
@@ -717,7 +717,7 @@ int NintendoDS::loadFieldData(void)
 		vector<rp_string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector(
 			dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 		d->fields->addField_bitfield(_RP("DSi Region"),
-			v_dsi_region_bitfield_names, 3, romHeader->dsi.region_code);
+			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
