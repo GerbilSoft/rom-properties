@@ -220,6 +220,9 @@ class RomData
 			// Floppy and/or hard disk image.
 			FTYPE_DISK_IMAGE,
 
+			// Executable, e.g. EXE.
+			FTYPE_EXECUTABLE,
+
 			// End of FileType.
 			FTYPE_LAST
 		};

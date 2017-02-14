@@ -77,6 +77,7 @@ SET(libromdata_SRCS
 	VirtualBoy.cpp
 	Amiibo.cpp
 	NES.cpp
+	EXE.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -129,6 +130,7 @@ SET(libromdata_H
 	DreamcastSave.hpp
 	VirtualBoy.hpp
 	Amiibo.hpp
+	EXE.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
