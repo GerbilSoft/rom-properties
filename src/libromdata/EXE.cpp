@@ -441,26 +441,26 @@ int EXE::loadFieldData(void)
 					len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 			}
 
-			const uint32_t pe_flags = d->pe.FileHeader.Characteristics;
+			const uint16_t pe_flags = le16_to_cpu(d->pe.FileHeader.Characteristics);
 
 			// Get the architecture-specific fields.
 			uint16_t os_ver_major, os_ver_minor;
 			uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
-			uint32_t dll_flags;
+			uint16_t dll_flags;
 			if (d->exeType == EXEPrivate::EXE_TYPE_PE) {
-				os_ver_major = d->pe.OptionalHeader.opt32.MajorOperatingSystemVersion;
-				os_ver_minor = d->pe.OptionalHeader.opt32.MinorOperatingSystemVersion;
-				subsystem = d->pe.OptionalHeader.opt32.Subsystem;
-				subsystem_ver_major = d->pe.OptionalHeader.opt32.MajorSubsystemVersion;
-				subsystem_ver_minor = d->pe.OptionalHeader.opt32.MinorSubsystemVersion;
-				dll_flags = d->pe.OptionalHeader.opt32.DllCharacteristics;
+				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
+				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
+				subsystem = le16_to_cpu(d->pe.OptionalHeader.opt32.Subsystem);
+				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorSubsystemVersion);
+				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt32.DllCharacteristics);
 			} else /*if (d->exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
-				os_ver_major = d->pe.OptionalHeader.opt64.MajorOperatingSystemVersion;
-				os_ver_minor = d->pe.OptionalHeader.opt64.MinorOperatingSystemVersion;
-				subsystem = d->pe.OptionalHeader.opt64.Subsystem;
-				subsystem_ver_major = d->pe.OptionalHeader.opt64.MajorSubsystemVersion;
-				subsystem_ver_minor = d->pe.OptionalHeader.opt64.MinorSubsystemVersion;
-				dll_flags = d->pe.OptionalHeader.opt64.DllCharacteristics;
+				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
+				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
+				subsystem = le16_to_cpu(d->pe.OptionalHeader.opt64.Subsystem);
+				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorSubsystemVersion);
+				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorSubsystemVersion);
+				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt64.DllCharacteristics);
 			}
 
 			// OS version.
