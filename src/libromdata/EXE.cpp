@@ -183,9 +183,8 @@ EXE::EXE(IRpFile *file)
 	}
 
 	// Verify the PE signature.
-	// NOTE: 'PE\0\0' is stored as a string, so we have to
-	// handle it as if it's big-endian.
-	if (be32_to_cpu(d->pe.Signature) != 'PE\0\0') {
+	// FIXME: MSVC handles 'PE\0\0' as 0x00504500.
+	if (be32_to_cpu(d->pe.Signature) != 0x50450000 /*'PE\0\0'*/) {
 		// Not a PE executable.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
 		return;
