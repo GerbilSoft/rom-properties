@@ -504,10 +504,6 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
 		// TODO: Verify this.
 		QMargins margins = ui.formLayout->contentsMargins();
-		margins.setLeft(0);
-		margins.setRight(0);
-		margins.setTop(0);
-		margins.setBottom(99);
 		ui.vboxLayout->setContentsMargins(margins);
 
 		// Save this as the credits label.
