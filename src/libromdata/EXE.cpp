@@ -444,44 +444,62 @@ int EXE::loadFieldData(void)
 			const uint32_t pe_flags = d->pe.FileHeader.Characteristics;
 
 			// Get the architecture-specific fields.
-			uint16_t subsystem;
+			uint16_t os_ver_major, os_ver_minor;
+			uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
 			uint32_t dll_flags;
 			if (d->exeType == EXEPrivate::EXE_TYPE_PE) {
+				os_ver_major = d->pe.OptionalHeader.opt32.MajorOperatingSystemVersion;
+				os_ver_minor = d->pe.OptionalHeader.opt32.MinorOperatingSystemVersion;
 				subsystem = d->pe.OptionalHeader.opt32.Subsystem;
+				subsystem_ver_major = d->pe.OptionalHeader.opt32.MajorSubsystemVersion;
+				subsystem_ver_minor = d->pe.OptionalHeader.opt32.MinorSubsystemVersion;
 				dll_flags = d->pe.OptionalHeader.opt32.DllCharacteristics;
 			} else /*if (d->exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
+				os_ver_major = d->pe.OptionalHeader.opt64.MajorOperatingSystemVersion;
+				os_ver_minor = d->pe.OptionalHeader.opt64.MinorOperatingSystemVersion;
 				subsystem = d->pe.OptionalHeader.opt64.Subsystem;
+				subsystem_ver_major = d->pe.OptionalHeader.opt64.MajorSubsystemVersion;
+				subsystem_ver_minor = d->pe.OptionalHeader.opt64.MinorSubsystemVersion;
 				dll_flags = d->pe.OptionalHeader.opt64.DllCharacteristics;
 			}
 
+			// OS version.
+			char buf[48];
+			int len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
+			if (len > (int)sizeof(buf))
+				len = (int)sizeof(buf);
+			d->fields->addField_string(_RP("OS Version"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
 			// Subsystem names.
-			static const rp_char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
+			static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
 				nullptr,			// IMAGE_SUBSYSTEM_UNKNOWN
-				_RP("Native"),			// IMAGE_SUBSYSTEM_NATIVE
-				_RP("Windows"),			// IMAGE_SUBSYSTEM_WINDOWS_GUI
-				_RP("Console"),			// IMAGE_SUBSYSTEM_WINDOWS_CUI
+				"Native",			// IMAGE_SUBSYSTEM_NATIVE
+				"Windows",			// IMAGE_SUBSYSTEM_WINDOWS_GUI
+				"Console",			// IMAGE_SUBSYSTEM_WINDOWS_CUI
 				nullptr,
-				_RP("OS/2 Console"),		// IMAGE_SUBSYSTEM_OS2_CUI
+				"OS/2 Console",			// IMAGE_SUBSYSTEM_OS2_CUI
 				nullptr,
-				_RP("POSIX Console"),		// IMAGE_SUBSYSTEM_POSIX_CUI
-				_RP("Win9x Native Driver"),	// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-				_RP("Windows CE"),		// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-				_RP("EFI Application"),		// IMAGE_SUBSYSTEM_EFI_APPLICATION
-				_RP("EFI Boot Service Driver"),	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-				_RP("EFI Runtime Driver"),	// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-				_RP("EFI ROM Image"),		// IMAGE_SUBSYSTEM_EFI_ROM
-				_RP("Xbox"),			// IMAGE_SUBSYSTEM_XBOX
+				"POSIX Console",		// IMAGE_SUBSYSTEM_POSIX_CUI
+				"Win9x Native Driver",		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+				"Windows CE",			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+				"EFI Application",		// IMAGE_SUBSYSTEM_EFI_APPLICATION
+				"EFI Boot Service Driver",	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+				"EFI Runtime Driver",		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+				"EFI ROM Image",		// IMAGE_SUBSYSTEM_EFI_ROM
+				"Xbox",				// IMAGE_SUBSYSTEM_XBOX
 			};
-			if (subsystem < ARRAY_SIZE(subsysNames)) {
-				d->fields->addField_string(_RP("Subsystem"), subsysNames[subsystem]);
-			} else {
-				char buf[32];
-				int len = snprintf(buf, sizeof(buf), "Unknown (%u)", subsystem);
-				if (len > (int)sizeof(buf))
-					len = (int)sizeof(buf);
-				d->fields->addField_string(_RP("Subsystem"),
-					len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-			}
+
+			// Subsystem name and version.
+			len = snprintf(buf, sizeof(buf), "%s %u.%u",
+				(subsystem < ARRAY_SIZE(subsysNames)
+					? subsysNames[subsystem]
+					: "Unknown"),
+				subsystem_ver_major, subsystem_ver_minor);
+			if (len > (int)sizeof(buf))
+				len = (int)sizeof(buf);
+			d->fields->addField_string(_RP("Subsystem"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 			// PE flags. (characteristics)
 			// NOTE: Only important flags will be listed.
