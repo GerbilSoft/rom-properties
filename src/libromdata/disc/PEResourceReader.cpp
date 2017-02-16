@@ -34,10 +34,8 @@
 
 // C++ includes.
 #include <memory>
-#include <unordered_map>
 #include <vector>
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -64,11 +62,29 @@ class PEResourceReaderPrivate
 		// Read position.
 		int64_t pos;
 
-		// Resource types. (Top-level directory.)
-		ao::uvector<IMAGE_RESOURCE_DIRECTORY> res_types;
+		// Resource directory entry.
+		struct ResDirEntry {
+			uint16_t id;	// Resource ID.
+			uint32_t addr;	// Address of the IMAGE_RESOURCE_DIRECTORY or
+					// IMAGE_RESOURCE_DATA_ENTRY, relative to rsrc_addr.
+					// NOTE: If the high bit is set, this is a subdirectory.
+		};
+		typedef ao::uvector<ResDirEntry> rsrc_dir_t;
 
-		// Map of resource type to res_types index.
-		unordered_map<uint16_t, int> map_res_types;
+		// Resource types. (Top-level directory.)
+		rsrc_dir_t res_types;
+
+		/**
+		 * Load a resource directory.
+		 *
+		 * NOTE: Only numeric resources and/or subdirectories are loaded.
+		 * Named resources and/or subdirectores are ignored.
+		 *
+		 * @param addr	[in] Starting address of the directory. (relative to the start of .rsrc)
+		 * @param dir	[out] Resource directory.
+		 * @return Number of entries loaded, or negative POSIX error code on error.
+		 */
+		int loadResDir(uint32_t addr, rsrc_dir_t &dir);
 };
 
 /** PEResourceReaderPrivate **/
@@ -107,20 +123,41 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	}
 
 	// Load the root resource directory.
+	int ret = loadResDir(0, res_types);
+	if (ret <= 0) {
+		// No resources, or an error occurred.
+		this->file = nullptr;
+	}
+}
+
+/**
+ * Load a resource directory.
+ *
+ * NOTE: Only numeric resources and/or subdirectories are loaded.
+ * Named resources and/or subdirectores are ignored.
+ *
+ * @param addr	[in] Starting address of the directory. (relative to the start of .rsrc)
+ * @param dir	[out] Resource directory.
+ * @return Number of entries loaded, or negative POSIX error code on error.
+ */
+int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
+{
+	RP_Q(PEResourceReader);
+
 	IMAGE_RESOURCE_DIRECTORY root;
-	int ret = file->seek(rsrc_addr);
+	int ret = file->seek(rsrc_addr + addr);
 	if (ret != 0) {
 		// Seek error.
 		q->m_lastError = file->lastError();
 		file = nullptr;
-		return;
+		return q->m_lastError;
 	}
 	size_t size = file->read(&root, sizeof(root));
 	if (size != sizeof(root)) {
 		// Read error;
 		q->m_lastError = file->lastError();
 		file = nullptr;
-		return;
+		return q->m_lastError;
 	}
 
 	// Total number of entries.
@@ -137,54 +174,38 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		// Read error.
 		q->m_lastError = file->lastError();
 		file = nullptr;
-		return;
+		return q->m_lastError;
 	}
 
 	// Read each directory header.
-	uint32_t startOfResourceSection = rsrc_addr + sizeof(root);
-	res_types.resize(entryCount);
-	map_res_types.reserve(entryCount);
+	uint32_t startOfResourceSection = addr + sizeof(root);
+	dir.resize(entryCount);
 	const IMAGE_RESOURCE_DIRECTORY_ENTRY *irdEntry = irdEntries.get();
 	unsigned int entriesRead = 0;
 	for (unsigned int i = 0; i < entryCount; i++, irdEntry++) {
 		// Skipping any root directory entry that isn't an ID.
-		uint32_t res_type = le32_to_cpu(irdEntry->Name);
-		if (res_type > 0xFFFF) {
+		uint32_t id = le32_to_cpu(irdEntry->Name);
+		if (id > 0xFFFF) {
 			// Not an ID.
 			continue;
-		} else if (!(le32_to_cpu(irdEntry->OffsetToData) & 0x80000000)) {
-			// Not a subdirectory.
-			continue;
 		}
 
-		// Get the directory address.
+		// Entry address.
 		uint32_t dir_addr = startOfResourceSection + (le32_to_cpu(irdEntry->OffsetToData) & ~0x80000000);
-		// Read the directory entry.
-		ret = file->seek(dir_addr);
-		if (ret != 0) {
-			// Seek error.
-			res_types.clear();
-			q->m_lastError = file->lastError();
-			file = nullptr;
-			return;
-		}
-		size = file->read(&res_types[entriesRead], sizeof(IMAGE_RESOURCE_DIRECTORY));
-		if (size != sizeof(IMAGE_RESOURCE_DIRECTORY)) {
-			// Read error.
-			res_types.clear();
-			q->m_lastError = file->lastError();
-			file = nullptr;
-			return;
-		}
 
-		// Add an entry to the unordered_map for fast lookup.
-		map_res_types.insert(std::make_pair((uint16_t)res_type, (int)entryCount));
-		// Directory entry loaded.
+		auto &entry = dir[entriesRead];
+		entry.id = (uint16_t)id;
+		// addr points to IMAGE_RESOURCE_DIRECTORY
+		// or IMAGE_RESOURCE_DATA_ENTRY.
+		entry.addr = startOfResourceSection + le32_to_cpu(irdEntry->OffsetToData);
+
+		// Next entry.
 		entriesRead++;
 	}
 
 	// Shrink the vector in case we skipped some types.
-	res_types.resize(entriesRead);
+	dir.resize(entriesRead);
+	return (int)entriesRead;
 }
 
 /** PEResourceReader **/
