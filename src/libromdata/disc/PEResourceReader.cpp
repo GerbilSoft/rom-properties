@@ -68,7 +68,7 @@ class PEResourceReaderPrivate
 		ao::uvector<IMAGE_RESOURCE_DIRECTORY> res_types;
 
 		// Map of resource type to res_types index.
-		unordered_map<uint32_t, int> map_res_types;
+		unordered_map<uint16_t, int> map_res_types;
 };
 
 /** PEResourceReaderPrivate **/
@@ -143,11 +143,13 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 	// Read each directory header.
 	uint32_t startOfResourceSection = rsrc_addr + sizeof(root);
 	res_types.resize(entryCount);
+	map_res_types.reserve(entryCount);
 	const IMAGE_RESOURCE_DIRECTORY_ENTRY *irdEntry = irdEntries.get();
 	unsigned int entriesRead = 0;
 	for (unsigned int i = 0; i < entryCount; i++, irdEntry++) {
 		// Skipping any root directory entry that isn't an ID.
-		if (le32_to_cpu(irdEntry->Name) > 0xFFFF) {
+		uint32_t res_type = le32_to_cpu(irdEntry->Name);
+		if (res_type > 0xFFFF) {
 			// Not an ID.
 			continue;
 		} else if (!(le32_to_cpu(irdEntry->OffsetToData) & 0x80000000)) {
@@ -175,6 +177,8 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 			return;
 		}
 
+		// Add an entry to the unordered_map for fast lookup.
+		map_res_types.insert(std::make_pair((uint16_t)res_type, (int)entryCount));
 		// Directory entry loaded.
 		entriesRead++;
 	}
