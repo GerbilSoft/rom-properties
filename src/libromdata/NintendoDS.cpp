@@ -482,8 +482,9 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 
 	const NDS_RomHeader *const romHeader =
 		reinterpret_cast<const NDS_RomHeader*>(info->header.pData);
-	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo))) {
-		// Nintendo logo is present at the correct location.
+	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
+	    le16_to_cpu(romHeader->nintendo_logo_checksum) == 0xCF56) {
+		// Nintendo logo is valid.
 		// TODO: DS vs. DSi?
 		return 0;
 	}
