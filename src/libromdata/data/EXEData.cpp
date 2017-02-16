@@ -66,6 +66,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{IMAGE_FILE_MACHINE_SH5,	_RP("Hitachi SH5")},
 	{IMAGE_FILE_MACHINE_ARM,	_RP("ARM")},
 	{IMAGE_FILE_MACHINE_THUMB,	_RP("ARM Thumb")},
+	{IMAGE_FILE_MACHINE_ARMNT,	_RP("ARM Thumb-2")},
 	{IMAGE_FILE_MACHINE_AM33,	_RP("Matsushita AM33")},
 	{IMAGE_FILE_MACHINE_POWERPC,	_RP("PowerPC")},
 	{IMAGE_FILE_MACHINE_POWERPCFP,	_RP("PowerPC with FPU")},
@@ -79,6 +80,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{IMAGE_FILE_MACHINE_EBC,	_RP("EFI Byte Code")},
 	{IMAGE_FILE_MACHINE_AMD64,	_RP("AMD64")},
 	{IMAGE_FILE_MACHINE_M32R,	_RP("Mitsubishi M32R")},
+	{IMAGE_FILE_MACHINE_ARM64,	_RP("ARM (64-bit)")},
 	{IMAGE_FILE_MACHINE_CEE,	_RP("MSIL (.NET)")},
 
 	{0, nullptr}

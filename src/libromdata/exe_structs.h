@@ -95,6 +95,7 @@ typedef enum {
 	IMAGE_FILE_MACHINE_SH5		= 0x01A8, /* Hitachi SH5 */
 	IMAGE_FILE_MACHINE_ARM		= 0x01C0, /* ARM little endian */
 	IMAGE_FILE_MACHINE_THUMB	= 0x01C2, /* Thumb */
+	IMAGE_FILE_MACHINE_ARMNT	= 0x01C4, /* Thumb-2 */
 	IMAGE_FILE_MACHINE_AM33		= 0x01D3, /* Matsushita AM33 */
 	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* Power PC little endian */
 	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* Power PC with floating point support */
@@ -109,6 +110,7 @@ typedef enum {
 	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
 	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
 	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
+	IMAGE_FILE_MACHINE_ARM64	= 0xAA64, /* ARM64 little-endian */
 	IMAGE_FILE_MACHINE_CEE		= 0xC0EE, /* MSIL (.NET) */
 } PE_Machine;
 
