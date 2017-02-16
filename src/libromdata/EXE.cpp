@@ -22,6 +22,7 @@
 #include "EXE.hpp"
 #include "RomData_p.hpp"
 
+#include "data/EXEData.hpp"
 #include "exe_structs.h"
 
 #include "common.h"
@@ -546,70 +547,8 @@ int EXE::loadFieldData(void)
 
 			// Common PE 32/64 fields.
 			// TODO: bsearch()?
-			const rp_char *cpu = nullptr;
 			const uint16_t machine = le16_to_cpu(d->pe.FileHeader.Machine);
-			switch (machine) {
-				case IMAGE_FILE_MACHINE_AM33:
-					cpu = _RP("Matsushita AM33");
-					break;
-				case IMAGE_FILE_MACHINE_AMD64:
-					cpu = _RP("AMD64");
-					break;
-				case IMAGE_FILE_MACHINE_ARM:
-					cpu = _RP("ARM");
-					break;
-				case IMAGE_FILE_MACHINE_EBC:
-					cpu = _RP("EFI Byte Code");
-					break;
-				case IMAGE_FILE_MACHINE_I386:
-					cpu = _RP("Intel i386");
-					break;
-				case IMAGE_FILE_MACHINE_IA64:
-					cpu = _RP("Intel Itanium");
-					break;
-				case IMAGE_FILE_MACHINE_M32R:
-					cpu = _RP("Mitsubishi M32R");
-					break;
-				case IMAGE_FILE_MACHINE_MIPS16:
-					cpu = _RP("MIPS16");
-					break;
-				case IMAGE_FILE_MACHINE_MIPSFPU:
-					cpu = _RP("MIPS with FPU");
-					break;
-				case IMAGE_FILE_MACHINE_MIPSFPU16:
-					cpu = _RP("MIPS16 with FPU");
-					break;
-				case IMAGE_FILE_MACHINE_POWERPC:
-					cpu = _RP("PowerPC");
-					break;
-				case IMAGE_FILE_MACHINE_POWERPCFP:
-					cpu = _RP("PowerPC with FPU");
-					break;
-				case IMAGE_FILE_MACHINE_R4000:
-					cpu = _RP("MIPS R4000");
-					break;
-				case IMAGE_FILE_MACHINE_SH3:
-					cpu = _RP("Hitachi SH3");
-					break;
-				case IMAGE_FILE_MACHINE_SH3DSP:
-					cpu = _RP("Hitachi SH3 DSP");
-					break;
-				case IMAGE_FILE_MACHINE_SH4:
-					cpu = _RP("Hitachi SH4");
-					break;
-				case IMAGE_FILE_MACHINE_SH5:
-					cpu = _RP("Hitachi SH5");
-					break;
-				case IMAGE_FILE_MACHINE_THUMB:
-					cpu = _RP("ARM Thumb");
-					break;
-				case IMAGE_FILE_MACHINE_WCEMIPSV2:
-					cpu = _RP("MIPS (WCE v2)");
-					break;
-				default:
-					break;
-			}
-
+			const rp_char *cpu = EXEData::lookup_cpu(machine);
 			if (cpu != nullptr) {
 				d->fields->addField_string(_RP("CPU"), cpu);
 			} else {
