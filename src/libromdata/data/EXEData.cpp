@@ -81,7 +81,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{IMAGE_FILE_MACHINE_AMD64,	_RP("AMD64")},
 	{IMAGE_FILE_MACHINE_M32R,	_RP("Mitsubishi M32R")},
 	{IMAGE_FILE_MACHINE_ARM64,	_RP("ARM (64-bit)")},
-	{IMAGE_FILE_MACHINE_CEE,	_RP("MSIL (.NET)")},
+	{IMAGE_FILE_MACHINE_CEE,	_RP("MSIL")},
 
 	{0, nullptr}
 };

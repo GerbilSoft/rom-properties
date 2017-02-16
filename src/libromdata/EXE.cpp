@@ -234,6 +234,9 @@ int EXEPrivate::loadPEResourceTypes(void)
 		}
 	}
 
+	// TODO: Find the section that matches the virtual address in
+	// data directory entry IMAGE_DATA_DIRECTORY_RESOURCE_TABLE?
+
 	// Find the .rsrc section.
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
@@ -532,6 +535,10 @@ int EXE::loadFieldData(void)
 		d->fields->addField_string(_RP("Type"), _RP("Unknown"));
 	}
 
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
+
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_PE:
 		case EXEPrivate::EXE_TYPE_PE32PLUS: {
@@ -545,27 +552,14 @@ int EXE::loadFieldData(void)
 			// TEST: Load the resource root directory.
 			ret = d->loadPEResourceTypes();
 
-			// Common PE 32/64 fields.
-			// TODO: bsearch()?
 			const uint16_t machine = le16_to_cpu(d->pe.FileHeader.Machine);
-			const rp_char *cpu = EXEData::lookup_cpu(machine);
-			if (cpu != nullptr) {
-				d->fields->addField_string(_RP("CPU"), cpu);
-			} else {
-				char buf[32];
-				int len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)", machine);
-				if (len > (int)sizeof(buf))
-					len = (int)sizeof(buf);
-				d->fields->addField_string(_RP("CPU"),
-					len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-			}
-
 			const uint16_t pe_flags = le16_to_cpu(d->pe.FileHeader.Characteristics);
 
 			// Get the architecture-specific fields.
 			uint16_t os_ver_major, os_ver_minor;
 			uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
 			uint16_t dll_flags;
+			bool dotnet;
 			if (d->exeType == EXEPrivate::EXE_TYPE_PE) {
 				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
 				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
@@ -573,6 +567,9 @@ int EXE::loadFieldData(void)
 				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorSubsystemVersion);
 				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorSubsystemVersion);
 				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt32.DllCharacteristics);
+				// TODO: Check VirtualAddress, Size, or both?
+				// 'file' checks VirtualAddress.
+				dotnet = (d->pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 			} else /*if (d->exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
 				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
 				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
@@ -580,11 +577,31 @@ int EXE::loadFieldData(void)
 				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorSubsystemVersion);
 				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorSubsystemVersion);
 				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt64.DllCharacteristics);
+				// TODO: Check VirtualAddress, Size, or both?
+				// 'file' checks VirtualAddress.
+				dotnet = (d->pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 			}
 
+			// CPU. (Also .NET status.)
+			rp_string s_cpu;
+			const rp_char *const cpu = EXEData::lookup_cpu(machine);
+			if (cpu != nullptr) {
+				s_cpu = cpu;
+			} else {
+				len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)%s",
+					machine, (dotnet ? " (.NET)" : ""));
+				if (len > (int)sizeof(buf))
+					len = (int)sizeof(buf);
+				s_cpu = (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			}
+			if (dotnet) {
+				// .NET executable.
+				s_cpu += _RP(" (.NET)");
+			}
+			d->fields->addField_string(_RP("CPU"), s_cpu);
+
 			// OS version.
-			char buf[48];
-			int len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
+			len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
 			if (len > (int)sizeof(buf))
 				len = (int)sizeof(buf);
 			d->fields->addField_string(_RP("OS Version"),
