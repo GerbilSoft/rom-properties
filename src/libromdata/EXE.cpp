@@ -85,6 +85,20 @@ class EXEPrivate : public RomDataPrivate
 			} OptionalHeader;
 		} pe;
 		#pragma pack()
+
+		// PE section headers.
+		// TODO: Use ao::uvector<>?
+		vector<IMAGE_SECTION_HEADER> pe_sections;
+
+		/**
+		 * Load the PE section table.
+		 *
+		 * NOTE: If the table was read successfully, but no section
+		 * headers were found, -ENOENT is returned.
+		 *
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadPESectionTable(void);
 };
 
 /** EXEPrivate **/
@@ -96,6 +110,79 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
 	memset(&pe, 0, sizeof(pe));
+}
+
+/**
+ * Load the PE section table.
+ *
+ * NOTE: If the table was read successfully, but no section
+ * headers were found, -ENOENT is returned.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::loadPESectionTable(void)
+{
+	if (!pe_sections.empty()) {
+		// Section table is already loaded.
+		return 0;
+	} else if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	}
+
+	uint32_t section_table_start = le32_to_cpu(mz.e_lfanew);
+	uint32_t SizeOfHeaders;
+	switch (exeType) {
+		case EXE_TYPE_PE:
+			section_table_start += sizeof(IMAGE_NT_HEADERS32);
+			SizeOfHeaders = le32_to_cpu(pe.OptionalHeader.opt32.SizeOfHeaders);
+			break;
+		case EXE_TYPE_PE32PLUS:
+			section_table_start += sizeof(IMAGE_NT_HEADERS64);
+			SizeOfHeaders = le32_to_cpu(pe.OptionalHeader.opt64.SizeOfHeaders);
+			break;
+		default:
+			// Not a PE executable.
+			return -ENOTSUP;
+	}
+
+	// Read the section table, up to SizeOfHeaders.
+	uint32_t section_count = (SizeOfHeaders - section_table_start) / sizeof(IMAGE_SECTION_HEADER);
+	assert(section_count <= 128);
+	if (section_count > 128) {
+		// Sanity check: Maximum of 128 sections.
+		return -ENOMEM;
+	}
+	int ret = file->seek(section_table_start);
+	if (ret != 0) {
+		// Seek error.
+		return -EIO;
+	}
+	pe_sections.resize(section_count);
+	uint32_t szToRead = (uint32_t)(section_count * sizeof(IMAGE_SECTION_HEADER));
+	size_t size = file->read(pe_sections.data(), szToRead);
+	if (size != (size_t)szToRead) {
+		// Read error.
+		pe_sections.clear();
+		return -EIO;
+	}
+
+	// Not all sections may be in use.
+	// Find the first section header with an empty name.
+	ret = 0;
+	for (unsigned int i = 0; i < (unsigned int)pe_sections.size(); i++) {
+		if (pe_sections[i].Name[0] == 0) {
+			// Found the first empty section.
+			pe_sections.resize(i);
+			break;
+		}
+	}
+
+	// Section headers have been read.
+	return ret;
 }
 
 /** EXE **/
@@ -364,6 +451,14 @@ int EXE::loadFieldData(void)
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_PE:
 		case EXEPrivate::EXE_TYPE_PE32PLUS: {
+			// TEST: Load the PE section table.
+			// Not currently used.
+			int ret = d->loadPESectionTable();
+			if (ret != 0) {
+				// Error loading the PE section table.
+				// TODO: Show a warning?
+			}
+
 			// Common PE 32/64 fields.
 			// TODO: bsearch()?
 			const rp_char *cpu = nullptr;
