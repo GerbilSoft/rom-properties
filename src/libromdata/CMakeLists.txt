@@ -103,6 +103,7 @@ SET(libromdata_SRCS
 	disc/GcnFst.cpp
 	disc/PartitionFile.cpp
 	disc/SparseDiscReader.cpp
+	disc/PEResourceReader.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -177,6 +178,7 @@ SET(libromdata_H
 	disc/PartitionFile.hpp
 	disc/SparseDiscReader.hpp
 	disc/SparseDiscReader_p.hpp
+	disc/PEResourceReader.hpp
 	NES.hpp
 	)
 
