@@ -53,10 +53,15 @@ class EXEDataPrivate {
 // NOTE: The cpu field *must* be sorted in ascending order.
 const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{IMAGE_FILE_MACHINE_I386,	_RP("Intel i386")},
+	{IMAGE_FILE_MACHINE_R3000_BE,	_RP("MIPS R3000 (big-endian)")},
+	{IMAGE_FILE_MACHINE_R3000,	_RP("MIPS R3000")},
 	{IMAGE_FILE_MACHINE_R4000,	_RP("MIPS R4000")},
+	{IMAGE_FILE_MACHINE_R10000,	_RP("MIPS R10000")},
 	{IMAGE_FILE_MACHINE_WCEMIPSV2,	_RP("MIPS (WCE v2)")},
+	{IMAGE_FILE_MACHINE_ALPHA,	_RP("DEC Alpha AXP")},
 	{IMAGE_FILE_MACHINE_SH3,	_RP("Hitachi SH3")},
 	{IMAGE_FILE_MACHINE_SH3DSP,	_RP("Hitachi SH3 DSP")},
+	{IMAGE_FILE_MACHINE_SH3E,	_RP("Hitachi SH3E")},
 	{IMAGE_FILE_MACHINE_SH4,	_RP("Hitachi SH4")},
 	{IMAGE_FILE_MACHINE_SH5,	_RP("Hitachi SH5")},
 	{IMAGE_FILE_MACHINE_ARM,	_RP("ARM")},
@@ -66,11 +71,15 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{IMAGE_FILE_MACHINE_POWERPCFP,	_RP("PowerPC with FPU")},
 	{IMAGE_FILE_MACHINE_IA64,	_RP("Intel Itanium")},
 	{IMAGE_FILE_MACHINE_MIPS16,	_RP("MIPS16")},
+	{IMAGE_FILE_MACHINE_ALPHA64,	_RP("DEC Alpha AXP (64-bit)")},
 	{IMAGE_FILE_MACHINE_MIPSFPU,	_RP("MIPS with FPU")},
 	{IMAGE_FILE_MACHINE_MIPSFPU16,	_RP("MIPS16 with FPU")},
+	{IMAGE_FILE_MACHINE_TRICORE,	_RP("Infineon TriCore")},
+	{IMAGE_FILE_MACHINE_CEF,	_RP("Common Executable Format")},
 	{IMAGE_FILE_MACHINE_EBC,	_RP("EFI Byte Code")},
 	{IMAGE_FILE_MACHINE_AMD64,	_RP("AMD64")},
 	{IMAGE_FILE_MACHINE_M32R,	_RP("Mitsubishi M32R")},
+	{IMAGE_FILE_MACHINE_CEE,	_RP("MSIL (.NET)")},
 
 	{0, nullptr}
 };

@@ -80,26 +80,36 @@ typedef enum {
 typedef enum {
 	// TODO: Update from `file`.
 	IMAGE_FILE_MACHINE_UNKNOWN	= 0x0000,
-	IMAGE_FILE_MACHINE_AM33		= 0x01d3, /* Matsushita AM33 */
-	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
-	IMAGE_FILE_MACHINE_ARM		= 0x01c0, /* ARM little endian */
-	IMAGE_FILE_MACHINE_EBC		= 0x0ebc, /* EFI byte code */
-	IMAGE_FILE_MACHINE_I386		= 0x014c, /* Intel 386 or later processors 
+	IMAGE_FILE_MACHINE_I386		= 0x014C, /* Intel 386 or later processors 
 						     and compatible processors */
+	IMAGE_FILE_MACHINE_R3000_BE	= 0x0160, /* MIPS big endian */
+	IMAGE_FILE_MACHINE_R3000	= 0x0162, /* MIPS little endian */
+	IMAGE_FILE_MACHINE_R4000	= 0x0166, /* MIPS little endian */
+	IMAGE_FILE_MACHINE_R10000	= 0x0168, /* MIPS little endian */
+	IMAGE_FILE_MACHINE_WCEMIPSV2	= 0x0169, /* MIPS little-endian WCE v2 */
+	IMAGE_FILE_MACHINE_ALPHA	= 0x0184, /* Alpha AXP */
+	IMAGE_FILE_MACHINE_SH3		= 0x01A2, /* Hitachi SH3 */
+	IMAGE_FILE_MACHINE_SH3DSP	= 0x01A3, /* Hitachi SH3 DSP */
+	IMAGE_FILE_MACHINE_SH3E		= 0x01A4, /* Hitachi SH3E */
+	IMAGE_FILE_MACHINE_SH4		= 0x01A6, /* Hitachi SH4 */
+	IMAGE_FILE_MACHINE_SH5		= 0x01A8, /* Hitachi SH5 */
+	IMAGE_FILE_MACHINE_ARM		= 0x01C0, /* ARM little endian */
+	IMAGE_FILE_MACHINE_THUMB	= 0x01C2, /* Thumb */
+	IMAGE_FILE_MACHINE_AM33		= 0x01D3, /* Matsushita AM33 */
+	IMAGE_FILE_MACHINE_POWERPC	= 0x01F0, /* Power PC little endian */
+	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01F1, /* Power PC with floating point support */
 	IMAGE_FILE_MACHINE_IA64		= 0x0200, /* Intel Itanium processor family */
-	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
 	IMAGE_FILE_MACHINE_MIPS16	= 0x0266, /* MIPS16 */
+	IMAGE_FILE_MACHINE_ALPHA64	= 0x0284, /* Alpha AXP (64-bit) */
 	IMAGE_FILE_MACHINE_MIPSFPU	= 0x0366, /* MIPS with FPU */
 	IMAGE_FILE_MACHINE_MIPSFPU16	= 0x0466, /* MIPS16 with FPU */
-	IMAGE_FILE_MACHINE_POWERPC	= 0x01f0, /* Power PC little endian */
-	IMAGE_FILE_MACHINE_POWERPCFP	= 0x01f1, /* Power PC with floating point support */
-	IMAGE_FILE_MACHINE_R4000	= 0x0166, /* MIPS little endian */
-	IMAGE_FILE_MACHINE_SH3		= 0x01a2, /* Hitachi SH3 */
-	IMAGE_FILE_MACHINE_SH3DSP	= 0x01a3, /* Hitachi SH3 DSP */
-	IMAGE_FILE_MACHINE_SH4		= 0x01a6, /* Hitachi SH4 */
-	IMAGE_FILE_MACHINE_SH5		= 0x01a8, /* Hitachi SH5 */
-	IMAGE_FILE_MACHINE_THUMB	= 0x01c2, /* Thumb */
-	IMAGE_FILE_MACHINE_WCEMIPSV2	= 0x0169, /* MIPS little-endian WCE v2 */
+	IMAGE_FILE_MACHINE_AXP64	= IMAGE_FILE_MACHINE_ALPHA64, /* Alpha AXP (64-bit) */
+	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infinieon */
+	IMAGE_FILE_MACHINE_CEF		= 0x0CEF, /* Common Executable Format (Windows CE) */
+	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
+	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
+	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
+	IMAGE_FILE_MACHINE_CEE		= 0xC0EE, /* MSIL (.NET) */
 } PE_Machine;
 
 typedef enum {
