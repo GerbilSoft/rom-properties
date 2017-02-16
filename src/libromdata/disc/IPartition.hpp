@@ -61,6 +61,7 @@ class IPartition : public IDiscReader
 		 * @return Partition size, or -1 on error.
 		 */
 		virtual int64_t partition_size(void) const = 0;
+
 		/**
 		 * Get the used partition size.
 		 * This includes the partition headers and any
