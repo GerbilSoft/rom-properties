@@ -190,9 +190,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 			continue;
 		}
 
-		// Entry address.
-		uint32_t dir_addr = startOfResourceSection + (le32_to_cpu(irdEntry->OffsetToData) & ~0x80000000);
-
+		// Entry data.
 		auto &entry = dir[entriesRead];
 		entry.id = (uint16_t)id;
 		// addr points to IMAGE_RESOURCE_DIRECTORY
