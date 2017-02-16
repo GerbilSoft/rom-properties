@@ -20,7 +20,10 @@
  ***************************************************************************/
 
 // Based on w32api's winnt.h.
-// Reference: https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winnt.h
+// References:
+// - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winnt.h
+// - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winver.h
+// - http://www.brokenthorn.com/Resources/OSDevPE.html
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
@@ -317,6 +320,152 @@ typedef struct _IMAGE_SECTION_HEADER {
 } IMAGE_SECTION_HEADER;
 #pragma pack()
 ASSERT_STRUCT(IMAGE_SECTION_HEADER, IMAGE_SIZEOF_SECTION_HEADER);
+
+/** Win32 resources. **/
+
+// Resource types.
+typedef enum {
+	RT_CURSOR	= 1,
+	RT_BITMAP	= 2,
+	RT_ICON		= 3,
+	RT_MENU		= 4,
+	RT_DIALOG	= 5,
+	RT_STRING	= 6,
+	RT_FONTDIR	= 7,
+	RT_FONT		= 8,
+	RT_ACCELERATOR	= 9,
+	RT_RCDATA	= 10,
+	RT_MESSAGETABLE	= 11,
+	RT_VERSION	= 16,
+	RT_DLGINCLUDE	= 17,
+	RT_PLUGPLAY	= 19,
+	RT_VXD		= 20,
+	RT_ANICURSOR	= 21,
+	RT_ANIICON	= 22,
+	RT_HTML		= 23,
+	RT_MANIFEST	= 24,
+} ResourceType;
+
+// Resource directory.
+#pragma pack(1)
+typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY {
+	uint32_t Characteristics;
+	uint32_t TimeDateStamp;
+	uint16_t MajorVersion;
+	uint16_t MinorVersion;
+	uint16_t NumberOfNamedEntries;
+	uint16_t NumberOfIdEntries;
+	// following this struct are named entries, then ID entries
+} IMAGE_RESOURCE_DIRECTORY;
+#pragma pack()
+
+// Resource directory entry.
+#pragma pack(1)
+typedef struct PACKED _IMAGE_RESOURCE_DIRECTORY_ENTRY {
+	// Name/ID field.
+	// If bit 31 is set, this is an offset into the string table.
+	// Otherwise, it's a 16-bit ID.
+	uint32_t Name;
+
+	// Offset to the resource data.
+	// If bit 31 is set, this points to a subdirectory.
+	// Otherwise, it's an actual resource.
+	uint32_t OffsetToData;
+} IMAGE_RESOURCE_DIRECTORY_ENTRY;
+#pragma pack()
+
+// Resource data entry.
+#pragma pack(1)
+typedef struct PACKED _IMAGE_RESOURCE_DATA_ENTRY {
+	uint32_t OffsetToData;
+	uint32_t Size;
+	uint32_t CodePage;
+	uint32_t Reserved;
+} IMAGE_RESOURCE_DATA_ENTRY;
+#pragma pack()
+
+// Version flags.
+//#define VS_FILE_INFO RT_VERSION	// TODO
+#define VS_VERSION_INFO 1
+#define VS_USER_DEFINED 100
+#define VS_FFI_SIGNATURE 0xFEEF04BD
+#define VS_FFI_STRUCVERSION 0x10000
+#define VS_FFI_FILEFLAGSMASK 0x3F
+typedef enum {
+	VS_FF_DEBUG = 1,
+	VS_FF_PRERELEASE = 2,
+	VS_FF_PATCHED = 4,
+	VS_FF_PRIVATEBUILD = 8,
+	VS_FF_INFOINFERRED = 16,
+	VS_FF_SPECIALBUILD = 32,
+} VS_FileFlags;
+
+typedef enum {
+	VOS_UNKNOWN = 0,
+	VOS_DOS = 0x10000,
+	VOS_OS216 = 0x20000,
+	VOS_OS232 = 0x30000,
+	VOS_NT = 0x40000,
+	VOS__BASE = 0,
+	VOS__WINDOWS16 = 1,
+	VOS__PM16 = 2,
+	VOS__PM32 = 3,
+	VOS__WINDOWS32 = 4,
+	VOS_DOS_WINDOWS16 = 0x10001,
+	VOS_DOS_WINDOWS32 = 0x10004,
+	VOS_OS216_PM16 = 0x20002,
+	VOS_OS232_PM32 = 0x30003,
+	VOS_NT_WINDOWS32 = 0x40004,
+} VS_OperatingSystem;
+
+typedef enum {
+	VFT_UNKNOWN = 0,
+	VFT_APP = 1,
+	VFT_DLL = 2,
+	VFT_DRV = 3,
+	VFT_FONT = 4,
+	VFT_VXD = 5,
+	VFT_STATIC_LIB = 7,
+} VS_FileType;
+
+typedef enum {
+	VFT2_UNKNOWN = 0,
+	VFT2_DRV_PRINTER = 1,
+	VFT2_DRV_KEYBOARD = 2,
+	VFT2_DRV_LANGUAGE = 3,
+	VFT2_DRV_DISPLAY = 4,
+	VFT2_DRV_MOUSE = 5,
+	VFT2_DRV_NETWORK = 6,
+	VFT2_DRV_SYSTEM = 7,
+	VFT2_DRV_INSTALLABLE = 8,
+	VFT2_DRV_SOUND = 9,
+	VFT2_DRV_COMM = 10,
+	VFT2_DRV_INPUTMETHOD = 11,
+	VFT2_FONT_RASTER = 1,
+	VFT2_FONT_VECTOR = 2,
+	VFT2_FONT_TRUETYPE = 3,
+} VS_FileSubtype;
+
+/**
+ * Version info resource. (fixed-size data section)
+ */
+#pragma pack(1)
+typedef struct PACKED _VS_FIXEDFILEINFO {
+	uint32_t dwSignature;
+	uint32_t dwStrucVersion;
+	uint32_t dwFileVersionMS;
+	uint32_t dwFileVersionLS;
+	uint32_t dwProductVersionMS;
+	uint32_t dwProductVersionLS;
+	uint32_t dwFileFlagsMask;
+	uint32_t dwFileFlags;
+	uint32_t dwFileOS;
+	uint32_t dwFileType;
+	uint32_t dwFileSubtype;
+	uint32_t dwFileDateMS;
+	uint32_t dwFileDateLS;
+} _VS_FIXEDFILEINFO;
+#pragma pack()
 
 #ifdef __cplusplus
 }

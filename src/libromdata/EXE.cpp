@@ -42,8 +42,10 @@
 // C++ includes.
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -93,6 +95,13 @@ class EXEPrivate : public RomDataPrivate
 		// PE section headers.
 		ao::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
+		// Address of the .rsrc section.
+		uint32_t rsrc_addr;
+		// Resource types. (Top-level directory.)
+		ao::uvector<IMAGE_RESOURCE_DIRECTORY> pe_res_types;
+		// Map of resource type to pe_res_types index.
+		unordered_map<uint32_t, int> map_pe_res_types;
+
 		/**
 		 * Load the PE section table.
 		 *
@@ -102,6 +111,12 @@ class EXEPrivate : public RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadPESectionTable(void);
+
+		/**
+		 * Load the top-level PE resource directory.
+		 * @return Number of resource types, or 0 if no resources.
+		 */
+		int loadPEResourceTypes(void);
 };
 
 /** EXEPrivate **/
@@ -109,6 +124,7 @@ class EXEPrivate : public RomDataPrivate
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
 	, exeType(EXE_TYPE_UNKNOWN)
+	, rsrc_addr(0)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
@@ -186,6 +202,125 @@ int EXEPrivate::loadPESectionTable(void)
 
 	// Section headers have been read.
 	return ret;
+}
+
+/**
+ * Load the top-level PE resource directory.
+ * @return Number of resource types, or 0 if no resources.
+ */
+int EXEPrivate::loadPEResourceTypes(void)
+{
+	// TODO: Separate class to read resources?
+
+	// Make sure the section table is loaded.
+	if (pe_sections.empty()) {
+		int ret = loadPESectionTable();
+		if (ret != 0) {
+			// Unable to load the section table.
+			return 0;
+		}
+	}
+
+	if (!pe_res_types.empty()) {
+		// PE resource directory is already loaded.
+		return (int)pe_res_types.size();
+	} else if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	}
+
+	// Find the .rsrc section.
+	// TODO: Move to loadPESectionTable()?
+	const IMAGE_SECTION_HEADER *rsrc = nullptr;
+	for (int i = (int)pe_sections.size()-1; i >= 0; i--) {
+		const IMAGE_SECTION_HEADER *section = &pe_sections[i];
+		if (!strcmp(section->Name, ".rsrc")) {
+			// Found the .rsrc section.
+			rsrc = section;
+			break;
+		}
+	}
+
+	if (!rsrc) {
+		// No .rsrc section.
+		return 0;
+	}
+
+	// Load the root resource directory.
+	IMAGE_RESOURCE_DIRECTORY root;
+	rsrc_addr = le32_to_cpu(rsrc->PointerToRawData);
+	int ret = file->seek(rsrc_addr);
+	if (ret != 0) {
+		// Seek error.
+		return 0;
+	}
+	size_t size = file->read(&root, sizeof(root));
+	if (size != sizeof(root)) {
+		// Read error;
+		return 0;
+	}
+
+	// Total number of entries.
+	unsigned int entryCount = le16_to_cpu(root.NumberOfNamedEntries) + le16_to_cpu(root.NumberOfIdEntries);
+	assert(entryCount <= 64);
+	if (entryCount > 64) {
+		// Sanity check; constrain to 64 entries.
+		entryCount = 64;
+	}
+	uint32_t szToRead = (uint32_t)(entryCount * sizeof(IMAGE_RESOURCE_DIRECTORY_ENTRY));
+	IMAGE_RESOURCE_DIRECTORY_ENTRY *irdEntries = static_cast<IMAGE_RESOURCE_DIRECTORY_ENTRY*>(malloc(szToRead));
+	size = file->read(irdEntries, szToRead);
+	if (size != szToRead) {
+		// Read error.
+		free(irdEntries);
+		return 0;
+	}
+
+	// Read each directory header.
+	uint32_t startOfResourceSection = rsrc_addr + sizeof(root);
+	pe_res_types.resize(entryCount);
+	const IMAGE_RESOURCE_DIRECTORY_ENTRY *irdEntry = irdEntries;
+	unsigned int entriesRead = 0;
+	for (unsigned int i = 0; i < entryCount; i++, irdEntry++) {
+		// Skipping any root directory entry that isn't an ID.
+		if (le32_to_cpu(irdEntry->Name) > 0xFFFF) {
+			// Not an ID.
+			continue;
+		} else if (!(le32_to_cpu(irdEntry->OffsetToData) & 0x80000000)) {
+			// Not a subdirectory.
+			continue;
+		}
+
+		// Get the directory address.
+		uint32_t dir_addr = startOfResourceSection + (le32_to_cpu(irdEntry->OffsetToData) & ~0x80000000);
+		// Read the directory entry.
+		ret = file->seek(dir_addr);
+		if (ret != 0) {
+			// Seek error.
+			pe_res_types.clear();
+			free(irdEntries);
+			return 0;
+		}
+		size = file->read(&pe_res_types[entriesRead], sizeof(IMAGE_RESOURCE_DIRECTORY));
+		if (size != sizeof(IMAGE_RESOURCE_DIRECTORY)) {
+			// Read error.
+			pe_res_types.clear();
+			free(irdEntries);
+			return 0;
+		}
+
+		// Directory entry loaded.
+		printf("Resource: type=%04X, addr=%08X\n", le32_to_cpu(irdEntry->Name), dir_addr);
+		entriesRead++;
+	}
+
+	// Shrink the vector in case we skipped some types.
+	pe_res_types.resize(entriesRead);
+
+	return (int)entriesRead;
 }
 
 /** EXE **/
@@ -461,6 +596,8 @@ int EXE::loadFieldData(void)
 				// Error loading the PE section table.
 				// TODO: Show a warning?
 			}
+			// TEST: Load the resource root directory.
+			ret = d->loadPEResourceTypes();
 
 			// Common PE 32/64 fields.
 			// TODO: bsearch()?
