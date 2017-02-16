@@ -212,15 +212,6 @@ int EXEPrivate::loadPEResourceTypes(void)
 {
 	// TODO: Separate class to read resources?
 
-	// Make sure the section table is loaded.
-	if (pe_sections.empty()) {
-		int ret = loadPESectionTable();
-		if (ret != 0) {
-			// Unable to load the section table.
-			return 0;
-		}
-	}
-
 	if (!pe_res_types.empty()) {
 		// PE resource directory is already loaded.
 		return (int)pe_res_types.size();
@@ -230,6 +221,15 @@ int EXEPrivate::loadPEResourceTypes(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
+	}
+
+	// Make sure the section table is loaded.
+	if (pe_sections.empty()) {
+		int ret = loadPESectionTable();
+		if (ret != 0) {
+			// Unable to load the section table.
+			return 0;
+		}
 	}
 
 	// Find the .rsrc section.
