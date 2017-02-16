@@ -275,7 +275,7 @@ ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER64, 240);
  * All fields are little-endian.
  */
 #pragma pack(1)
-typedef struct _IMAGE_NT_HEADERS32 {
+typedef struct PACKED _IMAGE_NT_HEADERS32 {
 	uint32_t Signature;
 	IMAGE_FILE_HEADER FileHeader;
 	IMAGE_OPTIONAL_HEADER32 OptionalHeader;
@@ -288,7 +288,7 @@ ASSERT_STRUCT(IMAGE_NT_HEADERS32, 248);
  * All fields are little-endian.
  */
 #pragma pack(1)
-typedef struct _IMAGE_NT_HEADERS64 {
+typedef struct PACKED _IMAGE_NT_HEADERS64 {
 	uint32_t Signature;
 	IMAGE_FILE_HEADER FileHeader;
 	IMAGE_OPTIONAL_HEADER64 OptionalHeader;
