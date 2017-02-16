@@ -29,6 +29,10 @@
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
@@ -87,8 +91,7 @@ class EXEPrivate : public RomDataPrivate
 		#pragma pack()
 
 		// PE section headers.
-		// TODO: Use ao::uvector<>?
-		vector<IMAGE_SECTION_HEADER> pe_sections;
+		ao::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
 		/**
 		 * Load the PE section table.
