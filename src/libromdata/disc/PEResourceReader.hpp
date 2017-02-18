@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_PERESOURCEREADER_HPP__
 
 #include "IPartition.hpp"
+#include "../exe_structs.h"
 
 namespace LibRomData {
 
@@ -118,6 +119,15 @@ class PEResourceReader : public IPartition
 		 * @return IRpFile*, or nullptr on error.
 		 */
 		IRpFile *open(uint16_t type, int id, int lang);
+
+		/**
+		 * Load a VS_VERSION_INFO resource.
+		 * @param id		[in] Resource ID. (-1 for "first entry")
+		 * @param lang		[in] Language ID. (-1 for "first entry")
+		 * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi);
 };
 
 }

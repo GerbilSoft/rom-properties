@@ -120,24 +120,6 @@ class EXEPrivate : public RomDataPrivate
 		int loadPEResourceTypes(void);
 
 		/**
-		 * Add fields for the PE version resource.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int addFields_PEVersionResource(void);
-
-		/**
-		 * Read the header for a PE version resource.
-		 *
-		 * The file pointer will be advanced past the header.
-		 *
-		 * @param file		[in] PE version resource.
-		 * @param key		[in] Expected header name.
-		 * @param pSectLen	[out] Section length.
-		 * @return 0 if the header matches; non-zero on error.
-		 */
-		int readPEVersionResourceHeader(IRpFile *file, const char16_t *key, uint16_t *pSectLen);
-
-		/**
 		 * Add fields for PE and PE32+ executables.
 		 */
 		void addFields_PE(void);
@@ -299,111 +281,13 @@ int EXEPrivate::loadPEResourceTypes(void)
 }
 
 /**
- * Add fields for the PE version resource.
- * @return 0 on success; negative POSIX error code on error.
+ * Add fields for PE and PE32+ executables.
  */
-int EXEPrivate::addFields_PEVersionResource(void)
-{
-	// Reference: https://sourceware.org/git/?p=binutils.git;a=blob;f=binutils/resbin.c;hb=a0a1bb07cb2c03b7d34f12e734c6f363ddb7c7b2
-	if (!rsrcReader) {
-		// Resource reader isn't open.
-		printf("not open\n");
-		return -EIO;
-	}
-
-	unique_ptr<IRpFile> f_ver(rsrcReader->open(RT_VERSION, VS_VERSION_INFO, -1));
-	if (!f_ver) {
-		printf("noent\n");
-		return -ENOENT;
-	}
-
-
-	// Read the version header.
-	const char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
-	uint16_t sectLen;
-	int ret = readPEVersionResourceHeader(f_ver.get(), vsvi, &sectLen);
-	if (ret != 0) {
-		// Header is incorrect.
-		printf("header err\n");
-		return ret;
-	}
-
-	return 0;
-}
-
-/**
- * Read the header for a PE version resource.
- *
- * The file pointer will be advanced past the header.
- *
- * @param file		[in] PE version resource.
- * @param key		[in] Expected header name.
- * @param pSectLen	[out] Section length.
- * @return 0 if the header matches; non-zero on error.
- */
-int EXEPrivate::readPEVersionResourceHeader(IRpFile *file, const char16_t *key, uint16_t *pSectLen)
-{
-	// Read fields.
-	uint16_t fields[3];	// len, sectlen, type
-	size_t size = file->read(fields, sizeof(fields));
-	if (size != sizeof(fields)) {
-		// Read error.
-		return -EIO;
-	}
-
-	uint16_t type = le16_to_cpu(fields[2]);
-	if (type != 0) {
-		// Only version 0 is supported.
-		return -EIO;
-	}
-
-	// Check the key name.
-	unsigned int key_len = u16_strlen(key);
-	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
-	unique_ptr<char16_t> keyData(static_cast<char16_t*>(malloc(keyData_len)));
-	// Make sure we read a multiple of 4 bytes.
-	keyData_len = (keyData_len + 3) & ~3;
-	size = file->read(keyData.get(), keyData_len);
-	if (size != keyData_len) {
-		// Read error.
-		return -EIO;
-	}
-
-	// Verify that the strings are equal.
-	// NOTE: Win32 is always UTF-16LE, so we have to
-	// adjust for endianness.
-	const char16_t *pKeyData = keyData.get();
-	for (unsigned int i = key_len; i > 0; i--, pKeyData++, key++) {
-		if (le16_to_cpu(*pKeyData) != *key) {
-			// Key mismatch.
-			return -EIO;
-		}
-	}
-	if (*pKeyData != 0) {
-		// Not NULL terminated.
-		return -EIO;
-	}
-
-	// Header read successfully.
-	*pSectLen = le16_to_cpu(fields[1]);
-	return 0;
-}
-
 void EXEPrivate::addFields_PE(void)
 {
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
-
-	// TEST: Load the PE section table.
-	// Not currently used.
-	int ret = loadPESectionTable();
-	if (ret != 0) {
-		// Error loading the PE section table.
-		// TODO: Show a warning?
-	}
-	// TEST: Load the resource root directory.
-	ret = loadPEResourceTypes();
 
 	const uint16_t machine = le16_to_cpu(pe.FileHeader.Machine);
 	const uint16_t pe_flags = le16_to_cpu(pe.FileHeader.Characteristics);
@@ -525,8 +409,18 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(_RP("DLL Flags"),
 		v_dll_flags_names, dll_flags_columns, dll_flags);
 
+	// Load resources.
+	int ret = loadPEResourceTypes();
+	if (ret != 0) {
+		// Unable to load resources.
+		// We're done here.
+		return;
+	}
+
 	// Load the version resource.
-	printf("%d\n", addFields_PEVersionResource());
+	VS_FIXEDFILEINFO vsffi;
+	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi);
+	printf("ret: %d\n", ret);
 }
 
 /** EXE **/

@@ -22,8 +22,9 @@
 #include "PEResourceReader.hpp"
 #include "../exe_structs.h"
 
-#include "byteswap.h"
 #include "common.h"
+#include "byteswap.h"
+#include "TextFuncs.hpp"
 #include "../file/IRpFile.hpp"
 #include "PartitionFile.hpp"
 
@@ -115,6 +116,18 @@ class PEResourceReaderPrivate
 		 * @return Resource directory, or nullptr if not found.
 		 */
 		const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
+
+		/**
+		 * Read the header for a PE version resource.
+		 *
+		 * The file pointer will be advanced past the header.
+		 *
+		 * @param file		[in] PE version resource.
+		 * @param key		[in] Expected header name.
+		 * @param pSectLen	[out] Section length.
+		 * @return 0 if the header matches; non-zero on error.
+		 */
+		static int load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t *pSectLen);
 };
 
 /** PEResourceReaderPrivate **/
@@ -331,6 +344,64 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 	rsrc_dir_t *id_dir = &(iter_type_and_id.first->second);
 	loadResDir(id_addr, *id_dir);
 	return id_dir;
+}
+
+/**
+ * Read the header for a PE version resource.
+ *
+ * The file pointer will be advanced past the header.
+ *
+ * @param file		[in] PE version resource.
+ * @param key		[in] Expected header name.
+ * @param pSectLen	[out] Section length.
+ * @return 0 if the header matches; non-zero on error.
+ */
+int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t *pSectLen)
+{
+	// Read fields.
+	uint16_t fields[3];	// len, sectlen, type
+	size_t size = file->read(fields, sizeof(fields));
+	if (size != sizeof(fields)) {
+		// Read error.
+		return -EIO;
+	}
+
+	uint16_t type = le16_to_cpu(fields[2]);
+	if (type != 0) {
+		// Only version 0 is supported.
+		return -EIO;
+	}
+
+	// Check the key name.
+	unsigned int key_len = u16_strlen(key);
+	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
+	unique_ptr<char16_t> keyData(static_cast<char16_t*>(malloc(keyData_len)));
+	// Make sure we read a multiple of 4 bytes.
+	keyData_len = (keyData_len + 3) & ~3;
+	size = file->read(keyData.get(), keyData_len);
+	if (size != keyData_len) {
+		// Read error.
+		return -EIO;
+	}
+
+	// Verify that the strings are equal.
+	// NOTE: Win32 is always UTF-16LE, so we have to
+	// adjust for endianness.
+	const char16_t *pKeyData = keyData.get();
+	for (unsigned int i = key_len; i > 0; i--, pKeyData++, key++) {
+		if (le16_to_cpu(*pKeyData) != *key) {
+			// Key mismatch.
+			return -EIO;
+		}
+	}
+	if (*pKeyData != 0) {
+		// Not NULL terminated.
+		return -EIO;
+	}
+
+	// Header read successfully.
+	*pSectLen = le16_to_cpu(fields[1]);
+	return 0;
 }
 
 /** PEResourceReader **/
@@ -565,6 +636,71 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	// and size as the file parameters.
 	// TODO: Set the codepage somewhere?
 	return new PartitionFile(this, data_addr, le32_to_cpu(irdata.Size));
+}
+
+/**
+ * Load a VS_VERSION_INFO resource.
+ * @param id		[in] Resource ID. (-1 for "first entry")
+ * @param lang		[in] Language ID. (-1 for "first entry")
+ * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
+ * @return 0 on success; non-zero on error.
+ */
+int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi)
+{
+	assert(pVsFfi != nullptr);
+	if (!pVsFfi) {
+		// Invalid parameters.
+		return -EINVAL;
+	}
+
+	// Open the VS_VERSION_INFO resource.
+	unique_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	if (!f_ver) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Read the version header.
+	const char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
+	uint16_t sectLen;
+	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, &sectLen);
+	if (ret != 0) {
+		// Header is incorrect.
+		return ret;
+	}
+
+	// Verify the section size.
+	if (sectLen != sizeof(*pVsFfi)) {
+		// Wrong size.
+		return -EIO;
+	}
+
+	// Read the version information.
+	size_t size = f_ver->read(pVsFfi, sizeof(*pVsFfi));
+	if (size != sizeof(*pVsFfi)) {
+		// Read error.
+		return -EIO;
+	}
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the fields.
+	pVsFfi->dwSignature		= le32_to_cpu(pVsFfi->dwSignature);
+	pVsFfi->dwStrucVersion		= le32_to_cpu(pVsFfi->dwStrucVersion);
+	pVsFfi->dwFileVersionMS		= le32_to_cpu(pVsFfi->dwFileVersionMS);
+	pVsFfi->dwFileVersionLS		= le32_to_cpu(pVsFfi->dwFileVersionLS);
+	pVsFfi->dwProductVersionMS	= le32_to_cpu(pVsFfi->dwProductVersionMS);
+	pVsFfi->dwProductVersionLS	= le32_to_cpu(pVsFfi->dwProductVersionLS);
+	pVsFfi->dwFileFlagsMask		= le32_to_cpu(pVsFfi->dwFileFlagsMask);
+	pVsFfi->dwFileFlags		= le32_to_cpu(pVsFfi->dwFileFlags);
+	pVsFfi->dwFileOS		= le32_to_cpu(pVsFfi->dwFileOS);
+	pVsFfi->dwFileType		= le32_to_cpu(pVsFfi->dwFileType);
+	pVsFfi->dwFileSubtype		= le32_to_cpu(pVsFfi->dwFileSubtype);
+	pVsFfi->dwFileDateMS		= le32_to_cpu(pVsFfi->dwFileDateMS);
+	pVsFfi->dwFileDateLS		= le32_to_cpu(pVsFfi->dwFileDateLS);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	// Version information read successfully.
+	return 0;
 }
 
 }
