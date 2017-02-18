@@ -41,8 +41,9 @@ class PEResourceReader : public IPartition
 		 * @param file IRpFile.
 		 * @param rsrc_addr .rsrc section start offset.
 		 * @param rsrc_size .rsrc section size.
+		 * @param rsrc_va .rsrc virtual address.
 		 */
-		PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size);
+		PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 		~PEResourceReader();
 
 	private:

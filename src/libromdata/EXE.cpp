@@ -259,7 +259,8 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// NOTE: .rsrc address and size are validated by PEResourceReader.
 	rsrcReader = new PEResourceReader(file,
 		le32_to_cpu(rsrc->PointerToRawData),
-		le32_to_cpu(rsrc->SizeOfRawData));
+		le32_to_cpu(rsrc->SizeOfRawData),
+		le32_to_cpu(rsrc->VirtualAddress));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the .rsrc section.
 		int err = rsrcReader->lastError();
@@ -671,6 +672,9 @@ int EXE::loadFieldData(void)
 				dll_flags_names, ARRAY_SIZE(dll_flags_names));
 			d->fields->addField_bitfield(_RP("DLL Flags"),
 				v_dll_flags_names, dll_flags_columns, dll_flags);
+
+			// Attempt to load the version resource.
+			d->rsrcReader->open(RT_VERSION, VS_VERSION_INFO, -1);
 			break;
 		}
 

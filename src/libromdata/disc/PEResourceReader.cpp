@@ -23,7 +23,9 @@
 #include "../exe_structs.h"
 
 #include "byteswap.h"
+#include "common.h"
 #include "../file/IRpFile.hpp"
+#include "PartitionFile.hpp"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -34,8 +36,10 @@
 
 // C++ includes.
 #include <memory>
+#include <unordered_map>
 #include <vector>
 using std::unique_ptr;
+using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
@@ -44,7 +48,7 @@ class PEResourceReaderPrivate
 {
 	public:
 		PEResourceReaderPrivate(PEResourceReader *q, IRpFile *file,
-			uint32_t rsrc_addr, uint32_t rsrc_size);
+			uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 
 	private:
 		RP_DISABLE_COPY(PEResourceReaderPrivate)
@@ -58,6 +62,7 @@ class PEResourceReaderPrivate
 		// .rsrc section.
 		uint32_t rsrc_addr;
 		uint32_t rsrc_size;
+		uint32_t rsrc_va;
 
 		// Read position.
 		int64_t pos;
@@ -74,6 +79,16 @@ class PEResourceReaderPrivate
 		// Resource types. (Top-level directory.)
 		rsrc_dir_t res_types;
 
+		// Cached top-level directories. (type)
+		// Key: type
+		// Value: Resources contained within the directory.
+		unordered_map<uint16_t, rsrc_dir_t> type_dirs;
+
+		// Cached second-level directories. (type and ID)
+		// Key: LOWORD == type, HIWORD == id
+		// Value: Resources contained within the directory.
+		unordered_map<uint32_t, rsrc_dir_t> type_and_id_dirs;
+
 		/**
 		 * Load a resource directory.
 		 *
@@ -85,17 +100,34 @@ class PEResourceReaderPrivate
 		 * @return Number of entries loaded, or negative POSIX error code on error.
 		 */
 		int loadResDir(uint32_t addr, rsrc_dir_t &dir);
+
+		/**
+		 * Get the resource directory for the specified type.
+		 * @param type Resource type.
+		 * @return Resource directory, or nullptr if not found.
+		 */
+		const rsrc_dir_t *getTypeDir(uint16_t type);
+
+		/**
+		 * Get the resource directory for the specified type and ID.
+		 * @param type Resource type.
+		 * @param id Resource ID.
+		 * @return Resource directory, or nullptr if not found.
+		 */
+		const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
 };
 
 /** PEResourceReaderPrivate **/
 
 PEResourceReaderPrivate::PEResourceReaderPrivate(
 		PEResourceReader *q, IRpFile *file,
-		uint32_t rsrc_addr, uint32_t rsrc_size)
+		uint32_t rsrc_addr, uint32_t rsrc_size,
+		uint32_t rsrc_va)
 	: q_ptr(q)
 	, file(file)
 	, rsrc_addr(rsrc_addr)
 	, rsrc_size(rsrc_size)
+	, rsrc_va(rsrc_va)
 	, pos(0)
 {
 	if (!file) {
@@ -175,7 +207,6 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	}
 
 	// Read each directory header.
-	uint32_t startOfResourceSection = addr + sizeof(root);
 	dir.resize(entryCount);
 	const IMAGE_RESOURCE_DIRECTORY_ENTRY *irdEntry = irdEntries.get();
 	unsigned int entriesRead = 0;
@@ -192,7 +223,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 		entry.id = (uint16_t)id;
 		// addr points to IMAGE_RESOURCE_DIRECTORY
 		// or IMAGE_RESOURCE_DATA_ENTRY.
-		entry.addr = startOfResourceSection + le32_to_cpu(irdEntry->OffsetToData);
+		entry.addr = le32_to_cpu(irdEntry->OffsetToData);
 
 		// Next entry.
 		entriesRead++;
@@ -201,6 +232,105 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	// Shrink the vector in case we skipped some types.
 	dir.resize(entriesRead);
 	return (int)entriesRead;
+}
+
+/**
+ * Get the resource directory for the specified type.
+ * @param type Resource type.
+ * @return Resource directory, or nullptr if not found.
+ */
+const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(uint16_t type)
+{
+	// Check if the type is already cached.
+	auto iter_td = type_dirs.find(type);
+	if (iter_td != type_dirs.end()) {
+		// Type is already cached.
+		return &(iter_td->second);
+	}
+
+	// Not cached. Find the type in the root directory.
+	uint32_t type_addr = 0;
+	for (auto iter_root = res_types.cbegin();
+	     iter_root != res_types.cend(); ++iter_root)
+	{
+		if (iter_root->id == type) {
+			// Found the type.
+			if (!(iter_root->addr & 0x80000000)) {
+				// Not a subdirectory.
+				return nullptr;
+			}
+			type_addr = (iter_root->addr & ~0x80000000);
+			break;
+		}
+	}
+	if (type_addr == 0) {
+		// Not found.
+		return nullptr;
+	}
+
+	// Load the directory.
+	auto iter_type = type_dirs.insert(std::make_pair(type, rsrc_dir_t()));
+	if (!iter_type.second) {
+		// Error adding to the map.
+		return nullptr;
+	}
+	rsrc_dir_t *type_dir = &(iter_type.first->second);
+	loadResDir(type_addr, *type_dir);
+	return type_dir;
+}
+
+/**
+ * Get the resource directory for the specified type and ID.
+ * @param type Resource type.
+ * @param id Resource ID.
+ * @return Resource directory, or nullptr if not found.
+ */
+const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir(uint16_t type, uint16_t id)
+{
+	// Check if the type and ID is already cached.
+	uint32_t type_and_id = (type | ((uint32_t)id << 16));
+	auto iter_td = type_and_id_dirs.find(type_and_id);
+	if (iter_td != type_and_id_dirs.end()) {
+		// Type and ID is already cached.
+		return &(iter_td->second);
+	}
+
+	// Not cached. Find the type in the root directory.
+	const rsrc_dir_t *type_dir = getTypeDir(type);
+	if (!type_dir) {
+		// Type not found.
+		return nullptr;
+	}
+
+	// Find the ID in the type directory.
+	uint32_t id_addr = 0;
+	for (auto iter_type = type_dir->cbegin();
+	     iter_type != type_dir->cend(); ++iter_type)
+	{
+		if (iter_type->id == id) {
+			// Found the ID.
+			if (!(iter_type->addr & 0x80000000)) {
+				// Not a subdirectory.
+				return nullptr;
+			}
+			id_addr = (iter_type->addr & ~0x80000000);
+			break;
+		}
+	}
+	if (id_addr == 0) {
+		// Not found.
+		return nullptr;
+	}
+
+	// Load the directory.
+	auto iter_type_and_id = type_and_id_dirs.insert(std::make_pair(type_and_id, rsrc_dir_t()));
+	if (!iter_type_and_id.second) {
+		// Error adding to the map.
+		return nullptr;
+	}
+	rsrc_dir_t *id_dir = &(iter_type_and_id.first->second);
+	loadResDir(id_addr, *id_dir);
+	return id_dir;
 }
 
 /** PEResourceReader **/
@@ -214,9 +344,10 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
  * @param file IRpFile.
  * @param rsrc_addr .rsrc section start offset.
  * @param rsrc_size .rsrc section size.
+ * @param rsrc_va .rsrc virtual address.
  */
-PEResourceReader::PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size)
-	: d_ptr(new PEResourceReaderPrivate(this, file, rsrc_addr, rsrc_size))
+PEResourceReader::PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va)
+	: d_ptr(new PEResourceReaderPrivate(this, file, rsrc_addr, rsrc_size, rsrc_va))
 { }
 
 PEResourceReader::~PEResourceReader()
@@ -364,10 +495,75 @@ int64_t PEResourceReader::partition_size_used(void) const
  */
 IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 {
-	// TODO
-	assert(!"PEResourceReader::open() isn't implemented.");
-	m_lastError = -ENOTSUP;
-	return nullptr;
+	// Check if the directory has been cached.
+	RP_D(PEResourceReader);
+
+	if (id == -1) {
+		// Get the first ID for this type.
+		const PEResourceReaderPrivate::rsrc_dir_t *type_dir = d->getTypeDir(type);
+		if (!type_dir || type_dir->empty())
+			return nullptr;
+		id = type_dir->at(0).id;
+	}
+
+	// Get the directory for the type and ID.
+	const PEResourceReaderPrivate::rsrc_dir_t *type_id_dir = d->getTypeIdDir(type, (uint16_t)id);
+	if (!type_id_dir || type_id_dir->empty())
+		return nullptr;
+
+	const PEResourceReaderPrivate::ResDirEntry *dirEntry;
+	if (lang == -1) {
+		// Get the first language for this type.
+		dirEntry = &type_id_dir->at(0);
+	} else {
+		// Find the specified language ID.
+		for (auto iter = type_id_dir->cbegin();
+		     iter != type_id_dir->cend(); ++iter)
+		{
+			if (iter->id == (uint16_t)lang) {
+				// Found the language ID.
+				dirEntry = &(*iter);
+				break;
+			}
+		}
+
+		if (!dirEntry) {
+			// Not found.
+			return nullptr;
+		}
+	}
+
+	// Make sure this is a file.
+	assert(!(dirEntry->addr & 0x80000000));
+	if (dirEntry->addr & 0x80000000) {
+		// This is a subdirectory.
+		return nullptr;
+	}
+
+	// Get the IMAGE_RESOURCE_DATA_ENTRY.
+	IMAGE_RESOURCE_DATA_ENTRY irdata;
+	int ret = d->file->seek(d->rsrc_addr + dirEntry->addr);
+	if (ret != 0) {
+		// Seek error.
+		m_lastError = d->file->lastError();
+		return nullptr;
+	}
+	size_t size = d->file->read(&irdata, sizeof(irdata));
+	if (size != sizeof(irdata)) {
+		// Read error.
+		m_lastError = d->file->lastError();
+		return nullptr;
+	}
+
+	// NOTE: OffsetToData is an RVA, not relative to the physical address.
+	const uint32_t data_addr = le32_to_cpu(irdata.OffsetToData) - d->rsrc_va + d->rsrc_addr;
+
+	// Create the PartitionFile.
+	// This is an IRpFile implementation that uses an
+	// IPartition as the reader and takes an offset
+	// and size as the file parameters.
+	// TODO: Set the codepage somewhere?
+	return new PartitionFile(this, data_addr, le32_to_cpu(irdata.Size));
 }
 
 }
