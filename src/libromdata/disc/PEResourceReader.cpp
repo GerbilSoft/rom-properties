@@ -682,10 +682,19 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 		return -EIO;
 	}
 
+	// Verify the signature and structure version.
+	pVsFfi->dwSignature	= le32_to_cpu(pVsFfi->dwSignature);
+	pVsFfi->dwStrucVersion	= le32_to_cpu(pVsFfi->dwStrucVersion);
+	if (pVsFfi->dwSignature != VS_FFI_SIGNATURE ||
+	    pVsFfi->dwStrucVersion != VS_FFI_STRUCVERSION)
+	{
+		// Signature and/or structure version is incorrect.
+		// TODO: Better error code?
+		return -EIO;
+	}
+
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	// Byteswap the fields.
-	pVsFfi->dwSignature		= le32_to_cpu(pVsFfi->dwSignature);
-	pVsFfi->dwStrucVersion		= le32_to_cpu(pVsFfi->dwStrucVersion);
+	// Byteswap the remaining fields.
 	pVsFfi->dwFileVersionMS		= le32_to_cpu(pVsFfi->dwFileVersionMS);
 	pVsFfi->dwFileVersionLS		= le32_to_cpu(pVsFfi->dwFileVersionLS);
 	pVsFfi->dwProductVersionMS	= le32_to_cpu(pVsFfi->dwProductVersionMS);
