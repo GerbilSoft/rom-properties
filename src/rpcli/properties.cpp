@@ -149,25 +149,52 @@ public:
 		if (!romField->desc.bitfield.names) {
 			return os << "[ERROR: No bitfield names.]";
 		}
-		int perRow = (bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4);
+		const int perRow = (bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4);
 
+		// TODO: Remove bitfieldDesc.elements?
 		unique_ptr<size_t[]> colSize(new size_t[perRow]());
 		int count = bitfieldDesc.elements;
 		assert(count <= (int)bitfieldDesc.names->size());
 		if (count > (int)bitfieldDesc.names->size()) {
 			count = (int)bitfieldDesc.names->size();
 		}
-		for (int i = 0; i < count; i++) {
-			colSize[i%perRow] = max(bitfieldDesc.names->at(i).size(), colSize[i%perRow]);
+
+		// Determine the column widths.
+		int col = 0;
+		for (int bit = 0; bit < count; bit++) {
+			const rp_string &name = bitfieldDesc.names->at(bit);
+			if (name.empty())
+				continue;
+
+			colSize[col] = max(name.size(), colSize[col]);
+			col++;
+			if (col == perRow) {
+				col = 0;
+			}
 		}
 
+		// Print the bits.
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
 		os << left;
-		for (int i = 0; i < bitfieldDesc.elements; i++) {
-			if (i && i%perRow == 0) os << endl << Pad(field.width);
-			os << " [" << ((romField->data.bitfield & (1 << i)) ? '*' : ' ') << "] " <<
-				setw(colSize[i%perRow]) << bitfieldDesc.names->at(i);
+		col = 0;
+		for (int bit = 0; bit < count; bit++) {
+			const rp_string &name = bitfieldDesc.names->at(bit);
+			if (name.empty())
+				continue;
+
+			// Update the current column number before printing.
+			// This prevents an empty row from being printed
+			// if the number of valid elements is divisible by
+			// the column count.
+			if (col == perRow) {
+				os << endl << Pad(field.width);
+				col = 0;
+			}
+
+			os << " [" << ((romField->data.bitfield & (1 << bit)) ? '*' : ' ') << "] " <<
+				setw(colSize[col]) << name;
+			col++;
 		}
 		return os;
 	}
@@ -467,14 +494,21 @@ public:
 				assert(bitfieldDesc.names != nullptr);
 				if (bitfieldDesc.names) {
 					os << '[';
+					// TODO: Remove bitfieldDesc.elements?
 					int count = bitfieldDesc.elements;
 					assert(count <= (int)bitfieldDesc.names->size());
 					if (count > (int)bitfieldDesc.names->size()) {
 						count = (int)bitfieldDesc.names->size();
 					}
-					for (int j = 0; j < count; j++) {
-						if (j) os << ",";
-						os << JSONString(bitfieldDesc.names->at(j).c_str());
+					bool printedOne = false;
+					for (int bit = 0; bit < count; bit++) {
+						const rp_string &name = bitfieldDesc.names->at(bit);
+						if (name.empty())
+							continue;
+
+						if (printedOne) os << ",";
+						printedOne = true;
+						os << JSONString(name.c_str());
 					}
 					os << ']';
 				} else {
