@@ -114,6 +114,12 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * @return Title index, or -1 on error.
 		 */
 		int getTitleIndex(void) const;
+
+		/**
+		 * Check the NDS Secure Area type.
+		 * @return Secure area type.
+		 */
+		const rp_char *checkNDSSecureArea(void);
 };
 
 /** NintendoDSPrivate **/
@@ -325,8 +331,6 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	return icon_first_frame;
 }
 
-/** NintendoDS **/
-
 /**
  * Get the title index.
  * The title that most closely matches the
@@ -414,6 +418,87 @@ int NintendoDSPrivate::getTitleIndex(void) const
 
 	return lang;
 }
+
+/**
+ * Check the NDS Secure Area type.
+ * @return Secure area type, or nullptr if unknown.
+ */
+const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
+{
+	// Read the start of the Secure Area.
+	uint32_t secure_area[2];
+	int ret = file->seek(0x4000);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+	size_t size = file->read(secure_area, sizeof(secure_area));
+	if (size != sizeof(secure_area)) {
+		// Read error.
+		return nullptr;
+	}
+
+	// Reference: https://github.com/devkitPro/ndstool/blob/master/source/header.cpp#L39
+
+	// Byteswap the Secure Area start.
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	secure_area[0] = le32_to_cpu(secure_area[0]);
+	secure_area[1] = le32_to_cpu(secure_area[1]);
+#endif
+
+	const rp_char *secType = nullptr;
+	bool needs_encryption = false;
+	if (le32_to_cpu(romHeader.arm9.rom_offset) < 0x4000) {
+		// ARM9 secure area is not present.
+		// This is only valid for homebrew.
+		secType = _RP("Homebrew");
+	} else if (secure_area[0] == 0x00000000 && secure_area[1] == 0x00000000) {
+		// Secure area is empty. (DS Download Play)
+		secType = _RP("Multiboot");
+	} else if (secure_area[0] == 0xE7FFDEFF && secure_area[1] == 0xE7FFDEFF) {
+		// Secure area is decrypted.
+		// Probably dumped using wooddumper or Decrypt9WIP.
+		secType = _RP("Decrypted");
+		needs_encryption = true;	// CRC requires encryption.
+	} else {
+		// Make sure 0x1000-0x3FFF is blank.
+		// NOTE: ndstool checks 0x0200-0x0FFF, but this may
+		// contain extra data for DSi-enhanced ROMs, or even
+		// for regular DS games released after the DSi.
+		uint32_t blank_area[0x3000/4];
+		ret = file->seek(0x1000);
+		if (ret != 0) {
+			// Seek error.
+			return nullptr;
+		}
+		size = file->read(blank_area, sizeof(blank_area));
+		if (size != sizeof(blank_area)) {
+			// Read error.
+			return nullptr;
+		}
+
+		for (int i = ARRAY_SIZE(blank_area)-1; i >= 0; i--) {
+			if (blank_area[i] != 0) {
+				// Not zero. This area is not accessible
+				// on the NDS, so it might be an original
+				// mask ROM dump. Either that, or a Wii U
+				// Virtual Console dump.
+				secType = _RP("Mask ROM");
+				break;
+			}
+		}
+		if (!secType) {
+			// Encrypted ROM dump.
+			secType = _RP("Encrypted");
+		}
+	}
+
+	// TODO: Verify the CRC?
+	// For decrypted ROMs, this requires re-encrypting the secure area.
+	return secType;
+}
+
+/** NintendoDS **/
 
 /**
  * Read a Nintendo DS ROM image.
@@ -637,7 +722,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields->reserve(11);	// Maximum of 11 fields.
 
 	// Game title.
 	d->fields->addField_string(_RP("Title"),
@@ -664,6 +749,15 @@ int NintendoDS::loadFieldData(void)
 	// ROM version.
 	d->fields->addField_string_numeric(_RP("Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
+
+	// Secure Area.
+	// TODO: Verify the CRC.
+	const rp_char *secure_area = d->checkNDSSecureArea();
+	if (secure_area) {
+		d->fields->addField_string(_RP("Secure Area"), secure_area);
+	} else {
+		d->fields->addField_string(_RP("Secure Area"), _RP("Unknown"));
+	}
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
