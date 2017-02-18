@@ -28,10 +28,6 @@
 #include "../file/IRpFile.hpp"
 #include "PartitionFile.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
-
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -42,6 +38,10 @@
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 
 namespace LibRomData {
 
