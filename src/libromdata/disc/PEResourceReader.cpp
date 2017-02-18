@@ -511,7 +511,7 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	if (!type_id_dir || type_id_dir->empty())
 		return nullptr;
 
-	const PEResourceReaderPrivate::ResDirEntry *dirEntry;
+	const PEResourceReaderPrivate::ResDirEntry *dirEntry = nullptr;
 	if (lang == -1) {
 		// Get the first language for this type.
 		dirEntry = &type_id_dir->at(0);
