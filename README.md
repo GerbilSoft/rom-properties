@@ -126,21 +126,18 @@ will be used for thumbnails (and icons on Windows).
 
 * Sega Mega Drive: Plain binary (\*.gen, \*.bin), Super Magic Drive (\*.smd)
 * Sega Dreamcast: Save files (\*.vmi, \*.vms, \*.dci)
-* Nintendo DS(i): Decrypted (\*.nds)
+* Nintendo DS(i): Plain binary (\*.nds, \*.dsi, \*.srl)
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
   CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc), save files (\*.gci, \*.gcs, \*.sav)
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
   CISO disc image (\*.ciso)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
-* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb)
+* Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb, \*.srl)
 * Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv)
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
 * Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
   3DS Virtual Console dumps (\*.tds)
-
-Some file types are not currently registered on Windows due to conflicts with
-well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
 
 ## External Media Downloads
 

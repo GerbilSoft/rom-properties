@@ -659,8 +659,9 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
 vector<const rp_char*> NintendoDS::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
-		_RP(".nds"),
-		_RP(".dsi"),
+		_RP(".nds"),	// Nintendo DS
+		_RP(".dsi"),	// Nintendo DSi (devkitARM r46)
+		_RP(".srl"),	// Official SDK extension
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }

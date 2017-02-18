@@ -232,11 +232,10 @@ const rp_char *GameBoyAdvance::systemName(uint32_t type) const
 vector<const rp_char*> GameBoyAdvance::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
-		_RP(".gba"), _RP(".agb"),
-
-		// NOTE: These extensions may cause conflicts on
-		// Windows if fallback handling isn't working.
-		_RP(".mb"),	// AutoDesk Maya binary scene file
+		_RP(".gba"),	// Most common
+		_RP(".agb"),	// Less common
+		_RP(".mb"),	// Multiboot (may conflict with AutoDesk Maya)
+		_RP(".srl"),	// Official SDK extension
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
