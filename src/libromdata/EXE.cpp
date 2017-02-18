@@ -116,6 +116,11 @@ class EXEPrivate : public RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
 		 */
 		int loadPEResourceTypes(void);
+
+		/**
+		 * Add fields for PE and PE32+ executables.
+		 */
+		void addFields_PE(void);
 };
 
 /** EXEPrivate **/
@@ -271,6 +276,146 @@ int EXEPrivate::loadPEResourceTypes(void)
 
 	// .rsrc section loaded.
 	return 0;
+}
+
+void EXEPrivate::addFields_PE(void)
+{
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
+
+	// TEST: Load the PE section table.
+	// Not currently used.
+	int ret = loadPESectionTable();
+	if (ret != 0) {
+		// Error loading the PE section table.
+		// TODO: Show a warning?
+	}
+	// TEST: Load the resource root directory.
+	ret = loadPEResourceTypes();
+
+	const uint16_t machine = le16_to_cpu(pe.FileHeader.Machine);
+	const uint16_t pe_flags = le16_to_cpu(pe.FileHeader.Characteristics);
+
+	// Get the architecture-specific fields.
+	uint16_t os_ver_major, os_ver_minor;
+	uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
+	uint16_t dll_flags;
+	bool dotnet;
+	if (exeType == EXEPrivate::EXE_TYPE_PE) {
+		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
+		subsystem = le16_to_cpu(pe.OptionalHeader.opt32.Subsystem);
+		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(pe.OptionalHeader.opt32.DllCharacteristics);
+		// TODO: Check VirtualAddress, Size, or both?
+		// 'file' checks VirtualAddress.
+		dotnet = (pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+	} else /*if (exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
+		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
+		subsystem = le16_to_cpu(pe.OptionalHeader.opt64.Subsystem);
+		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(pe.OptionalHeader.opt64.DllCharacteristics);
+		// TODO: Check VirtualAddress, Size, or both?
+		// 'file' checks VirtualAddress.
+		dotnet = (pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+	}
+
+	// CPU. (Also .NET status.)
+	rp_string s_cpu;
+	const rp_char *const cpu = EXEData::lookup_cpu(machine);
+	if (cpu != nullptr) {
+		s_cpu = cpu;
+	} else {
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)%s",
+			machine, (dotnet ? " (.NET)" : ""));
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		s_cpu = (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+	if (dotnet) {
+		// .NET executable.
+		s_cpu += _RP(" (.NET)");
+	}
+	fields->addField_string(_RP("CPU"), s_cpu);
+
+	// OS version.
+	len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	fields->addField_string(_RP("OS Version"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+	// Subsystem names.
+	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
+		nullptr,			// IMAGE_SUBSYSTEM_UNKNOWN
+		"Native",			// IMAGE_SUBSYSTEM_NATIVE
+		"Windows",			// IMAGE_SUBSYSTEM_WINDOWS_GUI
+		"Console",			// IMAGE_SUBSYSTEM_WINDOWS_CUI
+		nullptr,
+		"OS/2 Console",			// IMAGE_SUBSYSTEM_OS2_CUI
+		nullptr,
+		"POSIX Console",		// IMAGE_SUBSYSTEM_POSIX_CUI
+		"Win9x Native Driver",		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+		"Windows CE",			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+		"EFI Application",		// IMAGE_SUBSYSTEM_EFI_APPLICATION
+		"EFI Boot Service Driver",	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+		"EFI Runtime Driver",		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+		"EFI ROM Image",		// IMAGE_SUBSYSTEM_EFI_ROM
+		"Xbox",				// IMAGE_SUBSYSTEM_XBOX
+	};
+
+	// Subsystem name and version.
+	len = snprintf(buf, sizeof(buf), "%s %u.%u",
+		(subsystem < ARRAY_SIZE(subsysNames)
+			? subsysNames[subsystem]
+			: "Unknown"),
+		subsystem_ver_major, subsystem_ver_minor);
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	fields->addField_string(_RP("Subsystem"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+	// PE flags. (characteristics)
+	// NOTE: Only important flags will be listed.
+	static const rp_char *const pe_flags_names[] = {
+		nullptr, _RP("Executable"), nullptr,
+		nullptr, nullptr, _RP(">2GB addressing"),
+		nullptr, nullptr, nullptr,
+		nullptr, nullptr, nullptr,
+		nullptr, _RP("DLL"), nullptr,
+		nullptr
+	};
+	vector<rp_string> *v_pe_flags_names = RomFields::strArrayToVector(
+		pe_flags_names, ARRAY_SIZE(pe_flags_names));
+	fields->addField_bitfield(_RP("PE Flags"),
+		v_pe_flags_names, 3, pe_flags);
+
+	// NOTE: 3 columns is too wide for DLL Flags on Windows.
+#ifdef _WIN32
+	static const int dll_flags_columns = 2;
+#else
+	static const int dll_flags_columns = 3;
+#endif	
+	// DLL flags. (characteristics)
+	static const rp_char *const dll_flags_names[] = {
+		nullptr, nullptr, nullptr,
+		nullptr, nullptr, _RP("High Entropy VA"),
+		_RP("Dynamic Base"), _RP("Force Integrity"), _RP("NX Compatible"),
+		_RP("No Isolation"), _RP("No SEH"), _RP("No Bind"),
+		_RP("AppContainer"), _RP("WDM Driver"), _RP("Control Flow Guard"),
+		_RP("TS Aware"),
+	};
+	vector<rp_string> *v_dll_flags_names = RomFields::strArrayToVector(
+		dll_flags_names, ARRAY_SIZE(dll_flags_names));
+	fields->addField_bitfield(_RP("DLL Flags"),
+		v_dll_flags_names, dll_flags_columns, dll_flags);
+
+	// Attempt to load the version resource.
+	rsrcReader->open(RT_VERSION, VS_VERSION_INFO, -1);
 }
 
 /** EXE **/
@@ -536,147 +681,11 @@ int EXE::loadFieldData(void)
 		d->fields->addField_string(_RP("Type"), _RP("Unknown"));
 	}
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_PE:
-		case EXEPrivate::EXE_TYPE_PE32PLUS: {
-			// TEST: Load the PE section table.
-			// Not currently used.
-			int ret = d->loadPESectionTable();
-			if (ret != 0) {
-				// Error loading the PE section table.
-				// TODO: Show a warning?
-			}
-			// TEST: Load the resource root directory.
-			ret = d->loadPEResourceTypes();
-
-			const uint16_t machine = le16_to_cpu(d->pe.FileHeader.Machine);
-			const uint16_t pe_flags = le16_to_cpu(d->pe.FileHeader.Characteristics);
-
-			// Get the architecture-specific fields.
-			uint16_t os_ver_major, os_ver_minor;
-			uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
-			uint16_t dll_flags;
-			bool dotnet;
-			if (d->exeType == EXEPrivate::EXE_TYPE_PE) {
-				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
-				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
-				subsystem = le16_to_cpu(d->pe.OptionalHeader.opt32.Subsystem);
-				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt32.MajorSubsystemVersion);
-				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt32.MinorSubsystemVersion);
-				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt32.DllCharacteristics);
-				// TODO: Check VirtualAddress, Size, or both?
-				// 'file' checks VirtualAddress.
-				dotnet = (d->pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
-			} else /*if (d->exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
-				os_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
-				os_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
-				subsystem = le16_to_cpu(d->pe.OptionalHeader.opt64.Subsystem);
-				subsystem_ver_major = le16_to_cpu(d->pe.OptionalHeader.opt64.MajorSubsystemVersion);
-				subsystem_ver_minor = le16_to_cpu(d->pe.OptionalHeader.opt64.MinorSubsystemVersion);
-				dll_flags = le16_to_cpu(d->pe.OptionalHeader.opt64.DllCharacteristics);
-				// TODO: Check VirtualAddress, Size, or both?
-				// 'file' checks VirtualAddress.
-				dotnet = (d->pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
-			}
-
-			// CPU. (Also .NET status.)
-			rp_string s_cpu;
-			const rp_char *const cpu = EXEData::lookup_cpu(machine);
-			if (cpu != nullptr) {
-				s_cpu = cpu;
-			} else {
-				len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)%s",
-					machine, (dotnet ? " (.NET)" : ""));
-				if (len > (int)sizeof(buf))
-					len = (int)sizeof(buf);
-				s_cpu = (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-			}
-			if (dotnet) {
-				// .NET executable.
-				s_cpu += _RP(" (.NET)");
-			}
-			d->fields->addField_string(_RP("CPU"), s_cpu);
-
-			// OS version.
-			len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
-			if (len > (int)sizeof(buf))
-				len = (int)sizeof(buf);
-			d->fields->addField_string(_RP("OS Version"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-
-			// Subsystem names.
-			static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
-				nullptr,			// IMAGE_SUBSYSTEM_UNKNOWN
-				"Native",			// IMAGE_SUBSYSTEM_NATIVE
-				"Windows",			// IMAGE_SUBSYSTEM_WINDOWS_GUI
-				"Console",			// IMAGE_SUBSYSTEM_WINDOWS_CUI
-				nullptr,
-				"OS/2 Console",			// IMAGE_SUBSYSTEM_OS2_CUI
-				nullptr,
-				"POSIX Console",		// IMAGE_SUBSYSTEM_POSIX_CUI
-				"Win9x Native Driver",		// IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-				"Windows CE",			// IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-				"EFI Application",		// IMAGE_SUBSYSTEM_EFI_APPLICATION
-				"EFI Boot Service Driver",	// IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-				"EFI Runtime Driver",		// IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-				"EFI ROM Image",		// IMAGE_SUBSYSTEM_EFI_ROM
-				"Xbox",				// IMAGE_SUBSYSTEM_XBOX
-			};
-
-			// Subsystem name and version.
-			len = snprintf(buf, sizeof(buf), "%s %u.%u",
-				(subsystem < ARRAY_SIZE(subsysNames)
-					? subsysNames[subsystem]
-					: "Unknown"),
-				subsystem_ver_major, subsystem_ver_minor);
-			if (len > (int)sizeof(buf))
-				len = (int)sizeof(buf);
-			d->fields->addField_string(_RP("Subsystem"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-
-			// PE flags. (characteristics)
-			// NOTE: Only important flags will be listed.
-			static const rp_char *const pe_flags_names[] = {
-				nullptr, _RP("Executable"), nullptr,
-				nullptr, nullptr, _RP(">2GB addressing"),
-				nullptr, nullptr, nullptr,
-				nullptr, nullptr, nullptr,
-				nullptr, _RP("DLL"), nullptr,
-				nullptr
-			};
-			vector<rp_string> *v_pe_flags_names = RomFields::strArrayToVector(
-				pe_flags_names, ARRAY_SIZE(pe_flags_names));
-			d->fields->addField_bitfield(_RP("PE Flags"),
-				v_pe_flags_names, 3, pe_flags);
-
-                       // NOTE: 3 columns is too wide for DLL Flags on Windows.
-#ifdef _WIN32
-			static const int dll_flags_columns = 2;
-#else
-			static const int dll_flags_columns = 3;
-#endif	
-			// DLL flags. (characteristics)
-			static const rp_char *const dll_flags_names[] = {
-				nullptr, nullptr, nullptr,
-				nullptr, nullptr, _RP("High Entropy VA"),
-				_RP("Dynamic Base"), _RP("Force Integrity"), _RP("NX Compatible"),
-				_RP("No Isolation"), _RP("No SEH"), _RP("No Bind"),
-				_RP("AppContainer"), _RP("WDM Driver"), _RP("Control Flow Guard"),
-				_RP("TS Aware"),
-			};
-			vector<rp_string> *v_dll_flags_names = RomFields::strArrayToVector(
-				dll_flags_names, ARRAY_SIZE(dll_flags_names));
-			d->fields->addField_bitfield(_RP("DLL Flags"),
-				v_dll_flags_names, dll_flags_columns, dll_flags);
-
-			// Attempt to load the version resource.
-			d->rsrcReader->open(RT_VERSION, VS_VERSION_INFO, -1);
+		case EXEPrivate::EXE_TYPE_PE32PLUS:
+			d->addFields_PE();
 			break;
-		}
 
 		default:
 			// TODO: Other executable types.
