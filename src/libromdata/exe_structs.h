@@ -500,7 +500,7 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 	uint32_t dwFileSubtype;
 	uint32_t dwFileDateMS;
 	uint32_t dwFileDateLS;
-} _VS_FIXEDFILEINFO;
+} VS_FIXEDFILEINFO;
 #pragma pack()
 
 #ifdef __cplusplus
