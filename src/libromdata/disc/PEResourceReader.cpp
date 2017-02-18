@@ -149,14 +149,12 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	if (ret != 0) {
 		// Seek error.
 		q->m_lastError = file->lastError();
-		file = nullptr;
 		return q->m_lastError;
 	}
 	size_t size = file->read(&root, sizeof(root));
 	if (size != sizeof(root)) {
 		// Read error;
 		q->m_lastError = file->lastError();
-		file = nullptr;
 		return q->m_lastError;
 	}
 
@@ -173,7 +171,6 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	if (size != szToRead) {
 		// Read error.
 		q->m_lastError = file->lastError();
-		file = nullptr;
 		return q->m_lastError;
 	}
 
