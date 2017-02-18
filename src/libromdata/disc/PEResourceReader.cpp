@@ -397,7 +397,7 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 	}
 
 	// Seek to the position.
-	int ret = d->file->seek(d->pos);
+	int ret = d->file->seek((int64_t)d->rsrc_addr + (int64_t)d->pos);
 	if (ret != 0) {
 		// Seek error.
 		m_lastError = d->file->lastError();
@@ -420,7 +420,7 @@ int PEResourceReader::seek(int64_t pos)
 	RP_D(PEResourceReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
-	if (!d->file ||  !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		m_lastError = EBADF;
 		return -1;
 	}
@@ -556,7 +556,8 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	}
 
 	// NOTE: OffsetToData is an RVA, not relative to the physical address.
-	const uint32_t data_addr = le32_to_cpu(irdata.OffsetToData) - d->rsrc_va + d->rsrc_addr;
+	// NOTE: Address 0 in IDiscReader equals rsrc_addr.
+	const uint32_t data_addr = le32_to_cpu(irdata.OffsetToData) - d->rsrc_va;
 
 	// Create the PartitionFile.
 	// This is an IRpFile implementation that uses an
