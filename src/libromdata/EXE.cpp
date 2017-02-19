@@ -45,11 +45,9 @@
 
 // C++ includes.
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
