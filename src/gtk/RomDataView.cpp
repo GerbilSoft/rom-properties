@@ -106,10 +106,6 @@ struct _RomDataView {
 	GtkVBox __parent__;
 #endif
 
-	/* Widgets */
-	GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
-	GtkWidget	*lblCredits;
-
 	/* Timeouts */
 	guint		changed_idle;
 
@@ -138,10 +134,14 @@ struct _RomDataView {
 	guint		tmrIconAnim;
 	int		last_delay;		// Last delay value.
 
-#ifndef NDEBUG
-	// DEBUG: Ensure we only have one STRF_CREDITS field.
-	bool hasStrfCredits;
-#endif
+	// Tab layout.
+	GtkWidget	*tabWidget;
+	struct tab {
+		GtkWidget	*vbox;		// Either page or a GtkVBox/GtkBox.
+		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
+		GtkWidget	*lblCredits;
+	};
+	vector<tab> *tabs;
 
 	// Description labels.
 	RpDescFormatType		desc_format_type;
@@ -273,13 +273,10 @@ rom_data_view_init(RomDataView *page)
 	// No ROM data initially.
 	page->filename = nullptr;
 	page->romData = nullptr;
-	page->table = nullptr;
-	page->lblCredits = nullptr;
 	page->last_frame_number = 0;
 	page->iconAnimHelper = new IconAnimHelper();
-#ifndef NDEBUG
-	page->hasStrfCredits = false;
-#endif
+	page->tabWidget = nullptr;
+	page->tabs = new vector<RomDataView::tab>();
 
 	page->desc_format_type = RP_DFT_XFCE;
 	page->vecDescLabels = new vector<GtkWidget*>();
@@ -368,6 +365,7 @@ rom_data_view_dispose(GObject *object)
 	}
 
 	// Clear the widget reference containers.
+	page->tabs->clear();
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
@@ -386,6 +384,7 @@ rom_data_view_finalize(GObject *object)
 
 	// Delete the C++ objects.
 	delete page->iconAnimHelper;
+	delete page->tabs;
 	delete page->vecDescLabels;
 	delete page->setDescLabelIsWarning;
 	delete page->mapBitfields;
@@ -520,20 +519,25 @@ rom_data_view_set_filename(RomDataView	*page,
 			gtk_widget_hide(page->hboxHeaderRow);
 		}
 
+		// Delete the tabs.
+		for (int i = (int)page->tabs->size()-1; i >= 0; i--) {
+			auto &tab = page->tabs->at(i);
+			if (tab.lblCredits) {
+				gtk_widget_destroy(tab.lblCredits);
+			}
+			if (tab.table) {
+				gtk_widget_destroy(tab.table);
+			}
+			if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
+				gtk_widget_destroy(tab.vbox);
+			}
+		}
+		page->tabs->clear();
+
 		// Clear the various widget references.
 		page->vecDescLabels->clear();
 		page->setDescLabelIsWarning->clear();
 		page->mapBitfields->clear();
-
-		// Delete the table and "credits" label.
-		if (page->table) {
-			gtk_widget_destroy(page->table);
-			page->table = nullptr;
-		}
-		if (page->lblCredits) {
-			gtk_widget_destroy(page->lblCredits);
-			page->lblCredits = nullptr;
-		}
 	}
 
 	// Filename has been changed.
@@ -759,14 +763,12 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 
 	if (field->desc.flags & RomFields::STRF_CREDITS) {
 		// Credits row goes at the end.
-		// There should be a maximum of one STRF_CREDITS per RomData subclass.
-#ifndef NDEBUG
-		assert(page->hasStrfCredits == false);
-		page->hasStrfCredits = true;
-#endif
+		// There should be a maximum of one STRF_CREDITS per tab.
+		auto &tab = page->tabs->at(field->tabIdx);
+		assert(tab.lblCredits == nullptr);
 
 		// Credits row.
-		gtk_box_pack_end(GTK_BOX(page), widget, FALSE, FALSE, 0);
+		gtk_box_pack_end(GTK_BOX(tab.vbox), widget, FALSE, FALSE, 0);
 
 		// NULL out widget to hide the description field.
 		// NOTE: Not destroying the widget since we still
@@ -1079,25 +1081,25 @@ rom_data_view_update_display(RomDataView *page)
 	// Initialize the header row.
 	rom_data_view_init_header_row(page);
 
+	// Delete the tabs.
+	for (int i = (int)page->tabs->size()-1; i >= 0; i--) {
+		auto &tab = page->tabs->at(i);
+		if (tab.lblCredits) {
+			gtk_widget_destroy(tab.lblCredits);
+		}
+		if (tab.table) {
+			gtk_widget_destroy(tab.table);
+		}
+		if (tab.vbox && tab.vbox != GTK_WIDGET(page)) {
+			gtk_widget_destroy(tab.vbox);
+		}
+	}
+	page->tabs->clear();
+
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
-#ifndef NDEBUG
-	page->hasStrfCredits = false;
-#endif
-
-	// Delete the table if it's already present.
-	if (page->table) {
-		gtk_widget_destroy(page->table);
-		page->table = nullptr;
-	}
-
-	// Delete the credits label if it's already present.
-	if (page->lblCredits) {
-		gtk_widget_destroy(page->lblCredits);
-		page->lblCredits = nullptr;
-	}
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1113,23 +1115,73 @@ rom_data_view_update_display(RomDataView *page)
 	}
 	const int count = fields->count();
 
+	// Create the GtkNotebook.
+	if (fields->tabCount() > 1) {
+		page->tabs->resize(fields->tabCount());
+		page->tabWidget = gtk_notebook_new();
+		for (int i = 0; i < fields->tabCount(); i++) {
+			// Create a tab.
+			const rp_char *name = fields->tabName(i);
+			if (!name) {
+				// Skip this tab.
+				continue;
+			}
+
+			auto &tab = page->tabs->at(i);
 #if GTK_CHECK_VERSION(3,0,0)
-	// Create the GtkGrid.
-	page->table = gtk_grid_new();
-	gtk_grid_set_row_spacing(GTK_GRID(page->table), 2);
-	gtk_grid_set_column_spacing(GTK_GRID(page->table), 8);
+			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+			tab.table = gtk_grid_new();
+			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
+			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
 #else
-	// Create the GtkTable.
-	page->table = gtk_table_new(count, 2, FALSE);
-	gtk_table_set_row_spacings(GTK_TABLE(page->table), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(page->table), 8);
+			tab.vbox = gtk_vbox_new(FALSE, 8);
+			// TODO: Adjust the table size?
+			tab.table = gtk_table_new(count, 2, FALSE);
+			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
+			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif
-	gtk_container_set_border_width(GTK_CONTAINER(page->table), 8);
-	gtk_box_pack_start(GTK_BOX(page), page->table, FALSE, FALSE, 0);
-	gtk_widget_show(page->table);
+
+			gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
+			gtk_box_pack_start(GTK_BOX(tab.vbox), tab.table, FALSE, FALSE, 0);
+			gtk_widget_show(tab.table);
+			gtk_widget_show(tab.vbox);
+
+			// Add the tab.
+			GtkWidget *label = gtk_label_new(rp_string_to_utf8(name).c_str());
+			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, label);
+		}
+		gtk_box_pack_start(GTK_BOX(page), page->tabWidget, TRUE, TRUE, 0);
+		gtk_widget_show(page->tabWidget);
+	} else {
+		// No tabs.
+		// Don't create a GtkNotebook, but simulate a single
+		// tab in page->tabs[] to make it easier to work with.
+		page->tabs->resize(1);
+		auto &tab = page->tabs->at(0);
+		tab.vbox = GTK_WIDGET(page);
+#if GTK_CHECK_VERSION(3,0,0)
+		tab.table = gtk_grid_new();
+		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
+		gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
+#else
+		// TODO: Adjust the table size?
+		tab.table = gtk_table_new(count, 2, FALSE);
+		gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
+		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
+#endif
+
+		gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
+		gtk_box_pack_start(GTK_BOX(page), tab.table, FALSE, FALSE, 0);
+		gtk_widget_show(tab.table);
+	}
 
 	// Reserve enough space for vecDescLabels.
 	page->vecDescLabels->reserve(count);
+	// Per-tab row counts.
+	vector<int> tabRowCount(page->tabs->size());
+
+	// TODO: Ensure the description column has the
+	// same width on all tabs.
 
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
@@ -1137,6 +1189,17 @@ rom_data_view_update_display(RomDataView *page)
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
+
+		// Verify the tab index.
+		const int tabIdx = field->tabIdx;
+		assert(tabIdx >= 0 && tabIdx < (int)page->tabs->size());
+		if (tabIdx < 0 || tabIdx >= (int)page->tabs->size()) {
+			// Tab index is out of bounds.
+			continue;
+		} else if (!page->tabs->at(tabIdx).table) {
+			// Tab name is empty. Tab is hidden.
+			continue;
+		}
 
 		GtkWidget *widget = nullptr;
 		switch (field->type) {
@@ -1172,6 +1235,7 @@ rom_data_view_update_display(RomDataView *page)
 
 		if (widget) {
 			// Add the widget to the table.
+			auto &tab = page->tabs->at(tabIdx);
 
 			// TODO: Localization.
 			std::string gtkdesc = rp_string_to_utf8(field->name);
@@ -1194,19 +1258,21 @@ rom_data_view_update_display(RomDataView *page)
 
 			// Value widget.
 			// TODO: Left-align for GNOME; right-align for XFCE.
+			int &row = tabRowCount[tabIdx];
 #if GTK_CHECK_VERSION(3,0,0)
 			// TODO: GTK_FILL
-			gtk_grid_attach(GTK_GRID(page->table), lblDesc, 0, i, 1, 1);
+			gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
 
 			// Widget halign is set above.
 			gtk_widget_set_valign(widget, GTK_ALIGN_START);
-			gtk_grid_attach(GTK_GRID(page->table), widget, 1, i, 1, 1);
+			gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
 #else
-			gtk_table_attach(GTK_TABLE(page->table), lblDesc, 0, 1, i, i+1,
+			gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
 				GTK_FILL, GTK_FILL, 0, 0);
-			gtk_table_attach(GTK_TABLE(page->table), widget, 1, 2, i, i+1,
+			gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
 				GTK_FILL, GTK_FILL, 0, 0);
 #endif
+			row++;
 		}
 	}
 }
