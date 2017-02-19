@@ -78,8 +78,9 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #endif
 
 // Control base IDs.
-#define IDC_STATIC_BANNER		0x100
-#define IDC_STATIC_ICON			0x101
+#define IDC_STATIC_BANNER		0x0100
+#define IDC_STATIC_ICON			0x0101
+#define IDC_TAB_WIDGET			0x0102
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
 #define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
@@ -148,6 +149,14 @@ class RP_ShellPropSheetExt_Private
 		HBITMAP hbmpBanner;
 		POINT ptBanner;
 		SIZE szBanner;
+
+		// Tab layout.
+		HWND tabWidget;
+		struct tab {
+			HWND hWnd;		// Tab window.
+			HWND lblCredits;	// Credits.
+		};
+		vector<tab> tabs;
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
@@ -1536,7 +1545,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS;
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
@@ -1587,25 +1596,87 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
 	RECT tmpRect = {0, 0, 0, 8+4};
 	MapDialogRect(hDlg, &tmpRect);
-	const SIZE descSize = {max_text_width, tmpRect.bottom};
+	SIZE descSize = {max_text_width, tmpRect.bottom};
 
-	// Current position.
+	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 	tmpRect.left = 7; tmpRect.top = 7;
 	tmpRect.right = 8; tmpRect.bottom = 8;
 	MapDialogRect(hDlg, &tmpRect);
-	POINT curPt = {tmpRect.left, tmpRect.top};
+	const SIZE dlgMargin = {tmpRect.left, tmpRect.top};
 
-	// Width available for the value widget(s).
+	// Get the dialog size.
 	RECT dlgRect;
 	GetClientRect(hDlg, &dlgRect);
-	LONG x = GetDialogBaseUnits();
-	const int dlg_value_width = dlgRect.right - (curPt.x * 2) - descSize.cx;
+	// Adjust the rectangle for margins.
+	InflateRect(&dlgRect, -dlgMargin.cx, -dlgMargin.cy);
+	// Calculate the size for convenience purposes.
+	SIZE dlgSize = {
+		dlgRect.right - dlgRect.left,
+		dlgRect.bottom - dlgRect.top
+	};
+
+	// Current position.
+	POINT curPt = {dlgRect.left, dlgRect.top};
+	int dlg_value_width = dlgSize.cx - descSize.cx;
 
 	// Create the header row.
-	const SIZE full_width_size = {dlg_value_width + descSize.cx, descSize.cy};
-	curPt.y += createHeaderRow(hDlg, curPt, full_width_size);
+	const SIZE header_size = {dlgSize.cx, descSize.cy};
+	const int headerH = createHeaderRow(hDlg, curPt, header_size);
+	dlgRect.top += headerH;
+	dlgSize.cy -= headerH;
+	curPt.y += headerH;
+
+	// Do we need to create a tab widget?
+	if (fields->tabCount() > 1) {
+		tabs.resize(fields->tabCount());
+		tabWidget = CreateWindow(WC_TABCONTROL, nullptr,
+			WS_CHILD | WS_VISIBLE,
+			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
+			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
+			nullptr, nullptr);
+		SetWindowFont(tabWidget, hFont, FALSE);
+
+		// Add tabs.
+		// NOTE: Tabs must be added *before* calling TabCtrl_AdjustRect();
+		// otherwise, the tab bar height won't be taken into account.
+		TCITEM tcItem;
+		tcItem.mask = TCIF_TEXT;
+		for (int i = 0; i < fields->tabCount(); i++) {
+			// Create a tab.
+			const rp_char *name = fields->tabName(i);
+			if (!name) {
+				// Skip this tab.
+				continue;
+			}
+
+			auto &tab = tabs[i];
+			// TODO: Create page control for the tab.
+
+			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
+			TabCtrl_InsertItem(tabWidget, i, &tcItem);
+		}
+
+		// Adjust the dialog size for subtabs.
+		TabCtrl_AdjustRect(tabWidget, FALSE, &dlgRect);
+		// Add more margins.
+		InflateRect(&dlgRect, -dlgMargin.cx/2, -dlgMargin.cy/2);
+		// Update dlgSize.
+		dlgSize.cx = dlgRect.right - dlgRect.left;
+		dlgSize.cy = dlgRect.bottom - dlgRect.top;
+		// Update curPt.
+		curPt.x = dlgRect.left;
+		curPt.y = dlgRect.top;
+		// Update dlg_value_width.
+		dlg_value_width = dlgSize.cx - descSize.cx;
+	} else {
+		// No tabs.
+		// Don't create a WC_TABCONTROL, but simulate a single
+		// tab in tabs[] to make it easier to work with.
+		// TODO
+		tabs.resize(1);
+	}
 
 	for (int idx = 0; idx < count; idx++) {
 		const RomFields::Field *field = fields->field(idx);
