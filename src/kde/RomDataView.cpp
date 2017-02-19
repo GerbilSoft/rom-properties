@@ -834,6 +834,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		tab.vboxLayout->addLayout(tab.formLayout, 1);
 	}
 
+	// TODO: Ensure the description column has the
+	// same width on all tabs.
+
 	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
