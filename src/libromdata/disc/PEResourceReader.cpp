@@ -374,10 +374,10 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 
 	// Check the key name.
 	unsigned int key_len = u16_strlen(key);
-	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
-	unique_ptr<char16_t> keyData(static_cast<char16_t*>(malloc(keyData_len)));
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
+	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
 	keyData_len = ((keyData_len + sizeof(fields) + 3) & ~3) - sizeof(fields);
+	unique_ptr<char16_t[]> keyData(new char16_t[keyData_len/sizeof(char16_t)]);
 	size = file->read(keyData.get(), keyData_len);
 	if (size != keyData_len) {
 		// Read error.
