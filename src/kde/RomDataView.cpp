@@ -806,14 +806,10 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			auto &tab = ui.tabs[i];
 			QWidget *widget = new QWidget(q);
 
-			// QVBoxLayout
+			// Layouts.
+			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
+			// Otherwise, we end up with no margins.
 			tab.vboxLayout = new QVBoxLayout(widget);
-			// Zero the margins for the QVBoxLayout, since usually
-			// only the QFormLayout is present.
-			QMargins margins(0, 0, 0, 0);
-			tab.vboxLayout->setContentsMargins(margins);
-
-			// QFormLayout
 			tab.formLayout = new QFormLayout();
 			tab.vboxLayout->addLayout(tab.formLayout, 1);
 
