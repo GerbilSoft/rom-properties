@@ -285,6 +285,13 @@ int EXEPrivate::loadPEResourceTypes(void)
  */
 void EXEPrivate::addFields_PE(void)
 {
+	// Up to 3 tabs.
+	fields->reserveTabs(3);
+
+	// PE Header
+	fields->setTabName(0, _RP("PE Header"));
+	fields->setTabIndex(0);
+
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
@@ -428,7 +435,10 @@ void EXEPrivate::addFields_PE(void)
 
 	// Add the version fields.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
-	// TODO: Separate tab.
+	fields->setTabName(1, _RP("Version"));
+	fields->setTabIndex(1);
+
+	// File version.
 	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
 		vsffi.dwFileVersionMS >> 16,
 		vsffi.dwFileVersionMS & 0xFFFF,
@@ -439,6 +449,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_string(_RP("File Version"),
 		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
+	// Product version.
 	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
 		vsffi.dwProductVersionMS >> 16,
 		vsffi.dwProductVersionMS & 0xFFFF,
@@ -866,7 +877,10 @@ int EXE::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	// Maximum number of fields:
+	// - PE: 6
+	//   - PE Version: +6
+	d->fields->reserve(12);
 
 	// Executable type.
 	static const rp_char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
