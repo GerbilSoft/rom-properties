@@ -30,10 +30,6 @@
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
-
 // PEResourceReader
 #include "disc/PEResourceReader.hpp"
 
@@ -49,6 +45,10 @@
 #include <vector>
 using std::string;
 using std::vector;
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 
 namespace LibRomData {
 
