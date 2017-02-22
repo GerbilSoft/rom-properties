@@ -25,6 +25,11 @@
 #include "IPartition.hpp"
 #include "../exe_structs.h"
 
+// C++ includes.
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 namespace LibRomData {
 
 class IRpFile;
@@ -120,14 +125,25 @@ class PEResourceReader : public IPartition
 		 */
 		IRpFile *open(uint16_t type, int id, int lang);
 
+		// StringTable.
+		// - Element 1: Key
+		// - Element 2: Value
+		typedef std::vector<std::pair<rp_string, rp_string> > StringTable;
+
+		// StringFileInfo section.
+		// - Key: Langauge ID. (LOWORD = charset, HIWORD = language)
+		// - Value: String table.
+		typedef std::unordered_map<uint32_t, StringTable> StringFileInfo;
+
 		/**
 		 * Load a VS_VERSION_INFO resource.
 		 * @param id		[in] Resource ID. (-1 for "first entry")
 		 * @param lang		[in] Language ID. (-1 for "first entry")
 		 * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
+		 * @param pVsSfi	[out] StringFileInfo section.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi);
+		int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi);
 };
 
 }

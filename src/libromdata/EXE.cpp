@@ -394,7 +394,9 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(_RP("PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
-	// NOTE: 3 columns is too wide for DLL Flags on Windows.
+	// NOTE: When using subtabs, 3 columns is too wide on Windows.
+	// TODO: Revert this, and have the Windows frontend automatically
+	// reduce columns if they'd be too wide.
 #ifdef _WIN32
 	static const int dll_flags_columns = 2;
 #else
@@ -424,7 +426,8 @@ void EXEPrivate::addFields_PE(void)
 
 	// Load the version resource.
 	VS_FIXEDFILEINFO vsffi;
-	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi);
+	PEResourceReader::StringFileInfo vssfi;
+	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
 	if (ret != 0) {
 		// Unable to load the version resource.
 		// We're done here.
@@ -626,6 +629,34 @@ void EXEPrivate::addFields_PE(void)
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
 			);
+	}
+
+	// Was a StringFileInfo table loaded?
+	if (!vssfi.empty()) {
+		// TODO: Show the language that most closely matches the system.
+		// For now, only showing the "first" language, which may be
+		// random due to unordered_map<>.
+		// TODO: Show certain entries as their own fields?
+		const auto &st = vssfi.begin()->second;
+		auto data = new vector<vector<rp_string> >();
+		data->resize(st.size());
+		for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
+			const auto &st_row = st.at(i);
+			auto &data_row = data->at(i);
+			data_row.reserve(2);
+			data_row.push_back(st_row.first);
+			data_row.push_back(st_row.second);
+		}
+
+		// Fields.
+		static const rp_char *const field_names[] = {
+			_RP("Key"), _RP("Value")
+		};
+		vector<rp_string> *v_field_names = RomFields::strArrayToVector(
+			field_names, ARRAY_SIZE(field_names));
+
+		// Add the StringFileInfo.
+		fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
 	}
 }
 

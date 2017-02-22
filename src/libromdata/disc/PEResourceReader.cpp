@@ -33,8 +33,10 @@
 
 // C++ includes.
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
+using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -118,16 +120,34 @@ class PEResourceReaderPrivate
 		const rsrc_dir_t *getTypeIdDir(uint16_t type, uint16_t id);
 
 		/**
-		 * Read the header for a PE version resource.
+		 * Read the section header in a PE version resource.
 		 *
 		 * The file pointer will be advanced past the header.
 		 *
 		 * @param file		[in] PE version resource.
 		 * @param key		[in] Expected header name.
-		 * @param pSectLen	[out] Section length.
+		 * @param type		[in] Expected data type. (0 == binary, 1 == text)
+		 * @param pChildLen	[out,opt] Total length of the section.
+		 * @param pValueLen	[out,opt] Value length.
 		 * @return 0 if the header matches; non-zero on error.
 		 */
-		static int load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t *pSectLen);
+		static int load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t type, uint16_t *pLen, uint16_t *pValueLen);
+
+		/**
+		 * DWORD alignment function.
+		 * @param file	[in] File to DWORD align.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static inline int alignFileDWORD(IRpFile *file);
+
+		/**
+		 * Load a string table.
+		 * @param file		[in] PE version resource.
+		 * @param st		[out] String Table.
+		 * @param langID	[out] Language ID.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int load_StringTable(IRpFile *file, PEResourceReader::StringTable &st, uint32_t *langID);
 };
 
 /** PEResourceReaderPrivate **/
@@ -347,33 +367,36 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 }
 
 /**
- * Read the header for a PE version resource.
+ * Read the section header in a PE version resource.
  *
  * The file pointer will be advanced past the header.
  *
  * @param file		[in] PE version resource.
  * @param key		[in] Expected header name.
- * @param pSectLen	[out] Section length.
+ * @param type		[in] Expected data type. (0 == binary, 1 == text)
+ * @param pChildLen	[out] Total length of the section.
+ * @param pValueLen	[out] Value length.
  * @return 0 if the header matches; non-zero on error.
  */
-int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t *pSectLen)
+int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const char16_t *key, uint16_t type, uint16_t *pLen, uint16_t *pValueLen)
 {
 	// Read fields.
-	uint16_t fields[3];	// len, sectlen, type
+	uint16_t fields[3];	// wLength, wValueLength, wType
 	size_t size = file->read(fields, sizeof(fields));
 	if (size != sizeof(fields)) {
 		// Read error.
 		return -EIO;
 	}
 
-	uint16_t type = le16_to_cpu(fields[2]);
-	if (type != 0) {
-		// Only version 0 is supported.
+	// Validate the data type.
+	assert(type == 0 || type == 1);
+	if (type != le16_to_cpu(fields[2])) {
+		// Wrong data type.
 		return -EIO;
 	}
 
 	// Check the key name.
-	unsigned int key_len = u16_strlen(key);
+	unsigned int key_len = (unsigned int)u16_strlen(key);
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
 	keyData_len = ((keyData_len + sizeof(fields) + 3) & ~3) - sizeof(fields);
@@ -400,7 +423,152 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	}
 
 	// Header read successfully.
-	*pSectLen = le16_to_cpu(fields[1]);
+	*pLen = le16_to_cpu(fields[0]);
+	*pValueLen = le16_to_cpu(fields[1]);
+	return 0;
+}
+
+/**
+ * DWORD alignment function.
+ * @param file	[in] File to DWORD align.
+ * @return 0 on success; non-zero on error.
+ */
+inline int PEResourceReaderPrivate::alignFileDWORD(IRpFile *file)
+{
+	int ret = 0;
+	int64_t pos = file->tell();
+	if (pos % 4 != 0) {
+		pos = (pos + 3) & ~3LL;
+		ret = file->seek(pos);
+	}
+	return ret;
+}
+
+/**
+ * Load a string table.
+ * @param file		[in] PE version resource.
+ * @param st		[out] String Table.
+ * @param langID	[out] Language ID.
+ * @return 0 on success; non-zero on error.
+ */
+int PEResourceReaderPrivate::load_StringTable(IRpFile *file, PEResourceReader::StringTable &st, uint32_t *langID)
+{
+	// References:
+	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
+	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+
+	// Read fields.
+	const int64_t pos_start = file->tell();
+	uint16_t fields[3];	// wLength, wValueLength, wType
+	size_t size = file->read(fields, sizeof(fields));
+	if (size != sizeof(fields)) {
+		// Read error.
+		return -EIO;
+	}
+
+	// wLength contains the total string table length.
+	// wValueLength should be 0.
+	// wType should be 1, indicating a language ID string.
+	if (le16_to_cpu(fields[1]) != 0 || le16_to_cpu(fields[2]) != 1) {
+		// Not a string table.
+		return -EIO;
+	}
+
+	// Read the 8-character language ID.
+	char16_t s_langID[9];
+	size = file->read(s_langID, sizeof(s_langID));
+	if (size != sizeof(s_langID) ||
+	   (le16_to_cpu(s_langID[8]) != 0))
+	{
+		// Read error, or not NULL terminated.
+		return -EIO;
+	}
+
+	// Convert to UTF-8.
+	string str_langID = utf16le_to_utf8(s_langID, 8);
+	// Parse using strtoul().
+	char *endptr;
+	*langID = (unsigned int)strtoul(str_langID.c_str(), &endptr, 16);
+	if (*langID == 0 || *endptr != 0) {
+		// Not valid.
+		// TODO: Better error code?
+		return -EIO;
+	}
+
+	// DWORD alignment.
+	alignFileDWORD(file);
+
+	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
+	const int64_t pos_strings = file->tell();
+	int strTblData_len = (int)fields[0] - (int)(pos_strings - pos_start);
+	if (strTblData_len <= 0) {
+		// Error...
+		return -EIO;
+	}
+
+	// Read the string table.
+	unique_ptr<uint8_t[]> strTblData(new uint8_t[strTblData_len]);
+	size = file->read(strTblData.get(), strTblData_len);
+	if (size != (size_t)strTblData_len) {
+		// Read error.
+		return -EIO;
+	}
+	// DWORD alignment.
+	alignFileDWORD(file);
+
+	// Parse the string table.
+	// TODO: Optimizations.
+	st.clear();
+	int tblPos = 0;
+	while (tblPos < strTblData_len) {
+		// wLength, wValueLength, wType
+		memcpy(fields, &strTblData[tblPos], sizeof(fields));
+		if (le16_to_cpu(fields[2]) != 1) {
+			// Not a string...
+			return -EIO;
+		}
+		// TODO: Use fields[] directly?
+		// NOTE: wValueLength is number of *words* (aka UTF-16 characters).
+		// Hence, we're multiplying by two to get bytes.
+		const uint16_t wLength = le16_to_cpu(fields[0]);
+		const int wValueLength = le16_to_cpu(fields[1]) * 2;
+		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
+			// Not valid.
+			return -EIO;
+		}
+
+		// Key length, in bytes: wLength - wValueLength - sizeof(fields)
+		// Last Unicode character must be NULL.
+		tblPos += sizeof(fields);
+		const int key_len = ((wLength - wValueLength - sizeof(fields)) / sizeof(char16_t)) - 1;
+		const char16_t *key = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
+		if (le16_to_cpu(key[key_len]) != 0) {
+			// Not NULL-terminated.
+			return -EIO;
+		}
+
+		// DWORD alignment is required here.
+		tblPos += ((key_len + 1) * 2);
+		tblPos  = (tblPos + 3) & ~3;
+
+		// Value must be NULL-terminated.
+		const char16_t *value = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
+		const int value_len = (wValueLength / 2) - 1;
+		if (le16_to_cpu(value[value_len]) != 0) {
+			// Not NULL-terminated.
+			return -EIO;
+		}
+
+		st.push_back(std::pair<rp_string, rp_string>(
+			utf16le_to_rp_string(key, key_len),
+			utf16le_to_rp_string(value, value_len)));
+
+		// DWORD alignment is required here.
+		tblPos += wValueLength;
+		tblPos = (tblPos + 3) & ~3;
+	}
+
+	// String table loaded successfully.
 	return 0;
 }
 
@@ -643,12 +811,14 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
  * @param id		[in] Resource ID. (-1 for "first entry")
  * @param lang		[in] Language ID. (-1 for "first entry")
  * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
+ * @param pVsSfi	[out] StringFileInfo section.
  * @return 0 on success; non-zero on error.
  */
-int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi)
+int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi)
 {
 	assert(pVsFfi != nullptr);
-	if (!pVsFfi) {
+	assert(pVsSfi != nullptr);
+	if (!pVsFfi || !pVsSfi) {
 		// Invalid parameters.
 		return -EINVAL;
 	}
@@ -661,16 +831,17 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	}
 
 	// Read the version header.
-	const char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
-	uint16_t sectLen;
-	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, &sectLen);
+	static const char16_t vsvi[] = {'V','S','_','V','E','R','S','I','O','N','_','I','N','F','O',0};
+	uint16_t len, valueLen;
+	int ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, 0, &len, &valueLen);
 	if (ret != 0) {
 		// Header is incorrect.
 		return ret;
 	}
 
-	// Verify the section size.
-	if (sectLen != sizeof(*pVsFfi)) {
+	// Verify the value size.
+	// (Value should be VS_FIXEDFILEINFO.)
+	if (valueLen != sizeof(*pVsFfi)) {
 		// Wrong size.
 		return -EIO;
 	}
@@ -707,6 +878,30 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	pVsFfi->dwFileDateMS		= le32_to_cpu(pVsFfi->dwFileDateMS);
 	pVsFfi->dwFileDateLS		= le32_to_cpu(pVsFfi->dwFileDateLS);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	// DWORD alignment, if necessary.
+	PEResourceReaderPrivate::alignFileDWORD(f_ver.get());
+
+	// Read the StringFileInfo section header.
+	static const char16_t vssfi[] = {'S','t','r','i','n','g','F','i','l','e','I','n','f','o',0};
+	ret = PEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi, 1, &len, &valueLen);
+	if (ret != 0) {
+		// No StringFileInfo section.
+		return 0;
+	}
+
+	// Read a string table.
+	// TODO: Verify StringFileInfo length.
+	// May need to skip over additional string tables
+	// in order to read VarFileInfo.
+	StringTable st;
+	uint32_t langID;
+	ret = PEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
+	if (ret == 0) {
+		// String table read successfully.
+		// TODO: Reduce copying?
+		pVsSfi->insert(std::make_pair(langID, st));
+	}
 
 	// Version information read successfully.
 	return 0;
