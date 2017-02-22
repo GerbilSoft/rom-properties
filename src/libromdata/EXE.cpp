@@ -418,7 +418,7 @@ void EXEPrivate::addFields_PE(void)
 
 	// Load resources.
 	int ret = loadPEResourceTypes();
-	if (ret != 0) {
+	if (ret != 0 || !rsrcReader) {
 		// Unable to load resources.
 		// We're done here.
 		return;
