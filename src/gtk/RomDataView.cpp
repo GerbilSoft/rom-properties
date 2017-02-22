@@ -233,10 +233,16 @@ set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_
 
 			// Text alignment: Right
 			gtk_label_set_justify(label, GTK_JUSTIFY_RIGHT);
-#if GTK_CHECK_VERSION(3,0,0)
-			gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_END);
-			gtk_widget_set_valign(GTK_WIDGET(label), GTK_ALIGN_START);
+#if GTK_CHECK_VERSION(3,16,0)
+			// NOTE: gtk_widget_set_?align() doesn't work properly
+			// when using a GtkSizeGroup on GTK+ 3.x.
+			// gtk_label_set_?align() was introduced in GTK+ 3.16.
+			gtk_label_set_xalign(label, 1.0);
+			gtk_label_set_yalign(label, 0.0);
 #else
+			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
+			// needed for proper text alignment when using
+			// GtkSizeGroup prior to GTK+ 3.16.
 			gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f);
 #endif
 
@@ -252,10 +258,16 @@ set_label_format_type(RomDataView *page, GtkLabel *label, RpDescFormatType desc_
 
 			// Text alignment: Left
 			gtk_label_set_justify(label, GTK_JUSTIFY_LEFT);
-#if GTK_CHECK_VERSION(3,0,0)
-			gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
-			gtk_widget_set_valign(GTK_WIDGET(label), GTK_ALIGN_START);
+#if GTK_CHECK_VERSION(3,16,0)
+			// NOTE: gtk_widget_set_?align() doesn't work properly
+			// when using a GtkSizeGroup on GTK+ 3.x.
+			// gtk_label_set_?align() was introduced in GTK+ 3.16.
+			gtk_label_set_xalign(label, 0.0);
+			gtk_label_set_yalign(label, 0.0);
 #else
+			// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
+			// needed for proper text alignment when using
+			// GtkSizeGroup prior to GTK+ 3.16.
 			gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.0f);
 #endif
 
@@ -1262,7 +1274,6 @@ rom_data_view_update_display(RomDataView *page)
 			set_label_format_type(page, GTK_LABEL(lblDesc), page->desc_format_type);
 
 			// Value widget.
-			// TODO: Left-align for GNOME; right-align for XFCE.
 			int &row = tabRowCount[tabIdx];
 #if GTK_CHECK_VERSION(3,0,0)
 			// TODO: GTK_FILL
