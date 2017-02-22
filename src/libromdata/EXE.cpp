@@ -271,7 +271,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 		int err = rsrcReader->lastError();
 		delete rsrcReader;
 		rsrcReader = nullptr;
-		return err;
+		return (err != 0 ? err : -EIO);
 	}
 
 	// .rsrc section loaded.
