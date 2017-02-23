@@ -96,6 +96,22 @@ class NEResourceReaderPrivate
 		 * @return 0 if the header matches; non-zero on error.
 		 */
 		static int load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen);
+
+		/**
+		 * DWORD alignment function.
+		 * @param file	[in] File to DWORD align.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static inline int alignFileDWORD(IRpFile *file);
+
+		/**
+		 * Load a string table.
+		 * @param file		[in] PE version resource.
+		 * @param st		[out] String Table.
+		 * @param langID	[out] Language ID.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
 };
 
 /** NEResourceReaderPrivate **/
@@ -311,20 +327,24 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 
 	// Check the key name.
 	// NOTE: NE uses SBCS/MBCS/DBCS, so the length is in bytes.
-	const unsigned int key_len = (unsigned int)strlen(key) + 1;
-	unique_ptr<char[]> keyData(new char[key_len]);
-	size = file->read(keyData.get(), key_len);
-	if (size != key_len) {
+	const unsigned int key_len = (unsigned int)strlen(key);
+	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
+	// NOTE: sizeof(fields) == 4, so it's already WORD-aligned.
+	unsigned int keyData_len = key_len + 1;
+	keyData_len = (keyData_len + 3) & ~3;
+	unique_ptr<char[]> keyData(new char[keyData_len]);
+	size = file->read(keyData.get(), keyData_len);
+	if (size != keyData_len) {
 		// Read error.
 		return -EIO;
 	}
 
 	// Verify that the strings are equal.
-	if (strncmp(keyData.get(), key, key_len-1) != 0) {
+	if (strncmp(keyData.get(), key, key_len) != 0) {
 		// Key mismatch.
 		return -EIO;
 	}
-	if (keyData[key_len-1] != 0) {
+	if (keyData[key_len] != 0) {
 		// Not NULL terminated.
 		return -EIO;
 	}
@@ -332,6 +352,143 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	// Header read successfully.
 	*pLen = le16_to_cpu(fields[0]);
 	*pValueLen = le16_to_cpu(fields[1]);
+	return 0;
+}
+
+/**
+ * DWORD alignment function.
+ * @param file	[in] File to DWORD align.
+ * @return 0 on success; non-zero on error.
+ */
+inline int NEResourceReaderPrivate::alignFileDWORD(IRpFile *file)
+{
+	int ret = 0;
+	int64_t pos = file->tell();
+	if (pos % 4 != 0) {
+		pos = (pos + 3) & ~3LL;
+		ret = file->seek(pos);
+	}
+	return ret;
+}
+
+/**
+ * Load a string table.
+ * @param file		[in] PE version resource.
+ * @param st		[out] String Table.
+ * @param langID	[out] Language ID.
+ * @return 0 on success; non-zero on error.
+ */
+int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
+{
+	// References:
+	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
+	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+
+	// NOTE: 16-bit version resources use DWORD alignment, not WORD alignment.
+	// I'm guessing this is because it was originally developed for Windows NT.
+	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20061220-15/?p=28653
+
+	// Read fields.
+	const int64_t pos_start = file->tell();
+	uint16_t fields[2];	// wLength, wValueLength
+	size_t size = file->read(fields, sizeof(fields));
+	if (size != sizeof(fields)) {
+		// Read error.
+		return -EIO;
+	}
+
+	// wLength contains the total string table length.
+	// wValueLength should be 0.
+	if (le16_to_cpu(fields[1]) != 0) {
+		// Not a string table.
+		return -EIO;
+	}
+
+	// Read the 8-character language ID.
+	char s_langID[9];
+	size = file->read(s_langID, sizeof(s_langID));
+	if (size != sizeof(s_langID) || s_langID[8] != 0) {
+		// Read error, or not NULL terminated.
+		return -EIO;
+	}
+
+	// Parse using strtoul().
+	char *endptr;
+	*langID = (unsigned int)strtoul(s_langID, &endptr, 16);
+	if (*langID == 0 || endptr != &s_langID[8]) {
+		// Not valid.
+		// TODO: Better error code?
+		return -EIO;
+	}
+
+	// DWORD alignment.
+	alignFileDWORD(file);
+
+	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
+	const int64_t pos_strings = file->tell();
+	int strTblData_len = (int)fields[0] - (int)(pos_strings - pos_start);
+	if (strTblData_len <= 0) {
+		// Error...
+		return -EIO;
+	}
+
+	// Read the string table.
+	unique_ptr<uint8_t[]> strTblData(new uint8_t[strTblData_len]);
+	size = file->read(strTblData.get(), strTblData_len);
+	if (size != (size_t)strTblData_len) {
+		// Read error.
+		return -EIO;
+	}
+
+	// Parse the string table.
+	// TODO: Optimizations.
+	st.clear();
+	int tblPos = 0;
+	while (tblPos < strTblData_len) {
+		// wLength, wValueLength
+		memcpy(fields, &strTblData[tblPos], sizeof(fields));
+
+		// TODO: Use fields[] directly?
+		const uint16_t wLength = le16_to_cpu(fields[0]);
+		const uint16_t wValueLength = le16_to_cpu(fields[1]);
+		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
+			// Not valid.
+			return -EIO;
+		}
+
+		// Key length, in bytes: wLength - wValueLength - sizeof(fields)
+		// Last character must be NULL.
+		tblPos += sizeof(fields);
+		const int key_len = (wLength - wValueLength - sizeof(fields)) - 1;
+		const char *key = reinterpret_cast<const char*>(&strTblData[tblPos]);
+		if (key[key_len] != 0) {
+			// Not NULL-terminated.
+			return -EIO;
+		}
+
+		// DWORD alignment is required here.
+		tblPos += (key_len + 1);
+		tblPos  = (tblPos + 3) & ~3;
+
+		// Value must be NULL-terminated.
+		const char *value = reinterpret_cast<const char*>(&strTblData[tblPos]);
+		const int value_len = wValueLength - 1;
+		if (value[value_len] != 0) {
+			// Not NULL-terminated.
+			return -EIO;
+		}
+
+		// FIXME: Proper codepage conversion.
+		st.push_back(std::pair<rp_string, rp_string>(
+			latin1_to_rp_string(key, key_len),
+			latin1_to_rp_string(value, value_len)));
+
+		// DWORD alignment is required here.
+		tblPos += wValueLength;
+		tblPos  = (tblPos + 3) & ~3;
+	}
+
+	// String table loaded successfully.
 	return 0;
 }
 
@@ -609,7 +766,29 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	pVsFfi->dwFileDateLS		= le32_to_cpu(pVsFfi->dwFileDateLS);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
-	// TODO: StringFileInfo.
+	// DWORD alignment, if necessary.
+	NEResourceReaderPrivate::alignFileDWORD(f_ver.get());
+
+	// Read the StringFileInfo section header.
+	static const char vssfi[] = "StringFileInfo";
+	ret = NEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vssfi, &len, &valueLen);
+	if (ret != 0) {
+		// No StringFileInfo section.
+		return 0;
+	}
+
+	// Read a string table.
+	// TODO: Verify StringFileInfo length.
+	// May need to skip over additional string tables
+	// in order to read VarFileInfo.
+	StringTable st;
+	uint32_t langID;
+	ret = NEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
+	if (ret == 0) {
+		// String table read successfully.
+		// TODO: Reduce copying?
+		pVsSfi->insert(std::make_pair(langID, st));
+	}
 
 	// Version information read successfully.
 	return 0;
