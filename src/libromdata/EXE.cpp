@@ -592,7 +592,23 @@ void EXEPrivate::addFields_NE(void)
 	fields->addField_bitfield(_RP("Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
+	// Other flags.
+	// NOTE: Indicated as OS/2 flags by OSDev Wiki,
+	// but may be set on Windows programs too.
+	// References:
+	// - http://wiki.osdev.org/NE
+	// - http://www.program-transformation.org/Transform/PcExeFormat
+	static const rp_char *const other_flags_names[] = {
+		_RP("Long File Names"), _RP("Protected Mode"),
+		_RP("Proportional Fonts"), _RP("Gangload Area"),
+	};
+	vector<rp_string> *v_other_flags_names = RomFields::strArrayToVector(
+		other_flags_names, ARRAY_SIZE(other_flags_names));
+	fields->addField_bitfield(_RP("Other Flags"),
+		v_other_flags_names, 2, hdr.ne.OS2EXEFlags);
+
 	// Expected Windows version.
+	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
 		len = snprintf(buf, sizeof(buf), "%u.%u",
 			hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]);

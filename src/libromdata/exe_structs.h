@@ -569,12 +569,14 @@ typedef enum {
 	NE_DGT_NULL,		// (null)
 } NE_DGroupType;
 
-#define NE_GLOBINIT	(1 << 2)	// Global initialization
-#define NE_PMODEONLY	(1 << 3)	// Protected mode only
-#define NE_INSTRUC86	(1 << 4)	// 8086 instructions
-#define NE_INSTRU286	(1 << 5)	// 80286 instructions
-#define NE_INSTRU386	(1 << 6)	// 80386 instructions
-#define NE_INSTRUx87	(1 << 7)	// 80x87 (FPU) instructions
+typedef enum {
+	NE_GLOBINIT	= (1 << 2),	// Global initialization
+	NE_PMODEONLY	= (1 << 3),	// Protected mode only
+	NE_INSTRUC86	= (1 << 4),	// 8086 instructions
+	NE_INSTRU286	= (1 << 5),	// 80286 instructions
+	NE_INSTRU386	= (1 << 6),	// 80386 instructions
+	NE_INSTRUx87	= (1 << 7),	// 80x87 (FPU) instructions
+} NE_ProgFlags;
 
 // Application flags (ApplFlags)
 
@@ -585,12 +587,15 @@ typedef enum {
 	NE_APP_WINPMCOMPAT,	// Compatible with Windows/P.M. API
 	NE_APP_WINPMUSES,	// Uses Windows/P.M. API
 } NE_AppType;
-#define NE_OS2APP	(1 << 3)	// OS/2 family application
-// bit 4 reserved?
-#define NE_IMAGEERROR	(1 << 5)	// Errors in image/executable
-#define NE_ONCONFORM	(1 << 6)	// Non-conforming program?
-#define NE_DLL		(1 << 7)	// DLL or driver (SS:SP invalid, CS:IP -> Far INIT routine)
+
+typedef enum {
+	NE_OS2APP	= (1 << 3),	// OS/2 family application
+	// bit 4 reserved?
+	NE_IMAGEERROR	= (1 << 5),	// Errors in image/executable
+	NE_ONCONFORM	= (1 << 6),	// Non-conforming program?
+	NE_DLL		= (1 << 7),	// DLL or driver (SS:SP invalid, CS:IP -> Far INIT routine)
 					// AX=HMODULE, returns AX==0 success, AX!=0 fail
+} NE_ApplFlags;
 
 // Target OS (targOS)
 typedef enum {
@@ -606,10 +611,12 @@ typedef enum {
 } NE_TargetOS;
 
 // Other OS/2 flags.
-#define NE_OS2_LFN	(1 << 0)	// OS/2 Long File Names
-#define NE_OS2_PMODE	(1 << 1)	// OS/2 2.x Protected Mode executable
-#define NE_OS2_PFONT	(1 << 2)	// OS/2 2.x Proportional Fonts
-#define NE_OS2_GANGL	(1 << 3)	// OS/2 Gangload area
+typedef enum {
+	NE_OS2_LFN	= (1 << 0),	// OS/2 Long File Names
+	NE_OS2_PMODE	= (1 << 1),	// OS/2 2.x Protected Mode executable
+	NE_OS2_PFONT	= (1 << 2),	// OS/2 2.x Proportional Fonts
+	NE_OS2_GANGL	= (1 << 3),	// OS/2 Gangload area
+} NE_OS2EXEFlags;
 
 // 16-bit resource structs.
 
