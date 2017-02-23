@@ -1074,6 +1074,7 @@ EXE::EXE(IRpFile *file)
 	} else {
 		// Unrecognized secondary header.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		d->fileType = FTYPE_EXECUTABLE;
 		return;
 	}
 }
