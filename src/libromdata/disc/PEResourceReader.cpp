@@ -489,7 +489,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// Parse using strtoul().
 	char *endptr;
 	*langID = (unsigned int)strtoul(str_langID.c_str(), &endptr, 16);
-	if (*langID == 0 || *endptr != 0) {
+	if (*langID == 0 || endptr != (str_langID.c_str() + 8)) {
 		// Not valid.
 		// TODO: Better error code?
 		return -EIO;
@@ -565,7 +565,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;
-		tblPos = (tblPos + 3) & ~3;
+		tblPos  = (tblPos + 3) & ~3;
 	}
 
 	// String table loaded successfully.
