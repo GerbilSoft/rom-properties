@@ -102,6 +102,17 @@ class EXEPrivate : public RomDataPrivate
 		// Resource reader.
 		IResourceReader *rsrcReader;
 
+		/**
+		 * Add VS_VERSION_INFO fields.
+		 *
+		 * NOTE: A subtab is NOT created here; if one is desired,
+		 * create and set it before calling this function.
+		 *
+		 * @param pVsFfi	[in] VS_FIXEDFILEINFO
+		 * @param pVsSfi	[in,opt] IResourceReader::StringFileInfo
+		 */
+		void addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi);
+
 		/** NE-specific **/
 
 		/**
@@ -161,6 +172,250 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 EXEPrivate::~EXEPrivate()
 {
 	delete rsrcReader;
+}
+
+/**
+ * Add VS_VERSION_INFO fields.
+ *
+ * NOTE: A subtab is NOT created here; if one is desired,
+ * create and set it before calling this function.
+ *
+ * @param pVsFfi	[in] VS_FIXEDFILEINFO
+ * @param pVsSfi	[in,opt] IResourceReader::StringFileInfo
+ */
+void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi)
+{
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
+	assert(pVsFfi != nullptr);
+	if (!pVsFfi)
+		return;
+
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
+
+	// File version.
+	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
+		pVsFfi->dwFileVersionMS >> 16,
+		pVsFfi->dwFileVersionMS & 0xFFFF,
+		pVsFfi->dwFileVersionLS >> 16,
+		pVsFfi->dwFileVersionLS & 0xFFFF);
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	fields->addField_string(_RP("File Version"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+	// Product version.
+	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
+		pVsFfi->dwProductVersionMS >> 16,
+		pVsFfi->dwProductVersionMS & 0xFFFF,
+		pVsFfi->dwProductVersionLS >> 16,
+		pVsFfi->dwProductVersionLS & 0xFFFF);
+	if (len > (int)sizeof(buf))
+		len = (int)sizeof(buf);
+	fields->addField_string(_RP("Product Version"),
+		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+	// File flags.
+	static const rp_char *const file_flags_names[] = {
+		_RP("Debug"), _RP("Prerelease"), _RP("Patched"),
+		_RP("Private Build"), _RP("Info Inferred"), _RP("Special Build")
+	};
+	vector<rp_string> *v_file_flags_names = RomFields::strArrayToVector(
+		file_flags_names, ARRAY_SIZE(file_flags_names));
+	fields->addField_bitfield(_RP("File Flags"),
+		v_file_flags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
+
+	// File OS.
+	const rp_char *file_os;
+	switch (pVsFfi->dwFileOS) {
+		case VOS_DOS:
+			file_os = _RP("MS-DOS");
+			break;
+		case VOS_NT:
+			file_os = _RP("Windows NT");
+			break;
+		case VOS__WINDOWS16:
+			file_os = _RP("Windows (16-bit)");
+			break;
+		case VOS__WINDOWS32:
+			file_os = _RP("Windows (32-bit)");
+			break;
+		case VOS_OS216:
+			file_os = _RP("OS/2 (16-bit)");
+			break;
+		case VOS_OS232:
+			file_os = _RP("OS/2 (32-bit)");
+			break;
+		case VOS__PM16:
+			file_os = _RP("Presentation Manager (16-bit)");
+			break;
+		case VOS__PM32:
+			file_os = _RP("Presentation Manager (32-bit)");
+			break;
+
+		case VOS_DOS_WINDOWS16:
+			file_os = _RP("Windows on MS-DOS (16-bit)");
+			break;
+		case VOS_DOS_WINDOWS32:
+			file_os = _RP("Windows 9x (32-bit)");
+			break;
+		case VOS_NT_WINDOWS32:
+			file_os = _RP("Windows NT");
+			break;
+		case VOS_OS216_PM16:
+			file_os = _RP("OS/2 with Presentation Manager (16-bit)");
+			break;
+		case VOS_OS232_PM32:
+			file_os = _RP("OS/2 with Presentation Manager (32-bit)");
+			break;
+
+		case VOS_UNKNOWN:
+		default:
+			file_os = nullptr;
+			break;
+	}
+
+	if (file_os) {
+		fields->addField_string(_RP("File OS"), file_os);
+	} else {
+		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileOS);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("File OS"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// File type.
+	static const rp_char *const fileTypes[] = {
+		nullptr,			// VFT_UNKNOWN
+		_RP("Application"),		// VFT_APP
+		_RP("DLL"),			// VFT_DLL
+		_RP("Device Driver"),		// VFT_DRV
+		_RP("Font"),			// VFT_FONT,
+		_RP("Virtual Device Driver"),	// VFT_VXD
+		nullptr,
+		_RP("Static Library"),		// VFT_STATIC_LIB
+	};
+	const rp_char *fileType = (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes)
+					? fileTypes[pVsFfi->dwFileType]
+					: nullptr);
+	if (fileType) {
+		fields->addField_string(_RP("File Type"), fileType);
+	} else {
+		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileType);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("File Type"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// File subtype.
+	bool hasSubtype = false;
+	const rp_char *fileSubtype = nullptr;
+	switch (pVsFfi->dwFileType) {
+		case VFT_DRV: {
+			hasSubtype = true;
+			static const rp_char *const fileSubtypes_DRV[] = {
+				nullptr,			// VFT2_UNKNOWN
+				_RP("Printer"),			// VFT2_DRV_PRINTER
+				_RP("Keyboard"),		// VFT2_DRV_KEYBOARD
+				_RP("Language"),		// VFT2_DRV_LANGUAGE
+				_RP("Display"),			// VFT2_DRV_DISPLAY
+				_RP("Mouse"),			// VFT2_DRV_MOUSE
+				_RP("Network"),			// VFT2_DRV_NETWORK
+				_RP("System"),			// VFT2_DRV_SYSTEM
+				_RP("Installable"),		// VFT2_DRV_INSTALLABLE
+				_RP("Sound"),			// VFT2_DRV_SOUND
+				_RP("Communications"),		// VFT2_DRV_COMM
+				_RP("Input Method"),		// VFT2_DRV_INPUTMETHOD
+				_RP("Versioned Printer"),	// VFT2_DRV_VERSIONED_PRINTER
+			};
+			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
+						? fileSubtypes_DRV[pVsFfi->dwFileSubtype]
+						: nullptr);
+			break;
+		};
+
+		case VFT_FONT: {
+			hasSubtype = true;
+			static const rp_char *const fileSubtypes_FONT[] = {
+				nullptr,		// VFT2_UNKNOWN
+				_RP("Raster"),		// VFT2_FONT_RASTER
+				_RP("Vector"),		// VFT2_FONT_VECTOR
+				_RP("TrueType"),	// VFT2_FONT_TRUETYPE
+			};
+			fileSubtype = (pVsFfi->dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
+						? fileSubtypes_FONT[pVsFfi->dwFileSubtype]
+						: nullptr);
+			break;
+		};
+
+		default:
+			break;
+	}
+
+	if (hasSubtype) {
+		if (fileSubtype) {
+			fields->addField_string(_RP("File Subtype"), fileSubtype);
+		} else {
+			snprintf(buf, sizeof(buf), "Unknown (%08X)", pVsFfi->dwFileSubtype);
+			if (len > (int)sizeof(buf))
+				len = (int)sizeof(buf);
+			fields->addField_string(_RP("File Subtype"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		}
+	}
+
+	// File timestamp. (FILETIME format)
+	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
+	uint64_t fileTime = ((uint64_t)pVsFfi->dwFileDateMS) << 32 |
+			     (uint64_t)pVsFfi->dwFileDateLS;
+	if (fileTime != 0) {
+		// Convert to UNIX time.
+#ifndef FILETIME_1970
+		#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
+#endif
+#ifndef HECTONANOSEC_PER_SEC
+		#define HECTONANOSEC_PER_SEC 10000000LL
+#endif
+		int64_t fileTimeUnix = (fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC;
+		fields->addField_dateTime(_RP("File Time"), fileTimeUnix,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME
+			);
+	}
+
+	// Was a StringFileInfo table loaded?
+	if (!pVsSfi || pVsSfi->empty()) {
+		// Not loaded.
+		return;
+	}
+
+	// TODO: Show the language that most closely matches the system.
+	// For now, only showing the "first" language, which may be
+	// random due to unordered_map<>.
+	// TODO: Show certain entries as their own fields?
+	const auto &st = pVsSfi->begin()->second;
+	auto data = new vector<vector<rp_string> >();
+	data->resize(st.size());
+	for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
+		const auto &st_row = st.at(i);
+		auto &data_row = data->at(i);
+		data_row.reserve(2);
+		data_row.push_back(st_row.first);
+		data_row.push_back(st_row.second);
+	}
+
+	// Fields.
+	static const rp_char *const field_names[] = {
+		_RP("Key"), _RP("Value")
+	};
+	vector<rp_string> *v_field_names = RomFields::strArrayToVector(
+		field_names, ARRAY_SIZE(field_names));
+
+	// Add the StringFileInfo.
+	fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
 }
 
 /** NE-specific **/
@@ -347,7 +602,7 @@ void EXEPrivate::addFields_NE(void)
 
 	// Load the version resource.
 	VS_FIXEDFILEINFO vsffi;
-	PEResourceReader::StringFileInfo vssfi;
+	IResourceReader::StringFileInfo vssfi;
 	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
 	if (ret != 0) {
 		// Unable to load the version resource.
@@ -656,229 +911,9 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Add the version fields.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
 	fields->setTabName(1, _RP("Version"));
 	fields->setTabIndex(1);
-
-	// File version.
-	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
-		vsffi.dwFileVersionMS >> 16,
-		vsffi.dwFileVersionMS & 0xFFFF,
-		vsffi.dwFileVersionLS >> 16,
-		vsffi.dwFileVersionLS & 0xFFFF);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
-	fields->addField_string(_RP("File Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-
-	// Product version.
-	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
-		vsffi.dwProductVersionMS >> 16,
-		vsffi.dwProductVersionMS & 0xFFFF,
-		vsffi.dwProductVersionLS >> 16,
-		vsffi.dwProductVersionLS & 0xFFFF);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
-	fields->addField_string(_RP("Product Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-
-	// File flags.
-	static const rp_char *const file_flags_names[] = {
-		_RP("Debug"), _RP("Prerelease"), _RP("Patched"),
-		_RP("Private Build"), _RP("Info Inferred"), _RP("Special Build")
-	};
-	vector<rp_string> *v_file_flags_names = RomFields::strArrayToVector(
-		file_flags_names, ARRAY_SIZE(file_flags_names));
-	fields->addField_bitfield(_RP("File Flags"),
-		v_file_flags_names, 3, vsffi.dwFileFlags & vsffi.dwFileFlagsMask);
-
-	// File OS.
-	const rp_char *file_os;
-	switch (vsffi.dwFileOS) {
-		case VOS_DOS:
-			file_os = _RP("MS-DOS");
-			break;
-		case VOS_NT:
-			file_os = _RP("Windows NT");
-			break;
-		case VOS__WINDOWS16:
-			file_os = _RP("Windows (16-bit)");
-			break;
-		case VOS__WINDOWS32:
-			file_os = _RP("Windows (32-bit)");
-			break;
-		case VOS_OS216:
-			file_os = _RP("OS/2 (16-bit)");
-			break;
-		case VOS_OS232:
-			file_os = _RP("OS/2 (32-bit)");
-			break;
-		case VOS__PM16:
-			file_os = _RP("Presentation Manager (16-bit)");
-			break;
-		case VOS__PM32:
-			file_os = _RP("Presentation Manager (32-bit)");
-			break;
-
-		case VOS_DOS_WINDOWS16:
-			file_os = _RP("Windows on MS-DOS (16-bit)");
-			break;
-		case VOS_DOS_WINDOWS32:
-			file_os = _RP("Windows 9x (32-bit)");
-			break;
-		case VOS_NT_WINDOWS32:
-			file_os = _RP("Windows NT");
-			break;
-		case VOS_OS216_PM16:
-			file_os = _RP("OS/2 with Presentation Manager (16-bit)");
-			break;
-		case VOS_OS232_PM32:
-			file_os = _RP("OS/2 with Presentation Manager (32-bit)");
-			break;
-
-		case VOS_UNKNOWN:
-		default:
-			file_os = nullptr;
-			break;
-	}
-
-	if (file_os) {
-		fields->addField_string(_RP("File OS"), file_os);
-	} else {
-		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", vsffi.dwFileOS);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
-		fields->addField_string(_RP("File OS"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-	}
-
-	// File type.
-	static const rp_char *const fileTypes[] = {
-		nullptr,			// VFT_UNKNOWN
-		_RP("Application"),		// VFT_APP
-		_RP("DLL"),			// VFT_DLL
-		_RP("Device Driver"),		// VFT_DRV
-		_RP("Font"),			// VFT_FONT,
-		_RP("Virtual Device Driver"),	// VFT_VXD
-		nullptr,
-		_RP("Static Library"),		// VFT_STATIC_LIB
-	};
-	const rp_char *fileType = (vsffi.dwFileType < ARRAY_SIZE(fileTypes)
-					? fileTypes[vsffi.dwFileType]
-					: nullptr);
-	if (fileType) {
-		fields->addField_string(_RP("File Type"), fileType);
-	} else {
-		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", vsffi.dwFileType);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
-		fields->addField_string(_RP("File Type"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-	}
-
-	// File subtype.
-	bool hasSubtype = false;
-	const rp_char *fileSubtype = nullptr;
-	switch (vsffi.dwFileType) {
-		case VFT_DRV: {
-			hasSubtype = true;
-			static const rp_char *const fileSubtypes_DRV[] = {
-				nullptr,			// VFT2_UNKNOWN
-				_RP("Printer"),			// VFT2_DRV_PRINTER
-				_RP("Keyboard"),		// VFT2_DRV_KEYBOARD
-				_RP("Language"),		// VFT2_DRV_LANGUAGE
-				_RP("Display"),			// VFT2_DRV_DISPLAY
-				_RP("Mouse"),			// VFT2_DRV_MOUSE
-				_RP("Network"),			// VFT2_DRV_NETWORK
-				_RP("System"),			// VFT2_DRV_SYSTEM
-				_RP("Installable"),		// VFT2_DRV_INSTALLABLE
-				_RP("Sound"),			// VFT2_DRV_SOUND
-				_RP("Communications"),		// VFT2_DRV_COMM
-				_RP("Input Method"),		// VFT2_DRV_INPUTMETHOD
-				_RP("Versioned Printer"),	// VFT2_DRV_VERSIONED_PRINTER
-			};
-			fileSubtype = (vsffi.dwFileSubtype < ARRAY_SIZE(fileSubtypes_DRV)
-						? fileSubtypes_DRV[vsffi.dwFileSubtype]
-						: nullptr);
-			break;
-		};
-
-		case VFT_FONT: {
-			hasSubtype = true;
-			static const rp_char *const fileSubtypes_FONT[] = {
-				nullptr,		// VFT2_UNKNOWN
-				_RP("Raster"),		// VFT2_FONT_RASTER
-				_RP("Vector"),		// VFT2_FONT_VECTOR
-				_RP("TrueType"),	// VFT2_FONT_TRUETYPE
-			};
-			fileSubtype = (vsffi.dwFileSubtype < ARRAY_SIZE(fileSubtypes_FONT)
-						? fileSubtypes_FONT[vsffi.dwFileSubtype]
-						: nullptr);
-			break;
-		};
-
-		default:
-			break;
-	}
-
-	if (hasSubtype) {
-		if (fileSubtype) {
-			fields->addField_string(_RP("File Subtype"), fileSubtype);
-		} else {
-			snprintf(buf, sizeof(buf), "Unknown (%08X)", vsffi.dwFileSubtype);
-			if (len > (int)sizeof(buf))
-				len = (int)sizeof(buf);
-			fields->addField_string(_RP("File Subtype"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-		}
-	}
-
-	// File timestamp. (FILETIME format)
-	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
-	uint64_t fileTime = ((uint64_t)vsffi.dwFileDateMS) << 32 |
-			     (uint64_t)vsffi.dwFileDateLS;
-	if (fileTime != 0) {
-		// Convert to UNIX time.
-#ifndef FILETIME_1970
-		#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
-#endif
-#ifndef HECTONANOSEC_PER_SEC
-		#define HECTONANOSEC_PER_SEC 10000000LL
-#endif
-		int64_t fileTimeUnix = (fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC;
-		fields->addField_dateTime(_RP("File Time"), fileTimeUnix,
-			RomFields::RFT_DATETIME_HAS_DATE |
-			RomFields::RFT_DATETIME_HAS_TIME
-			);
-	}
-
-	// Was a StringFileInfo table loaded?
-	if (!vssfi.empty()) {
-		// TODO: Show the language that most closely matches the system.
-		// For now, only showing the "first" language, which may be
-		// random due to unordered_map<>.
-		// TODO: Show certain entries as their own fields?
-		const auto &st = vssfi.begin()->second;
-		auto data = new vector<vector<rp_string> >();
-		data->resize(st.size());
-		for (unsigned int i = 0; i < (unsigned int)st.size(); i++) {
-			const auto &st_row = st.at(i);
-			auto &data_row = data->at(i);
-			data_row.reserve(2);
-			data_row.push_back(st_row.first);
-			data_row.push_back(st_row.second);
-		}
-
-		// Fields.
-		static const rp_char *const field_names[] = {
-			_RP("Key"), _RP("Value")
-		};
-		vector<rp_string> *v_field_names = RomFields::strArrayToVector(
-			field_names, ARRAY_SIZE(field_names));
-
-		// Add the StringFileInfo.
-		fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
-	}
+	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
 
 /** EXE **/
