@@ -98,6 +98,13 @@ class EXEPrivate : public RomDataPrivate
 		} hdr;
 		#pragma pack()
 
+		/** NE-specific **/
+
+		/**
+		 * Add fields for NE executables.
+		 */
+		void addFields_NE(void);
+
 		/** PE-specific **/
 
 		// PE subsystem.
@@ -148,6 +155,105 @@ EXEPrivate::~EXEPrivate()
 {
 	delete rsrcReader;
 }
+
+/** NE-specific **/
+
+/**
+ * Add fields for NE executables.
+ */
+void EXEPrivate::addFields_NE(void)
+{
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
+
+	// Target OS.
+	static const rp_char *const targetOSes[] = {
+		nullptr,			// NE_OS_UNKNOWN
+		_RP("IBM OS/2"),		// NE_OS_OS2
+		_RP("Microsoft Windows"),	// NE_OS_WIN
+		_RP("European MS-DOS 4.x"),	// NE_OS_DOS4
+		_RP("Microsoft Windows (386)"),	// NE_OS_WIN386 (TODO)
+		_RP("Borland Operating System Services"),	// NE_OS_BOSS
+	};
+	const rp_char *const targetOS = (hdr.ne.targOS < ARRAY_SIZE(targetOS))
+					? targetOSes[hdr.ne.targOS]
+					: nullptr;
+	if (targetOS) {
+		fields->addField_string(_RP("Target OS"), targetOS);
+	} else {
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", hdr.ne.targOS);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("Target OS"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// DGroup type.
+	static const rp_char *const dgroupTypes[] = {
+		_RP("None"), _RP("Single Shared"), _RP("Multiple"), _RP("(null)")
+	};
+	fields->addField_string(_RP("DGroup Type"), dgroupTypes[hdr.ne.ProgFlags & 3]);
+
+	// Program flags.
+	static const rp_char *const ProgFlags_names[] = {
+		nullptr, nullptr,	// DGroup Type
+		_RP("Global Init"), _RP("Protected Mode Only"),
+		_RP("8086 insns"), _RP("80286 insns"),
+		_RP("80386 insns"), _RP("FPU insns")
+	};
+	vector<rp_string> *v_ProgFlags_names = RomFields::strArrayToVector(
+		ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
+	fields->addField_bitfield(_RP("Program Flags"),
+		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
+
+	// Application type.
+	if (hdr.ne.targOS == NE_OS_OS2) {
+		// Only mentioning Presentation Manager for OS/2 executables.
+		static const rp_char *const applTypes_OS2[] = {
+			_RP("None"),
+			_RP("Full Screen (not aware of Presentation Manager)"),
+			_RP("Presentation Manager compatible"),
+			_RP("Presentation Manager application")
+		};
+		fields->addField_string(_RP("Application Type"),
+			applTypes_OS2[hdr.ne.ApplFlags & 3]);
+	} else {
+		// Assume Windows for everything else.
+		static const rp_char *const applTypes_Win[] = {
+			_RP("None"),
+			_RP("Full Screen (not aware of Windows)"),
+			_RP("Windows compatible"),
+			_RP("Windows application")
+		};
+		fields->addField_string(_RP("Application Type"),
+			applTypes_Win[hdr.ne.ApplFlags & 3]);
+	}
+
+	// Application flags.
+	static const rp_char *const ApplFlags_names[] = {
+		nullptr, nullptr,	// Application type
+		nullptr, _RP("OS/2 Application"),
+		nullptr, _RP("Image Error"),
+		_RP("Non-Conforming"), _RP("DLL")
+	};
+	vector<rp_string> *v_ApplFlags_names = RomFields::strArrayToVector(
+		ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
+	fields->addField_bitfield(_RP("Application Flags"),
+		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
+
+	// Expected Windows version.
+	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
+		len = snprintf(buf, sizeof(buf), "%u.%u",
+			hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("Windows Version"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+}
+
+/** PE-specific **/
 
 /**
  * Load the PE section table.
@@ -1015,6 +1121,7 @@ int EXE::loadFieldData(void)
 	}
 
 	// Maximum number of fields:
+	// - NE: 6
 	// - PE: 6
 	//   - PE Version: +6
 	d->fields->reserve(12);
@@ -1035,6 +1142,10 @@ int EXE::loadFieldData(void)
 	}
 
 	switch (d->exeType) {
+		case EXEPrivate::EXE_TYPE_NE:
+			d->addFields_NE();
+			break;
+
 		case EXEPrivate::EXE_TYPE_PE:
 		case EXEPrivate::EXE_TYPE_PE32PLUS:
 			d->addFields_PE();
