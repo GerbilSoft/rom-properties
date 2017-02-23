@@ -24,6 +24,7 @@
 // - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winnt.h
 // - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winver.h
 // - http://www.brokenthorn.com/Resources/OSDevPE.html
+// - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648009(v=vs.85).aspx
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
@@ -372,6 +373,8 @@ typedef enum {
 	RT_ACCELERATOR	= 9,
 	RT_RCDATA	= 10,
 	RT_MESSAGETABLE	= 11,
+	RT_GROUP_CURSOR	= 12,	// (RT_CURSOR+11)
+	RT_GROUP_ICON	= 14,	// (RT_ICON+11)
 	RT_VERSION	= 16,
 	RT_DLGINCLUDE	= 17,
 	RT_PLUGPLAY	= 19,
@@ -380,6 +383,10 @@ typedef enum {
 	RT_ANIICON	= 22,
 	RT_HTML		= 23,
 	RT_MANIFEST	= 24,
+
+	// MFC resources
+	RT_DLGINIT	= 240,
+	RT_TOOLBAR	= 241,
 } ResourceType;
 
 // Resource directory.
