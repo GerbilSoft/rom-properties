@@ -621,7 +621,8 @@ public:
 ROMOutput::ROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	os << "-- " << romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) << " rom detected" << endl;
+	os << "-- " << romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) <<
+	      " " << romdata->fileType_string() << " detected" << endl;
 	os << FieldsOutput(*(romdata->fields())) << endl;
 
 	int supported = romdata->supportedImageTypes();
