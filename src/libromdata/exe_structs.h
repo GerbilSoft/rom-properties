@@ -510,6 +510,7 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 	uint32_t dwFileDateLS;
 } VS_FIXEDFILEINFO;
 #pragma pack()
+ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*4);
 
 /** New Executable (Win16) structs. **/
 // References:
