@@ -621,8 +621,12 @@ public:
 ROMOutput::ROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	os << "-- " << romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC) <<
-	      " " << romdata->fileType_string() << " detected" << endl;
+	const rp_char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const rp_char *fileType = romdata->fileType_string();
+
+	os << "-- " << (sysName ? sysName : "(unknown system)") <<
+	      " " << (fileType ? fileType : "(unknown filetype)") <<
+	      " detected" << endl;
 	os << FieldsOutput(*(romdata->fields())) << endl;
 
 	int supported = romdata->supportedImageTypes();
@@ -659,8 +663,21 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
-	os << "{\"system\":" << JSONString(romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC));
-	os << ",\"filetype\":" << JSONString(romdata->fileType_string());
+	const rp_char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
+	const rp_char *fileType = romdata->fileType_string();
+
+	os << "{\"system\":";
+	if (sysName) {
+		os << JSONString(sysName);
+	} else {
+		os << "\"unknown\"";
+	}
+	os << ",\"filetype\":";
+	if (fileType) {
+		os << JSONString(fileType);
+	} else {
+		os << "\"unknown\"";
+	}
 	os << ",\"fields\":" << JSONFieldsOutput(*(romdata->fields()));
 
 	int supported = romdata->supportedImageTypes();
