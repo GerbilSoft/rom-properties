@@ -607,6 +607,28 @@ typedef enum {
 #define NE_OS2_PFONT	(1 << 2)	// OS/2 2.x Proportional Fonts
 #define NE_OS2_GANGL	(1 << 3)	// OS/2 Gangload area
 
+// 16-bit resource structs.
+
+#pragma pack(1)
+typedef struct PACKED _NE_NAMEINFO {
+	uint16_t rnOffset;
+	uint16_t rnLength;
+	uint16_t rnFlags;
+	uint16_t rnID;
+	uint16_t rnHandle;
+	uint16_t rnUsage;
+} NE_NAMEINFO;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct PACKED _NE_TYPEINFO {
+	uint16_t rtTypeID;
+	uint16_t rtResourceCount;
+	uint32_t rtReserved;
+	// followed by NE_NAMEINFO[]
+} NE_TYPEINFO;
+#pragma pack()
+
 #ifdef __cplusplus
 }
 #endif

@@ -30,7 +30,8 @@
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
 
-// PEResourceReader
+// IResourceReader
+#include "disc/NEResourceReader.hpp"
 #include "disc/PEResourceReader.hpp"
 
 // C includes. (C++ namespace)
@@ -98,7 +99,16 @@ class EXEPrivate : public RomDataPrivate
 		} hdr;
 		#pragma pack()
 
+		// Resource reader.
+		IResourceReader *rsrcReader;
+
 		/** NE-specific **/
+
+		/**
+		 * Load the NE resource table.
+		 * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+		 */
+		int loadNEResourceTable(void);
 
 		/**
 		 * Add fields for NE executables.
@@ -112,9 +122,6 @@ class EXEPrivate : public RomDataPrivate
 
 		// PE section headers.
 		ao::uvector<IMAGE_SECTION_HEADER> pe_sections;
-
-		// PE resource reader.
-		PEResourceReader *rsrcReader;
 
 		/**
 		 * Load the PE section table.
@@ -143,8 +150,8 @@ class EXEPrivate : public RomDataPrivate
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
 	, exeType(EXE_TYPE_UNKNOWN)
-	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 	, rsrcReader(nullptr)
+	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
@@ -157,6 +164,84 @@ EXEPrivate::~EXEPrivate()
 }
 
 /** NE-specific **/
+
+/**
+ * Load the NE resource table.
+ * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+ */
+int EXEPrivate::loadNEResourceTable(void)
+{
+	if (rsrcReader) {
+		// Resource reader is already initialized.
+		return 0;
+	} else if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != EXE_TYPE_NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
+	}
+
+	// NE resource table offset is relative to the start of the NE header.
+	// It must be >= the size of the NE header.
+	uint32_t ResTableOffset = le16_to_cpu(hdr.ne.ResTableOffset);
+	if (ResTableOffset < sizeof(NE_Header)) {
+		// Resource table cannot start in the middle of the NE header.
+		return -EIO;
+	}
+
+	// Check for the lowest non-zero offset after ResTableOffset.
+	// This will be used for the resource table size.
+	uint32_t maxOffset = 0;
+	uint32_t resTableSize = 0;
+	{
+		#define TABLE_CHECK(var) do { \
+			const uint32_t var = le16_to_cpu(hdr.ne.var); \
+			if (var != 0 && var > ResTableOffset && \
+			    (maxOffset == 0 || var < maxOffset)) \
+			{ \
+				maxOffset = var; \
+			} \
+		} while (0)
+		TABLE_CHECK(SegTableOffset);
+		TABLE_CHECK(ResidNamTable);
+		TABLE_CHECK(ModRefTable);
+		TABLE_CHECK(ImportNameTable);
+		// TODO: OffStartNonResTab is from the start of the file.
+		// Not sure if we need to check it.
+
+		if (maxOffset != 0 && maxOffset > ResTableOffset) {
+			// Found a valid maximum.
+			resTableSize = maxOffset - ResTableOffset;
+		}
+	}
+
+	// Adjust ResTableOffset to make it an absolute address.
+	ResTableOffset += le16_to_cpu(mz.e_lfanew);
+
+	// Check if a size is known.
+	if (resTableSize == 0) {
+		// Not known. Go with the file size.
+		// NOTE: Limited to 32-bit file sizes.
+		resTableSize = (uint32_t)file->size() - ResTableOffset;
+	}
+
+	// Load the resources using NEResourceReader.
+	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
+	if (!rsrcReader->isOpen()) {
+		// Failed to open the resource table.
+		int err = rsrcReader->lastError();
+		delete rsrcReader;
+		rsrcReader = nullptr;
+		return (err != 0 ? err : -EIO);
+	}
+
+	// Resource table loaded.
+	return 0;
+}
 
 /**
  * Add fields for NE executables.
@@ -251,6 +336,26 @@ void EXEPrivate::addFields_NE(void)
 		fields->addField_string(_RP("Windows Version"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 	}
+
+	// Load resources.
+	int ret = loadNEResourceTable();
+	if (ret != 0 || !rsrcReader) {
+		// Unable to load resources.
+		// We're done here.
+		return;
+	}
+
+	// Load the version resource.
+	VS_FIXEDFILEINFO vsffi;
+	PEResourceReader::StringFileInfo vssfi;
+	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
+	if (ret != 0) {
+		// Unable to load the version resource.
+		// We're done here.
+		return;
+	}
+
+	// TODO: Add version resource fields.
 }
 
 /** PE-specific **/
@@ -335,7 +440,7 @@ int EXEPrivate::loadPESectionTable(void)
 int EXEPrivate::loadPEResourceTypes(void)
 {
 	if (rsrcReader) {
-		// PE resource reader is already initialized.
+		// Resource reader is already initialized.
 		return 0;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -343,6 +448,9 @@ int EXEPrivate::loadPEResourceTypes(void)
 	} else if (!isValid) {
 		// Unknown executable type.
 		return -EIO;
+	} else if (exeType != EXE_TYPE_PE && exeType != EXE_TYPE_PE32PLUS) {
+		// Unsupported executable type.
+		return -ENOTSUP;
 	}
 
 	// Make sure the section table is loaded.
