@@ -147,7 +147,7 @@ class PEResourceReaderPrivate
 		 * @param langID	[out] Language ID.
 		 * @return 0 on success; non-zero on error.
 		 */
-		static int load_StringTable(IRpFile *file, PEResourceReader::StringTable &st, uint32_t *langID);
+		static int load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID);
 };
 
 /** PEResourceReaderPrivate **/
@@ -451,7 +451,7 @@ inline int PEResourceReaderPrivate::alignFileDWORD(IRpFile *file)
  * @param langID	[out] Language ID.
  * @return 0 on success; non-zero on error.
  */
-int PEResourceReaderPrivate::load_StringTable(IRpFile *file, PEResourceReader::StringTable &st, uint32_t *langID)
+int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
 {
 	// References:
 	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx

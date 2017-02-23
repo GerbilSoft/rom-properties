@@ -181,6 +181,7 @@ SET(libromdata_H
 	disc/SparseDiscReader.hpp
 	disc/SparseDiscReader_p.hpp
 	disc/PEResourceReader.hpp
+	disc/IResourceReader.hpp
 	NES.hpp
 	)
 

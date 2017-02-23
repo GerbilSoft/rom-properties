@@ -22,20 +22,14 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_PERESOURCEREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_PERESOURCEREADER_HPP__
 
-#include "IPartition.hpp"
-#include "../exe_structs.h"
-
-// C++ includes.
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include "IResourceReader.hpp"
 
 namespace LibRomData {
 
 class IRpFile;
 
 class PEResourceReaderPrivate;
-class PEResourceReader : public IPartition
+class PEResourceReader : public IResourceReader
 {
 	public:
 		/**
@@ -50,7 +44,7 @@ class PEResourceReader : public IPartition
 		 * @param rsrc_va .rsrc virtual address.
 		 */
 		PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
-		~PEResourceReader();
+		virtual ~PEResourceReader();
 
 	private:
 		RP_DISABLE_COPY(PEResourceReader)
@@ -74,14 +68,14 @@ class PEResourceReader : public IPartition
 		 * @param size Amount of data to read, in bytes.
 		 * @return Number of bytes read.
 		 */
-		virtual size_t read(void *ptr, size_t size) override;
+		virtual size_t read(void *ptr, size_t size) override final;
 
 		/**
 		 * Set the partition position.
 		 * @param pos Partition position.
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int seek(int64_t pos) override;
+		virtual int seek(int64_t pos) override final;
 
 		/**
 		 * Seek to the beginning of the partition.
@@ -114,7 +108,7 @@ class PEResourceReader : public IPartition
 		virtual int64_t partition_size_used(void) const override final;
 
 	public:
-		/** Resource access functions. **/
+		/** IResourceReader functions. **/
 
 		/**
 		 * Open a resource.
@@ -123,17 +117,7 @@ class PEResourceReader : public IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		IRpFile *open(uint16_t type, int id, int lang);
-
-		// StringTable.
-		// - Element 1: Key
-		// - Element 2: Value
-		typedef std::vector<std::pair<rp_string, rp_string> > StringTable;
-
-		// StringFileInfo section.
-		// - Key: Langauge ID. (LOWORD = charset, HIWORD = language)
-		// - Value: String table.
-		typedef std::unordered_map<uint32_t, StringTable> StringFileInfo;
+		virtual IRpFile *open(uint16_t type, int id, int lang) override final;
 
 		/**
 		 * Load a VS_VERSION_INFO resource.
@@ -143,7 +127,7 @@ class PEResourceReader : public IPartition
 		 * @param pVsSfi	[out] StringFileInfo section.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi);
+		virtual int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi) override final;
 };
 
 }

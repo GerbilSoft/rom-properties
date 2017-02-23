@@ -539,7 +539,7 @@ void EXEPrivate::addFields_PE(void)
 
 	// Load the version resource.
 	VS_FIXEDFILEINFO vsffi;
-	PEResourceReader::StringFileInfo vssfi;
+	IResourceReader::StringFileInfo vssfi;
 	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
 	if (ret != 0) {
 		// Unable to load the version resource.
