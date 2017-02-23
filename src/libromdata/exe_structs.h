@@ -504,6 +504,102 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 } VS_FIXEDFILEINFO;
 #pragma pack()
 
+/** New Executable (Win16) structs. **/
+// References:
+// - http://wiki.osdev.org/NE
+// - http://www.fileformat.info/format/exe/corion-ne.htm
+
+#pragma pack(1)
+typedef struct PACKED _NE_Header {
+	// 0x00
+	uint16_t sig;			// "NE" (0x4E45)
+	uint8_t MajLinkerVersion;	// The major linker version
+	uint8_t MinLinkerVersion;	// The minor linker version
+	uint16_t EntryTableOffset;	// Offset of entry table, see below
+	uint16_t EntryTableLength;	// Length of entry table in bytes
+	uint32_t FileLoadCRC;		// 32-bit CRC of entire contents of file
+	uint8_t ProgFlags;		// Program flags, bitmapped
+	uint8_t ApplFlags;		// Application flags, bitmapped
+	uint8_t AutoDataSegIndex;	// The automatic data segment index
+	uint8_t reserved;
+	// 0x10
+	uint16_t InitHeapSize;		// The intial local heap size
+	uint16_t InitStackSize;		// The inital stack size
+	uint32_t EntryPoint;		// CS:IP entry point, CS is index into segment table
+	uint32_t InitStack;		// SS:SP inital stack pointer, SS is index into segment table
+	uint16_t SegCount;		// Number of segments in segment table
+	uint16_t ModRefs;		// Number of module references (DLLs)
+	// 0x20
+	uint16_t NoResNamesTabSiz;	// Size of non-resident names table, in bytes (Please clarify non-resident names table)
+	uint16_t SegTableOffset;	// Offset of Segment table
+	uint16_t ResTableOffset;	// Offset of resources table
+	uint16_t ResidNamTable;		// Offset of resident names table
+	uint16_t ModRefTable;		// Offset of module reference table
+	uint16_t ImportNameTable;	// Offset of imported names table (array of counted strings, terminated with string of length 00h)
+	uint32_t OffStartNonResTab;	// Offset from start of file to non-resident names table
+	// 0x30
+	uint16_t MovEntryCount;		// Count of moveable entry point listed in entry table
+	uint16_t FileAlnSzShftCnt;	// File alignment size shift count (0=9(default 512 byte pages))
+	uint16_t nResTabEntries;	// Number of resource table entries
+	uint8_t targOS;			// Target OS
+	uint8_t OS2EXEFlags;		// Other OS/2 flags
+	uint16_t retThunkOffset;	// Offset to return thunks or start of gangload area - what is gangload?
+	uint16_t segrefthunksoff;	// Offset to segment reference thunks or size of gangload area
+	uint16_t mincodeswap;		// Minimum code swap area size
+	uint8_t expctwinver[2];		// Expected windows version (minor first)
+} NE_Header;
+#pragma pack()
+ASSERT_STRUCT(NE_Header, 64);
+
+// Program flags (ProgFlags)
+
+// DGroup type (bits 0-1)
+typedef enum {
+	NE_DGT_NONE = 0,	// None
+	NE_DGT_SINSHARED,	// Single shared
+	NE_DGT_MULTIPLE,	// Multiple
+	NE_DGT_NULL,		// (null)
+} NE_DGroupType;
+
+#define NE_GLOBINIT	(1 << 2)	// Global initialization
+#define NE_PMODEONLY	(1 << 3)	// Protected mode only
+#define NE_INSTRUC86	(1 << 4)	// 8086 instructions
+#define NE_INSTRU286	(1 << 5)	// 80286 instructions
+#define NE_INSTRU386	(1 << 6)	// 80386 instructions
+#define NE_INSTRUx87	(1 << 7)	// 80x87 (FPU) instructions
+
+// Application flags (ApplFlags)
+
+// Application type (bits 0-1)
+typedef enum {
+	NE_APP_NONE = 0,
+	NE_APP_FULLSCREEN,	// Fullscreen (not aware of Windows/P.M. API)
+	NE_APP_WINPMCOMPAT,	// Compatible with Windows/P.M. API
+	NE_APP_WINPMUSES,	// Uses Windows/P.M. API
+} NE_AppType;
+#define NE_OS2APP	(1 << 3)	// OS/2 family application
+// bit 4 reserved?
+#define NE_IMAGEERROR	(1 << 5)	// Errors in image/executable
+#define NE_ONCONFORM	(1 << 6)	// Non-conforming program?
+#define NE_DLL		(1 << 7)	// DLL or driver (SS:SP invalid, CS:IP -> Far INIT routine)
+					// AX=HMODULE, returns AX==0 success, AX!=0 fail
+
+// Target OS (targOS)
+typedef enum {
+	NE_OS_UNKNOWN = 0,
+	NE_OS_OS2,		// IBM OS/2
+	NE_OS_WIN,		// Windows (16-bit)
+	NE_OS_DOS4,		// European DOS 4.x
+	NE_OS_WIN386,		// Windows for the 80386. (Win32s?) 32-bit code.
+	NE_OS_BOSS,		// Borland Operating System Services
+} NE_TargetOS;
+
+// Other OS/2 flags.
+#define NE_OS2_LFN	(1 << 0)	// OS/2 Long File Names
+#define NE_OS2_PMODE	(1 << 1)	// OS/2 2.x Protected Mode executable
+#define NE_OS2_PFONT	(1 << 2)	// OS/2 2.x Proportional Fonts
+#define NE_OS2_GANGL	(1 << 3)	// OS/2 Gangload area
+
 #ifdef __cplusplus
 }
 #endif

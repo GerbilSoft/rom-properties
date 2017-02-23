@@ -82,18 +82,23 @@ class EXEPrivate : public RomDataPrivate
 		// DOS MZ header.
 		IMAGE_DOS_HEADER mz;
 
-		// PE header.
+		// Secondary header.
 		#pragma pack(1)
-		struct PACKED {
-			uint32_t Signature;
-			IMAGE_FILE_HEADER FileHeader;
-			union {
-				uint16_t Magic;
-				IMAGE_OPTIONAL_HEADER32 opt32;
-				IMAGE_OPTIONAL_HEADER64 opt64;
-			} OptionalHeader;
-		} pe;
+		union PACKED {
+			struct PACKED {
+				uint32_t Signature;
+				IMAGE_FILE_HEADER FileHeader;
+				union {
+					uint16_t Magic;
+					IMAGE_OPTIONAL_HEADER32 opt32;
+					IMAGE_OPTIONAL_HEADER64 opt64;
+				} OptionalHeader;
+			} pe;
+			NE_Header ne;
+		} hdr;
 		#pragma pack()
+
+		/** PE-specific **/
 
 		// PE subsystem.
 		uint16_t pe_subsystem;
@@ -136,7 +141,7 @@ EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 {
 	// Clear the structs.
 	memset(&mz, 0, sizeof(mz));
-	memset(&pe, 0, sizeof(pe));
+	memset(&hdr, 0, sizeof(hdr));
 }
 
 EXEPrivate::~EXEPrivate()
@@ -170,11 +175,11 @@ int EXEPrivate::loadPESectionTable(void)
 	switch (exeType) {
 		case EXE_TYPE_PE:
 			section_table_start += sizeof(IMAGE_NT_HEADERS32);
-			SizeOfHeaders = le32_to_cpu(pe.OptionalHeader.opt32.SizeOfHeaders);
+			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt32.SizeOfHeaders);
 			break;
 		case EXE_TYPE_PE32PLUS:
 			section_table_start += sizeof(IMAGE_NT_HEADERS64);
-			SizeOfHeaders = le32_to_cpu(pe.OptionalHeader.opt64.SizeOfHeaders);
+			SizeOfHeaders = le32_to_cpu(hdr.pe.OptionalHeader.opt64.SizeOfHeaders);
 			break;
 		default:
 			// Not a PE executable.
@@ -298,8 +303,8 @@ void EXEPrivate::addFields_PE(void)
 	char buf[64];
 	int len;
 
-	const uint16_t machine = le16_to_cpu(pe.FileHeader.Machine);
-	const uint16_t pe_flags = le16_to_cpu(pe.FileHeader.Characteristics);
+	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
+	const uint16_t pe_flags = le16_to_cpu(hdr.pe.FileHeader.Characteristics);
 
 	// Get the architecture-specific fields.
 	uint16_t os_ver_major, os_ver_minor;
@@ -307,23 +312,23 @@ void EXEPrivate::addFields_PE(void)
 	uint16_t dll_flags;
 	bool dotnet;
 	if (exeType == EXEPrivate::EXE_TYPE_PE) {
-		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(pe.OptionalHeader.opt32.DllCharacteristics);
+		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt32.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	} else /*if (exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
-		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(pe.OptionalHeader.opt64.DllCharacteristics);
+		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt64.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	}
 
 	// CPU. (Also .NET status.)
@@ -724,80 +729,93 @@ EXE::EXE(IRpFile *file)
 		return;
 	}
 
-	// Load the PE header.
-	// TODO: NE/LE/LX.
-	uint32_t pe_addr = le32_to_cpu(d->mz.e_lfanew);
-	if (pe_addr < sizeof(d->mz) || pe_addr >= (d->file->size() - sizeof(d->pe))) {
+	// Load the secondary header. (NE/LE/LX/PE)
+	// TODO: LE/LX.
+	// NOTE: NE and PE secondary headers are both 64 bytes.
+	uint32_t hdr_addr = le32_to_cpu(d->mz.e_lfanew);
+	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
 		return;
 	}
 
-	int ret = d->file->seek(pe_addr);
+	int ret = d->file->seek(hdr_addr);
 	if (ret != 0) {
 		// Seek error.
 		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
 		d->isValid = false;
 		return;
 	}
-	size = d->file->read(&d->pe, sizeof(d->pe));
-	if (size != sizeof(d->pe)) {
+	size = d->file->read(&d->hdr, sizeof(d->hdr));
+	if (size != sizeof(d->hdr)) {
 		// Read error.
+		// TODO: Check the signature first instead of
+		// depending on the full union being available?
 		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
 		d->isValid = false;
 		return;
 	}
 
-	// Verify the PE signature.
+	// Check the signature.
 	// FIXME: MSVC handles 'PE\0\0' as 0x00504500.
-	if (be32_to_cpu(d->pe.Signature) != 0x50450000 /*'PE\0\0'*/) {
-		// Not a PE executable.
-		d->exeType = EXEPrivate::EXE_TYPE_MZ;
-		return;
-	}
-
-	// This is a PE executable.
-	// Check if it's PE or PE32+. (TODO: .NET?)
-	switch (le16_to_cpu(d->pe.OptionalHeader.Magic)) {
-		case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
-			d->exeType = EXEPrivate::EXE_TYPE_PE;
-			d->pe_subsystem = le16_to_cpu(d->pe.OptionalHeader.opt32.Subsystem);
-			break;
-		case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
-			d->exeType = EXEPrivate::EXE_TYPE_PE32PLUS;
-			d->pe_subsystem = le16_to_cpu(d->pe.OptionalHeader.opt64.Subsystem);
-			break;
-		default:
-			// Unsupported PE executable.
-			d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
-			d->isValid = false;
-			return;
-	}
-
-	// Check the file type.
-	const uint16_t pe_flags = le16_to_cpu(d->pe.FileHeader.Characteristics);
-	if (pe_flags & IMAGE_FILE_DLL) {
-		// DLL file.
-		d->fileType = FTYPE_DLL;
-	} else {
-		switch (d->pe_subsystem) {
-			case IMAGE_SUBSYSTEM_NATIVE:
-				// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
-				// device driver or boot-time executable.
-				// Need to check some other flag...
-				d->fileType = FTYPE_EXECUTABLE;
+	if (be32_to_cpu(d->hdr.pe.Signature) == 0x50450000 /*'PE\0\0'*/) {
+		// This is a PE executable.
+		// Check if it's PE or PE32+.
+		// (.NET is checked in loadFieldData().)
+		switch (le16_to_cpu(d->hdr.pe.OptionalHeader.Magic)) {
+			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+				d->exeType = EXEPrivate::EXE_TYPE_PE;
+				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt32.Subsystem);
 				break;
-			case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
-			case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
-				d->fileType = FTYPE_DEVICE_DRIVER;
-				break;
-			case IMAGE_SUBSYSTEM_EFI_ROM:
-				d->fileType = FTYPE_ROM_IMAGE;
+			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
+				d->exeType = EXEPrivate::EXE_TYPE_PE32PLUS;
+				d->pe_subsystem = le16_to_cpu(d->hdr.pe.OptionalHeader.opt64.Subsystem);
 				break;
 			default:
-				d->fileType = FTYPE_EXECUTABLE;
-				break;
+				// Unsupported PE executable.
+				d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
+				d->isValid = false;
+				return;
 		}
+
+		// Check the file type.
+		const uint16_t pe_flags = le16_to_cpu(d->hdr.pe.FileHeader.Characteristics);
+		if (pe_flags & IMAGE_FILE_DLL) {
+			// DLL file.
+			d->fileType = FTYPE_DLL;
+		} else {
+			switch (d->pe_subsystem) {
+				case IMAGE_SUBSYSTEM_NATIVE:
+					// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
+					// device driver or boot-time executable.
+					// Need to check some other flag...
+					d->fileType = FTYPE_EXECUTABLE;
+					break;
+				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+					d->fileType = FTYPE_DEVICE_DRIVER;
+					break;
+				case IMAGE_SUBSYSTEM_EFI_ROM:
+					d->fileType = FTYPE_ROM_IMAGE;
+					break;
+				default:
+					d->fileType = FTYPE_EXECUTABLE;
+					break;
+			}
+		}
+	} else if (be16_to_cpu(d->hdr.ne.sig) == 0x4E45 /* 'NE' */) {
+		// New Executable.
+		// TODO: Distinguish between DLL and driver?
+		d->exeType = EXEPrivate::EXE_TYPE_NE;
+		if (d->hdr.ne.ApplFlags & NE_DLL) {
+			d->fileType = FTYPE_DLL;
+		} else {
+			d->fileType = FTYPE_EXECUTABLE;
+		}
+	} else {
+		// Unrecognized secondary header.
+		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		return;
 	}
 }
 
@@ -873,9 +891,24 @@ const rp_char *EXE::systemName(uint32_t type) const
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
 
+		case EXEPrivate::EXE_TYPE_NE: {
+			// New Executable.
+			static const rp_char *const sysNames_NE[6][4] = {
+				{nullptr, nullptr, nullptr, nullptr},						// NE_OS_UNKNOWN
+				{_RP("IBM OS/2"), _RP("OS/2"), _RP("OS/2"), nullptr},				// NE_OS_OS2
+				{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN
+				{_RP("European MS-DOS 4.x"), _RP("EuroDOS 4.x"), _RP("EuroDOS 4.x"), nullptr},	// NE_OS_DOS4
+				{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN386 (TODO)
+				{_RP("Borland Operating System Services"), _RP("BOSS"), _RP("BOSS"), nullptr},	// NE_OS_BOSS
+			};
+			if (d->hdr.ne.targOS > NE_OS_BOSS)
+				return nullptr;
+			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
+		}
+
 		case EXEPrivate::EXE_TYPE_PE:
 		case EXEPrivate::EXE_TYPE_PE32PLUS: {
-			// Windows executable.
+			// Portable Executable.
 			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
 			switch (d->pe_subsystem) {
 				case IMAGE_SUBSYSTEM_EFI_APPLICATION:
