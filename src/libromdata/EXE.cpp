@@ -1160,8 +1160,22 @@ const rp_char *EXE::systemName(uint32_t type) const
 				{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN386 (TODO)
 				{_RP("Borland Operating System Services"), _RP("BOSS"), _RP("BOSS"), nullptr},	// NE_OS_BOSS
 			};
-			if (d->hdr.ne.targOS > NE_OS_BOSS)
-				return nullptr;
+			if (d->hdr.ne.targOS > NE_OS_BOSS) {
+				// Check for Phar Lap 286 extenders.
+				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
+				static const rp_char *const sysNames_NE_PharLap[2][4] = {
+					{_RP("Phar Lap 286|DOS Extender, OS/2"), _RP("Phar Lap 286 OS/2"), _RP("Phar Lap 286 OS/2"), nullptr},	// 0x81
+					{_RP("Phar Lap 286|DOS Extender, Windows"), _RP("Phar Lap 286 Windows"), _RP("Phar Lap 286 Windows"), nullptr},	// 0x82
+				};
+				if (d->hdr.ne.targOS == 0x81) {
+					return sysNames_NE_PharLap[0][type & SYSNAME_TYPE_MASK];
+				} else if (d->hdr.ne.targOS == 0x82) {
+					return sysNames_NE_PharLap[1][type & SYSNAME_TYPE_MASK];
+				} else {
+					// Not Phar-Lap.
+					return nullptr;
+				}
+			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
 		}
 

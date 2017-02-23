@@ -600,6 +600,9 @@ typedef enum {
 	NE_OS_DOS4,		// European DOS 4.x
 	NE_OS_WIN386,		// Windows for the 80386. (Win32s?) 32-bit code.
 	NE_OS_BOSS,		// Borland Operating System Services
+
+	NE_OS_PHARLAP_286_OS2 = 0x81,	// Phar Lap 286|DOS Extender, OS/2
+	NE_OS_PHARLAP_286_WIN = 0x82,	// Phar Lap 286|DOS Extender, Windows
 } NE_TargetOS;
 
 // Other OS/2 flags.
