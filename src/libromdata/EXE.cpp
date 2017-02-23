@@ -796,6 +796,7 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 	// Check the magic number.
 	// NOTE: 'MZ' is stored as a string, so we have to
 	// handle it as if it's big-endian.
+	// TODO: Also support 'ZM'?
 	if (be16_to_cpu(pMZ->e_magic) == 'MZ') {
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
