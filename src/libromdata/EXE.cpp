@@ -69,11 +69,12 @@ class EXEPrivate : public RomDataPrivate
 			EXE_TYPE_UNKNOWN = -1,	// Unknown EXE type.
 
 			EXE_TYPE_MZ = 0,	// DOS MZ
-			EXE_TYPE_NE = 1,	// 16-bit New Executable
-			EXE_TYPE_LE = 2,	// 32-bit Linear Executable
-			EXE_TYPE_LX = 3,	// Mixed 16/32/64-bit Linear Executable
-			EXE_TYPE_PE = 4,	// 32-bit Portable Executable
-			EXE_TYPE_PE32PLUS = 5,	// 64-bit Portable Executable
+			EXE_TYPE_NE,		// 16-bit New Executable
+			EXE_TYPE_LE,		// Mixed 16/32/64-bit Linear Executable
+			EXE_TYPE_W3,		// Collection of LE executables (WIN386.EXE)
+			EXE_TYPE_LX,		// 32-bit Linear Executable
+			EXE_TYPE_PE,		// 32-bit Portable Executable
+			EXE_TYPE_PE32PLUS,	// 64-bit Portable Executable
 
 			EXE_TYPE_LAST
 		};
@@ -86,6 +87,8 @@ class EXEPrivate : public RomDataPrivate
 		// Secondary header.
 		#pragma pack(1)
 		union PACKED {
+			uint32_t sig32;
+			uint16_t sig16;
 			struct PACKED {
 				uint32_t Signature;
 				IMAGE_FILE_HEADER FileHeader;
@@ -1071,6 +1074,11 @@ EXE::EXE(IRpFile *file)
 		} else {
 			d->fileType = FTYPE_EXECUTABLE;
 		}
+	} else if (be16_to_cpu(d->hdr.sig16) == 0x5733 /* 'W3' */) {
+		// W3 executable. (Collection of LE executables.)
+		// Only used by WIN386.EXE.
+		d->exeType = EXEPrivate::EXE_TYPE_W3;
+		d->fileType = FTYPE_EXECUTABLE;
 	} else {
 		// Unrecognized secondary header.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
@@ -1178,6 +1186,12 @@ const rp_char *EXE::systemName(uint32_t type) const
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
+		}
+
+		case EXEPrivate::EXE_TYPE_W3: {
+			// W3 executable. (Collection of LE executables.)
+			// Only used by WIN386.EXE.
+			return sysNames_Windows[type & SYSNAME_TYPE_MASK];
 		}
 
 		case EXEPrivate::EXE_TYPE_PE:
@@ -1298,8 +1312,9 @@ int EXE::loadFieldData(void)
 	static const rp_char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
 		_RP("MS-DOS Executable"),		// EXE_TYPE_MZ
 		_RP("16-bit New Executable"),		// EXE_TYPE_NE
-		_RP("32-bit Linear Executable"),	// EXE_TYPE_LE
-		_RP("Mixed-Mode Linear Executable"),	// EXE_TYPE_LX
+		_RP("Mixed-Mode Linear Executable"),	// EXE_TYPE_LE
+		_RP("Windows/386 Kernel"),		// EXE_TYPE_W3
+		_RP("32-bit Linear Executable"),	// EXE_TYPE_LX
 		_RP("32-bit Portable Executable"),	// EXE_TYPE_PE
 		_RP("64-bit Portable Executable"),	// EXE_TYPE_PE32PLUS
 	};
