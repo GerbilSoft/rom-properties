@@ -70,7 +70,7 @@ class EXEPrivate : public RomDataPrivate
 
 			EXE_TYPE_MZ = 0,	// DOS MZ
 			EXE_TYPE_NE,		// 16-bit New Executable
-			EXE_TYPE_LE,		// Mixed 16/32/64-bit Linear Executable
+			EXE_TYPE_LE,		// Mixed 16/32-bit Linear Executable
 			EXE_TYPE_W3,		// Collection of LE executables (WIN386.EXE)
 			EXE_TYPE_LX,		// 32-bit Linear Executable
 			EXE_TYPE_PE,		// 32-bit Portable Executable
