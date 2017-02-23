@@ -95,6 +95,9 @@ class EXEPrivate : public RomDataPrivate
 		} pe;
 		#pragma pack()
 
+		// PE subsystem.
+		uint16_t pe_subsystem;
+
 		// PE section headers.
 		ao::uvector<IMAGE_SECTION_HEADER> pe_sections;
 
@@ -128,6 +131,7 @@ class EXEPrivate : public RomDataPrivate
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
 	, exeType(EXE_TYPE_UNKNOWN)
+	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
 	, rsrcReader(nullptr)
 {
 	// Clear the structs.
@@ -299,13 +303,12 @@ void EXEPrivate::addFields_PE(void)
 
 	// Get the architecture-specific fields.
 	uint16_t os_ver_major, os_ver_minor;
-	uint16_t subsystem, subsystem_ver_major, subsystem_ver_minor;
+	uint16_t subsystem_ver_major, subsystem_ver_minor;
 	uint16_t dll_flags;
 	bool dotnet;
 	if (exeType == EXEPrivate::EXE_TYPE_PE) {
 		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
-		subsystem = le16_to_cpu(pe.OptionalHeader.opt32.Subsystem);
 		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt32.MajorSubsystemVersion);
 		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt32.MinorSubsystemVersion);
 		dll_flags = le16_to_cpu(pe.OptionalHeader.opt32.DllCharacteristics);
@@ -315,7 +318,6 @@ void EXEPrivate::addFields_PE(void)
 	} else /*if (exeType == EXEPrivate::EXE_TYPE_PE32PLUS)*/ {
 		os_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
 		os_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
-		subsystem = le16_to_cpu(pe.OptionalHeader.opt64.Subsystem);
 		subsystem_ver_major = le16_to_cpu(pe.OptionalHeader.opt64.MajorSubsystemVersion);
 		subsystem_ver_minor = le16_to_cpu(pe.OptionalHeader.opt64.MinorSubsystemVersion);
 		dll_flags = le16_to_cpu(pe.OptionalHeader.opt64.DllCharacteristics);
@@ -370,8 +372,8 @@ void EXEPrivate::addFields_PE(void)
 
 	// Subsystem name and version.
 	len = snprintf(buf, sizeof(buf), "%s %u.%u",
-		(subsystem < ARRAY_SIZE(subsysNames)
-			? subsysNames[subsystem]
+		(pe_subsystem < ARRAY_SIZE(subsysNames)
+			? subsysNames[pe_subsystem]
 			: "Unknown"),
 		subsystem_ver_major, subsystem_ver_minor);
 	if (len > (int)sizeof(buf))
@@ -678,10 +680,10 @@ void EXEPrivate::addFields_PE(void)
 EXE::EXE(IRpFile *file)
 	: super(new EXEPrivate(this, file))
 {
-	// This class handles executables.
-	// TODO: Different type for DLL, etc.?
+	// This class handles different types of files.
+	// d->fileType will be set later.
 	RP_D(EXE);
-	d->fileType = FTYPE_EXECUTABLE;
+	d->fileType = FTYPE_UNKNOWN;
 
 	if (!d->file) {
 		// Could not dup() the file handle.
@@ -717,6 +719,8 @@ EXE::EXE(IRpFile *file)
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40) {
 		// MS-DOS executable.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
+		// TODO: Check for MS-DOS device drivers?
+		d->fileType = FTYPE_EXECUTABLE;
 		return;
 	}
 
@@ -757,15 +761,43 @@ EXE::EXE(IRpFile *file)
 	switch (le16_to_cpu(d->pe.OptionalHeader.Magic)) {
 		case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
 			d->exeType = EXEPrivate::EXE_TYPE_PE;
+			d->pe_subsystem = le16_to_cpu(d->pe.OptionalHeader.opt32.Subsystem);
 			break;
 		case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
 			d->exeType = EXEPrivate::EXE_TYPE_PE32PLUS;
+			d->pe_subsystem = le16_to_cpu(d->pe.OptionalHeader.opt64.Subsystem);
 			break;
 		default:
 			// Unsupported PE executable.
 			d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
 			d->isValid = false;
 			return;
+	}
+
+	// Check the file type.
+	const uint16_t pe_flags = le16_to_cpu(d->pe.FileHeader.Characteristics);
+	if (pe_flags & IMAGE_FILE_DLL) {
+		// DLL file.
+		d->fileType = FTYPE_DLL;
+	} else {
+		switch (d->pe_subsystem) {
+			case IMAGE_SUBSYSTEM_NATIVE:
+				// TODO: IMAGE_SUBSYSTEM_NATIVE may be either a
+				// device driver or boot-time executable.
+				// Need to check some other flag...
+				d->fileType = FTYPE_EXECUTABLE;
+				break;
+			case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+			case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+				d->fileType = FTYPE_DEVICE_DRIVER;
+				break;
+			case IMAGE_SUBSYSTEM_EFI_ROM:
+				d->fileType = FTYPE_ROM_IMAGE;
+				break;
+			default:
+				d->fileType = FTYPE_EXECUTABLE;
+				break;
+		}
 	}
 }
 
@@ -828,14 +860,56 @@ const rp_char *EXE::systemName(uint32_t type) const
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// TODO: DOS, Windows, etc.
-	// Bits 0-1: Type. (short, long, abbreviation)
-	static const rp_char *const sysNames[4] = {
-		// FIXME: "NGC" in Japan?
-		_RP("DOS/Windows EXE (placeholder)"), _RP("DOS/Windows"), _RP("EXE"), nullptr
+	static const rp_char *const sysNames_Windows[4] = {
+		_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
+	switch (d->exeType) {
+		case EXEPrivate::EXE_TYPE_MZ: {
+			// DOS executable.
+			static const rp_char *const sysNames_DOS[4] = {
+				_RP("Microsoft MS-DOS"), _RP("MS-DOS"), _RP("DOS"), nullptr
+			};
+			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
+		}
+
+		case EXEPrivate::EXE_TYPE_PE:
+		case EXEPrivate::EXE_TYPE_PE32PLUS: {
+			// Windows executable.
+			// TODO: Also used by older SkyOS and BeOS, and HX for DOS.
+			switch (d->pe_subsystem) {
+				case IMAGE_SUBSYSTEM_EFI_APPLICATION:
+				case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
+				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
+				case IMAGE_SUBSYSTEM_EFI_ROM: {
+					// EFI executable.
+					static const rp_char *const sysNames_EFI[4] = {
+						_RP("Extensible Firmware Interface"), _RP("EFI"), _RP("EFI"), nullptr
+					};
+					return sysNames_EFI[type & SYSNAME_TYPE_MASK];
+				}
+
+				case IMAGE_SUBSYSTEM_XBOX: {
+					// TODO: Which Xbox?
+					static const rp_char *const sysNames_Xbox[4] = {
+						_RP("Microsoft Xbox"), _RP("Xbox"), _RP("Xbox"), nullptr
+					};
+					return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
+				}
+
+				default:
+					return sysNames_Windows[type & SYSNAME_TYPE_MASK];
+			}
+			break;
+		}
+
+		default:
+			break;
+	};
+
+	// Should not get here...
+	assert(!"Unknown EXE type.");
+	return _RP("Unknown EXE type");
 }
 
 /**
