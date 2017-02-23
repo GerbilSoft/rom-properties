@@ -503,6 +503,13 @@ int EXEPrivate::loadNEResourceTable(void)
  */
 void EXEPrivate::addFields_NE(void)
 {
+	// Up to 2 tabs.
+	fields->reserveTabs(2);
+
+	// NE Header
+	fields->setTabName(0, _RP("NE Header"));
+	fields->setTabIndex(0);
+
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
@@ -610,7 +617,10 @@ void EXEPrivate::addFields_NE(void)
 		return;
 	}
 
-	// TODO: Add version resource fields.
+	// Add the version fields.
+	fields->setTabName(1, _RP("Version"));
+	fields->setTabIndex(1);
+	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
 
 /** PE-specific **/

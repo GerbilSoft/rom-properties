@@ -83,6 +83,19 @@ class NEResourceReaderPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadResTbl(void);
+
+		/**
+		 * Read the section header in an NE version resource.
+		 *
+		 * The file pointer will be advanced past the header.
+		 *
+		 * @param file		[in] PE version resource.
+		 * @param key		[in] Expected header name.
+		 * @param pChildLen	[out,opt] Total length of the section.
+		 * @param pValueLen	[out,opt] Value length.
+		 * @return 0 if the header matches; non-zero on error.
+		 */
+		static int load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen);
 };
 
 /** NEResourceReaderPrivate **/
@@ -273,6 +286,53 @@ int NEResourceReaderPrivate::loadResTbl(void)
 	}
 
 	return ret;
+}
+
+/**
+ * Read the section header in an NE version resource.
+ *
+ * The file pointer will be advanced past the header.
+ *
+ * @param file		[in] PE version resource.
+ * @param key		[in] Expected header name.
+ * @param pChildLen	[out,opt] Total length of the section.
+ * @param pValueLen	[out,opt] Value length.
+ * @return 0 if the header matches; non-zero on error.
+ */
+int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const char *key, uint16_t *pLen, uint16_t *pValueLen)
+{
+	// Read fields.
+	uint16_t fields[2];	// wLength, wValueLength
+	size_t size = file->read(fields, sizeof(fields));
+	if (size != sizeof(fields)) {
+		// Read error.
+		return -EIO;
+	}
+
+	// Check the key name.
+	// NOTE: NE uses SBCS/MBCS/DBCS, so the length is in bytes.
+	const unsigned int key_len = (unsigned int)strlen(key) + 1;
+	unique_ptr<char[]> keyData(new char[key_len]);
+	size = file->read(keyData.get(), key_len);
+	if (size != key_len) {
+		// Read error.
+		return -EIO;
+	}
+
+	// Verify that the strings are equal.
+	if (strncmp(keyData.get(), key, key_len-1) != 0) {
+		// Key mismatch.
+		return -EIO;
+	}
+	if (keyData[key_len-1] != 0) {
+		// Not NULL terminated.
+		return -EIO;
+	}
+
+	// Header read successfully.
+	*pLen = le16_to_cpu(fields[0]);
+	*pValueLen = le16_to_cpu(fields[1]);
+	return 0;
 }
 
 /** NEResourceReader **/
@@ -486,8 +546,73 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
  */
 int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi)
 {
-	// TODO
-	return -1;
+	assert(pVsFfi != nullptr);
+	assert(pVsSfi != nullptr);
+	if (!pVsFfi || !pVsSfi) {
+		// Invalid parameters.
+		return -EINVAL;
+	}
+
+	// Open the VS_VERSION_INFO resource.
+	unique_ptr<IRpFile> f_ver(this->open(RT_VERSION, id, lang));
+	if (!f_ver) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Read the version header.
+	static const char vsvi[] = "VS_VERSION_INFO";
+	uint16_t len, valueLen;
+	int ret = NEResourceReaderPrivate::load_VS_VERSION_INFO_header(f_ver.get(), vsvi, &len, &valueLen);
+	if (ret != 0) {
+		// Header is incorrect.
+		return ret;
+	}
+
+	// Verify the value size.
+	// (Value should be VS_FIXEDFILEINFO.)
+	if (valueLen != sizeof(*pVsFfi)) {
+		// Wrong size.
+		return -EIO;
+	}
+
+	// Read the version information.
+	size_t size = f_ver->read(pVsFfi, sizeof(*pVsFfi));
+	if (size != sizeof(*pVsFfi)) {
+		// Read error.
+		return -EIO;
+	}
+
+	// Verify the signature and structure version.
+	pVsFfi->dwSignature	= le32_to_cpu(pVsFfi->dwSignature);
+	pVsFfi->dwStrucVersion	= le32_to_cpu(pVsFfi->dwStrucVersion);
+	if (pVsFfi->dwSignature != VS_FFI_SIGNATURE ||
+	    pVsFfi->dwStrucVersion != VS_FFI_STRUCVERSION)
+	{
+		// Signature and/or structure version is incorrect.
+		// TODO: Better error code?
+		return -EIO;
+	}
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the remaining fields.
+	pVsFfi->dwFileVersionMS		= le32_to_cpu(pVsFfi->dwFileVersionMS);
+	pVsFfi->dwFileVersionLS		= le32_to_cpu(pVsFfi->dwFileVersionLS);
+	pVsFfi->dwProductVersionMS	= le32_to_cpu(pVsFfi->dwProductVersionMS);
+	pVsFfi->dwProductVersionLS	= le32_to_cpu(pVsFfi->dwProductVersionLS);
+	pVsFfi->dwFileFlagsMask		= le32_to_cpu(pVsFfi->dwFileFlagsMask);
+	pVsFfi->dwFileFlags		= le32_to_cpu(pVsFfi->dwFileFlags);
+	pVsFfi->dwFileOS		= le32_to_cpu(pVsFfi->dwFileOS);
+	pVsFfi->dwFileType		= le32_to_cpu(pVsFfi->dwFileType);
+	pVsFfi->dwFileSubtype		= le32_to_cpu(pVsFfi->dwFileSubtype);
+	pVsFfi->dwFileDateMS		= le32_to_cpu(pVsFfi->dwFileDateMS);
+	pVsFfi->dwFileDateLS		= le32_to_cpu(pVsFfi->dwFileDateLS);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	// TODO: StringFileInfo.
+
+	// Version information read successfully.
+	return 0;
 }
 
 }
