@@ -541,9 +541,18 @@ void EXEPrivate::addFields_NE(void)
 	int len;
 
 	// Target OS.
-	const rp_char *const targetOS = (hdr.ne.targOS < ARRAY_SIZE(targetOS))
+	const rp_char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(targetOS))
 					? NE_TargetOSes[hdr.ne.targOS]
 					: nullptr;
+	if (!targetOS) {
+		// Check for Phar Lap extenders.
+		if (hdr.ne.targOS == NE_OS_PHARLAP_286_OS2) {
+			targetOS = NE_TargetOSes[NE_OS_OS2];
+		} else if (hdr.ne.targOS == NE_OS_PHARLAP_286_WIN) {
+			targetOS = NE_TargetOSes[NE_OS_WIN];
+		}
+	}
+
 	if (targetOS) {
 		fields->addField_string(_RP("Target OS"), targetOS);
 	} else {

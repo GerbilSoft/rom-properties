@@ -598,6 +598,8 @@ typedef enum {
 } NE_ApplFlags;
 
 // Target OS (targOS)
+// Used for NE and LE.
+// NOTE: Phar Lap is NE only.
 typedef enum {
 	NE_OS_UNKNOWN = 0,
 	NE_OS_OS2,		// IBM OS/2
