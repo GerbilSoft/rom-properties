@@ -99,6 +99,7 @@ class EXEPrivate : public RomDataPrivate
 				} OptionalHeader;
 			} pe;
 			NE_Header ne;
+			LE_Header le;
 		} hdr;
 		#pragma pack()
 
@@ -128,6 +129,13 @@ class EXEPrivate : public RomDataPrivate
 		 * Add fields for NE executables.
 		 */
 		void addFields_NE(void);
+
+		/** LE-specific **/
+
+		/**
+		 * Add fields for LE executables.
+		 */
+		void addFields_LE(void);
 
 		/** PE-specific **/
 
@@ -642,6 +650,67 @@ void EXEPrivate::addFields_NE(void)
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
 
+/** LE-specific **/
+
+/**
+ * Add fields for LE executables.
+ */
+void EXEPrivate::addFields_LE(void)
+{
+	// TODO: Byteswapping values.
+
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
+
+	// CPU.
+	// TODO: bsearch() in EXEData.
+	const rp_char *cpu;
+	switch (le16_to_cpu(hdr.le.cpu_type)) {
+		case LE_CPU_80286:
+			cpu = _RP("Intel i286");
+			break;
+		case LE_CPU_80386:
+			cpu = _RP("Intel i386");
+			break;
+		case LE_CPU_80486:
+			cpu = _RP("Intel i486");
+			break;
+		case LE_CPU_80586:
+			cpu = _RP("Intel Pentium");
+			break;
+		case LE_CPU_i860_N10:
+			cpu = _RP("Intel i860 XR (N10)");
+			break;
+		case LE_CPU_i860_N11:
+			cpu = _RP("Intel i860 XP (N11)");
+			break;
+		case LE_CPU_MIPS_I:
+			cpu = _RP("MIPS Mark I (R2000, R3000");
+			break;
+		case LE_CPU_MIPS_II:
+			cpu = _RP("MIPS Mark II (R6000)");
+			break;
+		case LE_CPU_MIPS_III:
+			cpu = _RP("MIPS Mark III (R4000)");
+			break;
+		case LE_CPU_UNKNOWN:
+		default:
+			cpu = nullptr;
+			break;
+	}
+
+	if (cpu) {
+		fields->addField_string(_RP("CPU"), cpu);
+	} else {
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)", le16_to_cpu(hdr.le.cpu_type));
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("CPU"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+}
+
 /** PE-specific **/
 
 /**
@@ -1090,6 +1159,20 @@ EXE::EXE(IRpFile *file)
 		} else {
 			d->fileType = FTYPE_EXECUTABLE;
 		}
+	} else if (be16_to_cpu(d->hdr.le.sig) == 0x4C45 /* 'LE' */) {
+		// Linear Executable.
+		d->exeType = EXEPrivate::EXE_TYPE_LE;
+		// TODO: Check byteorder flags and adjust as necessary.
+		if (le16_to_cpu(d->hdr.le.targOS) == NE_OS_WIN386) {
+			// LE VxD
+			d->fileType = FTYPE_DEVICE_DRIVER;
+		} else if (le32_to_cpu(d->hdr.le.module_type_flags) & LE_MODULE_IS_DLL) {
+			// LE DLL
+			d->fileType = FTYPE_DLL;
+		} else {
+			// LE EXE
+			d->fileType = FTYPE_EXECUTABLE;
+		}
 	} else if (be16_to_cpu(d->hdr.sig16) == 0x5733 /* 'W3' */) {
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
@@ -1166,6 +1249,16 @@ const rp_char *EXE::systemName(uint32_t type) const
 		_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr
 	};
 
+	// New Executable (and Linear Executable) operating systems.
+	static const rp_char *const sysNames_NE[6][4] = {
+		{nullptr, nullptr, nullptr, nullptr},						// NE_OS_UNKNOWN
+		{_RP("IBM OS/2"), _RP("OS/2"), _RP("OS/2"), nullptr},				// NE_OS_OS2
+		{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN
+		{_RP("European MS-DOS 4.x"), _RP("EuroDOS 4.x"), _RP("EuroDOS 4.x"), nullptr},	// NE_OS_DOS4
+		{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN386 (TODO)
+		{_RP("Borland Operating System Services"), _RP("BOSS"), _RP("BOSS"), nullptr},	// NE_OS_BOSS
+	};
+
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_MZ: {
 			// DOS executable.
@@ -1177,14 +1270,6 @@ const rp_char *EXE::systemName(uint32_t type) const
 
 		case EXEPrivate::EXE_TYPE_NE: {
 			// New Executable.
-			static const rp_char *const sysNames_NE[6][4] = {
-				{nullptr, nullptr, nullptr, nullptr},						// NE_OS_UNKNOWN
-				{_RP("IBM OS/2"), _RP("OS/2"), _RP("OS/2"), nullptr},				// NE_OS_OS2
-				{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN
-				{_RP("European MS-DOS 4.x"), _RP("EuroDOS 4.x"), _RP("EuroDOS 4.x"), nullptr},	// NE_OS_DOS4
-				{_RP("Microsoft Windows"), _RP("Windows"), _RP("Windows"), nullptr},		// NE_OS_WIN386 (TODO)
-				{_RP("Borland Operating System Services"), _RP("BOSS"), _RP("BOSS"), nullptr},	// NE_OS_BOSS
-			};
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
 				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
@@ -1202,6 +1287,18 @@ const rp_char *EXE::systemName(uint32_t type) const
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
+		}
+
+		case EXEPrivate::EXE_TYPE_LE: {
+			// Linear Executable.
+			// TODO: Some DOS extenders have the target OS set to OS/2.
+			// Check 'file' msdos magic.
+			// TODO: Byteswapping.
+			const uint16_t targOS = le16_to_cpu(d->hdr.le.targOS);
+			if (targOS <= NE_OS_WIN386) {
+				return sysNames_NE[targOS][type & SYSNAME_TYPE_MASK];
+			}
+			return nullptr;
 		}
 
 		case EXEPrivate::EXE_TYPE_W3: {
@@ -1276,7 +1373,7 @@ vector<const rp_char*> EXE::supportedFileExtensions_static(void)
 		_RP(".sys"), _RP(".tsp"),
 
 		// LE extensions
-		_RP("*.vxd"),
+		_RP("*.vxd"), _RP(".386"),
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
@@ -1343,6 +1440,10 @@ int EXE::loadFieldData(void)
 	switch (d->exeType) {
 		case EXEPrivate::EXE_TYPE_NE:
 			d->addFields_NE();
+			break;
+
+		case EXEPrivate::EXE_TYPE_LE:
+			d->addFields_LE();
 			break;
 
 		case EXEPrivate::EXE_TYPE_PE:

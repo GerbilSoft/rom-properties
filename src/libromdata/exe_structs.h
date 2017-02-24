@@ -640,6 +640,65 @@ typedef struct PACKED _NE_TYPEINFO {
 } NE_TYPEINFO;
 #pragma pack()
 
+/** Linear Executable (Win16 drivers) structs. **/
+// References:
+// - http://fileformats.archiveteam.org/wiki/Linear_Executable
+// - http://faydoc.tripod.com/formats/exe-LE.htm
+
+#pragma pack(1)
+typedef struct PACKED _LE_Header {
+	// 0x00
+	uint16_t sig;		// 'LE' (0x4C45)
+	uint8_t byte_order;	// 0 == little-endian; other == big-endian
+	uint8_t word_order;	// 0 == little-endian; other == big-endian
+	uint32_t format_level;	// Executable format level.
+	uint16_t cpu_type;	// See LE_CPU_Type.
+	uint16_t targOS;	// See NE_Target_OS.
+	uint32_t module_version;
+	// 0x10
+	uint32_t module_type_flags;	// See LE_Module_Type_Flags.
+
+	// TODO more
+	uint8_t filler[0xB0-0x14];
+} LE_Header;
+#pragma pack()
+ASSERT_STRUCT(LE_Header, 0xB0);
+
+// CPU type.
+typedef enum {
+	// TODO add to 'file'
+	LE_CPU_UNKNOWN		= 0x00,
+	LE_CPU_80286		= 0x01,
+	LE_CPU_80386		= 0x02,
+	LE_CPU_80486		= 0x03,
+	LE_CPU_80586		= 0x04,
+	LE_CPU_i860_N10		= 0x20,	// i860 XR
+	LE_CPU_i860_N11		= 0x21,	// i860 XP
+	LE_CPU_MIPS_I		= 0x40,	// MIPS Mark I (R2000, R3000)
+	LE_CPU_MIPS_II		= 0x41,	// MIPS Mark II (R6000)
+	LE_CPU_MIPS_III		= 0x42,	// MIPS Mark III (R4000)
+} LE_CPU_Type;
+
+// Module type flags.
+typedef enum {
+	LE_DLL_INIT_GLOBAL		= (0 << 2),
+	LE_DLL_INIT_PER_PROCESS		= (1 << 2),
+	LE_DLL_INIT_MASK		= (1 << 2),
+
+	LE_EXE_NO_INTERNAL_FIXUP	= (1 << 4),
+	LE_EXE_NO_EXTERNAL_FIXUP	= (1 << 5),
+
+	// Same sa NE_AppType.
+	LE_WINDOW_TYPE_UNKNOWN		= (0 << 8),
+	LE_WINDOW_TYPE_INCOMPATIBLE	= (1 << 8),
+	LE_WINDOW_TYPE_COMPATIBLE	= (2 << 8),
+	LE_WINDOW_TYPE_USES		= (3 << 8),
+	LE_WINDOW_TYPE_MASK		= (3 << 8),
+
+	LE_MODULE_NOT_LOADABLE		= (1 << 13),
+	LE_MODULE_IS_DLL		= (1 << 15),
+} LE_Module_Type_Flags;
+
 #ifdef __cplusplus
 }
 #endif
