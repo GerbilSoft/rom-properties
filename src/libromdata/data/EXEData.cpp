@@ -38,7 +38,8 @@ class EXEDataPrivate {
 			uint16_t cpu;
 			const rp_char *name;
 		};
-		static const MachineType machineTypes[];
+		static const MachineType machineTypes_PE[];
+		static const MachineType machineTypes_LE[];
 
 		/**
 		 * bsearch() comparison function for MachineType.
@@ -49,9 +50,9 @@ class EXEDataPrivate {
 		static int MachineType_compar(const void *a, const void *b);
 };
 
-// Machine type lookup.
+// PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
+const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_I386,	_RP("Intel i386")},
 	{IMAGE_FILE_MACHINE_R3000_BE,	_RP("MIPS R3000 (big-endian)")},
 	{IMAGE_FILE_MACHINE_R3000,	_RP("MIPS R3000")},
@@ -86,6 +87,22 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes[] = {
 	{0, nullptr}
 };
 
+// LE machine types.
+// NOTE: The cpu field *must* be sorted in ascending order.
+const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_LE[] = {
+	{LE_CPU_80286,		_RP("Intel i286")},
+	{LE_CPU_80386,		_RP("Intel i386")},
+	{LE_CPU_80486,		_RP("Intel i486")},
+	{LE_CPU_80586,		_RP("Intel Pentium")},
+	{LE_CPU_i860_N10,	_RP("Intel i860 XR (N10)")},
+	{LE_CPU_i860_N11,	_RP("Intel i860 XP (N11)")},
+	{LE_CPU_MIPS_I,		_RP("MIPS Mark I (R2000, R3000")},
+	{LE_CPU_MIPS_II,	_RP("MIPS Mark II (R6000)")},
+	{LE_CPU_MIPS_III,	_RP("MIPS Mark III (R4000)")},
+
+	{0, nullptr}
+};
+
 /**
  * bsearch() comparison function for MachineType.
  * @param a
@@ -102,18 +119,36 @@ int EXEDataPrivate::MachineType_compar(const void *a, const void *b)
 }
 
 /**
- * Look up a machine type. (CPU)
- * @param cpu Macine type.
+ * Look up a PE machine type. (CPU)
+ * @param cpu PE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const rp_char *EXEData::lookup_cpu(uint16_t cpu)
+const rp_char *EXEData::lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
 	const EXEDataPrivate::MachineType key = {cpu, nullptr};
 	const EXEDataPrivate::MachineType *res =
 		static_cast<const EXEDataPrivate::MachineType*>(bsearch(&key,
-			EXEDataPrivate::machineTypes,
-			ARRAY_SIZE(EXEDataPrivate::machineTypes)-1,
+			EXEDataPrivate::machineTypes_PE,
+			ARRAY_SIZE(EXEDataPrivate::machineTypes_PE)-1,
+			sizeof(EXEDataPrivate::MachineType),
+			EXEDataPrivate::MachineType_compar));
+	return (res ? res->name : nullptr);
+}
+
+/**
+ * Look up an LE machine type. (CPU)
+ * @param cpu LE machine type.
+ * @return Machine type name, or nullptr if not found.
+ */
+const rp_char *EXEData::lookup_le_cpu(uint16_t cpu)
+{
+	// Do a binary search.
+	const EXEDataPrivate::MachineType key = {cpu, nullptr};
+	const EXEDataPrivate::MachineType *res =
+		static_cast<const EXEDataPrivate::MachineType*>(bsearch(&key,
+			EXEDataPrivate::machineTypes_LE,
+			ARRAY_SIZE(EXEDataPrivate::machineTypes_LE)-1,
 			sizeof(EXEDataPrivate::MachineType),
 			EXEDataPrivate::MachineType_compar));
 	return (res ? res->name : nullptr);

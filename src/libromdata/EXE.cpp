@@ -664,46 +664,12 @@ void EXEPrivate::addFields_LE(void)
 	int len;
 
 	// CPU.
-	// TODO: bsearch() in EXEData.
-	const rp_char *cpu;
-	switch (le16_to_cpu(hdr.le.cpu_type)) {
-		case LE_CPU_80286:
-			cpu = _RP("Intel i286");
-			break;
-		case LE_CPU_80386:
-			cpu = _RP("Intel i386");
-			break;
-		case LE_CPU_80486:
-			cpu = _RP("Intel i486");
-			break;
-		case LE_CPU_80586:
-			cpu = _RP("Intel Pentium");
-			break;
-		case LE_CPU_i860_N10:
-			cpu = _RP("Intel i860 XR (N10)");
-			break;
-		case LE_CPU_i860_N11:
-			cpu = _RP("Intel i860 XP (N11)");
-			break;
-		case LE_CPU_MIPS_I:
-			cpu = _RP("MIPS Mark I (R2000, R3000");
-			break;
-		case LE_CPU_MIPS_II:
-			cpu = _RP("MIPS Mark II (R6000)");
-			break;
-		case LE_CPU_MIPS_III:
-			cpu = _RP("MIPS Mark III (R4000)");
-			break;
-		case LE_CPU_UNKNOWN:
-		default:
-			cpu = nullptr;
-			break;
-	}
-
+	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
+	const rp_char *const cpu = EXEData::lookup_le_cpu(cpu_type);
 	if (cpu) {
 		fields->addField_string(_RP("CPU"), cpu);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)", le16_to_cpu(hdr.le.cpu_type));
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)", cpu_type);
 		if (len > (int)sizeof(buf))
 			len = (int)sizeof(buf);
 		fields->addField_string(_RP("CPU"),
@@ -900,7 +866,7 @@ void EXEPrivate::addFields_PE(void)
 
 	// CPU. (Also .NET status.)
 	rp_string s_cpu;
-	const rp_char *const cpu = EXEData::lookup_cpu(machine);
+	const rp_char *const cpu = EXEData::lookup_pe_cpu(machine);
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
