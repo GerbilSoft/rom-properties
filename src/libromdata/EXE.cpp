@@ -119,6 +119,10 @@ class EXEPrivate : public RomDataPrivate
 
 		/** NE-specific **/
 
+		// NE target OSes.
+		// Also used for LE.
+		static const rp_char *const NE_TargetOSes[];
+
 		/**
 		 * Load the NE resource table.
 		 * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
@@ -168,6 +172,17 @@ class EXEPrivate : public RomDataPrivate
 };
 
 /** EXEPrivate **/
+
+// NE target OSes.
+// Also used for LE.
+const rp_char *const EXEPrivate::NE_TargetOSes[] = {
+	nullptr,			// NE_OS_UNKNOWN
+	_RP("IBM OS/2"),		// NE_OS_OS2
+	_RP("Microsoft Windows"),	// NE_OS_WIN
+	_RP("European MS-DOS 4.x"),	// NE_OS_DOS4
+	_RP("Microsoft Windows (386)"),	// NE_OS_WIN386 (TODO)
+	_RP("Borland Operating System Services"),	// NE_OS_BOSS
+};
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
 	: super(q, file)
@@ -526,16 +541,8 @@ void EXEPrivate::addFields_NE(void)
 	int len;
 
 	// Target OS.
-	static const rp_char *const targetOSes[] = {
-		nullptr,			// NE_OS_UNKNOWN
-		_RP("IBM OS/2"),		// NE_OS_OS2
-		_RP("Microsoft Windows"),	// NE_OS_WIN
-		_RP("European MS-DOS 4.x"),	// NE_OS_DOS4
-		_RP("Microsoft Windows (386)"),	// NE_OS_WIN386 (TODO)
-		_RP("Borland Operating System Services"),	// NE_OS_BOSS
-	};
 	const rp_char *const targetOS = (hdr.ne.targOS < ARRAY_SIZE(targetOS))
-					? targetOSes[hdr.ne.targOS]
+					? NE_TargetOSes[hdr.ne.targOS]
 					: nullptr;
 	if (targetOS) {
 		fields->addField_string(_RP("Target OS"), targetOS);
@@ -673,6 +680,22 @@ void EXEPrivate::addFields_LE(void)
 		if (len > (int)sizeof(buf))
 			len = (int)sizeof(buf);
 		fields->addField_string(_RP("CPU"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	// Target OS.
+	// NOTE: Same as NE.
+	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
+	const rp_char *const targetOS = (targOS < ARRAY_SIZE(targetOS))
+					? NE_TargetOSes[targOS]
+					: nullptr;
+	if (targetOS) {
+		fields->addField_string(_RP("Target OS"), targetOS);
+	} else {
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", targOS);
+		if (len > (int)sizeof(buf))
+			len = (int)sizeof(buf);
+		fields->addField_string(_RP("Target OS"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 	}
 }
