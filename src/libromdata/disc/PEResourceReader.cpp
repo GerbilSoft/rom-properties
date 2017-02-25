@@ -531,6 +531,10 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// NOTE: wValueLength is number of *words* (aka UTF-16 characters).
 		// Hence, we're multiplying by two to get bytes.
 		const uint16_t wLength = le16_to_cpu(fields[0]);
+		if (wLength < sizeof(fields)) {
+			// Invalid length.
+			return -EIO;
+		}
 		const int wValueLength = le16_to_cpu(fields[1]) * 2;
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
@@ -541,6 +545,10 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// Last Unicode character must be NULL.
 		tblPos += sizeof(fields);
 		const int key_len = ((wLength - wValueLength - sizeof(fields)) / sizeof(char16_t)) - 1;
+		if (key_len <= 0) {
+			// Invalid key length.
+			return -EIO;
+		}
 		const char16_t *key = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
 		if (le16_to_cpu(key[key_len]) != 0) {
 			// Not NULL-terminated.
@@ -554,7 +562,11 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// Value must be NULL-terminated.
 		const char16_t *value = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
 		const int value_len = (wValueLength / 2) - 1;
-		if (le16_to_cpu(value[value_len]) != 0) {
+		if (value_len <= 0) {
+			// Empty value.
+			const char16_t u16_empty[1] = {0};
+			value = u16_empty;
+		} else if (le16_to_cpu(value[value_len]) != 0) {
 			// Not NULL-terminated.
 			return -EIO;
 		}

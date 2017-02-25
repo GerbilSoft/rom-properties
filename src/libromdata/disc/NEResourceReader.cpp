@@ -450,6 +450,10 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// TODO: Use fields[] directly?
 		const uint16_t wLength = le16_to_cpu(fields[0]);
+		if (wLength < sizeof(fields)) {
+			// Invalid length.
+			return -EIO;
+		}
 		const uint16_t wValueLength = le16_to_cpu(fields[1]);
 		if (wValueLength >= wLength || wLength > (strTblData_len - tblPos)) {
 			// Not valid.
@@ -460,6 +464,10 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// Last character must be NULL.
 		tblPos += sizeof(fields);
 		const int key_len = (wLength - wValueLength - sizeof(fields)) - 1;
+		if (key_len <= 0) {
+			// Invalid key length.
+			return -EIO;
+		}
 		const char *key = reinterpret_cast<const char*>(&strTblData[tblPos]);
 		if (key[key_len] != 0) {
 			// Not NULL-terminated.
@@ -473,7 +481,11 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		// Value must be NULL-terminated.
 		const char *value = reinterpret_cast<const char*>(&strTblData[tblPos]);
 		const int value_len = wValueLength - 1;
-		if (value[value_len] != 0) {
+		if (value_len <= 0) {
+			// Empty value.
+			const char str_empty[1] = {0};
+			value = str_empty;
+		} else if (value[value_len] != 0) {
 			// Not NULL-terminated.
 			return -EIO;
 		}
