@@ -305,7 +305,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (file_os) {
 		fields->addField_string(_RP("File OS"), file_os);
 	} else {
-		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileOS);
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileOS);
 		if (len > (int)sizeof(buf))
 			len = (int)sizeof(buf);
 		fields->addField_string(_RP("File OS"),
@@ -329,7 +329,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (fileType) {
 		fields->addField_string(_RP("File Type"), fileType);
 	} else {
-		snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileType);
+		len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileType);
 		if (len > (int)sizeof(buf))
 			len = (int)sizeof(buf);
 		fields->addField_string(_RP("File Type"),
@@ -385,7 +385,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		if (fileSubtype) {
 			fields->addField_string(_RP("File Subtype"), fileSubtype);
 		} else {
-			snprintf(buf, sizeof(buf), "Unknown (%08X)", pVsFfi->dwFileSubtype);
+			len = snprintf(buf, sizeof(buf), "Unknown (%08X)", pVsFfi->dwFileSubtype);
 			if (len > (int)sizeof(buf))
 				len = (int)sizeof(buf);
 			fields->addField_string(_RP("File Subtype"),
