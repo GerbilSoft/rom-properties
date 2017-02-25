@@ -149,8 +149,9 @@ size_t DiscReader::read(void *ptr, size_t size)
 		size = (size_t)(m_offset + m_length - pos);
 	}
 
-	// TODO: Propagate errors.
-	return m_file->read(ptr, size);
+	size_t ret = m_file->read(ptr, size);
+	m_lastError = m_file->lastError();
+	return ret;
 }
 
 /**
@@ -165,8 +166,10 @@ int DiscReader::seek(int64_t pos)
 		m_lastError = EBADF;
 		return -1;
 	}
-	// TODO: Propagate errors.
-	return m_file->seek(pos + m_offset);
+
+	int ret = m_file->seek(pos + m_offset);
+	m_lastError = m_file->lastError();
+	return ret;
 }
 
 /**
@@ -179,8 +182,9 @@ void DiscReader::rewind(void)
 		m_lastError = EBADF;
 		return;
 	}
-	// TODO: Propagate errors.
+
 	m_file->seek(m_offset);
+	m_lastError = m_file->lastError();
 }
 
 /**

@@ -485,11 +485,14 @@ int WbfsReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	int ret = d->file->seek(phys_pos);
 	if (ret != 0) {
 		// Seek failed.
+		m_lastError = d->file->lastError();
 		return -1;
 	}
 
 	// Read the first 'size' bytes of the block.
-	return (int)d->file->read(ptr, size);
+	ret = (int)d->file->read(ptr, size);
+	m_lastError = d->file->lastError();
+	return ret;
 }
 
 }

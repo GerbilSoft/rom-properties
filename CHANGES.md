@@ -25,6 +25,8 @@
   * The Windows version now registers for "common" file extensions, e.g. ".bin"
     and ".iso". The previous handlers are saved as fallbacks. If rom-properties
     cannot handle one of these files, the fallback handler is used.
+  * Property page viewers now support subtabs. This is used for Windows
+    executables that contain version and manifest resources.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
@@ -39,6 +41,8 @@
     extension is not currently registered; alternatives are .nfc and .nfp)
   * Nintendo Entertainment System: iNES, FDS, QD, and TNES/TDS (3DS Virtual
     Console) formats are supported.
+  * Windows/DOS: Executables, dynamic link libraries, and other types of
+    executable files are supported.
 
 * Changes to existing systems:
   * GameCube: Fixed accidental swapping of Triforce and Wii system names.

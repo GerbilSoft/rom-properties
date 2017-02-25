@@ -83,6 +83,11 @@ class RomFieldsPrivate
 		// ROM field structs.
 		vector<RomFields::Field> fields;
 
+		// Current tab index.
+		uint8_t tabIdx;
+		// Tab names.
+		vector<rp_string> tabNames;
+
 		// Data counter for the old-style addData*() functions.
 		// TODO: Remove this once addData*() is removed.
 		int dataCount;
@@ -97,6 +102,7 @@ class RomFieldsPrivate
 
 RomFieldsPrivate::RomFieldsPrivate()
 	: refCount(1)
+	, tabIdx(0)
 	, dataCount(-1)
 { }
 
@@ -111,6 +117,7 @@ RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *desc, int count)
 		RomFields::Field &field = fields.at(i);
 		field.name = desc->name;
 		field.type = desc->type;
+		field.tabIdx = 0;	// Tabs aren't supported with the old method.
 		field.isValid = false;
 
 		switch (field.type) {
@@ -838,12 +845,101 @@ int RomFields::addData_ageRatings(uint16_t age_ratings[AGE_MAX])
 /** Convenience functions for RomData subclasses. **/
 /** NEW versions for dynamically-allocated fields. **/
 
+/** Tabs **/
+
+/**
+ * Reserve space for tabs.
+ * @param n Desired tab count.
+ */
+void RomFields::reserveTabs(int n)
+{
+	assert(n > 0);
+	if (n > 0) {
+		RP_D(RomFields);
+		d->fields.reserve(n);
+	}
+}
+
+/**
+ * Set the tab index for new fields.
+ * @param idx Tab index.
+ */
+void RomFields::setTabIndex(int tabIdx)
+{
+	RP_D(RomFields);
+	d->tabIdx = tabIdx;
+	if ((int)d->tabNames.size() < tabIdx+1) {
+		// Need to resize tabNames.
+		d->tabNames.resize(tabIdx+1);
+	}
+}
+
+/**
+ * Set a tab name.
+ * NOTE: An empty tab name will hide the tab.
+ * @param tabIdx Tab index.
+ * @param name Tab name.
+ */
+void RomFields::setTabName(int tabIdx, const rp_char *name)
+{
+	assert(tabIdx >= 0);
+	if (tabIdx < 0)
+		return;
+
+	RP_D(RomFields);
+	if ((int)d->tabNames.size() < tabIdx+1) {
+		// Need to resize tabNames.
+		d->tabNames.resize(tabIdx+1);
+	}
+	d->tabNames[tabIdx] = (name ? rp_string(name) : rp_string());
+}
+
+/**
+ * Get the tab count.
+ * @return Tab count. (highest tab index, plus 1)
+ */
+int RomFields::tabCount(void) const
+{
+	// NOTE: d->tabNames might be empty if
+	// only a single tab is in use and no
+	// tab name has been set.
+	RP_D(RomFields);
+	int ret = (int)d->tabNames.size();
+	return (ret > 0 ? ret : 1);
+}
+
+/**
+ * Get the name of the specified tab.
+ * @param tabIdx Tab index.
+ * @return Tab name, or nullptr if no name is set.
+ */
+const rp_char *RomFields::tabName(int tabIdx) const
+{
+	assert(tabIdx >= 0);
+	if (tabIdx < 0)
+		return nullptr;
+
+	RP_D(RomFields);
+	if (tabIdx >= (int)d->tabNames.size()) {
+		// No tab name.
+		return nullptr;
+	}
+
+	// NOTE: nullptr is returned if the name is empty.
+	if (d->tabNames[tabIdx].empty())
+		return nullptr;
+	return d->tabNames[tabIdx].c_str();
+}
+
+/** Fields **/
+
 /**
  * Reserve space for fields.
  * @param n Desired capacity.
  */
 void RomFields::reserve(int n)
 {
+	assert(n > 0);
 	if (n > 0) {
 		RP_D(RomFields);
 		d->fields.reserve(n);
@@ -869,7 +965,12 @@ std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArr
 	}
 
 	for (; strArray != nullptr && count > 0; strArray++, count--) {
-		pVec->push_back(rp_string(*strArray));
+		if (*strArray) {
+			pVec->push_back(rp_string(*strArray));
+		} else {
+			// nullptr. Handle as an empty string.
+			pVec->push_back(rp_string());
+		}
 	}
 
 	return pVec;
@@ -899,6 +1000,7 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, int flag
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = (str ? new rp_string(str) : nullptr);
+	field.tabIdx = d->tabIdx;
 	field.isValid = (name != nullptr);
 	return idx;
 }
@@ -929,6 +1031,7 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, int fl
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = (!str.empty() ? new rp_string(str) : nullptr);
+	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;
 }
@@ -1077,6 +1180,7 @@ int RomFields::addField_bitfield(const rp_char *name,
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.desc.bitfield.names = bit_names;
 	field.data.bitfield = bitfield;
+	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;
 }
@@ -1111,6 +1215,7 @@ int RomFields::addField_listData(const rp_char *name,
 	field.type = RFT_LISTDATA;
 	field.desc.list_data.names = headers;
 	field.data.list_data = list_data;
+	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;
 }
@@ -1141,6 +1246,7 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
 	field.type = RFT_DATETIME;
 	field.desc.flags = flags;
 	field.data.date_time = date_time;
+	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;
 }
@@ -1170,6 +1276,7 @@ int RomFields::addField_ageRatings(const rp_char *name, const age_ratings_t &age
 	field.name = rp_string(name);
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
+	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;
 }

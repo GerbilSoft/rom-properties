@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * IPartition.hpp: Partition reader interface.                             *
+ * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,57 +19,60 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 
-#include "IDiscReader.hpp"
+#include "IPartition.hpp"
+#include "../exe_structs.h"
+
+// C++ includes.
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace LibRomData {
 
-class IPartition : public IDiscReader
+class IResourceReader : public IPartition
 {
 	protected:
-		IPartition() { }
+		IResourceReader() { }
 	public:
-		virtual ~IPartition() = 0;
+		virtual ~IResourceReader() = 0;
 
 	private:
-		typedef IDiscReader super;
-		RP_DISABLE_COPY(IPartition)
+		RP_DISABLE_COPY(IResourceReader)
 
 	public:
-		/** IDiscReader **/
+		/** Resource access functions. **/
 
 		/**
-		 * isDiscSupported() is not handled by IPartition.
-		 * TODO: Maybe implement it to determine if the partition type is supported?
-		 * TODO: Move to IPartition.cpp?
-		 * @return -1
+		 * Open a resource.
+		 * @param type Resource type ID.
+		 * @param id Resource ID. (-1 for "first entry")
+		 * @param lang Language ID. (-1 for "first entry")
+		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final
-		{
-			((void)pHeader);
-			((void)szHeader);
-			return -1;
-		}
+		virtual IRpFile *open(uint16_t type, int id, int lang) = 0;
 
-	public:
-		/**
-		 * Get the partition size.
-		 * This includes the partition headers and any
-		 * metadata, e.g. Wii sector hashes, if present.
-		 * @return Partition size, or -1 on error.
-		 */
-		virtual int64_t partition_size(void) const = 0;
+		// StringTable.
+		// - Element 1: Key
+		// - Element 2: Value
+		typedef std::vector<std::pair<rp_string, rp_string> > StringTable;
+
+		// StringFileInfo section.
+		// - Key: Langauge ID. (LOWORD = charset, HIWORD = language)
+		// - Value: String table.
+		typedef std::unordered_map<uint32_t, StringTable> StringFileInfo;
 
 		/**
-		 * Get the used partition size.
-		 * This includes the partition headers and any
-		 * metadata, e.g. Wii sector hashes, if present.
-		 * It does *not* include "empty" sectors.
-		 * @return Used partition size, or -1 on error.
+		 * Load a VS_VERSION_INFO resource.
+		 * @param id		[in] Resource ID. (-1 for "first entry")
+		 * @param lang		[in] Language ID. (-1 for "first entry")
+		 * @param pVsFfi	[out] VS_FIXEDFILEINFO (host-endian)
+		 * @param pVsSfi	[out] StringFileInfo section.
+		 * @return 0 on success; non-zero on error.
 		 */
-		virtual int64_t partition_size_used(void) const = 0;
+		virtual int load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *pVsFfi, StringFileInfo *pVsSfi) = 0;
 };
 
 /**
@@ -77,8 +80,8 @@ class IPartition : public IDiscReader
  * an empty implementation, even though the function is
  * declared as pure-virtual.
  */
-inline IPartition::~IPartition() { }
+inline IResourceReader::~IResourceReader() { }
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__ */

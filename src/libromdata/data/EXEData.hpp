@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * IPartition.hpp: Partition reader interface.                             *
+ * EXEData.hpp: DOS/Windows executable data.                               *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,66 +19,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_EXEDATA_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DATA_EXEDATA_HPP__
 
-#include "IDiscReader.hpp"
+#include "config.libromdata.h"
+#include "common.h"
+#include <stdint.h>
 
 namespace LibRomData {
 
-class IPartition : public IDiscReader
+class EXEData
 {
-	protected:
-		IPartition() { }
-	public:
-		virtual ~IPartition() = 0;
-
 	private:
-		typedef IDiscReader super;
-		RP_DISABLE_COPY(IPartition)
-
-	public:
-		/** IDiscReader **/
-
-		/**
-		 * isDiscSupported() is not handled by IPartition.
-		 * TODO: Maybe implement it to determine if the partition type is supported?
-		 * TODO: Move to IPartition.cpp?
-		 * @return -1
-		 */
-		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final
-		{
-			((void)pHeader);
-			((void)szHeader);
-			return -1;
-		}
+		// Static class.
+		EXEData();
+		~EXEData();
+		RP_DISABLE_COPY(EXEData)
 
 	public:
 		/**
-		 * Get the partition size.
-		 * This includes the partition headers and any
-		 * metadata, e.g. Wii sector hashes, if present.
-		 * @return Partition size, or -1 on error.
+		 * Look up a PE machine type. (CPU)
+		 * @param cpu PE machine type.
+		 * @return Machine type name, or nullptr if not found.
 		 */
-		virtual int64_t partition_size(void) const = 0;
+		static const rp_char *lookup_pe_cpu(uint16_t cpu);
 
 		/**
-		 * Get the used partition size.
-		 * This includes the partition headers and any
-		 * metadata, e.g. Wii sector hashes, if present.
-		 * It does *not* include "empty" sectors.
-		 * @return Used partition size, or -1 on error.
+		 * Look up an LE machine type. (CPU)
+		 * @param cpu LE machine type.
+		 * @return Machine type name, or nullptr if not found.
 		 */
-		virtual int64_t partition_size_used(void) const = 0;
+		static const rp_char *lookup_le_cpu(uint16_t cpu);
 };
-
-/**
- * Both gcc and MSVC fail to compile unless we provide
- * an empty implementation, even though the function is
- * declared as pure-virtual.
- */
-inline IPartition::~IPartition() { }
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IPARTITION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_EXEDATA_HPP__ */

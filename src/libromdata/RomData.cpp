@@ -315,6 +315,10 @@ const rp_char *RomData::fileType_string(void) const
 		_RP("Application Package"),	// FTYPE_APPLICATION_PACKAGE
 		_RP("NFC Dump"),		// FTYPE_NFC_DUMP
 		_RP("Disk Image"),		// FTYPE_DISK_IMAGE
+		_RP("Executable"),		// FTYPE_EXECUTABLE
+		_RP("Dynamic Link Library"),	// FTYPE_DLL
+		_RP("Device Driver"),		// FTYPE_DEVICE_DRIVER
+		_RP("Resource Library"),	// FTYPE_RESOURCE_LIBRARY
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");

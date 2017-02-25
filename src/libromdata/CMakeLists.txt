@@ -77,11 +77,13 @@ SET(libromdata_SRCS
 	VirtualBoy.cpp
 	Amiibo.cpp
 	NES.cpp
+	EXE.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
 	data/WiiSystemMenuVersion.cpp
 	data/NESMappers.cpp
+	data/EXEData.cpp
 	file/IRpFile.cpp
 	file/RpMemFile.cpp
 	file/FileSystem_common.cpp
@@ -102,6 +104,8 @@ SET(libromdata_SRCS
 	disc/GcnFst.cpp
 	disc/PartitionFile.cpp
 	disc/SparseDiscReader.cpp
+	disc/PEResourceReader.cpp
+	disc/NEResourceReader.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -129,6 +133,7 @@ SET(libromdata_H
 	DreamcastSave.hpp
 	VirtualBoy.hpp
 	Amiibo.hpp
+	EXE.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -147,6 +152,7 @@ SET(libromdata_H
 	data/AmiiboData.hpp
 	data/WiiSystemMenuVersion.hpp
 	data/NESMappers.hpp
+	data/EXEData.hpp
 	file/IRpFile.hpp
 	file/RpFile.hpp
 	file/RpMemFile.hpp
@@ -175,6 +181,9 @@ SET(libromdata_H
 	disc/PartitionFile.hpp
 	disc/SparseDiscReader.hpp
 	disc/SparseDiscReader_p.hpp
+	disc/IResourceReader.hpp
+	disc/PEResourceReader.hpp
+	disc/NEResourceReader.hpp
 	NES.hpp
 	)
 

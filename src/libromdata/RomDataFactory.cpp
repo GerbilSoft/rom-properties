@@ -52,6 +52,7 @@ using std::vector;
 #include "PlayStationSave.hpp"
 #include "Amiibo.hpp"
 #include "NES.hpp"
+#include "EXE.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -126,6 +127,11 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(PlayStationSave, true),
 	GetRomDataFns(Amiibo, true),
 	GetRomDataFns(NES, false),
+
+	// NOTE: EXE has a 16-bit magic number,
+	// so it should go at the end.
+	// TODO: Thumbnailing on non-Windows platforms.
+	GetRomDataFns(EXE, false),
 	{nullptr, nullptr, nullptr, false}
 };
 

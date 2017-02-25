@@ -198,30 +198,19 @@ class RomData
 		enum FileType {
 			FTYPE_UNKNOWN = 0,
 
-			// ROM image.
-			FTYPE_ROM_IMAGE,
+			FTYPE_ROM_IMAGE,		// ROM image
+			FTYPE_DISC_IMAGE,		// Optical disc image
+			FTYPE_SAVE_FILE,		// Save file
+			FTYPE_EMBEDDED_DISC_IMAGE,	// "Embedded" disc image, e.g. GameCube TGC
+			FTYPE_APPLICATION_PACKAGE,	// Application package, e.g. WAD, CIA
+			FTYPE_NFC_DUMP,			// NFC dump, e.g. amiibo
+			FTYPE_DISK_IMAGE,		// Floppy and/or hard disk image
+			FTYPE_EXECUTABLE,		// Executable, e.g. EXE
+			FTYPE_DLL,			// Dynamic Link Library
+			FTYPE_DEVICE_DRIVER,		// Device driver
+			FTYPE_RESOURCE_LIBRARY,		// Resource library
 
-			// Optical disc image.
-			FTYPE_DISC_IMAGE,
-
-			// Save file.
-			FTYPE_SAVE_FILE,
-
-			// "Embedded" disc image.
-			// Commonly seen on GameCube demo discs.
-			FTYPE_EMBEDDED_DISC_IMAGE,
-
-			// Application package, e.g. WAD, CIA.
-			FTYPE_APPLICATION_PACKAGE,
-
-			// NFC dump, e.g. amiibo.
-			FTYPE_NFC_DUMP,
-
-			// Floppy and/or hard disk image.
-			FTYPE_DISK_IMAGE,
-
-			// End of FileType.
-			FTYPE_LAST
+			FTYPE_LAST			// End of FileType.
 		};
 
 		/**

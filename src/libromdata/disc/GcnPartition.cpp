@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.cpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -121,7 +121,9 @@ int GcnPartition::seek(int64_t pos)
 	}
 
 	// Use the IDiscReader directly for GCN partitions.
-	return d->discReader->seek(d->data_offset + pos);
+	int ret = d->discReader->seek(d->data_offset + pos);
+	m_lastError = d->discReader->lastError();
+	return ret;
 }
 
 /**
@@ -155,7 +157,7 @@ int64_t GcnPartition::size(void)
 int64_t GcnPartition::partition_size(void) const
 {
 	// TODO: Errors?
-	RP_D(GcnPartition);
+	RP_D(const GcnPartition);
 	return d->partition_size;
 }
 

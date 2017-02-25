@@ -77,21 +77,24 @@ class RomDataViewPrivate
 			QLabel *lblSysInfo;
 			QLabel *lblBanner;
 			QLabel *lblIcon;
-
-			// Form layout.
-			QFormLayout *formLayout;
-			QLabel *lblCredits;
-
 			QTimer *tmrIconAnim;
+
+			// Tab layout.
+			QTabWidget *tabWidget;
+			struct tab {
+				QVBoxLayout *vboxLayout;
+				QFormLayout *formLayout;
+				QLabel *lblCredits;
+			};
+			vector<tab> tabs;
 
 			Ui()	: vboxLayout(nullptr)
 				, hboxHeaderRow(nullptr)
 				, lblSysInfo(nullptr)
 				, lblBanner(nullptr)
 				, lblIcon(nullptr)
-				, formLayout(nullptr)
-				, lblCredits(nullptr)
 				, tmrIconAnim(nullptr)
+				, tabWidget(nullptr)
 				{ }
 			~Ui() {
 				// hboxHeaderRow may need to be deleted.
@@ -111,11 +114,6 @@ class RomDataViewPrivate
 		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
 		int last_frame_number;		// Last frame number.
-
-#ifndef NDEBUG
-		// DEBUG: Ensure we only have one STRF_CREDITS field.
-		bool hasStrfCredits;
-#endif
 
 		/**
 		 * Initialize the header row widgets.
@@ -199,9 +197,6 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
-#ifndef NDEBUG
-	, hasStrfCredits(false)
-#endif
 {
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -490,34 +485,32 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 	}
 
 	// Credits?
+	auto &tab = ui.tabs[field->tabIdx];
 	if (field->desc.flags & RomFields::STRF_CREDITS) {
 		// Credits row goes at the end.
-		// There should be a maximum of one STRF_CREDITS per RomData subclass.
-#ifndef NDEBUG
-		assert(hasStrfCredits == false);
-		hasStrfCredits = true;
-#endif
-		// Credits row.
-		ui.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
+		// There should be a maximum of one STRF_CREDITS per tab.
+		assert(tab.lblCredits == nullptr);
+		if (!tab.lblCredits) {
+			// Save this as the credits label.
+			tab.lblCredits = lblString;
+			// Add the credits label to the end of the QVBoxLayout.
+			tab.vboxLayout->addWidget(lblString, 0, Qt::AlignHCenter | Qt::AlignBottom);
 
-		// Set the bottom margin to match the QFormLayout.
-		// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
-		// TODO: Verify this.
-		QMargins margins = ui.formLayout->contentsMargins();
-		margins.setLeft(0);
-		margins.setRight(0);
-		margins.setTop(0);
-		margins.setBottom(99);
-		ui.vboxLayout->setContentsMargins(margins);
-
-		// Save this as the credits label.
-		ui.lblCredits = lblString;
+			// Set the bottom margin to match the QFormLayout.
+			// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
+			// TODO: Verify this.
+			QMargins margins = tab.formLayout->contentsMargins();
+			tab.vboxLayout->setContentsMargins(margins);
+		} else {
+			// Duplicate credits label.
+			delete lblString;
+		}
 
 		// No description field.
 		delete lblDesc;
 	} else {
 		// Standard string row.
-		ui.formLayout->addRow(lblDesc, lblString);
+		tab.formLayout->addRow(lblDesc, lblString);
 	}
 }
 
@@ -567,7 +560,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc, const RomFields::Field *f
 			col = 0;
 		}
 	}
-	ui.formLayout->addRow(lblDesc, gridLayout);
+	ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, gridLayout);
 }
 
 /**
@@ -628,7 +621,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 	treeWidget->resizeColumnToContents(count);
 
-	ui.formLayout->addRow(lblDesc, treeWidget);
+	ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
 }
 
 /**
@@ -648,7 +641,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
 		lblDateTime->setText(RomDataView::tr("Unknown"));
-		ui.formLayout->addRow(lblDesc, lblDateTime);
+		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 		return;
 	}
 
@@ -686,7 +679,7 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc, const RomFields::Field *f
 
 	if (!str.isEmpty()) {
 		lblDateTime->setText(str);
-		ui.formLayout->addRow(lblDesc, lblDateTime);
+		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblDateTime);
 	} else {
 		// Invalid date/time.
 		delete lblDateTime;
@@ -713,7 +706,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	if (!age_ratings) {
 		// No age ratings data.
 		lblAgeRatings->setText(RomDataView::tr("ERROR"));
-		ui.formLayout->addRow(lblDesc, lblAgeRatings);
+		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 		return;
 	}
 
@@ -748,7 +741,7 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	}
 
 	lblAgeRatings->setText(str);
-	ui.formLayout->addRow(lblDesc, lblAgeRatings);
+	ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, lblAgeRatings);
 }
 
 /**
@@ -758,19 +751,24 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
  */
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
-	// Delete the credits label if it's present.
-	delete ui.lblCredits;
-	ui.lblCredits = nullptr;
-#ifndef NDEBUG
-	hasStrfCredits = false;
-#endif
-
-	// Delete the form layout if it's present.
-	if (ui.formLayout) {
-		clearLayout(ui.formLayout);
-		delete ui.formLayout;
-		ui.formLayout = nullptr;
+	// Clear the tabs.
+	for (int i = ui.tabs.size()-1; i >= 0; i--) {
+		auto &tab = ui.tabs[i];
+		// Delete the credits label if it's present.
+		delete tab.lblCredits;
+		// Delete the QFormLayout if it's present.
+		if (tab.formLayout) {
+			clearLayout(tab.formLayout);
+			delete tab.formLayout;
+		}
+		// Delete the QVBoxLayout.
+		if (tab.vboxLayout != ui.vboxLayout) {
+			delete tab.vboxLayout;
+		}
 	}
+	ui.tabs.clear();
+	delete ui.tabWidget;
+	ui.tabWidget = nullptr;
 
 	// Clear the bitfields map.
 	mapBitfields.clear();
@@ -783,10 +781,6 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		return;
 	}
 
-	// Create the QFormLayout.
-	ui.formLayout = new QFormLayout();
-	ui.vboxLayout->addLayout(ui.formLayout, 1);
-
 	// Get the fields.
 	const RomFields *fields = romData->fields();
 	if (!fields) {
@@ -796,13 +790,70 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	}
 	const int count = fields->count();
 
-	// Create the data widgets.
+	// Create the QTabWidget.
 	Q_Q(RomDataView);
+	if (fields->tabCount() > 1) {
+		ui.tabs.resize(fields->tabCount());
+		ui.tabWidget = new QTabWidget(q);
+		for (int i = 0; i < fields->tabCount(); i++) {
+			// Create a tab.
+			const rp_char *name = fields->tabName(i);
+			if (!name) {
+				// Skip this tab.
+				continue;
+			}
+
+			auto &tab = ui.tabs[i];
+			QWidget *widget = new QWidget(q);
+
+			// Layouts.
+			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
+			// Otherwise, we end up with no margins.
+			tab.vboxLayout = new QVBoxLayout(widget);
+			tab.formLayout = new QFormLayout();
+			tab.vboxLayout->addLayout(tab.formLayout, 1);
+
+			// Add the tab.
+			ui.tabWidget->addTab(widget, (name ? RP2Q(name) : QString()));
+		}
+		ui.vboxLayout->addWidget(ui.tabWidget, 1);
+	} else {
+		// No tabs.
+		// Don't create a QTabWidget, but simulate a single
+		// tab in ui.tabs[] to make it easier to work with.
+		ui.tabs.resize(1);
+		auto &tab = ui.tabs[0];
+
+		// QVBoxLayout
+		// NOTE: Using ui.vboxLayout. We must ensure that
+		// this isn't deleted.
+		tab.vboxLayout = ui.vboxLayout;
+
+		// QFormLayout
+		tab.formLayout = new QFormLayout();
+		tab.vboxLayout->addLayout(tab.formLayout, 1);
+	}
+
+	// TODO: Ensure the description column has the
+	// same width on all tabs.
+
+	// Create the data widgets.
 	for (int i = 0; i < count; i++) {
 		const RomFields::Field *field = fields->field(i);
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
+
+		// Verify the tab index.
+		const int tabIdx = field->tabIdx;
+		assert(tabIdx >= 0 && tabIdx < (int)ui.tabs.size());
+		if (tabIdx < 0 || tabIdx >= (int)ui.tabs.size()) {
+			// Tab index is out of bounds.
+			continue;
+		} else if (!ui.tabs[tabIdx].formLayout) {
+			// Tab name is empty. Tab is hidden.
+			continue;
+		}
 
 		QLabel *lblDesc = new QLabel(q);
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);

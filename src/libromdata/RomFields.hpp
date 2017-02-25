@@ -215,6 +215,7 @@ class RomFields
 		struct Field {
 			rp_string name;		// Field name.
 			RomFieldType type;	// ROM field type.
+			uint8_t tabIdx;		// Tab index. (0 for default)
 			bool isValid;		// True if this field has valid data.
 
 			// Field description.
@@ -417,6 +418,43 @@ class RomFields
 	public:
 		/** Convenience functions for RomData subclasses. **/
 		/** NEW versions for dynamically-allocated fields. **/
+
+		/** Tabs **/
+
+		/**
+		 * Reserve space for tabs.
+		 * @param n Desired tab count.
+		 */
+		void reserveTabs(int n);
+
+		/**
+		 * Set the tab index for new fields.
+		 * @param idx Tab index.
+		 */
+		void setTabIndex(int tabIdx);
+
+		/**
+		 * Set a tab name.
+		 * NOTE: An empty tab name will hide the tab.
+		 * @param tabIdx Tab index.
+		 * @param name Tab name.
+		 */
+		void setTabName(int tabIdx, const rp_char *name);
+
+		/**
+		 * Get the tab count.
+		 * @return Tab count. (highest tab index, plus 1)
+		 */
+		int tabCount(void) const;
+
+		/**
+		 * Get the name of the specified tab.
+		 * @param tabIdx Tab index.
+		 * @return Tab name, or nullptr if no name is set.
+		 */
+		const rp_char *tabName(int tabIdx) const;
+
+		/** Fields **/
 
 		/**
 		 * Reserve space for fields.
