@@ -104,7 +104,8 @@ Notes:
 | Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
 | Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
 | Nintendo amiibo               |       Yes      |        No       |      Media     |
-| Nintendo Entertainment System |       Yes      |       N/A       |       No
+| Nintendo Entertainment System |       Yes      |       N/A       |       No       |
+| Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -118,6 +119,8 @@ Notes:
   * Anything else indicates what types of images are available.
   * For amiibo, "media" refers to the amiibo object, which may be a figurine,
     a card, or a plush.
+* Windows executables may contain multiple icon sizes. Support for Windows icons
+  will be added once support for multiple image sizes is added.
 
 There will eventually be a configuration window for setting which image
 will be used for thumbnails (and icons on Windows).
@@ -138,9 +141,7 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
 * Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
   3DS Virtual Console dumps (\*.tds)
-
-Some file types are not currently registered on Windows due to conflicts with
-well-known file types, e.g. \*.bin, \*.iso, and \*.mb.
+* Windows/DOS: Executables (\*.exe, \*.dll, others)
 
 ## External Media Downloads
 
