@@ -208,6 +208,7 @@ class RomData
 			FTYPE_EXECUTABLE,		// Executable, e.g. EXE
 			FTYPE_DLL,			// Dynamic Link Library
 			FTYPE_DEVICE_DRIVER,		// Device driver
+			FTYPE_RESOURCE_LIBRARY,		// Resource library
 
 			FTYPE_LAST			// End of FileType.
 		};

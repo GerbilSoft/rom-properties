@@ -1150,8 +1150,26 @@ EXE::EXE(IRpFile *file)
 		}
 	} else if (be16_to_cpu(d->hdr.ne.sig) == 0x4E45 /* 'NE' */) {
 		// New Executable.
-		// TODO: Distinguish between DLL and driver?
 		d->exeType = EXEPrivate::EXE_TYPE_NE;
+
+		// Check if this is a resource library.
+		// (All segment size values are 0.)
+		// NOTE: AutoDataSegIndex is 0 for .FON, but 1 for MORICONS.DLL.
+		// FIXME: ULFONT.FON has non-zero values.
+
+		// Check 0x10-0x1F for all 0s.
+		const uint32_t *res0chk = reinterpret_cast<const uint32_t*>(&d->hdr.ne.InitHeapSize);
+		if (res0chk[0] == 0 && res0chk[1] == 0 &&
+		    res0chk[2] == 0 && res0chk[3] == 0)
+		{
+			// This is a resource library.
+			// May be a font (.FON) or an icon library (.ICL, moricons.dll).
+			// TODO: Check the version resource if it's present?
+			d->fileType = FTYPE_RESOURCE_LIBRARY;
+			return;
+		}
+
+		// TODO: Distinguish between DLL and driver?
 		if (d->hdr.ne.ApplFlags & NE_DLL) {
 			d->fileType = FTYPE_DLL;
 		} else {
@@ -1369,6 +1387,9 @@ vector<const rp_char*> EXE::supportedFileExtensions_static(void)
 		_RP(".efi"), _RP(".mui"),
 		_RP(".ocx"), _RP(".scr"),
 		_RP(".sys"), _RP(".tsp"),
+
+		// NE extensions
+		_RP(".fon"),
 
 		// LE extensions
 		_RP("*.vxd"), _RP(".386"),
