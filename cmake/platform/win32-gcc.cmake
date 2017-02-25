@@ -1,11 +1,6 @@
 # Win32-specific CFLAGS/CXXFLAGS.
 # For MinGW compilers.
 
-# Basic platform flags for gcc:
-# - wchar_t is short.
-# - Enable MSVC 2005 compatibility. (In MinGW-w64 v4.0.2, this enables 64-bit time_t.)
-SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -D__MINGW_USE_VC2005_COMPAT")
-
 # Subsystem and minimum Windows version:
 # - If 32-bit: 5.01
 # - If 64-bit: 5.02

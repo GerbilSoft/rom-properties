@@ -50,6 +50,17 @@ IF(LFS_DEFINITIONS)
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${LFS_DEFINITIONS}")
 ENDIF(LFS_DEFINITIONS)
 
+# Check for 64-bit time_t.
+INCLUDE(Check64BitTimeSupport)
+CHECK_64BIT_TIME_SUPPORT()
+# NOTES:
+# - glibc does not currently support 64-bit time_t on 32-bit.
+# - Mac OS X does not (and won't) support 64-bit time_t on 32-bit.
+IF(TIME64_DEFINITIONS)
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${TIME64_DEFINITIONS}")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${TIME64_DEFINITIONS}")
+ENDIF(TIME64_DEFINITIONS)
+
 # Set CMAKE flags.
 # TODO: RelWithDebInfo / MinSizeRel?
 # Common
