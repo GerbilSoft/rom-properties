@@ -1193,7 +1193,8 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
  */
 uint32_t GameCube::supportedImageTypes_static(void)
 {
-       return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA;
+	return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D;
 }
 
 /**
