@@ -73,7 +73,9 @@ SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rpcli)
 SET_WINDOWS_SUBSYSTEM(rpcli CONSOLE)
 SET_WINDOWS_NO_MANIFEST(rpcli)
-SET_WINDOWS_ENTRYPOINT(rpcli wmain)
+# FIXME: setargv isn't necessarily sorted...
+# TODO: Implement our own setargv function?
+SET_WINDOWS_ENTRYPOINT(rpcli wmain ON)
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
