@@ -128,6 +128,28 @@ class NintendoDS : public RomData
 		 */
 		virtual uint32_t supportedImageTypes(void) const override final;
 
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		static std::vector<RomData::ImageSizeDef> supportedImageSizes_static(ImageType imageType);
+
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		virtual std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const override final;
+
 	protected:
 		/**
 		 * Load field data.
@@ -154,6 +176,32 @@ class NintendoDS : public RomData
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
 		virtual const IconAnimData *iconAnimData(void) const override final;
+
+	protected:
+		/**
+		 * Get the imgpf value for external image types.
+		 * @param imageType Image type to load.
+		 * @return imgpf value.
+		 */
+		virtual uint32_t imgpf_extURL(ImageType imageType) const override final;
+
+	public:
+		/**
+		 * Get a list of URLs for an external image type.
+		 *
+		 * A thumbnail size may be requested from the shell.
+		 * If the subclass supports multiple sizes, it should
+		 * try to get the size that most closely matches the
+		 * requested size.
+		 *
+		 * @param imageType	[in]     Image type.
+		 * @param pExtURLs	[out]    Output vector.
+		 * @param size		[in,opt] Requested image size. This may be a requested
+		 *                               thumbnail size in pixels, or an ImageSizeType
+		 *                               enum value.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const override final;
 };
 
 }
