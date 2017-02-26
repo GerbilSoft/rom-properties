@@ -103,6 +103,7 @@ SET_PROPERTY(DIRECTORY APPEND
 # Check for required libraries.
 INCLUDE(CheckZLIB)
 INCLUDE(CheckPNG)
+INCLUDE(CheckJPEG)
 
 # Project subdirectories.
 ADD_SUBDIRECTORY(extlib)

@@ -25,6 +25,7 @@
 
 // Image loaders.
 #include "RpPng.hpp"
+#include "RpJpeg.hpp"
 
 // C includes. (C++ namespace)
 #include <cstring>
@@ -42,6 +43,8 @@ class RpImageLoaderPrivate
 	public:
 		// Magic numbers.
 		static const uint8_t png_magic[8];
+		static const uint8_t jpeg_magic_1[4];
+		static const uint8_t jpeg_magic_2[4];
 };
 
 /** RpImageLoaderPrivate **/
@@ -49,6 +52,10 @@ class RpImageLoaderPrivate
 // Magic numbers.
 const uint8_t RpImageLoaderPrivate::png_magic[8] =
 	{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+const uint8_t RpImageLoaderPrivate::jpeg_magic_1[4] =
+	{0xFF, 0xD8, 0xFF, 0xE0};
+const uint8_t RpImageLoaderPrivate::jpeg_magic_2[4] =
+	{'J','F','I','F'};
 
 /** RpImageLoader **/
 
@@ -75,6 +82,14 @@ rp_image *RpImageLoader::loadUnchecked(IRpFile *file)
 		{
 			// Found a PNG image.
 			return RpPng::loadUnchecked(file);
+		}
+		else if (!memcmp(buf, RpImageLoaderPrivate::jpeg_magic_1,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_1)) &&
+			 !memcmp(&buf[6], RpImageLoaderPrivate::jpeg_magic_2,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_2)))
+		{
+			// Found a JPEG image.
+			return RpJpeg::loadUnchecked(file);
 		}
 	}
 
@@ -105,6 +120,14 @@ rp_image *RpImageLoader::load(IRpFile *file)
 		{
 			// Found a PNG image.
 			return RpPng::load(file);
+		}
+		else if (!memcmp(buf, RpImageLoaderPrivate::jpeg_magic_1,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_1)) &&
+			 !memcmp(&buf[6], RpImageLoaderPrivate::jpeg_magic_2,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_2)))
+		{
+			// Found a JPEG image.
+			return RpJpeg::load(file);
 		}
 	}
 

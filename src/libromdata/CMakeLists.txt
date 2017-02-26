@@ -94,6 +94,7 @@ SET(libromdata_SRCS
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+	img/RpJpeg.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -166,6 +167,7 @@ SET(libromdata_H
 	img/IconAnimHelper.hpp
 	img/APNG_dlopen.h
 	img/TCreateThumbnail.hpp
+	img/RpJpeg.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
@@ -313,6 +315,10 @@ FOREACH(_target romdata8 romdata16)
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${PNG_INCLUDE_DIRS})
 		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${PNG_DEFINITIONS})
 	ENDIF(PNG_FOUND)
+	IF(JPEG_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} ${JPEG_LIBRARY})
+		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${JPEG_INCLUDE_DIRS})
+	ENDIF(JPEG_FOUND)
 	IF(NETTLE_FOUND)
 		TARGET_LINK_LIBRARIES(${_target} ${NETTLE_LIBRARY})
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${NETTLE_INCLUDE_DIRS})
