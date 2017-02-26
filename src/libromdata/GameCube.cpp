@@ -1818,25 +1818,27 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// in one size per media type.
 	((void)size);
 
-	// Check for the requested media type.
-	// TODO: Option to pick the *B version?
-	const char *imageTypeName;
-	uint16_t width, height;
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+	// TODO: Sort based on requested image size.
+	// For now, assuming the default size.
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
 	switch (imageType) {
 		case IMG_EXT_MEDIA:
-			imageTypeName = "disc";
-			width = 160;
-			height = 160;
+			imageTypeName_base = "disc";
 			break;
 		case IMG_EXT_COVER:
-			imageTypeName = "cover";
-			width = 160;
-			height = 224;
+			imageTypeName_base = "cover";
 			break;
 		case IMG_EXT_COVER_3D:
-			imageTypeName = "cover3D";
-			width = 176;
-			height = 248;
+			imageTypeName_base = "cover3D";
 			break;
 		default:
 			// Unsupported image type.
@@ -1866,40 +1868,50 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 
 	// ExtURLs.
-	pExtURLs->reserve(4);
+	pExtURLs->reserve(4*sizeDefs.size());
 
-	// Disc scan: Is this not the first disc?
-	if (imageType == IMG_EXT_MEDIA &&
-	    d->discHeader.disc_number > 0)
-	{
-		// Disc 2 (or 3, or 4...)
-		// Request the disc 2 image first.
-		char s_discNum[16];
-		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
-		if (len > 0 && len < (int)(sizeof(s_discNum))) {
+	for (auto iter = sizeDefs.begin(); iter != sizeDefs.end(); ++iter) {
+		// Current size.
+		const ImageSizeDef &sizeDef = *iter;
+
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (sizeDef.name ? sizeDef.name : ""));
+
+		// Disc scan: Is this not the first disc?
+		if (imageType == IMG_EXT_MEDIA &&
+		    d->discHeader.disc_number > 0)
+		{
+			// Disc 2 (or 3, or 4...)
+			// Request the disc 2 image first.
+			char discName[16];
+			snprintf(discName, sizeof(discName), "%s%u",
+				 imageTypeName, d->discHeader.disc_number+1);
+
 			for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
 				int idx = (int)pExtURLs->size();
 				pExtURLs->resize(idx+1);
 				auto &extURL = pExtURLs->at(idx);
 
-				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
-				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
-				extURL.width = width;
-				extURL.height = height;
+				extURL.url = getURL_GameTDB("wii", discName, *iter, id6);
+				extURL.cache_key = getCacheKey("wii", discName, *iter, id6);
+				extURL.width = sizeDef.width;
+				extURL.height = sizeDef.height;
 			}
 		}
-	}
 
-	// First disc, or not a disc scan.
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-		int idx = (int)pExtURLs->size();
-		pExtURLs->resize(idx+1);
-		auto &extURL = pExtURLs->at(idx);
+		// First disc, or not a disc scan.
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
 
-		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
-		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
-		extURL.width = width;
-		extURL.height = height;
+			extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
+			extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
+			extURL.width = sizeDef.width;
+			extURL.height = sizeDef.height;
+		}
 	}
 
 	// All URLs added.

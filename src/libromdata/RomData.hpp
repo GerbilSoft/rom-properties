@@ -313,7 +313,7 @@ class RomData
 		virtual uint32_t supportedImageTypes(void) const;
 
 		struct ImageSizeDef {
-			const rp_char *name;	// Size name, if applicable. (May be nullptr.)
+			const char *name;	// Size name, if applicable. [UTF-8] (May be nullptr.)
 			uint16_t width;		// Image width. (May be 0 if unknown.)
 			uint16_t height;	// Image height. (May be 0 if unknown.)
 		};
