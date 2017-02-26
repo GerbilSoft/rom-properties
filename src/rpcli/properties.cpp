@@ -632,27 +632,29 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	int supported = romdata->supportedImageTypes();
 
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (supported&(1 << i)) {
-			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << endl;
-			auto image = romdata->image((RomData::ImageType)i);
-			if (image && image->isValid()) {
-				os << "   Format : " << rp_image::getFormatName(image->format()) << endl;
-				os << "   Size   : " << image->width() << " x " << image->height() << endl;
-				if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
-					os << "   Animated icon present (use -a to extract)" << endl;
-				}
+		if (!(supported & (1 << i)))
+			continue;
+
+		os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << endl;
+		auto image = romdata->image((RomData::ImageType)i);
+		if (image && image->isValid()) {
+			os << "   Format : " << rp_image::getFormatName(image->format()) << endl;
+			os << "   Size   : " << image->width() << " x " << image->height() << endl;
+			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
+				os << "   Animated icon present (use -a to extract)" << endl;
 			}
 		}
 	}
 
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (supported&(1 << i)) {
-			auto &urls = *romdata->extURLs((RomData::ImageType)i);
-			for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
-				os << "-- " <<
-					RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
-					" (cache_key: " << iter->cache_key << ")" << endl;
-			}
+		if (!(supported & (1 << i)))
+			continue;
+
+		auto &urls = *romdata->extURLs((RomData::ImageType)i);
+		for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
+			os << "-- " <<
+				RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
+				" (cache_key: " << iter->cache_key << ")" << endl;
 		}
 	}
 	return os;
@@ -685,66 +687,68 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	os << ",\n\"imgint\":[";
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (supported&(1 << i)) {
-			if (first) first = false;
-			else os << ",";
+		if (!(supported & (1 << i)))
+			continue;
 
-			os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
-			auto image = romdata->image((RomData::ImageType)i);
-			if (image && image->isValid()) {
-				os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
-				os << ",\"size\":[" << image->width() << "," << image->height() << "]";
-				int ppf = romdata->imgpf((RomData::ImageType) i);
-				if (ppf) {
-					os << ",\"postprocessing\":" << ppf;
-				}
-				if (ppf & RomData::IMGPF_ICON_ANIMATED) {
-					auto animdata = romdata->iconAnimData();
-					if (animdata) {
-						os << ",\"frames\":" << animdata->count;
-						os << ",\"sequence\":[";
-						for (int i = 0; i < animdata->seq_count; i++) {
-							if (i) os << ",";
-							os << (unsigned)animdata->seq_index[i];
-						}
-						os << "],\"delay\":[";
-						for (int i = 0; i < animdata->seq_count; i++) {
-							if (i) os << ",";
-							os << animdata->delays[i].ms;
-						}
-						os << "]";
+		if (first) first = false;
+		else os << ",";
+
+		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
+		auto image = romdata->image((RomData::ImageType)i);
+		if (image && image->isValid()) {
+			os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
+			os << ",\"size\":[" << image->width() << "," << image->height() << "]";
+			int ppf = romdata->imgpf((RomData::ImageType) i);
+			if (ppf) {
+				os << ",\"postprocessing\":" << ppf;
+			}
+			if (ppf & RomData::IMGPF_ICON_ANIMATED) {
+				auto animdata = romdata->iconAnimData();
+				if (animdata) {
+					os << ",\"frames\":" << animdata->count;
+					os << ",\"sequence\":[";
+					for (int i = 0; i < animdata->seq_count; i++) {
+						if (i) os << ",";
+						os << (unsigned)animdata->seq_index[i];
 					}
+					os << "],\"delay\":[";
+					for (int i = 0; i < animdata->seq_count; i++) {
+						if (i) os << ",";
+						os << animdata->delays[i].ms;
+					}
+					os << "]";
 				}
 			}
-			os << "}";
 		}
+		os << "}";
 	}
 
 	os << "],\n\"imgext\":[";
 	first = true;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (supported&(1 << i)) {
-			if (first) first = false;
+		if (!(supported & (1 << i)))
+			continue;
+
+		if (first) first = false;
+		else os << ",";
+
+		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
+		int ppf = romdata->imgpf((RomData::ImageType) i);
+		if (ppf) {
+			os << ",\"postprocessing\":" << ppf;
+		}
+		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
+		os << ",\"exturls\":[";
+		bool firsturl = true;
+		auto &urls = *romdata->extURLs((RomData::ImageType)i);
+		for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
+			if (firsturl) firsturl = false;
 			else os << ",";
 
-			os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
-			int ppf = romdata->imgpf((RomData::ImageType) i);
-			if (ppf) {
-				os << ",\"postprocessing\":" << ppf;
-			}
-			// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
-			os << ",\"exturls\":[";
-			bool firsturl = true;
-			auto &urls = *romdata->extURLs((RomData::ImageType)i);
-			for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
-				if (firsturl) firsturl = false;
-				else os << ",";
-
-				os << "{\"url\":" << JSONString(iter->url.c_str());
-				os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
-			}
-			os << "]}";
+			os << "{\"url\":" << JSONString(iter->url.c_str());
+			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
 		}
+		os << "]}";
 	}
 	return os << "]}";
 }
