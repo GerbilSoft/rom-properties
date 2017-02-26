@@ -488,27 +488,45 @@ int Amiibo::loadFieldData(void)
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external media types.
  * @param imageType Image type to load.
+ * @return imgpf value.
+ */
+uint32_t Amiibo::imgpf_extURL(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: amiibo.life's amiibo images have alpha transparency.
+	// Hence, no image processing is required.
+	return 0;
+}
+
+/**
+ * Get a list of URLs for an external media type.
+ * @param imageType	[in] Image type.
+ * @param pExtURLs	[out] Output vector.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Amiibo::loadURLs(ImageType imageType)
+int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return -ERANGE;
 	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
 
 	RP_D(Amiibo);
-
-	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d->extURLs[idx];
-	if (!extURLs.empty()) {
-		// URLs *have* been loaded...
-		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
@@ -524,8 +542,6 @@ int Amiibo::loadURLs(ImageType imageType)
 		return -ENOENT;
 	}
 
-	ExtURL extURL;
-
 	// Cache key. (amiibo ID)
 	// TODO: "amiibo/" or "nfp/"?
 	char amiibo_id_str[32];
@@ -537,6 +553,12 @@ int Amiibo::loadURLs(ImageType imageType)
 		// Invalid NFC ID.
 		return -EINVAL;
 	}
+
+	// Only one URL.
+	pExtURLs->resize(1);
+	auto &extURL = pExtURLs->at(0);
+
+	// Cache key.
 	extURL.cache_key = latin1_to_rp_string(amiibo_id_str, len);
 	extURL.cache_key += _RP(".png");
 
@@ -552,9 +574,8 @@ int Amiibo::loadURLs(ImageType imageType)
 	}
 	extURL.url = latin1_to_rp_string(url_str, len);
 
-	// Add the URL and we're done.
-	extURLs.push_back(extURL);
-	return (extURLs.empty() ? -ENOENT : 0);
+	// We're done here.
+	return 0;
 }
 
 }

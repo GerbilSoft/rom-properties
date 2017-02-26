@@ -30,6 +30,10 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 namespace LibRomData {
 
 /** RomDataPrivate **/
@@ -355,21 +359,20 @@ int RomData::loadInternalImage(ImageType imageType)
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external media types.
  * @param imageType Image type to load.
- * @return 0 on success; negative POSIX error code on error.
+ * @return imgpf value.
  */
-int RomData::loadURLs(ImageType imageType)
+uint32_t RomData::imgpf_extURL(ImageType imageType) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return -ERANGE;
+		return 0;
 	}
 
-	// No images supported by the base class.
-	return -ENOENT;
+	// No imgpf by default.
+	return 0;
 }
 
 /**
@@ -390,48 +393,6 @@ const RomFields *RomData::fields(void) const
 }
 
 /**
- * Verify that the specified image type has been loaded.
- * @param imageType Image type.
- * @return 0 if loaded; negative POSIX error code on error.
- */
-int RomData::verifyImageTypeLoaded(ImageType imageType) const
-{
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	// TODO: Check supportedImageTypes()?
-
-	RP_D(const RomData);
-	int ret = 0;
-	if (imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX) {
-		// This is an internal image.
-		// Make sure it's loaded.
-		const int idx = imageType - IMG_INT_MIN;
-		if (!d->images[idx]) {
-			// Internal image has not been loaded.
-			// Load it now.
-			ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
-		}
-	} else if (imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX) {
-		// This is an external image.
-		// Make sure the URL is loaded.
-		const int idx = imageType - IMG_EXT_MIN;
-		if (d->extURLs[idx].empty()) {
-			// List of URLs has not been loaded.
-			// Load it now.
-			ret = const_cast<RomData*>(this)->loadURLs(imageType);
-		}
-	} else {
-		// Should not get here...
-		ret = -ERANGE;
-	}
-
-	return ret;
-}
-
-/**
  * Get an internal image from the ROM.
  *
  * NOTE: The rp_image is owned by this object.
@@ -449,35 +410,43 @@ const rp_image *RomData::image(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return nullptr;
-	const int idx = imageType - IMG_INT_MIN;
+	// Check if the image is loaded.
 	RP_D(const RomData);
+	const int idx = imageType - IMG_INT_MIN;
+	if (!d->images[idx]) {
+		// Internal image has not been loaded.
+		// Load it now.
+		int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
+		if (ret != 0 || !d->images[idx]) {
+			// Error loading the image.
+			return nullptr;
+		}
+	}
 	return d->images[idx];
 }
 
 /**
  * Get a list of URLs for an external media type.
- *
- * NOTE: The std::vector<extURL> is owned by this object.
- * Do NOT delete this object until you're done using this rp_image.
- *
- * @param imageType Image type.
- * @return List of URLs and cache keys, or nullptr if the ROM doesn't have one.
+ * @param imageType	[in] Image type.
+ * @param pExtURLs	[out] Output vector.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
+int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return nullptr;
+		return -ERANGE;
+	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
 	}
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return nullptr;
-	const int idx = imageType - IMG_EXT_MIN;
-	RP_D(const RomData);
-	return &d->extURLs[idx];
+	// No external URLs by default.
+	pExtURLs->clear();
+	return -ENOENT;
 }
 
 /**
@@ -513,10 +482,24 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return 0;
-	RP_D(const RomData);
-	return d->imgpf[imageType];
+	if (imageType <= IMG_INT_MAX) {
+		// Check if the image is loaded.
+		RP_D(const RomData);
+		const int idx = imageType - IMG_INT_MIN;
+		if (!d->images[idx]) {
+			// Internal image has not been loaded.
+			// Load it now.
+			int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
+			if (ret != 0 || !d->images[idx]) {
+				// Error loading the image.
+				return 0;
+			}
+		}
+		return d->imgpf[imageType];
+	} else /*(imageType >= IMG_EXT_MIN)*/ {
+		// Use the imgpf_extURL() function.
+		return imgpf_extURL(imageType);
+	}
 }
 
 /**

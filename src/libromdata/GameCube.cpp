@@ -163,7 +163,7 @@ class GameCubePrivate : public RomDataPrivate
 		 *
 		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
 		 */
-		vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
+		static vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
 
 	public:
 		/**
@@ -1684,32 +1684,51 @@ int GameCube::loadInternalImage(ImageType imageType)
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external media types.
  * @param imageType Image type to load.
+ * @return imgpf value.
+ */
+uint32_t GameCube::imgpf_extURL(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
+	// alpha transparency. Hence, no image processing is required.
+	return 0;
+}
+
+/**
+ * Get a list of URLs for an external media type.
+ * @param imageType	[in] Image type.
+ * @param pExtURLs	[out] Output vector.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::loadURLs(ImageType imageType)
+int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return -ERANGE;
 	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
 
-	RP_D(GameCube);
+	RP_D(const GameCube);
 	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.
-		return 0;
+		return -ENOENT;
 	}
 
-	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d->extURLs[idx];
-	if (!extURLs.empty()) {
-		// URLs *have* been loaded...
-		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (d->discType < 0) {
@@ -1761,12 +1780,8 @@ int GameCube::loadURLs(ImageType imageType)
 		}
 	}
 
-	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
-	// alpha transparency. Hence, no image processing is required.
-	d->imgpf[imageType] = 0;
-
-	// Current extURL.
-	ExtURL extURL;
+	// ExtURLs.
+	pExtURLs->reserve(4);
 
 	// Disc scan: Is this not the first disc?
 	if (imageType == IMG_EXT_MEDIA &&
@@ -1778,23 +1793,28 @@ int GameCube::loadURLs(ImageType imageType)
 		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
 		if (len > 0 && len < (int)(sizeof(s_discNum))) {
 			for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+				int idx = (int)pExtURLs->size();
+				pExtURLs->resize(idx+1);
+				auto &extURL = pExtURLs->at(idx);
+
 				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
 				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
-				extURLs.push_back(extURL);
 			}
 		}
 	}
 
 	// First disc, or not a disc scan.
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter)
-	{
+	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+		int idx = (int)pExtURLs->size();
+		pExtURLs->resize(idx+1);
+		auto &extURL = pExtURLs->at(idx);
+
 		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
 		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
-		extURLs.push_back(extURL);
 	}
 
 	// All URLs added.
-	return (extURLs.empty() ? -ENOENT : 0);
+	return 0;
 }
 
 }

@@ -110,14 +110,15 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	}
 
 	// Synchronously download from the source URLs.
-	const std::vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
-	if (!extURLs || extURLs->empty()) {
+	std::vector<RomData::ExtURL> extURLs;
+	int ret = romData->extURLs(imageType, &extURLs);
+	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		return getNullImgClass();
 	}
 
 	CacheManager cache;
-	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
+	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
 		rp_string proxy = proxyForUrl(extURL.url);

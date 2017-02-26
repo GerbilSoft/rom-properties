@@ -331,12 +331,11 @@ class RomData
 		virtual int loadInternalImage(ImageType imageType);
 
 		/**
-		 * Load URLs for an external media type.
-		 * Called by RomData::extURL() if the URLs haven't been loaded yet.
+		 * Get the imgpf value for external media types.
 		 * @param imageType Image type to load.
-		 * @return 0 on success; negative POSIX error code on error.
+		 * @return imgpf value.
 		 */
-		virtual int loadURLs(ImageType imageType);
+		virtual uint32_t imgpf_extURL(ImageType imageType) const;
 
 	public:
 		/**
@@ -376,14 +375,11 @@ class RomData
 
 		/**
 		 * Get a list of URLs for an external media type.
-		 *
-		 * NOTE: The std::vector<extURL> is owned by this object.
-		 * Do NOT delete this object until you're done using this rp_image.
-		 *
-		 * @param imageType Image type.
-		 * @return List of URLs and cache keys, or nullptr if the ROM doesn't have one.
+		 * @param imageType	[in] Image type.
+		 * @param pExtURLs	[out] Output vector.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		const std::vector<ExtURL> *extURLs(ImageType imageType) const;
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const;
 
 		/**
 		 * Scrape an image URL from a downloaded HTML page.

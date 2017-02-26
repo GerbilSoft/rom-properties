@@ -646,12 +646,17 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		}
 	}
 
+	std::vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (!(supported & (1 << i)))
 			continue;
 
-		auto &urls = *romdata->extURLs((RomData::ImageType)i);
-		for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
+		extURLs.clear();	// NOTE: May not be needed...
+		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs);
+		if (ret != 0 || extURLs.empty())
+			continue;
+
+		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
 			os << "-- " <<
 				RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
 				" (cache_key: " << iter->cache_key << ")" << endl;
@@ -725,6 +730,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	os << "],\n\"imgext\":[";
 	first = true;
+	std::vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (!(supported & (1 << i)))
 			continue;
@@ -740,15 +746,19 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external image
 		os << ",\"exturls\":[";
 		bool firsturl = true;
-		auto &urls = *romdata->extURLs((RomData::ImageType)i);
-		for (auto iter = urls.cbegin(); iter != urls.end(); ++iter) {
+
+		extURLs.clear();	// NOTE: May not be needed...
+		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs);
+		if (ret != 0 || extURLs.empty())
+			continue;
+
+		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
 			if (firsturl) firsturl = false;
 			else os << ",";
 
 			os << "{\"url\":" << JSONString(iter->url.c_str());
 			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
 		}
-		os << "]}";
 	}
 	return os << "]}";
 }

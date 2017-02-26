@@ -137,12 +137,20 @@ class Amiibo : public RomData
 		virtual int loadFieldData(void) override final;
 
 		/**
-		 * Load URLs for an external media type.
-		 * Called by RomData::extURL() if the URLs haven't been loaded yet.
+		 * Get the imgpf value for external media types.
 		 * @param imageType Image type to load.
+		 * @return imgpf value.
+		 */
+		virtual uint32_t imgpf_extURL(ImageType imageType) const override final;
+
+	public:
+		/**
+		 * Get a list of URLs for an external media type.
+		 * @param imageType	[in] Image type.
+		 * @param pExtURLs	[out] Output vector.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadURLs(ImageType imageType) override final;
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const override final;
 };
 
 }
