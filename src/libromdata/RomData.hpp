@@ -331,7 +331,7 @@ class RomData
 		virtual int loadInternalImage(ImageType imageType);
 
 		/**
-		 * Get the imgpf value for external media types.
+		 * Get the imgpf value for external image types.
 		 * @param imageType Image type to load.
 		 * @return imgpf value.
 		 */
@@ -366,20 +366,41 @@ class RomData
 
 		/**
 		 * External URLs for a media type.
-		 * Includes URL and "cache key" for local caching.
+		 * Includes URL and "cache key" for local caching,
+		 * plus the expected image size (if available).
 		 */
 		struct ExtURL {
 			rp_string url;		// URL
 			rp_string cache_key;	// Cache key
+			uint16_t width;		// Expected image width. (0 for unknown)
+			uint16_t height;	// Expected image height. (0 for unknown)
 		};
 
 		/**
-		 * Get a list of URLs for an external media type.
-		 * @param imageType	[in] Image type.
-		 * @param pExtURLs	[out] Output vector.
+		 * Special image size values.
+		 */
+		enum ImageSizeType {
+			IMAGE_SIZE_DEFAULT	=  0,
+			IMAGE_SIZE_SMALLEST	= -1,
+			IMAGE_SIZE_LARGEST	= -2,
+		};
+
+		/**
+		 * Get a list of URLs for an external image type.
+		 *
+		 * A thumbnail size may be requested from the shell.
+		 * If the subclass supports multiple sizes, it should
+		 * try to get the size that most closely matches the
+		 * requested size.
+		 *
+		 * @param imageType	[in]     Image type.
+		 * @param pExtURLs	[out]    Output vector.
+		 * @param size		[in,opt] Requested image size. This may be a requested
+		 *                               thumbnail size in pixels, or an ImageSizeType
+		 *                               enum value.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const;
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const;
 
 		/**
 		 * Scrape an image URL from a downloaded HTML page.

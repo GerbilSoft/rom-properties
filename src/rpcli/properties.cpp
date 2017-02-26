@@ -652,7 +652,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 			continue;
 
 		extURLs.clear();	// NOTE: May not be needed...
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs);
+		// TODO: Customize the image size parameter?
+		// TODO: Option to retrieve supported image size?
+		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
 		if (ret != 0 || extURLs.empty())
 			continue;
 
@@ -748,7 +750,9 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		bool firsturl = true;
 
 		extURLs.clear();	// NOTE: May not be needed...
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs);
+		// TODO: Customize the image size parameter?
+		// TODO: Option to retrieve supported image size?
+		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
 		if (ret != 0 || extURLs.empty())
 			continue;
 

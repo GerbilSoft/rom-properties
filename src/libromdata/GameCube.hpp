@@ -145,7 +145,7 @@ class GameCube : public RomData
 		virtual int loadInternalImage(ImageType imageType) override final;
 
 		/**
-		 * Get the imgpf value for external media types.
+		 * Get the imgpf value for external image types.
 		 * @param imageType Image type to load.
 		 * @return imgpf value.
 		 */
@@ -153,12 +153,21 @@ class GameCube : public RomData
 
 	public:
 		/**
-		 * Get a list of URLs for an external media type.
-		 * @param imageType	[in] Image type.
-		 * @param pExtURLs	[out] Output vector.
+		 * Get a list of URLs for an external image type.
+		 *
+		 * A thumbnail size may be requested from the shell.
+		 * If the subclass supports multiple sizes, it should
+		 * try to get the size that most closely matches the
+		 * requested size.
+		 *
+		 * @param imageType	[in]     Image type.
+		 * @param pExtURLs	[out]    Output vector.
+		 * @param size		[in,opt] Requested image size. This may be a requested
+		 *                               thumbnail size in pixels, or an ImageSizeType
+		 *                               enum value.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const override final;
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const override final;
 };
 
 }

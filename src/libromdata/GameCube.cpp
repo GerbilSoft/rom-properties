@@ -1702,12 +1702,21 @@ uint32_t GameCube::imgpf_extURL(ImageType imageType) const
 }
 
 /**
- * Get a list of URLs for an external media type.
- * @param imageType	[in] Image type.
- * @param pExtURLs	[out] Output vector.
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
+int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
@@ -1736,22 +1745,29 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 		return -EIO;
 	}
 
+	// NOTE: GameTDB's GCN/Wii scans are currently only available
+	// in one size per media type.
+	((void)size);
+
 	// Check for the requested media type.
-	// NOTE: GameTDB has coverHQ for Wii/GCN, but not discHQ.
-	// GameTDB does not have *M for Wii/GCN.
-	// TODO: Configurable quality settings?
 	// TODO: Option to pick the *B version?
-	// TODO: Handle discs that have weird region codes?
 	const char *imageTypeName;
+	uint16_t width, height;
 	switch (imageType) {
 		case IMG_EXT_MEDIA:
 			imageTypeName = "disc";
+			width = 160;
+			height = 160;
 			break;
 		case IMG_EXT_COVER:
 			imageTypeName = "cover";
+			width = 160;
+			height = 224;
 			break;
 		case IMG_EXT_COVER_3D:
 			imageTypeName = "cover3D";
+			width = 176;
+			height = 248;
 			break;
 		default:
 			// Unsupported image type.
@@ -1799,6 +1815,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 
 				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
 				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
+				extURL.width = width;
+				extURL.height = height;
 			}
 		}
 	}
@@ -1811,6 +1829,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 
 		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
 		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
+		extURL.width = width;
+		extURL.height = height;
 	}
 
 	// All URLs added.

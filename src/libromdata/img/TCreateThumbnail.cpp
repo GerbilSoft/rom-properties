@@ -110,8 +110,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	}
 
 	// Synchronously download from the source URLs.
+	// TODO: Image size selection.
 	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs);
+	int ret = romData->extURLs(imageType, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		return getNullImgClass();

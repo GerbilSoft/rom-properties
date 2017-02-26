@@ -488,7 +488,7 @@ int Amiibo::loadFieldData(void)
 }
 
 /**
- * Get the imgpf value for external media types.
+ * Get the imgpf value for external image types.
  * @param imageType Image type to load.
  * @return imgpf value.
  */
@@ -506,12 +506,21 @@ uint32_t Amiibo::imgpf_extURL(ImageType imageType) const
 }
 
 /**
- * Get a list of URLs for an external media type.
- * @param imageType	[in] Image type.
- * @param pExtURLs	[out] Output vector.
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const
+int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
@@ -524,6 +533,9 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const
 		return -EINVAL;
 	}
 	pExtURLs->clear();
+
+	// Only one size is available.
+	((void)size);
 
 	RP_D(Amiibo);
 	if (!d->file || !d->file->isOpen()) {
@@ -573,6 +585,10 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs) const
 		return -EINVAL;
 	}
 	extURL.url = latin1_to_rp_string(url_str, len);
+
+	// Size may vary depending on amiibo.
+	extURL.width = 0;
+	extURL.height = 0;
 
 	// We're done here.
 	return 0;

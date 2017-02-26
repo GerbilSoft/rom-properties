@@ -359,7 +359,7 @@ int RomData::loadInternalImage(ImageType imageType)
 }
 
 /**
- * Get the imgpf value for external media types.
+ * Get the imgpf value for external image types.
  * @param imageType Image type to load.
  * @return imgpf value.
  */
@@ -426,12 +426,21 @@ const rp_image *RomData::image(ImageType imageType) const
 }
 
 /**
- * Get a list of URLs for an external media type.
- * @param imageType	[in] Image type.
- * @param pExtURLs	[out] Output vector.
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
+int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
@@ -445,6 +454,7 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs) const
 	}
 
 	// No external URLs by default.
+	((void)size);
 	pExtURLs->clear();
 	return -ENOENT;
 }
