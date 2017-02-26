@@ -94,6 +94,27 @@ class RomDataPrivate
 		 * @return Formatted file size.
 		 */
 		static rp_string formatFileSize(int64_t fileSize);
+
+		/**
+		 * Get the GameTDB URL for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name.
+		 * @param gameID Game ID.
+		 * @return GameTDB URL.
+		 */
+		static rp_string getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID);
+
+		/**
+		 * Get the GameTDB cache key for a given game.
+		 * @param system System name.
+		 * @param type Image type.
+		 * @param region Region name.
+		 * @param gameID Game ID.
+		 * TODO: PAL multi-region selection?
+		 * @return GameTDB cache key.
+		 */
+		static rp_string getCacheKey_GameTDB(const char *system, const char *type, const char *region, const char *gameID);
 };
 
 }

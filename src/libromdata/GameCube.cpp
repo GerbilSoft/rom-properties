@@ -1658,45 +1658,6 @@ int GameCube::loadFieldData(void)
 }
 
 /**
- * Get the GameTDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
- * @return GameTDB URL.
- */
-static LibRomData::rp_string getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
-{
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s.png", system, type, region, gameID);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-}
-
-/**
- * Get the GameTDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
- * TODO: PAL multi-region selection?
- * @return GameTDB URL.
- */
-static LibRomData::rp_string getCacheKey(const char *system, const char *type, const char *region, const char *gameID)
-{
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s.png", system, type, region, gameID);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-}
-
-/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
@@ -1894,8 +1855,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 				pExtURLs->resize(idx+1);
 				auto &extURL = pExtURLs->at(idx);
 
-				extURL.url = getURL_GameTDB("wii", discName, *iter, id6);
-				extURL.cache_key = getCacheKey("wii", discName, *iter, id6);
+				extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6);
+				extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6);
 				extURL.width = sizeDef.width;
 				extURL.height = sizeDef.height;
 			}
@@ -1907,8 +1868,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 			pExtURLs->resize(idx+1);
 			auto &extURL = pExtURLs->at(idx);
 
-			extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
-			extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
+			extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6);
+			extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6);
 			extURL.width = sizeDef.width;
 			extURL.height = sizeDef.height;
 		}

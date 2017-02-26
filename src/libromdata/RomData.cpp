@@ -195,6 +195,45 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
+/**
+ * Get the GameTDB URL for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * @return GameTDB URL.
+ */
+LibRomData::rp_string RomDataPrivate::getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
+{
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s.png", system, type, region, gameID);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);	// TODO: Handle truncation better.
+
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Get the GameTDB cache key for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * TODO: PAL multi-region selection?
+ * @return GameTDB cache key.
+ */
+LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
+{
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s.png", system, type, region, gameID);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);	// TODO: Handle truncation better.
+
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
 /** RomData **/
 
 /**
