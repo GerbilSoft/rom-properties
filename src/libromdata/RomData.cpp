@@ -530,16 +530,17 @@ const rp_char *RomData::getImageTypeName(ImageType imageType) {
 		return nullptr;
 	}
 
+	// FIXME commit these changes with COVER commit
 	static const rp_char *const image_type_names[] = {
 		// Internal
-		_RP("Internal icon"),			// IMG_INT_ICON
-		_RP("Internal banner"),			// IMG_INT_BANNER
-		_RP("Internal media scan"),		// IMG_INT_MEDIA
+		_RP("Internal icon"),				// IMG_INT_ICON
+		_RP("Internal banner"),				// IMG_INT_BANNER
+		_RP("Internal media scan"),			// IMG_INT_MEDIA
 		// External
-		_RP("External media scan"),		// IMG_EXT_MEDIA
-		_RP("External box scan"),		// IMG_EXT_BOX
-		_RP("External box scan (both sides)"),	// IMG_EXT_BOX_FULL
-		_RP("External box scan (3D version)"),	// IMG_EXT_BOX_3D
+		_RP("External media scan"),			// IMG_EXT_MEDIA
+		_RP("External cover scan"),			// IMG_EXT_COVER
+		_RP("External cover scan (3D version)"),	// IMG_EXT_COVER_3D
+		_RP("External box scan"),			// IMG_EXT_BOX
 	};
 	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1,
 		"image_type_names[] needs to be updated.");

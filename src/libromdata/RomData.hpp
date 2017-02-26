@@ -260,15 +260,15 @@ class RomData
 			// External images are downloaded from websites,
 			// such as GameTDB.
 			IMG_EXT_MEDIA,		// External media scan
-			IMG_EXT_BOX,		// External box scan
-			IMG_EXT_BOX_FULL,	// External box scan (both sides)
-			IMG_EXT_BOX_3D,		// External box scan (3D version)
+			IMG_EXT_COVER,		// External cover scan
+			IMG_EXT_COVER_3D,	// External cover scan (3D version)
+			IMG_EXT_BOX,		// External box scan (cover + outer box)
 
 			// Ranges.
 			IMG_INT_MIN = IMG_INT_ICON,
 			IMG_INT_MAX = IMG_INT_MEDIA,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
-			IMG_EXT_MAX = IMG_EXT_BOX_3D
+			IMG_EXT_MAX = IMG_EXT_BOX,
 		};
 
 		/**
@@ -285,9 +285,9 @@ class RomData
 			// External images are downloaded from websites,
 			// such as GameTDB.
 			IMGBF_EXT_MEDIA    = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
-			IMGBF_EXT_BOX      = (1 << IMG_EXT_BOX),	// External box scan
-			IMGBF_EXT_BOX_FULL = (1 << IMG_EXT_BOX_FULL),	// External box scan (both sides)
-			IMGBF_EXT_BOX_3D   = (1 << IMG_EXT_BOX_3D),	// External box scan (3D version)
+			IMGBF_EXT_COVER    = (1 << IMG_EXT_COVER),	// External cover scan
+			IMGBF_EXT_COVER_3D = (1 << IMG_EXT_COVER_3D),	// External cover scan (3D version)
+			IMGBF_EXT_BOX	   = (1 << IMG_EXT_BOX),	// External box scan (cover + outer box)
 		};
 
 		/**

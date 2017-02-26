@@ -1728,13 +1728,10 @@ int GameCube::loadURLs(ImageType imageType)
 		case IMG_EXT_MEDIA:
 			imageTypeName = "disc";
 			break;
-		case IMG_EXT_BOX:
+		case IMG_EXT_COVER:
 			imageTypeName = "cover";
 			break;
-		case IMG_EXT_BOX_FULL:
-			imageTypeName = "coverfull";
-			break;
-		case IMG_EXT_BOX_3D:
+		case IMG_EXT_COVER_3D:
 			imageTypeName = "cover3D";
 			break;
 		default:
