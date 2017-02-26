@@ -1201,8 +1201,8 @@ uint32_t DreamcastSave::supportedImageTypes(void) const
  */
 std::vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(ImageType imageType)
 {
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return std::vector<ImageSizeDef>();
 	}

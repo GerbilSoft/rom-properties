@@ -390,6 +390,8 @@ uint32_t RomData::supportedImageTypes(void) const
  */
 std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageType) const
 {
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+
 	// No images supported by default.
 	((void)imageType);
 	return std::vector<ImageSizeDef>();
