@@ -18,7 +18,7 @@ ELSE()
 ENDIF(NOT USE_INTERNAL_PNG)
 
 IF(USE_INTERNAL_PNG)
-	# Using the internal zlib library.
+	# Using the internal PNG library.
 	SET(PNG_FOUND 1)
 	SET(HAVE_PNG 1)
 	IF(WIN32 OR APPLE)
