@@ -1831,14 +1831,6 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	}
 	id6[6] = 0;
 
-	// Replace any non-printable characters with underscores.
-	// (NDDEMO has ID6 "00\0E01".)
-	for (int i = 0; i < 6; i++) {
-		if (!isprint(id6[i])) {
-			id6[i] = '_';
-		}
-	}
-
 	// ExtURLs.
 	pExtURLs->reserve(4*sizeDefs.size());
 
