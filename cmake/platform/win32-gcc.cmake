@@ -63,16 +63,8 @@ ENDFOREACH()
 # a bug in `ld` where if it generates the .reloc section,
 # it conveniently forgets the entry point.
 # Reference: https://lists.libav.org/pipermail/libav-devel/2014-October/063871.html
-# TODO: Does ARM Windows have a leading underscore?
-STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
-IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-	IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
-		SET(ENTRY_POINT "_mainCRTStartup")
-	ELSE()
-		SET(ENTRY_POINT "mainCRTStartup")
-	ENDIF()
-ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
-
+# NOTE: Entry point is set using SET_WINDOWS_ENTRYPOINT()
+# in platform.cmake due to ANSI/Unicode differences.
 FOREACH(FLAG_TEST "-Wl,--dynamicbase,--pic-executable")
 	# CMake doesn't like "+" characters in variable names.
 	STRING(REPLACE "+" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
@@ -81,7 +73,7 @@ FOREACH(FLAG_TEST "-Wl,--dynamicbase,--pic-executable")
 	IF(LDFLAG_${FLAG_TEST_VARNAME})
 		# Entry point is only set for EXEs.
 		# GNU `ld` always has the -e option.
-		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} ${FLAG_TEST} -Wl,-e,${ENTRY_POINT}")
+		SET(RP_EXE_LINKER_FLAGS_WIN32 "${RP_EXE_LINKER_FLAGS_WIN32} ${FLAG_TEST}")
 	ENDIF(LDFLAG_${FLAG_TEST_VARNAME})
 	UNSET(LDFLAG_${FLAG_TEST_VARNAME})
 	UNSET(FLAG_TEST_VARNAME)

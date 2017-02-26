@@ -130,3 +130,37 @@ IF(WIN32 AND MSVC)
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 ENDIF(WIN32 AND MSVC)
 ENDFUNCTION()
+
+# Set Windows entrypoint.
+# _target: Target.
+# _entrypoint: Entry point. (main, wmain, WinMain, wWinMain)
+FUNCTION(SET_WINDOWS_ENTRYPOINT _target _entrypoint)
+IF(WIN32)
+	IF(MSVC)
+		# MSVC automatically prepends an underscore if necessary.
+		SET(ENTRY_POINT_FLAG "/ENTRY:${_entrypoint}CRTStartup")
+	ELSE(MSVC)
+		# MinGW does not automatically prepend an underscore.
+		# TODO: Does ARM Windows have a leading underscore?
+		STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+		IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+			IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+				SET(ENTRY_POINT "_${_entrypoint}CRTStartup")
+			ELSE()
+				SET(ENTRY_POINT "${_entrypoint}CRTStartup")
+			ENDIF()
+		ELSE()
+			SET(ENTRY_POINT "${_entrypoint}CRTStartup")
+		ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+		SET(ENTRY_POINT_FLAG "-Wl,-e,${ENTRY_POINT}")
+	ENDIF(MSVC)
+
+	GET_TARGET_PROPERTY(TARGET_LINK_FLAGS ${_target} LINK_FLAGS)
+	IF(TARGET_LINK_FLAGS)
+		SET(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} ${ENTRY_POINT_FLAG}")
+	ELSE()
+		SET(TARGET_LINK_FLAGS "${ENTRY_POINT_FLAG}")
+	ENDIF()
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
+ENDIF(WIN32)
+ENDFUNCTION()
