@@ -101,9 +101,14 @@ class RomDataPrivate
 		 * @param type Image type.
 		 * @param region Region name.
 		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
+		 * TODO: PAL multi-region selection?
 		 * @return GameTDB URL.
 		 */
-		static rp_string getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID);
+		static rp_string getURL_GameTDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
 
 		/**
 		 * Get the GameTDB cache key for a given game.
@@ -111,10 +116,14 @@ class RomDataPrivate
 		 * @param type Image type.
 		 * @param region Region name.
 		 * @param gameID Game ID.
+		 * @param ext File extension, e.g. ".png" or ".jpg".
 		 * TODO: PAL multi-region selection?
 		 * @return GameTDB cache key.
 		 */
-		static rp_string getCacheKey_GameTDB(const char *system, const char *type, const char *region, const char *gameID);
+		static rp_string getCacheKey_GameTDB(
+			const char *system, const char *type,
+			const char *region, const char *gameID,
+			const char *ext);
 };
 
 }

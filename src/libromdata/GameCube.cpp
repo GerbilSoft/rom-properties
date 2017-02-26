@@ -1849,8 +1849,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 			pExtURLs->resize(idx+1);
 			auto &extURL = pExtURLs->at(idx);
 
-			extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6);
-			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6);
+			extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6, ".png");
+			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6, ".png");
 			extURL.width = sizeDef.width;
 			extURL.height = sizeDef.height;
 		}
@@ -1862,8 +1862,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		pExtURLs->resize(idx+1);
 		auto &extURL = pExtURLs->at(idx);
 
-		extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6);
-		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6);
+		extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6, ".png");
+		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6, ".png");
 		extURL.width = sizeDef.width;
 		extURL.height = sizeDef.height;
 	}

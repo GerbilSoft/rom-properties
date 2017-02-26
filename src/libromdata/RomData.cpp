@@ -201,12 +201,18 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
  * @param type Image type.
  * @param region Region name.
  * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
+ * TODO: PAL multi-region selection?
  * @return GameTDB URL.
  */
-LibRomData::rp_string RomDataPrivate::getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
+LibRomData::rp_string RomDataPrivate::getURL_GameTDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
 {
 	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s.png", system, type, region, gameID);
+	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s%s",
+			system, type, region, gameID, ext);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);	// TODO: Handle truncation better.
 
@@ -220,13 +226,18 @@ LibRomData::rp_string RomDataPrivate::getURL_GameTDB(const char *system, const c
  * @param type Image type.
  * @param region Region name.
  * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
  * TODO: PAL multi-region selection?
  * @return GameTDB cache key.
  */
-LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
+LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
 {
 	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s.png", system, type, region, gameID);
+	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s%s",
+			system, type, region, gameID, ext);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);	// TODO: Handle truncation better.
 

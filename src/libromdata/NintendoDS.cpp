@@ -1282,12 +1282,15 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 
 	// Determine the image type name.
 	const char *imageTypeName_base;
+	const char *ext;
 	switch (imageType) {
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
+			ext = ".jpg";
 			break;
 		case IMG_EXT_BOX:
 			imageTypeName_base = "box";
+			ext = ".png";
 			break;
 		default:
 			// Unsupported image type.
@@ -1324,8 +1327,8 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 		pExtURLs->resize(idx+1);
 		auto &extURL = pExtURLs->at(idx);
 
-		extURL.url = d->getURL_GameTDB("ds", imageTypeName, *iter, id4);
-		extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *iter, id4);
+		extURL.url = d->getURL_GameTDB("ds", imageTypeName, *iter, id4, ext);
+		extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *iter, id4, ext);
 		extURL.width = sizeDef.width;
 		extURL.height = sizeDef.height;
 	}
