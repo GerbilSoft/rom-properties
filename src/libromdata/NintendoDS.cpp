@@ -1243,11 +1243,18 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	}
 	pExtURLs->clear();
 
+	// Check for DS ROMs that don't have boxart.
 	RP_D(const NintendoDS);
 	if (!memcmp(d->romHeader.id4, "NTRJ", 4) ||
 	    !memcmp(d->romHeader.id4, "####", 4))
 	{
 		// This is either a prototype, a download demo, or homebrew.
+		// No external images are available.
+		return -ENOENT;
+	} else if ((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi) &&
+		d->romHeader.dsi.filetype != DSi_FTYPE_CARTRIDGE)
+	{
+		// This is a DSi SRL that isn't a cartridge dump.
 		// No external images are available.
 		return -ENOENT;
 	}
@@ -1304,7 +1311,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	// Determine the GameTDB region code(s).
 	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
 		d->romHeader.nds_region,
-		((d->romHeader.unitcode & 2)
+		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
 			? le32_to_cpu(d->romHeader.dsi.region_code)
 			: 0 /* not a DSi-enhanced/exclusive ROM */
 			),
