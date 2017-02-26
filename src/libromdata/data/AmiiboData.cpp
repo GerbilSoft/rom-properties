@@ -82,6 +82,7 @@ class AmiiboDataPrivate {
 		static const char_variant_t smb_rosalina_variants[];
 		static const char_variant_t smb_bowser_variants[];
 		static const char_variant_t smb_donkey_kong_variants[];
+		static const char_variant_t yoshi_poochy_variants[];
 		static const char_variant_t tloz_link_variants[];
 		static const char_variant_t tloz_zelda_variants[];
 		static const char_variant_t tloz_ganondorf_variants[];
@@ -151,7 +152,7 @@ class AmiiboDataPrivate {
 const rp_char *const AmiiboDataPrivate::char_series_names[] = {
 	_RP("Super Mario Bros."),	// 0x000
 	nullptr,			// 0x004
-	nullptr,			// 0x008
+	_RP("Yoshi"),			// 0x008
 	nullptr,			// 0x00C
 	_RP("The Legend of Zelda"),	// 0x010
 	nullptr,			// 0x014
@@ -309,6 +310,11 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::smb_donkey_kong_varia
 	// variants in amiibo mode.
 	{0xFF, _RP("Turbo Charge Donkey Kong")},
 	//{0xFF, _RP("Dark Turbo Charge Donkey Kong")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::yoshi_poochy_variants[] = {
+	{0x00, nullptr},	// TODO
+	{0x01, _RP("Yarn Poochy")},
 };
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::tloz_link_variants[] = {
@@ -471,12 +477,15 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0005, _RP("Bowser"), smb_bowser_variants, ARRAY_SIZE(smb_bowser_variants)},
 	{0x0006, _RP("Bowser Jr."), nullptr, 0},
 	{0x0007, _RP("Wario"), nullptr, 0},
-	{0x0008, _RP("Donkey Kong"), smb_donkey_kong_variants, ARRAY_SIZE(smb_donkey_kong_variants)},	// FIXME: Listed as 0x0080 on Amiibo DB's SSB tab.
+	{0x0008, _RP("Donkey Kong"), smb_donkey_kong_variants, ARRAY_SIZE(smb_donkey_kong_variants)},
 	{0x0009, _RP("Diddy Kong"), nullptr, 0},
 	{0x000A, _RP("Toad"), nullptr, 0},
 	{0x0013, _RP("Daisy"), nullptr, 0},
 	{0x0014, _RP("Waluigi"), nullptr, 0},
 	{0x0017, _RP("Boo"), nullptr, 0},
+
+	// Yoshi (character series = 0x008)
+	{0x0080, _RP("Poochy"), yoshi_poochy_variants, ARRAY_SIZE(yoshi_poochy_variants)},
 
 	// The Legend of Zelda (character series = 0x010)
 	{0x0100, _RP("Link"), tloz_link_variants, ARRAY_SIZE(tloz_link_variants)},
@@ -1169,9 +1178,9 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 1, _RP("Inkling Squid")},		// 0x0040
 
 	// Yarn Yoshi [0x0041-0x0043]
-	{  0, 0, _RP("Green Yarn Yoshi")},	// 0x0041
-	{  0, 0, _RP("Pink Yarn Yoshi")},	// 0x0042
-	{  0, 0, _RP("Light Blue Yarn Yoshi")},	// 0x0043
+	{  1, 0, _RP("Green Yarn Yoshi")},	// 0x0041
+	{  2, 0, _RP("Pink Yarn Yoshi")},	// 0x0042
+	{  3, 0, _RP("Light Blue Yarn Yoshi")},	// 0x0043
 
 	// Animal Crossing Cards: Series 1 [0x0044-0x00A7]
 	{  1, 1, _RP("Isabelle")},		// 0x0044
@@ -1677,7 +1686,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 51, 7, _RP("Mewtwo")},		// 0x023D
 
 	// Yarn Yoshi: Mega Yarn Yoshi [0x023E]
-	{  0, 0, _RP("Mega Yarn Yoshi")},	// 0x023E
+	{  4, 0, _RP("Mega Yarn Yoshi")},	// 0x023E
 
 	// Animal Crossing Figurines: Wave 1 [0x023F-0x0246]
 	{  0, 1, _RP("Isabelle")},		// 0x023F
@@ -1936,6 +1945,17 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 0, nullptr},				// 0x0351
 	{  0, 2, _RP("Zelda (The Wind Waker)")},	// 0x0352
 
+	// Unused [0x0353-0x35C]
+	{  0, 0, nullptr},			// 0x0353
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0354,0x0355
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0356,0x0357
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0358,0x0359
+	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x035A,0x035B
+	{  0, 0, nullptr},			// 0x035C
+
+	// Yarn Yoshi: Poochy [0x035D]
+	{  5, 0, _RP("Poochy")},			// 0x035D
+
 #if 0
 	// TODO: Not released yet.
 
@@ -2027,7 +2047,7 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x0353,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x035D+1,
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
