@@ -148,12 +148,8 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 }
 
 #ifdef _WIN32
-# ifdef RP_UTF8
 static int real_main(int argc, char *argv[])
-# else /* RP_UTF16 */
-int wmain(int argc, wchar_t *argv[])
-# endif
-#else /* !_WIN32 */
+#else
 int main(int argc, char *argv[])
 #endif
 {
@@ -220,7 +216,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-#if defined(_WIN32) && defined(RP_UTF8)
+#ifdef _WIN32
 // UTF-16 main() wrapper for Windows.
 #include <windows.h>
 int wmain(int argc, wchar_t *argv[]) {
