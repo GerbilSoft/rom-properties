@@ -1203,7 +1203,75 @@ uint32_t GameCube::supportedImageTypes_static(void)
  */
 uint32_t GameCube::supportedImageTypes(void) const
 {
-       return supportedImageTypes_static();
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	switch (imageType) {
+		case IMG_INT_BANNER: {
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, 96, 32},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+		case IMG_EXT_MEDIA: {
+			static const ImageSizeDef sz_EXT_MEDIA[] = {
+				{nullptr, 160, 160},
+			};
+			return vector<ImageSizeDef>(sz_EXT_MEDIA,
+				sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
+		}
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 224},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_3D: {
+			static const ImageSizeDef sz_EXT_COVER_3D[] = {
+				{nullptr, 176, 248},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**

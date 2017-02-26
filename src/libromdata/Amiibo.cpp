@@ -334,7 +334,7 @@ vector<const rp_char*> Amiibo::supportedFileExtensions(void) const
  */
 uint32_t Amiibo::supportedImageTypes_static(void)
 {
-       return IMGBF_EXT_MEDIA;
+	return IMGBF_EXT_MEDIA;
 }
 
 /**
@@ -343,7 +343,51 @@ uint32_t Amiibo::supportedImageTypes_static(void)
  */
 uint32_t Amiibo::supportedImageTypes(void) const
 {
-       return supportedImageTypes_static();
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	if (imageType != IMG_EXT_MEDIA) {
+		// Only media scans are supported.
+		return std::vector<ImageSizeDef>();
+	}
+
+	// Amiibo scan sizes may vary, but there's always one.
+	static const ImageSizeDef sz_EXT_MEDIA[] = {
+		{nullptr, 0, 0},
+	};
+	return vector<ImageSizeDef>(sz_EXT_MEDIA,
+		sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**

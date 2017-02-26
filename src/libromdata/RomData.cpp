@@ -341,6 +341,22 @@ uint32_t RomData::supportedImageTypes(void) const
 }
 
 /**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageType) const
+{
+	// No images supported by default.
+	((void)imageType);
+	return std::vector<ImageSizeDef>();
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
@@ -355,6 +371,7 @@ int RomData::loadInternalImage(ImageType imageType)
 	}
 
 	// No images supported by the base class.
+	((void)imageType);
 	return -ENOENT;
 }
 
@@ -372,6 +389,7 @@ uint32_t RomData::imgpf_extURL(ImageType imageType) const
 	}
 
 	// No imgpf by default.
+	((void)imageType);
 	return 0;
 }
 

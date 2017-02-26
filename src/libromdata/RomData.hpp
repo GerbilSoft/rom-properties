@@ -253,7 +253,6 @@ class RomData
 		enum ImageType {
 			// Internal images are contained with the ROM or disc image.
 			IMG_INT_ICON = 0,	// Internal icon, e.g. DS launcher icon
-			//IMG_INT_ICON_SMALL,	// Internal small icon. (3DS) [TODO]
 			IMG_INT_BANNER,		// Internal banner, e.g. GameCube discs
 			IMG_INT_MEDIA,		// Internal media scan, e.g. Dreamcast discs
 
@@ -278,7 +277,6 @@ class RomData
 		enum ImageTypeBF {
 			// Internal images are contained with the ROM or disc image.
 			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
-			//IMGBF_INT_ICON_SMALL = (1 << IMG_INT_ICON_SMALL),	// Internal small icon. (3DS) [TODO]
 			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
 			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
 
@@ -313,6 +311,23 @@ class RomData
 		 * @return Bitfield of supported image types. (ImageTypesBF)
 		 */
 		virtual uint32_t supportedImageTypes(void) const;
+
+		struct ImageSizeDef {
+			const rp_char *name;	// Size name, if applicable. (May be nullptr.)
+			uint16_t width;		// Image width. (May be 0 if unknown.)
+			uint16_t height;	// Image height. (May be 0 if unknown.)
+		};
+
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		virtual std::vector<ImageSizeDef> supportedImageSizes(ImageType imageType) const;
 
 	protected:
 		/**
