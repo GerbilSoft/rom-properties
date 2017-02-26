@@ -147,7 +147,12 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 	delete file;
 }
 
-int main(int argc,char **argv){
+#ifdef _WIN32
+static int real_main(int argc, char *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
+{
 	if(argc<2){
 		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
 		cerr << "Examples:" << endl;
@@ -210,3 +215,35 @@ int main(int argc,char **argv){
 	if (json) cout << "]";
 	return 0;
 }
+
+#ifdef _WIN32
+// UTF-16 main() wrapper for Windows.
+#include <windows.h>
+int wmain(int argc, wchar_t *argv[]) {
+	// Convert the UTF-16 arguments to UTF-8.
+	// NOTE: Using WideCharToMultiByte() directly in order to
+	// avoid std::string overhead.
+	char **u8argv = new char*[argc+1];
+	u8argv[argc] = nullptr;
+	for (int i = 0; i < argc; i++) {
+		int cbMbs = WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, nullptr, 0, nullptr, nullptr);
+		if (cbMbs <= 0) {
+			// Invalid string. Make it an empty string anyway.
+			u8argv[i] = strdup("");
+			continue;
+		}
+
+		u8argv[i] = (char*)malloc(cbMbs);
+		WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, u8argv[i], cbMbs, nullptr, nullptr);
+	}
+
+	// Run the program.
+	int ret = real_main(argc, u8argv);
+
+	// Free u8argv[].
+	for (int i = argc-1; i >= 0; i--) {
+		free(u8argv[i]);
+	}
+	delete[] u8argv;
+}
+#endif /* _WIN32 */
