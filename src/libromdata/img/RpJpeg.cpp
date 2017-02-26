@@ -451,12 +451,27 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				}
 
 				case JCS_CMYK: {
-					// TODO: Convert from CMYK to 32-bit ARGB.
-					assert(!"CMYK is not supported.");
-					jpeg_finish_decompress(&cinfo);
-					jpeg_destroy_decompress(&cinfo);
-					delete img;
-					return nullptr;
+					// Convert from CMYK to 32-bit ARGB.
+					// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
+					// TODO: Optimized version?
+					// TODO: Unroll the loop?
+					uint8_t *dest = static_cast<uint8_t*>(vdest);
+					const uint8_t *src = buffer[0];
+					for (unsigned int i = cinfo.output_width; i > 0; i--, dest += 4, src += 4) {
+						unsigned int k = src[3];
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+						dest[3] = 255;			// Alpha
+						dest[2] = k * src[0] / 255;	// Red
+						dest[1] = k * src[1] / 255;	// Green
+						dest[0] = k * src[2] / 255;	// Blue
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+						dest[0] = 255;			// Alpha
+						dest[1] = k * src[0] / 255;	// Red
+						dest[2] = k * src[1] / 255;	// Green
+						dest[3] = k * src[2] / 255;	// Blue
+#endif
+					}
+					break;
 				}
 
 				default: {
