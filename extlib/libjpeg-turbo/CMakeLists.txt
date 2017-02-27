@@ -56,6 +56,9 @@ message(STATUS "VERSION = ${VERSION}, BUILD = ${BUILD}")
 # since libjpeg-turbo isn't the base project.
 SET(TOPSRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+# rom-properties: Set the CMake debug postfix.
+SET(CMAKE_DEBUG_POSTFIX "d")
+
 # rom-properties: Don't use option() here; it's set by extlib.
 #option(WITH_SIMD "Include SIMD extensions" TRUE)
 #option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
@@ -295,6 +298,16 @@ if(WITH_TURBOJPEG)
     endif()
     target_link_libraries(turbojpeg jpeg-static)
     set_target_properties(turbojpeg PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
+    # rom-properties: Set POSTFIX instead of using SUFFIX.
+    if(MSVC)
+      SET_TARGET_PROPERTIES(turbojpeg PROPERTIES DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+      SET_TARGET_PROPERTIES(turbojpeg PROPERTIES RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}")
+    elseif(MINGW OR CYGWIN)
+      SET_TARGET_PROPERTIES(turbojpeg PROPERTIES DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+      SET_TARGET_PROPERTIES(turbojpeg PROPERTIES RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}")
+    endif(MSVC)
+
     # rom-properties: DO_SPLIT_DEBUG(), SET_WINDOWS_SUBSYSTEM()
     DO_SPLIT_DEBUG(turbojpeg)
     SET_WINDOWS_SUBSYSTEM(turbojpeg WIN32)
