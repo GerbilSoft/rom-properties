@@ -41,9 +41,11 @@
 
 // C++ includes.
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -742,9 +744,9 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 	}
 
 	// Load the eyecatch data.
-	uint8_t *data = static_cast<uint8_t*>(malloc(eyecatch_size));
+	unique_ptr<uint8_t[]> data(new uint8_t[eyecatch_size]);
 	this->file->seek(vms_header_offset + sz_icons);
-	size_t size = this->file->read(data, eyecatch_size);
+	size_t size = this->file->read(data.get(), eyecatch_size);
 	if (size != eyecatch_size) {
 		// Error loading the eyecatch data.
 		return nullptr;
@@ -754,7 +756,7 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 		// Apply 32-bit byteswapping to the eyecatch data.
 		// TODO: Use an IRpFile subclass that automatically byteswaps
 		// instead of doing manual byteswapping here?
-		__byte_swap_32_array((uint32_t*)data, eyecatch_size);
+		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
 	}
 
 	// Convert the eycatch to rp_image.
@@ -771,33 +773,32 @@ rp_image *DreamcastSavePrivate::loadBanner(void)
 			// FIXME: Completely untested.
 			img = ImageDecoder::fromDreamcastARGB4444(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
 			break;
 		}
 
 		case DC_VMS_EYECATCH_CI8: {
 			// CI8 eyecatch.
 			// TODO: Needs more testing.
-			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
+			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
 			img = ImageDecoder::fromDreamcastCI8(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI8_DATA_SIZE,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
 			break;
 		}
 
 		case DC_VMS_EYECATCH_CI4: {
 			// CI4 eyecatch.
-			const uint8_t *image_buf = data + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
+			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
 			img = ImageDecoder::fromDreamcastCI4(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI4_DATA_SIZE,
-				reinterpret_cast<const uint16_t*>(data), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);
+				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);
 			break;
 		}
 	}
 
-	free(data);
 	return img;
 }
 
