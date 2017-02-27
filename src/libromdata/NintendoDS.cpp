@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+
 #include "NintendoDS.hpp"
 #include "RomData_p.hpp"
 
@@ -858,8 +860,12 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
  */
 uint32_t NintendoDS::supportedImageTypes_static(void)
 {
+#ifdef HAVE_JPEG
 	return IMGBF_INT_ICON |
 	       IMGBF_EXT_COVER | IMGBF_EXT_BOX;
+#else /* !HAVE_JPEG */
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX;
+#endif
 }
 
 /**
@@ -1291,10 +1297,12 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	const char *imageTypeName_base;
 	const char *ext;
 	switch (imageType) {
+#ifdef HAVE_JPEG
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
 			ext = ".jpg";
 			break;
+#endif /* HAVE_JPEG */
 		case IMG_EXT_BOX:
 			imageTypeName_base = "box";
 			ext = ".png";
