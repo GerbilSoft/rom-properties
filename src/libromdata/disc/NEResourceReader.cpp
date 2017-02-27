@@ -65,7 +65,6 @@ class NEResourceReaderPrivate
 		// Resource segment table.
 		uint32_t rsrc_tbl_addr;
 		uint32_t rsrc_tbl_size;
-		uint32_t rscAlign;	// Resource alignment.
 
 		// Resource table entry.
 		struct ResTblEntry {
@@ -208,8 +207,8 @@ int NEResourceReaderPrivate::loadResTbl(void)
 	}
 
 	// Get the shift alignment. (power of 2)
-	const uint16_t shift_exp = (rsrcTblData[0] | (rsrcTblData[1] << 8));
-	if (shift_exp >= 16) {
+	const uint16_t rscAlignShift = (rsrcTblData[0] | (rsrcTblData[1] << 8));
+	if (rscAlignShift >= 16) {
 		// 64 KB or higher shift alignment is
 		// probably out of range.
 		return -EIO;
@@ -290,8 +289,8 @@ int NEResourceReaderPrivate::loadResTbl(void)
 			// NOTE: Wine shifts both addr and len; all documentation
 			// I can find says only addr is shifted, but then the len
 			// value is too small...
-			entry.addr = le32_to_cpu(nameInfo->rnOffset) << shift_exp;
-			entry.len = le16_to_cpu(nameInfo->rnLength) << shift_exp;
+			entry.addr = le32_to_cpu(nameInfo->rnOffset) << rscAlignShift;
+			entry.len = le16_to_cpu(nameInfo->rnLength) << rscAlignShift;
 			entriesRead++;
 		}
 		if (isErr)
