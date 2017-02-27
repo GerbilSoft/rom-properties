@@ -6,6 +6,7 @@ cd "${TRAVIS_BUILD_DIR}/build"
 # so we can't build the KDE5 plugin.
 cmake .. \
 	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DENABLE_JPEG=ON \
 	-DBUILD_TESTING=ON \
 	-DBUILD_KDE4=ON \
 	-DBUILD_KDE5=OFF \
