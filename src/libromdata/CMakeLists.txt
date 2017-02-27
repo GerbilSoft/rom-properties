@@ -94,7 +94,6 @@ SET(libromdata_SRCS
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
-	img/RpJpeg.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -167,7 +166,6 @@ SET(libromdata_H
 	img/IconAnimHelper.hpp
 	img/APNG_dlopen.h
 	img/TCreateThumbnail.hpp
-	img/RpJpeg.hpp
 	disc/IDiscReader.hpp
 	disc/DiscReader.hpp
 	disc/WbfsReader.hpp
@@ -193,6 +191,11 @@ IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 	SET(libromdata_SRCS ${libromdata_SRCS} img/APNG_dlopen.c)
 	SET(libromdata_NEEDS_DL 1)
 ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
+
+IF(JPEG_FOUND)
+	SET(libromdata_SRCS ${libromdata_SRCS} img/RpJpeg.cpp)
+	SET(libromdata_H ${libromdata_H} img/RpJpeg.hpp)
+ENDIF(JPEG_FOUND)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
