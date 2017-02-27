@@ -195,10 +195,10 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 	uint32_t imgpf = 0;
 	ImgSize img_sz;
 
-	if (imgbf & RomData::IMGBF_EXT_COVER) {
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, &img_sz);
-		imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
+		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, &img_sz);
+		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 
 	if (!isImgClassValid(ret_img)) {
