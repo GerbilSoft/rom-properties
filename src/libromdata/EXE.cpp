@@ -1064,9 +1064,11 @@ EXE::EXE(IRpFile *file)
 	// file has a DOS MZ executable stub. The actual executable
 	// type is determined here.
 
-	// If the relocation table address is less than 0x40,
-	// it's an MS-DOS executable.
-	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40) {
+	// Check for MS-DOS executables:
+	// - Relocation table address less than 0x40
+	// - Magic number is 'ZM' (Windows only accepts 'MZ')
+	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
+	    be16_to_cpu(d->mz.e_magic) == 'ZM') {
 		// MS-DOS executable.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
 		// TODO: Check for MS-DOS device drivers?
@@ -1102,7 +1104,8 @@ EXE::EXE(IRpFile *file)
 	}
 
 	// Check the signature.
-	// FIXME: MSVC handles 'PE\0\0' as 0x00504500.
+	// FIXME: MSVC handles 'PE\0\0' as 0x00504500,
+	// probably due to the embedded NULL bytes.
 	if (be32_to_cpu(d->hdr.pe.Signature) == 0x50450000 /*'PE\0\0'*/) {
 		// This is a PE executable.
 		// Check if it's PE or PE32+.
@@ -1148,7 +1151,7 @@ EXE::EXE(IRpFile *file)
 					break;
 			}
 		}
-	} else if (be16_to_cpu(d->hdr.ne.sig) == 0x4E45 /* 'NE' */) {
+	} else if (be16_to_cpu(d->hdr.ne.sig) == 'NE' /* 'NE' */) {
 		// New Executable.
 		d->exeType = EXEPrivate::EXE_TYPE_NE;
 
@@ -1227,10 +1230,10 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		reinterpret_cast<const IMAGE_DOS_HEADER*>(info->header.pData);
 
 	// Check the magic number.
-	// NOTE: 'MZ' is stored as a string, so we have to
-	// handle it as if it's big-endian.
-	// TODO: Also support 'ZM'?
-	if (be16_to_cpu(pMZ->e_magic) == 'MZ') {
+	// This may be either 'MZ' or 'ZM'. ('ZM' is less common.)
+	// NOTE: 'ZM' can only be used for MS-DOS executables.
+	// NOTE: Checking for little-endian host byteorder first.
+	if (pMZ->e_magic == 'ZM' || pMZ->e_magic == 'MZ') {
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
 		return EXEPrivate::EXE_TYPE_MZ;
@@ -1389,7 +1392,7 @@ vector<const rp_char*> EXE::supportedFileExtensions_static(void)
 		_RP(".sys"), _RP(".tsp"),
 
 		// NE extensions
-		_RP(".fon"),
+		_RP(".fon"), _RP(".icl"),
 
 		// LE extensions
 		_RP("*.vxd"), _RP(".386"),
