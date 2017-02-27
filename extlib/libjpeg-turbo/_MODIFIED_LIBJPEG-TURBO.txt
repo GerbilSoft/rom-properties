@@ -1,0 +1,15 @@
+This copy of libjpeg-turbo-1.5.1 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- autoconf build infratsructure has been removed.
+
+- Files not necessary for building libjpeg-turbo have been removed.
+
+- java/ and md5/ have been removed.
+
+- CMakeLists.txt has been modified to disable building of test and
+  example programs.
+
+To obtain the original libjpeg-turbo-1.5.1, visit:
+http://libjpeg-turbo.virtualgl.org/

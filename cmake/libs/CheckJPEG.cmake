@@ -18,17 +18,18 @@ ENDIF(NOT USE_INTERNAL_JPEG)
 
 IF(USE_INTERNAL_JPEG)
 	# Using the internal JPEG library.
-	MESSAGE(FATAL_ERROR "FIXME: Internal libjpeg-turbo is not available.")
 	SET(JPEG_FOUND 1)
 	SET(HAVE_JPEG 1)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
+		# NOTE: libjpeg-turbo 1.5.1's CMakeLists only builds
+		# a DLL version of turbojpeg, not libjpeg.
 		SET(USE_INTERNAL_JPEG_DLL ON)
-		SET(JPEG_LIBRARY jpeg-turbo)
+		SET(JPEG_LIBRARY jpeg)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_JPEG_DLL OFF)
-		SET(JPEG_LIBRARY jpeg-turbo_static)
+		SET(JPEG_LIBRARY jpeg-static)
 	ENDIF()
 	SET(JPEG_INCLUDE_DIR
 		${CMAKE_SOURCE_DIR}/extlib/libjpeg-turbo
