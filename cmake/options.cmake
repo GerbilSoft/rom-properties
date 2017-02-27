@@ -37,7 +37,8 @@ IF(WIN32)
 ELSE(WIN32)
 	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
 	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
-	OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
+	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
+	SET(USE_INTERNAL_JPEG OFF)
 ENDIF()
 
 # TODO: If APNG export is added, verify that system libpng
