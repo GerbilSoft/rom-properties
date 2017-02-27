@@ -53,6 +53,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 {
 	public:
 		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);
+		virtual ~PlayStationSavePrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -96,6 +97,19 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 {
 	// Clear the save header struct.
 	memset(&psvHeader, 0, sizeof(psvHeader));
+}
+
+PlayStationSavePrivate::~PlayStationSavePrivate()
+{
+	if (iconAnimData) {
+		// Delete all except the first animated icon frame.
+		// (The first frame is owned by the RomData superclass.)
+		// TODO: Optimize by checking for "> 0" instead of ">= 1"?
+		for (int i = iconAnimData->count-1; i >= 1; i--) {
+			delete iconAnimData->frames[i];
+		}
+		delete iconAnimData;
+	}
 }
 
 /**
