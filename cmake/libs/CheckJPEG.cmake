@@ -1,6 +1,5 @@
 # Check for libjpeg.
 # If libjpeg isn't found, extlib/libjpeg-turbo/ will be used instead.
-
 IF(NOT USE_INTERNAL_JPEG)
 	# Check for libjpeg.
 	FIND_PACKAGE(JPEG)
@@ -9,10 +8,16 @@ IF(NOT USE_INTERNAL_JPEG)
 		SET(HAVE_JPEG 1)
 	ELSE()
 		# System libjpeg was not found.
+		IF(NOT WIN32)
+			MESSAGE(FATAL_ERROR "System libjpeg was not found.\nCannot use the internal libjpeg-turbo on non-Windows platforms.")
+		ENDIF(NOT WIN32)
 		MESSAGE(STATUS "Using the internal copy of libjpeg-turbo since a system version was not found.")
 		SET(USE_INTERNAL_JPEG ON CACHE STRING "Use the internal copy of libjpeg.")
 	ENDIF()
 ELSE()
+	IF(NOT WIN32)
+		MESSAGE(FATAL_ERROR "Cannot use internal libjpeg-turbo on non-Windows platforms.")
+	ENDIF(NOT WIN32)
 	MESSAGE(STATUS "Using the internal copy of libjpeg.")
 ENDIF(NOT USE_INTERNAL_JPEG)
 
