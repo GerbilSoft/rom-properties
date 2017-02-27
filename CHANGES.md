@@ -27,6 +27,8 @@
     cannot handle one of these files, the fallback handler is used.
   * Property page viewers now support subtabs. This is used for Windows
     executables that contain version and manifest resources.
+  * JPEG is now supported for image downloads from external image databases.
+    GameTDB uses JPEG for certain image types, including Nintendo DS covers.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
