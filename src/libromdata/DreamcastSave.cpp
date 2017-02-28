@@ -1215,7 +1215,7 @@ std::vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(Ima
 
 	// Dreamcast save files have 32x32 icons.
 	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 32, 32},
+		{nullptr, 32, 32, 0},
 	};
 	return vector<ImageSizeDef>(sz_INT_ICON,
 		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));

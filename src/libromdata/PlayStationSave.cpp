@@ -401,7 +401,7 @@ std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes_static(I
 
 	// PlayStation save files have 16x16 icons.
 	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 16, 16},
+		{nullptr, 16, 16, 0},
 	};
 	return vector<ImageSizeDef>(sz_INT_ICON,
 		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));

@@ -893,24 +893,24 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 	switch (imageType) {
 		case IMG_INT_ICON: {
 			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, 32, 32},
+				{nullptr, 32, 32, 0},
 			};
 			return vector<ImageSizeDef>(sz_INT_ICON,
 				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
 		}
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
-				{nullptr, 160, 144},
-				{"S", 128, 115},
-				{"M", 400, 352},
-				{"HQ", 768, 680},
+				{nullptr, 160, 144, 0},
+				{"S", 128, 115, 1},
+				{"M", 400, 352, 2},
+				{"HQ", 768, 680, 3},
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER,
 				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
 		}
 		case IMG_EXT_BOX: {
 			static const ImageSizeDef sz_EXT_BOX[] = {
-				{nullptr, 240, 216},
+				{nullptr, 240, 216, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_BOX,
 				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX));

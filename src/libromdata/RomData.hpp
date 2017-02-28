@@ -316,6 +316,10 @@ class RomData
 			const char *name;	// Size name, if applicable. [UTF-8] (May be nullptr.)
 			uint16_t width;		// Image width. (May be 0 if unknown.)
 			uint16_t height;	// Image height. (May be 0 if unknown.)
+
+			// System-dependent values.
+			// Don't use these outside of a RomData subclass.
+			uint16_t index;		// Image index.
 		};
 
 		/**

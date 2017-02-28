@@ -1226,28 +1226,28 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 	switch (imageType) {
 		case IMG_INT_BANNER: {
 			static const ImageSizeDef sz_INT_BANNER[] = {
-				{nullptr, 96, 32},
+				{nullptr, 96, 32, 0},
 			};
 			return vector<ImageSizeDef>(sz_INT_BANNER,
 				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
 		}
 		case IMG_EXT_MEDIA: {
 			static const ImageSizeDef sz_EXT_MEDIA[] = {
-				{nullptr, 160, 160},
+				{nullptr, 160, 160, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_MEDIA,
 				sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
 		}
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
-				{nullptr, 160, 224},
+				{nullptr, 160, 224, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER,
 				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
 		}
 		case IMG_EXT_COVER_3D: {
 			static const ImageSizeDef sz_EXT_COVER_3D[] = {
-				{nullptr, 176, 248},
+				{nullptr, 176, 248, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
 				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
