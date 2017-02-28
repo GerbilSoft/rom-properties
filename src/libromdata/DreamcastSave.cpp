@@ -1208,17 +1208,27 @@ std::vector<RomData::ImageSizeDef> DreamcastSave::supportedImageSizes_static(Ima
 		return std::vector<ImageSizeDef>();
 	}
 
-	if (imageType != IMG_INT_ICON) {
-		// Only icons are supported.
-		return std::vector<ImageSizeDef>();
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, DC_VMS_ICON_W, DC_VMS_ICON_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_INT_BANNER: {
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+		default:
+			break;
 	}
 
-	// Dreamcast save files have 32x32 icons.
-	static const ImageSizeDef sz_INT_ICON[] = {
-		{nullptr, 32, 32, 0},
-	};
-	return vector<ImageSizeDef>(sz_INT_ICON,
-		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
 }
 
 /**
