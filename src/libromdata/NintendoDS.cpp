@@ -901,7 +901,7 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 		case IMG_EXT_COVER: {
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 160, 144, 0},
-				{"S", 128, 115, 1},
+				//{"S", 128, 115, 1},	// DISABLED; not needed.
 				{"M", 400, 352, 2},
 				{"HQ", 768, 680, 3},
 			};
