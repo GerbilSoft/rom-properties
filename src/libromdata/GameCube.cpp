@@ -1194,8 +1194,8 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
 uint32_t GameCube::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA |
-	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL |
-	       IMGBF_EXT_COVER_3D;
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
 }
 
 /**
@@ -1246,6 +1246,13 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 			return vector<ImageSizeDef>(sz_EXT_COVER,
 				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
 		}
+		case IMG_EXT_COVER_3D: {
+			static const ImageSizeDef sz_EXT_COVER_3D[] = {
+				{nullptr, 176, 248, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+		}
 		case IMG_EXT_COVER_FULL: {
 			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
 				{nullptr, 512, 340, 0},
@@ -1253,13 +1260,6 @@ std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageTyp
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
 				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
-		}
-		case IMG_EXT_COVER_3D: {
-			static const ImageSizeDef sz_EXT_COVER_3D[] = {
-				{nullptr, 176, 248, 0},
-			};
-			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
-				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
 		}
 		default:
 			break;
@@ -1814,11 +1814,11 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
 			break;
-		case IMG_EXT_COVER_FULL:
-			imageTypeName_base = "coverfull";
-			break;
 		case IMG_EXT_COVER_3D:
 			imageTypeName_base = "cover3D";
+			break;
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
 			break;
 		default:
 			// Unsupported image type.
