@@ -246,16 +246,16 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	 */
 
 	// Check for external images.
-	if (imgbf & RomData::IMGBF_EXT_COVER) {
-		// External cover scan.
-		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_COVER);
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_MEDIA);
 		needs_delete = (img != nullptr);
 	}
 	if (img != nullptr) {
-		// No cover scan. Try external media scan.
-		if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-			// External media scan.
-			img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_MEDIA);
+		// No external media scan. Try external cover scan.
+		if (imgbf & RomData::IMGBF_EXT_COVER) {
+			// External cover scan.
+			img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_COVER);
 			needs_delete = (img != nullptr);
 		}
 	}

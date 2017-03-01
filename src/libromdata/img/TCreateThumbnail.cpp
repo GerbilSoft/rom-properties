@@ -201,17 +201,17 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	 */
 
 	// Check for external images.
-	if (imgbf & RomData::IMGBF_EXT_COVER) {
-		// External cover scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
-		imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
+	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+		// External media scan.
+		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
+		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 	if (!isImgClassValid(ret_img)) {
-		// No cover scan. Try external media scan.
-		if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-			// External media scan.
-			ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
-			imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
+		// No external media scan. Try external cover scan.
+		if (imgbf & RomData::IMGBF_EXT_COVER) {
+			// External cover scan.
+			ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
+			imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
 		}
 	}
 
