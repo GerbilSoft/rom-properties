@@ -128,7 +128,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(PlayStationSave, true),
 	GetRomDataFns(Amiibo, true),
 	GetRomDataFns(NES, false),
-	GetRomDataFns(WiiU, false),
+	GetRomDataFns(WiiU, true),
 
 	// NOTE: EXE has a 16-bit magic number,
 	// so it should go at the end.

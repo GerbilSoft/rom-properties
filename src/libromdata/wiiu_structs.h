@@ -38,13 +38,22 @@ extern "C" {
  */
 #pragma pack(1)
 typedef struct PACKED _WiiU_DiscHeader {
-	char id[10];		// WUP-P-xxxx
-	char hyphen1;
+	union {
+		char id[10];		// WUP-P-xxxx
+		struct {
+			char wup[3];	// WUP
+			char hyphen1;	// -
+			char p;		// P
+			char hyphen2;	// -
+			char id4[4];	// xxxx
+		};
+	};
+	char hyphen3;
 	char version[2];	// Version number, in ASCII. (e.g. "00")
-	char hyphen2;
+	char hyphen4;
 	char os_version[3];	// Required OS version, in ASCII. (e.g. "551")
 	char region[3];		// Region code, in ASCII. ("USA", "EUR") (TODO: Is this the enforced region?)
-	char hyphen3;
+	char hyphen5;
 	char disc_number;	// Disc number, in ASCII. (TODO: Verify?)
 } WiiU_DiscHeader;
 #pragma pack()
