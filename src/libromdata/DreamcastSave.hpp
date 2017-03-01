@@ -146,6 +146,28 @@ class DreamcastSave : public RomData
 		 */
 		virtual uint32_t supportedImageTypes(void) const override final;
 
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		static std::vector<RomData::ImageSizeDef> supportedImageSizes_static(ImageType imageType);
+
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		virtual std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const override final;
+
 	protected:
 		/**
 		 * Load field data.

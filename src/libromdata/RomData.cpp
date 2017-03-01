@@ -30,6 +30,10 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <vector>
+using std::vector;
+
 namespace LibRomData {
 
 /** RomDataPrivate **/
@@ -191,6 +195,151 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
+/**
+ * Get the GameTDB URL for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
+ * TODO: PAL multi-region selection?
+ * @return GameTDB URL.
+ */
+LibRomData::rp_string RomDataPrivate::getURL_GameTDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
+{
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s%s",
+			system, type, region, gameID, ext);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);	// TODO: Handle truncation better.
+
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Get the GameTDB cache key for a given game.
+ * @param system System name.
+ * @param type Image type.
+ * @param region Region name.
+ * @param gameID Game ID.
+ * @param ext File extension, e.g. ".png" or ".jpg".
+ * TODO: PAL multi-region selection?
+ * @return GameTDB cache key.
+ */
+LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(
+	const char *system, const char *type,
+	const char *region, const char *gameID,
+	const char *ext)
+{
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s%s",
+			system, type, region, gameID, ext);
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);	// TODO: Handle truncation better.
+
+	// TODO: UTF-8, not Latin-1?
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+}
+
+/**
+ * Select the best size for an image.
+ * @param sizeDefs Image size definitions.
+ * @param size Requested thumbnail dimension. (assuming a square thumbnail)
+ * @return Image size definition, or nullptr on error.
+ */
+const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size)
+{
+	if (sizeDefs.empty() || size < RomData::IMAGE_SIZE_MIN_VALUE) {
+		// No sizes, or invalid size value.
+		return nullptr;
+	} else if (sizeDefs.size() == 1) {
+		// Only one size.
+		return &sizeDefs[0];
+	}
+
+	// Check for a "special" size value.
+	switch (size) {
+		case RomData::IMAGE_SIZE_DEFAULT:
+			// Default image.
+			return &sizeDefs[0];
+
+		case RomData::IMAGE_SIZE_SMALLEST: {
+			// Find the smallest image.
+			const RomData::ImageSizeDef *ret = &sizeDefs[0];
+			int sz = std::min(ret->width, ret->height);
+			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+				const RomData::ImageSizeDef *sizeDef = &(*iter);
+				if (sizeDef->width < sz || sizeDef->height < sz) {
+					ret = sizeDef;
+					sz = std::min(sizeDef->width, sizeDef->height);
+				}
+			}
+			return ret;
+		}
+
+		case RomData::IMAGE_SIZE_LARGEST: {
+			// Find the largest image.
+			const RomData::ImageSizeDef *ret = &sizeDefs[0];
+			int sz = std::max(ret->width, ret->height);
+			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+				const RomData::ImageSizeDef *sizeDef = &(*iter);
+				if (sizeDef->width > sz || sizeDef->height > sz) {
+					ret = sizeDef;
+					sz = std::max(sizeDef->width, sizeDef->height);
+				}
+			}
+			return ret;
+		}
+
+		default:
+			break;
+	}
+
+	// Find the largest image that has at least one dimension that
+	// is >= the requested size. If no image is >= the requested
+	// size, use the largest image.
+	// TODO: Check width/height separately?
+	const RomData::ImageSizeDef *ret = &sizeDefs[0];
+	int sz = std::max(ret->width, ret->height);
+	if (sz == size) {
+		// Found a match already.
+		return ret;
+	}
+	for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+		const RomData::ImageSizeDef *sizeDef = &(*iter);
+		const int szchk = std::max(sizeDef->width, sizeDef->height);
+		if (sz >= size) {
+			// We already found an image >= size.
+			// Only use this image if its largest dimension is
+			// >= size and < sz.
+			if (szchk >= size && szchk < sz) {
+				// Found a better match.
+				sz = szchk;
+				ret = sizeDef;
+			}
+		} else {
+			// Use this image if its largest dimension is > sz.
+			if (szchk > sz) {
+				// Found a better match.
+				sz = szchk;
+				ret = sizeDef;
+			}
+		}
+
+		if (sz == size) {
+			// Exact match!
+			// TODO: Verify width/height separately?
+			break;
+		}
+	}
+
+	return ret;
+}
+
 /** RomData **/
 
 /**
@@ -337,6 +486,24 @@ uint32_t RomData::supportedImageTypes(void) const
 }
 
 /**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+
+	// No images supported by default.
+	((void)imageType);
+	return std::vector<ImageSizeDef>();
+}
+
+/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
@@ -351,25 +518,26 @@ int RomData::loadInternalImage(ImageType imageType)
 	}
 
 	// No images supported by the base class.
+	((void)imageType);
 	return -ENOENT;
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external image types.
  * @param imageType Image type to load.
- * @return 0 on success; negative POSIX error code on error.
+ * @return imgpf value.
  */
-int RomData::loadURLs(ImageType imageType)
+uint32_t RomData::imgpf_extURL(ImageType imageType) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return -ERANGE;
+		return 0;
 	}
 
-	// No images supported by the base class.
-	return -ENOENT;
+	// No imgpf by default.
+	((void)imageType);
+	return 0;
 }
 
 /**
@@ -390,48 +558,6 @@ const RomFields *RomData::fields(void) const
 }
 
 /**
- * Verify that the specified image type has been loaded.
- * @param imageType Image type.
- * @return 0 if loaded; negative POSIX error code on error.
- */
-int RomData::verifyImageTypeLoaded(ImageType imageType) const
-{
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-	// TODO: Check supportedImageTypes()?
-
-	RP_D(const RomData);
-	int ret = 0;
-	if (imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX) {
-		// This is an internal image.
-		// Make sure it's loaded.
-		const int idx = imageType - IMG_INT_MIN;
-		if (!d->images[idx]) {
-			// Internal image has not been loaded.
-			// Load it now.
-			ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
-		}
-	} else if (imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX) {
-		// This is an external image.
-		// Make sure the URL is loaded.
-		const int idx = imageType - IMG_EXT_MIN;
-		if (d->extURLs[idx].empty()) {
-			// List of URLs has not been loaded.
-			// Load it now.
-			ret = const_cast<RomData*>(this)->loadURLs(imageType);
-		}
-	} else {
-		// Should not get here...
-		ret = -ERANGE;
-	}
-
-	return ret;
-}
-
-/**
  * Get an internal image from the ROM.
  *
  * NOTE: The rp_image is owned by this object.
@@ -449,35 +575,53 @@ const rp_image *RomData::image(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return nullptr;
-	const int idx = imageType - IMG_INT_MIN;
+	// Check if the image is loaded.
 	RP_D(const RomData);
+	const int idx = imageType - IMG_INT_MIN;
+	if (!d->images[idx]) {
+		// Internal image has not been loaded.
+		// Load it now.
+		int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
+		if (ret != 0 || !d->images[idx]) {
+			// Error loading the image.
+			return nullptr;
+		}
+	}
 	return d->images[idx];
 }
 
 /**
- * Get a list of URLs for an external media type.
+ * Get a list of URLs for an external image type.
  *
- * NOTE: The std::vector<extURL> is owned by this object.
- * Do NOT delete this object until you're done using this rp_image.
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
  *
- * @param imageType Image type.
- * @return List of URLs and cache keys, or nullptr if the ROM doesn't have one.
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const std::vector<RomData::ExtURL> *RomData::extURLs(ImageType imageType) const
+int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
-		return nullptr;
+		return -ERANGE;
+	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
 	}
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return nullptr;
-	const int idx = imageType - IMG_EXT_MIN;
-	RP_D(const RomData);
-	return &d->extURLs[idx];
+	// No external URLs by default.
+	((void)size);
+	pExtURLs->clear();
+	return -ENOENT;
 }
 
 /**
@@ -513,10 +657,24 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	if (verifyImageTypeLoaded(imageType) != 0)
-		return 0;
-	RP_D(const RomData);
-	return d->imgpf[imageType];
+	if (imageType <= IMG_INT_MAX) {
+		// Check if the image is loaded.
+		RP_D(const RomData);
+		const int idx = imageType - IMG_INT_MIN;
+		if (!d->images[idx]) {
+			// Internal image has not been loaded.
+			// Load it now.
+			int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
+			if (ret != 0 || !d->images[idx]) {
+				// Error loading the image.
+				return 0;
+			}
+		}
+		return d->imgpf[imageType];
+	} else /*(imageType >= IMG_EXT_MIN)*/ {
+		// Use the imgpf_extURL() function.
+		return imgpf_extURL(imageType);
+	}
 }
 
 /**
@@ -530,16 +688,18 @@ const rp_char *RomData::getImageTypeName(ImageType imageType) {
 		return nullptr;
 	}
 
+	// FIXME commit these changes with COVER commit
 	static const rp_char *const image_type_names[] = {
 		// Internal
-		_RP("Internal icon"),			// IMG_INT_ICON
-		_RP("Internal banner"),			// IMG_INT_BANNER
-		_RP("Internal media scan"),		// IMG_INT_MEDIA
+		_RP("Internal icon"),				// IMG_INT_ICON
+		_RP("Internal banner"),				// IMG_INT_BANNER
+		_RP("Internal media scan"),			// IMG_INT_MEDIA
 		// External
-		_RP("External media scan"),		// IMG_EXT_MEDIA
-		_RP("External box scan"),		// IMG_EXT_BOX
-		_RP("External box scan (both sides)"),	// IMG_EXT_BOX_FULL
-		_RP("External box scan (3D version)"),	// IMG_EXT_BOX_3D
+		_RP("External media scan"),			// IMG_EXT_MEDIA
+		_RP("External cover scan"),			// IMG_EXT_COVER
+		_RP("External cover scan (3D version)"),	// IMG_EXT_COVER_3D
+		_RP("External cover scan (front and back)"),	// IMG_EXT_COVER_FULL
+		_RP("External box scan"),			// IMG_EXT_BOX
 	};
 	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1,
 		"image_type_names[] needs to be updated.");

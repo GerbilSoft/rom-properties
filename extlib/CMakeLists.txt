@@ -99,6 +99,47 @@ IF(USE_INTERNAL_PNG)
 	SET_EXTLIB_PROPERTIES(png_static)
 ENDIF(USE_INTERNAL_PNG)
 
+IF(USE_INTERNAL_JPEG)
+	# Use the internal copy of libjpeg-turbo.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	# FIXME: libjpeg-turbo's CMakeLists.txt only officially supports Windows.
+	IF(WIN32 OR APPLE)
+		SET(ENABLE_SHARED ON)
+		SET(ENABLE_STATIC OFF)
+		SET(SKIP_INSTALL_LIBRARIES OFF)
+		SET(SKIP_INSTALL_ALL OFF)
+		SET(BUILD_SHARED_LIBS ON)
+	ELSE()
+		SET(ENABLE_SHARED OFF)
+		SET(ENABLE_STATIC ON)
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL ON)
+		SET(BUILD_SHARED_LIBS OFF)
+	ENDIF()
+
+	# libjpeg-turbo options.
+	SET(WITH_SIMD TRUE)
+	SET(WITH_ARITH_ENC TRUE)
+	SET(WITH_ARITH_DEC TRUE)
+	SET(WITH_JPEG7 FALSE)
+	SET(WITH_JPEG8 FALSE)
+	SET(WITH_MEM_SRCDST TRUE)
+	SET(WITH_TURBOJPEG FALSE)
+	SET(WITH_JAVA FALSE)
+	SET(WITH_12BIT FALSE)
+
+	# Build libjpeg-turbo.
+	ADD_SUBDIRECTORY(libjpeg-turbo)
+
+	# NOTE: Cannot remove targets from all builds
+	# if they're being installed.
+	#SET_EXTLIB_PROPERTIES(jpeg)
+	SET_EXTLIB_PROPERTIES(jpeg-static)
+	#SET_EXTLIB_PROPERTIES(turbojpeg)
+	SET_EXTLIB_PROPERTIES(turbojpeg-static)
+ENDIF(USE_INTERNAL_JPEG)
+
 # MiniZip.
 SET(SKIP_INSTALL_LIBRARIES ON)
 SET(SKIP_INSTALL_ALL ON)

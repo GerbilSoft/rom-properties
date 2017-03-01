@@ -28,14 +28,19 @@ ENDIF()
 
 OPTION(BUILD_CLI "Build the `rpcli` command line program." ON)
 
-# ZLIB and libpng.
+# ZLIB, libpng, libjpeg-turbo
 # Internal versions are always used on Windows.
 IF(WIN32)
 	SET(USE_INTERNAL_ZLIB ON)
 	SET(USE_INTERNAL_PNG ON)
+	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
+	SET(USE_INTERNAL_JPEG ON)
 ELSE(WIN32)
 	OPTION(USE_INTERNAL_ZLIB "Use the internal copy of zlib." OFF)
 	OPTION(USE_INTERNAL_PNG "Use the internal copy of libpng." OFF)
+	OPTION(ENABLE_JPEG "Enable JPEG decoding using libjpeg." ON)
+	#OPTION(USE_INTERNAL_JPEG "Use the internal copy of libjpeg-turbo." OFF)
+	SET(USE_INTERNAL_JPEG OFF)
 ENDIF()
 
 # TODO: If APNG export is added, verify that system libpng

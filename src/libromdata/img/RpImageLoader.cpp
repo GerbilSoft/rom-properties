@@ -19,12 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+
 #include "RpImageLoader.hpp"
 #include "rp_image.hpp"
 #include "../file/IRpFile.hpp"
 
 // Image loaders.
 #include "RpPng.hpp"
+#ifdef HAVE_JPEG
+#include "RpJpeg.hpp"
+#endif /* HAVE_JPEG */
 
 // C includes. (C++ namespace)
 #include <cstring>
@@ -42,6 +47,10 @@ class RpImageLoaderPrivate
 	public:
 		// Magic numbers.
 		static const uint8_t png_magic[8];
+#ifdef HAVE_JPEG
+		static const uint8_t jpeg_magic_1[4];
+		static const uint8_t jpeg_magic_2[4];
+#endif /* HAVE_JPEG */
 };
 
 /** RpImageLoaderPrivate **/
@@ -49,6 +58,12 @@ class RpImageLoaderPrivate
 // Magic numbers.
 const uint8_t RpImageLoaderPrivate::png_magic[8] =
 	{0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+#ifdef HAVE_JPEG
+const uint8_t RpImageLoaderPrivate::jpeg_magic_1[4] =
+	{0xFF, 0xD8, 0xFF, 0xE0};
+const uint8_t RpImageLoaderPrivate::jpeg_magic_2[4] =
+	{'J','F','I','F'};
+#endif /* HAVE_JPEG */
 
 /** RpImageLoader **/
 
@@ -76,6 +91,16 @@ rp_image *RpImageLoader::loadUnchecked(IRpFile *file)
 			// Found a PNG image.
 			return RpPng::loadUnchecked(file);
 		}
+#ifdef HAVE_JPEG
+		else if (!memcmp(buf, RpImageLoaderPrivate::jpeg_magic_1,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_1)) &&
+			 !memcmp(&buf[6], RpImageLoaderPrivate::jpeg_magic_2,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_2)))
+		{
+			// Found a JPEG image.
+			return RpJpeg::loadUnchecked(file);
+		}
+#endif /* HAVE_JPEG */
 	}
 
 	// Unsupported image format.
@@ -106,6 +131,16 @@ rp_image *RpImageLoader::load(IRpFile *file)
 			// Found a PNG image.
 			return RpPng::load(file);
 		}
+#ifdef HAVE_JPEG
+		else if (!memcmp(buf, RpImageLoaderPrivate::jpeg_magic_1,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_1)) &&
+			 !memcmp(&buf[6], RpImageLoaderPrivate::jpeg_magic_2,
+			  sizeof(RpImageLoaderPrivate::jpeg_magic_2)))
+		{
+			// Found a JPEG image.
+			return RpJpeg::load(file);
+		}
+#endif /* HAVE_JPEG */
 	}
 
 	// Unsupported image format.

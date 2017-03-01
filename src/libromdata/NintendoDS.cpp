@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+
 #include "NintendoDS.hpp"
 #include "RomData_p.hpp"
 
@@ -120,6 +122,21 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * @return Secure area type.
 		 */
 		const rp_char *checkNDSSecureArea(void);
+
+		/**
+		 * Convert a Nintendo DS(i) region value to a GameTDB region code.
+		 * @param ndsRegion Nintendo DS region.
+		 * @param dsiRegion Nintendo DSi region.
+		 * @param idRegion Game ID region.
+		 *
+		 * NOTE: Mulitple GameTDB region codes may be returned including:
+		 * - User-specified fallback region. [TODO]
+		 * - General fallback region.
+		 *
+		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 */
+		static vector<const char*> ndsRegionToGameTDB(
+			uint8_t ndsRegion, uint32_t dsiRegion, char idRegion);
 };
 
 /** NintendoDSPrivate **/
@@ -498,6 +515,159 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 	return secType;
 }
 
+/**
+ * Convert a Nintendo DS(i) region value to a GameTDB region code.
+ * @param ndsRegion Nintendo DS region.
+ * @param dsiRegion Nintendo DSi region.
+ * @param idRegion Game ID region.
+ *
+ * NOTE: Mulitple GameTDB region codes may be returned including:
+ * - User-specified fallback region. [TODO]
+ * - General fallback region.
+ *
+ * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ */
+vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
+	uint8_t ndsRegion, uint32_t dsiRegion, char idRegion)
+{
+	/**
+	 * There are up to three region codes for Nintendo DS games:
+	 * - Game ID
+	 * - NDS region (China/Korea only)
+	 * - DSi region (DSi-enhanced/exclusive games only)
+	 *
+	 * Nintendo DS does not have region lock outside of
+	 * China. (The Korea value isn't actually used.)
+	 *
+	 * Nintendo DSi does have region lock, but only for
+	 * DSi-enhanced/exclusive games.
+	 *
+	 * If a DSi-enhanced/exclusive game has a single region
+	 * code value set, that region will be displayed.
+	 *
+	 * If a DS-only game has China or Korea set, that region
+	 * will be displayed.
+	 *
+	 * The game ID will always be used as a fallback.
+	 *
+	 * Game ID reference:
+	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
+	 */
+	vector<const char*> ret;
+
+	int fallback_region = 0;
+	switch (dsiRegion) {
+		case DSi_REGION_JAPAN:
+			ret.push_back("JA");
+			return ret;
+		case DSi_REGION_USA:
+			ret.push_back("US");
+			return ret;
+		case DSi_REGION_EUROPE:
+		case DSi_REGION_EUROPE | DSi_REGION_AUSTRALIA:
+			// Process the game ID and use "EN" as a fallback.
+			fallback_region = 1;
+			break;
+		case DSi_REGION_AUSTRALIA:
+			// Process the game ID and use "AU","EN" as fallbacks.
+			fallback_region = 2;
+			break;
+		case DSi_REGION_CHINA:
+			ret.push_back("ZHCN");
+			ret.push_back("JA");
+			ret.push_back("EN");
+			return ret;
+		case DSi_REGION_SKOREA:
+			ret.push_back("KO");
+			ret.push_back("JA");
+			ret.push_back("EN");
+			return ret;
+		case 0:
+		default:
+			// No DSi region, or unsupported DSi region.
+			break;
+	}
+
+	// Check for China/Korea.
+	if (ndsRegion & NDS_REGION_CHINA) {
+		ret.push_back("ZHCN");
+		ret.push_back("JA");
+		ret.push_back("EN");
+		return ret;
+	} else if (ndsRegion & NDS_REGION_SKOREA) {
+		ret.push_back("KO");
+		ret.push_back("JA");
+		ret.push_back("EN");
+		return ret;
+	}
+
+	// Check for region-specific game IDs.
+	switch (idRegion) {
+		case 'E':	// USA
+			ret.push_back("US");
+			break;
+		case 'J':	// Japan
+			ret.push_back("JA");
+			break;
+		case 'P':	// PAL
+		case 'X':	// Multi-language release
+		case 'Y':	// Multi-language release
+		case 'L':	// Japanese import to PAL regions
+		case 'M':	// Japanese import to PAL regions
+		default:
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 1;
+			}
+			break;
+
+		// European regions.
+		case 'D':	// Germany
+			ret.push_back("DE");
+			break;
+		case 'F':	// France
+			ret.push_back("FR");
+			break;
+		case 'H':	// Netherlands
+			ret.push_back("NL");
+			break;
+		case 'I':	// Italy
+			ret.push_back("NL");
+			break;
+		case 'R':	// Russia
+			ret.push_back("RU");
+			break;
+		case 'S':	// Spain
+			ret.push_back("ES");
+			break;
+		case 'U':	// Australia
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 2;
+			}
+			break;
+	}
+
+	// Check for fallbacks.
+	switch (fallback_region) {
+		case 1:
+			// Europe
+			ret.push_back("EN");
+			break;
+		case 2:
+			// Australia
+			ret.push_back("AU");
+			ret.push_back("EN");
+			break;
+
+		case 0:	// None
+		default:
+			break;
+	}
+
+	return ret;
+}
+
 /** NintendoDS **/
 
 /**
@@ -690,7 +860,12 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
  */
 uint32_t NintendoDS::supportedImageTypes_static(void)
 {
-	return IMGBF_INT_ICON;
+#ifdef HAVE_JPEG
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL;
+#else /* !HAVE_JPEG */
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX;
+#endif
 }
 
 /**
@@ -700,6 +875,72 @@ uint32_t NintendoDS::supportedImageTypes_static(void)
 uint32_t NintendoDS::supportedImageTypes(void) const
 {
 	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, 32, 32, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 144, 0},
+				//{"S", 128, 115, 1},	// DISABLED; not needed.
+				{"M", 400, 352, 2},
+				{"HQ", 768, 680, 3},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 340, 144, 0},
+				//{"S", 272, 115, 1},	// Not currently present on GameTDB.
+				{"M", 856, 352, 2},
+				{"HQ", 1616, 680, 3},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+		}
+		case IMG_EXT_BOX: {
+			static const ImageSizeDef sz_EXT_BOX[] = {
+				{nullptr, 240, 216, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_BOX,
+				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**
@@ -864,7 +1105,7 @@ int NintendoDS::loadFieldData(void)
 
 		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
 			if (!(valid_ratings & (1 << i))) {
-				// Rating is not applicable for GameCube.
+				// Rating is not applicable for NintendoDS.
 				age_ratings[i] = 0;
 				continue;
 			}
@@ -969,6 +1210,181 @@ const IconAnimData *NintendoDS::iconAnimData(void) const
 
 	// Return the icon animation data.
 	return d->iconAnimData;
+}
+
+/**
+ * Get the imgpf value for external media types.
+ * @param imageType Image type to load.
+ * @return imgpf value.
+ */
+uint32_t NintendoDS::imgpf_extURL(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: GameTDB's Nintendo DS cover scans have alpha transparency.
+	// Hence, no image processing is required.
+	return 0;
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
+
+	// Check for DS ROMs that don't have boxart.
+	RP_D(const NintendoDS);
+	if (!memcmp(d->romHeader.id4, "NTRJ", 4) ||
+	    !memcmp(d->romHeader.id4, "####", 4))
+	{
+		// This is either a prototype, a download demo, or homebrew.
+		// No external images are available.
+		return -ENOENT;
+	} else if ((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi) &&
+		d->romHeader.dsi.filetype != DSi_FTYPE_CARTRIDGE)
+	{
+		// This is a DSi SRL that isn't a cartridge dump.
+		// No external images are available.
+		return -ENOENT;
+	}
+
+	if (!d->file || !d->file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// Select the best size.
+	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
+
+	// NOTE: Only downloading the first size as per the
+	// sort order, since GameTDB basically guarantees that
+	// all supported sizes for an image type are available.
+	// TODO: Add cache keys for other sizes in case they're
+	// downloaded and none of these are available?
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
+	const char *ext;
+	switch (imageType) {
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER:
+			imageTypeName_base = "cover";
+			ext = ".jpg";
+			break;
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
+			ext = ".jpg";
+			break;
+#endif /* HAVE_JPEG */
+		case IMG_EXT_BOX:
+			imageTypeName_base = "box";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Determine the GameTDB region code(s).
+	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
+		d->romHeader.nds_region,
+		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
+			? le32_to_cpu(d->romHeader.dsi.region_code)
+			: 0 /* not a DSi-enhanced/exclusive ROM */
+			),
+		d->romHeader.id4[3]);
+
+	// Game ID. (GameTDB uses ID4 for Nintendo DS.)
+	// Replace any non-printable characters with underscores.
+	char id4[5];
+	for (int i = 0; i < 4; i++) {
+		id4[i] = (isprint(d->romHeader.id4[i])
+			? d->romHeader.id4[i]
+			: '_');
+	}
+	id4[4] = 0;
+
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	const ImageSizeDef *szdefs_dl[3];
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index >= 2) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
+
+	// Add the URLs.
+	pExtURLs->reserve(4*szdef_count);
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+
+		// Add the images.
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
+
+			extURL.url = d->getURL_GameTDB("ds", imageTypeName, *iter, id4, ext);
+			extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *iter, id4, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index >= 2);
+		}
+	}
+
+	// All URLs added.
+	return 0;
 }
 
 }

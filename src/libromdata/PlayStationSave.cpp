@@ -53,6 +53,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 {
 	public:
 		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);
+		virtual ~PlayStationSavePrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -96,6 +97,19 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 {
 	// Clear the save header struct.
 	memset(&psvHeader, 0, sizeof(psvHeader));
+}
+
+PlayStationSavePrivate::~PlayStationSavePrivate()
+{
+	if (iconAnimData) {
+		// Delete all except the first animated icon frame.
+		// (The first frame is owned by the RomData superclass.)
+		// TODO: Optimize by checking for "> 0" instead of ">= 1"?
+		for (int i = iconAnimData->count-1; i >= 1; i--) {
+			delete iconAnimData->frames[i];
+		}
+		delete iconAnimData;
+	}
 }
 
 /**
@@ -361,6 +375,50 @@ uint32_t PlayStationSave::supportedImageTypes_static(void)
 uint32_t PlayStationSave::supportedImageTypes(void) const
 {
 	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	if (imageType != IMG_INT_ICON) {
+		// Only icons are supported.
+		return std::vector<ImageSizeDef>();
+	}
+
+	// PlayStation save files have 16x16 icons.
+	static const ImageSizeDef sz_INT_ICON[] = {
+		{nullptr, 16, 16, 0},
+	};
+	return vector<ImageSizeDef>(sz_INT_ICON,
+		sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**

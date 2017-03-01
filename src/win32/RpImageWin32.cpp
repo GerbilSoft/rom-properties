@@ -84,15 +84,17 @@ const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::
  */
 rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageType imageType)
 {
-	const vector<RomData::ExtURL> *extURLs = romData->extURLs(imageType);
-	if (!extURLs || extURLs->empty()) {
+	// TODO: Image size selection.
+	std::vector<RomData::ExtURL> extURLs;
+	int ret = romData->extURLs(imageType, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		return nullptr;
 	}
 
 	// Check each URL.
 	CacheManager cache;
-	for (auto iter = extURLs->cbegin(); iter != extURLs->cend(); ++iter) {
+	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
 		// TODO: Have download() return the actual data and/or load the cached file.

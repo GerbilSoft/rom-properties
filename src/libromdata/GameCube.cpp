@@ -163,7 +163,7 @@ class GameCubePrivate : public RomDataPrivate
 		 *
 		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
 		 */
-		vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
+		static vector<const char*> gcnRegionToGameTDB(unsigned int gcnRegion, char idRegion);
 
 	public:
 		/**
@@ -1193,7 +1193,9 @@ vector<const rp_char*> GameCube::supportedFileExtensions(void) const
  */
 uint32_t GameCube::supportedImageTypes_static(void)
 {
-       return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA;
+	return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL |
+	       IMGBF_EXT_COVER_3D;
 }
 
 /**
@@ -1202,7 +1204,83 @@ uint32_t GameCube::supportedImageTypes_static(void)
  */
 uint32_t GameCube::supportedImageTypes(void) const
 {
-       return supportedImageTypes_static();
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	switch (imageType) {
+		case IMG_INT_BANNER: {
+			static const ImageSizeDef sz_INT_BANNER[] = {
+				{nullptr, 96, 32, 0},
+			};
+			return vector<ImageSizeDef>(sz_INT_BANNER,
+				sz_INT_BANNER + ARRAY_SIZE(sz_INT_BANNER));
+		}
+		case IMG_EXT_MEDIA: {
+			static const ImageSizeDef sz_EXT_MEDIA[] = {
+				{nullptr, 160, 160, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_MEDIA,
+				sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
+		}
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 224, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 512, 340, 0},
+				{"HQ", 1024, 680, 1},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+		}
+		case IMG_EXT_COVER_3D: {
+			static const ImageSizeDef sz_EXT_COVER_3D[] = {
+				{nullptr, 176, 248, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_3D,
+				sz_EXT_COVER_3D + ARRAY_SIZE(sz_EXT_COVER_3D));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> GameCube::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**
@@ -1589,45 +1667,6 @@ int GameCube::loadFieldData(void)
 }
 
 /**
- * Get the GameTDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
- * @return GameTDB URL.
- */
-static LibRomData::rp_string getURL_GameTDB(const char *system, const char *type, const char *region, const char *gameID)
-{
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s.png", system, type, region, gameID);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-}
-
-/**
- * Get the GameTDB URL for a given game.
- * @param system System name.
- * @param type Image type.
- * @param region Region name.
- * @param gameID Game ID.
- * TODO: PAL multi-region selection?
- * @return GameTDB URL.
- */
-static LibRomData::rp_string getCacheKey(const char *system, const char *type, const char *region, const char *gameID)
-{
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s.png", system, type, region, gameID);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-}
-
-/**
  * Load an internal image.
  * Called by RomData::image() if the image data hasn't been loaded yet.
  * @param imageType Image type to load.
@@ -1684,32 +1723,60 @@ int GameCube::loadInternalImage(ImageType imageType)
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external media types.
  * @param imageType Image type to load.
+ * @return imgpf value.
+ */
+uint32_t GameCube::imgpf_extURL(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
+	// alpha transparency. Hence, no image processing is required.
+	return 0;
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::loadURLs(ImageType imageType)
+int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return -ERANGE;
 	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
 
-	RP_D(GameCube);
+	RP_D(const GameCube);
 	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.
-		return 0;
+		return -ENOENT;
 	}
 
-	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d->extURLs[idx];
-	if (!extURLs.empty()) {
-		// URLs *have* been loaded...
-		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (d->discType < 0) {
@@ -1717,30 +1784,50 @@ int GameCube::loadURLs(ImageType imageType)
 		return -EIO;
 	}
 
-	// Check for the requested media type.
-	// NOTE: GameTDB has coverHQ for Wii/GCN, but not discHQ.
-	// GameTDB does not have *M for Wii/GCN.
-	// TODO: Configurable quality settings?
-	// TODO: Option to pick the *B version?
-	// TODO: Handle discs that have weird region codes?
-	const char *imageTypeName;
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// Select the best size.
+	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
+
+	// NOTE: Only downloading the first size as per the
+	// sort order, since GameTDB basically guarantees that
+	// all supported sizes for an image type are available.
+	// TODO: Add cache keys for other sizes in case they're
+	// downloaded and none of these are available?
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
 	switch (imageType) {
 		case IMG_EXT_MEDIA:
-			imageTypeName = "disc";
+			imageTypeName_base = "disc";
 			break;
-		case IMG_EXT_BOX:
-			imageTypeName = "cover";
+		case IMG_EXT_COVER:
+			imageTypeName_base = "cover";
 			break;
-		case IMG_EXT_BOX_FULL:
-			imageTypeName = "coverfull";
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
 			break;
-		case IMG_EXT_BOX_3D:
-			imageTypeName = "cover3D";
+		case IMG_EXT_COVER_3D:
+			imageTypeName_base = "cover3D";
 			break;
 		default:
 			// Unsupported image type.
 			return -ENOENT;
 	}
+	// Current image type.
+	char imageTypeName[16];
+	snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+		 imageTypeName_base, (sizeDef->name ? sizeDef->name : ""));
 
 	// Determine the GameTDB region code(s).
 	vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
@@ -1756,20 +1843,11 @@ int GameCube::loadURLs(ImageType imageType)
 	}
 	id6[6] = 0;
 
-	// Replace any non-printable characters with underscores.
-	// (NDDEMO has ID6 "00\0E01".)
-	for (int i = 0; i < 6; i++) {
-		if (!isprint(id6[i])) {
-			id6[i] = '_';
-		}
-	}
-
-	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
-	// alpha transparency. Hence, no image processing is required.
-	d->imgpf[imageType] = 0;
-
-	// Current extURL.
-	ExtURL extURL;
+	// ExtURLs.
+	// TODO: If multiple image sizes are added, add the
+	// "default" size to the end of ExtURLs in case the
+	// user has high-resolution downloads disabled.
+	pExtURLs->reserve(4);
 
 	// Disc scan: Is this not the first disc?
 	if (imageType == IMG_EXT_MEDIA &&
@@ -1777,27 +1855,37 @@ int GameCube::loadURLs(ImageType imageType)
 	{
 		// Disc 2 (or 3, or 4...)
 		// Request the disc 2 image first.
-		char s_discNum[16];
-		int len = snprintf(s_discNum, sizeof(s_discNum), "disc%u", d->discHeader.disc_number+1);
-		if (len > 0 && len < (int)(sizeof(s_discNum))) {
-			for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-				extURL.url = getURL_GameTDB("wii", s_discNum, *iter, id6);
-				extURL.cache_key = getCacheKey("wii", s_discNum, *iter, id6);
-				extURLs.push_back(extURL);
-			}
+		char discName[16];
+		snprintf(discName, sizeof(discName), "%s%u",
+			 imageTypeName, d->discHeader.disc_number+1);
+
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
+
+			extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6, ".png");
+			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6, ".png");
+			extURL.width = sizeDef->width;
+			extURL.height = sizeDef->height;
 		}
 	}
 
 	// First disc, or not a disc scan.
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter)
-	{
-		extURL.url = getURL_GameTDB("wii", imageTypeName, *iter, id6);
-		extURL.cache_key = getCacheKey("wii", imageTypeName, *iter, id6);
-		extURLs.push_back(extURL);
+	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+		int idx = (int)pExtURLs->size();
+		pExtURLs->resize(idx+1);
+		auto &extURL = pExtURLs->at(idx);
+
+		extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6, ".png");
+		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6, ".png");
+		extURL.width = sizeDef->width;
+		extURL.height = sizeDef->height;
+		extURL.high_res = false;	// Only one size is available.
 	}
 
 	// All URLs added.
-	return (extURLs.empty() ? -ENOENT : 0);
+	return 0;
 }
 
 }

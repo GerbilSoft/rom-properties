@@ -9,6 +9,7 @@ Build-Depends:
  extra-cmake-modules (>= 0.0.11),
  libcurl-dev,
  libpng-dev,
+ libjpeg-dev,
  libqt4-dev,
  kdelibs5-dev,
  kio-dev,

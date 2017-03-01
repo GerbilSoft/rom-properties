@@ -334,7 +334,7 @@ vector<const rp_char*> Amiibo::supportedFileExtensions(void) const
  */
 uint32_t Amiibo::supportedImageTypes_static(void)
 {
-       return IMGBF_EXT_MEDIA;
+	return IMGBF_EXT_MEDIA;
 }
 
 /**
@@ -343,7 +343,51 @@ uint32_t Amiibo::supportedImageTypes_static(void)
  */
 uint32_t Amiibo::supportedImageTypes(void) const
 {
-       return supportedImageTypes_static();
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	if (imageType != IMG_EXT_MEDIA) {
+		// Only media scans are supported.
+		return std::vector<ImageSizeDef>();
+	}
+
+	// Amiibo scan sizes may vary, but there's always one.
+	static const ImageSizeDef sz_EXT_MEDIA[] = {
+		{nullptr, 0, 0, 0},
+	};
+	return vector<ImageSizeDef>(sz_EXT_MEDIA,
+		sz_EXT_MEDIA + ARRAY_SIZE(sz_EXT_MEDIA));
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
 }
 
 /**
@@ -488,27 +532,57 @@ int Amiibo::loadFieldData(void)
 }
 
 /**
- * Load URLs for an external media type.
- * Called by RomData::extURL() if the URLs haven't been loaded yet.
+ * Get the imgpf value for external image types.
  * @param imageType Image type to load.
+ * @return imgpf value.
+ */
+uint32_t Amiibo::imgpf_extURL(ImageType imageType) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: amiibo.life's amiibo images have alpha transparency.
+	// Hence, no image processing is required.
+	return 0;
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Amiibo::loadURLs(ImageType imageType)
+int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return -ERANGE;
 	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
+
+	// Only one size is available.
+	((void)size);
 
 	RP_D(Amiibo);
-
-	const int idx = imageType - IMG_EXT_MIN;
-	std::vector<ExtURL> &extURLs = d->extURLs[idx];
-	if (!extURLs.empty()) {
-		// URLs *have* been loaded...
-		return 0;
-	} else if (!d->file || !d->file->isOpen()) {
+	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
@@ -524,8 +598,6 @@ int Amiibo::loadURLs(ImageType imageType)
 		return -ENOENT;
 	}
 
-	ExtURL extURL;
-
 	// Cache key. (amiibo ID)
 	// TODO: "amiibo/" or "nfp/"?
 	char amiibo_id_str[32];
@@ -537,6 +609,12 @@ int Amiibo::loadURLs(ImageType imageType)
 		// Invalid NFC ID.
 		return -EINVAL;
 	}
+
+	// Only one URL.
+	pExtURLs->resize(1);
+	auto &extURL = pExtURLs->at(0);
+
+	// Cache key.
 	extURL.cache_key = latin1_to_rp_string(amiibo_id_str, len);
 	extURL.cache_key += _RP(".png");
 
@@ -552,9 +630,13 @@ int Amiibo::loadURLs(ImageType imageType)
 	}
 	extURL.url = latin1_to_rp_string(url_str, len);
 
-	// Add the URL and we're done.
-	extURLs.push_back(extURL);
-	return (extURLs.empty() ? -ENOENT : 0);
+	// Size may vary depending on amiibo.
+	extURL.width = 0;
+	extURL.height = 0;
+	extURL.high_res = false;	// Only one size is available.
+
+	// We're done here.
+	return 0;
 }
 
 }

@@ -231,7 +231,6 @@ const rp_char *N64::systemName(uint32_t type) const
 
 	// Bits 0-1: Type. (short, long, abbreviation)
 	static const rp_char *const sysNames[4] = {
-		// FIXME: "NGC" in Japan?
 		_RP("Nintendo 64"), _RP("Nintendo 64"), _RP("N64"), nullptr
 	};
 
