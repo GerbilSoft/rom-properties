@@ -865,7 +865,7 @@ uint32_t NintendoDS::supportedImageTypes_static(void)
 	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL;
 #else /* !HAVE_JPEG */
 	return IMGBF_INT_ICON | IMGBF_EXT_BOX;
-#endif
+#endif /* HAVE_JPEG */
 }
 
 /**
