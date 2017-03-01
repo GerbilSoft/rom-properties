@@ -134,10 +134,10 @@ class EXEPrivate : public RomDataPrivate
 		 */
 		void addFields_NE(void);
 
-		/** LE-specific **/
+		/** LE/LX-specific **/
 
 		/**
-		 * Add fields for LE executables.
+		 * Add fields for LE/LX executables.
 		 */
 		void addFields_LE(void);
 
@@ -666,10 +666,10 @@ void EXEPrivate::addFields_NE(void)
 	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 }
 
-/** LE-specific **/
+/** LE/LX-specific **/
 
 /**
- * Add fields for LE executables.
+ * Add fields for LE/LX executables.
  */
 void EXEPrivate::addFields_LE(void)
 {
@@ -1178,9 +1178,16 @@ EXE::EXE(IRpFile *file)
 		} else {
 			d->fileType = FTYPE_EXECUTABLE;
 		}
-	} else if (be16_to_cpu(d->hdr.le.sig) == 0x4C45 /* 'LE' */) {
+	} else if (be16_to_cpu(d->hdr.le.sig) == 'LE' ||
+		   be16_to_cpu(d->hdr.le.sig) == 'LX')
+	{
 		// Linear Executable.
-		d->exeType = EXEPrivate::EXE_TYPE_LE;
+		if (be16_to_cpu(d->hdr.le.sig) == 'LE') {
+			d->exeType = EXEPrivate::EXE_TYPE_LE;
+		} else /*if (be16_to_cpu(d->hdr.le.sig) == 'LX')*/ {
+			d->exeType = EXEPrivate::EXE_TYPE_LX;
+		}
+
 		// TODO: Check byteorder flags and adjust as necessary.
 		if (le16_to_cpu(d->hdr.le.targOS) == NE_OS_WIN386) {
 			// LE VxD
@@ -1192,9 +1199,10 @@ EXE::EXE(IRpFile *file)
 			// LE EXE
 			d->fileType = FTYPE_EXECUTABLE;
 		}
-	} else if (be16_to_cpu(d->hdr.sig16) == 0x5733 /* 'W3' */) {
+	} else if (be16_to_cpu(d->hdr.sig16) == 'W3' /* 'W3' */) {
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
+		// TODO: Check for W4. (Compressed version of W3 used by Win9x.)
 		d->exeType = EXEPrivate::EXE_TYPE_W3;
 		d->fileType = FTYPE_EXECUTABLE;
 	} else {
@@ -1308,7 +1316,8 @@ const rp_char *EXE::systemName(uint32_t type) const
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
 		}
 
-		case EXEPrivate::EXE_TYPE_LE: {
+		case EXEPrivate::EXE_TYPE_LE:
+		case EXEPrivate::EXE_TYPE_LX: {
 			// Linear Executable.
 			// TODO: Some DOS extenders have the target OS set to OS/2.
 			// Check 'file' msdos magic.
@@ -1465,6 +1474,7 @@ int EXE::loadFieldData(void)
 			break;
 
 		case EXEPrivate::EXE_TYPE_LE:
+		case EXEPrivate::EXE_TYPE_LX:
 			d->addFields_LE();
 			break;
 

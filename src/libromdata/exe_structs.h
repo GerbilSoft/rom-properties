@@ -642,10 +642,13 @@ typedef struct PACKED _NE_TYPEINFO {
 } NE_TYPEINFO;
 #pragma pack()
 
-/** Linear Executable (Win16 drivers) structs. **/
+/** Linear Executable structs. **/
+// NOTE: The header format is the same for LE (Win16 drivers)
+// and LX (32-bit OS/2 executables).
 // References:
 // - http://fileformats.archiveteam.org/wiki/Linear_Executable
 // - http://faydoc.tripod.com/formats/exe-LE.htm
+// - http://www.textfiles.com/programming/FORMATS/lxexe.txt
 
 #pragma pack(1)
 typedef struct PACKED _LE_Header {
@@ -659,12 +662,35 @@ typedef struct PACKED _LE_Header {
 	uint32_t module_version;
 	// 0x10
 	uint32_t module_type_flags;	// See LE_Module_Type_Flags.
-
+	uint32_t module_page_count;	// Number of memory pages.
+	uint32_t initial_cs_number;	// Initial object CS number.
+	uint32_t initial_eip;		// Initial EIP.
+	// 0x20
+	uint32_t initial_ss_number;	// Initial object SS number.
+	uint32_t initial_esp;		// Initial ESP.
+	uint32_t page_size;
+	uint32_t bytes_on_last_page;	// or page offset shift?
+	// 0x30
+	uint32_t fixup_section_size;
+	uint32_t fixup_section_checksum;
+	uint32_t loader_section_size;
+	uint32_t loader_section_checksum;
+	// 0x40
+	uint32_t object_table_offset;
+	uint32_t object_table_count;	// Number of entries in the object table.
+	uint32_t object_page_map_offset;
+	uint32_t object_iterate_data_map_offset;
+	// 0x50
+	uint32_t resource_table_offset;
+	uint32_t resource_table_count;	// Number of entries in the resource table.
+	uint32_t resident_names_table_offset;
+	uint32_t entry_table_offset;
+	// 0x60
 	// TODO more
-	uint8_t filler[0xB0-0x14];
+	uint8_t filler[0xA8-0x60];
 } LE_Header;
 #pragma pack()
-ASSERT_STRUCT(LE_Header, 0xB0);
+ASSERT_STRUCT(LE_Header, 0xA8);
 
 // CPU type.
 typedef enum {
