@@ -1273,9 +1273,6 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 		return -EIO;
 	}
 
-	// TODO: Handle this for GameTDB cover scans.
-	((void)size);
-
 	// Get the image sizes and sort them based on the
 	// requested image size.
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
@@ -1283,15 +1280,19 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 		// No image sizes.
 		return -ENOENT;
 	}
-	// TODO: Sort based on requested image size.
-	// For now, assuming the default size.
+
+	// Select the best size.
+	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
 
 	// NOTE: Only downloading the first size as per the
 	// sort order, since GameTDB basically guarantees that
 	// all supported sizes for an image type are available.
 	// TODO: Add cache keys for other sizes in case they're
 	// downloaded and none of these are available?
-	const ImageSizeDef &sizeDef = sizeDefs[0];
 
 	// Determine the image type name.
 	const char *imageTypeName_base;
@@ -1311,10 +1312,6 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 			// Unsupported image type.
 			return -ENOENT;
 	}
-	// Current image type.
-	char imageTypeName[16];
-	snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-		 imageTypeName_base, (sizeDef.name ? sizeDef.name : ""));
 
 	// Determine the GameTDB region code(s).
 	vector<const char*> tdb_regions = d->ndsRegionToGameTDB(
@@ -1335,17 +1332,41 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	}
 	id4[4] = 0;
 
-	// Add the URLs.
-	pExtURLs->reserve(4*sizeDefs.size());
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-		int idx = (int)pExtURLs->size();
-		pExtURLs->resize(idx+1);
-		auto &extURL = pExtURLs->at(idx);
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	const ImageSizeDef *szdefs_dl[3];
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index >= 2) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
 
-		extURL.url = d->getURL_GameTDB("ds", imageTypeName, *iter, id4, ext);
-		extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *iter, id4, ext);
-		extURL.width = sizeDef.width;
-		extURL.height = sizeDef.height;
+	// Add the URLs.
+	pExtURLs->reserve(4*szdef_count);
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+
+		// Add the images.
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
+
+			extURL.url = d->getURL_GameTDB("ds", imageTypeName, *iter, id4, ext);
+			extURL.cache_key = d->getCacheKey_GameTDB("ds", imageTypeName, *iter, id4, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index >= 2);
+		}
 	}
 
 	// All URLs added.

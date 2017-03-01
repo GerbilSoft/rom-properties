@@ -124,6 +124,14 @@ class RomDataPrivate
 			const char *system, const char *type,
 			const char *region, const char *gameID,
 			const char *ext);
+
+		/**
+		 * Select the best size for an image.
+		 * @param sizeDefs Image size definitions.
+		 * @param size Requested thumbnail dimension. (assuming a square thumbnail)
+		 * @return Image size definition, or nullptr on error.
+		 */
+		static const RomData::ImageSizeDef *selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size);
 };
 
 }

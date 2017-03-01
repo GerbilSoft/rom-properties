@@ -94,14 +94,14 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
  * Get an external image.
  * @param romData	[in] RomData object.
  * @param imageType	[in] Image type.
+ * @param req_size	[in] Requested image size.
  * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
  * @return External image, or null ImgClass on error.
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
-	const RomData *romData,
-	RomData::ImageType imageType,
-	ImgSize *pOutSize)
+	const RomData *romData, RomData::ImageType imageType,
+	int req_size, ImgSize *pOutSize)
 {
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
@@ -112,7 +112,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// Synchronously download from the source URLs.
 	// TODO: Image size selection.
 	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+	int ret = romData->extURLs(imageType, &extURLs, req_size);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		return getNullImgClass();
@@ -182,12 +182,12 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 /**
  * Create a thumbnail for the specified ROM file.
  * @param romData	[in] RomData object.
- * @param max_size	[in] Maximum image size.
+ * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img)
 {
 	// TODO: Customize which ones are used per-system.
 	// For now, check EXT MEDIA, then INT ICON.
@@ -197,7 +197,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 
 	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
 		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, &img_sz);
+		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
 		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
 	}
 
@@ -216,7 +216,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
-	// TODO: If image is larger than max_size, resize down.
+	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.
 		ResizeNearestUpPolicy resize_up = RESIZE_UP_HALF;
@@ -231,21 +231,21 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 			default:
 				// Only resize images that are less than or equal to
 				// half requested thumbnail size.
-				needs_resize_up = (img_sz.width  <= (max_size/2)) ||
-						  (img_sz.height <= (max_size/2));
+				needs_resize_up = (img_sz.width  <= (req_size/2)) ||
+						  (img_sz.height <= (req_size/2));
 				break;
 
 			case RESIZE_UP_ALL:
 				// Resize all images that are smaller than the
 				// requested thumbnail size.
-				needs_resize_up = (img_sz.width  < max_size) ||
-						  (img_sz.height < max_size);
+				needs_resize_up = (img_sz.width  < req_size) ||
+						  (img_sz.height < req_size);
 				break;
 		}
 
 		if (needs_resize_up) {
 			// Need to upscale the image.
-			ImgSize int_sz = {max_size, max_size};
+			ImgSize int_sz = {req_size, req_size};
 			// Resize to the next highest integer multiple.
 			int_sz.width -= (int_sz.width % img_sz.width);
 			int_sz.height -= (int_sz.height % img_sz.height);
@@ -268,12 +268,12 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int max_siz
 /**
  * Create a thumbnail for the specified ROM file.
  * @param file		[in] Open IRpFile object.
- * @param max_size	[in] Maximum image size.
+ * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int max_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img)
 {
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
@@ -284,7 +284,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int max_size, ImgCla
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, max_size, ret_img);
+	int ret = getThumbnail(romData, req_size, ret_img);
 	romData->unref();
 	return ret;
 }
@@ -292,12 +292,12 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int max_size, ImgCla
 /**
  * Create a thumbnail for the specified ROM file.
  * @param filename	[in] ROM file.
- * @param max_size	[in] Maximum image size.
+ * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int max_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img)
 {
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
@@ -318,7 +318,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int max_si
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, max_size, ret_img);
+	int ret = getThumbnail(romData, req_size, ret_img);
 	romData->unref();
 	return ret;
 }

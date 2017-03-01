@@ -393,6 +393,16 @@ class RomData
 			rp_string cache_key;	// Cache key
 			uint16_t width;		// Expected image width. (0 for unknown)
 			uint16_t height;	// Expected image height. (0 for unknown)
+
+			// Set this to true if this is a "high-resolution" image.
+			// This will be used to determine if it should be
+			// downloaded if high-resolution downloads are
+			// disabled.
+			//
+			// NOTE: If only one image size is available, set this
+			// to 'false' to allow it to be downloaded. Otherwise,
+			// no images will be downloaded.
+			bool high_res;
 		};
 
 		/**
@@ -402,6 +412,9 @@ class RomData
 			IMAGE_SIZE_DEFAULT	=  0,
 			IMAGE_SIZE_SMALLEST	= -1,
 			IMAGE_SIZE_LARGEST	= -2,
+
+			// Minimum allowed value.
+			IMAGE_SIZE_MIN_VALUE	= IMAGE_SIZE_LARGEST
 		};
 
 		/**

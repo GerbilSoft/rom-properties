@@ -1775,10 +1775,6 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		return -EIO;
 	}
 
-	// NOTE: GameTDB's GCN/Wii scans are currently only available
-	// in one size per media type.
-	((void)size);
-
 	// Get the image sizes and sort them based on the
 	// requested image size.
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
@@ -1786,15 +1782,19 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		// No image sizes.
 		return -ENOENT;
 	}
-	// TODO: Sort based on requested image size.
-	// For now, assuming the default size.
+
+	// Select the best size.
+	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
 
 	// NOTE: Only downloading the first size as per the
 	// sort order, since GameTDB basically guarantees that
 	// all supported sizes for an image type are available.
 	// TODO: Add cache keys for other sizes in case they're
 	// downloaded and none of these are available?
-	const ImageSizeDef &sizeDef = sizeDefs[0];
 
 	// Determine the image type name.
 	const char *imageTypeName_base;
@@ -1815,7 +1815,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// Current image type.
 	char imageTypeName[16];
 	snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-		 imageTypeName_base, (sizeDef.name ? sizeDef.name : ""));
+		 imageTypeName_base, (sizeDef->name ? sizeDef->name : ""));
 
 	// Determine the GameTDB region code(s).
 	vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
@@ -1832,7 +1832,10 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	id6[6] = 0;
 
 	// ExtURLs.
-	pExtURLs->reserve(4*sizeDefs.size());
+	// TODO: If multiple image sizes are added, add the
+	// "default" size to the end of ExtURLs in case the
+	// user has high-resolution downloads disabled.
+	pExtURLs->reserve(4);
 
 	// Disc scan: Is this not the first disc?
 	if (imageType == IMG_EXT_MEDIA &&
@@ -1851,8 +1854,8 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 			extURL.url = d->getURL_GameTDB("wii", discName, *iter, id6, ".png");
 			extURL.cache_key = d->getCacheKey_GameTDB("wii", discName, *iter, id6, ".png");
-			extURL.width = sizeDef.width;
-			extURL.height = sizeDef.height;
+			extURL.width = sizeDef->width;
+			extURL.height = sizeDef->height;
 		}
 	}
 
@@ -1864,8 +1867,9 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 		extURL.url = d->getURL_GameTDB("wii", imageTypeName, *iter, id6, ".png");
 		extURL.cache_key = d->getCacheKey_GameTDB("wii", imageTypeName, *iter, id6, ".png");
-		extURL.width = sizeDef.width;
-		extURL.height = sizeDef.height;
+		extURL.width = sizeDef->width;
+		extURL.height = sizeDef->height;
+		extURL.high_res = false;	// Only one size is available.
 	}
 
 	// All URLs added.

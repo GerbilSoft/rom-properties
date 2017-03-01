@@ -115,39 +115,40 @@ class TCreateThumbnail
 		 * Get an external image.
 		 * @param romData	[in] RomData object.
 		 * @param imageType	[in] Image type.
+		 * @param req_size	[in] Requested image size.
 		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
 		 * @return External image, or null ImgClass on error.
 		 */
-		ImgClass getExternalImage(const RomData *romData,
-			RomData::ImageType imageType,
-			ImgSize *pOutSize);
+		ImgClass getExternalImage(
+			const RomData *romData, RomData::ImageType imageType,
+			int req_size, ImgSize *pOutSize);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param romData	[in] RomData object.
-		 * @param max_size	[in] Maximum image size.
+		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const RomData *romData, int max_size, ImgClass &ret_img);
+		int getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param file		[in] Open IRpFile object.
-		 * @param max_size	[in] Maximum image size.
+		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(IRpFile *file, int max_size, ImgClass &ret_img);
+		int getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param filename	[in] ROM file.
-		 * @param max_size	[in] Maximum image size.
+		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const rp_char *filename, int max_size, ImgClass &ret_img);
+		int getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img);
 
 	protected:
 		/**

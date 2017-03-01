@@ -633,6 +633,7 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	// Size may vary depending on amiibo.
 	extURL.width = 0;
 	extURL.height = 0;
+	extURL.high_res = false;	// Only one size is available.
 
 	// We're done here.
 	return 0;

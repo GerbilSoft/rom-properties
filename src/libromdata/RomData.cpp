@@ -245,6 +245,101 @@ LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(
 	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 }
 
+/**
+ * Select the best size for an image.
+ * @param sizeDefs Image size definitions.
+ * @param size Requested thumbnail dimension. (assuming a square thumbnail)
+ * @return Image size definition, or nullptr on error.
+ */
+const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<RomData::ImageSizeDef> &sizeDefs, int size)
+{
+	if (sizeDefs.empty() || size < RomData::IMAGE_SIZE_MIN_VALUE) {
+		// No sizes, or invalid size value.
+		return nullptr;
+	} else if (sizeDefs.size() == 1) {
+		// Only one size.
+		return &sizeDefs[0];
+	}
+
+	// Check for a "special" size value.
+	switch (size) {
+		case RomData::IMAGE_SIZE_DEFAULT:
+			// Default image.
+			return &sizeDefs[0];
+
+		case RomData::IMAGE_SIZE_SMALLEST: {
+			// Find the smallest image.
+			const RomData::ImageSizeDef *ret = &sizeDefs[0];
+			int sz = std::min(ret->width, ret->height);
+			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+				const RomData::ImageSizeDef *sizeDef = &(*iter);
+				if (sizeDef->width < sz || sizeDef->height < sz) {
+					ret = sizeDef;
+					sz = std::min(sizeDef->width, sizeDef->height);
+				}
+			}
+			return ret;
+		}
+
+		case RomData::IMAGE_SIZE_LARGEST: {
+			// Find the largest image.
+			const RomData::ImageSizeDef *ret = &sizeDefs[0];
+			int sz = std::max(ret->width, ret->height);
+			for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+				const RomData::ImageSizeDef *sizeDef = &(*iter);
+				if (sizeDef->width > sz || sizeDef->height > sz) {
+					ret = sizeDef;
+					sz = std::max(sizeDef->width, sizeDef->height);
+				}
+			}
+			return ret;
+		}
+
+		default:
+			break;
+	}
+
+	// Find the largest image that has at least one dimension that
+	// is >= the requested size. If no image is >= the requested
+	// size, use the largest image.
+	// TODO: Check width/height separately?
+	const RomData::ImageSizeDef *ret = &sizeDefs[0];
+	int sz = std::max(ret->width, ret->height);
+	if (sz == size) {
+		// Found a match already.
+		return ret;
+	}
+	for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+		const RomData::ImageSizeDef *sizeDef = &(*iter);
+		const int szchk = std::max(sizeDef->width, sizeDef->height);
+		if (sz >= size) {
+			// We already found an image >= size.
+			// Only use this image if its largest dimension is
+			// >= size and < sz.
+			if (szchk >= size && szchk < sz) {
+				// Found a better match.
+				sz = szchk;
+				ret = sizeDef;
+			}
+		} else {
+			// Use this image if its largest dimension is > sz.
+			if (szchk > sz) {
+				// Found a better match.
+				sz = szchk;
+				ret = sizeDef;
+			}
+		}
+
+		if (sz == size) {
+			// Exact match!
+			// TODO: Verify width/height separately?
+			break;
+		}
+	}
+
+	return ret;
+}
+
 /** RomData **/
 
 /**
