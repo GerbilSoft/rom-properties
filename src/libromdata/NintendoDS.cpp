@@ -861,8 +861,8 @@ vector<const rp_char*> NintendoDS::supportedFileExtensions(void) const
 uint32_t NintendoDS::supportedImageTypes_static(void)
 {
 #ifdef HAVE_JPEG
-	return IMGBF_INT_ICON |
-	       IMGBF_EXT_COVER | IMGBF_EXT_BOX;
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL;
 #else /* !HAVE_JPEG */
 	return IMGBF_INT_ICON | IMGBF_EXT_BOX;
 #endif
@@ -907,6 +907,16 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes_static(ImageT
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER,
 				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 340, 144, 0},
+				//{"S", 272, 115, 1},	// Not currently present on GameTDB.
+				{"M", 856, 352, 2},
+				{"HQ", 1616, 680, 3},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
 		}
 		case IMG_EXT_BOX: {
 			static const ImageSizeDef sz_EXT_BOX[] = {
@@ -1301,6 +1311,10 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER:
 			imageTypeName_base = "cover";
+			ext = ".jpg";
+			break;
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
 			ext = ".jpg";
 			break;
 #endif /* HAVE_JPEG */

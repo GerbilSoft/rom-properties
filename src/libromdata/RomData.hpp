@@ -261,6 +261,7 @@ class RomData
 			IMG_EXT_MEDIA,		// External media scan
 			IMG_EXT_COVER,		// External cover scan
 			IMG_EXT_COVER_3D,	// External cover scan (3D version)
+			IMG_EXT_COVER_FULL,	// External cover scan (front and back)
 			IMG_EXT_BOX,		// External box scan (cover + outer box)
 
 			// Ranges.
@@ -282,10 +283,11 @@ class RomData
 
 			// External images are downloaded from websites,
 			// such as GameTDB.
-			IMGBF_EXT_MEDIA    = (1 << IMG_EXT_MEDIA),	// External media scan, e.g. GameTDB
-			IMGBF_EXT_COVER    = (1 << IMG_EXT_COVER),	// External cover scan
-			IMGBF_EXT_COVER_3D = (1 << IMG_EXT_COVER_3D),	// External cover scan (3D version)
-			IMGBF_EXT_BOX	   = (1 << IMG_EXT_BOX),	// External box scan (cover + outer box)
+			IMGBF_EXT_MEDIA      = (1 << IMG_EXT_MEDIA),      // External media scan, e.g. GameTDB
+			IMGBF_EXT_COVER      = (1 << IMG_EXT_COVER),      // External cover scan
+			IMGBF_EXT_COVER_3D   = (1 << IMG_EXT_COVER_3D),   // External cover scan (3D version)
+			IMGBF_EXT_COVER_FULL = (1 << IMG_EXT_COVER_FULL), // External cover scan (front and back)
+			IMGBF_EXT_BOX	     = (1 << IMG_EXT_BOX),        // External box scan (cover + outer box)
 		};
 
 		/**

@@ -698,6 +698,7 @@ const rp_char *RomData::getImageTypeName(ImageType imageType) {
 		_RP("External media scan"),			// IMG_EXT_MEDIA
 		_RP("External cover scan"),			// IMG_EXT_COVER
 		_RP("External cover scan (3D version)"),	// IMG_EXT_COVER_3D
+		_RP("External cover scan (front and back)"),	// IMG_EXT_COVER_FULL
 		_RP("External box scan"),			// IMG_EXT_BOX
 	};
 	static_assert(ARRAY_SIZE(image_type_names) == IMG_EXT_MAX + 1,
