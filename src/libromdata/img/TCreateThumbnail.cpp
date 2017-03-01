@@ -189,21 +189,35 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 template<typename ImgClass>
 int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img)
 {
-	// TODO: Customize which ones are used per-system.
-	// For now, check EXT MEDIA, then INT ICON.
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
 	ImgSize img_sz;
 
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
-		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
+	/**
+	 * TODO:
+	 * - Add a function to retrieve the "default" image type in RomData,
+	 *   which can be customized per subclass.
+	 * - Add user customization.
+	 */
+
+	// Check for external images.
+	if (imgbf & RomData::IMGBF_EXT_COVER) {
+		// External cover scan.
+		ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
+		imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
+	}
+	if (!isImgClassValid(ret_img)) {
+		// No cover scan. Try external media scan.
+		if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+			// External media scan.
+			ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
+			imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
+		}
 	}
 
 	if (!isImgClassValid(ret_img)) {
 		// No external media scan.
-		// Try an internal image.
+		// Try the internal icon.
 		if (imgbf & RomData::IMGBF_INT_ICON) {
 			// Internal icon.
 			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);

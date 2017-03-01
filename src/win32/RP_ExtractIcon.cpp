@@ -197,6 +197,8 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
+	// TODO: Use TCreateThumbnail()?
+
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
 	// we returned in GetIconLocation()?
@@ -232,10 +234,30 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	const rp_image *img = nullptr;
 
 	uint32_t imgbf = d->romData->supportedImageTypes();
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_MEDIA);
+
+	/**
+	 * TODO:
+	 * - Add a function to retrieve the "default" image type in RomData,
+	 *   which can be customized per subclass.
+	 * - Add user customization.
+	 * - Use image sizes? May not be necessary since Vista+ uses the
+	 *   thumbnail interface when showing >24x24 icons...
+	 * - Handle image processing flags.
+	 */
+
+	// Check for external images.
+	if (imgbf & RomData::IMGBF_EXT_COVER) {
+		// External cover scan.
+		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_COVER);
 		needs_delete = (img != nullptr);
+	}
+	if (img != nullptr) {
+		// No cover scan. Try external media scan.
+		if (imgbf & RomData::IMGBF_EXT_MEDIA) {
+			// External media scan.
+			img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_COVER);
+			needs_delete = (img != nullptr);
+		}
 	}
 
 	if (!img) {
