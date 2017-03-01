@@ -29,6 +29,11 @@
     executables that contain version and manifest resources.
   * JPEG is now supported for image downloads from external image databases.
     GameTDB uses JPEG for certain image types, including Nintendo DS covers.
+  * !!! Multiple image sizes are now supported for external image downloads.
+    GameTDB has higher-resolution scans for certain image types, including
+    Nintendo DS cover scans. These high-resolution scans are used if a larger
+    thumbnail size is requested by the file browser. A user configuration
+    option will be added later to disable high-resolution image downloads.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
