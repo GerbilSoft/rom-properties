@@ -29,6 +29,9 @@
 #include "RpImageWin32.hpp"
 #include "resource.h"
 
+// DialogBuilder for child tabs.
+#include "DialogBuilder.hpp"
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
@@ -1687,8 +1690,20 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Update dlg_value_width.
 		dlg_value_width = dlgSize.cx - descSize.cx;
 
+		// DialogBuilder for child tabs.
+		DialogBuilder dlgBuilder;
+		DLGTEMPLATE dlgTemplate;
+		dlgTemplate.style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
+		dlgTemplate.dwExtendedStyle = 0;
+		dlgTemplate.cdit = 0;
+		// FIXME: These are DLUs. We've precomputed pixels,
+		// so we'll need to use SetWindowPos() afterwards.
+		dlgTemplate.x = 0;
+		dlgTemplate.y = 0;
+		dlgTemplate.cx = 0;
+		dlgTemplate.cy = 0;
+
 		// Create windows for each tab.
-		bool hasShownFirst = false;
 		for (int i = 0; i < fields->tabCount(); i++) {
 			if (!fields->tabName(i)) {
 				// Skip this tab.
@@ -1697,27 +1712,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			auto &tab = tabs[i];
 
-			// Create a generic window for the tab.
-			// TODO: Create a generic window class?
-			// Or, don't create a window class...
-			DWORD style;
-			if (hasShownFirst) {
-				style = WS_CHILD | WS_TABSTOP | DS_CONTROL;
-			} else {
-				// Make sure the first tab is visible.
-				style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
-				hasShownFirst = true;
-			}
-			tab.hDlg = CreateWindow(WC_DIALOG, nullptr, style,
-				dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-				hDlg, (HMENU)(INT_PTR)(IDC_TAB_PAGE(i)),
-				nullptr, nullptr);
-			SetWindowFont(tab.hDlg, hFont, FALSE);
+			// Create a child dialog for the tab.
+			dlgBuilder.init(&dlgTemplate, RP2W_c(fields->tabName(i)));
+			tab.hDlg = CreateDialogIndirect(nullptr, dlgBuilder.get(), hDlg, nullptr);
+			SetWindowPos(tab.hDlg, nullptr, dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
+				SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 			// Current point should be (0,0),
 			// since it's relative to the child window.
 			tab.curPt.x = 0;
 			tab.curPt.y = 0;
+
+			// Disable WS_VISIBLE for tabs other than the first one.
+			dlgTemplate.style &= ~WS_VISIBLE;
 		}
 	} else {
 		// No tabs.
