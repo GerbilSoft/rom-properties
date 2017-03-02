@@ -25,6 +25,7 @@
 #include "RomData_p.hpp"
 
 #include "wiiu_structs.h"
+#include "data/WiiUData.hpp"
 
 #include "common.h"
 #include "byteswap.h"
@@ -516,6 +517,16 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			// Unsupported image type.
 			return -ENOENT;
 	}
+
+	// Look up the publisher ID.
+	uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
+	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
+		// Either the publisher ID is unknown, or it's a
+		// 4-character ID, which isn't supported by
+		// GameTDB at the moment.
+		return -ENOENT;
+	}
+
 	// Current image type.
 	char imageTypeName[16];
 	snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
@@ -527,9 +538,6 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	vector<const char*> tdb_regions;
 	tdb_regions.push_back("US");
 
-	// FIXME: Is the publisher in the header?
-	// GameTDB uses the ID6...
-
 	// Game ID.
 	// Replace any non-printable characters with underscores.
 	// (GameCube NDDEMO has ID6 "00\0E01".)
@@ -539,12 +547,11 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			? d->discHeader.id4[i]
 			: '_');
 	}
-	id6[6] = 0;
 
-	// TODO: Look up the publisher.
-	// For now, assuming '01' for Nintendo.
-	id6[4] = '0';
-	id6[5] = '1';
+	// Publisher ID.
+	id6[4] = (publisher_id >> 8) & 0xFF;
+	id6[5] = publisher_id & 0xFF;
+	id6[6] = 0;
 
 	// ExtURLs.
 	// TODO: If multiple image sizes are added, add the
