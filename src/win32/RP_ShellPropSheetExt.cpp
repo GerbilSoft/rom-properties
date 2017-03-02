@@ -1746,7 +1746,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			continue;
 
 		// Verify the tab index.
-		const int tabIdx = 0;//field->tabIdx;
+		const int tabIdx = field->tabIdx;
 		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
 		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
 			// Tab index is out of bounds.
