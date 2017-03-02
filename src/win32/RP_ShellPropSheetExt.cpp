@@ -364,6 +364,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	memset(&szIcon, 0, sizeof(szIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
+	// TODO: Move this to RP_ComBase so we don't have to look it up
+	// every time the property dialog is loaded?
 	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
 	if (hUxTheme_dll) {
 		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
@@ -798,7 +800,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// lblSysInfo
 	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
-		lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
+		lblSysInfo = CreateWindowEx(WS_EX_TRANSPARENT, WC_STATIC, sysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
@@ -929,7 +931,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// open a webpage. It does NOT allow highlighting.
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
-		hDlgItem = CreateWindow(WC_LINK, wstr.c_str(),
+		hDlgItem = CreateWindowEx(WS_EX_TRANSPARENT, WC_LINK, wstr.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
@@ -967,7 +969,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			// Single line.
 			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
 		}
-		hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
+		hDlgItem = CreateWindowEx(WS_EX_TRANSPARENT, WC_EDIT, wstr.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
@@ -1113,7 +1115,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		}
 
 		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindow(WC_BUTTON, s_name.c_str(),
+		HWND hCheckBox = CreateWindowEx(WS_EX_TRANSPARENT, WC_BUTTON, s_name.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1651,7 +1653,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Do we need to create a tab widget?
 	if (fields->tabCount() > 1) {
 		tabs.resize(fields->tabCount());
-		tabWidget = CreateWindow(WC_TABCONTROL, nullptr,
+		tabWidget = CreateWindowEx(WS_EX_TRANSPARENT, WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
@@ -1694,6 +1696,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		DialogBuilder dlgBuilder;
 		DLGTEMPLATE dlgTemplate;
 		dlgTemplate.style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
+		dlgTemplate.dwExtendedStyle = WS_EX_TRANSPARENT;
 		dlgTemplate.dwExtendedStyle = 0;
 		dlgTemplate.cdit = 0;
 		// FIXME: These are DLUs. We've precomputed pixels,
@@ -1714,7 +1717,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			// Create a child dialog for the tab.
 			dlgBuilder.init(&dlgTemplate, RP2W_c(fields->tabName(i)));
-			tab.hDlg = CreateDialogIndirect(nullptr, dlgBuilder.get(), hDlg, nullptr);
+			tab.hDlg = CreateDialogIndirect(nullptr, dlgBuilder.get(), hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr, dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 				SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
@@ -1762,7 +1765,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		desc_text += L':';
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
-		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
+		HWND hStatic = CreateWindowEx(WS_EX_TRANSPARENT, WC_STATIC, desc_text.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
@@ -2348,4 +2351,17 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 	// Update the timer.
 	// TODO: Verify that this affects the next callback.
 	SetTimer(hWnd, idEvent, delay, RP_ShellPropSheetExt::AnimTimerProc);
+}
+
+/**
+ * Dialog procedure for subtabs.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ */
+INT_PTR CALLBACK RP_ShellPropSheetExt::SubtabDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	// Dummy callback procedure that does nothing.
+	return FALSE; // Let system deal with other messages
 }

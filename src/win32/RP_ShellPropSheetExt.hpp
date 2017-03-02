@@ -140,6 +140,15 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param dwTime
 		 */
 		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+
+		/**
+		 * Dialog procedure for subtabs.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 */
+		static INT_PTR CALLBACK SubtabDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #ifdef __CRT_UUID_DECL
