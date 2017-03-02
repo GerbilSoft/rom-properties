@@ -31,6 +31,9 @@
 
 #include "libromdata/common.h"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 
@@ -87,11 +90,23 @@ typedef struct PACKED _DLGITEMTEMPLATEEX {
 } DLGITEMTEMPLATEEX;
 #pragma pack()
 
+/**
+ * Assertion macro for dialog buffer overflows.
+ * TODO: Show an error message in release builds?
+ * @param sz Size being added.
+ */
+#define ASSERT_BUFFER(sz) do { \
+	assert(m_pDlgBuf + (sz) <= &m_DlgBuf[sizeof(m_DlgBuf)]); \
+	if (m_pDlgBuf + (sz) > &m_DlgBuf[sizeof(m_DlgBuf)]) { \
+		abort(); \
+	} \
+} while (0)
+
 /** DLGTEMPLATEEX helper functions. **/
 
 inline void DialogBuilder::write_word(WORD w)
 {
-	// FIXME: Prevent buffer overflows.
+	ASSERT_BUFFER(sizeof(WORD));
 	LPWORD lpw = (LPWORD)m_pDlgBuf;
 	*lpw = w;
 	m_pDlgBuf += sizeof(WORD);
@@ -99,13 +114,14 @@ inline void DialogBuilder::write_word(WORD w)
 
 inline void DialogBuilder::write_wstr(LPCWSTR wstr)
 {
-	// FIXME: Prevent buffer overflows.
 	if (wstr) {
 		size_t cbWstr = (wcslen(wstr) + 1) * sizeof(wchar_t);
+		ASSERT_BUFFER(cbWstr);
 		memcpy(m_pDlgBuf, wstr, cbWstr);
 		m_pDlgBuf += cbWstr;
 	} else {
 		// NULL string.
+		ASSERT_BUFFER(sizeof(WORD));
 		LPWORD lpw = (LPWORD)m_pDlgBuf;
 		*lpw = 0;
 		m_pDlgBuf += sizeof(WORD);
@@ -117,6 +133,7 @@ inline void DialogBuilder::write_wstr_ord(LPCWSTR wstr)
 	// FIXME: Prevent buffer overflows.
 	if (((ULONG_PTR)wstr) <= 0xFFFF) {
 		// String is an atom.
+		ASSERT_BUFFER(sizeof(WORD)*2);
 		write_word(0xFFFF);
 		write_word(((ULONG_PTR)wstr) & 0xFFFF);
 	} else {
@@ -151,6 +168,7 @@ void DialogBuilder::init(LPCDLGTEMPLATE lpTemplate, LPCWSTR lpszTitle)
 	m_pDlgBuf = m_DlgBuf;
 
 	// Initialize the DLGTEMPLATEEX.
+	ASSERT_BUFFER(sizeof(DLGTEMPLATEEX));
 	DLGTEMPLATEEX *lpdt = (DLGTEMPLATEEX*)m_pDlgBuf;
 	m_pDlgBuf += sizeof(*lpdt);
 	lpdt->dlgVer = 1;
@@ -178,6 +196,7 @@ void DialogBuilder::init(LPCDLGTEMPLATE lpTemplate, LPCWSTR lpszTitle)
 
 	// Font information.
 	// TODO: Make DS_SETFONT optional?
+	ASSERT_BUFFER(sizeof(DLGTEMPLATEEX_FONT));
 	DLGTEMPLATEEX_FONT *lpdtf = (DLGTEMPLATEEX_FONT*)m_pDlgBuf;
 	m_pDlgBuf += sizeof(*lpdtf);
 	lpdtf->pointsize = 8;
@@ -200,6 +219,7 @@ void DialogBuilder::add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindo
 
 	// Create a DLGITEMTEMPLATEEX based on the DLGITEMTEMPLATE.
 	align_dword();
+	ASSERT_BUFFER(sizeof(DLGITEMTEMPLATEEX));
 	DLGITEMTEMPLATEEX *lpdit = (DLGITEMTEMPLATEEX*)m_pDlgBuf;
 	m_pDlgBuf += sizeof(*lpdit);
 
