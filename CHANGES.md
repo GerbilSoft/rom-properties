@@ -86,6 +86,10 @@
     than one thread attempted to load a PNG image at the same time.
   * Age ratings for CERO, ESRB, and AGCB are now converted to their official
     names instead of being displayed as numbers.
+  * (GNOME) The libnautilus-extension path is no longer hard-coded to
+    /usr/lib64/. This prevented it from working correctly on anything but
+    64-bit Linux systems that used the older multilib path, which means
+    the Ubuntu GNOME packages did not work.
 
 ## v0.8.1 (Windows only) (released 2016/10/24)
 
