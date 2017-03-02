@@ -927,7 +927,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
 		hDlgItem = CreateWindow(WC_LINK, wstr.c_str(),
-			WS_CHILD | WS_VISIBLE,
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
@@ -956,10 +956,13 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Create a read-only EDIT widget.
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
-		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
+		DWORD dwStyle;
 		if (lf_count > 0) {
 			// Multiple lines.
-			dwStyle |= ES_MULTILINE;
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+		} else {
+			// Single line.
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
 		}
 		hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
@@ -1108,7 +1111,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 		// FIXME: Tab ordering?
 		HWND hCheckBox = CreateWindow(WC_BUTTON, s_name.c_str(),
-			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
@@ -1646,7 +1649,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	if (fields->tabCount() > 1) {
 		tabs.resize(fields->tabCount());
 		tabWidget = CreateWindow(WC_TABCONTROL, nullptr,
-			WS_CHILD | WS_VISIBLE,
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
@@ -1699,10 +1702,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Or, don't create a window class...
 			DWORD style;
 			if (hasShownFirst) {
-				style = WS_CHILD;
+				style = WS_CHILD | WS_TABSTOP | DS_CONTROL;
 			} else {
 				// Make sure the first tab is visible.
-				style = WS_CHILD | WS_VISIBLE;
+				style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
 				hasShownFirst = true;
 			}
 			tab.hDlg = CreateWindow(WC_DIALOG, nullptr, style,
@@ -1808,7 +1811,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Create a ListView widget.
 				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
 					WC_LISTVIEW, nullptr,
-					WS_CHILD | WS_VISIBLE | LVS_ALIGNLEFT | LVS_REPORT,
+					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
 					tab.hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
