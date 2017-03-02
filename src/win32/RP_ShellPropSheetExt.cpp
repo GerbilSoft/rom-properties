@@ -81,6 +81,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
+#define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
 #define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
@@ -153,8 +154,9 @@ class RP_ShellPropSheetExt_Private
 		// Tab layout.
 		HWND tabWidget;
 		struct tab {
-			HWND hWnd;		// Tab window.
+			HWND hDlg;		// Tab child dialog.
 			HWND lblCredits;	// Credits.
+			POINT curPt;		// Current point.
 		};
 		vector<tab> tabs;
 
@@ -238,7 +240,8 @@ class RP_ShellPropSheetExt_Private
 
 		/**
 		 * Initialize a string field. (Also used for Date/Time.)
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
@@ -246,18 +249,21 @@ class RP_ShellPropSheetExt_Private
 		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
 		 * @return Field height, in pixels.
 		 */
-		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initString(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field, LPCWSTR wcs);
 
 		/**
 		 * Initialize a bitfield layout.
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initBitfield(HWND hDlg, const POINT &pt_start, int idx,
+		int initBitfield(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx,
 			const RomFields::Field *field);
 
 		/**
@@ -270,27 +276,31 @@ class RP_ShellPropSheetExt_Private
 		/**
 		 * Initialize a Date/Time field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initDateTime(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
 
 		/**
 		 * Initialize an Age Ratings field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initAgeRatings(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
 
 		/**
@@ -817,7 +827,8 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 /**
  * Initialize a string field. (Also used for Date/Time.)
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
@@ -825,11 +836,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field, LPCWSTR wcs)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 
 	// NOTE: libromdata uses Unix-style newlines.
@@ -867,7 +878,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 	HWND hDlgItem;
 
 	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
+	HFONT hFont = GetWindowFont(hWndTab);
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
@@ -884,7 +895,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 				hFont = hFontBold;
 				isWarning = true;
 				// Set the font of the description control.
-				HWND hStatic = GetDlgItem(hDlg, IDC_STATIC_DESC(idx));
+				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
 				if (hStatic) {
 					SetWindowFont(hStatic, hFont, FALSE);
 					hwndWarningControls.insert(hStatic);
@@ -918,7 +929,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		hDlgItem = CreateWindow(WC_LINK, wstr.c_str(),
 			WS_CHILD | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
-			hDlg, cId, nullptr, nullptr);
+			hWndTab, cId, nullptr, nullptr);
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 		assert(hwndSysLinkControls.empty());
 		hwndSysLinkControls.insert(hDlgItem);
@@ -929,7 +940,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		measureTextSizeLink(hDlg, hFont, wstr, &szText);
+		measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - (tmpRect.left * 2)) - szText.cx) / 2) + tmpRect.left;
@@ -953,7 +964,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
-			hDlg, cId, nullptr, nullptr);
+			hWndTab, cId, nullptr, nullptr);
 		SetWindowFont(hDlgItem, hFont, FALSE);
 
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
@@ -983,17 +994,18 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 /**
  * Initialize a bitfield layout.
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_BITFIELD)
 		return 0;
@@ -1004,8 +1016,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	MapDialogRect(hDlg, &rect_chkbox);
 
 	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
+	HFONT hFont = GetWindowFont(hWndTab);
+	HDC hDC = GetDC(hWndTab);
 	HFONT hFontOrig = SelectFont(hDC, hFont);
 
 	// Create a grid of checkboxes.
@@ -1024,7 +1036,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
 		RECT rectDlg;
-		GetClientRect(hDlg, &rectDlg);
+		GetClientRect(hWndTab, &rectDlg);
 		col_widths.push_back(rectDlg.right - pt_start.x);
 	} else if (bitfieldDesc.elemsPerRow > 1) {
 		// Determine the widest entry in each column.
@@ -1098,7 +1110,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		HWND hCheckBox = CreateWindow(WC_BUTTON, s_name.c_str(),
 			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
+			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
 		SetWindowFont(hCheckBox, hFont, FALSE);
 
@@ -1111,7 +1123,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	}
 
 	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
+	ReleaseDC(hWndTab, hDC);
 
 	// Return the total number of rows times the checkbox height,
 	// plus another 0.25 of a checkbox.
@@ -1203,25 +1215,26 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Fiel
 /**
  * Initialize a Date/Time field.
  * This function internally calls initString().
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_DATETIME)
 		return 0;
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, pt_start, idx, size, field, L"Unknown");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"Unknown");
 	}
 
 	// Format the date/time using the system locale.
@@ -1295,24 +1308,25 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, field, dateTimeStr);
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, dateTimeStr);
 }
 
 /**
  * Initialize an Age Ratings field.
  * This function internally calls initString().
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_AGE_RATINGS)
 		return 0;
@@ -1321,7 +1335,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		return initString(hDlg, pt_start, idx, size, field, L"ERROR");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"ERROR");
 	}
 
 	// Convert the age ratings field to a string.
@@ -1356,7 +1370,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, field, woss.str().c_str());
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, woss.str().c_str());
 }
 
 /**
@@ -1618,15 +1632,15 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	};
 
 	// Current position.
-	POINT curPt = {dlgRect.left, dlgRect.top};
+	POINT headerPt = {dlgRect.left, dlgRect.top};
 	int dlg_value_width = dlgSize.cx - descSize.cx;
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
-	const int headerH = createHeaderRow(hDlg, curPt, header_size);
+	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
 	dlgRect.top += headerH;
 	dlgSize.cy -= headerH;
-	curPt.y += headerH;
+	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
 	if (fields->tabCount() > 1) {
@@ -1650,10 +1664,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Skip this tab.
 				continue;
 			}
-
-			auto &tab = tabs[i];
-			// TODO: Create page control for the tab.
-
 			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
 			TabCtrl_InsertItem(tabWidget, i, &tcItem);
 		}
@@ -1661,21 +1671,59 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Adjust the dialog size for subtabs.
 		TabCtrl_AdjustRect(tabWidget, FALSE, &dlgRect);
 		// Add more margins.
+		// FIXME: On both WinXP and Win7, ths ends up with an
+		// 8px left margin, and 6px top/right margins.
+		// (Bottom margin is 6px on WinXP, 7px on Win7.)
 		InflateRect(&dlgRect, -dlgMargin.cx/2, -dlgMargin.cy/2);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
-		// Update curPt.
-		curPt.x = dlgRect.left;
-		curPt.y = dlgRect.top;
+		// Update headerPt.
+		headerPt.x = dlgRect.left;
+		headerPt.y = dlgRect.top;
 		// Update dlg_value_width.
 		dlg_value_width = dlgSize.cx - descSize.cx;
+
+		// Create windows for each tab.
+		bool hasShownFirst = false;
+		for (int i = 0; i < fields->tabCount(); i++) {
+			if (!fields->tabName(i)) {
+				// Skip this tab.
+				continue;
+			}
+
+			auto &tab = tabs[i];
+
+			// Create a generic window for the tab.
+			// TODO: Create a generic window class?
+			// Or, don't create a window class...
+			DWORD style;
+			if (hasShownFirst) {
+				style = WS_CHILD;
+			} else {
+				// Make sure the first tab is visible.
+				style = WS_CHILD | WS_VISIBLE;
+				hasShownFirst = true;
+			}
+			tab.hDlg = CreateWindow(WC_DIALOG, nullptr, style,
+				dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
+				hDlg, (HMENU)(INT_PTR)(IDC_TAB_PAGE(i)),
+				nullptr, nullptr);
+			SetWindowFont(tab.hDlg, hFont, FALSE);
+
+			// Current point should be (0,0),
+			// since it's relative to the child window.
+			tab.curPt.x = 0;
+			tab.curPt.y = 0;
+		}
 	} else {
 		// No tabs.
 		// Don't create a WC_TABCONTROL, but simulate a single
 		// tab in tabs[] to make it easier to work with.
-		// TODO
 		tabs.resize(1);
+		auto &tab = tabs[0];
+		tab.hDlg = hDlg;
+		tab.curPt = headerPt;
 	}
 
 	for (int idx = 0; idx < count; idx++) {
@@ -1683,6 +1731,20 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		assert(field != nullptr);
 		if (!field || !field->isValid)
 			continue;
+
+		// Verify the tab index.
+		const int tabIdx = 0;//field->tabIdx;
+		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
+		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
+			// Tab index is out of bounds.
+			continue;
+		} else if (!tabs[tabIdx].hDlg) {
+			// Tab name is empty. Tab is hidden.
+			continue;
+		}
+
+		// Current tab.
+		auto &tab = tabs[tabIdx];
 
 		// Append a ":" to the description.
 		// TODO: Localization.
@@ -1692,14 +1754,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_LEFT,
-			curPt.x, curPt.y, descSize.cx, descSize.cy,
-			hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
+			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
+			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
 		SetWindowFont(hStatic, hFont, FALSE);
 
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
-		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
+		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
 		HWND hDlgItem;
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
@@ -1711,7 +1773,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_STRING: {
 				// String data.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initString(hDlg, pt_start, idx, size, field, nullptr);
+				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
 				if (field_cy == 0) {
 					// initString() failed.
 					// Remove the description label.
@@ -1722,7 +1784,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, pt_start, idx, field);
+				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
 				if (field_cy == 0) {
 					// initBitfield() failed.
 					// Remove the description label.
@@ -1746,10 +1808,10 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Create a ListView widget.
 				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
 					WC_LISTVIEW, nullptr,
-					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
+					WS_CHILD | WS_VISIBLE | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
-					hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+					tab.hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 					nullptr, nullptr);
 				SetWindowFont(hDlgItem, hFont, FALSE);
 
@@ -1761,7 +1823,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_DATETIME: {
 				// Date/Time in Unix format.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initDateTime(hDlg, pt_start, idx, size, field);
+				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initDateTime() failed.
 					// Remove the description label.
@@ -1773,7 +1835,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_AGE_RATINGS: {
 				// Age Ratings field.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initAgeRatings(hDlg, pt_start, idx, size, field);
+				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initAgeRatings() failed.
 					// Remove the description label.
@@ -1791,7 +1853,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Next row.
-		curPt.y += field_cy;
+		tab.curPt.y += field_cy;
 	}
 }
 
