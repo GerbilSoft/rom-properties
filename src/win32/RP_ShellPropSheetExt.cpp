@@ -155,13 +155,14 @@ class RP_ShellPropSheetExt_Private
 		SIZE szBanner;
 
 		// Tab layout.
-		HWND tabWidget;
+		HWND hTabWidget;
 		struct tab {
 			HWND hDlg;		// Tab child dialog.
 			HWND lblCredits;	// Credits.
 			POINT curPt;		// Current point.
 		};
 		vector<tab> tabs;
+		int curTabIndex;
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
@@ -353,6 +354,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
 	, hbmpBanner(nullptr)
+	, hTabWidget(nullptr)
+	, curTabIndex(0)
 	, iconAnimData(nullptr)
 	, animTimerID(0)
 	, last_frame_number(0)
@@ -1653,12 +1656,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Do we need to create a tab widget?
 	if (fields->tabCount() > 1) {
 		tabs.resize(fields->tabCount());
-		tabWidget = CreateWindowEx(WS_EX_TRANSPARENT, WC_TABCONTROL, nullptr,
+		hTabWidget = CreateWindowEx(WS_EX_TRANSPARENT, WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(tabWidget, hFont, FALSE);
+		SetWindowFont(hTabWidget, hFont, FALSE);
+		curTabIndex = 0;
 
 		// Add tabs.
 		// NOTE: Tabs must be added *before* calling TabCtrl_AdjustRect();
@@ -1673,11 +1677,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				continue;
 			}
 			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
-			TabCtrl_InsertItem(tabWidget, i, &tcItem);
+			// FIXME: Does the index work correctly if a tab is skipped?
+			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(tabWidget, FALSE, &dlgRect);
+		TabCtrl_AdjustRect(hTabWidget, FALSE, &dlgRect);
 		// Add more margins.
 		// FIXME: On both WinXP and Win7, ths ends up with an
 		// 8px left margin, and 6px top/right margins.
@@ -2114,6 +2119,19 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						// Open the URL.
 						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
 						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					}
+					break;
+				}
+
+				case TCN_SELCHANGE: {
+					// Tab change. Make sure this is the correct WC_TABCONTROL.
+					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+					if (d->hTabWidget != nullptr && d->hTabWidget == lppsn->hdr.hwndFrom) {
+						// Tab widget. Show the selected tab.
+						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
+						ShowWindow(d->tabs[d->curTabIndex].hDlg, SW_HIDE);
+						d->curTabIndex = newTabIndex;
+						ShowWindow(d->tabs[newTabIndex].hDlg, SW_SHOW);
 					}
 					break;
 				}
