@@ -1697,7 +1697,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		DLGTEMPLATE dlgTemplate;
 		dlgTemplate.style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
 		dlgTemplate.dwExtendedStyle = WS_EX_TRANSPARENT;
-		dlgTemplate.dwExtendedStyle = 0;
 		dlgTemplate.cdit = 0;
 		// FIXME: These are DLUs. We've precomputed pixels,
 		// so we'll need to use SetWindowPos() afterwards.
