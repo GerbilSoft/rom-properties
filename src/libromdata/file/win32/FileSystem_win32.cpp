@@ -45,6 +45,9 @@ using std::wstring;
 
 namespace LibRomData { namespace FileSystem {
 
+// Configuration directories.
+static LONG init_counter = -1;
+static volatile LONG dir_is_init = 0;
 // User's cache directory.
 static rp_string cache_dir;
 // User's configuration directory.
@@ -148,6 +151,75 @@ int64_t filesize(const rp_string &filename)
 }
 
 /**
+ * Initialize the configuration directory paths.
+ */
+static void initConfigDirectories(void)
+{
+	// How this works:
+	// - init_counter is initially -1.
+	// - Incrementing it returns 0; this means that the
+	//   directories have not been initialized yet.
+	// - dir_is_init is set when initializing.
+	// - If the counter wraps around, the directories won't be
+	//   reinitialized because dir_is_init will be set.
+	if (InterlockedIncrement(&init_counter) != 0 || dir_is_init) {
+		// Function has already been called.
+		// Wait for directories to be initialized.
+		while (InterlockedExchangeAdd(&dir_is_init, 0) == 0) {
+			// TODO: Timeout counter?
+			Sleep(0);
+		}
+		return;
+	}
+
+	wchar_t path[MAX_PATH];
+	HRESULT hr;
+
+	/** Cache directory. **/
+
+	// Windows: Get CSIDL_LOCAL_APPDATA.
+	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
+	// - Windows Vista: C:\Users\username\AppData\Local
+	hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
+		nullptr, SHGFP_TYPE_CURRENT, path);
+	if (hr == S_OK) {
+		cache_dir = W2RP_c(path);
+		if (!cache_dir.empty()) {
+			// Add a trailing backslash if necessary.
+			if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\')) {
+				cache_dir += _RP_CHR('\\');
+			}
+
+			// Append "rom-properties\\cache".
+			cache_dir += _RP("rom-properties\\cache");
+		}
+	}
+
+	/** Configuration directory. **/
+
+	// Windows: Get CSIDL_APPDATA.
+	// - Windows XP: C:\Documents and Settings\username\Application Data
+	// - Windows Vista: C:\Users\username\AppData\Roaming
+	hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
+		nullptr, SHGFP_TYPE_CURRENT, path);
+	if (hr == S_OK) {
+		config_dir = W2RP_c(path);
+		if (!config_dir.empty()) {
+			// Add a trailing backslash if necessary.
+			if (config_dir.at(config_dir.size()-1) != _RP_CHR('\\')) {
+				config_dir += _RP_CHR('\\');
+			}
+
+			// Append "rom-properties".
+			config_dir += _RP("rom-properties");
+		}
+	}
+
+	// Directories have been initialized.
+	dir_is_init = true;
+}
+
+/**
  * Get the user's cache directory.
  * This is usually one of the following:
  * - Windows XP: %APPDATA%\Local Settings\rom-properties\cache
@@ -158,32 +230,11 @@ int64_t filesize(const rp_string &filename)
  */
 const rp_string &getCacheDirectory(void)
 {
-	if (!cache_dir.empty()) {
-		// We already got the cache directory.
-		return cache_dir;
+	// NOTE: It's safe to check dir_is_init here, since it's
+	// only ever set to 1 by our code.
+	if (!dir_is_init) {
+		initConfigDirectories();
 	}
-
-	// TODO: Mutex to prevent race conditions?
-
-	// Windows: Get CSIDL_LOCAL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Local Settings\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Local
-	wchar_t path[MAX_PATH];
-	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr != S_OK)
-		return cache_dir;
-
-	cache_dir = W2RP_c(path);
-	if (cache_dir.empty())
-		return cache_dir;
-
-	// Add a trailing backslash if necessary.
-	if (cache_dir.at(cache_dir.size()-1) != _RP_CHR('\\'))
-		cache_dir += _RP_CHR('\\');
-
-	// Append "rom-properties\\cache".
-	cache_dir += _RP("rom-properties\\cache");
 	return cache_dir;
 }
 
@@ -197,32 +248,11 @@ const rp_string &getCacheDirectory(void)
  */
 const rp_string &getConfigDirectory(void)
 {
-	if (!config_dir.empty()) {
-		// We already got the cache directory.
-		return config_dir;
+	// NOTE: It's safe to check dir_is_init here, since it's
+	// only ever set to 1 by our code.
+	if (!dir_is_init) {
+		initConfigDirectories();
 	}
-
-	// TODO: Mutex to prevent race conditions?
-
-	// Windows: Get CSIDL_APPDATA.
-	// - Windows XP: C:\Documents and Settings\username\Application Data
-	// - Windows Vista: C:\Users\username\AppData\Roaming
-	wchar_t path[MAX_PATH];
-	HRESULT hr = SHGetFolderPath(nullptr, CSIDL_APPDATA,
-		nullptr, SHGFP_TYPE_CURRENT, path);
-	if (hr != S_OK)
-		return config_dir;
-
-	config_dir = W2RP_c(path);
-	if (config_dir.empty())
-		return config_dir;
-
-	// Add a trailing backslash if necessary.
-	if (config_dir.at(config_dir.size()-1) != _RP_CHR('\\'))
-		config_dir += _RP_CHR('\\');
-
-	// Append "rom-properties".
-	config_dir += _RP("rom-properties");
 	return config_dir;
 }
 

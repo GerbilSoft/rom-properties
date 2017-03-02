@@ -39,14 +39,40 @@
 using std::string;
 using std::u16string;
 
+// Atomic function macros.
+// TODO: C++11 atomic support; test all of this.
+#if defined(__clang__)
+# if 0 && (__has_feature(c_atomic) || __has_extension(c_atomic))
+   /* Clang: Use prefixed C11-style atomics. */
+   /* FIXME: Not working... (clang-3.9.0 complains that it's not declared.) */
+#  define ATOMIC_ADD_FETCH(ptr, val) __c11_atomic_add_fetch(ptr, val, __ATOMIC_SEQ_CST)
+#  define ATOMIC_OR_FETCH(ptr, val) __c11_atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
+# else
+   /* Use Itanium-style atomics. */
+#  define ATOMIC_ADD_FETCH(ptr, val) __sync_add_and_fetch(ptr, val)
+#  define ATOMIC_OR_FETCH(ptr, val) __sync_or_and_fetch(ptr, val)
+# endif
+#elif defined(__GNUC__)
+# if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
+   /* gcc-4.7: Use prefixed C11-style atomics. */
+#  define ATOMIC_ADD_FETCH(ptr, val) __atomic_add_fetch(ptr, val, __ATOMIC_SEQ_CST)
+#  define ATOMIC_OR_FETCH(ptr, val) __atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
+# else
+   /* gcc-4.6 and earlier: Use Itanium-style atomics. */
+#  define ATOMIC_ADD_FETCH(ptr, val) __sync_add_and_fetch(ptr, val)
+#  define ATOMIC_OR_FETCH(ptr, val) __sync_or_and_fetch(ptr, val)
+# endif
+#endif
+
 namespace LibRomData { namespace FileSystem {
 
+// Configuration directories.
+static int init_counter = -1;
+static volatile int dir_is_init = 0;
 // User's cache directory.
 static rp_string cache_dir;
 // User's configuration directory.
 static rp_string config_dir;
-// User's home directory.
-static rp_string home_dir;
 
 /**
  * Recursively mkdir() subdirectories.
@@ -147,17 +173,34 @@ int64_t filesize(const rp_string &filename)
 }
 
 /**
- * Get the user's home directory. (Unix systems only!)
- * @return User's home directory, or empty string on error.
+ * Initialize the configuration directory paths.
  */
-static const rp_string &getHomeDirectory(void)
+static void initConfigDirectories(void)
 {
-	if (!home_dir.empty()) {
-		// We already got the home directory.
-		return home_dir;
+	// How this works:
+	// - init_counter is initially -1.
+	// - Incrementing it returns 0; this means that the
+	//   directories have not been initialized yet.
+	// - dir_is_init is set when initializing.
+	// - If the counter wraps around, the directories won't be
+	//   reinitialized because dir_is_init will be set.
+
+	if (ATOMIC_ADD_FETCH(&init_counter, 1) != 0) {
+		// Function has already been called.
+		// Wait for directories to be initialized.
+		while (ATOMIC_OR_FETCH(&dir_is_init, 0) == 0) {
+			// TODO: Timeout counter?
+			usleep(0);
+		}
+		return;
 	}
 
-	const char *home = getenv("HOME");
+	/** Home directory. **/
+	// NOTE: The home directory is NOT cached.
+	// It's only used to determine the other directories.
+
+	rp_string home_dir;
+	const char *const home = getenv("HOME");
 	if (home && home[0] != 0) {
 		// HOME variable is set.
 		home_dir = utf8_to_rp_string(home);
@@ -173,16 +216,47 @@ static const rp_string &getHomeDirectory(void)
 		int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
 		if (ret != 0 || !pwd_result) {
 			// getpwuid_r() failed.
-			return home_dir;
+			return;
 		}
 
-		if (pwd_result->pw_dir[0] == 0)
-			return home_dir;
+		if (pwd_result->pw_dir[0] == 0) {
+			// Empty home directory...
+			return;
+		}
 
 		home_dir = utf8_to_rp_string(pwd_result->pw_dir, strlen(pwd_result->pw_dir));
 	}
+	if (home_dir.empty()) {
+		// Unable to get the home directory...
+		return;
+	}
 
-	return home_dir;
+	/** Cache directory. **/
+	// TODO: Check XDG variables.
+
+	// Unix/Linux: Cache directory is ~/.cache/rom-properties/.
+	// TODO: Mac OS X.
+	cache_dir = home_dir;
+	// Add a trailing slash if necessary.
+	if (cache_dir.at(cache_dir.size()-1) != '/')
+		cache_dir += _RP_CHR('/');
+	// Append ".cache/rom-properties".
+	cache_dir += _RP(".cache/rom-properties");
+
+	/** Configuration directory. **/
+	// TODO: Check XDG variables.
+
+	// Unix/Linux: Cache directory is ~/.config/rom-properties/.
+	// TODO: Mac OS X.
+	config_dir = home_dir;
+	// Add a trailing slash if necessary.
+	if (config_dir.at(config_dir.size()-1) != '/')
+		config_dir += _RP_CHR('/');
+	// Append ".config/rom-properties".
+	config_dir += _RP(".config/rom-properties");
+
+	// Directories have been initialized.
+	dir_is_init = 1;
 }
 
 /**
@@ -196,25 +270,11 @@ static const rp_string &getHomeDirectory(void)
  */
 const rp_string &getCacheDirectory(void)
 {
-	if (!cache_dir.empty()) {
-		// We already got the cache directory.
-		return cache_dir;
+	// NOTE: It's safe to check dir_is_init here, since it's
+	// only ever set to 1 by our code.
+	if (!dir_is_init) {
+		initConfigDirectories();
 	}
-
-	// TODO: Mutex to prevent race conditions?
-
-	// Unix/Linux: Cache directory is ~/.cache/rom-properties/.
-	// TODO: Mac OS X.
-	cache_dir = getHomeDirectory();
-	if (cache_dir.empty())
-		return cache_dir;
-
-	// Add a trailing slash if necessary.
-	if (cache_dir.at(cache_dir.size()-1) != '/')
-		cache_dir += _RP_CHR('/');
-
-	// Append ".cache/rom-properties".
-	cache_dir += _RP(".cache/rom-properties");
 	return cache_dir;
 }
 
@@ -228,25 +288,11 @@ const rp_string &getCacheDirectory(void)
  */
 const rp_string &getConfigDirectory(void)
 {
-	if (!config_dir.empty()) {
-		// We already got the cache directory.
-		return config_dir;
+	// NOTE: It's safe to check dir_is_init here, since it's
+	// only ever set to 1 by our code.
+	if (!dir_is_init) {
+		initConfigDirectories();
 	}
-
-	// TODO: Mutex to prevent race conditions?
-
-	// Unix/Linux: Cache directory is ~/.config/rom-properties/.
-	// TODO: Mac OS X.
-	config_dir = getHomeDirectory();
-	if (config_dir.empty())
-		return config_dir;
-
-	// Add a trailing slash if necessary.
-	if (config_dir.at(config_dir.size()-1) != '/')
-		config_dir += _RP_CHR('/');
-
-	// Append ".config/rom-properties".
-	config_dir += _RP(".config/rom-properties");
 	return config_dir;
 }
 
