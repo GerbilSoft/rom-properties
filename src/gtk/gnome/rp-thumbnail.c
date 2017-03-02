@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	void *rp_plugin = dlopen(CMAKE_INSTALL_PREFIX "/lib64/nautilus/extensions-3.0/rom-properties-gnome.so", RTLD_LOCAL|RTLD_LAZY);
 	if (!rp_plugin) {
 		fprintf(stderr, "*** ERROR: Could not open the rom-properties GNOME plugin.\n");
-		puts(CMAKE_INSTALL_PREFIX "lib64/nautilus/extensions-3.0/rom-properties-gnome.so");
+		puts(dlerror());
 		return EXIT_FAILURE;
 	}
 
