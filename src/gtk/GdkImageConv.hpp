@@ -27,7 +27,7 @@
 
 #include "libromdata/common.h"
 namespace LibRomData {
-	struct rp_image;
+	class rp_image;
 }
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
