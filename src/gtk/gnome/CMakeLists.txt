@@ -25,6 +25,9 @@ ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK3_FOUND)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_SRCS "${rom-properties-gtk_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-gnome_H "${rom-properties-gtk_H}")
 
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gnome.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gnome.h")
+
 # Sources and headers. (GNOME-specific)
 SET(rom-properties-gnome_SRCS
 	${rom-properties-gnome_SRCS}

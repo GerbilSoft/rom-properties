@@ -25,6 +25,7 @@
  * thumbnailing plugins. If found, it runs the thumbnail function.
  */
 #include "config.version.h"
+#include "config.gnome.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -140,7 +141,7 @@ int main(int argc, char *argv[])
 	// Attempt to open the GNOME plugin.
 	// TODO: Try multiple plugins?
 	// TODO: Get the proper installation directory.
-	void *rp_plugin = dlopen(CMAKE_INSTALL_PREFIX "/lib64/nautilus/extensions-3.0/rom-properties-gnome.so", RTLD_LOCAL|RTLD_LAZY);
+	void *rp_plugin = dlopen(LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so", RTLD_LOCAL|RTLD_LAZY);
 	if (!rp_plugin) {
 		fprintf(stderr, "*** ERROR: Could not open the rom-properties GNOME plugin.\n");
 		puts(dlerror());
