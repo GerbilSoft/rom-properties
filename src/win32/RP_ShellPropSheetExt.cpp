@@ -547,13 +547,15 @@ int RP_ShellPropSheetExt_Private::measureTextSizeLink(HWND hWnd, HFONT hFont, co
 
 	int lbrackets = 0;
 	for (int i = 0; i < (int)wstr.size(); i++) {
-		if (wstr[i] == '<') {
+		if (wstr[i] == L'<') {
 			// Starting bracket.
 			lbrackets++;
-		} else if (wstr[i] == '>') {
+			continue;
+		} else if (wstr[i] == L'>') {
 			// Ending bracket.
 			assert(lbrackets > 0);
 			lbrackets--;
+			continue;
 		}
 
 		if (lbrackets == 0) {
@@ -945,7 +947,6 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
-		// FIXME: Measured text size is a bit too wide...
 		SIZE szText;
 		measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
