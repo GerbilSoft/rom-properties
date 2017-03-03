@@ -1039,42 +1039,75 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		count = (int)bitfieldDesc.names->size();
 	}
 
+	// Determine the available width for checkboxes.
+	RECT rectDlg;
+	GetClientRect(hWndTab, &rectDlg);
+	const int max_width = rectDlg.right - pt_start.x;
+
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
 	std::vector<int> col_widths;
 	int row = 0, col = 0;
-	if (bitfieldDesc.elemsPerRow == 1) {
+	int elemsPerRow = bitfieldDesc.elemsPerRow;
+	if (elemsPerRow == 1) {
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
-		RECT rectDlg;
-		GetClientRect(hWndTab, &rectDlg);
-		col_widths.push_back(rectDlg.right - pt_start.x);
-	} else if (bitfieldDesc.elemsPerRow > 1) {
+		col_widths.push_back(max_width);
+	} else if (elemsPerRow > 1) {
 		// Determine the widest entry in each column.
-		col_widths.resize(bitfieldDesc.elemsPerRow);
-		for (int j = 0; j < count; j++) {
-			const rp_string &name = bitfieldDesc.names->at(j);
-			if (name.empty())
-				continue;
-			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_s(name);
+		// If the columns are wider than the available area,
+		// reduce the number of columns until it fits.
+		for (; elemsPerRow > 1; elemsPerRow--) {
+			col_widths.resize(elemsPerRow);
+			row = 0; col = 0;
+			for (int j = 0; j < count; j++) {
+				const rp_string &name = bitfieldDesc.names->at(j);
+				if (name.empty())
+					continue;
+				// Make sure this is a UTF-16 string.
+				wstring s_name = RP2W_s(name);
 
-			// Get the width of this specific entry.
-			// TODO: Use measureTextSize()?
-			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-			int chk_w = rect_chkbox.right + textSize.cx;
-			if (chk_w > col_widths[col]) {
-				col_widths[col] = chk_w;
+				// Get the width of this specific entry.
+				// TODO: Use measureTextSize()?
+				SIZE textSize;
+				GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+				int chk_w = rect_chkbox.right + textSize.cx;
+				if (chk_w > col_widths[col]) {
+					col_widths[col] = chk_w;
+				}
+
+				// Next column.
+				col++;
+				if (col == elemsPerRow) {
+					// Next row.
+					row++;
+					col = 0;
+				}
 			}
 
-			// Next column.
-			col++;
-			if (col == bitfieldDesc.elemsPerRow) {
-				// Next row.
-				row++;
-				col = 0;
+			// Add up the widths.
+			int total_width = 0;
+			for (auto iter = col_widths.begin(); iter != col_widths.end(); ++iter) {
+				total_width += *iter;
 			}
+			// TODO: "DLL" on Windows executables is forced to the next line.
+			// Add 7x7 DLU margins?
+			if (total_width <= max_width) {
+				// Everything fits.
+				break;
+			}
+
+			// Too wide; try removing a column.
+			// Reset the column widths first.
+			// TODO: Better way to clear a vector?
+			// TODO: Skip the last element?
+			memset(col_widths.data(), 0, col_widths.size() * sizeof(int));
+		}
+
+		if (elemsPerRow == 1) {
+			// We're left with 1 column.
+			col_widths.resize(1);
+			col_widths[0] = max_width;
 		}
 	}
 
@@ -1098,14 +1131,14 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 		// Get the text size.
 		int chk_w;
-		if (bitfieldDesc.elemsPerRow == 0) {
+		if (elemsPerRow == 0) {
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
-			if (col == bitfieldDesc.elemsPerRow) {
+			if (col == elemsPerRow) {
 				// Next row.
 				row++;
 				col = 0;
