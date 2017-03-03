@@ -802,7 +802,8 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// lblSysInfo
 	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
-		lblSysInfo = CreateWindowEx(WS_EX_TRANSPARENT, WC_STATIC, sysInfo.c_str(),
+		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, sysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
@@ -972,7 +973,8 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			// Single line.
 			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
 		}
-		hDlgItem = CreateWindowEx(WS_EX_TRANSPARENT, WC_EDIT, wstr.c_str(), dwStyle,
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_EDIT, wstr.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
@@ -1151,7 +1153,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		}
 
 		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindowEx(WS_EX_TRANSPARENT, WC_BUTTON, s_name.c_str(),
+		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_BUTTON, s_name.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
@@ -1799,7 +1802,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		desc_text += L':';
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
-		HWND hStatic = CreateWindowEx(WS_EX_TRANSPARENT, WC_STATIC, desc_text.c_str(),
+		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, desc_text.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
@@ -1853,7 +1857,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				field_cy *= 6;
 
 				// Create a ListView widget.
-				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
+				hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 					WC_LISTVIEW, nullptr,
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
