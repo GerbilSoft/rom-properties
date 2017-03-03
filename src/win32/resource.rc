@@ -46,7 +46,7 @@ END
 // Subtab child dialog.
 // The size listed here is not used; SetWindowPos() is called
 // after creating the dialog.
-IDD_SUBTAB_CHILD_DIALOG DIALOGEX 0, 0, 0, 0
+IDD_SUBTAB_CHILD_DIALOG DIALOGEX 0, 0, 16, 16
 STYLE DS_SHELLFONT | WS_CHILD | WS_TABSTOP | WS_VISIBLE
 EXSTYLE WS_EX_TRANSPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
