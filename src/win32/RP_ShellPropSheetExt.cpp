@@ -935,7 +935,8 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
 		// TODO: With tabs: Verify behavior of LWS_TRANSPARENT.
-		hDlgItem = CreateWindowEx(WS_EX_TRANSPARENT, WC_LINK, wstr.c_str(),
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_LINK, wstr.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, cId, nullptr, nullptr);
@@ -1704,7 +1705,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Create the tab widget.
 		tabs.resize(fields->tabCount());
-		hTabWidget = CreateWindowEx(WS_EX_TRANSPARENT, WC_TABCONTROL, nullptr,
+		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
