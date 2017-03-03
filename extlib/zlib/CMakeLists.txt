@@ -276,6 +276,8 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
 	GET_TARGET_PROPERTY(DEBUG_FILENAME zlib PDB)
 	IF(WIN32)
 		# TODO: Test on MinGW.
+		# FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+		# so cpack fails in debug builds if we get the PDB property.
 		SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:zlib>/zlib1${CMAKE_DEBUG_POSTFIX}.pdb")
 		SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:zlib>/zlib1${CMAKE_RELEASE_POSTFIX}.pdb")
 		INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
