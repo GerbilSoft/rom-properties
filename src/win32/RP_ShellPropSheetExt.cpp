@@ -1749,6 +1749,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// (Bottom margin is 6px on WinXP, 7px on Win7.)
 			tab.curPt.x = dlgMargin.cx/2;
 			tab.curPt.y = dlgMargin.cy/2;
+			dlg_value_width -= (dlgMargin.cx * 2 / 3);
 		}
 	} else {
 		// No tabs.
