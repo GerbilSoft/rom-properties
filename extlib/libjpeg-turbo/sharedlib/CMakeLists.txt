@@ -82,7 +82,33 @@ add_executable(jcstest ../jcstest.c)
 target_link_libraries(jcstest jpeg)
 ENDIF(0) # rom-properties
 
-install(TARGETS jpeg #cjpeg djpeg jpegtran
+# rom-properties: Use our own INSTALL().
+IF(0)
+install(TARGETS jpeg cjpeg djpeg jpegtran
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
+ENDIF(0) # rom-properties
+
+# rom-properties: Use our own INSTALL().
+INCLUDE(DirInstallPaths)
+INSTALL(TARGETS jpeg
+	RUNTIME DESTINATION ${DIR_INSTALL_DLL}
+	#LIBRARY DESTINATION ${DIR_INSTALL_LIB}
+	#ARCHIVE DESTINATION ${DIR_INSTALL_LIB}
+	FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
+IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	# TODO: Test on MinGW.
+	# FIXME: Generator PDB expression doesn't have the debug postfix for some reason,
+	# so cpack fails in debug builds if we get the PDB property.
+	SET(PDB_FILENAME_D "$<TARGET_FILE_DIR:jpeg>/jpeg${DLL_VERSION}${CMAKE_DEBUG_POSTFIX}.pdb")
+	SET(PDB_FILENAME_R "$<TARGET_FILE_DIR:jpeg>/jpeg${DLL_VERSION}${CMAKE_RELEASE_POSTFIX}.pdb")
+	INSTALL(FILES "${PDB_FILENAME_D}" "${PDB_FILENAME_R}"
+		DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+		COMPONENT "debug"
+		OPTIONAL
+		)
+	UNSET(PDB_FILENAME_D)
+	UNSET(PDB_FILENAME_R)
+ENDIF(INSTALL_DEBUG)
