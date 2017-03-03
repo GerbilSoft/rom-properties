@@ -29,9 +29,6 @@
 #include "RpImageWin32.hpp"
 #include "resource.h"
 
-// DialogBuilder for child tabs.
-#include "DialogBuilder.hpp"
-
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
@@ -1730,20 +1727,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Update dlg_value_width.
 		dlg_value_width = dlgSize.cx - descSize.cx;
 
-		// DialogBuilder for child tabs.
-		DialogBuilder dlgBuilder;
-		DLGTEMPLATE dlgTemplate;
-		dlgTemplate.style = WS_CHILD | WS_TABSTOP | DS_CONTROL | WS_VISIBLE;
-		dlgTemplate.dwExtendedStyle = WS_EX_TRANSPARENT;
-		dlgTemplate.cdit = 0;
-		// FIXME: These are DLUs. We've precomputed pixels,
-		// so we'll need to use SetWindowPos() afterwards.
-		dlgTemplate.x = 0;
-		dlgTemplate.y = 0;
-		dlgTemplate.cx = 0;
-		dlgTemplate.cy = 0;
-
 		// Create windows for each tab.
+		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
 		for (int i = 0; i < fields->tabCount(); i++) {
 			if (!fields->tabName(i)) {
 				// Skip this tab.
@@ -1753,18 +1738,20 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			auto &tab = tabs[i];
 
 			// Create a child dialog for the tab.
-			dlgBuilder.init(&dlgTemplate, RP2W_c(fields->tabName(i)));
-			tab.hDlg = CreateDialogIndirect(nullptr, dlgBuilder.get(), hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
-			SetWindowPos(tab.hDlg, nullptr, dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
-				SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			extern HINSTANCE g_hInstance;
+			tab.hDlg = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
+				hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
+			SetWindowPos(tab.hDlg, nullptr,
+				dlgRect.left, dlgRect.top,
+				dlgSize.cx, dlgSize.cy,
+				swpFlags);
+			// Hide subsequent tabs.
+			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
 
 			// Current point should be (0,0),
 			// since it's relative to the child window.
 			tab.curPt.x = 0;
 			tab.curPt.y = 0;
-
-			// Disable WS_VISIBLE for tabs other than the first one.
-			dlgTemplate.style &= ~WS_VISIBLE;
 		}
 	} else {
 		// No tabs.

@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
 // Dialogs.
-#define IDD_PROPERTY_SHEET	100	/* Generic property sheet. */
+#define IDD_PROPERTY_SHEET		100	/* Generic property sheet. */
+#define IDD_SUBTAB_CHILD_DIALOG		101	/* Subtab child dialog. */
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */
