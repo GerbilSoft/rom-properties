@@ -1656,16 +1656,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-	tmpRect.left = 7; tmpRect.top = 7;
-	tmpRect.right = 8; tmpRect.bottom = 8;
-	MapDialogRect(hDlg, &tmpRect);
-	const SIZE dlgMargin = {tmpRect.left, tmpRect.top};
+	RECT dlgMargin = {7, 7, 8, 8};
+	MapDialogRect(hDlg, &dlgMargin);
 
 	// Get the dialog size.
-	RECT dlgRect;
-	GetClientRect(hDlg, &dlgRect);
+	// - fullDlgRect: Full dialog size
+	// - dlgRect: Adjusted dialog size.
+	// FIXME: Vertical height is off by 3px on Win7...
+	// Verified with WinSpy++: expected 341x408, got 341x405.
+	RECT fullDlgRect, dlgRect;
+	GetClientRect(hDlg, &fullDlgRect);
+	dlgRect = fullDlgRect;
 	// Adjust the rectangle for margins.
-	InflateRect(&dlgRect, -dlgMargin.cx, -dlgMargin.cy);
+	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
 	// Calculate the size for convenience purposes.
 	SIZE dlgSize = {
 		dlgRect.right - dlgRect.left,
@@ -1685,6 +1688,15 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Do we need to create a tab widget?
 	if (fields->tabCount() > 1) {
+		// Increase the tab widget width by half of the margin.
+		InflateRect(&dlgRect, dlgMargin.left/2, 0);
+		dlgSize.cx += dlgMargin.left;
+		// TODO: Do this regardless of tabs?
+		// NOTE: Margin with this change on Win7 is now 9px left, 12px bottom.
+		dlgRect.bottom = fullDlgRect.bottom - dlgRect.left;
+		dlgSize.cy = dlgRect.bottom - dlgRect.top;
+
+		// Create the tab widget.
 		tabs.resize(fields->tabCount());
 		hTabWidget = CreateWindowEx(WS_EX_TRANSPARENT, WC_TABCONTROL, nullptr,
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
@@ -1716,11 +1728,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
-		// Update headerPt.
-		headerPt.x = dlgRect.left;
-		headerPt.y = dlgRect.top;
 		// Update dlg_value_width.
-		dlg_value_width = dlgSize.cx - descSize.cx;
+		// FIXME: Results in 9px left, 7px right margins for RFT_LISTDATA.
+		dlg_value_width = dlgSize.cx - descSize.cx - (dlgMargin.left/2);
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
@@ -1738,7 +1748,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
-				dlgSize.cx-(dlgMargin.cx/2), dlgSize.cy-(dlgMargin.cy/2),
+				dlgSize.cx, dlgSize.cy,
 				swpFlags);
 			// Hide subsequent tabs.
 			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
@@ -1747,9 +1757,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// FIXME: On both WinXP and Win7, ths ends up with an
 			// 8px left margin, and 6px top/right margins.
 			// (Bottom margin is 6px on WinXP, 7px on Win7.)
-			tab.curPt.x = dlgMargin.cx/2;
-			tab.curPt.y = dlgMargin.cy/2;
-			dlg_value_width -= (dlgMargin.cx * 2 / 3);
+			tab.curPt.x = dlgMargin.left/2;
+			tab.curPt.y = dlgMargin.top/2;
 		}
 	} else {
 		// No tabs.
