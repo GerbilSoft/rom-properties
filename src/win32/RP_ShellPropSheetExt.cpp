@@ -1713,11 +1713,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 		// Adjust the dialog size for subtabs.
 		TabCtrl_AdjustRect(hTabWidget, FALSE, &dlgRect);
-		// Add more margins.
-		// FIXME: On both WinXP and Win7, ths ends up with an
-		// 8px left margin, and 6px top/right margins.
-		// (Bottom margin is 6px on WinXP, 7px on Win7.)
-		InflateRect(&dlgRect, -dlgMargin.cx/2, -dlgMargin.cy/2);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
@@ -1743,15 +1738,17 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
-				dlgSize.cx, dlgSize.cy,
+				dlgSize.cx-(dlgMargin.cx/2), dlgSize.cy-(dlgMargin.cy/2),
 				swpFlags);
 			// Hide subsequent tabs.
 			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
 
-			// Current point should be (0,0),
-			// since it's relative to the child window.
-			tab.curPt.x = 0;
-			tab.curPt.y = 0;
+			// Current point should be equal to the margins.
+			// FIXME: On both WinXP and Win7, ths ends up with an
+			// 8px left margin, and 6px top/right margins.
+			// (Bottom margin is 6px on WinXP, 7px on Win7.)
+			tab.curPt.x = dlgMargin.cx/2;
+			tab.curPt.y = dlgMargin.cy/2;
 		}
 	} else {
 		// No tabs.
