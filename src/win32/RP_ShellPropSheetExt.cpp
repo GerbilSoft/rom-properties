@@ -922,15 +922,16 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 		RECT tmpRect = {7, 7, 8, 8};
-		MapDialogRect(hDlg, &tmpRect);
+		MapDialogRect(hWndTab, &tmpRect);
 		RECT winRect;
-		GetClientRect(hDlg, &winRect);
+		GetClientRect(hWndTab, &winRect);
 
 		// Create a SysLink widget.
 		// SysLink allows the user to click a link and
 		// open a webpage. It does NOT allow highlighting.
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
+		// TODO: With tabs: Verify behavior of LWS_TRANSPARENT.
 		hDlgItem = CreateWindowEx(WS_EX_TRANSPARENT, WC_LINK, wstr.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
@@ -944,11 +945,12 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
+		// FIXME: Measured text size is a bit too wide...
 		SIZE szText;
 		measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
-		const int x = (((winRect.right - (tmpRect.left * 2)) - szText.cx) / 2) + tmpRect.left;
+		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
 		const int y = winRect.bottom - tmpRect.top - szText.cy;
 		// Set the position and size.
 		SetWindowPos(hDlgItem, 0, x, y, szText.cx, szText.cy,
