@@ -971,10 +971,10 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		DWORD dwStyle;
 		if (lf_count > 0) {
 			// Multiple lines.
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
 		} else {
 			// Single line.
-			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
 		}
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_EDIT, wstr.c_str(), dwStyle,
@@ -982,6 +982,15 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 			size.cx, field_cy,
 			hWndTab, cId, nullptr, nullptr);
 		SetWindowFont(hDlgItem, hFont, FALSE);
+
+		// Get the EDIT control margins.
+		DWORD dwMargins = SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
+
+		// Adjust the window size to compensate for the margins not being clickable.
+		// NOTE: Not adjusting the right margins.
+		SetWindowPos(hDlgItem, nullptr, pt_start.x - LOWORD(dwMargins), pt_start.y,
+			size.cx + LOWORD(dwMargins), field_cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
@@ -1808,7 +1817,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Create the static text widget. (FIXME: Disable mnemonics?)
 		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, desc_text.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_LEFT,
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
