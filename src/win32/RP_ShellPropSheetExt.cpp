@@ -1740,7 +1740,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
 		// Update dlg_value_width.
 		// FIXME: Results in 9px left, 7px right margins for RFT_LISTDATA.
-		dlg_value_width = dlgSize.cx - descSize.cx - (dlgMargin.left/2);
+		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left;
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
