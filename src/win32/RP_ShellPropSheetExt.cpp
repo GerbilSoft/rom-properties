@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
+#include "AutoGetDC.hpp"
 #include "resource.h"
 
 // libromdata
@@ -94,43 +95,6 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // Property for "external pointer".
 // This links the property sheet to the COM object.
 #define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
-
-/**
- * GetDC() RAII wrapper.
- */
-class AutoGetDC
-{
-	public:
-		AutoGetDC(HWND hWnd, HFONT hFont)
-			: hWnd(hWnd)
-		{
-			assert(hWnd != nullptr);
-			assert(hFont != nullptr);
-			if (hWnd) {
-				hDC = GetDC(hWnd);
-				hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
-			} else {
-				hDC = nullptr;
-				hFontOrig = nullptr;
-			}
-		}
-
-		~AutoGetDC() {
-			if (hDC) {
-				SelectFont(hDC, hFontOrig);
-				ReleaseDC(hWnd, hDC);
-			}
-		}
-
-		inline operator HDC() {
-			return hDC;
-		}
-
-	private:
-		HWND hWnd;
-		HDC hDC;
-		HFONT hFontOrig;
-};
 
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
