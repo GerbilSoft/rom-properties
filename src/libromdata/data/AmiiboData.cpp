@@ -155,7 +155,7 @@ const rp_char *const AmiiboDataPrivate::char_series_names[] = {
 	_RP("Yoshi"),			// 0x008
 	nullptr,			// 0x00C
 	_RP("The Legend of Zelda"),	// 0x010
-	nullptr,			// 0x014
+	_RP("The Legend of Zelda"),	// 0x014
 
 	// Animal Crossing
 	_RP("Animal Crossing"),		// 0x018
@@ -492,6 +492,8 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0101, _RP("Zelda"), tloz_zelda_variants, ARRAY_SIZE(tloz_zelda_variants)},
 	{0x0102, _RP("Ganondorf"), tloz_ganondorf_variants, ARRAY_SIZE(tloz_ganondorf_variants)},
 	{0x0103, _RP("Midna & Wolf Link"), nullptr, 0},
+	// The Legend of Zelda (character series = 0x014)
+	{0x0141, _RP("Bokoblin"), nullptr, 0},
 
 	// Animal Crossing (character series = 0x018)
 	{0x0180, _RP("Villager"), nullptr, 0},
@@ -1009,6 +1011,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x1F02, _RP("King Dedede"), nullptr, 0},
 	{0x1F03, _RP("Waddle Dee"), nullptr, 0},
 
+	// BoxBoy! (character series = 0x1F4)
+	{0x1F40, _RP("Qbby"), nullptr, 0},
+
 	// Fire Emblem (character series = 0x210)
 	{0x2100, _RP("Marth"), nullptr, 0},
 	{0x2101, _RP("Ike"), nullptr, 0},
@@ -1089,6 +1094,7 @@ const rp_char *const AmiiboDataPrivate::amiibo_series_names[] = {
 #endif
 	nullptr,					// 0x0E
 	_RP("Monster Hunter"),				// 0x0F
+	_RP("BoxBoy!"),					// 0x10
 };
 
 // amiibo IDs.
@@ -1945,16 +1951,23 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 0, nullptr},				// 0x0351
 	{  0, 2, _RP("Zelda (The Wind Waker)")},	// 0x0352
 
-	// Unused [0x0353-0x35C]
-	{  0, 0, nullptr},			// 0x0353
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0354,0x0355
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0356,0x0357
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0358,0x0359
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x035A,0x035B
-	{  0, 0, nullptr},			// 0x035C
+	// The Legend of Zelda: Breath of the Wild Series
+	{  0, 3, _RP("Link (Archer)")},			// 0x0353
+	{  0, 3, _RP("Link (Rider)")},			// 0x0354
+	{  0, 3, _RP("Guardian")},			// 0x0355
+	{  0, 3, _RP("Zelda")},				// 0x0356
+	// Unused [0x0357-0x35B]
+	{  0, 0, nullptr},				// 0x0357
+	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x0358,0x0359
+	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x035A,0x035B
+	// The Legend of Zelda: Breath of the Wild Series (continued)
+	{  0, 3, _RP("Bokoblin")},			// 0x035C
 
 	// Yarn Yoshi: Poochy [0x035D]
 	{  5, 0, _RP("Poochy")},			// 0x035D
+
+	// BoxBoy!: Qbby [0x035E]
+	{  0, 0, _RP("Qbby")},				// 0x035E
 
 #if 0
 	// TODO: Not released yet.
@@ -1963,11 +1976,6 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 57, 10, _RP("Bayonetta")},			// 0x0xxx
 	{ 58, 10, _RP("Cloud")},			// 0x0xxx
 	{ 59, 10, _RP("Corrin")},			// 0x0xxx
-
-	// The Legend of Zelda: Breath of the Wild Series
-	{  0, 3, _RP("Link (Archer)")},			// 0x0xxx
-	{  0, 3, _RP("Link (Rider)")},			// 0x0xxx
-	{  0, 3, _RP("Guardian")},			// 0x0xxx
 #endif
 };
 
@@ -2047,7 +2055,10 @@ const rp_char *AmiiboData::lookup_char_name(uint32_t char_id)
  */
 const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == 0x035D+1,
+	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
+	// floating-point hex constant:
+	// error: unable to find numeric literal operator ‘operator""+1’
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x035E)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
