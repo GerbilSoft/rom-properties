@@ -119,6 +119,7 @@ class RP_ShellPropSheetExt_Private
 		HWND hDlgSheet;		// Property sheet.
 
 		// Fonts.
+		HFONT hFontDlg;		// Main dialog font.
 		HFONT hFontBold;	// Bold font.
 		HFONT hFontMono;	// Monospaced font.
 
@@ -188,7 +189,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lf_count	[out,opt] Number of LF characters found.
 		 * @return wstring with DOS line endings.
 		 */
-		inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
+		static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
 
 		/**
 		 * Measure text size using GDI.
@@ -198,7 +199,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lpSize	[out] Size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
+		static int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 		/**
 		 * Measure text size using GDI.
@@ -210,7 +211,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lpSize	[out] Size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
+		static int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 	public:
 		/**
@@ -722,17 +723,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		sysInfo += RP2W_c(fileType);
 	}
 
-	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
- 
 	// Label size.
 	SIZE sz_lblSysInfo = {0, 0};
 
+	// Font to use.
+	// TODO: Handle these assertions in release builds.
+	assert(hFontBold != nullptr);
+	assert(hFontDlg != nullptr);
+	const HFONT hFont = (hFontBold ? hFontBold : hFontDlg);
+
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = measureTextSize(hDlg,
-			(hFontBold ? hFontBold : hFont),
-			sysInfo, &sz_lblSysInfo);
+		int ret = measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -808,7 +810,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, (hFontBold ? hFontBold : hFont), FALSE);
+		SetWindowFont(lblSysInfo, hFont, FALSE);
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -886,7 +888,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	HWND hDlgItem;
 
 	// Get the default font.
-	HFONT hFont = GetWindowFont(hWndTab);
+	HFONT hFont = hFontDlg;
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
@@ -1030,9 +1032,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	MapDialogRect(hDlg, &rect_chkbox);
 
 	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hWndTab);
+	// NOTE: Using the parent dialog's font.
 	HDC hDC = GetDC(hWndTab);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	HFONT hFontOrig = SelectFont(hDC, hFontDlg);
 
 	// Create a grid of checkboxes.
 	const auto &bitfieldDesc = field->desc.bitfield;
@@ -1160,7 +1162,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
 			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
-		SetWindowFont(hCheckBox, hFont, FALSE);
+		SetWindowFont(hCheckBox, hFontDlg, FALSE);
 
 		// Set the checkbox state.
 		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
@@ -1612,13 +1614,13 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
+	hFontDlg = GetWindowFont(hDlg);
 	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	HFONT hFontOrig = SelectFont(hDC, hFontDlg);
 
 	// Initialize the bold and monospaced fonts.
-	initBoldFont(hFont);
-	initMonospacedFont(hFont);
+	initBoldFont(hFontDlg);
+	initMonospacedFont(hFontDlg);
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
@@ -1711,7 +1713,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(hTabWidget, hFont, FALSE);
+		SetWindowFont(hTabWidget, hFontDlg, FALSE);
 		curTabIndex = 0;
 
 		// Add tabs.
@@ -1810,7 +1812,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
 			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
-		SetWindowFont(hStatic, hFont, FALSE);
+		SetWindowFont(hStatic, hFontDlg, FALSE);
 
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
@@ -1866,7 +1868,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					dlg_value_width, field_cy,
 					tab.hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 					nullptr, nullptr);
-				SetWindowFont(hDlgItem, hFont, FALSE);
+				SetWindowFont(hDlgItem, hFontDlg, FALSE);
 
 				// Initialize the ListView data.
 				initListView(hDlgItem, field);
@@ -2242,8 +2244,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
 				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
-				HFONT hFont = GetWindowFont(hDlg);
-				d->initMonospacedFont(hFont);
+				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
 		}
