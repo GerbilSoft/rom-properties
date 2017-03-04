@@ -95,6 +95,43 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // This links the property sheet to the COM object.
 #define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
 
+/**
+ * GetDC() RAII wrapper.
+ */
+class AutoGetDC
+{
+	public:
+		AutoGetDC(HWND hWnd, HFONT hFont)
+			: hWnd(hWnd)
+		{
+			assert(hWnd != nullptr);
+			assert(hFont != nullptr);
+			if (hWnd) {
+				hDC = GetDC(hWnd);
+				hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
+			} else {
+				hDC = nullptr;
+				hFontOrig = nullptr;
+			}
+		}
+
+		~AutoGetDC() {
+			if (hDC) {
+				SelectFont(hDC, hFontOrig);
+				ReleaseDC(hWnd, hDC);
+			}
+		}
+
+		inline operator HDC() {
+			return hDC;
+		}
+
+	private:
+		HWND hWnd;
+		HDC hDC;
+		HFONT hFontOrig;
+};
+
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
@@ -480,9 +517,7 @@ inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, 
 int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
 {
 	SIZE size_total = {0, 0};
-
-	HDC hDC = GetDC(hWnd);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	AutoGetDC hDC(hWnd, hFont);
 
 	// Handle newlines.
 	const wchar_t *data = wstr.data();
@@ -508,8 +543,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 		BOOL bRet = GetTextExtentPoint32(hDC, &data[start], len, &size_cur);
 		if (!bRet) {
 			// Something failed...
-			SelectFont(hDC, hFontOrig);
-			ReleaseDC(hWnd, hDC);
 			return -1;
 		}
 
@@ -521,9 +554,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 		// Next newline.
 		nl_pos_prev = (int)nl_pos;
 	} while (nl_pos != wstring::npos);
-
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hWnd, hDC);
 
 	*lpSize = size_total;
 	return 0;
@@ -1042,8 +1072,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
-	HDC hDC = GetDC(hWndTab);
-	HFONT hFontOrig = SelectFont(hDC, hFontDlg);
+	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Create a grid of checkboxes.
 	const auto &bitfieldDesc = field->desc.bitfield;
@@ -1180,9 +1209,6 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		pt.x += chk_w;
 		col++;
 	}
-
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hWndTab, hDC);
 
 	// Return the total number of rows times the checkbox height,
 	// plus another 0.25 of a checkbox.
@@ -1624,8 +1650,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Dialog font and device context.
 	hFontDlg = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFontDlg);
+	AutoGetDC hDC(hDlg, hFontDlg);
 
 	// Initialize the bold and monospaced fonts.
 	initBoldFont(hFontDlg);
@@ -1659,10 +1684,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// TODO: Use measureTextSize()?
 	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
 	max_text_width += textSize.cx;
-
-	// Release the DC.
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
 
 	// Create the ROM field widgets.
 	// Each static control is max_text_width pixels wide
