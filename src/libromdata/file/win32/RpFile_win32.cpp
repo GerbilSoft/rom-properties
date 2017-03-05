@@ -160,7 +160,7 @@ void RpFile::init(void)
 	// Unicode filename.
 	wstring filenameW;
 
-	// Check if this is a drive letter.
+	// Check if the path starts with a drive letter.
 	if (d->filename.size() >= 3 &&
 	    iswascii(d->filename[0]) && iswalpha(d->filename[0]) &&
 	    d->filename[1] == _RP_CHR(':') && d->filename[2] == _RP_CHR('\\'))
