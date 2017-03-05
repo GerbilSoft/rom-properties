@@ -282,6 +282,10 @@ RpFile::RpFile(const RpFile &other)
 	: super()
 	, d_ptr(new RpFilePrivate(other.d_ptr->filename, other.d_ptr->mode))
 {
+	RP_D(RpFile);
+	d->file = other.d_ptr->file;
+	d->device_size = other.d_ptr->device_size;
+	d->sector_size = other.d_ptr->sector_size;
 	m_lastError = other.m_lastError;
 }
 
@@ -296,6 +300,8 @@ RpFile &RpFile::operator=(const RpFile &other)
 	d->file = other.d_ptr->file;
 	d->filename = other.d_ptr->filename;
 	d->mode = other.d_ptr->mode;
+	d->device_size = other.d_ptr->device_size;
+	d->sector_size = other.d_ptr->sector_size;
 	m_lastError = other.m_lastError;
 	return *this;
 }
