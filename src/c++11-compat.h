@@ -106,6 +106,27 @@ namespace std {
 #endif
 
 /**
+ * MSVCRT case-insensitive string comparison functions.
+ * MinGW-w64 is missing some of these, so redefine the
+ * function names if they haven't been defined already.
+ */
+#ifdef _WIN32
+#include <string.h>
+#ifndef strcasecmp
+#define strcasecmp(s1, s2)     _stricmp(s1, s2)
+#endif
+#ifndef strncasecmp
+#define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+#endif
+#ifndef wcscasecmp
+#define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
+#endif
+#ifndef wcsncasecmp
+#define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
+#endif
+#endif /* _WIN32 */
+
+/**
  * MSVCRT prior to MSVC 2015 has a non-compliant _snprintf().
  * Note that MinGW-w64 uses MSVCRT.
  */

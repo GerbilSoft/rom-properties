@@ -84,6 +84,13 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32)
 
+# CMake-3.7.2 doesn't add include paths to windres.
+IF(MINGW)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_BINARY_DIR}\"")
+ENDIF(MINGW)
+
 # Use the .def file for DLL exports.
 IF(MSVC)
 	SET(RP_DLL_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")

@@ -39,12 +39,12 @@ using namespace LibRomData::FileSystem;
 #include "libromdata/RpWin32.hpp"
 #endif /* _WIN32 */
 
-// POSIX includes.
-#ifndef _WIN32
-#include <sys/stat.h>
+// gettimeofday()
+#ifdef _MSC_VER
+#include <time.h>
+#else
 #include <sys/time.h>
-#include <sys/types.h>
-#endif /* !_WIN32 */
+#endif
 
 // C++ includes.
 #include <memory>

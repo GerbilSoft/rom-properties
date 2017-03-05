@@ -89,6 +89,13 @@ TARGET_INCLUDE_DIRECTORIES(rpcli
 	)
 TARGET_LINK_LIBRARIES(rpcli romdata8)
 
+# CMake-3.7.2 doesn't add include paths to windres.
+IF(MINGW)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_BINARY_DIR}\"")
+ENDIF(MINGW)
+
 #################
 # Installation. #
 #################

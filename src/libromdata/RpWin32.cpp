@@ -54,7 +54,10 @@ static const errmap w32_to_posix[] = {
 	{ERROR_WRITE_FAULT,		EIO       },  // 29
 	{ERROR_READ_FAULT,		EIO       },  // 30
 	{ERROR_GEN_FAILURE,		EIO       },  // 31
+#ifdef ETXTBSY
+	// ETXTBSY is not defined in MinGW-w64 4.0.6.
 	{ERROR_SHARING_VIOLATION,	ETXTBSY   },  // 32 (TODO)
+#endif
         {ERROR_LOCK_VIOLATION,		EACCES    },  // BAD33
 	{ERROR_HANDLE_DISK_FULL,	ENOSPC    },  // 39
 	{ERROR_NOT_SUPPORTED,		ENOTSUP   },  // 50
@@ -92,8 +95,12 @@ static const errmap w32_to_posix[] = {
         {ERROR_FILENAME_EXCED_RANGE,	ENOENT    },  // 206
         {ERROR_NESTING_NOT_ALLOWED,	EAGAIN    },  // 215
 	{ERROR_EXE_MACHINE_TYPE_MISMATCH, ENOEXEC },  // 216
+#ifdef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT
+	// ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT is not defined in MinGW-w64 4.0.6.
 	{ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT, ENOEXEC}, // 308
-#ifdef ERROR_DISK_RESOURCES_EXHAUSTED /* Windows 7 SDK doesn't have this. */
+#endif
+#ifdef ERROR_DISK_RESOURCES_EXHAUSTED
+	// ERROR_DISK_RESOURCES_EXHAUSTED is not defined in the Windows 7 SDK.
 	{ERROR_DISK_RESOURCES_EXHAUSTED, ENOSPC   },  // 314
 #endif
 	{ERROR_INVALID_ADDRESS,		EFAULT    },  // 487

@@ -70,11 +70,6 @@ APNG_png_write_frame_tail_t APNG_png_write_frame_tail = NULL;
 static int ref_cnt = 0;
 
 /**
- * Is APNG supported or not?
- */
-static int is_apng_supported = 0;
-
-/**
  * Check if the PNG library supports APNG.
  * @return 0 if initialized; non-zero on error.
  */
