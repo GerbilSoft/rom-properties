@@ -117,44 +117,39 @@ void RpFile::init(void)
 	wstring filenameW;
 
 	// Check if this is a drive letter.
-	if (m_filename.size() == 3 &&
+	if (m_filename.size() >= 3 &&
 	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
 	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
 	{
-		// This is a drive letter.
-		// Only CD-ROM (and similar) drives are supported.
-		// TODO: Verify if opening by drive letter works,
-		// or if we have to resolve the physical device name.
-		if (GetDriveType(RP2W_s(m_filename)) != DRIVE_CDROM) {
-			// Not a CD-ROM drive.
-			m_lastError = ENOTSUP;
-			return;
+		// Is it only a drive letter?
+		if (m_filename.size() == 3) {
+			// This is a drive letter.
+			// Only CD-ROM (and similar) drives are supported.
+			// TODO: Verify if opening by drive letter works,
+			// or if we have to resolve the physical device name.
+			if (GetDriveType(RP2W_s(m_filename)) != DRIVE_CDROM) {
+				// Not a CD-ROM drive.
+				m_lastError = ENOTSUP;
+				return;
+			}
+
+			// Create a raw device filename.
+			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
+			filenameW = L"\\\\.\\X:";
+			filenameW[4] = m_filename[0];
+			m_isBlockDevice = true;
+		} else {
+			// Absolute path.
+			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
+			filenameW = L"\\\\?\\";
+			filenameW += RP2W_s(m_filename);
 		}
-
-		// Create a raw device filename.
-		// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
-		filenameW = L"\\\\.\\X:";
-		filenameW[4] = m_filename[0];
-		m_isBlockDevice = true;
-		goto skip_absolute_path;
-	}
-
-	// If this is an absolute path, make sure it starts with
-	// "\\?\" in order to support filenames longer than MAX_PATH.
-	if (m_filename.size() > 3 &&
-	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
-	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
-	{
-		// Absolute path. Prepend "\\?\" to the path.
-		filenameW = L"\\\\?\\";
-		filenameW += RP2W_s(m_filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
 		filenameW = RP2W_s(m_filename);
 	}
 
-skip_absolute_path:
 	// Open the file.
 	m_file.reset(CreateFile(filenameW.c_str(),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
