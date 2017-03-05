@@ -149,6 +149,7 @@ class RpFile : public IRpFile
 #ifdef _WIN32
 		// Win32: m_file is a HANDLE.
 		std::shared_ptr<void> m_file;
+		bool m_isBlockDevice;
 #else
 		// Other: m_file is an stdio FILE.
 		std::shared_ptr<FILE> m_file;
