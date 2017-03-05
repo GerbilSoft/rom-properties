@@ -68,8 +68,11 @@ class RpFilePrivate
 		rp_string filename;
 		RpFile::FileMode mode;
 
-		// Set if the file is a block device, e.g. "D:\".
-		bool isBlockDevice;
+		// Block device parameters.
+		// NOTE: These fields are all 0 if the
+		// file is a regular file.
+		int64_t device_size;		// Device size.
+		unsigned int sector_size;	// Sector size. (bytes per sector)
 
 	public:
 		static inline int mode_to_win32(RpFile::FileMode mode,
@@ -80,13 +83,15 @@ class RpFilePrivate
 RpFilePrivate::RpFilePrivate(const rp_char *filename, RpFile::FileMode mode)
 	: filename(filename)
 	, mode(mode)
-	, isBlockDevice(false)
+	, device_size(0)
+	, sector_size(0)
 { }
 
 RpFilePrivate::RpFilePrivate(const rp_string &filename, RpFile::FileMode mode)
 	: filename(filename)
 	, mode(mode)
-	, isBlockDevice(false)
+	, device_size(0)
+	, sector_size(0)
 { }
 
 inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
@@ -161,6 +166,7 @@ void RpFile::init(void)
 	wstring filenameW;
 
 	// Check if the path starts with a drive letter.
+	bool isBlockDevice = false;
 	if (d->filename.size() >= 3 &&
 	    iswascii(d->filename[0]) && iswalpha(d->filename[0]) &&
 	    d->filename[1] == _RP_CHR(':') && d->filename[2] == _RP_CHR('\\'))
@@ -181,7 +187,7 @@ void RpFile::init(void)
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			filenameW = L"\\\\.\\X:";
 			filenameW[4] = d->filename[0];
-			d->isBlockDevice = true;
+			isBlockDevice = true;
 		} else {
 			// Absolute path.
 			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
@@ -203,6 +209,33 @@ void RpFile::init(void)
 		// Error opening the file.
 		m_lastError = w32err_to_posix(GetLastError());
 		return;
+	}
+
+	if (isBlockDevice) {
+		// Use an IOCTL to get the disk geometry.
+		//
+		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works for CD-ROM,
+		// so we don't need to use the CD-ROM specific version,
+		// IOCTL_CDROM_GET_DRIVE_GEOMETRY.
+		//
+		// TODO: Works on XP and 7; check Wine.
+		DISK_GEOMETRY_EX dg;
+		DWORD dwBytesReturned;	// TODO: Check this?
+		if (!DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL))
+		{
+			// Error getting the disk geometry.
+			m_lastError = w32err_to_posix(GetLastError());
+			d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+			return;
+		}
+
+		// TODO: Make sure the sector size is a power of 2
+		// and isn't a ridiculous value.
+
+		// Save the disk geometry.
+		d->device_size = dg.DiskSize.QuadPart;
+		d->sector_size = dg.Geometry.BytesPerSector;
 	}
 }
 
@@ -435,28 +468,15 @@ int64_t RpFile::size(void)
 		return -1;
 	}
 
-	LARGE_INTEGER liFileSize;
-	BOOL bRet = FALSE;
-	if (d->isBlockDevice) {
-		// Block device. Use an IOCTL to get the disk geometry.
-		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works for CD-ROM,
-		// so we don't need to use the CD-ROM specific version,
-		// IOCTL_CDROM_GET_DRIVE_GEOMETRY.
-		// TODO: Works on 7; check XP and Wine.
-		DISK_GEOMETRY_EX dg;
-		DWORD dwBytesReturned;	// TODO: Check this?
-		bRet = DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
-			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL);
-		if (bRet) {
-			liFileSize = dg.DiskSize;
-		}
-	} else {
-		// Regular file.
-		bRet = GetFileSizeEx(d->file.get(), &liFileSize);
+	if (d->device_size != 0) {
+		// Block device. Use the cached device size.
+		return d->device_size;
 	}
 
-	if (!bRet) {
-		// Could not get the file/device size.
+	// Regular file.
+	LARGE_INTEGER liFileSize;
+	if (!GetFileSizeEx(d->file.get(), &liFileSize)) {
+		// Could not get the file size.
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
