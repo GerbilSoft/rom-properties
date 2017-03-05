@@ -104,18 +104,18 @@ class IRpFile
 		virtual int seek(int64_t pos) = 0;
 
 		/**
-		 * Get the file position.
-		 * @return File position, or -1 on error.
-		 */
-		virtual int64_t tell(void) = 0;
-
-		/**
 		 * Seek to the beginning of the file.
 		 */
 		inline void rewind(void)
 		{
 			this->seek(0);
 		}
+
+		/**
+		 * Get the file position.
+		 * @return File position, or -1 on error.
+		 */
+		virtual int64_t tell(void) = 0;
 
 		/**
 		 * Truncate the file.
