@@ -620,6 +620,29 @@ int WiiPartition::seek(int64_t pos)
 #endif /* ENABLE_DECRYPTION */
 }
 
+/**
+ * Get the partition position.
+ * @return Partition position on success; -1 on error.
+ */
+int64_t WiiPartition::tell(void)
+{
+	RP_D(WiiPartition);
+	assert(d->discReader != nullptr);
+	assert(d->discReader->isOpen());
+	if (!d->discReader ||  !d->discReader->isOpen()) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+#ifdef ENABLE_DECRYPTION
+	return d->pos_7C00;
+#else /* !ENABLE_DECRYPTION */
+	// Decryption is not enabled.
+	m_lastError = EIO;
+	return -1;
+#endif /* ENABLE_DECRYPTION */
+}
+
 /** WiiPartition **/
 
 /**

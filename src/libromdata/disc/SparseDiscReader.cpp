@@ -223,6 +223,26 @@ void SparseDiscReader::rewind(void)
 }
 
 /**
+ * Get the disc image position.
+ * @return Disc image position on success; -1 on error.
+ */
+int64_t SparseDiscReader::tell(void)
+{
+	RP_D(SparseDiscReader);
+	assert(d->file != nullptr);
+	assert(d->disc_size > 0);
+	assert(d->pos >= 0);
+	assert(d->block_size != 0);
+	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+		// Disc image wasn't initialized properly.
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	return d->pos;
+}
+
+/**
  * Get the disc image size.
  * @return Disc image size, or -1 on error.
  */

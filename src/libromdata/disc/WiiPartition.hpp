@@ -70,6 +70,12 @@ class WiiPartition : public GcnPartition
 		 */
 		virtual int seek(int64_t pos) override final;
 
+		/**
+		 * Get the partition position.
+		 * @return Partition position on success; -1 on error.
+		 */
+		virtual int64_t tell(void) override final;
+
 		/** WiiPartition **/
 
 		enum EncInitStatus {
