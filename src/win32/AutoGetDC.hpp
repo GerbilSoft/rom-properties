@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * resource.rc: Win32 resource script.                                     *
+ * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,11 +19,47 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
-#define __ROMPROPERTIES_WIN32_RESOURCE_H__
+#ifndef __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
+#define __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
 
-// Dialogs.
-#define IDD_PROPERTY_SHEET		100	/* Generic property sheet. */
-#define IDD_SUBTAB_CHILD_DIALOG		101	/* Subtab child dialog. */
+#include <cassert>
+#include <windows.h>
 
-#endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */
+/**
+ * GetDC() RAII wrapper.
+ */
+class AutoGetDC
+{
+	public:
+		inline AutoGetDC(HWND hWnd, HFONT hFont)
+			: hWnd(hWnd)
+		{
+			assert(hWnd != nullptr);
+			assert(hFont != nullptr);
+			if (hWnd) {
+				hDC = GetDC(hWnd);
+				hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
+			} else {
+				hDC = nullptr;
+				hFontOrig = nullptr;
+			}
+		}
+
+		inline ~AutoGetDC() {
+			if (hDC) {
+				SelectFont(hDC, hFontOrig);
+				ReleaseDC(hWnd, hDC);
+			}
+		}
+
+		inline operator HDC() {
+			return hDC;
+		}
+
+	private:
+		HWND hWnd;
+		HDC hDC;
+		HFONT hFontOrig;
+};
+
+#endif /* __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__ */

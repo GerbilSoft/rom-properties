@@ -966,14 +966,6 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(_RP("PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
-	// NOTE: When using subtabs, 3 columns is too wide on Windows.
-	// TODO: Revert this, and have the Windows frontend automatically
-	// reduce columns if they'd be too wide.
-#ifdef _WIN32
-	static const int dll_flags_columns = 2;
-#else
-	static const int dll_flags_columns = 3;
-#endif	
 	// DLL flags. (characteristics)
 	static const rp_char *const dll_flags_names[] = {
 		nullptr, nullptr, nullptr,
@@ -986,7 +978,7 @@ void EXEPrivate::addFields_PE(void)
 	vector<rp_string> *v_dll_flags_names = RomFields::strArrayToVector(
 		dll_flags_names, ARRAY_SIZE(dll_flags_names));
 	fields->addField_bitfield(_RP("DLL Flags"),
-		v_dll_flags_names, dll_flags_columns, dll_flags);
+		v_dll_flags_names, 3, dll_flags);
 
 	// Load resources.
 	int ret = loadPEResourceTypes();

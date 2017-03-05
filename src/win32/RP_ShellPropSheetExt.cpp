@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
+#include "AutoGetDC.hpp"
 #include "resource.h"
 
 // libromdata
@@ -81,6 +82,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
 #define IDC_TAB_WIDGET			0x0102
+#define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
 #define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
 #define IDC_RFT_STRING(idx)		(0x1400 + (idx))
 #define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
@@ -118,6 +120,7 @@ class RP_ShellPropSheetExt_Private
 		HWND hDlgSheet;		// Property sheet.
 
 		// Fonts.
+		HFONT hFontDlg;		// Main dialog font.
 		HFONT hFontBold;	// Bold font.
 		HFONT hFontMono;	// Monospaced font.
 
@@ -151,12 +154,14 @@ class RP_ShellPropSheetExt_Private
 		SIZE szBanner;
 
 		// Tab layout.
-		HWND tabWidget;
+		HWND hTabWidget;
 		struct tab {
-			HWND hWnd;		// Tab window.
+			HWND hDlg;		// Tab child dialog.
 			HWND lblCredits;	// Credits.
+			POINT curPt;		// Current point.
 		};
 		vector<tab> tabs;
+		int curTabIndex;
 
 		// Animated icon data.
 		const IconAnimData *iconAnimData;
@@ -185,7 +190,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lf_count	[out,opt] Number of LF characters found.
 		 * @return wstring with DOS line endings.
 		 */
-		inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
+		static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
 
 		/**
 		 * Measure text size using GDI.
@@ -195,7 +200,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lpSize	[out] Size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
+		static int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 		/**
 		 * Measure text size using GDI.
@@ -207,7 +212,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param lpSize	[out] Size.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
+		static int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 	public:
 		/**
@@ -238,7 +243,8 @@ class RP_ShellPropSheetExt_Private
 
 		/**
 		 * Initialize a string field. (Also used for Date/Time.)
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
@@ -246,18 +252,21 @@ class RP_ShellPropSheetExt_Private
 		 * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
 		 * @return Field height, in pixels.
 		 */
-		int initString(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initString(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field, LPCWSTR wcs);
 
 		/**
 		 * Initialize a bitfield layout.
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initBitfield(HWND hDlg, const POINT &pt_start, int idx,
+		int initBitfield(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx,
 			const RomFields::Field *field);
 
 		/**
@@ -270,27 +279,31 @@ class RP_ShellPropSheetExt_Private
 		/**
 		 * Initialize a Date/Time field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initDateTime(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initDateTime(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
 
 		/**
 		 * Initialize an Age Ratings field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Dialog window.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param idx		[in] Field index.
 		 * @param size		[in] Width and height for a single line label.
 		 * @param field		[in] RomFields::Field
 		 * @return Field height, in pixels.
 		 */
-		int initAgeRatings(HWND hDlg, const POINT &pt_start, int idx, const SIZE &size,
+		int initAgeRatings(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
 			const RomFields::Field *field);
 
 		/**
@@ -340,6 +353,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
 	, hbmpBanner(nullptr)
+	, hTabWidget(nullptr)
+	, curTabIndex(0)
 	, iconAnimData(nullptr)
 	, animTimerID(0)
 	, last_frame_number(0)
@@ -351,6 +366,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	memset(&szIcon, 0, sizeof(szIcon));
 
 	// Attempt to get IsThemeActive() from uxtheme.dll.
+	// TODO: Move this to RP_ComBase so we don't have to look it up
+	// every time the property dialog is loaded?
 	hUxTheme_dll = LoadLibrary(L"uxtheme.dll");
 	if (hUxTheme_dll) {
 		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
@@ -464,9 +481,7 @@ inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, 
 int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
 {
 	SIZE size_total = {0, 0};
-
-	HDC hDC = GetDC(hWnd);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	AutoGetDC hDC(hWnd, hFont);
 
 	// Handle newlines.
 	const wchar_t *data = wstr.data();
@@ -492,8 +507,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 		BOOL bRet = GetTextExtentPoint32(hDC, &data[start], len, &size_cur);
 		if (!bRet) {
 			// Something failed...
-			SelectFont(hDC, hFontOrig);
-			ReleaseDC(hWnd, hDC);
 			return -1;
 		}
 
@@ -505,9 +518,6 @@ int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const 
 		// Next newline.
 		nl_pos_prev = (int)nl_pos;
 	} while (nl_pos != wstring::npos);
-
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hWnd, hDC);
 
 	*lpSize = size_total;
 	return 0;
@@ -532,13 +542,15 @@ int RP_ShellPropSheetExt_Private::measureTextSizeLink(HWND hWnd, HFONT hFont, co
 
 	int lbrackets = 0;
 	for (int i = 0; i < (int)wstr.size(); i++) {
-		if (wstr[i] == '<') {
+		if (wstr[i] == L'<') {
 			// Starting bracket.
 			lbrackets++;
-		} else if (wstr[i] == '>') {
+			continue;
+		} else if (wstr[i] == L'>') {
 			// Ending bracket.
 			assert(lbrackets > 0);
 			lbrackets--;
+			continue;
 		}
 
 		if (lbrackets == 0) {
@@ -705,17 +717,18 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		sysInfo += RP2W_c(fileType);
 	}
 
-	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
- 
 	// Label size.
 	SIZE sz_lblSysInfo = {0, 0};
 
+	// Font to use.
+	// TODO: Handle these assertions in release builds.
+	assert(hFontBold != nullptr);
+	assert(hFontDlg != nullptr);
+	const HFONT hFont = (hFontBold ? hFontBold : hFontDlg);
+
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = measureTextSize(hDlg,
-			(hFontBold ? hFontBold : hFont),
-			sysInfo, &sz_lblSysInfo);
+		int ret = measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -785,12 +798,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// lblSysInfo
 	if (sz_lblSysInfo.cx > 0 && sz_lblSysInfo.cy > 0) {
-		lblSysInfo = CreateWindow(WC_STATIC, sysInfo.c_str(),
+		lblSysInfo = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, sysInfo.c_str(),
 			WS_CHILD | WS_VISIBLE | SS_CENTER,
 			curPt.x, curPt.y,
 			sz_lblSysInfo.cx, sz_lblSysInfo.cy,
 			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysInfo, (hFontBold ? hFontBold : hFont), FALSE);
+		SetWindowFont(lblSysInfo, hFont, FALSE);
 		curPt.x += sz_lblSysInfo.cx + pt_start.x;
 	}
 
@@ -817,7 +831,8 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 /**
  * Initialize a string field. (Also used for Date/Time.)
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
@@ -825,11 +840,11 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @param wcs		[in,opt] String data. (If nullptr, field data is used.)
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field, LPCWSTR wcs)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 
 	// NOTE: libromdata uses Unix-style newlines.
@@ -867,7 +882,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 	HWND hDlgItem;
 
 	// Get the default font.
-	HFONT hFont = GetWindowFont(hDlg);
+	HFONT hFont = hFontDlg;
 
 	// Check for any formatting options.
 	bool isWarning = false, isMonospace = false;
@@ -884,7 +899,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 				hFont = hFontBold;
 				isWarning = true;
 				// Set the font of the description control.
-				HWND hStatic = GetDlgItem(hDlg, IDC_STATIC_DESC(idx));
+				HWND hStatic = GetDlgItem(hWndTab, IDC_STATIC_DESC(idx));
 				if (hStatic) {
 					SetWindowFont(hStatic, hFont, FALSE);
 					hwndWarningControls.insert(hStatic);
@@ -906,19 +921,21 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
 		// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
 		RECT tmpRect = {7, 7, 8, 8};
-		MapDialogRect(hDlg, &tmpRect);
+		MapDialogRect(hWndTab, &tmpRect);
 		RECT winRect;
-		GetClientRect(hDlg, &winRect);
+		GetClientRect(hWndTab, &winRect);
 
 		// Create a SysLink widget.
 		// SysLink allows the user to click a link and
 		// open a webpage. It does NOT allow highlighting.
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
-		hDlgItem = CreateWindow(WC_LINK, wstr.c_str(),
-			WS_CHILD | WS_VISIBLE,
+		// TODO: With tabs: Verify behavior of LWS_TRANSPARENT.
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_LINK, wstr.c_str(),
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
-			hDlg, cId, nullptr, nullptr);
+			hWndTab, cId, nullptr, nullptr);
 		// There should be a maximum of one STRF_CREDITS per RomData subclass.
 		assert(hwndSysLinkControls.empty());
 		hwndSysLinkControls.insert(hDlgItem);
@@ -929,10 +946,10 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		measureTextSizeLink(hDlg, hFont, wstr, &szText);
+		measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
-		const int x = (((winRect.right - (tmpRect.left * 2)) - szText.cx) / 2) + tmpRect.left;
+		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
 		const int y = winRect.bottom - tmpRect.top - szText.cy;
 		// Set the position and size.
 		SetWindowPos(hDlgItem, 0, x, y, szText.cx, szText.cy,
@@ -945,16 +962,29 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 		// Create a read-only EDIT widget.
 		// The STATIC control doesn't allow the user
 		// to highlight and copy data.
-		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_READONLY | ES_AUTOHSCROLL;
+		DWORD dwStyle;
 		if (lf_count > 0) {
 			// Multiple lines.
-			dwStyle |= ES_MULTILINE;
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL | ES_MULTILINE;
+		} else {
+			// Single line.
+			dwStyle = WS_CHILD | WS_TABSTOP | WS_VISIBLE | WS_CLIPSIBLINGS | ES_READONLY | ES_AUTOHSCROLL;
 		}
-		hDlgItem = CreateWindow(WC_EDIT, wstr.c_str(), dwStyle,
+		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_EDIT, wstr.c_str(), dwStyle,
 			pt_start.x, pt_start.y,
 			size.cx, field_cy,
-			hDlg, cId, nullptr, nullptr);
+			hWndTab, cId, nullptr, nullptr);
 		SetWindowFont(hDlgItem, hFont, FALSE);
+
+		// Get the EDIT control margins.
+		DWORD dwMargins = SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
+
+		// Adjust the window size to compensate for the margins not being clickable.
+		// NOTE: Not adjusting the right margins.
+		SetWindowPos(hDlgItem, nullptr, pt_start.x - LOWORD(dwMargins), pt_start.y,
+			size.cx + LOWORD(dwMargins), field_cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Subclass multi-line EDIT controls to work around Enter/Escape issues.
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
@@ -983,17 +1013,18 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg,
 
 /**
  * Initialize a bitfield layout.
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_BITFIELD)
 		return 0;
@@ -1004,9 +1035,8 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 	MapDialogRect(hDlg, &rect_chkbox);
 
 	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	// NOTE: Using the parent dialog's font.
+	AutoGetDC hDC(hWndTab, hFontDlg);
 
 	// Create a grid of checkboxes.
 	const auto &bitfieldDesc = field->desc.bitfield;
@@ -1016,42 +1046,75 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		count = (int)bitfieldDesc.names->size();
 	}
 
+	// Determine the available width for checkboxes.
+	RECT rectDlg;
+	GetClientRect(hWndTab, &rectDlg);
+	const int max_width = rectDlg.right - pt_start.x;
+
 	// Column widths for multi-row layouts.
 	// (Includes the checkbox size.)
 	std::vector<int> col_widths;
 	int row = 0, col = 0;
-	if (bitfieldDesc.elemsPerRow == 1) {
+	int elemsPerRow = bitfieldDesc.elemsPerRow;
+	if (elemsPerRow == 1) {
 		// Optimization: Use the entire width of the dialog.
 		// TODO: Testing; right margin.
-		RECT rectDlg;
-		GetClientRect(hDlg, &rectDlg);
-		col_widths.push_back(rectDlg.right - pt_start.x);
-	} else if (bitfieldDesc.elemsPerRow > 1) {
+		col_widths.push_back(max_width);
+	} else if (elemsPerRow > 1) {
 		// Determine the widest entry in each column.
-		col_widths.resize(bitfieldDesc.elemsPerRow);
-		for (int j = 0; j < count; j++) {
-			const rp_string &name = bitfieldDesc.names->at(j);
-			if (name.empty())
-				continue;
-			// Make sure this is a UTF-16 string.
-			wstring s_name = RP2W_s(name);
+		// If the columns are wider than the available area,
+		// reduce the number of columns until it fits.
+		for (; elemsPerRow > 1; elemsPerRow--) {
+			col_widths.resize(elemsPerRow);
+			row = 0; col = 0;
+			for (int j = 0; j < count; j++) {
+				const rp_string &name = bitfieldDesc.names->at(j);
+				if (name.empty())
+					continue;
+				// Make sure this is a UTF-16 string.
+				wstring s_name = RP2W_s(name);
 
-			// Get the width of this specific entry.
-			// TODO: Use measureTextSize()?
-			SIZE textSize;
-			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
-			int chk_w = rect_chkbox.right + textSize.cx;
-			if (chk_w > col_widths[col]) {
-				col_widths[col] = chk_w;
+				// Get the width of this specific entry.
+				// TODO: Use measureTextSize()?
+				SIZE textSize;
+				GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
+				int chk_w = rect_chkbox.right + textSize.cx;
+				if (chk_w > col_widths[col]) {
+					col_widths[col] = chk_w;
+				}
+
+				// Next column.
+				col++;
+				if (col == elemsPerRow) {
+					// Next row.
+					row++;
+					col = 0;
+				}
 			}
 
-			// Next column.
-			col++;
-			if (col == bitfieldDesc.elemsPerRow) {
-				// Next row.
-				row++;
-				col = 0;
+			// Add up the widths.
+			int total_width = 0;
+			for (auto iter = col_widths.begin(); iter != col_widths.end(); ++iter) {
+				total_width += *iter;
 			}
+			// TODO: "DLL" on Windows executables is forced to the next line.
+			// Add 7x7 DLU margins?
+			if (total_width <= max_width) {
+				// Everything fits.
+				break;
+			}
+
+			// Too wide; try removing a column.
+			// Reset the column widths first.
+			// TODO: Better way to clear a vector?
+			// TODO: Skip the last element?
+			memset(col_widths.data(), 0, col_widths.size() * sizeof(int));
+		}
+
+		if (elemsPerRow == 1) {
+			// We're left with 1 column.
+			col_widths.resize(1);
+			col_widths[0] = max_width;
 		}
 	}
 
@@ -1075,14 +1138,14 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 
 		// Get the text size.
 		int chk_w;
-		if (bitfieldDesc.elemsPerRow == 0) {
+		if (elemsPerRow == 0) {
 			// Get the width of this specific entry.
 			// TODO: Use measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, s_name.data(), (int)s_name.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
 		} else {
-			if (col == bitfieldDesc.elemsPerRow) {
+			if (col == elemsPerRow) {
 				// Next row.
 				row++;
 				col = 0;
@@ -1095,12 +1158,13 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		}
 
 		// FIXME: Tab ordering?
-		HWND hCheckBox = CreateWindow(WC_BUTTON, s_name.c_str(),
-			WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
+		HWND hCheckBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_BUTTON, s_name.c_str(),
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_CHECKBOX,
 			pt.x, pt.y, chk_w, rect_chkbox.bottom,
-			hDlg, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
+			hWndTab, (HMENU)(INT_PTR)(IDC_RFT_BITFIELD(idx, j)),
 			nullptr, nullptr);
-		SetWindowFont(hCheckBox, hFont, FALSE);
+		SetWindowFont(hCheckBox, hFontDlg, FALSE);
 
 		// Set the checkbox state.
 		Button_SetCheck(hCheckBox, (field->data.bitfield & (1 << j)) ? BST_CHECKED : BST_UNCHECKED);
@@ -1109,9 +1173,6 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg,
 		pt.x += chk_w;
 		col++;
 	}
-
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
 
 	// Return the total number of rows times the checkbox height,
 	// plus another 0.25 of a checkbox.
@@ -1203,25 +1264,26 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Fiel
 /**
  * Initialize a Date/Time field.
  * This function internally calls initString().
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_DATETIME)
 		return 0;
 
 	if (field->data.date_time == -1) {
 		// Invalid date/time.
-		return initString(hDlg, pt_start, idx, size, field, L"Unknown");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"Unknown");
 	}
 
 	// Format the date/time using the system locale.
@@ -1295,24 +1357,25 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, field, dateTimeStr);
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, dateTimeStr);
 }
 
 /**
  * Initialize an Age Ratings field.
  * This function internally calls initString().
- * @param hDlg		[in] Dialog window.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
  * @param pt_start	[in] Starting position, in pixels.
  * @param idx		[in] Field index.
  * @param size		[in] Width and height for a single line label.
  * @param field		[in] RomFields::Field
  * @return Field height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
+int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
-	if (!hDlg || !field)
+	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_AGE_RATINGS)
 		return 0;
@@ -1321,7 +1384,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// No age ratings data.
-		return initString(hDlg, pt_start, idx, size, field, L"ERROR");
+		return initString(hDlg, hWndTab, pt_start, idx, size, field, L"ERROR");
 	}
 
 	// Convert the age ratings field to a string.
@@ -1356,7 +1419,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg,
 	}
 
 	// Initialize the string.
-	return initString(hDlg, pt_start, idx, size, field, woss.str().c_str());
+	return initString(hDlg, hWndTab, pt_start, idx, size, field, woss.str().c_str());
 }
 
 /**
@@ -1550,13 +1613,12 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Dialog font and device context.
-	HFONT hFont = GetWindowFont(hDlg);
-	HDC hDC = GetDC(hDlg);
-	HFONT hFontOrig = SelectFont(hDC, hFont);
+	hFontDlg = GetWindowFont(hDlg);
+	AutoGetDC hDC(hDlg, hFontDlg);
 
 	// Initialize the bold and monospaced fonts.
-	initBoldFont(hFont);
-	initMonospacedFont(hFont);
+	initBoldFont(hFontDlg);
+	initMonospacedFont(hFontDlg);
 
 	// Determine the maximum length of all field names.
 	// TODO: Line breaks?
@@ -1587,10 +1649,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	GetTextExtentPoint32(hDC, L":  ", 3, &textSize);
 	max_text_width += textSize.cx;
 
-	// Release the DC.
-	SelectFont(hDC, hFontOrig);
-	ReleaseDC(hDlg, hDC);
-
 	// Create the ROM field widgets.
 	// Each static control is max_text_width pixels wide
 	// and 8 DLUs tall, plus 4 vertical DLUs for spacing.
@@ -1601,16 +1659,19 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	// Get the dialog margin.
 	// 7x7 DLU margin is recommended by the Windows UX guidelines.
 	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-	tmpRect.left = 7; tmpRect.top = 7;
-	tmpRect.right = 8; tmpRect.bottom = 8;
-	MapDialogRect(hDlg, &tmpRect);
-	const SIZE dlgMargin = {tmpRect.left, tmpRect.top};
+	RECT dlgMargin = {7, 7, 8, 8};
+	MapDialogRect(hDlg, &dlgMargin);
 
 	// Get the dialog size.
-	RECT dlgRect;
-	GetClientRect(hDlg, &dlgRect);
+	// - fullDlgRect: Full dialog size
+	// - dlgRect: Adjusted dialog size.
+	// FIXME: Vertical height is off by 3px on Win7...
+	// Verified with WinSpy++: expected 341x408, got 341x405.
+	RECT fullDlgRect, dlgRect;
+	GetClientRect(hDlg, &fullDlgRect);
+	dlgRect = fullDlgRect;
 	// Adjust the rectangle for margins.
-	InflateRect(&dlgRect, -dlgMargin.cx, -dlgMargin.cy);
+	InflateRect(&dlgRect, -dlgMargin.left, -dlgMargin.top);
 	// Calculate the size for convenience purposes.
 	SIZE dlgSize = {
 		dlgRect.right - dlgRect.left,
@@ -1618,25 +1679,36 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	};
 
 	// Current position.
-	POINT curPt = {dlgRect.left, dlgRect.top};
+	POINT headerPt = {dlgRect.left, dlgRect.top};
 	int dlg_value_width = dlgSize.cx - descSize.cx;
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
-	const int headerH = createHeaderRow(hDlg, curPt, header_size);
+	const int headerH = createHeaderRow(hDlg, headerPt, header_size);
 	dlgRect.top += headerH;
 	dlgSize.cy -= headerH;
-	curPt.y += headerH;
+	headerPt.y += headerH;
 
 	// Do we need to create a tab widget?
 	if (fields->tabCount() > 1) {
+		// Increase the tab widget width by half of the margin.
+		InflateRect(&dlgRect, dlgMargin.left/2, 0);
+		dlgSize.cx += dlgMargin.left;
+		// TODO: Do this regardless of tabs?
+		// NOTE: Margin with this change on Win7 is now 9px left, 12px bottom.
+		dlgRect.bottom = fullDlgRect.bottom - dlgRect.left;
+		dlgSize.cy = dlgRect.bottom - dlgRect.top;
+
+		// Create the tab widget.
 		tabs.resize(fields->tabCount());
-		tabWidget = CreateWindow(WC_TABCONTROL, nullptr,
-			WS_CHILD | WS_VISIBLE,
+		hTabWidget = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_TABCONTROL, nullptr,
+			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			dlgRect.left, dlgRect.top, dlgSize.cx, dlgSize.cy,
 			hDlg, (HMENU)(INT_PTR)IDC_TAB_WIDGET,
 			nullptr, nullptr);
-		SetWindowFont(tabWidget, hFont, FALSE);
+		SetWindowFont(hTabWidget, hFontDlg, FALSE);
+		curTabIndex = 0;
 
 		// Add tabs.
 		// NOTE: Tabs must be added *before* calling TabCtrl_AdjustRect();
@@ -1650,32 +1722,56 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Skip this tab.
 				continue;
 			}
-
-			auto &tab = tabs[i];
-			// TODO: Create page control for the tab.
-
 			tcItem.pszText = const_cast<LPWSTR>(RP2W_c(name));
-			TabCtrl_InsertItem(tabWidget, i, &tcItem);
+			// FIXME: Does the index work correctly if a tab is skipped?
+			TabCtrl_InsertItem(hTabWidget, i, &tcItem);
 		}
 
 		// Adjust the dialog size for subtabs.
-		TabCtrl_AdjustRect(tabWidget, FALSE, &dlgRect);
-		// Add more margins.
-		InflateRect(&dlgRect, -dlgMargin.cx/2, -dlgMargin.cy/2);
+		TabCtrl_AdjustRect(hTabWidget, FALSE, &dlgRect);
 		// Update dlgSize.
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
-		// Update curPt.
-		curPt.x = dlgRect.left;
-		curPt.y = dlgRect.top;
 		// Update dlg_value_width.
-		dlg_value_width = dlgSize.cx - descSize.cx;
+		// FIXME: Results in 9px left, 7px right margins for RFT_LISTDATA.
+		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left;
+
+		// Create windows for each tab.
+		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
+		for (int i = 0; i < fields->tabCount(); i++) {
+			if (!fields->tabName(i)) {
+				// Skip this tab.
+				continue;
+			}
+
+			auto &tab = tabs[i];
+
+			// Create a child dialog for the tab.
+			extern HINSTANCE g_hInstance;
+			tab.hDlg = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
+				hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
+			SetWindowPos(tab.hDlg, nullptr,
+				dlgRect.left, dlgRect.top,
+				dlgSize.cx, dlgSize.cy,
+				swpFlags);
+			// Hide subsequent tabs.
+			swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_HIDEWINDOW;
+
+			// Current point should be equal to the margins.
+			// FIXME: On both WinXP and Win7, ths ends up with an
+			// 8px left margin, and 6px top/right margins.
+			// (Bottom margin is 6px on WinXP, 7px on Win7.)
+			tab.curPt.x = dlgMargin.left/2;
+			tab.curPt.y = dlgMargin.top/2;
+		}
 	} else {
 		// No tabs.
 		// Don't create a WC_TABCONTROL, but simulate a single
 		// tab in tabs[] to make it easier to work with.
-		// TODO
 		tabs.resize(1);
+		auto &tab = tabs[0];
+		tab.hDlg = hDlg;
+		tab.curPt = headerPt;
 	}
 
 	for (int idx = 0; idx < count; idx++) {
@@ -1684,22 +1780,37 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		if (!field || !field->isValid)
 			continue;
 
+		// Verify the tab index.
+		const int tabIdx = field->tabIdx;
+		assert(tabIdx >= 0 && tabIdx < (int)tabs.size());
+		if (tabIdx < 0 || tabIdx >= (int)tabs.size()) {
+			// Tab index is out of bounds.
+			continue;
+		} else if (!tabs[tabIdx].hDlg) {
+			// Tab name is empty. Tab is hidden.
+			continue;
+		}
+
+		// Current tab.
+		auto &tab = tabs[tabIdx];
+
 		// Append a ":" to the description.
 		// TODO: Localization.
 		wstring desc_text = RP2W_s(field->name);
 		desc_text += L':';
 
 		// Create the static text widget. (FIXME: Disable mnemonics?)
-		HWND hStatic = CreateWindow(WC_STATIC, desc_text.c_str(),
-			WS_CHILD | WS_VISIBLE | SS_LEFT,
-			curPt.x, curPt.y, descSize.cx, descSize.cy,
-			hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
+		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, desc_text.c_str(),
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
+			tab.curPt.x, tab.curPt.y, descSize.cx, descSize.cy,
+			tab.hDlg, (HMENU)(INT_PTR)(IDC_STATIC_DESC(idx)),
 			nullptr, nullptr);
-		SetWindowFont(hStatic, hFont, FALSE);
+		SetWindowFont(hStatic, hFontDlg, FALSE);
 
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
-		const POINT pt_start = {curPt.x + descSize.cx, curPt.y};
+		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
 		HWND hDlgItem;
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
@@ -1711,7 +1822,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_STRING: {
 				// String data.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initString(hDlg, pt_start, idx, size, field, nullptr);
+				field_cy = initString(hDlg, tab.hDlg, pt_start, idx, size, field, nullptr);
 				if (field_cy == 0) {
 					// initString() failed.
 					// Remove the description label.
@@ -1722,7 +1833,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 			case RomFields::RFT_BITFIELD:
 				// Create checkboxes starting at the current point.
-				field_cy = initBitfield(hDlg, pt_start, idx, field);
+				field_cy = initBitfield(hDlg, tab.hDlg, pt_start, idx, field);
 				if (field_cy == 0) {
 					// initBitfield() failed.
 					// Remove the description label.
@@ -1744,14 +1855,14 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				field_cy *= 6;
 
 				// Create a ListView widget.
-				hDlgItem = CreateWindowEx(WS_EX_LEFT | WS_EX_CLIENTEDGE,
+				hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 					WC_LISTVIEW, nullptr,
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
 					dlg_value_width, field_cy,
-					hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+					tab.hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 					nullptr, nullptr);
-				SetWindowFont(hDlgItem, hFont, FALSE);
+				SetWindowFont(hDlgItem, hFontDlg, FALSE);
 
 				// Initialize the ListView data.
 				initListView(hDlgItem, field);
@@ -1761,7 +1872,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_DATETIME: {
 				// Date/Time in Unix format.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initDateTime(hDlg, pt_start, idx, size, field);
+				field_cy = initDateTime(hDlg, tab.hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initDateTime() failed.
 					// Remove the description label.
@@ -1773,7 +1884,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			case RomFields::RFT_AGE_RATINGS: {
 				// Age Ratings field.
 				SIZE size = {dlg_value_width, field_cy};
-				field_cy = initAgeRatings(hDlg, pt_start, idx, size, field);
+				field_cy = initAgeRatings(hDlg, tab.hDlg, pt_start, idx, size, field);
 				if (field_cy == 0) {
 					// initAgeRatings() failed.
 					// Remove the description label.
@@ -1791,7 +1902,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		}
 
 		// Next row.
-		curPt.y += field_cy;
+		tab.curPt.y += field_cy;
 	}
 }
 
@@ -2044,6 +2155,19 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					break;
 				}
 
+				case TCN_SELCHANGE: {
+					// Tab change. Make sure this is the correct WC_TABCONTROL.
+					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+					if (d->hTabWidget != nullptr && d->hTabWidget == lppsn->hdr.hwndFrom) {
+						// Tab widget. Show the selected tab.
+						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
+						ShowWindow(d->tabs[d->curTabIndex].hDlg, SW_HIDE);
+						d->curTabIndex = newTabIndex;
+						ShowWindow(d->tabs[newTabIndex].hDlg, SW_SHOW);
+					}
+					break;
+				}
+
 				default:
 					break;
 			}
@@ -2114,8 +2238,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (pExt) {
 				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
-				HFONT hFont = GetWindowFont(hDlg);
-				d->initMonospacedFont(hFont);
+				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
 		}
@@ -2276,4 +2399,17 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 	// Update the timer.
 	// TODO: Verify that this affects the next callback.
 	SetTimer(hWnd, idEvent, delay, RP_ShellPropSheetExt::AnimTimerProc);
+}
+
+/**
+ * Dialog procedure for subtabs.
+ * @param hWnd
+ * @param uMsg
+ * @param wParam
+ * @param lParam
+ */
+INT_PTR CALLBACK RP_ShellPropSheetExt::SubtabDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	// Dummy callback procedure that does nothing.
+	return FALSE; // Let system deal with other messages
 }
