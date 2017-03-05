@@ -229,7 +229,7 @@ IFACEMETHODIMP IStreamWrapper::SetSize(ULARGE_INTEGER libNewSize)
 		}
 	}
 
-	return S_OK;
+	return hr;
 }
 
 /**
