@@ -212,31 +212,60 @@ void RpFile::init(void)
 	}
 
 	if (isBlockDevice) {
-		// Use an IOCTL to get the disk geometry.
-		//
-		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works for CD-ROM,
-		// so we don't need to use the CD-ROM specific version,
-		// IOCTL_CDROM_GET_DRIVE_GEOMETRY.
-		//
-		// TODO: Works on XP and 7; check Wine.
-		DISK_GEOMETRY_EX dg;
-		DWORD dwBytesReturned;	// TODO: Check this?
-		if (!DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
-			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL))
-		{
-			// Error getting the disk geometry.
-			// This might also mean there's no media present.
-			m_lastError = w32err_to_posix(GetLastError());
-			d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
-			return;
+		// Get the disk space.
+		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX seems to report 512-byte sectors
+		// for certain emulated CD-ROM device, e.g. the Verizon LG G2.
+		// GetDiskFreeSpace() reports the correct value (2048).
+		DWORD dwSectorsPerCluster, dwBytesPerSector;
+		DWORD dwNumberOfFreeClusters, dwTotalNumberOfClusters;
+		DWORD w32err = 0;
+		BOOL bRet = GetDiskFreeSpace(RP2W_s(d->filename),
+			&dwSectorsPerCluster, &dwBytesPerSector,
+			&dwNumberOfFreeClusters, &dwTotalNumberOfClusters);
+		if (bRet && dwBytesPerSector >= 512 && dwTotalNumberOfClusters > 0) {
+			// TODO: Make sure the sector size is a power of 2
+			// and isn't a ridiculous value.
+
+			// Save the device size and sector size.
+			// NOTE: GetDiskFreeSpaceEx() eliminates the need for multiplications,
+			// but it doesn't provide dwBytesPerSector.
+			d->device_size = (dwBytesPerSector * dwSectorsPerCluster) *
+					 (int64_t)dwTotalNumberOfClusters;
+			d->sector_size = dwBytesPerSector;
+		} else {
+			// GetDiskFreeSpace() failed.
+			DWORD w32err = GetLastError();
+			if (w32err == ERROR_INVALID_PARAMETER) {
+				// The disk may use some file system that
+				// Windows doesn't recognize.
+				// Try IOCTL_DISK_GET_DRIVE_GEOMETRY_EX instead.
+				DISK_GEOMETRY_EX dg;
+				DWORD dwBytesReturned;  // TODO: Check this?
+				if (DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+				    NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL) != 0)
+				{
+					// Device geometry retrieved.
+					w32err = 0;
+					d->device_size = dg.DiskSize.QuadPart;
+					d->sector_size = dg.Geometry.BytesPerSector;
+				} else {
+					// IOCTL failed.
+					w32err = GetLastError();
+					if (w32err == 0) {
+						w32err = ERROR_INVALID_PARAMETER;
+					}
+				}
+			}
 		}
 
-		// TODO: Make sure the sector size is a power of 2
-		// and isn't a ridiculous value.
-
-		// Save the disk geometry.
-		d->device_size = dg.DiskSize.QuadPart;
-		d->sector_size = dg.Geometry.BytesPerSector;
+		if (w32err != 0) {
+			// An error occurred...
+			m_lastError = w32err_to_posix(GetLastError());
+			if (m_lastError == 0) {
+				m_lastError = EIO;
+			}
+			d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+		}
 	}
 }
 
