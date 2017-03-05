@@ -37,16 +37,61 @@ using std::wstring;
 
 namespace LibRomData {
 
-// Deleter for std::unique_ptr<void> m_file.
+/**
+ * Deleter for std::unique_ptr<void> d->file,
+ * where the pointer is actually a HANDLE.
+ */
 struct myFile_deleter {
-	void operator()(void *p) const {
+	void operator()(HANDLE p) const {
 		if (p != nullptr && p != INVALID_HANDLE_VALUE) {
 			CloseHandle(p);
 		}
 	}
 };
 
-static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, DWORD *pdwCreationDisposition)
+/** RpFilePrivate **/
+
+class RpFilePrivate
+{
+	public:
+		RpFilePrivate(const rp_char *filename, RpFile::FileMode mode);
+		RpFilePrivate(const rp_string &filename, RpFile::FileMode mode);
+
+	private:
+		RP_DISABLE_COPY(RpFilePrivate)
+
+	public:
+		// NOTE: file is a HANDLE, but shared_ptr doesn't
+		// work correctly with pointer types as the
+		// template parameter.
+		std::shared_ptr<void> file;
+		rp_string filename;
+		RpFile::FileMode mode;
+
+		// Set if the file is a block device, e.g. "D:\".
+		bool isBlockDevice;
+
+	public:
+		static inline int mode_to_win32(RpFile::FileMode mode,
+			DWORD *pdwDesiredAccess,
+			DWORD *pdwCreationDisposition);
+};
+
+RpFilePrivate::RpFilePrivate(const rp_char *filename, RpFile::FileMode mode)
+	: filename(filename)
+	, mode(mode)
+	, isBlockDevice(false)
+{ }
+
+RpFilePrivate::RpFilePrivate(const rp_string &filename, RpFile::FileMode mode)
+	: filename(filename)
+	, mode(mode)
+	, isBlockDevice(false)
+{ }
+
+inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
+	DWORD *pdwDesiredAccess,
+	DWORD *pdwCreationDisposition)
 {
 	switch (mode) {
 		case RpFile::FM_OPEN_READ:
@@ -79,10 +124,7 @@ static inline int mode_to_win32(RpFile::FileMode mode, DWORD *pdwDesiredAccess, 
  */
 RpFile::RpFile(const rp_char *filename, FileMode mode)
 	: super()
-	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
-	, m_filename(filename)
-	, m_mode(mode)
-	, m_isBlockDevice(false)
+	, d_ptr(new RpFilePrivate(filename, mode))
 {
 	init();
 }
@@ -95,23 +137,21 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  */
 RpFile::RpFile(const rp_string &filename, FileMode mode)
 	: super()
-	, m_file(INVALID_HANDLE_VALUE, myFile_deleter())
-	, m_filename(filename)
-	, m_mode(mode)
-	, m_isBlockDevice(false)
+	, d_ptr(new RpFilePrivate(filename, mode))
 {
 	init();
 }
 
 /**
  * Common initialization function for RpFile's constructors.
- * Filename must be set in m_filename.
+ * Filename must be set in d->filename.
  */
 void RpFile::init(void)
 {
 	// Determine the file mode.
+	RP_D(RpFile);
 	DWORD dwDesiredAccess, dwCreationDisposition;
-	if (mode_to_win32(m_mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
+	if (d->mode_to_win32(d->mode, &dwDesiredAccess, &dwCreationDisposition) != 0) {
 		// Invalid mode.
 		m_lastError = EINVAL;
 		return;
@@ -121,17 +161,17 @@ void RpFile::init(void)
 	wstring filenameW;
 
 	// Check if this is a drive letter.
-	if (m_filename.size() >= 3 &&
-	    iswascii(m_filename[0]) && iswalpha(m_filename[0]) &&
-	    m_filename[1] == _RP_CHR(':') && m_filename[2] == _RP_CHR('\\'))
+	if (d->filename.size() >= 3 &&
+	    iswascii(d->filename[0]) && iswalpha(d->filename[0]) &&
+	    d->filename[1] == _RP_CHR(':') && d->filename[2] == _RP_CHR('\\'))
 	{
 		// Is it only a drive letter?
-		if (m_filename.size() == 3) {
+		if (d->filename.size() == 3) {
 			// This is a drive letter.
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
-			if (GetDriveType(RP2W_s(m_filename)) != DRIVE_CDROM) {
+			if (GetDriveType(RP2W_s(d->filename)) != DRIVE_CDROM) {
 				// Not a CD-ROM drive.
 				m_lastError = ENOTSUP;
 				return;
@@ -140,26 +180,26 @@ void RpFile::init(void)
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			filenameW = L"\\\\.\\X:";
-			filenameW[4] = m_filename[0];
-			m_isBlockDevice = true;
+			filenameW[4] = d->filename[0];
+			d->isBlockDevice = true;
 		} else {
 			// Absolute path.
 			// Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			filenameW = L"\\\\?\\";
-			filenameW += RP2W_s(m_filename);
+			filenameW += RP2W_s(d->filename);
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = RP2W_s(m_filename);
+		filenameW = RP2W_s(d->filename);
 	}
 
 	// Open the file.
-	m_file.reset(CreateFile(filenameW.c_str(),
+	d->file.reset(CreateFile(filenameW.c_str(),
 			dwDesiredAccess, FILE_SHARE_READ, nullptr,
 			dwCreationDisposition, FILE_ATTRIBUTE_NORMAL,
 			nullptr), myFile_deleter());
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		// Error opening the file.
 		m_lastError = w32err_to_posix(GetLastError());
 		return;
@@ -167,7 +207,9 @@ void RpFile::init(void)
 }
 
 RpFile::~RpFile()
-{ }
+{
+	delete d_ptr;
+}
 
 /**
  * Copy constructor.
@@ -175,9 +217,7 @@ RpFile::~RpFile()
  */
 RpFile::RpFile(const RpFile &other)
 	: super()
-	, m_file(other.m_file)
-	, m_filename(other.m_filename)
-	, m_mode(other.m_mode)
+	, d_ptr(new RpFilePrivate(other.d_ptr->filename, other.d_ptr->mode))
 {
 	m_lastError = other.m_lastError;
 }
@@ -189,9 +229,10 @@ RpFile::RpFile(const RpFile &other)
  */
 RpFile &RpFile::operator=(const RpFile &other)
 {
-	m_file = other.m_file;
-	m_filename = other.m_filename;
-	m_mode = other.m_mode;
+	RP_D(RpFile);
+	d->file = other.d_ptr->file;
+	d->filename = other.d_ptr->filename;
+	d->mode = other.d_ptr->mode;
 	m_lastError = other.m_lastError;
 	return *this;
 }
@@ -203,7 +244,8 @@ RpFile &RpFile::operator=(const RpFile &other)
  */
 bool RpFile::isOpen(void) const
 {
-	return (m_file && m_file.get() != INVALID_HANDLE_VALUE);
+	RP_D(const RpFile);
+	return (d->file && d->file.get() != INVALID_HANDLE_VALUE);
 }
 
 /**
@@ -227,7 +269,8 @@ IRpFile *RpFile::dup(void)
  */
 void RpFile::close(void)
 {
-	m_file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
+	RP_D(RpFile);
+	d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
 }
 
 /**
@@ -238,13 +281,14 @@ void RpFile::close(void)
  */
 size_t RpFile::read(void *ptr, size_t size)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return 0;
 	}
 
 	DWORD bytesRead;
-	BOOL bRet = ReadFile(m_file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
+	BOOL bRet = ReadFile(d->file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
@@ -262,7 +306,8 @@ size_t RpFile::read(void *ptr, size_t size)
  */
 size_t RpFile::write(const void *ptr, size_t size)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -270,7 +315,7 @@ size_t RpFile::write(const void *ptr, size_t size)
 	}
 
 	DWORD bytesWritten;
-	BOOL bRet = WriteFile(m_file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
+	BOOL bRet = WriteFile(d->file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
 	if (bRet == 0) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
@@ -287,14 +332,15 @@ size_t RpFile::write(const void *ptr, size_t size)
  */
 int RpFile::seek(int64_t pos)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liSeekPos;
 	liSeekPos.QuadPart = pos;
-	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, nullptr, FILE_BEGIN);
+	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
 	if (bRet == 0) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
@@ -309,14 +355,15 @@ int RpFile::seek(int64_t pos)
  */
 int64_t RpFile::tell(void)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = 0;
-	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (bRet == 0) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
@@ -332,7 +379,8 @@ int64_t RpFile::tell(void)
  */
 int RpFile::truncate(int64_t size)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE || !(m_mode & FM_WRITE)) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE || !(d->mode & FM_WRITE)) {
 		// Either the file isn't open,
 		// or it's read-only.
 		m_lastError = EBADF;
@@ -346,14 +394,14 @@ int RpFile::truncate(int64_t size)
 	// get the current file position.
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = size;
-	BOOL bRet = SetFilePointerEx(m_file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
+	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
 	if (bRet == 0) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
 	// Truncate the file.
-	bRet = SetEndOfFile(m_file.get());
+	bRet = SetEndOfFile(d->file.get());
 	if (bRet == 0) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
@@ -362,7 +410,7 @@ int RpFile::truncate(int64_t size)
 	// Restore the original position if it was
 	// less than the new size.
 	if (liSeekRet.QuadPart < size) {
-		bRet = SetFilePointerEx(m_file.get(), liSeekRet, nullptr, FILE_BEGIN);
+		bRet = SetFilePointerEx(d->file.get(), liSeekRet, nullptr, FILE_BEGIN);
 		if (bRet == 0) {
 			m_lastError = w32err_to_posix(GetLastError());
 			return -1;
@@ -381,14 +429,15 @@ int RpFile::truncate(int64_t size)
  */
 int64_t RpFile::size(void)
 {
-	if (!m_file || m_file.get() == INVALID_HANDLE_VALUE) {
+	RP_D(RpFile);
+	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return -1;
 	}
 
 	LARGE_INTEGER liFileSize;
 	BOOL bRet = FALSE;
-	if (m_isBlockDevice) {
+	if (d->isBlockDevice) {
 		// Block device. Use an IOCTL to get the disk geometry.
 		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works for CD-ROM,
 		// so we don't need to use the CD-ROM specific version,
@@ -396,14 +445,14 @@ int64_t RpFile::size(void)
 		// TODO: Works on 7; check XP and Wine.
 		DISK_GEOMETRY_EX dg;
 		DWORD dwBytesReturned;	// TODO: Check this?
-		bRet = DeviceIoControl(m_file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+		bRet = DeviceIoControl(d->file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
 			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL);
 		if (bRet) {
 			liFileSize = dg.DiskSize;
 		}
 	} else {
 		// Regular file.
-		bRet = GetFileSizeEx(m_file.get(), &liFileSize);
+		bRet = GetFileSizeEx(d->file.get(), &liFileSize);
 	}
 
 	if (!bRet) {
@@ -422,7 +471,8 @@ int64_t RpFile::size(void)
  */
 rp_string RpFile::filename(void) const
 {
-	return m_filename;
+	RP_D(const RpFile);
+	return d->filename;
 }
 
 }

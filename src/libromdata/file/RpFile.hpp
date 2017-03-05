@@ -33,6 +33,10 @@
 
 namespace LibRomData {
 
+#ifdef _WIN32
+class RpFilePrivate;
+#endif /* _WIN32 */
+
 class RpFile : public IRpFile
 {
 	public:
@@ -67,6 +71,11 @@ class RpFile : public IRpFile
 	public:
 		RpFile(const RpFile &other);
 		RpFile &operator=(const RpFile &other);
+#ifdef _WIN32
+	protected:
+		friend class RpFilePrivate;
+		RpFilePrivate *const d_ptr;
+#endif /* _WIN32 */
 
 	public:
 		/**
@@ -145,18 +154,15 @@ class RpFile : public IRpFile
 		 */
 		virtual rp_string filename(void) const override final;
 
+#ifndef _WIN32
 	protected:
-#ifdef _WIN32
-		// Win32: m_file is a HANDLE.
-		std::shared_ptr<void> m_file;
-		bool m_isBlockDevice;
-#else
-		// Other: m_file is an stdio FILE.
+		// On non-Windows platforms, m_file is an stdio FILE.
+		// TODO: Move to a private class?
 		std::shared_ptr<FILE> m_file;
-#endif
 
 		rp_string m_filename;
 		FileMode m_mode;
+#endif /* !_WIN32 */
 };
 
 }
