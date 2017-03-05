@@ -424,6 +424,16 @@ bool RomData::isValid(void) const
 }
 
 /**
+ * Is the file open?
+ * @return True if the file is open; false if it isn't.
+ */
+bool RomData::isOpen(void) const
+{
+	RP_D(RomData);
+	return (d->file != nullptr);
+}
+
+/**
  * Close the opened file.
  */
 void RomData::close(void)

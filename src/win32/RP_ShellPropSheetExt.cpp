@@ -2095,14 +2095,37 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Save handles for later.
 			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
-			// Initialize the dialog.
-			d->initDialog(hDlg);
 
-			// Make sure the underlying file handle is closed,
-			// since we don't need it once the RomData has been
-			// loaded by RomDataView.
-			d->romData->close();
+			// Dialog initialization is postponed to WM_SIZE,
+			// since some other extension (e.g. HashTab) may
+			// be resizing the dialog.
 			return TRUE;
+		}
+
+		case WM_SIZE: {
+			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
+				GetProp(hDlg, EXT_POINTER_PROP));
+			if (!pExt) {
+				// No RP_ShellPropSheetExt. Can't do anything...
+				return FALSE;
+			}
+
+			// TODO: Support dynamic resizing? The standard
+			// Explorer file properties dialog doesn't support
+			// it, but others might...
+			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+			if (d->romData->isOpen()) {
+				// Initialize the dialog.
+				d->initDialog(hDlg);
+
+				// Make sure the underlying file handle is closed,
+				// since we don't need it once the RomData has been
+				// loaded by RomDataView.
+				d->romData->close();
+			}
+
+			// Continue normal processing.
+			break;
 		}
 
 		case WM_DESTROY: {

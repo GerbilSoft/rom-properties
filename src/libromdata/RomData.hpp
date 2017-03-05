@@ -110,6 +110,12 @@ class RomData
 		bool isValid(void) const;
 
 		/**
+		 * Is the file open?
+		 * @return True if the file is open; false if it isn't.
+		 */
+		bool isOpen(void) const;
+
+		/**
 		 * Close the opened file.
 		 */
 		void close(void);
