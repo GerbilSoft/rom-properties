@@ -245,5 +245,7 @@ int wmain(int argc, wchar_t *argv[]) {
 		free(u8argv[i]);
 	}
 	delete[] u8argv;
+
+	return ret;
 }
 #endif /* _WIN32 */
