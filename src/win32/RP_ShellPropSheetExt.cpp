@@ -1680,7 +1680,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 
 	// Current position.
 	POINT headerPt = {dlgRect.left, dlgRect.top};
-	int dlg_value_width = dlgSize.cx - descSize.cx;
+	int dlg_value_width = dlgSize.cx - descSize.cx - 1;
 
 	// Create the header row.
 	const SIZE header_size = {dlgSize.cx, descSize.cy};
@@ -1693,7 +1693,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 	if (fields->tabCount() > 1) {
 		// Increase the tab widget width by half of the margin.
 		InflateRect(&dlgRect, dlgMargin.left/2, 0);
-		dlgSize.cx += dlgMargin.left;
+		dlgSize.cx += dlgMargin.left - 1;
 		// TODO: Do this regardless of tabs?
 		// NOTE: Margin with this change on Win7 is now 9px left, 12px bottom.
 		dlgRect.bottom = fullDlgRect.bottom - dlgRect.left;
@@ -1733,8 +1733,8 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		dlgSize.cx = dlgRect.right - dlgRect.left;
 		dlgSize.cy = dlgRect.bottom - dlgRect.top;
 		// Update dlg_value_width.
-		// FIXME: Results in 9px left, 7px right margins for RFT_LISTDATA.
-		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left;
+		// FIXME: Results in 9px left, 8px right margins for RFT_LISTDATA.
+		dlg_value_width = dlgSize.cx - descSize.cx - dlgMargin.left - 1;
 
 		// Create windows for each tab.
 		DWORD swpFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW;
