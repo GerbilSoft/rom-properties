@@ -225,6 +225,7 @@ void RpFile::init(void)
 			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL))
 		{
 			// Error getting the disk geometry.
+			// This might also mean there's no media present.
 			m_lastError = w32err_to_posix(GetLastError());
 			d->file.reset(INVALID_HANDLE_VALUE, myFile_deleter());
 			return;
