@@ -31,6 +31,10 @@
 using std::string;
 using std::wstring;
 
+// Windows SDK
+#include <windows.h>
+#include <winioctl.h>
+
 namespace LibRomData {
 
 // Deleter for std::unique_ptr<void> m_file.
@@ -383,12 +387,32 @@ int64_t RpFile::size(void)
 	}
 
 	LARGE_INTEGER liFileSize;
-	BOOL bRet = GetFileSizeEx(m_file.get(), &liFileSize);
-	if (bRet == 0) {
+	BOOL bRet = FALSE;
+	if (m_isBlockDevice) {
+		// Block device. Use an IOCTL to get the disk geometry.
+		// NOTE: IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works for CD-ROM,
+		// so we don't need to use the CD-ROM specific version,
+		// IOCTL_CDROM_GET_DRIVE_GEOMETRY.
+		// TODO: Works on 7; check XP and Wine.
+		DISK_GEOMETRY_EX dg;
+		DWORD dwBytesReturned;	// TODO: Check this?
+		bRet = DeviceIoControl(m_file.get(), IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+			NULL, 0, &dg, sizeof(dg), &dwBytesReturned, NULL);
+		if (bRet) {
+			liFileSize = dg.DiskSize;
+		}
+	} else {
+		// Regular file.
+		bRet = GetFileSizeEx(m_file.get(), &liFileSize);
+	}
+
+	if (!bRet) {
+		// Could not get the file/device size.
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
+	// Return the file/device size.
 	return liFileSize.QuadPart;
 }
 
