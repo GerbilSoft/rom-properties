@@ -548,6 +548,11 @@ STDAPI DllRegisterServer(void)
 		}
 	}
 
+	// Register RP_ShellPropSheetExt for disk drives.
+	// TODO: Icon/thumbnail handling?
+	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, L"Drive");
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
 	// Delete the rom-properties ProgID,
 	// since it's no longer used.
 	lResult = RegKey::deleteSubKey(HKEY_CLASSES_ROOT, RP_ProgID);
@@ -607,6 +612,11 @@ STDAPI DllUnregisterServer(void)
 			if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 		}
 	}
+
+	// Unregister RP_ShellPropSheetExt for disk drives.
+	// TODO: Icon/thumbnail handling?
+	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, L"Drive");
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Delete the rom-properties ProgID,
 	// since it's no longer used.

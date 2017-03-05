@@ -41,6 +41,7 @@ using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cctype>
 #include <cstring>
 
 // C++ includes.
@@ -1944,7 +1945,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		return E_INVALIDARG;
 	}
 
-	HRESULT hr = E_FAIL;
+	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.
 	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stm;
 
@@ -1961,47 +1962,77 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		return E_FAIL;
 	}
 
+	RP_D(RP_ShellPropSheetExt);
+	HRESULT hr = E_FAIL;
+	UINT nFiles, cchFilename;
+	wchar_t *filename = nullptr;
+	unique_ptr<IRpFile> file;
+
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
-	UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-	if (nFiles == 1) {
-		// Get the path of the file.
-		UINT cchFilename = DragQueryFile(hDrop, 0, nullptr, 0);
-		if (cchFilename > 0) {
-			cchFilename++;	// Add one for the NULL terminator.
-			wchar_t *filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
-			cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
-			if (cchFilename > 0) {
-				// Open the file.
-				unique_ptr<IRpFile> file(new RpFile(
-					W2RP_cl(filename, cchFilename),
-					RpFile::FM_OPEN_READ));
-				if (file && file->isOpen()) {
-					// Get the appropriate RomData class for this ROM.
-					// file is dup()'d by RomData.
-					RP_D(RP_ShellPropSheetExt);
-					RomData *romData = RomDataFactory::getInstance(file.get());
-					if (romData) {
-						// Make sure the existing RomData is unreferenced.
-						// TODO: If the filename matches, don't reopen?
-						if (d->romData) {
-							d->romData->unref();
-						}
-						d->romData = romData;
-						hr = S_OK;
-					} else {
-						// Could not open the RomData object.
-						hr = E_FAIL;
-					}
-				}
-			}
-			free(filename);
+	nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	if (nFiles != 1) {
+		// Wrong file count.
+		goto cleanup;
+	}
+
+	// Get the path of the file.
+	cchFilename = DragQueryFile(hDrop, 0, nullptr, 0);
+	if (cchFilename == 0) {
+		// No filename.
+		goto cleanup;
+	}
+
+	cchFilename++;	// Add one for the NULL terminator.
+	filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
+	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
+	if (cchFilename == 0) {
+		// No filename.
+		goto cleanup;
+	}
+
+	// Check if this is a drive letter.
+	if (cchFilename == 3 && iswalpha(filename[0]) &&
+	    filename[1] == L':' && filename[2] == L'\\')
+	{
+		// This is a drive letter.
+		// Only CD-ROM (and similar) drives are supported.
+		// TODO: Verify if opening by drive letter works,
+		// or if we have to resolve the physical device name.
+		if (GetDriveType(filename) != DRIVE_CDROM) {
+			// Not a CD-ROM drive.
+			goto cleanup;
 		}
 	}
 
+	// Open the file.
+	file.reset(new RpFile(W2RP_cl(filename, cchFilename), RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		// Unable to open the file.
+		goto cleanup;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// file is dup()'d by RomData.
+	RomData *romData = RomDataFactory::getInstance(file.get());
+	if (!romData) {
+		// Could not open the RomData object.
+		goto cleanup;
+	}
+
+	// Make sure the existing RomData is unreferenced.
+	// TODO: If the filename matches, don't reopen?
+	if (d->romData) {
+		d->romData->unref();
+	}
+	d->romData = romData;
+	hr = S_OK;
+
+cleanup:
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
+	free(filename);
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.
