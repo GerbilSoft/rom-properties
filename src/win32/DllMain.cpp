@@ -118,7 +118,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  */
 STDAPI DllCanUnloadNow(void)
 {
-	return (RP_ComBase_isReferenced() ? S_OK : S_FALSE);
+	return (RP_ComBase_isReferenced() ? S_FALSE : S_OK);
 }
 
 /**
