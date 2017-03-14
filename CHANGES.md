@@ -2,9 +2,33 @@
 
 ## v1.0 (unreleased)
 
+* New features:
+  * Property page viewers now support subtabs. This is used for Windows
+    executables that contain version and manifest resources.
+  * JPEG is now supported for image downloads from external image databases.
+    GameTDB uses JPEG for certain image types, including Nintendo DS covers.
+  * Added support for downloading Nintendo DS, GameCube, and Wii cover scans.
+    This includes cover and full cover scans for all three, and 3D cover scans
+    for GameCube and Wii.
+  * !!! Multiple image sizes are now supported for external image downloads.
+    GameTDB has higher-resolution scans for certain image types, including
+    Nintendo DS cover scans. These high-resolution scans are used if a larger
+    thumbnail size is requested by the file browser. A user configuration
+    option will be added later to disable high-resolution image downloads.
+
+* New systems supported:
+  * Windows/DOS: Executables, dynamic link libraries, and other types of
+    executable files are supported.
+  * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
+    downloads for disc, cover, 3D cover, and full cover scans.
+
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
   * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
+  * (GNOME) The libnautilus-extension path is no longer hard-coded to
+    /usr/lib64/. This prevented it from working correctly on anything but
+    64-bit Linux systems that used the older multilib path, which means
+    the Ubuntu GNOME packages did not work.
 
 ## v0.9-beta2 (released 2017/02/07)
 
@@ -25,15 +49,6 @@
   * The Windows version now registers for "common" file extensions, e.g. ".bin"
     and ".iso". The previous handlers are saved as fallbacks. If rom-properties
     cannot handle one of these files, the fallback handler is used.
-  * Property page viewers now support subtabs. This is used for Windows
-    executables that contain version and manifest resources.
-  * JPEG is now supported for image downloads from external image databases.
-    GameTDB uses JPEG for certain image types, including Nintendo DS covers.
-  * !!! Multiple image sizes are now supported for external image downloads.
-    GameTDB has higher-resolution scans for certain image types, including
-    Nintendo DS cover scans. These high-resolution scans are used if a larger
-    thumbnail size is requested by the file browser. A user configuration
-    option will be added later to disable high-resolution image downloads.
 
 * New systems supported:
   * Nintendo 64 ROM images: Z64, V64, swap2, and LE32 byteswap formats.
@@ -48,8 +63,6 @@
     extension is not currently registered; alternatives are .nfc and .nfp)
   * Nintendo Entertainment System: iNES, FDS, QD, and TNES/TDS (3DS Virtual
     Console) formats are supported.
-  * Windows/DOS: Executables, dynamic link libraries, and other types of
-    executable files are supported.
 
 * Changes to existing systems:
   * GameCube: Fixed accidental swapping of Triforce and Wii system names.
@@ -86,10 +99,6 @@
     than one thread attempted to load a PNG image at the same time.
   * Age ratings for CERO, ESRB, and AGCB are now converted to their official
     names instead of being displayed as numbers.
-  * (GNOME) The libnautilus-extension path is no longer hard-coded to
-    /usr/lib64/. This prevented it from working correctly on anything but
-    64-bit Linux systems that used the older multilib path, which means
-    the Ubuntu GNOME packages did not work.
 
 ## v0.8.1 (Windows only) (released 2016/10/24)
 
