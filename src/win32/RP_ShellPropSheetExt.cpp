@@ -978,7 +978,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		SetWindowFont(hDlgItem, hFont, FALSE);
 
 		// Get the EDIT control margins.
-		DWORD dwMargins = SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
+		const DWORD dwMargins = (DWORD)SendMessage(hDlgItem, EM_GETMARGINS, 0, 0);
 
 		// Adjust the window size to compensate for the margins not being clickable.
 		// NOTE: Not adjusting the right margins.
