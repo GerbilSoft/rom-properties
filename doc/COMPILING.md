@@ -67,12 +67,12 @@ Clone the repository, then open an MSVC or MinGW command prompt and run the
 following commands from your rom-properties repository directory:
 * mkdir build
 * cd build
-* cmake .. -G "Visual Studio 14 2015"
+* cmake .. -G "Visual Studio 15 2017"
 * make
 * cd src\win32
 * regsvr32 rom-properties.dll
 
-Replace "Visual Studio 14 2015" with the version of Visual Studio you have
+Replace "Visual Studio 15 2017" with the version of Visual Studio you have
 installed. Add "Win64" after the year for a 64-bit version.
 
 Caveats:
@@ -95,8 +95,8 @@ that can be used to build the two distribution packages:
 * rom-properties-[version]-windows.zip: Standard distribution.
 * rom-properties-[version]-windows.debug.zip: PDB files.
 
-The script uses the installed version of MSVC (2010, 2012, 2013, or 2015)
-to build both 32-bit and 64-bit versions of the ROM Properties Page
+The script uses the installed version of MSVC (2010, 2012, 2013, 2015, or
+2017) to build both 32-bit and 64-bit versions of the ROM Properties Page
 shell extension, and then it packages everything together.
 
 You must have CMake and Info-ZIP's zip.exe and unzip.exe in your path.

@@ -5,7 +5,7 @@ CD /D "%~dp0"
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later
-:: - MSVC 2010, 2012, 2013, or 2015 with 32-bit and 64-bit compilers
+:: - MSVC 2010, 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 ::
@@ -54,25 +54,46 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio 10.0\VC\bin\cl.exe" (
 	SET CMAKE_TOOLSET=v100
 )
 IF EXIST "%PRGFILES%\Microsoft Visual Studio 11.0\VC\bin\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
 	SET MSVC_VERSION=11.0
 	SET MSVC_YEAR=2012
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
 	SET "CMAKE_GENERATOR=11 2012"
 	SET CMAKE_TOOLSET=v110_xp
 )
 IF EXIST "%PRGFILES%\Microsoft Visual Studio 12.0\VC\bin\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 12.0"
 	SET MSVC_VERSION=12.0
 	SET MSVC_YEAR=2013
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 12.0"
 	SET "CMAKE_GENERATOR=12 2013"
 	SET CMAKE_TOOLSET=v120_xp
 )
 IF EXIST "%PRGFILES%\Microsoft Visual Studio 14.0\VC\bin\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 14.0"
 	SET MSVC_VERSION=14.0
 	SET MSVC_YEAR=2015
-	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio 14.0"
 	SET "CMAKE_GENERATOR=14 2015"
 	SET CMAKE_TOOLSET=v140_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.10.25017\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.10.25017"
+	SET MSVC_VERSION=14.1
+	SET MSVC_YEAR=2017
+	SET "CMAKE_GENERATOR=15 2017"
+	SET CMAKE_TOOLSET=v141_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.10.25017\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.10.25017"
+	SET MSVC_VERSION=14.1
+	SET MSVC_YEAR=2017
+	SET "CMAKE_GENERATOR=15 2017"
+	SET CMAKE_TOOLSET=v141_xp
+)
+IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\bin\HostX86\x86\cl.exe" (
+	SET "MSVC_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017"
+	SET MSVC_VERSION=14.1
+	SET MSVC_YEAR=2017
+	SET "CMAKE_GENERATOR=15 2017"
+	SET CMAKE_TOOLSET=v141_xp
 )
 
 IF "%CMAKE_GENERATOR%" == "" (
@@ -84,8 +105,23 @@ IF "%CMAKE_GENERATOR%" == "" (
 ECHO Using MSVC %MSVC_YEAR% (%MSVC_VERSION%) for packaging.
 ECHO.
 
+:: MSVC 2017 uses a different directory layout.
+:: NOTE: This must be set here, since you can't use a variable
+:: set in a block within the same block. (It'll have the previous
+:: value for some reason.)
+IF "%MSVC_YEAR%" == "2017" (
+	SET "MSVC_CL=%MSVC_DIR%\bin\HostX86\x86\cl.exe"
+	SET "MSVC_CL64_CROSS=%MSVC_DIR%\bin\HostX86\x64\cl.exe"
+	SET "MSVC_CL64_NATIVE=%MSVC_DIR%\bin\HostX64\x64\cl.exe"
+) ELSE (
+	SET "MSVC_CL=%MSVC_DIR%\VC\bin\cl.exe"
+	SET "MSVC_CL64_CROSS=%MSVC_DIR%\VC\bin\x86_amd64\cl.exe"
+	SET "MSVC_CL64_NATIVE=%MSVC_DIR%\VC\bin\amd64\cl.exe"
+)
+
 :: Check for the 32-bit compiler.
-IF NOT EXIST "%MSVC_DIR%\VC\bin\cl.exe" (
+IF NOT EXIST "%MSVC_CL%" (
+	ECHO "%MSVC_CL%"
 	ECHO *** ERROR: 32-bit cl.exe was not found.
 	ECHO Please reinstall MSVC.
 	PAUSE
@@ -94,8 +130,8 @@ IF NOT EXIST "%MSVC_DIR%\VC\bin\cl.exe" (
 
 :: Check for the 64-bit compiler.
 :: (either cross-compiler and native compiler)
-IF NOT EXIST "%MSVC_DIR%\VC\bin\x86_amd64\cl.exe" (
-	IF NOT EXIST "%MSVC_DIR%\VC\bin\amd64\cl.exe" (
+IF NOT EXIST "%MSVC_CL64_CROSS%" (
+	IF NOT EXIST "%MSVC_CL64_NATIVE%" (
 		ECHO *** ERROR: 64-bit cl.exe was not found.
 		ECHO Please reinstall MSVC.
 		PAUSE

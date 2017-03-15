@@ -35,6 +35,8 @@ Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
 * KDE 4.x
 * KDE Frameworks 5.x
+* XFCE (GTK+ 2.x)
+* GNOME and Unity (GTK+ 3.x)
 * Windows XP (and later)
 
 For instructions on compiling from source, see doc/COMPILING.md .
