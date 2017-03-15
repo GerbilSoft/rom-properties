@@ -90,6 +90,26 @@ class AmiiboDataPrivate {
 		static const char_variant_t pikmin_olimar_variants[];
 		static const char_variant_t mii_variants[];
 		static const char_variant_t splatoon_inkling_variants[];
+
+		static const char_variant_t mss_mario_variants[];
+		static const char_variant_t mss_luigi_variants[];
+		static const char_variant_t mss_peach_variants[];
+		static const char_variant_t mss_daisy_variants[];
+		static const char_variant_t mss_yoshi_variants[];
+		static const char_variant_t mss_wario_variants[];
+		static const char_variant_t mss_waluigi_variants[];
+		static const char_variant_t mss_donkey_kong_variants[];
+		static const char_variant_t mss_diddy_kong_variants[];
+		static const char_variant_t mss_bowser_variants[];
+		static const char_variant_t mss_bowser_jr_variants[];
+		static const char_variant_t mss_boo_variants[];
+		static const char_variant_t mss_baby_mario_variants[];
+		static const char_variant_t mss_baby_luigi_variants[];
+		static const char_variant_t mss_birdo_variants[];
+		static const char_variant_t mss_rosalina_variants[];
+		static const char_variant_t mss_metal_mario_variants[];
+		static const char_variant_t mss_pink_gold_peach_variants[];
+
 		static const char_variant_t ac_isabelle_variants[];
 		static const char_variant_t ac_kk_slider_variants[];
 		static const char_variant_t ac_tom_nook_variants[];
@@ -187,9 +207,13 @@ const rp_char *const AmiiboDataPrivate::char_series_names[] = {
 	_RP("Mii"),			// 0x07C
 	_RP("Splatoon"),		// 0x080
 
-	// 0x084 - 0x18C
+	// 0x084 - 0x098
 	nullptr, nullptr, nullptr,	// 0x084
-	nullptr, nullptr, nullptr, nullptr,	// 0x090
+	nullptr, nullptr, nullptr, 	// 0x090
+
+	_RP("Mario Sports Superstars"),	// 0x09C
+
+	// 0x0A0-0x18C
 	nullptr, nullptr, nullptr, nullptr,	// 0x0A0
 	nullptr, nullptr, nullptr, nullptr,	// 0x0B0
 	nullptr, nullptr, nullptr, nullptr,	// 0x0C0
@@ -354,6 +378,38 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_inkling_vari
 	{0x02, _RP("Inkling Boy")},
 	{0x03, _RP("Inkling Squid")},
 };
+
+// Mario Sports Superstars
+// Each character has five variants (0x01-0x05).
+// NOTE: Variant 0x00 is not actually assigned.
+#define MSS_VARIANT_ARRAY_DEF(char_name, c_name) \
+	const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mss_##c_name##_variants[] = { \
+		{0x00, _RP(char_name)}, \
+		{0x01, _RP(char_name " (Soccer)")}, \
+		{0x02, _RP(char_name " (Baseball")}, \
+		{0x03, _RP(char_name " (Tennis)")}, \
+		{0x04, _RP(char_name " (Golf)")}, \
+		{0x05, _RP(char_name " (Horse Racing")}, \
+	}
+
+MSS_VARIANT_ARRAY_DEF("Mario", mario);
+MSS_VARIANT_ARRAY_DEF("Luigi", luigi);
+MSS_VARIANT_ARRAY_DEF("Peach", peach);
+MSS_VARIANT_ARRAY_DEF("Daisy", daisy);
+MSS_VARIANT_ARRAY_DEF("Yoshi", yoshi);
+MSS_VARIANT_ARRAY_DEF("Wario", wario);
+MSS_VARIANT_ARRAY_DEF("Waluigi", waluigi);
+MSS_VARIANT_ARRAY_DEF("Donkey Kong", donkey_kong);
+MSS_VARIANT_ARRAY_DEF("Diddy Kong", diddy_kong);
+MSS_VARIANT_ARRAY_DEF("Bowser", bowser);
+MSS_VARIANT_ARRAY_DEF("Bowser Jr.", bowser_jr);
+MSS_VARIANT_ARRAY_DEF("Boo", boo);
+MSS_VARIANT_ARRAY_DEF("Baby Mario", baby_mario);
+MSS_VARIANT_ARRAY_DEF("Baby Luigi", baby_luigi);
+MSS_VARIANT_ARRAY_DEF("Birdo", birdo);
+MSS_VARIANT_ARRAY_DEF("Rosalina", rosalina);
+MSS_VARIANT_ARRAY_DEF("Metal Mario", metal_mario);
+MSS_VARIANT_ARRAY_DEF("Pink Gold Peach", pink_gold_peach);
 
 const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::ac_isabelle_variants[] = {
 	{0x00, _RP("Isabelle (Summer Outfit)")},
@@ -993,6 +1049,26 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x0800, _RP("Inkling"), splatoon_inkling_variants, ARRAY_SIZE(splatoon_inkling_variants)},
 	{0x0801, _RP("Callie"), nullptr, 0},
 	{0x0802, _RP("Marie"), nullptr, 0},
+
+	// Mario Sports Superstars (character series = 0x09C)
+	{0x09C0, _RP("Mario"), mss_mario_variants, ARRAY_SIZE(mss_mario_variants)},
+	{0x09C1, _RP("Luigi"), mss_luigi_variants, ARRAY_SIZE(mss_luigi_variants)},
+	{0x09C2, _RP("Peach"), mss_peach_variants, ARRAY_SIZE(mss_peach_variants)},
+	{0x09C3, _RP("Daisy"), mss_daisy_variants, ARRAY_SIZE(mss_daisy_variants)},
+	{0x09C4, _RP("Yoshi"), mss_yoshi_variants, ARRAY_SIZE(mss_yoshi_variants)},
+	{0x09C5, _RP("Wario"), mss_wario_variants, ARRAY_SIZE(mss_wario_variants)},
+	{0x09C6, _RP("Waluigi"), mss_waluigi_variants, ARRAY_SIZE(mss_waluigi_variants)},
+	{0x09C7, _RP("Donkey Kong"), mss_donkey_kong_variants, ARRAY_SIZE(mss_donkey_kong_variants)},
+	{0x09C8, _RP("Diddy Kong"), mss_diddy_kong_variants, ARRAY_SIZE(mss_diddy_kong_variants)},
+	{0x09C9, _RP("Bowser"), mss_bowser_variants, ARRAY_SIZE(mss_bowser_variants)},
+	{0x09CA, _RP("Bowser Jr."), mss_bowser_jr_variants, ARRAY_SIZE(mss_bowser_jr_variants)},
+	{0x09CB, _RP("Boo"), mss_boo_variants, ARRAY_SIZE(mss_boo_variants)},
+	{0x09CC, _RP("Baby Mario"), mss_baby_mario_variants, ARRAY_SIZE(mss_baby_mario_variants)},
+	{0x09CD, _RP("Baby Luigi"), mss_baby_luigi_variants, ARRAY_SIZE(mss_baby_luigi_variants)},
+	{0x09CE, _RP("Birdo"), mss_birdo_variants, ARRAY_SIZE(mss_birdo_variants)},
+	{0x09CF, _RP("Rosalina"), mss_rosalina_variants, ARRAY_SIZE(mss_rosalina_variants)},
+	{0x09D0, _RP("Metal Mario"), mss_metal_mario_variants, ARRAY_SIZE(mss_metal_mario_variants)},
+	{0x09D1, _RP("Pink Gold Peach"), mss_pink_gold_peach_variants, ARRAY_SIZE(mss_pink_gold_peach_variants)},
 
 	// Pokémon (character series = 0x190 - 0x1BC)
 	{0x1900+  6, _RP("Charizard"), nullptr, 0},
@@ -1761,65 +1837,100 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 10, 2, _RP("Waluigi")},		// 0x0267
 	{ 15, 2, _RP("Boo")},			// 0x0268
 
-	// Unused [0x0269-0x026F]
-	{  0, 0, nullptr},			// 0x0269
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026A,0x026B
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026C,0x026D
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x026E,0x026F
+	// Mario Sports Superstars Cards [0x0269-0x02C2]
+	{  1,  1, _RP("Mario (Soccer)")},		// 0x0269
+	{  2,  1, _RP("Mario (Baseball)")},		// 0x026A
+	{  3,  1, _RP("Mario (Tennis)")},		// 0x026B
+	{  4,  1, _RP("Mario (Golf)")},			// 0x026C
+	{  5,  1, _RP("Mario (Horse Racing)")},		// 0x026D
+	{  6,  1, _RP("Luigi (Soccer)")},		// 0x026E
+	{  7,  1, _RP("Luigi (Baseball)")},		// 0x026F
+	{  8,  1, _RP("Luigi (Tennis)")},		// 0x0270
+	{  9,  1, _RP("Luigi (Golf)")},			// 0x0271
+	{ 10,  1, _RP("Luigi (Horse Racing)")},		// 0x0272
+	{ 11,  1, _RP("Peach (Soccer)")},		// 0x0273
+	{ 12,  1, _RP("Peach (Baseball)")},		// 0x0274
+	{ 13,  1, _RP("Peach (Tennis)")},		// 0x0275
+	{ 14,  1, _RP("Peach (Golf)")},			// 0x0276
+	{ 15,  1, _RP("Peach (Horse Racing)")},		// 0x0277
+	{ 16,  1, _RP("Daisy (Soccer)")},		// 0x0278
+	{ 17,  1, _RP("Daisy (Baseball)")},		// 0x0279
+	{ 18,  1, _RP("Daisy (Tennis)")},		// 0x027A
+	{ 19,  1, _RP("Daisy (Golf)")},			// 0x027B
+	{ 20,  1, _RP("Daisy (Horse Racing)")},		// 0x027C
+	{ 21,  1, _RP("Yoshi (Soccer)")},		// 0x027D
+	{ 22,  1, _RP("Yoshi (Baseball)")},		// 0x027E
+	{ 23,  1, _RP("Yoshi (Tennis)")},		// 0x027F
+	{ 24,  1, _RP("Yoshi (Golf)")},			// 0x0280
+	{ 25,  1, _RP("Yoshi (Horse Racing)")},		// 0x0281
+	{ 26,  1, _RP("Wario (Soccer)")},		// 0x0282
+	{ 27,  1, _RP("Wario (Baseball)")},		// 0x0283
+	{ 28,  1, _RP("Wario (Tennis)")},		// 0x0284
+	{ 29,  1, _RP("Wario (Golf)")},			// 0x0285
+	{ 30,  1, _RP("Wario (Horse Racing)")},		// 0x0286
+	{ 31,  1, _RP("Waluigi (Soccer)")},		// 0x0287
+	{ 32,  1, _RP("Waluigi (Baseball)")},		// 0x0288
+	{ 33,  1, _RP("Waluigi (Tennis)")},		// 0x0289
+	{ 34,  1, _RP("Waluigi (Golf)")},		// 0x028A
+	{ 35,  1, _RP("Waluigi (Horse Racing)")},	// 0x028B
+	{ 36,  1, _RP("Donkey Kong (Soccer)")},		// 0x028C
+	{ 37,  1, _RP("Donkey Kong (Baseball)")},	// 0x028D
+	{ 38,  1, _RP("Donkey Kong (Tennis)")},		// 0x028E
+	{ 39,  1, _RP("Donkey Kong (Golf)")},		// 0x028F
+	{ 40,  1, _RP("Donkey Kong (Horse Racing)")},	// 0x0290
+	{ 41,  1, _RP("Diddy Kong (Soccer)")},		// 0x0291
+	{ 42,  1, _RP("Diddy Kong (Baseball)")},	// 0x0292
+	{ 43,  1, _RP("Diddy Kong (Tennis)")},		// 0x0293
+	{ 44,  1, _RP("Diddy Kong (Golf)")},		// 0x0294
+	{ 45,  1, _RP("Diddy Kong (Horse Racing)")},	// 0x0295
+	{ 46,  1, _RP("Bowser (Soccer)")},		// 0x0296
+	{ 47,  1, _RP("Bowser (Baseball)")},		// 0x0297
+	{ 48,  1, _RP("Bowser (Tennis)")},		// 0x0298
+	{ 49,  1, _RP("Bowser (Golf)")},		// 0x0299
+	{ 50,  1, _RP("Bowser (Horse Racing)")},	// 0x029A
+	{ 51,  1, _RP("Bowser Jr. (Soccer)")},		// 0x029B
+	{ 52,  1, _RP("Bowser Jr. (Baseball)")},	// 0x029C
+	{ 53,  1, _RP("Bowser Jr. (Tennis)")},		// 0x029D
+	{ 54,  1, _RP("Bowser Jr. (Golf)")},		// 0x029E
+	{ 55,  1, _RP("Bowser Jr. (Horse Racing)")},	// 0x029F
+	{ 56,  1, _RP("Boo (Soccer)")},			// 0x02A0
+	{ 57,  1, _RP("Boo (Baseball)")},		// 0x02A1
+	{ 58,  1, _RP("Boo (Tennis)")},			// 0x02A2
+	{ 59,  1, _RP("Boo (Golf)")},			// 0x02A3
+	{ 60,  1, _RP("Boo (Horse Racing)")},		// 0x02A4
+	{ 61,  1, _RP("Baby Mario (Soccer)")},		// 0x02A5
+	{ 62,  1, _RP("Baby Mario (Baseball)")},	// 0x02A6
+	{ 63,  1, _RP("Baby Mario (Tennis)")},		// 0x02A7
+	{ 64,  1, _RP("Baby Mario (Golf)")},		// 0x02A8
+	{ 65,  1, _RP("Baby Mario (Horse Racing)")},	// 0x02A9
+	{ 66,  1, _RP("Baby Luigi (Soccer)")},		// 0x02AA
+	{ 67,  1, _RP("Baby Luigi (Baseball)")},	// 0x02AB
+	{ 68,  1, _RP("Baby Luigi (Tennis)")},		// 0x02AC
+	{ 69,  1, _RP("Baby Luigi (Golf)")},		// 0x02AD
+	{ 70,  1, _RP("Baby Luigi (Horse Racing)")},	// 0x02AE
+	{ 71,  1, _RP("Birdo (Soccer)")},		// 0x02AF
+	{ 72,  1, _RP("Birdo (Baseball)")},		// 0x02B0
+	{ 73,  1, _RP("Birdo (Tennis)")},		// 0x02B1
+	{ 74,  1, _RP("Birdo (Golf)")},			// 0x02B2
+	{ 75,  1, _RP("Birdo (Horse Racing)")},		// 0x02B3
+	{ 76,  1, _RP("Rosalina (Soccer)")},		// 0x02B4
+	{ 77,  1, _RP("Rosalina (Baseball)")},		// 0x02B5
+	{ 78,  1, _RP("Rosalina (Tennis)")},		// 0x02B6
+	{ 79,  1, _RP("Rosalina (Golf)")},		// 0x02B7
+	{ 80,  1, _RP("Rosalina (Horse Racing)")},	// 0x02B8
+	{ 81,  1, _RP("Metal Mario (Soccer)")},		// 0x02B9
+	{ 82,  1, _RP("Metal Mario (Baseball)")},	// 0x02BA
+	{ 83,  1, _RP("Metal Mario (Tennis)")},		// 0x02BB
+	{ 84,  1, _RP("Metal Mario (Golf)")},		// 0x02BC
+	{ 85,  1, _RP("Metal Mario (Horse Racing)")},	// 0x02BD
+	{ 86,  1, _RP("Pink Gold Peach (Soccer)")},		// 0x02BE
+	{ 87,  1, _RP("Pink Gold Peach (Baseball)")},		// 0x02BF
+	{ 88,  1, _RP("Pink Gold Peach (Tennis)")},		// 0x02C0
+	{ 89,  1, _RP("Pink Gold Peach (Golf)")},		// 0x02C1
+	{ 90,  1, _RP("Pink Gold Peach (Horse Racing)")},	// 0x02C2
 
-	// Unused [0x0270-0x027F]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0270,0x0271
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0272,0x0273
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0274,0x0275
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0276,0x0277
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0278,0x0279
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027A,0x027B
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027C,0x027D
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x027E,0x027F
-
-	// Unused [0x0280-0x028F]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0280,0x0281
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0282,0x0283
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0284,0x0285
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0286,0x0287
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0288,0x0289
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028A,0x028B
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028C,0x028D
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x028E,0x028F
-
-	// Unused [0x0290-0x029F]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0290,0x0291
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0292,0x0293
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0294,0x0295
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0296,0x0297
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x0298,0x0299
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029A,0x029B
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029C,0x029D
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x029E,0x029F
-
-	// Unused [0x02A0-0x02AF]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A0,0x02A1
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A2,0x02A3
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A4,0x02A5
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A6,0x02A7
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02A8,0x02A9
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AA,0x02AB
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AC,0x02AD
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02AE,0x02AF
-
-	// Unused [0x02B0-0x02BF]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B0,0x02B1
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B2,0x02B3
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B4,0x02B5
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B6,0x02B7
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02B8,0x02B9
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BA,0x02BB
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BC,0x02BD
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02BE,0x02BF
-
-	// Unused [0x02C0-0x02CF]
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C0,0x02C1
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C2,0x02C3
+	// Unused [0x02C3-0x02CF]
+	{  0, 0, nullptr},			// 0x02C3
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C4,0x02C5
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C6,0x02C7
 	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x02C8,0x02C9
