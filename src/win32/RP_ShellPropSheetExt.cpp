@@ -2127,12 +2127,18 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
 
-			// Dialog initialization is postponed to WM_SIZE,
-			// since some other extension (e.g. HashTab) may
-			// be resizing the dialog.
+			// Initialize the dialog.
+			d->initDialog(hDlg);
+
+			// Make sure the underlying file handle is closed,
+			// since we don't need it once the RomData has been
+			// loaded by RomDataView.
+			d->romData->close();
 			return TRUE;
 		}
 
+		// FIXME: Resize the dialog widgets.
+#if 0
 		case WM_SIZE: {
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
@@ -2158,6 +2164,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Continue normal processing.
 			break;
 		}
+#endif
 
 		case WM_DESTROY: {
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
