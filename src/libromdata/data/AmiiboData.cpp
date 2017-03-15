@@ -1943,9 +1943,9 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 
 	// The Legend of Zelda: 30th Anniversary Series
 	{  0, 2, _RP("Link (Ocarina of Time)")},	// 0x034B
-	{  0, 0, nullptr},				// 0x034C
-	{  0, 0, nullptr},				// 0x034D
-	{  0, 0, nullptr},				// 0x034E
+	{  0, 0, _RP("Unreleased (Majora's Mask)")},	// 0x034C
+	{  0, 0, _RP("Unreleased (Twilight Princess)")},// 0x034D
+	{  0, 0, _RP("Unreleased (Skyward Sword)")},	// 0x034E
 	{  0, 2, _RP("Link (8-bit)")},			// 0x034F
 	{  0, 2, _RP("Toon Link (The Wind Waker)")},	// 0x0350
 	{  0, 0, nullptr},				// 0x0351
