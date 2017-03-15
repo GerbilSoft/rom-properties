@@ -24,6 +24,7 @@
 #include "RpWin32.hpp"
 
 // C includes. (C++ namespace)
+#include <cassert>
 #include <cctype>
 
 // C++ includes.
@@ -54,11 +55,13 @@ struct myFile_deleter {
 class RpFilePrivate
 {
 	public:
-		RpFilePrivate(const rp_char *filename, RpFile::FileMode mode);
-		RpFilePrivate(const rp_string &filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const rp_char *filename, RpFile::FileMode mode);
+		RpFilePrivate(RpFile *q, const rp_string &filename, RpFile::FileMode mode);
+		~RpFilePrivate();
 
 	private:
 		RP_DISABLE_COPY(RpFilePrivate)
+		RpFile *const q_ptr;
 
 	public:
 		// NOTE: file is a HANDLE, but shared_ptr doesn't
@@ -74,25 +77,51 @@ class RpFilePrivate
 		int64_t device_size;		// Device size.
 		unsigned int sector_size;	// Sector size. (bytes per sector)
 
+		// Sector buffer.
+		int64_t sector_num;		// Sector number in the buffer.
+		uint8_t *sector_buffer;		// Sector buffer.
+
 	public:
 		static inline int mode_to_win32(RpFile::FileMode mode,
 			DWORD *pdwDesiredAccess,
 			DWORD *pdwCreationDisposition);
+
+		/**
+		 * Read using block reads.
+		 * Required for block devices.
+		 * @param ptr Output data buffer.
+		 * @param size Amount of data to read, in bytes.
+		 * @return Number of bytes read.
+		 */
+		size_t readUsingBlocks(void *ptr, size_t size);
 };
 
-RpFilePrivate::RpFilePrivate(const rp_char *filename, RpFile::FileMode mode)
-	: filename(filename)
+/** RpFilePrivate **/
+
+RpFilePrivate::RpFilePrivate(RpFile *q, const rp_char *filename, RpFile::FileMode mode)
+	: q_ptr(q)
+	, filename(filename)
 	, mode(mode)
 	, device_size(0)
 	, sector_size(0)
+	, sector_num(-1)
+	, sector_buffer(nullptr)
 { }
 
-RpFilePrivate::RpFilePrivate(const rp_string &filename, RpFile::FileMode mode)
-	: filename(filename)
+RpFilePrivate::RpFilePrivate(RpFile *q, const rp_string &filename, RpFile::FileMode mode)
+	: q_ptr(q)
+	, filename(filename)
 	, mode(mode)
 	, device_size(0)
 	, sector_size(0)
+	, sector_num(-1)
+	, sector_buffer(nullptr)
 { }
+
+RpFilePrivate::~RpFilePrivate()
+{
+	free(sector_buffer);
+}
 
 inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 	DWORD *pdwDesiredAccess,
@@ -122,6 +151,135 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 }
 
 /**
+ * Read using block reads.
+ * Required for block devices.
+ * @param ptr Output data buffer.
+ * @param size Amount of data to read, in bytes.
+ * @return Number of bytes read.
+ */
+size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
+{
+	assert(device_size > 0);
+	assert(sector_size >= 512);
+	if (device_size <= 0 || sector_size < 512) {
+		// Not a block device...
+		return 0;
+	}
+
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
+	size_t ret = 0;
+
+	RP_Q(RpFile);
+	int64_t pos = q->tell();
+
+	// Are we already at the end of the block device?
+	if (pos >= device_size) {
+		// End of the block device.
+		return 0;
+	}
+
+	// Make sure d->pos + size <= d->device_size.
+	// If it isn't, we'll do a short read.
+	if (pos + (int64_t)size >= device_size) {
+		size = (size_t)(device_size - pos);
+	}
+
+	// Seek to the beginning of the first block.
+	// TODO: Make sure sector_size is a power of 2.
+	int seek_ret = q->seek(pos & ~((int64_t)sector_size - 1));
+	if (seek_ret != 0) {
+		// Seek error.
+		return 0;
+	}
+
+	// Check if we're not starting on a block boundary.
+	const uint32_t blockStartOffset = pos % sector_size;
+	if (blockStartOffset != 0) {
+		// Not a block boundary.
+		// Read the end of the first block.
+
+		// Read the first block.
+		DWORD bytesRead;
+		BOOL bRet = ReadFile(file.get(), sector_buffer, sector_size, &bytesRead, nullptr);
+		if (bRet == 0 || bytesRead != sector_size) {
+			// Read error.
+			sector_num = -1;
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return (bytesRead > 0 ? bytesRead : 0);
+		} else {
+			// Sector buffered.
+			sector_num = pos / sector_size;
+		}
+
+		// Copy the data from the sector buffer.
+		uint32_t read_sz = sector_size - blockStartOffset;
+		if (size < (size_t)read_sz) {
+			read_sz = (uint32_t)size;
+		}
+		memcpy(ptr, &sector_buffer[blockStartOffset], read_sz);
+
+		// Starting block read.
+		size -= read_sz;
+		ptr8 += read_sz;
+		ret += read_sz;
+	} else {
+		// Seek to the beginning of the first block.
+		seek_ret = q->seek(pos);
+		if (seek_ret != 0) {
+			// Seek error.
+			return 0;
+		}
+	}
+
+	// Must be on a sector boundary now.
+	assert(q->tell() % sector_size == 0);
+
+	// Read entire blocks.
+	for (; size >= sector_size;
+	    size -= sector_size, ptr8 += sector_size,
+	    ret += sector_size)
+	{
+		// Read the next block.
+		// FIXME: Read all of the contiguous blocks at once.
+		DWORD bytesRead;
+		BOOL bRet = ReadFile(file.get(), ptr8, (DWORD)sector_size, &bytesRead, nullptr);
+		if (bRet == 0 || bytesRead != (DWORD)sector_size) {
+			// Read error.
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return ret + (bytesRead > 0 ? bytesRead : 0);
+		}
+	}
+
+	// Check if we still have data left. (not a full block)
+	if (size > 0) {
+		// Read the last block.
+		pos = q->tell();
+		assert(pos % sector_size == 0);
+		DWORD bytesRead;
+		BOOL bRet = ReadFile(file.get(), sector_buffer, (DWORD)sector_size, &bytesRead, nullptr);
+		if (bRet == 0 || bytesRead != (DWORD)sector_size) {
+			// Read error.
+			sector_num = -1;
+			q->m_lastError = w32err_to_posix(GetLastError());
+			return ret + (bytesRead > 0 ? bytesRead : 0);
+		} else {
+			// Sector buffered.
+			sector_num = pos / sector_size;
+		}
+
+		// Copy the data from the sector buffer.
+		memcpy(ptr8, sector_buffer, size);
+
+		ret += size;
+	}
+
+	// Finished reading the data.
+	return ret;
+}
+
+/** RpFile **/
+
+/**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
  * @param filename Filename.
@@ -129,7 +287,7 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
  */
 RpFile::RpFile(const rp_char *filename, FileMode mode)
 	: super()
-	, d_ptr(new RpFilePrivate(filename, mode))
+	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
 	init();
 }
@@ -142,7 +300,7 @@ RpFile::RpFile(const rp_char *filename, FileMode mode)
  */
 RpFile::RpFile(const rp_string &filename, FileMode mode)
 	: super()
-	, d_ptr(new RpFilePrivate(filename, mode))
+	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
 	init();
 }
@@ -198,6 +356,12 @@ void RpFile::init(void)
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
 		filenameW = RP2W_s(d->filename);
+	}
+
+	if (isBlockDevice && (d->mode & FM_WRITE)) {
+		// Writing to block devices is not allowed.
+		m_lastError = EINVAL;
+		return;
 	}
 
 	// Open the file.
@@ -258,7 +422,10 @@ void RpFile::init(void)
 			}
 		}
 
-		if (w32err != 0) {
+		if (w32err == 0) {
+			// Allocate the sector buffer.
+			d->sector_buffer = static_cast<uint8_t*>(malloc(d->sector_size));
+		} else {
 			// An error occurred...
 			m_lastError = w32err_to_posix(GetLastError());
 			if (m_lastError == 0) {
@@ -280,12 +447,25 @@ RpFile::~RpFile()
  */
 RpFile::RpFile(const RpFile &other)
 	: super()
-	, d_ptr(new RpFilePrivate(other.d_ptr->filename, other.d_ptr->mode))
+	, d_ptr(new RpFilePrivate(this, other.d_ptr->filename, other.d_ptr->mode))
 {
 	RP_D(RpFile);
 	d->file = other.d_ptr->file;
 	d->device_size = other.d_ptr->device_size;
 	d->sector_size = other.d_ptr->sector_size;
+	d->sector_num = other.d_ptr->sector_num;
+
+	if (other.d_ptr->sector_buffer) {
+		// TODO: Make sure the sector size is a power of 2
+		// and isn't a ridiculous value.
+		assert(d->sector_size >= 512);
+
+		d->sector_buffer = static_cast<uint8_t*>(malloc(d->sector_size));
+		if (d->sector_num >= 0) {
+			memcpy(d->sector_buffer, other.d_ptr->sector_buffer, d->sector_size);
+		}
+	}
+
 	m_lastError = other.m_lastError;
 }
 
@@ -302,6 +482,25 @@ RpFile &RpFile::operator=(const RpFile &other)
 	d->mode = other.d_ptr->mode;
 	d->device_size = other.d_ptr->device_size;
 	d->sector_size = other.d_ptr->sector_size;
+	d->sector_num = other.d_ptr->sector_num;
+
+	if (other.d_ptr->sector_buffer) {
+		// TODO: Make sure the sector size is a power of 2
+		// and isn't a ridiculous value.
+		assert(d->sector_size >= 512);
+
+		if (d->sector_buffer) {
+			free(d->sector_buffer);
+		}
+		d->sector_buffer = static_cast<uint8_t*>(malloc(d->sector_size));
+		if (d->sector_num >= 0) {
+			memcpy(d->sector_buffer, other.d_ptr->sector_buffer, d->sector_size);
+		}
+	} else if (d->sector_buffer) {
+		free(d->sector_buffer);
+		d->sector_buffer = nullptr;
+	}
+
 	m_lastError = other.m_lastError;
 	return *this;
 }
@@ -354,11 +553,19 @@ size_t RpFile::read(void *ptr, size_t size)
 	if (!d->file || d->file.get() == INVALID_HANDLE_VALUE) {
 		m_lastError = EBADF;
 		return 0;
+	} else if (size == 0) {
+		// Nothing to read.
+		return 0;
+	}
+
+	if (d->sector_size != 0) {
+		// Block device. Need to read in multiples of the block size.
+		return d->readUsingBlocks(ptr, size);
 	}
 
 	DWORD bytesRead;
 	BOOL bRet = ReadFile(d->file.get(), ptr, (DWORD)size, &bytesRead, nullptr);
-	if (bRet == 0) {
+	if (!bRet) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
 		return 0;
@@ -383,9 +590,15 @@ size_t RpFile::write(const void *ptr, size_t size)
 		return 0;
 	}
 
+	if (d->sector_size != 0) {
+		// Writing to block devices is not allowed.
+		m_lastError = EBADF;
+		return 0;
+	}
+
 	DWORD bytesWritten;
 	BOOL bRet = WriteFile(d->file.get(), ptr, (DWORD)size, &bytesWritten, nullptr);
-	if (bRet == 0) {
+	if (!bRet) {
 		// An error occurred.
 		m_lastError = w32err_to_posix(GetLastError());
 		return 0;
@@ -410,7 +623,7 @@ int RpFile::seek(int64_t pos)
 	LARGE_INTEGER liSeekPos;
 	liSeekPos.QuadPart = pos;
 	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, nullptr, FILE_BEGIN);
-	if (bRet == 0) {
+	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
@@ -433,7 +646,7 @@ int64_t RpFile::tell(void)
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = 0;
 	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
-	if (bRet == 0) {
+	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
@@ -464,14 +677,14 @@ int RpFile::truncate(int64_t size)
 	LARGE_INTEGER liSeekPos, liSeekRet;
 	liSeekPos.QuadPart = size;
 	BOOL bRet = SetFilePointerEx(d->file.get(), liSeekPos, &liSeekRet, FILE_CURRENT);
-	if (bRet == 0) {
+	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
 
 	// Truncate the file.
 	bRet = SetEndOfFile(d->file.get());
-	if (bRet == 0) {
+	if (!bRet) {
 		m_lastError = w32err_to_posix(GetLastError());
 		return -1;
 	}
@@ -480,7 +693,7 @@ int RpFile::truncate(int64_t size)
 	// less than the new size.
 	if (liSeekRet.QuadPart < size) {
 		bRet = SetFilePointerEx(d->file.get(), liSeekRet, nullptr, FILE_BEGIN);
-		if (bRet == 0) {
+		if (!bRet) {
 			m_lastError = w32err_to_posix(GetLastError());
 			return -1;
 		}
