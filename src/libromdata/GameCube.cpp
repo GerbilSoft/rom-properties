@@ -1776,6 +1776,13 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		return -ENOENT;
 	}
 
+	// Check for known unusable game IDs.
+	// - RELSAB: Generic ID used for prototypes.
+	if (!memcmp(d->discHeader.id6, "RELSAB", 6)) {
+		// Cannot download images for this game ID.
+		return -ENOENT;
+	}
+
 	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;

@@ -10,22 +10,32 @@ ENDIF()
 # Don't embed rpaths in the executables.
 SET(CMAKE_SKIP_RPATH ON)
 
+# stdint.h must be present.
+INCLUDE(CheckIncludeFiles)
+CHECK_INCLUDE_FILES(stdint.h HAVE_STDINT_H)
+IF(NOT HAVE_STDINT_H)
+	MESSAGE(FATAL_ERROR "stdint.h is required.")
+ENDIF(NOT HAVE_STDINT_H)
+
 # Common flag variables:
 # [common]
 # - RP_C_FLAGS_COMMON
 # - RP_CXX_FLAGS_COMMON
 # - RP_EXE_LINKER_FLAGS_COMMON
 # - RP_SHARED_LINKER_FLAGS_COMMON
+# - RP_MODULE_LINKER_FLAGS_COMMON
 # [debug]
 # - RP_C_FLAGS_DEBUG
 # - RP_CXX_FLAGS_DEBUG
 # - RP_EXE_LINKER_FLAGS_DEBUG
 # - RP_SHARED_LINKER_FLAGS_DEBUG
+# - RP_MODULE_LINKER_FLAGS_DEBUG
 # [release]
 # - RP_C_FLAGS_RELEASE
 # - RP_CXX_FLAGS_RELEASE
 # - RP_EXE_LINKER_FLAGS_RELEASE
 # - RP_SHARED_LINKER_FLAGS_RELEASE
+# - RP_MODULE_LINKER_FLAGS_RELEASE
 #
 # DEBUG and RELEASE variables do *not* include COMMON.
 IF(MSVC)
@@ -147,10 +157,19 @@ IF(WIN32)
 				SET(SETARGV_FLAG "setargv.obj")
 			ENDIF()
 		ENDIF(_setargv)
+		UNSET(UNICODE_FLAG)
 	ELSE(MSVC)
 		# MinGW does not automatically prepend an underscore.
 		# TODO: Does ARM Windows have a leading underscore?
 		# TODO: _setargv for MinGW.
+
+		# NOTE: MinGW uses separate crt*.o files for Unicode
+		# instead of a separate entry point.
+		IF(_entrypoint MATCHES "^w")
+			SET(UNICODE_FLAG "-municode")
+			STRING(SUBSTRING "${_entrypoint}" 1 -1 _entrypoint)
+		ENDIF()
+
 		STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 		IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 			IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -167,9 +186,9 @@ IF(WIN32)
 
 	GET_TARGET_PROPERTY(TARGET_LINK_FLAGS ${_target} LINK_FLAGS)
 	IF(TARGET_LINK_FLAGS)
-		SET(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} ${ENTRY_POINT_FLAG} ${SETARGV_FLAG}")
+		SET(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} ${UNICODE_FLAG} ${ENTRY_POINT_FLAG} ${SETARGV_FLAG}")
 	ELSE()
-		SET(TARGET_LINK_FLAGS "${ENTRY_POINT_FLAG} ${SETARGV_FLAG}")
+		SET(TARGET_LINK_FLAGS "${UNICODE_FLAG} ${ENTRY_POINT_FLAG} ${SETARGV_FLAG}")
 	ENDIF()
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 ENDIF(WIN32)

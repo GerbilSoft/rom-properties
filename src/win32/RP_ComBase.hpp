@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ComBase.hpp: Base class for COM objects.                             *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -31,8 +31,8 @@
  */
 
 // QISearch()
+#include "QITab.h"
 extern "C" {
-typedef HRESULT (WINAPI *PFNQISEARCH)(void *that, LPCQITAB pqit, REFIID riid, void **ppv);
 extern PFNQISEARCH pQISearch;
 void incRpGlobalRefCount(void);
 void decRpGlobalRefCount(void);

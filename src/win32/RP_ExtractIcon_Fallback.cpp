@@ -34,6 +34,13 @@ using namespace LibRomData;
 #include <string>
 using std::wstring;
 
+// COM smart pointer typedefs.
+#ifndef _MSC_VER
+// MSVC: Defined in comdefsp.h.
+_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
+_COM_SMARTPTR_TYPEDEF(IPersistFile,  IID_IPersistFile);
+#endif
+
 /**
  * Use IExtractIconW from a fallback icon handler.
  * @param pExtractIconW Pointer to IExtractIconW interface.
@@ -45,9 +52,6 @@ using std::wstring;
 LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
 {
-	// COM smart pointer.
-	_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
-
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
 	HRESULT hr = pExtractIconW->QueryInterface(IID_PPV_ARGS(&pPersistFile));
@@ -117,9 +121,6 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 {
 	// TODO: Verify that LPCOLESTR is still Unicode in IExtractIconA.
 	// TODO: Needs testing.
-
-	// COM smart pointer.
-	_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
 
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
@@ -216,7 +217,6 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 		}
 
 		// Get the class object.
-		_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
 		IClassFactoryPtr pCF;
 		hr = CoGetClassObject(clsidIconHandler, CLSCTX_INPROC_SERVER, nullptr, IID_PPV_ARGS(&pCF));
 		if (FAILED(hr) || !pCF) {

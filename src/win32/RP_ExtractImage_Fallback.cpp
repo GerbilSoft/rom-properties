@@ -35,6 +35,14 @@ using namespace LibRomData;
 #include <string>
 using std::wstring;
 
+// COM smart pointer typedefs.
+#ifndef _MSC_VER
+// MSVC: Defined in comdefsp.h.
+_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
+_COM_SMARTPTR_TYPEDEF(IPersistFile,  IID_IPersistFile);
+#endif
+_COM_SMARTPTR_TYPEDEF(IExtractImage, IID_IExtractImage);
+
 /**
  * Fallback image handler function. (internal)
  * @param hkey_Assoc File association key to check.
@@ -65,7 +73,6 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	}
 
 	// Get the class object.
-	_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
 	IClassFactoryPtr pCF;
 	hr = CoGetClassObject(clsidExtractImage, CLSCTX_INPROC_SERVER, nullptr, IID_PPV_ARGS(&pCF));
 	if (FAILED(hr) || !pCF) {
@@ -74,7 +81,6 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	}
 
 	// Try getting the IPersistFile interface.
-	_COM_SMARTPTR_TYPEDEF(IPersistFile, IID_IPersistFile);
 	IPersistFilePtr pPersistFile;
 	hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pPersistFile));
 	if (FAILED(hr) || !pPersistFile) {
@@ -91,7 +97,6 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	}
 
 	// Try getting the IExtractImage interface.
-	_COM_SMARTPTR_TYPEDEF(IExtractImage, IID_IExtractImage);
 	IExtractImagePtr pExtractImage;
 	hr = pPersistFile->QueryInterface(IID_PPV_ARGS(&pExtractImage));
 	if (FAILED(hr) || !pExtractImage) {

@@ -81,17 +81,6 @@
  * in C++ 2011.
  */
 
-/** strcasecmp(), strncasecmp() **/
-
-/**
- * MSVC does not, and probably never will, define these functions.
- * It has equivalent functions with different names, though.
- */
-#define strcasecmp(s1, s2)     _stricmp(s1, s2)
-#define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
-#define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
-#define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
-
 /** strtoll(), strtoull() **/
 
 /**

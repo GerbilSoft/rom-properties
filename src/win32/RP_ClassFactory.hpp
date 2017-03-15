@@ -71,7 +71,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 
 			static const QITAB rgqit[] = {
 				QITABENT(RP_ClassFactory, IClassFactory),
-				{ 0 }
+				{ 0, 0 }
 			};
 			return pQISearch(this, rgqit, riid, ppvObject);
 		}

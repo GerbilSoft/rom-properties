@@ -485,6 +485,10 @@ unset(PNG_LIB_TARGETS)
 if(PNG_SHARED)
   # rom-properties: Add the resource script on Windows.
   IF(WIN32)
+    # rom-properties: CMake-3.7.2 doesn't add include paths to windres.
+    IF(MINGW)
+      SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
+    ENDIF(MINGW)
     SET(libpng_sources ${libpng_sources} scripts/pngwin.rc)
   ENDIF(WIN32)
   add_library(png SHARED ${libpng_sources})

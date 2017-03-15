@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
+ * QITab.h: QITAB header.                                                  *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +19,49 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
-#define __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
+#ifndef __ROMPROPERTIES_WIN32_QITAB_H__
+#define __ROMPROPERTIES_WIN32_QITAB_H__
 
-#include "libromdata/common.h"
-
-#include <cassert>
 #include <windows.h>
 
-/**
- * GetDC() RAII wrapper.
- */
-class AutoGetDC
-{
-	public:
-		inline AutoGetDC(HWND hWnd, HFONT hFont)
-			: hWnd(hWnd)
-		{
-			assert(hWnd != nullptr);
-			assert(hFont != nullptr);
-			if (hWnd) {
-				hDC = GetDC(hWnd);
-				hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
-			} else {
-				hDC = nullptr;
-				hFontOrig = nullptr;
-			}
-		}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-		inline ~AutoGetDC() {
-			if (hDC) {
-				SelectFont(hDC, hFontOrig);
-				ReleaseDC(hWnd, hDC);
-			}
-		}
+#ifndef OFFSETOFCLASS
+// Get the class vtable offset. Used for QITAB.
+// NOTE: QITAB::dwOffset is int, not DWORD.
+#define OFFSETOFCLASS(base, derived) \
+    (int)((DWORD)(DWORD_PTR)((base*)((derived*)8))-8)
+#endif
 
-		inline operator HDC() {
-			return hDC;
-		}
+#ifndef QITABENT
+// QITAB is not defined on MinGW-w64 4.0.6.
+typedef struct _QITAB {
+	const IID *piid;
+	int dwOffset;
+} QITAB, *LPQITAB;
+typedef const QITAB *LPCQITAB;
 
-	private:
-		RP_DISABLE_COPY(AutoGetDC)
+#ifdef __cplusplus
+# define QITABENTMULTI(Cthis, Ifoo, Iimpl) \
+    { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
+#else
+# define QITABENTMULTI(Cthis, Ifoo, Iimpl) \
+    { (IID*) &IID_##Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
+#endif /* __cplusplus */
 
-	private:
-		HWND hWnd;
-		HDC hDC;
-		HFONT hFontOrig;
-};
+#define QITABENTMULTI2(Cthis, Ifoo, Iimpl) \
+    { (IID*) &Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
 
-#endif /* __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__ */
+#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
+#endif /* QITABENT */
+
+// QISearch() function pointer.
+typedef HRESULT (WINAPI *PFNQISEARCH)(__inout void *that, __in LPCQITAB pqit, __in REFIID riid, __deref_out void **ppv);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __ROMPROPERTIES_WIN32_QITAB_H__ */

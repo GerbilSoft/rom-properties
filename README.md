@@ -35,6 +35,8 @@ Currently, the ROM Properties Page shell extension is compatible with the
 following platforms:
 * KDE 4.x
 * KDE Frameworks 5.x
+* XFCE (GTK+ 2.x)
+* GNOME and Unity (GTK+ 3.x)
 * Windows XP (and later)
 
 For instructions on compiling from source, see doc/COMPILING.md .
@@ -95,10 +97,10 @@ Notes:
 |:-----------------------------:|:--------------:|:---------------:|:--------------:|
 | Sega Mega Drive               |       Yes      |       N/A       |       No       |
 | Sega Dreamcast Saves          |       Yes      |   Icon, Banner  |       No       |
-| Nintendo DS(i)                |       Yes      |       Icon      |       No       |
+| Nintendo DS(i)                |       Yes      |       Icon      |  Covers, Box   |
 | Nintendo GameCube             |       Yes      |      Banner     |      Disc      |
 | Nintendo GameCube Saves       |       Yes      |       Icon      |       N/A      |
-| Nintendo Wii                  |       Yes      |        No       |      Disc      |
+| Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
 | Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
 | Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
@@ -106,6 +108,7 @@ Notes:
 | Nintendo amiibo               |       Yes      |        No       |      Media     |
 | Nintendo Entertainment System |       Yes      |       N/A       |       No       |
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
+| Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.

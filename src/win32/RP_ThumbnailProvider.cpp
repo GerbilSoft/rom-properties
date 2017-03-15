@@ -164,7 +164,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ThumbnailProvider, IInitializeWithStream),
 		QITABENT(RP_ThumbnailProvider, IThumbnailProvider),
-		{ 0 }
+		{ 0, 0 }
 	};
 	return pQISearch(this, rgqit, riid, ppvObj);
 }

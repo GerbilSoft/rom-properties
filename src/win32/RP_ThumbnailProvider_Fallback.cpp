@@ -35,6 +35,14 @@ using namespace LibRomData;
 #include <string>
 using std::wstring;
 
+// COM smart pointer typedefs.
+#ifndef _MSC_VER
+// MSVC: Defined in comdefsp.h.
+_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
+#endif
+_COM_SMARTPTR_TYPEDEF(IInitializeWithStream, IID_IInitializeWithStream);
+_COM_SMARTPTR_TYPEDEF(IThumbnailProvider,    IID_IThumbnailProvider);
+
 /**
  * Fallback thumbnail handler function. (internal)
  * @param hkey_Assoc File association key to check.
@@ -68,7 +76,6 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 	}
 
 	// Get the class object.
-	_COM_SMARTPTR_TYPEDEF(IClassFactory, IID_IClassFactory);
 	IClassFactoryPtr pCF;
 	hr = CoGetClassObject(clsidThumbnailProvider, CLSCTX_INPROC_SERVER, nullptr, IID_PPV_ARGS(&pCF));
 	if (FAILED(hr) || !pCF) {
@@ -78,7 +85,6 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// Try getting the IInitializeWithStream interface.
 	// FIXME: WMP11 only has IInitializeWithItem.
-	_COM_SMARTPTR_TYPEDEF(IInitializeWithStream, IID_IInitializeWithStream);
 	IInitializeWithStreamPtr pInitializeWithStream;
 	hr = pCF->CreateInstance(nullptr, IID_PPV_ARGS(&pInitializeWithStream));
 	if (FAILED(hr) || !pInitializeWithStream) {
@@ -97,7 +103,6 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 	}
 
 	// Try getting the IThumbnailProvider interface.
-	_COM_SMARTPTR_TYPEDEF(IThumbnailProvider, IID_IThumbnailProvider);
 	IThumbnailProviderPtr pThumbnailProvider;
 	hr = pInitializeWithStream->QueryInterface(IID_PPV_ARGS(&pThumbnailProvider));
 	if (FAILED(hr) || !pThumbnailProvider) {

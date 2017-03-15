@@ -22,8 +22,17 @@
 #include "properties.hpp"
 #include "config.rpcli.h"
 
+// Time functions, with workaround for systems
+// that don't have reentrant versions.
+// NOTE: This defines _POSIX_C_SOURCE, which is
+// required for *_r() functions on MinGW-w64,
+// so it needs to be before other includes.
+#include "time_r.h"
+
+// C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -35,16 +44,13 @@ using std::ostream;
 using std::setw;
 using std::unique_ptr;
 
-#include <libromdata/RomData.hpp>
-#include <libromdata/RomFields.hpp>
-#include <libromdata/TextFuncs.hpp>
-#include <libromdata/img/rp_image.hpp>
-#include <libromdata/img/IconAnimData.hpp>
+// libromdata
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomFields.hpp"
+#include "libromdata/TextFuncs.hpp"
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/IconAnimData.hpp"
 using namespace LibRomData;
-
-// Time functions, with workaround for systems
-// that don't have reentrant versions.
-#include "time_r.h"
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
