@@ -122,7 +122,9 @@ int GcnPartition::seek(int64_t pos)
 
 	// Use the IDiscReader directly for GCN partitions.
 	int ret = d->discReader->seek(d->data_offset + pos);
-	m_lastError = d->discReader->lastError();
+	if (ret != 0) {
+		m_lastError = d->discReader->lastError();
+	}
 	return ret;
 }
 
@@ -132,6 +134,28 @@ int GcnPartition::seek(int64_t pos)
 void GcnPartition::rewind(void)
 {
 	seek(0);
+}
+
+/**
+ * Get the partition position.
+ * @return Partition position on success; -1 on error.
+ */
+int64_t GcnPartition::tell(void)
+{
+	RP_D(GcnPartition);
+	assert(d->discReader != nullptr);
+	assert(d->discReader->isOpen());
+	if (!d->discReader ||  !d->discReader->isOpen()) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	// Use the IDiscReader directly for GCN partitions.
+	int64_t ret = d->discReader->tell();
+	if (ret < 0) {
+		m_lastError = d->discReader->lastError();
+	}
+	return ret;
 }
 
 /**

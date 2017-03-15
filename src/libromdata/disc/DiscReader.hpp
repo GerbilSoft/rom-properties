@@ -102,6 +102,12 @@ class DiscReader : public IDiscReader
 		virtual void rewind(void) override;
 
 		/**
+		 * Get the disc image position.
+		 * @return Disc image position on success; -1 on error.
+		 */
+		virtual int64_t tell(void) override final;
+
+		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */

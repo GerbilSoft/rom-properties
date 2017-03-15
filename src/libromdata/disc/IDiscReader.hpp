@@ -97,6 +97,12 @@ class IDiscReader
 		virtual void rewind(void) = 0;
 
 		/**
+		 * Get the disc image position.
+		 * @return Disc image position on success; -1 on error.
+		 */
+		virtual int64_t tell(void) = 0;
+
+		/**
 		 * Get the disc image size.
 		 * @return Disc image size, or -1 on error.
 		 */

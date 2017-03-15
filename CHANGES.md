@@ -15,6 +15,10 @@
     Nintendo DS cover scans. These high-resolution scans are used if a larger
     thumbnail size is requested by the file browser. A user configuration
     option will be added later to disable high-resolution image downloads.
+  * (Windows) Physical block devices are now supported. This allows viewing
+    ROM Properties for certain types of physical media, e.g. Wii DVD-R backups.
+    Currently only the property page is supported. Thumbnails (and icons)
+    are not supported for block devices.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of

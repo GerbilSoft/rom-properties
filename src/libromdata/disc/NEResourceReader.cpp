@@ -589,6 +589,26 @@ void NEResourceReader::rewind(void)
 }
 
 /**
+ * Get the partition position.
+ * @return Partition position on success; -1 on error.
+ */
+int64_t NEResourceReader::tell(void)
+{
+	RP_D(NEResourceReader);
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	if (!d->file || !d->file->isOpen()) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	// There isn't a separate resource "section" in
+	// NE executables, so forward all read requests
+	// to the underlying file.
+	return d->file->tell();
+}
+
+/**
  * Get the data size.
  * This size does not include the partition header,
  * and it's adjusted to exclude hashes.

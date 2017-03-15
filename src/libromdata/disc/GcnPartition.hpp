@@ -86,6 +86,12 @@ class GcnPartition : public IPartition
 		virtual void rewind(void) override final;
 
 		/**
+		 * Get the partition position.
+		 * @return Partition position on success; -1 on error.
+		 */
+		virtual int64_t tell(void) override;
+
+		/**
 		 * Get the data size.
 		 * This size does not include the partition header,
 		 * and it's adjusted to exclude hashes.

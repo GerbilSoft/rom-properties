@@ -697,6 +697,23 @@ void PEResourceReader::rewind(void)
 }
 
 /**
+ * Get the partition position.
+ * @return Partition position on success; -1 on error.
+ */
+int64_t PEResourceReader::tell(void)
+{
+	RP_D(PEResourceReader);
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	if (!d->file || !d->file->isOpen()) {
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	return d->pos;
+}
+
+/**
  * Get the data size.
  * This size does not include the partition header,
  * and it's adjusted to exclude hashes.

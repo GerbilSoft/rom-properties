@@ -147,7 +147,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		int rd = this->readBlock(blockIdx, ptr8, 0, block_size);
 		if (rd < 0 || rd != (int)block_size) {
 			// Error reading the data.
-			return (rd > 0 ? rd : 0);
+			return ret + (rd > 0 ? rd : 0);
 		}
 	}
 
@@ -161,7 +161,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		int rd = this->readBlock(blockIdx, ptr8, 0, size);
 		if (rd < 0 || rd != (int)size) {
 			// Error reading the data.
-			return (rd > 0 ? rd : 0);
+			return ret + (rd > 0 ? rd : 0);
 		}
 
 		ret += size;
@@ -220,6 +220,26 @@ void SparseDiscReader::rewind(void)
 	}
 
 	d->pos = 0;
+}
+
+/**
+ * Get the disc image position.
+ * @return Disc image position on success; -1 on error.
+ */
+int64_t SparseDiscReader::tell(void)
+{
+	RP_D(SparseDiscReader);
+	assert(d->file != nullptr);
+	assert(d->disc_size > 0);
+	assert(d->pos >= 0);
+	assert(d->block_size != 0);
+	if (!d->file || d->disc_size <= 0 || d->pos < 0 || d->block_size == 0) {
+		// Disc image wasn't initialized properly.
+		m_lastError = EBADF;
+		return -1;
+	}
+
+	return d->pos;
 }
 
 /**
