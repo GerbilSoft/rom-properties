@@ -992,7 +992,7 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Splatoon (character series = 0x080)
 	{0x0800, _RP("Inkling"), splatoon_inkling_variants, ARRAY_SIZE(splatoon_inkling_variants)},
 	{0x0801, _RP("Callie"), nullptr, 0},
-	{0x0801, _RP("Marie"), nullptr, 0},
+	{0x0802, _RP("Marie"), nullptr, 0},
 
 	// Pokémon (character series = 0x190 - 0x1BC)
 	{0x1900+  6, _RP("Charizard"), nullptr, 0},
