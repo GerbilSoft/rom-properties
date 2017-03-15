@@ -46,8 +46,8 @@ ENDIF(NOT WIN32)
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
 # Check for C library functions.
-INCLUDE(CheckFunctionExists)
-CHECK_FUNCTION_EXISTS(strnlen HAVE_STRNLEN)
+INCLUDE(CheckSymbolExists)
+CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
 
 # Check if non-capturing lambda functions can be cast to function pointers.
 INCLUDE(CheckCXX11LambdaAsFunctionPointer)
