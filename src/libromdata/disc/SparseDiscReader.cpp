@@ -147,7 +147,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		int rd = this->readBlock(blockIdx, ptr8, 0, block_size);
 		if (rd < 0 || rd != (int)block_size) {
 			// Error reading the data.
-			return (rd > 0 ? rd : 0);
+			return ret + (rd > 0 ? rd : 0);
 		}
 	}
 
@@ -161,7 +161,7 @@ size_t SparseDiscReader::read(void *ptr, size_t size)
 		int rd = this->readBlock(blockIdx, ptr8, 0, size);
 		if (rd < 0 || rd != (int)size) {
 			// Error reading the data.
-			return (rd > 0 ? rd : 0);
+			return ret + (rd > 0 ? rd : 0);
 		}
 
 		ret += size;
