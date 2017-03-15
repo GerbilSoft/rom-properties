@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
 #define __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
 
+#include "libromdata/common.h"
+
 #include <cassert>
 #include <windows.h>
 
@@ -55,6 +57,9 @@ class AutoGetDC
 		inline operator HDC() {
 			return hDC;
 		}
+
+	private:
+		RP_DISABLE_COPY(AutoGetDC)
 
 	private:
 		HWND hWnd;
