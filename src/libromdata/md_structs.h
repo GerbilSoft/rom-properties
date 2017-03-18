@@ -99,7 +99,14 @@ typedef struct PACKED _MD_RomHeader {
 
 	// Miscellaneous.
 	char modem_info[12];
-	char notes[40];
+	union {
+		char notes[40];
+		struct {
+			char notes24[24];
+			uint32_t info;
+			uint8_t data[12];
+		} extrom;
+	};
 	char region_codes[16];
 } MD_RomHeader;
 #pragma pack()

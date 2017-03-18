@@ -752,11 +752,11 @@ int MegaDrive::loadFieldData(void)
 				be32_to_cpu(romHeader->ram_end), 8,
 				RomFields::STRF_MONOSPACE);
 
-		// SRAM range.
-		// Info format: 'R', 'A', %1x1yz000, 0x20
+		// Check for external memory.
 		const uint32_t sram_info = be32_to_cpu(romHeader->sram_info);
 		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
 			// SRAM is present.
+			// Format: 'R', 'A', %1x1yz000, 0x20
 			// x == 1 for backup (SRAM), 0 for not backup
 			// yz == 10 for even addresses, 11 for odd addresses
 			// TODO: Print the 'x' bit.
@@ -775,11 +775,28 @@ int MegaDrive::loadFieldData(void)
 			}
 
 			d->fields->addField_string_address_range(_RP("SRAM Range"),
-					be32_to_cpu(romHeader->sram_start),
-					be32_to_cpu(romHeader->sram_end),
-					suffix, 8, RomFields::STRF_MONOSPACE);
+				be32_to_cpu(romHeader->sram_start),
+				be32_to_cpu(romHeader->sram_end),
+				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
 			d->fields->addField_string(_RP("SRAM Range"), _RP("None"));
+		}
+
+		// Check for an extra ROM chip.
+		if (be32_to_cpu(romHeader->extrom.info) == 0x524F2020) {
+			// Extra ROM chip. (Sonic & Knuckles)
+			// Format: 'R', 'O', 0x20, 0x20
+			// Start and End locations are listed twice, in 24-bit format.
+			// Not sure if there's any difference between the two...
+			const uint32_t extrom_start = (romHeader->extrom.data[0] << 16) |
+						      (romHeader->extrom.data[1] <<  8) |
+						       romHeader->extrom.data[2];
+			const uint32_t extrom_end   = (romHeader->extrom.data[3] << 16) |
+						      (romHeader->extrom.data[4] <<  8) |
+						       romHeader->extrom.data[5];
+			d->fields->addField_string_address_range(_RP("ExtROM Range"),
+				extrom_start, extrom_end, nullptr, 8,
+				RomFields::STRF_MONOSPACE);
 		}
 	}
 
