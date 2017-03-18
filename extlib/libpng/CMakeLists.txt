@@ -47,12 +47,16 @@ ENDIF(0)
 
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
-set(PNGLIB_RELEASE 28)
+set(PNGLIB_RELEASE 29)
 set(PNGLIB_NAME libpng${PNGLIB_MAJOR}${PNGLIB_MINOR})
 set(PNGLIB_VERSION ${PNGLIB_MAJOR}.${PNGLIB_MINOR}.${PNGLIB_RELEASE})
 
+# rom-properties: Not used.
+#include(GNUInstallDirs)
+
 # needed packages
-#Allow users to specify location of Zlib, 
+
+#Allow users to specify location of Zlib,
 # Useful if zlib is being built alongside this as a sub-project
 # rom-properties: Don't use option() here; it's set by extlib.
 #option(PNG_BUILD_ZLIB "Custom zlib Location, else find_package is used" OFF)
@@ -123,6 +127,38 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm" OR
     add_definitions(-DPNG_ARM_NEON_OPT=0)
   endif()
 endif()
+
+# set definitions and sources for powerpc
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^powerpc*" OR
+	${CMAKE_SYSTEM_PROCESSOR} MATCHES "^ppc64*" )
+  set(PNG_POWERPC_VSX_POSSIBLE_VALUES check on off)
+  set(PNG_POWERPC_VSX "check" CACHE STRING "Enable POWERPC VSX optimizations:
+     check: (default) use internal checking code;
+     off: disable the optimizations;
+     on: turn on unconditionally.")
+  set_property(CACHE PNG_POWERPC_VSX PROPERTY STRINGS
+     ${PNG_POWERPC_VSX_POSSIBLE_VALUES})
+  list(FIND PNG_POWERPC_VSX_POSSIBLE_VALUES ${PNG_POWERPC_VSX} index)
+  if(index EQUAL -1)
+    message(FATAL_ERROR
+      " PNG_POWERPC_VSX must be one of [${PNG_POWERPC_VSX_POSSIBLE_VALUES}]")
+  elseif(NOT ${PNG_POWERPC_VSX} STREQUAL "no")
+    set(libpng_powerpc_sources
+      powerpc/powerpc_init.c
+      powerpc/filter_vsx_intrinsics.c)
+
+    if(${PNG_POWERPC_VSX} STREQUAL "on")
+      add_definitions(-DPNG_POWERPC_VSX_OPT=2)
+    elseif(${PNG_POWERPC_VSX} STREQUAL "check")
+      add_definitions(-DPNG_POWERPC_VSX_CHECK_SUPPORTED)
+      message(WARNING
+      "[PNG_POWERPC_VSX==check] Please check contrib/powerpc/README file for the list of supported OSes.")
+    endif()
+  else()
+    add_definitions(-DPNG_POWERPC_VSX_OPT=0)
+  endif()
+endif()
+
 
 # SET LIBNAME
 set(PNG_LIB_NAME png${PNGLIB_MAJOR}${PNGLIB_MINOR})
@@ -415,6 +451,7 @@ set(libpng_sources
   pngwtran.c
   pngwutil.c
   ${libpng_arm_sources}
+  ${libpng_powerpc_sources}
 )
 
 # rom-properties: Enable Intel SSE2 optimizations on x86.
@@ -422,8 +459,8 @@ STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(libpng_sources
 		${libpng_sources}
-		contrib/intel/filter_sse2_intrinsics.c
-		contrib/intel/intel_init.c
+		intel/filter_sse2_intrinsics.c
+		intel/intel_init.c
 		)
 	ADD_DEFINITIONS(-DPNG_INTEL_SSE)
 	# Enable SSE2 for filter_sse2_intrinsics.c only.
@@ -434,7 +471,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 			# NOTE: We have to compile as C++ in versions
 			# of MSVC older than 2015 due to declarations
 			# of variables after code.
-			SET_SOURCE_FILES_PROPERTIES(contrib/intel/filter_sse2_intrinsics.c
+			SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
 				PROPERTIES LANGUAGE CXX)
 		ENDIF(MSVC_VERSION LESS 1900)
 	ELSEIF(NOT MSVC)
@@ -572,6 +609,8 @@ if(PNG_SHARED AND WIN32)
   set_target_properties(png PROPERTIES DEFINE_SYMBOL PNG_BUILD_DLL)
 endif()
 
+# rom-properties: Disable tests.
+IF(0)
 function(png_add_test)
   set(options)
   set(oneValueArgs NAME COMMAND)
@@ -724,6 +763,7 @@ if(PNG_TESTS AND PNG_SHARED)
   png_add_test(NAME pngimage-quick COMMAND pngimage OPTIONS --list-combos --log FILES ${PNGSUITE_PNGS})
   png_add_test(NAME pngimage-full COMMAND pngimage OPTIONS --exhaustive --list-combos --log FILES ${PNGSUITE_PNGS})
 endif()
+ENDIF(0) # rom-properties
 
 # rom-properties: Disable these tools.
 IF(0)
@@ -800,7 +840,7 @@ endif(NOT WIN32 OR CYGWIN OR MINGW)
 # SET UP LINKS
 if(PNG_SHARED)
   set_target_properties(png PROPERTIES
-#   VERSION 16.${PNGLIB_RELEASE}.1.6.28
+#   VERSION 16.${PNGLIB_RELEASE}.1.6.29
     VERSION 16.${PNGLIB_RELEASE}.0
     SOVERSION 16
     CLEAN_DIRECT_OUTPUT 1)
