@@ -1390,17 +1390,21 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 
 	// Convert the age ratings field to a string.
 	wostringstream woss;
-	bool printedOne = false;
+	unsigned int ratings_count = 0;
 	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
-		if (printedOne) {
+		if (ratings_count > 0) {
 			// Append a comma.
-			woss << L", ";
+			if (ratings_count % 4 == 0) {
+				// 4 ratings per line.
+				woss << L",\n";
+			} else {
+				woss << L", ";
+			}
 		}
-		printedOne = true;
 
 		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
@@ -1412,9 +1416,10 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 		}
 		woss << L'=';
 		woss << RP2W_s(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
+		ratings_count++;
 	}
 
-	if (!printedOne) {
+	if (ratings_count == 0) {
 		// No age ratings.
 		woss << L"None";
 	}
