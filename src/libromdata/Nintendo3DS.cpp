@@ -59,9 +59,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(Nintendo3DSPrivate)
 
 	public:
-		// RomFields data.
-		static const struct RomFields::Desc n3ds_fields[];
-
 		// ROM type.
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
@@ -129,19 +126,8 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 /** Nintendo3DSPrivate **/
 
-// ROM fields.
-const struct RomFields::Desc Nintendo3DSPrivate::n3ds_fields[] = {
-	// SMDH
-	{_RP("Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Full Title"), RomFields::RFT_STRING, {nullptr}},
-	{_RP("Publisher"), RomFields::RFT_STRING, {nullptr}},
-	// TODO (and others)
-	//{_RP("Age Ratings"), RomFields::RFT_STRING, {nullptr}},
-	//{_RP("Region"}, RomFields::RFT_BITFIELD, {nullptr}},
-};
-
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
-	: super(q, file, n3ds_fields, ARRAY_SIZE(n3ds_fields))
+	: super(q, file)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
 {
@@ -637,21 +623,20 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
+	d->fields->reserve(3); // Maximum of 3 fields.
+
 	// Load and parse the SMDH header.
 	if (d->loadSMDH() == 0) {
 		// SMDH header.
 		// TODO: Get the system language.
-		d->fields->addData_string(utf16le_to_rp_string(
+		d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
 			d->smdh_header.titles[1].desc_short, ARRAY_SIZE(d->smdh_header.titles[1].desc_short)));
-		d->fields->addData_string(utf16le_to_rp_string(
+		d->fields->addField_string(_RP("Full Title"), utf16le_to_rp_string(
 			d->smdh_header.titles[1].desc_long, ARRAY_SIZE(d->smdh_header.titles[1].desc_long)));
-		d->fields->addData_string(utf16le_to_rp_string(
+		d->fields->addField_string(_RP("Publisher"), utf16le_to_rp_string(
 			d->smdh_header.titles[1].publisher, ARRAY_SIZE(d->smdh_header.titles[1].publisher)));
-	} else {
-		// SMDH isn't loaded.
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
-		d->fields->addData_invalid();
+
+		// TODO: Age ratings, region code.
 	}
 
 	// Finished reading the field data.
