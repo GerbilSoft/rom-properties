@@ -642,11 +642,11 @@ int Nintendo3DS::loadFieldData(void)
 		// SMDH header.
 		// TODO: Get the system language.
 		d->fields->addData_string(utf16le_to_rp_string(
-			d->smdh_header.titles[1].desc_short, sizeof(d->smdh_header.titles[1].desc_short)));
+			d->smdh_header.titles[1].desc_short, ARRAY_SIZE(d->smdh_header.titles[1].desc_short)));
 		d->fields->addData_string(utf16le_to_rp_string(
-			d->smdh_header.titles[1].desc_long, sizeof(d->smdh_header.titles[1].desc_long)));
+			d->smdh_header.titles[1].desc_long, ARRAY_SIZE(d->smdh_header.titles[1].desc_long)));
 		d->fields->addData_string(utf16le_to_rp_string(
-			d->smdh_header.titles[1].publisher, sizeof(d->smdh_header.titles[1].publisher)));
+			d->smdh_header.titles[1].publisher, ARRAY_SIZE(d->smdh_header.titles[1].publisher)));
 	} else {
 		// SMDH isn't loaded.
 		d->fields->addData_invalid();
