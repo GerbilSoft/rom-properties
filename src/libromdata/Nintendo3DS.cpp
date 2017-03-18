@@ -636,7 +636,54 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_string(_RP("Publisher"), utf16le_to_rp_string(
 			d->smdh_header.titles[1].publisher, ARRAY_SIZE(d->smdh_header.titles[1].publisher)));
 
-		// TODO: Age ratings, region code.
+		// Region code.
+		// Maps directly to the SMDH field.
+		static const rp_char *const n3ds_region_bitfield_names[] = {
+			_RP("Japan"), _RP("USA"), _RP("Europe"),
+			_RP("Australia"), _RP("China"), _RP("South Korea"),
+			_RP("Taiwan")
+		};
+		vector<rp_string> *v_n3ds_region_bitfield_names = RomFields::strArrayToVector(
+			n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
+		d->fields->addField_bitfield(_RP("Region Code"),
+			v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh_header.settings.region_code));
+
+		// Age rating(s).
+		// Note that not all 16 fields are present on 3DS,
+		// though the fields do match exactly, so no
+		// mapping is necessary.
+		RomFields::age_ratings_t age_ratings;
+		// Valid ratings: 0-1, 3-4, 6-10
+		static const uint16_t valid_ratings = 0x7DB;
+
+		for (int i = (int)age_ratings.size()-1; i >= 0; i--) {
+			if (!(valid_ratings & (1 << i))) {
+				// Rating is not applicable for NintendoDS.
+				age_ratings[i] = 0;
+				continue;
+			}
+
+			// 3DS ratings field:
+			// - 0x1F: Age rating.
+			// - 0x20: No age restriction.
+			// - 0x40: Rating pending.
+			// - 0x80: Rating is valid if set.
+			const uint8_t n3ds_rating = d->smdh_header.settings.ratings[i];
+			if (!(n3ds_rating & 0x80)) {
+				// Rating is unused.
+				age_ratings[i] = 0;
+			} else if (n3ds_rating & 0x40) {
+				// Rating pending.
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_PENDING;
+			} else if (n3ds_rating & 0x20) {
+				// No age restriction.
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | RomFields::AGEBF_NO_RESTRICTION;
+			} else {
+				// Set active | age value.
+				age_ratings[i] = RomFields::AGEBF_ACTIVE | (n3ds_rating & 0x1F);
+			}
+		}
+		d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
 	}
 
 	// Finished reading the field data.
