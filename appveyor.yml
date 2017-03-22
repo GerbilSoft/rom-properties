@@ -33,11 +33,10 @@ configuration:
 environment:
   NASM_URL: http://www.nasm.us/pub/nasm/releasebuilds/2.12.02/win64/nasm-2.12.02-installer-x64.exe
 
+# Install NASM, then run CMake.
 before_build:
-  # Install NASM.
   - appveyor DownloadFile "%NASM_URL%" -FileName nasminst.exe
   - start /wait nasminst /S
-  # Run CMake.
   - cd %APPVEYOR_BUILD_FOLDER%
   - appveyor.cmd
 
