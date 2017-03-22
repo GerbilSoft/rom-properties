@@ -35,7 +35,7 @@ environment:
 
 before_build:
   # Install NASM.
-  - curl -L -o nasminst.exe "%NASM_URL%"
+  - appveyor DownloadFile "%NASM_URL%" -FileName nasminst.exe
   - start /wait nasminst /S
   # Run CMake.
   - cd %APPVEYOR_BUILD_FOLDER%
