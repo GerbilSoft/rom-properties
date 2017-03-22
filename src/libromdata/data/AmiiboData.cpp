@@ -385,11 +385,11 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_inkling_vari
 #define MSS_VARIANT_ARRAY_DEF(char_name, c_name) \
 	const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::mss_##c_name##_variants[] = { \
 		{0x00, _RP(char_name)}, \
-		{0x01, _RP(char_name " (Soccer)")}, \
-		{0x02, _RP(char_name " (Baseball")}, \
-		{0x03, _RP(char_name " (Tennis)")}, \
-		{0x04, _RP(char_name " (Golf)")}, \
-		{0x05, _RP(char_name " (Horse Racing")}, \
+		{0x01, _RP2(char_name, " (Soccer)")}, \
+		{0x02, _RP2(char_name, " (Baseball")}, \
+		{0x03, _RP2(char_name, " (Tennis)")}, \
+		{0x04, _RP2(char_name, " (Golf)")}, \
+		{0x05, _RP2(char_name, " (Horse Racing")}, \
 	}
 
 MSS_VARIANT_ARRAY_DEF("Mario", mario);

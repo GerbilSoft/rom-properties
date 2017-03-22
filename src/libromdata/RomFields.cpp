@@ -109,6 +109,7 @@ RomFieldsPrivate::RomFieldsPrivate()
 // DEPRECATED: Conversion of old-style desc to new fields.
 RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *desc, int count)
 	: refCount(1)
+	, tabIdx(0)
 	, dataCount(0)
 {
 	// Initialize fields.
