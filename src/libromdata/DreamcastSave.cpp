@@ -594,6 +594,16 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		return nullptr;
 	}
 
+	// NOTE: We need to set up iconAnimData in order to ensure
+	// this icon is deleted when the DreamcastSave is deleted.
+	this->iconAnimData = new IconAnimData();
+	iconAnimData->count = 1;
+	iconAnimData->seq_index[0] = 0;
+	iconAnimData->delays[0].numer = 0;
+	iconAnimData->delays[0].denom = 0;
+	iconAnimData->delays[0].ms = 0;
+	iconAnimData->frames[0] = nullptr;
+
 	// Do we have a color icon?
 	if (vms_header.icondata_vms.color_icon_addr >= sizeof(vms_header.icondata_vms)) {
 		// We have a color icon.
@@ -646,6 +656,7 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			palette.u16, sizeof(palette.u16));
 		if (img) {
 			// Icon converted successfully.
+			iconAnimData->frames[0] = img;
 			return img;
 		}
 	}
@@ -694,18 +705,9 @@ rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			palette[0] = 0xFF8CCEAD;	// Green
 			palette[1] = 0xFF081884;	// Blue
 		}
+
+		iconAnimData->frames[0] = img;
 	}
-
-	// NOTE: We need to set up iconAnimData in order to ensure
-	// this icon is deleted when the DreamcastSave is deleted.
-
-	this->iconAnimData = new IconAnimData();
-	iconAnimData->count = 1;
-	iconAnimData->seq_index[0] = 0;
-	iconAnimData->delays[0].numer = 0;
-	iconAnimData->delays[0].denom = 0;
-	iconAnimData->delays[0].ms = 0;
-	iconAnimData->frames[0] = img;
 
 	// Return the ICONDATA_VMS image.
 	return img;
