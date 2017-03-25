@@ -89,7 +89,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 			// The following headers are not exclusive,
 			// so one or more can be present.
-			HEADER_SMDH	= (1 << 0),
+			HEADER_SMDH	= (1 << 0),	// Includes header and icon.
 			HEADER_NCCH	= (1 << 1),
 
 			// The following headers are mutually exclusive.
@@ -104,7 +104,10 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		// Non-exclusive headers.
 		// NOTE: These must be byteswapped on access.
-		N3DS_SMDH_Header_t smdh_header;
+		struct {
+			N3DS_SMDH_Header_t header;
+			N3DS_SMDH_Icon_t icon;
+		} smdh;
 		N3DS_NCCH_Header_NoSig_t ncch_header;	// Primary NCCH, i.e. for the game.
 
 		// Mutually-exclusive headers.
@@ -131,7 +134,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		}
 
 		/**
-		 * Load the SMDH header.
+		 * Load the SMDH section.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadSMDH(void);
@@ -196,7 +199,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	img_icon[1] = nullptr;
 
 	// Clear the various headers.
-	memset(&smdh_header, 0, sizeof(smdh_header));
+	memset(&smdh, 0, sizeof(smdh));
 	memset(&ncch_header, 0, sizeof(ncch_header));
 	memset(&mxh, 0, sizeof(mxh));
 }
@@ -208,27 +211,27 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 }
 
 /**
- * Load the SMDH header.
+ * Load the SMDH section.
  * @return 0 on success; non-zero on error.
  */
 int Nintendo3DSPrivate::loadSMDH(void)
 {
 	if (headers_loaded & HEADER_SMDH) {
-		// SMDH header is already loaded.
+		// SMDH section is already loaded.
 		return 0;
 	}
 
 	switch (romType) {
 		case ROM_TYPE_SMDH: {
-			// SMDH header is at the beginning of the file.
+			// SMDH section is the entire file.
 			file->rewind();
-			size_t size = file->read(&smdh_header, sizeof(smdh_header));
-			if (size != sizeof(smdh_header)) {
-				// Error reading the SMDH header.
+			size_t size = file->read(&smdh, sizeof(smdh));
+			if (size != sizeof(smdh)) {
+				// Error reading the SMDH section.
 				return -1;
 			}
 
-			// SMDH header has been read.
+			// SMDH section has been read.
 			break;
 		}
 
@@ -245,21 +248,19 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -3;
 			}
 
-			// Read the SMDH header.
+			// Read the SMDH section.
 			int ret = file->seek(le32_to_cpu(mxh.hb3dsx_header.smdh_offset));
 			if (ret != 0) {
 				// Seek error.
 				return -4;
 			}
-
-			// Read the SMDH header.
-			size_t size = file->read(&smdh_header, sizeof(smdh_header));
-			if (size != sizeof(smdh_header)) {
-				// Error reading the SMDH header.
+			size_t size = file->read(&smdh, sizeof(smdh));
+			if (size != sizeof(smdh)) {
+				// Error reading the SMDH section.
 				return -5;
 			}
 
-			// SMDH header has been read.
+			// SMDH section has been read.
 			break;
 		}
 
@@ -279,9 +280,9 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -6;
 			}
 
-			// FBI's meta section is 15,040 bytes, but the SMDH header
-			// and icon only take up 14,016 bytes.
-			if (le32_to_cpu(mxh.cia_header.meta_size) < (uint32_t)(sizeof(smdh_header) + sizeof(N3DS_SMDH_Icon_t))) {
+			// FBI's meta section is 15,040 bytes, but the SMDH section
+			// only takes up 14,016 bytes.
+			if (le32_to_cpu(mxh.cia_header.meta_size) < (uint32_t)sizeof(smdh)) {
 				// Meta section is either not present or too small.
 				return -7;
 			}
@@ -299,19 +300,19 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -8;
 			}
 
-			// Read the SMDH header.
-			size_t size = file->read(&smdh_header, sizeof(smdh_header));
-			if (size != sizeof(smdh_header)) {
-				// Error reading the SMDH header.
+			// Read the SMDH section.
+			size_t size = file->read(&smdh, sizeof(smdh));
+			if (size != sizeof(smdh)) {
+				// Error reading the SMDH section.
 				return -5;
 			}
 
-			// SMDH header has been read.
+			// SMDH section has been read.
 			break;
 		}
 
 		case ROM_TYPE_CCI: {
-			// CCI file. (TODO: Consolidate with loadIcon().)
+			// CCI file.
 			// Load the ExeFS.
 			int ret = loadExeFS();
 			if (ret != 0) {
@@ -338,11 +339,14 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			if (!file_header) {
 				// No icon.
 				return -8;
+			} else if (le32_to_cpu(file_header->size) < sizeof(smdh)) {
+				// Icon is too small.
+				return -9;
 			}
 
-			// Load the SMDH header from the icon.
+			// Load the SMDH section.
 			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
-			memcpy(&smdh_header, exefs.get() + offset, sizeof(smdh_header));
+			memcpy(&smdh, exefs.get() + offset, sizeof(smdh));
 			break;
 		}
 
@@ -352,11 +356,11 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	}
 
 	// Verify the SMDH magic number.
-	if (memcmp(smdh_header.magic, N3DS_SMDH_HEADER_MAGIC, sizeof(smdh_header.magic)) != 0) {
+	if (memcmp(smdh.header.magic, N3DS_SMDH_HEADER_MAGIC, sizeof(smdh.header.magic)) != 0) {
 		// SMDH magic number is incorrect.
 		return -99;
 	}
-	// Loaded the SMDH header.
+	// Loaded the SMDH section.
 	headers_loaded |= HEADER_SMDH;
 	return 0;
 }
@@ -541,118 +545,11 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 		return nullptr;
 	}
 
-	// Make sure the SMDH header is loaded.
+	// Make sure the SMDH section is loaded.
 	if (!(headers_loaded & HEADER_SMDH)) {
-		// Load the SMDH header.
+		// Load the SMDH section.
 		if (loadSMDH() != 0) {
-			// Error loading the SMDH header.
-			return nullptr;
-		}
-	}
-
-	// Since loadSMDH() succeeded, all required headers are present.
-
-	// Load the SMDH icon data structure.
-	// How to load this depends on the file type.
-	// In all cases, the icon is located immediately
-	// after the SMDH header.
-	N3DS_SMDH_Icon_t smdh_icon;
-	uint32_t smdh_icon_address = 0;	// If non-zero, load as plaintext here.
-	switch (romType) {
-		case ROM_TYPE_SMDH: {
-			// SMDH file. Absolute addressing works absolutely.
-			smdh_icon_address = (uint32_t)sizeof(smdh_header);
-			break;
-		}
-
-		case ROM_TYPE_3DSX: {
-			// SMDH icon is located past the SMDH header.
-			smdh_icon_address = (uint32_t)(le32_to_cpu(mxh.hb3dsx_header.smdh_offset) + sizeof(smdh_header));
-			break;
-		}
-
-		case ROM_TYPE_CIA: {
-			// CIA file. SMDH may be located at the end
-			// of the file in plaintext, or as part of
-			// the executable in decrypted archives.
-
-			// TODO: Handle decrypted archives.
-			// TODO: If a CIA has an SMDH in the archive itself
-			// and as a meta at the end of the file, which does
-			// the FBI program prefer?
-
-			// Determine the SMDH starting address.
-			smdh_icon_address = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
-					toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
-					(uint32_t)sizeof(N3DS_CIA_Meta_Header_t) +
-					(uint32_t)sizeof(smdh_header);
-
-			// FBI's meta section is 15,040 bytes, but the SMDH header
-			// and icon only take up 14,016 bytes.
-			if (le32_to_cpu(mxh.cia_header.meta_size) <
-			    (uint32_t)(sizeof(smdh_header) + sizeof(smdh_icon)))
-			{
-				// Meta section is either not present or too small.
-				return nullptr;
-			}
-			break;
-		}
-
-		case ROM_TYPE_CCI: {
-			// CCI file. (TODO: Consolidate with loadSMDH().)
-			// Load the ExeFS.
-			int ret = loadExeFS();
-			if (ret != 0) {
-				// Error loading the ExeFS.
-				return nullptr;
-			}
-
-			// FIXME: Verify content length.
-			const N3DS_ExeFS_Header_t *const exefs_header =
-				reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
-			if (!exefs_header) {
-				// No ExeFS header.
-				return nullptr;
-			}
-			// Find "icon".
-			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
-				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
-					// Found "icon".
-					file_header = &exefs_header->files[i];
-					break;
-				}
-			}
-			if (!file_header) {
-				// No icon.
-				return nullptr;
-			}
-
-			// Load the SMDH icon data.
-			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
-			memcpy(&smdh_icon, exefs.get() + offset + sizeof(smdh_header), sizeof(smdh_icon));
-			break;
-		}
-
-		default:
-			// Unsupported...
-			return nullptr;
-	}
-
-	if (smdh_icon_address != 0) {
-		// Load the SMDH icon at the specified address.
-		int ret = file->seek(smdh_icon_address);
-		if (ret != 0) {
-			// Seek failed.
-			return nullptr;
-		}
-
-		size_t size = file->read(&smdh_icon, sizeof(smdh_icon));
-		if (size != sizeof(smdh_icon)) {
-			// Read failed.
+			// Error loading the SMDH section.
 			return nullptr;
 		}
 	}
@@ -669,13 +566,13 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 			// has a broken 24x24 icon.
 			img_icon[0] = ImageDecoder::fromN3DSTiledRGB565(
 				N3DS_SMDH_ICON_SMALL_W, N3DS_SMDH_ICON_SMALL_H,
-				smdh_icon.small, sizeof(smdh_icon.small));
+				smdh.icon.small, sizeof(smdh.icon.small));
 			break;
 		case 1:
 			// Large icon. (48x48)
 			img_icon[1] = ImageDecoder::fromN3DSTiledRGB565(
 				N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
-				smdh_icon.large, sizeof(smdh_icon.large));
+				smdh.icon.large, sizeof(smdh.icon.large));
 			break;
 		default:
 			// Invalid icon index.
@@ -880,7 +777,6 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 
 	// Determine what kind of file this is.
 	// NOTE: SMDH header and icon will be loaded on demand.
-	// and load the SMDH header and icon.
 	switch (d->romType) {
 		case Nintendo3DSPrivate::ROM_TYPE_SMDH:
 			// SMDH header.
@@ -1248,11 +1144,11 @@ int Nintendo3DS::loadFieldData(void)
 		// SMDH header.
 		// TODO: Get the system language.
 		d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
-			d->smdh_header.titles[1].desc_short, ARRAY_SIZE(d->smdh_header.titles[1].desc_short)));
+			d->smdh.header.titles[1].desc_short, ARRAY_SIZE(d->smdh.header.titles[1].desc_short)));
 		d->fields->addField_string(_RP("Full Title"), utf16le_to_rp_string(
-			d->smdh_header.titles[1].desc_long, ARRAY_SIZE(d->smdh_header.titles[1].desc_long)));
+			d->smdh.header.titles[1].desc_long, ARRAY_SIZE(d->smdh.header.titles[1].desc_long)));
 		d->fields->addField_string(_RP("Publisher"), utf16le_to_rp_string(
-			d->smdh_header.titles[1].publisher, ARRAY_SIZE(d->smdh_header.titles[1].publisher)));
+			d->smdh.header.titles[1].publisher, ARRAY_SIZE(d->smdh.header.titles[1].publisher)));
 
 		// Region code.
 		// Maps directly to the SMDH field.
@@ -1264,7 +1160,7 @@ int Nintendo3DS::loadFieldData(void)
 		vector<rp_string> *v_n3ds_region_bitfield_names = RomFields::strArrayToVector(
 			n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
 		d->fields->addField_bitfield(_RP("Region Code"),
-			v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh_header.settings.region_code));
+			v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh.header.settings.region_code));
 
 		// Age rating(s).
 		// Note that not all 16 fields are present on 3DS,
@@ -1286,7 +1182,7 @@ int Nintendo3DS::loadFieldData(void)
 			// - 0x20: No age restriction.
 			// - 0x40: Rating pending.
 			// - 0x80: Rating is valid if set.
-			const uint8_t n3ds_rating = d->smdh_header.settings.ratings[i];
+			const uint8_t n3ds_rating = d->smdh.header.settings.ratings[i];
 			if (!(n3ds_rating & 0x80)) {
 				// Rating is unused.
 				age_ratings[i] = 0;
@@ -1543,6 +1439,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
  */
 int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
+	return -ENOENT;
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
@@ -1682,7 +1579,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// Determine the GameTDB region code(s).
 	const uint32_t smdhRegion =
 		(d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH)
-			? le32_to_cpu(d->smdh_header.settings.region_code)
+			? le32_to_cpu(d->smdh.header.settings.region_code)
 			: 0;
 	vector<const char*> tdb_regions = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
 
