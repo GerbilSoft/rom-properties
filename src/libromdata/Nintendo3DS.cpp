@@ -126,7 +126,16 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		int loadSMDH(void);
 
 		/**
+		 * Load the specified NCCH header.
+		 * @param idx		[in] Content/partition index.
+		 * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+
+		/**
 		 * Load the NCCH header for the primary content.
+		 * The NCCH header is loaded into this->ncch_header.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadNCCH(void);
@@ -303,25 +312,46 @@ int Nintendo3DSPrivate::loadSMDH(void)
 }
 
 /**
- * Load the NCCH header for the primary content.
+ * Load the specified NCCH header.
+ * @param idx		[in] Content/partition index.
+ * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
  * @return 0 on success; non-zero on error.
  */
-int Nintendo3DSPrivate::loadNCCH(void)
+int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 {
-	if (headers_loaded & HEADER_NCCH) {
-		// NCCH header is already loaded.
-		return 0;
+	assert(pNcchHeader != nullptr);
+	if (!pNcchHeader) {
+		return -100;
 	}
 
+	uint8_t media_unit_shift = 9;
 	switch (romType) {
 		case ROM_TYPE_CCI: {
-			// A copy of the primary NCCH header (without signature)
-			// is located at the beginning of the ROM file.
-			file->seek(0x1100);
-			size_t size = file->read(&ncch_header, sizeof(ncch_header));
-			if (size != sizeof(ncch_header)) {
-				// Error reading the NCCH header.
+			// The NCCH header is located at the beginning of the partition.
+			// (Add 0x100 to skip the signature.)
+			assert(idx >= 0 && idx < 8);
+			if (idx < 0 || idx >= 8) {
+				// Invalid partition index.
 				return -1;
+			}
+
+			// Add the CCI media unit shift, if specified.
+			media_unit_shift += mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+
+			// Get the partition offset.
+			// TODO: Validate the partition length?
+			const int64_t partition_offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
+			// Make sure the partition starts after the card info header.
+			if (partition_offset <= 0x2000) {
+				// Invalid partition offset.
+				return -2;
+			}
+
+			file->seek(partition_offset + 0x100);
+			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
+			if (size != sizeof(*pNcchHeader)) {
+				// Error reading the NCCH header.
+				return -3;
 			}
 
 			// NCCH header has been read.
@@ -334,13 +364,34 @@ int Nintendo3DSPrivate::loadNCCH(void)
 	}
 
 	// Verify the NCCH magic number.
-	if (memcmp(ncch_header.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.magic)) != 0) {
-		// SMDH magic number is incorrect.
+	if (memcmp(pNcchHeader->magic, N3DS_NCCH_HEADER_MAGIC, sizeof(pNcchHeader->magic)) != 0) {
+		// NCCH magic number is incorrect.
 		return -99;
 	}
 	// Loaded the NCCH header.
-	headers_loaded |= HEADER_NCCH;
 	return 0;
+}
+
+/**
+ * Load the NCCH header for the primary content.
+ * The NCCH header is loaded into this->ncch_header.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadNCCH(void)
+{
+	if (headers_loaded & HEADER_NCCH) {
+		// NCCH header is already loaded.
+		return 0;
+	}
+
+	// TODO: For CCIs, verify that the copy in the
+	// Card Info Header matches the actual partition?
+	int ret = loadNCCH(0, &ncch_header);
+	if (ret == 0) {
+		// NCCH header loaded.
+		headers_loaded |= HEADER_NCCH;
+	}
+	return ret;
 }
 
 /**
