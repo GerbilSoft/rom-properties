@@ -542,9 +542,12 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			return ret;
 		case 0:
 		default:
-			// No DSi region, or unsupported DSi region.
+			// No SMDH region, or unsupported SMDH region.
 			break;
 	}
+
+	// TODO: If multiple SMDH region bits are set,
+	// compare each to the host system region.
 
 	// Check for region-specific game IDs.
 	switch (idRegion) {

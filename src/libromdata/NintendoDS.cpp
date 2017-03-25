@@ -564,6 +564,9 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 			break;
 	}
 
+	// TODO: If multiple DSi region bits are set,
+	// compare each to the host system region.
+
 	// Check for China/Korea.
 	if (ndsRegion & NDS_REGION_CHINA) {
 		ret.push_back("ZHCN");
@@ -584,6 +587,12 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
 			break;
 		case 'J':	// Japan
 			ret.push_back("JA");
+			break;
+		case 'O':
+			// TODO: US/EU.
+			// Compare to host system region.
+			// For now, assuming US.
+			ret.push_back("US");
 			break;
 		case 'P':	// PAL
 		case 'X':	// Multi-language release
