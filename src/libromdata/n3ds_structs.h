@@ -526,6 +526,104 @@ typedef struct PACKED _N3DS_ExeFS_Header_t {
 #pragma pack()
 ASSERT_STRUCT(N3DS_ExeFS_Header_t, 512);
 
+/**
+ * Nintendo 3DS: Title Metadata signature type.
+ * TMD header location depends on the signature type.
+ */
+typedef enum {
+	// NOTE: The first three are not generally used on 3DS.
+	N3DS_TMD_RSA_4096_SHA1		= 0x00010000,	// len = 0x200, pad = 0x3C
+	N3DS_TMD_RSA_2048_SHA1		= 0x00010001,	// len = 0x100, pad = 0x3C
+	N3DS_TMD_EC_SHA1		= 0x00010002,	// len =  0x3C, pad = 0x40
+
+	// These are used on 3DS.
+	N3DS_TMD_RSA_4096_SHA256	= 0x00010003,	// len = 0x200, pad = 0x3C
+	N3DS_TMD_RSA_2048_SHA256	= 0x00010004,	// len = 0x100, pad = 0x3C
+	N3DS_TMD_ECDSA_SHA256		= 0x00010005,	// len =  0x3C, pad = 0x40
+} N3DS_TMD_Signature_Type;
+
+/**
+ * Nintendo 3DS: Title Metadata header.
+ * Reference: https://3dbrew.org/wiki/TMD
+ *
+ * All fields are BIG-endian due to its
+ * roots in the Wii TMD format.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_TMD_Header_t {
+	char signature_issuer[0x40];	// [0x00] Signature issuer.
+	uint8_t tmd_version;		// [0x40]
+	uint8_t ca_crl_version;		// [0x41]
+	uint8_t signer_crl_version;	// [0x42]
+	uint8_t reserved1;		// [0x43]
+	uint64_t system_version;	// [0x44] Required system version.
+	uint64_t title_id;		// [0x4C] Title ID.
+	uint32_t title_type;		// [0x54] Title type.
+	uint16_t group_id;		// [0x58] Group ID.
+	uint32_t save_data_size;	// [0x4A] Save data size. (SRL: Public save data size)
+	uint32_t srl_private_save_data_size;	// [0x5E] SRL: Private save data size.
+	uint32_t reserved2;		// [0x62]
+	uint8_t srl_flag;		// [0x66] SRL flag.
+	uint8_t reserved3[0x31];	// [0x67]
+	uint32_t access_rights;		// [0x98] Access rights.
+	uint16_t title_version;		// [0x9C] Title version.
+	uint16_t content_count;		// [0x9E] Content count.
+	uint16_t boot_content;		// [0xA0] Boot content.
+	uint8_t padding[2];		// [0xA2]
+	uint8_t content_info_sha256[0x20];	// [0xA4] SHA-256 hash of content info records.
+} N3DS_TMD_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_TMD_Header_t, 0xC4);
+
+/**
+ * Nintendo 3DS: Content Info Record.
+ * Reference: https://3dbrew.org/wiki/TMD
+ *
+ * All fields are BIG-endian due to its
+ * roots in the Wii TMD format.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_Content_Info_Record_t {
+	uint16_t content_index_offset;
+	uint16_t content_command_count;	// [k]
+	uint8_t sha256_next[0x20];	// SHA-256 hash of the next [k] content records.
+} N3DS_Content_Info_Record_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_Content_Info_Record_t, 0x24);
+
+/**
+ * Nintendo 3DS: Content Chunk Record.
+ * Reference: https://3dbrew.org/wiki/TMD
+ *
+ * All fields are BIG-endian due to its
+ * roots in the Wii TMD format.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_Content_Chunk_Record_t {
+	uint32_t id;		// [0x00]
+	uint16_t index;		// [0x04]
+	uint16_t type;		// [0x06]
+	uint64_t size;		// [0x08]
+	uint8_t sha256[0x20];	// [0x10]
+} N3DS_Content_Chunk_Record_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_Content_Chunk_Record_t, 0x30);
+
+/**
+ * Nintendo 3DS: Title Metadata.
+ * Reference: https://3dbrew.org/wiki/TMD
+ *
+ * All fields are BIG-endian due to its
+ * roots in the Wii TMD format.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_TMD_t {
+	N3DS_TMD_Header_t header;			// [0x00] TMD header.
+	N3DS_Content_Info_Record_t cinfo_records[64];	// [0xA4] Content info records.
+} N3DS_TMD_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
+
 #ifdef __cplusplus
 }
 #endif

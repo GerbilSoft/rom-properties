@@ -95,10 +95,11 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are mutually exclusive.
 			HEADER_3DSX	= (1 << 2),
 			HEADER_CIA	= (1 << 3),
-			HEADER_NCSD	= (1 << 4),	// ncsd_header, cinfo_header
+			HEADER_TMD	= (1 << 4),
+			HEADER_NCSD	= (1 << 5),	// ncsd_header, cinfo_header
 
 			// TEMPORARY: Replace with N3DSExeFS, subclass of IPartition
-			TEMP_EXEFS	= (1 << 5),
+			TEMP_EXEFS	= (1 << 6),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -118,12 +119,22 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// NOTE: These must be byteswapped on access.
 		union {
 			N3DS_3DSX_Header_t hb3dsx_header;
-			N3DS_CIA_Header_t cia_header;
+			struct {
+				N3DS_CIA_Header_t cia_header;
+				N3DS_TMD_Header_t tmd_header;
+				// Content start address.
+				uint32_t content_start_addr;
+			};
 			struct {
 				N3DS_NCSD_Header_t ncsd_header;
 				N3DS_NCSD_Card_Info_Header_t cinfo_header;
 			};
 		} mxh;
+
+		// Content chunk records. (CIA only)
+		// Loaded by loadTMD().
+		unsigned int content_count;
+		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
 
 		// ExeFS.
 		// TODO: Replace with N3DSExeFS, subclass of IPartition
@@ -166,6 +177,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		int loadNCCH(void);
 
 		/**
+		 * Load the TMD header. (CIA only)
+		 * The TMD header is loaded into mxh.tmd_header.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadTMD(void);
+
+		/**
 		 * Load the ExeFS from the primary content.
 		 * TEMPORARY DEBUG FUNCTION; replace with N3DSExeFS, subclass of IPartition
 		 * ExeFS is loaded into this->exefs.
@@ -203,6 +221,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, headers_loaded(0)
 	, ncch_offset(0)
 	, ncch_length(0)
+	, content_count(0)
 {
 	// Clear img_icon.
 	img_icon[0] = nullptr;
@@ -396,25 +415,43 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -1;
 			}
 
-			// TODO: Parse the content index table.
-			// Assuming content 0 for now.
+			// Load the TMD header.
+			if (loadTMD() != 0) {
+				// Unable to load the TMD header.
+				return -2;
+			}
+
+			// TODO: Check the issuer to determine which set
+			// of encryption keys to use.
+			// TODO: Print TMD info in properties?
+
 			// TODO: Determine the encryption method from the ticket.
 			// For now, assuming the NCCH is unencrypted.
 
-			// Get the NCCH content length.
-			// FIXME: Length is technically 64-bit, but games larger
-			// than 4 GB don't currently exist.
-			length = (uint32_t)le64_to_cpu(mxh.cia_header.content_size);
-			if (length < sizeof(N3DS_NCCH_Header_t)) {
-				// Content is too small for NCCH.
-				return 3;
+			// Check if the content index is valid.
+			if ((unsigned int)idx >= content_count) {
+				// Content index is out of range.
+				return -3;
 			}
 
-			// Determine the NCCH starting address.
-			offset = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
-				 toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
-				 toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
-				 toNext64(le32_to_cpu(mxh.cia_header.tmd_size));
+			// Determine the content start position.
+			// Need to add all content chunk sizes, algined to 64 bytes.
+			for (unsigned int i = 0; i < content_count; i++) {
+				if (be16_to_cpu(content_chunks[i].index) == idx) {
+					// Found the content chunk.
+					length = (uint32_t)(be64_to_cpu(content_chunks[i].size));
+					break;
+				}
+				// Next chunk.
+				offset += toNext64(be64_to_cpu(content_chunks[i].size));
+			}
+			if (length == 0) {
+				// Content chunk not found.
+				return -4;
+			}
+
+			// Add the content start address.
+			offset += mxh.content_start_addr;
 
 			// Add 0x100 to skip the RSA signature.
 			int ret = file->seek(offset + 0x100);
@@ -520,6 +557,113 @@ int Nintendo3DSPrivate::loadNCCH(void)
 		headers_loaded |= HEADER_NCCH;
 	}
 	return ret;
+}
+
+/**
+ * Load the TMD header. (CIA only)
+ * The TMD header is loaded into mxh.tmd_header.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadTMD(void)
+{
+	if (headers_loaded & HEADER_TMD) {
+		// TMD header is already loaded.
+		return 0;
+	} else if (romType != ROM_TYPE_CIA) {
+		// TMD is only available in CIA files.
+		return -1;
+	}
+
+	// Determine the TMD starting address.
+	const uint32_t tmd_start = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+			toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
+			toNext64(le32_to_cpu(mxh.cia_header.ticket_size));
+	uint32_t addr = tmd_start;
+	int ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		return -2;
+	}
+
+	// Read the signature type.
+	uint32_t signature_type;
+	size_t size = file->read(&signature_type, sizeof(signature_type));
+	if (size != sizeof(signature_type)) {
+		// Read error.
+		return -3;
+	}
+	signature_type = be32_to_cpu(signature_type);
+
+	// Verify the signature type.
+	if ((signature_type & 0xFFFFFFF8) != 0x00010000) {
+		// Invalid signature type.
+		return -4;
+	}
+
+	// Skip over the signature and padding.
+	uint32_t sig_len;
+	switch (signature_type & 0x07) {
+		case N3DS_TMD_RSA_4096_SHA1 & 0x07:
+		case N3DS_TMD_RSA_4096_SHA256 & 0x07:
+			sig_len = sizeof(signature_type) + 0x200 + 0x3C;
+			break;
+		case N3DS_TMD_RSA_2048_SHA1 & 0x07:
+		case N3DS_TMD_RSA_2048_SHA256 & 0x07:
+			sig_len = sizeof(signature_type) + 0x100 + 0x3C;
+			break;
+		case N3DS_TMD_EC_SHA1 & 0x07:
+		case N3DS_TMD_ECDSA_SHA256 & 0x07:
+			sig_len = sizeof(signature_type) + 0x3C + 0x40;
+			break;
+		default:
+			// Invalid signature type.
+			return -4;
+	}
+
+	// Make sure the TMD is large enough.
+	const uint32_t tmd_size = le32_to_cpu(mxh.cia_header.tmd_size);
+	if (tmd_size < (sizeof(N3DS_TMD_t) + sig_len)) {
+		// TMD is too small.
+		return -5;
+	}
+
+	// Read the TMD.
+	addr += sig_len;
+	ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		return -6;
+	}
+	size = file->read(&mxh.tmd_header, sizeof(mxh.tmd_header));
+	if (size != sizeof(mxh.tmd_header)) {
+		// Read error.
+		return -7;
+	}
+
+	// Load the content chunk records.
+	addr += sizeof(N3DS_TMD_t);
+	ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		return -8;
+	}
+	content_count = be16_to_cpu(mxh.tmd_header.content_count);
+	content_chunks.reset(new N3DS_Content_Chunk_Record_t[content_count]);
+	const size_t content_chunks_size = content_count * sizeof(N3DS_Content_Chunk_Record_t);
+	size = file->read(content_chunks.get(), content_chunks_size);
+	if (size != content_chunks_size) {
+		// Read error.
+		content_count = 0;
+		content_chunks.reset(nullptr);
+		return -9;
+	}
+
+	// Store the content start address.
+	mxh.content_start_addr = tmd_start + toNext64(tmd_size);
+
+	// Loaded the TMD header.
+	headers_loaded |= HEADER_TMD;
+	return 0;
 }
 
 /**
