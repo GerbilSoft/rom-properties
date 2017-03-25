@@ -902,49 +902,48 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Show the ListView on a separate row?
 		auto partitions = new std::vector<std::vector<rp_string> >();
 		partitions->reserve(8);
+
+		// TODO: Show keyslots for eMMC?
+		static const rp_char *const cci_partition_type[] = {
+			_RP("Game"), _RP("Manual"), _RP("Download Play"),
+			nullptr, nullptr, nullptr,
+			_RP("New3DS Update"), _RP("Old3DS Update"),
+		};
+
+		// Media unit shift.
+		// Default is 9, but may be increased by
+		// ncsd_header->cci.partition_flags[8].
+		// FIXME: Handle invalid shift values?
+		uint8_t media_unit_shift = 9;
 		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
-			// CCI partition table.
-			static const rp_char *const cci_partition_type[] = {
-				_RP("Game"), _RP("Manual"), _RP("Download Play"),
-				nullptr, nullptr, nullptr,
-				_RP("New3DS Update"), _RP("Old3DS Update"),
-			};
+			// Add the CCI media unit shift, if specified.
+			media_unit_shift += ncsd_header->cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+		}
 
-			// Media unit shift.
-			// Default is 9, but may be increased by
-			// ncsd_header->cci.partition_flags[8].
-			// FIXME: Handle invalid shift values?
-			const uint8_t media_unit_shift = 9 + ncsd_header->cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+		// Process the partition table.
+		for (unsigned int i = 0; i < 8; i++) {
+			const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
+			if (length == 0)
+				continue;
 
-			// Process the partition table.
-			for (unsigned int i = 0; i < 8; i++) {
-				const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
-				if (length == 0)
-					continue;
+			int vidx = (int)partitions->size();
+			partitions->resize(vidx+1);
+			auto &data_row = partitions->at(vidx);
 
-				int vidx = (int)partitions->size();
-				partitions->resize(vidx+1);
-				auto &data_row = partitions->at(vidx);
+			// Partition number.
+			int len = snprintf(buf, sizeof(buf), "%u", i);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 
-				// Partition number.
-				int len = snprintf(buf, sizeof(buf), "%u", i);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
-				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			// Partition type.
+			// TODO: Update for eMMC?
+			const rp_char *type = (cci_partition_type[i] ? cci_partition_type[i] : _RP("Unknown"));
+			data_row.push_back(type);
 
-				// Partition type.
-				data_row.push_back(cci_partition_type[i]);
-
-				// Partition size.
-				const int64_t length_bytes = (int64_t)length << media_unit_shift;
-				data_row.push_back(d->formatFileSize(length_bytes));
-			}
-		} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC) {
-			// eMMC partition table.
-			// TODO: Show the keyslot?
-		} else {
-			// Should not get here...
-			assert(!"Attempting to show NCSD header for file that is neither CCI nor eMMC.");
+			// Partition size.
+			const int64_t length_bytes = (int64_t)length << media_unit_shift;
+			data_row.push_back(d->formatFileSize(length_bytes));
 		}
 
 		static const rp_char *const partitions_names[] = {
