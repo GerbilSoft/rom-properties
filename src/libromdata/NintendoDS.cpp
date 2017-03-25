@@ -1187,7 +1187,7 @@ int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// Save file isn't valid.
+		// ROM image isn't valid.
 		*pImage = nullptr;
 		return -EIO;
 	}
