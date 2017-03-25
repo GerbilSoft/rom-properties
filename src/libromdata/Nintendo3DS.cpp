@@ -910,6 +910,13 @@ int Nintendo3DS::loadFieldData(void)
 				_RP("New3DS Update"), _RP("Old3DS Update"),
 			};
 
+			// Media unit shift.
+			// Default is 9, but may be increased by
+			// ncsd_header->cci.partition_flags[8].
+			// FIXME: Handle invalid shift values?
+			const uint8_t media_unit_shift = 9 + ncsd_header->cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+
+			// Process the partition table.
 			for (unsigned int i = 0; i < 8; i++) {
 				const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
 				if (length == 0)
@@ -929,8 +936,7 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.push_back(cci_partition_type[i]);
 
 				// Partition size.
-				// TODO: Check media units flag. Assuming 512 bytes.
-				const int64_t length_bytes = (int64_t)length * 512;
+				const int64_t length_bytes = (int64_t)length << media_unit_shift;
 				data_row.push_back(d->formatFileSize(length_bytes));
 			}
 		} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC) {
