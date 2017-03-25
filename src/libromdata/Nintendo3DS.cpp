@@ -1454,23 +1454,43 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 
 			// Partition type.
+			// TODO: Use the partition ID to determine the type?
 			const rp_char *type = (pt_types[i] ? pt_types[i] : _RP("Unknown"));
 			data_row.push_back(type);
 
 			if (!emmc) {
-				// Version. [FIXME: Might not be right...]
+				// Version.
 				// Reference: https://3dbrew.org/wiki/Titles
 				int ret = d->loadNCCH(i, &part_ncch_header);
 				if (ret == 0) {
 					// Format the NCCH version.
-					const uint16_t version = le16_to_cpu(part_ncch_header.version);
-					len = snprintf(buf, sizeof(buf), "%u.%u.%u",
-						(version >> 10),
-						(version >>  4) & 0x1F,
-						(version & 0x0F));
-					if (len > (int)sizeof(buf))
-						len = sizeof(buf);
-					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+					bool isUpdate;
+					uint16_t version;
+					if (i >= 6) {
+						// System Update versions are in the partition ID.
+						// TODO: Update region.
+						isUpdate = true;
+						version = le16_to_cpu(part_ncch_header.sysversion);
+					} else {
+						// Use the NCCH version.
+						// NOTE: This doesn't seem to be accurate...
+						isUpdate = false;
+						version = le16_to_cpu(part_ncch_header.version);
+					}
+
+					if (isUpdate && version == 0x8000) {
+						// Early titles have a system update with version 0x8000 (32.0.0).
+						// This is usually 1.1.0, though some might be 1.0.0.
+						data_row.push_back(_RP("1.x.x"));
+					} else {
+						len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+							(version >> 10),
+							(version >>  4) & 0x1F,
+							(version & 0x0F));
+						if (len > (int)sizeof(buf))
+							len = sizeof(buf);
+						data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+					}
 				} else {
 					// Unable to load the NCCH header.
 					data_row.push_back(_RP("Unknown"));
