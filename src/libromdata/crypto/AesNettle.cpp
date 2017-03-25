@@ -256,43 +256,8 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len,
 	// Set the IV.
 	memcpy(d->iv, iv, AES_BLOCK_SIZE);
 
-	// Decrypt the data.
-#ifdef HAVE_NETTLE_3
-	switch (d->chainingMode) {
-		case CM_ECB:
-			d->decrypt_fn(&d->ctx, data_len, data, data);
-			break;
-
-		case CM_CBC:
-			if (!d->decrypt_fn) {
-				// No decryption function set...
-				return 0;
-			}
-
-			cbc_decrypt(&d->ctx, d->decrypt_fn, AES_BLOCK_SIZE,
-				    d->iv, data_len, data, data);
-			break;
-
-		default:
-			return 0;
-	}
-#else /* !HAVE_NETTLE_3 */
-	switch (d->chainingMode) {
-		case CM_ECB:
-			aes_decrypt(&d->ctx, data_len, data, data);
-			break;
-
-		case CM_CBC:
-			cbc_decrypt(&d->ctx, (nettle_crypt_func*)aes_decrypt, AES_BLOCK_SIZE,
-				    d->iv, data_len, data, data);
-			break;
-
-		default:
-			return 0;
-	}
-#endif /* HAVE_NETTLE_3 */
-
-	return data_len;
+	// Use the regular decrypt() function.
+	return decrypt(data, data_len);
 }
 
 }

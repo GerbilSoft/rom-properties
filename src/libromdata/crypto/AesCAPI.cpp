@@ -312,34 +312,14 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 		return 0;
 	}
 
-	// FIXME: Nettle version doesn't do this, which allows
-	// us to calling decrypt() multiple times for CBC with
-	// large amounts of data.
-
-	// Temporarily duplicate the key so we don't overwrite
-	// the feedback register in the original key.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379913(v=vs.85).aspx
-	HCRYPTKEY hMyKey;
-	if (!CryptDuplicateKey(d->hKey, nullptr, 0, &hMyKey)) {
-		// Error duplicating the key.
-		return 0;
-	}
-
 	// Set the IV.
-	if (!CryptSetKeyParam(hMyKey, KP_IV, iv, 0)) {
+	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
 		// Error setting the IV.
-		CryptDestroyKey(hMyKey);
 		return 0;
 	}
 
-	// Decrypt the data.
-	// NOTE: Specifying TRUE as the Final parameter results in
-	// CryptDecrypt failing with NTE_BAD_DATA, even though the
-	// data has the correct block length.
-	DWORD dwLen = data_len;
-	BOOL bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
-	CryptDestroyKey(hMyKey);
-	return (bRet ? dwLen : 0);
+	// Use the regular decrypt() function.
+	return decrypt(data, data_len);
 }
 
 }

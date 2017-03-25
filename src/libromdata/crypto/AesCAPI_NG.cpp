@@ -498,61 +498,12 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,
 		return 0;
 	}
 
-	// Get the block length.
-	ULONG cbBlockLen;
-	ULONG cbData;
-	NTSTATUS status = d->pBCryptGetProperty(
-				d->hAesAlg, 
-				BCRYPT_BLOCK_LENGTH, 
-				(PBYTE)&cbBlockLen, sizeof(DWORD),
-				&cbData, 0);
-	if (!NT_SUCCESS(status) || cbData != sizeof(cbBlockLen)) {
-		// Failed to get the block length.
-		return 0;
-	}
-
-	if (cbBlockLen != 16) {
-		// Block length is incorrect...
-		return 0;
-	}
-
-	// data_len must be a multiple of the block length.
-	assert(data_len % cbBlockLen == 0);
-	if (data_len % cbBlockLen != 0) {
-		// Invalid data length.
-		return 0;
-	}
-
 	// Set the IV.
 	assert(sizeof(d->iv) == 16);
 	memcpy(d->iv, iv, sizeof(d->iv));
 
-	ULONG cbResult;
-	switch (d->chainingMode) {
-		case CM_ECB:
-			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
-						nullptr,
-						nullptr, 0,
-						data, data_len,
-						&cbResult, 0);
-			break;
-
-		case CM_CBC:
-			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
-						nullptr,
-						d->iv, sizeof(d->iv),
-						data, data_len,
-						&cbResult, 0);
-			break;
-
-		default:
-			// Invalid chaining mode.
-			return 0;
-	}
-
-	return (NT_SUCCESS(status) ? cbResult : 0);
+	// Use the regular decrypt() function.
+	return decrypt(data, data_len);
 }
 
 }
