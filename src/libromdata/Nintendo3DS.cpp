@@ -1316,6 +1316,18 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 		}
 	}
 
+	// Validate the program ID.
+	const uint64_t program_id = le64_to_cpu(d->ncch_header.program_id);
+	if (((uint32_t)(program_id >> 32) != 0x00040000) ||
+	    ((uint32_t)(program_id) & 0xFF000000))
+	{
+		// This is probably not a retail application
+		// because one of the following conditions is met:
+		// - TitleID High is not 0x00040000
+		// - TitleID Low has the high byte set (SDK application)
+		return -ENOENT;
+	}
+
 	// Validate the product code.
 	if (memcmp(d->ncch_header.product_code, "CTR-", 4) != 0 &&
 	    memcmp(d->ncch_header.product_code, "KTR-", 4) != 0)
