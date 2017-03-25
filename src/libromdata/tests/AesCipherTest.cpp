@@ -259,12 +259,20 @@ TEST_P(AesCipherTest, decryptTest)
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
-	if (mode.chainingMode == IAesCipher::CM_CBC ||
-	    mode.chainingMode == IAesCipher::CM_CTR)
-	{
-		// Set the IV/counter.
-		// TODO: Try setting this with CM_ECB and expect failure.
-		EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+	switch (mode.chainingMode) {
+		case IAesCipher::CM_CBC:
+		case IAesCipher::CM_CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::CM_ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
 	}
 
 	// Decrypt the data.

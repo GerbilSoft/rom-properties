@@ -334,6 +334,10 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 
 /**
  * Set the cipher chaining mode.
+ *
+ * Note that the IV/counter must be set *after* setting
+ * the chaining mode; otherwise, setIV() will fail.
+ *
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -397,6 +401,9 @@ int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
+	} else if (d->chainingMode < CM_CBC || d->chainingMode > CM_CTR) {
+		// This chaining mode doesn't have an IV or counter.
+		return -EINVAL;
 	}
 
 	// Verify the block length.

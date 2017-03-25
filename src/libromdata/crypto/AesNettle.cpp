@@ -181,6 +181,10 @@ int AesNettle::setKey(const uint8_t *key, unsigned int len)
 
 /**
  * Set the cipher chaining mode.
+ *
+ * Note that the IV/counter must be set *after* setting
+ * the chaining mode; otherwise, setIV() will fail.
+ *
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -203,12 +207,15 @@ int AesNettle::setChainingMode(ChainingMode mode)
  */
 int AesNettle::setIV(const uint8_t *iv, unsigned int len)
 {
-	if (!iv || len != AES_BLOCK_SIZE) {
+	RP_D(AesNettle);
+	if (!iv || len != AES_BLOCK_SIZE ||
+	    d->chainingMode < CM_CBC || d->chainingMode > CM_CTR)
+	{
+		// Invalid parameters and/or chaining mode.
 		return -EINVAL;
 	}
 
-	// Set the IV.
-	RP_D(AesNettle);
+	// Set the IV/counter.
 	memcpy(d->iv, iv, AES_BLOCK_SIZE);
 	return 0;
 }

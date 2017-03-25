@@ -217,6 +217,10 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 
 /**
  * Set the cipher chaining mode.
+ *
+ * Note that the IV/counter must be set *after* setting
+ * the chaining mode; otherwise, setIV() will fail.
+ *
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -271,6 +275,7 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 
 	switch (d->chainingMode) {
 		case CM_ECB:
+		default:
 			// No IV.
 			return -EINVAL;
 		case CM_CBC:

@@ -63,6 +63,10 @@ class AesNettle : public IAesCipher
 
 		/**
 		 * Set the cipher chaining mode.
+		 *
+		 * Note that the IV/counter must be set *after* setting
+		 * the chaining mode; otherwise, setIV() will fail.
+		 *
 		 * @param mode Cipher chaining mode.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
