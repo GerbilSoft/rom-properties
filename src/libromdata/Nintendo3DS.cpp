@@ -888,27 +888,54 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_t *const ncsd_header = &d->mxh.ncsd_header;
 
-		// Media ID. (TODO: Is this valid for eMMC?)
-		const uint64_t media_id = le64_to_cpu(ncsd_header->media_id);
-		len = snprintf(buf, sizeof(buf), "%08X %08X",
-			(uint32_t)(media_id >> 32),
-			(uint32_t)(media_id));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		d->fields->addField_string(_RP("Media ID"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		// Partition type names.
+		static const rp_char *const partition_types[2][8] = {
+			// CCI
+			{_RP("Game"), _RP("Manual"), _RP("Download Play"),
+			 nullptr, nullptr, nullptr,
+			 _RP("New3DS Update"), _RP("Old3DS Update")},
+			// eMMC
+			{_RP("TWL NAND"), _RP("AGB SAVE"),
+			 _RP("FIRM0"), _RP("FIRM1"), _RP("CTR NAND"),
+			 nullptr, nullptr, nullptr},
+		};
+
+		const rp_char *const *pt_types = nullptr;
+		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+			// Media ID.
+			const uint64_t media_id = le64_to_cpu(ncsd_header->media_id);
+			len = snprintf(buf, sizeof(buf), "%08X %08X",
+				(uint32_t)(media_id >> 32),
+				(uint32_t)(media_id));
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			d->fields->addField_string(_RP("Media ID"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+
+			// Partition type names.
+			pt_types = partition_types[0];
+		} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC) {
+			// eMMC type.
+			d->fields->addField_string(_RP("Type"),
+				(ncsd_header->emmc_part_tbl.crypt_type[4] == 3
+					? _RP("New3DS")
+					: _RP("Old3DS / 2DS")));
+
+			// Partition type names.
+			pt_types = partition_types[1];
+		}
+		assert(pt_types != nullptr);
+		if (!pt_types) {
+			// Default to CCI.
+			pt_types = partition_types[0];
+		}
 
 		// Partition table.
-		// TODO: Show the ListView on a separate row?
+		// TODO:
+		// - Show the ListView on a separate row?
+		// - Show keyslots for eMMC?
 		auto partitions = new std::vector<std::vector<rp_string> >();
 		partitions->reserve(8);
-
-		// TODO: Show keyslots for eMMC?
-		static const rp_char *const cci_partition_type[] = {
-			_RP("Game"), _RP("Manual"), _RP("Download Play"),
-			nullptr, nullptr, nullptr,
-			_RP("New3DS Update"), _RP("Old3DS Update"),
-		};
 
 		// Media unit shift.
 		// Default is 9, but may be increased by
@@ -938,7 +965,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition type.
 			// TODO: Update for eMMC?
-			const rp_char *type = (cci_partition_type[i] ? cci_partition_type[i] : _RP("Unknown"));
+			const rp_char *type = (pt_types[i] ? pt_types[i] : _RP("Unknown"));
 			data_row.push_back(type);
 
 			// Partition size.
