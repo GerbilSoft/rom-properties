@@ -1221,6 +1221,33 @@ int Nintendo3DS::loadFieldData(void)
 	char buf[64];
 	int len;
 
+	// Title ID.
+	// If using NCSD, use the Media ID.
+	// Otherwise, use the primary Title ID.
+	const rp_char *tid_desc = nullptr;
+	uint64_t title_id = 0;
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
+		// TODO: Is this valid for eMMC?
+		tid_desc = _RP("Media ID");
+		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
+	} else {
+		// Get the title ID from the NCCH header.
+		if (d->loadNCCH() == 0) {
+			tid_desc = _RP("Title ID");
+			title_id = le64_to_cpu(d->ncch_header.program_id);
+		}
+	}
+
+	if (tid_desc) {
+		len = snprintf(buf, sizeof(buf), "%08X %08X",
+			(uint32_t)(title_id >> 32),
+			(uint32_t)(title_id));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		d->fields->addField_string(tid_desc,
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	}
+
 	// Load and parse the SMDH header.
 	if (d->loadSMDH() == 0) {
 		// SMDH header.
@@ -1318,16 +1345,6 @@ int Nintendo3DS::loadFieldData(void)
 		vector<rp_string> *v_partitions_names;
 		if (!emmc) {
 			// CCI (3DS cartridge dump)
-
-			// Media ID.
-			const uint64_t media_id = le64_to_cpu(ncsd_header->media_id);
-			len = snprintf(buf, sizeof(buf), "%08X %08X",
-				(uint32_t)(media_id >> 32),
-				(uint32_t)(media_id));
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			d->fields->addField_string(_RP("Media ID"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 
 			// Partition type names.
 			pt_types = partition_types[0];
@@ -1536,21 +1553,28 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 	pExtURLs->clear();
 
-	// Make sure the NCCH header is loaded.
+	// If using NCSD, use the Media ID.
+	// Otherwise, use the primary Title ID.
+	uint64_t title_id = 0;
 	RP_D(const Nintendo3DS);
-	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_NCCH)) {
-		// Load the NCCH header.
-		if (const_cast<Nintendo3DSPrivate*>(d)->loadNCCH() != 0) {
-			// Error loading the NCCH header.
-			return -EIO;
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
+		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
+	} else {
+		// Make sure the NCCH header is loaded.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_NCCH)) {
+			// Load the NCCH header.
+			if (const_cast<Nintendo3DSPrivate*>(d)->loadNCCH() != 0) {
+				// Error loading the NCCH header.
+				return -EIO;
+			}
 		}
+		title_id = le64_to_cpu(d->ncch_header.program_id);
 	}
 
-	// Validate the program ID.
+	// Validate the title ID.
 	// Reference: https://3dbrew.org/wiki/Titles
-	const uint64_t program_id = le64_to_cpu(d->ncch_header.program_id);
-	const uint32_t tid_hi = (uint32_t)(program_id >> 32);
-	const uint32_t tid_lo = (uint32_t)program_id;
+	const uint32_t tid_hi = (uint32_t)(title_id >> 32);
+	const uint32_t tid_lo = (uint32_t)(title_id);
 	if (tid_hi != 0x00040000 || tid_lo < 0x00030000 || tid_lo >= 0x0F800000) {
 		// This is probably not a retail application
 		// because one of the following conditions is met:
