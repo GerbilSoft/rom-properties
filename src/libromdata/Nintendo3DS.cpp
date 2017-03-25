@@ -425,6 +425,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -5;
 			}
 
+			// TODO: Check if this is DSiWare.
+			// If it is, set a flag and instantiate NintendoDS.
+
 			// NCCH header has been read.
 			break;
 		}
