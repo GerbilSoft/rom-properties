@@ -26,6 +26,7 @@
 // - https://3dbrew.org/wiki/CIA
 // - https://3dbrew.org/wiki/NCSD
 // - https://3dbrew.org/wiki/ExeFS
+// - https://3dbrew.org/wiki/TMD
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
@@ -455,12 +456,12 @@ typedef enum {
  * NCCH content type.
  */
 typedef enum {
-	N3DS_NCCH_CONTENT_TYPE_DATA	= 0x01,
-	N3DS_NCCH_CONTENT_TYPE_EXE	= 0x02,
-	N3DS_NCCH_CONTENT_TYPE_UPDATE	= 0x04,
-	N3DS_NCCH_CONTENT_TYPE_MANUAL	= 0x08,
-	N3DS_NCCH_CONTENT_TYPE_CHILD	= (0x04|0x08),
-	N3DS_NCCH_CONTENT_TYPE_TRIAL	= 0x10,
+	N3DS_NCCH_CONTENT_TYPE_Data		= 0x01,
+	N3DS_NCCH_CONTENT_TYPE_Executable	= 0x02,
+	N3DS_NCCH_CONTENT_TYPE_SystemUpdate	= 0x04,
+	N3DS_NCCH_CONTENT_TYPE_Manual		= 0x08,
+	N3DS_NCCH_CONTENT_TYPE_Child		= (0x04|0x08),
+	N3DS_NCCH_CONTENT_TYPE_Trial		= 0x10,
 } N3DS_NCCH_Content_Type;
 
 /**
@@ -529,6 +530,7 @@ ASSERT_STRUCT(N3DS_ExeFS_Header_t, 512);
 /**
  * Nintendo 3DS: Title Metadata signature type.
  * TMD header location depends on the signature type.
+ * Reference: https://3dbrew.org/wiki/TMD#Signature_Data
  */
 typedef enum {
 	// NOTE: The first three are not generally used on 3DS.
@@ -544,7 +546,7 @@ typedef enum {
 
 /**
  * Nintendo 3DS: Title Metadata header.
- * Reference: https://3dbrew.org/wiki/TMD
+ * Reference: https://3dbrew.org/wiki/TMD#Header
  *
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
@@ -577,7 +579,7 @@ ASSERT_STRUCT(N3DS_TMD_Header_t, 0xC4);
 
 /**
  * Nintendo 3DS: Content Info Record.
- * Reference: https://3dbrew.org/wiki/TMD
+ * Reference: https://3dbrew.org/wiki/TMD#Content_Info_Records
  *
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
@@ -593,7 +595,7 @@ ASSERT_STRUCT(N3DS_Content_Info_Record_t, 0x24);
 
 /**
  * Nintendo 3DS: Content Chunk Record.
- * Reference: https://3dbrew.org/wiki/TMD
+ * Reference: https://3dbrew.org/wiki/TMD#Content_chunk_records
  *
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
@@ -602,12 +604,24 @@ ASSERT_STRUCT(N3DS_Content_Info_Record_t, 0x24);
 typedef struct PACKED _N3DS_Content_Chunk_Record_t {
 	uint32_t id;		// [0x00]
 	uint16_t index;		// [0x04]
-	uint16_t type;		// [0x06]
+	uint16_t type;		// [0x06] See N3DS_Content_Chunk_Type_Flags.
 	uint64_t size;		// [0x08]
 	uint8_t sha256[0x20];	// [0x10]
 } N3DS_Content_Chunk_Record_t;
 #pragma pack()
 ASSERT_STRUCT(N3DS_Content_Chunk_Record_t, 0x30);
+
+/**
+ * Nintendo 3DS: Content Chunk type flags.
+ * Reference: https://3dbrew.org/wiki/TMD#Content_Type_flags
+ */
+typedef enum {
+	N3DS_CONTENT_CHUNK_ENCRYPTED	= 1,
+	N3DS_CONTENT_CHUNK_DISC		= 2,
+	N3DS_CONTENT_CHUNK_CFM		= 4,
+	N3DS_CONTENT_CHUNK_OPTIONAL	= 0x4000,
+	N3DS_CONTENT_CHUNK_SHARED	= 0x8000,
+} N3DS_Content_Chunk_Type_Flags;
 
 /**
  * Nintendo 3DS: Title Metadata.

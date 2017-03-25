@@ -1643,7 +1643,7 @@ int Nintendo3DS::loadFieldData(void)
 			if (length == 0)
 				continue;
 
-			int vidx = (int)partitions->size();
+			const int vidx = (int)partitions->size();
 			partitions->resize(vidx+1);
 			auto &data_row = partitions->at(vidx);
 
@@ -1734,6 +1734,87 @@ int Nintendo3DS::loadFieldData(void)
 			len = sizeof(buf);
 		d->fields->addField_string(_RP("Version"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+		// Contents table.
+		// TODO: Show the ListView on a separate row?
+		auto contents = new std::vector<std::vector<rp_string> >();
+		contents->reserve(d->content_count);
+
+		// Process the contents.
+		// TODO: Content types?
+		N3DS_NCCH_Header_NoSig_t content_ncch_header;
+		for (unsigned int i = 0; i < d->content_count; i++) {
+			uint32_t length;
+			int ret = d->loadNCCH(i, &content_ncch_header, nullptr, &length);
+			if (ret != 0) {
+				// Invalid content index.
+				// TODO: Are there CIAs with discontiguous content indexes?
+				// (Themes, DLC...)
+				break;
+			}
+
+			const int vidx = (int)contents->size();
+			contents->resize(vidx+1);
+			auto &data_row = contents->at(vidx);
+
+			// Content index.
+			len = snprintf(buf, sizeof(buf), "%u", i);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+
+			// Content type.
+			const rp_char *content_type;
+			const uint8_t ctype_flag = content_ncch_header.flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
+			printf("ctype flag: %02X\n", ctype_flag);
+			if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
+				// DLP child
+				content_type = _RP("Download Play");
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Trial) {
+				// Demo
+				content_type = _RP("Demo");
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
+				// CXI
+				content_type = _RP("CXI");
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Manual) {
+				// Manual
+				content_type = _RP("Manual");
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_SystemUpdate) {
+				// System Update
+				content_type = _RP("Update");
+			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
+				// CFA
+				content_type = _RP("CFA");
+			} else {
+				// Unknown.
+				content_type = _RP("Unknown");
+			}
+			data_row.push_back(content_type);
+
+			// Version. [FIXME: Might not be right...]
+			// Reference: https://3dbrew.org/wiki/Titles
+			// Format the NCCH version.
+			const uint16_t version = le16_to_cpu(content_ncch_header.version);
+			len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+				(version >> 10),
+				(version >>  4) & 0x1F,
+				(version & 0x0F));
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+			// Content size.
+			data_row.push_back(d->formatFileSize(length));
+		}
+
+		static const rp_char *const contents_names[] = {
+			_RP("#"), _RP("Type"), _RP("Version"), _RP("Size")
+		};
+		vector<rp_string> *v_contents_names = RomFields::strArrayToVector(
+			contents_names, ARRAY_SIZE(contents_names));
+
+		// Add the contents table.
+		d->fields->addField_listData(_RP("Contents"), v_contents_names, contents);
 	}
 
 	// Finished reading the field data.
