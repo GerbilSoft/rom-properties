@@ -92,7 +92,12 @@ AesNettle::~AesNettle()
  */
 const rp_char *AesNettle::name(void) const
 {
-	return _RP("GNU Nettle");
+	// TODO: Use NETTLE_VERSION_MAJOR and NETTLE_VERSION_MINOR if available.
+#ifdef HAVE_NETTLE_3
+	return _RP("GNU Nettle 3.x");
+#else
+	return _RP("GNU Nettle 2.x");
+#endif
 }
 
 /**
