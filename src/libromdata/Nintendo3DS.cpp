@@ -61,7 +61,8 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		// Internal images.
-		rp_image *img_icon;	// TODO: 48x48, 24x24
+		// 0 == 24x24; 1 == 48x48
+		rp_image *img_icon[2];
 
 	public:
 		// ROM type.
@@ -124,19 +125,23 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		/**
 		 * Load the ROM image's icon.
+		 * @param idx Image index. (0 == 24x24; 1 == 48x48)
 		 * @return Icon, or nullptr on error.
 		 */
-		const rp_image *loadIcon(void);
+		const rp_image *loadIcon(int idx = 1);
 };
 
 /** Nintendo3DSPrivate **/
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
-	, img_icon(nullptr)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
 {
+	// Clear img_icon.
+	img_icon[0] = nullptr;
+	img_icon[1] = nullptr;
+
 	// Clear the various headers.
 	memset(&smdh_header, 0, sizeof(smdh_header));
 	memset(&mxh, 0, sizeof(mxh));
@@ -144,7 +149,8 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
 {
-	delete img_icon;
+	delete img_icon[0];
+	delete img_icon[1];
 }
 
 /**
@@ -267,19 +273,24 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 /**
  * Load the ROM image's icon.
+ * @param idx Image index. (0 == 24x24; 1 == 48x48)
  * @return Icon, or nullptr on error.
  */
-const rp_image *Nintendo3DSPrivate::loadIcon(void)
+const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 {
-	if (img_icon) {
+	assert(idx == 0 || idx == 1);
+	if (idx != 0 && idx != 1) {
+		// Invalid icon index.
+		return nullptr;
+	}
+
+	if (img_icon[idx]) {
 		// Icon has already been loaded.
-		return img_icon;
+		return img_icon[idx];
 	} else if (!file || !isValid) {
 		// Can't load the icon.
 		return nullptr;
 	}
-
-	// TODO: Small icon?
 
 	// Make sure the SMDH header is loaded.
 	if (!(headers_loaded & HEADER_SMDH)) {
@@ -361,15 +372,33 @@ const rp_image *Nintendo3DSPrivate::loadIcon(void)
 		}
 	}
 
-	// Convert the large icon to rp_image.
+	// Convert the icon to rp_image.
 	// NOTE: Assuming RGB565 format.
 	// 3dbrew.org says it could be any of various formats,
 	// but only RGB565 has been used so far.
 	// Reference: https://www.3dbrew.org/wiki/SMDH#Icon_graphics
-	img_icon = ImageDecoder::fromN3DSTiledRGB565(
-		N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
-		smdh_icon.large, sizeof(smdh_icon.large));
-	return img_icon;
+	switch (idx) {
+		case 0:
+			// Small icon. (24x24)
+			// NOTE: Some older homebrew, including RxTools,
+			// has a broken 24x24 icon.
+			img_icon[0] = ImageDecoder::fromN3DSTiledRGB565(
+				N3DS_SMDH_ICON_SMALL_W, N3DS_SMDH_ICON_SMALL_H,
+				smdh_icon.small, sizeof(smdh_icon.small));
+			break;
+		case 1:
+			// Large icon. (48x48)
+			img_icon[1] = ImageDecoder::fromN3DSTiledRGB565(
+				N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
+				smdh_icon.large, sizeof(smdh_icon.large));
+			break;
+		default:
+			// Invalid icon index.
+			assert(!"Invalid 3DS icon index.");
+			return nullptr;
+	}
+
+	return img_icon[idx];
 }
 
 /** Nintendo3DS **/
@@ -635,8 +664,8 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
 	switch (imageType) {
 		case IMG_INT_ICON: {
 			static const ImageSizeDef sz_INT_ICON[] = {
-				{nullptr, 48, 48, 0},
-				{nullptr, 24, 24, 1},
+				{nullptr, 24, 24, 0},
+				{nullptr, 48, 48, 1},
 			};
 			return vector<ImageSizeDef>(sz_INT_ICON,
 				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
@@ -819,14 +848,17 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ERANGE;
 	}
 
+	// NOTE: Assuming icon index 1. (48x48)
+	const int idx = 1;
+
 	RP_D(Nintendo3DS);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by 3DS.
 		*pImage = nullptr;
 		return -ENOENT;
-	} else if (d->img_icon) {
+	} else if (d->img_icon[idx]) {
 		// Image has already been loaded.
-		*pImage = d->img_icon;
+		*pImage = d->img_icon[idx];
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
@@ -839,7 +871,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// Load the icon.
-	*pImage = d->loadIcon();
+	*pImage = d->loadIcon(idx);
 	return (*pImage != nullptr ? 0 : -EIO);
 }
 
