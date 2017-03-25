@@ -61,6 +61,7 @@ class AesCAPI_NG_Private
 		static DECL_FUNCPTR(BCryptGenerateSymmetricKey);
 		static DECL_FUNCPTR(BCryptDecrypt);
 		static DECL_FUNCPTR(BCryptDestroyKey);
+		static DECL_FUNCPTR(BCryptEncrypt);
 
 	public:
 		// NOTE: While the provider is shared in AesCAPI,
@@ -80,13 +81,12 @@ class AesCAPI_NG_Private
 		uint8_t key[32];
 		unsigned int key_len;
 
-		// Initialization vector.
-		// CryptoAPI NG doesn't store it in the key object,
-		// unlike the older CryptoAPI.
-		uint8_t iv[16];
-
 		// Chaining mode.
 		IAesCipher::ChainingMode chainingMode;
+
+		// CBC: Initialization vector.
+		// CTR: Counter.
+		uint8_t iv[16];
 };
 
 /** AesCAPI_NG_Private **/
@@ -100,6 +100,7 @@ DEF_FUNCPTR(BCryptCloseAlgorithmProvider);
 DEF_FUNCPTR(BCryptGenerateSymmetricKey);
 DEF_FUNCPTR(BCryptDecrypt);
 DEF_FUNCPTR(BCryptDestroyKey);
+DEF_FUNCPTR(BCryptEncrypt);
 
 AesCAPI_NG_Private::AesCAPI_NG_Private()
 	: hAesAlg(nullptr)
@@ -196,6 +197,7 @@ bool AesCAPI_NG::isUsable(void)
 	LOAD_FUNCPTR(BCryptGenerateSymmetricKey);
 	LOAD_FUNCPTR(BCryptDecrypt);
 	LOAD_FUNCPTR(BCryptDestroyKey);
+	LOAD_FUNCPTR(BCryptEncrypt);
 
 	// Make sure all of the function pointers are valid.
 	if (!AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider ||
@@ -204,7 +206,8 @@ bool AesCAPI_NG::isUsable(void)
 	    !AesCAPI_NG_Private::pBCryptCloseAlgorithmProvider ||
 	    !AesCAPI_NG_Private::pBCryptGenerateSymmetricKey ||
 	    !AesCAPI_NG_Private::pBCryptDecrypt ||
-	    !AesCAPI_NG_Private::pBCryptDestroyKey)
+	    !AesCAPI_NG_Private::pBCryptDestroyKey ||
+	    !AesCAPI_NG_Private::pBCryptEncrypt)
 	{
 		// At least one function pointer is missing.
 		AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider = nullptr;
@@ -214,6 +217,7 @@ bool AesCAPI_NG::isUsable(void)
 		AesCAPI_NG_Private::pBCryptGenerateSymmetricKey = nullptr;
 		AesCAPI_NG_Private::pBCryptDecrypt = nullptr;
 		AesCAPI_NG_Private::pBCryptDestroyKey = nullptr;
+		AesCAPI_NG_Private::pBCryptEncrypt = nullptr;
 
 		FreeLibrary(hBcryptDll);
 		return false;
@@ -348,6 +352,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	ULONG cbMode;
 	switch (mode) {
 		case CM_ECB:
+		case CM_CTR:	// implemented using ECB
 			szMode = BCRYPT_CHAIN_MODE_ECB;
 			cbMode = sizeof(BCRYPT_CHAIN_MODE_ECB);
 			break;
@@ -379,9 +384,9 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 }
 
 /**
- * Set the IV.
- * @param iv IV data.
- * @param len IV length, in bytes.
+ * Set the IV (CBC mode) or counter (CTR mode).
+ * @param iv IV/counter data.
+ * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
@@ -479,6 +484,42 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 						&cbResult, 0);
 			break;
 
+		case CM_CTR: {
+			// Need to decrypt each block manually.
+			uint8_t ctr_crypt[16];
+			ULONG cbTmpResult;
+			for (; data_len > 0; data_len -= 16, data += 16) {
+				// Encrypt the current counter.
+				memcpy(ctr_crypt, d->iv, sizeof(ctr_crypt));
+				status = d->pBCryptEncrypt(d->hKey,
+						ctr_crypt, sizeof(ctr_crypt),
+						nullptr,
+						nullptr, 0,
+						ctr_crypt, sizeof(ctr_crypt),
+						&cbTmpResult, 0);
+				if (!NT_SUCCESS(status)) {
+					// Encryption failed.
+					return 0;
+				}
+				cbResult += cbTmpResult;
+
+				// XOR with the ciphertext.
+				// TODO: Optimized XOR.
+				for (int i = 15; i >= 0; i--) {
+					data[i] ^= ctr_crypt[i];
+				}
+
+				// Increment the counter.
+				for (int i = 15; i >= 0; i--) {
+					if (++d->iv[i] != 0) {
+						// No carry needed.
+						break;
+					}
+				}
+			}
+			break;
+		}
+
 		default:
 			// Invalid chaining mode.
 			return 0;
@@ -488,11 +529,11 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 }
 
 /**
- * Decrypt a block of data using the specified IV.
+ * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
  * @param data Data block.
  * @param data_len Length of data block.
- * @param iv IV for the data block.
- * @param iv_len Length of the IV.
+ * @param iv IV/counter for the data block.
+ * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
 unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,

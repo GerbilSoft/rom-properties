@@ -31,6 +31,7 @@
 // Nettle AES functions.
 #include <nettle/aes.h>
 #include <nettle/cbc.h>
+#include <nettle/ctr.h>
 
 namespace LibRomData {
 
@@ -54,13 +55,27 @@ class AesNettlePrivate
 #else /* !HAVE_NETTLE_3 */
 		struct aes_ctx ctx;
 #endif /* HAVE_NETTLE_3 */
+
+		// Encryption key.
+		// Stored here because we need to
+		// use decryption for ECB and CBC,
+		// but encryption when using CTR.
+		uint8_t key[32];
+		int key_len;
+
+		// CBC: Initialization vector.
+		// CTR: Counter.
 		uint8_t iv[AES_BLOCK_SIZE];
 
 		IAesCipher::ChainingMode chainingMode;
 
 #ifdef HAVE_NETTLE_3
-		// Cipher function for cbc_decrypt().
+		// Cipher functions.
 		nettle_cipher_func *decrypt_fn;
+		nettle_cipher_func *encrypt_fn;
+		// Set Key functions.
+		nettle_set_key_func *setkey_dec_fn;
+		nettle_set_key_func *setkey_enc_fn;
 #endif /* HAVE_NETTLE_3 */
 };
 
@@ -70,10 +85,15 @@ AesNettlePrivate::AesNettlePrivate()
 	: chainingMode(IAesCipher::CM_ECB)
 #ifdef HAVE_NETTLE_3
 	, decrypt_fn(nullptr)
+	, encrypt_fn(nullptr)
+	, setkey_dec_fn(nullptr)
+	, setkey_enc_fn(nullptr)
 #endif /* HAVE_NETTLE_3 */
 {
-	// Clear the context and IV.
+	// Clear the context and keys.
 	memset(&ctx, 0, sizeof(ctx));
+	memset(key, 0, sizeof(key));
+	key_len = 0;
 	memset(iv, 0, sizeof(iv));
 }
 
@@ -133,22 +153,28 @@ int AesNettle::setKey(const uint8_t *key, unsigned int len)
 	switch (len) {
 		case 16:
 			d->decrypt_fn = (nettle_cipher_func*)aes128_decrypt;
-			aes128_set_decrypt_key(&d->ctx.aes128, key);
+			d->encrypt_fn = (nettle_cipher_func*)aes128_encrypt;
+			d->setkey_dec_fn = (nettle_set_key_func*)aes128_set_decrypt_key;
+			d->setkey_enc_fn = (nettle_set_key_func*)aes128_set_encrypt_key;
 			break;
 		case 24:
 			d->decrypt_fn = (nettle_cipher_func*)aes192_decrypt;
-			aes192_set_decrypt_key(&d->ctx.aes192, key);
+			d->encrypt_fn = (nettle_cipher_func*)aes192_encrypt;
+			d->setkey_dec_fn = (nettle_set_key_func*)aes192_set_decrypt_key;
+			d->setkey_enc_fn = (nettle_set_key_func*)aes192_set_encrypt_key;
 			break;
 		case 32:
 			d->decrypt_fn = (nettle_cipher_func*)aes256_decrypt;
-			aes256_set_decrypt_key(&d->ctx.aes256, key);
+			d->encrypt_fn = (nettle_cipher_func*)aes256_encrypt;
+			d->setkey_dec_fn = (nettle_set_key_func*)aes256_set_decrypt_key;
+			d->setkey_enc_fn = (nettle_set_key_func*)aes256_set_encrypt_key;
 			break;
 		default:
 			return -EINVAL;
 	}
-#else /* !HAVE_NETTLE_3 */
-	aes_set_decrypt_key(&d->ctx, len, key);
 #endif
+	memcpy(d->key, key, len);
+	d->key_len = len;
 
 	return 0;
 }
@@ -160,7 +186,7 @@ int AesNettle::setKey(const uint8_t *key, unsigned int len)
  */
 int AesNettle::setChainingMode(ChainingMode mode)
 {
-	if (mode < CM_ECB || mode > CM_CBC) {
+	if (mode < CM_ECB || mode > CM_CTR) {
 		return -EINVAL;
 	}
 
@@ -170,9 +196,9 @@ int AesNettle::setChainingMode(ChainingMode mode)
 }
 
 /**
- * Set the IV.
- * @param iv IV data.
- * @param len IV length, in bytes.
+ * Set the IV (CBC mode) or counter (CTR mode).
+ * @param iv IV/counter data.
+ * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesNettle::setIV(const uint8_t *iv, unsigned int len)
@@ -202,35 +228,62 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 
 	// Decrypt the data.
 	RP_D(AesNettle);
+	if (!d->decrypt_fn) {
+		// No decryption function set...
+		return 0;
+	}
+
 #ifdef HAVE_NETTLE_3
 	if (!d->decrypt_fn) {
 		// No decryption function set...
 		return 0;
 	}
+
+	// TODO: Optimize key setting so it isn't
+	// done unless it's needed.
 	switch (d->chainingMode) {
 		case CM_ECB:
+			d->setkey_dec_fn(&d->ctx, d->key);
 			d->decrypt_fn(&d->ctx, data_len, data, data);
 			break;
 
 		case CM_CBC:
 			// IV is automatically updated for the next block.
+			d->setkey_dec_fn(&d->ctx, d->key);
 			cbc_decrypt(&d->ctx, d->decrypt_fn, AES_BLOCK_SIZE,
 				    d->iv, data_len, data, data);
 			break;
 
+		case CM_CTR:
+			// ctr is automatically updated for the next block.
+			// NOTE: ctr uses the *encrypt* function, even for decryption.
+			d->setkey_enc_fn(&d->ctx, d->key);
+			ctr_crypt(&d->ctx, d->encrypt_fn, AES_BLOCK_SIZE,
+				  d->iv, data_len, data, data);
+			break;
 		default:
 			return 0;
 	}
 #else /* !HAVE_NETTLE_3 */
 	switch (d->chainingMode) {
 		case CM_ECB:
+			aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
 			aes_decrypt(&d->ctx, data_len, data, data);
 			break;
 
 		case CM_CBC:
 			// IV is automatically updated for the next block.
+			aes_set_decrypt_key(&d->ctx, d->key_len, d->key);
 			cbc_decrypt(&d->ctx, (nettle_crypt_func*)aes_decrypt, AES_BLOCK_SIZE,
 				    d->iv, data_len, data, data);
+			break;
+
+		case CM_CTR:
+			// ctr is automatically updated for the next block.
+			// NOTE: ctr uses the *encrypt* function, even for decryption.
+			aes_set_encrypt_key(&d->ctx, d->key_len, d->key);
+			ctr_crypt(&d->ctx, (nettle_crypt_func*)aes_encrypt, AES_BLOCK_SIZE,
+				  d->iv, data_len, data, data);
 			break;
 
 		default:
@@ -242,11 +295,11 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 }
 
 /**
- * Decrypt a block of data using the specified IV.
+ * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
  * @param data Data block.
  * @param data_len Length of data block.
- * @param iv IV for the data block.
- * @param iv_len Length of the IV.
+ * @param iv IV/counter for the data block.
+ * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
 unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len,

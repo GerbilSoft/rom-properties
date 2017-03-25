@@ -37,6 +37,8 @@
 //   [Google: "CryptImportKey" (no quotes)]
 // - http://etutorials.org/Programming/secure+programming/Chapter+5.+Symmetric+Encryption/5.25+Using+Symmetric+Encryption+with+Microsoft+s+CryptoAPI/
 //   [Google: "CryptoAPI set IV" (no quotes)]
+// - https://modexp.wordpress.com/2016/03/10/windows-ctr-mode-with-crypto-api/
+//   [Google: "cryptoapi-ng aes-ctr" (no quotes)]
 #include "../RpWin32.hpp"
 #include <wincrypt.h>
 
@@ -59,6 +61,12 @@ class AesCAPIPrivate
 
 		// Instance-specific key.
 		HCRYPTKEY hKey;
+
+		// Chaining mode.
+		IAesCipher::ChainingMode chainingMode;
+
+		// Counter for CTR mode.
+		uint8_t ctr[16];
 };
 
 /** AesCAPIPrivate **/
@@ -68,7 +76,11 @@ LONG AesCAPIPrivate::lRefCnt = 0;
 
 AesCAPIPrivate::AesCAPIPrivate()
 	: hKey(0)
+	, chainingMode(IAesCipher::CM_ECB)
 {
+	// Clear the counter.
+	memset(ctr, 0, sizeof(ctr));
+
 	if (InterlockedIncrement(&lRefCnt) == 1) {
 		// Initialize the CryptoAPI provider.
 		// TODO: Try multiple times, e.g.:
@@ -215,10 +227,13 @@ int AesCAPI::setChainingMode(ChainingMode mode)
 		// Key hasn't been set.
 		return -EBADF;
 	}
+	// TODO: Don't change if it matches?
+	// Need to ensure the default is ECB...
 
 	DWORD dwMode;
 	switch (mode) {
 		case CM_ECB:
+		case CM_CTR:
 			dwMode = CRYPT_MODE_ECB;
 			break;
 		case CM_CBC:
@@ -234,13 +249,14 @@ int AesCAPI::setChainingMode(ChainingMode mode)
 		return -w32err_to_posix(GetLastError());
 	}
 
+	d->chainingMode = mode;
 	return 0;
 }
 
 /**
- * Set the IV.
- * @param iv IV data.
- * @param len IV length, in bytes.
+ * Set the IV (CBC mode) or counter (CTR mode).
+ * @param iv IV/counter data.
+ * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
@@ -253,10 +269,21 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 		return -EBADF;
 	}
 
-	// Set the IV.
-	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
-		// Error setting the IV.
-		return -w32err_to_posix(GetLastError());
+	switch (d->chainingMode) {
+		case CM_ECB:
+			// No IV.
+			return -EINVAL;
+		case CM_CBC:
+			// Set the IV.
+			if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
+				// Error setting the IV.
+				return -w32err_to_posix(GetLastError());
+			}
+			break;
+		case CM_CTR:
+			// Set the counter.
+			memcpy(d->ctr, iv, len);
+			break;
 	}
 
 	return 0;
@@ -293,18 +320,53 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 	// NOTE: Specifying TRUE as the Final parameter results in
 	// CryptDecrypt failing with NTE_BAD_DATA, even though the
 	// data has the correct block length.
-	DWORD dwLen = data_len;
-	BOOL bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
-	CryptDestroyKey(hMyKey);
+	DWORD dwLen = 0;
+	BOOL bRet = FALSE;
+	if (d->chainingMode == CM_CTR) {
+		// CTR isn't supported by CryptoAPI directly.
+		// Need to decrypt each block manually.
+		uint8_t ctr_crypt[16];
+		for (; data_len > 0; data_len -= 16, data += 16) {
+			// Encrypt the current counter.
+			memcpy(ctr_crypt, d->ctr, sizeof(ctr_crypt));
+			DWORD dwTempLen = 16;
+			bRet = CryptEncrypt(hMyKey, 0, FALSE, 0, ctr_crypt, &dwTempLen, sizeof(ctr_crypt));
+			if (!bRet) {
+				// Encryption failed.
+				return 0;
+			}
+			dwLen += dwTempLen;
+
+			// XOR with the ciphertext.
+			// TODO: Optimized XOR.
+			for (int i = 15; i >= 0; i--) {
+				data[i] ^= ctr_crypt[i];
+			}
+
+			// Increment the counter.
+			for (int i = 15; i >= 0; i--) {
+				if (++d->ctr[i] != 0) {
+					// No carry needed.
+					break;
+				}
+			}
+		}
+	} else {
+		// EBC and/or CBC.
+		dwLen = data_len;
+		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
+		CryptDestroyKey(hMyKey);
+	}
+
 	return (bRet ? dwLen : 0);
 }
 
 /**
- * Decrypt a block of data using the specified IV.
+ * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
  * @param data Data block.
  * @param data_len Length of data block.
- * @param iv IV for the data block.
- * @param iv_len Length of the IV.
+ * @param iv IV/counter for the data block.
+ * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
