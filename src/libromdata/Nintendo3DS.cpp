@@ -1374,13 +1374,17 @@ int Nintendo3DS::loadFieldData(void)
 
 	// Title ID.
 	// If using NCSD, use the Media ID.
-	// Otherwise, use the primary Title ID.
+	// If using CIA/TMD, use the TMD Title ID.
+	// Otherwise, use the primary NCCH Title ID.
 	const rp_char *tid_desc = nullptr;
 	uint64_t title_id = 0;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// TODO: Is this valid for eMMC?
 		tid_desc = _RP("Media ID");
 		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
+	} else if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
+		tid_desc = _RP("Title ID");
+		title_id = be64_to_cpu(d->mxh.tmd_header.title_id);
 	} else {
 		// Get the title ID from the NCCH header.
 		if (d->loadNCCH() == 0) {
@@ -1708,6 +1712,28 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Add the partitions list data.
 		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
+	}
+
+	// Is the TMD header loaded?
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
+		// Display the TMD header.
+		// TODO: Add more fields?
+		const N3DS_TMD_Header_t *const tmd_header = &d->mxh.tmd_header;
+
+		// TODO: Required system version?
+
+		// Version.
+		// Reference: https://3dbrew.org/wiki/Titles
+		// TODO: Consolidate with NCSD.
+		const uint16_t version = be16_to_cpu(tmd_header->title_version);
+		len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+			(version >> 10),
+			(version >>  4) & 0x1F,
+			(version & 0x0F));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		d->fields->addField_string(_RP("Version"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 	}
 
 	// Finished reading the field data.
