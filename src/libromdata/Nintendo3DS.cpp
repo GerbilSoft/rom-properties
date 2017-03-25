@@ -888,6 +888,10 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_t *const ncsd_header = &d->mxh.ncsd_header;
 
+		// Is this eMMC?
+		const bool emmc = (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC);
+		const bool new3ds = (ncsd_header->emmc_part_tbl.crypt_type[4] == 3);
+
 		// Partition type names.
 		static const rp_char *const partition_types[2][8] = {
 			// CCI
@@ -900,8 +904,20 @@ int Nintendo3DS::loadFieldData(void)
 			 nullptr, nullptr, nullptr},
 		};
 
-		const rp_char *const *pt_types = nullptr;
-		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+		// eMMC keyslots.
+		static const uint8_t emmc_keyslots[2][8] = {
+			// Old3DS keyslots.
+			{0x03, 0x07, 0x06, 0x06, 0x04, 0x00, 0x00, 0x00},
+			// New3DS keyslots.
+			{0x03, 0x07, 0x06, 0x06, 0x05, 0x00, 0x00, 0x00},
+		};
+
+		const rp_char *const *pt_types;
+		const uint8_t *keyslots = nullptr;
+		vector<rp_string> *v_partitions_names;
+		if (!emmc) {
+			// CCI (3DS cartridge dump)
+
 			// Media ID.
 			const uint64_t media_id = le64_to_cpu(ncsd_header->media_id);
 			len = snprintf(buf, sizeof(buf), "%08X %08X",
@@ -914,26 +930,37 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition type names.
 			pt_types = partition_types[0];
-		} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC) {
+
+			// Columns for the partition table.
+			static const rp_char *const cci_partitions_names[] = {
+				_RP("#"), _RP("Type"), _RP("Size")
+			};
+			v_partitions_names = RomFields::strArrayToVector(
+				cci_partitions_names, ARRAY_SIZE(cci_partitions_names));
+		} else {
+			// eMMC (NAND dump)
+
 			// eMMC type.
 			d->fields->addField_string(_RP("Type"),
-				(ncsd_header->emmc_part_tbl.crypt_type[4] == 3
-					? _RP("New3DS")
-					: _RP("Old3DS / 2DS")));
+				(new3ds ? _RP("New3DS") : _RP("Old3DS / 2DS")));
 
 			// Partition type names.
+			// TODO: Show TWL NAND partitions?
 			pt_types = partition_types[1];
-		}
-		assert(pt_types != nullptr);
-		if (!pt_types) {
-			// Default to CCI.
-			pt_types = partition_types[0];
+
+			// Keyslots.
+			keyslots = emmc_keyslots[new3ds];
+
+			// Columns for the partition table.
+			static const rp_char *const emmc_partitions_names[] = {
+				_RP("#"), _RP("Type"), _RP("Keyslot"), _RP("Size")
+			};
+			v_partitions_names = RomFields::strArrayToVector(
+				emmc_partitions_names, ARRAY_SIZE(emmc_partitions_names));
 		}
 
 		// Partition table.
-		// TODO:
-		// - Show the ListView on a separate row?
-		// - Show keyslots for eMMC?
+		// TODO: Show the ListView on a separate row?
 		auto partitions = new std::vector<std::vector<rp_string> >();
 		partitions->reserve(8);
 
@@ -964,20 +991,21 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 
 			// Partition type.
-			// TODO: Update for eMMC?
 			const rp_char *type = (pt_types[i] ? pt_types[i] : _RP("Unknown"));
 			data_row.push_back(type);
+
+			if (keyslots) {
+				// Keyslot.
+				len = snprintf(buf, sizeof(buf), "0x%02X", keyslots[i]);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			}
 
 			// Partition size.
 			const int64_t length_bytes = (int64_t)length << media_unit_shift;
 			data_row.push_back(d->formatFileSize(length_bytes));
 		}
-
-		static const rp_char *const partitions_names[] = {
-			_RP("#"), _RP("Type"), _RP("Size")
-		};
-		vector<rp_string> *v_partitions_names = RomFields::strArrayToVector(
-			partitions_names, ARRAY_SIZE(partitions_names));
 
 		// Add the partitions list data.
 		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
