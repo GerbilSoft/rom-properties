@@ -320,12 +320,13 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 	// NOTE: Specifying TRUE as the Final parameter results in
 	// CryptDecrypt failing with NTE_BAD_DATA, even though the
 	// data has the correct block length.
-	DWORD dwLen = 0;
+	DWORD dwLen;
 	BOOL bRet = FALSE;
 	if (d->chainingMode == CM_CTR) {
 		// CTR isn't supported by CryptoAPI directly.
 		// Need to decrypt each block manually.
 		uint8_t ctr_crypt[16];
+		dwLen = 0;
 		for (; data_len > 0; data_len -= 16, data += 16) {
 			// Encrypt the current counter.
 			memcpy(ctr_crypt, d->ctr, sizeof(ctr_crypt));

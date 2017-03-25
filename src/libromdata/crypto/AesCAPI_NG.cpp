@@ -488,6 +488,7 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 			// Need to decrypt each block manually.
 			uint8_t ctr_crypt[16];
 			ULONG cbTmpResult;
+			cbResult = 0;
 			for (; data_len > 0; data_len -= 16, data += 16) {
 				// Encrypt the current counter.
 				memcpy(ctr_crypt, d->iv, sizeof(ctr_crypt));
