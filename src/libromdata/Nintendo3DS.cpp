@@ -620,6 +620,73 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 }
 
 /**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(ImageType imageType)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return std::vector<ImageSizeDef>();
+	}
+
+	switch (imageType) {
+		case IMG_INT_ICON: {
+			static const ImageSizeDef sz_INT_ICON[] = {
+				{nullptr, 48, 48, 0},
+				{nullptr, 24, 24, 1},
+			};
+			return vector<ImageSizeDef>(sz_INT_ICON,
+				sz_INT_ICON + ARRAY_SIZE(sz_INT_ICON));
+		}
+		case IMG_EXT_COVER: {
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 160, 144, 0},
+				//{"S", 128, 115, 1},	// Not currently present on GameTDB.
+				{"M", 400, 352, 2},
+				{"HQ", 768, 680, 3},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+		case IMG_EXT_COVER_FULL: {
+			static const ImageSizeDef sz_EXT_COVER_FULL[] = {
+				{nullptr, 340, 144, 0},
+				//{"S", 272, 115, 1},	// Not currently present on GameTDB.
+				{"M", 856, 352, 2},
+				{"HQ", 1616, 680, 3},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER_FULL,
+				sz_EXT_COVER_FULL + ARRAY_SIZE(sz_EXT_COVER_FULL));
+		}
+		case IMG_EXT_BOX: {
+			static const ImageSizeDef sz_EXT_BOX[] = {
+				{nullptr, 240, 216, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_BOX,
+				sz_EXT_BOX + ARRAY_SIZE(sz_EXT_BOX));
+		}
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return std::vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes(ImageType imageType) const
+{
+	return supportedImageSizes_static(imageType);
+}
+
+/**
  * Get image processing flags.
  *
  * These specify post-processing operations for images,
