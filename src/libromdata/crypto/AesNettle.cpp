@@ -19,8 +19,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "AesNettle.hpp"
 #include "config.libromdata.h"
+
+#include "AesNettle.hpp"
+#include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -78,12 +80,12 @@ AesNettlePrivate::AesNettlePrivate()
 /** AesNettle **/
 
 AesNettle::AesNettle()
-	: d(new AesNettlePrivate())
+	: d_ptr(new AesNettlePrivate())
 { }
 
 AesNettle::~AesNettle()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -126,6 +128,7 @@ int AesNettle::setKey(const uint8_t *key, unsigned int len)
 		return -EINVAL;
 	}
 
+	RP_D(AesNettle);
 #ifdef HAVE_NETTLE_3
 	switch (len) {
 		case 16:
@@ -161,6 +164,7 @@ int AesNettle::setChainingMode(ChainingMode mode)
 		return -EINVAL;
 	}
 
+	RP_D(AesNettle);
 	d->chainingMode = mode;
 	return 0;
 }
@@ -178,6 +182,7 @@ int AesNettle::setIV(const uint8_t *iv, unsigned int len)
 	}
 
 	// Set the IV.
+	RP_D(AesNettle);
 	memcpy(d->iv, iv, AES_BLOCK_SIZE);
 	return 0;
 }
@@ -196,6 +201,7 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 	}
 
 	// Decrypt the data.
+	RP_D(AesNettle);
 #ifdef HAVE_NETTLE_3
 	switch (d->chainingMode) {
 		case CM_ECB:
@@ -254,6 +260,7 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len,
 	}
 
 	// Set the IV.
+	RP_D(AesNettle);
 	memcpy(d->iv, iv, AES_BLOCK_SIZE);
 
 	// Use the regular decrypt() function.

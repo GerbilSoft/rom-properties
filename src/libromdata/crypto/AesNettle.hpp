@@ -38,7 +38,7 @@ class AesNettle : public IAesCipher
 		RP_DISABLE_COPY(AesNettle)
 	private:
 		friend class AesNettlePrivate;
-		AesNettlePrivate *const d;
+		AesNettlePrivate *const d_ptr;
 
 	public:
 		/**

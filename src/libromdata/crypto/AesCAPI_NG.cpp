@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "AesCAPI_NG.hpp"
+#include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -35,6 +36,9 @@
 #define DECL_FUNCPTR(f) typeof(f) * p##f
 #define DEF_FUNCPTR(f) typeof(f) * AesCAPI_NG_Private::p##f = nullptr
 #define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (typeof(f)*)GetProcAddress(hBcryptDll, #f)
+
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define AesCAPI_NGPrivate AesCAPI_NG_Private
 
 namespace LibRomData {
 
@@ -154,12 +158,12 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 /** AesCAPI_NG **/
 
 AesCAPI_NG::AesCAPI_NG()
-	: d(new AesCAPI_NG_Private())
+	: d_ptr(new AesCAPI_NG_Private())
 { }
 
 AesCAPI_NG::~AesCAPI_NG()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -235,6 +239,7 @@ const rp_char *AesCAPI_NG::name(void) const
  */
 bool AesCAPI_NG::isInit(void) const
 {
+	RP_D(const AesCAPI_NG);
 	return (d->hBcryptDll != nullptr &&
 		d->hAesAlg != nullptr);
 }
@@ -251,6 +256,7 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
+	RP_D(AesCAPI_NG);
 	if (!key) {
 		// No key specified.
 		return -EINVAL;
@@ -329,6 +335,7 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
  */
 int AesCAPI_NG::setChainingMode(ChainingMode mode)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
@@ -379,6 +386,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
  */
 int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
 {
+	RP_D(AesCAPI_NG);
 	if (!iv || len != 16) {
 		return -EINVAL;
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
@@ -419,6 +427,7 @@ int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
  */
 unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.
@@ -489,6 +498,7 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.

@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "AesCAPI.hpp"
+#include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -103,12 +104,12 @@ AesCAPIPrivate::~AesCAPIPrivate()
 /** AesCAPI **/
 
 AesCAPI::AesCAPI()
-	: d(new AesCAPIPrivate())
+	: d_ptr(new AesCAPIPrivate())
 { }
 
 AesCAPI::~AesCAPI()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -126,6 +127,7 @@ const rp_char *AesCAPI::name(void) const
  */
 bool AesCAPI::isInit(void) const
 {
+	RP_D(const AesCAPI);
 	return (d->hProvider != 0);
 }
 
@@ -141,6 +143,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
+	RP_D(AesCAPI);
 	if (!key) {
 		// No key specified.
 		return -EINVAL;
@@ -207,6 +210,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
  */
 int AesCAPI::setChainingMode(ChainingMode mode)
 {
+	RP_D(AesCAPI);
 	if (d->hKey == 0) {
 		// Key hasn't been set.
 		return -EBADF;
@@ -241,6 +245,7 @@ int AesCAPI::setChainingMode(ChainingMode mode)
  */
 int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 {
+	RP_D(AesCAPI);
 	if (!iv || len != 16) {
 		return -EINVAL;
 	} else if (d->hKey == 0) {
@@ -265,6 +270,7 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
  */
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 {
+	RP_D(AesCAPI);
 	if (d->hKey == 0) {
 		// Key hasn't been set.
 		return 0;
@@ -304,6 +310,7 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
+	RP_D(AesCAPI);
 	if (!iv || iv_len != 16) {
 		// Invalid IV.
 		return 0;

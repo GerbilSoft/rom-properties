@@ -38,7 +38,7 @@ class AesCAPI_NG : public IAesCipher
 		RP_DISABLE_COPY(AesCAPI_NG)
 	private:
 		friend class AesCAPI_NG_Private;
-		AesCAPI_NG_Private *const d;
+		AesCAPI_NG_Private *const d_ptr;
 
 	public:
 		/**
