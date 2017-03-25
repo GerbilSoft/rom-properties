@@ -396,6 +396,20 @@ typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
 ASSERT_STRUCT(N3DS_NCCH_Header_NoSig_t, 256);
 
 /**
+ * Nintendo 3DS NCCH header.
+ * This version does not have the 256-byte RSA-2048 signature.
+ * Reference: https://3dbrew.org/wiki/NCSD
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_Header_t {
+	uint8_t signature[0x100];		// RSA-2048 SHA-256 signature
+	N3DS_NCCH_Header_NoSig_t hdr;		// NCCH header
+} N3DS_NCCH_Header_t;
+#pragma pack()
+
+/**
  * NCCH flags. (byte array indexes)
  */
 typedef enum {

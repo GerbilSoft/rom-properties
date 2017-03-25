@@ -276,7 +276,6 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// of the file in plaintext, or as part of
 			// the executable in decrypted archives.
 
-			// TODO: Handle decrypted archives.
 			// TODO: If a CIA has an SMDH in the archive itself
 			// and as a meta at the end of the file, which does
 			// the FBI program prefer?
@@ -287,39 +286,35 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -6;
 			}
 
+			// Do we have a meta section?
 			// FBI's meta section is 15,040 bytes, but the SMDH section
 			// only takes up 14,016 bytes.
-			if (le32_to_cpu(mxh.cia_header.meta_size) < (uint32_t)sizeof(smdh)) {
-				// Meta section is either not present or too small.
-				return -7;
+			if (le32_to_cpu(mxh.cia_header.meta_size) >= (uint32_t)sizeof(smdh)) {
+				// Determine the SMDH starting address.
+				uint32_t addr = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+						toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
+						toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
+						toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
+						toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
+						(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
+				int ret = file->seek(addr);
+				if (ret == 0) {
+					// Read the SMDH section.
+					size_t size = file->read(&smdh, sizeof(smdh));
+					if (size == sizeof(smdh)) {
+						// SMDH section read.
+						break;
+					}
+				}
 			}
 
-			// Determine the SMDH starting address.
-			uint32_t addr = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
-					toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
-					toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
-					(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
-			int ret = file->seek(addr);
-			if (ret != 0) {
-				// Seek failed.
-				return -8;
-			}
-
-			// Read the SMDH section.
-			size_t size = file->read(&smdh, sizeof(smdh));
-			if (size != sizeof(smdh)) {
-				// Error reading the SMDH section.
-				return -5;
-			}
-
-			// SMDH section has been read.
-			break;
+			// Either there's no meta section, or the SMDH section
+			// wasn't valid. Try loading from the ExeFS.
+			// fall-through
 		}
 
 		case ROM_TYPE_CCI: {
-			// CCI file.
+			// CCI file, or CIA file with no meta section.
 			// Load the ExeFS.
 			int ret = loadExeFS();
 			if (ret != 0) {
@@ -389,10 +384,51 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 		return -100;
 	}
 
-	uint8_t media_unit_shift = 9;
 	int64_t offset = 0;
 	uint32_t length = 0;
 	switch (romType) {
+		case ROM_TYPE_CIA: {
+			if (!(headers_loaded & HEADER_CIA)) {
+				// CIA header is not loaded...
+				return -1;
+			}
+
+			// TODO: Parse the content index table.
+			// Assuming content 0 for now.
+			// TODO: Determine the encryption method from the ticket.
+			// For now, assuming the NCCH is unencrypted.
+
+			// Get the NCCH content length.
+			// FIXME: Length is technically 64-bit, but games larger
+			// than 4 GB don't currently exist.
+			length = (uint32_t)le64_to_cpu(mxh.cia_header.content_size);
+			if (length < sizeof(N3DS_NCCH_Header_t)) {
+				// Content is too small for NCCH.
+				return 3;
+			}
+
+			// Determine the NCCH starting address.
+			offset = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+				 toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
+				 toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
+				 toNext64(le32_to_cpu(mxh.cia_header.tmd_size));
+
+			// Add 0x100 to skip the RSA signature.
+			int ret = file->seek(offset + 0x100);
+			if (ret != 0) {
+				// Seek error.
+				return -4;
+			}
+			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
+			if (size != sizeof(*pNcchHeader)) {
+				// Read error.
+				return -5;
+			}
+
+			// NCCH header has been read.
+			break;
+		}
+
 		case ROM_TYPE_CCI: {
 			if (!(headers_loaded & HEADER_NCSD)) {
 				// NCSD header is not loaded...
@@ -407,8 +443,8 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -2;
 			}
 
-			// Add the CCI media unit shift, if specified.
-			media_unit_shift += mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+			// Get the CCI media unit shift.
+			const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 
 			// Get the partition offset and length.
 			offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
@@ -420,11 +456,15 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -3;
 			}
 
-			file->seek(offset + 0x100);
+			int ret = file->seek(offset + 0x100);
+			if (ret != 0) {
+				// Seek error.
+				return -4;
+			}
 			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
 			if (size != sizeof(*pNcchHeader)) {
-				// Error reading the NCCH header.
-				return -4;
+				// Read error.
+				return -5;
 			}
 
 			// NCCH header has been read.
