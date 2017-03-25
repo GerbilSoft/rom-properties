@@ -60,6 +60,16 @@ class NintendoDSPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(NintendoDSPrivate)
 
 	public:
+		// Animated icon data.
+		// This class owns all of the icons in here, so we
+		// must delete all of them.
+		IconAnimData *iconAnimData;
+
+		// Pointer to the first frame in iconAnimData.
+		// Used when showing a static icon.
+		const rp_image *icon_first_frame;
+
+	public:
 		/** RomFields **/
 
 		// Hardware type. (RFT_BITFIELD)
@@ -85,18 +95,6 @@ class NintendoDSPrivate : public RomDataPrivate
 		NDS_IconTitleData nds_icon_title;
 		bool nds_icon_title_loaded;
 
-		// Animated icon data.
-		// NOTE: Nintendo DSi icons can have custom sequences,
-		// so the first frame isn't necessarily the first in
-		// the sequence. Hence, we return a copy of the first
-		// frame in the sequence for loadIcon().
-		// This class owns all of the icons in here, so we
-		// must delete all of them.
-		IconAnimData *iconAnimData;
-
-		// The rp_image* copy. (DO NOT DELETE THIS!)
-		rp_image *icon_first_frame;
-
 		/**
 		 * Load the icon/title data.
 		 * @return 0 on success; negative POSIX error code on error.
@@ -107,7 +105,7 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * Load the ROM image's icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		rp_image *loadIcon(void);
+		const rp_image *loadIcon(void);
 
 		/**
 		 * Get the title index.
@@ -143,9 +141,9 @@ class NintendoDSPrivate : public RomDataPrivate
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
 	: super(q, file)
-	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
+	, nds_icon_title_loaded(false)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -227,16 +225,14 @@ int NintendoDSPrivate::loadIconTitleData(void)
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
-rp_image *NintendoDSPrivate::loadIcon(void)
+const rp_image *NintendoDSPrivate::loadIcon(void)
 {
-	if (!this->file || !this->isValid) {
-		// Can't load the icon.
-		return nullptr;
-	}
-
-	if (iconAnimData) {
+	if (icon_first_frame) {
 		// Icon has already been loaded.
 		return icon_first_frame;
+	} else if (!this->file || !this->isValid) {
+		// Can't load the icon.
+		return nullptr;
 	}
 
 	// Attempt to load the icon/title data.
@@ -323,28 +319,8 @@ rp_image *NintendoDSPrivate::loadIcon(void)
 	// a single icon because iconAnimData() will call loadIcon()
 	// if iconAnimData is nullptr.
 
-	// Return a copy of first frame.
-	// TODO: rp_image assignment operator and copy constructor.
-	const rp_image *src_img = iconAnimData->frames[iconAnimData->seq_index[0]];
-	if (src_img) {
-		icon_first_frame = new rp_image(32, 32, rp_image::FORMAT_CI8);
-
-		// Copy the image data.
-		// TODO: Image stride?
-		assert(icon_first_frame->data_len() == src_img->data_len());
-		const size_t data_len = std::min(icon_first_frame->data_len(), src_img->data_len());
-		memcpy(icon_first_frame->bits(), src_img->bits(), data_len);
-
-		// Copy the palette.
-		assert(icon_first_frame->palette_len() > 0);
-		assert(src_img->palette_len() > 0);
-		assert(icon_first_frame->palette_len() == src_img->palette_len());
-		const int palette_len = std::min(icon_first_frame->palette_len(), src_img->palette_len());
-		if (palette_len > 0) {
-			memcpy(icon_first_frame->palette(), src_img->palette(), palette_len);
-		}
-	}
-
+	// Return a pointer to the first frame.
+	icon_first_frame = iconAnimData->frames[iconAnimData->seq_index[0]];
 	return icon_first_frame;
 }
 
@@ -944,6 +920,47 @@ std::vector<RomData::ImageSizeDef> NintendoDS::supportedImageSizes(ImageType ima
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t NintendoDS::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	RP_D(const NintendoDS);
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Use nearest-neighbor scaling when resizing.
+			// Also, need to check if this is an animated icon.
+			const_cast<NintendoDSPrivate*>(d)->loadIcon();
+			if (d->iconAnimData && d->iconAnimData->count > 1) {
+				// Animated icon.
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_ICON_ANIMATED;
+			} else {
+				// Not animated.
+				ret = IMGPF_RESCALE_NEAREST;
+			}
+			break;
+
+		default:
+			// GameTDB's Nintendo DS cover scans have alpha transparency.
+			// Hence, no image processing is required.
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1138,46 +1155,46 @@ int NintendoDS::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int NintendoDS::loadInternalImage(ImageType imageType)
+int NintendoDS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(NintendoDS);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by DS.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->icon_first_frame) {
+		// Image has already been loaded.
+		*pImage = d->icon_first_frame;
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
+		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// ROM image isn't valid.
+		// Save file isn't valid.
+		*pImage = nullptr;
 		return -EIO;
 	}
 
-	// Check for supported image types.
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by DS.
-		return -ENOENT;
-	}
-
-	// Use nearest-neighbor scaling when resizing.
-	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	d->images[imageType] = d->loadIcon();
-	if (d->iconAnimData && d->iconAnimData->count > 1) {
-		// Animated icon.
-		d->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
-	}
-
-	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (d->images[imageType] != nullptr ? 0 : -EIO);
+	// Load the icon.
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 /**
@@ -1210,24 +1227,6 @@ const IconAnimData *NintendoDS::iconAnimData(void) const
 
 	// Return the icon animation data.
 	return d->iconAnimData;
-}
-
-/**
- * Get the imgpf value for external media types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t NintendoDS::imgpf_extURL(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-
-	// NOTE: GameTDB's Nintendo DS cover scans have alpha transparency.
-	// Hence, no image processing is required.
-	return 0;
 }
 
 /**

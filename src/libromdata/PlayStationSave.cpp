@@ -60,6 +60,10 @@ class PlayStationSavePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(PlayStationSavePrivate)
 
 	public:
+		// Animated icon data.
+		IconAnimData *iconAnimData;
+
+	public:
 		// Save file type.
 		enum SaveType {
 			SAVE_TYPE_UNKNOWN = -1,	// Unknown save type.
@@ -73,10 +77,6 @@ class PlayStationSavePrivate : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		PS1_PSV_Header psvHeader;
 
-		// Animated icon data.
-		// NOTE: The first frame is owned by the RomData superclass.
-		IconAnimData *iconAnimData;
-
 		/**
 		 * Load the save file's icons.
 		 *
@@ -85,15 +85,15 @@ class PlayStationSavePrivate : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		rp_image *loadIcon(void);
+		const rp_image *loadIcon(void);
 };
 
 /** PlayStationSavePrivate **/
 
 PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
 	: super(q, file)
-	, saveType(SAVE_TYPE_UNKNOWN)
 	, iconAnimData(nullptr)
+	, saveType(SAVE_TYPE_UNKNOWN)
 {
 	// Clear the save header struct.
 	memset(&psvHeader, 0, sizeof(psvHeader));
@@ -102,10 +102,9 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 PlayStationSavePrivate::~PlayStationSavePrivate()
 {
 	if (iconAnimData) {
-		// Delete all except the first animated icon frame.
-		// (The first frame is owned by the RomData superclass.)
-		// TODO: Optimize by checking for "> 0" instead of ">= 1"?
-		for (int i = iconAnimData->count-1; i >= 1; i--) {
+		// This class owns all of the icons in iconAnimData, so we
+		// must delete all of them.
+		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			delete iconAnimData->frames[i];
 		}
 		delete iconAnimData;
@@ -120,11 +119,11 @@ PlayStationSavePrivate::~PlayStationSavePrivate()
  *
  * @return Icon, or nullptr on error.
  */
-rp_image *PlayStationSavePrivate::loadIcon(void)
+const rp_image *PlayStationSavePrivate::loadIcon(void)
 {
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return const_cast<rp_image*>(iconAnimData->frames[0]);
+		return iconAnimData->frames[0];
 	}
 
 	if (saveType != SAVE_TYPE_PSV) {
@@ -184,7 +183,7 @@ rp_image *PlayStationSavePrivate::loadIcon(void)
 
 
 	// Return the first frame.
-	return const_cast<rp_image*>(iconAnimData->frames[0]);
+	return iconAnimData->frames[0];
 }
 
 /** PlayStationSave **/
@@ -422,6 +421,45 @@ std::vector<RomData::ImageSizeDef> PlayStationSave::supportedImageSizes(ImageTyp
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t PlayStationSave::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	RP_D(const PlayStationSave);
+	uint32_t ret = 0;
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Use nearest-neighbor scaling when resizing.
+			// Also, need to check if this is an animated icon.
+			const_cast<PlayStationSavePrivate*>(d)->loadIcon();
+			if (d->iconAnimData && d->iconAnimData->count > 1) {
+				// Animated icon.
+				ret = IMGPF_RESCALE_NEAREST | IMGPF_ICON_ANIMATED;
+			} else {
+				// Not animated.
+				ret = IMGPF_RESCALE_NEAREST;
+			}
+			break;
+
+		default:
+			break;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -460,46 +498,49 @@ int PlayStationSave::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int PlayStationSave::loadInternalImage(ImageType imageType)
+int PlayStationSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(PlayStationSave);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by PS1.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->iconAnimData) {
+		// Image has already been loaded.
+		// NOTE: PS1 icon animations are always sequential,
+		// so we can use a shortcut here.
+		*pImage = d->iconAnimData->frames[0];
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
+		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
-		// ROM image isn't valid.
+		// Save file isn't valid.
+		*pImage = nullptr;
 		return -EIO;
 	}
 
-	// Check for supported image types.
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by DS.
-		return -ENOENT;
-	}
-
-	// Use nearest-neighbor scaling when resizing.
-	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	d->images[imageType] = d->loadIcon();
-	if (d->iconAnimData && d->iconAnimData->count > 1) {
-		// Animated icon.
-		d->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
-	}
-
+	// Load the icon.
 	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (d->images[imageType] != nullptr ? 0 : -EIO);
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 /**

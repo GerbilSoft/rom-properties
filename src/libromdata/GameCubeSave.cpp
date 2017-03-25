@@ -60,6 +60,13 @@ class GameCubeSavePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameCubeSavePrivate)
 
 	public:
+		// Internal images.
+		rp_image *img_banner;
+
+		// Animated icon data.
+		IconAnimData *iconAnimData;
+
+	public:
 		// RomFields data.
 
 		// Directory entry from the GCI header.
@@ -96,10 +103,6 @@ class GameCubeSavePrivate : public RomDataPrivate
 		 */
 		static bool isCardDirEntry(const uint8_t *buffer, uint32_t data_size, SaveType saveType);
 
-		// Animated icon data.
-		// NOTE: The first frame is owned by the RomData superclass.
-		IconAnimData *iconAnimData;
-
 		/**
 		 * Load the save file's icons.
 		 *
@@ -108,22 +111,23 @@ class GameCubeSavePrivate : public RomDataPrivate
 		 *
 		 * @return Icon, or nullptr on error.
 		 */
-		rp_image *loadIcon(void);
+		const rp_image *loadIcon(void);
 
 		/**
 		 * Load the save file's banner.
 		 * @return Banner, or nullptr on error.
 		 */
-		rp_image *loadBanner(void);
+		const rp_image *loadBanner(void);
 };
 
 /** GameCubeSavePrivate **/
 
 GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
 	: super(q, file)
+	, img_banner(nullptr)
+	, iconAnimData(nullptr)
 	, saveType(SAVE_TYPE_UNKNOWN)
 	, dataOffset(-1)
-	, iconAnimData(nullptr)
 {
 	// Clear the directory entry.
 	memset(&direntry, 0, sizeof(direntry));
@@ -131,6 +135,7 @@ GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
 
 GameCubeSavePrivate::~GameCubeSavePrivate()
 {
+	delete img_banner;
 	if (iconAnimData) {
 		// Delete all except the first animated icon frame.
 		// (The first frame is owned by the RomData superclass.)
@@ -289,16 +294,14 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
  *
  * @return Icon, or nullptr on error.
  */
-rp_image *GameCubeSavePrivate::loadIcon(void)
+const rp_image *GameCubeSavePrivate::loadIcon(void)
 {
-	if (!this->file || !this->isValid) {
-		// Can't load the icon.
-		return nullptr;
-	}
-
 	if (iconAnimData) {
 		// Icon has already been loaded.
-		return const_cast<rp_image*>(iconAnimData->frames[0]);
+		return iconAnimData->frames[0];
+	} else if (!this->file || !this->isValid) {
+		// Can't load the icon.
+		return nullptr;
 	}
 
 	// Calculate the icon start address.
@@ -465,16 +468,19 @@ rp_image *GameCubeSavePrivate::loadIcon(void)
 	iconAnimData->seq_count = idx;
 
 	// Return the first frame.
-	return const_cast<rp_image*>(iconAnimData->frames[0]);
+	return iconAnimData->frames[0];
 }
 
 /**
  * Load the save file's banner.
  * @return Banner, or nullptr on error.
  */
-rp_image *GameCubeSavePrivate::loadBanner(void)
+const rp_image *GameCubeSavePrivate::loadBanner(void)
 {
-	if (!this->file || !this->isValid) {
+	if (img_banner) {
+		// Banner is already loaded.
+		return img_banner;
+	} else if (!this->file || !this->isValid) {
 		// Can't load the banner.
 		return nullptr;
 	}
@@ -505,10 +511,9 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
 		return nullptr;
 	}
 
-	rp_image *banner = nullptr;
 	if ((direntry.bannerfmt & CARD_BANNER_MASK) == CARD_BANNER_RGB) {
 		// Convert the banner from GCN RGB5A3 format to ARGB32.
-		banner = ImageDecoder::fromGcnRGB5A3(CARD_BANNER_W, CARD_BANNER_H,
+		img_banner = ImageDecoder::fromGcnRGB5A3(CARD_BANNER_W, CARD_BANNER_H,
 			reinterpret_cast<const uint16_t*>(bannerbuf), bannersize);
 	} else {
 		// Read the palette data.
@@ -521,11 +526,11 @@ rp_image *GameCubeSavePrivate::loadBanner(void)
 		}
 
 		// Convert the banner from GCN CI8 format to CI8.
-		banner = ImageDecoder::fromGcnCI8(CARD_BANNER_W, CARD_BANNER_H,
+		img_banner = ImageDecoder::fromGcnCI8(CARD_BANNER_W, CARD_BANNER_H,
 			bannerbuf, bannersize, palbuf, sizeof(palbuf));
 	}
 
-	return banner;
+	return img_banner;
 }
 
 /** GameCubeSave **/
@@ -828,6 +833,34 @@ std::vector<RomData::ImageSizeDef> GameCubeSave::supportedImageSizes(ImageType i
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameCubeSave::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+		case IMG_INT_BANNER:
+			// Use nearest-neighbor scaling.
+			return IMGPF_RESCALE_NEAREST;
+		default:
+			break;
+	}
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -932,23 +965,49 @@ int GameCubeSave::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubeSave::loadInternalImage(ImageType imageType)
+int GameCubeSave::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(GameCubeSave);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
-		return 0;
-	} else if (!d->file) {
+	switch (imageType) {
+		case IMG_INT_ICON:
+			if (d->iconAnimData) {
+				// Return the first icon frame.
+				// NOTE: GCN save icon animations are always
+				// sequential, so we can use a shortcut here.
+				*pImage = d->iconAnimData->frames[0];
+				return 0;
+			}
+			break;
+		case IMG_INT_BANNER:
+			if (d->img_banner) {
+				// Banner is loaded.
+				*pImage = d->img_banner;
+				return 0;
+			}
+			break;
+		default:
+			// Unsupported image type.
+			*pImage = nullptr;
+			return 0;
+	}
+
+	if (!d->file) {
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid) {
@@ -956,31 +1015,21 @@ int GameCubeSave::loadInternalImage(ImageType imageType)
 		return -EIO;
 	}
 
-	// Check for supported image types.
+	// Load the image.
 	switch (imageType) {
 		case IMG_INT_ICON:
-			// Icon.
-			d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-			d->images[imageType] = d->loadIcon();
-			if (d->iconAnimData && d->iconAnimData->count > 1) {
-				// Animated icon.
-				d->imgpf[imageType] |= IMGPF_ICON_ANIMATED;
-			}
+			*pImage = d->loadIcon();
 			break;
-
 		case IMG_INT_BANNER:
-			// Banner.
-			d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-			d->images[imageType] = d->loadBanner();
+			*pImage = d->loadBanner();
 			break;
-
 		default:
 			// Unsupported.
 			return -ENOENT;
 	}
 
 	// TODO: -ENOENT if the file doesn't actually have an icon/banner.
-	return (d->images[imageType] != nullptr ? 0 : -EIO);
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 /**

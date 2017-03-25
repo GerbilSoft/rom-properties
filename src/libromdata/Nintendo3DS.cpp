@@ -53,10 +53,15 @@ class Nintendo3DSPrivate : public RomDataPrivate
 {
 	public:
 		Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file);
+		virtual ~Nintendo3DSPrivate();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Nintendo3DSPrivate)
+
+	public:
+		// Internal images.
+		rp_image *img_icon;	// TODO: 48x48, 24x24
 
 	public:
 		// ROM type.
@@ -121,19 +126,25 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * Load the ROM image's icon.
 		 * @return Icon, or nullptr on error.
 		 */
-		rp_image *loadIcon(void);
+		const rp_image *loadIcon(void);
 };
 
 /** Nintendo3DSPrivate **/
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
+	, img_icon(nullptr)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
 {
 	// Clear the various headers.
 	memset(&smdh_header, 0, sizeof(smdh_header));
 	memset(&mxh, 0, sizeof(mxh));
+}
+
+Nintendo3DSPrivate::~Nintendo3DSPrivate()
+{
+	delete img_icon;
 }
 
 /**
@@ -258,9 +269,12 @@ int Nintendo3DSPrivate::loadSMDH(void)
  * Load the ROM image's icon.
  * @return Icon, or nullptr on error.
  */
-rp_image *Nintendo3DSPrivate::loadIcon(void)
+const rp_image *Nintendo3DSPrivate::loadIcon(void)
 {
-	if (!file || !isValid) {
+	if (img_icon) {
+		// Icon has already been loaded.
+		return img_icon;
+	} else if (!file || !isValid) {
 		// Can't load the icon.
 		return nullptr;
 	}
@@ -352,9 +366,10 @@ rp_image *Nintendo3DSPrivate::loadIcon(void)
 	// 3dbrew.org says it could be any of various formats,
 	// but only RGB565 has been used so far.
 	// Reference: https://www.3dbrew.org/wiki/SMDH#Icon_graphics
-	return ImageDecoder::fromN3DSTiledRGB565(
+	img_icon = ImageDecoder::fromN3DSTiledRGB565(
 		N3DS_SMDH_ICON_LARGE_W, N3DS_SMDH_ICON_LARGE_H,
 		smdh_icon.large, sizeof(smdh_icon.large));
+	return img_icon;
 }
 
 /** Nintendo3DS **/
@@ -605,6 +620,33 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Nintendo3DS::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	switch (imageType) {
+		case IMG_INT_ICON:
+			// Use nearest-neighbor scaling.
+			return IMGPF_RESCALE_NEAREST;
+		default:
+			break;
+	}
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -692,42 +734,46 @@ int Nintendo3DS::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int Nintendo3DS::loadInternalImage(ImageType imageType)
+int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(Nintendo3DS);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by 3DS.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_icon) {
+		// Image has already been loaded.
+		*pImage = d->img_icon;
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
+		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
+		*pImage = nullptr;
 		return -EIO;
 	}
 
-	// Check for supported image types.
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by 3DS.
-		return -ENOENT;
-	}
-
-	// Use nearest-neighbor scaling when resizing.
-	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
-	d->images[imageType] = d->loadIcon();
-
-	// TODO: -ENOENT if the file doesn't actually have an icon.
-	return (d->images[imageType] != nullptr ? 0 : -EIO);
+	// Load the icon.
+	*pImage = d->loadIcon();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }

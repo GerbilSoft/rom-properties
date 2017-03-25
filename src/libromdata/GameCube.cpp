@@ -72,6 +72,10 @@ class GameCubePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameCubePrivate)
 
 	public:
+		// Internal images.
+		rp_image *img_banner;
+
+	public:
 		// NDDEMO header.
 		static const uint8_t nddemo_header[64];
 
@@ -211,6 +215,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 
 GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	: super(q, file)
+	, img_banner(nullptr)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcn_opening_bnr(nullptr)
@@ -227,6 +232,9 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 
 GameCubePrivate::~GameCubePrivate()
 {
+	// Internal images.
+	delete img_banner;
+
 	updatePartition = nullptr;
 	gamePartition = nullptr;
 
@@ -1208,6 +1216,36 @@ uint32_t GameCube::supportedImageTypes(void) const
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameCube::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	switch (imageType) {
+		case IMG_INT_BANNER:
+			// Use nearest-neighbor scaling.
+			return IMGPF_RESCALE_NEAREST;
+		default:
+			// GameTDB's GameCube and Wii disc and 3D cover scans
+			// have alpha transparency. Hence, no image processing
+			// is required.
+			break;
+	}
+	return 0;
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
  *
  * The first item in the returned vector is the "default" size.
@@ -1668,45 +1706,50 @@ int GameCube::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::loadInternalImage(ImageType imageType)
+int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(GameCube);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
+	if (imageType != IMG_INT_BANNER) {
+		// Only IMG_INT_BANNER is supported by GameCube.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_banner) {
+		// Image has already been loaded.
+		*pImage = d->img_banner;
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
+		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
+		*pImage = nullptr;
 		return -EIO;
-	}
-
-	// Check for supported image types.
-	if (imageType != IMG_INT_BANNER) {
-		// Only IMG_INT_BANNER is supported by GameCube.
-		return -ENOENT;
 	}
 
 	// Load opening.bnr. (GCN/Triforce only)
 	// FIXME: Does Triforce have opening.bnr?
 	if (d->gcn_loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
+		*pImage = nullptr;
 		return -ENOENT;
 	}
-
-	// Use nearest-neighbor scaling when resizing.
-	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
 
 	// Convert the banner from GameCube RGB5A3 to ARGB32.
 	rp_image *banner = ImageDecoder::fromGcnRGB5A3(
@@ -1714,29 +1757,13 @@ int GameCube::loadInternalImage(ImageType imageType)
 		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
 	if (!banner) {
 		// Error converting the banner.
+		*pImage = nullptr;
 		return -EIO;
 	}
 
 	// Finished decoding the banner.
-	d->images[imageType] = banner;
-	return 0;
-}
-
-/**
- * Get the imgpf value for external media types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t GameCube::imgpf_extURL(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-
-	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
-	// alpha transparency. Hence, no image processing is required.
+	d->img_banner = banner;
+	*pImage = banner;
 	return 0;
 }
 

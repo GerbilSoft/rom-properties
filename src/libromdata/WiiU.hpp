@@ -154,13 +154,6 @@ class WiiU : public RomData
 		 */
 		virtual int loadFieldData(void) override final;
 
-		/**
-		 * Get the imgpf value for external image types.
-		 * @param imageType Image type to load.
-		 * @return imgpf value.
-		 */
-		virtual uint32_t imgpf_extURL(ImageType imageType) const override final;
-
 	public:
 		/**
 		 * Get a list of URLs for an external image type.

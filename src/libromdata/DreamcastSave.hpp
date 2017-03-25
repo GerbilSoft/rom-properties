@@ -168,6 +168,17 @@ class DreamcastSave : public RomData
 		 */
 		virtual std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const override final;
 
+		/**
+		 * Get image processing flags.
+		 *
+		 * These specify post-processing operations for images,
+		 * e.g. applying transparency masks.
+		 *
+		 * @param imageType Image type.
+		 * @return Bitfield of ImageProcessingBF operations to perform.
+		 */
+		virtual uint32_t imgpf(ImageType imageType) const override final;
+
 	protected:
 		/**
 		 * Load field data.
@@ -178,11 +189,12 @@ class DreamcastSave : public RomData
 
 		/**
 		 * Load an internal image.
-		 * Called by RomData::image() if the image data hasn't been loaded yet.
-		 * @param imageType Image type to load.
+		 * Called by RomData::image().
+		 * @param imageType	[in] Image type to load.
+		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType) override final;
+		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
 
 	public:
 		/**

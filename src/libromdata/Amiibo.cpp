@@ -391,6 +391,28 @@ std::vector<RomData::ImageSizeDef> Amiibo::supportedImageSizes(ImageType imageTy
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Amiibo::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// NOTE: amiibo.life's amiibo images have alpha transparency.
+	// Hence, no image processing is required.
+	return 0;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -529,24 +551,6 @@ int Amiibo::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
-}
-
-/**
- * Get the imgpf value for external image types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t Amiibo::imgpf_extURL(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-
-	// NOTE: amiibo.life's amiibo images have alpha transparency.
-	// Hence, no image processing is required.
-	return 0;
 }
 
 /**

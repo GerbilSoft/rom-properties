@@ -78,13 +78,6 @@ class RomDataPrivate
 		// File type. (default is FTYPE_ROM_IMAGE)
 		RomData::FileType fileType;
 
-		// Internal images.
-		rp_image *images[RomData::IMG_INT_MAX - RomData::IMG_INT_MIN + 1];
-
-		// Image processing flags for internal images.
-		// External images use RomData::imgpf_extURL().
-		uint32_t imgpf[RomData::IMG_INT_MAX+1];
-
 	public:
 		/** Convenience functions. **/
 
