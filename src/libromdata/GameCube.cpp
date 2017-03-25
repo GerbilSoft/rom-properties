@@ -161,7 +161,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * @param gcnRegion GCN region value.
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned including:
+		 * NOTE: Mulitple GameTDB region codes may be returned, including:
 		 * - User-specified fallback region. [TODO]
 		 * - General fallback region.
 		 *
@@ -437,7 +437,7 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
  * @param gcnRegion GCN region value.
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned including:
+ * NOTE: Mulitple GameTDB region codes may be returned, including:
  * - User-specified fallback region. [TODO]
  * - General fallback region.
  *

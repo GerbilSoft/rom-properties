@@ -127,7 +127,7 @@ class NintendoDSPrivate : public RomDataPrivate
 		 * @param dsiRegion Nintendo DSi region.
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned including:
+		 * NOTE: Mulitple GameTDB region codes may be returned, including:
 		 * - User-specified fallback region. [TODO]
 		 * - General fallback region.
 		 *
@@ -497,7 +497,7 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
  * @param dsiRegion Nintendo DSi region.
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned including:
+ * NOTE: Mulitple GameTDB region codes may be returned, including:
  * - User-specified fallback region. [TODO]
  * - General fallback region.
  *
