@@ -203,17 +203,16 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 	// Decrypt the data.
 	RP_D(AesNettle);
 #ifdef HAVE_NETTLE_3
+	if (!d->decrypt_fn) {
+		// No decryption function set...
+		return 0;
+	}
 	switch (d->chainingMode) {
 		case CM_ECB:
 			d->decrypt_fn(&d->ctx, data_len, data, data);
 			break;
 
 		case CM_CBC:
-			if (!d->decrypt_fn) {
-				// No decryption function set...
-				return 0;
-			}
-
 			// IV is automatically updated for the next block.
 			cbc_decrypt(&d->ctx, d->decrypt_fn, AES_BLOCK_SIZE,
 				    d->iv, data_len, data, data);
