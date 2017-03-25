@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_structs.h: Nintendo 3DS data structures.                           *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -20,10 +20,12 @@
  ***************************************************************************/
 
 // References:
-// - https://www.3dbrew.org/wiki/SMDH
+// - https://3dbrew.org/wiki/SMDH
 // - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
 // - https://3dbrew.org/wiki/3DSX_Format
 // - https://3dbrew.org/wiki/CIA
+// - https://3dbrew.org/wiki/NCSD
+// - https://3dbrew.org/wiki/ExeFS
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
@@ -117,7 +119,7 @@ typedef enum {
  * Nintendo 3DS SMDH header.
  * SMDH files contain a description of the title as well
  * as large and small icons.
- * Reference: https://www.3dbrew.org/wiki/SMDH
+ * Reference: https://3dbrew.org/wiki/SMDH
  *
  * All fields are little-endian.
  * NOTE: Strings may not be NULL-terminated!
@@ -357,7 +359,13 @@ typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
 	// NOTE: Addresses are relative to the version *with* a signature.
 	char magic[4];				// [0x100] "NCCH"
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
-	uint64_t partition_id;			// [0x108] Partition ID.
+	union {
+		uint64_t partition_id;		// [0x108] Partition ID.
+		struct {
+			uint8_t reserved[6];	// [0x108]
+			uint16_t sysversion;	// [0x10E] System Update version for update partitions.
+		};
+	};
 	char maker_code[2];			// [0x110] Maker code.
 	uint16_t version;			// [0x112] Version.
 	uint32_t fw96lock;			// [0x114] Used by FIRM 9.6.0-X to verify the content lock seed.
@@ -422,11 +430,64 @@ typedef enum {
  * NCCH bit masks.
  */
 typedef enum {
-	N3DS_NCCH_BIT_MASK_FIXEDCRYPTOKEY	= 0x01,
-	N3DS_NCCH_BIT_MASK_NOMOUNTROMFS		= 0x02,
-	N3DS_NCCH_BIT_MASK_NOCRYPTO		= 0x04,
-	N3DS_NCCH_BIT_MASK_FW96KEYY		= 0x20,
+	N3DS_NCCH_BIT_MASK_FixedCryptoKey	= 0x01,
+	N3DS_NCCH_BIT_MASK_NoMountRomFS		= 0x02,
+	N3DS_NCCH_BIT_MASK_NoCrypto		= 0x04,
+	N3DS_NCCH_BIT_MASK_Fw96KeyY		= 0x20,
 } N3DS_NCCH_Bit_Masks;
+
+/**
+ * NCCH section numbers.
+ * Used as part of the counter initialization.
+ * Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.h
+ */
+typedef enum {
+	N3DS_NCCH_SECTION_EXHEADER	= 1,
+	N3DS_NCCH_SECTION_EXEFS		= 2,
+	N3DS_NCCH_SECTION_ROMFS		= 3,
+} N3DS_NCCH_Sections;
+
+/**
+ * 3DS keyset.
+ * Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/keyset.h
+ */
+typedef enum {
+	N3DS_PKI_TEST,
+	//N3DS_PKI_BETA,
+	N3DS_PKI_DEVELOPMENT,
+	N3DS_PKI_PRODUCTION,
+	//N3DS_PKI_CUSTOM,
+} N3DS_KeySet;
+
+/**
+ * Nintendo 3DS: ExeFS file header.
+ * Reference: https://3dbrew.org/wiki/ExeFS
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_ExeFS_File_Header_t {
+	char name[8];
+	uint32_t offset;
+	uint32_t size;
+} N3DS_ExeFS_File_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_ExeFS_File_Header_t, 16);
+
+/**
+ * Nintendo 3DS: ExeFS header.
+ * Reference: https://3dbrew.org/wiki/ExeFS
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_ExeFS_Header_t {
+	N3DS_ExeFS_File_Header_t files[10];
+	uint8_t reserved[0x20];
+	uint8_t hashes[10][32];	// SHA-256 hashes of each file.
+} N3DS_ExeFS_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_ExeFS_Header_t, 512);
 
 #ifdef __cplusplus
 }

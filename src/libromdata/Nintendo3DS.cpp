@@ -36,6 +36,11 @@
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
 
+#ifdef ENABLE_DECRYPTION
+#include "crypto/AesCipherFactory.hpp"
+#include "crypto/IAesCipher.hpp"
+#endif /* ENABLE_DECRYPTION */
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
@@ -44,9 +49,11 @@
 
 // C++ includes.
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -92,6 +99,9 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			HEADER_3DSX	= (1 << 2),
 			HEADER_CIA	= (1 << 3),
 			HEADER_NCSD	= (1 << 4),
+
+			// TEMPORARY: Replace with N3DSExeFS, subclass of IPartition
+			TEMP_EXEFS	= (1 << 5),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -107,6 +117,10 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			N3DS_CIA_Header_t cia_header;
 			N3DS_NCSD_Header_t ncsd_header;
 		} mxh;
+
+		// ExeFS.
+		// TODO: Replace with N3DSExeFS, subclass of IPartition
+		unique_ptr<uint8_t[]> exefs;
 
 		/**
 		 * Round a value to the next highest multiple of 64.
@@ -142,6 +156,14 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		// TODO: Add a function to get the update versions
 		// from CCI images.
+
+		/**
+		 * Load the ExeFS from the primary content.
+		 * TEMPORARY DEBUG FUNCTION; replace with N3DSExeFS, subclass of IPartition
+		 * ExeFS is loaded into this->exefs.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadExeFS(void);
 
 		/**
 		 * Load the ROM image's icon.
@@ -291,10 +313,41 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			break;
 		}
 
-		case ROM_TYPE_CCI:
-			// CCI file. SMDH can only be loaded if it's plaintext.
-			// TODO: Find a plaintext CCI and/or a "null key" CCI.
-			return -97;
+		case ROM_TYPE_CCI: {
+			// CCI file. (TODO: Consolidate with loadIcon().)
+			// Load the ExeFS.
+			int ret = loadExeFS();
+			if (ret != 0) {
+				// Error loading the ExeFS.
+				return -6;
+			}
+
+			// FIXME: Verify content length.
+			const N3DS_ExeFS_Header_t *const exefs_header =
+				reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
+			if (!exefs_header) {
+				// No ExeFS header.
+				return -7;
+			}
+			// Find "icon".
+			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
+			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
+					// Found "icon".
+					file_header = &exefs_header->files[i];
+					break;
+				}
+			}
+			if (!file_header) {
+				// No icon.
+				return -8;
+			}
+
+			// Load the SMDH header from the icon.
+			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
+			memcpy(&smdh_header, exefs.get() + offset, sizeof(smdh_header));
+			break;
+		}
 
 		default:
 			// Unsupported...
@@ -327,12 +380,17 @@ int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 	uint8_t media_unit_shift = 9;
 	switch (romType) {
 		case ROM_TYPE_CCI: {
+			if (!(headers_loaded & HEADER_NCSD)) {
+				// NCSD header is not loaded...
+				return -1;
+			}
+
 			// The NCCH header is located at the beginning of the partition.
 			// (Add 0x100 to skip the signature.)
 			assert(idx >= 0 && idx < 8);
 			if (idx < 0 || idx >= 8) {
 				// Invalid partition index.
-				return -1;
+				return -2;
 			}
 
 			// Add the CCI media unit shift, if specified.
@@ -344,14 +402,14 @@ int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 			// Make sure the partition starts after the card info header.
 			if (partition_offset <= 0x2000) {
 				// Invalid partition offset.
-				return -2;
+				return -3;
 			}
 
 			file->seek(partition_offset + 0x100);
 			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
 			if (size != sizeof(*pNcchHeader)) {
 				// Error reading the NCCH header.
-				return -3;
+				return -4;
 			}
 
 			// NCCH header has been read.
@@ -392,6 +450,113 @@ int Nintendo3DSPrivate::loadNCCH(void)
 		headers_loaded |= HEADER_NCCH;
 	}
 	return ret;
+}
+
+/**
+ * Load the ExeFS from the primary content.
+ * TEMPORARY DEBUG FUNCTION; replace with N3DSExeFS, subclass of IPartition.
+ * ExeFS is loaded into this->exefs.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadExeFS(void)
+{
+	if (headers_loaded & TEMP_EXEFS) {
+		// ExeFS is already loaded.
+		return 0;
+	}
+
+	// TODO: Only CCI is supported at the moment.
+	if (romType != ROM_TYPE_CCI) {
+		return -1;
+	}
+
+	// TODO:
+	// - Verify values other than NoCrypto|FixedKeyCrypto.
+	// - N3DSExeFS subclass of IPartition to decrypt individual files.
+
+	// Load the NCCH header if it isn't already loaded.
+	if (!(headers_loaded & HEADER_NCCH)) {
+		int ret = loadNCCH();
+		if (ret != 0) {
+			return -2;
+		}
+	}
+
+	// Crypto settings, in priority order:
+	// 1. NoCrypto: AES key is all 0s. (FixedCryptoKey should also be set.)
+	// 2. FixedCryptoKey: Fixed key is used.
+	// 3. Neither: Standard key is used.
+	uint8_t key[16];
+	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption. Don't do anything.
+	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key encryption.
+		// TODO: Determine which keyset is in use.
+		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
+		memset(key, 0, sizeof(key));
+	} else {
+		// TODO: Other encryption methods.
+		return -96;
+	}
+
+	// Load the ExeFS region.
+	// TODO: Verify sizes; other error checking.
+	const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+	int64_t offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[0].offset) + le32_to_cpu(ncch_header.exefs_offset)) << media_unit_shift;
+	uint32_t length = le32_to_cpu(ncch_header.exefs_size) << media_unit_shift;
+	exefs.reset(new uint8_t[length]);
+	file->seek(offset);
+	file->read(exefs.get(), length);
+
+	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+		// Initialize the counter.
+		// Counter is the big-endian title ID, section number, then all zeroes.
+		// NOTE: Title ID is stored in little-endian in the NCCH header,
+		// so it always needs to be byteswapped.
+		uint8_t counter[16];
+		uint64_t tid_be = __swab64(ncch_header.program_id);
+		memcpy(counter, &tid_be, sizeof(tid_be));
+		counter[8] = N3DS_NCCH_SECTION_EXEFS;
+		memset(&counter[9], 0, 7);
+
+		// Initialize decryption.
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+		cipher->setKey(key, sizeof(key));
+		cipher->setChainingMode(IAesCipher::CM_CTR);
+
+		// Decrypt the ExeFS header.
+		// TODO: Uses ncchKey0.
+		cipher->setIV(counter, sizeof(counter));
+		cipher->decrypt(exefs.get(), sizeof(N3DS_ExeFS_Header_t));
+
+		// Decrypt each ExeFS file.
+		const N3DS_ExeFS_Header_t *const exefs_header =
+			reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
+		for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+			const N3DS_ExeFS_File_Header_t *const file_header = &exefs_header->files[i];
+			// TODO: "icon" and "banner" use ncchKey0; others use ncchKey1.
+			// TODO: Verify offsets.
+			// NOTE: Rounding up to 16 bytes.
+			const uint32_t size = (le32_to_cpu(file_header->size) + 15) & ~15;
+			if (size == 0)
+				continue;
+			const uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
+
+			// Update the counter based on the current position.
+			// TODO: Offset must be a multiple of 16.
+			uint64_t counter_low = ((uint64_t)N3DS_NCCH_SECTION_EXEFS << 56) | (offset / 16);
+			counter_low = __swab64(counter_low);
+			memcpy(&counter[8], &counter_low, sizeof(counter_low));
+			cipher->setIV(counter, sizeof(counter));
+
+			// Decrypt the data.
+			cipher->decrypt(exefs.get() + offset, size);
+		}
+	}
+
+	// ExeFS has been loaded.
+	headers_loaded |= TEMP_EXEFS;
+	return 0;
 }
 
 /**
@@ -475,10 +640,41 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 			break;
 		}
 
-		case ROM_TYPE_CCI:
-			// CCI file. SMDH can only be loaded if it's plaintext.
-			// TODO: Find a plaintext CCI and/or a "null key" CCI.
-			return nullptr;
+		case ROM_TYPE_CCI: {
+			// CCI file. (TODO: Consolidate with loadSMDH().)
+			// Load the ExeFS.
+			int ret = loadExeFS();
+			if (ret != 0) {
+				// Error loading the ExeFS.
+				return nullptr;
+			}
+
+			// FIXME: Verify content length.
+			const N3DS_ExeFS_Header_t *const exefs_header =
+				reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
+			if (!exefs_header) {
+				// No ExeFS header.
+				return nullptr;
+			}
+			// Find "icon".
+			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
+			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
+					// Found "icon".
+					file_header = &exefs_header->files[i];
+					break;
+				}
+			}
+			if (!file_header) {
+				// No icon.
+				return nullptr;
+			}
+
+			// Load the SMDH icon data.
+			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
+			memcpy(&smdh_icon, exefs.get() + offset + sizeof(smdh_header), sizeof(smdh_icon));
+			break;
+		}
 
 		default:
 			// Unsupported...
@@ -1199,7 +1395,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Columns for the partition table.
 			static const rp_char *const cci_partitions_names[] = {
-				_RP("#"), _RP("Type"), _RP("Size")
+				_RP("#"), _RP("Type"), _RP("Version"), _RP("Size")
 			};
 			v_partitions_names = RomFields::strArrayToVector(
 				cci_partitions_names, ARRAY_SIZE(cci_partitions_names));
@@ -1241,6 +1437,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Process the partition table.
+		N3DS_NCCH_Header_NoSig_t part_ncch_header;
 		for (unsigned int i = 0; i < 8; i++) {
 			const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
 			if (length == 0)
@@ -1251,7 +1448,7 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = partitions->at(vidx);
 
 			// Partition number.
-			int len = snprintf(buf, sizeof(buf), "%u", i);
+			len = snprintf(buf, sizeof(buf), "%u", i);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
@@ -1259,6 +1456,26 @@ int Nintendo3DS::loadFieldData(void)
 			// Partition type.
 			const rp_char *type = (pt_types[i] ? pt_types[i] : _RP("Unknown"));
 			data_row.push_back(type);
+
+			if (!emmc) {
+				// Version. [FIXME: Might not be right...]
+				// Reference: https://3dbrew.org/wiki/Titles
+				int ret = d->loadNCCH(i, &part_ncch_header);
+				if (ret == 0) {
+					// Format the NCCH version.
+					const uint16_t version = le16_to_cpu(part_ncch_header.version);
+					len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+						(version >> 10),
+						(version >>  4) & 0x1F,
+						(version & 0x0F));
+					if (len > (int)sizeof(buf))
+						len = sizeof(buf);
+					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				} else {
+					// Unable to load the NCCH header.
+					data_row.push_back(_RP("Unknown"));
+				}
+			}
 
 			if (keyslots) {
 				// Keyslot.
