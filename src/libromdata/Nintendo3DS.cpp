@@ -1368,14 +1368,16 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Validate the program ID.
+	// Reference: https://3dbrew.org/wiki/Titles
 	const uint64_t program_id = le64_to_cpu(d->ncch_header.program_id);
-	if (((uint32_t)(program_id >> 32) != 0x00040000) ||
-	    ((uint32_t)(program_id) & 0xFF000000))
-	{
+	const uint32_t tid_hi = (uint32_t)(program_id >> 32);
+	const uint32_t tid_lo = (uint32_t)program_id;
+	if (tid_hi != 0x00040000 || tid_lo < 0x00030000 || tid_lo >= 0x0F800000) {
 		// This is probably not a retail application
 		// because one of the following conditions is met:
 		// - TitleID High is not 0x00040000
-		// - TitleID Low has the high byte set (SDK application)
+		// - TitleID Low unique ID is  <   0x300 (system)
+		// - TitleID Low unique ID is >= 0xF8000 (eval/proto/dev)
 		return -ENOENT;
 	}
 
