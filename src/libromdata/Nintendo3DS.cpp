@@ -95,7 +95,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are mutually exclusive.
 			HEADER_3DSX	= (1 << 2),
 			HEADER_CIA	= (1 << 3),
-			HEADER_NCSD	= (1 << 4),
+			HEADER_NCSD	= (1 << 4),	// ncsd_header, cinfo_header
 
 			// TEMPORARY: Replace with N3DSExeFS, subclass of IPartition
 			TEMP_EXEFS	= (1 << 5),
@@ -119,7 +119,10 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		union {
 			N3DS_3DSX_Header_t hb3dsx_header;
 			N3DS_CIA_Header_t cia_header;
-			N3DS_NCSD_Header_t ncsd_header;
+			struct {
+				N3DS_NCSD_Header_t ncsd_header;
+				N3DS_NCSD_Card_Info_Header_t cinfo_header;
+			};
 		} mxh;
 
 		// ExeFS.
@@ -447,7 +450,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 			}
 
 			// Get the CCI media unit shift.
-			const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+			const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 
 			// Get the partition offset and length.
 			offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
@@ -582,7 +585,7 @@ int Nintendo3DSPrivate::loadExeFS(void)
 	uint8_t media_unit_shift = 9;
 	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
 		// Add the CCI media unit shift, if specified.
-		media_unit_shift += mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+		media_unit_shift += mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 	}
 
 	// Load the ExeFS region.
@@ -888,8 +891,9 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			break;
 
 		case Nintendo3DSPrivate::ROM_TYPE_CCI:
-			// Save the NCSD header for later.
+			// Save the NCSD and Card Info headers for later.
 			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
+			memcpy(&d->mxh.cinfo_header, &header[N3DS_NCSD_CARD_INFO_HEADER_ADDRESS], sizeof(d->mxh.cinfo_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
 			d->fileType = FTYPE_ROM_IMAGE;
 			break;
@@ -1380,6 +1384,95 @@ int Nintendo3DS::loadFieldData(void)
 				emmc_partitions_names, ARRAY_SIZE(emmc_partitions_names));
 		}
 
+		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+			// CCI-specific fields.
+			const N3DS_NCSD_Card_Info_Header_t *const cinfo_header = &d->mxh.cinfo_header;
+
+			// TODO: Check if platform != 1 on N3DS-only cartridges.
+
+			// Card type.
+			const rp_char *media_type;
+			switch (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX]) {
+				case N3DS_NCSD_MEDIA_TYPE_INNER_DEVICE:
+					media_type = _RP("Inner Device");
+					break;
+				case N3DS_NCSD_MEDIA_TYPE_CARD1:
+					media_type = _RP("Card1");
+					break;
+				case N3DS_NCSD_MEDIA_TYPE_CARD2:
+					media_type = _RP("Card2");
+					break;
+				case N3DS_NCSD_MEDIA_TYPE_EXTENDED_DEVICE:
+					media_type = _RP("Extended Device");
+					break;
+				default:
+					media_type = nullptr;
+					break;
+			}
+			if (media_type) {
+				d->fields->addField_string(_RP("Media Type"), media_type);
+			} else {
+				len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)",
+					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX]);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				d->fields->addField_string(_RP("Media Type"),
+					len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			}
+			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
+				// Card2 writable address.
+				d->fields->addField_string_numeric(_RP("Card2 RW Address"),
+					le32_to_cpu(cinfo_header->card2_writable_address),
+					RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+			}
+
+			// Card device.
+			// NOTE: Either the SDK3 or SDK2 field is set,
+			// depending on how old the title is. Check the
+			// SDK3 field first.
+			uint8_t card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
+			if (card_dev_id < N3DS_NCSD_CARD_DEVICE_MIN ||
+			    card_dev_id > N3DS_NCSD_CARD_DEVICE_MAX)
+			{
+				// SDK3 field is invalid. Use SDK2.
+				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
+			}
+
+			const rp_char *card_dev;
+			switch (card_dev_id) {
+				case N3DS_NCSD_CARD_DEVICE_NOR_FLASH:
+					card_dev = _RP("NOR Flash");
+					break;
+				case N3DS_NCSD_CARD_DEVICE_NONE:
+					card_dev = _RP("None");
+					break;
+				case N3DS_NCSD_CARD_DEVICE_BLUETOOTH:
+					card_dev = _RP("Bluetooth");
+					break;
+				default:
+					card_dev = nullptr;
+					break;
+			}
+			if (card_dev) {
+				d->fields->addField_string(_RP("Card Device"), card_dev);
+			} else {
+				len = snprintf(buf, sizeof(buf), "Unknown (SDK2=0x%02X, SDK3=0x%02X)",
+					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
+					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				d->fields->addField_string(_RP("Card Device"),
+					len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			}
+
+			// Card revision.
+			d->fields->addField_string_numeric(_RP("Card Revision"),
+				le32_to_cpu(cinfo_header->card_revision),
+				RomFields::FB_DEC, 2);
+
+			// TODO: Show "title version"?
+		}
+
 		// Partition table.
 		// TODO: Show the ListView on a separate row?
 		auto partitions = new std::vector<std::vector<rp_string> >();
@@ -1392,7 +1485,7 @@ int Nintendo3DS::loadFieldData(void)
 		uint8_t media_unit_shift = 9;
 		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
 			// Add the CCI media unit shift, if specified.
-			media_unit_shift += ncsd_header->cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+			media_unit_shift += ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 		}
 
 		// Process the partition table.
