@@ -140,6 +140,20 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * @return Icon, or nullptr on error.
 		 */
 		const rp_image *loadIcon(int idx = 1);
+
+		/**
+		 * Convert a Nintendo 3DS region value to a GameTDB region code.
+		 * @param smdhRegion Nintendo 3DS region. (from SMDH)
+		 * @param idRegion Game ID region.
+		 *
+		 * NOTE: Mulitple GameTDB region codes may be returned, including:
+		 * - User-specified fallback region. [TODO]
+		 * - General fallback region.
+		 *
+		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 */
+		static vector<const char*> n3dsRegionToGameTDB(
+			uint32_t smdhRegion, char idRegion);
 };
 
 /** Nintendo3DSPrivate **/
@@ -462,6 +476,151 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 	}
 
 	return img_icon[idx];
+}
+
+/**
+ * Convert a Nintendo 3DS region value to a GameTDB region code.
+ * @param smdhRegion Nintendo 3DS region. (from SMDH)
+ * @param idRegion Game ID region.
+ *
+ * NOTE: Mulitple GameTDB region codes may be returned, including:
+ * - User-specified fallback region. [TODO]
+ * - General fallback region.
+ *
+ * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ */
+vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
+	uint32_t smdhRegion, char idRegion)
+{
+	/**
+	 * There are up to two region codes for Nintendo DS games:
+	 * - Game ID
+	 * - SMDH region (if the SMDH is readable)
+	 *
+	 * Some games are "technically" region-free, even though
+	 * the cartridge is locked. These will need to use the
+	 * host system region.
+	 *
+	 * The game ID will always be used as a fallback.
+	 *
+	 * Game ID reference:
+	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
+	 */
+	vector<const char*> ret;
+
+	int fallback_region = 0;
+	switch (smdhRegion) {
+		case N3DS_REGION_JAPAN:
+			ret.push_back("JA");
+			return ret;
+		case N3DS_REGION_USA:
+			ret.push_back("US");
+			return ret;
+		case N3DS_REGION_EUROPE:
+		case N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA:
+			// Process the game ID and use "EN" as a fallback.
+			fallback_region = 1;
+			break;
+		case N3DS_REGION_AUSTRALIA:
+			// Process the game ID and use "AU","EN" as fallbacks.
+			fallback_region = 2;
+			break;
+		case N3DS_REGION_CHINA:
+			ret.push_back("ZHCN");
+			ret.push_back("JA");
+			ret.push_back("EN");
+			return ret;
+		case N3DS_REGION_SOUTH_KOREA:
+			ret.push_back("KO");
+			ret.push_back("JA");
+			ret.push_back("EN");
+			return ret;
+		case N3DS_REGION_TAIWAN:
+			ret.push_back("ZHTW");
+			ret.push_back("JA");
+			ret.push_back("EN");
+			return ret;
+		case 0:
+		default:
+			// No DSi region, or unsupported DSi region.
+			break;
+	}
+
+	// Check for region-specific game IDs.
+	switch (idRegion) {
+		case 'A':	// Region-free
+			// Need to use the host system region.
+			fallback_region = 3;
+			break;
+		case 'E':	// USA
+			ret.push_back("US");
+			break;
+		case 'J':	// Japan
+			ret.push_back("JA");
+			break;
+		case 'P':	// PAL
+		case 'X':	// Multi-language release
+		case 'Y':	// Multi-language release
+		case 'L':	// Japanese import to PAL regions
+		case 'M':	// Japanese import to PAL regions
+		default:
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 1;
+			}
+			break;
+
+		// European regions.
+		case 'D':	// Germany
+			ret.push_back("DE");
+			break;
+		case 'F':	// France
+			ret.push_back("FR");
+			break;
+		case 'H':	// Netherlands
+			ret.push_back("NL");
+			break;
+		case 'I':	// Italy
+			ret.push_back("NL");
+			break;
+		case 'R':	// Russia
+			ret.push_back("RU");
+			break;
+		case 'S':	// Spain
+			ret.push_back("ES");
+			break;
+		case 'U':	// Australia
+			if (fallback_region == 0) {
+				// Use the fallback region.
+				fallback_region = 2;
+			}
+			break;
+	}
+
+	// Check for fallbacks.
+	switch (fallback_region) {
+		case 1:
+			// Europe
+			ret.push_back("EN");
+			break;
+		case 2:
+			// Australia
+			ret.push_back("AU");
+			ret.push_back("EN");
+			break;
+
+		case 3:
+			// TODO: Check the host system region.
+			// For now, assuming US.
+			ret.push_back("US");
+			break;
+
+		case 0:	// None
+		default:
+			break;
+	}
+
+	return ret;
 }
 
 /** Nintendo3DS **/
@@ -1255,10 +1414,11 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Determine the GameTDB region code(s).
-	// TODO: Check the SMDH region if available.
-	// FIXME: Implement n3dsRegionToGameTDB(). For now, assuming US.
-	vector<const char*> tdb_regions;
-	tdb_regions.push_back("US");
+	const uint32_t smdhRegion =
+		(d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH)
+			? le32_to_cpu(d->smdh_header.settings.region_code)
+			: 0;
+	vector<const char*> tdb_regions = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has
