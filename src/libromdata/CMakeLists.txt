@@ -109,6 +109,7 @@ SET(libromdata_SRCS
 	disc/SparseDiscReader.cpp
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
+	disc/N3DSExeFS.cpp
 	img/pngcheck/pngcheck.cpp
 	)
 SET(libromdata_H
@@ -192,6 +193,7 @@ SET(libromdata_H
 	disc/IResourceReader.hpp
 	disc/PEResourceReader.hpp
 	disc/NEResourceReader.hpp
+	disc/N3DSExeFS.hpp
 	NES.hpp
 	)
 

@@ -36,10 +36,7 @@
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
 
-#ifdef ENABLE_DECRYPTION
-#include "crypto/AesCipherFactory.hpp"
-#include "crypto/IAesCipher.hpp"
-#endif /* ENABLE_DECRYPTION */
+#include "disc/N3DSExeFS.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -505,53 +502,17 @@ int Nintendo3DSPrivate::loadExeFS(void)
 	int64_t offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[0].offset) + le32_to_cpu(ncch_header.exefs_offset)) << media_unit_shift;
 	uint32_t length = le32_to_cpu(ncch_header.exefs_size) << media_unit_shift;
 	exefs.reset(new uint8_t[length]);
-	file->seek(offset);
-	file->read(exefs.get(), length);
+	unique_ptr<N3DSExeFS> exefs_reader(new N3DSExeFS(file, &ncch_header, offset, length));
+	if (!exefs_reader->isOpen()) {
+		// Unable to open the ExeFS.
+		return -97;
+	}
 
-	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
-		// Initialize the counter.
-		// Counter is the big-endian title ID, section number, then all zeroes.
-		// NOTE: Title ID is stored in little-endian in the NCCH header,
-		// so it always needs to be byteswapped.
-		uint8_t counter[16];
-		uint64_t tid_be = __swab64(ncch_header.program_id);
-		memcpy(counter, &tid_be, sizeof(tid_be));
-		counter[8] = N3DS_NCCH_SECTION_EXEFS;
-		memset(&counter[9], 0, 7);
-
-		// Initialize decryption.
-		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
-		cipher->setKey(key, sizeof(key));
-		cipher->setChainingMode(IAesCipher::CM_CTR);
-
-		// Decrypt the ExeFS header.
-		// TODO: Uses ncchKey0.
-		cipher->setIV(counter, sizeof(counter));
-		cipher->decrypt(exefs.get(), sizeof(N3DS_ExeFS_Header_t));
-
-		// Decrypt each ExeFS file.
-		const N3DS_ExeFS_Header_t *const exefs_header =
-			reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
-		for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
-			const N3DS_ExeFS_File_Header_t *const file_header = &exefs_header->files[i];
-			// TODO: "icon" and "banner" use ncchKey0; others use ncchKey1.
-			// TODO: Verify offsets.
-			// NOTE: Rounding up to 16 bytes.
-			const uint32_t size = (le32_to_cpu(file_header->size) + 15) & ~15;
-			if (size == 0)
-				continue;
-			const uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
-
-			// Update the counter based on the current position.
-			// TODO: Offset must be a multiple of 16.
-			uint64_t counter_low = ((uint64_t)N3DS_NCCH_SECTION_EXEFS << 56) | (offset / 16);
-			counter_low = __swab64(counter_low);
-			memcpy(&counter[8], &counter_low, sizeof(counter_low));
-			cipher->setIV(counter, sizeof(counter));
-
-			// Decrypt the data.
-			cipher->decrypt(exefs.get() + offset, size);
-		}
+	// Read the entire ExeFS.
+	size_t size = exefs_reader->read(exefs.get(), length);
+	if (size != length) {
+		// Read error.
+		return -98;
 	}
 
 	// ExeFS has been loaded.
