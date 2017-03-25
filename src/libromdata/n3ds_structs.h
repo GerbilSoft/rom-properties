@@ -247,6 +247,187 @@ typedef struct PACKED _N3DS_CIA_Meta_Header_t {
 #pragma pack()
 ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
 
+/**
+ * Nintendo 3DS cartridge and eMMC header. (NCSD)
+ * Reference: https://3dbrew.org/wiki/NCSD
+ *
+ * All fields are little-endian.
+ */
+#define N3DS_NCSD_HEADER_MAGIC "NCSD"
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCSD_Header_t {
+	uint8_t signature[0x100];	// RSA-2048 SHA-256 signature
+
+	// [0x100]
+	char magic[4];			// "NCSD"
+	uint32_t image_size;		// Image size, in media units. (1 media unit = 512 bytes)
+	uint64_t media_id;		// Media ID.
+
+	// [0x110] eMMC-specific partition table.
+	struct {
+		uint8_t fs_type[8];	// [0x110] Partition FS type. (eMMC only)
+		uint8_t crypt_type[8];	// [0x118] Partition crypt type. (eMMC only)
+	} emmc_part_tbl;
+
+	// [0x120] Partition table.
+	struct {
+		uint32_t offset;	// Partition offset, in media units.
+		uint32_t length;	// Partition length, in media units.
+	} partitions[8];
+
+	// [0x160]
+	union {
+		// CCI-specific. (not present in eMMC)
+		struct {
+			uint8_t exheader_sha256[32];	// [0x160] Exheader SHA-256 hash
+			uint32_t addl_header_size;	// [0x180] Additional header size.
+			uint32_t sector_zero_offset;	// [0x184] Sector zero offset.
+			uint8_t partition_flags[8];	// [0x188] Partition flags. (see N3DS_NCSD_Partition_Flags)
+			uint64_t partition_tid[8];	// [0x190] Partition title IDs.
+			uint8_t reserved[0x30];		// [0x1D0]
+		} cci;
+		// eMMC-specific. (not present in CCI)
+		struct {
+			uint8_t reserved[0x5E];		// [0x160]
+			uint8_t mbr[0x42];		// [0x1BE] Encrypted MBR partition table for TWL partitions.
+		} emmc;
+	};
+} N3DS_NCSD_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCSD_Header_t, 0x200);
+
+/**
+ * NCSD partition index.
+ */
+typedef enum {
+	NCSD_PARTITION_GAME		= 0,
+	NCSD_PARTITION_MANUAL		= 1,
+	NCSD_PARTITION_DLP		= 2,
+	NCSD_PARTITION_N3DS_UPDATE	= 6,
+	NCSD_PARTITION_O3DS_UPDATE	= 7,
+} N3DS_NCSD_Partition_Index;
+
+/**
+ * NCSD partition flags. (byte array indexes)
+ */
+typedef enum {
+	NCSD_PARTITION_FLAG_BACKUP_WRITE_WAIT_TIME	= 0,
+	NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3	= 3,
+	NCSD_PARTITION_FLAG_MEDIA_PLATFORM_INDEX	= 4,
+	NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX		= 5,
+	NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE		= 6,
+	NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2	= 7,
+} N3DS_NCSD_Partition_Flags;
+
+/**
+ * NCSD: Card Info Header.
+ * Reference: https://3dbrew.org/wiki/NCSD
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCSD_Card_Info_Header_t {
+	uint32_t card2_writable_address;	// CARD2: Writable address, in media units. (CARD1: Always 0xFFFFFFFF)
+	uint32_t card_info_bitmask;
+	uint8_t reserved1[0x108];
+	uint16_t title_version;
+	uint16_t card_revision;			// FIXME: May be uint8_t.
+	uint8_t reserved2[0xCEC];		// FIXME: 3dbrew says 0xCEE, but that goes over by 2.
+	uint8_t card_seed_keyY[0x10];		// First u64 is the media ID. (same as first NCCH partition ID)
+	uint8_t enc_card_seed[0x10];		// Encrypted card seed. (AES-CCM, keyslot 0x3B for retail cards)
+	uint8_t card_seed_aes_mac[0x10];
+	uint8_t card_seed_nonce[0x0C];
+	uint8_t reserved3[0xC4];
+	// Card Info Header is followed by a copy of the
+	// first partition's NCCH header.
+} N3DS_NCSD_Card_Info_Header_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCSD_Card_Info_Header_t, 0xF00);
+
+/**
+ * Nintendo 3DS NCCH header.
+ * This version does not have the 256-byte RSA-2048 signature.
+ * Reference: https://3dbrew.org/wiki/NCSD
+ *
+ * All fields are little-endian.
+ */
+#define N3DS_NCCH_HEADER_MAGIC "NCCH"
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_Header_NoSig {
+	// NOTE: Addresses are relative to the version *with* a signature.
+	char magic[4];				// [0x100] "NCCH"
+	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
+	uint64_t partition_id;			// [0x108] Partition ID.
+	char maker_code[2];			// [0x110] Maker code.
+	uint16_t version;			// [0x112] Version.
+	uint32_t fw96lock;			// [0x114] Used by FIRM 9.6.0-X to verify the content lock seed.
+	uint64_t program_id;			// [0x118] Program ID.
+	uint8_t reserved1[0x10];		// [0x120]
+	uint8_t logo_region_hash[0x20];		// [0x130] Logo region SHA-256 hash. (SDK 5+)
+	char product_code[0x10];		// [0x150] ASCII product code, e.g. "CTR-P-CTAP"
+	uint8_t exheader_hash[0x20];		// [0x160] Extended header SHA-256 hash.
+	uint32_t exheader_size;			// [0x180] Extended header size, in bytes.
+	uint8_t reserved2[4];			// [0x184]
+	uint8_t flags[8];			// [0x188] Flags. (see N3DS_NCCH_Flags)
+	uint32_t plain_region_offset;		// [0x190] Plain region offset, in media units.
+	uint32_t plain_region_size;		// [0x194] Plain region size, in media units.
+	uint32_t logo_region_offset;		// [0x198] Logo region offset, in media units. (SDK 5+)
+	uint32_t logo_region_size;		// [0x19C] Logo region size, in media units. (SDK 5+)
+	uint32_t exefs_offset;			// [0x1A0] ExeFS offset, in media units.
+	uint32_t exefs_size;			// [0x1A4] ExeFS size, in media units.
+	uint32_t exefs_hash_region_size;	// [0x1A8] ExeFS hash region size, in media units.
+	uint32_t reserved3;			// [0x1AC]
+	uint32_t romfs_offset;			// [0x1B0] RomFS offset, in media units.
+	uint32_t romfs_size;			// [0x1B4] RomFS size, in media units.
+	uint32_t romfs_hash_region_size;	// [0x1B8] RomFS hash region size, in media units.
+	uint32_t reserved4;			// [0x1BC]
+	uint8_t exefs_uperblock_hash[0x20];	// [0x1C0] ExeFS superblock SHA-256 hash
+	uint8_t romfs_uperblock_hash[0x20];	// [0x1E0] RomFS superblock SHA-256 hash
+} N3DS_NCCH_Header_NoSig;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_Header_NoSig, 256);
+
+/**
+ * NCCH flags. (byte array indexes)
+ */
+typedef enum {
+	N3DS_NCCH_FLAG_CRYPTO_METHOD		= 3,	// If non-zero, an NCCH crypto method is used.
+	N3DS_NCCH_FLAG_PLATFORM			= 4,	// See N3DS_NCCH_Platform.
+	N3DS_NCCH_FLAG_CONTENT_TYPE		= 5,	// See N3DS_NCCH_Content_Type.
+	N3DS_NCCH_FLAG_CONTENT_UNIT_SIZE	= 6,
+	N3DS_NCCH_FLAG_BIT_MASKS		= 7,	// See N3DS_NCCH_Bit_Masks.
+} N3DS_NCCH_Flags;
+
+/**
+ * NCCH platform type.
+ */
+typedef enum {
+	N3DS_NCCH_PLATFORM_CTR		= 1,	// Old3DS
+	N3DS_NCCH_PLATFORM_SNAKE	= 2,	// New3DS
+} N3DS_NCCH_Platform;
+
+/**
+ * NCCH content type.
+ */
+typedef enum {
+	N3DS_NCCH_CONTENT_TYPE_DATA	= 0x01,
+	N3DS_NCCH_CONTENT_TYPE_EXE	= 0x02,
+	N3DS_NCCH_CONTENT_TYPE_UPDATE	= 0x04,
+	N3DS_NCCH_CONTENT_TYPE_MANUAL	= 0x08,
+	N3DS_NCCH_CONTENT_TYPE_CHILD	= (0x04|0x08),
+	N3DS_NCCH_CONTENT_TYPE_TRIAL	= 0x10,
+} N3DS_NCCH_Content_Type;
+
+/**
+ * NCCH bit masks.
+ */
+typedef enum {
+	N3DS_NCCH_BIT_MASK_FIXEDCRYPTOKEY	= 0x01,
+	N3DS_NCCH_BIT_MASK_NOMOUNTROMFS		= 0x02,
+	N3DS_NCCH_BIT_MASK_NOCRYPTO		= 0x04,
+	N3DS_NCCH_BIT_MASK_FW96KEYY		= 0x20,
+} N3DS_NCCH_Bit_Masks;
+
 #ifdef __cplusplus
 }
 #endif

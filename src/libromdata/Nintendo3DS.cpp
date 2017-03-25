@@ -88,6 +88,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are mutually exclusive.
 			HEADER_3DSX	= (1 << 1),
 			HEADER_CIA	= (1 << 2),
+			HEADER_NCSD	= (1 << 3),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -104,6 +105,10 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// CIA header.
 			// NOTE: Must be byteswapped on access.
 			N3DS_CIA_Header_t cia_header;
+
+			// NCSD header.
+			// NOTE: Must be byteswapped on access.
+			N3DS_NCSD_Header_t ncsd_header;
 		} mxh;
 
 		/**
@@ -256,6 +261,11 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			break;
 		}
 
+		case ROM_TYPE_CCI:
+			// CCI file. SMDH can only be loaded if it's plaintext.
+			// TODO: Find a plaintext CCI and/or a "null key" CCI.
+			return -97;
+
 		default:
 			// Unsupported...
 			return -98;
@@ -351,6 +361,11 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 			}
 			break;
 		}
+
+		case ROM_TYPE_CCI:
+			// CCI file. SMDH can only be loaded if it's plaintext.
+			// TODO: Find a plaintext CCI and/or a "null key" CCI.
+			return nullptr;
 
 		default:
 			// Unsupported...
@@ -473,6 +488,21 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			d->fileType = FTYPE_APPLICATION_PACKAGE;
 			break;
 
+		case Nintendo3DSPrivate::ROM_TYPE_CCI:
+			// Save the NCSD header for later.
+			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
+			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
+			d->fileType = FTYPE_ROM_IMAGE;
+			break;
+
+		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
+			// Save the NCSD header for later.
+			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
+			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
+			// TODO: eMMC image type?
+			d->fileType = FTYPE_DISK_IMAGE;
+			break;
+
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
@@ -511,7 +541,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	    !rp_strcasecmp(info->ext, _RP(".cia")))
 	{
 		// Verify the header parameters.
-		const N3DS_CIA_Header_t *cia_header =
+		const N3DS_CIA_Header_t *const cia_header =
 			reinterpret_cast<const N3DS_CIA_Header_t*>(info->header.pData);
 		if (le32_to_cpu(cia_header->header_size) == (uint32_t)sizeof(N3DS_CIA_Header_t) &&
 		    le16_to_cpu(cia_header->type) == 0 &&
@@ -551,6 +581,29 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		// file with just the standard header and nothing
 		// else is rather useless.
 		return Nintendo3DSPrivate::ROM_TYPE_3DSX;
+	}
+
+	// Check for CCI/eMMC.
+	const N3DS_NCSD_Header_t *const ncsd_header =
+		reinterpret_cast<const N3DS_NCSD_Header_t*>(info->header.pData);
+	if (!memcmp(ncsd_header->magic, N3DS_NCSD_HEADER_MAGIC, 4)) {
+		// TODO: Validate the NCSD image size field?
+
+		// Check if this is an eMMC dump or a CCI image.
+		// This is done by checking the eMMC-specific crypt type section.
+		// (All zeroes for CCI; minor variance between Old3DS and New3DS.)
+		static const uint8_t crypt_cci[8]      = {0,0,0,0,0,0,0,0};
+		static const uint8_t crypt_emmc_old[8] = {1,2,2,2,2,0,0,0};
+		static const uint8_t crypt_emmc_new[8] = {1,2,2,2,3,0,0,0};
+		if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_cci, sizeof(crypt_cci))) {
+			// CCI image.
+			return Nintendo3DSPrivate::ROM_TYPE_CCI;
+		} else if (!memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_old, sizeof(crypt_emmc_old)) ||
+			   !memcmp(ncsd_header->emmc_part_tbl.crypt_type, crypt_emmc_new, sizeof(crypt_emmc_new))) {
+			// eMMC dump.
+			// NOTE: Not differentiating between Old3DS and New3DS here.
+			return Nintendo3DSPrivate::ROM_TYPE_eMMC;
+		}
 	}
 
 	// Not supported.
@@ -605,7 +658,7 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
 	static const rp_char *const exts[] = {
 		_RP(".smdh"),	// SMDH (icon) file.
 		_RP(".3dsx"),	// Homebrew application.
-		//_RP(".3ds"),	// ROM image. (TODO: Conflicts with 3DS Max)
+		_RP(".3ds"),	// ROM image. (NOTE: Conflicts with 3DS Max.)
 		_RP(".cci"),	// ROM image.
 		_RP(".cia"),	// CTR installable archive.
 	};
@@ -761,7 +814,11 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(3); // Maximum of 3 fields.
+	d->fields->reserve(7); // Maximum of 7 fields.
+
+	// Temporary buffer for snprintf().
+	char buf[64];
+	int len;
 
 	// Load and parse the SMDH header.
 	if (d->loadSMDH() == 0) {
@@ -822,6 +879,76 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		}
 		d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
+	}
+
+	// Is the NCSD header loaded?
+	// TODO: Show before SMDH, and/or on a different subtab?
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
+		// Display the NCSD header.
+		// TODO: Add more fields?
+		const N3DS_NCSD_Header_t *const ncsd_header = &d->mxh.ncsd_header;
+
+		// Media ID. (TODO: Is this valid for eMMC?)
+		const uint64_t media_id = le64_to_cpu(ncsd_header->media_id);
+		len = snprintf(buf, sizeof(buf), "%08X %08X",
+			(uint32_t)(media_id >> 32),
+			(uint32_t)(media_id));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		d->fields->addField_string(_RP("Media ID"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+
+		// Partition table.
+		// TODO: Show the ListView on a separate row?
+		auto partitions = new std::vector<std::vector<rp_string> >();
+		partitions->reserve(8);
+		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+			// CCI partition table.
+			static const rp_char *const cci_partition_type[] = {
+				_RP("Game"), _RP("Manual"), _RP("Download Play"),
+				nullptr, nullptr, nullptr,
+				_RP("New3DS Update"), _RP("Old3DS Update"),
+			};
+
+			for (unsigned int i = 0; i < 8; i++) {
+				const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
+				if (length == 0)
+					continue;
+
+				int vidx = (int)partitions->size();
+				partitions->resize(vidx+1);
+				auto &data_row = partitions->at(vidx);
+
+				// Partition number.
+				int len = snprintf(buf, sizeof(buf), "%u", i);
+				if (len > (int)sizeof(buf))
+					len = sizeof(buf);
+				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+
+				// Partition type.
+				data_row.push_back(cci_partition_type[i]);
+
+				// Partition size.
+				// TODO: Check media units flag. Assuming 512 bytes.
+				const int64_t length_bytes = (int64_t)length * 512;
+				data_row.push_back(d->formatFileSize(length_bytes));
+			}
+		} else if (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC) {
+			// eMMC partition table.
+			// TODO: Show the keyslot?
+		} else {
+			// Should not get here...
+			assert(!"Attempting to show NCSD header for file that is neither CCI nor eMMC.");
+		}
+
+		static const rp_char *const partitions_names[] = {
+			_RP("#"), _RP("Type"), _RP("Size")
+		};
+		vector<rp_string> *v_partitions_names = RomFields::strArrayToVector(
+			partitions_names, ARRAY_SIZE(partitions_names));
+
+		// Add the partitions list data.
+		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
 	}
 
 	// Finished reading the field data.
