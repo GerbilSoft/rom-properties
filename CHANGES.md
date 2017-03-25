@@ -19,6 +19,7 @@
     ROM Properties for certain types of physical media, e.g. Wii DVD-R backups.
     Currently only the property page is supported. Thumbnails (and icons)
     are not supported for block devices.
+  * Nintendo DS: Slot-2 PassMe ROM images are now recognized.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
