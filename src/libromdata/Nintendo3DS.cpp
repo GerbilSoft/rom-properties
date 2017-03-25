@@ -108,7 +108,11 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			N3DS_SMDH_Header_t header;
 			N3DS_SMDH_Icon_t icon;
 		} smdh;
-		N3DS_NCCH_Header_NoSig_t ncch_header;	// Primary NCCH, i.e. for the game.
+
+		// Primary NCCH, i.e. for the game.
+		int64_t ncch_offset;
+		uint32_t ncch_length;
+		N3DS_NCCH_Header_NoSig_t ncch_header;
 
 		// Mutually-exclusive headers.
 		// NOTE: These must be byteswapped on access.
@@ -143,9 +147,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * Load the specified NCCH header.
 		 * @param idx		[in] Content/partition index.
 		 * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
+		 * @param pOffset	[out,opt] Starting address of the NCCH header, in bytes.
+		 * @param pLength	[out,opt] Length of the NCCH section, in bytes.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+		int loadNCCH(int idx,
+			N3DS_NCCH_Header_NoSig_t *pNcchHeader,
+			int64_t *pOffset = nullptr, uint32_t *pLength = nullptr);
 
 		/**
 		 * Load the NCCH header for the primary content.
@@ -153,9 +161,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadNCCH(void);
-
-		// TODO: Add a function to get the update versions
-		// from CCI images.
 
 		/**
 		 * Load the ExeFS from the primary content.
@@ -193,6 +198,8 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
+	, ncch_offset(0)
+	, ncch_length(0)
 {
 	// Clear img_icon.
 	img_icon[0] = nullptr;
@@ -369,9 +376,13 @@ int Nintendo3DSPrivate::loadSMDH(void)
  * Load the specified NCCH header.
  * @param idx		[in] Content/partition index.
  * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
+ * @param pOffset	[out,opt] Starting address of the NCCH header, in bytes.
+ * @param pLength	[out,opt] Length of the NCCH section, in bytes.
  * @return 0 on success; non-zero on error.
  */
-int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
+int Nintendo3DSPrivate::loadNCCH(int idx,
+	N3DS_NCCH_Header_NoSig_t *pNcchHeader,
+	int64_t *pOffset, uint32_t *pLength)
 {
 	assert(pNcchHeader != nullptr);
 	if (!pNcchHeader) {
@@ -379,6 +390,8 @@ int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 	}
 
 	uint8_t media_unit_shift = 9;
+	int64_t offset = 0;
+	uint32_t length = 0;
 	switch (romType) {
 		case ROM_TYPE_CCI: {
 			if (!(headers_loaded & HEADER_NCSD)) {
@@ -397,16 +410,17 @@ int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 			// Add the CCI media unit shift, if specified.
 			media_unit_shift += mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 
-			// Get the partition offset.
-			// TODO: Validate the partition length?
-			const int64_t partition_offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
+			// Get the partition offset and length.
+			offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
+			length = le32_to_cpu(mxh.ncsd_header.partitions[idx].length) << media_unit_shift;
+			// TODO: Validate length.
 			// Make sure the partition starts after the card info header.
-			if (partition_offset <= 0x2000) {
+			if (offset <= 0x2000) {
 				// Invalid partition offset.
 				return -3;
 			}
 
-			file->seek(partition_offset + 0x100);
+			file->seek(offset + 0x100);
 			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
 			if (size != sizeof(*pNcchHeader)) {
 				// Error reading the NCCH header.
@@ -427,6 +441,15 @@ int Nintendo3DSPrivate::loadNCCH(int idx, N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 		// NCCH magic number is incorrect.
 		return -99;
 	}
+
+	// Return offset/length values.
+	if (pOffset) {
+		*pOffset = offset;
+	}
+	if (pLength) {
+		*pLength = length;
+	}
+
 	// Loaded the NCCH header.
 	return 0;
 }
@@ -445,7 +468,7 @@ int Nintendo3DSPrivate::loadNCCH(void)
 
 	// TODO: For CCIs, verify that the copy in the
 	// Card Info Header matches the actual partition?
-	int ret = loadNCCH(0, &ncch_header);
+	int ret = loadNCCH(0, &ncch_header, &ncch_offset, &ncch_length);
 	if (ret == 0) {
 		// NCCH header loaded.
 		headers_loaded |= HEADER_NCCH;
@@ -466,9 +489,18 @@ int Nintendo3DSPrivate::loadExeFS(void)
 		return 0;
 	}
 
-	// TODO: Only CCI is supported at the moment.
-	if (romType != ROM_TYPE_CCI) {
-		return -1;
+	// Check if the ROM type is supported.
+	switch (romType) {
+		case ROM_TYPE_CCI:
+			// Decrypted and zero-key CCIs are supported.
+			break;
+		case ROM_TYPE_CIA:
+			// Decrypted and NCCH zero-key CIAs are supported.
+			// TODO: Outer CIA encryption.
+			break;
+		default:
+			// Not supported.
+			return -1;
 	}
 
 	// TODO:
@@ -500,21 +532,31 @@ int Nintendo3DSPrivate::loadExeFS(void)
 		return -96;
 	}
 
+	// Media unit shift.
+	// Default is 9, but may be increased by
+	// ncsd_header->cci.partition_flags[8].
+	// FIXME: Handle invalid shift values?
+	uint8_t media_unit_shift = 9;
+	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
+		// Add the CCI media unit shift, if specified.
+		media_unit_shift += mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+	}
+
 	// Load the ExeFS region.
 	// TODO: Verify sizes; other error checking.
-	const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
-	int64_t offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[0].offset) + le32_to_cpu(ncch_header.exefs_offset)) << media_unit_shift;
-	uint32_t length = le32_to_cpu(ncch_header.exefs_size) << media_unit_shift;
-	exefs.reset(new uint8_t[length]);
-	unique_ptr<N3DSExeFS> exefs_reader(new N3DSExeFS(file, &ncch_header, offset, length));
+	const int64_t exefs_offset = ncch_offset +
+		(le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
+	const uint32_t exefs_length = (le32_to_cpu(ncch_header.exefs_size) << media_unit_shift);
+	exefs.reset(new uint8_t[ncch_length]);
+	unique_ptr<N3DSExeFS> exefs_reader(new N3DSExeFS(file, &ncch_header, exefs_offset, exefs_length));
 	if (!exefs_reader->isOpen()) {
 		// Unable to open the ExeFS.
 		return -97;
 	}
 
 	// Read the entire ExeFS.
-	size_t size = exefs_reader->read(exefs.get(), length);
-	if (size != length) {
+	size_t size = exefs_reader->read(exefs.get(), ncch_length);
+	if (size != exefs_length) {
 		// Read error.
 		return -98;
 	}
@@ -1439,7 +1481,9 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
  */
 int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
+	// FIXME: Remove this 'return' once ExeFS debugging is done.
 	return -ENOENT;
+
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
