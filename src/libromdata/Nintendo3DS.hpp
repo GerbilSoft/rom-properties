@@ -77,14 +77,14 @@ class Nintendo3DS : public RomData
 		 * @param info DetectInfo containing ROM detection information.
 		 * @return Class-specific system ID (>= 0) if supported; -1 if not.
 		 */
-		virtual int isRomSupported(const DetectInfo *info) const final;
+		virtual int isRomSupported(const DetectInfo *info) const override final;
 
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const final;
+		virtual const rp_char *systemName(uint32_t type) const override final;
 
 	public:
 		/**
@@ -115,7 +115,7 @@ class Nintendo3DS : public RomData
 		 *
 		 * @return List of all supported file extensions.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const final;
+		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override final;
 
 		/**
 		 * Get a bitfield of image types this class can retrieve.
@@ -127,7 +127,7 @@ class Nintendo3DS : public RomData
 		 * Get a bitfield of image types this class can retrieve.
 		 * @return Bitfield of supported image types. (ImageTypesBF)
 		 */
-		virtual uint32_t supportedImageTypes(void) const final;
+		virtual uint32_t supportedImageTypes(void) const override final;
 
 	protected:
 		/**
@@ -135,7 +135,7 @@ class Nintendo3DS : public RomData
 		 * Called by RomData::fields() if the field data hasn't been loaded yet.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadFieldData(void) final;
+		virtual int loadFieldData(void) override final;
 
 		/**
 		 * Load an internal image.
@@ -143,7 +143,7 @@ class Nintendo3DS : public RomData
 		 * @param imageType Image type to load.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType) final;
+		virtual int loadInternalImage(ImageType imageType) override final;
 };
 
 }
