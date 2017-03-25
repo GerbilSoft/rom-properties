@@ -76,6 +76,18 @@ class NintendoDSPrivate : public RomDataPrivate
 		};
 
 	public:
+		// ROM type.
+		enum RomType {
+			ROM_UNKNOWN	= -1,	// Unknown ROM type.
+			ROM_NDS		= 0,	// Nintendo DS ROM.
+			ROM_NDS_SLOT2	= 1,	// Nintendo DS ROM. (Slot-2)
+			ROM_DSi_ENH	= 2,	// Nintendo DSi-enhanced ROM.
+			ROM_DSi_ONLY	= 3,	// Nintendo DSi-only ROM.
+		};
+
+		// ROM type.
+		int romType;
+
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
 		NDS_RomHeader romHeader;
@@ -143,6 +155,7 @@ class NintendoDSPrivate : public RomDataPrivate
 
 NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
 	: super(q, file)
+	, romType(ROM_UNKNOWN)
 	, nds_icon_title_loaded(false)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
@@ -705,7 +718,8 @@ NintendoDS::NintendoDS(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for NDS.
 	info.szFile = 0;	// Not needed for NDS.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->romType = isRomSupported_static(&info);
+	d->isValid = (d->romType >= 0);
 }
 
 /**
@@ -727,21 +741,33 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	// TODO: Detect DS vs. DSi and return the system ID.
-
 	// Check the first 16 bytes of the Nintendo logo.
 	static const uint8_t nintendo_gba_logo[16] = {
 		0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21,
 		0x3D, 0x84, 0x82, 0x0A, 0x84, 0xE4, 0x09, 0xAD
+	};
+	static const uint8_t nintendo_ds_logo_slot2[16] = {
+		0xC8, 0x60, 0x4F, 0xE2, 0x01, 0x70, 0x8F, 0xE2,
+		0x17, 0xFF, 0x2F, 0xE1, 0x12, 0x4F, 0x11, 0x48,
 	};
 
 	const NDS_RomHeader *const romHeader =
 		reinterpret_cast<const NDS_RomHeader*>(info->header.pData);
 	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
 	    le16_to_cpu(romHeader->nintendo_logo_checksum) == 0xCF56) {
-		// Nintendo logo is valid.
-		// TODO: DS vs. DSi?
-		return 0;
+		// Nintendo logo is valid. (Slot-1)
+		static const uint8_t nds_romType[] = {
+			NintendoDSPrivate::ROM_NDS,		// 0x00 == Nintendo DS
+			NintendoDSPrivate::ROM_NDS,		// 0x01 == invalid (assuming DS)
+			NintendoDSPrivate::ROM_DSi_ENH,		// 0x02 == DSi-enhanced
+			NintendoDSPrivate::ROM_DSi_ONLY,	// 0x03 == DSi-only
+		};
+		return nds_romType[romHeader->unitcode & 3];
+	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2, sizeof(nintendo_ds_logo_slot2)) &&
+		   le16_to_cpu(romHeader->nintendo_logo_checksum) == 0x9E1A) {
+		// Nintendo logo is valid. (Slot-2)
+		// NOTE: Slot-2 is NDS only.
+		return NintendoDSPrivate::ROM_NDS_SLOT2;
 	}
 
 	// Not supported.
@@ -957,7 +983,7 @@ int NintendoDS::loadFieldData(void)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -965,6 +991,22 @@ int NintendoDS::loadFieldData(void)
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(11);	// Maximum of 11 fields.
+
+	// Type.
+	// TODO:
+	// - Show PassMe fields?
+	//   Reference: http://imrannazar.com/The-Smallest-NDS-File
+	// - Show IR cart and/or other accessories? (NAND ROM, etc.)
+	const rp_char *nds_romType;
+	switch (d->romType) {
+		case NintendoDSPrivate::ROM_NDS_SLOT2:
+			nds_romType = _RP("Slot-2 (PassMe)");
+			break;
+		default:
+			nds_romType = _RP("Slot-1");
+			break;
+	}
+	d->fields->addField_string(_RP("Type"), nds_romType);
 
 	// Game title.
 	d->fields->addField_string(_RP("Title"),
@@ -1157,7 +1199,7 @@ int NintendoDS::loadInternalImage(ImageType imageType)
 	} else if (!d->file) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
@@ -1278,7 +1320,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
+	} else if (!d->isValid || d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
 	}
