@@ -350,6 +350,11 @@ public:
 			os << RomFields::ageRatingDecode(i, rating);
 		}
 
+		if (!printedOne) {
+			// No age ratings.
+			os << "None";
+		}
+
 		return os;
 	}
 };
