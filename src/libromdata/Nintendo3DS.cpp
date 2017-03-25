@@ -20,6 +20,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+
 #include "Nintendo3DS.hpp"
 #include "RomData_p.hpp"
 
@@ -84,30 +86,25 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are not exclusive,
 			// so one or more can be present.
 			HEADER_SMDH	= (1 << 0),
+			HEADER_NCCH	= (1 << 1),
 
 			// The following headers are mutually exclusive.
-			HEADER_3DSX	= (1 << 1),
-			HEADER_CIA	= (1 << 2),
-			HEADER_NCSD	= (1 << 3),
+			HEADER_3DSX	= (1 << 2),
+			HEADER_CIA	= (1 << 3),
+			HEADER_NCSD	= (1 << 4),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
-		// SMDH header.
-		// NOTE: Must be byteswapped on access.
+		// Non-exclusive headers.
+		// NOTE: These must be byteswapped on access.
 		N3DS_SMDH_Header_t smdh_header;
+		N3DS_NCCH_Header_NoSig_t ncch_header;	// Primary NCCH, i.e. for the game.
 
 		// Mutually-exclusive headers.
+		// NOTE: These must be byteswapped on access.
 		union {
-			// 3DSX header.
-			// NOTE: Must be byteswapped on access.
 			N3DS_3DSX_Header_t hb3dsx_header;
-
-			// CIA header.
-			// NOTE: Must be byteswapped on access.
 			N3DS_CIA_Header_t cia_header;
-
-			// NCSD header.
-			// NOTE: Must be byteswapped on access.
 			N3DS_NCSD_Header_t ncsd_header;
 		} mxh;
 
@@ -127,6 +124,15 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadSMDH(void);
+
+		/**
+		 * Load the NCCH header for the primary content.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadNCCH(void);
+
+		// TODO: Add a function to get the update versions
+		// from CCI images.
 
 		/**
 		 * Load the ROM image's icon.
@@ -149,6 +155,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 
 	// Clear the various headers.
 	memset(&smdh_header, 0, sizeof(smdh_header));
+	memset(&ncch_header, 0, sizeof(ncch_header));
 	memset(&mxh, 0, sizeof(mxh));
 }
 
@@ -278,6 +285,47 @@ int Nintendo3DSPrivate::loadSMDH(void)
 	}
 	// Loaded the SMDH header.
 	headers_loaded |= HEADER_SMDH;
+	return 0;
+}
+
+/**
+ * Load the NCCH header for the primary content.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadNCCH(void)
+{
+	if (headers_loaded & HEADER_NCCH) {
+		// NCCH header is already loaded.
+		return 0;
+	}
+
+	switch (romType) {
+		case ROM_TYPE_CCI: {
+			// A copy of the primary NCCH header (without signature)
+			// is located at the beginning of the ROM file.
+			file->seek(0x1100);
+			size_t size = file->read(&ncch_header, sizeof(ncch_header));
+			if (size != sizeof(ncch_header)) {
+				// Error reading the NCCH header.
+				return -1;
+			}
+
+			// NCCH header has been read.
+			break;
+		}
+
+		default:
+			// Unsupported...
+			return -98;
+	}
+
+	// Verify the NCCH magic number.
+	if (memcmp(ncch_header.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.magic)) != 0) {
+		// SMDH magic number is incorrect.
+		return -99;
+	}
+	// Loaded the NCCH header.
+	headers_loaded |= HEADER_NCCH;
 	return 0;
 }
 
@@ -586,7 +634,7 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	// Check for CCI/eMMC.
 	const N3DS_NCSD_Header_t *const ncsd_header =
 		reinterpret_cast<const N3DS_NCSD_Header_t*>(info->header.pData);
-	if (!memcmp(ncsd_header->magic, N3DS_NCSD_HEADER_MAGIC, 4)) {
+	if (!memcmp(ncsd_header->magic, N3DS_NCSD_HEADER_MAGIC, sizeof(ncsd_header->magic))) {
 		// TODO: Validate the NCSD image size field?
 
 		// Check if this is an eMMC dump or a CCI image.
@@ -689,7 +737,12 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions(void) const
  */
 uint32_t Nintendo3DS::supportedImageTypes_static(void)
 {
-	return IMGBF_INT_ICON;
+#ifdef HAVE_JPEG
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_FULL;
+#else /* !HAVE_JPEG */
+	return IMGBF_INT_ICON | IMGBF_EXT_BOX;
+#endif /* HAVE_JPEG */
 }
 
 /**
@@ -1060,6 +1113,192 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	// Load the icon.
 	*pImage = d->loadIcon(idx);
 	return (*pImage != nullptr ? 0 : -EIO);
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return -ERANGE;
+	}
+	assert(pExtURLs != nullptr);
+	if (!pExtURLs) {
+		// No vector.
+		return -EINVAL;
+	}
+	pExtURLs->clear();
+
+	// Make sure the NCCH header is loaded.
+	RP_D(const Nintendo3DS);
+	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_NCCH)) {
+		// Load the NCCH header.
+		if (const_cast<Nintendo3DSPrivate*>(d)->loadNCCH() != 0) {
+			// Error loading the NCCH header.
+			return -EIO;
+		}
+	}
+
+	// Validate the product code.
+	if (memcmp(d->ncch_header.product_code, "CTR-", 4) != 0 &&
+	    memcmp(d->ncch_header.product_code, "KTR-", 4) != 0)
+	{
+		// Not a valid product code for GameTDB.
+		return -ENOENT;
+	}
+
+	if (d->ncch_header.product_code[5] != '-' ||
+	    d->ncch_header.product_code[10] != 0)
+	{
+		// Missing hyphen, or longer than 10 characters.
+		return -ENOENT;
+	}
+
+	// Check the product type.
+	// TODO: Enable demos, DLC, and updates?
+	switch (d->ncch_header.product_code[4]) {
+		case 'P':	// Game card
+		case 'N':	// eShop
+			// Product type is valid for GameTDB.
+			break;
+		case 'M':	// DLC
+		case 'U':	// Update
+		case 'T':	// Demo
+		default:
+			// Product type is NOT valid for GameTDB.
+			return -ENOENT;
+	}
+
+	// Make sure the ID4 has only printable characters.
+	const char *id4 = &d->ncch_header.product_code[6];
+	for (int i = 3; i >= 0; i--) {
+		if (!isprint(id4[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
+	}
+
+	// Check for known unsupported game IDs.
+	// TODO: Ignore eShop-only titles, or does GameTDB have those?
+	if (!memcmp(id4, "CTAP", 4)) {
+		// This is either a prototype, an update partition,
+		// or some other non-retail title.
+		// No external images are available.
+		return -ENOENT;
+	}
+
+	if (!d->file || !d->file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid || d->romType < 0) {
+		// ROM image isn't valid.
+		return -EIO;
+	}
+
+	// Get the image sizes and sort them based on the
+	// requested image size.
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// Select the best size.
+	const ImageSizeDef *sizeDef = d->selectBestSize(sizeDefs, size);
+	if (!sizeDef) {
+		// No size available...
+		return -ENOENT;
+	}
+
+	// NOTE: Only downloading the first size as per the
+	// sort order, since GameTDB basically guarantees that
+	// all supported sizes for an image type are available.
+	// TODO: Add cache keys for other sizes in case they're
+	// downloaded and none of these are available?
+
+	// Determine the image type name.
+	const char *imageTypeName_base;
+	const char *ext;
+	switch (imageType) {
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER:
+			imageTypeName_base = "cover";
+			ext = ".jpg";
+			break;
+		case IMG_EXT_COVER_FULL:
+			imageTypeName_base = "coverfull";
+			ext = ".jpg";
+			break;
+#endif /* HAVE_JPEG */
+		case IMG_EXT_BOX:
+			imageTypeName_base = "box";
+			ext = ".png";
+			break;
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Determine the GameTDB region code(s).
+	// TODO: Check the SMDH region if available.
+	// FIXME: Implement n3dsRegionToGameTDB(). For now, assuming US.
+	vector<const char*> tdb_regions;
+	tdb_regions.push_back("US");
+
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	const ImageSizeDef *szdefs_dl[3];
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index >= 2) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
+
+	// Add the URLs.
+	pExtURLs->reserve(4*szdef_count);
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
+
+		// Add the images.
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
+
+			extURL.url = d->getURL_GameTDB("3ds", imageTypeName, *iter, id4, ext);
+			extURL.cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, *iter, id4, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index >= 2);
+		}
+	}
+
+	// All URLs added.
+	return 0;
 }
 
 }

@@ -353,7 +353,7 @@ ASSERT_STRUCT(N3DS_NCSD_Card_Info_Header_t, 0xF00);
  */
 #define N3DS_NCCH_HEADER_MAGIC "NCCH"
 #pragma pack(1)
-typedef struct PACKED _N3DS_NCCH_Header_NoSig {
+typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
 	// NOTE: Addresses are relative to the version *with* a signature.
 	char magic[4];				// [0x100] "NCCH"
 	uint32_t content_size;			// [0x104] Content size, in media units. (1 media unit = 512 bytes)
@@ -383,9 +383,9 @@ typedef struct PACKED _N3DS_NCCH_Header_NoSig {
 	uint32_t reserved4;			// [0x1BC]
 	uint8_t exefs_uperblock_hash[0x20];	// [0x1C0] ExeFS superblock SHA-256 hash
 	uint8_t romfs_uperblock_hash[0x20];	// [0x1E0] RomFS superblock SHA-256 hash
-} N3DS_NCCH_Header_NoSig;
+} N3DS_NCCH_Header_NoSig_t;
 #pragma pack()
-ASSERT_STRUCT(N3DS_NCCH_Header_NoSig, 256);
+ASSERT_STRUCT(N3DS_NCCH_Header_NoSig_t, 256);
 
 /**
  * NCCH flags. (byte array indexes)

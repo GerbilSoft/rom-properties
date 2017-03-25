@@ -178,6 +178,24 @@ class Nintendo3DS : public RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+
+	public:
+		/**
+		 * Get a list of URLs for an external image type.
+		 *
+		 * A thumbnail size may be requested from the shell.
+		 * If the subclass supports multiple sizes, it should
+		 * try to get the size that most closely matches the
+		 * requested size.
+		 *
+		 * @param imageType	[in]     Image type.
+		 * @param pExtURLs	[out]    Output vector.
+		 * @param size		[in,opt] Requested image size. This may be a requested
+		 *                               thumbnail size in pixels, or an ImageSizeType
+		 *                               enum value.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const override final;
 };
 
 }
