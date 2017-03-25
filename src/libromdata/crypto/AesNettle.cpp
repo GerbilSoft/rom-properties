@@ -235,10 +235,6 @@ unsigned int AesNettle::decrypt(uint8_t *data, unsigned int data_len)
 
 	// Decrypt the data.
 	RP_D(AesNettle);
-	if (!d->decrypt_fn) {
-		// No decryption function set...
-		return 0;
-	}
 
 #ifdef HAVE_NETTLE_3
 	if (!d->decrypt_fn) {
