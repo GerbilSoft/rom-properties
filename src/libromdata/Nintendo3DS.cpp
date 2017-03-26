@@ -1111,8 +1111,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			// Save the NCSD header for later.
 			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
-			// TODO: eMMC image type?
-			d->fileType = FTYPE_DISK_IMAGE;
+			d->fileType = FTYPE_EMMC_DUMP;
 			break;
 
 		default:
@@ -1483,8 +1482,8 @@ int Nintendo3DS::loadFieldData(void)
 	// Otherwise, use the primary NCCH Title ID.
 	const rp_char *tid_desc = nullptr;
 	uint32_t tid_hi, tid_lo;
-	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
-		// TODO: Is this valid for eMMC?
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
+	    d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		tid_desc = _RP("Media ID");
 		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);

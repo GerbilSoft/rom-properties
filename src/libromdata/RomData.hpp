@@ -218,6 +218,7 @@ class RomData
 			FTYPE_ICON_FILE,		// Icon file, e.g. SMDH.
 			FTYPE_BANNER_FILE,		// Banner file, e.g. GameCube opening.bnr.
 			FTYPE_HOMEBREW,			// Homebrew application, e.g. 3DSX.
+			FTYPE_EMMC_DUMP,		// eMMC dump
 
 			FTYPE_LAST			// End of FileType.
 		};
