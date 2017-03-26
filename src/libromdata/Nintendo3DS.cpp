@@ -1478,26 +1478,27 @@ int Nintendo3DS::loadFieldData(void)
 	// If using CIA/TMD, use the TMD Title ID.
 	// Otherwise, use the primary NCCH Title ID.
 	const rp_char *tid_desc = nullptr;
-	uint64_t title_id = 0;
+	uint32_t tid_hi, tid_lo;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// TODO: Is this valid for eMMC?
 		tid_desc = _RP("Media ID");
-		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
+		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
+		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
 	} else if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
 		tid_desc = _RP("Title ID");
-		title_id = be64_to_cpu(d->mxh.tmd_header.title_id);
+		tid_hi = be32_to_cpu(d->mxh.tmd_header.title_id.hi);
+		tid_lo = be32_to_cpu(d->mxh.tmd_header.title_id.lo);
 	} else {
 		// Get the title ID from the NCCH header.
 		if (d->loadNCCH() == 0) {
 			tid_desc = _RP("Title ID");
-			title_id = le64_to_cpu(d->ncch_header.program_id);
+			tid_lo = le32_to_cpu(d->ncch_header.program_id.lo);
+			tid_hi = le32_to_cpu(d->ncch_header.program_id.hi);
 		}
 	}
 
 	if (tid_desc) {
-		len = snprintf(buf, sizeof(buf), "%08X-%08X",
-			(uint32_t)(title_id >> 32),
-			(uint32_t)(title_id));
+		len = snprintf(buf, sizeof(buf), "%08X-%08X", tid_hi, tid_lo);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
 		d->fields->addField_string(tid_desc,
@@ -2085,9 +2086,10 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	// If using NCSD, use the Media ID.
 	// Otherwise, use the primary Title ID.
-	uint64_t title_id = 0;
+	uint32_t tid_hi, tid_lo;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
-		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
+		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
+		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
 	} else {
 		// Make sure the NCCH header is loaded.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_NCCH)) {
@@ -2097,13 +2099,12 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 				return -EIO;
 			}
 		}
-		title_id = le64_to_cpu(d->ncch_header.program_id);
+		tid_lo = le32_to_cpu(d->ncch_header.program_id.lo);
+		tid_hi = le32_to_cpu(d->ncch_header.program_id.hi);
 	}
 
 	// Validate the title ID.
 	// Reference: https://3dbrew.org/wiki/Titles
-	const uint32_t tid_hi = (uint32_t)(title_id >> 32);
-	const uint32_t tid_lo = (uint32_t)(title_id);
 	if (tid_hi != 0x00040000 || tid_lo < 0x00030000 || tid_lo >= 0x0F800000) {
 		// This is probably not a retail application
 		// because one of the following conditions is met:

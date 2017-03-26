@@ -251,6 +251,36 @@ typedef struct PACKED _N3DS_CIA_Meta_Header_t {
 ASSERT_STRUCT(N3DS_CIA_Meta_Header_t, 0x400);
 
 /**
+ * Title ID struct/union. (little-endian version)
+ * TODO: Verify operation on big-endian systems.
+ */
+#pragma pack(1)
+typedef union PACKED _N3DS_TitleID_LE_t {
+	uint64_t id;
+	struct {
+		uint32_t lo;
+		uint32_t hi;
+	};
+} N3DS_TitleID_LE_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_TitleID_LE_t, 8);
+
+/**
+ * Title ID struct/union. (big-endian version)
+ * TODO: Verify operation on big-endian systems.
+ */
+#pragma pack(1)
+typedef union PACKED _N3DS_TitleID_BE_t {
+	uint64_t id;
+	struct {
+		uint32_t hi;
+		uint32_t lo;
+	};
+} N3DS_TitleID_BE_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
+
+/**
  * Nintendo 3DS cartridge and eMMC header. (NCSD)
  * Reference: https://3dbrew.org/wiki/NCSD
  *
@@ -262,9 +292,9 @@ typedef struct PACKED _N3DS_NCSD_Header_t {
 	uint8_t signature[0x100];	// RSA-2048 SHA-256 signature
 
 	// [0x100]
-	char magic[4];			// "NCSD"
-	uint32_t image_size;		// Image size, in media units. (1 media unit = 512 bytes)
-	uint64_t media_id;		// Media ID.
+	char magic[4];			// [0x100] "NCSD"
+	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
+	N3DS_TitleID_LE_t media_id;	// [0x108] Media ID.
 
 	// [0x110] eMMC-specific partition table.
 	struct {
@@ -393,7 +423,7 @@ typedef struct PACKED _N3DS_NCCH_Header_NoSig_t {
 	char maker_code[2];			// [0x110] Maker code.
 	uint16_t version;			// [0x112] Version.
 	uint32_t fw96lock;			// [0x114] Used by FIRM 9.6.0-X to verify the content lock seed.
-	uint64_t program_id;			// [0x118] Program ID.
+	N3DS_TitleID_LE_t program_id;		// [0x118] Program ID.
 	uint8_t reserved1[0x10];		// [0x120]
 	uint8_t logo_region_hash[0x20];		// [0x130] Logo region SHA-256 hash. (SDK 5+)
 	char product_code[0x10];		// [0x150] ASCII product code, e.g. "CTR-P-CTAP"
@@ -559,7 +589,7 @@ typedef struct PACKED _N3DS_TMD_Header_t {
 	uint8_t signer_crl_version;	// [0x42]
 	uint8_t reserved1;		// [0x43]
 	uint64_t system_version;	// [0x44] Required system version.
-	uint64_t title_id;		// [0x4C] Title ID.
+	N3DS_TitleID_BE_t title_id;	// [0x4C] Title ID.
 	uint32_t title_type;		// [0x54] Title type.
 	uint16_t group_id;		// [0x58] Group ID.
 	uint32_t save_data_size;	// [0x4A] Save data size. (SRL: Public save data size)
