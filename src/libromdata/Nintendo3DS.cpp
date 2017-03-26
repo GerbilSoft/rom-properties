@@ -2000,6 +2000,27 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 }
 
 /**
+ * Get the animated icon data.
+ *
+ * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+ * object has an animated icon.
+ *
+ * @return Animated icon data, or nullptr if no animated icon is present.
+ */
+const IconAnimData *Nintendo3DS::iconAnimData(void) const
+{
+	// NOTE: Nintendo 3DS icons cannot be animated.
+	// Nintendo DSi icons can be animated, so this is
+	// only used if we're looking at a DSiWare SRL
+	// packaged as a CIA.
+	RP_D(const Nintendo3DS);
+	if (d->srlData) {
+		return d->srlData->iconAnimData();
+	}
+	return nullptr;
+}
+
+/**
  * Get a list of URLs for an external image type.
  *
  * A thumbnail size may be requested from the shell.

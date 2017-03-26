@@ -181,6 +181,17 @@ class Nintendo3DS : public RomData
 
 	public:
 		/**
+		 * Get the animated icon data.
+		 *
+		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this
+		 * object has an animated icon.
+		 *
+		 * @return Animated icon data, or nullptr if no animated icon is present.
+		 */
+		virtual const IconAnimData *iconAnimData(void) const override final;
+
+	public:
+		/**
 		 * Get a list of URLs for an external image type.
 		 *
 		 * A thumbnail size may be requested from the shell.
