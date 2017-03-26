@@ -998,6 +998,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 	// - Add original tab names if present.
 	// - Add all to specified tab or to current tab.
 	// - Use absolute or relative tab offset.
+	d->fields.reserve(d->fields.size() + other->count());
 
 	for (int i = 0; i < other->count(); i++) {
 		const Field *src = other->field(i);
