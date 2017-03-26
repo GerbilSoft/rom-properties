@@ -1744,15 +1744,6 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Content types?
 		N3DS_NCCH_Header_NoSig_t content_ncch_header;
 		for (unsigned int i = 0; i < d->content_count; i++) {
-			uint32_t length;
-			int ret = d->loadNCCH(i, &content_ncch_header, nullptr, &length);
-			if (ret != 0) {
-				// Invalid content index.
-				// TODO: Are there CIAs with discontiguous content indexes?
-				// (Themes, DLC...)
-				break;
-			}
-
 			const int vidx = (int)contents->size();
 			contents->resize(vidx+1);
 			auto &data_row = contents->at(vidx);
@@ -1763,10 +1754,26 @@ int Nintendo3DS::loadFieldData(void)
 				len = sizeof(buf);
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 
+			uint32_t length;
+			int ret = d->loadNCCH(i, &content_ncch_header, nullptr, &length);
+			if (ret != 0) {
+				// Invalid content index, or this content isn't an NCCH.
+				// TODO: Are there CIAs with discontiguous content indexes?
+				// (Themes, DLC...)
+				data_row.push_back(_RP("Unknown"));
+				data_row.push_back(_RP(""));
+				// Content size.
+				if (i < d->content_count) {
+					data_row.push_back(d->formatFileSize(be64_to_cpu(d->content_chunks[i].size)));
+				} else {
+					data_row.push_back(_RP(""));
+				}
+				continue;
+			}
+
 			// Content type.
 			const rp_char *content_type;
 			const uint8_t ctype_flag = content_ncch_header.flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
-			printf("ctype flag: %02X\n", ctype_flag);
 			if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
 				// DLP child
 				content_type = _RP("Download Play");
