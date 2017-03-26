@@ -1470,9 +1470,6 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Up to 2 tabs.
-	d->fields->reserveTabs(2);
-
 	// TODO: May be less than 16 fields, but we'll use 16 for now.
 	d->fields->reserve(16); // Maximum of 16 fields.
 
@@ -1862,6 +1859,7 @@ int Nintendo3DS::loadFieldData(void)
 			const RomFields *srl_fields = d->srlData->fields();
 			if (srl_fields) {
 				// Set up tabs.
+				d->fields->reserveTabs(2);
 				d->fields->setTabName(0, _RP("CIA"));
 				d->fields->setTabName(1, _RP("DSiWare"));
 				// Add the DSiWare fields to tab 1.
