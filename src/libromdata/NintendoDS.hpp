@@ -49,6 +49,22 @@ class NintendoDS : public RomData
 		 */
 		explicit NintendoDS(IRpFile *file);
 
+		/**
+		 * Read a Nintendo DS ROM image.
+		 *
+		 * A ROM image must be opened by the caller. The file handle
+		 * will be dup()'d and must be kept open in order to load
+		 * data from the ROM image.
+		 *
+		 * To close the file, either delete this object or call close().
+		 *
+		 * NOTE: Check isValid() to determine if this is a valid ROM.
+		 *
+		 * @param file Open ROM image.
+		 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
+		 */
+		explicit NintendoDS(IRpFile *file, bool cia);
+
 	protected:
 		/**
 		 * RomData destructor is protected.
@@ -60,6 +76,11 @@ class NintendoDS : public RomData
 		typedef RomData super;
 		friend class NintendoDSPrivate;
 		RP_DISABLE_COPY(NintendoDS)
+
+		/**
+		 * Common initialization function for the constructors.
+		 */
+		void init(void);
 
 	public:
 		/** ROM detection functions. **/

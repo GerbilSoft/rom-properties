@@ -52,7 +52,7 @@ namespace LibRomData {
 class NintendoDSPrivate : public RomDataPrivate
 {
 	public:
-		NintendoDSPrivate(NintendoDS *q, IRpFile *file);
+		NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia);
 		virtual ~NintendoDSPrivate();
 
 	private:
@@ -94,6 +94,10 @@ class NintendoDSPrivate : public RomDataPrivate
 		// NOTE: Must be byteswapped on access.
 		NDS_IconTitleData nds_icon_title;
 		bool nds_icon_title_loaded;
+
+		// If true, this is an SRL in a 3DS CIA.
+		// Some fields shouldn't be displayed.
+		bool cia;
 
 		/**
 		 * Load the icon/title data.
@@ -139,11 +143,12 @@ class NintendoDSPrivate : public RomDataPrivate
 
 /** NintendoDSPrivate **/
 
-NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file)
+NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
 	: super(q, file)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
 	, nds_icon_title_loaded(false)
+	, cia(cia)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -669,13 +674,49 @@ vector<const char*> NintendoDSPrivate::ndsRegionToGameTDB(
  * @param file Open ROM image.
  */
 NintendoDS::NintendoDS(IRpFile *file)
-	: super(new NintendoDSPrivate(this, file))
+	: super(new NintendoDSPrivate(this, file, false))
 {
 	RP_D(NintendoDS);
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
 	}
+
+	init();
+}
+
+/**
+ * Read a Nintendo DS ROM image.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open ROM image.
+ * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
+ */
+NintendoDS::NintendoDS(IRpFile *file, bool cia)
+	: super(new NintendoDSPrivate(this, file, cia))
+{
+	RP_D(NintendoDS);
+	if (!d->file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
+	init();
+}
+
+/**
+ * Common initialization function for the constructors.
+ */
+void NintendoDS::init(void)
+{
+	RP_D(NintendoDS);
 
 	// Read the ROM header.
 	d->file->rewind();
@@ -1036,40 +1077,45 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
-	static const rp_char *const hw_bitfield_names[] = {
-		_RP("Nintendo DS"), _RP("Nintendo DSi")
-	};
-	vector<rp_string> *v_hw_bitfield_names = RomFields::strArrayToVector(
-		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
-	d->fields->addField_bitfield(_RP("Hardware"),
-		v_hw_bitfield_names, 0, hw_type);
+	if (!d->cia) {
+		static const rp_char *const hw_bitfield_names[] = {
+			_RP("Nintendo DS"), _RP("Nintendo DSi")
+		};
+		vector<rp_string> *v_hw_bitfield_names = RomFields::strArrayToVector(
+			hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
+		d->fields->addField_bitfield(_RP("Hardware"),
+			v_hw_bitfield_names, 0, hw_type);
 
-	// TODO: Combine DS Region and DSi Region into one bitfield?
+		// NDS Region.
+		// Only used for region locking on Chinese iQue DS consoles.
+		// Not displayed for DSiWare wrapped in 3DS CIA packages.
+		uint32_t nds_region = 0;
+		if (romHeader->nds_region & 0x80) {
+			nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
+		}
+		if (romHeader->nds_region & 0x40) {
+			nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
+		}
+		if (nds_region == 0) {
+			// No known region flags.
+			// Note that the Sonic Colors demo has 0x02 here.
+			nds_region = NintendoDSPrivate::NDS_REGION_FREE;
+		}
 
-	// DS Region.
-	uint32_t nds_region = 0;
-	if (romHeader->nds_region & 0x80) {
-		nds_region |= NintendoDSPrivate::NDS_REGION_CHINA;
+		static const rp_char *const nds_region_bitfield_names[] = {
+			_RP("Region-Free"), _RP("South Korea"), _RP("China")
+		};
+		vector<rp_string> *v_nds_region_bitfield_names = RomFields::strArrayToVector(
+			nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+		d->fields->addField_bitfield(_RP("DS Region"),
+			v_nds_region_bitfield_names, 0, nds_region);
 	}
-	if (romHeader->nds_region & 0x40) {
-		nds_region |= NintendoDSPrivate::NDS_REGION_SKOREA;
-	}
-	if (nds_region == 0) {
-		// No known region flags.
-		// Note that the Sonic Colors demo has 0x02 here.
-		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
-	}
-
-	static const rp_char *const nds_region_bitfield_names[] = {
-		_RP("Region-Free"), _RP("South Korea"), _RP("China")
-	};
-	vector<rp_string> *v_nds_region_bitfield_names = RomFields::strArrayToVector(
-		nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-	d->fields->addField_bitfield(_RP("DS Region"),
-		v_nds_region_bitfield_names, 0, nds_region);
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
+		const rp_char *const field_name = (d->cia
+				? _RP("Region Code")
+				: _RP("DSi Region"));
 
 		// DSi Region.
 		// Maps directly to the header field.
@@ -1079,7 +1125,7 @@ int NintendoDS::loadFieldData(void)
 		};
 		vector<rp_string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector(
 			dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
-		d->fields->addField_bitfield(_RP("DSi Region"),
+		d->fields->addField_bitfield(field_name,
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 		// DSi filetype.

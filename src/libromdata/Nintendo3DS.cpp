@@ -699,7 +699,7 @@ int Nintendo3DSPrivate::loadTMD(void)
 				if (srlFile->isOpen()) {
 					// Create the NintendoDS object.
 					// TODO: Close it when not needed. (override close()?)
-					srlData = new NintendoDS(srlFile);
+					srlData = new NintendoDS(srlFile, true);
 				}
 			}
 
