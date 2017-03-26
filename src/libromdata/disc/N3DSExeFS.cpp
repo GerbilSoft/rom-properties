@@ -131,7 +131,9 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 {
 	// Copy fields from the NCCH header.
 	memcpy(ncch_flags, ncch_header->flags, sizeof(ncch_flags));
+#ifdef ENABLE_DECRYPTION
 	tid_be = __swab64(ncch_header->program_id.id);
+#endif /* ENABLE_DECRYPTION */
 
 	// Determine the keyset to use.
 	// Crypto settings, in priority order:
