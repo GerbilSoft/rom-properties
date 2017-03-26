@@ -1473,8 +1473,8 @@ int Nintendo3DS::loadFieldData(void)
 	// Up to 2 tabs.
 	d->fields->reserveTabs(2);
 
-	// TODO: May be less than 15 fields, but we'll use 15 for now.
-	d->fields->reserve(15); // Maximum of 7 fields.
+	// TODO: May be less than 16 fields, but we'll use 16 for now.
+	d->fields->reserve(16); // Maximum of 16 fields.
 
 	// Temporary buffer for snprintf().
 	char buf[64];
@@ -1510,6 +1510,12 @@ int Nintendo3DS::loadFieldData(void)
 			len = sizeof(buf);
 		d->fields->addField_string(tid_desc,
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	}
+
+	// Product code.
+	if (d->loadNCCH() == 0) {
+		d->fields->addField_string(_RP("Product Code"),
+			latin1_to_rp_string(d->ncch_header.product_code, sizeof(d->ncch_header.product_code)));
 	}
 
 	// Load and parse the SMDH header.
