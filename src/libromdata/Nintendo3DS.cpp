@@ -1901,7 +1901,10 @@ int Nintendo3DS::loadFieldData(void)
 					cnt_type = _RP("Unknown");
 				}
 				data_row.push_back(cnt_type);
+
+				// TODO: Show the ROM revision for SRLs?
 				data_row.push_back(_RP(""));
+
 				// Content size.
 				if (i < d->content_count) {
 					data_row.push_back(d->formatFileSize(be64_to_cpu(d->content_chunks[i].size)));
