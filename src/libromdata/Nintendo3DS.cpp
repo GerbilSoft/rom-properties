@@ -766,7 +766,7 @@ int Nintendo3DSPrivate::loadExeFS(void)
 	}
 
 	// TODO:
-	// - Verify values other than NoCrypto|FixedKeyCrypto.
+	// - Verify values other than NoCrypto|FixedCryptoKey.
 	// - N3DSExeFS subclass of IPartition to decrypt individual files.
 
 	// Load the NCCH header if it isn't already loaded.
@@ -1592,7 +1592,7 @@ int Nintendo3DS::loadFieldData(void)
 			// CCI
 			{_RP("Game"), _RP("Manual"), _RP("Download Play"),
 			 nullptr, nullptr, nullptr,
-			 _RP("New3DS Update"), _RP("Old3DS Update")},
+			 _RP("N3DS Update"), _RP("O3DS Update")},
 			// eMMC
 			{_RP("TWL NAND"), _RP("AGB SAVE"),
 			 _RP("FIRM0"), _RP("FIRM1"), _RP("CTR NAND"),
@@ -1618,7 +1618,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Columns for the partition table.
 			static const rp_char *const cci_partitions_names[] = {
-				_RP("#"), _RP("Type"), _RP("Version"), _RP("Size")
+				_RP("#"), _RP("Type"), _RP("Encryption"), _RP("Version"), _RP("Size")
 			};
 			v_partitions_names = RomFields::strArrayToVector(
 				cci_partitions_names, ARRAY_SIZE(cci_partitions_names));
@@ -1648,7 +1648,7 @@ int Nintendo3DS::loadFieldData(void)
 			// CCI-specific fields.
 			const N3DS_NCSD_Card_Info_Header_t *const cinfo_header = &d->mxh.cinfo_header;
 
-			// TODO: Check if platform != 1 on N3DS-only cartridges.
+			// TODO: Check if platform != 1 on New3DS-only cartridges.
 
 			// Card type.
 			const rp_char *media_type;
@@ -1771,11 +1771,38 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(type);
 
 			if (!emmc) {
-				// Version.
-				// Reference: https://3dbrew.org/wiki/Titles
 				int ret = d->loadNCCH(i, &part_ncch_header);
 				if (ret == 0) {
-					// Format the NCCH version.
+					// Encryption.
+					const rp_char *crypto = nullptr;
+					if (part_ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+						// No encryption.
+						crypto = _RP("NoCrypto");
+					} else if (part_ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+						// Fixed key encryption.
+						// TODO: Determine which keyset is in use.
+						// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
+						crypto = _RP("Fixed (?)");
+					} else {
+						// Check ncchflag[3].
+						switch (part_ncch_header.flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
+							case 0x01:
+								crypto = _RP("Slot0x25");
+								break;
+							case 0x0A:
+								crypto = _RP("Slot0x18");
+								break;
+							case 0x0B:
+								crypto = _RP("Slot0x1B");
+								break;
+							default:
+								break;
+						}
+					}	
+					data_row.push_back(crypto ? crypto : _RP("Unknown"));
+
+					// Version.
+					// Reference: https://3dbrew.org/wiki/Titles
 					bool isUpdate;
 					uint16_t version;
 					if (i >= 6) {
@@ -1805,7 +1832,8 @@ int Nintendo3DS::loadFieldData(void)
 					}
 				} else {
 					// Unable to load the NCCH header.
-					data_row.push_back(_RP("Unknown"));
+					data_row.push_back(_RP("Unknown"));	// Encryption
+					data_row.push_back(_RP("Unknown"));	// Version
 				}
 			}
 
