@@ -474,6 +474,14 @@ class RomFields
 		static std::vector<rp_string> *strArrayToVector(const rp_char *const *strArray, int count = -1);
 
 		/**
+		 * Add fields from another RomFields object.
+		 * @param other Source RomFields object.
+		 * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+		 * @return Field index of the last field added.
+		 */
+		int addFields_romFields(const RomFields *other, int tabOffset);
+
+		/**
 		 * Add string field data.
 		 * @param name Field name.
 		 * @param str String.

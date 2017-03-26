@@ -1463,7 +1463,11 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(7); // Maximum of 7 fields.
+	// Up to 2 tabs.
+	d->fields->reserveTabs(2);
+
+	// TODO: May be less than 15 fields, but we'll use 15 for now.
+	d->fields->reserve(15); // Maximum of 7 fields.
 
 	// Temporary buffer for snprintf().
 	char buf[64];
@@ -1841,8 +1845,14 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Is this a DSiWare SRL?
 		if (d->srlData) {
-			// TODO: Need to add operator+= to enable
-			// concatenation of RomFields objects...
+			const RomFields *srl_fields = d->srlData->fields();
+			if (srl_fields) {
+				// Set up tabs.
+				d->fields->setTabName(0, _RP("CIA"));
+				d->fields->setTabName(1, _RP("DSiWare"));
+				// Add the DSiWare fields to tab 1.
+				d->fields->addFields_romFields(srl_fields, 1);
+			}
 		}
 
 		// Contents table.
