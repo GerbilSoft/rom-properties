@@ -1495,7 +1495,7 @@ int Nintendo3DS::loadFieldData(void)
 	}
 
 	if (tid_desc) {
-		len = snprintf(buf, sizeof(buf), "%08X %08X",
+		len = snprintf(buf, sizeof(buf), "%08X-%08X",
 			(uint32_t)(title_id >> 32),
 			(uint32_t)(title_id));
 		if (len > (int)sizeof(buf))
