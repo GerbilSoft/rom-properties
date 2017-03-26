@@ -33,6 +33,11 @@
 #include "file/IRpFile.hpp"
 #include "file/FileSystem.hpp"
 
+// For DSiWare SRLs embedded in CIAs.
+#include "disc/DiscReader.hpp"
+#include "disc/PartitionFile.hpp"
+#include "NintendoDS.hpp"
+
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
 
@@ -140,6 +145,11 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// TODO: Replace with N3DSExeFS, subclass of IPartition
 		unique_ptr<uint8_t[]> exefs;
 
+		// File readers for DSiWare CIAs.
+		DiscReader *srlReader;	// uses this->file
+		PartitionFile *srlFile;	// uses srlReader
+		NintendoDS *srlData;	// NintendoDS object.
+
 		/**
 		 * Round a value to the next highest multiple of 64.
 		 * @param value Value.
@@ -222,6 +232,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, ncch_offset(0)
 	, ncch_length(0)
 	, content_count(0)
+	, srlReader(nullptr)
+	, srlFile(nullptr)
+	, srlData(nullptr)
 {
 	// Clear img_icon.
 	img_icon[0] = nullptr;
@@ -237,6 +250,13 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 {
 	delete img_icon[0];
 	delete img_icon[1];
+
+	// If this is a DSiWare SRL, these will be open.
+	if (srlData) {
+		srlData->unref();
+	}
+	delete srlFile;
+	delete srlReader;
 }
 
 /**
@@ -660,6 +680,44 @@ int Nintendo3DSPrivate::loadTMD(void)
 
 	// Store the content start address.
 	mxh.content_start_addr = tmd_start + toNext64(tmd_size);
+
+	// If there's only one content, check if it's DSiWare.
+	// TODO: Can DSiWare have manuals?
+	if (content_count == 1 && !this->srlData) {
+		const int64_t offset = mxh.content_start_addr;
+		const uint32_t length = (uint32_t)be64_to_cpu(content_chunks[0].size);
+		if (length >= 0x8000) {
+			// Attempt to open the SRL as if it's a new file.
+			// TODO: CIA decryption?
+			// TODO: IRpFile implementation with offset/length, so we don't
+			// have to use both DiscReader and PartitionFile.
+			DiscReader *srlReader = new DiscReader(this->file, offset, length);
+			PartitionFile *srlFile = nullptr;
+			NintendoDS *srlData = nullptr;
+			if (srlReader->isOpen()) {
+				srlFile = new PartitionFile(srlReader, 0, length);
+				if (srlFile->isOpen()) {
+					// Create the NintendoDS object.
+					// TODO: Close it when not needed. (override close()?)
+					srlData = new NintendoDS(srlFile);
+				}
+			}
+
+			if (srlData && srlData->isOpen() && srlData->isValid()) {
+				// SRL opened successfully.
+				this->srlReader = srlReader;
+				this->srlFile = srlFile;
+				this->srlData = srlData;
+			} else {
+				// Failed to open the SRL.
+				if (srlData) {
+					srlData->unref();
+				}
+				delete srlFile;
+				delete srlReader;
+			}
+		}
+	}
 
 	// Loaded the TMD header.
 	headers_loaded |= HEADER_TMD;
@@ -1250,6 +1308,19 @@ uint32_t Nintendo3DS::supportedImageTypes_static(void)
  */
 uint32_t Nintendo3DS::supportedImageTypes(void) const
 {
+	RP_D(const Nintendo3DS);
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+		}
+		if (d->srlData) {
+			// This is a DSiWare SRL.
+			// Get the image information from the underlying SRL.
+			return d->srlData->supportedImageTypes();
+		}
+	}
+
 	return supportedImageTypes_static();
 }
 
@@ -1317,6 +1388,19 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes_static(Image
  */
 std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes(ImageType imageType) const
 {
+	RP_D(const Nintendo3DS);
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+		}
+		if (d->srlData) {
+			// This is a DSiWare SRL.
+			// Get the image information from the underlying SRL.
+			return d->srlData->supportedImageSizes(imageType);
+		}
+	}
+
 	return supportedImageSizes_static(imageType);
 }
 
@@ -1335,6 +1419,19 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return 0;
+	}
+
+	RP_D(const Nintendo3DS);
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+		}
+		if (d->srlData) {
+			// This is a DSiWare SRL.
+			// Get the image information from the underlying SRL.
+			return d->srlData->imgpf(imageType);
+		}
 	}
 
 	switch (imageType) {
@@ -1714,6 +1811,13 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
 	}
 
+	// If this is a CIA, load the TMD header if it hasn't been loaded already.
+	if ((d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) &&
+	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
+	{
+		d->loadTMD();
+	}
+
 	// Is the TMD header loaded?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
 		// Display the TMD header.
@@ -1734,6 +1838,12 @@ int Nintendo3DS::loadFieldData(void)
 			len = sizeof(buf);
 		d->fields->addField_string(_RP("Version"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+		// Is this a DSiWare SRL?
+		if (d->srlData) {
+			// TODO: Need to add operator+= to enable
+			// concatenation of RomFields objects...
+		}
 
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
@@ -1848,10 +1958,24 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ERANGE;
 	}
 
+	RP_D(Nintendo3DS);
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+			d->loadTMD();
+		}
+		if (d->srlData) {
+			// This is a DSiWare SRL.
+			// Get the image from the underlying SRL.
+			const rp_image *image = d->srlData->image(imageType);
+			*pImage = image;
+			return (image ? 0 : -EIO);
+		}
+	}
+
 	// NOTE: Assuming icon index 1. (48x48)
 	const int idx = 1;
 
-	RP_D(Nintendo3DS);
 	if (imageType != IMG_INT_ICON) {
 		// Only IMG_INT_ICON is supported by 3DS.
 		*pImage = nullptr;
@@ -1907,10 +2031,22 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 	pExtURLs->clear();
 
+	RP_D(const Nintendo3DS);
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
+		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
+		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
+			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+		}
+		if (d->srlData) {
+			// This is a DSiWare SRL.
+			// Get the image URLs from the underlying SRL.
+			return d->srlData->extURLs(imageType, pExtURLs, size);
+		}
+	}
+
 	// If using NCSD, use the Media ID.
 	// Otherwise, use the primary Title ID.
 	uint64_t title_id = 0;
-	RP_D(const Nintendo3DS);
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		title_id = le64_to_cpu(d->mxh.ncsd_header.media_id);
 	} else {

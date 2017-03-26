@@ -28,7 +28,7 @@
 
 namespace LibRomData {
 
-class IPartition;
+class IDiscReader;
 
 class PartitionFile : public IRpFile
 {
@@ -36,11 +36,11 @@ class PartitionFile : public IRpFile
 		/**
 		 * Open a file from an IPartition.
 		 * NOTE: These files are read-only.
-		 * @param partition IPartition object.
+		 * @param partition IPartition (or IDiscReader) object.
 		 * @param offset File starting offset.
 		 * @param size File size.
 		 */
-		PartitionFile(IPartition *partition, int64_t offset, int64_t size);
+		PartitionFile(IDiscReader *partition, int64_t offset, int64_t size);
 	public:
 		virtual ~PartitionFile();
 
@@ -129,7 +129,7 @@ class PartitionFile : public IRpFile
 		virtual rp_string filename(void) const override final;
 
 	protected:
-		IPartition *m_partition;
+		IDiscReader *m_partition;
 		int64_t m_offset;	// File starting offset.
 		int64_t m_size;		// File size.
 		int64_t m_pos;		// Current position.
