@@ -1880,7 +1880,15 @@ int Nintendo3DS::loadFieldData(void)
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
-				data_row.push_back(_RP("Unknown"));
+				const rp_char *cnt_type;
+				if (i == 0 && d->srlData) {
+					// This is an SRL.
+					cnt_type = _RP("SRL");
+				} else {
+					// Something else...
+					cnt_type = _RP("Unknown");
+				}
+				data_row.push_back(cnt_type);
 				data_row.push_back(_RP(""));
 				// Content size.
 				if (i < d->content_count) {
