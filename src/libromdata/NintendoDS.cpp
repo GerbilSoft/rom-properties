@@ -1031,7 +1031,11 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields->reserve(12);	// Maximum of 11 fields.
+
+	// Temporary buffer for snprintf().
+	char buf[32];
+	int len;
 
 	// Game title.
 	d->fields->addField_string(_RP("Title"),
@@ -1113,7 +1117,7 @@ int NintendoDS::loadFieldData(void)
 
 	if (hw_type & NintendoDSPrivate::DS_HW_DSi) {
 		// DSi-specific fields.
-		const rp_char *const field_name = (d->cia
+		const rp_char *const region_code_name = (d->cia
 				? _RP("Region Code")
 				: _RP("DSi Region"));
 
@@ -1125,8 +1129,17 @@ int NintendoDS::loadFieldData(void)
 		};
 		vector<rp_string> *v_dsi_region_bitfield_names = RomFields::strArrayToVector(
 			dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
-		d->fields->addField_bitfield(field_name,
+		d->fields->addField_bitfield(region_code_name,
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
+
+		// Title ID.
+		len = snprintf(buf, sizeof(buf), "%08X-%08X",
+			le32_to_cpu(romHeader->dsi.title_id.hi),
+			le32_to_cpu(romHeader->dsi.title_id.lo));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		d->fields->addField_string(_RP("Title ID"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
@@ -1158,8 +1171,7 @@ int NintendoDS::loadFieldData(void)
 			d->fields->addField_string(_RP("DSi ROM Type"), filetype);
 		} else {
 			// Invalid file type.
-			char buf[24];
-			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi.filetype);
+			len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi.filetype);
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
 			d->fields->addField_string(_RP("DSi ROM Type"),
