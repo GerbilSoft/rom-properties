@@ -1369,16 +1369,16 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Game ID.
-	// Replace any non-printable characters with underscores.
+	// The ID6 cannot have non-printable characters.
 	// (NDDEMO has ID6 "00\0E01".)
-	char id6[7];
-	for (int i = 0; i < 6; i++) {
-		id6[i] = (isprint(d->discHeader.id6[i])
-			? d->discHeader.id6[i]
-			: '_');
+	for (int i = ARRAY_SIZE(d->discHeader.id6)-1; i >= 0; i--) {
+		if (!isprint(d->discHeader.id6[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
 	}
-	id6[6] = 0;
-	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(_RP("Game ID"),
+		latin1_to_rp_string(d->discHeader.id6, ARRAY_SIZE(d->discHeader.id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);

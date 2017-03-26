@@ -1403,13 +1403,17 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 		d->romHeader.id4[3]);
 
 	// Game ID. (GameTDB uses ID4 for Nintendo DS.)
-	// Replace any non-printable characters with underscores.
+	// The ID4 cannot have non-printable characters.
 	char id4[5];
-	for (int i = 0; i < 4; i++) {
-		id4[i] = (isprint(d->romHeader.id4[i])
-			? d->romHeader.id4[i]
-			: '_');
+	for (int i = ARRAY_SIZE(d->romHeader.id4)-1; i >= 0; i--) {
+		if (!isprint(d->romHeader.id4[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
+		id4[i] = d->romHeader.id4[i];
 	}
+	// NULL-terminated ID4 is needed for the
+	// GameTDB URL functions.
 	id4[4] = 0;
 
 	// If we're downloading a "high-resolution" image (M or higher),
