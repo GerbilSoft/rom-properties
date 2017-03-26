@@ -128,7 +128,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 				uint32_t content_start_addr;
 			};
 			struct {
-				N3DS_NCSD_Header_t ncsd_header;
+				N3DS_NCSD_Header_NoSig_t ncsd_header;
 				N3DS_NCSD_Card_Info_Header_t cinfo_header;
 			};
 		} mxh;
@@ -1101,7 +1101,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 
 		case Nintendo3DSPrivate::ROM_TYPE_CCI:
 			// Save the NCSD and Card Info headers for later.
-			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
+			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			memcpy(&d->mxh.cinfo_header, &header[N3DS_NCSD_CARD_INFO_HEADER_ADDRESS], sizeof(d->mxh.cinfo_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
 			d->fileType = FTYPE_ROM_IMAGE;
@@ -1109,7 +1109,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 
 		case Nintendo3DSPrivate::ROM_TYPE_eMMC:
 			// Save the NCSD header for later.
-			memcpy(&d->mxh.ncsd_header, header, sizeof(d->mxh.ncsd_header));
+			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
 			d->fileType = FTYPE_EMMC_DUMP;
 			break;
@@ -1195,8 +1195,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check for CCI/eMMC.
-	const N3DS_NCSD_Header_t *const ncsd_header =
-		reinterpret_cast<const N3DS_NCSD_Header_t*>(info->header.pData);
+	const N3DS_NCSD_Header_NoSig_t *const ncsd_header =
+		reinterpret_cast<const N3DS_NCSD_Header_NoSig_t*>(
+			&info->header.pData[N3DS_NCSD_NOSIG_HEADER_ADDRESS]);
 	if (!memcmp(ncsd_header->magic, N3DS_NCSD_HEADER_MAGIC, sizeof(ncsd_header->magic))) {
 		// TODO: Validate the NCSD image size field?
 
@@ -1580,7 +1581,7 @@ int Nintendo3DS::loadFieldData(void)
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
 		// TODO: Add more fields?
-		const N3DS_NCSD_Header_t *const ncsd_header = &d->mxh.ncsd_header;
+		const N3DS_NCSD_Header_NoSig_t *const ncsd_header = &d->mxh.ncsd_header;
 
 		// Is this eMMC?
 		const bool emmc = (d->romType == Nintendo3DSPrivate::ROM_TYPE_eMMC);

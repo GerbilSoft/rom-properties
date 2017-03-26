@@ -282,15 +282,15 @@ ASSERT_STRUCT(N3DS_TitleID_BE_t, 8);
 
 /**
  * Nintendo 3DS cartridge and eMMC header. (NCSD)
+ * This version does not have the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
  *
  * All fields are little-endian.
  */
 #define N3DS_NCSD_HEADER_MAGIC "NCSD"
+#define N3DS_NCSD_NOSIG_HEADER_ADDRESS 0x100
 #pragma pack(1)
-typedef struct PACKED _N3DS_NCSD_Header_t {
-	uint8_t signature[0x100];	// RSA-2048 SHA-256 signature
-
+typedef struct PACKED _N3DS_NCSD_Header_NoSig_t {
 	// [0x100]
 	char magic[4];			// [0x100] "NCSD"
 	uint32_t image_size;		// [0x104] Image size, in media units. (1 media unit = 512 bytes)
@@ -325,9 +325,24 @@ typedef struct PACKED _N3DS_NCSD_Header_t {
 			uint8_t mbr[0x42];		// [0x1BE] Encrypted MBR partition table for TWL partitions.
 		} emmc;
 	};
+} N3DS_NCSD_Header_NoSig_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCSD_Header_NoSig_t, 256);
+
+/**
+ * Nintendo 3DS cartridge and eMMC header. (NCSD)
+ * This version has the 256-byte RSA-2048 signature.
+ * Reference: https://3dbrew.org/wiki/NCSD
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCSD_Header_t {
+	uint8_t signature[0x100];		// [0x000] RSA-2048 SHA-256 signature
+	N3DS_NCSD_Header_NoSig_t hdr;		// [0x100] NCSD header
 } N3DS_NCSD_Header_t;
 #pragma pack()
-ASSERT_STRUCT(N3DS_NCSD_Header_t, 0x200);
+ASSERT_STRUCT(N3DS_NCSD_Header_t, 512);
 
 /**
  * NCSD partition index.
@@ -451,17 +466,18 @@ ASSERT_STRUCT(N3DS_NCCH_Header_NoSig_t, 256);
 
 /**
  * Nintendo 3DS NCCH header.
- * This version does not have the 256-byte RSA-2048 signature.
+ * This version has the 256-byte RSA-2048 signature.
  * Reference: https://3dbrew.org/wiki/NCSD
  *
  * All fields are little-endian.
  */
 #pragma pack(1)
 typedef struct PACKED _N3DS_NCCH_Header_t {
-	uint8_t signature[0x100];		// RSA-2048 SHA-256 signature
-	N3DS_NCCH_Header_NoSig_t hdr;		// NCCH header
+	uint8_t signature[0x100];		// [0x000] RSA-2048 SHA-256 signature
+	N3DS_NCCH_Header_NoSig_t hdr;		// [0x100] NCCH header
 } N3DS_NCCH_Header_t;
 #pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_Header_t, 512);
 
 /**
  * NCCH flags. (byte array indexes)
