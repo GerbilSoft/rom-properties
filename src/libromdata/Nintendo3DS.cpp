@@ -102,9 +102,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			HEADER_CIA	= (1 << 3),
 			HEADER_TMD	= (1 << 4),
 			HEADER_NCSD	= (1 << 5),	// ncsd_header, cinfo_header
-
-			// TEMPORARY: Replace with N3DSExeFS, subclass of IPartition
-			TEMP_EXEFS	= (1 << 6),
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -141,9 +138,11 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		unsigned int content_count;
 		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
 
-		// ExeFS.
-		// TODO: Replace with N3DSExeFS, subclass of IPartition
-		unique_ptr<uint8_t[]> exefs;
+		// TODO: Move the pointers to the union?
+		// That requires careful memory management...
+
+		// ExeFS reader.
+		N3DSExeFS *exefs_reader;
 
 		// File readers for DSiWare CIAs.
 		DiscReader *srlReader;	// uses this->file
@@ -195,8 +194,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		/**
 		 * Load the ExeFS from the primary content.
-		 * TEMPORARY DEBUG FUNCTION; replace with N3DSExeFS, subclass of IPartition
-		 * ExeFS is loaded into this->exefs.
+		 * ExeFS reader will be set up as this->exefs_reader.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadExeFS(void);
@@ -232,6 +230,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, ncch_offset(0)
 	, ncch_length(0)
 	, content_count(0)
+	, exefs_reader(nullptr)
 	, srlReader(nullptr)
 	, srlFile(nullptr)
 	, srlData(nullptr)
@@ -250,6 +249,9 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 {
 	delete img_icon[0];
 	delete img_icon[1];
+
+	// ExeFS reader.
+	delete exefs_reader;
 
 	// If this is a DSiWare SRL, these will be open.
 	if (srlData) {
@@ -365,18 +367,21 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// FIXME: Verify content length.
-			const N3DS_ExeFS_Header_t *const exefs_header =
-				reinterpret_cast<const N3DS_ExeFS_Header_t*>(exefs.get());
-			if (!exefs_header) {
-				// No ExeFS header.
+			// TODO: Add file open functions to N3DSExeFS.
+			N3DS_ExeFS_Header_t exefs_header;
+			exefs_reader->rewind();
+			size_t size = exefs_reader->read(&exefs_header, sizeof(exefs_header));
+			if (size != sizeof(exefs_header)) {
+				// Read error.
 				return -7;
 			}
+
 			// Find "icon".
 			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
-				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
+			for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
+				if (!strncmp(exefs_header.files[i].name, "icon", sizeof(exefs_header.files[i].name))) {
 					// Found "icon".
-					file_header = &exefs_header->files[i];
+					file_header = &exefs_header.files[i];
 					break;
 				}
 			}
@@ -389,8 +394,17 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Load the SMDH section.
-			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(*exefs_header);
-			memcpy(&smdh, exefs.get() + offset, sizeof(smdh));
+			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(exefs_header);
+			ret = exefs_reader->seek(offset);
+			if (ret != 0) {
+				// Seek error.
+				return -10;
+			}
+			size = exefs_reader->read(&smdh, sizeof(smdh));
+			if (size != sizeof(smdh)) {
+				// Read error.
+				return -11;
+			}
 			break;
 		}
 
@@ -681,9 +695,10 @@ int Nintendo3DSPrivate::loadTMD(void)
 	// Store the content start address.
 	mxh.content_start_addr = tmd_start + toNext64(tmd_size);
 
-	// If there's only one content, check if it's DSiWare.
-	// TODO: Can DSiWare have manuals?
-	if (content_count == 1 && !this->srlData) {
+	// Check if the CIA is DSiWare.
+	// NOTE: "WarioWare Touched!" has a manual, but no other
+	// DSiWare titles that I've seen do.
+	if (content_count <= 2 && !this->srlData) {
 		const int64_t offset = mxh.content_start_addr;
 		const uint32_t length = (uint32_t)be64_to_cpu(content_chunks[0].size);
 		if (length >= 0x8000) {
@@ -726,14 +741,13 @@ int Nintendo3DSPrivate::loadTMD(void)
 
 /**
  * Load the ExeFS from the primary content.
- * TEMPORARY DEBUG FUNCTION; replace with N3DSExeFS, subclass of IPartition.
- * ExeFS is loaded into this->exefs.
+ * ExeFS reader will be set up as this->exefs_reader.
  * @return 0 on success; non-zero on error.
  */
 int Nintendo3DSPrivate::loadExeFS(void)
 {
-	if (headers_loaded & TEMP_EXEFS) {
-		// ExeFS is already loaded.
+	if (this->exefs_reader) {
+		// ExeFS reader is already set up.
 		return 0;
 	}
 
@@ -795,22 +809,15 @@ int Nintendo3DSPrivate::loadExeFS(void)
 	const int64_t exefs_offset = ncch_offset +
 		(le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
 	const uint32_t exefs_length = (le32_to_cpu(ncch_header.exefs_size) << media_unit_shift);
-	exefs.reset(new uint8_t[ncch_length]);
-	unique_ptr<N3DSExeFS> exefs_reader(new N3DSExeFS(file, &ncch_header, exefs_offset, exefs_length));
+	N3DSExeFS *exefs_reader = new N3DSExeFS(file, &ncch_header, exefs_offset, exefs_length);
 	if (!exefs_reader->isOpen()) {
 		// Unable to open the ExeFS.
+		delete exefs_reader;
 		return -97;
 	}
 
-	// Read the entire ExeFS.
-	size_t size = exefs_reader->read(exefs.get(), ncch_length);
-	if (size != exefs_length) {
-		// Read error.
-		return -98;
-	}
-
-	// ExeFS has been loaded.
-	headers_loaded |= TEMP_EXEFS;
+	// ExeFS opened.
+	this->exefs_reader = exefs_reader;
 	return 0;
 }
 
