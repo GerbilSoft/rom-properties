@@ -212,6 +212,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		const rp_image *loadIcon(int idx = 1);
 
 		/**
+		 * Get the NCCH crypto type.
+		 * @param pNcchHeader NCCH header.
+		 * @return NCCH crypto type, or nullptr if unknown.
+		 */
+		const rp_char *getNCCHCryptoType(const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+
+		/**
 		 * Convert a Nintendo 3DS region value to a GameTDB region code.
 		 * @param smdhRegion Nintendo 3DS region. (from SMDH)
 		 * @param idRegion Game ID region.
@@ -871,6 +878,39 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 	}
 
 	return img_icon[idx];
+}
+
+/**
+ * Get the NCCH crypto type.
+ * @param pNcchHeader NCCH header.
+ * @return NCCH crypto type, or nullptr if unknown.
+ */
+const rp_char *Nintendo3DSPrivate::getNCCHCryptoType(const N3DS_NCCH_Header_NoSig_t *pNcchHeader)
+{
+	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption.
+		return _RP("NoCrypto");
+	} else if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key encryption.
+		// TODO: Determine which keyset is in use.
+		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
+		return _RP("Fixed (?)");
+	} else {
+		// Check ncchflag[3].
+		switch (pNcchHeader->flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
+			case 0x01:
+				return _RP("Slot0x25");
+			case 0x0A:
+				return _RP("Slot0x18");
+			case 0x0B:
+				return _RP("Slot0x1B");
+			default:
+				break;
+		}
+	}
+
+	// Unknown encryption method...
+	return nullptr;
 }
 
 /**
@@ -1762,31 +1802,7 @@ int Nintendo3DS::loadFieldData(void)
 				int ret = d->loadNCCH(i, &part_ncch_header);
 				if (ret == 0) {
 					// Encryption.
-					const rp_char *crypto = nullptr;
-					if (part_ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-						// No encryption.
-						crypto = _RP("NoCrypto");
-					} else if (part_ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-						// Fixed key encryption.
-						// TODO: Determine which keyset is in use.
-						// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-						crypto = _RP("Fixed (?)");
-					} else {
-						// Check ncchflag[3].
-						switch (part_ncch_header.flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
-							case 0x01:
-								crypto = _RP("Slot0x25");
-								break;
-							case 0x0A:
-								crypto = _RP("Slot0x18");
-								break;
-							case 0x0B:
-								crypto = _RP("Slot0x1B");
-								break;
-							default:
-								break;
-						}
-					}	
+					const rp_char *crypto = d->getNCCHCryptoType(&part_ncch_header);
 					data_row.push_back(crypto ? crypto : _RP("Unknown"));
 
 					// Version.
@@ -1891,7 +1907,8 @@ int Nintendo3DS::loadFieldData(void)
 		// Process the contents.
 		// TODO: Content types?
 		N3DS_NCCH_Header_NoSig_t content_ncch_header;
-		for (unsigned int i = 0; i < d->content_count; i++) {
+		const N3DS_Content_Chunk_Record_t *content_chunk = &d->content_chunks[0];
+		for (unsigned int i = 0; i < d->content_count; i++, content_chunk++) {
 			const int vidx = (int)contents->size();
 			contents->resize(vidx+1);
 			auto &data_row = contents->at(vidx);
@@ -1901,6 +1918,14 @@ int Nintendo3DS::loadFieldData(void)
 			if (len > (int)sizeof(buf))
 				len = sizeof(buf);
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+
+			// TODO: Support for CIA+NCCH encryption.
+			// For now, if CIA encryption is in use, that will be
+			// the only thing listed. (Also, debug vs. retail?)
+			const rp_char *crypto = nullptr;
+			if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+				crypto = _RP("CIA");
+			}
 
 			uint32_t length;
 			int ret = d->loadNCCH(i, &content_ncch_header, nullptr, &length);
@@ -1912,18 +1937,22 @@ int Nintendo3DS::loadFieldData(void)
 				if (i == 0 && d->srlData) {
 					// This is an SRL.
 					cnt_type = _RP("SRL");
+					// TODO: Do SRLs have encryption besides CIA encryption?
+					if (!crypto) {
+						crypto = _RP("NoCrypto");
+					}
 				} else {
 					// Something else...
 					cnt_type = _RP("Unknown");
 				}
 				data_row.push_back(cnt_type);
 
-				// TODO: Show the ROM revision for SRLs?
-				data_row.push_back(_RP(""));
+				data_row.push_back(crypto ? crypto : _RP("Unknown"));	// Encryption
+				data_row.push_back(_RP(""));	// Version
 
 				// Content size.
 				if (i < d->content_count) {
-					data_row.push_back(d->formatFileSize(be64_to_cpu(d->content_chunks[i].size)));
+					data_row.push_back(d->formatFileSize(be64_to_cpu(content_chunk->size)));
 				} else {
 					data_row.push_back(_RP(""));
 				}
@@ -1957,6 +1986,12 @@ int Nintendo3DS::loadFieldData(void)
 			}
 			data_row.push_back(content_type);
 
+			// Encryption.
+			if (!crypto) {
+				crypto = d->getNCCHCryptoType(&content_ncch_header);
+			}
+			data_row.push_back(crypto ? crypto : _RP("Unknown"));
+
 			// Version. [FIXME: Might not be right...]
 			// Reference: https://3dbrew.org/wiki/Titles
 			// Format the NCCH version.
@@ -1974,7 +2009,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		static const rp_char *const contents_names[] = {
-			_RP("#"), _RP("Type"), _RP("Version"), _RP("Size")
+			_RP("#"), _RP("Type"), _RP("Encryption"), _RP("Version"), _RP("Size")
 		};
 		vector<rp_string> *v_contents_names = RomFields::strArrayToVector(
 			contents_names, ARRAY_SIZE(contents_names));
