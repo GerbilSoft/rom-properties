@@ -219,6 +219,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		const rp_char *getNCCHCryptoType(const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
 
 		/**
+		 * Add the title ID and product code fields.
+		 * Called by loadFieldData().
+		 */
+		void addTitleIdAndProductCodeFields(void);
+
+		/**
 		 * Convert a Nintendo 3DS region value to a GameTDB region code.
 		 * @param smdhRegion Nintendo 3DS region. (from SMDH)
 		 * @param idRegion Game ID region.
@@ -914,6 +920,50 @@ const rp_char *Nintendo3DSPrivate::getNCCHCryptoType(const N3DS_NCCH_Header_NoSi
 }
 
 /**
+ * Add the title ID and product code fields.
+ * Called by loadFieldData().
+ */
+void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
+{
+	// Title ID.
+	// If using NCSD, use the Media ID.
+	// If using CIA/TMD, use the TMD Title ID.
+	// Otherwise, use the primary NCCH Title ID.
+	const rp_char *tid_desc = nullptr;
+	uint32_t tid_hi, tid_lo;
+	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
+	    headers_loaded & Nintendo3DSPrivate::HEADER_NCSD)
+	{
+		tid_desc = _RP("Media ID");
+		tid_lo = le32_to_cpu(mxh.ncsd_header.media_id.lo);
+		tid_hi = le32_to_cpu(mxh.ncsd_header.media_id.hi);
+	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTMD() == 0) {
+		tid_desc = _RP("Title ID");
+		tid_hi = be32_to_cpu(mxh.tmd_header.title_id.hi);
+		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
+	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_NCCH) || loadNCCH() == 0) {
+		tid_desc = _RP("Title ID");
+		tid_lo = le32_to_cpu(ncch_header.program_id.lo);
+		tid_hi = le32_to_cpu(ncch_header.program_id.hi);
+	}
+
+	if (tid_desc) {
+		char buf[32];
+		int len = snprintf(buf, sizeof(buf), "%08X-%08X", tid_hi, tid_lo);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		fields->addField_string(tid_desc,
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	}
+
+	// Product code.
+	if ((headers_loaded & Nintendo3DSPrivate::HEADER_NCCH) || loadNCCH() == 0) {
+		fields->addField_string(_RP("Product Code"),
+			latin1_to_rp_string(ncch_header.product_code, sizeof(ncch_header.product_code)));
+	}
+}
+
+/**
  * Convert a Nintendo 3DS region value to a GameTDB region code.
  * @param smdhRegion Nintendo 3DS region. (from SMDH)
  * @param idRegion Game ID region.
@@ -1518,56 +1568,27 @@ int Nintendo3DS::loadFieldData(void)
 	char buf[64];
 	int len;
 
-	// Title ID and product code always go on the first tab,
-	// which is SMDH or DSiWare (if these can be loaded).
-	// Otherwise, it's CIA or NCSD.
-
-	// Title ID.
-	// If using NCSD, use the Media ID.
-	// If using CIA/TMD, use the TMD Title ID.
-	// Otherwise, use the primary NCCH Title ID.
-	const rp_char *tid_desc = nullptr;
-	uint32_t tid_hi, tid_lo;
-	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
-	    d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
-		tid_desc = _RP("Media ID");
-		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
-		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
-	} else if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
-		tid_desc = _RP("Title ID");
-		tid_hi = be32_to_cpu(d->mxh.tmd_header.title_id.hi);
-		tid_lo = be32_to_cpu(d->mxh.tmd_header.title_id.lo);
-	} else {
-		// Get the title ID from the NCCH header.
-		if (d->loadNCCH() == 0) {
-			tid_desc = _RP("Title ID");
-			tid_lo = le32_to_cpu(d->ncch_header.program_id.lo);
-			tid_hi = le32_to_cpu(d->ncch_header.program_id.hi);
-		}
+	// Load headers if we don't already have them.
+	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH)) {
+		d->loadSMDH();
 	}
-
-	if (tid_desc) {
-		len = snprintf(buf, sizeof(buf), "%08X-%08X", tid_hi, tid_lo);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		d->fields->addField_string(tid_desc,
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	if ((d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) &&
+	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
+	{
+		d->loadTMD();
 	}
-
-	// Product code.
-	if (d->loadNCCH() == 0) {
-		d->fields->addField_string(_RP("Product Code"),
-			latin1_to_rp_string(d->ncch_header.product_code, sizeof(d->ncch_header.product_code)));
-	}
-
-	// Do we have a separate SMDH/SRL tab?
-	bool haveSMDHtab = false;
 
 	// Load and parse the SMDH header.
-	if (d->loadSMDH() == 0) {
-		// SMDH header.
+	bool haveSeparateSMDHTab = true;
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
 		d->fields->setTabName(0, _RP("SMDH"));
-		haveSMDHtab = true;
+		// Will we end up having a separate SMDH tab?
+		if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
+			// There will only be a single tab.
+			// Add the title ID and product code fields here.
+			haveSeparateSMDHTab = false;
+			d->addTitleIdAndProductCodeFields();
+		}
 
 		// TODO: Get the system language.
 		d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
@@ -1630,22 +1651,36 @@ int Nintendo3DS::loadFieldData(void)
 		const RomFields *srl_fields = d->srlData->fields();
 		if (srl_fields) {
 			d->fields->setTabName(0, _RP("DSiWare"));
-			haveSMDHtab = true;
+
+			// Will we end up having a separate DSiWare tab?
+			if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
+				// There will only be a single tab.
+				// Add the title ID and product code fields here.
+				haveSeparateSMDHTab = false;
+				d->addTitleIdAndProductCodeFields();
+			}
+
 			// Add the DSiWare fields.
 			d->fields->addFields_romFields(srl_fields, 0);
 		}
+	} else {
+		// Single tab.
+		// Add the title ID and product code fields here.
+		haveSeparateSMDHTab = false;
+		d->addTitleIdAndProductCodeFields();
 	}
 
 	// Is the NCSD header loaded?
 	// TODO: Show before SMDH, and/or on a different subtab?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
-		if (haveSMDHtab) {
+		if (haveSeparateSMDHTab) {
 			d->fields->addTab(_RP("NCSD"));
+			// Add the title ID and product code fields here.
+			d->addTitleIdAndProductCodeFields();
 		} else {
 			d->fields->setTabName(0, _RP("NCSD"));
 		}
-		haveSMDHtab = true;
 
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_NoSig_t *const ncsd_header = &d->mxh.ncsd_header;
@@ -1887,23 +1922,17 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_listData(_RP("Partitions"), v_partitions_names, partitions);
 	}
 
-	// If this is a CIA, load the TMD header if it hasn't been loaded already.
-	if ((d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) &&
-	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
-	{
-		d->loadTMD();
-	}
-
 	// Is the TMD header loaded?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
 		// Display the TMD header.
 		// NOTE: This is usually for CIAs only.
-		if (haveSMDHtab) {
+		if (haveSeparateSMDHTab) {
 			d->fields->addTab(_RP("CIA"));
+			// Add the title ID and product code fields here.
+			d->addTitleIdAndProductCodeFields();
 		} else {
 			d->fields->setTabName(0, _RP("CIA"));
 		}
-		haveSMDHtab = true;
 
 		// TODO: Add more fields?
 		const N3DS_TMD_Header_t *const tmd_header = &d->mxh.tmd_header;
