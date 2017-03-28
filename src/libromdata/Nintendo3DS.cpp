@@ -112,6 +112,11 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			N3DS_SMDH_Icon_t icon;
 		} smdh;
 
+		// Media unit shift.
+		// This is usually 9 (512 bytes), though NCSD images
+		// can have larger shifts.
+		uint8_t media_unit_shift;
+
 		// Primary NCCH, i.e. for the game.
 		int64_t ncch_offset;
 		uint32_t ncch_length;
@@ -227,6 +232,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	: super(q, file)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
+	, media_unit_shift(9)	// default is 9 (512 bytes)
 	, ncch_offset(0)
 	, ncch_length(0)
 	, content_count(0)
@@ -520,9 +526,6 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -2;
 			}
 
-			// Get the CCI media unit shift.
-			const uint8_t media_unit_shift = 9 + mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
-
 			// Get the partition offset and length.
 			offset = (int64_t)(le32_to_cpu(mxh.ncsd_header.partitions[idx].offset)) << media_unit_shift;
 			length = le32_to_cpu(mxh.ncsd_header.partitions[idx].length) << media_unit_shift;
@@ -792,16 +795,6 @@ int Nintendo3DSPrivate::loadExeFS(void)
 	} else {
 		// TODO: Other encryption methods.
 		return -96;
-	}
-
-	// Media unit shift.
-	// Default is 9, but may be increased by
-	// ncsd_header->cci.partition_flags[8].
-	// FIXME: Handle invalid shift values?
-	uint8_t media_unit_shift = 9;
-	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
-		// Add the CCI media unit shift, if specified.
-		media_unit_shift += mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
 	}
 
 	// Load the ExeFS region.
@@ -1103,6 +1096,11 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			// Save the NCSD and Card Info headers for later.
 			memcpy(&d->mxh.ncsd_header, &header[N3DS_NCSD_NOSIG_HEADER_ADDRESS], sizeof(d->mxh.ncsd_header));
 			memcpy(&d->mxh.cinfo_header, &header[N3DS_NCSD_CARD_INFO_HEADER_ADDRESS], sizeof(d->mxh.cinfo_header));
+
+			// NCSD may have a larger media unit shift.
+			// FIXME: Handle invalid shift values?
+			d->media_unit_shift = 9 + d->mxh.ncsd_header.cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
+
 			d->headers_loaded |= Nintendo3DSPrivate::HEADER_NCSD;
 			d->fileType = FTYPE_ROM_IMAGE;
 			break;
@@ -1738,16 +1736,6 @@ int Nintendo3DS::loadFieldData(void)
 		auto partitions = new std::vector<std::vector<rp_string> >();
 		partitions->reserve(8);
 
-		// Media unit shift.
-		// Default is 9, but may be increased by
-		// ncsd_header->cci.partition_flags[8].
-		// FIXME: Handle invalid shift values?
-		uint8_t media_unit_shift = 9;
-		if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI) {
-			// Add the CCI media unit shift, if specified.
-			media_unit_shift += ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_UNIT_SIZE];
-		}
-
 		// Process the partition table.
 		N3DS_NCCH_Header_NoSig_t part_ncch_header;
 		for (unsigned int i = 0; i < 8; i++) {
@@ -1846,7 +1834,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Partition size.
-			const int64_t length_bytes = (int64_t)length << media_unit_shift;
+			const int64_t length_bytes = (int64_t)length << d->media_unit_shift;
 			data_row.push_back(d->formatFileSize(length_bytes));
 		}
 
