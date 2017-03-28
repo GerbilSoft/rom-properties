@@ -767,47 +767,12 @@ int Nintendo3DSPrivate::loadExeFS(void)
 		return 0;
 	}
 
-	// Check if the ROM type is supported.
-	switch (romType) {
-		case ROM_TYPE_CCI:
-			// Decrypted and zero-key CCIs are supported.
-			break;
-		case ROM_TYPE_CIA:
-			// Decrypted and NCCH zero-key CIAs are supported.
-			// TODO: Outer CIA encryption.
-			break;
-		default:
-			// Not supported.
-			return -1;
-	}
-
-	// TODO:
-	// - Verify values other than NoCrypto|FixedCryptoKey.
-	// - N3DSExeFS subclass of IPartition to decrypt individual files.
-
 	// Load the NCCH header if it isn't already loaded.
 	if (!(headers_loaded & HEADER_NCCH)) {
 		int ret = loadNCCH();
 		if (ret != 0) {
 			return -2;
 		}
-	}
-
-	// Crypto settings, in priority order:
-	// 1. NoCrypto: AES key is all 0s. (FixedCryptoKey should also be set.)
-	// 2. FixedCryptoKey: Fixed key is used.
-	// 3. Neither: Standard key is used.
-	uint8_t key[16];
-	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption. Don't do anything.
-	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-		// Fixed key encryption.
-		// TODO: Determine which keyset is in use.
-		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-		memset(key, 0, sizeof(key));
-	} else {
-		// TODO: Other encryption methods.
-		return -96;
 	}
 
 	// Load the ExeFS region.
