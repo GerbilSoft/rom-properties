@@ -442,6 +442,13 @@ class RomFields
 		void setTabName(int tabIdx, const rp_char *name);
 
 		/**
+		 * Add a tab to the end and select it.
+		 * @param name Tab name.
+		 * @return Tab index.
+		 */
+		int addTab(const rp_char *name);
+
+		/**
 		 * Get the tab count.
 		 * @return Tab count. (highest tab index, plus 1)
 		 */

@@ -896,6 +896,19 @@ void RomFields::setTabName(int tabIdx, const rp_char *name)
 }
 
 /**
+ * Add a tab to the end and select it.
+ * @param name Tab name.
+ * @return Tab index.
+ */
+int RomFields::addTab(const rp_char *name)
+{
+	RP_D(RomFields);
+	d->tabNames.push_back(name);
+	d->tabIdx = (int)d->tabNames.size() - 1;
+	return d->tabIdx;
+}
+
+/**
  * Get the tab count.
  * @return Tab count. (highest tab index, plus 1)
  */

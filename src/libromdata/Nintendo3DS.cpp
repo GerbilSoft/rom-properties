@@ -1511,9 +1511,16 @@ int Nintendo3DS::loadFieldData(void)
 	// TODO: May be less than 16 fields, but we'll use 16 for now.
 	d->fields->reserve(16); // Maximum of 16 fields.
 
+	// Reserve at least 2 tabs.
+	d->fields->reserveTabs(2);
+
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
+
+	// Title ID and product code always go on the first tab,
+	// which is SMDH or DSiWare (if these can be loaded).
+	// Otherwise, it's CIA or NCSD.
 
 	// Title ID.
 	// If using NCSD, use the Media ID.
@@ -1553,9 +1560,15 @@ int Nintendo3DS::loadFieldData(void)
 			latin1_to_rp_string(d->ncch_header.product_code, sizeof(d->ncch_header.product_code)));
 	}
 
+	// Do we have a separate SMDH/SRL tab?
+	bool haveSMDHtab = false;
+
 	// Load and parse the SMDH header.
 	if (d->loadSMDH() == 0) {
 		// SMDH header.
+		d->fields->setTabName(0, _RP("SMDH"));
+		haveSMDHtab = true;
+
 		// TODO: Get the system language.
 		d->fields->addField_string(_RP("Title"), utf16le_to_rp_string(
 			d->smdh.header.titles[1].desc_short, ARRAY_SIZE(d->smdh.header.titles[1].desc_short)));
@@ -1612,12 +1625,28 @@ int Nintendo3DS::loadFieldData(void)
 			}
 		}
 		d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
+	} else if (d->srlData) {
+		// DSiWare SRL.
+		const RomFields *srl_fields = d->srlData->fields();
+		if (srl_fields) {
+			d->fields->setTabName(0, _RP("DSiWare"));
+			haveSMDHtab = true;
+			// Add the DSiWare fields.
+			d->fields->addFields_romFields(srl_fields, 0);
+		}
 	}
 
 	// Is the NCSD header loaded?
 	// TODO: Show before SMDH, and/or on a different subtab?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
+		if (haveSMDHtab) {
+			d->fields->addTab(_RP("NCSD"));
+		} else {
+			d->fields->setTabName(0, _RP("NCSD"));
+		}
+		haveSMDHtab = true;
+
 		// TODO: Add more fields?
 		const N3DS_NCSD_Header_NoSig_t *const ncsd_header = &d->mxh.ncsd_header;
 
@@ -1868,6 +1897,14 @@ int Nintendo3DS::loadFieldData(void)
 	// Is the TMD header loaded?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD) {
 		// Display the TMD header.
+		// NOTE: This is usually for CIAs only.
+		if (haveSMDHtab) {
+			d->fields->addTab(_RP("CIA"));
+		} else {
+			d->fields->setTabName(0, _RP("CIA"));
+		}
+		haveSMDHtab = true;
+
 		// TODO: Add more fields?
 		const N3DS_TMD_Header_t *const tmd_header = &d->mxh.tmd_header;
 
@@ -1885,19 +1922,6 @@ int Nintendo3DS::loadFieldData(void)
 			len = sizeof(buf);
 		d->fields->addField_string(_RP("Version"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
-
-		// Is this a DSiWare SRL?
-		if (d->srlData) {
-			const RomFields *srl_fields = d->srlData->fields();
-			if (srl_fields) {
-				// Set up tabs.
-				d->fields->reserveTabs(2);
-				d->fields->setTabName(0, _RP("CIA"));
-				d->fields->setTabName(1, _RP("DSiWare"));
-				// Add the DSiWare fields to tab 1.
-				d->fields->addFields_romFields(srl_fields, 1);
-			}
-		}
 
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
