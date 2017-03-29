@@ -1654,8 +1654,8 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: May be less than 20 fields, but we'll use 20 for now.
-	d->fields->reserve(20); // Maximum of 20 fields.
+	// TODO: May be less than 21 fields, but we'll use 21 for now.
+	d->fields->reserve(21); // Maximum of 21 fields.
 
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
@@ -2182,6 +2182,25 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_string(_RP("Process Name"),
 			latin1_to_rp_string(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
+		// Application type. (resource limit category)
+		static const rp_char *const application_type_tbl[4] = {
+			_RP("Application"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
+			_RP("System Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
+			_RP("Library Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
+			_RP("SysModule"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
+		};
+		const uint8_t application_type = ncch_exheader->aci.arm11_local.res_limit_category;
+		if (application_type < ARRAY_SIZE(application_type_tbl)) {
+			d->fields->addField_string(_RP("Type"),
+				application_type_tbl[application_type]);
+		} else {
+			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", application_type);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			d->fields->addField_string(_RP("Type"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		}
+
 		// Flags.
 		static const rp_char *const exheader_flags_names[] = {
 			_RP("CompressExefsCode"), _RP("SDApplication")
@@ -2204,7 +2223,8 @@ int Nintendo3DS::loadFieldData(void)
 		};
 		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] & N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl)) {
-			d->fields->addField_string(_RP("Old3DS Sys Mode"), old3ds_sys_mode_tbl[old3ds_sys_mode]);
+			d->fields->addField_string(_RP("Old3DS Sys Mode"),
+				old3ds_sys_mode_tbl[old3ds_sys_mode]);
 		} else {
 			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", old3ds_sys_mode);
 			if (len > (int)sizeof(buf))
@@ -2222,7 +2242,8 @@ int Nintendo3DS::loadFieldData(void)
 		};
 		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] & N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
-			d->fields->addField_string(_RP("New3DS Sys Mode"), new3ds_sys_mode_tbl[new3ds_sys_mode]);
+			d->fields->addField_string(_RP("New3DS Sys Mode"),
+				new3ds_sys_mode_tbl[new3ds_sys_mode]);
 		} else {
 			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", new3ds_sys_mode);
 			if (len > (int)sizeof(buf))
