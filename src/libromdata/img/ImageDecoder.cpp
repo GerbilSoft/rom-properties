@@ -754,10 +754,10 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 
-	// N3DS tiling order.
-	// N3DS tiled images use an unusual tiling order.
-	// We have to untile it here instead of using BlitTile.
-	// Reference: https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
+	// N3DS uses 3-level Z-ordered tiling.
+	// References:
+	// - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
+	// - https://en.wikipedia.org/wiki/Z-order_curve
 	static const uint8_t tile_order[] = {
 		 0,  1,  8,  9,  2,  3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27,
 		 4,  5, 12, 13,  6,  7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31,
