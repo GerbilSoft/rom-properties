@@ -105,10 +105,10 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			HEADER_EXHEADER	= (1 << 2),	// From the primary NCCH.
 
 			// The following headers are mutually exclusive.
-			HEADER_3DSX	= (1 << 2),
-			HEADER_CIA	= (1 << 3),
-			HEADER_TMD	= (1 << 4),
-			HEADER_NCSD	= (1 << 5),	// ncsd_header, cinfo_header
+			HEADER_3DSX	= (1 << 3),
+			HEADER_CIA	= (1 << 4),
+			HEADER_TMD	= (1 << 5),
+			HEADER_NCSD	= (1 << 6),	// ncsd_header, cinfo_header
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
