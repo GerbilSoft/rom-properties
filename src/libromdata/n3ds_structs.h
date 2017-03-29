@@ -684,6 +684,241 @@ typedef struct PACKED _N3DS_TMD_t {
 #pragma pack()
 ASSERT_STRUCT(N3DS_TMD_t, 0xC4+(0x24*64));
 
+/**
+ * Nintendo 3DS: NCCH Extended Header: Code Set Info.
+ * Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#Code_Set_Info
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_ExHeader_CodeSet_t {
+	uint32_t address;
+	uint32_t physical_region_size;	// in page multiples
+	uint32_t size;			// in bytes
+} N3DS_NCCH_ExHeader_CodeSet_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_ExHeader_CodeSet_t, 12);
+
+/**
+ * Nintendo 3DS: NCCH Extended Header: System Control Info.
+ * Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#System_Control_Info
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_ExHeader_SCI_t {
+	char title[8];		// Application title. (default is "CtrApp")
+	uint8_t reserved1[5];
+	uint8_t flags;		// See N3DS_NCCH_ExHeader_SCI_Flags.
+	uint16_t remaster_version;
+	N3DS_NCCH_ExHeader_CodeSet_t text_code_set_info;
+	uint32_t stack_size;
+	N3DS_NCCH_ExHeader_CodeSet_t ro_code_set_info;
+	uint8_t reserved2[4];
+	N3DS_NCCH_ExHeader_CodeSet_t data_code_set_info;
+	uint32_t bss_size;
+	char dep_list[48][8];	// Dependency module list.
+
+	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#System_Info
+	struct {
+		uint64_t savedata_size;
+		uint64_t jump_id;
+		uint8_t reserved[0x30];
+	} system_info;
+} N3DS_NCCH_ExHeader_SCI_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_ExHeader_SCI_t, 0x200);
+
+/**
+ * NCCH Extended Header: SCI flags.
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_SCI_CompressExefsCode	= (1 << 0),
+	N3DS_NCCH_EXHEADER_SCI_SDApplication		= (1 << 1),
+} N3DS_NCCH_ExHeader_SCI_Flags;
+
+/**
+ * Nintendo 3DS: NCCH Extended Header: Access Control Info.
+ * Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#Access_Control_Info
+ *
+ * All fields are little-endian.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
+	// [0x000]
+	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Local_System_Capabilities
+	struct {
+		N3DS_TitleID_LE_t program_id;
+		uint32_t core_version;		// Title ID low of required FIRM.
+
+		// Flags:
+		// - [0] == New3DS CPU speed and L2 cache. (See N3DS_NCCH_ExHeader_ACI_Flag_New3DS_CPUMode)
+		// - [1] == New3DS system mode. (See N3DS_NCCH_ExHeader_ACI_Flag_New3DS_SysMode)
+		// - [2] == System mode. (See N3DS_NCCH_ExHeader_ACI_Flag_SysMode)
+		uint8_t flags[3];
+
+		uint8_t priority;
+		uint16_t res_limit_descriptors[16];
+
+		// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#Storage_Info
+		struct {
+			uint64_t extdata_id;
+			uint8_t sys_savedata_ids[8];
+			uint8_t storage_accessible_unique_ids[8];
+			// NOTE: The high byte here is technically separate,
+			// but I'm using a single uint64_t for convenience.
+			union {
+				uint64_t fs_access;	// See N3DS_NCCH_ExHeader_ACI_FsAccess.
+				struct {
+					uint8_t reserved[7];
+					uint8_t other_attr;	// See N3DS_NCCH_ExHeader_ACI_OtherAttr.
+				};
+			};
+		} storage;
+
+		char services[32][8];		// [0x050] Services.
+		char ext_services[2][8];	// [0x150] Extended services.
+		uint8_t reserved[15];		// [0x160]
+		uint8_t res_limit_category;	// [0x16F] See N3DS_NCCH_ExHeader_ACI_ResLimit_Category.
+	} arm11_local;
+
+	// [0x170]
+	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM11_Kernel_Capabilities
+	struct {
+		uint32_t descriptors[28];
+		uint8_t reserved[16];
+	} arm11_kernel;
+
+	// [0x1F0]
+	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM9_Access_Control
+	struct {
+		// FIXME: Determine the format of the descriptors.
+		// See N3DS_NCCH_ExHeader_IoAccessControl.
+		uint8_t descriptors[15];
+		uint8_t descriptor_version;
+	} arm9;
+} N3DS_NCCH_ExHeader_ACI_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_ExHeader_ACI_t, 0x200);
+
+/**
+ * NCCH Extended Header: ACI New3DS CPU mode. (flags[0])
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_EnableL2Cache	= (1 << 0),	// Ignored.
+	N3DS_NCCH_EXHEADER_ACI_FLAG0_cpuspeed_804MHz	= (1 << 1),
+} N3DS_NCCH_ExHeader_ACI_Flag_New3DS_CPUMode;
+
+/**
+ * NCCH Extended Header: ACI New3DS System Mode. (flags[1])
+ */
+typedef enum {
+	// New3DS system modes.
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy	= (0 << 0),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod	= (1 << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1	= (2 << 0),	// 178 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2	= (3 << 0),	// 124 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask	= (15 << 0),
+} N3DS_NCCH_ExHeader_ACI_Flag_New3DS_SysMode;
+
+/**
+ * NCCH Extended Header: ACI System Mode. (flags[2])
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_IdealCPU_Mask		= (2 << 0),
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Affinity_Mask		= (2 << 2),
+
+	// Old3DS system modes.
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod	= (0 << 4),	// 64 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1	= (2 << 4),	// 96 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2	= (3 << 4),	// 80 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3	= (4 << 4),	// 72 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4	= (5 << 4),	// 32 MB
+	N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask	= (15 << 4),
+} N3DS_NCCH_ExHeader_ACI_Flag_SysMode;
+
+/**
+ * NCCH Extended Header: ACI resource limit category.
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION	= 0,
+	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET	= 1,
+	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET	= 2,
+	N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER		= 3,	// sysmodules running in BASE
+} N3DS_NCCH_ExHeader_ACI_ResLimit_Category;
+
+/**
+ * NCCH Extended Header: ACI filesystem access info.
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemApplication	= (1 <<  0),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHardwareCheck		= (1 <<  1),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryFilesystemTool		= (1 <<  2),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Debug				= (1 <<  3),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlCardBackup			= (1 <<  4),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_TwlNandData			= (1 <<  5),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Boss				= (1 <<  6),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmc			= (1 <<  7),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Core				= (1 <<  8),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRo			= (1 <<  9),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRw			= (1 << 10),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CtrNandRoWrite			= (1 << 11),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategorySystemSettings		= (1 << 12),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Cardboard			= (1 << 13),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_ExportImportIvs			= (1 << 14),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_DirectSdmcWrite			= (1 << 15),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SwitchCleanup			= (1 << 16),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SaveDataMove			= (1 << 17),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shop				= (1 << 18),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_Shell				= (1 << 19),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_CategoryHomeMenu		= (1 << 20),
+	N3DS_NCCH_EXHEADER_ACI_FsAccess_SeedDB				= (1 << 21),
+} N3DS_NCCH_ExHeader_ACI_FsAccess;
+
+/**
+ * NCCH Extended Header: ACI other attributes.
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_NoRomFS			= (1 << 0),
+	N3DS_NCCH_EXHEADER_ACI_OtherAttr_ExtendedSavedataAccess		= (1 << 1),
+} N3DS_NCCH_ExHeader_ACI_OtherAttr;
+
+/**
+ * NCCH Extended Header: I/O access control. (ARM9)
+ */
+typedef enum {
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNand		= (1 << 0),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountNandRoWrite	= (1 << 1),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountTwln		= (1 << 2),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountWnand		= (1 << 3),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountCardSpi		= (1 << 4),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseSdif3		= (1 << 5),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_CreateSeed		= (1 << 6),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_UseCardSpi		= (1 << 7),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_SDApplication		= (1 << 8),
+	N3DS_NCCH_EXHEADER_ACI_IoAccess_FsMountSdmcWrite	= (1 << 9),
+} N3DS_NCCH_ExHeader_IoAccessControl;
+
+/**
+ * Nintendo 3DS: NCCH Extended Header.
+ * Reference: https://3dbrew.org/wiki/NCCH/Extended_Header
+ *
+ * All fields are little-endian.
+ */
+// NOTE: FBI.3ds only has SCI and ACI.
+// It doesn't have any signatures or the second ACI.
+#define N3DS_NCCH_EXHEADER_MIN_SIZE (sizeof(N3DS_NCCH_ExHeader_SCI_t) + sizeof(N3DS_NCCH_ExHeader_ACI_t))
+#pragma pack(1)
+typedef struct PACKED _N3DS_NCCH_ExHeader_t {
+	N3DS_NCCH_ExHeader_SCI_t sci;
+	N3DS_NCCH_ExHeader_ACI_t aci;
+	uint8_t signature_accessdesc[0x100];	// RSA-2048 SHA256
+	uint8_t ncch_pubkey[0x100];		// RSA-2048
+	N3DS_NCCH_ExHeader_ACI_t aci2;		// TODO: How is this different from aci?
+} N3DS_NCCH_ExHeader_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_NCCH_ExHeader_t, 0x800);
+
 #ifdef __cplusplus
 }
 #endif

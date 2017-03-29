@@ -42,6 +42,12 @@
 #include "img/ImageDecoder.hpp"
 
 #include "disc/N3DSExeFS.hpp"
+// TODO: Separate class for ExHeader loading?
+// Alternatively, extend N3DSExeFS to handle the entire NCCH.
+#ifdef ENABLE_DECRYPTION
+#include "crypto/AesCipherFactory.hpp"
+#include "crypto/IAesCipher.hpp"
+#endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -95,7 +101,8 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are not exclusive,
 			// so one or more can be present.
 			HEADER_SMDH	= (1 << 0),	// Includes header and icon.
-			HEADER_NCCH	= (1 << 1),
+			HEADER_NCCH	= (1 << 1),	// Primary NCCH.
+			HEADER_EXHEADER	= (1 << 2),	// From the primary NCCH.
 
 			// The following headers are mutually exclusive.
 			HEADER_3DSX	= (1 << 2),
@@ -117,11 +124,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// can have larger shifts.
 		uint8_t media_unit_shift;
 
-		// Primary NCCH, i.e. for the game.
-		int64_t ncch_offset;
-		uint32_t ncch_length;
-		N3DS_NCCH_Header_NoSig_t ncch_header;
-
 		// Mutually-exclusive headers.
 		// NOTE: These must be byteswapped on access.
 		union {
@@ -142,6 +144,14 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// Loaded by loadTMD().
 		unsigned int content_count;
 		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
+
+		// Primary NCCH, i.e. for the game.
+		int64_t ncch_offset;
+		uint32_t ncch_length;
+		N3DS_NCCH_Header_NoSig_t ncch_header;
+
+		// ExHeader from the primary NCCH.
+		N3DS_NCCH_ExHeader_t ncch_exheader;
 
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
@@ -205,6 +215,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		int loadExeFS(void);
 
 		/**
+		 * Load the ExHeader from the primary content.
+		 * The ExHeader will be loaded into this->ncch_exhader.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadExHeader(void);
+
+		/**
 		 * Load the ROM image's icon.
 		 * @param idx Image index. (0 == 24x24; 1 == 48x48)
 		 * @return Icon, or nullptr on error.
@@ -246,9 +263,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, romType(ROM_TYPE_UNKNOWN)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
+	, content_count(0)
 	, ncch_offset(0)
 	, ncch_length(0)
-	, content_count(0)
 	, exefs_reader(nullptr)
 	, srlReader(nullptr)
 	, srlFile(nullptr)
@@ -260,8 +277,9 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 
 	// Clear the various headers.
 	memset(&smdh, 0, sizeof(smdh));
-	memset(&ncch_header, 0, sizeof(ncch_header));
 	memset(&mxh, 0, sizeof(mxh));
+	memset(&ncch_header, 0, sizeof(ncch_header));
+	memset(&ncch_exheader, 0, sizeof(ncch_exheader));
 }
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
@@ -789,6 +807,119 @@ int Nintendo3DSPrivate::loadExeFS(void)
 
 	// ExeFS opened.
 	this->exefs_reader = exefs_reader;
+	return 0;
+}
+
+/**
+ * Load the ExHeader from the primary content.
+ * The ExHeader will be loaded into this->ncch_exhader.
+ * @return 0 on success; non-zero on error.
+ */
+int Nintendo3DSPrivate::loadExHeader(void)
+{
+	if (headers_loaded & HEADER_EXHEADER) {
+		// ExHeader is already loaded.
+		return 0;
+	}
+	// TODO:
+	// - Verify values other than NoCrypto|FixedCryptoKey.
+	// - N3DSExHeader helper subclass?
+
+	// Load the NCCH header if it isn't already loaded.
+	if (!(headers_loaded & HEADER_NCCH)) {
+		int ret = loadNCCH();
+		if (ret != 0) {
+			return -2;
+		}
+	}
+
+	// Crypto settings, in priority order:
+	// 1. NoCrypto: AES key is all 0s. (FixedCryptoKey should also be set.)
+	// 2. FixedCryptoKey: Fixed key is used.
+	// 3. Neither: Standard key is used.
+#ifdef ENABLE_DECRYPTION
+	uint8_t key[16];
+	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption. Don't do anything.
+	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key encryption.
+		// TODO: Determine which keyset is in use.
+		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
+		memset(key, 0, sizeof(key));
+	} else {
+		// TODO: Other encryption methods.
+		return -95;
+	}
+#else /* !ENABLE_DECRYPTION */
+	// Decryption is not available, so only NoCrypto is allowed.
+	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+		// Unsupported.
+		return -95;
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// Load the ExHeader region.
+	// ExHeader is stored immediately after the main header.
+	// TODO: Verify sizes; other error checking.
+	const int64_t exheader_offset = ncch_offset + sizeof(N3DS_NCCH_Header_t);
+	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
+	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE) {
+		// ExHeader is too small.
+		return -96;
+	}
+
+	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
+	exheader_length = (exheader_length + 15) & ~15;
+
+	int ret = file->seek(exheader_offset);
+	if (ret != 0) {
+		// Seek error.
+		return -97;
+	}
+	size_t size = file->read(&ncch_exheader, exheader_length);
+	if (size != exheader_length) {
+		// Read error.
+		return -98;
+	}
+
+	// If the ExHeader size is smaller than the maximum size,
+	// clear the rest of the ExHeader.
+	// TODO: Possible strict aliasing violation...
+	if (exheader_length < sizeof(ncch_exheader)) {
+		uint8_t *exzero = reinterpret_cast<uint8_t*>(&ncch_exheader) + exheader_length;
+		memset(exzero, 0, sizeof(ncch_exheader) - exheader_length);
+	}
+
+#ifdef ENABLE_DECRYPTION
+	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+		// Initialize the counter.
+		// Counter is the big-endian title ID, section number, then all zeroes.
+		// NOTE: Title ID is stored in little-endian in the NCCH header,
+		// so it always needs to be byteswapped.
+		uint8_t counter[16];
+		uint64_t tid_be = __swab64(ncch_header.program_id.id);
+		memcpy(counter, &tid_be, sizeof(tid_be));
+		counter[8] = N3DS_NCCH_SECTION_EXHEADER;
+		memset(&counter[9], 0, 7);
+
+		// Initialize decryption.
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+		cipher->setKey(key, sizeof(key));
+		cipher->setChainingMode(IAesCipher::CM_CTR);
+
+		// Decrypt the ExHeader.
+		// TODO: Uses ncchKey0.
+		cipher->setIV(counter, sizeof(counter));
+		size = cipher->decrypt(reinterpret_cast<uint8_t*>(&ncch_exheader), exheader_length);
+		if (size != exheader_length) {
+			// Decryption error.
+			return -99;
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// ExHeader loaded.
+	headers_loaded |= HEADER_EXHEADER;
 	return 0;
 }
 
@@ -1523,8 +1654,8 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: May be less than 16 fields, but we'll use 16 for now.
-	d->fields->reserve(16); // Maximum of 16 fields.
+	// TODO: May be less than 20 fields, but we'll use 20 for now.
+	d->fields->reserve(20); // Maximum of 20 fields.
 
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
@@ -1541,6 +1672,9 @@ int Nintendo3DS::loadFieldData(void)
 	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
 	{
 		d->loadTMD();
+	}
+	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_EXHEADER)) {
+		d->loadExHeader();
 	}
 
 	// Load and parse the SMDH header.
@@ -2034,6 +2168,81 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Add the contents table.
 		d->fields->addField_listData(_RP("Contents"), v_contents_names, contents);
+	}
+
+	// Is the NCCH Extended Header loaded?
+	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_EXHEADER) {
+		// Display the NCCH Extended Header.
+		d->fields->addTab(_RP("ExHeader"));
+
+		// TODO: Add more fields?
+		const N3DS_NCCH_ExHeader_t *const ncch_exheader = &d->ncch_exheader;
+
+		// Process name.
+		d->fields->addField_string(_RP("Process Name"),
+			latin1_to_rp_string(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
+
+		// Flags.
+		static const rp_char *const exheader_flags_names[] = {
+			_RP("CompressExefsCode"), _RP("SDApplication")
+		};
+		vector<rp_string> *v_exheader_flags_names = RomFields::strArrayToVector(
+			exheader_flags_names, ARRAY_SIZE(exheader_flags_names));
+		d->fields->addField_bitfield(_RP("Flags"),
+			v_exheader_flags_names, 0, le32_to_cpu(ncch_exheader->sci.flags));
+
+		// TODO: Figure out what "Core Version" is.
+
+		// System Mode.
+		static const rp_char *const old3ds_sys_mode_tbl[6] = {
+			_RP("Prod (64 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
+			nullptr,
+			_RP("Dev1 (96 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
+			_RP("Dev2 (80 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2
+			_RP("Dev3 (72 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
+			_RP("Dev4 (32 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4
+		};
+		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] & N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
+		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl)) {
+			d->fields->addField_string(_RP("Old3DS Sys Mode"), old3ds_sys_mode_tbl[old3ds_sys_mode]);
+		} else {
+			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", old3ds_sys_mode);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			d->fields->addField_string(_RP("Old3DS Sys Mode"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		}
+
+		// New3DS System Mode.
+		static const rp_char *const new3ds_sys_mode_tbl[4] = {
+			_RP("Legacy (64 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
+			_RP("Prod (124 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
+			_RP("Dev1 (178 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
+			_RP("Dev2 (124 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
+		};
+		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] & N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
+		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
+			d->fields->addField_string(_RP("New3DS Sys Mode"), new3ds_sys_mode_tbl[new3ds_sys_mode]);
+		} else {
+			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", new3ds_sys_mode);
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			d->fields->addField_string(_RP("New3DS Sys Mode"),
+				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		}
+
+		// New3DS CPU Mode.
+		static const rp_char *const new3ds_cpu_mode_names[] = {
+			_RP("L2 Cache"), _RP("804 MHz")
+		};
+		vector<rp_string> *v_new3ds_cpu_mode_names = RomFields::strArrayToVector(
+			new3ds_cpu_mode_names, ARRAY_SIZE(new3ds_cpu_mode_names));
+		d->fields->addField_bitfield(_RP("New3DS CPU Mode"),
+			v_new3ds_cpu_mode_names, 0, ncch_exheader->aci.arm11_local.flags[0]);
+
+		// TODO: Ideal CPU and affinity mask.
+		// TODO: core_version is probably specified for e.g. AGB.
+		// Indicate that somehow.
 	}
 
 	// Finished reading the field data.
