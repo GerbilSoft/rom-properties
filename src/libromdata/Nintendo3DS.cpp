@@ -100,7 +100,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are mutually exclusive.
 			HEADER_3DSX	= (1 << 1),
 			HEADER_CIA	= (1 << 2),
-			HEADER_TMD	= (1 << 3),
+			HEADER_TMD	= (1 << 3),	// ticket, tmd_header
 			HEADER_NCSD	= (1 << 4),	// ncsd_header, cinfo_header
 		};
 		uint32_t headers_loaded;	// HeadersPresent
@@ -123,9 +123,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			N3DS_3DSX_Header_t hb3dsx_header;
 			struct {
 				N3DS_CIA_Header_t cia_header;
+				N3DS_Ticket_t ticket;
 				N3DS_TMD_Header_t tmd_header;
 				// Content start address.
 				uint32_t content_start_addr;
+				// Title key encryption key selection.
+				// See N3DS_Ticket_TitleKey_KeyY
+				uint8_t titleKeyEncIdx;
 			};
 			struct {
 				N3DS_NCSD_Header_NoSig_t ncsd_header;
@@ -134,7 +138,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		} mxh;
 
 		// Content chunk records. (CIA only)
-		// Loaded by loadTMD().
+		// Loaded by loadTicketAndTMD().
 		unsigned int content_count;
 		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
 
@@ -197,11 +201,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		const N3DS_NCCH_Header_NoSig_t *loadNCCHHeader(void);
 
 		/**
-		 * Load the TMD header. (CIA only)
+		 * Load the ticket and TMD header. (CIA only)
+		 * The ticket is loaded into mxh.ticket.
 		 * The TMD header is loaded into mxh.tmd_header.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int loadTMD(void);
+		int loadTicketAndTMD(void);
 
 		/**
 		 * Load the ROM image's icon.
@@ -433,9 +438,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 				return -1;
 			}
 
-			// Load the TMD header.
-			if (loadTMD() != 0) {
-				// Unable to load the TMD header.
+			// Load the ticket and TMD header.
+			if (loadTicketAndTMD() != 0) {
+				// Unable to load the ticket and TMD header.
 				return -2;
 			}
 
@@ -597,25 +602,27 @@ inline const N3DS_NCCH_Header_NoSig_t *Nintendo3DSPrivate::loadNCCHHeader(void)
 }
 
 /**
- * Load the TMD header. (CIA only)
+ * Load the ticket and TMD header. (CIA only)
+ * The ticket is loaded into mxh.ticket.
  * The TMD header is loaded into mxh.tmd_header.
  * @return 0 on success; non-zero on error.
  */
-int Nintendo3DSPrivate::loadTMD(void)
+int Nintendo3DSPrivate::loadTicketAndTMD(void)
 {
 	if (headers_loaded & HEADER_TMD) {
-		// TMD header is already loaded.
+		// Ticket and TMD header are already loaded.
 		return 0;
 	} else if (romType != ROM_TYPE_CIA) {
-		// TMD is only available in CIA files.
+		// Ticket and TMD are only available in CIA files.
 		return -1;
 	}
 
-	// Determine the TMD starting address.
-	const uint32_t tmd_start = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
-			toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
-			toNext64(le32_to_cpu(mxh.cia_header.ticket_size));
-	uint32_t addr = tmd_start;
+	/** Read the ticket. **/
+
+	// Determine the ticket starting address.
+	const uint32_t ticket_start = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+			toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size));
+	uint32_t addr = ticket_start;
 	int ret = file->seek(addr);
 	if (ret != 0) {
 		// Seek error.
@@ -638,51 +645,120 @@ int Nintendo3DSPrivate::loadTMD(void)
 	}
 
 	// Skip over the signature and padding.
-	uint32_t sig_len;
-	switch (signature_type & 0x07) {
-		case N3DS_TMD_RSA_4096_SHA1 & 0x07:
-		case N3DS_TMD_RSA_4096_SHA256 & 0x07:
-			sig_len = sizeof(signature_type) + 0x200 + 0x3C;
-			break;
-		case N3DS_TMD_RSA_2048_SHA1 & 0x07:
-		case N3DS_TMD_RSA_2048_SHA256 & 0x07:
-			sig_len = sizeof(signature_type) + 0x100 + 0x3C;
-			break;
-		case N3DS_TMD_EC_SHA1 & 0x07:
-		case N3DS_TMD_ECDSA_SHA256 & 0x07:
-			sig_len = sizeof(signature_type) + 0x3C + 0x40;
-			break;
-		default:
-			// Invalid signature type.
-			return -4;
+	static const unsigned int sig_len_tbl[8] = {
+		0x200 + 0x3C,	// N3DS_SIGTYPE_RSA_4096_SHA1
+		0x100 + 0x3C,	// N3DS_SIGTYPE_RSA_2048_SHA1,
+		0x3C  + 0x40,	// N3DS_SIGTYPE_EC_SHA1
+
+		0x200 + 0x3C,	// N3DS_SIGTYPE_RSA_4096_SHA256
+		0x100 + 0x3C,	// N3DS_SIGTYPE_RSA_2048_SHA256,
+		0x3C  + 0x40,	// N3DS_SIGTYPE_ECDSA_SHA256
+
+		0,		// invalid
+		0,		// invalid
+	};
+
+	uint32_t sig_len = sig_len_tbl[signature_type & 0x07];
+	if (sig_len == 0) {
+		// Invalid signature type.
+		return -4;
+	}
+
+	// Make sure the ticket is large enough.
+	const uint32_t ticket_size = le32_to_cpu(mxh.cia_header.ticket_size);
+	if (ticket_size < (sizeof(N3DS_Ticket_t) + sig_len)) {
+		// Ticket is too small.
+		return -5;
+	}
+
+	// Read the ticket.
+	addr += sizeof(signature_type) + sig_len;
+	ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		return -6;
+	}
+	size = file->read(&mxh.ticket, sizeof(mxh.ticket));
+	if (size != sizeof(mxh.ticket)) {
+		// Read error.
+		return -7;
+	}
+
+	/** Read the TMD. **/
+
+	// Determine the TMD starting address.
+	const uint32_t tmd_start = ticket_start +
+			toNext64(le32_to_cpu(mxh.cia_header.ticket_size));
+	addr = tmd_start;
+	ret = file->seek(addr);
+	if (ret != 0) {
+		// Seek error.
+		return -8;
+	}
+
+	// Read the signature type.
+	size = file->read(&signature_type, sizeof(signature_type));
+	if (size != sizeof(signature_type)) {
+		// Read error.
+		return -9;
+	}
+	signature_type = be32_to_cpu(signature_type);
+
+	// Verify the signature type.
+	if ((signature_type & 0xFFFFFFF8) != 0x00010000) {
+		// Invalid signature type.
+		return -10;
+	}
+
+	// Skip over the signature and padding.
+	sig_len = sig_len_tbl[signature_type & 0x07];
+	if (sig_len == 0) {
+		// Invalid signature type.
+		return -11;
 	}
 
 	// Make sure the TMD is large enough.
 	const uint32_t tmd_size = le32_to_cpu(mxh.cia_header.tmd_size);
 	if (tmd_size < (sizeof(N3DS_TMD_t) + sig_len)) {
 		// TMD is too small.
-		return -5;
+		return -12;
 	}
 
 	// Read the TMD.
-	addr += sig_len;
+	addr += sizeof(signature_type) + sig_len;
 	ret = file->seek(addr);
 	if (ret != 0) {
 		// Seek error.
-		return -6;
+		return -13;
 	}
 	size = file->read(&mxh.tmd_header, sizeof(mxh.tmd_header));
 	if (size != sizeof(mxh.tmd_header)) {
 		// Read error.
-		return -7;
+		return -14;
 	}
+
+	// Check the ticket issuer.
+	if (!strncmp(mxh.ticket.issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(mxh.ticket.issuer))) {
+		// Retail issuer..
+		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
+	} else if (!strncmp(mxh.ticket.issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(mxh.ticket.issuer))) {
+		// Debug issuer.
+		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
+	} else {
+		// Unknown issuer.
+		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN;
+	}
+
+	// Check the KeyY index.
+	// TODO: Handle invalid KeyY indexes?
+	mxh.titleKeyEncIdx |= (mxh.ticket.keyY_index << 2);
 
 	// Load the content chunk records.
 	addr += sizeof(N3DS_TMD_t);
 	ret = file->seek(addr);
 	if (ret != 0) {
 		// Seek error.
-		return -8;
+		return -15;
 	}
 	content_count = be16_to_cpu(mxh.tmd_header.content_count);
 	content_chunks.reset(new N3DS_Content_Chunk_Record_t[content_count]);
@@ -692,7 +768,7 @@ int Nintendo3DSPrivate::loadTMD(void)
 		// Read error.
 		content_count = 0;
 		content_chunks.reset(nullptr);
-		return -9;
+		return -16;
 	}
 
 	// Store the content start address.
@@ -823,7 +899,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 		tid_desc = _RP("Media ID");
 		tid_lo = le32_to_cpu(mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(mxh.ncsd_header.media_id.hi);
-	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTMD() == 0) {
+	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTicketAndTMD() == 0) {
 		tid_desc = _RP("Title ID");
 		tid_hi = be32_to_cpu(mxh.tmd_header.title_id.hi);
 		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
@@ -1293,7 +1369,7 @@ uint32_t Nintendo3DS::supportedImageTypes(void) const
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		if (d->srlData) {
 			// This is a DSiWare SRL.
@@ -1373,7 +1449,7 @@ std::vector<RomData::ImageSizeDef> Nintendo3DS::supportedImageSizes(ImageType im
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		if (d->srlData) {
 			// This is a DSiWare SRL.
@@ -1406,7 +1482,7 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		if (d->srlData) {
 			// This is a DSiWare SRL.
@@ -1444,8 +1520,8 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: May be less than 21 fields, but we'll use 21 for now.
-	d->fields->reserve(21); // Maximum of 21 fields.
+	// TODO: May be less than 22 fields, but we'll use 22 for now.
+	d->fields->reserve(22); // Maximum of 22 fields.
 
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
@@ -1461,7 +1537,7 @@ int Nintendo3DS::loadFieldData(void)
 	if ((d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) &&
 	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
 	{
-		d->loadTMD();
+		d->loadTicketAndTMD();
 	}
 
 	// Load and parse the SMDH header.
@@ -1852,6 +1928,24 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_string(_RP("Version"),
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
+		// Issuer.
+		// NOTE: We're using the Ticket Issuer in the TMD tab.
+		// Retail Ticket will always have a Retail TMD,
+		// but the issuer is technically different.
+		// We're only printing "Ticket Issuer" if we can't
+		// identify the issuer at all.
+		static const rp_char *const issuer_tbl[4] = {
+			nullptr, _RP("Retail"), _RP("Debug"), nullptr
+		};
+		const rp_char *issuer = issuer_tbl[d->mxh.titleKeyEncIdx & N3DS_TICKET_TITLEKEY_ISSUER_MASK];
+		if (issuer) {
+			d->fields->addField_string(_RP("Issuer"), issuer);
+		} else {
+			// Print the ticket issuer as-is.
+			d->fields->addField_string(_RP("Ticket Issuer"),
+				latin1_to_rp_string(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
+		}
+
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
 		auto contents = new std::vector<std::vector<rp_string> >();
@@ -2129,7 +2223,7 @@ int Nintendo3DS::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			d->loadTMD();
+			d->loadTicketAndTMD();
 		}
 		if (d->srlData) {
 			// This is a DSiWare SRL.
@@ -2223,7 +2317,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA) {
 		// TMD needs to be loaded so we can check if it's a DSiWare SRL.
 		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD)) {
-			const_cast<Nintendo3DSPrivate*>(d)->loadTMD();
+			const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 		}
 		if (d->srlData) {
 			// This is a DSiWare SRL.

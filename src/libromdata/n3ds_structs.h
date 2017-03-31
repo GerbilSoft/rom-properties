@@ -27,6 +27,8 @@
 // - https://3dbrew.org/wiki/NCSD
 // - https://3dbrew.org/wiki/ExeFS
 // - https://3dbrew.org/wiki/TMD
+// - https://3dbrew.org/wiki/NCCH/Extended_Header
+// - https://3dbrew.org/wiki/Ticket
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_N3DS_STRUCTS_H__
@@ -574,25 +576,27 @@ typedef struct PACKED _N3DS_ExeFS_Header_t {
 ASSERT_STRUCT(N3DS_ExeFS_Header_t, 512);
 
 /**
- * Nintendo 3DS: Title Metadata signature type.
+ * Nintendo 3DS: Ticket and Title Metadata signature type.
  * TMD header location depends on the signature type.
  * Reference: https://3dbrew.org/wiki/TMD#Signature_Data
  */
 typedef enum {
 	// NOTE: The first three are not generally used on 3DS.
-	N3DS_TMD_RSA_4096_SHA1		= 0x00010000,	// len = 0x200, pad = 0x3C
-	N3DS_TMD_RSA_2048_SHA1		= 0x00010001,	// len = 0x100, pad = 0x3C
-	N3DS_TMD_EC_SHA1		= 0x00010002,	// len =  0x3C, pad = 0x40
+	N3DS_SIGTYPE_RSA_4096_SHA1		= 0x00010000,	// len = 0x200, pad = 0x3C
+	N3DS_SIGTYPE_RSA_2048_SHA1		= 0x00010001,	// len = 0x100, pad = 0x3C
+	N3DS_SIGTYPE_EC_SHA1			= 0x00010002,	// len =  0x3C, pad = 0x40
 
 	// These are used on 3DS.
-	N3DS_TMD_RSA_4096_SHA256	= 0x00010003,	// len = 0x200, pad = 0x3C
-	N3DS_TMD_RSA_2048_SHA256	= 0x00010004,	// len = 0x100, pad = 0x3C
-	N3DS_TMD_ECDSA_SHA256		= 0x00010005,	// len =  0x3C, pad = 0x40
-} N3DS_TMD_Signature_Type;
+	N3DS_SIGTYPE_RSA_4096_SHA256		= 0x00010003,	// len = 0x200, pad = 0x3C
+	N3DS_SIGTYPE_RSA_2048_SHA256		= 0x00010004,	// len = 0x100, pad = 0x3C
+	N3DS_SIGTYPE_ECDSA_SHA256		= 0x00010005,	// len =  0x3C, pad = 0x40
+} N3DS_Signature_Type;
 
 /**
  * Nintendo 3DS: Title Metadata header.
  * Reference: https://3dbrew.org/wiki/TMD#Header
+ *
+ * The signature is NOT included, since it's variable-length.
  *
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
@@ -672,6 +676,8 @@ typedef enum {
 /**
  * Nintendo 3DS: Title Metadata.
  * Reference: https://3dbrew.org/wiki/TMD
+ *
+ * The signature is NOT included, since it's variable-length.
  *
  * All fields are BIG-endian due to its
  * roots in the Wii TMD format.
@@ -918,6 +924,67 @@ typedef struct PACKED _N3DS_NCCH_ExHeader_t {
 } N3DS_NCCH_ExHeader_t;
 #pragma pack()
 ASSERT_STRUCT(N3DS_NCCH_ExHeader_t, 0x800);
+
+// Nintendo 3DS: Ticket issuers.
+#define N3DS_TICKET_ISSUER_RETAIL "Root-CA00000003-XS0000000c"
+#define N3DS_TICKET_ISSUER_DEBUG  "Root-CA00000004-XS00000009"
+
+/**
+ * Nintendo 3DS: Ticket.
+ * Reference: https://www.3dbrew.org/wiki/Ticket
+ *
+ * The signature is NOT included, since it's variable-length.
+ *
+ * All fields are BIG-endian due to its
+ * roots in the Wii ticket format.
+ */
+#pragma pack(1)
+typedef struct PACKED _N3DS_Ticket_t {
+	char issuer[0x40];		// [0x000] Ticket issuer. Can be used to distinguish debug vs. retail.
+	uint8_t ecc_public_key[0x3C];	// [0x040] ECC public key.
+	uint8_t version;		// [0x07C] Version. (Wii == 0; 3DS == 1)
+	uint8_t ca_crl_version;		// [0x07D]
+	uint8_t signer_crl_version;	// [0x07E]
+	uint8_t title_key[0x10];	// [0x07F] Title key. (encrypted)
+	uint8_t reserved1;		// [0x08F]
+	uint64_t ticket_id;		// [0x090]
+	uint32_t console_id;		// [0x098]
+	N3DS_TitleID_BE_t title_id;	// [0x09C] Title ID.
+	uint8_t reserved2[2];		// [0x0A4]
+	uint16_t title_version;		// [0x0A6] ticket title version.
+	uint8_t reserved3[8];		// [0x0A8]
+	uint8_t license_type;		// [0x0B0]
+	uint8_t keyY_index;		// [0x0B1] Common KeyY index. (keyslot 0x3D)
+	uint8_t reserved4[0x2A];	// [0x0B2]
+	uint32_t eshop_account_id;	// [0x0DC] eShop Account ID?
+	uint8_t reserved5;		// [0x0E0]
+	uint8_t audit;			// [0x0E1]
+	uint8_t reserved6[0x42];	// [0x0E2]
+	uint32_t limits[0x10];		// [0x124] Demo use limits.
+	uint8_t content_index[0xAC];	// [0x164] Content index.
+} N3DS_Ticket_t;
+#pragma pack()
+ASSERT_STRUCT(N3DS_Ticket_t, 528);
+
+/**
+ * Ticket common key index for title key encryption.
+ */
+typedef enum {
+	// Bits 0-1: Issuer.
+	// - 0: Unknown, or no encryption.
+	// - 1: Retail
+	// - 2: Debug
+	N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN	= (0 << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_RETAIL	= (1 << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_DEBUG	= (2 << 0),
+	N3DS_TICKET_TITLEKEY_ISSUER_MASK	= (3 << 0),
+
+	// Bits 2-4: KeyY index.
+	// - 0: eShop titles
+	// - 1: System titles
+	// - 2-5: Unknown
+	N3DS_TICKET_TITLEKEY_KEYY_INDEX_MASK	= (7 << 2),
+} N3DS_Ticket_TitleKey_KeyY;
 
 #ifdef __cplusplus
 }
