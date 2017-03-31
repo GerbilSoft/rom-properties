@@ -39,13 +39,17 @@ class NCCHReader : public IPartition
 		 * NOTE: The IRpFile *must* remain valid while this
 		 * NCCHReader is open.
 		 *
-		 * @param file IRpFile.
-		 * @param media_unit_shift Media unit shift.
-		 * @param ncch_offset NCCH start offset, in bytes.
-		 * @param ncch_length NCCH length, in bytes.
+		 * @param file 			[in] IRpFile.
+		 * @param media_unit_shift	[in] Media unit shift.
+		 * @param ncch_offset		[in] NCCH start offset, in bytes.
+		 * @param ncch_length		[in] NCCH length, in bytes.
+		 * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
+		 * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
 		 */
 		NCCHReader(IRpFile *file, uint8_t media_unit_shift,
-			  int64_t ncch_offset, uint32_t ncch_length);
+				int64_t ncch_offset, uint32_t ncch_length,
+				const N3DS_Ticket_t *ticket = nullptr,
+				uint16_t tmd_content_index = 0);
 		virtual ~NCCHReader();
 
 	private:

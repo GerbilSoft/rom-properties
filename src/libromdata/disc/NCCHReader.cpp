@@ -31,6 +31,7 @@
 #ifdef ENABLE_DECRYPTION
 #include "crypto/AesCipherFactory.hpp"
 #include "crypto/IAesCipher.hpp"
+#include "crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
@@ -52,7 +53,9 @@ class NCCHReaderPrivate
 	public:
 		NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length);
+			int64_t ncch_offset, uint32_t ncch_length,
+			const N3DS_Ticket_t *ticket = nullptr,
+			uint16_t tmd_content_index = 0);
 		~NCCHReaderPrivate();
 
 	private:
@@ -84,7 +87,7 @@ class NCCHReaderPrivate
 		uint32_t headers_loaded;	// HeadersPresent
 
 		// NCCH header.
-		N3DS_NCCH_Header_NoSig_t ncch_header;
+		N3DS_NCCH_Header_t ncch_header;
 		// NCCH ExHeader.
 		N3DS_NCCH_ExHeader_t ncch_exheader;
 		// ExeFS header.
@@ -107,9 +110,12 @@ class NCCHReaderPrivate
 		// with a zero key.
 		uint8_t ncch_keys[2][16];
 
-		// AES cipher.
-		// TODO: Move to N3DSFile, since it may use per-file values?
-		IAesCipher *cipher;
+		// NCCH cipher.
+		IAesCipher *cipher_ncch;	// NCCH cipher.
+
+		// CIA cipher.
+		uint8_t title_key[16];		// Decrypted title key.
+		IAesCipher *cipher_cia;		// CIA cipher.
 
 		union ctr_t {
 			uint8_t u8[16];
@@ -132,6 +138,18 @@ class NCCHReaderPrivate
 			ctr->u8[11] = 0;
 			offset /= 16;
 			ctr->u32[3] = cpu_to_be32(offset);
+		}
+
+		/**
+		 * Initialize an AES-CBC IV using the TMD content index.
+		 * Used for decrypting CIAs.
+		 * @param iv AES-CBC IV.
+		 */
+		inline void init_cia_cbc_iv(ctr_t *iv)
+		{
+			iv->u8[0] = tmd_content_index >> 8;
+			iv->u8[1] = tmd_content_index & 0xFF;
+			memset(&iv->u8[2], 0, sizeof(iv->u8)-2);
 		}
 
 		// Encrypted section addresses.
@@ -167,6 +185,11 @@ class NCCHReaderPrivate
 		 * @return Index in encSections, or -1 if not encrypted.
 		 */
 		int findEncSection(uint32_t address) const;
+
+		// KeyY index for title key encryption. (CIA only)
+		uint8_t titleKeyEncIdx;
+		// TMD content index.
+		uint16_t tmd_content_index;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -174,7 +197,9 @@ class NCCHReaderPrivate
 
 NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	uint8_t media_unit_shift,
-	int64_t ncch_offset, uint32_t ncch_length)
+	int64_t ncch_offset, uint32_t ncch_length,
+	const N3DS_Ticket_t *ticket,
+	uint16_t tmd_content_index)
 	: q_ptr(q)
 	, file(file)
 	, ncch_offset(ncch_offset)
@@ -184,13 +209,94 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	, headers_loaded(0)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
-	, cipher(nullptr)
+	, cipher_ncch(nullptr)
+	, cipher_cia(nullptr)
+	, titleKeyEncIdx(0)
+	, tmd_content_index(tmd_content_index)
 #endif /* ENABLE_DECRYPTION */
 {
-	// TODO: CIA outer decryption.
+#ifdef ENABLE_DECRYPTION
+	// Initialize the Key Manager.
+	KeyManager keyManager;
 
-	// Read the NCCH header. (without the signature)
-	int ret = file->seek(ncch_offset + 0x100);
+	// Check if this is a CIA with title key encryption.
+	if (ticket) {
+		// Check the ticket issuer.
+		const char *key_prefix;
+		if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(ticket->issuer))) {
+			// Retail issuer..
+			key_prefix = "ctr";
+			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
+		} else if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(ticket->issuer))) {
+			// Debug issuer.
+			key_prefix = "ctr-dev";
+			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
+		} else {
+			// Unknown issuer.
+			key_prefix = "ctr";
+			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN;
+		}
+
+		// Check the KeyY index.
+		// TODO: Handle invalid KeyY indexes?
+		titleKeyEncIdx |= (ticket->keyY_index << 2);
+
+		// Try to get the KeyNormal.
+		// TODO: Fall back to KeyX/KeyY if not found.
+		char key_name[64];
+		snprintf(key_name, sizeof(key_name), "%s-Slot0x3DKeyNormal-%d",
+			key_prefix, titleKeyEncIdx >> 2);
+		KeyManager::KeyData_t keyData;
+		if (keyManager.get(key_name, &keyData) != 0) {
+			// Could not retrieve the CIA key.
+			// TODO: Encryption errors like WiiPartition.
+			q->m_lastError = EIO;
+			this->file = nullptr;
+			return;
+		} else if (!keyData.key || keyData.length != 16) {
+			// Invalid key.
+			// TODO: Encryption errors like WiiPartition.
+			q->m_lastError = EIO;
+			this->file = nullptr;
+			return;
+		}
+
+		// Create the cipher.
+		cipher_cia = AesCipherFactory::getInstance();
+
+		// Initialize parameters for title key decryption.
+		// Parameters:
+		// - Keyslot: 0x3D
+		// - Chaining mode: CBC
+		// - IV: Title ID (little-endian)
+		cipher_cia->setChainingMode(IAesCipher::CM_CBC);
+		cipher_cia->setKey(keyData.key, keyData.length);
+		tid_be = ticket->title_id.id;	// already in BE
+		ctr_t cia_iv;
+		memcpy(cia_iv.u8, &tid_be, sizeof(tid_be));
+		memset(&cia_iv.u8[8], 0, 8);
+		cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+
+		// Decrypt the title key.
+		memcpy(title_key, ticket->title_key, sizeof(title_key));
+		cipher_cia->decrypt(title_key, sizeof(title_key));
+
+		// Initialize parameters for CIA decryption.
+		// Parameters:
+		// - Key: Decrypted title key.
+		// - Chaining mode: CBC
+		// - IV: Content index from the TMD.
+		cipher_cia->setKey(title_key, sizeof(title_key));
+	} else {
+		// No CIA encryption.
+		memset(title_key, 0, sizeof(title_key));
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// Read the NCCH header.
+	// We're including the signature, since the first 16 bytes
+	// are used for encryption in certain cases.
+	int ret = file->seek(ncch_offset);
 	if (ret != 0) {
 		// Seek error.
 		q->m_lastError = file->lastError();
@@ -210,11 +316,34 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		this->file = nullptr;
 		return;
 	}
+#ifdef ENABLE_DECRYPTION
+	if (cipher_cia) {
+		// Decrypt the NCCH header.
+		// IV is the TMD content index.
+		ctr_t cia_iv;
+		init_cia_cbc_iv(&cia_iv);
+		cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+		// TODO: Change decrypt()'s parameter to void*?
+		// TODO: Verify decryption return value.
+		cipher_cia->decrypt(reinterpret_cast<uint8_t*>(&ncch_header), sizeof(ncch_header));
+	}
+#endif /* ENABLE_DECRYPTION */
+	// Verify the NCCH magic number.
+	if (memcmp(ncch_header.hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.hdr.magic)) != 0) {
+		// NCCH magic number is incorrect.
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		this->file = nullptr;
+		return;
+	}
 	headers_loaded |= HEADER_NCCH;
 
 #ifdef ENABLE_DECRYPTION
 	// Byteswap the title ID. (It's used for the AES counter.)
-	tid_be = __swab64(ncch_header.program_id.id);
+	if (tid_be == 0) {
+		tid_be = __swab64(ncch_header.hdr.program_id.id);
+	}
 #endif /* ENABLE_DECRYPTION */
 
 	// Determine the keyset to use.
@@ -223,23 +352,23 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	// 2. FixedCryptoKey: Fixed key is used.
 	// 3. Neither: Standard key is used.
 #ifdef ENABLE_DECRYPTION
-	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+	if (ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
 		// No encryption.
 		memset(ncch_keys, 0, sizeof(ncch_keys));
-	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+	} else if (ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
 		// Fixed key encryption.
 		// TODO: Determine which keyset is in use.
 		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
 		memset(ncch_keys, 0, sizeof(ncch_keys));
 	} else {
-		// TODO: Other encryption methods.
-		q->m_lastError = EIO;
-		this->file = nullptr;
-		return;
+		// Standard NCCH encryption.
+		// TODO: Implement this.
+		// For now, assuming TEST. (Zero-key)
+		memset(ncch_keys, 0, sizeof(ncch_keys));
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
-	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
 		// TODO: Set an error like WiiPartition.
 		q->m_lastError = EIO;
@@ -249,16 +378,43 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 #endif /* ENABLE_DECRYPTION */
 
 	// Load the ExeFS header.
+	// NOTE: Checking for >= 16, since it has to be
+	// non-zero and on a multiple of 16 for AES.
 	// TODO: Verify length.
-	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
-	if (exefs_offset != 0) {
-		ret = file->seek(ncch_offset + exefs_offset);
-		if (ret != 0) {
-			// Seek error.
-			q->m_lastError = file->lastError();
-			this->file = nullptr;
-			return;
+	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.hdr.exefs_offset) << media_unit_shift);
+	if (exefs_offset >= 16) {
+#ifdef ENABLE_DECRYPTION
+		ctr_t cia_iv;
+		if (cipher_cia) {
+			// Read the CIA IV, which is 16 bytes before the
+			// start of the ExeFS header.
+			ret = file->seek(ncch_offset + exefs_offset - 16);
+			if (ret != 0) {
+				// Seek error.
+				q->m_lastError = file->lastError();
+				this->file = nullptr;
+				return;
+			}
+			size = file->read(&cia_iv, sizeof(cia_iv));
+			if (size != sizeof(cia_iv)) {
+				// Read error.
+				q->m_lastError = file->lastError();
+				this->file = nullptr;
+				return;
+			}
+		} else
+#endif /* ENABLE_DECRYPTION */
+		{
+			// Seek to the start of the ExeFS.
+			ret = file->seek(ncch_offset + exefs_offset);
+			if (ret != 0) {
+				// Seek error.
+				q->m_lastError = file->lastError();
+				this->file = nullptr;
+				return;
+			}
 		}
+		// Read the ExeFS header.
 		size = file->read(&exefs_header, sizeof(exefs_header));
 		if (size != sizeof(exefs_header)) {
 			// Read error.
@@ -266,24 +422,32 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			this->file = nullptr;
 			return;
 		}
+
+		if (cipher_cia) {
+			// Decrypt the ExeFS header.
+			// TODO: Change decrypt()'s parameter to void*?
+			// TODO: Verify decryption return value.
+			cipher_cia->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+		}
+
 		headers_loaded |= HEADER_EXEFS;
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
-		cipher = AesCipherFactory::getInstance();
-		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher_ncch = AesCipherFactory::getInstance();
+		cipher_ncch->setChainingMode(IAesCipher::CM_CTR);
 		ctr_t ctr;
 
 		if (headers_loaded & HEADER_EXEFS) {
 			// Decrypt the ExeFS header.
 			// ExeFS header uses ncchKey0.
-			cipher->setKey(ncch_keys[0], sizeof(ncch_keys[0]));
+			cipher_ncch->setKey(ncch_keys[0], sizeof(ncch_keys[0]));
 			init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, 0);
-			cipher->setIV(ctr.u8, sizeof(ctr.u8));
-			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+			cipher_ncch->setIV(ctr.u8, sizeof(ctr.u8));
+			cipher_ncch->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 		}
 
 		// Initialize encrypted section handling.
@@ -300,7 +464,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		encSections.push_back(EncSection(
 			sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
 			sizeof(N3DS_NCCH_Header_t),	// Counter base address.
-			le32_to_cpu(ncch_header.exheader_size),
+			le32_to_cpu(ncch_header.hdr.exheader_size),
 			0, N3DS_NCCH_SECTION_EXHEADER));
 
 		if (headers_loaded & HEADER_EXEFS) {
@@ -319,7 +483,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 				uint8_t keyIdx;
 				if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
-				!strncmp(file_header->name, "banner", sizeof(file_header->name))) {
+				    !strncmp(file_header->name, "banner", sizeof(file_header->name))) {
 					// Icon and Banner use key 0.
 					keyIdx = 0;
 				} else {
@@ -337,12 +501,12 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		}
 
 		// RomFS
-		if (le32_to_cpu(ncch_header.romfs_size) != 0) {
-			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift);
+		if (le32_to_cpu(ncch_header.hdr.romfs_size) != 0) {
+			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
 			encSections.push_back(EncSection(
 				romfs_offset,	// Address within NCCH.
 				romfs_offset,	// Counter base address.
-				(le32_to_cpu(ncch_header.romfs_size) << media_unit_shift),
+				(le32_to_cpu(ncch_header.hdr.romfs_size) << media_unit_shift),
 				0, N3DS_NCCH_SECTION_ROMFS));
 		}
 
@@ -356,7 +520,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 NCCHReaderPrivate::~NCCHReaderPrivate()
 {
 #ifdef ENABLE_DECRYPTION
-	delete cipher;
+	delete cipher_ncch;
+	delete cipher_cia;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -426,7 +591,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 	}
 
 	// Check the ExHeader length.
-	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
+	uint32_t exheader_length = le32_to_cpu(ncch_header.hdr.exheader_size);
 	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
 	    exheader_length > sizeof(ncch_exheader))
 	{
@@ -471,14 +636,18 @@ int NCCHReaderPrivate::loadExHeader(void)
  * NOTE: The IRpFile *must* remain valid while this
  * NCCHReader is open.
  *
- * @param file IRpFile.
- * @param media_unit_shift Media unit shift.
- * @param ncch_offset NCCH start offset, in bytes.
- * @param ncch_length NCCH length, in bytes.
+ * @param file 			[in] IRpFile.
+ * @param media_unit_shift	[in] Media unit shift.
+ * @param ncch_offset		[in] NCCH start offset, in bytes.
+ * @param ncch_length		[in] NCCH length, in bytes.
+ * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
+ * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
  */
 NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
-		int64_t ncch_offset, uint32_t ncch_length)
-	: d_ptr(new NCCHReaderPrivate(this, file, media_unit_shift, ncch_offset, ncch_length))
+		int64_t ncch_offset, uint32_t ncch_length,
+		const N3DS_Ticket_t *ticket,
+		uint16_t tmd_content_index)
+	: d_ptr(new NCCHReaderPrivate(this, file, media_unit_shift, ncch_offset, ncch_length, ticket, tmd_content_index))
 { }
 
 NCCHReader::~NCCHReader()
@@ -525,19 +694,56 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		size = (size_t)(d->ncch_length - d->pos);
 	}
 
-	if (d->ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption. Read directly from the NCCH.
-		int ret = d->file->seek(d->ncch_offset + d->pos);
+	const int64_t start_addr = d->ncch_offset + d->pos;
+
+#ifdef ENABLE_DECRYPTION
+	NCCHReaderPrivate::ctr_t cia_iv;
+	if (d->cipher_cia) {
+		// Need to load the IV first.
+		if (d->pos == 0) {
+			// IV is the TMD content index.
+			d->init_cia_cbc_iv(&cia_iv);
+		} else {
+			// IV is 16 bytes before d->pos.
+			int ret = d->file->seek(start_addr - 16);
+			if (ret != 0) {
+				// Seek error.
+				m_lastError = d->file->lastError();
+				return 0;
+			}
+			size_t size = d->file->read(&cia_iv, sizeof(cia_iv));
+			if (size != sizeof(cia_iv)) {
+				// Read error.
+				m_lastError = d->file->lastError();
+				return 0;
+			}
+		}
+		d->cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
+		// Seek to the starting address.
+		int ret = d->file->seek(start_addr);
 		if (ret != 0) {
 			// Seek error.
 			m_lastError = d->file->lastError();
 			return 0;
 		}
+	}
+
+	if (d->ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption. Read directly from the NCCH.
 		size_t ret_sz = d->file->read(ptr, size);
 		if (ret_sz != size) {
 			// Possible error occurred...
 			m_lastError = d->file->lastError();
 		}
+#ifdef ENABLE_DECRYPTION
+		if (d->cipher_cia) {
+			// CIA has outer encryption.
+			d->cipher_cia->decrypt(static_cast<uint8_t*>(ptr), ret_sz);
+		}
+#endif /* ENABLE_DECRYPTION */
 		return ret_sz;
 	}
 
@@ -558,6 +764,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 	size_t sz_total_read = 0;
 	while (size > 0) {
 		// Determine what section we're in.
@@ -585,28 +792,39 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			}
 		}
 
-		size_t ret_sz = d->file->read(ptr, sz_to_read);
+		size_t ret_sz = d->file->read(ptr8, sz_to_read);
 		if (ret_sz != sz_to_read) {
 			// Possible error occurred...
 			m_lastError = d->file->lastError();
 		}
 
+		if (d->cipher_cia && ret_sz >= 16) {
+			// CIA has outer encryption.
+			// Save the last 16-byte block for the next IV.
+			// TODO: Handle ret_sz < 16; error handling.
+			memcpy(&cia_iv.u8, ptr8 + ret_sz - 16, sizeof(cia_iv.u8));
+			d->cipher_cia->decrypt(ptr8, ret_sz);
+			// Set the IV. (FIXME: Only needed for AesCAPI; fix this...)
+			d->cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+		}
+
 		if (section) {
 			// Set the required key.
 			// TODO: Don't set the key if it hasn't changed.
-			d->cipher->setKey(d->ncch_keys[section->keyIdx], sizeof(d->ncch_keys[section->keyIdx]));
+			d->cipher_ncch->setKey(d->ncch_keys[section->keyIdx], sizeof(d->ncch_keys[section->keyIdx]));
 
 			// Initialize the counter based on section and offset.
 			NCCHReaderPrivate::ctr_t ctr;
 			d->init_ctr(&ctr, section->section, d->pos - section->ctr_base);
-			d->cipher->setIV(ctr.u8, sizeof(ctr.u8));
+			d->cipher_ncch->setIV(ctr.u8, sizeof(ctr.u8));
 
 			// Decrypt the data.
 			// FIXME: Round up to 16 if a short read occurred?
-			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
+			ret_sz = d->cipher_ncch->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
 		}
 
 		d->pos += (uint32_t)ret_sz;
+		ptr8 += ret_sz;
 		sz_total_read += ret_sz;
 		size -= ret_sz;
 		if (d->pos > d->ncch_length) {
@@ -741,7 +959,7 @@ const N3DS_NCCH_Header_NoSig_t *NCCHReader::ncchHeader(void) const
 		return nullptr;
 	}
 
-	return &d->ncch_header;
+	return &d->ncch_header.hdr;
 }
 
 /**
@@ -877,7 +1095,7 @@ int NCCHReader::cryptoType(CryptoType *pCryptoType) const
 		// TODO: Try to load it here?
 		return -EIO;
 	}
-	return cryptoType_static(pCryptoType, &d->ncch_header);
+	return cryptoType_static(pCryptoType, &d->ncch_header.hdr);
 }
 
 /**
@@ -931,7 +1149,7 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	}
 
 	// Get the file offset.
-	const uint32_t offset = (le32_to_cpu(d->ncch_header.exefs_offset) << d->media_unit_shift) +
+	const uint32_t offset = (le32_to_cpu(d->ncch_header.hdr.exefs_offset) << d->media_unit_shift) +
 		sizeof(d->exefs_header) +
 		le32_to_cpu(file_header->offset);
 	const uint32_t size = le32_to_cpu(file_header->size);

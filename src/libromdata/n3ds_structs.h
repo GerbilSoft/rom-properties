@@ -653,7 +653,7 @@ ASSERT_STRUCT(N3DS_Content_Info_Record_t, 0x24);
 #pragma pack(1)
 typedef struct PACKED _N3DS_Content_Chunk_Record_t {
 	uint32_t id;		// [0x00]
-	uint16_t index;		// [0x04]
+	uint16_t index;		// [0x04] Content index. (Used for CIA title key encryption.)
 	uint16_t type;		// [0x06] See N3DS_Content_Chunk_Type_Flags.
 	uint64_t size;		// [0x08]
 	uint8_t sha256[0x20];	// [0x10]

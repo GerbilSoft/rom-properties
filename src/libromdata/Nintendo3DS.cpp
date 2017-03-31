@@ -127,9 +127,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 				N3DS_TMD_Header_t tmd_header;
 				// Content start address.
 				uint32_t content_start_addr;
-				// Title key encryption key selection.
-				// See N3DS_Ticket_TitleKey_KeyY
-				uint8_t titleKeyEncIdx;
 			};
 			struct {
 				N3DS_NCSD_Header_NoSig_t ncsd_header;
@@ -177,14 +174,9 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		/**
 		 * Load the specified NCCH header.
 		 * @param idx		[in] Content/partition index.
-		 * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
-		 * @param pOffset	[out,opt] Starting address of the NCCH header, in bytes.
-		 * @param pLength	[out,opt] Length of the NCCH section, in bytes.
-		 * @return 0 on success; non-zero on error.
+		 * @return NCCHReader on success; nullptr on error.
 		 */
-		int loadNCCH(int idx,
-			N3DS_NCCH_Header_NoSig_t *pNcchHeader,
-			int64_t *pOffset = nullptr, uint32_t *pLength = nullptr);
+		NCCHReader *loadNCCH(int idx);
 
 		/**
 		 * Create an NCCHReader for the primary content.
@@ -415,33 +407,23 @@ int Nintendo3DSPrivate::loadSMDH(void)
 /**
  * Load the specified NCCH header.
  * @param idx		[in] Content/partition index.
- * @param pNcchHeader	[out] Pointer to N3DS_NCCH_Header_NoSig_t.
- * @param pOffset	[out,opt] Starting address of the NCCH header, in bytes.
- * @param pLength	[out,opt] Length of the NCCH section, in bytes.
- * @return 0 on success; non-zero on error.
+ * @return NCCHReader on success; nullptr on error.
  */
-int Nintendo3DSPrivate::loadNCCH(int idx,
-	N3DS_NCCH_Header_NoSig_t *pNcchHeader,
-	int64_t *pOffset, uint32_t *pLength)
+NCCHReader *Nintendo3DSPrivate::loadNCCH(int idx)
 {
-	assert(pNcchHeader != nullptr);
-	if (!pNcchHeader) {
-		return -100;
-	}
-
 	int64_t offset = 0;
 	uint32_t length = 0;
 	switch (romType) {
 		case ROM_TYPE_CIA: {
 			if (!(headers_loaded & HEADER_CIA)) {
 				// CIA header is not loaded...
-				return -1;
+				return nullptr;
 			}
 
 			// Load the ticket and TMD header.
 			if (loadTicketAndTMD() != 0) {
 				// Unable to load the ticket and TMD header.
-				return -2;
+				return nullptr;
 			}
 
 			// TODO: Check the issuer to determine which set
@@ -454,7 +436,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 			// Check if the content index is valid.
 			if ((unsigned int)idx >= content_count) {
 				// Content index is out of range.
-				return -3;
+				return nullptr;
 			}
 
 			// Determine the content start position.
@@ -470,35 +452,18 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 			}
 			if (length == 0) {
 				// Content chunk not found.
-				return -4;
+				return nullptr;
 			}
 
 			// Add the content start address.
 			offset += mxh.content_start_addr;
-
-			// Add 0x100 to skip the RSA signature.
-			int ret = file->seek(offset + 0x100);
-			if (ret != 0) {
-				// Seek error.
-				return -4;
-			}
-			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
-			if (size != sizeof(*pNcchHeader)) {
-				// Read error.
-				return -5;
-			}
-
-			// TODO: Check if this is DSiWare.
-			// If it is, set a flag and instantiate NintendoDS.
-
-			// NCCH header has been read.
 			break;
 		}
 
 		case ROM_TYPE_CCI: {
 			if (!(headers_loaded & HEADER_NCSD)) {
 				// NCSD header is not loaded...
-				return -1;
+				return nullptr;
 			}
 
 			// The NCCH header is located at the beginning of the partition.
@@ -506,7 +471,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 			assert(idx >= 0 && idx < 8);
 			if (idx < 0 || idx >= 8) {
 				// Invalid partition index.
-				return -2;
+				return nullptr;
 			}
 
 			// Get the partition offset and length.
@@ -516,45 +481,46 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 			// Make sure the partition starts after the card info header.
 			if (offset <= 0x2000) {
 				// Invalid partition offset.
-				return -3;
+				return nullptr;
 			}
-
-			int ret = file->seek(offset + 0x100);
-			if (ret != 0) {
-				// Seek error.
-				return -4;
-			}
-			size_t size = file->read(pNcchHeader, sizeof(*pNcchHeader));
-			if (size != sizeof(*pNcchHeader)) {
-				// Read error.
-				return -5;
-			}
-
-			// NCCH header has been read.
 			break;
 		}
 
 		default:
 			// Unsupported...
-			return -98;
+			return nullptr;
 	}
 
-	// Verify the NCCH magic number.
-	if (memcmp(pNcchHeader->magic, N3DS_NCCH_HEADER_MAGIC, sizeof(pNcchHeader->magic)) != 0) {
-		// NCCH magic number is incorrect.
-		return -99;
+	// Is this encrypted using CIA title key encryption?
+	N3DS_Ticket_t *ticket = nullptr;
+	if (romType == ROM_TYPE_CIA && idx < (int)content_count) {
+		// Check if this content is encrypted.
+		// If it is, we'll need to give NCCHReader the ticket.
+		const N3DS_Content_Chunk_Record_t *content_chunk = &content_chunks[0];
+		for (unsigned int i = 0; i < content_count; i++, content_chunk++) {
+			const uint16_t content_index = be16_to_cpu(content_chunk->index);
+			if (content_index == idx) {
+				// Found the content index.
+				if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+					// Content is encrypted.
+					ticket = &mxh.ticket;
+				}
+				break;
+			}
+		}
 	}
 
-	// Return offset/length values.
-	if (pOffset) {
-		*pOffset = offset;
-	}
-	if (pLength) {
-		*pLength = length;
+	// Create the NCCHReader.
+	NCCHReader *ncch_reader = new NCCHReader(file,
+		media_unit_shift, offset, length, ticket, idx);
+	if (!ncch_reader->isOpen()) {
+		// Error creating the NCCHReader.
+		delete ncch_reader;
+		return nullptr;
 	}
 
-	// Loaded the NCCH header.
-	return 0;
+	// NCCHReader created successfully.
+	return ncch_reader;
 }
 
 /**
@@ -569,22 +535,23 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 		return this->ncch_reader;
 	}
 
+	unsigned int content_idx = 0;
+	if (romType == ROM_TYPE_CIA) {
+		// Use the boot content index.
+		if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTicketAndTMD() == 0) {
+			content_idx = be16_to_cpu(mxh.tmd_header.boot_content);
+		}
+	}
+
 	// TODO: For CCIs, verify that the copy in the
 	// Card Info Header matches the actual partition?
-	int64_t ncch_offset;
-	uint32_t ncch_length;
-	N3DS_NCCH_Header_NoSig_t ncch_header;	// TODO: Make this loadNCCH() parameter optional?
-	int ret = loadNCCH(0, &ncch_header, &ncch_offset, &ncch_length);
-	if (ret == 0) {
-		// Create the NCCH reader.
-		NCCHReader *ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
-		if (ncch_reader->isOpen()) {
-			// NCCH reader created successfully.
-			this->ncch_reader = ncch_reader;
-		} else {
-			// NCCH reader encountered an error.
-			delete ncch_reader;
-		}
+	NCCHReader *ncch_reader = loadNCCH(content_idx);
+	if (ncch_reader && ncch_reader->isOpen()) {
+		// NCCH reader created successfully.
+		this->ncch_reader = ncch_reader;
+	} else {
+		// NCCH reader encountered an error.
+		delete ncch_reader;
 	}
 
 	return this->ncch_reader;
@@ -736,22 +703,6 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 		// Read error.
 		return -14;
 	}
-
-	// Check the ticket issuer.
-	if (!strncmp(mxh.ticket.issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(mxh.ticket.issuer))) {
-		// Retail issuer..
-		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
-	} else if (!strncmp(mxh.ticket.issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(mxh.ticket.issuer))) {
-		// Debug issuer.
-		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
-	} else {
-		// Unknown issuer.
-		mxh.titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN;
-	}
-
-	// Check the KeyY index.
-	// TODO: Handle invalid KeyY indexes?
-	mxh.titleKeyEncIdx |= (mxh.ticket.keyY_index << 2);
 
 	// Load the content chunk records.
 	addr += sizeof(N3DS_TMD_t);
@@ -1803,7 +1754,6 @@ int Nintendo3DS::loadFieldData(void)
 		partitions->reserve(8);
 
 		// Process the partition table.
-		N3DS_NCCH_Header_NoSig_t part_ncch_header;
 		for (unsigned int i = 0; i < 8; i++) {
 			const uint32_t length = le32_to_cpu(ncsd_header->partitions[i].length);
 			if (length == 0)
@@ -1825,12 +1775,13 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(type);
 
 			if (!emmc) {
-				int ret = d->loadNCCH(i, &part_ncch_header);
-				if (ret == 0) {
+				unique_ptr<NCCHReader> ncch(d->loadNCCH(i));
+				const N3DS_NCCH_Header_NoSig_t *part_ncch_header = (ncch ? ncch->ncchHeader() : nullptr);
+				if (part_ncch_header) {
 					// Encryption.
 					NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-					ret = NCCHReader::cryptoType_static(&cryptoType, &part_ncch_header);
-					if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+					int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
+					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						len = snprintf(buf, sizeof(buf), "%s",
 							(cryptoType.name ? cryptoType.name : "Unknown"));
@@ -1853,12 +1804,12 @@ int Nintendo3DS::loadFieldData(void)
 						// System Update versions are in the partition ID.
 						// TODO: Update region.
 						isUpdate = true;
-						version = le16_to_cpu(part_ncch_header.sysversion);
+						version = le16_to_cpu(part_ncch_header->sysversion);
 					} else {
 						// Use the NCCH version.
 						// NOTE: This doesn't seem to be accurate...
 						isUpdate = false;
-						version = le16_to_cpu(part_ncch_header.version);
+						version = le16_to_cpu(part_ncch_header->version);
 					}
 
 					if (isUpdate && version == 0x8000) {
@@ -1934,10 +1885,18 @@ int Nintendo3DS::loadFieldData(void)
 		// but the issuer is technically different.
 		// We're only printing "Ticket Issuer" if we can't
 		// identify the issuer at all.
-		static const rp_char *const issuer_tbl[4] = {
-			nullptr, _RP("Retail"), _RP("Debug"), nullptr
-		};
-		const rp_char *issuer = issuer_tbl[d->mxh.titleKeyEncIdx & N3DS_TICKET_TITLEKEY_ISSUER_MASK];
+		const rp_char *issuer;
+		if (!strncmp(d->mxh.ticket.issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(d->mxh.ticket.issuer))) {
+			// Retail issuer..
+			issuer = _RP("Retail");
+		} else if (!strncmp(d->mxh.ticket.issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(d->mxh.ticket.issuer))) {
+			// Debug issuer.
+			issuer = _RP("Debug");
+		} else {
+			// Unknown issuer.
+			issuer = nullptr;
+		}
+
 		if (issuer) {
 			d->fields->addField_string(_RP("Issuer"), issuer);
 		} else {
@@ -1953,7 +1912,6 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Process the contents.
 		// TODO: Content types?
-		N3DS_NCCH_Header_NoSig_t content_ncch_header;
 		const N3DS_Content_Chunk_Record_t *content_chunk = &d->content_chunks[0];
 		for (unsigned int i = 0; i < d->content_count; i++, content_chunk++) {
 			const int vidx = (int)contents->size();
@@ -1980,9 +1938,10 @@ int Nintendo3DS::loadFieldData(void)
 				cryptoType.encrypted = false;
 			}
 
-			uint32_t length;
-			int ret = d->loadNCCH(i, &content_ncch_header, nullptr, &length);
-			if (ret != 0) {
+			// TODO: Use content_chunk->index?
+			unique_ptr<NCCHReader> ncch(d->loadNCCH(i));
+			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = (ncch ? ncch->ncchHeader() : nullptr);
+			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
@@ -2022,7 +1981,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Content type.
 			const rp_char *content_type;
-			const uint8_t ctype_flag = content_ncch_header.flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
+			const uint8_t ctype_flag = content_ncch_header->flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
 			if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
 				// DLP child
 				content_type = _RP("Download Play");
@@ -2049,7 +2008,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Encryption.
 			if (!cryptoType.name) {
-				int ret = NCCHReader::cryptoType_static(&cryptoType, &content_ncch_header);
+				int ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
 				if (ret != 0) {
 					// Unknown encryption.
 					cryptoType.name = nullptr;
@@ -2075,7 +2034,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Version. [FIXME: Might not be right...]
 			// Reference: https://3dbrew.org/wiki/Titles
 			// Format the NCCH version.
-			const uint16_t version = le16_to_cpu(content_ncch_header.version);
+			const uint16_t version = le16_to_cpu(content_ncch_header->version);
 			len = snprintf(buf, sizeof(buf), "%u.%u.%u",
 				(version >> 10),
 				(version >>  4) & 0x1F,
@@ -2085,7 +2044,7 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 			// Content size.
-			data_row.push_back(d->formatFileSize(length));
+			data_row.push_back(d->formatFileSize(ncch->partition_size()));
 		}
 
 		static const rp_char *const contents_names[] = {
