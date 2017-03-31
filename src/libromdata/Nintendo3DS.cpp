@@ -1752,8 +1752,22 @@ int Nintendo3DS::loadFieldData(void)
 				int ret = d->loadNCCH(i, &part_ncch_header);
 				if (ret == 0) {
 					// Encryption.
-					const rp_char *crypto = NCCHReader::cryptoType_static(&part_ncch_header);
-					data_row.push_back(crypto ? crypto : _RP("Unknown"));
+					NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
+					ret = NCCHReader::cryptoType_static(&cryptoType, &part_ncch_header);
+					if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+						// Not encrypted, or not using a predefined keyslot.
+						len = snprintf(buf, sizeof(buf), "%s",
+							(cryptoType.name ? cryptoType.name : "Unknown"));
+					} else {
+						// Encrypted.
+						len = snprintf(buf, sizeof(buf), "%s%s (0x%02X)",
+							(cryptoType.name ? cryptoType.name : "Unknown"),
+							(cryptoType.seed ? "+Seed" : ""),
+							cryptoType.keyslot);
+					}
+					if (len > (int)sizeof(buf))
+						len = sizeof(buf);
+					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 					// Version.
 					// Reference: https://3dbrew.org/wiki/Titles
@@ -1861,9 +1875,15 @@ int Nintendo3DS::loadFieldData(void)
 			// TODO: Support for CIA+NCCH encryption.
 			// For now, if CIA encryption is in use, that will be
 			// the only thing listed. (Also, debug vs. retail?)
-			const rp_char *crypto = nullptr;
+			NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
 			if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
-				crypto = _RP("CIA");
+				cryptoType.name = "CIA";
+				// NOTE: Not setting other parameters,
+				// since CIA encryption is based on
+				// the title key, which is encrypted using
+				// key 0x3D. (Retail KeyY and Dev normal key
+				// are known; retail KeyX is missing.)
+				cryptoType.encrypted = false;
 			}
 
 			uint32_t length;
@@ -1877,8 +1897,9 @@ int Nintendo3DS::loadFieldData(void)
 					// This is an SRL.
 					cnt_type = _RP("SRL");
 					// TODO: Do SRLs have encryption besides CIA encryption?
-					if (!crypto) {
-						crypto = _RP("NoCrypto");
+					if (!cryptoType.name) {
+						cryptoType.name = "NoCrypto";
+						cryptoType.encrypted = false;
 					}
 				} else {
 					// Something else...
@@ -1886,8 +1907,15 @@ int Nintendo3DS::loadFieldData(void)
 				}
 				data_row.push_back(cnt_type);
 
-				data_row.push_back(crypto ? crypto : _RP("Unknown"));	// Encryption
-				data_row.push_back(_RP(""));	// Version
+				// Encryption.
+				if (cryptoType.name) {
+					data_row.push_back(latin1_to_rp_string(cryptoType.name, -1));
+				} else {
+					data_row.push_back(_RP("Unknown"));
+				}
+
+				// Version.
+				data_row.push_back(_RP(""));
 
 				// Content size.
 				if (i < d->content_count) {
@@ -1926,10 +1954,29 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(content_type);
 
 			// Encryption.
-			if (!crypto) {
-				crypto = NCCHReader::cryptoType_static(&content_ncch_header);
+			if (!cryptoType.name) {
+				int ret = NCCHReader::cryptoType_static(&cryptoType, &content_ncch_header);
+				if (ret != 0) {
+					// Unknown encryption.
+					cryptoType.name = nullptr;
+					cryptoType.encrypted = false;
+				}
 			}
-			data_row.push_back(crypto ? crypto : _RP("Unknown"));
+
+			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
+				// Not encrypted, or not using a predefined keyslot.
+				len = snprintf(buf, sizeof(buf), "%s",
+					(cryptoType.name ? cryptoType.name : "Unknown"));
+			} else {
+				// Encrypted.
+				len = snprintf(buf, sizeof(buf), "%s%s (0x%02X)",
+					(cryptoType.name ? cryptoType.name : "Unknown"),
+					(cryptoType.seed ? "+Seed" : ""),
+					cryptoType.keyslot);
+			}
+			if (len > (int)sizeof(buf))
+				len = sizeof(buf);
+			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 			// Version. [FIXME: Might not be right...]
 			// Reference: https://3dbrew.org/wiki/Titles

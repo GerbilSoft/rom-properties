@@ -517,7 +517,7 @@ typedef enum {
 	N3DS_NCCH_BIT_MASK_FixedCryptoKey	= 0x01,
 	N3DS_NCCH_BIT_MASK_NoMountRomFS		= 0x02,
 	N3DS_NCCH_BIT_MASK_NoCrypto		= 0x04,
-	N3DS_NCCH_BIT_MASK_Fw96KeyY		= 0x20,
+	N3DS_NCCH_BIT_MASK_Fw96KeyY		= 0x20,	// SEED encryption
 } N3DS_NCCH_Bit_Masks;
 
 /**

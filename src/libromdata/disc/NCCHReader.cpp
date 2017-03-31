@@ -780,50 +780,104 @@ const N3DS_ExeFS_Header_t *NCCHReader::exefsHeader(void) const
 
 /**
  * Get the NCCH crypto type.
- * @param pNcchHeader NCCH header.
- * @return NCCH crypto type, or nullptr if unknown.
+ * @param pCryptoType	[out] Crypto type.
+ * @param pNcchHeader	[in] NCCH header.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const rp_char *NCCHReader::cryptoType_static(const N3DS_NCCH_Header_NoSig_t *pNcchHeader)
+int NCCHReader::cryptoType_static(CryptoType *pCryptoType, const N3DS_NCCH_Header_NoSig_t *pNcchHeader)
 {
-	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption.
-		return _RP("NoCrypto");
-	} else if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-		// Fixed key encryption.
-		// TODO: Determine which keyset is in use.
-		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-		return _RP("Fixed (?)");
-	} else {
-		// Check ncchflag[3].
-		switch (pNcchHeader->flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
-			case 0x01:
-				return _RP("Slot0x25");
-			case 0x0A:
-				return _RP("Slot0x18");
-			case 0x0B:
-				return _RP("Slot0x1B");
-			default:
-				break;
-		}
+	assert(pCryptoType != nullptr);
+	assert(pNcchHeader != nullptr);
+	if (!pCryptoType || !pNcchHeader) {
+		// Invalid argument(s).
+		return -EINVAL;
 	}
 
-	// Unknown encryption method...
-	return nullptr;
+	// References:
+	// - https://github.com/d0k3/GodMode9/blob/master/source/game/ncch.c
+	// - https://github.com/d0k3/GodMode9/blob/master/source/game/ncch.h
+	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption.
+		pCryptoType->name = "NoCrypto";
+		pCryptoType->encrypted = false;
+		pCryptoType->keyslot = 0xFF;
+		pCryptoType->seed = false;
+		return 0;
+	}
+
+	// Encryption is enabled.
+	pCryptoType->encrypted = true;
+	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key encryption.
+		// NOTE: Keyslot 0x11 is used, but that keyslot
+		// isn't permanently assigned, so we're not setting
+		// it here.
+		pCryptoType->keyslot = 0xFF;
+		pCryptoType->seed = false;
+		// NOTE: Using GodMode9's fixed keyset determination.
+		if (le32_to_cpu(pNcchHeader->program_id.hi) & 0x10) {
+			// Using the fixed debug key.
+			pCryptoType->name = "Fixed (Debug)";
+		} else {
+			// Using zero-key.
+			pCryptoType->name = "Fixed (Zero)";
+		}
+		return 0;
+	}
+
+	// Check ncchflag[3].
+	switch (pNcchHeader->flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
+		case 0x00:
+			pCryptoType->name = "Standard";
+			pCryptoType->keyslot = 0x2C;
+			break;
+		case 0x01:
+			pCryptoType->name = "v7.x";
+			pCryptoType->keyslot = 0x25;
+			break;
+		case 0x0A:
+			pCryptoType->name = "Secure3";
+			pCryptoType->keyslot = 0x18;
+			break;
+		case 0x0B:
+			pCryptoType->name = "Secure4";
+			pCryptoType->keyslot = 0x1B;
+			break;
+		default:
+			// TODO: Unknown encryption method...
+			assert(!"Unknown NCCH encryption method.");
+			pCryptoType->name = nullptr;
+			pCryptoType->keyslot = 0xFF;
+			break;
+	}
+
+	// Is SEED encryption in use?
+	pCryptoType->seed = !!(pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_Fw96KeyY);
+
+	// We're done here.
+	return 0;
 }
 
 /**
  * Get the NCCH crypto type.
- * @return NCCH crypto type, or nullptr if unknown.
+ * @param pCryptoType	[out] Crypto type.
+ * @return 0 on success; negative POSIX error code on error.
  */
-const rp_char *NCCHReader::cryptoType(void) const
+int NCCHReader::cryptoType(CryptoType *pCryptoType) const
 {
+	assert(pCryptoType != nullptr);
+	if (!pCryptoType) {
+		// Invalid argument.
+		return -EINVAL;
+	}
+
 	RP_D(const NCCHReader);
 	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_NCCH)) {
 		// NCCH header wasn't loaded.
 		// TODO: Try to load it here?
-		return nullptr;
+		return -EIO;
 	}
-	return cryptoType_static(&d->ncch_header);
+	return cryptoType_static(pCryptoType, &d->ncch_header);
 }
 
 /**

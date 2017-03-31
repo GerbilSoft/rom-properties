@@ -140,17 +140,29 @@ class NCCHReader : public IPartition
 		const N3DS_ExeFS_Header_t *exefsHeader(void) const;
 
 		/**
-		 * Get the NCCH crypto type.
-		 * @param pNcchHeader NCCH header.
-		 * @return NCCH crypto type, or nullptr if unknown.
+		 * Crypto type information.
 		 */
-		static const rp_char *cryptoType_static(const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+		struct CryptoType {
+			const char *name;	// Crypto method name. (ASCII)
+			bool encrypted;		// True if it's encrypted.
+			uint8_t keyslot;	// Keyslot. (0x00-0x3F)
+			bool seed;		// True if SEED encryption is in use.
+		};
 
 		/**
 		 * Get the NCCH crypto type.
-		 * @return NCCH crypto type, or nullptr if unknown.
+		 * @param pCryptoType	[out] Crypto type.
+		 * @param pNcchHeader	[in] NCCH header.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		const rp_char *cryptoType(void) const;
+		static int cryptoType_static(CryptoType *pCryptoType, const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+
+		/**
+		 * Get the NCCH crypto type.
+		 * @param pCryptoType	[out] Crypto type.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int cryptoType(CryptoType *pCryptoType) const;
 
 		/**
 		 * Open a file. (read-only)
