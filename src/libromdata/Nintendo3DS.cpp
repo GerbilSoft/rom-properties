@@ -1924,20 +1924,6 @@ int Nintendo3DS::loadFieldData(void)
 				len = sizeof(buf);
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 
-			// TODO: Support for CIA+NCCH encryption.
-			// For now, if CIA encryption is in use, that will be
-			// the only thing listed. (Also, debug vs. retail?)
-			NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
-			if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
-				cryptoType.name = "CIA";
-				// NOTE: Not setting other parameters,
-				// since CIA encryption is based on
-				// the title key, which is encrypted using
-				// key 0x3D. (Retail KeyY and Dev normal key
-				// are known; retail KeyX is missing.)
-				cryptoType.encrypted = false;
-			}
-
 			// TODO: Use content_chunk->index?
 			unique_ptr<NCCHReader> ncch(d->loadNCCH(i));
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = (ncch ? ncch->ncchHeader() : nullptr);
@@ -1945,14 +1931,19 @@ int Nintendo3DS::loadFieldData(void)
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
+				const rp_char *crypto = nullptr;
+				if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+					// CIA encryption.
+					crypto = _RP("CIA");
+				}
+
 				const rp_char *cnt_type;
 				if (i == 0 && d->srlData) {
 					// This is an SRL.
 					cnt_type = _RP("SRL");
 					// TODO: Do SRLs have encryption besides CIA encryption?
-					if (!cryptoType.name) {
-						cryptoType.name = "NoCrypto";
-						cryptoType.encrypted = false;
+					if (!crypto) {
+						crypto = _RP("NoCrypto");
 					}
 				} else {
 					// Something else...
@@ -1961,12 +1952,7 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.push_back(cnt_type);
 
 				// Encryption.
-				if (cryptoType.name) {
-					data_row.push_back(latin1_to_rp_string(cryptoType.name, -1));
-				} else {
-					data_row.push_back(_RP("Unknown"));
-				}
-
+				data_row.push_back(crypto ? crypto : _RP("Unknown"));
 				// Version.
 				data_row.push_back(_RP(""));
 
@@ -2007,13 +1993,19 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(content_type);
 
 			// Encryption.
-			if (!cryptoType.name) {
-				int ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
-				if (ret != 0) {
-					// Unknown encryption.
-					cryptoType.name = nullptr;
-					cryptoType.encrypted = false;
-				}
+			NCCHReader::CryptoType cryptoType;
+			bool isCIAcrypto = !!(be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED);
+			int ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
+			if (ret != 0) {
+				// Unknown encryption.
+				cryptoType.name = nullptr;
+				cryptoType.encrypted = false;
+			}
+			if (!cryptoType.name && isCIAcrypto) {
+				// Prevent "CIA+Unknown".
+				cryptoType.name = "CIA";
+				cryptoType.encrypted = false;
+				isCIAcrypto = false;
 			}
 
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
@@ -2022,7 +2014,8 @@ int Nintendo3DS::loadFieldData(void)
 					(cryptoType.name ? cryptoType.name : "Unknown"));
 			} else {
 				// Encrypted.
-				len = snprintf(buf, sizeof(buf), "%s%s (0x%02X)",
+				len = snprintf(buf, sizeof(buf), "%s%s%s (0x%02X)",
+					(isCIAcrypto ? "CIA+" : ""),
 					(cryptoType.name ? cryptoType.name : "Unknown"),
 					(cryptoType.seed ? "+Seed" : ""),
 					cryptoType.keyslot);
