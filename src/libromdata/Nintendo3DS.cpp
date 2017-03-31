@@ -1076,8 +1076,8 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	info.header.addr = 0;
 	info.header.size = sizeof(header);
 	info.header.pData = reinterpret_cast<const uint8_t*>(header);
-	const rp_string ext = FileSystem::file_ext(file->filename());
-	info.ext = ext.c_str();
+	const rp_string filename = file->filename();
+	info.ext = FileSystem::file_ext(filename);
 	info.szFile = d->file->size();
 	d->romType = isRomSupported_static(&info);
 
