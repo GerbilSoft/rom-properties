@@ -128,6 +128,12 @@ class NCCHReader : public IPartition
 		const N3DS_NCCH_Header_NoSig_t *ncchHeader(void) const;
 
 		/**
+		 * Get the NCCH extended header.
+		 * @return NCCH extended header, or nullptr if it couldn't be loaded.
+		 */
+		const N3DS_NCCH_ExHeader_t *ncchExHeader(void) const;
+
+		/**
 		 * Get the ExeFS header.
 		 * @return ExeFS header, or nullptr if it couldn't be loaded.
 		 */

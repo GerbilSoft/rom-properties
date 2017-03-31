@@ -41,12 +41,8 @@
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
 
+// NCCH reader.
 #include "disc/NCCHReader.hpp"
-// TODO: Use NCCHReader to load the ExHeader.
-#ifdef ENABLE_DECRYPTION
-#include "crypto/AesCipherFactory.hpp"
-#include "crypto/IAesCipher.hpp"
-#endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -101,13 +97,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// so one or more can be present.
 			HEADER_SMDH	= (1 << 0),	// Includes header and icon.
 			HEADER_NCCH	= (1 << 1),	// Primary NCCH.
-			HEADER_EXHEADER	= (1 << 2),	// From the primary NCCH.
 
 			// The following headers are mutually exclusive.
-			HEADER_3DSX	= (1 << 3),
-			HEADER_CIA	= (1 << 4),
-			HEADER_TMD	= (1 << 5),
-			HEADER_NCSD	= (1 << 6),	// ncsd_header, cinfo_header
+			HEADER_3DSX	= (1 << 2),
+			HEADER_CIA	= (1 << 3),
+			HEADER_TMD	= (1 << 4),
+			HEADER_NCSD	= (1 << 5),	// ncsd_header, cinfo_header
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -148,9 +143,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		int64_t ncch_offset;
 		uint32_t ncch_length;
 		N3DS_NCCH_Header_NoSig_t ncch_header;
-
-		// ExHeader from the primary NCCH.
-		N3DS_NCCH_ExHeader_t ncch_exheader;
 
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
@@ -194,7 +186,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		/**
 		 * Load the NCCH header for the primary content.
-		 * The NCCH header is loaded into this->ncch_header.
+		 * An NCCH reader is created as this->ncch_reader.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadNCCH(void);
@@ -205,20 +197,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadTMD(void);
-
-		/**
-		 * Load the ExeFS from the primary content.
-		 * ExeFS reader will be set up as this->ncch_reader.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int loadExeFS(void);
-
-		/**
-		 * Load the ExHeader from the primary content.
-		 * The ExHeader will be loaded into this->ncch_exhader.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int loadExHeader(void);
 
 		/**
 		 * Load the ROM image's icon.
@@ -278,7 +256,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	memset(&smdh, 0, sizeof(smdh));
 	memset(&mxh, 0, sizeof(mxh));
 	memset(&ncch_header, 0, sizeof(ncch_header));
-	memset(&ncch_exheader, 0, sizeof(ncch_exheader));
 }
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
@@ -286,7 +263,7 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 	delete img_icon[0];
 	delete img_icon[1];
 
-	// ExeFS reader.
+	// NCCH reader.
 	delete ncch_reader;
 
 	// If this is a DSiWare SRL, these will be open.
@@ -395,22 +372,23 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 		case ROM_TYPE_CCI: {
 			// CCI file, or CIA file with no meta section.
-			// Load the ExeFS.
-			int ret = loadExeFS();
-			if (ret != 0) {
-				// Error loading the ExeFS.
-				return -6;
+			// Find "icon" in the ExeFS.
+			// TODO: NCCHReader::open()
+			// FIXME: Verify content length.
+			if (!ncch_reader) {
+				int ret = loadNCCH();
+				if (ret != 0 || !ncch_reader) {
+					// Unable to open the primary NCCH.
+					return -7;
+				}
 			}
 
-			// FIXME: Verify content length.
 			const N3DS_ExeFS_Header_t *exefs_header = ncch_reader->exefsHeader();
 			if (!exefs_header) {
 				// ExeFS header wasn't loaded.
-				return -7;
+				return -8;
 			}
 
-			// Find "icon".
-			// TODO: NCCHReader::open()
 			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
 			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
 				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
@@ -421,23 +399,23 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 			if (!file_header) {
 				// No icon.
-				return -8;
+				return -9;
 			} else if (le32_to_cpu(file_header->size) < sizeof(smdh)) {
 				// Icon is too small.
-				return -9;
+				return -10;
 			}
 
 			// Load the SMDH section.
 			uint32_t offset = ncch_reader->exefsDataOffset() + le32_to_cpu(file_header->offset);
-			ret = ncch_reader->seek(offset);
+			int ret = ncch_reader->seek(offset);
 			if (ret != 0) {
 				// Seek error.
-				return -10;
+				return -11;
 			}
 			size_t size = ncch_reader->read(&smdh, sizeof(smdh));
 			if (size != sizeof(smdh)) {
 				// Read error.
-				return -11;
+				return -12;
 			}
 			break;
 		}
@@ -620,6 +598,11 @@ int Nintendo3DSPrivate::loadNCCH(void)
 	if (ret == 0) {
 		// NCCH header loaded.
 		headers_loaded |= HEADER_NCCH;
+
+		// Create the NCCH reader if it isn't already created.
+		if (!ncch_reader) {
+			ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
+		}
 	}
 	return ret;
 }
@@ -767,156 +750,6 @@ int Nintendo3DSPrivate::loadTMD(void)
 
 	// Loaded the TMD header.
 	headers_loaded |= HEADER_TMD;
-	return 0;
-}
-
-/**
- * Load the ExeFS from the primary content.
- * ExeFS reader will be set up as this->ncch_reader.
- * @return 0 on success; non-zero on error.
- */
-int Nintendo3DSPrivate::loadExeFS(void)
-{
-	if (this->ncch_reader) {
-		// ExeFS reader is already set up.
-		return 0;
-	}
-
-	// Load the NCCH header if it isn't already loaded.
-	if (!(headers_loaded & HEADER_NCCH)) {
-		int ret = loadNCCH();
-		if (ret != 0) {
-			return -2;
-		}
-	}
-
-	// Load the ExeFS region.
-	// TODO: Verify sizes; other error checking.
-	// TODO: Fold this into loadNCCH().
-	NCCHReader *ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
-	if (!ncch_reader->isOpen()) {
-		// Unable to open the ExeFS.
-		delete ncch_reader;
-		return -97;
-	}
-
-	// ExeFS opened.
-	this->ncch_reader = ncch_reader;
-	return 0;
-}
-
-/**
- * Load the ExHeader from the primary content.
- * The ExHeader will be loaded into this->ncch_exhader.
- * @return 0 on success; non-zero on error.
- */
-int Nintendo3DSPrivate::loadExHeader(void)
-{
-	if (headers_loaded & HEADER_EXHEADER) {
-		// ExHeader is already loaded.
-		return 0;
-	}
-	// TODO:
-	// - Verify values other than NoCrypto|FixedCryptoKey.
-	// - N3DSExHeader helper subclass?
-
-	// Load the NCCH header if it isn't already loaded.
-	if (!(headers_loaded & HEADER_NCCH)) {
-		int ret = loadNCCH();
-		if (ret != 0) {
-			return -2;
-		}
-	}
-
-	// Crypto settings, in priority order:
-	// 1. NoCrypto: AES key is all 0s. (FixedCryptoKey should also be set.)
-	// 2. FixedCryptoKey: Fixed key is used.
-	// 3. Neither: Standard key is used.
-#ifdef ENABLE_DECRYPTION
-	uint8_t key[16];
-	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption. Don't do anything.
-	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-		// Fixed key encryption.
-		// TODO: Determine which keyset is in use.
-		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-		memset(key, 0, sizeof(key));
-	} else {
-		// TODO: Other encryption methods.
-		return -95;
-	}
-#else /* !ENABLE_DECRYPTION */
-	// Decryption is not available, so only NoCrypto is allowed.
-	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
-		// Unsupported.
-		return -95;
-	}
-#endif /* ENABLE_DECRYPTION */
-
-	// Load the ExHeader region.
-	// ExHeader is stored immediately after the main header.
-	// TODO: Verify sizes; other error checking.
-	const int64_t exheader_offset = ncch_offset + sizeof(N3DS_NCCH_Header_t);
-	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
-	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
-	    exheader_length > sizeof(ncch_exheader))
-	{
-		// ExHeader is either too small or too big.
-		return -96;
-	}
-
-	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
-	exheader_length = (exheader_length + 15) & ~15;
-
-	int ret = file->seek(exheader_offset);
-	if (ret != 0) {
-		// Seek error.
-		return -97;
-	}
-	size_t size = file->read(&ncch_exheader, exheader_length);
-	if (size != exheader_length) {
-		// Read error.
-		return -98;
-	}
-
-	// If the ExHeader size is smaller than the maximum size,
-	// clear the rest of the ExHeader.
-	// TODO: Possible strict aliasing violation...
-	if (exheader_length < sizeof(ncch_exheader)) {
-		uint8_t *exzero = reinterpret_cast<uint8_t*>(&ncch_exheader) + exheader_length;
-		memset(exzero, 0, sizeof(ncch_exheader) - exheader_length);
-	}
-
-#ifdef ENABLE_DECRYPTION
-	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
-		// Initialize the counter.
-		// Counter is the big-endian title ID, section number, then all zeroes.
-		// NOTE: Title ID is stored in little-endian in the NCCH header,
-		// so it always needs to be byteswapped.
-		uint8_t counter[16];
-		uint64_t tid_be = __swab64(ncch_header.program_id.id);
-		memcpy(counter, &tid_be, sizeof(tid_be));
-		counter[8] = N3DS_NCCH_SECTION_EXHEADER;
-		memset(&counter[9], 0, 7);
-
-		// Initialize decryption.
-		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
-		cipher->setKey(key, sizeof(key));
-		cipher->setChainingMode(IAesCipher::CM_CTR);
-
-		// Decrypt the ExHeader.
-		// TODO: Uses ncchKey0.
-		cipher->setIV(counter, sizeof(counter));
-		size = cipher->decrypt(reinterpret_cast<uint8_t*>(&ncch_exheader), exheader_length);
-		if (size != exheader_length) {
-			// Decryption error.
-			return -99;
-		}
-	}
-#endif /* ENABLE_DECRYPTION */
-
-	// ExHeader loaded.
-	headers_loaded |= HEADER_EXHEADER;
 	return 0;
 }
 
@@ -1670,9 +1503,6 @@ int Nintendo3DS::loadFieldData(void)
 	{
 		d->loadTMD();
 	}
-	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_EXHEADER)) {
-		d->loadExHeader();
-	}
 
 	// Load and parse the SMDH header.
 	bool haveSeparateSMDHTab = true;
@@ -2167,13 +1997,13 @@ int Nintendo3DS::loadFieldData(void)
 		d->fields->addField_listData(_RP("Contents"), v_contents_names, contents);
 	}
 
-	// Is the NCCH Extended Header loaded?
-	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_EXHEADER) {
+	// Get the NCCH Extended Header.
+	const N3DS_NCCH_ExHeader_t *const ncch_exheader =
+		(d->ncch_reader ? d->ncch_reader->ncchExHeader() : nullptr);
+	if (ncch_exheader) {
 		// Display the NCCH Extended Header.
-		d->fields->addTab(_RP("ExHeader"));
-
 		// TODO: Add more fields?
-		const N3DS_NCCH_ExHeader_t *const ncch_exheader = &d->ncch_exheader;
+		d->fields->addTab(_RP("ExHeader"));
 
 		// Process name.
 		d->fields->addField_string(_RP("Process Name"),
