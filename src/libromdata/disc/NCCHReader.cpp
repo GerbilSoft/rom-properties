@@ -193,21 +193,21 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	int ret = file->seek(ncch_offset + 0x100);
 	if (ret != 0) {
 		// Seek error.
-		this->file = nullptr;
 		q->m_lastError = file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
+		this->file = nullptr;
 		return;
 	}
 	size_t size = file->read(&ncch_header, sizeof(ncch_header));
 	if (size != sizeof(ncch_header)) {
 		// Read error.
-		this->file = nullptr;
 		q->m_lastError = file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
+		this->file = nullptr;
 		return;
 	}
 	headers_loaded |= HEADER_NCCH;
