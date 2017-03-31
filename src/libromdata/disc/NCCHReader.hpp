@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * N3DSExeFS.hpp: Nintendo 3DS ExeFS reader.                               *
+ * NCCHReader.hpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_N3DSEXEFS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_N3DSEXEFS_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
 
 #include "IPartition.hpp"
 #include "../n3ds_structs.h"
@@ -29,32 +29,32 @@ namespace LibRomData {
 
 class IRpFile;
 
-class N3DSExeFSPrivate;
-class N3DSExeFS : public IPartition
+class NCCHReaderPrivate;
+class NCCHReader : public IPartition
 {
 	public:
 		/**
-		 * Construct an N3DSExeFS with the specified IRpFile.
+		 * Construct an NCCHReader with the specified IRpFile.
 		 *
 		 * NOTE: The IRpFile *must* remain valid while this
-		 * N3DSExeFS is open.
+		 * NCCHReader is open.
 		 *
 		 * @param file IRpFile.
-		 * @param ncch_header NCCH header. Needed for encryption parameters.
-		 * @param offset ExeFS start offset, in bytes.
-		 * @param length ExeFS length, in bytes.
+		 * @param media_unit_shift Media unit shift.
+		 * @param ncch_offset NCCH start offset, in bytes.
+		 * @param ncch_length NCCH length, in bytes.
 		 */
-		N3DSExeFS(IRpFile *file, const N3DS_NCCH_Header_NoSig_t *ncch_header,
-			  int64_t offset, uint32_t length);
-		virtual ~N3DSExeFS();
+		NCCHReader(IRpFile *file, uint8_t media_unit_shift,
+			  int64_t ncch_offset, uint32_t ncch_length);
+		virtual ~NCCHReader();
 
 	private:
 		typedef IPartition super;
-		RP_DISABLE_COPY(N3DSExeFS)
+		RP_DISABLE_COPY(NCCHReader)
 
 	protected:
-		friend class N3DSExeFSPrivate;
-		N3DSExeFSPrivate *const d_ptr;
+		friend class NCCHReaderPrivate;
+		NCCHReaderPrivate *const d_ptr;
 
 	public:
 		/** IDiscReader **/
@@ -100,6 +100,7 @@ class N3DSExeFS : public IPartition
 		 */
 		virtual int64_t size(void) override final;
 
+	public:
 		/** IPartition **/
 
 		/**
@@ -116,8 +117,31 @@ class N3DSExeFS : public IPartition
 		 * @return Used partition size, or -1 on error.
 		 */
 		virtual int64_t partition_size_used(void) const override final;
+
+	public:
+		/** NCCHReader **/
+
+		/**
+		 * Get the NCCH header.
+		 * @return NCCH header, or nullptr if it couldn't be loaded.
+		 */
+		const N3DS_NCCH_Header_NoSig_t *ncchHeader(void) const;
+
+		/**
+		 * Get the ExeFS header.
+		 * @return ExeFS header, or nullptr if it couldn't be loaded.
+		 */
+		const N3DS_ExeFS_Header_t *exefsHeader(void) const;
+
+		/**
+		 * Get the ExeFS data offset within the NCCH.
+		 * This is immediately after the ExeFS header.
+		 * TODO: Remove once open() is added.
+		 * @return ExeFS data offset, or 0 on error.
+		 */
+		uint32_t exefsDataOffset(void) const;
 };
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_N3DSEXEFS_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__ */

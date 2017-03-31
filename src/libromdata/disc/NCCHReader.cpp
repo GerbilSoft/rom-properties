@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * N3DSExeFS.cpp: Nintendo 3DS ExeFS reader.                               *
+ * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "N3DSExeFS.hpp"
+#include "NCCHReader.hpp"
 #include "config.libromdata.h"
 
 #include "byteswap.h"
@@ -38,43 +38,45 @@
 #include <cstring>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
+#include <vector>
+using std::vector;
 using std::unique_ptr;
 
 namespace LibRomData {
 
-class N3DSExeFSPrivate
+class NCCHReaderPrivate
 {
 	public:
-		N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
-			const N3DS_NCCH_Header_NoSig_t *ncch_header,
-			int64_t offset, uint32_t length);
-		~N3DSExeFSPrivate();
+		NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
+			uint8_t media_unit_shift,
+			int64_t ncch_offset, uint32_t ncch_length);
+		~NCCHReaderPrivate();
 
 	private:
-		RP_DISABLE_COPY(N3DSExeFSPrivate)
+		RP_DISABLE_COPY(NCCHReaderPrivate)
 	protected:
-		N3DSExeFS *const q_ptr;
+		NCCHReader *const q_ptr;
 
 	public:
 		IRpFile *file;		// 3DS ROM image.
 
-		// Offsets.
-		int64_t fs_offset;	// ExeFS start offset, in bytes.
-		uint32_t fs_length;	// ExeFS length, in bytes.
+		// NCCH offsets.
+		const int64_t ncch_offset;	// NCCH start offset, in bytes.
+		const uint32_t ncch_length;	// NCCH length, in bytes.
+		const uint8_t media_unit_shift;
 
-		// Current read position within the ExeFS.
-		// pos = 0 indicates the beginning of the ExeFS header.
+		// Current read position within the NCCH.
+		// pos = 0 indicates the beginning of the NCCH header.
 		// NOTE: This cannot be more than 4 GB,
 		// so we're using uint32_t.
 		uint32_t pos;
 
+		// NCCH header.
+		N3DS_NCCH_Header_NoSig_t ncch_header;
 		// ExeFS header.
 		N3DS_ExeFS_Header_t exefs_header;
-
-		// NCCH flags.
-		// See N3DS_NCCH_Flags for more information.
-		uint8_t ncch_flags[8];
 
 #ifdef ENABLE_DECRYPTION
 		// Title ID. Used for AES-CTR initialization.
@@ -112,27 +114,78 @@ class N3DSExeFSPrivate
 			offset /= 16;
 			ctr->u32[3] = cpu_to_be32(offset);
 		}
+
+		// Encrypted section addresses.
+		struct EncSection {
+			uint32_t address;	// relative to ncch_offset
+			uint32_t ctr_address;	// Counter relative address.
+			uint32_t length;
+			uint8_t keyIdx;		// ncch_keys[] index
+			uint8_t section;	// N3DS_NCCH_Sections
+
+			EncSection(uint32_t address, uint32_t ctr_address,
+				uint32_t length, uint8_t keyIdx, uint8_t section)
+				: address(address)
+				, ctr_address(ctr_address)
+				, length(length)
+				, keyIdx(keyIdx)
+				, section(section)
+				{ }
+
+			/**
+			 * Comparison operator for std::sort().
+			 */
+			inline bool operator<(const EncSection& other) const
+			{
+				return (other.address < this->address);
+			}
+		};
+		vector<EncSection> encSections;
 #endif /* ENABLE_DECRYPTION */
 };
 
-/** N3DSExeFSPrivate **/
+/** NCCHReaderPrivate **/
 
-N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
-	const N3DS_NCCH_Header_NoSig_t *ncch_header,
-	int64_t offset, uint32_t length)
+NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
+	uint8_t media_unit_shift,
+	int64_t ncch_offset, uint32_t ncch_length)
 	: q_ptr(q)
 	, file(file)
-	, fs_offset(offset)
-	, fs_length(length)
+	, ncch_offset(ncch_offset)
+	, ncch_length(ncch_length)
+	, media_unit_shift(media_unit_shift)
 	, pos(0)
 #ifdef ENABLE_DECRYPTION
 	, cipher(nullptr)
 #endif /* ENABLE_DECRYPTION */
 {
-	// Copy fields from the NCCH header.
-	memcpy(ncch_flags, ncch_header->flags, sizeof(ncch_flags));
+	// TODO: CIA outer decryption.
+
+	// Read the NCCH header. (without the signature)
+	int ret = file->seek(ncch_offset + 0x100);
+	if (ret != 0) {
+		// Seek error.
+		this->file = nullptr;
+		q->m_lastError = file->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return;
+	}
+	size_t size = file->read(&ncch_header, sizeof(ncch_header));
+	if (size != sizeof(ncch_header)) {
+		// Read error.
+		this->file = nullptr;
+		q->m_lastError = file->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return;
+	}
+
 #ifdef ENABLE_DECRYPTION
-	tid_be = __swab64(ncch_header->program_id.id);
+	// Byteswap the title ID. (It's used for the AES counter.)
+	tid_be = __swab64(ncch_header.program_id.id);
 #endif /* ENABLE_DECRYPTION */
 
 	// Determine the keyset to use.
@@ -141,10 +194,10 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 	// 2. FixedCryptoKey: Fixed key is used.
 	// 3. Neither: Standard key is used.
 #ifdef ENABLE_DECRYPTION
-	if (ncch_flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+	if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
 		// No encryption.
 		memset(ncch_keys, 0, sizeof(ncch_keys));
-	} else if (ncch_flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+	} else if (ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
 		// Fixed key encryption.
 		// TODO: Determine which keyset is in use.
 		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
@@ -157,7 +210,7 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
-	if (!(ncch_flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
 		// TODO: Set an error like WiiPartition.
 		q->m_lastError = EIO;
@@ -166,15 +219,20 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 	}
 #endif /* ENABLE_DECRYPTION */
 
+	// TODO: If ExeFS size is 0, no ExeFS is present.
+	// Need to indicate missing ExHeader, ExeFS, RomFS, etc.
+
 	// Load the ExeFS header.
-	int ret = file->seek(fs_offset);
+	// TODO: Verify length.
+	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
+	ret = file->seek(ncch_offset + exefs_offset);
 	if (ret != 0) {
 		// Seek error.
 		q->m_lastError = file->lastError();
 		this->file = nullptr;
 		return;
 	}
-	size_t size = file->read(&exefs_header, sizeof(exefs_header));
+	size = file->read(&exefs_header, sizeof(exefs_header));
 	if (size != sizeof(exefs_header)) {
 		// Read error.
 		q->m_lastError = file->lastError();
@@ -183,7 +241,7 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 	}
 
 #ifdef ENABLE_DECRYPTION
-	if (!(ncch_flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
+	if (!(ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
 		cipher = AesCipherFactory::getInstance();
@@ -196,38 +254,92 @@ N3DSExeFSPrivate::N3DSExeFSPrivate(N3DSExeFS *q, IRpFile *file,
 		init_ctr(&ctr, 0);
 		cipher->setIV(ctr.u8, sizeof(ctr.u8));
 		cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+
+		// Initialize encrypted section handling.
+		// Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.c
+		// Encryption details:
+		// - ExHeader: ncchKey0, N3DS_NCCH_SECTION_EXHEADER
+		// - acexDesc (TODO): ncchKey0, N3DS_NCCH_SECTION_EXHEADER
+		// - ExeFS:
+		//   - Header, "icon" and "banner": ncchKey0, N3DS_NCCH_SECTION_EXEFS
+		//   - Other files: ncchKey1, N3DS_NCCH_SECTION_EXEFS
+		// - RomFS (TODO): ncchKey1, N3DS_NCCH_SECTION_ROMFS
+
+		// ExHeader
+		encSections.push_back(EncSection(
+			sizeof(N3DS_NCCH_Header_t), 0,
+			le32_to_cpu(ncch_header.exheader_size),
+			0, N3DS_NCCH_SECTION_EXHEADER));
+
+		// ExeFS header
+		encSections.push_back(EncSection(
+			exefs_offset, 0,
+			(le32_to_cpu(ncch_header.exefs_size) << media_unit_shift),
+			0, N3DS_NCCH_SECTION_EXEFS));
+
+		// ExeFS files
+		for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
+			const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[i];
+			if (file_header->name[0] == 0)
+				continue;	// or break?
+
+			uint8_t keyIdx;
+			if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
+			    !strncmp(file_header->name, "banner", sizeof(file_header->name))) {
+				// Icon and Banner use key 0.
+				keyIdx = 0;
+			} else {
+				// All other files use key 1.
+				keyIdx = 1;
+			}
+
+			encSections.push_back(EncSection(
+				exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
+				le32_to_cpu(file_header->offset),
+				le32_to_cpu(file_header->offset),	// Counter address.
+				le32_to_cpu(file_header->size),
+				keyIdx, N3DS_NCCH_SECTION_EXEFS));
+		}
+
+		// RomFS
+		encSections.push_back(EncSection(
+			(le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift), 0,
+			(le32_to_cpu(ncch_header.romfs_size) << media_unit_shift),
+			0, N3DS_NCCH_SECTION_ROMFS));
+
+		// Sort encSections by NCCH-relative address.
+		// TODO: Check for overlap?
+		std::sort(encSections.begin(), encSections.end());
 	}
 #endif /* ENABLE_DECRYPTION */
-
-	// ExeFS is ready.
 }
 
-N3DSExeFSPrivate::~N3DSExeFSPrivate()
+NCCHReaderPrivate::~NCCHReaderPrivate()
 {
 #ifdef ENABLE_DECRYPTION
 	delete cipher;
 #endif /* ENABLE_DECRYPTION */
 }
 
-/** N3DSExeFS **/
+/** NCCHReader **/
 
 /**
- * Construct an N3DSExeFS with the specified IRpFile.
+ * Construct an NCCHReader with the specified IRpFile.
  *
  * NOTE: The IRpFile *must* remain valid while this
- * N3DSExeFS is open.
+ * NCCHReader is open.
  *
  * @param file IRpFile.
- * @param ncch_header NCCH header. Needed for encryption parameters.
- * @param offset ExeFS start offset, in bytes.
- * @param length ExeFS length, in bytes.
+ * @param media_unit_shift Media unit shift.
+ * @param ncch_offset NCCH start offset, in bytes.
+ * @param ncch_length NCCH length, in bytes.
  */
-N3DSExeFS::N3DSExeFS(IRpFile *file, const N3DS_NCCH_Header_NoSig_t *ncch_header,
-	  int64_t offset, uint32_t length)
-	: d_ptr(new N3DSExeFSPrivate(this, file, ncch_header, offset, length))
+NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
+		int64_t ncch_offset, uint32_t ncch_length)
+	: d_ptr(new NCCHReaderPrivate(this, file, media_unit_shift, ncch_offset, ncch_length))
 { }
 
-N3DSExeFS::~N3DSExeFS()
+NCCHReader::~NCCHReader()
 {
 	delete d_ptr;
 }
@@ -239,9 +351,9 @@ N3DSExeFS::~N3DSExeFS()
  * This usually only returns false if an error occurred.
  * @return True if the partition is open; false if it isn't.
  */
-bool N3DSExeFS::isOpen(void) const
+bool NCCHReader::isOpen(void) const
 {
-	RP_D(N3DSExeFS);
+	RP_D(NCCHReader);
 	return (d->file && d->file->isOpen());
 }
 
@@ -251,9 +363,9 @@ bool N3DSExeFS::isOpen(void) const
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes read.
  */
-size_t N3DSExeFS::read(void *ptr, size_t size)
+size_t NCCHReader::read(void *ptr, size_t size)
 {
-	RP_D(N3DSExeFS);
+	RP_D(NCCHReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file || !d->file->isOpen()) {
@@ -262,18 +374,18 @@ size_t N3DSExeFS::read(void *ptr, size_t size)
 	}
 
 	// Are we already at the end of the file?
-	if (d->pos >= d->fs_length)
+	if (d->pos >= d->ncch_length)
 		return 0;
 
-	// Make sure d->pos + size <= d->fs_length.
+	// Make sure d->pos + size <= d->ncch_length.
 	// If it isn't, we'll do a short read.
-	if (d->pos + (int64_t)size >= d->fs_length) {
-		size = (size_t)(d->fs_length - d->pos);
+	if (d->pos + (int64_t)size >= d->ncch_length) {
+		size = (size_t)(d->ncch_length - d->pos);
 	}
 
-	if (d->ncch_flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption. Read directly from the ExeFS.
-		int ret = d->file->seek(d->fs_offset + d->pos);
+	if (d->ncch_header.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption. Read directly from the NCCH.
+		int ret = d->file->seek(d->ncch_offset + d->pos);
 		if (ret != 0) {
 			// Seek error.
 			m_lastError = d->file->lastError();
@@ -301,7 +413,7 @@ size_t N3DSExeFS::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	int ret = d->file->seek(d->fs_offset + d->pos);
+	int ret = d->file->seek(d->ncch_offset + d->pos);
 	if (ret != 0) {
 		// Seek error.
 		m_lastError = d->file->lastError();
@@ -315,13 +427,13 @@ size_t N3DSExeFS::read(void *ptr, size_t size)
 
 	// Decrypt the data.
 	// FIXME: Round up to 16 if a short read occurred?
-	N3DSExeFSPrivate::ctr_t ctr;
+	NCCHReaderPrivate::ctr_t ctr;
 	d->init_ctr(&ctr, d->pos);
 	d->cipher->setIV(ctr.u8, sizeof(ctr.u8));
 	ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
 	d->pos += (uint32_t)ret_sz;
-	if (d->pos > d->fs_length) {
-		d->pos = d->fs_length;
+	if (d->pos > d->ncch_length) {
+		d->pos = d->ncch_length;
 	}
 	return ret_sz;
 #else /* !ENABLE_DECRYPTION */
@@ -335,9 +447,9 @@ size_t N3DSExeFS::read(void *ptr, size_t size)
  * @param pos Partition position.
  * @return 0 on success; -1 on error.
  */
-int N3DSExeFS::seek(int64_t pos)
+int NCCHReader::seek(int64_t pos)
 {
-	RP_D(N3DSExeFS);
+	RP_D(NCCHReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file ||  !d->file->isOpen()) {
@@ -349,8 +461,8 @@ int N3DSExeFS::seek(int64_t pos)
 	// TODO: How does POSIX behave?
 	if (pos < 0)
 		d->pos = 0;
-	else if (pos >= d->fs_length)
-		d->pos = d->fs_length;
+	else if (pos >= d->ncch_length)
+		d->pos = d->ncch_length;
 	else
 		d->pos = (uint32_t)pos;
 	return 0;
@@ -359,7 +471,7 @@ int N3DSExeFS::seek(int64_t pos)
 /**
  * Seek to the beginning of the partition.
  */
-void N3DSExeFS::rewind(void)
+void NCCHReader::rewind(void)
 {
 	seek(0);
 }
@@ -368,9 +480,9 @@ void N3DSExeFS::rewind(void)
  * Get the partition position.
  * @return Partition position on success; -1 on error.
  */
-int64_t N3DSExeFS::tell(void)
+int64_t NCCHReader::tell(void)
 {
-	RP_D(N3DSExeFS);
+	RP_D(NCCHReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
 	if (!d->file ||  !d->file->isOpen()) {
@@ -383,15 +495,15 @@ int64_t N3DSExeFS::tell(void)
 
 /**
  * Get the data size.
- * This size does not include the partition header,
+ * This size does not include the NCCH header,
  * and it's adjusted to exclude hashes.
  * @return Data size, or -1 on error.
  */
-int64_t N3DSExeFS::size(void)
+int64_t NCCHReader::size(void)
 {
 	// TODO: Errors?
-	RP_D(const N3DSExeFS);
-	const int64_t ret = d->fs_length - sizeof(N3DS_ExeFS_Header_t);
+	RP_D(const NCCHReader);
+	const int64_t ret = d->ncch_length - sizeof(N3DS_NCCH_Header_t);
 	return (ret >= 0 ? ret : 0);
 }
 
@@ -402,11 +514,11 @@ int64_t N3DSExeFS::size(void)
  * This size includes the partition header and hashes.
  * @return Partition size, or -1 on error.
  */
-int64_t N3DSExeFS::partition_size(void) const
+int64_t NCCHReader::partition_size(void) const
 {
 	// TODO: Errors?
-	RP_D(const N3DSExeFS);
-	return d->fs_length;
+	RP_D(const NCCHReader);
+	return d->ncch_length;
 }
 
 /**
@@ -415,12 +527,68 @@ int64_t N3DSExeFS::partition_size(void) const
  * but does not include "empty" sectors.
  * @return Used partition size, or -1 on error.
  */
-int64_t N3DSExeFS::partition_size_used(void) const
+int64_t NCCHReader::partition_size_used(void) const
 {
 	// TODO: Errors?
-	// NOTE: For N3DSExeFS, this is the same as partition_size().
-	RP_D(const N3DSExeFS);
-	return d->fs_length;
+	// NOTE: For NCCHReader, this is the same as partition_size().
+	RP_D(const NCCHReader);
+	return d->ncch_length;
+}
+
+/**
+ * Get the NCCH header.
+ * @return NCCH header, or nullptr if it couldn't be loaded.
+ */
+const N3DS_NCCH_Header_NoSig_t *NCCHReader::ncchHeader(void) const
+{
+	RP_D(const NCCHReader);
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	if (!d->file || !d->file->isOpen()) {
+		//m_lastError = EBADF;
+		return nullptr;
+	}
+
+	// TODO: Check if the NCCH header was actually loaded.
+	return &d->ncch_header;
+}
+
+/**
+ * Get the ExeFS header.
+ * @return ExeFS header, or nullptr if it couldn't be loaded.
+ */
+const N3DS_ExeFS_Header_t *NCCHReader::exefsHeader(void) const
+{
+	RP_D(const NCCHReader);
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	if (!d->file || !d->file->isOpen()) {
+		//m_lastError = EBADF;
+		return nullptr;
+	}
+
+	// TODO: Check if the ExeFS header was actually loaded.
+	return &d->exefs_header;
+}
+
+/**
+ * Get the ExeFS data offset within the NCCH.
+ * This is immediately after the ExeFS header.
+ * TODO: Remove once open() is added.
+ * @return ExeFS data offset, or 0 on error.
+ */
+uint32_t NCCHReader::exefsDataOffset(void) const
+{
+	RP_D(const NCCHReader);
+	assert(d->file != nullptr);
+	assert(d->file->isOpen());
+	if (!d->file || !d->file->isOpen()) {
+		//m_lastError = EBADF;
+		return 0;
+	}
+
+	// TODO: Check if the ExeFS header was actually loaded.
+	return (le32_to_cpu(d->ncch_header.exefs_offset) << d->media_unit_shift) + sizeof(d->exefs_header);
 }
 
 }

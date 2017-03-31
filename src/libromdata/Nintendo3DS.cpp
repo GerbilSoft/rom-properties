@@ -41,9 +41,8 @@
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"
 
-#include "disc/N3DSExeFS.hpp"
-// TODO: Separate class for ExHeader loading?
-// Alternatively, extend N3DSExeFS to handle the entire NCCH.
+#include "disc/NCCHReader.hpp"
+// TODO: Use NCCHReader to load the ExHeader.
 #ifdef ENABLE_DECRYPTION
 #include "crypto/AesCipherFactory.hpp"
 #include "crypto/IAesCipher.hpp"
@@ -156,8 +155,8 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
 
-		// ExeFS reader.
-		N3DSExeFS *exefs_reader;
+		// NCCH reader.
+		NCCHReader *ncch_reader;
 
 		// File readers for DSiWare CIAs.
 		DiscReader *srlReader;	// uses this->file
@@ -209,7 +208,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 		/**
 		 * Load the ExeFS from the primary content.
-		 * ExeFS reader will be set up as this->exefs_reader.
+		 * ExeFS reader will be set up as this->ncch_reader.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int loadExeFS(void);
@@ -266,7 +265,7 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, content_count(0)
 	, ncch_offset(0)
 	, ncch_length(0)
-	, exefs_reader(nullptr)
+	, ncch_reader(nullptr)
 	, srlReader(nullptr)
 	, srlFile(nullptr)
 	, srlData(nullptr)
@@ -288,7 +287,7 @@ Nintendo3DSPrivate::~Nintendo3DSPrivate()
 	delete img_icon[1];
 
 	// ExeFS reader.
-	delete exefs_reader;
+	delete ncch_reader;
 
 	// If this is a DSiWare SRL, these will be open.
 	if (srlData) {
@@ -404,21 +403,19 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// FIXME: Verify content length.
-			// TODO: Add file open functions to N3DSExeFS.
-			N3DS_ExeFS_Header_t exefs_header;
-			exefs_reader->rewind();
-			size_t size = exefs_reader->read(&exefs_header, sizeof(exefs_header));
-			if (size != sizeof(exefs_header)) {
-				// Read error.
+			const N3DS_ExeFS_Header_t *exefs_header = ncch_reader->exefsHeader();
+			if (!exefs_header) {
+				// ExeFS header wasn't loaded.
 				return -7;
 			}
 
 			// Find "icon".
+			// TODO: NCCHReader::open()
 			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-			for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
-				if (!strncmp(exefs_header.files[i].name, "icon", sizeof(exefs_header.files[i].name))) {
+			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
 					// Found "icon".
-					file_header = &exefs_header.files[i];
+					file_header = &exefs_header->files[i];
 					break;
 				}
 			}
@@ -431,13 +428,13 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Load the SMDH section.
-			uint32_t offset = le32_to_cpu(file_header->offset) + sizeof(exefs_header);
-			ret = exefs_reader->seek(offset);
+			uint32_t offset = ncch_reader->exefsDataOffset() + le32_to_cpu(file_header->offset);
+			ret = ncch_reader->seek(offset);
 			if (ret != 0) {
 				// Seek error.
 				return -10;
 			}
-			size = exefs_reader->read(&smdh, sizeof(smdh));
+			size_t size = ncch_reader->read(&smdh, sizeof(smdh));
 			if (size != sizeof(smdh)) {
 				// Read error.
 				return -11;
@@ -775,12 +772,12 @@ int Nintendo3DSPrivate::loadTMD(void)
 
 /**
  * Load the ExeFS from the primary content.
- * ExeFS reader will be set up as this->exefs_reader.
+ * ExeFS reader will be set up as this->ncch_reader.
  * @return 0 on success; non-zero on error.
  */
 int Nintendo3DSPrivate::loadExeFS(void)
 {
-	if (this->exefs_reader) {
+	if (this->ncch_reader) {
 		// ExeFS reader is already set up.
 		return 0;
 	}
@@ -795,18 +792,16 @@ int Nintendo3DSPrivate::loadExeFS(void)
 
 	// Load the ExeFS region.
 	// TODO: Verify sizes; other error checking.
-	const int64_t exefs_offset = ncch_offset +
-		(le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
-	const uint32_t exefs_length = (le32_to_cpu(ncch_header.exefs_size) << media_unit_shift);
-	N3DSExeFS *exefs_reader = new N3DSExeFS(file, &ncch_header, exefs_offset, exefs_length);
-	if (!exefs_reader->isOpen()) {
+	// TODO: Fold this into loadNCCH().
+	NCCHReader *ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
+	if (!ncch_reader->isOpen()) {
 		// Unable to open the ExeFS.
-		delete exefs_reader;
+		delete ncch_reader;
 		return -97;
 	}
 
 	// ExeFS opened.
-	this->exefs_reader = exefs_reader;
+	this->ncch_reader = ncch_reader;
 	return 0;
 }
 
