@@ -135,16 +135,16 @@ class NCCHReaderPrivate
 
 		// Encrypted section addresses.
 		struct EncSection {
-			uint32_t address;	// relative to ncch_offset
-			uint32_t ctr_address;	// Counter relative address.
+			uint32_t address;	// Relative to ncch_offset.
+			uint32_t ctr_base;	// Base address for the AES-CTR counter.
 			uint32_t length;
 			uint8_t keyIdx;		// ncch_keys[] index
 			uint8_t section;	// N3DS_NCCH_Sections
 
-			EncSection(uint32_t address, uint32_t ctr_address,
+			EncSection(uint32_t address, uint32_t ctr_base,
 				uint32_t length, uint8_t keyIdx, uint8_t section)
 				: address(address)
-				, ctr_address(ctr_address)
+				, ctr_base(ctr_base)
 				, length(length)
 				, keyIdx(keyIdx)
 				, section(section)
@@ -159,6 +159,13 @@ class NCCHReaderPrivate
 			}
 		};
 		vector<EncSection> encSections;
+
+		/**
+		 * Find the encrypted section containing a given address.
+		 * @param address Address.
+		 * @return Index in encSections, or -1 if not encrypted.
+		 */
+		int findEncSection(uint32_t address) const;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -290,14 +297,16 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 		// ExHeader
 		encSections.push_back(EncSection(
-			sizeof(N3DS_NCCH_Header_t), 0,
+			sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
+			sizeof(N3DS_NCCH_Header_t),	// Counter base address.
 			le32_to_cpu(ncch_header.exheader_size),
 			0, N3DS_NCCH_SECTION_EXHEADER));
 
 		if (headers_loaded & HEADER_EXEFS) {
 			// ExeFS header
 			encSections.push_back(EncSection(
-				exefs_offset, 0,
+				exefs_offset,	// Address within NCCH.
+				exefs_offset,	// Counter base address.
 				sizeof(N3DS_ExeFS_Header_t),
 				0, N3DS_NCCH_SECTION_EXEFS));
 
@@ -319,8 +328,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 				encSections.push_back(EncSection(
 					exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
-					le32_to_cpu(file_header->offset),
-					le32_to_cpu(file_header->offset),	// Counter address.
+						le32_to_cpu(file_header->offset),
+					exefs_offset,				// Counter base address.
 					le32_to_cpu(file_header->size),
 					keyIdx, N3DS_NCCH_SECTION_EXEFS));
 			}
@@ -328,8 +337,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 		// RomFS
 		if (le32_to_cpu(ncch_header.romfs_size) != 0) {
+			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift);
 			encSections.push_back(EncSection(
-				(le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift), 0,
+				romfs_offset,	// Address within NCCH.
+				romfs_offset,	// Counter base address.
 				(le32_to_cpu(ncch_header.romfs_size) << media_unit_shift),
 				0, N3DS_NCCH_SECTION_ROMFS));
 		}
@@ -348,6 +359,29 @@ NCCHReaderPrivate::~NCCHReaderPrivate()
 #endif /* ENABLE_DECRYPTION */
 }
 
+#ifdef ENABLE_DECRYPTION
+/**
+ * Find the encrypted section containing a given address.
+ * @param address Address.
+ * @return Index in encSections, or -1 if not encrypted.
+ */
+int NCCHReaderPrivate::findEncSection(uint32_t address) const
+{
+	for (int i = 0; i < (int)encSections.size(); i++) {
+		const auto &section = encSections.at(i);
+		if (address >= section.address &&
+		    address < section.address + section.length)
+		{
+			// Found the section.
+			return i;
+		}
+	}
+
+	// Not an encrypted section.
+	return -1;
+}
+#endif /* ENABLE_DECRYPTION */
+
 /**
  * Load the NCCH Extended Header.
  * @return 0 on success; non-zero on error.
@@ -365,16 +399,22 @@ int NCCHReaderPrivate::loadExHeader(void)
 		return -1;
 	}
 
+	// NOTE: Using NCCHReader functions instead of direct
+	// file access, so all addresses are relative to the
+	// start of the NCCH.
+
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
 	RP_Q(NCCHReader);
-	int ret = file->seek(ncch_offset + sizeof(N3DS_NCCH_Header_t));
+	int64_t prev_pos = q->tell();
+	int ret = q->seek(sizeof(N3DS_NCCH_Header_t));
 	if (ret != 0) {
 		// Seek error.
 		q->m_lastError = file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
+		q->seek(prev_pos);
 		return -2;
 	}
 
@@ -391,13 +431,14 @@ int NCCHReaderPrivate::loadExHeader(void)
 	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
 	exheader_length = (exheader_length + 15) & ~15;
 
-	size_t size = file->read(&ncch_exheader, exheader_length);
+	size_t size = q->read(&ncch_exheader, exheader_length);
 	if (size != exheader_length) {
 		// Read error.
 		q->m_lastError = file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
+		q->seek(prev_pos);
 		return -4;
 	}
 
@@ -410,6 +451,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 	}
 
 	// ExHeader loaded.
+	q->seek(prev_pos);
 	headers_loaded |= HEADER_EXHEADER;
 	return 0;
 }
@@ -493,11 +535,6 @@ size_t NCCHReader::read(void *ptr, size_t size)
 	}
 
 #ifdef ENABLE_DECRYPTION
-	// TODO: Handle reads of differently-encrypted areas.
-	// For now, assuming ncch_keys[0] for everything.
-	// Either need to move decryption down to N3DSFile,
-	// or handle separate regions here.
-
 	// TODO: Handle reads that aren't a multiple of 16 bytes.
 	assert(d->pos % 16 == 0);
 	assert(size % 16 == 0);
@@ -506,29 +543,76 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		return 0;
 	}
 
+	// Seek to the starting position.
 	int ret = d->file->seek(d->ncch_offset + d->pos);
 	if (ret != 0) {
 		// Seek error.
 		m_lastError = d->file->lastError();
 		return 0;
 	}
-	size_t ret_sz = d->file->read(ptr, size);
-	if (ret_sz != size) {
-		// Possible error occurred...
-		m_lastError = d->file->lastError();
+
+	size_t sz_total_read = 0;
+	while (size > 0) {
+		// Determine what section we're in.
+		int sectIdx = d->findEncSection(d->pos);
+		const NCCHReaderPrivate::EncSection *section = (
+			sectIdx >= 0 ? &d->encSections.at(sectIdx) : nullptr);
+
+		size_t sz_to_read = 0;
+		uint32_t section_offset = 0;
+		if (!section) {
+			// Not in an encrypted section.
+			// TODO: Find the next encrypted section.
+			// For now, assuming the rest is plaintext.
+			sz_to_read = size;
+			assert(!"Reading in an unencrypted section...");
+		} else {
+			// We're in an encrypted section.
+			section_offset = (uint32_t)(d->pos - section->address);
+			if (section_offset + size <= section->length) {
+				// Remainder of reading is in this section.
+				sz_to_read = size;
+			} else {
+				// We're reading past the end of this section.
+				sz_to_read = section->length - section_offset;
+			}
+		}
+
+		size_t ret_sz = d->file->read(ptr, sz_to_read);
+		if (ret_sz != sz_to_read) {
+			// Possible error occurred...
+			m_lastError = d->file->lastError();
+		}
+
+		if (section) {
+			// Set the required key.
+			// TODO: Don't set the key if it hasn't changed.
+			d->cipher->setKey(d->ncch_keys[section->keyIdx], sizeof(d->ncch_keys[section->keyIdx]));
+
+			// Initialize the counter based on section and offset.
+			NCCHReaderPrivate::ctr_t ctr;
+			d->init_ctr(&ctr, section->section, d->pos - section->ctr_base);
+			d->cipher->setIV(ctr.u8, sizeof(ctr.u8));
+
+			// Decrypt the data.
+			// FIXME: Round up to 16 if a short read occurred?
+			ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
+		}
+
+		d->pos += (uint32_t)ret_sz;
+		sz_total_read += ret_sz;
+		size -= ret_sz;
+		if (d->pos > d->ncch_length) {
+			d->pos = d->ncch_length;
+			break;
+		}
+		if (ret_sz != sz_to_read) {
+			// Short read.
+			break;
+		}
 	}
 
-	// Decrypt the data.
-	// FIXME: Round up to 16 if a short read occurred?
-	NCCHReaderPrivate::ctr_t ctr;
-	d->init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, d->pos);
-	d->cipher->setIV(ctr.u8, sizeof(ctr.u8));
-	ret_sz = d->cipher->decrypt(static_cast<uint8_t*>(ptr), (unsigned int)ret_sz);
-	d->pos += (uint32_t)ret_sz;
-	if (d->pos > d->ncch_length) {
-		d->pos = d->ncch_length;
-	}
-	return ret_sz;
+	return sz_total_read;
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled.
 	return 0;
