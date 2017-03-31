@@ -89,6 +89,12 @@ class NCCHReaderPrivate
 		// ExeFS header.
 		N3DS_ExeFS_Header_t exefs_header;
 
+		/**
+		 * Load the NCCH Extended Header.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int loadExHeader(void);
+
 #ifdef ENABLE_DECRYPTION
 		// Title ID. Used for AES-CTR initialization.
 		// (Big-endian format)
@@ -234,65 +240,25 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// TODO: If ExeFS size is 0, no ExeFS is present.
-	// Need to indicate missing ExHeader, ExeFS, RomFS, etc.
-
-	// Load the ExHeader region.
-	// ExHeader is stored immediately after the main header.
-	// TODO: Verify sizes; other error checking.
-	const int64_t exheader_offset = ncch_offset + sizeof(N3DS_NCCH_Header_t);
-	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
-	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
-	    exheader_length > sizeof(ncch_exheader))
-	{
-		// ExHeader is either too small or too big.
-		q->m_lastError = -EIO;
-		this->file = nullptr;
-		return;
-	}
-
-	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
-	exheader_length = (exheader_length + 15) & ~15;
-
-	ret = file->seek(exheader_offset);
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		this->file = nullptr;
-		return;
-	}
-	size = file->read(&ncch_exheader, exheader_length);
-	if (size != exheader_length) {
-		// Read error.
-		q->m_lastError = file->lastError();
-		this->file = nullptr;
-		return;
-	}
-
-	// If the ExHeader size is smaller than the maximum size,
-	// clear the rest of the ExHeader.
-	// TODO: Possible strict aliasing violation...
-	if (exheader_length < sizeof(ncch_exheader)) {
-		uint8_t *exzero = reinterpret_cast<uint8_t*>(&ncch_exheader) + exheader_length;
-		memset(exzero, 0, sizeof(ncch_exheader) - exheader_length);
-	}
-
 	// Load the ExeFS header.
 	// TODO: Verify length.
 	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.exefs_offset) << media_unit_shift);
-	ret = file->seek(ncch_offset + exefs_offset);
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		this->file = nullptr;
-		return;
-	}
-	size = file->read(&exefs_header, sizeof(exefs_header));
-	if (size != sizeof(exefs_header)) {
-		// Read error.
-		q->m_lastError = file->lastError();
-		this->file = nullptr;
-		return;
+	if (exefs_offset != 0) {
+		ret = file->seek(ncch_offset + exefs_offset);
+		if (ret != 0) {
+			// Seek error.
+			q->m_lastError = file->lastError();
+			this->file = nullptr;
+			return;
+		}
+		size = file->read(&exefs_header, sizeof(exefs_header));
+		if (size != sizeof(exefs_header)) {
+			// Read error.
+			q->m_lastError = file->lastError();
+			this->file = nullptr;
+			return;
+		}
+		headers_loaded |= HEADER_EXEFS;
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -301,21 +267,16 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		// TODO: Check for errors.
 		cipher = AesCipherFactory::getInstance();
 		cipher->setChainingMode(IAesCipher::CM_CTR);
-		// ExHeader and ExeFS header both use ncchKey0.
-		cipher->setKey(ncch_keys[0], sizeof(ncch_keys[0]));
-
-		// Decrypt the NCCH ExHeader.
 		ctr_t ctr;
-		init_ctr(&ctr, N3DS_NCCH_SECTION_EXHEADER, 0);
-		cipher->setIV(ctr.u8, sizeof(ctr.u8));
-		cipher->decrypt(reinterpret_cast<uint8_t*>(&ncch_exheader), sizeof(ncch_exheader));
-		headers_loaded |= HEADER_EXHEADER;
 
-		// Decrypt the ExeFS header.
-		init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, 0);
-		cipher->setIV(ctr.u8, sizeof(ctr.u8));
-		cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
-		headers_loaded |= HEADER_EXEFS;
+		if (headers_loaded & HEADER_EXEFS) {
+			// Decrypt the ExeFS header.
+			// ExeFS header uses ncchKey0.
+			cipher->setKey(ncch_keys[0], sizeof(ncch_keys[0]));
+			init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, 0);
+			cipher->setIV(ctr.u8, sizeof(ctr.u8));
+			cipher->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
+		}
 
 		// Initialize encrypted section handling.
 		// Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.c
@@ -333,51 +294,51 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			le32_to_cpu(ncch_header.exheader_size),
 			0, N3DS_NCCH_SECTION_EXHEADER));
 
-		// ExeFS header
-		encSections.push_back(EncSection(
-			exefs_offset, 0,
-			(le32_to_cpu(ncch_header.exefs_size) << media_unit_shift),
-			0, N3DS_NCCH_SECTION_EXEFS));
-
-		// ExeFS files
-		for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
-			const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[i];
-			if (file_header->name[0] == 0)
-				continue;	// or break?
-
-			uint8_t keyIdx;
-			if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
-			    !strncmp(file_header->name, "banner", sizeof(file_header->name))) {
-				// Icon and Banner use key 0.
-				keyIdx = 0;
-			} else {
-				// All other files use key 1.
-				keyIdx = 1;
-			}
-
+		if (headers_loaded & HEADER_EXEFS) {
+			// ExeFS header
 			encSections.push_back(EncSection(
-				exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
-				le32_to_cpu(file_header->offset),
-				le32_to_cpu(file_header->offset),	// Counter address.
-				le32_to_cpu(file_header->size),
-				keyIdx, N3DS_NCCH_SECTION_EXEFS));
+				exefs_offset, 0,
+				sizeof(N3DS_ExeFS_Header_t),
+				0, N3DS_NCCH_SECTION_EXEFS));
+
+			// ExeFS files
+			for (int i = 0; i < ARRAY_SIZE(exefs_header.files); i++) {
+				const N3DS_ExeFS_File_Header_t *file_header = &exefs_header.files[i];
+				if (file_header->name[0] == 0)
+					continue;	// or break?
+
+				uint8_t keyIdx;
+				if (!strncmp(file_header->name, "icon", sizeof(file_header->name)) ||
+				!strncmp(file_header->name, "banner", sizeof(file_header->name))) {
+					// Icon and Banner use key 0.
+					keyIdx = 0;
+				} else {
+					// All other files use key 1.
+					keyIdx = 1;
+				}
+
+				encSections.push_back(EncSection(
+					exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
+					le32_to_cpu(file_header->offset),
+					le32_to_cpu(file_header->offset),	// Counter address.
+					le32_to_cpu(file_header->size),
+					keyIdx, N3DS_NCCH_SECTION_EXEFS));
+			}
 		}
 
 		// RomFS
-		encSections.push_back(EncSection(
-			(le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift), 0,
-			(le32_to_cpu(ncch_header.romfs_size) << media_unit_shift),
-			0, N3DS_NCCH_SECTION_ROMFS));
+		if (le32_to_cpu(ncch_header.romfs_size) != 0) {
+			encSections.push_back(EncSection(
+				(le32_to_cpu(ncch_header.romfs_offset) << media_unit_shift), 0,
+				(le32_to_cpu(ncch_header.romfs_size) << media_unit_shift),
+				0, N3DS_NCCH_SECTION_ROMFS));
+		}
 
 		// Sort encSections by NCCH-relative address.
 		// TODO: Check for overlap?
 		std::sort(encSections.begin(), encSections.end());
-	} else
-#endif /* ENABLE_DECRYPTION */
-	{
-		// ExHeader and ExeFS headers are loaded.
-		headers_loaded |= (HEADER_EXHEADER | HEADER_EXEFS);
 	}
+#endif /* ENABLE_DECRYPTION */
 }
 
 NCCHReaderPrivate::~NCCHReaderPrivate()
@@ -385,6 +346,72 @@ NCCHReaderPrivate::~NCCHReaderPrivate()
 #ifdef ENABLE_DECRYPTION
 	delete cipher;
 #endif /* ENABLE_DECRYPTION */
+}
+
+/**
+ * Load the NCCH Extended Header.
+ * @return 0 on success; non-zero on error.
+ */
+int NCCHReaderPrivate::loadExHeader(void)
+{
+	if (headers_loaded & HEADER_EXHEADER) {
+		// NCCH Extended Header is already loaded.
+		return 0;
+	}
+
+	// TODO: Load the NCCH header if it isn't loaded?
+	if (!(headers_loaded & HEADER_NCCH)) {
+		// NCCH header wasn't loaded.
+		return -1;
+	}
+
+	// Load the ExHeader.
+	// ExHeader is stored immediately after the main header.
+	RP_Q(NCCHReader);
+	int ret = file->seek(ncch_offset + sizeof(N3DS_NCCH_Header_t));
+	if (ret != 0) {
+		// Seek error.
+		q->m_lastError = file->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return -2;
+	}
+
+	// Check the ExHeader length.
+	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
+	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
+	    exheader_length > sizeof(ncch_exheader))
+	{
+		// ExHeader is either too small or too big.
+		q->m_lastError = EIO;
+		return -3;
+	}
+
+	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
+	exheader_length = (exheader_length + 15) & ~15;
+
+	size_t size = file->read(&ncch_exheader, exheader_length);
+	if (size != exheader_length) {
+		// Read error.
+		q->m_lastError = file->lastError();
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return -4;
+	}
+
+	// If the ExHeader size is smaller than the maximum size,
+	// clear the rest of the ExHeader.
+	// TODO: Possible strict aliasing violation...
+	if (exheader_length < sizeof(ncch_exheader)) {
+		uint8_t *exzero = reinterpret_cast<uint8_t*>(&ncch_exheader) + exheader_length;
+		memset(exzero, 0, sizeof(ncch_exheader) - exheader_length);
+	}
+
+	// ExHeader loaded.
+	headers_loaded |= HEADER_EXHEADER;
+	return 0;
 }
 
 /** NCCHReader **/
@@ -639,9 +666,10 @@ const N3DS_NCCH_ExHeader_t *NCCHReader::ncchExHeader(void) const
 	}
 
 	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_EXHEADER)) {
-		// ExHeader wasn't loaded.
-		// TODO: Try to load it here?
-		return nullptr;
+		if (const_cast<NCCHReaderPrivate*>(d)->loadExHeader() != 0) {
+			// Unable to load the ExHeader.
+			return nullptr;
+		}
 	}
 
 	return &d->ncch_exheader;
