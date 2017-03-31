@@ -863,8 +863,10 @@ int Nintendo3DSPrivate::loadExHeader(void)
 	// TODO: Verify sizes; other error checking.
 	const int64_t exheader_offset = ncch_offset + sizeof(N3DS_NCCH_Header_t);
 	uint32_t exheader_length = le32_to_cpu(ncch_header.exheader_size);
-	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE) {
-		// ExHeader is too small.
+	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
+	    exheader_length > sizeof(ncch_exheader))
+	{
+		// ExHeader is either too small or too big.
 		return -96;
 	}
 
