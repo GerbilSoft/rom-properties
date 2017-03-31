@@ -96,13 +96,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			// The following headers are not exclusive,
 			// so one or more can be present.
 			HEADER_SMDH	= (1 << 0),	// Includes header and icon.
-			HEADER_NCCH	= (1 << 1),	// Primary NCCH.
 
 			// The following headers are mutually exclusive.
-			HEADER_3DSX	= (1 << 2),
-			HEADER_CIA	= (1 << 3),
-			HEADER_TMD	= (1 << 4),
-			HEADER_NCSD	= (1 << 5),	// ncsd_header, cinfo_header
+			HEADER_3DSX	= (1 << 1),
+			HEADER_CIA	= (1 << 2),
+			HEADER_TMD	= (1 << 3),
+			HEADER_NCSD	= (1 << 4),	// ncsd_header, cinfo_header
 		};
 		uint32_t headers_loaded;	// HeadersPresent
 
@@ -139,17 +138,16 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		unsigned int content_count;
 		unique_ptr<N3DS_Content_Chunk_Record_t[]> content_chunks;
 
-		// Primary NCCH, i.e. for the game.
-		int64_t ncch_offset;
-		uint32_t ncch_length;
-		N3DS_NCCH_Header_NoSig_t ncch_header;
-
 		// TODO: Move the pointers to the union?
 		// That requires careful memory management...
 
-		// NCCH reader.
+	private:
+		// Primary NCCH reader.
+		// NOTE: Do NOT access this directly!
+		// Use loadNCCH() instead.
 		NCCHReader *ncch_reader;
 
+	public:
 		// File readers for DSiWare CIAs.
 		DiscReader *srlReader;	// uses this->file
 		PartitionFile *srlFile;	// uses srlReader
@@ -185,11 +183,18 @@ class Nintendo3DSPrivate : public RomDataPrivate
 			int64_t *pOffset = nullptr, uint32_t *pLength = nullptr);
 
 		/**
-		 * Load the NCCH header for the primary content.
+		 * Create an NCCHReader for the primary content.
 		 * An NCCH reader is created as this->ncch_reader.
-		 * @return 0 on success; non-zero on error.
+		 * @return this->ncch_reader on success; nullptr on error.
 		 */
-		int loadNCCH(void);
+		NCCHReader *loadNCCH(void);
+
+		/**
+		 * Get the NCCH header from the primary content.
+		 * This uses loadNCCH() to get the NCCH reader.
+		 * @return NCCH header, or nullptr on error.
+		 */
+		const N3DS_NCCH_Header_NoSig_t *loadNCCHHeader(void);
 
 		/**
 		 * Load the TMD header. (CIA only)
@@ -241,8 +246,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
 	, content_count(0)
-	, ncch_offset(0)
-	, ncch_length(0)
 	, ncch_reader(nullptr)
 	, srlReader(nullptr)
 	, srlFile(nullptr)
@@ -255,7 +258,6 @@ Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
 	// Clear the various headers.
 	memset(&smdh, 0, sizeof(smdh));
 	memset(&mxh, 0, sizeof(mxh));
-	memset(&ncch_header, 0, sizeof(ncch_header));
 }
 
 Nintendo3DSPrivate::~Nintendo3DSPrivate()
@@ -375,12 +377,10 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// Find "icon" in the ExeFS.
 			// TODO: NCCHReader::open()
 			// FIXME: Verify content length.
+			NCCHReader *ncch_reader = loadNCCH();
 			if (!ncch_reader) {
-				int ret = loadNCCH();
-				if (ret != 0 || !ncch_reader) {
-					// Unable to open the primary NCCH.
-					return -7;
-				}
+				// Unable to open the primary NCCH.
+				return -7;
 			}
 
 			const N3DS_ExeFS_Header_t *exefs_header = ncch_reader->exefsHeader();
@@ -581,30 +581,47 @@ int Nintendo3DSPrivate::loadNCCH(int idx,
 }
 
 /**
- * Load the NCCH header for the primary content.
- * The NCCH header is loaded into this->ncch_header.
- * @return 0 on success; non-zero on error.
+ * Create an NCCHReader for the primary content.
+ * An NCCH reader is created as this->ncch_reader.
+ * @return this->ncch_reader on success; nullptr on error.
  */
-int Nintendo3DSPrivate::loadNCCH(void)
+NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 {
-	if (headers_loaded & HEADER_NCCH) {
-		// NCCH header is already loaded.
-		return 0;
+	if (this->ncch_reader) {
+		// NCCH reader has already been created.
+		return this->ncch_reader;
 	}
 
 	// TODO: For CCIs, verify that the copy in the
 	// Card Info Header matches the actual partition?
+	int64_t ncch_offset;
+	uint32_t ncch_length;
+	N3DS_NCCH_Header_NoSig_t ncch_header;	// TODO: Make this loadNCCH() parameter optional?
 	int ret = loadNCCH(0, &ncch_header, &ncch_offset, &ncch_length);
 	if (ret == 0) {
-		// NCCH header loaded.
-		headers_loaded |= HEADER_NCCH;
-
-		// Create the NCCH reader if it isn't already created.
-		if (!ncch_reader) {
-			ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
+		// Create the NCCH reader.
+		NCCHReader *ncch_reader = new NCCHReader(file, media_unit_shift, ncch_offset, ncch_length);
+		if (ncch_reader->isOpen()) {
+			// NCCH reader created successfully.
+			this->ncch_reader = ncch_reader;
+		} else {
+			// NCCH reader encountered an error.
+			delete ncch_reader;
 		}
 	}
-	return ret;
+
+	return this->ncch_reader;
+}
+
+/**
+ * Get the NCCH header from the primary content.
+ * This uses loadNCCH() to get the NCCH reader.
+ * @return NCCH header, or nullptr on error.
+ */
+inline const N3DS_NCCH_Header_NoSig_t *Nintendo3DSPrivate::loadNCCHHeader(void)
+{
+	const NCCHReader *const ncch_reader = loadNCCH();
+	return (ncch_reader ? ncch_reader->ncchHeader() : nullptr);
 }
 
 /**
@@ -855,6 +872,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 	// If using NCSD, use the Media ID.
 	// If using CIA/TMD, use the TMD Title ID.
 	// Otherwise, use the primary NCCH Title ID.
+
+	// NCCH header.
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header = loadNCCHHeader();
+
 	const rp_char *tid_desc = nullptr;
 	uint32_t tid_hi, tid_lo;
 	if (romType == Nintendo3DSPrivate::ROM_TYPE_CCI &&
@@ -867,10 +888,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 		tid_desc = _RP("Title ID");
 		tid_hi = be32_to_cpu(mxh.tmd_header.title_id.hi);
 		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
-	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_NCCH) || loadNCCH() == 0) {
+	} else if (ncch_header) {
 		tid_desc = _RP("Title ID");
-		tid_lo = le32_to_cpu(ncch_header.program_id.lo);
-		tid_hi = le32_to_cpu(ncch_header.program_id.hi);
+		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
+		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
 	}
 
 	if (tid_desc) {
@@ -883,9 +904,9 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 	}
 
 	// Product code.
-	if ((headers_loaded & Nintendo3DSPrivate::HEADER_NCCH) || loadNCCH() == 0) {
+	if (ncch_header) {
 		fields->addField_string(_RP("Product Code"),
-			latin1_to_rp_string(ncch_header.product_code, sizeof(ncch_header.product_code)));
+			latin1_to_rp_string(ncch_header->product_code, sizeof(ncch_header->product_code)));
 	}
 }
 
@@ -1998,8 +2019,9 @@ int Nintendo3DS::loadFieldData(void)
 	}
 
 	// Get the NCCH Extended Header.
+	const NCCHReader *ncch_reader = d->loadNCCH();
 	const N3DS_NCCH_ExHeader_t *const ncch_exheader =
-		(d->ncch_reader ? d->ncch_reader->ncchExHeader() : nullptr);
+		(ncch_reader ? ncch_reader->ncchExHeader() : nullptr);
 	if (ncch_exheader) {
 		// Display the NCCH Extended Header.
 		// TODO: Add more fields?
@@ -2224,23 +2246,24 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 		}
 	}
 
+	// Make sure the NCCH header is loaded.
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
+		const_cast<Nintendo3DSPrivate*>(d)->loadNCCHHeader();
+	if (!ncch_header) {
+		// Unable to load the NCCH header.
+		// Cannot create URLs.
+		return -ENOENT;
+	}
+
 	// If using NCSD, use the Media ID.
 	// Otherwise, use the primary Title ID.
 	uint32_t tid_hi, tid_lo;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		tid_lo = le32_to_cpu(d->mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(d->mxh.ncsd_header.media_id.hi);
-	} else {
-		// Make sure the NCCH header is loaded.
-		if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_NCCH)) {
-			// Load the NCCH header.
-			if (const_cast<Nintendo3DSPrivate*>(d)->loadNCCH() != 0) {
-				// Error loading the NCCH header.
-				return -EIO;
-			}
-		}
-		tid_lo = le32_to_cpu(d->ncch_header.program_id.lo);
-		tid_hi = le32_to_cpu(d->ncch_header.program_id.hi);
+	} else if (ncch_header) {
+		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
+		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
 	}
 
 	// Validate the title ID.
@@ -2255,15 +2278,15 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Validate the product code.
-	if (memcmp(d->ncch_header.product_code, "CTR-", 4) != 0 &&
-	    memcmp(d->ncch_header.product_code, "KTR-", 4) != 0)
+	if (memcmp(ncch_header->product_code, "CTR-", 4) != 0 &&
+	    memcmp(ncch_header->product_code, "KTR-", 4) != 0)
 	{
 		// Not a valid product code for GameTDB.
 		return -ENOENT;
 	}
 
-	if (d->ncch_header.product_code[5] != '-' ||
-	    d->ncch_header.product_code[10] != 0)
+	if (ncch_header->product_code[5] != '-' ||
+	    ncch_header->product_code[10] != 0)
 	{
 		// Missing hyphen, or longer than 10 characters.
 		return -ENOENT;
@@ -2271,7 +2294,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 
 	// Check the product type.
 	// TODO: Enable demos, DLC, and updates?
-	switch (d->ncch_header.product_code[4]) {
+	switch (ncch_header->product_code[4]) {
 		case 'P':	// Game card
 		case 'N':	// eShop
 			// Product type is valid for GameTDB.
@@ -2285,7 +2308,7 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Make sure the ID4 has only printable characters.
-	const char *id4 = &d->ncch_header.product_code[6];
+	const char *id4 = &ncch_header->product_code[6];
 	for (int i = 3; i >= 0; i--) {
 		if (!isprint(id4[i])) {
 			// Non-printable character found.
