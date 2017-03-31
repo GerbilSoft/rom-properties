@@ -211,13 +211,6 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		const rp_image *loadIcon(int idx = 1);
 
 		/**
-		 * Get the NCCH crypto type.
-		 * @param pNcchHeader NCCH header.
-		 * @return NCCH crypto type, or nullptr if unknown.
-		 */
-		const rp_char *getNCCHCryptoType(const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
-
-		/**
 		 * Add the title ID and product code fields.
 		 * Called by loadFieldData().
 		 */
@@ -806,39 +799,6 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 	}
 
 	return img_icon[idx];
-}
-
-/**
- * Get the NCCH crypto type.
- * @param pNcchHeader NCCH header.
- * @return NCCH crypto type, or nullptr if unknown.
- */
-const rp_char *Nintendo3DSPrivate::getNCCHCryptoType(const N3DS_NCCH_Header_NoSig_t *pNcchHeader)
-{
-	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption.
-		return _RP("NoCrypto");
-	} else if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-		// Fixed key encryption.
-		// TODO: Determine which keyset is in use.
-		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-		return _RP("Fixed (?)");
-	} else {
-		// Check ncchflag[3].
-		switch (pNcchHeader->flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
-			case 0x01:
-				return _RP("Slot0x25");
-			case 0x0A:
-				return _RP("Slot0x18");
-			case 0x0B:
-				return _RP("Slot0x1B");
-			default:
-				break;
-		}
-	}
-
-	// Unknown encryption method...
-	return nullptr;
 }
 
 /**
@@ -1792,7 +1752,7 @@ int Nintendo3DS::loadFieldData(void)
 				int ret = d->loadNCCH(i, &part_ncch_header);
 				if (ret == 0) {
 					// Encryption.
-					const rp_char *crypto = d->getNCCHCryptoType(&part_ncch_header);
+					const rp_char *crypto = NCCHReader::cryptoType_static(&part_ncch_header);
 					data_row.push_back(crypto ? crypto : _RP("Unknown"));
 
 					// Version.
@@ -1967,7 +1927,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Encryption.
 			if (!crypto) {
-				crypto = d->getNCCHCryptoType(&content_ncch_header);
+				crypto = NCCHReader::cryptoType_static(&content_ncch_header);
 			}
 			data_row.push_back(crypto ? crypto : _RP("Unknown"));
 

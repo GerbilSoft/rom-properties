@@ -400,13 +400,19 @@ int NCCHReaderPrivate::loadExHeader(void)
 		return -1;
 	}
 
+	RP_Q(NCCHReader);
+	if (!file || !file->isOpen()) {
+		// File isn't open...
+		q->m_lastError = EBADF;
+		return -2;
+	}
+
 	// NOTE: Using NCCHReader functions instead of direct
 	// file access, so all addresses are relative to the
 	// start of the NCCH.
 
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
-	RP_Q(NCCHReader);
 	int64_t prev_pos = q->tell();
 	int ret = q->seek(sizeof(N3DS_NCCH_Header_t));
 	if (ret != 0) {
@@ -416,7 +422,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 			q->m_lastError = EIO;
 		}
 		q->seek(prev_pos);
-		return -2;
+		return -3;
 	}
 
 	// Check the ExHeader length.
@@ -426,7 +432,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 	{
 		// ExHeader is either too small or too big.
 		q->m_lastError = EIO;
-		return -3;
+		return -4;
 	}
 
 	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
@@ -440,7 +446,7 @@ int NCCHReaderPrivate::loadExHeader(void)
 			q->m_lastError = EIO;
 		}
 		q->seek(prev_pos);
-		return -4;
+		return -5;
 	}
 
 	// If the ExHeader size is smaller than the maximum size,
@@ -713,6 +719,8 @@ int64_t NCCHReader::partition_size_used(void) const
 	return d->ncch_length;
 }
 
+/** NCCHReader **/
+
 /**
  * Get the NCCH header.
  * @return NCCH header, or nullptr if it couldn't be loaded.
@@ -743,13 +751,6 @@ const N3DS_NCCH_Header_NoSig_t *NCCHReader::ncchHeader(void) const
 const N3DS_NCCH_ExHeader_t *NCCHReader::ncchExHeader(void) const
 {
 	RP_D(const NCCHReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
-		//m_lastError = EBADF;
-		return nullptr;
-	}
-
 	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_EXHEADER)) {
 		if (const_cast<NCCHReaderPrivate*>(d)->loadExHeader() != 0) {
 			// Unable to load the ExHeader.
@@ -767,13 +768,6 @@ const N3DS_NCCH_ExHeader_t *NCCHReader::ncchExHeader(void) const
 const N3DS_ExeFS_Header_t *NCCHReader::exefsHeader(void) const
 {
 	RP_D(const NCCHReader);
-	assert(d->file != nullptr);
-	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
-		//m_lastError = EBADF;
-		return nullptr;
-	}
-
 	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_EXEFS)) {
 		// ExeFS header wasn't loaded.
 		// TODO: Try to load it here?
@@ -782,6 +776,54 @@ const N3DS_ExeFS_Header_t *NCCHReader::exefsHeader(void) const
 
 	// TODO: Check if the ExeFS header was actually loaded.
 	return &d->exefs_header;
+}
+
+/**
+ * Get the NCCH crypto type.
+ * @param pNcchHeader NCCH header.
+ * @return NCCH crypto type, or nullptr if unknown.
+ */
+const rp_char *NCCHReader::cryptoType_static(const N3DS_NCCH_Header_NoSig_t *pNcchHeader)
+{
+	if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption.
+		return _RP("NoCrypto");
+	} else if (pNcchHeader->flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key encryption.
+		// TODO: Determine which keyset is in use.
+		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
+		return _RP("Fixed (?)");
+	} else {
+		// Check ncchflag[3].
+		switch (pNcchHeader->flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
+			case 0x01:
+				return _RP("Slot0x25");
+			case 0x0A:
+				return _RP("Slot0x18");
+			case 0x0B:
+				return _RP("Slot0x1B");
+			default:
+				break;
+		}
+	}
+
+	// Unknown encryption method...
+	return nullptr;
+}
+
+/**
+ * Get the NCCH crypto type.
+ * @return NCCH crypto type, or nullptr if unknown.
+ */
+const rp_char *NCCHReader::cryptoType(void) const
+{
+	RP_D(const NCCHReader);
+	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_NCCH)) {
+		// NCCH header wasn't loaded.
+		// TODO: Try to load it here?
+		return nullptr;
+	}
+	return cryptoType_static(&d->ncch_header);
 }
 
 /**

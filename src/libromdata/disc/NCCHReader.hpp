@@ -140,6 +140,19 @@ class NCCHReader : public IPartition
 		const N3DS_ExeFS_Header_t *exefsHeader(void) const;
 
 		/**
+		 * Get the NCCH crypto type.
+		 * @param pNcchHeader NCCH header.
+		 * @return NCCH crypto type, or nullptr if unknown.
+		 */
+		static const rp_char *cryptoType_static(const N3DS_NCCH_Header_NoSig_t *pNcchHeader);
+
+		/**
+		 * Get the NCCH crypto type.
+		 * @return NCCH crypto type, or nullptr if unknown.
+		 */
+		const rp_char *cryptoType(void) const;
+
+		/**
 		 * Open a file. (read-only)
 		 *
 		 * NOTE: Only ExeFS is currently supported.
