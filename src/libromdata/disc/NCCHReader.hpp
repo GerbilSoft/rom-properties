@@ -140,12 +140,15 @@ class NCCHReader : public IPartition
 		const N3DS_ExeFS_Header_t *exefsHeader(void) const;
 
 		/**
-		 * Get the ExeFS data offset within the NCCH.
-		 * This is immediately after the ExeFS header.
-		 * TODO: Remove once open() is added.
-		 * @return ExeFS data offset, or 0 on error.
+		 * Open a file. (read-only)
+		 *
+		 * NOTE: Only ExeFS is currently supported.
+		 *
+		 * @param section NCCH section.
+		 * @param filename Filename. (ASCII)
+		 * @return IRpFile*, or nullptr on error.
 		 */
-		uint32_t exefsDataOffset(void) const;
+		IRpFile *open(int section, const char *filename);
 };
 
 }

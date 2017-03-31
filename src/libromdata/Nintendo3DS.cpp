@@ -374,48 +374,27 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 		case ROM_TYPE_CCI: {
 			// CCI file, or CIA file with no meta section.
-			// Find "icon" in the ExeFS.
-			// TODO: NCCHReader::open()
-			// FIXME: Verify content length.
+			// Open "exefs:/icon".
 			NCCHReader *ncch_reader = loadNCCH();
 			if (!ncch_reader) {
 				// Unable to open the primary NCCH.
 				return -7;
 			}
 
-			const N3DS_ExeFS_Header_t *exefs_header = ncch_reader->exefsHeader();
-			if (!exefs_header) {
-				// ExeFS header wasn't loaded.
+			unique_ptr<IRpFile> f_icon(ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
+			if (!f_icon) {
+				// Failed to open "icon".
 				return -8;
-			}
-
-			const N3DS_ExeFS_File_Header_t *file_header = nullptr;
-			for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
-				if (!strncmp(exefs_header->files[i].name, "icon", sizeof(exefs_header->files[i].name))) {
-					// Found "icon".
-					file_header = &exefs_header->files[i];
-					break;
-				}
-			}
-			if (!file_header) {
-				// No icon.
-				return -9;
-			} else if (le32_to_cpu(file_header->size) < sizeof(smdh)) {
+			} else if (f_icon->size() < (int64_t)sizeof(smdh)) {
 				// Icon is too small.
-				return -10;
+				return -9;
 			}
 
 			// Load the SMDH section.
-			uint32_t offset = ncch_reader->exefsDataOffset() + le32_to_cpu(file_header->offset);
-			int ret = ncch_reader->seek(offset);
-			if (ret != 0) {
-				// Seek error.
-				return -11;
-			}
-			size_t size = ncch_reader->read(&smdh, sizeof(smdh));
+			size_t size = f_icon->read(&smdh, sizeof(smdh));
 			if (size != sizeof(smdh)) {
 				// Read error.
-				return -12;
+				return -10;
 			}
 			break;
 		}

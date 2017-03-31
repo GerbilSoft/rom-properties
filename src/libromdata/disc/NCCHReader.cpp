@@ -26,6 +26,7 @@
 #include "n3ds_structs.h"
 
 #include "file/IRpFile.hpp"
+#include "PartitionFile.hpp"
 
 #ifdef ENABLE_DECRYPTION
 #include "crypto/AesCipherFactory.hpp"
@@ -784,29 +785,76 @@ const N3DS_ExeFS_Header_t *NCCHReader::exefsHeader(void) const
 }
 
 /**
- * Get the ExeFS data offset within the NCCH.
- * This is immediately after the ExeFS header.
- * TODO: Remove once open() is added.
- * @return ExeFS data offset, or 0 on error.
+ * Open a file. (read-only)
+ *
+ * NOTE: Only ExeFS is currently supported.
+ *
+ * @param section NCCH section.
+ * @param filename Filename. (ASCII)
+ * @return IRpFile*, or nullptr on error.
  */
-uint32_t NCCHReader::exefsDataOffset(void) const
+IRpFile *NCCHReader::open(int section, const char *filename)
 {
-	RP_D(const NCCHReader);
+	RP_D(NCCHReader);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
+	assert(section == N3DS_NCCH_SECTION_EXEFS);
+	assert(filename != nullptr);
 	if (!d->file || !d->file->isOpen()) {
-		//m_lastError = EBADF;
-		return 0;
+		m_lastError = EBADF;
+		return nullptr;
+	} else if (section != N3DS_NCCH_SECTION_EXEFS) {
+		// Only ExeFS is currently supported.
+		m_lastError = ENOTSUP;
+		return nullptr;
+	} else if (!filename) {
+		// Invalid filename.
+		m_lastError = EINVAL;
+		return nullptr;
 	}
 
-	if (!(d->headers_loaded & NCCHReaderPrivate::HEADER_EXEFS)) {
-		// ExeFS header wasn't loaded.
-		// TODO: Try to load it here?
-		return 0;
+	// Get the ExeFS header.
+	const N3DS_ExeFS_Header_t *const exefs_header = exefsHeader();
+	if (!exefs_header) {
+		// Unable to get the ExeFS header.
+		return nullptr;
 	}
 
-	// TODO: Check if the ExeFS header was actually loaded.
-	return (le32_to_cpu(d->ncch_header.exefs_offset) << d->media_unit_shift) + sizeof(d->exefs_header);
+	const N3DS_ExeFS_File_Header_t *file_header = nullptr;
+	for (int i = 0; i < ARRAY_SIZE(exefs_header->files); i++) {
+		if (!strncmp(exefs_header->files[i].name, filename, sizeof(exefs_header->files[i].name))) {
+			// Found "icon".
+			file_header = &exefs_header->files[i];
+			break;
+		}
+	}
+	if (!file_header) {
+		// File not found.
+		m_lastError = ENOENT;
+		return nullptr;
+	}
+
+	// Get the file offset.
+	const uint32_t offset = (le32_to_cpu(d->ncch_header.exefs_offset) << d->media_unit_shift) +
+		sizeof(d->exefs_header) +
+		le32_to_cpu(file_header->offset);
+	const uint32_t size = le32_to_cpu(file_header->size);
+	if (offset >= d->ncch_length ||
+	    ((int64_t)offset + size) > d->ncch_length)
+	{
+		// File offset/size is out of bounds.
+		m_lastError = EIO;	// TODO: Better error code?
+		return nullptr;
+	}
+
+	// TODO: Reference count opened PartitionFiles and
+	// add assertions if they aren't closed correctly.
+
+	// Create the PartitionFile.
+	// This is an IRpFile implementation that uses an
+	// IPartition as the reader and takes an offset
+	// and size as the file parameters.
+	return new PartitionFile(this, offset, size);
 }
 
 }
