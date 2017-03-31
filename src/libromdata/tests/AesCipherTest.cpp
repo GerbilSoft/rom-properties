@@ -249,8 +249,9 @@ void AesCipherTest::TearDown(void)
 
 /**
  * Run an AesCipher decryption test.
+ * This version sets the key before the chaining mode.
  */
-TEST_P(AesCipherTest, decryptTest)
+TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 {
 	const AesCipherTest_mode &mode = GetParam();
 	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
@@ -258,6 +259,46 @@ TEST_P(AesCipherTest, decryptTest)
 	// Set the cipher settings.
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::CM_CBC:
+		case IAesCipher::CM_CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::CM_ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+	}
+
+	// Decrypt the data.
+	vector<uint8_t> buf(mode.cipherText_len);
+	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	EXPECT_EQ((unsigned int)buf.size(),
+		m_cipher->decrypt(buf.data(), (unsigned int)buf.size()));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), (unsigned int)buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * This version sets the chaining mode before the key.
+ */
+TEST_P(AesCipherTest, decryptTest_chainingThenKey)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
 
 	switch (mode.chainingMode) {
 		case IAesCipher::CM_CBC:

@@ -67,6 +67,14 @@ class AesCAPIPrivate
 
 		// Counter for CTR mode.
 		uint8_t ctr[16];
+
+		/**
+		 * Set the chaining mode on a key.
+		 * @param hKey HCRYPTKEY.
+		 * @param mode Chaining mode.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode);
 };
 
 /** AesCAPIPrivate **/
@@ -111,6 +119,36 @@ AesCAPIPrivate::~AesCAPIPrivate()
 			hProvider = 0;
 		}
 	}
+}
+
+/**
+ * Set the chaining mode on a key.
+ * @param hKey HCRYPTKEY.
+ * @param mode Chaining mode.
+ * @return 0 on success; non-zero on error.
+ */
+int AesCAPIPrivate::setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode)
+{
+	DWORD dwMode;
+	switch (mode) {
+		case IAesCipher::CM_ECB:
+		case IAesCipher::CM_CTR:
+			dwMode = CRYPT_MODE_ECB;
+			break;
+		case IAesCipher::CM_CBC:
+			dwMode = CRYPT_MODE_CBC;
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	if (!CryptSetKeyParam(hKey, KP_MODE, (BYTE*)&dwMode, 0)) {
+		// Error setting the chaining mode.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Chaining mode set.
+	return 0;
 }
 
 /** AesCAPI **/
@@ -205,6 +243,14 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 		return -w32err_to_posix(GetLastError());
 	}
 
+	// Set the cipher chaining mode.
+	int ret = d->setChainingMode(hNewKey, d->chainingMode);
+	if (ret != 0) {
+		// Error setting the chaining mode.
+		CryptDestroyKey(hNewKey);
+		return ret;
+	}
+
 	// Key loaded successfully.
 	HCRYPTKEY hOldKey = d->hKey;
 	d->hKey = hNewKey;
@@ -227,33 +273,21 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 int AesCAPI::setChainingMode(ChainingMode mode)
 {
 	RP_D(AesCAPI);
-	if (d->hKey == 0) {
-		// Key hasn't been set.
-		return -EBADF;
-	}
-	// TODO: Don't change if it matches?
-	// Need to ensure the default is ECB...
-
-	DWORD dwMode;
-	switch (mode) {
-		case CM_ECB:
-		case CM_CTR:
-			dwMode = CRYPT_MODE_ECB;
-			break;
-		case CM_CBC:
-			dwMode = CRYPT_MODE_CBC;
-			break;
-		default:
-			return -EINVAL;
+	if (d->chainingMode == mode) {
+		// No change...
+		return 0;
 	}
 
-	// Set the cipher chaining mode.
-	if (!CryptSetKeyParam(d->hKey, KP_MODE, (BYTE*)&dwMode, 0)) {
-		// Error setting CBC mode.
-		return -w32err_to_posix(GetLastError());
-	}
-
+	// Save the chaining mode.
 	d->chainingMode = mode;
+
+	if (d->hKey) {
+		// Set the chaining mode.
+		return d->setChainingMode(d->hKey, mode);
+	}
+
+	// We can't apply the chaining mode yet,
+	// since we don't have a key.
 	return 0;
 }
 
