@@ -1515,8 +1515,9 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: May be less than 22 fields, but we'll use 22 for now.
-	d->fields->reserve(22); // Maximum of 22 fields.
+	// Maximum of 17 fields.
+	// Tested with several CCI, CIA, and NCCH files.
+	d->fields->reserve(17);
 
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
