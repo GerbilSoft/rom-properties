@@ -227,59 +227,46 @@ class NCCHReaderPrivate
 		KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
 
-		/**
-		 * Verification data for debug Slot0x3DKeyX.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 */
-		static const uint8_t verifyData_ctr_dev_Slot0x3DKeyX[16];
+		// Encryption key indexes.
+		enum EncryptionKeys {
+			// Retail
+			Key_Retail_Slot0x18KeyX,
+			Key_Retail_Slot0x1BKeyX,
+			Key_Retail_Slot0x25KeyX,
+			Key_Retail_Slot0x3DKeyY_0,
+			Key_Retail_Slot0x3DKeyY_1,
+			Key_Retail_Slot0x3DKeyY_2,
+			Key_Retail_Slot0x3DKeyY_3,
+			Key_Retail_Slot0x3DKeyY_4,
+			Key_Retail_Slot0x3DKeyY_5,
 
-		/**
-		 * Verification data for debug Slot0x3DKeyX.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 * Primary index is ticket->keyY_index.
-		 */
-		static const uint8_t verifyData_ctr_dev_Slot0x3DKeyY_tbl[6][16];
+			// Debug
+			Key_Debug_FixedCryptoKey,
+			Key_Debug_Slot0x18KeyX,
+			Key_Debug_Slot0x1BKeyX,
+			Key_Debug_Slot0x25KeyX,
+			Key_Debug_Slot0x3DKeyX,
+			Key_Debug_Slot0x3DKeyY_0,
+			Key_Debug_Slot0x3DKeyY_1,
+			Key_Debug_Slot0x3DKeyY_2,
+			Key_Debug_Slot0x3DKeyY_3,
+			Key_Debug_Slot0x3DKeyY_4,
+			Key_Debug_Slot0x3DKeyY_5,
+			Key_Debug_Slot0x3DKeyNormal_0,
+			Key_Debug_Slot0x3DKeyNormal_1,
+			Key_Debug_Slot0x3DKeyNormal_2,
+			Key_Debug_Slot0x3DKeyNormal_3,
+			Key_Debug_Slot0x3DKeyNormal_4,
+			Key_Debug_Slot0x3DKeyNormal_5,
 
-		/**
-		 * Verification data for debug Slot0x3DKeyNormal.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 * Primary index is ticket->keyY_index.
-		 */
-		static const uint8_t verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[6][16];
+			Key_Max
+		};
 
-		/**
-		 * Verification data for debug FixedCryptoKey.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 */
-		static const uint8_t verifyData_ctr_dev_FixedCryptoKey[16];
+		// Verification key names.
+		static const char *const EncryptionKeyNames[Key_Max];
 
-		/**
-		 * Verification data for debug Slot0x25KeyX.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 * Indexes: 0 == Retail; 1 == Debug
-		 */
-		static const uint8_t verifyData_ctr_Slot0x25KeyX[2][16];
-
-		/**
-		 * Verification data for debug Slot0x18KeyX.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 * Indexes: 0 == Retail; 1 == Debug
-		 */
-		static const uint8_t verifyData_ctr_Slot0x18KeyX[2][16];
-
-		/**
-		 * Verification data for debug Slot0x1BKeyX.
-		 * This is the string "AES-128-ECB-TEST"
-		 * encrypted using the key with AES-128-ECB.
-		 * Indexes: 0 == Retail; 1 == Debug
-		 */
-		static const uint8_t verifyData_ctr_Slot0x1BKeyX[2][16];
+		// Verification key data.
+		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
 #endif /* ENABLE_DECRYPTION */
 };
 

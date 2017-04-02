@@ -85,9 +85,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
 			if (ticket->keyY_index < 6) {
 				// Verification data is available.
-				keyX_verify = verifyData_ctr_dev_Slot0x3DKeyX;
-				keyY_verify = verifyData_ctr_dev_Slot0x3DKeyY_tbl[ticket->keyY_index];
-				keyNormal_verify = verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[ticket->keyY_index];
+				keyX_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyX];
+				keyY_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyY_0 + ticket->keyY_index];
+				keyNormal_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyNormal_0 + ticket->keyY_index];
 			}
 		} else {
 			// Unknown issuer.
