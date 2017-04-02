@@ -169,6 +169,12 @@ class NCCHReader : public IPartition
 		int cryptoType(CryptoType *pCryptoType) const;
 
 		/**
+		 * Get the content type as a string.
+		 * @return Content type, or nullptr on error.
+		 */
+		const rp_char *contentType(void) const;
+
+		/**
 		 * Open a file. (read-only)
 		 *
 		 * NOTE: Only ExeFS is currently supported.

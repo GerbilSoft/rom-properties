@@ -968,6 +968,45 @@ int NCCHReader::cryptoType(CryptoType *pCryptoType) const
 }
 
 /**
+ * Get the content type as a string.
+ * @return Content type, or nullptr on error.
+ */
+const rp_char *NCCHReader::contentType(void) const
+{
+	const N3DS_NCCH_Header_NoSig_t *ncch_header = ncchHeader();
+	if (!ncch_header) {
+		// NCCH header is not loaded.
+		return nullptr;
+	}
+
+	const rp_char *content_type;
+	const uint8_t ctype_flag = ncch_header->flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
+	if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
+		// DLP child
+		content_type = _RP("Download Play");
+	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Trial) {
+		// Demo
+		content_type = _RP("Demo");
+	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
+		// CXI
+		content_type = _RP("CXI");
+	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Manual) {
+		// Manual
+		content_type = _RP("Manual");
+	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_SystemUpdate) {
+		// System Update
+		content_type = _RP("Update");
+	} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
+		// CFA
+		content_type = _RP("CFA");
+	} else {
+		// Unknown.
+		content_type = nullptr;
+	}
+	return content_type;
+}
+
+/**
  * Open a file. (read-only)
  *
  * NOTE: Only ExeFS is currently supported.

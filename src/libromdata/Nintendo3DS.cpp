@@ -211,8 +211,9 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		/**
 		 * Add the title ID and product code fields.
 		 * Called by loadFieldData().
+		 * @param showContentType If true, show the content type.
 		 */
-		void addTitleIdAndProductCodeFields(void);
+		void addTitleIdAndProductCodeFields(bool showContentType);
 
 		/**
 		 * Convert a Nintendo 3DS region value to a GameTDB region code.
@@ -844,8 +845,9 @@ const rp_image *Nintendo3DSPrivate::loadIcon(int idx)
 /**
  * Add the title ID and product code fields.
  * Called by loadFieldData().
+ * @param showContentType If true, show the content type.
  */
-void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
+void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 {
 	// Title ID.
 	// If using NCSD, use the Media ID.
@@ -853,7 +855,9 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 	// Otherwise, use the primary NCCH Title ID.
 
 	// NCCH header.
-	const N3DS_NCCH_Header_NoSig_t *const ncch_header = loadNCCHHeader();
+	NCCHReader *const ncch = loadNCCH();
+	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
+		(ncch ? ncch->ncchHeader() : nullptr);
 
 	const rp_char *tid_desc = nullptr;
 	uint32_t tid_hi, tid_lo;
@@ -882,10 +886,20 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(void)
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
-	// Product code.
-	if (ncch_header) {
-		fields->addField_string(_RP("Product Code"),
-			latin1_to_rp_string(ncch_header->product_code, sizeof(ncch_header->product_code)));
+	if (ncch) {
+		// Product code.
+		if (ncch_header) {
+			fields->addField_string(_RP("Product Code"),
+				latin1_to_rp_string(ncch_header->product_code, sizeof(ncch_header->product_code)));
+		}
+
+		// Content type.
+		// This is normally shown in the CIA content table.
+		if (showContentType) {
+			const rp_char *content_type = ncch->contentType();
+			fields->addField_string(_RP("Content Type"),
+				(content_type ? content_type : _RP("Unknown")));
+		}
 	}
 }
 
@@ -1531,8 +1545,9 @@ int Nintendo3DS::loadFieldData(void)
 		if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
 			// There will only be a single tab.
 			// Add the title ID and product code fields here.
+			// (Include the content type, if available.)
 			haveSeparateSMDHTab = false;
-			d->addTitleIdAndProductCodeFields();
+			d->addTitleIdAndProductCodeFields(true);
 		}
 
 		// TODO: Get the system language.
@@ -1601,8 +1616,9 @@ int Nintendo3DS::loadFieldData(void)
 			if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
 				// There will only be a single tab.
 				// Add the title ID and product code fields here.
+				// (Include the content type, if available.)
 				haveSeparateSMDHTab = false;
-				d->addTitleIdAndProductCodeFields();
+				d->addTitleIdAndProductCodeFields(true);
 			}
 
 			// Add the DSiWare fields.
@@ -1611,8 +1627,9 @@ int Nintendo3DS::loadFieldData(void)
 	} else {
 		// Single tab.
 		// Add the title ID and product code fields here.
+		// (Include the content type, if available.)
 		haveSeparateSMDHTab = false;
-		d->addTitleIdAndProductCodeFields();
+		d->addTitleIdAndProductCodeFields(true);
 	}
 
 	// Is the NCSD header loaded?
@@ -1622,7 +1639,8 @@ int Nintendo3DS::loadFieldData(void)
 		if (haveSeparateSMDHTab) {
 			d->fields->addTab(_RP("NCSD"));
 			// Add the title ID and product code fields here.
-			d->addTitleIdAndProductCodeFields();
+			// (Content type is listed in the NCSD partition table.)
+			d->addTitleIdAndProductCodeFields(false);
 		} else {
 			d->fields->setTabName(0, _RP("NCSD"));
 		}
@@ -1888,7 +1906,8 @@ int Nintendo3DS::loadFieldData(void)
 		if (haveSeparateSMDHTab) {
 			d->fields->addTab(_RP("CIA"));
 			// Add the title ID and product code fields here.
-			d->addTitleIdAndProductCodeFields();
+			// (Content type is listed in the CIA contents table.)
+			d->addTitleIdAndProductCodeFields(false);
 		} else {
 			d->fields->setTabName(0, _RP("CIA"));
 		}
@@ -1998,31 +2017,8 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Content type.
-			const rp_char *content_type;
-			const uint8_t ctype_flag = content_ncch_header->flags[N3DS_NCCH_FLAG_CONTENT_TYPE];
-			if ((ctype_flag & N3DS_NCCH_CONTENT_TYPE_Child) == N3DS_NCCH_CONTENT_TYPE_Child) {
-				// DLP child
-				content_type = _RP("Download Play");
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Trial) {
-				// Demo
-				content_type = _RP("Demo");
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Executable) {
-				// CXI
-				content_type = _RP("CXI");
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Manual) {
-				// Manual
-				content_type = _RP("Manual");
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_SystemUpdate) {
-				// System Update
-				content_type = _RP("Update");
-			} else if (ctype_flag & N3DS_NCCH_CONTENT_TYPE_Data) {
-				// CFA
-				content_type = _RP("CFA");
-			} else {
-				// Unknown.
-				content_type = _RP("Unknown");
-			}
-			data_row.push_back(content_type);
+			const rp_char *content_type = ncch->contentType();
+			data_row.push_back(content_type ? content_type : _RP("Unknown"));
 
 			// Encryption.
 			NCCHReader::CryptoType cryptoType;
