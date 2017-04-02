@@ -85,11 +85,6 @@ class CtrKeyScramblerTest : public ::testing::TestWithParam<CtrKeyScramblerTest_
 			const uint8_t *actual,
 			unsigned int size,
 			const char *data_type);
-
-		// KeyManager instance.
-		KeyManager *keyManager;
-		// CtrKeyScrambler instance.
-		CtrKeyScrambler *ctrKeyScrambler;
 };
 
 /**
@@ -158,19 +153,14 @@ void CtrKeyScramblerTest::CompareByteArrays(
  * Run before each test.
  */
 void CtrKeyScramblerTest::SetUp(void)
-{
-	keyManager = KeyManager::instance();
-	assert(keyManager != nullptr);
-}
+{ }
 
 /**
  * TearDown() function.
  * Run after each test.
  */
 void CtrKeyScramblerTest::TearDown(void)
-{
-	keyManager = nullptr;
-}
+{ }
 
 /**
  * Run a CtrKeyScrambler test.
@@ -182,14 +172,17 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 	ASSERT_TRUE(mode.keyX != nullptr);
 	ASSERT_TRUE(mode.keyY != nullptr);
 
-	// Make sure KeyManager has the CTR scrambling key.
-	// TODO: Verify the key.
-	ASSERT_EQ(0, keyManager->get("ctr-scrambler", nullptr));
+	// Use a rather bland scrambling key.
+	static const uint8_t ctr_scrambler[16] = {
+		0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+		0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F
+	};
 
 	u128_t keyNormal;
 	ASSERT_EQ(0, CtrKeyScrambler::CtrScramble(&keyNormal,
 		reinterpret_cast<const u128_t*>(mode.keyX),
-		reinterpret_cast<const u128_t*>(mode.keyY)));
+		reinterpret_cast<const u128_t*>(mode.keyY),
+		reinterpret_cast<const u128_t*>(&ctr_scrambler)));
 
 	// Compare the generated KeyNormal to the expected KeyNormal.
 	CompareByteArrays(mode.keyNormal, keyNormal.u8, 16, "KeyNormal");
@@ -211,8 +204,8 @@ static const uint8_t test_KeyY[16] = {
 
 // Expected CtrScramble(test_KeyX, test_KeyY).
 static const uint8_t test_CtrScramble[16] = {
-	0xD3,0xF5,0x26,0x8A,0x3A,0x38,0x90,0x94,
-	0xEF,0x9C,0x81,0xB3,0x0E,0xD8,0x8F,0x28
+	0xEB,0x4C,0x83,0xD5,0xFC,0xA8,0x94,0x21,
+	0x1B,0xBB,0x85,0x34,0x0E,0x5B,0x70,0xE4
 };
 
 INSTANTIATE_TEST_CASE_P(ctrScrambleTest, CtrKeyScramblerTest,

@@ -49,9 +49,26 @@ class CtrKeyScrambler
 		 * @param keyNormal	[out] Normal key.
 		 * @param keyX		[in] KeyX.
 		 * @param keyY		[in] KeyY.
-		 * @return 0 on success; non-zero on error.
+		 * @param ctr_scrambler	[in] Scrambler constant.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		static int CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u128_t *keyY);
+		static int CtrScramble(u128_t *keyNormal,
+			const u128_t *keyX, const u128_t *keyY,
+			const u128_t *ctr_scrambler);
+
+		/**
+		 * CTR key scrambler. (for keyslots 0x04-0x3F)
+		 *
+		 * "ctr-scrambler" is retrieved from KeyManager and is
+		 * used as the scrambler constant.
+		 *
+		 * @param keyNormal	[out] Normal key.
+		 * @param keyX		[in] KeyX.
+		 * @param keyY		[in] KeyY.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		static int CtrScramble(u128_t *keyNormal,
+			const u128_t *keyX, const u128_t *keyY);
 };
 
 }
