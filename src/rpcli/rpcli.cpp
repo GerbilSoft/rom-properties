@@ -155,6 +155,11 @@ int main(int argc, char *argv[])
 {
 	if(argc<2){
 		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
+		cerr << "  -j:   Use JSON output format." << endl;
+		cerr << "  -xN:  Extract image N to outfile in PNG format." << endl;
+		cerr << "  -xbN: Extract image N to outfile in BMP format." << endl;
+		cerr << "  -a:   Extract the animated icon to outfile in APNG format." << endl;
+		cerr << endl;
 		cerr << "Examples:" << endl;
 		cerr << "* rpcli s3.gen" << endl;
 		cerr << "\t displays info about s3.gen" << endl;
