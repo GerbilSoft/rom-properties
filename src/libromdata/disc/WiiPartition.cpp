@@ -243,7 +243,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	// Otherwise, we can only get the partition size information.
 
 	// Initialize the Key Manager.
-	KeyManager keyManager;
+	KeyManager *keyManager = KeyManager::instance();
 
 	// Determine the required encryption key.
 	const WiiPartition::EncKey encKey = getEncKey();
@@ -287,9 +287,9 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 		// Get the common key.
 		KeyManager::KeyData_t keyData;
-		if (keyManager.get(key_name, &keyData) != 0) {
+		if (keyManager->get(key_name, &keyData) != 0) {
 			// Common key was not found.
-			if (keyManager.areKeysLoaded()) {
+			if (keyManager->areKeysLoaded()) {
 				// Keys were loaded, but this key is missing.
 				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
 			} else {

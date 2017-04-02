@@ -32,7 +32,13 @@ namespace LibRomData {
 class KeyManagerPrivate;
 class KeyManager
 {
-	public:
+	protected:
+		/**
+		 * KeyManager class.
+		 *
+		 * This class is a Singleton, so the caller must obtain a
+		 * pointer to the class using instance().
+		 */
 		KeyManager();
 		~KeyManager();
 
@@ -42,6 +48,13 @@ class KeyManager
 	private:
 		friend class KeyManagerPrivate;
 		KeyManagerPrivate *const d;
+
+	public:
+		/**
+		 * Get the KeyManager instance.
+		 * @return KeyManager instance.
+		 */
+		static KeyManager *instance(void);
 
 	public:
 		// Encryption key data.

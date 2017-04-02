@@ -217,7 +217,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 {
 #ifdef ENABLE_DECRYPTION
 	// Initialize the Key Manager.
-	KeyManager keyManager;
+	KeyManager *keyManager = KeyManager::instance();
 
 	// Check if this is a CIA with title key encryption.
 	if (ticket) {
@@ -247,7 +247,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		snprintf(key_name, sizeof(key_name), "%s-Slot0x3DKeyNormal-%d",
 			key_prefix, titleKeyEncIdx >> 2);
 		KeyManager::KeyData_t keyData;
-		if (keyManager.get(key_name, &keyData) != 0) {
+		if (keyManager->get(key_name, &keyData) != 0) {
 			// Could not retrieve the CIA key.
 			// TODO: Encryption errors like WiiPartition.
 			q->m_lastError = EIO;

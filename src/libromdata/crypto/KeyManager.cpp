@@ -50,6 +50,10 @@ class KeyManagerPrivate
 		RP_DISABLE_COPY(KeyManagerPrivate)
 
 	public:
+		// Static KeyManager instance.
+		static KeyManager instance;
+
+	public:
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -87,6 +91,11 @@ class KeyManagerPrivate
 };
 
 /** KeyManagerPrivate **/
+
+// Singleton instance.
+// Using a static non-pointer variable in order to
+// handle proper destruction when the DLL is unloaded.
+KeyManager KeyManagerPrivate::instance;
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: cfg_isInKeysSection(false)
@@ -378,6 +387,16 @@ KeyManager::KeyManager()
 KeyManager::~KeyManager()
 {
 	delete d;
+}
+
+/**
+ * Get the KeyManager instance.
+ * @return KeyManager instance.
+ */
+KeyManager *KeyManager::instance(void)
+{
+	// Singleton instance.
+	return &KeyManagerPrivate::instance;
 }
 
 /**
