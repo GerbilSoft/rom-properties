@@ -156,38 +156,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	// Read the NCCH header.
 	// We're including the signature, since the first 16 bytes
 	// are used for encryption in certain cases.
-	int ret = file->seek(ncch_offset);
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		this->file = nullptr;
-		return;
-	}
-	size_t size = file->read(&ncch_header, sizeof(ncch_header));
+	size_t size = readFromROM(0, &ncch_header, sizeof(ncch_header));
 	if (size != sizeof(ncch_header)) {
 		// Read error.
-		q->m_lastError = file->lastError();
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
+		// NOTE: readFromROM() sets q->m_lastError.
 		this->file = nullptr;
 		return;
 	}
-#ifdef ENABLE_DECRYPTION
-	if (cipher_cia) {
-		// Decrypt the NCCH header.
-		// IV is the TMD content index.
-		ctr_t cia_iv;
-		init_cia_cbc_iv(&cia_iv);
-		cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-		// TODO: Change decrypt()'s parameter to void*?
-		// TODO: Verify decryption return value.
-		cipher_cia->decrypt(reinterpret_cast<uint8_t*>(&ncch_header), sizeof(ncch_header));
-	}
-#endif /* ENABLE_DECRYPTION */
+
 	// Verify the NCCH magic number.
 	if (memcmp(ncch_header.hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.hdr.magic)) != 0) {
 		// NCCH magic number is incorrect.
@@ -243,54 +219,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	// TODO: Verify length.
 	const uint32_t exefs_offset = (le32_to_cpu(ncch_header.hdr.exefs_offset) << media_unit_shift);
 	if (exefs_offset >= 16) {
-#ifdef ENABLE_DECRYPTION
-		ctr_t cia_iv;
-		if (cipher_cia) {
-			// Read the CIA IV, which is 16 bytes before the
-			// start of the ExeFS header.
-			ret = file->seek(ncch_offset + exefs_offset - 16);
-			if (ret != 0) {
-				// Seek error.
-				q->m_lastError = file->lastError();
-				this->file = nullptr;
-				return;
-			}
-			size = file->read(&cia_iv, sizeof(cia_iv));
-			if (size != sizeof(cia_iv)) {
-				// Read error.
-				q->m_lastError = file->lastError();
-				this->file = nullptr;
-				return;
-			}
-		} else
-#endif /* ENABLE_DECRYPTION */
-		{
-			// Seek to the start of the ExeFS.
-			ret = file->seek(ncch_offset + exefs_offset);
-			if (ret != 0) {
-				// Seek error.
-				q->m_lastError = file->lastError();
-				this->file = nullptr;
-				return;
-			}
-		}
 		// Read the ExeFS header.
-		size = file->read(&exefs_header, sizeof(exefs_header));
+		size = readFromROM(exefs_offset, &exefs_header, sizeof(exefs_header));
 		if (size != sizeof(exefs_header)) {
 			// Read error.
-			q->m_lastError = file->lastError();
+			// NOTE: readFromROM() sets q->m_lastError.
 			this->file = nullptr;
 			return;
 		}
-
-#ifdef ENABLE_DECRYPTION
-		if (cipher_cia) {
-			// Decrypt the ExeFS header.
-			// TODO: Change decrypt()'s parameter to void*?
-			// TODO: Verify decryption return value.
-			cipher_cia->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
-		}
-#endif /* ENABLE_DECRYPTION */
 
 		headers_loaded |= HEADER_EXEFS;
 	}
@@ -409,6 +345,126 @@ int NCCHReaderPrivate::findEncSection(uint32_t address) const
 	return -1;
 }
 #endif /* ENABLE_DECRYPTION */
+
+/**
+ * Read data from the underlying ROM image.
+ * CIA decryption is automatically handled if set up properly.
+ *
+ * NOTE: Offset and size must both be multiples of 16.
+ *
+ * @param offset	[in] Starting address, relative to the beginning of the NCCH.
+ * @param ptr		[out] Output buffer.
+ * @param size		[in] Amount of data to read.
+ * @return Number of bytes read, or 0 on error.
+ */
+size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
+{
+	assert(ptr != nullptr);
+	assert(offset % 16 == 0);
+	assert(size % 16 == 0);
+	RP_Q(NCCHReader);
+	if (!ptr || offset % 16 != 0 || size % 16 != 0) {
+		// Invalid parameters.
+		q->m_lastError = EINVAL;
+		return 0;
+	} else if (size == 0) {
+		// Nothing to do.
+		return 0;
+	}
+
+	int64_t phys_addr = ncch_offset + offset;
+
+#ifdef ENABLE_DECRYPTION
+	ctr_t cia_iv;
+	if (cipher_cia) {
+		// CIA decryption is required.
+		if (offset >= 16) {
+			// Subtract 16 in order to read the IV.
+			offset -= 16;
+		}
+		int ret = file->seek(phys_addr);
+		if (ret != 0) {
+			// Seek error.
+			q->m_lastError = file->lastError();
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
+			}
+			return 0;
+		}
+
+		if (offset == 0) {
+			// Start of CIA content.
+			// IV is the TMD content index.
+			cia_iv.u8[0] = tmd_content_index >> 8;
+			cia_iv.u8[1] = tmd_content_index & 0xFF;
+			memset(&cia_iv.u8[2], 0, sizeof(cia_iv.u8)-2);
+		} else {
+			// IV is the previous 16 bytes.
+			// TODO: Cache this?
+			size_t sz_read = file->read(&cia_iv.u8, sizeof(cia_iv.u8));
+			if (sz_read != sizeof(cia_iv.u8)) {
+				// Read error.
+				q->m_lastError = file->lastError();
+				if (q->m_lastError == 0) {
+					q->m_lastError = EIO;
+				}
+				return 0;
+			}
+		}
+	} else
+#endif /* ENABLE_DECRYPTION */
+	{
+		// No CIA decryption is needed.
+		// Seek directly to the start of the data.
+		int ret = file->seek(phys_addr);
+		if (ret != 0) {
+			// Seek error.
+			q->m_lastError = file->lastError();
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
+			}
+			return 0;
+		}
+	}
+
+	// Read the data.
+	size_t sz_read = file->read(ptr, size);
+	if (sz_read != size) {
+		// Short read.
+		q->m_lastError = file->lastError();
+#ifdef ENABLE_DECRYPTION
+		if (cipher_cia) {
+			// Cannot decrypt with a short read.
+			if (q->m_lastError == 0) {
+				q->m_lastError = EIO;
+			}
+			return 0;
+		}
+#endif /* ENABLE_DECRYPTION */
+	}
+
+#ifdef ENABLE_DECRYPTION
+	if (cipher_cia) {
+		// Decrypt the data.
+		int ret = cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+		if (ret != 0) {
+			// setIV() failed.
+			q->m_lastError = EIO;
+			return -EIO;
+		}
+		unsigned int sz_dec = cipher_cia->decrypt(
+			static_cast<uint8_t*>(ptr), (unsigned int)size);
+		if (sz_dec != size) {
+			// decrypt() failed.
+			q->m_lastError = EIO;
+			return 0;
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	// Data read successfully.
+	return sz_read;
+}
 
 /**
  * Load the NCCH Extended Header.
@@ -556,57 +612,11 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		size = (size_t)(d->ncch_length - d->pos);
 	}
 
-	const int64_t start_addr = d->ncch_offset + d->pos;
-
-#ifdef ENABLE_DECRYPTION
-	NCCHReaderPrivate::ctr_t cia_iv;
-	if (d->cipher_cia) {
-		// Need to load the IV first.
-		if (d->pos == 0) {
-			// IV is the TMD content index.
-			d->init_cia_cbc_iv(&cia_iv);
-		} else {
-			// IV is 16 bytes before d->pos.
-			int ret = d->file->seek(start_addr - 16);
-			if (ret != 0) {
-				// Seek error.
-				m_lastError = d->file->lastError();
-				return 0;
-			}
-			size_t size = d->file->read(&cia_iv, sizeof(cia_iv));
-			if (size != sizeof(cia_iv)) {
-				// Read error.
-				m_lastError = d->file->lastError();
-				return 0;
-			}
-		}
-		d->cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-	} else
-#endif /* ENABLE_DECRYPTION */
-	{
-		// Seek to the starting address.
-		int ret = d->file->seek(start_addr);
-		if (ret != 0) {
-			// Seek error.
-			m_lastError = d->file->lastError();
-			return 0;
-		}
-	}
-
 	if (d->ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption. Read directly from the NCCH.
-		size_t ret_sz = d->file->read(ptr, size);
-		if (ret_sz != size) {
-			// Possible error occurred...
-			m_lastError = d->file->lastError();
-		}
-#ifdef ENABLE_DECRYPTION
-		if (d->cipher_cia) {
-			// CIA has outer encryption.
-			d->cipher_cia->decrypt(static_cast<uint8_t*>(ptr), ret_sz);
-		}
-#endif /* ENABLE_DECRYPTION */
-		return ret_sz;
+		// No NCCH encryption.
+		// NOTE: readFromROM() sets q->m_lastError, so we
+		// don't need to check if a short read occurred.
+		return d->readFromROM(d->pos, ptr, size);
 	}
 
 #ifdef ENABLE_DECRYPTION
@@ -654,21 +664,10 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			}
 		}
 
-		size_t ret_sz = d->file->read(ptr8, sz_to_read);
-		if (ret_sz != sz_to_read) {
-			// Possible error occurred...
-			m_lastError = d->file->lastError();
-		}
-
-		if (d->cipher_cia && ret_sz >= 16) {
-			// CIA has outer encryption.
-			// Save the last 16-byte block for the next IV.
-			// TODO: Handle ret_sz < 16; error handling.
-			memcpy(&cia_iv.u8, ptr8 + ret_sz - 16, sizeof(cia_iv.u8));
-			d->cipher_cia->decrypt(ptr8, ret_sz);
-			// Set the IV. (FIXME: Only needed for AesCAPI; fix this...)
-			d->cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-		}
+		// Read from the ROM image.
+		// This automatically removes the outer CIA
+		// title key encryption if it's present.
+		size_t ret_sz = d->readFromROM(d->pos, ptr8, sz_to_read);
 
 		if (section) {
 			// Set the required key.

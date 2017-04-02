@@ -37,9 +37,6 @@
 // C includes.
 #include <stdint.h>
 
-// C includes. (C++ namespace)
-#include <cstring>
-
 // C++ includes.
 #include <vector>
 
@@ -95,6 +92,19 @@ class NCCHReaderPrivate
 		N3DS_ExeFS_Header_t exefs_header;
 
 		/**
+		 * Read data from the underlying ROM image.
+		 * CIA decryption is automatically handled if set up properly.
+		 *
+		 * NOTE: Offset and size must both be multiples of 16.
+		 *
+		 * @param offset	[in] Starting address, relative to the beginning of the NCCH.
+		 * @param ptr		[out] Output buffer.
+		 * @param size		[in] Amount of data to read.
+		 * @return Number of bytes read, or 0 on error.
+		 */
+		size_t readFromROM(uint32_t offset, void *ptr, size_t size);
+
+		/**
 		 * Load the NCCH Extended Header.
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -139,18 +149,6 @@ class NCCHReaderPrivate
 			ctr->u8[11] = 0;
 			offset /= 16;
 			ctr->u32[3] = cpu_to_be32(offset);
-		}
-
-		/**
-		 * Initialize an AES-CBC IV using the TMD content index.
-		 * Used for decrypting CIAs.
-		 * @param iv AES-CBC IV.
-		 */
-		inline void init_cia_cbc_iv(ctr_t *iv)
-		{
-			iv->u8[0] = tmd_content_index >> 8;
-			iv->u8[1] = tmd_content_index & 0xFF;
-			memset(&iv->u8[2], 0, sizeof(iv->u8)-2);
 		}
 
 		// Encrypted section addresses.
