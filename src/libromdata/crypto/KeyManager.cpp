@@ -79,6 +79,14 @@ class KeyManagerPrivate
 		unordered_map<string, uint32_t> mapKeyNames;
 
 		/**
+		 * Map of invalid key names to errors.
+		 * These are stored for better error reporting.
+		 * - Key: Key name.
+		 * - Value: Verification result.
+		 */
+		unordered_map<string, uint8_t> mapInvalidKeyNames;
+
+		/**
 		 * Initialize KeyManager.
 		 */
 		void init(void);
@@ -271,17 +279,18 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		chr = end - 1;
 	}
 
+	string keyName(line_buf.data(), equals_pos - line_buf.data());
+	if (keyName.empty()) {
+		// Empty key name.
+		return;
+	}
+
 	const char *value = equals_pos + 1;
 	int value_len = (int)(end - 1 - equals_pos);
 	if (value[0] == 0 || (value_len % 2 != 0)) {
 		// Key is either empty, or is an odd length.
 		// (Odd length means half a byte...)
-		return;
-	}
-
-	string keyName(line_buf.data(), equals_pos - line_buf.data());
-	if (keyName.empty()) {
-		// Empty key name.
+		mapInvalidKeyNames.insert(std::make_pair(keyName, KeyManager::VERIFY_KEY_INVALID));
 		return;
 	}
 
@@ -355,6 +364,7 @@ int KeyManagerPrivate::loadKeys(void)
 	// Clear the loaded keys.
 	vKeys.clear();
 	mapKeyNames.clear();
+	mapInvalidKeyNames.clear();
 
 	// We're not in the keys section initially.
 	cfg_curSection.clear();
@@ -560,9 +570,16 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 
 	// Attempt to get the key from the map.
 	RP_D(const KeyManager);
-	unordered_map<string, uint32_t>::const_iterator iter = d->mapKeyNames.find(keyName);
+	auto iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
-		// Key not found.
+		// Key was not parsed. Figure out why.
+		auto iter = d->mapInvalidKeyNames.find(keyName);
+		if (iter != d->mapInvalidKeyNames.end()) {
+			// An error occurred when parsing the key.
+			return (VerifyResult)iter->second;
+		}
+
+		// Key was not found.
 		return VERIFY_KEY_NOT_FOUND;
 	}
 
