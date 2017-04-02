@@ -20,8 +20,10 @@
  ***************************************************************************/
 
 #include "KeyManager.hpp"
-#include "../file/FileSystem.hpp"
-#include "../file/RpFile.hpp"
+
+#include "RpAtomics.h"
+#include "file/FileSystem.hpp"
+#include "file/RpFile.hpp"
 
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"
@@ -72,6 +74,11 @@ class KeyManagerPrivate
 		unordered_map<string, uint32_t> mapKeyNames;
 
 		/**
+		 * Initialize KeyManager.
+		 */
+		void init(void);
+
+		/**
 		 * Process a configuration line.
 		 * @param line_buf Configuration line.
 		 */
@@ -82,6 +89,10 @@ class KeyManagerPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadKeys(void);
+
+		// Initialization counter.
+		int init_counter;
+		volatile int is_init;
 
 		// Temporary configuration loading variables.
 		string cfg_curSection;
@@ -108,10 +119,39 @@ const char KeyManager::verifyTestString[] = {
 KeyManager KeyManagerPrivate::instance;
 
 KeyManagerPrivate::KeyManagerPrivate()
-	: cfg_isInKeysSection(false)
+	: init_counter(-1)
+	, is_init(0)
+	, cfg_isInKeysSection(false)
 	, conf_was_found(false)
 	, conf_mtime(0)
+{ }
+
+/**
+ * Initialize KeyManager.
+ */
+void KeyManagerPrivate::init(void)
 {
+	// How this works:
+	// - init_counter is initially -1.
+	// - Incrementing it returns 0; this means that the
+	//   directories have not been initialized yet.
+	// - is_init is set when initializing.
+	// - If the counter wraps around, the directories won't be
+	//   reinitialized because dir_is_init will be set.
+	if (ATOMIC_INC_FETCH(&init_counter) != 0) {
+		// Function has already been called.
+		// Wait for directories to be initialized.
+		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
+			// TODO: Timeout counter?
+#ifdef _WIN32
+			Sleep(0);
+#else /* !_WIN32 */
+			usleep(0);
+#endif /* _WIN32 */
+		}
+		return;
+	}
+
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
 
@@ -132,6 +172,9 @@ KeyManagerPrivate::KeyManagerPrivate()
 		// rmkdir() failed.
 		conf_filename.clear();
 	}
+
+	// KeyManager has been initialized.
+	is_init = 1;
 }
 
 /**
@@ -432,9 +475,14 @@ bool KeyManager::areKeysLoaded(void) const
  */
 int KeyManager::reloadIfChanged(void)
 {
-	int ret = 0;
-
+	// NOTE: It's safe to check dir_is_init here, since it's
+	// only ever set to 1 by our code.
 	RP_D(KeyManager);
+	if (!d->is_init) {
+		d->init();
+	}
+
+	int ret = 0;
 	if (!d->conf_was_found) {
 		// keys.conf wasn't found.
 		// Try loading it again.
