@@ -187,8 +187,7 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 
 	// Make sure KeyManager has the CTR scrambling key.
 	// TODO: Verify the key.
-	KeyManager::KeyData_t keyData;
-	ASSERT_EQ(0, keyManager->get("ctr-scrambler", &keyData));
+	ASSERT_EQ(0, keyManager->get("ctr-scrambler", nullptr));
 
 	u128_t keyNormal;
 	ASSERT_EQ(0, ctrKeyScrambler->CtrScramble(&keyNormal,

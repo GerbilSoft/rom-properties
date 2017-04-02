@@ -481,7 +481,7 @@ int KeyManager::reloadIfChanged(void)
  */
 int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 {
-	if (!keyName || !pKeyData) {
+	if (!keyName || keyName[0] == 0) {
 		// Invalid parameters.
 		return -EINVAL;
 	}
@@ -498,9 +498,9 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 	}
 
 	// Found the key.
-	uint32_t keyIdx = iter->second;
-	uint32_t idx = (keyIdx & 0xFFFFFF);
-	uint8_t len = ((keyIdx >> 24) & 0xFF);
+	const uint32_t keyIdx = iter->second;
+	const uint32_t idx = (keyIdx & 0xFFFFFF);
+	const uint8_t len = ((keyIdx >> 24) & 0xFF);
 
 	// Make sure the key index is valid.
 	assert(idx + len <= d->vKeys.size());
@@ -509,8 +509,10 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 		return -EFAULT;
 	}
 
-	pKeyData->key = d->vKeys.data() + idx;
-	pKeyData->length = len;
+	if (pKeyData) {
+		pKeyData->key = d->vKeys.data() + idx;
+		pKeyData->length = len;
+	}
 	return 0;
 }
 

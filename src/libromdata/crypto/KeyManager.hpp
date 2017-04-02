@@ -85,7 +85,7 @@ class KeyManager
 		/**
 		 * Get an encryption key.
 		 * @param keyName	[in]  Encryption key name.
-		 * @param pKeyData	[out] Key data struct.
+		 * @param pKeyData	[out,opt] Key data struct. (If nullptr, key will be checked but not loaded.)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int get(const char *keyName, KeyData_t *pKeyData) const;
