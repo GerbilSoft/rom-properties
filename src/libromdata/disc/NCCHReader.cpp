@@ -529,6 +529,26 @@ int NCCHReaderPrivate::loadExHeader(void)
 		memset(exzero, 0, sizeof(ncch_exheader) - exheader_length);
 	}
 
+	// TODO: Verify the ExHeader SHA256.
+	// For now, reject it if some fields are invalid, since this
+	// usually means it's encrypted with a key that isn't available.
+	if (ncch_exheader.aci.arm11_local.res_limit_category > N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER) {
+		// Invalid application type.
+		return -6;
+	}
+	const uint8_t old3ds_sys_mode = (ncch_exheader.aci.arm11_local.flags[2] &
+		N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
+	if (old3ds_sys_mode > N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4) {
+		// Invalid Old3DS system mode.
+		return -7;
+	}
+	const uint8_t new3ds_sys_mode = ncch_exheader.aci.arm11_local.flags[1] &
+		N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
+	if (new3ds_sys_mode > N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2) {
+		// Invalid New3DS system mode.
+		return -8;
+	}
+	
 	// ExHeader loaded.
 	q->seek(prev_pos);
 	headers_loaded |= HEADER_EXHEADER;

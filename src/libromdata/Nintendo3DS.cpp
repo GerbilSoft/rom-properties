@@ -1477,6 +1477,8 @@ int Nintendo3DS::loadFieldData(void)
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
 
+	// TODO: Show a warning if a required encryption key was not found.
+
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
@@ -2102,7 +2104,8 @@ int Nintendo3DS::loadFieldData(void)
 			_RP("Dev3 (72 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
 			_RP("Dev4 (32 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev4
 		};
-		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] & N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
+		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] &
+			N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl)) {
 			d->fields->addField_string(_RP("Old3DS Sys Mode"),
 				old3ds_sys_mode_tbl[old3ds_sys_mode]);
@@ -2121,7 +2124,8 @@ int Nintendo3DS::loadFieldData(void)
 			_RP("Dev1 (178 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
 			_RP("Dev2 (124 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev2
 		};
-		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] & N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
+		const uint8_t new3ds_sys_mode = ncch_exheader->aci.arm11_local.flags[1] &
+			N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
 			d->fields->addField_string(_RP("New3DS Sys Mode"),
 				new3ds_sys_mode_tbl[new3ds_sys_mode]);
