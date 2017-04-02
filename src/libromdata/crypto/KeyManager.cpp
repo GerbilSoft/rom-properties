@@ -628,6 +628,12 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 		return VERIFY_KEY_INVALID;
 	}
 
+	// Verify the key length.
+	if (pKeyData->length != 16 && pKeyData->length != 24 && pKeyData->length != 32) {
+		// Key length is invalid.
+		return VERIFY_KEY_INVALID;
+	}
+
 	// Decrypt the test data.
 	// TODO: Keep this IAesCipher instance around?
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
