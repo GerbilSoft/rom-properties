@@ -123,6 +123,10 @@ class KeyManager
 		 */
 		VerifyResult getAndVerify(const char *keyName, KeyData_t *pKeyData,
 			const uint8_t *pVerifyData, unsigned int verifyLen) const;
+
+		// Verification test string.
+		// NOTE: This string is NOT NULL-terminated!
+		static const char verifyTestString[16];
 };
 
 }

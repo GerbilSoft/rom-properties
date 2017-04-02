@@ -95,6 +95,13 @@ class KeyManagerPrivate
 
 /** KeyManagerPrivate **/
 
+// Verification test string.
+// NOTE: This string is NOT NULL-terminated!
+const char KeyManager::verifyTestString[] = {
+	'A','E','S','-','1','2','8','-',
+	'E','C','B','-','T','E','S','T'
+};
+
 // Singleton instance.
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
@@ -598,8 +605,7 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	}
 
 	// Verify the test data.
-	static const char testString[] = "AES-128-ECB-TEST";
-	if (memcmp(tmpData.get(), testString, verifyLen) != 0) {
+	if (memcmp(tmpData.get(), verifyTestString, verifyLen) != 0) {
 		// Verification failed.
 		return VERIFY_WRONG_KEY;
 	}

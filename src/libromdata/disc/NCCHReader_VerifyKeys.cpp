@@ -21,9 +21,19 @@
  ***************************************************************************/
 
 #include "NCCHReader_p.hpp"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be compiled if decryption is enabled.
+#endif /* !ENABLE_DECRYPTION */
+
+#include "crypto/IAesCipher.hpp"
+#include "crypto/AesCipherFactory.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
 
 namespace LibRomData {
 
@@ -126,6 +136,47 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
 		reinterpret_cast<const u128_t*>(keyX_data.key),
 		reinterpret_cast<const u128_t*>(keyY_data.key));
 	// TODO: Scrambling-specific error?
+	if (ret != 0) {
+		return KeyManager::VERIFY_KEY_INVALID;
+	}
+
+	if (keyNormal_verify) {
+		// Verify the generated Normal key.
+		// TODO: Make this a function in KeyManager, and share it
+		// with KeyManager::getAndVerify().
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+		if (!cipher) {
+			// Unable to create the IAesCipher.
+			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		}
+		// Set cipher parameters.
+		ret = cipher->setChainingMode(IAesCipher::CM_ECB);
+		if (ret != 0) {
+			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		}
+		ret = cipher->setKey(pKeyOut->u8, sizeof(*pKeyOut));
+		if (ret != 0) {
+			return KeyManager::VERFIY_IAESCIPHER_INIT_ERR;
+		}
+
+		// Decrypt the test data.
+		// NOTE: IAesCipher decrypts in place, so we need to
+		// make a temporary copy.
+		unique_ptr<uint8_t[]> tmpData(new uint8_t[16]);
+		memcpy(tmpData.get(), keyNormal_verify, 16);
+		unsigned int size = cipher->decrypt(tmpData.get(), 16);
+		if (size != 16) {
+			// Decryption failed.
+			return KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR;
+		}
+
+		// Verify the test data.
+		if (memcmp(tmpData.get(), KeyManager::verifyTestString, 16) != 0) {
+			// Verification failed.
+			return KeyManager::VERIFY_WRONG_KEY;
+		}
+	}
+
 	return (ret == 0 ? KeyManager::VERIFY_OK : KeyManager::VERIFY_KEY_INVALID);
 }
 
