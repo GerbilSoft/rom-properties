@@ -216,9 +216,6 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 #endif /* ENABLE_DECRYPTION */
 {
 #ifdef ENABLE_DECRYPTION
-	// Initialize the Key Manager.
-	KeyManager *keyManager = KeyManager::instance();
-
 	// Check if this is a CIA with title key encryption.
 	if (ticket) {
 		// Check the ticket issuer.
@@ -240,6 +237,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		// Check the KeyY index.
 		// TODO: Handle invalid KeyY indexes?
 		titleKeyEncIdx |= (ticket->keyY_index << 2);
+
+		// Get the Key Manager instance.
+		KeyManager *keyManager = KeyManager::instance();
+		assert(keyManager != nullptr);
 
 		// Try to get the KeyNormal.
 		// TODO: Fall back to KeyX/KeyY if not found.

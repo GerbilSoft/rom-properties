@@ -242,8 +242,9 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	// If decryption is enabled, we can load the key and enable reading.
 	// Otherwise, we can only get the partition size information.
 
-	// Initialize the Key Manager.
+	// Get the Key Manager instance.
 	KeyManager *keyManager = KeyManager::instance();
+	assert(keyManager != nullptr);
 
 	// Determine the required encryption key.
 	const WiiPartition::EncKey encKey = getEncKey();
