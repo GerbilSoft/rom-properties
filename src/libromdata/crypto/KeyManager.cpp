@@ -23,6 +23,9 @@
 #include "../file/FileSystem.hpp"
 #include "../file/RpFile.hpp"
 
+#include "IAesCipher.hpp"
+#include "AesCipherFactory.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
@@ -477,24 +480,30 @@ int KeyManager::reloadIfChanged(void)
  * Get an encryption key.
  * @param keyName	[in]  Encryption key name.
  * @param pKeyData	[out] Key data struct.
- * @return 0 on success; negative POSIX error code on error.
+ * @return VerifyResult.
  */
-int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
+KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 {
+	assert(keyName != nullptr);
+	assert(keyName[0] != 0);
 	if (!keyName || keyName[0] == 0) {
 		// Invalid parameters.
-		return -EINVAL;
+		return VERIFY_INVALID_PARAMS;
 	}
 
 	// Check if keys.conf needs to be reloaded.
 	const_cast<KeyManager*>(this)->reloadIfChanged();
+	if (!areKeysLoaded()) {
+		// Keys are not loaded.
+		return VERIFY_KEY_DB_NOT_LOADED;
+	}
 
 	// Attempt to get the key from the map.
 	RP_D(const KeyManager);
 	unordered_map<string, uint32_t>::const_iterator iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
 		// Key not found.
-		return -ENOENT;
+		return VERIFY_KEY_NOT_FOUND;
 	}
 
 	// Found the key.
@@ -506,14 +515,97 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 	assert(idx + len <= d->vKeys.size());
 	if (idx + len > d->vKeys.size()) {
 		// Should not happen...
-		return -EFAULT;
+		return VERIFY_KEY_DB_ERROR;
 	}
 
 	if (pKeyData) {
 		pKeyData->key = d->vKeys.data() + idx;
 		pKeyData->length = len;
 	}
-	return 0;
+	return VERIFY_OK;
+}
+
+/**
+ * Verify and retrieve an encryption key.
+ *
+ * This will decrypt the specified block of data
+ * using the key with AES-128-ECB, which will result
+ * in the 16-byte string "AES-128-ECB-TEST".
+ *
+ * If the key is valid, pKeyData will be populated
+ * with the key information, similar to get().
+ *
+ * @param keyName	[in] Encryption key name.
+ * @param pKeyData	[out] Key data struct.
+ * @param pVerifyData	[in] Verification data block.
+ * @param verifyLen	[in] Length of pVerifyData. (Must be 16.)
+ * @return VerifyResult.
+ */
+KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t *pKeyData,
+	const uint8_t *pVerifyData, unsigned int verifyLen) const
+{
+	assert(keyName);
+	assert(pVerifyData);
+	assert(verifyLen == 16);
+	if (!keyName || !pVerifyData || verifyLen != 16) {
+		// Invalid parameters.
+		return VERIFY_INVALID_PARAMS;
+	}
+
+	// Temporary KeyData_t in case pKeyData is nullptr.
+	KeyData_t tmp_key_data;
+	if (!pKeyData) {
+		pKeyData = &tmp_key_data;
+	}
+
+	// Get the key first.
+	VerifyResult res = get(keyName, pKeyData);
+	if (res != VERIFY_OK) {
+		// Error obtaining the key.
+		return res;
+	} else if (!pKeyData->key || pKeyData->length == 0) {
+		// Key is invalid.
+		return VERIFY_KEY_INVALID;
+	}
+
+	// Decrypt the test data.
+	// TODO: Keep this IAesCipher instance around?
+	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+	if (!cipher) {
+		// Unable to create the IAesCipher.
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+
+	// Set cipher parameters.
+	int ret = cipher->setChainingMode(IAesCipher::CM_ECB);
+	if (ret != 0) {
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+	ret = cipher->setKey(pKeyData->key, pKeyData->length);
+	if (ret != 0) {
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+
+	// Decrypt the test data.
+	// NOTE: IAesCipher decrypts in place, so we need to
+	// make a temporary copy.
+	unique_ptr<uint8_t[]> tmpData(new uint8_t[verifyLen]);
+	memcpy(tmpData.get(), pVerifyData, verifyLen);
+	unsigned int size = cipher->decrypt(tmpData.get(), verifyLen);
+	if (size != verifyLen) {
+		// Decryption failed.
+		return VERIFY_IAESCIPHER_DECRYPT_ERR;
+	}
+
+	// Verify the test data.
+	static const char testString[] = "AES-128-ECB-TEST";
+	if (memcmp(tmpData.get(), testString, verifyLen) != 0) {
+		// Verification failed.
+		return VERIFY_WRONG_KEY;
+	}
+
+	// Test data verified.
+	return VERIFY_OK;
 }
 
 }

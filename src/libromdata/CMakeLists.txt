@@ -194,6 +194,7 @@ SET(libromdata_H
 	disc/PEResourceReader.hpp
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
+	disc/NCCHReader_p.hpp
 	NES.hpp
 	)
 
@@ -237,6 +238,7 @@ IF(ENABLE_DECRYPTION)
 		crypto/AesCipherFactory.cpp
 		crypto/KeyManager.cpp
 		crypto/CtrKeyScrambler.cpp
+		disc/NCCHReader_VerifyKeys.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/IAesCipher.hpp

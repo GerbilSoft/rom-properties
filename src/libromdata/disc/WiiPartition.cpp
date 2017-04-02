@@ -255,19 +255,19 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	}
 
 	// Determine the encryption key name.
-	const char *key_name;
+	const char *keyName;
 	switch (encKey) {
 		case WiiPartition::ENCKEY_COMMON:
 			// Wii common key.
-			key_name = "rvl-common";
+			keyName = "rvl-common";
 			break;
 		case WiiPartition::ENCKEY_KOREAN:
 			// Korean key.
-			key_name = "rvl-korean";
+			keyName = "rvl-korean";
 			break;
 		case WiiPartition::ENCKEY_DEBUG:
 			// Debug key. (RVT-R)
-			key_name = "rvt-debug";
+			keyName = "rvt-debug";
 			break;
 		default:
 			// Unknown key...
@@ -285,16 +285,54 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 			return encInitStatus;
 		}
 
+		// Verification data for the encryption keys.
+		// This is the string "AES-128-ECB-TEST"
+		// encrypted using the key with AES-128-ECB.
+		// TODO: Test before committing.
+		static const uint8_t verifyData_tbl[3][16] = {
+			// rvl-common
+			{0xCF,0xB7,0xFF,0xA0,0x64,0x0C,0x7A,0x7D,
+			 0xA7,0x22,0xDC,0x16,0x40,0xFA,0x04,0x58},
+			// rvl-korean
+			{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
+			 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
+			// rvt-debug
+			{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
+			 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
+		};
+		const uint8_t *const verifyData = verifyData_tbl[encKey];
+
 		// Get the common key.
 		KeyManager::KeyData_t keyData;
-		if (keyManager->get(key_name, &keyData) != 0) {
+		KeyManager::VerifyResult res = keyManager->getAndVerify(
+			keyName, &keyData, verifyData, 16);
+		if (res != KeyManager::VERIFY_OK) {
 			// Common key was not found.
-			if (keyManager->areKeysLoaded()) {
-				// Keys were loaded, but this key is missing.
-				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
-			} else {
-				// Keys were not loaded. keys.conf is missing.
-				encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
+			// TODO: Use KeyManager::VerifyResult instead of EncInitStatus?
+			switch (res) {
+				case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
+					// Keys are not loaded.
+					// keys.conf is missing.
+					encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
+					break;
+				case KeyManager::VERIFY_KEY_NOT_FOUND:
+					// Keys were loaded, but this key is missing.
+					encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+					break;
+				case KeyManager::VERFIY_IAESCIPHER_INIT_ERR:
+				case KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR:
+					// Cipher isn't working.
+					encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+					break;
+				case KeyManager::VERIFY_KEY_INVALID:
+				case KeyManager::VERIFY_WRONG_KEY:
+					// Key is incorrect.
+					encInitStatus = WiiPartition::ENCINIT_INCORRECT_KEY;
+					break;
+				default:
+					// Some other error.
+					encInitStatus = WiiPartition::ENCINIT_UNKNOWN;
+					break;
 			}
 			return encInitStatus;
 		}

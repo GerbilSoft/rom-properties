@@ -22,9 +22,6 @@
 #include "NCCHReader.hpp"
 #include "config.libromdata.h"
 
-#include "byteswap.h"
-#include "n3ds_structs.h"
-
 #include "file/IRpFile.hpp"
 #include "PartitionFile.hpp"
 
@@ -46,152 +43,8 @@
 using std::vector;
 using std::unique_ptr;
 
+#include "NCCHReader_p.hpp"
 namespace LibRomData {
-
-class NCCHReaderPrivate
-{
-	public:
-		NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
-			uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length,
-			const N3DS_Ticket_t *ticket = nullptr,
-			uint16_t tmd_content_index = 0);
-		~NCCHReaderPrivate();
-
-	private:
-		RP_DISABLE_COPY(NCCHReaderPrivate)
-	protected:
-		NCCHReader *const q_ptr;
-
-	public:
-		IRpFile *file;		// 3DS ROM image.
-
-		// NCCH offsets.
-		const int64_t ncch_offset;	// NCCH start offset, in bytes.
-		const uint32_t ncch_length;	// NCCH length, in bytes.
-		const uint8_t media_unit_shift;
-
-		// Current read position within the NCCH.
-		// pos = 0 indicates the beginning of the NCCH header.
-		// NOTE: This cannot be more than 4 GB,
-		// so we're using uint32_t.
-		uint32_t pos;
-
-		// Loaded headers.
-		enum HeadersPresent {
-			HEADER_NONE	= 0,
-			HEADER_NCCH	= (1 << 0),
-			HEADER_EXHEADER	= (1 << 1),
-			HEADER_EXEFS	= (1 << 2),
-		};
-		uint32_t headers_loaded;	// HeadersPresent
-
-		// NCCH header.
-		N3DS_NCCH_Header_t ncch_header;
-		// NCCH ExHeader.
-		N3DS_NCCH_ExHeader_t ncch_exheader;
-		// ExeFS header.
-		N3DS_ExeFS_Header_t exefs_header;
-
-		/**
-		 * Load the NCCH Extended Header.
-		 * @return 0 on success; non-zero on error.
-		 */
-		int loadExHeader(void);
-
-#ifdef ENABLE_DECRYPTION
-		// Title ID. Used for AES-CTR initialization.
-		// (Big-endian format)
-		uint64_t tid_be;
-
-		// Encryption keys.
-		// TODO: Use correct key index depending on file.
-		// For now, only supporting NoCrypto and FixedCryptoKey
-		// with a zero key.
-		uint8_t ncch_keys[2][16];
-
-		// NCCH cipher.
-		IAesCipher *cipher_ncch;	// NCCH cipher.
-
-		// CIA cipher.
-		uint8_t title_key[16];		// Decrypted title key.
-		IAesCipher *cipher_cia;		// CIA cipher.
-
-		union ctr_t {
-			uint8_t u8[16];
-			uint32_t u32[4];
-			uint64_t u64[2];
-		};
-
-		/**
-		 * Initialize an AES-CTR counter using the Title ID.
-		 * @param ctr AES-CTR counter.
-		 * @param section NCCH section.
-		 * @param offset Partition offset, in bytes.
-		 */
-		inline void init_ctr(ctr_t *ctr, uint8_t section, uint32_t offset)
-		{
-			ctr->u64[0] = tid_be;
-			ctr->u8[8] = section;
-			ctr->u8[9] = 0;
-			ctr->u8[10] = 0;
-			ctr->u8[11] = 0;
-			offset /= 16;
-			ctr->u32[3] = cpu_to_be32(offset);
-		}
-
-		/**
-		 * Initialize an AES-CBC IV using the TMD content index.
-		 * Used for decrypting CIAs.
-		 * @param iv AES-CBC IV.
-		 */
-		inline void init_cia_cbc_iv(ctr_t *iv)
-		{
-			iv->u8[0] = tmd_content_index >> 8;
-			iv->u8[1] = tmd_content_index & 0xFF;
-			memset(&iv->u8[2], 0, sizeof(iv->u8)-2);
-		}
-
-		// Encrypted section addresses.
-		struct EncSection {
-			uint32_t address;	// Relative to ncch_offset.
-			uint32_t ctr_base;	// Base address for the AES-CTR counter.
-			uint32_t length;
-			uint8_t keyIdx;		// ncch_keys[] index
-			uint8_t section;	// N3DS_NCCH_Sections
-
-			EncSection(uint32_t address, uint32_t ctr_base,
-				uint32_t length, uint8_t keyIdx, uint8_t section)
-				: address(address)
-				, ctr_base(ctr_base)
-				, length(length)
-				, keyIdx(keyIdx)
-				, section(section)
-				{ }
-
-			/**
-			 * Comparison operator for std::sort().
-			 */
-			inline bool operator<(const EncSection& other) const
-			{
-				return (other.address < this->address);
-			}
-		};
-		vector<EncSection> encSections;
-
-		/**
-		 * Find the encrypted section containing a given address.
-		 * @param address Address.
-		 * @return Index in encSections, or -1 if not encrypted.
-		 */
-		int findEncSection(uint32_t address) const;
-
-		// KeyY index for title key encryption. (CIA only)
-		uint8_t titleKeyEncIdx;
-		// TMD content index.
-		uint16_t tmd_content_index;
-#endif /* ENABLE_DECRYPTION */
-};
 
 /** NCCHReaderPrivate **/
 
@@ -219,18 +72,27 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	// Check if this is a CIA with title key encryption.
 	if (ticket) {
 		// Check the ticket issuer.
-		const char *key_prefix;
+		const char *keyPrefix;
+		const uint8_t *verifyData_keyX = nullptr;
+		const uint8_t *verifyData_keyY = nullptr;
+		const uint8_t *verifyData_keyNormal = nullptr;
 		if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(ticket->issuer))) {
 			// Retail issuer..
-			key_prefix = "ctr";
+			keyPrefix = "ctr";
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
 		} else if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(ticket->issuer))) {
 			// Debug issuer.
-			key_prefix = "ctr-dev";
+			keyPrefix = "ctr-dev";
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
+			if (ticket->keyY_index < 6) {
+				// Verification data is available.
+				verifyData_keyX = verifyData_ctr_dev_Slot0x3DKeyX;
+				verifyData_keyY = verifyData_ctr_dev_Slot0x3DKeyY_tbl[ticket->keyY_index];
+				verifyData_keyNormal = verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[ticket->keyY_index];
+			}
 		} else {
 			// Unknown issuer.
-			key_prefix = "ctr";
+			keyPrefix = "ctr";
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_UNKNOWN;
 		}
 
@@ -244,11 +106,18 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 		// Try to get the KeyNormal.
 		// TODO: Fall back to KeyX/KeyY if not found.
-		char key_name[64];
-		snprintf(key_name, sizeof(key_name), "%s-Slot0x3DKeyNormal-%d",
-			key_prefix, titleKeyEncIdx >> 2);
+		char keyName[64];
+		snprintf(keyName, sizeof(keyName), "%s-Slot0x3DKeyNormal-%d",
+			keyPrefix, titleKeyEncIdx >> 2);
 		KeyManager::KeyData_t keyData;
-		if (keyManager->get(key_name, &keyData) != 0) {
+		KeyManager::VerifyResult res;
+		if (verifyData_keyNormal) {
+			res = keyManager->getAndVerify(keyName, &keyData, verifyData_keyNormal, 16);
+		} else {
+			res = keyManager->get(keyName, &keyData);
+		}
+
+		if (res != KeyManager::VERIFY_OK) {
 			// Could not retrieve the CIA key.
 			// TODO: Encryption errors like WiiPartition.
 			q->m_lastError = EIO;
