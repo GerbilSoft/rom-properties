@@ -424,12 +424,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			return;
 		}
 
+#ifdef ENABLE_DECRYPTION
 		if (cipher_cia) {
 			// Decrypt the ExeFS header.
 			// TODO: Change decrypt()'s parameter to void*?
 			// TODO: Verify decryption return value.
 			cipher_cia->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 		}
+#endif /* ENABLE_DECRYPTION */
 
 		headers_loaded |= HEADER_EXEFS;
 	}
