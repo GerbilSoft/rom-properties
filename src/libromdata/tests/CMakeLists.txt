@@ -71,6 +71,17 @@ IF(ENABLE_DECRYPTION)
 	DO_SPLIT_DEBUG(AesCipherTest)
 	SET_WINDOWS_SUBSYSTEM(AesCipherTest CONSOLE)
 	ADD_TEST(NAME AesCipherTest COMMAND AesCipherTest)
+
+	# CtrKeyScrambler test.
+	ADD_EXECUTABLE(CtrKeyScramblerTest
+		gtest_init.cpp
+		CtrKeyScramblerTest.cpp
+		)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest romdata8)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest gtest)
+	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
+	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
+	ADD_TEST(NAME CtrKeyScramblerTest COMMAND CtrKeyScramblerTest)
 ENDIF(ENABLE_DECRYPTION)
 
 # GcnFstPrint. (Not a test, but a useful program.)

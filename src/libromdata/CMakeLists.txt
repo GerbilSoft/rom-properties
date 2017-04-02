@@ -236,10 +236,12 @@ IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
 		crypto/AesCipherFactory.cpp
 		crypto/KeyManager.cpp
+		crypto/CtrKeyScrambler.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/IAesCipher.hpp
 		crypto/KeyManager.hpp
+		crypto/CtrKeyScrambler.hpp
 		)
 	IF(WIN32)
 		SET(libromdata_CRYPTO_OS_SRCS
