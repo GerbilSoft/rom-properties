@@ -116,10 +116,7 @@ class NCCHReaderPrivate
 		uint64_t tid_be;
 
 		// Encryption keys.
-		// TODO: Use correct key index depending on file.
-		// For now, only supporting NoCrypto and FixedCryptoKey
-		// with a zero key.
-		uint8_t ncch_keys[2][16];
+		u128_t ncch_keys[2];
 
 		// NCCH cipher.
 		IAesCipher *cipher_ncch;	// NCCH cipher.
@@ -210,6 +207,27 @@ class NCCHReaderPrivate
 			const uint8_t *keyY_verify);
 
 		/**
+		 * Generate an AES normal key from a KeyX and an NCCH signature.
+		 * KeyX will be selected based on ncchflags[3].
+		 * The first 16 bytes of the NCCH signature is used as KeyY.
+		 *
+		 * NOTE: If the NCCH uses NoCrypto, this function will return
+		 * an error, since there's no keys that would work for it.
+		 * Check for NoCrypto before calling this function.
+		 *
+		 * TODO: SEED encryption is not supported, though it isn't needed
+		 * for "exefs:/icon" and "exefs:/banner".
+		 *
+		 * @param pKeyOut		[out] Output key data. (array of 2 keys)
+		 * @param pNcchHeader		[in] NCCH header, with signature.
+		 * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
+		 *                                   If unknown, will try Debug, then Retail.
+		 * @return VerifyResult.
+		 */
+		KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
+			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
+
+		/**
 		 * Verification data for debug Slot0x3DKeyX.
 		 * This is the string "AES-128-ECB-TEST"
 		 * encrypted using the key with AES-128-ECB.
@@ -231,6 +249,37 @@ class NCCHReaderPrivate
 		 * Primary index is ticket->keyY_index.
 		 */
 		static const uint8_t verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[6][16];
+
+		/**
+		 * Verification data for debug FixedCryptoKey.
+		 * This is the string "AES-128-ECB-TEST"
+		 * encrypted using the key with AES-128-ECB.
+		 */
+		static const uint8_t verifyData_ctr_dev_FixedCryptoKey[16];
+
+		/**
+		 * Verification data for debug Slot0x25KeyX.
+		 * This is the string "AES-128-ECB-TEST"
+		 * encrypted using the key with AES-128-ECB.
+		 * Indexes: 0 == Retail; 1 == Debug
+		 */
+		static const uint8_t verifyData_ctr_Slot0x25KeyX[2][16];
+
+		/**
+		 * Verification data for debug Slot0x18KeyX.
+		 * This is the string "AES-128-ECB-TEST"
+		 * encrypted using the key with AES-128-ECB.
+		 * Indexes: 0 == Retail; 1 == Debug
+		 */
+		static const uint8_t verifyData_ctr_Slot0x18KeyX[2][16];
+
+		/**
+		 * Verification data for debug Slot0x1BKeyX.
+		 * This is the string "AES-128-ECB-TEST"
+		 * encrypted using the key with AES-128-ECB.
+		 * Indexes: 0 == Retail; 1 == Debug
+		 */
+		static const uint8_t verifyData_ctr_Slot0x1BKeyX[2][16];
 #endif /* ENABLE_DECRYPTION */
 };
 

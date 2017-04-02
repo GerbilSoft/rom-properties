@@ -182,25 +182,14 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	}
 #endif /* ENABLE_DECRYPTION */
 
-	// Determine the keyset to use.
-	// Crypto settings, in priority order:
-	// 1. NoCrypto: AES key is all 0s. (FixedCryptoKey should also be set.)
-	// 2. FixedCryptoKey: Fixed key is used.
-	// 3. Neither: Standard key is used.
 #ifdef ENABLE_DECRYPTION
-	if (ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
-		// No encryption.
-		memset(ncch_keys, 0, sizeof(ncch_keys));
-	} else if (ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
-		// Fixed key encryption.
-		// TODO: Determine which keyset is in use.
-		// For now, assuming TEST. (Zero-key) [FBI.3ds uses this]
-		memset(ncch_keys, 0, sizeof(ncch_keys));
-	} else {
-		// Standard NCCH encryption.
-		// TODO: Implement this.
-		// For now, assuming TEST. (Zero-key)
-		memset(ncch_keys, 0, sizeof(ncch_keys));
+	// Determine the keyset to use.
+	KeyManager::VerifyResult res = loadNCCHKeys(
+		ncch_keys, &ncch_header, titleKeyEncIdx);
+	if (res != KeyManager::VERIFY_OK) {
+		// Failed to load the keyset.
+		// Zero out the keys.
+		// TODO: Disable anything that requires reading encrypted data.
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
@@ -242,7 +231,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		if (headers_loaded & HEADER_EXEFS) {
 			// Decrypt the ExeFS header.
 			// ExeFS header uses ncchKey0.
-			cipher_ncch->setKey(ncch_keys[0], sizeof(ncch_keys[0]));
+			cipher_ncch->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
 			init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, 0);
 			cipher_ncch->setIV(ctr.u8, sizeof(ctr.u8));
 			cipher_ncch->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
@@ -672,7 +661,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		if (section) {
 			// Set the required key.
 			// TODO: Don't set the key if it hasn't changed.
-			d->cipher_ncch->setKey(d->ncch_keys[section->keyIdx], sizeof(d->ncch_keys[section->keyIdx]));
+			d->cipher_ncch->setKey(d->ncch_keys[section->keyIdx].u8, sizeof(d->ncch_keys[section->keyIdx].u8));
 
 			// Initialize the counter based on section and offset.
 			NCCHReaderPrivate::ctr_t ctr;

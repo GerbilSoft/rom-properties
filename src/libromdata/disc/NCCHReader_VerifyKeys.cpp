@@ -57,7 +57,11 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
 	const uint8_t *keyX_verify,
 	const uint8_t *keyY_verify)
 {
-	KeyManager::VerifyResult res;
+	assert(pKeyOut);
+	if (!pKeyOut) {
+		// Invalid parameters.
+		return KeyManager::VERIFY_INVALID_PARAMS;
+	}
 
 	// Get the Key Manager instance.
 	KeyManager *keyManager = KeyManager::instance();
@@ -68,6 +72,7 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
 	}
 
 	// Attempt to load the Normal key first.
+	KeyManager::VerifyResult res;
 	if (keyNormal_name) {
 		KeyManager::KeyData_t keyNormal_data;
 		if (keyNormal_verify) {
@@ -182,6 +187,189 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
 }
 
 /**
+ * Generate an AES normal key from a KeyX and an NCCH signature.
+ * KeyX will be selected based on ncchflags[3].
+ * The first 16 bytes of the NCCH signature is used as KeyY.
+ *
+ * NOTE: If the NCCH uses NoCrypto, this function will return
+ * an error, since there's no keys that would work for it.
+ * Check for NoCrypto before calling this function.
+ *
+ * TODO: SEED encryption is not supported, though it isn't needed
+ * for "exefs:/icon" and "exefs:/banner".
+ *
+ * @param pKeyOut		[out] Output key data. (array of 2 keys)
+ * @param pNcchHeader		[in] NCCH header, with signature.
+ * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
+ *                                   If unknown, will try Debug, then Retail.
+ * @return VerifyResult.
+ */
+KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
+	const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer)
+{
+	KeyManager::VerifyResult res;
+
+	assert(pKeyOut != nullptr);
+	assert(pNcchHeader != nullptr);
+	if (!pKeyOut || !pNcchHeader) {
+		// Invalid parameters.
+		return KeyManager::VERIFY_INVALID_PARAMS;
+	}
+
+	// Initialize the Key Manager.
+	KeyManager *keyManager = KeyManager::instance();
+
+	// Determine the keyset to use.
+	// TODO: If issuer is unknown, try Debug, then Retail.
+	const bool isDebug = ((issuer & N3DS_TICKET_TITLEKEY_ISSUER_MASK) == N3DS_TICKET_TITLEKEY_ISSUER_DEBUG);
+
+	// KeyX array.
+	// - 0: Standard keyslot. (0x2C) Always used for "exefs:/icon" and "exefs:/banner".
+	// - 1: Secondary keyslot. If nullptr, same as 0.
+	const char *keyX_name[2] = {nullptr, nullptr};
+	const uint8_t *keyX_verify[2] = {nullptr, nullptr};	// TODO
+
+	bool isFixedKey = false;
+	if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
+		// No encryption.
+		// Shouldn't be calling this function...
+		return KeyManager::VERIFY_INVALID_PARAMS;
+	} else if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
+		// Fixed key.
+		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {
+			// Using the fixed debug key.
+			keyX_name[0] = "ctr-dev-FixedCryptoKey";
+			keyX_verify[0] = verifyData_ctr_dev_FixedCryptoKey;
+			isFixedKey = true;
+		} else {
+			// Zero-key.
+			memset(pKeyOut, 0, sizeof(*pKeyOut) * 2);
+			return KeyManager::VERIFY_OK;
+		}
+	} else {
+		// Regular NCCH encryption.
+
+		// Standard keyslot. (0x2C)
+		if (isDebug) {
+			keyX_name[0] = "ctr-dev-Slot0x2CKeyX";
+			keyX_verify[0] = nullptr;
+		} else {
+			keyX_name[0] = "ctr-Slot0x2CKeyX";
+			keyX_verify[0] = nullptr;
+		}
+
+		// Check for a secondary keyslot.
+		// TODO: Add verification tables for retail.
+		// TODO: Handle SEED encryption? (Not needed for "exefs:/icon" and "exefs:/banner".)
+		// TODO: Use a table instead of if (isDebug)?
+		switch (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_CRYPTO_METHOD]) {
+			case 0x00:
+				// Standard (0x2C)
+				// NOTE: Leave as nullptr, since we don't
+				// need to load it twice.
+				break;
+			case 0x01:
+				// v7.x (0x25)
+				if (isDebug) {
+					keyX_name[1] = "ctr-dev-Slot0x25KeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x25KeyX[1];
+				} else {
+					keyX_name[1] = "ctr-Slot0x25KeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x25KeyX[0];
+				}
+				break;
+			case 0x0A:
+				// Secure3 (0x18)
+				if (isDebug) {
+					keyX_name[1] = "ctr-dev-Slot0x18KeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x18KeyX[1];
+				} else {
+					keyX_name[1] = "ctr-Slot0x18KeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x18KeyX[0];
+				}
+				break;
+			case 0x0B:
+				// Secure4 (0x1B)
+				if (isDebug) {
+					keyX_name[1] = "ctr-dev-Slot0x1BKeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x1BKeyX[1];
+				} else {
+					keyX_name[1] = "ctr-Slot0x1BKeyX";
+					keyX_verify[1] = verifyData_ctr_Slot0x1BKeyX[0];
+				}
+				break;
+			default:
+				// TODO: Unknown encryption method...
+				// TODO: Better error code.
+				assert(!"Unknown NCCH encryption method.");
+				return KeyManager::VERIFY_WRONG_KEY;
+		}
+	}
+
+	// Load the two KeyX keys.
+	KeyManager::KeyData_t keyX_data[2];
+	for (int i = 0; i < 2; i++) {
+		if (!keyX_name[i]) {
+			// KeyX[1] is the same as KeyX[0];
+			break;
+		}
+
+		if (keyX_verify[i]) {
+			res = keyManager->getAndVerify(
+				keyX_name[i], &keyX_data[i],
+				keyX_verify[i], 16);
+		} else {
+			res = keyManager->get(keyX_name[i], &keyX_data[i]);
+		}
+
+		if (res != KeyManager::VERIFY_OK) {
+			// KeyX error.
+			return res;
+		} else if (keyX_data[i].length != 16) {
+			// KeyX is the wrong length.
+			return KeyManager::VERIFY_KEY_INVALID;
+		}
+	}
+
+	// If this is a fixed key, then we actually loaded
+	// KeyNormal, not KeyX. Return immediately.
+	if (isFixedKey) {
+		// Copy the keys.
+		const int idx2 = (keyX_name[1] ? 1 : 0);
+		memcpy(pKeyOut[0].u8, keyX_data[0].key, 16);
+		memcpy(pKeyOut[1].u8, keyX_data[idx2].key, 16);
+		return KeyManager::VERIFY_OK;
+	}
+
+	// Scramble the primary keyslot to get KeyNormal.
+	int ret = CtrKeyScrambler::CtrScramble(&pKeyOut[0],
+		reinterpret_cast<const u128_t*>(keyX_data[0].key),
+		reinterpret_cast<const u128_t*>(pNcchHeader->signature));
+	// TODO: Scrambling-specific error?
+	if (ret != 0) {
+		return KeyManager::VERIFY_KEY_INVALID;
+	}
+
+	// Do we have a secondary key?
+	if (keyX_name[1]) {
+		// Scramble the secondary keyslot to get KeyNormal.
+		ret = CtrKeyScrambler::CtrScramble(&pKeyOut[1],
+			reinterpret_cast<const u128_t*>(keyX_data[1].key),
+			reinterpret_cast<const u128_t*>(pNcchHeader->signature));
+		// TODO: Scrambling-specific error?
+		if (ret != 0) {
+			return KeyManager::VERIFY_KEY_INVALID;
+		}
+	} else {
+		// Copy ncchKey0 to ncchKey1.
+		memcpy(pKeyOut[1].u8, pKeyOut[0].u8, sizeof(pKeyOut[1].u8));
+	}
+
+	// NCCH keys generated.
+	return KeyManager::VERIFY_OK;
+}
+
+/**
  * Verification data for debug Slot0x3DKeyX.
  * This is the string "AES-128-ECB-TEST"
  * encrypted using the key with AES-128-ECB.
@@ -250,6 +438,61 @@ const uint8_t NCCHReaderPrivate::verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[6][16]
 	// 5
 	{0xAA,0xDA,0x4C,0xA8,0xF6,0xE5,0xA9,0x77,
 	 0xE0,0xA0,0xF9,0xE4,0x76,0xCF,0x0D,0x63},
+};
+
+/**
+ * Verification data for debug FixedCryptoKey.
+ * This is the string "AES-128-ECB-TEST"
+ * encrypted using the key with AES-128-ECB.
+ */
+const uint8_t NCCHReaderPrivate::verifyData_ctr_dev_FixedCryptoKey[16] = {
+	0x1E,0x95,0x82,0xCD,0x65,0x2A,0xE3,0x3F,
+	0x90,0xEB,0x91,0x3F,0x77,0xE0,0x0A,0x35
+};
+
+/**
+ * Verification data for debug Slot0x25KeyX.
+ * This is the string "AES-128-ECB-TEST"
+ * encrypted using the key with AES-128-ECB.
+ * Indexes: 0 == Retail; 1 == Debug
+ */
+const uint8_t NCCHReaderPrivate::verifyData_ctr_Slot0x25KeyX[2][16] = {
+	// Retail
+	{0x23,0x81,0x94,0x9A,0x56,0xC9,0xEC,0x25,
+	 0xE1,0xA8,0xC7,0x52,0x49,0xE6,0x58,0x25},
+	// Debug
+	{0x81,0x01,0x31,0xFD,0xDC,0x08,0x9E,0x7D,
+	 0x56,0xC9,0x62,0x37,0xAE,0x33,0x26,0xEE}
+};
+
+/**
+ * Verification data for debug Slot0x18KeyX.
+ * This is the string "AES-128-ECB-TEST"
+ * encrypted using the key with AES-128-ECB.
+ * Indexes: 0 == Retail; 1 == Debug
+ */
+const uint8_t NCCHReaderPrivate::verifyData_ctr_Slot0x18KeyX[2][16] = {
+	// Retail
+	{0xE6,0x2E,0x52,0x4A,0x3A,0x17,0x28,0xC8,
+	 0xC0,0xFA,0x0C,0x3D,0x74,0x5D,0x74,0x41},
+	// Debug
+	{0xF8,0x66,0x09,0x3A,0x7C,0x81,0x64,0x41,
+	 0x14,0x17,0x43,0x5C,0xCD,0xA7,0xED,0x1B}
+};
+
+/**
+ * Verification data for debug Slot0x1BKeyX.
+ * This is the string "AES-128-ECB-TEST"
+ * encrypted using the key with AES-128-ECB.
+ * Indexes: 0 == Retail; 1 == Debug
+ */
+const uint8_t NCCHReaderPrivate::verifyData_ctr_Slot0x1BKeyX[2][16] = {
+	// Retail
+	{0x8E,0x9D,0x8E,0xE5,0x10,0x31,0xF9,0x3C,
+	 0x7C,0x77,0x13,0x91,0x33,0xC4,0xE3,0x45},
+	// Debug
+	{0x04,0x86,0xC2,0x87,0x60,0xE2,0x24,0x93,
+	 0xAF,0x9D,0xF5,0x15,0x22,0x5A,0x09,0x2B}
 };
 
 }
