@@ -43,6 +43,24 @@
 namespace LibRomData {
 
 /**
+ * Byteswap a 128-bit key for use with 32/64-bit addition.
+ * @param dest Destination.
+ * @param src Source.
+ */
+static inline void bswap_u128_t(u128_t &dest, const u128_t &src)
+{
+#if USE64
+	dest.u64[0] = __swab64(src.u64[0]);
+	dest.u64[1] = __swab64(src.u64[1]);
+#else /* !USE64 */
+	dest.u32[0] = __swab32(src.u32[0]);
+	dest.u32[1] = __swab32(src.u32[1]);
+	dest.u32[2] = __swab32(src.u32[2]);
+	dest.u32[3] = __swab32(src.u32[3]);
+#endif /* USE64 */
+}
+
+/**
  * CTR key scrambler. (for keyslots 0x04-0x3F)
  * @param keyNormal	[out] Normal key.
  * @param keyX		[in] KeyX.
@@ -69,17 +87,17 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 		return -EINVAL;
 	}
 
-#if USE64
-	// 64-bit version.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	u128_t keyXtmp, ctr_scrambler_tmp;
-	keyXtmp.u64[0] = be64_to_cpu(keyX->u64[0]);
-	keyXtmp.u64[1] = be64_to_cpu(keyX->u64[1]);
-	ctr_scrambler_tmp.u64[0] = be64_to_cpu(ctr_scrambler->u64[0]);
-	ctr_scrambler_tmp.u64[1] = be64_to_cpu(ctr_scrambler->u64[1]);
+	bswap_u128_t(keyXtmp, *keyX);
+	bswap_u128_t(ctr_scrambler_tmp, *ctr_scrambler);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	const u128_t &keyXtmp = *keyX;
+	const u128_t &ctr_scrambler_tmp = *ctr_scrambler;
 #endif
+
+#if USE64
+	// 64-bit version.
 
 	// Rotate KeyX left by two.
 	u128_t keyTmp;
@@ -101,20 +119,6 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	keyNormal->u64[0] = cpu_to_be64((keyTmp.u64[1] << 23) | (keyTmp.u64[0] >> 41));
 #else /* !USE64 */
 	// 32-bit version.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	u128_t keyXtmp, ctr_scrambler_tmp;
-	keyXtmp.u32[0] = be32_to_cpu(keyX->u32[0]);
-	keyXtmp.u32[1] = be32_to_cpu(keyX->u32[1]);
-	keyXtmp.u32[2] = be32_to_cpu(keyX->u32[2]);
-	keyXtmp.u32[3] = be32_to_cpu(keyX->u32[3]);
-	ctr_scrambler_tmp.u32[0] = be32_to_cpu(ctr_scrambler->u32[0]);
-	ctr_scrambler_tmp.u32[1] = be32_to_cpu(ctr_scrambler->u32[1]);
-	ctr_scrambler_tmp.u32[2] = be32_to_cpu(ctr_scrambler->u32[2]);
-	ctr_scrambler_tmp.u32[3] = be32_to_cpu(ctr_scrambler->u32[3]);
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	const u128_t &keyXtmp = *keyX;
-	const u128_t &ctr_scrambler_tmp = *ctr_scrambler;
-#endif
 
 	// Rotate KeyX left by two.
 	u128_t keyTmp;
