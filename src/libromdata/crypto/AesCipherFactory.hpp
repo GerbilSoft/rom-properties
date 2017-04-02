@@ -45,7 +45,7 @@ class AesCipherFactory
 		 *
 		 * @return IAesCipher class, or nullptr if decryption isn't supported
 		 */
-		static IAesCipher *getInstance(void);
+		static IAesCipher *create(void);
 };
 
 }

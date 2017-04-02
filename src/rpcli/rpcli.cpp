@@ -118,7 +118,7 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file->isOpen()) {
-		RomData *romData = RomDataFactory::getInstance(file);
+		RomData *romData = RomDataFactory::create(file);
 		if (romData) {
 			if (romData->isValid()) {
 

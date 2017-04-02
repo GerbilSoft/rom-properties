@@ -263,7 +263,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		}
 
 		// Create the cipher.
-		cipher_cia = AesCipherFactory::getInstance();
+		cipher_cia = AesCipherFactory::create();
 
 		// Initialize parameters for title key decryption.
 		// Parameters:
@@ -438,7 +438,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Initialize the AES cipher.
 		// TODO: Check for errors.
-		cipher_ncch = AesCipherFactory::getInstance();
+		cipher_ncch = AesCipherFactory::create();
 		cipher_ncch->setChainingMode(IAesCipher::CM_CTR);
 		ctr_t ctr;
 

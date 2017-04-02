@@ -2020,7 +2020,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *romData = RomDataFactory::getInstance(file.get());
+	RomData *romData = RomDataFactory::create(file.get());
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;

@@ -223,7 +223,7 @@ void AesCipherTest::CompareByteArrays(
  */
 void AesCipherTest::SetUp(void)
 {
-	m_cipher = AesCipherFactory::getInstance();
+	m_cipher = AesCipherFactory::create();
 	ASSERT_TRUE(m_cipher != nullptr);
 	ASSERT_TRUE(m_cipher->isInit());
 

@@ -1312,7 +1312,7 @@ rom_data_view_load_rom_data(gpointer data)
 		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			// Create the RomData object.
-			page->romData = RomDataFactory::getInstance(file, false);
+			page->romData = RomDataFactory::create(file, false);
 
 			// Update the display widgets.
 			rom_data_view_update_display(page);

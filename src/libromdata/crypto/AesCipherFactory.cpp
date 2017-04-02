@@ -43,7 +43,7 @@ namespace LibRomData {
  *
  * @return IAesCipher class, or nullptr if decryption isn't supported
  */
-IAesCipher *AesCipherFactory::getInstance(void)
+IAesCipher *AesCipherFactory::create(void)
 {
 #if defined(_WIN32)
 	// Windows: Use CryptoAPI NG if available.

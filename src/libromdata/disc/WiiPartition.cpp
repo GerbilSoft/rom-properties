@@ -278,8 +278,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	// TODO: Mutex?
 	if (!aes_common[encKey]) {
 		// Initialize this key.
-		// TODO: Dev keys?
-		unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 		if (!cipher || !cipher->isInit()) {
 			// Error initializing the cipher.
 			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
@@ -313,7 +312,7 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 	}
 
 	// Initialize the title key AES cipher.
-	unique_ptr<IAesCipher> cipher(AesCipherFactory::getInstance());
+	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;

@@ -164,7 +164,7 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 		// NOTE: We have to create an instance here in order to
 		// prevent false positives caused by isRomSupported()
 		// saying "yes" while new RomData() says "no".
-		RomData *romData = RomDataFactory::getInstance(file, false);
+		RomData *romData = RomDataFactory::create(file, false);
 		if (romData != nullptr) {
 			supported = TRUE;
 			romData->unref();
