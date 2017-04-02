@@ -50,9 +50,11 @@ namespace LibRomData {
 static inline void bswap_u128_t(u128_t &dest, const u128_t &src)
 {
 #if USE64
+	static_assert(sizeof(void*) == 8, "USE64 == 1 but sizeof(void*) != 8");
 	dest.u64[0] = __swab64(src.u64[0]);
 	dest.u64[1] = __swab64(src.u64[1]);
 #else /* !USE64 */
+	static_assert(sizeof(void*) == 4, "USE64 == 0 but sizeof(void*) != 4");
 	dest.u32[0] = __swab32(src.u32[0]);
 	dest.u32[1] = __swab32(src.u32[1]);
 	dest.u32[2] = __swab32(src.u32[2]);
