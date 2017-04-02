@@ -654,7 +654,6 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			sectIdx >= 0 ? &d->encSections.at(sectIdx) : nullptr);
 
 		size_t sz_to_read = 0;
-		uint32_t section_offset = 0;
 		if (!section) {
 			// Not in an encrypted section.
 			// TODO: Find the next encrypted section.
@@ -663,7 +662,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			assert(!"Reading in an unencrypted section...");
 		} else {
 			// We're in an encrypted section.
-			section_offset = (uint32_t)(d->pos - section->address);
+			uint32_t section_offset = (uint32_t)(d->pos - section->address);
 			if (section_offset + size <= section->length) {
 				// Remainder of reading is in this section.
 				sz_to_read = size;

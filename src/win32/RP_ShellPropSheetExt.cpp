@@ -158,7 +158,6 @@ class RP_ShellPropSheetExt_Private
 		HWND hTabWidget;
 		struct tab {
 			HWND hDlg;		// Tab child dialog.
-			HWND lblCredits;	// Credits.
 			POINT curPt;		// Current point.
 		};
 		vector<tab> tabs;
@@ -931,7 +930,9 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// open a webpage. It does NOT allow highlighting.
 		// TODO: SysLink + EDIT?
 		// FIXME: Centered text alignment?
-		// TODO: With tabs: Verify behavior of LWS_TRANSPARENT.
+		// TODO: With subtabs:
+		// - Verify behavior of LWS_TRANSPARENT.
+		// - Show below subtabs.
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_LINK, wstr.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
@@ -1817,7 +1818,6 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Create the value widget.
 		int field_cy = descSize.cy;	// Default row size.
 		const POINT pt_start = {tab.curPt.x + descSize.cx, tab.curPt.y};
-		HWND hDlgItem;
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
@@ -1861,7 +1861,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				field_cy *= 6;
 
 				// Create a ListView widget.
-				hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
+				HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 					WC_LISTVIEW, nullptr,
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
 					pt_start.x, pt_start.y,
