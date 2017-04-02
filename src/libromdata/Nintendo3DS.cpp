@@ -81,11 +81,12 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		enum RomType {
 			ROM_TYPE_UNKNOWN = -1,	// Unknown ROM type.
 
-			ROM_TYPE_SMDH    = 0,	// SMDH
-			ROM_TYPE_3DSX    = 1,	// 3DSX (homebrew)
-			ROM_TYPE_CCI     = 2,	// CCI/3DS (cartridge dump)
-			ROM_TYPE_eMMC    = 3,	// eMMC dump
-			ROM_TYPE_CIA     = 4,	// CIA
+			ROM_TYPE_SMDH	= 0,	// SMDH
+			ROM_TYPE_3DSX	= 1,	// 3DSX (homebrew)
+			ROM_TYPE_CCI	= 2,	// CCI/3DS (cartridge dump)
+			ROM_TYPE_eMMC	= 3,	// eMMC dump
+			ROM_TYPE_CIA	= 4,	// CIA
+			ROM_TYPE_NCCH	= 5,	// NCCH
 		};
 		int romType;
 
@@ -362,8 +363,9 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// fall-through
 		}
 
-		case ROM_TYPE_CCI: {
-			// CCI file, or CIA file with no meta section.
+		case ROM_TYPE_CCI:
+		case ROM_TYPE_NCCH: {
+			// CCI file, CIA file with no meta section, or NCCH file.
 			// Open "exefs:/icon".
 			NCCHReader *ncch_reader = loadNCCH();
 			if (!ncch_reader) {
@@ -483,6 +485,17 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(int idx)
 				// Invalid partition offset.
 				return nullptr;
 			}
+			break;
+		}
+
+		case ROM_TYPE_NCCH: {
+			// NCCH file. Only one content.
+			if (idx != 0) {
+				// Invalid content index.
+				return nullptr;
+			}
+			offset = 0;
+			length = file->size();
 			break;
 		}
 
@@ -1115,6 +1128,12 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 			d->fileType = FTYPE_EMMC_DUMP;
 			break;
 
+		case Nintendo3DSPrivate::ROM_TYPE_NCCH:
+			// NCCH reader will be created when loadNCCH() is called.
+			// TODO: Better type.
+			d->fileType = FTYPE_TITLE_CONTENTS;
+			break;
+
 		default:
 			// Unknown ROM format.
 			d->romType = Nintendo3DSPrivate::ROM_TYPE_UNKNOWN;
@@ -1219,6 +1238,15 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		}
 	}
 
+	// Check for NCCH.
+	const N3DS_NCCH_Header_t *const ncch_header =
+		reinterpret_cast<const N3DS_NCCH_Header_t*>(info->header.pData);
+	if (!memcmp(ncch_header->hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header->hdr.magic))) {
+		// Found the NCCH magic.
+		// TODO: Other checks?
+		return Nintendo3DSPrivate::ROM_TYPE_NCCH;
+	}
+
 	// Not supported.
 	return -1;
 }
@@ -1274,6 +1302,8 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
 		_RP(".3ds"),	// ROM image. (NOTE: Conflicts with 3DS Max.)
 		_RP(".cci"),	// ROM image.
 		_RP(".cia"),	// CTR installable archive.
+		_RP(".ncch"),	// NCCH file.
+		_RP(".app"),	// NCCH file. (NOTE: May conflict with others...)
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }

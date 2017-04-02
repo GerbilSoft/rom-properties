@@ -468,6 +468,7 @@ const rp_char *RomData::fileType_string(void) const
 		_RP("Banner File"),		// FTYPE_BANNER_FILE
 		_RP("Homebrew Application"),	// FTYPE_HOMEBREW
 		_RP("eMMC Dump"),		// FTYPE_EMMC_DUMP
+		_RP("Title Contents"),		// FTYPE_TITLE_CONTENTS
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
