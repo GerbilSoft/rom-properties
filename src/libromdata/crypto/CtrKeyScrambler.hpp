@@ -35,32 +35,13 @@ typedef union {
 	uint64_t u64[2];
 } u128_t;
 
-class CtrKeyScramblerPrivate;
 class CtrKeyScrambler
 {
-	protected:
-		/**
-		 * CtrKeyScrambler class.
-		 *
-		 * This class is a Singleton, so the caller must obtain a
-		 * pointer to the class using instance().
-		 */
+	private:
+		// Static class.
 		CtrKeyScrambler();
 		~CtrKeyScrambler();
-
-	private:
 		RP_DISABLE_COPY(CtrKeyScrambler)
-
-	private:
-		friend class CtrKeyScramblerPrivate;
-		CtrKeyScramblerPrivate *const d_ptr;
-
-	public:
-		/**
-		 * Get the CtrKeyScrambler instance.
-		 * @return CtrKeyScrambler instance.
-		 */
-		static CtrKeyScrambler *instance(void);
 
 	public:
 		/**
@@ -70,7 +51,7 @@ class CtrKeyScrambler
 		 * @param keyY		[in] KeyY.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u128_t *keyY);
+		static int CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u128_t *keyY);
 };
 
 }

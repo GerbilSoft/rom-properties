@@ -161,8 +161,6 @@ void CtrKeyScramblerTest::SetUp(void)
 {
 	keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
-	ctrKeyScrambler = CtrKeyScrambler::instance();
-	assert(ctrKeyScrambler != nullptr);
 }
 
 /**
@@ -172,7 +170,6 @@ void CtrKeyScramblerTest::SetUp(void)
 void CtrKeyScramblerTest::TearDown(void)
 {
 	keyManager = nullptr;
-	ctrKeyScrambler = nullptr;
 }
 
 /**
@@ -190,7 +187,7 @@ TEST_P(CtrKeyScramblerTest, ctrScrambleTest)
 	ASSERT_EQ(0, keyManager->get("ctr-scrambler", nullptr));
 
 	u128_t keyNormal;
-	ASSERT_EQ(0, ctrKeyScrambler->CtrScramble(&keyNormal,
+	ASSERT_EQ(0, CtrKeyScrambler::CtrScramble(&keyNormal,
 		reinterpret_cast<const u128_t*>(mode.keyX),
 		reinterpret_cast<const u128_t*>(mode.keyY)));
 

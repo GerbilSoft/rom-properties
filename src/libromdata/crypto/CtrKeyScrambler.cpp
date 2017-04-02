@@ -30,59 +30,6 @@
 
 namespace LibRomData {
 
-class CtrKeyScramblerPrivate
-{
-	public:
-		CtrKeyScramblerPrivate();
-
-	private:
-		RP_DISABLE_COPY(CtrKeyScramblerPrivate)
-
-	public:
-		// Static CtrKeyScrambler instance.
-		static CtrKeyScrambler instance;
-
-	public:
-		// Key scrambler constants.
-		u128_t ctr_scrambler;
-		bool ctr_loaded;
-};
-
-/** CtrKeyScramblerPrivate **/
-
-// Singleton instance.
-// Using a static non-pointer variable in order to
-// handle proper destruction when the DLL is unloaded.
-CtrKeyScrambler CtrKeyScramblerPrivate::instance;
-
-CtrKeyScramblerPrivate::CtrKeyScramblerPrivate()
-	: ctr_loaded(false)
-{
-	// Clear the key scrambler constants.
-	memset(&ctr_scrambler, 0, sizeof(ctr_scrambler));
-}
-
-/** CtrKeyScrambler **/
-
-CtrKeyScrambler::CtrKeyScrambler()
-	: d_ptr(new CtrKeyScramblerPrivate())
-{ }
-
-CtrKeyScrambler::~CtrKeyScrambler()
-{
-	delete d_ptr;
-}
-
-/**
- * Get the CtrKeyScrambler instance.
- * @return CtrKeyScrambler instance.
- */
-CtrKeyScrambler *CtrKeyScrambler::instance(void)
-{
-	// Singleton instance.
-	return &CtrKeyScramblerPrivate::instance;
-}
-
 /**
  * CTR key scrambler. (for keyslots 0x04-0x3F)
  * @param keyNormal	[out] Normal key.
@@ -98,37 +45,33 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u1
 	// key is handled as if it's big-endian.
 	// TODO: Operate on 64-bit types if building for 64-bit?
 
-	RP_D(CtrKeyScrambler);
-	if (!d->ctr_loaded) {
-		// Load the key scrambler constant.
-		// TODO: Make this thread-safe.
-		KeyManager *const keyManager = KeyManager::instance();
-		if (!keyManager) {
-			// Unable to initialize the KeyManager.
-			return -EIO;
-		}
-
-		KeyManager::KeyData_t keyData;
-		if (keyManager->get("ctr-scrambler", &keyData) != 0) {
-			// Key not found.
-			return -ENOENT;
-		}
-		if (!keyData.key || keyData.length != 16) {
-			// Key is not valid.
-			return -EIO;	// TODO: Better error code?
-		}
-
-		// Key scrambler constant loaded.
-		memcpy(d->ctr_scrambler.u8, keyData.key, 16);
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		// Byteswap the key scrambler constant.
-		d->ctr_scrambler.u32[0] = be32_to_cpu(d->ctr_scrambler.u32[0]);
-		d->ctr_scrambler.u32[1] = be32_to_cpu(d->ctr_scrambler.u32[1]);
-		d->ctr_scrambler.u32[2] = be32_to_cpu(d->ctr_scrambler.u32[2]);
-		d->ctr_scrambler.u32[3] = be32_to_cpu(d->ctr_scrambler.u32[3]);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-		d->ctr_loaded = true;
+	// Load the key scrambler constant.
+	KeyManager *const keyManager = KeyManager::instance();
+	if (!keyManager) {
+		// Unable to initialize the KeyManager.
+		return -EIO;
 	}
+
+	KeyManager::KeyData_t keyData;
+	if (keyManager->get("ctr-scrambler", &keyData) != 0) {
+		// Key not found.
+		return -ENOENT;
+	}
+	if (!keyData.key || keyData.length != 16) {
+		// Key is not valid.
+		return -EIO;	// TODO: Better error code?
+	}
+
+	// Key scrambler constant loaded.
+	u128_t ctr_scrambler;
+	memcpy(ctr_scrambler.u8, keyData.key, 16);
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	// Byteswap the key scrambler constant.
+	ctr_scrambler.u32[0] = be32_to_cpu(ctr_scrambler.u32[0]);
+	ctr_scrambler.u32[1] = be32_to_cpu(ctr_scrambler.u32[1]);
+	ctr_scrambler.u32[2] = be32_to_cpu(ctr_scrambler.u32[2]);
+	ctr_scrambler.u32[3] = be32_to_cpu(ctr_scrambler.u32[3]);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	u128_t keyXtmp;
@@ -155,10 +98,10 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal, const u128_t *keyX, const u1
 
 	// Add the constant.
 	// Reference for carry functionality: https://accu.org/index.php/articles/1849
-	keyTmp.u32[3] += d->ctr_scrambler.u32[3];
-	keyTmp.u32[2] += d->ctr_scrambler.u32[2] + (keyTmp.u32[3] < d->ctr_scrambler.u32[3]);
-	keyTmp.u32[1] += d->ctr_scrambler.u32[1] + (keyTmp.u32[2] < d->ctr_scrambler.u32[2]);
-	keyTmp.u32[0] += d->ctr_scrambler.u32[0] + (keyTmp.u32[1] < d->ctr_scrambler.u32[1]);
+	keyTmp.u32[3] += ctr_scrambler.u32[3];
+	keyTmp.u32[2] += ctr_scrambler.u32[2] + (keyTmp.u32[3] < ctr_scrambler.u32[3]);
+	keyTmp.u32[1] += ctr_scrambler.u32[1] + (keyTmp.u32[2] < ctr_scrambler.u32[2]);
+	keyTmp.u32[0] += ctr_scrambler.u32[0] + (keyTmp.u32[1] < ctr_scrambler.u32[1]);
 
 	// Rotate left by 87.
 	// This is effectively "rotate left by 23" with adjusted DWORD indexes.
