@@ -22,7 +22,112 @@
 
 #include "NCCHReader_p.hpp"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 namespace LibRomData {
+
+/**
+ * Attempt to load an AES normal key.
+ * @param pKeyOut		[out] Output key data.
+ * @param keyNormal_name	[in,opt] KeyNormal slot name.
+ * @param keyX_name		[in,opt] KeyX slot name.
+ * @param keyY_name		[in,opt] KeyY slot name.
+ * @param keyNormal_verify	[in,opt] KeyNormal verification data. (NULL or 16 bytes)
+ * @param keyX_verify		[in,opt] KeyX verification data. (NULL or 16 bytes)
+ * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
+ * @return VerifyResult.
+ */
+KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
+	const char *keyNormal_name,
+	const char *keyX_name,
+	const char *keyY_name,
+	const uint8_t *keyNormal_verify,
+	const uint8_t *keyX_verify,
+	const uint8_t *keyY_verify)
+{
+	KeyManager::VerifyResult res;
+
+	// Get the Key Manager instance.
+	KeyManager *keyManager = KeyManager::instance();
+	assert(keyManager != nullptr);
+	if (!keyManager) {
+		// TODO: Some other error?
+		return KeyManager::VERIFY_KEY_DB_ERROR;
+	}
+
+	// Attempt to load the Normal key first.
+	if (keyNormal_name) {
+		KeyManager::KeyData_t keyNormal_data;
+		if (keyNormal_verify) {
+			res = keyManager->getAndVerify(
+				keyNormal_name, &keyNormal_data,
+				keyNormal_verify, 16);
+		} else {
+			res = keyManager->get(keyNormal_name, &keyNormal_data);
+		}
+
+		if (res == KeyManager::VERIFY_OK && keyNormal_data.length == 16) {
+			// KeyNormal loaded and verified.
+			memcpy(pKeyOut->u8, keyNormal_data.key, 16);
+			return KeyManager::VERIFY_OK;
+		}
+
+		// Check for database errors.
+		switch (res) {
+			case KeyManager::VERIFY_INVALID_PARAMS:
+			case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
+			case KeyManager::VERIFY_KEY_DB_ERROR:
+				// Database error. Don't continue.
+				return res;
+			default:
+				break;
+		}
+	}
+
+	// Could not load the Normal key.
+	// Load KeyX and KeyY.
+	if (!keyX_name || !keyY_name) {
+		// One of them is missing...
+		return KeyManager::VERIFY_INVALID_PARAMS;
+	}
+	KeyManager::KeyData_t keyX_data, keyY_data;
+
+	// Load KeyX.
+	if (keyX_verify) {
+		res = keyManager->getAndVerify(
+			keyX_name, &keyX_data,
+			keyX_verify, 16);
+	} else {
+		res = keyManager->get(keyX_name, &keyX_data);
+	}
+
+	if (res != KeyManager::VERIFY_OK || keyX_data.length != 16) {
+		// Error loading KeyX.
+		return res;
+	}
+
+	// Load KeyY.
+	if (keyY_verify) {
+		res = keyManager->getAndVerify(
+			keyY_name, &keyY_data,
+			keyY_verify, 16);
+	} else {
+		res = keyManager->get(keyY_name, &keyY_data);
+	}
+
+	if (res != KeyManager::VERIFY_OK || keyY_data.length != 16) {
+		// Error loading KeyY.
+		return res;
+	}
+
+	// Scramble the keys to get KeyNormal.
+	int ret = CtrKeyScrambler::CtrScramble(pKeyOut,
+		reinterpret_cast<const u128_t*>(keyX_data.key),
+		reinterpret_cast<const u128_t*>(keyY_data.key));
+	// TODO: Scrambling-specific error?
+	return (ret == 0 ? KeyManager::VERIFY_OK : KeyManager::VERIFY_KEY_INVALID);
+}
 
 /**
  * Verification data for debug Slot0x3DKeyX.

@@ -28,7 +28,6 @@
 #ifdef ENABLE_DECRYPTION
 #include "crypto/AesCipherFactory.hpp"
 #include "crypto/IAesCipher.hpp"
-#include "crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes. (C++ namespace)
@@ -73,9 +72,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	if (ticket) {
 		// Check the ticket issuer.
 		const char *keyPrefix;
-		const uint8_t *verifyData_keyX = nullptr;
-		const uint8_t *verifyData_keyY = nullptr;
-		const uint8_t *verifyData_keyNormal = nullptr;
+		const uint8_t *keyX_verify = nullptr;
+		const uint8_t *keyY_verify = nullptr;
+		const uint8_t *keyNormal_verify = nullptr;
 		if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(ticket->issuer))) {
 			// Retail issuer..
 			keyPrefix = "ctr";
@@ -86,9 +85,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
 			if (ticket->keyY_index < 6) {
 				// Verification data is available.
-				verifyData_keyX = verifyData_ctr_dev_Slot0x3DKeyX;
-				verifyData_keyY = verifyData_ctr_dev_Slot0x3DKeyY_tbl[ticket->keyY_index];
-				verifyData_keyNormal = verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[ticket->keyY_index];
+				keyX_verify = verifyData_ctr_dev_Slot0x3DKeyX;
+				keyY_verify = verifyData_ctr_dev_Slot0x3DKeyY_tbl[ticket->keyY_index];
+				keyNormal_verify = verifyData_ctr_dev_Slot0x3DKeyNormal_tbl[ticket->keyY_index];
 			}
 		} else {
 			// Unknown issuer.
@@ -100,63 +99,54 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		// TODO: Handle invalid KeyY indexes?
 		titleKeyEncIdx |= (ticket->keyY_index << 2);
 
-		// Get the Key Manager instance.
-		KeyManager *keyManager = KeyManager::instance();
-		assert(keyManager != nullptr);
+		// Keyslot names.
+		char keyX_name[40];
+		char keyY_name[40];
+		char keyNormal_name[40];
+		snprintf(keyX_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyX", keyPrefix);
+		snprintf(keyY_name, sizeof(keyY_name), "%s-Slot0x3DKeyY-%d",
+			keyPrefix, ticket->keyY_index);
+		snprintf(keyNormal_name, sizeof(keyNormal_name), "%s-Slot0x3DKeyNormal-%d",
+			keyPrefix, ticket->keyY_index);
 
-		// Try to get the KeyNormal.
-		// TODO: Fall back to KeyX/KeyY if not found.
-		char keyName[64];
-		snprintf(keyName, sizeof(keyName), "%s-Slot0x3DKeyNormal-%d",
-			keyPrefix, titleKeyEncIdx >> 2);
-		KeyManager::KeyData_t keyData;
-		KeyManager::VerifyResult res;
-		if (verifyData_keyNormal) {
-			res = keyManager->getAndVerify(keyName, &keyData, verifyData_keyNormal, 16);
+		// Get the KeyNormal. If that fails, get KeyX and KeyY,
+		// then use CtrKeyScrambler to generate KeyNormal.
+		u128_t keyNormal;
+		KeyManager::VerifyResult res = loadKeyNormal(&keyNormal,
+			keyNormal_name, keyX_name, keyY_name,
+			keyNormal_verify, keyX_verify, keyY_verify);
+		if (res == KeyManager::VERIFY_OK) {
+			// Create the cipher.
+			cipher_cia = AesCipherFactory::create();
+
+			// Initialize parameters for title key decryption.
+			// TODO: Error checking.
+			// Parameters:
+			// - Keyslot: 0x3D
+			// - Chaining mode: CBC
+			// - IV: Title ID (little-endian)
+			cipher_cia->setChainingMode(IAesCipher::CM_CBC);
+			cipher_cia->setKey(keyNormal.u8, sizeof(keyNormal.u8));
+			tid_be = ticket->title_id.id;	// already in BE
+			ctr_t cia_iv;
+			memcpy(cia_iv.u8, &tid_be, sizeof(tid_be));
+			memset(&cia_iv.u8[8], 0, 8);
+			cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
+
+			// Decrypt the title key.
+			memcpy(title_key, ticket->title_key, sizeof(title_key));
+			cipher_cia->decrypt(title_key, sizeof(title_key));
+
+			// Initialize parameters for CIA decryption.
+			// Parameters:
+			// - Key: Decrypted title key.
+			// - Chaining mode: CBC
+			// - IV: Content index from the TMD.
+			cipher_cia->setKey(title_key, sizeof(title_key));
 		} else {
-			res = keyManager->get(keyName, &keyData);
+			// Unable to get the CIA encryption keys.
+			memset(title_key, 0, sizeof(title_key));
 		}
-
-		if (res != KeyManager::VERIFY_OK) {
-			// Could not retrieve the CIA key.
-			// TODO: Encryption errors like WiiPartition.
-			q->m_lastError = EIO;
-			this->file = nullptr;
-			return;
-		} else if (!keyData.key || keyData.length != 16) {
-			// Invalid key.
-			// TODO: Encryption errors like WiiPartition.
-			q->m_lastError = EIO;
-			this->file = nullptr;
-			return;
-		}
-
-		// Create the cipher.
-		cipher_cia = AesCipherFactory::create();
-
-		// Initialize parameters for title key decryption.
-		// Parameters:
-		// - Keyslot: 0x3D
-		// - Chaining mode: CBC
-		// - IV: Title ID (little-endian)
-		cipher_cia->setChainingMode(IAesCipher::CM_CBC);
-		cipher_cia->setKey(keyData.key, keyData.length);
-		tid_be = ticket->title_id.id;	// already in BE
-		ctr_t cia_iv;
-		memcpy(cia_iv.u8, &tid_be, sizeof(tid_be));
-		memset(&cia_iv.u8[8], 0, 8);
-		cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
-
-		// Decrypt the title key.
-		memcpy(title_key, ticket->title_key, sizeof(title_key));
-		cipher_cia->decrypt(title_key, sizeof(title_key));
-
-		// Initialize parameters for CIA decryption.
-		// Parameters:
-		// - Key: Decrypted title key.
-		// - Chaining mode: CBC
-		// - IV: Content index from the TMD.
-		cipher_cia->setKey(title_key, sizeof(title_key));
 	} else {
 		// No CIA encryption.
 		memset(title_key, 0, sizeof(title_key));

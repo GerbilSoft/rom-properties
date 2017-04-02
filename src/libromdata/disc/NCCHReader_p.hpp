@@ -29,6 +29,11 @@
 #include "byteswap.h"
 #include "n3ds_structs.h"
 
+#ifdef ENABLE_DECRYPTION
+#include "crypto/KeyManager.hpp"
+#include "crypto/CtrKeyScrambler.hpp"
+#endif /* ENABLE_DECRYPTION */
+
 // C includes.
 #include <stdint.h>
 
@@ -186,6 +191,25 @@ class NCCHReaderPrivate
 		uint8_t titleKeyEncIdx;
 		// TMD content index.
 		uint16_t tmd_content_index;
+
+		/**
+		 * Attempt to load an AES normal key.
+		 * @param pKeyOut		[out] Output key data.
+		 * @param keyNormal_name	[in,opt] KeyNormal slot name.
+		 * @param keyX_name		[in,opt] KeyX slot name.
+		 * @param keyY_name		[in,opt] KeyY slot name.
+		 * @param keyNormal_verify	[in,opt] KeyNormal verification data. (NULL or 16 bytes)
+		 * @param keyX_verify		[in,opt] KeyX verification data. (NULL or 16 bytes)
+		 * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
+		 * @return VerifyResult.
+		 */
+		KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
+			const char *keyNormal_name,
+			const char *keyX_name,
+			const char *keyY_name,
+			const uint8_t *keyNormal_verify,
+			const uint8_t *keyX_verify,
+			const uint8_t *keyY_verify);
 
 		/**
 		 * Verification data for debug Slot0x3DKeyX.
