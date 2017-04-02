@@ -238,6 +238,7 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 		// Fixed key.
 		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {
 			// Using the fixed debug key.
+			// TODO: Is there a retail equivalent?
 			keyX_name[0] = EncryptionKeyNames[Key_Debug_FixedCryptoKey];
 			keyX_verify[0] = EncryptionKeyVerifyData[Key_Debug_FixedCryptoKey];
 			isFixedKey = true;
