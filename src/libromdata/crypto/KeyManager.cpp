@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -381,12 +381,12 @@ int KeyManagerPrivate::loadKeys(void)
 /** KeyManager **/
 
 KeyManager::KeyManager()
-	: d(new KeyManagerPrivate())
+	: d_ptr(new KeyManagerPrivate())
 { }
 
 KeyManager::~KeyManager()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -412,6 +412,7 @@ KeyManager *KeyManager::instance(void)
  */
 bool KeyManager::areKeysLoaded(void) const
 {
+	RP_D(const KeyManager);
 	return d->conf_was_found;
 }
 
@@ -423,6 +424,7 @@ int KeyManager::reloadIfChanged(void)
 {
 	int ret = 0;
 
+	RP_D(KeyManager);
 	if (!d->conf_was_found) {
 		// keys.conf wasn't found.
 		// Try loading it again.
@@ -488,6 +490,7 @@ int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 	const_cast<KeyManager*>(this)->reloadIfChanged();
 
 	// Attempt to get the key from the map.
+	RP_D(const KeyManager);
 	unordered_map<string, uint32_t>::const_iterator iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
 		// Key not found.

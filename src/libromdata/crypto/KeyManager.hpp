@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -47,7 +47,7 @@ class KeyManager
 
 	private:
 		friend class KeyManagerPrivate;
-		KeyManagerPrivate *const d;
+		KeyManagerPrivate *const d_ptr;
 
 	public:
 		/**
