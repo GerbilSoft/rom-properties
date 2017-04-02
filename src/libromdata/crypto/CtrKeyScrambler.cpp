@@ -29,6 +29,17 @@
 #include <cerrno>
 #include <cstring>
 
+// Use 64-bit arithmetic on 64-bit systems.
+// TODO: Check the assembly and verify that this actually improves performance.
+#if defined(__LP64__) || defined(__LLP64__) || \
+    defined(_M_X64) || defined(_M_IA64) || defined(_M_ARM64)
+// Use 64-bit arithmetic.
+#define USE64 1
+#else
+// Use 32-bit arithmetic.
+#define USE64 0
+#endif
+
 namespace LibRomData {
 
 /**
@@ -58,6 +69,38 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 		return -EINVAL;
 	}
 
+#if USE64
+	// 64-bit version.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+	u128_t keyXtmp, ctr_scrambler_tmp;
+	keyXtmp.u64[0] = be64_to_cpu(keyX->u64[0]);
+	keyXtmp.u64[1] = be64_to_cpu(keyX->u64[1]);
+	ctr_scrambler_tmp.u64[0] = be64_to_cpu(ctr_scrambler->u64[0]);
+	ctr_scrambler_tmp.u64[1] = be64_to_cpu(ctr_scrambler->u64[1]);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+	const u128_t &keyXtmp = *keyX;
+#endif
+
+	// Rotate KeyX left by two.
+	u128_t keyTmp;
+	keyTmp.u64[0] = (keyXtmp.u64[0] << 2) | (keyXtmp.u64[1] >> 62);
+	keyTmp.u64[1] = (keyXtmp.u64[1] << 2) | (keyXtmp.u64[0] >> 62);
+
+	// XOR by KeyY.
+	keyTmp.u64[0] ^= be64_to_cpu(keyY->u64[0]);
+	keyTmp.u64[1] ^= be64_to_cpu(keyY->u64[1]);
+
+	// Add the constant.
+	// Reference for carry functionality: https://accu.org/index.php/articles/1849
+	keyTmp.u64[1] += ctr_scrambler_tmp.u64[1];
+	keyTmp.u64[0] += ctr_scrambler_tmp.u64[0] + (keyTmp.u64[1] < ctr_scrambler_tmp.u64[1]);
+
+	// Rotate left by 87.
+	// This is effectively "rotate left by 23" with adjusted DWORD indexes.
+	keyNormal->u64[1] = cpu_to_be64((keyTmp.u64[0] << 23) | (keyTmp.u64[1] >> 41));
+	keyNormal->u64[0] = cpu_to_be64((keyTmp.u64[1] << 23) | (keyTmp.u64[0] >> 41));
+#else /* !USE64 */
+	// 32-bit version.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	u128_t keyXtmp, ctr_scrambler_tmp;
 	keyXtmp.u32[0] = be32_to_cpu(keyX->u32[0]);
@@ -99,6 +142,7 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	keyNormal->u32[3] = cpu_to_be32((keyTmp.u32[1] << 23) | (keyTmp.u32[2] >> 9));
 	keyNormal->u32[0] = cpu_to_be32((keyTmp.u32[2] << 23) | (keyTmp.u32[3] >> 9));
 	keyNormal->u32[1] = cpu_to_be32((keyTmp.u32[3] << 23) | (keyTmp.u32[0] >> 9));
+#endif /* USE64 */
 
 	// We're done here.
 	return 0;
