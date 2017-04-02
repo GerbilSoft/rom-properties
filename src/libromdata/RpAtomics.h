@@ -46,14 +46,14 @@
 #  define ATOMIC_OR_FETCH(ptr, val) __sync_or_and_fetch(ptr, val)
 # endif
 #elif defined(_MSC_VER)
-# include "RpWin32.hpp"
+# include <intrin.h>
 static inline int ATOMIC_INC_FETCH(volatile int *ptr)
 {
-	return InterlockedIncrement(reinterpret_cast<volatile LONG*>(ptr));
+	return _InterlockedIncrement(reinterpret_cast<volatile long*>(ptr));
 }
 static inline int ATOMIC_OR_FETCH(volatile int *ptr, int val)
 {
-	return InterlockedOr(reinterpret_cast<volatile LONG*>(ptr), val);
+	return _InterlockedOr(reinterpret_cast<volatile long*>(ptr), val);
 }
 #else
 # error Atomic functions not defined for this compiler.

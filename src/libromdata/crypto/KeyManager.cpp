@@ -28,6 +28,11 @@
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"
 
+#ifdef _WIN32
+// windows.h is needed for Sleep()
+#include "RpWin32.hpp"
+#endif /* _WIN32 */
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
