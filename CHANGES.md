@@ -19,6 +19,9 @@
     ROM Properties for certain types of physical media, e.g. Wii DVD-R backups.
     Currently only the property page is supported. Thumbnails (and icons)
     are not supported for block devices.
+  * (rpcli) New option "-k". This option will verify all known keys in
+    keys.conf. Verification is done by decrypting a string that was encrypted
+    with the original key and checking if the decrypted string is correct.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
@@ -29,6 +32,8 @@
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
   * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
+  * Fixed access to files on Wii partitions located past 4 GB. This applies
+    to logical addresses in sparse formats, e.g. WBFS.
   * (GNOME) The libnautilus-extension path is no longer hard-coded to
     /usr/lib64/. This prevented it from working correctly on anything but
     64-bit Linux systems that used the older multilib path, which means
