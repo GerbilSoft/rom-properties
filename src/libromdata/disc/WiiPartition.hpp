@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
+#include "config.libromdata.h"
+
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
 
@@ -108,6 +110,29 @@ class WiiPartition : public GcnPartition
 		 * @return Encryption key in use.
 		 */
 		EncKey encKey(void) const;
+
+#ifdef ENABLE_DECRYPTION
+	public:
+		/**
+		 * Get the total number of encryption key names.
+		 * @return Number of encryption key names.
+		 */
+		static int encryptionKeyCount_static(void);
+
+		/**
+		 * Get an encryption key name.
+		 * @param keyIdx Encryption key index.
+		 * @return Encryption key name (in ASCII), or nullptr on error.
+		 */
+		static const char *encryptionKeyName_static(int keyIdx);
+
+		/**
+		 * Get the verification data for a given encryption key index.
+		 * @param keyIdx Encryption key index.
+		 * @return Verification data. (16 bytes)
+		 */
+		static const uint8_t *encryptionVerifyData_static(int keyIdx);
+#endif /* ENABLE_DECRYPTION */
 };
 
 }

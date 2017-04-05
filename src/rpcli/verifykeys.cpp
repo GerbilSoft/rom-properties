@@ -30,6 +30,7 @@
 
 // libromdata
 #include "libromdata/crypto/KeyManager.hpp"
+#include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
 #include "libromdata/disc/NCCHReader.hpp"
 using namespace LibRomData;
@@ -61,6 +62,7 @@ typedef struct _EncKeyFns_t {
 }
 
 static const EncKeyFns_t encKeyFns[] = {
+	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(NCCHReader),
 

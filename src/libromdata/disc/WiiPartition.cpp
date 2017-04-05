@@ -78,13 +78,12 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		// Encryption key in use.
 		WiiPartition::EncKey m_encKey;
 
-	public:
 #ifdef ENABLE_DECRYPTION
+	public:
 		// AES cipher for the Common key.
 		// - Index 0: rvl-common (retail)
 		// - Index 1: rvl-korean (Korean)
 		// - Index 2: rvt-debug  (debug)
-		// TODO: Dev keys?
 		static IAesCipher *aes_common[3];
 		static int aes_common_refcnt;
 
@@ -116,6 +115,29 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int readSector(uint32_t sector_num);
+
+	public:
+		// Encryption key indexes.
+		// TODO: Combine with WiiPartition::EncKey.
+		enum EncryptionKeys {
+			// Retail
+			Key_Rvl_Common,
+			Key_Rvl_Korean,
+			Key_Rvl_SD_AES,
+			Key_Rvl_SD_IV,
+			Key_Rvl_SD_MD5,
+
+			// Debug
+			Key_Rvt_Debug,
+
+			Key_Max
+		};
+
+		// Verification key names.
+		static const char *const EncryptionKeyNames[Key_Max];
+
+		// Verification key data.
+		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
 #endif
 };
 
@@ -124,6 +146,45 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 #ifdef ENABLE_DECRYPTION
 IAesCipher *WiiPartitionPrivate::aes_common[3] = {nullptr, nullptr, nullptr};
 int WiiPartitionPrivate::aes_common_refcnt = 0;
+
+// Verification key names.
+const char *const WiiPartitionPrivate::EncryptionKeyNames[Key_Max] = {
+	// Retail
+	"rvl-common",
+	"rvl-korean",
+	"rvl-sd-aes",
+	"rvl-sd-iv",
+	"rvl-sd-md5",
+
+	// Debug
+	"rvt-debug",
+};
+
+const uint8_t WiiPartitionPrivate::EncryptionKeyVerifyData[Key_Max][16] = {
+	/** Retail **/
+
+	// rvl-common
+	{0xCF,0xB7,0xFF,0xA0,0x64,0x0C,0x7A,0x7D,
+	 0xA7,0x22,0xDC,0x16,0x40,0xFA,0x04,0x58},
+	// rvl-korean
+	{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
+	 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
+	// rvl-sd-aes
+	{0x8C,0x1C,0xBA,0x01,0x02,0xB9,0x6F,0x65,
+	 0x24,0x7C,0x85,0x3C,0x0F,0x3B,0x8C,0x37},
+	// rvl-sd-iv
+	{0xE3,0xEE,0xE5,0x0F,0xDC,0xFD,0xBE,0x89,
+	 0x20,0x05,0xF2,0xB9,0xD8,0x1D,0xF1,0x27},
+	// rvl-sd-md5
+	{0xF8,0xE1,0x8D,0x89,0x06,0xC7,0x21,0x32,
+	 0x9D,0xE0,0x14,0x19,0x30,0xC3,0x88,0x1F},
+
+	/** Debug **/
+
+	// rvt-debug
+	{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
+	 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
+};
 #endif /* ENABLE_DECRYPTION */
 
 WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReader, int64_t partition_offset)
@@ -254,20 +315,20 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 		return encInitStatus;
 	}
 
-	// Determine the encryption key name.
-	const char *keyName;
+	// Determine the encryption key to use.
+	WiiPartitionPrivate::EncryptionKeys keyIdx;
 	switch (encKey) {
 		case WiiPartition::ENCKEY_COMMON:
 			// Wii common key.
-			keyName = "rvl-common";
+			keyIdx = WiiPartitionPrivate::Key_Rvl_Common;
 			break;
 		case WiiPartition::ENCKEY_KOREAN:
 			// Korean key.
-			keyName = "rvl-korean";
+			keyIdx = WiiPartitionPrivate::Key_Rvl_Korean;
 			break;
 		case WiiPartition::ENCKEY_DEBUG:
 			// Debug key. (RVT-R)
-			keyName = "rvt-debug";
+			keyIdx = WiiPartitionPrivate::Key_Rvt_Debug;
 			break;
 		default:
 			// Unknown key...
@@ -285,27 +346,11 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 			return encInitStatus;
 		}
 
-		// Verification data for the encryption keys.
-		// This is the string "AES-128-ECB-TEST"
-		// encrypted using the key with AES-128-ECB.
-		// TODO: Test before committing.
-		static const uint8_t verifyData_tbl[3][16] = {
-			// rvl-common
-			{0xCF,0xB7,0xFF,0xA0,0x64,0x0C,0x7A,0x7D,
-			 0xA7,0x22,0xDC,0x16,0x40,0xFA,0x04,0x58},
-			// rvl-korean
-			{0x98,0x1C,0xD4,0x51,0x17,0xF2,0x23,0xB6,
-			 0xC8,0x84,0x4A,0x97,0xA6,0x93,0xF2,0xE3},
-			// rvt-debug
-			{0x22,0xC4,0x2C,0x5B,0xCB,0xFE,0x75,0xAC,
-			 0xEB,0xC3,0x6B,0xAF,0x90,0xB3,0xB4,0xF5},
-		};
-		const uint8_t *const verifyData = verifyData_tbl[encKey];
-
 		// Get the common key.
 		KeyManager::KeyData_t keyData;
 		KeyManager::VerifyResult res = keyManager->getAndVerify(
-			keyName, &keyData, verifyData, 16);
+			WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
+			WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
 		if (res != KeyManager::VERIFY_OK) {
 			// Common key was not found.
 			// TODO: Use KeyManager::VerifyResult instead of EncInitStatus?
@@ -704,5 +749,42 @@ WiiPartition::EncKey WiiPartition::encKey(void) const
 	RP_D(WiiPartition);
 	return d->getEncKey();
 }
+
+#ifdef ENABLE_DECRYPTION
+/** Encryption keys. **/
+
+/**
+ * Get the total number of encryption key names.
+ * @return Number of encryption key names.
+ */
+int WiiPartition::encryptionKeyCount_static(void)
+{
+	return WiiPartitionPrivate::Key_Max;
+}
+
+/**
+ * Get an encryption key name.
+ * @param keyIdx Encryption key index.
+ * @return Encryption key name (in ASCII), or nullptr on error.
+ */
+const char *WiiPartition::encryptionKeyName_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= WiiPartitionPrivate::Key_Max)
+		return nullptr;
+	return WiiPartitionPrivate::EncryptionKeyNames[keyIdx];
+}
+
+/**
+ * Get the verification data for a given encryption key index.
+ * @param keyIdx Encryption key index.
+ * @return Verification data. (16 bytes)
+ */
+const uint8_t *WiiPartition::encryptionVerifyData_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= WiiPartitionPrivate::Key_Max)
+		return nullptr;
+	return WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx];
+}
+#endif /* ENABLE_DECRYPTION */
 
 }
