@@ -357,6 +357,39 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 	return KeyManager::VERIFY_OK;
 }
 
+/**
+ * Get the total number of encryption key names.
+ * @return Number of encryption key names.
+ */
+int NCCHReader::encryptionKeyCount_static(void)
+{
+	return NCCHReaderPrivate::Key_Max;
+}
+
+/**
+ * Get an encryption key name.
+ * @param keyIdx Encryption key index.
+ * @return Encryption key name (in ASCII), or nullptr on error.
+ */
+const char *NCCHReader::encryptionKeyName_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= NCCHReaderPrivate::Key_Max)
+		return nullptr;
+	return NCCHReaderPrivate::EncryptionKeyNames[keyIdx];
+}
+
+/**
+ * Get the verification data for a given encryption key index.
+ * @param keyIdx Encryption key index.
+ * @return Verification data. (16 bytes)
+ */
+const uint8_t *NCCHReader::encryptionVerifyData_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= NCCHReaderPrivate::Key_Max)
+		return nullptr;
+	return NCCHReaderPrivate::EncryptionKeyVerifyData[keyIdx];
+}
+
 // Verification key names.
 const char *const NCCHReaderPrivate::EncryptionKeyNames[Key_Max] = {
 	// Retail

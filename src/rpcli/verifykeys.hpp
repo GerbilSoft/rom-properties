@@ -1,8 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rpcli)                            *
- * config.rpcli.h.in: rpcli configuration. (source file)                   *
+ * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2017 by Egor.                                        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,22 +20,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_CONFIG_H__
-#define __ROMPROPERTIES_RPCLI_CONFIG_H__
+#ifndef __ROMPROPERTIES_RPCLI_VERIFYKEYS_HPP__
+#define __ROMPROPERTIES_RPCLI_VERIFYKEYS_HPP__
 
-/* Define to 1 if you have the `gmtime_r` function. */
-#cmakedefine HAVE_GMTIME_R 1
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Define to 1 if you have the `gmtime_s` function. */
-#cmakedefine HAVE_GMTIME_S 1
+/**
+ * Verify encryption keys.
+ * @return 0 on success; non-zero on error.
+ */
+int VerifyKeys(void);
 
-/* Define to 1 if you have the `localtime_r' function. */
-#cmakedefine HAVE_LOCALTIME_R 1
+#ifdef __cplusplus
+}
+#endif
 
-/* Define to 1 if you have the `localtime_s' function. */
-#cmakedefine HAVE_LOCALTIME_S 1
-
-/* Define to 1 if decryption should be enabled. */
-#cmakedefine ENABLE_DECRYPTION 1
-
-#endif /* __ROMPROPERTIES_RPCLI_CONFIG_H__ */
+#endif /* __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__ */
