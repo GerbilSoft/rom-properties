@@ -498,7 +498,7 @@ int WiiPartitionPrivate::readSector(uint32_t sector_num)
 
 	// Read the first encrypted sector of the partition.
 	int64_t sector_addr = partition_offset + data_offset;
-	sector_addr += (sector_num * SECTOR_SIZE_ENCRYPTED);
+	sector_addr += ((int64_t)sector_num * SECTOR_SIZE_ENCRYPTED);
 
 	RP_Q(WiiPartition);
 	int ret = discReader->seek(sector_addr);
