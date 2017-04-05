@@ -28,6 +28,10 @@
     executable files are supported.
   * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
     downloads for disc, cover, 3D cover, and full cover scans.
+  * Nintendo 3DS: SMDH, 3DSX, CCI (\*.3ds), CIA, and NCCH files are supported.
+    Parts of some formats (CCI, CIA, NCCH) may require decryption keys.
+    If the keys are not available, then some information will not be
+    available.
 
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
