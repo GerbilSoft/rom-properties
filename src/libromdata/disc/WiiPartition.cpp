@@ -80,13 +80,6 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 
 #ifdef ENABLE_DECRYPTION
 	public:
-		// AES cipher for the Common key.
-		// - Index 0: rvl-common (retail)
-		// - Index 1: rvl-korean (Korean)
-		// - Index 2: rvt-debug  (debug)
-		static IAesCipher *aes_common[3];
-		static int aes_common_refcnt;
-
 		// AES cipher for this partition's title key.
 		IAesCipher *aes_title;
 		// Decrypted title key.
@@ -144,8 +137,6 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 /** WiiPartitionPrivate **/
 
 #ifdef ENABLE_DECRYPTION
-IAesCipher *WiiPartitionPrivate::aes_common[3] = {nullptr, nullptr, nullptr};
-int WiiPartitionPrivate::aes_common_refcnt = 0;
 
 // Verification key names.
 const char *const WiiPartitionPrivate::EncryptionKeyNames[Key_Max] = {
@@ -208,12 +199,6 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 
 	// Clear the partition header struct.
 	memset(&partitionHeader, 0, sizeof(partitionHeader));
-
-#ifdef ENABLE_DECRYPTION
-	// Increment the AES common key reference counter.
-	// TODO: Atomic reference count?
-	++aes_common_refcnt;
-#endif /* ENABLE_DECRYPTION */
 
 	if (!discReader->isOpen()) {
 		q->m_lastError = discReader->lastError();
@@ -336,68 +321,54 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 			return encInitStatus;
 	}
 
-	// TODO: Mutex?
-	if (!aes_common[encKey]) {
-		// Initialize this key.
-		unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
-		if (!cipher || !cipher->isInit()) {
-			// Error initializing the cipher.
-			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-			return encInitStatus;
-		}
-
-		// Get the common key.
-		KeyManager::KeyData_t keyData;
-		KeyManager::VerifyResult res = keyManager->getAndVerify(
-			WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
-			WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
-		if (res != KeyManager::VERIFY_OK) {
-			// Common key was not found.
-			// TODO: Use KeyManager::VerifyResult instead of EncInitStatus?
-			switch (res) {
-				case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
-					// Keys are not loaded.
-					// keys.conf is missing.
-					encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
-					break;
-				case KeyManager::VERIFY_KEY_NOT_FOUND:
-					// Keys were loaded, but this key is missing.
-					encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
-					break;
-				case KeyManager::VERFIY_IAESCIPHER_INIT_ERR:
-				case KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR:
-					// Cipher isn't working.
-					encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-					break;
-				case KeyManager::VERIFY_KEY_INVALID:
-				case KeyManager::VERIFY_WRONG_KEY:
-					// Key is incorrect.
-					encInitStatus = WiiPartition::ENCINIT_INCORRECT_KEY;
-					break;
-				default:
-					// Some other error.
-					encInitStatus = WiiPartition::ENCINIT_UNKNOWN;
-					break;
-			}
-			return encInitStatus;
-		}
-
-		// Load the common key. (CBC mode)
-		int ret = cipher->setKey(keyData.key, keyData.length);
-		ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
-		if (ret != 0) {
-			encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-			return encInitStatus;
-		}
-
-		// Save the cipher as the common instance.
-		aes_common[encKey] = cipher.release();
-	}
-
-	// Initialize the title key AES cipher.
+	// Initialize the AES cipher.
 	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
 	if (!cipher || !cipher->isInit()) {
 		// Error initializing the cipher.
+		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+		return encInitStatus;
+	}
+
+	// Get the common key.
+	KeyManager::KeyData_t keyData;
+	KeyManager::VerifyResult res = keyManager->getAndVerify(
+		WiiPartitionPrivate::EncryptionKeyNames[keyIdx], &keyData,
+		WiiPartitionPrivate::EncryptionKeyVerifyData[keyIdx], 16);
+	if (res != KeyManager::VERIFY_OK) {
+		// Common key was not found.
+		// TODO: Use KeyManager::VerifyResult instead of EncInitStatus?
+		switch (res) {
+			case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
+				// Keys are not loaded.
+				// keys.conf is missing.
+				encInitStatus = WiiPartition::ENCINIT_NO_KEYFILE;
+				break;
+			case KeyManager::VERIFY_KEY_NOT_FOUND:
+				// Keys were loaded, but this key is missing.
+				encInitStatus = WiiPartition::ENCINIT_MISSING_KEY;
+				break;
+			case KeyManager::VERFIY_IAESCIPHER_INIT_ERR:
+			case KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR:
+				// Cipher isn't working.
+				encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
+				break;
+			case KeyManager::VERIFY_KEY_INVALID:
+			case KeyManager::VERIFY_WRONG_KEY:
+				// Key is incorrect.
+				encInitStatus = WiiPartition::ENCINIT_INCORRECT_KEY;
+				break;
+			default:
+				// Some other error.
+				encInitStatus = WiiPartition::ENCINIT_UNKNOWN;
+				break;
+		}
+		return encInitStatus;
+	}
+
+	// Load the common key. (CBC mode)
+	int ret = cipher->setKey(keyData.key, keyData.length);
+	ret |= cipher->setChainingMode(IAesCipher::CM_CBC);
+	if (ret != 0) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}
@@ -411,17 +382,13 @@ WiiPartition::EncInitStatus WiiPartitionPrivate::initDecryption(void)
 
 	// Decrypt the title key.
 	memcpy(title_key, partitionHeader.ticket.enc_title_key, sizeof(title_key));
-	if (aes_common[encKey]->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
+	if (cipher->decrypt(title_key, sizeof(title_key), iv, sizeof(iv)) != sizeof(title_key)) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}
 
-	// Load the title key. (CBC mode)
+	// Set the title key in the AES cipher.
 	if (cipher->setKey(title_key, sizeof(title_key)) != 0) {
-		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
-		return encInitStatus;
-	}
-	if (cipher->setChainingMode(IAesCipher::CM_CBC) != 0) {
 		encInitStatus = WiiPartition::ENCINIT_CIPHER_ERROR;
 		return encInitStatus;
 	}
@@ -462,18 +429,6 @@ WiiPartitionPrivate::~WiiPartitionPrivate()
 {
 #ifdef ENABLE_DECRYPTION
 	delete aes_title;
-
-	// Decrement the reference counter for the common keys.
-	// TODO: Atomic reference count?
-	if (--aes_common_refcnt == 0) {
-		// Delete the common keys.
-		delete aes_common[0];
-		aes_common[0] = nullptr;
-		delete aes_common[1];
-		aes_common[1] = nullptr;
-		delete aes_common[2];
-		aes_common[2] = nullptr;
-	}
 #endif /* ENABLE_DECRYPTION */
 }
 
