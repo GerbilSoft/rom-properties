@@ -30,6 +30,7 @@
 
 // libromdata
 #include "libromdata/crypto/KeyManager.hpp"
+#include "libromdata/crypto/CtrKeyScrambler.hpp"
 #include "libromdata/disc/NCCHReader.hpp"
 using namespace LibRomData;
 
@@ -40,6 +41,31 @@ using namespace LibRomData;
 #include <iostream>
 using std::cerr;
 using std::endl;
+
+typedef int (*pfnKeyCount_t)(void);
+typedef const char* (*pfnKeyName_t)(int keyIdx);
+typedef const uint8_t* (*pfnVerifyData_t)(int keyIdx);
+
+typedef struct _EncKeyFns_t {
+	const char *name;
+	pfnKeyCount_t pfnKeyCount;
+	pfnKeyName_t pfnKeyName;
+	pfnVerifyData_t pfnVerifyData;
+} EncKeyFns_t;
+
+#define ENCKEYFNS(klass) { \
+	#klass, \
+	klass::encryptionKeyCount_static, \
+	klass::encryptionKeyName_static, \
+	klass::encryptionVerifyData_static, \
+}
+
+static const EncKeyFns_t encKeyFns[] = {
+	ENCKEYFNS(CtrKeyScrambler),
+	ENCKEYFNS(NCCHReader),
+
+	{nullptr, nullptr, nullptr, nullptr}
+};
 
 /**
  * Verify encryption keys.
@@ -59,66 +85,74 @@ int VerifyKeys(void)
 		return 1;
 	}
 
-	// Get keys from NCCHReader.
-	cerr << "*** Checking encryption keys from NCCHReader..." << endl;
+	// Get keys from supported classes.
 	int ret = 0;
-	int keyCount = NCCHReader::encryptionKeyCount_static();
-	for (int i = 0; i < keyCount; i++) {
-		const char *const keyName = NCCHReader::encryptionKeyName_static(i);
-		assert(keyName != nullptr);
-		if (!keyName) {
-			cerr << "WARNING: Key " << i << " has no name. Skipping..." << endl;
-			ret = 1;
-			continue;
-		}
-
-		// Verification data. (16 bytes)
-		const uint8_t *const verifyData = NCCHReader::encryptionVerifyData_static(i);
-		assert(verifyData != nullptr);
-		if (!verifyData) {
-			cerr << "WARNING: Key '" << keyName << "' has no verification data. Skipping..." << endl;
-			ret = 1;
-			continue;
-		}
-
-		// Verify the key.
-		KeyManager::VerifyResult res = keyManager->getAndVerify(keyName, nullptr, verifyData, 16);
-		cerr << keyName << ": ";
-		if (res == KeyManager::VERIFY_OK) {
-			cerr << "OK" << endl;
-		} else {
-			cerr << "ERROR: ";
-			switch (res) {
-				case KeyManager::VERIFY_INVALID_PARAMS:
-					cerr << "Invalid parameters.";
-					break;
-				case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
-					cerr << "Key database is not loaded.";
-					break;
-				case KeyManager::VERIFY_KEY_DB_ERROR:
-					cerr << "Key database error.";
-					break;
-				case KeyManager::VERIFY_KEY_NOT_FOUND:
-					cerr << "Key was not found.";
-					break;
-				case KeyManager::VERIFY_KEY_INVALID:
-					cerr << "Key is not valid for this operation.";
-					break;
-				case KeyManager::VERFIY_IAESCIPHER_INIT_ERR:
-					cerr << "AES initialization failed";
-					break;
-				case KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR:
-					cerr << "AES decryption failed.";
-					break;
-				case KeyManager::VERIFY_WRONG_KEY:
-					cerr << "Key is incorrect.";
-					break;
-				default:
-					cerr << "Unknown error code " << res << ".";
-					break;
-			}
+	bool printedOne = false;
+	for (const EncKeyFns_t *p = encKeyFns; p->name != nullptr; p++) {
+		if (printedOne) {
 			cerr << endl;
-			ret = 1;
+		}
+		printedOne = true;
+
+		cerr << "*** Checking encryption keys from " << p->name << "..." << endl;
+		int keyCount = p->pfnKeyCount();
+		for (int i = 0; i < keyCount; i++) {
+			const char *const keyName = p->pfnKeyName(i);
+			assert(keyName != nullptr);
+			if (!keyName) {
+				cerr << "WARNING: Key " << i << " has no name. Skipping..." << endl;
+				ret = 1;
+				continue;
+			}
+
+			// Verification data. (16 bytes)
+			const uint8_t *const verifyData = p->pfnVerifyData(i);
+			assert(verifyData != nullptr);
+			if (!verifyData) {
+				cerr << "WARNING: Key '" << keyName << "' has no verification data. Skipping..." << endl;
+				ret = 1;
+				continue;
+			}
+
+			// Verify the key.
+			KeyManager::VerifyResult res = keyManager->getAndVerify(keyName, nullptr, verifyData, 16);
+			cerr << keyName << ": ";
+			if (res == KeyManager::VERIFY_OK) {
+				cerr << "OK" << endl;
+			} else {
+				cerr << "ERROR: ";
+				switch (res) {
+					case KeyManager::VERIFY_INVALID_PARAMS:
+						cerr << "Invalid parameters.";
+						break;
+					case KeyManager::VERIFY_KEY_DB_NOT_LOADED:
+						cerr << "Key database is not loaded.";
+						break;
+					case KeyManager::VERIFY_KEY_DB_ERROR:
+						cerr << "Key database error.";
+						break;
+					case KeyManager::VERIFY_KEY_NOT_FOUND:
+						cerr << "Key was not found.";
+						break;
+					case KeyManager::VERIFY_KEY_INVALID:
+						cerr << "Key is not valid for this operation.";
+						break;
+					case KeyManager::VERFIY_IAESCIPHER_INIT_ERR:
+						cerr << "AES initialization failed";
+						break;
+					case KeyManager::VERIFY_IAESCIPHER_DECRYPT_ERR:
+						cerr << "AES decryption failed.";
+						break;
+					case KeyManager::VERIFY_WRONG_KEY:
+						cerr << "Key is incorrect.";
+						break;
+					default:
+						cerr << "Unknown error code " << res << ".";
+						break;
+				}
+				cerr << endl;
+				ret = 1;
+			}
 		}
 	}
 

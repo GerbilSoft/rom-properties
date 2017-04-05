@@ -22,6 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_CTRKEYSCRAMBLER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_CTRKEYSCRAMBLER_HPP__
 
+#include "config.libromdata.h"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be included if decryption is enabled.
+#endif /* ENABLE_DECRYPTION */
+
 #include "common.h"
 #include <stdint.h>
 
@@ -69,6 +74,27 @@ class CtrKeyScrambler
 		 */
 		static int CtrScramble(u128_t *keyNormal,
 			const u128_t *keyX, const u128_t *keyY);
+
+	public:
+		/**
+		 * Get the total number of encryption key names.
+		 * @return Number of encryption key names.
+		 */
+		static int encryptionKeyCount_static(void);
+
+		/**
+		 * Get an encryption key name.
+		 * @param keyIdx Encryption key index.
+		 * @return Encryption key name (in ASCII), or nullptr on error.
+		 */
+		static const char *encryptionKeyName_static(int keyIdx);
+
+		/**
+		 * Get the verification data for a given encryption key index.
+		 * @param keyIdx Encryption key index.
+		 * @return Verification data. (16 bytes)
+		 */
+		static const uint8_t *encryptionVerifyData_static(int keyIdx);
 };
 
 }

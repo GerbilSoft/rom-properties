@@ -22,6 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
+#include "config.libromdata.h"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be included if decryption is enabled.
+#endif /* ENABLE_DECRYPTION */
+
 #include "common.h"
 
 // C includes.

@@ -19,6 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be compiled if decryption is enabled.
+#endif /* ENABLE_DECRYPTION */
+
 #include "CtrKeyScrambler.hpp"
 #include "byteswap.h"
 
@@ -41,6 +46,78 @@
 #endif
 
 namespace LibRomData {
+
+class CtrKeyScramblerPrivate
+{
+	private:
+		CtrKeyScramblerPrivate();
+		~CtrKeyScramblerPrivate();
+		RP_DISABLE_COPY(CtrKeyScramblerPrivate);
+
+	public:
+		// Encryption key indexes.
+		enum EncryptionKeys {
+			// Retail
+			Key_Twl_Scrambler,
+			Key_Ctr_Scrambler,
+
+			Key_Max
+		};
+
+		// Verification key names.
+		static const char *const EncryptionKeyNames[Key_Max];
+
+		// Verification key data.
+		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
+};
+
+// Verification key names.
+const char *const CtrKeyScramblerPrivate::EncryptionKeyNames[Key_Max] = {
+	"twl-scrambler",
+	"ctr-scrambler",
+};
+
+const uint8_t CtrKeyScramblerPrivate::EncryptionKeyVerifyData[Key_Max][16] = {
+	// twl-scrambler
+	{0x65,0xCF,0x82,0xC5,0xDB,0x79,0x93,0x8C,
+	 0x01,0x33,0x65,0x87,0x72,0xDF,0x60,0x94},
+	// ctr-scrambler
+	{0xEF,0x4F,0x47,0x3C,0x04,0xAD,0xAA,0xAE,
+	 0x66,0x98,0x29,0xCB,0xC2,0x4D,0x9D,0xB0},
+};
+
+/**
+ * Get the total number of encryption key names.
+ * @return Number of encryption key names.
+ */
+int CtrKeyScrambler::encryptionKeyCount_static(void)
+{
+	return CtrKeyScramblerPrivate::Key_Max;
+}
+
+/**
+ * Get an encryption key name.
+ * @param keyIdx Encryption key index.
+ * @return Encryption key name (in ASCII), or nullptr on error.
+ */
+const char *CtrKeyScrambler::encryptionKeyName_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= CtrKeyScramblerPrivate::Key_Max)
+		return nullptr;
+	return CtrKeyScramblerPrivate::EncryptionKeyNames[keyIdx];
+}
+
+/**
+ * Get the verification data for a given encryption key index.
+ * @param keyIdx Encryption key index.
+ * @return Verification data. (16 bytes)
+ */
+const uint8_t *CtrKeyScrambler::encryptionVerifyData_static(int keyIdx)
+{
+	if (keyIdx < 0 || keyIdx >= CtrKeyScramblerPrivate::Key_Max)
+		return nullptr;
+	return CtrKeyScramblerPrivate::EncryptionKeyVerifyData[keyIdx];
+}
 
 /**
  * Byteswap a 128-bit key for use with 32/64-bit addition.
@@ -184,10 +261,15 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	}
 
 	KeyManager::KeyData_t keyData;
-	if (keyManager->get("ctr-scrambler", &keyData) != 0) {
-		// Key not found.
+	KeyManager::VerifyResult res = keyManager->getAndVerify(
+		CtrKeyScramblerPrivate::EncryptionKeyNames[CtrKeyScramblerPrivate::Key_Ctr_Scrambler], &keyData,
+		CtrKeyScramblerPrivate::EncryptionKeyVerifyData[CtrKeyScramblerPrivate::Key_Ctr_Scrambler], 16);
+	if (res != KeyManager::VERIFY_OK) {
+		// Key error.
+		// TODO: Return the key error?
 		return -ENOENT;
 	}
+
 	if (!keyData.key || keyData.length != 16) {
 		// Key is not valid.
 		return -EIO;	// TODO: Better error code?

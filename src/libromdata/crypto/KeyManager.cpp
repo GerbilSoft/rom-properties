@@ -19,6 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be compiled if decryption is enabled.
+#endif /* ENABLE_DECRYPTION */
+
 #include "KeyManager.hpp"
 
 #include "RpAtomics.h"
