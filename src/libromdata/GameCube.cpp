@@ -197,6 +197,17 @@ class GameCubePrivate : public RomDataPrivate
 		 * @return Game name, or empty string if opening.bnr was not loaded.
 		 */
 		rp_string wii_getBannerName(void) const;
+
+		/**
+		 * Get the encryption status of a partition.
+		 *
+		 * This is used to check if the encryption keys are available
+		 * for a partition, or if not, why not.
+		 *
+		 * @param partition Partition to check.
+		 * @return nullptr if partition is readable; error message if not.
+		 */
+		const rp_char *wii_getCryptoStatus(const WiiPartition *partition);
 };
 
 /** GameCubePrivate **/
@@ -871,6 +882,59 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 	return info;
 }
 
+/**
+ * Get the encryption status of a partition.
+ *
+ * This is used to check if the encryption keys are available
+ * for a partition, or if not, why not.
+ *
+ * @param partition Partition to check.
+ * @return nullptr if partition is readable; error message if not.
+ */
+const rp_char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
+{
+	// Error table.
+	static const rp_char *const errTbl[] = {
+		// VERIFY_OK
+		_RP("ERROR: Something happened."),
+		// VERIFY_INVALID_PARAMS
+		_RP("ERROR: Invalid parameters. (THIS IS A BUG!)"),
+		// VERIFY_NO_SUPPORT
+		_RP("ERROR: Decryption is not supported in this build."),
+		// VERIFY_KEY_DB_NOT_LOADED
+		_RP("ERROR: keys.conf was not found."),
+		// VERIFY_KEY_DB_ERROR
+		_RP("ERROR: keys.conf has an error and could not be loaded."),
+		// VERIFY_KEY_NOT_FOUND
+		_RP("ERROR: Required key was not found in keys.conf."),
+		// VERIFY_KEY_INVALID
+		_RP("ERROR: The key in keys.conf is not a valid key."),
+		// VERFIY_IAESCIPHER_INIT_ERR
+		_RP("ERROR: AES decryption could not be initialized."),
+		// VERIFY_IAESCIPHER_DECRYPT_ERR
+		_RP("ERROR: AES decryption failed."),
+		// VERIFY_WRONG_KEY
+		_RP("ERROR: The key in keys.conf is incorrect."),
+	};
+	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
+
+	const KeyManager::VerifyResult res = partition->verifyResult();
+	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
+		// This may be an invalid key index.
+		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
+			// Invalid key index.
+			return _RP("ERROR: Invalid common key index.");
+		}
+	}
+
+	if (res >= 0 && res < KeyManager::VERIFY_MAX) {
+		return errTbl[res];
+	}
+
+	// Should not get here...
+	return _RP("ERROR: Unknown error. (THIS IS A BUG!)");
+}
+
 /** GameCube **/
 
 /**
@@ -1506,6 +1570,14 @@ int GameCube::loadFieldData(void)
 		rp_string game_name = d->wii_getBannerName();
 		if (!game_name.empty()) {
 			d->fields->addField_string(_RP("Game Info"), game_name);
+		} else {
+			// Empty game name may be either because it's
+			// homebrew, a prototype, or a key error.
+			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+				// Key error.
+				d->fields->addField_string(_RP("Game Info"),
+					d->wii_getCryptoStatus(d->gamePartition));
+			}
 		}
 	}
 
@@ -1577,47 +1649,7 @@ int GameCube::loadFieldData(void)
 			if (!d->updatePartition) {
 				sysMenu = _RP("None");
 			} else {
-				// Error table.
-				static const rp_char *const errTbl[] = {
-					// VERIFY_OK
-					_RP("ERROR: Something happened."),
-					// VERIFY_INVALID_PARAMS
-					_RP("ERROR: Invalid parameters. (THIS IS A BUG!)"),
-					// VERIFY_NO_SUPPORT
-					_RP("ERROR: Decryption is not supported in this build."),
-					// VERIFY_KEY_DB_NOT_LOADED
-					_RP("ERROR: keys.conf was not found."),
-					// VERIFY_KEY_DB_ERROR
-					_RP("ERROR: keys.conf has an error and could not be loaded."),
-					// VERIFY_KEY_NOT_FOUND
-					_RP("ERROR: Required key was not found in keys.conf."),
-					// VERIFY_KEY_INVALID
-					_RP("ERROR: The key in keys.conf is not a valid key."),
-					// VERFIY_IAESCIPHER_INIT_ERR
-					_RP("ERROR: AES decryption could not be initialized."),
-					// VERIFY_IAESCIPHER_DECRYPT_ERR
-					_RP("ERROR: AES decryption failed."),
-					// VERIFY_WRONG_KEY
-					_RP("ERROR: The key in keys.conf is incorrect."),
-				};
-				static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
-
-				const KeyManager::VerifyResult res = d->updatePartition->verifyResult();
-				if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
-					// This may be an invalid key index.
-					if (d->updatePartition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
-						// Invalid key index.
-						sysMenu = _RP("ERROR: Invalid common key index.");
-					}
-				}
-
-				if (!sysMenu) {
-					if (res >= 0 && res < KeyManager::VERIFY_MAX) {
-						sysMenu = errTbl[res];
-					} else {
-						sysMenu = _RP("ERROR: Unknown error. (THIS IS A BUG!)");
-					}
-				}
+				sysMenu = d->wii_getCryptoStatus(d->updatePartition);
 			}
 		}
 		d->fields->addField_string(_RP("Update"), sysMenu);
