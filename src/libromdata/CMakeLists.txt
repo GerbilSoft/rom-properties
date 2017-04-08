@@ -281,11 +281,18 @@ FIND_PACKAGE(Threads REQUIRED)
 SET(libromdata_THREAD_H
 	threads/Atomics.h
 	threads/Semaphore.hpp
+	threads/Mutex.hpp
 	)
 IF(CMAKE_USE_WIN32_THREADS_INIT)
-	SET(libromdata_THREAD_SRCS threads/SemaphoreWin32.cpp)
+	SET(libromdata_THREAD_SRCS
+		threads/SemaphoreWin32.cpp
+		threads/MutexWin32.cpp
+		)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
-	SET(libromdata_THREAD_SRCS threads/SemaphorePosix.cpp)
+	SET(libromdata_THREAD_SRCS
+		threads/SemaphorePosix.cpp
+		threads/MutexPosix.cpp
+		)
 ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
