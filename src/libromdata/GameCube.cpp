@@ -860,8 +860,15 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 		game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
 	}
 
-	// Convert from UTF-16BE.
-	return utf16be_to_rp_string(game_name, ARRAY_SIZE(wii_opening_bnr->names[0]));
+	// NOTE: The banner may have two lines.
+	// Each line is a maximum of 21 characters.
+	// Convert from UTF-16 BE and split into two lines at the same time.
+	rp_string info = utf16be_to_rp_string(game_name, 21);
+	if (game_name[21] != 0) {
+		info += _RP_CHR('\n');
+		info += utf16be_to_rp_string(&game_name[21], 21);
+	}
+	return info;
 }
 
 /** GameCube **/

@@ -38,6 +38,7 @@
   * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
   * Fixed access to files on Wii partitions located past 4 GB. This applies
     to logical addresses in sparse formats, e.g. WBFS.
+  * Wii: The "Game Info" field may be two separate lines.
   * (GNOME) The libnautilus-extension path is no longer hard-coded to
     /usr/lib64/. This prevented it from working correctly on anything but
     64-bit Linux systems that used the older multilib path, which means
