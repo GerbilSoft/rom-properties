@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
+#include "config.libromdata.h"
 #include "common.h"
 
 // C includes.
@@ -32,16 +33,50 @@ namespace LibRomData {
 class KeyManagerPrivate;
 class KeyManager
 {
-	public:
+	protected:
+		/**
+		 * KeyManager class.
+		 *
+		 * This class is a Singleton, so the caller must obtain a
+		 * pointer to the class using instance().
+		 */
 		KeyManager();
 		~KeyManager();
 
 	private:
 		RP_DISABLE_COPY(KeyManager)
 
+	public:
+		/**
+		 * Key verification result.
+		 */
+		enum VerifyResult {
+			VERIFY_UNKNOWN			= -1,	// Unknown status.
+			VERIFY_OK			= 0,	// Key obtained/verified.
+			VERIFY_INVALID_PARAMS		= 1,	// Parameters are invalid.
+			VERIFY_NO_SUPPORT		= 2,	// Decryption is not supported.
+			VERIFY_KEY_DB_NOT_LOADED	= 3,	// Key database is not loaded.
+			VERIFY_KEY_DB_ERROR		= 4,	// Something's wrong with the key database.
+			VERIFY_KEY_NOT_FOUND		= 5,	// Key was not found.
+			VERIFY_KEY_INVALID		= 6,	// Key is not valid for this operation.
+			VERFIY_IAESCIPHER_INIT_ERR	= 7,	// IAesCipher could not be created.
+			VERIFY_IAESCIPHER_DECRYPT_ERR	= 8,	// IAesCipher::decrypt() failed.
+			VERIFY_WRONG_KEY		= 9,	// The key did not decrypt the test string correctly.
+
+			VERIFY_MAX
+		};
+
+#ifdef ENABLE_DECRYPTION
 	private:
 		friend class KeyManagerPrivate;
-		KeyManagerPrivate *const d;
+		KeyManagerPrivate *const d_ptr;
+
+	public:
+		/**
+		 * Get the KeyManager instance.
+		 * @return KeyManager instance.
+		 */
+		static KeyManager *instance(void);
 
 	public:
 		// Encryption key data.
@@ -64,18 +99,36 @@ class KeyManager
 		bool areKeysLoaded(void) const;
 
 		/**
-		 * Reload keys if the key configuration file has changed.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int reloadIfChanged(void);
-
-		/**
 		 * Get an encryption key.
 		 * @param keyName	[in]  Encryption key name.
-		 * @param pKeyData	[out] Key data struct.
-		 * @return 0 on success; negative POSIX error code on error.
+		 * @param pKeyData	[out,opt] Key data struct. (If nullptr, key will be checked but not loaded.)
+		 * @return VerifyResult.
 		 */
-		int get(const char *keyName, KeyData_t *pKeyData) const;
+		VerifyResult get(const char *keyName, KeyData_t *pKeyData) const;
+
+		/**
+		 * Verify and retrieve an encryption key.
+		 *
+		 * This will decrypt the specified block of data
+		 * using the key with AES-128-ECB, which will result
+		 * in the 16-byte string "AES-128-ECB-TEST".
+		 *
+		 * If the key is valid, pKeyData will be populated
+		 * with the key information, similar to get().
+		 *
+		 * @param keyName	[in] Encryption key name.
+		 * @param pKeyData	[out,opt] Key data struct. (If nullptr, key will be checked but not loaded.)
+		 * @param pVerifyData	[in] Verification data block.
+		 * @param verifyLen	[in] Length of pVerifyData. (Must be 16.)
+		 * @return VerifyResult.
+		 */
+		VerifyResult getAndVerify(const char *keyName, KeyData_t *pKeyData,
+			const uint8_t *pVerifyData, unsigned int verifyLen) const;
+
+		// Verification test string.
+		// NOTE: This string is NOT NULL-terminated!
+		static const char verifyTestString[16];
+#endif /* ENABLE_DECRYPTION */
 };
 
 }

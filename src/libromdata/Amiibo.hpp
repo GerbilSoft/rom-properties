@@ -150,6 +150,17 @@ class Amiibo : public RomData
 		 */
 		virtual std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const override final;
 
+		/**
+		 * Get image processing flags.
+		 *
+		 * These specify post-processing operations for images,
+		 * e.g. applying transparency masks.
+		 *
+		 * @param imageType Image type.
+		 * @return Bitfield of ImageProcessingBF operations to perform.
+		 */
+		virtual uint32_t imgpf(ImageType imageType) const override final;
+
 	protected:
 		/**
 		 * Load field data.
@@ -157,13 +168,6 @@ class Amiibo : public RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadFieldData(void) override final;
-
-		/**
-		 * Get the imgpf value for external image types.
-		 * @param imageType Image type to load.
-		 * @return imgpf value.
-		 */
-		virtual uint32_t imgpf_extURL(ImageType imageType) const override final;
 
 	public:
 		/**

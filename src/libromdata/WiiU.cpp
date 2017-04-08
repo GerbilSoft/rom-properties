@@ -413,24 +413,6 @@ int WiiU::loadFieldData(void)
 }
 
 /**
- * Get the imgpf value for external media types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t WiiU::imgpf_extURL(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-
-	// NOTE: GameTDB's Wii U disc and 3D cover scans have
-	// alpha transparency. Hence, no image processing is required.
-	return 0;
-}
-
-/**
  * Get a list of URLs for an external image type.
  *
  * A thumbnail size may be requested from the shell.

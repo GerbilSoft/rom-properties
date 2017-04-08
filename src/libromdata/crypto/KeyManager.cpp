@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,9 +19,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libromdata.h"
+#ifndef ENABLE_DECRYPTION
+#error This file should only be compiled if decryption is enabled.
+#endif /* ENABLE_DECRYPTION */
+
 #include "KeyManager.hpp"
-#include "../file/FileSystem.hpp"
-#include "../file/RpFile.hpp"
+
+#include "file/FileSystem.hpp"
+#include "file/RpFile.hpp"
+#include "threads/Atomics.h"
+#include "threads/Mutex.hpp"
+
+#include "IAesCipher.hpp"
+#include "AesCipherFactory.hpp"
+
+#ifdef _WIN32
+// windows.h is needed for Sleep()
+#include "RpWin32.hpp"
+#endif /* _WIN32 */
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -50,6 +66,10 @@ class KeyManagerPrivate
 		RP_DISABLE_COPY(KeyManagerPrivate)
 
 	public:
+		// Static KeyManager instance.
+		static KeyManager instance;
+
+	public:
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -65,6 +85,19 @@ class KeyManagerPrivate
 		unordered_map<string, uint32_t> mapKeyNames;
 
 		/**
+		 * Map of invalid key names to errors.
+		 * These are stored for better error reporting.
+		 * - Key: Key name.
+		 * - Value: Verification result.
+		 */
+		unordered_map<string, uint8_t> mapInvalidKeyNames;
+
+		/**
+		 * Initialize KeyManager.
+		 */
+		void init(void);
+
+		/**
 		 * Process a configuration line.
 		 * @param line_buf Configuration line.
 		 */
@@ -72,9 +105,17 @@ class KeyManagerPrivate
 
 		/**
 		 * Load keys from the configuration file.
+		 * @param force If true, force a reload, even if the timestamp hasn't changed.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadKeys(void);
+		int loadKeys(bool force = false);
+
+		// Initialization counter.
+		int init_counter;
+		volatile int is_init;
+
+		// loadKeys() mutex.
+		Mutex mtxLoadKeys;
 
 		// Temporary configuration loading variables.
 		string cfg_curSection;
@@ -88,11 +129,52 @@ class KeyManagerPrivate
 
 /** KeyManagerPrivate **/
 
+// Verification test string.
+// NOTE: This string is NOT NULL-terminated!
+const char KeyManager::verifyTestString[] = {
+	'A','E','S','-','1','2','8','-',
+	'E','C','B','-','T','E','S','T'
+};
+
+// Singleton instance.
+// Using a static non-pointer variable in order to
+// handle proper destruction when the DLL is unloaded.
+KeyManager KeyManagerPrivate::instance;
+
 KeyManagerPrivate::KeyManagerPrivate()
-	: cfg_isInKeysSection(false)
+	: init_counter(-1)
+	, is_init(0)
+	, cfg_isInKeysSection(false)
 	, conf_was_found(false)
 	, conf_mtime(0)
+{ }
+
+/**
+ * Initialize KeyManager.
+ */
+void KeyManagerPrivate::init(void)
 {
+	// How this works:
+	// - init_counter is initially -1.
+	// - Incrementing it returns 0; this means that the
+	//   directories have not been initialized yet.
+	// - is_init is set when initializing.
+	// - If the counter wraps around, the directories won't be
+	//   reinitialized because dir_is_init will be set.
+	if (ATOMIC_INC_FETCH(&init_counter) != 0) {
+		// Function has already been called.
+		// Wait for directories to be initialized.
+		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
+			// TODO: Timeout counter?
+#ifdef _WIN32
+			Sleep(0);
+#else /* !_WIN32 */
+			usleep(0);
+#endif /* _WIN32 */
+		}
+		return;
+	}
+
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
 
@@ -113,6 +195,12 @@ KeyManagerPrivate::KeyManagerPrivate()
 		// rmkdir() failed.
 		conf_filename.clear();
 	}
+
+	// Load the keys.
+	loadKeys(true);
+
+	// KeyManager has been initialized.
+	is_init = 1;
 }
 
 /**
@@ -204,17 +292,18 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		chr = end - 1;
 	}
 
+	string keyName(line_buf.data(), equals_pos - line_buf.data());
+	if (keyName.empty()) {
+		// Empty key name.
+		return;
+	}
+
 	const char *value = equals_pos + 1;
 	int value_len = (int)(end - 1 - equals_pos);
 	if (value[0] == 0 || (value_len % 2 != 0)) {
 		// Key is either empty, or is an odd length.
 		// (Odd length means half a byte...)
-		return;
-	}
-
-	string keyName(line_buf.data(), equals_pos - line_buf.data());
-	if (keyName.empty()) {
-		// Empty key name.
+		mapInvalidKeyNames.insert(std::make_pair(keyName, KeyManager::VERIFY_KEY_INVALID));
 		return;
 	}
 
@@ -270,15 +359,40 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 
 /**
  * Load keys from the configuration file.
+ * @param force If true, force a reload, even if the timestamp hasn't changed.
  * @return 0 on success; negative POSIX error code on error.
  */
-int KeyManagerPrivate::loadKeys(void)
+int KeyManagerPrivate::loadKeys(bool force)
 {
-	// Open the configuration file.
 	if (conf_filename.empty()) {
-		// Configuration directory is invalid...
+		// Configuration filename is invalid...
 		return -ENOENT;
 	}
+
+	if (!force && conf_was_found) {
+		// Check if the keys.conf timestamp has changed.
+		time_t mtime;
+		int ret = FileSystem::get_mtime(conf_filename, &mtime);
+		if (ret != 0) {
+			// Failed to retrieve the mtime.
+			// Leave everything as-is.
+			// TODO: Proper error code?
+			return -EIO;
+		}
+
+		if (mtime == conf_mtime) {
+			// Timestamp has not changed.
+			return 0;
+		}
+	}
+
+	// loadKeys() mutex.
+	// NOTE: This may result in keys.conf being loaded twice
+	// in some cases, but that's better than keys.conf being
+	// loaded twice at the same time and causing collisions.
+	MutexLocker mtxLocker(mtxLoadKeys);
+
+	// Open the configuration file.
 	unique_ptr<IRpFile> file(new RpFile(conf_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Error opening the file.
@@ -288,6 +402,7 @@ int KeyManagerPrivate::loadKeys(void)
 	// Clear the loaded keys.
 	vKeys.clear();
 	mapKeyNames.clear();
+	mapInvalidKeyNames.clear();
 
 	// We're not in the keys section initially.
 	cfg_curSection.clear();
@@ -365,19 +480,42 @@ int KeyManagerPrivate::loadKeys(void)
 		processConfigLine(line_buf);
 	}
 
+	// Save the mtime from the keys.conf file.
+	// TODO: IRpFile::get_mtime()?
+	time_t mtime;
+	int ret = FileSystem::get_mtime(conf_filename, &mtime);
+	if (ret == 0) {
+		conf_mtime = mtime;
+	} else {
+		// mtime error...
+		// TODO: What do we do here?
+		conf_mtime = 0;
+	}
+
 	// Keys loaded.
+	conf_was_found = true;
 	return 0;
 }
 
 /** KeyManager **/
 
 KeyManager::KeyManager()
-	: d(new KeyManagerPrivate())
+	: d_ptr(new KeyManagerPrivate())
 { }
 
 KeyManager::~KeyManager()
 {
-	delete d;
+	delete d_ptr;
+}
+
+/**
+ * Get the KeyManager instance.
+ * @return KeyManager instance.
+ */
+KeyManager *KeyManager::instance(void)
+{
+	// Singleton instance.
+	return &KeyManagerPrivate::instance;
 }
 
 /**
@@ -393,103 +531,164 @@ KeyManager::~KeyManager()
  */
 bool KeyManager::areKeysLoaded(void) const
 {
+	RP_D(const KeyManager);
 	return d->conf_was_found;
-}
-
-/**
- * Reload keys if the key configuration file has changed.
- * @return 0 on success; negative POSIX error code on error.
- */
-int KeyManager::reloadIfChanged(void)
-{
-	int ret = 0;
-
-	if (!d->conf_was_found) {
-		// keys.conf wasn't found.
-		// Try loading it again.
-		ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
-		if (ret == 0) {
-			// Keys loaded.
-			// Get the mtime.
-			time_t mtime;
-			ret = FileSystem::get_mtime(d->conf_filename, &mtime);
-			if (ret == 0) {
-				d->conf_mtime = mtime;
-			} else {
-				// mtime error...
-				// TODO: What do we do here?
-				d->conf_mtime = 0;
-			}
-			d->conf_was_found = true;
-		}
-	} else {
-		// Check if the timestamp has changed.
-		// NOTE: If get_mtime() failed, we'll leave everything
-		// as it is instead of clearing the loaded keys.
-		// TODO: Set a flag to ignore the previous mtime if
-		// a new file is found in case the file is swapped
-		// underneath us?
-		time_t mtime;
-		int ret = FileSystem::get_mtime(d->conf_filename, &mtime);
-		if (ret == 0) {
-			if (mtime != d->conf_mtime) {
-				// Timestmap has changed.
-				// Reload the keys.
-				ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
-				if (ret == 0) {
-					// Keys loaded.
-					d->conf_mtime = mtime;
-				} else {
-					// Key load failed.
-					d->conf_was_found = false;
-					// Existing keys are still OK.
-					ret = 0;
-				}
-			}
-		}
-	}
-
-	return ret;
 }
 
 /**
  * Get an encryption key.
  * @param keyName	[in]  Encryption key name.
  * @param pKeyData	[out] Key data struct.
- * @return 0 on success; negative POSIX error code on error.
+ * @return VerifyResult.
  */
-int KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
+KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyData) const
 {
-	if (!keyName || !pKeyData) {
+	assert(keyName != nullptr);
+	assert(keyName[0] != 0);
+	if (!keyName || keyName[0] == 0) {
 		// Invalid parameters.
-		return -EINVAL;
+		return VERIFY_INVALID_PARAMS;
 	}
 
 	// Check if keys.conf needs to be reloaded.
-	const_cast<KeyManager*>(this)->reloadIfChanged();
+	// NOTE: It's safe to check d->is_init here, sicne it's
+	// only ever set to 1 by our code.
+	RP_D(const KeyManager);
+	if (!d->is_init) {
+		// d->init() will call loadKeys().
+		const_cast<KeyManagerPrivate*>(d)->init();
+	} else {
+		// Load the keys.
+		// This function won't do anything if the keys
+		// have already been loaded and keys.conf hasn't
+		// been changed.
+		const_cast<KeyManagerPrivate*>(d)->loadKeys();
+	}
+
+	if (!areKeysLoaded()) {
+		// Keys are not loaded.
+		return VERIFY_KEY_DB_NOT_LOADED;
+	}
 
 	// Attempt to get the key from the map.
-	unordered_map<string, uint32_t>::const_iterator iter = d->mapKeyNames.find(keyName);
+	auto iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
-		// Key not found.
-		return -ENOENT;
+		// Key was not parsed. Figure out why.
+		auto iter = d->mapInvalidKeyNames.find(keyName);
+		if (iter != d->mapInvalidKeyNames.end()) {
+			// An error occurred when parsing the key.
+			return (VerifyResult)iter->second;
+		}
+
+		// Key was not found.
+		return VERIFY_KEY_NOT_FOUND;
 	}
 
 	// Found the key.
-	uint32_t keyIdx = iter->second;
-	uint32_t idx = (keyIdx & 0xFFFFFF);
-	uint8_t len = ((keyIdx >> 24) & 0xFF);
+	const uint32_t keyIdx = iter->second;
+	const uint32_t idx = (keyIdx & 0xFFFFFF);
+	const uint8_t len = ((keyIdx >> 24) & 0xFF);
 
 	// Make sure the key index is valid.
 	assert(idx + len <= d->vKeys.size());
 	if (idx + len > d->vKeys.size()) {
 		// Should not happen...
-		return -EFAULT;
+		return VERIFY_KEY_DB_ERROR;
 	}
 
-	pKeyData->key = d->vKeys.data() + idx;
-	pKeyData->length = len;
-	return 0;
+	if (pKeyData) {
+		pKeyData->key = d->vKeys.data() + idx;
+		pKeyData->length = len;
+	}
+	return VERIFY_OK;
+}
+
+/**
+ * Verify and retrieve an encryption key.
+ *
+ * This will decrypt the specified block of data
+ * using the key with AES-128-ECB, which will result
+ * in the 16-byte string "AES-128-ECB-TEST".
+ *
+ * If the key is valid, pKeyData will be populated
+ * with the key information, similar to get().
+ *
+ * @param keyName	[in] Encryption key name.
+ * @param pKeyData	[out] Key data struct.
+ * @param pVerifyData	[in] Verification data block.
+ * @param verifyLen	[in] Length of pVerifyData. (Must be 16.)
+ * @return VerifyResult.
+ */
+KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t *pKeyData,
+	const uint8_t *pVerifyData, unsigned int verifyLen) const
+{
+	assert(keyName);
+	assert(pVerifyData);
+	assert(verifyLen == 16);
+	if (!keyName || !pVerifyData || verifyLen != 16) {
+		// Invalid parameters.
+		return VERIFY_INVALID_PARAMS;
+	}
+
+	// Temporary KeyData_t in case pKeyData is nullptr.
+	KeyData_t tmp_key_data;
+	if (!pKeyData) {
+		pKeyData = &tmp_key_data;
+	}
+
+	// Get the key first.
+	VerifyResult res = get(keyName, pKeyData);
+	if (res != VERIFY_OK) {
+		// Error obtaining the key.
+		return res;
+	} else if (!pKeyData->key || pKeyData->length == 0) {
+		// Key is invalid.
+		return VERIFY_KEY_INVALID;
+	}
+
+	// Verify the key length.
+	if (pKeyData->length != 16 && pKeyData->length != 24 && pKeyData->length != 32) {
+		// Key length is invalid.
+		return VERIFY_KEY_INVALID;
+	}
+
+	// Decrypt the test data.
+	// TODO: Keep this IAesCipher instance around?
+	unique_ptr<IAesCipher> cipher(AesCipherFactory::create());
+	if (!cipher) {
+		// Unable to create the IAesCipher.
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+
+	// Set cipher parameters.
+	int ret = cipher->setChainingMode(IAesCipher::CM_ECB);
+	if (ret != 0) {
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+	ret = cipher->setKey(pKeyData->key, pKeyData->length);
+	if (ret != 0) {
+		return VERFIY_IAESCIPHER_INIT_ERR;
+	}
+
+	// Decrypt the test data.
+	// NOTE: IAesCipher decrypts in place, so we need to
+	// make a temporary copy.
+	unique_ptr<uint8_t[]> tmpData(new uint8_t[verifyLen]);
+	memcpy(tmpData.get(), pVerifyData, verifyLen);
+	unsigned int size = cipher->decrypt(tmpData.get(), verifyLen);
+	if (size != verifyLen) {
+		// Decryption failed.
+		return VERIFY_IAESCIPHER_DECRYPT_ERR;
+	}
+
+	// Verify the test data.
+	if (memcmp(tmpData.get(), verifyTestString, verifyLen) != 0) {
+		// Verification failed.
+		return VERIFY_WRONG_KEY;
+	}
+
+	// Test data verified.
+	return VERIFY_OK;
 }
 
 }

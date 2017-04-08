@@ -34,4 +34,7 @@
 /* Define to 1 if you have the `localtime_s' function. */
 #cmakedefine HAVE_LOCALTIME_S 1
 
+/* Define to 1 if decryption should be enabled. */
+#cmakedefine ENABLE_DECRYPTION 1
+
 #endif /* __ROMPROPERTIES_RPCLI_CONFIG_H__ */

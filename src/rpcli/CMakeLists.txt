@@ -61,14 +61,21 @@ SET(rom-properties-rpcli_H
 	bmp.hpp
 	)
 
+IF(ENABLE_DECRYPTION)
+	SET(rom-properties-rpcli_CRYPTO_SRCS verifykeys.cpp)
+	SET(rom-properties-rpcli_CRYPTO_H verifykeys.hpp)
+ENDIF(ENABLE_DECRYPTION)
+
 #####################
 # Build the plugin. #
 #####################
 
 ADD_EXECUTABLE(rpcli
-		${rom-properties-rpcli_SRCS}
-		${rom-properties-rpcli_H}
-		)
+	${rom-properties-rpcli_SRCS}
+	${rom-properties-rpcli_H}
+	${rom-properties-rpcli_CRYPTO_SRCS}
+	${rom-properties-rpcli_CRYPTO_H}
+	)
 SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rpcli)
 SET_WINDOWS_SUBSYSTEM(rpcli CONSOLE)

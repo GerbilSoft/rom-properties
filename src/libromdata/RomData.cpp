@@ -54,10 +54,6 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, fields(new RomFields())
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
-	// Clear the internal images field.
-	memset(&images, 0, sizeof(images));
-	memset(&imgpf, 0, sizeof(imgpf));
-
 	if (!file)
 		return;
 
@@ -81,10 +77,6 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc 
 	, fields(new RomFields(fields, count))
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
-	// Clear the internal images field.
-	memset(&images, 0, sizeof(images));
-	memset(&imgpf, 0, sizeof(imgpf));
-
 	if (!file)
 		return;
 
@@ -96,14 +88,8 @@ RomDataPrivate::~RomDataPrivate()
 {
 	delete fields;
 
-	// Delete the internal images.
-	for (int i = ARRAY_SIZE(images)-1; i >= 0; i--) {
-		delete images[i];
-	}
-
 	// Close the file if it's still open.
 	delete this->file;
-	this->file = nullptr;
 }
 
 /** Convenience functions. **/
@@ -478,6 +464,11 @@ const rp_char *RomData::fileType_string(void) const
 		_RP("Dynamic Link Library"),	// FTYPE_DLL
 		_RP("Device Driver"),		// FTYPE_DEVICE_DRIVER
 		_RP("Resource Library"),	// FTYPE_RESOURCE_LIBRARY
+		_RP("Icon File"),		// FTYPE_ICON_FILE
+		_RP("Banner File"),		// FTYPE_BANNER_FILE
+		_RP("Homebrew Application"),	// FTYPE_HOMEBREW
+		_RP("eMMC Dump"),		// FTYPE_EMMC_DUMP
+		_RP("Title Contents"),		// FTYPE_TITLE_CONTENTS
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
@@ -514,30 +505,15 @@ std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageT
 }
 
 /**
- * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
- * @return 0 on success; negative POSIX error code on error.
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
  */
-int RomData::loadInternalImage(ImageType imageType)
-{
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
-		// ImageType is out of range.
-		return -ERANGE;
-	}
-
-	// No images supported by the base class.
-	((void)imageType);
-	return -ENOENT;
-}
-
-/**
- * Get the imgpf value for external image types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t RomData::imgpf_extURL(ImageType imageType) const
+uint32_t RomData::imgpf(ImageType imageType) const
 {
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
@@ -548,6 +524,32 @@ uint32_t RomData::imgpf_extURL(ImageType imageType) const
 	// No imgpf by default.
 	((void)imageType);
 	return 0;
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		*pImage = nullptr;
+		return -ERANGE;
+	}
+
+	// No images supported by the base class.
+	((void)imageType);
+	*pImage = nullptr;
+	return -ENOENT;
 }
 
 /**
@@ -585,19 +587,11 @@ const rp_image *RomData::image(ImageType imageType) const
 	}
 	// TODO: Check supportedImageTypes()?
 
-	// Check if the image is loaded.
-	RP_D(const RomData);
-	const int idx = imageType - IMG_INT_MIN;
-	if (!d->images[idx]) {
-		// Internal image has not been loaded.
-		// Load it now.
-		int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
-		if (ret != 0 || !d->images[idx]) {
-			// Error loading the image.
-			return nullptr;
-		}
-	}
-	return d->images[idx];
+	// Load the internal image.
+	// The subclass maintains ownership of the image.
+	const rp_image *img;
+	int ret = const_cast<RomData*>(this)->loadInternalImage(imageType, &img);
+	return (ret == 0 ? img : nullptr);
 }
 
 /**
@@ -650,44 +644,6 @@ rp_string RomData::scrapeImageURL(const char *html, size_t size) const
 }
 
 /**
- * Get image processing flags.
- *
- * These specify post-processing operations for images,
- * e.g. applying transparency masks.
- *
- * @param imageType Image type.
- * @return Bitfield of ImageProcessingBF operations to perform.
- */
-uint32_t RomData::imgpf(ImageType imageType) const
-{
-	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-	// TODO: Check supportedImageTypes()?
-
-	if (imageType <= IMG_INT_MAX) {
-		// Check if the image is loaded.
-		RP_D(const RomData);
-		const int idx = imageType - IMG_INT_MIN;
-		if (!d->images[idx]) {
-			// Internal image has not been loaded.
-			// Load it now.
-			int ret = const_cast<RomData*>(this)->loadInternalImage(imageType);
-			if (ret != 0 || !d->images[idx]) {
-				// Error loading the image.
-				return 0;
-			}
-		}
-		return d->imgpf[imageType];
-	} else /*(imageType >= IMG_EXT_MIN)*/ {
-		// Use the imgpf_extURL() function.
-		return imgpf_extURL(imageType);
-	}
-}
-
-/**
 * Get name of an image type
 * @param imageType Image type.
 * @return String containing user-friendly name of an image type.
@@ -698,7 +654,6 @@ const rp_char *RomData::getImageTypeName(ImageType imageType) {
 		return nullptr;
 	}
 
-	// FIXME commit these changes with COVER commit
 	static const rp_char *const image_type_names[] = {
 		// Internal
 		_RP("Internal icon"),				// IMG_INT_ICON

@@ -442,6 +442,13 @@ class RomFields
 		void setTabName(int tabIdx, const rp_char *name);
 
 		/**
+		 * Add a tab to the end and select it.
+		 * @param name Tab name.
+		 * @return Tab index.
+		 */
+		int addTab(const rp_char *name);
+
+		/**
 		 * Get the tab count.
 		 * @return Tab count. (highest tab index, plus 1)
 		 */
@@ -472,6 +479,14 @@ class RomFields
 		 * @return Allocated std::vector<rp_string>.
 		 */
 		static std::vector<rp_string> *strArrayToVector(const rp_char *const *strArray, int count = -1);
+
+		/**
+		 * Add fields from another RomFields object.
+		 * @param other Source RomFields object.
+		 * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+		 * @return Field index of the last field added.
+		 */
+		int addFields_romFields(const RomFields *other, int tabOffset);
 
 		/**
 		 * Add string field data.

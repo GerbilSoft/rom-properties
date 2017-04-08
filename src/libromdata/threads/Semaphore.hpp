@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * Semaphore.hpp: System-specific semaphore implementation.                *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,16 +19,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHEMGR_SEMAPHORE_HPP__
-#define __ROMPROPERTIES_LIBCACHEMGR_SEMAPHORE_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_SEMAPHORE_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_SEMAPHORE_HPP__
 
-#include "libromdata/common.h"
+#include "common.h"
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include "RpWin32_sdk.h"
+#else /* !_WIN32 */
 #include <semaphore.h>
 #endif
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
 class Semaphore
 {
@@ -100,4 +102,4 @@ class SemaphoreLocker
 
 }
 
-#endif /* __ROMPROPERTIES_LIBCACHEMGR_SEMAPHORE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_SEMAPHORE_HPP__ */

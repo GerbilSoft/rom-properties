@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
- * SemaphoreWin32.cpp: Win32 semaphore implementation.                     *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * MutexPosix.cpp: POSIX mutex implementation.                             *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,74 +19,68 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "Semaphore.hpp"
+#include "Mutex.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
 /**
- * Create a semaphore.
- * @param count Number of times the semaphore can be obtained before blocking.
+ * Create a mutex.
  */
-Semaphore::Semaphore(int count)
+Mutex::Mutex()
+	: m_isInit(false)
 {
-	m_sem = CreateSemaphore(nullptr, count, count, nullptr);
-	assert(m_sem != nullptr);
-	if (!m_sem) {
+	int ret = pthread_mutex_init(&m_mutex, nullptr);
+	assert(ret == 0);
+	if (ret == 0) {
+		m_isInit = true;
+	} else {
 		// FIXME: Do something if an error occurred here...
 	}
 }
 
 /**
- * Delete the semaphore.
- * WARNING: Semaphore MUST be fully released!
+ * Delete the mutex.
+ * WARNING: Mutex MUST be unlocked!
  */
-Semaphore::~Semaphore()
+Mutex::~Mutex()
 {
-	if (m_sem) {
-		CloseHandle(m_sem);
-		m_sem = nullptr;
+	if (m_isInit) {
+		// TODO: Error checking.
+		pthread_mutex_destroy(&m_mutex);
+		m_isInit = false;
 	}
 }
 
 /**
- * Obtain the semaphore.
- * If the semaphore is at zero, this function will block
- * until another thread releases the semaphore.
+ * Lock the mutex.
+ * If the mutex is locked, this function will block until
+ * the previous locker unlocks it.
  * @return 0 on success; non-zero on error.
  */
-int Semaphore::obtain(void)
+int Mutex::lock(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
-	DWORD dwWaitResult = WaitForSingleObject(m_sem, INFINITE);
-	if (dwWaitResult == WAIT_OBJECT_0)
-		return 0;
-
 	// TODO: What error to return?
-	return -1;
+	return pthread_mutex_lock(&m_mutex);
 }
 
 /**
- * Release a lock on the semaphore.
+ * Unlock the mutex.
  * @return 0 on success; non-zero on error.
  */
-int Semaphore::release(void)
+int Mutex::unlock(void)
 {
-	if (!m_sem)
+	if (!m_isInit)
 		return -EBADF;
 
-	BOOL bRet = ReleaseSemaphore(m_sem, 1, nullptr);
-	if (bRet != 0)
-		return 0;
-
 	// TODO: What error to return?
-	return -1;
+	return pthread_mutex_unlock(&m_mutex);
 }
 
 }

@@ -20,16 +20,26 @@
     Currently only the property page is supported. Thumbnails (and icons)
     are not supported for block devices.
   * Nintendo DS: Slot-2 PassMe ROM images are now recognized.
+  * (rpcli) New option "-k". This option will verify all known keys in
+    keys.conf. Verification is done by decrypting a string that was encrypted
+    with the original key and checking if the decrypted string is correct.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
     executable files are supported.
   * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
     downloads for disc, cover, 3D cover, and full cover scans.
+  * Nintendo 3DS: SMDH, 3DSX, CCI (\*.3ds), CIA, and NCCH files are supported.
+    Parts of some formats (CCI, CIA, NCCH) may require decryption keys.
+    If the keys are not available, then some information will not be
+    available.
 
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
   * Fixed age ratings not showing up for Japanese Nintendo DSi and Wii games.
+  * Fixed access to files on Wii partitions located past 4 GB. This applies
+    to logical addresses in sparse formats, e.g. WBFS.
+  * Wii: The "Game Info" field may be two separate lines.
   * (GNOME) The libnautilus-extension path is no longer hard-coded to
     /usr/lib64/. This prevented it from working correctly on anything but
     64-bit Linux systems that used the older multilib path, which means

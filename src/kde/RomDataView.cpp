@@ -713,14 +713,20 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 	// Convert the age ratings field to a string.
 	QString str;
 	str.reserve(64);
+	unsigned int ratings_count = 0;
 	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
-		if (!str.isEmpty()) {
+		if (ratings_count > 0) {
 			// Append a comma.
-			str += QLatin1String(", ");
+			if (ratings_count % 4 == 0) {
+				// 4 ratings per line.
+				str += QLatin1String(",\n");
+			} else {
+				str += QLatin1String(", ");
+			}
 		}
 
 		const char *abbrev = RomFields::ageRatingAbbrev(i);
@@ -733,9 +739,10 @@ void RomDataViewPrivate::initAgeRatings(QLabel *lblDesc, const RomFields::Field 
 		}
 		str += QChar(L'=');
 		str += RP2Q(utf8_to_rp_string(RomFields::ageRatingDecode(i, rating)));
+		ratings_count++;
 	}
 
-	if (str.isEmpty()) {
+	if (ratings_count == 0) {
 		// No age ratings.
 		str = RomDataView::tr("None");
 	}

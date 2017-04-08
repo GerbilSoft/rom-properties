@@ -38,7 +38,7 @@ class AesCAPI : public IAesCipher
 		RP_DISABLE_COPY(AesCAPI)
 	private:
 		friend class AesCAPIPrivate;
-		AesCAPIPrivate *const d;
+		AesCAPIPrivate *const d_ptr;
 
 	public:
 		/**
@@ -63,15 +63,19 @@ class AesCAPI : public IAesCipher
 
 		/**
 		 * Set the cipher chaining mode.
+		 *
+		 * Note that the IV/counter must be set *after* setting
+		 * the chaining mode; otherwise, setIV() will fail.
+		 *
 		 * @param mode Cipher chaining mode.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int setChainingMode(ChainingMode mode) override final;
 
 		/**
-		 * Set the IV.
-		 * @param iv IV data.
-		 * @param len IV length, in bytes.
+		 * Set the IV (CBC mode) or counter (CTR mode).
+		 * @param iv IV/counter data.
+		 * @param len IV/counter length, in bytes.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int setIV(const uint8_t *iv, unsigned int len) override final;
@@ -85,11 +89,11 @@ class AesCAPI : public IAesCipher
 		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len) override final;
 
 		/**
-		 * Decrypt a block of data using the specified IV.
+		 * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
 		 * @param data Data block.
 		 * @param data_len Length of data block.
-		 * @param iv IV for the data block.
-		 * @param iv_len Length of the IV.
+		 * @param iv IV/counter for the data block.
+		 * @param iv_len Length of the IV/counter.
 		 * @return Number of bytes decrypted on success; 0 on error.
 		 */
 		virtual unsigned int decrypt(uint8_t *data, unsigned int data_len,

@@ -57,7 +57,7 @@ class RomDataFactory
 		 * @param thumbnail If true, RomData class must support at least one image type.
 		 * @return RomData class, or nullptr if the ROM isn't supported.
 		 */
-		static RomData *getInstance(IRpFile *file, bool thumbnail = false);
+		static RomData *create(IRpFile *file, bool thumbnail = false);
 
 		struct ExtInfo {
 			const rp_char *ext;

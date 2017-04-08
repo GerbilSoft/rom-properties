@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "AesCAPI.hpp"
+#include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cerrno>
@@ -36,6 +37,8 @@
 //   [Google: "CryptImportKey" (no quotes)]
 // - http://etutorials.org/Programming/secure+programming/Chapter+5.+Symmetric+Encryption/5.25+Using+Symmetric+Encryption+with+Microsoft+s+CryptoAPI/
 //   [Google: "CryptoAPI set IV" (no quotes)]
+// - https://modexp.wordpress.com/2016/03/10/windows-ctr-mode-with-crypto-api/
+//   [Google: "cryptoapi-ng aes-ctr" (no quotes)]
 #include "../RpWin32.hpp"
 #include <wincrypt.h>
 
@@ -58,6 +61,20 @@ class AesCAPIPrivate
 
 		// Instance-specific key.
 		HCRYPTKEY hKey;
+
+		// Chaining mode.
+		IAesCipher::ChainingMode chainingMode;
+
+		// Counter for CTR mode.
+		uint8_t ctr[16];
+
+		/**
+		 * Set the chaining mode on a key.
+		 * @param hKey HCRYPTKEY.
+		 * @param mode Chaining mode.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode);
 };
 
 /** AesCAPIPrivate **/
@@ -67,7 +84,11 @@ LONG AesCAPIPrivate::lRefCnt = 0;
 
 AesCAPIPrivate::AesCAPIPrivate()
 	: hKey(0)
+	, chainingMode(IAesCipher::CM_ECB)
 {
+	// Clear the counter.
+	memset(ctr, 0, sizeof(ctr));
+
 	if (InterlockedIncrement(&lRefCnt) == 1) {
 		// Initialize the CryptoAPI provider.
 		// TODO: Try multiple times, e.g.:
@@ -100,15 +121,45 @@ AesCAPIPrivate::~AesCAPIPrivate()
 	}
 }
 
+/**
+ * Set the chaining mode on a key.
+ * @param hKey HCRYPTKEY.
+ * @param mode Chaining mode.
+ * @return 0 on success; non-zero on error.
+ */
+int AesCAPIPrivate::setChainingMode(HCRYPTKEY hKey, IAesCipher::ChainingMode mode)
+{
+	DWORD dwMode;
+	switch (mode) {
+		case IAesCipher::CM_ECB:
+		case IAesCipher::CM_CTR:
+			dwMode = CRYPT_MODE_ECB;
+			break;
+		case IAesCipher::CM_CBC:
+			dwMode = CRYPT_MODE_CBC;
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	if (!CryptSetKeyParam(hKey, KP_MODE, (BYTE*)&dwMode, 0)) {
+		// Error setting the chaining mode.
+		return -w32err_to_posix(GetLastError());
+	}
+
+	// Chaining mode set.
+	return 0;
+}
+
 /** AesCAPI **/
 
 AesCAPI::AesCAPI()
-	: d(new AesCAPIPrivate())
+	: d_ptr(new AesCAPIPrivate())
 { }
 
 AesCAPI::~AesCAPI()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -126,6 +177,7 @@ const rp_char *AesCAPI::name(void) const
  */
 bool AesCAPI::isInit(void) const
 {
+	RP_D(const AesCAPI);
 	return (d->hProvider != 0);
 }
 
@@ -141,6 +193,7 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
+	RP_D(AesCAPI);
 	if (!key) {
 		// No key specified.
 		return -EINVAL;
@@ -190,6 +243,14 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 		return -w32err_to_posix(GetLastError());
 	}
 
+	// Set the cipher chaining mode.
+	int ret = d->setChainingMode(hNewKey, d->chainingMode);
+	if (ret != 0) {
+		// Error setting the chaining mode.
+		CryptDestroyKey(hNewKey);
+		return ret;
+	}
+
 	// Key loaded successfully.
 	HCRYPTKEY hOldKey = d->hKey;
 	d->hKey = hNewKey;
@@ -202,45 +263,43 @@ int AesCAPI::setKey(const uint8_t *key, unsigned int len)
 
 /**
  * Set the cipher chaining mode.
+ *
+ * Note that the IV/counter must be set *after* setting
+ * the chaining mode; otherwise, setIV() will fail.
+ *
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setChainingMode(ChainingMode mode)
 {
-	if (d->hKey == 0) {
-		// Key hasn't been set.
-		return -EBADF;
+	RP_D(AesCAPI);
+	if (d->chainingMode == mode) {
+		// No change...
+		return 0;
 	}
 
-	DWORD dwMode;
-	switch (mode) {
-		case CM_ECB:
-			dwMode = CRYPT_MODE_ECB;
-			break;
-		case CM_CBC:
-			dwMode = CRYPT_MODE_CBC;
-			break;
-		default:
-			return -EINVAL;
+	// Save the chaining mode.
+	d->chainingMode = mode;
+
+	if (d->hKey) {
+		// Set the chaining mode.
+		return d->setChainingMode(d->hKey, mode);
 	}
 
-	// Set the cipher chaining mode.
-	if (!CryptSetKeyParam(d->hKey, KP_MODE, (BYTE*)&dwMode, 0)) {
-		// Error setting CBC mode.
-		return -w32err_to_posix(GetLastError());
-	}
-
+	// We can't apply the chaining mode yet,
+	// since we don't have a key.
 	return 0;
 }
 
 /**
- * Set the IV.
- * @param iv IV data.
- * @param len IV length, in bytes.
+ * Set the IV (CBC mode) or counter (CTR mode).
+ * @param iv IV/counter data.
+ * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 {
+	RP_D(AesCAPI);
 	if (!iv || len != 16) {
 		return -EINVAL;
 	} else if (d->hKey == 0) {
@@ -248,10 +307,22 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
 		return -EBADF;
 	}
 
-	// Set the IV.
-	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
-		// Error setting the IV.
-		return -w32err_to_posix(GetLastError());
+	switch (d->chainingMode) {
+		case CM_ECB:
+		default:
+			// No IV.
+			return -EINVAL;
+		case CM_CBC:
+			// Set the IV.
+			if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
+				// Error setting the IV.
+				return -w32err_to_posix(GetLastError());
+			}
+			break;
+		case CM_CTR:
+			// Set the counter.
+			memcpy(d->ctr, iv, len);
+			break;
 	}
 
 	return 0;
@@ -265,6 +336,7 @@ int AesCAPI::setIV(const uint8_t *iv, unsigned int len)
  */
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 {
+	RP_D(AesCAPI);
 	if (d->hKey == 0) {
 		// Key hasn't been set.
 		return 0;
@@ -287,23 +359,60 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len)
 	// NOTE: Specifying TRUE as the Final parameter results in
 	// CryptDecrypt failing with NTE_BAD_DATA, even though the
 	// data has the correct block length.
-	DWORD dwLen = data_len;
-	BOOL bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
-	CryptDestroyKey(hMyKey);
+	DWORD dwLen;
+	BOOL bRet = FALSE;
+	if (d->chainingMode == CM_CTR) {
+		// CTR isn't supported by CryptoAPI directly.
+		// Need to decrypt each block manually.
+		uint8_t ctr_crypt[16];
+		dwLen = 0;
+		for (; data_len > 0; data_len -= 16, data += 16) {
+			// Encrypt the current counter.
+			memcpy(ctr_crypt, d->ctr, sizeof(ctr_crypt));
+			DWORD dwTempLen = 16;
+			bRet = CryptEncrypt(hMyKey, 0, FALSE, 0, ctr_crypt, &dwTempLen, sizeof(ctr_crypt));
+			if (!bRet) {
+				// Encryption failed.
+				return 0;
+			}
+			dwLen += dwTempLen;
+
+			// XOR with the ciphertext.
+			// TODO: Optimized XOR.
+			for (int i = 15; i >= 0; i--) {
+				data[i] ^= ctr_crypt[i];
+			}
+
+			// Increment the counter.
+			for (int i = 15; i >= 0; i--) {
+				if (++d->ctr[i] != 0) {
+					// No carry needed.
+					break;
+				}
+			}
+		}
+	} else {
+		// EBC and/or CBC.
+		dwLen = data_len;
+		bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
+		CryptDestroyKey(hMyKey);
+	}
+
 	return (bRet ? dwLen : 0);
 }
 
 /**
- * Decrypt a block of data using the specified IV.
+ * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
  * @param data Data block.
  * @param data_len Length of data block.
- * @param iv IV for the data block.
- * @param iv_len Length of the IV.
+ * @param iv IV/counter for the data block.
+ * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
 unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
+	RP_D(AesCAPI);
 	if (!iv || iv_len != 16) {
 		// Invalid IV.
 		return 0;
@@ -312,34 +421,14 @@ unsigned int AesCAPI::decrypt(uint8_t *data, unsigned int data_len,
 		return 0;
 	}
 
-	// FIXME: Nettle version doesn't do this, which allows
-	// us to calling decrypt() multiple times for CBC with
-	// large amounts of data.
-
-	// Temporarily duplicate the key so we don't overwrite
-	// the feedback register in the original key.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa379913(v=vs.85).aspx
-	HCRYPTKEY hMyKey;
-	if (!CryptDuplicateKey(d->hKey, nullptr, 0, &hMyKey)) {
-		// Error duplicating the key.
-		return 0;
-	}
-
 	// Set the IV.
-	if (!CryptSetKeyParam(hMyKey, KP_IV, iv, 0)) {
+	if (!CryptSetKeyParam(d->hKey, KP_IV, iv, 0)) {
 		// Error setting the IV.
-		CryptDestroyKey(hMyKey);
 		return 0;
 	}
 
-	// Decrypt the data.
-	// NOTE: Specifying TRUE as the Final parameter results in
-	// CryptDecrypt failing with NTE_BAD_DATA, even though the
-	// data has the correct block length.
-	DWORD dwLen = data_len;
-	BOOL bRet = CryptDecrypt(hMyKey, 0, FALSE, 0, data, &dwLen);
-	CryptDestroyKey(hMyKey);
-	return (bRet ? dwLen : 0);
+	// Use the regular decrypt() function.
+	return decrypt(data, data_len);
 }
 
 }

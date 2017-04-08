@@ -896,6 +896,19 @@ void RomFields::setTabName(int tabIdx, const rp_char *name)
 }
 
 /**
+ * Add a tab to the end and select it.
+ * @param name Tab name.
+ * @return Tab index.
+ */
+int RomFields::addTab(const rp_char *name)
+{
+	RP_D(RomFields);
+	d->tabNames.push_back(name);
+	d->tabIdx = (int)d->tabNames.size() - 1;
+	return d->tabIdx;
+}
+
+/**
  * Get the tab count.
  * @return Tab count. (highest tab index, plus 1)
  */
@@ -975,6 +988,86 @@ std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArr
 	}
 
 	return pVec;
+}
+
+/**
+ * Add fields from another RomFields object.
+ * @param other Source RomFields object.
+ * @param tabOffset Tab index to add to the original tabs. (If -1, ignore the original tabs.)
+ * @return Field index of the last field added.
+ */
+int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
+{
+	RP_D(RomFields);
+	assert(d->dataCount < 0);
+	if (d->dataCount >= 0)
+		return -1;
+
+	assert(other != nullptr);
+	if (!other)
+		return -1;
+
+	// TODO: More tab options:
+	// - Add original tab names if present.
+	// - Add all to specified tab or to current tab.
+	// - Use absolute or relative tab offset.
+	d->fields.reserve(d->fields.size() + other->count());
+
+	for (int i = 0; i < other->count(); i++) {
+		const Field *src = other->field(i);
+		if (!src)
+			continue;
+
+		int idx = (int)d->fields.size();
+		d->fields.resize(idx+1);
+		Field &field = d->fields.at(idx);
+		field.name = src->name;
+		field.type = src->type;
+		field.tabIdx = (tabOffset != -1 ? (src->tabIdx + tabOffset) : d->tabIdx);
+		field.isValid = src->isValid;
+		field.desc.flags = src->desc.flags;
+
+		switch (src->type) {
+			case RFT_INVALID:
+				// No data here...
+				break;
+
+			case RFT_STRING:
+				field.data.str = (src->data.str ? new rp_string(*src->data.str) : nullptr);
+				break;
+			case RFT_BITFIELD:
+				field.desc.bitfield.elements = src->desc.bitfield.elements;
+				field.desc.bitfield.elemsPerRow = src->desc.bitfield.elemsPerRow;
+				field.desc.bitfield.names = (src->desc.bitfield.names
+						? new vector<rp_string>(*(src->desc.bitfield.names))
+						: nullptr);
+				field.data.bitfield = src->data.bitfield;
+				break;
+			case RFT_LISTDATA:
+				field.desc.list_data.names = (src->desc.list_data.names
+						? new vector<rp_string>(*(src->desc.list_data.names))
+						: nullptr);
+				field.data.list_data = (src->data.list_data
+						? new vector<vector<rp_string> >(*(src->data.list_data))
+						: nullptr);
+				break;
+			case RFT_DATETIME:
+				field.data.date_time = src->data.date_time;
+				break;
+			case RFT_AGE_RATINGS:
+				field.data.age_ratings = (src->data.age_ratings
+						? new age_ratings_t(*src->data.age_ratings)
+						: nullptr);
+				break;
+
+			default:
+				assert(!"Unsupported RomFields::RomFieldsType.");
+				break;
+		}
+	}
+
+	// Fields added.
+	return (int)d->fields.size()-1;
 }
 
 /**

@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "AesCAPI_NG.hpp"
+#include "../common.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -35,6 +36,9 @@
 #define DECL_FUNCPTR(f) typeof(f) * p##f
 #define DEF_FUNCPTR(f) typeof(f) * AesCAPI_NG_Private::p##f = nullptr
 #define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (typeof(f)*)GetProcAddress(hBcryptDll, #f)
+
+// Workaround for RP_D() expecting the no-underscore naming convention.
+#define AesCAPI_NGPrivate AesCAPI_NG_Private
 
 namespace LibRomData {
 
@@ -57,6 +61,7 @@ class AesCAPI_NG_Private
 		static DECL_FUNCPTR(BCryptGenerateSymmetricKey);
 		static DECL_FUNCPTR(BCryptDecrypt);
 		static DECL_FUNCPTR(BCryptDestroyKey);
+		static DECL_FUNCPTR(BCryptEncrypt);
 
 	public:
 		// NOTE: While the provider is shared in AesCAPI,
@@ -76,13 +81,12 @@ class AesCAPI_NG_Private
 		uint8_t key[32];
 		unsigned int key_len;
 
-		// Initialization vector.
-		// CryptoAPI NG doesn't store it in the key object,
-		// unlike the older CryptoAPI.
-		uint8_t iv[16];
-
 		// Chaining mode.
 		IAesCipher::ChainingMode chainingMode;
+
+		// CBC: Initialization vector.
+		// CTR: Counter.
+		uint8_t iv[16];
 };
 
 /** AesCAPI_NG_Private **/
@@ -96,6 +100,7 @@ DEF_FUNCPTR(BCryptCloseAlgorithmProvider);
 DEF_FUNCPTR(BCryptGenerateSymmetricKey);
 DEF_FUNCPTR(BCryptDecrypt);
 DEF_FUNCPTR(BCryptDestroyKey);
+DEF_FUNCPTR(BCryptEncrypt);
 
 AesCAPI_NG_Private::AesCAPI_NG_Private()
 	: hAesAlg(nullptr)
@@ -154,12 +159,12 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 /** AesCAPI_NG **/
 
 AesCAPI_NG::AesCAPI_NG()
-	: d(new AesCAPI_NG_Private())
+	: d_ptr(new AesCAPI_NG_Private())
 { }
 
 AesCAPI_NG::~AesCAPI_NG()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /**
@@ -192,6 +197,7 @@ bool AesCAPI_NG::isUsable(void)
 	LOAD_FUNCPTR(BCryptGenerateSymmetricKey);
 	LOAD_FUNCPTR(BCryptDecrypt);
 	LOAD_FUNCPTR(BCryptDestroyKey);
+	LOAD_FUNCPTR(BCryptEncrypt);
 
 	// Make sure all of the function pointers are valid.
 	if (!AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider ||
@@ -200,7 +206,8 @@ bool AesCAPI_NG::isUsable(void)
 	    !AesCAPI_NG_Private::pBCryptCloseAlgorithmProvider ||
 	    !AesCAPI_NG_Private::pBCryptGenerateSymmetricKey ||
 	    !AesCAPI_NG_Private::pBCryptDecrypt ||
-	    !AesCAPI_NG_Private::pBCryptDestroyKey)
+	    !AesCAPI_NG_Private::pBCryptDestroyKey ||
+	    !AesCAPI_NG_Private::pBCryptEncrypt)
 	{
 		// At least one function pointer is missing.
 		AesCAPI_NG_Private::pBCryptOpenAlgorithmProvider = nullptr;
@@ -210,6 +217,7 @@ bool AesCAPI_NG::isUsable(void)
 		AesCAPI_NG_Private::pBCryptGenerateSymmetricKey = nullptr;
 		AesCAPI_NG_Private::pBCryptDecrypt = nullptr;
 		AesCAPI_NG_Private::pBCryptDestroyKey = nullptr;
+		AesCAPI_NG_Private::pBCryptEncrypt = nullptr;
 
 		FreeLibrary(hBcryptDll);
 		return false;
@@ -235,6 +243,7 @@ const rp_char *AesCAPI_NG::name(void) const
  */
 bool AesCAPI_NG::isInit(void) const
 {
+	RP_D(const AesCAPI_NG);
 	return (d->hBcryptDll != nullptr &&
 		d->hAesAlg != nullptr);
 }
@@ -251,6 +260,7 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 	// - 16 (AES-128)
 	// - 24 (AES-192)
 	// - 32 (AES-256)
+	RP_D(AesCAPI_NG);
 	if (!key) {
 		// No key specified.
 		return -EINVAL;
@@ -324,11 +334,16 @@ int AesCAPI_NG::setKey(const uint8_t *key, unsigned int len)
 
 /**
  * Set the cipher chaining mode.
+ *
+ * Note that the IV/counter must be set *after* setting
+ * the chaining mode; otherwise, setIV() will fail.
+ *
  * @param mode Cipher chaining mode.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setChainingMode(ChainingMode mode)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
@@ -341,6 +356,7 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 	ULONG cbMode;
 	switch (mode) {
 		case CM_ECB:
+		case CM_CTR:	// implemented using ECB
 			szMode = BCRYPT_CHAIN_MODE_ECB;
 			cbMode = sizeof(BCRYPT_CHAIN_MODE_ECB);
 			break;
@@ -372,18 +388,22 @@ int AesCAPI_NG::setChainingMode(ChainingMode mode)
 }
 
 /**
- * Set the IV.
- * @param iv IV data.
- * @param len IV length, in bytes.
+ * Set the IV (CBC mode) or counter (CTR mode).
+ * @param iv IV/counter data.
+ * @param len IV/counter length, in bytes.
  * @return 0 on success; negative POSIX error code on error.
  */
 int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
 {
+	RP_D(AesCAPI_NG);
 	if (!iv || len != 16) {
 		return -EINVAL;
 	} else if (!d->hBcryptDll || !d->hAesAlg) {
 		// Algorithm is not available.
 		return -EBADF;
+	} else if (d->chainingMode < CM_CBC || d->chainingMode > CM_CTR) {
+		// This chaining mode doesn't have an IV or counter.
+		return -EINVAL;
 	}
 
 	// Verify the block length.
@@ -419,6 +439,7 @@ int AesCAPI_NG::setIV(const uint8_t *iv, unsigned int len)
  */
 unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.
@@ -469,6 +490,43 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 						data, data_len,
 						&cbResult, 0);
 			break;
+
+		case CM_CTR: {
+			// Need to decrypt each block manually.
+			uint8_t ctr_crypt[16];
+			ULONG cbTmpResult;
+			cbResult = 0;
+			for (; data_len > 0; data_len -= 16, data += 16) {
+				// Encrypt the current counter.
+				memcpy(ctr_crypt, d->iv, sizeof(ctr_crypt));
+				status = d->pBCryptEncrypt(d->hKey,
+						ctr_crypt, sizeof(ctr_crypt),
+						nullptr,
+						nullptr, 0,
+						ctr_crypt, sizeof(ctr_crypt),
+						&cbTmpResult, 0);
+				if (!NT_SUCCESS(status)) {
+					// Encryption failed.
+					return 0;
+				}
+				cbResult += cbTmpResult;
+
+				// XOR with the ciphertext.
+				// TODO: Optimized XOR.
+				for (int i = 15; i >= 0; i--) {
+					data[i] ^= ctr_crypt[i];
+				}
+
+				// Increment the counter.
+				for (int i = 15; i >= 0; i--) {
+					if (++d->iv[i] != 0) {
+						// No carry needed.
+						break;
+					}
+				}
+			}
+			break;
+		}
 
 		default:
 			// Invalid chaining mode.
@@ -479,16 +537,17 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 }
 
 /**
- * Decrypt a block of data using the specified IV.
+ * Decrypt a block of data using the specified IV (CBC mode) or counter (CTR mode).
  * @param data Data block.
  * @param data_len Length of data block.
- * @param iv IV for the data block.
- * @param iv_len Length of the IV.
+ * @param iv IV/counter for the data block.
+ * @param iv_len Length of the IV/counter.
  * @return Number of bytes decrypted on success; 0 on error.
  */
 unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,
 	const uint8_t *iv, unsigned int iv_len)
 {
+	RP_D(AesCAPI_NG);
 	if (!d->hBcryptDll || !d->hAesAlg || !d->hKey) {
 		// Algorithm is not available,
 		// or the key hasn't been set.
@@ -498,61 +557,12 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len,
 		return 0;
 	}
 
-	// Get the block length.
-	ULONG cbBlockLen;
-	ULONG cbData;
-	NTSTATUS status = d->pBCryptGetProperty(
-				d->hAesAlg, 
-				BCRYPT_BLOCK_LENGTH, 
-				(PBYTE)&cbBlockLen, sizeof(DWORD),
-				&cbData, 0);
-	if (!NT_SUCCESS(status) || cbData != sizeof(cbBlockLen)) {
-		// Failed to get the block length.
-		return 0;
-	}
-
-	if (cbBlockLen != 16) {
-		// Block length is incorrect...
-		return 0;
-	}
-
-	// data_len must be a multiple of the block length.
-	assert(data_len % cbBlockLen == 0);
-	if (data_len % cbBlockLen != 0) {
-		// Invalid data length.
-		return 0;
-	}
-
 	// Set the IV.
 	assert(sizeof(d->iv) == 16);
 	memcpy(d->iv, iv, sizeof(d->iv));
 
-	ULONG cbResult;
-	switch (d->chainingMode) {
-		case CM_ECB:
-			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
-						nullptr,
-						nullptr, 0,
-						data, data_len,
-						&cbResult, 0);
-			break;
-
-		case CM_CBC:
-			status = d->pBCryptDecrypt(d->hKey,
-						data, data_len,
-						nullptr,
-						d->iv, sizeof(d->iv),
-						data, data_len,
-						&cbResult, 0);
-			break;
-
-		default:
-			// Invalid chaining mode.
-			return 0;
-	}
-
-	return (NT_SUCCESS(status) ? cbResult : 0);
+	// Use the regular decrypt() function.
+	return decrypt(data, data_len);
 }
 
 }

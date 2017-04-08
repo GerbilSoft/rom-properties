@@ -1053,17 +1053,21 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 
 	// Convert the age ratings field to a string.
 	ostringstream oss;
-	bool printedOne = false;
+	unsigned int ratings_count = 0;
 	for (int i = 0; i < (int)age_ratings->size(); i++) {
 		const uint16_t rating = age_ratings->at(i);
 		if (!(rating & RomFields::AGEBF_ACTIVE))
 			continue;
 
-		if (printedOne) {
+		if (ratings_count > 0) {
 			// Append a comma.
-			oss << ", ";
+			if (ratings_count % 4 == 0) {
+				// 4 ratings per line.
+				oss << ",\n";
+			} else {
+				oss << ", ";
+			}
 		}
-		printedOne = true;
 
 		const char *abbrev = RomFields::ageRatingAbbrev(i);
 		if (abbrev) {
@@ -1074,9 +1078,10 @@ rom_data_view_init_age_ratings(G_GNUC_UNUSED RomDataView *page, const RomFields:
 			oss << i;
 		}
 		oss << '=' << RomFields::ageRatingDecode(i, rating);
+		ratings_count++;
 	}
 
-	if (!printedOne) {
+	if (ratings_count == 0) {
 		// No age ratings.
 		oss << "None";
 	}
@@ -1307,7 +1312,7 @@ rom_data_view_load_rom_data(gpointer data)
 		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			// Create the RomData object.
-			page->romData = RomDataFactory::getInstance(file, false);
+			page->romData = RomDataFactory::create(file, false);
 
 			// Update the display widgets.
 			rom_data_view_update_display(page);

@@ -20,18 +20,18 @@
  ***************************************************************************/
 
 #include "PartitionFile.hpp"
-#include "IPartition.hpp"
+#include "IDiscReader.hpp"
 
 namespace LibRomData {
 
 /**
  * Open a file from an IPartition.
  * NOTE: These files are read-only.
- * @param partition IPartition object.
+ * @param partition IPartition (or IDiscReader) object.
  * @param offset File starting offset.
  * @param size File size.
  */
-PartitionFile::PartitionFile(IPartition *partition, int64_t offset, int64_t size)
+PartitionFile::PartitionFile(IDiscReader *partition, int64_t offset, int64_t size)
 	: super()
 	, m_partition(partition)
 	, m_offset(offset)

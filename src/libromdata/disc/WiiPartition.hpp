@@ -22,8 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
+#include "config.libromdata.h"
+
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
+#include "../crypto/KeyManager.hpp"
 
 namespace LibRomData {
 
@@ -78,22 +81,11 @@ class WiiPartition : public GcnPartition
 
 		/** WiiPartition **/
 
-		enum EncInitStatus {
-			ENCINIT_OK = 0,
-			ENCINIT_UNKNOWN,
-			ENCINIT_DISABLED,		// ENABLE_DECRYPTION disabled.
-			ENCINIT_INVALID_KEY_IDX,	// Invalid common key index in the disc header.
-			ENCINIT_NO_KEYFILE,		// keys.conf was not found.
-			ENCINIT_MISSING_KEY,		// Required key not found.
-			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
-			ENCINIT_INCORRECT_KEY,		// Key is incorrect.
-		};
-
 		/**
-		 * Encryption initialization status.
-		 * @return Encryption initialization status.
+		 * Encryption key verification result.
+		 * @return Encryption key verification result.
 		 */
-		EncInitStatus encInitStatus(void) const;
+		KeyManager::VerifyResult verifyResult(void) const;
 
 		// Encryption key in use.
 		enum EncKey {
@@ -108,6 +100,29 @@ class WiiPartition : public GcnPartition
 		 * @return Encryption key in use.
 		 */
 		EncKey encKey(void) const;
+
+#ifdef ENABLE_DECRYPTION
+	public:
+		/**
+		 * Get the total number of encryption key names.
+		 * @return Number of encryption key names.
+		 */
+		static int encryptionKeyCount_static(void);
+
+		/**
+		 * Get an encryption key name.
+		 * @param keyIdx Encryption key index.
+		 * @return Encryption key name (in ASCII), or nullptr on error.
+		 */
+		static const char *encryptionKeyName_static(int keyIdx);
+
+		/**
+		 * Get the verification data for a given encryption key index.
+		 * @param keyIdx Encryption key index.
+		 * @return Verification data. (16 bytes)
+		 */
+		static const uint8_t *encryptionVerifyData_static(int keyIdx);
+#endif /* ENABLE_DECRYPTION */
 };
 
 }

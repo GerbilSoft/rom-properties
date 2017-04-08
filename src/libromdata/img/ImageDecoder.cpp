@@ -72,6 +72,13 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an RGB565 pixel to ARGB32. (Dreamcast)
+		 * @param px16 RGB565 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGB565_to_ARGB32(uint16_t px16);
 };
 
 /** ImageDecoderPrivate **/
@@ -220,6 +227,27 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 	px32 |= ((px16 & 0x0F00) << 8);		// R
 	px32 |= ((px16 & 0xF000) << 12);	// A
 	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an RGB565 pixel to ARGB32. (Dreamcast)
+ * @param px16 RGB565 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// RGB555: RRRRRGGG GGGBBBBB
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
+	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+
+	// No alpha channel.
+	px32 |= 0xFF000000U;
 	return px32;
 }
 
@@ -562,7 +590,7 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 	for (int y = 0; y < height; y++) {
 		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 		for (int x = width; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(*px_dest);
+			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
 			img_buf++;
 			px_dest++;
 		}
@@ -689,6 +717,67 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 		for (int x = width; x > 0; x -= 2, dest += 2, img_buf++) {
 			dest[0] = (*img_buf & 0x0F);
 			dest[1] = (*img_buf >> 4);
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Nintendo 3DS RGB565 tiled icon to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf RGB565 tiled image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
+	const uint16_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	if (!img_buf)
+		return nullptr;
+	else if (width < 0 || height < 0)
+		return nullptr;
+	else if (img_siz < ((width * height) * 2))
+		return nullptr;
+
+	// N3DS tiled images use 8x8 tiles.
+	if (width % 8 != 0 || height % 8 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const int tilesX = (width / 8);
+	const int tilesY = (height / 8);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// N3DS uses 3-level Z-ordered tiling.
+	// References:
+	// - https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp
+	// - https://en.wikipedia.org/wiki/Z-order_curve
+	static const uint8_t tile_order[] = {
+		 0,  1,  8,  9,  2,  3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27,
+		 4,  5, 12, 13,  6,  7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31,
+		32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59,
+		36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63
+	};
+
+	// Temporary tile buffer.
+	uint32_t tileBuf[8*8];
+
+	for (int y = 0; y < tilesY; y++) {
+		for (int x = 0; x < tilesX; x++) {
+			// Convert each tile to ARGB32 manually.
+			// TODO: Optimize using pointers instead of indexes?
+			for (int i = 0; i < 8*8; i++, img_buf++) {
+				tileBuf[tile_order[i]] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
+			}
+
+			// Blit the tile to the main image buffer.
+			BlitTile<uint32_t, 8, 8>(img, tileBuf, x, y);
 		}
 	}
 

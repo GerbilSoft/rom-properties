@@ -60,7 +60,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 			if (file && file->isOpen()) {
 				// Get the appropriate RomData class for this ROM.
 				// file is dup()'d by RomData.
-				RomData *romData = RomDataFactory::getInstance(file.get());
+				RomData *romData = RomDataFactory::create(file.get());
 				if (romData) {
 					// ROM is supported. Show the properties.
 					RomDataView *romDataView = new RomDataView(romData, props);

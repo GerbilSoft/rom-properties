@@ -72,6 +72,10 @@ class GameCubePrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GameCubePrivate)
 
 	public:
+		// Internal images.
+		rp_image *img_banner;
+
+	public:
 		// NDDEMO header.
 		static const uint8_t nddemo_header[64];
 
@@ -157,7 +161,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * @param gcnRegion GCN region value.
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned including:
+		 * NOTE: Mulitple GameTDB region codes may be returned, including:
 		 * - User-specified fallback region. [TODO]
 		 * - General fallback region.
 		 *
@@ -193,6 +197,17 @@ class GameCubePrivate : public RomDataPrivate
 		 * @return Game name, or empty string if opening.bnr was not loaded.
 		 */
 		rp_string wii_getBannerName(void) const;
+
+		/**
+		 * Get the encryption status of a partition.
+		 *
+		 * This is used to check if the encryption keys are available
+		 * for a partition, or if not, why not.
+		 *
+		 * @param partition Partition to check.
+		 * @return nullptr if partition is readable; error message if not.
+		 */
+		const rp_char *wii_getCryptoStatus(const WiiPartition *partition);
 };
 
 /** GameCubePrivate **/
@@ -211,6 +226,7 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 
 GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	: super(q, file)
+	, img_banner(nullptr)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, gcn_opening_bnr(nullptr)
@@ -227,6 +243,9 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 
 GameCubePrivate::~GameCubePrivate()
 {
+	// Internal images.
+	delete img_banner;
+
 	updatePartition = nullptr;
 	gamePartition = nullptr;
 
@@ -429,7 +448,7 @@ const rp_char *GameCubePrivate::gcnRegionToString(unsigned int gcnRegion, char i
  * @param gcnRegion GCN region value.
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned including:
+ * NOTE: Mulitple GameTDB region codes may be returned, including:
  * - User-specified fallback region. [TODO]
  * - General fallback region.
  *
@@ -812,48 +831,108 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 	}
 
 	// Determine the system language.
-	const char16_t *game_name;
+	int langIdx;
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
 		default:
 			// English. (default)
 			// Used if the host system language doesn't match
 			// any of the languages supported by Wii.
-			game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+			langIdx = WII_LANG_ENGLISH;
 			break;
 
 		case 'ja':
-			game_name = wii_opening_bnr->names[WII_LANG_JAPANESE];
+			langIdx = WII_LANG_JAPANESE;
 			break;
 		case 'de':
-			game_name = wii_opening_bnr->names[WII_LANG_GERMAN];
+			langIdx = WII_LANG_GERMAN;
 			break;
 		case 'fr':
-			game_name = wii_opening_bnr->names[WII_LANG_FRENCH];
+			langIdx = WII_LANG_FRENCH;
 			break;
 		case 'es':
-			game_name = wii_opening_bnr->names[WII_LANG_SPANISH];
+			langIdx = WII_LANG_SPANISH;
 			break;
 		case 'it':
-			game_name = wii_opening_bnr->names[WII_LANG_ITALIAN];
+			langIdx = WII_LANG_ITALIAN;
 			break;
 		case 'nl':
-			game_name = wii_opening_bnr->names[WII_LANG_DUTCH];
+			langIdx = WII_LANG_DUTCH;
 			break;
 		case 'ko':
-			game_name = wii_opening_bnr->names[WII_LANG_KOREAN];
+			langIdx = WII_LANG_KOREAN;
 			break;
 	}
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (game_name[0] == 0) {
+	if (wii_opening_bnr->names[langIdx][0][0] == 0) {
 		// Revert to English.
-		game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+		langIdx = WII_LANG_ENGLISH;
 	}
 
-	// Convert from UTF-16BE.
-	return utf16be_to_rp_string(game_name, ARRAY_SIZE(wii_opening_bnr->names[0]));
+	// NOTE: The banner may have two lines.
+	// Each line is a maximum of 21 characters.
+	// Convert from UTF-16 BE and split into two lines at the same time.
+	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[langIdx][0], 21);
+	if (wii_opening_bnr->names[langIdx][1][0] != 0) {
+		info += _RP_CHR('\n');
+		info += utf16be_to_rp_string(wii_opening_bnr->names[langIdx][1], 21);
+	}
+	return info;
+}
+
+/**
+ * Get the encryption status of a partition.
+ *
+ * This is used to check if the encryption keys are available
+ * for a partition, or if not, why not.
+ *
+ * @param partition Partition to check.
+ * @return nullptr if partition is readable; error message if not.
+ */
+const rp_char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
+{
+	// Error table.
+	static const rp_char *const errTbl[] = {
+		// VERIFY_OK
+		_RP("ERROR: Something happened."),
+		// VERIFY_INVALID_PARAMS
+		_RP("ERROR: Invalid parameters. (THIS IS A BUG!)"),
+		// VERIFY_NO_SUPPORT
+		_RP("ERROR: Decryption is not supported in this build."),
+		// VERIFY_KEY_DB_NOT_LOADED
+		_RP("ERROR: keys.conf was not found."),
+		// VERIFY_KEY_DB_ERROR
+		_RP("ERROR: keys.conf has an error and could not be loaded."),
+		// VERIFY_KEY_NOT_FOUND
+		_RP("ERROR: Required key was not found in keys.conf."),
+		// VERIFY_KEY_INVALID
+		_RP("ERROR: The key in keys.conf is not a valid key."),
+		// VERFIY_IAESCIPHER_INIT_ERR
+		_RP("ERROR: AES decryption could not be initialized."),
+		// VERIFY_IAESCIPHER_DECRYPT_ERR
+		_RP("ERROR: AES decryption failed."),
+		// VERIFY_WRONG_KEY
+		_RP("ERROR: The key in keys.conf is incorrect."),
+	};
+	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
+
+	const KeyManager::VerifyResult res = partition->verifyResult();
+	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
+		// This may be an invalid key index.
+		if (partition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
+			// Invalid key index.
+			return _RP("ERROR: Invalid common key index.");
+		}
+	}
+
+	if (res >= 0 && res < KeyManager::VERIFY_MAX) {
+		return errTbl[res];
+	}
+
+	// Should not get here...
+	return _RP("ERROR: Unknown error. (THIS IS A BUG!)");
 }
 
 /** GameCube **/
@@ -1208,6 +1287,36 @@ uint32_t GameCube::supportedImageTypes(void) const
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t GameCube::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	switch (imageType) {
+		case IMG_INT_BANNER:
+			// Use nearest-neighbor scaling.
+			return IMGPF_RESCALE_NEAREST;
+		default:
+			// GameTDB's GameCube and Wii disc and 3D cover scans
+			// have alpha transparency. Hence, no image processing
+			// is required.
+			break;
+	}
+	return 0;
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
  *
  * The first item in the returned vector is the "default" size.
@@ -1331,16 +1440,16 @@ int GameCube::loadFieldData(void)
 	}
 
 	// Game ID.
-	// Replace any non-printable characters with underscores.
+	// The ID6 cannot have non-printable characters.
 	// (NDDEMO has ID6 "00\0E01".)
-	char id6[7];
-	for (int i = 0; i < 6; i++) {
-		id6[i] = (isprint(d->discHeader.id6[i])
-			? d->discHeader.id6[i]
-			: '_');
+	for (int i = ARRAY_SIZE(d->discHeader.id6)-1; i >= 0; i--) {
+		if (!isprint(d->discHeader.id6[i])) {
+			// Non-printable character found.
+			return -ENOENT;
+		}
 	}
-	id6[6] = 0;
-	d->fields->addField_string(_RP("Game ID"), latin1_to_rp_string(id6, 6));
+	d->fields->addField_string(_RP("Game ID"),
+		latin1_to_rp_string(d->discHeader.id6, ARRAY_SIZE(d->discHeader.id6)));
 
 	// Look up the publisher.
 	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
@@ -1456,14 +1565,6 @@ int GameCube::loadFieldData(void)
 	// Load the Wii partition tables.
 	int wiiPtLoaded = d->loadWiiPartitionTables();
 
-	// Get the game name from opening.bnr.
-	if (wiiPtLoaded == 0) {
-		rp_string game_name = d->wii_getBannerName();
-		if (!game_name.empty()) {
-			d->fields->addField_string(_RP("Game Info"), game_name);
-		}
-	}
-
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
 	// Note that not all 16 fields are present on GCN,
@@ -1500,10 +1601,21 @@ int GameCube::loadFieldData(void)
 	}
 	d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
 
-	// Display the Wii partition tables.
+	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {
-		// Wii partition tables loaded.
-		// Convert them to RFT_LISTDATA for display purposes.
+		// Get the game name from opening.bnr.
+		rp_string game_name = d->wii_getBannerName();
+		if (!game_name.empty()) {
+			d->fields->addField_string(_RP("Game Info"), game_name);
+		} else {
+			// Empty game name may be either because it's
+			// homebrew, a prototype, or a key error.
+			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+				// Key error.
+				d->fields->addField_string(_RP("Game Info"),
+					d->wii_getCryptoStatus(d->gamePartition));
+			}
+		}
 
 		// Update version.
 		const rp_char *sysMenu = nullptr;
@@ -1532,30 +1644,7 @@ int GameCube::loadFieldData(void)
 			if (!d->updatePartition) {
 				sysMenu = _RP("None");
 			} else {
-				switch (d->updatePartition->encInitStatus()) {
-					case WiiPartition::ENCINIT_DISABLED:
-						sysMenu = _RP("ERROR: Decryption is disabled.");
-						break;
-					case WiiPartition::ENCINIT_INVALID_KEY_IDX:
-						sysMenu = _RP("ERROR: Invalid common key index.");
-						break;
-					case WiiPartition::ENCINIT_NO_KEYFILE:
-						sysMenu = _RP("ERROR: keys.conf was not found.");
-						break;
-					case WiiPartition::ENCINIT_MISSING_KEY:
-						// TODO: Which key?
-						sysMenu = _RP("ERROR: Required key was not found in keys.conf.");
-						break;
-					case WiiPartition::ENCINIT_CIPHER_ERROR:
-						sysMenu = _RP("ERROR: Decryption library failed.");
-						break;
-					case WiiPartition::ENCINIT_INCORRECT_KEY:
-						sysMenu = _RP("ERROR: Key is incorrect.");
-						break;
-					default:
-						sysMenu = _RP("Unknown");
-						break;
-				}
+				sysMenu = d->wii_getCryptoStatus(d->updatePartition);
 			}
 		}
 		d->fields->addField_string(_RP("Update"), sysMenu);
@@ -1668,45 +1757,50 @@ int GameCube::loadFieldData(void)
 
 /**
  * Load an internal image.
- * Called by RomData::image() if the image data hasn't been loaded yet.
- * @param imageType Image type to load.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCube::loadInternalImage(ImageType imageType)
+int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
-	if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
 		// ImageType is out of range.
+		*pImage = nullptr;
 		return -ERANGE;
 	}
 
 	RP_D(GameCube);
-	if (d->images[imageType]) {
-		// Icon *has* been loaded...
+	if (imageType != IMG_INT_BANNER) {
+		// Only IMG_INT_BANNER is supported by GameCube.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (d->img_banner) {
+		// Image has already been loaded.
+		*pImage = d->img_banner;
 		return 0;
 	} else if (!d->file) {
 		// File isn't open.
+		*pImage = nullptr;
 		return -EBADF;
 	} else if (!d->isValid) {
 		// Save file isn't valid.
+		*pImage = nullptr;
 		return -EIO;
-	}
-
-	// Check for supported image types.
-	if (imageType != IMG_INT_BANNER) {
-		// Only IMG_INT_BANNER is supported by GameCube.
-		return -ENOENT;
 	}
 
 	// Load opening.bnr. (GCN/Triforce only)
 	// FIXME: Does Triforce have opening.bnr?
 	if (d->gcn_loadOpeningBnr() != 0) {
 		// Could not load opening.bnr.
+		*pImage = nullptr;
 		return -ENOENT;
 	}
-
-	// Use nearest-neighbor scaling when resizing.
-	d->imgpf[imageType] = IMGPF_RESCALE_NEAREST;
 
 	// Convert the banner from GameCube RGB5A3 to ARGB32.
 	rp_image *banner = ImageDecoder::fromGcnRGB5A3(
@@ -1714,29 +1808,13 @@ int GameCube::loadInternalImage(ImageType imageType)
 		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
 	if (!banner) {
 		// Error converting the banner.
+		*pImage = nullptr;
 		return -EIO;
 	}
 
 	// Finished decoding the banner.
-	d->images[imageType] = banner;
-	return 0;
-}
-
-/**
- * Get the imgpf value for external media types.
- * @param imageType Image type to load.
- * @return imgpf value.
- */
-uint32_t GameCube::imgpf_extURL(ImageType imageType) const
-{
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
-		// ImageType is out of range.
-		return 0;
-	}
-
-	// NOTE: GameTDB's Wii and GameCube disc and 3D cover scans have
-	// alpha transparency. Hence, no image processing is required.
+	d->img_banner = banner;
+	*pImage = banner;
 	return 0;
 }
 

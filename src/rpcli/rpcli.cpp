@@ -19,26 +19,36 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <cassert>
-#include <vector>
+#include "config.rpcli.h"
 
-#include <libromdata/file/RpFile.hpp>
-#include <libromdata/RomData.hpp>
-#include <libromdata/RomDataFactory.hpp>
-#include <libromdata/TextFuncs.hpp>
-#include <libromdata/img/rp_image.hpp>
-#include <libromdata/img/RpPng.hpp>
-#include <libromdata/img/IconAnimData.hpp>
+// libromdata
+#include "libromdata/file/RpFile.hpp"
+#include "libromdata/RomData.hpp"
+#include "libromdata/RomDataFactory.hpp"
+#include "libromdata/TextFuncs.hpp"
+#include "libromdata/img/rp_image.hpp"
+#include "libromdata/img/RpPng.hpp"
+#include "libromdata/img/IconAnimData.hpp"
+using namespace LibRomData;
+
 #include "bmp.hpp"
 #include "properties.hpp"
+#ifdef ENABLE_DECRYPTION
+#include "verifykeys.hpp"
+#endif /* ENABLE_DECRYPTION */
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstdlib>
+
+// C++ includes.
+#include <fstream>
+#include <iostream>
+#include <vector>
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::ofstream;
-using namespace LibRomData;
 
 struct ExtractParam {
 	int image_type; // Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
@@ -118,7 +128,7 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file->isOpen()) {
-		RomData *romData = RomDataFactory::getInstance(file);
+		RomData *romData = RomDataFactory::create(file);
 		if (romData) {
 			if (romData->isValid()) {
 
@@ -154,7 +164,17 @@ int main(int argc, char *argv[])
 #endif
 {
 	if(argc<2){
+#ifdef ENABLE_DECRYPTION
+		cerr << "Usage: rpcli [-k] [-j] [[-x[b]N outfile]... filename]..." << endl;
+		cerr << "  -k:   Verify encryption keys in keys.conf." << endl;
+#else /* !ENABLE_DECRYPTION */
 		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
+#endif /* ENABLE_DECRYPTION */
+		cerr << "  -j:   Use JSON output format." << endl;
+		cerr << "  -xN:  Extract image N to outfile in PNG format." << endl;
+		cerr << "  -xbN: Extract image N to outfile in BMP format." << endl;
+		cerr << "  -a:   Extract the animated icon to outfile in APNG format." << endl;
+		cerr << endl;
 		cerr << "Examples:" << endl;
 		cerr << "* rpcli s3.gen" << endl;
 		cerr << "\t displays info about s3.gen" << endl;
@@ -174,9 +194,20 @@ int main(int argc, char *argv[])
 	}
 	if (json) cout << "[";
 	bool first = true;
+	int ret = 0;
 	for(int i=1;i<argc;i++){
 		if(argv[i][0] == '-'){
 			switch (argv[i][1]) {
+#ifdef ENABLE_DECRYPTION
+			case 'k': {
+				// Verify encryption keys.
+				static bool hasVerifiedKeys = false;
+				if (!hasVerifiedKeys) {
+					ret = VerifyKeys();
+				}
+				break;
+			}
+#endif /* ENABLE_DECRYPTION */
 			case 'x': {
 				ExtractParam ep;
 				ep.is_bmp = argv[i][2] == 'b';
@@ -213,7 +244,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (json) cout << "]";
-	return 0;
+	return ret;
 }
 
 #ifdef _WIN32

@@ -20,3 +20,80 @@ rvl-sd-md5=
 # RVT-R debug key. This is used by development systems
 # for prototype RVT-R discs.
 rvt-debug=
+
+######## Nintendo 3DS ########
+
+### NOTE: For keys that don't depend on title contents,
+### if KeyNormal is present, it will be used. Otherwise,
+### KeyX, KeyY, and the scrambling constant will be used.
+
+### Key scrambler constants.
+### "<<<" == rotate left
+
+# TWL key scrambler: KeyNormal = ((KeyX ^ KeyY) + constant) <<< 42
+# Used for keyslots 0x00-0x03.
+twl-scrambler=
+# CTR key scrambler: KeyNormal = (((KeyX <<< 2) ^ KeyY) + constant) <<< 87
+# Used for keyslots 0x04-0x3F.
+ctr-scrambler=
+
+### For Standard, 7.x, Secure3, and Secure4:
+# KeyY is the first 0x10 bytes of the NCCH signature.
+# For exefs:/icon and exefs:/banner, Standard is always used with this KeyY.
+#
+# If SEED is used, then for other NCCH sections, KeyY is
+# the first 16 bytes of the SHA-256 of the seed.
+
+### 0x18: Secure3 encryption. (ncchflag[3] == 0x0A)
+ctr-Slot0x18KeyX=
+ctr-dev-Slot0x18KeyX=
+
+### 0x1B: Secure4 encryption. (ncchflag[3] == 0x0B)
+ctr-Slot0x1BKeyX=
+ctr-dev-Slot0x1BKeyX=
+
+### 0x25: 7.x encryption. (ncchflag[3] == 1)
+ctr-Slot0x25KeyX=
+ctr-dev-Slot0x25KeyX=
+
+### 0x2C: Standard encryption. (ncchflag[3] == 0)
+# TODO: Verify these values. (from makerom/pki/dev.h)
+ctr-Slot0x2CKeyX=
+ctr-dev-Slot0x2CKeyX=
+
+### 0x3D: Title key encryption.
+# KeyX is constant; KeyY has 6 different options.
+# Debug: KeyX, KeyY, and KeyNormal are all known.
+# Retail: Only KeyY is known.
+#
+# KeyY indexes:
+# - 0: eShop titles
+# - 1: System titles
+#
+ctr-Slot0x3DKeyX=
+ctr-Slot0x3DKeyY-0=
+ctr-Slot0x3DKeyY-1=
+ctr-Slot0x3DKeyY-2=
+ctr-Slot0x3DKeyY-3=
+ctr-Slot0x3DKeyY-4=
+ctr-Slot0x3DKeyY-5=
+ctr-Slot0x3DKeyNormal-0=
+ctr-Slot0x3DKeyNormal-1=
+ctr-Slot0x3DKeyNormal-2=
+ctr-Slot0x3DKeyNormal-3=
+ctr-Slot0x3DKeyNormal-4=
+ctr-Slot0x3DKeyNormal-5=
+
+ctr-dev-Slot0x3DKeyX=
+ctr-dev-Slot0x3DKeyY-0=
+ctr-dev-Slot0x3DKeyY-1=
+ctr-dev-Slot0x3DKeyY-2=
+ctr-dev-Slot0x3DKeyY-3=
+ctr-dev-Slot0x3DKeyY-4=
+ctr-dev-Slot0x3DKeyY-5=
+ctr-dev-Slot0x3DKeyNormal-0=
+ctr-dev-Slot0x3DKeyNormal-1=
+ctr-dev-Slot0x3DKeyNormal-2=
+ctr-dev-Slot0x3DKeyNormal-3=
+ctr-dev-Slot0x3DKeyNormal-4=
+ctr-dev-Slot0x3DKeyNormal-5=

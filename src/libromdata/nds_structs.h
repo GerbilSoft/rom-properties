@@ -174,16 +174,29 @@ typedef struct PACKED _NDS_RomHeader {
 		uint32_t modcrypt2_size;	// 0 for none
 
 		// 0x230
-		uint32_t title_id;		// Title ID low. (reversed game ID)
-		uint8_t filetype;		// See DSi_FileType.
-		uint8_t reserved4[3];		// 00 03 00
+		// TODO: Verify operation on big-endian.
+		union {
+			union {
+				uint64_t id;	// 64-bit Title ID.
+				struct {
+					uint32_t lo;	// Title ID low. (reversed game ID)
+					uint32_t hi;	// Title ID high.
+				};
+			} title_id;
+
+			struct {
+				uint8_t reserved4[4];	// Title ID low.
+				uint8_t filetype;	// See DSi_FileType.
+				uint8_t reserved5[3];	// 00 03 00
+			};
+		};
 
 		// 0x238
 		uint32_t sd_public_sav_size;
 		uint32_t sd_private_sav_size;
 
 		// 0x240
-		uint8_t reserved5[176];		// Zero-filled
+		uint8_t reserved6[176];		// Zero-filled
 
 		// 0x2F0
 		uint8_t age_ratings[0x10];	// Age ratings. [TODO]
@@ -195,9 +208,9 @@ typedef struct PACKED _NDS_RomHeader {
 		uint8_t sha1_hmac_icon_title[20];
 		uint8_t sha1_hmac_arm9i[20];	// decrypted
 		uint8_t sha1_hmac_arm7i[20];	// decrypted
-		uint8_t reserved6[40];
+		uint8_t reserved7[40];
 		uint8_t sha1_hmac_arm9_nosecure[20];	// SHA1 HMAC of ARM9 without 16 KB secure area
-		uint8_t reserved7[2636];
+		uint8_t reserved8[2636];
 		uint8_t debug_args[0x180];	// Zero and unchecked on retail; used for arguments on debug.
 		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
 	} dsi;

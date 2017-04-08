@@ -76,6 +76,9 @@ inline ::std::ostream& operator<<(::std::ostream& os, const AesCipherTest_mode& 
 		case IAesCipher::CM_CBC:
 			cm_str = "CBC";
 			break;
+		case IAesCipher::CM_CTR:
+			cm_str = "CTR";
+			break;
 		default:
 			cm_str = "UNK";
 			break;
@@ -220,7 +223,7 @@ void AesCipherTest::CompareByteArrays(
  */
 void AesCipherTest::SetUp(void)
 {
-	m_cipher = AesCipherFactory::getInstance();
+	m_cipher = AesCipherFactory::create();
 	ASSERT_TRUE(m_cipher != nullptr);
 	ASSERT_TRUE(m_cipher->isInit());
 
@@ -246,8 +249,9 @@ void AesCipherTest::TearDown(void)
 
 /**
  * Run an AesCipher decryption test.
+ * This version sets the key before the chaining mode.
  */
-TEST_P(AesCipherTest, decryptTest)
+TEST_P(AesCipherTest, decryptTest_keyThenChaining)
 {
 	const AesCipherTest_mode &mode = GetParam();
 	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
@@ -256,9 +260,60 @@ TEST_P(AesCipherTest, decryptTest)
 	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
 	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
 
-	if (mode.chainingMode == IAesCipher::CM_CBC) {
-		// Set the IV.
-		EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+	switch (mode.chainingMode) {
+		case IAesCipher::CM_CBC:
+		case IAesCipher::CM_CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::CM_ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+	}
+
+	// Decrypt the data.
+	vector<uint8_t> buf(mode.cipherText_len);
+	memcpy(buf.data(), mode.cipherText, mode.cipherText_len);
+	EXPECT_EQ((unsigned int)buf.size(),
+		m_cipher->decrypt(buf.data(), (unsigned int)buf.size()));
+
+	// Compare the buffer to the known plaintext.
+	CompareByteArrays(reinterpret_cast<const uint8_t*>(test_string),
+		buf.data(), (unsigned int)buf.size(), "plaintext data");
+}
+
+/**
+ * Run an AesCipher decryption test.
+ * This version sets the chaining mode before the key.
+ */
+TEST_P(AesCipherTest, decryptTest_chainingThenKey)
+{
+	const AesCipherTest_mode &mode = GetParam();
+	ASSERT_TRUE(mode.key_len == 16 || mode.key_len == 24 || mode.key_len == 32);
+
+	// Set the cipher settings.
+	EXPECT_EQ(0, m_cipher->setChainingMode(mode.chainingMode));
+	EXPECT_EQ(0, m_cipher->setKey(aes_key, (unsigned int)mode.key_len));
+
+	switch (mode.chainingMode) {
+		case IAesCipher::CM_CBC:
+		case IAesCipher::CM_CTR:
+			// CBC requires an initialization vector.
+			// CTR requires an initial counter value.
+			EXPECT_EQ(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
+
+		case IAesCipher::CM_ECB:
+		default:
+			// ECB doesn't use an initialization vector.
+			// setIV() should fail.
+			EXPECT_NE(0, m_cipher->setIV(aes_iv, sizeof(aes_iv)));
+			break;
 	}
 
 	// Decrypt the data.
@@ -293,6 +348,9 @@ string AesCipherTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 			break;
 		case IAesCipher::CM_CBC:
 			cm_str = "CBC";
+			break;
+		case IAesCipher::CM_CTR:
+			cm_str = "CTR";
 			break;
 		default:
 			cm_str = "UNK";
@@ -370,6 +428,39 @@ static const uint8_t aes256cbc_ciphertext[64] = {
 	0xCE,0x35,0xAF,0x78,0x8A,0x0B,0x38,0xDB
 };
 
+static const uint8_t aes128ctr_ciphertext[64] = {
+	0xAC,0x52,0x86,0x43,0x5A,0x3D,0x8E,0x0A,
+	0xB0,0x9E,0xEE,0x90,0x27,0x3A,0xDA,0x81,
+	0xE9,0xC0,0x88,0x78,0x4F,0x81,0xE2,0xFD,
+	0x14,0x11,0x24,0xB1,0x61,0xA5,0x79,0x78,
+	0xC1,0xCC,0xB9,0x5B,0xD1,0x5B,0x3D,0xBB,
+	0x3D,0x25,0x20,0x55,0x95,0x98,0xBE,0x24,
+	0x09,0x79,0xAD,0xB0,0xEA,0x99,0x6C,0x98,
+	0x83,0x19,0xA7,0xAB,0xC4,0x2E,0x3C,0x08
+};
+
+static const uint8_t aes192ctr_ciphertext[64] = {
+	0x25,0x8C,0xF0,0x21,0x59,0x35,0xAF,0xB6,
+	0xD4,0x99,0xF5,0x11,0x29,0xEF,0xAF,0x8E,
+	0x6C,0x8D,0x9F,0xD5,0x76,0xBF,0x1F,0xB0,
+	0x10,0x10,0x14,0x6D,0x3B,0xBE,0x39,0x50,
+	0x1F,0x17,0xF6,0x73,0xF0,0x92,0xE3,0xDB,
+	0xE2,0x7F,0xED,0xB1,0xDA,0xE1,0x47,0xC3,
+	0xC8,0x83,0xA8,0x36,0xA4,0x58,0x0A,0x03,
+	0x92,0x70,0x03,0x5C,0x42,0x68,0x44,0x06
+};
+
+static const uint8_t aes256ctr_ciphertext[64] = {
+	0x35,0x3B,0xD6,0xA5,0xD2,0x18,0xC7,0x27,
+	0x84,0xCD,0x91,0x33,0xAC,0x05,0xF5,0x33,
+	0xD0,0x1E,0x31,0x71,0xF5,0x3E,0x22,0x92,
+	0x06,0x36,0x76,0x1D,0x8B,0x07,0x5C,0x29,
+	0x0E,0x2D,0x12,0xD8,0xD0,0x98,0x00,0x45,
+	0xFD,0x5B,0xB2,0xC1,0x7D,0x92,0xC0,0xF4,
+	0xB0,0x7E,0x8E,0x53,0x11,0xCB,0x9D,0xB1,
+	0xBA,0x23,0xD4,0x70,0x25,0x74,0xDB,0x8F
+};
+
 INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
 	::testing::Values(
 		AesCipherTest_mode(IAesCipher::CM_ECB, 16,
@@ -390,7 +481,17 @@ INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
 			sizeof(aes192cbc_ciphertext)),
 		AesCipherTest_mode(IAesCipher::CM_CBC, 32,
 			aes256cbc_ciphertext,
-			sizeof(aes256cbc_ciphertext))
+			sizeof(aes256cbc_ciphertext)),
+
+		AesCipherTest_mode(IAesCipher::CM_CTR, 16,
+			aes128ctr_ciphertext,
+			sizeof(aes128ctr_ciphertext)),
+		AesCipherTest_mode(IAesCipher::CM_CTR, 24,
+			aes192ctr_ciphertext,
+			sizeof(aes192ctr_ciphertext)),
+		AesCipherTest_mode(IAesCipher::CM_CTR, 32,
+			aes256ctr_ciphertext,
+			sizeof(aes256ctr_ciphertext))
 		)
 
 	, AesCipherTest::test_case_suffix_generator);

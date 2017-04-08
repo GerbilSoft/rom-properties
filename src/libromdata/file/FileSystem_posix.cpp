@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -23,6 +23,7 @@
 
 // libromdata
 #include "TextFuncs.hpp"
+#include "threads/Atomics.h"
 
 // C includes.
 #include <sys/stat.h>
@@ -39,36 +40,11 @@
 using std::string;
 using std::u16string;
 
-// Atomic function macros.
-// TODO: C++11 atomic support; test all of this.
-#if defined(__clang__)
-# if 0 && (__has_feature(c_atomic) || __has_extension(c_atomic))
-   /* Clang: Use prefixed C11-style atomics. */
-   /* FIXME: Not working... (clang-3.9.0 complains that it's not declared.) */
-#  define ATOMIC_ADD_FETCH(ptr, val) __c11_atomic_add_fetch(ptr, val, __ATOMIC_SEQ_CST)
-#  define ATOMIC_OR_FETCH(ptr, val) __c11_atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
-# else
-   /* Use Itanium-style atomics. */
-#  define ATOMIC_ADD_FETCH(ptr, val) __sync_add_and_fetch(ptr, val)
-#  define ATOMIC_OR_FETCH(ptr, val) __sync_or_and_fetch(ptr, val)
-# endif
-#elif defined(__GNUC__)
-# if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-   /* gcc-4.7: Use prefixed C11-style atomics. */
-#  define ATOMIC_ADD_FETCH(ptr, val) __atomic_add_fetch(ptr, val, __ATOMIC_SEQ_CST)
-#  define ATOMIC_OR_FETCH(ptr, val) __atomic_or_fetch(ptr, val, __ATOMIC_SEQ_CST)
-# else
-   /* gcc-4.6 and earlier: Use Itanium-style atomics. */
-#  define ATOMIC_ADD_FETCH(ptr, val) __sync_add_and_fetch(ptr, val)
-#  define ATOMIC_OR_FETCH(ptr, val) __sync_or_and_fetch(ptr, val)
-# endif
-#endif
-
 namespace LibRomData { namespace FileSystem {
 
 // Configuration directories.
 static int init_counter = -1;
-static volatile int dir_is_init = 0;
+static volatile int is_init = 0;
 // User's cache directory.
 static rp_string cache_dir;
 // User's configuration directory.
@@ -181,14 +157,13 @@ static void initConfigDirectories(void)
 	// - init_counter is initially -1.
 	// - Incrementing it returns 0; this means that the
 	//   directories have not been initialized yet.
-	// - dir_is_init is set when initializing.
+	// - is_init is set when initializing.
 	// - If the counter wraps around, the directories won't be
-	//   reinitialized because dir_is_init will be set.
-
-	if (ATOMIC_ADD_FETCH(&init_counter, 1) != 0) {
+	//   reinitialized because is_init will be set.
+	if (ATOMIC_INC_FETCH(&init_counter) != 0) {
 		// Function has already been called.
 		// Wait for directories to be initialized.
-		while (ATOMIC_OR_FETCH(&dir_is_init, 0) == 0) {
+		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
 			// TODO: Timeout counter?
 			usleep(0);
 		}
@@ -256,7 +231,7 @@ static void initConfigDirectories(void)
 	config_dir += _RP(".config/rom-properties");
 
 	// Directories have been initialized.
-	dir_is_init = 1;
+	is_init = 1;
 }
 
 /**
@@ -270,9 +245,9 @@ static void initConfigDirectories(void)
  */
 const rp_string &getCacheDirectory(void)
 {
-	// NOTE: It's safe to check dir_is_init here, since it's
+	// NOTE: It's safe to check is_init here, since it's
 	// only ever set to 1 by our code.
-	if (!dir_is_init) {
+	if (!is_init) {
 		initConfigDirectories();
 	}
 	return cache_dir;
@@ -288,9 +263,9 @@ const rp_string &getCacheDirectory(void)
  */
 const rp_string &getConfigDirectory(void)
 {
-	// NOTE: It's safe to check dir_is_init here, since it's
+	// NOTE: It's safe to check is_init here, since it's
 	// only ever set to 1 by our code.
-	if (!dir_is_init) {
+	if (!is_init) {
 		initConfigDirectories();
 	}
 	return config_dir;
