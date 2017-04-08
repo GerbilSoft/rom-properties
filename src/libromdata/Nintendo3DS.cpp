@@ -496,7 +496,7 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(int idx)
 				return nullptr;
 			}
 			offset = 0;
-			length = file->size();
+			length = (uint32_t)file->size();
 			break;
 		}
 
@@ -1193,8 +1193,6 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		    le16_to_cpu(cia_header->version) == 0)
 		{
 			// Add up all the sizes and see if it matches the file.
-			// NOTE: We're only checking the minimum size in case
-			// the file happens to be bigger.
 			uint32_t sz_min = Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->header_size)) +
 					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->cert_chain_size)) +
 					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->ticket_size)) +
@@ -1202,8 +1200,11 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 					  Nintendo3DSPrivate::toNext64(le32_to_cpu((uint32_t)cia_header->content_size)) +
 					  Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->meta_size));
 			if (info->szFile >= (int64_t)sz_min) {
-				// It's a match!
-				return Nintendo3DSPrivate::ROM_TYPE_CIA;
+				// Allow for 64 KB variance. (TODO needs testing)
+				if (info->szFile <= (int64_t)sz_min + 65536) {
+					// It's a match!
+					return Nintendo3DSPrivate::ROM_TYPE_CIA;
+				}
 			}
 		}
 	}
