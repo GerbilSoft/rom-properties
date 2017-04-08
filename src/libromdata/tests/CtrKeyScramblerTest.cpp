@@ -46,9 +46,9 @@ namespace LibRomData { namespace Tests {
 // Parameters for CtrKeyScrambler tests.
 struct CtrKeyScramblerTest_mode
 {
-	const uint8_t *const keyNormal;	// Expected KeyNormal.
-	const uint8_t *const keyX;	// KeyX.
-	const uint8_t *const keyY;	// KeyY.
+	const uint8_t *keyNormal;	// Expected KeyNormal.
+	const uint8_t *keyX;		// KeyX.
+	const uint8_t *keyY;		// KeyY.
 
 	CtrKeyScramblerTest_mode(
 		const uint8_t *keyNormal,
@@ -58,6 +58,22 @@ struct CtrKeyScramblerTest_mode
 		, keyX(keyX)
 		, keyY(keyY)
 	{ }
+
+	// May be required for MSVC 2010?
+	CtrKeyScramblerTest_mode(const CtrKeyScramblerTest_mode &other)
+		: keyNormal(other.keyNormal)
+		, keyX(other.keyX)
+		, keyY(other.keyY)
+	{ }
+
+	// Required for MSVC 2010.
+	CtrKeyScramblerTest_mode &operator=(const CtrKeyScramblerTest_mode &other)
+	{
+		keyNormal = other.keyNormal;
+		keyX = other.keyX;
+		keyY = other.keyY;
+		return *this;
+	}
 };
 
 class CtrKeyScramblerTest : public ::testing::TestWithParam<CtrKeyScramblerTest_mode>
