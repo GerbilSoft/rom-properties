@@ -25,7 +25,9 @@
 #include "config.rpcli.h"
 
 // _POSIX_C_SOURCE is required for *_r() on MinGW-w64.
+#ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 1
+#endif
 #include <time.h>
 
 #ifndef HAVE_GMTIME_R
