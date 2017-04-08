@@ -50,7 +50,17 @@ IAesCipher *AesCipherFactory::create(void)
 	// If not, fall back to CryptoAPI.
 	if (AesCAPI_NG::isUsable()) {
 		// CryptoAPI NG is available.
-		return new AesCAPI_NG();
+		// NOTE: Wine (as of 2.5) has CryptoAPI NG, but it
+		// doesn't actually implement any encryption algorithms,
+		// so we can't use it. We'll need to verify that AES
+		// is initialized before returning the AesCAPI_NG object.
+		// Wine's CryptoAPI implementation *does* support AES.
+		IAesCipher *cipher = new AesCAPI_NG();
+		if (cipher->isInit()) {
+			return cipher;
+		}
+		// AES isn't working in bcrypt.
+		delete cipher;
 	}
 
 	// CryptoAPI NG is not available.
