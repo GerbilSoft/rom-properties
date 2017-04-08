@@ -483,6 +483,19 @@ int NCCHReaderPrivate::loadExHeader(void)
 	// file access, so all addresses are relative to the
 	// start of the NCCH.
 
+	// Check the ExHeader length.
+	uint32_t exheader_length = le32_to_cpu(ncch_header.hdr.exheader_size);
+	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
+	    exheader_length > sizeof(ncch_exheader))
+	{
+		// ExHeader is either too small or too big.
+		q->m_lastError = EIO;
+		return -3;
+	}
+
+	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
+	exheader_length = (exheader_length + 15) & ~15;
+
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
 	int64_t prev_pos = q->tell();
@@ -494,22 +507,8 @@ int NCCHReaderPrivate::loadExHeader(void)
 			q->m_lastError = EIO;
 		}
 		q->seek(prev_pos);
-		return -3;
-	}
-
-	// Check the ExHeader length.
-	uint32_t exheader_length = le32_to_cpu(ncch_header.hdr.exheader_size);
-	if (exheader_length < N3DS_NCCH_EXHEADER_MIN_SIZE ||
-	    exheader_length > sizeof(ncch_exheader))
-	{
-		// ExHeader is either too small or too big.
-		q->m_lastError = EIO;
 		return -4;
 	}
-
-	// Round up exheader_length to the nearest 16 bytes for decryption purposes.
-	exheader_length = (exheader_length + 15) & ~15;
-
 	size_t size = q->read(&ncch_exheader, exheader_length);
 	if (size != exheader_length) {
 		// Read error.
