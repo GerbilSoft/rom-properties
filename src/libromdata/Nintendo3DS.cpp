@@ -1319,6 +1319,9 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
 		_RP(".cia"),	// CTR installable archive.
 		_RP(".ncch"),	// NCCH file.
 		_RP(".app"),	// NCCH file. (NOTE: May conflict with others...)
+		_RP(".cxi"),	// CTR Executable Image (NCCH)
+		_RP(".cfa"),	// CTR File Archive (NCCH)
+		_RP(".csu"),	// CTR System Update (CCI)
 	};
 	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
 }
