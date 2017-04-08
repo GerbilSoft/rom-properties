@@ -82,12 +82,6 @@ class KeyManager
 		bool areKeysLoaded(void) const;
 
 		/**
-		 * Reload keys if the key configuration file has changed.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int reloadIfChanged(void);
-
-		/**
 		 * Key verification result.
 		 */
 		enum VerifyResult {

@@ -26,9 +26,10 @@
 
 #include "KeyManager.hpp"
 
-#include "threads/Atomics.h"
 #include "file/FileSystem.hpp"
 #include "file/RpFile.hpp"
+#include "threads/Atomics.h"
+#include "threads/Mutex.hpp"
 
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"
@@ -104,13 +105,17 @@ class KeyManagerPrivate
 
 		/**
 		 * Load keys from the configuration file.
+		 * @param force If true, force a reload, even if the timestamp hasn't changed.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadKeys(void);
+		int loadKeys(bool force = false);
 
 		// Initialization counter.
 		int init_counter;
 		volatile int is_init;
+
+		// loadKeys() mutex.
+		Mutex mtxLoadKeys;
 
 		// Temporary configuration loading variables.
 		string cfg_curSection;
@@ -190,6 +195,9 @@ void KeyManagerPrivate::init(void)
 		// rmkdir() failed.
 		conf_filename.clear();
 	}
+
+	// Load the keys.
+	loadKeys(true);
 
 	// KeyManager has been initialized.
 	is_init = 1;
@@ -351,15 +359,40 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 
 /**
  * Load keys from the configuration file.
+ * @param force If true, force a reload, even if the timestamp hasn't changed.
  * @return 0 on success; negative POSIX error code on error.
  */
-int KeyManagerPrivate::loadKeys(void)
+int KeyManagerPrivate::loadKeys(bool force)
 {
-	// Open the configuration file.
 	if (conf_filename.empty()) {
-		// Configuration directory is invalid...
+		// Configuration filename is invalid...
 		return -ENOENT;
 	}
+
+	if (!force && conf_was_found) {
+		// Check if the keys.conf timestamp has changed.
+		time_t mtime;
+		int ret = FileSystem::get_mtime(conf_filename, &mtime);
+		if (ret != 0) {
+			// Failed to retrieve the mtime.
+			// Leave everything as-is.
+			// TODO: Proper error code?
+			return -EIO;
+		}
+
+		if (mtime == conf_mtime) {
+			// Timestamp has not changed.
+			return 0;
+		}
+	}
+
+	// loadKeys() mutex.
+	// NOTE: This may result in keys.conf being loaded twice
+	// in some cases, but that's better than keys.conf being
+	// loaded twice at the same time and causing collisions.
+	MutexLocker mtxLocker(mtxLoadKeys);
+
+	// Open the configuration file.
 	unique_ptr<IRpFile> file(new RpFile(conf_filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Error opening the file.
@@ -447,7 +480,20 @@ int KeyManagerPrivate::loadKeys(void)
 		processConfigLine(line_buf);
 	}
 
+	// Save the mtime from the keys.conf file.
+	// TODO: IRpFile::get_mtime()?
+	time_t mtime;
+	int ret = FileSystem::get_mtime(conf_filename, &mtime);
+	if (ret == 0) {
+		conf_mtime = mtime;
+	} else {
+		// mtime error...
+		// TODO: What do we do here?
+		conf_mtime = 0;
+	}
+
 	// Keys loaded.
+	conf_was_found = true;
 	return 0;
 }
 
@@ -490,68 +536,6 @@ bool KeyManager::areKeysLoaded(void) const
 }
 
 /**
- * Reload keys if the key configuration file has changed.
- * @return 0 on success; negative POSIX error code on error.
- */
-int KeyManager::reloadIfChanged(void)
-{
-	// NOTE: It's safe to check dir_is_init here, since it's
-	// only ever set to 1 by our code.
-	RP_D(KeyManager);
-	if (!d->is_init) {
-		d->init();
-	}
-
-	int ret = 0;
-	if (!d->conf_was_found) {
-		// keys.conf wasn't found.
-		// Try loading it again.
-		ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
-		if (ret == 0) {
-			// Keys loaded.
-			// Get the mtime.
-			time_t mtime;
-			ret = FileSystem::get_mtime(d->conf_filename, &mtime);
-			if (ret == 0) {
-				d->conf_mtime = mtime;
-			} else {
-				// mtime error...
-				// TODO: What do we do here?
-				d->conf_mtime = 0;
-			}
-			d->conf_was_found = true;
-		}
-	} else {
-		// Check if the timestamp has changed.
-		// NOTE: If get_mtime() failed, we'll leave everything
-		// as it is instead of clearing the loaded keys.
-		// TODO: Set a flag to ignore the previous mtime if
-		// a new file is found in case the file is swapped
-		// underneath us?
-		time_t mtime;
-		int ret = FileSystem::get_mtime(d->conf_filename, &mtime);
-		if (ret == 0) {
-			if (mtime != d->conf_mtime) {
-				// Timestmap has changed.
-				// Reload the keys.
-				ret = const_cast<KeyManagerPrivate*>(d)->loadKeys();
-				if (ret == 0) {
-					// Keys loaded.
-					d->conf_mtime = mtime;
-				} else {
-					// Key load failed.
-					d->conf_was_found = false;
-					// Existing keys are still OK.
-					ret = 0;
-				}
-			}
-		}
-	}
-
-	return ret;
-}
-
-/**
  * Get an encryption key.
  * @param keyName	[in]  Encryption key name.
  * @param pKeyData	[out] Key data struct.
@@ -567,14 +551,26 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	}
 
 	// Check if keys.conf needs to be reloaded.
-	const_cast<KeyManager*>(this)->reloadIfChanged();
+	// NOTE: It's safe to check d->is_init here, sicne it's
+	// only ever set to 1 by our code.
+	RP_D(const KeyManager);
+	if (!d->is_init) {
+		// d->init() will call loadKeys().
+		const_cast<KeyManagerPrivate*>(d)->init();
+	} else {
+		// Load the keys.
+		// This function won't do anything if the keys
+		// have already been loaded and keys.conf hasn't
+		// been changed.
+		const_cast<KeyManagerPrivate*>(d)->loadKeys();
+	}
+
 	if (!areKeysLoaded()) {
 		// Keys are not loaded.
 		return VERIFY_KEY_DB_NOT_LOADED;
 	}
 
 	// Attempt to get the key from the map.
-	RP_D(const KeyManager);
 	auto iter = d->mapKeyNames.find(keyName);
 	if (iter == d->mapKeyNames.end()) {
 		// Key was not parsed. Figure out why.
