@@ -28,10 +28,7 @@
 #include "libromdata/RomData.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/file/FileSystem.hpp"
-using LibRomData::rp_string;
-using LibRomData::IRpFile;
-using LibRomData::RpFile;
-using LibRomData::RomData;
+using namespace LibRomData;
 using namespace LibRomData::FileSystem;
 
 // Windows includes.

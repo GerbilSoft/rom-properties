@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libcachemgr)                      *
+ * ROM Properties Page shell extension. (libromdata)                       *
  * SemaphoreWin32.cpp: Win32 semaphore implementation.                     *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,14 +19,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "Semaphore.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
-namespace LibCacheMgr {
+namespace LibRomData {
 
 /**
  * Create a semaphore.

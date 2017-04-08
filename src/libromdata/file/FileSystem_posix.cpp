@@ -23,7 +23,7 @@
 
 // libromdata
 #include "TextFuncs.hpp"
-#include "RpAtomics.h"
+#include "threads/Atomics.h"
 
 // C includes.
 #include <sys/stat.h>

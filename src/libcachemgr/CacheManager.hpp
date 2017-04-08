@@ -24,7 +24,7 @@
 
 #include "libromdata/config.libromdata.h"
 #include "libromdata/common.h"
-#include "Semaphore.hpp"
+#include "libromdata/threads/Semaphore.hpp"
 
 namespace LibRomData {
 	class RomData;
@@ -98,7 +98,7 @@ class CacheManager
 		IDownloader *m_downloader;
 
 		// Semaphore used to limit the number of simultaneous downloads.
-		static Semaphore m_dlsem;
+		static LibRomData::Semaphore m_dlsem;
 };
 
 }

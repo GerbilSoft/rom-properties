@@ -26,7 +26,7 @@
 
 #include "KeyManager.hpp"
 
-#include "RpAtomics.h"
+#include "threads/Atomics.h"
 #include "file/FileSystem.hpp"
 #include "file/RpFile.hpp"
 

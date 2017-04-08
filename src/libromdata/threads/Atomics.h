@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpAtomics.h: Atomic function macros.                                    *
+ * Atomics.h: Atomic function macros.                                      *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __LIBROMDATA_RPATOMICS_H__
-#define __LIBROMDATA_RPATOMICS_H__
+#ifndef __LIBROMDATA_THREADS_ATOMICS_H__
+#define __LIBROMDATA_THREADS_ATOMICS_H__
 
 // Atomic function macros.
 // TODO: C++11 atomic support; test all of this.
@@ -59,4 +59,4 @@ static inline int ATOMIC_OR_FETCH(volatile int *ptr, int val)
 # error Atomic functions not defined for this compiler.
 #endif
 
-#endif /* __LIBROMDATA_RPATOMICS_H__ */
+#endif /* __LIBROMDATA_THREADS_ATOMICS_H__ */

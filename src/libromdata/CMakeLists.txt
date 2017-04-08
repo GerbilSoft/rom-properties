@@ -137,6 +137,7 @@ SET(libromdata_H
 	DreamcastSave.hpp
 	VirtualBoy.hpp
 	Amiibo.hpp
+	NES.hpp
 	EXE.hpp
 	WiiU.hpp
 	Nintendo3DS.hpp
@@ -195,7 +196,6 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
-	NES.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
@@ -263,6 +263,7 @@ IF(ENABLE_DECRYPTION)
 			)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
+
 IF(HAVE_ZLIB)
 	# Enable zlib in pngcheck.
 	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
@@ -274,6 +275,21 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 		PROPERTIES COMPILE_FLAGS "-Wno-unused")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
+# Find the system threading library.
+FIND_PACKAGE(Threads REQUIRED)
+# Threading implementation.
+SET(libromdata_THREAD_H
+	threads/Atomics.h
+	threads/Semaphore.hpp
+	)
+IF(CMAKE_USE_WIN32_THREADS_INIT)
+	SET(libromdata_THREAD_SRCS threads/SemaphoreWin32.cpp)
+ELSEIF(CMAKE_USE_PTHREADS_INIT)
+	SET(libromdata_THREAD_SRCS threads/SemaphorePosix.cpp)
+ELSE()
+	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
+ENDIF()
+
 ######################
 # Build the library. #
 ######################
@@ -284,6 +300,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
 	${libromdata_CRYPTO_OS_SRCS} ${libromdata_CRYPTO_OS_H}
+	${libromdata_THREAD_SRCS} ${libromdata_THREAD_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata8 PUBLIC -DRP_UTF8)
 
@@ -292,7 +309,8 @@ ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
-	${libromdata_CRYPTO_OS_SRCS}
+	${libromdata_CRYPTO_OS_SRCS} ${libromdata_CRYPTO_OS_H}
+	${libromdata_THREAD_SRCS} ${libromdata_THREAD_H}
 	)
 TARGET_COMPILE_DEFINITIONS(romdata16 PUBLIC -DRP_UTF16)
 
@@ -346,6 +364,9 @@ FOREACH(_target romdata8 romdata16)
 			TARGET_LINK_LIBRARIES(${_target} advapi32)
 		ENDIF(ENABLE_DECRYPTION)
 	ENDIF(WIN32)
+	IF(CMAKE_THREAD_LIBS_INIT)
+		TARGET_LINK_LIBRARIES(${_target} ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
 ENDFOREACH()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
