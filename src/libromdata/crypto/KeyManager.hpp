@@ -23,10 +23,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
 #include "config.libromdata.h"
-#ifndef ENABLE_DECRYPTION
-#error This file should only be included if decryption is enabled.
-#endif /* ENABLE_DECRYPTION */
-
 #include "common.h"
 
 // C includes.
@@ -50,6 +46,27 @@ class KeyManager
 	private:
 		RP_DISABLE_COPY(KeyManager)
 
+	public:
+		/**
+		 * Key verification result.
+		 */
+		enum VerifyResult {
+			VERIFY_UNKNOWN			= -1,	// Unknown status.
+			VERIFY_OK			= 0,	// Key obtained/verified.
+			VERIFY_INVALID_PARAMS		= 1,	// Parameters are invalid.
+			VERIFY_NO_SUPPORT		= 2,	// Decryption is not supported.
+			VERIFY_KEY_DB_NOT_LOADED	= 3,	// Key database is not loaded.
+			VERIFY_KEY_DB_ERROR		= 4,	// Something's wrong with the key database.
+			VERIFY_KEY_NOT_FOUND		= 5,	// Key was not found.
+			VERIFY_KEY_INVALID		= 6,	// Key is not valid for this operation.
+			VERFIY_IAESCIPHER_INIT_ERR	= 7,	// IAesCipher could not be created.
+			VERIFY_IAESCIPHER_DECRYPT_ERR	= 8,	// IAesCipher::decrypt() failed.
+			VERIFY_WRONG_KEY		= 9,	// The key did not decrypt the test string correctly.
+
+			VERIFY_MAX
+		};
+
+#ifdef ENABLE_DECRYPTION
 	private:
 		friend class KeyManagerPrivate;
 		KeyManagerPrivate *const d_ptr;
@@ -82,21 +99,6 @@ class KeyManager
 		bool areKeysLoaded(void) const;
 
 		/**
-		 * Key verification result.
-		 */
-		enum VerifyResult {
-			VERIFY_OK			= 0,	// Key obtained/verified.
-			VERIFY_INVALID_PARAMS		= 1,	// Parameters are invalid.
-			VERIFY_KEY_DB_NOT_LOADED	= 2,	// Key database is not loaded.
-			VERIFY_KEY_DB_ERROR		= 3,	// Something's wrong with the key database.
-			VERIFY_KEY_NOT_FOUND		= 4,	// Key was not found.
-			VERIFY_KEY_INVALID		= 5,	// Key is not valid for this operation.
-			VERFIY_IAESCIPHER_INIT_ERR	= 6,	// IAesCipher could not be created.
-			VERIFY_IAESCIPHER_DECRYPT_ERR	= 7,	// IAesCipher::decrypt() failed.
-			VERIFY_WRONG_KEY		= 8,	// The key did not decrypt the test string correctly.
-		};
-
-		/**
 		 * Get an encryption key.
 		 * @param keyName	[in]  Encryption key name.
 		 * @param pKeyData	[out,opt] Key data struct. (If nullptr, key will be checked but not loaded.)
@@ -126,6 +128,7 @@ class KeyManager
 		// Verification test string.
 		// NOTE: This string is NOT NULL-terminated!
 		static const char verifyTestString[16];
+#endif /* ENABLE_DECRYPTION */
 };
 
 }

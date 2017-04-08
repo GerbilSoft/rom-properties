@@ -26,6 +26,7 @@
 
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
+#include "../crypto/KeyManager.hpp"
 
 namespace LibRomData {
 
@@ -80,22 +81,11 @@ class WiiPartition : public GcnPartition
 
 		/** WiiPartition **/
 
-		enum EncInitStatus {
-			ENCINIT_OK = 0,
-			ENCINIT_UNKNOWN,
-			ENCINIT_DISABLED,		// ENABLE_DECRYPTION disabled.
-			ENCINIT_INVALID_KEY_IDX,	// Invalid common key index in the disc header.
-			ENCINIT_NO_KEYFILE,		// keys.conf was not found.
-			ENCINIT_MISSING_KEY,		// Required key not found.
-			ENCINIT_CIPHER_ERROR,		// Could not initialize the cipher.
-			ENCINIT_INCORRECT_KEY,		// Key is incorrect.
-		};
-
 		/**
-		 * Encryption initialization status.
-		 * @return Encryption initialization status.
+		 * Encryption key verification result.
+		 * @return Encryption key verification result.
 		 */
-		EncInitStatus encInitStatus(void) const;
+		KeyManager::VerifyResult verifyResult(void) const;
 
 		// Encryption key in use.
 		enum EncKey {

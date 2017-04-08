@@ -1577,29 +1577,46 @@ int GameCube::loadFieldData(void)
 			if (!d->updatePartition) {
 				sysMenu = _RP("None");
 			} else {
-				switch (d->updatePartition->encInitStatus()) {
-					case WiiPartition::ENCINIT_DISABLED:
-						sysMenu = _RP("ERROR: Decryption is disabled.");
-						break;
-					case WiiPartition::ENCINIT_INVALID_KEY_IDX:
+				// Error table.
+				static const rp_char *const errTbl[] = {
+					// VERIFY_OK
+					_RP("ERROR: Something happened."),
+					// VERIFY_INVALID_PARAMS
+					_RP("ERROR: Invalid parameters. (THIS IS A BUG!)"),
+					// VERIFY_NO_SUPPORT
+					_RP("ERROR: Decryption is not supported in this build."),
+					// VERIFY_KEY_DB_NOT_LOADED
+					_RP("ERROR: keys.conf was not found."),
+					// VERIFY_KEY_DB_ERROR
+					_RP("ERROR: keys.conf has an error and could not be loaded."),
+					// VERIFY_KEY_NOT_FOUND
+					_RP("ERROR: Required key was not found in keys.conf."),
+					// VERIFY_KEY_INVALID
+					_RP("ERROR: The key in keys.conf is not a valid key."),
+					// VERFIY_IAESCIPHER_INIT_ERR
+					_RP("ERROR: AES decryption could not be initialized."),
+					// VERIFY_IAESCIPHER_DECRYPT_ERR
+					_RP("ERROR: AES decryption failed."),
+					// VERIFY_WRONG_KEY
+					_RP("ERROR: The key in keys.conf is incorrect."),
+				};
+				static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
+
+				const KeyManager::VerifyResult res = d->updatePartition->verifyResult();
+				if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
+					// This may be an invalid key index.
+					if (d->updatePartition->encKey() == WiiPartition::ENCKEY_UNKNOWN) {
+						// Invalid key index.
 						sysMenu = _RP("ERROR: Invalid common key index.");
-						break;
-					case WiiPartition::ENCINIT_NO_KEYFILE:
-						sysMenu = _RP("ERROR: keys.conf was not found.");
-						break;
-					case WiiPartition::ENCINIT_MISSING_KEY:
-						// TODO: Which key?
-						sysMenu = _RP("ERROR: Required key was not found in keys.conf.");
-						break;
-					case WiiPartition::ENCINIT_CIPHER_ERROR:
-						sysMenu = _RP("ERROR: Decryption library failed.");
-						break;
-					case WiiPartition::ENCINIT_INCORRECT_KEY:
-						sysMenu = _RP("ERROR: Key is incorrect.");
-						break;
-					default:
-						sysMenu = _RP("Unknown");
-						break;
+					}
+				}
+
+				if (!sysMenu) {
+					if (res >= 0 && res < KeyManager::VERIFY_MAX) {
+						sysMenu = errTbl[res];
+					} else {
+						sysMenu = _RP("ERROR: Unknown error. (THIS IS A BUG!)");
+					}
 				}
 			}
 		}
