@@ -31,12 +31,14 @@ namespace LibRomData {
  * Create a mutex.
  */
 Mutex::Mutex()
+	: m_isInit(false)
 {
-	m_mutex = CreateMutex(nullptr, FALSE, nullptr);
-	assert(m_mutex != nullptr);
-	if (!m_mutex) {
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms686908(v=vs.85).aspx
+	if (!InitializeCriticalSectionAndSpinCount(&m_criticalSection, 0x400)) {
 		// FIXME: Do something if an error occurred here...
+		return;
 	}
+	m_isInit = true;
 }
 
 /**
@@ -45,9 +47,10 @@ Mutex::Mutex()
  */
 Mutex::~Mutex()
 {
-	if (m_mutex) {
-		CloseHandle(m_mutex);
-		m_mutex = nullptr;
+	if (m_isInit) {
+		// TODO: Error checking.
+		DeleteCriticalSection(&m_criticalSection);
+		m_isInit = false;
 	}
 }
 
@@ -59,15 +62,12 @@ Mutex::~Mutex()
  */
 int Mutex::lock(void)
 {
-	if (!m_mutex)
+	if (!m_isInit)
 		return -EBADF;
 
-	DWORD dwWaitResult = WaitForSingleObject(m_mutex, INFINITE);
-	if (dwWaitResult == WAIT_OBJECT_0)
-		return 0;
-
-	// TODO: What error to return?
-	return -1;
+	// TODO: Error handling?
+	EnterCriticalSection(&m_criticalSection);
+	return 0;
 }
 
 /**
@@ -76,15 +76,12 @@ int Mutex::lock(void)
  */
 int Mutex::unlock(void)
 {
-	if (!m_mutex)
+	if (!m_isInit)
 		return -EBADF;
 
-	BOOL bRet = ReleaseMutex(m_mutex);
-	if (bRet != 0)
-		return 0;
-
-	// TODO: What error to return?
-	return -1;
+	// TODO: Error handling?
+	LeaveCriticalSection(&m_criticalSection);
+	return 0;
 }
 
 }

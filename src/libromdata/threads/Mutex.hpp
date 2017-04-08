@@ -66,11 +66,13 @@ class Mutex
 
 	private:
 #ifdef _WIN32
-		HANDLE m_mutex;
+		// NOTE: Windows implementation uses critical sections,
+		// since they have less overhead than mutexes.
+		CRITICAL_SECTION m_criticalSection;
 #else
 		pthread_mutex_t m_mutex;
-		bool m_isInit;
 #endif
+		bool m_isInit;
 };
 
 /**
