@@ -24,6 +24,7 @@
 
 #include "IPartition.hpp"
 #include "../n3ds_structs.h"
+#include "../crypto/KeyManager.hpp"
 
 namespace LibRomData {
 
@@ -167,6 +168,12 @@ class NCCHReader : public IPartition
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int cryptoType(CryptoType *pCryptoType) const;
+
+		/**
+		 * Encryption key verification result.
+		 * @return Encryption key verification result.
+		 */
+		KeyManager::VerifyResult verifyResult(void) const;
 
 		/**
 		 * Get the content type as a string.

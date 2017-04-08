@@ -232,8 +232,9 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 	bool isFixedKey = false;
 	if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto) {
 		// No encryption.
-		// Shouldn't be calling this function...
-		return KeyManager::VERIFY_INVALID_PARAMS;
+		// Zero the key anyway.
+		memset(pKeyOut, 0, sizeof(*pKeyOut) * 2);
+		return KeyManager::VERIFY_OK;
 	} else if (pNcchHeader->hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_FixedCryptoKey) {
 		// Fixed key.
 		if (le32_to_cpu(pNcchHeader->hdr.program_id.hi) & 0x10) {

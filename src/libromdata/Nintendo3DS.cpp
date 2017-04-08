@@ -1526,8 +1526,6 @@ int Nintendo3DS::loadFieldData(void)
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
 
-	// TODO: Show a warning if a required encryption key was not found.
-
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
@@ -1540,6 +1538,26 @@ int Nintendo3DS::loadFieldData(void)
 	    !(d->headers_loaded & Nintendo3DSPrivate::HEADER_TMD))
 	{
 		d->loadTicketAndTMD();
+	}
+
+	// Get the primary NCCH.
+	// If this fails, and the file type is NCSD or CIA,
+	// it usually means there's a missing key.
+	const NCCHReader *const ncch_reader = d->loadNCCH();
+	// Check for potential encryption key errors.
+	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI ||
+	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
+	    d->romType == Nintendo3DSPrivate::ROM_TYPE_NCCH)
+	{
+		if (!d->srlData && (!ncch_reader ||
+			ncch_reader->verifyResult() != KeyManager::VERIFY_OK))
+		{
+			// Missing encryption keys.
+			// TODO: Show the actual verification result.
+			d->fields->addField_string(_RP("Warning"),
+				_RP("A required encryption key was not found or is incorrect."),
+				RomFields::STRF_WARNING);
+		}
 	}
 
 	// Load and parse the SMDH header.
@@ -1648,6 +1666,14 @@ int Nintendo3DS::loadFieldData(void)
 			d->addTitleIdAndProductCodeFields(false);
 		} else {
 			d->fields->setTabName(0, _RP("NCSD"));
+		}
+
+		if (!ncch_reader || ncch_reader->verifyResult() != KeyManager::VERIFY_OK) {
+			// Missing encryption keys.
+			// TODO: Show the actual verification result.
+			d->fields->addField_string(_RP("Warning"),
+				_RP("A required encryption key was not found or is incorrect."),
+				RomFields::STRF_WARNING);
 		}
 
 		// TODO: Add more fields?
@@ -2084,7 +2110,6 @@ int Nintendo3DS::loadFieldData(void)
 	}
 
 	// Get the NCCH Extended Header.
-	const NCCHReader *ncch_reader = d->loadNCCH();
 	const N3DS_NCCH_ExHeader_t *const ncch_exheader =
 		(ncch_reader ? ncch_reader->ncchExHeader() : nullptr);
 	if (ncch_exheader) {

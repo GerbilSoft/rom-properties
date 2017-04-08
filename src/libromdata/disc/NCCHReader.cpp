@@ -59,6 +59,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	, media_unit_shift(media_unit_shift)
 	, pos(0)
 	, headers_loaded(0)
+	, verifyResult(KeyManager::VERIFY_UNKNOWN)
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher_ncch(nullptr)
@@ -184,22 +185,24 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 #ifdef ENABLE_DECRYPTION
 	// Determine the keyset to use.
-	KeyManager::VerifyResult res = loadNCCHKeys(
-		ncch_keys, &ncch_header, titleKeyEncIdx);
-	if (res != KeyManager::VERIFY_OK) {
+	verifyResult = loadNCCHKeys(ncch_keys, &ncch_header, titleKeyEncIdx);
+	if (verifyResult != KeyManager::VERIFY_OK) {
 		// Failed to load the keyset.
 		// Zero out the keys.
 		// TODO: Disable anything that requires reading encrypted data.
+		// TODO: Determine which key couldn't be loaded.
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
 	if (!(ncch_header.hdr.flags[N3DS_NCCH_FLAG_BIT_MASKS] & N3DS_NCCH_BIT_MASK_NoCrypto)) {
 		// Unsupported.
-		// TODO: Set an error like WiiPartition.
+		verifyResult = KeyManager::VERIFY_NO_SUPPORT;
 		q->m_lastError = EIO;
 		this->file = nullptr;
 		return;
 	}
+	// No decryption is required.
+	verifyResult = KeyManager::VERIFY_OK;
 #endif /* ENABLE_DECRYPTION */
 
 	// Load the ExeFS header.
@@ -971,6 +974,16 @@ int NCCHReader::cryptoType(CryptoType *pCryptoType) const
 		return -EIO;
 	}
 	return cryptoType_static(pCryptoType, &d->ncch_header.hdr);
+}
+
+/**
+ * Encryption key verification result.
+ * @return Encryption key verification result.
+ */
+KeyManager::VerifyResult NCCHReader::verifyResult(void) const
+{
+	RP_D(const NCCHReader);
+	return d->verifyResult;
 }
 
 /**

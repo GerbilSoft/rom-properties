@@ -29,8 +29,8 @@
 #include "byteswap.h"
 #include "n3ds_structs.h"
 
-#ifdef ENABLE_DECRYPTION
 #include "crypto/KeyManager.hpp"
+#ifdef ENABLE_DECRYPTION
 #include "crypto/CtrKeyScrambler.hpp"
 #endif /* ENABLE_DECRYPTION */
 
@@ -90,6 +90,9 @@ class NCCHReaderPrivate
 		N3DS_NCCH_ExHeader_t ncch_exheader;
 		// ExeFS header.
 		N3DS_ExeFS_Header_t exefs_header;
+
+		// Encryption key verification result.
+		KeyManager::VerifyResult verifyResult;
 
 		/**
 		 * Read data from the underlying ROM image.
