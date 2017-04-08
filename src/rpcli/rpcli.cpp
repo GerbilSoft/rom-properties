@@ -129,28 +129,24 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::create(file);
-		if (romData) {
-			if (romData->isValid()) {
+		if (romData && romData->isValid()) {
+			if (json) {
+				cerr << "-- Outputting JSON data" << endl;
+				cout << JSONROMOutput(romData) << endl;
+			} else {
+				cout << ROMOutput(romData) << endl;
+			}
 
-				if (json) {
-					cerr << "-- Outputting json data" << endl;
-					cout << JSONROMOutput(romData) << endl;
-				}
-				else {
-					cout << ROMOutput(romData) << endl;
-				}
-
-				ExtractImages(romData, extract);
-			}else{
-				cerr << "-- Rom is not supported" << endl;
-				if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
-			}			
-			romData->unref();
-		}else {
-			cerr << "-- Unknown error" << endl;
-			if (json) cout << "{\"error\":\"unknown error\"}" << endl;
+			ExtractImages(romData, extract);
+		} else {
+			cerr << "-- ROM is not supported" << endl;
+			if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 		}
-	}else{
+
+		if (romData) {
+			romData->unref();
+		}
+	} else {
 		cerr << "-- Couldn't open file... : " << strerror(file->lastError()) << endl;
 		if (json) cout << "{\"error\":\"couldn't open file\"}" << endl;
 	}
