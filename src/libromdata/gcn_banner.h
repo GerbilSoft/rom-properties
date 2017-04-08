@@ -173,7 +173,13 @@ typedef struct _wii_imet_t {
 	uint32_t unknown;
 	uint32_t sizes[3];	// icon.bin, banner.bin, sound.bin
 	uint32_t flag1;
-	char16_t names[10][42];	// UTF-16BE: JP,EN,DE,FR,ES,IT,NL,xx,xx,KO
+
+	// Titles. (UTF-16BE)
+	// - Index 0: Language: JP,EN,DE,FR,ES,IT,NL,xx,xx,KO
+	// - Index 1: Line
+	// - Index 2: Character
+	char16_t names[10][2][21];
+
 	uint8_t zeroes2[588];
 	uint8_t md5[16];	// MD5 of 0 to 'hashsize' in the header.
 				// This field is all 0 when calculating.

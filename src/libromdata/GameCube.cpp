@@ -820,53 +820,53 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 	}
 
 	// Determine the system language.
-	const char16_t *game_name;
+	int langIdx;
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
 		default:
 			// English. (default)
 			// Used if the host system language doesn't match
 			// any of the languages supported by Wii.
-			game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+			langIdx = WII_LANG_ENGLISH;
 			break;
 
 		case 'ja':
-			game_name = wii_opening_bnr->names[WII_LANG_JAPANESE];
+			langIdx = WII_LANG_JAPANESE;
 			break;
 		case 'de':
-			game_name = wii_opening_bnr->names[WII_LANG_GERMAN];
+			langIdx = WII_LANG_GERMAN;
 			break;
 		case 'fr':
-			game_name = wii_opening_bnr->names[WII_LANG_FRENCH];
+			langIdx = WII_LANG_FRENCH;
 			break;
 		case 'es':
-			game_name = wii_opening_bnr->names[WII_LANG_SPANISH];
+			langIdx = WII_LANG_SPANISH;
 			break;
 		case 'it':
-			game_name = wii_opening_bnr->names[WII_LANG_ITALIAN];
+			langIdx = WII_LANG_ITALIAN;
 			break;
 		case 'nl':
-			game_name = wii_opening_bnr->names[WII_LANG_DUTCH];
+			langIdx = WII_LANG_DUTCH;
 			break;
 		case 'ko':
-			game_name = wii_opening_bnr->names[WII_LANG_KOREAN];
+			langIdx = WII_LANG_KOREAN;
 			break;
 	}
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (game_name[0] == 0) {
+	if (wii_opening_bnr->names[langIdx][0][0] == 0) {
 		// Revert to English.
-		game_name = wii_opening_bnr->names[WII_LANG_ENGLISH];
+		langIdx = WII_LANG_ENGLISH;
 	}
 
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	rp_string info = utf16be_to_rp_string(game_name, 21);
-	if (game_name[21] != 0) {
+	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[langIdx][0], 21);
+	if (wii_opening_bnr->names[langIdx][1][0] != 0) {
 		info += _RP_CHR('\n');
-		info += utf16be_to_rp_string(&game_name[21], 21);
+		info += utf16be_to_rp_string(wii_opening_bnr->names[langIdx][1], 21);
 	}
 	return info;
 }
