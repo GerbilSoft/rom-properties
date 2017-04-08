@@ -478,7 +478,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		# TODO: Other compilers?
 		SET(SSE2_FLAG "-msse2")
 	ENDIF()
-	SET_SOURCE_FILES_PROPERTIES(contrib/intel/filter_sse2_intrinsics.c
+	SET_SOURCE_FILES_PROPERTIES(intel/filter_sse2_intrinsics.c
 		APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
 ENDIF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
