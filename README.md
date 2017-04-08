@@ -108,7 +108,8 @@ Notes:
 | Nintendo amiibo               |       Yes      |        No       |      Media     |
 | Nintendo Entertainment System |       Yes      |       N/A       |       No       |
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
-| Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
+| Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
+| Nintendo 3DS                  |       Yes      |       Icon      |     Covers     |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -145,6 +146,14 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
   3DS Virtual Console dumps (\*.tds)
 * Windows/DOS: Executables (\*.exe, \*.dll, others)
+* Nintendo Wii U: 1:1 disc image (\*.wud)
+* Nintendo 3DS: Icon files (\*.smdh), homebrew (\*.3dsx), cartridge images
+  (\*.3ds, \*.cci), importable archives (\*.cia), eMMC dumps (\*.bin),
+  and title contents (\*.ncch, \*.app)
+  * Encryption keys are needed for encrypted cartridge images, importable
+    archives, and title contents. Many keys are still unknown, so it may not
+    be possible to view the full details of one of these files unless they
+    are decrypted first.
 
 ## External Media Downloads
 
