@@ -1565,22 +1565,6 @@ int GameCube::loadFieldData(void)
 	// Load the Wii partition tables.
 	int wiiPtLoaded = d->loadWiiPartitionTables();
 
-	// Get the game name from opening.bnr.
-	if (wiiPtLoaded == 0) {
-		rp_string game_name = d->wii_getBannerName();
-		if (!game_name.empty()) {
-			d->fields->addField_string(_RP("Game Info"), game_name);
-		} else {
-			// Empty game name may be either because it's
-			// homebrew, a prototype, or a key error.
-			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
-				// Key error.
-				d->fields->addField_string(_RP("Game Info"),
-					d->wii_getCryptoStatus(d->gamePartition));
-			}
-		}
-	}
-
 	// Get age rating(s).
 	// RVL_RegionSetting is loaded in the constructor.
 	// Note that not all 16 fields are present on GCN,
@@ -1617,10 +1601,21 @@ int GameCube::loadFieldData(void)
 	}
 	d->fields->addField_ageRatings(_RP("Age Rating"), age_ratings);
 
-	// Display the Wii partition tables.
+	// Display the Wii partition table(s).
 	if (wiiPtLoaded == 0) {
-		// Wii partition tables loaded.
-		// Convert them to RFT_LISTDATA for display purposes.
+		// Get the game name from opening.bnr.
+		rp_string game_name = d->wii_getBannerName();
+		if (!game_name.empty()) {
+			d->fields->addField_string(_RP("Game Info"), game_name);
+		} else {
+			// Empty game name may be either because it's
+			// homebrew, a prototype, or a key error.
+			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
+				// Key error.
+				d->fields->addField_string(_RP("Game Info"),
+					d->wii_getCryptoStatus(d->gamePartition));
+			}
+		}
 
 		// Update version.
 		const rp_char *sysMenu = nullptr;
