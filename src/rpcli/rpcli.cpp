@@ -145,7 +145,7 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 				cerr << "-- Rom is not supported" << endl;
 				if (json) cout << "{\"error\":\"rom is not supported\"}" << endl;
 			}			
-			romData->close();
+			romData->unref();
 		}else {
 			cerr << "-- Unknown error" << endl;
 			if (json) cout << "{\"error\":\"unknown error\"}" << endl;
