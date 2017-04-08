@@ -58,7 +58,7 @@ typedef const QITAB *LPCQITAB;
 #endif /* QITABENT */
 
 // QISearch() function pointer.
-typedef HRESULT (WINAPI *PFNQISEARCH)(__inout void *that, __in LPCQITAB pqit, __in REFIID riid, __deref_out void **ppv);
+typedef HRESULT (STDAPICALLTYPE *PFNQISEARCH)(_Inout_ void* that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
 
 #ifdef __cplusplus
 }

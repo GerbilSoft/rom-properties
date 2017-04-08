@@ -128,8 +128,7 @@ STDAPI DllCanUnloadNow(void)
  * @param ppv		[out] Pointer that receives the interface pointer requested in riid.
  * @return Error code.
  */
-__checkReturn
-STDAPI DllGetClassObject(__in REFCLSID rclsid, __in REFIID riid, __deref_out LPVOID FAR* ppv)
+STDAPI _Check_return_ DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv)
 {
 	if (!ppv) {
 		// Incorrect parameters.

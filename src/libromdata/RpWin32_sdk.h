@@ -90,4 +90,17 @@
 
 #include <windows.h>
 
+// SAL 1.0 annotations not supported by MinGW-w64 5.0.1.
+#ifndef __out_opt
+#define __out_opt
+#endif
+
+// SAL 2.0 annotations not supported by MSVC 2010.
+#ifndef _COM_Outptr_
+#define _COM_Outptr_
+#endif
+#ifndef _Outptr_
+#define _Outptr_
+#endif
+
 #endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_SDK_H__ */

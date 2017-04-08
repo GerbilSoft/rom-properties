@@ -1972,6 +1972,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	UINT nFiles, cchFilename;
 	wchar_t *filename = nullptr;
 	unique_ptr<IRpFile> file;
+	RomData *romData = nullptr;
 
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
@@ -2020,7 +2021,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	RomData *romData = RomDataFactory::create(file.get());
+	romData = RomDataFactory::create(file.get());
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
