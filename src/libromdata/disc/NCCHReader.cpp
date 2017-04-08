@@ -603,10 +603,17 @@ bool NCCHReader::isOpen(void) const
 size_t NCCHReader::read(void *ptr, size_t size)
 {
 	RP_D(NCCHReader);
+	assert(ptr != nullptr);
 	assert(d->file != nullptr);
 	assert(d->file->isOpen());
-	if (!d->file || !d->file->isOpen()) {
+	if (!ptr) {
+		m_lastError = EINVAL;
+		return 0;
+	} else if (!d->file || !d->file->isOpen()) {
 		m_lastError = EBADF;
+		return 0;
+	} else if (size == 0) {
+		// Nothing to do...
 		return 0;
 	}
 
