@@ -20,124 +20,77 @@
  ***************************************************************************/
 
 #include "bmp.hpp"
-#include <cassert>
-#include <ostream>
-#include <fstream>
-#include <libromdata/img/rp_image.hpp>
-#include <libromdata/byteswap.h>
-#include <libromdata/common.h>
-using std::ostream;
+#include "bmp_structs.h"
+
+#include "libromdata/byteswap.h"
+#include "libromdata/common.h"
+#include "libromdata/img/rp_image.hpp"
 using LibRomData::rp_image;
 
-// Bitmap header overview: https://msdn.microsoft.com/en-us/library/dd183376.aspx
-// Short version of the bitmap structure:
-// - BITMAPFILEHEADER
-// - BITMAPINFOHEADER
-// - palette (array of RGBQUAD)
-// - bitmap data
-// Some notes:
-// - Last two fields depend on things like biBitCount and biCompression
-// - RGBQUAD is basically uint32 with colors arranged in 0x00RRGGBB
-// - Everything is little-endian
-// - By default, scanlines go from bottom to top, unless the image size is negative
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstring>
 
-#pragma pack(1)
-// Reference : https://msdn.microsoft.com/en-us/library/dd183374.aspx
-struct PACKED BITMAPFILEHEADER {
-	uint16_t bfType;
-	uint32_t bfSize;
-	uint16_t bfReserved1;
-	uint16_t bfReserved2;
-	uint32_t bfOffBits;
-	BITMAPFILEHEADER():
-		bfType(0x4D42), // "BM"
-		bfSize(0),
-		bfReserved1(0),
-		bfReserved2(0),
-		bfOffBits(0){}
-	inline void swap(){ // useful for big-endian only
-		bfType		= cpu_to_le32(bfType);
-		bfSize		= cpu_to_le32(bfSize);
-		bfReserved1	= cpu_to_le16(bfReserved1);
-		bfReserved2	= cpu_to_le16(bfReserved2);
-		bfOffBits	= cpu_to_le32(bfOffBits);
+// C++ includes.
+#include <ostream>
+#include <fstream>
+using std::ostream;
+
+int rpbmp(std::ostream& os, const rp_image *img)
+{
+	assert(img != nullptr);
+	assert(img->isValid());
+	if (!img || !img->isValid()) {
+		return -1;
 	}
-};
-static_assert(sizeof(BITMAPFILEHEADER) == 14, "invalid struct size: BITMAPFILEHEADER");
-
-// Reference : https://msdn.microsoft.com/en-us/library/dd183376.aspx
-struct PACKED BITMAPINFOHEADER {
-	uint32_t biSize;
-	int32_t  biWidth;
-	int32_t  biHeight;
-	uint16_t biPlanes;
-	uint16_t biBitCount;
-	uint32_t biCompression;
-	uint32_t biSizeImage;
-	int32_t  biXPelsPerMeter;
-	int32_t  biYPelsPerMeter;
-	uint32_t biClrUsed;
-	uint32_t biClrImportant;
-	BITMAPINFOHEADER():
-		biSize(40),
-		biWidth(0),
-		biHeight(0),
-		biPlanes(1),
-		biBitCount(0),
-		biCompression(0),
-		biSizeImage(0),
-		biXPelsPerMeter(0),
-		biYPelsPerMeter(0),
-		biClrUsed(0),
-		biClrImportant(0){}
-	inline void swap(){ // useful for big-endian only
-		biSize			= cpu_to_le32(biSize);
-		biWidth			= cpu_to_le32(biWidth);
-		biHeight		= cpu_to_le32(biHeight);
-		biPlanes		= cpu_to_le16(biPlanes);
-		biBitCount		= cpu_to_le16(biBitCount);
-		biCompression	= cpu_to_le32(biCompression);
-		biSizeImage		= cpu_to_le32(biSizeImage);
-		biXPelsPerMeter	= cpu_to_le32(biXPelsPerMeter);
-		biYPelsPerMeter	= cpu_to_le32(biYPelsPerMeter);
-		biClrUsed		= cpu_to_le32(biClrUsed);
-		biClrImportant	= cpu_to_le32(biClrImportant);
-	}
-};
-static_assert(sizeof(BITMAPINFOHEADER) == 40, "invalid struct size: BITMAPINFOHEADER");
-
-#pragma pack()
-int rpbmp(std::ostream& os, const rp_image* img){
-	if(!img || !img->isValid()) return -1;
 	if (img->format() != rp_image::FORMAT_ARGB32 && img->format() != rp_image::FORMAT_CI8) {
 		// Unsupported image format
 		assert(img->format() == rp_image::FORMAT_NONE); // Should be none unless new format is added
 		return -1;
 	}
+
 	BITMAPFILEHEADER fhead;
-	fhead.bfSize	= sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER)
-						+ img->palette_len()*4 + img->data_len();
-	fhead.bfOffBits	= sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) 
-						+ img->palette_len()*4;
-	fhead.swap();
-	os.write((char*)&fhead,sizeof(fhead));
-	
+	fhead.bfType = cpu_to_le16(0x4D42);
+	fhead.bfSize = cpu_to_le32(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) +
+				img->palette_len()*4 + (uint32_t)img->data_len());
+	fhead.bfReserved1 = 0;
+	fhead.bfReserved2 = 0;
+	fhead.bfOffBits	= cpu_to_le32(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) +
+				img->palette_len()*4);
+	os.write(reinterpret_cast<const char*>(&fhead), sizeof(fhead));
+
 	BITMAPINFOHEADER ihead;
-	ihead.biWidth		= img->width();
-	ihead.biHeight		= -img->height(); // NOTE: the minus sign
-	ihead.biBitCount	= img->format() == rp_image::FORMAT_CI8 ? 8 : 32;
-	ihead.biClrUsed		= img->palette_len();
-	ihead.swap();
-	os.write((char*)&ihead,sizeof(ihead));
-	
-	if(img->format() == rp_image::FORMAT_CI8)
-		os.write((const char*)img->palette(),img->palette_len()*4);
-	
-	os.write((const char*)img->bits(),img->data_len());
+	memset(&ihead, 0, sizeof(ihead));
+	ihead.biSize		= cpu_to_le32((uint32_t)sizeof(ihead));
+	ihead.biWidth		= cpu_to_le32(img->width());
+	// FIXME: Verify byteswapping of negative numbers.
+	ihead.biHeight		= cpu_to_le32(-img->height());	// Negative for top-down.
+	ihead.biPlanes		= cpu_to_le32(1);
+	ihead.biBitCount	= cpu_to_le16(img->format() == rp_image::FORMAT_CI8 ? 8 : 32);
+	ihead.biCompression	= cpu_to_le32(BI_RGB);
+	ihead.biSizeImage	= cpu_to_le32(0);
+	ihead.biXPelsPerMeter	= cpu_to_le32(0);
+	ihead.biYPelsPerMeter	= cpu_to_le32(0);
+	if (img->format() == rp_image::FORMAT_CI8) {
+		ihead.biClrUsed		= cpu_to_le32(img->palette_len());
+	} else {
+		ihead.biClrUsed		= cpu_to_le32(0);
+	}
+	ihead.biClrImportant	= ihead.biClrUsed;
+	os.write(reinterpret_cast<const char*>(&ihead), sizeof(ihead));
+
+	if (img->format() == rp_image::FORMAT_CI8) {
+		// Write the palette for CI8 images.
+		os.write(reinterpret_cast<const char*>(img->palette()), img->palette_len()*4);
+	}
+
+	// Write the image data.
+	os.write(static_cast<const char*>(img->bits()), img->data_len());
 	return 0;
 }
 
-int rpbmp(const rp_char *filename, const LibRomData::rp_image* img) {
+int rpbmp(const rp_char *filename, const LibRomData::rp_image *img)
+{
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 	if (!file.is_open()) {
 		return -1;
