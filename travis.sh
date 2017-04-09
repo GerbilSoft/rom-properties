@@ -14,8 +14,8 @@ cmake .. \
 	-DBUILD_GNOME=ON \
 	|| exit 1
 # Build UTF-8 and UTF-16 libraries for testing purposes.
-make romdata8 romdata16 cachemgr8 cachemgr16 || RET=1
+make -k romdata8 romdata16 cachemgr8 cachemgr16 || RET=1
 # Build the actual plugin(s).
-make || RET=1
+make -k || RET=1
 ctest -V || RET=1
 exit "${RET}"
