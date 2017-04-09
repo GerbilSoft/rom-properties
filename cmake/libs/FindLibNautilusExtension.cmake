@@ -24,5 +24,7 @@ FIND_LIBRARY_PKG_CONFIG(LibNautilusExtension
 
 # Extensions directory.
 IF(LibNautilusExtension_FOUND AND NOT LibNautilusExtension_EXTENSION_DIR)
-	MESSAGE(FATAL_ERROR "LibNautilusExtension_EXTENSION_DIR is not set.")
+	MESSAGE(WARNING "LibNautilusExtension_EXTENSION_DIR is not set; using defaults.")
+	INCLUDE(DirInstallPaths)
+	SET(LibNautilusExtension_EXTENSION_DIR "${DIR_INSTALL_LIB}/nautilus/extensions-3.0" CACHE INTERNAL "LibNautilusExtension_EXTENSION_DIR")
 ENDIF(LibNautilusExtension_FOUND AND NOT LibNautilusExtension_EXTENSION_DIR)

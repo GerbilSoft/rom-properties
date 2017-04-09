@@ -26,7 +26,7 @@
 #
 FUNCTION(FIND_LIBRARY_PKG_CONFIG _prefix _pkgconf _include _library _target)
 	FIND_PACKAGE(PkgConfig)
-	IF(PkgConfig_FOUND)
+	IF(PKG_CONFIG_FOUND)
 		PKG_CHECK_MODULES(PC_${_prefix} QUIET ${_pkgconf})
 		SET(${_prefix}_DEFINITIONS ${PC_${_prefix}_CFLAGS_OTHER})
 
@@ -42,6 +42,7 @@ FUNCTION(FIND_LIBRARY_PKG_CONFIG _prefix _pkgconf _include _library _target)
 		# Handle the QUIETLY and REQUIRED arguments and set
 		# ${_prefix}_FOUND to TRUE if all listed variables
 		# are TRUE.
+		SET(${_prefix}_PREV_FOUND ${_prefix}_FOUND)
 		INCLUDE(FindPackageHandleStandardArgs)
 		FIND_PACKAGE_HANDLE_STANDARD_ARGS(${_prefix}
 			FOUND_VAR ${_prefix}_FOUND
@@ -76,9 +77,14 @@ FUNCTION(FIND_LIBRARY_PKG_CONFIG _prefix _pkgconf _include _library _target)
 			SET_TARGET_PROPERTIES(${_target} PROPERTIES
 				INTERFACE_INCLUDE_DIRECTORIES "${${_prefix}_INCLUDE_DIRS}")
 
-			# Check for extensiondir and/or extensionsdir.
-			PKG_GET_VARIABLE(${_prefix}_EXTENSION_DIR ${_pkgconf} extensiondir)
-			PKG_GET_VARIABLE(${_prefix}_EXTENSIONS_DIR ${_pkgconf} extensionsdir)
+			IF(COMMAND PKG_GET_VARIABLE)
+				IF(NOT ${_prefix}_PREV_FOUND)
+					MESSAGE(STATUS "Found ${_prefix}: ${${_prefix}_LIBRARY} (version ${${_prefix}_VERSION})")
+				ENDIF(NOT ${_prefix}_PREV_FOUND)
+				# Check for extensiondir and/or extensionsdir.
+				PKG_GET_VARIABLE(${_prefix}_EXTENSION_DIR ${_pkgconf} extensiondir)
+				PKG_GET_VARIABLE(${_prefix}_EXTENSIONS_DIR ${_pkgconf} extensionsdir)
+			ENDIF(COMMAND PKG_GET_VARIABLE)
 
 			# Replace hard-coded prefixes.
 			INCLUDE(ReplaceHardcodedPrefix)
@@ -88,8 +94,12 @@ FUNCTION(FIND_LIBRARY_PKG_CONFIG _prefix _pkgconf _include _library _target)
 
 			# Export variables.
 			FOREACH(VAR FOUND INCLUDE_DIRS LIBRARY LIBRARIES DEFINITIONS EXTENSION_DIR EXTENSIONS_DIR VERSION)
-				SET(${_prefix}_${VAR} ${${_prefix}_${VAR}} PARENT_SCOPE)
+				SET(${_prefix}_${VAR} ${${_prefix}_${VAR}} CACHE INTERNAL "${_prefix}_${VAR}")
 			ENDFOREACH()
+		ELSE(${_prefix}_FOUND)
+			MESSAGE(STATUS "NOT FOUND: ${_prefix}")
 		ENDIF(${_prefix}_FOUND)
-	ENDIF(PkgConfig_FOUND)
+	ELSE(PKG_CONFIG_FOUND)
+		MESSAGE(STATUS "NOT FOUND: PkgConfig - cannot search for ${_prefix}")
+	ENDIF(PKG_CONFIG_FOUND)
 ENDFUNCTION()
