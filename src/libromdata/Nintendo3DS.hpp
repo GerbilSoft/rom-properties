@@ -63,6 +63,12 @@ class Nintendo3DS : public RomData
 		RP_DISABLE_COPY(Nintendo3DS)
 
 	public:
+		/**
+		 * Close the opened file.
+		 */
+		virtual void close(void) override final;
+
+	public:
 		/** ROM detection functions. **/
 
 		/**

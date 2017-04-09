@@ -118,7 +118,7 @@ class RomData
 		/**
 		 * Close the opened file.
 		 */
-		void close(void);
+		virtual void close(void);
 
 	public:
 		/** ROM detection functions. **/

@@ -1157,6 +1157,19 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	d->isValid = true;
 }
 
+/**
+ * Close the opened file.
+ */
+void Nintendo3DS::close(void)
+{
+	RP_D(Nintendo3DS);
+	if (d->srlData) {
+		// Close the SRL.
+		d->srlData->close();
+	}
+	super::close();
+}
+
 /** ROM detection functions. **/
 
 /**
