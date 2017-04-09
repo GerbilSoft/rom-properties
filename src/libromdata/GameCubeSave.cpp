@@ -137,9 +137,7 @@ GameCubeSavePrivate::~GameCubeSavePrivate()
 {
 	delete img_banner;
 	if (iconAnimData) {
-		// Delete all except the first animated icon frame.
-		// (The first frame is owned by the RomData superclass.)
-		for (int i = iconAnimData->count-1; i >= 1; i--) {
+		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			delete iconAnimData->frames[i];
 		}
 		delete iconAnimData;

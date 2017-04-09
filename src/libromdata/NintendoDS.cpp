@@ -171,12 +171,6 @@ NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
 NintendoDSPrivate::~NintendoDSPrivate()
 {
 	if (iconAnimData) {
-		// NOTE: Nintendo DSi icons can have custom sequences,
-		// so the first frame isn't necessarily the first in
-		// the sequence. Hence, we return a copy of the first
-		// frame in the sequence for loadIcon().
-		// This class owns all of the icons in here, so we
-		// must delete all of them.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			delete iconAnimData->frames[i];
 		}

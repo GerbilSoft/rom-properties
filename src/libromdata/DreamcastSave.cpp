@@ -211,8 +211,6 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
 
 	delete img_banner;
 	if (iconAnimData) {
-		// This class owns all of the icons in iconAnimData, so we
-		// must delete all of them.
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			delete iconAnimData->frames[i];
 		}
