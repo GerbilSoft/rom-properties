@@ -257,7 +257,7 @@ LONG RP_ExtractIcon_Private::UnregisterFileType(RegKey &hkey_Assoc)
 	}
 
 	// Restore the fallbacks if we have any.
-	DWORD dwTypeDefaultIcon, dwTypeIconHandler;
+	DWORD dwTypeDefaultIcon = 0, dwTypeIconHandler = 0;
 	defaultIcon.clear();
 	iconHandler.clear();
 	RegKey hkcr_RP_Fallback(hkey_Assoc, L"RP_Fallback", KEY_READ|KEY_WRITE, false);

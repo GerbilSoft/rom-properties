@@ -296,7 +296,7 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 	}
 
 	// Load the two KeyX keys.
-	KeyManager::KeyData_t keyX_data[2];
+	KeyManager::KeyData_t keyX_data[2] = {{nullptr, 0}, {nullptr, 0}};
 	for (int i = 0; i < 2; i++) {
 		if (!keyX_name[i]) {
 			// KeyX[1] is the same as KeyX[0];

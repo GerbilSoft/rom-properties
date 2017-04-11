@@ -179,6 +179,10 @@ wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 
 	// Allocate a buffer and get the data.
 	wchar_t *wbuf = static_cast<wchar_t*>(malloc(cbData));
+	if (!wbuf) {
+		// Memory allocation failed.
+		return wstring();
+	}
 	lResult = RegQueryValueEx(m_hKey,
 		lpValueName,	// lpValueName
 		nullptr,	// lpReserved

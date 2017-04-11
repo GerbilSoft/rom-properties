@@ -1992,6 +1992,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	cchFilename++;	// Add one for the NULL terminator.
 	filename = (wchar_t*)malloc(cchFilename * sizeof(wchar_t));
+	if (!filename) {
+		// Memory allocation failed.
+		goto cleanup;
+	}
 	cchFilename = DragQueryFile(hDrop, 0, filename, cchFilename);
 	if (cchFilename == 0) {
 		// No filename.

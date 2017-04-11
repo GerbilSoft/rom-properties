@@ -107,7 +107,7 @@ class GcnFstPrivate
 GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 	: hasErrors(false)
 	, fstData(nullptr)
-	, fstData_sz(len + 1)
+	, fstData_sz(len)
 	, string_table(nullptr)
 	, string_table_sz(0)
 	, offsetShift(offsetShift)
@@ -139,19 +139,20 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 	}
 
 	// Copy the FST data.
-	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz));
+	// NOTE: +1 for NULL termination.
+	uint8_t *fst8 = static_cast<uint8_t*>(malloc(fstData_sz + 1));
 	if (!fst8) {
 		// Could not allocate memory for the FST.
 		hasErrors = true;
 		return;
 	}
-	fst8[len] = 0; // Make sure the string table is NULL-terminated.
+	memcpy(fst8, fstData, fstData_sz);
+	fst8[fstData_sz] = 0; // Make sure the string table is NULL-terminated.
 	this->fstData = reinterpret_cast<GCN_FST_Entry*>(fst8);
-	memcpy(this->fstData, fstData, len);
 
 	// Save a pointer to the string table.
 	string_table = reinterpret_cast<char*>(&fst8[string_table_offset]);
-	string_table_sz = len - string_table_offset;
+	string_table_sz = fstData_sz - string_table_offset;
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
 	// Reserve space in the string table.
