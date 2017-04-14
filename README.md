@@ -240,3 +240,5 @@ decrypt data will show an error message instead of the data in question.
   for more information on PS1 save files.
 * [amiibo.life](http://amiibo.life): Database of Nintendo amiibo figurines,
   cards, and plushes. Used for automatic downloading of amiibo images.
+* [3dbrew](https://www.3dbrew.org): Nintendo 3DS homebrew and reverse
+  engineering. Used for Nintendo 3DS file format information.
