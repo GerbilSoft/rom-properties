@@ -41,7 +41,9 @@
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <vector>
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -319,11 +321,12 @@ MegaDrive::MegaDrive(IRpFile *file)
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
 
 				// First bank needs to be deinterleaved.
-				uint8_t smd_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
-				uint8_t bin_data[MegaDrivePrivate::SMD_BLOCK_SIZE];
+				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
+				uint8_t *const smd_data = block.get();
+				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
 				d->file->seek(512);
-				size = d->file->read(smd_data, sizeof(smd_data));
-				if (size != sizeof(smd_data)) {
+				size = d->file->read(smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
+				if (size != MegaDrivePrivate::SMD_BLOCK_SIZE) {
 					// Short read. ROM is invalid.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
 					break;
