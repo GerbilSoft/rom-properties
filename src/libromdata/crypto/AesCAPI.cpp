@@ -55,11 +55,8 @@ class AesCAPIPrivate
 
 	public:
 		// CryptoAPI provider.
-		// NOTE: Reference-counted and shared with all instances.
-		static HCRYPTPROV hProvider;
-		static LONG lRefCnt;
-
-		// Instance-specific key.
+		HCRYPTPROV hProvider;
+		// CryptoAPI key.
 		HCRYPTKEY hKey;
 
 		// Chaining mode.
@@ -79,30 +76,26 @@ class AesCAPIPrivate
 
 /** AesCAPIPrivate **/
 
-HCRYPTPROV AesCAPIPrivate::hProvider = 0;
-LONG AesCAPIPrivate::lRefCnt = 0;
-
 AesCAPIPrivate::AesCAPIPrivate()
-	: hKey(0)
+	: hProvider(0)
+	, hKey(0)
 	, chainingMode(IAesCipher::CM_ECB)
 {
 	// Clear the counter.
 	memset(ctr, 0, sizeof(ctr));
 
-	if (InterlockedIncrement(&lRefCnt) == 1) {
-		// Initialize the CryptoAPI provider.
-		// TODO: Try multiple times, e.g.:
-		// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa382383(v=vs.85).aspx
-		// http://stackoverflow.com/questions/4495247/ms-crypto-api-behavior-on-windows-xp-vs-vista-7
-		// MS_ENH_RSA_AES_PROV is the value for Windows 7, but it fails for XP.
-		// XP expects MS_ENH_RSA_AES_PROV_XP, which has "(Prototype)".
-		// Specifiyng nullptr should work in both cases.
-		if (!CryptAcquireContext(&hProvider, nullptr, nullptr,
-		    PROV_RSA_AES, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-		{
-			// Unable to find an AES encryption provider.
-			hProvider = 0;
-		}
+	// Initialize the CryptoAPI provider.
+	// TODO: Try multiple times, e.g.:
+	// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa382383(v=vs.85).aspx
+	// http://stackoverflow.com/questions/4495247/ms-crypto-api-behavior-on-windows-xp-vs-vista-7
+	// MS_ENH_RSA_AES_PROV is the value for Windows 7, but it fails for XP.
+	// XP expects MS_ENH_RSA_AES_PROV_XP, which has "(Prototype)".
+	// Specifiyng nullptr should work in both cases.
+	if (!CryptAcquireContext(&hProvider, nullptr, nullptr,
+	    PROV_RSA_AES, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+	{
+		// Unable to find an AES encryption provider.
+		hProvider = 0;
 	}
 }
 
@@ -111,13 +104,8 @@ AesCAPIPrivate::~AesCAPIPrivate()
 	if (hKey != 0) {
 		CryptDestroyKey(hKey);
 	}
-
-	if (InterlockedDecrement(&lRefCnt) == 0) {
-		// All references have been removed.
-		if (hProvider != 0) {
-			CryptReleaseContext(hProvider, 0);
-			hProvider = 0;
-		}
+	if (hProvider != 0) {
+		CryptReleaseContext(hProvider, 0);
 	}
 }
 
