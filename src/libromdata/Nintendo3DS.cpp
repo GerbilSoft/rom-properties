@@ -1328,6 +1328,7 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
 		_RP(".smdh"),	// SMDH (icon) file.
 		_RP(".3dsx"),	// Homebrew application.
 		_RP(".3ds"),	// ROM image. (NOTE: Conflicts with 3DS Max.)
+		_RP(".3dz"),	// ROM image. (with private header for Gateway 3DS)
 		_RP(".cci"),	// ROM image.
 		_RP(".cia"),	// CTR installable archive.
 		_RP(".ncch"),	// NCCH file.
