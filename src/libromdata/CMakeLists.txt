@@ -224,6 +224,7 @@ IF(WIN32)
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
+		Win32_ExeInit.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS

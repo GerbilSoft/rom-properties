@@ -245,8 +245,13 @@ int main(int argc, char *argv[])
 
 #ifdef _WIN32
 // UTF-16 main() wrapper for Windows.
-#include <windows.h>
-int wmain(int argc, wchar_t *argv[]) {
+#include "libromdata/Win32_ExeInit.hpp"
+int wmain(int argc, wchar_t *argv[])
+{
+	// libromdata Windows executable initialization.
+	// This sets various security options.
+	LibRomData::Win32_ExeInit();
+
 	// Convert the UTF-16 arguments to UTF-8.
 	// NOTE: Using WideCharToMultiByte() directly in order to
 	// avoid std::string overhead.
