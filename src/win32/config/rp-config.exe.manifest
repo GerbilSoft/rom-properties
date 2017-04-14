@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+	<assemblyIdentity
+		type="win32"
+		name="ROM Properties Page configuration stub"
+		version="0.9.0.1"
+		processorArchitecture="*"
+	/>
+
+	<description>ROM Properties Page configuration stub</description>
+
+	<!-- Common Controls 6. Needed for visual styles on XP and later. -->
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity
+				type="win32"
+				name="Microsoft.Windows.Common-Controls"
+				version="6.0.0.0"
+				processorArchitecture="*"
+				publicKeyToken="6595b64144ccf1df"
+				language="*"
+			/>
+		</dependentAssembly>
+	</dependency>
+
+	<!-- Application security requirements. Used for Vista UAC. -->
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+		<security>
+			<requestedPrivileges>
+				<requestedExecutionLevel
+					level="asInvoker"
+					uiAccess="false"
+				/>
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
+
+	<!-- Mark this program as *not* DPI-aware on Windows Vista and later. -->
+	<asmv3:application>
+		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+			<dpiAware>false</dpiAware>
+		</asmv3:windowsSettings>
+	</asmv3:application>
+
+	<!-- Operating system compatibility. -->
+	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+		<application>
+			<!--The ID below indicates application support for Windows Vista -->
+			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
+
+			<!--The ID below indicates application support for Windows 7 -->
+			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+
+			<!-- Enable long paths (>260 chars) on Windows 10 Anniversary Update. (1607) -->
+			<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+		</application>
+	</compatibility>
+</assembly>

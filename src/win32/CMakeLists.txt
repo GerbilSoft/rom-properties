@@ -19,6 +19,7 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
+	config/ConfigDialog.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -110,9 +111,8 @@ IF(RP_DLL_FLAGS)
 	ENDIF()
 	SET_TARGET_PROPERTIES(rom-properties PROPERTIES LINK_FLAGS "${RP_LINK_FLAGS}")
 	UNSET(RP_LINK_FLAGS)
+	UNSET(RP_DLL_FLAGS)
 ENDIF(RP_DLL_FLAGS)
-
-UNSET(RP_DLL_FLAGS)
 
 # Delay-load ZLIB and LIBPNG.
 # NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
@@ -129,6 +129,24 @@ UNSET(RP_DLL_FLAGS)
 	#SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16d.dll")
 #	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16.dll")
 #ENDIF(USE_INTERNAL_PNG_DLL)
+
+### rp-config stub.
+ADD_EXECUTABLE(rp-config WIN32 config/rp-config.c config/rp-config.rc)
+SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
+DO_SPLIT_DEBUG(rp-config)
+SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
+SET_WINDOWS_NO_MANIFEST(rp-config)
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(rp-config
+	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+	)
 
 #################
 # Installation. #

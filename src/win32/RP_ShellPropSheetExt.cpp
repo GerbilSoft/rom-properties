@@ -74,11 +74,6 @@ namespace Gdiplus {
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
 
-// IDC_STATIC might not be defined.
-#ifndef IDC_STATIC
-#define IDC_STATIC (-1)
-#endif
-
 // Control base IDs.
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
@@ -2184,6 +2179,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 				d->stopAnimTimer();
 			}
+
+			// FIXME: Remove EXT_POINTER_PROP from child windows.
+			// NOTE: WM_DESTROY is sent *before* child windows are destroyed.
+			// WM_NCDESTROY is sent *after*.
 
 			// Remove the EXT_POINTER_PROP property from the page. 
 			// The EXT_POINTER_PROP property stored the pointer to the 

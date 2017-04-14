@@ -22,8 +22,35 @@
 #ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
-// Dialogs.
+// Dialogs
 #define IDD_PROPERTY_SHEET		100	/* Generic property sheet. */
 #define IDD_SUBTAB_CHILD_DIALOG		101	/* Subtab child dialog. */
+
+// Standard controls
+#ifndef IDC_STATIC
+#define IDC_STATIC (-1)
+#endif
+
+/** Configuration dialog **/
+#define IDD_CONFIG_DOWNLOADS                    110
+#define IDD_CONFIG_CACHE                        111
+#define IDD_CONFIG_CACHE_XP                     112
+
+// Downloads
+#define IDC_EXTIMGDL                            40101
+#define IDC_INTICONSMALL                        40102
+#define IDC_HIGHRESDL                           40103
+
+// Thumbnail cache
+#define IDC_CACHE_CLEAR_SYS_THUMBS              40201
+#define IDC_CACHE_CLEAR_RP_DL                   40202
+#define IDC_CACHE_STATUS                        40203
+#define IDC_CACHE_PROGRESS                      40204
+#define IDC_CACHE_XP_FIND_DRIVES                40205
+#define IDC_CACHE_XP_FIND_PATH                  40206
+#define IDC_CACHE_XP_DRIVES                     40207
+#define IDC_CACHE_XP_PATH                       40208
+#define IDC_CACHE_XP_BROWSE                     40209
+#define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40210
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

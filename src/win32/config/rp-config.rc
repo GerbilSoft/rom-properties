@@ -1,0 +1,98 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (Win32)                            *
+ * rp-config.rc: rp-config.exe Win32 resource script.                      *
+ *                                                                         *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+// Resource script for the rp-config.exe stub.,
+#include <windows.h>
+
+/* program version */
+#include "config.version.h"
+/* git version */
+#include "libromdata/git.h"
+
+/** Manifest. **/
+CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rp-config.exe.manifest"
+
+/** Version number. **/
+#define RP_VERSION_WIN32 RP_VERSION_MAJOR,RP_VERSION_MINOR,RP_VERSION_PATCH,RP_VERSION_DEVEL
+
+#ifdef RP_GIT_VERSION
+# ifdef RP_GIT_DESCRIBE
+#  define Win32_RC_FileVersion RP_VERSION_STRING "\r\n" RP_GIT_VERSION "\r\n" RP_GIT_DESCRIBE
+# else /* !RP_GIT_DESCRIBE */
+#  define Win32_RC_FileVersion RP_VERSION_STRING "\r\n" RP_GIT_VERSION
+# endif /* RP_GIT_DESCRIBE */
+#else /* !RP_GIT_VERSION */
+# define Win32_RC_FileVersion RP_VERSION_STRING
+#endif /* RP_GIT_VERSION */
+
+/** File flags for VERSIONINFO. **/
+#ifdef _DEBUG
+# define RP_VS_FF_DEBUG VS_FF_DEBUG
+#else
+# define RP_VS_FF_DEBUG 0
+#endif
+#if RP_VERSION_DEVEL != 0
+# define RP_VS_FF_PRERELEASE VS_FF_PRERELEASE
+#else
+# define RP_VS_FF_PRERELEASE 0
+#endif
+
+#define RP_VS_FILEFLAGS (RP_VS_FF_DEBUG | RP_VS_FF_PRERELEASE)
+
+// TODO: The git version gets cut off on Windows 7, since it uses
+// a ListView instead of separate ListBox and Edit controls like
+// on Windows XP.
+
+/** Application version. **/
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION RP_VERSION_WIN32
+	PRODUCTVERSION RP_VERSION_WIN32
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+	FILEFLAGS RP_VS_FILEFLAGS
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_DLL
+	FILESUBTYPE 0x0L
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		/* English (US), Unicode */
+		BLOCK "040904B0"
+		BEGIN
+			//VALUE "Comments", "\0"
+			//VALUE "CompanyName", "\0"
+			VALUE "FileDescription", "ROM Properties Page configuration stub\0"
+			VALUE "FileVersion", "rp-config " Win32_RC_FileVersion "\0"
+			VALUE "InternalName", "rp-config\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2017 by David Korth.\0"
+			//VALUE "LegalTrademarks", "\0"
+			//VALUE "OriginalFilename", "\0"
+			//VALUE "PrivateBuild", "\0"
+			VALUE "ProductName", "ROM Properties Page configuration stub\0"
+			VALUE "ProductVersion", "rp-config " Win32_RC_FileVersion "\0"
+			//VALUE "SpecialBuild", "\0"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x409, 1200
+	END
+END
