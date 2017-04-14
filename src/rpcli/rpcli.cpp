@@ -44,10 +44,12 @@ using namespace LibRomData;
 // C++ includes.
 #include <fstream>
 #include <iostream>
+#include <locale>
 #include <vector>
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::locale;
 using std::ofstream;
 
 struct ExtractParam {
@@ -159,6 +161,9 @@ static int real_main(int argc, char *argv[])
 int main(int argc, char *argv[])
 #endif
 {
+	// Set the C and C++ locales.
+	locale::global(locale(""));
+
 	if(argc<2){
 #ifdef ENABLE_DECRYPTION
 		cerr << "Usage: rpcli [-k] [-j] [[-x[b]N outfile]... filename]..." << endl;
