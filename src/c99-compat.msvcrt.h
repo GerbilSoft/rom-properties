@@ -1,7 +1,7 @@
 /***************************************************************************
  * c99-compat.msvcrt.h: C99 compatibility header. (MSVC)                   *
  *                                                                         *
- * Copyright (c) 2011-2016 by David Korth.                                 *
+ * Copyright (c) 2011-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -134,5 +134,50 @@ int C99_snprintf(char *str, size_t size, const char *format, ...)
 #define fseeko(stream, offset, origin) _fseeki64(stream, offset, origin)
 #define ftello(stream) _ftelli64(stream)
 #endif /* _MSC_VER */
+
+/** C99 **/
+
+/**
+ * C library functions that have different names in MSVCRT
+ * compared to POSIX and C99.
+ *
+ * Note that later versions of MSVC (esp. 2013 and 2015)
+ * have added more C99 functionality, since C99 is included
+ * in C++ 2011.
+ */
+
+/** strtoll(), strtoull() **/
+
+/**
+ * MSVC 2013 (12.0) added proper support for strtoll() and strtoull().
+ * Older verisons don't have these functions, but they do have
+ * the equivalent functions _strtoi64() and _strtoui64().
+ */
+#if _MSC_VER < 1800
+#define strtoll(nptr, endptr, base)  _strtoi64(nptr, endptr, base)
+#define strtoull(nptr, endptr, base) _strtoui64(nptr, endptr, base)
+#define wcstoll(nptr, endptr, base)  _wcstoi64(nptr, endptr, base)
+#define wcstoull(nptr, endptr, base) _wcstoui64(nptr, endptr, base)
+#endif /* _MSC_VER < 1800 */
+
+/** strcasecmp() and related **/
+
+/**
+ * MSVCRT case-insensitive string comparison functions.
+ * MinGW-w64 is missing some of these, so redefine the
+ * function names if they haven't been defined already.
+ */
+#ifndef strcasecmp
+#define strcasecmp(s1, s2)     _stricmp(s1, s2)
+#endif
+#ifndef strncasecmp
+#define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
+#endif
+#ifndef wcscasecmp
+#define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
+#endif
+#ifndef wcsncasecmp
+#define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
+#endif
 
 #endif /* __C99_COMPAT_MSVCRT_H__ */

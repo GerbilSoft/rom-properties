@@ -70,31 +70,6 @@
 
 #endif /* __cplusplus */
 
-/** C99 **/
-
-/**
- * C library functions that have different names in MSVCRT
- * compared to POSIX and C99.
- *
- * Note that later versions of MSVC (esp. 2013 and 2015)
- * have added more C99 functionality, since C99 is included
- * in C++ 2011.
- */
-
-/** strtoll(), strtoull() **/
-
-/**
- * MSVC 2013 (12.0) added proper support for strtoll() and strtoull().
- * Older verisons don't have these functions, but they do have
- * the equivalent functions _strtoi64() and _strtoui64().
- */
-#if _MSC_VER < 1800
-#define strtoll(nptr, endptr, base)  _strtoi64(nptr, endptr, base)
-#define strtoull(nptr, endptr, base) _strtoui64(nptr, endptr, base)
-#define wcstoll(nptr, endptr, base)  _wcstoi64(nptr, endptr, base)
-#define wcstoull(nptr, endptr, base) _wcstoui64(nptr, endptr, base)
-#endif /* _MSC_VER < 1800 */
-
 /**
  * MSVC doesn't have typeof(), but as of MSVC 2010,
  * it has decltype(), which is essentially the same thing.

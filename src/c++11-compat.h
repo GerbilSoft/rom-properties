@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.h: C++ 2011 compatibility header.                          *
  *                                                                         *
- * Copyright (c) 2011-2015 by David Korth.                                 *
+ * Copyright (c) 2011-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -104,27 +104,6 @@ namespace std {
 #  define __func__ "<unknown>"
 # endif
 #endif
-
-/**
- * MSVCRT case-insensitive string comparison functions.
- * MinGW-w64 is missing some of these, so redefine the
- * function names if they haven't been defined already.
- */
-#ifdef _WIN32
-#include <string.h>
-#ifndef strcasecmp
-#define strcasecmp(s1, s2)     _stricmp(s1, s2)
-#endif
-#ifndef strncasecmp
-#define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
-#endif
-#ifndef wcscasecmp
-#define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
-#endif
-#ifndef wcsncasecmp
-#define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)
-#endif
-#endif /* _WIN32 */
 
 /**
  * MSVCRT prior to MSVC 2015 has a non-compliant _snprintf().
