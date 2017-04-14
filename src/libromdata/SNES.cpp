@@ -306,9 +306,13 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		vector<const rp_char*> exts = supportedFileExtensions_static();
-		for (auto iter = exts.cbegin(); iter != exts.cend(); ++iter) {
-			if (!rp_strcasecmp(info->ext, *iter)) {
+		const rp_char *const *exts = supportedFileExtensions_static();
+		if (!exts) {
+			// Should not happen...
+			return -1;
+		}
+		for (; *exts != nullptr; exts++) {
+			if (!rp_strcasecmp(info->ext, *exts)) {
 				// File extension is supported.
 				return 0;
 			}
@@ -425,18 +429,20 @@ const rp_char *SNES::systemName(uint32_t type) const
  * NOTE: The extensions do not include the leading dot,
  * e.g. "bin" instead of ".bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> SNES::supportedFileExtensions_static(void)
+const rp_char *const *SNES::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".smc"), _RP(".swc"), _RP(".sfc"),
 		_RP(".fig"), _RP(".ufo"),
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -447,12 +453,12 @@ vector<const rp_char*> SNES::supportedFileExtensions_static(void)
  * NOTE: The extensions do not include the leading dot,
  * e.g. "bin" instead of ".bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> SNES::supportedFileExtensions(void) const
+const rp_char *const *SNES::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

@@ -245,17 +245,19 @@ const rp_char *N64::systemName(uint32_t type) const
  * NOTE: The extensions do not include the leading dot,
  * e.g. "bin" instead of ".bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> N64::supportedFileExtensions_static(void)
+const rp_char *const *N64::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".z64"), _RP(".n64"), _RP(".v64"),
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -271,7 +273,7 @@ vector<const rp_char*> N64::supportedFileExtensions_static(void)
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> N64::supportedFileExtensions(void) const
+const rp_char *const *N64::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

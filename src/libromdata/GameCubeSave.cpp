@@ -725,19 +725,21 @@ const rp_char *GameCubeSave::systemName(uint32_t type) const
  * NOTE: The extensions do not include the leading dot,
  * e.g. "bin" instead of ".bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> GameCubeSave::supportedFileExtensions_static(void)
+const rp_char *const *GameCubeSave::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".gci"),	// USB Memory Adapter
 		_RP(".gcs"),	// GameShark
 		_RP(".sav"),	// MaxDrive (TODO: Too generic?)
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -753,7 +755,7 @@ vector<const rp_char*> GameCubeSave::supportedFileExtensions_static(void)
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> GameCubeSave::supportedFileExtensions(void) const
+const rp_char *const *GameCubeSave::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

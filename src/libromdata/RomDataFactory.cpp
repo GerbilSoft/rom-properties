@@ -72,7 +72,7 @@ class RomDataFactoryPrivate
 
 	public:
 		typedef int (*pFnIsRomSupported)(const RomData::DetectInfo *info);
-		typedef vector<const rp_char*> (*pFnSupportedFileExtensions)(void);
+		typedef const rp_char *const * (*pFnSupportedFileExtensions)(void);
 
 #ifdef HAVE_LAMBDA_AS_FUNCTION_POINTER
 		typedef RomData* (*pFnNewRomData)(IRpFile *file);
@@ -169,9 +169,9 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// Lowercase versions are only used on non-Windows platforms
 	// due to case-sensitive file systems.
 #ifdef _WIN32
-	const rp_char *const exts[4] = {_RP(".VMI"), nullptr, _RP(".VMS"), nullptr};
+	static const rp_char *const exts[4] = {_RP(".VMI"), nullptr, _RP(".VMS"), nullptr};
 #else /* !_WIN32 */
-	const rp_char *const exts[4] = {_RP(".VMI"), _RP(".vmi"), _RP(".VMS"), _RP(".vms")};
+	static const rp_char *const exts[4] = {_RP(".VMI"), _RP(".vmi"), _RP(".VMS"), _RP(".vms")};
 #endif
 
 	if (has_dc_vms) {
@@ -395,28 +395,36 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 	// an unordered_map. If any of the handlers for a
 	// given extension support thumbnails, then the
 	// thumbnail handlers will be registered.
+	// FIXME: May need to use rp_string instead of rp_char*
+	// for proper hashing.
 	unordered_map<const rp_char*, bool> exts;
 
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_header[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		vector<const rp_char*> sys_vec = fns->supportedFileExtensions();
+		const rp_char *const *sys_exts = fns->supportedFileExtensions();
+		if (!sys_exts)
+			continue;
+
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
-		exts.reserve(exts.size() + sys_vec.size());
+		exts.reserve(exts.size() + 4);
 #endif
-		for (auto iter = sys_vec.cbegin(); iter != sys_vec.cend(); ++iter) {
-			exts[*iter] |= fns->hasThumbnail;
+		for (; *sys_exts != nullptr; sys_exts++) {
+			exts[*sys_exts] |= fns->hasThumbnail;
 		}
 	}
 
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
 	for (; fns->supportedFileExtensions != nullptr; fns++) {
-		vector<const rp_char*> sys_vec = fns->supportedFileExtensions();
+		const rp_char *const *sys_exts = fns->supportedFileExtensions();
+		if (!sys_exts)
+			continue;
+
 #if !defined(_MSC_VER) || _MSC_VER >= 1700
-		exts.reserve(exts.size() + sys_vec.size());
+		exts.reserve(exts.size() + 4);
 #endif
-		for (auto iter = sys_vec.cbegin(); iter != sys_vec.cend(); ++iter) {
-			exts[*iter] |= fns->hasThumbnail;
+		for (; *sys_exts != nullptr; sys_exts++) {
+			exts[*sys_exts] |= fns->hasThumbnail;
 		}
 	}
 

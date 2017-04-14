@@ -407,18 +407,20 @@ const rp_char *DMG::systemName(uint32_t type) const
  * NOTE: The extensions include the leading dot,
  * e.g. ".bin" instead of "bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> DMG::supportedFileExtensions_static(void)
+const rp_char *const *DMG::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".gb"), _RP(".sgb"), _RP(".sgb2"),
-		_RP(".gbc"), _RP(".cgb")
+		_RP(".gbc"), _RP(".cgb"),
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -429,12 +431,12 @@ vector<const rp_char*> DMG::supportedFileExtensions_static(void)
  * NOTE: The extensions include the leading dot,
  * e.g. ".bin" instead of "bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> DMG::supportedFileExtensions(void) const
+const rp_char *const *DMG::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

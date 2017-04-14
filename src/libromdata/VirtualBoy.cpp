@@ -304,19 +304,21 @@ const rp_char *VirtualBoy::systemName(uint32_t type) const
  * NOTE: The extensions include the leading dot,
  * e.g. ".bin" instead of "bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> VirtualBoy::supportedFileExtensions_static(void)
+const rp_char *const *VirtualBoy::supportedFileExtensions_static(void)
 {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 	static const rp_char *const exts[] = {
-		_RP(".vb")	// Visual Basic .NET source files
+		_RP(".vb"),	// Visual Basic .NET source files
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -327,12 +329,12 @@ vector<const rp_char*> VirtualBoy::supportedFileExtensions_static(void)
  * NOTE: The extensions include the leading dot,
  * e.g. ".bin" instead of "bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> VirtualBoy::supportedFileExtensions(void) const
+const rp_char *const *VirtualBoy::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

@@ -1317,12 +1317,12 @@ const rp_char *Nintendo3DS::systemName(uint32_t type) const
  * NOTE: The extensions do not include the leading dot,
  * e.g. "bin" instead of ".bin".
  *
- * NOTE 2: The strings in the std::vector should *not*
- * be freed by the caller.
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
  *
- * @return List of all supported file extensions.
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
+const rp_char *const *Nintendo3DS::supportedFileExtensions_static(void)
 {
 	static const rp_char *const exts[] = {
 		_RP(".smdh"),	// SMDH (icon) file.
@@ -1336,8 +1336,10 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
 		_RP(".cxi"),	// CTR Executable Image (NCCH)
 		_RP(".cfa"),	// CTR File Archive (NCCH)
 		_RP(".csu"),	// CTR System Update (CCI)
+
+		nullptr
 	};
-	return vector<const rp_char*>(exts, exts + ARRAY_SIZE(exts));
+	return exts;
 }
 
 /**
@@ -1353,7 +1355,7 @@ vector<const rp_char*> Nintendo3DS::supportedFileExtensions_static(void)
  *
  * @return List of all supported file extensions.
  */
-vector<const rp_char*> Nintendo3DS::supportedFileExtensions(void) const
+const rp_char *const *Nintendo3DS::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
 }

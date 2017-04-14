@@ -93,12 +93,12 @@ class NES : public RomData
 		 * NOTE: The extensions include the leading dot,
 		 * e.g. ".bin" instead of "bin".
 		 *
-		 * NOTE 2: The strings in the std::vector should *not*
-		 * be freed by the caller.
+		 * NOTE 2: The array and the strings in the array should
+		 * *not* be freed by the caller.
 		 *
-		 * @return List of all supported file extensions.
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		static std::vector<const rp_char*> supportedFileExtensions_static(void);
+		static const rp_char *const *supportedFileExtensions_static(void);
 
 		/**
 		 * Get a list of all supported file extensions.
@@ -108,12 +108,12 @@ class NES : public RomData
 		 * NOTE: The extensions include the leading dot,
 		 * e.g. ".bin" instead of "bin".
 		 *
-		 * NOTE 2: The strings in the std::vector should *not*
-		 * be freed by the caller.
+		 * NOTE 2: The array and the strings in the array should
+		 * *not* be freed by the caller.
 		 *
-		 * @return List of all supported file extensions.
+		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual std::vector<const rp_char*> supportedFileExtensions(void) const override;
+		virtual const rp_char *const *supportedFileExtensions(void) const override;
 
 	protected:
 		/**
