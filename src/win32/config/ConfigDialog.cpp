@@ -28,6 +28,10 @@
 // C includes.
 #include <stdlib.h>
 
+// C++ includes.
+#include <string>
+using std::wstring;
+
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
 
@@ -171,21 +175,35 @@ static int clearCacheVista(HWND hDlg)
 		return 3;
 	}
 
+	// Get the CLSID.
+	wstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
+	if (s_clsidThumbnailCacheCleaner.size() != 38) {
+		// Not a CLSID.
+		SetWindowText(hStatusLabel, L"ERROR: Thumbnail Cache cleaner CLSID is invalid.");
+		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+		return 4;
+	}
+	CLSID clsidThumbnailCacheCleaner;
+	HRESULT hr = CLSIDFromString(s_clsidThumbnailCacheCleaner.c_str(), &clsidThumbnailCacheCleaner);
+	if (FAILED(hr)) {
+		// Failed to convert the CLSID from string.
+		SetWindowText(hStatusLabel, L"ERROR: Thumbnail Cache cleaner CLSID is invalid.");
+		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+		return 5;
+	}
+
 	// Attempt to clear the cache on all non-removable hard drives.
 	// TODO: Check mount points?
-	// TODO: Load the CLSID from the registry:
-	// - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache
 	// Reference: http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	IEmptyVolumeCachePtr pCleaner;
-	static const CLSID CLSID_ThumbnailCacheCleaner = {0x889900c3, 0x59f3, 0x4c2f, {0xae, 0x21, 0xa4, 0x09, 0xea, 0x01, 0xe6, 0x05}};
-	HRESULT hr = CoCreateInstance(CLSID_ThumbnailCacheCleaner, nullptr,
+	hr = CoCreateInstance(clsidThumbnailCacheCleaner, nullptr,
 		CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&pCleaner));
 	if (FAILED(hr)) {
 		// Failed...
 		swprintf(wbuf, _countof(wbuf), L"ERROR: CoCreateInstance() failed. (hr == 0x%08X)", hr);
 		SetWindowText(hStatusLabel, wbuf);
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-		return 4;
+		return 6;
 	}
 
 	// TODO: Disable user input until we're done?
@@ -233,7 +251,7 @@ static int clearCacheVista(HWND hDlg)
 			SetWindowText(hStatusLabel, wbuf);
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
-			return 5;
+			return 7;
 		}
 
 		// Clear the thumbnails.
