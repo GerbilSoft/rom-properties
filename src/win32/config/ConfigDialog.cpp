@@ -40,7 +40,31 @@ _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
 // Property for "external pointer".
 // This links the property sheet to the COM object.
-#define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
+#define EXT_POINTER_PROP L"ConfigDialog"
+
+/** ConfigDialogPrivate **/
+
+class ConfigDialogPrivate
+{
+	public:
+		ConfigDialogPrivate(bool isVista);
+
+	private:
+		RP_DISABLE_COPY(ConfigDialogPrivate)
+
+	private:
+		bool m_isVista;
+
+	public:
+		inline bool isVista(void) const
+		{
+			return m_isVista;
+		}
+};
+
+ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
+	: m_isVista(isVista)
+{ }
 
 /** Property sheet callback functions. **/
 
@@ -61,9 +85,13 @@ static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			if (!pPage)
 				return TRUE;
 
+			// Get the pointer to the ConfigDialogPrivate object.
+			ConfigDialogPrivate *const d = reinterpret_cast<ConfigDialogPrivate*>(pPage->lParam);
+			if (!d)
+				return TRUE;
+
 			// Store the object pointer with this particular page dialog.
-			// TODO
-			SetProp(hDlg, EXT_POINTER_PROP, nullptr);
+			SetProp(hDlg, EXT_POINTER_PROP, reinterpret_cast<HANDLE>(lParam));
 
 			// TODO: Initialize the dialog.
 			return TRUE;
@@ -300,9 +328,21 @@ static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 			if (!pPage)
 				return TRUE;
 
+			// Get the pointer to the ConfigDialogPrivate object.
+			ConfigDialogPrivate *const d = reinterpret_cast<ConfigDialogPrivate*>(pPage->lParam);
+			if (!d)
+				return TRUE;
+
 			// Store the object pointer with this particular page dialog.
-			// TODO
-			SetProp(hDlg, EXT_POINTER_PROP, nullptr);
+			SetProp(hDlg, EXT_POINTER_PROP, reinterpret_cast<HANDLE>(lParam));
+
+			// On XP, we need to initialize some widgets.
+			// TODO: InitDialog().
+			if (!d->isVista()) {
+				Button_SetCheck(GetDlgItem(hDlg, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
+				ShowWindow(GetDlgItem(hDlg, IDC_CACHE_XP_PATH), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_CACHE_XP_BROWSE), SW_HIDE);
+			}
 
 			// TODO: Initialize the dialog.
 			return TRUE;
@@ -394,27 +434,38 @@ static INT_PTR createPropertySheet(void)
 	psp[0].pfnDlgProc = DlgProc_Downloads;
 	psp[0].pcRefParent = nullptr;
 	psp[0].pfnCallback = CallbackProc_Downloads;
-	psp[0].lParam = 0;	// TODO
 
 	// Thumbnail cache.
-	// TODO: References:
+	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	// TODO: Check for the Thumbnail Cache cleanup object:
-	// - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache
-	// If present, use the Vista+ dialog.
-	// If not present, use the XP dialog.
-	// For now, always using the Vista version.
 	psp[1].dwSize = sizeof(psp);
 	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp[1].hInstance = g_hInstance;
-	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
 	psp[1].pszIcon = nullptr;
 	psp[1].pszTitle = L"Thumbnail Cache";
 	psp[1].pfnDlgProc = DlgProc_Cache;
 	psp[1].pcRefParent = nullptr;
 	psp[1].pfnCallback = CallbackProc_Cache;
-	psp[1].lParam = 0;	// TODO
+
+	// Determine which dialog we should use.
+	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
+	bool isVista;
+	if (hKey.isOpen()) {
+		// Vista+ Thumbnail Cache cleaner is available.
+		isVista = true;
+		psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
+		hKey.close();
+	} else {
+		// Not available. Use manual cache cleaning.
+		isVista = false;
+		psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
+	}
+
+	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
+	ConfigDialogPrivate *const d = new ConfigDialogPrivate(isVista);
+	psp[0].lParam = reinterpret_cast<LPARAM>(d);
+	psp[1].lParam = reinterpret_cast<LPARAM>(d);
 
 	// Create the property sheet pages.
 	// NOTE: PropertySheet() is supposed to be able to take an
@@ -439,7 +490,9 @@ static INT_PTR createPropertySheet(void)
 	psh.hplWatermark = nullptr;
 	psh.hbmHeader = nullptr;
 
-	return PropertySheet(&psh);
+	INT_PTR ret = PropertySheet(&psh);
+	delete d;
+	return ret;
 }
 
 /**
