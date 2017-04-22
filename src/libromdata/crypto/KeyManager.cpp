@@ -573,9 +573,9 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	RP_D(const KeyManager);
 #ifdef _WIN32
 	// TODO: Handle errors.
-	InitOnceExecuteOnce(&(const_cast<KeyManagerPrivate*>(d)->once_control,
+	InitOnceExecuteOnce(&(const_cast<KeyManagerPrivate*>(d)->once_control),
 		const_cast<KeyManagerPrivate*>(d)->initOnceFunc,
-		this, nullptr);
+		(PVOID)this, nullptr);
 #else
 	pthread_once(&(const_cast<KeyManagerPrivate*>(d)->once_control),
 		const_cast<KeyManagerPrivate*>(d)->initOnceFunc);
