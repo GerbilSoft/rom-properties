@@ -24,6 +24,7 @@
 // libromdata
 #include "TextFuncs.hpp"
 #include "threads/Atomics.h"
+#include "threads/InitOnceExecuteOnceXP.h"
 
 // C includes.
 #include <sys/utime.h>
@@ -46,9 +47,11 @@ using std::wstring;
 
 namespace LibRomData { namespace FileSystem {
 
+// InitOnceExecuteOnce() control variable.
+static INIT_ONCE once_control = INIT_ONCE_STATIC_INIT;
+
 // Configuration directories.
-static int init_counter = -1;
-static volatile int is_init = 0;
+
 // User's cache directory.
 static rp_string cache_dir;
 // User's configuration directory.
@@ -153,25 +156,14 @@ int64_t filesize(const rp_string &filename)
 
 /**
  * Initialize the configuration directory paths.
+ * Called by InitOnceExecuteOnce().
  */
-static void initConfigDirectories(void)
+static BOOL WINAPI initConfigDirectories(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context)
 {
-	// How this works:
-	// - init_counter is initially -1.
-	// - Incrementing it returns 0; this means that the
-	//   directories have not been initialized yet.
-	// - is_init is set when initializing.
-	// - If the counter wraps around, the directories won't be
-	//   reinitialized because is_init will be set.
-	if (ATOMIC_INC_FETCH(&init_counter) != 0 || is_init) {
-		// Function has already been called.
-		// Wait for directories to be initialized.
-		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
-			// TODO: Timeout counter?
-			Sleep(0);
-		}
-		return;
-	}
+	// We aren't using any of the InitOnceExecuteOnce() parameters.
+	((void)once);
+	((void)param);
+	((void)context);
 
 	wchar_t path[MAX_PATH];
 	HRESULT hr;
@@ -217,7 +209,7 @@ static void initConfigDirectories(void)
 	}
 
 	// Directories have been initialized.
-	is_init = 1;
+	return TRUE;
 }
 
 /**
@@ -231,11 +223,8 @@ static void initConfigDirectories(void)
  */
 const rp_string &getCacheDirectory(void)
 {
-	// NOTE: It's safe to check is_init here, since it's
-	// only ever set to 1 by our code.
-	if (!is_init) {
-		initConfigDirectories();
-	}
+	// TODO: Handle errors.
+	InitOnceExecuteOnce(&once_control, initConfigDirectories, nullptr, nullptr);
 	return cache_dir;
 }
 
@@ -249,11 +238,8 @@ const rp_string &getCacheDirectory(void)
  */
 const rp_string &getConfigDirectory(void)
 {
-	// NOTE: It's safe to check is_init here, since it's
-	// only ever set to 1 by our code.
-	if (!is_init) {
-		initConfigDirectories();
-	}
+	// TODO: Handle errors.
+	InitOnceExecuteOnce(&once_control, initConfigDirectories, nullptr, nullptr);
 	return config_dir;
 }
 

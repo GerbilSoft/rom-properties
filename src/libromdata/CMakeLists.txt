@@ -217,6 +217,7 @@ IF(WIN32)
 		file/win32/IStreamWrapper.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
+		threads/InitOnceExecuteOnceXP.c
 		)
 	SET(libromdata_OS_H
 		RpWin32.hpp
@@ -224,6 +225,7 @@ IF(WIN32)
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
+		threads/InitOnceExecuteOnceXP.h
 		Win32_ExeInit.hpp
 		)
 ELSE(WIN32)
