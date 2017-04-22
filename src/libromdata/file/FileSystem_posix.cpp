@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <utime.h>
+#include <pthread.h>
 
 // C includes. (C++ namespace)
 #include <cstring>

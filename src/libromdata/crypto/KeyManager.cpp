@@ -51,6 +51,13 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
+// One-time initialization.
+#ifdef _WIN32
+#include "../threads/InitOnceExecuteOnceXP.h"
+#else
+#include <pthread.h>
+#endif
+
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "../uvector.h"
@@ -67,6 +74,9 @@ class KeyManagerPrivate
 
 	public:
 		// Static KeyManager instance.
+		// TODO: Q_GLOBAL_STATIC() equivalent, though we
+		// may need special initialization if the compiler
+		// doesn't support thread-safe statics.
 		static KeyManager instance;
 
 	public:
@@ -98,6 +108,16 @@ class KeyManagerPrivate
 		void init(void);
 
 		/**
+		 * Initialize Once function.
+		 * Called by pthread_once() or InitOnceExecuteOnce().
+		 */
+#ifdef _WIN32
+		static BOOL WINAPI initOnceFunc(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context);
+#else
+		static void initOnceFunc(void);
+#endif
+
+		/**
 		 * Process a configuration line.
 		 * @param line_buf Configuration line.
 		 */
@@ -110,9 +130,15 @@ class KeyManagerPrivate
 		 */
 		int loadKeys(bool force = false);
 
-		// Initialization counter.
-		int init_counter;
-		volatile int is_init;
+#ifdef _WIN32
+		// InitOnceExecuteOnce() control variable.
+		INIT_ONCE once_control;
+		static const INIT_ONCE ONCE_CONTROL_INIT = INIT_ONCE_STATIC_INIT;
+#else
+		// pthread_once() control variable.
+		pthread_once_t once_control;
+		static const pthread_once_t ONCE_CONTROL_INIT = PTHREAD_ONCE_INIT;
+#endif
 
 		// loadKeys() mutex.
 		Mutex mtxLoadKeys;
@@ -142,8 +168,7 @@ const char KeyManager::verifyTestString[] = {
 KeyManager KeyManagerPrivate::instance;
 
 KeyManagerPrivate::KeyManagerPrivate()
-	: init_counter(-1)
-	, is_init(0)
+	: once_control(ONCE_CONTROL_INIT)
 	, cfg_isInKeysSection(false)
 	, conf_was_found(false)
 	, conf_mtime(0)
@@ -151,30 +176,10 @@ KeyManagerPrivate::KeyManagerPrivate()
 
 /**
  * Initialize KeyManager.
+ * Called by initOnceFunc().
  */
 void KeyManagerPrivate::init(void)
 {
-	// How this works:
-	// - init_counter is initially -1.
-	// - Incrementing it returns 0; this means that the
-	//   directories have not been initialized yet.
-	// - is_init is set when initializing.
-	// - If the counter wraps around, the directories won't be
-	//   reinitialized because dir_is_init will be set.
-	if (ATOMIC_INC_FETCH(&init_counter) != 0) {
-		// Function has already been called.
-		// Wait for directories to be initialized.
-		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
-			// TODO: Timeout counter?
-#ifdef _WIN32
-			Sleep(0);
-#else /* !_WIN32 */
-			usleep(0);
-#endif /* _WIN32 */
-		}
-		return;
-	}
-
 	// Reserve 1 KB for the key store.
 	vKeys.reserve(1024);
 
@@ -198,9 +203,23 @@ void KeyManagerPrivate::init(void)
 
 	// Load the keys.
 	loadKeys(true);
+}
 
-	// KeyManager has been initialized.
-	is_init = 1;
+/**
+ * Initialize Once function.
+ * Called by pthread_once() or InitOnceExecuteOnce().
+ * TODO: Add a pthread_once() wrapper for Windows?
+ */
+#ifdef _WIN32
+BOOL WINAPI KeyManagerPrivate::initOnceFunc(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context)
+#else
+void KeyManagerPrivate::initOnceFunc(void)
+#endif
+{
+	instance.d_ptr->init();
+#ifdef _WIN32
+	return TRUE;
+#endif
 }
 
 /**
@@ -551,19 +570,22 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	}
 
 	// Check if keys.conf needs to be reloaded.
-	// NOTE: It's safe to check d->is_init here, sicne it's
-	// only ever set to 1 by our code.
 	RP_D(const KeyManager);
-	if (!d->is_init) {
-		// d->init() will call loadKeys().
-		const_cast<KeyManagerPrivate*>(d)->init();
-	} else {
-		// Load the keys.
-		// This function won't do anything if the keys
-		// have already been loaded and keys.conf hasn't
-		// been changed.
-		const_cast<KeyManagerPrivate*>(d)->loadKeys();
-	}
+#ifdef _WIN32
+	// TODO: Handle errors.
+	InitOnceExecuteOnce(&(const_cast<KeyManagerPrivate*>(d)->once_control,
+		const_cast<KeyManagerPrivate*>(d)->initOnceFunc,
+		this, nullptr);
+#else
+	pthread_once(&(const_cast<KeyManagerPrivate*>(d)->once_control),
+		const_cast<KeyManagerPrivate*>(d)->initOnceFunc);
+#endif
+
+	// Load the keys.
+	// This function won't do anything if the keys
+	// have already been loaded and keys.conf hasn't
+	// been changed.
+	const_cast<KeyManagerPrivate*>(d)->loadKeys();
 
 	if (!areKeysLoaded()) {
 		// Keys are not loaded.
