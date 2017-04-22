@@ -37,7 +37,8 @@
 #endif /* _MSC_VER */
 
 // GCC compatibility.
-#ifdef __GNUC__
+// TODO: Figure out when these were added to clang.
+#if defined(__GNUC__) && !defined(__clang__)
 
 /* std::allocator_traits: Added in gcc-4.7. */
 #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 7))
