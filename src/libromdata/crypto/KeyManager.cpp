@@ -533,6 +533,18 @@ KeyManager::~KeyManager()
  */
 KeyManager *KeyManager::instance(void)
 {
+	// Initialize the singleton instance.
+	KeyManager *const q = &KeyManagerPrivate::instance;
+
+#ifdef _WIN32
+	// TODO: Handle errors.
+	InitOnceExecuteOnce(&q->d_ptr->once_control,
+		q->d_ptr->initOnceFunc,
+		(PVOID)q, nullptr);
+#else
+	pthread_once(&q->d_ptr->once_control, q->d_ptr->initOnceFunc);
+#endif
+
 	// Singleton instance.
 	return &KeyManagerPrivate::instance;
 }
@@ -570,21 +582,10 @@ KeyManager::VerifyResult KeyManager::get(const char *keyName, KeyData_t *pKeyDat
 	}
 
 	// Check if keys.conf needs to be reloaded.
-	RP_D(const KeyManager);
-#ifdef _WIN32
-	// TODO: Handle errors.
-	InitOnceExecuteOnce(&(const_cast<KeyManagerPrivate*>(d)->once_control),
-		const_cast<KeyManagerPrivate*>(d)->initOnceFunc,
-		(PVOID)this, nullptr);
-#else
-	pthread_once(&(const_cast<KeyManagerPrivate*>(d)->once_control),
-		const_cast<KeyManagerPrivate*>(d)->initOnceFunc);
-#endif
-
-	// Load the keys.
 	// This function won't do anything if the keys
 	// have already been loaded and keys.conf hasn't
 	// been changed.
+	RP_D(const KeyManager);
 	const_cast<KeyManagerPrivate*>(d)->loadKeys();
 
 	if (!areKeysLoaded()) {
