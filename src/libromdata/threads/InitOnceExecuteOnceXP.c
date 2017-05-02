@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RunOnceXP.hpp: InitOnceExecuteOnce() implementation for Windows XP.     *
+ * InitOnceExecuteOnceXP.c: InitOnceExecuteOnce() implementation for       *
+ * Windows XP. (also works on later systems)                               *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
