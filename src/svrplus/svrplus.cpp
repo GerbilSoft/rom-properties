@@ -28,7 +28,7 @@
 #include <string>
 #include <stdarg.h>
 #include "resource.h"
-#if defined(_WIN64)
+#if 0 // defined(_WIN64)
 #error This app should only be compiled as x86 application
 #endif
 
