@@ -359,6 +359,7 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
 			vKeys.resize(vKeys_start_pos);
+			return;
 		}
 
 		vKeys[vKeys_pos] = (chr0 << 4 | chr1);
