@@ -341,6 +341,7 @@ int KeyManagerPrivate::loadKeys(bool force)
 
 	if (!force && conf_was_found) {
 		// Check if the keys.conf timestamp has changed.
+		// Initial check. (fast path)
 		time_t mtime;
 		int ret = FileSystem::get_mtime(conf_filename, &mtime);
 		if (ret != 0) {
@@ -361,6 +362,24 @@ int KeyManagerPrivate::loadKeys(bool force)
 	// in some cases, but that's better than keys.conf being
 	// loaded twice at the same time and causing collisions.
 	MutexLocker mtxLocker(mtxLoadKeys);
+
+	if (!force && conf_was_found) {
+		// Check if the keys.conf timestamp has changed.
+		// NOTE: Second check once the mutex is locked.
+		time_t mtime;
+		int ret = FileSystem::get_mtime(conf_filename, &mtime);
+		if (ret != 0) {
+			// Failed to retrieve the mtime.
+			// Leave everything as-is.
+			// TODO: Proper error code?
+			return -EIO;
+		}
+
+		if (mtime == conf_mtime) {
+			// Timestamp has not changed.
+			return 0;
+		}
+	}
 
 	// Clear the loaded keys.
 	vKeys.clear();
