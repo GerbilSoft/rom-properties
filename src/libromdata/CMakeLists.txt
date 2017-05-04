@@ -347,6 +347,7 @@ FOREACH(_target romdata8 romdata16)
 	ENDIF(libromdata_NEEDS_DL AND CMAKE_DL_LIBS)
 
 	# Other libraries.
+	TARGET_LINK_LIBRARIES(${_target} inih)
 	IF(ICONV_LIBRARY)
 		TARGET_LINK_LIBRARIES(${_target} ${ICONV_LIBRARY})
 	ENDIF(ICONV_LIBRARY)

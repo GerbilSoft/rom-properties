@@ -26,14 +26,6 @@
 
 #include "KeyManager.hpp"
 
-#include "file/FileSystem.hpp"
-#include "file/RpFile.hpp"
-#include "threads/Atomics.h"
-#include "threads/Mutex.hpp"
-
-#include "IAesCipher.hpp"
-#include "AesCipherFactory.hpp"
-
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
@@ -46,12 +38,29 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
+#include "file/FileSystem.hpp"
+#include "file/RpFile.hpp"
+#include "threads/Atomics.h"
+#include "threads/Mutex.hpp"
+
+#include "IAesCipher.hpp"
+#include "AesCipherFactory.hpp"
+
 // One-time initialization.
 #ifdef _WIN32
 #include "../threads/InitOnceExecuteOnceXP.h"
 #else
 #include <pthread.h>
 #endif
+
+// Text conversion functions and macros.
+#include "TextFuncs.hpp"
+#ifdef _WIN32
+#include "../RpWin32.hpp"
+#endif
+
+// INI parser.
+#include "ini.h"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
@@ -114,9 +123,17 @@ class KeyManagerPrivate
 
 		/**
 		 * Process a configuration line.
-		 * @param line_buf Configuration line.
+		 *
+		 * NOTE: This function is static because it is used as a
+		 * C-style callback from inih.
+		 *
+		 * @param user KeyManagerPrivate object.
+		 * @param section Section.
+		 * @param name Key.
+		 * @param value Value.
+		 * @return 1 on success; 0 on error.
 		 */
-		void processConfigLine(const string &line_buf);
+		static int processConfigLine(void *user, const char *section, const char *name, const char *value);
 
 		/**
 		 * Load keys from the configuration file.
@@ -137,10 +154,6 @@ class KeyManagerPrivate
 
 		// loadKeys() mutex.
 		Mutex mtxLoadKeys;
-
-		// Temporary configuration loading variables.
-		string cfg_curSection;
-		bool cfg_isInKeysSection;
 
 		// keys.conf status.
 		rp_string conf_filename;
@@ -164,7 +177,6 @@ KeyManager KeyManagerPrivate::instance;
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: once_control(ONCE_CONTROL_INIT)
-	, cfg_isInKeysSection(false)
 	, conf_was_found(false)
 	, conf_mtime(0)
 { }
@@ -219,118 +231,61 @@ void KeyManagerPrivate::initOnceFunc(void)
 
 /**
  * Process a configuration line.
- * @param line_buf Configuration line.
+ *
+ * NOTE: This function is static because it is used as a
+ * C-style callback from inih.
+ *
+ * @param user KeyManagerPrivate object.
+ * @param section Section.
+ * @param name Key.
+ * @param value Value.
+ * @return 1 on success; 0 on error.
  */
-void KeyManagerPrivate::processConfigLine(const string &line_buf)
+int KeyManagerPrivate::processConfigLine(void *user, const char *section, const char *name, const char *value)
 {
-	bool foundNonSpace = false;
-	const char *sect_start = nullptr;
-	const char *equals_pos = nullptr;
+	KeyManagerPrivate *const d = static_cast<KeyManagerPrivate*>(user);
 
-	const char *chr = line_buf.data();
-	for (int i = 0; i < (int)line_buf.size(); i++, chr++) {
-		if (!foundNonSpace) {
-			// Check if the current character is still a space.
-			if (isspace(*chr)) {
-				// Space character.
-				continue;
-			} else if (*chr == '[') {
-				// Start of section.
-				sect_start = chr+1;
-				foundNonSpace = true;
-			} else if (*chr == '=' || *chr == ';' || *chr == '#') {
-				// Equals with no key name, or comment line.
-				// Skip this line.
-				return;
-			} else {
-				// Regular key line.
-				foundNonSpace = true;
-			}
-		} else {
-			if (sect_start != nullptr) {
-				// Section header.
-				if (*chr == ';' || *chr == '#') {
-					// Comment. Skip this line.
-					return;
-				} else if (*chr == ']') {
-					// End of section header.
-					if (sect_start == chr) {
-						// Empty section header.
-						return;
-					}
+	// NOTE: Invalid lines are ignored, so we're always returning 1.
 
-					// Check the section.
-					cfg_curSection = string(sect_start, chr - sect_start);
-					if (!strncasecmp(cfg_curSection.data(), "Keys", cfg_curSection.size())) {
-						// This is the "Keys" section.
-						cfg_isInKeysSection = true;
-					} else {
-						// This is not the "Keys" section.
-						cfg_isInKeysSection = false;
-					}
-
-					// Skip the rest of the line.
-					return;
-				}
-			} else {
-				// Key name/value.
-				if (!equals_pos) {
-					// We haven't found the equals symbol yet.
-					if (*chr == ';' || *chr == '#') {
-						// Comment. Skip this line.
-						return;
-					} else if (*chr == '=') {
-						// Found the equals symbol.
-						equals_pos = chr;
-					}
-				} else {
-					// We found the equals symbol.
-					if (*chr == ';' || *chr == '#') {
-						// Comment. Skip the rest of the line.
-						break;
-					}
-				}
-			}
-		}
+	// Are we in the "Keys" section?
+	if (!section || strcasecmp(section, "Keys") != 0) {
+		// Not in the "Keys" section.
+		return 1;
 	}
 
-	// Parse the key and value.
-	if (!equals_pos) {
-		// No equals sign.
-		return;
-	}
-
-	const char *end = line_buf.data() + line_buf.size();
-	if (chr > end) {
-		// Out of bounds. Assume the end of the line.
-		chr = end - 1;
-	}
-
-	string keyName(line_buf.data(), equals_pos - line_buf.data());
-	if (keyName.empty()) {
+	// Are the key name and/or value empty?
+	if (!name || name[0] == 0) {
 		// Empty key name.
-		return;
+		return 1;
 	}
 
-	const char *value = equals_pos + 1;
-	int value_len = (int)(end - 1 - equals_pos);
-	if (value[0] == 0 || (value_len % 2 != 0)) {
-		// Key is either empty, or is an odd length.
-		// (Odd length means half a byte...)
-		mapInvalidKeyNames.insert(std::make_pair(keyName, KeyManager::VERIFY_KEY_INVALID));
-		return;
+	// Is the value empty?
+	if (!value || value[0] == 0) {
+		// Value is empty.
+		d->mapInvalidKeyNames.insert(std::make_pair(string(name), KeyManager::VERIFY_KEY_INVALID));
+		return 1;
 	}
+
+	// Check the value length.
+	int value_len = (int)strlen(value);
+	if ((value_len % 2) != 0) {
+		// Value is an odd length, which is invalid.
+		// This means we have an extra nybble.
+		d->mapInvalidKeyNames.insert(std::make_pair(string(name), KeyManager::VERIFY_KEY_INVALID));
+		return 1;
+	}
+	const uint8_t len = (uint8_t)(value_len / 2);
 
 	// Parse the value.
-	unsigned int vKeys_start_pos = (unsigned int)vKeys.size();
+	unsigned int vKeys_start_pos = (unsigned int)d->vKeys.size();
 	unsigned int vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
-	vKeys.resize(vKeys.size() + (value_len / 2));
+	d->vKeys.resize(d->vKeys.size() + len);
 
 	// ASCII to HEX lookup table.
 	// Reference: http://codereview.stackexchange.com/questions/22757/char-hex-string-to-byte-array
-	const uint8_t ascii_to_hex[0x100] = {
+	static const uint8_t ascii_to_hex[0x100] = {
 		//0     1     2     3     4     5     6    7      8     9     A     B     C     D     E     F
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//0
 		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//1
@@ -358,18 +313,18 @@ void KeyManagerPrivate::processConfigLine(const string &line_buf)
 		char chr1 = ascii_to_hex[(uint8_t)value[1]];
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
-			vKeys.resize(vKeys_start_pos);
-			return;
+			d->vKeys.resize(vKeys_start_pos);
+			return 1;
 		}
 
-		vKeys[vKeys_pos] = (chr0 << 4 | chr1);
+		d->vKeys[vKeys_pos] = (chr0 << 4 | chr1);
 	}
 
 	// Value parsed successfully.
 	uint32_t keyIdx = vKeys_start_pos;
-	uint8_t len = (uint8_t)(vKeys_pos - vKeys_start_pos);
 	keyIdx |= (len << 24);
-	mapKeyNames.insert(std::make_pair(keyName, keyIdx));
+	d->mapKeyNames.insert(std::make_pair(string(name), keyIdx));
+	return 1;
 }
 
 /**
@@ -407,98 +362,37 @@ int KeyManagerPrivate::loadKeys(bool force)
 	// loaded twice at the same time and causing collisions.
 	MutexLocker mtxLocker(mtxLoadKeys);
 
-	// Open the configuration file.
-	unique_ptr<IRpFile> file(new RpFile(conf_filename, RpFile::FM_OPEN_READ));
-	if (!file || !file->isOpen()) {
-		// Error opening the file.
-		return -EIO;
-	}
-
 	// Clear the loaded keys.
 	vKeys.clear();
 	mapKeyNames.clear();
 	mapInvalidKeyNames.clear();
 
-	// We're not in the keys section initially.
-	cfg_curSection.clear();
-	cfg_isInKeysSection = false;
+	// Parse the configuration file.
+	// NOTE: We're using the filename directly, since it's always
+	// on the local file system, and it's easier to let inih
+	// manage the file itself.
+#ifdef _WIN32
+	// Win32: Use ini_parse_w().
+	int ret = ini_parse_w(RP2W_s(conf_filename), KeyManagerPrivate::processConfigLine, this);
+#else /* !_WIN32 */
+	// Linux or other systems: Use ini_parse().
+	int ret = ini_parse(rp_string_to_utf8(conf_filename).c_str(), KeyManagerPrivate::processConfigLine, this);
+#endif /* _WIN32 */
+	if (ret != 0) {
+		// Error parsing the INI file.
+		vKeys.clear();
+		mapKeyNames.clear();
+		mapInvalidKeyNames.clear();
 
-	// Parse the file.
-	// We're looking for the "[Keys]" section.
-	string line_buf;
-	static const int LINE_LENGTH_MAX = 256;
-	line_buf.reserve(LINE_LENGTH_MAX);
-	size_t sz;
-	bool skipLine = false;
-	do {
-		char buf[4096];
-		sz = file->read(buf, sizeof(buf));
-		if (sz == 0)
-			break;
-
-		int lastStartPos = 0;
-		for (int pos = 0; pos < (int)sz; pos++) {
-			// Find the first '\r' or '\n', starting at pos.
-			if (buf[pos] == '\r' || buf[pos] == '\n') {
-				// Found a newline.
-				if (lastStartPos == pos || skipLine) {
-					// Empty line, or the length limit has been exceeded.
-					// Continue to the next line.
-					// Next line starts at the next character.
-					lastStartPos = pos + 1;
-					skipLine = false;
-					continue;
-				}
-
-				const int data_size = (pos - lastStartPos);
-
-				// Add the string from lastStartPos up to the previous
-				// character to the line buffer.
-				if (line_buf.size() + data_size > LINE_LENGTH_MAX) {
-					// Line length limit exceeded.
-					line_buf.clear();
-					// Next line starts at the next character.
-					lastStartPos = pos + 1;
-					continue;
-				}
-
-				line_buf.append(&buf[lastStartPos], data_size);
-				if (!line_buf.empty()) {
-					// Process the line.
-					processConfigLine(line_buf);
-					line_buf.clear();
-				}
-
-				// Next line starts at the next character.
-				lastStartPos = pos + 1;
-			}
-		}
-
-		// If anything is still left in buf[],
-		// add it to the line buffer.
-		if (!skipLine && lastStartPos < (int)sz) {
-			const int data_size = ((int)sz - lastStartPos);
-			if (line_buf.size() + data_size > LINE_LENGTH_MAX) {
-				// Line length limit exceeded.
-				skipLine = true;
-				line_buf.clear();
-			} else {
-				line_buf.append(&buf[lastStartPos], data_size);
-			}
-		}
-	} while (sz != 0);
-
-	// If any data is left in the line buffer (possibly due
-	// to a missing trailing newline), process it.
-	if (!skipLine && !line_buf.empty()) {
-		// Process the line.
-		processConfigLine(line_buf);
+		if (ret == -2)
+			return -ENOMEM;
+		return -EIO;
 	}
 
 	// Save the mtime from the keys.conf file.
 	// TODO: IRpFile::get_mtime()?
 	time_t mtime;
-	int ret = FileSystem::get_mtime(conf_filename, &mtime);
+	ret = FileSystem::get_mtime(conf_filename, &mtime);
 	if (ret == 0) {
 		conf_mtime = mtime;
 	} else {
