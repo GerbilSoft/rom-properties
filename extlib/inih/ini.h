@@ -50,6 +50,12 @@ typedef char* (*ini_reader)(char* str, int num, void* stream);
 */
 int ini_parse(const char* filename, ini_handler handler, void* user);
 
+#ifdef _WIN32
+/* Same as ini_parse(), but takes a wide character filename. Needed for
+   Unicode filenames on Windows. */
+int ini_parse_w(const wchar_t* filename, ini_handler handler, void* user);
+#endif /* _WIN32 */
+
 /* Same as ini_parse(), but takes a FILE* instead of filename. This doesn't
    close the file when it's finished -- the caller must do that. */
 int ini_parse_file(FILE* file, ini_handler handler, void* user);

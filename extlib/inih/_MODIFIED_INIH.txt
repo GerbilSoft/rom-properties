@@ -1,0 +1,9 @@
+This copy of inih-r39 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- New function that takes a wchar_t* filename. Needed for
+  Unicode filenames on Windows.
+
+To obtain the original inih-r39, visit:
+https://github.com/benhoyt/inih

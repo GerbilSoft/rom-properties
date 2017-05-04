@@ -199,3 +199,19 @@ int ini_parse(const char* filename, ini_handler handler, void* user)
     fclose(file);
     return error;
 }
+
+/* See documentation in header file. */
+#ifdef _WIN32
+int ini_parse_w(const wchar_t* filename, ini_handler handler, void* user)
+{
+    FILE* file;
+    int error;
+
+    file = _wfopen(filename, "r");
+    if (!file)
+        return -1;
+    error = ini_parse_file(file, handler, user);
+    fclose(file);
+    return error;
+}
+#endif /* _WIN32 */

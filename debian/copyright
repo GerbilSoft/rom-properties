@@ -131,7 +131,14 @@ Copyright: 1991-2010 Thomas G. Lane
 License: BSD-BY-LC-NE
 
 Files:
- extlib/inih/
+ extlib/inih/*.c
+ extlib/inih/*.h
+ extlib/inih/LICENSE.txt
+ extlib/inih/README.md
+ extlib/inih/cpp/
+ extlib/inih/examples/
+ extlib/inih/extra/
+ extlib/inih/tests/
 Copyright: (c) 2009, Ben Hoyt
 License: BSD-3-clause
 
