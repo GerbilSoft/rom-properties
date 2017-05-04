@@ -192,7 +192,7 @@ int ini_parse(const char* filename, ini_handler handler, void* user)
     FILE* file;
     int error;
 
-    file = fopen(filename, "r");
+    file = fopen(filename, "rb");
     if (!file)
         return -1;
     error = ini_parse_file(file, handler, user);
@@ -207,7 +207,7 @@ int ini_parse_w(const wchar_t* filename, ini_handler handler, void* user)
     FILE* file;
     int error;
 
-    file = _wfopen(filename, "r");
+    file = _wfopen(filename, "rb");
     if (!file)
         return -1;
     error = ini_parse_file(file, handler, user);
