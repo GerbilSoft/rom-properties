@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <utime.h>
+#include <pthread.h>
 
 // C includes. (C++ namespace)
 #include <cstring>
@@ -42,9 +43,11 @@ using std::u16string;
 
 namespace LibRomData { namespace FileSystem {
 
+// pthread_once() control variable.
+static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+
 // Configuration directories.
-static int init_counter = -1;
-static volatile int is_init = 0;
+
 // User's cache directory.
 static rp_string cache_dir;
 // User's configuration directory.
@@ -150,26 +153,10 @@ int64_t filesize(const rp_string &filename)
 
 /**
  * Initialize the configuration directory paths.
+ * Called by pthread_once().
  */
 static void initConfigDirectories(void)
 {
-	// How this works:
-	// - init_counter is initially -1.
-	// - Incrementing it returns 0; this means that the
-	//   directories have not been initialized yet.
-	// - is_init is set when initializing.
-	// - If the counter wraps around, the directories won't be
-	//   reinitialized because is_init will be set.
-	if (ATOMIC_INC_FETCH(&init_counter) != 0) {
-		// Function has already been called.
-		// Wait for directories to be initialized.
-		while (ATOMIC_OR_FETCH(&is_init, 0) == 0) {
-			// TODO: Timeout counter?
-			usleep(0);
-		}
-		return;
-	}
-
 	/** Home directory. **/
 	// NOTE: The home directory is NOT cached.
 	// It's only used to determine the other directories.
@@ -231,7 +218,6 @@ static void initConfigDirectories(void)
 	config_dir += _RP(".config/rom-properties");
 
 	// Directories have been initialized.
-	is_init = 1;
 }
 
 /**
@@ -245,11 +231,8 @@ static void initConfigDirectories(void)
  */
 const rp_string &getCacheDirectory(void)
 {
-	// NOTE: It's safe to check is_init here, since it's
-	// only ever set to 1 by our code.
-	if (!is_init) {
-		initConfigDirectories();
-	}
+	// TODO: Handle errors.
+	pthread_once(&once_control, initConfigDirectories);
 	return cache_dir;
 }
 
@@ -263,11 +246,8 @@ const rp_string &getCacheDirectory(void)
  */
 const rp_string &getConfigDirectory(void)
 {
-	// NOTE: It's safe to check is_init here, since it's
-	// only ever set to 1 by our code.
-	if (!is_init) {
-		initConfigDirectories();
-	}
+	// TODO: Handle errors.
+	pthread_once(&once_control, initConfigDirectories);
 	return config_dir;
 }
 

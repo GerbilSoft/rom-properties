@@ -146,6 +146,13 @@ SET(SKIP_INSTALL_ALL ON)
 SET(BUILD_SHARED_LIBS OFF)
 ADD_SUBDIRECTORY(minizip)
 
+# inih
+SET(SKIP_INSTALL_LIBRARIES ON)
+SET(SKIP_INSTALL_ALL ON)
+SET(BUILD_SHARED_LIBS OFF)
+ADD_SUBDIRECTORY(inih)
+SET_EXTLIB_PROPERTIES(inih)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake

@@ -10,9 +10,6 @@ ENDIF()
 # NOTE: This program is Unicode only on Windows.
 # No ANSI support.
 
-# Minimum Windows version for the SDK is Windows XP.
-SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_IE=0x0600")
-
 # Subsystem and minimum Windows version:
 # - If 32-bit: 5.01
 # - If 64-bit: 5.02

@@ -31,7 +31,6 @@
 // libromdata
 #include "TextFuncs.hpp"
 #include "file/FileSystem.hpp"
-#include "uvector.h"
 #include "disc/GcnFst.hpp"
 #ifdef _WIN32
 #include "RpWin32.hpp"
@@ -52,6 +51,10 @@ using std::istringstream;
 using std::string;
 using std::stringstream;
 using std::unordered_set;
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 
 namespace LibRomData { namespace Tests {
 

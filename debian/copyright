@@ -130,6 +130,18 @@ Copyright: 1991-2010 Thomas G. Lane
            2009-2011 Nokia Corporation and/or its subsidiary(-ies)
 License: BSD-BY-LC-NE
 
+Files:
+ extlib/inih/*.c
+ extlib/inih/*.h
+ extlib/inih/LICENSE.txt
+ extlib/inih/README.md
+ extlib/inih/cpp/
+ extlib/inih/examples/
+ extlib/inih/extra/
+ extlib/inih/tests/
+Copyright: (c) 2009, Ben Hoyt
+License: BSD-3-clause
+
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
