@@ -95,6 +95,8 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	: super(new GameBoyAdvancePrivate(this, file))
 {
 	RP_D(GameBoyAdvance);
+	d->className = "GameBoyAdvance";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

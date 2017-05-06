@@ -201,6 +201,12 @@ class RomData
 		 */
 		virtual const rp_char *systemName(uint32_t type) const = 0;
 
+		/**
+		 * Get the class name for the user configuration.
+		 * @return Class name. (ASCII) (nullptr on error)
+		 */
+		const char *className(void) const;
+
 		enum FileType {
 			FTYPE_UNKNOWN = 0,
 

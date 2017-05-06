@@ -684,6 +684,8 @@ NintendoDS::NintendoDS(IRpFile *file)
 	: super(new NintendoDSPrivate(this, file, false))
 {
 	RP_D(NintendoDS);
+	d->className = "NintendoDS";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;
@@ -710,6 +712,8 @@ NintendoDS::NintendoDS(IRpFile *file, bool cia)
 	: super(new NintendoDSPrivate(this, file, cia))
 {
 	RP_D(NintendoDS);
+	d->className = "NintendoDS";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

@@ -955,6 +955,7 @@ GameCube::GameCube(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(GameCube);
+	d->className = "GameCube";
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {

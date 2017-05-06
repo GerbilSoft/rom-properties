@@ -97,6 +97,8 @@ N64::N64(IRpFile *file)
 	: super(new N64Private(this, file))
 {
 	RP_D(N64);
+	d->className = "N64";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

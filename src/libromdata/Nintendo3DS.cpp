@@ -1072,7 +1072,9 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// This class handles several different types of files,
 	// so we'll initialize d->fileType later.
 	RP_D(Nintendo3DS);
+	d->className = "Nintendo3DS";
 	d->fileType = FTYPE_UNKNOWN;
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

@@ -275,9 +275,9 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
 MegaDrive::MegaDrive(IRpFile *file)
 	: super(new MegaDrivePrivate(this, file))
 {
-	// TODO: Only validate that this is an MD ROM here.
-	// Load fields elsewhere.
 	RP_D(MegaDrive);
+	d->className = "MegaDrive";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

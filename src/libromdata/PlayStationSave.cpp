@@ -206,6 +206,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 {
 	// This class handles save files.
 	RP_D(PlayStationSave);
+	d->className = "PlayStationSave";
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {

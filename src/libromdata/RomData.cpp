@@ -52,6 +52,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields())
+	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
 	if (!file)
@@ -75,6 +76,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc 
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields(fields, count))
+	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
 	if (!file)
@@ -427,6 +429,17 @@ void RomData::close(void)
 	RP_D(RomData);
 	delete d->file;
 	d->file = nullptr;
+}
+
+/**
+ * Get the class name for the user configuration.
+ * @return Class name. (ASCII) (nullptr on error)
+ */
+const char *RomData::className(void) const
+{
+	RP_D(const RomData);
+	assert(d->className != nullptr);
+	return d->className;
 }
 
 /**

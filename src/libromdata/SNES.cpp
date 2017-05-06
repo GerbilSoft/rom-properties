@@ -189,6 +189,8 @@ SNES::SNES(IRpFile *file)
 	: super(new SNESPrivate(this, file))
 {
 	RP_D(SNES);
+	d->className = "SNES";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

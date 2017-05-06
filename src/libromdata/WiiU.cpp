@@ -92,6 +92,7 @@ WiiU::WiiU(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(WiiU);
+	d->className = "WiiU";
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
