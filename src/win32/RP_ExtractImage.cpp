@@ -55,7 +55,8 @@ const CLSID CLSID_RP_ExtractImage =
 #include "libromdata/img/TCreateThumbnail.cpp"
 
 RP_ExtractImage_Private::RP_ExtractImage_Private()
-	: dwRecClrDepth(0)
+	: romData(nullptr)
+	, dwRecClrDepth(0)
 	, dwFlags(0)
 {
 	rgSize.cx = 0;
@@ -63,7 +64,11 @@ RP_ExtractImage_Private::RP_ExtractImage_Private()
 }
 
 RP_ExtractImage_Private::~RP_ExtractImage_Private()
-{ }
+{
+	if (romData) {
+		romData->unref();
+	}
+}
 
 /**
  * Wrapper function to convert rp_image* to ImgClass.
@@ -203,9 +208,31 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
 	UNUSED(dwMode);	// TODO
 
-	// pszFileName is the file being worked on.
+	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractImage);
-	d->filename = W2RP_c(pszFileName);
+	if (d->romData) {
+		d->romData->unref();
+		d->romData = nullptr;
+	}
+
+	// pszFileName is the file being worked on.
+	// TODO: If the file was already loaded, don't reload it.
+	d->filename = W2RP_cs(pszFileName);
+
+	// Attempt to open the ROM file.
+	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		return E_FAIL;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	d->romData = RomDataFactory::create(file.get(), true);
+
+	// NOTE: Since this is the registered image extractor
+	// for the file type, we have to implement our own
+	// fallbacks for unsupported files. Hence, we'll
+	// continue even if d->romData is nullptr;
 	return S_OK;
 }
 
@@ -282,18 +309,27 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(LPWSTR pszPathBuffer,
 
 IFACEMETHODIMP RP_ExtractImage::Extract(HBITMAP *phBmpImage)
 {
-	// Verify parameters:
-	// - A filename must have been set by calling IPersistFile::Load().
-	// - phBmpImage must not be nullptr.
+	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractImage);
-	if (d->filename.empty() || !phBmpImage) {
+	if (d->filename.empty()) {
+		return E_UNEXPECTED;
+	}
+
+	// phBmpImage must be valid.
+	if (!phBmpImage) {
 		return E_INVALIDARG;
 	}
 	*phBmpImage = nullptr;
 
+	if (!d->romData) {
+		// ROM is not supported. Use the fallback.
+		return d->Fallback(phBmpImage);
+	}
+
+	// ROM is supported. Get the image.
 	// NOTE: Using width only. (TODO: both width/height?)
-	int ret = d->getThumbnail(d->filename.c_str(), d->rgSize.cx, *phBmpImage);
-	if (ret != 0) {
+	int ret = d->getThumbnail(d->romData, d->rgSize.cx, *phBmpImage);
+	if (ret != 0 || !*phBmpImage) {
 		// ROM is not supported. Use the fallback.
 		return d->Fallback(phBmpImage);
 	}

@@ -45,6 +45,9 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		// ROM filename from IPersistFile::Load().
 		LibRomData::rp_string filename;
 
+		// RomData object. Loaded in IPersistFile::Load().
+		LibRomData::RomData *romData;
+
 		// Data from IExtractImage::GetLocation().
 		SIZE rgSize;
 		DWORD dwRecClrDepth;
