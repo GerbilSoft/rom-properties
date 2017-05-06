@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "Config.hpp"
+#include "ConfReader_p.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -27,7 +28,6 @@
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
-#include <ctime>
 
 // C++ includes.
 #include <algorithm>
@@ -40,16 +40,6 @@ using std::unordered_map;
 
 #include "RomData.hpp"
 #include "file/FileSystem.hpp"
-#include "file/RpFile.hpp"
-#include "threads/Atomics.h"
-#include "threads/Mutex.hpp"
-
-// One-time initialization.
-#ifdef _WIN32
-#include "threads/InitOnceExecuteOnceXP.h"
-#else
-#include <pthread.h>
-#endif
 
 // Text conversion functions and macros.
 #include "TextFuncs.hpp"
@@ -66,12 +56,13 @@ using std::unordered_map;
 
 namespace LibRomData {
 
-class ConfigPrivate
+class ConfigPrivate : public ConfReaderPrivate
 {
 	public:
 		ConfigPrivate();
 
 	private:
+		typedef ConfReaderPrivate super;
 		RP_DISABLE_COPY(ConfigPrivate)
 
 	public:
@@ -83,69 +74,21 @@ class ConfigPrivate
 
 	public:
 		/**
-		 * Initialize Config.
-		 */
-		void init(void);
-
-		/**
-		 * Initialize Once function.
-		 * Called by pthread_once() or InitOnceExecuteOnce().
-		 */
-#ifdef _WIN32
-		static BOOL WINAPI initOnceFunc(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context);
-#else
-		static void initOnceFunc(void);
-#endif
-
-		/**
 		 * Reset the configuration to the default values.
 		 */
-		void reset(void);
+		void reset(void) override final;
 
 		/**
 		 * Process a configuration line.
+		 * Virtual function; must be reimplemented by subclasses.
 		 *
-		 * NOTE: This function is static because it is used as a
-		 * C-style callback from inih.
-		 *
-		 * @param user ConfigPrivate object.
 		 * @param section Section.
 		 * @param name Key.
 		 * @param value Value.
 		 * @return 1 on success; 0 on error.
 		 */
-		static int processConfigLine(void *user, const char *section, const char *name, const char *value);
-
-		/**
-		 * Load the configuration.
-		 *
-		 * If the configuration has been modified since the last
-		 * load, it will be reloaded. Otherwise, this function
-		 * won't do anything.
-		 *
-		 * @param force If true, force a reload, even if the file hasn't been modified.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int load(bool force = false);
-
-#ifdef _WIN32
-		// InitOnceExecuteOnce() control variable.
-		INIT_ONCE once_control;
-		static const INIT_ONCE ONCE_CONTROL_INIT = INIT_ONCE_STATIC_INIT;
-#else
-		// pthread_once() control variable.
-		pthread_once_t once_control;
-		static const pthread_once_t ONCE_CONTROL_INIT = PTHREAD_ONCE_INIT;
-#endif
-
-		// load() mutex.
-		Mutex mtxLoad;
-
-		// rom-properties.conf status.
-		rp_string conf_filename;
-		bool conf_was_found;
-		time_t conf_mtime;
-		time_t conf_last_checked;
+		int processConfigLine(const char *section,
+			const char *name, const char *value) override final;
 
 	public:
 		// Image type priority data.
@@ -176,10 +119,7 @@ class ConfigPrivate
 Config ConfigPrivate::instance;
 
 ConfigPrivate::ConfigPrivate()
-	: once_control(ONCE_CONTROL_INIT)
-	, conf_was_found(false)
-	, conf_mtime(0)
-	, conf_last_checked(0)
+	: super(_RP("rom-properties.conf"))
 	/* Download options */
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
@@ -189,61 +129,20 @@ ConfigPrivate::ConfigPrivate()
 }
 
 /**
- * Initialize Config.
- * Called by initOnceFunc().
- */
-void ConfigPrivate::init(void)
-{
-	// Reserve 1 KB for the image type priorities store.
-	vImgTypePrio.reserve(1024);
-
-	// Configuration filename.
-	conf_filename = FileSystem::getConfigDirectory();
-	if (!conf_filename.empty()) {
-		if (conf_filename.at(conf_filename.size()-1) != _RP_CHR(DIR_SEP_CHR)) {
-			conf_filename += _RP_CHR(DIR_SEP_CHR);
-		}
-		conf_filename += _RP("rom-properties.conf");
-	}
-
-	// Make sure the configuration directory exists.
-	// NOTE: The filename portion MUST be kept in config_path,
-	// since the last component is ignored by rmkdir().
-	int ret = FileSystem::rmkdir(conf_filename);
-	if (ret != 0) {
-		// rmkdir() failed.
-		conf_filename.clear();
-	}
-
-	// Load the configuration.
-	load(true);
-}
-
-/**
- * Initialize Once function.
- * Called by pthread_once() or InitOnceExecuteOnce().
- * TODO: Add a pthread_once() wrapper for Windows?
- */
-#ifdef _WIN32
-BOOL WINAPI ConfigPrivate::initOnceFunc(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context)
-#else
-void ConfigPrivate::initOnceFunc(void)
-#endif
-{
-	instance.d_ptr->init();
-#ifdef _WIN32
-	return TRUE;
-#endif
-}
-
-/**
  * Reset the configuration to the default values.
  */
 void ConfigPrivate::reset(void)
 {
-	// Image type priorities.
+	// Clear the image type priorities vector and map.
 	vImgTypePrio.clear();
 	mapImgTypePrio.clear();
+
+	// Reserve 1 KB for the image type priorities store.
+	vImgTypePrio.reserve(1024);
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+	// Reserve 16 entries for the map.
+	mapImgTypePrio.reserve(16);
+#endif
 
 	// Download options.
 	extImgDownloadEnabled = true;
@@ -253,20 +152,15 @@ void ConfigPrivate::reset(void)
 
 /**
  * Process a configuration line.
+ * Virtual function; must be reimplemented by subclasses.
  *
- * NOTE: This function is static because it is used as a
- * C-style callback from inih.
- *
- * @param user ConfigPrivate object.
  * @param section Section.
  * @param name Key.
  * @param value Value.
  * @return 1 on success; 0 on error.
  */
-int ConfigPrivate::processConfigLine(void *user, const char *section, const char *name, const char *value)
+int ConfigPrivate::processConfigLine(const char *section, const char *name, const char *value)
 {
-	ConfigPrivate *const d = static_cast<ConfigPrivate*>(user);
-
 	// NOTE: Invalid lines are ignored, so we're always returning 1.
 
 	// TODO: Load image type priorities.
@@ -286,11 +180,11 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 		// Downloads. Check for one of the three boolean options.
 		bool *param;
 		if (!strcasecmp(name, "ExtImageDownload")) {
-			param = &d->extImgDownloadEnabled;
+			param = &extImgDownloadEnabled;
 		} else if (!strcasecmp(name, "UseIntIconForSmallSizes")) {
-			param = &d->useIntIconForSmallSizes;
+			param = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "DownloadHighResScans")) {
-			param = &d->downloadHighResScans;
+			param = &downloadHighResScans;
 		} else {
 			// Invalid option.
 			return 1;
@@ -311,7 +205,7 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 
 		// Parse the comma-separated values.
 		const char *pos = value;
-		const unsigned int vStartPos = (unsigned int)d->vImgTypePrio.size();
+		const unsigned int vStartPos = (unsigned int)vImgTypePrio.size();
 		unsigned int count = 0;	// Number of image types.
 		uint32_t imgbf = 0;	// Image type bitfield to prevent duplicates.
 		while (*pos) {
@@ -331,7 +225,7 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 			// for this system are disabled.
 			if (count == 0 && len == 2 && !strncasecmp(pos, "no", 2)) {
 				// Thumbnails are disabled.
-				d->vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
+				vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
 				count = 1;
 				break;
 			}
@@ -389,7 +283,7 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 				// Too many image types...
 				break;
 			}
-			d->vImgTypePrio.push_back((uint8_t)imgType);
+			vImgTypePrio.push_back((uint8_t)imgType);
 			count++;
 
 			if (!comma)
@@ -407,7 +301,7 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 			// Add the class name information to the map.
 			uint32_t keyIdx = vStartPos;
 			keyIdx |= (count << 24);
-			d->mapImgTypePrio.insert(std::make_pair(className, keyIdx));
+			mapImgTypePrio.insert(std::make_pair(className, keyIdx));
 		}
 	}
 
@@ -415,123 +309,11 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 	return 1;
 }
 
-/**
- * Load the configuration.
- *
- * If the configuration has been modified since the last
- * load, it will be reloaded. Otherwise, this function
- * won't do anything.
- *
- * @param force If true, force a reload, even if the file hasn't been modified.
- * @return 0 on success; negative POSIX error code on error.
- */
-int ConfigPrivate::load(bool force)
-{
-	if (conf_filename.empty()) {
-		// Configuration filename is invalid...
-		return -ENOENT;
-	}
-
-	if (!force && conf_was_found) {
-		// Have we checked the timestamp recently?
-		// TODO: Define the threshold somewhere.
-		const time_t cur_time = time(nullptr);
-		if (abs(cur_time - conf_last_checked) < 2) {
-			// We checked it recently. Assume it's up to date.
-			return 0;
-		}
-		conf_last_checked = cur_time;
-
-		// Check if the keys.conf timestamp has changed.
-		// Initial check. (fast path)
-		time_t mtime;
-		int ret = FileSystem::get_mtime(conf_filename, &mtime);
-		if (ret != 0) {
-			// Failed to retrieve the mtime.
-			// Leave everything as-is.
-			// TODO: Proper error code?
-			return -EIO;
-		}
-
-		if (mtime == conf_mtime) {
-			// Timestamp has not changed.
-			return 0;
-		}
-	}
-
-	// loadKeys() mutex.
-	// NOTE: This may result in keys.conf being loaded twice
-	// in some cases, but that's better than keys.conf being
-	// loaded twice at the same time and causing collisions.
-	MutexLocker mtxLocker(mtxLoad);
-
-	if (!force && conf_was_found) {
-		// Check if the keys.conf timestamp has changed.
-		// NOTE: Second check once the mutex is locked.
-		time_t mtime;
-		int ret = FileSystem::get_mtime(conf_filename, &mtime);
-		if (ret != 0) {
-			// Failed to retrieve the mtime.
-			// Leave everything as-is.
-			// TODO: Proper error code?
-			return -EIO;
-		}
-
-		if (mtime == conf_mtime) {
-			// Timestamp has not changed.
-			return 0;
-		}
-	}
-
-	// Reset the configuration to the default values.
-	reset();
-
-	// Parse the configuration file.
-	// NOTE: We're using the filename directly, since it's always
-	// on the local file system, and it's easier to let inih
-	// manage the file itself.
-#ifdef _WIN32
-	// Win32: Use ini_parse_w().
-	int ret = ini_parse_w(RP2W_s(conf_filename), ConfigPrivate::processConfigLine, this);
-#else /* !_WIN32 */
-	// Linux or other systems: Use ini_parse().
-	int ret = ini_parse(rp_string_to_utf8(conf_filename).c_str(), ConfigPrivate::processConfigLine, this);
-#endif /* _WIN32 */
-	if (ret != 0) {
-		// Error parsing the INI file.
-		reset();
-		if (ret == -2)
-			return -ENOMEM;
-		return -EIO;
-	}
-
-	// Save the mtime from the keys.conf file.
-	// TODO: IRpFile::get_mtime()?
-	time_t mtime;
-	ret = FileSystem::get_mtime(conf_filename, &mtime);
-	if (ret == 0) {
-		conf_mtime = mtime;
-	} else {
-		// mtime error...
-		// TODO: What do we do here?
-		conf_mtime = 0;
-	}
-
-	// Keys loaded.
-	conf_was_found = true;
-	return 0;
-}
-
 /** Config **/
 
 Config::Config()
-	: d_ptr(new ConfigPrivate())
+	: super(new ConfigPrivate())
 { }
-
-Config::~Config()
-{
-	delete d_ptr;
-}
 
 /**
  * Get the Config instance.
@@ -545,54 +327,10 @@ Config *Config::instance(void)
 {
 	// Initialize the singleton instance.
 	Config *const q = &ConfigPrivate::instance;
-
-#ifdef _WIN32
-	// TODO: Handle errors.
-	InitOnceExecuteOnce(&q->d_ptr->once_control,
-		q->d_ptr->initOnceFunc,
-		(PVOID)q, nullptr);
-#else
-	pthread_once(&q->d_ptr->once_control, q->d_ptr->initOnceFunc);
-#endif
-
-	// Reload the configuration if necessary.
+	// Load the configuration if necessary.
 	q->load(false);
-
-	// Singleton instance.
+	// Return the singleton instance.
 	return &ConfigPrivate::instance;
-}
-
-/**
- * Has the configuration been loaded yet?
- *
- * This function will *not* load the configuration.
- * To load the configuration, call load().
- *
- * If this function returns false after calling get(),
- * rom-properties.conf is probably missing.
- *
- * @return True if the configuration have been loaded; false if not.
- */
-bool Config::isLoaded(void) const
-{
-	RP_D(const Config);
-	return d->conf_was_found;
-}
-
-/**
- * Load the configuration.
- *
- * If the configuration has been modified since the last
- * load, it will be reloaded. Otherwise, this function
- * won't do anything.
- *
- * @param force If true, force a reload, even if the file hasn't been modified.
- * @return 0 on success; negative POSIX error code on error.
- */
-int Config::load(bool force)
-{
-	RP_D(Config);
-	return d->load(force);
 }
 
 /** Image types. **/

@@ -19,18 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CONFIG_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_CONFIG_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_CONFIG_CONFIG_HPP__
 
-#include "common.h"
-
-// C includes.
-#include <stdint.h>
+#include "ConfReader.hpp"
 
 namespace LibRomData {
 
-class ConfigPrivate;
-class Config
+class Config : public ConfReader
 {
 	protected:
 		/**
@@ -40,14 +36,13 @@ class Config
 		 * pointer to the class using instance().
 		 */
 		Config();
-		~Config();
 
 	private:
+		typedef ConfReader super;
 		RP_DISABLE_COPY(Config)
 
 	private:
 		friend class ConfigPrivate;
-		ConfigPrivate *const d_ptr;
 
 	public:
 		/**
@@ -59,32 +54,6 @@ class Config
 		 * @return Config instance.
 		 */
 		static Config *instance(void);
-
-	public:
-		/**
-		 * Has the configuration been loaded yet?
-		 *
-		 * This function will *not* load the configuration.
-		 * To load the configuration, call load().
-		 *
-		 * If this function returns false after calling get(),
-		 * rom-properties.conf is probably missing.
-		 *
-		 * @return True if the configuration have been loaded; false if not.
-		 */
-		bool isLoaded(void) const;
-
-		/**
-		 * Load the configuration.
-		 *
-		 * If the configuration has been modified since the last
-		 * load, it will be reloaded. Otherwise, this function
-		 * won't do anything.
-		 *
-		 * @param force If true, force a reload, even if the file hasn't been modified.
-		 * @return 0 on success; negative POSIX error code on error.
-		 */
-		int load(bool force = false);
 
 	public:
 		/** Image types. **/
@@ -144,4 +113,4 @@ class Config
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_CONFIG_HPP__ */

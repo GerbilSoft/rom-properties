@@ -111,6 +111,7 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
+	config/ConfReader.cpp
 	config/Config.cpp
 	)
 SET(libromdata_H
@@ -197,6 +198,7 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	config/ConfReader.hpp
 	config/Config.hpp
 	)
 
