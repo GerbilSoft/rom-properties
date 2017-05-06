@@ -217,7 +217,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*pdwAlpha = WTSAT_ARGB;
 
 	int ret = d->getThumbnail(d->file, cx, *phbmp);
-	if (ret != 0) {
+	if (ret != 0 || !*phbmp) {
 		// ROM is not supported. Use the fallback.
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}
