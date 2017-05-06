@@ -316,7 +316,6 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	}
 
 	// Convert the image to an icon mask.
-	// FIXME: Use the resized icon?
 	HBITMAP hbmMask = toHBITMAP_mask(image);
 	if (!hbmMask) {
 		DeleteObject(hBitmap);
@@ -446,15 +445,37 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 		return nullptr;
 	}
 
-	// Temporarily convert the HBITMAP to rp_image.
-	// TODO: toHICON(const rp_image*) converts back
-	// to HBITMAP. We need to optimize this out.
+	// Temporarily convert the HBITMAP to rp_image
+	// in order to create an icon mask.
+	// NOTE: Windows doesn't seem to have any way to get
+	// direct access to the HBITAMP's pixels, so this step
+	// step is required. (GetDIBits() copies the pixels.)
 	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
 	}
 
-	// Convert the rp_image to HICON.
-	return toHICON(img.get());
+	// Convert the image to an icon mask.
+	HBITMAP hbmMask = toHBITMAP_mask(img.get());
+	if (!hbmMask) {
+		// Failed to create the icon mask.
+		return nullptr;
+	}
+
+	// Convert to an icon.
+	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
+	ICONINFO ii;
+	ii.fIcon = TRUE;
+	ii.xHotspot = 0;
+	ii.yHotspot = 0;
+	ii.hbmColor = hBitmap;
+	ii.hbmMask = hbmMask;
+
+	// Create the icon.
+	HICON hIcon = CreateIconIndirect(&ii);
+
+	// Delete the icon mask bitmap and we're done.
+	DeleteObject(hbmMask);
+	return hIcon;
 }
