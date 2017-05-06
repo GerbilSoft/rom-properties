@@ -286,6 +286,11 @@ class RomData
 			IMG_INT_MAX = IMG_INT_MEDIA,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
 			IMG_EXT_MAX = IMG_EXT_BOX,
+
+			// Special value for the user configuration.
+			// If specified, all thumbnails will be disabled.
+			// (Manual image extraction in rpcli is not affected.)
+			IMG_DISABLED = 255,
 		};
 
 		/**

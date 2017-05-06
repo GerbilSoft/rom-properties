@@ -327,6 +327,15 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 			// Otherwise, read from pos to comma-1.
 			const unsigned int len = (comma ? (unsigned int)(comma-pos) : (unsigned int)strlen(pos));
 
+			// If the first entry is "no", then all thumbnails
+			// for this system are disabled.
+			if (count == 0 && len == 2 && !strncasecmp(pos, "no", 2)) {
+				// Thumbnails are disabled.
+				d->vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
+				count = 1;
+				break;
+			}
+
 			// Check the image type.
 			// TODO: Hash comparison?
 			// First byte of 'name' is a length value for optimization purposes.
