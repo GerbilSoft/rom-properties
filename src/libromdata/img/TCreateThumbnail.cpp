@@ -34,6 +34,7 @@ using LibCacheMgr::CacheManager;
 #include "../file/RpFile.hpp"
 #include "rp_image.hpp"
 #include "RpImageLoader.hpp"
+#include "Config.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -200,29 +201,48 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	 * - Add user customization.
 	 */
 
-	// Check for external images.
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
-		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
-	}
-	if (!isImgClassValid(ret_img)) {
-		// No external media scan. Try external cover scan.
-		if (imgbf & RomData::IMGBF_EXT_COVER) {
-			// External cover scan.
-			ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
-			imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
-		}
+	// Image priority.
+	// TODO: Load from the configuration and/or use defaults.
+	std::vector<uint8_t> vImgPrio;
+	vImgPrio.push_back(RomData::IMG_EXT_MEDIA);
+	vImgPrio.push_back(RomData::IMG_EXT_COVER);
+	vImgPrio.push_back(RomData::IMG_INT_ICON);
+
+	Config *const config = Config::instance();
+	if (config->useIntIconForSmallSizes() && req_size <= 48) {
+		// Check for an icon first.
+		// TODO: Define "small sizes" somewhere. (DPI independence?)
+		vImgPrio.insert(vImgPrio.begin(), RomData::IMG_INT_ICON);
 	}
 
-	if (!isImgClassValid(ret_img)) {
-		// No external media scan.
-		// Try the internal icon.
-		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
-			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);
-			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
+	for (auto iter = vImgPrio.cbegin(); iter != vImgPrio.cend(); ++iter) {
+		RomData::ImageType imgType = (RomData::ImageType)*iter;
+		const uint32_t bf = (1 << imgType);
+		if (!(imgbf & bf)) {
+			// Image is not present.
+			continue;
 		}
+
+		// This image may be present.
+		if (imgType <= RomData::IMG_INT_MAX) {
+			// Internal image.
+			ret_img = getInternalImage(romData, imgType, &img_sz);
+			imgpf = romData->imgpf(imgType);
+		} else {
+			// External image.
+			ret_img = getExternalImage(romData, imgType, req_size, &img_sz);
+			imgpf = romData->imgpf(imgType);
+		}
+
+		if (isImgClassValid(ret_img)) {
+			// Image retrieved.
+			break;
+		}
+
+		// Make sure we don't check this image type again
+		// in case there are duplicate entries in the
+		// priority list.
+		imgbf &= ~bf;
 	}
 
 	if (!isImgClassValid(ret_img)) {

@@ -80,6 +80,7 @@ SET(libromdata_SRCS
 	EXE.cpp
 	WiiU.cpp
 	Nintendo3DS.cpp
+	Config.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -156,6 +157,7 @@ SET(libromdata_H
 	nes_structs.h
 	wiiu_structs.h
 	n3ds_structs.h
+	Config.hpp
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
