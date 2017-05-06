@@ -39,16 +39,12 @@ using std::unique_ptr;
 using std::unordered_map;
 
 #include "RomData.hpp"
-#include "file/FileSystem.hpp"
 
 // Text conversion functions and macros.
 #include "TextFuncs.hpp"
 #ifdef _WIN32
 #include "RpWin32.hpp"
 #endif
-
-// INI parser.
-#include "ini.h"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
