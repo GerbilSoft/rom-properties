@@ -30,6 +30,7 @@
 #include <ctime>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -37,6 +38,7 @@ using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 
+#include "RomData.hpp"
 #include "file/FileSystem.hpp"
 #include "file/RpFile.hpp"
 #include "threads/Atomics.h"
@@ -302,6 +304,101 @@ int ConfigPrivate::processConfigLine(void *user, const char *section, const char
 			*param = false;
 		} else {
 			// TODO: Show a warning or something?
+		}
+	} else if (!strcasecmp(section, "ImageTypes")) {
+		// NOTE: Duplicates will overwrite previous entries in the map,
+		// though all of the data will remain in the vector.
+
+		// Parse the comma-separated values.
+		const char *pos = value;
+		const unsigned int vStartPos = (unsigned int)d->vImgTypePrio.size();
+		unsigned int count = 0;	// Number of image types.
+		uint32_t imgbf = 0;	// Image type bitfield to prevent duplicates.
+		while (*pos) {
+			// Find the next comma.
+			const char *comma = strchr(pos, ',');
+			if (comma == pos) {
+				// Empty field.
+				pos++;
+				continue;
+			}
+
+			// If no comma was found, read the remainder of the field.
+			// Otherwise, read from pos to comma-1.
+			const unsigned int len = (comma ? (unsigned int)(comma-pos) : (unsigned int)strlen(pos));
+
+			// Check the image type.
+			// TODO: Hash comparison?
+			// First byte of 'name' is a length value for optimization purposes.
+			// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
+			// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
+			// we have to store the length byte separately from the actual
+			// image type name.
+			static const char *imageTypeNames[RomData::IMG_EXT_MAX+1] = {
+				"\x07" "IntIcon",
+				"\x09" "IntBanner",
+				"\x08" "IntMedia",
+				"\x08" "ExtMedia",
+				"\x08" "ExtCover",
+				"\x0A" "ExtCover3D",
+				"\x0C" "ExtCoverFull",
+				"\x06" "ExtBox",
+			};
+			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
+
+			RomData::ImageType imgType = (RomData::ImageType)-1;
+			for (int i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
+				if ((unsigned int)imageTypeNames[i][0] == len &&
+				    !strncasecmp(pos, &imageTypeNames[i][1], len))
+				{
+					// Found a match!
+					imgType = (RomData::ImageType)i;
+					break;
+				}
+			}
+
+			if (imgType < 0) {
+				// Not a match.
+				if (!comma)
+					break;
+				// Continue after the comma.
+				pos = comma + 1;
+				continue;
+			}
+
+			// Check for duplicates.
+			if (imgbf & (1 << imgType)) {
+				// Duplicate image type!
+				continue;
+			}
+			imgbf |= (1 << imgType);
+
+			// Add the image type.
+			// Maximum of 32 due to imgbf width.
+			assert(count < 32);
+			if (count >= 32) {
+				// Too many image types...
+				break;
+			}
+			d->vImgTypePrio.push_back((uint8_t)imgType);
+			count++;
+
+			if (!comma)
+				break;
+
+			// Continue after the comma.
+			pos = comma + 1;
+		}
+
+		if (count > 0) {
+			// Convert the class name to lowercase.
+			string className(name);
+			std::transform(className.begin(), className.end(), className.begin(), ::tolower);
+
+			// Add the class name information to the map.
+			uint32_t keyIdx = vStartPos;
+			keyIdx |= (count << 24);
+			d->mapImgTypePrio.insert(std::make_pair(className, keyIdx));
 		}
 	}
 
