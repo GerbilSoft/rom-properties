@@ -30,6 +30,7 @@
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
+#include "libromdata/Config.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -245,28 +246,51 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	 * - Handle image processing flags.
 	 */
 
-	// Check for external images.
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_MEDIA);
-		needs_delete = (img != nullptr);
-	}
-	if (!img) {
-		// No external media scan. Try external cover scan.
-		if (imgbf & RomData::IMGBF_EXT_COVER) {
-			// External cover scan.
-			img = RpImageWin32::getExternalImage(d->romData, RomData::IMG_EXT_COVER);
-			needs_delete = (img != nullptr);
-		}
+	// TODO: Use TCreateThumbnail instead of duplicating everything here.
+	// Not going to implement imgpf here.
+
+	// Image priority.
+	// TODO: Load from the configuration and/or use defaults.
+	std::vector<uint8_t> vImgPrio;
+	vImgPrio.push_back(RomData::IMG_EXT_MEDIA);
+	vImgPrio.push_back(RomData::IMG_EXT_COVER);
+	vImgPrio.push_back(RomData::IMG_INT_ICON);
+
+	const Config *const config = Config::instance();
+	if (config->useIntIconForSmallSizes() && LOWORD(nIconSize) <= 48) {
+		// Check for an icon first.
+		// TODO: Define "small sizes" somewhere. (DPI independence?)
+		vImgPrio.insert(vImgPrio.begin(), RomData::IMG_INT_ICON);
 	}
 
-	if (!img) {
-		// No external media scan.
-		// Try an internal image.
-		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
-			img = RpImageWin32::getInternalImage(d->romData, RomData::IMG_INT_ICON);
+	for (auto iter = vImgPrio.cbegin(); iter != vImgPrio.cend(); ++iter) {
+		RomData::ImageType imgType = (RomData::ImageType)*iter;
+		const uint32_t bf = (1 << imgType);
+		if (!(imgbf & bf)) {
+			// Image is not present.
+			continue;
 		}
+
+		// This image may be present.
+		if (imgType <= RomData::IMG_INT_MAX) {
+			// Internal image.
+			img = RpImageWin32::getInternalImage(d->romData, imgType);
+			needs_delete = false;
+		} else {
+			// External image.
+			img = RpImageWin32::getExternalImage(d->romData, imgType);
+			needs_delete = (img != nullptr);
+		}
+
+		if (img != nullptr) {
+			// Image retrieved.
+			break;
+		}
+
+		// Make sure we don't check this image type again
+		// in case there are duplicate entries in the
+		// priority list.
+		imgbf &= ~bf;
 	}
 
 	if (img) {
@@ -295,6 +319,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 			delete const_cast<rp_image*>(img);
 		}
 	}
+
 
 	if (!*phiconLarge) {
 		// No icon. Try the fallback.
