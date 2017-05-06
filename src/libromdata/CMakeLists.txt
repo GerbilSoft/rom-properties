@@ -80,7 +80,6 @@ SET(libromdata_SRCS
 	EXE.cpp
 	WiiU.cpp
 	Nintendo3DS.cpp
-	Config.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -98,6 +97,7 @@ SET(libromdata_SRCS
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+	img/pngcheck/pngcheck.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -111,7 +111,7 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
-	img/pngcheck/pngcheck.cpp
+	config/Config.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -157,7 +157,6 @@ SET(libromdata_H
 	nes_structs.h
 	wiiu_structs.h
 	n3ds_structs.h
-	Config.hpp
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
@@ -198,6 +197,7 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	config/Config.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

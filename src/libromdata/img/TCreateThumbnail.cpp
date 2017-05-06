@@ -34,7 +34,7 @@ using LibCacheMgr::CacheManager;
 #include "../file/RpFile.hpp"
 #include "rp_image.hpp"
 #include "RpImageLoader.hpp"
-#include "Config.hpp"
+#include "../config/Config.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
