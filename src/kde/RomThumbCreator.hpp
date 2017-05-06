@@ -41,7 +41,33 @@ class RomThumbCreator : public ThumbCreator
 		virtual ~RomThumbCreator();
 
 	public:
+		/**
+		 * Creates a thumbnail.
+		 *
+		 * Note that this method should not do any scaling.  The @p width and @p
+		 * height parameters are provided as hints for images that are generated
+		 * from non-image data (like text).
+		 *
+		 * @param path    The path of the file to create a preview for.  This is
+		 *                always a local path.
+		 * @param width   The requested preview width (see the note on scaling
+		 *                above).
+		 * @param height  The requested preview height (see the note on scaling
+		 *                above).
+		 * @param img     The QImage to store the preview in.
+		 *
+		 * @return @c true if a preview was successfully generated and store in @p
+		 *         img, @c false otherwise.
+		 */
 		virtual bool create(const QString &path, int width, int height, QImage &img) override final;
+
+		/**
+		 * Returns the flags for this plugin.
+		 *
+		 * @return XOR'd flags values.
+		 * @see Flags
+		 */
+		virtual Flags flags(void) const override final;
 
 	private:
 		typedef ThumbCreator super;
