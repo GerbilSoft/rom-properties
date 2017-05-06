@@ -269,7 +269,9 @@ const rp_char *const *WiiU::supportedFileExtensions(void) const
 uint32_t WiiU::supportedImageTypes_static(void)
 {
 #ifdef HAVE_JPEG
-	return IMGBF_EXT_MEDIA | IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D;
+	return IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
 #else /* !HAVE_JPEG */
 	return IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
 #endif /* HAVE_JPEG */
