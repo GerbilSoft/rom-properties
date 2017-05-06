@@ -98,11 +98,16 @@ rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageT
 	// NOTE: This will force a configuration timestamp check.
 	const Config *const config = Config::instance();
 	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+	const bool downloadHighResScans = config->downloadHighResScans();
 
 	// Check each URL.
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
+		if (!downloadHighResScans && iter->high_res) {
+			// High-resolution scan downloads are disabled.
+			continue;
+		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
 		rp_string cache_filename;

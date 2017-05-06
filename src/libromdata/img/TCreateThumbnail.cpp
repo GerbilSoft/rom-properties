@@ -122,10 +122,15 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// NOTE: This will force a configuration timestamp check.
 	const Config *const config = Config::instance();
 	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+	const bool downloadHighResScans = config->downloadHighResScans();
 
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
+		if (!downloadHighResScans && iter->high_res) {
+			// High-resolution scan downloads are disabled.
+			continue;
+		}
 
 		rp_string proxy = proxyForUrl(extURL.url);
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
