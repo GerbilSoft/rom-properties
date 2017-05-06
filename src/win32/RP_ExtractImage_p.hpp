@@ -115,7 +115,6 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 
 		/**
 		 * Free an ImgClass object.
-		 * This may be no-op for e.g. HBITMAP.
 		 * @param imgClass ImgClass object.
 		 */
 		virtual void freeImgClass(HBITMAP &imgClass) const override final;

@@ -105,7 +105,6 @@ HBITMAP RP_ThumbnailProvider_Private::getNullImgClass(void) const
 
 /**
  * Free an ImgClass object.
- * This may be no-op for e.g. HBITMAP.
  * @param imgClass ImgClass object.
  */
 void RP_ThumbnailProvider_Private::freeImgClass(HBITMAP &imgClass) const

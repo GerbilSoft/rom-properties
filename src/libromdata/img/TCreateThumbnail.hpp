@@ -185,7 +185,10 @@ class TCreateThumbnail
 
 		/**
 		 * Free an ImgClass object.
-		 * This may be no-op for e.g. QImage.
+		 *
+		 * This function may be a no-op in cases where ImgClass
+		 * is not a pointer, e.g. QImage in Qt frontends.
+		 *
 		 * @param imgClass ImgClass object.
 		 */
 		virtual void freeImgClass(ImgClass &imgClass) const = 0;
