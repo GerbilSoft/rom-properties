@@ -430,6 +430,8 @@ class RomData
 			IMAGE_SIZE_DEFAULT	=  0,
 			IMAGE_SIZE_SMALLEST	= -1,
 			IMAGE_SIZE_LARGEST	= -2,
+			// TODO: IMAGE_SIZE_ALL to get all images.
+			// IMAGE_SIZE_ALL	= -3,
 
 			// Minimum allowed value.
 			IMAGE_SIZE_MIN_VALUE	= IMAGE_SIZE_LARGEST
