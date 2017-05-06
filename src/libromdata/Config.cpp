@@ -21,9 +21,13 @@
 
 #include "Config.hpp"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
+#include <ctime>
 
 // C++ includes.
 #include <memory>
@@ -139,6 +143,7 @@ class ConfigPrivate
 		rp_string conf_filename;
 		bool conf_was_found;
 		time_t conf_mtime;
+		time_t conf_last_checked;
 
 	public:
 		// Image type priority data.
@@ -172,6 +177,7 @@ ConfigPrivate::ConfigPrivate()
 	: once_control(ONCE_CONTROL_INIT)
 	, conf_was_found(false)
 	, conf_mtime(0)
+	, conf_last_checked(0)
 	/* Download options */
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
@@ -321,6 +327,15 @@ int ConfigPrivate::load(bool force)
 	}
 
 	if (!force && conf_was_found) {
+		// Have we checked the timestamp recently?
+		// TODO: Define the threshold somewhere.
+		const time_t cur_time = time(nullptr);
+		if (abs(cur_time - conf_last_checked) < 2) {
+			// We checked it recently. Assume it's up to date.
+			return 0;
+		}
+		conf_last_checked = cur_time;
+
 		// Check if the keys.conf timestamp has changed.
 		// Initial check. (fast path)
 		time_t mtime;

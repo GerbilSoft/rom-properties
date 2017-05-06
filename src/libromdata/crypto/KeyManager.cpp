@@ -26,9 +26,13 @@
 
 #include "KeyManager.hpp"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
+#include <ctime>
 
 // C++ includes.
 #include <memory>
@@ -84,28 +88,6 @@ class KeyManagerPrivate
 		static KeyManager instance;
 
 	public:
-		// Encryption key data.
-		// Managed as a single block in order to reduce
-		// memory allocations.
-		ao::uvector<uint8_t> vKeys;
-
-		/**
-		 * Map of key names to vKeys indexes.
-		 * - Key: Key name.
-		 * - Value: vKeys information.
-		 *   - High byte: Key length.
-		 *   - Low 3 bytes: Key index.
-		 */
-		unordered_map<string, uint32_t> mapKeyNames;
-
-		/**
-		 * Map of invalid key names to errors.
-		 * These are stored for better error reporting.
-		 * - Key: Key name.
-		 * - Value: Verification result.
-		 */
-		unordered_map<string, uint8_t> mapInvalidKeyNames;
-
 		/**
 		 * Initialize KeyManager.
 		 */
@@ -159,6 +141,30 @@ class KeyManagerPrivate
 		rp_string conf_filename;
 		bool conf_was_found;
 		time_t conf_mtime;
+		time_t conf_last_checked;
+
+	public:
+		// Encryption key data.
+		// Managed as a single block in order to reduce
+		// memory allocations.
+		ao::uvector<uint8_t> vKeys;
+
+		/**
+		 * Map of key names to vKeys indexes.
+		 * - Key: Key name.
+		 * - Value: vKeys information.
+		 *   - High byte: Key length.
+		 *   - Low 3 bytes: Key index.
+		 */
+		unordered_map<string, uint32_t> mapKeyNames;
+
+		/**
+		 * Map of invalid key names to errors.
+		 * These are stored for better error reporting.
+		 * - Key: Key name.
+		 * - Value: Verification result.
+		 */
+		unordered_map<string, uint8_t> mapInvalidKeyNames;
 };
 
 /** KeyManagerPrivate **/
@@ -179,6 +185,7 @@ KeyManagerPrivate::KeyManagerPrivate()
 	: once_control(ONCE_CONTROL_INIT)
 	, conf_was_found(false)
 	, conf_mtime(0)
+	, conf_last_checked(0)
 { }
 
 /**
@@ -340,6 +347,15 @@ int KeyManagerPrivate::loadKeys(bool force)
 	}
 
 	if (!force && conf_was_found) {
+		// Have we checked the timestamp recently?
+		// TODO: Define the threshold somewhere.
+		const time_t cur_time = time(nullptr);
+		if (abs(cur_time - conf_last_checked) < 2) {
+			// We checked it recently. Assume it's up to date.
+			return 0;
+		}
+		conf_last_checked = cur_time;
+
 		// Check if the keys.conf timestamp has changed.
 		// Initial check. (fast path)
 		time_t mtime;
