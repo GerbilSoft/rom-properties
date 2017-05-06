@@ -35,7 +35,6 @@ extern "C" {
 
 namespace LibRomData {
 	class rp_image;
-	class RomData;
 }
 
 class RegKey;

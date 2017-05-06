@@ -30,7 +30,7 @@
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/Config.hpp"
+#include "libromdata/img/RpGdiplusBackend.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -51,6 +51,10 @@ const CLSID CLSID_RP_ExtractIcon =
 /** RP_ExtractIcon_Private **/
 #include "RP_ExtractIcon_p.hpp"
 
+// TCreateThumbnail is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/img/TCreateThumbnail.cpp"
+
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	: romData(nullptr)
 { }
@@ -60,6 +64,100 @@ RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 	if (romData) {
 		romData->unref();
 	}
+}
+
+/**
+ * Wrapper function to convert rp_image* to ImgClass.
+ * @param img rp_image
+ * @return ImgClass.
+ */
+HBITMAP RP_ExtractIcon_Private::rpImageToImgClass(const rp_image *img) const
+{
+	// IExtractIcon returns an icon with alpha transparency.
+	// We're returning an HBITMAP here. It's converted into
+	// an HICON later.
+
+	// We should be using the RpGdiplusBackend.
+	const RpGdiplusBackend *const backend =
+		dynamic_cast<const RpGdiplusBackend*>(img->backend());
+	assert(backend != nullptr);
+	if (!backend) {
+		// Incorrect backend set.
+		return nullptr;
+	}
+
+	// Convert to HBITMAP.
+	// TODO: Const-ness stuff.
+	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+	if (!hBitmap) {
+		// Error converting to HBITMAP.
+		return nullptr;
+	}
+	return hBitmap;
+}
+
+/**
+ * Wrapper function to check if an ImgClass is valid.
+ * @param imgClass ImgClass
+ * @return True if valid; false if not.
+ */
+bool RP_ExtractIcon_Private::isImgClassValid(const HBITMAP &imgClass) const
+{
+	return (imgClass != nullptr);
+}
+
+/**
+ * Wrapper function to get a "null" ImgClass.
+ * @return "Null" ImgClass.
+ */
+HBITMAP RP_ExtractIcon_Private::getNullImgClass(void) const
+{
+	return nullptr;
+}
+
+/**
+ * Free an ImgClass object.
+ * @param imgClass ImgClass object.
+ */
+void RP_ExtractIcon_Private::freeImgClass(HBITMAP &imgClass) const
+{
+	DeleteObject(imgClass);
+}
+
+/**
+ * Rescale an ImgClass using nearest-neighbor scaling.
+ * @param imgClass ImgClass object.
+ * @param sz New size.
+ * @return Rescaled ImgClass.
+ */
+HBITMAP RP_ExtractIcon_Private::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
+{
+	// Convert the HBITMAP to rp_image.
+	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
+	if (!img) {
+		// Error converting to rp_image.
+		return nullptr;
+	}
+
+	// IExtractIcon returns an icon with alpha transparency.
+	// We're returning an HBITMAP here. It's converted into
+	// an HICON later.
+
+	// Resize the image.
+	// TODO: "nearest" parameter.
+	const SIZE win_sz = {sz.width, sz.height};
+	return RpImageWin32::toHBITMAP_alpha(img.get(), win_sz, true);
+}
+
+/**
+ * Get the proxy for the specified URL.
+ * @return Proxy, or empty string if no proxy is needed.
+ */
+rp_string RP_ExtractIcon_Private::proxyForUrl(const rp_string &url) const
+{
+	// libcachemgr uses urlmon on Windows, which
+	// always uses the system proxy.
+	return rp_string();
 }
 
 /** RP_ExtractIcon **/
@@ -121,8 +219,6 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 	d->filename = W2RP_cs(pszFileName);
 
 	// Attempt to open the ROM file.
-	// TODO: RpQFile wrapper.
-	// For now, using RpFile, which is an stdio wrapper.
 	unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		return E_FAIL;
@@ -227,102 +323,45 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	}
 
 	// ROM is supported. Get the image.
-	// TODO: Customize which ones are used per-system.
-	// For now, check EXT MEDIA, then INT ICON.
-
-	*phiconLarge = nullptr;
-	bool needs_delete = false;	// External images need manual deletion.
-	const rp_image *img = nullptr;
-
-	uint32_t imgbf = d->romData->supportedImageTypes();
-
-	/**
-	 * TODO:
-	 * - Add a function to retrieve the "default" image type in RomData,
-	 *   which can be customized per subclass.
-	 * - Add user customization.
-	 * - Use image sizes? May not be necessary since Vista+ uses the
-	 *   thumbnail interface when showing >24x24 icons...
-	 * - Handle image processing flags.
-	 */
-
-	// TODO: Use TCreateThumbnail instead of duplicating everything here.
-	// Not going to implement imgpf here.
-
-	// Image priority.
-	// TODO: Load from the configuration and/or use defaults.
-	std::vector<uint8_t> vImgPrio;
-	vImgPrio.push_back(RomData::IMG_EXT_MEDIA);
-	vImgPrio.push_back(RomData::IMG_EXT_COVER);
-	vImgPrio.push_back(RomData::IMG_INT_ICON);
-
-	const Config *const config = Config::instance();
-	if (config->useIntIconForSmallSizes() && LOWORD(nIconSize) <= 48) {
-		// Check for an icon first.
-		// TODO: Define "small sizes" somewhere. (DPI independence?)
-		vImgPrio.insert(vImgPrio.begin(), RomData::IMG_INT_ICON);
+	// TODO: Small icon?
+	HBITMAP hBmpImage = nullptr;
+	int ret = d->getThumbnail(d->romData, LOWORD(nIconSize), hBmpImage);
+	if (ret != 0 || !hBmpImage) {
+		// Thumbnail not available. Use the fallback.
+		if (hBmpImage) {
+			DeleteObject(hBmpImage);
+			hBmpImage = nullptr;
+		}
+		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
+		// NOTE: S_FALSE causes icon shenanigans.
+		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);
 	}
 
-	for (auto iter = vImgPrio.cbegin(); iter != vImgPrio.cend(); ++iter) {
-		RomData::ImageType imgType = (RomData::ImageType)*iter;
-		const uint32_t bf = (1 << imgType);
-		if (!(imgbf & bf)) {
-			// Image is not present.
-			continue;
+	// Convert the HBITMAP to an HICON.
+	HICON hIcon = RpImageWin32::toHICON(hBmpImage);
+	if (hIcon != nullptr) {
+		// Icon converted.
+		bool iconWasSet = false;
+		if (phiconLarge) {
+			*phiconLarge = hIcon;
+			iconWasSet = true;
+		}
+		if (phiconSmall) {
+			// TODO: Support the small icon?
+			// NULL out the small icon.
+			*phiconSmall = nullptr;
 		}
 
-		// This image may be present.
-		if (imgType <= RomData::IMG_INT_MAX) {
-			// Internal image.
-			img = RpImageWin32::getInternalImage(d->romData, imgType);
-			needs_delete = false;
-		} else {
-			// External image.
-			img = RpImageWin32::getExternalImage(d->romData, imgType);
-			needs_delete = (img != nullptr);
+		if (!iconWasSet) {
+			// Not returning the icon.
+			// Delete it to prevent a resource leak.
+			DeleteObject(hIcon);
 		}
-
-		if (img != nullptr) {
-			// Image retrieved.
-			break;
-		}
-
-		// Make sure we don't check this image type again
-		// in case there are duplicate entries in the
-		// priority list.
-		imgbf &= ~bf;
-	}
-
-	if (img) {
-		// TODO: If the image is non-square, make it square.
-		// Convert the image to HICON.
-		HICON hIcon = RpImageWin32::toHICON(img);
-		if (hIcon != nullptr) {
-			// Icon converted.
-			bool iconWasSet = false;
-			if (phiconLarge) {
-				*phiconLarge = hIcon;
-				iconWasSet = true;
-			}
-			if (phiconSmall) {
-				// NULL out the small icon.
-				*phiconSmall = nullptr;
-			}
-
-			if (!iconWasSet) {
-				DeleteObject(hIcon);
-			}
-		}
-
-		if (needs_delete) {
-			// Delete the image.
-			delete const_cast<rp_image*>(img);
-		}
-	}
-
-
-	if (!*phiconLarge) {
-		// No icon. Try the fallback.
+	} else {
+		// Error converting to HICON.
+		// Use the fallback.
+		DeleteObject(hBmpImage);
+		hBmpImage = nullptr;
 		LONG lResult = d->Fallback(phiconLarge, phiconSmall, nIconSize);
 		// NOTE: S_FALSE causes icon shenanigans.
 		return (lResult == ERROR_SUCCESS ? S_OK : E_FAIL);

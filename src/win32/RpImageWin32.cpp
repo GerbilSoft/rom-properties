@@ -23,17 +23,9 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
-#include "libromdata/RomData.hpp"
-#include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
 #include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/Config.hpp"
 using namespace LibRomData;
-
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -54,93 +46,6 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 #include "libromdata/img/GdiplusHelper.hpp"
-
-/**
- * Get an internal image.
- * NOTE: The image is owned by the RomData object;
- * caller must NOT delete it!
- * OBSOLETE: Replace with TCreateThumbnail.
- *
- * @param romData RomData object.
- * @param imageType Image type.
- * @return Internal image, or nullptr on error.
- */
-const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::ImageType imageType)
-{
-	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
-	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
-		// Out of range.
-		return nullptr;
-	}
-
-	return romData->image(imageType);
-}
-
-/**
- * Get an external image.
- * NOTE: Caller must delete the image after use.
- * OBSOLETE: Replace with TCreateThumbnail.
- *
- * @param romData RomData object.
- * @param imageType Image type.
- * @return External image, or nullptr on error.
- */
-rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageType imageType)
-{
-	// TODO: Image size selection.
-	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-	if (ret != 0 || extURLs.empty()) {
-		// No URLs.
-		return nullptr;
-	}
-
-	// NOTE: This will force a configuration timestamp check.
-	const Config *const config = Config::instance();
-	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
-	const bool downloadHighResScans = config->downloadHighResScans();
-
-	// Check each URL.
-	CacheManager cache;
-	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-		const RomData::ExtURL &extURL = *iter;
-		if (!downloadHighResScans && iter->high_res) {
-			// High-resolution scan downloads are disabled.
-			continue;
-		}
-
-		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename;
-		if (extImgDownloadEnabled) {
-			// Attempt to download the image if it isn't already
-			// present in the rom-properties cache.
-			cache_filename = cache.download(extURL.url, extURL.cache_key);
-		} else {
-			// Don't attempt to download the image.
-			// Only check the rom-properties cache.
-			cache_filename = cache.findInCache(extURL.cache_key);
-		}
-		if (cache_filename.empty())
-			continue;
-
-		// Attempt to load the image.
-		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
-		if (!file || !file->isOpen())
-			continue;
-
-		rp_image *dl_img = RpImageLoader::load(file.get());
-		if (dl_img && dl_img->isValid()) {
-			// Image loaded.
-			return dl_img;
-		}
-		delete dl_img;
-
-		// Try the next URL.
-	}
-
-	// Could not load any external images.
-	return nullptr;
-}
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -526,4 +431,30 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// rp_image created.
 	return img;
+}
+
+/**
+ * Convert an HBITMAP to HICON.
+ * @param hBitmap HBITMAP.
+ * @return HICON, or nullptr on error.
+ */
+HICON RpImageWin32::toHICON(HBITMAP hBitmap)
+{
+	assert(hBitmap != nullptr);
+	if (!hBitmap) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// Temporarily convert the HBITMAP to rp_image.
+	// TODO: toHICON(const rp_image*) converts back
+	// to HBITMAP. We need to optimize this out.
+	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
+	if (!img) {
+		// Error converting to rp_image.
+		return nullptr;
+	}
+
+	// Convert the rp_image to HICON.
+	return toHICON(img.get());
 }
