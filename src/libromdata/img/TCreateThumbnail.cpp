@@ -119,6 +119,10 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		return getNullImgClass();
 	}
 
+	// NOTE: This will force a configuration timestamp check.
+	const Config *const config = Config::instance();
+	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
@@ -127,7 +131,16 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		rp_string cache_filename;
+		if (extImgDownloadEnabled) {
+			// Attempt to download the image if it isn't already
+			// present in the rom-properties cache.
+			cache_filename = cache.download(extURL.url, extURL.cache_key);
+		} else {
+			// Don't attempt to download the image.
+			// Only check the rom-properties cache.
+			cache_filename = cache.findInCache(extURL.cache_key);
+		}
 		if (cache_filename.empty())
 			continue;
 
@@ -208,7 +221,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	vImgPrio.push_back(RomData::IMG_EXT_COVER);
 	vImgPrio.push_back(RomData::IMG_INT_ICON);
 
-	Config *const config = Config::instance();
+	const Config *const config = Config::instance();
 	if (config->useIntIconForSmallSizes() && req_size <= 48) {
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)

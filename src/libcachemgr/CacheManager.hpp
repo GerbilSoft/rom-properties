@@ -73,6 +73,13 @@ class CacheManager
 		 */
 		LibRomData::rp_string getCacheFilename(const LibRomData::rp_string &cache_key);
 
+		/**
+		 * Filter invalid characters from a cache key.
+		 * @param cache_key Cache key.
+		 * @return Filtered cache key.
+		 */
+		LibRomData::rp_string filterCacheKey(const LibRomData::rp_string &cache_key);
+
 	public:
 		/**
 		 * Download a file.
@@ -92,6 +99,13 @@ class CacheManager
 		LibRomData::rp_string download(
 			const LibRomData::rp_string &url,
 			const LibRomData::rp_string &cache_key);
+
+		/**
+		 * Check if a file has already been cached.
+		 * @param cache_key Cache key.
+		 * @return Filename in the cache, or empty string if not found.
+		 */
+		LibRomData::rp_string findInCache(const LibRomData::rp_string &cache_key);
 
 	protected:
 		LibRomData::rp_string m_proxyUrl;

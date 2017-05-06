@@ -28,6 +28,7 @@
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/RpImageLoader.hpp"
 #include "libromdata/img/RpGdiplusBackend.hpp"
+#include "libromdata/Config.hpp"
 using namespace LibRomData;
 
 // libcachemgr
@@ -58,6 +59,7 @@ namespace Gdiplus {
  * Get an internal image.
  * NOTE: The image is owned by the RomData object;
  * caller must NOT delete it!
+ * OBSOLETE: Replace with TCreateThumbnail.
  *
  * @param romData RomData object.
  * @param imageType Image type.
@@ -77,6 +79,7 @@ const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::
 /**
  * Get an external image.
  * NOTE: Caller must delete the image after use.
+ * OBSOLETE: Replace with TCreateThumbnail.
  *
  * @param romData RomData object.
  * @param imageType Image type.
@@ -92,13 +95,26 @@ rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageT
 		return nullptr;
 	}
 
+	// NOTE: This will force a configuration timestamp check.
+	const Config *const config = Config::instance();
+	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+
 	// Check each URL.
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		rp_string cache_filename;
+		if (extImgDownloadEnabled) {
+			// Attempt to download the image if it isn't already
+			// present in the rom-properties cache.
+			cache_filename = cache.download(extURL.url, extURL.cache_key);
+		} else {
+			// Don't attempt to download the image.
+			// Only check the rom-properties cache.
+			cache_filename = cache.findInCache(extURL.cache_key);
+		}
 		if (cache_filename.empty())
 			continue;
 
