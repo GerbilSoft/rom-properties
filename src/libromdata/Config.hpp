@@ -98,6 +98,25 @@ class Config
 		// TODO: Function to get image type priority for a specified class.
 
 	public:
+		/** Image types. **/
+
+		enum ImgTypeResult {
+			IMGTR_ERR_MAP_CORRUPTED	= -2,	// Internal map is corrupted.
+			IMGTR_ERR_INVALID_PARAMS = -1,	// Invalid parameters.
+			IMGTR_SUCCESS		= 0,	// Image type priority data returned successfully.
+			IMGTR_USE_DEFAULTS	= 1,	// Use the global defaults.
+			IMGTR_DISABLED		= 2,	// Thumbnails are disabled for this class.
+		};
+
+		/**
+		 * Get the image type priority data for the specified class name.
+		 * NOTE: Call load() before using this function.
+		 * @param className	[in] Class name. (ASCII)
+		 * @param imgTypePrio	[out] Image type priority data.
+		 * @return ImgTypeResult
+		 */
+		ImgTypeResult getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const;
+
 		/** Download options. **/
 
 		/**

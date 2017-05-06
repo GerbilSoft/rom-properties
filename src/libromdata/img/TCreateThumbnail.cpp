@@ -212,29 +212,65 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	uint32_t imgpf = 0;
 	ImgSize img_sz;
 
-	/**
-	 * TODO:
-	 * - Add a function to retrieve the "default" image type in RomData,
-	 *   which can be customized per subclass.
-	 * - Add user customization.
-	 */
+	// Default image type priorities.
+	// TODO: Make this accessible to the config UI.
+	static const uint8_t defImgTypePrio[] = {
+		RomData::IMG_EXT_MEDIA,
+		RomData::IMG_EXT_COVER,
+		RomData::IMG_EXT_BOX,
+		RomData::IMG_INT_MEDIA,
+		RomData::IMG_INT_ICON,
+		RomData::IMG_INT_BANNER,
+	};
 
-	// Image priority.
-	// TODO: Load from the configuration and/or use defaults.
-	std::vector<uint8_t> vImgPrio;
-	vImgPrio.push_back(RomData::IMG_EXT_MEDIA);
-	vImgPrio.push_back(RomData::IMG_EXT_COVER);
-	vImgPrio.push_back(RomData::IMG_INT_ICON);
-
+	// Get the image priority.
 	const Config *const config = Config::instance();
+	Config::ImgTypePrio_t imgTypePrio;
+	Config::ImgTypeResult res = config->getImgTypePrio(romData->className(), &imgTypePrio);
+	switch (res) {
+		case Config::IMGTR_SUCCESS:
+			// Image type priority received successfully.
+			break;
+		case Config::IMGTR_USE_DEFAULTS:
+		default:
+			// Use the default priorities.
+			// NOTE: This is also used if the configuration
+			// has an error.
+			imgTypePrio.imgTypes = defImgTypePrio;
+			imgTypePrio.length = ARRAY_SIZE(defImgTypePrio);
+			break;
+		case Config::IMGTR_DISABLED:
+			// Thumbnails are disabled for this class.
+			return RPCT_SOURCE_FILE_CLASS_DISABLED;
+	}
+
 	if (config->useIntIconForSmallSizes() && req_size <= 48) {
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)
-		vImgPrio.insert(vImgPrio.begin(), RomData::IMG_INT_ICON);
+		if (imgbf & RomData::IMGBF_INT_ICON) {
+			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);
+			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
+			imgbf &= ~RomData::IMGBF_INT_ICON;
+
+			if (isImgClassValid(ret_img)) {
+				// Image retrieved.
+				// TODO: Better method than goto?
+				goto skip_image_check;
+			}
+		}
 	}
 
-	for (auto iter = vImgPrio.cbegin(); iter != vImgPrio.cend(); ++iter) {
-		RomData::ImageType imgType = (RomData::ImageType)*iter;
+	// Check all available images in image priority order.
+	// TODO: Use pointer arithmetic in this loop?
+	for (unsigned int i = 0; i < imgTypePrio.length; i++) {
+		const RomData::ImageType imgType =
+			static_cast<RomData::ImageType>(imgTypePrio.imgTypes[i]);
+		assert(imgType <= RomData::IMG_EXT_MAX);
+		if (imgType > RomData::IMG_EXT_MAX) {
+			// Invalid image type. Ignore it.
+			continue;
+		}
+
 		const uint32_t bf = (1 << imgType);
 		if (!(imgbf & bf)) {
 			// Image is not present.
@@ -268,6 +304,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
+skip_image_check:
 	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.

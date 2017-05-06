@@ -595,6 +595,60 @@ int Config::load(bool force)
 	return d->load(force);
 }
 
+/** Image types. **/
+
+/**
+ * Get the image type priority data for the specified class name.
+ * NOTE: Call load() before using this function.
+ * @param className	[in] Class name. (ASCII)
+ * @param imgTypePrio	[out] Image type priority data.
+ * @return ImgTypeResult
+ */
+Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const
+{
+	assert(className != nullptr);
+	assert(imgTypePrio != nullptr);
+	if (!className || !imgTypePrio) {
+		return IMGTR_ERR_INVALID_PARAMS;
+	}
+
+	// Find the class name in the map.
+	RP_D(const Config);
+	string className_lower(className);
+	std::transform(className_lower.begin(), className_lower.end(), className_lower.begin(), ::tolower);
+	auto iter = d->mapImgTypePrio.find(className_lower);
+	if (iter == d->mapImgTypePrio.end()) {
+		// Class name not found.
+		// Use the global defaults.
+		return IMGTR_USE_DEFAULTS;
+	}
+
+	// Class name found.
+	// Check its entry.
+	const uint32_t keyIdx = iter->second;
+	const uint32_t idx = (keyIdx & 0xFFFFFF);
+	const uint8_t len = ((keyIdx >> 24) & 0xFF);
+	assert(len > 0);
+	assert(idx < d->vImgTypePrio.size());
+	assert(idx + len <= d->vImgTypePrio.size());
+	if (len == 0 || idx >= d->vImgTypePrio.size() || idx + len > d->vImgTypePrio.size()) {
+		// Entry is invalid...
+		// TODO: Force a configuration reload?
+		return IMGTR_ERR_MAP_CORRUPTED;
+	}
+
+	// Is the first entry RomData::IMG_DISABLED?
+	if (d->vImgTypePrio[idx] == (uint8_t)RomData::IMG_DISABLED) {
+		// Thumbnails are disabled for this class.
+		return IMGTR_DISABLED;
+	}
+
+	// Return the starting address and length.
+	imgTypePrio->imgTypes = &d->vImgTypePrio[idx];
+	imgTypePrio->length = len;
+	return IMGTR_SUCCESS;
+}
+
 /** Download options. **/
 
 /**
