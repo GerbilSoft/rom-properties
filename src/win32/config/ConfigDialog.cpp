@@ -84,6 +84,10 @@ class ConfigDialogPrivate
 			return (value == BST_CHECKED ? L"true" : L"false");
 		}
 
+		// Property sheet change variables.
+		// Used for optimization.
+		bool changed_Downloads;
+
 		// Downloads tab functions.
 		void reset_Downloads(HWND hDlg);
 		void save_Downloads(HWND hDlg);
@@ -102,6 +106,7 @@ class ConfigDialogPrivate
 ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
 	: m_isVista(isVista)
 	, config(Config::instance())
+	, changed_Downloads(false)
 { }
 
 /** Property sheet callback functions. **/
@@ -124,6 +129,9 @@ void ConfigDialogPrivate::reset_Downloads(HWND hDlg)
 	if (hWnd) {
 		Button_SetCheck(hWnd, boolToBstChecked(config->downloadHighResScans()));
 	}
+
+	// No longer changed.
+	changed_Downloads = false;
 }
 
 /**
@@ -153,6 +161,9 @@ void ConfigDialogPrivate::save_Downloads(HWND hDlg)
 		const wchar_t *bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
 		WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, RP2W_c(filename));
 	}
+
+	// No longer changed.
+	changed_Downloads = false;
 }
 
 /**
@@ -194,9 +205,17 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WP
 		}
 
 		case WM_COMMAND: {
+			ConfigDialogPrivate *d = static_cast<ConfigDialogPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ConfigDialogPrivate. Can't do anything...
+				return FALSE;
+			}
+
 			// A checkbox has been adjusted.
 			// Page has been modified.
 			PropSheet_Changed(GetParent(hDlg), hDlg);
+			d->changed_Downloads = true;
 			break;
 		}
 
@@ -212,7 +231,9 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WP
 			switch (lppsn->hdr.code) {
 				case PSN_APPLY:
 					// Save settings.
-					d->save_Downloads(hDlg);
+					if (d->changed_Downloads) {
+						d->save_Downloads(hDlg);
+					}
 					break;
 				default:
 					break;
