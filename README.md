@@ -137,7 +137,7 @@ will be used for thumbnails (and icons on Windows).
 * Nintendo GameCube: 1:1 disc image (\*.iso, \*.gcm) [including DiscEx-shrunken images],
   CISO disc image (\*.ciso), TGC embedded disc image (\*.tgc), save files (\*.gci, \*.gcs, \*.sav)
 * Nintendo Wii: 1:1 disc image (\*.iso, \*.gcm), WBFS disc image (\*.wbfs),
-  CISO disc image (\*.ciso)
+  CISO disc image (\*.ciso), WIA disc image (\*.wia)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb, \*.srl)
 * Nintendo Virtual Boy: Plain binary (\*.vb)
