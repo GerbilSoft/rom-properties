@@ -1800,34 +1800,23 @@ int Nintendo3DS::loadFieldData(void)
 			// TODO: Check if platform != 1 on New3DS-only cartridges.
 
 			// Card type.
-			const rp_char *media_type;
-			switch (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX]) {
-				case N3DS_NCSD_MEDIA_TYPE_INNER_DEVICE:
-					media_type = _RP("Inner Device");
-					break;
-				case N3DS_NCSD_MEDIA_TYPE_CARD1:
-					media_type = _RP("Card1");
-					break;
-				case N3DS_NCSD_MEDIA_TYPE_CARD2:
-					media_type = _RP("Card2");
-					break;
-				case N3DS_NCSD_MEDIA_TYPE_EXTENDED_DEVICE:
-					media_type = _RP("Extended Device");
-					break;
-				default:
-					media_type = nullptr;
-					break;
-			}
-			if (media_type) {
-				d->fields->addField_string(_RP("Media Type"), media_type);
+			static const rp_char *const media_type_tbl[4] = {
+				_RP("Inner Device"),
+				_RP("Card1"),
+				_RP("Card2"),
+				_RP("Extended Device"),
+			};
+			const uint8_t media_type = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX];
+			if (media_type < ARRAY_SIZE(media_type_tbl)) {
+				d->fields->addField_string(_RP("Media Type"), media_type_tbl[media_type]);
 			} else {
-				len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)",
-					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX]);
+				len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", media_type);
 				if (len > (int)sizeof(buf))
 					len = sizeof(buf);
 				d->fields->addField_string(_RP("Media Type"),
 					len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
 			}
+
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
 				// Card2 writable address.
 				d->fields->addField_string_numeric(_RP("Card2 RW Address"),
@@ -1847,23 +1836,14 @@ int Nintendo3DS::loadFieldData(void)
 				card_dev_id = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3];
 			}
 
-			const rp_char *card_dev;
-			switch (card_dev_id) {
-				case N3DS_NCSD_CARD_DEVICE_NOR_FLASH:
-					card_dev = _RP("NOR Flash");
-					break;
-				case N3DS_NCSD_CARD_DEVICE_NONE:
-					card_dev = _RP("None");
-					break;
-				case N3DS_NCSD_CARD_DEVICE_BLUETOOTH:
-					card_dev = _RP("Bluetooth");
-					break;
-				default:
-					card_dev = nullptr;
-					break;
-			}
-			if (card_dev) {
-				d->fields->addField_string(_RP("Card Device"), card_dev);
+			static const rp_char *const card_dev_tbl[4] = {
+				nullptr,
+				_RP("NOR Flash"),
+				_RP("None"),
+				_RP("Bluetooth"),
+			};
+			if (card_dev_id >= 1 && card_dev_id < ARRAY_SIZE(card_dev_tbl)) {
+				d->fields->addField_string(_RP("Card Device"), card_dev_tbl[card_dev_id]);
 			} else {
 				len = snprintf(buf, sizeof(buf), "Unknown (SDK2=0x%02X, SDK3=0x%02X)",
 					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
