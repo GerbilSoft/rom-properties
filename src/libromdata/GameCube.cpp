@@ -90,9 +90,9 @@ class GameCubePrivate : public RomDataPrivate
 
 			// High byte: Image format.
 			DISC_FORMAT_RAW  = (0 << 8),	// Raw image. (ISO, GCM)
-			DISC_FORMAT_WBFS = (1 << 8),	// WBFS image. (Wii only)
-			DISC_FORMAT_CISO = (2 << 8),	// CISO image.
-			DISC_FORMAT_TGC  = (3 << 8),	// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_TGC  = (1 << 8),	// TGC (embedded disc image) (GCN only?)
+			DISC_FORMAT_WBFS = (2 << 8),	// WBFS image. (Wii only)
+			DISC_FORMAT_CISO = (3 << 8),	// CISO image.
 			DISC_FORMAT_UNKNOWN = (0xFF << 8),
 			DISC_FORMAT_MASK = (0xFF << 8),
 		};
@@ -983,12 +983,6 @@ GameCube::GameCube(IRpFile *file)
 			case GameCubePrivate::DISC_FORMAT_RAW:
 				d->discReader = new DiscReader(d->file);
 				break;
-			case GameCubePrivate::DISC_FORMAT_WBFS:
-				d->discReader = new WbfsReader(d->file);
-				break;
-			case GameCubePrivate::DISC_FORMAT_CISO:
-				d->discReader = new CisoGcnReader(d->file);
-				break;
 			case GameCubePrivate::DISC_FORMAT_TGC: {
 				d->fileType = FTYPE_EMBEDDED_DISC_IMAGE;
 
@@ -998,6 +992,12 @@ GameCube::GameCube(IRpFile *file)
 				d->discReader = new DiscReader(d->file, gcm_offset, -1);
 				break;
 			}
+			case GameCubePrivate::DISC_FORMAT_WBFS:
+				d->discReader = new WbfsReader(d->file);
+				break;
+			case GameCubePrivate::DISC_FORMAT_CISO:
+				d->discReader = new CisoGcnReader(d->file);
+				break;
 			case GameCubePrivate::DISC_FORMAT_UNKNOWN:
 			default:
 				d->fileType = FTYPE_UNKNOWN;
@@ -1141,6 +1141,14 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
 	}
 
+	// Check for TGC.
+	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
+	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
+		// TGC images have their own 32 KB header, so we can't
+		// check the actual GCN/Wii header here.
+		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC;
+	}
+
 	// Check for sparse/compressed disc formats.
 	// These are checked after the magic numbers in case some joker
 	// decides to make a GCN or Wii disc image with the game ID "WBFS".
@@ -1166,14 +1174,6 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		// at the beginning of the disc, so we can't check the
 		// system format here.
 		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_CISO;
-	}
-
-	// Check for TGC.
-	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
-	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
-		// TGC images have their own 32 KB header, so we can't
-		// check the actual GCN/Wii header here.
-		return GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC;
 	}
 
 	// Not supported.
