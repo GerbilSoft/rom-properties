@@ -52,7 +52,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::unique_ptr;
 using std::vector;
