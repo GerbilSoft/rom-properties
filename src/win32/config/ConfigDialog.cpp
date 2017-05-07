@@ -40,9 +40,9 @@ using std::wstring;
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
-// Property for "external pointer".
-// This links the property sheet to the COM object.
-#define EXT_POINTER_PROP L"ConfigDialog"
+// Property for "D pointer".
+// This points to the ConfigDialogPrivate object.
+#define D_PTR_PROP L"ConfigDialogPrivate"
 
 /** ConfigDialogPrivate **/
 
@@ -75,8 +75,18 @@ class ConfigDialogPrivate
 			return (value ? BST_CHECKED : BST_UNCHECKED);
 		}
 
+		/**
+		 * Convert BST_CHECKED or BST_UNCHECKED to a bool string.
+		 * @param value BST_CHECKED or BST_UNCHECKED.
+		 * @return Bool string.
+		 */
+		static inline const wchar_t *bstCheckedToBoolString(unsigned int value) {
+			return (value == BST_CHECKED ? L"true" : L"false");
+		}
+
 		// Downloads tab functions.
 		void reset_Downloads(HWND hDlg);
+		void save_Downloads(HWND hDlg);
 		static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
@@ -117,6 +127,35 @@ void ConfigDialogPrivate::reset_Downloads(HWND hDlg)
 }
 
 /**
+ * Save the Downloads tab configuration.
+ * @param hDlg Downloads property sheet.
+ */
+void ConfigDialogPrivate::save_Downloads(HWND hDlg)
+{
+	const rp_char *filename = config->filename();
+	if (!filename) {
+		// No configuration filename...
+		return;
+	}
+
+	HWND hWnd = GetDlgItem(hDlg, IDC_EXTIMGDL);
+	if (hWnd) {
+		const wchar_t *bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
+		WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, RP2W_c(filename));
+	}
+	hWnd = GetDlgItem(hDlg, IDC_INTICONSMALL);
+	if (hWnd) {
+		const wchar_t *bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
+		WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, RP2W_c(filename));
+	}
+	hWnd = GetDlgItem(hDlg, IDC_HIGHRESDL);
+	if (hWnd) {
+		const wchar_t *bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
+		WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, RP2W_c(filename));
+	}
+}
+
+/**
  * DlgProc for IDD_CONFIG_DOWNLOADS.
  * @param hDlg
  * @param uMsg
@@ -138,8 +177,8 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WP
 			if (!d)
 				return TRUE;
 
-			// Store the object pointer with this particular page dialog.
-			SetProp(hDlg, EXT_POINTER_PROP, reinterpret_cast<HANDLE>(lParam));
+			// Store the D object pointer with this particular page dialog.
+			SetProp(hDlg,D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
 			// Reset the values.
 			d->reset_Downloads(hDlg);
@@ -147,11 +186,38 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WP
 		}
 
 		case WM_DESTROY: {
-			// Remove the EXT_POINTER_PROP property from the page. 
-			// The EXT_POINTER_PROP property stored the pointer to the 
-			// FilePropSheetExt object.
-			RemoveProp(hDlg, EXT_POINTER_PROP);
+			// Remove the D_PTR_PROP property from the page. 
+			// The D_PTR_PROP property stored the pointer to the 
+			// ConfigDialogPrivate object.
+			RemoveProp(hDlg, D_PTR_PROP);
 			return TRUE;
+		}
+
+		case WM_COMMAND: {
+			// A checkbox has been adjusted.
+			// Page has been modified.
+			PropSheet_Changed(GetParent(hDlg), hDlg);
+			break;
+		}
+
+		case WM_NOTIFY: {
+			ConfigDialogPrivate *d = static_cast<ConfigDialogPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ConfigDialogPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
+			switch (lppsn->hdr.code) {
+				case PSN_APPLY:
+					// Save settings.
+					d->save_Downloads(hDlg);
+					break;
+				default:
+					break;
+			}
+			break;
 		}
 
 		default:
@@ -382,8 +448,8 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM
 			if (!d)
 				return TRUE;
 
-			// Store the object pointer with this particular page dialog.
-			SetProp(hDlg, EXT_POINTER_PROP, reinterpret_cast<HANDLE>(lParam));
+			// Store the D object pointer with this particular page dialog.
+			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
 			// On XP, we need to initialize some widgets.
 			// TODO: InitDialog().
@@ -398,10 +464,10 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM
 		}
 
 		case WM_DESTROY: {
-			// Remove the EXT_POINTER_PROP property from the page. 
-			// The EXT_POINTER_PROP property stored the pointer to the 
-			// FilePropSheetExt object.
-			RemoveProp(hDlg, EXT_POINTER_PROP);
+			// Remove the D_PTR_PROP property from the page. 
+			// The D_PTR_PROP property stored the pointer to the 
+			// ConfigDialogPrivate object.
+			RemoveProp(hDlg, D_PTR_PROP);
 			return TRUE;
 		}
 
