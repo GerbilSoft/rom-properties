@@ -2358,9 +2358,6 @@ const IconAnimData *Nintendo3DS::iconAnimData(void) const
  */
 int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 {
-	// FIXME: Remove this 'return' once ExeFS debugging is done.
-	return -ENOENT;
-
 	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
