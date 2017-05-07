@@ -35,10 +35,8 @@
 // C++ includes.
 #include <array>
 #include <limits>
-#include <sstream>
 #include <string>
 #include <vector>
-using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -447,19 +445,18 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 		return string();
 	}
 
-	ostringstream oss;
-
 	// Check for special statuses.
+	const char *s_rating = nullptr;
 	if (rating & RomFields::AGEBF_PROHIBITED) {
 		// Prohibited.
 		// TODO: Better description?
-		oss << "No";
+		s_rating = "No";
 	} else if (rating & RomFields::AGEBF_PENDING) {
 		// Rating is pending.
-		oss << "RP";
+		s_rating = "RP";
 	} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
 		// No age restriction.
-		oss << "All";
+		s_rating = "All";
 	} else {
 		// Use the age rating.
 		// TODO: Verify these.
@@ -467,23 +464,22 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_JAPAN:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
-						oss << "A";
+						s_rating = "A";
 						break;
 					case 12:
-						oss << "B";
+						s_rating = "B";
 						break;
 					case 15:
-						oss << "C";
+						s_rating = "C";
 						break;
 					case 17:
-						oss << "D";
+						s_rating = "D";
 						break;
 					case 18:
-						oss << "Z";
+						s_rating = "Z";
 						break;
 					default:
-						// Unknown rating. Show the numeric value.
-						oss << (rating & AGEBF_MIN_AGE_MASK);
+						// Unknown rating.
 						break;
 				}
 				break;
@@ -491,26 +487,25 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_USA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 3:
-						oss << "eC";
+						s_rating = "eC";
 						break;
 					case 6:
-						oss << "E";
+						s_rating = "E";
 						break;
 					case 10:
-						oss << "E10+";
+						s_rating = "E10+";
 						break;
 					case 13:
-						oss << "T";
+						s_rating = "T";
 						break;
 					case 17:
-						oss << "M";
+						s_rating = "M";
 						break;
 					case 18:
-						oss << "AO";
+						s_rating = "AO";
 						break;
 					default:
-						// Unknown rating. Show the numeric value.
-						oss << (rating & AGEBF_MIN_AGE_MASK);
+						// Unknown rating.
 						break;
 				}
 				break;
@@ -518,43 +513,52 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_AUSTRALIA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
-						oss << "G";
+						s_rating = "G";
 						break;
 					case 7:
-						oss << "PG";
+						s_rating = "PG";
 						break;
 					case 14:
-						oss << "M";
+						s_rating = "M";
 						break;
 					case 15:
-						oss << "MA15+";
+						s_rating = "MA15+";
 						break;
 					case 18:
-						oss << "R18+";
+						s_rating = "R18+";
 						break;
 					default:
-						// Unknown rating. Show the numeric value.
-						oss << (rating & AGEBF_MIN_AGE_MASK);
+						// Unknown rating.
 						break;
 				}
 				break;
 
 			default:
 				// No special handling for this country.
-				// Show the numeric value.
-				oss << (rating & AGEBF_MIN_AGE_MASK);
 				break;
 		}
+	}
+
+	string str;
+	str.reserve(8);
+	if (s_rating) {
+		str = s_rating;
+	} else {
+		// No string rating.
+		// Print the numeric value.
+		char buf[4];
+		snprintf(buf, sizeof(buf), "%u", rating & RomFields::AGEBF_MIN_AGE_MASK);
+		str = buf;
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
 		// Rating may change during online play.
 		// TODO: Add a description of this somewhere.
 		// NOTE: Unicode U+00B0, encoded as UTF-8.
-		oss << "\xC2\xB0";
+		str += "\xC2\xB0";
 	}
 
-	return oss.str();
+	return str;
 }
 
 /** Field accessors. **/
