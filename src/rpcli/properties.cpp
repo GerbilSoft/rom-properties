@@ -646,9 +646,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		if (!(supported & (1 << i)))
 			continue;
 
-		os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << endl;
 		auto image = romdata->image((RomData::ImageType)i);
 		if (image && image->isValid()) {
+			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << endl;
 			os << "   Format : " << rp_image::getFormatName(image->format()) << endl;
 			os << "   Size   : " << image->width() << " x " << image->height() << endl;
 			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
