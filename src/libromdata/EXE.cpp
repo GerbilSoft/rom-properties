@@ -541,7 +541,7 @@ void EXEPrivate::addFields_NE(void)
 	int len;
 
 	// Target OS.
-	const rp_char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(targetOS))
+	const rp_char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[hdr.ne.targOS]
 					: nullptr;
 	if (!targetOS) {
@@ -695,7 +695,7 @@ void EXEPrivate::addFields_LE(void)
 	// Target OS.
 	// NOTE: Same as NE.
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
-	const rp_char *const targetOS = (targOS < ARRAY_SIZE(targetOS))
+	const rp_char *const targetOS = (targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[targOS]
 					: nullptr;
 	if (targetOS) {
