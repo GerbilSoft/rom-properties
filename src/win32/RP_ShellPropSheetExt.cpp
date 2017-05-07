@@ -1319,8 +1319,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 		// Adjust the buffer position.
 		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
+		start_pos += (ret-1);
+		cchBuf -= (ret-1);
 	}
 
 	if (field->desc.flags & RomFields::RFT_DATETIME_HAS_TIME) {
@@ -1343,8 +1343,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 		// Adjust the buffer position.
 		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
+		start_pos += (ret-1);
+		cchBuf -= (ret-1);
 	}
 
 	if (start_pos == 0) {
