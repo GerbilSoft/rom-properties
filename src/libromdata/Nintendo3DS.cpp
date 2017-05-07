@@ -726,6 +726,11 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 		return -15;
 	}
 	content_count = be16_to_cpu(mxh.tmd_header.content_count);
+	if (content_count > 255) {
+		// TODO: Do any titles have more than 255 contents?
+		// Restricting to 255 maximum for now.
+		content_count = 255;
+	}
 	content_chunks.reset(new N3DS_Content_Chunk_Record_t[content_count]);
 	const size_t content_chunks_size = content_count * sizeof(N3DS_Content_Chunk_Record_t);
 	size = file->read(content_chunks.get(), content_chunks_size);
