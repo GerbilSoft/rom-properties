@@ -215,8 +215,11 @@ public:
 		auto romField = field.romField;
 		const auto &listDataDesc = romField->desc.list_data;
 		assert(listDataDesc.names != nullptr);
+		assert(romField->data.list_data != nullptr);
 		if (!listDataDesc.names) {
 			return os << "[ERROR: No list field names.]";
+		} else if (!romField->data.list_data) {
+			return os << "[ERROR: No list data.]";
 		}
 
 		const size_t fieldCount = listDataDesc.names->size();
@@ -242,18 +245,15 @@ public:
 			os << "|" << setw(colSize[i]) << listDataDesc.names->at(i);
 		}
 		os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
-		assert(romField->data.list_data != nullptr);
-		if (romField->data.list_data) {
-			for (auto it = romField->data.list_data->begin();
-			     it != romField->data.list_data->end(); ++it)
-			{
-				int i = 0;
-				os << endl << Pad(field.width);
-				for (auto jt = it->begin(); jt != it->end(); ++jt) {
-					os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
-				}
-				os << "|";
+		for (auto it = romField->data.list_data->begin();
+		     it != romField->data.list_data->end(); ++it)
+		{
+			int i = 0;
+			os << endl << Pad(field.width);
+			for (auto jt = it->begin(); jt != it->end(); ++jt) {
+				os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
 			}
+			os << "|";
 		}
 		return os;
 	}
