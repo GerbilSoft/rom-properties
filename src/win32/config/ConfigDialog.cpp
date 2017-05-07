@@ -24,6 +24,8 @@
 
 #include "RegKey.hpp"
 #include "libromdata/common.h"
+#include "libromdata/config/Config.hpp"
+using LibRomData::Config;
 
 // C includes.
 #include <stdlib.h>
@@ -60,13 +62,59 @@ class ConfigDialogPrivate
 		{
 			return m_isVista;
 		}
+
+		// Config instance.
+		Config *config;
+
+		/**
+		 * Convert a bool value to BST_CHCEKED or BST_UNCHECKED.
+		 * @param value Bool value.
+		 * @return BST_CHECKED or BST_UNCHECKED.
+		 */
+		static inline int boolToBstChecked(bool value) {
+			return (value ? BST_CHECKED : BST_UNCHECKED);
+		}
+
+		// Downloads tab functions.
+		void reset_Downloads(HWND hDlg);
+		static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static UINT CALLBACK CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+		// Thumbnail Cache tab functions.
+		static int clearCacheVista(HWND hDlg);
+		static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static UINT CALLBACK CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+		// Create Property Sheet.
+		static INT_PTR CreatePropertySheet(void);
 };
 
 ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
 	: m_isVista(isVista)
+	, config(Config::instance())
 { }
 
 /** Property sheet callback functions. **/
+
+/**
+ * Reset the Downloads tab to the current configuration.
+ * @param hDlg Downloads property sheet.
+ */
+void ConfigDialogPrivate::reset_Downloads(HWND hDlg)
+{
+	HWND hWnd = GetDlgItem(hDlg, IDC_EXTIMGDL);
+	if (hWnd) {
+		Button_SetCheck(hWnd, boolToBstChecked(config->extImgDownloadEnabled()));
+	}
+	hWnd = GetDlgItem(hDlg, IDC_INTICONSMALL);
+	if (hWnd) {
+		Button_SetCheck(hWnd, boolToBstChecked(config->useIntIconForSmallSizes()));
+	}
+	hWnd = GetDlgItem(hDlg, IDC_HIGHRESDL);
+	if (hWnd) {
+		Button_SetCheck(hWnd, boolToBstChecked(config->downloadHighResScans()));
+	}
+}
 
 /**
  * DlgProc for IDD_CONFIG_DOWNLOADS.
@@ -75,7 +123,7 @@ ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
  * @param wParam
  * @param lParam
  */
-static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -93,7 +141,8 @@ static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Store the object pointer with this particular page dialog.
 			SetProp(hDlg, EXT_POINTER_PROP, reinterpret_cast<HANDLE>(lParam));
 
-			// TODO: Initialize the dialog.
+			// Reset the values.
+			d->reset_Downloads(hDlg);
 			return TRUE;
 		}
 
@@ -119,7 +168,7 @@ static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, L
  * @param wParam
  * @param lParam
  */
-static UINT CALLBACK CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK ConfigDialogPrivate::CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
@@ -144,7 +193,7 @@ static UINT CALLBACK CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAG
  * @param hDlg IDD_CONFIG_CACHE dialog.
  * @return 0 on success; non-zero on error.
  */
-static int clearCacheVista(HWND hDlg)
+int ConfigDialogPrivate::clearCacheVista(HWND hDlg)
 {
 	HWND hStatusLabel = GetDlgItem(hDlg, IDC_CACHE_STATUS);
 	HWND hProgressBar = GetDlgItem(hDlg, IDC_CACHE_PROGRESS);
@@ -318,7 +367,7 @@ static int clearCacheVista(HWND hDlg)
  * @param wParam
  * @param lParam
  */
-static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -386,7 +435,7 @@ static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
  * @param wParam
  * @param lParam
  */
-static UINT CALLBACK CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK ConfigDialogPrivate::CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
@@ -408,7 +457,7 @@ static UINT CALLBACK CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE pp
 
 // Create the property sheet.
 // TEMPORARY version to test things out.
-static INT_PTR createPropertySheet(void)
+INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 {
 	extern HINSTANCE g_hInstance;
 
@@ -518,7 +567,7 @@ int __declspec(dllexport) CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
-	createPropertySheet();
+	ConfigDialogPrivate::CreatePropertySheet();
 
 	// Uninitialize COM.
 	CoUninitialize();
