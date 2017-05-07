@@ -70,7 +70,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 {
 	wchar_t *last_backslash;
 	HMODULE hRpDll;
-	PFNRPSHOWCONFIGDIALOG pfn;
 
 	// DLL filename.
 	wchar_t dll_filename[_countof(exe_path)+32];
@@ -107,7 +106,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	hRpDll = LoadLibrary(dll_filename);
 	if (hRpDll) {
 		// Find the rp_show_config_dialog() function.
-		pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export);
+		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export);
 		if (pfn) {
 			// Run the function.
 			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow);
