@@ -482,7 +482,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		const int value_len = wValueLength - 1;
 		if (value_len <= 0) {
 			// Empty value.
-			const char str_empty[1] = {0};
+			static const char str_empty[1] = {0};
 			value = str_empty;
 		} else if (value[value_len] != 0) {
 			// Not NULL-terminated.
