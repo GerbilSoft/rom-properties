@@ -564,7 +564,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 		const int value_len = (wValueLength / 2) - 1;
 		if (value_len <= 0) {
 			// Empty value.
-			const char16_t u16_empty[1] = {0};
+			static const char16_t u16_empty[1] = {0};
 			value = u16_empty;
 		} else if (le16_to_cpu(value[value_len]) != 0) {
 			// Not NULL-terminated.
