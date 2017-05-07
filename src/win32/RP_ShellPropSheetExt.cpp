@@ -2137,19 +2137,19 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
 
-			// Initialize the dialog.
-			d->initDialog(hDlg);
+			// Dialog initialization is postponed to WM_SHOWWINDOW,
+			// since some other extension (e.g. HashTab) may be
+			// resizing the dialog.
 
-			// Make sure the underlying file handle is closed,
-			// since we don't need it once the RomData has been
-			// loaded by RomDataView.
-			d->romData->close();
+			// NOTE: We're using WM_SHOWWINDOW instead of WM_SIZE
+			// because WM_SIZE isn't sent for block devices,
+			// e.g. CD-ROM drives.
 			return TRUE;
 		}
 
-		// FIXME: Resize the dialog widgets.
-#if 0
-		case WM_SIZE: {
+		// FIXME: FBI's age rating is cut off on Windows
+		// if we don't adjust for WM_SHOWWINDOW.
+		case WM_SHOWWINDOW: {
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
 				GetProp(hDlg, EXT_POINTER_PROP));
 			if (!pExt) {
@@ -2174,7 +2174,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Continue normal processing.
 			break;
 		}
-#endif
 
 		case WM_DESTROY: {
 			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
