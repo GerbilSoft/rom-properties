@@ -227,4 +227,28 @@ int ConfReader::load(bool force)
 	return 0;
 }
 
+/**
+ * Get the configuration filename.
+ *
+ * If the configuration's directory does not exist, this
+ * will return nullptr. Otherwise, the filename will be
+ * returned, even if the file doesn't exist yet.
+ *
+ * @return Configuration filename, or nullptr on error.
+ */
+const rp_char *ConfReader::filename(void) const
+{
+	RP_D(const ConfReader);
+	if (d->conf_filename.empty()) {
+		// No filename yet. Try to load the file.
+		int ret = const_cast<ConfReader*>(this)->load(false);
+		if (ret != 0 || d->conf_filename.empty()) {
+			// Still unable to get the filename.
+			return nullptr;
+		}
+	}
+
+	return d->conf_filename.c_str();
+}
+
 }

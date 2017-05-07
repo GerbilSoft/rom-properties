@@ -69,6 +69,17 @@ class ConfReader
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int load(bool force = false);
+
+		/**
+		 * Get the configuration filename.
+		 *
+		 * If the configuration's directory does not exist, this
+		 * will return nullptr. Otherwise, the filename will be
+		 * returned, even if the file doesn't exist yet.
+		 *
+		 * @return Configuration filename, or nullptr on error.
+		 */
+		const rp_char *filename(void) const;
 };
 
 }
