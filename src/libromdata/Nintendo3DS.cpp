@@ -322,7 +322,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			break;
 		}
 
-		case ROM_TYPE_CIA: {
+		case ROM_TYPE_CIA:
 			// CIA file. SMDH may be located at the end
 			// of the file in plaintext, or as part of
 			// the executable in decrypted archives.
@@ -362,7 +362,6 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// Either there's no meta section, or the SMDH section
 			// wasn't valid. Try loading from the ExeFS.
 			// fall-through
-		}
 
 		case ROM_TYPE_CCI:
 		case ROM_TYPE_NCCH: {
