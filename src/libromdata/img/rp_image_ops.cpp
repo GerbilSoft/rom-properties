@@ -103,7 +103,7 @@ rp_image *rp_image::dup(void) const
  *
  * @return New rp_image with a squared version of the original.
  */
-rp_image *rp_image::square(void) const
+rp_image *rp_image::squared(void) const
 {
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before

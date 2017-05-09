@@ -93,7 +93,7 @@ HBITMAP RP_ThumbnailProvider_Private::rpImageToImgClass(const rp_image *img) con
 	unique_ptr<rp_image> tmp_img;
 	if (!img->isSquare()) {
 		// Image is non-square.
-		tmp_img.reset(img->square());
+		tmp_img.reset(img->squared());
 		assert(tmp_img.get() != nullptr);
 		if (tmp_img) {
 			img = tmp_img.get();

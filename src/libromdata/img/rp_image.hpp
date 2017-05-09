@@ -234,7 +234,7 @@ class rp_image
 		 *
 		 * @return New rp_image with a squared version of the original.
 		 */
-		rp_image *square(void) const;
+		rp_image *squared(void) const;
 };
 
 }
