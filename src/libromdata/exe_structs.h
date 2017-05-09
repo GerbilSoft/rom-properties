@@ -512,6 +512,16 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 #pragma pack()
 ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*4);
 
+// Manifest IDs.
+typedef enum {
+	CREATEPROCESS_MANIFEST_RESOURCE_ID = 1,
+	ISOLATIONAWARE_MANIFEST_RESOURCE_ID = 2,
+	ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = 3,
+
+	MANIFEST_ID_MIN = 1,
+	MANIFEST_ID_MAX = 3,
+} PE_ManifestID;
+
 /** New Executable (Win16) structs. **/
 // References:
 // - http://wiki.osdev.org/NE

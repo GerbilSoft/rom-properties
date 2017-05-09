@@ -139,6 +139,7 @@ SET(libromdata_H
 	Amiibo.hpp
 	NES.hpp
 	EXE.hpp
+	EXE_p.hpp
 	WiiU.hpp
 	Nintendo3DS.hpp
 	md_structs.h
@@ -207,6 +208,10 @@ IF(JPEG_FOUND)
 	SET(libromdata_SRCS ${libromdata_SRCS} img/RpJpeg.cpp)
 	SET(libromdata_H ${libromdata_H} img/RpJpeg.hpp)
 ENDIF(JPEG_FOUND)
+
+IF(ENABLE_XML)
+	SET(libromdata_SRCS ${libromdata_SRCS} EXE_manifest.cpp)
+ENDIF(ENABLE_XML)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
@@ -369,6 +374,9 @@ FOREACH(_target romdata8 romdata16)
 		TARGET_LINK_LIBRARIES(${_target} ${NETTLE_LIBRARY})
 		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${NETTLE_INCLUDE_DIRS})
 	ENDIF(NETTLE_FOUND)
+	IF(ENABLE_XML)
+		TARGET_LINK_LIBRARIES(${_target} tinyxml2)
+	ENDIF(ENABLE_XML)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} gdiplus)
 		IF(ENABLE_DECRYPTION)

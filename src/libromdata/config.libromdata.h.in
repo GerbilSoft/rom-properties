@@ -53,6 +53,9 @@
 /* Define to 1 if lambda functions can be cast to function pointers. */
 #cmakedefine HAVE_LAMBDA_AS_FUNCTION_POINTER 1
 
+/* Define to 1 if XML parsing is enabled. */
+#cmakedefine ENABLE_XML 1
+
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
