@@ -27,11 +27,11 @@ IF(USE_INTERNAL_ZLIB)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_ZLIB_DLL ON)
-		SET(ZLIB_LIBRARY zlib)
+		SET(ZLIB_LIBRARY zlib INTERNAL)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_ZLIB_DLL OFF)
-		SET(ZLIB_LIBRARY zlibstatic)
+		SET(ZLIB_LIBRARY zlibstatic INTERNAL)
 	ENDIF()
 	SET(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
 	# FIXME: When was it changed from DIR to DIRS?

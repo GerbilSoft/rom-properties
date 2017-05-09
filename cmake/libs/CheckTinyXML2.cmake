@@ -27,7 +27,7 @@ IF(USE_INTERNAL_XML)
 	SET(USE_INTERNAL_XML_DLL OFF)
 	# NOTE: The tinyxml2 target has implicit include directories,
 	# so we don't need to set the variables.
-	SET(TinyXML2_LIBRARY tinyxml2)
+	SET(TinyXML2_LIBRARY tinyxml2 INTERNAL)
 ELSE(USE_INTERNAL_XML)
 	SET(USE_INTERNAL_XML_DLL OFF)
 ENDIF(USE_INTERNAL_XML)
