@@ -77,6 +77,25 @@ RP_ExtractImage_Private::~RP_ExtractImage_Private()
  */
 HBITMAP RP_ExtractImage_Private::rpImageToImgClass(const rp_image *img) const
 {
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+
+	// (NOTE: IExtractImage doesn't have this problem,
+	// but we're doing this for consistency with
+	// RP_ExtractIcon in order to prevent image shifting
+	// when refreshing Explorer.)
+
+	unique_ptr<rp_image> tmp_img;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		tmp_img.reset(img->square());
+		assert(tmp_img.get() != nullptr);
+		if (tmp_img) {
+			img = tmp_img.get();
+		}
+	}
+
 	// NOTE: IExtractImage doesn't support alpha transparency,
 	// so blend the image with COLOR_WINDOW. This works for the
 	// most part, at least with Windows Explorer, but the cached

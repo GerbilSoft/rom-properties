@@ -81,6 +81,25 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
  */
 HBITMAP RP_ThumbnailProvider_Private::rpImageToImgClass(const rp_image *img) const
 {
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+
+	// (NOTE: IThumbnailProvider doesn't have this problem,
+	// but we're doing this for consistency with
+	// RP_ExtractIcon in order to prevent image shifting
+	// when refreshing Explorer.)
+
+	unique_ptr<rp_image> tmp_img;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		tmp_img.reset(img->square());
+		assert(tmp_img.get() != nullptr);
+		if (tmp_img) {
+			img = tmp_img.get();
+		}
+	}
+
 	return RpImageWin32::toHBITMAP_alpha(img);
 }
 
