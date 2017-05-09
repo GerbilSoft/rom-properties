@@ -11,7 +11,7 @@ IF(NOT USE_INTERNAL_PNG)
 	ELSE()
 		# System libpng was not found.
 		MESSAGE(STATUS "Using the internal copy of libpng since a system version was not found.")
-		SET(USE_INTERNAL_PNG ON CACHE STRING "Use the internal copy of libpng.")
+		SET(USE_INTERNAL_PNG ON CACHE STRING "Use the internal copy of libpng." FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of libpng.")

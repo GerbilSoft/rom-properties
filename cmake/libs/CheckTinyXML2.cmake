@@ -12,7 +12,7 @@ IF(NOT USE_INTERNAL_XML)
 	ELSE()
 		# System TinyXML2 was not found.
 		MESSAGE(STATUS "Using the internal copy of TinyXML2 since a system version was not found.")
-		SET(USE_INTERNAL_XML ON CACHE STRING "Use the internal copy of TinyXML2.")
+		SET(USE_INTERNAL_XML ON CACHE STRING "Use the internal copy of TinyXML2." FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of TinyXML2.")
