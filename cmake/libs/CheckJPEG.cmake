@@ -32,11 +32,11 @@ IF(USE_INTERNAL_JPEG)
 		# NOTE: libjpeg-turbo 1.5.1's CMakeLists only builds
 		# a DLL version of turbojpeg, not libjpeg.
 		SET(USE_INTERNAL_JPEG_DLL ON)
-		SET(JPEG_LIBRARY jpeg INTERNAL)
+		SET(JPEG_LIBRARY jpeg CACHE "JPEG library." INTERNAL FORCE)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_JPEG_DLL OFF)
-		SET(JPEG_LIBRARY jpeg-static INTERNAL)
+		SET(JPEG_LIBRARY jpeg-static CACHE "JPEG library." INTERNAL FORCE)
 	ENDIF()
 	SET(JPEG_INCLUDE_DIR
 		${CMAKE_SOURCE_DIR}/extlib/libjpeg-turbo
