@@ -77,7 +77,7 @@ void EXEPrivate::addFields_PE_Manifest(void)
 
 	// Parse the XML.
 	XMLDocument doc;
-	XMLError xerr = doc.Parse(xml.get());
+	int xerr = doc.Parse(xml.get());
 	if (xerr != XML_SUCCESS) {
 		// Error parsing the manifest XML.
 		return;
