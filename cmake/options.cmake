@@ -49,6 +49,10 @@ ENDIF()
 # Enable decryption for newer ROM and disc images.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
+# Enable XML parsing for certain formats, e.g. Windows manifests.
+# TODO: Option to use the system tinyxml2?
+OPTION(ENABLE_XML "Enable XML parsing for e.g. Windows manifests." ON)
+
 # Split debug information into a separate file.
 OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
 
