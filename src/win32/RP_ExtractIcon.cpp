@@ -78,7 +78,7 @@ HBITMAP RP_ExtractIcon_Private::rpImageToImgClass(const rp_image *img) const
 	// an HICON later.
 
 	// We should be using the RpGdiplusBackend.
-	const RpGdiplusBackend *const backend =
+	const RpGdiplusBackend *backend =
 		dynamic_cast<const RpGdiplusBackend*>(img->backend());
 	assert(backend != nullptr);
 	if (!backend) {
@@ -86,14 +86,27 @@ HBITMAP RP_ExtractIcon_Private::rpImageToImgClass(const rp_image *img) const
 		return nullptr;
 	}
 
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+	unique_ptr<rp_image> tmp_img;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		tmp_img.reset(img->square());
+		assert(tmp_img.get() != nullptr);
+		if (tmp_img) {
+			const RpGdiplusBackend *const tmp_backend =
+				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
+			assert(tmp_backend != nullptr);
+			if (tmp_backend) {
+				backend = tmp_backend;
+			}
+		}
+	}
+
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
-	HBITMAP hBitmap = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
-	if (!hBitmap) {
-		// Error converting to HBITMAP.
-		return nullptr;
-	}
-	return hBitmap;
+	return const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
 }
 
 /**
