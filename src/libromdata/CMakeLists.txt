@@ -92,6 +92,7 @@ SET(libromdata_SRCS
 	file/FileSystem_common.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
+	img/rp_image_ops.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
 	img/RpPng.cpp
@@ -170,6 +171,7 @@ SET(libromdata_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	img/rp_image.hpp
+	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp

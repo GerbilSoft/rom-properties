@@ -123,6 +123,12 @@ class rp_image
 		int height(void) const;
 
 		/**
+		 * Is this rp_image square?
+		 * @return True if width == height; false if not.
+		 */
+		bool isSquare(void) const;
+
+		/**
 		 * Get the number of bytes per line.
 		 * @return Bytes per line.
 		 */
@@ -209,6 +215,26 @@ class rp_image
 		 * @return String containing the user-friendly name of a format.
 		 */
 		static const rp_char *getFormatName(Format format);
+
+	public:
+		/** Image operations. **/
+
+		/**
+		 * Duplicate the rp_image.
+		 * @return New rp_image with a copy of the image data.
+		 */
+		rp_image *dup(void) const;
+
+		/**
+		 * Square the rp_image.
+		 *
+		 * If the width and height don't match, transparent rows
+		 * and/or columns will be added to "square" the image.
+		 * Otherwise, this is the same as dup().
+		 *
+		 * @return New rp_image with a squared version of the original.
+		 */
+		rp_image *square(void) const;
 };
 
 }

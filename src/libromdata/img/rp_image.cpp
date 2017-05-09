@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "rp_image.hpp"
+#include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
 #include "common.h"
@@ -132,46 +133,6 @@ rp_image_backend_default::~rp_image_backend_default()
 	free(m_data);
 	free(m_palette);
 }
-
-/** rp_image_private **/
-
-class rp_image_private
-{
-	public:
-		/**
-		 * Create an rp_image_private.
-		 *
-		 * If an rp_image_backend has been registered, that backend
-		 * will be used; otherwise, the defaul tbackend will be used.
-		 *
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param format Image format.
-		 */
-		rp_image_private(int width, int height, rp_image::Format format);
-
-		/**
-		 * Create an rp_image_private using the specified rp_image_backend.
-		 *
-		 * NOTE: This rp_image will take ownership of the rp_image_backend.
-		 *
-		 * @param backend rp_image_backend.
-		 */
-		explicit rp_image_private(rp_image_backend *backend);
-
-		~rp_image_private();
-
-	private:
-		rp_image_private(const rp_image_private &other);
-		rp_image_private &operator=(const rp_image_private &other);
-
-	public:
-		static rp_image::rp_image_backend_creator_fn backend_fn;
-
-	public:
-		// Image backend.
-		rp_image_backend *backend;
-};
 
 /** rp_image_private **/
 
@@ -309,6 +270,15 @@ int rp_image::width(void) const
 int rp_image::height(void) const
 {
 	return d->backend->height;
+}
+
+/**
+ * Is this rp_image square?
+ * @return True if width == height; false if not.
+ */
+bool rp_image::isSquare(void) const
+{
+	return (d->backend->width == d->backend->height);
 }
 
 /**
