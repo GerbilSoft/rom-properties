@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP__
 #define __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP__
 
+#include "libromdata/config.libromdata.h"
 #include "libromdata/common.h"
 
 namespace LibRomData {
@@ -76,11 +77,16 @@ class ConfigDialogPrivate
 		bool changed_ImageTypes;
 		bool changed_Downloads;
 
+		// Image type data.
+		static const int SYS_COUNT = 8;
+		static const rp_char *const ImageTypes_sysNames[SYS_COUNT];
+
 		// Image type priorities tab functions.
-		void reset_ImageTypes(HWND hDlg);
-		void save_ImageTypes(HWND hDlg);
-		static INT_PTR CALLBACK DlgProc_ImageTypes(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		static UINT CALLBACK CallbackProc_ImageTypes(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+		void ImageTypes_reset(HWND hDlg);
+		void ImageTypes_save(HWND hDlg);
+		void ImageTypes_createGrid(HWND hDlg);
+		static INT_PTR CALLBACK ImageTypes_DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static UINT CALLBACK ImageTypes_CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		// Downloads tab functions.
 		void reset_Downloads(HWND hDlg);

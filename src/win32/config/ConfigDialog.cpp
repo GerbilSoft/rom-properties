@@ -70,9 +70,9 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_IMAGETYPES);
 	psp[0].pszIcon = nullptr;
 	psp[0].pszTitle = L"Image Types";
-	psp[0].pfnDlgProc = DlgProc_ImageTypes;
+	psp[0].pfnDlgProc = ImageTypes_DlgProc;
 	psp[0].pcRefParent = nullptr;
-	psp[0].pfnCallback = CallbackProc_ImageTypes;
+	psp[0].pfnCallback = ImageTypes_CallbackProc;
 
 	// Download configuration.
 	psp[1].dwSize = sizeof(psp);

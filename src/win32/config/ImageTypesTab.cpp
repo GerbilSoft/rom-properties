@@ -22,17 +22,93 @@
 #include "stdafx.h"
 
 #include "ConfigDialog_p.hpp"
+#include "WinUI.hpp"
 #include "resource.h"
 
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/config/Config.hpp"
 using LibRomData::Config;
 
+// C++ includes.
+#include <string>
+using std::wstring;
+
+// System names.
+const rp_char *const ConfigDialogPrivate::ImageTypes_sysNames[SYS_COUNT] = {
+	_RP("amiibo"),
+	_RP("Dreamcast Saves"),
+	_RP("GameCube / Wii"),
+	_RP("GameCube Saves"),
+	_RP("Nintendo DS(i)"),
+	_RP("Nintendo 3DS"),
+	_RP("PlayStation Saves"),
+	_RP("Wii U"),
+};
+
+/**
+ * Create the grid of static text and combo boxes.
+ * @param hDlg Image type priorities property sheet.
+ */
+void ConfigDialogPrivate::ImageTypes_createGrid(HWND hDlg)
+{
+	// Get the dialog margin.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	RECT dlgMargin = {7, 7, 8, 8};
+	MapDialogRect(hDlg, &dlgMargin);
+
+	// Get the font of the parent dialog.
+	HFONT hFontDlg = GetWindowFont(GetParent(hDlg));
+	assert(hFontDlg != nullptr);
+	if (!hFontDlg) {
+		// No font?!
+		return;
+	}
+
+	// Get the dimensions of IDC_IMAGETYPES_DESC2.
+	HWND lblDesc2 = GetDlgItem(hDlg, IDC_IMAGETYPES_DESC2);
+	assert(lblDesc2 != nullptr);
+	if (!lblDesc2) {
+		// Label is missing...
+		return;
+	}
+	RECT rect_lblDesc2;
+	GetWindowRect(lblDesc2, &rect_lblDesc2);
+	MapWindowPoints(HWND_DESKTOP, GetParent(lblDesc2), (LPPOINT)&rect_lblDesc2, 2);
+
+	// Determine the size of the largest system label.
+	// TODO: Height needs to match the combo boxes.
+	SIZE sz_lblSysLabel = {0, 0};
+	int width = 0;
+	for (int i = SYS_COUNT-1; i >= 0; i--) {
+		SIZE szCur;
+		WinUI::measureTextSize(hDlg, hFontDlg, RP2W_c(ImageTypes_sysNames[i]), &szCur);
+		if (szCur.cx > sz_lblSysLabel.cx) {
+			sz_lblSysLabel.cx = szCur.cx;
+		}
+		if (szCur.cy > sz_lblSysLabel.cy) {
+			sz_lblSysLabel.cy = szCur.cy;
+		}
+	}
+
+	// Create the labels.
+	POINT curPt = {rect_lblDesc2.left, rect_lblDesc2.bottom + dlgMargin.bottom};
+	for (unsigned int i = 0; i < SYS_COUNT; i++) {
+		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, RP2W_c(ImageTypes_sysNames[i]),
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
+			curPt.x, curPt.y, sz_lblSysLabel.cx, sz_lblSysLabel.cy,
+			hDlg, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(hStatic, hFontDlg, FALSE);
+		curPt.y += sz_lblSysLabel.cy;
+	}
+}
+
 /**
  * Reset the image type priorities tab to the current configuration.
  * @param hDlg Image type priorities property sheet.
  */
-void ConfigDialogPrivate::reset_ImageTypes(HWND hDlg)
+void ConfigDialogPrivate::ImageTypes_reset(HWND hDlg)
 {
 	// TODO
 
@@ -44,7 +120,7 @@ void ConfigDialogPrivate::reset_ImageTypes(HWND hDlg)
  * Save the image type priorities tab configuration.
  * @param hDlg Image type priorities property sheet.
  */
-void ConfigDialogPrivate::save_ImageTypes(HWND hDlg)
+void ConfigDialogPrivate::ImageTypes_save(HWND hDlg)
 {
 	const rp_char *filename = config->filename();
 	if (!filename) {
@@ -65,7 +141,7 @@ void ConfigDialogPrivate::save_ImageTypes(HWND hDlg)
  * @param wParam
  * @param lParam
  */
-INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_ImageTypes(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ConfigDialogPrivate::ImageTypes_DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -83,10 +159,11 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_ImageTypes(HWND hDlg, UINT uMsg, W
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
-			// TODO: Create the control grid.
+			// Create the control grid.
+			d->ImageTypes_createGrid(hDlg);
 
 			// Reset the values.
-			d->reset_ImageTypes(hDlg);
+			d->ImageTypes_reset(hDlg);
 			return TRUE;
 		}
 
@@ -111,7 +188,7 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_ImageTypes(HWND hDlg, UINT uMsg, W
 				case PSN_APPLY:
 					// Save settings.
 					if (d->changed_ImageTypes) {
-						d->save_ImageTypes(hDlg);
+						d->ImageTypes_save(hDlg);
 					}
 					break;
 
@@ -145,7 +222,7 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_ImageTypes(HWND hDlg, UINT uMsg, W
  * @param wParam
  * @param lParam
  */
-UINT CALLBACK ConfigDialogPrivate::CallbackProc_ImageTypes(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK ConfigDialogPrivate::ImageTypes_CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
