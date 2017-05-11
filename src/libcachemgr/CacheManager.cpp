@@ -43,6 +43,9 @@ using namespace LibRomData::FileSystem;
 #include <sys/time.h>
 #endif
 
+// C includes. (C++ namespace)
+#include <cctype>
+
 // C++ includes.
 #include <memory>
 #include <string>
@@ -153,6 +156,16 @@ rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
  */
 LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &cache_key)
 {
+	// Quick check: Ensure the cache key is not empty and
+	// that it doesn't start with a path separator.
+	if (cache_key.empty() ||
+	    cache_key[0] == _RP_CHR('/') || cache_key[0] == _RP_CHR('\\'))
+	{
+		// Cache key is either empty or starts with
+		// a path separator.
+		return rp_string();
+	}
+
 	rp_string filtered_cache_key = cache_key;
 	bool foundSlash = true;
 	int dotCount = 0;
@@ -163,17 +176,18 @@ LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &
 		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
 		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
 		// Values:
-		// - 0: Forbidden
+		// - 0: Not allowed (converted to '_')
 		// - 1: Allowed
 		// - 2: Dot
 		// - 3: Slash
+		// - 4: Backslash or colon (error)
 		static const uint8_t valid_ascii_tbl[0x80] = {
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
 			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x50 (\\)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, // 0x50 (\\)
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
 		};
@@ -183,17 +197,19 @@ LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &
 			continue;
 		}
 
-		switch (valid_ascii_tbl[chr] & 3) {
+		switch (valid_ascii_tbl[chr] & 7) {
 			case 0:
 			default:
 				// Invalid character.
 				*iter = _RP_CHR('_');
 				foundSlash = false;
 				break;
+
 			case 1:
 				// Valid character.
 				foundSlash = false;
 				break;
+
 			case 2:
 				// Dot.
 				// Check for "../" (or ".." at the end of the cache key).
@@ -205,6 +221,7 @@ LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &
 					}
 				}
 				break;
+
 			case 3:
 				// Slash.
 #ifdef _WIN32
@@ -214,6 +231,11 @@ LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &
 				foundSlash = true;
 				dotCount = 0;
 				break;
+
+			case 4:
+				// Backslash or colon.
+				// Not allowed at all.
+				return rp_string();
 		}
 	}
 

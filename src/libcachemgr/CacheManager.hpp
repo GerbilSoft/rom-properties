@@ -73,12 +73,13 @@ class CacheManager
 		 */
 		LibRomData::rp_string getCacheFilename(const LibRomData::rp_string &cache_key);
 
+	public:
 		/**
 		 * Filter invalid characters from a cache key.
 		 * @param cache_key Cache key.
 		 * @return Filtered cache key.
 		 */
-		LibRomData::rp_string filterCacheKey(const LibRomData::rp_string &cache_key);
+		static LibRomData::rp_string filterCacheKey(const LibRomData::rp_string &cache_key);
 
 	public:
 		/**
