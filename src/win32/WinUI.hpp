@@ -42,11 +42,24 @@ std::wstring unix2dos(const std::wstring &wstr_unix, int *lf_count);
  * Measure text size using GDI.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param str		[in] String.
+ * @param wstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize);
+int measureTextSize(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize);
+
+/**
+ * Measure text size using GDI.
+ * @param hWnd		[in] hWnd.
+ * @param hFont		[in] Font.
+ * @param wstr		[in] String.
+ * @param lpSize	[out] Size.
+ * @return 0 on success; non-zero on error.
+ */
+static inline int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize)
+{
+	return measureTextSize(hWnd, hFont, wstr.c_str(), lpSize);
+}
 
 /**
  * Measure text size using GDI.
@@ -54,11 +67,26 @@ int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpS
  * calling the regular measureTextSize() function.
  * @param hWnd		[in] hWnd.
  * @param hFont		[in] Font.
- * @param str		[in] String.
+ * @param wstr		[in] String.
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize);
+int measureTextSizeLink(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize);
+
+/**
+ * Measure text size using GDI.
+ * This version removes HTML-style tags before
+ * calling the regular measureTextSize() function.
+ * @param hWnd		[in] hWnd.
+ * @param hFont		[in] Font.
+ * @param wstr		[in] String.
+ * @param lpSize	[out] Size.
+ * @return 0 on success; non-zero on error.
+ */
+static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize)
+{
+	return measureTextSizeLink(hWnd, hFont, wstr.c_str(), lpSize);
+}
 
 /**
  * Determine the monospaced font to use.

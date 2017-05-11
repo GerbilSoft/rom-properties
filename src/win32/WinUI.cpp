@@ -24,8 +24,10 @@
 #include "AutoGetDC.hpp"
 
 // C++ includes.
+#include <memory>
 #include <string>
 #include <unordered_set>
+using std::unique_ptr;
 using std::unordered_set;
 using std::wstring;
 
@@ -66,33 +68,43 @@ wstring unix2dos(const wstring &wstr_unix, int *lf_count)
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on errro.
  */
-int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
+int measureTextSize(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize)
 {
+	assert(hWnd != nullptr);
+	assert(hFont != nullptr);
+	assert(wstr != nullptr);
+	assert(lpSize != nullptr);
+	if (!hWnd || !hFont || !wstr || !lpSize)
+		return -EINVAL;
+
 	SIZE size_total = {0, 0};
 	AutoGetDC hDC(hWnd, hFont);
 
-	// Handle newlines.
-	const wchar_t *data = wstr.data();
-	int nl_pos_prev = -1;
-	size_t nl_pos = 0;	// Assuming no NL at the start.
+	// Find the next newline.
 	do {
-		nl_pos = wstr.find(L'\n', nl_pos + 1);
-		const int start = nl_pos_prev + 1;
+		const wchar_t *p_nl = wcschr(wstr, L'\n');
 		int len;
-		if (nl_pos != wstring::npos) {
-			len = (int)(nl_pos - start);
+		if (p_nl) {
+			// Found a newline.
+			len = (int)(p_nl - wstr);
 		} else {
-			len = (int)(wstr.size() - start);
+			// No newline. Process the rest of the string.
+			len = (int)wcslen(wstr);
+		}
+		assert(len >= 0);
+		if (len < 0) {
+			len = 0;
 		}
 
 		// Check if a '\r' is present before the '\n'.
-		if (data[nl_pos - 1] == L'\r') {
+		if (len > 0 && p_nl != nullptr && *(p_nl-1) == L'\r') {
 			// Ignore the '\r'.
 			len--;
 		}
 
+		// Measure the text size.
 		SIZE size_cur;
-		BOOL bRet = GetTextExtentPoint32(hDC, &data[start], len, &size_cur);
+		BOOL bRet = GetTextExtentPoint32(hDC, wstr, len, &size_cur);
 		if (!bRet) {
 			// Something failed...
 			return -1;
@@ -104,8 +116,10 @@ int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
 		size_total.cy += size_cur.cy;
 
 		// Next newline.
-		nl_pos_prev = (int)nl_pos;
-	} while (nl_pos != wstring::npos);
+		if (!p_nl)
+			break;
+		wstr = p_nl + 1;
+	} while (*wstr != 0);
 
 	*lpSize = size_total;
 	return 0;
@@ -121,20 +135,25 @@ int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
-int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
+int measureTextSizeLink(HWND hWnd, HFONT hFont, const wchar_t *wstr, LPSIZE lpSize)
 {
+	assert(wstr != nullptr);
+	if (!wstr)
+		return -EINVAL;
+
 	// Remove HTML-style tags.
 	// NOTE: This is a very simplistic version.
-	wstring nwstr;
-	nwstr.reserve(wstr.size());
+	size_t len = wcslen(wstr);
+	unique_ptr<wchar_t[]> nwstr(new wchar_t[len+1]);
+	wchar_t *p = nwstr.get();
 
 	int lbrackets = 0;
-	for (int i = 0; i < (int)wstr.size(); i++) {
-		if (wstr[i] == L'<') {
+	for (; *wstr != 0; wstr++) {
+		if (*wstr == L'<') {
 			// Starting bracket.
 			lbrackets++;
 			continue;
-		} else if (wstr[i] == L'>') {
+		} else if (*wstr == L'>') {
 			// Ending bracket.
 			assert(lbrackets > 0);
 			lbrackets--;
@@ -143,11 +162,12 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSi
 
 		if (lbrackets == 0) {
 			// Not currently in a tag.
-			nwstr += wstr[i];
+			*p++ = *wstr;
 		}
 	}
 
-	return measureTextSize(hWnd, hFont, nwstr, lpSize);
+	*p = 0;
+	return measureTextSize(hWnd, hFont, nwstr.get(), lpSize);
 }
 
 /**
