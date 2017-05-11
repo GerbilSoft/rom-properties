@@ -60,6 +60,13 @@ int measureTextSize(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpS
  */
 int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::wstring &wstr, LPSIZE lpSize);
 
+/**
+ * Determine the monospaced font to use.
+ * @param plfFontMono Pointer to LOGFONT to store the font name in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int findMonospacedFont(LOGFONT *plfFontMono);
+
 }
 
 #endif /* __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__ */

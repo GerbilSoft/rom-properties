@@ -123,7 +123,6 @@ class RP_ShellPropSheetExt_Private
 
 		// Monospaced font details.
 		LOGFONT lfFontMono;
-		unordered_set<wstring> monospaced_fonts;
 		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
 		bool bPrevIsClearType;	// Previous ClearType setting.
 
@@ -275,17 +274,6 @@ class RP_ShellPropSheetExt_Private
 		 * @param hFont Base font.
 		 */
 		void initBoldFont(HFONT hFont);
-
-		/**
-		 * Monospaced font enumeration procedure.
-		 * @param lpelfe Enumerated font information.
-		 * @param lpntme Font metrics.
-		 * @param FontType Font type.
-		 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
-		 */
-		static int CALLBACK MonospacedFontEnumProc(
-			const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
-			DWORD FontType, LPARAM lParam);
 
 	public:
 		/**
@@ -1275,33 +1263,6 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Monospaced font enumeration procedure.
- * @param lpelfe Enumerated font information.
- * @param lpntme Font metrics.
- * @param FontType Font type.
- * @param lParam Pointer to RP_ShellPropSheetExt_Private.
- */
-int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
-	const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
-	DWORD FontType, LPARAM lParam)
-{
-	RP_ShellPropSheetExt_Private *d =
-		reinterpret_cast<RP_ShellPropSheetExt_Private*>(lParam);
-
-	// Check the font attributes:
-	// - Must be monospaced.
-	// - Must be horizontally-oriented.
-	if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) &&
-	     lpelfe->lfFaceName[0] != '@')
-	{
-		d->monospaced_fonts.insert(lpelfe->lfFaceName);
-	}
-
-	// Continue enumeration.
-	return 1;
-}
-
-/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -1358,57 +1319,12 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 			return;
 		}
 
-		// Enumerate all monospaced fonts.
-		// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
-		monospaced_fonts.clear();
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-		monospaced_fonts.reserve(64);
-#endif
-		LOGFONT lfEnumFonts;
-		memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
-		lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
-		lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
-		HDC hdc = GetDC(nullptr);
-		EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
-			reinterpret_cast<LPARAM>(this), 0);
-		ReleaseDC(nullptr, hdc);
-
-		// Fonts to try.
-		static const wchar_t *const fonts[] = {
-			L"DejaVu Sans Mono",
-			L"Consolas",
-			L"Lucida Console",
-			L"Fixedsys Excelsior 3.01",
-			L"Fixedsys Excelsior 3.00",
-			L"Fixedsys Excelsior 3.0",
-			L"Fixedsys Excelsior 2.00",
-			L"Fixedsys Excelsior 2.0",
-			L"Fixedsys Excelsior 1.00",
-			L"Fixedsys Excelsior 1.0",
-			L"Fixedsys",
-			L"Courier New",
-		};
-
-		const wchar_t *font = nullptr;
-
-		for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
-			if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
-				// Found a font.
-				font = fonts[i];
-				break;
-			}
-		}
-
-		// We don't need the enumerated fonts anymore.
-		monospaced_fonts.clear();
-
-		if (!font) {
+		// Find a monospaced font.
+		int ret = WinUI::findMonospacedFont(&lfFontMono);
+		if (ret != 0) {
 			// Monospaced font not found.
 			return;
 		}
-
-		// Adjust the font and create a new one.
-		wcscpy(lfFontMono.lfFaceName, font);
 	}
 
 	// Create the monospaced font.

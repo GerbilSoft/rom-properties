@@ -25,6 +25,8 @@
 
 // C++ includes.
 #include <string>
+#include <unordered_set>
+using std::unordered_set;
 using std::wstring;
 
 namespace WinUI {
@@ -146,6 +148,95 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSi
 	}
 
 	return measureTextSize(hWnd, hFont, nwstr, lpSize);
+}
+
+/**
+ * Monospaced font enumeration procedure.
+ * @param lpelfe Enumerated font information.
+ * @param lpntme Font metrics.
+ * @param FontType Font type.
+ * @param lParam Pointer to RP_ShellPropSheetExt_Private.
+ */
+static int CALLBACK MonospacedFontEnumProc(
+	const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
+	DWORD FontType, LPARAM lParam)
+{
+	unordered_set<wstring> *pFonts = reinterpret_cast<unordered_set<wstring>*>(lParam);
+
+	// Check the font attributes:
+	// - Must be monospaced.
+	// - Must be horizontally-oriented.
+	if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) &&
+	     lpelfe->lfFaceName[0] != '@')
+	{
+		pFonts->insert(lpelfe->lfFaceName);
+	}
+
+	// Continue enumeration.
+	return 1;
+}
+
+/**
+ * Determine the monospaced font to use.
+ * @param plfFontMono Pointer to LOGFONT to store the font name in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int findMonospacedFont(LOGFONT *plfFontMono)
+{
+	// Enumerate all monospaced fonts.
+	// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
+	unordered_set<wstring> enum_fonts;
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+	enum_fonts.reserve(64);
+#endif
+
+	LOGFONT lfEnumFonts = { 0 };
+	lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
+	lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
+	HDC hdc = GetDC(nullptr);
+	EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
+		reinterpret_cast<LPARAM>(&enum_fonts), 0);
+	ReleaseDC(nullptr, hdc);
+
+	if (enum_fonts.empty()) {
+		// No fonts...
+		return -ENOENT;
+	}
+
+	// Fonts to try.
+	static const wchar_t *const mono_font_names[] = {
+		L"DejaVu Sans Mono",
+		L"Consolas",
+		L"Lucida Console",
+		L"Fixedsys Excelsior 3.01",
+		L"Fixedsys Excelsior 3.00",
+		L"Fixedsys Excelsior 3.0",
+		L"Fixedsys Excelsior 2.00",
+		L"Fixedsys Excelsior 2.0",
+		L"Fixedsys Excelsior 1.00",
+		L"Fixedsys Excelsior 1.0",
+		L"Fixedsys",
+		L"Courier New",
+		nullptr
+	};
+
+	const wchar_t *mono_font = nullptr;
+	for (const wchar_t *const *test_font = mono_font_names; *test_font != nullptr; test_font++) {
+		if (enum_fonts.find(*test_font) != enum_fonts.end()) {
+			// Found a font.
+			mono_font = *test_font;
+			break;
+		}
+	}
+
+	if (!mono_font) {
+		// No monospaced font found.
+		return -ENOENT;
+	}
+
+	// Found the monospaced font.
+	wcscpy_s(plfFontMono->lfFaceName, _countof(plfFontMono->lfFaceName), mono_font);
+	return 0;
 }
 
 }
