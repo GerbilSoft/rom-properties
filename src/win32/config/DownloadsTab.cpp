@@ -106,7 +106,7 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Downloads(HWND hDlg, UINT uMsg, WP
 				return TRUE;
 
 			// Store the D object pointer with this particular page dialog.
-			SetProp(hDlg,D_PTR_PROP, reinterpret_cast<HANDLE>(d));
+			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
 			// Reset the values.
 			d->reset_Downloads(hDlg);
