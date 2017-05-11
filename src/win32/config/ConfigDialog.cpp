@@ -46,6 +46,39 @@ ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
 	, changed_Downloads(false)
 { }
 
+/**
+ * Property Sheet callback.
+ * @param hDlg Property sheet dialog.
+ * @param uMsg
+ * @param lParam
+ * @return 0
+ */
+int CALLBACK ConfigDialogPrivate::CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam)
+{
+	switch (uMsg) {
+		case PSCB_INITIALIZED: {
+			// Property sheet has been initialized.
+			// Add the system menu and minimize box.
+			LONG style = GetWindowLong(hDlg, GWL_STYLE);
+			style |= WS_MINIMIZEBOX | WS_SYSMENU;
+			SetWindowLong(hDlg, GWL_STYLE, style);
+
+			// Remove the context help box.
+			// NOTE: Setting WS_MINIMIZEBOX does this,
+			// but we should remove the style anyway.
+			LONG exstyle = GetWindowLong(hDlg, GWL_EXSTYLE);
+			exstyle &= ~WS_EX_CONTEXTHELP;
+			SetWindowLong(hDlg, GWL_EXSTYLE, exstyle);
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return 0;
+}
+
 // Create the property sheet.
 // TEMPORARY version to test things out.
 INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
@@ -61,6 +94,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Create three property sheet pages.
+	// TODO: Make each property sheet its own class?
 	PROPSHEETPAGE psp[3];
 
 	// Image type priorities.
@@ -129,7 +163,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	// Create the property sheet.
 	PROPSHEETHEADER psh;
 	psh.dwSize = sizeof(psh);
-	psh.dwFlags = 0;
+	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP;
 	psh.hwndParent = nullptr;
 	psh.hInstance = g_hInstance;
 	psh.hIcon = nullptr;
@@ -137,7 +171,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	psh.nPages = 3;
 	psh.nStartPage = 0;
 	psh.phpage = hpsp;
-	psh.pfnCallback = nullptr;	// TODO
+	psh.pfnCallback = ConfigDialogPrivate::CallbackProc;
 	psh.hbmWatermark = nullptr;
 	psh.hplWatermark = nullptr;
 	psh.hbmHeader = nullptr;

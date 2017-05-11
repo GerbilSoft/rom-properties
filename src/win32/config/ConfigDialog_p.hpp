@@ -101,6 +101,9 @@ class ConfigDialogPrivate
 		static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
+		// Property Sheet callback.
+		static int CALLBACK CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
+
 		// Create Property Sheet.
 		static INT_PTR CreatePropertySheet(void);
 };
