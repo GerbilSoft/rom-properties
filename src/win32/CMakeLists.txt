@@ -4,6 +4,7 @@ PROJECT(rom-properties-win32)
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
 	RegKey.cpp
+	WinUI.cpp
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
@@ -28,6 +29,7 @@ SET(rom-properties-win32_SRCS
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
+	WinUI.hpp
 	RP_ExtractIcon.hpp
 	RP_ExtractIcon_p.hpp
 	RP_ClassFactory.hpp
