@@ -68,7 +68,7 @@ class CacheManager
 	protected:
 		/**
 		 * Get a cache filename.
-		 * @param cache_key Cache key.
+		 * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
 		 * @return Cache filename, or empty string on error.
 		 */
 		LibRomData::rp_string getCacheFilename(const LibRomData::rp_string &cache_key);
