@@ -42,6 +42,7 @@ const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
 ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
 	: m_isVista(isVista)
 	, config(Config::instance())
+	, changed_ImageTypes(false)
 	, changed_Downloads(false)
 { }
 
@@ -60,32 +61,42 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	InitCommonControlsEx(&initCommCtrl);
 
 	// Create three property sheet pages.
-	// TODO: Select only one caching page depending on OS version.
 	PROPSHEETPAGE psp[3];
 
-	// Download configuration.
+	// Image type priorities.
 	psp[0].dwSize = sizeof(psp);
 	psp[0].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
 	psp[0].hInstance = g_hInstance;
-	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
+	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_IMAGETYPES);
 	psp[0].pszIcon = nullptr;
-	psp[0].pszTitle = L"Downloads";
-	psp[0].pfnDlgProc = DlgProc_Downloads;
+	psp[0].pszTitle = L"Image Types";
+	psp[0].pfnDlgProc = DlgProc_ImageTypes;
 	psp[0].pcRefParent = nullptr;
-	psp[0].pfnCallback = CallbackProc_Downloads;
+	psp[0].pfnCallback = CallbackProc_ImageTypes;
+
+	// Download configuration.
+	psp[1].dwSize = sizeof(psp);
+	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp[1].hInstance = g_hInstance;
+	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
+	psp[1].pszIcon = nullptr;
+	psp[1].pszTitle = L"Downloads";
+	psp[1].pfnDlgProc = DlgProc_Downloads;
+	psp[1].pcRefParent = nullptr;
+	psp[1].pfnCallback = CallbackProc_Downloads;
 
 	// Thumbnail cache.
 	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	psp[1].dwSize = sizeof(psp);
-	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[1].hInstance = g_hInstance;
-	psp[1].pszIcon = nullptr;
-	psp[1].pszTitle = L"Thumbnail Cache";
-	psp[1].pfnDlgProc = DlgProc_Cache;
-	psp[1].pcRefParent = nullptr;
-	psp[1].pfnCallback = CallbackProc_Cache;
+	psp[2].dwSize = sizeof(psp);
+	psp[2].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp[2].hInstance = g_hInstance;
+	psp[2].pszIcon = nullptr;
+	psp[2].pszTitle = L"Thumbnail Cache";
+	psp[2].pfnDlgProc = DlgProc_Cache;
+	psp[2].pcRefParent = nullptr;
+	psp[2].pfnCallback = CallbackProc_Cache;
 
 	// Determine which dialog we should use.
 	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
@@ -93,18 +104,19 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	if (hKey.isOpen()) {
 		// Vista+ Thumbnail Cache cleaner is available.
 		isVista = true;
-		psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
+		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
 		hKey.close();
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
-		psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
+		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
 	}
 
 	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
 	ConfigDialogPrivate *const d = new ConfigDialogPrivate(isVista);
 	psp[0].lParam = reinterpret_cast<LPARAM>(d);
 	psp[1].lParam = reinterpret_cast<LPARAM>(d);
+	psp[2].lParam = reinterpret_cast<LPARAM>(d);
 
 	// Create the property sheet pages.
 	// NOTE: PropertySheet() is supposed to be able to take an
@@ -112,6 +124,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	HPROPSHEETPAGE hpsp[3];
 	hpsp[0] = CreatePropertySheetPage(&psp[0]);
 	hpsp[1] = CreatePropertySheetPage(&psp[1]);
+	hpsp[2] = CreatePropertySheetPage(&psp[2]);
 
 	// Create the property sheet.
 	PROPSHEETHEADER psh;
@@ -121,7 +134,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	psh.hInstance = g_hInstance;
 	psh.hIcon = nullptr;
 	psh.pszCaption = L"ROM Properties Page Configuration";
-	psh.nPages = 2;
+	psh.nPages = 3;
 	psh.nStartPage = 0;
 	psh.phpage = hpsp;
 	psh.pfnCallback = nullptr;	// TODO
@@ -129,6 +142,7 @@ INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
 	psh.hplWatermark = nullptr;
 	psh.hbmHeader = nullptr;
 
+	// TODO: Minimize button?
 	INT_PTR ret = PropertySheet(&psh);
 	delete d;
 	return ret;

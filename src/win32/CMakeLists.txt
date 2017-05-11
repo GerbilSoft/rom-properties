@@ -21,6 +21,7 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider_Fallback.cpp
 	config/ConfigDialog.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
+	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
 	resource.rc

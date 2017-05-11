@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP
-#define __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP
+#ifndef __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP__
+#define __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP__
 
 #include "libromdata/common.h"
 
@@ -72,7 +72,14 @@ class ConfigDialogPrivate
 
 		// Property sheet change variables.
 		// Used for optimization.
+		bool changed_ImageTypes;
 		bool changed_Downloads;
+
+		// Image type priorities tab functions.
+		void reset_ImageTypes(HWND hDlg);
+		void save_ImageTypes(HWND hDlg);
+		static INT_PTR CALLBACK DlgProc_ImageTypes(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static UINT CALLBACK CallbackProc_ImageTypes(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		// Downloads tab functions.
 		void reset_Downloads(HWND hDlg);
@@ -89,4 +96,4 @@ class ConfigDialogPrivate
 		static INT_PTR CreatePropertySheet(void);
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP */
+#endif /* __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOGPRIVATE_HPP__ */

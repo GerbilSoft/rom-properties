@@ -23,8 +23,8 @@
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
 // Dialogs
-#define IDD_PROPERTY_SHEET		100	/* Generic property sheet. */
-#define IDD_SUBTAB_CHILD_DIALOG		101	/* Subtab child dialog. */
+#define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */
+#define IDD_SUBTAB_CHILD_DIALOG                 101	/* Subtab child dialog. */
 
 // Standard controls
 #ifndef IDC_STATIC
@@ -32,9 +32,15 @@
 #endif
 
 /** Configuration dialog **/
-#define IDD_CONFIG_DOWNLOADS                    110
-#define IDD_CONFIG_CACHE                        111
-#define IDD_CONFIG_CACHE_XP                     112
+#define IDD_CONFIG_IMAGETYPES                   110
+#define IDD_CONFIG_DOWNLOADS                    111
+#define IDD_CONFIG_CACHE                        112
+#define IDD_CONFIG_CACHE_XP                     113
+
+// Image type priorities.
+#define IDC_IMAGETYPES_DESC1                    40001
+#define IDC_IMAGETYPES_DESC2                    40002
+#define IDC_IMAGETYPES_CREDITS                  40003
 
 // Downloads
 #define IDC_EXTIMGDL                            40101
