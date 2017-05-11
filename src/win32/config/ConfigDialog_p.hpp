@@ -24,6 +24,7 @@
 
 #include "libromdata/config.libromdata.h"
 #include "libromdata/common.h"
+#include "libromdata/RomData.hpp"
 
 namespace LibRomData {
 	class Config;
@@ -79,6 +80,7 @@ class ConfigDialogPrivate
 
 		// Image type data.
 		static const int SYS_COUNT = 8;
+		static const rp_char *const ImageTypes_imgTypeNames[LibRomData::RomData::IMG_EXT_MAX+1];
 		static const rp_char *const ImageTypes_sysNames[SYS_COUNT];
 
 		// Image type priorities tab functions.
