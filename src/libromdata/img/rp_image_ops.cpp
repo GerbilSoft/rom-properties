@@ -30,6 +30,9 @@
 // C++ includes.
 #include <algorithm>
 
+// Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
+#define rp_imagePrivate rp_image_private
+
 namespace LibRomData {
 
 /** Image operations. **/
@@ -40,6 +43,7 @@ namespace LibRomData {
  */
 rp_image *rp_image::dup(void) const
 {
+	RP_D(const rp_image);
 	const int width = d->backend->width;
 	const int height = d->backend->height;
 	const rp_image::Format format = d->backend->format;
@@ -108,6 +112,7 @@ rp_image *rp_image::squared(void) const
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
+	RP_D(const rp_image);
 	const int width = d->backend->width;
 	const int height = d->backend->height;
 	rp_image *sq_img = nullptr;

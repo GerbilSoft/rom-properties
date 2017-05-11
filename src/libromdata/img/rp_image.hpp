@@ -70,10 +70,10 @@ class rp_image
 		~rp_image();
 
 	private:
-		friend class rp_image_private;
-		rp_image_private *const d;
-	private:
 		RP_DISABLE_COPY(rp_image)
+	private:
+		friend class rp_image_private;
+		rp_image_private *const d_ptr;
 
 	public:
 		/**
@@ -179,13 +179,13 @@ class rp_image
 		 * Get the image palette.
 		 * @return Pointer to image palette, or nullptr if not a paletted image.
 		 */
-		uint32_t *palette(void);
+		const uint32_t *palette(void) const;
 
 		/**
 		 * Get the image palette.
 		 * @return Pointer to image palette, or nullptr if not a paletted image.
 		 */
-		const uint32_t *palette(void) const;
+		uint32_t *palette(void);
 
 		/**
 		 * Get the number of elements in the image palette.

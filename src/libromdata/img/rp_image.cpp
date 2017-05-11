@@ -31,6 +31,9 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
+#define rp_imagePrivate rp_image_private
+
 namespace LibRomData {
 
 /** rp_image_backend_default **/
@@ -195,7 +198,7 @@ rp_image_private::~rp_image_private()
  * @param format Image format.
  */
 rp_image::rp_image(int width, int height, rp_image::Format format)
-	: d(new rp_image_private(width, height, format))
+	: d_ptr(new rp_image_private(width, height, format))
 { }
 
 /**
@@ -206,12 +209,12 @@ rp_image::rp_image(int width, int height, rp_image::Format format)
  * @param backend rp_image_backend.
  */
 rp_image::rp_image(rp_image_backend *backend)
-	: d(new rp_image_private(backend))
+	: d_ptr(new rp_image_private(backend))
 { }
 
 rp_image::~rp_image()
 {
-	delete d;
+	delete d_ptr;
 }
 
 /** Creator function. **/
@@ -240,6 +243,7 @@ rp_image::rp_image_backend_creator_fn rp_image::backendCreatorFn(void)
  */
 const rp_image_backend *rp_image::backend(void) const
 {
+	RP_D(const rp_image);
 	return d->backend;
 }
 
@@ -251,6 +255,7 @@ const rp_image_backend *rp_image::backend(void) const
  */
 bool rp_image::isValid(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->isValid();
 }
 
@@ -260,6 +265,7 @@ bool rp_image::isValid(void) const
  */
 int rp_image::width(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->width;
 }
 
@@ -269,6 +275,7 @@ int rp_image::width(void) const
  */
 int rp_image::height(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->height;
 }
 
@@ -278,6 +285,7 @@ int rp_image::height(void) const
  */
 bool rp_image::isSquare(void) const
 {
+	RP_D(const rp_image);
 	return (d->backend->width == d->backend->height);
 }
 
@@ -287,6 +295,7 @@ bool rp_image::isSquare(void) const
  */
 int rp_image::stride(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->stride;
 }
 
@@ -296,6 +305,7 @@ int rp_image::stride(void) const
  */
 rp_image::Format rp_image::format(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->format;
 }
 
@@ -305,6 +315,7 @@ rp_image::Format rp_image::format(void) const
  */
 const void *rp_image::bits(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->data();
 }
 
@@ -315,6 +326,7 @@ const void *rp_image::bits(void) const
  */
 void *rp_image::bits(void)
 {
+	RP_D(rp_image);
 	return d->backend->data();
 }
 
@@ -325,6 +337,7 @@ void *rp_image::bits(void)
  */
 const void *rp_image::scanLine(int i) const
 {
+	RP_D(const rp_image);
 	const uint8_t *data = static_cast<const uint8_t*>(d->backend->data());
 	if (!data)
 		return nullptr;
@@ -340,6 +353,7 @@ const void *rp_image::scanLine(int i) const
  */
 void *rp_image::scanLine(int i)
 {
+	RP_D(rp_image);
 	uint8_t *data = static_cast<uint8_t*>(d->backend->data());
 	if (!data)
 		return nullptr;
@@ -354,16 +368,8 @@ void *rp_image::scanLine(int i)
  */
 size_t rp_image::data_len(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->data_len();
-}
-
-/**
- * Get the image palette.
- * @return Pointer to image palette, or nullptr if not a paletted image.
- */
-uint32_t *rp_image::palette(void)
-{
-	return d->backend->palette();
 }
 
 /**
@@ -372,6 +378,17 @@ uint32_t *rp_image::palette(void)
  */
 const uint32_t *rp_image::palette(void) const
 {
+	RP_D(const rp_image);
+	return d->backend->palette();
+}
+
+/**
+ * Get the image palette.
+ * @return Pointer to image palette, or nullptr if not a paletted image.
+ */
+uint32_t *rp_image::palette(void)
+{
+	RP_D(rp_image);
 	return d->backend->palette();
 }
 
@@ -381,6 +398,7 @@ const uint32_t *rp_image::palette(void) const
  */
 int rp_image::palette_len(void) const
 {
+	RP_D(const rp_image);
 	return d->backend->palette_len();
 }
 
@@ -392,6 +410,7 @@ int rp_image::palette_len(void) const
  */
 int rp_image::tr_idx(void) const
 {
+	RP_D(const rp_image);
 	if (d->backend->format != FORMAT_CI8)
 		return -1;
 
@@ -406,6 +425,7 @@ int rp_image::tr_idx(void) const
  */
 void rp_image::set_tr_idx(int tr_idx)
 {
+	RP_D(rp_image);
 	assert(d->backend->format == FORMAT_CI8);
 	assert(tr_idx >= -1 && tr_idx < d->backend->palette_len());
 
@@ -421,7 +441,8 @@ void rp_image::set_tr_idx(int tr_idx)
 * @param format Format.
 * @return String containing the user-friendly name of a format.
 */
-const rp_char *rp_image::getFormatName(Format format){
+const rp_char *rp_image::getFormatName(Format format)
+{
 	assert(format >= FORMAT_NONE && format < FORMAT_LAST);
 	if (format < FORMAT_NONE || format >= FORMAT_LAST) {
 		return nullptr;
