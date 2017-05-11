@@ -36,6 +36,11 @@ class ConfigDialogPrivate
 	private:
 		RP_DISABLE_COPY(ConfigDialogPrivate)
 
+	public:
+		// Property for "D pointer".
+		// This points to the ConfigDialogPrivate object.
+		static const wchar_t D_PTR_PROP[];
+
 	private:
 		bool m_isVista;
 
@@ -65,10 +70,6 @@ class ConfigDialogPrivate
 		static inline const wchar_t *bstCheckedToBoolString(unsigned int value) {
 			return (value == BST_CHECKED ? L"true" : L"false");
 		}
-
-		// Property for "D pointer".
-		// This points to the ConfigDialogPrivate object.
-		static const wchar_t D_PTR_PROP[];
 
 		// Property sheet change variables.
 		// Used for optimization.

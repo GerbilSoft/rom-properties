@@ -89,10 +89,6 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
 
-// Property for "external pointer".
-// This links the property sheet to the COM object.
-#define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
-
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ShellPropSheetExtPrivate RP_ShellPropSheetExt_Private
@@ -107,6 +103,11 @@ class RP_ShellPropSheetExt_Private
 		RP_DISABLE_COPY(RP_ShellPropSheetExt_Private)
 	private:
 		RP_ShellPropSheetExt *const q_ptr;
+
+	public:
+		// Property for "D pointer".
+		// This points to the ConfigDialogPrivate object.
+		static const wchar_t D_PTR_PROP[];
 
 	public:
 		// ROM data.
@@ -291,6 +292,10 @@ class RP_ShellPropSheetExt_Private
 };
 
 /** RP_ShellPropSheetExt_Private **/
+
+// Property for "D pointer".
+// This points to the ConfigDialogPrivate object.
+const wchar_t RP_ShellPropSheetExt_Private::D_PTR_PROP[] = L"RP_ShellPropSheetExt_Private";
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
 	: q_ptr(q)
@@ -825,13 +830,14 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		if (dwStyle & ES_MULTILINE) {
 			// Store the object pointer so we can reference it later.
-			SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q_ptr));
+			SetProp(hDlgItem, D_PTR_PROP, static_cast<HANDLE>(this));
 
 			// Subclass the control.
 			// TODO: Error handling?
 			SetWindowSubclass(hDlgItem,
 				RP_ShellPropSheetExt::MultilineEditProc,
-				(UINT_PTR)cId, (DWORD_PTR)q_ptr);
+				reinterpret_cast<UINT_PTR>(cId),
+				reinterpret_cast<DWORD_PTR>(this));
 		}
 	}
 
@@ -1887,13 +1893,13 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return TRUE;
 
 			// Access the property sheet extension from property page.
-			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
+			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
 				return TRUE;
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
-			// Store the object pointer with this particular page dialog.
-			SetProp(hDlg, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
+			// Store the D object pointer with this particular page dialog.
+			SetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP, static_cast<HANDLE>(d));
 			// Save handles for later.
 			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
@@ -1911,17 +1917,16 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		// FIXME: Resize the dialog widgets.
 #if 0
 		case WM_SIZE: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
 			// TODO: Support dynamic resizing? The standard
 			// Explorer file properties dialog doesn't support
 			// it, but others might...
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			if (d->romData->isOpen()) {
 				// Initialize the dialog.
 				d->initDialog(hDlg);
@@ -1938,34 +1943,32 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 #endif
 
 		case WM_DESTROY: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				// Stop the animation timer.
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 				d->stopAnimTimer();
 			}
 
-			// FIXME: Remove EXT_POINTER_PROP from child windows.
+			// FIXME: Remove D_PTR_PROP from child windows.
 			// NOTE: WM_DESTROY is sent *before* child windows are destroyed.
 			// WM_NCDESTROY is sent *after*.
 
-			// Remove the EXT_POINTER_PROP property from the page. 
-			// The EXT_POINTER_PROP property stored the pointer to the 
-			// FilePropSheetExt object.
-			RemoveProp(hDlg, EXT_POINTER_PROP);
+			// Remove the D_PTR_PROP property from the page. 
+			// The D_PTR_PROP property stored the pointer to the 
+			// RP_ShellPropSheetExt_Private object.
+			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
 			return TRUE;
 		}
 
 		case WM_NOTIFY: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
 				case PSN_SETACTIVE:
@@ -1979,7 +1982,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case NM_CLICK:
 				case NM_RETURN: {
 					// Check if this is a SysLink control.
-					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 					if (d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
 					    d->hwndSysLinkControls.end())
 					{
@@ -1993,7 +1995,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 				case TCN_SELCHANGE: {
 					// Tab change. Make sure this is the correct WC_TABCONTROL.
-					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 					if (d->hTabWidget != nullptr && d->hTabWidget == lppsn->hdr.hwndFrom) {
 						// Tab widget. Show the selected tab.
 						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
@@ -2013,14 +2014,13 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_PAINT: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			if (!d->hbmpBanner && !d->hbmpIconFrames[0]) {
 				// Nothing to draw...
 				break;
@@ -2059,10 +2059,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
 			// Reload the images.
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				d->loadImages(hDlg);
 			}
 			break;
@@ -2070,27 +2069,28 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_NCPAINT: {
 			// Update the monospaced font.
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
 		}
 
 		case WM_CTLCOLORSTATIC: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
-				if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
-				    d->hwndWarningControls.end())
-				{
-					// Set the "Warning" color.
-					HDC hdc = reinterpret_cast<HDC>(wParam);
-					SetTextColor(hdc, RGB(255, 0, 0));
-				}
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
+			    d->hwndWarningControls.end())
+			{
+				// Set the "Warning" color.
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, RGB(255, 0, 0));
 			}
 			break;
 		}
@@ -2160,14 +2160,13 @@ LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
 		// No RP_ShellPropSheetExt. Can't do anything...
 		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 	}
-	RP_ShellPropSheetExt *const pExt =
-		reinterpret_cast<RP_ShellPropSheetExt*>(dwRefData);
+	RP_ShellPropSheetExt_Private *const d =
+		reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
 
 	switch (uMsg) {
 		case WM_KEYDOWN: {
 			// Work around Enter/Escape issues.
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			switch (wParam) {
 				case VK_RETURN:
 					SendMessage(d->hDlgProps, WM_COMMAND, IDOK, 0);
