@@ -24,16 +24,19 @@
 
 #include "libromdata/config.libromdata.h"
 #include "libromdata/common.h"
-#include "libromdata/RomData.hpp"
 
 namespace LibRomData {
 	class Config;
 }
 
+// Property sheet tabs.
+class ITab;
+
 class ConfigDialogPrivate
 {
 	public:
-		ConfigDialogPrivate(bool isVista);
+		ConfigDialogPrivate();
+		~ConfigDialogPrivate();
 
 	private:
 		RP_DISABLE_COPY(ConfigDialogPrivate)
@@ -73,22 +76,14 @@ class ConfigDialogPrivate
 			return (value == BST_CHECKED ? L"true" : L"false");
 		}
 
+		// Property sheet variables.
+		ITab *tabs[1];	// TODO: Add Downloads and Cache.
+		HPROPSHEETPAGE hpsp[3];
+		PROPSHEETHEADER psh;
+
 		// Property sheet change variables.
 		// Used for optimization.
-		bool changed_ImageTypes;
 		bool changed_Downloads;
-
-		// Image type data.
-		static const int SYS_COUNT = 8;
-		static const rp_char *const ImageTypes_imgTypeNames[LibRomData::RomData::IMG_EXT_MAX+1];
-		static const rp_char *const ImageTypes_sysNames[SYS_COUNT];
-
-		// Image type priorities tab functions.
-		void ImageTypes_reset(HWND hDlg);
-		void ImageTypes_save(HWND hDlg);
-		void ImageTypes_createGrid(HWND hDlg);
-		static INT_PTR CALLBACK ImageTypes_DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		static UINT CALLBACK ImageTypes_CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		// Downloads tab functions.
 		void reset_Downloads(HWND hDlg);

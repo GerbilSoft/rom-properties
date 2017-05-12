@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 
+#include "ConfigDialog.hpp"
 #include "ConfigDialog_p.hpp"
 #include "resource.h"
 
@@ -33,18 +34,112 @@ using LibRomData::Config;
 // C includes.
 #include <stdlib.h>
 
+// DllMain.cpp
+extern HINSTANCE g_hInstance;
+
+// Property sheet tabs.
+#include "ImageTypesTab.hpp"
+
 /** ConfigDialogPrivate **/
 
 // Property for "D pointer".
 // This points to the ConfigDialogPrivate object.
 const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
 
-ConfigDialogPrivate::ConfigDialogPrivate(bool isVista)
-	: m_isVista(isVista)
+ConfigDialogPrivate::ConfigDialogPrivate()
+	: m_isVista(false)
 	, config(Config::instance())
-	, changed_ImageTypes(false)
 	, changed_Downloads(false)
-{ }
+{
+	// Initialize the property sheet tabs.
+	memset(tabs, 0, sizeof(tabs));
+
+	// Make sure we have all required window classes available.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	INITCOMMONCONTROLSEX initCommCtrl;
+	initCommCtrl.dwSize = sizeof(initCommCtrl);
+	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
+	// TODO: Also ICC_STANDARD_CLASSES on XP+?
+	InitCommonControlsEx(&initCommCtrl);
+
+	// Create three property sheet pages.
+	PROPSHEETPAGE psp[3];
+
+	// Image type priority.
+	tabs[0] = new ImageTypesTab();
+	hpsp[0] = tabs[0]->getHPropSheetPage();
+
+	// Download configuration.
+	psp[1].dwSize = sizeof(psp);
+	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp[1].hInstance = g_hInstance;
+	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
+	psp[1].pszIcon = nullptr;
+	psp[1].pszTitle = L"Downloads";
+	psp[1].pfnDlgProc = DlgProc_Downloads;
+	psp[1].pcRefParent = nullptr;
+	psp[1].pfnCallback = CallbackProc_Downloads;
+
+	// Thumbnail cache.
+	// References:
+	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
+	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
+	psp[2].dwSize = sizeof(psp);
+	psp[2].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp[2].hInstance = g_hInstance;
+	psp[2].pszIcon = nullptr;
+	psp[2].pszTitle = L"Thumbnail Cache";
+	psp[2].pfnDlgProc = DlgProc_Cache;
+	psp[2].pcRefParent = nullptr;
+	psp[2].pfnCallback = CallbackProc_Cache;
+
+	// Determine which dialog we should use.
+	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
+	if (hKey.isOpen()) {
+		// Vista+ Thumbnail Cache cleaner is available.
+		m_isVista = true;
+		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
+		hKey.close();
+	} else {
+		// Not available. Use manual cache cleaning.
+		m_isVista = false;
+		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
+	}
+
+	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
+	psp[1].lParam = reinterpret_cast<LPARAM>(this);
+	psp[2].lParam = reinterpret_cast<LPARAM>(this);
+
+	// Create the property sheet pages.
+	// NOTE: PropertySheet() is supposed to be able to take an
+	// array of PROPSHEETPAGE, but it isn't working...
+	hpsp[1] = CreatePropertySheetPage(&psp[1]);
+	hpsp[2] = CreatePropertySheetPage(&psp[2]);
+
+	// Create the property sheet.
+	psh.dwSize = sizeof(psh);
+	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP;
+	psh.hwndParent = nullptr;
+	psh.hInstance = g_hInstance;
+	psh.hIcon = nullptr;
+	psh.pszCaption = L"ROM Properties Page Configuration";
+	psh.nPages = 3;
+	psh.nStartPage = 0;
+	psh.phpage = hpsp;
+	psh.pfnCallback = ConfigDialogPrivate::CallbackProc;
+	psh.hbmWatermark = nullptr;
+	psh.hplWatermark = nullptr;
+	psh.hbmHeader = nullptr;
+
+	// Property sheet will be displayed when ConfigDialog::exec() is called.
+}
+
+ConfigDialogPrivate::~ConfigDialogPrivate()
+{
+	for (int i = ARRAY_SIZE(tabs)-1; i >= 0; i--) {
+		delete tabs[i];
+	}
+}
 
 /**
  * Property Sheet callback.
@@ -79,107 +174,25 @@ int CALLBACK ConfigDialogPrivate::CallbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 	return 0;
 }
 
-// Create the property sheet.
-// TEMPORARY version to test things out.
-INT_PTR ConfigDialogPrivate::CreatePropertySheet(void)
+/** ConfigDialog **/
+
+ConfigDialog::ConfigDialog()
+	: d_ptr(new ConfigDialogPrivate())
+{ }
+
+ConfigDialog::~ConfigDialog()
 {
-	extern HINSTANCE g_hInstance;
+	delete d_ptr;
+}
 
-	// Make sure we have all required window classes available.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
-	INITCOMMONCONTROLSEX initCommCtrl;
-	initCommCtrl.dwSize = sizeof(initCommCtrl);
-	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
-	// TODO: Also ICC_STANDARD_CLASSES on XP+?
-	InitCommonControlsEx(&initCommCtrl);
-
-	// Create three property sheet pages.
-	// TODO: Make each property sheet its own class?
-	PROPSHEETPAGE psp[3];
-
-	// Image type priorities.
-	psp[0].dwSize = sizeof(psp);
-	psp[0].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[0].hInstance = g_hInstance;
-	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_IMAGETYPES);
-	psp[0].pszIcon = nullptr;
-	psp[0].pszTitle = L"Image Types";
-	psp[0].pfnDlgProc = ImageTypes_DlgProc;
-	psp[0].pcRefParent = nullptr;
-	psp[0].pfnCallback = ImageTypes_CallbackProc;
-
-	// Download configuration.
-	psp[1].dwSize = sizeof(psp);
-	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[1].hInstance = g_hInstance;
-	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
-	psp[1].pszIcon = nullptr;
-	psp[1].pszTitle = L"Downloads";
-	psp[1].pfnDlgProc = DlgProc_Downloads;
-	psp[1].pcRefParent = nullptr;
-	psp[1].pfnCallback = CallbackProc_Downloads;
-
-	// Thumbnail cache.
-	// References:
-	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
-	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	psp[2].dwSize = sizeof(psp);
-	psp[2].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[2].hInstance = g_hInstance;
-	psp[2].pszIcon = nullptr;
-	psp[2].pszTitle = L"Thumbnail Cache";
-	psp[2].pfnDlgProc = DlgProc_Cache;
-	psp[2].pcRefParent = nullptr;
-	psp[2].pfnCallback = CallbackProc_Cache;
-
-	// Determine which dialog we should use.
-	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
-	bool isVista;
-	if (hKey.isOpen()) {
-		// Vista+ Thumbnail Cache cleaner is available.
-		isVista = true;
-		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
-		hKey.close();
-	} else {
-		// Not available. Use manual cache cleaning.
-		isVista = false;
-		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
-	}
-
-	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
-	ConfigDialogPrivate *const d = new ConfigDialogPrivate(isVista);
-	psp[0].lParam = reinterpret_cast<LPARAM>(d);
-	psp[1].lParam = reinterpret_cast<LPARAM>(d);
-	psp[2].lParam = reinterpret_cast<LPARAM>(d);
-
-	// Create the property sheet pages.
-	// NOTE: PropertySheet() is supposed to be able to take an
-	// array of PROPSHEETPAGE, but it isn't working...
-	HPROPSHEETPAGE hpsp[3];
-	hpsp[0] = CreatePropertySheetPage(&psp[0]);
-	hpsp[1] = CreatePropertySheetPage(&psp[1]);
-	hpsp[2] = CreatePropertySheetPage(&psp[2]);
-
-	// Create the property sheet.
-	PROPSHEETHEADER psh;
-	psh.dwSize = sizeof(psh);
-	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP;
-	psh.hwndParent = nullptr;
-	psh.hInstance = g_hInstance;
-	psh.hIcon = nullptr;
-	psh.pszCaption = L"ROM Properties Page Configuration";
-	psh.nPages = 3;
-	psh.nStartPage = 0;
-	psh.phpage = hpsp;
-	psh.pfnCallback = ConfigDialogPrivate::CallbackProc;
-	psh.hbmWatermark = nullptr;
-	psh.hplWatermark = nullptr;
-	psh.hbmHeader = nullptr;
-
-	// TODO: Minimize button?
-	INT_PTR ret = PropertySheet(&psh);
-	delete d;
-	return ret;
+/**
+ * Run the property sheet.
+ * @return PropertySheet() return value.
+ */
+INT_PTR ConfigDialog::exec(void)
+{
+	RP_D(ConfigDialog);
+	return PropertySheet(&d->psh);
 }
 
 /**
@@ -205,7 +218,8 @@ int __declspec(dllexport) CALLBACK rp_show_config_dialog(
 		return EXIT_FAILURE;
 	}
 
-	ConfigDialogPrivate::CreatePropertySheet();
+	ConfigDialog *cfg = new ConfigDialog();
+	INT_PTR ret = cfg->exec();
 
 	// Uninitialize COM.
 	CoUninitialize();
