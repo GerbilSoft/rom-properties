@@ -61,7 +61,7 @@ class ConfigDialogPrivate
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.
-		static int CALLBACK CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
+		static int CALLBACK callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
 
 		// Create Property Sheet.
 		static INT_PTR CreatePropertySheet(void);
@@ -108,7 +108,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.nPages = 3;
 	psh.nStartPage = 0;
 	psh.phpage = hpsp;
-	psh.pfnCallback = ConfigDialogPrivate::CallbackProc;
+	psh.pfnCallback = this->callbackProc;
 	psh.hbmWatermark = nullptr;
 	psh.hplWatermark = nullptr;
 	psh.hbmHeader = nullptr;
@@ -124,13 +124,13 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
 }
 
 /**
- * Property Sheet callback.
+ * Property Sheet callback procedure.
  * @param hDlg Property sheet dialog.
  * @param uMsg
  * @param lParam
  * @return 0
  */
-int CALLBACK ConfigDialogPrivate::CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam)
+int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam)
 {
 	switch (uMsg) {
 		case PSCB_INITIALIZED: {
