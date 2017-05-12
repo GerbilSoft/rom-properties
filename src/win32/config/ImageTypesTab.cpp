@@ -28,6 +28,16 @@
 using LibRomData::Config;
 using LibRomData::RomData;
 
+// RomData subclasses with images.
+#include "libromdata/Amiibo.hpp"
+#include "libromdata/DreamcastSave.hpp"
+#include "libromdata/GameCube.hpp"
+#include "libromdata/GameCubeSave.hpp"
+#include "libromdata/NintendoDS.hpp"
+#include "libromdata/Nintendo3DS.hpp"
+#include "libromdata/PlayStationSave.hpp"
+#include "libromdata/WiiU.hpp"
+
 #include "WinUI.hpp"
 #include "resource.h"
 
@@ -53,9 +63,18 @@ class ImageTypesTabPrivate
 
 	public:
 		// Image type data.
-		static const int SYS_COUNT = 8;
 		static const rp_char *const imageTypeNames[RomData::IMG_EXT_MAX+1];
-		static const rp_char *const sysNames[SYS_COUNT];
+
+		// System data.
+		typedef uint32_t (*pFnSupportedImageTypes)(void);
+		struct SysData {
+			const rp_char *name;			// System name.
+			pFnSupportedImageTypes getTypes;	// Get supported image types.
+		};
+#define SysDataEntry(klass, name) \
+	{name, LibRomData::klass::supportedImageTypes_static}
+		static const int SYS_COUNT = 8;
+		static const SysData sysData[SYS_COUNT];
 
 		/**
 		 * Create the grid of static text and combo boxes.
@@ -134,16 +153,16 @@ const rp_char *const ImageTypesTabPrivate::imageTypeNames[RomData::IMG_EXT_MAX+1
 	_RP("External\nBox"),
 };
 
-// System names.
-const rp_char *const ImageTypesTabPrivate::sysNames[SYS_COUNT] = {
-	_RP("amiibo"),
-	_RP("Dreamcast Saves"),
-	_RP("GameCube / Wii"),
-	_RP("GameCube Saves"),
-	_RP("Nintendo DS(i)"),
-	_RP("Nintendo 3DS"),
-	_RP("PlayStation Saves"),
-	_RP("Wii U"),
+// System data.
+const ImageTypesTabPrivate::SysData ImageTypesTabPrivate::sysData[SYS_COUNT] = {
+	SysDataEntry(Amiibo,		_RP("amiibo")),
+	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
+	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
+	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),
+	SysDataEntry(NintendoDS,	_RP("Nintendo DS(i)")),
+	SysDataEntry(Nintendo3DS,	_RP("Nintendo 3DS")),
+	SysDataEntry(PlayStationSave,	_RP("PlayStation Saves")),
+	SysDataEntry(WiiU,		_RP("Wii U")),
 };
 
 /**
@@ -196,9 +215,9 @@ void ImageTypesTabPrivate::createGrid()
 	// Determine the size of the largest system name label.
 	// TODO: Height needs to match the combo boxes.
 	SIZE sz_lblSysName = {0, 0};
-	for (int i = SYS_COUNT-1; i >= 0; i--) {
+	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
-		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysNames[i]), &szCur);
+		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysData[sys].name), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}
@@ -243,31 +262,41 @@ void ImageTypesTabPrivate::createGrid()
 		yadj_lblSysName = 0;
 	}
 	const int cbo_x_start = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
-	for (unsigned int sysName = 0; sysName < SYS_COUNT; sysName++) {
+	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(sysNames[sysName]),
+			WC_STATIC, RP2W_c(sysData[sys].name),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
 			curPt.x, curPt.y+yadj_lblSysName,
 			sz_lblSysName.cx, sz_lblSysName.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysName, hFontDlg, FALSE);
 
-		// Dropdown boxes.
-		// TODO:
-		// - Only add boxes if the image type is available for the specified system.
-		// - Add strings, e.g. "No", 1, 2, etc.
+		// Get supported image types.
+		uint32_t imgbf = sysData[sys].getTypes();
+		assert(imgbf != 0);
+
 		int cbo_x = cbo_x_start;
-		HWND *p_cboImageType = &cboImageType[sysName][0];
-		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX+1; imageType++, p_cboImageType++) {
+		HWND *p_cboImageType = &cboImageType[sys][0];
+		for (unsigned int imageType = 0; imgbf != 0 && imageType <= RomData::IMG_EXT_MAX+1;
+		     imageType++, p_cboImageType++, cbo_x += sz_lblImageType.cx, imgbf >>= 1)
+		{
+			if (!(imgbf & 1)) {
+				// Current image type is not supported.
+				*p_cboImageType = nullptr;
+				continue;
+			}
+
+			// Create the dropdown box.
 			*p_cboImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 				WC_COMBOBOX, nullptr,
 				WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
 				cbo_x, curPt.y, szCbo.cx, szCbo.cy,
-				hWndPropSheet, (HMENU)(INT_PTR)IDC_IMAGETYPES_CBOIMAGETYPE(sysName, imageType),
+				hWndPropSheet, (HMENU)(INT_PTR)IDC_IMAGETYPES_CBOIMAGETYPE(sys, imageType),
 				nullptr, nullptr);
 			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
-			cbo_x += sz_lblImageType.cx;
+
+			// TODO: Add strings, e.g. "No", 1, 2, etc.
 		}
 
 		// Next row.
