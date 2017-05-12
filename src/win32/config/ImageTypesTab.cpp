@@ -97,7 +97,15 @@ class ImageTypesTabPrivate
 
 		// Has the user changed anything?
 		bool changed;
+
+		// Image type dropdowns.
+		// NOTE: This is a square array, but no system supports
+		// *all* image types, so most of these will be nullptr.
+		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
 };
+
+// Control base IDs.
+#define IDC_IMAGETYPES_CBOIMAGETYPE(sysName, imageType) (0x2000 + (((sysName) << 4) | (imageType)))
 
 /** ImageTypesTabPrivate **/
 
@@ -105,7 +113,10 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
 	, changed(false)
-{ }
+{
+	// Clear the cboImageType array.
+	memset(cboImageType, 0, sizeof(cboImageType));
+}
 
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
@@ -212,7 +223,7 @@ void ImageTypesTabPrivate::createGrid()
 	DestroyWindow(cboTestBox);
 
 	// Create the image type labels.
-	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + dlgMargin.right,
+	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i <= RomData::IMG_EXT_MAX; i++) {
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
@@ -224,21 +235,42 @@ void ImageTypesTabPrivate::createGrid()
 		curPt.x += sz_lblImageType.cx;
 	}
 
-	// Create the system name labels.
+	// Create the system name labels and dropdown boxes.
 	curPt.x = rect_lblDesc2.left;
-	curPt.y += sz_lblImageType.cy;
+	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
 	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
 	if (yadj_lblSysName < 0) {
 		yadj_lblSysName = 0;
 	}
-	for (unsigned int i = 0; i < SYS_COUNT; i++) {
+	const int cbo_x_start = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
+	for (unsigned int sysName = 0; sysName < SYS_COUNT; sysName++) {
+		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(sysNames[i]),
-			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
+			WC_STATIC, RP2W_c(sysNames[sysName]),
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
 			curPt.x, curPt.y+yadj_lblSysName,
 			sz_lblSysName.cx, sz_lblSysName.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysName, hFontDlg, FALSE);
+
+		// Dropdown boxes.
+		// TODO:
+		// - Only add boxes if the image type is available for the specified system.
+		// - Add strings, e.g. "No", 1, 2, etc.
+		int cbo_x = cbo_x_start;
+		HWND *p_cboImageType = &cboImageType[sysName][0];
+		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX+1; imageType++, p_cboImageType++) {
+			*p_cboImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+				WC_COMBOBOX, nullptr,
+				WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
+				cbo_x, curPt.y, szCbo.cx, szCbo.cy,
+				hWndPropSheet, (HMENU)(INT_PTR)IDC_IMAGETYPES_CBOIMAGETYPE(sysName, imageType),
+				nullptr, nullptr);
+			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
+			cbo_x += sz_lblImageType.cx;
+		}
+
+		// Next row.
 		curPt.y += rect_cboTestBox.bottom;
 	}
 
