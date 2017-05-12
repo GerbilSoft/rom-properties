@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.cpp: Thumbnail Cache tab. (Part of ConfigDialog.)              *
+ * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -20,19 +20,11 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-
-#include "ConfigDialog_p.hpp"
-#include "resource.h"
+#include "CacheTab.hpp"
 
 #include "libromdata/RpWin32.hpp"
-#include "libromdata/config/Config.hpp"
-using LibRomData::Config;
-
 #include "RegKey.hpp"
-
-// C++ includes.
-#include <string>
-using std::wstring;
+#include "resource.h"
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -40,15 +32,105 @@ using std::wstring;
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
+// C includes. (C++ namespace)
+#include <cassert>
+
+// C++ includes.
+#include <string>
+using std::wstring;
+
+class CacheTabPrivate
+{
+	public:
+		CacheTabPrivate();
+
+	private:
+		RP_DISABLE_COPY(CacheTabPrivate)
+
+	public:
+		// Property for "D pointer".
+		// This points to the CacheTabPrivate object.
+		static const wchar_t D_PTR_PROP[];
+
+	public:
+		/**
+		 * Initialize controls on the XP version.
+		 */
+		void initControlsXP(void);
+
+		/**
+		 * Clear the Thumbnail Cache. (Windows Vista and later.)
+		 * @return 0 on success; non-zero on error.
+		 */
+		int clearCacheVista(void);
+
+	public:
+		/**
+		 * Dialog procedure.
+		 * @param hDlg
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 */
+		static INT_PTR CALLBACK dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+		/**
+		 * Property sheet callback procedure.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param ppsp
+		 */
+		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+	public:
+		// Property sheet.
+		HPROPSHEETPAGE hPropSheetPage;
+		HWND hWndPropSheet;
+
+		// Is this Windows Vista or later?
+		bool isVista;
+};
+
+/** CacheTabPrivate **/
+
+CacheTabPrivate::CacheTabPrivate()
+	: hPropSheetPage(nullptr)
+	, hWndPropSheet(nullptr)
+	, isVista(false)
+{
+	// Determine which dialog we should use.
+	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
+	if (hKey.isOpen()) {
+		// Windows Vista Thumbnail Cache cleaner is available.
+		isVista = true;
+	} else {
+		// Not available. Use manual cache cleaning.
+		isVista = false;
+	}
+}
+
+// Property for "D pointer".
+// This points to the CacheTabPrivate object.
+const wchar_t CacheTabPrivate::D_PTR_PROP[] = L"CacheTabPrivate";
+
 /**
- * Clear the thumbnail cache. (Vista+)
- * @param hDlg IDD_CONFIG_CACHE dialog.
+ * Initialize controls on the XP version.
+ */
+void CacheTabPrivate::initControlsXP(void)
+{
+	Button_SetCheck(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
+	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
+	ShowWindow(GetDlgItem(hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
+}
+
+/**
+ * Clear the Thumbnail Cache. (Windows Vista and later.)
  * @return 0 on success; non-zero on error.
  */
-int ConfigDialogPrivate::clearCacheVista(HWND hDlg)
+int CacheTabPrivate::clearCacheVista(void)
 {
-	HWND hStatusLabel = GetDlgItem(hDlg, IDC_CACHE_STATUS);
-	HWND hProgressBar = GetDlgItem(hDlg, IDC_CACHE_PROGRESS);
+	HWND hStatusLabel = GetDlgItem(hWndPropSheet, IDC_CACHE_STATUS);
+	HWND hProgressBar = GetDlgItem(hWndPropSheet, IDC_CACHE_PROGRESS);
 	ShowWindow(hStatusLabel, SW_SHOW);
 	ShowWindow(hProgressBar, SW_SHOW);
 
@@ -142,7 +224,7 @@ int ConfigDialogPrivate::clearCacheVista(HWND hDlg)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Thumbnail cache callback.
-	RP_EmptyVolumeCacheCallback *pCallback = new RP_EmptyVolumeCacheCallback(hDlg);
+	RP_EmptyVolumeCacheCallback *pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
 
 	pCallback->m_baseProgress = 0;
 	unsigned int clearCount = 0;	// Number of drives actually cleared. (S_OK)
@@ -213,13 +295,13 @@ int ConfigDialogPrivate::clearCacheVista(HWND hDlg)
 }
 
 /**
- * DlgProc for IDD_CONFIG_CACHE / IDD_CONFIG_CACHE_XP.
+ * Dialog procedure.
  * @param hDlg
  * @param uMsg
  * @param wParam
  * @param lParam
  */
-INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -229,39 +311,70 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM
 			if (!pPage)
 				return TRUE;
 
-			// Get the pointer to the ConfigDialogPrivate object.
-			ConfigDialogPrivate *const d = reinterpret_cast<ConfigDialogPrivate*>(pPage->lParam);
+			// Get the pointer to the CacheTabPrivate object.
+			CacheTabPrivate *const d = reinterpret_cast<CacheTabPrivate*>(pPage->lParam);
 			if (!d)
 				return TRUE;
+
+			assert(d->hWndPropSheet == nullptr);
+			d->hWndPropSheet = hDlg;
 
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
-			// On XP, we need to initialize some widgets.
-			// TODO: InitDialog().
-			if (!d->isVista()) {
-				Button_SetCheck(GetDlgItem(hDlg, IDC_CACHE_XP_FIND_DRIVES), BST_CHECKED);
-				ShowWindow(GetDlgItem(hDlg, IDC_CACHE_XP_PATH), SW_HIDE);
-				ShowWindow(GetDlgItem(hDlg, IDC_CACHE_XP_BROWSE), SW_HIDE);
+			// The XP version requires some control initialization.
+			if (!d->isVista) {
+				d->initControlsXP();
 			}
-
-			// TODO: Initialize the dialog.
 			return TRUE;
 		}
 
 		case WM_DESTROY: {
 			// Remove the D_PTR_PROP property from the page. 
 			// The D_PTR_PROP property stored the pointer to the 
-			// ConfigDialogPrivate object.
+			// CacheTabPrivate object.
 			RemoveProp(hDlg, D_PTR_PROP);
 			return TRUE;
 		}
 
+		case WM_NOTIFY: {
+			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No CacheTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
+			switch (lppsn->hdr.code) {
+				case NM_CLICK:
+				case NM_RETURN:
+					// SysLink control notification.
+					if (lppsn->hdr.hwndFrom == GetDlgItem(hDlg, IDC_IMAGETYPES_CREDITS)) {
+						// Open the URL.
+						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
+						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					}
+					break;
+
+				default:
+					break;
+			}
+			break;
+		}
+
 		case WM_COMMAND: {
+			CacheTabPrivate *const d = static_cast<CacheTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No CacheTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
 			switch (LOWORD(wParam)) {
 				case IDC_CACHE_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (Vista+)
-					clearCacheVista(hDlg);
+					d->clearCacheVista();
 					return TRUE;
 				case IDC_CACHE_XP_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (XP)
@@ -281,13 +394,13 @@ INT_PTR CALLBACK ConfigDialogPrivate::DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM
 }
 
 /**
- * Property sheet callback function for IDD_CONFIG_CACHE / IDD_CONFIG_CACHE_XP.
+ * Property sheet callback procedure.
  * @param hDlg
  * @param uMsg
  * @param wParam
  * @param lParam
  */
-UINT CALLBACK ConfigDialogPrivate::CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK CacheTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
@@ -305,4 +418,71 @@ UINT CALLBACK ConfigDialogPrivate::CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPR
 	}
 
 	return FALSE;
+}
+
+/** CacheTab **/
+
+CacheTab::CacheTab(void)
+	: d_ptr(new CacheTabPrivate())
+{ }
+
+CacheTab::~CacheTab()
+{
+	delete d_ptr;
+}
+
+/**
+ * Create the HPROPSHEETPAGE for this tab.
+ *
+ * NOTE: This function can only be called once.
+ * Subsequent invocations will return nullptr.
+ *
+ * @return HPROPSHEETPAGE.
+ */
+HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
+{
+	RP_D(CacheTab);
+	assert(d->hPropSheetPage == nullptr);
+	if (d->hPropSheetPage) {
+		// Property sheet has already been created.
+		return nullptr;
+	}
+
+	extern HINSTANCE g_hInstance;
+
+	PROPSHEETPAGE psp;
+	psp.dwSize = sizeof(psp);	
+	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE;
+	psp.hInstance = g_hInstance;
+	psp.pszIcon = nullptr;
+	psp.pszTitle = L"Thumbnail Cache";
+	psp.pfnDlgProc = CacheTabPrivate::dlgProc;
+	psp.lParam = reinterpret_cast<LPARAM>(d);
+	psp.pcRefParent = nullptr;
+	psp.pfnCallback = CacheTabPrivate::callbackProc;
+
+	if (d->isVista) {
+		psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
+	} else {
+		psp.pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
+	}
+
+	d->hPropSheetPage = CreatePropertySheetPage(&psp);
+	return d->hPropSheetPage;
+}
+
+/**
+ * Reset the contents of this tab.
+ */
+void CacheTab::reset(void)
+{
+	// Nothing to reset here...
+}
+
+/**
+ * Save the contents of this tab.
+ */
+void CacheTab::save(void)
+{
+	// Nothing to save here...
 }

@@ -46,15 +46,7 @@ class ConfigDialogPrivate
 		// This points to the ConfigDialogPrivate object.
 		static const wchar_t D_PTR_PROP[];
 
-	private:
-		bool m_isVista;
-
 	public:
-		inline bool isVista(void) const
-		{
-			return m_isVista;
-		}
-
 		// Config instance.
 		LibRomData::Config *config;
 
@@ -77,7 +69,7 @@ class ConfigDialogPrivate
 		}
 
 		// Property sheet variables.
-		ITab *tabs[1];	// TODO: Add Downloads and Cache.
+		ITab *tabs[3];	// TODO: Add Downloads.
 		HPROPSHEETPAGE hpsp[3];
 		PROPSHEETHEADER psh;
 
@@ -90,11 +82,6 @@ class ConfigDialogPrivate
 		void save_Downloads(HWND hDlg);
 		static INT_PTR CALLBACK DlgProc_Downloads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		static UINT CALLBACK CallbackProc_Downloads(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
-
-		// Thumbnail Cache tab functions.
-		static int clearCacheVista(HWND hDlg);
-		static INT_PTR CALLBACK DlgProc_Cache(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-		static UINT CALLBACK CallbackProc_Cache(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
 		// Property Sheet callback.
 		static int CALLBACK CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);

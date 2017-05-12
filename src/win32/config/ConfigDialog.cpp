@@ -39,6 +39,7 @@ extern HINSTANCE g_hInstance;
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
+#include "CacheTab.hpp"
 
 /** ConfigDialogPrivate **/
 
@@ -47,8 +48,7 @@ extern HINSTANCE g_hInstance;
 const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
 
 ConfigDialogPrivate::ConfigDialogPrivate()
-	: m_isVista(false)
-	, config(Config::instance())
+	: config(Config::instance())
 	, changed_Downloads(false)
 {
 	// Initialize the property sheet tabs.
@@ -84,37 +84,16 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
-	psp[2].dwSize = sizeof(psp);
-	psp[2].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[2].hInstance = g_hInstance;
-	psp[2].pszIcon = nullptr;
-	psp[2].pszTitle = L"Thumbnail Cache";
-	psp[2].pfnDlgProc = DlgProc_Cache;
-	psp[2].pcRefParent = nullptr;
-	psp[2].pfnCallback = CallbackProc_Cache;
-
-	// Determine which dialog we should use.
-	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
-	if (hKey.isOpen()) {
-		// Vista+ Thumbnail Cache cleaner is available.
-		m_isVista = true;
-		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE);
-		hKey.close();
-	} else {
-		// Not available. Use manual cache cleaning.
-		m_isVista = false;
-		psp[2].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_CACHE_XP);
-	}
+	tabs[2] = new CacheTab();
+	hpsp[2] = tabs[2]->getHPropSheetPage();
 
 	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
 	psp[1].lParam = reinterpret_cast<LPARAM>(this);
-	psp[2].lParam = reinterpret_cast<LPARAM>(this);
 
 	// Create the property sheet pages.
 	// NOTE: PropertySheet() is supposed to be able to take an
 	// array of PROPSHEETPAGE, but it isn't working...
 	hpsp[1] = CreatePropertySheetPage(&psp[1]);
-	hpsp[2] = CreatePropertySheetPage(&psp[2]);
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);

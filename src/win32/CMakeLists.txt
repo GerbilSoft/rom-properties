@@ -47,6 +47,7 @@ SET(rom-properties-win32_H
 	config/RP_EmptyVolumeCacheCallback.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
+	config/CacheTab.hpp
 	resource.h
 	)
 
