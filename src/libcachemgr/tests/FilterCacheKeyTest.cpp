@@ -34,9 +34,9 @@ namespace LibCacheMgr { namespace Tests {
 struct FilterCacheKeyTest_mode
 {
 	// Cache keys.
-	const rp_char *const keyOrig;		// Original key.
-	const rp_char *const keyFilteredPosix;	// Filtered key. (POSIX)
-	const rp_char *const keyFilteredWin32;	// Filtered key. (Win32)
+	const rp_char *keyOrig;			// Original key.
+	const rp_char *keyFilteredPosix;	// Filtered key. (POSIX)
+	const rp_char *keyFilteredWin32;	// Filtered key. (Win32)
 
 	FilterCacheKeyTest_mode(
 		const rp_char *keyOrig,
@@ -46,6 +46,22 @@ struct FilterCacheKeyTest_mode
 		, keyFilteredPosix(keyFilteredPosix)
 		, keyFilteredWin32(keyFilteredWin32)
 	{ }
+
+	// May be required for MSVC 2010?
+	FilterCacheKeyTest_mode(const FilterCacheKeyTest_mode &other)
+		: keyOrig(other.keyOrig)
+		, keyFilteredPosix(other.keyFilteredPosix)
+		, keyFilteredWin32(other.keyFilteredWin32)
+	{ }
+
+	// Required for MSVC 2010.
+	FilterCacheKeyTest_mode &operator=(const FilterCacheKeyTest_mode &other)
+	{
+		keyOrig = other.keyOrig;
+		keyFilteredPosix = other.keyFilteredPosix;
+		keyFilteredWin32 = other.keyFilteredWin32;
+		return *this;
+	}
 };
 
 class FilterCacheKeyTest : public ::testing::TestWithParam<FilterCacheKeyTest_mode>
