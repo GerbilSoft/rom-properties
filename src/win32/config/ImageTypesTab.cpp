@@ -196,30 +196,50 @@ void ImageTypesTabPrivate::createGrid()
 		}
 	}
 
+	// Create a combo box in order to determine its actual vertical size.
+	SIZE szCbo = {sz_lblImageType.cx, sz_lblImageType.cy*3};
+	HWND cboTestBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+		WC_COMBOBOX, nullptr,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
+		0, 0, szCbo.cx, szCbo.cy,
+		hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
+	SetWindowFont(cboTestBox, hFontDlg, FALSE);
+
+	RECT rect_cboTestBox;
+	GetWindowRect(cboTestBox, &rect_cboTestBox);
+	MapWindowPoints(HWND_DESKTOP, GetParent(cboTestBox), (LPPOINT)&rect_cboTestBox, 2);
+	szCbo.cy = rect_cboTestBox.bottom * 3;
+	DestroyWindow(cboTestBox);
+
 	// Create the image type labels.
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + dlgMargin.right,
 		rect_lblDesc2.bottom + dlgMargin.bottom};
 	for (unsigned int i = 0; i <= RomData::IMG_EXT_MAX; i++) {
-		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, RP2W_c(imageTypeNames[i]),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
 			curPt.x, curPt.y, sz_lblImageType.cx, sz_lblImageType.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(hStatic, hFontDlg, FALSE);
+		SetWindowFont(lblImageType, hFontDlg, FALSE);
 		curPt.x += sz_lblImageType.cx;
 	}
 
 	// Create the system name labels.
 	curPt.x = rect_lblDesc2.left;
 	curPt.y += sz_lblImageType.cy;
+	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
+	if (yadj_lblSysName < 0) {
+		yadj_lblSysName = 0;
+	}
 	for (unsigned int i = 0; i < SYS_COUNT; i++) {
-		HWND hStatic = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, RP2W_c(sysNames[i]),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_LEFT,
-			curPt.x, curPt.y, sz_lblSysName.cx, sz_lblSysName.cy,
+			curPt.x, curPt.y+yadj_lblSysName,
+			sz_lblSysName.cx, sz_lblSysName.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(hStatic, hFontDlg, FALSE);
-		curPt.y += sz_lblSysName.cy;
+		SetWindowFont(lblSysName, hFontDlg, FALSE);
+		curPt.y += rect_cboTestBox.bottom;
 	}
 
 	// Load the configuration.
