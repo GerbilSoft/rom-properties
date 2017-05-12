@@ -43,10 +43,10 @@ SET(rom-properties-win32_H
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
 	config/ConfigDialog.hpp
-	config/ConfigDialog_p.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
+	config/DownloadsTab.hpp
 	config/CacheTab.hpp
 	resource.h
 	)

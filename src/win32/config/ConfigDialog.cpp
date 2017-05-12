@@ -20,9 +20,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-
 #include "ConfigDialog.hpp"
-#include "ConfigDialog_p.hpp"
 #include "resource.h"
 
 #include "libromdata/common.h"
@@ -39,7 +37,35 @@ extern HINSTANCE g_hInstance;
 
 // Property sheet tabs.
 #include "ImageTypesTab.hpp"
+#include "DownloadsTab.hpp"
 #include "CacheTab.hpp"
+
+class ConfigDialogPrivate
+{
+	public:
+		ConfigDialogPrivate();
+		~ConfigDialogPrivate();
+
+	private:
+		RP_DISABLE_COPY(ConfigDialogPrivate)
+
+	public:
+		// Property for "D pointer".
+		// This points to the ConfigDialogPrivate object.
+		static const wchar_t D_PTR_PROP[];
+
+	public:
+		// Property sheet variables.
+		ITab *tabs[3];	// TODO: Add Downloads.
+		HPROPSHEETPAGE hpsp[3];
+		PROPSHEETHEADER psh;
+
+		// Property Sheet callback.
+		static int CALLBACK CallbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
+
+		// Create Property Sheet.
+		static INT_PTR CreatePropertySheet(void);
+};
 
 /** ConfigDialogPrivate **/
 
@@ -48,12 +74,7 @@ extern HINSTANCE g_hInstance;
 const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
 
 ConfigDialogPrivate::ConfigDialogPrivate()
-	: config(Config::instance())
-	, changed_Downloads(false)
 {
-	// Initialize the property sheet tabs.
-	memset(tabs, 0, sizeof(tabs));
-
 	// Make sure we have all required window classes available.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
 	INITCOMMONCONTROLSEX initCommCtrl;
@@ -62,38 +83,20 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
-	// Create three property sheet pages.
-	PROPSHEETPAGE psp[3];
+	// Initialize the property sheet tabs.
 
 	// Image type priority.
 	tabs[0] = new ImageTypesTab();
 	hpsp[0] = tabs[0]->getHPropSheetPage();
-
 	// Download configuration.
-	psp[1].dwSize = sizeof(psp);
-	psp[1].dwFlags = PSP_USECALLBACK | PSP_USETITLE;
-	psp[1].hInstance = g_hInstance;
-	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_CONFIG_DOWNLOADS);
-	psp[1].pszIcon = nullptr;
-	psp[1].pszTitle = L"Downloads";
-	psp[1].pfnDlgProc = DlgProc_Downloads;
-	psp[1].pcRefParent = nullptr;
-	psp[1].pfnCallback = CallbackProc_Downloads;
-
+	tabs[1] = new DownloadsTab();
+	hpsp[1] = tabs[1]->getHPropSheetPage();
 	// Thumbnail cache.
 	// References:
 	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[2] = new CacheTab();
 	hpsp[2] = tabs[2]->getHPropSheetPage();
-
-	// Create a ConfigDialogPrivate and make it available to the property sheet pages.
-	psp[1].lParam = reinterpret_cast<LPARAM>(this);
-
-	// Create the property sheet pages.
-	// NOTE: PropertySheet() is supposed to be able to take an
-	// array of PROPSHEETPAGE, but it isn't working...
-	hpsp[1] = CreatePropertySheetPage(&psp[1]);
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
