@@ -121,6 +121,9 @@ class ImageTypesTabPrivate
 		// NOTE: This is a square array, but no system supports
 		// *all* image types, so most of these will be nullptr.
 		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
+
+		// Number of valid image types per system.
+		uint8_t validImageTypes[SYS_COUNT];
 };
 
 // Control base IDs.
@@ -133,8 +136,9 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 {
-	// Clear the cboImageType array.
+	// Clear the arrays.
 	memset(cboImageType, 0, sizeof(cboImageType));
+	memset(validImageTypes, 0, sizeof(validImageTypes));
 }
 
 // Property for "D pointer".
@@ -254,6 +258,14 @@ void ImageTypesTabPrivate::createGrid()
 		curPt.x += sz_lblImageType.cx;
 	}
 
+	// Dropdown strings.
+	// NOTE: One more string than the total number of image types,
+	// since we have a string for "No".
+	static const wchar_t s_values[RomData::IMG_EXT_MAX+2][4] = {
+		L"No", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8"
+	};
+	static_assert(ARRAY_SIZE(s_values) == RomData::IMG_EXT_MAX+2, "s_values[] is the wrong size.");
+
 	// Create the system name labels and dropdown boxes.
 	curPt.x = rect_lblDesc2.left;
 	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
@@ -277,6 +289,7 @@ void ImageTypesTabPrivate::createGrid()
 		assert(imgbf != 0);
 
 		int cbo_x = cbo_x_start;
+		validImageTypes[sys] = 0;
 		HWND *p_cboImageType = &cboImageType[sys][0];
 		for (unsigned int imageType = 0; imgbf != 0 && imageType <= RomData::IMG_EXT_MAX+1;
 		     imageType++, p_cboImageType++, cbo_x += sz_lblImageType.cx, imgbf >>= 1)
@@ -296,7 +309,24 @@ void ImageTypesTabPrivate::createGrid()
 				nullptr, nullptr);
 			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
 
-			// TODO: Add strings, e.g. "No", 1, 2, etc.
+			// Increment the valid image types counter.
+			validImageTypes[sys]++;
+		}
+
+		// Add strings to the dropdowns.
+		p_cboImageType = &cboImageType[sys][0];
+		for (int imageType = RomData::IMG_EXT_MAX; imageType >= 0; imageType--, p_cboImageType++) {
+			if (!*p_cboImageType) {
+				// No dropdown box here.
+				continue;
+			}
+
+			// NOTE: Need to add one more than the total number,
+			// since "No" counts as an entry.
+			for (int i = 0; i <= validImageTypes[sys]; i++) {
+				assert(s_values[i] != nullptr);
+				ComboBox_AddString(*p_cboImageType, s_values[i]);
+			}
 		}
 
 		// Next row.
