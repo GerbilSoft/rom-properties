@@ -69,11 +69,12 @@ class ImageTypesTabPrivate
 		typedef uint32_t (*pFnSupportedImageTypes)(void);
 		struct SysData {
 			const rp_char *name;			// System name.
-			const char *className;			// Class name in Config.
+			const char *classNameA;			// Class name in Config. (ASCII)
+			const wchar_t *classNameW;		// Class name in Config. (Unicode)
 			pFnSupportedImageTypes getTypes;	// Get supported image types.
 		};
 #define SysDataEntry(klass, name) \
-	{name, #klass, LibRomData::klass::supportedImageTypes_static}
+	{name, #klass, L#klass, LibRomData::klass::supportedImageTypes_static}
 		static const int SYS_COUNT = 8;
 		static const SysData sysData[SYS_COUNT];
 
@@ -125,6 +126,10 @@ class ImageTypesTabPrivate
 
 		// Number of valid image types per system.
 		uint8_t validImageTypes[SYS_COUNT];
+
+		// Which systems have the default configuration?
+		// These ones will be saved with a blank value.
+		bool sysIsDefault[SYS_COUNT];
 };
 
 // Control base IDs.
@@ -140,6 +145,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	// Clear the arrays.
 	memset(cboImageType, 0, sizeof(cboImageType));
 	memset(validImageTypes, 0, sizeof(validImageTypes));
+	memset(sysIsDefault, 0, sizeof(sysIsDefault));
 }
 
 // Property for "D pointer".
@@ -359,15 +365,19 @@ void ImageTypesTabPrivate::reset(void)
 
 		// Get the image priority.
 		Config::ImgTypePrio_t imgTypePrio;
-		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
+		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
 		bool no_thumbs = false;
 			switch (res) {
 			case Config::IMGTR_SUCCESS:
+				// Image type priority received successfully.
+				sysIsDefault[sys] = false;
+				break;
 			case Config::IMGTR_SUCCESS_DEFAULTS:
 				// Image type priority received successfully.
 				// IMGTR_SUCCESS_DEFAULTS indicates the returned
 				// data is the default priority, since a custom
 				// configuration was not found for this class.
+				sysIsDefault[sys] = true;
 				break;
 			case Config::IMGTR_DISABLED:
 				// Thumbnails are disabled for this class.
@@ -411,7 +421,23 @@ void ImageTypesTabPrivate::reset(void)
  */
 void ImageTypesTabPrivate::save(void)
 {
-	// TODO
+	// NOTE: This may re-check the configuration timestamp.
+	const Config *const config = Config::instance();
+	const rp_char *const filename = config->filename();
+	if (!filename) {
+		// No configuration filename...
+		return;
+	}
+
+	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+		// Is this system using the default configuration?
+		if (sysIsDefault[sys]) {
+			// Default configuration. Write an empty string.
+			// NOTE: Passing NULL here deletes the entry.
+			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"", RP2W_c(filename));
+			continue;
+		}
+	}
 
 	// No longer changed.
 	changed = false;
@@ -488,6 +514,40 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				default:
 					break;
 			}
+			break;
+		}
+
+		case WM_COMMAND: {
+			ImageTypesTabPrivate *d = static_cast<ImageTypesTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (HIWORD(wParam) != CBN_SELCHANGE)
+				break;
+
+			// NOTE: CBN_SELCHANGE is NOT sent in response to
+			// CB_SETCURSEL, so we shouldn't need to "lock"
+			// this handler when reset() is called.
+			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775821(v=vs.85).aspx
+
+			// Mark this configuration as no longer being default.
+			// Base ID is 0x2000.
+			// Image type is lower 4 bits.
+			if (LOWORD(wParam) < 0x2000)
+				break;
+			unsigned int sys = (LOWORD(wParam) - 0x2000) >> 4;
+			if (sys >= SYS_COUNT)
+				break;
+			d->sysIsDefault[sys] = false;
+
+			// Configuration has been changed.
+			PropSheet_Changed(GetParent(hDlg), hDlg);
+			d->changed = true;
+
+			// Allow the message to be processed by the system.
 			break;
 		}
 
