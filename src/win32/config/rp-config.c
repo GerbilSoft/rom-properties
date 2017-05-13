@@ -64,10 +64,6 @@ static const wchar_t rp_subdir[] = L"amd64/";
 #error Unsupported CPU architecture.
 #endif
 
-// Executable path.
-static wchar_t exe_path[MAX_PATH];
-static DWORD exe_path_len;
-
 /**
  * Try loading the ROM Properties Page DLL.
  *
@@ -83,6 +79,8 @@ static DWORD exe_path_len;
 		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export); \
 		if (pfn) { \
 			/* Run the function. */ \
+			free(exe_path); \
+			free(dll_filename); \
 			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
 		} \
 		FreeLibrary(hRpDll); \
@@ -91,9 +89,12 @@ static DWORD exe_path_len;
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-	// DLL filename.
-	wchar_t dll_filename[_countof(exe_path)+32];
+	// Filename and path buffers.
+	wchar_t *exe_path = NULL;	// MAX_PATH
+	wchar_t *dll_filename = NULL;	// MAX_PATH+32
+
 	wchar_t *last_backslash;
+	DWORD exe_path_len;
 
 	((void)hPrevInstance);
 
@@ -103,10 +104,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	// Get the executable path.
 	// TODO: Support longer than MAX_PATH?
-	exe_path_len = GetModuleFileName(hInstance, exe_path, _countof(exe_path));
-	if (exe_path_len == 0 || exe_path_len >= _countof(exe_path)) {
+	exe_path = malloc(MAX_PATH*sizeof(wchar_t));
+	if (!exe_path)
+		goto fail;
+	exe_path_len = GetModuleFileName(hInstance, exe_path, MAX_PATH);
+	if (exe_path_len == 0 || exe_path_len >= MAX_PATH) {
 		// FIXME: Handle this.
-		return EXIT_FAILURE;
+		goto fail;
 	}
 
 	// Find the last backslash.
@@ -118,10 +122,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	} else {
 		// Invalid path...
 		// FIXME: Handle this.
-		return EXIT_FAILURE;
+		goto fail;
 	}
 
 	// Initialize dll_filename with exe_path.
+	dll_filename = malloc((MAX_PATH+32)*sizeof(wchar_t));
+	if (!dll_filename)
+		goto fail;
 	memcpy(dll_filename, exe_path, exe_path_len*sizeof(wchar_t));
 
 	// First, check for rom-properties.dll in rp-config.exe's directory.
@@ -136,5 +143,9 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	// FIXME: Search CLSIDs.
 	// TODO: Show an error message.
+
+fail:
+	free(exe_path);
+	free(dll_filename);
 	return EXIT_FAILURE;
 }
