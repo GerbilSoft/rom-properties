@@ -194,7 +194,7 @@ INT_PTR ConfigDialog::exec(void)
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-int __declspec(dllexport) CALLBACK rp_show_config_dialog(
+int CALLBACK rp_show_config_dialog(
 	HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 {
 	// TODO: nCmdShow.

@@ -51,15 +51,10 @@
  */
 typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow);
 
-// rp_show_config_dialog export name.
-// This function is decorated in order to prevent
-// calling convention mismatches on i386.
-// TODO: Check ARM?
+// Architecture-specific subdirectory.
 #if defined(__i386__) || defined(_M_IX86)
-static const char rp_show_config_dialog_export[] = "_rp_show_config_dialog@16";
 static const wchar_t rp_subdir[] = L"i386/";
 #elif defined(__amd64__) || defined(_M_X64)
-static const char rp_show_config_dialog_export[] = "rp_show_config_dialog";
 static const wchar_t rp_subdir[] = L"amd64/";
 #else
 #error Unsupported CPU architecture.
@@ -88,7 +83,7 @@ static const wchar_t CLSIDs[4][40] = {
 	HMODULE hRpDll = LoadLibrary(dll_filename); \
 	if (hRpDll) { \
 		/* Find the rp_show_config_dialog() function. */ \
-		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export); \
+		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, "rp_show_config_dialog"); \
 		if (pfn) { \
 			/* Run the function. */ \
 			free(exe_path); \
