@@ -69,10 +69,11 @@ class ImageTypesTabPrivate
 		typedef uint32_t (*pFnSupportedImageTypes)(void);
 		struct SysData {
 			const rp_char *name;			// System name.
+			const char *className;			// Class name in Config.
 			pFnSupportedImageTypes getTypes;	// Get supported image types.
 		};
 #define SysDataEntry(klass, name) \
-	{name, LibRomData::klass::supportedImageTypes_static}
+	{name, #klass, LibRomData::klass::supportedImageTypes_static}
 		static const int SYS_COUNT = 8;
 		static const SysData sysData[SYS_COUNT];
 
@@ -342,7 +343,80 @@ void ImageTypesTabPrivate::createGrid()
  */
 void ImageTypesTabPrivate::reset(void)
 {
-	// TODO
+	// Reset all combo boxes first.
+	HWND *p_cboImageType;
+	for (p_cboImageType = &cboImageType[0][0];
+	     p_cboImageType != &cboImageType[SYS_COUNT][0]; p_cboImageType++)
+	{
+		if (*p_cboImageType) {
+			ComboBox_SetCurSel(*p_cboImageType, 0);
+		}
+	}
+
+	// Load the configuration for each system.
+	// TODO: Get the default configuration from RomData / TCreateThumbnail
+	// instead of hard-coding it here.
+	static const uint8_t defImgTypePrio[] = {
+		RomData::IMG_EXT_MEDIA,
+		RomData::IMG_EXT_COVER,
+		RomData::IMG_EXT_BOX,
+		RomData::IMG_INT_MEDIA,
+		RomData::IMG_INT_ICON,
+		RomData::IMG_INT_BANNER,
+	};
+
+	const Config *const config = Config::instance();
+	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
+		p_cboImageType = &cboImageType[sys][0];
+
+		// Get the image priority.
+		Config::ImgTypePrio_t imgTypePrio;
+		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
+		bool no_thumbs = false;
+		switch (res) {
+			case Config::IMGTR_SUCCESS:
+				// Image type priority received successfully.
+				break;
+			case Config::IMGTR_USE_DEFAULTS:
+			default:
+				// Use the default priorities.
+				// NOTE: This is also used if the configuration
+				// has an error.
+				imgTypePrio.imgTypes = defImgTypePrio;
+				imgTypePrio.length = ARRAY_SIZE(defImgTypePrio);
+				break;
+			case Config::IMGTR_DISABLED:
+				// Thumbnails are disabled for this class.
+				no_thumbs = true;
+				break;
+		}
+
+		if (no_thumbs)
+			continue;
+
+		int nextPrio = 1;	// Next priority value to use.
+		bool imageTypeSet[RomData::IMG_EXT_MAX+1];	// Element set to true once an image type priority is read.
+		memset(imageTypeSet, 0, sizeof(imageTypeSet));
+
+		p_cboImageType = &cboImageType[sys][0];
+		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
+		{
+			uint8_t imageType = imgTypePrio.imgTypes[i];
+			assert(imageType == 0xFF || imageType <= RomData::IMG_EXT_MAX);
+			if (imageType > RomData::IMG_EXT_MAX && imageType != 0xFF) {
+				// Invalid image type.
+				continue;
+			}
+			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
+				// Set the image type.
+				imageTypeSet[imageType] = true;
+				if (imageType <= RomData::IMG_EXT_MAX) {
+					ComboBox_SetCurSel(p_cboImageType[imageType], nextPrio);
+					nextPrio++;
+				}
+			}
+		}
+	}
 
 	// No longer changed.
 	changed = false;
