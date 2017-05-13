@@ -68,13 +68,34 @@ static const wchar_t rp_subdir[] = L"amd64/";
 static wchar_t exe_path[MAX_PATH];
 static DWORD exe_path_len;
 
+/**
+ * Try loading the ROM Properties Page DLL.
+ *
+ * If successful, rp_show_config_dialog() will be called and
+ * its value will be returned to the caller.
+ *
+ * @param dll_filename DLL filename.
+ */
+#define TRY_LOAD_DLL(dll_filename) do { \
+	HMODULE hRpDll = LoadLibrary(dll_filename); \
+	if (hRpDll) { \
+		/* Find the rp_show_config_dialog() function. */ \
+		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export); \
+		if (pfn) { \
+			/* Run the function. */ \
+			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
+		} \
+		FreeLibrary(hRpDll); \
+	} \
+} while (0)
+
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-	wchar_t *last_backslash;
-	HMODULE hRpDll;
-
 	// DLL filename.
 	wchar_t dll_filename[_countof(exe_path)+32];
+	wchar_t *last_backslash;
+
+	((void)hPrevInstance);
 
 	// libromdata Windows executable initialization.
 	// This sets various security options.
@@ -105,31 +126,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	// First, check for rom-properties.dll in rp-config.exe's directory.
 	wcscpy(&dll_filename[exe_path_len], L"rom-properties.dll");
-	hRpDll = LoadLibrary(dll_filename);
-	if (hRpDll) {
-		// Find the rp_show_config_dialog() function.
-		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export);
-		if (pfn) {
-			// Run the function.
-			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow);
-		}
-		FreeLibrary(hRpDll);
-	}
+	TRY_LOAD_DLL(dll_filename);
 
 	// Check the architecture-specific subdirectory.
 	wcscpy(&dll_filename[exe_path_len], rp_subdir);
 	// NOTE: -1 because _countof() includes the NULL terminator.
 	wcscpy(&dll_filename[exe_path_len + _countof(rp_subdir) - 1], L"rom-properties.dll");
-	hRpDll = LoadLibrary(dll_filename);
-	if (hRpDll) {
-		// Find the rp_show_config_dialog() function.
-		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export);
-		if (pfn) {
-			// Run the function.
-			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow);
-		}
-		FreeLibrary(hRpDll);
-	}
+	TRY_LOAD_DLL(dll_filename);
 
 	// FIXME: Search CLSIDs.
 	// TODO: Show an error message.
