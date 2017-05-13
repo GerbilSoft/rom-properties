@@ -87,6 +87,13 @@ class ConfigPrivate : public ConfReaderPrivate
 			const char *name, const char *value) override final;
 
 	public:
+		/**
+		 * Default image type priority.
+		 * Used if a custom configuration is not defined
+		 * for a given system.
+		 */
+		static const uint8_t defImgTypePrio[];
+
 		// Image type priority data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -113,6 +120,20 @@ class ConfigPrivate : public ConfReaderPrivate
 // Using a static non-pointer variable in order to
 // handle proper destruction when the DLL is unloaded.
 Config ConfigPrivate::instance;
+
+/**
+ * Default image type priority.
+ * Used if a custom configuration is not defined
+ * for a given system.
+ */
+const uint8_t ConfigPrivate::defImgTypePrio[] = {
+	RomData::IMG_EXT_MEDIA,
+	RomData::IMG_EXT_COVER,
+	RomData::IMG_EXT_BOX,
+	RomData::IMG_INT_MEDIA,
+	RomData::IMG_INT_ICON,
+	RomData::IMG_INT_BANNER,
+};
 
 ConfigPrivate::ConfigPrivate()
 	: super(_RP("rom-properties.conf"))
@@ -354,7 +375,9 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	if (iter == d->mapImgTypePrio.end()) {
 		// Class name not found.
 		// Use the global defaults.
-		return IMGTR_USE_DEFAULTS;
+		imgTypePrio->imgTypes = d->defImgTypePrio;
+		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
+		return IMGTR_SUCCESS_DEFAULTS;
 	}
 
 	// Class name found.
@@ -381,6 +404,22 @@ Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_
 	imgTypePrio->imgTypes = &d->vImgTypePrio[idx];
 	imgTypePrio->length = len;
 	return IMGTR_SUCCESS;
+}
+
+/**
+ * Get the default image type priority data.
+ * This is the priority data used if a custom configuration
+ * is not defined for a given class.
+ * @param imgTypePrio	[out] Image type priority data.
+ */
+void Config::getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const
+{
+	assert(imgTypePrio != nullptr);
+	if (imgTypePrio) {
+		RP_D(const Config);
+		imgTypePrio->imgTypes = d->defImgTypePrio;
+		imgTypePrio->length = ARRAY_SIZE(d->defImgTypePrio);
+	}
 }
 
 /** Download options. **/

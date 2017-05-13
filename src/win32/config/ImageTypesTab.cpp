@@ -353,18 +353,6 @@ void ImageTypesTabPrivate::reset(void)
 		}
 	}
 
-	// Load the configuration for each system.
-	// TODO: Get the default configuration from RomData / TCreateThumbnail
-	// instead of hard-coding it here.
-	static const uint8_t defImgTypePrio[] = {
-		RomData::IMG_EXT_MEDIA,
-		RomData::IMG_EXT_COVER,
-		RomData::IMG_EXT_BOX,
-		RomData::IMG_INT_MEDIA,
-		RomData::IMG_INT_ICON,
-		RomData::IMG_INT_BANNER,
-	};
-
 	const Config *const config = Config::instance();
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		p_cboImageType = &cboImageType[sys][0];
@@ -373,17 +361,13 @@ void ImageTypesTabPrivate::reset(void)
 		Config::ImgTypePrio_t imgTypePrio;
 		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
 		bool no_thumbs = false;
-		switch (res) {
+			switch (res) {
 			case Config::IMGTR_SUCCESS:
+			case Config::IMGTR_SUCCESS_DEFAULTS:
 				// Image type priority received successfully.
-				break;
-			case Config::IMGTR_USE_DEFAULTS:
-			default:
-				// Use the default priorities.
-				// NOTE: This is also used if the configuration
-				// has an error.
-				imgTypePrio.imgTypes = defImgTypePrio;
-				imgTypePrio.length = ARRAY_SIZE(defImgTypePrio);
+				// IMGTR_SUCCESS_DEFAULTS indicates the returned
+				// data is the default priority, since a custom
+				// configuration was not found for this class.
 				break;
 			case Config::IMGTR_DISABLED:
 				// Thumbnails are disabled for this class.

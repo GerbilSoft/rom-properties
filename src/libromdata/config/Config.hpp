@@ -73,7 +73,7 @@ class Config : public ConfReader
 			IMGTR_ERR_MAP_CORRUPTED	= -2,	// Internal map is corrupted.
 			IMGTR_ERR_INVALID_PARAMS = -1,	// Invalid parameters.
 			IMGTR_SUCCESS		= 0,	// Image type priority data returned successfully.
-			IMGTR_USE_DEFAULTS	= 1,	// Use the global defaults.
+			IMGTR_SUCCESS_DEFAULTS	= 1,	// Custom configuration not defined; returning defaults.
 			IMGTR_DISABLED		= 2,	// Thumbnails are disabled for this class.
 		};
 
@@ -85,6 +85,14 @@ class Config : public ConfReader
 		 * @return ImgTypeResult
 		 */
 		ImgTypeResult getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const;
+
+		/**
+		 * Get the default image type priority data.
+		 * This is the priority data used if a custom configuration
+		 * is not defined for a given class.
+		 * @param imgTypePrio	[out] Image type priority data.
+		 */
+		void getDefImgTypePrio(ImgTypePrio_t *imgTypePrio) const;
 
 		/** Download options. **/
 
