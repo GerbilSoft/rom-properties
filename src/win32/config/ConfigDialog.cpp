@@ -55,6 +55,17 @@ class ConfigDialogPrivate
 		static const wchar_t D_PTR_PROP[];
 
 	public:
+		// DLL containing the property sheet icon.
+		// WARNING: Not thread-safe, but ConfigDialog
+		// shouldn't be used in a multi-threaded environment.
+		// NOTE: This DLL is never unloaded.
+		static HMODULE hIconDll;
+		static LPWSTR pszIcon;
+
+		// Find the icon.
+		static void findIcon(void);
+
+	public:
 		// Property sheet variables.
 		ITab *tabs[3];	// TODO: Add Downloads.
 		HPROPSHEETPAGE hpsp[3];
@@ -73,6 +84,10 @@ class ConfigDialogPrivate
 // This points to the ConfigDialogPrivate object.
 const wchar_t ConfigDialogPrivate::D_PTR_PROP[] = L"ConfigDialogPrivate";
 
+// Property sheet icon.
+HMODULE ConfigDialogPrivate::hIconDll = nullptr;
+LPWSTR ConfigDialogPrivate::pszIcon = nullptr;
+
 ConfigDialogPrivate::ConfigDialogPrivate()
 {
 	// Make sure we have all required window classes available.
@@ -82,6 +97,9 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	initCommCtrl.dwICC = ICC_LISTVIEW_CLASSES | ICC_LINK_CLASS | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
+
+	// Find the icon.
+	findIcon();
 
 	// Initialize the property sheet tabs.
 
@@ -100,10 +118,10 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
-	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP;
+	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEICONID;
 	psh.hwndParent = nullptr;
-	psh.hInstance = g_hInstance;
-	psh.hIcon = nullptr;
+	psh.hInstance = hIconDll;
+	psh.pszIcon = pszIcon;	// Small icon only!
 	psh.pszCaption = L"ROM Properties Page Configuration";
 	psh.nPages = 3;
 	psh.nStartPage = 0;
@@ -121,6 +139,48 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
 	for (int i = ARRAY_SIZE(tabs)-1; i >= 0; i--) {
 		delete tabs[i];
 	}
+}
+
+/**
+ * Find the icon.
+ */
+void ConfigDialogPrivate::findIcon(void)
+{
+	if (hIconDll)
+		return;
+
+	// Check for a DLL containing a usable ROM chip icon.
+	struct IconDllData_t {
+		const wchar_t *dll_filename;
+		LPWSTR pszIcon;
+	};
+
+	static const IconDllData_t iconDllData[] = {
+		{L"imageres.dll", MAKEINTRESOURCE(34)},	// Vista+
+		{L"shell32.dll",  MAKEINTRESOURCE(13)},
+	};
+
+	for (unsigned int i = 0; i < ARRAY_SIZE(iconDllData); i++) {
+		HMODULE hDll = LoadLibrary(iconDllData[i].dll_filename);
+		if (!hDll)
+			continue;
+
+		// Check for the specified icon resource.
+		HRSRC hRes = FindResource(hDll, iconDllData[i].pszIcon, RT_GROUP_ICON);
+		if (hRes) {
+			// Found a usable icon.
+			// NOTE: The DLL is *not* freed until the program exits.
+			hIconDll = hDll;
+			pszIcon = iconDllData[i].pszIcon;
+			return;
+		}
+
+		FreeLibrary(hDll);
+	}
+
+	// No usable icon...
+	hIconDll = nullptr;
+	pszIcon = nullptr;
 }
 
 /**
@@ -146,6 +206,19 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 			LONG exstyle = GetWindowLong(hDlg, GWL_EXSTYLE);
 			exstyle &= ~WS_EX_CONTEXTHELP;
 			SetWindowLong(hDlg, GWL_EXSTYLE, exstyle);
+
+			// NOTE: PropertySheet's pszIcon only uses the small icon.
+			// Set the large icon here.
+			if (hIconDll) {
+				HICON hIcon = static_cast<HICON>(LoadImage(
+					hIconDll, pszIcon, IMAGE_ICON,
+					GetSystemMetrics(SM_CXICON),
+					GetSystemMetrics(SM_CYICON),
+					LR_SHARED));
+				if (hIcon) {
+					SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+				}
+			}
 			break;
 		}
 

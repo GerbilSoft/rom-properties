@@ -54,7 +54,7 @@
 //#define NOVIRTUALKEYCODES 1
 //#define NOWINMESSAGES 1
 //#define NOWINSTYLES 1
-#define NOSYSMETRICS 1
+//#define NOSYSMETRICS 1
 #define NOMENUS 1
 #define NOICONS 1
 #define NOKEYSTATES 1
