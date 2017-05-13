@@ -383,7 +383,7 @@ void ImageTypesTabPrivate::reset(void)
 		Config::ImgTypePrio_t imgTypePrio;
 		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
 		bool no_thumbs = false;
-			switch (res) {
+		switch (res) {
 			case Config::IMGTR_SUCCESS:
 				// Image type priority received successfully.
 				sysIsDefault[sys] = false;
@@ -397,6 +397,11 @@ void ImageTypesTabPrivate::reset(void)
 				break;
 			case Config::IMGTR_DISABLED:
 				// Thumbnails are disabled for this class.
+				no_thumbs = true;
+				break;
+			default:
+				// Should not happen...
+				assert(!"Invalid return value from Config::getImgTypePrio().");
 				no_thumbs = true;
 				break;
 		}

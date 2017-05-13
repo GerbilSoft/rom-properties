@@ -227,6 +227,10 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		case Config::IMGTR_DISABLED:
 			// Thumbnails are disabled for this class.
 			return RPCT_SOURCE_FILE_CLASS_DISABLED;
+		default:
+			// Should not happen...
+			assert(!"Invalid return value from Config::getImgTypePrio().");
+			return RPCT_SOURCE_FILE_ERROR;
 	}
 
 	if (config->useIntIconForSmallSizes() && req_size <= 48) {
