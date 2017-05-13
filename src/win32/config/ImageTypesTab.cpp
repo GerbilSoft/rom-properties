@@ -126,6 +126,12 @@ class ImageTypesTabPrivate
 		// *all* image types, so most of these will be nullptr.
 		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
 
+		// Image types. (0xFF == No; others == RomData::ImageType)
+		// NOTE: We need to store them here in order to handle
+		// duplicate prevention, since CBN_SELCHANGE doesn't
+		// include the "previous" index.
+		uint8_t imageTypes[SYS_COUNT][RomData::IMG_EXT_MAX+1];
+
 		// Number of valid image types per system.
 		uint8_t validImageTypes[SYS_COUNT];
 
@@ -146,6 +152,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 {
 	// Clear the arrays.
 	memset(cboImageType, 0, sizeof(cboImageType));
+	memset(imageTypes, 0xFF, sizeof(imageTypes));
 	memset(validImageTypes, 0, sizeof(validImageTypes));
 	memset(sysIsDefault, 0, sizeof(sysIsDefault));
 }
@@ -390,7 +397,7 @@ void ImageTypesTabPrivate::reset(void)
 		if (no_thumbs)
 			continue;
 
-		int nextPrio = 1;	// Next priority value to use.
+		int nextPrio = 0;	// Next priority value to use.
 		bool imageTypeSet[RomData::IMG_EXT_MAX+1];	// Element set to true once an image type priority is read.
 		memset(imageTypeSet, 0, sizeof(imageTypeSet));
 
@@ -407,7 +414,9 @@ void ImageTypesTabPrivate::reset(void)
 				// Set the image type.
 				imageTypeSet[imageType] = true;
 				if (imageType <= RomData::IMG_EXT_MAX) {
-					ComboBox_SetCurSel(p_cboImageType[imageType], nextPrio);
+					imageTypes[sys][imageType] = nextPrio;
+					// +1 because combobox index 0 is "No".
+					ComboBox_SetCurSel(p_cboImageType[imageType], nextPrio+1);
 					nextPrio++;
 				}
 			}
@@ -431,6 +440,9 @@ void ImageTypesTabPrivate::save(void)
 		return;
 	}
 
+	// Image types are stored in the imageTypes[] array.
+	const uint8_t *pImageTypes = imageTypes[0];
+
 	wostringstream woss;
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
@@ -438,39 +450,30 @@ void ImageTypesTabPrivate::save(void)
 			// Default configuration. Write an empty string.
 			// NOTE: Passing NULL here deletes the entry.
 			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"", RP2W_c(filename));
+			pImageTypes += ARRAY_SIZE(imageTypes[0]);
 			continue;
 		}
 
 		// Reset the wostringstream.
 		woss.str(wstring());
 
-		// Get the image types from the dropdowns.
+		// Format of imageTypes[]:
+		// - Index: Image type.
+		// - Value: Priority.
+		// We need to swap index and value.
 		uint8_t imgTypePrio[RomData::IMG_EXT_MAX+1];
 		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
-		HWND *p_cboImageType = &cboImageType[sys][0];
 		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX;
-		     imageType++, p_cboImageType++)
+		     imageType++, pImageTypes++)
 		{
-			if (!*p_cboImageType) {
-				// Image type is not valid for this system.
+			if (*pImageTypes > RomData::IMG_EXT_MAX) {
+				// Image type is either not valid for this system
+				// or is set to "No".
 				continue;
 			}
 
-			// Check the priority.
 			// TODO: Prevent duplicates.
-			int idx = ComboBox_GetCurSel(*p_cboImageType);
-			assert(idx >= 0);
-			assert(idx <= RomData::IMG_EXT_MAX+1);
-			if (idx <= 0) {
-				// Either "No" is selected, or nothing is selected.
-				// Image type will be ignored.
-				continue;
-			} else if (idx > RomData::IMG_EXT_MAX+1) {
-				// Image type is invalid...
-				continue;
-			}
-
-			imgTypePrio[idx-1] = imageType;
+			imgTypePrio[*pImageTypes] = imageType;
 		}
 
 		// Convert the image type priority to strings.
@@ -609,9 +612,16 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			unsigned int sys = (LOWORD(wParam) - 0x2000) >> 4;
 			if (sys >= SYS_COUNT)
 				break;
-			d->sysIsDefault[sys] = false;
+			unsigned int imageType = (wParam & 0x000F);
+			if (imageType > RomData::IMG_EXT_MAX)
+				break;
+
+			// Save the image type ID.
+			int idx = ComboBox_GetCurSel((HWND)lParam);
+			d->imageTypes[sys][imageType] = (idx <= 0 ? 0xFF : idx-1);
 
 			// Configuration has been changed.
+			d->sysIsDefault[sys] = false;
 			PropSheet_Changed(GetParent(hDlg), hDlg);
 			d->changed = true;
 
