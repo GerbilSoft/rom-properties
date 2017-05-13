@@ -78,7 +78,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0
  * Configuration: Download settings.
  */
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-IDD_CONFIG_DOWNLOADS DIALOGEX 0, 0, 311, 186
+IDD_CONFIG_DOWNLOADS DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
@@ -92,39 +92,39 @@ END
  * Configuration: Thumbnail cache. (Windows Vista and later)
  */
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-IDD_CONFIG_CACHE DIALOGEX 0, 0, 311, 186
+IDD_CONFIG_CACHE DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "If any image type settings were changed, you will need to clear the system thumbnail cache.", IDC_STATIC, 7, 7, 297, 8, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 297, 28, 0, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 297, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 297, 28, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 152, 297, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 163, 297, 16, WS_EX_LEFT
+    LTEXT           "If any image type settings were changed, you will need to clear the system thumbnail cache.", IDC_STATIC, 7, 7, 317, 8, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 317, 28, 0, WS_EX_LEFT
+    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 317, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 317, 28, 0, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 317, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 317, 16, WS_EX_LEFT
 END
 
 /**
  * Configuration: Thumbnail cache. (Windows XP and earlier)
  */
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 311, 186
+IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.", IDC_STATIC, 7, 7, 292, 25, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.", IDC_STATIC, 7, 7, 317, 25, SS_LEFT, WS_EX_TRANSPARENT
     AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
     AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST, 7, 46, 297, 40, WS_EX_LEFT | WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 242, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
-    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 254, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
-    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 90, 297, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 240, 20, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 254, 127, 50, 15, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 152, 297, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 163, 297, 16, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST, 7, 46, 317, 40, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 263, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
+    PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 275, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
+    PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 90, 318, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
+    LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 265, 20, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 275, 127, 50, 15, 0, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 317, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 317, 16, WS_EX_LEFT
 END
 
 /** Manifest. **/
