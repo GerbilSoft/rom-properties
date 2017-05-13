@@ -21,6 +21,7 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
 	config/ConfigDialog.cpp
+	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
@@ -43,6 +44,7 @@ SET(rom-properties-win32_H
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
 	config/ConfigDialog.hpp
+	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
