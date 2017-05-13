@@ -56,8 +56,10 @@ typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LP
 // TODO: Check ARM?
 #if defined(__i386__) || defined(_M_IX86)
 static const char rp_show_config_dialog_export[] = "_rp_show_config_dialog@16";
+static const wchar_t rp_subdir[] = L"i386/";
 #elif defined(__amd64__) || defined(_M_X64)
 static const char rp_show_config_dialog_export[] = "rp_show_config_dialog";
+static const wchar_t rp_subdir[] = L"amd64/";
 #else
 #error Unsupported CPU architecture.
 #endif
@@ -114,7 +116,22 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 		FreeLibrary(hRpDll);
 	}
 
-	// FIXME: Search other paths, including i386/, amd64/, and CLSID.
+	// Check the architecture-specific subdirectory.
+	wcscpy(&dll_filename[exe_path_len], rp_subdir);
+	// NOTE: -1 because _countof() includes the NULL terminator.
+	wcscpy(&dll_filename[exe_path_len + _countof(rp_subdir) - 1], L"rom-properties.dll");
+	hRpDll = LoadLibrary(dll_filename);
+	if (hRpDll) {
+		// Find the rp_show_config_dialog() function.
+		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, rp_show_config_dialog_export);
+		if (pfn) {
+			// Run the function.
+			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow);
+		}
+		FreeLibrary(hRpDll);
+	}
+
+	// FIXME: Search CLSIDs.
 	// TODO: Show an error message.
 	return EXIT_FAILURE;
 }
