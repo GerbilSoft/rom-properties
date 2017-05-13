@@ -92,9 +92,13 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 				dll_filename[0] = 0;
 			}
 
+#if !defined(_MSC_VER) || defined(_DLL)
 			// Disable thread library calls, since we don't
 			// care about thread attachments.
+			// NOTE: On MSVC, don't do this if using the static CRT.
+			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms682579(v=vs.85).aspx
 			DisableThreadLibraryCalls(hInstance);
+#endif /* !defined(_MSC_VER) || defined(_DLL) */
 
 			// Register RpGdiplusBackend.
 			// TODO: Static initializer somewhere?
