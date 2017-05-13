@@ -95,6 +95,13 @@ class ImageTypesTabPrivate
 		 */
 		void save(void);
 
+		/**
+		 * Update imageTypes in response to a user change.
+		 * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
+		 * @param prio New priority. (0xFF == No; others == priority)
+		 */
+		void updateImageType(unsigned int id, unsigned int prio);
+
 	public:
 		/**
 		 * Dialog procedure.
@@ -126,7 +133,7 @@ class ImageTypesTabPrivate
 		// *all* image types, so most of these will be nullptr.
 		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
 
-		// Image types. (0xFF == No; others == RomData::ImageType)
+		// Image types. (0xFF == No; others == priority)
 		// NOTE: We need to store them here in order to handle
 		// duplicate prevention, since CBN_SELCHANGE doesn't
 		// include the "previous" index.
@@ -471,8 +478,6 @@ void ImageTypesTabPrivate::save(void)
 				// or is set to "No".
 				continue;
 			}
-
-			// TODO: Prevent duplicates.
 			imgTypePrio[*pImageTypes] = imageType;
 		}
 
@@ -512,6 +517,55 @@ void ImageTypesTabPrivate::save(void)
 
 	// No longer changed.
 	changed = false;
+}
+
+/**
+ * Update imageTypes in response to a user change.
+ * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
+ * @param prio New priority. (0xFF == No; others == priority)
+ */
+void ImageTypesTabPrivate::updateImageType(unsigned int id, unsigned int prio)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// Base ID is 0x2000.
+	// Image type is lower 4 bits.
+	if (id < 0x2000)
+		return;
+
+	const unsigned int sys = (id - 0x2000) >> 4;
+	if (sys >= SYS_COUNT)
+		return;
+	const unsigned int imageType = (id & 0x000F);
+	if (imageType > RomData::IMG_EXT_MAX)
+		return;
+
+	if (prio != 0xFF) {
+		// Check for any image types that have the new priority.
+		const uint8_t prev_prio = imageTypes[sys][imageType];
+		for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
+			if (i == imageType)
+				continue;
+			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == prio) {
+				// Found a match! Swap the priority.
+				imageTypes[sys][i] = prev_prio;
+				ComboBox_SetCurSel(cboImageType[sys][i], (prev_prio == 0xFF ? 0 : prev_prio+1));
+				break;
+			}
+		}
+	}
+
+	// Save the image type ID.
+	imageTypes[sys][imageType] = prio;
+
+	// Mark this configuration as no longer being default.
+	sysIsDefault[sys] = false;
+
+	// Configuration has been changed.
+	PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
+	changed = true;
 }
 
 /**
@@ -603,27 +657,8 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// CB_SETCURSEL, so we shouldn't need to "lock"
 			// this handler when reset() is called.
 			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775821(v=vs.85).aspx
-
-			// Mark this configuration as no longer being default.
-			// Base ID is 0x2000.
-			// Image type is lower 4 bits.
-			if (LOWORD(wParam) < 0x2000)
-				break;
-			unsigned int sys = (LOWORD(wParam) - 0x2000) >> 4;
-			if (sys >= SYS_COUNT)
-				break;
-			unsigned int imageType = (wParam & 0x000F);
-			if (imageType > RomData::IMG_EXT_MAX)
-				break;
-
-			// Save the image type ID.
 			int idx = ComboBox_GetCurSel((HWND)lParam);
-			d->imageTypes[sys][imageType] = (idx <= 0 ? 0xFF : idx-1);
-
-			// Configuration has been changed.
-			d->sysIsDefault[sys] = false;
-			PropSheet_Changed(GetParent(hDlg), hDlg);
-			d->changed = true;
+			d->updateImageType(LOWORD(wParam), (idx <= 0 ? 0xFF : idx-1));
 
 			// Allow the message to be processed by the system.
 			break;
