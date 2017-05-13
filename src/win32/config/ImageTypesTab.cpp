@@ -46,7 +46,9 @@ using LibRomData::RomData;
 
 // C++ includes.
 #include <string>
+#include <sstream>
 using std::wstring;
+using std::wostringstream;
 
 class ImageTypesTabPrivate
 {
@@ -429,6 +431,7 @@ void ImageTypesTabPrivate::save(void)
 		return;
 	}
 
+	wostringstream woss;
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
 		if (sysIsDefault[sys]) {
@@ -436,6 +439,71 @@ void ImageTypesTabPrivate::save(void)
 			// NOTE: Passing NULL here deletes the entry.
 			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"", RP2W_c(filename));
 			continue;
+		}
+
+		// Reset the wostringstream.
+		woss.str(wstring());
+
+		// Get the image types from the dropdowns.
+		uint8_t imgTypePrio[RomData::IMG_EXT_MAX+1];
+		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
+		HWND *p_cboImageType = &cboImageType[sys][0];
+		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX;
+		     imageType++, p_cboImageType++)
+		{
+			if (!*p_cboImageType) {
+				// Image type is not valid for this system.
+				continue;
+			}
+
+			// Check the priority.
+			// TODO: Prevent duplicates.
+			int idx = ComboBox_GetCurSel(*p_cboImageType);
+			assert(idx >= 0);
+			assert(idx <= RomData::IMG_EXT_MAX+1);
+			if (idx <= 0) {
+				// Either "No" is selected, or nothing is selected.
+				// Image type will be ignored.
+				continue;
+			} else if (idx > RomData::IMG_EXT_MAX+1) {
+				// Image type is invalid...
+				continue;
+			}
+
+			imgTypePrio[idx-1] = imageType;
+		}
+
+		// Convert the image type priority to strings.
+		// TODO: Export the string data from Config.
+		static const wchar_t *const imageTypeNames[RomData::IMG_EXT_MAX+1] = {
+			L"IntIcon",
+			L"IntBanner",
+			L"IntMedia",
+			L"ExtMedia",
+			L"ExtCover",
+			L"ExtCover3D",
+			L"ExtCoverFull",
+			L"ExtBox",
+		};
+		static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
+
+		bool hasOne = false;
+		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
+			const uint8_t imageType = imgTypePrio[i];
+			if (imageType <= RomData::IMG_EXT_MAX) {
+				if (hasOne)
+					woss << L',';
+				hasOne = true;
+				woss << imageTypeNames[imageType];
+			}
+		}
+
+		if (hasOne) {
+			// At least one image type is enabled.
+			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, woss.str().c_str(), RP2W_c(filename));
+		} else {
+			// All image types are disabled.
+			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"No", RP2W_c(filename));
 		}
 	}
 
