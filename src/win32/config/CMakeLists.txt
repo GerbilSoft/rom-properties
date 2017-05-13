@@ -1,0 +1,15 @@
+PROJECT(rp-config-win32 C)
+# rp-config stub for Windows.
+
+ADD_EXECUTABLE(rp-config WIN32 rp-config.c rp-config.rc)
+SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
+DO_SPLIT_DEBUG(rp-config)
+SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
+SET_WINDOWS_NO_MANIFEST(rp-config)
+
+TARGET_INCLUDE_DIRECTORIES(rp-config
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# build/src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# build/src/win32
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+	)

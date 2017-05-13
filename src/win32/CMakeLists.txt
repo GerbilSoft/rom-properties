@@ -143,22 +143,7 @@ ENDIF(RP_DLL_FLAGS)
 #ENDIF(USE_INTERNAL_PNG_DLL)
 
 ### rp-config stub.
-ADD_EXECUTABLE(rp-config WIN32 config/rp-config.c config/rp-config.rc)
-SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
-DO_SPLIT_DEBUG(rp-config)
-SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
-SET_WINDOWS_NO_MANIFEST(rp-config)
-# Include paths:
-# - Public: Current source and binary directories.
-# - Private: Parent source and binary directories,
-#            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rp-config
-	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
-	)
+ADD_SUBDIRECTORY(config)
 
 #################
 # Installation. #
