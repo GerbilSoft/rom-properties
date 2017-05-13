@@ -31,6 +31,8 @@
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
 #include "stdafx.h"
+#include "config.version.h"
+
 #include "RegKey.hpp"
 #include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
@@ -628,6 +630,40 @@ STDAPI DllUnregisterServer(void)
 	// Notify the shell that file associations have changed.
 	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144148(v=vs.85).aspx
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+
+	return S_OK;
+}
+
+/**
+ * Get the DLL version.
+ * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb776404(v=vs.85).aspx
+ */
+STDAPI DllGetVersion(_Out_ DLLVERSIONINFO2 *pdvi)
+{
+	if (!pdvi) {
+		// Return E_POINTER since pdvi is an out param.
+		// Reference: http://stackoverflow.com/questions/1426672/when-return-e-pointer-and-when-e-invalidarg
+		return E_POINTER;
+	}
+
+	if (pdvi->info1.cbSize < sizeof(DLLVERSIONINFO)) {
+		// Invalid struct...
+		return E_INVALIDARG;
+	}
+
+	// DLLVERSIONINFO
+	pdvi->info1.dwMajorVersion = RP_VERSION_MAJOR;
+	pdvi->info1.dwMinorVersion = RP_VERSION_MINOR;
+	pdvi->info1.dwBuildNumber = RP_VERSION_PATCH;	// Not technically a build number...
+	pdvi->info1.dwBuildNumber = DLLVER_PLATFORM_NT;	// TODO: 9x?
+
+	if (pdvi->info1.cbSize >= sizeof(DLLVERSIONINFO2)) {
+		// DLLVERSIONINFO2
+		pdvi->dwFlags = 0;
+		pdvi->ullVersion = MAKEDLLVERULL(
+			RP_VERSION_MAJOR, RP_VERSION_MINOR,
+			RP_VERSION_PATCH, RP_VERSION_DEVEL);
+	}
 
 	return S_OK;
 }
