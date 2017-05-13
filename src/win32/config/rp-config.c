@@ -112,6 +112,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	HKEY hkeyCLSID = NULL;	// HKEY_CLASSES_ROOT\\CLSID
 	DWORD exe_path_len;
 	LONG lResult;
+	unsigned int i;
 
 	((void)hPrevInstance);
 
@@ -119,16 +120,19 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	// This sets various security options.
 	LibRomData_Win32_ExeInit();
 
+#define FAIL_MESSAGE(msg) do { \
+		MessageBox(NULL, (msg), L"ROM Properties Page Configuration", MB_ICONSTOP); \
+		goto fail; \
+	} while (0)
+
 	// Get the executable path.
 	// TODO: Support longer than MAX_PATH?
 	exe_path = malloc(MAX_PATH*sizeof(wchar_t));
 	if (!exe_path)
-		goto fail;
+		FAIL_MESSAGE(L"Failed to allocate memory for the EXE path.");
 	exe_path_len = GetModuleFileName(hInstance, exe_path, EXE_PATH_LEN);
-	if (exe_path_len == 0 || exe_path_len >= EXE_PATH_LEN) {
-		// FIXME: Handle this.
-		goto fail;
-	}
+	if (exe_path_len == 0 || exe_path_len >= EXE_PATH_LEN)
+		FAIL_MESSAGE(L"Failed to get the EXE path.");
 
 	// Find the last backslash.
 	last_backslash = wcsrchr(exe_path, L'\\');
@@ -139,13 +143,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	} else {
 		// Invalid path...
 		// FIXME: Handle this.
-		goto fail;
+		FAIL_MESSAGE(L"EXE path is invalid.");
 	}
 
 	// Initialize dll_filename with exe_path.
 	dll_filename = malloc(DLL_FILENAME_LEN*sizeof(wchar_t));
 	if (!dll_filename)
-		goto fail;
+		FAIL_MESSAGE(L"Failed to allocate memory for the DLL filename.");
 	memcpy(dll_filename, exe_path, exe_path_len*sizeof(wchar_t));
 
 	// First, check for rom-properties.dll in rp-config.exe's directory.
@@ -160,52 +164,55 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	// Check the CLSIDs.
 	lResult = RegOpenKeyEx(HKEY_CLASSES_ROOT, L"CLSID", 0, KEY_ENUMERATE_SUB_KEYS, &hkeyCLSID);
-	if (lResult == ERROR_SUCCESS) {
-		// Need to open "HKCR\\CLSID\\{CLSID}\\InprocServer32".
-		unsigned int i;
-		for (i = 0; i < _countof(CLSIDs); i++) {
-			HKEY hkeyClass, hkeyInprocServer32;
-			DWORD cbData, type;
+	if (lResult != ERROR_SUCCESS)
+		FAIL_MESSAGE(L"Failed to open HKEY_CLASSES_ROOT\\CLSID.");
 
-			lResult = RegOpenKeyEx(hkeyCLSID, CLSIDs[i], 0, KEY_ENUMERATE_SUB_KEYS, &hkeyClass);
-			if (lResult != ERROR_SUCCESS)
-				continue;
+	// Need to open "HKCR\\CLSID\\{CLSID}\\InprocServer32".
+	for (i = 0; i < _countof(CLSIDs); i++) {
+		HKEY hkeyClass, hkeyInprocServer32;
+		DWORD cbData, type;
 
-			lResult = RegOpenKeyEx(hkeyClass, L"InprocServer32", 0, KEY_READ, &hkeyInprocServer32);
-			if (lResult != ERROR_SUCCESS) {
-				RegCloseKey(hkeyClass);
-				continue;
-			}
+		lResult = RegOpenKeyEx(hkeyCLSID, CLSIDs[i], 0, KEY_ENUMERATE_SUB_KEYS, &hkeyClass);
+		if (lResult != ERROR_SUCCESS)
+			continue;
 
-			// Read the default value to get the DLL filename.
-			cbData = DLL_FILENAME_LEN*sizeof(wchar_t);
-			lResult = RegQueryValueEx(
-				hkeyInprocServer32,	// hKey
-				NULL,			// lpValueName
-				NULL,			// lpReserved
-				&type,			// lpType
-				(LPBYTE)dll_filename,	// lpData
-				&cbData);		// lpcbData
-			RegCloseKey(hkeyInprocServer32);
+		lResult = RegOpenKeyEx(hkeyClass, L"InprocServer32", 0, KEY_READ, &hkeyInprocServer32);
+		if (lResult != ERROR_SUCCESS) {
 			RegCloseKey(hkeyClass);
-
-			// TODO: REG_EXPAND_SZ?
-			if (lResult != ERROR_SUCCESS || type != REG_SZ)
-				continue;
-
-			// Verify the NULL terminator.
-			if ((cbData % 2 != 0) || dll_filename[(cbData/2)-1] != 0) {
-				// Either this isn't a multiple of 2 bytes,
-				// or there's no NULL terminator.
-				continue;
-			}
-
-			// Attempt to load this DLL.
-			TRY_LOAD_DLL(dll_filename);
+			continue;
 		}
+
+		// Read the default value to get the DLL filename.
+		cbData = DLL_FILENAME_LEN*sizeof(wchar_t);
+		lResult = RegQueryValueEx(
+			hkeyInprocServer32,	// hKey
+			NULL,			// lpValueName
+			NULL,			// lpReserved
+			&type,			// lpType
+			(LPBYTE)dll_filename,	// lpData
+			&cbData);		// lpcbData
+		RegCloseKey(hkeyInprocServer32);
+		RegCloseKey(hkeyClass);
+
+		// TODO: REG_EXPAND_SZ?
+		if (lResult != ERROR_SUCCESS || type != REG_SZ)
+			continue;
+
+		// Verify the NULL terminator.
+		if ((cbData % 2 != 0) || dll_filename[(cbData/2)-1] != 0) {
+			// Either this isn't a multiple of 2 bytes,
+			// or there's no NULL terminator.
+			continue;
+		}
+
+		// Attempt to load this DLL.
+		TRY_LOAD_DLL(dll_filename);
 	}
 
-	// TODO: Show an error message.
+	// All options have failed...
+	MessageBox(NULL, L"Could not find rom-properties.dll.\n\n"
+		L"Please ensure the DLL is present in the same\ndirectory as rp-config.exe.",
+		L"ROM Properties Page Configuration", MB_ICONWARNING);
 
 fail:
 	free(exe_path);
