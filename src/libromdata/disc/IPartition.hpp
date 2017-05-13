@@ -48,8 +48,8 @@ class IPartition : public IDiscReader
 		 */
 		virtual int isDiscSupported(const uint8_t *pHeader, size_t szHeader) const override final
 		{
-			((void)pHeader);
-			((void)szHeader);
+			RP_UNUSED(pHeader);
+			RP_UNUSED(szHeader);
 			return -1;
 		}
 

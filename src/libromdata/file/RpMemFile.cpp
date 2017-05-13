@@ -154,8 +154,8 @@ size_t RpMemFile::read(void *ptr, size_t size)
 size_t RpMemFile::write(const void *ptr, size_t size)
 {
 	// Not a valid operation for RpMemFile.
-	((void)ptr);
-	((void)size);
+	RP_UNUSED(ptr);
+	RP_UNUSED(size);
 	m_lastError = EBADF;
 	return 0;
 }
@@ -208,7 +208,7 @@ int RpMemFile::truncate(int64_t size)
 {
 	// Not supported.
 	// TODO: Writable RpMemFile?
-	((void)size);
+	RP_UNUSED(size);
 	m_lastError = ENOTSUP;
 	return -1;
 }

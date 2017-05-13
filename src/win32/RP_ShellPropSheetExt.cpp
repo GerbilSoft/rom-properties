@@ -1867,9 +1867,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam)
 {
 	// Not used.
-	((void)uPageID);
-	((void)pfnReplaceWith);
-	((void)lParam);
+	RP_UNUSED(uPageID);
+	RP_UNUSED(pfnReplaceWith);
+	RP_UNUSED(lParam);
 	return E_NOTIMPL;
 }
 

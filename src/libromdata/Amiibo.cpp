@@ -586,7 +586,7 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	pExtURLs->clear();
 
 	// Only one size is available.
-	((void)size);
+	RP_UNUSED(size);
 
 	RP_D(Amiibo);
 	if (!d->file || !d->file->isOpen()) {

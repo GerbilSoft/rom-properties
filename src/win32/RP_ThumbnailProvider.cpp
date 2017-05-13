@@ -193,7 +193,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 {
 	// Ignoring grfMode for now. (always read-only)
-	((void)grfMode);
+	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
 	IRpFile *file = new RpFile_IStream(pstream);

@@ -74,9 +74,9 @@ BOOL CALLBACK PropSheetIconPrivate::getPropSheetIcons(
 	_Out_opt_ PVOID *context)
 {
 	// We aren't using any of the InitOnceExecuteOnce() parameters.
-	((void)once);
-	((void)param);
-	((void)context);
+	RP_UNUSED(once);
+	RP_UNUSED(param);
+	RP_UNUSED(context);
 
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {

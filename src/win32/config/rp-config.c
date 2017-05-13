@@ -29,6 +29,7 @@
 // LibRomData
 // NOTE: We're not linking to LibRomData, so we can only
 // use things that are defined in the headers.
+#include "libromdata/common.h"
 #include "libromdata/RpWin32_sdk.h"
 #include "libromdata/Win32_ExeInit.hpp"
 
@@ -114,7 +115,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	LONG lResult;
 	unsigned int i;
 
-	((void)hPrevInstance);
+	RP_UNUSED(hPrevInstance);
 
 	// libromdata Windows executable initialization.
 	// This sets various security options.

@@ -129,7 +129,7 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 static void
 rp_thumbnail_class_finalize(RpThumbnailClass *klass)
 {
-	((void)klass);
+	RP_UNUSED(klass);
 }
 
 static void

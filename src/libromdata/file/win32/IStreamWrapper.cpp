@@ -297,7 +297,7 @@ IFACEMETHODIMP IStreamWrapper::CopyTo(IStream *pstm, ULARGE_INTEGER cb,
 IFACEMETHODIMP IStreamWrapper::Commit(DWORD grfCommitFlags)
 {
 	// NOTE: Returning S_OK, even though we're not doing anything here.
-	((void)grfCommitFlags);
+	RP_UNUSED(grfCommitFlags);
 	return S_OK;
 }
 
@@ -308,17 +308,17 @@ IFACEMETHODIMP IStreamWrapper::Revert(void)
 
 IFACEMETHODIMP IStreamWrapper::LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
 {
-	((void)libOffset);
-	((void)cb);
-	((void)dwLockType);
+	RP_UNUSED(libOffset);
+	RP_UNUSED(cb);
+	RP_UNUSED(dwLockType);
 	return E_NOTIMPL;
 }
 
 IFACEMETHODIMP IStreamWrapper::UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType)
 {
-	((void)libOffset);
-	((void)cb);
-	((void)dwLockType);
+	RP_UNUSED(libOffset);
+	RP_UNUSED(cb);
+	RP_UNUSED(dwLockType);
 	return E_NOTIMPL;
 }
 

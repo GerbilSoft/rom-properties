@@ -1347,7 +1347,7 @@ static void
 checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 				  gpointer		 user_data)
 {
-	((void)user_data);
+	RP_UNUSED(user_data);
 	RomDataView *page = static_cast<RomDataView*>(user_data);
 
 	// Check if this GtkToggleButton is present in the map.

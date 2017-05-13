@@ -70,7 +70,7 @@ int IRpFile::getc(void)
  */
 int IRpFile::ungetc(int c)
 {
-	((void)c);	// TODO: Don't ignore this?
+	RP_UNUSED(c);	// TODO: Don't ignore this?
 
 	// TODO: seek() overload that supports SEEK_CUR?
 	int64_t pos = tell();

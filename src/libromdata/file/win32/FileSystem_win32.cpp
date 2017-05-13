@@ -161,9 +161,9 @@ int64_t filesize(const rp_string &filename)
 static BOOL WINAPI initConfigDirectories(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
 {
 	// We aren't using any of the InitOnceExecuteOnce() parameters.
-	((void)once);
-	((void)param);
-	((void)context);
+	RP_UNUSED(once);
+	RP_UNUSED(param);
+	RP_UNUSED(context);
 
 	wchar_t path[MAX_PATH];
 	HRESULT hr;

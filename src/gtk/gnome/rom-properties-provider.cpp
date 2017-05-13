@@ -67,19 +67,19 @@ rom_properties_provider_register_type_ext(GTypeModule *module)
 static void
 rom_properties_provider_class_init(RomPropertiesProviderClass *klass)
 {
-	((void)klass);
+	RP_UNUSED(klass);
 }
 
 static void
 rom_properties_provider_class_finalize(RomPropertiesProviderClass *klass)
 {
-	((void)klass);
+	RP_UNUSED(klass);
 }
 
 static void
 rom_properties_provider_init(RomPropertiesProvider *sbr_provider)
 {
-	((void)sbr_provider);
+	RP_UNUSED(sbr_provider);
 }
 
 static void
@@ -91,10 +91,10 @@ rom_properties_provider_page_provider_init(NautilusPropertyPageProviderIface *if
 static GList*
 rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
+	RP_UNUSED(provider);
 	GList *pages = nullptr;
 	GList *file;
 	NautilusFileInfo *info;
-	((void)provider);
 
 	if (g_list_length(files) != 1) 
 		return nullptr;
