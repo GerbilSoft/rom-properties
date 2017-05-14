@@ -323,18 +323,28 @@ static wstring GetUserFileAssoc(const wstring &sid, const rp_char *ext)
 {
 	// Check if the user has already associated this file extension.
 	// TODO: Check all users.
-	wstring regPath;
-	regPath.reserve(128);
-	regPath  = sid;
-	regPath += L"\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\";
-	regPath += RP2W_c(ext);
-	regPath += L"\\UserChoice";
+
+	// 288-character buffer:
+	// - SID length: 184 characters
+	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
+	// - FileExts: 61 characters
+	// - Extension: 16 characters
+	// - UserChoice: 11 characters
+	// - Extra: 16 characters
+	wchar_t regPath[288];
+	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
+		L"%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice",
+		sid.c_str(), RP2W_c(ext));
+	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		// Buffer isn't large enough...
+		return wstring();
+	}
 
 	// FIXME: This will NOT update profiles that aren't loaded.
 	// Other profiles will need to be loaded manually, or those users
 	// will have to register the DLL themselves.
 	// Reference: http://windowsitpro.com/scripting/how-can-i-update-all-profiles-machine-even-if-theyre-not-currently-loaded
-	RegKey hkcu_UserChoice(HKEY_USERS, regPath.c_str(), KEY_READ, false);
+	RegKey hkcu_UserChoice(HKEY_USERS, regPath, KEY_READ, false);
 	if (!hkcu_UserChoice.isOpen()) {
 		// ERROR_FILE_NOT_FOUND is acceptable.
 		// Anything else is an error.
@@ -397,11 +407,21 @@ static LONG RegisterUserFileType(const wstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Next, check "HKU\\[sid]".
-	wstring regPath;
-	regPath.reserve(128);
-	regPath  = sid;
-	regPath += L"\\Software\\Classes";
-	RegKey hku_cr(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+
+	// 208-character buffer:
+	// - SID length: 184 characters
+	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
+	// - Software\\Classes: 16 characters
+	// - Extra: 8 characters
+	wchar_t regPath[208];
+	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
+		L"%s\\Software\\Classes", sid.c_str());
+	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		// Buffer isn't large enough...
+		return ERROR_BUFFER_OVERFLOW;
+	}
+
+	RegKey hku_cr(HKEY_USERS, regPath, KEY_WRITE, false);
 	if (hku_cr.isOpen()) {
 		LONG lResult = RegisterFileType(hku_cr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
@@ -465,11 +485,21 @@ static LONG UnregisterUserFileType(const wstring &sid, const RomDataFactory::Ext
 	}
 
 	// Next, check "HKU\\[sid]".
-	wstring regPath;
-	regPath.reserve(128);
-	regPath  = sid;
-	regPath += L"\\Software\\Classes\\";
-	RegKey hku_cr(HKEY_USERS, regPath.c_str(), KEY_WRITE, false);
+
+	// 208-character buffer:
+	// - SID length: 184 characters
+	//   - Reference: http://stackoverflow.com/questions/1140528/what-is-the-maximum-length-of-a-sid-in-sddl-format
+	// - Software\\Classes: 16 characters
+	// - Extra: 8 characters
+	wchar_t regPath[208];
+	int len = swprintf_s(regPath, ARRAY_SIZE(regPath),
+		L"%s\\Software\\Classes", sid.c_str());
+	if (len <= 0 || len >= ARRAY_SIZE(regPath)) {
+		// Buffer isn't large enough...
+		return ERROR_BUFFER_OVERFLOW;
+	}
+
+	RegKey hku_cr(HKEY_USERS, regPath, KEY_WRITE, false);
 	if (hku_cr.isOpen()) {
 		LONG lResult = UnregisterFileType(hku_cr, progID_info);
 		if (lResult != ERROR_SUCCESS) {
