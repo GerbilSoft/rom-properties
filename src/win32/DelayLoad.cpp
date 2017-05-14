@@ -33,6 +33,30 @@ extern wchar_t dll_filename[];
  */
 static HMODULE rp_loadLibrary(LPCSTR pszModuleName)
 {
+	// We only want to handle DLLs included with rom-properties.
+	// System DLLs should be handled normally.
+	// DLL whitelist: First byte is an explicit length.
+	static const char prefix_whitelist[][12] = {
+		"\x05" "zlib1",
+		"\x06" "libpng",
+		"\x04" "jpeg",
+		"\x08" "tinyxml2",
+	};
+	bool match = false;
+	for (unsigned int i = 0; i < _countof(prefix_whitelist); i++) {
+		if (!strncasecmp(pszModuleName, &prefix_whitelist[i][1],
+		     (unsigned int)prefix_whitelist[i][0]))
+		{
+			// Found a match.
+			match = true;
+			break;
+		}
+	}
+	if (!match) {
+		// Not a match. Use standard delay-load.
+		return nullptr;
+	}
+
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
 	wchar_t dll_fullpath[MAX_PATH+32];
