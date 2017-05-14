@@ -134,10 +134,14 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
-TARGET_LINK_LIBRARIES(rom-properties comctl32)
-IF(DELAY_LOAD_ENABLED)
+TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32)
+
+# Delay-load some Windows system libraries.
+# TODO: MinGW delay-load?
+IF(MSVC)
+	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
 	TARGET_LINK_LIBRARIES(rom-properties delayimp)
-ENDIF(DELAY_LOAD_ENABLED)
+ENDIF(MSVC)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)
@@ -147,8 +151,9 @@ IF(MINGW)
 ENDIF(MINGW)
 
 # Use the .def file for DLL exports.
+# Also add delay-load flags here. (TODO: MinGW?)
 IF(MSVC)
-	SET(RP_DLL_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
+	SET(RP_DLL_FLAGS "${RP_SYS_DELAY_LOAD_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
 ELSEIF(MINGW)
 	# NOTE: Enabling stdcall fixups so we can use
 	# the same .def file for Win32 and Win64,
