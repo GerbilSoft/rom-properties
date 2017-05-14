@@ -15,5 +15,7 @@ The following changes have been made to the original:
 - Added fall-through comments for gcc-7.1's -Wimplicit-fallthrough
   warning, which is enabled by default.
 
+- Applied Gentoo patch tinyxml2-4.0.1-xmltest.patch.
+
 To obtain the original tinyxml2-4.0.1, visit:
 https://github.com/leethomason/tinyxml2
