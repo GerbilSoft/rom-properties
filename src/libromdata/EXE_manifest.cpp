@@ -165,7 +165,7 @@ void EXEPrivate::addFields_PE_Manifest(void)
 		ADD_ATTR(assemblyIdentity, "language", "Language");
 		ADD_ATTR(assemblyIdentity, "version", "Version");
 		// TODO: Replace "*" with "Any"?
-		ADD_ATTR(assemblyIdentity, "processorArchitecture", "CPU Architecture");
+		ADD_ATTR(assemblyIdentity, "processorArchitecture", "CPU Arch");
 		ADD_ATTR(assemblyIdentity, "publicKeyToken", "publicKeyToken");
 	}
 
@@ -206,11 +206,11 @@ void EXEPrivate::addFields_PE_Manifest(void)
 	static const rp_char *const WindowsSettings_names[] = {
 		_RP("Auto Elevate"),
 		_RP("Disable Theming"),
-		_RP("Disable Window Filtering"),
-		_RP("High-Resolution Scrolling Aware"),
+		_RP("Disable Window Filter"),
+		_RP("High-Res Scroll"),
 		_RP("Magic Future Setting"),
 		_RP("Printer Driver Isolation"),
-		_RP("Ultra High-Resolution Scrolling Aware"),
+		_RP("Ultra High-Res Scroll"),
 	};
 
 	// Windows settings.
@@ -244,8 +244,8 @@ void EXEPrivate::addFields_PE_Manifest(void)
 			// Show the bitfield.
 			vector<rp_string> *const v_WindowsSettings_names = RomFields::strArrayToVector(
 				WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
-			fields->addField_bitfield(_RP("Windows Settings"),
-				v_WindowsSettings_names, 1, settings);
+			fields->addField_bitfield(_RP("Settings"),
+				v_WindowsSettings_names, 2, settings);
 
 			// DPI Aware.
 			// TODO: Test 10/1607 and improve descriptions.
@@ -253,7 +253,7 @@ void EXEPrivate::addFields_PE_Manifest(void)
 			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
 			ADD_TEXT(windowsSettings, "dpiAware", "DPI Aware");
 			// DPI Awareness. (Win10/1607)
-			ADD_TEXT(windowsSettings, "dpiAwareness", "DPI Awareness (10/1607)");
+			ADD_TEXT(windowsSettings, "dpiAwareness", "DPI Awareness");
 		}
 	}
 
@@ -277,7 +277,7 @@ void EXEPrivate::addFields_PE_Manifest(void)
 		_RP("Windows 8"),
 		_RP("Windows 8.1"),
 		_RP("Windows 10"),
-		_RP("Long Path Aware (Win10/1607)"),
+		_RP("Long Path Aware"),
 	};
 
 	FIRST_CHILD_ELEMENT_NS(compatibility, assembly, "compatibility", "asmv1");
@@ -323,8 +323,8 @@ void EXEPrivate::addFields_PE_Manifest(void)
 			// Show the bitfield.
 			vector<rp_string> *const v_OS_Compatibility_names = RomFields::strArrayToVector(
 				OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
-			fields->addField_bitfield(_RP("OS Compatibility"),
-				v_OS_Compatibility_names, 1, compat);
+			fields->addField_bitfield(_RP("Compatibility"),
+				v_OS_Compatibility_names, 2, compat);
 		}
 	}
 }
