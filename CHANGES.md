@@ -50,6 +50,11 @@
     64-bit Linux systems that used the older multilib path, which means
     the Ubuntu GNOME packages did not work.
 
+* Other changes:
+  * (Windows) The 32-bit EXEs have been moved out of the i386/ subdirectory
+    and into the base directory. The 64-bit EXEs are still in the amd64/
+    subdirectory.
+
 ## v0.9-beta2 (released 2017/02/07)
 
 * New features:
