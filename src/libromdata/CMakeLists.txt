@@ -217,6 +217,9 @@ ENDIF(JPEG_FOUND)
 
 IF(ENABLE_XML)
 	SET(libromdata_SRCS ${libromdata_SRCS} EXE_manifest.cpp)
+	IF(WIN32 AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
+		SET(libromdata_SRCS ${libromdata_SRCS} EXE_delayload.cpp)
+	ENDIF(WIN32 AND (NOT USE_INTERNAL_XML OR USE_INTERNAL_XML_DLL))
 ENDIF(ENABLE_XML)
 
 IF(WIN32)
@@ -233,6 +236,7 @@ IF(WIN32)
 	SET(libromdata_OS_H
 		RpWin32.hpp
 		RpWin32_sdk.h
+		RpWin32_delayload.h
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
