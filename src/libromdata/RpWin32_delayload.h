@@ -55,10 +55,14 @@ static LONG WINAPI DelayLoad_filter_##fn(DWORD exceptioncode) { \
 #define DELAYLOAD_TEST_FUNCTION_IMPL0(fn) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \
 static int DelayLoad_test_##fn(void) { \
-	__try { \
-		(void)fn(); \
-	} __except (DelayLoad_filter_##fn(GetExceptionCode())) { \
-		return -ENOTSUP; \
+	static int success = 0; \
+	if (!success) { \
+		__try { \
+			(void)fn(); \
+		} __except (DelayLoad_filter_##fn(GetExceptionCode())) { \
+			return -ENOTSUP; \
+		} \
+		success = 1; \
 	} \
 	return 0; \
 }
@@ -72,10 +76,14 @@ static int DelayLoad_test_##fn(void) { \
 #define DELAYLOAD_TEST_FUNCTION_IMPL2(fn, arg0, arg1) \
 DELAYLOAD_FILTER_FUNCTION_IMPL(fn) \
 static int DelayLoad_test_##fn(void) { \
-	__try { \
-		(void)fn(arg0, arg1); \
-	} __except (DelayLoad_filter_##fn(GetExceptionCode())) { \
-		return -ENOTSUP; \
+	static int success = 0; \
+	if (!success) { \
+		__try { \
+			(void)fn(arg0, arg1); \
+		} __except (DelayLoad_filter_##fn(GetExceptionCode())) { \
+			return -ENOTSUP; \
+		} \
+		success = 1; \
 	} \
 	return 0; \
 }

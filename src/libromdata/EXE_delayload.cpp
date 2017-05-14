@@ -55,14 +55,18 @@ static LONG WINAPI DelayLoad_filter_TinyXML2(DWORD exceptioncode)
  */
 int DelayLoad_test_TinyXML2(void)
 {
+	static int success = 0;
 	volatile char tmp[sizeof(XMLDocument)] = { 0 };
-	__try {
-		// XMLDocument::WhitespaceMode() is non-virtual and
-		// returns a single value from within the struct.
-		// It should work with our pseudo-struct.
-		exe_dl_ws = ((const XMLDocument*)&tmp[0])->WhitespaceMode();
-	} __except (DelayLoad_filter_TinyXML2(GetExceptionCode())) {
-		return -ENOTSUP;
+	if (!success) {
+		__try {
+			// XMLDocument::WhitespaceMode() is non-virtual and
+			// returns a single value from within the struct.
+			// It should work with our pseudo-struct.
+			exe_dl_ws = ((const XMLDocument*)&tmp[0])->WhitespaceMode();
+		} __except (DelayLoad_filter_TinyXML2(GetExceptionCode())) {
+			return -ENOTSUP;
+		}
+		success = 1;
 	}
 	return 0;
 }
