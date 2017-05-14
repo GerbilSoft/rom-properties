@@ -61,6 +61,42 @@ IF(MSVC)
 	SET(rom-properties-win32_PCH_H stdafx.h)
 ENDIF(MSVC)
 
+# Delay-load ZLIB and LIBPNG.
+# NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
+# have different names in Debug and Release builds.
+# TODO: MinGW-w64 equivalent.
+IF(MSVC)
+	UNSET(DELAY_LOAD_ENABLED)
+	IF(USE_INTERNAL_ZLIB_DLL)
+		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:zlib1d.dll")
+		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:zlib1.dll")
+		SET(DELAY_LOAD_ENABLED 1)
+	ENDIF(USE_INTERNAL_ZLIB_DLL)
+	IF(USE_INTERNAL_PNG_DLL)
+		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:libpng16d.dll")
+		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:libpng16.dll")
+		SET(DELAY_LOAD_ENABLED 1)
+	ENDIF(USE_INTERNAL_PNG_DLL)
+	IF(USE_INTERNAL_JPEG_DLL)
+		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:jpeg62d.dll")
+		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:jpeg62.dll")
+		SET(DELAY_LOAD_ENABLED 1)
+	ENDIF(USE_INTERNAL_JPEG_DLL)
+	IF(USE_INTERNAL_XML_DLL)
+		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:tinyxml2d.dll")
+		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:tinyxml2.dll")
+		SET(DELAY_LOAD_ENABLED 1)
+	ENDIF(USE_INTERNAL_XML_DLL)
+
+	IF(DELAY_LOAD_ENABLED)
+		# We need a custom delay-load hook in order to
+		# load the DLLs from the correct directory.
+		# NOTE: Using C++ instead of C in order to avoid
+		# compiling the PCH twice.
+		SET(rom-properties-win32-DELAY_LOAD_SRC DelayLoad.cpp)
+	ENDIF(DELAY_LOAD_ENABLED)
+ENDIF(MSVC)
+
 #####################
 # Build the plugin. #
 #####################
@@ -74,6 +110,7 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_H}
 	${rom-properties-win32_SRCS}
 	${rom-properties-win32_H}
+	${rom-properties-win32-DELAY_LOAD_SRC}
 	)
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)
@@ -98,6 +135,9 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32)
+IF(DELAY_LOAD_ENABLED)
+	TARGET_LINK_LIBRARIES(rom-properties delayimp)
+ENDIF(DELAY_LOAD_ENABLED)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)
@@ -127,22 +167,6 @@ IF(RP_DLL_FLAGS)
 	UNSET(RP_LINK_FLAGS)
 	UNSET(RP_DLL_FLAGS)
 ENDIF(RP_DLL_FLAGS)
-
-# Delay-load ZLIB and LIBPNG.
-# NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
-# have different names in Debug and Release builds.
-# FIXME: The rom-properties DLL directory is *not* in the
-# DLL search path, so these delay loads fail.
-# TODO: SetDllDirectory() temporarily for XP, and
-# AddDllDirectory() on Windows Vista+?
-#IF(USE_INTERNAL_ZLIB_DLL)
-#	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1d.dll")
-#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1.dll")
-#ENDIF(USE_INTERNAL_ZLIB_DLL)
-#IF(USE_INTERNAL_PNG_DLL)
-	#SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16d.dll")
-#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16.dll")
-#ENDIF(USE_INTERNAL_PNG_DLL)
 
 ### rp-config stub.
 ADD_SUBDIRECTORY(config)
