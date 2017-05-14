@@ -57,8 +57,8 @@ namespace LibRomData {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-// TODO: jround_up() uses division. Find a better function?
-DELAYLOAD_TEST_FUNCTION_IMPL2(jround_up, 0, 1);
+// TODO: jdiv_round_up() uses division. Find a better function?
+DELAYLOAD_TEST_FUNCTION_IMPL2(jdiv_round_up, 0, 1);
 #endif /* _MSC_VER */
 
 class RpJpegPrivate
@@ -292,7 +292,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 #if defined(_MSC_VER) && defined(JPEG_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_jround_up() != 0) {
+	if (DelayLoad_test_jdiv_round_up() != 0) {
 		// Delay load failed.
 		return nullptr;
 	}
