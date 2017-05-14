@@ -45,16 +45,32 @@ namespace LibRomData {
  */
 void EXEPrivate::addFields_PE_Manifest(void)
 {
+	// Manifest resource IDs
+	struct ManifestResourceID_t {
+		uint16_t id;
+		const rp_char *name;
+	};
+
+	static const ManifestResourceID_t resource_ids[] = {
+		{CREATEPROCESS_MANIFEST_RESOURCE_ID, _RP("CreateProcess")},
+		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, _RP("Isolation-Aware")},
+		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, _RP("Isolation-Aware, No Static Import")},
+
+		// Windows XP's explorer.exe uses resource ID 123.
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
+		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, _RP("Visual Style")},
+	};
+
 	// Search for a PE manifest resource.
 	unique_ptr<IRpFile> f_manifest = nullptr;
-	unsigned int id;
-	for (id = MANIFEST_ID_MIN; id < MANIFEST_ID_MAX; id++) {
-		f_manifest.reset(rsrcReader->open(RT_MANIFEST, id, -1));
+	unsigned int id_idx;
+	for (id_idx = 0; id_idx < ARRAY_SIZE(resource_ids); id_idx++) {
+		f_manifest.reset(rsrcReader->open(RT_MANIFEST, resource_ids[id_idx].id, -1));
 		if (f_manifest != nullptr)
 			break;
 	}
 
-	if (!f_manifest) {
+	if (!f_manifest || id_idx >= ARRAY_SIZE(resource_ids)) {
 		// No manifest resource.
 		return;
 	}
@@ -112,16 +128,7 @@ void EXEPrivate::addFields_PE_Manifest(void)
 	fields->addTab(_RP("Manifest"));
 
 	// Manifest ID.
-	static const rp_char *const manifest_id_name[] = {
-		_RP("CreateProcess"),
-		_RP("Isolation-Aware"),
-		_RP("Isolation-Aware, No Static Import"),
-	};
-	if (id >= 1 && id <= 3) {
-		fields->addField_string(_RP("Manifest ID"), manifest_id_name[id-1]);
-	} else {
-		fields->addField_string_numeric(_RP("Manifest ID"), id);
-	}
+	fields->addField_string(_RP("Manifest ID"), resource_ids[id_idx].name);
 
 	#define FIRST_CHILD_ELEMENT_NS(var, parent_elem, child_elem_name, namespace) \
 		const XMLElement *var = parent_elem->FirstChildElement(child_elem_name); \

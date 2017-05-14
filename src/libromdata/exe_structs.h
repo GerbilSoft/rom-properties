@@ -518,8 +518,9 @@ typedef enum {
 	ISOLATIONAWARE_MANIFEST_RESOURCE_ID = 2,
 	ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = 3,
 
-	MANIFEST_ID_MIN = 1,
-	MANIFEST_ID_MAX = 3,
+	// Windows XP's explorer.exe uses resource ID 123.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
+	XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID = 123,
 } PE_ManifestID;
 
 /** New Executable (Win16) structs. **/
