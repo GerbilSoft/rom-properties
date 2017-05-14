@@ -1,0 +1,19 @@
+This copy of tinyxml2-4.0.1 is a modified version of the original.
+
+The following changes have been made to the original:
+
+- Non-CMake build infrastructure has been removed.
+
+- The original CMakeLists.txt has been removed and replaced with a
+  minimal version that only supports static linking.
+
+- Test cases are no longer built and run.
+
+- cmake_minimum_required() is disabled, since it interfered with
+  policies set by the main build infrastructure.
+
+- Added fall-through comments for gcc-7.1's -Wimplicit-fallthrough
+  warning, which is enabled by default.
+
+To obtain the original tinyxml2-4.0.1, visit:
+https://github.com/leethomason/tinyxml2

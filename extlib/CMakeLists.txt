@@ -153,6 +153,16 @@ SET(BUILD_SHARED_LIBS OFF)
 ADD_SUBDIRECTORY(inih)
 SET_EXTLIB_PROPERTIES(inih)
 
+# tinyxml2
+IF(USE_INTERNAL_XML)
+	# TODO: DLL build on Windows.
+	SET(SKIP_INSTALL_LIBRARIES ON)
+	SET(SKIP_INSTALL_ALL ON)
+	SET(BUILD_SHARED_LIBS OFF)
+	ADD_SUBDIRECTORY(tinyxml2)
+	SET_EXTLIB_PROPERTIES(tinyxml2)
+ENDIF(USE_INTERNAL_XML)
+
 # Google Test
 IF(BUILD_TESTING)
 	# Reference: http://stackoverflow.com/questions/12540970/how-to-make-gtest-build-mdd-instead-of-mtd-by-default-using-cmake

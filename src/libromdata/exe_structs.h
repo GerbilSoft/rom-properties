@@ -512,6 +512,17 @@ typedef struct PACKED _VS_FIXEDFILEINFO {
 #pragma pack()
 ASSERT_STRUCT(VS_FIXEDFILEINFO, 13*4);
 
+// Manifest IDs.
+typedef enum {
+	CREATEPROCESS_MANIFEST_RESOURCE_ID = 1,
+	ISOLATIONAWARE_MANIFEST_RESOURCE_ID = 2,
+	ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = 3,
+
+	// Windows XP's explorer.exe uses resource ID 123.
+	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
+	XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID = 123,
+} PE_ManifestID;
+
 /** New Executable (Win16) structs. **/
 // References:
 // - http://wiki.osdev.org/NE

@@ -11,7 +11,7 @@ IF(NOT USE_INTERNAL_PNG)
 	ELSE()
 		# System libpng was not found.
 		MESSAGE(STATUS "Using the internal copy of libpng since a system version was not found.")
-		SET(USE_INTERNAL_PNG ON CACHE STRING "Use the internal copy of libpng.")
+		SET(USE_INTERNAL_PNG ON CACHE STRING "Use the internal copy of libpng." FORCE)
 	ENDIF()
 ELSE()
 	MESSAGE(STATUS "Using the internal copy of libpng.")
@@ -24,12 +24,12 @@ IF(USE_INTERNAL_PNG)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_PNG_DLL ON)
-		SET(PNG_LIBRARY png)
+		SET(PNG_LIBRARY png CACHE "PNG library." INTERNAL FORCE)
 		UNSET(PNG_DEFINITIONS)
 	ELSE()
 		# Using static linking on other systems.
 		SET(USE_INTERNAL_PNG_DLL OFF)
-		SET(PNG_LIBRARY png_static)
+		SET(PNG_LIBRARY png_static CACHE "PNG library." INTERNAL FORCE)
 		SET(PNG_DEFINITIONS -DPNG_STATIC)
 	ENDIF()
 	# FIXME: When was it changed from DIR to DIRS?

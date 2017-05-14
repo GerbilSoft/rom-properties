@@ -17,15 +17,16 @@ addons:
     packages:
       - libcurl4-openssl-dev
       - libpng-dev
+      - libjpeg-dev
+      - nettle-dev
+      - libtinyxml2-dev
       - libqt4-dev
       - kdelibs5-dev
-      - nettle-dev
       - libglib2.0-dev
       - libgtk2.0-dev
       - libthunarx-2-dev
       - libgtk-3-dev
       - libnautilus-extension-dev
-      - libjpeg-dev
 
 # Run the build script.
 script: ./travis.sh
