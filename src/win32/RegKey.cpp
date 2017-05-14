@@ -167,7 +167,7 @@ wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 		&dwType,	// lpType
 		nullptr,	// lpData
 		&cbData);	// lpcbData
-	if (lResult != ERROR_SUCCESS || cbData == 0 ||
+	if (lResult != ERROR_SUCCESS || cbData == 0 || (cbData % 2 != 0) ||
 	    (dwType != REG_SZ && dwType != REG_EXPAND_SZ))
 	{
 		// Either an error occurred, or this isn't REG_SZ or REG_EXPAND_SZ.
@@ -205,7 +205,6 @@ wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 	}
 
 	// Convert cbData to cchData.
-	assert(cbData % 2 == 0);
 	DWORD cchData = cbData / sizeof(wbuf[0]);
 
 	// Check for NULL terminators.
