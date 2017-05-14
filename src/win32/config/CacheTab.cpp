@@ -148,7 +148,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		// NOTE: PBM_SETSTATE is Vista+, which is fine here because
 		// this is only run on Vista+.
 		DWORD dwErr = GetLastError();
-		swprintf(wbuf, _countof(wbuf), L"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)", dwErr);
+		swprintf_s(wbuf, ARRAY_SIZE(wbuf), L"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)", dwErr);
 		SetWindowText(hStatusLabel, wbuf);
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
@@ -180,7 +180,7 @@ int CacheTabPrivate::clearCacheVista(void)
 	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
 	if (!hKey.isOpen()) {
 		// Failed to open the registry key.
-		swprintf(wbuf, _countof(wbuf), L"ERROR: Thumbnail Cache cleaner not found. (res == %ld)", hKey.lOpenRes());
+		swprintf_s(wbuf, ARRAY_SIZE(wbuf), L"ERROR: Thumbnail Cache cleaner not found. (res == %ld)", hKey.lOpenRes());
 		SetWindowText(hStatusLabel, wbuf);
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 3;
@@ -211,7 +211,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&pCleaner));
 	if (FAILED(hr)) {
 		// Failed...
-		swprintf(wbuf, _countof(wbuf), L"ERROR: CoCreateInstance() failed. (hr == 0x%08X)", hr);
+		swprintf_s(wbuf, ARRAY_SIZE(wbuf), L"ERROR: CoCreateInstance() failed. (hr == 0x%08X)", hr);
 		SetWindowText(hStatusLabel, wbuf);
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
@@ -258,7 +258,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		} else if (hr != S_OK) {
 			// Some error occurred.
 			// TODO: Continue with other drives?
-			swprintf(wbuf, _countof(wbuf), L"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)", szDrivePath[0], hr);
+			swprintf_s(wbuf, ARRAY_SIZE(wbuf), L"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)", szDrivePath[0], hr);
 			SetWindowText(hStatusLabel, wbuf);
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -270,7 +270,7 @@ int CacheTabPrivate::clearCacheVista(void)
 		if (FAILED(hr)) {
 			// Cleanup failed. (TODO: Figure out why!)
 			// TODO: Indicate the drive letter and error code.
-			swprintf(wbuf, _countof(wbuf), L"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)", szDrivePath[0], hr);
+			swprintf_s(wbuf, ARRAY_SIZE(wbuf), L"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)", szDrivePath[0], hr);
 			SetWindowText(hStatusLabel, wbuf);
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
