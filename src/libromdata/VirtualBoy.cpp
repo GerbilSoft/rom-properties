@@ -370,7 +370,7 @@ int VirtualBoy::loadFieldData(void)
 
 	// Game ID and publisher.
 	string id6(romHeader->gameid, sizeof(romHeader->gameid));
-	id6 += string(romHeader->publisher, sizeof(romHeader->publisher));
+	id6.append(romHeader->publisher, sizeof(romHeader->publisher));
 	d->fields->addField_string(_RP("Game ID"),
 		latin1_to_rp_string(id6.data(), (int)id6.size()));
 

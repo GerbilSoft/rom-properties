@@ -1629,22 +1629,22 @@ int GameCube::loadFieldData(void)
 			// Game name.
 			if (comment->gamename_full[0] != 0) {
 				field_len = (int)strnlen(comment->gamename_full, sizeof(comment->gamename_full));
-				comment_data += string(comment->gamename_full, field_len);
+				comment_data.append(comment->gamename_full, field_len);
 				comment_data += '\n';
 			} else if (comment->gamename[0] != 0) {
 				field_len = (int)strnlen(comment->gamename, sizeof(comment->gamename));
-				comment_data += string(comment->gamename, field_len);
+				comment_data.append(comment->gamename, field_len);
 				comment_data += '\n';
 			}
 
 			// Company.
 			if (comment->company_full[0] != 0) {
 				field_len = (int)strnlen(comment->company_full, sizeof(comment->company_full));
-				comment_data += string(comment->company_full, field_len);
+				comment_data.append(comment->company_full, field_len);
 				comment_data += '\n';
 			} else if (comment->company[0] != 0) {
 				field_len = (int)strnlen(comment->company, sizeof(comment->company));
-				comment_data += string(comment->company, field_len);
+				comment_data.append(comment->company, field_len);
 				comment_data += '\n';
 			}
 
@@ -1656,7 +1656,7 @@ int GameCube::loadFieldData(void)
 				}
 
 				field_len = (int)strnlen(comment->gamedesc, sizeof(comment->gamedesc));
-				comment_data += string(comment->gamedesc, field_len);
+				comment_data.append(comment->gamedesc, field_len);
 			}
 
 			// Remove trailing newlines.
