@@ -273,6 +273,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	if (!file)
 		return nullptr;
 
+	// Rewind the file.
 	file->rewind();
 
 	RpJpegPrivate::my_error_mgr jerr;
@@ -523,7 +524,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 		return nullptr;
 
 	// FIXME: Add a JPEG equivalent of pngcheck().
-	file->rewind();
 	return loadUnchecked(file);
 }
 

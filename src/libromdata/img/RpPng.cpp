@@ -690,6 +690,7 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	if (!file)
 		return nullptr;
 
+	// Rewind the file.
 	file->rewind();
 
 	png_structp png_ptr;
@@ -740,7 +741,6 @@ rp_image *RpPng::load(IRpFile *file)
 	}
 
 	// PNG image has been validated.
-	file->rewind();
 	return loadUnchecked(file);
 }
 
