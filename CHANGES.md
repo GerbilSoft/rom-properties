@@ -35,7 +35,9 @@
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
-    executable files are supported.
+    executable files are supported. Includes parsing of version and
+    manifest resources. Icon thumbnailing on non-Windows systems will
+    be added in a future release.
   * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
     downloads for disc, cover, 3D cover, and full cover scans.
   * Nintendo 3DS: SMDH, 3DSX, CCI (\*.3ds), CIA, and NCCH files are supported.
