@@ -46,8 +46,6 @@ class RomDataPrivate
 		 *
 		 * @param q RomData class.
 		 * @param file ROM file.
-		 * @param fields Array of ROM Field descriptions.
-		 * @param count Number of ROM Field descriptions.
 		 */
 		RomDataPrivate(RomData *q, IRpFile *file);
 
@@ -75,6 +73,8 @@ class RomDataPrivate
 		IRpFile *file;			// Open file.
 		RomFields *const fields;	// ROM fields.
 
+		// Class name for user configuration. (ASCII) (default is nullptr)
+		const char *className;
 		// File type. (default is FTYPE_ROM_IMAGE)
 		RomData::FileType fileType;
 

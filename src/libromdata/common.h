@@ -48,6 +48,9 @@
 #define ASSERT_STRUCT(st,sz) enum { st##_SIZE = (sz), }; \
 	static_assert(sizeof(st)==(sz),#st " is not " #sz " bytes.")
 
+// RP equivalent of Q_UNUSED().
+#define RP_UNUSED(x) ((void)x)
+
 #ifdef __cplusplus
 // RP equivalents of Q_D() and Q_Q().
 #define RP_D(klass) klass##Private *const d = static_cast<klass##Private*>(d_ptr)

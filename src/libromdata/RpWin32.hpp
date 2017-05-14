@@ -27,6 +27,7 @@
 #endif
 
 #include "RpWin32_sdk.h"
+#include "common.h"
 
 namespace LibRomData {
 
@@ -163,7 +164,7 @@ static inline const rp_char *W2RP_c(const wchar_t *wcs)
  */
 static inline const rp_char *W2RP_cl(const wchar_t *wcs, int len)
 {
-	((void)len);
+	RP_UNUSED(len);
 	return reinterpret_cast<const rp_char*>(wcs);
 }
 

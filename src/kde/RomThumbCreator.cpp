@@ -105,7 +105,6 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 
 		/**
 		 * Free an ImgClass object.
-		 * This may be no-op for e.g. QImage.
 		 * @param imgClass ImgClass object.
 		 */
 		virtual void freeImgClass(QImage &imgClass) const override final;
@@ -158,7 +157,6 @@ QImage RomThumbCreatorPrivate::getNullImgClass(void) const
 
 /**
  * Free an ImgClass object.
- * This may be no-op for e.g. QImage.
  * @param imgClass ImgClass object.
  */
 void RomThumbCreatorPrivate::freeImgClass(QImage &imgClass) const

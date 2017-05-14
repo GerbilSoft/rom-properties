@@ -3,3 +3,5 @@ EXPORTS
 	DllGetClassObject	PRIVATE
 	DllRegisterServer	PRIVATE
 	DllUnregisterServer	PRIVATE
+	DllGetVersion		PRIVATE
+	rp_show_config_dialog	PRIVATE

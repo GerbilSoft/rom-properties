@@ -219,7 +219,7 @@ void RpJpegPrivate::skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 void RpJpegPrivate::term_source(j_decompress_ptr cinfo)
 {
 	// Nothing to do here...
-	((void)cinfo);
+	RP_UNUSED(cinfo);
 }
 
 /**

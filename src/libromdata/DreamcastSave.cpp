@@ -824,6 +824,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);
+	d->className = "DreamcastSave";
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {
@@ -975,6 +976,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);
+	d->className = "DreamcastSave";
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {

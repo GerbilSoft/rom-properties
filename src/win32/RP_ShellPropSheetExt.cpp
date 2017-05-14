@@ -28,6 +28,7 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
 #include "AutoGetDC.hpp"
+#include "WinUI.hpp"
 #include "resource.h"
 
 // libromdata
@@ -74,11 +75,6 @@ namespace Gdiplus {
 const CLSID CLSID_RP_ShellPropSheetExt =
 	{0x2443C158, 0xDF7C, 0x4352, {0xB4, 0x35, 0xBC, 0x9F, 0x88, 0x5F, 0xFD, 0x52}};
 
-// IDC_STATIC might not be defined.
-#ifndef IDC_STATIC
-#define IDC_STATIC (-1)
-#endif
-
 // Control base IDs.
 #define IDC_STATIC_BANNER		0x0100
 #define IDC_STATIC_ICON			0x0101
@@ -92,10 +88,6 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 
 // Bitfield is last due to multiple controls per field.
 #define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
-
-// Property for "external pointer".
-// This links the property sheet to the COM object.
-#define EXT_POINTER_PROP L"RP_ShellPropSheetExt"
 
 /** RP_ShellPropSheetExt_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
@@ -113,6 +105,11 @@ class RP_ShellPropSheetExt_Private
 		RP_ShellPropSheetExt *const q_ptr;
 
 	public:
+		// Property for "D pointer".
+		// This points to the ConfigDialogPrivate object.
+		static const wchar_t D_PTR_PROP[];
+
+	public:
 		// ROM data.
 		LibRomData::RomData *romData;
 
@@ -127,7 +124,6 @@ class RP_ShellPropSheetExt_Private
 
 		// Monospaced font details.
 		LOGFONT lfFontMono;
-		unordered_set<wstring> monospaced_fonts;
 		vector<HWND> hwndMonoControls;			// Controls using the monospaced font.
 		bool bPrevIsClearType;	// Previous ClearType setting.
 
@@ -181,38 +177,6 @@ class RP_ShellPropSheetExt_Private
 		 * Stop the animation timer.
 		 */
 		void stopAnimTimer(void);
-
-	private:
-		/**
-		 * Convert UNIX line endings to DOS line endings.
-		 * TODO: Move to RpWin32?
-		 * @param wstr_unix	[in] wstring with UNIX line endings.
-		 * @param lf_count	[out,opt] Number of LF characters found.
-		 * @return wstring with DOS line endings.
-		 */
-		static inline wstring unix2dos(const wstring &wstr_unix, int *lf_count);
-
-		/**
-		 * Measure text size using GDI.
-		 * @param hWnd		[in] hWnd.
-		 * @param hFont		[in] Font.
-		 * @param str		[in] String.
-		 * @param lpSize	[out] Size.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
-
-		/**
-		 * Measure text size using GDI.
-		 * This version removes HTML-style tags before
-		 * calling the regular measureTextSize() function.
-		 * @param hWnd		[in] hWnd.
-		 * @param hFont		[in] Font.
-		 * @param str		[in] String.
-		 * @param lpSize	[out] Size.
-		 * @return 0 on success; non-zero on error.
-		 */
-		static int measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize);
 
 	public:
 		/**
@@ -312,17 +276,6 @@ class RP_ShellPropSheetExt_Private
 		 */
 		void initBoldFont(HFONT hFont);
 
-		/**
-		 * Monospaced font enumeration procedure.
-		 * @param lpelfe Enumerated font information.
-		 * @param lpntme Font metrics.
-		 * @param FontType Font type.
-		 * @param lParam Pointer to RP_ShellPropSheetExt_Private.
-		 */
-		static int CALLBACK MonospacedFontEnumProc(
-			const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
-			DWORD FontType, LPARAM lParam);
-
 	public:
 		/**
 		 * Initialize the monospaced font.
@@ -339,6 +292,10 @@ class RP_ShellPropSheetExt_Private
 };
 
 /** RP_ShellPropSheetExt_Private **/
+
+// Property for "D pointer".
+// This points to the ConfigDialogPrivate object.
+const wchar_t RP_ShellPropSheetExt_Private::D_PTR_PROP[] = L"RP_ShellPropSheetExt_Private";
 
 RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q)
 	: q_ptr(q)
@@ -441,125 +398,6 @@ void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
 		KillTimer(hDlgSheet, animTimerID);
 		animTimerID = 0;
 	}
-}
-
-/**
- * Convert UNIX line endings to DOS line endings.
- * TODO: Move to RpWin32?
- * @param wstr_unix	[in] wstring with UNIX line endings.
- * @param lf_count	[out,opt] Number of LF characters found.
- * @return wstring with DOS line endings.
- */
-inline wstring RP_ShellPropSheetExt_Private::unix2dos(const wstring &wstr_unix, int *lf_count)
-{
-	// TODO: Optimize this!
-	wstring wstr_dos;
-	wstr_dos.reserve(wstr_unix.size());
-	int lf = 0;
-	for (size_t i = 0; i < wstr_unix.size(); i++) {
-		if (wstr_unix[i] == L'\n') {
-			wstr_dos += L"\r\n";
-			lf++;
-		} else {
-			wstr_dos += wstr_unix[i];
-		}
-	}
-	if (lf_count) {
-		*lf_count = lf;
-	}
-	return wstr_dos;
-}
-
-/**
- * Measure text size using GDI.
- * @param hWnd		[in] hWnd.
- * @param hFont		[in] Font.
- * @param wstr		[in] String.
- * @param lpSize	[out] Size.
- * @return 0 on success; non-zero on errro.
- */
-int RP_ShellPropSheetExt_Private::measureTextSize(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
-{
-	SIZE size_total = {0, 0};
-	AutoGetDC hDC(hWnd, hFont);
-
-	// Handle newlines.
-	const wchar_t *data = wstr.data();
-	int nl_pos_prev = -1;
-	size_t nl_pos = 0;	// Assuming no NL at the start.
-	do {
-		nl_pos = wstr.find(L'\n', nl_pos + 1);
-		const int start = nl_pos_prev + 1;
-		int len;
-		if (nl_pos != wstring::npos) {
-			len = (int)(nl_pos - start);
-		} else {
-			len = (int)(wstr.size() - start);
-		}
-
-		// Check if a '\r' is present before the '\n'.
-		if (data[nl_pos - 1] == L'\r') {
-			// Ignore the '\r'.
-			len--;
-		}
-
-		SIZE size_cur;
-		BOOL bRet = GetTextExtentPoint32(hDC, &data[start], len, &size_cur);
-		if (!bRet) {
-			// Something failed...
-			return -1;
-		}
-
-		if (size_cur.cx > size_total.cx) {
-			size_total.cx = size_cur.cx;
-		}
-		size_total.cy += size_cur.cy;
-
-		// Next newline.
-		nl_pos_prev = (int)nl_pos;
-	} while (nl_pos != wstring::npos);
-
-	*lpSize = size_total;
-	return 0;
-}
-
-/**
- * Measure text size using GDI.
- * This version removes HTML-style tags before
- * calling the regular measureTextSize() function.
- * @param hWnd		[in] hWnd.
- * @param hFont		[in] Font.
- * @param wstr		[in] String.
- * @param lpSize	[out] Size.
- * @return 0 on success; non-zero on error.
- */
-int RP_ShellPropSheetExt_Private::measureTextSizeLink(HWND hWnd, HFONT hFont, const wstring &wstr, LPSIZE lpSize)
-{
-	// Remove HTML-style tags.
-	// NOTE: This is a very simplistic version.
-	wstring nwstr;
-	nwstr.reserve(wstr.size());
-
-	int lbrackets = 0;
-	for (int i = 0; i < (int)wstr.size(); i++) {
-		if (wstr[i] == L'<') {
-			// Starting bracket.
-			lbrackets++;
-			continue;
-		} else if (wstr[i] == L'>') {
-			// Ending bracket.
-			assert(lbrackets > 0);
-			lbrackets--;
-			continue;
-		}
-
-		if (lbrackets == 0) {
-			// Not currently in a tag.
-			nwstr += wstr[i];
-		}
-	}
-
-	return measureTextSize(hWnd, hFont, nwstr, lpSize);
 }
 
 /**
@@ -728,7 +566,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
+		int ret = WinUI::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -861,11 +699,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 
 		// TODO: NULL string == empty string?
 		if (field->data.str) {
-			wstr = unix2dos(RP2W_s(*(field->data.str)), &lf_count);
+			wstr = WinUI::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
-		wstr = unix2dos(wstring(wcs), &lf_count);
+		wstr = WinUI::unix2dos(wstring(wcs), &lf_count);
 	}
 
 	// Field height.
@@ -948,7 +786,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		measureTextSizeLink(hWndTab, hFont, wstr, &szText);
+		WinUI::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
@@ -992,13 +830,14 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		if (dwStyle & ES_MULTILINE) {
 			// Store the object pointer so we can reference it later.
-			SetProp(hDlgItem, EXT_POINTER_PROP, static_cast<HANDLE>(q_ptr));
+			SetProp(hDlgItem, D_PTR_PROP, static_cast<HANDLE>(this));
 
 			// Subclass the control.
 			// TODO: Error handling?
 			SetWindowSubclass(hDlgItem,
 				RP_ShellPropSheetExt::MultilineEditProc,
-				(UINT_PTR)cId, (DWORD_PTR)q_ptr);
+				reinterpret_cast<UINT_PTR>(cId),
+				reinterpret_cast<DWORD_PTR>(this));
 		}
 	}
 
@@ -1324,8 +1163,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 		// Adjust the buffer position.
 		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
+		start_pos += (ret-1);
+		cchBuf -= (ret-1);
 	}
 
 	if (field->desc.flags & RomFields::RFT_DATETIME_HAS_TIME) {
@@ -1348,8 +1187,8 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 		// Adjust the buffer position.
 		// NOTE: ret includes the NULL terminator.
-		start_pos += ret-1;
-		cchBuf -= ret-1;
+		start_pos += (ret-1);
+		cchBuf -= (ret-1);
 	}
 
 	if (start_pos == 0) {
@@ -1430,33 +1269,6 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Monospaced font enumeration procedure.
- * @param lpelfe Enumerated font information.
- * @param lpntme Font metrics.
- * @param FontType Font type.
- * @param lParam Pointer to RP_ShellPropSheetExt_Private.
- */
-int CALLBACK RP_ShellPropSheetExt_Private::MonospacedFontEnumProc(
-	const LOGFONT *lpelfe, const TEXTMETRIC *lpntme,
-	DWORD FontType, LPARAM lParam)
-{
-	RP_ShellPropSheetExt_Private *d =
-		reinterpret_cast<RP_ShellPropSheetExt_Private*>(lParam);
-
-	// Check the font attributes:
-	// - Must be monospaced.
-	// - Must be horizontally-oriented.
-	if ((lpelfe->lfPitchAndFamily & FIXED_PITCH) &&
-	     lpelfe->lfFaceName[0] != '@')
-	{
-		d->monospaced_fonts.insert(lpelfe->lfFaceName);
-	}
-
-	// Continue enumeration.
-	return 1;
-}
-
-/**
  * Initialize the bold font.
  * @param hFont Base font.
  */
@@ -1513,57 +1325,12 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 			return;
 		}
 
-		// Enumerate all monospaced fonts.
-		// Reference: http://www.catch22.net/tuts/fixed-width-font-enumeration
-		monospaced_fonts.clear();
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-		monospaced_fonts.reserve(64);
-#endif
-		LOGFONT lfEnumFonts;
-		memset(&lfEnumFonts, 0, sizeof(lfEnumFonts));
-		lfEnumFonts.lfCharSet = DEFAULT_CHARSET;
-		lfEnumFonts.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
-		HDC hdc = GetDC(nullptr);
-		EnumFontFamiliesEx(hdc, &lfEnumFonts, MonospacedFontEnumProc,
-			reinterpret_cast<LPARAM>(this), 0);
-		ReleaseDC(nullptr, hdc);
-
-		// Fonts to try.
-		static const wchar_t *const fonts[] = {
-			L"DejaVu Sans Mono",
-			L"Consolas",
-			L"Lucida Console",
-			L"Fixedsys Excelsior 3.01",
-			L"Fixedsys Excelsior 3.00",
-			L"Fixedsys Excelsior 3.0",
-			L"Fixedsys Excelsior 2.00",
-			L"Fixedsys Excelsior 2.0",
-			L"Fixedsys Excelsior 1.00",
-			L"Fixedsys Excelsior 1.0",
-			L"Fixedsys",
-			L"Courier New",
-		};
-
-		const wchar_t *font = nullptr;
-
-		for (int i = 0; i < ARRAY_SIZE(fonts); i++) {
-			if (monospaced_fonts.find(fonts[i]) != monospaced_fonts.end()) {
-				// Found a font.
-				font = fonts[i];
-				break;
-			}
-		}
-
-		// We don't need the enumerated fonts anymore.
-		monospaced_fonts.clear();
-
-		if (!font) {
+		// Find a monospaced font.
+		int ret = WinUI::findMonospacedFont(&lfFontMono);
+		if (ret != 0) {
 			// Monospaced font not found.
 			return;
 		}
-
-		// Adjust the font and create a new one.
-		wcscpy(lfFontMono.lfFaceName, font);
 	}
 
 	// Create the monospaced font.
@@ -2100,9 +1867,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETPAGE pfnReplaceWith, LPARAM lParam)
 {
 	// Not used.
-	((void)uPageID);
-	((void)pfnReplaceWith);
-	((void)lParam);
+	RP_UNUSED(uPageID);
+	RP_UNUSED(pfnReplaceWith);
+	RP_UNUSED(lParam);
 	return E_NOTIMPL;
 }
 
@@ -2126,13 +1893,13 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return TRUE;
 
 			// Access the property sheet extension from property page.
-			RP_ShellPropSheetExt *pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
+			RP_ShellPropSheetExt *const pExt = reinterpret_cast<RP_ShellPropSheetExt*>(pPage->lParam);
 			if (!pExt)
 				return TRUE;
 			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 
-			// Store the object pointer with this particular page dialog.
-			SetProp(hDlg, EXT_POINTER_PROP, static_cast<HANDLE>(pExt));
+			// Store the D object pointer with this particular page dialog.
+			SetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP, static_cast<HANDLE>(d));
 			// Save handles for later.
 			d->hDlgProps = GetParent(hDlg);
 			d->hDlgSheet = hDlg;
@@ -2150,17 +1917,16 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		// FIXME: FBI's age rating is cut off on Windows
 		// if we don't adjust for WM_SHOWWINDOW.
 		case WM_SHOWWINDOW: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
 			// TODO: Support dynamic resizing? The standard
 			// Explorer file properties dialog doesn't support
 			// it, but others might...
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			if (d->romData->isOpen()) {
 				// Initialize the dialog.
 				d->initDialog(hDlg);
@@ -2176,30 +1942,32 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_DESTROY: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				// Stop the animation timer.
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 				d->stopAnimTimer();
 			}
 
-			// Remove the EXT_POINTER_PROP property from the page. 
-			// The EXT_POINTER_PROP property stored the pointer to the 
-			// FilePropSheetExt object.
-			RemoveProp(hDlg, EXT_POINTER_PROP);
+			// FIXME: Remove D_PTR_PROP from child windows.
+			// NOTE: WM_DESTROY is sent *before* child windows are destroyed.
+			// WM_NCDESTROY is sent *after*.
+
+			// Remove the D_PTR_PROP property from the page. 
+			// The D_PTR_PROP property stored the pointer to the 
+			// RP_ShellPropSheetExt_Private object.
+			RemoveProp(hDlg, RP_ShellPropSheetExtPrivate::D_PTR_PROP);
 			return TRUE;
 		}
 
 		case WM_NOTIFY: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
 			switch (lppsn->hdr.code) {
 				case PSN_SETACTIVE:
@@ -2213,7 +1981,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case NM_CLICK:
 				case NM_RETURN: {
 					// Check if this is a SysLink control.
-					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 					if (d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
 					    d->hwndSysLinkControls.end())
 					{
@@ -2227,7 +1994,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 				case TCN_SELCHANGE: {
 					// Tab change. Make sure this is the correct WC_TABCONTROL.
-					RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 					if (d->hTabWidget != nullptr && d->hTabWidget == lppsn->hdr.hwndFrom) {
 						// Tab widget. Show the selected tab.
 						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
@@ -2247,14 +2013,13 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_PAINT: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (!pExt) {
-				// No RP_ShellPropSheetExt. Can't do anything...
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
 				return FALSE;
 			}
 
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			if (!d->hbmpBanner && !d->hbmpIconFrames[0]) {
 				// Nothing to draw...
 				break;
@@ -2293,10 +2058,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		case WM_SYSCOLORCHANGE:
 		case WM_THEMECHANGED: {
 			// Reload the images.
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				d->loadImages(hDlg);
 			}
 			break;
@@ -2304,27 +2068,28 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 		case WM_NCPAINT: {
 			// Update the monospaced font.
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (d) {
 				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
 		}
 
 		case WM_CTLCOLORSTATIC: {
-			RP_ShellPropSheetExt *pExt = static_cast<RP_ShellPropSheetExt*>(
-				GetProp(hDlg, EXT_POINTER_PROP));
-			if (pExt) {
-				RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
-				if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
-				    d->hwndWarningControls.end())
-				{
-					// Set the "Warning" color.
-					HDC hdc = reinterpret_cast<HDC>(wParam);
-					SetTextColor(hdc, RGB(255, 0, 0));
-				}
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			if (d->hwndWarningControls.find(reinterpret_cast<HWND>(lParam)) !=
+			    d->hwndWarningControls.end())
+			{
+				// Set the "Warning" color.
+				HDC hdc = reinterpret_cast<HDC>(wParam);
+				SetTextColor(hdc, RGB(255, 0, 0));
 			}
 			break;
 		}
@@ -2394,14 +2159,13 @@ LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
 		// No RP_ShellPropSheetExt. Can't do anything...
 		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 	}
-	RP_ShellPropSheetExt *const pExt =
-		reinterpret_cast<RP_ShellPropSheetExt*>(dwRefData);
+	RP_ShellPropSheetExt_Private *const d =
+		reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
 
 	switch (uMsg) {
 		case WM_KEYDOWN: {
 			// Work around Enter/Escape issues.
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
-			RP_ShellPropSheetExt_Private *const d = pExt->d_ptr;
 			switch (wParam) {
 				case VK_RETURN:
 					SendMessage(d->hDlgProps, WM_COMMAND, IDOK, 0);

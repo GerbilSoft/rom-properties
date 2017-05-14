@@ -92,11 +92,13 @@ SET(libromdata_SRCS
 	file/FileSystem_common.cpp
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
+	img/rp_image_ops.cpp
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
 	img/RpPng.cpp
 	img/IconAnimHelper.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
+	img/pngcheck/pngcheck.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
 	disc/WbfsReader.cpp
@@ -110,7 +112,8 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
-	img/pngcheck/pngcheck.cpp
+	config/ConfReader.cpp
+	config/Config.cpp
 	)
 SET(libromdata_H
 	byteorder.h
@@ -168,6 +171,7 @@ SET(libromdata_H
 	file/RpMemFile.hpp
 	file/FileSystem.hpp
 	img/rp_image.hpp
+	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
@@ -196,6 +200,8 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	config/ConfReader.hpp
+	config/Config.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

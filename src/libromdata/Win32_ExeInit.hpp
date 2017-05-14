@@ -36,7 +36,9 @@
 #define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
 #endif
 
+#ifdef __cplusplus
 namespace LibRomData {
+#endif
 
 /**
  * libromdata Windows executable initialization.
@@ -45,25 +47,40 @@ namespace LibRomData {
  *
  * @return 0 on success; non-zero on error.
  */
+#ifdef __cplusplus
 static int Win32_ExeInit(void)
+#else
+static int LibRomData_Win32_ExeInit(void)
+#endif
 {
-	HMODULE hKernel32 = LoadLibrary(L"kernel32.dll");
-	if (!hKernel32)
+	typedef BOOL (WINAPI *PFNSETDEP)(DWORD dwFlags);
+	typedef BOOL (WINAPI *PFNSETDLLDIRW)(LPCWSTR lpPathName);
+	typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
+		(HANDLE HeapHandle, int HeapInformationClass,
+		 PVOID HeapInformation, SIZE_T HeapInformationLength);
+
+	HMODULE hKernel32;
+	PFNSETDEP pfnSetDep;
+	PFNSETDLLDIRW pfnSetDllDirectoryW;
+	PFNHEAPSETINFORMATION pfnHeapSetInformation;
+
+	hKernel32 = LoadLibrary(L"kernel32.dll");
+	if (!hKernel32) {
+		// Should never happen...
 		return GetLastError();
+	}
 
 	// Enable DEP/NX. (WinXP SP3, Vista, and later.)
 	// NOTE: DEP/NX should be specified in the PE header
 	// using ld's --nxcompat, but we'll set it manually here,
 	// just in case the linker doesn't support it.
-	typedef BOOL (WINAPI *PFNSETDEP)(DWORD dwFlags);
-	PFNSETDEP pfnSetDep = (PFNSETDEP)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
+	pfnSetDep = (PFNSETDEP)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
 	if (pfnSetDep) {
 		pfnSetDep(PROCESS_DEP_ENABLE);
 	}
 
 	// Remove the current directory from the DLL search path.
-	typedef BOOL (WINAPI *PFNSETDLLDIRW)(LPCWSTR lpPathName);
-	PFNSETDLLDIRW pfnSetDllDirectoryW = (PFNSETDLLDIRW)GetProcAddress(hKernel32, "SetDllDirectoryW");
+	pfnSetDllDirectoryW = (PFNSETDLLDIRW)GetProcAddress(hKernel32, "SetDllDirectoryW");
 	if (pfnSetDllDirectoryW) {
 		pfnSetDllDirectoryW(L"");
 	}
@@ -72,10 +89,7 @@ static int Win32_ExeInit(void)
 	// NOTE: Parameter 2 is usually type enum HEAP_INFORMATION_CLASS,
 	// but this type isn't present in older versions of MinGW, so we're
 	// using int instead.
-	typedef BOOL (WINAPI *PFNHSI)
-		(HANDLE HeapHandle, int HeapInformationClass,
-		 PVOID HeapInformation, SIZE_T HeapInformationLength);
-	PFNHSI pfnHeapSetInformation = (PFNHSI)GetProcAddress(hKernel32, "HeapSetInformation");
+	pfnHeapSetInformation = (PFNHEAPSETINFORMATION)GetProcAddress(hKernel32, "HeapSetInformation");
 	if (pfnHeapSetInformation) {
 		// HeapEnableTerminationOnCorruption == 1
 		pfnHeapSetInformation(nullptr, 1, nullptr, 0);
@@ -85,6 +99,8 @@ static int Win32_ExeInit(void)
 	return 0;
 }
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_WIN32_EXEINIT_H__ */

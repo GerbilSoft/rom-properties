@@ -4,6 +4,7 @@ PROJECT(rom-properties-win32)
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
 	RegKey.cpp
+	WinUI.cpp
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
@@ -19,10 +20,17 @@ SET(rom-properties-win32_SRCS
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
+	config/ConfigDialog.cpp
+	config/PropSheetIcon.cpp
+	config/RP_EmptyVolumeCacheCallback.cpp
+	config/ImageTypesTab.cpp
+	config/DownloadsTab.cpp
+	config/CacheTab.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
 	RegKey.hpp
+	WinUI.hpp
 	RP_ExtractIcon.hpp
 	RP_ExtractIcon_p.hpp
 	RP_ClassFactory.hpp
@@ -35,6 +43,13 @@ SET(rom-properties-win32_H
 	RpFile_IStream.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
+	config/ConfigDialog.hpp
+	config/PropSheetIcon.hpp
+	config/RP_EmptyVolumeCacheCallback.hpp
+	config/ITab.hpp
+	config/ImageTypesTab.hpp
+	config/DownloadsTab.hpp
+	config/CacheTab.hpp
 	resource.h
 	)
 
@@ -110,9 +125,8 @@ IF(RP_DLL_FLAGS)
 	ENDIF()
 	SET_TARGET_PROPERTIES(rom-properties PROPERTIES LINK_FLAGS "${RP_LINK_FLAGS}")
 	UNSET(RP_LINK_FLAGS)
+	UNSET(RP_DLL_FLAGS)
 ENDIF(RP_DLL_FLAGS)
-
-UNSET(RP_DLL_FLAGS)
 
 # Delay-load ZLIB and LIBPNG.
 # NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
@@ -129,6 +143,9 @@ UNSET(RP_DLL_FLAGS)
 	#SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16d.dll")
 #	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16.dll")
 #ENDIF(USE_INTERNAL_PNG_DLL)
+
+### rp-config stub.
+ADD_SUBDIRECTORY(config)
 
 #################
 # Installation. #

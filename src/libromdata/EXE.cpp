@@ -1025,6 +1025,7 @@ EXE::EXE(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(EXE);
+	d->className = "EXE";
 	d->fileType = FTYPE_UNKNOWN;
 
 	if (!d->file) {

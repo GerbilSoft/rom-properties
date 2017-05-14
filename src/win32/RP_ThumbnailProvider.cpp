@@ -81,6 +81,25 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
  */
 HBITMAP RP_ThumbnailProvider_Private::rpImageToImgClass(const rp_image *img) const
 {
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+
+	// (NOTE: IThumbnailProvider doesn't have this problem,
+	// but we're doing this for consistency with
+	// RP_ExtractIcon in order to prevent image shifting
+	// when refreshing Explorer.)
+
+	unique_ptr<rp_image> tmp_img;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		tmp_img.reset(img->squared());
+		assert(tmp_img.get() != nullptr);
+		if (tmp_img) {
+			img = tmp_img.get();
+		}
+	}
+
 	return RpImageWin32::toHBITMAP_alpha(img);
 }
 
@@ -105,7 +124,6 @@ HBITMAP RP_ThumbnailProvider_Private::getNullImgClass(void) const
 
 /**
  * Free an ImgClass object.
- * This may be no-op for e.g. HBITMAP.
  * @param imgClass ImgClass object.
  */
 void RP_ThumbnailProvider_Private::freeImgClass(HBITMAP &imgClass) const
@@ -175,7 +193,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 {
 	// Ignoring grfMode for now. (always read-only)
-	((void)grfMode);
+	RP_UNUSED(grfMode);
 
 	// Create an IRpFile wrapper for the IStream.
 	IRpFile *file = new RpFile_IStream(pstream);
@@ -218,7 +236,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*pdwAlpha = WTSAT_ARGB;
 
 	int ret = d->getThumbnail(d->file, cx, *phbmp);
-	if (ret != 0) {
+	if (ret != 0 || !*phbmp) {
 		// ROM is not supported. Use the fallback.
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}

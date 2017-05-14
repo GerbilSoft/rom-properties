@@ -164,8 +164,8 @@ size_t PartitionFile::read(void *ptr, size_t size)
 size_t PartitionFile::write(const void *ptr, size_t size)
 {
 	// Not a valid operation for PartitionFile.
-	((void)ptr);
-	((void)size);
+	RP_UNUSED(ptr);
+	RP_UNUSED(size);
 	m_lastError = EBADF;
 	return 0;
 }
@@ -215,7 +215,7 @@ int64_t PartitionFile::tell(void)
 int PartitionFile::truncate(int64_t size)
 {
 	// Not supported.
-	((void)size);
+	RP_UNUSED(size);
 	m_lastError = ENOTSUP;
 	return -m_lastError;
 }

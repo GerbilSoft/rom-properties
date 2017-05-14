@@ -551,6 +551,7 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 {
 	// This class handles save files.
 	RP_D(GameCubeSave);
+	d->className = "GameCubeSave";
 	d->fileType = FTYPE_SAVE_FILE;
 
 	if (!d->file) {

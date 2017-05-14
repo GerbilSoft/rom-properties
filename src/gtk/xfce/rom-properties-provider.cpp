@@ -52,13 +52,13 @@ THUNARX_DEFINE_TYPE_EXTENDED(RomPropertiesProvider, rom_properties_provider,
 static void
 rom_properties_provider_class_init (RomPropertiesProviderClass *klass)
 {
-	((void)klass);
+	RP_UNUSED(klass);
 }
 
 static void
 rom_properties_provider_init(RomPropertiesProvider *sbr_provider)
 {
-	((void)sbr_provider);
+	RP_UNUSED(sbr_provider);
 }
 
 static void
@@ -70,10 +70,10 @@ rom_properties_provider_page_provider_init(ThunarxPropertyPageProviderIface *ifa
 static GList*
 rom_properties_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
 {
+	RP_UNUSED(page_provider);
 	GList *pages = nullptr;
 	GList *file;
 	ThunarxFileInfo *info;
-	((void)page_provider);
 
 	if (g_list_length(files) != 1) 
 		return nullptr;

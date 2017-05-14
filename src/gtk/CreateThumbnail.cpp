@@ -96,7 +96,6 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 
 		/**
 		 * Free an ImgClass object.
-		 * This may be no-op for e.g. PGDKPIXBUF.
 		 * @param imgClass ImgClass object.
 		 */
 		virtual void freeImgClass(PGDKPIXBUF &imgClass) const override final;
@@ -151,7 +150,6 @@ PGDKPIXBUF CreateThumbnailPrivate::getNullImgClass(void) const
 
 /**
  * Free an ImgClass object.
- * This may be no-op for e.g. PGDKPIXBUF.
  * @param imgClass ImgClass object.
  */
 void CreateThumbnailPrivate::freeImgClass(PGDKPIXBUF &imgClass) const

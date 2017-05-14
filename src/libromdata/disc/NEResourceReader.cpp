@@ -680,7 +680,7 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
 	RP_D(NEResourceReader);
 
 	// NOTE: The language ID is not used in NE resources.
-	((void)lang);
+	RP_UNUSED(lang);
 
 	// NOTE: Type and resource IDs have the high bit set for integers.
 	// We're only supporting integer IDs, so set the high bits here.

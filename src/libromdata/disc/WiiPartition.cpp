@@ -598,8 +598,8 @@ size_t WiiPartition::read(void *ptr, size_t size)
 	return ret;
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled.
-	((void)ptr);
-	((void)size);
+	RP_UNUSED(ptr);
+	RP_UNUSED(size);
 	m_lastError = EIO;
 	return 0;
 #endif /* ENABLE_DECRYPTION */
@@ -632,7 +632,7 @@ int WiiPartition::seek(int64_t pos)
 	return 0;
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not enabled.
-	((void)pos);
+	RP_UNUSED(pos);
 	m_lastError = EIO;
 	return -1;
 #endif /* ENABLE_DECRYPTION */

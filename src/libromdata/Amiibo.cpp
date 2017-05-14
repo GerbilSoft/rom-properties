@@ -112,6 +112,7 @@ Amiibo::Amiibo(IRpFile *file)
 {
 	// This class handles NFC dumps.
 	RP_D(Amiibo);
+	d->className = "Amiibo";
 	d->fileType = FTYPE_NFC_DUMP;
 
 	if (!d->file) {
@@ -585,7 +586,7 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 	pExtURLs->clear();
 
 	// Only one size is available.
-	((void)size);
+	RP_UNUSED(size);
 
 	RP_D(Amiibo);
 	if (!d->file || !d->file->isOpen()) {

@@ -22,16 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_CRYPTO_KEYMANAGER_HPP__
 
-#include "config.libromdata.h"
-#include "common.h"
-
-// C includes.
-#include <stdint.h>
+#include "../config/ConfReader.hpp"
 
 namespace LibRomData {
 
-class KeyManagerPrivate;
-class KeyManager
+class KeyManager : public ConfReader
 {
 	protected:
 		/**
@@ -41,10 +36,13 @@ class KeyManager
 		 * pointer to the class using instance().
 		 */
 		KeyManager();
-		~KeyManager();
 
 	private:
+		typedef ConfReader super;
 		RP_DISABLE_COPY(KeyManager)
+
+	private:
+		friend class KeyManagerPrivate;
 
 	public:
 		/**
@@ -67,10 +65,6 @@ class KeyManager
 		};
 
 #ifdef ENABLE_DECRYPTION
-	private:
-		friend class KeyManagerPrivate;
-		KeyManagerPrivate *const d_ptr;
-
 	public:
 		/**
 		 * Get the KeyManager instance.
@@ -84,19 +78,6 @@ class KeyManager
 			const uint8_t *key;	// Key data.
 			uint32_t length;	// Key length.
 		};
-
-		/**
-		 * Have the encryption keys been loaded yet?
-		 *
-		 * This function will *not* load the keys.
-		 * To load the keys, call get() with the requested key name.
-		 *
-		 * If this function returns false after calling get(),
-		 * keys.conf is probably missing.
-		 *
-		 * @return True if keys have been loaded; false if not.
-		 */
-		bool areKeysLoaded(void) const;
 
 		/**
 		 * Get an encryption key.

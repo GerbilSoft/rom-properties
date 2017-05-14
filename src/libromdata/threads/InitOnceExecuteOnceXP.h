@@ -60,7 +60,7 @@ typedef LONG INIT_ONCE_XP, *PINIT_ONCE_XP;
 #endif
 #define INIT_ONCE_STATIC_INIT INIT_ONCE_STATIC_INIT_XP
 
-typedef BOOL (WINAPI *PINIT_ONCE_XP_FN)(_Inout_ PINIT_ONCE_XP once, _In_ PVOID param, _Out_opt_ LPVOID *context);
+typedef BOOL (WINAPI *PINIT_ONCE_XP_FN)(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
 #define PINIT_ONCE PINIT_ONCE_XP
 #define PINIT_ONCE_FN PINIT_ONCE_XP_FN
 

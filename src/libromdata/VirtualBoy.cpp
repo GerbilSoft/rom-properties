@@ -144,6 +144,8 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	: super(new VirtualBoyPrivate(this, file))
 {
 	RP_D(VirtualBoy);
+	d->className = "VirtualBoy";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

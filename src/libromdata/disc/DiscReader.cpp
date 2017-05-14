@@ -100,8 +100,8 @@ DiscReader::~DiscReader()
 int DiscReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 {
 	// DiscReader supports everything.
-	((void)pHeader);
-	((void)szHeader);
+	RP_UNUSED(pHeader);
+	RP_UNUSED(szHeader);
 	return 0;
 }
 
@@ -114,8 +114,8 @@ int DiscReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 int DiscReader::isDiscSupported(const uint8_t *pHeader, size_t szHeader) const
 {
 	// DiscReader supports everything.
-	((void)pHeader);
-	((void)szHeader);
+	RP_UNUSED(pHeader);
+	RP_UNUSED(szHeader);
 	return 0;
 }
 

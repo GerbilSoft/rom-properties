@@ -40,4 +40,26 @@
 #include <comdef.h>
 #include <shlwapi.h>
 
+// IEmptyVolumeCache and related.
+#include <emptyvc.h>
+
+// NOTE: Since we're targetting XP/2003 minimum, some progress bar
+// functionality isn't defined in the headers.
+#ifndef PBM_SETSTATE
+#define PBM_SETSTATE            (WM_USER+16) // wParam = PBST_[State] (NORMAL, ERROR, PAUSED)
+#endif
+#ifndef PBM_GETSTATE
+#define PBM_GETSTATE            (WM_USER+17)
+#endif
+
+#ifndef PBST_NORMAL
+#define PBST_NORMAL             0x0001
+#endif
+#ifndef PBST_ERROR
+#define PBST_ERROR              0x0002
+#endif
+#ifndef PBST_PAUSED
+#define PBST_PAUSED             0x0003
+#endif
+
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

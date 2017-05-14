@@ -43,6 +43,9 @@ using namespace LibRomData::FileSystem;
 #include <sys/time.h>
 #endif
 
+// C includes. (C++ namespace)
+#include <cctype>
+
 // C++ includes.
 #include <memory>
 #include <string>
@@ -118,11 +121,18 @@ void CacheManager::setProxyUrl(const rp_string &proxyUrl)
 
 /**
  * Get a cache filename.
- * @param cache_key Cache key.
+ * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
  * @return Cache filename, or empty string on error.
  */
 rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
 {
+	// Filter invalid characters from the cache key.
+	const rp_string filtered_cache_key = filterCacheKey(cache_key);
+	if (filtered_cache_key.empty()) {
+		// Invalid cache key.
+		return rp_string();
+	}
+
 	// Get the cache filename.
 	// This is the cache directory plus the cache key.
 	rp_string cache_filename = getCacheDirectory();
@@ -132,31 +142,104 @@ rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
 	if (cache_filename.at(cache_filename.size()-1) != DIR_SEP_CHR)
 		cache_filename += DIR_SEP_CHR;
 
-	// The cache key uses slashes. This must be converted
-	// to backslashes on Windows.
-#ifdef _WIN32
-	cache_filename.reserve(cache_filename.size() + cache_key.size());
-	for (size_t i = 0; i < cache_key.size(); i++) {
-		if (cache_key[i] == '/') {
-			cache_filename += DIR_SEP_CHR;
-		} else {
-			cache_filename += cache_key[i];
-		}
-	}
-#else
-	// Use slashes in the cache key.
-	cache_filename += cache_key;
-#endif
-
-	// NOTE: The filename portion MUST be kept in cache_filename,
-	// since the last component is ignored by rmkdir().
-	if (rmkdir(cache_filename) != 0) {
-		// Error creating subdirectories.
-		return rp_string();
-	}
+	// Append the filtered cache key.
+	cache_filename += filtered_cache_key;
 
 	// Cache filename created.
 	return cache_filename;
+}
+
+/**
+ * Filter invalid characters from a cache key.
+ * @param cache_key Cache key.
+ * @return Filtered cache key.
+ */
+LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &cache_key)
+{
+	// Quick check: Ensure the cache key is not empty and
+	// that it doesn't start with a path separator.
+	if (cache_key.empty() ||
+	    cache_key[0] == _RP_CHR('/') || cache_key[0] == _RP_CHR('\\'))
+	{
+		// Cache key is either empty or starts with
+		// a path separator.
+		return rp_string();
+	}
+
+	rp_string filtered_cache_key = cache_key;
+	bool foundSlash = true;
+	int dotCount = 0;
+	for (auto iter = filtered_cache_key.begin(); iter != filtered_cache_key.end(); ++iter) {
+		// Don't allow control characters, invalid FAT32 characters, or dots.
+		// '/' is allowed for cache hierarchy. (Converted to '\\' on Windows.)
+		// '.' is allowed for file extensions.
+		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
+		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+		// Values:
+		// - 0: Not allowed (converted to '_')
+		// - 1: Allowed
+		// - 2: Dot
+		// - 3: Slash
+		// - 4: Backslash or colon (error)
+		static const uint8_t valid_ascii_tbl[0x80] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
+			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, // 0x50 (\\)
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
+		};
+		unsigned int chr = (unsigned int)*iter;
+		if (chr >= 0x80) {
+			// Non-ASCII characters are allowed.
+			continue;
+		}
+
+		switch (valid_ascii_tbl[chr] & 7) {
+			case 0:
+			default:
+				// Invalid character.
+				*iter = _RP_CHR('_');
+				foundSlash = false;
+				break;
+
+			case 1:
+				// Valid character.
+				foundSlash = false;
+				break;
+
+			case 2:
+				// Dot.
+				// Check for "../" (or ".." at the end of the cache key).
+				if (foundSlash) {
+					dotCount++;
+					if (dotCount >= 2) {
+						// Invalid cache key.
+						return rp_string();
+					}
+				}
+				break;
+
+			case 3:
+				// Slash.
+#ifdef _WIN32
+				// Convert to backslash on Windows.
+				*iter = _RP_CHR('\\');
+#endif /* _WIN32 */
+				foundSlash = true;
+				dotCount = 0;
+				break;
+
+			case 4:
+				// Backslash or colon.
+				// Not allowed at all.
+				return rp_string();
+		}
+	}
+
+	return filtered_cache_key;
 }
 
 /**
@@ -178,53 +261,16 @@ rp_string CacheManager::download(
 	const rp_string &url,
 	const rp_string &cache_key)
 {
-	rp_string filter_cache_key = cache_key;
-	bool foundSlash = true;
-	int dotCount = 0;
-	for (int i = (int)filter_cache_key.size()-1; i >= 0; i--) {
-		// Don't allow control characters,
-		// invalid FAT32 characters, or dots.
-		// (NOTE: '/' and '.' are allowed for extensions and cache hierarchy.)
-		// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
-		static const uint8_t valid_ascii_tbl[] = {
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
-			1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, // 0x20 (", *, .)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x50 (\\)
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // 0x80 (|)
-		};
-		unsigned int chr = (unsigned int)filter_cache_key[i];
-		if (chr < 0x80 && !valid_ascii_tbl[chr]) {
-			// Invalid character.
-			filter_cache_key[i] = _RP_CHR('_');
-		}
-
-		// Check for "../" (or ".." at the end of the cache key).
-		if (foundSlash && chr == '.') {
-			dotCount++;
-			if (dotCount >= 2) {
-				// Invalid cache key.
-				return rp_string();
-			}
-		} else if (chr == '/') {
-			foundSlash = true;
-			dotCount = 0;
-		} else {
-			foundSlash = false;
-		}
-	}
-
-	SemaphoreLocker locker(m_dlsem);
-
 	// Check the main cache key.
-	rp_string cache_filename = getCacheFilename(filter_cache_key);
+	rp_string cache_filename = getCacheFilename(cache_key);
 	if (cache_filename.empty()) {
 		// Error obtaining the cache key filename.
 		return rp_string();
 	}
+
+	// Lock the semaphore to make sure we don't
+	// download too many files at once.
+	SemaphoreLocker locker(m_dlsem);
 
 	// Check if the file already exists.
 	if (!access(cache_filename, R_OK)) {
@@ -269,6 +315,14 @@ rp_string CacheManager::download(
 		return rp_string();
 	}
 
+	// Make sure the subdirectories exist.
+	// NOTE: The filename portion MUST be kept in cache_filename,
+	// since the last component is ignored by rmkdir().
+	if (rmkdir(cache_filename) != 0) {
+		// Error creating subdirectories.
+		return rp_string();
+	}
+
 	// TODO: Keep-alive cURL connections (one per server)?
 	m_downloader->setUrl(url);
 	m_downloader->setProxyUrl(m_proxyUrl);
@@ -300,6 +354,24 @@ rp_string CacheManager::download(
 
 	// Return the cache filename.
 	return cache_filename;
+}
+
+/**
+ * Check if a file has already been cached.
+ * @param cache_key Cache key.
+ * @return Filename in the cache, or empty string if not found.
+ */
+LibRomData::rp_string CacheManager::findInCache(const LibRomData::rp_string &cache_key)
+{
+	// Get the cache key filename.
+	rp_string cache_filename = getCacheFilename(cache_key);
+	if (cache_filename.empty()) {
+		// Error obtaining the cache key filename.
+		return rp_string();
+	}
+
+	// Return the filename if the file exists.
+	return (!access(cache_filename, R_OK) ? cache_filename : rp_string());
 }
 
 }

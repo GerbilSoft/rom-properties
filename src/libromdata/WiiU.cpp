@@ -92,6 +92,7 @@ WiiU::WiiU(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(WiiU);
+	d->className = "WiiU";
 	d->fileType = FTYPE_DISC_IMAGE;
 
 	if (!d->file) {
@@ -268,7 +269,9 @@ const rp_char *const *WiiU::supportedFileExtensions(void) const
 uint32_t WiiU::supportedImageTypes_static(void)
 {
 #ifdef HAVE_JPEG
-	return IMGBF_EXT_MEDIA | IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D;
+	return IMGBF_EXT_MEDIA |
+	       IMGBF_EXT_COVER | IMGBF_EXT_COVER_3D |
+	       IMGBF_EXT_COVER_FULL;
 #else /* !HAVE_JPEG */
 	return IMGBF_EXT_MEDIA | IMGBF_EXT_COVER_3D;
 #endif /* HAVE_JPEG */
@@ -511,11 +514,6 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		return -ENOENT;
 	}
 
-	// Current image type.
-	char imageTypeName[16];
-	snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
-		 imageTypeName_base, (sizeDef->name ? sizeDef->name : ""));
-
 	// Determine the GameTDB region code(s).
 	// TODO: Wii U version. (Figure out the region code field...)
 	//vector<const char*> tdb_regions = d->gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
@@ -537,23 +535,41 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	id6[5] = publisher_id & 0xFF;
 	id6[6] = 0;
 
-	// ExtURLs.
-	// TODO: If multiple image sizes are added, add the
-	// "default" size to the end of ExtURLs in case the
-	// user has high-resolution downloads disabled.
-	pExtURLs->reserve(4);
+	// If we're downloading a "high-resolution" image (M or higher),
+	// also add the default image to ExtURLs in case the user has
+	// high-resolution image downloads disabled.
+	const ImageSizeDef *szdefs_dl[2];
+	szdefs_dl[0] = sizeDef;
+	unsigned int szdef_count;
+	if (sizeDef->index > 0) {
+		// M or higher.
+		szdefs_dl[1] = &sizeDefs[0];
+		szdef_count = 2;
+	} else {
+		// Default or S.
+		szdef_count = 1;
+	}
 
-	// Get the URLs.
-	for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
-		int idx = (int)pExtURLs->size();
-		pExtURLs->resize(idx+1);
-		auto &extURL = pExtURLs->at(idx);
+	// Add the URLs.
+	pExtURLs->reserve(4*szdef_count);
+	for (unsigned int i = 0; i < szdef_count; i++) {
+		// Current image type.
+		char imageTypeName[16];
+		snprintf(imageTypeName, sizeof(imageTypeName), "%s%s",
+			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
-		extURL.url = d->getURL_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
-		extURL.cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
-		extURL.width = sizeDef->width;
-		extURL.height = sizeDef->height;
-		extURL.high_res = false;	// Only one size is available.
+		// Add the images.
+		for (auto iter = tdb_regions.cbegin(); iter != tdb_regions.cend(); ++iter) {
+			int idx = (int)pExtURLs->size();
+			pExtURLs->resize(idx+1);
+			auto &extURL = pExtURLs->at(idx);
+
+			extURL.url = d->getURL_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
+			extURL.cache_key = d->getCacheKey_GameTDB("wiiu", imageTypeName, *iter, id6, ext);
+			extURL.width = szdefs_dl[i]->width;
+			extURL.height = szdefs_dl[i]->height;
+			extURL.high_res = (szdefs_dl[i]->index > 0);
+		}
 	}
 
 	// All URLs added.

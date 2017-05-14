@@ -54,7 +54,7 @@
 //#define NOVIRTUALKEYCODES 1
 //#define NOWINMESSAGES 1
 //#define NOWINSTYLES 1
-#define NOSYSMETRICS 1
+//#define NOSYSMETRICS 1
 #define NOMENUS 1
 #define NOICONS 1
 #define NOKEYSTATES 1
@@ -80,7 +80,7 @@
 //#define NOSOUND 1
 //#define NOTEXTMETRIC 1
 #define NOWH 1
-#define NOWINOFFSETS 1
+//#define NOWINOFFSETS 1
 #define NOCOMM 1
 #define NOKANJI 1
 #define NOHELP 1

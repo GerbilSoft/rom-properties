@@ -52,6 +52,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields())
+	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
 	if (!file)
@@ -75,6 +76,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc 
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields(fields, count))
+	, className(nullptr)
 	, fileType(RomData::FTYPE_ROM_IMAGE)
 {
 	if (!file)
@@ -430,6 +432,17 @@ void RomData::close(void)
 }
 
 /**
+ * Get the class name for the user configuration.
+ * @return Class name. (ASCII) (nullptr on error)
+ */
+const char *RomData::className(void) const
+{
+	RP_D(const RomData);
+	assert(d->className != nullptr);
+	return d->className;
+}
+
+/**
  * Get the general file type.
  * @return General file type.
  */
@@ -500,7 +513,7 @@ std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageT
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 
 	// No images supported by default.
-	((void)imageType);
+	RP_UNUSED(imageType);
 	return std::vector<ImageSizeDef>();
 }
 
@@ -522,7 +535,7 @@ uint32_t RomData::imgpf(ImageType imageType) const
 	}
 
 	// No imgpf by default.
-	((void)imageType);
+	RP_UNUSED(imageType);
 	return 0;
 }
 
@@ -547,7 +560,7 @@ int RomData::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// No images supported by the base class.
-	((void)imageType);
+	RP_UNUSED(imageType);
 	*pImage = nullptr;
 	return -ENOENT;
 }
@@ -623,7 +636,7 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	}
 
 	// No external URLs by default.
-	((void)size);
+	RP_UNUSED(size);
 	pExtURLs->clear();
 	return -ENOENT;
 }
@@ -638,8 +651,8 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 rp_string RomData::scrapeImageURL(const char *html, size_t size) const
 {
 	// Not supported in the base class.
-	((void)html);
-	((void)size);
+	RP_UNUSED(html);
+	RP_UNUSED(size);
 	return rp_string();
 }
 

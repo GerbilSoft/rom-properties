@@ -284,9 +284,9 @@ const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
 DMG::DMG(IRpFile *file)
 	: super(new DMGPrivate(this, file))
 {
-	// TODO: Only validate that this is an DMG ROM here.
-	// Load fields elsewhere.
 	RP_D(DMG);
+	d->className = "DMG";
+
 	if (!d->file) {
 		// Could not dup() the file handle.
 		return;

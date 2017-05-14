@@ -241,6 +241,11 @@ IF "%ZIP_PREFIX%" == "" (
 unzip ..\build.i386\*-win32.zip
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
+:: Move the 32-bit EXEs to the base directory.
+:: NOTE: Not moving the PDBs to the base directory,
+:: since those are stored in a separate ZIP file.
+MOVE i386\*.exe .
+
 :: Extract the 64-bit ZIP file.
 :: (Only the architecture-specific directory.)
 unzip ..\build.amd64\*-win64.zip amd64/*

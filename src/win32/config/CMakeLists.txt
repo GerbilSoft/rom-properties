@@ -1,0 +1,40 @@
+PROJECT(rp-config-win32 C)
+# rp-config stub for Windows.
+
+ADD_EXECUTABLE(rp-config WIN32 rp-config.c rp-config.rc)
+SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
+DO_SPLIT_DEBUG(rp-config)
+SET_WINDOWS_SUBSYSTEM(rp-config WIN32)
+SET_WINDOWS_NO_MANIFEST(rp-config)
+
+TARGET_INCLUDE_DIRECTORIES(rp-config
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# build/src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# build/src/win32
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+	)
+
+#################
+# Installation. #
+#################
+
+INCLUDE(DirInstallPaths)
+
+# NOTE: Don't install libraries.
+# That installs the import library, which isn't used
+# for shell extensions.
+INSTALL(TARGETS rp-config
+	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+	LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
+	#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+	COMPONENT "program"
+	)
+IF(INSTALL_DEBUG)
+	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
+	GET_TARGET_PROPERTY(DEBUG_FILENAME rp-config PDB)
+	INSTALL(FILES "${DEBUG_FILENAME}"
+		DESTINATION "${DIR_INSTALL_DLL_DEBUG}"
+		COMPONENT "debug"
+		)
+	UNSET(DEBUG_FILENAME)
+ENDIF(INSTALL_DEBUG)

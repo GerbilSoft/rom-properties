@@ -216,6 +216,7 @@ NES::NES(IRpFile *file)
 	: super(new NESPrivate(this, file))
 {
 	RP_D(NES);
+	d->className = "NES";
 
 	if (!d->file) {
 		// Could not dup() the file handle.

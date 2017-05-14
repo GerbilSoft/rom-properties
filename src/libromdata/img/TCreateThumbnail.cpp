@@ -34,6 +34,7 @@ using LibCacheMgr::CacheManager;
 #include "../file/RpFile.hpp"
 #include "rp_image.hpp"
 #include "RpImageLoader.hpp"
+#include "../config/Config.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -118,15 +119,33 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		return getNullImgClass();
 	}
 
+	// NOTE: This will force a configuration timestamp check.
+	const Config *const config = Config::instance();
+	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
+	const bool downloadHighResScans = config->downloadHighResScans();
+
 	CacheManager cache;
 	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
 		const RomData::ExtURL &extURL = *iter;
+		if (!downloadHighResScans && iter->high_res) {
+			// High-resolution scan downloads are disabled.
+			continue;
+		}
 
 		rp_string proxy = proxyForUrl(extURL.url);
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 
 		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
+		rp_string cache_filename;
+		if (extImgDownloadEnabled) {
+			// Attempt to download the image if it isn't already
+			// present in the rom-properties cache.
+			cache_filename = cache.download(extURL.url, extURL.cache_key);
+		} else {
+			// Don't attempt to download the image.
+			// Only check the rom-properties cache.
+			cache_filename = cache.findInCache(extURL.cache_key);
+		}
 		if (cache_filename.empty())
 			continue;
 
@@ -193,36 +212,80 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 	uint32_t imgpf = 0;
 	ImgSize img_sz;
 
-	/**
-	 * TODO:
-	 * - Add a function to retrieve the "default" image type in RomData,
-	 *   which can be customized per subclass.
-	 * - Add user customization.
-	 */
-
-	// Check for external images.
-	if (imgbf & RomData::IMGBF_EXT_MEDIA) {
-		// External media scan.
-		ret_img = getExternalImage(romData, RomData::IMG_EXT_MEDIA, req_size, &img_sz);
-		imgpf = romData->imgpf(RomData::IMG_EXT_MEDIA);
+	// Get the image priority.
+	const Config *const config = Config::instance();
+	Config::ImgTypePrio_t imgTypePrio;
+	Config::ImgTypeResult res = config->getImgTypePrio(romData->className(), &imgTypePrio);
+	switch (res) {
+		case Config::IMGTR_SUCCESS:
+		case Config::IMGTR_SUCCESS_DEFAULTS:
+			// Image type priority received successfully.
+			// IMGTR_SUCCESS_DEFAULTS indicates the returned
+			// data is the default priority, since a custom
+			// configuration was not found for this class.
+			break;
+		case Config::IMGTR_DISABLED:
+			// Thumbnails are disabled for this class.
+			return RPCT_SOURCE_FILE_CLASS_DISABLED;
+		default:
+			// Should not happen...
+			assert(!"Invalid return value from Config::getImgTypePrio().");
+			return RPCT_SOURCE_FILE_ERROR;
 	}
-	if (!isImgClassValid(ret_img)) {
-		// No external media scan. Try external cover scan.
-		if (imgbf & RomData::IMGBF_EXT_COVER) {
-			// External cover scan.
-			ret_img = getExternalImage(romData, RomData::IMG_EXT_COVER, req_size, &img_sz);
-			imgpf = romData->imgpf(RomData::IMG_EXT_COVER);
-		}
-	}
 
-	if (!isImgClassValid(ret_img)) {
-		// No external media scan.
-		// Try the internal icon.
+	if (config->useIntIconForSmallSizes() && req_size <= 48) {
+		// Check for an icon first.
+		// TODO: Define "small sizes" somewhere. (DPI independence?)
 		if (imgbf & RomData::IMGBF_INT_ICON) {
-			// Internal icon.
 			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
+			imgbf &= ~RomData::IMGBF_INT_ICON;
+
+			if (isImgClassValid(ret_img)) {
+				// Image retrieved.
+				// TODO: Better method than goto?
+				goto skip_image_check;
+			}
 		}
+	}
+
+	// Check all available images in image priority order.
+	// TODO: Use pointer arithmetic in this loop?
+	for (unsigned int i = 0; i < imgTypePrio.length; i++) {
+		const RomData::ImageType imgType =
+			static_cast<RomData::ImageType>(imgTypePrio.imgTypes[i]);
+		assert(imgType <= RomData::IMG_EXT_MAX);
+		if (imgType > RomData::IMG_EXT_MAX) {
+			// Invalid image type. Ignore it.
+			continue;
+		}
+
+		const uint32_t bf = (1 << imgType);
+		if (!(imgbf & bf)) {
+			// Image is not present.
+			continue;
+		}
+
+		// This image may be present.
+		if (imgType <= RomData::IMG_INT_MAX) {
+			// Internal image.
+			ret_img = getInternalImage(romData, imgType, &img_sz);
+			imgpf = romData->imgpf(imgType);
+		} else {
+			// External image.
+			ret_img = getExternalImage(romData, imgType, req_size, &img_sz);
+			imgpf = romData->imgpf(imgType);
+		}
+
+		if (isImgClassValid(ret_img)) {
+			// Image retrieved.
+			break;
+		}
+
+		// Make sure we don't check this image type again
+		// in case there are duplicate entries in the
+		// priority list.
+		imgbf &= ~bf;
 	}
 
 	if (!isImgClassValid(ret_img)) {
@@ -230,6 +293,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
+skip_image_check:
 	// TODO: If image is larger than req_size, resize down.
 	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
 		// TODO: User configuration.

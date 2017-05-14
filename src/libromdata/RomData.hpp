@@ -201,6 +201,12 @@ class RomData
 		 */
 		virtual const rp_char *systemName(uint32_t type) const = 0;
 
+		/**
+		 * Get the class name for the user configuration.
+		 * @return Class name. (ASCII) (nullptr on error)
+		 */
+		const char *className(void) const;
+
 		enum FileType {
 			FTYPE_UNKNOWN = 0,
 
@@ -280,6 +286,11 @@ class RomData
 			IMG_INT_MAX = IMG_INT_MEDIA,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
 			IMG_EXT_MAX = IMG_EXT_BOX,
+
+			// Special value for the user configuration.
+			// If specified, all thumbnails will be disabled.
+			// (Manual image extraction in rpcli is not affected.)
+			IMG_DISABLED = 255,
 		};
 
 		/**
@@ -430,6 +441,8 @@ class RomData
 			IMAGE_SIZE_DEFAULT	=  0,
 			IMAGE_SIZE_SMALLEST	= -1,
 			IMAGE_SIZE_LARGEST	= -2,
+			// TODO: IMAGE_SIZE_ALL to get all images.
+			// IMAGE_SIZE_ALL	= -3,
 
 			// Minimum allowed value.
 			IMAGE_SIZE_MIN_VALUE	= IMAGE_SIZE_LARGEST

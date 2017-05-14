@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "RpWin32.hpp"
-#include "common.h"
 
 namespace LibRomData {
 

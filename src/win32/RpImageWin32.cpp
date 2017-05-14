@@ -23,16 +23,9 @@
 #include "RpImageWin32.hpp"
 
 // libromdata
-#include "libromdata/RomData.hpp"
-#include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
 #include "libromdata/img/RpGdiplusBackend.hpp"
 using namespace LibRomData;
-
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,73 +46,6 @@ namespace Gdiplus {
 }
 #include <gdiplus.h>
 #include "libromdata/img/GdiplusHelper.hpp"
-
-/**
- * Get an internal image.
- * NOTE: The image is owned by the RomData object;
- * caller must NOT delete it!
- *
- * @param romData RomData object.
- * @param imageType Image type.
- * @return Internal image, or nullptr on error.
- */
-const rp_image *RpImageWin32::getInternalImage(const RomData *romData, RomData::ImageType imageType)
-{
-	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
-	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
-		// Out of range.
-		return nullptr;
-	}
-
-	return romData->image(imageType);
-}
-
-/**
- * Get an external image.
- * NOTE: Caller must delete the image after use.
- *
- * @param romData RomData object.
- * @param imageType Image type.
- * @return External image, or nullptr on error.
- */
-rp_image *RpImageWin32::getExternalImage(const RomData *romData, RomData::ImageType imageType)
-{
-	// TODO: Image size selection.
-	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-	if (ret != 0 || extURLs.empty()) {
-		// No URLs.
-		return nullptr;
-	}
-
-	// Check each URL.
-	CacheManager cache;
-	for (auto iter = extURLs.cbegin(); iter != extURLs.cend(); ++iter) {
-		const RomData::ExtURL &extURL = *iter;
-
-		// TODO: Have download() return the actual data and/or load the cached file.
-		rp_string cache_filename = cache.download(extURL.url, extURL.cache_key);
-		if (cache_filename.empty())
-			continue;
-
-		// Attempt to load the image.
-		unique_ptr<IRpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
-		if (!file || !file->isOpen())
-			continue;
-
-		rp_image *dl_img = RpImageLoader::load(file.get());
-		if (dl_img && dl_img->isValid()) {
-			// Image loaded.
-			return dl_img;
-		}
-		delete dl_img;
-
-		// Try the next URL.
-	}
-
-	// Could not load any external images.
-	return nullptr;
-}
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
@@ -390,7 +316,6 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	}
 
 	// Convert the image to an icon mask.
-	// FIXME: Use the resized icon?
 	HBITMAP hbmMask = toHBITMAP_mask(image);
 	if (!hbmMask) {
 		DeleteObject(hBitmap);
@@ -505,4 +430,52 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// rp_image created.
 	return img;
+}
+
+/**
+ * Convert an HBITMAP to HICON.
+ * @param hBitmap HBITMAP.
+ * @return HICON, or nullptr on error.
+ */
+HICON RpImageWin32::toHICON(HBITMAP hBitmap)
+{
+	assert(hBitmap != nullptr);
+	if (!hBitmap) {
+		// Invalid image.
+		return nullptr;
+	}
+
+	// Temporarily convert the HBITMAP to rp_image
+	// in order to create an icon mask.
+	// NOTE: Windows doesn't seem to have any way to get
+	// direct access to the HBITAMP's pixels, so this step
+	// step is required. (GetDIBits() copies the pixels.)
+	unique_ptr<rp_image> img(fromHBITMAP(hBitmap));
+	if (!img) {
+		// Error converting to rp_image.
+		return nullptr;
+	}
+
+	// Convert the image to an icon mask.
+	HBITMAP hbmMask = toHBITMAP_mask(img.get());
+	if (!hbmMask) {
+		// Failed to create the icon mask.
+		return nullptr;
+	}
+
+	// Convert to an icon.
+	// Reference: http://forums.codeguru.com/showthread.php?441251-CBitmap-to-HICON-or-HICON-from-HBITMAP&p=1661856#post1661856
+	ICONINFO ii;
+	ii.fIcon = TRUE;
+	ii.xHotspot = 0;
+	ii.yHotspot = 0;
+	ii.hbmColor = hBitmap;
+	ii.hbmMask = hbmMask;
+
+	// Create the icon.
+	HICON hIcon = CreateIconIndirect(&ii);
+
+	// Delete the icon mask bitmap and we're done.
+	DeleteObject(hbmMask);
+	return hIcon;
 }
