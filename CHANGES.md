@@ -10,11 +10,11 @@
   * Added support for downloading Nintendo DS, GameCube, and Wii cover scans.
     This includes cover and full cover scans for all three, and 3D cover scans
     for GameCube and Wii.
-  * !!! Multiple image sizes are now supported for external image downloads.
+  * Multiple image sizes are now supported for external image downloads.
     GameTDB has higher-resolution scans for certain image types, including
     Nintendo DS cover scans. These high-resolution scans are used if a larger
-    thumbnail size is requested by the file browser. A user configuration
-    option will be added later to disable high-resolution image downloads.
+    thumbnail size is requested by the file browser. An option to disable
+    downloading of high-resolution images is available in the user config file.
   * (Windows) Physical block devices are now supported. This allows viewing
     ROM Properties for certain types of physical media, e.g. Wii DVD-R backups.
     Currently only the property page is supported. Thumbnails (and icons)
@@ -23,6 +23,11 @@
   * (rpcli) New option "-k". This option will verify all known keys in
     keys.conf. Verification is done by decrypting a string that was encrypted
     with the original key and checking if the decrypted string is correct.
+  * (Windows) A configuration program, rp-config.exe, is now included. This
+    allows you to configure the image type priority for thumbnails as well
+    as download options. Linux versions will be added in a future release,
+    though the underlying rom-properties.conf functionality is implemented
+    and works on all platforms.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
