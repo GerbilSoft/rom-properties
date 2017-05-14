@@ -155,12 +155,30 @@ SET_EXTLIB_PROPERTIES(inih)
 
 # tinyxml2
 IF(USE_INTERNAL_XML)
-	# TODO: DLL build on Windows.
-	SET(SKIP_INSTALL_LIBRARIES ON)
-	SET(SKIP_INSTALL_ALL ON)
-	SET(BUILD_SHARED_LIBS OFF)
+	# Use the internal copy of TinyXML2.
+	# On Windows and Mac OS X, this will build DLLs.
+	# On other systems, this will be statically-linked.
+	IF(WIN32 OR APPLE)
+		SET(ENABLE_SHARED ON)
+		SET(ENABLE_STATIC OFF)
+		SET(SKIP_INSTALL_LIBRARIES OFF)
+		SET(SKIP_INSTALL_ALL OFF)
+		SET(BUILD_SHARED_LIBS ON)
+	ELSE()
+		SET(ENABLE_SHARED OFF)
+		SET(ENABLE_STATIC ON)
+		SET(SKIP_INSTALL_LIBRARIES ON)
+		SET(SKIP_INSTALL_ALL ON)
+		SET(BUILD_SHARED_LIBS OFF)
+	ENDIF()
+
+	# Build TinyXML2.
 	ADD_SUBDIRECTORY(tinyxml2)
-	SET_EXTLIB_PROPERTIES(tinyxml2)
+
+	# NOTE: Cannot remove targets from all builds
+	# if they're being installed.
+	SET_EXTLIB_PROPERTIES(tinyxml2_static)
+	#SET_EXTLIB_PROPERTIES(tinyxml2)
 ENDIF(USE_INTERNAL_XML)
 
 # Google Test
