@@ -1,6 +1,9 @@
 # Win32-specific CFLAGS/CXXFLAGS.
 # For MinGW compilers.
 
+# Enable "secure" API functions: *_s()
+SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} -DMINGW_HAS_SECURE_API")
+
 # Subsystem and minimum Windows version:
 # - If 32-bit: 5.01
 # - If 64-bit: 5.02

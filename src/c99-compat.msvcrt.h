@@ -153,26 +153,27 @@ int C99_snprintf(char *str, size_t size, const char *format, ...)
  * Older verisons don't have these functions, but they do have
  * the equivalent functions _strtoi64() and _strtoui64().
  */
-#if _MSC_VER < 1800
+#if defined(_MSC_VER) && _MSC_VER < 1800
 #define strtoll(nptr, endptr, base)  _strtoi64(nptr, endptr, base)
 #define strtoull(nptr, endptr, base) _strtoui64(nptr, endptr, base)
 #define wcstoll(nptr, endptr, base)  _wcstoi64(nptr, endptr, base)
 #define wcstoull(nptr, endptr, base) _wcstoui64(nptr, endptr, base)
-#endif /* _MSC_VER < 1800 */
+#endif /* defined(_MSC_VER) && _MSC_VER < 1800 */
 
 /** strcasecmp() and related **/
 
 /**
  * MSVCRT case-insensitive string comparison functions.
- * MinGW-w64 is missing some of these, so redefine the
- * function names if they haven't been defined already.
+ * MinGW-w64 has the ANSI versions, but not the Unicode versions.
  */
+#ifdef _MSC_VER
 #ifndef strcasecmp
 #define strcasecmp(s1, s2)     _stricmp(s1, s2)
 #endif
 #ifndef strncasecmp
 #define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
 #endif
+#endif /* _MSC_VER */
 #ifndef wcscasecmp
 #define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
 #endif
