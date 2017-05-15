@@ -1576,40 +1576,10 @@ int Nintendo3DS::loadFieldData(void)
 				: KeyManager::VERIFY_UNKNOWN);
 		if (!d->srlData && res != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
-			// TODO: Share with GameCube::wii_getCryptoStatus().
-
-			// Error table.
-			static const rp_char *const errTbl[] = {
-				// VERIFY_OK
-				_RP("Something happened."),
-				// VERIFY_INVALID_PARAMS
-				_RP("Invalid parameters. (THIS IS A BUG!)"),
-				// VERIFY_NO_SUPPORT
-				_RP("Decryption is not supported in this build."),
-				// VERIFY_KEY_DB_NOT_LOADED
-				_RP("keys.conf was not found."),
-				// VERIFY_KEY_DB_ERROR
-				_RP("keys.conf has an error and could not be loaded."),
-				// VERIFY_KEY_NOT_FOUND
-				_RP("Required key was not found in keys.conf."),
-				// VERIFY_KEY_INVALID
-				_RP("The key in keys.conf is not a valid key."),
-				// VERFIY_IAESCIPHER_INIT_ERR
-				_RP("AES decryption could not be initialized."),
-				// VERIFY_IAESCIPHER_DECRYPT_ERR
-				_RP("AES decryption failed."),
-				// VERIFY_WRONG_KEY
-				_RP("The key in keys.conf is incorrect."),
-			};
-			static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
-
-			const rp_char *err = nullptr;
-			if (res >= 0 && res < KeyManager::VERIFY_MAX) {
-				err = errTbl[res];
-			} else {
+			const rp_char *err = KeyManager::verifyResultToString(res);
+			if (!err) {
 				err = _RP("Unknown error. (THIS IS A BUG!)");
 			}
-
 			d->fields->addField_string(_RP("Warning"), err, RomFields::STRF_WARNING);
 		}
 	}

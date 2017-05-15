@@ -64,6 +64,13 @@ class KeyManager : public ConfReader
 			VERIFY_MAX
 		};
 
+		/**
+		 * Get a description for a VerifyResult.
+		 * @param res VerifyResult.
+		 * @return Description, or nullptr if invalid.
+		 */
+		static const rp_char *verifyResultToString(VerifyResult res);
+
 #ifdef ENABLE_DECRYPTION
 	public:
 		/**

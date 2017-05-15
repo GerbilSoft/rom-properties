@@ -952,31 +952,6 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
  */
 const rp_char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partition)
 {
-	// Error table.
-	static const rp_char *const errTbl[] = {
-		// VERIFY_OK
-		_RP("ERROR: Something happened."),
-		// VERIFY_INVALID_PARAMS
-		_RP("ERROR: Invalid parameters. (THIS IS A BUG!)"),
-		// VERIFY_NO_SUPPORT
-		_RP("ERROR: Decryption is not supported in this build."),
-		// VERIFY_KEY_DB_NOT_LOADED
-		_RP("ERROR: keys.conf was not found."),
-		// VERIFY_KEY_DB_ERROR
-		_RP("ERROR: keys.conf has an error and could not be loaded."),
-		// VERIFY_KEY_NOT_FOUND
-		_RP("ERROR: Required key was not found in keys.conf."),
-		// VERIFY_KEY_INVALID
-		_RP("ERROR: The key in keys.conf is not a valid key."),
-		// VERFIY_IAESCIPHER_INIT_ERR
-		_RP("ERROR: AES decryption could not be initialized."),
-		// VERIFY_IAESCIPHER_DECRYPT_ERR
-		_RP("ERROR: AES decryption failed."),
-		// VERIFY_WRONG_KEY
-		_RP("ERROR: The key in keys.conf is incorrect."),
-	};
-	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
-
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VERIFY_KEY_NOT_FOUND) {
 		// This may be an invalid key index.
@@ -986,12 +961,11 @@ const rp_char *GameCubePrivate::wii_getCryptoStatus(const WiiPartition *partitio
 		}
 	}
 
-	if (res >= 0 && res < KeyManager::VERIFY_MAX) {
-		return errTbl[res];
+	const rp_char *err = KeyManager::verifyResultToString(res);
+	if (!err) {
+		err = _RP("ERROR: Unknown error. (THIS IS A BUG!)");
 	}
-
-	// Should not get here...
-	return _RP("ERROR: Unknown error. (THIS IS A BUG!)");
+	return err;
 }
 
 /** GameCube **/
@@ -1741,8 +1715,9 @@ int GameCube::loadFieldData(void)
 			// homebrew, a prototype, or a key error.
 			if (d->gamePartition->verifyResult() != KeyManager::VERIFY_OK) {
 				// Key error.
-				d->fields->addField_string(_RP("Game Info"),
-					d->wii_getCryptoStatus(d->gamePartition));
+				rp_string err(_RP("ERROR: "));
+				err += d->wii_getCryptoStatus(d->gamePartition);
+				d->fields->addField_string(_RP("Game Info"), err);
 			}
 		}
 

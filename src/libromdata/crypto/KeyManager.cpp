@@ -20,9 +20,6 @@
  ***************************************************************************/
 
 #include "config.libromdata.h"
-#ifndef ENABLE_DECRYPTION
-#error This file should only be compiled if decryption is enabled.
-#endif /* ENABLE_DECRYPTION */
 
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
@@ -66,12 +63,14 @@ class KeyManagerPrivate : public ConfReaderPrivate
 		typedef ConfReaderPrivate super;
 		RP_DISABLE_COPY(KeyManagerPrivate)
 
+#ifdef ENABLE_DECRYPTION
 	public:
 		// Static KeyManager instance.
 		// TODO: Q_GLOBAL_STATIC() equivalent, though we
 		// may need special initialization if the compiler
 		// doesn't support thread-safe statics.
 		static KeyManager instance;
+#endif /* ENABLE_DECRYPTION */
 
 	public:
 		/**
@@ -92,6 +91,7 @@ class KeyManagerPrivate : public ConfReaderPrivate
 			const char *name, const char *value) override final;
 
 	public:
+#ifdef ENABLE_DECRYPTION
 		// Encryption key data.
 		// Managed as a single block in order to reduce
 		// memory allocations.
@@ -113,9 +113,16 @@ class KeyManagerPrivate : public ConfReaderPrivate
 		 * - Value: Verification result.
 		 */
 		unordered_map<string, uint8_t> mapInvalidKeyNames;
+#endif /* ENABLE_DECRYPTION */
 };
 
 /** KeyManagerPrivate **/
+
+#ifdef ENABLE_DECRYPTION
+// Singleton instance.
+// Using a static non-pointer variable in order to
+// handle proper destruction when the DLL is unloaded.
+KeyManager KeyManagerPrivate::instance;
 
 // Verification test string.
 // NOTE: This string is NOT NULL-terminated!
@@ -123,11 +130,7 @@ const char KeyManager::verifyTestString[] = {
 	'A','E','S','-','1','2','8','-',
 	'E','C','B','-','T','E','S','T'
 };
-
-// Singleton instance.
-// Using a static non-pointer variable in order to
-// handle proper destruction when the DLL is unloaded.
-KeyManager KeyManagerPrivate::instance;
+#endif /* ENABLE_DECRYPTION */
 
 KeyManagerPrivate::KeyManagerPrivate()
 	: super(_RP("keys.conf"))
@@ -138,6 +141,7 @@ KeyManagerPrivate::KeyManagerPrivate()
  */
 void KeyManagerPrivate::reset(void)
 {
+#ifdef ENABLE_DECRYPTION
 	// Clear the loaded keys.
 	vKeys.clear();
 	mapKeyNames.clear();
@@ -150,6 +154,9 @@ void KeyManagerPrivate::reset(void)
 	// NOTE: Not reserving entries for invalid key names.
 	mapKeyNames.reserve(64);
 #endif
+#else /* !ENABLE_DECRYPTION */
+	assert(!"Should not be called in no-decryption builds.");
+#endif /* ENABLE_DECRYPTION */
 }
 
 /**
@@ -163,6 +170,7 @@ void KeyManagerPrivate::reset(void)
  */
 int KeyManagerPrivate::processConfigLine(const char *section, const char *name, const char *value)
 {
+#ifdef ENABLE_DECRYPTION
 	// NOTE: Invalid lines are ignored, so we're always returning 1.
 
 	// Are we in the "Keys" section?
@@ -243,6 +251,10 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	keyIdx |= (len << 24);
 	mapKeyNames.insert(std::make_pair(string(name), keyIdx));
 	return 1;
+#else /* !ENABLE_DECRYPTION */
+	assert(!"Should not be called in no-decryption builds.");
+	return 0;
+#endif /* ENABLE_DECRYPTION */
 }
 
 /** KeyManager **/
@@ -251,6 +263,43 @@ KeyManager::KeyManager()
 	: super(new KeyManagerPrivate())
 { }
 
+/**
+ * Get a description for a VerifyResult.
+ * @param res VerifyResult.
+ * @return Description, or nullptr if invalid.
+ */
+const rp_char *KeyManager::verifyResultToString(VerifyResult res)
+{
+	static const rp_char *const errTbl[] = {
+		// VERIFY_OK
+		_RP("Something happened."),
+		// VERIFY_INVALID_PARAMS
+		_RP("Invalid parameters. (THIS IS A BUG!)"),
+		// VERIFY_NO_SUPPORT
+		_RP("Decryption is not supported in this build."),
+		// VERIFY_KEY_DB_NOT_LOADED
+		_RP("keys.conf was not found."),
+		// VERIFY_KEY_DB_ERROR
+		_RP("keys.conf has an error and could not be loaded."),
+		// VERIFY_KEY_NOT_FOUND
+		_RP("Required key was not found in keys.conf."),
+		// VERIFY_KEY_INVALID
+		_RP("The key in keys.conf is not a valid key."),
+		// VERFIY_IAESCIPHER_INIT_ERR
+		_RP("AES decryption could not be initialized."),
+		// VERIFY_IAESCIPHER_DECRYPT_ERR
+		_RP("AES decryption failed."),
+		// VERIFY_WRONG_KEY
+		_RP("The key in keys.conf is incorrect."),
+	};
+	static_assert(ARRAY_SIZE(errTbl) == KeyManager::VERIFY_MAX, "Update errTbl[].");
+
+	assert(res >= 0);
+	assert(res < ARRAY_SIZE(errTbl));
+	return ((res >= 0 && res < ARRAY_SIZE(errTbl)) ? errTbl[res] : nullptr);
+}
+
+#ifdef ENABLE_DECRYPTION
 /**
  * Get the KeyManager instance.
  * @return KeyManager instance.
@@ -407,5 +456,6 @@ KeyManager::VerifyResult KeyManager::getAndVerify(const char *keyName, KeyData_t
 	// Test data verified.
 	return VERIFY_OK;
 }
+#endif /* ENABLE_DECRYPTION */
 
 }

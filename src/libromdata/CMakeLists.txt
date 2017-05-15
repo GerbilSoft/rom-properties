@@ -112,6 +112,7 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
+	crypto/KeyManager.cpp
 	config/ConfReader.cpp
 	config/Config.cpp
 	)
@@ -201,6 +202,7 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	crypto/KeyManager.hpp
 	config/ConfReader.hpp
 	config/Config.hpp
 	)
@@ -253,13 +255,11 @@ ENDIF(WIN32)
 IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
 		crypto/AesCipherFactory.cpp
-		crypto/KeyManager.cpp
 		crypto/CtrKeyScrambler.cpp
 		disc/NCCHReader_VerifyKeys.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/IAesCipher.hpp
-		crypto/KeyManager.hpp
 		crypto/CtrKeyScrambler.hpp
 		)
 	IF(WIN32)
