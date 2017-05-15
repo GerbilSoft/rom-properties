@@ -83,9 +83,9 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    AUTOCHECKBOX    "Enable external image downloads.", IDC_EXTIMGDL, 7, 7, 123, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_INTICONSMALL, 7, 21, 185, 8, 0, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Download high-resolution scans if viewing large thumbnails.\nThis may increase bandwidth usage.", IDC_HIGHRESDL, 7, 35, 200, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable external image downloads.", IDC_EXTIMGDL, 7, 7, 319, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_INTICONSMALL, 7, 21, 319, 8, 0, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Download high-resolution scans if viewing large thumbnails.\nThis may increase bandwidth usage.", IDC_HIGHRESDL, 7, 35, 319, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
