@@ -230,6 +230,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 */
 		static vector<const char*> n3dsRegionToGameTDB(
 			uint32_t smdhRegion, char idRegion);
+
+		/**
+		 * Convert a Nintendo 3DS version number field to a string.
+		 * @param version Version number.
+		 * @return String.
+		 */
+		static inline rp_string n3dsVersionToString(uint16_t version);
 };
 
 /** Nintendo3DSPrivate **/
@@ -1044,6 +1051,24 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 	}
 
 	return ret;
+}
+
+/**
+ * Convert a Nintendo 3DS version number field to a string.
+ * @param version Version number.
+ * @return String.
+ */
+inline rp_string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
+{
+	// Reference: https://3dbrew.org/wiki/Titles
+	char buf[12];
+	int len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+		(version >> 10),
+		(version >>  4) & 0x1F,
+		(version & 0x0F));
+	if (len > (int)sizeof(buf))
+		len = sizeof(buf);
+	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 }
 
 /** Nintendo3DS **/
@@ -1909,13 +1934,7 @@ int Nintendo3DS::loadFieldData(void)
 						// This is usually 1.1.0, though some might be 1.0.0.
 						data_row.push_back(_RP("1.x.x"));
 					} else {
-						len = snprintf(buf, sizeof(buf), "%u.%u.%u",
-							(version >> 10),
-							(version >>  4) & 0x1F,
-							(version & 0x0F));
-						if (len > (int)sizeof(buf))
-							len = sizeof(buf);
-						data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+						data_row.push_back(d->n3dsVersionToString(version));
 					}
 				} else {
 					// Unable to load the NCCH header.
@@ -1960,17 +1979,8 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Required system version?
 
 		// Version.
-		// Reference: https://3dbrew.org/wiki/Titles
-		// TODO: Consolidate with NCSD.
 		const uint16_t version = be16_to_cpu(tmd_header->title_version);
-		len = snprintf(buf, sizeof(buf), "%u.%u.%u",
-			(version >> 10),
-			(version >>  4) & 0x1F,
-			(version & 0x0F));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		d->fields->addField_string(_RP("Version"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		d->fields->addField_string(_RP("Version"), d->n3dsVersionToString(version));
 
 		// Issuer.
 		// NOTE: We're using the Ticket Issuer in the TMD tab.
@@ -2096,16 +2106,8 @@ int Nintendo3DS::loadFieldData(void)
 			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 			// Version. [FIXME: Might not be right...]
-			// Reference: https://3dbrew.org/wiki/Titles
-			// Format the NCCH version.
 			const uint16_t version = le16_to_cpu(content_ncch_header->version);
-			len = snprintf(buf, sizeof(buf), "%u.%u.%u",
-				(version >> 10),
-				(version >>  4) & 0x1F,
-				(version & 0x0F));
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			data_row.push_back(d->n3dsVersionToString(version));
 
 			// Content size.
 			data_row.push_back(d->formatFileSize(ncch->partition_size()));
