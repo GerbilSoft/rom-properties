@@ -33,6 +33,12 @@
 #include <excpt.h>
 #include <errno.h>
 
+// This isn't defined if compiling with MSVC 2012+
+// when using the Windows 7 SDK.
+#ifndef FACILITY_VISUALCPP
+#define FACILITY_VISUALCPP 109
+#endif
+
 /**
  * DELAYLOAD_FILTER_FUNCTION_IMPL(): Implementation of the DelayLoad filter function.
  * Don't use this directly; it's used by DELAYLOAD_TEST_FUNCTION_IMPL*().
