@@ -86,10 +86,10 @@ ENDIF(MSVC)
 ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_SRC}
 	${rom-properties-win32_PCH_H}
-	${rom-properties-win32_SRCS}
-	${rom-properties-win32_H}
 	${rom-properties-win32-DELAY_LOAD_SRC}
 	${rom-properties-win32-DELAY_LOAD_H}
+	${rom-properties-win32_SRCS}
+	${rom-properties-win32_H}
 	)
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)
