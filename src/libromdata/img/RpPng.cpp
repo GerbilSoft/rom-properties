@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -58,7 +58,17 @@ using std::unique_ptr;
 // pngcheck()
 #include "pngcheck/pngcheck.hpp"
 
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#include "delayload/DelayLoadHelper.hpp"
+#endif
+
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(png_access_version_number);
+#endif /* _MSC_VER */
 
 class RpPngPrivate
 {
@@ -690,6 +700,16 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	if (!file)
 		return nullptr;
 
+#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_png_access_version_number() != 0) {
+		// Delay load failed.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+
+	// Rewind the file.
 	file->rewind();
 
 	png_structp png_ptr;
@@ -740,7 +760,6 @@ rp_image *RpPng::load(IRpFile *file)
 	}
 
 	// PNG image has been validated.
-	file->rewind();
 	return loadUnchecked(file);
 }
 
@@ -759,6 +778,15 @@ int RpPng::save(IRpFile *file, const rp_image *img)
 {
 	if (!file || !img)
 		return -EINVAL;
+
+#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_png_access_version_number() != 0) {
+		// Delay load failed.
+		return -ENOTSUP;
+	}
+#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
 
 	// Truncate the file initially.
 	int ret = file->truncate(0);
@@ -809,6 +837,15 @@ int RpPng::save(const rp_char *filename, const rp_image *img)
 {
 	if (!filename || filename[0] == 0 || !img)
 		return -EINVAL;
+
+#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_png_access_version_number() != 0) {
+		// Delay load failed.
+		return -ENOTSUP;
+	}
+#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_CREATE_WRITE));
 	if (!file->isOpen()) {
@@ -862,6 +899,15 @@ int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
 		// Single image.
 		return save(file, iconAnimData->frames[iconAnimData->seq_index[0]]);
 	}
+
+#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_png_access_version_number() != 0) {
+		// Delay load failed.
+		return -ENOTSUP;
+	}
+#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
 
 	// Truncate the file initially.
 	int ret = file->truncate(0);
@@ -932,6 +978,15 @@ int RpPng::save(const rp_char *filename, const IconAnimData *iconAnimData)
 		// Single image.
 		return save(filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 	}
+
+#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_png_access_version_number() != 0) {
+		// Delay load failed.
+		return -ENOTSUP;
+	}
+#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
 
 	// Load APNG.
 	int apng_ret = APNG_ref();

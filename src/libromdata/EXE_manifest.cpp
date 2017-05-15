@@ -40,11 +40,30 @@ using std::vector;
 
 namespace LibRomData {
 
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+/**
+ * Check if TinyXML2 can be delay-loaded.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+extern int DelayLoad_test_TinyXML2(void);
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 /**
  * Add fields from the Win32 manifest resource.
+ * @return 0 on success; negative POSIX error code on error.
  */
-void EXEPrivate::addFields_PE_Manifest(void)
+int EXEPrivate::addFields_PE_Manifest(void)
 {
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	int ret = DelayLoad_test_TinyXML2();
+	if (ret != 0) {
+		// Delay load failed.
+		return ret;
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 	// Manifest resource IDs
 	struct ManifestResourceID_t {
 		uint16_t id;
@@ -72,21 +91,21 @@ void EXEPrivate::addFields_PE_Manifest(void)
 
 	if (!f_manifest || id_idx >= ARRAY_SIZE(resource_ids)) {
 		// No manifest resource.
-		return;
+		return -ENOENT;
 	}
 
 	// Read the entire resource into memory.
 	// Assuming a limit of 64 KB for manifests.
 	if (f_manifest->size() > 65536) {
 		// Manifest is too big.
-		return;
+		return -ENOMEM;
 	}
 	unsigned int xml_size = (unsigned int)f_manifest->size();
 	unique_ptr<char[]> xml(new char[xml_size+1]);
 	size_t size = f_manifest->read(xml.get(), xml_size);
 	if (size != xml_size) {
 		// Read error.
-		return;
+		return -EIO;
 	}
 	xml[xml_size] = 0;
 	f_manifest.reset();
@@ -96,14 +115,16 @@ void EXEPrivate::addFields_PE_Manifest(void)
 	int xerr = doc.Parse(xml.get());
 	if (xerr != XML_SUCCESS) {
 		// Error parsing the manifest XML.
-		return;
+		// TODO: Better error code.
+		return -EIO;
 	}
 
 	// Root element must be assembly.
 	const XMLElement *const assembly = doc.FirstChildElement("assembly");
 	if (!assembly) {
 		// No assembly element.
-		return;
+		// TODO: Better error code.
+		return -EIO;
 	}
 
 	// Verify assembly attributes.
@@ -120,7 +141,8 @@ void EXEPrivate::addFields_PE_Manifest(void)
 		    strcmp(manifestVersion, "1.0") != 0)
 		{
 			// Incorrect assembly attributes.
-			return;
+			// TODO: Better error code.
+			return -EIO;
 		}
 	}
 
@@ -327,6 +349,9 @@ void EXEPrivate::addFields_PE_Manifest(void)
 				v_OS_Compatibility_names, 2, compat);
 		}
 	}
+
+	// Manifest read successfully.
+	return 0;
 }
 
 }

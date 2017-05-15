@@ -43,7 +43,23 @@ using std::unique_ptr;
 #include <jerror.h>
 #include <setjmp.h>
 
+#ifdef _MSC_VER
+// NOTE: jpegint.h does not have extern "C".
+// We're using it for DELAYLOAD verification.
+extern "C" {
+#include <jpegint.h>
+}
+// MSVC: Exception handling for /DELAYLOAD.
+#include "delayload/DelayLoadHelper.hpp"
+#endif /* _MSC_VER */
+
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+// TODO: jdiv_round_up() uses division. Find a better function?
+DELAYLOAD_TEST_FUNCTION_IMPL2(jdiv_round_up, 0, 1);
+#endif /* _MSC_VER */
 
 class RpJpegPrivate
 {
@@ -273,6 +289,16 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	if (!file)
 		return nullptr;
 
+#if defined(_MSC_VER) && defined(JPEG_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_jdiv_round_up() != 0) {
+		// Delay load failed.
+		return nullptr;
+	}
+#endif /* defined(_MSC_VER) && defined(JPEG_IS_DLL) */
+
+	// Rewind the file.
 	file->rewind();
 
 	RpJpegPrivate::my_error_mgr jerr;
@@ -523,7 +549,6 @@ rp_image *RpJpeg::load(IRpFile *file)
 		return nullptr;
 
 	// FIXME: Add a JPEG equivalent of pngcheck().
-	file->rewind();
 	return loadUnchecked(file);
 }
 

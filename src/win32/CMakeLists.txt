@@ -53,17 +53,31 @@ SET(rom-properties-win32_H
 	resource.h
 	)
 
-# Precompiled headers.
-# NOTE: Only enabling PCH for MSVC builds.
 IF(MSVC)
+	# Precompiled headers.
+	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
 	SET(rom-properties-win32_PCH_SRC stdafx.cpp)
 	SET(rom-properties-win32_PCH_H stdafx.h)
+
+	# Delay-load sources.
+	SET(rom-properties-win32-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
+	SET(rom-properties-win32-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
 ENDIF(MSVC)
 
 #####################
 # Build the plugin. #
 #####################
+
+### rp-config stub.
+# NOTE: This must be *before* including the DelayLoad flags.
+ADD_SUBDIRECTORY(config)
+
+IF(MSVC)
+	# Delay-load extlibs.
+	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	SET_DELAY_LOAD_FLAGS()
+ENDIF(MSVC)
 
 # FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
@@ -72,6 +86,8 @@ ENDIF(MSVC)
 ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_PCH_SRC}
 	${rom-properties-win32_PCH_H}
+	${rom-properties-win32-DELAY_LOAD_SRC}
+	${rom-properties-win32-DELAY_LOAD_H}
 	${rom-properties-win32_SRCS}
 	${rom-properties-win32_H}
 	)
@@ -97,7 +113,14 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
-TARGET_LINK_LIBRARIES(rom-properties comctl32)
+TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32)
+
+# Delay-load some Windows system libraries.
+# TODO: MinGW delay-load?
+IF(MSVC)
+	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
+	TARGET_LINK_LIBRARIES(rom-properties delayimp)
+ENDIF(MSVC)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)
@@ -107,8 +130,9 @@ IF(MINGW)
 ENDIF(MINGW)
 
 # Use the .def file for DLL exports.
+# Also add delay-load flags here. (TODO: MinGW?)
 IF(MSVC)
-	SET(RP_DLL_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
+	SET(RP_DLL_FLAGS "${RP_SYS_DELAY_LOAD_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.def")
 ELSEIF(MINGW)
 	# NOTE: Enabling stdcall fixups so we can use
 	# the same .def file for Win32 and Win64,
@@ -127,25 +151,6 @@ IF(RP_DLL_FLAGS)
 	UNSET(RP_LINK_FLAGS)
 	UNSET(RP_DLL_FLAGS)
 ENDIF(RP_DLL_FLAGS)
-
-# Delay-load ZLIB and LIBPNG.
-# NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
-# have different names in Debug and Release builds.
-# FIXME: The rom-properties DLL directory is *not* in the
-# DLL search path, so these delay loads fail.
-# TODO: SetDllDirectory() temporarily for XP, and
-# AddDllDirectory() on Windows Vista+?
-#IF(USE_INTERNAL_ZLIB_DLL)
-#	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1d.dll")
-#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:zlib1.dll")
-#ENDIF(USE_INTERNAL_ZLIB_DLL)
-#IF(USE_INTERNAL_PNG_DLL)
-	#SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16d.dll")
-#	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DELAYLOAD:libpng16.dll")
-#ENDIF(USE_INTERNAL_PNG_DLL)
-
-### rp-config stub.
-ADD_SUBDIRECTORY(config)
 
 #################
 # Installation. #

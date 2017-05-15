@@ -158,8 +158,9 @@ class EXEPrivate : public RomDataPrivate
 #ifdef ENABLE_XML
 		/**
 		 * Add fields from the Win32 manifest resource.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		void addFields_PE_Manifest(void);
+		int addFields_PE_Manifest(void);
 #endif /* ENABLE_XML */
 };
 
