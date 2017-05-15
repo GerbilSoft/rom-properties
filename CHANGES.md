@@ -125,7 +125,8 @@
     used on Windows, and it had some odd quirks like loading grayscale images
     as 32-bit ARGB instead of paletted.
   * (Windows) zlib and libpng are now compiled as DLLs instead of being
-    statically linked.
+    statically linked. The DLLs are linked using delay-load, so they're
+    not loaded until they're needed.
   * pngcheck: Fixed a race condition that could result in crashes if more
     than one thread attempted to load a PNG image at the same time.
   * Age ratings for CERO, ESRB, and AGCB are now converted to their official
