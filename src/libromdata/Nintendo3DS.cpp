@@ -1539,6 +1539,9 @@ int Nintendo3DS::loadFieldData(void)
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
 
+	// Have we shown a warning yet?
+	bool shownWarning = false;
+
 	// Temporary buffer for snprintf().
 	char buf[64];
 	int len;
@@ -1563,16 +1566,18 @@ int Nintendo3DS::loadFieldData(void)
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_NCCH)
 	{
 		KeyManager::VerifyResult res = (ncch
-				? ncch->verifyResult()
-				: KeyManager::VERIFY_UNKNOWN);
-		printf("res == %d\n", res);
+			? ncch->verifyResult()
+			: KeyManager::VERIFY_UNKNOWN);
 		if (!d->srlData && res != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
-			const rp_char *err = KeyManager::verifyResultToString(res);
-			if (!err) {
-				err = _RP("Unknown error. (THIS IS A BUG!)");
+			if (!shownWarning) {
+				const rp_char *err = KeyManager::verifyResultToString(res);
+				if (!err) {
+					err = _RP("Unknown error. (THIS IS A BUG!)");
+				}
+				d->fields->addField_string(_RP("Warning"), err, RomFields::STRF_WARNING);
+				shownWarning = true;
 			}
-			d->fields->addField_string(_RP("Warning"), err, RomFields::STRF_WARNING);
 		}
 	}
 
@@ -1686,10 +1691,19 @@ int Nintendo3DS::loadFieldData(void)
 
 		if (!ncch || ncch->verifyResult() != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
-			// TODO: Show the actual verification result.
-			d->fields->addField_string(_RP("Warning"),
-				_RP("A required encryption key was not found or is incorrect."),
-				RomFields::STRF_WARNING);
+			// TODO: This warning probably isn't needed,
+			// since it's handled above...
+			if (!shownWarning) {
+				KeyManager::VerifyResult res = (ncch
+					? ncch->verifyResult()
+					: KeyManager::VERIFY_UNKNOWN);
+				const rp_char *err = KeyManager::verifyResultToString(res);
+				if (!err) {
+					err = _RP("Unknown error. (THIS IS A BUG!)");
+				}
+				d->fields->addField_string(_RP("Warning"), err, RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
 		}
 
 		// TODO: Add more fields?
