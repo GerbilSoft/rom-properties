@@ -176,6 +176,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * Load the specified NCCH header.
 		 * @param idx		[in] Content/partition index.
 		 * @return NCCHReader on success; nullptr on error.
+		 * NOTE: Caller must check NCCHReader::isOpen().
 		 */
 		NCCHReader *loadNCCH(int idx);
 
@@ -183,6 +184,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * Create an NCCHReader for the primary content.
 		 * An NCCH reader is created as this->ncch_reader.
 		 * @return this->ncch_reader on success; nullptr on error.
+		 * NOTE: Caller must check NCCHReader::isOpen().
 		 */
 		NCCHReader *loadNCCH(void);
 
@@ -367,8 +369,8 @@ int Nintendo3DSPrivate::loadSMDH(void)
 		case ROM_TYPE_NCCH: {
 			// CCI file, CIA file with no meta section, or NCCH file.
 			// Open "exefs:/icon".
-			NCCHReader *ncch_reader = loadNCCH();
-			if (!ncch_reader) {
+			NCCHReader *const ncch_reader = loadNCCH();
+			if (!ncch_reader || !ncch_reader->isOpen()) {
 				// Unable to open the primary NCCH.
 				return -7;
 			}
@@ -410,6 +412,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
  * Load the specified NCCH header.
  * @param idx		[in] Content/partition index.
  * @return NCCHReader on success; nullptr on error.
+ * NOTE: Caller must check NCCHReader::isOpen().
  */
 NCCHReader *Nintendo3DSPrivate::loadNCCH(int idx)
 {
@@ -524,22 +527,16 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(int idx)
 	}
 
 	// Create the NCCHReader.
-	NCCHReader *ncch_reader = new NCCHReader(file,
-		media_unit_shift, offset, length, ticket, idx);
-	if (!ncch_reader->isOpen()) {
-		// Error creating the NCCHReader.
-		delete ncch_reader;
-		return nullptr;
-	}
-
-	// NCCHReader created successfully.
-	return ncch_reader;
+	// NOTE: We're not checking isOpen() here.
+	// That should be checked by the caller.
+	return new NCCHReader(file, media_unit_shift, offset, length, ticket, idx);
 }
 
 /**
  * Create an NCCHReader for the primary content.
  * An NCCH reader is created as this->ncch_reader.
  * @return this->ncch_reader on success; nullptr on error.
+ * NOTE: Caller must check NCCHReader::isOpen().
  */
 NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 {
@@ -558,15 +555,9 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
 
 	// TODO: For CCIs, verify that the copy in the
 	// Card Info Header matches the actual partition?
-	NCCHReader *ncch_reader = loadNCCH(content_idx);
-	if (ncch_reader && ncch_reader->isOpen()) {
-		// NCCH reader created successfully.
-		this->ncch_reader = ncch_reader;
-	} else {
-		// NCCH reader encountered an error.
-		delete ncch_reader;
-	}
-
+	// NOTE: We're not checking isOpen() here.
+	// That should be checked by the caller.
+	this->ncch_reader = loadNCCH(content_idx);
 	return this->ncch_reader;
 }
 
@@ -577,8 +568,8 @@ NCCHReader *Nintendo3DSPrivate::loadNCCH(void)
  */
 inline const N3DS_NCCH_Header_NoSig_t *Nintendo3DSPrivate::loadNCCHHeader(void)
 {
-	const NCCHReader *const ncch_reader = loadNCCH();
-	return (ncch_reader ? ncch_reader->ncchHeader() : nullptr);
+	const NCCHReader *const ncch = loadNCCH();
+	return (ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 }
 
 /**
@@ -861,7 +852,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	// NCCH header.
 	NCCHReader *const ncch = loadNCCH();
 	const N3DS_NCCH_Header_NoSig_t *const ncch_header =
-		(ncch ? ncch->ncchHeader() : nullptr);
+		(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 
 	const rp_char *tid_desc = nullptr;
 	uint32_t tid_hi, tid_lo;
@@ -890,7 +881,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
-	if (ncch) {
+	if (ncch && ncch->isOpen()) {
 		// Product code.
 		if (ncch_header) {
 			fields->addField_string(_RP("Product Code"),
@@ -1565,15 +1556,16 @@ int Nintendo3DS::loadFieldData(void)
 	// Get the primary NCCH.
 	// If this fails, and the file type is NCSD or CIA,
 	// it usually means there's a missing key.
-	const NCCHReader *const ncch_reader = d->loadNCCH();
+	const NCCHReader *const ncch = d->loadNCCH();
 	// Check for potential encryption key errors.
 	if (d->romType == Nintendo3DSPrivate::ROM_TYPE_CCI ||
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_CIA ||
 	    d->romType == Nintendo3DSPrivate::ROM_TYPE_NCCH)
 	{
-		KeyManager::VerifyResult res = (ncch_reader
-				? ncch_reader->verifyResult()
+		KeyManager::VerifyResult res = (ncch
+				? ncch->verifyResult()
 				: KeyManager::VERIFY_UNKNOWN);
+		printf("res == %d\n", res);
 		if (!d->srlData && res != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
 			const rp_char *err = KeyManager::verifyResultToString(res);
@@ -1692,7 +1684,7 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->setTabName(0, _RP("NCSD"));
 		}
 
-		if (!ncch_reader || ncch_reader->verifyResult() != KeyManager::VERIFY_OK) {
+		if (!ncch || ncch->verifyResult() != KeyManager::VERIFY_OK) {
 			// Missing encryption keys.
 			// TODO: Show the actual verification result.
 			d->fields->addField_string(_RP("Warning"),
@@ -1861,7 +1853,8 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (!emmc) {
 				unique_ptr<NCCHReader> ncch(d->loadNCCH(i));
-				const N3DS_NCCH_Header_NoSig_t *part_ncch_header = (ncch ? ncch->ncchHeader() : nullptr);
+				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
+					(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 				if (part_ncch_header) {
 					// Encryption.
 					NCCHReader::CryptoType cryptoType = {nullptr, false, 0, false};
@@ -2012,7 +2005,8 @@ int Nintendo3DS::loadFieldData(void)
 
 			// TODO: Use content_chunk->index?
 			unique_ptr<NCCHReader> ncch(d->loadNCCH(i));
-			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = (ncch ? ncch->ncchHeader() : nullptr);
+			const N3DS_NCCH_Header_NoSig_t *const content_ncch_header =
+				(ncch && ncch->isOpen() ? ncch->ncchHeader() : nullptr);
 			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
@@ -2115,7 +2109,7 @@ int Nintendo3DS::loadFieldData(void)
 
 	// Get the NCCH Extended Header.
 	const N3DS_NCCH_ExHeader_t *const ncch_exheader =
-		(ncch_reader ? ncch_reader->ncchExHeader() : nullptr);
+		(ncch && ncch->isOpen() ? ncch->ncchExHeader() : nullptr);
 	if (ncch_exheader) {
 		// Display the NCCH Extended Header.
 		// TODO: Add more fields?
