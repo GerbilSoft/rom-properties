@@ -60,7 +60,7 @@ using std::unique_ptr;
 
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
-#include "RpWin32_delayload.h"
+#include "delayload/DelayLoadHelper.hpp"
 #endif
 
 namespace LibRomData {

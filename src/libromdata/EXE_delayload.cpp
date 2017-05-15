@@ -30,7 +30,7 @@
 using namespace tinyxml2;
 
 // MSVC: Exception handling for /DELAYLOAD.
-#include "RpWin32_delayload.h"
+#include "delayload/DelayLoadHelper.hpp"
 
 namespace LibRomData {
 

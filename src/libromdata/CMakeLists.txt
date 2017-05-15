@@ -236,7 +236,6 @@ IF(WIN32)
 	SET(libromdata_OS_H
 		RpWin32.hpp
 		RpWin32_sdk.h
-		RpWin32_delayload.h
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
@@ -346,12 +345,15 @@ FOREACH(_target romdata8 romdata16)
 	# - Private: Parent source and binary directories,
 	#            and top-level binary directory for git_version.h.
 	TARGET_INCLUDE_DIRECTORIES(${_target}
-		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
+		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
 		)
+	IF(MSVC)
+		TARGET_LINK_LIBRARIES(${_target} delayimp)
+	ENDIF(MSVC)
 	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

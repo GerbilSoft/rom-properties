@@ -53,53 +53,31 @@ SET(rom-properties-win32_H
 	resource.h
 	)
 
-# Precompiled headers.
-# NOTE: Only enabling PCH for MSVC builds.
 IF(MSVC)
+	# Precompiled headers.
+	# NOTE: Only enabling PCH for MSVC builds.
 	INCLUDE(PrecompiledHeader)
 	SET(rom-properties-win32_PCH_SRC stdafx.cpp)
 	SET(rom-properties-win32_PCH_H stdafx.h)
-ENDIF(MSVC)
 
-# Delay-load ZLIB and LIBPNG.
-# NOTE: Using CMAKE_SHARED_LINKER_FLAGS because zlib and libpng
-# have different names in Debug and Release builds.
-# TODO: MinGW-w64 equivalent.
-IF(MSVC)
-	UNSET(DELAY_LOAD_ENABLED)
-	IF(USE_INTERNAL_ZLIB_DLL)
-		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:zlib1d.dll")
-		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:zlib1.dll")
-		SET(DELAY_LOAD_ENABLED 1)
-	ENDIF(USE_INTERNAL_ZLIB_DLL)
-	IF(USE_INTERNAL_PNG_DLL)
-		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:libpng16d.dll")
-		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:libpng16.dll")
-		SET(DELAY_LOAD_ENABLED 1)
-	ENDIF(USE_INTERNAL_PNG_DLL)
-	IF(USE_INTERNAL_JPEG_DLL)
-		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:jpeg62d.dll")
-		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:jpeg62.dll")
-		SET(DELAY_LOAD_ENABLED 1)
-	ENDIF(USE_INTERNAL_JPEG_DLL)
-	IF(USE_INTERNAL_XML_DLL)
-		SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}   /DELAYLOAD:tinyxml2d.dll")
-		SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DELAYLOAD:tinyxml2.dll")
-		SET(DELAY_LOAD_ENABLED 1)
-	ENDIF(USE_INTERNAL_XML_DLL)
-
-	IF(DELAY_LOAD_ENABLED)
-		# We need a custom delay-load hook in order to
-		# load the DLLs from the correct directory.
-		# NOTE: Using C++ instead of C in order to avoid
-		# compiling the PCH twice.
-		SET(rom-properties-win32-DELAY_LOAD_SRC DelayLoad.cpp)
-	ENDIF(DELAY_LOAD_ENABLED)
+	# Delay-load sources.
+	SET(rom-properties-win32-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
+	SET(rom-properties-win32-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
 ENDIF(MSVC)
 
 #####################
 # Build the plugin. #
 #####################
+
+### rp-config stub.
+# NOTE: This must be *before* including the DelayLoad flags.
+ADD_SUBDIRECTORY(config)
+
+IF(MSVC)
+	# Delay-load extlibs.
+	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	SET_DELAY_LOAD_FLAGS()
+ENDIF(MSVC)
 
 # FIXME: Build both Win32 and Win64 DLLs?
 # NOTE: MODULE results in the .dll being placed in
@@ -111,6 +89,7 @@ ADD_LIBRARY(rom-properties SHARED
 	${rom-properties-win32_SRCS}
 	${rom-properties-win32_H}
 	${rom-properties-win32-DELAY_LOAD_SRC}
+	${rom-properties-win32-DELAY_LOAD_H}
 	)
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)
@@ -172,9 +151,6 @@ IF(RP_DLL_FLAGS)
 	UNSET(RP_LINK_FLAGS)
 	UNSET(RP_DLL_FLAGS)
 ENDIF(RP_DLL_FLAGS)
-
-### rp-config stub.
-ADD_SUBDIRECTORY(config)
 
 #################
 # Installation. #

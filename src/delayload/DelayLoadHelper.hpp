@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * RpWin32_delayload.h: DelayLoad exception handler.                       *
+ * DelayLoadHelper.hpp: DelayLoad helper functions and macros.             *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -19,16 +19,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_RPWIN32_DELAYLOAD_H__
-#define __ROMPROPERTIES_LIBROMDATA_RPWIN32_DELAYLOAD_H__
+#ifndef __ROMPROPERTIES_WIN32_DELAYLOAD_DELAYLOADHELPER_H__
+#define __ROMPROPERTIES_WIN32_DELAYLOAD_DELAYLOADHELPER_H__
 
 #if !defined(_WIN32) || !defined(_MSC_VER)
-#error RpWin32_delayload.h is MSVC and Win32 only at the moment.
+#error DelayLoadHelper.h is MSVC and Win32 only at the moment.
 #endif
 
 // MSVC: Exception handling for /DELAYLOAD.
 // TODO: Check for /DELAYLOAD usage.
-#include "RpWin32_sdk.h"
+#include "libromdata/RpWin32_sdk.h"
 #include <delayimp.h>
 #include <excpt.h>
 #include <errno.h>
@@ -88,4 +88,4 @@ static int DelayLoad_test_##fn(void) { \
 	return 0; \
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_DELAYLOAD_H__ */
+#endif /* __ROMPROPERTIES_WIN32_DELAYLOAD_DELAYLOADHELPER_H__ */
