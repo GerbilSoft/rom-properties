@@ -156,7 +156,7 @@ string cp1252_to_utf8(const char *str, int len)
 	string ret;
 	char *mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
 	if (mbs) {
-		ret = string(mbs);
+		ret = mbs;
 		free(mbs);
 	}
 
@@ -182,7 +182,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
-		ret = u16string(wcs);
+		ret = wcs;
 		free(wcs);
 	}
 
@@ -209,13 +209,13 @@ string cp1252_sjis_to_utf8(const char *str, int len)
 	string ret;
 	char *mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
 	if (mbs) {
-		ret = string(mbs);
+		ret = mbs;
 		free(mbs);
 	} else {
 		// Try cp1252.
 		mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
 		if (mbs) {
-			ret = string(mbs);
+			ret = mbs;
 			free(mbs);
 		}
 	}
@@ -241,13 +241,13 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
-		ret = u16string(wcs);
+		ret = wcs;
 		free(wcs);
 	} else {
 		// Try cp1252.
 		wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
 		if (wcs) {
-			ret = u16string(wcs);
+			ret = wcs;
 			free(wcs);
 		}
 	}
@@ -270,7 +270,7 @@ u16string utf8_to_utf16(const char *str, int len)
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
 	if (wcs) {
-		ret = u16string(wcs);
+		ret = wcs;
 		free(wcs);
 	}
 
@@ -293,7 +293,7 @@ static inline string utf16_to_utf8_int(const char16_t *str, int len, const char 
 	string ret;
 	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), encoding, "UTF-8");
 	if (mbs) {
-		ret = string(mbs);
+		ret = mbs;
 		free(mbs);
 	}
 

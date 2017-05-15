@@ -158,7 +158,7 @@ string cp1252_to_utf8(const char *str, int len)
 			if (mbs[cbMbs-1] == 0) {
 				cbMbs--;
 			}
-			ret = string(mbs, cbMbs);
+			ret.assign(mbs, cbMbs);
 		}
 		free(mbs);
 	}
@@ -191,7 +191,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 		if (wcs[cchWcs-1] == 0) {
 			cchWcs--;
 		}
-		ret = u16string(wcs, cchWcs);
+		ret.assign(wcs, cchWcs);
 	}
 
 	free(wcs);
@@ -231,7 +231,7 @@ string cp1252_sjis_to_utf8(const char *str, int len)
 				cbMbs--;
 			}
 
-			ret = string(mbs, cbMbs);
+			ret.assign(mbs, cbMbs);
 		}
 		free(mbs);
 	}
@@ -266,7 +266,7 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 		if (wcs[cchWcs-1] == 0) {
 			cchWcs--;
 		}
-		ret = u16string(wcs, cchWcs);
+		ret.assign(wcs, cchWcs);
 	}
 
 	free(wcs);
@@ -294,7 +294,7 @@ u16string utf8_to_utf16(const char *str, int len)
 		if (wcs[cchWcs-1] == 0) {
 			cchWcs--;
 		}
-		ret = u16string(wcs, cchWcs);
+		ret.assign(wcs, cchWcs);
 	}
 
 	free(wcs);
@@ -323,7 +323,7 @@ string utf16le_to_utf8(const char16_t *str, int len)
 		if (mbs[cbMbs-1] == 0) {
 			cbMbs--;
 		}
-		ret = string(mbs, cbMbs);
+		ret.assign(mbs, cbMbs);
 	}
 
 	free(mbs);

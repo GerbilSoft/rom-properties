@@ -142,7 +142,7 @@ RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *desc, int count)
 				names->reserve(count);
 				for (int i = 0; i < count; i++) {
 					const rp_char *const name_src = desc->bitfield->names[i];
-					names->push_back(name_src ? rp_string(name_src) : rp_string());
+					names->push_back(name_src ? name_src : _RP(""));
 				}
 				field.desc.bitfield.names = names;
 				break;
@@ -159,7 +159,7 @@ RomFieldsPrivate::RomFieldsPrivate(const RomFields::Desc *desc, int count)
 				names->reserve(count);
 				for (int i = 0; i < count; i++) {
 					const rp_char *const name_src = desc->list_data->names[i];
-					names->push_back(name_src ? rp_string(name_src) : rp_string());
+					names->push_back(name_src ? name_src : _RP(""));
 				}
 				field.desc.list_data.names = names;
 				break;
@@ -896,7 +896,7 @@ void RomFields::setTabName(int tabIdx, const rp_char *name)
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
 	}
-	d->tabNames[tabIdx] = (name ? rp_string(name) : rp_string());
+	d->tabNames[tabIdx] = (name ? name : _RP(""));
 }
 
 /**
@@ -983,12 +983,8 @@ std::vector<rp_string> *RomFields::strArrayToVector(const rp_char *const *strArr
 	}
 
 	for (; strArray != nullptr && count > 0; strArray++, count--) {
-		if (*strArray) {
-			pVec->push_back(rp_string(*strArray));
-		} else {
-			// nullptr. Handle as an empty string.
-			pVec->push_back(rp_string());
-		}
+		// nullptr will be handled as empty strings.
+		pVec->push_back(*strArray ? *strArray : _RP(""));
 	}
 
 	return pVec;
@@ -1094,7 +1090,7 @@ int RomFields::addField_string(const rp_char *name, const rp_char *str, int flag
 	Field &field = d->fields.at(idx);
 
 	assert(name != nullptr);
-	field.name = (name ? rp_string(name) : rp_string());
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = (str ? new rp_string(str) : nullptr);
@@ -1125,7 +1121,7 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, int fl
 	assert(name != nullptr);
 	if (!name)
 		return -1;
-	field.name = rp_string(name);
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = (!str.empty() ? new rp_string(str) : nullptr);
@@ -1272,7 +1268,7 @@ int RomFields::addField_bitfield(const rp_char *name,
 	assert(bit_names != nullptr);
 	if (!name || !bit_names)
 		return -1;
-	field.name = rp_string(name);
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_BITFIELD;
 	field.desc.bitfield.elements = (int)bit_names->size();	// TODO: Remove this.
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
@@ -1309,7 +1305,7 @@ int RomFields::addField_listData(const rp_char *name,
 	assert(headers != nullptr);
 	if (!name || !headers)
 		return -1;
-	field.name = rp_string(name);
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_LISTDATA;
 	field.desc.list_data.names = headers;
 	field.data.list_data = list_data;
@@ -1340,7 +1336,7 @@ int RomFields::addField_dateTime(const rp_char *name, int64_t date_time, int fla
 	assert(name != nullptr);
 	if (!name)
 		return -1;
-	field.name = rp_string(name);
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_DATETIME;
 	field.desc.flags = flags;
 	field.data.date_time = date_time;
@@ -1371,7 +1367,7 @@ int RomFields::addField_ageRatings(const rp_char *name, const age_ratings_t &age
 	assert(name != nullptr);
 	if (!name)
 		return -1;
-	field.name = rp_string(name);
+	field.name = (name ? name : _RP(""));
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
