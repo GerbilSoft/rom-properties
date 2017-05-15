@@ -31,7 +31,9 @@ using namespace LibRomData;
 #include "RegKey.hpp"
 
 // C++ includes.
+#include <memory>
 #include <string>
+using std::unique_ptr;
 using std::wstring;
 
 // COM smart pointer typedefs.
@@ -292,10 +294,13 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 			return GetLastError();
 		}
 
-		wchar_t *wbuf = static_cast<wchar_t*>(malloc(cchExpand*sizeof(wchar_t)));
-		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf, cchExpand);
-		defaultIcon = wstring(wbuf, cchExpand-1);
-		free(wbuf);
+		unique_ptr<wchar_t[]> wbuf(new wchar_t[cchExpand]);
+		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf.get(), cchExpand);
+		if (cchExpand == 0) {
+			// Error expanding the strings.
+			return GetLastError();
+		}
+		defaultIcon.assign(wbuf.get(), cchExpand-1);
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,
