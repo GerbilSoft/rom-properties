@@ -66,11 +66,33 @@ IF(ENABLE_DECRYPTION)
 	SET(rom-properties-rpcli_CRYPTO_H verifykeys.hpp)
 ENDIF(ENABLE_DECRYPTION)
 
-#####################
-# Build the plugin. #
-#####################
+IF(MSVC)
+	# Precompiled headers.
+	# NOTE: Only enabling PCH for MSVC builds.
+	INCLUDE(PrecompiledHeader)
+	SET(rom-properties-rpcli_PCH_SRC stdafx.cpp)
+	SET(rom-properties-rpcli_PCH_H stdafx.h)
+
+	# Delay-load sources.
+	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
+	SET(rom-properties-rpcli-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
+ENDIF(MSVC)
+
+#########################
+# Build the executable. #
+#########################
+
+IF(MSVC)
+	# Delay-load extlibs.
+	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	SET_DELAY_LOAD_FLAGS()
+ENDIF(MSVC)
 
 ADD_EXECUTABLE(rpcli
+	${rom-properties-win32_PCH_SRC}
+	${rom-properties-win32_PCH_H}
+	${rom-properties-win32-DELAY_LOAD_SRC}
+	${rom-properties-win32-DELAY_LOAD_H}
 	${rom-properties-rpcli_SRCS}
 	${rom-properties-rpcli_H}
 	${rom-properties-rpcli_CRYPTO_SRCS}
@@ -102,6 +124,13 @@ IF(MINGW)
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
 	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_BINARY_DIR}\"")
 ENDIF(MINGW)
+
+# Delay-load some Windows system libraries.
+# TODO: MinGW delay-load?
+IF(MSVC)
+	SET(RP_SYS_DELAY_LOAD_FLAGS "/DELAYLOAD:urlmon.dll /DELAYLOAD:wininet.dll")
+	TARGET_LINK_LIBRARIES(rpcli delayimp)
+ENDIF(MSVC)
 
 #################
 # Installation. #
