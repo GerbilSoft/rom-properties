@@ -87,9 +87,20 @@ class TImageTypesConfig
 		static const int SYS_COUNT = 8;
 
 		/**
+		 * Create the grid of labels and ComboBoxes.
+		 */
+		void createGrid(void);
+
+		/**
 		 * (Re-)Load the configuration into the grid.
 		 */
 		void reset(void);
+
+		/**
+		 * Save the configuration from the grid.
+		 */
+		// TODO
+		//void save(void);
 
 	public:
 		// Image type data.
@@ -146,8 +157,29 @@ class TImageTypesConfig
 		 */
 		void cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
 
+	protected:
+		/** Pure virtual functions. (protected) **/
+
+		/**
+		 * Create the labels in the grid.
+		 */
+		INLINE_OVERRIDE virtual void createGridLabels(void) = 0;
+
+		/**
+		 * Create a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
+		 */
+		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) = 0;
+
+		/**
+		 * Add strings to a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
+		 * @param max_prio Maximum priority value. (minimum is 1)
+		 */
+		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) = 0;
+
 	public:
-		/** Pure virtual functions. **/
+		/** Pure virtual functions. (public) **/
 
 		/**
 		 * Set a ComboBox's current index.

@@ -71,17 +71,33 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 
 	public:
 		/**
-		 * Create the grid of static text and combo boxes.
-		 */
-		void createGrid(void);
-
-		/**
 		 * Save the configuration.
 		 */
 		void save(void);
 
-	public:
-		/** TImageTypesConfig functions. **/
+	protected:
+		/** TImageTypesConfig functions. (protected) **/
+
+		/**
+		 * Create the labels in the grid.
+		 */
+		INLINE_OVERRIDE virtual void createGridLabels(void) override final;
+
+		/**
+		 * Create a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
+		 */
+		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) override final;
+
+		/**
+		 * Add strings to a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
+		 * @param max_prio Maximum priority value. (minimum is 1)
+		 */
+		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+
+	protected:
+		/** TImageTypesConfig functions. (public) **/
 
 		/**
 		 * Set a ComboBox's current index.
@@ -113,6 +129,11 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		// Property sheet.
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
+
+		// Grid parameters.
+		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
+		SIZE sz_cboImageType;	// ComboBox size.
+		unsigned int cy_cboImageType_list;	// ComboBox list height.
 };
 
 // Control base ID.
@@ -123,19 +144,27 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-{ }
+{
+	// Clear the grid parameters.
+	pt_cboImageType.x = 0;
+	pt_cboImageType.y = 0;
+	sz_cboImageType.cx = 0;
+	sz_cboImageType.cy = 0;
+	cy_cboImageType_list = 0;
+}
 
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
 const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
 
 /**
- * Create the grid of static text and combo boxes.
+ * Create the labels in the grid.
  */
-void ImageTypesTabPrivate::createGrid()
+void ImageTypesTabPrivate::createGridLabels(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	assert(sz_cboImageType.cx == 0);
+	if (!hWndPropSheet || sz_cboImageType.cx != 0)
 		return;
 
 	// Get the dialog margin.
@@ -177,7 +206,6 @@ void ImageTypesTabPrivate::createGrid()
 	}
 
 	// Determine the size of the largest system name label.
-	// TODO: Height needs to match the combo boxes.
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
@@ -191,18 +219,20 @@ void ImageTypesTabPrivate::createGrid()
 	}
 
 	// Create a combo box in order to determine its actual vertical size.
-	SIZE szCbo = {sz_lblImageType.cx, sz_lblImageType.cy*3};
+	sz_cboImageType.cx = sz_lblImageType.cx;
+	const unsigned int cbo_test_cy = sz_lblImageType.cy * 3;
 	HWND cboTestBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 		WC_COMBOBOX, nullptr,
 		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
-		0, 0, szCbo.cx, szCbo.cy,
+		0, 0, sz_cboImageType.cx, cbo_test_cy,
 		hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 	SetWindowFont(cboTestBox, hFontDlg, FALSE);
 
 	RECT rect_cboTestBox;
 	GetWindowRect(cboTestBox, &rect_cboTestBox);
 	MapWindowPoints(HWND_DESKTOP, GetParent(cboTestBox), (LPPOINT)&rect_cboTestBox, 2);
-	szCbo.cy = rect_cboTestBox.bottom * 3;
+	sz_cboImageType.cy = rect_cboTestBox.bottom;
+	cy_cboImageType_list = rect_cboTestBox.bottom * 3;
 	DestroyWindow(cboTestBox);
 
 	// Create the image type labels.
@@ -218,6 +248,94 @@ void ImageTypesTabPrivate::createGrid()
 		curPt.x += sz_lblImageType.cx;
 	}
 
+	// Determine the starting point.
+	curPt.x = rect_lblDesc2.left;
+	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
+	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
+	if (yadj_lblSysName < 0) {
+		yadj_lblSysName = 0;
+	}
+
+	// Save the ComboBox starting position for later.
+	pt_cboImageType.x = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
+	pt_cboImageType.y = curPt.y;
+
+	// Create the system name labels.
+	curPt.y += yadj_lblSysName;
+	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+		// System name label.
+		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, RP2W_c(sysData[sys].name),
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
+			curPt.x, curPt.y,
+			sz_lblSysName.cx, sz_lblSysName.cy,
+			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
+		SetWindowFont(lblSysName, hFontDlg, FALSE);
+
+		// Next row.
+		curPt.y += rect_cboTestBox.bottom;
+	}
+}
+
+/**
+ * Create a ComboBox in the grid.
+ * @param cbid ComboBox ID.
+ */
+void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
+{
+	assert(hWndPropSheet != nullptr);
+	assert(sz_cboImageType.cx != 0);
+	if (!hWndPropSheet || sz_cboImageType.cx == 0)
+		return;
+
+	const unsigned int sys = sysFromCbid(cbid);
+	const unsigned int imageType = imageTypeFromCbid(cbid);
+	assert(sys < SYS_COUNT);
+	assert(imageType < IMG_TYPE_COUNT);
+	if (sys >= SYS_COUNT || imageType >= IMG_TYPE_COUNT)
+		return;
+
+	// Get the font of the parent dialog.
+	// TODO: Cache this?
+	HFONT hFontDlg = GetWindowFont(GetParent(hWndPropSheet));
+	assert(hFontDlg != nullptr);
+	if (!hFontDlg) {
+		// No font?!
+		return;
+	}
+
+	// Create the ComboBox.
+	const POINT ptComboBox = {
+		pt_cboImageType.x + (sz_cboImageType.cx * (LONG)imageType),
+		pt_cboImageType.y + (sz_cboImageType.cy * (LONG)sys)
+	};
+
+	HWND hComboBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+		WC_COMBOBOX, nullptr,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
+		ptComboBox.x, ptComboBox.y,
+		sz_cboImageType.cx, cy_cboImageType_list,
+		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
+		nullptr, nullptr);
+	SetWindowFont(hComboBox, hFontDlg, FALSE);
+	cboImageType[sys][imageType] = hComboBox;
+}
+
+/**
+ * Add strings to a ComboBox in the grid.
+ * @param cbid ComboBox ID.
+ * @param max_prio Maximum priority value. (minimum is 1)
+ */
+void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+	HWND cboImageType = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid);
+	assert(cboImageType != nullptr);
+	if (!cboImageType)
+		return;
+
 	// Dropdown strings.
 	// NOTE: One more string than the total number of image types,
 	// since we have a string for "No".
@@ -226,75 +344,12 @@ void ImageTypesTabPrivate::createGrid()
 	};
 	static_assert(ARRAY_SIZE(s_values) == RomData::IMG_EXT_MAX+2, "s_values[] is the wrong size.");
 
-	// Create the system name labels and dropdown boxes.
-	curPt.x = rect_lblDesc2.left;
-	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
-	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
-	if (yadj_lblSysName < 0) {
-		yadj_lblSysName = 0;
+	// NOTE: Need to add one more than the total number,
+	// since "No" counts as an entry.
+	for (int i = 0; i <= max_prio; i++) {
+		assert(s_values[i] != nullptr);
+		ComboBox_AddString(cboImageType, s_values[i]);
 	}
-	const int cbo_x_start = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
-		// System name label.
-		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
-			WC_STATIC, RP2W_c(sysData[sys].name),
-			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
-			curPt.x, curPt.y+yadj_lblSysName,
-			sz_lblSysName.cx, sz_lblSysName.cy,
-			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
-		SetWindowFont(lblSysName, hFontDlg, FALSE);
-
-		// Get supported image types.
-		uint32_t imgbf = sysData[sys].getTypes();
-		assert(imgbf != 0);
-
-		int cbo_x = cbo_x_start;
-		validImageTypes[sys] = 0;
-		HWND *p_cboImageType = &cboImageType[sys][0];
-		for (unsigned int imageType = 0; imgbf != 0 && imageType <= RomData::IMG_EXT_MAX+1;
-		     imageType++, p_cboImageType++, cbo_x += sz_lblImageType.cx, imgbf >>= 1)
-		{
-			if (!(imgbf & 1)) {
-				// Current image type is not supported.
-				*p_cboImageType = nullptr;
-				continue;
-			}
-
-			// Create the dropdown box.
-			*p_cboImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-				WC_COMBOBOX, nullptr,
-				WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
-				cbo_x, curPt.y, szCbo.cx, szCbo.cy,
-				hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + sysAndImageTypeToCbid(sys, imageType)),
-				nullptr, nullptr);
-			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
-
-			// Increment the valid image types counter.
-			validImageTypes[sys]++;
-		}
-
-		// Add strings to the dropdowns.
-		p_cboImageType = &cboImageType[sys][0];
-		for (int imageType = RomData::IMG_EXT_MAX; imageType >= 0; imageType--, p_cboImageType++) {
-			if (!*p_cboImageType) {
-				// No dropdown box here.
-				continue;
-			}
-
-			// NOTE: Need to add one more than the total number,
-			// since "No" counts as an entry.
-			for (int i = 0; i <= validImageTypes[sys]; i++) {
-				assert(s_values[i] != nullptr);
-				ComboBox_AddString(*p_cboImageType, s_values[i]);
-			}
-		}
-
-		// Next row.
-		curPt.y += rect_cboTestBox.bottom;
-	}
-
-	// Load the configuration.
-	reset();
 }
 
 /**
@@ -393,7 +448,7 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
-	HWND cboImageType = GetDlgItem(hWndPropSheet, cbid + 0x2000);
+	HWND cboImageType = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid);
 	assert(cboImageType != nullptr);
 	if (cboImageType) {
 		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));

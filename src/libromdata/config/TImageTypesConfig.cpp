@@ -76,6 +76,48 @@ TImageTypesConfig<ComboBox>::~TImageTypesConfig()
 { }
 
 /**
+ * Create the grid of labels and ComboBoxes.
+ */
+template<typename ComboBox>
+void TImageTypesConfig<ComboBox>::createGrid(void)
+{
+	// TODO: Make sure the grid wasn't already created.
+
+	// Create the grid labels.
+	createGridLabels();
+
+	// Create the ComboBoxes.
+	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+		// Get supported image types.
+		uint32_t imgbf = sysData[sys].getTypes();
+		assert(imgbf != 0);
+
+		validImageTypes[sys] = 0;
+		for (unsigned int imageType = 0; imgbf != 0 && imageType < IMG_TYPE_COUNT; imageType++, imgbf >>= 1) {
+			if (!(imgbf & 1)) {
+				// Current image type is not supported.
+				continue;
+			}
+
+			// Create the ComboBox.
+			createComboBox(sysAndImageTypeToCbid(sys, imageType));
+			// Increment the valid image types counter.
+			validImageTypes[sys]++;
+		}
+
+		// Add strings to the ComboBoxes.
+		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--) {
+			if (cboImageType[sys][imageType] != nullptr) {
+				addComboBoxStrings(sysAndImageTypeToCbid(sys, imageType), validImageTypes[sys]);
+			}
+		}
+	}
+
+	// Load the configuration.
+	reset();
+}
+
+/**
  * (Re-)Load the configuration into the grid.
  */
 template<typename ComboBox>
