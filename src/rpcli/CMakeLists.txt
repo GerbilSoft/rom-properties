@@ -89,15 +89,21 @@ IF(MSVC)
 ENDIF(MSVC)
 
 ADD_EXECUTABLE(rpcli
-	${rom-properties-win32_PCH_SRC}
-	${rom-properties-win32_PCH_H}
-	${rom-properties-win32-DELAY_LOAD_SRC}
-	${rom-properties-win32-DELAY_LOAD_H}
+	${rom-properties-rpcli_PCH_SRC}
+	${rom-properties-rpcli_PCH_H}
+	${rom-properties-rpcli-DELAY_LOAD_SRC}
+	${rom-properties-rpcli-DELAY_LOAD_H}
 	${rom-properties-rpcli_SRCS}
 	${rom-properties-rpcli_H}
 	${rom-properties-rpcli_CRYPTO_SRCS}
 	${rom-properties-rpcli_CRYPTO_H}
 	)
+# NOTE: Only enabling PCH for MSVC.
+IF(MSVC)
+	ADD_PRECOMPILED_HEADER(rpcli ${rom-properties-rpcli_PCH_H}
+		SOURCE_CXX ${rom-properties-rpcli_PCH_SRC}
+		)
+ENDIF(MSVC)
 SET_TARGET_PROPERTIES(rpcli PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rpcli)
 SET_WINDOWS_SUBSYSTEM(rpcli CONSOLE)

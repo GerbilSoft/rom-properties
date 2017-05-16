@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "stdafx.h"
 #include "bmp.hpp"
 #include "bmp_structs.h"
 
