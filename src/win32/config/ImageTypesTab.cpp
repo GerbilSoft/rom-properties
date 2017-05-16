@@ -50,12 +50,18 @@ using LibRomData::RomData;
 using std::wstring;
 using std::wostringstream;
 
-class ImageTypesTabPrivate
+// TImageTypesConfig is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/config/TImageTypesConfig.cpp"
+using LibRomData::TImageTypesConfig;
+
+class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 {
 	public:
 		ImageTypesTabPrivate();
 
 	private:
+		typedef TImageTypesConfig<HWND> super;
 		RP_DISABLE_COPY(ImageTypesTabPrivate)
 
 	public:
@@ -64,43 +70,26 @@ class ImageTypesTabPrivate
 		static const wchar_t D_PTR_PROP[];
 
 	public:
-		// Image type data.
-		static const rp_char *const imageTypeNames[RomData::IMG_EXT_MAX+1];
-
-		// System data.
-		typedef uint32_t (*pFnSupportedImageTypes)(void);
-		struct SysData {
-			const rp_char *name;			// System name.
-			const char *classNameA;			// Class name in Config. (ASCII)
-			const wchar_t *classNameW;		// Class name in Config. (Unicode)
-			pFnSupportedImageTypes getTypes;	// Get supported image types.
-		};
-#define SysDataEntry(klass, name) \
-	{name, #klass, L#klass, LibRomData::klass::supportedImageTypes_static}
-		static const int SYS_COUNT = 8;
-		static const SysData sysData[SYS_COUNT];
-
 		/**
 		 * Create the grid of static text and combo boxes.
 		 */
 		void createGrid(void);
 
 		/**
-		 * Reset the grid to the current configuration.
-		 */
-		void reset(void);
-
-		/**
 		 * Save the configuration.
 		 */
 		void save(void);
 
+	public:
+		/** TImageTypesConfig functions. **/
+
 		/**
-		 * Update imageTypes in response to a user change.
-		 * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
-		 * @param prio New priority. (0xFF == No; others == priority)
+		 * Set a ComboBox's current index.
+		 * This will not trigger cboImageType_priorityValueChanged().
+		 * @param cbid ComboBox ID.
+		 * @param prio New priority value. (0xFF == no)
 		 */
-		void updateImageType(unsigned int id, unsigned int prio);
+		INLINE_OVERRIDE virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
 		/**
@@ -124,73 +113,21 @@ class ImageTypesTabPrivate
 		// Property sheet.
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
-
-		// Has the user changed anything?
-		bool changed;
-
-		// Image type dropdowns.
-		// NOTE: This is a square array, but no system supports
-		// *all* image types, so most of these will be nullptr.
-		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
-
-		// Image types. (0xFF == No; others == priority)
-		// NOTE: We need to store them here in order to handle
-		// duplicate prevention, since CBN_SELCHANGE doesn't
-		// include the "previous" index.
-		uint8_t imageTypes[SYS_COUNT][RomData::IMG_EXT_MAX+1];
-
-		// Number of valid image types per system.
-		uint8_t validImageTypes[SYS_COUNT];
-
-		// Which systems have the default configuration?
-		// These ones will be saved with a blank value.
-		bool sysIsDefault[SYS_COUNT];
 };
 
-// Control base IDs.
-#define IDC_IMAGETYPES_CBOIMAGETYPE(sysName, imageType) (0x2000 + (((sysName) << 4) | (imageType)))
+// Control base ID.
+#define IDC_IMAGETYPES_CBOIMAGETYPE_BASE 0x2000
 
 /** ImageTypesTabPrivate **/
 
 ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, changed(false)
-{
-	// Clear the arrays.
-	memset(cboImageType, 0, sizeof(cboImageType));
-	memset(imageTypes, 0xFF, sizeof(imageTypes));
-	memset(validImageTypes, 0, sizeof(validImageTypes));
-	memset(sysIsDefault, 0, sizeof(sysIsDefault));
-}
+{ }
 
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
 const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
-
-// Image type names.
-const rp_char *const ImageTypesTabPrivate::imageTypeNames[RomData::IMG_EXT_MAX+1] = {
-	_RP("Internal\nIcon"),
-	_RP("Internal\nBanner"),
-	_RP("Internal\nMedia"),
-	_RP("External\nMedia"),
-	_RP("External\nCover"),
-	_RP("External\n3D Cover"),
-	_RP("External\nFull Cover"),
-	_RP("External\nBox"),
-};
-
-// System data.
-const ImageTypesTabPrivate::SysData ImageTypesTabPrivate::sysData[SYS_COUNT] = {
-	SysDataEntry(Amiibo,		_RP("amiibo")),
-	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
-	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
-	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),
-	SysDataEntry(NintendoDS,	_RP("Nintendo DS(i)")),
-	SysDataEntry(Nintendo3DS,	_RP("Nintendo 3DS")),
-	SysDataEntry(PlayStationSave,	_RP("PlayStation Saves")),
-	SysDataEntry(WiiU,		_RP("Wii U")),
-};
 
 /**
  * Create the grid of static text and combo boxes.
@@ -328,7 +265,7 @@ void ImageTypesTabPrivate::createGrid()
 				WC_COMBOBOX, nullptr,
 				WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
 				cbo_x, curPt.y, szCbo.cx, szCbo.cy,
-				hWndPropSheet, (HMENU)(INT_PTR)IDC_IMAGETYPES_CBOIMAGETYPE(sys, imageType),
+				hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + sysAndImageTypeToCbid(sys, imageType)),
 				nullptr, nullptr);
 			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
 
@@ -358,85 +295,6 @@ void ImageTypesTabPrivate::createGrid()
 
 	// Load the configuration.
 	reset();
-}
-
-/**
- * Reset the grid to the current configuration.
- */
-void ImageTypesTabPrivate::reset(void)
-{
-	// Reset all combo boxes first.
-	HWND *p_cboImageType;
-	for (p_cboImageType = &cboImageType[0][0];
-	     p_cboImageType != &cboImageType[SYS_COUNT][0]; p_cboImageType++)
-	{
-		if (*p_cboImageType) {
-			ComboBox_SetCurSel(*p_cboImageType, 0);
-		}
-	}
-
-	const Config *const config = Config::instance();
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		p_cboImageType = &cboImageType[sys][0];
-
-		// Get the image priority.
-		Config::ImgTypePrio_t imgTypePrio;
-		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
-		bool no_thumbs = false;
-		switch (res) {
-			case Config::IMGTR_SUCCESS:
-				// Image type priority received successfully.
-				sysIsDefault[sys] = false;
-				break;
-			case Config::IMGTR_SUCCESS_DEFAULTS:
-				// Image type priority received successfully.
-				// IMGTR_SUCCESS_DEFAULTS indicates the returned
-				// data is the default priority, since a custom
-				// configuration was not found for this class.
-				sysIsDefault[sys] = true;
-				break;
-			case Config::IMGTR_DISABLED:
-				// Thumbnails are disabled for this class.
-				no_thumbs = true;
-				break;
-			default:
-				// Should not happen...
-				assert(!"Invalid return value from Config::getImgTypePrio().");
-				no_thumbs = true;
-				break;
-		}
-
-		if (no_thumbs)
-			continue;
-
-		int nextPrio = 0;	// Next priority value to use.
-		bool imageTypeSet[RomData::IMG_EXT_MAX+1];	// Element set to true once an image type priority is read.
-		memset(imageTypeSet, 0, sizeof(imageTypeSet));
-
-		p_cboImageType = &cboImageType[sys][0];
-		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
-		{
-			uint8_t imageType = imgTypePrio.imgTypes[i];
-			assert(imageType == 0xFF || imageType <= RomData::IMG_EXT_MAX);
-			if (imageType > RomData::IMG_EXT_MAX && imageType != 0xFF) {
-				// Invalid image type.
-				continue;
-			}
-			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
-				// Set the image type.
-				imageTypeSet[imageType] = true;
-				if (imageType <= RomData::IMG_EXT_MAX) {
-					imageTypes[sys][imageType] = nextPrio;
-					// +1 because combobox index 0 is "No".
-					ComboBox_SetCurSel(p_cboImageType[imageType], nextPrio+1);
-					nextPrio++;
-				}
-			}
-		}
-	}
-
-	// No longer changed.
-	changed = false;
 }
 
 /**
@@ -525,52 +383,21 @@ void ImageTypesTabPrivate::save(void)
 }
 
 /**
- * Update imageTypes in response to a user change.
- * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
- * @param prio New priority. (0xFF == No; others == priority)
+ * Set a ComboBox's current index.
+ * This will not trigger cboImageType_priorityValueChanged().
+ * @param cbid ComboBox ID.
+ * @param prio New priority value. (0xFF == no)
  */
-void ImageTypesTabPrivate::updateImageType(unsigned int id, unsigned int prio)
+void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
-
-	// Base ID is 0x2000.
-	// Image type is lower 4 bits.
-	if (id < 0x2000)
-		return;
-
-	const unsigned int sys = (id - 0x2000) >> 4;
-	if (sys >= SYS_COUNT)
-		return;
-	const unsigned int imageType = (id & 0x000F);
-	if (imageType > RomData::IMG_EXT_MAX)
-		return;
-
-	if (prio != 0xFF) {
-		// Check for any image types that have the new priority.
-		const uint8_t prev_prio = imageTypes[sys][imageType];
-		for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
-			if (i == imageType)
-				continue;
-			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == prio) {
-				// Found a match! Swap the priority.
-				imageTypes[sys][i] = prev_prio;
-				ComboBox_SetCurSel(cboImageType[sys][i], (prev_prio == 0xFF ? 0 : prev_prio+1));
-				break;
-			}
-		}
+	HWND cboImageType = GetDlgItem(hWndPropSheet, cbid + 0x2000);
+	assert(cboImageType != nullptr);
+	if (cboImageType) {
+		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));
 	}
-
-	// Save the image type ID.
-	imageTypes[sys][imageType] = prio;
-
-	// Mark this configuration as no longer being default.
-	sysIsDefault[sys] = false;
-
-	// Configuration has been changed.
-	PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
-	changed = true;
 }
 
 /**
@@ -662,8 +489,15 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// CB_SETCURSEL, so we shouldn't need to "lock"
 			// this handler when reset() is called.
 			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775821(v=vs.85).aspx
-			int idx = ComboBox_GetCurSel((HWND)lParam);
-			d->updateImageType(LOWORD(wParam), (idx <= 0 ? 0xFF : idx-1));
+			unsigned int cbid = LOWORD(wParam);
+			if (cbid < IDC_IMAGETYPES_CBOIMAGETYPE_BASE)
+				break;
+			cbid -= IDC_IMAGETYPES_CBOIMAGETYPE_BASE;
+
+			const int idx = ComboBox_GetCurSel((HWND)lParam);
+			d->cboImageType_priorityValueChanged(cbid, (unsigned int)(idx <= 0 ? 0xFF : idx-1));
+			// Configuration has been changed.
+			PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
 
 			// Allow the message to be processed by the system.
 			break;
