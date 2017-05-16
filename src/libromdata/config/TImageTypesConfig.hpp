@@ -42,19 +42,14 @@ typedef uint32_t (*pFnSupportedImageTypes)(void);
 struct SysData_t {
 	const rp_char *name;			// System name.
 	const char *classNameA;			// Class name in Config. (ASCII)
-#if defined(_WIN32)
-	const wchar_t *classNameW;		// Class name in Config. (Unicode)
-#elif defined(RP_UTF16)
-	const rp_char *classNameRP;		// Clas name in Config. (Unicode, rp_char)
+#if defined(RP_UTF16)
+	const rp_char *classNameRP;		// Clas name in Config. (rp_char)
 #else /* defined(RP_UTF8) */
 	#define classNameRP classNameA
 #endif /* _WIN32 */
 	pFnSupportedImageTypes getTypes;	// Get supported image types.
 };
-#ifdef _WIN32
-#define SysDataEntry(klass, name) \
-	{name, #klass, L#klass, LibRomData::klass::supportedImageTypes_static}
-#elif defined(RP_UTF16)
+#if defined(RP_UTF16)
 #define SysDataEntry(klass, name) \
 	{name, #klass, _RP(#klass), LibRomData::klass::supportedImageTypes_static}
 #else /* defined(RP_UTF8) */
@@ -98,9 +93,9 @@ class TImageTypesConfig
 
 		/**
 		 * Save the configuration from the grid.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		// TODO
-		//void save(void);
+		int save(void);
 
 	public:
 		// Image type data.
@@ -177,6 +172,30 @@ class TImageTypesConfig
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
 		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) = 0;
+
+		/**
+		 * Initialize the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveStart(void) = 0;
+
+		/**
+		 * Write an ImageType configuration entry.
+		 * @param sysName System name.
+		 * @param imageTypeList Image type list, comma-separated.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) = 0;
+
+		/**
+		 * Close the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveFinish(void) = 0;
 
 	public:
 		/** Pure virtual functions. (public) **/

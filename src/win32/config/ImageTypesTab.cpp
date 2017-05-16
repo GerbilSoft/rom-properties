@@ -59,6 +59,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 {
 	public:
 		ImageTypesTabPrivate();
+		virtual ~ImageTypesTabPrivate();
 
 	private:
 		typedef TImageTypesConfig<HWND> super;
@@ -68,12 +69,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		// Property for "D pointer".
 		// This points to the ImageTypesTabPrivate object.
 		static const wchar_t D_PTR_PROP[];
-
-	public:
-		/**
-		 * Save the configuration.
-		 */
-		void save(void);
 
 	protected:
 		/** TImageTypesConfig functions. (protected) **/
@@ -95,6 +90,30 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
 		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+
+		/**
+		 * Initialize the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveStart(void) override final;
+
+		/**
+		 * Write an ImageType configuration entry.
+		 * @param sysName System name.
+		 * @param imageTypeList Image type list, comma-separated.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+
+		/**
+		 * Close the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveFinish(void) override final;
 
 	protected:
 		/** TImageTypesConfig functions. (public) **/
@@ -134,6 +153,10 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
 		SIZE sz_cboImageType;	// ComboBox size.
 		unsigned int cy_cboImageType_list;	// ComboBox list height.
+
+		// Temporary configuration filename.
+		// Set by saveStart(); cleared by saveFinish().
+		wchar_t *tmp_conf_filename;
 };
 
 // Control base ID.
@@ -144,6 +167,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, tmp_conf_filename(nullptr)
 {
 	// Clear the grid parameters.
 	pt_cboImageType.x = 0;
@@ -151,6 +175,14 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 	sz_cboImageType.cx = 0;
 	sz_cboImageType.cy = 0;
 	cy_cboImageType_list = 0;
+}
+
+ImageTypesTabPrivate::~ImageTypesTabPrivate()
+{
+	// tmp_conf_filename should be nullptr,
+	// since it's only used when saving.
+	assert(tmp_conf_filename == nullptr);
+	free(tmp_conf_filename);
 }
 
 // Property for "D pointer".
@@ -353,88 +385,63 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 }
 
 /**
- * Save the configuration.
+ * Initialize the Save subsystem.
+ * This is needed on platforms where the configuration file
+ * must be opened with an appropriate writer class.
+ * @return 0 on success; negative POSIX error code on error.
  */
-void ImageTypesTabPrivate::save(void)
+int ImageTypesTabPrivate::saveStart(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
 	const rp_char *const filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
-		return;
+		return -ENOENT;
 	}
 
-	// Image types are stored in the imageTypes[] array.
-	const uint8_t *pImageTypes = imageTypes[0];
-
-	wostringstream woss;
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
-		// Is this system using the default configuration?
-		if (sysIsDefault[sys]) {
-			// Default configuration. Write an empty string.
-			// NOTE: Passing NULL here deletes the entry.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"", RP2W_c(filename));
-			pImageTypes += ARRAY_SIZE(imageTypes[0]);
-			continue;
-		}
-
-		// Reset the wostringstream.
-		woss.str(wstring());
-
-		// Format of imageTypes[]:
-		// - Index: Image type.
-		// - Value: Priority.
-		// We need to swap index and value.
-		uint8_t imgTypePrio[RomData::IMG_EXT_MAX+1];
-		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
-		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX;
-		     imageType++, pImageTypes++)
-		{
-			if (*pImageTypes > RomData::IMG_EXT_MAX) {
-				// Image type is either not valid for this system
-				// or is set to "No".
-				continue;
-			}
-			imgTypePrio[*pImageTypes] = imageType;
-		}
-
-		// Convert the image type priority to strings.
-		// TODO: Export the string data from Config.
-		static const wchar_t *const imageTypeNames[RomData::IMG_EXT_MAX+1] = {
-			L"IntIcon",
-			L"IntBanner",
-			L"IntMedia",
-			L"ExtMedia",
-			L"ExtCover",
-			L"ExtCover3D",
-			L"ExtCoverFull",
-			L"ExtBox",
-		};
-		static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
-
-		bool hasOne = false;
-		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
-			const uint8_t imageType = imgTypePrio[i];
-			if (imageType <= RomData::IMG_EXT_MAX) {
-				if (hasOne)
-					woss << L',';
-				hasOne = true;
-				woss << imageTypeNames[imageType];
-			}
-		}
-
-		if (hasOne) {
-			// At least one image type is enabled.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, woss.str().c_str(), RP2W_c(filename));
-		} else {
-			// All image types are disabled.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"No", RP2W_c(filename));
-		}
+	// Store the configuration filename.
+	assert(tmp_conf_filename == nullptr);
+	if (tmp_conf_filename) {
+		// Shouldn't be set here...
+		free(tmp_conf_filename);
 	}
+	tmp_conf_filename = wcsdup(RP2W_s(filename));
+	return 0;
+}
 
-	// No longer changed.
-	changed = false;
+/**
+ * Write an ImageType configuration entry.
+ * @param sysName System name.
+ * @param imageTypeList Image type list, comma-separated.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
+{
+	assert(tmp_conf_filename != nullptr);
+	if (!tmp_conf_filename) {
+		return -ENOENT;
+	}
+	WritePrivateProfileString(L"ImageTypes", RP2W_c(sysName), RP2W_c(imageTypeList), tmp_conf_filename);
+	return 0;
+}
+
+/**
+ * Close the Save subsystem.
+ * This is needed on platforms where the configuration file
+ * must be opened with an appropriate writer class.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageTypesTabPrivate::saveFinish(void)
+{
+	// Clear the configuration filename.
+	assert(tmp_conf_filename != nullptr);
+	if (!tmp_conf_filename) {
+		return -ENOENT;
+	}
+	free(tmp_conf_filename);
+	tmp_conf_filename = nullptr;
+	return 0;
 }
 
 /**
@@ -509,6 +516,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case PSN_APPLY:
 					// Save settings.
 					if (d->changed) {
+						// TODO: Show an error message if this fails.
 						d->save();
 					}
 					break;
@@ -652,6 +660,7 @@ void ImageTypesTab::reset(void)
  */
 void ImageTypesTab::save(void)
 {
+	// TODO: Show an error message if this fails.
 	RP_D(ImageTypesTab);
 	d->save();
 }

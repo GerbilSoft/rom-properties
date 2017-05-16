@@ -199,6 +199,112 @@ void TImageTypesConfig<ComboBox>::reset(void)
 }
 
 /**
+ * Save the configuration from the grid.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+template<typename ComboBox>
+int TImageTypesConfig<ComboBox>::save(void)
+{
+	if (!changed) {
+		// No changes. Nothing to save.
+		return 0;
+	}
+
+	// Initialize the Save subsystem.
+	int ret = saveStart();
+	if (ret != 0)
+		return ret;
+
+	// Image types are stored in the imageTypes[] array.
+	const uint8_t *pImageTypes = imageTypes[0];
+
+	// NOTE: Using an rp_string with reserved storage
+	// instead of ostringstream, since we had problems
+	// with u16string ostringstream before.
+	rp_string imageTypeList;
+	imageTypeList.reserve(128);
+	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+		// Is this system using the default configuration?
+		if (sysIsDefault[sys]) {
+			// Default configuration. Write an empty string.
+			ret = saveWriteEntry(sysData[sys].classNameRP, _RP(""));
+			if (ret != 0) {
+				// Error...
+				saveFinish();
+				return ret;
+			}
+			pImageTypes += ARRAY_SIZE(imageTypes[0]);
+			continue;
+		}
+
+		// Clear the imageTypeList.
+		imageTypeList.clear();
+
+		// Format of imageTypes[]:
+		// - Index: Image type.
+		// - Value: Priority.
+		// We need to swap index and value.
+		uint8_t imgTypePrio[IMG_TYPE_COUNT];
+		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
+		for (unsigned int imageType = 0; imageType < IMG_TYPE_COUNT;
+		     imageType++, pImageTypes++)
+		{
+			if (*pImageTypes >= IMG_TYPE_COUNT) {
+				// Image type is either not valid for this system
+				// or is set to "No".
+				continue;
+			}
+			imgTypePrio[*pImageTypes] = imageType;
+		}
+
+		// Convert the image type priority to strings.
+		// TODO: Export the string data from Config.
+		static const rp_char *const imageTypeNames[IMG_TYPE_COUNT] = {
+			_RP("IntIcon"),
+			_RP("IntBanner"),
+			_RP("IntMedia"),
+			_RP("ExtMedia"),
+			_RP("ExtCover"),
+			_RP("ExtCover3D"),
+			_RP("ExtCoverFull"),
+			_RP("ExtBox"),
+		};
+		static_assert(ARRAY_SIZE(imageTypeNames) == IMG_TYPE_COUNT, "imageTypeNames[] is the wrong size.");
+
+		bool hasOne = false;
+		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
+			const uint8_t imageType = imgTypePrio[i];
+			if (imageType <= RomData::IMG_EXT_MAX) {
+				if (hasOne)
+					imageTypeList += _RP_CHR(',');
+				hasOne = true;
+				imageTypeList += imageTypeNames[imageType];
+			}
+		}
+
+		if (hasOne) {
+			// At least one image type is enabled.
+			ret = saveWriteEntry(sysData[sys].classNameRP, imageTypeList.c_str());
+		} else {
+			// All image types are disabled.
+			ret = saveWriteEntry(sysData[sys].classNameRP, _RP("No"));
+		}
+		if (ret != 0) {
+			// Error...
+			saveFinish();
+			return ret;
+		}
+	}
+
+	ret = saveFinish();
+	if (ret == 0) {
+		// No longer changed.
+		changed = false;
+	}
+	return ret;
+}
+
+/**
  * A ComboBox index was changed by the user.
  * @param cbid ComboBox ID.
  * @param prio New priority value. (0xFF == no)
