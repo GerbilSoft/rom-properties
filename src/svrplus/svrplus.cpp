@@ -102,7 +102,11 @@ namespace {
 	// Globals
 
 	HINSTANCE g_hInst; /**< hInstance of this application */
-	bool g_isWow; /**< true if running on 64-bit system */
+#ifdef _WIN64
+	constexpr bool g_is64bit = true;	/**< true if running on 64-bit system */
+#else /* !_WIN64 */
+	bool g_is64bit = false;			/**< true if running on 64-bit system */
+#endif
 	bool g_inProgress = false; /**< true if currently (un)installing the DLLs */
 
 	// Custom messages
@@ -227,11 +231,11 @@ namespace {
 		else if (result == 1) { // File not found
 			const wstring suffix = isUninstall
 				? Format(strfmt_skippingUnreg, is64 ? 64 : 32)
-				: (g_isWow
+				: (g_is64bit
 					? Format(strfmt_dllRequiredNote, is64 ? 64 : 32)
 					: L"");
 			const wchar_t *filename = is64 ? str_rp64path : str_rp32path;
-			MessageBox(hWnd, (Format(strfmt_notFound, filename) + suffix).c_str(), title, isUninstall || g_isWow ? MB_ICONWARNING : MB_ICONERROR);
+			MessageBox(hWnd, (Format(strfmt_notFound, filename) + suffix).c_str(), title, isUninstall || g_is64bit ? MB_ICONWARNING : MB_ICONERROR);
 		}
 		else {
 			const wchar_t *fmtString;
@@ -242,7 +246,7 @@ namespace {
 			else { // Failure
 				fmtString = isUninstall ? strfmt_uninstallFailure : strfmt_installFailure;
 				suffix = extraError;
-				if (!isUninstall && g_isWow) suffix += Format(strfmt_dllRequiredNote, is64 ? 64 : 32);
+				if (!isUninstall && g_is64bit) suffix += Format(strfmt_dllRequiredNote, is64 ? 64 : 32);
 			}
 			MessageBox(hWnd, (Format(fmtString, is64 ? 64 : 32) + suffix).c_str(), title, result == 0 ? MB_ICONINFORMATION : MB_ICONERROR);
 		}
@@ -263,7 +267,7 @@ namespace {
 		HWND hWnd = params->hWnd;
 
 		// if installing, do additional msvc check
-		if (!params->isUninstall && (!CheckMsvc(false) || g_isWow && !CheckMsvc(true)))
+		if (!params->isUninstall && (!CheckMsvc(false) || g_is64bit && !CheckMsvc(true)))
 		{
 			if (IDYES == MessageBox(hWnd, str_msvcNotFound, str_installTitle, MB_ICONWARNING | MB_YESNO)) {
 				if (32 >= (int)ShellExecute(nullptr, L"open", MSVCRT_URL, nullptr, nullptr, SW_SHOW)) {
@@ -272,7 +276,7 @@ namespace {
 			}
 		}
 		else {
-			if (g_isWow) TryInstallServer(hWnd, false, true);
+			if (g_is64bit) TryInstallServer(hWnd, false, true);
 			TryInstallServer(hWnd, false, false);
 		}
 
@@ -366,26 +370,29 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 {
 	g_hInst = hInstance;
 
-	// Detect Wow64
+#ifndef _WIN64
+	// Check if this is a 64-bit system. (Wow64)
 	HMODULE kernel32 = GetModuleHandle(L"kernel32");
 	if (!kernel32) {
 		DebugBreak();
 		return 1;
 	}
-	typedef BOOL(WINAPI *fnIsWow64Process)(HANDLE, PBOOL);
-	fnIsWow64Process myIsWow64Process = (fnIsWow64Process)GetProcAddress(kernel32, "IsWow64Process");
+	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
+	PFNISWOW64PROCESS pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(kernel32, "IsWow64Process");
 
-	if (myIsWow64Process == nullptr) {
-		g_isWow = false;
-	}
-	else {
+	if (!pfnIsWow64Process) {
+		// IsWow64Process() isn't available.
+		// This must be a 32-bit system.
+		g_is64bit = false;
+	} else {
 		BOOL bWow;
-		if (!myIsWow64Process(GetCurrentProcess(), &bWow)) {
+		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
 			DebugBreak();
 			return 1;
 		}
-		g_isWow = bWow ? true : false;
+		g_is64bit = !!bWow;
 	}
+#endif /* !_WIN64 */
 
 	// Run the dialog
 	DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), nullptr, DialogProc);
