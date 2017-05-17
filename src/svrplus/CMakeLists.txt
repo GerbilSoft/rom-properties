@@ -9,19 +9,19 @@ SET(svrplus_H
 	resource.h
 	)
 
-#####################
-# Build the plugin. #
-#####################
+#########################
+# Build the executable. #
+#########################
 
 ADD_EXECUTABLE(svrplus
 	${svrplus_SRCS}
 	${svrplus_H}
 	)
-
 SET_TARGET_PROPERTIES(svrplus PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(svrplus)
 SET_WINDOWS_SUBSYSTEM(svrplus WIN32)
 SET_WINDOWS_NO_MANIFEST(svrplus)
+SET_WINDOWS_ENTRYPOINT(svrplus wWinMain OFF)
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,
@@ -33,7 +33,7 @@ TARGET_INCLUDE_DIRECTORIES(svrplus
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(svrplus comctl32 Shlwapi)
+TARGET_LINK_LIBRARIES(svrplus comctl32 shlwapi)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)

@@ -19,18 +19,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include <stdio.h>
-#include <Windows.h>
-#include <Shellapi.h>
-#include <Shlwapi.h>
-#include <wchar.h>
-#include <assert.h>
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
+#include <cwchar>
+
+// C++ includes.
 #include <string>
-#include <stdarg.h>
+using std::wstring;
+
+// Windows headers.
+#include <windows.h>
+#include <shellapi.h>
+#include <shlwapi.h>
+
+// Application resources.
 #include "resource.h"
-#if 0 // defined(_WIN64)
-#error This app should only be compiled as x86 application
-#endif
 
 #define MSVCRT_URL L"https://www.microsoft.com/en-us/download/details.aspx?id=53587"
 
@@ -109,7 +114,7 @@ namespace {
 	 * @param format the format string
 	 * @returns formated string
 	 */
-	std::wstring Format(const wchar_t *format, ...) {
+	wstring Format(const wchar_t *format, ...) {
 		// NOTE: There's no standard "dry-run" version of swprintf, and even the msvc
 		// extension is deprecated by _s version which doesn't allow dry-running.
 		va_list args;
@@ -117,7 +122,7 @@ namespace {
 		int count = _vsnwprintf((wchar_t*)nullptr, 0, format, args); // cast is nescessary for VS2015, because template overloads
 		wchar_t *buf = new wchar_t[count + 1];
 		_vsnwprintf(buf, count + 1, format, args);
-		std::wstring rv(buf);
+		wstring rv(buf);
 		delete[] buf;
 		va_end(args);
 		return rv;
@@ -147,7 +152,7 @@ namespace {
 	 * @param extraError additional error message
 	 * @return 0 - success, 1 - file not found, 2 - other (fatal) error (see extraError), -1 - silent failure
 	 */
-	int InstallServer(bool isUninstall, bool is64, std::wstring& extraError) {
+	int InstallServer(bool isUninstall, bool is64, wstring& extraError) {
 		// Construct path for regsvr
 		wchar_t regsvr[MAX_PATH];
 		if (0 == GetWindowsDirectory(regsvr, MAX_PATH)) {
@@ -208,7 +213,7 @@ namespace {
 	 * @param is64 when true, installs 64-bit version
 	 */
 	void TryInstallServer(HWND hWnd, bool isUninstall, bool is64) {
-		std::wstring extraError;
+		wstring extraError;
 		int result = InstallServer(isUninstall, is64, extraError);
 		const wchar_t *title = isUninstall ? str_uninstallTitle : str_installTitle;
 
@@ -220,7 +225,7 @@ namespace {
 			return;
 		}
 		else if (result == 1) { // File not found
-			const std::wstring suffix = isUninstall
+			const wstring suffix = isUninstall
 				? Format(strfmt_skippingUnreg, is64 ? 64 : 32)
 				: (g_isWow
 					? Format(strfmt_dllRequiredNote, is64 ? 64 : 32)
@@ -230,7 +235,7 @@ namespace {
 		}
 		else {
 			const wchar_t *fmtString;
-			std::wstring suffix;
+			wstring suffix;
 			if (result == 0) { // Success
 				fmtString = isUninstall ? strfmt_uninstallSuccess : strfmt_installSuccess;
 			}
@@ -357,7 +362,8 @@ namespace {
 /**
  * Entry point
  */
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow) {
+int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmdShow)
+{
 	g_hInst = hInstance;
 
 	// Detect Wow64
