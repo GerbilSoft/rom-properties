@@ -44,10 +44,7 @@ namespace {
 	constexpr wchar_t str_rp32path[] = L"i386\\rom-properties.dll";
 	constexpr wchar_t str_rp64path[] = L"amd64\\rom-properties.dll";
 
-	// Dialog strings
-	constexpr wchar_t strdlg_title[] = L"ROM Properties installer";
-	constexpr wchar_t strdlg_installBtn[] = L"Install";
-	constexpr wchar_t strdlg_uninstallBtn[] = L"Uninstall";
+	/** Dialog strings **/
 
 	// User visible strings
 	constexpr wchar_t str_exitConfirmation[] =
@@ -74,22 +71,6 @@ namespace {
 	constexpr wchar_t strfmt_regsvrErr[] = L"regsvr32 returned error code (%d)";
 
 	constexpr wchar_t strfmt_createThreadErr[] = L"Couldn't start worker thread (%d)";
-
-	constexpr wchar_t str_installIntro[] =
-		L"This installer will register the ROM Properties DLL with the system, "
-		L"which will provide extra functionality for supported files in Windows Explorer.\n\n"
-		L"Note that the DLL locations are hard-coded in the registry. "
-		L"If you move the DLLs, you will have to rerun this script. "
-		L"In addition, the DLLs will usually be locked by Explorer, "
-		L"so you will need to run the uninstall script and restart "
-		L"Windows Explorer in order to move the DLLs.\n\n"
-		L"Do you want to proceed?";
-
-	constexpr wchar_t str_uninstallIntro[] =
-		L"This uninstaller will unregister the ROM Properties DLL.\n\n"
-		L"NOTE: Unregistering will disable all functionality provided "
-		L"by the DLL for supported ROM files.\n\n"
-		L"Do you want to proceed?";
 
 	constexpr wchar_t str_msvcNotFound[] =
 		L"ERROR: MSVC 2015 runtime was not found.\n"
@@ -293,24 +274,93 @@ namespace {
 	}
 
 	/**
+	 * Initialize the dialog.
+	 * @param hDlg Dialog handle.
+	 */
+	inline void InitDialog(HWND hDlg)
+	{
+		HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON,
+			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+		if (hIcon) {
+			SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		}
+
+		// FIXME: Figure out the SysLink styles. (0x50010000?)
+		ShowWindow(GetDlgItem(hDlg, IDC_STATIC_STATUS2), SW_HIDE);
+
+		// Set the dialog strings.
+		static const wchar_t strdlg_desc[] =
+			L"This installer will register the ROM Properties Page DLL with the system, "
+			L"which will provide extra functionality for supported files in Windows Explorer.\n\n"
+			L"Note that the DLL locations are hard-coded in the registry. If you move the DLLs, "
+			L"you will have to rerun this installer. In addition, the DLLs will usually be locked "
+			L"by Explorer, so you will need to use this program to uninstall the DLLs first and "
+			L"then restart Explorer in order to move the DLLs.\n\n"
+			L"Uninstalling will unregister the ROM Properties DLL, which will disable the extra "
+			L"functionality provided by the DLL for supported ROM files.";
+		SetWindowText(GetDlgItem(hDlg, IDC_STATIC_DESC), strdlg_desc);
+
+		// Check if MSVCRT is installed. If it isn't, show a warning
+		// message and disable the buttons.
+		const bool hasMsvc32 = CheckMsvc(false);
+
+		// Go through the various permutations.
+		const wchar_t *line1 = nullptr, *line2 = nullptr;
+#ifndef _WIN64
+		if (!g_is64bit) {
+			// 32-bit system.
+			if (!hasMsvc32) {
+				// 32-bit MSVCRT is missing.
+				line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
+				line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
+					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>";
+			}
+		} else
+#endif /* !_WIN64 */
+		{
+			// 64-bit system.
+			const bool hasMsvc64 = CheckMsvc(true);
+			if (!hasMsvc32 && !hasMsvc64) {
+				// Both 32-bit and 64-bit MSVCRT are missing.
+				line1 = L"The 32-bit and 64-bit MSVC 2017 runtimes are not installed.";
+				line2 = L"You can download the MSVC 2017 runtime at:\n"
+					L"\x2022 32-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>\n";
+					L"\x2022 64-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746572\">https://go.microsoft.com/fwlink/?LinkId=746572</a>";
+			} else if (!hasMsvc32 && hasMsvc64) {
+				// 32-bit MSVCRT is missing.
+				line1 = L"The 32-bit MSVC 2017 runtime is not installed.";
+				line2 = L"You can download the 32-bit MSVC 2017 runtime at:\n"
+					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>";
+			} else if (hasMsvc32 && !hasMsvc64) {
+				// 64-bit MSVCRT is missing.
+				line1 = L"The 64-bit MSVC 2017 runtime is not installed.";
+				line2 = L"You can download the 64-bit MSVC 2017 runtime at:\n"
+					L"\x2022 <a href=\"https://go.microsoft.com/fwlink/?LinkId=746572\">https://go.microsoft.com/fwlink/?LinkId=746572</a>";
+			}
+		}
+
+		if (line1) {
+			// MSVCRT is missing.
+			// TODO: IDI_EXCLAMATION
+			HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
+			HWND hStatus2 = GetDlgItem(hDlg, IDC_STATIC_STATUS2);
+			SetWindowText(hStatus1, line1);
+			SetWindowText(hStatus2, line2);
+			ShowWindow(hStatus1, SW_SHOW);
+			ShowWindow(hStatus2, SW_SHOW);
+			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), FALSE);
+		}
+	}
+
+	/**
 	 * Main dialog message handler
 	 */
-	INT_PTR CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		switch (uMsg) {
 		case WM_INITDIALOG: {
-			// Set icon
-			HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON,
-				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-			if (hIcon) {
-				SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
-			}
-
-			// Set title/strings
-			SetWindowText(hWnd, strdlg_title);
-			SetWindowText(GetDlgItem(hWnd, IDC_BUTTON_INSTALL), strdlg_installBtn);
-			SetWindowText(GetDlgItem(hWnd, IDC_BUTTON_UNINSTALL), strdlg_uninstallBtn);
-
-			return TRUE;
+			InitDialog(hDlg);
+			break;
 		}
 		case WM_SETCURSOR: {
 			DlgUpdateCursor();
@@ -318,46 +368,47 @@ namespace {
 		}
 		case WM_APP_ENDTASK: {
 			g_inProgress = false;
-			EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_INSTALL), TRUE);
-			EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_UNINSTALL), TRUE);
+			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), TRUE);
+			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), TRUE);
 			DlgUpdateCursor();
 			return TRUE;
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
-			case IDC_BUTTON_INSTALL:
-			case IDC_BUTTON_UNINSTALL:
-				if (g_inProgress) return TRUE;
-				bool isUninstall = LOWORD(wParam) == IDC_BUTTON_UNINSTALL;
-				const wchar_t* intro = isUninstall ? str_uninstallIntro : str_installIntro;
-				const wchar_t* title = isUninstall ? str_uninstallTitle : str_installTitle;
-				if (IDYES == MessageBox(hWnd, intro, title, MB_ICONINFORMATION | MB_YESNO)) {
-					EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_INSTALL), FALSE);
-					EnableWindow(GetDlgItem(hWnd, IDC_BUTTON_UNINSTALL), FALSE);
+				case IDC_BUTTON_INSTALL:
+				case IDC_BUTTON_UNINSTALL: {
+					if (g_inProgress) return TRUE;
+					bool isUninstall = LOWORD(wParam) == IDC_BUTTON_UNINSTALL;
+					EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), FALSE);
+					EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), FALSE);
 					g_inProgress = true;
 					DlgUpdateCursor();
 
 					// The installation is done on a separate thread so that we don't lock the message loop
 					ThreadParams *params = new ThreadParams;
-					params->hWnd = hWnd;
+					params->hWnd = hDlg;
 					params->isUninstall = isUninstall;
 					HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, params, 0, nullptr);
 					if (!hThread) {
-						MessageBox(hWnd, Format(strfmt_createThreadErr, GetLastError()).c_str(), title, MB_ICONERROR);
+						// TODO: Show the error message on the status labels.
+						const wchar_t *const title = (isUninstall ? L"Uninstall Error" : L"Install Error");
+						MessageBox(hDlg, Format(strfmt_createThreadErr, GetLastError()).c_str(), title, MB_ICONERROR);
 						return TRUE;
 					}
 					CloseHandle(hThread);
+					return TRUE;
 				}
-				return TRUE;
+
+				default:
+					break;
 			}
 			return FALSE;
 		}
 		case WM_CLOSE:
 			if (!g_inProgress) {
-				EndDialog(hWnd, 0);
+				EndDialog(hDlg, 0);
 			}
 			return TRUE;
-			break;
 		}
 		return FALSE;
 	}
@@ -395,7 +446,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 #endif /* !_WIN64 */
 
 	// Run the dialog
-	DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), nullptr, DialogProc);
+	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), nullptr, DialogProc);
 
 	return 0;
 }

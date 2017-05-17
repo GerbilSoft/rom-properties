@@ -22,9 +22,12 @@
 #ifndef __ROMPROPERTIES_SVRPLUS_RESOURCE_H__
 #define __ROMPROPERTIES_SVRPLUS_RESOURCE_H__
 
-#define IDD_DIALOG1                     101
-#define IDI_ICON1                       102
-#define IDC_BUTTON_INSTALL              1001
-#define IDC_BUTTON_UNINSTALL            1002
+#define IDD_SVRPLUS                             101
+#define IDI_ICON1                               102
+#define IDC_STATIC_DESC                         1001
+#define IDC_STATIC_STATUS1                      1002
+#define IDC_STATIC_STATUS2                      1003
+#define IDC_BUTTON_INSTALL                      1004
+#define IDC_BUTTON_UNINSTALL                    1005
 
 #endif /* __ROMPROPERTIES_SVRPLUS_RESOURCE_H__ */
