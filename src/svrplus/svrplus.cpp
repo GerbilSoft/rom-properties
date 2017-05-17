@@ -70,8 +70,6 @@ namespace {
 	constexpr wchar_t str_stillActive[] = L"Process returned STILL_ACTIVE";
 	constexpr wchar_t strfmt_regsvrErr[] = L"regsvr32 returned error code (%d)";
 
-	constexpr wchar_t strfmt_createThreadErr[] = L"Couldn't start worker thread (%d)";
-
 	constexpr wchar_t str_msvcNotFound[] =
 		L"ERROR: MSVC 2015 runtime was not found.\n"
 		L"Please download and install the MSVC 2015 runtime packages from: " MSVCRT_URL L"\n\n"
@@ -434,12 +432,17 @@ namespace {
 					params->isUninstall = isUninstall;
 					HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, params, 0, nullptr);
 					if (!hThread) {
-						// TODO: Show the error message on the status labels.
-						const wchar_t *const title = (isUninstall ? L"Uninstall Error" : L"Install Error");
-						MessageBox(hDlg, Format(strfmt_createThreadErr, GetLastError()).c_str(), title, MB_ICONERROR);
+						// Couldn't start the worker thread.
+						const wstring threadErr = Format(L"\x2022 Win32 error code: %u", GetLastError());
+						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr.c_str(), true);
+						EnableButtons(hDlg, true);
+						g_inProgress = false;
+						DlgUpdateCursor();
 						return TRUE;
+					} else {
+						// We don't need to keep the thread handle open.
+						CloseHandle(hThread);
 					}
-					CloseHandle(hThread);
 					return TRUE;
 				}
 
