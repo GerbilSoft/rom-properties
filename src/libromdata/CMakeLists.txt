@@ -115,6 +115,7 @@ SET(libromdata_SRCS
 	crypto/KeyManager.cpp
 	config/ConfReader.cpp
 	config/Config.cpp
+	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	)
 SET(libromdata_H
 	byteorder.h
@@ -205,6 +206,7 @@ SET(libromdata_H
 	crypto/KeyManager.hpp
 	config/ConfReader.hpp
 	config/Config.hpp
+	config/TImageTypesConfig.hpp
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))

@@ -24,19 +24,7 @@
 
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/config/Config.hpp"
-#include "libromdata/RomData.hpp"
 using LibRomData::Config;
-using LibRomData::RomData;
-
-// RomData subclasses with images.
-#include "libromdata/Amiibo.hpp"
-#include "libromdata/DreamcastSave.hpp"
-#include "libromdata/GameCube.hpp"
-#include "libromdata/GameCubeSave.hpp"
-#include "libromdata/NintendoDS.hpp"
-#include "libromdata/Nintendo3DS.hpp"
-#include "libromdata/PlayStationSave.hpp"
-#include "libromdata/WiiU.hpp"
 
 #include "WinUI.hpp"
 #include "resource.h"
@@ -44,18 +32,19 @@ using LibRomData::RomData;
 // C includes. (C++ namespace)
 #include <cassert>
 
-// C++ includes.
-#include <string>
-#include <sstream>
-using std::wstring;
-using std::wostringstream;
+// TImageTypesConfig is a templated class,
+// so we have to #include the .cpp file here.
+#include "libromdata/config/TImageTypesConfig.cpp"
+using LibRomData::TImageTypesConfig;
 
-class ImageTypesTabPrivate
+class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 {
 	public:
 		ImageTypesTabPrivate();
+		virtual ~ImageTypesTabPrivate();
 
 	private:
+		typedef TImageTypesConfig<HWND> super;
 		RP_DISABLE_COPY(ImageTypesTabPrivate)
 
 	public:
@@ -63,44 +52,66 @@ class ImageTypesTabPrivate
 		// This points to the ImageTypesTabPrivate object.
 		static const wchar_t D_PTR_PROP[];
 
-	public:
-		// Image type data.
-		static const rp_char *const imageTypeNames[RomData::IMG_EXT_MAX+1];
-
-		// System data.
-		typedef uint32_t (*pFnSupportedImageTypes)(void);
-		struct SysData {
-			const rp_char *name;			// System name.
-			const char *classNameA;			// Class name in Config. (ASCII)
-			const wchar_t *classNameW;		// Class name in Config. (Unicode)
-			pFnSupportedImageTypes getTypes;	// Get supported image types.
-		};
-#define SysDataEntry(klass, name) \
-	{name, #klass, L#klass, LibRomData::klass::supportedImageTypes_static}
-		static const int SYS_COUNT = 8;
-		static const SysData sysData[SYS_COUNT];
+	protected:
+		/** TImageTypesConfig functions. (protected) **/
 
 		/**
-		 * Create the grid of static text and combo boxes.
+		 * Create the labels in the grid.
 		 */
-		void createGrid(void);
+		INLINE_OVERRIDE virtual void createGridLabels(void) override final;
 
 		/**
-		 * Reset the grid to the current configuration.
+		 * Create a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
 		 */
-		void reset(void);
+		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) override final;
 
 		/**
-		 * Save the configuration.
+		 * Add strings to a ComboBox in the grid.
+		 * @param cbid ComboBox ID.
+		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		void save(void);
+		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
 
 		/**
-		 * Update imageTypes in response to a user change.
-		 * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
-		 * @param prio New priority. (0xFF == No; others == priority)
+		 * Finish adding the ComboBoxes.
 		 */
-		void updateImageType(unsigned int id, unsigned int prio);
+		INLINE_OVERRIDE virtual void finishComboBoxes(void) override final;
+
+		/**
+		 * Initialize the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveStart(void) override final;
+
+		/**
+		 * Write an ImageType configuration entry.
+		 * @param sysName System name.
+		 * @param imageTypeList Image type list, comma-separated.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+
+		/**
+		 * Close the Save subsystem.
+		 * This is needed on platforms where the configuration file
+		 * must be opened with an appropriate writer class.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		INLINE_OVERRIDE virtual int saveFinish(void) override final;
+
+	protected:
+		/** TImageTypesConfig functions. (public) **/
+
+		/**
+		 * Set a ComboBox's current index.
+		 * This will not trigger cboImageType_priorityValueChanged().
+		 * @param cbid ComboBox ID.
+		 * @param prio New priority value. (0xFF == no)
+		 */
+		INLINE_OVERRIDE virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
 		/**
@@ -125,80 +136,64 @@ class ImageTypesTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
-		// Has the user changed anything?
-		bool changed;
+		// Grid parameters.
+		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
+		SIZE sz_cboImageType;	// ComboBox size.
+		unsigned int cy_cboImageType_list;	// ComboBox list height.
 
-		// Image type dropdowns.
-		// NOTE: This is a square array, but no system supports
-		// *all* image types, so most of these will be nullptr.
-		HWND cboImageType[SYS_COUNT][RomData::IMG_EXT_MAX+1];
+		// Last ComboBox added.
+		// Needed in order to set the correct
+		// tab order for the credits label.
+		HWND cboImageType_lastAdded;
 
-		// Image types. (0xFF == No; others == priority)
-		// NOTE: We need to store them here in order to handle
-		// duplicate prevention, since CBN_SELCHANGE doesn't
-		// include the "previous" index.
-		uint8_t imageTypes[SYS_COUNT][RomData::IMG_EXT_MAX+1];
-
-		// Number of valid image types per system.
-		uint8_t validImageTypes[SYS_COUNT];
-
-		// Which systems have the default configuration?
-		// These ones will be saved with a blank value.
-		bool sysIsDefault[SYS_COUNT];
+		// Temporary configuration filename.
+		// Set by saveStart(); cleared by saveFinish().
+		wchar_t *tmp_conf_filename;
 };
 
-// Control base IDs.
-#define IDC_IMAGETYPES_CBOIMAGETYPE(sysName, imageType) (0x2000 + (((sysName) << 4) | (imageType)))
+// Control base ID.
+#define IDC_IMAGETYPES_CBOIMAGETYPE_BASE 0x2000
 
 /** ImageTypesTabPrivate **/
 
 ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, changed(false)
+	, cboImageType_lastAdded(nullptr)
+	, tmp_conf_filename(nullptr)
 {
-	// Clear the arrays.
-	memset(cboImageType, 0, sizeof(cboImageType));
-	memset(imageTypes, 0xFF, sizeof(imageTypes));
-	memset(validImageTypes, 0, sizeof(validImageTypes));
-	memset(sysIsDefault, 0, sizeof(sysIsDefault));
+	// Clear the grid parameters.
+	pt_cboImageType.x = 0;
+	pt_cboImageType.y = 0;
+	sz_cboImageType.cx = 0;
+	sz_cboImageType.cy = 0;
+	cy_cboImageType_list = 0;
+}
+
+ImageTypesTabPrivate::~ImageTypesTabPrivate()
+{
+	// cboImageType_lastAdded should be nullptr.
+	// (Cleared by finishComboBoxes().)
+	assert(cboImageType_lastAdded == nullptr);
+
+	// tmp_conf_filename should be nullptr,
+	// since it's only used when saving.
+	assert(tmp_conf_filename == nullptr);
+	free(tmp_conf_filename);
 }
 
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
 const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
 
-// Image type names.
-const rp_char *const ImageTypesTabPrivate::imageTypeNames[RomData::IMG_EXT_MAX+1] = {
-	_RP("Internal\nIcon"),
-	_RP("Internal\nBanner"),
-	_RP("Internal\nMedia"),
-	_RP("External\nMedia"),
-	_RP("External\nCover"),
-	_RP("External\n3D Cover"),
-	_RP("External\nFull Cover"),
-	_RP("External\nBox"),
-};
-
-// System data.
-const ImageTypesTabPrivate::SysData ImageTypesTabPrivate::sysData[SYS_COUNT] = {
-	SysDataEntry(Amiibo,		_RP("amiibo")),
-	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
-	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
-	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),
-	SysDataEntry(NintendoDS,	_RP("Nintendo DS(i)")),
-	SysDataEntry(Nintendo3DS,	_RP("Nintendo 3DS")),
-	SysDataEntry(PlayStationSave,	_RP("PlayStation Saves")),
-	SysDataEntry(WiiU,		_RP("Wii U")),
-};
-
 /**
- * Create the grid of static text and combo boxes.
+ * Create the labels in the grid.
  */
-void ImageTypesTabPrivate::createGrid()
+void ImageTypesTabPrivate::createGridLabels(void)
 {
 	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
+	assert(sz_cboImageType.cx == 0);
+	if (!hWndPropSheet || sz_cboImageType.cx != 0)
 		return;
 
 	// Get the dialog margin.
@@ -228,7 +223,7 @@ void ImageTypesTabPrivate::createGrid()
 
 	// Determine the size of the largest image type label.
 	SIZE sz_lblImageType = {0, 0};
-	for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
+	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
 		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
 		if (szCur.cx > sz_lblImageType.cx) {
@@ -240,7 +235,6 @@ void ImageTypesTabPrivate::createGrid()
 	}
 
 	// Determine the size of the largest system name label.
-	// TODO: Height needs to match the combo boxes.
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
@@ -254,24 +248,26 @@ void ImageTypesTabPrivate::createGrid()
 	}
 
 	// Create a combo box in order to determine its actual vertical size.
-	SIZE szCbo = {sz_lblImageType.cx, sz_lblImageType.cy*3};
+	sz_cboImageType.cx = sz_lblImageType.cx;
+	const unsigned int cbo_test_cy = sz_lblImageType.cy * 3;
 	HWND cboTestBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 		WC_COMBOBOX, nullptr,
 		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
-		0, 0, szCbo.cx, szCbo.cy,
+		0, 0, sz_cboImageType.cx, cbo_test_cy,
 		hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 	SetWindowFont(cboTestBox, hFontDlg, FALSE);
 
 	RECT rect_cboTestBox;
 	GetWindowRect(cboTestBox, &rect_cboTestBox);
 	MapWindowPoints(HWND_DESKTOP, GetParent(cboTestBox), (LPPOINT)&rect_cboTestBox, 2);
-	szCbo.cy = rect_cboTestBox.bottom * 3;
+	sz_cboImageType.cy = rect_cboTestBox.bottom;
+	cy_cboImageType_list = rect_cboTestBox.bottom * 3;
 	DestroyWindow(cboTestBox);
 
 	// Create the image type labels.
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
-	for (unsigned int i = 0; i <= RomData::IMG_EXT_MAX; i++) {
+	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, RP2W_c(imageTypeNames[i]),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
@@ -281,296 +277,214 @@ void ImageTypesTabPrivate::createGrid()
 		curPt.x += sz_lblImageType.cx;
 	}
 
-	// Dropdown strings.
-	// NOTE: One more string than the total number of image types,
-	// since we have a string for "No".
-	static const wchar_t s_values[RomData::IMG_EXT_MAX+2][4] = {
-		L"No", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8"
-	};
-	static_assert(ARRAY_SIZE(s_values) == RomData::IMG_EXT_MAX+2, "s_values[] is the wrong size.");
-
-	// Create the system name labels and dropdown boxes.
+	// Determine the starting point.
 	curPt.x = rect_lblDesc2.left;
 	curPt.y += sz_lblImageType.cy + (dlgMargin.bottom / 2);
 	int yadj_lblSysName = (rect_cboTestBox.bottom - sz_lblSysName.cy) / 2;
 	if (yadj_lblSysName < 0) {
 		yadj_lblSysName = 0;
 	}
-	const int cbo_x_start = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
+
+	// Save the ComboBox starting position for later.
+	pt_cboImageType.x = curPt.x + sz_lblSysName.cx + (dlgMargin.right/2);
+	pt_cboImageType.y = curPt.y;
+
+	// Create the system name labels.
+	curPt.y += yadj_lblSysName;
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, RP2W_c(sysData[sys].name),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
-			curPt.x, curPt.y+yadj_lblSysName,
+			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblSysName, hFontDlg, FALSE);
 
-		// Get supported image types.
-		uint32_t imgbf = sysData[sys].getTypes();
-		assert(imgbf != 0);
-
-		int cbo_x = cbo_x_start;
-		validImageTypes[sys] = 0;
-		HWND *p_cboImageType = &cboImageType[sys][0];
-		for (unsigned int imageType = 0; imgbf != 0 && imageType <= RomData::IMG_EXT_MAX+1;
-		     imageType++, p_cboImageType++, cbo_x += sz_lblImageType.cx, imgbf >>= 1)
-		{
-			if (!(imgbf & 1)) {
-				// Current image type is not supported.
-				*p_cboImageType = nullptr;
-				continue;
-			}
-
-			// Create the dropdown box.
-			*p_cboImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-				WC_COMBOBOX, nullptr,
-				WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
-				cbo_x, curPt.y, szCbo.cx, szCbo.cy,
-				hWndPropSheet, (HMENU)(INT_PTR)IDC_IMAGETYPES_CBOIMAGETYPE(sys, imageType),
-				nullptr, nullptr);
-			SetWindowFont(*p_cboImageType, hFontDlg, FALSE);
-
-			// Increment the valid image types counter.
-			validImageTypes[sys]++;
-		}
-
-		// Add strings to the dropdowns.
-		p_cboImageType = &cboImageType[sys][0];
-		for (int imageType = RomData::IMG_EXT_MAX; imageType >= 0; imageType--, p_cboImageType++) {
-			if (!*p_cboImageType) {
-				// No dropdown box here.
-				continue;
-			}
-
-			// NOTE: Need to add one more than the total number,
-			// since "No" counts as an entry.
-			for (int i = 0; i <= validImageTypes[sys]; i++) {
-				assert(s_values[i] != nullptr);
-				ComboBox_AddString(*p_cboImageType, s_values[i]);
-			}
-		}
-
 		// Next row.
 		curPt.y += rect_cboTestBox.bottom;
 	}
-
-	// Load the configuration.
-	reset();
 }
 
 /**
- * Reset the grid to the current configuration.
+ * Create a ComboBox in the grid.
+ * @param cbid ComboBox ID.
  */
-void ImageTypesTabPrivate::reset(void)
+void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 {
-	// Reset all combo boxes first.
-	HWND *p_cboImageType;
-	for (p_cboImageType = &cboImageType[0][0];
-	     p_cboImageType != &cboImageType[SYS_COUNT][0]; p_cboImageType++)
-	{
-		if (*p_cboImageType) {
-			ComboBox_SetCurSel(*p_cboImageType, 0);
-		}
+	assert(hWndPropSheet != nullptr);
+	assert(sz_cboImageType.cx != 0);
+	if (!hWndPropSheet || sz_cboImageType.cx == 0)
+		return;
+
+	const unsigned int sys = sysFromCbid(cbid);
+	const unsigned int imageType = imageTypeFromCbid(cbid);
+	if (!validateSysImageType(sys, imageType))
+		return;
+
+	// Get the font of the parent dialog.
+	// TODO: Cache this?
+	HFONT hFontDlg = GetWindowFont(GetParent(hWndPropSheet));
+	assert(hFontDlg != nullptr);
+	if (!hFontDlg) {
+		// No font?!
+		return;
 	}
 
-	const Config *const config = Config::instance();
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		p_cboImageType = &cboImageType[sys][0];
+	// Create the ComboBox.
+	const POINT ptComboBox = {
+		pt_cboImageType.x + (sz_cboImageType.cx * (LONG)imageType),
+		pt_cboImageType.y + (sz_cboImageType.cy * (LONG)sys)
+	};
 
-		// Get the image priority.
-		Config::ImgTypePrio_t imgTypePrio;
-		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
-		bool no_thumbs = false;
-		switch (res) {
-			case Config::IMGTR_SUCCESS:
-				// Image type priority received successfully.
-				sysIsDefault[sys] = false;
-				break;
-			case Config::IMGTR_SUCCESS_DEFAULTS:
-				// Image type priority received successfully.
-				// IMGTR_SUCCESS_DEFAULTS indicates the returned
-				// data is the default priority, since a custom
-				// configuration was not found for this class.
-				sysIsDefault[sys] = true;
-				break;
-			case Config::IMGTR_DISABLED:
-				// Thumbnails are disabled for this class.
-				no_thumbs = true;
-				break;
-			default:
-				// Should not happen...
-				assert(!"Invalid return value from Config::getImgTypePrio().");
-				no_thumbs = true;
-				break;
-		}
+	HWND hComboBox = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+		WC_COMBOBOX, nullptr,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST,
+		ptComboBox.x, ptComboBox.y,
+		sz_cboImageType.cx, cy_cboImageType_list,
+		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
+		nullptr, nullptr);
+	SetWindowFont(hComboBox, hFontDlg, FALSE);
+	cboImageType[sys][imageType] = hComboBox;
 
-		if (no_thumbs)
-			continue;
-
-		int nextPrio = 0;	// Next priority value to use.
-		bool imageTypeSet[RomData::IMG_EXT_MAX+1];	// Element set to true once an image type priority is read.
-		memset(imageTypeSet, 0, sizeof(imageTypeSet));
-
-		p_cboImageType = &cboImageType[sys][0];
-		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
-		{
-			uint8_t imageType = imgTypePrio.imgTypes[i];
-			assert(imageType == 0xFF || imageType <= RomData::IMG_EXT_MAX);
-			if (imageType > RomData::IMG_EXT_MAX && imageType != 0xFF) {
-				// Invalid image type.
-				continue;
-			}
-			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
-				// Set the image type.
-				imageTypeSet[imageType] = true;
-				if (imageType <= RomData::IMG_EXT_MAX) {
-					imageTypes[sys][imageType] = nextPrio;
-					// +1 because combobox index 0 is "No".
-					ComboBox_SetCurSel(p_cboImageType[imageType], nextPrio+1);
-					nextPrio++;
-				}
-			}
-		}
-	}
-
-	// No longer changed.
-	changed = false;
+	SetWindowPos(hComboBox,
+		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	cboImageType_lastAdded = hComboBox;
 }
 
 /**
- * Save the configuration.
+ * Add strings to a ComboBox in the grid.
+ * @param cbid ComboBox ID.
+ * @param max_prio Maximum priority value. (minimum is 1)
  */
-void ImageTypesTabPrivate::save(void)
+void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+	HWND cboImageType = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid);
+	assert(cboImageType != nullptr);
+	if (!cboImageType)
+		return;
+
+	// Dropdown strings.
+	// NOTE: One more string than the total number of image types,
+	// since we have a string for "No".
+	static const wchar_t s_values[IMG_TYPE_COUNT+1][4] = {
+		L"No", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8"
+	};
+	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
+
+	// NOTE: Need to add one more than the total number,
+	// since "No" counts as an entry.
+	for (int i = 0; i <= max_prio; i++) {
+		assert(s_values[i] != nullptr);
+		ComboBox_AddString(cboImageType, s_values[i]);
+	}
+}
+
+/**
+ * Finish adding the ComboBoxes.
+ */
+void ImageTypesTabPrivate::finishComboBoxes(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	if (!cboImageType_lastAdded) {
+		// Nothing to do here.
+		return;
+	}
+
+	HWND lblCredits = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS);
+	assert(lblCredits != nullptr);
+	if (!lblCredits)
+		return;
+
+	SetWindowPos(lblCredits,
+		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	cboImageType_lastAdded = nullptr;
+}
+
+/**
+ * Initialize the Save subsystem.
+ * This is needed on platforms where the configuration file
+ * must be opened with an appropriate writer class.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageTypesTabPrivate::saveStart(void)
 {
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
 	const rp_char *const filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
-		return;
+		return -ENOENT;
 	}
 
-	// Image types are stored in the imageTypes[] array.
-	const uint8_t *pImageTypes = imageTypes[0];
-
-	wostringstream woss;
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
-		// Is this system using the default configuration?
-		if (sysIsDefault[sys]) {
-			// Default configuration. Write an empty string.
-			// NOTE: Passing NULL here deletes the entry.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"", RP2W_c(filename));
-			pImageTypes += ARRAY_SIZE(imageTypes[0]);
-			continue;
-		}
-
-		// Reset the wostringstream.
-		woss.str(wstring());
-
-		// Format of imageTypes[]:
-		// - Index: Image type.
-		// - Value: Priority.
-		// We need to swap index and value.
-		uint8_t imgTypePrio[RomData::IMG_EXT_MAX+1];
-		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
-		for (unsigned int imageType = 0; imageType <= RomData::IMG_EXT_MAX;
-		     imageType++, pImageTypes++)
-		{
-			if (*pImageTypes > RomData::IMG_EXT_MAX) {
-				// Image type is either not valid for this system
-				// or is set to "No".
-				continue;
-			}
-			imgTypePrio[*pImageTypes] = imageType;
-		}
-
-		// Convert the image type priority to strings.
-		// TODO: Export the string data from Config.
-		static const wchar_t *const imageTypeNames[RomData::IMG_EXT_MAX+1] = {
-			L"IntIcon",
-			L"IntBanner",
-			L"IntMedia",
-			L"ExtMedia",
-			L"ExtCover",
-			L"ExtCover3D",
-			L"ExtCoverFull",
-			L"ExtBox",
-		};
-		static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
-
-		bool hasOne = false;
-		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
-			const uint8_t imageType = imgTypePrio[i];
-			if (imageType <= RomData::IMG_EXT_MAX) {
-				if (hasOne)
-					woss << L',';
-				hasOne = true;
-				woss << imageTypeNames[imageType];
-			}
-		}
-
-		if (hasOne) {
-			// At least one image type is enabled.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, woss.str().c_str(), RP2W_c(filename));
-		} else {
-			// All image types are disabled.
-			WritePrivateProfileString(L"ImageTypes", sysData[sys].classNameW, L"No", RP2W_c(filename));
-		}
+	// Store the configuration filename.
+	assert(tmp_conf_filename == nullptr);
+	if (tmp_conf_filename) {
+		// Shouldn't be set here...
+		free(tmp_conf_filename);
 	}
-
-	// No longer changed.
-	changed = false;
+	tmp_conf_filename = wcsdup(RP2W_s(filename));
+	return 0;
 }
 
 /**
- * Update imageTypes in response to a user change.
- * @param id Control ID. (IDC_IMAGETYPES_CBOIMAGETYPE)
- * @param prio New priority. (0xFF == No; others == priority)
+ * Write an ImageType configuration entry.
+ * @param sysName System name.
+ * @param imageTypeList Image type list, comma-separated.
+ * @return 0 on success; negative POSIX error code on error.
  */
-void ImageTypesTabPrivate::updateImageType(unsigned int id, unsigned int prio)
+int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
+{
+	assert(tmp_conf_filename != nullptr);
+	if (!tmp_conf_filename) {
+		return -ENOENT;
+	}
+	WritePrivateProfileString(L"ImageTypes", RP2W_c(sysName), RP2W_c(imageTypeList), tmp_conf_filename);
+	return 0;
+}
+
+/**
+ * Close the Save subsystem.
+ * This is needed on platforms where the configuration file
+ * must be opened with an appropriate writer class.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int ImageTypesTabPrivate::saveFinish(void)
+{
+	// Clear the configuration filename.
+	assert(tmp_conf_filename != nullptr);
+	if (!tmp_conf_filename) {
+		return -ENOENT;
+	}
+	free(tmp_conf_filename);
+	tmp_conf_filename = nullptr;
+	return 0;
+}
+
+/**
+ * Set a ComboBox's current index.
+ * This will not trigger cboImageType_priorityValueChanged().
+ * @param cbid ComboBox ID.
+ * @param prio New priority value. (0xFF == no)
+ */
+void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio)
 {
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
-
-	// Base ID is 0x2000.
-	// Image type is lower 4 bits.
-	if (id < 0x2000)
-		return;
-
-	const unsigned int sys = (id - 0x2000) >> 4;
-	if (sys >= SYS_COUNT)
-		return;
-	const unsigned int imageType = (id & 0x000F);
-	if (imageType > RomData::IMG_EXT_MAX)
-		return;
-
-	if (prio != 0xFF) {
-		// Check for any image types that have the new priority.
-		const uint8_t prev_prio = imageTypes[sys][imageType];
-		for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
-			if (i == imageType)
-				continue;
-			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == prio) {
-				// Found a match! Swap the priority.
-				imageTypes[sys][i] = prev_prio;
-				ComboBox_SetCurSel(cboImageType[sys][i], (prev_prio == 0xFF ? 0 : prev_prio+1));
-				break;
-			}
-		}
+	HWND cboImageType = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid);
+	assert(cboImageType != nullptr);
+	if (cboImageType) {
+		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));
 	}
-
-	// Save the image type ID.
-	imageTypes[sys][imageType] = prio;
-
-	// Mark this configuration as no longer being default.
-	sysIsDefault[sys] = false;
-
-	// Configuration has been changed.
-	PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
-	changed = true;
 }
 
 /**
@@ -627,6 +541,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case PSN_APPLY:
 					// Save settings.
 					if (d->changed) {
+						// TODO: Show an error message if this fails.
 						d->save();
 					}
 					break;
@@ -662,8 +577,15 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// CB_SETCURSEL, so we shouldn't need to "lock"
 			// this handler when reset() is called.
 			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775821(v=vs.85).aspx
-			int idx = ComboBox_GetCurSel((HWND)lParam);
-			d->updateImageType(LOWORD(wParam), (idx <= 0 ? 0xFF : idx-1));
+			unsigned int cbid = LOWORD(wParam);
+			if (cbid < IDC_IMAGETYPES_CBOIMAGETYPE_BASE)
+				break;
+			cbid -= IDC_IMAGETYPES_CBOIMAGETYPE_BASE;
+
+			const int idx = ComboBox_GetCurSel((HWND)lParam);
+			d->cboImageType_priorityValueChanged(cbid, (unsigned int)(idx <= 0 ? 0xFF : idx-1));
+			// Configuration has been changed.
+			PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
 
 			// Allow the message to be processed by the system.
 			break;
@@ -763,6 +685,7 @@ void ImageTypesTab::reset(void)
  */
 void ImageTypesTab::save(void)
 {
+	// TODO: Show an error message if this fails.
 	RP_D(ImageTypesTab);
 	d->save();
 }
