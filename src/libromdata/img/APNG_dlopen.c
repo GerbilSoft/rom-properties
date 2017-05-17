@@ -27,20 +27,24 @@
 // C includes.
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef _WIN32
 // Unix dlopen()
 #include <dlfcn.h>
 #else
 // Windows LoadLibrary()
-#include <windows.h>
-#define dlopen(filename, flag)	LoadLibraryA(filename)
+#include "RpWin32_sdk.h"
 #define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
 #define dlclose(handle)		FreeLibrary(handle)
 #endif
 
 // DLL handle.
+#ifdef _WIN32
+static HMODULE libpng_dll = NULL;
+#else /* _WIN32 */
 static void *libpng_dll = NULL;
+#endif
 
 // APNG function pointers.
 APNG_png_get_acTL_t APNG_png_get_acTL = NULL;
@@ -75,28 +79,42 @@ static int ref_cnt = 0;
  */
 static int init_apng(void)
 {
-	// External PNG library.
-	char png_dll_filename[32];
 #ifdef _WIN32
-	// The Windows build uses a debug suffix for libpng.
-#ifndef NDEBUG
-	snprintf(png_dll_filename, sizeof(png_dll_filename),
-		 "libpng%dd.dll", PNG_LIBPNG_VER_DLLNUM);
-#else
-	snprintf(png_dll_filename, sizeof(png_dll_filename),
-		 "libpng%d.dll", PNG_LIBPNG_VER_DLLNUM);
-#endif
+	BOOL bRet;
+	wchar_t png_dll_filename[16];
 #else /* !_WIN32 */
-	// TODO: dylib on Mac OS X?
-	snprintf(png_dll_filename, sizeof(png_dll_filename),
-		 "libpng%d.so", PNG_LIBPNG_VER_DLLNUM);
-#endif
+	char png_so_filename[16];
+#endif /* _WIN32 */
 
+	if (libpng_dll) {
+		// APNG is already initialized.
+		return 0;
+	}
+
+#ifdef _WIN32
+	// Get the handle of the already-opened libpng.
+	// Using GetModuleHandleEx() to increase the refcount.
+#ifndef NDEBUG
+	swprintf(png_dll_filename, _countof(png_dll_filename),
+		 L"libpng%ud.dll", PNG_LIBPNG_VER_DLLNUM);
+#else
+	swprintf(png_dll_filename, _countof(png_dll_filename),
+		 L"libpng%u.dll", PNG_LIBPNG_VER_DLLNUM);
+#endif
+	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
+	if (!bRet) {
+		libpng_dll = NULL;
+		return -1;
+	}
+#else /* !_WIN32 */
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
-	libpng_dll = dlopen(png_dll_filename, RTLD_LOCAL|RTLD_NOW);
+	snprintf(png_so_filename, sizeof(png_so_filename),
+		 "libpng%u.so", PNG_LIBPNG_VER_SONUM);
+	libpng_dll = dlopen(png_so_filename, RTLD_LOCAL|RTLD_NOW);
 	if (!libpng_dll)
 		return -1;
+#endif
 
 	// Check for APNG support.
 	APNG_png_get_acTL = dlsym(libpng_dll, "png_get_acTL");
