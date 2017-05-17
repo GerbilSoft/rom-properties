@@ -28,13 +28,43 @@
 
 #include "RpWin32_sdk.h"
 
-// DEP policy. (requires _WIN32_WINNT >= 0x0600)
+// DEP policy. (Vista SP1; later backported to XP SP3)
+typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 #ifndef PROCESS_DEP_ENABLE
 #define PROCESS_DEP_ENABLE 0x1
 #endif
 #ifndef PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION
 #define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
 #endif
+
+// SetDllDirectory() (Win2003; later backported to XP SP1)
+typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(_In_opt_ LPCWSTR lpPathName);
+
+// SetDefaultDllDirectories() (Win8; later backported to Vista and Win7)
+typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(_In_ DWORD DirectoryFlags);
+#ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
+#define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_APPLICATION_DIR
+#define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_USER_DIRS
+#define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
+#define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+#define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
+#endif
+
+// HeapSetInformation() (WinXP)
+typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
+	(_In_opt_ HANDLE HeapHandle,
+	 _In_ int HeapInformationClass,
+	 _In_ PVOID HeapInformation,
+	 _In_ SIZE_T HeapInformationLength);
+
 
 #ifdef __cplusplus
 namespace LibRomData {
@@ -53,15 +83,10 @@ static int Win32_ExeInit(void)
 static int LibRomData_Win32_ExeInit(void)
 #endif
 {
-	typedef BOOL (WINAPI *PFNSETDEP)(DWORD dwFlags);
-	typedef BOOL (WINAPI *PFNSETDLLDIRW)(LPCWSTR lpPathName);
-	typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
-		(HANDLE HeapHandle, int HeapInformationClass,
-		 PVOID HeapInformation, SIZE_T HeapInformationLength);
-
 	HMODULE hKernel32;
-	PFNSETDEP pfnSetDep;
-	PFNSETDLLDIRW pfnSetDllDirectoryW;
+	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
+	PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
 	PFNHEAPSETINFORMATION pfnHeapSetInformation;
 
 	hKernel32 = LoadLibrary(L"kernel32.dll");
@@ -70,19 +95,29 @@ static int LibRomData_Win32_ExeInit(void)
 		return GetLastError();
 	}
 
-	// Enable DEP/NX. (WinXP SP3, Vista, and later.)
+	// Enable DEP/NX.
 	// NOTE: DEP/NX should be specified in the PE header
 	// using ld's --nxcompat, but we'll set it manually here,
 	// just in case the linker doesn't support it.
-	pfnSetDep = (PFNSETDEP)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
-	if (pfnSetDep) {
-		pfnSetDep(PROCESS_DEP_ENABLE);
+	pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
+	if (pfnSetProcessDEPPolicy) {
+		pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
 	}
 
 	// Remove the current directory from the DLL search path.
-	pfnSetDllDirectoryW = (PFNSETDLLDIRW)GetProcAddress(hKernel32, "SetDllDirectoryW");
+	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)GetProcAddress(hKernel32, "SetDllDirectoryW");
 	if (pfnSetDllDirectoryW) {
 		pfnSetDllDirectoryW(L"");
+	}
+
+	// Only search the system directory for DLLs.
+	// This can help prevent DLL hijacking.
+	// NOTE: The application directory is explicitly searched
+	// for bundled DLLs for explicitly-linked DLLs and
+	// delay-loaded DLLs.
+	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
+	if (pfnSetDefaultDllDirectories) {
+		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 
 	// Terminate the process if heap corruption is detected.
