@@ -98,6 +98,43 @@ namespace {
 	HICON hIconDialogSmall = nullptr;
 
 	/**
+	 * Show a status message.
+	 * @param hDlg Dialog.
+	 * @param line1 Line 1. (If nullptr, status message will be hidden.)
+	 * @param line2 Line 2. (May contain up to 3 lines and have links.)
+	 * @param exclaim If true, show an exclamation icon.
+	 */
+	void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *line2, bool exclaim)
+	{
+		// TODO: Exclamation icon.
+		HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
+		HWND hStatus2 = GetDlgItem(hDlg, IDC_STATIC_STATUS2);
+
+		if (!line1) {
+			// No status message.
+			ShowWindow(hStatus1, SW_HIDE);
+			ShowWindow(hStatus2, SW_HIDE);
+			return;
+		}
+
+		SetWindowText(hStatus1, line1);
+		SetWindowText(hStatus2, line2);
+		ShowWindow(hStatus1, SW_SHOW);
+		ShowWindow(hStatus2, SW_SHOW);
+	}
+
+	/**
+	 * Enable/disable the Install/Uninstall buttons.
+	 * @param hDlg Dialog.
+	 * @param enable True to enable; false to disable.
+	 */
+	inline void EnableButtons(HWND hDlg, bool enable)
+	{
+		EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), enable);
+		EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), enable);
+	}
+
+	/**
 	 * Formats a wide string. C++-ism for swprintf.
 	 *
 	 * @param format the format string
@@ -354,18 +391,12 @@ namespace {
 			}
 		}
 
-		if (line1) {
-			// MSVCRT is missing.
-			// TODO: IDI_EXCLAMATION
-			HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
-			HWND hStatus2 = GetDlgItem(hDlg, IDC_STATIC_STATUS2);
-			SetWindowText(hStatus1, line1);
-			SetWindowText(hStatus2, line2);
-			ShowWindow(hStatus1, SW_SHOW);
-			ShowWindow(hStatus2, SW_SHOW);
-			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), FALSE);
-			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), FALSE);
-		}
+		// Show the status message.
+		// If line1 is set, an error occurred, so we should
+		// show the exclamation icon and disable the buttons.
+		bool err = (line1 != nullptr);
+		ShowStatusMessage(hDlg, line1, line2, err);
+		EnableButtons(hDlg, !err);
 	}
 
 	/**
@@ -383,8 +414,7 @@ namespace {
 		}
 		case WM_APP_ENDTASK: {
 			g_inProgress = false;
-			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), TRUE);
-			EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), TRUE);
+			EnableButtons(hDlg, true);
 			DlgUpdateCursor();
 			return TRUE;
 		}
@@ -394,8 +424,7 @@ namespace {
 				case IDC_BUTTON_UNINSTALL: {
 					if (g_inProgress) return TRUE;
 					bool isUninstall = LOWORD(wParam) == IDC_BUTTON_UNINSTALL;
-					EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_INSTALL), FALSE);
-					EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_UNINSTALL), FALSE);
+					EnableButtons(hDlg, false);
 					g_inProgress = true;
 					DlgUpdateCursor();
 
