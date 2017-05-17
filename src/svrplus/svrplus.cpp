@@ -289,7 +289,7 @@ namespace {
 	 */
 	inline void InitDialog(HWND hDlg)
 	{
-		HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON,
+		HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
 			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 		if (hIcon) {
 			SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);

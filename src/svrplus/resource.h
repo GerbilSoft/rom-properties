@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_SVRPLUS_RESOURCE_H__
 
 #define IDD_SVRPLUS                             101
-#define IDI_ICON1                               102
+#define IDI_SVRPLUS                             102
 #define IDC_STATIC_DESC                         1001
 #define IDC_STATIC_STATUS1                      1002
 #define IDC_STATIC_STATUS2                      1003
