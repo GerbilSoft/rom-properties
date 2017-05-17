@@ -27,8 +27,16 @@
 #include "../RpWin32.hpp"
 #include "../RomData.hpp"
 #include "Config.hpp"
-using LibRomData::Config;
-using LibRomData::RomData;
+
+// RomData subclasses with images.
+#include "../Amiibo.hpp"
+#include "../DreamcastSave.hpp"
+#include "../GameCube.hpp"
+#include "../GameCubeSave.hpp"
+#include "../NintendoDS.hpp"
+#include "../Nintendo3DS.hpp"
+#include "../PlayStationSave.hpp"
+#include "../WiiU.hpp"
 
 namespace LibRomData {
 

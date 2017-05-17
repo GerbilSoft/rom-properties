@@ -24,31 +24,13 @@
 
 #include "libromdata/RpWin32.hpp"
 #include "libromdata/config/Config.hpp"
-#include "libromdata/RomData.hpp"
 using LibRomData::Config;
-using LibRomData::RomData;
-
-// RomData subclasses with images.
-#include "libromdata/Amiibo.hpp"
-#include "libromdata/DreamcastSave.hpp"
-#include "libromdata/GameCube.hpp"
-#include "libromdata/GameCubeSave.hpp"
-#include "libromdata/NintendoDS.hpp"
-#include "libromdata/Nintendo3DS.hpp"
-#include "libromdata/PlayStationSave.hpp"
-#include "libromdata/WiiU.hpp"
 
 #include "WinUI.hpp"
 #include "resource.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
-
-// C++ includes.
-#include <string>
-#include <sstream>
-using std::wstring;
-using std::wostringstream;
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
@@ -226,7 +208,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 
 	// Determine the size of the largest image type label.
 	SIZE sz_lblImageType = {0, 0};
-	for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
+	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
 		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
 		if (szCur.cx > sz_lblImageType.cx) {
@@ -270,7 +252,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Create the image type labels.
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
-	for (unsigned int i = 0; i <= RomData::IMG_EXT_MAX; i++) {
+	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, RP2W_c(imageTypeNames[i]),
 			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
@@ -371,10 +353,10 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// Dropdown strings.
 	// NOTE: One more string than the total number of image types,
 	// since we have a string for "No".
-	static const wchar_t s_values[RomData::IMG_EXT_MAX+2][4] = {
+	static const wchar_t s_values[IMG_TYPE_COUNT+1][4] = {
 		L"No", L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8"
 	};
-	static_assert(ARRAY_SIZE(s_values) == RomData::IMG_EXT_MAX+2, "s_values[] is the wrong size.");
+	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
 
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
