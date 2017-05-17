@@ -119,6 +119,9 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 				addComboBoxStrings(sysAndImageTypeToCbid(sys, imageType), validImageTypes[sys]);
 			}
 		}
+
+		// ComboBox finalization, if necessary.
+		finishComboBoxes();
 	}
 
 	// Load the configuration.

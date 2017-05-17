@@ -200,6 +200,11 @@ class TImageTypesConfig
 		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) = 0;
 
 		/**
+		 * Finish adding the ComboBoxes.
+		 */
+		INLINE_OVERRIDE virtual void finishComboBoxes(void) = 0;
+
+		/**
 		 * Initialize the Save subsystem.
 		 * This is needed on platforms where the configuration file
 		 * must be opened with an appropriate writer class.

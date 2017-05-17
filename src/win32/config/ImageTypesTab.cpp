@@ -74,6 +74,11 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
 
 		/**
+		 * Finish adding the ComboBoxes.
+		 */
+		INLINE_OVERRIDE virtual void finishComboBoxes(void) override final;
+
+		/**
 		 * Initialize the Save subsystem.
 		 * This is needed on platforms where the configuration file
 		 * must be opened with an appropriate writer class.
@@ -136,6 +141,11 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		SIZE sz_cboImageType;	// ComboBox size.
 		unsigned int cy_cboImageType_list;	// ComboBox list height.
 
+		// Last ComboBox added.
+		// Needed in order to set the correct
+		// tab order for the credits label.
+		HWND cboImageType_lastAdded;
+
 		// Temporary configuration filename.
 		// Set by saveStart(); cleared by saveFinish().
 		wchar_t *tmp_conf_filename;
@@ -149,6 +159,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 ImageTypesTabPrivate::ImageTypesTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
+	, cboImageType_lastAdded(nullptr)
 	, tmp_conf_filename(nullptr)
 {
 	// Clear the grid parameters.
@@ -161,6 +172,10 @@ ImageTypesTabPrivate::ImageTypesTabPrivate()
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
 {
+	// cboImageType_lastAdded should be nullptr.
+	// (Cleared by finishComboBoxes().)
+	assert(cboImageType_lastAdded == nullptr);
+
 	// tmp_conf_filename should be nullptr,
 	// since it's only used when saving.
 	assert(tmp_conf_filename == nullptr);
@@ -331,6 +346,11 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		nullptr, nullptr);
 	SetWindowFont(hComboBox, hFontDlg, FALSE);
 	cboImageType[sys][imageType] = hComboBox;
+
+	SetWindowPos(hComboBox,
+		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	cboImageType_lastAdded = hComboBox;
 }
 
 /**
@@ -362,6 +382,31 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		assert(s_values[i] != nullptr);
 		ComboBox_AddString(cboImageType, s_values[i]);
 	}
+}
+
+/**
+ * Finish adding the ComboBoxes.
+ */
+void ImageTypesTabPrivate::finishComboBoxes(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	if (!cboImageType_lastAdded) {
+		// Nothing to do here.
+		return;
+	}
+
+	HWND lblCredits = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CREDITS);
+	assert(lblCredits != nullptr);
+	if (!lblCredits)
+		return;
+
+	SetWindowPos(lblCredits,
+		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
+		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	cboImageType_lastAdded = nullptr;
 }
 
 /**
