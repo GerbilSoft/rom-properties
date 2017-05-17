@@ -203,7 +203,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		if (security) {
 			FIRST_CHILD_ELEMENT_NS(requestedPrivileges, security, "requestedPrivileges", "asmv2");
 			if (requestedPrivileges) {
-				FIRST_CHILD_ELEMENT_NS(requestedExecutionLevel, requestedPrivileges, "requestedPrivileges", "asmv2");
+				FIRST_CHILD_ELEMENT_NS(requestedExecutionLevel, requestedPrivileges, "requestedExecutionLevel", "asmv2");
 				if (requestedExecutionLevel) {
 					ADD_ATTR(requestedExecutionLevel, "level", "Execution Level");
 					ADD_ATTR(requestedExecutionLevel, "uiAccess", "UI Access");
