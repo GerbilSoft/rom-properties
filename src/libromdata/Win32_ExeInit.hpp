@@ -110,14 +110,14 @@ static int LibRomData_Win32_ExeInit(void)
 		pfnSetDllDirectoryW(L"");
 	}
 
-	// Only search the system directory for DLLs.
-	// This can help prevent DLL hijacking.
-	// NOTE: The application directory is explicitly searched
-	// for bundled DLLs for explicitly-linked DLLs and
-	// delay-loaded DLLs.
+	// Search the application directory and system directory for DLLs.
+	// Application directory is needed because libpng is explicitly
+	// linked to zlib, and delay-load will fail if the application
+	// directory isn't in the search path.
+	// TODO: Fix this somehow...
 	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
 	if (pfnSetDefaultDllDirectories) {
-		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 
 	// Terminate the process if heap corruption is detected.
