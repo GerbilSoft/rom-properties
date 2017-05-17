@@ -125,7 +125,12 @@ namespace {
 			DebugBreak();
 			return true;
 		}
-		PathAppend(msvc, is64 ? L"Sysnative\\msvcp140.dll" : L"System32\\msvcp140.dll");
+#ifdef _WIN64
+		const wchar_t *const msvcp140_dll = (is64 ? L"System32\\msvcp140.dll" : L"SysWOW64\\msvcp140.dll");
+#else /* !_WIN64 */
+		const wchar_t *const msvcp140_dll = (is64 ? L"Sysnative\\msvcp140.dll" : L"System32\\msvcp140.dll");
+#endif
+		PathAppend(msvc, msvcp140_dll);
 		return PathFileExists(msvc) == TRUE;
 	}
 
@@ -144,7 +149,12 @@ namespace {
 			DebugBreak();
 			return -1;
 		}
-		PathAppend(regsvr, is64 ? L"Sysnative\\regsvr32.exe" : L"System32\\regsvr32.exe");
+#ifdef _WIN64
+		const wchar_t *const regsvr32_exe = (is64 ? L"System32\\regsvr32.exe" : L"SysWOW64\\regsvr32.exe");
+#else /* !_WIN64 */
+		const wchar_t *const regsvr32_exe = (is64 ? L"Sysnative\\regsvr32.exe" : L"System32\\regsvr32.exe");
+#endif
+		PathAppend(regsvr, regsvr32_exe);
 
 		// Construct arguments
 		wchar_t args[14 + MAX_PATH + 4 + 3] = L"regsvr32.exe \"";
