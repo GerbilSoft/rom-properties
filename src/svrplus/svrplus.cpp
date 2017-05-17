@@ -376,7 +376,7 @@ namespace {
 				// Both 32-bit and 64-bit MSVCRT are missing.
 				line1 = L"The 32-bit and 64-bit MSVC 2017 runtimes are not installed.";
 				line2 = L"You can download the MSVC 2017 runtime at:\n"
-					L"\x2022 32-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>\n";
+					L"\x2022 32-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746571\">https://go.microsoft.com/fwlink/?LinkId=746571</a>\n"
 					L"\x2022 64-bit: <a href=\"https://go.microsoft.com/fwlink/?LinkId=746572\">https://go.microsoft.com/fwlink/?LinkId=746572</a>";
 			} else if (!hasMsvc32 && hasMsvc64) {
 				// 32-bit MSVCRT is missing.
