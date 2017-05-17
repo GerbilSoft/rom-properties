@@ -33,6 +33,7 @@ using std::wstring;
 #include <windows.h>
 #include <shellapi.h>
 #include <shlwapi.h>
+#include <commctrl.h>
 
 // Application resources.
 #include "resource.h"
@@ -441,14 +442,42 @@ namespace {
 			}
 			return FALSE;
 		}
+
+		case WM_NOTIFY: {
+			const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
+			assert(pHdr != nullptr);
+			switch (pHdr->code) {
+				case NM_CLICK:
+				case NM_RETURN: {
+					if (pHdr->idFrom != IDC_STATIC_STATUS2)
+						break;
+
+					// This is a SysLink control.
+					// Open the URL.
+					const NMLINK *const pNMLink = reinterpret_cast<const NMLINK*>(pHdr);
+					ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					return TRUE;
+				}
+
+				default:
+					break;
+			}
+			break;
+		}
+
 		case WM_CLOSE:
 			if (!g_inProgress) {
 				EndDialog(hDlg, 0);
 			}
 			return TRUE;
+
+		default:
+			break;
 		}
+
 		return FALSE;
 	}
+
 }
 
 /**
