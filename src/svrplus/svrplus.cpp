@@ -427,8 +427,16 @@ namespace {
 
 					// This is a SysLink control.
 					// Open the URL.
+					// ShellExecute return value references:
+					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
+					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
 					const NMLINK *const pNMLink = reinterpret_cast<const NMLINK*>(pHdr);
-					ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					int ret = (int)(INT_PTR)ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
+					if (ret <= 32) {
+						// ShellExecute() failed.
+						wstring err = Format(L"Could not open the URL.\n\nWin32 error code: %d", ret);
+						MessageBox(hDlg, err.c_str(), L"Could not open URL", MB_ICONERROR);
+					}
 					return TRUE;
 				}
 
