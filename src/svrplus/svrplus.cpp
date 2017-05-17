@@ -82,7 +82,7 @@ namespace {
 
 	// Globals
 
-	HINSTANCE g_hInst; /**< hInstance of this application */
+	HINSTANCE g_hInstance; /**< hInstance of this application */
 #ifdef _WIN64
 	constexpr bool g_is64bit = true;	/**< true if running on 64-bit system */
 #else /* !_WIN64 */
@@ -92,6 +92,10 @@ namespace {
 
 	// Custom messages
 	constexpr UINT WM_APP_ENDTASK = WM_APP;
+
+	// Icons. (NOTE: These MUST be deleted after use!)
+	HICON hIconDialog = nullptr;
+	HICON hIconDialogSmall = nullptr;
 
 	/**
 	 * Formats a wide string. C++-ism for swprintf.
@@ -159,7 +163,7 @@ namespace {
 		// Construct arguments
 		wchar_t args[14 + MAX_PATH + 4 + 3] = L"regsvr32.exe \"";
 		// Construct path to rom-properties.dll inside the arguments
-		DWORD szModuleFn = GetModuleFileName(g_hInst, &args[14], MAX_PATH);
+		DWORD szModuleFn = GetModuleFileName(g_hInstance, &args[14], MAX_PATH);
 		if (szModuleFn == MAX_PATH || szModuleFn == 0) {
 			// TODO: add an error message for the MAX_PATH case?
 			DebugBreak();
@@ -289,10 +293,11 @@ namespace {
 	 */
 	inline void InitDialog(HWND hDlg)
 	{
-		HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
-			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		if (hIcon) {
-			SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		if (hIconDialog) {
+			SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIconDialog));
+		}
+		if (hIconDialogSmall) {
+			SendMessage(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIconDialogSmall));
 		}
 
 		// FIXME: Figure out the SysLink styles. (0x50010000?)
@@ -429,7 +434,7 @@ namespace {
  */
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmdShow)
 {
-	g_hInst = hInstance;
+	g_hInstance = hInstance;
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
@@ -455,8 +460,26 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 	}
 #endif /* !_WIN64 */
 
+	// Load the icon.
+	hIconDialog = static_cast<HICON>(LoadImage(
+		g_hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
+		GetSystemMetrics(SM_CXICON),
+		GetSystemMetrics(SM_CYICON), 0));
+	hIconDialogSmall = static_cast<HICON>(LoadImage(
+		g_hInstance, MAKEINTRESOURCE(IDI_SVRPLUS), IMAGE_ICON,
+		GetSystemMetrics(SM_CXSMICON),
+		GetSystemMetrics(SM_CYSMICON), 0));
+
 	// Run the dialog
 	DialogBox(hInstance, MAKEINTRESOURCE(IDD_SVRPLUS), nullptr, DialogProc);
+
+	// Delete the icons.
+	if (hIconDialog) {
+		DestroyIcon(hIconDialog);
+	}
+	if (hIconDialogSmall) {
+		DestroyIcon(hIconDialogSmall);
+	}
 
 	return 0;
 }
