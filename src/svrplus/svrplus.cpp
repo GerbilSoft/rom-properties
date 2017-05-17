@@ -45,40 +45,6 @@ namespace {
 	constexpr wchar_t str_rp32path[] = L"i386\\rom-properties.dll";
 	constexpr wchar_t str_rp64path[] = L"amd64\\rom-properties.dll";
 
-	/** Dialog strings **/
-
-	// User visible strings
-	constexpr wchar_t str_exitConfirmation[] =
-		L"An installation is in progress\n\n"
-		L"Are you sure you want to exit?\n\n"
-		L"(regsvr32 may be still running in the background)";
-
-	constexpr wchar_t str_installTitle[] = L"ROM Properties installer";
-	constexpr wchar_t str_uninstallTitle[] = L"ROM Properties uninstaller";
-
-	constexpr wchar_t strfmt_installSuccess[] = L"%d-bit DLL registration successful.";
-	constexpr wchar_t strfmt_uninstallSuccess[] = L"%d-bit DLL unregistration successful.";
-
-	constexpr wchar_t strfmt_installFailure[] = L"%d-bit DLL registration failed:\n";
-	constexpr wchar_t strfmt_uninstallFailure[] = L"%d-bit DLL unregistration failed:\n";
-
-	constexpr wchar_t strfmt_notFound[] = L"%s not found.";
-	constexpr wchar_t strfmt_dllRequiredNote[] = L"\n\nThis DLL is required in order to support %d-bit applications.";
-	constexpr wchar_t strfmt_skippingUnreg[] = L"\n\nSkipping %d-bit DLL unregistration.";
-
-	// extraErrors
-	constexpr wchar_t strfmt_createProcessErr[] = L"Couldn't create regsvr32 process (%d)";
-	constexpr wchar_t str_stillActive[] = L"Process returned STILL_ACTIVE";
-	constexpr wchar_t strfmt_regsvrErr[] = L"regsvr32 returned error code (%d)";
-
-	constexpr wchar_t str_msvcNotFound[] =
-		L"ERROR: MSVC 2015 runtime was not found.\n"
-		L"Please download and install the MSVC 2015 runtime packages from: " MSVCRT_URL L"\n\n"
-		L"NOTE: On 64-bit systems, you will need to install both the 32-bit and the 64-bit versions.\n\n"
-		L"Do you want to open the URL in your web browser?";
-
-	constexpr wchar_t str_couldntOpenUrl[] = L"ERROR: Couldn't open URL";
-
 	// Globals
 
 	HINSTANCE g_hInstance; /**< hInstance of this application */
@@ -177,9 +143,9 @@ namespace {
 	/**
 	 * (Un)installs the COM Server DLL.
 	 *
-	 * @param isUninstall when true, uninstalls the DLL, instead of installing it.
-	 * @param is64 when true, installs 64-bit version
-	 * @param extraError additional error message
+	 * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
+	 * @param is64		[in] when true, installs 64-bit version
+	 * @param extraError	[out] additional error message
 	 * @return 0 - success, 1 - file not found, 2 - other (fatal) error (see extraError), -1 - silent failure
 	 */
 	int InstallServer(bool isUninstall, bool is64, wstring& extraError) {
@@ -220,7 +186,7 @@ namespace {
 		ZeroMemory(&pi, sizeof(pi));
 
 		if (!CreateProcess(regsvr, args, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-			extraError = Format(strfmt_createProcessErr, GetLastError());
+			extraError = Format(L"Couldn't create regsvr32 process (%u)", GetLastError());
 			return 2;
 		}
 		WaitForSingleObject(pi.hProcess, INFINITE);
@@ -229,12 +195,12 @@ namespace {
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 		if (status == STILL_ACTIVE) {
-			extraError = str_stillActive;
+			extraError = L"Process returned STILL_ACTIVE";
 			return 2;
 		}
 
 		if (status) {
-			extraError = Format(strfmt_regsvrErr, status);
+			extraError = Format(L"regsvr32 returned error code (%d)", status);
 			return 2;
 		}
 		return 0;
@@ -250,34 +216,41 @@ namespace {
 	void TryInstallServer(HWND hWnd, bool isUninstall, bool is64) {
 		wstring extraError;
 		int result = InstallServer(isUninstall, is64, extraError);
-		const wchar_t *title = isUninstall ? str_uninstallTitle : str_installTitle;
+		const wchar_t *const title = isUninstall ? L"ROM Properties Uninstaller" : L"ROM Properties Installer";
 
 		// This is different from the original install script in that it
 		// doesn't consider 64-bit errors to be fatal.
 		// Rationale: User might want to only install 32-bit version.
 
+		static constexpr wchar_t strfmt_dllRequiredNote[] = L"\n\nThis DLL is required in order to support %u-bit applications.";
+		static constexpr wchar_t strfmt_skippingUnreg[] = L"\n\nSkipping %u-bit DLL unregistration.";
+
 		if (result == -1) {
 			return;
-		}
-		else if (result == 1) { // File not found
+		} else if (result == 1) { // File not found
 			const wstring suffix = isUninstall
 				? Format(strfmt_skippingUnreg, is64 ? 64 : 32)
 				: (g_is64bit
 					? Format(strfmt_dllRequiredNote, is64 ? 64 : 32)
 					: L"");
 			const wchar_t *filename = is64 ? str_rp64path : str_rp32path;
-			MessageBox(hWnd, (Format(strfmt_notFound, filename) + suffix).c_str(), title, isUninstall || g_is64bit ? MB_ICONWARNING : MB_ICONERROR);
+			MessageBox(hWnd, (Format(L"%s not found.", filename) + suffix).c_str(), title, isUninstall || g_is64bit ? MB_ICONWARNING : MB_ICONERROR);
 		}
 		else {
 			const wchar_t *fmtString;
 			wstring suffix;
 			if (result == 0) { // Success
-				fmtString = isUninstall ? strfmt_uninstallSuccess : strfmt_installSuccess;
-			}
-			else { // Failure
-				fmtString = isUninstall ? strfmt_uninstallFailure : strfmt_installFailure;
+				fmtString = isUninstall
+					? L"%u-bit DLL unregistration successful."
+					: L"%u-bit DLL registration successful.";
+			} else { // Failure
+				fmtString = isUninstall
+					? L"%u-bit DLL unregistration failed:\n"
+					: L"%u-bit DLL registration failed:\n";
 				suffix = extraError;
-				if (!isUninstall && g_is64bit) suffix += Format(strfmt_dllRequiredNote, is64 ? 64 : 32);
+				if (!isUninstall && g_is64bit) {
+					suffix += Format(strfmt_dllRequiredNote, is64 ? 64 : 32);
+				}
 			}
 			MessageBox(hWnd, (Format(fmtString, is64 ? 64 : 32) + suffix).c_str(), title, result == 0 ? MB_ICONINFORMATION : MB_ICONERROR);
 		}
