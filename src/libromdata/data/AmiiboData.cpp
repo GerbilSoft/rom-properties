@@ -90,6 +90,7 @@ class AmiiboDataPrivate {
 		static const char_variant_t pikmin_olimar_variants[];
 		static const char_variant_t mii_variants[];
 		static const char_variant_t splatoon_inkling_variants[];
+		static const char_variant_t fe_corrin_variants[];
 
 		static const char_variant_t mss_mario_variants[];
 		static const char_variant_t mss_luigi_variants[];
@@ -377,6 +378,11 @@ const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::splatoon_inkling_vari
 	{0x01, _RP("Inkling Girl")},
 	{0x02, _RP("Inkling Boy")},
 	{0x03, _RP("Inkling Squid")},
+};
+
+const AmiiboDataPrivate::char_variant_t AmiiboDataPrivate::fe_corrin_variants[] = {
+	{0x00, _RP("Corrin")},
+	{0x01, _RP("Corrin (Player 2)")},
 };
 
 // Mario Sports Superstars
@@ -1096,6 +1102,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	{0x2102, _RP("Lucina"), nullptr, 0},
 	{0x2103, _RP("Robin"), nullptr, 0},
 	{0x2104, _RP("Roy"), nullptr, 0},
+	{0x2105, _RP("Corrin"), fe_corrin_variants, 0},
+	{0x2106, _RP("Alm"), nullptr, 0},
+	{0x2107, _RP("Celica"), nullptr, 0},
 
 	// Xenoblade (character series = 0x224)
 	{0x2240, _RP("Shulk"), nullptr, 0},
@@ -2080,6 +2089,13 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// BoxBoy!: Qbby [0x035E]
 	{  0, 0, _RP("Qbby")},				// 0x035E
 
+	// Unused [0x035F]
+	{  0, 0, nullptr},				// 0x035F
+
+	// Fire Emblem [0x0360-0x0361]
+	{  0, 0, _RP("Alm")},				// 0x0360
+	{  0, 0, _RP("Celica")},			// 0x0361
+
 #if 0
 	// TODO: Not released yet.
 
@@ -2087,6 +2103,22 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{ 57, 10, _RP("Bayonetta")},			// 0x0xxx
 	{ 58, 10, _RP("Cloud")},			// 0x0xxx
 	{ 59, 10, _RP("Corrin")},			// 0x0xxx
+	{ 60, 10, _RP("Bayonetta (Player 2)")},		// 0x0xxx
+	{ 61, 10, _RP("Cloud (Player 2)")},		// 0x0xxx
+	{ 62, 10, _RP("Corrin (Player 2)")},		// 0x0xxx
+
+	// The Legend of Zelda
+	{  0,  0, _RP("Link (Majora's Mask)")},		// 0x0xxx
+	{  0,  0, _RP("Link (Twilight Princess)")},	// 0x0xxx
+	{  0,  0, _RP("Link (Skyward Sword)")},		// 0x0xxx
+
+	// Splatoon
+	{  0, 3, _RP("Inkling Girl (Neon Pink)")},	// 0x0xxx
+	{  0, 3, _RP("Inkling Boy (Neon Green)")},	// 0x0xxx
+	{  0, 3, _RP("Inkling Squid (Neon Purple)")},	// 0x0xxx
+
+	// Pikmin
+	{  0, 0, _RP("Pikmin")},			// 0x0xxx
 #endif
 };
 
@@ -2169,7 +2201,7 @@ const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x035E)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0361)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
