@@ -39,8 +39,6 @@ using std::wstring;
 // Application resources.
 #include "resource.h"
 
-#define MSVCRT_URL L"https://www.microsoft.com/en-us/download/details.aspx?id=53587"
-
 namespace {
 	// File paths
 	constexpr wchar_t str_rp32path[] = L"i386\\rom-properties.dll";
