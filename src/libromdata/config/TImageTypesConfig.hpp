@@ -142,6 +142,32 @@ class TImageTypesConfig
 			return (cbid >> 3);
 		}
 
+		/**
+		 * Validate system and image types.
+		 * @param sys System.
+		 * @param imageType Image type.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool validateSysImageType(unsigned int sys, unsigned int imageType)
+		{
+			assert(sys < SYS_COUNT);
+			assert(imageType < IMG_TYPE_COUNT);
+			return (sys < SYS_COUNT && imageType < IMG_TYPE_COUNT);
+		}
+
+		/**
+		 * Validate a ComboBox ID.
+		 * @param cbid ComboBox ID.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool validateCbid(unsigned int cbid)
+		{
+			assert(sysFromCbid(cbid) < SYS_COUNT);
+			assert(imageTypeFromCbid(cbid) < IMG_TYPE_COUNT);
+			return (sysFromCbid(cbid) < SYS_COUNT &&
+				imageTypeFromCbid(cbid) < IMG_TYPE_COUNT);
+		}
+
 	public:
 		/** UI signals. **/
 

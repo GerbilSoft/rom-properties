@@ -322,9 +322,7 @@ void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
-	assert(sys < SYS_COUNT);
-	assert(imageType < IMG_TYPE_COUNT);
-	if (sys >= SYS_COUNT || imageType >= IMG_TYPE_COUNT)
+	if (!validateSysImageType(sys, imageType))
 		return;
 
 	if (prio >= 0 && prio != 0xFF) {

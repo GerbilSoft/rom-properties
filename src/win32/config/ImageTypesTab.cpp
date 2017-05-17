@@ -304,9 +304,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
-	assert(sys < SYS_COUNT);
-	assert(imageType < IMG_TYPE_COUNT);
-	if (sys >= SYS_COUNT || imageType >= IMG_TYPE_COUNT)
+	if (!validateSysImageType(sys, imageType))
 		return;
 
 	// Get the font of the parent dialog.
