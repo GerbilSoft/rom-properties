@@ -293,24 +293,14 @@ namespace {
 	 * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
 	 */
 	DWORD WINAPI ThreadProc(LPVOID lpParameter) {
-		ThreadParams *params = reinterpret_cast<ThreadParams*>(lpParameter);
-		HWND hWnd = params->hWnd;
+		ThreadParams *const params = reinterpret_cast<ThreadParams*>(lpParameter);
 
-		// if installing, do additional msvc check
-		if (!params->isUninstall && (!CheckMsvc(false) || g_is64bit && !CheckMsvc(true)))
-		{
-			if (IDYES == MessageBox(hWnd, str_msvcNotFound, str_installTitle, MB_ICONWARNING | MB_YESNO)) {
-				if (32 >= (int)ShellExecute(nullptr, L"open", MSVCRT_URL, nullptr, nullptr, SW_SHOW)) {
-					MessageBox(hWnd, str_couldntOpenUrl, str_installTitle, MB_ICONERROR);
-				}
-			}
-		}
-		else {
-			if (g_is64bit) TryInstallServer(hWnd, false, true);
-			TryInstallServer(hWnd, false, false);
-		}
+		// Try to (un)install the 64-bit version.
+		if (g_is64bit) TryInstallServer(params->hWnd, params->isUninstall, true);
+		// Try to (un)install the 32-bit version.
+		TryInstallServer(params->hWnd, params->isUninstall, false);
 
-		SendMessage(hWnd, WM_APP_ENDTASK, 0, 0);
+		SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
 		delete params;
 		return 0;
 	}
@@ -427,7 +417,7 @@ namespace {
 					DlgUpdateCursor();
 
 					// The installation is done on a separate thread so that we don't lock the message loop
-					ThreadParams *params = new ThreadParams;
+					ThreadParams *const params = new ThreadParams;
 					params->hWnd = hDlg;
 					params->isUninstall = isUninstall;
 					HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, params, 0, nullptr);
