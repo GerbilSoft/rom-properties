@@ -409,6 +409,18 @@ namespace {
 					return TRUE;
 				}
 
+				case IDOK:
+					// There's no "OK" button here...
+					// Silently ignore it.
+					return TRUE;
+
+				case IDCANCEL:
+					// User pressed Escape.
+					if (!g_inProgress) {
+						EndDialog(hDlg, 0);
+					}
+					return TRUE;
+
 				default:
 					break;
 			}
