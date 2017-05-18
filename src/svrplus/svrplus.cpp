@@ -369,7 +369,8 @@ namespace {
 	 *
 	 * @param lpParameter ptr to parameters of type ThreadPrams. Owned by this thread.
 	 */
-	DWORD WINAPI ThreadProc(LPVOID lpParameter) {
+	DWORD WINAPI ThreadProc(LPVOID lpParameter)
+	{
 		ThreadParams *const params = reinterpret_cast<ThreadParams*>(lpParameter);
 
 		// Try to (un)install the 64-bit version.
@@ -393,6 +394,7 @@ namespace {
 					: L"\n\nDLL registered successfully.");
 			}
 			ShowStatusMessage(params->hWnd, msg, L"", MB_ICONINFORMATION);
+			MessageBeep(MB_ICONINFORMATION);
 		} else {
 			// At least one of the DLLs failed to register.
 			const wchar_t *msg1;
@@ -422,6 +424,7 @@ namespace {
 			}
 
 			ShowStatusMessage(params->hWnd, msg1, msg2.c_str(), MB_ICONSTOP);
+			MessageBeep(MB_ICONSTOP);
 		}
 
 		SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
@@ -601,6 +604,7 @@ namespace {
 						// Couldn't start the worker thread.
 						const wstring threadErr = Format(L"\x2022 Win32 error code: %u", GetLastError());
 						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr.c_str(), MB_ICONSTOP);
+						MessageBeep(MB_ICONSTOP);
 						EnableButtons(hDlg, true);
 						g_inProgress = false;
 						DlgUpdateCursor();
