@@ -62,19 +62,26 @@ namespace {
 	HICON hIconDialog = nullptr;
 	HICON hIconDialogSmall = nullptr;
 
+	// System 16x16 icons. (Do NOT delete these!)
+	HICON hIconExclaim = nullptr;	// USER32.dll,-101
+	//HICON hIconQuestion = nullptr;	// USER32.dll,-102
+	HICON hIconCritical = nullptr;	// USER32.dll,-103
+	HICON hIconInfo = nullptr;	// USER32.dll,-104
+
 	// IDC_STATIC_STATUS1 rectangles with and without the exclamation point icon.
-	RECT rectStatus1_noExclaim;
-	RECT rectStatus1_exclaim;
+	RECT rectStatus1_noIcon;
+	RECT rectStatus1_icon;
 
 	/**
 	 * Show a status message.
 	 * @param hDlg Dialog.
 	 * @param line1 Line 1. (If nullptr, status message will be hidden.)
 	 * @param line2 Line 2. (May contain up to 3 lines and have links.)
-	 * @param exclaim If true, show an exclamation icon.
+	 * @param uType Icon type. (Use MessageBox constants.)
 	 */
-	void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *line2, bool exclaim)
+	void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *line2, UINT uType)
 	{
+		HWND hStaticIcon = GetDlgItem(hDlg, IDC_STATIC_ICON);
 		HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
 		HWND hStatus2 = GetDlgItem(hDlg, IDC_STATIC_STATUS2);
 
@@ -85,20 +92,39 @@ namespace {
 			return;
 		}
 
-		int sw_status;
-		const RECT *rect;
-		if (exclaim) {
-			// Show the exclamation icon.
-			sw_status = SW_SHOW;
-			rect = &rectStatus1_exclaim;
-		} else {
-			// Hide the exclamation icon.
-			sw_status = SW_HIDE;
-			rect = &rectStatus1_noExclaim;
+		// Determine the icon to use.
+		HICON hIcon;
+		switch (uType & 0x70) {
+			case MB_ICONSTOP:
+				hIcon = hIconCritical;
+				break;
+			case MB_ICONQUESTION:	// TODO?
+			case MB_ICONINFORMATION:
+				hIcon = hIconInfo;
+				break;
+			case MB_ICONEXCLAMATION:
+				hIcon = hIconExclaim;
+				break;
+			default:
+				hIcon = nullptr;
+				break;
 		}
 
-		// Adjust the exclamation icon and Status1 rectangle.
-		ShowWindow(GetDlgItem(hDlg, IDC_STATIC_EXCLAIM), sw_status);
+		int sw_status;
+		const RECT *rect;
+		if (hIcon != nullptr) {
+			// Show the icon.
+			sw_status = SW_SHOW;
+			rect = &rectStatus1_icon;
+			Static_SetIcon(hStaticIcon, hIcon);
+		} else {
+			// Hide the icon.
+			sw_status = SW_HIDE;
+			rect = &rectStatus1_noIcon;
+		}
+
+		// Adjust the icon and Status1 rectangle.
+		ShowWindow(hStaticIcon, sw_status);
 		SetWindowPos(hStatus1, nullptr, rect->left, rect->top,
 			rect->right - rect->left, rect->bottom - rect->top,
 			SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
@@ -366,7 +392,7 @@ namespace {
 					? L"\n\nDLL unregistered successfully."
 					: L"\n\nDLL registered successfully.");
 			}
-			ShowStatusMessage(params->hWnd, msg, L"", false);
+			ShowStatusMessage(params->hWnd, msg, L"", MB_ICONINFORMATION);
 		} else {
 			// At least one of the DLLs failed to register.
 			const wchar_t *msg1;
@@ -395,7 +421,7 @@ namespace {
 				msg2 += msg64;
 			}
 
-			ShowStatusMessage(params->hWnd, msg1, msg2.c_str(), true);
+			ShowStatusMessage(params->hWnd, msg1, msg2.c_str(), MB_ICONSTOP);
 		}
 
 		SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
@@ -425,28 +451,42 @@ namespace {
 
 		// Get Status1's dimensions.
 		HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
-		GetWindowRect(hStatus1, &rectStatus1_noExclaim);
-		MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rectStatus1_noExclaim, 2);
+		GetWindowRect(hStatus1, &rectStatus1_noIcon);
+		MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rectStatus1_noIcon, 2);
 
 		// Adjust the left boundary for the icon.
 		// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 		static const SIZE szIcon = {16, 16};
-		rectStatus1_exclaim = rectStatus1_noExclaim;
-		rectStatus1_exclaim.left += szIcon.cx + (szIcon.cx / 8);
+		rectStatus1_icon = rectStatus1_noIcon;
+		rectStatus1_icon.left += szIcon.cx + (szIcon.cx / 8);
 
-		// Initialize the exclamation icon.
+		// Load the icons.
 		// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
 		// Need to get the icon from USER32 directly.
+		HMODULE hUser32 = GetModuleHandle(L"user32");
+		assert(hUser32 != nullptr);
+		if (hUser32) {
+			hIconExclaim = (HICON)LoadImage(hUser32,
+				MAKEINTRESOURCE(101), IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);
+			/*hIconQuestion = (HICON)LoadImage(hUser32,
+				MAKEINTRESOURCE(102), IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);*/
+			hIconCritical = (HICON)LoadImage(hUser32,
+				MAKEINTRESOURCE(103), IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);
+			hIconInfo = (HICON)LoadImage(hUser32,
+				MAKEINTRESOURCE(104), IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);
+		}
+
+		// Initialize the icon control.
 		HWND hExclaim = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, nullptr,
 			WS_CHILD | WS_CLIPSIBLINGS | SS_ICON,
-			rectStatus1_noExclaim.left, rectStatus1_noExclaim.top,
+			rectStatus1_noIcon.left, rectStatus1_noIcon.top-1,
 			szIcon.cx, szIcon.cy,
-			hDlg, (HMENU)IDC_STATIC_EXCLAIM, nullptr, nullptr);
-		HICON hIcon = (HICON)LoadImage(GetModuleHandle(L"user32"),
-				MAKEINTRESOURCE(101), IMAGE_ICON,
-				szIcon.cx, szIcon.cy, LR_SHARED);
-		Static_SetIcon(hExclaim, hIcon);
+			hDlg, (HMENU)IDC_STATIC_ICON, nullptr, nullptr);
 
 		// FIXME: Figure out the SysLink styles. (0x50010000?)
 		ShowWindow(GetDlgItem(hDlg, IDC_STATIC_STATUS2), SW_HIDE);
@@ -506,7 +546,7 @@ namespace {
 		// If line1 is set, an error occurred, so we should
 		// show the exclamation icon and disable the buttons.
 		bool err = (line1 != nullptr);
-		ShowStatusMessage(hDlg, line1, line2, err);
+		ShowStatusMessage(hDlg, line1, line2, (err ? MB_ICONEXCLAMATION : 0));
 		EnableButtons(hDlg, !err);
 	}
 
@@ -546,7 +586,7 @@ namespace {
 							? L"\n\nUnregistering DLL..."
 							: L"\n\nRegistering DLL...");
 					}
-					ShowStatusMessage(hDlg, msg, L"", false);
+					ShowStatusMessage(hDlg, msg, L"", 0);
 
 					EnableButtons(hDlg, false);
 					g_inProgress = true;
@@ -560,7 +600,7 @@ namespace {
 					if (!hThread) {
 						// Couldn't start the worker thread.
 						const wstring threadErr = Format(L"\x2022 Win32 error code: %u", GetLastError());
-						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr.c_str(), true);
+						ShowStatusMessage(hDlg, L"An error occurred while starting the worker thread.", threadErr.c_str(), MB_ICONSTOP);
 						EnableButtons(hDlg, true);
 						g_inProgress = false;
 						DlgUpdateCursor();
