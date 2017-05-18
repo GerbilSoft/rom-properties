@@ -161,21 +161,45 @@ namespace {
 		return PathFileExists(msvc) == TRUE;
 	}
 
+	enum InstallServerResult {
+		ISR_FATAL_ERROR = -1,		// Error that should never happen.
+		ISR_OK = 0,
+		ISR_FILE_NOT_FOUND,
+		ISR_CREATEPROCESS_FAILED,	// errorCode is GetLastError()
+		ISR_PROCESS_STILL_ACTIVE,
+		ISR_REGSVR32_EXIT_CODE,		// errorCode is REGSVR32's exit code.
+	};
+
+	// References:
+	// - http://stackoverflow.com/questions/22094309/regsvr32-exit-codes-documentation
+	// - http://stackoverflow.com/a/22095500
+	enum RegSvr32ExitCode {
+		REGSVR32_OK = 0,
+		REGSVR32_FAIL_ARGS	= 1, // Invalid argument.
+		REGSVR32_FAIL_OLE	= 2, // OleInitialize() failed.
+		REGSVR32_FAIL_LOAD	= 3, // LoadLibrary() failed.
+		REGSVR32_FAIL_ENTRY	= 4, // GetProcAddress() failed.
+		REGSVR32_FAIL_REG	= 5, // DllRegisterServer() or DllUnregisterServer() failed.
+	};
+
 	/**
 	 * (Un)installs the COM Server DLL.
 	 *
-	 * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
-	 * @param is64		[in] when true, installs 64-bit version
-	 * @param extraError	[out] additional error message
-	 * @return 0 - success, 1 - file not found, 2 - other (fatal) error (see extraError), -1 - silent failure
+	 * @param isUninstall	[in] When true, uninstalls the DLL, instead of installing it.
+	 * @param is64		[in] When true, installs 64-bit version.
+	 * @param pErrorCode	[out,opt] Additional error code.
+	 * @return InstallServerResult
 	 */
-	int InstallServer(bool isUninstall, bool is64, wstring& extraError) {
+	InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode) {
 		// Construct path for regsvr
 		wchar_t regsvr[MAX_PATH];
-		if (0 == GetWindowsDirectory(regsvr, MAX_PATH)) {
-			DebugBreak();
-			return -1;
+		UINT szWinDir = GetWindowsDirectory(regsvr, _countof(regsvr));
+		assert(szWinDir != 0);
+		if (szWinDir == 0) {
+			// This shouldn't happen...
+			return ISR_FATAL_ERROR;
 		}
+
 #ifdef _WIN64
 		const wchar_t *const regsvr32_exe = (is64 ? L"System32\\regsvr32.exe" : L"SysWOW64\\regsvr32.exe");
 #else /* !_WIN64 */
@@ -184,47 +208,61 @@ namespace {
 		PathAppend(regsvr, regsvr32_exe);
 
 		// Construct arguments
-		wchar_t args[14 + MAX_PATH + 4 + 3] = L"regsvr32.exe \"";
+		wchar_t args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = L"regsvr32.exe \"";
 		// Construct path to rom-properties.dll inside the arguments
 		DWORD szModuleFn = GetModuleFileName(g_hInstance, &args[14], MAX_PATH);
-		if (szModuleFn == MAX_PATH || szModuleFn == 0) {
+		assert(szModuleFn != 0);
+		assert(szModuleFn < MAX_PATH);
+		if (szModuleFn == 0 || szModuleFn >= MAX_PATH) {
 			// TODO: add an error message for the MAX_PATH case?
-			DebugBreak();
-			return -1;
+			return ISR_FATAL_ERROR;
 		}
 		PathFindFileName(&args[14])[0] = 0;
 		PathAppend(&args[14], is64 ? str_rp64path : str_rp32path);
 		if (!PathFileExists(&args[14])) {
-			return 1; // File not found
+			// File not found.
+			return ISR_FILE_NOT_FOUND;
 		}
 		// Append /s (silent) key, and optionally append /u (uninstall) key.
 		wcscat_s(args, _countof(args), isUninstall ? L"\" /s /u" : L"\" /s");
 
-		STARTUPINFO si;
-		ZeroMemory(&si, sizeof(si));
+		STARTUPINFO si = { 0 };
 		si.cb = sizeof(si);
-		PROCESS_INFORMATION pi;
-		ZeroMemory(&pi, sizeof(pi));
+		PROCESS_INFORMATION pi = { 0 };
 
 		if (!CreateProcess(regsvr, args, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-			extraError = Format(L"Couldn't create regsvr32 process (%u)", GetLastError());
-			return 2;
+			if (pErrorCode) {
+				*pErrorCode = GetLastError();
+			}
+			return ISR_CREATEPROCESS_FAILED;
 		}
+
+		// Wait for the process to exit.
 		WaitForSingleObject(pi.hProcess, INFINITE);
 		DWORD status;
 		GetExitCodeProcess(pi.hProcess, &status);
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
-		if (status == STILL_ACTIVE) {
-			extraError = L"Process returned STILL_ACTIVE";
-			return 2;
+
+		switch (status) {
+			case STILL_ACTIVE:
+				// Process is still active...
+				return ISR_PROCESS_STILL_ACTIVE;
+
+			case 0:
+				// Process completed.
+				break;
+
+			default:
+				// Process returned a non-zero exit code.
+				if (pErrorCode) {
+					*pErrorCode = status;
+				}
+				return ISR_REGSVR32_EXIT_CODE;
 		}
 
-		if (status) {
-			extraError = Format(L"regsvr32 returned error code (%d)", status);
-			return 2;
-		}
-		return 0;
+		// Process completed.
+		return ISR_OK;
 	}
 
 	/**
@@ -233,48 +271,66 @@ namespace {
 	 * @param hWnd owner window of message boxes
 	 * @param isUninstall when true, uninstalls the DLL, instead of installing it.
 	 * @param is64 when true, installs 64-bit version
+	 * @return Empty string on success; error message string on error.
 	 */
-	void TryInstallServer(HWND hWnd, bool isUninstall, bool is64) {
-		wstring extraError;
-		int result = InstallServer(isUninstall, is64, extraError);
-		const wchar_t *const title = isUninstall ? L"ROM Properties Uninstaller" : L"ROM Properties Installer";
+	wstring TryInstallServer(HWND hWnd, bool isUninstall, bool is64) {
+		DWORD errorCode;
+		InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
-		// This is different from the original install script in that it
-		// doesn't consider 64-bit errors to be fatal.
-		// Rationale: User might want to only install 32-bit version.
+		const wchar_t *const dll_path = (is64 ? str_rp64path : str_rp32path);
+		const wchar_t *const entry_point = (isUninstall ? L"DllUnregisterServer" : L"DllRegisterServer");
 
-		static constexpr wchar_t strfmt_dllRequiredNote[] = L"\n\nThis DLL is required in order to support %u-bit applications.";
-		static constexpr wchar_t strfmt_skippingUnreg[] = L"\n\nSkipping %u-bit DLL unregistration.";
-
-		if (result == -1) {
-			return;
-		} else if (result == 1) { // File not found
-			const wstring suffix = isUninstall
-				? Format(strfmt_skippingUnreg, is64 ? 64 : 32)
-				: (g_is64bit
-					? Format(strfmt_dllRequiredNote, is64 ? 64 : 32)
-					: L"");
-			const wchar_t *filename = is64 ? str_rp64path : str_rp32path;
-			MessageBox(hWnd, (Format(L"%s not found.", filename) + suffix).c_str(), title, isUninstall || g_is64bit ? MB_ICONWARNING : MB_ICONERROR);
-		}
-		else {
-			const wchar_t *fmtString;
-			wstring suffix;
-			if (result == 0) { // Success
-				fmtString = isUninstall
-					? L"%u-bit DLL unregistration successful."
-					: L"%u-bit DLL registration successful.";
-			} else { // Failure
-				fmtString = isUninstall
-					? L"%u-bit DLL unregistration failed:\n"
-					: L"%u-bit DLL registration failed:\n";
-				suffix = extraError;
-				if (!isUninstall && g_is64bit) {
-					suffix += Format(strfmt_dllRequiredNote, is64 ? 64 : 32);
+		wstring msg;
+		switch (res) {
+			case ISR_OK:
+				// No error.
+				break;
+			case ISR_FATAL_ERROR:
+			default:
+				msg = L"An unknown fatal error occurred.";
+				break;
+			case ISR_FILE_NOT_FOUND:
+				msg = dll_path;
+				msg += L" is missing.";
+				break;
+			case ISR_CREATEPROCESS_FAILED:
+				msg = Format(L"Could not start REGSVR32.exe. (Err:%u)", errorCode);
+				break;
+			case ISR_PROCESS_STILL_ACTIVE:
+				msg = L"The REGSVR32 process never completed.";
+				break;
+			case ISR_REGSVR32_EXIT_CODE:
+				switch (errorCode) {
+					case REGSVR32_FAIL_ARGS:
+						msg = L"REGSVR32 failed: Invalid argument.";
+						break;
+					case REGSVR32_FAIL_OLE:
+						msg = L"REGSVR32 failed: OleInitialize() failed.";
+						break;
+					case REGSVR32_FAIL_LOAD:
+						msg = L"REGSVR32 failed: ";
+						msg += dll_path;
+						msg += L" is not a valid DLL.";
+						break;
+					case REGSVR32_FAIL_ENTRY:
+						msg = L"REGSVR32 failed: ";
+						msg += dll_path;
+						msg += L" is missing ";
+						msg += entry_point;
+						break;
+					case REGSVR32_FAIL_REG:
+						msg = L"REGSVR32 failed: ";
+						msg += entry_point;
+						msg += L" returned an error.";
+						break;
+					default:
+						msg = Format(L"REGSVR32 failed: Unknown exit code %u.", errorCode);
+						break;
 				}
-			}
-			MessageBox(hWnd, (Format(fmtString, is64 ? 64 : 32) + suffix).c_str(), title, result == 0 ? MB_ICONINFORMATION : MB_ICONERROR);
+				break;
 		}
+
+		return msg;
 	}
 
 	struct ThreadParams {
@@ -291,9 +347,56 @@ namespace {
 		ThreadParams *const params = reinterpret_cast<ThreadParams*>(lpParameter);
 
 		// Try to (un)install the 64-bit version.
-		if (g_is64bit) TryInstallServer(params->hWnd, params->isUninstall, true);
+		wstring msg32, msg64;
+		if (g_is64bit) {
+			msg64 = TryInstallServer(params->hWnd, params->isUninstall, true);
+		}
 		// Try to (un)install the 32-bit version.
-		TryInstallServer(params->hWnd, params->isUninstall, false);
+		msg32 = TryInstallServer(params->hWnd, params->isUninstall, false);
+
+		if (msg32.empty() && msg64.empty()) {
+			// DLL(s) registered successfully.
+			const wchar_t *msg;
+			if (g_is64bit) {
+				msg = (params->isUninstall
+					? L"\n\nDLLs unregistered successfully."
+					: L"\n\nDLLs registered successfully.");
+			} else {
+				msg = (params->isUninstall
+					? L"\n\nDLL unregistered successfully."
+					: L"\n\nDLL registered successfully.");
+			}
+			ShowStatusMessage(params->hWnd, msg, L"", false);
+		} else {
+			// At least one of the DLLs failed to register.
+			const wchar_t *msg1;
+			if (g_is64bit) {
+				msg1 = (params->isUninstall
+					? L"An error occurred while unregistering the DLLs."
+					: L"An error occurred while registering the DLLs.");
+			} else {
+				msg1 = (params->isUninstall
+					? L"An error occurred while unregistering the DLL."
+					: L"An error occurred while registering the DLL.");
+			}
+
+			wstring msg2;
+			if (!msg32.empty()) {
+				if (g_is64bit) {
+					msg2 = L"\x2022 32-bit: ";
+				}
+				msg2 += msg32;
+			}
+			if (!msg64.empty()) {
+				if (!msg2.empty()) {
+					msg2 += L'\n';
+				}
+				msg2 += L"\x2022 64-bit: ";
+				msg2 += msg64;
+			}
+
+			ShowStatusMessage(params->hWnd, msg1, msg2.c_str(), true);
+		}
 
 		SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
 		delete params;
@@ -432,6 +535,19 @@ namespace {
 				case IDC_BUTTON_UNINSTALL: {
 					if (g_inProgress) return TRUE;
 					bool isUninstall = LOWORD(wParam) == IDC_BUTTON_UNINSTALL;
+
+					const wchar_t *msg;
+					if (g_is64bit) {
+						msg = (isUninstall
+							? L"\n\nUnregistering DLLs..."
+							: L"\n\nRegistering DLLs...");
+					} else {
+						msg = (isUninstall
+							? L"\n\nUnregistering DLL..."
+							: L"\n\nRegistering DLL...");
+					}
+					ShowStatusMessage(hDlg, msg, L"", false);
+
 					EnableButtons(hDlg, false);
 					g_inProgress = true;
 					DlgUpdateCursor();
