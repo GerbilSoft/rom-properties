@@ -32,6 +32,7 @@ using std::wstring;
 
 // Windows headers.
 #include <windows.h>
+#include <windowsx.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <commctrl.h>
@@ -61,6 +62,10 @@ namespace {
 	HICON hIconDialog = nullptr;
 	HICON hIconDialogSmall = nullptr;
 
+	// IDC_STATIC_STATUS1 rectangles with and without the exclamation point icon.
+	RECT rectStatus1_noExclaim;
+	RECT rectStatus1_exclaim;
+
 	/**
 	 * Show a status message.
 	 * @param hDlg Dialog.
@@ -70,7 +75,6 @@ namespace {
 	 */
 	void ShowStatusMessage(HWND hDlg, const wchar_t *line1, const wchar_t *line2, bool exclaim)
 	{
-		// TODO: Exclamation icon.
 		HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
 		HWND hStatus2 = GetDlgItem(hDlg, IDC_STATIC_STATUS2);
 
@@ -80,6 +84,24 @@ namespace {
 			ShowWindow(hStatus2, SW_HIDE);
 			return;
 		}
+
+		int sw_status;
+		const RECT *rect;
+		if (exclaim) {
+			// Show the exclamation icon.
+			sw_status = SW_SHOW;
+			rect = &rectStatus1_exclaim;
+		} else {
+			// Hide the exclamation icon.
+			sw_status = SW_HIDE;
+			rect = &rectStatus1_noExclaim;
+		}
+
+		// Adjust the exclamation icon and Status1 rectangle.
+		ShowWindow(GetDlgItem(hDlg, IDC_STATIC_EXCLAIM), sw_status);
+		SetWindowPos(hStatus1, nullptr, rect->left, rect->top,
+			rect->right - rect->left, rect->bottom - rect->top,
+			SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
 
 		SetWindowText(hStatus1, line1);
 		SetWindowText(hStatus2, line2);
@@ -297,6 +319,31 @@ namespace {
 		if (hIconDialogSmall) {
 			SendMessage(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIconDialogSmall));
 		}
+
+		// Get Status1's dimensions.
+		HWND hStatus1 = GetDlgItem(hDlg, IDC_STATIC_STATUS1);
+		GetWindowRect(hStatus1, &rectStatus1_noExclaim);
+		MapWindowPoints(HWND_DESKTOP, hDlg, (LPPOINT)&rectStatus1_noExclaim, 2);
+
+		// Adjust the left boundary for the icon.
+		// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
+		static const SIZE szIcon = {16, 16};
+		rectStatus1_exclaim = rectStatus1_noExclaim;
+		rectStatus1_exclaim.left += szIcon.cx + (szIcon.cx / 8);
+
+		// Initialize the exclamation icon.
+		// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
+		// Need to get the icon from USER32 directly.
+		HWND hExclaim = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
+			WC_STATIC, nullptr,
+			WS_CHILD | WS_CLIPSIBLINGS | SS_ICON,
+			rectStatus1_noExclaim.left, rectStatus1_noExclaim.top,
+			szIcon.cx, szIcon.cy,
+			hDlg, (HMENU)IDC_STATIC_EXCLAIM, nullptr, nullptr);
+		HICON hIcon = (HICON)LoadImage(GetModuleHandle(L"user32"),
+				MAKEINTRESOURCE(101), IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);
+		Static_SetIcon(hExclaim, hIcon);
 
 		// FIXME: Figure out the SysLink styles. (0x50010000?)
 		ShowWindow(GetDlgItem(hDlg, IDC_STATIC_STATUS2), SW_HIDE);
