@@ -185,9 +185,10 @@ class RP_ShellPropSheetExt_Private
 		 * This function should bee called on startup and if
 		 * the window's background color changes.
 		 *
-		 * @param hDlg	[in] Dialog window.
+		 * NOTE: The HWND isn't needed here, since this function
+		 * doesn't touch the dialog at all.
 		 */
-		void loadImages(HWND hDlg);
+		void loadImages(void);
 
 	private:
 		/**
@@ -406,10 +407,15 @@ void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
  * This function should be called on startup and if
  * the window's background color changes.
  *
- * @param hDlg	[in] Dialog window.
+ * NOTE: The HWND isn't needed here, since this function
+ * doesn't touch the dialog at all.
  */
-void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
+void RP_ShellPropSheetExt_Private::loadImages(void)
 {
+	assert(romData != nullptr);
+	if (!romData)
+		return;
+
 	// Window background color.
 	// Static controls don't support alpha transparency (?? test),
 	// so we have to fake it.
@@ -466,6 +472,7 @@ void RP_ShellPropSheetExt_Private::loadImages(HWND hDlg)
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Get the animated icon data.
+			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to GDI+ bitmaps.
 				// TODO: Refactor this a bit...
@@ -620,8 +627,9 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			}
 			total_widget_width += szIcon.cx;
 
-			// Get the animated icon data.
-			iconAnimData = romData->iconAnimData();
+			// NOTE: Animated icon data is retrieved in loadImages(),
+			// which is called in WM_INITDIALOG. This is needed in order to
+			// ensure that the animated icon timer is initialized properly.
 		} else {
 			// No icon.
 			icon = nullptr;
@@ -658,9 +666,6 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 			curPt.x + szIcon.cx, curPt.y + szIcon.cy);
 		curPt.x += szIcon.cx + pt_start.x;
 	}
-
-	// Load the images.
-	loadImages(hDlg);
 
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
@@ -1908,6 +1913,11 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// since some other extension (e.g. HashTab) may be
 			// resizing the dialog.
 
+			// We need to load the images here.
+			// Otherwise, the animation won't be initialized
+			// properly when the tab is first displayed.
+			d->loadImages();
+
 			// NOTE: We're using WM_SHOWWINDOW instead of WM_SIZE
 			// because WM_SIZE isn't sent for block devices,
 			// e.g. CD-ROM drives.
@@ -2061,7 +2071,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (d) {
-				d->loadImages(hDlg);
+				d->loadImages();
 			}
 			break;
 		}
