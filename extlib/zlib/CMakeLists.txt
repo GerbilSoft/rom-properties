@@ -207,34 +207,51 @@ if(MINGW)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW)
 
-# rom-properties: Added ${ZLIB_ASM_C_SRCS} for 64-bit MSVC builds.
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_ASM_C_SRCS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_ASM_C_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
-set_target_properties(zlib PROPERTIES SOVERSION 1)
+# rom-properties:
+# - Added ${ZLIB_ASM_C_SRCS} for 64-bit MSVC builds.
+# - If BUILD_SHARED_LIBS: Only build zlib.
+# - If not BUILD_SHARED_LIBS: Only build zlibstatic.
+IF(BUILD_SHARED_LIBS)
+	add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_ASM_C_SRCS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+	set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
+	set_target_properties(zlib PROPERTIES SOVERSION 1)
+ELSE(BUILD_SHARED_LIBS)
+	add_custom_target(zlib)
+ENDIF(BUILD_SHARED_LIBS)
+IF(BUILD_STATIC_LIBS)
+	add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_ASM_C_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+ELSE(BUILD_STATIC_LIBS)
+	add_custom_target(zlibstatic)
+ENDIF(BUILD_STATIC_LIBS)
 add_definitions(${ZLIB_DEFINITIONS})
 
-# rom-properties: Set target definitions.
-target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
-target_compile_definitions(zlibstatic PUBLIC -DZLIB_CONST)
-
-# rom-properties: Set include directories.
-TARGET_INCLUDE_DIRECTORIES(zlib
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	)
-TARGET_INCLUDE_DIRECTORIES(zlibstatic
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	)
+# rom-properties: Set target definitions and include directories.
+IF(BUILD_SHARED_LIBS)
+	target_compile_definitions(zlib PUBLIC -DZLIB_CONST)
+	TARGET_INCLUDE_DIRECTORIES(zlib
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		)
+ENDIF(BUILD_SHARED_LIBS)
+IF(BUILD_STATIC_LIBS)
+	target_compile_definitions(zlibstatic PUBLIC -DZLIB_CONST)
+	TARGET_INCLUDE_DIRECTORIES(zlibstatic
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		)
+ENDIF(BUILD_STATIC_LIBS)
 
 # rom-properties: Split debug functionality; Windows subsystem.
 # NOTE: Do NOT use DO_SPLIT_DEBUG on static library targets,
 # since it results in the entire thing being split out on Linux.
-DO_SPLIT_DEBUG(zlib)
-SET_WINDOWS_SUBSYSTEM(zlib WIN32)
-INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(zlibstatic)
+IF(BUILD_SHARED_LIBS)
+	DO_SPLIT_DEBUG(zlib)
+	SET_WINDOWS_SUBSYSTEM(zlib WIN32)
+ENDIF(BUILD_SHARED_LIBS)
+IF(BUILD_STATIC_LIBS)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(zlibstatic)
+ENDIF(BUILD_STATIC_LIBS)
 
 if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version

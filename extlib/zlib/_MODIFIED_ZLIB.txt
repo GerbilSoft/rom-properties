@@ -25,4 +25,6 @@ The following changes have been made to the original:
 - cmake_minimum_required() is disabled, since it interfered with
   policies set by the main build infrastructure.
 
+- Improved shared vs. static selection.
+
 To obtain the original zlib-1.2.11, visit http://www.zlib.net .
