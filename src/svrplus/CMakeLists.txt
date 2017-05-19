@@ -8,6 +8,11 @@ SET(svrplus_H resource.h)
 # Build the executable. #
 #########################
 
+# Use the static CRT.
+INCLUDE(ConfigureMSVCRuntime)
+SET(MSVC_RUNTIME "static")
+CONFIGURE_MSVC_RUNTIME()
+
 ADD_EXECUTABLE(svrplus ${svrplus_SRCS} ${svrplus_H})
 SET_TARGET_PROPERTIES(svrplus PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(svrplus)
