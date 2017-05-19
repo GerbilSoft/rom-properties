@@ -5,24 +5,38 @@
 
 # TODO: Add support for MinGW.
 
-macro(configure_msvc_runtime)
+# Parameters:
+# - _crt: static for static CRT; anything else for the DLL CRT.
+# - ...: configurations to apply the CRT selection to (if not specified, all will be set)
+# Specify target configurations as parameters.
+# If no configurations are specified, all will be used.
+macro(configure_msvc_runtime _crt)
   if(MSVC)
     # Default to statically-linked runtime.
-    if("${MSVC_RUNTIME}" STREQUAL "")
-      set(MSVC_RUNTIME "static")
+    if("${_crt}" STREQUAL "")
+      set(_crt "static")
     endif()
     # Set compiler options.
-    set(variables
-      CMAKE_C_FLAGS_DEBUG
-      CMAKE_C_FLAGS_MINSIZEREL
-      CMAKE_C_FLAGS_RELEASE
-      CMAKE_C_FLAGS_RELWITHDEBINFO
-      CMAKE_CXX_FLAGS_DEBUG
-      CMAKE_CXX_FLAGS_MINSIZEREL
-      CMAKE_CXX_FLAGS_RELEASE
-      CMAKE_CXX_FLAGS_RELWITHDEBINFO
-    )
-    if(${MSVC_RUNTIME} STREQUAL "static")
+    set(list_var "${ARGN}")
+    unset(variables)
+    foreach(arg IN LISTS list_var)
+      STRING(TOUPPER ${arg} arg)
+      set(variables ${variables} CMAKE_C_FLAGS_${arg} CMAKE_CXX_FLAGS_${arg})
+    endforeach()
+    unset(list_var)
+    if(NOT variables)
+      set(variables
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_MINSIZEREL
+        CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_MINSIZEREL
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+      )
+    endif(NOT variables)
+    if(${_crt} STREQUAL "static")
       message(STATUS
         "MSVC -> forcing use of statically-linked runtime."
       )

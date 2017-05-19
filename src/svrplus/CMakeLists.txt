@@ -10,8 +10,7 @@ SET(svrplus_H resource.h)
 
 # Use the static CRT.
 INCLUDE(ConfigureMSVCRuntime)
-SET(MSVC_RUNTIME "static")
-CONFIGURE_MSVC_RUNTIME()
+CONFIGURE_MSVC_RUNTIME(static MinSizeRel Release RelWithDebInfo)
 
 ADD_EXECUTABLE(svrplus ${svrplus_SRCS} ${svrplus_H})
 SET_TARGET_PROPERTIES(svrplus PROPERTIES PREFIX "")
