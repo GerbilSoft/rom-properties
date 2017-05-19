@@ -246,6 +246,10 @@ unzip ..\build.i386\*-win32.zip
 :: since those are stored in a separate ZIP file.
 MOVE i386\*.exe .
 
+:: Rename svrplus.exe to install.exe to make it
+:: more obvious that it's the installer.
+REN svrplus.exe install.exe
+
 :: Extract the 64-bit ZIP file.
 :: (Only the architecture-specific directory.)
 unzip ..\build.amd64\*-win64.zip amd64/*
