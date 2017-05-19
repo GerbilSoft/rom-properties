@@ -1,22 +1,14 @@
 PROJECT(svrplus)
 
 # Sources and headers.
-SET(svrplus_SRCS
-	svrplus.cpp
-	resource.rc
-	)
-SET(svrplus_H
-	resource.h
-	)
+SET(svrplus_SRCS svrplus.cpp resource.rc)
+SET(svrplus_H resource.h)
 
 #########################
 # Build the executable. #
 #########################
 
-ADD_EXECUTABLE(svrplus
-	${svrplus_SRCS}
-	${svrplus_H}
-	)
+ADD_EXECUTABLE(svrplus ${svrplus_SRCS} ${svrplus_H})
 SET_TARGET_PROPERTIES(svrplus PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(svrplus)
 SET_WINDOWS_SUBSYSTEM(svrplus WIN32)
@@ -33,7 +25,7 @@ TARGET_INCLUDE_DIRECTORIES(svrplus
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(svrplus comctl32 shlwapi)
+TARGET_LINK_LIBRARIES(svrplus comctl32)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)

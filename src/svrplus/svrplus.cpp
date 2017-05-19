@@ -34,7 +34,6 @@ using std::wstring;
 #include <windows.h>
 #include <windowsx.h>
 #include <shellapi.h>
-#include <shlwapi.h>
 #include <commctrl.h>
 
 // Application resources.
@@ -294,12 +293,22 @@ namespace {
 			// TODO: add an error message for the MAX_PATH case?
 			return ISR_FATAL_ERROR;
 		}
-		PathFindFileName(&args[14])[0] = 0;
-		PathAppend(&args[14], is64 ? str_rp64path : str_rp32path);
+
+		// Find the last backslash in the module filename.
+		wchar_t *bs = wcsrchr(args, L'\\');
+		if (!bs) {
+			// No backslashes...
+			return ISR_FATAL_ERROR;
+		}
+
+		// Remove the EXE filename, then append the DLL relative path.
+		bs[1] = 0;
+		wcscat_s(args, _countof(args), is64 ? str_rp64path : str_rp32path);
 		if (!fileExists(&args[14])) {
 			// File not found.
 			return ISR_FILE_NOT_FOUND;
 		}
+
 		// Append /s (silent) key, and optionally append /u (uninstall) key.
 		wcscat_s(args, _countof(args), isUninstall ? L"\" /s /u" : L"\" /s");
 
