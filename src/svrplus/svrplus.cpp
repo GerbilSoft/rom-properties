@@ -521,7 +521,7 @@ namespace {
 		// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 		static const SIZE szIcon = {16, 16};
 		rectStatus1_icon = rectStatus1_noIcon;
-		rectStatus1_icon.left += szIcon.cx + (szIcon.cx / 8);
+		rectStatus1_icon.left += szIcon.cx + (szIcon.cx / 5);
 
 		// Load the icons.
 		// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
