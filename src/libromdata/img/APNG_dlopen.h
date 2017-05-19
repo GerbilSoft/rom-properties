@@ -46,6 +46,11 @@ extern "C" {
 #else /* USE_INTERNAL_PNG && !USE_INTERNAL_PNG_DLL */
 /**
  * Load APNG and increment the reference counter.
+ *
+ * NOTE: On Windows, if libpng is set for delay-load, the caller
+ * *must* ensure that it's loaded before calling this function!
+ * Otherwise, this function will fail.
+ *
  * @return 0 on success; non-zero on error.
  */
 extern int APNG_ref(void);

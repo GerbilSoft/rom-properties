@@ -94,6 +94,9 @@ static int init_apng(void)
 #ifdef _WIN32
 	// Get the handle of the already-opened libpng.
 	// Using GetModuleHandleEx() to increase the refcount.
+	// NOTE: If libpng is set for delay-load, the caller *must*
+	// ensure that it's loaded before calling this function!
+	// Otherwise, this will fail.
 #ifndef NDEBUG
 	swprintf(png_dll_filename, _countof(png_dll_filename),
 		 L"libpng%ud.dll", PNG_LIBPNG_VER_DLLNUM);
@@ -102,6 +105,7 @@ static int init_apng(void)
 		 L"libpng%u.dll", PNG_LIBPNG_VER_DLLNUM);
 #endif
 	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
+	assert(bRet != nullptr);
 	if (!bRet) {
 		libpng_dll = NULL;
 		return -1;
@@ -153,6 +157,11 @@ static int init_apng(void)
 
 /**
  * Load APNG and increment the reference counter.
+ *
+ * NOTE: On Windows, if libpng is set for delay-load, the caller
+ * *must* ensure that it's loaded before calling this function!
+ * Otherwise, this function will fail.
+ *
  * @return 0 on success; non-zero on error.
  */
 int APNG_ref(void)
