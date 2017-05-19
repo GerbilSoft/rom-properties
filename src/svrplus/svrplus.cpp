@@ -167,24 +167,73 @@ namespace {
 	}
 
 	/**
-	 * Checks wether or not Visual C++ runtime is installed.
+	 * Get a pathname in the specified System directory.
+	 * @param pszPath	[out] Path buffer.
+	 * @param cchPath	[in] Size of path buffer, in characters.
+	 * @param filename	[in] Filename to append. (Should be at least MAX_PATH.)
+	 * @param is64		[in] If true, use the 64-bit System directory.
+	 * @return Length of path in characters, excluding NULL terminator, on success; negative POSIX error code on error.
+	 */
+	int GetSystemDirFilePath(wchar_t *pszPath, unsigned int cchPath, const wchar_t *filename, bool is64)
+	{
+		// Get the Windows directory first.
+		unsigned int len = GetWindowsDirectory(pszPath, cchPath);
+		assert(len != 0);
+		if (len == 0) {
+			// Unable to get the Windows directory.
+			return -EIO;
+		} else if (len >= (cchPath-2)) {
+			// Not enough space for the Windows directory.
+			return -ENOMEM;
+		}
+
+		// Make sure the path ends with a backslash.
+		if (pszPath[len-1] != '\\') {
+			pszPath[len] = '\\';
+			pszPath[len+1] = 0;
+			len++;
+		}
+
+		// Make sure we have enough space for the System directory and filename.
+		unsigned int cchFilename = (unsigned int)wcslen(filename);
+		if (len + cchFilename + 11 >= cchPath) {
+			// Not enough space.
+			return -ENOMEM;
+		}
+
+		// Append the System directory name.
+#ifdef _WIN64
+		wcscpy_s(&pszPath[len], cchPath-len, (is64 ? L"System32\\" : L"SysWOW64\\"));
+		len += 9;
+#else /* !_WIN64 */
+		wcscpy_s(&pszPath[len], cchPath-len, (is64 ? L"Sysnative\\" : L"System32\\"));
+		len += (is64 ? 10 : 9);
+#endif /* _WIN64 */
+
+		// Append the filename.
+		wcscpy_s(&pszPath[len], cchPath-len, filename);
+		return len + cchFilename;
+	}
+
+	/**
+	 * Checks whether or not the Visual C++ runtime is installed.
 	 *
 	 * @param is64 when true, checks for 64-bit version
 	 * @return true if installed
 	 */
-	bool CheckMsvc(bool is64) {
-		wchar_t msvc[MAX_PATH];
-		if (0 == GetWindowsDirectory(msvc, MAX_PATH)) {
-			DebugBreak();
+	bool CheckMsvc(bool is64)
+	{
+		// Determine the MSVCRT DLL name.
+		wchar_t msvcrt_path[MAX_PATH];
+		int ret = GetSystemDirFilePath(msvcrt_path, _countof(msvcrt_path), L"msvcp140.dll", is64);
+		if (ret <= 0) {
+			// Unable to get the path.
+			// Assume the file exists.
 			return true;
 		}
-#ifdef _WIN64
-		const wchar_t *const msvcp140_dll = (is64 ? L"System32\\msvcp140.dll" : L"SysWOW64\\msvcp140.dll");
-#else /* !_WIN64 */
-		const wchar_t *const msvcp140_dll = (is64 ? L"Sysnative\\msvcp140.dll" : L"System32\\msvcp140.dll");
-#endif
-		PathAppend(msvc, msvcp140_dll);
-		return PathFileExists(msvc) == TRUE;
+
+		// Check if the file exists.
+		return (GetFileAttributes(msvcrt_path) != INVALID_FILE_ATTRIBUTES);
 	}
 
 	enum InstallServerResult {
@@ -217,21 +266,13 @@ namespace {
 	 * @return InstallServerResult
 	 */
 	InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode) {
-		// Construct path for regsvr
-		wchar_t regsvr[MAX_PATH];
-		UINT szWinDir = GetWindowsDirectory(regsvr, _countof(regsvr));
-		assert(szWinDir != 0);
-		if (szWinDir == 0) {
-			// This shouldn't happen...
+		// Determine the REGSVR32 path.
+		wchar_t regsvr32_path[MAX_PATH];
+		int ret = GetSystemDirFilePath(regsvr32_path, _countof(regsvr32_path), L"regsvr32.exe", is64);
+		if (ret <= 0) {
+			// Unable to get the path.
 			return ISR_FATAL_ERROR;
 		}
-
-#ifdef _WIN64
-		const wchar_t *const regsvr32_exe = (is64 ? L"System32\\regsvr32.exe" : L"SysWOW64\\regsvr32.exe");
-#else /* !_WIN64 */
-		const wchar_t *const regsvr32_exe = (is64 ? L"Sysnative\\regsvr32.exe" : L"System32\\regsvr32.exe");
-#endif
-		PathAppend(regsvr, regsvr32_exe);
 
 		// Construct arguments
 		wchar_t args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = L"regsvr32.exe \"";
@@ -256,7 +297,7 @@ namespace {
 		si.cb = sizeof(si);
 		PROCESS_INFORMATION pi = { 0 };
 
-		if (!CreateProcess(regsvr, args, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
+		if (!CreateProcess(regsvr32_path, args, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
 			if (pErrorCode) {
 				*pErrorCode = GetLastError();
 			}
