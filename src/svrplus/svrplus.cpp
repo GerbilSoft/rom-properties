@@ -460,12 +460,12 @@ namespace {
 			const wchar_t *msg1;
 			if (g_is64bit) {
 				msg1 = (params->isUninstall
-					? L"An error occurred while unregistering the DLLs."
-					: L"An error occurred while registering the DLLs.");
+					? L"An error occurred while unregistering the DLLs:"
+					: L"An error occurred while registering the DLLs:");
 			} else {
 				msg1 = (params->isUninstall
-					? L"An error occurred while unregistering the DLL."
-					: L"An error occurred while registering the DLL.");
+					? L"An error occurred while unregistering the DLL:"
+					: L"An error occurred while registering the DLL:");
 			}
 
 			wstring msg2;
