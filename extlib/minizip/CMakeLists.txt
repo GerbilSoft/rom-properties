@@ -1,11 +1,8 @@
 PROJECT(minizip C)
 
-IF(WIN32)
-	# Use extlib/zlib/.
-	SET(ZLIB_LIBRARY zlibstatic)
-ELSE(WIN32)
-	FIND_LIBRARY(ZLIB REQUIRED)
-ENDIF(WIN32)
+IF(NOT ZLIB_LIBRARY)
+	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
+ENDIF(NOT ZLIB_LIBRARY)
 
 # Sources.
 SET(minizip_SRCS
