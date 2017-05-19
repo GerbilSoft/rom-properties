@@ -216,6 +216,16 @@ namespace {
 	}
 
 	/**
+	 * Check if a file exists.
+	 * @param filename Filename.
+	 * @return True if the file exists; false if not.
+	 */
+	inline bool fileExists(const wchar_t *filename)
+	{
+		return (GetFileAttributes(filename) != INVALID_FILE_ATTRIBUTES);
+	}
+
+	/**
 	 * Checks whether or not the Visual C++ runtime is installed.
 	 *
 	 * @param is64 when true, checks for 64-bit version
@@ -233,7 +243,7 @@ namespace {
 		}
 
 		// Check if the file exists.
-		return (GetFileAttributes(msvcrt_path) != INVALID_FILE_ATTRIBUTES);
+		return fileExists(msvcrt_path);
 	}
 
 	enum InstallServerResult {
@@ -286,7 +296,7 @@ namespace {
 		}
 		PathFindFileName(&args[14])[0] = 0;
 		PathAppend(&args[14], is64 ? str_rp64path : str_rp32path);
-		if (!PathFileExists(&args[14])) {
+		if (!fileExists(&args[14])) {
 			// File not found.
 			return ISR_FILE_NOT_FOUND;
 		}
