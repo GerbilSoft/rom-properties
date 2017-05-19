@@ -446,12 +446,12 @@ namespace {
 			const wchar_t *msg;
 			if (g_is64bit) {
 				msg = (params->isUninstall
-					? L"\n\nDLLs unregistered successfully."
-					: L"\n\nDLLs registered successfully.");
+					? L"DLLs unregistered successfully."
+					: L"DLLs registered successfully.");
 			} else {
 				msg = (params->isUninstall
-					? L"\n\nDLL unregistered successfully."
-					: L"\n\nDLL registered successfully.");
+					? L"DLL unregistered successfully."
+					: L"DLL registered successfully.");
 			}
 			ShowStatusMessage(params->hWnd, msg, L"", MB_ICONINFORMATION);
 			MessageBeep(MB_ICONINFORMATION);
