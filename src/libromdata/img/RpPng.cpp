@@ -58,17 +58,33 @@ using std::unique_ptr;
 // pngcheck()
 #include "pngcheck/pngcheck.hpp"
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+// Need zlib for delay-load checks.
+#include <zlib.h>
 // MSVC: Exception handling for /DELAYLOAD.
 #include "delayload/DelayLoadHelper.hpp"
-#endif
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 namespace LibRomData {
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(png_access_version_number);
-#endif /* _MSC_VER */
+DELAYLOAD_FILTER_FUNCTION_IMPL(zlib_and_png)
+static int DelayLoad_test_zlib_and_png(void)
+{
+	static bool success = false;
+	if (!success) {
+		__try {
+			zlibVersion();
+			png_access_version_number();
+		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
+			return -ENOTSUP;
+		}
+		success = true;
+	}
+	return 0;
+}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 class RpPngPrivate
 {
@@ -700,14 +716,14 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 	if (!file)
 		return nullptr;
 
-#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_png_access_version_number() != 0) {
+	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return nullptr;
 	}
-#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Rewind the file.
 	file->rewind();
@@ -779,14 +795,14 @@ int RpPng::save(IRpFile *file, const rp_image *img)
 	if (!file || !img)
 		return -EINVAL;
 
-#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_png_access_version_number() != 0) {
+	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return -ENOTSUP;
 	}
-#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Truncate the file initially.
 	int ret = file->truncate(0);
@@ -838,14 +854,14 @@ int RpPng::save(const rp_char *filename, const rp_image *img)
 	if (!filename || filename[0] == 0 || !img)
 		return -EINVAL;
 
-#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_png_access_version_number() != 0) {
+	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return -ENOTSUP;
 	}
-#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_CREATE_WRITE));
 	if (!file->isOpen()) {
@@ -900,14 +916,14 @@ int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
 		return save(file, iconAnimData->frames[iconAnimData->seq_index[0]]);
 	}
 
-#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_png_access_version_number() != 0) {
+	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return -ENOTSUP;
 	}
-#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Truncate the file initially.
 	int ret = file->truncate(0);
@@ -979,14 +995,14 @@ int RpPng::save(const rp_char *filename, const IconAnimData *iconAnimData)
 		return save(filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 	}
 
-#if defined(_MSC_VER) && defined(PNG_IS_DLL)
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_png_access_version_number() != 0) {
+	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
 		return -ENOTSUP;
 	}
-#endif /* defined(_MSC_VER) && defined(PNG_IS_DLL) */
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Load APNG.
 	int apng_ret = APNG_ref();

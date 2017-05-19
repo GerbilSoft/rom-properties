@@ -26,6 +26,20 @@
 #include <string>
 #endif /* __cplusplus */
 
+/* Define to 1 if you have zlib. */
+#cmakedefine HAVE_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib. */
+#cmakedefine USE_INTERNAL_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib as a DLL. */
+#cmakedefine USE_INTERNAL_ZLIB_DLL 1
+
+/* Define to 1 if zlib is a DLL. */
+#if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
+#define ZLIB_IS_DLL 1
+#endif
+
 /* Define to 1 if you have libpng. */
 #cmakedefine HAVE_PNG 1
 

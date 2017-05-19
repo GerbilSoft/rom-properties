@@ -110,14 +110,13 @@ static int LibRomData_Win32_ExeInit(void)
 		pfnSetDllDirectoryW(L"");
 	}
 
-	// Search the application directory and system directory for DLLs.
-	// Application directory is needed because libpng is explicitly
-	// linked to zlib, and delay-load will fail if the application
-	// directory isn't in the search path.
-	// TODO: Fix this somehow...
+	// Only search the system directory for DLLs.
+	// The Delay-Load helper will handle bundled DLLs at runtime.
+	// NOTE: gdiplus.dll is not a "Known DLL", and since it isn't
+	// delay-loaded, it may be loaded from the application directory...
 	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)GetProcAddress(hKernel32, "SetDefaultDllDirectories");
 	if (pfnSetDefaultDllDirectories) {
-		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+		pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
 	}
 
 	// Terminate the process if heap corruption is detected.
