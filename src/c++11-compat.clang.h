@@ -44,6 +44,8 @@
  * present in older versions of LLVM/clang.
  *
  * These are all automatically enabled when compiling C code.
+ *
+ * Reference: https://clang.llvm.org/cxx_status.html
  */
 
 /* For clang-3.1+, make sure we're compiling with -std=c++11 or -std=gnu++11. */
@@ -55,21 +57,18 @@
 #endif /* __cplusplus */
 #endif /* __clang_major__ */
 
-/**
- * clang-3.0 added the following:
- * - nullptr
- * - Explicit virtual override
- */
+/* clang-3.1: constexpr */
+#if (__clang_major__ < 3 || (__clnag_major__ == 3 && __clang_minor < 1))
+#define CXX11_COMPAT_CONSTEXPR
+#endif
+
+/* clang-3.0: nullptr, explicit virtual override */
 #if (__clang_major__ < 3)
 #define CXX11_COMPAT_NULLPTR
 #define CXX11_COMPAT_OVERRIDE
 #endif
 
-/**
- * clang-2.9 added the following:
- * - New character types
- * - Static assertions
- */
+/* clang-2.9: New character types, static assertions */
 #if (__clang_major__ < 2 || (__clang_major__ == 2 && __clang_minor__ < 9))
 #define CXX11_COMPAT_CHARTYPES
 #define CXX11_COMPAT_STATIC_ASSERT

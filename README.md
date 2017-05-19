@@ -61,15 +61,15 @@ the "ROM Properties" tab to view more information about the ROM image.
 
 ### Windows
 
-Extract the ZIP archive to a directory, then run the install.cmd file.
-If using Windows Vista or later, install.cmd must be run as an administrator.
-(Right-click the file, select "Run as administrator".)
+Extract the ZIP archive to a directory, then run install.exe. The installer
+requires administrator access, so click "Yes" if requested. In the installer,
+click the "Install" button to register the ROM Properties Page DLL.
 
 Note that this will hard-code the location of the DLL files in the registry,
 so you may want to place the DLLs in a common location.
 
-To uninstall the plugin, run uninstall.cmd. This also requires administrator
-access on Windows Vista and later.
+To uninstall the plugin, run install.exe again, then click the "Uninstall"
+button.
 
 ## Current OS Feature Support Level
 

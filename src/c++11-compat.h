@@ -27,6 +27,7 @@
  * Provide replacements for C++ 2011 functionality.
  */
 #define CXX11_COMPAT_NULLPTR
+#define CXX11_COMPAT_CONSTEXPR
 #define CXX11_COMPAT_OVERRIDE
 #define CXX11_COMPAT_CHARTYPES
 
@@ -81,6 +82,12 @@ namespace std {
 }
 #endif /* __cplusplus */
 #endif /* CXX11_COMPAT_CHARTYPES */
+
+/* constexpr */
+/* NOTE: This might not work in all cases. */
+#ifdef CXX11_COMPAT_CONSTEXPR
+#define constexpr const
+#endif
 
 /* Explicit override/final. */
 #ifdef CXX11_COMPAT_OVERRIDE

@@ -34,6 +34,8 @@
  * present in older versions of MSVC.
  *
  * These are all automatically enabled when compiling C code.
+ *
+ * Reference: https://msdn.microsoft.com/en-us/library/hh567368.aspx
  */
 
 #if (_MSC_VER < 1900)
@@ -42,6 +44,11 @@
  * (char16_t, char32_t, related string types)
  */
 #define CXX11_COMPAT_CHARTYPES
+
+/**
+ * MSVC 2015 also added support for constexpr.
+ */
+#define CXX11_COMPAT_CONSTEXPR
 #endif
 
 #if (_MSC_VER < 1700)
