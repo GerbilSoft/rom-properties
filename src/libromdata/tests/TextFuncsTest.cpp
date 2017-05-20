@@ -43,7 +43,7 @@ using std::u16string;
 // NOTE: We're redefining ARRAY_SIZE() here in order to
 // get a size_t instead of an int.
 #ifdef ARRAY_SIZE
-#unfed ARRAY_SIZE
+#undef ARRAY_SIZE
 #endif
 
 /**
