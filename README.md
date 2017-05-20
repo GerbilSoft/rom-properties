@@ -151,9 +151,7 @@ will be used for thumbnails (and icons on Windows).
   (\*.3ds, \*.cci), importable archives (\*.cia), eMMC dumps (\*.bin),
   and title contents (\*.ncch, \*.app)
   * Encryption keys are needed for encrypted cartridge images, importable
-    archives, and title contents. Many keys are still unknown, so it may not
-    be possible to view the full details of one of these files unless they
-    are decrypted first.
+    archives, and title contents.
 
 ## External Media Downloads
 
