@@ -61,8 +61,8 @@ IF(MSVC)
 	SET(rom-properties-win32_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-win32-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
-	SET(rom-properties-win32-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
+	SET(rom-properties-win32-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.cpp)
+	SET(rom-properties-win32-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.hpp)
 ENDIF(MSVC)
 
 #####################
@@ -75,7 +75,7 @@ ADD_SUBDIRECTORY(config)
 
 IF(MSVC)
 	# Delay-load extlibs.
-	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 	SET_DELAY_LOAD_FLAGS()
 ENDIF(MSVC)
 

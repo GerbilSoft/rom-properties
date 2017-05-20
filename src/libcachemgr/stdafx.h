@@ -27,7 +27,7 @@
 #endif
 
 // Windows SDK defines and includes.
-#include "libromdata/RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 
 // Additional Windows headers.
 #include <shlobj.h>

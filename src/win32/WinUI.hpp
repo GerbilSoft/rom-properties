@@ -22,8 +22,6 @@
 #ifndef __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__
 #define __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__
 
-#include "libromdata/RpWin32_sdk.h"
-
 // C++ includes.
 #include <string>
 

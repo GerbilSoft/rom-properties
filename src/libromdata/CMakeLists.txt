@@ -239,12 +239,10 @@ IF(WIN32)
 		)
 	SET(libromdata_OS_H
 		RpWin32.hpp
-		RpWin32_sdk.h
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
 		threads/InitOnceExecuteOnceXP.h
-		Win32_ExeInit.hpp
 		)
 ELSE(WIN32)
 	SET(libromdata_OS_SRCS
@@ -392,6 +390,9 @@ FOREACH(_target romdata8 romdata16)
 		TARGET_LINK_LIBRARIES(${_target} ${TinyXML2_LIBRARY})
 	ENDIF(ENABLE_XML AND TinyXML2_FOUND)
 	IF(WIN32)
+		# libwin32common
+		TARGET_LINK_LIBRARIES(${_target} win32common)
+		# Windows system libraries
 		TARGET_LINK_LIBRARIES(${_target} gdiplus)
 		IF(ENABLE_DECRYPTION)
 			TARGET_LINK_LIBRARIES(${_target} advapi32)

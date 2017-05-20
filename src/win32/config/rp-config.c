@@ -30,8 +30,10 @@
 // NOTE: We're not linking to LibRomData, so we can only
 // use things that are defined in the headers.
 #include "libromdata/common.h"
-#include "libromdata/RpWin32_sdk.h"
-#include "libromdata/Win32_ExeInit.hpp"
+
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/secoptions.h"
 
 // C includes.
 #include <locale.h>
@@ -113,9 +115,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	RP_UNUSED(hPrevInstance);
 
-	// libromdata Windows executable initialization.
-	// This sets various security options.
-	LibRomData_Win32_ExeInit();
+	// Set Win32 security options.
+	secoptions_init();
 
 	// Set the C locale.
 	// TODO: C++ locale?

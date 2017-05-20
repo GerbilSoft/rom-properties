@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * RpWin32_sdk.h: Windows SDK defines and includes.                        *
  *                                                                         *
- * Copyright (c) 2009-2016 by David Korth.                                 *
+ * Copyright (c) 2009-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,12 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_RPWIN32_SDK_H__
-#define __ROMPROPERTIES_LIBROMDATA_RPWIN32_SDK_H__
-
-#ifndef _WIN32
-#error RpWin32_sdk.h should only be included in Windows builds.
-#endif
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__
 
 // Show a warning if one of the macros isn't defined in CMake.
 #ifndef WINVER
@@ -103,4 +99,4 @@
 #define _Outptr_
 #endif
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_RPWIN32_SDK_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__ */

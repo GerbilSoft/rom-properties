@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
- * gtest_init.c: Google Test initialization.                               *
+ * ROM Properties Page shell extension. (libwin32common)                   *
+ * secoptions.h: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,36 +19,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-// C++ includes.
-#include <locale>
-using std::locale;
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
 
-#ifdef _WIN32
-#include "libwin32common/secoptions.h"
-
-// rp_image backend registration.
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::RpGdiplusBackend;
-using LibRomData::rp_image;
-#endif /* _WIN32 */
-
-extern "C" int gtest_main(int argc, char *argv[]);
-
-int main(int argc, char *argv[])
-{
-#ifdef _WIN32
-	// Set Win32 security options.
-	secoptions_init();
-
-	// Register RpGdiplusBackend.
-	// TODO: Static initializer somewhere?
-	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-	// Set the C and C++ locales.
-	locale::global(locale(""));
+/**
+ * Enable security options for Windows executables.
+ * This should be called at the program's entry point.
+ * Reference: http://msdn.microsoft.com/en-us/library/bb430720.aspx
+ *
+ * @return 0 on success; non-zero on error.
+ */
+int secoptions_init(void);
 
-	// Call the actual main function.
-	return gtest_main(argc, argv);
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__ */

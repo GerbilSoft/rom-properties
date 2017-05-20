@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata/tests)                 *
- * gtest_init.c: Google Test initialization.                               *
+ * ROM Properties Page shell extension. (libwin32common)                   *
+ * wmain.c: UTF-16 to UTF-8 main() wrapper for command-line programs.      *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,36 +19,47 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-// C++ includes.
-#include <locale>
-using std::locale;
+#include "secoptions.h"
+#include "RpWin32_sdk.h"
 
-#ifdef _WIN32
-#include "libwin32common/secoptions.h"
+// C includes.
+#include <stdlib.h>
 
-// rp_image backend registration.
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::RpGdiplusBackend;
-using LibRomData::rp_image;
-#endif /* _WIN32 */
-
-extern "C" int gtest_main(int argc, char *argv[]);
-
-int main(int argc, char *argv[])
+// TODO: envp[]?
+extern int main(int argc, char *argv[]);
+int wmain(int argc, wchar_t *argv[])
 {
-#ifdef _WIN32
+	char **u8argv;
+	int i, ret;
+
 	// Set Win32 security options.
 	secoptions_init();
 
-	// Register RpGdiplusBackend.
-	// TODO: Static initializer somewhere?
-	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
-#endif
+	// Convert the UTF-16 arguments to UTF-8.
+	// NOTE: Using WideCharToMultiByte() directly in order to
+	// avoid std::string overhead.
+	u8argv = malloc((argc+1)*sizeof(char*));
+	u8argv[argc] = nullptr;
+	for (i = 0; i < argc; i++) {
+		int cbMbs = WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, nullptr, 0, nullptr, nullptr);
+		if (cbMbs <= 0) {
+			// Invalid string. Make it an empty string anyway.
+			u8argv[i] = strdup("");
+			continue;
+		}
 
-	// Set the C and C++ locales.
-	locale::global(locale(""));
+		u8argv[i] = (char*)malloc(cbMbs);
+		WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, u8argv[i], cbMbs, nullptr, nullptr);
+	}
 
-	// Call the actual main function.
-	return gtest_main(argc, argv);
+	// Run the program.
+	ret = main(argc, u8argv);
+
+	// Free u8argv[].
+	for (i = argc-1; i >= 0; i--) {
+		free(u8argv[i]);
+	}
+	free(u8argv);
+
+	return ret;
 }

@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rpcli)                            *
- * Win32_ExeInit.hpp: Win32 common executable initialization.              *
+ * ROM Properties Page shell extension. (libwin32common)                   *
+ * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,14 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIN32_EXEINIT_H__
-#define __ROMPROPERTIES_LIBROMDATA_WIN32_EXEINIT_H__
-
-#ifndef _WIN32
-#error Win32_ExeInit.hpp should only be included on Windows.
-#endif /* !_WIN32 */
-
+#include "secoptions.h"
 #include "RpWin32_sdk.h"
+
+// C includes.
+#include <assert.h>
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
 typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
@@ -65,11 +62,6 @@ typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
 	 _In_ PVOID HeapInformation,
 	 _In_ SIZE_T HeapInformationLength);
 
-
-#ifdef __cplusplus
-namespace LibRomData {
-#endif
-
 /**
  * libromdata Windows executable initialization.
  * This sets various security options.
@@ -77,19 +69,24 @@ namespace LibRomData {
  *
  * @return 0 on success; non-zero on error.
  */
-#ifdef __cplusplus
-static int Win32_ExeInit(void)
-#else
-static int LibRomData_Win32_ExeInit(void)
-#endif
+int secoptions_init(void)
 {
+	BOOL bRet;
 	HMODULE hKernel32;
 	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
 	PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
 	PFNHEAPSETINFORMATION pfnHeapSetInformation;
 
-	hKernel32 = LoadLibrary(L"kernel32.dll");
+#ifndef NDEBUG
+	// Make sure this function isn't called more than once.
+	static unsigned char call_count = 0;
+	assert(call_count == 0);
+	call_count++;
+#endif /* NDEBUG */
+
+	// Using GetModuleHandleEx() to increase the refcount.
+	bRet = GetModuleHandleEx(0, L"kernel32.dll", &hKernel32);
 	if (!hKernel32) {
 		// Should never happen...
 		return GetLastError();
@@ -136,5 +133,3 @@ static int LibRomData_Win32_ExeInit(void)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIN32_EXEINIT_H__ */

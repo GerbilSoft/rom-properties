@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_WIN32_CONFIG_CONFIGDIALOG_HPP__
 
 #include "libromdata/common.h"
-#include "libromdata/RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 
 class ConfigDialogPrivate;
 class ConfigDialog

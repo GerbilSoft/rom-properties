@@ -18,6 +18,9 @@ ADD_EXECUTABLE(RpImageLoaderTest
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(RpImageLoaderTest win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest romdata8)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
@@ -62,6 +65,7 @@ IF(ENABLE_DECRYPTION)
 	TARGET_LINK_LIBRARIES(AesCipherTest romdata8)
 	TARGET_LINK_LIBRARIES(AesCipherTest gtest)
 	IF(WIN32)
+		TARGET_LINK_LIBRARIES(AesCipherTest win32common)
 		TARGET_LINK_LIBRARIES(AesCipherTest advapi32)
 	ENDIF(WIN32)
 	IF(NETTLE_LIBRARY)
@@ -91,6 +95,9 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(GcnFstPrint win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(GcnFstPrint romdata8)
 DO_SPLIT_DEBUG(GcnFstPrint)
 SET_WINDOWS_SUBSYSTEM(GcnFstPrint CONSOLE)
@@ -102,6 +109,9 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(GcnFstTest win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(GcnFstTest romdata8)
 TARGET_LINK_LIBRARIES(GcnFstTest gtest)
 TARGET_LINK_LIBRARIES(GcnFstTest minizip ${ZLIB_LIBRARY})
@@ -136,6 +146,9 @@ ADD_EXECUTABLE(TextFuncsTest8
 	gtest_init.cpp
 	TextFuncsTest.cpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(TextFuncsTest8 win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(TextFuncsTest8 romdata8)
 TARGET_LINK_LIBRARIES(TextFuncsTest8 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest8)
@@ -148,6 +161,9 @@ ADD_EXECUTABLE(TextFuncsTest16
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(GcnFstTest win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(TextFuncsTest16 romdata16)
 TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest16)

@@ -30,7 +30,7 @@
 #error InitOnceExecuteOnceXP.h should only be included in Windows builds.
 #endif /* _WIN32 */
 
-#include "../RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -50,7 +50,7 @@ extern "C" {
 #include <jpegint.h>
 }
 // MSVC: Exception handling for /DELAYLOAD.
-#include "delayload/DelayLoadHelper.hpp"
+#include "libwin32common/DelayLoadHelper.hpp"
 #endif /* _MSC_VER */
 
 namespace LibRomData {

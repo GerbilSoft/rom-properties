@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.cpp: DelayLoad helper functions and macros.             *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *

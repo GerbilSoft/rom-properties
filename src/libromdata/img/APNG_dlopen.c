@@ -34,7 +34,7 @@
 #include <dlfcn.h>
 #else
 // Windows LoadLibrary()
-#include "RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 #define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
 #define dlclose(handle)		FreeLibrary(handle)
 #endif

@@ -25,7 +25,7 @@
 #include "common.h"
 
 #ifdef _WIN32
-#include "RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 #else /* !_WIN32 */
 #include <semaphore.h>
 #endif

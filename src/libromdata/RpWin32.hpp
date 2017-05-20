@@ -26,7 +26,7 @@
 #error RpWin32.hpp should only be included in Windows builds.
 #endif
 
-#include "RpWin32_sdk.h"
+#include "libwin32common/RpWin32_sdk.h"
 #include "common.h"
 
 namespace LibRomData {

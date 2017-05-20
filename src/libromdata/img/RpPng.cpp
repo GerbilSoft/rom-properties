@@ -62,7 +62,7 @@ using std::unique_ptr;
 // Need zlib for delay-load checks.
 #include <zlib.h>
 // MSVC: Exception handling for /DELAYLOAD.
-#include "delayload/DelayLoadHelper.hpp"
+#include "libwin32common/DelayLoadHelper.hpp"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 namespace LibRomData {
