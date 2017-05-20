@@ -33,13 +33,15 @@
 #include "stdafx.h"
 #include "config.version.h"
 
-#include "RegKey.hpp"
 #include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
 #include "RP_ExtractImage.hpp"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
+
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"

@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,7 +19,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "RegKey.hpp"
 
 // C includes. (C++ namespace)
@@ -31,6 +30,11 @@
 #include <list>
 using std::wstring;
 using std::list;
+
+// Windows SDK.
+#include <objbase.h>
+
+namespace LibWin32Common {
 
 /**
  * Create or open a registry key.
@@ -738,4 +742,6 @@ LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCWSTR progID)
 
 	// TODO: Check progID and remove CLSID if it's present.
 	return ERROR_SUCCESS;
+}
+
 }

@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -19,13 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
-#define __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__
 
-#include "libromdata/common.h"
-
+// C includes. (C++ namespace)
 #include <cassert>
-#include <windows.h>
+
+// Windows SDK.
+#include "RpWin32_sdk.h"
+#include <windowsx.h>
+
+namespace LibWin32Common {
 
 /**
  * GetDC() RAII wrapper.
@@ -59,7 +63,9 @@ class AutoGetDC
 		}
 
 	private:
-		RP_DISABLE_COPY(AutoGetDC)
+		// Disable copying.
+		AutoGetDC(const AutoGetDC &);
+		AutoGetDC &operator=(const AutoGetDC &);
 
 	private:
 		HWND hWnd;
@@ -67,4 +73,6 @@ class AutoGetDC
 		HFONT hFontOrig;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_AUTOGETDC_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__ */

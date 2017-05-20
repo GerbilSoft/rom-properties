@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * DialogBuilder.cpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -26,10 +26,7 @@
 // - DLGITEMTEMPLATEEX: https://msdn.microsoft.com/en-us/library/windows/desktop/ms645389(v=vs.85).aspx
 // - 32-bit extended dialogs: https://blogs.msdn.microsoft.com/oldnewthing/20040623-00/?p=38753
 
-#include "stdafx.h"
 #include "DialogBuilder.hpp"
-
-#include "libromdata/common.h"
 
 // C includes.
 #include <stdlib.h>
@@ -37,12 +34,22 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
+// Windows SDK.
+#include <objbase.h>
+
+// NOTE: We can't use libromdata/common.h here.
+// Define the PACKED attribute manually.
+#ifdef __GNUC__
+#define PACKED __attribute__((packed))
+#else
+#define PACKED
+#endif
+
+namespace LibWin32Common {
+
 DialogBuilder::DialogBuilder()
 	: m_pDlgBuf(m_DlgBuf)
 	, m_pcDlgItems(nullptr)
-{ }
-
-DialogBuilder::~DialogBuilder()
 { }
 
 /**
@@ -265,4 +272,6 @@ void DialogBuilder::clear(void)
 {
 	// Reset the pointer to the beginning of the buffer.
 	m_pDlgBuf = m_DlgBuf;
+}
+
 }

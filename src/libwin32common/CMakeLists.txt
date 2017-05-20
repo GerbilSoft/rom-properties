@@ -10,10 +10,17 @@ PROJECT(libwin32common)
 SET(libwin32common_SRCS
 	secoptions.c
 	wmain.c
+	DialogBuilder.cpp
+	RegKey.cpp
+	WinUI.cpp
 	)
 SET(libwin32common_H
 	RpWin32_sdk.h
 	secoptions.h
+	DialogBuilder.hpp
+	RegKey.hpp
+	AutoGetDC.hpp
+	WinUI.hpp
 	)
 
 ######################

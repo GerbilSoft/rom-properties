@@ -28,7 +28,8 @@
 #include "libromdata/file/FileSystem.hpp"
 using namespace LibRomData;
 
-#include "RegKey.hpp"
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <memory>

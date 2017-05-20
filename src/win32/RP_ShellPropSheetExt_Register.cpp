@@ -22,7 +22,9 @@
 
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
-#include "RegKey.hpp"
+
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>

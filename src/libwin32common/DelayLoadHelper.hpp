@@ -19,11 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOAD_DELAYLOADHELPER_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOAD_DELAYLOADHELPER_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOADHELPER_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOADHELPER_HPP__
 
 #if !defined(_WIN32) || !defined(_MSC_VER)
-#error DelayLoadHelper.h is MSVC and Win32 only at the moment.
+#error DelayLoadHelper.hpp is MSVC and Win32 only at the moment.
 #endif
 
 // MSVC: Exception handling for /DELAYLOAD.
@@ -94,4 +94,4 @@ static int DelayLoad_test_##fn(void) { \
 	return 0; \
 }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOAD_DELAYLOADHELPER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOADHELPER_HPP__ */

@@ -58,7 +58,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -69,7 +69,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 	private:
 		/**
@@ -102,7 +102,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param nIconSize Icon sizes.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG Fallback_int(RegKey &hkey_Assoc,
+		LONG Fallback_int(LibWin32Common::RegKey &hkey_Assoc,
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 	public:

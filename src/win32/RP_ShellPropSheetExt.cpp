@@ -27,9 +27,12 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
-#include "AutoGetDC.hpp"
-#include "WinUI.hpp"
 #include "resource.h"
+
+// libwin32common
+#include "libwin32common/AutoGetDC.hpp"
+#include "libwin32common/WinUI.hpp"
+using LibWin32Common::AutoGetDC;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -573,7 +576,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = WinUI::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
+		int ret = LibWin32Common::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -704,11 +707,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 
 		// TODO: NULL string == empty string?
 		if (field->data.str) {
-			wstr = WinUI::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
+			wstr = LibWin32Common::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
-		wstr = WinUI::unix2dos(wstring(wcs), &lf_count);
+		wstr = LibWin32Common::unix2dos(wstring(wcs), &lf_count);
 	}
 
 	// Field height.
@@ -791,7 +794,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		WinUI::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
+		LibWin32Common::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
@@ -1331,7 +1334,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 		}
 
 		// Find a monospaced font.
-		int ret = WinUI::findMonospacedFont(&lfFontMono);
+		int ret = LibWin32Common::findMonospacedFont(&lfFontMono);
 		if (ret != 0) {
 			// Monospaced font not found.
 			return;

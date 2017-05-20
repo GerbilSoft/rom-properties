@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
  * Copyright (c) 2016 by David Korth.                                      *
@@ -19,14 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_REGKEY_HPP__
-#define __ROMPROPERTIES_WIN32_REGKEY_HPP__
-
-#include "common.h"
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
 
 // C++ includes.
 #include <string>
 #include <list>
+
+// Windows SDK.
+#include "RpWin32_sdk.h"
+
+namespace LibWin32Common {
 
 class RegKey
 {
@@ -52,7 +55,9 @@ class RegKey
 		~RegKey();
 
 	private:
-		RP_DISABLE_COPY(RegKey)
+		// Disable copying.
+		RegKey(const RegKey &);
+		RegKey &operator=(const RegKey &);
 
 	public:
 		/**
@@ -208,4 +213,6 @@ class RegKey
 		REGSAM m_samDesired;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_REGKEY_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__ */

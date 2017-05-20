@@ -63,7 +63,7 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -74,7 +74,7 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 	private:
 		/**
@@ -83,7 +83,7 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param phBmpImage
 		 * @return HRESULT.
 		 */
-		HRESULT Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmpImage);
+		HRESULT Fallback_int(LibWin32Common::RegKey &hkey_Assoc, HBITMAP *phBmpImage);
 
 	public:
 		/**

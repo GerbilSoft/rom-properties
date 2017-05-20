@@ -36,8 +36,10 @@ extern "C" {
 namespace LibRomData {
 	class rp_image;
 }
+namespace LibWin32Common {
+	class RegKey;
+}
 
-class RegKey;
 class RP_ExtractImage_Private;
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
@@ -71,7 +73,7 @@ RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -85,7 +87,7 @@ RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IPersist (IPersistFile base class)

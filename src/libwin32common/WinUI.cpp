@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -19,7 +19,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
 
@@ -31,7 +30,7 @@ using std::unique_ptr;
 using std::unordered_set;
 using std::wstring;
 
-namespace WinUI {
+namespace LibWin32Common {
 
 /**
  * Convert UNIX line endings to DOS line endings.

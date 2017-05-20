@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -19,17 +19,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__
-#define __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
 
 // C++ includes.
 #include <string>
 
-namespace WinUI {
+// Windows SDK.
+#include "RpWin32_sdk.h"
+
+namespace LibWin32Common {
 
 /**
  * Convert UNIX line endings to DOS line endings.
- * TODO: Move to RpWin32?
  * @param wstr_unix	[in] wstring with UNIX line endings.
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return wstring with DOS line endings.
@@ -95,4 +97,4 @@ int findMonospacedFont(LOGFONT *plfFontMono);
 
 }
 
-#endif /* __ROMPROPERTIES_WIN32_WINUICOMMON_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__ */

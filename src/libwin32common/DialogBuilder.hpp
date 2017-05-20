@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * DialogBuilder.hpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,19 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_DIALOGBUILDER_HPP__
-#define __ROMPROPERTIES_WIN32_DIALOGBUILDER_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__
 
 // C includes.
 #include <stdint.h>
 
-// C includes. (C++ namespace)
-#include <cstring>
-
-// rp_string
-#include "libromdata/common.h"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/RpWin32.hpp"
+// Windows SDK.
+#include "RpWin32_sdk.h"
 
 // Standard window classes.
 // These macros use the ordinal value, which saves
@@ -43,14 +38,17 @@
 #define WC_ORD_SCROLLBAR	MAKEINTATOM(0x0084)
 #define WC_ORD_COMBOBOX		MAKEINTATOM(0x0085)
 
+namespace LibWin32Common {
+
 class DialogBuilder
 {
 	public:
 		DialogBuilder();
-		~DialogBuilder();
 
 	private:
-		RP_DISABLE_COPY(DialogBuilder)
+		// Disable copying.
+		DialogBuilder(const DialogBuilder &);
+		DialogBuilder &operator=(const DialogBuilder &);
 
 	private:
 		/** DLGTEMPLATEEX helper functions. **/
@@ -85,28 +83,6 @@ class DialogBuilder
 		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, LPCWSTR lpszWindowText);
 
 		/**
-		 * Add a control to the dialog.
-		 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
-		 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
-		 * @param lpszWindowText	[in, opt] Window text.
-		 */
-		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const rp_char *lpszWindowText)
-		{
-			add(lpItemTemplate, lpszWindowClass, RP2W_c(lpszWindowText));
-		}
-
-		/**
-		 * Add a control to the dialog.
-		 * @param lpItemTemplate	[in] DLGITEMTEMPLATE.
-		 * @param lpszWindowClass	[in] Window class. (May be an ordinal value.)
-		 * @param lpszWindowText	[in, opt] Window text.
-		 */
-		void add(const DLGITEMTEMPLATE *lpItemTemplate, LPCWSTR lpszWindowClass, const LibRomData::rp_string &lpszWindowText)
-		{
-			add(lpItemTemplate, lpszWindowClass, RP2W_s(lpszWindowText));
-		}
-
-		/**
 		 * Get a pointer to the created DLGTEMPLATEEX.
 		 * @return DLGTEMPLATE.
 		 */
@@ -129,4 +105,6 @@ class DialogBuilder
 		LPWORD m_pcDlgItems;
 };
 
-#endif /* __ROMPROPERTIES_WIN32_DIALOGBUILDER_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__ */
