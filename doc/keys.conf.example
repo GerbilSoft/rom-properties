@@ -43,6 +43,7 @@ ctr-scrambler=
 #
 # If SEED is used, then for other NCCH sections, KeyY is
 # the first 16 bytes of the SHA-256 of the seed.
+#
 
 ### 0x18: Secure3 encryption. (ncchflag[3] == 0x0A)
 ctr-Slot0x18KeyX=
@@ -69,6 +70,7 @@ ctr-dev-Slot0x2CKeyX=
 # - 0: eShop titles
 # - 1: System titles
 #
+
 ctr-Slot0x3DKeyX=
 ctr-Slot0x3DKeyY-0=
 ctr-Slot0x3DKeyY-1=
