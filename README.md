@@ -109,7 +109,7 @@ Notes:
 | Nintendo Entertainment System |       Yes      |       N/A       |       No       |
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 | Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
-| Nintendo 3DS                  |       Yes      |       Icon      |     Covers     |
+| Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -126,8 +126,11 @@ Notes:
 * Windows executables may contain multiple icon sizes. Support for Windows icons
   will be added once support for multiple image sizes is added.
 
-There will eventually be a configuration window for setting which image
-will be used for thumbnails (and icons on Windows).
+An initial configuration program is included with the Windows version of
+rom-propreties 1.0. This allows you to configure which images will be used for
+thumbnails on each system. The functionality is available on Linux as well, but
+the UI hasn't been ported over yet. See `doc/rom-properties.conf.example` for
+an example configuration file, which can be placed in `~/.config/rom-properties`.
 
 ## File Types Supported
 
