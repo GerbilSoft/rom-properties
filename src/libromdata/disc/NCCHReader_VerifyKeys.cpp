@@ -295,6 +295,10 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 		}
 	}
 
+	// FIXME: Allowing a missing secondary key for now,
+	// since only the primary key is needed for headers.
+	// Need to return an appropriate error in this case.
+
 	// Load the two KeyX keys.
 	KeyManager::KeyData_t keyX_data[2] = {{nullptr, 0}, {nullptr, 0}};
 	for (int i = 0; i < 2; i++) {
@@ -313,7 +317,11 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 
 		if (res != KeyManager::VERIFY_OK) {
 			// KeyX error.
-			return res;
+			if (i == 0)
+				return res;
+			// Secondary key. Ignore errors for now.
+			memset(&keyX_data[i], 0, sizeof(keyX_data[i]));
+			keyX_name[i] = nullptr;
 		} else if (keyX_data[i].length != 16) {
 			// KeyX is the wrong length.
 			return KeyManager::VERIFY_KEY_INVALID;
@@ -347,7 +355,9 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
 			reinterpret_cast<const u128_t*>(pNcchHeader->signature));
 		// TODO: Scrambling-specific error?
 		if (ret != 0) {
-			return KeyManager::VERIFY_KEY_INVALID;
+			// FIXME: Ignoring errors for secondary keys for now.
+			//return KeyManager::VERIFY_KEY_INVALID;
+			memset(&pKeyOut[1], 0, sizeof(pKeyOut[1]));
 		}
 	} else {
 		// Copy ncchKey0 to ncchKey1.
