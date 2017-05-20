@@ -57,47 +57,29 @@ class SystemRegionPrivate
 
 		// One-time initialization variable and functions.
 #ifdef _WIN32
-		static INIT_ONCE once_control_cc;
-		static INIT_ONCE once_control_lc;
+		static INIT_ONCE once_control;
 
 		/**
-		 * Get the system country code.
+		 * Get the system region information.
 		 * Called by InitOnceExecuteOnce().
 		 * Country code will be stored in 'cc'.
-		 * @param once
-		 * @param param
-		 * @param context
-		 * @return TRUE on success; FALSE on error.
-		 */
-		static BOOL WINAPI getCountryCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
-
-		/**
-		 * Get the system language code.
-		 * Called by InitOnceExecuteOnce().
 		 * Language code will be stored in 'lc'.
 		 * @param once
 		 * @param param
 		 * @param context
 		 * @return TRUE on success; FALSE on error.
 		 */
-		static BOOL WINAPI getLanguageCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
+		static BOOL WINAPI getSystemRegion(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
 #else /* !_WIN32 */
-		static pthread_once_t once_control_cc;
-		static pthread_once_t once_control_lc;
+		static pthread_once_t once_control;
 
 		/**
-		 * Get the system country code.
+		 * Get the system region information.
 		 * Called by pthread_once().
 		 * Country code will be stored in 'cc'.
+		 * Language code will be stored in 'lc'.
 		 */
-		static void getCountryCode(void);
-
-		/**
-		 * Get the system language code.
-		 * Called by pthread_once().
-		 * Country code will be stored in 'lc'.
-		 */
-		static void getLanguageCode(void);
+		static void getSystemRegion(void);
 #endif /* _WIN32 */
 };
 
@@ -107,19 +89,19 @@ uint32_t SystemRegionPrivate::lc = 0;
 
 // One-time initialization variable and functions.
 #ifdef _WIN32
-INIT_ONCE SystemRegionPrivate::once_control_cc = INIT_ONCE_STATIC_INIT;
-INIT_ONCE SystemRegionPrivate::once_control_lc = INIT_ONCE_STATIC_INIT;
+INIT_ONCE SystemRegionPrivate::once_control = INIT_ONCE_STATIC_INIT;
 
 /**
- * Get the system country code.
+ * Get the system region information.
  * Called by InitOnceExecuteOnce().
  * Country code will be stored in 'cc'.
+ * Language code will be stored in 'lc'.
  * @param once
  * @param param
  * @param context
  * @return TRUE on success; FALSE on error.
  */
-BOOL WINAPI SystemRegionPrivate::getCountryCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
+BOOL WINAPI SystemRegionPrivate::getSystemRegion(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
 {
 	RP_UNUSED(once);
 	RP_UNUSED(param);
@@ -128,6 +110,7 @@ BOOL WINAPI SystemRegionPrivate::getCountryCode(_Inout_ PINIT_ONCE_XP once, _Ino
 	// References:
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
+
 	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.
 	// FIXME: Non-ASCII locale names will break!
@@ -151,36 +134,13 @@ BOOL WINAPI SystemRegionPrivate::getCountryCode(_Inout_ PINIT_ONCE_XP once, _Ino
 		default:
 			// Unsupported. (MSDN says the string could be up to 9 characters!)
 			cc = 0;
-			return FALSE;
+			break;
 	}
 
-	// Country code retrieved.
-	return TRUE;
-}
-
-/**
- * Get the system language code.
- * Called by InitOnceExecuteOnce().
- * Language code will be stored in 'lc'.
- * @param once
- * @param param
- * @param context
- * @return TRUE on success; FALSE on error.
- */
-BOOL WINAPI SystemRegionPrivate::getLanguageCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
-{
-	RP_UNUSED(once);
-	RP_UNUSED(param);
-	RP_UNUSED(context);
-
-	// References:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// NOTE: LOCALE_SISO639LANGNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.
 	// FIXME: Non-ASCII locale names will break!
-	wchar_t locale[16];
-	int ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, locale, ARRAY_SIZE(locale));
+	ret = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, locale, ARRAY_SIZE(locale));
 	switch (ret) {
 		case 3:
 			// 2-character language code.
@@ -199,37 +159,58 @@ BOOL WINAPI SystemRegionPrivate::getLanguageCode(_Inout_ PINIT_ONCE_XP once, _In
 		default:
 			// Unsupported. (MSDN says the string could be up to 9 characters!)
 			lc = 0;
-			return FALSE;
+			break;
 	}
 
-	// Language code retrieved.
+	// System region information retrieved.
 	return TRUE;
 }
 
 #else
 
-pthread_once_t SystemRegionPrivate::once_control_cc = PTHREAD_ONCE_INIT;
-pthread_once_t SystemRegionPrivate::once_control_lc = PTHREAD_ONCE_INIT;
+pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 
 /**
- * Get the system country code.
+ * Get the system region information.
  * Called by pthread_once().
  * Country code will be stored in 'cc'.
+ * Language code will be stored in 'lc'.
  */
-void SystemRegionPrivate::getCountryCode(void)
+void SystemRegionPrivate::getSystemRegion(void)
 {
 	// TODO: Check the C++ locale if this fails?
 	const char *const locale = setlocale(LC_ALL, nullptr);
 	if (!locale) {
-		// Unable to get the locale...
+		// Unable to get the locale.
 		cc = 0;
+		lc = 0;
 		return;
+	}
+
+	// Language code: Read up to the first non-alphabetic character.
+	if (isalpha(locale[0]) && isalpha(locale[1])) {
+		if (!isalpha(locale[2])) {
+			// 2-character language code.
+			lc = ((tolower(locale[0]) << 8) |
+			       tolower(locale[1]));
+		} else if (isalpha(locale[2]) && !isalpha(locale[3])) {
+			// 3-character language code.
+			lc = ((tolower(locale[0]) << 16) |
+			      (tolower(locale[1]) << 8) |
+			       tolower(locale[2]));
+		} else {
+			// Invalid language code.
+			lc = 0;
+		}
+	} else {
+		// Invalid language code.
+		lc = 0;
 	}
 
 	// Look for an underscore. ('_')
 	const char *const underscore = strchr(locale, '_');
 	if (!underscore) {
-		// Locale name is invalid.
+		// No country code...
 		cc = 0;
 		return;
 	}
@@ -245,37 +226,13 @@ void SystemRegionPrivate::getCountryCode(void)
 			cc = ((toupper(underscore[1]) << 16) |
 			      (toupper(underscore[2]) << 8) |
 			       toupper(underscore[3]));
+		} else {
+			// Invalid country code.
+			cc = 0;
 		}
-	}
-}
-
-/**
- * Get the system language code.
- * Called by pthread_once().
- * Country code will be stored in 'lc'.
- */
-void SystemRegionPrivate::getLanguageCode(void)
-{
-	// TODO: Check the C++ locale if this fails?
-	const char *locale = setlocale(LC_ALL, nullptr);
-	if (!locale) {
-		// Unable to get the locale...
-		lc = 0;
-		return;
-	}
-
-	// Read up to the first non-alphabetic character.
-	if (isalpha(locale[0]) && isalpha(locale[1])) {
-		if (!isalpha(locale[2])) {
-			// 2-character language code.
-			lc = ((tolower(locale[0]) << 8) |
-			       tolower(locale[1]));
-		} else if (isalpha(locale[2]) && !isalpha(locale[3])) {
-			// 3-character language code.
-			lc = ((tolower(locale[0]) << 16) |
-			      (tolower(locale[1]) << 8) |
-			       tolower(locale[2]));
-		}
+	} else {
+		// Invalid country code.
+		cc = 0;
 	}
 }
 #endif /* _WIN32 */
@@ -293,11 +250,11 @@ void SystemRegionPrivate::getLanguageCode(void)
 uint32_t SystemRegion::getCountryCode(void)
 {
 #ifdef _WIN32
-	InitOnceExecuteOnce(&SystemRegionPrivate::once_control_cc,
-		SystemRegionPrivate::getCountryCode, nullptr, nullptr);
+	InitOnceExecuteOnce(&SystemRegionPrivate::once_control,
+		SystemRegionPrivate::getSystemRegion, nullptr, nullptr);
 #else /* !_WIN32 */
-	pthread_once(&SystemRegionPrivate::once_control_cc,
-		SystemRegionPrivate::getCountryCode);
+	pthread_once(&SystemRegionPrivate::once_control,
+		SystemRegionPrivate::getSystemRegion);
 #endif /* _WIN32 */
 	return SystemRegionPrivate::cc;
 }
@@ -315,11 +272,11 @@ uint32_t SystemRegion::getCountryCode(void)
 uint32_t SystemRegion::getLanguageCode(void)
 {
 #ifdef _WIN32
-	InitOnceExecuteOnce(&SystemRegionPrivate::once_control_lc,
-		SystemRegionPrivate::getLanguageCode, nullptr, nullptr);
+	InitOnceExecuteOnce(&SystemRegionPrivate::once_control,
+		SystemRegionPrivate::getSystemRegion, nullptr, nullptr);
 #else /* !_WIN32 */
-	pthread_once(&SystemRegionPrivate::once_control_lc,
-		SystemRegionPrivate::getLanguageCode);
+	pthread_once(&SystemRegionPrivate::once_control,
+		SystemRegionPrivate::getSystemRegion);
 #endif /* _WIN32 */
 	return SystemRegionPrivate::lc;
 }
