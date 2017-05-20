@@ -387,7 +387,7 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 		// CIA decryption is required.
 		if (offset >= 16) {
 			// Subtract 16 in order to read the IV.
-			offset -= 16;
+			phys_addr -= 16;
 		}
 		int ret = file->seek(phys_addr);
 		if (ret != 0) {
