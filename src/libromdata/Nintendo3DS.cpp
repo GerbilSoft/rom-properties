@@ -2008,6 +2008,13 @@ int Nintendo3DS::loadFieldData(void)
 				latin1_to_rp_string(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
 		}
 
+		// Demo use limit.
+		if (be32_to_cpu(d->mxh.ticket.limits[0]) == 4) {
+			// Title has use limits.
+			d->fields->addField_string_numeric(_RP("Demo Use Limit"),
+				be32_to_cpu(d->mxh.ticket.limits[1]));
+		}
+
 		// Contents table.
 		// TODO: Show the ListView on a separate row?
 		auto contents = new std::vector<std::vector<rp_string> >();
