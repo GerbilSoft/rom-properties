@@ -182,7 +182,7 @@ static inline std::u16string utf16be_to_utf16(const char16_t *str, int len)
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string latin1_to_utf8(const char* str, int len);
+std::string latin1_to_utf8(const char *str, int len);
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
@@ -191,7 +191,7 @@ std::string latin1_to_utf8(const char* str, int len);
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string latin1_to_utf16(const char* str, int len);
+std::u16string latin1_to_utf16(const char *str, int len);
 
 /** Miscellaneous functions. **/
 

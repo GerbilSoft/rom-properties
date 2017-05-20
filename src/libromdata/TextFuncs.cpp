@@ -79,23 +79,20 @@ u16string utf16_bswap(const char16_t *str, int len)
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string latin1_to_utf8(const char* str, int len)
+string latin1_to_utf8(const char *str, int len)
 {
 	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
 
 	string mbs;
 	mbs.reserve(len*2);
-	for (; len > 0; len--, str++) {
+	for (; *str != 0 && len > 0; len--, str++) {
 		// TODO: Optimize the branches?
-		if (!*str) {
-			// NULL. End of string.
-			break;
-		} else if ((*str & 0x80) == 0) {
+		if ((*str & 0x80) == 0) {
 			// ASCII.
 			mbs.push_back(*str);
 		} else if ((*str & 0xE0) == 0x80) {
-			// Characters 0x80-0x9F. Replace with '?'.
-			mbs.push_back('?');
+			// Characters 0x80-0x9F. Replace with U+FFFD.
+			mbs.append("\xEF\xBF\xBD");
 		} else {
 			// Other character. 2 bytes are needed.
 			mbs.push_back(0xC0 | ((*str >> 6) & 0x03));
@@ -118,10 +115,10 @@ u16string latin1_to_utf16(const char *str, int len)
 
 	u16string wcs;
 	wcs.reserve(len);
-	for (; len > 0; len--, str++) {
+	for (; *str != 0 && len > 0; len--, str++) {
 		if ((*str & 0xE0) == 0x80) {
-			// Characters 0x80-0x9F. Replace with '?'.
-			wcs.push_back(_RP_U16_CHR('?'));
+			// Characters 0x80-0x9F. Replace with U+FFFD.
+			wcs.push_back((char16_t)0xFFFD);
 		} else {
 			// Other character.
 			wcs.push_back((char16_t)(uint8_t)*str);
