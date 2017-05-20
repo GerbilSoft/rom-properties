@@ -1,6 +1,18 @@
 # Changes
 
-## v1.0 (unreleased)
+## v1.0 (released 2017/05/20)
+
+* New systems supported:
+  * Windows/DOS: Executables, dynamic link libraries, and other types of
+    executable files are supported. Includes parsing of version and
+    manifest resources. Icon thumbnailing on non-Windows systems will
+    be added in a future release.
+  * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
+    downloads for disc, cover, 3D cover, and full cover scans.
+  * Nintendo 3DS: SMDH, 3DSX, CCI (\*.3ds), CIA, and NCCH files are supported.
+    Parts of some formats (CCI, CIA, NCCH) may require decryption keys.
+    If the keys are not available, then some information will not be
+    available.
 
 * New features:
   * Property page viewers now support subtabs. This is used for Windows
@@ -32,20 +44,10 @@
     as download options. Linux versions will be added in a future release,
     though the underlying rom-properties.conf functionality is implemented
     and works on all platforms.
+  * (Windows) A new installation program, svrplus, is provided. This program
+    supercedes install.cmd and uninstall.cmd.
   * (rpcli) New option "-c". This option prints the system region codes.
     This is mostly useful for debugging.
-
-* New systems supported:
-  * Windows/DOS: Executables, dynamic link libraries, and other types of
-    executable files are supported. Includes parsing of version and
-    manifest resources. Icon thumbnailing on non-Windows systems will
-    be added in a future release.
-  * Nintendo Wii U: Full disc images (\*.wud) are supported, with image
-    downloads for disc, cover, 3D cover, and full cover scans.
-  * Nintendo 3DS: SMDH, 3DSX, CCI (\*.3ds), CIA, and NCCH files are supported.
-    Parts of some formats (CCI, CIA, NCCH) may require decryption keys.
-    If the keys are not available, then some information will not be
-    available.
 
 * Bug fixes:
   * Fixed an inverted "Copy Protected" condition for Dreamcast VMI files.
