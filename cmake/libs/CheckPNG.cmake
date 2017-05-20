@@ -2,6 +2,13 @@
 # If libpng isn't found, extlib/libpng/ will be used instead.
 
 IF(NOT USE_INTERNAL_PNG)
+	IF(PNG_LIBRARY MATCHES "^png$" OR PNG_LIBRARY MATCHES "^png_static$")
+		# Internal libpng was previously in use.
+		UNSET(PNG_FOUND)
+		UNSET(HAVE_PNG)
+		UNSET(PNG_LIBRARY CACHE)
+	ENDIF()
+
 	# Check for libpng.
 	FIND_PACKAGE(PNG)
 	IF(PNG_FOUND)

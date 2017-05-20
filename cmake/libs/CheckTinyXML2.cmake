@@ -4,6 +4,13 @@
 IF(ENABLE_XML)
 
 IF(NOT USE_INTERNAL_XML)
+	IF(TinyXML2_LIBRARY MATCHES "^tinyxml2$" OR TinyXML2_LIBRARY MATCHES "^tinyxml2_static$")
+		# Internal TinyXML2 was previously in use.
+		UNSET(XML_FOUND)
+		UNSET(HAVE_XML)
+		UNSET(TinyXML2_LIBRARY CACHE)
+	ENDIF()
+
 	# Check for TinyXML2.
 	FIND_PACKAGE(TinyXML2)
 	IF(TinyXML2_FOUND)

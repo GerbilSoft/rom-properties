@@ -3,6 +3,13 @@
 IF(ENABLE_JPEG)
 
 IF(NOT USE_INTERNAL_JPEG)
+	IF(JPEG_LIBRARY MATCHES "^jpeg$" OR JPEG_LIBRARY MATCHES "^jpeg-static$")
+		# Internal libjpeg was previously in use.
+		UNSET(JPEG_FOUND)
+		UNSET(HAVE_JPEG)
+		UNSET(JPEG_LIBRARY CACHE)
+	ENDIF()
+
 	# Check for libjpeg.
 	FIND_PACKAGE(JPEG)
 	IF(JPEG_FOUND)
