@@ -105,7 +105,7 @@ static int init_apng(void)
 		 L"libpng%u.dll", PNG_LIBPNG_VER_DLLNUM);
 #endif
 	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
-	assert(bRet != nullptr);
+	assert(bRet != FALSE);
 	if (!bRet) {
 		libpng_dll = NULL;
 		return -1;
