@@ -24,7 +24,7 @@
     keys.conf. Verification is done by decrypting a string that was encrypted
     with the original key and checking if the decrypted string is correct.
   * GameCube: Added partial support for WIA disc images. A copy of the disc
-    header is stored in plaintext in WIA fomrat, so disc header fields and
+    header is stored in plaintext in WIA format, so disc header fields and
     external images are supported. Region code, age ratings, and the internal
     GCN banner are not supported.
   * (Windows) A configuration program, rp-config.exe, is now included. This
