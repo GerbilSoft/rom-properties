@@ -10,6 +10,7 @@ INCLUDE(DirInstallPaths)
 # compiling for Windows?
 INSTALL(FILES
 	keys.conf.example
+	rom-properties.conf.example
 	COMPILING.md
 	DESTINATION "${DIR_INSTALL_DOC}"
 	COMPONENT "doc"

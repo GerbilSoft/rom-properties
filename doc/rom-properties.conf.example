@@ -1,0 +1,43 @@
+[ImageTypes]
+; Image download settings.
+; The value can be one of the following:
+; - Empty string: Default priority will be used.
+; - "No": No images will be used for this system.
+; - Comma-separated list, in ascending priority order.
+;
+; The list may contain the following image type names:
+; - IntIcon: Internal icon.
+; - IntBanner: Internal banner.
+; - IntMedia: Internal media scan. (currently unused)
+; - ExtMedia: External media scan.
+; - ExtCover: External cover scan.
+; - ExtCover3D: External 3D cover scan.
+; - ExtCoverFull: External full cover scan.
+; - ExtBox: External box scan.
+;
+; If a specified image type is not supported by the system,
+; it is ignored.
+;
+; The default image priority list is:
+; - ExtMedia,ExtCover,ExtBox,IntMedia,IntIcon,IntBanner
+Amiibo=
+DreamcastSave=
+GameCube=
+GameCubeSave=
+NintendoDS=
+Nintendo3DS=
+PlayStationSave=
+WiiU=
+
+[Downloads]
+; Enable downloading images from external databases,
+; such as GameTDB.com .
+ExtImageDownload=true
+
+; Download high-resolution scans from external databases
+; if available.
+DownloadHighResScans=true
+
+; Prefer the internal icon if the file browser requests
+; a small (48x48 or lower) thumbnail preview.
+UseIntIconForSmallSizes=true
