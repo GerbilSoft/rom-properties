@@ -57,7 +57,6 @@ ctr-Slot0x25KeyX=
 ctr-dev-Slot0x25KeyX=
 
 ### 0x2C: Standard encryption. (ncchflag[3] == 0)
-# TODO: Verify these values. (from makerom/pki/dev.h)
 ctr-Slot0x2CKeyX=
 ctr-dev-Slot0x2CKeyX=
 

@@ -77,9 +77,15 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		const uint8_t *keyY_verify = nullptr;
 		const uint8_t *keyNormal_verify = nullptr;
 		if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_RETAIL, sizeof(ticket->issuer))) {
-			// Retail issuer..
+			// Retail issuer.
 			keyPrefix = "ctr";
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
+			if (ticket->keyY_index < 6) {
+				// Verification data is available.
+				keyX_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyX];
+				keyY_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyY_0 + ticket->keyY_index];
+				keyNormal_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyNormal_0 + ticket->keyY_index];
+			}
 		} else if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(ticket->issuer))) {
 			// Debug issuer.
 			keyPrefix = "ctr-dev";
