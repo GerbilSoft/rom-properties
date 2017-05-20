@@ -23,9 +23,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 
 #include "TImageTypesConfig.hpp"
-
-#include "../RpWin32.hpp"
-#include "../RomData.hpp"
 #include "Config.hpp"
 
 // RomData subclasses with images.
