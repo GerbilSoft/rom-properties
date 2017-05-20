@@ -1507,6 +1507,7 @@ int GameCube::loadFieldData(void)
 
 	// Disc header is read in the constructor.
 	// TODO: Reserve fewer fields for GCN?
+	const GCN_DiscHeader *const discHeader = &d->discHeader;
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// TODO: Trim the titles. (nulls, spaces)
@@ -1521,7 +1522,7 @@ int GameCube::loadFieldData(void)
 			// USA/PAL uses cp1252.
 			d->fields->addField_string(_RP("Title"),
 				cp1252_to_rp_string(
-					d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 
 		case GCN_REGION_JAPAN:
@@ -1529,32 +1530,32 @@ int GameCube::loadFieldData(void)
 			// Japan uses Shift-JIS.
 			d->fields->addField_string(_RP("Title"),
 				cp1252_sjis_to_rp_string(
-					d->discHeader.game_title, sizeof(d->discHeader.game_title)));
+					discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 	}
 
 	// Game ID.
 	// The ID6 cannot have non-printable characters.
 	// (NDDEMO has ID6 "00\0E01".)
-	for (int i = ARRAY_SIZE(d->discHeader.id6)-1; i >= 0; i--) {
-		if (!isprint(d->discHeader.id6[i])) {
+	for (int i = ARRAY_SIZE(discHeader->id6)-1; i >= 0; i--) {
+		if (!isprint(discHeader->id6[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}
 	}
 	d->fields->addField_string(_RP("Game ID"),
-		latin1_to_rp_string(d->discHeader.id6, ARRAY_SIZE(d->discHeader.id6)));
+		latin1_to_rp_string(discHeader->id6, ARRAY_SIZE(discHeader->id6)));
 
 	// Look up the publisher.
-	const rp_char *publisher = NintendoPublishers::lookup(d->discHeader.company);
+	const rp_char *publisher = NintendoPublishers::lookup(discHeader->company);
 	d->fields->addField_string(_RP("Publisher"),
 		publisher ? publisher : _RP("Unknown"));
 
 	// Other fields.
 	d->fields->addField_string_numeric(_RP("Disc #"),
-		d->discHeader.disc_number+1, RomFields::FB_DEC);
+		discHeader->disc_number+1, RomFields::FB_DEC);
 	d->fields->addField_string_numeric(_RP("Revision"),
-		d->discHeader.revision, RomFields::FB_DEC, 2);
+		discHeader->revision, RomFields::FB_DEC, 2);
 
 	// The remaining fields are not located in the disc header.
 	// If we can't read the disc contents for some reason, e.g.
@@ -1568,7 +1569,7 @@ int GameCube::loadFieldData(void)
 	// Region code.
 	// bi2.bin and/or RVL_RegionSetting is loaded in the constructor,
 	// and the region code is stored in d->gcnRegion.
-	const rp_char *region = d->gcnRegionToString(d->gcnRegion, d->discHeader.id4[3]);
+	const rp_char *region = d->gcnRegionToString(d->gcnRegion, discHeader->id4[3]);
 	if (region) {
 		d->fields->addField_string(_RP("Region"), region);
 	} else {
