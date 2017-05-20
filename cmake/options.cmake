@@ -57,12 +57,7 @@ ENDIF()
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
 # Link-time optimization.
-# TODO: Re-implement this for Linux/gcc builds.
-IF(MSVC)
-	OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ON)
-ELSE(MSVC)
-	SET(ENABLE_LTO OFF)
-ENDIF(MSVC)
+OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ON)
 
 # Split debug information into a separate file.
 OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)

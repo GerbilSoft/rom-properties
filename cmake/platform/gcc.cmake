@@ -138,3 +138,54 @@ SET(RP_CXX_FLAGS_RELEASE	"-O2 -ggdb -DNDEBUG")
 
 # Unset temporary variables.
 UNSET(CFLAG_OPTIMIZE_DEBUG)
+
+# Check for link-time optimization. (Release builds only.)
+# FIXME: Running CMake with -DENABLE_LTO=ON, then -DENABLE_LTO=OFF
+# doesn't seem to work right... (The flags aren't removed properly.)
+# [Kubuntu 17.04, cmake-3.7.2]
+IF(ENABLE_LTO)
+	# We need two wrappers in order for LTO to work properly:
+	# - gcc-ar: static library archiver
+	# - gcc-ranlib: static library indexer
+	# Without these wrappers, all sorts of undefined refernce errors
+	# occur in gcc-4.9 due to "slim" LTO objects, and possibly
+	# earlier versions for various reasons.
+	MESSAGE(STATUS "Checking if the gcc LTO wrappers are available:")
+	IF("${CMAKE_AR}" MATCHES "gcc-ar$")
+		# Already using the gcc-ar wrapper.
+		SET(GCC_WRAPPER_AR "${CMAKE_AR}")
+	ELSE()
+		# Replace ar with gcc-ar.
+		STRING(REGEX REPLACE "ar$" "gcc-ar" GCC_WRAPPER_AR "${CMAKE_AR}")
+	ENDIF()
+	IF("${CMAKE_RANLIB}" MATCHES "gcc-ranlib$")
+		# Already using the gcc-ranlib wrapper.
+		SET(GCC_WRAPPER_RANLIB "${CMAKE_RANLIB}")
+	ELSE()
+		# Replace ranlib with gcc-ranlib.
+		STRING(REGEX REPLACE "ranlib$" "gcc-ranlib" GCC_WRAPPER_RANLIB "${CMAKE_RANLIB}")
+	ENDIF()
+
+	IF(EXISTS "${GCC_WRAPPER_AR}" AND EXISTS "${GCC_WRAPPER_RANLIB}")
+		# Found gcc binutils wrappers.
+		SET(CMAKE_AR "${GCC_WRAPPER_AR}")
+		SET(CMAKE_RANLIB "${GCC_WRAPPER_RANLIB}")
+		MESSAGE(STATUS "Checking if the gcc LTO wrappers are available: yes")
+
+		# Check for the LTO compiler flag.
+		CHECK_C_COMPILER_FLAG("-flto" CFLAG_LTO)
+		IF(CFLAG_LTO)
+			SET(RP_C_FLAGS_RELEASE   "${RP_C_FLAGS_RELEASE} -flto")
+			SET(RP_CXX_FLAGS_RELEASE "${RP_CXX_FLAGS_RELEASE} -flto")
+			SET(RP_EXE_LINKER_FLAGS_RELEASE    "${RP_EXE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+			SET(RP_SHARED_LINKER_FLAGS_RELEASE "${RP_SHARED_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+			SET(RP_MODULE_LINKER_FLAGS_RELEASE "${RP_MODULE_LINKER_FLAGS_RELEASE} -flto -fuse-linker-plugin")
+		ELSE(CFLAG_LTO)
+			MESSAGE(FATAL_ERROR "LTO optimization requested but -flto is not supported.")
+		ENDIF(CFLAG_LTO)
+		UNSET(CFLAG_LTO)
+	ELSE()
+		MESSAGE(STATUS "Checking if the gcc LTO wrappers are available: no")
+		MESSAGE(FATAL_ERROR "gcc binutils wrappers not found; cannot enable LTO.")
+	ENDIF()
+ENDIF(ENABLE_LTO)
