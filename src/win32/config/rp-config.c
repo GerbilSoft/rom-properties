@@ -34,6 +34,7 @@
 #include "libromdata/Win32_ExeInit.hpp"
 
 // C includes.
+#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -115,6 +116,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	// libromdata Windows executable initialization.
 	// This sets various security options.
 	LibRomData_Win32_ExeInit();
+
+	// Set the C locale.
+	// TODO: C++ locale?
+	setlocale(LC_ALL, "");
 
 #define FAIL_MESSAGE(msg) do { \
 		MessageBox(NULL, (msg), L"ROM Properties Page Configuration", MB_ICONSTOP); \

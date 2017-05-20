@@ -20,6 +20,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+// Security options.
+#include "libromdata/Win32_ExeInit.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdarg>
@@ -27,7 +30,9 @@
 #include <cwchar>
 
 // C++ includes.
+#include <locale>
 #include <string>
+using std::locale;
 using std::wstring;
 
 // Windows headers.
@@ -745,6 +750,13 @@ namespace {
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmdShow)
 {
 	g_hInstance = hInstance;
+
+	// libromdata Windows executable initialization.
+	// This sets various security options.
+	LibRomData::Win32_ExeInit();
+
+	// Set the C and C++ locales.
+	locale::global(locale(""));
 
 #ifndef _WIN64
 	// Check if this is a 64-bit system. (Wow64)
