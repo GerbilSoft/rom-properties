@@ -39,6 +39,9 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
 		EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE PLUGIN_INSTALL_DIR)
+		IF(NOT PLUGIN_INSTALL_DIR)
+			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+		ENDIF(NOT PLUGIN_INSTALL_DIR)
 		EXEC_PROGRAM(qtpaths ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
 		INCLUDE(ReplaceHardcodedPrefix)
 		REPLACE_HARDCODED_PREFIX(PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")

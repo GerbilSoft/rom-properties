@@ -16,6 +16,7 @@ Build-Depends:
  libqt4-dev,
  kdelibs5-dev,
  qtbase5-dev,
+ qttools5-dev-tools,
  kio-dev,
  libglib2.0-dev,
  libgtk2.0-dev,
