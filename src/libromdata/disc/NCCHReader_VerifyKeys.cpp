@@ -64,7 +64,7 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
 	}
 
 	// Get the Key Manager instance.
-	KeyManager *keyManager = KeyManager::instance();
+	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
 	if (!keyManager) {
 		// TODO: Some other error?

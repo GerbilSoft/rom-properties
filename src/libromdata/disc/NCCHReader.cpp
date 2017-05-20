@@ -147,6 +147,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		} else {
 			// Unable to get the CIA encryption keys.
 			memset(title_key, 0, sizeof(title_key));
+			verifyResult = res;
+			this->file = nullptr;
+			return;
 		}
 	} else {
 		// No CIA encryption.
@@ -161,6 +164,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	if (size != sizeof(ncch_header)) {
 		// Read error.
 		// NOTE: readFromROM() sets q->m_lastError.
+		// TODO: Better verifyResult?
+		verifyResult = KeyManager::VERIFY_WRONG_KEY;
 		this->file = nullptr;
 		return;
 	}
@@ -168,6 +173,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	// Verify the NCCH magic number.
 	if (memcmp(ncch_header.hdr.magic, N3DS_NCCH_HEADER_MAGIC, sizeof(ncch_header.hdr.magic)) != 0) {
 		// NCCH magic number is incorrect.
+		// TODO: Better verifyResult? (May be DSiWare...)
+		verifyResult = KeyManager::VERIFY_WRONG_KEY;
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
@@ -189,8 +196,10 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	if (verifyResult != KeyManager::VERIFY_OK) {
 		// Failed to load the keyset.
 		// Zero out the keys.
-		// TODO: Disable anything that requires reading encrypted data.
-		// TODO: Determine which key couldn't be loaded.
+		memset(ncch_keys, 0, sizeof(ncch_keys));
+		q->m_lastError = EIO;
+		this->file = nullptr;
+		return;
 	}
 #else /* !ENABLE_DECRYPTION */
 	// Decryption is not available, so only NoCrypto is allowed.
