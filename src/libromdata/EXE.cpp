@@ -1328,7 +1328,8 @@ int EXE::loadFieldData(void)
 	// - NE: 6
 	// - PE: 6
 	//   - PE Version: +6
-	d->fields->reserve(12);
+	//   - PE Manifest: +12
+	d->fields->reserve(24);
 
 	// Executable type.
 	static const rp_char *const exeTypes[EXEPrivate::EXE_TYPE_LAST] = {
