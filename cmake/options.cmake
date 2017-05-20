@@ -57,7 +57,13 @@ ENDIF()
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
 # Link-time optimization.
-OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ON)
+# FIXME: Not working in clang builds...
+IF(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+	SET(LTO_DEFAULT OFF)
+ELSEIF(CMAKE_COMPILER_IS_GNUCXX OR MSVC)
+	SET(LTO_DEFAULT ON)
+ENDIF()
+OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ${LTO_DEFAULT})
 
 # Split debug information into a separate file.
 OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
