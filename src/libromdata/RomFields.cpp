@@ -690,21 +690,22 @@ int RomFields::addData_string(const rp_string &str)
  */
 int RomFields::addData_string_numeric(uint32_t val, Base base, int digits)
 {
-	char buf[32];
-	int len;
+	const char *fmtstr;
 	switch (base) {
 		case FB_DEC:
 		default:
-			len = snprintf(buf, sizeof(buf), "%0*u", digits, val);
+			fmtstr = "%0*u";
 			break;
 		case FB_HEX:
-			len = snprintf(buf, sizeof(buf), "0x%0*X", digits, val);
+			fmtstr = "0x%0*X";
 			break;
 		case FB_OCT:
-			len = snprintf(buf, sizeof(buf), "0%0*o", digits, val);
+			fmtstr = "0%0*o";
 			break;
 	}
 
+	char buf[32];
+	int len = snprintf(buf, sizeof(buf), fmtstr, digits, val);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 
@@ -1145,21 +1146,22 @@ int RomFields::addField_string(const rp_char *name, const rp_string &str, int fl
  */
 int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base base, int digits, int flags)
 {
-	char buf[32];
-	int len;
+	const char *fmtstr;
 	switch (base) {
 		case FB_DEC:
 		default:
-			len = snprintf(buf, sizeof(buf), "%0*u", digits, val);
+			fmtstr = "%0*u";
 			break;
 		case FB_HEX:
-			len = snprintf(buf, sizeof(buf), "0x%0*X", digits, val);
+			fmtstr = "0x%0*X";
 			break;
 		case FB_OCT:
-			len = snprintf(buf, sizeof(buf), "0%0*o", digits, val);
+			fmtstr = "0%0*o";
 			break;
 	}
 
+	char buf[32];
+	int len = snprintf(buf, sizeof(buf), fmtstr, digits, val);
 	if (len > (int)sizeof(buf))
 		len = sizeof(buf);
 
