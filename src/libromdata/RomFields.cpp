@@ -35,9 +35,11 @@
 // C++ includes.
 #include <array>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -724,25 +726,27 @@ int RomFields::addData_string_hexdump(const uint8_t *buf, size_t size)
 
 	// Reserve 3 characters per byte.
 	// (Two hex digits, plus one space.)
-	rp_string rps;
-	rps.resize(size * 3);
-	size_t rps_pos = 0;
+	unique_ptr<rp_char[]> rps(new rp_char[size*3]);
+	rp_char *pRps = rps.get();
 
-	// Temporary snprintf buffer.
-	char hexbuf[8];
-	for (; size > 0; size--, buf++, rps_pos += 3) {
-		snprintf(hexbuf, sizeof(hexbuf), "%02X ", *buf);
-		rps[rps_pos+0] = hexbuf[0];
-		rps[rps_pos+1] = hexbuf[1];
-		rps[rps_pos+2] = hexbuf[2];
+	// Hexadecimal lookup table.
+	static const rp_char hex_lookup[16] = {
+		_RP_CHR('0'),_RP_CHR('1'),_RP_CHR('2'),_RP_CHR('3'),
+		_RP_CHR('4'),_RP_CHR('5'),_RP_CHR('6'),_RP_CHR('7'),
+		_RP_CHR('8'),_RP_CHR('9'),_RP_CHR('A'),_RP_CHR('B'),
+		_RP_CHR('C'),_RP_CHR('D'),_RP_CHR('E'),_RP_CHR('F')
+	};
+
+	// Print the hexdump.
+	for (; size > 0; size--, buf++, pRps += 3) {
+		pRps[0] = hex_lookup[*buf >> 4];
+		pRps[1] = hex_lookup[*buf & 0x0F];
+		pRps[2] = _RP_CHR(' ');
 	}
 
 	// Remove the trailing space.
-	if (rps.size() > 0) {
-		rps.resize(rps.size() - 1);
-	}
-
-	return addData_string(rps);
+	*(pRps-1) = 0;
+	return addData_string(rps.get());
 }
 
 /**
@@ -1179,25 +1183,27 @@ int RomFields::addField_string_hexdump(const rp_char *name, const uint8_t *buf, 
 
 	// Reserve 3 characters per byte.
 	// (Two hex digits, plus one space.)
-	rp_string rps;
-	rps.resize(size * 3);
-	size_t rps_pos = 0;
+	unique_ptr<rp_char[]> rps(new rp_char[size*3]);
+	rp_char *pRps = rps.get();
 
-	// Temporary snprintf buffer.
-	char hexbuf[8];
-	for (; size > 0; size--, buf++, rps_pos += 3) {
-		snprintf(hexbuf, sizeof(hexbuf), "%02X ", *buf);
-		rps[rps_pos+0] = hexbuf[0];
-		rps[rps_pos+1] = hexbuf[1];
-		rps[rps_pos+2] = hexbuf[2];
+	// Hexadecimal lookup table.
+	static const rp_char hex_lookup[16] = {
+		_RP_CHR('0'),_RP_CHR('1'),_RP_CHR('2'),_RP_CHR('3'),
+		_RP_CHR('4'),_RP_CHR('5'),_RP_CHR('6'),_RP_CHR('7'),
+		_RP_CHR('8'),_RP_CHR('9'),_RP_CHR('A'),_RP_CHR('B'),
+		_RP_CHR('C'),_RP_CHR('D'),_RP_CHR('E'),_RP_CHR('F')
+	};
+
+	// Print the hexdump.
+	for (; size > 0; size--, buf++, pRps += 3) {
+		pRps[0] = hex_lookup[*buf >> 4];
+		pRps[1] = hex_lookup[*buf & 0x0F];
+		pRps[2] = _RP_CHR(' ');
 	}
 
 	// Remove the trailing space.
-	if (rps.size() > 0) {
-		rps.resize(rps.size() - 1);
-	}
-
-	return addField_string(name, rps, flags);
+	*(pRps-1) = 0;
+	return addField_string(name, rps.get(), flags);
 }
 
 /**
