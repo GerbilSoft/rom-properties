@@ -25,10 +25,18 @@ License: GPL-2+
 Comment:
 
 Files:
- extlib/googletest/.gitignore
- extlib/googletest/CMakeLists.txt
+ src/svrplus/*
+Copyright:
+ 2017, Egor
+ 2017, David Korth <gerbilsoft@gerbilsoft.com>
+License: GPL-2+
+Comment:
+
+Files:
  extlib/googletest/googlemock/*
  extlib/googletest/googletest/*
+ extlib/googletest/.gitignore
+ extlib/googletest/CMakeLists.txt
  extlib/googletest/README.md
 Copyright: 2008-2016, Google Inc.
 License: BSD-3-clause
@@ -44,10 +52,10 @@ Copyright:
 License: Zlib
 
 Files:
- extlib/zlib/contrib/
- extlib/zlib/doc/
- extlib/zlib/test/
- extlib/zlib/win32/
+ extlib/zlib/contrib/*
+ extlib/zlib/doc/*
+ extlib/zlib/test/*
+ extlib/zlib/win32/*
  extlib/zlib/*.c
  extlib/zlib/*.h
  extlib/zlib/*.xml
@@ -68,8 +76,8 @@ Copyright:
 License: Zlib
 
 Files:
- extlib/libpng/arm/
- extlib/libpng/scripts/
+ extlib/libpng/arm/*
+ extlib/libpng/scripts/*
  extlib/libpng/*.c
  extlib/libpng/*.h
  extlib/libpng/*.in
@@ -86,7 +94,7 @@ Copyright: Copyright (c) 1998-2016 Glenn Randers-Pehrson
 License: libpng
 
 Files:
- extlib/libpng/contrib/intel/
+ extlib/libpng/intel/*
 Copyright:  2016 Google, Inc.
             2014,2016 Glenn Randers-Pehrson
 License: libpng
@@ -101,13 +109,13 @@ Copyright: 1996, 1997 Andreas Dilger
 License: libpng
 
 Files:
- extlib/libjpeg-turbo/cmakescripts/
- extlib/libjpeg-turbo/doc/
- extlib/libjpeg-turbo/release/
- extlib/libjpeg-turbo/sharedlib/
- extlib/libjpeg-turbo/simd/
- extlib/libjpeg-turbo/testimages/
- extlib/libjpeg-turbo/win/
+ extlib/libjpeg-turbo/cmakescripts/*
+ extlib/libjpeg-turbo/doc/*
+ extlib/libjpeg-turbo/release/*
+ extlib/libjpeg-turbo/sharedlib/*
+ extlib/libjpeg-turbo/simd/*
+ extlib/libjpeg-turbo/testimages/*
+ extlib/libjpeg-turbo/win/*
  extlib/libjpeg-turbo/*.c
  extlib/libjpeg-turbo/*.h
  extlib/libjpeg-turbo/*.md
@@ -131,16 +139,30 @@ Copyright: 1991-2010 Thomas G. Lane
 License: BSD-BY-LC-NE
 
 Files:
+ extlib/inih/cpp/*
+ extlib/inih/examples/*
+ extlib/inih/extra/*
+ extlib/inih/tests/*
  extlib/inih/*.c
  extlib/inih/*.h
  extlib/inih/LICENSE.txt
  extlib/inih/README.md
- extlib/inih/cpp/
- extlib/inih/examples/
- extlib/inih/extra/
- extlib/inih/tests/
 Copyright: (c) 2009, Ben Hoyt
 License: BSD-3-clause
+
+Files:
+ extlib/tinyxml2/contrib/*
+ extlib/tinyxml2/resources/*
+ extlib/tinyxml2/*.conf
+ extlib/tinyxml2/*.cpp
+ extlib/tinyxml2/*.h
+ extlib/tinyxml2/*.md
+ extlib/tinyxml2/*.png
+ extlib/tinyxml2/CMakeLists.txt
+ extlib/tinyxml2/Makefile
+ extlib/tinyxml2/dox
+Copyright: 2011-2016 Lee Thomason (www.grinninglizard.com)
+License: Zlib
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
