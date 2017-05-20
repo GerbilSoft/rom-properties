@@ -179,15 +179,15 @@ class TextFuncsTest : public ::testing::Test
 		 * Latin1 to UTF-8 test string.
 		 * Contains the expected result from:
 		 * - latin1_to_utf8(cp1252_data, ARRAY_SIZE(cp1252_data))
-		 * (NOTE: Unsupported characters are replaced with '?'.)
+		 * (NOTE: Unsupported characters are replaced with U+FFFD.)
 		 */
-		static const uint8_t latin1_utf8_data[346];
+		static const uint8_t latin1_utf8_data[346+(26*2)];
 
 		/**
 		 * Latin1 to UTF-16 test string.
 		 * Contains the expected result from:
 		 * - latin1_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
-		 * (NOTE: Unsupported characters are replaced with '?'.)
+		 * (NOTE: Unsupported characters are replaced with U+FFFD.)
 		 */
 		static const char16_t latin1_utf16_data[250];
 };
