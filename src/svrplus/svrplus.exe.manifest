@@ -3,7 +3,7 @@
 	<assemblyIdentity
 		type="win32"
 		name="ROM Properties Page shell extension installer"
-		version="0.9.0.1"
+		version="1.0.0.0"
 		processorArchitecture="*"
 	/>
 
