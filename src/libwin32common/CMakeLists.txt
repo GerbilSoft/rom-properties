@@ -8,7 +8,6 @@ PROJECT(libwin32common)
 
 # Sources and headers.
 SET(libwin32common_SRCS
-	secoptions.c
 	wmain.c
 	DialogBuilder.cpp
 	RegKey.cpp
