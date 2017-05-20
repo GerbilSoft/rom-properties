@@ -42,9 +42,11 @@
 
 // C++ includes.
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -155,7 +157,7 @@ void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, SaveType sa
 		// Swap 16-bit values at 0x2E through 0x40.
 		// Also 0x06 (pad_00 / bannerfmt).
 		// Reference: https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/GCMemcard.cpp
-		uint16_t *u16ptr = reinterpret_cast<uint16_t*>(direntry);
+		uint16_t *const u16ptr = reinterpret_cast<uint16_t*>(direntry);
 		u16ptr[0x06>>1] = __swab16(u16ptr[0x06>>1]);
 		for (int i = (0x2C>>1); i < (0x40>>1); i++) {
 			u16ptr[i] = __swab16(u16ptr[i]);
@@ -364,12 +366,11 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
-	uint8_t *icondata = (uint8_t*)malloc(iconsizetotal);
+	unique_ptr<uint8_t[]> icondata(new uint8_t[iconsizetotal]);
 	this->file->seek(dataOffset + iconaddr);
-	size_t size = this->file->read(icondata, iconsizetotal);
+	size_t size = this->file->read(icondata.get(), iconsizetotal);
 	if (size != iconsizetotal) {
 		// Error reading the icon data.
-		free(icondata);
 		return nullptr;
 	}
 
@@ -445,7 +446,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	}
 
 	// Free the icon data.
-	free(icondata);
+	icondata.reset(nullptr);
 
 	// NOTE: We're not deleting iconAnimData even if we only have
 	// a single icon because iconAnimData() will call loadIcon()

@@ -394,19 +394,14 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	// Allocate memory for the bitmap.
 	const int src_stride = ((bm.bmWidth * bi.biBitCount + 31) / 32) * 4;
 	const DWORD dwBmpSize = src_stride * height;
-	uint8_t *pBits = static_cast<uint8_t*>(malloc(dwBmpSize));
-	if (!pBits) {
-		// malloc() failed.
-		return nullptr;
-	}
+	unique_ptr<uint8_t[]> pBits(new uint8_t[dwBmpSize]);
 
 	// Get the DIBits.
 	HDC hDC = GetDC(nullptr);
-	int dib_ret = GetDIBits(hDC, hBitmap, 0, height, pBits, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+	int dib_ret = GetDIBits(hDC, hBitmap, 0, height, pBits.get(), (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 	ReleaseDC(nullptr, hDC);
 	if (!dib_ret) {
 		// GetDIBits() failed.
-		free(pBits);
 		return nullptr;
 	}
 
@@ -418,7 +413,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 	// The image might be upside-down.
 
 	// Copy the image data.
-	const uint8_t *src = pBits;
+	const uint8_t *src = pBits.get();
 	uint8_t *dest = static_cast<uint8_t*>(img->bits());
 	const int dest_stride = img->stride();
 	for (int y = height; y > 0; y--) {
@@ -426,7 +421,6 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 		src += src_stride;
 		dest += dest_stride;
 	}
-	free(pBits);
 
 	// rp_image created.
 	return img;

@@ -257,8 +257,8 @@ GameCubePrivate::~GameCubePrivate()
 		}
 	}
 
-	free(gcn_opening_bnr);
-	free(wii_opening_bnr);
+	delete gcn_opening_bnr;
+	delete wii_opening_bnr;
 	delete discReader;
 }
 
@@ -685,10 +685,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 		return -gcnPartition->lastError();
 	}
 
-	// Always use a BNR2 pointer.
-	// BNR1 and BNR2 have identical layouts, except
-	// BNR2 has more comment fields.
-	banner_bnr2_t *pBanner = nullptr;
+	// Determine the banner size.
 	unsigned int banner_size = 0;
 
 	// Read the magic number to determine what type of
@@ -716,24 +713,22 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	}
 
 	// Load the full banner.
-	// NOTE: Magic number is loaded as host-endian.
-	pBanner = (banner_bnr2_t*)malloc(banner_size);
-	if (!pBanner) {
-		// ENOMEM
-		return -ENOMEM;
-	}
+	// NOTE: Always use a BNR2 pointer.
+	//       BNR1 and BNR2 have identical layouts, except
+	//       BNR2 has more comment fields.
+	// NOTE 2: Magic number is loaded as host-endian.
+	unique_ptr<banner_bnr2_t> pBanner(new banner_bnr2_t);
 	pBanner->magic = bnr_magic;
 	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
 	if (size != banner_size-4) {
 		// Read error.
 		// TODO: Allow smaller than "full" for BNR2?
-		free(pBanner);
 		int err = f_opening_bnr->lastError();
 		return (err != 0 ? -err : -EIO);
 	}
 
 	// Banner is loaded.
-	gcn_opening_bnr = pBanner;
+	gcn_opening_bnr = pBanner.release();
 	return 0;
 }
 
@@ -769,14 +764,13 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	}
 
 	// Read the IMET struct.
-	wii_imet_t *pBanner = static_cast<wii_imet_t*>(malloc(sizeof(*pBanner)));
+	unique_ptr<wii_imet_t> pBanner(new wii_imet_t);
 	if (!pBanner) {
 		return -ENOMEM;
 	}
-	size_t size = f_opening_bnr->read(pBanner, sizeof(*pBanner));
+	size_t size = f_opening_bnr->read(pBanner.get(), sizeof(*pBanner));
 	if (size != sizeof(*pBanner)) {
 		// Read error.
-		free(pBanner);
 		int err = f_opening_bnr->lastError();
 		return (err != 0 ? -err : -EIO);
 	}
@@ -785,12 +779,11 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	if (be32_to_cpu(pBanner->magic) != WII_IMET_MAGIC) {
 		// Magic is incorrect.
 		// TODO: Better error code?
-		free(pBanner);
 		return -EIO;
 	}
 
 	// Banner is loaded.
-	wii_opening_bnr = pBanner;
+	wii_opening_bnr = pBanner.release();
 	return 0;
 }
 
