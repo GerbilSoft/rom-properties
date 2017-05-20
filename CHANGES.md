@@ -32,6 +32,8 @@
     as download options. Linux versions will be added in a future release,
     though the underlying rom-properties.conf functionality is implemented
     and works on all platforms.
+  * (rpcli) New option "-c". This option prints the system region codes.
+    This is mostly useful for debugging.
 
 * New systems supported:
   * Windows/DOS: Executables, dynamic link libraries, and other types of
