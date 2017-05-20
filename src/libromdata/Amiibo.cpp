@@ -440,7 +440,7 @@ int Amiibo::loadFieldData(void)
 	// Serial number.
 
 	// Convert the 7-byte serial number to ASCII.
-	static const uint8_t hex_lookup[16] = {
+	static const char hex_lookup[16] = {
 		'0','1','2','3','4','5','6','7',
 		'8','9','A','B','C','D','E','F'
 	};
