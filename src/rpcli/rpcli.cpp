@@ -30,6 +30,8 @@
 #include "libromdata/img/rp_image.hpp"
 #include "libromdata/img/RpPng.hpp"
 #include "libromdata/img/IconAnimData.hpp"
+#include "libromdata/SystemRegion.hpp"
+#include "libromdata/byteswap.h"
 using namespace LibRomData;
 
 #include "bmp.hpp"
@@ -64,7 +66,7 @@ struct ExtractParam {
 * @param romData RomData containing the images
 * @param extract Vector of image extraction parameters
 */
-void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
+static void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
 	int supported = romData->supportedImageTypes();
 	for (auto it = extract.begin(); it != extract.end(); ++it) {
 		if (!it->filename) continue;
@@ -127,7 +129,7 @@ void ExtractImages(RomData *romData, std::vector<ExtractParam>& extract) {
 * @param json Is program running in json mode?
 * @param extract Vector of image extraction parameters
 */
-void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
+static void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract){
 	cerr << "== Reading file '" << filename << "'..." << endl;
 	IRpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);	
 	if (file->isOpen()) {
@@ -156,6 +158,48 @@ void DoFile(const char *filename, bool json, std::vector<ExtractParam>& extract)
 	delete file;
 }
 
+/**
+ * Print the system region information.
+ */
+static void PrintSystemRegion(void)
+{
+	uint32_t lc = SystemRegion::getLanguageCode();
+	cout << "System language code: ";
+	if (lc == 0) {
+		cout << "0 (this is a bug!)";
+	}
+	else {
+		// Print the language code, left-to-right.
+		// TODO: Optimize this.
+		lc = __swab32(lc);
+		for (unsigned int i = 4; i > 0; i--, lc >>= 8) {
+			if ((lc & 0xFF) == 0)
+				continue;
+			cout << (char)(lc & 0xFF);
+		}
+	}
+	cout << endl;
+
+	uint32_t cc = SystemRegion::getCountryCode();
+	cout << "System country code:  ";
+	if (cc == 0) {
+		cout << "0 (this is a bug!)";
+	} else {
+		// Print the country code, left-to-right.
+		// TODO: Optimize this.
+		cc = __swab32(cc);
+		for (unsigned int i = 4; i > 0; i--, cc >>= 8) {
+			if ((cc & 0xFF) == 0)
+				continue;
+			cout << (char)(cc & 0xFF);
+		}
+	}
+	cout << endl;
+
+	// Extra line. (TODO: Only if multiple commands are specified.)
+	cout << endl;
+}
+
 #ifdef _WIN32
 static int real_main(int argc, char *argv[])
 #else
@@ -167,11 +211,12 @@ int main(int argc, char *argv[])
 
 	if(argc<2){
 #ifdef ENABLE_DECRYPTION
-		cerr << "Usage: rpcli [-k] [-j] [[-x[b]N outfile]... filename]..." << endl;
+		cerr << "Usage: rpcli [-k] [-c] [-j] [[-x[b]N outfile]... filename]..." << endl;
 		cerr << "  -k:   Verify encryption keys in keys.conf." << endl;
 #else /* !ENABLE_DECRYPTION */
 		cerr << "Usage: rpcli [-j] [[-x[b]N outfile]... filename]..." << endl;
 #endif /* ENABLE_DECRYPTION */
+		cerr << "  -c:   Print system region information." << endl;
 		cerr << "  -j:   Use JSON output format." << endl;
 		cerr << "  -xN:  Extract image N to outfile in PNG format." << endl;
 		cerr << "  -xbN: Extract image N to outfile in BMP format." << endl;
@@ -210,6 +255,11 @@ int main(int argc, char *argv[])
 				break;
 			}
 #endif /* ENABLE_DECRYPTION */
+			case 'c': {
+				// Print the system region information.
+				PrintSystemRegion();
+				break;
+			}
 			case 'x': {
 				ExtractParam ep;
 				ep.is_bmp = argv[i][2] == 'b';
