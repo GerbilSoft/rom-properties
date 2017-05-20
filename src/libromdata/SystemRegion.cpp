@@ -30,28 +30,101 @@
 #include <cstring>
 #endif
 
+// One-time initialization.
+#ifdef _WIN32
+#include "threads/InitOnceExecuteOnceXP.h"
+#else
+#include <pthread.h>
+#endif
+
 namespace LibRomData {
 
-/**
- * Get the system country code. (ISO-3166)
- * This will always be an uppercase ASCII string.
- *
- * NOTE: Some newer country codes may use 3-character abbreviations.
- * The abbreviation will always be aligned towards the LSB, e.g.
- * 'US' will be 0x00005553.
- *
- * @return ISO-3166 country code as a uint32_t, or 0 on error.
- */
-uint32_t SystemRegion::getCountryCode(void)
+class SystemRegionPrivate
 {
-	static uint32_t cc = 0;
-	static bool cc_retrieved = false;
-	if (cc_retrieved) {
-		// Country code has already been obtained.
-		return cc;
-	}
+	private:
+		// SystemRegion is a static class.
+		SystemRegionPrivate();
+		~SystemRegionPrivate();
+		RP_DISABLE_COPY(SystemRegionPrivate)
 
+	public:
+		// Country and language codes.
+		static uint32_t cc;
+		static uint32_t lc;
+
+		/** TODO: Combine the initialization functions so they retrieve **
+		 ** both country code and language code at the same time.       **/
+
+		// One-time initialization variable and functions.
 #ifdef _WIN32
+		static INIT_ONCE once_control_cc;
+		static INIT_ONCE once_control_lc;
+
+		/**
+		 * Get the system country code.
+		 * Called by InitOnceExecuteOnce().
+		 * Country code will be stored in 'cc'.
+		 * @param once
+		 * @param param
+		 * @param context
+		 * @return TRUE on success; FALSE on error.
+		 */
+		static BOOL WINAPI getCountryCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
+
+		/**
+		 * Get the system language code.
+		 * Called by InitOnceExecuteOnce().
+		 * Language code will be stored in 'lc'.
+		 * @param once
+		 * @param param
+		 * @param context
+		 * @return TRUE on success; FALSE on error.
+		 */
+		static BOOL WINAPI getLanguageCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
+#else /* !_WIN32 */
+		static pthread_once_t once_control_cc;
+		static pthread_once_t once_control_lc;
+
+		/**
+		 * Get the system country code.
+		 * Called by pthread_once().
+		 * Country code will be stored in 'cc'.
+		 */
+		static void getCountryCode(void);
+
+		/**
+		 * Get the system language code.
+		 * Called by pthread_once().
+		 * Country code will be stored in 'lc'.
+		 */
+		static void getLanguageCode(void);
+#endif /* _WIN32 */
+};
+
+// Country and language codes.
+uint32_t SystemRegionPrivate::cc = 0;
+uint32_t SystemRegionPrivate::lc = 0;
+
+// One-time initialization variable and functions.
+#ifdef _WIN32
+INIT_ONCE SystemRegionPrivate::once_control_cc = INIT_ONCE_STATIC_INIT;
+INIT_ONCE SystemRegionPrivate::once_control_lc = INIT_ONCE_STATIC_INIT;
+
+/**
+ * Get the system country code.
+ * Called by InitOnceExecuteOnce().
+ * Country code will be stored in 'cc'.
+ * @param once
+ * @param param
+ * @param context
+ * @return TRUE on success; FALSE on error.
+ */
+BOOL WINAPI SystemRegionPrivate::getCountryCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
+{
+	RP_UNUSED(once);
+	RP_UNUSED(param);
+	RP_UNUSED(context);
+
 	// References:
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
@@ -77,57 +150,29 @@ uint32_t SystemRegion::getCountryCode(void)
 
 		default:
 			// Unsupported. (MSDN says the string could be up to 9 characters!)
-			break;
+			cc = 0;
+			return FALSE;
 	}
-#else
-	// TODO: Check the C++ locale if this fails?
-	const char *locale = setlocale(LC_ALL, nullptr);
-	if (locale) {
-		// Look for an underscore. ('_')
-		const char *underscore = strchr(locale, '_');
-		if (underscore) {
-			// Found an underscore.
-			if (isalpha(underscore[1]) && isalpha(underscore[2])) {
-				if (!isalpha(underscore[3])) {
-					// 2-character country code.
-					cc = ((toupper(underscore[1]) << 8) |
-					       toupper(underscore[2]));
-				} else if (isalpha(underscore[3]) && !isalpha(underscore[4])) {
-					// 3-character country code.
-					cc = ((toupper(underscore[1]) << 16) |
-					      (toupper(underscore[2]) << 8) |
-					       toupper(underscore[3]));
-				}
-			}
-		}
-	}
-#endif
 
 	// Country code retrieved.
-	cc_retrieved = true;
-	return cc;
+	return TRUE;
 }
 
 /**
- * Get the system language code. (ISO-639)
- * This will always be a lowercase ASCII string.
- *
- * NOTE: Some newer country codes may use 3-character abbreviations.
- * The abbreviation will always be aligned towards the LSB, e.g.
- * 'en' will be 0x0000656E.
- *
- * @return ISO-639 language code as a uint32_t, or 0 on error.
+ * Get the system language code.
+ * Called by InitOnceExecuteOnce().
+ * Language code will be stored in 'lc'.
+ * @param once
+ * @param param
+ * @param context
+ * @return TRUE on success; FALSE on error.
  */
-uint32_t SystemRegion::getLanguageCode(void)
+BOOL WINAPI SystemRegionPrivate::getLanguageCode(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
 {
-	static uint32_t lc = 0;
-	static bool lc_retrieved = false;
-	if (lc_retrieved) {
-		// Language code has already been obtained.
-		return lc;
-	}
+	RP_UNUSED(once);
+	RP_UNUSED(param);
+	RP_UNUSED(context);
 
-#ifdef _WIN32
 	// References:
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
@@ -153,31 +198,130 @@ uint32_t SystemRegion::getLanguageCode(void)
 
 		default:
 			// Unsupported. (MSDN says the string could be up to 9 characters!)
-			break;
+			lc = 0;
+			return FALSE;
 	}
-#else
-	// TODO: Check the C++ locale if this fails?
-	const char *locale = setlocale(LC_ALL, nullptr);
-	if (locale) {
-		// Read up to the first non-alphabetic character.
-		if (isalpha(locale[0]) && isalpha(locale[1])) {
-			if (!isalpha(locale[2])) {
-				// 2-character language code.
-				lc = ((tolower(locale[0]) << 8) |
-				       tolower(locale[1]));
-			} else if (isalpha(locale[2]) && !isalpha(locale[3])) {
-				// 3-character language code.
-				lc = ((tolower(locale[0]) << 16) |
-				      (tolower(locale[1]) << 8) |
-				       tolower(locale[2]));
-			}
-		}
-	}
-#endif
 
 	// Language code retrieved.
-	lc_retrieved = true;
-	return lc;
+	return TRUE;
+}
+
+#else
+
+pthread_once_t SystemRegionPrivate::once_control_cc = PTHREAD_ONCE_INIT;
+pthread_once_t SystemRegionPrivate::once_control_lc = PTHREAD_ONCE_INIT;
+
+/**
+ * Get the system country code.
+ * Called by pthread_once().
+ * Country code will be stored in 'cc'.
+ */
+void SystemRegionPrivate::getCountryCode(void)
+{
+	// TODO: Check the C++ locale if this fails?
+	const char *const locale = setlocale(LC_ALL, nullptr);
+	if (!locale) {
+		// Unable to get the locale...
+		cc = 0;
+		return;
+	}
+
+	// Look for an underscore. ('_')
+	const char *const underscore = strchr(locale, '_');
+	if (!underscore) {
+		// Locale name is invalid.
+		cc = 0;
+		return;
+	}
+
+	// Found an underscore.
+	if (isalpha(underscore[1]) && isalpha(underscore[2])) {
+		if (!isalpha(underscore[3])) {
+			// 2-character country code.
+			cc = ((toupper(underscore[1]) << 8) |
+			       toupper(underscore[2]));
+		} else if (isalpha(underscore[3]) && !isalpha(underscore[4])) {
+			// 3-character country code.
+			cc = ((toupper(underscore[1]) << 16) |
+			      (toupper(underscore[2]) << 8) |
+			       toupper(underscore[3]));
+		}
+	}
+}
+
+/**
+ * Get the system language code.
+ * Called by pthread_once().
+ * Country code will be stored in 'lc'.
+ */
+void SystemRegionPrivate::getLanguageCode(void)
+{
+	// TODO: Check the C++ locale if this fails?
+	const char *locale = setlocale(LC_ALL, nullptr);
+	if (!locale) {
+		// Unable to get the locale...
+		lc = 0;
+		return;
+	}
+
+	// Read up to the first non-alphabetic character.
+	if (isalpha(locale[0]) && isalpha(locale[1])) {
+		if (!isalpha(locale[2])) {
+			// 2-character language code.
+			lc = ((tolower(locale[0]) << 8) |
+			       tolower(locale[1]));
+		} else if (isalpha(locale[2]) && !isalpha(locale[3])) {
+			// 3-character language code.
+			lc = ((tolower(locale[0]) << 16) |
+			      (tolower(locale[1]) << 8) |
+			       tolower(locale[2]));
+		}
+	}
+}
+#endif /* _WIN32 */
+
+/**
+ * Get the system country code. (ISO-3166)
+ * This will always be an uppercase ASCII string.
+ *
+ * NOTE: Some newer country codes may use 3-character abbreviations.
+ * The abbreviation will always be aligned towards the LSB, e.g.
+ * 'US' will be 0x00005553.
+ *
+ * @return ISO-3166 country code as a uint32_t, or 0 on error.
+ */
+uint32_t SystemRegion::getCountryCode(void)
+{
+#ifdef _WIN32
+	InitOnceExecuteOnce(&SystemRegionPrivate::once_control_cc,
+		SystemRegionPrivate::getCountryCode, nullptr, nullptr);
+#else /* !_WIN32 */
+	pthread_once(&SystemRegionPrivate::once_control_cc,
+		SystemRegionPrivate::getCountryCode);
+#endif /* _WIN32 */
+	return SystemRegionPrivate::cc;
+}
+
+/**
+ * Get the system language code. (ISO-639)
+ * This will always be a lowercase ASCII string.
+ *
+ * NOTE: Some newer country codes may use 3-character abbreviations.
+ * The abbreviation will always be aligned towards the LSB, e.g.
+ * 'en' will be 0x0000656E.
+ *
+ * @return ISO-639 language code as a uint32_t, or 0 on error.
+ */
+uint32_t SystemRegion::getLanguageCode(void)
+{
+#ifdef _WIN32
+	InitOnceExecuteOnce(&SystemRegionPrivate::once_control_lc,
+		SystemRegionPrivate::getLanguageCode, nullptr, nullptr);
+#else /* !_WIN32 */
+	pthread_once(&SystemRegionPrivate::once_control_lc,
+		SystemRegionPrivate::getLanguageCode);
+#endif /* _WIN32 */
+	return SystemRegionPrivate::lc;
 }
 
 }
