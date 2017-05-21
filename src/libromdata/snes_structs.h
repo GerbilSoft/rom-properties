@@ -102,48 +102,48 @@ typedef enum {
 typedef struct PACKED _SNES_RomHeader {
 	/** Extended header is only present if old_publisher_code == 0x33. **/
 	struct {
-		char new_publisher_code[2];
-		char id4[4];
-		uint8_t reserved[7];	// Always 0x00.
-		uint8_t exp_ram_size;	// Expansion RAM size.
-		uint8_t special_version;
-		uint8_t cart_type;
+		char new_publisher_code[2];	// [0x7FB0]
+		char id4[4];			// [0x7FB2]
+		uint8_t reserved[7];		// [0x7FB6] Always 0x00.
+		uint8_t exp_ram_size;		// [0x7FBD] Expansion RAM size.
+		uint8_t special_version;	// [0x7FBE]
+		uint8_t cart_type;		// [0x7FBF]
 	} ext;
 
 	/** Standard SNES header. **/
-	char title[21];
-	uint8_t rom_mapping;		// LoROM, HiROM
-	uint8_t rom_type;
-	uint8_t rom_size;		// ROM size. (1024 << rom_size)
-	uint8_t sram_size;		// SRAM size. (1024 << sram_size);
-	uint8_t destination_code;	// Destination code. (TODO: Enum?)
-	uint8_t old_publisher_code;
-	uint8_t version;
-	uint16_t checksum_complement;
-	uint16_t checksum;
+	char title[21];			// [0x7FC0]
+	uint8_t rom_mapping;		// [0x7FD5] LoROM, HiROM
+	uint8_t rom_type;		// [0x7FD6]
+	uint8_t rom_size;		// [0x7FD7] ROM size. (1024 << rom_size)
+	uint8_t sram_size;		// [0x7FD8] SRAM size. (1024 << sram_size);
+	uint8_t destination_code;	// [0x7FD9] Destination code. (TODO: Enum?)
+	uint8_t old_publisher_code;	// [0x7FDA]
+	uint8_t version;		// [0x7FDB]
+	uint16_t checksum_complement;	// [0x7FDC]
+	uint16_t checksum;		// [0x7FDE]
 
 	/** Vectors. **/
 	struct {
 		struct {
-			uint8_t reserved[4];
-			uint16_t cop;
-			uint16_t brk;
-			uint16_t abort;
-			uint16_t nmi;
-			uint16_t reset;
-			uint16_t irq;
+			uint8_t reserved[4];	// [0x7FE0]
+			uint16_t cop;		// [0x7FE4]
+			uint16_t brk;		// [0x7FE6]
+			uint16_t abort;		// [0x7FE8]
+			uint16_t nmi;		// [0x7FEA]
+			uint16_t reset;		// [0x7FEC]
+			uint16_t irq;		// [0x7FEE]
 		} native;
 		struct {
-			uint8_t reserved1[4];
-			uint16_t cop;
-			uint8_t reserved2[2];
-			uint16_t abort;
-			uint16_t nmi;
-			uint16_t res;
+			uint8_t reserved1[4];	// [0x7FF0]
+			uint16_t cop;		// [0x7FF4]
+			uint8_t reserved2[2];	// [0x7FF6]
+			uint16_t abort;		// [0x7FF8]
+			uint16_t nmi;		// [0x7FFA]
+			uint16_t res;		// [0x7FFC]
 			union {
 				// IRQ/BRK share the same vector
 				// in 6502 emulation mode.
-				uint16_t irq;
+				uint16_t irq;	// [0x7FFE]
 				uint16_t brk;
 			};
 		} emulation;
