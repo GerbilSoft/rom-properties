@@ -381,6 +381,11 @@ public:
 #endif /* RP_PRINTF_ENABLED */
 #endif /* USE_ZLIB */
 	{
+#ifdef USE_ZLIB
+		// Clear arrays and structs.
+		memset(outbuf, 0, sizeof(outbuf));
+		memset(&zstrm, 0, sizeof(zstrm));
+#endif /* USE_ZLIB */
 #if defined(USE_ZLIB) && defined(RP_PRINTF_ENABLED)
 		// Can't use the one declared later, so we'll
 		// copy it here.

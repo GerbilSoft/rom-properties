@@ -69,6 +69,11 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 	, tmd_content_index(tmd_content_index)
 #endif /* ENABLE_DECRYPTION */
 {
+	// Clear the various structs.
+	memset(&ncch_header, 0, sizeof(ncch_header));
+	memset(&ncch_exheader, 0, sizeof(ncch_exheader));
+	memset(&exefs_header, 0, sizeof(exefs_header));
+
 #ifdef ENABLE_DECRYPTION
 	// Check if this is a CIA with title key encryption.
 	if (ticket) {
