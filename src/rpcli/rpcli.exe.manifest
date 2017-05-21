@@ -3,7 +3,7 @@
 	<assemblyIdentity
 		type="win32"
 		name="ROM Properties Page command line interface"
-		version="0.9.0.1"
+		version="1.0.0.1"
 		processorArchitecture="*"
 	/>
 

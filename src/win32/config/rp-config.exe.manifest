@@ -3,7 +3,7 @@
 	<assemblyIdentity
 		type="win32"
 		name="ROM Properties Page configuration stub"
-		version="1.0.0.0"
+		version="1.0.0.1"
 		processorArchitecture="*"
 	/>
 
