@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class SNESPrivate;
-class SNES : public RomData
+class SNES : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class SNES : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit SNES(IRpFile *file);
+		explicit SNES(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

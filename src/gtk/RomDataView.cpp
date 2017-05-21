@@ -22,16 +22,20 @@
 #include "RomDataView.hpp"
 #include "GdkImageConv.hpp"
 
-#include "libromdata/common.h"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
+// librpbase
+#include "librpbase/common.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
+using namespace LibRpBase;
+
+// libromdata
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-#include "libromdata/img/IconAnimHelper.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>

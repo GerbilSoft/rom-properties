@@ -19,12 +19,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
-#include "common.h"
 #include "RomDataFactory.hpp"
-#include "file/RpFile.hpp"
-#include "file/FileSystem.hpp"
+
+// librpbase
+#include "librpbase/common.h"
+#include "librpbase/RomData.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
 
 // C++ includes.
 #include <unordered_map>

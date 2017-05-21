@@ -22,11 +22,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
-#include "../crypto/KeyManager.hpp"
+
+// librpbase
+#include "librpbase/crypto/KeyManager.hpp"
 
 namespace LibRomData {
 
@@ -85,7 +87,7 @@ class WiiPartition : public GcnPartition
 		 * Encryption key verification result.
 		 * @return Encryption key verification result.
 		 */
-		KeyManager::VerifyResult verifyResult(void) const;
+		LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
 		// Encryption key in use.
 		enum EncKey {

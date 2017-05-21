@@ -24,7 +24,8 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-#include "RegKey.hpp"
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>

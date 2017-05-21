@@ -22,12 +22,16 @@
 #include "stdafx.h"
 #include "UrlmonDownloader.hpp"
 
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/RpWin32.hpp"
-using LibRomData::IRpFile;
-using LibRomData::RpFile;
-using LibRomData::rp_string;
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32time.h"
+
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+using LibRpBase::IRpFile;
+using LibRpBase::RpFile;
+using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -92,12 +92,9 @@ IF(BUILD_KDE5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde5
-		romdata16
-		cachemgr16
-		KF5::KIOWidgets
-		Qt5::Widgets Qt5::Gui Qt5::Core
-		)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr16 romdata16 rpbase16)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(rom-properties-kde5 Qt5::Widgets Qt5::Gui Qt5::Core)
 ENDIF(BUILD_KDE5)
 
 # Define -DQT_NO_DEBUG in release builds.

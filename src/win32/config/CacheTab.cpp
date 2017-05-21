@@ -22,8 +22,10 @@
 #include "stdafx.h"
 #include "CacheTab.hpp"
 
-#include "libromdata/RpWin32.hpp"
-#include "RegKey.hpp"
+// libwin32common
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
+
 #include "resource.h"
 
 // IEmptyVolumeCacheCallBack implementation.

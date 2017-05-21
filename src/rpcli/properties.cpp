@@ -45,13 +45,13 @@ using std::ostream;
 using std::setw;
 using std::unique_ptr;
 
-// libromdata
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-using namespace LibRomData;
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+using namespace LibRpBase;
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
@@ -629,7 +629,7 @@ public:
 
 
 
-ROMOutput::ROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) { }
+ROMOutput::ROMOutput(const RomData *romdata) : romdata(romdata) { }
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const rp_char *sysName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_GENERIC);
@@ -678,7 +678,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	return os;
 }
 
-JSONROMOutput::JSONROMOutput(const LibRomData::RomData* romdata) : romdata(romdata) {}
+JSONROMOutput::JSONROMOutput(const RomData *romdata) : romdata(romdata) {}
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());

@@ -25,14 +25,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class NESPrivate;
-class NES : public RomData
+class NES : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -46,7 +46,7 @@ class NES : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit NES(IRpFile *file);
+		explicit NES(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

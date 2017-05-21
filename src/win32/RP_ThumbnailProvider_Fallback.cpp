@@ -24,12 +24,15 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-// libromdata
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/file/FileSystem.hpp"
-using namespace LibRomData;
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
+#include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
-#include "RegKey.hpp"
+// libwin32common
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <string>

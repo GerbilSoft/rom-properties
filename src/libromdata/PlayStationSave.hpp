@@ -23,13 +23,13 @@
 #define __ROMPROPERTIES_LIBROMDATA_PLAYSTATIONSAVE_HPP__
 
 #include <stdint.h>
-#include "TextFuncs.hpp"
-#include "RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class PlayStationSavePrivate;
-class PlayStationSave : public RomData
+class PlayStationSave : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -45,7 +45,7 @@ class PlayStationSave : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit PlayStationSave(IRpFile *file);
+		explicit PlayStationSave(LibRpBase::IRpFile *file);
 
 	protected:
 		/**
@@ -174,7 +174,8 @@ class PlayStationSave : public RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 
 	public:
 		/**
@@ -185,7 +186,7 @@ class PlayStationSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override final;
+		virtual const LibRpBase::IconAnimData *iconAnimData(void) const override final;
 };
 
 }

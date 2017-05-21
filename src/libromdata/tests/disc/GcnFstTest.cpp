@@ -28,14 +28,19 @@
 #include "iowin32.h"
 #endif
 
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
+
 // libromdata
-#include "TextFuncs.hpp"
-#include "file/FileSystem.hpp"
 #include "disc/GcnFst.hpp"
-#ifdef _WIN32
-#include "RpWin32.hpp"
-#endif
 using LibRomData::GcnFst;
+
+// libwin32common
+#ifdef _WIN32
+#include "libwin32common/RpWin32_sdk.h"
+#endif
 
 // FST printer.
 #include "FstPrint.hpp"

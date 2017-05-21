@@ -30,11 +30,14 @@
 
 #include "rom-properties-provider.hpp"
 
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/RomData.hpp"
+// librpbase
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/RomData.hpp"
+using LibRpBase::RpFile;
+using LibRpBase::RomData;
+
+// libromdata
 #include "libromdata/RomDataFactory.hpp"
-using LibRomData::RpFile;
-using LibRomData::RomData;
 using LibRomData::RomDataFactory;
 
 #include "../RomDataView.hpp"

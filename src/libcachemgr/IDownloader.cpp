@@ -39,7 +39,7 @@ IDownloader::IDownloader(const rp_char *url)
 	, m_maxSize(0)
 { }
 
-IDownloader::IDownloader(const LibRomData::rp_string &url)
+IDownloader::IDownloader(const LibRpBase::rp_string &url)
 	: m_url(url)
 	, m_mtime(-1)
 	, m_inProgress(false)
@@ -64,7 +64,7 @@ bool IDownloader::isInProgress(void) const
  * Get the current URL.
  * @return URL.
  */
-LibRomData::rp_string IDownloader::url(void) const
+LibRpBase::rp_string IDownloader::url(void) const
 {
 	return m_url;
 }
@@ -84,7 +84,7 @@ void IDownloader::setUrl(const rp_char *url)
  * Set the URL.
  * @param url New URL.
  */
-void IDownloader::setUrl(const LibRomData::rp_string &url)
+void IDownloader::setUrl(const LibRpBase::rp_string &url)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
@@ -119,7 +119,7 @@ void IDownloader::setMaxSize(size_t maxSize)
  * Get the proxy server.
  * @return Proxy server URL.
  */
-LibRomData::rp_string IDownloader::proxyUrl(void) const
+LibRpBase::rp_string IDownloader::proxyUrl(void) const
 {
 	return m_proxyUrl;
 }
@@ -143,7 +143,7 @@ void IDownloader::setProxyUrl(const rp_char *proxyUrl)
  * Set the proxy server.
  * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
  */
-void IDownloader::setProxyUrl(const LibRomData::rp_string &proxyUrl)
+void IDownloader::setProxyUrl(const LibRpBase::rp_string &proxyUrl)
 {
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?

@@ -25,19 +25,19 @@
 #include <QtCore/QMetaType>
 #include <QWidget>
 
-#include "libromdata/RomData.hpp"
-Q_DECLARE_METATYPE(LibRomData::RomData*)
+#include "librpbase/RomData.hpp"
+Q_DECLARE_METATYPE(LibRpBase::RomData*)
 
 class RomDataViewPrivate;
 class RomDataView : public QWidget
 {
 	Q_OBJECT
 
-	Q_PROPERTY(LibRomData::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
+	Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
 
 	public:
 		explicit RomDataView(QWidget *parent = 0);
-		explicit RomDataView(LibRomData::RomData *romData, QWidget *parent = 0);
+		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = 0);
 		virtual ~RomDataView();
 
 	private:
@@ -84,7 +84,7 @@ class RomDataView : public QWidget
 		 * Get the current RomData object.
 		 * @return RomData object.
 		 */
-		LibRomData::RomData *romData(void) const;
+		LibRpBase::RomData *romData(void) const;
 
 	public slots:
 		/**
@@ -95,14 +95,14 @@ class RomDataView : public QWidget
 		 *
 		 * @return RomData object.
 		 */
-		void setRomData(LibRomData::RomData *romData);
+		void setRomData(LibRpBase::RomData *romData);
 
 	signals:
 		/**
 		 * The RomData object has been changed.
 		 * @param romData New RomData object.
 		 */
-		void romDataChanged(LibRomData::RomData *romData);
+		void romDataChanged(LibRpBase::RomData *romData);
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

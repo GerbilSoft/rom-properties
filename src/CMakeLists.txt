@@ -21,6 +21,10 @@ CHECK_HIDDEN_VISIBILITY()
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
 
 # Source Code subdirectories.
+IF(WIN32)
+	ADD_SUBDIRECTORY(libwin32common)
+ENDIF(WIN32)
+ADD_SUBDIRECTORY(librpbase)
 ADD_SUBDIRECTORY(libromdata)
 ADD_SUBDIRECTORY(libcachemgr)
 

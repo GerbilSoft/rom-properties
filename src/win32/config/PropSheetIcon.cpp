@@ -22,7 +22,8 @@
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-#include "libromdata/threads/InitOnceExecuteOnceXP.h"
+// librpbase
+#include "librpbase/threads/InitOnceExecuteOnceXP.h"
 
 class PropSheetIconPrivate
 {

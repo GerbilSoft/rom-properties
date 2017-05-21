@@ -22,10 +22,13 @@
 #ifndef __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 #define __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 
-#include "libromdata/RomData.hpp"
-namespace LibRomData {
+#include "librpbase/common.h"
+namespace LibRpBase {
 	class rp_image;
 }
+
+// C includes.
+#include <stdint.h>
 
 class RpImageWin32
 {
@@ -41,7 +44,7 @@ class RpImageWin32
 		 * @param image rp_image.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP_mask(const LibRomData::rp_image *image);
+		static HBITMAP toHBITMAP_mask(const LibRpBase::rp_image *image);
 
 	public:
 		/**
@@ -50,7 +53,7 @@ class RpImageWin32
 		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor);
+		static HBITMAP toHBITMAP(const LibRpBase::rp_image *image, uint32_t bgColor);
 
 		/**
 		 * Convert an rp_image to HBITMAP.
@@ -61,7 +64,7 @@ class RpImageWin32
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor,
+		static HBITMAP toHBITMAP(const LibRpBase::rp_image *image, uint32_t bgColor,
 					const SIZE &size, bool nearest);
 
 		/**
@@ -70,7 +73,7 @@ class RpImageWin32
 		 * @param image	[in] rp_image.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image);
+		static HBITMAP toHBITMAP_alpha(const LibRpBase::rp_image *image);
 
 		/**
 		 * Convert an rp_image to HBITMAP.
@@ -80,21 +83,21 @@ class RpImageWin32
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
 		 * @return HBITMAP, or nullptr on error.
 		 */
-		static HBITMAP toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest);
+		static HBITMAP toHBITMAP_alpha(const LibRpBase::rp_image *image, const SIZE &size, bool nearest);
 
 		/**
 		 * Convert an rp_image to HICON.
 		 * @param image rp_image.
 		 * @return HICON, or nullptr on error.
 		 */
-		static HICON toHICON(const LibRomData::rp_image *image);
+		static HICON toHICON(const LibRpBase::rp_image *image);
 
 		/**
 		 * Convert an HBITMAP to rp_image.
 		 * @param hBitmap HBITMAP.
 		 * @return rp_image.
 		 */
-		static LibRomData::rp_image *fromHBITMAP(HBITMAP hBitmap);
+		static LibRpBase::rp_image *fromHBITMAP(HBITMAP hBitmap);
 
 		/**
 		 * Convert an HBITMAP to HICON.

@@ -25,8 +25,8 @@
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
 
-#include "libromdata/common.h"
-namespace LibRomData {
+#include "librpbase/common.h"
+namespace LibRpBase {
 	class rp_image;
 }
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -45,7 +45,7 @@ class GdkImageConv
 		 * @param img rp_image.
 		 * @return GdkPixbuf, or nullptr on error.
 		 */
-		static GdkPixbuf *rp_image_to_GdkPixbuf(const LibRomData::rp_image *img);
+		static GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpBase::rp_image *img);
 };
 
 #endif /* __ROMPROPERTIES_XFCE_GDKIMAGECONV_HPP__ */

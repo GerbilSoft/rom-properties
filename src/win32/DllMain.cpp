@@ -33,7 +33,6 @@
 #include "stdafx.h"
 #include "config.version.h"
 
-#include "RegKey.hpp"
 #include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
@@ -41,15 +40,22 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 
+// libwin32common
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
+
+// rp_image backend registration.
+#include "librpbase/img/RpGdiplusBackend.hpp"
+#include "librpbase/img/rp_image.hpp"
+using LibRpBase::RpGdiplusBackend;
+using LibRpBase::rp_image;
+
+// Text conversion functions and macros.
+#include "librpbase/TextFuncs.hpp"
+
 // For file extensions.
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
-
-// rp_image backend registration.
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::RpGdiplusBackend;
-using LibRomData::rp_image;
 
 // C++ includes.
 #include <memory>

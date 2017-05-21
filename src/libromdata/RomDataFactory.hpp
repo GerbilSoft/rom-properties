@@ -22,17 +22,19 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_ROMDATAFACTORY_HPP__
 
-#include "config.libromdata.h"
-#include "common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 // C++ includes.
 #include <vector>
 
+namespace LibRpBase {
+	class RomData;
+	class IRpFile;
+}
+
 namespace LibRomData {
 
-class IRpFile;
-
-class RomData;
 class RomDataFactory
 {
 	private:
@@ -57,7 +59,7 @@ class RomDataFactory
 		 * @param thumbnail If true, RomData class must support at least one image type.
 		 * @return RomData class, or nullptr if the ROM isn't supported.
 		 */
-		static RomData *create(IRpFile *file, bool thumbnail = false);
+		static LibRpBase::RomData *create(LibRpBase::IRpFile *file, bool thumbnail = false);
 
 		struct ExtInfo {
 			const rp_char *ext;

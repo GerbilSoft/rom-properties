@@ -22,9 +22,11 @@
 // C++ includes.
 #include <ostream>
 
-namespace LibRomData {
+namespace LibRpBase {
+	class IFst;
+}
 
-class IFst;
+namespace LibRomData {
 
 /**
  * Print an FST to an ostream.
@@ -32,6 +34,6 @@ class IFst;
  * @param os ostream.
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(IFst *fst, std::ostream &os);
+int fstPrint(LibRpBase::IFst *fst, std::ostream &os);
 
 };

@@ -22,11 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
-#include "libromdata/threads/Semaphore.hpp"
+// librpbase
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
+#include "librpbase/threads/Semaphore.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 	class RomData;
 }
 
@@ -51,7 +52,7 @@ class CacheManager
 		 * Get the proxy server.
 		 * @return Proxy server URL.
 		 */
-		LibRomData::rp_string proxyUrl(void) const;
+		LibRpBase::rp_string proxyUrl(void) const;
 
 		/**
 		 * Set the proxy server.
@@ -63,7 +64,7 @@ class CacheManager
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
 		 */
-		void setProxyUrl(const LibRomData::rp_string &proxyUrl);
+		void setProxyUrl(const LibRpBase::rp_string &proxyUrl);
 
 	protected:
 		/**
@@ -71,7 +72,7 @@ class CacheManager
 		 * @param cache_key Cache key. (Will be filtered using filterCacheKey().)
 		 * @return Cache filename, or empty string on error.
 		 */
-		LibRomData::rp_string getCacheFilename(const LibRomData::rp_string &cache_key);
+		LibRpBase::rp_string getCacheFilename(const LibRpBase::rp_string &cache_key);
 
 	public:
 		/**
@@ -79,7 +80,7 @@ class CacheManager
 		 * @param cache_key Cache key.
 		 * @return Filtered cache key.
 		 */
-		static LibRomData::rp_string filterCacheKey(const LibRomData::rp_string &cache_key);
+		static LibRpBase::rp_string filterCacheKey(const LibRpBase::rp_string &cache_key);
 
 	public:
 		/**
@@ -97,23 +98,23 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
-		LibRomData::rp_string download(
-			const LibRomData::rp_string &url,
-			const LibRomData::rp_string &cache_key);
+		LibRpBase::rp_string download(
+			const LibRpBase::rp_string &url,
+			const LibRpBase::rp_string &cache_key);
 
 		/**
 		 * Check if a file has already been cached.
 		 * @param cache_key Cache key.
 		 * @return Filename in the cache, or empty string if not found.
 		 */
-		LibRomData::rp_string findInCache(const LibRomData::rp_string &cache_key);
+		LibRpBase::rp_string findInCache(const LibRpBase::rp_string &cache_key);
 
 	protected:
-		LibRomData::rp_string m_proxyUrl;
+		LibRpBase::rp_string m_proxyUrl;
 		IDownloader *m_downloader;
 
 		// Semaphore used to limit the number of simultaneous downloads.
-		static LibRomData::Semaphore m_dlsem;
+		static LibRpBase::Semaphore m_dlsem;
 };
 
 }

@@ -25,16 +25,19 @@
 #include <stdint.h>
 #include "../gcn_structs.h"
 
+namespace LibRpBase {
+	class IDiscReader;
+}
+
 namespace LibRomData {
 
 class GcnPartition;
-class IDiscReader;
 class GcnFst;
 
 class GcnPartitionPrivate
 {
 	public:
-		GcnPartitionPrivate(GcnPartition *q, IDiscReader *discReader,
+		GcnPartitionPrivate(GcnPartition *q, LibRpBase::IDiscReader *discReader,
 			int64_t partition_offset, uint8_t offsetShift = 0);
 		virtual ~GcnPartitionPrivate();
 
@@ -46,7 +49,7 @@ class GcnPartitionPrivate
 	public:
 		uint8_t offsetShift;	// GCN == 0, Wii == 2
 
-		IDiscReader *discReader;
+		LibRpBase::IDiscReader *discReader;
 
 		// Offsets. (-1 == error)
 		// For GCN, these are usually 0.

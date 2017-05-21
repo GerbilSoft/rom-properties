@@ -22,12 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class WiiUPrivate;
-class WiiU : public RomData
+class WiiU : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -43,7 +43,7 @@ class WiiU : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		explicit WiiU(IRpFile *file);
+		explicit WiiU(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

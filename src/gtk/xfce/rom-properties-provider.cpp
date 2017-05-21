@@ -22,11 +22,14 @@
 #include "rom-properties-provider.hpp"
 #include "rom-properties-page.hpp"
 
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/RomData.hpp"
+// librpbase
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/RomData.hpp"
+using LibRpBase::RpFile;
+using LibRpBase::RomData;
+
+// libromdata
 #include "libromdata/RomDataFactory.hpp"
-using LibRomData::RpFile;
-using LibRomData::RomData;
 using LibRomData::RomDataFactory;
 
 static void   rom_properties_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);

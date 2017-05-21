@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class AmiiboPrivate;
-class Amiibo : public RomData
+class Amiibo : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class Amiibo : public RomData
 		 *
 		 * @param file Open NFC dump.
 		 */
-		explicit Amiibo(IRpFile *file);
+		explicit Amiibo(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

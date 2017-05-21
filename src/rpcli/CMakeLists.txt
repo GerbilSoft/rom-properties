@@ -74,8 +74,8 @@ IF(MSVC)
 	SET(rom-properties-rpcli_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
-	SET(rom-properties-rpcli-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
+	SET(rom-properties-rpcli-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.cpp)
+	SET(rom-properties-rpcli-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.hpp)
 ENDIF(MSVC)
 
 #########################
@@ -84,7 +84,7 @@ ENDIF(MSVC)
 
 IF(MSVC)
 	# Delay-load extlibs.
-	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 	SET_DELAY_LOAD_FLAGS()
 ENDIF(MSVC)
 
@@ -122,7 +122,7 @@ TARGET_INCLUDE_DIRECTORIES(rpcli
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rpcli romdata8)
+TARGET_LINK_LIBRARIES(rpcli romdata8 rpbase8)
 
 # CMake-3.7.2 doesn't add include paths to windres.
 IF(MINGW)

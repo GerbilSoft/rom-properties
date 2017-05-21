@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "MegaDriveRegions.hpp"
-#include "SystemRegion.hpp"
+#include "librpbase/SystemRegion.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -123,7 +123,7 @@ MegaDriveRegions::MD_BrandingRegion MegaDriveRegions::getBrandingRegion(uint32_t
 	}
 
 	// Get the country code.
-	const uint32_t cc = SystemRegion::getCountryCode();
+	const uint32_t cc = LibRpBase::SystemRegion::getCountryCode();
 
 	// Check for a single-region ROM.
 	switch (md_region) {

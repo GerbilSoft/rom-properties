@@ -24,11 +24,13 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
 #include "CisoGcnReader.hpp"
-#include "SparseDiscReader_p.hpp"
+#include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "ciso_gcn.h"
 
-#include "byteswap.h"
-#include "file/IRpFile.hpp"
+// librpbase
+#include "librpbase/byteswap.h"
+#include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 // C includes.
 #include <stdlib.h>

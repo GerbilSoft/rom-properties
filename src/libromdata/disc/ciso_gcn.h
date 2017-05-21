@@ -26,7 +26,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISO_GCN_H__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CISO_GCN_H__
 
-#include "common.h"
+#include "librpbase/common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

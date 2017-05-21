@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class NintendoDSPrivate;
-class NintendoDS : public RomData
+class NintendoDS : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class NintendoDS : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit NintendoDS(IRpFile *file);
+		explicit NintendoDS(LibRpBase::IRpFile *file);
 
 		/**
 		 * Read a Nintendo DS ROM image.
@@ -63,7 +63,7 @@ class NintendoDS : public RomData
 		 * @param file Open ROM image.
 		 * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
 		 */
-		explicit NintendoDS(IRpFile *file, bool cia);
+		explicit NintendoDS(LibRpBase::IRpFile *file, bool cia);
 
 	protected:
 		/**
@@ -197,7 +197,8 @@ class NintendoDS : public RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 
 	public:
 		/**
@@ -208,7 +209,7 @@ class NintendoDS : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override final;
+		virtual const LibRpBase::IconAnimData *iconAnimData(void) const override final;
 
 	public:
 		/**

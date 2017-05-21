@@ -22,9 +22,9 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-#include "libromdata/config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 	class rp_image;
 }
 
@@ -59,7 +59,7 @@ namespace LibRomData {
  * @param rps rp_string
  * @return QString
  */
-static inline QString RP2Q(const LibRomData::rp_string &rps)
+static inline QString RP2Q(const LibRpBase::rp_string &rps)
 {
 	return QString::fromUtf8(rps.data(), (int)rps.size());
 }
@@ -89,7 +89,7 @@ static inline QString RP2Q(const rp_char *rps, int len = -1)
  * @param rps rp_string
  * @return QString
  */
-static inline QString RP2Q(const LibRomData::rp_string &rps)
+static inline QString RP2Q(const LibRpBase::rp_string &rps)
 {
 	return QString(reinterpret_cast<const QChar*>(rps.data()), (int)rps.size());
 }
@@ -148,6 +148,6 @@ static inline const rp_char *Q2RP(const QString &qs)
  * @param image rp_image.
  * @return QImage.
  */
-QImage rpToQImage(const LibRomData::rp_image *image);
+QImage rpToQImage(const LibRpBase::rp_image *image);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

@@ -22,11 +22,10 @@
 #ifndef __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 #define __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 
-#include "libromdata/file/IRpFile.hpp"
-#include "libromdata/RpWin32.hpp"
+#include "librpbase/file/IRpFile.hpp"
 #include <objidl.h>
 
-class RpFile_IStream : public LibRomData::IRpFile
+class RpFile_IStream : public LibRpBase::IRpFile
 {
 	public:
 		/**
@@ -37,7 +36,7 @@ class RpFile_IStream : public LibRomData::IRpFile
 		virtual ~RpFile_IStream();
 
 	private:
-		typedef LibRomData::IRpFile super;
+		typedef LibRpBase::IRpFile super;
 		RpFile_IStream(const RpFile_IStream &other);
 		RpFile_IStream &operator=(const RpFile_IStream &other);
 
@@ -116,11 +115,11 @@ class RpFile_IStream : public LibRomData::IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
-		virtual LibRomData::rp_string filename(void) const override final;
+		virtual LibRpBase::rp_string filename(void) const override final;
 
 	protected:
 		IStream *m_pStream;
-		LibRomData::rp_string m_filename;
+		LibRpBase::rp_string m_filename;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__ */

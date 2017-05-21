@@ -23,7 +23,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_DMG_STRUCTS_H__
 
-#include "common.h"
+#include "librpbase/common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

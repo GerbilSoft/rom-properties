@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class GameCubeSavePrivate;
-class GameCubeSave : public RomData
+class GameCubeSave : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class GameCubeSave : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		explicit GameCubeSave(IRpFile *file);
+		explicit GameCubeSave(LibRpBase::IRpFile *file);
 
 	protected:
 		/**
@@ -176,7 +176,8 @@ class GameCubeSave : public RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 
 	public:
 		/**
@@ -187,7 +188,7 @@ class GameCubeSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override final;
+		virtual const LibRpBase::IconAnimData *iconAnimData(void) const override final;
 };
 
 }

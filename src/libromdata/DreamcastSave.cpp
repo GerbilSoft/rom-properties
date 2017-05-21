@@ -20,17 +20,19 @@
  ***************************************************************************/
 
 #include "DreamcastSave.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "dc_structs.h"
 
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
+// librpbase
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
 
-#include "img/rp_image.hpp"
-#include "img/ImageDecoder.hpp"
-#include "img/IconAnimData.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

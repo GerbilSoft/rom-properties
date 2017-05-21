@@ -26,8 +26,6 @@
 
 namespace LibRomData {
 
-class IRpFile;
-
 class PEResourceReaderPrivate;
 class PEResourceReader : public IResourceReader
 {
@@ -43,7 +41,7 @@ class PEResourceReader : public IResourceReader
 		 * @param rsrc_size .rsrc section size.
 		 * @param rsrc_va .rsrc virtual address.
 		 */
-		PEResourceReader(IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
+		PEResourceReader(LibRpBase::IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
 		virtual ~PEResourceReader();
 
 	private:
@@ -123,7 +121,7 @@ class PEResourceReader : public IResourceReader
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual IRpFile *open(uint16_t type, int id, int lang) override final;
+		virtual LibRpBase::IRpFile *open(uint16_t type, int id, int lang) override final;
 
 		/**
 		 * Load a VS_VERSION_INFO resource.

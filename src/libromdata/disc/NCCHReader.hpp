@@ -22,16 +22,20 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
 
-#include "IPartition.hpp"
 #include "../n3ds_structs.h"
-#include "../crypto/KeyManager.hpp"
+
+// librpbase
+#include "librpbase/disc/IPartition.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
+
+namespace LibRpBase {
+	class IRpFile;
+}
 
 namespace LibRomData {
 
-class IRpFile;
-
 class NCCHReaderPrivate;
-class NCCHReader : public IPartition
+class NCCHReader : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -47,10 +51,10 @@ class NCCHReader : public IPartition
 		 * @param ticket		[in,opt] Ticket for CIA decryption. (nullptr if NoCrypto)
 		 * @param tmd_content_index	[in,opt] TMD content index for CIA decryption.
 		 */
-		NCCHReader(IRpFile *file, uint8_t media_unit_shift,
-				int64_t ncch_offset, uint32_t ncch_length,
-				const N3DS_Ticket_t *ticket = nullptr,
-				uint16_t tmd_content_index = 0);
+		NCCHReader(LibRpBase::IRpFile *file, uint8_t media_unit_shift,
+			int64_t ncch_offset, uint32_t ncch_length,
+			const N3DS_Ticket_t *ticket = nullptr,
+			uint16_t tmd_content_index = 0);
 		virtual ~NCCHReader();
 
 	private:
@@ -173,7 +177,7 @@ class NCCHReader : public IPartition
 		 * Encryption key verification result.
 		 * @return Encryption key verification result.
 		 */
-		KeyManager::VerifyResult verifyResult(void) const;
+		LibRpBase::KeyManager::VerifyResult verifyResult(void) const;
 
 		/**
 		 * Get the content type as a string.
@@ -190,7 +194,7 @@ class NCCHReader : public IPartition
 		 * @param filename Filename. (ASCII)
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		IRpFile *open(int section, const char *filename);
+		LibRpBase::IRpFile *open(int section, const char *filename);
 
 #ifdef ENABLE_DECRYPTION
 		/**

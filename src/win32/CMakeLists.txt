@@ -3,8 +3,6 @@ PROJECT(rom-properties-win32)
 # Sources and headers.
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
-	RegKey.cpp
-	WinUI.cpp
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
@@ -15,7 +13,6 @@ SET(rom-properties-win32_SRCS
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
 	RP_ShellPropSheetExt_Register.cpp
-	#DialogBuilder.cpp
 	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
@@ -29,8 +26,6 @@ SET(rom-properties-win32_SRCS
 	resource.rc
 	)
 SET(rom-properties-win32_H
-	RegKey.hpp
-	WinUI.hpp
 	RP_ExtractIcon.hpp
 	RP_ExtractIcon_p.hpp
 	RP_ClassFactory.hpp
@@ -39,7 +34,6 @@ SET(rom-properties-win32_H
 	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
-	#DialogBuilder.hpp
 	RpFile_IStream.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
@@ -50,6 +44,7 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
+	QITab.h
 	resource.h
 	)
 
@@ -61,8 +56,8 @@ IF(MSVC)
 	SET(rom-properties-win32_PCH_H stdafx.h)
 
 	# Delay-load sources.
-	SET(rom-properties-win32-DELAY_LOAD_SRC ../delayload/DelayLoadHelper.cpp)
-	SET(rom-properties-win32-DELAY_LOAD_H ../delayload/DelayLoadHelper.hpp)
+	SET(rom-properties-win32-DELAY_LOAD_SRC ../libwin32common/DelayLoadHelper.cpp)
+	SET(rom-properties-win32-DELAY_LOAD_H ../libwin32common/DelayLoadHelper.hpp)
 ENDIF(MSVC)
 
 #####################
@@ -75,7 +70,7 @@ ADD_SUBDIRECTORY(config)
 
 IF(MSVC)
 	# Delay-load extlibs.
-	INCLUDE(../delayload/DelayLoadHelper.cmake)
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 	SET_DELAY_LOAD_FLAGS()
 ENDIF(MSVC)
 
@@ -112,7 +107,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
+TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32)
 
 # Delay-load some Windows system libraries.

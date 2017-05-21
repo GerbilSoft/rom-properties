@@ -22,8 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_EXEDATA_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_EXEDATA_HPP__
 
-#include "config.libromdata.h"
-#include "common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 #include <stdint.h>
 
 namespace LibRomData {

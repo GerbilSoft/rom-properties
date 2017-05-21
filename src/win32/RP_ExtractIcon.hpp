@@ -22,8 +22,9 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+// librpbase
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "RP_ComBase.hpp"
@@ -33,11 +34,10 @@ extern "C" {
 	extern const CLSID CLSID_RP_ExtractIcon;
 }
 
-namespace LibRomData {
-	class rp_image;
+namespace LibWin32Common {
+	class RegKey;
 }
 
-class RegKey;
 class RP_ExtractIcon_Private;
 
 class UUID_ATTR("{E51BC107-E491-4B29-A6A3-2A4309259802}")
@@ -71,7 +71,7 @@ RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -85,7 +85,7 @@ RP_ExtractIcon : public RP_ComBase3<IPersistFile, IExtractIconW, IExtractIconA>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IPersist (IPersistFile base class)

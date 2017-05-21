@@ -19,14 +19,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
 #include "GcnPartition.hpp"
-#include "config.libromdata.h"
 
-#include "byteswap.h"
 #include "gcn_structs.h"
-#include "IDiscReader.hpp"
 #include "GcnFst.hpp"
-#include "PartitionFile.hpp"
+
+// librpbase
+#include "librpbase/byteswap.h"
+#include "librpbase/disc/PartitionFile.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

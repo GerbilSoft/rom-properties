@@ -22,13 +22,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITION_HPP__
 
-#include "IPartition.hpp"
+#include "librpbase/disc/IPartition.hpp"
 #include "GcnFst.hpp"
 
 namespace LibRomData {
 
 class GcnPartitionPrivate;
-class GcnPartition : public IPartition
+class GcnPartition : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -123,14 +123,14 @@ class GcnPartition : public IPartition
 		 * @param path	[in] Directory path.
 		 * @return IFst::Dir*, or nullptr on error.
 		 */
-		IFst::Dir *opendir(const rp_char *path);
+		LibRpBase::IFst::Dir *opendir(const rp_char *path);
 
 		/**
 		 * Open a directory.
 		 * @param path	[in] Directory path.
 		 * @return IFst::Dir*, or nullptr on error.
 		 */
-		inline IFst::Dir *opendir(const LibRomData::rp_string &path)
+		inline LibRpBase::IFst::Dir *opendir(const LibRpBase::rp_string &path)
 		{
 			return opendir(path.c_str());
 		}
@@ -141,21 +141,21 @@ class GcnPartition : public IPartition
 		 * @return IFst::DirEnt, or nullptr if end of directory or on error.
 		 * (TODO: Add lastError()?)
 		 */
-		IFst::DirEnt *readdir(IFst::Dir *dirp);
+		LibRpBase::IFst::DirEnt *readdir(LibRpBase::IFst::Dir *dirp);
 
 		/**
 		 * Close an opened directory.
 		 * @param dirp IFst::Dir pointer.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int closedir(IFst::Dir *dirp);
+		int closedir(LibRpBase::IFst::Dir *dirp);
 
 		/**
 		 * Open a file. (read-only)
 		 * @param filename Filename.
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		IRpFile *open(const rp_char *filename);
+		LibRpBase::IRpFile *open(const rp_char *filename);
 };
 
 }

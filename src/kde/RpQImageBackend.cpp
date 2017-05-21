@@ -24,8 +24,10 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+// librpbase
+#include "librpbase/img/rp_image.hpp"
+using LibRpBase::rp_image;
+using LibRpBase::rp_image_backend;
 
 RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
@@ -68,7 +70,7 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 /**
  * Creator function for rp_image::setBackendCreatorFn().
  */
-LibRomData::rp_image_backend *RpQImageBackend::creator_fn(int width, int height, rp_image::Format format)
+rp_image_backend *RpQImageBackend::creator_fn(int width, int height, rp_image::Format format)
 {
 	return new RpQImageBackend(width, height, format);
 }

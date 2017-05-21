@@ -20,11 +20,15 @@
  ***************************************************************************/
 
 #include "GcnPartitionPrivate.hpp"
-#include "../byteswap.h"
+#include "librpbase/byteswap.h"
 
-#include "IDiscReader.hpp"
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
+
+// librpbase
+#include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::IDiscReader;
+using LibRpBase::KeyManager;
 
 // C includes. (C++ namespace)
 #include <cstring>

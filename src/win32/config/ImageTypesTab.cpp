@@ -22,11 +22,13 @@
 #include "stdafx.h"
 #include "ImageTypesTab.hpp"
 
-#include "libromdata/RpWin32.hpp"
-#include "libromdata/config/Config.hpp"
-using LibRomData::Config;
+// libwin32common
+#include "libwin32common/WinUI.hpp"
 
-#include "WinUI.hpp"
+// librpbase
+#include "librpbase/config/Config.hpp"
+using LibRpBase::Config;
+
 #include "resource.h"
 
 // C includes. (C++ namespace)
@@ -225,7 +227,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblImageType = {0, 0};
 	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 		SIZE szCur;
-		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(imageTypeNames[i]), &szCur);
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
 		}
@@ -238,7 +240,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		SIZE szCur;
-		WinUI::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysData[sys].name), &szCur);
+		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, RP2W_c(sysData[sys].name), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}

@@ -19,19 +19,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
 #include "WiiPartition.hpp"
-#include "config.libromdata.h"
 
-#include "byteswap.h"
 #include "gcn_structs.h"
-#include "IDiscReader.hpp"
 #include "GcnFst.hpp"
 
-#include "crypto/KeyManager.hpp"
+// librpbase
+#include "librpbase/byteswap.h"
+#include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "crypto/AesCipherFactory.hpp"
-#include "crypto/IAesCipher.hpp"
+#include "librpbase/crypto/AesCipherFactory.hpp"
+#include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

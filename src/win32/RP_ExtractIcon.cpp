@@ -24,14 +24,17 @@
 #include "RP_ExtractIcon.hpp"
 #include "RpImageWin32.hpp"
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpGdiplusBackend.hpp"
+using namespace LibRpBase;
+
 // libromdata
-#include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RpWin32.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpGdiplusBackend.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -218,7 +221,7 @@ IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
 
 IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
-	UNUSED(dwMode);	// TODO
+	RP_UNUSED(dwMode);	// TODO
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractIcon);
@@ -250,20 +253,20 @@ IFACEMETHODIMP RP_ExtractIcon::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 IFACEMETHODIMP RP_ExtractIcon::Save(LPCOLESTR pszFileName, BOOL fRemember)
 {
-	UNUSED(pszFileName);
-	UNUSED(fRemember);
+	RP_UNUSED(pszFileName);
+	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
 IFACEMETHODIMP RP_ExtractIcon::SaveCompleted(LPCOLESTR pszFileName)
 {
-	UNUSED(pszFileName);
+	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
 IFACEMETHODIMP RP_ExtractIcon::GetCurFile(LPOLESTR *ppszFileName)
 {
-	UNUSED(ppszFileName);
+	RP_UNUSED(ppszFileName);
 	return E_NOTIMPL;
 }
 
@@ -276,10 +279,10 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 	// TODO: If the icon is cached on disk, return a filename.
 	// TODO: Enable ASYNC?
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb761852(v=vs.85).aspx
+	RP_UNUSED(uFlags);
 	if (!pszIconFile || !piIndex || cchMax == 0) {
 		return E_INVALIDARG;
 	}
-	UNUSED(uFlags);
 
 	// If the file wasn't set via IPersistFile::Load(), that's an error.
 	RP_D(RP_ExtractIcon);
@@ -312,8 +315,8 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(LPCWSTR pszFile, UINT nIconIndex,
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
 	// we returned in GetIconLocation()?
-	UNUSED(pszFile);
-	UNUSED(nIconIndex);
+	RP_UNUSED(pszFile);
+	RP_UNUSED(nIconIndex);
 
 	// TODO: Use nIconSize outside of fallback?
 

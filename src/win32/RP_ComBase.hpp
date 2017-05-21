@@ -30,15 +30,16 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
+// librpbase common macros.
+#include "librpbase/common.h"
+
 // QISearch()
 #include "QITab.h"
 extern "C" {
-extern PFNQISEARCH pQISearch;
-void incRpGlobalRefCount(void);
-void decRpGlobalRefCount(void);
+	extern PFNQISEARCH pQISearch;
+	void incRpGlobalRefCount(void);
+	void decRpGlobalRefCount(void);
 }
-
-#include "libromdata/RpWin32.hpp"
 
 // References of all objects.
 extern volatile ULONG RP_ulTotalRefCount;

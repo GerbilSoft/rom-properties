@@ -23,11 +23,12 @@
 #include "ConfigDialog.hpp"
 #include "resource.h"
 
-#include "libromdata/common.h"
-#include "libromdata/config/Config.hpp"
-using LibRomData::Config;
+// librpbase
+#include "librpbase/config/Config.hpp"
+using LibRpBase::Config;
 
-#include "RegKey.hpp"
+// Property sheet icon.
+// Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
 
 // C includes.

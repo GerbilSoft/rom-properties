@@ -28,13 +28,16 @@
 #include "libcachemgr/CacheManager.hpp"
 using LibCacheMgr::CacheManager;
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
+#include "librpbase/config/Config.hpp"
+using namespace LibRpBase;
+
 // libromdata
-#include "../RomData.hpp"
 #include "../RomDataFactory.hpp"
-#include "../file/RpFile.hpp"
-#include "rp_image.hpp"
-#include "RpImageLoader.hpp"
-#include "../config/Config.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

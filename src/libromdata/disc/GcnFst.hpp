@@ -22,13 +22,13 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 
-#include "IFst.hpp"
+#include "librpbase/disc/IFst.hpp"
 #include "gcn_structs.h"
 
 namespace LibRomData {
 
 class GcnFstPrivate;
-class GcnFst : public IFst
+class GcnFst : public LibRpBase::IFst
 {
 	public:
 		/**

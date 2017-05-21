@@ -9,7 +9,7 @@
 #pragma warning(disable:4200)
 #endif
 
-#include "common.h"
+#include "librpbase/common.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

@@ -23,9 +23,10 @@
 #include "DownloadsTab.hpp"
 #include "resource.h"
 
-#include "libromdata/RpWin32.hpp"
-#include "libromdata/config/Config.hpp"
-using LibRomData::Config;
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/config/Config.hpp"
+using LibRpBase::Config;
 
 // C includes. (C++ namespace)
 #include <cassert>

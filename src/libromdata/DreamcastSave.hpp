@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class DreamcastSavePrivate;
-class DreamcastSave : public RomData
+class DreamcastSave : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class DreamcastSave : public RomData
 		 *
 		 * @param file Open save file.
 		 */
-		explicit DreamcastSave(IRpFile *file);
+		explicit DreamcastSave(LibRpBase::IRpFile *file);
 
 		/**
 		 * Read a Sega Dreamcast save file. (.VMI+.VMS pair)
@@ -65,7 +65,7 @@ class DreamcastSave : public RomData
 		 * @param vms_file Open .VMS save file.
 		 * @param vmi_file Open .VMI save file.
 		 */
-		DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file);
+		DreamcastSave(LibRpBase::IRpFile *vms_file, LibRpBase::IRpFile *vmi_file);
 
 	protected:
 		/**
@@ -194,7 +194,8 @@ class DreamcastSave : public RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 
 	public:
 		/**
@@ -205,7 +206,7 @@ class DreamcastSave : public RomData
 		 *
 		 * @return Animated icon data, or nullptr if no animated icon is present.
 		 */
-		virtual const IconAnimData *iconAnimData(void) const override final;
+		virtual const LibRpBase::IconAnimData *iconAnimData(void) const override final;
 };
 
 }

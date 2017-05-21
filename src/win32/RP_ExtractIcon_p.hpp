@@ -43,10 +43,10 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 
 	public:
 		// ROM filename from IPersistFile::Load().
-		LibRomData::rp_string filename;
+		LibRpBase::rp_string filename;
 
 		// RomData object. Loaded in IPersistFile::Load().
-		LibRomData::RomData *romData;
+		LibRpBase::RomData *romData;
 
 	public:
 		/**
@@ -58,7 +58,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkey_Assoc);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -69,7 +69,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkey_Assoc);
 
 	private:
 		/**
@@ -102,7 +102,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param nIconSize Icon sizes.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG Fallback_int(RegKey &hkey_Assoc,
+		LONG Fallback_int(LibWin32Common::RegKey &hkey_Assoc,
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 	public:
@@ -123,7 +123,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual HBITMAP rpImageToImgClass(const LibRomData::rp_image *img) const override final;
+		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -156,7 +156,7 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const override final;
+		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const override final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */

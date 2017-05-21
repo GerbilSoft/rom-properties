@@ -6,9 +6,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
 # CacheManager::filterCacheKey() test.
 ADD_EXECUTABLE(FilterCacheKeyTest
-	../../libromdata/tests/gtest_init.cpp
+	../../librpbase/tests/gtest_init.cpp
 	FilterCacheKeyTest.cpp
 	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(FilterCacheKeyTest win32common)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest romdata8 cachemgr8)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)

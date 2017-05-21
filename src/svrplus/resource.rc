@@ -19,13 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "resource.h"
+// Resource script for svrplus.
 #include <windows.h>
+#include "resource.h"
 
 /* program version */
 #include "config.version.h"
 /* git version */
-#include "libromdata/git.h"
+#include "librpbase/git.h"
 
 /** Manifest. **/
 CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"svrplus.exe.manifest"

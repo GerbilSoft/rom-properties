@@ -36,9 +36,9 @@ using std::ostringstream;
 using std::string;
 
 #ifdef _WIN32
+#include "libwin32common/RpWin32_sdk.h"
 #include <io.h>
-#include "TextFuncs.hpp"
-#include "RpWin32.hpp"
+#include "librpbase/TextFuncs.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 

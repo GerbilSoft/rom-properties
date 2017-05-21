@@ -22,10 +22,11 @@
 #include "stdafx.h"
 #include "RpFile_IStream.hpp"
 
-// libromdata
-#include "libromdata/file/IRpFile.hpp"
-using LibRomData::IRpFile;
-using LibRomData::rp_string;
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
+using LibRpBase::IRpFile;
+using LibRpBase::rp_string;
 
 // C++ includes.
 #include <string>

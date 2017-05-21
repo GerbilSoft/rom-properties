@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class GameBoyAdvancePrivate;
-class GameBoyAdvance : public RomData
+class GameBoyAdvance : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class GameBoyAdvance : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit GameBoyAdvance(IRpFile *file);
+		explicit GameBoyAdvance(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

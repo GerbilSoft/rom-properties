@@ -22,8 +22,8 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "RP_ComBase.hpp"
@@ -36,15 +36,13 @@ extern "C" {
 	extern const CLSID CLSID_RP_ThumbnailProvider;
 }
 
-namespace LibRomData {
-	class IRpFile;
-	class rp_image;
+namespace LibWin32Common {
+	class RegKey;
 }
 
 // C++ includes.
 #include <string>
 
-class RegKey;
 class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
@@ -78,7 +76,7 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -92,7 +90,7 @@ RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvi
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IInitializeWithStream

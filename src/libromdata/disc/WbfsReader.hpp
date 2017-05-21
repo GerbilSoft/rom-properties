@@ -22,12 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 
-#include "SparseDiscReader.hpp"
+#include "librpbase/disc/SparseDiscReader.hpp"
 
 namespace LibRomData {
 
 class WbfsReaderPrivate;
-class WbfsReader : public SparseDiscReader
+class WbfsReader : public LibRpBase::SparseDiscReader
 {
 	public:
 		/**
@@ -36,7 +36,7 @@ class WbfsReader : public SparseDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		explicit WbfsReader(IRpFile *file);
+		explicit WbfsReader(LibRpBase::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

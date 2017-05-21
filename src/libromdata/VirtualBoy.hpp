@@ -25,14 +25,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class VirtualBoyPrivate;
-class VirtualBoy : public RomData
+class VirtualBoy : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -46,7 +46,7 @@ class VirtualBoy : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit VirtualBoy(IRpFile *file);
+		explicit VirtualBoy(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

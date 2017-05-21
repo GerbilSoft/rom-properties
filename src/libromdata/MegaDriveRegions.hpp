@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEREGIONS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEREGIONS_HPP__
 
-#include "common.h"
+#include "librpbase/common.h"
 
 // C includes.
 #include <stdint.h>

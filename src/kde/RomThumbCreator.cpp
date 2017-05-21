@@ -27,15 +27,20 @@
 #include "libcachemgr/CacheManager.hpp"
 using LibCacheMgr::CacheManager;
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/img/rp_image.hpp"
+using LibRpBase::RomData;
+using LibRpBase::rp_image;
+
 // libromdata
-#include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/img/rp_image.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // TCreateThumbnail is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/img/TCreateThumbnail.cpp"
+using LibRomData::TCreateThumbnail;
 
 // C includes.
 #include <unistd.h>

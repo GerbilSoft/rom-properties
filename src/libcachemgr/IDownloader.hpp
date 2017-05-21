@@ -22,8 +22,9 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+// librpbase
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 #include <stdint.h>
 
@@ -38,7 +39,7 @@ class IDownloader
 	public:
 		IDownloader();
 		explicit IDownloader(const rp_char *url);
-		explicit IDownloader(const LibRomData::rp_string &url);
+		explicit IDownloader(const LibRpBase::rp_string &url);
 		virtual ~IDownloader();
 
 	private:
@@ -57,7 +58,7 @@ class IDownloader
 		 * Get the current URL.
 		 * @return URL.
 		 */
-		LibRomData::rp_string url(void) const;
+		LibRpBase::rp_string url(void) const;
 
 		/**
 		 * Set the URL.
@@ -69,7 +70,7 @@ class IDownloader
 		 * Set the URL.
 		 * @param url New URL.
 		 */
-		void setUrl(const LibRomData::rp_string &url);
+		void setUrl(const LibRpBase::rp_string &url);
 
 		/**
 		 * Get the maximum buffer size. (0 == unlimited)
@@ -92,7 +93,7 @@ class IDownloader
 		 * Get the proxy server.
 		 * @return Proxy server URL.
 		 */
-		LibRomData::rp_string proxyUrl(void) const;
+		LibRpBase::rp_string proxyUrl(void) const;
 
 		/**
 		 * Set the proxy server.
@@ -104,7 +105,7 @@ class IDownloader
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
 		 */
-		void setProxyUrl(const LibRomData::rp_string &proxyUrl);
+		void setProxyUrl(const LibRpBase::rp_string &proxyUrl);
 
 	public:
 		/** Data accessors. **/
@@ -140,8 +141,8 @@ class IDownloader
 		virtual int download(void) = 0;
 
 	protected:
-		LibRomData::rp_string m_url;
-		LibRomData::rp_string m_proxyUrl;
+		LibRpBase::rp_string m_url;
+		LibRpBase::rp_string m_proxyUrl;
 
 		// Uninitialized vector class.
 		// Reference: http://andreoffringa.org/?q=uvector

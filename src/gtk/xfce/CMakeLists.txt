@@ -75,7 +75,7 @@ IF(BUILD_XFCE)
 		)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-xfce PUBLIC ${GTK2_INCLUDE_DIRS})
 
-	TARGET_LINK_LIBRARIES(rom-properties-xfce romdata8 cachemgr8)
+	TARGET_LINK_LIBRARIES(rom-properties-xfce cachemgr8 romdata8 rpbase8)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce ${GTK2_LIBRARIES} GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(${GTK2_DEFINITIONS} -DG_LOG_DOMAIN=\"rom-properties-xfce\")

@@ -27,18 +27,25 @@
 #include "stdafx.h"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RpImageWin32.hpp"
-#include "AutoGetDC.hpp"
-#include "WinUI.hpp"
 #include "resource.h"
+
+// libwin32common
+#include "libwin32common/AutoGetDC.hpp"
+#include "libwin32common/WinUI.hpp"
+#include "libwin32common/w32time.h"
+using LibWin32Common::AutoGetDC;
+
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/RpWin32.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -66,10 +73,10 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "libromdata/img/GdiplusHelper.hpp"
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-#include "libromdata/img/IconAnimHelper.hpp"
+#include "librpbase/img/GdiplusHelper.hpp"
+#include "librpbase/img/RpGdiplusBackend.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -111,7 +118,7 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		// ROM data.
-		LibRomData::RomData *romData;
+		RomData *romData;
 
 		// Useful window handles.
 		HWND hDlgProps;		// Property dialog. (parent)
@@ -573,7 +580,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	if (!sysInfo.empty()) {
 		// Determine the appropriate label size.
-		int ret = WinUI::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
+		int ret = LibWin32Common::measureTextSize(hDlg, hFont, sysInfo, &sz_lblSysInfo);
 		if (ret != 0) {
 			// Error determining the label size.
 			// Don't draw the label.
@@ -704,11 +711,11 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 
 		// TODO: NULL string == empty string?
 		if (field->data.str) {
-			wstr = WinUI::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
+			wstr = LibWin32Common::unix2dos(RP2W_s(*(field->data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
-		wstr = WinUI::unix2dos(wstring(wcs), &lf_count);
+		wstr = LibWin32Common::unix2dos(wstring(wcs), &lf_count);
 	}
 
 	// Field height.
@@ -791,7 +798,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		WinUI::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
+		LibWin32Common::measureTextSizeLink(hWndTab, hFont, wstr, &szText);
 
 		// Determine the position.
 		const int x = (((winRect.right - winRect.left) - szText.cx) / 2) + winRect.left;
@@ -1331,7 +1338,7 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 		}
 
 		// Find a monospaced font.
-		int ret = WinUI::findMonospacedFont(&lfFontMono);
+		int ret = LibWin32Common::findMonospacedFont(&lfFontMono);
 		if (ret != 0) {
 			// Monospaced font not found.
 			return;

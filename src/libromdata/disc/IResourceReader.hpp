@@ -22,8 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 
-#include "IPartition.hpp"
 #include "../exe_structs.h"
+
+// librpbase
+#include "librpbase/config.librpbase.h"
+#include "librpbase/disc/IPartition.hpp"
 
 // C++ includes.
 #include <string>
@@ -32,7 +35,7 @@
 
 namespace LibRomData {
 
-class IResourceReader : public IPartition
+class IResourceReader : public LibRpBase::IPartition
 {
 	protected:
 		IResourceReader() { }
@@ -52,12 +55,12 @@ class IResourceReader : public IPartition
 		 * @param lang Language ID. (-1 for "first entry")
 		 * @return IRpFile*, or nullptr on error.
 		 */
-		virtual IRpFile *open(uint16_t type, int id, int lang) = 0;
+		virtual LibRpBase::IRpFile *open(uint16_t type, int id, int lang) = 0;
 
 		// StringTable.
 		// - Element 1: Key
 		// - Element 2: Value
-		typedef std::vector<std::pair<rp_string, rp_string> > StringTable;
+		typedef std::vector<std::pair<LibRpBase::rp_string, LibRpBase::rp_string> > StringTable;
 
 		// StringFileInfo section.
 		// - Key: Langauge ID. (LOWORD = charset, HIWORD = language)

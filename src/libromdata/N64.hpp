@@ -24,14 +24,14 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 
 class N64Private;
-class N64 : public RomData
+class N64 : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class N64 : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit N64(IRpFile *file);
+		explicit N64(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

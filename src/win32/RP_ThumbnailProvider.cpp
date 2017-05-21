@@ -22,17 +22,18 @@
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "stdafx.h"
 #include "RP_ThumbnailProvider.hpp"
-#include "RegKey.hpp"
 #include "RpImageWin32.hpp"
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
+using namespace LibRpBase;
+
 // libromdata
-#include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RpWin32.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"

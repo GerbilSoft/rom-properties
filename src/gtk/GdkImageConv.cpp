@@ -25,8 +25,9 @@
 #include <cassert>
 #include <cstring>
 
-#include "libromdata/img/rp_image.hpp"
-using LibRomData::rp_image;
+// librpbase
+#include "librpbase/img/rp_image.hpp"
+using LibRpBase::rp_image;
 
 /**
  * Convert an rp_image to GdkPixbuf.

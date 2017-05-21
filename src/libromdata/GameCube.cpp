@@ -20,23 +20,26 @@
  ***************************************************************************/
 
 #include "GameCube.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "data/NintendoPublishers.hpp"
 #include "data/WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
-#include "SystemRegion.hpp"
 
-#include "common.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
-#include "img/rp_image.hpp"
-#include "img/ImageDecoder.hpp"
+// librpbase
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/SystemRegion.hpp"
+#include "librpbase/file/IRpFile.hpp"
+
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+using namespace LibRpBase;
 
 // DiscReader
-#include "disc/DiscReader.hpp"
+#include "librpbase/disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
 #include "disc/WiiPartition.hpp"
@@ -56,7 +59,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-#include "SystemRegion.hpp"
+#include "librpbase/SystemRegion.hpp"
 
 namespace LibRomData {
 

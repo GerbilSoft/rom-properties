@@ -19,16 +19,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
-#include "config.libromdata.h"
 
-#include "file/IRpFile.hpp"
-#include "PartitionFile.hpp"
-
+// librpbase
+#include "librpbase/file/IRpFile.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "crypto/AesCipherFactory.hpp"
-#include "crypto/IAesCipher.hpp"
+#include "librpbase/crypto/AesCipherFactory.hpp"
+#include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -22,12 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
 
-#include "SparseDiscReader.hpp"
+#include "librpbase/disc/SparseDiscReader.hpp"
 
 namespace LibRomData {
 
 class CisoGcnReaderPrivate;
-class CisoGcnReader : public SparseDiscReader
+class CisoGcnReader : public LibRpBase::SparseDiscReader
 {
 	public:
 		/**
@@ -36,7 +36,7 @@ class CisoGcnReader : public SparseDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		explicit CisoGcnReader(IRpFile *file);
+		explicit CisoGcnReader(LibRpBase::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

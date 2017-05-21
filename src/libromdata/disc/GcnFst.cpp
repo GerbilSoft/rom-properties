@@ -20,10 +20,11 @@
  ***************************************************************************/
 
 #include "GcnFst.hpp"
-#include "byteswap.h"
 
-#include "TextFuncs.hpp"
-using LibRomData::rp_string;
+// librpbase
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

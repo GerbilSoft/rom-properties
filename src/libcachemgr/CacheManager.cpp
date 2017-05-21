@@ -24,24 +24,26 @@
 #endif
 #include "CacheManager.hpp"
 
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/RomData.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/file/FileSystem.hpp"
-using namespace LibRomData;
-using namespace LibRomData::FileSystem;
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
+using namespace LibRpBase::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
-#include "libromdata/RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 // gettimeofday()
+// NOTE: MSVC doesn't actually have gettimeofday().
+// We have our own version in msvc_common.h.
 #ifdef _MSC_VER
-#include <time.h>
-#else
+#include "libwin32common/msvc_common.h"
+#else /* !_MSC_VER */
 #include <sys/time.h>
-#endif
+#endif /* _MSC_VER */
 
 // C includes. (C++ namespace)
 #include <cctype>
@@ -154,7 +156,7 @@ rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
  * @param cache_key Cache key.
  * @return Filtered cache key.
  */
-LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 {
 	// Quick check: Ensure the cache key is not empty and
 	// that it doesn't start with a path separator.
@@ -361,7 +363,7 @@ rp_string CacheManager::download(
  * @param cache_key Cache key.
  * @return Filename in the cache, or empty string if not found.
  */
-LibRomData::rp_string CacheManager::findInCache(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::findInCache(const rp_string &cache_key)
 {
 	// Get the cache key filename.
 	rp_string cache_filename = getCacheFilename(cache_key);

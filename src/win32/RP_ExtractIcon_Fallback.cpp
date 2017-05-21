@@ -24,11 +24,14 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ExtractIcon_p.hpp"
 
-// libromdata
-#include "libromdata/file/FileSystem.hpp"
-using namespace LibRomData;
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
 
-#include "RegKey.hpp"
+// libwin32common
+#include "libwin32common/RegKey.hpp"
+using LibWin32Common::RegKey;
 
 // C++ includes.
 #include <memory>

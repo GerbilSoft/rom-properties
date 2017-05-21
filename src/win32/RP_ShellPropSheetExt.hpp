@@ -22,8 +22,9 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 #define __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+// librpbase
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 // References:
 // - http://www.codeproject.com/Articles/338268/COM-in-C
@@ -31,8 +32,8 @@
 // - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
 #include "RP_ComBase.hpp"
 
-namespace LibRomData {
-	class RomData;
+namespace LibWin32Common {
+	class RegKey;
 }
 
 // CLSID
@@ -43,7 +44,6 @@ extern "C" {
 // C++ includes.
 #include <string>
 
-class RegKey;
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
@@ -74,7 +74,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType_int(RegKey &hkey_Assoc);
+		static LONG RegisterFileType_int(LibWin32Common::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -85,7 +85,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType_int(RegKey &hkey_Assoc);
+		static LONG UnregisterFileType_int(LibWin32Common::RegKey &hkey_Assoc);
 
 	public:
 		/**
@@ -100,7 +100,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 		/**
 		 * Unregister the COM object.
@@ -114,7 +114,7 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 		 * @param ext File extension, including the leading dot.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(RegKey &hkcr, LPCWSTR ext);
+		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCWSTR ext);
 
 	public:
 		// IShellExtInit

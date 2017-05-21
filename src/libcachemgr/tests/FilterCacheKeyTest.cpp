@@ -23,8 +23,8 @@
 #include "gtest/gtest.h"
 
 // libromdata
-#include "libromdata/TextFuncs.hpp"
-using LibRomData::rp_string;
+#include "librpbase/TextFuncs.hpp"
+using LibRpBase::rp_string;
 
 // Cache Manager
 #include "../CacheManager.hpp"
