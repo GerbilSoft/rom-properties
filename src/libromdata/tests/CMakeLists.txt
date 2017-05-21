@@ -162,7 +162,7 @@ ADD_EXECUTABLE(TextFuncsTest16
 	TextFuncsTest_data.hpp
 	)
 IF(WIN32)
-	TARGET_LINK_LIBRARIES(GcnFstTest win32common)
+	TARGET_LINK_LIBRARIES(TextFuncsTest16 win32common)
 ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(TextFuncsTest16 romdata16)
 TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
