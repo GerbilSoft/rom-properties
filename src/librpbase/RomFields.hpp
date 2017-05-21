@@ -271,13 +271,6 @@ class RomFields
 		 * Initialize a ROM Fields class.
 		 */
 		RomFields();
-
-		/**
-		 * Initialize a ROM Fields class.
-		 * @param desc Array of field descriptions.
-		 * @param count Number of fields.
-		 */
-		DEPRECATED RomFields(const Desc *desc, int count);
 		~RomFields();
 	public:
 		RomFields(const RomFields &other);
@@ -341,83 +334,6 @@ class RomFields
 
 	public:
 		/** Convenience functions for RomData subclasses. **/
-		/** OLD versions for statically-allocated fields. **/
-
-		/**
-		 * Add invalid field data.
-		 * This effectively hides the field.
-		 * @return Field index.
-		 */
-		DEPRECATED int addData_invalid(void);
-
-		/**
-		 * Add string field data.
-		 * @param str String.
-		 * @return Field index.
-		 */
-		DEPRECATED int addData_string(const rp_char *str);
-
-		/**
-		 * Add string field data.
-		 * @param str String.
-		 * @return Field index.
-		 */
-		DEPRECATED int addData_string(const rp_string &str);
-
-		enum Base {
-			FB_DEC,
-			FB_HEX,
-			FB_OCT,
-		};
-
-		/**
-		 * Add string field data using a numeric value.
-		 * @param val Numeric value.
-		 * @param base Base. If not decimal, a prefix will be added.
-		 * @param digits Number of leading digits. (0 for none)
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_string_numeric(uint32_t val, Base base = FB_DEC, int digits = 0);
-		
-		/**
-		 * Add a string field formatted like a hex dump
-		 * @param buf Input bytes.
-		 * @param size Byte count.
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_string_hexdump(const uint8_t *buf, size_t size);
-
-		/**
-		 * Add bitfield data.
-		 * @param bitfield Bitfield.
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_bitfield(uint32_t bitfield);
-
-		/**
-		 * Add ListData.
-		 * @param list_data ListData. (must be allocated with new)
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_listData(ListData *list_data);
-
-		/**
-		 * Add DateTime.
-		 * @param date_time Date/Time.
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_dateTime(int64_t date_time);
-
-		/**
-		 * Add age ratings.
-		 * @param age_ratings Age ratings array. (uint16_t[16])
-		 * @return Field index, or -1 on error.
-		 */
-		DEPRECATED int addData_ageRatings(uint16_t age_ratings[AGE_MAX]);
-
-	public:
-		/** Convenience functions for RomData subclasses. **/
-		/** NEW versions for dynamically-allocated fields. **/
 
 		/** Tabs **/
 
@@ -506,13 +422,11 @@ class RomFields
 		 */
 		int addField_string(const rp_char *name, const rp_string &str, int flags = 0);
 
-#if 0
 		enum Base {
 			FB_DEC,
 			FB_HEX,
 			FB_OCT,
 		};
-#endif
 
 		/**
 		 * Add string field data using a numeric value.

@@ -59,7 +59,7 @@ class RomData
 		 *
 		 * @param file ROM file.
 		 */
-		explicit RomData(IRpFile* file);
+		explicit RomData(IRpFile *file);
 
 		/**
 		 * ROM data base class.

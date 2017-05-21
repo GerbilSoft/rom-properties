@@ -49,16 +49,6 @@ class RomDataPrivate
 		 */
 		RomDataPrivate(RomData *q, IRpFile *file);
 
-		/**
-		 * Initialize a RomDataPrivate storage class.
-		 *
-		 * @param q RomData class.
-		 * @param file ROM file.
-		 * @param fields Array of ROM Field descriptions.
-		 * @param count Number of ROM Field descriptions.
-		 */
-		DEPRECATED RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count);
-
 		virtual ~RomDataPrivate();
 
 	private:

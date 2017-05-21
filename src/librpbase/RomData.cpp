@@ -62,30 +62,6 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	this->file = file->dup();
 }
 
-/**
- * Initialize a RomDataPrivate storage class.
- *
- * @param q RomData class.
- * @param file ROM file.
- * @param fields Array of ROM Field descriptions.
- * @param count Number of ROM Field descriptions.
- */
-RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomFields::Desc *fields, int count)
-	: q_ptr(q)
-	, ref_count(1)
-	, isValid(false)
-	, file(nullptr)
-	, fields(new RomFields(fields, count))
-	, className(nullptr)
-	, fileType(RomData::FTYPE_ROM_IMAGE)
-{
-	if (!file)
-		return;
-
-	// dup() the file.
-	this->file = file->dup();
-}
-
 RomDataPrivate::~RomDataPrivate()
 {
 	delete fields;
