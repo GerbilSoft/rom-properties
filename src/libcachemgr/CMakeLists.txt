@@ -66,6 +66,7 @@ FOREACH(_target cachemgr8 cachemgr16)
 	# Exclude from ALL builds.
 	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 	IF(WIN32)
+		TARGET_LINK_LIBRARIES(${_target} win32common)
 		TARGET_LINK_LIBRARIES(${_target} urlmon wininet)
 	ELSE(WIN32)
 		TARGET_LINK_LIBRARIES(${_target} ${CURL_LIBRARIES})

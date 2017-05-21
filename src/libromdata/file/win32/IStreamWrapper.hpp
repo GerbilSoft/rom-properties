@@ -27,7 +27,7 @@
 #endif
 
 #include "../IRpFile.hpp"
-#include "../../RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 #include <objidl.h>
 
 namespace LibRomData {

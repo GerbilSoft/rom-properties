@@ -23,7 +23,8 @@
 #include "DownloadsTab.hpp"
 #include "resource.h"
 
-#include "libromdata/RpWin32.hpp"
+// libromdata
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/config/Config.hpp"
 using LibRomData::Config;
 

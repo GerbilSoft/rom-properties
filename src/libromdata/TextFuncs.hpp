@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2016 by David Korth.                                 *
+ * Copyright (c) 2009-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -569,5 +569,11 @@ static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
 extern "C"
 size_t strnlen(const char *str, size_t len);
 #endif /* HAVE_STRNLEN */
+
+#ifdef _WIN32
+// wchar_t text conversion macros.
+// Generally used only on Windows.
+#include "TextFuncs_wchar.hpp"
+#endif
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_TEXTFUNCS_HPP__ */

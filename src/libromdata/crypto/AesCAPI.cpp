@@ -25,6 +25,10 @@
 // C includes. (C++ namespace)
 #include <cerrno>
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32err.h"
+
 // References:
 // - http://www.codeproject.com/Tips/787096/Operation-Password-CryptoAPI-with-AES
 //   [Google: "CryptoAPI decrypting AES example" (no quotes)]
@@ -39,7 +43,6 @@
 //   [Google: "CryptoAPI set IV" (no quotes)]
 // - https://modexp.wordpress.com/2016/03/10/windows-ctr-mode-with-crypto-api/
 //   [Google: "cryptoapi-ng aes-ctr" (no quotes)]
-#include "../RpWin32.hpp"
 #include <wincrypt.h>
 
 namespace LibRomData {

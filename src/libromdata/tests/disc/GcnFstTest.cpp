@@ -33,7 +33,7 @@
 #include "file/FileSystem.hpp"
 #include "disc/GcnFst.hpp"
 #ifdef _WIN32
-#include "RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 #endif
 using LibRomData::GcnFst;
 

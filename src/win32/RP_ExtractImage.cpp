@@ -27,7 +27,7 @@
 // libromdata
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RpWin32.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
@@ -225,7 +225,7 @@ IFACEMETHODIMP RP_ExtractImage::IsDirty(void)
 
 IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 {
-	UNUSED(dwMode);	// TODO
+	RP_UNUSED(dwMode);	// TODO
 
 	// If we already have a RomData object, unref() it first.
 	RP_D(RP_ExtractImage);
@@ -257,20 +257,20 @@ IFACEMETHODIMP RP_ExtractImage::Load(LPCOLESTR pszFileName, DWORD dwMode)
 
 IFACEMETHODIMP RP_ExtractImage::Save(LPCOLESTR pszFileName, BOOL fRemember)
 {
-	UNUSED(pszFileName);
-	UNUSED(fRemember);
+	RP_UNUSED(pszFileName);
+	RP_UNUSED(fRemember);
 	return E_NOTIMPL;
 }
 
 IFACEMETHODIMP RP_ExtractImage::SaveCompleted(LPCOLESTR pszFileName)
 {
-	UNUSED(pszFileName);
+	RP_UNUSED(pszFileName);
 	return E_NOTIMPL;
 }
 
 IFACEMETHODIMP RP_ExtractImage::GetCurFile(LPOLESTR *ppszFileName)
 {
-	UNUSED(ppszFileName);
+	RP_UNUSED(ppszFileName);
 	return E_NOTIMPL;
 }
 

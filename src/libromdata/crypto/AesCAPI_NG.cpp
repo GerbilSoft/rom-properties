@@ -26,9 +26,11 @@
 #include <cassert>
 #include <cerrno>
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-#include "../RpWin32.hpp"
 #include <bcrypt.h>
 #include <winternl.h>
 

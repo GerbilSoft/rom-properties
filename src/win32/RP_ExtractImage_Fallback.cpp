@@ -25,10 +25,11 @@
 #include "RP_ExtractImage_p.hpp"
 
 // libromdata
-#include "libromdata/file/RpFile.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/FileSystem.hpp"
 using namespace LibRomData;
 
+// libwin32common
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 

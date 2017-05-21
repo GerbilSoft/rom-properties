@@ -26,7 +26,6 @@
 #include "libwin32common/WinUI.hpp"
 
 // libromdata
-#include "libromdata/RpWin32.hpp"
 #include "libromdata/config/Config.hpp"
 using LibRomData::Config;
 

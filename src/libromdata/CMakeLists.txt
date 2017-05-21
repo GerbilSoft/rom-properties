@@ -228,7 +228,6 @@ ENDIF(ENABLE_XML)
 
 IF(WIN32)
 	SET(libromdata_OS_SRCS
-		RpWin32.cpp
 		TextFuncs_win32.cpp
 		file/win32/FileSystem_win32.cpp
 		file/win32/RpFile_win32.cpp
@@ -238,7 +237,6 @@ IF(WIN32)
 		threads/InitOnceExecuteOnceXP.c
 		)
 	SET(libromdata_OS_H
-		RpWin32.hpp
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp

@@ -32,15 +32,16 @@
 // libwin32common
 #include "libwin32common/AutoGetDC.hpp"
 #include "libwin32common/WinUI.hpp"
+#include "libwin32common/w32time.h"
 using LibWin32Common::AutoGetDC;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
 #include "libromdata/RomData.hpp"
 #include "libromdata/RomFields.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/RpFile.hpp"
 #include "libromdata/img/rp_image.hpp"
-#include "libromdata/RpWin32.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)

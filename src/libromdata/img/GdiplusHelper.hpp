@@ -27,7 +27,7 @@
 #endif
 
 #include "common.h"
-#include "../RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 
 class GdiplusHelper
 {

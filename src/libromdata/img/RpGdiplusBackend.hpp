@@ -26,7 +26,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_IMG_RPGDIPLUSBACKEND_HPP__
 
 #include "rp_image_backend.hpp"
-#include "RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 
 // C++ includes.
 #include <memory>

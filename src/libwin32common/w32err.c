@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libromdata)                       *
- * RpWin32.cpp: Windows-specific functions.                                *
+ * ROM Properties Page shell extension. (libwin32common)                   *
+ * w32err.c: Error code mapping. (Windows to POSIX)                        *
  *                                                                         *
- * Copyright (c) 2009-2016 by David Korth.                                 *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,9 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "RpWin32.hpp"
+#include "w32err.h"
 
-namespace LibRomData {
+// C includes.
+#include <errno.h>
+#include <stdlib.h>
 
 typedef struct _errmap {
         DWORD w32;	// Win32 error code.
@@ -124,8 +126,8 @@ static const errmap w32_to_posix[] = {
  */
 static int errmap_compar(const void *a, const void *b)
 {
-	DWORD err1 = static_cast<const errmap*>(a)->w32;
-	DWORD err2 = static_cast<const errmap*>(b)->w32;
+	const DWORD err1 = ((const errmap*)a)->w32;
+	const DWORD err2 = ((const errmap*)a)->w32;
 	if (err1 < err2) return -1;
 	if (err1 > err2) return 1;
 	return 0;
@@ -140,8 +142,9 @@ int w32err_to_posix(DWORD w32err)
 {
 	// Check the error code table.
 	const errmap key = {w32err, 0};
-	const errmap *entry = static_cast<const errmap*>(bsearch(&key,
-			w32_to_posix, ARRAY_SIZE(w32_to_posix),
+	const errmap *const entry = (const errmap*)(bsearch(&key,
+			w32_to_posix,
+			sizeof(w32_to_posix)/sizeof(w32_to_posix[0]),
 			sizeof(errmap), errmap_compar));
 	if (entry) {
 		// Found an error code.
@@ -160,45 +163,3 @@ int w32err_to_posix(DWORD w32err)
 	// Return the default EINVAL.
 	return EINVAL;
 }
-
-}
-
-/** C99/POSIX replacement functions. **/
-
-#ifdef _MSC_VER
-// MSVC doesn't have struct timeval or gettimeofday().
-int gettimeofday(struct timeval *tv, struct timezone *tz)
-{
-	union {
-		uint64_t ns100;	// Time since 1/1/1601 in 100ns units.
-		FILETIME ft;
-	} _now;
-	TIME_ZONE_INFORMATION TimeZoneInformation;
-	DWORD tzi;
-
-	if (tz) {
-		// Get the timezone information.
-		if ((tzi = GetTimeZoneInformation(&TimeZoneInformation)) != TIME_ZONE_ID_INVALID) {
-			tz->tz_minuteswest = TimeZoneInformation.Bias;
-			if (tzi == TIME_ZONE_ID_DAYLIGHT) {
-				tz->tz_dsttime = 1;
-			} else {
-				tz->tz_dsttime = 0;
-			}
-		} else {
-			tz->tz_minuteswest = 0;
-			tz->tz_dsttime = 0;
-		}
-	}
-
-	if (tv) {
-		GetSystemTimeAsFileTime(&_now.ft);	// 100ns units since 1/1/1601
-		// Windows XP's accuract seems to be ~125,000ns == 125us == 0.125ms
-		_now.ns100 -= FILETIME_1970;
-		tv->tv_sec = _now.ns100 / HECTONANOSEC_PER_SEC;			// seconds since 1/1/1970
-		tv->tv_usec = (_now.ns100 % HECTONANOSEC_PER_SEC) / 10LL;	// microseconds
-	}
-
-	return 0;
-}
-#endif /* _MSC_VER */

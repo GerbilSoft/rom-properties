@@ -53,6 +53,9 @@ using LibRomData::RomDataFactory;
 using LibRomData::RpGdiplusBackend;
 using LibRomData::rp_image;
 
+// Text conversion functions and macros.
+#include "libromdata/TextFuncs.hpp"
+
 // C++ includes.
 #include <memory>
 #include <string>

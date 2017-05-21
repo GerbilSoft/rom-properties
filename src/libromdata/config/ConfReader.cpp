@@ -27,9 +27,6 @@
 
 // Text conversion functions and macros.
 #include "TextFuncs.hpp"
-#ifdef _WIN32
-#include "RpWin32.hpp"
-#endif
 
 // INI parser.
 #include "ini.h"

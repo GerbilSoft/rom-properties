@@ -21,7 +21,10 @@
 
 #include "../RpFile.hpp"
 #include "TextFuncs.hpp"
-#include "RpWin32.hpp"
+
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32err.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

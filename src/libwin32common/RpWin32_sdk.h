@@ -86,6 +86,29 @@
 
 #include <windows.h>
 
+#if defined(__GNUC__) && defined(__MINGW32__) && _WIN32_WINNT < 0x0502
+/**
+ * MinGW-w64 only defines ULONG overloads for the various atomic functions
+ * if _WIN32_WINNT > 0x0502.
+ */
+static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedIncrement(reinterpret_cast<LONG volatile*>(Addend)));
+}
+static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
+{
+	return (ULONG)(InterlockedDecrement(reinterpret_cast<LONG volatile*>(Addend)));
+}
+#endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
+
+// UUID attribute.
+#ifdef _MSC_VER
+#define UUID_ATTR(str) __declspec(uuid(str))
+#else /* !_MSC_VER */
+// UUID attribute is not supported by gcc-5.2.0.
+#define UUID_ATTR(str)
+#endif /* _MSC_VER */
+
 // SAL 1.0 annotations not supported by MinGW-w64 5.0.1.
 #ifndef __out_opt
 #define __out_opt

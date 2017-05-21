@@ -22,12 +22,12 @@
 #include "TextFuncs.hpp"
 #include "config.libromdata.h"
 
-#if !defined(_WIN32)
+#ifndef _WIN32
 #error TextFuncs_win32.cpp is for Windows only.
 #endif
 
 // Windows
-#include "RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 
 // C includes. (C++ namespace)
 #include <cassert>

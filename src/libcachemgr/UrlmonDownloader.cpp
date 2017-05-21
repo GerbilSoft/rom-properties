@@ -22,9 +22,13 @@
 #include "stdafx.h"
 #include "UrlmonDownloader.hpp"
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32time.h"
+
+// libromdata
 #include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/RpFile.hpp"
-#include "libromdata/RpWin32.hpp"
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;

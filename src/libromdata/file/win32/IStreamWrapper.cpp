@@ -21,6 +21,9 @@
 
 #include "IStreamWrapper.hpp"
 
+// Text conversion functions and macros.
+#include "../../TextFuncs.hpp"
+
 // C++ includes.
 #include <string>
 using std::wstring;

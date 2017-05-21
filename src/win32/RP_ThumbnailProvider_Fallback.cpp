@@ -25,10 +25,12 @@
 #include "RP_ThumbnailProvider_p.hpp"
 
 // libromdata
-#include "libromdata/file/RpFile.hpp"
+#include "libromdata/TextFuncs.hpp"
 #include "libromdata/file/FileSystem.hpp"
+#include "libromdata/file/IRpFile.hpp"
 using namespace LibRomData;
 
+// libwin32common
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 

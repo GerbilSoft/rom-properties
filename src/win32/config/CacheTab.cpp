@@ -26,9 +26,6 @@
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
-// libromdata
-#include "libromdata/RpWin32.hpp"
-
 #include "resource.h"
 
 // IEmptyVolumeCacheCallBack implementation.

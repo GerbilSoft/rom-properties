@@ -33,15 +33,17 @@ using namespace LibRomData::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32
-#include "libromdata/RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
 #endif /* _WIN32 */
 
 // gettimeofday()
+// NOTE: MSVC doesn't actually have gettimeofday().
+// We have our own version in msvc_common.h.
 #ifdef _MSC_VER
-#include <time.h>
-#else
+#include "libwin32common/msvc_common.h"
+#else /* !_MSC_VER */
 #include <sys/time.h>
-#endif
+#endif /* _MSC_VER */
 
 // C includes. (C++ namespace)
 #include <cctype>

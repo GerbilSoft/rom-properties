@@ -44,9 +44,6 @@ using std::unordered_map;
 
 // Text conversion functions and macros.
 #include "TextFuncs.hpp"
-#ifdef _WIN32
-#include "../RpWin32.hpp"
-#endif
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

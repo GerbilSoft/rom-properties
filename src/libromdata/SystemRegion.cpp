@@ -23,17 +23,12 @@
 #include "common.h"
 
 #ifdef _WIN32
-#include "RpWin32.hpp"
+#include "libwin32common/RpWin32_sdk.h"
+#include "threads/InitOnceExecuteOnceXP.h"
 #else
 #include <cctype>
 #include <clocale>
 #include <cstring>
-#endif
-
-// One-time initialization.
-#ifdef _WIN32
-#include "threads/InitOnceExecuteOnceXP.h"
-#else
 #include <pthread.h>
 #endif
 

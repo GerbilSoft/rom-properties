@@ -106,7 +106,7 @@ class RP_ClassFactory : public RP_ComBase<IClassFactory>, public creatorClass
 		IFACEMETHODIMP LockServer(BOOL fLock) override final
 		{
 			// Not implemented.
-			UNUSED(fLock);
+			RP_UNUSED(fLock);
 			return S_OK;
 		}
 };

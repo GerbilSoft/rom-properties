@@ -21,11 +21,6 @@
 
 #include "../FileSystem.hpp"
 
-// libromdata
-#include "TextFuncs.hpp"
-#include "threads/Atomics.h"
-#include "threads/InitOnceExecuteOnceXP.h"
-
 // C includes.
 #include <sys/utime.h>
 
@@ -40,10 +35,19 @@ using std::string;
 using std::u16string;
 using std::wstring;
 
+// libwin32common
+#include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/w32err.h"
+#include "libwin32common/w32time.h"
+
 // Windows includes.
-#include "../../RpWin32.hpp"
 #include <shlobj.h>
 #include <direct.h>
+
+// libromdata
+#include "TextFuncs.hpp"
+#include "threads/Atomics.h"
+#include "threads/InitOnceExecuteOnceXP.h"
 
 namespace LibRomData { namespace FileSystem {
 

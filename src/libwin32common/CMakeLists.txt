@@ -12,6 +12,7 @@ SET(libwin32common_SRCS
 	DialogBuilder.cpp
 	RegKey.cpp
 	WinUI.cpp
+	w32err.c
 	)
 SET(libwin32common_H
 	RpWin32_sdk.h
@@ -20,7 +21,14 @@ SET(libwin32common_H
 	RegKey.hpp
 	AutoGetDC.hpp
 	WinUI.hpp
+	w32err.h
+	msvc_common.h
+	w32time.h
 	)
+
+IF(MSVC)
+	SET(libwin32common_SRCS ${libwin32common_SRCS} msvc_common.c)
+ENDIF(MSVC)
 
 ######################
 # Build the library. #
