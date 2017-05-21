@@ -31,7 +31,7 @@
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: RpImageLoader tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: RpImageLoader tests.\n\n");
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.

@@ -25,9 +25,11 @@
 #endif /* ENABLE_DECRYPTION */
 
 #include "CtrKeyScrambler.hpp"
-#include "librpbase/byteswap.h"
 
+// librpbase
+#include "librpbase/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::KeyManager;
 
 // C includes. (C++ namespace)
 #include <cassert>

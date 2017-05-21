@@ -33,7 +33,7 @@
 #include <nettle/cbc.h>
 #include <nettle/ctr.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class AesNettlePrivate
 {

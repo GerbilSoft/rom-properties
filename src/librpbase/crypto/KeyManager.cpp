@@ -49,7 +49,7 @@ using std::unordered_map;
 // Reference: http://andreoffringa.org/?q=uvector
 #include "../uvector.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class KeyManagerPrivate : public ConfReaderPrivate
 {

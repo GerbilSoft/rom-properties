@@ -24,7 +24,7 @@
 
 #include "IDiscReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IPartition : public IDiscReader
 {

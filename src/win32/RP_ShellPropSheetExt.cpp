@@ -41,9 +41,11 @@ using LibWin32Common::AutoGetDC;
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -116,7 +118,7 @@ class RP_ShellPropSheetExt_Private
 
 	public:
 		// ROM data.
-		LibRomData::RomData *romData;
+		RomData *romData;
 
 		// Useful window handles.
 		HWND hDlgProps;		// Property dialog. (parent)

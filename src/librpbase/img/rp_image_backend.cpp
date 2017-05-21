@@ -24,7 +24,7 @@
 // C includes (C++ namespace)
 #include <cassert>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** rp_image_backend **/
 

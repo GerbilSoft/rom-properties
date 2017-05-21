@@ -31,6 +31,8 @@
 
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::KeyManager;
+
 // libromdata
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
 #include "libromdata/disc/WiiPartition.hpp"

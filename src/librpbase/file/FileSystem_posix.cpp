@@ -41,7 +41,7 @@
 using std::string;
 using std::u16string;
 
-namespace LibRomData { namespace FileSystem {
+namespace LibRpBase { namespace FileSystem {
 
 // pthread_once() control variable.
 static pthread_once_t once_control = PTHREAD_ONCE_INIT;

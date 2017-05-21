@@ -53,7 +53,7 @@ extern "C" {
 #include "libwin32common/DelayLoadHelper.hpp"
 #endif /* _MSC_VER */
 
-namespace LibRomData {
+namespace LibRpBase {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.

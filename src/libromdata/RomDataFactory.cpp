@@ -21,10 +21,14 @@
 
 #include "librpbase/config.librpbase.h"
 
-#include "librpbase/common.h"
 #include "RomDataFactory.hpp"
+
+// librpbase
+#include "librpbase/common.h"
+#include "librpbase/RomData.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
+using namespace LibRpBase;
 
 // C++ includes.
 #include <unordered_map>

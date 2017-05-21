@@ -27,7 +27,7 @@
 
 // librpbase
 #include "librpbase/config/Config.hpp"
-using LibRomData::Config;
+using LibRpBase::Config;
 
 #include "resource.h"
 

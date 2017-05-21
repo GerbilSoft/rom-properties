@@ -53,7 +53,7 @@
 #define DIR_SEP_CHR '/'
 #endif
 
-namespace LibRomData { namespace FileSystem {
+namespace LibRpBase { namespace FileSystem {
 
 /**
  * Recursively mkdir() subdirectories.

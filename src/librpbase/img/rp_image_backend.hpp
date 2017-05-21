@@ -24,7 +24,7 @@
 
 #include "rp_image.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * rp_image data storage class.

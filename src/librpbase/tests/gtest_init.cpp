@@ -29,8 +29,8 @@ using std::locale;
 // rp_image backend registration.
 #include "librpbase/img/RpGdiplusBackend.hpp"
 #include "librpbase/img/rp_image.hpp"
-using LibRomData::RpGdiplusBackend;
-using LibRomData::rp_image;
+using LibRpBase::RpGdiplusBackend;
+using LibRpBase::rp_image;
 #endif /* _WIN32 */
 
 extern "C" int gtest_main(int argc, char *argv[]);

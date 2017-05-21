@@ -26,17 +26,20 @@
 #include "data/WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
-#include "librpbase/SystemRegion.hpp"
 
+// librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "img/rp_image.hpp"
-#include "img/ImageDecoder.hpp"
+
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+using namespace LibRpBase;
 
 // DiscReader
-#include "disc/DiscReader.hpp"
+#include "librpbase/disc/DiscReader.hpp"
 #include "disc/WbfsReader.hpp"
 #include "disc/CisoGcnReader.hpp"
 #include "disc/WiiPartition.hpp"

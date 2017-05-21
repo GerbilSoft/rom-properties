@@ -22,9 +22,9 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-// libromdata
+// librpbase
 #include "librpbase/img/rp_image.hpp"
-using LibRomData::rp_image;
+using LibRpBase::rp_image;
 
 // C includes. (C++ namespace)
 #include <cassert>

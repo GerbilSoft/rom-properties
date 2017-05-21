@@ -34,7 +34,7 @@
 #include <vector>
 using std::vector;
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** RomDataPrivate **/
 
@@ -193,7 +193,7 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
  * TODO: PAL multi-region selection?
  * @return GameTDB URL.
  */
-LibRomData::rp_string RomDataPrivate::getURL_GameTDB(
+LibRpBase::rp_string RomDataPrivate::getURL_GameTDB(
 	const char *system, const char *type,
 	const char *region, const char *gameID,
 	const char *ext)
@@ -218,7 +218,7 @@ LibRomData::rp_string RomDataPrivate::getURL_GameTDB(
  * TODO: PAL multi-region selection?
  * @return GameTDB cache key.
  */
-LibRomData::rp_string RomDataPrivate::getCacheKey_GameTDB(
+LibRpBase::rp_string RomDataPrivate::getCacheKey_GameTDB(
 	const char *system, const char *type,
 	const char *region, const char *gameID,
 	const char *ext)
@@ -378,7 +378,7 @@ RomData::~RomData()
  * Take a reference to this RomData* object.
  * @return this
  */
-LibRomData::RomData *RomData::ref(void)
+LibRpBase::RomData *RomData::ref(void)
 {
 	// TODO: Atomic addition.
 	RP_D(RomData);

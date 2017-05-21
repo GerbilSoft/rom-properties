@@ -26,7 +26,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/config/Config.hpp"
-using LibRomData::Config;
+using LibRpBase::Config;
 
 // C includes. (C++ namespace)
 #include <cassert>

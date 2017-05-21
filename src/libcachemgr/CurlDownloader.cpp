@@ -21,7 +21,7 @@
 
 #include "CurlDownloader.hpp"
 #include "librpbase/TextFuncs.hpp"
-using LibRomData::rp_string;
+using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -192,12 +192,12 @@ int CurlDownloader::download(void)
 
 	// Convert the URL to UTF-8.
 	// TODO: Only if not RP_UTF8?
-	string url8 = LibRomData::rp_string_to_utf8(m_url);
+	string url8 = LibRpBase::rp_string_to_utf8(m_url);
 
 	// Proxy settings.
 	if (!m_proxyUrl.empty()) {
 		// TODO: Only if not RP_UTF8?
-		string proxyUrl8 = LibRomData::rp_string_to_utf8(m_proxyUrl);
+		string proxyUrl8 = LibRpBase::rp_string_to_utf8(m_proxyUrl);
 		curl_easy_setopt(curl, CURLOPT_PROXY, proxyUrl8.c_str());
 	}
 

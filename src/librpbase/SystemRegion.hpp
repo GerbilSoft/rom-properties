@@ -27,7 +27,7 @@
 // C includes.
 #include <stdint.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class SystemRegion
 {

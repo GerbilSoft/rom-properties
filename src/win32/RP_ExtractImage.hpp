@@ -33,9 +33,6 @@ extern "C" {
 	extern const CLSID CLSID_RP_ExtractImage;
 }
 
-namespace LibRomData {
-	class rp_image;
-}
 namespace LibWin32Common {
 	class RegKey;
 }

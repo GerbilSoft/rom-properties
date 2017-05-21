@@ -21,10 +21,10 @@
 
 #include "FstPrint.hpp"
 
-// libromdata
+// librpbase
 #include "librpbase/TextFuncs.hpp"
-#include "disc/IFst.hpp"
-using LibRomData::rp_string;
+#include "librpbase/disc/IFst.hpp"
+using namespace LibRpBase;
 
 // C includes.
 #include <stdint.h>

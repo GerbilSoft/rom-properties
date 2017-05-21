@@ -42,7 +42,7 @@
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class AesCAPI_NG_Private
 {

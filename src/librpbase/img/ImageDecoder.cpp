@@ -27,7 +27,7 @@
 #include <cassert>
 #include <cstring>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class ImageDecoderPrivate
 {

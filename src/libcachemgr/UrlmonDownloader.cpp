@@ -29,9 +29,9 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
-using LibRomData::IRpFile;
-using LibRomData::RpFile;
-using LibRomData::rp_string;
+using LibRpBase::IRpFile;
+using LibRpBase::RpFile;
+using LibRpBase::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>

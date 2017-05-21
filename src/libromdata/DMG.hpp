@@ -32,7 +32,7 @@
 namespace LibRomData {
 
 class DMGPrivate;
-class DMG : public RomData
+class DMG : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -46,7 +46,7 @@ class DMG : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit DMG(IRpFile *file);
+		explicit DMG(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

@@ -57,7 +57,7 @@ using std::u16string;
 	(((sizeof(x) / sizeof(x[0]))) / \
 		(size_t)(!(sizeof(x) % sizeof(x[0]))))
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 class TextFuncsTest : public ::testing::Test
 {
@@ -1442,7 +1442,7 @@ TEST_F(TextFuncsTest, rp_strcmp)
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: TextFuncs tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: TextFuncs tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

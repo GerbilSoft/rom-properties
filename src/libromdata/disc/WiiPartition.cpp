@@ -22,15 +22,17 @@
 #include "librpbase/config.librpbase.h"
 #include "WiiPartition.hpp"
 
-#include "librpbase/byteswap.h"
 #include "gcn_structs.h"
 #include "GcnFst.hpp"
 
+// librpbase
+#include "librpbase/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

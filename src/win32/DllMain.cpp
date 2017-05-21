@@ -40,14 +40,15 @@
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"
 
+// libwin32common
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
 // rp_image backend registration.
 #include "librpbase/img/RpGdiplusBackend.hpp"
 #include "librpbase/img/rp_image.hpp"
-using LibRomData::RpGdiplusBackend;
-using LibRomData::rp_image;
+using LibRpBase::RpGdiplusBackend;
+using LibRpBase::rp_image;
 
 // Text conversion functions and macros.
 #include "librpbase/TextFuncs.hpp"

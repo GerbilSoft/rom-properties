@@ -30,7 +30,7 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include <objidl.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IStreamWrapper : public IStream
 {

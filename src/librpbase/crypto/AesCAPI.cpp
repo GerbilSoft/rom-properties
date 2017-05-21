@@ -45,7 +45,7 @@
 //   [Google: "cryptoapi-ng aes-ctr" (no quotes)]
 #include <wincrypt.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class AesCAPIPrivate
 {

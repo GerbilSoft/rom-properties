@@ -37,7 +37,7 @@ using std::unique_ptr;
 #include "img/rp_image.hpp"
 #include "img/GdiplusHelper.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Create an RpGdiplusBackend.

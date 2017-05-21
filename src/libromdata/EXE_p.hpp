@@ -38,10 +38,10 @@
 namespace LibRomData {
 
 class EXE;
-class EXEPrivate : public RomDataPrivate
+class EXEPrivate : public LibRpBase::RomDataPrivate
 {
 	public:
-		EXEPrivate(EXE *q, IRpFile *file);
+		EXEPrivate(EXE *q, LibRpBase::IRpFile *file);
 		~EXEPrivate();
 
 	private:

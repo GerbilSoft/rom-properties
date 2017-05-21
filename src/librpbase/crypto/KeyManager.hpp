@@ -24,7 +24,7 @@
 
 #include "../config/ConfReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class KeyManager : public ConfReader
 {

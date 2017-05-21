@@ -24,11 +24,12 @@
 #endif
 #include "CacheManager.hpp"
 
+// librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
-using namespace LibRomData;
-using namespace LibRomData::FileSystem;
+using namespace LibRpBase;
+using namespace LibRpBase::FileSystem;
 
 // Windows includes.
 #ifdef _WIN32

@@ -25,7 +25,7 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 class rp_image;

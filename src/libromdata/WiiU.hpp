@@ -27,7 +27,7 @@
 namespace LibRomData {
 
 class WiiUPrivate;
-class WiiU : public RomData
+class WiiU : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -43,7 +43,7 @@ class WiiU : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		explicit WiiU(IRpFile *file);
+		explicit WiiU(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

@@ -21,7 +21,7 @@
 
 #include "FileSystem.hpp"
 
-namespace LibRomData { namespace FileSystem {
+namespace LibRpBase { namespace FileSystem {
 
 /**
  * Get the file extension from a filename or pathname.

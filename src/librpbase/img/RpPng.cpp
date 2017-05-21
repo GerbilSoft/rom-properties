@@ -65,7 +65,7 @@ using std::unique_ptr;
 #include "libwin32common/DelayLoadHelper.hpp"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-namespace LibRomData {
+namespace LibRpBase {
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // DelayLoad test implementation.

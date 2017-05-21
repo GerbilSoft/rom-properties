@@ -31,7 +31,7 @@
 namespace LibRomData {
 
 class GameCubePrivate;
-class GameCube : public RomData
+class GameCube : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class GameCube : public RomData
 		 *
 		 * @param file Open disc image.
 		 */
-		explicit GameCube(IRpFile *file);
+		explicit GameCube(LibRpBase::IRpFile *file);
 
 	protected:
 		/**
@@ -176,7 +176,8 @@ class GameCube : public RomData
 		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int loadInternalImage(ImageType imageType, const rp_image **pImage) override final;
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 
 	public:
 		/**

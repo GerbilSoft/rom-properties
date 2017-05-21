@@ -25,7 +25,7 @@
 
 // librpbase
 #include "librpbase/config/Config.hpp"
-using LibRomData::Config;
+using LibRpBase::Config;
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.

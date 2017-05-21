@@ -37,7 +37,7 @@
 // C includes. (C++ namespace)
 #include <ctime>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** ConfReaderPrivate **/
 

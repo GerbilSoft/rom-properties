@@ -31,7 +31,7 @@
 namespace LibRomData {
 
 class MegaDrivePrivate;
-class MegaDrive : public RomData
+class MegaDrive : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -45,7 +45,7 @@ class MegaDrive : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit MegaDrive(IRpFile *file);
+		explicit MegaDrive(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

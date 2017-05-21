@@ -32,7 +32,7 @@
 #include <array>
 #include <cstdio>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class rp_image;
 

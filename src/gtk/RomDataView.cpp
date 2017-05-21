@@ -31,9 +31,11 @@
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>

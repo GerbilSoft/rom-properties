@@ -30,7 +30,7 @@
 
 // TODO: Make this implicitly shared.
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class rp_image_backend;
 

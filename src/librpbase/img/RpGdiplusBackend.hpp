@@ -41,7 +41,7 @@ namespace Gdiplus {
 #include <olectl.h>
 #include <gdiplus.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * rp_image data storage class.

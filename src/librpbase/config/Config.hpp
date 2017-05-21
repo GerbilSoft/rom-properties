@@ -24,7 +24,7 @@
 
 #include "ConfReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class Config : public ConfReader
 {

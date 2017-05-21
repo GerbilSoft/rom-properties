@@ -25,7 +25,7 @@
 #include <cassert>
 #include <cerrno>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Create a mutex.

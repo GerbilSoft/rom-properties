@@ -23,7 +23,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_PNGCHECK_PNGCHECK_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_PNGCHECK_PNGCHECK_HPP__
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 

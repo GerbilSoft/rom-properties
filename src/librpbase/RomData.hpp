@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 class rp_image;

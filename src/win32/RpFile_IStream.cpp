@@ -25,8 +25,8 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-using LibRomData::IRpFile;
-using LibRomData::rp_string;
+using LibRpBase::IRpFile;
+using LibRpBase::rp_string;
 
 // C++ includes.
 #include <string>

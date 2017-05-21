@@ -30,7 +30,7 @@
 #include <semaphore.h>
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class Semaphore
 {

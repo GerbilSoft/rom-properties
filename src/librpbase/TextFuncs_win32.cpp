@@ -43,7 +43,7 @@ using std::wstring;
 // Shared internal functions.
 #include "TextFuncs_int.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** OS-specific text conversion functions. **/
 

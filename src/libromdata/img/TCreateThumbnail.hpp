@@ -81,9 +81,13 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 #ifdef __cplusplus
 #include "librpbase/RomData.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
+	class IRpFile;
+	class RomData;
+	class rp_image;
+};
 
-class RomData;
+namespace LibRomData {
 
 template<typename ImgClass>
 class TCreateThumbnail
@@ -110,8 +114,8 @@ class TCreateThumbnail
 		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
 		 * @return Internal image, or null ImgClass on error.
 		 */
-		ImgClass getInternalImage(const RomData *romData,
-			RomData::ImageType imageType,
+		ImgClass getInternalImage(const LibRpBase::RomData *romData,
+			LibRpBase::RomData::ImageType imageType,
 			ImgSize *pOutSize);
 
 		/**
@@ -123,7 +127,7 @@ class TCreateThumbnail
 		 * @return External image, or null ImgClass on error.
 		 */
 		ImgClass getExternalImage(
-			const RomData *romData, RomData::ImageType imageType,
+			const LibRpBase::RomData *romData, LibRpBase::RomData::ImageType imageType,
 			int req_size, ImgSize *pOutSize);
 
 		/**
@@ -133,7 +137,7 @@ class TCreateThumbnail
 		 * @param ret_img	[out] Return image.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img);
+		int getThumbnail(const LibRpBase::RomData *romData, int req_size, ImgClass &ret_img);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -142,7 +146,7 @@ class TCreateThumbnail
 		 * @param ret_img	[out] Return image.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img);
+		int getThumbnail(LibRpBase::IRpFile *file, int req_size, ImgClass &ret_img);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
@@ -170,7 +174,7 @@ class TCreateThumbnail
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual ImgClass rpImageToImgClass(const rp_image *img) const = 0;
+		virtual ImgClass rpImageToImgClass(const LibRpBase::rp_image *img) const = 0;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -207,7 +211,7 @@ class TCreateThumbnail
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual rp_string proxyForUrl(const rp_string &url) const = 0;
+		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const = 0;
 };
 
 }

@@ -42,7 +42,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class RomFieldsPrivate
 {

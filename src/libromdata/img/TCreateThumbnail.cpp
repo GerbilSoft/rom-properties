@@ -34,6 +34,8 @@ using LibCacheMgr::CacheManager;
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpbase/config/Config.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "../RomDataFactory.hpp"
 

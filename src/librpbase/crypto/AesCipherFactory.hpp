@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IAesCipher;
 class AesCipherFactory

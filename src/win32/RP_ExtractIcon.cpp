@@ -30,9 +30,11 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpGdiplusBackend.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // C includes. (C++ namespace)
 #include <cassert>

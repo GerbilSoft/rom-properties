@@ -22,10 +22,13 @@
 #include "stdafx.h"
 #include "config.rpcli.h"
 
-// libromdata
+// librpbase
 #include "librpbase/byteswap.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
+using namespace LibRpBase;
+
+// libromdata
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"

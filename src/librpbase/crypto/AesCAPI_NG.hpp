@@ -24,7 +24,7 @@
 
 #include "IAesCipher.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class AesCAPI_NG_Private;
 class AesCAPI_NG : public IAesCipher

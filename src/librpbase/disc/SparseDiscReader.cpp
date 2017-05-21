@@ -28,7 +28,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** SparseDiscReaderPrivate **/
 

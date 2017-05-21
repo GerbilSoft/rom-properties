@@ -24,7 +24,7 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Open an IRpFile backed by memory.

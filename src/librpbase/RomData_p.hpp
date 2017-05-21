@@ -30,7 +30,7 @@
 
 #include "RomData.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 class RomData;

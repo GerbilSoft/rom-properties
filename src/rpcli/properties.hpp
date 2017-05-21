@@ -23,21 +23,21 @@
 #define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 
 #include <ostream>
-namespace LibRomData {
+namespace LibRpBase {
 	class RomData;
 }
 
 class ROMOutput {
-	const LibRomData::RomData* romdata;
+	const LibRpBase::RomData *romdata;
 public:
-	explicit ROMOutput(const LibRomData::RomData* romdata);
+	explicit ROMOutput(const LibRpBase::RomData *romdata);
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
 class JSONROMOutput {
-	const LibRomData::RomData* romdata;
+	const LibRpBase::RomData *romdata;
 public:
-	explicit JSONROMOutput(const LibRomData::RomData* romdata);
+	explicit JSONROMOutput(const LibRpBase::RomData *romdata);
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 };
 

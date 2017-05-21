@@ -22,7 +22,7 @@
 #include "PartitionFile.hpp"
 #include "IDiscReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Open a file from an IPartition.

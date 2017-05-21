@@ -63,7 +63,7 @@
 using std::string;
 using std::unique_ptr;
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 // tRNS chunk for CI8 paletted images.
 // BMP format doesn't support alpha values

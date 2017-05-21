@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
 
+// librpbase
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
@@ -33,9 +34,6 @@ extern "C" {
 	extern const CLSID CLSID_RP_ExtractIcon;
 }
 
-namespace LibRomData {
-	class rp_image;
-}
 namespace LibWin32Common {
 	class RegKey;
 }

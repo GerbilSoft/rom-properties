@@ -32,7 +32,7 @@
 # include "AesNettle.hpp"
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Create an IAesCipher class.

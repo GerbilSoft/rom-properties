@@ -33,7 +33,7 @@
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** Image operations. **/
 

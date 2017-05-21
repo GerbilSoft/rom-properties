@@ -24,7 +24,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
 
 /**
- * NOTE: These are defined outside of the LibRomData
+ * NOTE: These are defined outside of the LibRpBase
  * namespace because macros are needed for the UTF-8
  * versions.
  *
@@ -48,7 +48,7 @@
  */
 #define RP2W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRomData::rp_string_to_utf16(str, -1).c_str()))
+		LibRpBase::rp_string_to_utf16(str, -1).c_str()))
 
 /**
  * Get const wchar_t* from rp_string.
@@ -57,7 +57,7 @@
  */
 #define RP2W_s(rps) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRomData::rp_string_to_utf16(rps).c_str()))
+		LibRpBase::rp_string_to_utf16(rps).c_str()))
 
 /**
  * Get const rp_char* from const wchar_t*.
@@ -65,7 +65,7 @@
  * @return const rp_char*
  */
 #define W2RP_c(wcs) \
-	(LibRomData::utf16_to_rp_string( \
+	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs), -1).c_str())
 
 /**
@@ -75,7 +75,7 @@
  * @return const rp_char*
  */
 #define W2RP_cl(wcs, len) \
-	(LibRomData::utf16_to_rp_string( \
+	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs), len).c_str())
 
 /**
@@ -84,7 +84,7 @@
  * @return const rp_char*
  */
 #define W2RP_s(wcs) \
-	(LibRomData::utf16_to_rp_string( \
+	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()).c_str())
 
 // FIXME: In-place conversion of std::u16string to std::wstring?
@@ -95,7 +95,7 @@
  * @return rp_string
  */
 #define W2RP_cs(wcs) \
-	(LibRomData::utf16_to_rp_string( \
+	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs), -1))
 
 /**
@@ -104,7 +104,7 @@
  * @return rp_string
  */
 #define W2RP_ss(wcs) \
-	(LibRomData::utf16_to_rp_string( \
+	(LibRpBase::utf16_to_rp_string( \
 		reinterpret_cast<const char16_t*>(wcs.data()), (int)wcs.size()))
 
 #elif defined(RP_UTF16)
@@ -124,7 +124,7 @@ static inline const wchar_t *RP2W_c(const rp_char *str)
  * @param rps rp_string
  * @return const wchar_t*
  */
-static inline const wchar_t *RP2W_s(const LibRomData::rp_string &rps)
+static inline const wchar_t *RP2W_s(const LibRpBase::rp_string &rps)
 {
 	return reinterpret_cast<const wchar_t*>(rps.c_str());
 }
@@ -168,9 +168,9 @@ static inline const rp_char *W2RP_s(const std::wstring &wcs)
  * @param wcs const wchar_t*
  * @return const rp_char*
  */
-static inline const LibRomData::rp_string W2RP_cs(const wchar_t *wcs)
+static inline const LibRpBase::rp_string W2RP_cs(const wchar_t *wcs)
 {
-	return LibRomData::rp_string(
+	return LibRpBase::rp_string(
 		reinterpret_cast<const rp_char*>(wcs));
 }
 
@@ -179,9 +179,9 @@ static inline const LibRomData::rp_string W2RP_cs(const wchar_t *wcs)
  * @param wcs std::wstring
  * @return const rp_char*
  */
-static inline const LibRomData::rp_string W2RP_ss(const std::wstring &wcs)
+static inline const LibRpBase::rp_string W2RP_ss(const std::wstring &wcs)
 {
-	return LibRomData::rp_string(
+	return LibRpBase::rp_string(
 		reinterpret_cast<const rp_char*>(wcs.data()), wcs.size());
 }
 

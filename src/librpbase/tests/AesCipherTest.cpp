@@ -41,7 +41,7 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
-namespace LibRomData { namespace Tests {
+namespace LibRpBase { namespace Tests {
 
 struct AesCipherTest_mode
 {
@@ -502,7 +502,7 @@ INSTANTIATE_TEST_CASE_P(AesDecryptTest, AesCipherTest,
  */
 extern "C" int gtest_main(int argc, char *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: AesCipher tests.\n\n");
+	fprintf(stderr, "LibRpBase test suite: AesCipher tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

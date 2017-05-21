@@ -49,7 +49,7 @@ using std::wstring;
 #include "threads/Atomics.h"
 #include "threads/InitOnceExecuteOnceXP.h"
 
-namespace LibRomData { namespace FileSystem {
+namespace LibRpBase { namespace FileSystem {
 
 // InitOnceExecuteOnce() control variable.
 static INIT_ONCE once_control = INIT_ONCE_STATIC_INIT;

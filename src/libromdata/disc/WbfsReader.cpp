@@ -23,8 +23,10 @@
 #include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "libwbfs.h"
 
+// librpbase
 #include "librpbase/byteswap.h"
 #include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 // C includes.
 #include <stdlib.h>

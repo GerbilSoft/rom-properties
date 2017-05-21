@@ -24,7 +24,7 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 IRpFile::IRpFile()
 	: m_lastError(0)

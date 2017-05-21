@@ -31,7 +31,7 @@
 namespace LibRomData {
 
 class GameBoyAdvancePrivate;
-class GameBoyAdvance : public RomData
+class GameBoyAdvance : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class GameBoyAdvance : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit GameBoyAdvance(IRpFile *file);
+		explicit GameBoyAdvance(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

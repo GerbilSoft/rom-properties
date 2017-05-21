@@ -22,13 +22,14 @@
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
 
+// librpbase
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/disc/PartitionFile.hpp"
-
 #ifdef ENABLE_DECRYPTION
 #include "librpbase/crypto/AesCipherFactory.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #endif /* ENABLE_DECRYPTION */
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

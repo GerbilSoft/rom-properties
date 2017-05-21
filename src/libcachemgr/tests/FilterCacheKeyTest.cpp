@@ -24,7 +24,7 @@
 
 // libromdata
 #include "librpbase/TextFuncs.hpp"
-using LibRomData::rp_string;
+using LibRpBase::rp_string;
 
 // Cache Manager
 #include "../CacheManager.hpp"

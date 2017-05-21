@@ -47,7 +47,7 @@ typedef char mode_str_t;
 #include <unistd.h>
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 // Deleter for std::unique_ptr<FILE> m_file.
 struct myFile_deleter {

@@ -25,7 +25,7 @@
 #include "librpbase/config.librpbase.h"
 #include "../file/IRpFile.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IDiscReader;
 

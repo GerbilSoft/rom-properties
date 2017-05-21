@@ -24,7 +24,7 @@
 
 #include "IAesCipher.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class AesNettlePrivate;
 class AesNettle : public IAesCipher

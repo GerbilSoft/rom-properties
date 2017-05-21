@@ -22,10 +22,13 @@
 #include "librpbase/config.librpbase.h"
 #include "GcnPartition.hpp"
 
-#include "librpbase/byteswap.h"
 #include "gcn_structs.h"
 #include "GcnFst.hpp"
+
+// librpbase
+#include "librpbase/byteswap.h"
 #include "librpbase/disc/PartitionFile.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

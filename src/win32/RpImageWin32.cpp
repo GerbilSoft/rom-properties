@@ -25,7 +25,8 @@
 // librpbase
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpGdiplusBackend.hpp"
-using namespace LibRomData;
+using LibRpBase::rp_image;
+using LibRpBase::RpGdiplusBackend;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -52,7 +53,7 @@ namespace Gdiplus {
  * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_mask(const LibRomData::rp_image *image)
+HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -212,7 +213,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const LibRomData::rp_image *image, uint32_t bgColor,
+HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
 				const SIZE &size, bool nearest)
 {
 	assert(image != nullptr);
@@ -242,7 +243,7 @@ HBITMAP RpImageWin32::toHBITMAP(const LibRomData::rp_image *image, uint32_t bgCo
  * @param image	[in] rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
+HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
 {
 	const SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
@@ -256,7 +257,7 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const LibRomData::rp_image *image, const SIZE &size, bool nearest)
+HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());

@@ -24,7 +24,7 @@
 
 #include "rp_image.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class rp_image_backend;
 class rp_image_private

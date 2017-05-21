@@ -31,7 +31,7 @@
 // C includes. (C++ namespace)
 #include <cstddef>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 

@@ -26,9 +26,11 @@
 #include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
+// librpbase
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

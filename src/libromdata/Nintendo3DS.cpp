@@ -27,19 +27,21 @@
 
 #include "n3ds_structs.h"
 
+// librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 
-// For DSiWare SRLs embedded in CIAs.
-#include "disc/DiscReader.hpp"
-#include "disc/PartitionFile.hpp"
-#include "NintendoDS.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
+using namespace LibRpBase;
 
-#include "img/rp_image.hpp"
-#include "img/ImageDecoder.hpp"
+// For DSiWare SRLs embedded in CIAs.
+#include "librpbase/disc/DiscReader.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
+#include "NintendoDS.hpp"
 
 // NCCH reader.
 #include "disc/NCCHReader.hpp"

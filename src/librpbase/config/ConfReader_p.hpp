@@ -35,7 +35,7 @@
 #include <pthread.h>
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class ConfReader;
 class ConfReaderPrivate

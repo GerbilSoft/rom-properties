@@ -34,7 +34,7 @@
 // C includes. (C++ namespace)
 #include <cstring>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class RpImageLoaderPrivate
 {

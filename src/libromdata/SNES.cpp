@@ -25,12 +25,14 @@
 #include "data/NintendoPublishers.hpp"
 #include "snes_structs.h"
 #include "CopierFormats.h"
-#include "librpbase/SystemRegion.hpp"
 
+// librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/SystemRegion.hpp"
 #include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

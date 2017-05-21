@@ -38,7 +38,7 @@ using std::u16string;
 // Shared internal functions.
 #include "TextFuncs_int.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** OS-independent text conversion functions. **/
 

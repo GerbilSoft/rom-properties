@@ -29,9 +29,11 @@
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // RpFile_IStream
 #include "RpFile_IStream.hpp"

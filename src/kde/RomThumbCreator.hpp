@@ -29,10 +29,6 @@ class QUrl;
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KDE5.)
 
-namespace LibRomData {
-	class rp_image;
-}
-
 class RomThumbCreatorPrivate;
 class RomThumbCreator : public ThumbCreator
 {

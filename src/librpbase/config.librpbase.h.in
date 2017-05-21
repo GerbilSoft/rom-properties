@@ -145,7 +145,7 @@ typedef char rp_char;
 /* NOTE: There is no UTF-8 character literal in C++ 2011. */
 #define _RP_CHR(x) (x)
 #ifdef __cplusplus
-namespace LibRomData {
+namespace LibRpBase {
 	typedef std::string rp_string;
 }
 #endif /* __cplusplus */
@@ -155,7 +155,7 @@ typedef char16_t rp_char;
 #define _RP2(x,y) _RP2_U16_STR(x,y)
 #define _RP_CHR(x) _RP_U16_CHR(x)
 #ifdef __cplusplus
-namespace LibRomData {
+namespace LibRpBase {
 	typedef std::u16string rp_string;
 }
 #endif /* __cplusplus */

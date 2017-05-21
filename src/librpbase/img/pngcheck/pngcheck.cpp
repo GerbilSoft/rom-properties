@@ -132,7 +132,7 @@
  */
 #include "pngcheck.hpp"
 #include "../../file/IRpFile.hpp"
-using LibRomData::IRpFile;
+using LibRpBase::IRpFile;
 
 #include <memory>
 using std::unique_ptr;
@@ -178,7 +178,7 @@ using std::unique_ptr;
 #  include <zlib.h>
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 typedef unsigned char  uch;
 typedef unsigned short ush;

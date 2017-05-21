@@ -24,7 +24,7 @@
 // C includes. (C++ namespace)
 #include <cstdio>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 IDiscReader::IDiscReader()
 	: m_lastError(0)

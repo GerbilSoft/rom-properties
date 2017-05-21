@@ -25,10 +25,10 @@
 
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
-
-#include "librpbase/byteswap.h"
 #include "n3ds_structs.h"
 
+// librpbase
+#include "librpbase/byteswap.h"
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "../crypto/CtrKeyScrambler.hpp"
@@ -40,16 +40,18 @@
 // C++ includes.
 #include <vector>
 
-namespace LibRomData {
-
 #ifdef ENABLE_DECRYPTION
-class IAesCipher;
+namespace LibRpBase {
+	class IAesCipher;
+}
 #endif /* ENABLE_DECRYPTION */
+
+namespace LibRomData {
 
 class NCCHReaderPrivate
 {
 	public:
-		NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
+		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IRpFile *file,
 			uint8_t media_unit_shift,
 			int64_t ncch_offset, uint32_t ncch_length,
 			const N3DS_Ticket_t *ticket = nullptr,
@@ -62,7 +64,7 @@ class NCCHReaderPrivate
 		NCCHReader *const q_ptr;
 
 	public:
-		IRpFile *file;		// 3DS ROM image.
+		LibRpBase::IRpFile *file;	// 3DS ROM image.
 
 		// NCCH offsets.
 		const int64_t ncch_offset;	// NCCH start offset, in bytes.
@@ -92,7 +94,7 @@ class NCCHReaderPrivate
 		N3DS_ExeFS_Header_t exefs_header;
 
 		// Encryption key verification result.
-		KeyManager::VerifyResult verifyResult;
+		LibRpBase::KeyManager::VerifyResult verifyResult;
 
 		/**
 		 * Read data from the underlying ROM image.
@@ -122,11 +124,11 @@ class NCCHReaderPrivate
 		u128_t ncch_keys[2];
 
 		// NCCH cipher.
-		IAesCipher *cipher_ncch;	// NCCH cipher.
+		LibRpBase::IAesCipher *cipher_ncch;	// NCCH cipher.
 
 		// CIA cipher.
 		uint8_t title_key[16];		// Decrypted title key.
-		IAesCipher *cipher_cia;		// CIA cipher.
+		LibRpBase::IAesCipher *cipher_cia;		// CIA cipher.
 
 		union ctr_t {
 			uint8_t u8[16];
@@ -201,7 +203,7 @@ class NCCHReaderPrivate
 		 * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
 		 * @return VerifyResult.
 		 */
-		KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
+		LibRpBase::KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
 			const char *keyNormal_name,
 			const char *keyX_name,
 			const char *keyY_name,
@@ -227,7 +229,7 @@ class NCCHReaderPrivate
 		 *                                   If unknown, will try Debug, then Retail.
 		 * @return VerifyResult.
 		 */
-		KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
+		LibRpBase::KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
 			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
 
 		// Encryption key indexes.

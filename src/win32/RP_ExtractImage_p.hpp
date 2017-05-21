@@ -43,10 +43,10 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 
 	public:
 		// ROM filename from IPersistFile::Load().
-		LibRomData::rp_string filename;
+		LibRpBase::rp_string filename;
 
 		// RomData object. Loaded in IPersistFile::Load().
-		LibRomData::RomData *romData;
+		LibRpBase::RomData *romData;
 
 		// Data from IExtractImage::GetLocation().
 		SIZE rgSize;
@@ -101,7 +101,7 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual HBITMAP rpImageToImgClass(const LibRomData::rp_image *img) const override final;
+		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override final;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -134,7 +134,7 @@ class RP_ExtractImage_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual LibRomData::rp_string proxyForUrl(const LibRomData::rp_string &url) const override final;
+		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const override final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_P_HPP__ */

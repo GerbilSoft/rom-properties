@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_INT_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_INT_HPP__
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Remove trailing NULLs from the source string by adjusting the length.

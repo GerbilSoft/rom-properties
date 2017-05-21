@@ -36,10 +36,6 @@ extern "C" {
 	extern const CLSID CLSID_RP_ThumbnailProvider;
 }
 
-namespace LibRomData {
-	class IRpFile;
-	class rp_image;
-}
 namespace LibWin32Common {
 	class RegKey;
 }

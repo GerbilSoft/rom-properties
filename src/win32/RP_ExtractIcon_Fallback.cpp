@@ -27,7 +27,7 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/FileSystem.hpp"
-using namespace LibRomData;
+using namespace LibRpBase;
 
 // libwin32common
 #include "libwin32common/RegKey.hpp"

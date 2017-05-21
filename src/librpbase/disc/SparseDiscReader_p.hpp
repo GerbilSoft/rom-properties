@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include "../common.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile;
 class SparseDiscReader;

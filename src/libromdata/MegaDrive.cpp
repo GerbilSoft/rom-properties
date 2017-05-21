@@ -27,10 +27,12 @@
 #include "md_structs.h"
 #include "CopierFormats.h"
 
+// librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
 
 // C includes.
 #include <stdlib.h>

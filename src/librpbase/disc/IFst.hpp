@@ -32,7 +32,7 @@
 // Based on dirent.h from glibc-2.23.
 #include "d_type.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IFst
 {
@@ -90,7 +90,7 @@ class IFst
 		 * @param path	[in] Directory path.
 		 * @return Dir*, or nullptr on error.
 		 */
-		inline Dir *opendir(const LibRomData::rp_string &path)
+		inline Dir *opendir(const LibRpBase::rp_string &path)
 		{
 			return opendir(path.c_str());
 		}

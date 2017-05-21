@@ -33,13 +33,16 @@ using LibCacheMgr::CacheManager;
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
+using namespace LibRpBase;
+
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using namespace LibRomData;
+using LibRomData::RomDataFactory;
 
 // TCreateThumbnail is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/img/TCreateThumbnail.cpp"
+using LibRomData::TCreateThumbnail;
 
 // C includes. (C++ namespace)
 #include <cassert>

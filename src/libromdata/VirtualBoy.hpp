@@ -32,7 +32,7 @@
 namespace LibRomData {
 
 class VirtualBoyPrivate;
-class VirtualBoy : public RomData
+class VirtualBoy : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -46,7 +46,7 @@ class VirtualBoy : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit VirtualBoy(IRpFile *file);
+		explicit VirtualBoy(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

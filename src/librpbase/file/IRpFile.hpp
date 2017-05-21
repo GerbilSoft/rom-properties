@@ -31,7 +31,7 @@
 // C includes. (C++ namespace)
 #include <cstddef>	/* for size_t */
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class IRpFile
 {

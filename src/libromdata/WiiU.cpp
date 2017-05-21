@@ -27,11 +27,14 @@
 #include "wiiu_structs.h"
 #include "data/WiiUData.hpp"
 
+// librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
-#include "img/rp_image.hpp"
+
+#include "librpbase/img/rp_image.hpp"
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>

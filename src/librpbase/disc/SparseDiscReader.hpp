@@ -25,7 +25,7 @@
 
 #include "IDiscReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class SparseDiscReaderPrivate;
 class SparseDiscReader : public IDiscReader

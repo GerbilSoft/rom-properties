@@ -28,7 +28,7 @@
 #include <string>
 using std::wstring;
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Create an IStream wrapper for IRpFile.

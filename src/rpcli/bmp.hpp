@@ -23,13 +23,13 @@
 #define __ROMPROPERTIES_RPCLI_BMP_HPP__
 
 #include "librpbase/config.librpbase.h"
-namespace LibRomData {
+namespace LibRpBase {
 	class rp_image;
 }
 
 #include <ostream>
 
-int rpbmp(std::ostream& os, const LibRomData::rp_image *img);
-int rpbmp(const rp_char *filename, const LibRomData::rp_image *img);
+int rpbmp(std::ostream& os, const LibRpBase::rp_image *img);
+int rpbmp(const rp_char *filename, const LibRpBase::rp_image *img);
 
 #endif /* __ROMPROPERTIES_RPCLI_BMP_HPP__ */

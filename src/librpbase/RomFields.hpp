@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class RomFieldsPrivate;
 class RomFields

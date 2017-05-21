@@ -30,7 +30,7 @@
 #include <pthread.h>
 #endif
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class Mutex
 {

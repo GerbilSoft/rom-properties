@@ -44,7 +44,7 @@
 // Shared internal functions.
 #include "TextFuncs_int.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /** Generic text conversion functions. **/
 

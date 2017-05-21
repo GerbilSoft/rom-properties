@@ -27,7 +27,7 @@
 namespace LibRomData {
 
 class CisoGcnReaderPrivate;
-class CisoGcnReader : public SparseDiscReader
+class CisoGcnReader : public LibRpBase::SparseDiscReader
 {
 	public:
 		/**
@@ -36,7 +36,7 @@ class CisoGcnReader : public SparseDiscReader
 		 * closed afterwards.
 		 * @param file File to read from.
 		 */
-		explicit CisoGcnReader(IRpFile *file);
+		explicit CisoGcnReader(LibRpBase::IRpFile *file);
 
 	private:
 		typedef SparseDiscReader super;

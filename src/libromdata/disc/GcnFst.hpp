@@ -28,7 +28,7 @@
 namespace LibRomData {
 
 class GcnFstPrivate;
-class GcnFst : public IFst
+class GcnFst : public LibRpBase::IFst
 {
 	public:
 		/**

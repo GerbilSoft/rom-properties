@@ -30,7 +30,7 @@
 // C++ includes.
 #include <memory>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 #ifdef _WIN32
 class RpFilePrivate;

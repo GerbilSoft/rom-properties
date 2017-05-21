@@ -28,7 +28,7 @@
 #include <cassert>
 #include <cerrno>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Construct a DiscReader with the specified file.

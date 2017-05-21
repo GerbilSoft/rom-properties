@@ -31,7 +31,7 @@
 namespace LibRomData {
 
 class EXEPrivate;
-class EXE : public RomData
+class EXE : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -47,7 +47,7 @@ class EXE : public RomData
 		 *
 		 * @param file Open ROM image.
 		 */
-		explicit EXE(IRpFile *file);
+		explicit EXE(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

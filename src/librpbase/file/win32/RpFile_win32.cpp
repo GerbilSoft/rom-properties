@@ -41,7 +41,7 @@ using std::wstring;
 #include <windows.h>
 #include <winioctl.h>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 /**
  * Deleter for std::unique_ptr<void> d->file,

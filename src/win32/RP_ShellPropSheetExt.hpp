@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 #define __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
 
+// librpbase
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
@@ -31,9 +32,6 @@
 // - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
 #include "RP_ComBase.hpp"
 
-namespace LibRomData {
-	class RomData;
-}
 namespace LibWin32Common {
 	class RegKey;
 }

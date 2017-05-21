@@ -25,6 +25,10 @@
 #include "TImageTypesConfig.hpp"
 #include "librpbase/config/Config.hpp"
 
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+using LibRpBase::rp_string;
+
 // RomData subclasses with images.
 #include "../Amiibo.hpp"
 #include "../DreamcastSave.hpp"
@@ -177,22 +181,22 @@ void TImageTypesConfig<ComboBox>::reset(void)
 			continue;
 
 		int nextPrio = 0;	// Next priority value to use.
-		bool imageTypeSet[RomData::IMG_EXT_MAX+1];	// Element set to true once an image type priority is read.
+		bool imageTypeSet[IMG_TYPE_COUNT];	// Element set to true once an image type priority is read.
 		memset(imageTypeSet, 0, sizeof(imageTypeSet));
 
 		p_cboImageType = &cboImageType[sys][0];
 		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
 		{
 			uint8_t imageType = imgTypePrio.imgTypes[i];
-			assert(imageType == 0xFF || imageType <= RomData::IMG_EXT_MAX);
-			if (imageType > RomData::IMG_EXT_MAX && imageType != 0xFF) {
+			assert(imageType == 0xFF || imageType < IMG_TYPE_COUNT);
+			if (imageType >= IMG_TYPE_COUNT && imageType != 0xFF) {
 				// Invalid image type.
 				continue;
 			}
 			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
 				// Set the image type.
 				imageTypeSet[imageType] = true;
-				if (imageType <= RomData::IMG_EXT_MAX) {
+				if (imageType < IMG_TYPE_COUNT) {
 					imageTypes[sys][imageType] = nextPrio;
 					// NOTE: Using the actual priority value, not the ComboBox index.
 					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
@@ -282,7 +286,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 		bool hasOne = false;
 		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
 			const uint8_t imageType = imgTypePrio[i];
-			if (imageType <= RomData::IMG_EXT_MAX) {
+			if (imageType < IMG_TYPE_COUNT) {
 				if (hasOne)
 					imageTypeList += _RP_CHR(',');
 				hasOne = true;
@@ -328,7 +332,7 @@ void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	if (prio >= 0 && prio != 0xFF) {
 		// Check for any image types that have the new priority.
 		const uint8_t prev_prio = imageTypes[sys][imageType];
-		for (int i = RomData::IMG_EXT_MAX; i >= 0; i--) {
+		for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
 			if (i == imageType)
 				continue;
 			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == (uint8_t)prio) {

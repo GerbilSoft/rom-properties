@@ -26,7 +26,7 @@
 // C includes. (C++ namespace)
 #include <cassert>
 
-namespace LibRomData {
+namespace LibRpBase {
 
 IconAnimHelper::IconAnimHelper()
 	: m_iconAnimData(nullptr)

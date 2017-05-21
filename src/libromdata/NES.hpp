@@ -32,7 +32,7 @@
 namespace LibRomData {
 
 class NESPrivate;
-class NES : public RomData
+class NES : public LibRpBase::RomData
 {
 	public:
 		/**
@@ -46,7 +46,7 @@ class NES : public RomData
 		 *
 		 * @param file Open ROM file.
 		 */
-		explicit NES(IRpFile *file);
+		explicit NES(LibRpBase::IRpFile *file);
 
 	protected:
 		/**

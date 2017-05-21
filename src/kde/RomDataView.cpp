@@ -23,13 +23,14 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
+// librpbase
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/img/rp_image.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
-using namespace LibRomData;
+using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -1067,7 +1068,7 @@ RomData *RomDataView::romData(void) const
  *
  * @return RomData object.
  */
-void RomDataView::setRomData(LibRomData::RomData *romData)
+void RomDataView::setRomData(RomData *romData)
 {
 	Q_D(RomDataView);
 	if (d->romData == romData)

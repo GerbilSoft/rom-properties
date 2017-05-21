@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class rp_image;
 class IRpFile;

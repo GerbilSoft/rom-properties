@@ -24,7 +24,7 @@
 
 #include "IRpFile.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class RpMemFile : public IRpFile
 {

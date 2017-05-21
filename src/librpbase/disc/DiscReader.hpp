@@ -26,7 +26,7 @@
 
 #include "IDiscReader.hpp"
 
-namespace LibRomData {
+namespace LibRpBase {
 
 class DiscReader : public IDiscReader
 {
