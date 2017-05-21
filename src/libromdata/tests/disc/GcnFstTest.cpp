@@ -29,8 +29,8 @@
 #endif
 
 // libromdata
-#include "TextFuncs.hpp"
-#include "file/FileSystem.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
 #include "disc/GcnFst.hpp"
 #ifdef _WIN32
 #include "libwin32common/RpWin32_sdk.h"

@@ -22,10 +22,10 @@
 // Google Test
 #include "gtest/gtest.h"
 
-#include "../TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
 // CtrKeyScrambler
-#include "../crypto/KeyManager.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
 #include "../crypto/CtrKeyScrambler.hpp"
 
 // C includes. (C++ namespace)

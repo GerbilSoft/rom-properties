@@ -24,10 +24,9 @@
 #endif
 #include "CacheManager.hpp"
 
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/RomData.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/file/FileSystem.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
 using namespace LibRomData;
 using namespace LibRomData::FileSystem;
 
@@ -156,7 +155,7 @@ rp_string CacheManager::getCacheFilename(const rp_string &cache_key)
  * @param cache_key Cache key.
  * @return Filtered cache key.
  */
-LibRomData::rp_string CacheManager::filterCacheKey(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::filterCacheKey(const rp_string &cache_key)
 {
 	// Quick check: Ensure the cache key is not empty and
 	// that it doesn't start with a path separator.
@@ -363,7 +362,7 @@ rp_string CacheManager::download(
  * @param cache_key Cache key.
  * @return Filename in the cache, or empty string if not found.
  */
-LibRomData::rp_string CacheManager::findInCache(const LibRomData::rp_string &cache_key)
+rp_string CacheManager::findInCache(const rp_string &cache_key)
 {
 	// Get the cache key filename.
 	rp_string cache_filename = getCacheFilename(cache_key);

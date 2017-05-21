@@ -79,9 +79,11 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 #endif
 
 #ifdef __cplusplus
-#include "../RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
+
+class RomData;
 
 template<typename ImgClass>
 class TCreateThumbnail

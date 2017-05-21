@@ -25,8 +25,8 @@
 // libwin32common
 #include "libwin32common/WinUI.hpp"
 
-// libromdata
-#include "libromdata/config/Config.hpp"
+// librpbase
+#include "librpbase/config/Config.hpp"
 using LibRomData::Config;
 
 #include "resource.h"

@@ -22,8 +22,8 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 #define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "RP_ComBase.hpp"

@@ -24,12 +24,13 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RpImageWin32.hpp"
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpImageLoader.hpp"
 // libromdata
-#include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpImageLoader.hpp"
 using namespace LibRomData;
 
 // RpFile_IStream

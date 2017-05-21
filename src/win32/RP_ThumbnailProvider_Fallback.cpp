@@ -24,10 +24,10 @@
 #include "RP_ThumbnailProvider.hpp"
 #include "RP_ThumbnailProvider_p.hpp"
 
-// libromdata
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/FileSystem.hpp"
-#include "libromdata/file/IRpFile.hpp"
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
+#include "librpbase/file/IRpFile.hpp"
 using namespace LibRomData;
 
 // libwin32common

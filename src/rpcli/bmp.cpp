@@ -23,9 +23,9 @@
 #include "bmp.hpp"
 #include "bmp_structs.h"
 
-#include "libromdata/byteswap.h"
-#include "libromdata/common.h"
-#include "libromdata/img/rp_image.hpp"
+#include "librpbase/byteswap.h"
+#include "librpbase/common.h"
+#include "librpbase/img/rp_image.hpp"
 using LibRomData::rp_image;
 
 // C includes. (C++ namespace)

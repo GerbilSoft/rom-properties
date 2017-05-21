@@ -22,9 +22,9 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_CACHEMANAGER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
-#include "libromdata/threads/Semaphore.hpp"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
+#include "librpbase/threads/Semaphore.hpp"
 
 namespace LibRomData {
 	class RomData;

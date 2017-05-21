@@ -43,7 +43,7 @@
  * - Everything is little-endian
  * - By default, scanlines go from bottom to top, unless the image height is negative
  */
-#include "libromdata/common.h"
+#include "librpbase/common.h"
 
 #ifdef __cplusplus
 extern "C" {

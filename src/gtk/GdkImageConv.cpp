@@ -25,7 +25,7 @@
 #include <cassert>
 #include <cstring>
 
-#include "libromdata/img/rp_image.hpp"
+#include "librpbase/img/rp_image.hpp"
 using LibRomData::rp_image;
 
 /**

@@ -24,12 +24,13 @@
 #include "RP_ExtractImage.hpp"
 #include "RpImageWin32.hpp"
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
 // libromdata
-#include "libromdata/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)

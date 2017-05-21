@@ -20,18 +20,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
 #include "Nintendo3DS.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "n3ds_structs.h"
 
-#include "common.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
-#include "file/FileSystem.hpp"
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
+#include "librpbase/file/FileSystem.hpp"
 
 // For DSiWare SRLs embedded in CIAs.
 #include "disc/DiscReader.hpp"

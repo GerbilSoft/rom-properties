@@ -32,7 +32,7 @@
 #include "RpQt.hpp"
 
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/file/RpFile.hpp"
+#include "librpbase/file/RpFile.hpp"
 using namespace LibRomData;
 
 // C++ includes.

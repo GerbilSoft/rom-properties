@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 
 #include "TImageTypesConfig.hpp"
-#include "Config.hpp"
+#include "librpbase/config/Config.hpp"
 
 // RomData subclasses with images.
 #include "../Amiibo.hpp"

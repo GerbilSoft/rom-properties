@@ -20,11 +20,11 @@
  ***************************************************************************/
 
 #include "WbfsReader.hpp"
-#include "SparseDiscReader_p.hpp"
+#include "librpbase/disc/SparseDiscReader_p.hpp"
 #include "libwbfs.h"
 
-#include "byteswap.h"
-#include "file/IRpFile.hpp"
+#include "librpbase/byteswap.h"
+#include "librpbase/file/IRpFile.hpp"
 
 // C includes.
 #include <stdlib.h>

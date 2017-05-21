@@ -107,7 +107,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties romdata16 cachemgr16)
+TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32)
 
 # Delay-load some Windows system libraries.

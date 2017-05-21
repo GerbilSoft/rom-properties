@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 

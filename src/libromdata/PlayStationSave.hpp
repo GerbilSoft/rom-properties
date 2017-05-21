@@ -23,8 +23,8 @@
 #define __ROMPROPERTIES_LIBROMDATA_PLAYSTATIONSAVE_HPP__
 
 #include <stdint.h>
-#include "TextFuncs.hpp"
-#include "RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 

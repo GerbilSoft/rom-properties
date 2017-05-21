@@ -20,7 +20,8 @@
  ***************************************************************************/
 
 #include "CurlDownloader.hpp"
-#include "libromdata/TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
+using LibRomData::rp_string;
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -44,7 +45,7 @@ CurlDownloader::CurlDownloader(const rp_char *url)
 	: super(url)
 { }
 
-CurlDownloader::CurlDownloader(const LibRomData::rp_string &url)
+CurlDownloader::CurlDownloader(const rp_string &url)
 	: super(url)
 { }
 

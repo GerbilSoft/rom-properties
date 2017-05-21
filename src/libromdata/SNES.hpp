@@ -24,9 +24,9 @@
 
 #include <stdint.h>
 #include <string>
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 
-#include "RomData.hpp"
+#include "librpbase/RomData.hpp"
 
 namespace LibRomData {
 

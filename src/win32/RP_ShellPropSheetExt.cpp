@@ -35,13 +35,14 @@
 #include "libwin32common/w32time.h"
 using LibWin32Common::AutoGetDC;
 
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/img/rp_image.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -70,10 +71,10 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "libromdata/img/GdiplusHelper.hpp"
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-#include "libromdata/img/IconAnimHelper.hpp"
+#include "librpbase/img/GdiplusHelper.hpp"
+#include "librpbase/img/RpGdiplusBackend.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =

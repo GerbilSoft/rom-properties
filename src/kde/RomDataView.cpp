@@ -23,12 +23,12 @@
 #include "RpQt.hpp"
 #include "RpQImageBackend.hpp"
 
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-#include "libromdata/img/IconAnimHelper.hpp"
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)

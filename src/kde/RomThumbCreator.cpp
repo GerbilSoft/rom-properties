@@ -28,9 +28,9 @@
 using LibCacheMgr::CacheManager;
 
 // libromdata
-#include "libromdata/RomData.hpp"
+#include "librpbase/RomData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/img/rp_image.hpp"
+#include "librpbase/img/rp_image.hpp"
 using namespace LibRomData;
 
 // TCreateThumbnail is a templated class,

@@ -22,11 +22,11 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
 #include "GcnPartition.hpp"
 #include "GcnFst.hpp"
-#include "../crypto/KeyManager.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
 
 namespace LibRomData {
 

@@ -22,10 +22,13 @@
 #ifndef __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 #define __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
 
-#include "libromdata/RomData.hpp"
+#include "librpbase/common.h"
 namespace LibRomData {
 	class rp_image;
 }
+
+// C includes.
+#include <stdint.h>
 
 class RpImageWin32
 {

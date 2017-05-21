@@ -24,9 +24,9 @@
 #include "RP_ExtractImage.hpp"
 #include "RP_ExtractImage_p.hpp"
 
-// libromdata
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/FileSystem.hpp"
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/FileSystem.hpp"
 using namespace LibRomData;
 
 // libwin32common

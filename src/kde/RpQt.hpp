@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
-#include "libromdata/config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 
 namespace LibRomData {
 	class rp_image;

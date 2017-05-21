@@ -19,15 +19,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 #ifndef ENABLE_DECRYPTION
 #error This file should only be compiled if decryption is enabled.
 #endif /* ENABLE_DECRYPTION */
 
 #include "CtrKeyScrambler.hpp"
-#include "byteswap.h"
+#include "librpbase/byteswap.h"
 
-#include "KeyManager.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

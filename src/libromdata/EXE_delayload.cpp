@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 // NOTE: EXE_p.hpp can't be included because it includes exe_structs.h.
-#include "config.libromdata.h"
+#include "librpbase/config.librpbase.h"
 #if !defined(_MSC_VER) || !defined(XML_IS_DLL)
 #error EXE_delayload.cpp should only be enabled on MSVC builds with TinyXML2 enabled as a DLL.
 #endif

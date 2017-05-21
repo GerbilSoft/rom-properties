@@ -20,9 +20,9 @@
  ***************************************************************************/
 
 #include "GcnFst.hpp"
-#include "byteswap.h"
+#include "librpbase/byteswap.h"
 
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 using LibRomData::rp_string;
 
 // C includes. (C++ namespace)

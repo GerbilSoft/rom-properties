@@ -20,15 +20,15 @@
  ***************************************************************************/
 
 #include "GameCubeSave.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 
-#include "common.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
 
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"

@@ -26,9 +26,9 @@
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32time.h"
 
-// libromdata
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/RpFile.hpp"
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
 using LibRomData::IRpFile;
 using LibRomData::RpFile;
 using LibRomData::rp_string;

@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_COPIERFORMATS_H__
 #define __ROMPROPERTIES_LIBROMDATA_COPIERFORMATS_H__
 
-#include "common.h"
+#include "librpbase/common.h"
 
 #ifdef __cplusplus
 extern "C" {

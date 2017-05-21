@@ -29,10 +29,11 @@
 
 #include "verifykeys.hpp"
 
+// librpbase
+#include "librpbase/crypto/KeyManager.hpp"
 // libromdata
-#include "libromdata/crypto/KeyManager.hpp"
-#include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/crypto/CtrKeyScrambler.hpp"
+#include "libromdata/disc/WiiPartition.hpp"
 #include "libromdata/disc/NCCHReader.hpp"
 using namespace LibRomData;
 

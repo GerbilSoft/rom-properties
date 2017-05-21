@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_CISOGCNREADER_HPP__
 
-#include "SparseDiscReader.hpp"
+#include "librpbase/disc/SparseDiscReader.hpp"
 
 namespace LibRomData {
 

@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_WBFSREADER_HPP__
 
-#include "SparseDiscReader.hpp"
+#include "librpbase/disc/SparseDiscReader.hpp"
 
 namespace LibRomData {
 

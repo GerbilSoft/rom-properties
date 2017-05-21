@@ -57,7 +57,7 @@ IF(BUILD_GNOME)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-gnome romdata8 cachemgr8)
+	TARGET_LINK_LIBRARIES(rom-properties-gnome cachemgr8 romdata8 rpbase8)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")

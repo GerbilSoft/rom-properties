@@ -23,9 +23,11 @@
 #define __ROMPROPERTIES_RPCLI_PROPERTIES_HPP__
 
 #include <ostream>
-#include "libromdata/RomData.hpp"
+namespace LibRomData {
+	class RomData;
+}
 
-class ROMOutput{
+class ROMOutput {
 	const LibRomData::RomData* romdata;
 public:
 	explicit ROMOutput(const LibRomData::RomData* romdata);

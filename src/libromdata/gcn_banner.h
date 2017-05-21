@@ -28,7 +28,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_GCN_BANNER_H__
 
 #include <stdint.h>
-#include "common.h"
+#include "librpbase/common.h"
 
 #ifdef __cplusplus
 extern "C" {

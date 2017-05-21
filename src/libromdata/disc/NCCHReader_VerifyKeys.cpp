@@ -25,8 +25,8 @@
 #error This file should only be compiled if decryption is enabled.
 #endif /* !ENABLE_DECRYPTION */
 
-#include "crypto/IAesCipher.hpp"
-#include "crypto/AesCipherFactory.hpp"
+#include "librpbase/crypto/IAesCipher.hpp"
+#include "librpbase/crypto/AesCipherFactory.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

@@ -28,8 +28,8 @@
  * be compiled correctly.
  */
 
-#include "../common.h"
-#include "../RomData.hpp"
+#include "librpbase/common.h"
+#include "librpbase/RomData.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

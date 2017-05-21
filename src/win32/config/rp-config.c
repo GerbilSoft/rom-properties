@@ -29,7 +29,7 @@
 // LibRomData
 // NOTE: We're not linking to LibRomData, so we can only
 // use things that are defined in the headers.
-#include "libromdata/common.h"
+#include "librpbase/common.h"
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"

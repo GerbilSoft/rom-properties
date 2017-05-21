@@ -30,7 +30,7 @@
  * Therefore, we aren't defining a CLSID.
  */
 
-#include "libromdata/common.h"
+#include "librpbase/common.h"
 #include "RP_ComBase.hpp"
 
 class RP_EmptyVolumeCacheCallback : public RP_ComBase<IEmptyVolumeCacheCallBack>

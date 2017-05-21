@@ -23,9 +23,9 @@
 #include "DownloadsTab.hpp"
 #include "resource.h"
 
-// libromdata
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/config/Config.hpp"
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/config/Config.hpp"
 using LibRomData::Config;
 
 // C includes. (C++ namespace)

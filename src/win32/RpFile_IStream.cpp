@@ -22,9 +22,9 @@
 #include "stdafx.h"
 #include "RpFile_IStream.hpp"
 
-// libromdata
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/file/IRpFile.hpp"
+// librpbase
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
 using LibRomData::IRpFile;
 using LibRomData::rp_string;
 

@@ -22,7 +22,7 @@
 #include "FstPrint.hpp"
 
 // libromdata
-#include "TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "disc/IFst.hpp"
 using LibRomData::rp_string;
 

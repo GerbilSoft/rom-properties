@@ -23,15 +23,15 @@
 #include "config.rpcli.h"
 
 // libromdata
-#include "libromdata/file/RpFile.hpp"
-#include "libromdata/RomData.hpp"
+#include "librpbase/byteswap.h"
+#include "librpbase/RomData.hpp"
+#include "librpbase/SystemRegion.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/RpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpbase/img/IconAnimData.hpp"
 #include "libromdata/RomDataFactory.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpPng.hpp"
-#include "libromdata/img/IconAnimData.hpp"
-#include "libromdata/SystemRegion.hpp"
-#include "libromdata/byteswap.h"
 using namespace LibRomData;
 
 #include "bmp.hpp"

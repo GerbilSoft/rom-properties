@@ -22,9 +22,9 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_HPP__
 
-#include "IPartition.hpp"
+#include "librpbase/disc/IPartition.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
 #include "../n3ds_structs.h"
-#include "../crypto/KeyManager.hpp"
 
 namespace LibRomData {
 

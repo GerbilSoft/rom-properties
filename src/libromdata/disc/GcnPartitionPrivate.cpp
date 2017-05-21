@@ -20,9 +20,8 @@
  ***************************************************************************/
 
 #include "GcnPartitionPrivate.hpp"
-#include "../byteswap.h"
+#include "librpbase/byteswap.h"
 
-#include "IDiscReader.hpp"
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
 

@@ -23,15 +23,15 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__
 
+#include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
-#include "config.libromdata.h"
 
-#include "byteswap.h"
+#include "librpbase/byteswap.h"
 #include "n3ds_structs.h"
 
-#include "crypto/KeyManager.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
-#include "crypto/CtrKeyScrambler.hpp"
+#include "../crypto/CtrKeyScrambler.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes.

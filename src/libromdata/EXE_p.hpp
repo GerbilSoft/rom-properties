@@ -22,8 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_EXE_P_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_EXE_P_HPP__
 
-#include "config.libromdata.h"
-#include "RomData_p.hpp"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/RomData_p.hpp"
 
 #include "exe_structs.h"
 

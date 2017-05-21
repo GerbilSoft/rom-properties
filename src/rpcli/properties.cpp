@@ -45,12 +45,12 @@ using std::ostream;
 using std::setw;
 using std::unique_ptr;
 
-// libromdata
-#include "libromdata/RomData.hpp"
-#include "libromdata/RomFields.hpp"
-#include "libromdata/TextFuncs.hpp"
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/IconAnimData.hpp"
+// librpbase
+#include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/IconAnimData.hpp"
 using namespace LibRomData;
 
 class StreamStateSaver {

@@ -1,0 +1,166 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (librpbase)                       *
+ * config.librpbase.h.in: LibRpBase configuration. (source file)          *
+ *                                                                         *
+ * Copyright (c) 2016 by David Korth.                                      *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
+#define __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
+
+#ifdef __cplusplus
+#include <string>
+#endif /* __cplusplus */
+
+/* Define to 1 if you have zlib. */
+#cmakedefine HAVE_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib. */
+#cmakedefine USE_INTERNAL_ZLIB 1
+
+/* Define to 1 if we're using the internal copy of zlib as a DLL. */
+#cmakedefine USE_INTERNAL_ZLIB_DLL 1
+
+/* Define to 1 if zlib is a DLL. */
+#if !defined(USE_INTERNAL_ZLIB) || defined(USE_INTERNAL_ZLIB_DLL)
+#define ZLIB_IS_DLL 1
+#endif
+
+/* Define to 1 if you have libpng. */
+#cmakedefine HAVE_PNG 1
+
+/* Define to 1 if we're using the internal copy of libpng. */
+#cmakedefine USE_INTERNAL_PNG 1
+
+/* Define to 1 if we're using the internal copy of libpng as a DLL. */
+#cmakedefine USE_INTERNAL_PNG_DLL 1
+
+/* Define to 1 if libpng is a DLL. */
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+#define PNG_IS_DLL 1
+#endif
+
+/* Define to 1 if you have libjpeg. */
+#cmakedefine HAVE_JPEG 1
+
+/* Define to 1 if we're using the internal copy of libjpeg. */
+#cmakedefine USE_INTERNAL_JPEG 1
+
+/* Define to 1 if we're using the internal copy of libjpeg as a DLL. */
+#cmakedefine USE_INTERNAL_JPEG_DLL 1
+
+/* Define to 1 if libjpeg is a DLL. */
+#if !defined(USE_INTERNAL_JPEG) || defined(USE_INTERNAL_JPEG_DLL)
+#define JPEG_IS_DLL 1
+#endif
+
+/* Define to 1 if you have the `strnlen' function. */
+#cmakedefine HAVE_STRNLEN 1
+
+/* Define to 1 if decryption should be enabled. */
+#cmakedefine ENABLE_DECRYPTION 1
+
+/* Define to 1 if we're using nettle for decryption. */
+#cmakedefine HAVE_NETTLE 1
+
+/* Define to 1 if we're using nettle and it is v3.0 or later. */
+#cmakedefine HAVE_NETTLE_3 1
+
+/* Define to 1 if lambda functions can be cast to function pointers. */
+#cmakedefine HAVE_LAMBDA_AS_FUNCTION_POINTER 1
+
+/* Define to 1 if XML parsing is enabled. */
+#cmakedefine ENABLE_XML 1
+
+/* Define to 1 if we're using the internal copy of TinyXML2. */
+#cmakedefine USE_INTERNAL_XML 1
+
+/* Define to 1 if we're using the internal copy of TinyXML2 as a DLL. */
+#cmakedefine USE_INTERNAL_XML_DLL 1
+
+/* Define to 1 if TinyXML2 is a DLL. */
+#if !defined(USE_INTERNAL_XML) || defined(USE_INTERNAL_XML_DLL)
+#define XML_IS_DLL 1
+#endif
+
+/** iconv **/
+
+/* Define to 1 if you have iconv() in either libc or libiconv. */
+#cmakedefine HAVE_ICONV 1
+
+/* Define to 1 if the system has a 16-bit wchar_t. */
+#ifdef _WIN32
+#define RP_WIS16 1
+#endif
+
+#ifdef _MSC_VER
+/* MSVC 2015 added support for Unicode string literals. */
+/* Older versions still support L"str" for UTF-16. */
+/* FIXME: char16_t is defined in c++11-compat.h, not here. */
+#if _MSC_VER < 1900
+#define _RP_U8_STR(x)		x
+#define _RP2_U8_STR(x,y)	x y
+#define _RP_U16_STR(x)		((char16_t*)(L##x))
+#define _RP2_U16_STR(x,y)	((char16_t*)(L##x L##y))
+#define _RP_U16_CHR(x)		((char16_t)(L##x))
+#else
+#define _RP_U8_STR(x)		(u8##x)
+#define _RP2_U8_STR(x,y)	(u8##x u8##y)
+#define _RP_U16_STR(x)		(u##x)
+#define _RP2_U16_STR(x,y)	(u##x u##y)
+#define _RP_U16_CHR(x)		(u##x)
+#endif
+#else
+/* Other compilers with C++ 2011 support should support Unicode */
+/* string literals without any issues. */
+/* FIXME: Fail if the compiler doesn't support Unicode string literals. */
+#define _RP_U8_STR(x)		(u8##x)
+#define _RP2_U8_STR(x,y)	(u8##x u8##y)
+#define _RP_U16_STR(x)		(u##x)
+#define _RP2_U16_STR(x,y)	(u##x u##y)
+#define _RP_U16_CHR(x)		(u##x)
+#endif
+
+/* String types. This may vary based on build target. */
+#if defined(RP_UTF8) && defined(RP_UTF16)
+#error Must define RP_UTF8 or RP_UTF16, but not both.
+#elif defined(RP_UTF8)
+typedef char rp_char;
+#define _RP(x) _RP_U8_STR(x)
+#define _RP2(x,y) _RP2_U8_STR(x,y)
+/* NOTE: There is no UTF-8 character literal in C++ 2011. */
+#define _RP_CHR(x) (x)
+#ifdef __cplusplus
+namespace LibRomData {
+	typedef std::string rp_string;
+}
+#endif /* __cplusplus */
+#elif defined(RP_UTF16)
+typedef char16_t rp_char;
+#define _RP(x) _RP_U16_STR(x)
+#define _RP2(x,y) _RP2_U16_STR(x,y)
+#define _RP_CHR(x) _RP_U16_CHR(x)
+#ifdef __cplusplus
+namespace LibRomData {
+	typedef std::u16string rp_string;
+}
+#endif /* __cplusplus */
+#else
+#error Must define RP_UTF8 or RP_UTF16, but not both.
+#endif
+
+#endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_H__ */

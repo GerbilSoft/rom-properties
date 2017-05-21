@@ -26,7 +26,7 @@
 #error Cannot compile EXE_manifest.cpp without XML support.
 #endif
 
-#include "file/IRpFile.hpp"
+#include "librpbase/file/IRpFile.hpp"
 
 // TinyXML2
 #include "tinyxml2.h"

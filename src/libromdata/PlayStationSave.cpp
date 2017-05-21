@@ -24,14 +24,14 @@
 // - http://problemkaputt.de/psx-spx.htm
 
 #include "PlayStationSave.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "ps1_structs.h"
 
-#include "common.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
 
 #include "img/rp_image.hpp"
 #include "img/ImageDecoder.hpp"

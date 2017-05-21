@@ -25,7 +25,7 @@
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
 
-#include "libromdata/common.h"
+#include "librpbase/common.h"
 namespace LibRomData {
 	class rp_image;
 }

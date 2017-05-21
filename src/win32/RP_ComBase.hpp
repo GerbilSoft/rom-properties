@@ -30,8 +30,8 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
-// libromdata common macros.
-#include "libromdata/common.h"
+// librpbase common macros.
+#include "librpbase/common.h"
 
 // QISearch()
 #include "QITab.h"

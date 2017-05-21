@@ -22,11 +22,11 @@
 #include "NEResourceReader.hpp"
 #include "../exe_structs.h"
 
-#include "common.h"
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "../file/IRpFile.hpp"
-#include "PartitionFile.hpp"
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

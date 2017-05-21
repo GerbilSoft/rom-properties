@@ -43,18 +43,18 @@
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
-// For file extensions.
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
-
 // rp_image backend registration.
-#include "libromdata/img/RpGdiplusBackend.hpp"
-#include "libromdata/img/rp_image.hpp"
+#include "librpbase/img/RpGdiplusBackend.hpp"
+#include "librpbase/img/rp_image.hpp"
 using LibRomData::RpGdiplusBackend;
 using LibRomData::rp_image;
 
 // Text conversion functions and macros.
-#include "libromdata/TextFuncs.hpp"
+#include "librpbase/TextFuncs.hpp"
+
+// For file extensions.
+#include "libromdata/RomDataFactory.hpp"
+using LibRomData::RomDataFactory;
 
 // C++ includes.
 #include <memory>

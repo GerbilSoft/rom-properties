@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 #define __ROMPROPERTIES_KDE_RPQIMAGEBACKEND_HPP__
 
-#include "libromdata/img/rp_image_backend.hpp"
+#include "librpbase/img/rp_image_backend.hpp"
 #include <QtCore/QVector>
 #include <QtGui/QImage>
 

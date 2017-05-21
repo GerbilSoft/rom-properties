@@ -23,8 +23,8 @@
 #include "ConfigDialog.hpp"
 #include "resource.h"
 
-#include "libromdata/common.h"
-#include "libromdata/config/Config.hpp"
+// librpbase
+#include "librpbase/config/Config.hpp"
 using LibRomData::Config;
 
 // Property sheet icon.

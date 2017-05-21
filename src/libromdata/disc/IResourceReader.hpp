@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
 
-#include "IPartition.hpp"
+#include "librpbase/disc/IPartition.hpp"
 #include "../exe_structs.h"
 
 // C++ includes.

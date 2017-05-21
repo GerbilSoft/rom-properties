@@ -22,9 +22,9 @@
 #include "stdafx.h"
 #include "RpImageWin32.hpp"
 
-// libromdata
-#include "libromdata/img/rp_image.hpp"
-#include "libromdata/img/RpGdiplusBackend.hpp"
+// librpbase
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpGdiplusBackend.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -45,7 +45,7 @@ namespace Gdiplus {
 	using std::max;
 }
 #include <gdiplus.h>
-#include "libromdata/img/GdiplusHelper.hpp"
+#include "librpbase/img/GdiplusHelper.hpp"
 
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.

@@ -46,12 +46,9 @@ IF(BUILD_KDE4)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde4
-		romdata16
-		cachemgr16
-		${KDE4_KFILE_LIBRARY}
-		Qt4::QtGui Qt4::QtCore
-		)
+	TARGET_LINK_LIBRARIES(rom-properties-kde4 cachemgr16 romdata16 rpbase16)
+	TARGET_LINK_LIBRARIES(rom-properties-kde4 ${KDE4_KFILE_LIBRARY})
+	TARGET_LINK_LIBRARIES(rom-properties-kde4 Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
 ENDIF(BUILD_KDE4)
 

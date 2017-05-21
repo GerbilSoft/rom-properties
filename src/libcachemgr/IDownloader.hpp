@@ -22,8 +22,8 @@
 #ifndef __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
 #define __ROMPROPERTIES_LIBCACHEMGR_IDOWNLOADER_HPP__
 
-#include "libromdata/config.libromdata.h"
-#include "libromdata/common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 #include <stdint.h>
 

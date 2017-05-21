@@ -23,8 +23,8 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_DATA_NESMAPPERS_HPP__
 
-#include "config.libromdata.h"
-#include "common.h"
+#include "librpbase/config.librpbase.h"
+#include "librpbase/common.h"
 
 namespace LibRomData {
 

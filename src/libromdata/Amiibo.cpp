@@ -20,14 +20,14 @@
  ***************************************************************************/
 
 #include "Amiibo.hpp"
-#include "RomData_p.hpp"
+#include "librpbase/RomData_p.hpp"
 
 #include "nfp_structs.h"
 #include "data/AmiiboData.hpp"
 
-#include "byteswap.h"
-#include "TextFuncs.hpp"
-#include "file/IRpFile.hpp"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>

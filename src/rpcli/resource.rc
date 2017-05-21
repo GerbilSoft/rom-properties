@@ -25,7 +25,7 @@
 /* program version */
 #include "config.version.h"
 /* git version */
-#include "libromdata/git.h"
+#include "librpbase/git.h"
 
 /** Manifest. **/
 CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rpcli.exe.manifest"

@@ -25,7 +25,7 @@
 #include <QtCore/QMetaType>
 #include <QWidget>
 
-#include "libromdata/RomData.hpp"
+#include "librpbase/RomData.hpp"
 Q_DECLARE_METATYPE(LibRomData::RomData*)
 
 class RomDataViewPrivate;

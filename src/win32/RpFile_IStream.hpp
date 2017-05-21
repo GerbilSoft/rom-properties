@@ -22,7 +22,7 @@
 #ifndef __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 #define __ROMPROPERTIES_WIN32_RPFILE_ISTREAM_HPP__
 
-#include "libromdata/file/IRpFile.hpp"
+#include "librpbase/file/IRpFile.hpp"
 #include <objidl.h>
 
 class RpFile_IStream : public LibRomData::IRpFile

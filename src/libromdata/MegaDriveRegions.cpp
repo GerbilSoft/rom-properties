@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 #include "MegaDriveRegions.hpp"
-#include "SystemRegion.hpp"
+#include "librpbase/SystemRegion.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
