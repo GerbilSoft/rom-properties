@@ -339,6 +339,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 		static const Arm9VerStr_t arm9VerStr[] = {
 			{_RP("Luma3DS"), "Luma3DS v", 9},
 			{_RP("GodMode9"), "GodMode9 Explorer v", 19},
+			{_RP("Decrypt9WIP"), "Decrypt9WIP (", 13},
+			{_RP("Hourglass9"), "Hourglass9 v", 12},
 		};
 
 		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
@@ -353,7 +355,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 			verstr += arm9VerStr[i].searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
-			while (verstr < end && verstr[count] != 0 && !isspace(verstr[count]) && count < 32) {
+			while (verstr < end && verstr[count] != 0 &&
+			       !isspace(verstr[count]) && verstr[count] != ')' &&
+			       count < 32)
+			{
 				count++;
 			}
 			if (count > 0) {
