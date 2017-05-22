@@ -241,7 +241,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Nintendo 3DS firmware binary header.
 	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
-	d->fields->reserve(5);	// Maximum of 4 fields.
+	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Read the firmware binary.
 	unique_ptr<uint8_t[]> firmBuf;
