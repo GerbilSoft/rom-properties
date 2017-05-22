@@ -62,12 +62,6 @@ class Nintendo3DSFirmPrivate : public RomDataPrivate
 		// Firmware header.
 		// NOTE: Must be byteswapped on access.
 		N3DS_FIRM_Header_t firmHeader;
-
-		/**
-		 * Check if the firmware binary is a known official FIRM.
-		 * @return FirmBin_t*, or nullptr if not found.
-		 */
-		const Nintendo3DSFirmData::FirmBin_t *checkFirmBin(void);
 };
 
 /** Nintendo3DSFirmPrivate **/
@@ -77,32 +71,6 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
-}
-
-/**
- * Check if the firmware binary is a known official FIRM.
- * @return FirmBin_t*, or nullptr if not found.
- */
-const Nintendo3DSFirmData::FirmBin_t *Nintendo3DSFirmPrivate::checkFirmBin(void)
-{
-	const int64_t szFile = this->file->size();
-	if (szFile > 4*1024*1024) {
-		// Firmware binary is too big.
-		return nullptr;
-	}
-
-	// Read the firmware binary.
-	unique_ptr<uint8_t[]> firmBuf(new uint8_t[(unsigned int)szFile]);
-	this->file->rewind();
-	size_t size = this->file->read(firmBuf.get(), (unsigned int)szFile);
-	if (size != (unsigned int)szFile) {
-		// Error reading the firmware binary.
-		return nullptr;
-	}
-
-	// Calculate the CRC32 and look it up.
-	uint32_t crc = crc32(0, firmBuf.get(), (unsigned int)szFile);
-	return Nintendo3DSFirmData::lookup_firmBin(crc);
 }
 
 /** Nintendo3DSFirm **/
@@ -275,6 +243,21 @@ int Nintendo3DSFirm::loadFieldData(void)
 	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
+	// Read the firmware binary.
+	unique_ptr<uint8_t[]> firmBuf;
+	unsigned int szFile = 0;
+	if (d->file->size() <= 4*1024*1024) {
+		// Firmware binary is 4 MB or less.
+		szFile = (unsigned int)d->file->size();
+		firmBuf.reset(new uint8_t[szFile]);
+		d->file->rewind();
+		size_t size = d->file->read(firmBuf.get(), szFile);
+		if (size != szFile) {
+			// Error reading the firmware binary.
+			firmBuf.reset();
+		}
+	}
+
 	// Temporary buffer for snprintf().
 	char buf[32];
 	int len;
@@ -288,13 +271,17 @@ int Nintendo3DSFirm::loadFieldData(void)
 	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
 	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
-		firmBin = d->checkFirmBin();
-		if (firmBin != nullptr) {
-			// Official firmware binary.
-			firmBinDesc = (firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM"));
-		} else {
-			// Check for a custom FIRM.
-			checkCustomFIRM = true;
+		// Calculate the CRC32 and look it up.
+		if (firmBuf) {
+			const uint32_t crc = crc32(0, firmBuf.get(), (unsigned int)szFile);
+			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
+			if (firmBin != nullptr) {
+				// Official firmware binary.
+				firmBinDesc = (firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM"));
+			} else {
+				// Check for a custom FIRM.
+				checkCustomFIRM = true;
+			}
 		}
 	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
 		// ARM9 homebrew.
