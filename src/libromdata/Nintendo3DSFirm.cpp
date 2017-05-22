@@ -1,0 +1,327 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
+ *                                                                         *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation; either version 2 of the License, or (at your  *
+ * option) any later version.                                              *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful, but     *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ ***************************************************************************/
+
+#include "librpbase/config.librpbase.h"
+
+#include "Nintendo3DSFirm.hpp"
+#include "librpbase/RomData_p.hpp"
+
+#include "n3ds_firm_structs.h"
+#include "data/Nintendo3DSFirmData.hpp"
+
+#include "librpbase/common.h"
+#include "librpbase/byteswap.h"
+#include "librpbase/TextFuncs.hpp"
+#include "librpbase/file/IRpFile.hpp"
+using namespace LibRpBase;
+
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cstring>
+#include <cstddef>
+
+// C++ includes.
+#include <memory>
+#include <vector>
+using std::unique_ptr;
+using std::vector;
+
+// zlib for crc32()
+#include <zlib.h>
+
+namespace LibRomData {
+
+class Nintendo3DSFirmPrivate : public RomDataPrivate
+{
+	public:
+		Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file);
+
+	private:
+		typedef RomDataPrivate super;
+		RP_DISABLE_COPY(Nintendo3DSFirmPrivate)
+
+	public:
+		// Firmware header.
+		// NOTE: Must be byteswapped on access.
+		N3DS_FIRM_Header_t firmHeader;
+
+		/**
+		 * Check if the firmware binary is a known official FIRM.
+		 * @return FirmBin_t*, or nullptr if not found.
+		 */
+		const Nintendo3DSFirmData::FirmBin_t *checkFirmBin(void);
+};
+
+/** Nintendo3DSFirmPrivate **/
+
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file)
+	: super(q, file)
+{
+	// Clear the various structs.
+	memset(&firmHeader, 0, sizeof(firmHeader));
+}
+
+/**
+ * Check if the firmware binary is a known official FIRM.
+ * @return FirmBin_t*, or nullptr if not found.
+ */
+const Nintendo3DSFirmData::FirmBin_t *Nintendo3DSFirmPrivate::checkFirmBin(void)
+{
+	const int64_t szFile = this->file->size();
+	if (szFile > 4*1024*1024) {
+		// Firmware binary is too big.
+		return nullptr;
+	}
+
+	// Read the firmware binary.
+	unique_ptr<uint8_t[]> firmBuf(new uint8_t[(unsigned int)szFile]);
+	this->file->rewind();
+	size_t size = this->file->read(firmBuf.get(), (unsigned int)szFile);
+	if (size != (unsigned int)szFile) {
+		// Error reading the firmware binary.
+		return nullptr;
+	}
+
+	// Calculate the CRC32 and look it up.
+	uint32_t crc = crc32(0, firmBuf.get(), (unsigned int)szFile);
+	return Nintendo3DSFirmData::lookup_firmBin(crc);
+}
+
+/** Nintendo3DSFirm **/
+
+/**
+ * Read a Nintendo 3DS firmware binary.
+ *
+ * A ROM image must be opened by the caller. The file handle
+ * will be dup()'d and must be kept open in order to load
+ * data from the ROM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid ROM.
+ *
+ * @param file Open ROM image.
+ */
+Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
+	: super(new Nintendo3DSFirmPrivate(this, file))
+{
+	RP_D(Nintendo3DSFirm);
+	d->className = "Nintendo3DSFirm";
+	d->fileType = FTYPE_FIRMWARE_BINARY;
+
+	if (!d->file) {
+		// Could not dup() the file handle.
+		return;
+	}
+
+	// Read the firmware header.
+	d->file->rewind();
+	size_t size = d->file->read(&d->firmHeader, sizeof(d->firmHeader));
+	if (size != sizeof(d->firmHeader))
+		return;
+
+	// Check if this firmware binary is supported.
+	DetectInfo info;
+	info.header.addr = 0;
+	info.header.size = sizeof(d->firmHeader);
+	info.header.pData = reinterpret_cast<const uint8_t*>(&d->firmHeader);
+	info.ext = nullptr;	// Not needed for N3DS FIRM.
+	info.szFile = 0;	// Not needed for N3DS FIRM.
+	d->isValid = (isRomSupported_static(&info) >= 0);
+}
+
+/**
+ * Is a ROM image supported by this class?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int Nintendo3DSFirm::isRomSupported_static(const DetectInfo *info)
+{
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	assert(info->header.addr == 0);
+	if (!info || !info->header.pData ||
+	    info->header.addr != 0 ||
+	    info->header.size < sizeof(N3DS_FIRM_Header_t))
+	{
+		// Either no detection information was specified,
+		// or the header is too small.
+		return -1;
+	}
+
+	// Check the FIRM magic.
+	// TODO: Other checks?
+	const N3DS_FIRM_Header_t *const firmHeader =
+		reinterpret_cast<const N3DS_FIRM_Header_t*>(info->header.pData);
+	if (!memcmp(firmHeader->magic, N3DS_FIRM_MAGIC, sizeof(firmHeader->magic))) {
+		// This is a FIRM binary.
+		return 0;
+	}
+
+	// Not supported.
+	return -1;
+}
+
+/**
+ * Is a ROM image supported by this object?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int Nintendo3DSFirm::isRomSupported(const DetectInfo *info) const
+{
+	return isRomSupported_static(info);
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
+ */
+const rp_char *Nintendo3DSFirm::systemName(uint32_t type) const
+{
+	RP_D(const Nintendo3DSFirm);
+	if (!d->isValid || !isSystemNameTypeValid(type))
+		return nullptr;
+
+	// Bits 0-1: Type. (short, long, abbreviation)
+	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles.
+	static const rp_char *const sysNames[4] = {
+		_RP("Nintendo 3DS"), _RP("Nintendo 3DS"), _RP("3DS"), nullptr
+	};
+
+	return sysNames[type & SYSNAME_TYPE_MASK];
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const rp_char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
+{
+	static const rp_char *const exts[] = {
+		_RP(".firm"),	// boot9strap
+		_RP(".bin"),	// older
+
+		nullptr
+	};
+	return exts;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const rp_char *const *Nintendo3DSFirm::supportedFileExtensions(void) const
+{
+	return supportedFileExtensions_static();
+}
+
+/**
+ * Load field data.
+ * Called by RomData::fields() if the field data hasn't been loaded yet.
+ * @return Number of fields read on success; negative POSIX error code on error.
+ */
+int Nintendo3DSFirm::loadFieldData(void)
+{
+	RP_D(Nintendo3DSFirm);
+	if (d->fields->isDataLoaded()) {
+		// Field data *has* been loaded...
+		return 0;
+	} else if (!d->file) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!d->isValid) {
+		// Firmware binary isn't valid.
+		return -EIO;
+	}
+
+	// Nintendo 3DS firmware binary header.
+	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
+	d->fields->reserve(4);	// Maximum of 4 fields.
+
+	// Temporary buffer for snprintf().
+	char buf[32];
+	int len;
+
+	// If both ARM11 and ARM9 entry points are non-zero,
+	// check if this is an official 3DS firmware binary.
+	const Nintendo3DSFirmData::FirmBin_t *firmBin = nullptr;
+	const uint32_t arm11_entrypoint = le32_to_cpu(firmHeader->arm11_entrypoint);
+	const uint32_t arm9_entrypoint = le32_to_cpu(firmHeader->arm9_entrypoint);
+	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
+		firmBin = d->checkFirmBin();
+		if (firmBin != nullptr) {
+			// Official firmware binary.
+			d->fields->addField_string(_RP("Type"),
+				(firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM")));
+		} else {
+			// Unofficial firmware binary.
+			d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+		}
+	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
+		// ARM9 homebrew.
+		d->fields->addField_string(_RP("Type"), _RP("ARM9 Homebrew"));
+	} else if (arm11_entrypoint != 0 && arm9_entrypoint == 0) {
+		// ARM11 homebrew. (Not a thing...)
+		d->fields->addField_string(_RP("Type"), _RP("ARM11 Homebrew"));
+	} else {
+		// None of the above...
+		d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+	}
+
+	// Official firmware binary fields.
+	if (firmBin) {
+		// FIRM version.
+		len = snprintf(buf, sizeof(buf), "%u.%u-%u",
+			firmBin->major, firmBin->minor, firmBin->revision);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		d->fields->addField_string(_RP("FIRM Version"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+
+		// System version.
+		d->fields->addField_string(_RP("System Version"),
+			latin1_to_rp_string(firmBin->version, ARRAY_SIZE(firmBin->version)));
+	}
+
+	// Finished reading the field data.
+	return (int)d->fields->count();
+}
+
+}

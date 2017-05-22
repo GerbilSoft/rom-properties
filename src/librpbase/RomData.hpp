@@ -226,6 +226,7 @@ class RomData
 			FTYPE_HOMEBREW,			// Homebrew application, e.g. 3DSX.
 			FTYPE_EMMC_DUMP,		// eMMC dump
 			FTYPE_TITLE_CONTENTS,		// Title contents, e.g. NCCH.
+			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
 
 			FTYPE_LAST			// End of FileType.
 		};
