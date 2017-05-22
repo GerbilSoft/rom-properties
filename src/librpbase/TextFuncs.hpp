@@ -570,6 +570,19 @@ extern "C"
 size_t strnlen(const char *str, size_t len);
 #endif /* HAVE_STRNLEN */
 
+#ifndef HAVE_MEMMEM
+/**
+ * Find a string within a block of memory.
+ * @param haystack Block of memory.
+ * @param haystacklen Length of haystack.
+ * @param needle String to search for.
+ * @param needlelen Length of needle.
+ * @return Location of needle in haystack, or nullptr if not found.
+ */
+void *memmem(const void *haystack, size_t haystacklen,
+	     const void *needle, size_t needlelen);
+#endif /* HAVE_MEMMEM */
+
 #ifdef _WIN32
 // wchar_t text conversion macros.
 // Generally used only on Windows.
