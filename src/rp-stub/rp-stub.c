@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GNOME)                            *
+ * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -57,6 +57,50 @@ typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(void);
 
 // Are we running as rp-config?
 static uint8_t is_rp_config = 0;
+
+// Supported rom-properties frontends.
+typedef enum {
+	RP_FE_KDE4,
+	RP_FE_KDE5,
+	RP_FE_XFCE,
+	RP_FE_GNOME,
+
+	RP_FE_MAX
+} RP_Frontend;
+
+// Extension paths.
+static const char *const RP_Extension_Path[RP_FE_MAX] = {
+#ifdef KDE4_PLUGIN_INSTALL_DIR
+	KDE4_PLUGIN_INSTALL_DIR "/rom-properties-kde4.so",
+#else
+	NULL,
+#endif
+#ifdef KDE5_PLUGIN_INSTALL_DIR
+	KDE5_PLUGIN_INSTALL_DIR "/rom-properties-kde5.so",
+#else
+	NULL,
+#endif
+#ifdef ThunarX2_EXTENSIONS_DIR
+	ThunarX2_EXTENSIONS_DIR "/rom-properties-xfce.so",
+#else
+	NULL,
+#endif
+#ifdef LibNautilusExtension_EXTENSION_DIR
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so",
+#else
+	NULL,
+#endif
+};
+
+// Plugin priority order.
+// - Index: Current desktop environment. (RP_Frontend)
+// - Value: Plugin to use. (RP_Frontend)
+static const uint8_t plugin_prio[4][4] = {
+	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_GNOME},	// RP_FE_KDE4
+	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE},	// RP_FE_KDE5
+	{RP_FE_XFCE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
+	{RP_FE_GNOME, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
+};
 
 static void show_version(void)
 {
@@ -192,21 +236,44 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// Attempt to open the GNOME plugin.
-	// TODO: Try multiple plugins?
-	// TODO: Get the proper installation directory.
-	void *rp_plugin = dlopen(LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so", RTLD_LOCAL|RTLD_LAZY);
-	if (!rp_plugin) {
-		fprintf(stderr, "*** ERROR: Could not open the rom-properties GNOME plugin.\n");
-		puts(dlerror());
-		return EXIT_FAILURE;
+	// Attempt to open all available plugins.
+	// TODO: Determine the current desktop. Assuming XFCE for now.
+	const uint8_t cur_desktop = RP_FE_XFCE;
+
+	const char *const symname = (config ? "rp_show_config_dialog" : "rp_create_thumbnail");
+	const uint8_t *prio = &plugin_prio[cur_desktop][0];
+	void *hRpPlugin = NULL;
+	void *pfn = NULL;
+	for (unsigned int i = 4; i > 0; i--, prio++) {
+		// Attempt to open this plugin.
+		const char *const plugin_path = RP_Extension_Path[*prio];
+		if (!plugin_path)
+			continue;
+
+		hRpPlugin = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
+		if (!hRpPlugin) {
+			// Library not found.
+			continue;
+		}
+
+		// Find the requested symbol.
+		pfn = dlsym(hRpPlugin, symname);
+		if (!pfn) {
+			// Symbol not found.
+			dlclose(hRpPlugin);
+			hRpPlugin = NULL;
+			continue;
+		}
+
+		// Found the symbol.
+		break;
 	}
 
-	const char *symname = (config ? "rp_show_config_dialog" : "rp_create_thumbnail");
-	void *pfn = dlsym(rp_plugin, symname);
 	if (!pfn) {
-		dlclose(rp_plugin);
-		fprintf(stderr, "*** ERROR: Could not find %s() in the rom-properties GNOME plugin.\n", symname);
+		if (hRpPlugin) {
+			dlclose(hRpPlugin);
+		}
+		fprintf(stderr, "*** ERROR: Could not find %s() in any installed rom-properties plugin.\n", symname);
 		return EXIT_FAILURE;
 	}
 
@@ -221,9 +288,9 @@ int main(int argc, char *argv[])
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)();
 	}
 
-	dlclose(rp_plugin);
+	dlclose(hRpPlugin);
 	if (ret != 0) {
-		fprintf(stderr, "*** ERROR: rp_create_thumbnail() returned %d.\n", ret);
+		fprintf(stderr, "*** ERROR: %s() returned %d.\n", symname, ret);
 	}
 	return ret;
 }

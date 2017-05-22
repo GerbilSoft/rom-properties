@@ -1,6 +1,29 @@
 PROJECT(rp-stub)
 
 # Find the framework libraries in order to determine plugin paths.
+# FIXME: Remove prefix from KDE4's path.
+# NOTE: Need to skip the uninstall rule due to conflicts
+# with the actual KDE4 frontend.
+SET(_kde4_uninstall_rule_created TRUE)
+FIND_PACKAGE(KDE4)
+SET(KDE4_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
+UNSET(PLUGIN_INSTALL_DIR)
+UNSET(PLUGIN_INSTALL_DIR CACHE)
+# Get rid of the explicit C90 setting. (set by KDE4)
+STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+
+# Get the plugin directory and Qt prefix.
+# Prefix will be removed from the plugin directory if necessary.
+EXEC_PROGRAM(qtpaths ARGS --plugin-dir OUTPUT_VARIABLE KDE5_PLUGIN_INSTALL_DIR)
+IF(NOT KDE5_PLUGIN_INSTALL_DIR)
+	MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+ENDIF(NOT KDE5_PLUGIN_INSTALL_DIR)
+EXEC_PROGRAM(qtpaths ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
+INCLUDE(ReplaceHardcodedPrefix)
+REPLACE_HARDCODED_PREFIX(KDE5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
+
+# XFCE and GNOME.
+FIND_PACKAGE(ThunarX2)
 FIND_PACKAGE(LibNautilusExtension 3.0.0)
 
 # Write the config.h file.
