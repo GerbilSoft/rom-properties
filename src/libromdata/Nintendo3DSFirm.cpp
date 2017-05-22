@@ -339,7 +339,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			lumaver += 8;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
-			while (lumaver < end && lumaver[count] != 0 && !isspace(lumaver[count])) {
+			while (lumaver < end && lumaver[count] != 0 && !isspace(lumaver[count]) && count < 32) {
 				count++;
 			}
 			if (count > 0) {
