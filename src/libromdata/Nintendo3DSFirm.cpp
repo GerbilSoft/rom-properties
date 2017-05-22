@@ -299,19 +299,13 @@ int Nintendo3DSFirm::loadFieldData(void)
 		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
 			// This is Boot9Strap.
 			firmBinDesc = _RP("Boot9Strap");
-		} else {
+		} else if (firmBuf) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
 			static const char sighax_magic[] = "3DS BOOTHAX INS";
-			d->file->rewind();
-			int ret = d->file->seek(0x208);
-			if (ret == 0) {
-				char buf[sizeof(sighax_magic)];
-				size_t size = d->file->read(buf, sizeof(buf));
-				if (size == sizeof(buf) && !memcmp(buf, sighax_magic, sizeof(buf))) {
-					// Found derrek's sighax installer.
-					firmBinDesc = _RP("sighax installer");
-				}
+			if (!memcmp(&firmBuf[0x208], sighax_magic, sizeof(sighax_magic))) {
+				// Found derrek's sighax installer.
+				firmBinDesc = _RP("sighax installer");
 			}
 		}
 	}
