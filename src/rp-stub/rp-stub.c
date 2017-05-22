@@ -126,8 +126,9 @@ static void show_help(const char *argv0)
 			"extracted and saved as output_file.\n"
 			"\n"
 			"Options:\n"
-			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 			"  -s, --size\t\tMaximum thumbnail size. (default is 256px)\n"
+			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
+			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
 			"  -h, --help\t\tDisplay this help and exit.\n"
 			"  -V, --version\t\tOutput version information and exit.\n"
 			, argv0);
@@ -168,8 +169,9 @@ int main(int argc, char *argv[])
 	}
 
 	static const struct option long_options[] = {
-		{"config",	no_argument,		nullptr, 'c'},
 		{"size",	required_argument,	nullptr, 's'},
+		{"config",	no_argument,		nullptr, 'c'},
+		{"debug",	no_argument,		nullptr, 'd'},
 		{"help",	no_argument,		nullptr, 'h'},
 		{"version",	no_argument,		nullptr, 'V'},
 		// TODO: Option to scan for installed plugins.
@@ -177,15 +179,11 @@ int main(int argc, char *argv[])
 
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
+	uint8_t debug = 0;
 	int maximum_size = 256;
 	int c, option_index;
-	while ((c = getopt_long(argc, argv, "cs:hV", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "s:cdhV", long_options, &option_index)) != -1) {
 		switch (c) {
-			case 'c':
-				// Show the configuration dialog.
-				config = 1;
-				break;
-
 			case 's': {
 				char *endptr;
 				errno = 0;
@@ -205,6 +203,16 @@ int main(int argc, char *argv[])
 				maximum_size = (int)lTmp;
 				break;
 			}
+
+			case 'c':
+				// Show the configuration dialog.
+				config = 1;
+				break;
+
+			case 'd':
+				// Enable debug output.
+				debug = 1;
+				break;
 
 			case 'h':
 				show_help(argv[0]);
@@ -250,6 +258,9 @@ int main(int argc, char *argv[])
 		if (!plugin_path)
 			continue;
 
+		if (debug) {
+			fprintf(stderr, "Attempting to open: %s\n", plugin_path);
+		}
 		hRpPlugin = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
 		if (!hRpPlugin) {
 			// Library not found.
@@ -257,6 +268,9 @@ int main(int argc, char *argv[])
 		}
 
 		// Find the requested symbol.
+		if (debug) {
+			fprintf(stderr, "Checking for symbol: %s\n", symname);
+		}
 		pfn = dlsym(hRpPlugin, symname);
 		if (!pfn) {
 			// Symbol not found.
@@ -282,12 +296,22 @@ int main(int argc, char *argv[])
 		// Create the thumbnail.
 		const char *const source_file = argv[optind];
 		const char *const output_file = argv[optind+1];
+		if (debug) {
+			fprintf(stderr, "Calling function: %s(\"%s\", \"%s\", %d);\n",
+				symname, source_file, output_file, maximum_size);
+		}
 		ret = ((PFN_RP_CREATE_THUMBNAIL)pfn)(source_file, output_file, maximum_size);
 	} else {
 		// Show the configuration dialog.
+		if (debug) {
+			fprintf(stderr, "Calling function: %s();\n", symname);
+		}
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)();
 	}
 
+	if (debug) {
+		fprintf(stderr, "%s() returned %d.\n", symname, ret);
+	}
 	dlclose(hRpPlugin);
 	if (ret != 0) {
 		fprintf(stderr, "*** ERROR: %s() returned %d.\n", symname, ret);
