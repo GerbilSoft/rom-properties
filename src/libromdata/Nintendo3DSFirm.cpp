@@ -330,23 +330,40 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Check for ARM9 homebrew.
 	if (checkARM9) {
-		// Check for Luma3DS.
-		const char *lumaver = (const char*)memmem(firmBuf.get(), szFile, "Luma3DS v", 9);
-		if (lumaver) {
-			d->fields->addField_string(_RP("Title"), _RP("Luma3DS"));
+		// Version strings.
+		struct Arm9VerStr_t {
+			const rp_char *title;	// Application title.
+			const char *searchstr;	// Search string.
+			unsigned int searchlen;	// Search string length, without the NULL terminator.
+		};
+		static const Arm9VerStr_t arm9VerStr[] = {
+			{_RP("Luma3DS"), "Luma3DS v", 9},
+			{_RP("GodMode9"), "GodMode9 Explorer v", 19},
+		};
 
-			// Everything after the 'v' is the version.
-			lumaver += 8;
+		for (unsigned int i = 0; i < ARRAY_SIZE(arm9VerStr); i++) {
+			const char *verstr = (const char*)memmem(firmBuf.get(), szFile,
+				arm9VerStr[i].searchstr, arm9VerStr[i].searchlen);
+			if (!verstr)
+				continue;
+
+			d->fields->addField_string(_RP("Title"), arm9VerStr[i].title);
+
+			// Version does NOT include the 'v' character.
+			verstr += arm9VerStr[i].searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
-			while (lumaver < end && lumaver[count] != 0 && !isspace(lumaver[count]) && count < 32) {
+			while (verstr < end && verstr[count] != 0 && !isspace(verstr[count]) && count < 32) {
 				count++;
 			}
 			if (count > 0) {
-				// NOTE: Luma3DS uses UTF-8 strings.
+				// NOTE: Most ARM9 homebrew uses UTF-8 strings.
 				d->fields->addField_string(_RP("Version"),
-					utf8_to_rp_string(lumaver, count));
+					utf8_to_rp_string(verstr, count));
 			}
+
+			// We're done here.
+			break;
 		}
 	}
 
