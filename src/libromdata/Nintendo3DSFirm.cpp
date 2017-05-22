@@ -241,7 +241,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Nintendo 3DS firmware binary header.
 	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields->reserve(5);	// Maximum of 4 fields.
 
 	// Read the firmware binary.
 	unique_ptr<uint8_t[]> firmBuf;
@@ -370,6 +370,16 @@ int Nintendo3DSFirm::loadFieldData(void)
 			// We're done here.
 			break;
 		}
+	}
+
+	// Entry Points
+	if (arm11_entrypoint != 0) {
+		d->fields->addField_string_numeric(_RP("ARM11 Entry Point"),
+			arm11_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+	}
+	if (arm9_entrypoint != 0) {
+		d->fields->addField_string_numeric(_RP("ARM9 Entry Point"),
+			arm9_entrypoint, RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.
