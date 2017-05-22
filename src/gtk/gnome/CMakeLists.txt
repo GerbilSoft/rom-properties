@@ -61,23 +61,6 @@ IF(BUILD_GNOME)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gnome::libnautilus-extension)
 	TARGET_LINK_LIBRARIES(rom-properties-gnome Gtk3::gtk3 GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
 	ADD_DEFINITIONS(-DG_LOG_DOMAIN=\"rom-properties-gnome\")
-
-	# Thumbnail wrapper program.
-	ADD_EXECUTABLE(rp-thumbnail rp-thumbnail.c)
-	DO_SPLIT_DEBUG(rp-thumbnail)
-	TARGET_INCLUDE_DIRECTORIES(rp-thumbnail
-		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
-		)
-
-	# Link in libdl if it's required for dlopen().
-	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(rp-thumbnail ${CMAKE_DL_LIBS})
-	ENDIF(CMAKE_DL_LIBS)
 ENDIF(BUILD_GNOME)
 
 #######################
@@ -88,10 +71,6 @@ ENDIF(BUILD_GNOME)
 IF(BUILD_GNOME)
 	INSTALL(TARGETS rom-properties-gnome
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
-		COMPONENT "plugin"
-		)
-	INSTALL(TARGETS rp-thumbnail
-		RUNTIME DESTINATION "${DIR_INSTALL_LIBEXEC}"
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
@@ -106,14 +85,6 @@ IF(BUILD_GNOME)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
-				COMPONENT "debug"
-				)
-		ENDIF(DEBUG_FILENAME)
-
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rp-thumbnail PDB)
-		IF(DEBUG_FILENAME)
-			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${DIR_INSTALL_LIBEXEC}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

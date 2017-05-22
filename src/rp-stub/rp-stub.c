@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rp-thumbnail.c: Thumbnail wrapper program.                              *
+ * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -20,12 +20,13 @@
  ***************************************************************************/
 
 /**
- * thumbnail.c is a wrapper program for the GNOME plugin.
+ * rp-stub.c is a wrapper program for the Linux plugins.
  * It parses the command line and then searches for installed
- * thumbnailing plugins. If found, it runs the thumbnail function.
+ * rom-properties libraries. If found, it runs the requested
+ * function from the library.
  */
 #include "config.version.h"
-#include "config.gnome.h"
+#include "config.rp-stub.h"
 
 #include <dlfcn.h>
 #include <errno.h>
