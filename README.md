@@ -152,7 +152,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Nintendo Wii U: 1:1 disc image (\*.wud)
 * Nintendo 3DS: Icon files (\*.smdh), homebrew (\*.3dsx), cartridge images
   (\*.3ds, \*.cci), importable archives (\*.cia), eMMC dumps (\*.bin),
-  and title contents (\*.ncch, \*.app)
+  title contents (\*.ncch, \*.app), and firmware binaries (\*.firm, \*.bin)
   * Encryption keys are needed for encrypted cartridge images, importable
     archives, and title contents.
 
