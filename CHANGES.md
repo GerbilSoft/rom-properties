@@ -1,5 +1,14 @@
 # Changes
 
+## v1.1 (released 2017/??/??)
+
+* New features:
+  * Nintendo 3DS firmware binaries are now supported. For official FIRM
+    binaries, the CRC32 is compared against an internal database of known
+    versions. This currently includes 1.0 through 11.4. For unofficial
+    FIRM, various heuristics are used to determine if it's a well-known
+    homebrew title.
+
 ## v1.0 (released 2017/05/20)
 
 * New systems supported:

@@ -48,6 +48,7 @@ ENDIF(NOT WIN32)
 # Check for C library functions.
 INCLUDE(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
+CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 
 # Check if non-capturing lambda functions can be cast to function pointers.
 # NOTE: Used by libromdata, not librpbase, but we're

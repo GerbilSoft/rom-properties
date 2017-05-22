@@ -20,6 +20,7 @@ SET(libromdata_SRCS
 	EXE.cpp
 	WiiU.cpp
 	Nintendo3DS.cpp
+	Nintendo3DSFirm.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -27,6 +28,7 @@ SET(libromdata_SRCS
 	data/NESMappers.cpp
 	data/EXEData.cpp
 	data/WiiUData.cpp
+	data/Nintendo3DSFirmData.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -61,6 +63,7 @@ SET(libromdata_H
 	EXE_p.hpp
 	WiiU.hpp
 	Nintendo3DS.hpp
+	Nintendo3DSFirm.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -83,6 +86,7 @@ SET(libromdata_H
 	data/NESMappers.hpp
 	data/EXEData.hpp
 	data/WiiUData.hpp
+	data/Nintendo3DSFirmData.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
