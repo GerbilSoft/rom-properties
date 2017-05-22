@@ -284,26 +284,55 @@ int Nintendo3DSFirm::loadFieldData(void)
 	const Nintendo3DSFirmData::FirmBin_t *firmBin = nullptr;
 	const uint32_t arm11_entrypoint = le32_to_cpu(firmHeader->arm11_entrypoint);
 	const uint32_t arm9_entrypoint = le32_to_cpu(firmHeader->arm9_entrypoint);
+	const rp_char *firmBinDesc = nullptr;
+	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
+	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
 		firmBin = d->checkFirmBin();
 		if (firmBin != nullptr) {
 			// Official firmware binary.
-			d->fields->addField_string(_RP("Type"),
-				(firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM")));
+			firmBinDesc = (firmBin->isNew3DS ? _RP("New3DS FIRM") : _RP("Old3DS FIRM"));
 		} else {
-			// Unofficial firmware binary.
-			d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+			// Check for a custom FIRM.
+			checkCustomFIRM = true;
 		}
 	} else if (arm11_entrypoint == 0 && arm9_entrypoint != 0) {
 		// ARM9 homebrew.
-		d->fields->addField_string(_RP("Type"), _RP("ARM9 Homebrew"));
+		firmBinDesc = _RP("ARM9 Homebrew");
+		checkARM9 = true;
 	} else if (arm11_entrypoint != 0 && arm9_entrypoint == 0) {
 		// ARM11 homebrew. (Not a thing...)
-		d->fields->addField_string(_RP("Type"), _RP("ARM11 Homebrew"));
-	} else {
-		// None of the above...
-		d->fields->addField_string(_RP("Type"), _RP("Unknown"));
+		firmBinDesc = _RP("ARM11 Homebrew");
 	}
+
+	if (checkCustomFIRM) {
+		// TODO: Split into a separate function?
+
+		// Check for "B9S" at 0x3D.
+		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
+			// This is Boot9Strap.
+			firmBinDesc = _RP("Boot9Strap");
+		} else {
+			// Check for sighax installer.
+			// NOTE: String has a NULL terminator.
+			static const char sighax_magic[] = "3DS BOOTHAX INS";
+			d->file->rewind();
+			int ret = d->file->seek(0x208);
+			if (ret == 0) {
+				char buf[sizeof(sighax_magic)];
+				size_t size = d->file->read(buf, sizeof(buf));
+				if (size == sizeof(buf) && !memcmp(buf, sighax_magic, sizeof(buf))) {
+					// Found derrek's sighax installer.
+					firmBinDesc = _RP("sighax installer");
+				}
+			}
+		}
+	}
+
+	d->fields->addField_string(_RP("Type"),
+		(firmBinDesc ? firmBinDesc : _RP("Unknown")));
+
+	// TODO: Check for ARM9 homebrew. (version strings, etc)
 
 	// Official firmware binary fields.
 	if (firmBin) {
