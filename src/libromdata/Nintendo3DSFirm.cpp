@@ -313,8 +313,6 @@ int Nintendo3DSFirm::loadFieldData(void)
 	d->fields->addField_string(_RP("Type"),
 		(firmBinDesc ? firmBinDesc : _RP("Unknown")));
 
-	// TODO: Check for ARM9 homebrew. (version strings, etc)
-
 	// Official firmware binary fields.
 	if (firmBin) {
 		// FIRM version.
@@ -328,6 +326,28 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version.
 		d->fields->addField_string(_RP("System Version"),
 			latin1_to_rp_string(firmBin->version, ARRAY_SIZE(firmBin->version)));
+	}
+
+	// Check for ARM9 homebrew.
+	if (checkARM9) {
+		// Check for Luma3DS.
+		const char *lumaver = (const char*)memmem(firmBuf.get(), szFile, "Luma3DS v", 9);
+		if (lumaver) {
+			d->fields->addField_string(_RP("Title"), _RP("Luma3DS"));
+
+			// Everything after the 'v' is the version.
+			lumaver += 8;
+			const char *end = (const char*)firmBuf.get() + szFile;
+			int count = 0;
+			while (lumaver < end && lumaver[count] != 0 && !isspace(lumaver[count])) {
+				count++;
+			}
+			if (count > 0) {
+				// NOTE: Luma3DS uses UTF-8 strings.
+				d->fields->addField_string(_RP("Version"),
+					utf8_to_rp_string(lumaver, count));
+			}
+		}
 	}
 
 	// Finished reading the field data.
