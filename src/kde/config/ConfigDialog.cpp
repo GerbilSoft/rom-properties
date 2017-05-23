@@ -52,12 +52,16 @@ class ConfigDialogPrivate
 		// "Apply" and "Reset" buttons.
 		QPushButton *btnApply;
 		QPushButton *btnReset;
+
+		// Last focused QWidget.
+		QWidget *lastFocus;
 };
 
 ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	: q_ptr(q)
 	, btnApply(nullptr)
 	, btnReset(nullptr)
+	, lastFocus(nullptr)
 { }
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
@@ -115,6 +119,14 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// FIXME: Should be doable in Qt Designer...
 	connect(d->ui.tabImageTypes, SIGNAL(modified()),
 		this, SLOT(tabModified()));
+
+	// Install the event filter on all child widgets.
+	// This is needed in order to track focus in case
+	// the "Apply" button is clicked.
+	QList<QWidget*> widgets = this->findChildren<QWidget*>();
+	foreach (QWidget *widget, widgets) {
+		widget->installEventFilter(this);
+	}
 }
 
 /**
@@ -139,6 +151,28 @@ void ConfigDialog::changeEvent(QEvent *event)
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/**
+ * Event filter for tracking focus.
+ * @param watched Object.
+ * @param event QEvent.
+ * @return True to filter the event; false to allow it to propagate.
+ */
+bool ConfigDialog::eventFilter(QObject *watched, QEvent *event)
+{
+	if (event->type() == QEvent::FocusIn) {
+		Q_D(ConfigDialog);
+		QWidget *widget = qobject_cast<QWidget*>(watched);
+		if (widget && widget != d->btnApply) {
+			// Save the widget for refocusing if the
+			// "Apply" button is clicked.
+			d->lastFocus = widget;
+		}
+	}
+
+	// Allow the event to propagate.
+	return false;
 }
 
 /** Button slots. **/
@@ -177,6 +211,12 @@ void ConfigDialog::apply(void)
 	// Save all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
+
+	// Set the focus to the last-focused widget.
+	// Otherwise, it ends up focusing the "Cancel" button.
+	if (d->lastFocus) {
+		d->lastFocus->setFocus();
+	}
 
 	// Disable the "Apply" and "Reset" buttons.
 	d->btnApply->setEnabled(false);

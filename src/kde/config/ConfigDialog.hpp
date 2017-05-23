@@ -43,6 +43,9 @@ class ConfigDialog : public QDialog
 		// State change event. (Used for switching the UI language at runtime.)
 		void changeEvent(QEvent *event);
 
+		// Event filter for tracking focus.
+		bool eventFilter(QObject *watched, QEvent *event);
+
 	protected slots:
 		/**
 		 * The "OK" button was clicked.
