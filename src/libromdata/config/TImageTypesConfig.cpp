@@ -22,12 +22,14 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 
+// NOTE: This is #included in other files,
+// so don't use any 'using' statements!
+
 #include "TImageTypesConfig.hpp"
 #include "librpbase/config/Config.hpp"
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::rp_string;
 
 // RomData subclasses with images.
 #include "../Amiibo.hpp"
@@ -146,27 +148,27 @@ void TImageTypesConfig<ComboBox>::reset(void)
 		}
 	}
 
-	const Config *const config = Config::instance();
+	const LibRpBase::Config *const config = LibRpBase::Config::instance();
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		ComboBox *p_cboImageType = &cboImageType[sys][0];
 
 		// Get the image priority.
-		Config::ImgTypePrio_t imgTypePrio;
-		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
+		LibRpBase::Config::ImgTypePrio_t imgTypePrio;
+		LibRpBase::Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
 		bool no_thumbs = false;
 		switch (res) {
-			case Config::IMGTR_SUCCESS:
+			case LibRpBase::Config::IMGTR_SUCCESS:
 				// Image type priority received successfully.
 				sysIsDefault[sys] = false;
 				break;
-			case Config::IMGTR_SUCCESS_DEFAULTS:
+			case LibRpBase::Config::IMGTR_SUCCESS_DEFAULTS:
 				// Image type priority received successfully.
 				// IMGTR_SUCCESS_DEFAULTS indicates the returned
 				// data is the default priority, since a custom
 				// configuration was not found for this class.
 				sysIsDefault[sys] = true;
 				break;
-			case Config::IMGTR_DISABLED:
+			case LibRpBase::Config::IMGTR_DISABLED:
 				// Thumbnails are disabled for this class.
 				no_thumbs = true;
 				break;
@@ -233,7 +235,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 	// NOTE: Using an rp_string with reserved storage
 	// instead of ostringstream, since we had problems
 	// with u16string ostringstream before.
-	rp_string imageTypeList;
+	LibRpBase::rp_string imageTypeList;
 	imageTypeList.reserve(128);
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
