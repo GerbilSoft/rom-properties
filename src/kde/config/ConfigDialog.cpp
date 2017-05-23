@@ -107,6 +107,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	d->btnApply = d->ui.buttonBox->button(QDialogButtonBox::Apply);
 	d->btnReset = d->ui.buttonBox->button(QDialogButtonBox::Reset);
 
+	// FIXME: Set the "Reset" button's icon to "edit-undo".
+	// Attmepting to do this using d->btnApply->setIcon() doesn't seem to work...
+
 	// Connect slots for "Reset" and "Apply".
 	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));
 	connect(d->btnReset, SIGNAL(clicked()), this, SLOT(reset()));
