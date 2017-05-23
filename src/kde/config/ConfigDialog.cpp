@@ -21,6 +21,9 @@
 
 #include "ConfigDialog.hpp"
 
+// Qt includes.
+#include <QPushButton>
+
 /** ConfigDialogPrivate **/
 
 #include "ui_ConfigDialog.h"
@@ -81,6 +84,20 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	}
 #endif /* QT_VERSION >= 0x040600 */
 #endif /* Q_OS_MAC */
+
+	// Connect slots for "Reset" and "Apply".
+	connect(d->ui.buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()),
+		this, SLOT(apply()));
+	connect(d->ui.buttonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()),
+		this, SLOT(reset()));
+
+	// Disable the "Apply" button until we receive a modification signal.
+	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+
+	// Connect the modification signals.
+	// FIXME: Should be doable in Qt Designer...
+	connect(d->ui.tabImageTypes, SIGNAL(modified()),
+		this, SLOT(tabModified()));
 }
 
 /**
@@ -105,4 +122,53 @@ void ConfigDialog::changeEvent(QEvent *event)
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/** Button slots. **/
+
+/**
+ * The "OK" button was clicked.
+ */
+void ConfigDialog::accept(void)
+{
+	// Save all tabs and close the dialog.
+	Q_D(ConfigDialog);
+	d->ui.tabImageTypes->save();
+	super::accept();
+}
+
+/**
+ * The "Apply" button was clicked.
+ */
+void ConfigDialog::apply(void)
+{
+	// Save all tabs.
+	Q_D(ConfigDialog);
+	d->ui.tabImageTypes->save();
+
+	// Disable the "Apply" button.
+	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+}
+
+/**
+ * The "Reset" button was clicked.
+ */
+void ConfigDialog::reset(void)
+{
+	// Reset all tabs.
+	Q_D(ConfigDialog);
+	d->ui.tabImageTypes->reset();
+
+	// Disable the "Apply" button.
+	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+}
+
+/**
+ * A tab has been modified.
+ */
+void ConfigDialog::tabModified(void)
+{
+	// Enable the "Apply" button.
+	Q_D(ConfigDialog);
+	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
 }

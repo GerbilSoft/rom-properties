@@ -86,4 +86,7 @@
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>tabModified()</slot>
+ </slots>
 </ui>

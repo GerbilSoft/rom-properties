@@ -42,6 +42,27 @@ class ConfigDialog : public QDialog
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
 		void changeEvent(QEvent *event);
+
+	protected slots:
+		/**
+		 * The "OK" button was clicked.
+		 */
+		void accept(void) override final;
+
+		/**
+		 * The "Apply" button was clicked.
+		 */
+		void apply(void);
+
+		/**
+		 * The "Reset" button was clicked.
+		 */
+		void reset(void);
+
+		/**
+		 * A tab has been modified.
+		 */
+		void tabModified(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */
