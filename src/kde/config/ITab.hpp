@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__
 
 // Qt includes.
+#include <QSettings>
 #include <QWidget>
 
 class ITab : public QWidget
@@ -46,8 +47,9 @@ class ITab : public QWidget
 
 		/**
 		 * Save the configuration.
+		 * @param pSettings QSettings object.
 		 */
-		virtual void save(void) = 0;
+		virtual void save(QSettings *pSettings) = 0;
 
 	signals:
 		/**

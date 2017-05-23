@@ -21,8 +21,16 @@
 
 #include "ConfigDialog.hpp"
 
+// librpbase
+#include "librpbase/config/Config.hpp"
+using LibRpBase::Config;
+
+// RP2Q()
+#include "RpQt.hpp"
+
 // Qt includes.
 #include <QPushButton>
+#include <QSettings>
 
 /** ConfigDialogPrivate **/
 
@@ -132,8 +140,8 @@ void ConfigDialog::changeEvent(QEvent *event)
 void ConfigDialog::accept(void)
 {
 	// Save all tabs and close the dialog.
-	Q_D(ConfigDialog);
-	d->ui.tabImageTypes->save();
+	// TODO: What if apply() fails?
+	apply();
 	super::accept();
 }
 
@@ -142,9 +150,24 @@ void ConfigDialog::accept(void)
  */
 void ConfigDialog::apply(void)
 {
+	// Open the configuration file using QSettings.
+	// TODO: Error handling.
+	const Config *const config = Config::instance();
+	const rp_char *const filename = config->filename();
+	if (!filename) {
+		// No configuration filename...
+		return;
+	}
+
+	QSettings settings(RP2Q(filename), QSettings::IniFormat);
+	if (!settings.isWritable()) {
+		// Can't write to the file...
+		return;
+	}
+
 	// Save all tabs.
 	Q_D(ConfigDialog);
-	d->ui.tabImageTypes->save();
+	d->ui.tabImageTypes->save(&settings);
 
 	// Disable the "Apply" button.
 	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);

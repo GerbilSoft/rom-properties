@@ -116,6 +116,10 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 
 		// QSignalMapper for the QComboBoxes.
 		QSignalMapper *mapperCboImageType;
+
+		// Temporary QSettings object.
+		// Set and cleared by ImageTypesTab::save();
+		QSettings *pSettings;
 };
 
 /** ImageTypesTabPrivate **/
@@ -124,6 +128,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
 	, mapperCboImageType(new QSignalMapper(q))
+	, pSettings(nullptr)
 {
 	// Connect the QSignalMapper to the ImageTypesTab.
 	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
@@ -135,6 +140,10 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	// cboImageType_lastAdded should be nullptr.
 	// (Cleared by finishComboBoxes().)
 	assert(cboImageType_lastAdded == nullptr);
+
+	// pSettings should be nullptr,
+	// since it's only used when saving.
+	assert(pSettings == nullptr);
 }
 
 /** TImageTypesConfig functions. (protected) **/
@@ -255,8 +264,12 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
  */
 int ImageTypesTabPrivate::saveStart(void)
 {
-	// TODO for Qt
-	return -ENOTSUP;
+	assert(pSettings != nullptr);
+	if (!pSettings) {
+		return -ENOENT;
+	}
+	pSettings->beginGroup(QLatin1String("ImageTypes"));
+	return 0;
 }
 
 /**
@@ -267,8 +280,16 @@ int ImageTypesTabPrivate::saveStart(void)
  */
 int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList)
 {
-	// TODO for Qt
-	return -ENOTSUP;
+	assert(pSettings != nullptr);
+	if (!pSettings) {
+		return -ENOENT;
+	}
+
+	// NOTE: QSettings stores comma-separated strings with
+	// double-quotes, which may be a bit confusing.
+	// Config will simply ignore the double-quotes.
+	pSettings->setValue(RP2Q(sysName), RP2Q(imageTypeList));
+	return 0;
 }
 
 /**
@@ -279,8 +300,12 @@ int ImageTypesTabPrivate::saveWriteEntry(const rp_char *sysName, const rp_char *
  */
 int ImageTypesTabPrivate::saveFinish(void)
 {
-	// TODO for Qt
-	return -ENOTSUP;
+	assert(pSettings != nullptr);
+	if (!pSettings) {
+		return -ENOENT;
+	}
+	pSettings->endGroup();
+	return 0;
 }
 
 /** TImageTypesConfig functions. (public) **/
@@ -354,10 +379,19 @@ void ImageTypesTab::reset(void)
 
 /**
  * Save the configuration.
+ * @param pSettings QSettings object.
  */
-void ImageTypesTab::save(void)
+void ImageTypesTab::save(QSettings *pSettings)
 {
-	// TODO
+	assert(pSettings != nullptr);
+	if (!pSettings)
+		return;
+
+	// Save the configuration.
+	RP_D(ImageTypesTab);
+	d->pSettings = pSettings;
+	d->save();
+	d->pSettings = nullptr;
 }
 
 /**

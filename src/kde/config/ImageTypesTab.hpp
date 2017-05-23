@@ -51,8 +51,9 @@ class ImageTypesTab : public ITab
 
 		/**
 		 * Save the configuration.
+		 * @param pSettings QSettings object.
 		 */
-		virtual void save(void) override final;
+		virtual void save(QSettings *pSettings) override final;
 
 	protected slots:
 		/**
