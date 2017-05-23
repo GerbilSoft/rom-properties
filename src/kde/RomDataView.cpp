@@ -449,6 +449,9 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 		lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 		lblString->setTextFormat(Qt::RichText);
 		lblString->setOpenExternalLinks(true);
+		lblString->setTextInteractionFlags(
+			Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+		lblString->setFocusPolicy(Qt::StrongFocus);
 		if (field->data.str) {
 			// Replace newlines with "<br/>".
 			QString text = RP2Q(*(field->data.str)).replace(QChar(L'\n'), QLatin1String("<br/>"));
@@ -457,8 +460,8 @@ void RomDataViewPrivate::initString(QLabel *lblDesc, const RomFields::Field *fie
 	} else {
 		// Standard text with no formatting.
 		lblString->setTextInteractionFlags(
-			Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse |
-			Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByKeyboard);
+			Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+		lblString->setFocusPolicy(Qt::StrongFocus);
 		lblString->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblString->setTextFormat(Qt::PlainText);
 		if (field->data.str) {
