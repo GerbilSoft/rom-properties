@@ -188,6 +188,8 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 // This points to the ImageTypesTabPrivate object.
 const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
 
+/** TImageTypesConfig functions. (protected) **/
+
 /**
  * Create the labels in the grid.
  */
@@ -471,6 +473,8 @@ int ImageTypesTabPrivate::saveFinish(void)
 	return 0;
 }
 
+/** TImageTypesConfig functions. (public) **/
+
 /**
  * Set a ComboBox's current index.
  * This will not trigger cboImageType_priorityValueChanged().
@@ -488,6 +492,8 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));
 	}
 }
+
+/** Other ImageTypesTabPrivate functions. **/
 
 /**
  * Dialog procedure.
