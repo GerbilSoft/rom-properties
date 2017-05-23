@@ -28,12 +28,22 @@ namespace LibRpBase {
 
 namespace LibRomData {
 
+struct FstFileCount {
+	unsigned int dirs;
+	unsigned int files;
+};
+
 /**
  * Print an FST to an ostream.
- * @param fst FST to print.
- * @param os ostream.
+ * @param fst	[in] FST to print.
+ * @param os	[in,out] ostream.
+ * @param fc	[out,opt] Pointer to FstFileCount struct.
+ *
+ * If fc is nullptr, file count is printed to os.
+ * Otherwise, file count is stored in fc.
+ *
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(LibRpBase::IFst *fst, std::ostream &os);
+int fstPrint(LibRpBase::IFst *fst, std::ostream &os, FstFileCount *fc = nullptr);
 
 };

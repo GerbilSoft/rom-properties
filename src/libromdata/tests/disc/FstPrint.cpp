@@ -49,13 +49,6 @@ using std::vector;
 
 namespace LibRomData {
 
-struct fst_stats {
-	unsigned int dirs;
-	unsigned int files;
-
-	fst_stats() : dirs(0), files(0) { }
-};
-
 /**
  * Print an FST to an ostream.
  * @param fst		[in]FST to print.
@@ -63,10 +56,11 @@ struct fst_stats {
  * @param path		[in] Directory path.
  * @param level		[in] Current directory level. (0 == root)
  * @param tree_lines	[in/out] Levels with tree lines.
- * @param stats		[out] Statistics.
+ * @param fc		[out] File count.
  * @return 0 on success; negative POSIX error code on error.
  */
-static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, vector<uint8_t> &tree_lines, fst_stats &stats)
+static int fstPrint(IFst *fst, ostream &os, const rp_string &path,
+	int level, vector<uint8_t> &tree_lines, FstFileCount &fc)
 {
 	// Open the root path in the FST.
 	IFst::Dir *dirp = fst->opendir(path);
@@ -109,7 +103,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 		// actually stored within the Dir object.
 		if (dirent->type == DT_DIR) {
 			// Subdirectory.
-			stats.dirs++;
+			fc.dirs++;
 
 			rp_string name = dirent->name;
 			rp_string subdir = path;
@@ -137,7 +131,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			os << name << '\n';
 
 			// Print the subdirectory.
-			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, stats);
+			int ret = fstPrint(fst, os, subdir, level+1, tree_lines, fc);
 			if (ret != 0) {
 				// ERROR
 				return ret;
@@ -147,7 +141,7 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 			tree_lines.resize(tree_lines.size()-1);
 		} else {
 			// File.
-			stats.files++;
+			fc.files++;
 
 			// Save the filename.
 			rp_string name = dirent->name;
@@ -195,11 +189,16 @@ static int fstPrint(IFst *fst, ostream &os, const rp_string &path, int level, ve
 
 /**
  * Print an FST to an ostream.
- * @param fst FST to print.
- * @param os ostream.
+ * @param fst	[in] FST to print.
+ * @param os	[in,out] ostream.
+ * @param fc	[out,opt] Pointer to FstFileCount struct.
+ *
+ * If fc is nullptr, file count is printed to os.
+ * Otherwise, file count is stored in fc.
+ *
  * @return 0 on success; negative POSIX error code on error.
  */
-int fstPrint(IFst *fst, ostream &os)
+int fstPrint(IFst *fst, ostream &os, FstFileCount *fc)
 {
 	if (!fst) {
 		// Invalid parameters.
@@ -209,16 +208,22 @@ int fstPrint(IFst *fst, ostream &os)
 	std::vector<uint8_t> tree_lines;
 	tree_lines.reserve(16);
 
-	fst_stats stats;
-
-	int ret = fstPrint(fst, os, _RP("/"), 0, tree_lines, stats);
+	FstFileCount fc_tmp = {0, 0};
+	int ret = fstPrint(fst, os, _RP("/"), 0, tree_lines, fc_tmp);
 	if (ret != 0) {
 		return ret;
 	}
 
-	os << '\n' <<
-		stats.dirs << ' ' << (stats.dirs == 1 ? "directory" : "directories") << ", " <<
-		stats.files << ' ' << (stats.files == 1 ? "file" : "files") << '\n';
+	if (fc) {
+		// Return the file count.
+		*fc = fc_tmp;
+	} else {
+		// Print the file count.
+		os << '\n' <<
+			fc_tmp.dirs << ' ' << (fc_tmp.dirs == 1 ? "directory" : "directories") << ", " <<
+			fc_tmp.files << ' ' << (fc_tmp.files == 1 ? "file" : "files") << '\n';
+	}
+
 	os.flush();
 	return 0;
 }
