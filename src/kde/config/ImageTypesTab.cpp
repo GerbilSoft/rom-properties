@@ -53,25 +53,25 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		/**
 		 * Create the labels in the grid.
 		 */
-		inline virtual void createGridLabels(void) override final;
+		virtual void createGridLabels(void) override final;
 
 		/**
 		 * Create a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 */
-		inline virtual void createComboBox(unsigned int cbid) override final;
+		virtual void createComboBox(unsigned int cbid) override final;
 
 		/**
 		 * Add strings to a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		inline virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+		virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
 
 		/**
 		 * Finish adding the ComboBoxes.
 		 */
-		inline virtual void finishComboBoxes(void) override final;
+		virtual void finishComboBoxes(void) override final;
 
 		/**
 		 * Initialize the Save subsystem.
@@ -79,7 +79,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		inline virtual int saveStart(void) override final;
+		virtual int saveStart(void) override final;
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -87,7 +87,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		inline virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -95,7 +95,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		inline virtual int saveFinish(void) override final;
+		virtual int saveFinish(void) override final;
 
 	protected:
 		/** TImageTypesConfig functions. (public) **/
@@ -106,7 +106,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
 		 */
-		inline virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
+		virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
 		// Last ComboBox added.
