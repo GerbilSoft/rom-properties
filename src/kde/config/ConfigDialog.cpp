@@ -71,7 +71,16 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 #ifdef Q_OS_MAC
 	// Remove the window icon. (Mac "proxy icon")
 	this->setWindowIcon(QIcon());
-#endif
+#else /* !Q_OS_MAC */
+	// Set the icon from the system theme.
+	// TODO: Fallback for older Qt?
+#if QT_VERSION >= 0x040600
+	QString iconName = QLatin1String("media-flash");
+	if (QIcon::hasThemeIcon(iconName)) {
+		this->setWindowIcon(QIcon::fromTheme(iconName));
+	}
+#endif /* QT_VERSION >= 0x040600 */
+#endif /* Q_OS_MAC */
 }
 
 /**
