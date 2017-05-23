@@ -60,25 +60,25 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		/**
 		 * Create the labels in the grid.
 		 */
-		INLINE_OVERRIDE virtual void createGridLabels(void) override final;
+		inline virtual void createGridLabels(void) override final;
 
 		/**
 		 * Create a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 */
-		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) override final;
+		inline virtual void createComboBox(unsigned int cbid) override final;
 
 		/**
 		 * Add strings to a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+		inline virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
 
 		/**
 		 * Finish adding the ComboBoxes.
 		 */
-		INLINE_OVERRIDE virtual void finishComboBoxes(void) override final;
+		inline virtual void finishComboBoxes(void) override final;
 
 		/**
 		 * Initialize the Save subsystem.
@@ -86,7 +86,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveStart(void) override final;
+		inline virtual int saveStart(void) override final;
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -94,7 +94,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		inline virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -102,7 +102,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveFinish(void) override final;
+		inline virtual int saveFinish(void) override final;
 
 	protected:
 		/** TImageTypesConfig functions. (public) **/
@@ -113,7 +113,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
 		 */
-		INLINE_OVERRIDE virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
+		inline virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
 		/**
