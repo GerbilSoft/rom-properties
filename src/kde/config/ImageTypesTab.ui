@@ -35,7 +35,14 @@ External images are downloaded from an external image database.
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridImageTypes"/>
+    <layout class="QGridLayout" name="gridImageTypes">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+    </layout>
    </item>
    <item>
     <spacer name="vspcImageTypes">
