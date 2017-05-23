@@ -53,6 +53,13 @@ class ImageTypesTab : public ITab
 		 * Save the configuration.
 		 */
 		virtual void save(void) override final;
+
+	protected slots:
+		/**
+		 * A QComboBox index has changed.
+		 * @param cbid ComboBox ID.
+		 */
+		void cboImageType_currentIndexChanged(int cbid);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__ */

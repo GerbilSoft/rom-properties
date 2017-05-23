@@ -25,6 +25,7 @@
 // Qt includes.
 #include <QComboBox>
 #include <QLabel>
+#include <QSignalMapper>
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
@@ -112,6 +113,9 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// Needed in order to set the correct
 		// tab order for the credits label.
 		QComboBox *cboImageType_lastAdded;
+
+		// QSignalMapper for the QComboBoxes.
+		QSignalMapper *mapperCboImageType;
 };
 
 /** ImageTypesTabPrivate **/
@@ -119,7 +123,12 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
-{ }
+	, mapperCboImageType(new QSignalMapper(q))
+{
+	// Connect the QSignalMapper to the ImageTypesTab.
+	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
+		q, SLOT(cboImageType_currentIndexChanged(int)));
+}
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
 {
@@ -177,7 +186,10 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	cboImageType[sys][imageType] = cbo;
 
-	// TODO: QSignalMapper so we can record changes.
+	// Connect the signal to the QSignalMapper.
+	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
+		mapperCboImageType, SLOT(map()));
+	mapperCboImageType->setMapping(cbo, (int)cbid);
 
 	// Adjust the tab order.
 	if (cboImageType_lastAdded) {
@@ -346,4 +358,29 @@ void ImageTypesTab::reset(void)
 void ImageTypesTab::save(void)
 {
 	// TODO
+}
+
+/**
+ * A QComboBox index has changed.
+ * @param cbid ComboBox ID.
+ */
+void ImageTypesTab::cboImageType_currentIndexChanged(int cbid)
+{
+	Q_D(ImageTypesTab);
+	const unsigned int sys = d->sysFromCbid((unsigned int)cbid);
+	const unsigned int imageType = d->imageTypeFromCbid((unsigned int)cbid);
+	if (!d->validateSysImageType(sys, imageType))
+		return;
+
+	QComboBox *cbo = d->cboImageType[sys][imageType];
+	assert(cbo != nullptr);
+	if (!cbo)
+		return;
+
+	const int idx = cbo->currentIndex();
+	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+	if (d->cboImageType_priorityValueChanged(cbid, prio)) {
+		// Configuration has been changed.
+		emit modified();
+	}
 }

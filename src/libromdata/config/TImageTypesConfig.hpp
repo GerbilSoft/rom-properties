@@ -166,8 +166,9 @@ class TImageTypesConfig
 		 * A ComboBox index was changed by the user.
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
+		 * @return True if changed; false if not.
 		 */
-		void cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
+		bool cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
 
 	protected:
 		/** Pure virtual functions. (protected) **/

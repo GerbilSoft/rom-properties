@@ -322,20 +322,26 @@ int TImageTypesConfig<ComboBox>::save(void)
  * A ComboBox index was changed by the user.
  * @param cbid ComboBox ID.
  * @param prio New priority value. (0xFF == no)
+ * @return True if changed; false if not.
  */
 template<typename ComboBox>
-void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio)
+bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
-		return;
+		return false;
+
+	const uint8_t prev_prio = imageTypes[sys][imageType];
+	if (prev_prio == prio) {
+		// No change.
+		return false;
+	}
 
 	if (prio >= 0 && prio != 0xFF) {
 		// Check for any image types that have the new priority.
-		const uint8_t prev_prio = imageTypes[sys][imageType];
 		for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
-			if (i == imageType)
+			if ((unsigned int)i == imageType)
 				continue;
 			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == (uint8_t)prio) {
 				// Found a match! Swap the priority.
@@ -352,6 +358,7 @@ void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	sysIsDefault[sys] = false;
 	// Configuration has been changed.
 	changed = true;
+	return true;
 }
 
 }
