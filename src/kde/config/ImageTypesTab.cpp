@@ -336,7 +336,8 @@ void ImageTypesTab::changeEvent(QEvent *event)
  */
 void ImageTypesTab::reset(void)
 {
-	// TODO
+	RP_D(ImageTypesTab);
+	d->reset();
 }
 
 /**
