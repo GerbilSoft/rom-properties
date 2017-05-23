@@ -48,12 +48,11 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 
 /**
  * rp_show_config_dialog() function pointer.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ * @param argc
+ * @param argv
  * @return 0 on success; non-zero on error.
  */
-typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(void);
+typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(int argc, char *argv[]);
 
 // Are we running as rp-config?
 static uint8_t is_rp_config = 0;
@@ -306,7 +305,8 @@ int main(int argc, char *argv[])
 		if (debug) {
 			fprintf(stderr, "Calling function: %s();\n", symname);
 		}
-		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)();
+		// FIXME: argc/argv may be manipulated by getopt().
+		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)(argc, argv);
 	}
 
 	if (debug) {

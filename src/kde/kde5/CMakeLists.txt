@@ -65,12 +65,16 @@ ENDIF()
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_H "${rom-properties-kde_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde5_UIS "${rom-properties-kde_UIS}")
 
 # Sources and headers. (KDE5-specific)
 SET(rom-properties-kde5_SRCS
 	${rom-properties-kde5_SRCS}
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
+
+# Wrap UI files.
+QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
 
 #####################
 # Build the plugin. #
@@ -80,17 +84,18 @@ IF(BUILD_KDE5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
 	ADD_LIBRARY(rom-properties-kde5 MODULE
 		${rom-properties-kde5_SRCS}
+		${rom-properties-kde5_H}
 		${rom-properties-kde5_UIS_H}
 		)
 	SET_TARGET_PROPERTIES(rom-properties-kde5 PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(rom-properties-kde5)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde5
-		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kde5
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kde5
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 cachemgr16 romdata16 rpbase16)
 	TARGET_LINK_LIBRARIES(rom-properties-kde5 KF5::KIOWidgets)

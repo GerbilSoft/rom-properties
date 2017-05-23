@@ -21,12 +21,16 @@ ENDIF(QT4_FOUND)
 # Sources and headers. (common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_SRCS "${rom-properties-kde_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-kde_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_UIS "${rom-properties-kde_UIS}")
 
 # Sources and headers. (KDE4-specific)
 SET(rom-properties-kde4_SRCS
 	${rom-properties-kde4_SRCS}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
+
+# Wrap UI files.
+QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
 
 #####################
 # Build the plugin. #
@@ -36,15 +40,16 @@ IF(BUILD_KDE4)
 	KDE4_ADD_PLUGIN(rom-properties-kde4
 		${rom-properties-kde4_SRCS}
 		${rom-properties-kde4_H}
+		${rom-properties-kde4_UIS_H}
 		)
 	DO_SPLIT_DEBUG(rom-properties-kde4)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4
-		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kde4
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kde4
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 cachemgr16 romdata16 rpbase16)
 	TARGET_LINK_LIBRARIES(rom-properties-kde4 ${KDE4_KFILE_LIBRARY})
