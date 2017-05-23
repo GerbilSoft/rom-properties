@@ -48,10 +48,16 @@ class ConfigDialogPrivate
 
 	public:
 		Ui::ConfigDialog ui;
+
+		// "Apply" and "Reset" buttons.
+		QPushButton *btnApply;
+		QPushButton *btnReset;
 };
 
 ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	: q_ptr(q)
+	, btnApply(nullptr)
+	, btnReset(nullptr)
 { }
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
@@ -93,14 +99,17 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 #endif /* QT_VERSION >= 0x040600 */
 #endif /* Q_OS_MAC */
 
-	// Connect slots for "Reset" and "Apply".
-	connect(d->ui.buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()),
-		this, SLOT(apply()));
-	connect(d->ui.buttonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()),
-		this, SLOT(reset()));
+	// Cache the "Apply" and "Reset" buttons.
+	d->btnApply = d->ui.buttonBox->button(QDialogButtonBox::Apply);
+	d->btnReset = d->ui.buttonBox->button(QDialogButtonBox::Reset);
 
-	// Disable the "Apply" button until we receive a modification signal.
-	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+	// Connect slots for "Reset" and "Apply".
+	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));
+	connect(d->btnReset, SIGNAL(clicked()), this, SLOT(reset()));
+
+	// Disable the "Apply" and "Reset" buttons until we receive a modification signal.
+	d->btnApply->setEnabled(false);
+	d->btnReset->setEnabled(false);
 
 	// Connect the modification signals.
 	// FIXME: Should be doable in Qt Designer...
@@ -169,8 +178,9 @@ void ConfigDialog::apply(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
 
-	// Disable the "Apply" button.
-	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+	// Disable the "Apply" and "Reset" buttons.
+	d->btnApply->setEnabled(false);
+	d->btnReset->setEnabled(false);
 }
 
 /**
@@ -182,8 +192,9 @@ void ConfigDialog::reset(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
 
-	// Disable the "Apply" button.
-	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+	// Disable the "Apply" and "Reset" buttons.
+	d->btnApply->setEnabled(false);
+	d->btnReset->setEnabled(false);
 }
 
 /**
@@ -191,7 +202,8 @@ void ConfigDialog::reset(void)
  */
 void ConfigDialog::tabModified(void)
 {
-	// Enable the "Apply" button.
+	// Enable the "Apply" and "Reset" buttons.
 	Q_D(ConfigDialog);
-	d->ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+	d->btnApply->setEnabled(true);
+	d->btnReset->setEnabled(true);
 }
