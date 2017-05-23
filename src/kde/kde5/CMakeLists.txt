@@ -42,9 +42,9 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		IF(NOT PLUGIN_INSTALL_DIR)
 			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
 		ENDIF(NOT PLUGIN_INSTALL_DIR)
-		EXEC_PROGRAM(qtpaths ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
-		INCLUDE(ReplaceHardcodedPrefix)
-		REPLACE_HARDCODED_PREFIX(PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
+		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt5" instead of "/usr".
+		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69
+		REPLACE_HARDCODED_PREFIX(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
 
 		# Find KDE5. (TODO: Version?)
