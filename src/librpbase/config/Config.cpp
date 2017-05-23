@@ -217,8 +217,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		// NOTE: Duplicates will overwrite previous entries in the map,
 		// though all of the data will remain in the vector.
 
-		// TODO: Trim spaces from the whole string and
-		// from each string component?
+		// inih automatically trims spaces from the
+		// start and end of the string.
 
 		// If the first character is '"', ignore it.
 		// Needed because QSettings encloses strings in
@@ -261,6 +261,25 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// (Unquoted strings represent QStringList.)
 			if (!comma && pos[len-1] == '"') {
 				len--;
+			}
+
+			// Check for spaces at the start of the string.
+			while (isspace(*pos) && len > 0) {
+				pos++;
+				len--;
+			}
+			// Check for spaces at the end of the string.
+			while (len > 0 && isspace(pos[len-1])) {
+				len--;
+			}
+
+			if (len == 0) {
+				// Empty string.
+				if (!comma)
+					break;
+				// Continue after the comma.
+				pos = comma + 1;
+				continue;
 			}
 
 			// Check the image type.
