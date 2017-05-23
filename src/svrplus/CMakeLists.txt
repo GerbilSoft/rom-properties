@@ -1,5 +1,8 @@
 PROJECT(svrplus)
 
+# Create the manifest file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/svrplus.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/svrplus.exe.manifest" @ONLY)
+
 # Sources and headers.
 SET(svrplus_SRCS svrplus.cpp resource.rc)
 SET(svrplus_H resource.h)

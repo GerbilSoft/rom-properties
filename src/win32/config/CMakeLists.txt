@@ -1,6 +1,9 @@
 PROJECT(rp-config-win32 C)
 # rp-config stub for Windows.
 
+# Create the manifest file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rp-config.exe.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rp-config.exe.manifest" @ONLY)
+
 ADD_EXECUTABLE(rp-config WIN32 rp-config.c rp-config.rc)
 SET_TARGET_PROPERTIES(rp-config PROPERTIES PREFIX "")
 DO_SPLIT_DEBUG(rp-config)

@@ -2,26 +2,12 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
 	<assemblyIdentity
 		type="win32"
-		name="ROM Properties Page shell extension"
-		version="1.0.0.1"
-		processorArchitecture="*"
+		name="ROM Properties Page command line interface"
+		version="@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@.@VERSION_DEVEL@"
+		processorArchitecture="@WIN32_MANIFEST_PROCESSOR_ARCHITECTURE@"
 	/>
 
-	<description>ROM Properties Page shell extension</description>
-
-	<!-- Common Controls 6. Needed for visual styles on XP and later. -->
-	<dependency>
-		<dependentAssembly>
-			<assemblyIdentity
-				type="win32"
-				name="Microsoft.Windows.Common-Controls"
-				version="6.0.0.0"
-				processorArchitecture="*"
-				publicKeyToken="6595b64144ccf1df"
-				language="*"
-			/>
-		</dependentAssembly>
-	</dependency>
+	<description>ROM Properties Page command line interface</description>
 
 	<!-- Application security requirements. Used for Vista UAC. -->
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
@@ -34,13 +20,6 @@
 			</requestedPrivileges>
 		</security>
 	</trustInfo>
-
-	<!-- Mark this program as *not* DPI-aware on Windows Vista and later. -->
-	<asmv3:application>
-		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
-			<dpiAware>false</dpiAware>
-		</asmv3:windowsSettings>
-	</asmv3:application>
 
 	<!-- Operating system compatibility. -->
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

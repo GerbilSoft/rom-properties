@@ -1,5 +1,8 @@
 PROJECT(rom-properties-win32)
 
+# Create the manifest file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/rom-properties.dll.manifest.in" "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.dll.manifest" @ONLY)
+
 # Sources and headers.
 SET(rom-properties-win32_SRCS
 	DllMain.cpp
