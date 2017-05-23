@@ -106,16 +106,27 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		 * @param prio New priority value. (0xFF == no)
 		 */
 		inline virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
+
+	public:
+		// Last ComboBox added.
+		// Needed in order to set the correct
+		// tab order for the credits label.
+		QComboBox *cboImageType_lastAdded;
 };
 
 /** ImageTypesTabPrivate **/
 
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
+	, cboImageType_lastAdded(nullptr)
 { }
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
-{ }
+{
+	// cboImageType_lastAdded should be nullptr.
+	// (Cleared by finishComboBoxes().)
+	assert(cboImageType_lastAdded == nullptr);
+}
 
 /** TImageTypesConfig functions. (protected) **/
 
@@ -161,6 +172,12 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	cboImageType[sys][imageType] = cbo;
 
 	// TODO: QSignalMapper so we can record changes.
+
+	// Adjust the tab order.
+	if (cboImageType_lastAdded) {
+		q->setTabOrder(cboImageType_lastAdded, cbo);
+	}
+	cboImageType_lastAdded = cbo;
 }
 
 /**
@@ -201,7 +218,15 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
  */
 void ImageTypesTabPrivate::finishComboBoxes(void)
 {
-	// Nothing to do here...
+	if (!cboImageType_lastAdded) {
+		// Nothing to do here.
+		return;
+	}
+
+	// Set the tab order for the credits label.
+	Q_Q(ImageTypesTab);
+	q->setTabOrder(cboImageType_lastAdded, ui.lblCredits);
+	cboImageType_lastAdded = nullptr;
 }
 
 /**
