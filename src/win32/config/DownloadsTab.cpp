@@ -197,8 +197,8 @@ void DownloadsTabPrivate::loadDefaults(void)
 	}
 
 	if (isDefChanged) {
-		PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
 		this->changed = true;
+		PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
 	}
 }
 
