@@ -174,6 +174,8 @@ int main(int argc, char *argv[])
 		{"help",	no_argument,		nullptr, 'h'},
 		{"version",	no_argument,		nullptr, 'V'},
 		// TODO: Option to scan for installed plugins.
+
+		{NULL, 0, NULL, 0}
 	};
 
 	// Default to 256x256.
@@ -220,6 +222,12 @@ int main(int argc, char *argv[])
 			case 'V':
 				show_version();
 				return EXIT_SUCCESS;
+
+			case '?':
+			default:
+				// Unrecognized option.
+				fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
+				return EXIT_FAILURE;
 		}
 	}
 
