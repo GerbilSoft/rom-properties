@@ -46,6 +46,13 @@ class ITab : public QWidget
 		virtual void reset(void) = 0;
 
 		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		virtual void loadDefaults(void) = 0;
+
+		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */

@@ -50,6 +50,13 @@ class ImageTypesTab : public ITab
 		virtual void reset(void) override final;
 
 		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		virtual void loadDefaults(void) override final;
+
+		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */

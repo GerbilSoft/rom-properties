@@ -378,6 +378,21 @@ void ImageTypesTab::reset(void)
 }
 
 /**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void ImageTypesTab::loadDefaults(void)
+{
+	RP_D(ImageTypesTab);
+	bool bRet = d->loadDefaults();
+	if (bRet) {
+		// Configuration has changed.
+		emit modified();
+	}
+}
+
+/**
  * Save the configuration.
  * @param pSettings QSettings object.
  */

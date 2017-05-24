@@ -49,9 +49,10 @@ class ConfigDialogPrivate
 	public:
 		Ui::ConfigDialog ui;
 
-		// "Apply" and "Reset" buttons.
+		// "Apply", "Reset", and "Defaults" buttons.
 		QPushButton *btnApply;
 		QPushButton *btnReset;
+		QPushButton *btnDefaults;
 
 		// Last focused QWidget.
 		QWidget *lastFocus;
@@ -61,6 +62,7 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	: q_ptr(q)
 	, btnApply(nullptr)
 	, btnReset(nullptr)
+	, btnDefaults(nullptr)
 	, lastFocus(nullptr)
 { }
 
@@ -103,16 +105,22 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 #endif /* QT_VERSION >= 0x040600 */
 #endif /* Q_OS_MAC */
 
-	// Cache the "Apply" and "Reset" buttons.
+	// Cache the "Apply", "Reset", and "Defaults" buttons.
 	d->btnApply = d->ui.buttonBox->button(QDialogButtonBox::Apply);
 	d->btnReset = d->ui.buttonBox->button(QDialogButtonBox::Reset);
+	d->btnDefaults = d->ui.buttonBox->button(QDialogButtonBox::RestoreDefaults);
 
-	// FIXME: Set the "Reset" button's icon to "edit-undo".
+	// FIXME: Set the "Reset" button's icon to "edit-undo". (Also something for Defaults.)
 	// Attmepting to do this using d->btnApply->setIcon() doesn't seem to work...
+	// See KDE5's System Settings for the correct icons.
 
-	// Connect slots for "Reset" and "Apply".
+	// Connect slots for "Apply" and "Reset".
 	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));
 	connect(d->btnReset, SIGNAL(clicked()), this, SLOT(reset()));
+
+	// The "Defaults" button doesn't need any special processing,
+	// so forward it directly to the tabs.
+	connect(d->btnDefaults, SIGNAL(clicked()), d->ui.tabImageTypes, SLOT(loadDefaults()));
 
 	// Disable the "Apply" and "Reset" buttons until we receive a modification signal.
 	d->btnApply->setEnabled(false);
@@ -120,8 +128,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 
 	// Connect the modification signals.
 	// FIXME: Should be doable in Qt Designer...
-	connect(d->ui.tabImageTypes, SIGNAL(modified()),
-		this, SLOT(tabModified()));
+	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 
 	// Install the event filter on all child widgets.
 	// This is needed in order to track focus in case

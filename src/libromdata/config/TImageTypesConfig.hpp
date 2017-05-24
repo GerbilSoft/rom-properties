@@ -77,10 +77,26 @@ class TImageTypesConfig
 		 */
 		void createGrid(void);
 
+	protected:
+		/**
+		 * (Re-)Load the configuration into the grid.
+		 * @param loadDefaults If true, use the default configuration instead of the user configuration.
+		 * @return True if anything was modified; false if not.
+		 */
+		bool reset_int(bool loadDefaults);
+
+	public:
 		/**
 		 * (Re-)Load the configuration into the grid.
 		 */
 		void reset(void);
+
+		/**
+		 * Load the default configuration.
+		 * This does NOT save and will not clear 'changed'.
+		 * @return True if anything was modified; false if not.
+		 */
+		bool loadDefaults(void);
 
 		/**
 		 * Save the configuration from the grid.
