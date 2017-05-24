@@ -253,6 +253,11 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 						}
 					}
 
+					// Set focus to the tab control.
+					SetFocus(PropSheet_GetTabControl(hWnd));
+					// Go to the next control.
+					SendMessage(hWnd, WM_NEXTDLGCTL, 0, FALSE);
+
 					// TODO: Clear the "changed" state in the property sheet?
 					// Disable the "Apply" and "Reset" buttons.
 					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
