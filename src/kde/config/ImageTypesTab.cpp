@@ -238,6 +238,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		assert(s_values[i] != nullptr);
 		cbo->addItem(QLatin1String(s_values[i]));
 	}
+	cbo->setCurrentIndex(0);
 }
 
 /**

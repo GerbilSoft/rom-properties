@@ -386,6 +386,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		assert(s_values[i] != nullptr);
 		ComboBox_AddString(cboImageType, s_values[i]);
 	}
+	ComboBox_SetCurSel(cboImageType, 0);
 }
 
 /**
