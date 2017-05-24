@@ -174,7 +174,7 @@ bool ConfigDialog::eventFilter(QObject *watched, QEvent *event)
 	if (event->type() == QEvent::FocusIn) {
 		Q_D(ConfigDialog);
 		QWidget *widget = qobject_cast<QWidget*>(watched);
-		if (widget && widget != d->btnApply) {
+		if (widget && widget != d->btnApply && widget != d->btnReset) {
 			// Save the widget for refocusing if the
 			// "Apply" button is clicked.
 			d->lastFocus = widget;
@@ -241,6 +241,12 @@ void ConfigDialog::reset(void)
 	// Reset all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
+
+	// Set the focus to the last-focused widget.
+	// Otherwise, it ends up focusing the "Cancel" button.
+	if (d->lastFocus) {
+		d->lastFocus->setFocus();
+	}
 
 	// Disable the "Apply" and "Reset" buttons.
 	d->btnApply->setEnabled(false);
