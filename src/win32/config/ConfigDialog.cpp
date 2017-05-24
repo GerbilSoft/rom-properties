@@ -294,12 +294,10 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 				case IDC_RP_DEFAULTS: {
 					// "Defaults" was clicked.
-					// Load the defaults in all of the tabs.
-					for (unsigned int i = 0; i < TAB_COUNT; i++) {
-						HWND hwndPropSheet = PropSheet_IndexToHwnd(hWnd, i);
-						if (hwndPropSheet) {
-							SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
-						}
+					// Load the defaults in the current tab.
+					HWND hwndPropSheet = PropSheet_GetCurrentPageHwnd(hWnd);
+					if (hwndPropSheet) {
+						SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
 					}
 
 					// KDE5 System Settings keeps focus on the "Defaults" button,

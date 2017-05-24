@@ -28,6 +28,9 @@ using LibRpBase::Config;
 // RP2Q()
 #include "RpQt.hpp"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // Qt includes.
 #include <QPushButton>
 #include <QSettings>
@@ -117,10 +120,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Connect slots for "Apply" and "Reset".
 	connect(d->btnApply, SIGNAL(clicked()), this, SLOT(apply()));
 	connect(d->btnReset, SIGNAL(clicked()), this, SLOT(reset()));
-
-	// The "Defaults" button doesn't need any special processing,
-	// so forward it directly to the tabs.
-	connect(d->btnDefaults, SIGNAL(clicked()), d->ui.tabImageTypes, SLOT(loadDefaults()));
+	connect(d->btnDefaults, SIGNAL(clicked()), this, SLOT(loadDefaults()));
 
 	// Disable the "Apply" and "Reset" buttons until we receive a modification signal.
 	d->btnApply->setEnabled(false);
@@ -245,6 +245,22 @@ void ConfigDialog::reset(void)
 	// Disable the "Apply" and "Reset" buttons.
 	d->btnApply->setEnabled(false);
 	d->btnReset->setEnabled(false);
+}
+
+/**
+ * The "Defaults" button was clicked.
+ */
+void ConfigDialog::loadDefaults(void)
+{
+	Q_D(ConfigDialog);
+	switch (d->ui.tabWidget->currentIndex()) {
+		case 0:
+			d->ui.tabImageTypes->loadDefaults();
+			break;
+		default:
+			assert(!"Unrecognized tab index.");
+			break;
+	}
 }
 
 /**

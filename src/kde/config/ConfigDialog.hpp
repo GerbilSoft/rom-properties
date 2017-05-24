@@ -63,6 +63,11 @@ class ConfigDialog : public QDialog
 		void reset(void);
 
 		/**
+		 * The "Defaults" button was clicked.
+		 */
+		void loadDefaults(void);
+
+		/**
 		 * A tab has been modified.
 		 */
 		void tabModified(void);
