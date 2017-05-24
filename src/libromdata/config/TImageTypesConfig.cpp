@@ -137,16 +137,9 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 template<typename ComboBox>
 void TImageTypesConfig<ComboBox>::reset(void)
 {
-	// Reset all ComboBox objects first.
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		unsigned int cbid = sysAndImageTypeToCbid(sys, IMG_TYPE_COUNT-1);
-		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
-			if (cboImageType[sys][imageType]) {
-				// NOTE: Using the actual priority value, not the ComboBox index.
-				cboImageType_setPriorityValue(cbid, 0xFF);
-			}
-		}
-	}
+	// Which ComboBoxes need to be reset to "No"?
+	bool cbo_needsReset[SYS_COUNT][IMG_TYPE_COUNT];
+	memset(cbo_needsReset, true, sizeof(cbo_needsReset));
 
 	const LibRpBase::Config *const config = LibRpBase::Config::instance();
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
@@ -200,10 +193,22 @@ void TImageTypesConfig<ComboBox>::reset(void)
 				imageTypeSet[imageType] = true;
 				if (imageType < IMG_TYPE_COUNT) {
 					imageTypes[sys][imageType] = nextPrio;
+
 					// NOTE: Using the actual priority value, not the ComboBox index.
 					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
+					cbo_needsReset[sys][imageType] = false;
 					nextPrio++;
 				}
+			}
+		}
+	}
+
+	// Set ComboBoxes that don't have a priority to "No".
+	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
+		unsigned int cbid = sysAndImageTypeToCbid((unsigned int)sys, IMG_TYPE_COUNT-1);
+		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
+			if (cbo_needsReset[sys][imageType] && cboImageType[sys][imageType]) {
+				cboImageType_setPriorityValue(cbid, 0xFF);
 			}
 		}
 	}
