@@ -90,4 +90,10 @@ amiibo images are provided by &lt;a href=&quot;http://amiibo.life/&quot;&gt;amii
  </widget>
  <resources/>
  <connections/>
+ <slots>
+  <slot>reset()</slot>
+  <slot>loadDefaults()</slot>
+  <slot>save()</slot>
+  <slot>cboImageType_currentIndexChanged(int)</slot>
+ </slots>
 </ui>
