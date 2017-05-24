@@ -58,8 +58,9 @@ class ConfigDialogPrivate
 
 	public:
 		// Property sheet variables.
-		ITab *tabs[3];	// TODO: Add Downloads.
-		HPROPSHEETPAGE hpsp[3];
+		static const unsigned int TAB_COUNT = 3;
+		ITab *tabs[TAB_COUNT];
+		HPROPSHEETPAGE hpsp[TAB_COUNT];
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.
@@ -241,13 +242,23 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 					// Disable the "Reset" button.
 					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
 					break;
-				case IDRESET:
+
+				case IDRESET: {
 					// "Reset" was clicked.
-					// TODO: Reset all tabs.
+					// Reset all of the tabs.
+					for (unsigned int i = 0; i < TAB_COUNT; i++) {
+						HWND hwndPropSheet = PropSheet_IndexToHwnd(hWnd, i);
+						if (hwndPropSheet) {
+							SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_RESET, 0, 0);
+						}
+					}
+
 					// TODO: Clear the "changed" state in the property sheet?
 					// Disable the "Apply" and "Reset" buttons.
 					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
 					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
+				}
+
 				default:
 					break;
 			}

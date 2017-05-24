@@ -271,6 +271,19 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 			break;
 		}
 
+		case WM_RP_PROP_SHEET_RESET: {
+			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Reset the tab.
+			d->reset();
+			break;
+		}
+
 		default:
 			break;
 	}

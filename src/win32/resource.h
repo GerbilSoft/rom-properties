@@ -44,6 +44,12 @@
 #define IDC_SUNKEN_LINE                         12326
 #define IDC_SUNKEN_LINEHEADER                   12327
 
+// "Reset" message.
+// The parent PropertySheet doesn't store any user data, so we can't
+// store a reference to the private class. Hence, we have to send a
+// message to all child property sheet pages instead.
+#define WM_RP_PROP_SHEET_RESET			(WM_USER + 0x1234)
+
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110
 #define IDD_CONFIG_DOWNLOADS                    111

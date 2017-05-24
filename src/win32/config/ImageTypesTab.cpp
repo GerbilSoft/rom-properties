@@ -537,7 +537,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_NOTIFY: {
-			ImageTypesTabPrivate *d = static_cast<ImageTypesTabPrivate*>(
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
@@ -571,7 +571,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_COMMAND: {
-			ImageTypesTabPrivate *d = static_cast<ImageTypesTabPrivate*>(
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
@@ -598,6 +598,19 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			// Allow the message to be processed by the system.
+			break;
+		}
+
+		case WM_RP_PROP_SHEET_RESET: {
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Reset the tab.
+			d->reset();
 			break;
 		}
 
