@@ -373,6 +373,9 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				return FALSE;
 			}
 
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+
 			switch (LOWORD(wParam)) {
 				case IDC_CACHE_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (Vista+)

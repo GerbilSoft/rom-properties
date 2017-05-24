@@ -261,6 +261,9 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 				return FALSE;
 			}
 
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+
 			// A checkbox has been adjusted.
 			// Page has been modified.
 			PropSheet_Changed(GetParent(hDlg), hDlg);
