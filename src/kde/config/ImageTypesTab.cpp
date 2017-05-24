@@ -373,7 +373,7 @@ void ImageTypesTab::changeEvent(QEvent *event)
  */
 void ImageTypesTab::reset(void)
 {
-	RP_D(ImageTypesTab);
+	Q_D(ImageTypesTab);
 	d->reset();
 }
 
@@ -384,10 +384,10 @@ void ImageTypesTab::reset(void)
  */
 void ImageTypesTab::loadDefaults(void)
 {
-	RP_D(ImageTypesTab);
+	Q_D(ImageTypesTab);
 	bool bRet = d->loadDefaults();
 	if (bRet) {
-		// Configuration has changed.
+		// Configuration has been changed.
 		emit modified();
 	}
 }
@@ -403,7 +403,7 @@ void ImageTypesTab::save(QSettings *pSettings)
 		return;
 
 	// Save the configuration.
-	RP_D(ImageTypesTab);
+	Q_D(ImageTypesTab);
 	d->pSettings = pSettings;
 	d->save();
 	d->pSettings = nullptr;
