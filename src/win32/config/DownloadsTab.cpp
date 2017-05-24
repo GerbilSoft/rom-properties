@@ -463,5 +463,7 @@ void DownloadsTab::loadDefaults(void)
 void DownloadsTab::save(void)
 {
 	RP_D(DownloadsTab);
-	d->save();
+	if (d->changed) {
+		d->save();
+	}
 }

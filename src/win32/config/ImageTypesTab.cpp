@@ -743,5 +743,7 @@ void ImageTypesTab::save(void)
 {
 	// TODO: Show an error message if this fails.
 	RP_D(ImageTypesTab);
-	d->save();
+	if (d->changed) {
+		d->save();
+	}
 }

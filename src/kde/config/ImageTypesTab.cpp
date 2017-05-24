@@ -405,9 +405,11 @@ void ImageTypesTab::save(QSettings *pSettings)
 
 	// Save the configuration.
 	Q_D(ImageTypesTab);
-	d->pSettings = pSettings;
-	d->save();
-	d->pSettings = nullptr;
+	if (d->changed) {
+		d->pSettings = pSettings;
+		d->save();
+		d->pSettings = nullptr;
+	}
 }
 
 /**
