@@ -10,7 +10,7 @@
     <height>152</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="vboxMain" stretch="0,1,0,0">
+  <layout class="QVBoxLayout" name="vboxMain">
    <item>
     <widget class="QLabel" name="lblImageTypes">
      <property name="sizePolicy">
