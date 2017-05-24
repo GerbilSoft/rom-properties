@@ -374,6 +374,16 @@ void DownloadsTab::reset(void)
 }
 
 /**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void DownloadsTab::loadDefaults(void)
+{
+	// TODO
+}
+
+/**
  * Save the contents of this tab.
  */
 void DownloadsTab::save(void)

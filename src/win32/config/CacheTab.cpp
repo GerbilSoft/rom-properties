@@ -485,6 +485,16 @@ void CacheTab::reset(void)
 }
 
 /**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void CacheTab::loadDefaults(void)
+{
+	// Nothing to load here...
+}
+
+/**
  * Save the contents of this tab.
  */
 void CacheTab::save(void)

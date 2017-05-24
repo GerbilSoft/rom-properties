@@ -52,6 +52,13 @@ class ITab
 		virtual void reset(void) = 0;
 
 		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		virtual void loadDefaults(void) = 0;
+
+		/**
 		 * Save the contents of this tab.
 		 */
 		virtual void save(void) = 0;

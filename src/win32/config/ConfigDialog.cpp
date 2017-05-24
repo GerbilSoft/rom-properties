@@ -189,27 +189,39 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 {
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
-			// Create the "Reset" button.
-			if (GetDlgItem(hWnd, IDRESET) != nullptr) {
-				// It's already been created...
-				// This shouldn't happen.
-				assert(!"IDRESET is already created.");
+			// Create the "Reset" and "Defaults" buttons.
+			if (GetDlgItem(hWnd, IDC_RP_RESET) != nullptr) {
+				// "Reset" button is already created.
+				// This shouldn't happen...
+				assert(!"IDC_RP_RESET is already created.");
+				break;
+			} else if (GetDlgItem(hWnd, IDC_RP_DEFAULTS) != nullptr) {
+				// "Defaults" button is already created.
+				// This shouldn't happen...
+				assert(!"IDC_RP_DEFAULTS is already created.");
 				break;
 			}
 
 			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
+			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
 			HWND hTabControl = PropSheet_GetTabControl(hWnd);
-			if (!hBtnOK || !hTabControl)
+			if (!hBtnOK || !hBtnCancel || !hTabControl)
 				break;
 
-			RECT rect_btnOK, rect_tabControl;
+			RECT rect_btnOK, rect_btnCancel, rect_tabControl;
 			GetWindowRect(hBtnOK, &rect_btnOK);
+			GetWindowRect(hBtnCancel, &rect_btnCancel);
 			GetWindowRect(hTabControl, &rect_tabControl);
 			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_btnOK, 2);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_btnCancel, 2);
 			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_tabControl, 2);
 
-			const POINT ptBtnReset = {rect_tabControl.left, rect_btnOK.top};
-			const SIZE szBtnReset = {
+			// Dialog font.
+			HFONT hDlgFont = GetWindowFont(hWnd);
+
+			// Create the "Reset" button.
+			POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
+			const SIZE szBtn = {
 				rect_btnOK.right - rect_btnOK.left,
 				rect_btnOK.bottom - rect_btnOK.top
 			};
@@ -217,10 +229,9 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			HWND hBtnReset = CreateWindowEx(0,
 				WC_BUTTON, L"Reset",
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
-				ptBtnReset.x, ptBtnReset.y,
-				szBtnReset.cx, szBtnReset.cy,
-				hWnd, (HMENU)IDRESET, nullptr, nullptr);
-			SetWindowFont(hBtnReset, GetWindowFont(hWnd), FALSE);
+				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);
+			SetWindowFont(hBtnReset, hDlgFont, FALSE);
 			EnableWindow(hBtnReset, FALSE);
 
 			// Fix up the tab order. ("Reset" should be after "Apply".)
@@ -229,6 +240,19 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				SetWindowPos(hBtnReset, hBtnApply,
 					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			}
+
+			// Create the "Defaults" button.
+			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
+			HWND hBtnDefaults = CreateWindowEx(0,
+				WC_BUTTON, L"Defaults",
+				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
+				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);
+			SetWindowFont(hBtnDefaults, hDlgFont, FALSE);
+
+			// Fix up the tab order. ("Defaults" should be after "Reset".)
+			SetWindowPos(hBtnDefaults, hBtnReset,
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			break;
 		}
 
@@ -240,10 +264,10 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				case IDC_APPLY_BUTTON:
 					// "Apply" was clicked.
 					// Disable the "Reset" button.
-					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
+					EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), FALSE);
 					break;
 
-				case IDRESET: {
+				case IDC_RP_RESET: {
 					// "Reset" was clicked.
 					// Reset all of the tabs.
 					for (unsigned int i = 0; i < TAB_COUNT; i++) {
@@ -261,7 +285,23 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 					// TODO: Clear the "changed" state in the property sheet?
 					// Disable the "Apply" and "Reset" buttons.
 					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
-					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
+					EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), FALSE);
+					break;
+				}
+
+				case IDC_RP_DEFAULTS: {
+					// "Defaults" was clicked.
+					// Load the defaults in all of the tabs.
+					for (unsigned int i = 0; i < TAB_COUNT; i++) {
+						HWND hwndPropSheet = PropSheet_IndexToHwnd(hWnd, i);
+						if (hwndPropSheet) {
+							SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
+						}
+					}
+
+					// KDE5 System Settings keeps focus on the "Defaults" button,
+					// so we'll leave the focus as-si.
+					break;
 				}
 
 				default:
@@ -274,7 +314,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 		case PSM_CHANGED:
 			// A property sheet is telling us that something has changed.
 			// Enable the "Reset" button.
-			EnableWindow(GetDlgItem(hWnd, IDRESET), TRUE);
+			EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), TRUE);
 			break;
 
 		case WM_NCDESTROY:

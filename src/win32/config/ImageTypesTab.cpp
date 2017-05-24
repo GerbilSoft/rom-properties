@@ -615,6 +615,23 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_RP_PROP_SHEET_DEFAULTS: {
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Load the defaults.
+			bool bRet = d->loadDefaults();
+			if (bRet) {
+				// Configuration has been changed.
+				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+			}
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -702,6 +719,21 @@ void ImageTypesTab::reset(void)
 {
 	RP_D(ImageTypesTab);
 	d->reset();
+}
+
+/**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void ImageTypesTab::loadDefaults(void)
+{
+	RP_D(ImageTypesTab);
+	bool bRet = d->loadDefaults();
+	if (bRet) {
+		// Configuration has been changed.
+		PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+	}
 }
 
 /**
