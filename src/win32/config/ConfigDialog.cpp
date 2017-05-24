@@ -34,6 +34,9 @@ using LibRpBase::Config;
 // C includes.
 #include <stdlib.h>
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // DllMain.cpp
 extern HINSTANCE g_hInstance;
 
