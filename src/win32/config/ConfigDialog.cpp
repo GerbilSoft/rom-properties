@@ -65,6 +65,9 @@ class ConfigDialogPrivate
 		// Property Sheet callback.
 		static int CALLBACK callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
 
+		// Subclass procedure for the Property Sheet.
+		static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 		// Create Property Sheet.
 		static INT_PTR CreatePropertySheet(void);
 };
@@ -155,6 +158,10 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 			if (hIcon) {
 				SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
 			}
+
+			// Subclass the property sheet so we can create the
+			// "Reset" button in WM_SHOWWINDOW.
+			SetWindowSubclass(hDlg, subclassProc, 0, 0);
 			break;
 		}
 
@@ -163,6 +170,86 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 	}
 
 	return 0;
+}
+
+/**
+ * Subclass procedure for the Property Sheet.
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	RP_ShellProSheetExt*
+ */
+LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_SHOWWINDOW: {
+			// Create the "Reset" button.
+			if (GetDlgItem(hWnd, IDRESET) != nullptr) {
+				// It's already been created...
+				// This shouldn't happen.
+				assert(!"IDRESET is already created.");
+
+				// Remove the subclass since we no longer need it.
+				// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+				RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+				break;
+			}
+
+			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
+			HWND hTabControl = PropSheet_GetTabControl(hWnd);
+			if (!hBtnOK || !hTabControl)
+				break;
+
+			RECT rect_btnOK, rect_tabControl;
+			GetWindowRect(hBtnOK, &rect_btnOK);
+			GetWindowRect(hTabControl, &rect_tabControl);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_btnOK, 2);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_tabControl, 2);
+
+			const POINT ptBtnReset = {rect_tabControl.left, rect_btnOK.top};
+			const SIZE szBtnReset = {
+				rect_btnOK.right - rect_btnOK.left,
+				rect_btnOK.bottom - rect_btnOK.top
+			};
+
+			HWND hBtnReset = CreateWindowEx(0,
+				WC_BUTTON, L"Reset",
+				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
+				ptBtnReset.x, ptBtnReset.y,
+				szBtnReset.cx, szBtnReset.cy,
+				hWnd, (HMENU)IDRESET, nullptr, nullptr);
+			SetWindowFont(hBtnReset, GetWindowFont(hWnd), FALSE);
+			EnableWindow(hBtnReset, FALSE);
+
+			// Fix up the tab order. ("Reset" should be after "Apply".)
+			HWND hBtnApply = GetDlgItem(hWnd, IDC_APPLY_BUTTON);
+			if (hBtnApply) {
+				SetWindowPos(hBtnReset, hBtnApply,
+					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			}
+
+			// Remove the subclass since we no longer need it.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+			break;
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /** ConfigDialog **/

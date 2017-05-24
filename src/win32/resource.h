@@ -30,6 +30,19 @@
 #ifndef IDC_STATIC
 #define IDC_STATIC (-1)
 #endif
+// "Standard" buttons.
+#define IDRESET 12
+
+// Property sheet controls.
+// These are defined in Wine's comctl32.h, but not the Windows SDK.
+// Reference: https://source.winehq.org/git/wine.git/blob/HEAD:/dlls/comctl32/comctl32.h
+#define IDC_TABCONTROL                          12320
+#define IDC_APPLY_BUTTON                        12321
+#define IDC_BACK_BUTTON                         12323
+#define IDC_NEXT_BUTTON                         12324
+#define IDC_FINISH_BUTTON                       12325
+#define IDC_SUNKEN_LINE                         12326
+#define IDC_SUNKEN_LINEHEADER                   12327
 
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110
