@@ -180,7 +180,7 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
  * @param wParam	WPARAM
  * @param lParam	LPARAM
  * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	RP_ShellProSheetExt*
+ * @param dwRefData
  */
 LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	HWND hWnd, UINT uMsg,
@@ -286,7 +286,10 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 					// Disable the "Apply" and "Reset" buttons.
 					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
 					EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), FALSE);
-					break;
+
+					// Don't continue processing. Otherwise, weird things
+					// will happen with the button message.
+					return TRUE;
 				}
 
 				case IDC_RP_DEFAULTS: {
@@ -300,8 +303,11 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 					}
 
 					// KDE5 System Settings keeps focus on the "Defaults" button,
-					// so we'll leave the focus as-si.
-					break;
+					// so we'll leave the focus as-is.
+
+					// Don't continue processing. Otherwise, weird things
+					// will happen with the button message.
+					return TRUE;
 				}
 
 				default:

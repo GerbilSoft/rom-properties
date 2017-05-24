@@ -63,11 +63,27 @@ class DownloadsTabPrivate
 			return (value == BST_CHECKED ? L"true" : L"false");
 		}
 
+		/**
+		 * Convert BST_CHECKED or BST_UNCHECKED to a bool.
+		 * @param value BST_CHECKED or BST_UNCHECKED.
+		 * @return bool.
+		 */
+		static inline bool bstCheckedToBool(unsigned int value) {
+			return (value == BST_CHECKED);
+		}
+
 	public:
 		/**
 		 * Reset the configuration.
 		 */
 		void reset(void);
+
+		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		void loadDefaults(void);
 
 		/**
 		 * Save the configuration.
@@ -140,6 +156,50 @@ void DownloadsTabPrivate::reset(void)
 
 	// No longer changed.
 	changed = false;
+}
+
+void DownloadsTabPrivate::loadDefaults(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// TODO: Get the defaults from Config.
+	// For now, hard-coding everything here.
+	static const bool extImgDownloadEnabled_default = true;
+	static const bool useIntIconForSmallSizes_default = true;
+	static const bool downloadHighResScans_default = true;
+	bool isDefChanged = false;
+
+	HWND hWnd = GetDlgItem(hWndPropSheet, IDC_EXTIMGDL);
+	if (hWnd) {
+		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
+		if (cur != extImgDownloadEnabled_default) {
+			Button_SetCheck(hWnd, boolToBstChecked(extImgDownloadEnabled_default));
+			isDefChanged = true;
+		}
+	}
+	hWnd = GetDlgItem(hWndPropSheet, IDC_INTICONSMALL);
+	if (hWnd) {
+		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
+		if (cur != useIntIconForSmallSizes_default) {
+			Button_SetCheck(hWnd, boolToBstChecked(useIntIconForSmallSizes_default));
+			isDefChanged = true;
+		}
+	}
+	hWnd = GetDlgItem(hWndPropSheet, IDC_HIGHRESDL);
+	if (hWnd) {
+		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
+		if (cur != downloadHighResScans_default) {
+			Button_SetCheck(hWnd, boolToBstChecked(downloadHighResScans_default));
+			isDefChanged = true;
+		}
+	}
+
+	if (isDefChanged) {
+		PropSheet_Changed(GetParent(hWndPropSheet), hWndPropSheet);
+		this->changed = true;
+	}
 }
 
 /**
@@ -275,12 +335,25 @@ INT_PTR CALLBACK DownloadsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPara
 			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
-				// No ImageTypesTabPrivate. Can't do anything...
+				// No DownloadsTabPrivate. Can't do anything...
 				return FALSE;
 			}
 
 			// Reset the tab.
 			d->reset();
+			break;
+		}
+
+		case WM_RP_PROP_SHEET_DEFAULTS: {
+			DownloadsTabPrivate *const d = static_cast<DownloadsTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No DownloadsTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Load the defaults.
+			d->loadDefaults();
 			break;
 		}
 
@@ -380,7 +453,8 @@ void DownloadsTab::reset(void)
  */
 void DownloadsTab::loadDefaults(void)
 {
-	// TODO
+	RP_D(DownloadsTab);
+	d->loadDefaults();
 }
 
 /**
