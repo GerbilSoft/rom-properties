@@ -193,10 +193,6 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				// It's already been created...
 				// This shouldn't happen.
 				assert(!"IDRESET is already created.");
-
-				// Remove the subclass since we no longer need it.
-				// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-				RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
 				break;
 			}
 
@@ -232,12 +228,38 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 				SetWindowPos(hBtnReset, hBtnApply,
 					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			}
-
-			// Remove the subclass since we no longer need it.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
 			break;
 		}
+
+		case WM_COMMAND: {
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+
+			switch (LOWORD(wParam)) {
+				case IDC_APPLY_BUTTON:
+					// "Apply" was clicked.
+					// Disable the "Reset" button.
+					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
+					break;
+				case IDRESET:
+					// "Reset" was clicked.
+					// TODO: Reset all tabs.
+					// TODO: Clear the "changed" state in the property sheet?
+					// Disable the "Apply" and "Reset" buttons.
+					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
+					EnableWindow(GetDlgItem(hWnd, IDRESET), FALSE);
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case PSM_CHANGED:
+			// A property sheet is telling us that something has changed.
+			// Enable the "Reset" button.
+			EnableWindow(GetDlgItem(hWnd, IDRESET), TRUE);
+			break;
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
