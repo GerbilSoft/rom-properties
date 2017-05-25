@@ -129,6 +129,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Connect the modification signals.
 	// FIXME: Should be doable in Qt Designer...
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
+	connect(d->ui.tabDownloads, SIGNAL(modified()), this, SLOT(tabModified()));
 
 	// Install the event filter on all child widgets.
 	// This is needed in order to track focus in case
@@ -221,6 +222,7 @@ void ConfigDialog::apply(void)
 	// Save all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
+	d->ui.tabDownloads->save(&settings);
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -241,6 +243,7 @@ void ConfigDialog::reset(void)
 	// Reset all tabs.
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
+	d->ui.tabDownloads->reset();
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -262,6 +265,9 @@ void ConfigDialog::loadDefaults(void)
 	switch (d->ui.tabWidget->currentIndex()) {
 		case 0:
 			d->ui.tabImageTypes->loadDefaults();
+			break;
+		case 1:
+			d->ui.tabDownloads->loadDefaults();
 			break;
 		default:
 			assert(!"Unrecognized tab index.");

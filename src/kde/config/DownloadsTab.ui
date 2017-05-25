@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DownloadsTab</class>
+ <widget class="QWidget" name="DownloadsTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>325</width>
+    <height>100</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="vboxMain">
+   <item>
+    <widget class="QCheckBox" name="chkExtImgDownloadEnabled">
+     <property name="text">
+      <string>Enable external image downloads.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkUseIntIconForSmallSizes">
+     <property name="text">
+      <string>Always use the internal icon (if present) for small sizes.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkDownloadHighResScans">
+     <property name="text">
+      <string>Download high-resolution scans if viewing large thumbnails.
+This may increase bandwidth usage.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="vspcDownloads">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>197</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>chkExtImgDownloadEnabled</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>DownloadsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>14</x>
+     <y>18</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>5</x>
+     <y>18</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkUseIntIconForSmallSizes</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>DownloadsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>12</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>4</x>
+     <y>43</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkDownloadHighResScans</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>DownloadsTab</receiver>
+   <slot>checkBox_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>12</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>modified()</signal>
+  <slot>reset()</slot>
+  <slot>loadDefaults()</slot>
+  <slot>save()</slot>
+  <slot>checkBox_clicked()</slot>
+ </slots>
+</ui>

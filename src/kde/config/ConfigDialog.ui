@@ -21,7 +21,12 @@
      </property>
      <widget class="ImageTypesTab" name="tabImageTypes">
       <attribute name="title">
-       <string>Image Types</string>
+       <string>&amp;Image Types</string>
+      </attribute>
+     </widget>
+     <widget class="DownloadsTab" name="tabDownloads">
+      <attribute name="title">
+       <string>&amp;Downloads</string>
       </attribute>
      </widget>
     </widget>
@@ -47,6 +52,19 @@
    <slots>
     <signal>modified()</signal>
     <slot>reset()</slot>
+    <slot>loadDefaults()</slot>
+    <slot>save()</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>DownloadsTab</class>
+   <extends>QWidget</extends>
+   <header>config/DownloadsTab.hpp</header>
+   <container>1</container>
+   <slots>
+    <signal>modified()</signal>
+    <slot>reset()</slot>
+    <slot>loadDefaults()</slot>
     <slot>save()</slot>
    </slots>
   </customwidget>

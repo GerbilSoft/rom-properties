@@ -13,6 +13,7 @@ SET(rom-properties-kde_SRCS
 	config/ConfigDialog.cpp
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
+	config/DownloadsTab.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -23,10 +24,12 @@ SET(rom-properties-kde_H
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
+	config/DownloadsTab.hpp
 	)
 SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
+	config/DownloadsTab.ui
 	)
 
 # Qt options:
