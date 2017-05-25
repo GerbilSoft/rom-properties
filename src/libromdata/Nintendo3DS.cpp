@@ -43,8 +43,9 @@ using namespace LibRpBase;
 #include "librpbase/disc/PartitionFile.hpp"
 #include "NintendoDS.hpp"
 
-// NCCH reader.
+// NCCH and CIA readers.
 #include "disc/NCCHReader.hpp"
+#include "disc/CIAReader.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -153,7 +154,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		// File readers for DSiWare CIAs.
-		DiscReader *srlReader;	// uses this->file
+		IDiscReader *srlReader;	// uses this->file
 		PartitionFile *srlFile;	// uses srlReader
 		NintendoDS *srlData;	// NintendoDS object.
 
@@ -522,10 +523,11 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 	}
 
 	// Is this encrypted using CIA title key encryption?
-	N3DS_Ticket_t *ticket = nullptr;
+	CIAReader *ciaReader = nullptr;
 	if (romType == ROM_TYPE_CIA && idx < (int)content_count) {
 		// Check if this content is encrypted.
-		// If it is, we'll need to give NCCHReader the ticket.
+		// If it is, we'll need to create a CIAReader.
+		N3DS_Ticket_t *ticket = nullptr;
 		const N3DS_Content_Chunk_Record_t *content_chunk = &content_chunks[0];
 		for (unsigned int i = 0; i < content_count; i++, content_chunk++) {
 			const uint16_t content_index = be16_to_cpu(content_chunk->index);
@@ -538,12 +540,27 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 				break;
 			}
 		}
+
+		if (ticket) {
+			// Create a CIAReader.
+			ciaReader = new CIAReader(file, offset, length, ticket, idx);
+		}
 	}
 
 	// Create the NCCHReader.
 	// NOTE: We're not checking isOpen() here.
 	// That should be checked by the caller.
-	*pOutNcchReader = new NCCHReader(file, media_unit_shift, offset, length, ticket, idx);
+	if (ciaReader) {
+		// This is an encrypted CIA.
+		// NOTE: NCCHReader will take ownership of the CIAReader,
+		// so we don't have to manage it ourselves.
+		// NOTE 2: CIAReader handles the offset, so we need to
+		// tell NCCHReader that the offset is 0.
+		*pOutNcchReader = new NCCHReader(ciaReader, media_unit_shift, 0, length);
+	} else {
+		// Anything else is read directly.
+		*pOutNcchReader = new NCCHReader(file, media_unit_shift, offset, length);
+	}
 	return 0;
 }
 
@@ -757,10 +774,24 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 		const uint32_t length = (uint32_t)be64_to_cpu(content_chunks[0].size);
 		if (length >= 0x8000) {
 			// Attempt to open the SRL as if it's a new file.
-			// TODO: CIA decryption?
 			// TODO: IRpFile implementation with offset/length, so we don't
 			// have to use both DiscReader and PartitionFile.
-			DiscReader *srlReader = new DiscReader(this->file, offset, length);
+
+			// Check if this content is encrypted.
+			// If it is, we'll need to create a CIAReader.
+			IDiscReader *srlReader = nullptr;
+			if (be16_to_cpu(content_chunks[0].type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+				// Content is encrypted.
+				srlReader = new CIAReader(this->file, offset, length,
+					&mxh.ticket, be16_to_cpu(content_chunks[0].index));
+			} else {
+				// Content is NOT encrypted.
+				// Use a plain old DiscReader.
+				srlReader = new DiscReader(this->file, offset, length);
+			}
+
+			// TODO: Make IDiscReader derive from IRpFile.
+			// May need to add reference counting to IRpFile...
 			PartitionFile *srlFile = nullptr;
 			NintendoDS *srlData = nullptr;
 			if (srlReader->isOpen()) {
@@ -1565,6 +1596,9 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
+	// TODO: Disambiguate the various NCCHReader pointers.
+	// TODO: Split up into smaller functions?
+
 	// Maximum of 17 fields.
 	// Tested with several CCI, CIA, and NCCH files.
 	d->fields->reserve(17);
@@ -2098,7 +2132,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Content type.
-			const rp_char *content_type = ncch->contentType();
+			const rp_char *content_type = pNcch->contentType();
 			data_row.push_back(content_type ? content_type : _RP("Unknown"));
 
 			// Encryption.

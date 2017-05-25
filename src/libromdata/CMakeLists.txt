@@ -39,6 +39,7 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
+	disc/CIAReader.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	)
 # Headers.
@@ -101,6 +102,7 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	disc/CIAReader.hpp
 	config/TImageTypesConfig.hpp
 	)
 
@@ -114,10 +116,11 @@ ENDIF(ENABLE_XML)
 IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
 		crypto/CtrKeyScrambler.cpp
-		disc/NCCHReader_VerifyKeys.cpp
+		crypto/N3DSVerifyKeys.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
+		crypto/N3DSVerifyKeys.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

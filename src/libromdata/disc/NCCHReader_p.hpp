@@ -32,6 +32,7 @@
 #include "librpbase/crypto/KeyManager.hpp"
 #ifdef ENABLE_DECRYPTION
 #include "../crypto/CtrKeyScrambler.hpp"
+#include "../crypto/N3DSVerifyKeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C includes.
@@ -53,10 +54,14 @@ class NCCHReaderPrivate
 	public:
 		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IRpFile *file,
 			uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length,
-			const N3DS_Ticket_t *ticket = nullptr,
-			uint16_t tmd_content_index = 0);
+			int64_t ncch_offset, uint32_t ncch_length);
+		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IDiscReader *discReader,
+			uint8_t media_unit_shift,
+			int64_t ncch_offset, uint32_t ncch_length);
 		~NCCHReaderPrivate();
+
+	private:
+		void init(void);
 
 	private:
 		RP_DISABLE_COPY(NCCHReaderPrivate)
@@ -64,7 +69,11 @@ class NCCHReaderPrivate
 		NCCHReader *const q_ptr;
 
 	public:
-		LibRpBase::IRpFile *file;	// 3DS ROM image.
+		bool useDiscReader;	// TODO: Make IDiscReader a subclass of IRpFile?
+		union {
+			LibRpBase::IRpFile *file;		// 3DS ROM image.
+			LibRpBase::IDiscReader *discReader;	// Disc reader for encrypted CIAs.
+		};
 
 		// NCCH offsets.
 		const int64_t ncch_offset;	// NCCH start offset, in bytes.
@@ -124,34 +133,7 @@ class NCCHReaderPrivate
 		u128_t ncch_keys[2];
 
 		// NCCH cipher.
-		LibRpBase::IAesCipher *cipher_ncch;	// NCCH cipher.
-
-		// CIA cipher.
-		uint8_t title_key[16];		// Decrypted title key.
-		LibRpBase::IAesCipher *cipher_cia;		// CIA cipher.
-
-		union ctr_t {
-			uint8_t u8[16];
-			uint32_t u32[4];
-			uint64_t u64[2];
-		};
-
-		/**
-		 * Initialize an AES-CTR counter using the Title ID.
-		 * @param ctr AES-CTR counter.
-		 * @param section NCCH section.
-		 * @param offset Partition offset, in bytes.
-		 */
-		inline void init_ctr(ctr_t *ctr, uint8_t section, uint32_t offset)
-		{
-			ctr->u64[0] = tid_be;
-			ctr->u8[8] = section;
-			ctr->u8[9] = 0;
-			ctr->u8[10] = 0;
-			ctr->u8[11] = 0;
-			offset /= 16;
-			ctr->u32[3] = cpu_to_be32(offset);
-		}
+		LibRpBase::IAesCipher *cipher;
 
 		// Encrypted section addresses.
 		struct EncSection {
@@ -191,96 +173,6 @@ class NCCHReaderPrivate
 		uint8_t titleKeyEncIdx;
 		// TMD content index.
 		uint16_t tmd_content_index;
-
-		/**
-		 * Attempt to load an AES normal key.
-		 * @param pKeyOut		[out] Output key data.
-		 * @param keyNormal_name	[in,opt] KeyNormal slot name.
-		 * @param keyX_name		[in,opt] KeyX slot name.
-		 * @param keyY_name		[in,opt] KeyY slot name.
-		 * @param keyNormal_verify	[in,opt] KeyNormal verification data. (NULL or 16 bytes)
-		 * @param keyX_verify		[in,opt] KeyX verification data. (NULL or 16 bytes)
-		 * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
-		 * @return VerifyResult.
-		 */
-		LibRpBase::KeyManager::VerifyResult loadKeyNormal(u128_t *pKeyOut,
-			const char *keyNormal_name,
-			const char *keyX_name,
-			const char *keyY_name,
-			const uint8_t *keyNormal_verify,
-			const uint8_t *keyX_verify,
-			const uint8_t *keyY_verify);
-
-		/**
-		 * Generate an AES normal key from a KeyX and an NCCH signature.
-		 * KeyX will be selected based on ncchflags[3].
-		 * The first 16 bytes of the NCCH signature is used as KeyY.
-		 *
-		 * NOTE: If the NCCH uses NoCrypto, this function will return
-		 * an error, since there's no keys that would work for it.
-		 * Check for NoCrypto before calling this function.
-		 *
-		 * TODO: SEED encryption is not supported, though it isn't needed
-		 * for "exefs:/icon" and "exefs:/banner".
-		 *
-		 * @param pKeyOut		[out] Output key data. (array of 2 keys)
-		 * @param pNcchHeader		[in] NCCH header, with signature.
-		 * @param issuer		[in] Issuer type. (N3DS_Ticket_TitleKey_KeyY)
-		 *                                   If unknown, will try Debug, then Retail.
-		 * @return VerifyResult.
-		 */
-		LibRpBase::KeyManager::VerifyResult loadNCCHKeys(u128_t pKeyOut[2],
-			const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer);
-
-		// Encryption key indexes.
-		enum EncryptionKeys {
-			// Retail
-			Key_Retail_Slot0x18KeyX,
-			Key_Retail_Slot0x1BKeyX,
-			Key_Retail_Slot0x25KeyX,
-			Key_Retail_Slot0x2CKeyX,
-			Key_Retail_Slot0x3DKeyX,
-			Key_Retail_Slot0x3DKeyY_0,
-			Key_Retail_Slot0x3DKeyY_1,
-			Key_Retail_Slot0x3DKeyY_2,
-			Key_Retail_Slot0x3DKeyY_3,
-			Key_Retail_Slot0x3DKeyY_4,
-			Key_Retail_Slot0x3DKeyY_5,
-			Key_Retail_Slot0x3DKeyNormal_0,
-			Key_Retail_Slot0x3DKeyNormal_1,
-			Key_Retail_Slot0x3DKeyNormal_2,
-			Key_Retail_Slot0x3DKeyNormal_3,
-			Key_Retail_Slot0x3DKeyNormal_4,
-			Key_Retail_Slot0x3DKeyNormal_5,
-
-			// Debug
-			Key_Debug_FixedCryptoKey,
-			Key_Debug_Slot0x18KeyX,
-			Key_Debug_Slot0x1BKeyX,
-			Key_Debug_Slot0x25KeyX,
-			Key_Debug_Slot0x2CKeyX,
-			Key_Debug_Slot0x3DKeyX,
-			Key_Debug_Slot0x3DKeyY_0,
-			Key_Debug_Slot0x3DKeyY_1,
-			Key_Debug_Slot0x3DKeyY_2,
-			Key_Debug_Slot0x3DKeyY_3,
-			Key_Debug_Slot0x3DKeyY_4,
-			Key_Debug_Slot0x3DKeyY_5,
-			Key_Debug_Slot0x3DKeyNormal_0,
-			Key_Debug_Slot0x3DKeyNormal_1,
-			Key_Debug_Slot0x3DKeyNormal_2,
-			Key_Debug_Slot0x3DKeyNormal_3,
-			Key_Debug_Slot0x3DKeyNormal_4,
-			Key_Debug_Slot0x3DKeyNormal_5,
-
-			Key_Max
-		};
-
-		// Verification key names.
-		static const char *const EncryptionKeyNames[Key_Max];
-
-		// Verification key data.
-		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
 #endif /* ENABLE_DECRYPTION */
 };
 

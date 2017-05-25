@@ -34,9 +34,9 @@
 using LibRpBase::KeyManager;
 
 // libromdata
-#include "libromdata/crypto/CtrKeyScrambler.hpp"
 #include "libromdata/disc/WiiPartition.hpp"
-#include "libromdata/disc/NCCHReader.hpp"
+#include "libromdata/crypto/CtrKeyScrambler.hpp"
+#include "libromdata/crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -68,7 +68,7 @@ typedef struct _EncKeyFns_t {
 static const EncKeyFns_t encKeyFns[] = {
 	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
-	ENCKEYFNS(NCCHReader),
+	ENCKEYFNS(N3DSVerifyKeys),
 
 	{nullptr, nullptr, nullptr, nullptr}
 };
@@ -79,9 +79,6 @@ static const EncKeyFns_t encKeyFns[] = {
  */
 int VerifyKeys(void)
 {
-	// TODO: Add decryption key functions to Nintendo3DS
-	// and stop using NCCHReader.
-
 	// Initialize the key manager.
 	// Get the Key Manager instance.
 	KeyManager *keyManager = KeyManager::instance();

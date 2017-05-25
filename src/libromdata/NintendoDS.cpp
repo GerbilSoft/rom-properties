@@ -432,7 +432,10 @@ int NintendoDSPrivate::getTitleIndex(void) const
 const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 {
 	// Read the start of the Secure Area.
-	uint32_t secure_area[2];
+	// NOTE: We only need to check the first two DWORDs, but
+	// we're reading the first four because CIAReader only
+	// supports multiples of 16 bytes right now.
+	uint32_t secure_area[4];
 	int ret = file->seek(0x4000);
 	if (ret != 0) {
 		// Seek error.
