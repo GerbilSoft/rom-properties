@@ -2165,7 +2165,7 @@ UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
  * @param wParam	WPARAM
  * @param lParam	LPARAM
  * @param uIdSubclass	Subclass ID. (usually the control ID)
- * @param dwRefData	RP_ShellProSheetExt*
+ * @param dwRefData	RP_ShellPropSheetExt*
  */
 LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
 	HWND hWnd, UINT uMsg,

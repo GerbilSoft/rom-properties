@@ -217,8 +217,19 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 		// NOTE: Duplicates will overwrite previous entries in the map,
 		// though all of the data will remain in the vector.
 
-		// Parse the comma-separated values.
+		// inih automatically trims spaces from the
+		// start and end of the string.
+
+		// If the first character is '"', ignore it.
+		// Needed because QSettings encloses strings in
+		// double-quotes if they contain commas.
+		// (Unquoted strings represent QStringList.)
 		const char *pos = value;
+		if (*pos == '"') {
+			pos++;
+		}
+
+		// Parse the comma-separated values.
 		const unsigned int vStartPos = (unsigned int)vImgTypePrio.size();
 		unsigned int count = 0;	// Number of image types.
 		uint32_t imgbf = 0;	// Image type bitfield to prevent duplicates.
@@ -233,7 +244,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 			// If no comma was found, read the remainder of the field.
 			// Otherwise, read from pos to comma-1.
-			const unsigned int len = (comma ? (unsigned int)(comma-pos) : (unsigned int)strlen(pos));
+			unsigned int len = (comma ? (unsigned int)(comma-pos) : (unsigned int)strlen(pos));
 
 			// If the first entry is "no", then all thumbnails
 			// for this system are disabled.
@@ -242,6 +253,33 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				vImgTypePrio.push_back((uint8_t)RomData::IMG_DISABLED);
 				count = 1;
 				break;
+			}
+
+			// If the last character is '"', ignore it.
+			// Needed because QSettings encloses strings in
+			// double-quotes if they contain commas.
+			// (Unquoted strings represent QStringList.)
+			if (!comma && pos[len-1] == '"') {
+				len--;
+			}
+
+			// Check for spaces at the start of the string.
+			while (isspace(*pos) && len > 0) {
+				pos++;
+				len--;
+			}
+			// Check for spaces at the end of the string.
+			while (len > 0 && isspace(pos[len-1])) {
+				len--;
+			}
+
+			if (len == 0) {
+				// Empty string.
+				if (!comma)
+					break;
+				// Continue after the comma.
+				pos = comma + 1;
+				continue;
 			}
 
 			// Check the image type.

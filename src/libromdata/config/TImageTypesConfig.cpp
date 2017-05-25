@@ -22,12 +22,14 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_CPP__
 
+// NOTE: This is #included in other files,
+// so don't use any 'using' statements!
+
 #include "TImageTypesConfig.hpp"
 #include "librpbase/config/Config.hpp"
 
 // librpbase
 #include "librpbase/TextFuncs.hpp"
-using LibRpBase::rp_string;
 
 // RomData subclasses with images.
 #include "../Amiibo.hpp"
@@ -126,65 +128,69 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 	}
 
 	// Load the configuration.
+	memset(imageTypes, 0xFF, sizeof(imageTypes));
 	reset();
 }
 
 /**
  * (Re-)Load the configuration into the grid.
+ * @param loadDefaults If true, use the default configuration instead of the user configuration.
+ * @return True if anything was modified; false if not.
  */
 template<typename ComboBox>
-void TImageTypesConfig<ComboBox>::reset(void)
+bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 {
-	// Reset all ComboBox objects first.
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		unsigned int cbid = sysAndImageTypeToCbid(sys, IMG_TYPE_COUNT-1);
-		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
-			if (cboImageType[sys][imageType]) {
-				// NOTE: Using the actual priority value, not the ComboBox index.
-				cboImageType_setPriorityValue(cbid, 0xFF);
-			}
-		}
+	bool hasChanged = false;
+
+	// Which ComboBoxes need to be reset to "No"?
+	bool cbo_needsReset[SYS_COUNT][IMG_TYPE_COUNT];
+	memset(cbo_needsReset, true, sizeof(cbo_needsReset));
+
+	const LibRpBase::Config *const config = LibRpBase::Config::instance();
+
+	LibRpBase::Config::ImgTypePrio_t imgTypePrio;
+	if (loadDefaults) {
+		// Use the default image priority for all types.
+		memset(sysIsDefault, true, sizeof(sysIsDefault));
+		config->getDefImgTypePrio(&imgTypePrio);
 	}
 
-	const Config *const config = Config::instance();
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		ComboBox *p_cboImageType = &cboImageType[sys][0];
-
-		// Get the image priority.
-		Config::ImgTypePrio_t imgTypePrio;
-		Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
-		bool no_thumbs = false;
-		switch (res) {
-			case Config::IMGTR_SUCCESS:
-				// Image type priority received successfully.
-				sysIsDefault[sys] = false;
-				break;
-			case Config::IMGTR_SUCCESS_DEFAULTS:
-				// Image type priority received successfully.
-				// IMGTR_SUCCESS_DEFAULTS indicates the returned
-				// data is the default priority, since a custom
-				// configuration was not found for this class.
-				sysIsDefault[sys] = true;
-				break;
-			case Config::IMGTR_DISABLED:
-				// Thumbnails are disabled for this class.
-				no_thumbs = true;
-				break;
-			default:
-				// Should not happen...
-				assert(!"Invalid return value from Config::getImgTypePrio().");
-				no_thumbs = true;
-				break;
+		if (!loadDefaults) {
+			// Get the image priority.
+			LibRpBase::Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].classNameA, &imgTypePrio);
+			bool no_thumbs = false;
+			switch (res) {
+				case LibRpBase::Config::IMGTR_SUCCESS:
+					// Image type priority received successfully.
+					sysIsDefault[sys] = false;
+					break;
+				case LibRpBase::Config::IMGTR_SUCCESS_DEFAULTS:
+					// Image type priority received successfully.
+					// IMGTR_SUCCESS_DEFAULTS indicates the returned
+					// data is the default priority, since a custom
+					// configuration was not found for this class.
+					sysIsDefault[sys] = true;
+					break;
+				case LibRpBase::Config::IMGTR_DISABLED:
+					// Thumbnails are disabled for this class.
+					no_thumbs = true;
+					break;
+				default:
+					// Should not happen...
+					assert(!"Invalid return value from Config::getImgTypePrio().");
+					no_thumbs = true;
+					break;
+			}
+			if (no_thumbs)
+				continue;
 		}
-
-		if (no_thumbs)
-			continue;
 
 		int nextPrio = 0;	// Next priority value to use.
 		bool imageTypeSet[IMG_TYPE_COUNT];	// Element set to true once an image type priority is read.
 		memset(imageTypeSet, 0, sizeof(imageTypeSet));
 
-		p_cboImageType = &cboImageType[sys][0];
+		ComboBox *p_cboImageType = &cboImageType[sys][0];
 		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
 		{
 			uint8_t imageType = imgTypePrio.imgTypes[i];
@@ -197,17 +203,60 @@ void TImageTypesConfig<ComboBox>::reset(void)
 				// Set the image type.
 				imageTypeSet[imageType] = true;
 				if (imageType < IMG_TYPE_COUNT) {
-					imageTypes[sys][imageType] = nextPrio;
-					// NOTE: Using the actual priority value, not the ComboBox index.
-					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
+					if (imageTypes[sys][imageType] != nextPrio) {
+						imageTypes[sys][imageType] = nextPrio;
+						hasChanged = true;
+
+						// NOTE: Using the actual priority value, not the ComboBox index.
+						cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
+					}
+					cbo_needsReset[sys][imageType] = false;
 					nextPrio++;
 				}
 			}
 		}
 	}
 
+	// Set ComboBoxes that don't have a priority to "No".
+	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
+		unsigned int cbid = sysAndImageTypeToCbid((unsigned int)sys, IMG_TYPE_COUNT-1);
+		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
+			if (cbo_needsReset[sys][imageType] && cboImageType[sys][imageType]) {
+				if (imageTypes[sys][imageType] != 0xFF) {
+					hasChanged = true;
+					cboImageType_setPriorityValue(cbid, 0xFF);
+				}
+			}
+		}
+	}
+
+	return hasChanged;
+}
+
+/**
+ * (Re-)Load the configuration into the grid.
+ */
+template<typename ComboBox>
+void TImageTypesConfig<ComboBox>::reset(void)
+{
+	reset_int(false);
 	// No longer changed.
 	changed = false;
+}
+
+/**
+ * Load the default configuration.
+ * This does NOT save and will not clear 'changed'.
+ * @return True if anything was modified; false if not.
+ */
+template<typename ComboBox>
+bool TImageTypesConfig<ComboBox>::loadDefaults(void)
+{
+	bool bRet = reset_int(true);
+	if (bRet) {
+		changed = true;
+	}
+	return bRet;
 }
 
 /**
@@ -233,7 +282,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 	// NOTE: Using an rp_string with reserved storage
 	// instead of ostringstream, since we had problems
 	// with u16string ostringstream before.
-	rp_string imageTypeList;
+	LibRpBase::rp_string imageTypeList;
 	imageTypeList.reserve(128);
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Is this system using the default configuration?
@@ -320,20 +369,26 @@ int TImageTypesConfig<ComboBox>::save(void)
  * A ComboBox index was changed by the user.
  * @param cbid ComboBox ID.
  * @param prio New priority value. (0xFF == no)
+ * @return True if changed; false if not.
  */
 template<typename ComboBox>
-void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio)
+bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
-		return;
+		return false;
+
+	const uint8_t prev_prio = imageTypes[sys][imageType];
+	if (prev_prio == prio) {
+		// No change.
+		return false;
+	}
 
 	if (prio >= 0 && prio != 0xFF) {
 		// Check for any image types that have the new priority.
-		const uint8_t prev_prio = imageTypes[sys][imageType];
 		for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
-			if (i == imageType)
+			if ((unsigned int)i == imageType)
 				continue;
 			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == (uint8_t)prio) {
 				// Found a match! Swap the priority.
@@ -350,6 +405,7 @@ void TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	sysIsDefault[sys] = false;
 	// Configuration has been changed.
 	changed = true;
+	return true;
 }
 
 }

@@ -34,6 +34,9 @@ using LibRpBase::Config;
 // C includes.
 #include <stdlib.h>
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // DllMain.cpp
 extern HINSTANCE g_hInstance;
 
@@ -58,12 +61,16 @@ class ConfigDialogPrivate
 
 	public:
 		// Property sheet variables.
-		ITab *tabs[3];	// TODO: Add Downloads.
-		HPROPSHEETPAGE hpsp[3];
+		static const unsigned int TAB_COUNT = 3;
+		ITab *tabs[TAB_COUNT];
+		HPROPSHEETPAGE hpsp[TAB_COUNT];
 		PROPSHEETHEADER psh;
 
 		// Property Sheet callback.
 		static int CALLBACK callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam);
+
+		// Subclass procedure for the Property Sheet.
+		static LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 		// Create Property Sheet.
 		static INT_PTR CreatePropertySheet(void);
@@ -155,6 +162,10 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 			if (hIcon) {
 				SendMessage(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
 			}
+
+			// Subclass the property sheet so we can create the
+			// "Reset" button in WM_SHOWWINDOW.
+			SetWindowSubclass(hDlg, subclassProc, 0, 0);
 			break;
 		}
 
@@ -163,6 +174,167 @@ int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lPar
 	}
 
 	return 0;
+}
+
+/**
+ * Subclass procedure for the Property Sheet.
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData
+ */
+LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	switch (uMsg) {
+		case WM_SHOWWINDOW: {
+			// Create the "Reset" and "Defaults" buttons.
+			if (GetDlgItem(hWnd, IDC_RP_RESET) != nullptr) {
+				// "Reset" button is already created.
+				// This shouldn't happen...
+				assert(!"IDC_RP_RESET is already created.");
+				break;
+			} else if (GetDlgItem(hWnd, IDC_RP_DEFAULTS) != nullptr) {
+				// "Defaults" button is already created.
+				// This shouldn't happen...
+				assert(!"IDC_RP_DEFAULTS is already created.");
+				break;
+			}
+
+			HWND hBtnOK = GetDlgItem(hWnd, IDOK);
+			HWND hBtnCancel = GetDlgItem(hWnd, IDCANCEL);
+			HWND hTabControl = PropSheet_GetTabControl(hWnd);
+			if (!hBtnOK || !hBtnCancel || !hTabControl)
+				break;
+
+			RECT rect_btnOK, rect_btnCancel, rect_tabControl;
+			GetWindowRect(hBtnOK, &rect_btnOK);
+			GetWindowRect(hBtnCancel, &rect_btnCancel);
+			GetWindowRect(hTabControl, &rect_tabControl);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_btnOK, 2);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_btnCancel, 2);
+			MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rect_tabControl, 2);
+
+			// Dialog font.
+			HFONT hDlgFont = GetWindowFont(hWnd);
+
+			// Create the "Reset" button.
+			POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
+			const SIZE szBtn = {
+				rect_btnOK.right - rect_btnOK.left,
+				rect_btnOK.bottom - rect_btnOK.top
+			};
+
+			HWND hBtnReset = CreateWindowEx(0,
+				WC_BUTTON, L"Reset",
+				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
+				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);
+			SetWindowFont(hBtnReset, hDlgFont, FALSE);
+			EnableWindow(hBtnReset, FALSE);
+
+			// Fix up the tab order. ("Reset" should be after "Apply".)
+			HWND hBtnApply = GetDlgItem(hWnd, IDC_APPLY_BUTTON);
+			if (hBtnApply) {
+				SetWindowPos(hBtnReset, hBtnApply,
+					0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			}
+
+			// Create the "Defaults" button.
+			ptBtn.x += szBtn.cx + (rect_btnCancel.left - rect_btnOK.right);
+			HWND hBtnDefaults = CreateWindowEx(0,
+				WC_BUTTON, L"Defaults",
+				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
+				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+				hWnd, (HMENU)IDC_RP_DEFAULTS, nullptr, nullptr);
+			SetWindowFont(hBtnDefaults, hDlgFont, FALSE);
+
+			// Fix up the tab order. ("Defaults" should be after "Reset".)
+			SetWindowPos(hBtnDefaults, hBtnReset,
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			break;
+		}
+
+		case WM_COMMAND: {
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+
+			switch (LOWORD(wParam)) {
+				case IDC_APPLY_BUTTON:
+					// "Apply" was clicked.
+					// Disable the "Reset" button.
+					EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), FALSE);
+					break;
+
+				case IDC_RP_RESET: {
+					// "Reset" was clicked.
+					// Reset all of the tabs.
+					for (unsigned int i = 0; i < TAB_COUNT; i++) {
+						HWND hwndPropSheet = PropSheet_IndexToHwnd(hWnd, i);
+						if (hwndPropSheet) {
+							SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_RESET, 0, 0);
+						}
+					}
+
+					// Set focus to the tab control.
+					SetFocus(PropSheet_GetTabControl(hWnd));
+					// Go to the next control.
+					SendMessage(hWnd, WM_NEXTDLGCTL, 0, FALSE);
+
+					// TODO: Clear the "changed" state in the property sheet?
+					// Disable the "Apply" and "Reset" buttons.
+					EnableWindow(GetDlgItem(hWnd, IDC_APPLY_BUTTON), FALSE);
+					EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), FALSE);
+
+					// Don't continue processing. Otherwise, weird things
+					// will happen with the button message.
+					return TRUE;
+				}
+
+				case IDC_RP_DEFAULTS: {
+					// "Defaults" was clicked.
+					// Load the defaults in the current tab.
+					HWND hwndPropSheet = PropSheet_GetCurrentPageHwnd(hWnd);
+					if (hwndPropSheet) {
+						SendMessage(hwndPropSheet, WM_RP_PROP_SHEET_DEFAULTS, 0, 0);
+					}
+
+					// KDE5 System Settings keeps focus on the "Defaults" button,
+					// so we'll leave the focus as-is.
+
+					// Don't continue processing. Otherwise, weird things
+					// will happen with the button message.
+					return TRUE;
+				}
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case PSM_CHANGED:
+			// A property sheet is telling us that something has changed.
+			// Enable the "Reset" button.
+			EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), TRUE);
+			break;
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /** ConfigDialog **/

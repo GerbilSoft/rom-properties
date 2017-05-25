@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * ITab.cpp: Configuration tab interface.                                  *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-
+// NOTE: We need a .cpp file here in order for
+// automoc to generate a moc file.
+ 
 #include "ITab.hpp"
 
-class CacheTabPrivate;
-class CacheTab : public ITab
-{
-	public:
-		CacheTab();
-		virtual ~CacheTab();
+ITab::ITab(QWidget *parent)
+	: super(parent)
+{ }
 
-	private:
-		typedef ITab super;
-		RP_DISABLE_COPY(CacheTab)
-	private:
-		friend class CacheTabPrivate;
-		CacheTabPrivate *const d_ptr;
-
-	public:
-		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
-		 */
-		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
-
-		/**
-		 * Reset the contents of this tab.
-		 */
-		virtual void reset(void) override final;
-
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		virtual void loadDefaults(void) override final;
-
-		/**
-		 * Save the contents of this tab.
-		 */
-		virtual void save(void) override final;
-};
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */
+ITab::~ITab()
+{ }

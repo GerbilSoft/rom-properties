@@ -31,6 +31,28 @@
 #define IDC_STATIC (-1)
 #endif
 
+// Property sheet controls.
+// These are defined in Wine's comctl32.h, but not the Windows SDK.
+// Reference: https://source.winehq.org/git/wine.git/blob/HEAD:/dlls/comctl32/comctl32.h
+#define IDC_TABCONTROL                          12320
+#define IDC_APPLY_BUTTON                        12321
+#define IDC_BACK_BUTTON                         12323
+#define IDC_NEXT_BUTTON                         12324
+#define IDC_FINISH_BUTTON                       12325
+#define IDC_SUNKEN_LINE                         12326
+#define IDC_SUNKEN_LINEHEADER                   12327
+
+// Custom property sheet controls.
+#define IDC_RP_RESET                            13431
+#define IDC_RP_DEFAULTS                         13432
+
+// "Reset" and "Defaults" messages.
+// The parent PropertySheet doesn't store any user data, so we can't
+// store a reference to the private class. Hence, we have to send a
+// message to all child property sheet pages instead.
+#define WM_RP_PROP_SHEET_RESET			(WM_USER + 0x1234)
+#define WM_RP_PROP_SHEET_DEFAULTS		(WM_USER + 0x1235)
+
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110
 #define IDD_CONFIG_DOWNLOADS                    111

@@ -373,6 +373,9 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				return FALSE;
 			}
 
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+
 			switch (LOWORD(wParam)) {
 				case IDC_CACHE_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (Vista+)
@@ -479,6 +482,16 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 void CacheTab::reset(void)
 {
 	// Nothing to reset here...
+}
+
+/**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void CacheTab::loadDefaults(void)
+{
+	// Nothing to load here...
 }
 
 /**

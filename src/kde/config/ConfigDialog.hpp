@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +19,58 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
 
-#include "ITab.hpp"
+#include <QDialog>
 
-class CacheTabPrivate;
-class CacheTab : public ITab
+class ConfigDialogPrivate;
+class ConfigDialog : public QDialog
 {
-	public:
-		CacheTab();
-		virtual ~CacheTab();
-
-	private:
-		typedef ITab super;
-		RP_DISABLE_COPY(CacheTab)
-	private:
-		friend class CacheTabPrivate;
-		CacheTabPrivate *const d_ptr;
+	Q_OBJECT
 
 	public:
+		explicit ConfigDialog(QWidget *parent = nullptr);
+		~ConfigDialog();
+
+	private:
+		typedef QDialog super;
+		ConfigDialogPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(ConfigDialog)
+		Q_DISABLE_COPY(ConfigDialog)
+
+	protected:
+		// State change event. (Used for switching the UI language at runtime.)
+		void changeEvent(QEvent *event);
+
+		// Event filter for tracking focus.
+		bool eventFilter(QObject *watched, QEvent *event);
+
+	protected slots:
 		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
+		 * The "OK" button was clicked.
 		 */
-		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
+		void accept(void) override final;
 
 		/**
-		 * Reset the contents of this tab.
+		 * The "Apply" button was clicked.
 		 */
-		virtual void reset(void) override final;
+		void apply(void);
 
 		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
+		 * The "Reset" button was clicked.
 		 */
-		virtual void loadDefaults(void) override final;
+		void reset(void);
 
 		/**
-		 * Save the contents of this tab.
+		 * The "Defaults" button was clicked.
 		 */
-		virtual void save(void) override final;
+		void loadDefaults(void);
+
+		/**
+		 * A tab has been modified.
+		 */
+		void tabModified(void);
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */

@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * ITab.hpp: Configuration tab interface.                                  *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +19,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__
 
-#include "ITab.hpp"
+// Qt includes.
+#include <QSettings>
+#include <QWidget>
 
-class CacheTabPrivate;
-class CacheTab : public ITab
+class ITab : public QWidget
 {
+	Q_OBJECT
+
+	protected:
+		ITab(QWidget *parent = nullptr);
 	public:
-		CacheTab();
-		virtual ~CacheTab();
+		virtual ~ITab();
 
 	private:
-		typedef ITab super;
-		RP_DISABLE_COPY(CacheTab)
-	private:
-		friend class CacheTabPrivate;
-		CacheTabPrivate *const d_ptr;
+		typedef QWidget super;
+		Q_DISABLE_COPY(ITab)
 
-	public:
+	public slots:
 		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
+		 * Reset the configuration.
 		 */
-		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
-
-		/**
-		 * Reset the contents of this tab.
-		 */
-		virtual void reset(void) override final;
+		virtual void reset(void) = 0;
 
 		/**
 		 * Load the default configuration.
 		 * This does NOT save, and will only emit modified()
 		 * if it's different from the current configuration.
 		 */
-		virtual void loadDefaults(void) override final;
+		virtual void loadDefaults(void) = 0;
 
 		/**
-		 * Save the contents of this tab.
+		 * Save the configuration.
+		 * @param pSettings QSettings object.
 		 */
-		virtual void save(void) override final;
+		virtual void save(QSettings *pSettings) = 0;
+
+	signals:
+		/**
+		 * Configuration has been modified.
+		 */
+		void modified(void);
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_ITAB_HPP__ */

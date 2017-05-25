@@ -57,15 +57,6 @@ struct SysData_t {
 	{name, #klass, LibRomData::klass::supportedImageTypes_static}
 #endif
 
-// MSVC 2010 doesn't support inline virtual functions.
-// MSVC 2015 does support it.
-// TODO: Check MSVC 2012 and 2013, and also gcc and clang.
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-#define INLINE_OVERRIDE inline
-#else
-#define INLINE_OVERRIDE
-#endif
-
 template<typename ComboBox>
 class TImageTypesConfig
 {
@@ -86,10 +77,26 @@ class TImageTypesConfig
 		 */
 		void createGrid(void);
 
+	protected:
+		/**
+		 * (Re-)Load the configuration into the grid.
+		 * @param loadDefaults If true, use the default configuration instead of the user configuration.
+		 * @return True if anything was modified; false if not.
+		 */
+		bool reset_int(bool loadDefaults);
+
+	public:
 		/**
 		 * (Re-)Load the configuration into the grid.
 		 */
 		void reset(void);
+
+		/**
+		 * Load the default configuration.
+		 * This does NOT save and will not clear 'changed'.
+		 * @return True if anything was modified; false if not.
+		 */
+		bool loadDefaults(void);
 
 		/**
 		 * Save the configuration from the grid.
@@ -175,8 +182,9 @@ class TImageTypesConfig
 		 * A ComboBox index was changed by the user.
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
+		 * @return True if changed; false if not.
 		 */
-		void cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
+		bool cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
 
 	protected:
 		/** Pure virtual functions. (protected) **/
@@ -184,25 +192,25 @@ class TImageTypesConfig
 		/**
 		 * Create the labels in the grid.
 		 */
-		INLINE_OVERRIDE virtual void createGridLabels(void) = 0;
+		virtual void createGridLabels(void) = 0;
 
 		/**
 		 * Create a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 */
-		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) = 0;
+		virtual void createComboBox(unsigned int cbid) = 0;
 
 		/**
 		 * Add strings to a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) = 0;
+		virtual void addComboBoxStrings(unsigned int cbid, int max_prio) = 0;
 
 		/**
 		 * Finish adding the ComboBoxes.
 		 */
-		INLINE_OVERRIDE virtual void finishComboBoxes(void) = 0;
+		virtual void finishComboBoxes(void) = 0;
 
 		/**
 		 * Initialize the Save subsystem.
@@ -210,7 +218,7 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveStart(void) = 0;
+		virtual int saveStart(void) = 0;
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -218,7 +226,7 @@ class TImageTypesConfig
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) = 0;
+		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) = 0;
 
 		/**
 		 * Close the Save subsystem.
@@ -226,7 +234,7 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveFinish(void) = 0;
+		virtual int saveFinish(void) = 0;
 
 	public:
 		/** Pure virtual functions. (public) **/
@@ -237,7 +245,7 @@ class TImageTypesConfig
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
 		 */
-		INLINE_OVERRIDE virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) = 0;
+		virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) = 0;
 
 	public:
 		// Has the user changed anything?

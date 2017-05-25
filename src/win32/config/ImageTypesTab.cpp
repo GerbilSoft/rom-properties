@@ -60,25 +60,25 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		/**
 		 * Create the labels in the grid.
 		 */
-		INLINE_OVERRIDE virtual void createGridLabels(void) override final;
+		virtual void createGridLabels(void) override final;
 
 		/**
 		 * Create a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 */
-		INLINE_OVERRIDE virtual void createComboBox(unsigned int cbid) override final;
+		virtual void createComboBox(unsigned int cbid) override final;
 
 		/**
 		 * Add strings to a ComboBox in the grid.
 		 * @param cbid ComboBox ID.
 		 * @param max_prio Maximum priority value. (minimum is 1)
 		 */
-		INLINE_OVERRIDE virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
+		virtual void addComboBoxStrings(unsigned int cbid, int max_prio) override final;
 
 		/**
 		 * Finish adding the ComboBoxes.
 		 */
-		INLINE_OVERRIDE virtual void finishComboBoxes(void) override final;
+		virtual void finishComboBoxes(void) override final;
 
 		/**
 		 * Initialize the Save subsystem.
@@ -86,7 +86,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveStart(void) override final;
+		virtual int saveStart(void) override final;
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -94,7 +94,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param imageTypeList Image type list, comma-separated.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
+		virtual int saveWriteEntry(const rp_char *sysName, const rp_char *imageTypeList) override final;
 
 		/**
 		 * Close the Save subsystem.
@@ -102,7 +102,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		INLINE_OVERRIDE virtual int saveFinish(void) override final;
+		virtual int saveFinish(void) override final;
 
 	protected:
 		/** TImageTypesConfig functions. (public) **/
@@ -113,7 +113,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		 * @param cbid ComboBox ID.
 		 * @param prio New priority value. (0xFF == no)
 		 */
-		INLINE_OVERRIDE virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
+		virtual void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) override final;
 
 	public:
 		/**
@@ -187,6 +187,8 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 // Property for "D pointer".
 // This points to the ImageTypesTabPrivate object.
 const wchar_t ImageTypesTabPrivate::D_PTR_PROP[] = L"ImageTypesTabPrivate";
+
+/** TImageTypesConfig functions. (protected) **/
 
 /**
  * Create the labels in the grid.
@@ -384,6 +386,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		assert(s_values[i] != nullptr);
 		ComboBox_AddString(cboImageType, s_values[i]);
 	}
+	ComboBox_SetCurSel(cboImageType, 0);
 }
 
 /**
@@ -471,6 +474,8 @@ int ImageTypesTabPrivate::saveFinish(void)
 	return 0;
 }
 
+/** TImageTypesConfig functions. (public) **/
+
 /**
  * Set a ComboBox's current index.
  * This will not trigger cboImageType_priorityValueChanged().
@@ -488,6 +493,8 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));
 	}
 }
+
+/** Other ImageTypesTabPrivate functions. **/
 
 /**
  * Dialog procedure.
@@ -531,7 +538,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_NOTIFY: {
-			ImageTypesTabPrivate *d = static_cast<ImageTypesTabPrivate*>(
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
@@ -565,7 +572,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 		}
 
 		case WM_COMMAND: {
-			ImageTypesTabPrivate *d = static_cast<ImageTypesTabPrivate*>(
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (!d) {
 				// No ImageTypesTabPrivate. Can't do anything...
@@ -585,11 +592,43 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			cbid -= IDC_IMAGETYPES_CBOIMAGETYPE_BASE;
 
 			const int idx = ComboBox_GetCurSel((HWND)lParam);
-			d->cboImageType_priorityValueChanged(cbid, (unsigned int)(idx <= 0 ? 0xFF : idx-1));
-			// Configuration has been changed.
-			PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+			const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+			if (d->cboImageType_priorityValueChanged(cbid, prio)) {
+				// Configuration has been changed.
+				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+			}
 
 			// Allow the message to be processed by the system.
+			break;
+		}
+
+		case WM_RP_PROP_SHEET_RESET: {
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Reset the tab.
+			d->reset();
+			break;
+		}
+
+		case WM_RP_PROP_SHEET_DEFAULTS: {
+			ImageTypesTabPrivate *const d = static_cast<ImageTypesTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No ImageTypesTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Load the defaults.
+			bool bRet = d->loadDefaults();
+			if (bRet) {
+				// Configuration has been changed.
+				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+			}
 			break;
 		}
 
@@ -683,11 +722,28 @@ void ImageTypesTab::reset(void)
 }
 
 /**
+ * Load the default configuration.
+ * This does NOT save, and will only emit modified()
+ * if it's different from the current configuration.
+ */
+void ImageTypesTab::loadDefaults(void)
+{
+	RP_D(ImageTypesTab);
+	bool bRet = d->loadDefaults();
+	if (bRet) {
+		// Configuration has been changed.
+		PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
+	}
+}
+
+/**
  * Save the contents of this tab.
  */
 void ImageTypesTab::save(void)
 {
 	// TODO: Show an error message if this fails.
 	RP_D(ImageTypesTab);
-	d->save();
+	if (d->changed) {
+		d->save();
+	}
 }

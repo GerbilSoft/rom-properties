@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,52 +19,44 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
+#include "ConfigDialog.hpp"
 
-#include "ITab.hpp"
+// Qt includes.
+#include <QApplication>
 
-class CacheTabPrivate;
-class CacheTab : public ITab
+/**
+ * Exported function for the rp-config stub.
+ * @param argc
+ * @param argv
+ * @return 0 on success; non-zero on error.
+ */
+extern "C"
+Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 {
-	public:
-		CacheTab();
-		virtual ~CacheTab();
+#if QT_VERSION >= 0x050000
+	// Enable High DPI.
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#if QT_VERSION >= 0x050600
+	// Enable High DPI pixmaps.
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
+#else
+	// Hardcode the value in case the user upgrades to Qt 5.6 later.
+	// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
+	QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
+#endif /* QT_VERSION >= 0x050600 */
+#endif /* QT_VERSION >= 0x050000 */
 
-	private:
-		typedef ITab super;
-		RP_DISABLE_COPY(CacheTab)
-	private:
-		friend class CacheTabPrivate;
-		CacheTabPrivate *const d_ptr;
+	QApplication *rpApp = qApp;
+	if (!rpApp) {
+		// Create the QApplication.
+		rpApp = new QApplication(argc, argv);
+	}
 
-	public:
-		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
-		 */
-		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
+	// Create and run the ConfigDialog.
+	// TODO: Get the return value?
+	ConfigDialog *cfg = new ConfigDialog();
+	cfg->show();
 
-		/**
-		 * Reset the contents of this tab.
-		 */
-		virtual void reset(void) override final;
-
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		virtual void loadDefaults(void) override final;
-
-		/**
-		 * Save the contents of this tab.
-		 */
-		virtual void save(void) override final;
-};
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */
+	// Run the Qt UI.
+	return rpApp->exec();
+}

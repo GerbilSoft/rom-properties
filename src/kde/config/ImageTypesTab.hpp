@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * ImageTypesTab.hpp: Image Types tab for rp-config.                       *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,38 +19,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__
 
 #include "ITab.hpp"
 
-class CacheTabPrivate;
-class CacheTab : public ITab
+class ImageTypesTabPrivate;
+class ImageTypesTab : public ITab
 {
+	Q_OBJECT
+
 	public:
-		CacheTab();
-		virtual ~CacheTab();
+		ImageTypesTab(QWidget *parent = nullptr);
+		virtual ~ImageTypesTab();
 
 	private:
 		typedef ITab super;
-		RP_DISABLE_COPY(CacheTab)
-	private:
-		friend class CacheTabPrivate;
-		CacheTabPrivate *const d_ptr;
+		ImageTypesTabPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(ImageTypesTab);
+		Q_DISABLE_COPY(ImageTypesTab)
 
-	public:
-		/**
-		 * Create the HPROPSHEETPAGE for this tab.
-		 *
-		 * NOTE: This function can only be called once.
-		 * Subsequent invocations will return nullptr.
-		 *
-		 * @return HPROPSHEETPAGE.
-		 */
-		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
+	protected:
+		// State change event. (Used for switching the UI language at runtime.)
+		void changeEvent(QEvent *event);
 
+	public slots:
 		/**
-		 * Reset the contents of this tab.
+		 * Reset the configuration.
 		 */
 		virtual void reset(void) override final;
 
@@ -62,9 +57,17 @@ class CacheTab : public ITab
 		virtual void loadDefaults(void) override final;
 
 		/**
-		 * Save the contents of this tab.
+		 * Save the configuration.
+		 * @param pSettings QSettings object.
 		 */
-		virtual void save(void) override final;
+		virtual void save(QSettings *pSettings) override final;
+
+	protected slots:
+		/**
+		 * A QComboBox index has changed.
+		 * @param cbid ComboBox ID.
+		 */
+		void cboImageType_currentIndexChanged(int cbid);
 };
 
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__ */
