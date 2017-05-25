@@ -8,6 +8,9 @@
     versions. This currently includes 1.0 through 11.4. For unofficial
     FIRM, various heuristics are used to determine if it's a well-known
     homebrew title.
+  * (KDE) rp-config is now available in both the KDE4 and KDE5 frontends.
+    This is based on the rp-thumbnail stub that was previously used for the
+    GNOME frontend. Both of them are now part of a new executable, rp-stub.
 
 ## v1.0 (released 2017/05/20)
 
