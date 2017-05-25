@@ -11,6 +11,9 @@
   * (KDE) rp-config is now available in both the KDE4 and KDE5 frontends.
     This is based on the rp-thumbnail stub that was previously used for the
     GNOME frontend. Both of them are now part of a new executable, rp-stub.
+  * Encrypted DSiWare CIAs are now supported, provided you have the keys
+    set up in keys.conf. (Slot0x3D, KeyX, KeyY-0 through KeyY-5; or,
+    Slot0x3D KeyNormal-0 through KeyNormal-5)
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
