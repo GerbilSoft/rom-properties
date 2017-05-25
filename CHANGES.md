@@ -12,6 +12,10 @@
     This is based on the rp-thumbnail stub that was previously used for the
     GNOME frontend. Both of them are now part of a new executable, rp-stub.
 
+* Bug fixes:
+  * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
+    packages, which prevented thumbnailing from working.
+
 ## v1.0 (released 2017/05/20)
 
 * New systems supported:
