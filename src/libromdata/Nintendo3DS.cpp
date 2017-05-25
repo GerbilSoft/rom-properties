@@ -154,7 +154,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 
 	public:
 		// File readers for DSiWare CIAs.
-		DiscReader *srlReader;	// uses this->file
+		IDiscReader *srlReader;	// uses this->file
 		PartitionFile *srlFile;	// uses srlReader
 		NintendoDS *srlData;	// NintendoDS object.
 
@@ -774,10 +774,24 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 		const uint32_t length = (uint32_t)be64_to_cpu(content_chunks[0].size);
 		if (length >= 0x8000) {
 			// Attempt to open the SRL as if it's a new file.
-			// TODO: CIA decryption?
 			// TODO: IRpFile implementation with offset/length, so we don't
 			// have to use both DiscReader and PartitionFile.
-			DiscReader *srlReader = new DiscReader(this->file, offset, length);
+
+			// Check if this content is encrypted.
+			// If it is, we'll need to create a CIAReader.
+			IDiscReader *srlReader = nullptr;
+			if (be16_to_cpu(content_chunks[0].type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+				// Content is encrypted.
+				srlReader = new CIAReader(this->file, offset, length,
+					&mxh.ticket, be16_to_cpu(content_chunks[0].index));
+			} else {
+				// Content is NOT encrypted.
+				// Use a plain old DiscReader.
+				srlReader = new DiscReader(this->file, offset, length);
+			}
+
+			// TODO: Make IDiscReader derive from IRpFile.
+			// May need to add reference counting to IRpFile...
 			PartitionFile *srlFile = nullptr;
 			NintendoDS *srlData = nullptr;
 			if (srlReader->isOpen()) {
