@@ -114,10 +114,11 @@ ENDIF(ENABLE_XML)
 IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
 		crypto/CtrKeyScrambler.cpp
-		disc/NCCHReader_VerifyKeys.cpp
+		crypto/N3DSVerifyKeys.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
+		crypto/N3DSVerifyKeys.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

@@ -38,10 +38,6 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <algorithm>
-#include <memory>
-#include <vector>
-using std::vector;
-using std::unique_ptr;
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {
@@ -88,9 +84,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_RETAIL;
 			if (ticket->keyY_index < 6) {
 				// Verification data is available.
-				keyX_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyX];
-				keyY_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyY_0 + ticket->keyY_index];
-				keyNormal_verify = EncryptionKeyVerifyData[Key_Retail_Slot0x3DKeyNormal_0 + ticket->keyY_index];
+				keyX_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX];
+				keyY_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0 + ticket->keyY_index];
+				keyNormal_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0 + ticket->keyY_index];
 			}
 		} else if (!strncmp(ticket->issuer, N3DS_TICKET_ISSUER_DEBUG, sizeof(ticket->issuer))) {
 			// Debug issuer.
@@ -98,9 +94,9 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			titleKeyEncIdx = N3DS_TICKET_TITLEKEY_ISSUER_DEBUG;
 			if (ticket->keyY_index < 6) {
 				// Verification data is available.
-				keyX_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyX];
-				keyY_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyY_0 + ticket->keyY_index];
-				keyNormal_verify = EncryptionKeyVerifyData[Key_Debug_Slot0x3DKeyNormal_0 + ticket->keyY_index];
+				keyX_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX];
+				keyY_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0 + ticket->keyY_index];
+				keyNormal_verify = N3DSVerifyKeys::EncryptionKeyVerifyData[N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0 + ticket->keyY_index];
 			}
 		} else {
 			// Unknown issuer.
@@ -125,7 +121,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		// Get the KeyNormal. If that fails, get KeyX and KeyY,
 		// then use CtrKeyScrambler to generate KeyNormal.
 		u128_t keyNormal;
-		KeyManager::VerifyResult res = loadKeyNormal(&keyNormal,
+		KeyManager::VerifyResult res = N3DSVerifyKeys::loadKeyNormal(&keyNormal,
 			keyNormal_name, keyX_name, keyY_name,
 			keyNormal_verify, keyX_verify, keyY_verify);
 		if (res == KeyManager::VERIFY_OK) {
@@ -141,7 +137,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 			cipher_cia->setChainingMode(IAesCipher::CM_CBC);
 			cipher_cia->setKey(keyNormal.u8, sizeof(keyNormal.u8));
 			tid_be = ticket->title_id.id;	// already in BE
-			ctr_t cia_iv;
+			u128_t cia_iv;
 			memcpy(cia_iv.u8, &tid_be, sizeof(tid_be));
 			memset(&cia_iv.u8[8], 0, 8);
 			cipher_cia->setIV(cia_iv.u8, sizeof(cia_iv.u8));
@@ -204,7 +200,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 
 #ifdef ENABLE_DECRYPTION
 	// Determine the keyset to use.
-	verifyResult = loadNCCHKeys(ncch_keys, &ncch_header, titleKeyEncIdx);
+	verifyResult = N3DSVerifyKeys::loadNCCHKeys(ncch_keys, &ncch_header, titleKeyEncIdx);
 	if (verifyResult != KeyManager::VERIFY_OK) {
 		// Failed to load the keyset.
 		// Zero out the keys.
@@ -250,13 +246,13 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IRpFile *file,
 		// TODO: Check for errors.
 		cipher_ncch = AesCipherFactory::create();
 		cipher_ncch->setChainingMode(IAesCipher::CM_CTR);
-		ctr_t ctr;
+		u128_t ctr;
 
 		if (headers_loaded & HEADER_EXEFS) {
 			// Decrypt the ExeFS header.
 			// ExeFS header uses ncchKey0.
 			cipher_ncch->setKey(ncch_keys[0].u8, sizeof(ncch_keys[0].u8));
-			init_ctr(&ctr, N3DS_NCCH_SECTION_EXEFS, 0);
+			ctr.init_ctr(tid_be, N3DS_NCCH_SECTION_EXEFS, 0);
 			cipher_ncch->setIV(ctr.u8, sizeof(ctr.u8));
 			cipher_ncch->decrypt(reinterpret_cast<uint8_t*>(&exefs_header), sizeof(exefs_header));
 		}
@@ -388,7 +384,7 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 	int64_t phys_addr = ncch_offset + offset;
 
 #ifdef ENABLE_DECRYPTION
-	ctr_t cia_iv;
+	u128_t cia_iv;
 	if (cipher_cia) {
 		// CIA decryption is required.
 		if (offset >= 16) {
@@ -713,8 +709,8 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			d->cipher_ncch->setKey(d->ncch_keys[section->keyIdx].u8, sizeof(d->ncch_keys[section->keyIdx].u8));
 
 			// Initialize the counter based on section and offset.
-			NCCHReaderPrivate::ctr_t ctr;
-			d->init_ctr(&ctr, section->section, d->pos - section->ctr_base);
+			u128_t ctr;
+			ctr.init_ctr(d->tid_be, section->section, d->pos - section->ctr_base);
 			d->cipher_ncch->setIV(ctr.u8, sizeof(ctr.u8));
 
 			// Decrypt the data.

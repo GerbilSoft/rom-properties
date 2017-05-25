@@ -1,7 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * NCCHReader_VerifyKeys.cpp: Nintendo 3DS NCCH reader.                    *
- * Key verification data.                                                  *
+ * N3DSVerifyKeys.cpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -20,10 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "NCCHReader_p.hpp"
-#ifndef ENABLE_DECRYPTION
-#error This file should only be compiled if decryption is enabled.
-#endif /* !ENABLE_DECRYPTION */
+#include "N3DSVerifyKeys.hpp"
 
 // librpbase
 #include "librpbase/crypto/IAesCipher.hpp"
@@ -31,6 +27,9 @@
 using LibRpBase::IAesCipher;
 using LibRpBase::AesCipherFactory;
 using LibRpBase::KeyManager;
+
+// libromdata
+#include "CtrKeyScrambler.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -53,7 +52,7 @@ namespace LibRomData {
  * @param keyY_verify		[in,opt] KeyY verification data. (NULL or 16 bytes)
  * @return VerifyResult.
  */
-KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
+KeyManager::VerifyResult N3DSVerifyKeys::loadKeyNormal(u128_t *pKeyOut,
 	const char *keyNormal_name,
 	const char *keyX_name,
 	const char *keyY_name,
@@ -208,7 +207,7 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadKeyNormal(u128_t *pKeyOut,
  *                                   If unknown, will try Debug, then Retail.
  * @return VerifyResult.
  */
-KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
+KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	const N3DS_NCCH_Header_t *pNcchHeader, uint8_t issuer)
 {
 	KeyManager::VerifyResult res;
@@ -376,9 +375,9 @@ KeyManager::VerifyResult NCCHReaderPrivate::loadNCCHKeys(u128_t pKeyOut[2],
  * Get the total number of encryption key names.
  * @return Number of encryption key names.
  */
-int NCCHReader::encryptionKeyCount_static(void)
+int N3DSVerifyKeys::encryptionKeyCount_static(void)
 {
-	return NCCHReaderPrivate::Key_Max;
+	return Key_Max;
 }
 
 /**
@@ -386,11 +385,11 @@ int NCCHReader::encryptionKeyCount_static(void)
  * @param keyIdx Encryption key index.
  * @return Encryption key name (in ASCII), or nullptr on error.
  */
-const char *NCCHReader::encryptionKeyName_static(int keyIdx)
+const char *N3DSVerifyKeys::encryptionKeyName_static(int keyIdx)
 {
-	if (keyIdx < 0 || keyIdx >= NCCHReaderPrivate::Key_Max)
+	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
-	return NCCHReaderPrivate::EncryptionKeyNames[keyIdx];
+	return EncryptionKeyNames[keyIdx];
 }
 
 /**
@@ -398,15 +397,15 @@ const char *NCCHReader::encryptionKeyName_static(int keyIdx)
  * @param keyIdx Encryption key index.
  * @return Verification data. (16 bytes)
  */
-const uint8_t *NCCHReader::encryptionVerifyData_static(int keyIdx)
+const uint8_t *N3DSVerifyKeys::encryptionVerifyData_static(int keyIdx)
 {
-	if (keyIdx < 0 || keyIdx >= NCCHReaderPrivate::Key_Max)
+	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
-	return NCCHReaderPrivate::EncryptionKeyVerifyData[keyIdx];
+	return EncryptionKeyVerifyData[keyIdx];
 }
 
 // Verification key names.
-const char *const NCCHReaderPrivate::EncryptionKeyNames[Key_Max] = {
+const char *const N3DSVerifyKeys::EncryptionKeyNames[Key_Max] = {
 	// Retail
 	"ctr-Slot0x18KeyX",
 	"ctr-Slot0x1BKeyX",
@@ -448,7 +447,7 @@ const char *const NCCHReaderPrivate::EncryptionKeyNames[Key_Max] = {
 };
 
 // Verification key data.
-const uint8_t NCCHReaderPrivate::EncryptionKeyVerifyData[Key_Max][16] = {
+const uint8_t N3DSVerifyKeys::EncryptionKeyVerifyData[Key_Max][16] = {
 	/** Retail **/
 
 	// Key_Retail_Slot0x18KeyX
