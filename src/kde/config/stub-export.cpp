@@ -42,7 +42,7 @@ Q_DECL_EXPORT int rp_show_config_dialog(int argc, char *argv[])
 #else
 	// Hardcode the value in case the user upgrades to Qt 5.6 later.
 	// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
-	QApplication::setAttribute(13, true);
+	QApplication::setAttribute((Qt::ApplicationAttribute)13, true);
 #endif /* QT_VERSION >= 0x050600 */
 #endif /* QT_VERSION >= 0x050000 */
 
