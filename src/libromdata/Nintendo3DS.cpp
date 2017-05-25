@@ -1565,6 +1565,9 @@ int Nintendo3DS::loadFieldData(void)
 		return -EIO;
 	}
 
+	// TODO: Disambiguate the various NCCHReader pointers.
+	// TODO: Split up into smaller functions?
+
 	// Maximum of 17 fields.
 	// Tested with several CCI, CIA, and NCCH files.
 	d->fields->reserve(17);
@@ -2098,7 +2101,7 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Content type.
-			const rp_char *content_type = ncch->contentType();
+			const rp_char *content_type = pNcch->contentType();
 			data_row.push_back(content_type ? content_type : _RP("Unknown"));
 
 			// Encryption.
