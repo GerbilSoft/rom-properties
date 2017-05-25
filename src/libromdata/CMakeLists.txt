@@ -39,6 +39,7 @@ SET(libromdata_SRCS
 	disc/PEResourceReader.cpp
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
+	disc/CIAReader.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	)
 # Headers.
@@ -101,6 +102,7 @@ SET(libromdata_H
 	disc/NEResourceReader.hpp
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
+	disc/CIAReader.hpp
 	config/TImageTypesConfig.hpp
 	)
 

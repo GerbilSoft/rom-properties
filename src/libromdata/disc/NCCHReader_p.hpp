@@ -54,10 +54,14 @@ class NCCHReaderPrivate
 	public:
 		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IRpFile *file,
 			uint8_t media_unit_shift,
-			int64_t ncch_offset, uint32_t ncch_length,
-			const N3DS_Ticket_t *ticket = nullptr,
-			uint16_t tmd_content_index = 0);
+			int64_t ncch_offset, uint32_t ncch_length);
+		NCCHReaderPrivate(NCCHReader *q, LibRpBase::IDiscReader *discReader,
+			uint8_t media_unit_shift,
+			int64_t ncch_offset, uint32_t ncch_length);
 		~NCCHReaderPrivate();
+
+	private:
+		void init(void);
 
 	private:
 		RP_DISABLE_COPY(NCCHReaderPrivate)
@@ -65,7 +69,11 @@ class NCCHReaderPrivate
 		NCCHReader *const q_ptr;
 
 	public:
-		LibRpBase::IRpFile *file;	// 3DS ROM image.
+		bool useDiscReader;	// TODO: Make IDiscReader a subclass of IRpFile?
+		union {
+			LibRpBase::IRpFile *file;		// 3DS ROM image.
+			LibRpBase::IDiscReader *discReader;	// Disc reader for encrypted CIAs.
+		};
 
 		// NCCH offsets.
 		const int64_t ncch_offset;	// NCCH start offset, in bytes.
@@ -125,11 +133,7 @@ class NCCHReaderPrivate
 		u128_t ncch_keys[2];
 
 		// NCCH cipher.
-		LibRpBase::IAesCipher *cipher_ncch;	// NCCH cipher.
-
-		// CIA cipher.
-		uint8_t title_key[16];		// Decrypted title key.
-		LibRpBase::IAesCipher *cipher_cia;		// CIA cipher.
+		LibRpBase::IAesCipher *cipher;
 
 		// Encrypted section addresses.
 		struct EncSection {
