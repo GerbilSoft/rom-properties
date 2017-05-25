@@ -663,14 +663,6 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		return 0;
 	}
 
-	// Seek to the starting position.
-	int ret = d->file->seek(d->ncch_offset + d->pos);
-	if (ret != 0) {
-		// Seek error.
-		m_lastError = d->file->lastError();
-		return 0;
-	}
-
 	uint8_t *ptr8 = static_cast<uint8_t*>(ptr);
 	size_t sz_total_read = 0;
 	while (size > 0) {
