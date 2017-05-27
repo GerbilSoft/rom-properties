@@ -67,18 +67,18 @@ class KeyStoreModelPrivate
 		style_t style;
 
 		/**
-		 * Cached copy of keyStore->count().
+		 * Cached copy of keyStore->totalKeyCount().
 		 * This value is needed after the KeyStore is destroyed,
 		 * so we need to cache it here, since the destroyed()
 		 * slot might be run *after* the KeyStore is deleted.
 		 */
-		int keyCount;
+		int totalKeyCount;
 };
 
 KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 	: q_ptr(q)
 	, keyStore(nullptr)
-	, keyCount(0)
+	, totalKeyCount(0)
 { }
 
 /**
@@ -123,7 +123,7 @@ int KeyStoreModel::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	Q_D(const KeyStoreModel);
-	return d->keyCount;
+	return d->totalKeyCount;
 }
 
 int KeyStoreModel::columnCount(const QModelIndex& parent) const
@@ -258,59 +258,43 @@ void KeyStoreModel::setKeyStore(KeyStore *keyStore)
 	// If we have a KeyStore already, disconnect its signals.
 	if (d->keyStore) {
 		// Notify the view that we're about to remove all rows.
-		// TODO: keyCount should already be cached...
-		const int keyCount = d->keyStore->count();
-		if (keyCount > 0) {
-			beginRemoveRows(QModelIndex(), 0, (keyCount - 1));
+		// TODO: totalKeyCount should already be cached...
+		const int totalKeyCount = d->keyStore->totalKeyCount();
+		if (totalKeyCount > 0) {
+			beginRemoveRows(QModelIndex(), 0, (totalKeyCount - 1));
 		}
 
 		// Disconnect the Card's signals.
 		disconnect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			   this, SLOT(keyStore_destroyed_slot(QObject*)));
-		disconnect(d->keyStore, SIGNAL(keysAboutToBeInserted(int,int)),
-			   this, SLOT(keyStore_keysAboutToBeInserted_slot(int,int)));
-		disconnect(d->keyStore, SIGNAL(keysInserted()),
-			   this, SLOT(keyStore_keysInserted_slot()));
-		disconnect(d->keyStore, SIGNAL(keysAboutToBeRemoved(int,int)),
-			   this, SLOT(keyStore_keysAboutToBeRemoved_slot(int,int)));
-		disconnect(d->keyStore, SIGNAL(keysRemoved()),
-			   this, SLOT(keyStore_keysRemoved_slot()));
 
 		d->keyStore = nullptr;
 
 		// Done removing rows.
-		d->keyCount = 0;
-		if (keyCount > 0) {
+		d->totalKeyCount = 0;
+		if (totalKeyCount > 0) {
 			endRemoveRows();
 		}
 	}
 
 	if (keyStore) {
 		// Notify the view that we're about to add rows.
-		const int keyCount = keyStore->count();
-		if (keyCount > 0) {
-			beginInsertRows(QModelIndex(), 0, (keyCount - 1));
+		const int totalKeyCount = keyStore->totalKeyCount();
+		if (totalKeyCount > 0) {
+			beginInsertRows(QModelIndex(), 0, (totalKeyCount - 1));
 		}
 
 		// Set the KeyStore.
 		d->keyStore = keyStore;
-		// NOTE: keyCount must be set here.
-		d->keyCount = keyCount;
+		// NOTE: totalKeyCount must be set here.
+		d->totalKeyCount = totalKeyCount;
 
 		// Connect the KeyStore's signals.
 		connect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			this, SLOT(keyStore_destroyed_slot(QObject*)));
-		connect(d->keyStore, SIGNAL(keysAboutToBeInserted(int,int)),
-			this, SLOT(keyStore_keysAboutToBeInserted_slot(int,int)));
-		connect(d->keyStore, SIGNAL(keysInserted()),
-			this, SLOT(keyStore_keysInserted_slot()));
-		connect(d->keyStore, SIGNAL(keysAboutToBeRemoved(int,int)),
-			this, SLOT(keyStore_keysAboutToBeRemoved_slot(int,int)));
-		connect(d->keyStore, SIGNAL(keysRemoved()),
-			this, SLOT(keyStore_keysRemoved_slot()));
 
 		// Done adding rows.
-		if (keyCount > 0) {
+		if (totalKeyCount > 0) {
 			endInsertRows();
 		}
 	}
@@ -343,71 +327,17 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 
 	// Our KeyStore was destroyed.
 	d->keyStore = nullptr;
-	int old_keyCount = d->keyCount;
-	if (old_keyCount > 0) {
-		beginRemoveRows(QModelIndex(), 0, (old_keyCount - 1));
+	int old_totalKeyCount = d->totalKeyCount;
+	if (old_totalKeyCount > 0) {
+		beginRemoveRows(QModelIndex(), 0, (old_totalKeyCount - 1));
 	}
-	d->keyCount = 0;
-	if (old_keyCount > 0) {
+	d->totalKeyCount = 0;
+	if (old_totalKeyCount > 0) {
 		endRemoveRows();
 	}
 
 	emit keyStoreChanged();
 }
-
-/**
- * Keys are about to be added to the KeyStore.
- * @param start First key index.
- * @param end Last key index.
- */
-void KeyStoreModel::keyStore_keysAboutToBeInserted_slot(int start, int end)
-{
-	// Start adding rows.
-	beginInsertRows(QModelIndex(), start, end);
-}
-
-/**
- * Keys have been added to the KeyStore.
- */
-void KeyStoreModel::keyStore_keysInserted_slot(void)
-{
-	// Update the file count.
-	Q_D(KeyStoreModel);
-	if (d->keyStore) {
-		d->keyCount = d->keyStore->count();
-	}
-
-	// Done adding rows.
-	endInsertRows();
-}
-
-/**
- * Keys are about to be removed from the KeyStore.
- * @param start First file index.
- * @param end Last file index.
- */
-void KeyStoreModel::keyStore_keysAboutToBeRemoved_slot(int start, int end)
-{
-	// Start removing rows.
-	beginRemoveRows(QModelIndex(), start, end);
-}
-
-/**
- * Keys have been removed from the KeyStore.
- */
-void KeyStoreModel::keyStore_keysRemoved_slot(void)
-{
-	// Update the key count.
-	Q_D(KeyStoreModel);
-	if (d->keyStore) {
-		d->keyCount = d->keyStore->count();
-	}
-
-	// Done removing rows.
-	endRemoveRows();
-}
-
-/** Slots. **/
 
 /**
  * The system theme has changed.

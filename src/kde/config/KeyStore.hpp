@@ -29,7 +29,7 @@ class KeyStore : public QObject
 {
 	Q_OBJECT
 
-	Q_PROPERTY(int count READ count)
+	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
 
 	public:
 		KeyStore(QObject *parent = 0);
@@ -61,41 +61,38 @@ class KeyStore : public QObject
 		/** Key management **/
 
 		/**
-		 * Keys are about to be added to the KeyStore.
-		 * @param start First key index.
-		 * @param end Last key index.
-		 */
-		void keysAboutToBeInserted(int start, int end);
-
-		/**
-		 * Keys have been added to the KeyStore.
-		 */
-		void keysInserted(void);
-
-		/**
-		 * Keys are about to be removed from the KeyStore.
-		 * @param start First key index.
-		 * @param end Last key index.
-		 */
-		void keysAboutToBeRemoved(int start, int end);
-
-		/**
-		 * Keys have been removed from the KeyStore.
-		 */
-		void keysRemoved(void);
-
-		/**
 		 * A key has changed.
-		 * @param idx Key index.
+		 * @param sectIdx Section index.
+		 * @param keyIdx Key index.
 		 */
-		void keyChanged(int idx);
+		void keyChanged(int sectIdx, int keyIdx);
 
 	public:
 		/**
-		 * Get the number of keys.
-		 * @return Number of keys.
+		 * Get the number of sections. (top-level)
+		 * @return Number of sections.
 		 */
-		int count(void) const;
+		int sectCount(void) const;
+
+		/**
+		 * Get a section name.
+		 * @param sectIdx Section index.
+		 * @return Section name, or empty string on error.
+		 */
+		QString sectName(int sectIdx) const;
+
+		/**
+		 * Get the number of keys in a given section.
+		 * @param sectIdx Section index.
+		 * @return Number of keys in the section, or -1 on error.
+		 */
+		int keyCount(int sectIdx) const;
+
+		/**
+		 * Get the total number of keys.
+		 * @return Total number of keys.
+		 */
+		int totalKeyCount(void) const;
 
 		/**
 		 * Is the KeyStore empty?
@@ -105,6 +102,15 @@ class KeyStore : public QObject
 
 		/**
 		 * Get a Key object.
+		 * @param sectIdx Section index.
+		 * @param keyIdx Key index.
+		 * @return Key object, or nullptr on error.
+		 */
+		const Key *getKey(int sectIdx, int keyIdx) const;
+
+		/**
+		 * Get a Key object using a linear key count.
+		 * TODO: Remove this once we switch to a Tree model.
 		 * @param idx Key index.
 		 * @return Key object, or nullptr on error.
 		 */

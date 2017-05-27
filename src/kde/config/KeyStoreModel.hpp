@@ -86,30 +86,6 @@ class KeyStoreModel : public QAbstractListModel
 		void keyStore_destroyed_slot(QObject *obj = 0);
 
 		/**
-		 * Keys are about to be added to the KeyStore.
-		 * @param start First key index.
-		 * @param end Last key index.
-		 */
-		void keyStore_keysAboutToBeInserted_slot(int start, int end);
-
-		/**
-		 * Keys have been added to the KeyStore.
-		 */
-		void keyStore_keysInserted_slot(void);
-
-		/**
-		 * Keys are about to be removed from the KeyStore.
-		 * @param start First key index.
-		 * @param end Last key index.
-		 */
-		void keyStore_keysAboutToBeRemoved_slot(int start, int end);
-
-		/**
-		 * Keys have been removed from the KeyStore.
-		 */
-		void keyStore_keysRemoved_slot(void);
-
-		/**
 		 * The system theme has changed.
 		 */
 		void themeChanged_slot(void);
