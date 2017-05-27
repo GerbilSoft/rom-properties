@@ -14,6 +14,9 @@ SET(rom-properties-kde_SRCS
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
+	config/QTreeViewOpt.cpp
+	config/KeyStore.cpp
+	config/KeyStoreModel.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -25,12 +28,21 @@ SET(rom-properties-kde_H
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
+	config/QTreeViewOpt.hpp
+	config/KeyStore.hpp
+	config/KeyStoreModel.hpp
 	)
 SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
 	config/DownloadsTab.ui
 	)
+
+IF(ENABLE_DECRYPTION)
+	SET(rom-properties-kde_SRCS ${rom-properties-kde_SRCS} config/KeyManagerTab.cpp)
+	SET(rom-properties-kde_H    ${rom-properties-kde_H}    config/KeyManagerTab.hpp)
+	SET(rom-properties-kde_UIS  ${rom-properties-kde_UIS}  config/KeyManagerTab.ui)
+ENDIF(ENABLE_DECRYPTION)
 
 # Qt options:
 # - Fast QString concatenation. (Qt 4.6+, plus 4.8-specific version)

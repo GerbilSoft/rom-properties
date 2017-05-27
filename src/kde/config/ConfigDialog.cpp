@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 
 // librpbase
@@ -34,6 +35,10 @@ using LibRpBase::Config;
 // Qt includes.
 #include <QPushButton>
 #include <QSettings>
+
+#ifdef ENABLE_DECRYPTION
+#include "KeyManagerTab.hpp"
+#endif
 
 /** ConfigDialogPrivate **/
 
@@ -51,6 +56,18 @@ class ConfigDialogPrivate
 
 	public:
 		Ui::ConfigDialog ui;
+#ifdef ENABLE_DECRYPTION
+		KeyManagerTab *tabKeyManager;
+		/**
+		 * Retranslate parts of the UI that aren't present in the .ui file.
+		 */
+		void retranslateUi_nonDesigner(void);
+#else /* !ENABLE_DECRYPTION */
+		/**
+		 * Retranslate parts of the UI that aren't present in the .ui file.
+		 */
+		inline void retranslateUi_nonDesigner(void) { }
+#endif /* ENABLE_DECRYPTION */
 
 		// "Apply", "Reset", and "Defaults" buttons.
 		QPushButton *btnApply;
@@ -63,6 +80,9 @@ class ConfigDialogPrivate
 
 ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	: q_ptr(q)
+#ifdef ENABLE_DECRYPTION
+	, tabKeyManager(nullptr)
+#endif /* ENABLE_DECRYPTION */
 	, btnApply(nullptr)
 	, btnReset(nullptr)
 	, btnDefaults(nullptr)
@@ -71,6 +91,27 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 { }
+
+// Qt4 has an extra parameter specifying the encoding for 8-bit strings.
+// Qt5 removes that parameter because all 8-bit strings are assumed to be UTF-8.
+#if QT_VERSION >= 0x050000
+#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
+	QApplication::translate((context), (sourceText), (disambiguation))
+#else /* QT_VERSION < 0x050000 */
+#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
+	QApplication::translate((context), (sourceText), (disambiguation), QApplication::UnicodeUTF8)
+#endif
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Retranslate parts of the UI that aren't present in the .ui file.
+ */
+void ConfigDialogPrivate::retranslateUi_nonDesigner(void)
+{
+	ui.tabWidget->setTabText(ui.tabWidget->indexOf(tabKeyManager),
+		QAPPLICATION_TRANSLATE("ConfigDialog", "&Key Manager", nullptr));
+}
+#endif /* ENABLE_DECRYPTION */
 
 /** ConfigDialog **/
 
@@ -90,6 +131,21 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 {
 	Q_D(ConfigDialog);
 	d->ui.setupUi(this);
+
+#ifdef ENABLE_DECRYPTION
+	// Add the Key Manager tab.
+	// NOTE: This isn't present in the .ui file because
+	// we don't want a hard dependency on Key Manager.
+	// Otherwise, no-crypto builds will break.
+	d->tabKeyManager = new KeyManagerTab();
+	d->tabKeyManager->setObjectName(QLatin1String("tabKeyManager"));
+	// NOTE: Using insertTab() in case we decide to add
+	// an "About" tab at the end.
+	d->ui.tabWidget->insertTab(2, d->tabKeyManager, QString());
+#endif /* ENABLE_DECRYPTION */
+
+	// Retranslate non-Designer widgets.
+	d->retranslateUi_nonDesigner();
 
 	// Delete the window on close.
 	this->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -158,6 +214,7 @@ void ConfigDialog::changeEvent(QEvent *event)
 		// Retranslate the UI.
 		Q_D(ConfigDialog);
 		d->ui.retranslateUi(this);
+		d->retranslateUi_nonDesigner();
 	}
 
 	// Pass the event to the base class.
