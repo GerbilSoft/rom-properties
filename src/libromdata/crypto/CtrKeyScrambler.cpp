@@ -36,17 +36,6 @@ using LibRpBase::KeyManager;
 #include <cerrno>
 #include <cstring>
 
-// Use 64-bit arithmetic on 64-bit systems.
-// TODO: Check the assembly and verify that this actually improves performance.
-#if defined(__LP64__) || defined(__LLP64__) || \
-    defined(_M_X64) || defined(_M_IA64) || defined(_M_ARM64)
-// Use 64-bit arithmetic.
-#define USE64 1
-#else
-// Use 32-bit arithmetic.
-#define USE64 0
-#endif
-
 namespace LibRomData {
 
 class CtrKeyScramblerPrivate
@@ -128,17 +117,8 @@ const uint8_t *CtrKeyScrambler::encryptionVerifyData_static(int keyIdx)
  */
 static inline void bswap_u128_t(u128_t &dest, const u128_t &src)
 {
-#if USE64
-	static_assert(sizeof(void*) == 8, "USE64 == 1 but sizeof(void*) != 8");
 	dest.u64[0] = __swab64(src.u64[0]);
 	dest.u64[1] = __swab64(src.u64[1]);
-#else /* !USE64 */
-	static_assert(sizeof(void*) == 4, "USE64 == 0 but sizeof(void*) != 4");
-	dest.u32[0] = __swab32(src.u32[0]);
-	dest.u32[1] = __swab32(src.u32[1]);
-	dest.u32[2] = __swab32(src.u32[2]);
-	dest.u32[3] = __swab32(src.u32[3]);
-#endif /* USE64 */
 }
 
 /**
@@ -177,9 +157,6 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	const u128_t &ctr_scrambler_tmp = *ctr_scrambler;
 #endif
 
-#if USE64
-	// 64-bit version.
-
 	// Rotate KeyX left by two.
 	u128_t keyTmp;
 	keyTmp.u64[0] = (keyXtmp.u64[0] << 2) | (keyXtmp.u64[1] >> 62);
@@ -198,36 +175,6 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 	// This is effectively "rotate left by 23" with adjusted DWORD indexes.
 	keyNormal->u64[1] = cpu_to_be64((keyTmp.u64[0] << 23) | (keyTmp.u64[1] >> 41));
 	keyNormal->u64[0] = cpu_to_be64((keyTmp.u64[1] << 23) | (keyTmp.u64[0] >> 41));
-#else /* !USE64 */
-	// 32-bit version.
-
-	// Rotate KeyX left by two.
-	u128_t keyTmp;
-	keyTmp.u32[0] = (keyXtmp.u32[0] << 2) | (keyXtmp.u32[1] >> 30);
-	keyTmp.u32[1] = (keyXtmp.u32[1] << 2) | (keyXtmp.u32[2] >> 30);
-	keyTmp.u32[2] = (keyXtmp.u32[2] << 2) | (keyXtmp.u32[3] >> 30);
-	keyTmp.u32[3] = (keyXtmp.u32[3] << 2) | (keyXtmp.u32[0] >> 30);
-
-	// XOR by KeyY.
-	keyTmp.u32[0] ^= be32_to_cpu(keyY->u32[0]);
-	keyTmp.u32[1] ^= be32_to_cpu(keyY->u32[1]);
-	keyTmp.u32[2] ^= be32_to_cpu(keyY->u32[2]);
-	keyTmp.u32[3] ^= be32_to_cpu(keyY->u32[3]);
-
-	// Add the constant.
-	// Reference for carry functionality: https://accu.org/index.php/articles/1849
-	keyTmp.u32[3] += ctr_scrambler_tmp.u32[3];
-	keyTmp.u32[2] += ctr_scrambler_tmp.u32[2] + (keyTmp.u32[3] < ctr_scrambler_tmp.u32[3]);
-	keyTmp.u32[1] += ctr_scrambler_tmp.u32[1] + (keyTmp.u32[2] < ctr_scrambler_tmp.u32[2]);
-	keyTmp.u32[0] += ctr_scrambler_tmp.u32[0] + (keyTmp.u32[1] < ctr_scrambler_tmp.u32[1]);
-
-	// Rotate left by 87.
-	// This is effectively "rotate left by 23" with adjusted DWORD indexes.
-	keyNormal->u32[2] = cpu_to_be32((keyTmp.u32[0] << 23) | (keyTmp.u32[1] >> 9));
-	keyNormal->u32[3] = cpu_to_be32((keyTmp.u32[1] << 23) | (keyTmp.u32[2] >> 9));
-	keyNormal->u32[0] = cpu_to_be32((keyTmp.u32[2] << 23) | (keyTmp.u32[3] >> 9));
-	keyNormal->u32[1] = cpu_to_be32((keyTmp.u32[3] << 23) | (keyTmp.u32[0] >> 9));
-#endif /* USE64 */
 
 	// We're done here.
 	return 0;
