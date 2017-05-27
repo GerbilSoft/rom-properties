@@ -29,9 +29,9 @@ using LibCacheMgr::CacheManager;
 
 // librpbase
 #include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/img/rp_image.hpp"
-using LibRpBase::RomData;
-using LibRpBase::rp_image;
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -249,3 +249,64 @@ ThumbCreator::Flags RomThumbCreator::flags(void) const
 	return ThumbCreator::None;
 }
 
+/** CreateThumbnail **/
+
+/**
+ * Thumbnail creator function for wrapper programs.
+ * @param source_file Source file. (UTF-8)
+ * @param output_file Output file. (UTF-8)
+ * @param maximum_size Maximum size.
+ * @return 0 on success; non-zero on error.
+ */
+extern "C"
+Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+{
+	// NOTE: TCreateThumbnail() has wrappers for opening the
+	// ROM file and getting RomData*, but we're doing it here
+	// in order to return better error codes.
+
+	// Register RpQImageBackend.
+	// TODO: Static initializer somewhere?
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+
+	// Attempt to open the ROM file.
+	// TODO: RpQFile wrapper.
+	// For now, using RpFile, which is an stdio wrapper.
+	unique_ptr<IRpFile> file(new RpFile(utf8_to_rp_string(source_file), RpFile::FM_OPEN_READ));
+	if (!file || !file->isOpen()) {
+		// Could not open the file.
+		return RPCT_SOURCE_FILE_ERROR;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	RomData *romData = RomDataFactory::create(file.get(), true);
+	file.reset(nullptr);	// file is dup()'d by RomData.
+	if (!romData) {
+		// ROM is not supported.
+		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+	}
+
+	// Create the thumbnail.
+	// TODO: If image is larger than maximum_size, resize down.
+	RomThumbCreatorPrivate *d = new RomThumbCreatorPrivate();
+	QImage ret_img;
+	int ret = d->getThumbnail(romData, maximum_size, ret_img);
+	delete d;
+
+	if (ret != 0 || ret_img.isNull()) {
+		// No image.
+		romData->unref();
+		return RPCT_SOURCE_FILE_NO_IMAGE;
+	}
+
+	// Save the image.
+	ret = RPCT_SUCCESS;
+	if (!ret_img.save(QString::fromUtf8(output_file), "png")) {
+		// Image save failed.
+		ret = RPCT_OUTPUT_FILE_FAILED;
+	}
+
+	romData->unref();
+	return ret;
+}
