@@ -210,11 +210,24 @@ int CurlDownloader::download(void)
 	curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 	// Redirection is required for http://amiibo.life/nfc/%08X-%08X
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+
 	// Header and data functions.
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+
+	// Don't use signals. We're running as a plugin, so using
+	// signals might interfere.
+	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+
+	// Set timeouts to ensure we don't take forever.
+	// TODO: User configuration?
+	// - Connect timeout: 2 seconds.
+	// - Total timeout: 20 seconds.
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
+
 	// TODO: Set the User-Agent?
 	CURLcode res = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
