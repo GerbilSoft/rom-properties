@@ -94,6 +94,8 @@ SET(librpbase_H
 	uvector.h
 	TextFuncs.hpp
 	TextFuncs_int.hpp
+	TextFuncs_utf8.hpp
+	TextFuncs_wchar.hpp
 	RomData.hpp
 	RomData_p.hpp
 	RomFields.hpp

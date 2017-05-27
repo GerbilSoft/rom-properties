@@ -67,7 +67,6 @@ ENDIF(BUILD_GNOME)
 # Install the plugin. #
 #######################
 
-# TODO: Update for GNOME.
 IF(BUILD_GNOME)
 	INSTALL(TARGETS rom-properties-gnome
 		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"

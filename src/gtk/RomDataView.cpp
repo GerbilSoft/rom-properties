@@ -635,13 +635,13 @@ rom_data_view_init_header_row(RomDataView *page)
 	string sysInfo;
 	sysInfo.reserve(128);
 	if (systemName) {
-		sysInfo = systemName;
+		sysInfo = RP2U8_c(systemName);
 	}
 	if (fileType) {
 		if (!sysInfo.empty()) {
 			sysInfo += '\n';
 		}
-		sysInfo += fileType;
+		sysInfo += RP2U8_c(fileType);
 	}
 
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
@@ -743,7 +743,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 		if (field->data.str) {
 			// NOTE: Pango markup does not support <br/>.
 			// It uses standard newlines for line breaks.
-			gtk_label_set_markup(GTK_LABEL(widget), rp_string_to_utf8(*(field->data.str)).c_str());
+			gtk_label_set_markup(GTK_LABEL(widget), RP2U8_s(*(field->data.str)));
 		}
 	} else {
 		// Standard text with no formatting.
@@ -751,7 +751,7 @@ rom_data_view_init_string(RomDataView *page, const RomFields::Field *field)
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 		GTK_WIDGET_HALIGN_LEFT(widget);
 		if (field->data.str) {
-			gtk_label_set_text(GTK_LABEL(widget), rp_string_to_utf8(*(field->data.str)).c_str());
+			gtk_label_set_text(GTK_LABEL(widget), RP2U8_s(*(field->data.str)));
 		}
 	}
 
@@ -849,7 +849,7 @@ rom_data_view_init_bitfield(RomDataView *page, const RomFields::Field *field)
 		if (name.empty())
 			continue;
 
-		GtkWidget *checkBox = gtk_check_button_new_with_label(rp_string_to_utf8(name).c_str());
+		GtkWidget *checkBox = gtk_check_button_new_with_label(RP2U8_s(name));
 		gtk_widget_show(checkBox);
 		gboolean value = !!(field->data.bitfield & (1 << bit));
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
@@ -920,7 +920,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				gtk_list_store_set(listStore, &treeIter,
-					col, rp_string_to_utf8(*iter).c_str(), -1);
+					col, RP2U8_s(*iter), -1);
 			}
 		}
 	}
@@ -945,7 +945,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		if (!name.empty()) {
 			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
-				rp_string_to_utf8(name).c_str(), renderer,
+				RP2U8_s(name), renderer,
 				"text", i, nullptr);
 			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 		}
@@ -1168,7 +1168,7 @@ rom_data_view_update_display(RomDataView *page)
 			gtk_widget_show(tab.vbox);
 
 			// Add the tab.
-			GtkWidget *label = gtk_label_new(rp_string_to_utf8(name).c_str());
+			GtkWidget *label = gtk_label_new(RP2U8_s(name));
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, label);
 		}
 		gtk_box_pack_start(GTK_BOX(page), page->tabWidget, TRUE, TRUE, 0);
@@ -1263,7 +1263,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = page->tabs->at(tabIdx);
 
 			// TODO: Localization.
-			std::string gtkdesc = rp_string_to_utf8(field->name);
+			std::string gtkdesc = RP2U8_s(field->name);
 			gtkdesc += ':';
 
 			// Description label.
@@ -1313,7 +1313,7 @@ rom_data_view_load_rom_data(gpointer data)
 	// TODO: gvfs support.
 	if (G_LIKELY(page->filename != nullptr)) {
 		// Open the ROM file.
-		RpFile *file = new RpFile(page->filename, RpFile::FM_OPEN_READ);
+		RpFile *file = new RpFile(U82RP_c(page->filename), RpFile::FM_OPEN_READ);
 		if (file->isOpen()) {
 			// Create the RomData object.
 			page->romData = RomDataFactory::create(file, false);

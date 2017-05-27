@@ -138,6 +138,7 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
 
 /**
  * Convert cp1252 text to UTF-8.
+ * Trailing NULL bytes will be removed.
  * @param str cp1252 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
@@ -169,6 +170,7 @@ string cp1252_to_utf8(const char *str, int len)
 
 /**
  * Convert cp1252 text to UTF-16.
+ * Trailing NULL bytes will be removed.
  * @param str cp1252 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
@@ -202,6 +204,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-8.
+ * Trailing NULL bytes will be removed.
  * @param str cp1252 or Shift-JIS text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
@@ -242,6 +245,7 @@ string cp1252_sjis_to_utf8(const char *str, int len)
 
 /**
  * Convert cp1252 or Shift-JIS text to UTF-16.
+ * Trailing NULL bytes will be removed.
  * @param str cp1252 or Shift-JIS text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
@@ -277,6 +281,7 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
 
 /**
  * Convert UTF-8 text to UTF-16.
+ * Trailing NULL bytes will be removed.
  * @param str UTF-8 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
@@ -307,6 +312,7 @@ u16string utf8_to_utf16(const char *str, int len)
 
 /**
  * Convert UTF-16LE text to UTF-8.
+ * Trailing NULL bytes will be removed.
  * @param str UTF-16LE text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
@@ -332,6 +338,7 @@ string utf16le_to_utf8(const char16_t *str, int len)
 
 /**
  * Convert UTF-16BE text to UTF-8.
+ * Trailing NULL bytes will be removed.
  * @param str UTF-16BE text.
  * @param len Length of str, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.

@@ -33,8 +33,8 @@
 // librpbase
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/RomData.hpp"
-using LibRpBase::RpFile;
-using LibRpBase::RomData;
+#include "librpbase/TextFuncs.hpp"
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
@@ -161,7 +161,7 @@ rom_properties_get_file_supported(NautilusFileInfo *info)
 	// TODO: Check file extensions and/or MIME types?
 
 	// Open the ROM file.
-	RpFile *file = new RpFile(filename, RpFile::FM_OPEN_READ);
+	RpFile *file = new RpFile(U82RP_c(filename), RpFile::FM_OPEN_READ);
 	if (file->isOpen()) {
 		// Is this ROM file supported?
 		// NOTE: We have to create an instance here in order to

@@ -74,6 +74,7 @@ u16string utf16_bswap(const char16_t *str, int len)
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-8.
+ * Trailing NULL bytes will be removed.
  * NOTE: 0x80-0x9F (cp1252) is converted to U+FFFD.
  * @param str Latin-1 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
@@ -104,6 +105,7 @@ string latin1_to_utf8(const char *str, int len)
 
 /**
  * Convert Latin-1 (ISO-8859-1) text to UTF-16.
+ * Trailing NULL bytes will be removed.
  * NOTE: 0x80-0x9F (cp1252) is converted to U+FFFD.
  * @param str Latin-1 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
