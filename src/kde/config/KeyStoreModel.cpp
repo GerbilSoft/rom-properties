@@ -24,6 +24,7 @@
 
 // Qt includes.
 #include <QtGui/QFont>
+#include <QtGui/QFontMetrics>
 #include <QtGui/QPixmap>
 #include <QApplication>
 #include <QStyle>
@@ -55,6 +56,7 @@ class KeyStoreModelPrivate
 
 			// Monospace font.
 			QFont fntMonospace;
+			QSize szValueHint;	// Size hint for the value column.
 
 			// Pixmaps for COL_ISVALID.
 			// TODO: Hi-DPI support.
@@ -89,6 +91,11 @@ void KeyStoreModelPrivate::style_t::init(void)
 	// Monospace font.
 	fntMonospace = QFont(QLatin1String("Monospace"));
 	fntMonospace.setStyleHint(QFont::TypeWriter);
+
+	// Size hint for the monospace column.
+	QFontMetrics fm(fntMonospace);
+	szValueHint = fm.size(Qt::TextSingleLine,
+		QLatin1String("0123456789ABCDEF0123456789ABCDEF"));
 
 	// Initialize the COL_ISVALID pixmaps.
 	// TODO: Handle SP_MessageBoxQuestion on non-Windows systems,
@@ -209,14 +216,19 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			}
 			break;
 
-		case Qt::SizeHintRole: {
-			// Increase row height by 4px.
-			if (index.column() == COL_ISVALID) {
-				return QSize(d->style.pxmIsValid_width,
-					     (d->style.pxmIsValid_height + 4));
+		case Qt::SizeHintRole:
+			switch (index.column()) {
+				case COL_VALUE:
+					// Use the monospace size hint.
+					return d->style.szValueHint;
+				case COL_ISVALID:
+					// Increase row height by 4px.
+					return QSize(d->style.pxmIsValid_width,
+						(d->style.pxmIsValid_height + 4));
+				default:
+					break;
 			}
 			break;
-		}
 
 		default:
 			break;
@@ -386,7 +398,7 @@ void KeyStoreModel::themeChanged_slot(void)
 {
 	// Reinitialize the style.
 	Q_D(KeyStoreModel);
+	emit layoutAboutToBeChanged();
 	d->style.init();
-
-	// TODO: Force an update?
+	emit layoutChanged();
 }
