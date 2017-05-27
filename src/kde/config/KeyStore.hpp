@@ -46,6 +46,7 @@ class KeyStore : public QObject
 		struct Key {
 			enum Status {
 				Status_Empty = 0,	// Key is empty.
+				Status_Unknown,		// Key status is unknown.
 				Status_NotAKey,		// Not a key.
 				Status_Incorrect,	// Key is incorrect.
 				Status_OK,		// Key is OK.
@@ -57,6 +58,12 @@ class KeyStore : public QObject
 			bool allowKanji;	// Allow Kanji for UTF-16LE + BOM.
 		};
 
+	public:
+		/**
+		 * (Re-)Load the keys from keys.conf.
+		 */
+		void reset(void);
+
 	signals:
 		/** Key management **/
 
@@ -66,6 +73,17 @@ class KeyStore : public QObject
 		 * @param keyIdx Key index.
 		 */
 		void keyChanged(int sectIdx, int keyIdx);
+
+		/**
+		 * A key has changed.
+		 * @param idx Flat key index.
+		 */
+		void keyChanged(int idx);
+
+		/**
+		 * All keys have changed.
+		 */
+		void allKeysChanged(void);
 
 	public:
 		/**

@@ -64,6 +64,12 @@ class KeyStorePrivate
 		};
 		QVector<Section> sections;
 
+	public:
+		/**
+		 * (Re-)Load the keys from keys.conf.
+		 */
+		void reset(void);
+
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -111,6 +117,9 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
 		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
+		assert(keyCount > 0);
+		if (keyCount <= 0)
+			continue;
 
 		// Set up the section.
 		section.name = RP2Q(encSys->sectName);
@@ -118,17 +127,20 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 		section.keyCount = keyCount;
 		sections.append(section);
 
+		// Increment keyIdxStart for the next section.
+		keyIdxStart += keyCount;
+
 		// Get the keys.
 		keys.reserve(keys.size() + keyCount);
 		for (int i = 0; i < keyCount; i++) {
 			// Key name.
 			const char *const keyName = encSys->pfnKeyName(i);
 			assert(keyName != nullptr);
-			if (keyName) {
-				key.name = QLatin1String(keyName);
-			} else {
-				key.name.clear();
+			if (!keyName) {
+				// Skip NULL key names. (This shouldn't happen...)
+				continue;
 			}
+			key.name = QLatin1String(keyName);
 
 			// Key is empty initially.
 			key.status = KeyStore::Key::Status_Empty;
@@ -141,6 +153,106 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 			keys.append(key);
 		}
 	}
+
+	// Load the keys.
+	reset();
+}
+
+/**
+ * (Re-)Load the keys from keys.conf.
+ */
+void KeyStorePrivate::reset(void)
+{
+	if (keys.isEmpty())
+		return;
+
+	// Get the KeyManager.
+	KeyManager *const keyManager = KeyManager::instance();
+	assert(keyManager != nullptr);
+	if (!keyManager)
+		return;
+
+	// TODO: Move conversion to KeyManager?
+	char buf[64+1];
+
+	// Hexadecimal lookup table.
+	static const char hex_lookup[16] = {
+		'0','1','2','3','4','5','6','7',
+		'8','9','A','B','C','D','E','F',
+	};
+
+	int keyIdxStart = 0;
+	KeyManager::KeyData_t keyData;
+	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
+		const KeyStorePrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
+		const int keyCount = encSys->pfnKeyCount();
+		assert(keyCount > 0);
+		if (keyCount <= 0)
+			continue;
+
+		// Starting key.
+		KeyStore::Key *key = &keys[keyIdxStart];
+		// Increment keyIdxStart for the next section.
+		keyIdxStart += keyCount;
+
+		// Get the keys.
+		for (int i = 0; i < keyCount; i++, key++) {
+			// Key name.
+			const char *const keyName = encSys->pfnKeyName(i);
+			assert(keyName != nullptr);
+			if (!keyName) {
+				// Skip NULL key names. (This shouldn't happen...)
+				continue;
+			}
+
+			// Get the key data without verifying.
+			// NOTE: If we verify here, the key data won't be returned
+			// if it isn't valid.
+			KeyManager::VerifyResult res = keyManager->get(keyName, &keyData);
+			switch (res) {
+				case KeyManager::VERIFY_OK:
+					// Convert the key to a string.
+					assert(keyData.key != nullptr);
+					assert(keyData.length > 0);
+					assert(keyData.length <= 32);
+					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
+						const uint8_t *pKey = keyData.key;
+						char *pBuf = buf;
+						for (unsigned int i = keyData.length; i > 0; i--, pKey++, pBuf += 2) {
+							pBuf[0] = hex_lookup[*pKey >> 4];
+							pBuf[1] = hex_lookup[*pKey & 0x0F];
+						}
+						*pBuf = 0;
+						key->value = QLatin1String(buf);
+
+						// TODO: Verify the key.
+						key->status = KeyStore::Key::Status_Unknown;
+					} else {
+						// Key is invalid...
+						// TODO: Show an error message?
+						key->value.clear();
+						key->status = KeyStore::Key::Status_NotAKey;
+					}
+					break;
+
+				case KeyManager::VERIFY_KEY_INVALID:
+					// Key is invalid. (i.e. not in the correct format)
+					key->value.clear();
+					key->status = KeyStore::Key::Status_NotAKey;
+					break;
+
+				default:
+					// Assume the key wasn't found.
+					key->value.clear();
+					key->status = KeyStore::Key::Status_Empty;
+					break;
+			}
+		}
+	}
+
+	// TODO: Only emit this signal if keys actually changed?
+	Q_Q(KeyStore);
+	emit q->allKeysChanged();
 }
 
 /** KeyStore **/
@@ -157,6 +269,15 @@ KeyStore::KeyStore(QObject *parent)
 KeyStore::~KeyStore()
 {
 	delete d_ptr;
+}
+
+/**
+ * (Re-)Load the keys from keys.conf.
+ */
+void KeyStore::reset(void)
+{
+	Q_D(KeyStore);
+	d->reset();
 }
 
 /** Accessors. **/

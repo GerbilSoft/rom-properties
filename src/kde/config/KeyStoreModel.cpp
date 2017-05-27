@@ -152,9 +152,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 				case COL_KEY_NAME:
 					return key->name;
 				case COL_VALUE:
-					// Placeholder for testing.
-					return QLatin1String("0123456789ABCDEF0123456789ABCDEF");
-					//return key->value;
+					return key->value;
 				default:
 					break;
 			}
@@ -167,6 +165,9 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 				case COL_ISVALID:
 					switch (key->status) {
 						default:
+						case KeyStore::Key::Status_Unknown:
+							// Unknown...
+							return d->style.pxmIsValid_unknown;
 						case KeyStore::Key::Status_NotAKey:
 							// The key data is not in the correct format.
 							return d->style.pxmIsValid_unknown;
@@ -187,8 +188,15 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			break;
 
 		case Qt::TextAlignmentRole:
-			// Text should be left-aligned horizontally, center-aligned vertically.
-			return (int)(Qt::AlignLeft | Qt::AlignVCenter);
+			switch (index.column()) {
+				case COL_VALUE:
+					// Encryption key should be center-aligned.
+					return (int)(Qt::AlignHCenter | Qt::AlignVCenter);
+				default:
+					// Other text should be left-aligned horizontally, center-aligned vertically.
+					return (int)(Qt::AlignLeft | Qt::AlignVCenter);
+			}
+			break;
 
 		case Qt::FontRole:
 			switch (index.column()) {
@@ -264,9 +272,13 @@ void KeyStoreModel::setKeyStore(KeyStore *keyStore)
 			beginRemoveRows(QModelIndex(), 0, (totalKeyCount - 1));
 		}
 
-		// Disconnect the Card's signals.
+		// Disconnect the KeyStore's signals.
 		disconnect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			   this, SLOT(keyStore_destroyed_slot(QObject*)));
+		disconnect(d->keyStore, SIGNAL(keyChanged(int)),
+			   this, SLOT(keyStore_keyChanged_slot(int)));
+		disconnect(d->keyStore, SIGNAL(allKeysChanged()),
+			   this, SLOT(keyStore_allKeysChanged_slot()));
 
 		d->keyStore = nullptr;
 
@@ -292,6 +304,10 @@ void KeyStoreModel::setKeyStore(KeyStore *keyStore)
 		// Connect the KeyStore's signals.
 		connect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			this, SLOT(keyStore_destroyed_slot(QObject*)));
+		connect(d->keyStore, SIGNAL(keyChanged(int)),
+			this, SLOT(keyStore_keyChanged_slot(int)));
+		connect(d->keyStore, SIGNAL(allKeysChanged()),
+			this, SLOT(keyStore_allKeysChanged_slot()));
 
 		// Done adding rows.
 		if (totalKeyCount > 0) {
@@ -337,6 +353,30 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 	}
 
 	emit keyStoreChanged();
+}
+
+/**
+ * A key in the KeyStore has changed.
+ * @param keyIdx Flat key index.
+ */
+void KeyStoreModel::keyStore_keyChanged_slot(int idx)
+{
+	QModelIndex qmi_left = createIndex(idx, 0);
+	QModelIndex qmi_right = createIndex(idx, COL_MAX);
+	emit dataChanged(qmi_left, qmi_right);
+}
+
+/**
+ * All keys in the KeyStore have changed.
+ */
+void KeyStoreModel::keyStore_allKeysChanged_slot(void)
+{
+	Q_D(KeyStoreModel);
+	if (d->totalKeyCount <= 0)
+		return;
+	QModelIndex qmi_left = createIndex(0, 0);
+	QModelIndex qmi_right = createIndex(d->totalKeyCount-1, COL_MAX);
+	emit dataChanged(qmi_left, qmi_right);
 }
 
 /**

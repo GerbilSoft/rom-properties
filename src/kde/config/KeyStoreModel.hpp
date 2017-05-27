@@ -86,6 +86,17 @@ class KeyStoreModel : public QAbstractListModel
 		void keyStore_destroyed_slot(QObject *obj = 0);
 
 		/**
+		 * A key in the KeyStore has changed.
+		 * @param keyIdx Flat key index.
+		 */
+		void keyStore_keyChanged_slot(int idx);
+
+		/**
+		 * All keys in the KeyStore have changed.
+		 */
+		void keyStore_allKeysChanged_slot(void);
+
+		/**
 		 * The system theme has changed.
 		 */
 		void themeChanged_slot(void);
