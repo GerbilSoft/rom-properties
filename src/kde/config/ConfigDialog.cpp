@@ -187,6 +187,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabDownloads, SIGNAL(modified()), this, SLOT(tabModified()));
 
+	// Make sure the "Defaults" button has the correct state.
+	on_tabWidget_currentChanged();
+
 	// Install the event filter on all child widgets.
 	// This is needed in order to track focus in case
 	// the "Apply" button is clicked.
@@ -241,6 +244,25 @@ bool ConfigDialog::eventFilter(QObject *watched, QEvent *event)
 
 	// Allow the event to propagate.
 	return false;
+}
+
+/** Automatic slots from Qt Designer. **/
+
+/**
+ * The current tab has changed.
+ * @param index New tab index.
+ */
+void ConfigDialog::on_tabWidget_currentChanged(void)
+{
+	// Enable/disable the "Defaults" button.
+	Q_D(ConfigDialog);
+	ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
+	if (tab) {
+		d->btnDefaults->setEnabled(tab->hasDefaults());
+	} else {
+		// Not an ITab...
+		d->btnDefaults->setEnabled(false);
+	}
 }
 
 /** Button slots. **/

@@ -39,6 +39,18 @@ class ITab : public QWidget
 		typedef QWidget super;
 		Q_DISABLE_COPY(ITab)
 
+	public:
+		/**
+		 * Does this tab have defaults available?
+		 * If so, the "Defaults" button will be enabled.
+		 * Otherwise, it will be disabled.
+		 *
+		 * Default is true.
+		 *
+		 * @return True to enable; false to disable.
+		 */
+		virtual bool hasDefaults(void) const { return true; }
+
 	public slots:
 		/**
 		 * Reset the configuration.

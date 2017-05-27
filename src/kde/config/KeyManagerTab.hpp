@@ -28,6 +28,7 @@ class KeyManagerTabPrivate;
 class KeyManagerTab : public ITab
 {
 	Q_OBJECT
+	Q_PROPERTY(bool defaults READ hasDefaults)
 
 	public:
 		KeyManagerTab(QWidget *parent = nullptr);
@@ -38,6 +39,18 @@ class KeyManagerTab : public ITab
 		KeyManagerTabPrivate *const d_ptr;
 		Q_DECLARE_PRIVATE(KeyManagerTab);
 		Q_DISABLE_COPY(KeyManagerTab)
+
+	public:
+		/**
+		 * Does this tab have defaults available?
+		 * If so, the "Defaults" button will be enabled.
+		 * Otherwise, it will be disabled.
+		 *
+		 * KeyManagerTab sets this to false.
+		 *
+		 * @return True to enable; false to disable.
+		 */
+		virtual bool hasDefaults(void) const override final { return false; }
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)

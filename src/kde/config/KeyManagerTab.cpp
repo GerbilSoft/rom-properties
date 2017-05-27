@@ -128,11 +128,7 @@ void KeyManagerTab::reset(void)
  */
 void KeyManagerTab::loadDefaults(void)
 {
-	// The "default" configuration would result in
-	// removing all of the keys, so we won't do anything
-	// for this tab.
-
-	// TODO: Disable the "Defaults" button on this tab?
+	// Not implemented for this tab.
 }
 
 /**

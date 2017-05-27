@@ -48,9 +48,14 @@ class ConfigDialog : public QDialog
 
 	protected slots:
 		/**
+		 * The current tab has changed.
+		 */
+		void on_tabWidget_currentChanged(void);
+
+		/**
 		 * The "OK" button was clicked.
 		 */
-		void accept(void) override final;
+		virtual void accept(void) override final;
 
 		/**
 		 * The "Apply" button was clicked.
