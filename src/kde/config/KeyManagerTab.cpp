@@ -24,6 +24,9 @@
 #include "KeyStore.hpp"
 #include "KeyStoreModel.hpp"
 
+// Qt includes.
+#include <QMenu>
+
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate
 {
@@ -90,6 +93,13 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	// TODO: Proxy model for sorting.
 	d->ui.treeKeyStore->setModel(d->keyStoreModel);
 	d->resizeColumnsToContents();
+
+	// Create the dropdown menu for the "Import" button.
+	QMenu *menuImport = new QMenu(tr("&Import"), d->ui.btnImport);
+	menuImport->addAction(d->ui.actionImportWiiKeysBin);
+	menuImport->addAction(d->ui.actionImport3DSboot9firm);
+	menuImport->addAction(d->ui.actionImport3DSaeskeydb);
+	d->ui.btnImport->setMenu(menuImport);
 }
 
 KeyManagerTab::~KeyManagerTab()
