@@ -235,6 +235,9 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			}
 			break;
 
+		case AllowKanjiRole:
+			return key->allowKanji;
+
 		default:
 			break;
 	}

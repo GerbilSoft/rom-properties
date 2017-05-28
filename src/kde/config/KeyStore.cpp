@@ -147,10 +147,10 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 			key.status = KeyStore::Key::Status_Empty;
 
 			// Allow kanji for twl-scrambler.
-			if (key.name == QLatin1String("twl-scrambler")) {
-				key.allowKanji = true;
-			}
+			key.allowKanji = (key.name == QLatin1String("twl-scrambler"));
 
+			// Save the key.
+			// TODO: Edit a Key struct directly in the QVector?
 			keys.append(key);
 		}
 	}

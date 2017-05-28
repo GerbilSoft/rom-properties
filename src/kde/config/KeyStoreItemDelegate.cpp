@@ -23,6 +23,7 @@
 // - https://stackoverflow.com/questions/26614678/validating-user-input-in-a-qtableview
 // - https://stackoverflow.com/a/26614960
 #include "KeyStoreItemDelegate.hpp"
+#include "KeyStoreModel.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -42,9 +43,12 @@ KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)
 	: super(parent)
 {
 	// Initialize the validators.
+	// Hexadecimal
 	static const char regex_validHexKey[] = "[0-9a-fA-F]*";
-	// TODO
-	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F]*";
+	// Hexadecimal + Kanji
+	// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
+	// NOTE: QRegExp doesn't support named Unicode properties.
+	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\x3400-\\x4DB5\\x4E00-\\x9FCB\\xF900-\\xFA6A]*";
 
 	m_validHexKey = new QRegExpValidator(
 		QRegExp(QLatin1String(regex_validHexKey)), this);
@@ -57,18 +61,21 @@ QWidget *KeyStoreItemDelegate::createEditor(QWidget *parent,
         const QModelIndex &index) const
 {
 	Q_UNUSED(option);
+	Q_UNUSED(index);
 	QLineEdit *editor = new QLineEdit(parent);
 	return editor;
 }
 
 void KeyStoreItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-	QString value = index.model()->data(index, Qt::EditRole).toString();
-	// TODO: Set the Kanji validator if allowKanji is set.
+	const QAbstractItemModel *model = index.model();
+	QString value = model->data(index, Qt::EditRole).toString();
+	bool allowKanji = model->data(index, KeyStoreModel::AllowKanjiRole).toBool();
+
 	QLineEdit *line = qobject_cast<QLineEdit*>(editor);
 	assert(line != nullptr);
 	if (line) {
-		line->setValidator(m_validHexKey);
+		line->setValidator(allowKanji ? m_validHexKeyOrKanji : m_validHexKey);
 		line->setText(value);
 	}
 }
@@ -90,5 +97,6 @@ void KeyStoreItemDelegate::updateEditorGeometry(QWidget *editor,
 	const QStyleOptionViewItem &option,
 	const QModelIndex &index) const
 {
+	Q_UNUSED(index);
 	editor->setGeometry(option.rect);
 }
