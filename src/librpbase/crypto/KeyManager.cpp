@@ -232,8 +232,8 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	for (; value_len > 0; value_len -= 2, vKeys_pos++, value += 2) {
 		// Process two characters at a time.
 		// Two hexadecimal digits == one byte.
-		char chr0 = ascii_to_hex[(uint8_t)value[0]];
-		char chr1 = ascii_to_hex[(uint8_t)value[1]];
+		uint8_t chr0 = ascii_to_hex[(uint8_t)value[0]];
+		uint8_t chr1 = ascii_to_hex[(uint8_t)value[1]];
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
 			vKeys.resize(vKeys_start_pos);
