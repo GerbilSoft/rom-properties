@@ -683,12 +683,16 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 	QString new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
-		QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-		if (convKey.isEmpty()) {
-			// Invalid kanji key.
-			return -EINVAL;
+		// NOTE: convertKanjiToHex() returns an empty string on error,
+		// so if the original string is empty, don't do anything.
+		if (!value.isEmpty()) {
+			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+			if (convKey.isEmpty()) {
+				// Invalid kanji key.
+				return -EINVAL;
+			}
+			new_value = convKey;
 		}
-		new_value = convKey;
 	} else {
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
@@ -730,12 +734,16 @@ int KeyStore::setKey(int idx, const QString &value)
 	QString new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
-		QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-		if (convKey.isEmpty()) {
-			// Invalid kanji key.
-			return -EINVAL;
+		// NOTE: convertKanjiToHex() returns an empty string on error,
+		// so if the original string is empty, don't do anything.
+		if (!value.isEmpty()) {
+			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+			if (convKey.isEmpty()) {
+				// Invalid kanji key.
+				return -EINVAL;
+			}
+			new_value = convKey;
 		}
-		new_value = convKey;
 	} else {
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
