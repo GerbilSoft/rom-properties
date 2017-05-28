@@ -170,6 +170,16 @@ class KeyStore : public QObject
 		 * KeyStore has been changed by the user.
 		 */
 		void modified(void);
+
+	public:
+		/**
+		 * Import a Wii keys.bin file.
+		 * TODO: Return a list of keys that were imported
+		 * and display them in a message bar thing.
+		 * @param filename keys.bin filename.
+		 * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+		 */
+		int importWiiKeysBin(const QString &filename);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */

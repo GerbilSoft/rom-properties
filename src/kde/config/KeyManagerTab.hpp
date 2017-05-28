@@ -74,6 +74,12 @@ class KeyManagerTab : public ITab
 		 * @param pSettings QSettings object.
 		 */
 		virtual void save(QSettings *pSettings) override final;
+
+	protected slots:
+		/**
+		 * Import keys from Wii keys.bin. (BootMii format)
+		 */
+		void on_actionImportWiiKeysBin_triggered(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__ */

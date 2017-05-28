@@ -27,6 +27,7 @@
 #include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/crypto/IAesCipher.hpp"
 #include "librpbase/crypto/AesCipherFactory.hpp"
+#include "librpbase/file/RpFile.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -41,6 +42,10 @@ using namespace LibRomData;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
 
 // Qt includes.
 #include <QtCore/QVector>
@@ -117,6 +122,14 @@ class KeyStorePrivate
 		 * @param keyIdx Key index.
 		 */
 		void verifyKey(int sectIdx, int keyIdx);
+
+	public:
+		// Section enumeration.
+		enum SectionIDs {
+			Section_WiiPartition = 0,
+			Section_CtrKeyScrambler,
+			Section_N3DSVerifyKeys,
+		};
 
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -789,4 +802,76 @@ bool KeyStore::hasChanged(void) const
 {
 	Q_D(const KeyStore);
 	return d->changed;
+}
+
+/**
+ * Import a Wii keys.bin file.
+ * TODO: Return a list of keys that were imported
+ * and display them in a message bar thing.
+ * @param filename keys.bin filename.
+ * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ */
+int KeyStore::importWiiKeysBin(const QString &filename)
+{
+	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	if (!file) {
+		// TODO: Show an error message.
+		return -EIO;
+	}
+
+	// File must be 1,024 bytes.
+	if (file->size() != 1024) {
+		// TODO: Show an error message.
+		return -EIO;
+	}
+
+	// Read the entire 1,024 bytes.
+	uint8_t buf[1024];
+	size_t size = file->read(buf, sizeof(buf));
+	if (size != 1024) {
+		// TODO: Show an error message.
+		return -EIO;
+	}
+	file->close();
+
+	// Verify the BootMii (BackupMii) header.
+	// TODO: Is there a v0? If this shows v0, show a different message.
+	static const char BackupMii_magic[] = "BackupMii v1";
+	if (memcmp(buf, BackupMii_magic, sizeof(BackupMii_magic)-1) != 0) {
+		// TODO: Check for v0.
+		// TODO: Show an error message.
+		return -EIO;
+	}
+
+	// Import keys.
+	Q_D(KeyStore);
+	int keysImported = 0;
+
+	// Starting index of Wii keys.
+	const int keyIdxStart = d->sections[KeyStorePrivate::Section_WiiPartition].keyIdxStart;
+
+	// TODO:
+	// - rvl-korean may be in keys.bin files dumped from Korean systems.
+	// - SD keys are not present in keys.bin.
+
+	// Check if we need to import rvl-common.
+	Key *pKey = &d->keys[keyIdxStart + WiiPartition::Key_Rvl_Common];
+	if (pKey->status != Key::Status_OK) {
+		// Check if the system's common key is correct.
+		const uint8_t *verifyData = WiiPartition::encryptionVerifyData_static(WiiPartition::Key_Rvl_Common);
+		assert(verifyData != nullptr);
+		if (verifyData) {
+			int ret = d->verifyKeyData(&buf[0x114], verifyData, 16);
+			if (ret == 0) {
+				// Found a match!
+				pKey->value = d->binToHexStr(&buf[0x114], 16);
+				pKey->status = Key::Status_OK;
+				keysImported++;
+				emit keyChanged(KeyStorePrivate::Section_WiiPartition, WiiPartition::Key_Rvl_Common);
+				emit keyChanged(keyIdxStart + WiiPartition::Key_Rvl_Common);
+			}
+		}
+	}
+
+	return keysImported;
 }

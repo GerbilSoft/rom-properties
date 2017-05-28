@@ -26,6 +26,7 @@
 #include "KeyStoreItemDelegate.hpp"
 
 // Qt includes.
+#include <QFileDialog>
 #include <QMenu>
 
 #include "ui_KeyManagerTab.h"
@@ -153,4 +154,24 @@ void KeyManagerTab::save(QSettings *pSettings)
 {
 	// TODO: Needs to save to keys.conf, not rom-properties.conf.
 	return;
+}
+
+/** Actions. **/
+
+/**
+ * Import keys from Wii keys.bin. (BootMii format)
+ */
+void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
+{
+	// TODO: Move this to common code in libromdata.
+
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Select Wii keys.bin File"),	// caption
+		QString(),			// dir (TODO)
+		tr("keys.bin (keys.bin);;Binary Files (*.bin);;All Files (*.*)"));
+	if (filename.isEmpty())
+		return;
+
+	Q_D(KeyManagerTab);
+	d->keyStore->importWiiKeysBin(filename);
 }
