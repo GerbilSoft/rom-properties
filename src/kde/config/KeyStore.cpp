@@ -495,7 +495,7 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 			// Hexadecimal only.
 			// TODO: Validate it here? We're already
 			// using a validator in the UI...
-			key.value = value;
+			key.value = value.toUpper();
 		}
 
 		emit keyChanged(sectIdx, keyIdx);
@@ -535,7 +535,7 @@ int KeyStore::setKey(int idx, const QString &value)
 			// Hexadecimal only.
 			// TODO: Validate it here? We're already
 			// using a validator in the UI...
-			key.value = value;
+			key.value = value.toUpper();
 		}
 
 		// Figure out what section this key is in.
