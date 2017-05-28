@@ -72,6 +72,15 @@ class KeyStorePrivate
 		};
 		QVector<Section> sections;
 
+		/**
+		 * Convert a flat key index to sectIdx/keyIdx.
+		 * @param idx		[in] Flat key index.
+		 * @param sectIdx	[out] Section index.
+		 * @param keyIdx	[out] Key index.
+		 * @return True on success; false on error.
+		 */
+		bool flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx);
+
 	public:
 		/**
 		 * (Re-)Load the keys from keys.conf.
@@ -182,6 +191,35 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 
 	// Load the keys.
 	reset();
+}
+
+/**
+ * Convert a flat key index to sectIdx/keyIdx.
+ * @param idx		[in] Flat key index.
+ * @param sectIdx	[out] Section index.
+ * @param keyIdx	[out] Key index.
+ * @return True on success; false on error.
+ */
+bool KeyStorePrivate::flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx)
+{
+	assert(idx >= 0);
+	assert(idx < keys.size());
+	if (idx < 0 || idx >= keys.size())
+		return false;
+
+	// Figure out what section this key is in.
+	for (int i = 0; i < sections.size(); i++) {
+		const KeyStorePrivate::Section &section = sections[i];
+		if (idx < (section.keyIdxStart + section.keyCount)) {
+			// Found the section.
+			sectIdx = i;
+			keyIdx = idx - section.keyIdxStart;
+			return true;
+		}
+	}
+
+	// Not found.
+	return false;
 }
 
 /**
@@ -555,21 +593,10 @@ int KeyStore::setKey(int idx, const QString &value)
 
 	if (key.value != new_value) {
 		key.value = new_value;
-
-		// Figure out what section this key is in.
-		int sectIdx = -1;
-		int keyIdx = -1;
-		for (int i = 0; i < d->sections.size(); i++) {
-			const KeyStorePrivate::Section &section = d->sections[i];
-			if (idx < section.keyIdxStart) {
-				sectIdx = i;
-				keyIdx = idx - section.keyIdxStart;
-				break;
-			}
-		}
-
-		assert(sectIdx >= 0);
-		if (sectIdx >= 0) {
+		int sectIdx, keyIdx;
+		bool bRet = d->flatKeyToSectKey(idx, sectIdx, keyIdx);
+		assert(bRet);
+		if (bRet) {
 			emit keyChanged(sectIdx, keyIdx);
 		}
 		emit keyChanged(idx);
