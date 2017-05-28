@@ -761,7 +761,7 @@ int KeyStore::setKey(int idx, const QString &value)
  * Has KeyStore been changed by the user?
  * @return True if it has; false if it hasn't.
  */
-bool KeyStore::changed(void) const
+bool KeyStore::hasChanged(void) const
 {
 	Q_D(const KeyStore);
 	return d->changed;

@@ -30,7 +30,7 @@ class KeyStore : public QObject
 	Q_OBJECT
 
 	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
-	Q_PROPERTY(bool changed READ changed NOTIFY modified)
+	Q_PROPERTY(bool changed READ hasChanged NOTIFY modified)
 
 	public:
 		KeyStore(QObject *parent = 0);
@@ -163,7 +163,7 @@ class KeyStore : public QObject
 		 * Has KeyStore been changed by the user?
 		 * @return True if it has; false if it hasn't.
 		 */
-		bool changed(void) const;
+		bool hasChanged(void) const;
 
 	signals:
 		/**
