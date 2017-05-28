@@ -187,7 +187,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 							return d->style.pxmIsValid_unknown;
 						case KeyStore::Key::Status_NotAKey:
 							// The key data is not in the correct format.
-							return d->style.pxmIsValid_unknown;
+							return d->style.pxmIsValid_invalid;
 						case KeyStore::Key::Status_Empty:
 							// Empty key.
 							break;

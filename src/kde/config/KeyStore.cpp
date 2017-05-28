@@ -25,7 +25,9 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/crypto/KeyManager.hpp"
-using LibRpBase::KeyManager;
+#include "librpbase/crypto/IAesCipher.hpp"
+#include "librpbase/crypto/AesCipherFactory.hpp"
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"
@@ -47,6 +49,7 @@ class KeyStorePrivate
 {
 	public:
 		explicit KeyStorePrivate(KeyStore *q);
+		~KeyStorePrivate();
 
 	private:
 		KeyStore *const q_ptr;
@@ -72,6 +75,9 @@ class KeyStorePrivate
 		};
 		QVector<Section> sections;
 
+		// IAesCipher for verifying keys.
+		IAesCipher *cipher;
+
 		/**
 		 * Convert a flat key index to sectIdx/keyIdx.
 		 * @param idx		[in] Flat key index.
@@ -94,6 +100,14 @@ class KeyStorePrivate
 		 * @return Converted string, or empty string on error.
 		 */
 		static QString convertKanjiToHex(const QString &str);
+
+	public:
+		/**
+		 * Verify a key and update its status.
+		 * @param sectIdx Section index.
+		 * @param keyIdx Key index.
+		 */
+		void verifyKey(int sectIdx, int keyIdx);
 
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -139,7 +153,19 @@ const char KeyStorePrivate::hex_lookup[16] = {
 KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 	: q_ptr(q)
 	, changed(false)
+	, cipher(AesCipherFactory::create())
 {
+	// Make sure the cipher is usable.
+	if (cipher->isInit()) {
+		// Set the cipher parameters.
+		cipher->setChainingMode(IAesCipher::CM_ECB);
+	} else {
+		// Cipher is not usable.
+		// We won't be able to verify keys.
+		delete cipher;
+		cipher = nullptr;
+	}
+
 	// Load the key names from the various classes.
 	// Values will be loaded later.
 	sections.clear();
@@ -191,6 +217,11 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 
 	// Load the keys.
 	reset();
+}
+
+KeyStorePrivate::~KeyStorePrivate()
+{
+	delete cipher;
 }
 
 /**
@@ -289,8 +320,8 @@ void KeyStorePrivate::reset(void)
 							hasChanged = true;
 						}
 
-						// TODO: Verify the key.
-						key->status = KeyStore::Key::Status_Unknown;
+						// Verify the key.
+						verifyKey(encSysNum, i);
 					} else {
 						// Key is invalid...
 						// TODO: Show an error message?
@@ -373,6 +404,125 @@ QString KeyStorePrivate::convertKanjiToHex(const QString &str)
 	}
 
 	return hexstr;
+}
+
+/**
+ * Verify a key and update its status.
+ * @param sectIdx Section index.
+ * @param keyIdx Key index.
+ */
+void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
+{
+	assert(sectIdx >= 0);
+	assert(sectIdx < sections.size());
+	if (sectIdx < 0 || sectIdx >= sections.size())
+		return;
+
+	assert(keyIdx >= 0);
+	assert(keyIdx < sections[sectIdx].keyCount);
+	if (keyIdx < 0 || keyIdx >= sections[sectIdx].keyCount)
+		return;
+
+	// Check the key length.
+	KeyStore::Key &key = keys[sections[sectIdx].keyIdxStart + keyIdx];
+	if (key.value.isEmpty()) {
+		// Empty key.
+		key.status = KeyStore::Key::Status_Empty;
+		return;
+	} else if (key.value.size() != 16 && key.value.size() % 2 != 0) {
+		// Invalid length.
+		// TODO: Support keys that aren't 128-bit.
+		key.status = KeyStore::Key::Status_NotAKey;
+		return;
+	}
+
+	if (!cipher) {
+		// Cipher is unavailable.
+		// Cannot verify the key.
+		key.status = KeyStore::Key::Status_Unknown;
+		return;
+	}
+
+	// Get the key verification data. (16 bytes)
+	const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(keyIdx);
+	if (!verifyData) {
+		// No key verification data is available.
+		key.status = KeyStore::Key::Status_Unknown;
+		return;
+	}
+
+	// ASCII to HEX lookup table.
+	// Reference: http://codereview.stackexchange.com/questions/22757/char-hex-string-to-byte-array
+	// FIXME: Add a function to KeyManager to convert a string to bytes.
+	static const uint8_t ascii_to_hex[0x100] = {
+		//0     1     2     3     4     5     6    7      8     9     A     B     C     D     E     F
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//0
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//1
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//2
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//3
+		0xFF, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//4
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//5
+		0xFF, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//6
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//7
+
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//8
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//9
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//A
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//B
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//C
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//D
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,//E
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF //F
+	};
+
+	// Convert the key to bytes.
+	// TODO: Use uvector?
+	QByteArray ba;
+	ba.reserve(16);
+	const QChar *value = key.value.constData();
+	uint8_t *p = (uint8_t*)ba.data();
+
+	for (int len = key.value.size(); len > 0; len -= 2, value += 2, p++) {
+		// Process two characters at a time.
+		// Two hexadecimal digits == one byte.
+		uint8_t chr0 = ascii_to_hex[(uint8_t)value[0].unicode()];
+		uint8_t chr1 = ascii_to_hex[(uint8_t)value[1].unicode()];
+		if (chr0 > 0x0F || chr1 > 0x0F) {
+			// Invalid character.
+			key.status = KeyStore::Key::Status_NotAKey;
+			return;
+		}
+
+		ba.append(chr0 << 4 | chr1);
+	}
+
+	// Attempt to decrypt the verification data using the key.
+	uint8_t testData[16];
+	memcpy(testData, verifyData, sizeof(testData));
+	int ret = cipher->setKey(reinterpret_cast<const uint8_t*>(ba.constData()), ba.size());
+	if (ret != 0) {
+		// Error setting the key.
+		key.status = KeyStore::Key::Status_Unknown;
+		return;
+	}
+	unsigned int size = cipher->decrypt(testData, sizeof(testData));
+	if (size != sizeof(testData)) {
+		// Error decrypting the data.
+		key.status = KeyStore::Key::Status_Unknown;
+		return;
+	}
+	if (sectIdx == 0 && keyIdx == 0) {
+		printf("\n");
+	}
+
+	// Check if the decrypted data is correct.
+	if (!memcmp(testData, KeyManager::verifyTestString, sizeof(testData))) {
+		// Decrypted data is correct.
+		key.status = KeyStore::Key::Status_OK;
+	} else {
+		// Decrypted data is wrong.
+		key.status = KeyStore::Key::Status_Incorrect;
+	}
 }
 
 /** KeyStore **/
@@ -526,7 +676,6 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
 		return -ERANGE;
 
-	// TODO: Verify the key.
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
 	const KeyStorePrivate::Section &section = d->sections[sectIdx];
@@ -549,6 +698,9 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 
 	if (key.value != new_value) {
 		key.value = new_value;
+		// Verify the key.
+		d->verifyKey(sectIdx, keyIdx);
+		// Key has changed.
 		emit keyChanged(sectIdx, keyIdx);
 		emit keyChanged(section.keyIdxStart + keyIdx);
 		d->changed = true;
@@ -597,6 +749,8 @@ int KeyStore::setKey(int idx, const QString &value)
 		bool bRet = d->flatKeyToSectKey(idx, sectIdx, keyIdx);
 		assert(bRet);
 		if (bRet) {
+			// Verify the key.
+			d->verifyKey(sectIdx, keyIdx);
 			emit keyChanged(sectIdx, keyIdx);
 		}
 		emit keyChanged(idx);
