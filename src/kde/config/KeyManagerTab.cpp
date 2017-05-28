@@ -23,6 +23,7 @@
 
 #include "KeyStore.hpp"
 #include "KeyStoreModel.hpp"
+#include "KeyStoreItemDelegate.hpp"
 
 // Qt includes.
 #include <QMenu>
@@ -93,6 +94,9 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	// TODO: Proxy model for sorting.
 	d->ui.treeKeyStore->setModel(d->keyStoreModel);
 	d->resizeColumnsToContents();
+
+	// Initialize treeKeyStore's item delegate.
+	d->ui.treeKeyStore->setItemDelegate(new KeyStoreItemDelegate(this));
 
 	// Create the dropdown menu for the "Import" button.
 	QMenu *menuImport = new QMenu(tr("&Import"), d->ui.btnImport);

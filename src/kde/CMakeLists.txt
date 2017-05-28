@@ -17,6 +17,7 @@ SET(rom-properties-kde_SRCS
 	config/QTreeViewOpt.cpp
 	config/KeyStore.cpp
 	config/KeyStoreModel.cpp
+	config/KeyStoreItemDelegate.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -31,6 +32,7 @@ SET(rom-properties-kde_H
 	config/QTreeViewOpt.hpp
 	config/KeyStore.hpp
 	config/KeyStoreModel.hpp
+	config/KeyStoreItemDelegate.hpp
 	)
 SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
