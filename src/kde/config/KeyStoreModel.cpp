@@ -154,10 +154,18 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 	switch (role) {
 		case Qt::DisplayRole:
-			// TODO
 			switch (index.column()) {
 				case COL_KEY_NAME:
 					return key->name;
+				case COL_VALUE:
+					return key->value;
+				default:
+					break;
+			}
+			break;
+
+		case Qt::EditRole:
+			switch (index.column()) {
 				case COL_VALUE:
 					return key->value;
 				default:
@@ -195,15 +203,12 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 			break;
 
 		case Qt::TextAlignmentRole:
-			switch (index.column()) {
-				case COL_VALUE:
-					// Encryption key should be center-aligned.
-					return (int)(Qt::AlignHCenter | Qt::AlignVCenter);
-				default:
-					// Other text should be left-aligned horizontally, center-aligned vertically.
-					return (int)(Qt::AlignLeft | Qt::AlignVCenter);
-			}
-			break;
+			// Text should be left-aligned horizontally, center-aligned vertically.
+			// NOTE: Center-aligning the encryption key causes
+			// weirdness when editing, especially since if the
+			// key is short, the editor will start in the middle
+			// of the column instead of the left side.
+			return (int)(Qt::AlignLeft | Qt::AlignVCenter);
 
 		case Qt::FontRole:
 			switch (index.column()) {
@@ -236,6 +241,44 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 	// Default value.
 	return QVariant();
+}
+
+bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	Q_D(KeyStoreModel);
+	if (!d->keyStore || !index.isValid())
+		return false;
+	if (index.row() >= rowCount())
+		return false;
+
+	// Only COL_VALUE can be edited, and only text.
+	if (index.column() != COL_VALUE || role != Qt::EditRole)
+		return false;
+
+	// Edit the value.
+	// TODO: Make sure it's hexadecimal, and verify the key.
+	// KeyStore::setKey() will emit a signal if the value changes,
+	// which will cause KeyStoreModel to emit dataChanged().
+	d->keyStore->setKey(index.row(), value.toString());
+	return true;
+}
+
+Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
+{
+	Q_D(const KeyStoreModel);
+	if (!d->keyStore || !index.isValid())
+		return 0;
+	if (index.row() >= rowCount())
+		return 0;
+
+	switch (index.column()) {
+		case COL_VALUE:
+			// Value can be edited.
+			return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+		default:
+			// Standard flags.
+			return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	}
 }
 
 QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -374,7 +417,7 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 void KeyStoreModel::keyStore_keyChanged_slot(int idx)
 {
 	QModelIndex qmi_left = createIndex(idx, 0);
-	QModelIndex qmi_right = createIndex(idx, COL_MAX);
+	QModelIndex qmi_right = createIndex(idx, COL_MAX-1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
@@ -387,7 +430,7 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 	if (d->totalKeyCount <= 0)
 		return;
 	QModelIndex qmi_left = createIndex(0, 0);
-	QModelIndex qmi_right = createIndex(d->totalKeyCount-1, COL_MAX);
+	QModelIndex qmi_right = createIndex(d->totalKeyCount-1, COL_MAX-1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 

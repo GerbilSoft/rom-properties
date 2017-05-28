@@ -38,6 +38,7 @@ using namespace LibRomData;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 // Qt includes.
 #include <QtCore/QVector>
@@ -399,4 +400,84 @@ const KeyStore::Key *KeyStore::getKey(int idx) const
 		return nullptr;
 
 	return &d->keys[idx];
+}
+
+/**
+ * Set a key's value.
+ * If successful, and the new value is different,
+ * keyChanged() will be emitted.
+ *
+ * @param sectIdx Section index.
+ * @param keyIdx Key index.
+ * @param value New value.
+ * @return 0 on success; non-zero on error.
+ */
+int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
+{
+	Q_D(KeyStore);
+	assert(sectIdx >= 0);
+	assert(sectIdx < d->sections.size());
+	if (sectIdx < 0 || sectIdx >= d->sections.size())
+		return -ERANGE;
+	assert(keyIdx >= 0);
+	assert(keyIdx < d->sections[sectIdx].keyCount);
+	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
+		return -ERANGE;
+
+	// TODO: Verify the key.
+	// If allowKanji is true, check if the key is kanji
+	// and convert it to UTF-16LE hexadecimal.
+	const KeyStorePrivate::Section &section = d->sections[sectIdx];
+	Key &key = d->keys[section.keyIdxStart + keyIdx];
+	if (key.value != value) {
+		key.value = value;
+		emit keyChanged(sectIdx, keyIdx);
+		emit keyChanged(section.keyIdxStart + keyIdx);
+	}
+	return 0;
+}
+
+/**
+ * Set a key's value.
+ * If successful, and the new value is different,
+ * keyChanged() will be emitted.
+ *
+ * @param idx Flat key index.
+ * @param value New value.
+ * @return 0 on success; non-zero on error.
+ */
+int KeyStore::setKey(int idx, const QString &value)
+{
+	Q_D(KeyStore);
+	assert(idx >= 0);
+	assert(idx < d->keys.size());
+	if (idx < 0 || idx >= d->keys.size())
+		return -ERANGE;
+
+	// TODO: Verify the key.
+	// If allowKanji is true, check if the key is kanji
+	// and convert it to UTF-16LE hexadecimal.
+	Key &key = d->keys[idx];
+	if (key.value != value) {
+		key.value = value;
+
+		// Figure out what section this key is in.
+		int sectIdx = -1;
+		int keyIdx = -1;
+		for (int i = 0; i < d->sections.size(); i++) {
+			const KeyStorePrivate::Section &section = d->sections[i];
+			if (idx < section.keyIdxStart) {
+				sectIdx = i;
+				keyIdx = idx - section.keyIdxStart;
+				break;
+			}
+		}
+
+		assert(sectIdx >= 0);
+		if (sectIdx >= 0) {
+			emit keyChanged(sectIdx, keyIdx);
+		}
+		emit keyChanged(idx);
+	}
+	return 0;
 }

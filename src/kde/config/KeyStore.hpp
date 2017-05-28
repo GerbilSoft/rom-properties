@@ -133,6 +133,29 @@ class KeyStore : public QObject
 		 * @return Key object, or nullptr on error.
 		 */
 		const Key *getKey(int idx) const;
+
+		/**
+		 * Set a key's value.
+		 * If successful, and the new value is different,
+		 * keyChanged() will be emitted.
+		 *
+		 * @param sectIdx Section index.
+		 * @param keyIdx Key index.
+		 * @param value New value.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKey(int sectIdx, int keyIdx, const QString &value);
+
+		/**
+		 * Set a key's value.
+		 * If successful, and the new value is different,
+		 * keyChanged() will be emitted.
+		 *
+		 * @param idx Flat key index.
+		 * @param value New value.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int setKey(int idx, const QString &value);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */

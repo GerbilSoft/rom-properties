@@ -57,6 +57,9 @@ class KeyStoreModel : public QAbstractListModel
 		virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override final;
 
 		virtual QVariant data(const QModelIndex& index, int role) const override final;
+		virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override final;
+		virtual Qt::ItemFlags flags(const QModelIndex &index) const override final;
+
 		virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override final;
 
 	public:
