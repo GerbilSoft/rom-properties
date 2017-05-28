@@ -30,6 +30,7 @@ class KeyStore : public QObject
 	Q_OBJECT
 
 	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
+	Q_PROPERTY(bool changed READ changed NOTIFY modified)
 
 	public:
 		KeyStore(QObject *parent = 0);
@@ -156,6 +157,19 @@ class KeyStore : public QObject
 		 * @return 0 on success; non-zero on error.
 		 */
 		int setKey(int idx, const QString &value);
+
+	public:
+		/**
+		 * Has KeyStore been changed by the user?
+		 * @return True if it has; false if it hasn't.
+		 */
+		bool changed(void) const;
+
+	signals:
+		/**
+		 * KeyStore has been changed by the user.
+		 */
+		void modified(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */

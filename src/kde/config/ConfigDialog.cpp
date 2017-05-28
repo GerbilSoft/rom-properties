@@ -186,6 +186,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// FIXME: Should be doable in Qt Designer...
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabDownloads, SIGNAL(modified()), this, SLOT(tabModified()));
+#ifdef ENABLE_DECRYPTION
+	connect(d->tabKeyManager, SIGNAL(modified()), this, SLOT(tabModified()));
+#endif /* ENABLE_DECRYPTION */
 
 	// Make sure the "Defaults" button has the correct state.
 	on_tabWidget_currentChanged();
@@ -302,6 +305,10 @@ void ConfigDialog::apply(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
 	d->ui.tabDownloads->save(&settings);
+#ifdef ENABLE_DECRYPTION
+	// FIXME: Should be saving to keys.conf, not rom-properties.conf.
+	d->tabKeyManager->save(&settings);
+#endif /* ENABLE_DECRYPTION */
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -323,6 +330,9 @@ void ConfigDialog::reset(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
 	d->ui.tabDownloads->reset();
+#ifdef ENABLE_DECRYPTION
+	d->tabKeyManager->reset();
+#endif /* ENABLE_DECRYPTION */
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.

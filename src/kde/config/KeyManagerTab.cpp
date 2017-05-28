@@ -43,9 +43,6 @@ class KeyManagerTabPrivate
 		Ui::KeyManagerTab ui;
 
 	public:
-		// Has the user changed anything?
-		bool changed;
-
 		// KeyStore.
 		KeyStore *keyStore;
 		// KeyStoreModel.
@@ -61,7 +58,6 @@ class KeyManagerTabPrivate
 
 KeyManagerTabPrivate::KeyManagerTabPrivate(KeyManagerTab* q)
 	: q_ptr(q)
-	, changed(false)
 	, keyStore(new KeyStore(q))
 	, keyStoreModel(new KeyStoreModel(q))
 {
@@ -104,6 +100,9 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	menuImport->addAction(d->ui.actionImport3DSboot9firm);
 	menuImport->addAction(d->ui.actionImport3DSaeskeydb);
 	d->ui.btnImport->setMenu(menuImport);
+
+	// Connect KeyStore's modified() signal to our modified() signal.
+	connect(d->keyStore, SIGNAL(modified()), this, SIGNAL(modified()));
 }
 
 KeyManagerTab::~KeyManagerTab()

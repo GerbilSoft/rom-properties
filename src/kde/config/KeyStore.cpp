@@ -54,6 +54,13 @@ class KeyStorePrivate
 		Q_DISABLE_COPY(KeyStorePrivate)
 
 	public:
+		// Has the user changed anything?
+		// This specifically refers to *user* settings.
+		// reset() will emit dataChanged(), but changed
+		// will be set back to false.
+		bool changed;
+
+	public:
 		// Keys.
 		QVector<KeyStore::Key> keys;
 
@@ -122,6 +129,7 @@ const char KeyStorePrivate::hex_lookup[16] = {
 
 KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 	: q_ptr(q)
+	, changed(false)
 {
 	// Load the key names from the various classes.
 	// Values will be loaded later.
@@ -282,6 +290,9 @@ void KeyStorePrivate::reset(void)
 		Q_Q(KeyStore);
 		emit q->allKeysChanged();
 	}
+
+	// Keys have been reset.
+	changed = false;
 }
 
 /**
@@ -482,24 +493,28 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 	// and convert it to UTF-16LE hexadecimal.
 	const KeyStorePrivate::Section &section = d->sections[sectIdx];
 	Key &key = d->keys[section.keyIdxStart + keyIdx];
-	if (key.value != value) {
-		if (key.allowKanji) {
-			// Convert kanji to hexadecimal if needed.
-			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-			if (convKey.isEmpty()) {
-				// Invalid kanji key.
-				return -EINVAL;
-			}
-			key.value = convKey;
-		} else {
-			// Hexadecimal only.
-			// TODO: Validate it here? We're already
-			// using a validator in the UI...
-			key.value = value.toUpper();
+	QString new_value;
+	if (key.allowKanji) {
+		// Convert kanji to hexadecimal if needed.
+		QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+		if (convKey.isEmpty()) {
+			// Invalid kanji key.
+			return -EINVAL;
 		}
+		new_value = convKey;
+	} else {
+		// Hexadecimal only.
+		// TODO: Validate it here? We're already
+		// using a validator in the UI...
+		new_value = value.toUpper();
+	}
 
+	if (key.value != new_value) {
+		key.value = new_value;
 		emit keyChanged(sectIdx, keyIdx);
 		emit keyChanged(section.keyIdxStart + keyIdx);
+		d->changed = true;
+		emit modified();
 	}
 	return 0;
 }
@@ -522,21 +537,24 @@ int KeyStore::setKey(int idx, const QString &value)
 		return -ERANGE;
 
 	Key &key = d->keys[idx];
-	if (key.value != value) {
-		if (key.allowKanji) {
-			// Convert kanji to hexadecimal if needed.
-			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-			if (convKey.isEmpty()) {
-				// Invalid kanji key.
-				return -EINVAL;
-			}
-			key.value = convKey;
-		} else {
-			// Hexadecimal only.
-			// TODO: Validate it here? We're already
-			// using a validator in the UI...
-			key.value = value.toUpper();
+	QString new_value;
+	if (key.allowKanji) {
+		// Convert kanji to hexadecimal if needed.
+		QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+		if (convKey.isEmpty()) {
+			// Invalid kanji key.
+			return -EINVAL;
 		}
+		new_value = convKey;
+	} else {
+		// Hexadecimal only.
+		// TODO: Validate it here? We're already
+		// using a validator in the UI...
+		new_value = value.toUpper();
+	}
+
+	if (key.value != new_value) {
+		key.value = new_value;
 
 		// Figure out what section this key is in.
 		int sectIdx = -1;
@@ -555,6 +573,18 @@ int KeyStore::setKey(int idx, const QString &value)
 			emit keyChanged(sectIdx, keyIdx);
 		}
 		emit keyChanged(idx);
+		d->changed = true;
+		emit modified();
 	}
 	return 0;
+}
+
+/**
+ * Has KeyStore been changed by the user?
+ * @return True if it has; false if it hasn't.
+ */
+bool KeyStore::changed(void) const
+{
+	Q_D(const KeyStore);
+	return d->changed;
 }
