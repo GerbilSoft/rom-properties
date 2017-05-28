@@ -854,22 +854,46 @@ int KeyStore::importWiiKeysBin(const QString &filename)
 	// - rvl-korean may be in keys.bin files dumped from Korean systems.
 	// - SD keys are not present in keys.bin.
 
-	// Check if we need to import rvl-common.
-	Key *pKey = &d->keys[keyIdxStart + WiiPartition::Key_Rvl_Common];
-	if (pKey->status != Key::Status_OK) {
-		// Check if the system's common key is correct.
-		const uint8_t *verifyData = WiiPartition::encryptionVerifyData_static(WiiPartition::Key_Rvl_Common);
+	// Key addresses and indexes.
+	struct KeyBinAddress {
+		uint32_t address;
+		int keyIdx;
+	};
+	static const KeyBinAddress keyBinAddress[] = {
+		{0x114, WiiPartition::Key_Rvl_Common},
+		{0x114, WiiPartition::Key_Rvt_Debug},
+	};
+
+	// Check the keys.
+	for (int i = ARRAY_SIZE(keyBinAddress)-1; i >= 0; i--) {
+		const KeyBinAddress *const kba = &keyBinAddress[i];
+		Key *const pKey = &d->keys[keyIdxStart + kba->keyIdx];
+		if (pKey->status == Key::Status_OK) {
+			// Key is already OK. Don't bother with it.
+			continue;
+		}
+		const uint8_t *const keyData = &buf[kba->address];
+
+		// Check if the key in the binary file is correct.
+		const uint8_t *verifyData = WiiPartition::encryptionVerifyData_static(kba->keyIdx);
 		assert(verifyData != nullptr);
-		if (verifyData) {
-			int ret = d->verifyKeyData(&buf[0x114], verifyData, 16);
-			if (ret == 0) {
-				// Found a match!
-				pKey->value = d->binToHexStr(&buf[0x114], 16);
-				pKey->status = Key::Status_OK;
-				keysImported++;
-				emit keyChanged(KeyStorePrivate::Section_WiiPartition, WiiPartition::Key_Rvl_Common);
-				emit keyChanged(keyIdxStart + WiiPartition::Key_Rvl_Common);
-			}
+		if (!verifyData) {
+			// Can't verify this key...
+			// Import it anyway.
+			pKey->value = d->binToHexStr(keyData, 16);
+			pKey->status = Key::Status_Unknown;
+			continue;
+		}
+
+		// Verify the key.
+		int ret = d->verifyKeyData(keyData, verifyData, 16);
+		if (ret == 0) {
+			// Found a match!
+			pKey->value = d->binToHexStr(keyData, 16);
+			pKey->status = Key::Status_OK;
+			keysImported++;
+			emit keyChanged(KeyStorePrivate::Section_WiiPartition, kba->keyIdx);
+			emit keyChanged(keyIdxStart + kba->keyIdx);
 		}
 	}
 
