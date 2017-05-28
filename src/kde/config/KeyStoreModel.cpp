@@ -89,13 +89,15 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 void KeyStoreModelPrivate::style_t::init(void)
 {
 	// Monospace font.
-	fntMonospace = QFont(QLatin1String("Monospace"));
+	fntMonospace = QApplication::font();
+	fntMonospace.setFamily(QLatin1String("Monospace"));
 	fntMonospace.setStyleHint(QFont::TypeWriter);
 
 	// Size hint for the monospace column.
+	// NOTE: Needs an extra space, possibly due to margins...
 	QFontMetrics fm(fntMonospace);
 	szValueHint = fm.size(Qt::TextSingleLine,
-		QLatin1String("0123456789ABCDEF0123456789ABCDEF"));
+		QLatin1String("0123456789ABCDEF0123456789ABCDEF "));
 
 	// Initialize the COL_ISVALID pixmaps.
 	// TODO: Handle SP_MessageBoxQuestion on non-Windows systems,
