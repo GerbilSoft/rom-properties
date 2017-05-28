@@ -96,9 +96,9 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	d->ui.treeKeyStore->setItemDelegate(new KeyStoreItemDelegate(this));
 
 	// Create the dropdown menu for the "Import" button.
-	QMenu *menuImport = new QMenu(tr("&Import"), d->ui.btnImport);
+	QMenu *menuImport = new QMenu(tr("I&mport"), d->ui.btnImport);
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
-	menuImport->addAction(d->ui.actionImport3DSboot9firm);
+	menuImport->addAction(d->ui.actionImport3DSboot9bin);
 	menuImport->addAction(d->ui.actionImport3DSaeskeydb);
 	d->ui.btnImport->setMenu(menuImport);
 
@@ -163,8 +163,6 @@ void KeyManagerTab::save(QSettings *pSettings)
  */
 void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 {
-	// TODO: Move this to common code in libromdata.
-
 	QString filename = QFileDialog::getOpenFileName(this,
 		tr("Select Wii keys.bin File"),	// caption
 		QString(),			// dir (TODO)
@@ -174,4 +172,20 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 
 	Q_D(KeyManagerTab);
 	d->keyStore->importWiiKeysBin(filename);
+}
+
+/**
+ * Import keys from 3DS boot9.bin.
+ */
+void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
+{
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Select 3DS boot9.bin File"),	// caption
+		QString(),			// dir (TODO)
+		tr("boot9.bin (boot9.bin);;Binary Files (*.bin);;All Files (*.*)"));
+	if (filename.isEmpty())
+		return;
+
+	Q_D(KeyManagerTab);
+	d->keyStore->import3DSboot9bin(filename);
 }

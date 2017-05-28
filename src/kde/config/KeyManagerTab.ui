@@ -60,9 +60,9 @@
     <string>Wii keys.bin</string>
    </property>
   </action>
-  <action name="actionImport3DSboot9firm">
+  <action name="actionImport3DSboot9bin">
    <property name="text">
-    <string>3DS boot9.firm</string>
+    <string>3DS boot9.bin</string>
    </property>
   </action>
   <action name="actionImport3DSaeskeydb">

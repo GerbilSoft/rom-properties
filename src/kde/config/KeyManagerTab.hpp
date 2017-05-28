@@ -80,6 +80,11 @@ class KeyManagerTab : public ITab
 		 * Import keys from Wii keys.bin. (BootMii format)
 		 */
 		void on_actionImportWiiKeysBin_triggered(void);
+
+		/**
+		 * Import keys from 3DS boot9.bin.
+		 */
+		void on_actionImport3DSboot9bin_triggered(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__ */

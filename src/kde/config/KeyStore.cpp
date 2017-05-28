@@ -47,6 +47,9 @@ using namespace LibRomData;
 #include <memory>
 using std::unique_ptr;
 
+// zlib for crc32()
+#include <zlib.h>
+
 // Qt includes.
 #include <QtCore/QVector>
 
@@ -830,7 +833,10 @@ int KeyStore::importWiiKeysBin(const QString &filename)
 	size_t size = file->read(buf, sizeof(buf));
 	if (size != 1024) {
 		// TODO: Show an error message.
-		return -EIO;
+		int err = file->lastError();
+		if (err == 0)
+			err = EIO;
+		return -err;
 	}
 	file->close();
 
@@ -843,7 +849,7 @@ int KeyStore::importWiiKeysBin(const QString &filename)
 		return -EIO;
 	}
 
-	// Import keys.
+	// Import the keys.
 	Q_D(KeyStore);
 	int keysImported = 0;
 
@@ -893,6 +899,117 @@ int KeyStore::importWiiKeysBin(const QString &filename)
 			pKey->status = Key::Status_OK;
 			keysImported++;
 			emit keyChanged(KeyStorePrivate::Section_WiiPartition, kba->keyIdx);
+			emit keyChanged(keyIdxStart + kba->keyIdx);
+		}
+	}
+
+	return keysImported;
+}
+
+/**
+ * Import a 3DS boot9.bin file.
+ * TODO: Return a list of keys that were imported
+ * and display them in a message bar thing.
+ * @param filename boot9.bin filename.
+ * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ */
+int KeyStore::import3DSboot9bin(const QString &filename)
+{
+	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	if (!file) {
+		// TODO: Show an error message.
+		return -EIO;
+	}
+
+	// File may be:
+	// - 65,536 bytes: Unprotected + Protected boot9
+	// - 32,768 bytes: Protected boot9
+	const int64_t fileSize = file->size();
+	if (fileSize != 65536 && fileSize != 32768) {
+		// TODO: Show an error message.
+		return -EIO;
+	}
+
+	// Read the protected section into memory.
+	unique_ptr<uint8_t[]> buf(new uint8_t[32768]);
+	if (fileSize == 65536) {
+		// Seek to the second half.
+		int ret = file->seek(32768);
+		if (ret != 0) {
+			// Seek error.
+			int err = file->lastError();
+			if (err == 0)
+				err = EIO;
+			return -err;
+		}
+	}
+	size_t size = file->read(buf.get(), 32768);
+	if (size != 32768) {
+		// TODO: Show an error message.
+		int err = file->lastError();
+		if (err == 0)
+			err = EIO;
+		return -err;
+	}
+	file->close();
+
+	// Check the CRC32.
+	// NOTE: CRC32 isn't particularly strong, so we'll still
+	// verify the keys before importing them.
+	const uint32_t crc = crc32(0, buf.get(), 32768);
+	if (crc != 0x9D50A525) {
+		// Incorrect CRC32.
+		return -EIO;
+	}
+
+	// Import the keys.
+	Q_D(KeyStore);
+	int keysImported = 0;
+
+	// Starting index of Wii keys.
+	const int keyIdxStart = d->sections[KeyStorePrivate::Section_N3DSVerifyKeys].keyIdxStart;
+
+	// Key addresses and indexes.
+	struct KeyBinAddress {
+		uint32_t address;
+		int keyIdx;
+	};
+	static const KeyBinAddress keyBinAddress[] = {
+		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
+		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
+		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
+		{0x5E20, N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX},
+	};
+
+	// Check the keys.
+	for (int i = ARRAY_SIZE(keyBinAddress)-1; i >= 0; i--) {
+		const KeyBinAddress *const kba = &keyBinAddress[i];
+		Key *const pKey = &d->keys[keyIdxStart + kba->keyIdx];
+		if (pKey->status == Key::Status_OK) {
+			// Key is already OK. Don't bother with it.
+			continue;
+		}
+		const uint8_t *const keyData = &buf[kba->address];
+
+		// Check if the key in the binary file is correct.
+		const uint8_t *verifyData = N3DSVerifyKeys::encryptionVerifyData_static(kba->keyIdx);
+		assert(verifyData != nullptr);
+		if (!verifyData) {
+			// Can't verify this key...
+			// Import it anyway.
+			pKey->value = d->binToHexStr(keyData, 16);
+			pKey->status = Key::Status_Unknown;
+			continue;
+		}
+
+		// Verify the key.
+		int ret = d->verifyKeyData(keyData, verifyData, 16);
+		if (ret == 0) {
+			// Found a match!
+			pKey->value = d->binToHexStr(keyData, 16);
+			pKey->status = Key::Status_OK;
+			keysImported++;
+			emit keyChanged(KeyStorePrivate::Section_N3DSVerifyKeys, kba->keyIdx);
 			emit keyChanged(keyIdxStart + kba->keyIdx);
 		}
 	}

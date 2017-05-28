@@ -180,6 +180,15 @@ class KeyStore : public QObject
 		 * @return Number of keys imported if the file is valid; negative POSIX error code on error.
 		 */
 		int importWiiKeysBin(const QString &filename);
+
+		/**
+		 * Import a 3DS boot9.bin file.
+		 * TODO: Return a list of keys that were imported
+		 * and display them in a message bar thing.
+		 * @param filename boot9.bin filename.
+		 * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+		 */
+		int import3DSboot9bin(const QString &filename);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */
