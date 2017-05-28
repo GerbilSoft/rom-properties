@@ -71,6 +71,14 @@ class KeyStorePrivate
 		 */
 		void reset(void);
 
+	public:
+		/**
+		 * Convert a string that may contain kanji to hexadecimal.
+		 * @param str String.
+		 * @return Converted string, or empty string on error.
+		 */
+		static QString convertKanjiToHex(const QString &str);
+
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -93,6 +101,9 @@ class KeyStorePrivate
 		}
 
 		static const EncKeyFns_t encKeyFns[];
+
+		// Hexadecimal lookup table.
+		static const char hex_lookup[16];
 };
 
 /** KeyStorePrivate **/
@@ -101,6 +112,12 @@ const KeyStorePrivate::EncKeyFns_t KeyStorePrivate::encKeyFns[] = {
 	ENCKEYFNS(WiiPartition,    _RP("Nintendo Wii AES Keys")),
 	ENCKEYFNS(CtrKeyScrambler, _RP("Nintendo 3DS Key Scrambler Constants")),
 	ENCKEYFNS(N3DSVerifyKeys,  _RP("Nintendo 3DS AES Keys")),
+};
+
+// Hexadecimal lookup table.
+const char KeyStorePrivate::hex_lookup[16] = {
+	'0','1','2','3','4','5','6','7',
+	'8','9','A','B','C','D','E','F',
 };
 
 KeyStorePrivate::KeyStorePrivate(KeyStore *q)
@@ -178,12 +195,6 @@ void KeyStorePrivate::reset(void)
 
 	// TODO: Move conversion to KeyManager?
 	char buf[64+1];
-
-	// Hexadecimal lookup table.
-	static const char hex_lookup[16] = {
-		'0','1','2','3','4','5','6','7',
-		'8','9','A','B','C','D','E','F',
-	};
 
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
@@ -271,6 +282,48 @@ void KeyStorePrivate::reset(void)
 		Q_Q(KeyStore);
 		emit q->allKeysChanged();
 	}
+}
+
+/**
+ * Convert a string that may contain kanji to hexadecimal.
+ * @param str String.
+ * @return Converted string, or empty string on error.
+ */
+QString KeyStorePrivate::convertKanjiToHex(const QString &str)
+{
+	// Check for non-ASCII characters.
+	// TODO: Also check for non-hex digits?
+	bool hasNonAscii = false;
+	foreach (QChar chr, str) {
+		if (chr.unicode() >= 128) {
+			// Found a non-ASCII character.
+			hasNonAscii = true;
+			break;
+		}
+	}
+
+	if (!hasNonAscii) {
+		// No non-ASCII characters.
+		return str;
+	}
+
+	// We're expecting 7 kanji symbols,
+	// but we'll take any length.
+
+	// Convert to a UTF-16LE hex string, starting with U+FEFF.
+	// TODO: Combine with the first loop?
+	QString hexstr;
+	hexstr.reserve(4+(hexstr.size()*4));
+	hexstr += QLatin1String("FFFE");
+	foreach (const QChar chr, str) {
+		const ushort u16 = chr.unicode();
+		hexstr += QChar((ushort)hex_lookup[(u16 >>  4) & 0x0F]);
+		hexstr += QChar((ushort)hex_lookup[(u16 >>  0) & 0x0F]);
+		hexstr += QChar((ushort)hex_lookup[(u16 >> 12) & 0x0F]);
+		hexstr += QChar((ushort)hex_lookup[(u16 >>  8) & 0x0F]);
+	}
+
+	return hexstr;
 }
 
 /** KeyStore **/
@@ -430,7 +483,21 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 	const KeyStorePrivate::Section &section = d->sections[sectIdx];
 	Key &key = d->keys[section.keyIdxStart + keyIdx];
 	if (key.value != value) {
-		key.value = value;
+		if (key.allowKanji) {
+			// Convert kanji to hexadecimal if needed.
+			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+			if (convKey.isEmpty()) {
+				// Invalid kanji key.
+				return -EINVAL;
+			}
+			key.value = convKey;
+		} else {
+			// Hexadecimal only.
+			// TODO: Validate it here? We're already
+			// using a validator in the UI...
+			key.value = value;
+		}
+
 		emit keyChanged(sectIdx, keyIdx);
 		emit keyChanged(section.keyIdxStart + keyIdx);
 	}
@@ -454,12 +521,22 @@ int KeyStore::setKey(int idx, const QString &value)
 	if (idx < 0 || idx >= d->keys.size())
 		return -ERANGE;
 
-	// TODO: Verify the key.
-	// If allowKanji is true, check if the key is kanji
-	// and convert it to UTF-16LE hexadecimal.
 	Key &key = d->keys[idx];
 	if (key.value != value) {
-		key.value = value;
+		if (key.allowKanji) {
+			// Convert kanji to hexadecimal if needed.
+			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
+			if (convKey.isEmpty()) {
+				// Invalid kanji key.
+				return -EINVAL;
+			}
+			key.value = convKey;
+		} else {
+			// Hexadecimal only.
+			// TODO: Validate it here? We're already
+			// using a validator in the UI...
+			key.value = value;
+		}
 
 		// Figure out what section this key is in.
 		int sectIdx = -1;
