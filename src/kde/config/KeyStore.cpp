@@ -103,6 +103,15 @@ class KeyStorePrivate
 
 	public:
 		/**
+		 * Verify a key.
+		 * @param keyData	[in] Key data. (16 bytes)
+		 * @param verifyData	[in] Key verification data. (16 bytes)
+		 * @param len		[in] Length of keyData and verifyData. (must be 16)
+		 * @return 0 if the key is verified; non-zero if not.
+		 */
+		int verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len);
+
+		/**
 		 * Verify a key and update its status.
 		 * @param sectIdx Section index.
 		 * @param keyIdx Key index.
@@ -407,6 +416,39 @@ QString KeyStorePrivate::convertKanjiToHex(const QString &str)
 }
 
 /**
+ * Verify a key.
+ * @param keyData	[in] Key data. (16 bytes)
+ * @param verifyData	[in] Key verification data. (16 bytes)
+ * @param len		[in] Length of keyData and verifyData. (must be 16)
+ * @return 0 if the key is verified; non-zero if not.
+ */
+int KeyStorePrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len)
+{
+	assert(len == 16);
+	if (len != 16) {
+		// Invalid key data.
+		return -EINVAL;
+	}
+
+	// Attempt to decrypt the verification data using the key.
+	uint8_t testData[16];
+	memcpy(testData, verifyData, sizeof(testData));
+	int ret = cipher->setKey(keyData, len);
+	if (ret != 0) {
+		// Error setting the key.
+		return -EIO;
+	}
+	unsigned int size = cipher->decrypt(testData, sizeof(testData));
+	if (size != sizeof(testData)) {
+		// Error decrypting the data.
+		return -EIO;
+	}
+
+	// Check if the decrypted data is correct.
+	return (memcmp(testData, KeyManager::verifyTestString, sizeof(testData)) != 0);
+}
+
+/**
  * Verify a key and update its status.
  * @param sectIdx Section index.
  * @param keyIdx Key index.
@@ -461,24 +503,9 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
 		return;
 	}
 
-	// Attempt to decrypt the verification data using the key.
-	uint8_t testData[16];
-	memcpy(testData, verifyData, sizeof(testData));
-	ret = cipher->setKey(keyBytes, sizeof(keyBytes));
-	if (ret != 0) {
-		// Error setting the key.
-		key.status = KeyStore::Key::Status_Unknown;
-		return;
-	}
-	unsigned int size = cipher->decrypt(testData, sizeof(testData));
-	if (size != sizeof(testData)) {
-		// Error decrypting the data.
-		key.status = KeyStore::Key::Status_Unknown;
-		return;
-	}
-
-	// Check if the decrypted data is correct.
-	if (!memcmp(testData, KeyManager::verifyTestString, sizeof(testData))) {
+	// Verify the key.
+	ret = verifyKeyData(keyBytes, verifyData, sizeof(keyBytes));
+	if (ret == 0) {
 		// Decrypted data is correct.
 		key.status = KeyStore::Key::Status_OK;
 	} else {
