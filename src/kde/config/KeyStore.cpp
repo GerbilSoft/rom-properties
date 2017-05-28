@@ -172,6 +172,9 @@ void KeyStorePrivate::reset(void)
 	if (!keyManager)
 		return;
 
+	// Have any keys actually changed?
+	bool hasChanged = false;
+
 	// TODO: Move conversion to KeyManager?
 	char buf[64+1];
 
@@ -223,36 +226,50 @@ void KeyStorePrivate::reset(void)
 							pBuf[1] = hex_lookup[*pKey & 0x0F];
 						}
 						*pBuf = 0;
-						key->value = QLatin1String(buf);
+						if (key->value != QLatin1String(buf)) {
+							key->value = QLatin1String(buf);
+							hasChanged = true;
+						}
 
 						// TODO: Verify the key.
 						key->status = KeyStore::Key::Status_Unknown;
 					} else {
 						// Key is invalid...
 						// TODO: Show an error message?
-						key->value.clear();
+						if (!key->value.isEmpty()) {
+							key->value.clear();
+							hasChanged = true;
+						}
 						key->status = KeyStore::Key::Status_NotAKey;
 					}
 					break;
 
 				case KeyManager::VERIFY_KEY_INVALID:
 					// Key is invalid. (i.e. not in the correct format)
-					key->value.clear();
+					if (!key->value.isEmpty()) {
+						key->value.clear();
+						hasChanged = true;
+					}
 					key->status = KeyStore::Key::Status_NotAKey;
 					break;
 
 				default:
 					// Assume the key wasn't found.
-					key->value.clear();
+					if (!key->value.isEmpty()) {
+						key->value.clear();
+						hasChanged = true;
+					}
 					key->status = KeyStore::Key::Status_Empty;
 					break;
 			}
 		}
 	}
 
-	// TODO: Only emit this signal if keys actually changed?
-	Q_Q(KeyStore);
-	emit q->allKeysChanged();
+	if (hasChanged) {
+		// Keys have changed.
+		Q_Q(KeyStore);
+		emit q->allKeysChanged();
+	}
 }
 
 /** KeyStore **/
