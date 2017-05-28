@@ -118,7 +118,8 @@ void KeyManagerTab::changeEvent(QEvent *event)
  */
 void KeyManagerTab::reset(void)
 {
-	// TODO
+	Q_D(KeyManagerTab);
+	d->keyStore->reset();
 }
 
 /**
