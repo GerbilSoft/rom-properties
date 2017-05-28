@@ -141,8 +141,17 @@ class KeyStorePrivate
 
 		static const EncKeyFns_t encKeyFns[];
 
+	public:
 		// Hexadecimal lookup table.
 		static const char hex_lookup[16];
+
+		/**
+		 * Convert a binary key to a hexadecimal string.
+		 * @param data	[in] Binary key.
+		 * @param len	[in] Length of binary key, in bytes.
+		 * @return Hexadecimal string.
+		 */
+		static QString binToHexStr(const uint8_t *data, unsigned int len);
 };
 
 /** KeyStorePrivate **/
@@ -279,9 +288,6 @@ void KeyStorePrivate::reset(void)
 	// Have any keys actually changed?
 	bool hasChanged = false;
 
-	// TODO: Move conversion to KeyManager?
-	char buf[64+1];
-
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
 	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
@@ -292,12 +298,12 @@ void KeyStorePrivate::reset(void)
 			continue;
 
 		// Starting key.
-		KeyStore::Key *key = &keys[keyIdxStart];
+		KeyStore::Key *pKey = &keys[keyIdxStart];
 		// Increment keyIdxStart for the next section.
 		keyIdxStart += keyCount;
 
 		// Get the keys.
-		for (int i = 0; i < keyCount; i++, key++) {
+		for (int i = 0; i < keyCount; i++, pKey++) {
 			// Key name.
 			const char *const keyName = encSys->pfnKeyName(i);
 			assert(keyName != nullptr);
@@ -317,15 +323,9 @@ void KeyStorePrivate::reset(void)
 					assert(keyData.length > 0);
 					assert(keyData.length <= 32);
 					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
-						const uint8_t *pKey = keyData.key;
-						char *pBuf = buf;
-						for (unsigned int i = keyData.length; i > 0; i--, pKey++, pBuf += 2) {
-							pBuf[0] = hex_lookup[*pKey >> 4];
-							pBuf[1] = hex_lookup[*pKey & 0x0F];
-						}
-						*pBuf = 0;
-						if (key->value != QLatin1String(buf)) {
-							key->value = QLatin1String(buf);
+						QString value = binToHexStr(keyData.key, keyData.length);
+						if (pKey->value != value) {
+							pKey->value = value;
 							hasChanged = true;
 						}
 
@@ -334,30 +334,30 @@ void KeyStorePrivate::reset(void)
 					} else {
 						// Key is invalid...
 						// TODO: Show an error message?
-						if (!key->value.isEmpty()) {
-							key->value.clear();
+						if (!pKey->value.isEmpty()) {
+							pKey->value.clear();
 							hasChanged = true;
 						}
-						key->status = KeyStore::Key::Status_NotAKey;
+						pKey->status = KeyStore::Key::Status_NotAKey;
 					}
 					break;
 
 				case KeyManager::VERIFY_KEY_INVALID:
 					// Key is invalid. (i.e. not in the correct format)
-					if (!key->value.isEmpty()) {
-						key->value.clear();
+					if (!pKey->value.isEmpty()) {
+						pKey->value.clear();
 						hasChanged = true;
 					}
-					key->status = KeyStore::Key::Status_NotAKey;
+					pKey->status = KeyStore::Key::Status_NotAKey;
 					break;
 
 				default:
 					// Assume the key wasn't found.
-					if (!key->value.isEmpty()) {
-						key->value.clear();
+					if (!pKey->value.isEmpty()) {
+						pKey->value.clear();
 						hasChanged = true;
 					}
-					key->status = KeyStore::Key::Status_Empty;
+					pKey->status = KeyStore::Key::Status_Empty;
 					break;
 			}
 		}
@@ -512,6 +512,30 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
 		// Decrypted data is wrong.
 		key.status = KeyStore::Key::Status_Incorrect;
 	}
+}
+
+/**
+ * Convert a binary key to a hexadecimal string.
+ * @param data	[in] Binary key.
+ * @param len	[in] Length of binary key, in bytes.
+ * @return Hexadecimal string.
+ */
+QString KeyStorePrivate::binToHexStr(const uint8_t *data, unsigned int len)
+{
+	assert(data != nullptr);
+	assert(len > 0);
+	assert(len <= 64);
+	if (!data || len == 0 || len > 64)
+		return QString();
+
+	QString hexstr;
+	hexstr.reserve(len*2);
+	for (; len > 0; len--, data++) {
+		hexstr += QChar((ushort)KeyStorePrivate::hex_lookup[*data >> 4]);
+		hexstr += QChar((ushort)KeyStorePrivate::hex_lookup[*data & 0x0F]);
+	}
+
+	return hexstr;
 }
 
 /** KeyStore **/
