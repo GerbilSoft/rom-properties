@@ -56,6 +56,7 @@ class KeyStore : public QObject
 			QString name;		// Key name.
 			QString value;		// Key value. (as QString for display purposes)
 			uint8_t status;		// Key status. (See the Status enum.)
+			bool modified;		// True if the key has been modified since last reset() or save().
 			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
 

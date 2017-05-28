@@ -255,6 +255,7 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 
 			// Key is empty initially.
 			key.status = KeyStore::Key::Status_Empty;
+			key.modified = false;
 
 			// Allow kanji for twl-scrambler.
 			key.allowKanji = (key.name == QLatin1String("twl-scrambler"));
@@ -392,6 +393,9 @@ void KeyStorePrivate::reset(void)
 					pKey->status = KeyStore::Key::Status_Empty;
 					break;
 			}
+
+			// Key is no longer modified.
+			pKey->modified = false;
 		}
 	}
 
@@ -449,8 +453,15 @@ int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, c
 		if (!verifyData) {
 			// Can't verify this key...
 			// Import it anyway.
-			pKey->value = binToHexStr(keyData, 16);
-			pKey->status = KeyStore::Key::Status_Unknown;
+			const QString new_value = binToHexStr(keyData, 16);
+			if (pKey->value != new_value) {
+				pKey->value = new_value;
+				pKey->status = KeyStore::Key::Status_Unknown;
+				pKey->modified = true;
+				keysImported++;
+				emit q->keyChanged(sectIdx, kba->keyIdx);
+				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+			}
 			continue;
 		}
 
@@ -458,11 +469,15 @@ int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, c
 		int ret = verifyKeyData(keyData, verifyData, 16);
 		if (ret == 0) {
 			// Found a match!
-			pKey->value = binToHexStr(keyData, 16);
-			pKey->status = KeyStore::Key::Status_OK;
-			keysImported++;
-			emit q->keyChanged(sectIdx, kba->keyIdx);
-			emit q->keyChanged(keyIdxStart + kba->keyIdx);
+			const QString new_value = binToHexStr(keyData, 16);
+			if (pKey->value != new_value) {
+				pKey->value = binToHexStr(keyData, 16);
+				pKey->status = KeyStore::Key::Status_OK;
+				pKey->modified = true;
+				keysImported++;
+				emit q->keyChanged(sectIdx, kba->keyIdx);
+				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+			}
 		}
 	}
 
@@ -811,6 +826,7 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 
 	if (key.value != new_value) {
 		key.value = new_value;
+		key.modified = true;
 		// Verify the key.
 		d->verifyKey(sectIdx, keyIdx);
 		// Key has changed.
@@ -862,6 +878,7 @@ int KeyStore::setKey(int idx, const QString &value)
 
 	if (key.value != new_value) {
 		key.value = new_value;
+		key.modified = true;
 		int sectIdx, keyIdx;
 		bool bRet = d->flatKeyToSectKey(idx, sectIdx, keyIdx);
 		assert(bRet);
