@@ -43,17 +43,35 @@ KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)
 	: super(parent)
 {
 	// Initialize the validators.
+	// QRegularExpressionValidator is preferred because it's
+	// significantly faster, but it was added in Qt 5.1, so
+	// we need to use QRegExpValidator if it isn't available.
+
 	// Hexadecimal
 	static const char regex_validHexKey[] = "[0-9a-fA-F]*";
+
 	// Hexadecimal + Kanji
 	// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
-	// NOTE: QRegExp doesn't support named Unicode properties.
+#if QT_VERSION >= 0x050100
+	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\p{Han}]*";
+#else /* QT_VERSION < 0x050100 */
+	// QRegExp doesn't support named Unicode properties.
 	static const char regex_validHexKeyOrKanji[] = "[0-9a-fA-F\\x3400-\\x4DB5\\x4E00-\\x9FCB\\xF900-\\xFA6A]*";
+#endif
 
+#if QT_VERSION >= 0x050100
+	// Create QRegularExpressionValidator objects.
+	m_validHexKey = new QRegularExpressionValidator(
+		QRegularExpression(QLatin1String(regex_validHexKey)), this);
+	m_validHexKeyOrKanji = new QRegularExpressionValidator(
+		QRegularExpression(QLatin1String(regex_validHexKeyOrKanji)), this);
+#else /* QT_VERSION < 0x050100 */
+	// Create QRegExpValidator objects.
 	m_validHexKey = new QRegExpValidator(
 		QRegExp(QLatin1String(regex_validHexKey)), this);
 	m_validHexKeyOrKanji = new QRegExpValidator(
 		QRegExp(QLatin1String(regex_validHexKeyOrKanji)), this);
+#endif
 }
 
 QWidget *KeyStoreItemDelegate::createEditor(QWidget *parent,
