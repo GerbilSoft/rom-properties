@@ -53,6 +53,15 @@ class KeyManagerTabPrivate
 		 * Resize the QTreeView's columns to fit their contents.
 		 */
 		void resizeColumnsToContents(void);
+
+		/**
+		 * Show key import return status.
+		 * @param filename Filename.
+		 * @param keyType Key type.
+		 * @param iret ImportReturn.
+		 */
+		void showKeyImportReturnStatus(const QString &filename,
+			const QString &keyType, const KeyStore::ImportReturn &iret);
 };
 
 /** KeyManagerTabPrivate **/
@@ -76,6 +85,90 @@ void KeyManagerTabPrivate::resizeColumnsToContents(void)
 		ui.treeKeyStore->resizeColumnToContents(i);
 	}
 	ui.treeKeyStore->resizeColumnToContents(num_sections);
+}
+
+/**
+ * Show key import return status.
+ * @param filename Filename.
+ * @param keyType Key type.
+ * @param iret ImportReturn.
+ */
+void KeyManagerTabPrivate::showKeyImportReturnStatus(
+	const QString &filename,
+	const QString &keyType,
+	const KeyStore::ImportReturn &iret)
+{
+	QString msg;
+	MessageWidget::MsgIcon icon;
+	bool showKeyStats = false;
+	switch (iret.status) {
+		case KeyStore::Import_InvalidParams:
+		default:
+			msg = KeyManagerTab::tr("An invalid parameter was passed to the key importer.\nTHIS IS A BUG; please report this to the developers!");
+			icon = MessageWidget::ICON_CRITICAL;
+			break;
+
+		case KeyStore::Import_OpenError:
+			// TODO: Show error.
+			msg = KeyManagerTab::tr("An error occurred while opening '%1'.")
+				.arg(QFileInfo(filename).fileName());
+			icon = MessageWidget::ICON_CRITICAL;
+			break;
+
+		case KeyStore::Import_ReadError:
+			// TODO: Show error.
+			msg = KeyManagerTab::tr("An error occurred while reading '%1'.")
+				.arg(QFileInfo(filename).fileName());
+			icon = MessageWidget::ICON_CRITICAL;
+			break;
+
+		case KeyStore::Import_InvalidFile:
+			msg = KeyManagerTab::tr("The file '%1' is not a %2 file.")
+				.arg(QFileInfo(filename).fileName())
+				.arg(keyType);
+			icon = MessageWidget::ICON_WARNING;
+			break;
+
+		case KeyStore::Import_NoKeysImported:
+			msg = KeyManagerTab::tr("No keys were imported from '%1'.")
+				.arg(QFileInfo(filename).fileName());
+			icon = MessageWidget::ICON_WARNING;
+			showKeyStats = true;
+			break;
+
+		case KeyStore::Import_KeysImported:
+			msg = KeyManagerTab::tr("%Ln key(s) were imported from '%1'.",
+				 nullptr, iret.keysImportedVerify + iret.keysImportedNoVerify)
+				.arg(QFileInfo(filename).fileName());
+			icon = MessageWidget::ICON_INFORMATION;
+			showKeyStats = true;
+			break;
+	}
+
+	if (showKeyStats) {
+		if (iret.keysExist > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) already exist in the Key Manager.",
+					nullptr, iret.keysExist);
+		}
+		if (iret.keysInvalid > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) were not imported because they are incorrect.",
+					nullptr, iret.keysInvalid);
+		}
+		if (iret.keysImportedVerify > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) have been imported and verified as correct.",
+					nullptr, iret.keysImportedVerify);
+		}
+		if (iret.keysImportedNoVerify > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) have been imported without verification.",
+					nullptr, iret.keysImportedNoVerify);
+		}
+	}
+
+	ui.msgWidget->showMessage(msg, icon);
 }
 
 /** KeyManagerTab **/
@@ -171,7 +264,8 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	d->keyStore->importWiiKeysBin(filename);
+	KeyStore::ImportReturn iret = d->keyStore->importWiiKeysBin(filename);
+	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
 }
 
 /**
@@ -187,5 +281,6 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		return;
 
 	Q_D(KeyManagerTab);
-	d->keyStore->import3DSboot9bin(filename);
+	KeyStore::ImportReturn iret = d->keyStore->import3DSboot9bin(filename);
+	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
 }

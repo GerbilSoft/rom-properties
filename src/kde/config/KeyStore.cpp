@@ -141,14 +141,14 @@ class KeyStorePrivate
 
 		/**
 		 * Import keys from a binary blob.
-		 * FIXME: More comprehensive error messages for the message bar.
 		 * @param sectIdx	[in] Section index.
 		 * @param kba		[in] KeyBinAddress array.
 		 * @param buf		[in] Key buffer.
 		 * @param len		[in] Length of buf.
-		 * @return Number of keys imported, or negative POSIX error code on error.
+		 * @return Key import status.
 		 */
-		int importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
+		KeyStore::ImportReturn importKeysFromBlob(int sectIdx,
+			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -416,10 +416,13 @@ void KeyStorePrivate::reset(void)
  * @param kba		[in] KeyBinAddress array.
  * @param buf		[in] Key buffer.
  * @param len		[in] Length of buf.
- * @return Number of keys imported, or negative POSIX error code on error.
+ * @return Key import status.
  */
-int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
+KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
+	int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
 {
+	KeyStore::ImportReturn iret = {0, 0, 0, 0, 0};
+
 	assert(sectIdx >= 0);
 	assert(sectIdx < sections.size());
 	assert(kba != nullptr);
@@ -428,21 +431,24 @@ int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, c
 	if (sectIdx < 0 || sectIdx >= sections.size() ||
 	    !kba || !buf || len == 0)
 	{
-		return -EINVAL;
+		iret.status = KeyStore::Import_InvalidParams;
+		return iret;
 	}
 
 	Q_Q(KeyStore);
-	int keysImported = 0;
+	bool wereKeysImported = false;
 	const int keyIdxStart = sections[sectIdx].keyIdxStart;
 	for (; kba->keyIdx >= 0; kba++) {
 		KeyStore::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
 		if (pKey->status == KeyStore::Key::Status_OK) {
 			// Key is already OK. Don't bother with it.
+			iret.keysExist++;
 			continue;
 		}
 		assert(kba->address + 16 < len);
 		if (kba->address + 16 > len) {
 			// Out of range...
+			// FIXME: Report an error?
 			continue;
 		}
 		const uint8_t *const keyData = &buf[kba->address];
@@ -458,7 +464,8 @@ int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, c
 				pKey->value = new_value;
 				pKey->status = KeyStore::Key::Status_Unknown;
 				pKey->modified = true;
-				keysImported++;
+				iret.keysImportedNoVerify++;
+				wereKeysImported = true;
 				emit q->keyChanged(sectIdx, kba->keyIdx);
 				emit q->keyChanged(keyIdxStart + kba->keyIdx);
 			}
@@ -474,14 +481,21 @@ int KeyStorePrivate::importKeysFromBlob(int sectIdx, const KeyBinAddress *kba, c
 				pKey->value = binToHexStr(keyData, 16);
 				pKey->status = KeyStore::Key::Status_OK;
 				pKey->modified = true;
-				keysImported++;
+				iret.keysImportedVerify++;
+				wereKeysImported = true;
 				emit q->keyChanged(sectIdx, kba->keyIdx);
 				emit q->keyChanged(keyIdxStart + kba->keyIdx);
 			}
+		} else {
+			// Not a match.
+			iret.keysInvalid++;
 		}
 	}
 
-	return keysImported;
+	iret.status = (wereKeysImported
+		? KeyStore::Import_KeysImported
+		: KeyStore::Import_NoKeysImported);
+	return iret;
 }
 
 /**
@@ -911,29 +925,30 @@ bool KeyStore::hasChanged(void) const
  * @param filename keys.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-int KeyStore::importWiiKeysBin(const QString &filename)
+KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
 {
+	ImportReturn iret = {0, 0, 0, 0, 0};
+
 	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
 	if (!file) {
-		// TODO: Show an error message.
-		return -EIO;
+		iret.status = Import_OpenError;
+		return iret;
 	}
 
 	// File must be 1,024 bytes.
 	if (file->size() != 1024) {
-		// TODO: Show an error message.
-		return -EIO;
+		iret.status = Import_InvalidFile;
+		return iret;
 	}
 
 	// Read the entire 1,024 bytes.
 	uint8_t buf[1024];
 	size_t size = file->read(buf, sizeof(buf));
 	if (size != 1024) {
-		// TODO: Show an error message.
-		int err = file->lastError();
-		if (err == 0)
-			err = EIO;
-		return -err;
+		// Read error.
+		// TODO: file->lastError()?
+		iret.status = Import_ReadError;
+		return iret;
 	}
 	file->close();
 
@@ -942,8 +957,8 @@ int KeyStore::importWiiKeysBin(const QString &filename)
 	static const char BackupMii_magic[] = "BackupMii v1";
 	if (memcmp(buf, BackupMii_magic, sizeof(BackupMii_magic)-1) != 0) {
 		// TODO: Check for v0.
-		// TODO: Show an error message.
-		return -EIO;
+		iret.status = Import_InvalidFile;
+		return iret;
 	}
 
 	// TODO:
@@ -970,12 +985,14 @@ int KeyStore::importWiiKeysBin(const QString &filename)
  * @param filename boot9.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-int KeyStore::import3DSboot9bin(const QString &filename)
+KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
 {
+	ImportReturn iret = {0, 0, 0, 0, 0};
+
 	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
 	if (!file) {
-		// TODO: Show an error message.
-		return -EIO;
+		iret.status = Import_OpenError;
+		return iret;
 	}
 
 	// File may be:
@@ -983,8 +1000,8 @@ int KeyStore::import3DSboot9bin(const QString &filename)
 	// - 32,768 bytes: Protected boot9
 	const int64_t fileSize = file->size();
 	if (fileSize != 65536 && fileSize != 32768) {
-		// TODO: Show an error message.
-		return -EIO;
+		iret.status = Import_InvalidFile;
+		return iret;
 	}
 
 	// Read the protected section into memory.
@@ -994,19 +1011,15 @@ int KeyStore::import3DSboot9bin(const QString &filename)
 		int ret = file->seek(32768);
 		if (ret != 0) {
 			// Seek error.
-			int err = file->lastError();
-			if (err == 0)
-				err = EIO;
-			return -err;
+			iret.status = Import_ReadError;
+			return iret;
 		}
 	}
 	size_t size = file->read(buf.get(), 32768);
 	if (size != 32768) {
-		// TODO: Show an error message.
-		int err = file->lastError();
-		if (err == 0)
-			err = EIO;
-		return -err;
+		// Read error.
+		iret.status = Import_ReadError;
+		return iret;
 	}
 	file->close();
 
@@ -1016,7 +1029,8 @@ int KeyStore::import3DSboot9bin(const QString &filename)
 	const uint32_t crc = crc32(0, buf.get(), 32768);
 	if (crc != 0x9D50A525) {
 		// Incorrect CRC32.
-		return -EIO;
+		iret.status = Import_InvalidFile;
+		return iret;
 	}
 
 	// Key addresses and indexes.

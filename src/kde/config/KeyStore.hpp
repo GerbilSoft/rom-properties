@@ -173,23 +173,43 @@ class KeyStore : public QObject
 		void modified(void);
 
 	public:
+		enum ImportStatus {
+			Import_InvalidParams = 0,	// Invalid parameters. (Should not happen!)
+			Import_OpenError,	// Could not open the file. (TODO: More info?)
+			Import_ReadError,	// Could not read the file. (TODO: More info?)
+			Import_InvalidFile,	// File is not the correct type.
+			Import_NoKeysImported,	// No keys were imported.
+			Import_KeysImported,	// Keys were imported.
+		};
+
+		/**
+		 * Return data for the import functions.
+		 */
+		struct ImportReturn {
+			uint8_t status;			/* ImportStatus */
+			uint8_t keysExist;		// Keys not imported because they're already in the file.
+			uint8_t keysInvalid;		// Keys not imported because they didn't verify.
+			uint8_t keysImportedVerify;	// Keys imported and verified.
+			uint8_t keysImportedNoVerify;	// Keys imported but unverified.
+		};
+
 		/**
 		 * Import a Wii keys.bin file.
 		 * TODO: Return a list of keys that were imported
 		 * and display them in a message bar thing.
 		 * @param filename keys.bin filename.
-		 * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+		 * @return Key import status.
 		 */
-		int importWiiKeysBin(const QString &filename);
+		ImportReturn importWiiKeysBin(const QString &filename);
 
 		/**
 		 * Import a 3DS boot9.bin file.
 		 * TODO: Return a list of keys that were imported
 		 * and display them in a message bar thing.
 		 * @param filename boot9.bin filename.
-		 * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+		 * @return Key import status.
 		 */
-		int import3DSboot9bin(const QString &filename);
+		ImportReturn import3DSboot9bin(const QString &filename);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */

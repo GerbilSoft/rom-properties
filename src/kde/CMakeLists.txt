@@ -18,6 +18,8 @@ SET(rom-properties-kde_SRCS
 	config/KeyStore.cpp
 	config/KeyStoreModel.cpp
 	config/KeyStoreItemDelegate.cpp
+	config/MessageWidget.cpp
+	config/MessageWidgetStack.cpp
 	)
 SET(rom-properties-kde_H
 	RomPropertiesDialogPlugin.hpp
@@ -33,6 +35,8 @@ SET(rom-properties-kde_H
 	config/KeyStore.hpp
 	config/KeyStoreModel.hpp
 	config/KeyStoreItemDelegate.hpp
+	config/MessageWidget.hpp
+	config/MessageWidgetStack.hpp
 	)
 SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
