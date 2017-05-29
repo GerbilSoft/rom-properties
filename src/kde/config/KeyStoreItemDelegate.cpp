@@ -29,7 +29,9 @@
 #include <cassert>
 
 // Qt includes.
+#include <QtGui/QPainter>
 #include <QtGui/QValidator>
+#include <QApplication>
 #include <QLineEdit>
 
 #if QT_VERSION > 0x050000
@@ -117,4 +119,38 @@ void KeyStoreItemDelegate::updateEditorGeometry(QWidget *editor,
 {
 	Q_UNUSED(index);
 	editor->setGeometry(option.rect);
+}
+
+void KeyStoreItemDelegate::paint(QPainter *painter,
+	const QStyleOptionViewItem &option,
+	const QModelIndex &index) const
+{
+	if (!index.isValid() || index.column() != KeyStoreModel::COL_ISVALID) {
+		// Index is invalid, or this isn't the "Is Valid?" column.
+		// Use the default paint().
+		super::paint(painter, option, index);
+		return;
+	}
+
+	// Get the QPixmap from the QModelIndex.
+	QPixmap pxm = index.data(Qt::DecorationRole).value<QPixmap>();
+	if (pxm.isNull()) {
+		// NULL QPixmap.
+		// Use the default paint().
+		super::paint(painter, option, index);
+		return;
+	}
+
+	// Qt4: Need to use QStyleOptionViewItemV4.
+	const QStyleOptionViewItemV4 &optionv4 = option;
+
+	// Draw the style element.
+	QStyle *const style = optionv4.widget ? optionv4.widget->style() : QApplication::style();
+	style->drawControl(QStyle::CE_ItemViewItem, &optionv4, painter, optionv4.widget);
+
+	// Center-align the image within the rectangle.
+	// TODO: Use Qt::TextAlignmentRole?
+	const int x = ((optionv4.rect.width() - pxm.width()) / 2) + optionv4.rect.left();
+	const int y = ((optionv4.rect.height() - pxm.height()) / 2) + optionv4.rect.top();
+	painter->drawPixmap(x, y, pxm);
 }

@@ -42,10 +42,16 @@ class KeyStoreItemDelegate : public QStyledItemDelegate
 		Q_DISABLE_COPY(KeyStoreItemDelegate)
 
 	public:
-		virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override final;
+		virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+			const QModelIndex &index) const override final;
 		virtual void setEditorData(QWidget *editor, const QModelIndex &index) const override final;
-		virtual void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override final;
-		virtual void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override final;
+		virtual void setModelData(QWidget *editor, QAbstractItemModel *model,
+			const QModelIndex &index) const override final;
+		virtual void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+			const QModelIndex &index) const override final;
+
+		virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
+			const QModelIndex &index) const override final;
 
 	protected:
 		// Validators.
