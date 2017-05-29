@@ -149,6 +149,8 @@ void MessageWidgetPrivate::Ui_MessageWidget::setupUi(QWidget *MessageWidget)
 	btnDismiss->setFocusPolicy(Qt::NoFocus);
 	QIcon icon = btnDismiss->style()->standardIcon(QStyle::SP_DialogCloseButton);
 	btnDismiss->setIcon(icon);
+	const int szBtn = iconSz + ((iconSz/4) & ~1);
+	btnDismiss->setMaximumSize(szBtn, szBtn);
 
 	hboxFrame->addWidget(btnDismiss);
 	hboxFrame->setAlignment(btnDismiss, Qt::AlignTop);
