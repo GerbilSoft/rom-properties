@@ -333,6 +333,13 @@ void MessageWidget::showMessage(const QString &msg, MsgIcon icon, int timeout, Q
 	Q_D(MessageWidget);
 	d->ui.lblMessage->setText(msg);
 	d->setIcon(icon);
+	if (icon == ICON_CRITICAL) {
+		// Use white text.
+		d->ui.lblMessage->setStyleSheet(QLatin1String("QLabel { color: white; }"));
+	} else {
+		// Use black text.
+		d->ui.lblMessage->setStyleSheet(QLatin1String("QLabel { color: black; }"));
+	}
 
 	// Set up the timer.
 	d->tmrTimeout->stop();
