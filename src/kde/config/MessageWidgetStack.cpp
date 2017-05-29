@@ -98,6 +98,9 @@ MessageWidgetStack::MessageWidgetStack(QWidget *parent)
 {
 	Q_D(MessageWidgetStack);
 	d->ui.setupUi(this);
+
+	// Hide the stack initially, since we aren't showing any messages.
+	this->hide();
 }
 
 MessageWidgetStack::~MessageWidgetStack()
@@ -130,6 +133,7 @@ void MessageWidgetStack::showMessage(const QString &msg, MessageWidget::MsgIcon 
 	d->ui.vboxMain->addWidget(messageWidget);
 	d->ui.vboxMain->setAlignment(messageWidget, Qt::AlignTop);
 	messageWidget->showMessage(msg, icon, timeout, closeOnDestroy);
+	this->show();
 }
 
 /** Slots. **/
@@ -145,6 +149,11 @@ void MessageWidgetStack::messageWidget_dismissed_slot(QWidget *widget)
 	if (d->messageWidgets.contains(qobject_cast<MessageWidget*>(widget))) {
 		d->messageWidgets.remove(qobject_cast<MessageWidget*>(widget));
 		delete widget;
+	}
+
+	if (d->messageWidgets.isEmpty()) {
+		// No more widgets.
+		this->hide();
 	}
 }
 
