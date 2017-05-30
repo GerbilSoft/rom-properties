@@ -550,7 +550,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 	// Create the NCCHReader.
 	// NOTE: We're not checking isOpen() here.
 	// That should be checked by the caller.
-	if (ciaReader) {
+	if (ciaReader && ciaReader->isOpen()) {
 		// This is an encrypted CIA.
 		// NOTE: NCCHReader will take ownership of the CIAReader,
 		// so we don't have to manage it ourselves.
