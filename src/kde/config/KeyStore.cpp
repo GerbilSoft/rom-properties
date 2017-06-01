@@ -1210,6 +1210,7 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 		// use the same code for both Retail and Debug.
 
 		// Check if the key is OK.
+		bool keyChecked = false;
 		for (int i = 0; i < ARRAY_SIZE(keyIdx); i++) {
 			if (keyIdx[i] < 0)
 				break;
@@ -1218,6 +1219,7 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 			if (pKey->status == Key::Status_OK) {
 				// Key is already OK. Don't bother with it.
 				iret.keysExist++;
+				keyChecked = true;
 				continue;
 			}
 
@@ -1243,6 +1245,7 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 					}
 					// Key can only match either Retail or Debug,
 					// so we're done here.
+					keyChecked = true;
 					break;
 				}
 			} else {
@@ -1263,7 +1266,13 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 				}
 				// Can't determine if this is Retail or Debug,
 				// so continue anyway.
+				keyChecked = true;
 			}
+		}
+
+		if (!keyChecked) {
+			// Key didn't match.
+			iret.keysInvalid++;
 		}
 	} while (++aesKey != aesKeyEnd);
 
