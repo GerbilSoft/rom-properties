@@ -150,6 +150,13 @@ class KeyStorePrivate
 		KeyStore::ImportReturn importKeysFromBlob(int sectIdx,
 			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
+		/**
+		 * Get the encryption key required for aeskeydb.bin.
+		 * @param pKey	[out] Key output.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int getAesKeyDB_key(u128_t *pKey) const;
+
 	private:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -502,6 +509,52 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 		? KeyStore::Import_KeysImported
 		: KeyStore::Import_NoKeysImported);
 	return iret;
+}
+
+/**
+ * Get the encryption key required for aeskeydb.bin.
+ * TODO: Support for Debug systems.
+ * @param pKey	[out] Key output.
+ * @return 0 on success; non-zero on error.
+ */
+int KeyStorePrivate::getAesKeyDB_key(u128_t *pKey) const
+{
+	assert(pKey != nullptr);
+	if (!pKey) {
+		return -EINVAL;
+	}
+
+	// Get the CTR scrambler constant.
+	const Section &sectScrambler = sections[Section_CtrKeyScrambler];
+	const KeyStore::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
+	if (ctr_scrambler.status != KeyStore::Key::Status_OK) {
+		// Key is not correct.
+		return -ENOENT;
+	}
+
+	// Get Slot0x2CKeyX.
+	const Section &sectN3DS = sections[Section_N3DSVerifyKeys];
+	const KeyStore::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
+	if (key_slot0x2CKeyX.status != KeyStore::Key::Status_OK) {
+		// Key is not correct.
+		return -ENOENT;
+	}
+
+	// Convert the keys to bytes.
+	u128_t scrambler, keyX, keyY;
+	int ret = KeyManager::hexStringToBytes(Q2RP(ctr_scrambler.value), scrambler.u8, sizeof(scrambler.u8));
+	if (ret != 0) {
+		return -EIO;
+	}
+	ret = KeyManager::hexStringToBytes(Q2RP(key_slot0x2CKeyX.value), keyX.u8, sizeof(keyX.u8));
+	if (ret != 0) {
+		return -EIO;
+	}
+	// Slot0x2CKeyY for aeskeydb.bin is all 0.
+	memset(keyY.u8, 0, sizeof(keyY.u8));
+
+	// Scramble the key.
+	return CtrKeyScrambler::CtrScramble(pKey, &keyX, &keyY, &scrambler);
 }
 
 /**
@@ -1099,8 +1152,19 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 		uint8_t key[16];
 	} AesKeyInfo;
 
+	// Slot0x2CKeyX is needed to decrypt keys if the
+	// aeskeydb.bin file is encrypted.
 	Q_D(KeyStore);
-	const AesKeyInfo *aesKey = reinterpret_cast<const AesKeyInfo*>(buf.get());
+	unique_ptr<IAesCipher> cipher;
+	u128_t aeskeydb_key;
+	if (d->getAesKeyDB_key(&aeskeydb_key) == 0) {
+		// TODO: Support for debug-encrypted aeskeydb.bin?
+		cipher.reset(AesCipherFactory::create());
+		cipher->setChainingMode(IAesCipher::CM_CTR);
+		cipher->setKey(aeskeydb_key.u8, sizeof(aeskeydb_key.u8));
+	}
+
+	AesKeyInfo *aesKey = reinterpret_cast<AesKeyInfo*>(buf.get());
 	const AesKeyInfo *const aesKeyEnd = reinterpret_cast<const AesKeyInfo*>(buf.get() + fileSize);
 	const int keyIdxStart = d->sections[KeyStorePrivate::Section_N3DSVerifyKeys].keyIdxStart;
 	bool wereKeysImported = false;
@@ -1201,13 +1265,23 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 
 		if (aesKey->isEncrypted) {
 			// Key is encrypted.
-			// TODO: Decrypt the key. (uses 0x2CKeyX with zero KeyY)
-			iret.keysCantDecrypt++;
-			continue;
+			int ret = -1;
+			if (cipher) {
+				// Counter is the first 12 bytes of the AesKeyInfo struct.
+				u128_t ctr;
+				memcpy(ctr.u8, aesKey, 12);
+				memset(&ctr.u8[12], 0, 4);
+				ret = cipher->decrypt(aesKey->key, sizeof(aesKey->key),
+					ctr.u8, sizeof(ctr.u8));
+			}
+			if (ret != sizeof(aesKey->key)) {
+				// Unable to decrypt the key.
+				// FIXME: This might result in the wrong number of
+				// keys being reported in total.
+				iret.keysCantDecrypt++;
+				continue;
+			}
 		}
-
-		// TODO: Split into a separate function so we can
-		// use the same code for both Retail and Debug.
 
 		// Check if the key is OK.
 		bool keyChecked = false;
