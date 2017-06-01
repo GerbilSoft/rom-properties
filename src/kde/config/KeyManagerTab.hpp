@@ -85,6 +85,11 @@ class KeyManagerTab : public ITab
 		 * Import keys from 3DS boot9.bin.
 		 */
 		void on_actionImport3DSboot9bin_triggered(void);
+
+		/**
+		 * Import keys from 3DS aeskeydb.bin.
+		 */
+		void on_actionImport3DSaeskeydb_triggered(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__ */

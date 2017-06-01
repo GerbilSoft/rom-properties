@@ -421,7 +421,7 @@ void KeyStorePrivate::reset(void)
 KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 	int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
 {
-	KeyStore::ImportReturn iret = {0, 0, 0, 0, 0};
+	KeyStore::ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	assert(sectIdx >= 0);
 	assert(sectIdx < sections.size());
@@ -454,7 +454,7 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 		const uint8_t *const keyData = &buf[kba->address];
 
 		// Check if the key in the binary file is correct.
-		const uint8_t *verifyData = encKeyFns[sectIdx].pfnVerifyData(kba->keyIdx);
+		const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(kba->keyIdx);
 		assert(verifyData != nullptr);
 		if (!verifyData) {
 			// Can't verify this key...
@@ -468,6 +468,9 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 				wereKeysImported = true;
 				emit q->keyChanged(sectIdx, kba->keyIdx);
 				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+			} else {
+				// No change.
+				iret.keysExist++;
 			}
 			continue;
 		}
@@ -485,6 +488,9 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 				wereKeysImported = true;
 				emit q->keyChanged(sectIdx, kba->keyIdx);
 				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+			} else {
+				// No change.
+				iret.keysExist++;
 			}
 		} else {
 			// Not a match.
@@ -920,14 +926,12 @@ bool KeyStore::hasChanged(void) const
 
 /**
  * Import a Wii keys.bin file.
- * TODO: Return a list of keys that were imported
- * and display them in a message bar thing.
  * @param filename keys.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
 KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0};
+	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
 	if (!file) {
@@ -980,14 +984,12 @@ KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
 
 /**
  * Import a 3DS boot9.bin file.
- * TODO: Return a list of keys that were imported
- * and display them in a message bar thing.
  * @param filename boot9.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
 KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
 {
-	ImportReturn iret = {0, 0, 0, 0, 0};
+	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
 	if (!file) {
@@ -1047,4 +1049,226 @@ KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
 	Q_D(KeyStore);
 	return d->importKeysFromBlob(KeyStorePrivate::Section_N3DSVerifyKeys,
 		keyBinAddress, buf.get(), 32768);
+}
+
+/**
+ * Import a 3DS aeskeydb.bin file.
+ * @param filename aeskeydb.bin filename.
+ * @return Key import status.
+ */
+KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
+{
+	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
+
+	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	if (!file) {
+		iret.status = Import_OpenError;
+		return iret;
+	}
+
+	// File must be <= 64 KB and a multiple of 32 bytes.
+	const int64_t fileSize = file->size();
+	if (fileSize == 0 || fileSize > 65536 || (fileSize % 32 != 0)) {
+		iret.status = Import_InvalidFile;
+		return iret;
+	}
+
+	// Read the entire file into memory.
+	unique_ptr<uint8_t[]> buf(new uint8_t[fileSize]);
+	size_t size = file->read(buf.get(), fileSize);
+	if (size != (unsigned int)fileSize) {
+		// Read error.
+		// TODO: file->lastError()?
+		iret.status = Import_ReadError;
+		return iret;
+	}
+	file->close();
+
+	// aeskeydb keyslot from Decrypt9WIP.
+	// NOTE: Decrypt9WIP and SafeB9SInstaller interpret the "keyUnitType" field differently.
+	// - Decrypt9WIP: isDevkitKey == 0 for retail, non-zero for debug
+	// - SafeB9SInstaller: keyUnitType == 0 for ALL units, 1 for retail only, 2 for debug only
+	// To prevent issues, we'll check both retail and debug for all keys.
+	typedef struct PACKED _AesKeyInfo {
+		uint8_t slot;		// keyslot, 0x00...0x3F 
+		char type;		// type 'X' / 'Y' / 'N' for normalKey / 'I' for IV
+		char id[10];		// key ID for special keys, all zero for standard keys
+		uint8_t reserved[2];	// reserved space
+		uint8_t keyUnitType;	// see above
+		uint8_t isEncrypted;	// if non-zero, key is encrypted using Slot0x2C, with KeyY = 0
+		uint8_t key[16];
+	} AesKeyInfo;
+
+	Q_D(KeyStore);
+	const AesKeyInfo *aesKey = reinterpret_cast<const AesKeyInfo*>(buf.get());
+	const AesKeyInfo *const aesKeyEnd = reinterpret_cast<const AesKeyInfo*>(buf.get() + fileSize);
+	const int keyIdxStart = d->sections[KeyStorePrivate::Section_N3DSVerifyKeys].keyIdxStart;
+	bool wereKeysImported = false;
+	do {
+		// Check if this is a supported keyslot.
+		// Key indexes: 0 == retail, 1 == debug
+		// except for Slot0x3DKeyY, which has 6 of each
+		// TODO: Use static const arrays and assign an array pointer?
+		int8_t keyIdx[12] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ,-1};
+		switch (aesKey->slot) {
+			case 0x18:
+				// Only KeyX is available for this key.
+				// KeyY is taken from the title's RSA signature.
+				if (aesKey->type == 'X') {
+					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x18KeyX;
+					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x18KeyX;
+				}
+				break;
+
+			case 0x1B:
+				// Only KeyX is available for this key.
+				// KeyY is taken from the title's RSA signature.
+				if (aesKey->type == 'X') {
+					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x1BKeyX;
+					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x1BKeyX;
+				}
+				break;
+
+			case 0x25:
+				// Only KeyX is available for this key.
+				// KeyY is taken from the title's RSA signature.
+				if (aesKey->type == 'X') {
+					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x25KeyX;
+					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x25KeyX;
+				}
+				break;
+
+			case 0x2C:
+				// Only KeyX is available for this key.
+				// KeyY is taken from the title's RSA signature.
+				if (aesKey->type == 'X') {
+					keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX;
+					keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX;
+				}
+				break;
+
+			case 0x3D:
+				// KeyX, KeyY, and KeyNormal are available.
+				// TODO: Optimize Y/N cases by setting an array pointer?
+				switch (aesKey->type) {
+					case 'X':
+						keyIdx[0] = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX;
+						keyIdx[1] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyX;
+						break;
+					case 'Y':
+						keyIdx[0]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_0;
+						keyIdx[1]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_1;
+						keyIdx[2]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_2;
+						keyIdx[3]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_3;
+						keyIdx[4]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_4;
+						keyIdx[5]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyY_5;
+						keyIdx[6]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_0;
+						keyIdx[7]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_1;
+						keyIdx[8]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_2;
+						keyIdx[9]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_3;
+						keyIdx[10] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_4;
+						keyIdx[11] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyY_5;
+						break;
+					case 'N':
+						keyIdx[0]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_0;
+						keyIdx[1]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_1;
+						keyIdx[2]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_2;
+						keyIdx[3]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_3;
+						keyIdx[4]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_4;
+						keyIdx[5]  = N3DSVerifyKeys::Key_Retail_Slot0x3DKeyNormal_5;
+						keyIdx[6]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_0;
+						keyIdx[7]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_1;
+						keyIdx[8]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_2;
+						keyIdx[9]  = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_3;
+						keyIdx[10] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_4;
+						keyIdx[11] = N3DSVerifyKeys::Key_Debug_Slot0x3DKeyNormal_5;
+						break;
+					default:
+						break;
+				}
+				break;
+
+			default:
+				// Key is not supported.
+				break;
+		}
+
+		if (keyIdx[0] < 0) {
+			// Key is not supported.
+			iret.keysNotUsed++;
+			continue;
+		}
+
+		if (aesKey->isEncrypted) {
+			// Key is encrypted.
+			// TODO: Decrypt the key. (uses 0x2CKeyX with zero KeyY)
+			iret.keysCantDecrypt++;
+			continue;
+		}
+
+		// TODO: Split into a separate function so we can
+		// use the same code for both Retail and Debug.
+
+		// Check if the key is OK.
+		for (int i = 0; i < ARRAY_SIZE(keyIdx); i++) {
+			if (keyIdx[i] < 0)
+				break;
+
+			Key *const pKey = &d->keys[keyIdxStart + keyIdx[i]];
+			if (pKey->status == Key::Status_OK) {
+				// Key is already OK. Don't bother with it.
+				iret.keysExist++;
+				continue;
+			}
+
+			// Check if this key matches.
+			const uint8_t *const verifyData = N3DSVerifyKeys::encryptionVerifyData_static(keyIdx[i]);
+			if (verifyData) {
+				// Verify the key.
+				int ret = d->verifyKeyData(aesKey->key, verifyData, 16);
+				if (ret == 0) {
+					// Found a match!
+					const QString new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+					if (pKey->value != new_value) {
+						pKey->value = new_value;
+						pKey->status = KeyStore::Key::Status_OK;
+						pKey->modified = true;
+						iret.keysImportedVerify++;
+						wereKeysImported = true;
+						emit keyChanged(KeyStorePrivate::Section_N3DSVerifyKeys, keyIdx[i]);
+						emit keyChanged(keyIdxStart + keyIdx[i]);
+					} else {
+						// No change.
+						iret.keysExist++;
+					}
+					// Key can only match either Retail or Debug,
+					// so we're done here.
+					break;
+				}
+			} else {
+				// Can't verify this key...
+				// Import it anyway.
+				const QString new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+				if (pKey->value != new_value) {
+					pKey->value = new_value;
+					pKey->status = KeyStore::Key::Status_Unknown;
+					pKey->modified = true;
+					iret.keysImportedNoVerify++;
+					wereKeysImported = true;
+					emit keyChanged(KeyStorePrivate::Section_N3DSVerifyKeys, keyIdx[i]);
+					emit keyChanged(keyIdxStart + keyIdx[i]);
+				} else {
+					// No change.
+					iret.keysExist++;
+				}
+				// Can't determine if this is Retail or Debug,
+				// so continue anyway.
+			}
+		}
+	} while (++aesKey != aesKeyEnd);
+
+	iret.status = (wereKeysImported
+		? KeyStore::Import_KeysImported
+		: KeyStore::Import_NoKeysImported);
+	return iret;
 }

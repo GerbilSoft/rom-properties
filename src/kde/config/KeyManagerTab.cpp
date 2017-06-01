@@ -156,6 +156,16 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 				KeyManagerTab::tr("%Ln key(s) were not imported because they are incorrect.",
 					nullptr, iret.keysInvalid);
 		}
+		if (iret.keysNotUsed > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) were not imported because they aren't used by rom-properties.",
+					nullptr, iret.keysNotUsed);
+		}
+		if (iret.keysCantDecrypt > 0) {
+			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
+				KeyManagerTab::tr("%Ln key(s) were not imported because they are encrypted and the key isn't available.",
+					nullptr, iret.keysNotUsed);
+		}
 		if (iret.keysImportedVerify > 0) {
 			msg += QChar(L'\n') + QChar(0x2022) + QChar(L' ') +
 				KeyManagerTab::tr("%Ln key(s) have been imported and verified as correct.",
@@ -283,4 +293,21 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 	Q_D(KeyManagerTab);
 	KeyStore::ImportReturn iret = d->keyStore->import3DSboot9bin(filename);
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
+}
+
+/**
+ * Import keys from 3DS aeskeydb.bin.
+ */
+void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
+{
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Select 3DS aeskeydb.bin File"),	// caption
+		QString(),				// dir (TODO)
+		tr("aeskeydb.bin (aeskeydb.bin);;Binary Files (*.bin);;All Files (*.*)"));
+	if (filename.isEmpty())
+		return;
+
+	Q_D(KeyManagerTab);
+	KeyStore::ImportReturn iret = d->keyStore->import3DSaeskeydb(filename);
+	d->showKeyImportReturnStatus(filename, QLatin1String("3DS aeskeydb.bin"), iret);
 }

@@ -189,14 +189,14 @@ class KeyStore : public QObject
 			uint8_t status;			/* ImportStatus */
 			uint8_t keysExist;		// Keys not imported because they're already in the file.
 			uint8_t keysInvalid;		// Keys not imported because they didn't verify.
+			uint8_t keysNotUsed;		// Keys not imported because they aren't used by rom-properties.
+			uint8_t keysCantDecrypt;	// Keys not imported because they're encrypted and the key isn't available.
 			uint8_t keysImportedVerify;	// Keys imported and verified.
 			uint8_t keysImportedNoVerify;	// Keys imported but unverified.
 		};
 
 		/**
 		 * Import a Wii keys.bin file.
-		 * TODO: Return a list of keys that were imported
-		 * and display them in a message bar thing.
 		 * @param filename keys.bin filename.
 		 * @return Key import status.
 		 */
@@ -204,12 +204,17 @@ class KeyStore : public QObject
 
 		/**
 		 * Import a 3DS boot9.bin file.
-		 * TODO: Return a list of keys that were imported
-		 * and display them in a message bar thing.
 		 * @param filename boot9.bin filename.
 		 * @return Key import status.
 		 */
 		ImportReturn import3DSboot9bin(const QString &filename);
+
+		/**
+		 * Import a 3DS aeskeydb.bin file.
+		 * @param filename aeskeydb.bin filename.
+		 * @return Key import status.
+		 */
+		ImportReturn import3DSaeskeydb(const QString &filename);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */
