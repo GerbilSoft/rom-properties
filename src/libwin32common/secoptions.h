@@ -23,9 +23,12 @@
 #define __ROMPROPERTIES_LIBWIN32COMMON_SECOPTIONS_H__
 
 #include "RpWin32_sdk.h"
+#include "sdkddkver.h"
 
 // C includes.
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +71,11 @@ typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
 	 _In_ PVOID HeapInformation,
 	 _In_ SIZE_T HeapInformationLength);
 
+// SetProcessMitigationPolicy (Win8)
+// Reference: https://git.videolan.org/?p=vlc/vlc-2.2.git;a=commitdiff;h=054cf24557164f79045d773efe7da87c4fe357de;hp=52e4b740ad47574bdff7b80aba4949311e1b88f1
+#include "secoptions_win8.h"
+typedef BOOL (WINAPI *PFNSETPROCESSMITIGATIONPOLICY)(_In_ PROCESS_MITIGATION_POLICY MitigationPolicy, _In_ PVOID lpBuffer, _In_ SIZE_T dwLength);
+
 #ifndef INLINE
 #ifdef _MSC_VER
 #define INLINE __inline
@@ -87,7 +95,7 @@ static INLINE int secoptions_init(void)
 {
 	BOOL bRet;
 	HMODULE hKernel32;
-	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+	PFNSETPROCESSMITIGATIONPOLICY pfnSetProcessMitigationPolicy;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
 	PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
 	PFNHEAPSETINFORMATION pfnHeapSetInformation;
@@ -106,13 +114,73 @@ static INLINE int secoptions_init(void)
 		return GetLastError();
 	}
 
-	// Enable DEP/NX.
-	// NOTE: DEP/NX should be specified in the PE header
-	// using ld's --nxcompat, but we'll set it manually here,
-	// just in case the linker doesn't support it.
-	pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
-	if (pfnSetProcessDEPPolicy) {
-		pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
+	// Check for SetProcessMitigationPolicy().
+	// If available, it supercedes many of these.
+	pfnSetProcessMitigationPolicy = (PFNSETPROCESSMITIGATIONPOLICY)GetProcAddress(hKernel32, "SetProcessMitigationPolicy");
+	if (pfnSetProcessMitigationPolicy) {
+		union {
+			// TODO: Some of these need further investigation.
+			DWORD flags;
+			PROCESS_MITIGATION_DEP_POLICY dep;
+			PROCESS_MITIGATION_ASLR_POLICY aslr;
+			PROCESS_MITIGATION_DYNAMIC_CODE_POLICY dynamic_code;
+			PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY strict_handle_check;
+			//PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY system_call_disable;
+			//PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable;
+			//PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY control_flow_guard;	// MSVC 2015+: /guard:cf
+			//PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY binary_signature;
+			//PROCESS_MITIGATION_FONT_DISABLE_POLICY font_disable;
+			PROCESS_MITIGATION_IMAGE_LOAD_POLICY image_load;
+		} policy;
+		// Most of these are 4 bytes, except for
+		// PROCESS_MITIGATION_DEP_POLICY, which is 8.
+		static_assert(sizeof(policy) == 8, "sizeof(policy) != 8");
+
+		// Set DEP policy.
+		policy.flags = 0;
+		policy.dep.Enable = 1;
+		policy.dep.DisableAtlThunkEmulation = 1;
+		policy.dep.Permanent = TRUE;
+		pfnSetProcessMitigationPolicy(ProcessDEPPolicy, &policy.dep, sizeof(policy.dep));
+
+		// Set ASLR policy.
+		policy.flags = 0;
+		policy.aslr.EnableBottomUpRandomization = 1;
+		policy.aslr.EnableForceRelocateImages = 1;
+		policy.aslr.EnableHighEntropy = 1;
+		policy.aslr.DisallowStrippedImages = 0;	// TODO?
+		pfnSetProcessMitigationPolicy(ProcessASLRPolicy, &policy.aslr, sizeof(policy.aslr));
+
+		// Set dynamic code policy.
+		policy.flags = 0;
+		policy.dynamic_code.ProhibitDynamicCode = 1;
+		//policy.dynamic_code.AllowThreadOptOut = 0;	// Win10
+		pfnSetProcessMitigationPolicy(ProcessDynamicCodePolicy, &policy.dynamic_code, sizeof(policy.dynamic_code));
+
+		// Set strict handle check policy.
+		policy.flags = 0;
+		policy.strict_handle_check.RaiseExceptionOnInvalidHandleReference = 1;
+		policy.strict_handle_check.HandleExceptionsPermanentlyEnabled = 1;
+		pfnSetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &policy.strict_handle_check, sizeof(policy.strict_handle_check));
+
+		// Set image load policy.
+		policy.flags = 0;
+		policy.image_load.NoRemoteImages = 0;	// TODO
+		policy.image_load.NoLowMandatoryLabelImages = 1;
+		policy.image_load.PreferSystem32Images = 1;
+		pfnSetProcessMitigationPolicy(ProcessImageLoadPolicy, &policy.image_load, sizeof(policy.image_load));
+	} else {
+		// Use the old functions if they're available.
+		PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
+
+		// Enable DEP/NX.
+		// NOTE: DEP/NX should be specified in the PE header
+		// using ld's --nxcompat, but we'll set it manually here,
+		// just in case the linker doesn't support it.
+		pfnSetProcessDEPPolicy = (PFNSETPROCESSDEPPOLICY)GetProcAddress(hKernel32, "SetProcessDEPPolicy");
+		if (pfnSetProcessDEPPolicy) {
+			pfnSetProcessDEPPolicy(PROCESS_DEP_ENABLE | PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION);
+		}
 	}
 
 	// Remove the current directory from the DLL search path.
