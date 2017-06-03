@@ -25,6 +25,9 @@
 #include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // Qt includes.
 #include <QFileDialog>
 #include <QMenu>
@@ -255,8 +258,36 @@ void KeyManagerTab::loadDefaults(void)
  */
 void KeyManagerTab::save(QSettings *pSettings)
 {
-	// TODO: Needs to save to keys.conf, not rom-properties.conf.
-	return;
+	// pSettings is keys.conf.
+	assert(pSettings != nullptr);
+	if (!pSettings)
+		return;
+
+	Q_D(KeyManagerTab);
+	if (!d->keyStore->hasChanged())
+		return;
+
+	// [Keys]
+	pSettings->beginGroup(QLatin1String("Keys"));
+
+	// TODO: Keep this in OS-specific code, or make
+	// KeyStore templated and make this a virtual function?
+	const int totalKeyCount = d->keyStore->totalKeyCount();
+	for (int i = 0; i < totalKeyCount; i++) {
+		const KeyStore::Key *const pKey = d->keyStore->getKey(i);
+		assert(pKey != nullptr);
+		if (!pKey || !pKey->modified)
+			continue;
+
+		// Save this key.
+		pSettings->setValue(pKey->name, pKey->value);
+	}
+
+	// End of [Keys]
+	pSettings->endGroup();
+
+	// Clear the modified status.
+	d->keyStore->allKeysSaved();
 }
 
 /** Actions. **/

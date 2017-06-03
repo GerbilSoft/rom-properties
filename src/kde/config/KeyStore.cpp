@@ -968,6 +968,22 @@ int KeyStore::setKey(int idx, const QString &value)
 }
 
 /**
+ * Mark all keys as saved.
+ * This clears the "modified" field.
+ */
+void KeyStore::allKeysSaved(void)
+{
+	Q_D(KeyStore);
+	for (auto iter = d->keys.begin(); iter != d->keys.end(); ++iter) {
+		iter->modified = false;
+	}
+
+	// KeyStore is no longer changed.
+	// NOTE: Not emitting modified() here.
+	d->changed = false;
+}
+
+/**
  * Has KeyStore been changed by the user?
  * @return True if it has; false if it hasn't.
  */

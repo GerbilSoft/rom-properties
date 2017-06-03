@@ -38,6 +38,8 @@ using LibRpBase::Config;
 
 #ifdef ENABLE_DECRYPTION
 #include "KeyManagerTab.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::KeyManager;
 #endif
 
 /** ConfigDialogPrivate **/
@@ -289,7 +291,7 @@ void ConfigDialog::apply(void)
 	// Open the configuration file using QSettings.
 	// TODO: Error handling.
 	const Config *const config = Config::instance();
-	const rp_char *const filename = config->filename();
+	const rp_char *filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
 		return;
@@ -305,9 +307,17 @@ void ConfigDialog::apply(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
 	d->ui.tabDownloads->save(&settings);
+
 #ifdef ENABLE_DECRYPTION
-	// FIXME: Should be saving to keys.conf, not rom-properties.conf.
-	d->tabKeyManager->save(&settings);
+	// KeyManager needs to save to keys.conf.
+	const KeyManager *const keyManager = KeyManager::instance();
+	filename = keyManager->filename();
+	if (filename) {
+		QSettings keys_conf(RP2Q(filename), QSettings::IniFormat);
+		if (keys_conf.isWritable()) {
+			d->tabKeyManager->save(&keys_conf);
+		}
+	}
 #endif /* ENABLE_DECRYPTION */
 
 	// Set the focus to the last-focused widget.

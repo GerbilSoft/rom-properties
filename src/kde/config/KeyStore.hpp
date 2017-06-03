@@ -30,7 +30,9 @@ class KeyStore : public QObject
 	Q_OBJECT
 
 	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
-	Q_PROPERTY(bool changed READ hasChanged NOTIFY modified)
+	// NOTE: modified() isn't a modifier, since it's only emitted
+	// if d->changed becomes true.
+	Q_PROPERTY(bool changed READ hasChanged)
 
 	public:
 		KeyStore(QObject *parent = 0);
@@ -56,7 +58,7 @@ class KeyStore : public QObject
 			QString name;		// Key name.
 			QString value;		// Key value. (as QString for display purposes)
 			uint8_t status;		// Key status. (See the Status enum.)
-			bool modified;		// True if the key has been modified since last reset() or save().
+			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
 			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
 
@@ -158,6 +160,17 @@ class KeyStore : public QObject
 		 * @return 0 on success; non-zero on error.
 		 */
 		int setKey(int idx, const QString &value);
+
+	public slots:
+		/**
+		 * Mark all keys as saved.
+		 * This clears the "modified" field.
+		 *
+		 * NOTE: We aren't providing a save() function,
+		 * since that's OS-dependent. This function should
+		 * be called by the OS-specific save code.
+		 */
+		void allKeysSaved(void);
 
 	public:
 		/**
