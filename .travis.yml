@@ -27,6 +27,7 @@ addons:
       - libthunarx-2-dev
       - libgtk-3-dev
       - libnautilus-extension-dev
+      - libdbus-glib-1-dev
 
 # Run the build script.
 script: ./travis.sh

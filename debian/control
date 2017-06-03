@@ -22,7 +22,8 @@ Build-Depends:
  libgtk2.0-dev,
  libthunarx-2-dev,
  libgtk-3-dev,
- libnautilus-extension-dev
+ libnautilus-extension-dev,
+ libdbus-glib-1-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
