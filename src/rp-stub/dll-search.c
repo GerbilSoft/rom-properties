@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "config.rp-stub.h"
+#include "rp-stub/config.rp-stub.h"
 #include "dll-search.h"
 
 // C includes.

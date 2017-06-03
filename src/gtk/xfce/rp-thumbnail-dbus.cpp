@@ -26,10 +26,14 @@
 
 #include "rp-thumbnail-dbus.hpp"
 #include "librpbase/common.h"
+#include "rp-stub/dll-search.h"
 
 #include <glib-object.h>
 #include <dbus/dbus-glib-bindings.h>
 #include "rp-thumbnail-server-bindings.h"
+
+// C includes. (C++ namespace)
+#include <cstdarg>
 
 // C++ includes.
 #include <deque>
@@ -409,10 +413,56 @@ cleanup:
 	return !isEmpty;
 }
 
+/**
+ * Debug print function for rp_dll_search().
+ * @param level Debug level.
+ * @param format Format string.
+ * @param ... Format arguments.
+ * @return vfprintf() return value.
+ */
+static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
+{
+	if (level < LEVEL_ERROR)
+		return 0;
+
+	// g_warning() may be using g_log_structured(),
+	// and there's no variant of g_log_structured()
+	// that takes va_list, so we'll print it to a
+	// buffer first.
+	char buf[512];
+
+	va_list args;
+	va_start(args, format);
+	int ret = vsnprintf(buf, sizeof(buf), format, args);
+	va_end(args);
+
+	if (level < LEVEL_ERROR) {
+		// G_MESSAGES_DEBUG must be set to rom-properties-xfce
+		// in order to print these messages.
+		g_debug(buf);
+	} else {
+		g_warning(buf);
+	}
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
+
+#if !GLIB_CHECK_VERSION(2,36,0)
+	// g_type_init() is automatic as of glib-2.36.0
+	// and is marked deprecated.
+	g_type_init();
+#endif /* !GLIB_CHECK_VERSION(2,36,0) */
+#if !GLIB_CHECK_VERSION(2,32,0)
+	// g_thread_init() is automatic as of glib-2.32.0
+	// and is marked deprecated.
+	if (!g_thread_supported()) {
+		g_thread_init(nullptr);
+	}
+#endif /* !GLIB_CHECK_VERSION(2,32,0) */
 
 	// Get the cache directory.
 	// TODO: Use $XDG_CACHE_HOME and/or getpwuid_r().
@@ -428,38 +478,18 @@ int main(int argc, char *argv[])
 		cache_dir.resize(cache_dir.size()-1);
 	}
 	if (cache_dir.empty()) {
-		fprintf(stderr, "*** ERROR: $HOME is not set.");
+		g_warning("$HOME is not set.");
 		return EXIT_FAILURE;
 	}
 	// Append "/.cache".
 	cache_dir += "/.cache";
 
-	// Attempt to open rom-properties-xfce.so.
-	// TODO: Use rp-stub's DLL search code.
-	void *hRpPlugin = dlopen("/usr/lib64/thunarx-2/rom-properties-xfce.so", RTLD_LOCAL|RTLD_LAZY);
-	if (!hRpPlugin) {
-		fprintf(stderr, "*** ERROR: Cannot dlopen() rom-properties-xfce.so.\n");
+	// Attempt to open a ROM Properties Page library.
+	void *pDll = NULL;
+	int ret = rp_dll_search("rp_create_thumbnail", &pDll, (void**)&pfn_rp_create_thumbnail, fnDebug);
+	if (ret != 0) {
 		return EXIT_FAILURE;
 	}
-	pfn_rp_create_thumbnail = (PFN_RP_CREATE_THUMBNAIL)dlsym(hRpPlugin, "rp_create_thumbnail");
-	if (!pfn_rp_create_thumbnail) {
-		dlclose(hRpPlugin);
-		fprintf(stderr, "*** ERROR: rom-properties-xfce.so does not have rp_create_thumbnail().\n");
-		return EXIT_FAILURE;
-	}
-
-#if !GLIB_CHECK_VERSION(2,36,0)
-	// g_type_init() is automatic as of glib-2.36.0
-	// and is marked deprecated.
-	g_type_init();
-#endif /* !GLIB_CHECK_VERSION(2,36,0) */
-#if !GLIB_CHECK_VERSION(2,32,0)
-	// g_thread_init() is automatic as of glib-2.32.0
-	// and is marked deprecated.
-	if (!g_thread_supported()) {
-		g_thread_init(nullptr);
-	}
-#endif /* !GLIB_CHECK_VERSION(2,32,0) */
 
 	dbus_g_thread_init();
 	GMainLoop *loop = g_main_loop_new(nullptr, false);
@@ -471,8 +501,9 @@ int main(int argc, char *argv[])
 	if (server->registered) {
 		// Server is registered.
 		// Run the main loop.
+		g_debug("Starting the D-Bus service.");
 		g_main_loop_run(loop);
 	}
-	dlclose(hRpPlugin);
+	dlclose(pDll);
 	return 0;
 }

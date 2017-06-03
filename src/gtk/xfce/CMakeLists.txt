@@ -50,10 +50,12 @@ ADD_CUSTOM_COMMAND(
 
 SET(rp-thumbnail-dbus_SRCS
 	rp-thumbnail-dbus.cpp
+	../../rp-stub/dll-search.c
 	)
 SET(rp-thumbnail-dbus_H
 	rp-thumbnail-dbus.hpp
 	${CMAKE_CURRENT_BINARY_DIR}/rp-thumbnail-server-bindings.h
+	../../rp-stub/dll-search.h
 	)
 
 # Process the .service file.
