@@ -79,17 +79,48 @@ struct _RpThumbnail {
 	unordered_map<guint, string> *uri_map;
 };
 
-// FIXME: G_DEFINE_DYNAMIC_TYPE() doesn't work in C++ mode with gcc-6.2
-// due to an implicit int to GTypeFlags conversion.
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpThumbnail, rp_thumbnail,
-	G_TYPE_OBJECT, 0,
-	G_IMPLEMENT_INTERFACE(G_TYPE_OBJECT, rp_thumbnail_init));
+/** Type information. **/
+// NOTE: We can't use G_DEFINE_DYNAMIC_TYPE() here because
+// that requires a GTypeModule, which we don't have.
 
-void
-rp_thumbnail_register_type_ext(GTypeModule *module)
+static void     rp_thumbnail_init              (RpThumbnail      *thumbnailer);
+static void     rp_thumbnail_class_init        (RpThumbnailClass *klass);
+
+static gpointer rp_thumbnail_parent_class = nullptr;
+
+static void
+rp_thumbnail_class_intern_init(gpointer klass)
 {
-	rp_thumbnail_register_type(module);
+	  rp_thumbnail_parent_class = g_type_class_peek_parent(klass);
+	  rp_thumbnail_class_init(static_cast<RpThumbnailClass*>(klass));
 }
+
+GType
+rp_thumbnail_get_type(void)
+{
+	static GType rp_thumbnail_type_id = 0;
+	if (!rp_thumbnail_type_id) {
+		static const GTypeInfo g_define_type_info = {
+			sizeof(RpThumbnailClass),	// class_size
+			nullptr,			// base_init
+			nullptr,			// base_finalize
+			(GClassInitFunc)rp_thumbnail_class_intern_init,
+			nullptr,			// class_finalize
+			nullptr,			// class_data
+			sizeof(RpThumbnail),		// instance_size
+			0,				// n_preallocs
+			(GInstanceInitFunc)rp_thumbnail_init,
+			nullptr				// value_table
+		};
+		rp_thumbnail_type_id = g_type_register_static(G_TYPE_OBJECT,
+							"RpThumbnail",
+							&g_define_type_info,
+							(GTypeFlags) 0);
+	}
+	return rp_thumbnail_type_id;
+}
+
+/** End type information. **/
 
 static void
 rp_thumbnail_class_init(RpThumbnailClass *klass)
@@ -125,12 +156,9 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 		g_error_free(error);
 		return;
 	}
-}
 
-static void
-rp_thumbnail_class_finalize(RpThumbnailClass *klass)
-{
-	RP_UNUSED(klass);
+	// Register introspection data.
+	dbus_g_object_type_install_info(TYPE_RP_THUMBNAIL, &dbus_glib_rp_thumbnail_object_info);
 }
 
 static void
@@ -149,7 +177,7 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 
 	// Register D-Bus path.
 	dbus_g_connection_register_g_object(klass->connection,
-		"/com/gerbilsoft/rom-properties-page/SpecializedThumbnailer1",
+		"/com/gerbilsoft/rom_properties_page/SpecializedThumbnailer1",
 		G_OBJECT(thumbnailer));
 
 	// Register the service name.
@@ -164,6 +192,7 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 	{
 		g_warning("Unable to register service: %s", error->message);
 		g_error_free(error);
+		// TODO: Set an error that can be read by main().
 	}
 
 	g_object_unref(driver_proxy);
@@ -266,6 +295,9 @@ rp_thumbnail_process(gpointer data)
 		goto cleanup;
 	}
 
+	// FIXME: Thumbnail it.
+	printf("Attempting to thumbnail: %s\n", iter->second.c_str());
+
 cleanup:
 	// Request is finished. Emit the finished signal.
 	g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_FINISHED], 0, handle);
@@ -278,8 +310,33 @@ cleanup:
 	return (!thumbnailer->handle_queue->empty());
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-	// TODO: Not implemented yet...
-	return 1;
+	RP_UNUSED(argc);
+	RP_UNUSED(argv);
+
+	RpThumbnail *server;
+	GMainLoop *loop;
+
+#if !GLIB_CHECK_VERSION(2,36,0)
+	// g_type_init() is automatic as of glib-2.36.0
+	// and is marked deprecated.
+	g_type_init();
+#endif /* !GLIB_CHECK_VERSION(2,36,0) */
+#if !GLIB_CHECK_VERSION(2,32,0)
+	// g_thread_init() is automatic as of glib-2.32.0
+	// and is marked deprecated.
+	if (!g_thread_supported()) {
+		g_thread_init(nullptr);
+	}
+#endif /* !GLIB_CHECK_VERSION(2,32,0) */
+
+	dbus_g_thread_init();
+	loop = g_main_loop_new(nullptr, false);
+
+	// Initialize the D-Bus server.
+	server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
+	// TODO: Check for initialization errors.
+	g_main_loop_run(loop);
+	return 0;
 }

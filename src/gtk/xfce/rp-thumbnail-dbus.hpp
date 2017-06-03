@@ -39,8 +39,6 @@ typedef struct _RpThumbnail		RpThumbnail;
 
 /* these two functions are implemented automatically by the G_DEFINE_DYNAMIC_TYPE macro */
 GType		rp_thumbnail_provider_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-/* NOTE: G_DEFINE_DYNAMIC_TYPE() declares the actual function as static. */
-void		rp_thumbnail_provider_register_type_ext	(GTypeModule *module) G_GNUC_INTERNAL;
 
 guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 	const gchar *uri, const gchar *mime_type,
