@@ -40,6 +40,22 @@ using std::make_pair;
 using std::string;
 using std::unordered_map;
 
+// dlopen()
+#include <dlfcn.h>
+
+/**
+ * rp_create_thumbnail() function pointer.
+ * @param source_file Source file. (UTF-8)
+ * @param output_file Output file. (UTF-8)
+ * @param maximum_size Maximum size.
+ * @return 0 on success; non-zero on error.
+ */
+typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
+static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
+
+// Thumbnail cache directory.
+static string cache_dir;
+
 /* Signal identifiers */
 enum RpThumbnailSignals {
 	SIGNAL_0,
@@ -181,7 +197,7 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 
 	// Register D-Bus path.
 	dbus_g_connection_register_g_object(klass->connection,
-		"/com/gerbilsoft/rom_properties_page/SpecializedThumbnailer1",
+		"/com/gerbilsoft/rom_properties/SpecializedThumbnailer1",
 		G_OBJECT(thumbnailer));
 
 	// Register the service name.
@@ -191,7 +207,7 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 		DBUS_INTERFACE_DBUS);
 
 	int res = org_freedesktop_DBus_request_name(driver_proxy,
-		"com.gerbilsoft.rom-properties-page.SpecializedThumbnailer1",
+		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
 		DBUS_NAME_FLAG_DO_NOT_QUEUE, &request_ret, &error);
 	if (res == 1) {
 		// The D-Bus call succeeded.
@@ -303,6 +319,10 @@ rp_thumbnail_process(gpointer data)
 
 	guint handle;
 	gchar *filename;
+	GChecksum *md5 = nullptr;
+	const gchar *md5_string;	// owned by md5 object
+	string cache_filename;
+	int ret;
 
 	// Process one thumbnail.
 	handle = thumbnailer->handle_queue->front();
@@ -315,18 +335,58 @@ rp_thumbnail_process(gpointer data)
 		goto cleanup;
 	}
 
-	// Verify that the thumbnail URI is local.
+	// Verify that the specified URI is local.
 	// TODO: Support GVFS.
 	filename = g_filename_from_uri(iter->second.c_str(), nullptr, nullptr);
 	if (!filename) {
 		// URI is not describing a local file.
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, "", 0, "URI is not describing a local file.");
+			 handle, iter->second.c_str(), 0, "URI is not describing a local file.");
 		goto cleanup;
 	}
 
-	// FIXME: Thumbnail it.
-	printf("Attempting to thumbnail: %s\n", iter->second.c_str());
+	// TODO: Hard-coding "flavor" as "normal" right now.
+	// TODO: Make sure the URI to thumbnail is not in the cache directory.
+
+	// Make sure the thumbnail directory exists.
+	cache_filename = cache_dir + "/thumbnails/normal";
+	if (g_mkdir_with_parents(cache_filename.c_str(), 0777) != 0) {
+		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
+			 handle, iter->second.c_str(), 0, "Cannot mkdir() the thumbnail cache directory.");
+		goto cleanup;
+	}
+
+	// TODO: Handle "flavor", check $XDG_CACHE_HOME.
+	// Reference: https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
+	// For now, creating "normal" 256x256 thumbnails.
+	// NOTE: glib-2.34 has g_compute_checksum_for_bytes().
+	md5 = g_checksum_new(G_CHECKSUM_MD5);
+	if (!md5) {
+		// Cannot allocate an MD5...
+		// TODO: Test for this early.
+		// FIXME: failed_uris should be an array of strings.
+		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
+			 handle, iter->second.c_str(), 0, "g_checksum_new() does not support MD5.");
+		goto cleanup;
+	}
+	g_checksum_update(md5, reinterpret_cast<const guchar*>(iter->second.c_str()), iter->second.size());
+	md5_string = g_checksum_get_string(md5);
+	cache_filename += '/';
+	cache_filename += md5_string;
+	cache_filename += ".png";
+
+	// Thumbnail the iamge.
+	ret = pfn_rp_create_thumbnail(filename, cache_filename.c_str(), 256);
+	if (ret == 0) {
+		// Image thumbnailed successfully.
+		g_debug("rom-properties thumbnail: %s -> %s [OK]", filename, cache_filename.c_str());
+		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_READY], 0, handle, iter->second.c_str());
+	} else {
+		// Error thumbnailing the image...
+		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
+			 handle, iter->second.c_str(), 2, "Image thumbnailing failed... (TODO: return code)");
+		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", filename, cache_filename.c_str(), ret);
+	}
 
 cleanup:
 	// Request is finished. Emit the finished signal.
@@ -335,6 +395,9 @@ cleanup:
 		// Remove the URI from the map.
 		thumbnailer->uri_map->erase(iter);
 	}
+
+	// Free the checksum objects.
+	g_checksum_free(md5);
 
 	// Return TRUE if we still have more thumbnails queued.
 	const bool isEmpty = thumbnailer->handle_queue->empty();
@@ -350,6 +413,40 @@ int main(int argc, char *argv[])
 {
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
+
+	// Get the cache directory.
+	// TODO: Use $XDG_CACHE_HOME and/or getpwuid_r().
+	const char *const home_env = getenv("HOME");
+	if (home_env) {
+		cache_dir = home_env;
+	}
+	// Remove trailing slashes.
+	// NOTE: If $HOME is "/", this will result in an empty directory,
+	// which will cause the program to exit. Not a big deal, since
+	// that shouldn't happen...
+	while (!cache_dir.empty() && cache_dir[cache_dir.size()-1] == '/') {
+		cache_dir.resize(cache_dir.size()-1);
+	}
+	if (cache_dir.empty()) {
+		fprintf(stderr, "*** ERROR: $HOME is not set.");
+		return EXIT_FAILURE;
+	}
+	// Append "/.cache".
+	cache_dir += "/.cache";
+
+	// Attempt to open rom-properties-xfce.so.
+	// TODO: Use rp-stub's DLL search code.
+	void *hRpPlugin = dlopen("/usr/lib64/thunarx-2/rom-properties-xfce.so", RTLD_LOCAL|RTLD_LAZY);
+	if (!hRpPlugin) {
+		fprintf(stderr, "*** ERROR: Cannot dlopen() rom-properties-xfce.so.\n");
+		return EXIT_FAILURE;
+	}
+	pfn_rp_create_thumbnail = (PFN_RP_CREATE_THUMBNAIL)dlsym(hRpPlugin, "rp_create_thumbnail");
+	if (!pfn_rp_create_thumbnail) {
+		dlclose(hRpPlugin);
+		fprintf(stderr, "*** ERROR: rom-properties-xfce.so does not have rp_create_thumbnail().\n");
+		return EXIT_FAILURE;
+	}
 
 #if !GLIB_CHECK_VERSION(2,36,0)
 	// g_type_init() is automatic as of glib-2.36.0
@@ -376,5 +473,6 @@ int main(int argc, char *argv[])
 		// Run the main loop.
 		g_main_loop_run(loop);
 	}
+	dlclose(hRpPlugin);
 	return 0;
 }

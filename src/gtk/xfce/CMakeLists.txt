@@ -56,6 +56,11 @@ SET(rp-thumbnail-dbus_H
 	${CMAKE_CURRENT_BINARY_DIR}/rp-thumbnail-server-bindings.h
 	)
 
+# Process the .service file.
+INCLUDE(DirInstallPaths)
+CONFIGURE_FILE(com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service.in
+	com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service)
+
 IF(BUILD_XFCE)
 	ADD_LIBRARY(rom-properties-xfce MODULE
 		${rom-properties-xfce_SRCS}
@@ -93,6 +98,10 @@ IF(BUILD_XFCE)
 		)
 	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus cachemgr8 romdata8 rpbase8)
 	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GdkPixbuf2::gdkpixbuf2 GLib2::dbus GLib2::gobject GLib2::glib)
+	# Link in libdl if it's required for dlopen().
+	IF(CMAKE_DL_LIBS)
+		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})
+	ENDIF(CMAKE_DL_LIBS)
 ENDIF(BUILD_XFCE)
 
 #######################
@@ -106,6 +115,21 @@ IF(BUILD_XFCE)
 		LIBRARY DESTINATION "${ThunarX2_EXTENSIONS_DIR}"
 		COMPONENT "plugin"
 		)
+	INSTALL(TARGETS rp-thumbnailer-dbus
+		RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+		COMPONENT "plugin"
+		)
+	# TODO: Use session_bus_services_dir from dbus-1.pc.
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service"
+		DESTINATION "share/dbus-1/services"
+		COMPONENT "plugin"
+		)
+	# NOTE: This file must be installed with a ".service" extension.
+	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer"
+		RENAME com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
+		DESTINATION "share/thumbnailers"
+		COMPONENT "plugin"
+		)
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
@@ -114,6 +138,14 @@ IF(BUILD_XFCE)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${ThunarX2_EXTENSIONS_DIR}"
+				COMPONENT "debug"
+				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME rp-thumbnailer-dbus PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
