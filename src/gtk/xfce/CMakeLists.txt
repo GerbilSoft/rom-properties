@@ -98,8 +98,7 @@ IF(BUILD_XFCE)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus cachemgr8 romdata8 rpbase8)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GdkPixbuf2::gdkpixbuf2 GLib2::dbus GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::dbus GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})
