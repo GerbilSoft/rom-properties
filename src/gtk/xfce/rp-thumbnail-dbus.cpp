@@ -65,6 +65,9 @@ struct _RpThumbnailClass {
 struct _RpThumbnail {
 	GObject __parent__;
 
+	// Is the D-Bus service registered?
+	bool registered;
+
 	// Idle function for processing.
 	guint process_idle;
 
@@ -164,6 +167,7 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 static void
 rp_thumbnail_init(RpThumbnail *thumbnailer)
 {
+	thumbnailer->registered = false;
 	thumbnailer->process_idle = 0;
 	thumbnailer->last_handle = 0;
 	thumbnailer->handle_queue = new deque<guint>();
@@ -186,13 +190,38 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 		DBUS_PATH_DBUS,
 		DBUS_INTERFACE_DBUS);
 
-	if (!org_freedesktop_DBus_request_name(driver_proxy,
+	int res = org_freedesktop_DBus_request_name(driver_proxy,
 		"com.gerbilsoft.rom-properties-page.SpecializedThumbnailer1",
-		0, &request_ret, &error))
-	{
+		DBUS_NAME_FLAG_DO_NOT_QUEUE, &request_ret, &error);
+	if (res == 1) {
+		// The D-Bus call succeeded.
+		// Check the return value.
+		switch (request_ret) {
+			case 0:
+			default:
+				// An unknown error occurred.
+				g_warning("Unable to register service: res == %d", request_ret);
+				dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
+				break;
+
+			case DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
+			case DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
+				// D-Bus object registered successfully.
+				thumbnailer->registered = true;
+				break;
+
+			case DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
+			case DBUS_REQUEST_NAME_REPLY_EXISTS:
+				// Some other process has already registered this name.
+				g_warning("This thumbnailer is already registered; exiting.");
+				dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
+				break;
+		}
+	} else {
+		// The D-Bus call failed.
 		g_warning("Unable to register service: %s", error->message);
 		g_error_free(error);
-		// TODO: Set an error that can be read by main().
+		dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
 	}
 
 	g_object_unref(driver_proxy);
@@ -342,8 +371,13 @@ int main(int argc, char *argv[])
 	loop = g_main_loop_new(nullptr, false);
 
 	// Initialize the D-Bus server.
+	// TODO: Distinguish between "already running" and "error"
+	// and return non-zero in the error case.
 	server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
-	// TODO: Check for initialization errors.
-	g_main_loop_run(loop);
+	if (server->registered) {
+		// Server is registered.
+		// Run the main loop.
+		g_main_loop_run(loop);
+	}
 	return 0;
 }
