@@ -124,10 +124,30 @@ IF(BUILD_XFCE)
 		DESTINATION "share/dbus-1/services"
 		COMPONENT "plugin"
 		)
+
 	# NOTE: This file must be installed with a ".service" extension.
+	# NOTE 2: On Ubuntu, this must be installed in share/xfce4/thumbnailers,
+	# since Ubuntu ends up listing /usr/share/ in $XDG_DATA_DIRS twice,
+	# which causes tumblerd to load /usr/share/thumbnailers/ twice and
+	# fail an assertion.
+
+	# Detect Ubuntu.
+	# Reference: https://stackoverflow.com/questions/26919334/detect-underlying-platform-flavour-in-cmake
+	FIND_PROGRAM(LSB_RELEASE lsb_release)
+	IF(LSB_RELEASE)
+		EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is
+			OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	ENDIF(LSB_RELEASE)
+	IF(LSB_RELEASE_ID_SHORT STREQUAL Ubuntu)
+		SET(THUMBNAIL_DEST_DIR "share/xfce4/thumbnailers")
+	ELSE()
+		SET(THUMBNAIL_DEST_DIR "share/thumbnailers")
+	ENDIF()
 	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.thumbnailer"
 		RENAME com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
-		DESTINATION "share/thumbnailers"
+		DESTINATION "${THUMBNAIL_DEST_DIR}"
 		COMPONENT "plugin"
 		)
 
