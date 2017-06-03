@@ -351,9 +351,6 @@ int main(int argc, char *argv[])
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
 
-	RpThumbnail *server;
-	GMainLoop *loop;
-
 #if !GLIB_CHECK_VERSION(2,36,0)
 	// g_type_init() is automatic as of glib-2.36.0
 	// and is marked deprecated.
@@ -368,12 +365,12 @@ int main(int argc, char *argv[])
 #endif /* !GLIB_CHECK_VERSION(2,32,0) */
 
 	dbus_g_thread_init();
-	loop = g_main_loop_new(nullptr, false);
+	GMainLoop *loop = g_main_loop_new(nullptr, false);
 
 	// Initialize the D-Bus server.
 	// TODO: Distinguish between "already running" and "error"
 	// and return non-zero in the error case.
-	server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
+	RpThumbnail *server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
 	if (server->registered) {
 		// Server is registered.
 		// Run the main loop.
