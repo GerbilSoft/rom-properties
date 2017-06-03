@@ -25,6 +25,7 @@
  */
 
 #include "rp-thumbnail-dbus.hpp"
+#include "librpbase/common.h"
 
 #include <glib-object.h>
 #include <dbus/dbus-glib-bindings.h>
