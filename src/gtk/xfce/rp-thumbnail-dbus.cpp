@@ -90,6 +90,13 @@ struct _RpThumbnailClass {
 
 #define SHUTDOWN_TIMEOUT_SECONDS 30
 
+// Thumbnail request information.
+struct request_info {
+	string uri;
+	bool large;	// False for 'normal' (128x128); true for 'large' (256x256)
+	bool urgent;	// 'urgent' value
+};
+
 struct _RpThumbnail {
 	GObject __parent__;
 
@@ -113,7 +120,7 @@ struct _RpThumbnail {
 	// referenced by handle, so we store the
 	// handles in a deque and the URIs in a map.
 	deque<guint> *handle_queue;
-	unordered_map<guint, string> *uri_map;
+	unordered_map<guint, request_info> *uri_map;
 };
 
 /** Type information. **/
@@ -213,7 +220,7 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 	thumbnailer->idle_process = 0;
 	thumbnailer->last_handle = 0;
 	thumbnailer->handle_queue = new deque<guint>();
-	thumbnailer->uri_map = new unordered_map<guint, string>();
+	thumbnailer->uri_map = new unordered_map<guint, request_info>();
 	thumbnailer->uri_map->reserve(8);
 
 	GError *error = NULL;
@@ -336,7 +343,12 @@ guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 	}
 
 	// Add the URI to the queue.
-	thumbnailer->uri_map->insert(make_pair(handle, uri));
+	// NOTE: Currently handling all flavors that aren't "large" as "normal".
+	request_info req;
+	req.uri = uri;
+	req.large = (g_ascii_strcasecmp(flavor, "large") == 0);
+	req.urgent = urgent;
+	thumbnailer->uri_map->insert(make_pair(handle, req));
 	thumbnailer->handle_queue->push_back(handle);
 
 	// Make sure the idle process is started.
@@ -399,7 +411,8 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	handle = thumbnailer->handle_queue->front();
 	thumbnailer->handle_queue->pop_front();
 	auto iter = thumbnailer->uri_map->find(handle);
-	if (iter == thumbnailer->uri_map->end()) {
+	const request_info *const req = (iter != thumbnailer->uri_map->end() ? &(iter->second) : nullptr);
+	if (!req) {
 		// URI not found.
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
 			 handle, "", 0, "Handle has no associated URI.");
@@ -408,28 +421,26 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 
 	// Verify that the specified URI is local.
 	// TODO: Support GVFS.
-	filename = g_filename_from_uri(iter->second.c_str(), nullptr, nullptr);
+	filename = g_filename_from_uri(req->uri.c_str(), nullptr, nullptr);
 	if (!filename) {
 		// URI is not describing a local file.
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, iter->second.c_str(), 0, "URI is not describing a local file.");
+			 handle, req->uri.c_str(), 0, "URI is not describing a local file.");
 		goto cleanup;
 	}
 
-	// TODO: Hard-coding "flavor" as "normal" right now.
 	// TODO: Make sure the URI to thumbnail is not in the cache directory.
 
 	// Make sure the thumbnail directory exists.
-	cache_filename = cache_dir + "/thumbnails/normal";
+	cache_filename = cache_dir + "/thumbnails/";
+	cache_filename += (req->large ? "large" : "normal");
 	if (g_mkdir_with_parents(cache_filename.c_str(), 0777) != 0) {
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, iter->second.c_str(), 0, "Cannot mkdir() the thumbnail cache directory.");
+			 handle, req->uri.c_str(), 0, "Cannot mkdir() the thumbnail cache directory.");
 		goto cleanup;
 	}
 
-	// TODO: Handle "flavor", check $XDG_CACHE_HOME.
 	// Reference: https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	// For now, creating "normal" 256x256 thumbnails.
 	// NOTE: glib-2.34 has g_compute_checksum_for_bytes().
 	md5 = g_checksum_new(G_CHECKSUM_MD5);
 	if (!md5) {
@@ -437,25 +448,26 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 		// TODO: Test for this early.
 		// FIXME: failed_uris should be an array of strings.
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, iter->second.c_str(), 0, "g_checksum_new() does not support MD5.");
+			 handle, req->uri.c_str(), 0, "g_checksum_new() does not support MD5.");
 		goto cleanup;
 	}
-	g_checksum_update(md5, reinterpret_cast<const guchar*>(iter->second.c_str()), iter->second.size());
+	g_checksum_update(md5, reinterpret_cast<const guchar*>(req->uri.c_str()), req->uri.size());
 	md5_string = g_checksum_get_string(md5);
 	cache_filename += '/';
 	cache_filename += md5_string;
 	cache_filename += ".png";
 
-	// Thumbnail the iamge.
-	ret = pfn_rp_create_thumbnail(filename, cache_filename.c_str(), 256);
+	// Thumbnail the image.
+	ret = pfn_rp_create_thumbnail(filename, cache_filename.c_str(),
+		req->large ? 256 : 128);
 	if (ret == 0) {
 		// Image thumbnailed successfully.
 		g_debug("rom-properties thumbnail: %s -> %s [OK]", filename, cache_filename.c_str());
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_READY], 0, handle, iter->second.c_str());
+		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_READY], 0, handle, req->uri.c_str());
 	} else {
 		// Error thumbnailing the image...
 		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, iter->second.c_str(), 2, "Image thumbnailing failed... (TODO: return code)");
+			 handle, req->uri.c_str(), 2, "Image thumbnailing failed... (TODO: return code)");
 		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", filename, cache_filename.c_str(), ret);
 	}
 
