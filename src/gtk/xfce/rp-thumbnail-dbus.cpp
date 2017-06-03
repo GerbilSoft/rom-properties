@@ -68,19 +68,27 @@ enum RpThumbnailSignals {
 	SIGNAL_FINISHED,
 	SIGNAL_ERROR,
 
+	// Internal signal: RpThumbnail has been idle for long enough and should exit.
+	SIGNAL_SHUTDOWN,
+
 	SIGNAL_LAST
 };
 
 // Internal functions.
 static void	rp_thumbnail_dispose		(GObject	*object);
 static void	rp_thumbnail_finalize		(GObject	*object);
-static gboolean	rp_thumbnail_process		(gpointer	 data);
+static gboolean	rp_thumbnail_timeout		(RpThumbnail	*thumbnailer);
+static gboolean	rp_thumbnail_process		(RpThumbnail	*thumbnailer);
 
 struct _RpThumbnailClass {
 	GObjectClass __parent__;
 	DBusGConnection *connection;
+
+	// TODO: Store signal_ids outside of the class?
 	guint signal_ids[SIGNAL_LAST];
 };
+
+#define SHUTDOWN_TIMEOUT_SECONDS 30
 
 struct _RpThumbnail {
 	GObject __parent__;
@@ -88,8 +96,14 @@ struct _RpThumbnail {
 	// Is the D-Bus service registered?
 	bool registered;
 
+	// Has the shutdown signal been emitted?
+	bool shutdown_emitted;
+
+	// Shutdown timeout.
+	guint timeout_id;
+
 	// Idle function for processing.
-	guint process_idle;
+	guint idle_process;
 
 	// Last handle value.
 	guint last_handle;
@@ -171,6 +185,12 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING, 0);
 
+	// Internal signal: RpThumbnail has been idle for long enough and should exit.
+	klass->signal_ids[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
+		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
+		0, nullptr, nullptr, nullptr,
+		G_TYPE_NONE, 0);
+
 	// Initialize the D-Bus connection, per-klass.
 	GError *error = nullptr;
 	klass->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
@@ -188,7 +208,9 @@ static void
 rp_thumbnail_init(RpThumbnail *thumbnailer)
 {
 	thumbnailer->registered = false;
-	thumbnailer->process_idle = 0;
+	thumbnailer->shutdown_emitted = false;
+	thumbnailer->timeout_id = 0;
+	thumbnailer->idle_process = 0;
 	thumbnailer->last_handle = 0;
 	thumbnailer->handle_queue = new deque<guint>();
 	thumbnailer->uri_map = new unordered_map<guint, string>();
@@ -245,6 +267,12 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 	}
 
 	g_object_unref(driver_proxy);
+
+	if (thumbnailer->registered) {
+		// Make sure we shut down after inactivity.
+		thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
+			(GSourceFunc)rp_thumbnail_timeout, thumbnailer);
+	}
 }
 
 static void
@@ -252,10 +280,16 @@ rp_thumbnail_dispose(GObject *object)
 {
 	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
 
-	// Unregister process_idle.
-	if (G_UNLIKELY(thumbnailer->process_idle != 0)) {
-		g_source_remove(thumbnailer->process_idle);
-		thumbnailer->process_idle = 0;
+	// Stop the inactivity timeout.
+	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
+		g_source_remove(thumbnailer->timeout_id);
+		thumbnailer->timeout_id = 0;
+	}
+
+	// Unregister idle_process.
+	if (G_UNLIKELY(thumbnailer->idle_process != 0)) {
+		g_source_remove(thumbnailer->idle_process);
+		thumbnailer->idle_process = 0;
 	}
 }
 
@@ -280,6 +314,18 @@ guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 	const gchar *uri, const gchar *mime_type,
 	const char *flavor, bool urgent)
 {
+	if (G_UNLIKELY(thumbnailer->shutdown_emitted)) {
+		// The shutdown signal was emitted.
+		// Can't queue anything else.
+		return 0;
+	}
+
+	// Stop the inactivity timeout.
+	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
+		g_source_remove(thumbnailer->timeout_id);
+		thumbnailer->timeout_id = 0;
+	}
+
 	// Queue the URI for processing.
 	// TODO: Handle 'flavor', 'urgent', etc.
 	guint handle = ++thumbnailer->last_handle;
@@ -294,9 +340,10 @@ guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 	thumbnailer->handle_queue->push_back(handle);
 
 	// Make sure the idle process is started.
-	// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
-	if (thumbnailer->process_idle == 0) {
-		thumbnailer->process_idle = g_idle_add(rp_thumbnail_process, thumbnailer);
+	// TODO: Make it multi-threaded?
+	// FIXME: Atomic compare and/or mutex if multi-threaded.
+	if (thumbnailer->idle_process == 0) {
+		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnail_process, thumbnailer);
 	}
 
 	return handle;
@@ -310,16 +357,36 @@ gboolean rp_thumbnail_dequeue(RpThumbnail *thumbnailer,
 }
 
 /**
- * Process a thumbnail.
- * @param data RpThumbnail object.
+ * Inactivity timeout has elapsed.
+ * @param thumbnailer RpThumbnail object.
  */
 static gboolean
-rp_thumbnail_process(gpointer data)
+rp_thumbnail_timeout(RpThumbnail *thumbnailer)
 {
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(data);
-	g_return_val_if_fail(thumbnailer != nullptr || IS_RP_THUMBNAIL(thumbnailer), FALSE);
+	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), FALSE);
+	if (!thumbnailer->handle_queue->empty()) {
+		// Still processing stuff.
+		return true;
+	}
 
-	RpThumbnailClass *const klass = RP_THUMBNAIL_GET_CLASS(data);
+	// Stop the timeout and shut down the thumbnailer.
+	RpThumbnailClass *const klass = RP_THUMBNAIL_GET_CLASS(thumbnailer);
+	thumbnailer->timeout_id = 0;
+	thumbnailer->shutdown_emitted = true;
+	g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_SHUTDOWN], 0);
+	g_debug("Shutting down due to %u seconds of inactivity.", SHUTDOWN_TIMEOUT_SECONDS);
+	return false;
+}
+
+/**
+ * Process a thumbnail.
+ * @param thumbnailer RpThumbnail object.
+ */
+static gboolean
+rp_thumbnail_process(RpThumbnail *thumbnailer)
+{
+	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), FALSE);
+	RpThumbnailClass *const klass = RP_THUMBNAIL_GET_CLASS(thumbnailer);
 
 	guint handle;
 	gchar *filename;
@@ -408,7 +475,13 @@ cleanup:
 	if (isEmpty) {
 		// Clear the idle process.
 		// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
-		thumbnailer->process_idle = 0;
+		thumbnailer->idle_process = 0;
+
+		// Restart the inactivity timeout.
+		if (G_LIKELY(thumbnailer->timeout_id == 0)) {
+			thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
+				(GSourceFunc)rp_thumbnail_timeout, thumbnailer);
+		}
 	}
 	return !isEmpty;
 }
@@ -444,6 +517,21 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 		g_warning(buf);
 	}
 	return ret;
+}
+
+/**
+ * Shutdown callback.
+ * @param thumbnailer RpThumbnail object.
+ * @param main_loop GMainLoop.
+ */
+static void
+shutdown_rp_thumbnail_dbus(RpThumbnail *thumbnailer, GMainLoop *main_loop)
+{
+	g_return_if_fail(IS_RP_THUMBNAIL(thumbnailer));
+	g_return_if_fail(main_loop != nullptr);
+
+	// Exit the main loop.
+	g_main_loop_quit(main_loop);
 }
 
 int main(int argc, char *argv[])
@@ -492,7 +580,7 @@ int main(int argc, char *argv[])
 	}
 
 	dbus_g_thread_init();
-	GMainLoop *loop = g_main_loop_new(nullptr, false);
+	GMainLoop *main_loop = g_main_loop_new(nullptr, false);
 
 	// Initialize the D-Bus server.
 	// TODO: Distinguish between "already running" and "error"
@@ -500,9 +588,13 @@ int main(int argc, char *argv[])
 	RpThumbnail *server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
 	if (server->registered) {
 		// Server is registered.
+
+		// Make sure we quit after the RpThumbnail server is idle for long enough.
+		g_signal_connect(server, "shutdown", G_CALLBACK(shutdown_rp_thumbnail_dbus), main_loop);
+
 		// Run the main loop.
 		g_debug("Starting the D-Bus service.");
-		g_main_loop_run(loop);
+		g_main_loop_run(main_loop);
 	}
 	dlclose(pDll);
 	return 0;
