@@ -245,6 +245,7 @@ guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 	thumbnailer->handle_queue->push_back(handle);
 
 	// Make sure the idle process is started.
+	// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
 	if (thumbnailer->process_idle == 0) {
 		thumbnailer->process_idle = g_idle_add(rp_thumbnail_process, thumbnailer);
 	}
@@ -307,7 +308,13 @@ cleanup:
 	}
 
 	// Return TRUE if we still have more thumbnails queued.
-	return (!thumbnailer->handle_queue->empty());
+	const bool isEmpty = thumbnailer->handle_queue->empty();
+	if (isEmpty) {
+		// Clear the idle process.
+		// FIXME: Atomic compare and/or mutex? (assuming multi-threaded...)
+		thumbnailer->process_idle = 0;
+	}
+	return !isEmpty;
 }
 
 int main(int argc, char *argv[])
