@@ -30,7 +30,7 @@ FIND_PACKAGE(LibNautilusExtension 3.0.0)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-stub.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-stub.h")
 
 # rp-stub
-ADD_EXECUTABLE(rp-stub rp-stub.c)
+ADD_EXECUTABLE(rp-stub rp-stub.c dll-search.c dll-search.h)
 DO_SPLIT_DEBUG(rp-stub)
 TARGET_INCLUDE_DIRECTORIES(rp-stub
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
