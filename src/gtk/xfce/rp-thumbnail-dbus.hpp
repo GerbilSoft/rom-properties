@@ -40,13 +40,6 @@ typedef struct _RpThumbnail		RpThumbnail;
 /* these two functions are implemented automatically by the G_DEFINE_DYNAMIC_TYPE macro */
 GType		rp_thumbnail_provider_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 
-guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
-	const gchar *uri, const gchar *mime_type,
-	const char *flavor, bool urgent) G_GNUC_INTERNAL;
-
-gboolean rp_thumbnail_dequeue(RpThumbnail *thumbnailer,
-	unsigned int handle, GError **error);
-
 G_END_DECLS;
 
 #endif /* !__ROMPROPERTIES_XFCE_RP_THUMBNAIL_DBUS_HPP__ */

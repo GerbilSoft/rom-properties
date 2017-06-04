@@ -29,8 +29,7 @@
 #include "rp-stub/dll-search.h"
 
 #include <glib-object.h>
-#include <dbus/dbus-glib-bindings.h>
-#include "rp-thumbnail-server-bindings.h"
+#include "SpecializedThumbnailer1.h"
 
 // C includes. (C++ namespace)
 #include <cstdarg>
@@ -60,15 +59,31 @@ static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
 // Thumbnail cache directory.
 static string cache_dir;
 
+// D-Bus connection.
+// TODO: Make this a property of RpThumbnail?
+static GDBusConnection *connection = nullptr;
+
+// Shutdown request.
+static bool stop_main_loop = false;
+
+// from tumbler-utils.h
+#define g_dbus_async_return_val_if_fail(expr, invocation, val) \
+G_STMT_START { \
+	if (G_UNLIKELY(!(expr))) { \
+		GError *dbus_async_return_if_fail_error = nullptr; \
+		g_set_error(&dbus_async_return_if_fail_error, G_DBUS_ERROR, G_DBUS_ERROR_FAILED, \
+			"Assertion \"%s\" failed", #expr); \
+		g_dbus_method_invocation_return_gerror(invocation, dbus_async_return_if_fail_error); \
+		g_clear_error(&dbus_async_return_if_fail_error); \
+		return (val); \
+	} \
+} G_STMT_END
+
 /* Signal identifiers */
 enum RpThumbnailSignals {
 	SIGNAL_0,
-	SIGNAL_READY,
-	SIGNAL_STARTED,
-	SIGNAL_FINISHED,
-	SIGNAL_ERROR,
 
-	// Internal signal: RpThumbnail has been idle for long enough and should exit.
+	// RpThumbnail has been idle for long enough and should exit.
 	SIGNAL_SHUTDOWN,
 
 	SIGNAL_LAST
@@ -80,9 +95,21 @@ static void	rp_thumbnail_finalize		(GObject	*object);
 static gboolean	rp_thumbnail_timeout		(RpThumbnail	*thumbnailer);
 static gboolean	rp_thumbnail_process		(RpThumbnail	*thumbnailer);
 
+// D-Bus methods.
+static gboolean	rp_thumbnail_queue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+						 GDBusMethodInvocation *invocation,
+						 const gchar	*uri,
+						 const gchar	*mime_type,
+						 const char	*flavor,
+						 bool		 urgent,
+						 RpThumbnail	*thumbnailer);
+static gboolean	rp_thumbnail_dequeue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+						 GDBusMethodInvocation *invocation,
+						 guint		 handle,
+						 RpThumbnail	*thumbnailer);
+
 struct _RpThumbnailClass {
 	GObjectClass __parent__;
-	DBusGConnection *connection;
 
 	// TODO: Store signal_ids outside of the class?
 	guint signal_ids[SIGNAL_LAST];
@@ -99,9 +126,10 @@ struct request_info {
 
 struct _RpThumbnail {
 	GObject __parent__;
+	OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton;
 
-	// Is the D-Bus service registered?
-	bool registered;
+	// Is the D-Bus object exported?
+	bool exported;
 
 	// Has the shutdown signal been emitted?
 	bool shutdown_emitted;
@@ -129,6 +157,8 @@ struct _RpThumbnail {
 
 static void     rp_thumbnail_init              (RpThumbnail      *thumbnailer);
 static void     rp_thumbnail_class_init        (RpThumbnailClass *klass);
+
+static void     rp_thumbnail_constructed       (GObject *object);
 
 static gpointer rp_thumbnail_parent_class = nullptr;
 
@@ -172,49 +202,23 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_thumbnail_dispose;
 	gobject_class->finalize = rp_thumbnail_finalize;
+	gobject_class->constructed = rp_thumbnail_constructed;
 
 	// Register signals.
 	klass->signal_ids[SIGNAL_0] = 0;
-	klass->signal_ids[SIGNAL_READY] = g_signal_new("ready",
-		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
-		0, nullptr, nullptr, nullptr,
-		G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING, 0);
-	klass->signal_ids[SIGNAL_STARTED] = g_signal_new("started",
-		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
-		0, nullptr, nullptr, nullptr,
-		G_TYPE_NONE, 1, G_TYPE_UINT, 0);
-	klass->signal_ids[SIGNAL_FINISHED] = g_signal_new("finished",
-		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
-		0, nullptr, nullptr, nullptr,
-		G_TYPE_NONE, 1, G_TYPE_UINT, 0);
-	klass->signal_ids[SIGNAL_ERROR] = g_signal_new("error",
-		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
-		0, nullptr, nullptr, nullptr,
-		G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING, 0);
 
-	// Internal signal: RpThumbnail has been idle for long enough and should exit.
+	// RpThumbnail has been idle for long enough and should exit.
 	klass->signal_ids[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
 		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
 		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
-
-	// Initialize the D-Bus connection, per-klass.
-	GError *error = nullptr;
-	klass->connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-	if (!klass->connection) {
-		g_warning("Unable to connect to D-Bus: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	// Register introspection data.
-	dbus_g_object_type_install_info(TYPE_RP_THUMBNAIL, &dbus_glib_rp_thumbnail_object_info);
 }
 
 static void
 rp_thumbnail_init(RpThumbnail *thumbnailer)
 {
-	thumbnailer->registered = false;
+	thumbnailer->skeleton = nullptr;
+	thumbnailer->exported = false;
 	thumbnailer->shutdown_emitted = false;
 	thumbnailer->timeout_id = 0;
 	thumbnailer->idle_process = 0;
@@ -222,63 +226,35 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 	thumbnailer->handle_queue = new deque<guint>();
 	thumbnailer->uri_map = new unordered_map<guint, request_info>();
 	thumbnailer->uri_map->reserve(8);
+}
 
-	GError *error = NULL;
-	DBusGProxy *driver_proxy;
-	RpThumbnailClass *klass = RP_THUMBNAIL_GET_CLASS(thumbnailer);
-	guint request_ret;
+static void
+rp_thumbnail_constructed(GObject *object)
+{
+	g_return_if_fail(IS_RP_THUMBNAIL(object));
+	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
 
-	// Register D-Bus path.
-	dbus_g_connection_register_g_object(klass->connection,
-		"/com/gerbilsoft/rom_properties/SpecializedThumbnailer1",
-		G_OBJECT(thumbnailer));
-
-	// Register the service name.
-	driver_proxy = dbus_g_proxy_new_for_name(klass->connection,
-		DBUS_SERVICE_DBUS,
-		DBUS_PATH_DBUS,
-		DBUS_INTERFACE_DBUS);
-
-	int res = org_freedesktop_DBus_request_name(driver_proxy,
-		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
-		DBUS_NAME_FLAG_DO_NOT_QUEUE, &request_ret, &error);
-	if (res == 1) {
-		// The D-Bus call succeeded.
-		// Check the return value.
-		switch (request_ret) {
-			case 0:
-			default:
-				// An unknown error occurred.
-				g_warning("Unable to register service: res == %d", request_ret);
-				dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
-				break;
-
-			case DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER:
-			case DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
-				// D-Bus object registered successfully.
-				thumbnailer->registered = true;
-				break;
-
-			case DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
-			case DBUS_REQUEST_NAME_REPLY_EXISTS:
-				// Some other process has already registered this name.
-				g_warning("This thumbnailer is already registered; exiting.");
-				dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
-				break;
-		}
-	} else {
-		// The D-Bus call failed.
-		g_warning("Unable to register service: %s", error->message);
+	GError *error = nullptr;
+	thumbnailer->skeleton = org_freedesktop_thumbnails_specialized_thumbnailer1_skeleton_new();
+	g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(thumbnailer->skeleton),
+		connection, "/com/gerbilsoft/rom_properties/SpecializedThumbnailer1", &error);
+	if (error) {
+		g_critical("Error exporting RpThumbnail on session bus: %s", error->message);
 		g_error_free(error);
-		dbus_g_connection_unregister_g_object(klass->connection, G_OBJECT(thumbnailer));
-	}
-
-	g_object_unref(driver_proxy);
-
-	if (thumbnailer->registered) {
+		thumbnailer->exported = false;
+	} else {
+		// Connect signals to the relevant functions.
+		g_signal_connect(thumbnailer->skeleton, "handle-queue",
+			G_CALLBACK(rp_thumbnail_queue), thumbnailer);
+		g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
+			G_CALLBACK(rp_thumbnail_dequeue), thumbnailer);
+		
 		// Make sure we shut down after inactivity.
 		thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
 			(GSourceFunc)rp_thumbnail_timeout, thumbnailer);
+
+		// Object is exported.
+		thumbnailer->exported = true;
 	}
 }
 
@@ -311,20 +287,31 @@ rp_thumbnail_finalize(GObject *object)
 
 /**
  * Queue a ROM image for thumbnailing.
- * @param thumbnailer RpThumbnailer object.
- * @param uri URI to thumbnail.
- * @param mime_type MIME type of the URI.
- * @param flavor The flavor that should be made, e.g. "normal".
- * @return Request handle.
+ * @param skeleton	[in] GDBusObjectSkeleton
+ * @param invocation	[in/out] GDBusMethodInvocation
+ * @param uri		[in] URI to thumbnail.
+ * @param mime_type	[in] MIME type of the URI.
+ * @param flavor	[in] The flavor that should be made, e.g. "normal".
+ * @param urgent	[in] Is this thumbnail "urgent"?
+ * @param thumbnailer	[in] RpThumbnailer object.
+ * @return True if the signal was handled; false if not.
  */
-guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
+static gboolean
+rp_thumbnail_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+	GDBusMethodInvocation *invocation,
 	const gchar *uri, const gchar *mime_type,
-	const char *flavor, bool urgent)
+	const char *flavor, bool urgent,
+	RpThumbnail *thumbnailer)
 {
+	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(uri != nullptr, invocation, false);
+
 	if (G_UNLIKELY(thumbnailer->shutdown_emitted)) {
 		// The shutdown signal was emitted.
 		// Can't queue anything else.
-		return 0;
+		g_dbus_method_invocation_return_error(invocation,
+			G_DBUS_ERROR, G_DBUS_ERROR_NO_SERVER, "Service is shutting down.");
+		return true;
 	}
 
 	// Stop the inactivity timeout.
@@ -358,14 +345,30 @@ guint rp_thumbnail_queue(RpThumbnail *thumbnailer,
 		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnail_process, thumbnailer);
 	}
 
-	return handle;
+	org_freedesktop_thumbnails_specialized_thumbnailer1_complete_queue(skeleton, invocation, handle);
+	return true;
 }
 
-gboolean rp_thumbnail_dequeue(RpThumbnail *thumbnailer,
-	unsigned int handle, GError **error)
+/**
+ * Dequeue a ROM image that was previously queued for thumbnailing.
+ * @param skeleton	[in] GDBusObjectSkeleton
+ * @param invocation	[in] GDBusMethodInvocation
+ * @param handle	[in] Handle previously returned by queue().
+ * @param thumbnailer	[in] RpThumbnailer object.
+ * @return True if the signal was handled; false if not.
+ */
+static gboolean
+rp_thumbnail_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+	GDBusMethodInvocation *invocation,
+	guint handle,
+	RpThumbnail *thumbnailer)
 {
+	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(handle != 0, invocation, false);
+
 	// TODO
-	return false;
+	org_freedesktop_thumbnails_specialized_thumbnailer1_complete_dequeue(skeleton, invocation);
+	return true;
 }
 
 /**
@@ -375,7 +378,7 @@ gboolean rp_thumbnail_dequeue(RpThumbnail *thumbnailer,
 static gboolean
 rp_thumbnail_timeout(RpThumbnail *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), FALSE);
+	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), false);
 	if (!thumbnailer->handle_queue->empty()) {
 		// Still processing stuff.
 		return true;
@@ -398,7 +401,6 @@ static gboolean
 rp_thumbnail_process(RpThumbnail *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), FALSE);
-	RpThumbnailClass *const klass = RP_THUMBNAIL_GET_CLASS(thumbnailer);
 
 	guint handle;
 	gchar *filename;
@@ -414,8 +416,9 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	const request_info *const req = (iter != thumbnailer->uri_map->end() ? &(iter->second) : nullptr);
 	if (!req) {
 		// URI not found.
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, "", 0, "Handle has no associated URI.");
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, "",
+			0, "Handle has no associated URI.");
 		goto cleanup;
 	}
 
@@ -424,8 +427,9 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	filename = g_filename_from_uri(req->uri.c_str(), nullptr, nullptr);
 	if (!filename) {
 		// URI is not describing a local file.
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, req->uri.c_str(), 0, "URI is not describing a local file.");
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri.c_str(),
+			0, "URI is not describing a local file.");
 		goto cleanup;
 	}
 
@@ -435,8 +439,9 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	cache_filename = cache_dir + "/thumbnails/";
 	cache_filename += (req->large ? "large" : "normal");
 	if (g_mkdir_with_parents(cache_filename.c_str(), 0777) != 0) {
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, req->uri.c_str(), 0, "Cannot mkdir() the thumbnail cache directory.");
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri.c_str(),
+			0, "Cannot mkdir() the thumbnail cache directory.");
 		goto cleanup;
 	}
 
@@ -446,9 +451,9 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	if (!md5) {
 		// Cannot allocate an MD5...
 		// TODO: Test for this early.
-		// FIXME: failed_uris should be an array of strings.
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, req->uri.c_str(), 0, "g_checksum_new() does not support MD5.");
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri.c_str(),
+			0, "g_checksum_new() does not support MD5.");
 		goto cleanup;
 	}
 	g_checksum_update(md5, reinterpret_cast<const guchar*>(req->uri.c_str()), req->uri.size());
@@ -463,17 +468,19 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	if (ret == 0) {
 		// Image thumbnailed successfully.
 		g_debug("rom-properties thumbnail: %s -> %s [OK]", filename, cache_filename.c_str());
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_READY], 0, handle, req->uri.c_str());
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_ready(
+			thumbnailer->skeleton, handle, req->uri.c_str());
 	} else {
 		// Error thumbnailing the image...
-		g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_ERROR], 0,
-			 handle, req->uri.c_str(), 2, "Image thumbnailing failed... (TODO: return code)");
 		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", filename, cache_filename.c_str(), ret);
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, req->uri.c_str(),
+			2, "Image thumbnailing failed... (TODO: return code)");
 	}
 
 cleanup:
 	// Request is finished. Emit the finished signal.
-	g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_FINISHED], 0, handle);
+	org_freedesktop_thumbnails_specialized_thumbnailer1_emit_finished(thumbnailer->skeleton, handle);
 	if (iter != thumbnailer->uri_map->end()) {
 		// Remove the URI from the map.
 		thumbnailer->uri_map->erase(iter);
@@ -543,7 +550,26 @@ shutdown_rp_thumbnail_dbus(RpThumbnail *thumbnailer, GMainLoop *main_loop)
 	g_return_if_fail(main_loop != nullptr);
 
 	// Exit the main loop.
-	g_main_loop_quit(main_loop);
+	stop_main_loop = true;
+	if (g_main_loop_is_running(main_loop)) {
+		g_main_loop_quit(main_loop);
+	}
+}
+
+/**
+ * The D-Bus name was either lost or could not be acquired.
+ * @param main_loop GMainLoop
+ */
+static void
+on_dbus_name_lost(GDBusConnection *connection, const gchar *name, gpointer user_data)
+{
+	GMainLoop *const main_loop = (GMainLoop*)user_data;
+	g_return_if_fail(main_loop != nullptr);
+
+	stop_main_loop = true;
+	if (g_main_loop_is_running(main_loop)) {
+		g_main_loop_quit(main_loop);
+	}
 }
 
 int main(int argc, char *argv[])
@@ -591,22 +617,36 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	dbus_g_thread_init();
+	GError *error = nullptr;
+	connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
+	if (error) {
+		g_critical("Unable to connect to the session bus: %s", error->message);
+		g_error_free(error);
+		dlclose(pDll);
+		return EXIT_FAILURE;
+	}
+
 	GMainLoop *main_loop = g_main_loop_new(nullptr, false);
 
-	// Initialize the D-Bus server.
-	// TODO: Distinguish between "already running" and "error"
-	// and return non-zero in the error case.
-	RpThumbnail *server = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
-	if (server->registered) {
-		// Server is registered.
+	// Create the RpThumbnail service object.
+	RpThumbnail *const thumbnailer = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
+
+	// Register the D-Bus service.
+	g_bus_own_name_on_connection(connection,
+		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
+		G_BUS_NAME_OWNER_FLAGS_NONE, nullptr, on_dbus_name_lost, main_loop, nullptr);
+
+	if (thumbnailer->exported) {
+		// Service object is exported.
 
 		// Make sure we quit after the RpThumbnail server is idle for long enough.
-		g_signal_connect(server, "shutdown", G_CALLBACK(shutdown_rp_thumbnail_dbus), main_loop);
+		g_signal_connect(thumbnailer, "shutdown", G_CALLBACK(shutdown_rp_thumbnail_dbus), main_loop);
 
 		// Run the main loop.
-		g_debug("Starting the D-Bus service.");
-		g_main_loop_run(main_loop);
+		if (!stop_main_loop) {
+			g_debug("Starting the D-Bus service.");
+			g_main_loop_run(main_loop);
+		}
 	}
 	dlclose(pDll);
 	return 0;

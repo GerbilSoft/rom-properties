@@ -4,7 +4,6 @@ PROJECT(rom-properties-xfce)
 FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
-FIND_PACKAGE(DBusGLib)
 # GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 COMPONENTS gtk)
 IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
@@ -40,21 +39,23 @@ SET(rom-properties-xfce_H
 
 # D-Bus bindings for the thumbnailer.
 ADD_CUSTOM_COMMAND(
-	OUTPUT rp-thumbnail-server-bindings.h
-	COMMAND "${GLIB_DBUS_BINDING_TOOL}" --prefix=rp_thumbnail --mode=glib-server
+	OUTPUT SpecializedThumbnailer1.c SpecializedThumbnailer1.h
+	COMMAND "${GDBUS_CODEGEN}"
+		--generate-c-code SpecializedThumbnailer1
 		"${CMAKE_CURRENT_SOURCE_DIR}/org.freedesktop.thumbnails.SpecializedThumbnailer1.xml"
-		> rp-thumbnail-server-bindings.h
+	WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	DEPENDS org.freedesktop.thumbnails.SpecializedThumbnailer1.xml
 	VERBATIM
 	)
 
 SET(rp-thumbnail-dbus_SRCS
 	rp-thumbnail-dbus.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	../../rp-stub/dll-search.c
 	)
 SET(rp-thumbnail-dbus_H
 	rp-thumbnail-dbus.hpp
-	${CMAKE_CURRENT_BINARY_DIR}/rp-thumbnail-server-bindings.h
+	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
 	../../rp-stub/dll-search.h
 	)
 
@@ -98,7 +99,7 @@ IF(BUILD_XFCE)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::dbus GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})
