@@ -90,8 +90,10 @@ enum RpThumbnailSignals {
 };
 
 // Internal functions.
+static void	rp_thumbnail_constructed	(GObject	*object);
 static void	rp_thumbnail_dispose		(GObject	*object);
 static void	rp_thumbnail_finalize		(GObject	*object);
+
 static gboolean	rp_thumbnail_timeout		(RpThumbnail	*thumbnailer);
 static gboolean	rp_thumbnail_process		(RpThumbnail	*thumbnailer);
 
@@ -157,8 +159,6 @@ struct _RpThumbnail {
 
 static void     rp_thumbnail_init              (RpThumbnail      *thumbnailer);
 static void     rp_thumbnail_class_init        (RpThumbnailClass *klass);
-
-static void     rp_thumbnail_constructed       (GObject *object);
 
 static gpointer rp_thumbnail_parent_class = nullptr;
 
@@ -280,6 +280,10 @@ static void
 rp_thumbnail_finalize(GObject *object)
 {
 	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+
+	if (thumbnailer->skeleton) {
+		g_object_unref(thumbnailer->skeleton);
+	}
 
 	delete thumbnailer->handle_queue;
 	delete thumbnailer->uri_map;
