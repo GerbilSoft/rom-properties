@@ -209,6 +209,16 @@ class NCCHReader : public LibRpBase::IPartition
 		 * @return IRpFile*, or nullptr on error.
 		 */
 		LibRpBase::IRpFile *open(int section, const char *filename);
+
+		/**
+		 * Open the logo section.
+		 *
+		 * For CXIs compiled with pre-SDK5, opens the "logo" file in ExeFS.
+		 * Otherwise, this opens the separate logo section.
+		 *
+		 * @return IRpFile*, or nullptr on error.
+		 */
+		LibRpBase::IRpFile *openLogo(void);
 };
 
 }

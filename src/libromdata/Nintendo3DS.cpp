@@ -62,6 +62,9 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+// zlib for crc32()
+#include <zlib.h>
+
 namespace LibRomData {
 
 class Nintendo3DSPrivate : public RomDataPrivate
@@ -215,7 +218,7 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		const rp_image *loadIcon(int idx = 1);
 
 		/**
-		 * Add the title ID and product code fields.
+		 * Add the title ID, product code, and logo fields.
 		 * Called by loadFieldData().
 		 * @param showContentType If true, show the content type.
 		 */
@@ -940,6 +943,70 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 			const rp_char *content_type = ncch->contentType();
 			fields->addField_string(_RP("Content Type"),
 				(content_type ? content_type : _RP("Unknown")));
+		}
+
+		// Logo.
+		// NOTE: All known official logo binaries are 8 KB.
+		// The original and new "Homebrew" logos are also 8 KB.
+		uint32_t crc = 0;
+		unique_ptr<IRpFile> f_logo(ncch->openLogo());
+		const int64_t szFile = (f_logo ? f_logo->size() : 0);
+		if (szFile == 8192) {
+			// Calculate the CRC32.
+			unique_ptr<uint8_t[]> buf(new uint8_t[(unsigned int)szFile]);
+			size_t size = f_logo->read(buf.get(), (unsigned int)szFile);
+			if (size == (unsigned int)szFile) {
+				crc = crc32(0, buf.get(), (unsigned int)szFile);
+			}
+		} else if (szFile > 0) {
+			// Some other custom logo.
+			crc = 1;
+		}
+
+		const rp_char *logo_name;
+		switch (crc) {
+			case 0:
+				// No logo.
+				logo_name = nullptr;
+				break;
+			default:
+				// Custom logo.
+				logo_name = _RP("Custom");
+				break;
+
+			// Official logos.
+			case 0xCFD0EB8B:
+				logo_name = _RP("Nintendo");
+				break;
+			case 0x1093522B:
+				logo_name = _RP("Licensed by Nintendo");
+				break;
+			case 0x4FA8771C:
+				logo_name = _RP("Distributed by Nintendo");
+				break;
+			case 0x7F68B548:
+				logo_name = _RP("iQue");
+				break;
+			case 0xD8907ED7:
+				logo_name = _RP("iQue (System)");
+				break;
+
+			// Homebrew logos.
+			case 0x343A79D9:
+				// "Old" static Homebrew logo.
+				// Included with `makerom`.
+				logo_name = _RP("Homebrew (static)");
+				break;
+			case 0xF257BD67:
+				// "New" animated Homebrew logo.
+				// Uses the Homebrew Launcher theme.
+				// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
+				logo_name = _RP("Homebrew (animated)");
+				break;
+		}
+
+		if (logo_name) {
+			fields->addField_string(_RP("Logo"), logo_name);
 		}
 	}
 }

@@ -987,4 +987,32 @@ IRpFile *NCCHReader::open(int section, const char *filename)
 	return new PartitionFile(this, offset, size);
 }
 
+/**
+ * Open the logo section.
+ *
+ * For CXIs compiled with pre-SDK5, opens the "logo" file in ExeFS.
+ * Otherwise, this opens the separate logo section.
+ *
+ * @return IRpFile*, or nullptr on error.
+ */
+LibRpBase::IRpFile *NCCHReader::openLogo(void)
+{
+	RP_D(NCCHReader);
+	assert(isOpen());
+	if (!isOpen()) {
+		m_lastError = EBADF;
+		return nullptr;
+	}
+
+	// Check if the dedicated logo section is present.
+	if (le32_to_cpu(d->ncch_header.hdr.logo_region_size) != 0) {
+		// Dedicated logo section is present.
+		// TODO
+		return nullptr;
+	}
+
+	// Pre-SDK5. Load the "logo" file from ExeFS.
+	return this->open(N3DS_NCCH_SECTION_EXEFS, "logo");
+}
+
 }
