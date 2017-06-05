@@ -127,14 +127,14 @@ rom_properties_page_dispose(GObject *object)
 	}
 
 	// Call the superclass dispose() function.
-	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose)(object);
+	G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose(object);
 }
 
 static void
 rom_properties_page_finalize(GObject *object)
 {
 	// Call the superclass finalize() function.
-	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
+	G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize(object);
 }
 
 RomPropertiesPage*

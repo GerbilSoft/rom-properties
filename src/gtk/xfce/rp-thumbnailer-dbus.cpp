@@ -304,7 +304,7 @@ rp_thumbnailer_dispose(GObject *object)
 	}
 
 	// Call the superclass dispose() function.
-	(*G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose)(object);
+	G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose(object);
 }
 
 static void
@@ -323,7 +323,7 @@ rp_thumbnailer_finalize(GObject *object)
 	free(thumbnailer->cache_dir);
 
 	// Call the superclass finalize() function.
-	(*G_OBJECT_CLASS(rp_thumbnailer_parent_class)->finalize)(object);
+	G_OBJECT_CLASS(rp_thumbnailer_parent_class)->finalize(object);
 }
 
 /**
