@@ -528,6 +528,7 @@ typedef enum {
  * Reference: https://github.com/profi200/Project_CTR/blob/master/makerom/ncch.h
  */
 typedef enum {
+	N3DS_NCCH_SECTION_PLAIN		= 0,	// No encryption
 	N3DS_NCCH_SECTION_EXHEADER	= 1,
 	N3DS_NCCH_SECTION_EXEFS		= 2,
 	N3DS_NCCH_SECTION_ROMFS		= 3,

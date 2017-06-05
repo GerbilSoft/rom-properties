@@ -195,10 +195,25 @@ void NCCHReaderPrivate::init(void)
 		// Encryption details:
 		// - ExHeader: ncchKey0, N3DS_NCCH_SECTION_EXHEADER
 		// - acexDesc (TODO): ncchKey0, N3DS_NCCH_SECTION_EXHEADER
+		// - Logo: Plaintext (SDK5+ only)
 		// - ExeFS:
 		//   - Header, "icon" and "banner": ncchKey0, N3DS_NCCH_SECTION_EXEFS
 		//   - Other files: ncchKey1, N3DS_NCCH_SECTION_EXEFS
 		// - RomFS (TODO): ncchKey1, N3DS_NCCH_SECTION_ROMFS
+
+		// Logo (SDK5+)
+		// NOTE: This is plaintext, but read() doesn't work properly
+		// unless a section is defined. Use N3DS_NCCH_SECTION_PLAIN
+		// to indicate this.
+		const uint32_t logo_region_size = le32_to_cpu(ncch_header.hdr.logo_region_size) << media_unit_shift;
+		if (logo_region_size > 0) {
+			const uint32_t logo_region_offset = le32_to_cpu(ncch_header.hdr.logo_region_offset) << media_unit_shift;
+			encSections.push_back(EncSection(
+				logo_region_offset,	// Address within NCCH.
+				logo_region_offset,		// Counter base address.
+				logo_region_size,
+				0, N3DS_NCCH_SECTION_PLAIN));
+		}
 
 		// ExHeader
 		encSections.push_back(EncSection(
@@ -557,11 +572,10 @@ size_t NCCHReader::read(void *ptr, size_t size)
 
 		size_t sz_to_read = 0;
 		if (!section) {
-			// Not in an encrypted section.
-			// TODO: Find the next encrypted section.
-			// For now, assuming the rest is plaintext.
-			sz_to_read = size;
-			assert(!"Reading in an unencrypted section...");
+			// Not in a defined section.
+			// TODO: Handle this?
+			assert(!"Reading in an undefined section.");
+			return sz_total_read;
 		} else {
 			// We're in an encrypted section.
 			uint32_t section_offset = (uint32_t)(d->pos - section->address);
@@ -579,7 +593,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 		// title key encryption if it's present.
 		size_t ret_sz = d->readFromROM(d->pos, ptr8, sz_to_read);
 
-		if (section) {
+		if (section && section->section > N3DS_NCCH_SECTION_PLAIN) {
 			// Set the required key.
 			// TODO: Don't set the key if it hasn't changed.
 			d->cipher->setKey(d->ncch_keys[section->keyIdx].u8, sizeof(d->ncch_keys[section->keyIdx].u8));
@@ -1005,10 +1019,12 @@ LibRpBase::IRpFile *NCCHReader::openLogo(void)
 	}
 
 	// Check if the dedicated logo section is present.
-	if (le32_to_cpu(d->ncch_header.hdr.logo_region_size) != 0) {
+	const uint32_t logo_region_size = le32_to_cpu(d->ncch_header.hdr.logo_region_size) << d->media_unit_shift;
+	if (logo_region_size > 0) {
 		// Dedicated logo section is present.
-		// TODO
-		return nullptr;
+		return new PartitionFile(this,
+			le32_to_cpu(d->ncch_header.hdr.logo_region_offset) << d->media_unit_shift,
+			logo_region_size);
 	}
 
 	// Pre-SDK5. Load the "logo" file from ExeFS.
