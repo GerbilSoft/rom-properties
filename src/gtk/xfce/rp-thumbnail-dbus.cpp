@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * thumbnail-dbus.cpp: D-Bus thumbnail provider.                           *
+ * rp-thumbnail-dbus.cpp: D-Bus thumbnailer service.                       *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -26,13 +26,9 @@
 
 #include "rp-thumbnail-dbus.hpp"
 #include "librpbase/common.h"
-#include "rp-stub/dll-search.h"
 
 #include <glib-object.h>
 #include "SpecializedThumbnailer1.h"
-
-// C includes. (C++ namespace)
-#include <cstdarg>
 
 // C++ includes.
 #include <deque>
@@ -42,29 +38,6 @@ using std::deque;
 using std::make_pair;
 using std::string;
 using std::unordered_map;
-
-// dlopen()
-#include <dlfcn.h>
-
-/**
- * rp_create_thumbnail() function pointer.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
- * @return 0 on success; non-zero on error.
- */
-typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
-static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
-
-// Thumbnail cache directory.
-static string cache_dir;
-
-// D-Bus connection.
-// TODO: Make this a property of RpThumbnail?
-static GDBusConnection *connection = nullptr;
-
-// Shutdown request.
-static bool stop_main_loop = false;
 
 // from tumbler-utils.h
 #define g_dbus_async_return_val_if_fail(expr, invocation, val) \
@@ -89,10 +62,31 @@ enum RpThumbnailSignals {
 	SIGNAL_LAST
 };
 
+/* Property identifiers. */
+enum RpThumbnailProperties {
+	PROP_0,
+
+	PROP_CONNECTION,
+	PROP_CACHE_DIR,
+	PROP_PFN_RP_CREATE_THUMBNAIL,
+	PROP_EXPORTED,
+
+	PROP_LAST
+};
+
 // Internal functions.
 static void	rp_thumbnail_constructed	(GObject	*object);
 static void	rp_thumbnail_dispose		(GObject	*object);
 static void	rp_thumbnail_finalize		(GObject	*object);
+
+static void	rp_thumbnail_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
+static void	rp_thumbnail_set_property	(GObject	*object,
+						 guint		 prop_id,
+						 const GValue	*value,
+						 GParamSpec	*pspec);
 
 static gboolean	rp_thumbnail_timeout		(RpThumbnail	*thumbnailer);
 static gboolean	rp_thumbnail_process		(RpThumbnail	*thumbnailer);
@@ -130,9 +124,6 @@ struct _RpThumbnail {
 	GObject __parent__;
 	OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton;
 
-	// Is the D-Bus object exported?
-	bool exported;
-
 	// Has the shutdown signal been emitted?
 	bool shutdown_emitted;
 
@@ -151,14 +142,28 @@ struct _RpThumbnail {
 	// handles in a deque and the URIs in a map.
 	deque<guint> *handle_queue;
 	unordered_map<guint, request_info> *uri_map;
+
+	/** Properties. **/
+
+	// D-Bus connection.
+	GDBusConnection *connection;
+
+	// Thumbnail cache directory.
+	gchar *cache_dir;
+
+	// rp_create_thumbnail() function pointer.
+	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail;
+
+	// Is the D-Bus object exported?
+	bool exported;
 };
 
 /** Type information. **/
 // NOTE: We can't use G_DEFINE_DYNAMIC_TYPE() here because
 // that requires a GTypeModule, which we don't have.
 
-static void     rp_thumbnail_init              (RpThumbnail      *thumbnailer);
-static void     rp_thumbnail_class_init        (RpThumbnailClass *klass);
+static void     rp_thumbnail_init		(RpThumbnail      *thumbnailer);
+static void     rp_thumbnail_class_init		(RpThumbnailClass *klass);
 
 static gpointer rp_thumbnail_parent_class = nullptr;
 
@@ -203,6 +208,8 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 	gobject_class->dispose = rp_thumbnail_dispose;
 	gobject_class->finalize = rp_thumbnail_finalize;
 	gobject_class->constructed = rp_thumbnail_constructed;
+	gobject_class->get_property = rp_thumbnail_get_property;
+	gobject_class->set_property = rp_thumbnail_set_property;
 
 	// Register signals.
 	klass->signal_ids[SIGNAL_0] = 0;
@@ -212,13 +219,27 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
 		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
+
+	// Register properties.
+	g_object_class_install_property(gobject_class, PROP_CONNECTION,
+		g_param_spec_object("connection", "connection", "D-Bus connection.",
+			G_TYPE_DBUS_CONNECTION, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
+	g_object_class_install_property(gobject_class, PROP_CACHE_DIR,
+		g_param_spec_string("cache_dir", "cache_dir", "XDG cache directory.",
+			nullptr, (GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
+	g_object_class_install_property(gobject_class, PROP_PFN_RP_CREATE_THUMBNAIL,
+		g_param_spec_pointer("pfn_rp_create_thumbnail", "pfn_rp_create_thumbnail",
+			"rp_create_thumbnail() function pointer.",
+			(GParamFlags)(G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
+	g_object_class_install_property(gobject_class, PROP_EXPORTED,
+		g_param_spec_boolean("exported", "exported", "Is the D-Bus object exported?",
+			false, G_PARAM_READABLE));
 }
 
 static void
 rp_thumbnail_init(RpThumbnail *thumbnailer)
 {
 	thumbnailer->skeleton = nullptr;
-	thumbnailer->exported = false;
 	thumbnailer->shutdown_emitted = false;
 	thumbnailer->timeout_id = 0;
 	thumbnailer->idle_process = 0;
@@ -226,6 +247,12 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 	thumbnailer->handle_queue = new deque<guint>();
 	thumbnailer->uri_map = new unordered_map<guint, request_info>();
 	thumbnailer->uri_map->reserve(8);
+
+	/** Properties. **/
+	thumbnailer->connection = nullptr;
+	thumbnailer->cache_dir = nullptr;
+	thumbnailer->pfn_rp_create_thumbnail = nullptr;
+	thumbnailer->exported = false;
 }
 
 static void
@@ -237,7 +264,7 @@ rp_thumbnail_constructed(GObject *object)
 	GError *error = nullptr;
 	thumbnailer->skeleton = org_freedesktop_thumbnails_specialized_thumbnailer1_skeleton_new();
 	g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(thumbnailer->skeleton),
-		connection, "/com/gerbilsoft/rom_properties/SpecializedThumbnailer1", &error);
+		thumbnailer->connection, "/com/gerbilsoft/rom_properties/SpecializedThumbnailer1", &error);
 	if (error) {
 		g_critical("Error exporting RpThumbnail on session bus: %s", error->message);
 		g_error_free(error);
@@ -255,6 +282,7 @@ rp_thumbnail_constructed(GObject *object)
 
 		// Object is exported.
 		thumbnailer->exported = true;
+		g_object_notify(G_OBJECT(thumbnailer), "exported");
 	}
 }
 
@@ -287,6 +315,93 @@ rp_thumbnail_finalize(GObject *object)
 
 	delete thumbnailer->handle_queue;
 	delete thumbnailer->uri_map;
+
+	/** Properties. **/
+	free(thumbnailer->cache_dir);
+}
+
+/**
+ * Get a property from the RpThumbnail.
+ * @param object	[in] RpThumbnail object.
+ * @param prop_id	[in] Property ID.
+ * @param value		[out] Value.
+ * @param pspec		[in] Parameter specification.
+ */
+static void
+rp_thumbnail_get_property(GObject *object,
+	guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	g_return_if_fail(IS_RP_THUMBNAIL(object));
+	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+
+	switch (prop_id) {
+		case PROP_CONNECTION:
+			g_value_set_object(value, thumbnailer->connection);
+			break;
+		case PROP_CACHE_DIR:
+			g_value_set_string(value, thumbnailer->cache_dir);
+			break;
+		case PROP_PFN_RP_CREATE_THUMBNAIL:
+			g_value_set_pointer(value, (gpointer)thumbnailer->pfn_rp_create_thumbnail);
+			break;
+		case PROP_EXPORTED:
+			g_value_set_boolean(value, thumbnailer->exported);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+/**
+ * Set a property in the RpThumbnail.
+ * @param object	[in] RpThumbnail object.
+ * @param prop_id	[in] Property ID.
+ * @param value		[in] Value.
+ * @param pspec		[in] Parameter specification.
+ */
+static void
+rp_thumbnail_set_property(GObject *object,
+	guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	g_return_if_fail(IS_RP_THUMBNAIL(object));
+	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+
+	switch (prop_id) {
+		case PROP_CONNECTION: {
+			GDBusConnection *const old_connection = thumbnailer->connection;
+			GDBusConnection *const connection = static_cast<GDBusConnection*>(g_value_get_object(value));
+			// TODO: Atomic exchange?
+			thumbnailer->connection = (connection
+				? static_cast<GDBusConnection*>(g_object_ref(connection))
+				: nullptr);
+			if (old_connection) {
+				g_object_unref(old_connection);
+			}
+			break;
+		}
+
+		case PROP_CACHE_DIR: {
+			gchar *old_cache_dir = thumbnailer->cache_dir;
+			thumbnailer->cache_dir = g_value_dup_string(value);
+			g_free(old_cache_dir);
+			break;
+		}
+
+		case PROP_PFN_RP_CREATE_THUMBNAIL:
+			thumbnailer->pfn_rp_create_thumbnail =
+				(PFN_RP_CREATE_THUMBNAIL)g_value_get_pointer(value);
+			break;
+
+		case PROP_EXPORTED:
+			// FIXME: Read-only property.
+			// Need to show some error message...
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
 }
 
 /**
@@ -437,10 +552,28 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 		goto cleanup;
 	}
 
+	// NOTE: cache_dir and pfn_rp_create_thumbnail should NOT be nullptr
+	// at this point, but we're checking it anyway.
+	if (!thumbnailer->cache_dir || thumbnailer->cache_dir[0] == 0) {
+		// No cache directory...
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, "",
+			0, "Thumbnail cache directory is empty.");
+		goto cleanup;
+	}
+	if (!thumbnailer->pfn_rp_create_thumbnail) {
+		// No thumbnailer function.
+		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+			thumbnailer->skeleton, handle, "",
+			0, "No thumbnailer function is available.");
+		goto cleanup;
+	}
+
 	// TODO: Make sure the URI to thumbnail is not in the cache directory.
 
 	// Make sure the thumbnail directory exists.
-	cache_filename = cache_dir + "/thumbnails/";
+	cache_filename = thumbnailer->cache_dir;
+	cache_filename += "/thumbnails/";
 	cache_filename += (req->large ? "large" : "normal");
 	if (g_mkdir_with_parents(cache_filename.c_str(), 0777) != 0) {
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
@@ -467,7 +600,7 @@ rp_thumbnail_process(RpThumbnail *thumbnailer)
 	cache_filename += ".png";
 
 	// Thumbnail the image.
-	ret = pfn_rp_create_thumbnail(filename, cache_filename.c_str(),
+	ret = thumbnailer->pfn_rp_create_thumbnail(filename, cache_filename.c_str(),
 		req->large ? 256 : 128);
 	if (ret == 0) {
 		// Image thumbnailed successfully.
@@ -510,148 +643,32 @@ cleanup:
 }
 
 /**
- * Debug print function for rp_dll_search().
- * @param level Debug level.
- * @param format Format string.
- * @param ... Format arguments.
- * @return vfprintf() return value.
+ * Create an RpThumbnail object.
+ * @param connection			[in] GDBusConnection
+ * @param cache_dir			[in] Cache directory.
+ * @param pfn_rp_create_thumbnail	[in] rp_create_thumbnail() function pointer.
+ * @return RpThumbnail object.
  */
-static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
+RpThumbnail*
+rp_thumbnail_new(GDBusConnection *connection,
+	const gchar *cache_dir,
+	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail)
 {
-	if (level < LEVEL_ERROR)
-		return 0;
-
-	// g_warning() may be using g_log_structured(),
-	// and there's no variant of g_log_structured()
-	// that takes va_list, so we'll print it to a
-	// buffer first.
-	char buf[512];
-
-	va_list args;
-	va_start(args, format);
-	int ret = vsnprintf(buf, sizeof(buf), format, args);
-	va_end(args);
-
-	if (level < LEVEL_ERROR) {
-		// G_MESSAGES_DEBUG must be set to rom-properties-xfce
-		// in order to print these messages.
-		g_debug(buf);
-	} else {
-		g_warning(buf);
-	}
-	return ret;
+	return static_cast<RpThumbnail*>(
+		g_object_new(TYPE_RP_THUMBNAIL,
+			"connection", connection,
+			"cache_dir", cache_dir,
+			"pfn_rp_create_thumbnail", pfn_rp_create_thumbnail,
+			nullptr));
 }
 
 /**
- * Shutdown callback.
- * @param thumbnailer RpThumbnail object.
- * @param main_loop GMainLoop.
+ * Is the RpThumbnail object exported?
+ * @return True if it's exported; false if it isn't.
  */
-static void
-shutdown_rp_thumbnail_dbus(RpThumbnail *thumbnailer, GMainLoop *main_loop)
+gboolean
+rp_thumbnail_is_exported(RpThumbnail *thumbnailer)
 {
-	g_return_if_fail(IS_RP_THUMBNAIL(thumbnailer));
-	g_return_if_fail(main_loop != nullptr);
-
-	// Exit the main loop.
-	stop_main_loop = true;
-	if (g_main_loop_is_running(main_loop)) {
-		g_main_loop_quit(main_loop);
-	}
-}
-
-/**
- * The D-Bus name was either lost or could not be acquired.
- * @param main_loop GMainLoop
- */
-static void
-on_dbus_name_lost(GDBusConnection *connection, const gchar *name, gpointer user_data)
-{
-	GMainLoop *const main_loop = (GMainLoop*)user_data;
-	g_return_if_fail(main_loop != nullptr);
-
-	stop_main_loop = true;
-	if (g_main_loop_is_running(main_loop)) {
-		g_main_loop_quit(main_loop);
-	}
-}
-
-int main(int argc, char *argv[])
-{
-	RP_UNUSED(argc);
-	RP_UNUSED(argv);
-
-#if !GLIB_CHECK_VERSION(2,36,0)
-	// g_type_init() is automatic as of glib-2.36.0
-	// and is marked deprecated.
-	g_type_init();
-#endif /* !GLIB_CHECK_VERSION(2,36,0) */
-#if !GLIB_CHECK_VERSION(2,32,0)
-	// g_thread_init() is automatic as of glib-2.32.0
-	// and is marked deprecated.
-	if (!g_thread_supported()) {
-		g_thread_init(nullptr);
-	}
-#endif /* !GLIB_CHECK_VERSION(2,32,0) */
-
-	// Get the cache directory.
-	// TODO: Use $XDG_CACHE_HOME and/or getpwuid_r().
-	const char *const home_env = getenv("HOME");
-	if (home_env) {
-		cache_dir = home_env;
-	}
-	// Remove trailing slashes.
-	// NOTE: If $HOME is "/", this will result in an empty directory,
-	// which will cause the program to exit. Not a big deal, since
-	// that shouldn't happen...
-	while (!cache_dir.empty() && cache_dir[cache_dir.size()-1] == '/') {
-		cache_dir.resize(cache_dir.size()-1);
-	}
-	if (cache_dir.empty()) {
-		g_warning("$HOME is not set.");
-		return EXIT_FAILURE;
-	}
-	// Append "/.cache".
-	cache_dir += "/.cache";
-
-	// Attempt to open a ROM Properties Page library.
-	void *pDll = NULL;
-	int ret = rp_dll_search("rp_create_thumbnail", &pDll, (void**)&pfn_rp_create_thumbnail, fnDebug);
-	if (ret != 0) {
-		return EXIT_FAILURE;
-	}
-
-	GError *error = nullptr;
-	connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
-	if (error) {
-		g_critical("Unable to connect to the session bus: %s", error->message);
-		g_error_free(error);
-		dlclose(pDll);
-		return EXIT_FAILURE;
-	}
-
-	GMainLoop *main_loop = g_main_loop_new(nullptr, false);
-
-	// Create the RpThumbnail service object.
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(g_object_new(TYPE_RP_THUMBNAIL, nullptr));
-
-	// Register the D-Bus service.
-	g_bus_own_name_on_connection(connection,
-		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
-		G_BUS_NAME_OWNER_FLAGS_NONE, nullptr, on_dbus_name_lost, main_loop, nullptr);
-
-	if (thumbnailer->exported) {
-		// Service object is exported.
-
-		// Make sure we quit after the RpThumbnail server is idle for long enough.
-		g_signal_connect(thumbnailer, "shutdown", G_CALLBACK(shutdown_rp_thumbnail_dbus), main_loop);
-
-		// Run the main loop.
-		if (!stop_main_loop) {
-			g_debug("Starting the D-Bus service.");
-			g_main_loop_run(main_loop);
-		}
-	}
-	dlclose(pDll);
-	return 0;
+	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), false);
+	return thumbnailer->exported;
 }

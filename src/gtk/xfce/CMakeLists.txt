@@ -50,6 +50,7 @@ ADD_CUSTOM_COMMAND(
 
 SET(rp-thumbnail-dbus_SRCS
 	rp-thumbnail-dbus.cpp
+	rp-thumbnail-main.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	../../rp-stub/dll-search.c
 	)
