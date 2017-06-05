@@ -709,6 +709,9 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// later than the file, don't redo the thumbnail.
 	// NOTE: tumblerd is supposed to manage this, but it seems
 	// that it doesn't... (Maybe only for built-in thumbnailers?)
+#if 0
+	// FIXME: This prevents updates if a file is replaced with another
+	// file whose timestamp is older than the thumbnail.
 	ret = (int)check_file_mtimes(filename, cache_filename.c_str());
 	switch (ret) {
 		case CHECK_FILE_MTIMES_NEEDS_UPDATE:
@@ -728,6 +731,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 				0, "Cannot check modification time of source file.");
 			goto cleanup;
 	}
+#endif
 
 	// Thumbnail the image.
 	ret = thumbnailer->pfn_rp_create_thumbnail(filename, cache_filename.c_str(),
