@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rp-thumbnail-main.cpp: D-Bus thumbnailerer service: main()              *
+ * rp-thumbnailer-main.cpp: D-Bus thumbnailerer service: main()            *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -21,7 +21,7 @@
 
 #include "librpbase/common.h"
 #include "rp-stub/dll-search.h"
-#include "rp-thumbnail-dbus.hpp"
+#include "rp-thumbnailer-dbus.hpp"
 
 // C includes.
 #include <stdlib.h>
@@ -112,9 +112,9 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
  * @param main_loop GMainLoop.
  */
 static void
-shutdown_rp_thumbnail_dbus(RpThumbnail *thumbnailer, GMainLoop *main_loop)
+shutdown_rp_thumbnailer_dbus(RpThumbnailer *thumbnailer, GMainLoop *main_loop)
 {
-	g_return_if_fail(IS_RP_THUMBNAIL(thumbnailer));
+	g_return_if_fail(IS_RP_THUMBNAILER(thumbnailer));
 	g_return_if_fail(main_loop != nullptr);
 
 	// Exit the main loop.
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 	GMainLoop *main_loop = g_main_loop_new(nullptr, false);
 
 	// Create the RpThumbnail service object.
-	RpThumbnail *const thumbnailer = rp_thumbnail_new(
+	RpThumbnailer *const thumbnailer = rp_thumbnailer_new(
 		connection, cache_dir.c_str(), pfn_rp_create_thumbnail);
 
 	// Register the D-Bus service.
@@ -190,11 +190,11 @@ int main(int argc, char *argv[])
 		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
 		G_BUS_NAME_OWNER_FLAGS_NONE, nullptr, on_dbus_name_lost, main_loop, nullptr);
 
-	if (rp_thumbnail_is_exported(thumbnailer)) {
+	if (rp_thumbnailer_is_exported(thumbnailer)) {
 		// Service object is exported.
 
 		// Make sure we quit after the RpThumbnail server is idle for long enough.
-		g_signal_connect(thumbnailer, "shutdown", G_CALLBACK(shutdown_rp_thumbnail_dbus), main_loop);
+		g_signal_connect(thumbnailer, "shutdown", G_CALLBACK(shutdown_rp_thumbnailer_dbus), main_loop);
 
 		// Run the main loop.
 		if (!stop_main_loop) {

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rp-thumbnailer-dbus.cpp: D-Bus thumbnailer service.                     *
+ * rp-thumbnailer-dbus.hpp: D-Bus thumbnailer service.                     *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_XFCE_RP_THUMBNAIL_DBUS_HPP__
-#define __ROMPROPERTIES_GTK_XFCE_RP_THUMBNAIL_DBUS_HPP__
+#ifndef __ROMPROPERTIES_GTK_XFCE_RP_THUMBNAILER_DBUS_HPP__
+#define __ROMPROPERTIES_GTK_XFCE_RP_THUMBNAILER_DBUS_HPP__
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -36,25 +36,25 @@ G_BEGIN_DECLS;
  */
 typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
 
-typedef struct _RpThumbnailClass	RpThumbnailClass;
-typedef struct _RpThumbnail		RpThumbnail;
+typedef struct _RpThumbnailerClass	RpThumbnailerClass;
+typedef struct _RpThumbnailer		RpThumbnailer;
 
-#define TYPE_RP_THUMBNAIL		(rp_thumbnail_get_type())
-#define RP_THUMBNAIL(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_RP_THUMBNAIL, RpThumbnail))
-#define RP_THUMBNAIL_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_RP_THUMBNAIL, RpThumbnailClass))
-#define IS_RP_THUMBNAIL(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_RP_THUMBNAIL))
-#define IS_RP_THUMBNAIL_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_RP_THUMBNAIL))
-#define RP_THUMBNAIL_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_RP_THUMBNAIL, RpThumbnailClass))
+#define TYPE_RP_THUMBNAILER		(rp_thumbnailer_get_type())
+#define RP_THUMBNAILER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_RP_THUMBNAILER, RpThumbnailer))
+#define RP_THUMBNAILER_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_RP_THUMBNAILER, RpThumbnailerClass))
+#define IS_RP_THUMBNAILER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_RP_THUMBNAILER))
+#define IS_RP_THUMBNAILER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_RP_THUMBNAILER))
+#define RP_THUMBNAILER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_RP_THUMBNAILER, RpThumbnailerClass))
 
-GType		rp_thumbnail_get_type			(void) G_GNUC_CONST G_GNUC_INTERNAL;
+GType		rp_thumbnailer_get_type			(void) G_GNUC_CONST G_GNUC_INTERNAL;
 
-RpThumbnail	*rp_thumbnail_new			(GDBusConnection *connection,
+RpThumbnailer	*rp_thumbnailer_new			(GDBusConnection *connection,
 							 const gchar *cache_dir,
 							 PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail)
 							G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
-gboolean	rp_thumbnail_is_exported		(RpThumbnail *thumbnailer);
+gboolean	rp_thumbnailer_is_exported		(RpThumbnailer *thumbnailer);
 
 G_END_DECLS;
 
-#endif /* !__ROMPROPERTIES_GTK_XFCE_RP_THUMBNAIL_DBUS_HPP__ */
+#endif /* __ROMPROPERTIES_GTK_XFCE_RP_THUMBNAILER_DBUS_HPP__ */

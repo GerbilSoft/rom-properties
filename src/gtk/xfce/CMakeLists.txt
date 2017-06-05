@@ -48,14 +48,14 @@ ADD_CUSTOM_COMMAND(
 	VERBATIM
 	)
 
-SET(rp-thumbnail-dbus_SRCS
-	rp-thumbnail-dbus.cpp
-	rp-thumbnail-main.cpp
+SET(rp-thumbnailer-dbus_SRCS
+	rp-thumbnailer-dbus.cpp
+	rp-thumbnailer-main.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	../../rp-stub/dll-search.c
 	)
-SET(rp-thumbnail-dbus_H
-	rp-thumbnail-dbus.hpp
+SET(rp-thumbnailer-dbus_H
+	rp-thumbnailer-dbus.hpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
 	../../rp-stub/dll-search.h
 	)
@@ -88,8 +88,8 @@ IF(BUILD_XFCE)
 
 	# D-Bus thumbnailer.
 	ADD_EXECUTABLE(rp-thumbnailer-dbus
-		${rp-thumbnail-dbus_SRCS}
-		${rp-thumbnail-dbus_H}
+		${rp-thumbnailer-dbus_SRCS}
+		${rp-thumbnailer-dbus_H}
 		)
 	DO_SPLIT_DEBUG(rp-thumbnailer-dbus)
 	TARGET_INCLUDE_DIRECTORIES(rp-thumbnailer-dbus

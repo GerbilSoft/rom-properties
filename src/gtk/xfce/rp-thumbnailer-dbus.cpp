@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GNOME)                            *
- * rp-thumbnail-dbus.cpp: D-Bus thumbnailer service.                       *
+ * rp-thumbnailer-dbus.cpp: D-Bus thumbnailer service.                     *
  *                                                                         *
  * Copyright (c) 2017 by David Korth.                                      *
  *                                                                         *
@@ -24,7 +24,7 @@
  * - https://github.com/linneman/dbus-example
  */
 
-#include "rp-thumbnail-dbus.hpp"
+#include "rp-thumbnailer-dbus.hpp"
 #include "librpbase/common.h"
 
 #include <glib-object.h>
@@ -53,17 +53,17 @@ G_STMT_START { \
 } G_STMT_END
 
 /* Signal identifiers */
-enum RpThumbnailSignals {
+enum RpThumbnailerSignals {
 	SIGNAL_0,
 
-	// RpThumbnail has been idle for long enough and should exit.
+	// RpThumbnailer has been idle for long enough and should exit.
 	SIGNAL_SHUTDOWN,
 
 	SIGNAL_LAST
 };
 
 /* Property identifiers. */
-enum RpThumbnailProperties {
+enum RpThumbnailerProperties {
 	PROP_0,
 
 	PROP_CONNECTION,
@@ -75,36 +75,36 @@ enum RpThumbnailProperties {
 };
 
 // Internal functions.
-static void	rp_thumbnail_constructed	(GObject	*object);
-static void	rp_thumbnail_dispose		(GObject	*object);
-static void	rp_thumbnail_finalize		(GObject	*object);
+static void	rp_thumbnailer_constructed	(GObject	*object);
+static void	rp_thumbnailer_dispose		(GObject	*object);
+static void	rp_thumbnailer_finalize		(GObject	*object);
 
-static void	rp_thumbnail_get_property	(GObject	*object,
+static void	rp_thumbnailer_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
-static void	rp_thumbnail_set_property	(GObject	*object,
+static void	rp_thumbnailer_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
 
-static gboolean	rp_thumbnail_timeout		(RpThumbnail	*thumbnailer);
-static gboolean	rp_thumbnail_process		(RpThumbnail	*thumbnailer);
+static gboolean	rp_thumbnailer_timeout		(RpThumbnailer	*thumbnailer);
+static gboolean	rp_thumbnailer_process		(RpThumbnailer	*thumbnailer);
 
 // D-Bus methods.
-static gboolean	rp_thumbnail_queue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+static gboolean	rp_thumbnailer_queue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 						 GDBusMethodInvocation *invocation,
 						 const gchar	*uri,
 						 const gchar	*mime_type,
 						 const char	*flavor,
 						 bool		 urgent,
-						 RpThumbnail	*thumbnailer);
-static gboolean	rp_thumbnail_dequeue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+						 RpThumbnailer	*thumbnailer);
+static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 						 GDBusMethodInvocation *invocation,
 						 guint		 handle,
-						 RpThumbnail	*thumbnailer);
+						 RpThumbnailer	*thumbnailer);
 
-struct _RpThumbnailClass {
+struct _RpThumbnailerClass {
 	GObjectClass __parent__;
 
 	// TODO: Store signal_ids outside of the class?
@@ -120,7 +120,7 @@ struct request_info {
 	bool urgent;	// 'urgent' value
 };
 
-struct _RpThumbnail {
+struct _RpThumbnailer {
 	GObject __parent__;
 	OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton;
 
@@ -162,61 +162,61 @@ struct _RpThumbnail {
 // NOTE: We can't use G_DEFINE_DYNAMIC_TYPE() here because
 // that requires a GTypeModule, which we don't have.
 
-static void     rp_thumbnail_init		(RpThumbnail      *thumbnailer);
-static void     rp_thumbnail_class_init		(RpThumbnailClass *klass);
+static void     rp_thumbnailer_init		(RpThumbnailer      *thumbnailer);
+static void     rp_thumbnailer_class_init		(RpThumbnailerClass *klass);
 
-static gpointer rp_thumbnail_parent_class = nullptr;
+static gpointer rp_thumbnailer_parent_class = nullptr;
 
 static void
-rp_thumbnail_class_intern_init(gpointer klass)
+rp_thumbnailer_class_intern_init(gpointer klass)
 {
-	  rp_thumbnail_parent_class = g_type_class_peek_parent(klass);
-	  rp_thumbnail_class_init(static_cast<RpThumbnailClass*>(klass));
+	  rp_thumbnailer_parent_class = g_type_class_peek_parent(klass);
+	  rp_thumbnailer_class_init(static_cast<RpThumbnailerClass*>(klass));
 }
 
 GType
-rp_thumbnail_get_type(void)
+rp_thumbnailer_get_type(void)
 {
-	static GType rp_thumbnail_type_id = 0;
-	if (!rp_thumbnail_type_id) {
+	static GType rp_thumbnailer_type_id = 0;
+	if (!rp_thumbnailer_type_id) {
 		static const GTypeInfo g_define_type_info = {
-			sizeof(RpThumbnailClass),	// class_size
+			sizeof(RpThumbnailerClass),	// class_size
 			nullptr,			// base_init
 			nullptr,			// base_finalize
-			(GClassInitFunc)rp_thumbnail_class_intern_init,
+			(GClassInitFunc)rp_thumbnailer_class_intern_init,
 			nullptr,			// class_finalize
 			nullptr,			// class_data
-			sizeof(RpThumbnail),		// instance_size
+			sizeof(RpThumbnailer),		// instance_size
 			0,				// n_preallocs
-			(GInstanceInitFunc)rp_thumbnail_init,
+			(GInstanceInitFunc)rp_thumbnailer_init,
 			nullptr				// value_table
 		};
-		rp_thumbnail_type_id = g_type_register_static(G_TYPE_OBJECT,
-							"RpThumbnail",
+		rp_thumbnailer_type_id = g_type_register_static(G_TYPE_OBJECT,
+							"RpThumbnailer",
 							&g_define_type_info,
 							(GTypeFlags) 0);
 	}
-	return rp_thumbnail_type_id;
+	return rp_thumbnailer_type_id;
 }
 
 /** End type information. **/
 
 static void
-rp_thumbnail_class_init(RpThumbnailClass *klass)
+rp_thumbnailer_class_init(RpThumbnailerClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = rp_thumbnail_dispose;
-	gobject_class->finalize = rp_thumbnail_finalize;
-	gobject_class->constructed = rp_thumbnail_constructed;
-	gobject_class->get_property = rp_thumbnail_get_property;
-	gobject_class->set_property = rp_thumbnail_set_property;
+	gobject_class->dispose = rp_thumbnailer_dispose;
+	gobject_class->finalize = rp_thumbnailer_finalize;
+	gobject_class->constructed = rp_thumbnailer_constructed;
+	gobject_class->get_property = rp_thumbnailer_get_property;
+	gobject_class->set_property = rp_thumbnailer_set_property;
 
 	// Register signals.
 	klass->signal_ids[SIGNAL_0] = 0;
 
-	// RpThumbnail has been idle for long enough and should exit.
+	// RpThumbnailer has been idle for long enough and should exit.
 	klass->signal_ids[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
-		TYPE_RP_THUMBNAIL, G_SIGNAL_RUN_LAST,
+		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 
@@ -237,7 +237,7 @@ rp_thumbnail_class_init(RpThumbnailClass *klass)
 }
 
 static void
-rp_thumbnail_init(RpThumbnail *thumbnailer)
+rp_thumbnailer_init(RpThumbnailer *thumbnailer)
 {
 	thumbnailer->skeleton = nullptr;
 	thumbnailer->shutdown_emitted = false;
@@ -256,29 +256,29 @@ rp_thumbnail_init(RpThumbnail *thumbnailer)
 }
 
 static void
-rp_thumbnail_constructed(GObject *object)
+rp_thumbnailer_constructed(GObject *object)
 {
-	g_return_if_fail(IS_RP_THUMBNAIL(object));
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	GError *error = nullptr;
 	thumbnailer->skeleton = org_freedesktop_thumbnails_specialized_thumbnailer1_skeleton_new();
 	g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(thumbnailer->skeleton),
 		thumbnailer->connection, "/com/gerbilsoft/rom_properties/SpecializedThumbnailer1", &error);
 	if (error) {
-		g_critical("Error exporting RpThumbnail on session bus: %s", error->message);
+		g_critical("Error exporting RpThumbnailer on session bus: %s", error->message);
 		g_error_free(error);
 		thumbnailer->exported = false;
 	} else {
 		// Connect signals to the relevant functions.
 		g_signal_connect(thumbnailer->skeleton, "handle-queue",
-			G_CALLBACK(rp_thumbnail_queue), thumbnailer);
+			G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
 		g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
-			G_CALLBACK(rp_thumbnail_dequeue), thumbnailer);
+			G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
 		
 		// Make sure we shut down after inactivity.
 		thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
-			(GSourceFunc)rp_thumbnail_timeout, thumbnailer);
+			(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
 
 		// Object is exported.
 		thumbnailer->exported = true;
@@ -287,9 +287,9 @@ rp_thumbnail_constructed(GObject *object)
 }
 
 static void
-rp_thumbnail_dispose(GObject *object)
+rp_thumbnailer_dispose(GObject *object)
 {
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	// Stop the inactivity timeout.
 	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
@@ -305,9 +305,9 @@ rp_thumbnail_dispose(GObject *object)
 }
 
 static void
-rp_thumbnail_finalize(GObject *object)
+rp_thumbnailer_finalize(GObject *object)
 {
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	if (thumbnailer->skeleton) {
 		g_object_unref(thumbnailer->skeleton);
@@ -321,18 +321,18 @@ rp_thumbnail_finalize(GObject *object)
 }
 
 /**
- * Get a property from the RpThumbnail.
- * @param object	[in] RpThumbnail object.
+ * Get a property from the RpThumbnailer.
+ * @param object	[in] RpThumbnailer object.
  * @param prop_id	[in] Property ID.
  * @param value		[out] Value.
  * @param pspec		[in] Parameter specification.
  */
 static void
-rp_thumbnail_get_property(GObject *object,
+rp_thumbnailer_get_property(GObject *object,
 	guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	g_return_if_fail(IS_RP_THUMBNAIL(object));
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	switch (prop_id) {
 		case PROP_CONNECTION:
@@ -354,18 +354,18 @@ rp_thumbnail_get_property(GObject *object,
 }
 
 /**
- * Set a property in the RpThumbnail.
- * @param object	[in] RpThumbnail object.
+ * Set a property in the RpThumbnailer.
+ * @param object	[in] RpThumbnailer object.
  * @param prop_id	[in] Property ID.
  * @param value		[in] Value.
  * @param pspec		[in] Parameter specification.
  */
 static void
-rp_thumbnail_set_property(GObject *object,
+rp_thumbnailer_set_property(GObject *object,
 	guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-	g_return_if_fail(IS_RP_THUMBNAIL(object));
-	RpThumbnail *const thumbnailer = RP_THUMBNAIL(object);
+	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	switch (prop_id) {
 		case PROP_CONNECTION: {
@@ -416,13 +416,13 @@ rp_thumbnail_set_property(GObject *object,
  * @return True if the signal was handled; false if not.
  */
 static gboolean
-rp_thumbnail_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	GDBusMethodInvocation *invocation,
 	const gchar *uri, const gchar *mime_type,
 	const char *flavor, bool urgent,
-	RpThumbnail *thumbnailer)
+	RpThumbnailer *thumbnailer)
 {
-	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
 	g_dbus_async_return_val_if_fail(uri != nullptr, invocation, false);
 
 	if (G_UNLIKELY(thumbnailer->shutdown_emitted)) {
@@ -461,7 +461,7 @@ rp_thumbnail_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	// TODO: Make it multi-threaded?
 	// FIXME: Atomic compare and/or mutex if multi-threaded.
 	if (thumbnailer->idle_process == 0) {
-		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnail_process, thumbnailer);
+		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnailer_process, thumbnailer);
 	}
 
 	org_freedesktop_thumbnails_specialized_thumbnailer1_complete_queue(skeleton, invocation, handle);
@@ -477,12 +477,12 @@ rp_thumbnail_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
  * @return True if the signal was handled; false if not.
  */
 static gboolean
-rp_thumbnail_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+rp_thumbnailer_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 	GDBusMethodInvocation *invocation,
 	guint handle,
-	RpThumbnail *thumbnailer)
+	RpThumbnailer *thumbnailer)
 {
-	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
 	g_dbus_async_return_val_if_fail(handle != 0, invocation, false);
 
 	// TODO
@@ -492,19 +492,19 @@ rp_thumbnail_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 
 /**
  * Inactivity timeout has elapsed.
- * @param thumbnailer RpThumbnail object.
+ * @param thumbnailer RpThumbnailer object.
  */
 static gboolean
-rp_thumbnail_timeout(RpThumbnail *thumbnailer)
+rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), false);
+	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
 	if (!thumbnailer->handle_queue->empty()) {
 		// Still processing stuff.
 		return true;
 	}
 
 	// Stop the timeout and shut down the thumbnailer.
-	RpThumbnailClass *const klass = RP_THUMBNAIL_GET_CLASS(thumbnailer);
+	RpThumbnailerClass *const klass = RP_THUMBNAILER_GET_CLASS(thumbnailer);
 	thumbnailer->timeout_id = 0;
 	thumbnailer->shutdown_emitted = true;
 	g_signal_emit(thumbnailer, klass->signal_ids[SIGNAL_SHUTDOWN], 0);
@@ -514,12 +514,12 @@ rp_thumbnail_timeout(RpThumbnail *thumbnailer)
 
 /**
  * Process a thumbnail.
- * @param thumbnailer RpThumbnail object.
+ * @param thumbnailer RpThumbnailer object.
  */
 static gboolean
-rp_thumbnail_process(RpThumbnail *thumbnailer)
+rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), FALSE);
+	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
 
 	guint handle;
 	gchar *filename;
@@ -636,26 +636,26 @@ cleanup:
 		// Restart the inactivity timeout.
 		if (G_LIKELY(thumbnailer->timeout_id == 0)) {
 			thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
-				(GSourceFunc)rp_thumbnail_timeout, thumbnailer);
+				(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
 		}
 	}
 	return !isEmpty;
 }
 
 /**
- * Create an RpThumbnail object.
+ * Create an RpThumbnailer object.
  * @param connection			[in] GDBusConnection
  * @param cache_dir			[in] Cache directory.
  * @param pfn_rp_create_thumbnail	[in] rp_create_thumbnail() function pointer.
- * @return RpThumbnail object.
+ * @return RpThumbnailer object.
  */
-RpThumbnail*
-rp_thumbnail_new(GDBusConnection *connection,
+RpThumbnailer*
+rp_thumbnailer_new(GDBusConnection *connection,
 	const gchar *cache_dir,
 	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail)
 {
-	return static_cast<RpThumbnail*>(
-		g_object_new(TYPE_RP_THUMBNAIL,
+	return static_cast<RpThumbnailer*>(
+		g_object_new(TYPE_RP_THUMBNAILER,
 			"connection", connection,
 			"cache_dir", cache_dir,
 			"pfn_rp_create_thumbnail", pfn_rp_create_thumbnail,
@@ -663,12 +663,12 @@ rp_thumbnail_new(GDBusConnection *connection,
 }
 
 /**
- * Is the RpThumbnail object exported?
+ * Is the RpThumbnailer object exported?
  * @return True if it's exported; false if it isn't.
  */
 gboolean
-rp_thumbnail_is_exported(RpThumbnail *thumbnailer)
+rp_thumbnailer_is_exported(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAIL(thumbnailer), false);
+	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
 	return thumbnailer->exported;
 }
