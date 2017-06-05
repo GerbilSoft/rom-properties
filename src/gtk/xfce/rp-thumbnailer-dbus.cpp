@@ -302,6 +302,9 @@ rp_thumbnailer_dispose(GObject *object)
 		g_source_remove(thumbnailer->idle_process);
 		thumbnailer->idle_process = 0;
 	}
+
+	// Call the superclass dispose() function.
+	(*G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose)(object);
 }
 
 static void
@@ -318,6 +321,9 @@ rp_thumbnailer_finalize(GObject *object)
 
 	/** Properties. **/
 	free(thumbnailer->cache_dir);
+
+	// Call the superclass finalize() function.
+	(*G_OBJECT_CLASS(rp_thumbnailer_parent_class)->finalize)(object);
 }
 
 /**
