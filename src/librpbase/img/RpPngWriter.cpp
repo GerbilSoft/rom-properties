@@ -26,8 +26,9 @@
 #include "../file/RpFile.hpp"
 #include "../img/rp_image.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
+// APNG
+#include "../img/IconAnimData.hpp"
+#include "APNG_dlopen.h"
 
 // libpng
 #include <png.h>
@@ -45,6 +46,9 @@
 #define png_set_expand_gray_1_2_4_to_8(png_ptr) \
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
+
+// C includes. (C++ namespace)
+#include <cassert>
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
@@ -79,6 +83,8 @@ class RpPngWriterPrivate
 	public:
 		RpPngWriterPrivate(const rp_char *filename, const rp_image *img);
 		RpPngWriterPrivate(IRpFile *file, const rp_image *img);
+		RpPngWriterPrivate(const rp_char *filename, const IconAnimData *iconAnimData);
+		RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData);
 		~RpPngWriterPrivate();
 
 	private:
@@ -97,8 +103,12 @@ class RpPngWriterPrivate
 		// Otherwise, it's a dup()'d instance of the IRpFile.
 		IRpFile *file;
 
-		// rp_image
-		const rp_image *img;
+		// Image and/or animated image data to save.
+		bool isAnimated;
+		union {
+			const rp_image *img;
+			const IconAnimData *iconAnimData;
+		};
 
 		// PNG pointers.
 		png_structp png_ptr;
@@ -143,6 +153,30 @@ class RpPngWriterPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_CI8_palette(void);
+
+		/**
+		 * Write the rp_image data to the PNG image.
+		 *
+		 * This must be called after any other modifier functions.
+		 *
+		 * If constructed using a filename instead of IRpFile,
+		 * this will automatically close the file.
+		 *
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_IDAT(void);
+
+		/**
+		 * Write the animated image data to the PNG image.
+		 *
+		 * This must be called after any other modifier functions.
+		 *
+		 * If constructed using a filename instead of IRpFile,
+		 * this will automatically close the file.
+		 *
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_IDAT_APNG(void);
 };
 
 /** RpPngWriterPrivate **/
@@ -150,11 +184,12 @@ class RpPngWriterPrivate
 RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *img)
 	: lastError(0)
 	, file(nullptr)
-	, img(img)
+	, isAnimated(false)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
 {
+	this->img = img;
 	if (!filename || filename[0] == 0 || !img || !img->isValid()) {
 		// Invalid parameters.
 		lastError = EINVAL;
@@ -197,11 +232,12 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	: lastError(0)
 	, file(nullptr)
-	, img(img)
+	, isAnimated(false)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
 {
+	this->img = img;
 	if (!file || !img || !img->isValid()) {
 		// Invalid parameters.
 		lastError = EINVAL;
@@ -256,6 +292,153 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	}
 }
 
+RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimData *iconAnimData)
+	: lastError(0)
+	, file(nullptr)
+	, isAnimated(false)
+	, png_ptr(nullptr)
+	, info_ptr(nullptr)
+	, IHDR_written(false)
+{
+	this->iconAnimData = nullptr;
+	if (!filename || filename[0] == 0 || !iconAnimData || iconAnimData->seq_count <= 0) {
+		// Invalid parameters.
+		lastError = EINVAL;
+		return;
+	}
+	this->filename = filename;
+
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		lastError = ENOTSUP;
+		return;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	if (iconAnimData->seq_count > 1) {
+		// Load APNG.
+		int ret = APNG_ref();
+		if (ret != 0) {
+			// Error loading APNG.
+			lastError = ENOTSUP;
+			return;
+		}
+		this->isAnimated = true;
+	}
+
+	file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
+	if (!file->isOpen()) {
+		// Unable to open the file.
+		lastError = file->lastError();
+		if (lastError == 0) {
+			lastError = EIO;
+		}
+		delete file;
+		file = nullptr;
+		return;
+	}
+
+	// Set img or iconAnimData.
+	if (this->isAnimated) {
+		this->iconAnimData = iconAnimData;
+	} else {
+		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
+	}
+
+	// Initialize the PNG write structs.
+	int ret = init_png_write_structs();
+	if (ret != 0) {
+		// FIXME: Unlink the file if necessary.
+		lastError = -ret;
+		delete this->file;
+		this->file = nullptr;
+	}
+}
+
+RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData)
+	: lastError(0)
+	, file(nullptr)
+	, isAnimated(false)
+	, png_ptr(nullptr)
+	, info_ptr(nullptr)
+	, IHDR_written(false)
+{
+	this->iconAnimData = nullptr;
+	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
+		// Invalid parameters.
+		lastError = EINVAL;
+		return;
+	}
+
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		lastError = ENOTSUP;
+		return;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	if (iconAnimData->seq_count > 1) {
+		// Load APNG.
+		int ret = APNG_ref();
+		if (ret != 0) {
+			// Error loading APNG.
+			lastError = ENOTSUP;
+			return;
+		}
+		this->isAnimated = true;
+	}
+
+	if (!file->isOpen()) {
+		// File isn't open.
+		lastError = file->lastError();
+		if (lastError == 0) {
+			lastError = EIO;
+		}
+		return;
+	}
+
+	this->file = file->dup();
+
+	// Truncate the file.
+	int ret = this->file->truncate(0);
+	if (ret != 0) {
+		// Unable to truncate the file.
+		lastError = this->file->lastError();
+		if (lastError == 0) {
+			lastError = EIO;
+		}
+		delete this->file;
+		this->file = nullptr;
+		return;
+	}
+
+	// Truncation should automatically rewind,
+	// but let's do it anyway.
+	this->file->rewind();
+
+	// Set img or iconAnimData.
+	if (this->isAnimated) {
+		this->iconAnimData = iconAnimData;
+	} else {
+		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
+	}
+
+	// Initialize the PNG write structs.
+	ret = init_png_write_structs();
+	if (ret != 0) {
+		// FIXME: Unlink the file if necessary.
+		lastError = -ret;
+		delete this->file;
+		this->file = nullptr;
+	}
+}
+
 RpPngWriterPrivate::~RpPngWriterPrivate()
 {
 	if (png_ptr || info_ptr) {
@@ -267,6 +450,11 @@ RpPngWriterPrivate::~RpPngWriterPrivate()
 
 	// Close the IRpFile.
 	delete this->file;
+
+	if (this->isAnimated) {
+		// Unreference APNG.
+		APNG_unref();
+	}
 }
 
 /**
@@ -332,7 +520,16 @@ void RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
  */
 int RpPngWriterPrivate::write_CI8_palette(void)
 {
-	const int num_entries = img->palette_len();
+	// Get the first image.
+	// TODO: Handle animated images where the different frames
+	// have different widths, heights, and/or formats.
+	// Also, does PNG support separate palettes per frame?
+	// If not, the frames may need to be converted to ARGB32.
+	const rp_image *const img0 = (this->isAnimated
+		? this->iconAnimData->frames[iconAnimData->seq_index[0]]
+		: this->img);
+
+	const int num_entries = img0->palette_len();
 	if (num_entries < 0 || num_entries > 256)
 		return -EINVAL;
 
@@ -342,7 +539,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	bool has_tRNS = false;
 
 	// Convert the palette.
-	const uint32_t *const palette = img->palette();
+	const uint32_t *const palette = img0->palette();
 	for (int i = 0; i < num_entries; i++) {
 		png_pal[i].blue  = ( palette[i]        & 0xFF);
 		png_pal[i].green = ((palette[i] >> 8)  & 0xFF);
@@ -358,6 +555,180 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 		// Write the tRNS chunk.
 		png_set_tRNS(png_ptr, info_ptr, png_tRNS, num_entries, nullptr);
 	}
+	return 0;
+}
+
+/**
+ * Write the rp_image data to the PNG image.
+ *
+ * This must be called after any other modifier functions.
+ *
+ * If constructed using a filename instead of IRpFile,
+ * this will automatically close the file.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriterPrivate::write_IDAT(void)
+{
+	assert(file != nullptr);
+	assert(img != nullptr);
+	assert(!isAnimated);
+	assert(IHDR_written);
+	if (!file || !img || isAnimated) {
+		// Invalid state.
+		lastError = EIO;
+		return -lastError;
+	}
+	if (!IHDR_written) {
+		// IHDR has not been written yet.
+		// TODO: Better error code?
+		lastError = EIO;
+		return -lastError;
+	}
+
+	// Row pointers. (NOTE: Allocated after IHDR is written.)
+	const int height = img->height();
+	const png_byte **row_pointers = nullptr;
+
+#ifdef PNG_SETJMP_SUPPORTED
+	// WARNING: Do NOT initialize any C++ objects past this point!
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		// PNG read failed.
+		png_free(png_ptr, row_pointers);
+		return -EIO;
+	}
+#endif
+
+	// TODO: Byteswap image data on big-endian systems?
+	//ppng_set_swap(png_ptr);
+	// TODO: What format on big-endian?
+	png_set_bgr(png_ptr);
+
+	// Allocate the row pointers.
+	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	if (!row_pointers) {
+		lastError = ENOMEM;
+		return -lastError;
+	}
+
+	// Initialize the row pointers array.
+	for (int y = height-1; y >= 0; y--) {
+		row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
+	}
+
+	// Write the image data.
+	png_write_image(png_ptr, (png_bytepp)row_pointers);
+	png_free(png_ptr, row_pointers);
+	row_pointers = nullptr;
+
+	// Finished writing.
+	png_write_end(png_ptr, info_ptr);
+
+	// Free the PNG structs and close the file.
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+	delete file;
+	file = nullptr;
+	return 0;
+}
+
+/**
+ * Write the animated image data to the PNG image.
+ *
+ * This must be called after any other modifier functions.
+ *
+ * If constructed using a filename instead of IRpFile,
+ * this will automatically close the file.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriterPrivate::write_IDAT_APNG(void)
+{
+	assert(file != nullptr);
+	assert(img != nullptr);
+	assert(isAnimated);
+	assert(IHDR_written);
+	if (!file || !img || !isAnimated) {
+		// Invalid state.
+		lastError = EIO;
+		return -lastError;
+	}
+	if (!IHDR_written) {
+		// IHDR has not been written yet.
+		// TODO: Better error code?
+		lastError = EIO;
+		return -lastError;
+	}
+
+	// Row pointers. (NOTE: Allocated after IHDR is written.)
+	const png_byte **row_pointers = nullptr;
+
+	// Get the first image.
+	// TODO: Handle animated images where the different frames
+	// have different widths, heights, and/or formats.
+	const rp_image *const img0 = (this->isAnimated
+		? this->iconAnimData->frames[iconAnimData->seq_index[0]]
+		: this->img);
+	const int width = img0->width();
+	const int height = img0->height();
+
+#ifdef PNG_SETJMP_SUPPORTED
+	// WARNING: Do NOT initialize any C++ objects past this point!
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		// PNG read failed.
+		png_free(png_ptr, row_pointers);
+		return -EIO;
+	}
+#endif
+
+	// TODO: Byteswap image data on big-endian systems?
+	//ppng_set_swap(png_ptr);
+	// TODO: What format on big-endian?
+	png_set_bgr(png_ptr);
+
+	// Allocate the row pointers.
+	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	if (!row_pointers) {
+		lastError = ENOMEM;
+		return -lastError;
+	}
+
+	// Write the images.
+	for (int i = 0; i < iconAnimData->seq_count; i++) {
+		const rp_image *img = iconAnimData->frames[iconAnimData->seq_index[i]];
+		if (!img)
+			break;
+
+		// Initialize the row pointers array.
+		for (int y = height-1; y >= 0; y--) {
+			row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
+		}
+
+		// Frame header.
+		png_write_frame_head(png_ptr, info_ptr, (png_bytepp)row_pointers,
+				width, height, 0, 0,		// width, height, x offset, y offset
+				iconAnimData->delays[i].numer,
+				iconAnimData->delays[i].denom,
+				PNG_DISPOSE_OP_NONE,
+				PNG_BLEND_OP_SOURCE);
+
+		// Write the image data.
+		// TODO: Individual palette for CI8?
+		png_write_image(png_ptr, (png_bytepp)row_pointers);
+
+		// Frame tail.
+		png_write_frame_tail(png_ptr, info_ptr);
+	}
+
+	png_free(png_ptr, row_pointers);
+	row_pointers = nullptr;
+
+	// Finished writing.
+	png_write_end(png_ptr, info_ptr);
+
+	// Free the PNG structs and close the file.
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+	delete file;
+	file = nullptr;
 	return 0;
 }
 
@@ -378,15 +749,65 @@ RpPngWriter::RpPngWriter(const rp_char *filename, const rp_image *img)
 
 /**
  * Write an image to a PNG file.
+ * IRpFile must be open for writing.
  *
  * Check isOpen() after constructing to verify that
  * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
  *
  * @param file	[in] IRpFile open for writing.
  * @param img	[in] rp_image.
  */
 RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
 	: d_ptr(new RpPngWriterPrivate(file, img))
+{ }
+
+/**
+ * Write an animated image to an APNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * set as the last error. The caller should then save
+ * the image as a standard PNG file.
+ *
+ * @param file		[in] IRpFile open for writing.
+ * @param iconAnimData	[in] Animated image data.
+ */
+RpPngWriter::RpPngWriter(const rp_char *filename, const IconAnimData *iconAnimData)
+	: d_ptr(new RpPngWriterPrivate(filename, iconAnimData))
+{ }
+
+/**
+ * Write an animated image to an APNG file.
+ * IRpFile must be open for writing.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * set as the last error. The caller should then save
+ * the image as a standard PNG file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param file		[in] IRpFile open for writing.
+ * @param iconAnimData	[in] Animated image data.
+ */
+RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
+	: d_ptr(new RpPngWriterPrivate(file, iconAnimData))
 { }
 
 RpPngWriter::~RpPngWriter()
@@ -436,6 +857,13 @@ int RpPngWriter::write_IHDR(void)
 		return -d->lastError;
 	}
 
+	// Get the first image.
+	// TODO: Handle animated images where the different frames
+	// have different widths, heights, and/or formats.
+	const rp_image *const img0 = (d->isAnimated
+		? d->iconAnimData->frames[d->iconAnimData->seq_index[0]]
+		: d->img);
+
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
 	if (setjmp(png_jmpbuf(d->png_ptr))) {
@@ -450,10 +878,10 @@ int RpPngWriter::write_IHDR(void)
 	png_set_compression_level(d->png_ptr, 5);	// TODO: Customizable?
 
 	// Write the PNG header.
-	switch (d->img->format()) {
+	switch (img0->format()) {
 		case rp_image::FORMAT_ARGB32:
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					d->img->width(), d->img->height(),
+					img0->width(), img0->height(),
 					8, PNG_COLOR_TYPE_RGB_ALPHA,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
@@ -462,7 +890,7 @@ int RpPngWriter::write_IHDR(void)
 
 		case rp_image::FORMAT_CI8:
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					d->img->width(), d->img->height(),
+					img0->width(), img0->height(),
 					8, PNG_COLOR_TYPE_PALETTE,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
@@ -477,6 +905,11 @@ int RpPngWriter::write_IHDR(void)
 			assert(!"Unsupported rp_image::Format.");
 			d->lastError = EINVAL;
 			return -d->lastError;
+	}
+
+	if (d->isAnimated) {
+		// Write an acTL chunk to indicate that this is an APNG image.
+		png_set_acTL(d->png_ptr, d->info_ptr, d->iconAnimData->seq_count, 0);
 	}
 
 	// Write the PNG information to the file.
@@ -498,64 +931,15 @@ int RpPngWriter::write_IHDR(void)
 int RpPngWriter::write_IDAT(void)
 {
 	RP_D(RpPngWriter);
-	assert(d->file != nullptr);
-	assert(d->img != nullptr);
-	assert(d->IHDR_written);
-	if (!d->file || !d->img) {
-		// Invalid state.
-		d->lastError = EIO;
-		return -d->lastError;
+	if (d->isAnimated) {
+		// Write an animated PNG image.
+		// NOTE: d->isAnimated is only set if APNG is loaded,
+		// so we don't have to check it again here.
+		return d->write_IDAT_APNG();
+	} else {
+		// Write a regular PNG image.
+		return d->write_IDAT();
 	}
-	if (!d->IHDR_written) {
-		// IHDR has not been written yet.
-		// TODO: Better error code?
-		d->lastError = EIO;
-		return -d->lastError;
-	}
-
-	// Row pointers. (NOTE: Allocated after IHDR is written.)
-	const int height = d->img->height();
-	const png_byte **row_pointers = nullptr;
-
-#ifdef PNG_SETJMP_SUPPORTED
-	// WARNING: Do NOT initialize any C++ objects past this point!
-	if (setjmp(png_jmpbuf(d->png_ptr))) {
-		// PNG read failed.
-		png_free(d->png_ptr, row_pointers);
-		return -EIO;
-	}
-#endif
-
-	// TODO: Byteswap image data on big-endian systems?
-	//ppng_set_swap(png_ptr);
-	// TODO: What format on big-endian?
-	png_set_bgr(d->png_ptr);
-
-	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(d->png_ptr, sizeof(const png_byte*) * height);
-	if (!row_pointers) {
-		d->lastError = ENOMEM;
-		return -d->lastError;
-	}
-
-	// Initialize the row pointers array.
-	for (int y = height-1; y >= 0; y--) {
-		row_pointers[y] = static_cast<const png_byte*>(d->img->scanLine(y));
-	}
-
-	// Write the image data.
-	png_write_image(d->png_ptr, (png_bytepp)row_pointers);
-	png_free(d->png_ptr, row_pointers);
-	row_pointers = nullptr;
-
-	// Finished writing.
-	png_write_end(d->png_ptr, d->info_ptr);
-
-	// Free the PNG structs and close the file.
-	png_destroy_write_struct(&d->png_ptr, &d->info_ptr);
-	delete d->file;
-	d->file = nullptr;
-	return 0;
 }
 
 }

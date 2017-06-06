@@ -29,6 +29,7 @@ namespace LibRpBase {
 
 class IRpFile;
 class rp_image;
+class IconAnimData;
 
 class RpPngWriterPrivate;
 class RpPngWriter
@@ -47,14 +48,60 @@ class RpPngWriter
 
 		/**
 		 * Write an image to a PNG file.
+		 * IRpFile must be open for writing.
 		 *
 		 * Check isOpen() after constructing to verify that
 		 * the file was opened.
+		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
 		 *
 		 * @param file	[in] IRpFile open for writing.
 		 * @param img	[in] rp_image.
 		 */
 		RpPngWriter(IRpFile *file, const rp_image *img);
+
+		/**
+		 * Write an animated image to an APNG file.
+		 *
+		 * Check isOpen() after constructing to verify that
+		 * the file was opened.
+		 *
+		 * If the animated image contains a single frame,
+		 * a standard PNG image will be written.
+		 *
+		 * NOTE: If the image has multiple frames and APNG
+		 * write support is unavailable, -ENOTSUP will be
+		 * set as the last error. The caller should then save
+		 * the image as a standard PNG file.
+		 *
+		 * @param file		[in] IRpFile open for writing.
+		 * @param iconAnimData	[in] Animated image data.
+		 */
+		RpPngWriter(const rp_char *filename, const IconAnimData *iconAnimData);
+
+		/**
+		 * Write an animated image to an APNG file.
+		 * IRpFile must be open for writing.
+		 *
+		 * Check isOpen() after constructing to verify that
+		 * the file was opened.
+		 *
+		 * If the animated image contains a single frame,
+		 * a standard PNG image will be written.
+		 *
+		 * NOTE: If the image has multiple frames and APNG
+		 * write support is unavailable, -ENOTSUP will be
+		 * set as the last error. The caller should then save
+		 * the image as a standard PNG file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param file		[in] IRpFile open for writing.
+		 * @param iconAnimData	[in] Animated image data.
+		 */
+		RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData);
 
 		~RpPngWriter();
 
