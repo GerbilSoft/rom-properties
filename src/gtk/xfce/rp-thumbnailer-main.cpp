@@ -82,9 +82,6 @@ static int init_cache_dir(void)
  */
 static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 {
-	if (level < LEVEL_ERROR)
-		return 0;
-
 	// g_warning() may be using g_log_structured(),
 	// and there's no variant of g_log_structured()
 	// that takes va_list, so we'll print it to a
