@@ -117,6 +117,7 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	int ret = vfprintf(stderr, format, args);
+	fputc('\n', stderr);
 	va_end(args);
 
 	return ret;

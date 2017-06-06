@@ -95,7 +95,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 			continue;
 
 		if (pfnDebug) {
-			pfnDebug(LEVEL_DEBUG, "Attempting to open: %s\n", plugin_path);
+			pfnDebug(LEVEL_DEBUG, "Attempting to open: %s", plugin_path);
 		}
 		*ppDll = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
 		if (!*ppDll) {
@@ -105,7 +105,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 
 		// Find the requested symbol.
 		if (pfnDebug) {
-			pfnDebug(LEVEL_DEBUG, "Checking for symbol: %s\n", symname);
+			pfnDebug(LEVEL_DEBUG, "Checking for symbol: %s", symname);
 		}
 		*ppfn = dlsym(*ppDll, symname);
 		if (!*ppfn) {
@@ -121,7 +121,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 
 	if (!*ppfn) {
 		if (pfnDebug) {
-			pfnDebug(LEVEL_ERROR, "*** ERROR: Could not find %s() in any installed rom-properties plugin.\n", symname);
+			pfnDebug(LEVEL_ERROR, "*** ERROR: Could not find %s() in any installed rom-properties plugin.", symname);
 		}
 		return -ENOENT;
 	}
