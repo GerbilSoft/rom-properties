@@ -25,6 +25,10 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
+// C++ includes.
+#include <string>
+#include <vector>
+
 namespace LibRpBase {
 
 class IRpFile;
@@ -129,6 +133,22 @@ class RpPngWriter
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_IHDR(void);
+
+#if 0
+		typedef std::vector<std::pair<std::string, std::string> > kv_vector;
+
+		/**
+		 * Write an array of text chunks.
+		 * This is needed for e.g. the XDG thumbnailing specification.
+		 *
+		 * NOTE: This currently only supports Latin-1 strings.
+		 * FIXME: Untested!
+		 *
+		 * @param kv_vector Vector of key/value pairs.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_tEXt(const kv_vector &kv);
+#endif
 
 		/**
 		 * Write the rp_image data to the PNG image.

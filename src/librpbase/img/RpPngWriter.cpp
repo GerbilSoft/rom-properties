@@ -918,6 +918,68 @@ int RpPngWriter::write_IHDR(void)
 	return 0;
 }
 
+#if 0
+/**
+ * Write an array of text chunks.
+ * This is needed for e.g. the XDG thumbnailing specification.
+ *
+ * NOTE: This currently only supports Latin-1 strings.
+ * FIXME: Untested!
+ *
+ * @param kv_vector Vector of key/value pairs.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriter::write_tEXt(const kv_vector &kv)
+{
+	RP_D(RpPngWriter);
+	assert(d->file != nullptr);
+	assert(d->img != nullptr);
+	assert(d->IHDR_written);
+	if (!d->file || !d->img) {
+		// Invalid state.
+		d->lastError = EIO;
+		return -d->lastError;
+	}
+	if (!d->IHDR_written) {
+		// IHDR has not been written yet.
+		// TODO: Better error code?
+		d->lastError = EIO;
+		return -d->lastError;
+	}
+
+	if (kv.empty()) {
+		// Empty vector...
+		return 0;
+	}
+
+	// Allocate string pointer arrays for kv_vector.
+	// Since kv_vector is Latin-1, we don't have to
+	// strdup() the strings.
+	// TODO: unique_ptr<>?
+	png_text *text = new png_text[kv.size()];
+	png_text *pTxt = text;
+	for (unsigned int i = 0; i < kv.size(); i++, pTxt++) {
+		pTxt->compression = PNG_TEXT_COMPRESSION_NONE;
+		pTxt->key = (png_charp)kv[i].first.c_str();
+		pTxt->text = (png_charp)kv[i].second.c_str();
+	}
+
+#ifdef PNG_SETJMP_SUPPORTED
+	// WARNING: Do NOT initialize any C++ objects past this point!
+	if (setjmp(png_jmpbuf(d->png_ptr))) {
+		// PNG write failed.
+		delete[] text;
+		d->lastError = EIO;
+		return -d->lastError;
+	}
+#endif
+
+	png_set_text(d->png_ptr, d->info_ptr, text, kv.size());
+	delete[] text;
+	return 0;
+}
+#endif
+
 /**
  * Write the rp_image data to the PNG image.
  *
