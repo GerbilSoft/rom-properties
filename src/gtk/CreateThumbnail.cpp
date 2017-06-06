@@ -270,6 +270,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// TODO: Distinguish between GNOME and XFCE?
 	// TODO: Does gdk_pixbuf_savev() support zTXt?
+	// TODO: Set keys in the Qt one.
 	option_keys[curopt] = "tEXt::Software";
 	option_values[curopt] = "ROM Properties Page shell extension (GTK+)";
 	curopt++;

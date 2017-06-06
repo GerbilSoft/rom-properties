@@ -76,6 +76,7 @@ SET(librpbase_SRCS
 	img/RpImageLoader.cpp
 	img/ImageDecoder.cpp
 	img/RpPng.cpp
+	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
 	img/pngcheck/pngcheck.cpp
 	disc/IDiscReader.cpp
@@ -110,6 +111,7 @@ SET(librpbase_H
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
 	img/RpPng.hpp
+	img/RpPngWriter.hpp
 	img/IconAnimData.hpp
 	img/IconAnimHelper.hpp
 	img/APNG_dlopen.h
