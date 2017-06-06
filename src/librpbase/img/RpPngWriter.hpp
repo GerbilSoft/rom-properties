@@ -33,7 +33,7 @@ namespace LibRpBase {
 
 class IRpFile;
 class rp_image;
-class IconAnimData;
+struct IconAnimData;
 
 class RpPngWriterPrivate;
 class RpPngWriter
