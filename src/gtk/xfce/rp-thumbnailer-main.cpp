@@ -133,6 +133,7 @@ on_dbus_name_lost(GDBusConnection *connection, const gchar *name, gpointer user_
 
 	stop_main_loop = true;
 	if (g_main_loop_is_running(main_loop)) {
+		g_debug("D-Bus name was lost; exiting.");
 		g_main_loop_quit(main_loop);
 	}
 }
