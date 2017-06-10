@@ -290,18 +290,39 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	// - Show on a separate line?
 
 	static const rp_char *const vectors_names[] = {
+		// $00
 		_RP("Initial SP"),
 		_RP("Entry Point"),
 		_RP("Bus Error"),
 		_RP("Address Error"),
+		// $10
 		_RP("Illegal Instruction"),
 		_RP("Division by Zero"),
 		_RP("CHK Exception"),
 		_RP("TRAPV Exception"),
+		// $20
 		_RP("Privilege Violation"),
 		_RP("TRACE Exception"),
 		_RP("Line A Emulator"),
 		_RP("Line F Emulator"),
+		// $60
+		_RP("Spurious Interrupt"),
+		_RP("IRQ1"),
+		_RP("IRQ2 (TH)"),
+		_RP("IRQ3"),
+		// $70
+		_RP("IRQ4 (HBlank)"),
+		_RP("IRQ5"),
+		_RP("IRQ6 (VBlank)"),
+		_RP("IRQ7 (NMI)"),
+	};
+
+	// Map of displayed vectors to actual vectors.
+	// This uses vector indees, *not* byte addresses.
+	static const uint8_t vectors_map[] = {
+		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
+		 8,  9, 10, 11,			// $20-$2C
+		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
 	};
 
 	auto vectors_info = new std::vector<std::vector<rp_string> >();
@@ -312,10 +333,13 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		// TODO: Add a mapping table when skipping some.
 		auto &data_row = vectors_info->at(i);
 
+		// Actual vector number.
+		const uint8_t vector_index = vectors_map[i];
+
 		// #
 		// NOTE: This is the byte address in the vector table.
 		char buf[16];
-		int len = snprintf(buf, sizeof(buf), "$%02X", i*4);
+		int len = snprintf(buf, sizeof(buf), "$%02X", vector_index*4);
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
 		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("$??"));
@@ -325,7 +349,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// Address
 		len = snprintf(buf, sizeof(buf), "$%08X",
-			be32_to_cpu(pVectors->vectors[i]));
+			be32_to_cpu(pVectors->vectors[vector_index]));
 		if (len > (int)sizeof(buf))
 			len = sizeof(buf);
 		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
