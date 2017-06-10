@@ -694,6 +694,9 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field, LPCWSTR wcs)
 {
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
+	assert(field != nullptr);
 	if (!hDlg || !hWndTab || !field)
 		return 0;
 
@@ -877,6 +880,10 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx,
 	const RomFields::Field *field)
 {
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
+	assert(field != nullptr);
+	assert(field->type == RomFields::RFT_BITFIELD);
 	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_BITFIELD)
@@ -1041,6 +1048,9 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
  */
 void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Field *field)
 {
+	assert(hWnd != nullptr);
+	assert(field != nullptr);
+	assert(field->type == RomFields::RFT_LISTDATA);
 	if (!hWnd || !field)
 		return;
 	if (field->type != RomFields::RFT_LISTDATA)
@@ -1129,6 +1139,10 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
+	assert(field != nullptr);
+	assert(field->type == RomFields::RFT_DATETIME);
 	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_DATETIME)
@@ -1228,6 +1242,10 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	const POINT &pt_start, int idx, const SIZE &size,
 	const RomFields::Field *field)
 {
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
+	assert(field != nullptr);
+	assert(field->type == RomFields::RFT_AGE_RATINGS);
 	if (!hDlg || !hWndTab || !field)
 		return 0;
 	if (field->type != RomFields::RFT_AGE_RATINGS)
@@ -1286,6 +1304,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
  */
 void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
 {
+	assert(hFont != nullptr);
 	if (!hFont || hFontBold) {
 		// No base font, or the bold font
 		// is already initialized.
@@ -1307,6 +1326,7 @@ void RP_ShellPropSheetExt_Private::initBoldFont(HFONT hFont)
  */
 void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
 {
+	assert(hFont != nullptr);
 	if (!hFont) {
 		// No base font...
 		return;
@@ -1376,13 +1396,16 @@ void RP_ShellPropSheetExt_Private::initMonospacedFont(HFONT hFont)
  */
 void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 {
-	if (!romData) {
-		// No ROM data loaded.
+	assert(hDlg != nullptr);
+	assert(romData != nullptr);
+	if (!hDlg || !romData) {
+		// No dialog, or no ROM data loaded.
 		return;
 	}
 
 	// Get the fields.
 	const RomFields *fields = romData->fields();
+	assert(fields != nullptr);
 	if (!fields) {
 		// No fields.
 		// TODO: Show an error?
