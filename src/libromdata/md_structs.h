@@ -44,12 +44,12 @@ typedef struct PACKED _M68K_VectorTable {
 			uint32_t address_error;
 			uint32_t illegal_insn;
 			uint32_t div_by_zero;
-			uint32_t chk_insn;
-			uint32_t trapv_insn;
+			uint32_t chk_exception;
+			uint32_t trapv_exception;
 			uint32_t priv_violation;
-			uint32_t trace;
-			uint32_t unimpl_insn1;
-			uint32_t unimpl_insn2;
+			uint32_t trace_exception;
+			uint32_t lineA_emulator;
+			uint32_t lineF_emulator;
 			uint32_t reserved1[3];
 			uint32_t uninit_interrupt;
 			uint32_t reserved2[8];

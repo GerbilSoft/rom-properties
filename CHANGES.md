@@ -17,6 +17,11 @@
   * Nintendo3DS: The logo section is now checked and displayed. Official
     Nintendo logos and a few Homebrew logos are supported. Anything else
     is listed as "Custom".
+  * MegaDrive: A new "Vector Table" tab has been added. This tab shows
+    the Initial SP and Entry Point, plus several other vectors.
+  * MegaDrive: A second ROM Header tab for locked-on ROMs has been added.
+    This shows the ROM header information for locked-on ROMs for e.g.
+    "Sonic 3 & Knuckles".
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built

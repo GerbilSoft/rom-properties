@@ -625,7 +625,15 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 	treeWidget->resizeColumnToContents(count);
 
-	ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
+	// TODO: Set height based on rows_visible.
+	if (field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW) {
+		// Separate rows.
+		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc);
+		ui.tabs[field->tabIdx].formLayout->addRow(treeWidget);
+	} else {
+		// Single row.
+		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
+	}
 }
 
 /**

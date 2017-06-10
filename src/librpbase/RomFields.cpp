@@ -273,6 +273,10 @@ void RomFields::detach(void)
 				break;
 			case RFT_LISTDATA:
 				// Copy the ListData.
+				field_new.desc.list_data.flags =
+					field_old.desc.list_data.flags;
+				field_new.desc.list_data.rows_visible =
+					field_old.desc.list_data.rows_visible;
 				if (field_old.desc.list_data.names) {
 					field_new.desc.list_data.names = new vector<rp_string>(*field_old.desc.list_data.names);
 				} else {
@@ -695,6 +699,10 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field.data.bitfield = src->data.bitfield;
 				break;
 			case RFT_LISTDATA:
+				field.desc.list_data.flags =
+					src->desc.list_data.flags;
+				field.desc.list_data.rows_visible =
+					src->desc.list_data.rows_visible;
 				field.desc.list_data.names = (src->desc.list_data.names
 						? new vector<rp_string>(*(src->desc.list_data.names))
 						: nullptr);
@@ -930,11 +938,14 @@ int RomFields::addField_bitfield(const rp_char *name,
  * @param name Field name.
  * @param headers Vector of column names.
  * @param list_data ListData.
+ * @param rows_visible Number of visible rows, (0 for "default")
+ * @param flags Flags.
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_listData(const rp_char *name,
 	const std::vector<rp_string> *headers,
-	const std::vector<std::vector<rp_string> > *list_data)
+	const std::vector<std::vector<rp_string> > *list_data,
+	int rows_visible, uint32_t flags)
 {
 	RP_D(RomFields);
 
@@ -945,10 +956,13 @@ int RomFields::addField_listData(const rp_char *name,
 
 	assert(name != nullptr);
 	assert(headers != nullptr);
-	if (!name || !headers)
+	assert(rows_visible >= 0);
+	if (!name || !headers || rows_visible < 0)
 		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_LISTDATA;
+	field.desc.list_data.flags = flags;
+	field.desc.list_data.rows_visible = rows_visible;
 	field.desc.list_data.names = headers;
 	field.data.list_data = list_data;
 	field.tabIdx = d->tabIdx;

@@ -141,6 +141,29 @@ class MegaDrivePrivate : public RomDataPrivate
 		static void decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE]);
 
 	public:
+		/**
+		 * Add fields for the ROM header.
+		 *
+		 * This function will not create a new tab.
+		 * If one is desired, it should be created
+		 * before calling this function.
+		 *
+		 * @param pRomHeader ROM header.
+		 */
+		void addFields_romHeader(const MD_RomHeader *pRomHeader);
+
+		/**
+		 * Add fields for the vector table.
+		 *
+		 * This function will not create a new tab.
+		 * If one is desired, it should be created
+		 * before calling this function.
+		 *
+		 * @param pVectors Vector table.
+		 */
+		void addFields_vectorTable(const M68K_VectorTable *pVectors);
+
+	public:
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
 		M68K_VectorTable vectors;	// Interrupt vectors.
@@ -156,6 +179,7 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	, md_region(0)
 {
 	// Clear the various structs.
+	memset(&vectors, 0, sizeof(vectors));
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&smdHeader, 0, sizeof(smdHeader));
 }
@@ -257,6 +281,262 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
 		even[12] = src[ 6];
 		even[14] = src[ 7];
 	}
+}
+
+/**
+ * Add fields for the ROM header.
+ *
+ * This function will not create a new tab.
+ * If one is desired, it should be created
+ * before calling this function.
+ *
+ * @param pRomHeader ROM header.
+ */
+void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
+{
+	// Read the strings from the header.
+	fields->addField_string(_RP("System"),
+		cp1252_sjis_to_rp_string(pRomHeader->system, sizeof(pRomHeader->system)));
+	fields->addField_string(_RP("Copyright"),
+		cp1252_sjis_to_rp_string(pRomHeader->copyright, sizeof(pRomHeader->copyright)));
+
+	// Determine the publisher.
+	// Formats in the copyright line:
+	// - "(C)SEGA"
+	// - "(C)T-xx"
+	// - "(C)T-xxx"
+	// - "(C)Txxx"
+	const rp_char *publisher = nullptr;
+	unsigned int t_code = 0;
+	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
+		// Sega first-party game.
+		publisher = _RP("Sega");
+	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
+		// Third-party game.
+		int start = 4;
+		if (pRomHeader->copyright[4] == '-')
+			start++;
+		char *endptr;
+		t_code = strtoul(&pRomHeader->copyright[start], &endptr, 10);
+		if (t_code != 0 &&
+		    endptr > &pRomHeader->copyright[start] &&
+		    endptr < &pRomHeader->copyright[start+3])
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = MegaDrivePublishers::lookup(t_code);
+		}
+	}
+
+	if (publisher) {
+		// Publisher identified.
+		fields->addField_string(_RP("Publisher"), publisher);
+	} else if (t_code > 0) {
+		// Unknown publisher, but there is a valid T code.
+		char buf[16];
+		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		fields->addField_string(_RP("Publisher"),
+			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	} else {
+		// Unknown publisher.
+		fields->addField_string(_RP("Publisher"), _RP("Unknown"));
+	}
+
+	// Titles, serial number, and checksum.
+	fields->addField_string(_RP("Domestic Title"),
+		cp1252_sjis_to_rp_string(pRomHeader->title_domestic, sizeof(pRomHeader->title_domestic)));
+	fields->addField_string(_RP("Export Title"),
+		cp1252_sjis_to_rp_string(pRomHeader->title_export, sizeof(pRomHeader->title_export)));
+	fields->addField_string(_RP("Serial Number"),
+		cp1252_sjis_to_rp_string(pRomHeader->serial, sizeof(pRomHeader->serial)));
+	if (!isDisc()) {
+		// Checksum. (MD only; not valid for Mega CD.)
+		fields->addField_string_numeric(_RP("Checksum"),
+			be16_to_cpu(pRomHeader->checksum), RomFields::FB_HEX, 4,
+			RomFields::STRF_MONOSPACE);
+	}
+
+	// I/O support bitfield.
+	static const rp_char *const io_bitfield_names[] = {
+		_RP("Joypad"), _RP("6-button"), _RP("SMS Joypad"),
+		_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
+		_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
+		_RP("Paddle"), _RP("Floppy Drive"), _RP("CD-ROM"),
+		_RP("Activator"), _RP("Mega Mouse")
+	};
+	vector<rp_string> *v_io_bitfield_names = RomFields::strArrayToVector(
+		io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
+	// Parse I/O support.
+	uint32_t io_support = parseIOSupport(pRomHeader->io_support, sizeof(pRomHeader->io_support));
+	fields->addField_bitfield(_RP("I/O Support"),
+		v_io_bitfield_names, 3, io_support);
+
+	if (!isDisc()) {
+		// ROM range.
+		fields->addField_string_address_range(_RP("ROM Range"),
+				be32_to_cpu(pRomHeader->rom_start),
+				be32_to_cpu(pRomHeader->rom_end), 8,
+				RomFields::STRF_MONOSPACE);
+
+		// RAM range.
+		fields->addField_string_address_range(_RP("RAM Range"),
+				be32_to_cpu(pRomHeader->ram_start),
+				be32_to_cpu(pRomHeader->ram_end), 8,
+				RomFields::STRF_MONOSPACE);
+
+		// Check for external memory.
+		const uint32_t sram_info = be32_to_cpu(pRomHeader->sram_info);
+		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
+			// SRAM is present.
+			// Format: 'R', 'A', %1x1yz000, 0x20
+			// x == 1 for backup (SRAM), 0 for not backup
+			// yz == 10 for even addresses, 11 for odd addresses
+			// TODO: Print the 'x' bit.
+			const rp_char *suffix;
+			switch ((sram_info >> (8+3)) & 0x03) {
+				case 2:
+					suffix = _RP("(even only)");
+					break;
+				case 3:
+					suffix = _RP("(odd only)");
+					break;
+				default:
+					// TODO: Are both alternates 16-bit?
+					suffix = _RP("(16-bit)");
+					break;
+			}
+
+			fields->addField_string_address_range(_RP("SRAM Range"),
+				be32_to_cpu(pRomHeader->sram_start),
+				be32_to_cpu(pRomHeader->sram_end),
+				suffix, 8, RomFields::STRF_MONOSPACE);
+		} else {
+			fields->addField_string(_RP("SRAM Range"), _RP("None"));
+		}
+
+		// Check for an extra ROM chip.
+		if (be32_to_cpu(pRomHeader->extrom.info) == 0x524F2020) {
+			// Extra ROM chip. (Sonic & Knuckles)
+			// Format: 'R', 'O', 0x20, 0x20
+			// Start and End locations are listed twice, in 24-bit format.
+			// Not sure if there's any difference between the two...
+			const uint32_t extrom_start = (pRomHeader->extrom.data[0] << 16) |
+						      (pRomHeader->extrom.data[1] <<  8) |
+						       pRomHeader->extrom.data[2];
+			const uint32_t extrom_end   = (pRomHeader->extrom.data[3] << 16) |
+						      (pRomHeader->extrom.data[4] <<  8) |
+						       pRomHeader->extrom.data[5];
+			fields->addField_string_address_range(_RP("ExtROM Range"),
+				extrom_start, extrom_end, nullptr, 8,
+				RomFields::STRF_MONOSPACE);
+		}
+	}
+
+	// Region code.
+	// TODO: Validate the Mega CD security program?
+	static const rp_char *const region_code_bitfield_names[] = {
+		_RP("Japan"), _RP("Asia"),
+		_RP("USA"), _RP("Europe")
+	};
+	vector<rp_string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
+		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+	fields->addField_bitfield(_RP("Region Code"),
+		v_region_code_bitfield_names, 0, md_region);
+}
+
+/**
+ * Add fields for the vector table.
+ *
+ * This function will not create a new tab.
+ * If one is desired, it should be created
+ * before calling this function.
+ *
+ * @param pVectors Vector table.
+ */
+void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
+{
+	// Use a LIST_DATA field in order to show all the vectors.
+	// TODO:
+	// - Make the "#" and "Address" columns monospace.
+	// - Increase the height.
+	// - Show on a separate line?
+
+	static const rp_char *const vectors_names[] = {
+		// $00
+		_RP("Initial SP"),
+		_RP("Entry Point"),
+		_RP("Bus Error"),
+		_RP("Address Error"),
+		// $10
+		_RP("Illegal Instruction"),
+		_RP("Division by Zero"),
+		_RP("CHK Exception"),
+		_RP("TRAPV Exception"),
+		// $20
+		_RP("Privilege Violation"),
+		_RP("TRACE Exception"),
+		_RP("Line A Emulator"),
+		_RP("Line F Emulator"),
+		// $60
+		_RP("Spurious Interrupt"),
+		_RP("IRQ1"),
+		_RP("IRQ2 (TH)"),
+		_RP("IRQ3"),
+		// $70
+		_RP("IRQ4 (HBlank)"),
+		_RP("IRQ5"),
+		_RP("IRQ6 (VBlank)"),
+		_RP("IRQ7 (NMI)"),
+	};
+
+	// Map of displayed vectors to actual vectors.
+	// This uses vector indees, *not* byte addresses.
+	static const uint8_t vectors_map[] = {
+		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
+		 8,  9, 10, 11,			// $20-$2C
+		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
+	};
+
+	auto vectors_info = new std::vector<std::vector<rp_string> >();
+	vectors_info->resize(ARRAY_SIZE(vectors_names));
+
+	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {
+		// No vectors are skipped yet.
+		// TODO: Add a mapping table when skipping some.
+		auto &data_row = vectors_info->at(i);
+
+		// Actual vector number.
+		const uint8_t vector_index = vectors_map[i];
+
+		// #
+		// NOTE: This is the byte address in the vector table.
+		char buf[16];
+		int len = snprintf(buf, sizeof(buf), "$%02X", vector_index*4);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("$??"));
+
+		// Vector name
+		data_row.push_back(vectors_names[i]);
+
+		// Address
+		len = snprintf(buf, sizeof(buf), "$%08X",
+			be32_to_cpu(pVectors->vectors[vector_index]));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	static const rp_char *const vectors_headers[] = {
+		_RP("#"),
+		_RP("Vector"),
+		_RP("Address"),
+	};
+	vector<rp_string> *v_vectors_headers = RomFields::strArrayToVector(
+		vectors_headers, ARRAY_SIZE(vectors_headers));
+	fields->addField_listData(_RP("Vector Table"), v_vectors_headers, vectors_info,
+		8, RomFields::RFT_LISTVIEW_SEPARATE_ROW);
 }
 
 /** MegaDrive **/
@@ -664,168 +944,70 @@ int MegaDrive::loadFieldData(void)
 		return -EIO;
 	}
 
-	// MD ROM header, excluding the vector table.
-	const MD_RomHeader *romHeader = &d->romHeader;
-	d->fields->reserve(14);	// Maximum of 14 fields.
+	// Maximum number of fields:
+	// - ROM Header: 13
+	// - Vector table: 1 (LIST_DATA)
+	d->fields->reserve(14);
 
-	// Read the strings from the header.
-	d->fields->addField_string(_RP("System"),
-		cp1252_sjis_to_rp_string(romHeader->system, sizeof(romHeader->system)));
-	d->fields->addField_string(_RP("Copyright"),
-		cp1252_sjis_to_rp_string(romHeader->copyright, sizeof(romHeader->copyright)));
+	// Reserve at least 2 tabs.
+	d->fields->reserveTabs(2);
 
-	// Determine the publisher.
-	// Formats in the copyright line:
-	// - "(C)SEGA"
-	// - "(C)T-xx"
-	// - "(C)T-xxx"
-	// - "(C)Txxx"
-	const rp_char *publisher = nullptr;
-	unsigned int t_code = 0;
-	if (!memcmp(romHeader->copyright, "(C)SEGA", 7)) {
-		// Sega first-party game.
-		publisher = _RP("Sega");
-	} else if (!memcmp(romHeader->copyright, "(C)T", 4)) {
-		// Third-party game.
-		int start = 4;
-		if (romHeader->copyright[4] == '-')
-			start++;
-		char *endptr;
-		t_code = strtoul(&romHeader->copyright[start], &endptr, 10);
-		if (t_code != 0 &&
-		    endptr > &romHeader->copyright[start] &&
-		    endptr < &romHeader->copyright[start+3])
-		{
-			// Valid T-code. Look up the publisher.
-			publisher = MegaDrivePublishers::lookup(t_code);
-		}
-	}
-
-	if (publisher) {
-		// Publisher identified.
-		d->fields->addField_string(_RP("Publisher"), publisher);
-	} else if (t_code > 0) {
-		// Unknown publisher, but there is a valid T code.
-		char buf[16];
-		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		d->fields->addField_string(_RP("Publisher"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-	} else {
-		// Unknown publisher.
-		d->fields->addField_string(_RP("Publisher"), _RP("Unknown"));
-	}
-
-	// Titles, serial number, and checksum.
-	d->fields->addField_string(_RP("Domestic Title"),
-		cp1252_sjis_to_rp_string(romHeader->title_domestic, sizeof(romHeader->title_domestic)));
-	d->fields->addField_string(_RP("Export Title"),
-		cp1252_sjis_to_rp_string(romHeader->title_export, sizeof(romHeader->title_export)));
-	d->fields->addField_string(_RP("Serial Number"),
-		cp1252_sjis_to_rp_string(romHeader->serial, sizeof(romHeader->serial)));
-	if (!d->isDisc()) {
-		// Checksum. (MD only; not valid for Mega CD.)
-		d->fields->addField_string_numeric(_RP("Checksum"),
-			be16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4,
-			RomFields::STRF_MONOSPACE);
-	}
-
-	// I/O support bitfield.
-	static const rp_char *const io_bitfield_names[] = {
-		_RP("Joypad"), _RP("6-button"), _RP("SMS Joypad"),
-		_RP("Team Player"), _RP("Keyboard"), _RP("Serial I/O"),
-		_RP("Printer"), _RP("Tablet"), _RP("Trackball"),
-		_RP("Paddle"), _RP("Floppy Drive"), _RP("CD-ROM"),
-		_RP("Activator"), _RP("Mega Mouse")
-	};
-	vector<rp_string> *v_io_bitfield_names = RomFields::strArrayToVector(
-		io_bitfield_names, ARRAY_SIZE(io_bitfield_names));
-	// Parse I/O support.
-	uint32_t io_support = d->parseIOSupport(romHeader->io_support, sizeof(romHeader->io_support));
-	d->fields->addField_bitfield(_RP("I/O Support"),
-		v_io_bitfield_names, 3, io_support);
+	// ROM Header.
+	d->fields->setTabName(0, _RP("ROM Header"));
+	d->addFields_romHeader(&d->romHeader);
 
 	if (!d->isDisc()) {
-		// ROM range.
-		d->fields->addField_string_address_range(_RP("ROM Range"),
-				be32_to_cpu(romHeader->rom_start),
-				be32_to_cpu(romHeader->rom_end), 8,
-				RomFields::STRF_MONOSPACE);
+		// Vector table. (MD only; not valid for Mega CD.)
+		d->fields->addTab(_RP("Vector Table"));
+		d->addFields_vectorTable(&d->vectors);
+	}
 
-		// RAM range.
-		d->fields->addField_string_address_range(_RP("RAM Range"),
-				be32_to_cpu(romHeader->ram_start),
-				be32_to_cpu(romHeader->ram_end), 8,
-				RomFields::STRF_MONOSPACE);
+	// Check for S&K.
+	if (!memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial))) {
+		// Check if a locked-on ROM is present.
+		bool header_loaded = false;
+		uint8_t header[0x200];
 
-		// Check for external memory.
-		const uint32_t sram_info = be32_to_cpu(romHeader->sram_info);
-		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
-			// SRAM is present.
-			// Format: 'R', 'A', %1x1yz000, 0x20
-			// x == 1 for backup (SRAM), 0 for not backup
-			// yz == 10 for even addresses, 11 for odd addresses
-			// TODO: Print the 'x' bit.
-			const rp_char *suffix;
-			switch ((sram_info >> (8+3)) & 0x03) {
-				case 2:
-					suffix = _RP("(even only)");
-					break;
-				case 3:
-					suffix = _RP("(odd only)");
-					break;
-				default:
-					// TODO: Are both alternates 16-bit?
-					suffix = _RP("(16-bit)");
-					break;
+		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
+			// Load the 16K block and deinterleave it.
+			if (d->file->size() >= (512 + (2*1024*1024) + 16384)) {
+				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
+				uint8_t *const smd_data = block.get();
+				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
+				int ret = d->file->seek(512 + (2*1024*1024));
+				if (ret == 0) {
+					size_t size = d->file->read(smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
+					if (size == MegaDrivePrivate::SMD_BLOCK_SIZE) {
+						// Deinterleave the block.
+						d->decodeSMDBlock(bin_data, smd_data);
+						memcpy(header, bin_data, sizeof(header));
+						header_loaded = true;
+					}
+				}
 			}
-
-			d->fields->addField_string_address_range(_RP("SRAM Range"),
-				be32_to_cpu(romHeader->sram_start),
-				be32_to_cpu(romHeader->sram_end),
-				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
-			d->fields->addField_string(_RP("SRAM Range"), _RP("None"));
+			// Load the header directly.
+			int ret = d->file->seek(2*1024*1024);
+			if (ret == 0) {
+				size_t size = d->file->read(header, sizeof(header));
+				header_loaded = (size == sizeof(header));
+			}
 		}
 
-		// Check for an extra ROM chip.
-		if (be32_to_cpu(romHeader->extrom.info) == 0x524F2020) {
-			// Extra ROM chip. (Sonic & Knuckles)
-			// Format: 'R', 'O', 0x20, 0x20
-			// Start and End locations are listed twice, in 24-bit format.
-			// Not sure if there's any difference between the two...
-			const uint32_t extrom_start = (romHeader->extrom.data[0] << 16) |
-						      (romHeader->extrom.data[1] <<  8) |
-						       romHeader->extrom.data[2];
-			const uint32_t extrom_end   = (romHeader->extrom.data[3] << 16) |
-						      (romHeader->extrom.data[4] <<  8) |
-						       romHeader->extrom.data[5];
-			d->fields->addField_string_address_range(_RP("ExtROM Range"),
-				extrom_start, extrom_end, nullptr, 8,
-				RomFields::STRF_MONOSPACE);
+		if (header_loaded) {
+			// Check the "SEGA" magic.
+			static const char sega_magic[4] = {'S','E','G','A'};
+			if (!memcmp(&header[0x100], sega_magic, sizeof(sega_magic)) ||
+			    !memcmp(&header[0x101], sega_magic, sizeof(sega_magic)))
+			{
+				// Found the "SEGA" magic.
+				// Show the ROM header.
+				const MD_RomHeader *const lockon_header =
+					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
+				d->fields->addTab(_RP("Locked-On ROM Header"));
+				d->addFields_romHeader(lockon_header);
+			}
 		}
-	}
-
-	// Region code.
-	// TODO: Validate the Mega CD security program?
-	static const rp_char *const region_code_bitfield_names[] = {
-		_RP("Japan"), _RP("Asia"),
-		_RP("USA"), _RP("Europe")
-	};
-	vector<rp_string> *v_region_code_bitfield_names = RomFields::strArrayToVector(
-		region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	d->fields->addField_bitfield(_RP("Region Code"),
-		v_region_code_bitfield_names, 0, d->md_region);
-
-	if (!d->isDisc()) {
-		// Vectors. (MD only; not valid for Mega CD.)
-		d->fields->addField_string_numeric(_RP("Entry Point"),
-			be32_to_cpu(d->vectors.initial_pc),
-			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
-		d->fields->addField_string_numeric(_RP("Initial SP"),
-			be32_to_cpu(d->vectors.initial_sp),
-			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.
