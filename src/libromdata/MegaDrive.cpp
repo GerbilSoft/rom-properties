@@ -964,24 +964,47 @@ int MegaDrive::loadFieldData(void)
 	// Check for S&K.
 	if (!memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial))) {
 		// Check if a locked-on ROM is present.
-		int64_t check_size;
+		bool header_loaded = false;
+		uint8_t header[0x200];
+
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
-			check_size = (2*1024*1024) + 512 + 16384;
-		} else {
-			check_size = (2*1024*1024) + 512;
-		}
-		if (d->file->size() > check_size) {
-			// TODO: For SMD, deinterleave the block first.
-			// TODO: Show the vector table?
-			int ret = d->file->seek((2*1024*1024) + 0x100);
-			if (ret == 0) {
-				MD_RomHeader lockon_header;
-				size_t size = d->file->read(&lockon_header, sizeof(lockon_header));
-				if (size == sizeof(lockon_header)) {
-					// Show the ROM header.
-					d->fields->addTab(_RP("Locked-On ROM Header"));
-					d->addFields_romHeader(&lockon_header);
+			// Load the 16K block and deinterleave it.
+			if (d->file->size() >= (512 + (2*1024*1024) + 16384)) {
+				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
+				uint8_t *const smd_data = block.get();
+				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
+				int ret = d->file->seek(512 + (2*1024*1024));
+				if (ret == 0) {
+					size_t size = d->file->read(smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
+					if (size == MegaDrivePrivate::SMD_BLOCK_SIZE) {
+						// Deinterleave the block.
+						d->decodeSMDBlock(bin_data, smd_data);
+						memcpy(header, bin_data, sizeof(header));
+						header_loaded = true;
+					}
 				}
+			}
+		} else {
+			// Load the header directly.
+			int ret = d->file->seek(2*1024*1024);
+			if (ret == 0) {
+				size_t size = d->file->read(header, sizeof(header));
+				header_loaded = (size == sizeof(header));
+			}
+		}
+
+		if (header_loaded) {
+			// Check the "SEGA" magic.
+			static const char sega_magic[4] = {'S','E','G','A'};
+			if (!memcmp(&header[0x100], sega_magic, sizeof(sega_magic)) ||
+			    !memcmp(&header[0x101], sega_magic, sizeof(sega_magic)))
+			{
+				// Found the "SEGA" magic.
+				// Show the ROM header.
+				const MD_RomHeader *const lockon_header =
+					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
+				d->fields->addTab(_RP("Locked-On ROM Header"));
+				d->addFields_romHeader(lockon_header);
 			}
 		}
 	}
