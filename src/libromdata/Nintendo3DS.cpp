@@ -2498,6 +2498,10 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	} else if (ncch_header) {
 		tid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		tid_hi = le32_to_cpu(ncch_header->program_id.hi);
+	} else {
+		// Unlikely, but cppcheck complained.
+		tid_lo = 0;
+		tid_hi = 0;
 	}
 
 	// Validate the title ID.
