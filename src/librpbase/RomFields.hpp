@@ -112,6 +112,13 @@ class RomFields
 			const rp_char *const *names;
 		};
 
+		// Display flags for RFT_LISTDATA.
+		enum ListDataFlags {
+			// Show the ListView on a separate row
+			// from the description label.
+			RFT_LISTVIEW_SEPARATE_ROW = (1 << 0),
+		};
+
 		// Display flags for RFT_DATETIME.
 		enum DateTimeFlags {
 			// Show the date value.
@@ -234,6 +241,10 @@ class RomFields
 					const std::vector<rp_string> *names;
 				} bitfield;
 				struct _list_data {
+					// Flags.
+					uint32_t flags;
+					// Number of visible rows. (0 for "default")
+					int rows_visible;
 					// List field names. (headers)
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
@@ -497,11 +508,14 @@ class RomFields
 		 * @param name Field name.
 		 * @param headers Vector of column names.
 		 * @param list_data ListData.
+		 * @param rows_visible Number of visible rows, (0 for "default")
+		 * @param flags Flags.
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_listData(const rp_char *name,
 			const std::vector<rp_string> *headers,
-			const std::vector<std::vector<rp_string> > *list_data);
+			const std::vector<std::vector<rp_string> > *list_data,
+			int rows_visible = 0, uint32_t flags = 0);
 
 		/**
 		 * Add DateTime.

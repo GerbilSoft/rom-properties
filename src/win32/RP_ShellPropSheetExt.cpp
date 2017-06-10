@@ -242,11 +242,18 @@ class RP_ShellPropSheetExt_Private
 			const RomFields::Field *field);
 
 		/**
-		 * Initialize a ListView control.
-		 * @param hWnd		[in] HWND of the ListView control.
+		 * Initialize a ListData field.
+		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+		 * @param hWndTab	[in] Tab window. (for the actual control)
+		 * @param pt_start	[in] Starting position, in pixels.
+		 * @param idx		[in] Field index.
+		 * @param size		[in] Width and height for a default ListView.
 		 * @param field		[in] RomFields::Field
+		 * @return Field height, in pixels.
 		 */
-		void initListView(HWND hWnd, const RomFields::Field *field);
+		int initListData(HWND hDlg, HWND hWndTab,
+			const POINT &pt_start, int idx, const SIZE &size,
+			const RomFields::Field *field);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -1042,29 +1049,48 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 }
 
 /**
- * Initialize a ListView control.
- * @param hWnd		[in] HWND of the ListView control.
+ * Initialize a ListData field.
+ * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
+ * @param hWndTab	[in] Tab window. (for the actual control)
+ * @param pt_start	[in] Starting position, in pixels.
+ * @param idx		[in] Field index.
+ * @param size		[in] Width and height for a default ListView.
  * @param field		[in] RomFields::Field
+ * @return Field height, in pixels.
  */
-void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Field *field)
+int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
+	const POINT &pt_start, int idx, const SIZE &size,
+	const RomFields::Field *field)
 {
-	assert(hWnd != nullptr);
+	assert(hDlg != nullptr);
+	assert(hWndTab != nullptr);
 	assert(field != nullptr);
 	assert(field->type == RomFields::RFT_LISTDATA);
-	if (!hWnd || !field)
-		return;
+	if (!hDlg || !hWndTab || !field)
+		return 0;
 	if (field->type != RomFields::RFT_LISTDATA)
-		return;
+		return 0;
 
 	const auto &listDataDesc = field->desc.list_data;
 	assert(listDataDesc.names != nullptr);
 	if (!listDataDesc.names) {
 		// No column names...
-		return;
+		return 0;
 	}
 
+	// Create a ListView widget.
+	// NOTE: Separate row option is handled by the caller.
+	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
+		WC_LISTVIEW, nullptr,
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
+		pt_start.x, pt_start.y,
+		size.cx, size.cy,
+		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
+		nullptr, nullptr);
+	SetWindowFont(hDlgItem, hFontDlg, FALSE);
+
 	// Set extended ListView styles.
-	ListView_SetExtendedListViewStyle(hWnd, LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyle(hDlgItem, LVS_EX_FULLROWSELECT);
 
 	// Insert columns.
 	// TODO: Make sure there aren't any columns to start with?
@@ -1086,7 +1112,7 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Fiel
 			lvColumn.cx = 0;
 		}
 
-		ListView_InsertColumn(hWnd, i, &lvColumn);
+		ListView_InsertColumn(hDlgItem, i, &lvColumn);
 	}
 
 	// Add the row data.
@@ -1108,10 +1134,10 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Fiel
 				lvItem.pszText = (LPWSTR)iter->c_str();
 				if (col == 0) {
 					// Column 0: Insert the item.
-					ListView_InsertItem(hWnd, &lvItem);
+					ListView_InsertItem(hDlgItem, &lvItem);
 				} else {
 					// Columns 1 and higher: Set the subitem.
-					ListView_SetItem(hWnd, &lvItem);
+					ListView_SetItem(hDlgItem, &lvItem);
 				}
 			}
 		}
@@ -1120,8 +1146,52 @@ void RP_ShellPropSheetExt_Private::initListView(HWND hWnd, const RomFields::Fiel
 	// Resize all of the columns.
 	// TODO: Do this on system theme change?
 	for (int i = 0; i < count; i++) {
-		ListView_SetColumnWidth(hWnd, i, LVSCW_AUTOSIZE_USEHEADER);
+		ListView_SetColumnWidth(hDlgItem, i, LVSCW_AUTOSIZE_USEHEADER);
 	}
+
+	// Get the dialog margin.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	RECT dlgMargin = {7, 7, 8, 8};
+	MapDialogRect(hDlg, &dlgMargin);
+
+	// Increase the ListView height.
+	// Default: 5 rows, plus the header.
+	int cy = 0;
+	if (ListView_GetItemCount(hDlgItem) > 0) {
+		// Get the header rect and an item rect.
+		HWND hHeader = ListView_GetHeader(hDlgItem);
+		assert(hHeader != nullptr);
+		if (hHeader) {
+			RECT rectHeader;
+			GetClientRect(hHeader, &rectHeader);
+			cy = rectHeader.bottom;
+		}
+		RECT rectItem;
+		ListView_GetItemRect(hDlgItem, 0, &rectItem, LVIR_BOUNDS);
+		const int item_cy = (rectItem.bottom - rectItem.top);
+		if (item_cy > 0) {
+			// Multiply by the requested number of visible rows.
+			int rows_visible = field->desc.list_data.rows_visible;
+			if (rows_visible == 0) {
+				rows_visible = 5;
+			}
+			cy += (item_cy * rows_visible);
+			// Add half of the dialog margin.
+			// TODO Get the ListView border size?
+			cy += (dlgMargin.top/2);
+		} else {
+			// TODO: Can't handle this case...
+			cy = size.cy;
+		}
+	} else {
+		// TODO: Can't handle this if no items are present.
+		cy = size.cy;
+	}
+
+	SetWindowPos(hDlgItem, nullptr, 0, 0, size.cx, cy,
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
+	return cy;
 }
 
 /**
@@ -1650,30 +1720,31 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				break;
 
 			case RomFields::RFT_LISTDATA: {
-				assert(field->desc.list_data.names != nullptr);
-				if (!field->desc.list_data.names) {
-					// No column names...
-					break;
+				// Create a ListView control.
+				SIZE size = {dlg_value_width, field_cy*6};
+				POINT pt_ListData = pt_start;
+				if (field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW) {
+					// Separate row.
+					size.cx = dlgSize.cx - dlgMargin.left - 1;
+					pt_ListData.x = tab.curPt.x;
+					pt_ListData.y += (descSize.cy - (dlgMargin.top/3));
 				}
 
-				// Increase row height to 72 DLU.
-				// descSize is 8+4 DLU (12); 72/12 == 6
-				// FIXME: The last row seems to be cut off with the
-				// Windows XP Luna theme, but not Windows Classic...
-				field_cy *= 6;
-
-				// Create a ListView widget.
-				HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
-					WC_LISTVIEW, nullptr,
-					WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
-					pt_start.x, pt_start.y,
-					dlg_value_width, field_cy,
-					tab.hDlg, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
-					nullptr, nullptr);
-				SetWindowFont(hDlgItem, hFontDlg, FALSE);
-
-				// Initialize the ListView data.
-				initListView(hDlgItem, field);
+				field_cy = initListData(hDlg, tab.hDlg, pt_ListData, idx, size, field);
+				if (field_cy == 0) {
+					// initListData() failed.
+					// Remove the description label.
+					DestroyWindow(hStatic);
+				} else {
+					// Add the extra row if necessary.
+					if (field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW) {
+						const int szAdj = descSize.cy - (dlgMargin.top/3);
+						field_cy += szAdj;
+						// Reduce the hStatic size slightly.
+						SetWindowPos(hStatic, nullptr, 0, 0, descSize.cx, szAdj,
+							SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
+					}
+				}
 				break;
 			}
 
