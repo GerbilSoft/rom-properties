@@ -929,14 +929,13 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	GtkWidget *widget = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget), GTK_SHADOW_IN);
 	gtk_widget_show(widget);
 
 	// Create the GtkTreeView.
 	GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(listStore));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView), TRUE);
 	gtk_widget_show(treeView);
-	//treeWidget->setRootIsDecorated(false);
-	//treeWidget->setUniformRowHeights(true);
 	gtk_container_add(GTK_CONTAINER(widget), treeView);
 
 	// Set up the column names.
