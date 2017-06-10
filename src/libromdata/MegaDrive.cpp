@@ -141,6 +141,18 @@ class MegaDrivePrivate : public RomDataPrivate
 		static void decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE]);
 
 	public:
+		/**
+		 * Add fields for the vector table.
+		 *
+		 * This function will not create a new tab.
+		 * If one is desired, it should be created
+		 * before calling this function.
+		 *
+		 * @param pVectors Vector table.
+		 */
+		void addFields_vectorTable(const M68K_VectorTable *pVectors);
+
+	public:
 		// ROM header.
 		// NOTE: Must be byteswapped on access.
 		M68K_VectorTable vectors;	// Interrupt vectors.
@@ -156,6 +168,7 @@ MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
 	, md_region(0)
 {
 	// Clear the various structs.
+	memset(&vectors, 0, sizeof(vectors));
 	memset(&romHeader, 0, sizeof(romHeader));
 	memset(&smdHeader, 0, sizeof(smdHeader));
 }
@@ -257,6 +270,75 @@ void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_
 		even[12] = src[ 6];
 		even[14] = src[ 7];
 	}
+}
+
+/**
+ * Add fields for the vector table.
+ *
+ * This function will not create a new tab.
+ * If one is desired, it should be created
+ * before calling this function.
+ *
+ * @param pVectors Vector table.
+ */
+void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
+{
+	// Use a LIST_DATA field in order to show all the vectors.
+	// TODO:
+	// - Make the "#" and "Address" columns monospace.
+	// - Increase the height.
+	// - Show on a separate line?
+
+	static const rp_char *const vectors_names[] = {
+		_RP("Initial SP"),
+		_RP("Entry Point"),
+		_RP("Bus Error"),
+		_RP("Address Error"),
+		_RP("Illegal Instruction"),
+		_RP("Division by Zero"),
+		_RP("CHK Exception"),
+		_RP("TRAPV Exception"),
+		_RP("Privilege Violation"),
+		_RP("TRACE Exception"),
+		_RP("Line A Emulator"),
+		_RP("Line F Emulator"),
+	};
+
+	auto vectors_info = new std::vector<std::vector<rp_string> >();
+	vectors_info->resize(ARRAY_SIZE(vectors_names));
+
+	for (unsigned int i = 0; i < ARRAY_SIZE(vectors_names); i++) {
+		// No vectors are skipped yet.
+		// TODO: Add a mapping table when skipping some.
+		auto &data_row = vectors_info->at(i);
+
+		// #
+		// NOTE: This is the byte address in the vector table.
+		char buf[16];
+		int len = snprintf(buf, sizeof(buf), "$%02X", i*4);
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("$??"));
+
+		// Vector name
+		data_row.push_back(vectors_names[i]);
+
+		// Address
+		len = snprintf(buf, sizeof(buf), "$%08X",
+			be32_to_cpu(pVectors->vectors[i]));
+		if (len > (int)sizeof(buf))
+			len = sizeof(buf);
+		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+	}
+
+	static const rp_char *const vectors_headers[] = {
+		_RP("#"),
+		_RP("Vector"),
+		_RP("Address"),
+	};
+	vector<rp_string> *v_vectors_headers = RomFields::strArrayToVector(
+		vectors_headers, ARRAY_SIZE(vectors_headers));
+	fields->addField_listData(_RP("Vector Table"), v_vectors_headers, vectors_info);
 }
 
 /** MegaDrive **/
@@ -666,7 +748,17 @@ int MegaDrive::loadFieldData(void)
 
 	// MD ROM header, excluding the vector table.
 	const MD_RomHeader *romHeader = &d->romHeader;
-	d->fields->reserve(14);	// Maximum of 14 fields.
+
+	// Maximum number of fields:
+	// - ROM Header: 13
+	// - Vector table: 1 (LIST_DATA)
+	d->fields->reserve(14);
+
+	// Reserve at least 2 tabs.
+	d->fields->reserveTabs(2);
+
+	// ROM Header.
+	d->fields->setTabName(0, _RP("ROM Header"));
 
 	// Read the strings from the header.
 	d->fields->addField_string(_RP("System"),
@@ -819,13 +911,9 @@ int MegaDrive::loadFieldData(void)
 		v_region_code_bitfield_names, 0, d->md_region);
 
 	if (!d->isDisc()) {
-		// Vectors. (MD only; not valid for Mega CD.)
-		d->fields->addField_string_numeric(_RP("Entry Point"),
-			be32_to_cpu(d->vectors.initial_pc),
-			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
-		d->fields->addField_string_numeric(_RP("Initial SP"),
-			be32_to_cpu(d->vectors.initial_sp),
-			RomFields::FB_HEX, 8, RomFields::STRF_MONOSPACE);
+		// Vector table. (MD only; not valid for Mega CD.)
+		d->fields->addTab(_RP("Vector Table"));
+		d->addFields_vectorTable(&d->vectors);
 	}
 
 	// Finished reading the field data.
