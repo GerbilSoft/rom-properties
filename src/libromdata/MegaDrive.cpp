@@ -961,8 +961,30 @@ int MegaDrive::loadFieldData(void)
 		d->addFields_vectorTable(&d->vectors);
 	}
 
-	// TODO: If this is S&K and the ROM is >2 MB,
-	// check for and display the header of the locked-on ROM.
+	// Check for S&K.
+	if (!memcmp(d->romHeader.serial, "GM MK-1563 -00", sizeof(d->romHeader.serial))) {
+		// Check if a locked-on ROM is present.
+		int64_t check_size;
+		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
+			check_size = (2*1024*1024) + 512 + 16384;
+		} else {
+			check_size = (2*1024*1024) + 512;
+		}
+		if (d->file->size() > check_size) {
+			// TODO: For SMD, deinterleave the block first.
+			// TODO: Show the vector table?
+			int ret = d->file->seek((2*1024*1024) + 0x100);
+			if (ret == 0) {
+				MD_RomHeader lockon_header;
+				size_t size = d->file->read(&lockon_header, sizeof(lockon_header));
+				if (size == sizeof(lockon_header)) {
+					// Show the ROM header.
+					d->fields->addTab(_RP("Locked-On ROM Header"));
+					d->addFields_romHeader(&lockon_header);
+				}
+			}
+		}
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
