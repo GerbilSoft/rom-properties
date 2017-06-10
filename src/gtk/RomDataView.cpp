@@ -1135,6 +1135,9 @@ rom_data_view_update_display(RomDataView *page)
 		return;
 	}
 	const int count = fields->count();
+#if !GTK_CHECK_VERSION(3,0,0)
+	int rowCount = count;
+#endif
 
 	// Create the GtkNotebook.
 	if (fields->tabCount() > 1) {
@@ -1157,7 +1160,7 @@ rom_data_view_update_display(RomDataView *page)
 #else
 			tab.vbox = gtk_vbox_new(FALSE, 8);
 			// TODO: Adjust the table size?
-			tab.table = gtk_table_new(count, 2, FALSE);
+			tab.table = gtk_table_new(rowCount, 2, FALSE);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif
@@ -1227,6 +1230,7 @@ rom_data_view_update_display(RomDataView *page)
 		}
 
 		GtkWidget *widget = nullptr;
+		bool separate_rows = false;
 		switch (field->type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
@@ -1241,6 +1245,7 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_LISTDATA:
+				separate_rows = !!(field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW);
 				widget = rom_data_view_init_listdata(page, field);
 				break;
 
@@ -1290,14 +1295,44 @@ rom_data_view_update_display(RomDataView *page)
 
 			// Widget halign is set above.
 			gtk_widget_set_valign(widget, GTK_ALIGN_START);
-			gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
+			if (separate_rows) {
+				// Separate rows.
+
+				// Make sure the description label is left-aligned.
+#if GTK_CHECK_VERSION(3,16,0)
+				gtk_label_set_xalign(GTK_LABEL(lblDesc), 0.0);
+#else
+				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
+#endif
+
+				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 1, 1);
+				row += 2;
+			} else {
+				// Single row.
+				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 2, 1);
+				row++;
+			}
 #else
 			gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
 				GTK_FILL, GTK_FILL, 0, 0);
-			gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
-				GTK_FILL, GTK_FILL, 0, 0);
+			if (separate_rows) {
+				// Separate rows.
+				rowCount++;
+				gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
+
+				// Make sure the description label is left-aligned.
+				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
+
+				gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 1, row+1, row+2,
+					GTK_FILL, GTK_FILL, 0, 0);
+				row += 2;
+			} else {
+				// Single row.
+				gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
+					GTK_FILL, GTK_FILL, 0, 0);
+				row++;
+			}
 #endif
-			row++;
 		}
 	}
 }
