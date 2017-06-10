@@ -65,53 +65,6 @@ class RomFields
 			STRF_CREDITS	= (1 << 2),
 		};
 
-		// Description for String.
-		struct StringDesc {
-			enum StringFormat {
-				// Print the string using a monospaced font.
-				STRF_MONOSPACE	= (1 << 0),
-
-				// Print the string using a "warning" font.
-				// (usually bold and red)
-				STRF_WARNING	= (1 << 1),
-
-				// "Credits" field.
-				// Used for providing credits for an external database.
-				// This field disables highlighting and enables links
-				// using HTML-style "<a>" tags. This field is also
-				// always shown at the bottom of the dialog and with
-				// center-aligned text.
-				// NOTE: Maximum of one STRF_CREDITS per RomData subclass.
-				STRF_CREDITS	= (1 << 2),
-			};
-
-			// Custom formatting options.
-			// (See the StringFormat enum.)
-			uint32_t formatting;
-		};
-
-		// Description for Bitfield.
-		struct BitfieldDesc {
-			// Number of bits to check. (must be 1-32)
-			int elements;
-			// Bit flags per row. (3 or 4 is usually good)
-			int elemsPerRow;
-			// Bit flag names.
-			// Must be an array of at least 'elements' strings.
-			// If a name is nullptr, that element is skipped.
-			const rp_char *const *names;
-		};
-
-		// Description for ListData.
-		struct ListDataDesc {
-			// Number of fields per row.
-			int count;
-			// List field names. (headers)
-			// Must be an array of at least 'fields' strings.
-			// If a name is nullptr, that field is skipped.
-			const rp_char *const *names;
-		};
-
 		// Display flags for RFT_LISTDATA.
 		enum ListDataFlags {
 			// Show the ListView on a separate row
@@ -134,30 +87,6 @@ class RomFields
 			// This is useful for timestamps that aren't actually
 			// adjusted for the local timezone.
 			RFT_DATETIME_IS_UTC = (1 << 2),
-		};
-
-		// Description for RFT_DATETIME.
-		struct DateTimeDesc {
-			uint32_t flags;	// DateTimeFlags
-		};
-
-		// The ROM data class holds a number of customizable fields.
-		// These fields are hard-coded by the subclass and passed
-		// to the constructor.
-		struct Desc {
-			const rp_char *name;	// Display name.
-			RomFieldType type;	// ROM field type.
-
-			// Some types require more information.
-			// The following pointer must point to the required
-			// data structure for the type.
-			union {
-				const void *ptr;
-				const StringDesc *str_desc;	// May be nullptr.
-				const BitfieldDesc *bitfield;
-				const ListDataDesc *list_data;
-				const DateTimeDesc *date_time;
-			};
 		};
 
 		// List data for a list view.
