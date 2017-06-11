@@ -97,6 +97,12 @@ class KeyManagerTabPrivate
 
 	public:
 		/**
+		 * Initialize the UI.
+		 */
+		void initUI(void);
+
+	public:
+		/**
 		 * Reset the configuration.
 		 */
 		void reset(void);
@@ -187,6 +193,88 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 const wchar_t KeyManagerTabPrivate::D_PTR_PROP[] = L"KeyManagerTabPrivate";
 
 /**
+ * Initialize the UI.
+ */
+void KeyManagerTabPrivate::initUI(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// Get the required controls.
+	HWND hBtnImport = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_IMPORT);
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hBtnImport != nullptr);
+	assert(hListView != nullptr);
+	if (!hBtnImport || !hListView)
+		return;
+
+	// Check the COMCTL32.DLL version.
+	HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
+	assert(hComCtl32 != nullptr);
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+	bool isComCtl32_610 = false;
+	if (hComCtl32) {
+		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	}
+	if (pfnDllGetVersion) {
+		DLLVERSIONINFO dvi;
+		dvi.cbSize = sizeof(dvi);
+		HRESULT hr = pfnDllGetVersion(&dvi);
+		if (SUCCEEDED(hr)) {
+			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
+				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+		}
+	}
+
+	if (isComCtl32_610) {
+		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
+		// (Windows Vista or later)
+		LONG lStyle = GetWindowLong(hBtnImport, GWL_STYLE);
+		lStyle |= BS_SPLITBUTTON;
+		SetWindowLong(hBtnImport, GWL_STYLE, lStyle);
+		BUTTON_SPLITINFO bsi;
+		bsi.mask = BCSIF_STYLE;
+		bsi.uSplitStyle = BCSS_NOSPLIT;
+		Button_SetSplitInfo(hBtnImport, &bsi);
+	} else {
+		// COMCTL32 is older than v6.10. Use a regular button.
+		// NOTE: The Unicode down arrow doesn't show on on Windows XP.
+		// Maybe we *should* use ownerdraw...
+		SetWindowText(hBtnImport, L"Import...");
+	}
+
+	// Initialize the ListView.
+	// Set full row selection.
+	ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT);
+
+	// Column 0: Key Name.
+	LVCOLUMN lvCol;
+	memset(&lvCol, 0, sizeof(lvCol));
+	lvCol.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
+	lvCol.fmt = LVCFMT_LEFT;
+	lvCol.pszText = L"Key Name";
+	ListView_InsertColumn(hListView, 0, &lvCol);
+
+	// Column 1: Value.
+	// TODO: Set width to 32 monospace chars.
+	// TODO: Set font.
+	lvCol.pszText = L"Value";
+	ListView_InsertColumn(hListView, 1, &lvCol);
+
+	// Column 2: Verification status.
+	// TODO: Draw an icon.
+	lvCol.pszText = L"Valid?";
+	ListView_InsertColumn(hListView, 2, &lvCol);
+
+	// Auto-size the columns.
+	ListView_SetColumnWidth(hListView, 0, LVSCW_AUTOSIZE_USEHEADER);
+	ListView_SetColumnWidth(hListView, 1, LVSCW_AUTOSIZE_USEHEADER);
+	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
+}
+
+/**
  * Reset the configuration.
  */
 void KeyManagerTabPrivate::reset(void)
@@ -244,52 +332,8 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
-			// Set extended ListView styles.
-			HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
-			assert(hListView != nullptr);
-			if (hListView) {
-				ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT);
-			}
-
-			HWND hBtnImport = GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT);
-			assert(hBtnImport != nullptr);
-			if (hBtnImport) {
-				// Check the COMCTL32.DLL version.
-				HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
-				assert(hComCtl32 != nullptr);
-				typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-				PFNDLLGETVERSION pfnDllGetVersion = nullptr;
-				bool isComCtl32_610 = false;
-				if (hComCtl32) {
-					pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
-				}
-				if (pfnDllGetVersion) {
-					DLLVERSIONINFO dvi;
-					dvi.cbSize = sizeof(dvi);
-					HRESULT hr = pfnDllGetVersion(&dvi);
-					if (SUCCEEDED(hr)) {
-						isComCtl32_610 = dvi.dwMajorVersion > 6 ||
-							(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
-					}
-				}
-
-				if (isComCtl32_610) {
-					// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
-					// (Windows Vista or later)
-					LONG lStyle = GetWindowLong(hBtnImport, GWL_STYLE);
-					lStyle |= BS_SPLITBUTTON;
-					SetWindowLong(hBtnImport, GWL_STYLE, lStyle);
-					BUTTON_SPLITINFO bsi;
-					bsi.mask = BCSIF_STYLE;
-					bsi.uSplitStyle = BCSS_NOSPLIT;
-					Button_SetSplitInfo(hBtnImport, &bsi);
-				} else {
-					// COMCTL32 is older than v6.10. Use a regular button.
-					// NOTE: The Unicode down arrow doesn't show on on Windows XP.
-					// Maybe we *should* use ownerdraw...
-					SetWindowText(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), L"Import...");
-				}
-			}
+			// Initialize the UI.
+			d->initUI();
 
 			// Reset the configuration.
 			d->reset();
