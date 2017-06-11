@@ -1001,6 +1001,9 @@ int MegaDrive::loadFieldData(void)
 			    !memcmp(&header[0x101], sega_magic, sizeof(sega_magic)))
 			{
 				// Found the "SEGA" magic.
+				// Reserve more fields for the second ROM header.
+				d->fields->reserve(27);
+
 				// Show the ROM header.
 				const MD_RomHeader *const lockon_header =
 					reinterpret_cast<const MD_RomHeader*>(&header[0x100]);
