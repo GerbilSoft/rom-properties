@@ -159,6 +159,12 @@ typedef enum {
 	N3DS_LANG_CHINESE_TRAD	= 11,
 } N3DS_Language_ID;
 
+// NOTE: Windows SDK defines 'small' as 'char' for IDL.
+// We're undefining it here.
+#ifdef small
+#undef small
+#endif
+
 /**
  * Nintendo 3DS SMDH icon data.
  * NOTE: Assumes RGB565, though other formats
