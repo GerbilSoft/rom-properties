@@ -770,7 +770,7 @@ void KeyStoreUI::reset(void)
 int KeyStoreUI::sectCount(void) const
 {
 	RP_D(const KeyStoreUI);
-	return d->sections.size();
+	return (int)d->sections.size();
 }
 
 /**
