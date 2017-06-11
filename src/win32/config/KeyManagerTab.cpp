@@ -37,6 +37,50 @@ using namespace LibRomData;
 // C includes. (C++ namespace)
 #include <cassert>
 
+// Win32: Split buttons.
+// Not available unless _WIN32_WINNT >= 0x0600
+#ifndef BS_SPLITBUTTON
+#define BS_SPLITBUTTON	0x0000000CL
+#endif
+#ifndef BCSIF_GLYPH
+#define BCSIF_GLYPH	0x0001
+#endif
+#ifndef BCSIF_IMAGE
+#define BCSIF_IMAGE	0x0002
+#endif
+#ifndef BCSIF_STYLE
+#define BCSIF_STYLE	0x0004
+#endif
+#ifndef BCSIF_SIZE
+#define BCSIF_SIZE	0x0008
+#endif
+#ifndef BCSS_NOSPLIT
+#define BCSS_NOSPLIT	0x0001
+#endif
+#ifndef BCSS_STRETCH
+#define BCSS_STRETCH	0x0002
+#endif
+#ifndef BCSS_ALIGNLEFT
+#define BCSS_ALIGNLEFT	0x0004
+#endif
+#ifndef BCSS_IMAGE
+#define BCSS_IMAGE	0x0008
+#endif
+#ifndef BCM_SETSPLITINFO
+#define BCM_SETSPLITINFO         (BCM_FIRST + 0x0007)
+#define Button_SetSplitInfo(hwnd, pInfo) \
+    (BOOL)SNDMSG((hwnd), BCM_SETSPLITINFO, 0, (LPARAM)(pInfo))
+#define BCM_GETSPLITINFO         (BCM_FIRST + 0x0008)
+#define Button_GetSplitInfo(hwnd, pInfo) \
+    (BOOL)SNDMSG((hwnd), BCM_GETSPLITINFO, 0, (LPARAM)(pInfo))
+typedef struct tagBUTTON_SPLITINFO {
+	UINT        mask;
+	HIMAGELIST  himlGlyph;
+	UINT        uSplitStyle;
+	SIZE        size;
+} BUTTON_SPLITINFO, *PBUTTON_SPLITINFO;
+#endif
+
 class KeyManagerTabPrivate
 {
 	public:
@@ -200,9 +244,46 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
-			// Add a down arrow to the "Import" button.
-			// TODO: Better down arrow? (may need ownerdraw for MFC-like "Menu Button")
-			SetWindowText(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), L"Import \x25BC");
+			HWND hBtnImport = GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT);
+			assert(hBtnImport != nullptr);
+			if (hBtnImport) {
+				// Check the COMCTL32.DLL version.
+				HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
+				assert(hComCtl32 != nullptr);
+				typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+				PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+				bool isComCtl32_610 = false;
+				if (hComCtl32) {
+					pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+				}
+				if (pfnDllGetVersion) {
+					DLLVERSIONINFO dvi;
+					dvi.cbSize = sizeof(dvi);
+					HRESULT hr = pfnDllGetVersion(&dvi);
+					if (SUCCEEDED(hr)) {
+						isComCtl32_610 = dvi.dwMajorVersion > 6 ||
+							(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+					}
+				}
+
+				if (isComCtl32_610) {
+					// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
+					// (Windows Vista or later)
+					LONG lStyle = GetWindowLong(hBtnImport, GWL_STYLE);
+					lStyle |= BS_SPLITBUTTON;
+					SetWindowLong(hBtnImport, GWL_STYLE, lStyle);
+					BUTTON_SPLITINFO bsi;
+					bsi.mask = BCSIF_STYLE;
+					bsi.uSplitStyle = BCSS_NOSPLIT;
+					Button_SetSplitInfo(hBtnImport, &bsi);
+				} else {
+					// COMCTL32 is older than v6.10. Use a regular button
+					// with a Unicode arrow that's "good enough".
+					// (Windows XP or earlier)
+					// I could emulate a split button with ownerdraw, but :effort:
+					SetWindowText(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), L"Import \x25BC");
+				}
+			}
 
 			// Reset the configuration.
 			d->reset();
