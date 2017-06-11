@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * KeyStore.cpp: Key store object for Qt.                                  *
+ * KeyStoreUI.cpp: Key store object for Qt.                                *
  *                                                                         *
  * Copyright (c) 2012-2017 by David Korth.                                 *
  *                                                                         *
@@ -598,7 +598,7 @@ rp_string KeyStoreUIPrivate::convertKanjiToHex(const rp_string &str)
 	// Already in UTF-16.
 	const std::u16string &u16str = str;
 #endif
-	
+
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
 	rp_string hexstr;
