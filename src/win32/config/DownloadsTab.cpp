@@ -141,18 +141,9 @@ void DownloadsTabPrivate::reset(void)
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
 
-	HWND hWnd = GetDlgItem(hWndPropSheet, IDC_EXTIMGDL);
-	if (hWnd) {
-		Button_SetCheck(hWnd, boolToBstChecked(config->extImgDownloadEnabled()));
-	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_INTICONSMALL);
-	if (hWnd) {
-		Button_SetCheck(hWnd, boolToBstChecked(config->useIntIconForSmallSizes()));
-	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_HIGHRESDL);
-	if (hWnd) {
-		Button_SetCheck(hWnd, boolToBstChecked(config->downloadHighResScans()));
-	}
+	CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
+	CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
+	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
 
 	// No longer changed.
 	changed = false;
@@ -171,29 +162,20 @@ void DownloadsTabPrivate::loadDefaults(void)
 	static const bool downloadHighResScans_default = true;
 	bool isDefChanged = false;
 
-	HWND hWnd = GetDlgItem(hWndPropSheet, IDC_EXTIMGDL);
-	if (hWnd) {
-		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
-		if (cur != extImgDownloadEnabled_default) {
-			Button_SetCheck(hWnd, boolToBstChecked(extImgDownloadEnabled_default));
-			isDefChanged = true;
-		}
+	bool cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
+	if (cur != extImgDownloadEnabled_default) {
+		CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(extImgDownloadEnabled_default));
+		isDefChanged = true;
 	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_INTICONSMALL);
-	if (hWnd) {
-		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
-		if (cur != useIntIconForSmallSizes_default) {
-			Button_SetCheck(hWnd, boolToBstChecked(useIntIconForSmallSizes_default));
-			isDefChanged = true;
-		}
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
+	if (cur != useIntIconForSmallSizes_default) {
+		CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(useIntIconForSmallSizes_default));
+		isDefChanged = true;
 	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_HIGHRESDL);
-	if (hWnd) {
-		bool cur = bstCheckedToBool(Button_GetCheck(hWnd));
-		if (cur != downloadHighResScans_default) {
-			Button_SetCheck(hWnd, boolToBstChecked(downloadHighResScans_default));
-			isDefChanged = true;
-		}
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
+	if (cur != downloadHighResScans_default) {
+		CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(downloadHighResScans_default));
+		isDefChanged = true;
 	}
 
 	if (isDefChanged) {
@@ -219,21 +201,14 @@ void DownloadsTabPrivate::save(void)
 		return;
 	}
 
-	HWND hWnd = GetDlgItem(hWndPropSheet, IDC_EXTIMGDL);
-	if (hWnd) {
-		const wchar_t *const bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
-		WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, RP2W_c(filename));
-	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_INTICONSMALL);
-	if (hWnd) {
-		const wchar_t *const bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
-		WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, RP2W_c(filename));
-	}
-	hWnd = GetDlgItem(hWndPropSheet, IDC_HIGHRESDL);
-	if (hWnd) {
-		const wchar_t *const bstr = bstCheckedToBoolString(Button_GetCheck(hWnd));
-		WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, RP2W_c(filename));
-	}
+	const wchar_t *bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
+	WritePrivateProfileString(L"Downloads", L"ExtImageDownload", bstr, RP2W_c(filename));
+
+	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
+	WritePrivateProfileString(L"Downloads", L"UseIntIconForSmallSizes", bstr, RP2W_c(filename));
+
+	bstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
+	WritePrivateProfileString(L"Downloads", L"DownloadHighResScans", bstr, RP2W_c(filename));
 
 	// No longer changed.
 	changed = false;
