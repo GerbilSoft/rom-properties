@@ -22,6 +22,8 @@
 #ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
+#include "config.librpbase.h"
+
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */
 #define IDD_SUBTAB_CHILD_DIALOG                 101	/* Subtab child dialog. */
@@ -58,6 +60,7 @@
 #define IDD_CONFIG_DOWNLOADS                    111
 #define IDD_CONFIG_CACHE                        112
 #define IDD_CONFIG_CACHE_XP                     113
+#define IDD_CONFIG_KEYMANAGER                   114
 
 // Image type priorities.
 #define IDC_IMAGETYPES_DESC1                    40001
@@ -80,5 +83,17 @@
 #define IDC_CACHE_XP_PATH                       40208
 #define IDC_CACHE_XP_BROWSE                     40209
 #define IDC_CACHE_XP_CLEAR_SYS_THUMBS           40210
+
+#ifdef ENABLE_DECRYPTION
+// Key Manager
+#define IDC_KEYMANAGER_LIST                     40301
+#define IDC_KEYMANAGER_IMPORT                   40302
+
+// Key Manager: "Import" menu
+#define IDR_KEYMANAGER_IMPORT                   30301
+#define IDC_KEYMANAGER_IMPORT_WII_KEYS_BIN      30302
+#define IDC_KEYMANAGER_IMPORT_3DS_BOOT9_BIN     30303
+#define IDC_KEYMANAGER_IMPORT_3DS_AESKEYDB      30304
+#endif /* ENABLE_DECRYPTION */
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

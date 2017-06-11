@@ -110,11 +110,11 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILD
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0
-{
+BEGIN
     LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 302, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore\nFIXME: Generate the grid programmatically to avoid spacing issues?", IDC_IMAGETYPES_DESC2, 7, 37, 306, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\nare provided by <a href=""http://www.gametdb.com/"">GameTDB</a>.\namiibo images are provided by <a href=""http://amiibo.life/"">amiibo.life</a>, the Unofficial amiibo Database.", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 179, 302, 24, 0x00000000
-}
+END
 
 /**
  * Configuration: Download settings.
@@ -168,3 +168,32 @@ BEGIN
     LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 317, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 317, 16, WS_EX_LEFT
 END
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Configuration: Key Manager.
+ */
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 333, 210
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT, 7, 7, 317, 178, WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Import", IDC_KEYMANAGER_IMPORT, 7, 189, 50, 14, 0, WS_EX_LEFT
+END
+
+/**
+ * Configuration: Key Manager. ("Import" popup menu.)
+ */
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDR_KEYMANAGER_IMPORT MENU
+BEGIN
+    POPUP "Import"
+    BEGIN
+        MENUITEM "Wii keys.bin", IDC_KEYMANAGER_IMPORT_WII_KEYS_BIN
+        MENUITEM "3DS boot9.firm", IDC_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
+        MENUITEM "3DS aeskeydb.bin", IDC_KEYMANAGER_IMPORT_3DS_AESKEYDB
+    END
+END
+#endif /* ENABLE_DECRYPTION */

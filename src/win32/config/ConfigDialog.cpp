@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 #include "resource.h"
 
@@ -44,6 +45,9 @@ extern HINSTANCE g_hInstance;
 #include "ImageTypesTab.hpp"
 #include "DownloadsTab.hpp"
 #include "CacheTab.hpp"
+#ifdef ENABLE_DECRYPTION
+#include "KeyManagerTab.hpp"
+#endif /* ENABLE_DECRYPTION */
 
 class ConfigDialogPrivate
 {
@@ -61,7 +65,11 @@ class ConfigDialogPrivate
 
 	public:
 		// Property sheet variables.
+#ifdef ENABLE_DECRYPTION
+		static const unsigned int TAB_COUNT = 4;
+#else
 		static const unsigned int TAB_COUNT = 3;
+#endif
 		ITab *tabs[TAB_COUNT];
 		HPROPSHEETPAGE hpsp[TAB_COUNT];
 		PROPSHEETHEADER psh;
@@ -106,6 +114,11 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[2] = new CacheTab();
 	hpsp[2] = tabs[2]->getHPropSheetPage();
+#ifdef ENABLE_DECRYPTION
+	// Key Manager.
+	tabs[3] = new KeyManagerTab();
+	hpsp[3] = tabs[3]->getHPropSheetPage();
+#endif /* ENABLE_DECRYPTION */
 
 	// Create the property sheet.
 	psh.dwSize = sizeof(psh);
@@ -114,7 +127,7 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	psh.hInstance = g_hInstance;
 	psh.hIcon = PropSheetIcon::getSmallIcon();	// Small icon only!
 	psh.pszCaption = L"ROM Properties Page Configuration";
-	psh.nPages = 3;
+	psh.nPages = ARRAY_SIZE(hpsp);
 	psh.nStartPage = 0;
 	psh.phpage = hpsp;
 	psh.pfnCallback = this->callbackProc;
