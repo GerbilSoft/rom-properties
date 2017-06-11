@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "KeyStoreQt.hpp"
-#include "RpQt.hpp"
 
 /**
  * Create a new KeyStore object.
