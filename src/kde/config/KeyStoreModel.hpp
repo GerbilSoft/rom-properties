@@ -23,12 +23,12 @@
 #define __ROMPROPERTIES_KDE_CONFIG_KEYSTOREMODEL_HPP__
 
 // Qt includes.
-#include <QtCore/QAbstractListModel>
+#include <QtCore/QAbstractItemModel>
 
 class KeyStore;
 
 class KeyStoreModelPrivate;
-class KeyStoreModel : public QAbstractListModel
+class KeyStoreModel : public QAbstractItemModel
 {
 	Q_OBJECT
 	Q_PROPERTY(KeyStore* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
@@ -38,7 +38,7 @@ class KeyStoreModel : public QAbstractListModel
 		virtual ~KeyStoreModel();
 
 	private:
-		typedef QAbstractListModel super;
+		typedef QAbstractItemModel super;
 		KeyStoreModelPrivate *const d_ptr;
 		Q_DECLARE_PRIVATE(KeyStoreModel)
 		Q_DISABLE_COPY(KeyStoreModel)
@@ -55,6 +55,9 @@ class KeyStoreModel : public QAbstractListModel
 		// Qt Model/View interface.
 		virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override final;
 		virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override final;
+
+		virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const final;
+		virtual QModelIndex parent(const QModelIndex& index) const final;
 
 		// Custom role for "allowKanji".
 		static const int AllowKanjiRole = Qt::UserRole;
@@ -93,9 +96,10 @@ class KeyStoreModel : public QAbstractListModel
 
 		/**
 		 * A key in the KeyStore has changed.
-		 * @param keyIdx Flat key index.
+		 * @param sectIdx Section index.
+		 * @param keyIdx Key index.
 		 */
-		void keyStore_keyChanged_slot(int idx);
+		void keyStore_keyChanged_slot(int sectIdx, int keyIdx);
 
 		/**
 		 * All keys in the KeyStore have changed.

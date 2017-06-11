@@ -37,6 +37,7 @@ class KeyManagerTabPrivate
 {
 	public:
 		explicit KeyManagerTabPrivate(KeyManagerTab *q);
+		~KeyManagerTabPrivate();
 
 	private:
 		KeyManagerTab *const q_ptr;
@@ -76,6 +77,13 @@ KeyManagerTabPrivate::KeyManagerTabPrivate(KeyManagerTab* q)
 {
 	// Set the KeyStoreModel's KeyStore.
 	keyStoreModel->setKeyStore(keyStore);
+}
+
+KeyManagerTabPrivate::~KeyManagerTabPrivate()
+{
+	// Make sure keyStoreModel is deleted before keyStore.
+	delete keyStoreModel;
+	delete keyStore;
 }
 
 /**
@@ -196,6 +204,13 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 	// Set the QListView's model.
 	// TODO: Proxy model for sorting.
 	d->ui.treeKeyStore->setModel(d->keyStoreModel);
+	d->ui.treeKeyStore->expandAll();
+
+	// Make the first column "spanned" for all section headers.
+	for (int sectIdx = d->keyStore->sectCount(); sectIdx >= 0; sectIdx--) {
+		d->ui.treeKeyStore->setFirstColumnSpanned(sectIdx, QModelIndex(), true);
+	}
+	// Must be done *after* marking the first column as "spanned".
 	d->resizeColumnsToContents();
 
 	// Initialize treeKeyStore's item delegate.

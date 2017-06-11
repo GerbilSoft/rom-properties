@@ -69,18 +69,34 @@ class KeyStoreModelPrivate
 		style_t style;
 
 		/**
-		 * Cached copy of keyStore->totalKeyCount().
+		 * Cached copy of keyStore->sectCount().
 		 * This value is needed after the KeyStore is destroyed,
 		 * so we need to cache it here, since the destroyed()
 		 * slot might be run *after* the KeyStore is deleted.
 		 */
-		int totalKeyCount;
+		int sectCount;
 };
+
+// Windows-style LOWORD()/HIWORD()/MAKELONG() functions.
+// QModelIndex internal ID:
+// - LOWORD: Section.
+// - HIWORD: Key index. (0xFFFF for section header)
+#ifndef _WIN32
+static inline uint16_t LOWORD(uint32_t dwValue) {
+	return (dwValue & 0xFFFF);
+}
+static inline uint16_t HIWORD(uint32_t dwValue) {
+	return (dwValue >> 16);
+}
+static inline uint32_t MAKELONG(uint16_t wLow, uint16_t wHigh) {
+	return (wLow | (wHigh << 16));
+}
+#endif /* _WIN32 */
 
 KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 	: q_ptr(q)
 	, keyStore(nullptr)
-	, totalKeyCount(0)
+	, sectCount(0)
 { }
 
 /**
@@ -130,15 +146,91 @@ KeyStoreModel::~KeyStoreModel()
 
 int KeyStoreModel::rowCount(const QModelIndex& parent) const
 {
-	Q_UNUSED(parent);
 	Q_D(const KeyStoreModel);
-	return d->totalKeyCount;
+	if (!d->keyStore) {
+		// KeyStore isn't set yet.
+		return 0;
+	}
+
+	if (!parent.isValid()) {
+		// Root item. Return the number of sections.
+		return d->keyStore->sectCount();
+	} else {
+		if (parent.column() > 0) {
+			// rowCount is only valid for column 0.
+			return 0;
+		}
+		// Check the internal ID.
+		const uint32_t id = (uint32_t)parent.internalId();
+		if (HIWORD(id) == 0xFFFF) {
+			// Section header.
+			return d->keyStore->keyCount(LOWORD(id));
+		} else {
+			// Key. No rows.
+			return 0;
+		}
+	}
 }
 
 int KeyStoreModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
+	Q_D(const KeyStoreModel);
+	if (!d->keyStore) {
+		// KeyStore isn't set yet.
+		return 0;
+	}
+
+	// NOTE: We have to return COL_MAX for everything.
+	// Otherwise, it acts a bit wonky.
 	return COL_MAX;
+}
+
+QModelIndex KeyStoreModel::index(int row, int column, const QModelIndex& parent) const
+{
+	Q_D(const KeyStoreModel);
+	if (!d->keyStore || !hasIndex(row, column, parent))
+		return QModelIndex();
+
+	if (!parent.isValid()) {
+		// Root item.
+		if (row < 0 || row >= d->keyStore->sectCount()) {
+			// Invalid index.
+			return QModelIndex();
+		}
+		return createIndex(row, column, MAKELONG(row, 0xFFFF));
+	} else {
+		// Check the internal ID.
+		const uint32_t id = (uint32_t)parent.internalId();
+		if (HIWORD(id) == 0xFFFF) {
+			// Section header.
+			if (row < 0 || row >= d->keyStore->keyCount(LOWORD(id))) {
+				// Invalid index.
+				return QModelIndex();
+			}
+			return createIndex(row, column, MAKELONG(LOWORD(id), row));
+		} else {
+			// Key. Cannot create child index.
+			return QModelIndex();
+		}
+	}
+}
+
+QModelIndex KeyStoreModel::parent(const QModelIndex& index) const
+{
+	Q_D(const KeyStoreModel);
+	if (!d->keyStore || !index.isValid())
+		return QModelIndex();
+
+	// Check the internal ID.
+	const uint32_t id = (uint32_t)index.internalId();
+	if (HIWORD(id) == 0xFFFF) {
+		// Section header. Parent is root.
+		return QModelIndex();
+	} else {
+		// Key. Parent is a section header.
+		return createIndex(LOWORD(id), 0, MAKELONG(LOWORD(id), 0xFFFF));
+	}
 }
 
 QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
@@ -146,11 +238,29 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
 		return QVariant();
-	if (index.row() >= rowCount())
-		return QVariant();
 
-	// Get the key.
-	const KeyStore::Key *key = d->keyStore->getKey(index.row());
+	// Check the internal ID.
+	const uint32_t id = (uint32_t)index.internalId();
+	if (HIWORD(id) == 0xFFFF) {
+		// Section header.
+		if (index.column() != 0) {
+			// Invalid column.
+			return QVariant();
+		}
+
+		switch (role) {
+			case Qt::DisplayRole:
+				return d->keyStore->sectName(LOWORD(id));
+			default:
+				break;
+		}
+
+		// Nothing for this role.
+		return QVariant();
+	}
+
+	// Key index.
+	const KeyStore::Key *key = d->keyStore->getKey(LOWORD(id), HIWORD(id));
 	if (!key)
 		return QVariant();
 
@@ -253,8 +363,15 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 	Q_D(KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
 		return false;
-	if (index.row() >= rowCount())
+
+	// Check the internal ID.
+	const uint32_t id = (uint32_t)index.internalId();
+	if (HIWORD(id) == 0xFFFF) {
+		// Section header. Not editable.
 		return false;
+	}
+
+	// Key index.
 
 	// Only COL_VALUE can be edited, and only text.
 	if (index.column() != COL_VALUE || role != Qt::EditRole)
@@ -264,7 +381,7 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 	// TODO: Make sure it's hexadecimal, and verify the key.
 	// KeyStore::setKey() will emit a signal if the value changes,
 	// which will cause KeyStoreModel to emit dataChanged().
-	d->keyStore->setKey(index.row(), value.toString());
+	d->keyStore->setKey(LOWORD(id), HIWORD(id), value.toString());
 	return true;
 }
 
@@ -273,9 +390,15 @@ Qt::ItemFlags KeyStoreModel::flags(const QModelIndex &index) const
 	Q_D(const KeyStoreModel);
 	if (!d->keyStore || !index.isValid())
 		return 0;
-	if (index.row() >= rowCount())
-		return 0;
 
+	// Check the internal ID.
+	const uint32_t id = (uint32_t)index.internalId();
+	if (HIWORD(id) == 0xFFFF) {
+		// Section header.
+		return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	}
+
+	// Key index.
 	switch (index.column()) {
 		case COL_VALUE:
 			// Value can be edited.
@@ -326,51 +449,50 @@ void KeyStoreModel::setKeyStore(KeyStore *keyStore)
 	// If we have a KeyStore already, disconnect its signals.
 	if (d->keyStore) {
 		// Notify the view that we're about to remove all rows.
-		// TODO: totalKeyCount should already be cached...
-		const int totalKeyCount = d->keyStore->totalKeyCount();
-		if (totalKeyCount > 0) {
-			beginRemoveRows(QModelIndex(), 0, (totalKeyCount - 1));
+		const int sectCount = d->keyStore->sectCount();
+		if (sectCount > 0) {
+			beginRemoveRows(QModelIndex(), 0, sectCount-1);
 		}
 
 		// Disconnect the KeyStore's signals.
 		disconnect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			   this, SLOT(keyStore_destroyed_slot(QObject*)));
-		disconnect(d->keyStore, SIGNAL(keyChanged(int)),
-			   this, SLOT(keyStore_keyChanged_slot(int)));
+		disconnect(d->keyStore, SIGNAL(keyChanged(int,int)),
+			   this, SLOT(keyStore_keyChanged_slot(int,int)));
 		disconnect(d->keyStore, SIGNAL(allKeysChanged()),
 			   this, SLOT(keyStore_allKeysChanged_slot()));
 
 		d->keyStore = nullptr;
 
 		// Done removing rows.
-		d->totalKeyCount = 0;
-		if (totalKeyCount > 0) {
+		d->sectCount = 0;
+		if (sectCount > 0) {
 			endRemoveRows();
 		}
 	}
 
 	if (keyStore) {
 		// Notify the view that we're about to add rows.
-		const int totalKeyCount = keyStore->totalKeyCount();
-		if (totalKeyCount > 0) {
-			beginInsertRows(QModelIndex(), 0, (totalKeyCount - 1));
+		const int sectCount = keyStore->sectCount();
+		if (sectCount > 0) {
+			beginInsertRows(QModelIndex(), 0, sectCount-1);
 		}
 
 		// Set the KeyStore.
 		d->keyStore = keyStore;
-		// NOTE: totalKeyCount must be set here.
-		d->totalKeyCount = totalKeyCount;
+		// NOTE: sectCount must be set here.
+		d->sectCount = sectCount;
 
 		// Connect the KeyStore's signals.
 		connect(d->keyStore, SIGNAL(destroyed(QObject*)),
 			this, SLOT(keyStore_destroyed_slot(QObject*)));
-		connect(d->keyStore, SIGNAL(keyChanged(int)),
-			this, SLOT(keyStore_keyChanged_slot(int)));
+		connect(d->keyStore, SIGNAL(keyChanged(int,int)),
+			this, SLOT(keyStore_keyChanged_slot(int,int)));
 		connect(d->keyStore, SIGNAL(allKeysChanged()),
 			this, SLOT(keyStore_allKeysChanged_slot()));
 
 		// Done adding rows.
-		if (totalKeyCount > 0) {
+		if (sectCount > 0) {
 			endInsertRows();
 		}
 	}
@@ -402,13 +524,16 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 		return;
 
 	// Our KeyStore was destroyed.
-	d->keyStore = nullptr;
-	int old_totalKeyCount = d->totalKeyCount;
-	if (old_totalKeyCount > 0) {
-		beginRemoveRows(QModelIndex(), 0, (old_totalKeyCount - 1));
+	// NOTE: It's still valid while this function is running.
+	// QAbstractItemModel segfaults if we NULL it out before
+	// calling beginRemoveRows(). (QAbstractListModel didn't.)
+	int old_sectCount = d->sectCount;
+	if (old_sectCount > 0) {
+		beginRemoveRows(QModelIndex(), 0, old_sectCount-1);
 	}
-	d->totalKeyCount = 0;
-	if (old_totalKeyCount > 0) {
+	d->keyStore = nullptr;
+	d->sectCount = 0;
+	if (old_sectCount > 0) {
 		endRemoveRows();
 	}
 
@@ -417,12 +542,14 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 
 /**
  * A key in the KeyStore has changed.
- * @param keyIdx Flat key index.
+ * @param sectIdx Section index.
+ * @param keyIdx Key index.
  */
-void KeyStoreModel::keyStore_keyChanged_slot(int idx)
+void KeyStoreModel::keyStore_keyChanged_slot(int sectIdx, int keyIdx)
 {
-	QModelIndex qmi_left = createIndex(idx, 0);
-	QModelIndex qmi_right = createIndex(idx, COL_MAX-1);
+	const uint32_t parent_id = MAKELONG(sectIdx, 0xFFFF);
+	QModelIndex qmi_left = createIndex(keyIdx, 0, parent_id);
+	QModelIndex qmi_right = createIndex(keyIdx, COL_MAX-1, parent_id);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
@@ -432,10 +559,12 @@ void KeyStoreModel::keyStore_keyChanged_slot(int idx)
 void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 {
 	Q_D(KeyStoreModel);
-	if (d->totalKeyCount <= 0)
+	if (d->sectCount <= 0)
 		return;
+
+	// TODO: Enumerate all child keys too?
 	QModelIndex qmi_left = createIndex(0, 0);
-	QModelIndex qmi_right = createIndex(d->totalKeyCount-1, COL_MAX-1);
+	QModelIndex qmi_right = createIndex(d->sectCount-1, COL_MAX-1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
