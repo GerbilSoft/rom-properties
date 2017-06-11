@@ -70,6 +70,15 @@ class CtrKeyScrambler
 			const u128_t *keyX, const u128_t *keyY);
 
 	public:
+		// Encryption key indexes.
+		enum EncryptionKeys {
+			// Retail
+			Key_Twl_Scrambler,
+			Key_Ctr_Scrambler,
+
+			Key_Max
+		};
+
 		/**
 		 * Get the total number of encryption key names.
 		 * @return Number of encryption key names.

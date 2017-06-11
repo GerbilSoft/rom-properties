@@ -1,8 +1,9 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * ConfigDialog.hpp: Configuration dialog.                                 *
+ * QTreeViewOpt.hpp: QTreeView with drawing optimizations.                 *
+ * Specifically, don't update rows that are offscreen.			   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2013-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,63 +20,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__
 
-#include <QDialog>
+// Qt includes and classes.
+#include <QTreeView>
+class QKeyEvent;
+class QFocusEvent;
 
-class ConfigDialogPrivate;
-class ConfigDialog : public QDialog
+class QTreeViewOpt : public QTreeView
 {
 	Q_OBJECT
 
 	public:
-		explicit ConfigDialog(QWidget *parent = nullptr);
-		~ConfigDialog();
+		explicit QTreeViewOpt(QWidget *parent = 0);
 
 	private:
-		typedef QDialog super;
-		ConfigDialogPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(ConfigDialog)
-		Q_DISABLE_COPY(ConfigDialog)
+		typedef QTreeView super;
+		Q_DISABLE_COPY(QTreeViewOpt);
 
-	protected:
-		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event);
-
-		// Event filter for tracking focus.
-		bool eventFilter(QObject *watched, QEvent *event);
+	public:
+#if QT_VERSION >= 0x050000
+		virtual void dataChanged(const QModelIndex &topLeft,
+			const QModelIndex &bottomRight,
+			const QVector<int> &roles = QVector<int>()) override final;
+#else /* QT_VERSION < 0x050000 */
+		virtual void dataChanged(const QModelIndex &topLeft,
+			const QModelIndex &bottomRight) override final;
+#endif
 
 	protected slots:
-		/**
-		 * The current tab has changed.
-		 */
-		void on_tabWidget_currentChanged(void);
+		void showColumnContextMenu(const QPoint &point);
 
-		/**
-		 * The "OK" button was clicked.
-		 */
-		virtual void accept(void) override final;
-
-		/**
-		 * The "Apply" button was clicked.
-		 */
-		void apply(void);
-
-		/**
-		 * The "Reset" button was clicked.
-		 */
-		void reset(void);
-
-		/**
-		 * The "Defaults" button was clicked.
-		 */
-		void loadDefaults(void);
-
-		/**
-		 * A tab has been modified.
-		 */
-		void tabModified(void);
+	/** Shh... it's a secret to everybody. **/
+	protected:
+		virtual void keyPressEvent(QKeyEvent *event) override final;
+		virtual void focusOutEvent(QFocusEvent *event) override final;
+	signals:
+		void keyPress(QKeyEvent *event);
+		void focusOut(QFocusEvent *event);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__ */

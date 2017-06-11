@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * ConfigDialog.hpp: Configuration dialog.                                 *
+ * MessageWidgetStack.hpp: Message widget stack.                           *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2014-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,63 +19,49 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_MESSAGEWIDGETSTACK__
+#define __ROMPROPERTIES_KDE_CONFIG_MESSAGEWIDGETSTACK__
 
-#include <QDialog>
+#include <QWidget>
+#include "MessageWidget.hpp"
 
-class ConfigDialogPrivate;
-class ConfigDialog : public QDialog
+class MessageWidgetStackPrivate;
+class MessageWidgetStack : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		explicit ConfigDialog(QWidget *parent = nullptr);
-		~ConfigDialog();
+		explicit MessageWidgetStack(QWidget *parent = 0);
+		virtual ~MessageWidgetStack();
 
 	private:
-		typedef QDialog super;
-		ConfigDialogPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(ConfigDialog)
-		Q_DISABLE_COPY(ConfigDialog)
+		typedef QWidget super;
+		MessageWidgetStackPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(MessageWidgetStack)
+		Q_DISABLE_COPY(MessageWidgetStack)
 
-	protected:
-		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event);
-
-		// Event filter for tracking focus.
-		bool eventFilter(QObject *watched, QEvent *event);
+	public:
+		/**
+		 * Show a message.
+		 * @param msg Message text. (supports Qt RichText formatting)
+		 * @param icon Icon.
+		 * @param timeout Timeout, in milliseconds. (0 for no timeout)
+		 * @param closeOnDestroy Close the message when the specified QObject is destroyed.
+		 */
+		void showMessage(const QString &msg, MessageWidget::MsgIcon icon, int timeout = 0, QObject *closeOnDestroy = 0);
 
 	protected slots:
 		/**
-		 * The current tab has changed.
+		 * A MessageWidget has been dismissed.
+		 * @param widget MessageWidget.
 		 */
-		void on_tabWidget_currentChanged(void);
+		void messageWidget_dismissed_slot(QWidget *widget);
 
 		/**
-		 * The "OK" button was clicked.
+		 * A MessageWidget has been destroyed.
+		 * @param obj QObject that was destroyed.
 		 */
-		virtual void accept(void) override final;
-
-		/**
-		 * The "Apply" button was clicked.
-		 */
-		void apply(void);
-
-		/**
-		 * The "Reset" button was clicked.
-		 */
-		void reset(void);
-
-		/**
-		 * The "Defaults" button was clicked.
-		 */
-		void loadDefaults(void);
-
-		/**
-		 * A tab has been modified.
-		 */
-		void tabModified(void);
+		void messageWidget_destroyed_slot(QObject *obj);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_MESSAGEWIDGETSTACK__ */

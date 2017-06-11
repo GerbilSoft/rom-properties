@@ -387,6 +387,8 @@ int N3DSVerifyKeys::encryptionKeyCount_static(void)
  */
 const char *N3DSVerifyKeys::encryptionKeyName_static(int keyIdx)
 {
+	assert(keyIdx >= 0);
+	assert(keyIdx < Key_Max);
 	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
 	return EncryptionKeyNames[keyIdx];
@@ -399,6 +401,8 @@ const char *N3DSVerifyKeys::encryptionKeyName_static(int keyIdx)
  */
 const uint8_t *N3DSVerifyKeys::encryptionVerifyData_static(int keyIdx)
 {
+	assert(keyIdx >= 0);
+	assert(keyIdx < Key_Max);
 	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
 	return EncryptionKeyVerifyData[keyIdx];

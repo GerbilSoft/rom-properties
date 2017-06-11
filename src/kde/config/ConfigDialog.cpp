@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "librpbase/config.librpbase.h"
 #include "ConfigDialog.hpp"
 
 // librpbase
@@ -34,6 +35,12 @@ using LibRpBase::Config;
 // Qt includes.
 #include <QPushButton>
 #include <QSettings>
+
+#ifdef ENABLE_DECRYPTION
+#include "KeyManagerTab.hpp"
+#include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::KeyManager;
+#endif
 
 /** ConfigDialogPrivate **/
 
@@ -51,6 +58,18 @@ class ConfigDialogPrivate
 
 	public:
 		Ui::ConfigDialog ui;
+#ifdef ENABLE_DECRYPTION
+		KeyManagerTab *tabKeyManager;
+		/**
+		 * Retranslate parts of the UI that aren't present in the .ui file.
+		 */
+		void retranslateUi_nonDesigner(void);
+#else /* !ENABLE_DECRYPTION */
+		/**
+		 * Retranslate parts of the UI that aren't present in the .ui file.
+		 */
+		inline void retranslateUi_nonDesigner(void) { }
+#endif /* ENABLE_DECRYPTION */
 
 		// "Apply", "Reset", and "Defaults" buttons.
 		QPushButton *btnApply;
@@ -63,6 +82,9 @@ class ConfigDialogPrivate
 
 ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	: q_ptr(q)
+#ifdef ENABLE_DECRYPTION
+	, tabKeyManager(nullptr)
+#endif /* ENABLE_DECRYPTION */
 	, btnApply(nullptr)
 	, btnReset(nullptr)
 	, btnDefaults(nullptr)
@@ -71,6 +93,27 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 
 ConfigDialogPrivate::~ConfigDialogPrivate()
 { }
+
+// Qt4 has an extra parameter specifying the encoding for 8-bit strings.
+// Qt5 removes that parameter because all 8-bit strings are assumed to be UTF-8.
+#if QT_VERSION >= 0x050000
+#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
+	QApplication::translate((context), (sourceText), (disambiguation))
+#else /* QT_VERSION < 0x050000 */
+#define QAPPLICATION_TRANSLATE(context, sourceText, disambiguation) \
+	QApplication::translate((context), (sourceText), (disambiguation), QApplication::UnicodeUTF8)
+#endif
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Retranslate parts of the UI that aren't present in the .ui file.
+ */
+void ConfigDialogPrivate::retranslateUi_nonDesigner(void)
+{
+	ui.tabWidget->setTabText(ui.tabWidget->indexOf(tabKeyManager),
+		QAPPLICATION_TRANSLATE("ConfigDialog", "&Key Manager", nullptr));
+}
+#endif /* ENABLE_DECRYPTION */
 
 /** ConfigDialog **/
 
@@ -90,6 +133,21 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 {
 	Q_D(ConfigDialog);
 	d->ui.setupUi(this);
+
+#ifdef ENABLE_DECRYPTION
+	// Add the Key Manager tab.
+	// NOTE: This isn't present in the .ui file because
+	// we don't want a hard dependency on Key Manager.
+	// Otherwise, no-crypto builds will break.
+	d->tabKeyManager = new KeyManagerTab();
+	d->tabKeyManager->setObjectName(QLatin1String("tabKeyManager"));
+	// NOTE: Using insertTab() in case we decide to add
+	// an "About" tab at the end.
+	d->ui.tabWidget->insertTab(2, d->tabKeyManager, QString());
+#endif /* ENABLE_DECRYPTION */
+
+	// Retranslate non-Designer widgets.
+	d->retranslateUi_nonDesigner();
 
 	// Delete the window on close.
 	this->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -130,6 +188,12 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// FIXME: Should be doable in Qt Designer...
 	connect(d->ui.tabImageTypes, SIGNAL(modified()), this, SLOT(tabModified()));
 	connect(d->ui.tabDownloads, SIGNAL(modified()), this, SLOT(tabModified()));
+#ifdef ENABLE_DECRYPTION
+	connect(d->tabKeyManager, SIGNAL(modified()), this, SLOT(tabModified()));
+#endif /* ENABLE_DECRYPTION */
+
+	// Make sure the "Defaults" button has the correct state.
+	on_tabWidget_currentChanged();
 
 	// Install the event filter on all child widgets.
 	// This is needed in order to track focus in case
@@ -158,6 +222,7 @@ void ConfigDialog::changeEvent(QEvent *event)
 		// Retranslate the UI.
 		Q_D(ConfigDialog);
 		d->ui.retranslateUi(this);
+		d->retranslateUi_nonDesigner();
 	}
 
 	// Pass the event to the base class.
@@ -186,6 +251,25 @@ bool ConfigDialog::eventFilter(QObject *watched, QEvent *event)
 	return false;
 }
 
+/** Automatic slots from Qt Designer. **/
+
+/**
+ * The current tab has changed.
+ * @param index New tab index.
+ */
+void ConfigDialog::on_tabWidget_currentChanged(void)
+{
+	// Enable/disable the "Defaults" button.
+	Q_D(ConfigDialog);
+	ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
+	if (tab) {
+		d->btnDefaults->setEnabled(tab->hasDefaults());
+	} else {
+		// Not an ITab...
+		d->btnDefaults->setEnabled(false);
+	}
+}
+
 /** Button slots. **/
 
 /**
@@ -207,7 +291,7 @@ void ConfigDialog::apply(void)
 	// Open the configuration file using QSettings.
 	// TODO: Error handling.
 	const Config *const config = Config::instance();
-	const rp_char *const filename = config->filename();
+	const rp_char *filename = config->filename();
 	if (!filename) {
 		// No configuration filename...
 		return;
@@ -223,6 +307,18 @@ void ConfigDialog::apply(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->save(&settings);
 	d->ui.tabDownloads->save(&settings);
+
+#ifdef ENABLE_DECRYPTION
+	// KeyManager needs to save to keys.conf.
+	const KeyManager *const keyManager = KeyManager::instance();
+	filename = keyManager->filename();
+	if (filename) {
+		QSettings keys_conf(RP2Q(filename), QSettings::IniFormat);
+		if (keys_conf.isWritable()) {
+			d->tabKeyManager->save(&keys_conf);
+		}
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -244,6 +340,9 @@ void ConfigDialog::reset(void)
 	Q_D(ConfigDialog);
 	d->ui.tabImageTypes->reset();
 	d->ui.tabDownloads->reset();
+#ifdef ENABLE_DECRYPTION
+	d->tabKeyManager->reset();
+#endif /* ENABLE_DECRYPTION */
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.

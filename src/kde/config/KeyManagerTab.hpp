@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * ConfigDialog.hpp: Configuration dialog.                                 *
+ * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,63 +19,77 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
+#ifndef __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__
+#define __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__
 
-#include <QDialog>
+#include "ITab.hpp"
 
-class ConfigDialogPrivate;
-class ConfigDialog : public QDialog
+class KeyManagerTabPrivate;
+class KeyManagerTab : public ITab
 {
 	Q_OBJECT
+	Q_PROPERTY(bool defaults READ hasDefaults)
 
 	public:
-		explicit ConfigDialog(QWidget *parent = nullptr);
-		~ConfigDialog();
+		KeyManagerTab(QWidget *parent = nullptr);
+		virtual ~KeyManagerTab();
 
 	private:
-		typedef QDialog super;
-		ConfigDialogPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(ConfigDialog)
-		Q_DISABLE_COPY(ConfigDialog)
+		typedef ITab super;
+		KeyManagerTabPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(KeyManagerTab);
+		Q_DISABLE_COPY(KeyManagerTab)
+
+	public:
+		/**
+		 * Does this tab have defaults available?
+		 * If so, the "Defaults" button will be enabled.
+		 * Otherwise, it will be disabled.
+		 *
+		 * KeyManagerTab sets this to false.
+		 *
+		 * @return True to enable; false to disable.
+		 */
+		virtual bool hasDefaults(void) const override final { return false; }
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
 		void changeEvent(QEvent *event);
 
-		// Event filter for tracking focus.
-		bool eventFilter(QObject *watched, QEvent *event);
+	public slots:
+		/**
+		 * Reset the configuration.
+		 */
+		virtual void reset(void) override final;
+
+		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		virtual void loadDefaults(void) override final;
+
+		/**
+		 * Save the configuration.
+		 * @param pSettings QSettings object.
+		 */
+		virtual void save(QSettings *pSettings) override final;
 
 	protected slots:
 		/**
-		 * The current tab has changed.
+		 * Import keys from Wii keys.bin. (BootMii format)
 		 */
-		void on_tabWidget_currentChanged(void);
+		void on_actionImportWiiKeysBin_triggered(void);
 
 		/**
-		 * The "OK" button was clicked.
+		 * Import keys from 3DS boot9.bin.
 		 */
-		virtual void accept(void) override final;
+		void on_actionImport3DSboot9bin_triggered(void);
 
 		/**
-		 * The "Apply" button was clicked.
+		 * Import keys from 3DS aeskeydb.bin.
 		 */
-		void apply(void);
-
-		/**
-		 * The "Reset" button was clicked.
-		 */
-		void reset(void);
-
-		/**
-		 * The "Defaults" button was clicked.
-		 */
-		void loadDefaults(void);
-
-		/**
-		 * A tab has been modified.
-		 */
-		void tabModified(void);
+		void on_actionImport3DSaeskeydb_triggered(void);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_CONFIG_KEYMANAGERTAB_HPP__ */
