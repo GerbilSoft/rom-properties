@@ -47,7 +47,6 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
-	config/KeyManagerTab.hpp
 	QITab.h
 	resource.h
 	)
@@ -55,9 +54,11 @@ SET(rom-properties-win32_H
 IF(ENABLE_DECRYPTION)
 	SET(rom-properties-win32_CRYPTO_SRCS
 		config/KeyManagerTab.cpp
+		config/KeyStoreWin32.cpp
 		)
 	SET(rom-properties-win32_CRYPTO_H
 		config/KeyManagerTab.hpp
+		config/KeyStoreWin32.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

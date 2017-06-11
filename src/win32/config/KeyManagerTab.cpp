@@ -23,6 +23,9 @@
 #include "KeyManagerTab.hpp"
 #include "resource.h"
 
+// KeyStore
+#include "KeyStoreWin32.hpp"
+
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/config/Config.hpp"
@@ -142,6 +145,9 @@ class KeyManagerTabPrivate
 		// "Import" popup menu.
 		HMENU hMenuImport;	// Must be deleted using DestroyMenu().
 
+		// KeyStore.
+		KeyStoreWin32 *keyStore;
+
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -179,6 +185,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hWndPropSheet(nullptr)
 	, changed(false)
 	, hMenuImport(nullptr)
+	, keyStore(new KeyStoreWin32())
 { }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -186,6 +193,7 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	if (hMenuImport) {
 		DestroyMenu(hMenuImport);
 	}
+	delete keyStore;
 }
 
 // Property for "D pointer".
@@ -248,6 +256,9 @@ void KeyManagerTabPrivate::initUI(void)
 	// Initialize the ListView.
 	// Set full row selection.
 	ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT);
+	// Set the virtual list item count.
+	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
+		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 
 	// Column 0: Key Name.
 	LVCOLUMN lvCol;
@@ -269,6 +280,7 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
 	// Auto-size the columns.
+	// FIXME: This doens't work with LVS_OWNERDATA.
 	ListView_SetColumnWidth(hListView, 0, LVSCW_AUTOSIZE_USEHEADER);
 	ListView_SetColumnWidth(hListView, 1, LVSCW_AUTOSIZE_USEHEADER);
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
@@ -356,8 +368,8 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
-			switch (lppsn->hdr.code) {
+			NMHDR *pHdr = reinterpret_cast<NMHDR*>(lParam);
+			switch (pHdr->code) {
 				case PSN_APPLY:
 					// Save settings.
 					if (d->changed) {
@@ -365,6 +377,42 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					}
 					break;
 
+				case LVN_GETDISPINFO: {
+					if (!d->keyStore || pHdr->idFrom != IDC_KEYMANAGER_LIST)
+						break;
+
+					LVITEM *plvItem = &reinterpret_cast<NMLVDISPINFO*>(lParam)->item;
+					if (plvItem->iItem < 0 || plvItem->iItem >= d->keyStore->totalKeyCount()) {
+						// Index is out of range.
+						break;
+					}
+
+					const KeyStoreWin32::Key *key = d->keyStore->getKey(plvItem->iItem);
+					if (!key)
+						break;
+
+					if (plvItem->mask & LVIF_TEXT) {
+						// Fill in text.
+						// NOTE: We need to store the text in a
+						// temporary wstring buffer.
+						switch (plvItem->iSubItem) {
+							case 0:
+								// Key name.
+								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->name));
+								break;
+							case 1:
+								// Value.
+								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->value));
+								break;
+							default:
+								// No text for "Valid?".
+								plvItem->pszText[0] = 0;
+								break;
+						}
+					}
+					break;
+				}
+					
 				default:
 					break;
 			}
