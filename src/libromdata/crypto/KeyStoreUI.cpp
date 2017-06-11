@@ -19,8 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "KeyStore.hpp"
-#include "RpQt.hpp"
+#include "KeyStoreUI.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -31,9 +30,9 @@
 using namespace LibRpBase;
 
 // libromdata
-#include "libromdata/disc/WiiPartition.hpp"
-#include "libromdata/crypto/CtrKeyScrambler.hpp"
-#include "libromdata/crypto/N3DSVerifyKeys.hpp"
+#include "../disc/WiiPartition.hpp"
+#include "../crypto/CtrKeyScrambler.hpp"
+#include "../crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
 // C includes.
@@ -42,27 +41,34 @@ using namespace LibRomData;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
+#include <cstring>
 
 // C++ includes.
 #include <memory>
+#include <vector>
 using std::unique_ptr;
+using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>
 
-// Qt includes.
-#include <QtCore/QVector>
+// for Qt-style signal emission
+#ifdef emit
+#undef emit
+#endif
+#define emit
 
-class KeyStorePrivate
+namespace LibRomData {
+
+class KeyStoreUIPrivate
 {
 	public:
-		explicit KeyStorePrivate(KeyStore *q);
-		~KeyStorePrivate();
+		explicit KeyStoreUIPrivate(KeyStoreUI *q);
+		~KeyStoreUIPrivate();
 
 	private:
-		KeyStore *const q_ptr;
-		Q_DECLARE_PUBLIC(KeyStore)
-		Q_DISABLE_COPY(KeyStorePrivate)
+		KeyStoreUI *const q_ptr;
+		RP_DISABLE_COPY(KeyStoreUIPrivate)
 
 	public:
 		// Has the user changed anything?
@@ -73,15 +79,15 @@ class KeyStorePrivate
 
 	public:
 		// Keys.
-		QVector<KeyStore::Key> keys;
+		vector<KeyStoreUI::Key> keys;
 
 		// Sections.
 		struct Section {
-			QString name;
+			rp_string name;
 			int keyIdxStart;	// Starting index in keys.
 			int keyCount;		// Number of keys.
 		};
-		QVector<Section> sections;
+		vector<Section> sections;
 
 		// IAesCipher for verifying keys.
 		IAesCipher *cipher;
@@ -107,7 +113,7 @@ class KeyStorePrivate
 		 * @param str String.
 		 * @return Converted string, or empty string on error.
 		 */
-		static QString convertKanjiToHex(const QString &str);
+		static rp_string convertKanjiToHex(const rp_string &str);
 
 	public:
 		/**
@@ -147,7 +153,7 @@ class KeyStorePrivate
 		 * @param len		[in] Length of buf.
 		 * @return Key import status.
 		 */
-		KeyStore::ImportReturn importKeysFromBlob(int sectIdx,
+		KeyStoreUI::ImportReturn importKeysFromBlob(int sectIdx,
 			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
 
 		/**
@@ -190,24 +196,24 @@ class KeyStorePrivate
 		 * @param len	[in] Length of binary key, in bytes.
 		 * @return Hexadecimal string.
 		 */
-		static QString binToHexStr(const uint8_t *data, unsigned int len);
+		static rp_string binToHexStr(const uint8_t *data, unsigned int len);
 };
 
-/** KeyStorePrivate **/
+/** KeyStoreUIPrivate **/
 
-const KeyStorePrivate::EncKeyFns_t KeyStorePrivate::encKeyFns[] = {
+const KeyStoreUIPrivate::EncKeyFns_t KeyStoreUIPrivate::encKeyFns[] = {
 	ENCKEYFNS(WiiPartition,    _RP("Nintendo Wii AES Keys")),
 	ENCKEYFNS(CtrKeyScrambler, _RP("Nintendo 3DS Key Scrambler Constants")),
 	ENCKEYFNS(N3DSVerifyKeys,  _RP("Nintendo 3DS AES Keys")),
 };
 
 // Hexadecimal lookup table.
-const char KeyStorePrivate::hex_lookup[16] = {
+const char KeyStoreUIPrivate::hex_lookup[16] = {
 	'0','1','2','3','4','5','6','7',
 	'8','9','A','B','C','D','E','F',
 };
 
-KeyStorePrivate::KeyStorePrivate(KeyStore *q)
+KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 	: q_ptr(q)
 	, changed(false)
 	, cipher(AesCipherFactory::create())
@@ -230,7 +236,6 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 	keys.clear();
 
 	Section section;
-	KeyStore::Key key;
 	int keyIdxStart = 0;
 	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
 		const EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
@@ -240,10 +245,11 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 			continue;
 
 		// Set up the section.
-		section.name = RP2Q(encSys->sectName);
+		sections.resize(sections.size()+1);
+		auto &section = sections[sections.size()-1];
+		section.name = encSys->sectName;
 		section.keyIdxStart = keyIdxStart;
 		section.keyCount = keyCount;
-		sections.append(section);
 
 		// Increment keyIdxStart for the next section.
 		keyIdxStart += keyCount;
@@ -258,26 +264,26 @@ KeyStorePrivate::KeyStorePrivate(KeyStore *q)
 				// Skip NULL key names. (This shouldn't happen...)
 				continue;
 			}
-			key.name = QLatin1String(keyName);
+
+			keys.resize(keys.size()+1);
+			auto &key = keys[keys.size()-1];
+			key.name = latin1_to_rp_string(keyName, -1);
 
 			// Key is empty initially.
-			key.status = KeyStore::Key::Status_Empty;
+			key.status = KeyStoreUI::Key::Status_Empty;
 			key.modified = false;
 
 			// Allow kanji for twl-scrambler.
-			key.allowKanji = (key.name == QLatin1String("twl-scrambler"));
-
-			// Save the key.
-			// TODO: Edit a Key struct directly in the QVector?
-			keys.append(key);
+			key.allowKanji = (key.name == _RP("twl-scrambler"));
 		}
 	}
 
-	// Load the keys.
-	reset();
+	// Keys will NOT be auto-loaded due to multiple inheritance issues.
+	// The subclass must load the keys.
+	//reset();
 }
 
-KeyStorePrivate::~KeyStorePrivate()
+KeyStoreUIPrivate::~KeyStoreUIPrivate()
 {
 	delete cipher;
 }
@@ -289,16 +295,16 @@ KeyStorePrivate::~KeyStorePrivate()
  * @param keyIdx	[out] Key index.
  * @return True on success; false on error.
  */
-bool KeyStorePrivate::flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx)
+bool KeyStoreUIPrivate::flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx)
 {
 	assert(idx >= 0);
-	assert(idx < keys.size());
-	if (idx < 0 || idx >= keys.size())
+	assert(idx < (int)keys.size());
+	if (idx < 0 || idx >= (int)keys.size())
 		return false;
 
 	// Figure out what section this key is in.
-	for (int i = 0; i < sections.size(); i++) {
-		const KeyStorePrivate::Section &section = sections[i];
+	for (int i = 0; i < (int)sections.size(); i++) {
+		const KeyStoreUIPrivate::Section &section = sections[i];
 		if (idx < (section.keyIdxStart + section.keyCount)) {
 			// Found the section.
 			sectIdx = i;
@@ -314,9 +320,9 @@ bool KeyStorePrivate::flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx)
 /**
  * (Re-)Load the keys from keys.conf.
  */
-void KeyStorePrivate::reset(void)
+void KeyStoreUIPrivate::reset(void)
 {
-	if (keys.isEmpty())
+	if (keys.empty())
 		return;
 
 	// Get the KeyManager.
@@ -331,14 +337,14 @@ void KeyStorePrivate::reset(void)
 	int keyIdxStart = 0;
 	KeyManager::KeyData_t keyData;
 	for (int encSysNum = 0; encSysNum < ARRAY_SIZE(encKeyFns); encSysNum++) {
-		const KeyStorePrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
+		const KeyStoreUIPrivate::EncKeyFns_t *const encSys = &encKeyFns[encSysNum];
 		const int keyCount = encSys->pfnKeyCount();
 		assert(keyCount > 0);
 		if (keyCount <= 0)
 			continue;
 
 		// Starting key.
-		KeyStore::Key *pKey = &keys[keyIdxStart];
+		KeyStoreUI::Key *pKey = &keys[keyIdxStart];
 		// Increment keyIdxStart for the next section.
 		keyIdxStart += keyCount;
 
@@ -363,7 +369,7 @@ void KeyStorePrivate::reset(void)
 					assert(keyData.length > 0);
 					assert(keyData.length <= 32);
 					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
-						QString value = binToHexStr(keyData.key, keyData.length);
+						rp_string value = binToHexStr(keyData.key, keyData.length);
 						if (pKey->value != value) {
 							pKey->value = value;
 							hasChanged = true;
@@ -374,30 +380,30 @@ void KeyStorePrivate::reset(void)
 					} else {
 						// Key is invalid...
 						// TODO: Show an error message?
-						if (!pKey->value.isEmpty()) {
+						if (!pKey->value.empty()) {
 							pKey->value.clear();
 							hasChanged = true;
 						}
-						pKey->status = KeyStore::Key::Status_NotAKey;
+						pKey->status = KeyStoreUI::Key::Status_NotAKey;
 					}
 					break;
 
 				case KeyManager::VERIFY_KEY_INVALID:
 					// Key is invalid. (i.e. not in the correct format)
-					if (!pKey->value.isEmpty()) {
+					if (!pKey->value.empty()) {
 						pKey->value.clear();
 						hasChanged = true;
 					}
-					pKey->status = KeyStore::Key::Status_NotAKey;
+					pKey->status = KeyStoreUI::Key::Status_NotAKey;
 					break;
 
 				default:
 					// Assume the key wasn't found.
-					if (!pKey->value.isEmpty()) {
+					if (!pKey->value.empty()) {
 						pKey->value.clear();
 						hasChanged = true;
 					}
-					pKey->status = KeyStore::Key::Status_Empty;
+					pKey->status = KeyStoreUI::Key::Status_Empty;
 					break;
 			}
 
@@ -408,8 +414,8 @@ void KeyStorePrivate::reset(void)
 
 	if (hasChanged) {
 		// Keys have changed.
-		Q_Q(KeyStore);
-		emit q->allKeysChanged();
+		RP_Q(KeyStoreUI);
+		emit q->allKeysChanged_int();
 	}
 
 	// Keys have been reset.
@@ -425,29 +431,29 @@ void KeyStorePrivate::reset(void)
  * @param len		[in] Length of buf.
  * @return Key import status.
  */
-KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 	int sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
 {
-	KeyStore::ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
+	KeyStoreUI::ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
 	assert(sectIdx >= 0);
-	assert(sectIdx < sections.size());
+	assert(sectIdx < (int)sections.size());
 	assert(kba != nullptr);
 	assert(buf != nullptr);
 	assert(len != 0);
-	if (sectIdx < 0 || sectIdx >= sections.size() ||
+	if (sectIdx < 0 || sectIdx >= (int)sections.size() ||
 	    !kba || !buf || len == 0)
 	{
-		iret.status = KeyStore::Import_InvalidParams;
+		iret.status = KeyStoreUI::Import_InvalidParams;
 		return iret;
 	}
 
-	Q_Q(KeyStore);
+	RP_Q(KeyStoreUI);
 	bool wereKeysImported = false;
 	const int keyIdxStart = sections[sectIdx].keyIdxStart;
 	for (; kba->keyIdx >= 0; kba++) {
-		KeyStore::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
-		if (pKey->status == KeyStore::Key::Status_OK) {
+		KeyStoreUI::Key *const pKey = &keys[keyIdxStart + kba->keyIdx];
+		if (pKey->status == KeyStoreUI::Key::Status_OK) {
 			// Key is already OK. Don't bother with it.
 			iret.keysExist++;
 			continue;
@@ -466,15 +472,15 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 		if (!verifyData) {
 			// Can't verify this key...
 			// Import it anyway.
-			const QString new_value = binToHexStr(keyData, 16);
+			const rp_string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = new_value;
-				pKey->status = KeyStore::Key::Status_Unknown;
+				pKey->status = KeyStoreUI::Key::Status_Unknown;
 				pKey->modified = true;
 				iret.keysImportedNoVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged(sectIdx, kba->keyIdx);
-				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
 				iret.keysExist++;
@@ -486,15 +492,15 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 		int ret = verifyKeyData(keyData, verifyData, 16);
 		if (ret == 0) {
 			// Found a match!
-			const QString new_value = binToHexStr(keyData, 16);
+			const rp_string new_value = binToHexStr(keyData, 16);
 			if (pKey->value != new_value) {
 				pKey->value = binToHexStr(keyData, 16);
-				pKey->status = KeyStore::Key::Status_OK;
+				pKey->status = KeyStoreUI::Key::Status_OK;
 				pKey->modified = true;
 				iret.keysImportedVerify++;
 				wereKeysImported = true;
-				emit q->keyChanged(sectIdx, kba->keyIdx);
-				emit q->keyChanged(keyIdxStart + kba->keyIdx);
+				emit q->keyChanged_int(sectIdx, kba->keyIdx);
+				emit q->keyChanged_int(keyIdxStart + kba->keyIdx);
 			} else {
 				// No change.
 				iret.keysExist++;
@@ -506,8 +512,8 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
 	}
 
 	iret.status = (wereKeysImported
-		? KeyStore::Import_KeysImported
-		: KeyStore::Import_NoKeysImported);
+		? KeyStoreUI::Import_KeysImported
+		: KeyStoreUI::Import_NoKeysImported);
 	return iret;
 }
 
@@ -517,7 +523,7 @@ KeyStore::ImportReturn KeyStorePrivate::importKeysFromBlob(
  * @param pKey	[out] Key output.
  * @return 0 on success; non-zero on error.
  */
-int KeyStorePrivate::getAesKeyDB_key(u128_t *pKey) const
+int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 {
 	assert(pKey != nullptr);
 	if (!pKey) {
@@ -526,27 +532,27 @@ int KeyStorePrivate::getAesKeyDB_key(u128_t *pKey) const
 
 	// Get the CTR scrambler constant.
 	const Section &sectScrambler = sections[Section_CtrKeyScrambler];
-	const KeyStore::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
-	if (ctr_scrambler.status != KeyStore::Key::Status_OK) {
+	const KeyStoreUI::Key &ctr_scrambler = keys[sectScrambler.keyIdxStart + CtrKeyScrambler::Key_Ctr_Scrambler];
+	if (ctr_scrambler.status != KeyStoreUI::Key::Status_OK) {
 		// Key is not correct.
 		return -ENOENT;
 	}
 
 	// Get Slot0x2CKeyX.
 	const Section &sectN3DS = sections[Section_N3DSVerifyKeys];
-	const KeyStore::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
-	if (key_slot0x2CKeyX.status != KeyStore::Key::Status_OK) {
+	const KeyStoreUI::Key &key_slot0x2CKeyX = keys[sectN3DS.keyIdxStart + N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX];
+	if (key_slot0x2CKeyX.status != KeyStoreUI::Key::Status_OK) {
 		// Key is not correct.
 		return -ENOENT;
 	}
 
 	// Convert the keys to bytes.
 	u128_t scrambler, keyX, keyY;
-	int ret = KeyManager::hexStringToBytes(Q2RP(ctr_scrambler.value), scrambler.u8, sizeof(scrambler.u8));
+	int ret = KeyManager::hexStringToBytes(ctr_scrambler.value.c_str(), scrambler.u8, sizeof(scrambler.u8));
 	if (ret != 0) {
 		return -EIO;
 	}
-	ret = KeyManager::hexStringToBytes(Q2RP(key_slot0x2CKeyX.value), keyX.u8, sizeof(keyX.u8));
+	ret = KeyManager::hexStringToBytes(key_slot0x2CKeyX.value.c_str(), keyX.u8, sizeof(keyX.u8));
 	if (ret != 0) {
 		return -EIO;
 	}
@@ -562,13 +568,15 @@ int KeyStorePrivate::getAesKeyDB_key(u128_t *pKey) const
  * @param str String.
  * @return Converted string, or empty string on error.
  */
-QString KeyStorePrivate::convertKanjiToHex(const QString &str)
+rp_string KeyStoreUIPrivate::convertKanjiToHex(const rp_string &str)
 {
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
-	foreach (QChar chr, str) {
-		if (chr.unicode() >= 128) {
+	for (const rp_char *p = str.c_str(); *p != 0; p++) {
+		// The following check works for both UTF-8 and UTF-16.
+		// If the character value is >= 128, it's non-ASCII.
+		if (((unsigned int)*p) >= 128) {
 			// Found a non-ASCII character.
 			hasNonAscii = true;
 			break;
@@ -583,17 +591,25 @@ QString KeyStorePrivate::convertKanjiToHex(const QString &str)
 	// We're expecting 7 kanji symbols,
 	// but we'll take any length.
 
+#ifdef RP_UTF8
+	// Convert to UTF-16 first.
+	const std::u16string u16str = rp_string_to_utf16(str);
+#else /* RP_UTF16 */
+	// Already in UTF-16.
+	const std::u16string &u16str = str;
+#endif
+	
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
-	QString hexstr;
-	hexstr.reserve(4+(hexstr.size()*4));
-	hexstr += QLatin1String("FFFE");
-	foreach (const QChar chr, str) {
-		const ushort u16 = chr.unicode();
-		hexstr += QChar((ushort)hex_lookup[(u16 >>  4) & 0x0F]);
-		hexstr += QChar((ushort)hex_lookup[(u16 >>  0) & 0x0F]);
-		hexstr += QChar((ushort)hex_lookup[(u16 >> 12) & 0x0F]);
-		hexstr += QChar((ushort)hex_lookup[(u16 >>  8) & 0x0F]);
+	rp_string hexstr;
+	hexstr.reserve(4+(u16str.size()*4));
+	hexstr += _RP("FFFE");
+	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
+		const char16_t u16 = *p;
+		hexstr += (char16_t)hex_lookup[(u16 >>  4) & 0x0F];
+		hexstr += (char16_t)hex_lookup[(u16 >>  0) & 0x0F];
+		hexstr += (char16_t)hex_lookup[(u16 >> 12) & 0x0F];
+		hexstr += (char16_t)hex_lookup[(u16 >>  8) & 0x0F];
 	}
 
 	return hexstr;
@@ -606,7 +622,7 @@ QString KeyStorePrivate::convertKanjiToHex(const QString &str)
  * @param len		[in] Length of keyData and verifyData. (must be 16)
  * @return 0 if the key is verified; non-zero if not.
  */
-int KeyStorePrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len)
+int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verifyData, int len)
 {
 	assert(len == 16);
 	if (len != 16) {
@@ -637,11 +653,11 @@ int KeyStorePrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *verify
  * @param sectIdx Section index.
  * @param keyIdx Key index.
  */
-void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
+void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 {
 	assert(sectIdx >= 0);
-	assert(sectIdx < sections.size());
-	if (sectIdx < 0 || sectIdx >= sections.size())
+	assert(sectIdx < (int)sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)sections.size())
 		return;
 
 	assert(keyIdx >= 0);
@@ -650,22 +666,22 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
 		return;
 
 	// Check the key length.
-	KeyStore::Key &key = keys[sections[sectIdx].keyIdxStart + keyIdx];
-	if (key.value.isEmpty()) {
+	KeyStoreUI::Key &key = keys[sections[sectIdx].keyIdxStart + keyIdx];
+	if (key.value.empty()) {
 		// Empty key.
-		key.status = KeyStore::Key::Status_Empty;
+		key.status = KeyStoreUI::Key::Status_Empty;
 		return;
 	} else if (key.value.size() != 16 && key.value.size() % 2 != 0) {
 		// Invalid length.
 		// TODO: Support keys that aren't 128-bit.
-		key.status = KeyStore::Key::Status_NotAKey;
+		key.status = KeyStoreUI::Key::Status_NotAKey;
 		return;
 	}
 
 	if (!cipher) {
 		// Cipher is unavailable.
 		// Cannot verify the key.
-		key.status = KeyStore::Key::Status_Unknown;
+		key.status = KeyStoreUI::Key::Status_Unknown;
 		return;
 	}
 
@@ -673,17 +689,17 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
 	const uint8_t *const verifyData = encKeyFns[sectIdx].pfnVerifyData(keyIdx);
 	if (!verifyData) {
 		// No key verification data is available.
-		key.status = KeyStore::Key::Status_Unknown;
+		key.status = KeyStoreUI::Key::Status_Unknown;
 		return;
 	}
 
 	// Convert the key to bytes.
 	// TODO: Support keys that aren't 128-bit.
 	uint8_t keyBytes[16];
-	int ret = KeyManager::hexStringToBytes(Q2RP(key.value), keyBytes, sizeof(keyBytes));
+	int ret = KeyManager::hexStringToBytes(key.value.c_str(), keyBytes, sizeof(keyBytes));
 	if (ret != 0) {
 		// Invalid character(s) encountered.
-		key.status = KeyStore::Key::Status_NotAKey;
+		key.status = KeyStoreUI::Key::Status_NotAKey;
 		return;
 	}
 
@@ -691,10 +707,10 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
 	ret = verifyKeyData(keyBytes, verifyData, sizeof(keyBytes));
 	if (ret == 0) {
 		// Decrypted data is correct.
-		key.status = KeyStore::Key::Status_OK;
+		key.status = KeyStoreUI::Key::Status_OK;
 	} else {
 		// Decrypted data is wrong.
-		key.status = KeyStore::Key::Status_Incorrect;
+		key.status = KeyStoreUI::Key::Status_Incorrect;
 	}
 }
 
@@ -704,19 +720,19 @@ void KeyStorePrivate::verifyKey(int sectIdx, int keyIdx)
  * @param len	[in] Length of binary key, in bytes.
  * @return Hexadecimal string.
  */
-QString KeyStorePrivate::binToHexStr(const uint8_t *data, unsigned int len)
+rp_string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 {
 	assert(data != nullptr);
 	assert(len > 0);
 	assert(len <= 64);
 	if (!data || len == 0 || len > 64)
-		return QString();
+		return rp_string();
 
-	QString hexstr;
+	rp_string hexstr;
 	hexstr.reserve(len*2);
 	for (; len > 0; len--, data++) {
-		hexstr += QChar((ushort)KeyStorePrivate::hex_lookup[*data >> 4]);
-		hexstr += QChar((ushort)KeyStorePrivate::hex_lookup[*data & 0x0F]);
+		hexstr += (rp_char)hex_lookup[*data >> 4];
+		hexstr += (rp_char)hex_lookup[*data & 0x0F];
 	}
 
 	return hexstr;
@@ -725,15 +741,13 @@ QString KeyStorePrivate::binToHexStr(const uint8_t *data, unsigned int len)
 /** KeyStore **/
 
 /**
- * Create a new KeyStore object.
- * @param parent Parent object.
+ * Create a new KeyStoreUI object.
  */
-KeyStore::KeyStore(QObject *parent)
-	: super(parent)
-	, d_ptr(new KeyStorePrivate(this))
+KeyStoreUI::KeyStoreUI()
+	: d_ptr(new KeyStoreUIPrivate(this))
 { }
 
-KeyStore::~KeyStore()
+KeyStoreUI::~KeyStoreUI()
 {
 	delete d_ptr;
 }
@@ -741,9 +755,9 @@ KeyStore::~KeyStore()
 /**
  * (Re-)Load the keys from keys.conf.
  */
-void KeyStore::reset(void)
+void KeyStoreUI::reset(void)
 {
-	Q_D(KeyStore);
+	RP_D(KeyStoreUI);
 	d->reset();
 }
 
@@ -753,25 +767,25 @@ void KeyStore::reset(void)
  * Get the number of sections. (top-level)
  * @return Number of sections.
  */
-int KeyStore::sectCount(void) const
+int KeyStoreUI::sectCount(void) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	return d->sections.size();
 }
 
 /**
  * Get a section name.
  * @param sectIdx Section index.
- * @return Section name, or empty string on error.
+ * @return Section name, or nullptr on error.
  */
-QString KeyStore::sectName(int sectIdx) const
+const rp_char *KeyStoreUI::sectName(int sectIdx) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
-	assert(sectIdx < d->sections.size());
-	if (sectIdx < 0 || sectIdx >= d->sections.size())
-		return QString();
-	return d->sections[sectIdx].name;
+	assert(sectIdx < (int)d->sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
+		return nullptr;
+	return d->sections[sectIdx].name.c_str();
 }
 
 /**
@@ -779,12 +793,12 @@ QString KeyStore::sectName(int sectIdx) const
  * @param sectIdx Section index.
  * @return Number of keys in the section, or -1 on error.
  */
-int KeyStore::keyCount(int sectIdx) const
+int KeyStoreUI::keyCount(int sectIdx) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
-	assert(sectIdx < d->sections.size());
-	if (sectIdx < 0 || sectIdx >= d->sections.size())
+	assert(sectIdx < (int)d->sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
 		return -1;
 	return d->sections[sectIdx].keyCount;
 }
@@ -793,12 +807,12 @@ int KeyStore::keyCount(int sectIdx) const
  * Get the total number of keys.
  * @return Total number of keys.
  */
-int KeyStore::totalKeyCount(void) const
+int KeyStoreUI::totalKeyCount(void) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	int ret = 0;
-	foreach (const KeyStorePrivate::Section &section, d->sections) {
-		ret += section.keyCount;
+	for (int i = (int)d->sections.size()-1; i >= 0; i--) {
+		ret += d->sections[i].keyCount;
 	}
 	return ret;
 }
@@ -807,10 +821,11 @@ int KeyStore::totalKeyCount(void) const
  * Is the KeyStore empty?
  * @return True if empty; false if not.
  */
-bool KeyStore::isEmpty(void) const
+bool KeyStoreUI::isEmpty(void) const
 {
-	Q_D(const KeyStore);
-	return d->sections.isEmpty();
+	RP_D(const KeyStoreUI);
+	// TODO: Check each section to make sure they're not empty?
+	return d->sections.empty();
 }
 
 /**
@@ -819,13 +834,14 @@ bool KeyStore::isEmpty(void) const
  * @param keyIdx Key index.
  * @return Key object, or nullptr on error.
  */
-const KeyStore::Key *KeyStore::getKey(int sectIdx, int keyIdx) const
+const KeyStoreUI::Key *KeyStoreUI::getKey(int sectIdx, int keyIdx) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
-	assert(sectIdx < d->sections.size());
-	if (sectIdx < 0 || sectIdx >= d->sections.size())
+	assert(sectIdx < (int)d->sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
 		return nullptr;
+
 	assert(keyIdx >= 0);
 	assert(keyIdx < d->sections[sectIdx].keyCount);
 	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
@@ -840,12 +856,12 @@ const KeyStore::Key *KeyStore::getKey(int sectIdx, int keyIdx) const
  * @param idx Key index.
  * @return Key object, or nullptr on error.
  */
-const KeyStore::Key *KeyStore::getKey(int idx) const
+const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	assert(idx >= 0);
-	assert(idx < d->keys.size());
-	if (idx < 0 || idx >= d->keys.size())
+	assert(idx < (int)d->keys.size());
+	if (idx < 0 || idx >= (int)d->keys.size())
 		return nullptr;
 
 	return &d->keys[idx];
@@ -861,13 +877,14 @@ const KeyStore::Key *KeyStore::getKey(int idx) const
  * @param value New value.
  * @return 0 on success; non-zero on error.
  */
-int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
+int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
 {
-	Q_D(KeyStore);
+	RP_D(KeyStoreUI);
 	assert(sectIdx >= 0);
-	assert(sectIdx < d->sections.size());
-	if (sectIdx < 0 || sectIdx >= d->sections.size())
+	assert(sectIdx < (int)d->sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
 		return -ERANGE;
+
 	assert(keyIdx >= 0);
 	assert(keyIdx < d->sections[sectIdx].keyCount);
 	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
@@ -875,16 +892,16 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
-	const KeyStorePrivate::Section &section = d->sections[sectIdx];
+	const KeyStoreUIPrivate::Section &section = d->sections[sectIdx];
 	Key &key = d->keys[section.keyIdxStart + keyIdx];
-	QString new_value;
+	rp_string new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
-		if (!value.isEmpty()) {
-			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-			if (convKey.isEmpty()) {
+		if (!value.empty()) {
+			rp_string convKey = d->convertKanjiToHex(value);
+			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
 			}
@@ -894,7 +911,13 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
 		// using a validator in the UI...
-		new_value = value.toUpper();
+		new_value = value;
+		// Convert ASCII characters to uppercase.
+		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
+			if ((unsigned int)*iter < 128) {
+				*iter = toupper(*iter);
+			}
+		}
 	}
 
 	if (key.value != new_value) {
@@ -903,10 +926,10 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
 		// Verify the key.
 		d->verifyKey(sectIdx, keyIdx);
 		// Key has changed.
-		emit keyChanged(sectIdx, keyIdx);
-		emit keyChanged(section.keyIdxStart + keyIdx);
+		emit keyChanged_int(sectIdx, keyIdx);
+		emit keyChanged_int(section.keyIdxStart + keyIdx);
 		d->changed = true;
-		emit modified();
+		emit modified_int();
 	}
 	return 0;
 }
@@ -920,23 +943,23 @@ int KeyStore::setKey(int sectIdx, int keyIdx, const QString &value)
  * @param value New value.
  * @return 0 on success; non-zero on error.
  */
-int KeyStore::setKey(int idx, const QString &value)
+int KeyStoreUI::setKey(int idx, const rp_string &value)
 {
-	Q_D(KeyStore);
+	RP_D(KeyStoreUI);
 	assert(idx >= 0);
-	assert(idx < d->keys.size());
-	if (idx < 0 || idx >= d->keys.size())
+	assert(idx < (int)d->keys.size());
+	if (idx < 0 || idx >= (int)d->keys.size())
 		return -ERANGE;
 
 	Key &key = d->keys[idx];
-	QString new_value;
+	rp_string new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
 		// NOTE: convertKanjiToHex() returns an empty string on error,
 		// so if the original string is empty, don't do anything.
-		if (!value.isEmpty()) {
-			QString convKey = KeyStorePrivate::convertKanjiToHex(value);
-			if (convKey.isEmpty()) {
+		if (!value.empty()) {
+			rp_string convKey = KeyStoreUIPrivate::convertKanjiToHex(value);
+			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;
 			}
@@ -946,7 +969,13 @@ int KeyStore::setKey(int idx, const QString &value)
 		// Hexadecimal only.
 		// TODO: Validate it here? We're already
 		// using a validator in the UI...
-		new_value = value.toUpper();
+		new_value = value;
+		// Convert ASCII characters to uppercase.
+		for (auto iter = new_value.begin(); iter != new_value.end(); ++iter) {
+			if ((unsigned int)*iter < 128) {
+				*iter = toupper(*iter);
+			}
+		}
 	}
 
 	if (key.value != new_value) {
@@ -958,11 +987,11 @@ int KeyStore::setKey(int idx, const QString &value)
 		if (bRet) {
 			// Verify the key.
 			d->verifyKey(sectIdx, keyIdx);
-			emit keyChanged(sectIdx, keyIdx);
+			emit keyChanged_int(sectIdx, keyIdx);
 		}
-		emit keyChanged(idx);
+		emit keyChanged_int(idx);
 		d->changed = true;
-		emit modified();
+		emit modified_int();
 	}
 	return 0;
 }
@@ -971,9 +1000,9 @@ int KeyStore::setKey(int idx, const QString &value)
  * Mark all keys as saved.
  * This clears the "modified" field.
  */
-void KeyStore::allKeysSaved(void)
+void KeyStoreUI::allKeysSaved(void)
 {
-	Q_D(KeyStore);
+	RP_D(KeyStoreUI);
 	for (auto iter = d->keys.begin(); iter != d->keys.end(); ++iter) {
 		iter->modified = false;
 	}
@@ -987,9 +1016,9 @@ void KeyStore::allKeysSaved(void)
  * Has KeyStore been changed by the user?
  * @return True if it has; false if it hasn't.
  */
-bool KeyStore::hasChanged(void) const
+bool KeyStoreUI::hasChanged(void) const
 {
-	Q_D(const KeyStore);
+	RP_D(const KeyStoreUI);
 	return d->changed;
 }
 
@@ -998,11 +1027,11 @@ bool KeyStore::hasChanged(void) const
  * @param filename keys.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
+KeyStoreUI::ImportReturn KeyStoreUI::importWiiKeysBin(const rp_char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
-	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file) {
 		iret.status = Import_OpenError;
 		return iret;
@@ -1038,7 +1067,7 @@ KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
 	// - rvl-korean may be in keys.bin files dumped from Korean systems.
 	// - SD keys are not present in keys.bin.
 
-	static const KeyStorePrivate::KeyBinAddress keyBinAddress[] = {
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
 		{0x114, WiiPartition::Key_Rvl_Common},
 		{0x114, WiiPartition::Key_Rvt_Debug},
 
@@ -1046,8 +1075,8 @@ KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
 	};
 
 	// Import the keys.
-	Q_D(KeyStore);
-	return d->importKeysFromBlob(KeyStorePrivate::Section_WiiPartition,
+	RP_D(KeyStoreUI);
+	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_WiiPartition,
 		keyBinAddress, buf, sizeof(buf));
 }
 
@@ -1056,11 +1085,11 @@ KeyStore::ImportReturn KeyStore::importWiiKeysBin(const QString &filename)
  * @param filename boot9.bin filename.
  * @return Number of keys imported if the file is valid; negative POSIX error code on error.
  */
-KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
+KeyStoreUI::ImportReturn KeyStoreUI::import3DSboot9bin(const rp_char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
-	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file) {
 		iret.status = Import_OpenError;
 		return iret;
@@ -1105,7 +1134,7 @@ KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
 	}
 
 	// Key addresses and indexes.
-	static const KeyStorePrivate::KeyBinAddress keyBinAddress[] = {
+	static const KeyStoreUIPrivate::KeyBinAddress keyBinAddress[] = {
 		{0x59D0, N3DSVerifyKeys::Key_Retail_Slot0x2CKeyX},
 		{0x5A20, N3DSVerifyKeys::Key_Retail_Slot0x3DKeyX},
 		{0x5DD0, N3DSVerifyKeys::Key_Debug_Slot0x2CKeyX},
@@ -1115,8 +1144,8 @@ KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
 	};
 
 	// Import the keys.
-	Q_D(KeyStore);
-	return d->importKeysFromBlob(KeyStorePrivate::Section_N3DSVerifyKeys,
+	RP_D(KeyStoreUI);
+	return d->importKeysFromBlob(KeyStoreUIPrivate::Section_N3DSVerifyKeys,
 		keyBinAddress, buf.get(), 32768);
 }
 
@@ -1125,11 +1154,11 @@ KeyStore::ImportReturn KeyStore::import3DSboot9bin(const QString &filename)
  * @param filename aeskeydb.bin filename.
  * @return Key import status.
  */
-KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
+KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
 {
 	ImportReturn iret = {0, 0, 0, 0, 0, 0, 0};
 
-	unique_ptr<RpFile> file(new RpFile(Q2RP(filename), RpFile::FM_OPEN_READ));
+	unique_ptr<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file) {
 		iret.status = Import_OpenError;
 		return iret;
@@ -1170,7 +1199,7 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 
 	// Slot0x2CKeyX is needed to decrypt keys if the
 	// aeskeydb.bin file is encrypted.
-	Q_D(KeyStore);
+	RP_D(KeyStoreUI);
 	unique_ptr<IAesCipher> cipher;
 	u128_t aeskeydb_key;
 	if (d->getAesKeyDB_key(&aeskeydb_key) == 0) {
@@ -1182,7 +1211,7 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 
 	AesKeyInfo *aesKey = reinterpret_cast<AesKeyInfo*>(buf.get());
 	const AesKeyInfo *const aesKeyEnd = reinterpret_cast<const AesKeyInfo*>(buf.get() + fileSize);
-	const int keyIdxStart = d->sections[KeyStorePrivate::Section_N3DSVerifyKeys].keyIdxStart;
+	const int keyIdxStart = d->sections[KeyStoreUIPrivate::Section_N3DSVerifyKeys].keyIdxStart;
 	bool wereKeysImported = false;
 	do {
 		// Check if this is a supported keyslot.
@@ -1320,15 +1349,15 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 				int ret = d->verifyKeyData(aesKey->key, verifyData, 16);
 				if (ret == 0) {
 					// Found a match!
-					const QString new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+					const rp_string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 					if (pKey->value != new_value) {
 						pKey->value = new_value;
-						pKey->status = KeyStore::Key::Status_OK;
+						pKey->status = KeyStoreUI::Key::Status_OK;
 						pKey->modified = true;
 						iret.keysImportedVerify++;
 						wereKeysImported = true;
-						emit keyChanged(KeyStorePrivate::Section_N3DSVerifyKeys, keyIdx[i]);
-						emit keyChanged(keyIdxStart + keyIdx[i]);
+						emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, keyIdx[i]);
+						emit keyChanged_int(keyIdxStart + keyIdx[i]);
 					} else {
 						// No change.
 						iret.keysExist++;
@@ -1341,15 +1370,15 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 			} else {
 				// Can't verify this key...
 				// Import it anyway.
-				const QString new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
+				const rp_string new_value = d->binToHexStr(aesKey->key, sizeof(aesKey->key));
 				if (pKey->value != new_value) {
 					pKey->value = new_value;
-					pKey->status = KeyStore::Key::Status_Unknown;
+					pKey->status = KeyStoreUI::Key::Status_Unknown;
 					pKey->modified = true;
 					iret.keysImportedNoVerify++;
 					wereKeysImported = true;
-					emit keyChanged(KeyStorePrivate::Section_N3DSVerifyKeys, keyIdx[i]);
-					emit keyChanged(keyIdxStart + keyIdx[i]);
+					emit keyChanged_int(KeyStoreUIPrivate::Section_N3DSVerifyKeys, keyIdx[i]);
+					emit keyChanged_int(keyIdxStart + keyIdx[i]);
 				} else {
 					// No change.
 					iret.keysExist++;
@@ -1367,7 +1396,9 @@ KeyStore::ImportReturn KeyStore::import3DSaeskeydb(const QString &filename)
 	} while (++aesKey != aesKeyEnd);
 
 	iret.status = (wereKeysImported
-		? KeyStore::Import_KeysImported
-		: KeyStore::Import_NoKeysImported);
+		? KeyStoreUI::Import_KeysImported
+		: KeyStoreUI::Import_NoKeysImported);
 	return iret;
+}
+
 }

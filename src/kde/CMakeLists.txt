@@ -15,7 +15,7 @@ SET(rom-properties-kde_SRCS
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/QTreeViewOpt.cpp
-	config/KeyStore.cpp
+	config/KeyStoreQt.cpp
 	config/KeyStoreModel.cpp
 	config/KeyStoreItemDelegate.cpp
 	config/MessageWidget.cpp
@@ -32,7 +32,7 @@ SET(rom-properties-kde_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/QTreeViewOpt.hpp
-	config/KeyStore.hpp
+	config/KeyStoreQt.hpp
 	config/KeyStoreModel.hpp
 	config/KeyStoreItemDelegate.hpp
 	config/MessageWidget.hpp

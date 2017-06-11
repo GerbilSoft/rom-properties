@@ -117,10 +117,12 @@ IF(ENABLE_DECRYPTION)
 	SET(libromdata_CRYPTO_SRCS
 		crypto/CtrKeyScrambler.cpp
 		crypto/N3DSVerifyKeys.cpp
+		crypto/KeyStoreUI.cpp
 		)
 	SET(libromdata_CRYPTO_H
 		crypto/CtrKeyScrambler.hpp
 		crypto/N3DSVerifyKeys.hpp
+		crypto/KeyStoreUI.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
 

@@ -25,13 +25,13 @@
 // Qt includes.
 #include <QtCore/QAbstractItemModel>
 
-class KeyStore;
+class KeyStoreQt;
 
 class KeyStoreModelPrivate;
 class KeyStoreModel : public QAbstractItemModel
 {
 	Q_OBJECT
-	Q_PROPERTY(KeyStore* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
+	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
 
 	public:
 		explicit KeyStoreModel(QObject *parent = 0);
@@ -73,13 +73,13 @@ class KeyStoreModel : public QAbstractItemModel
 		 * Set the KeyStore to use in this model.
 		 * @param keyStore KeyStore.
 		 */
-		void setKeyStore(KeyStore *keyStore);
+		void setKeyStore(KeyStoreQt *keyStore);
 
 		/**
 		 * Get the KeyStore in use by this model.
 		 * @return KeyStore.
 		 */
-		KeyStore *keyStore(void) const;
+		KeyStoreQt *keyStore(void) const;
 
 	signals:
 		/**
