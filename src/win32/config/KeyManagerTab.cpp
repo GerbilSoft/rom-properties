@@ -244,6 +244,13 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Store the D object pointer with this particular page dialog.
 			SetProp(hDlg, D_PTR_PROP, reinterpret_cast<HANDLE>(d));
 
+			// Set extended ListView styles.
+			HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (hListView) {
+				ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT);
+			}
+
 			HWND hBtnImport = GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT);
 			assert(hBtnImport != nullptr);
 			if (hBtnImport) {
@@ -277,11 +284,10 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					bsi.uSplitStyle = BCSS_NOSPLIT;
 					Button_SetSplitInfo(hBtnImport, &bsi);
 				} else {
-					// COMCTL32 is older than v6.10. Use a regular button
-					// with a Unicode arrow that's "good enough".
-					// (Windows XP or earlier)
-					// I could emulate a split button with ownerdraw, but :effort:
-					SetWindowText(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), L"Import \x25BC");
+					// COMCTL32 is older than v6.10. Use a regular button.
+					// NOTE: The Unicode down arrow doesn't show on on Windows XP.
+					// Maybe we *should* use ownerdraw...
+					SetWindowText(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), L"Import...");
 				}
 			}
 
