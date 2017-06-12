@@ -46,6 +46,9 @@ using namespace LibRomData;
 // C++ includes.
 #include <algorithm>
 
+// Windows includes.
+#include <commdlg.h>
+
 // Win32: Split buttons.
 // Not available unless _WIN32_WINNT >= 0x0600
 #ifndef BS_SPLITBUTTON
@@ -189,6 +192,24 @@ class KeyManagerTabPrivate
 		}
 
 		static const EncKeyFns_t encKeyFns[];
+
+	public:
+		/** "Import" menu actions. **/
+
+		/**
+		 * Import keys from Wii keys.bin. (BootMii format)
+		 */
+		void importWiiKeysBin(void);
+
+		/**
+		 * Import keys from 3DS boot9.bin.
+		 */
+		void import3DSboot9bin(void);
+
+		/**
+		 * Import keys from 3DS aeskeydb.bin.
+		 */
+		void import3DSaeskeydb(void);
 };
 
 /** KeyManagerTabPrivate **/
@@ -613,14 +634,19 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_KEYMANAGER_IMPORT) {
-				// Show the "Import" popup menu.
-				if (!d->hMenuImport) {
-					extern HINSTANCE g_hInstance;
-					d->hMenuImport = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_KEYMANAGER_IMPORT));
-				}
+			switch (LOWORD(wParam)) {
+				case IDC_KEYMANAGER_IMPORT: {
+					// Show the "Import" popup menu.
+					if (!d->hMenuImport) {
+						extern HINSTANCE g_hInstance;
+						d->hMenuImport = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_KEYMANAGER_IMPORT));
+					}
 
-				if (d->hMenuImport) {
+					if (!d->hMenuImport) {
+						// Unable to create the "Import" popup menu.
+						return TRUE;
+					}
+
 					HMENU hSubMenu = GetSubMenu(d->hMenuImport, 0);
 					if (hSubMenu) {
 						RECT btnRect;
@@ -628,7 +654,21 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						TrackPopupMenu(hSubMenu, TPM_LEFTALIGN|TPM_TOPALIGN,
 							btnRect.left, btnRect.bottom, 0, hDlg, nullptr);
 					}
+					return TRUE;
 				}
+
+				case IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN:
+					d->importWiiKeysBin();
+					return TRUE;
+				case IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN:
+					d->import3DSboot9bin();
+					break;
+				case IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB:
+					d->import3DSaeskeydb();
+					break;
+
+				default:
+					break;
 			}
 			break;
 		}
@@ -675,6 +715,131 @@ UINT CALLBACK KeyManagerTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 	}
 
 	return FALSE;
+}
+
+/** "Import" menu actions. **/
+
+/**
+ * Import keys from Wii keys.bin. (BootMii format)
+ */
+void KeyManagerTabPrivate::importWiiKeysBin(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
+	wchar_t filename[MAX_PATH];
+	filename[0] = 0;
+
+	OPENFILENAME ofn;
+	memset(&ofn, 0, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndPropSheet;
+	ofn.lpstrFilter = L"keys.bin\0keys.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrCustomFilter = nullptr;
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrTitle = L"Select Wii keys.bin File";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	BOOL bRet = GetOpenFileName(&ofn);
+	if (!bRet || filename[0] == 0)
+		return;
+
+	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2RP_c(filename));
+	// TODO: Port showKeyImportReturnStatus from the KDE version.
+	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
+
+	// TODO: Don't force a ListView update.
+	// Use notifications from KeyStore.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	if (hListView) {
+		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
+	}
+}
+
+/**
+ * Import keys from 3DS boot9.bin.
+ */
+void KeyManagerTabPrivate::import3DSboot9bin(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
+	wchar_t filename[MAX_PATH];
+	filename[0] = 0;
+
+	OPENFILENAME ofn;
+	memset(&ofn, 0, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndPropSheet;
+	ofn.lpstrFilter = L"boot9.bin\0boot9.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrCustomFilter = nullptr;
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrTitle = L"Select 3DS boot9.bin File";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	BOOL bRet = GetOpenFileName(&ofn);
+	if (!bRet || filename[0] == 0)
+		return;
+
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2RP_c(filename));
+	// TODO: Port showKeyImportReturnStatus from the KDE version.
+	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
+
+	// TODO: Don't force a ListView update.
+	// Use notifications from KeyStore.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	if (hListView) {
+		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
+	}
+}
+
+/**
+ * Import keys from 3DS aeskeydb.bin.
+ */
+void KeyManagerTabPrivate::import3DSaeskeydb(void)
+{
+	assert(hWndPropSheet != nullptr);
+	if (!hWndPropSheet)
+		return;
+
+	// TODO: Does the "Common Item Dialog" support >MAX_PATH?
+	wchar_t filename[MAX_PATH];
+	filename[0] = 0;
+
+	OPENFILENAME ofn;
+	memset(&ofn, 0, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndPropSheet;
+	ofn.lpstrFilter = L"aeskeydb.bin\0aeskeydb.bin\0Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0";
+	ofn.lpstrCustomFilter = nullptr;
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = ARRAY_SIZE(filename);
+	ofn.lpstrTitle = L"Select 3DS aeskeydb.bin File";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	BOOL bRet = GetOpenFileName(&ofn);
+	if (!bRet || filename[0] == 0)
+		return;
+
+	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2RP_c(filename));
+	// TODO: Port showKeyImportReturnStatus from the KDE version.
+	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
+
+	// TODO: Don't force a ListView update.
+	// Use notifications from KeyStore.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	if (hListView) {
+		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
+	}
 }
 
 /** KeyManagerTab **/
