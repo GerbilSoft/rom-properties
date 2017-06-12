@@ -551,6 +551,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					return TRUE;
 				}
 
+				case PSN_SETACTIVE:
+					// Disable the "Defaults" button.
+					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
+					break;
+
 				default:
 					break;
 			}

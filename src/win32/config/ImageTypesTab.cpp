@@ -545,8 +545,8 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
-			switch (lppsn->hdr.code) {
+			NMHDR *pHdr = reinterpret_cast<NMHDR*>(lParam);
+			switch (pHdr->code) {
 				case PSN_APPLY:
 					// Save settings.
 					if (d->changed) {
@@ -558,11 +558,16 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case NM_CLICK:
 				case NM_RETURN:
 					// SysLink control notification.
-					if (lppsn->hdr.hwndFrom == GetDlgItem(hDlg, IDC_IMAGETYPES_CREDITS)) {
+					if (pHdr->idFrom == IDC_IMAGETYPES_CREDITS) {
 						// Open the URL.
 						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
 						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 					}
+					break;
+
+				case PSN_SETACTIVE:
+					// Enable the "Defaults" button.
+					RpPropSheet_EnableDefaults(GetParent(hDlg), true);
 					break;
 
 				default:

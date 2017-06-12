@@ -54,6 +54,11 @@
 // message to all child property sheet pages instead.
 #define WM_RP_PROP_SHEET_RESET			(WM_USER + 0x1234)
 #define WM_RP_PROP_SHEET_DEFAULTS		(WM_USER + 0x1235)
+// Enable/disable the "Defaults" button.
+// We can't access the ITab objects from the PropertySheet callback function.
+// wParam: 0 == disable, 1 == enable
+#define WM_RP_PROP_SHEET_ENABLE_DEFAULTS	(WM_USER + 0x1236)
+#define RpPropSheet_EnableDefaults(hWnd,enable)	(void)SNDMSG(hWnd,WM_RP_PROP_SHEET_ENABLE_DEFAULTS,(WPARAM)(enable),0)
 
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110

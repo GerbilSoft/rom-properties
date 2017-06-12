@@ -343,6 +343,11 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
 			break;
 
+		case WM_RP_PROP_SHEET_ENABLE_DEFAULTS:
+			// Enable/disable the "Defaults" button.
+			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
+			break;
+
 		default:
 			break;
 	}
