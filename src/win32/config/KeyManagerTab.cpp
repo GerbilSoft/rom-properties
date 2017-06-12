@@ -43,6 +43,9 @@ using namespace LibRomData;
 // C includes. (C++ namespace)
 #include <cassert>
 
+// C++ includes.
+#include <algorithm>
+
 // Win32: Split buttons.
 // Not available unless _WIN32_WINNT >= 0x0600
 #ifndef BS_SPLITBUTTON
@@ -308,10 +311,50 @@ void KeyManagerTabPrivate::initUI(void)
 	lvCol.pszText = L"Valid?";
 	ListView_InsertColumn(hListView, 2, &lvCol);
 
-	// Auto-size the columns.
-	// FIXME: This doens't work with LVS_OWNERDATA.
-	ListView_SetColumnWidth(hListView, 0, LVSCW_AUTOSIZE_USEHEADER);
-	ListView_SetColumnWidth(hListView, 1, LVSCW_AUTOSIZE_USEHEADER);
+	// Determine the maximum width of columns 0 and 1.
+	// This is needed because LVSCW_AUTOSIZE_USEHEADER doesn't
+	// work with LVS_OWNERDATA.
+	// Reference: https://stackoverflow.com/questions/9255540/how-auto-size-the-columns-width-of-a-list-view-in-virtual-mode
+	// TODO: Determine the correct padding.
+	// 8,12 seems to be right on both XP and 7...
+	// TODO: If the user double-clicks the column splitter, it will
+	// resize based on the displayed rows, not all rows.
+	static const int column_padding[2] = {8, 12};
+	int column_width[2] = {0, 0};
+
+	// Make sure the "Value" column is at least 32 characters wide.
+	// NOTE: ListView_GetStringWidth() doesn't adjust for the monospaced font.
+	SIZE szValue;
+	int ret = LibWin32Common::measureTextSize(hListView, hFontMono, L"0123456789ABCDEF0123456789ABCDEF", &szValue);
+	assert(ret == 0);
+	if (ret == 0) {
+		column_width[1] = szValue.cx + column_padding[1];
+	}
+	//column_width[1] = ListView_GetStringWidth(hListView, L"0123456789ABCDEF0123456789ABCDEF") + column_padding[1];
+
+	for (int i = keyStore->totalKeyCount()-1; i >= 0; i--) {
+		const KeyStoreWin32::Key *key = keyStore->getKey(i);
+		assert(key != nullptr);
+		if (!key)
+			continue;
+
+		int tmp_width[2];
+		tmp_width[0] = ListView_GetStringWidth(hListView, RP2W_s(key->name)) + column_padding[0];
+		//tmp_width[1] = ListView_GetStringWidth(hListView, RP2W_s(key->value)) + column_padding[1];
+
+		column_width[0] = std::max(column_width[0], tmp_width[0]);
+		//column_width[1] = std::max(column_width[1], tmp_width[1]);
+
+		int ret = LibWin32Common::measureTextSize(hListView, hFontMono, RP2W_s(key->value), &szValue);
+		assert(ret == 0);
+		if (ret == 0) {
+			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
+		}
+	}
+	ListView_SetColumnWidth(hListView, 0, column_width[0]);
+	ListView_SetColumnWidth(hListView, 1, column_width[1]);
+
+	// Auto-size the "Valid?" column.
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
 }
 
