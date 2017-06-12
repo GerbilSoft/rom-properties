@@ -511,6 +511,9 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 		}
 	}
 
+	if (wereKeysImported) {
+		emit q->modified_int();
+	}
 	iret.status = (wereKeysImported
 		? KeyStoreUI::Import_KeysImported
 		: KeyStoreUI::Import_NoKeysImported);
@@ -1395,6 +1398,9 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
 		}
 	} while (++aesKey != aesKeyEnd);
 
+	if (wereKeysImported) {
+		emit modified_int();
+	}
 	iret.status = (wereKeysImported
 		? KeyStoreUI::Import_KeysImported
 		: KeyStoreUI::Import_NoKeysImported);
