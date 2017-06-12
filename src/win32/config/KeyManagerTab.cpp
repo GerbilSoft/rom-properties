@@ -26,6 +26,9 @@
 // KeyStore
 #include "KeyStoreWin32.hpp"
 
+// libwin32common
+#include "libwin32common/WinUI.hpp"
+
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/config/Config.hpp"
@@ -104,6 +107,13 @@ class KeyManagerTabPrivate
 		 */
 		void initUI(void);
 
+		/**
+		 * Initialize the monospaced font.
+		 * TODO: Combine with RP_ShellPropSheetExt's monospaced font code.
+		 * @param hFont Base font.
+		 */
+		void initMonospacedFont(HFONT hFont);
+
 	public:
 		/**
 		 * Reset the configuration.
@@ -148,6 +158,14 @@ class KeyManagerTabPrivate
 		// KeyStore.
 		KeyStoreWin32 *keyStore;
 
+		// Fonts.
+		HFONT hFontDlg;		// Main dialog font.
+		HFONT hFontMono;	// Monospaced font.
+
+		// Monospaced font details.
+		LOGFONT lfFontMono;
+		bool bPrevIsClearType;	// Previous ClearType setting.
+
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -186,13 +204,22 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, changed(false)
 	, hMenuImport(nullptr)
 	, keyStore(new KeyStoreWin32())
-{ }
+	, hFontDlg(nullptr)
+	, hFontMono(nullptr)
+	, bPrevIsClearType(nullptr)
+{
+	memset(&lfFontMono, 0, sizeof(lfFontMono));
+}
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
 {
 	if (hMenuImport) {
 		DestroyMenu(hMenuImport);
 	}
+	if (hFontMono) {
+		DeleteFont(hFontMono);
+	}
+
 	delete keyStore;
 }
 
@@ -208,6 +235,10 @@ void KeyManagerTabPrivate::initUI(void)
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
+
+	// Initialize the fonts.
+	hFontDlg = GetWindowFont(hWndPropSheet);
+	initMonospacedFont(hFontDlg);
 
 	// Get the required controls.
 	HWND hBtnImport = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_IMPORT);
@@ -269,8 +300,6 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_InsertColumn(hListView, 0, &lvCol);
 
 	// Column 1: Value.
-	// TODO: Set width to 32 monospace chars.
-	// TODO: Set font.
 	lvCol.pszText = L"Value";
 	ListView_InsertColumn(hListView, 1, &lvCol);
 
@@ -284,6 +313,72 @@ void KeyManagerTabPrivate::initUI(void)
 	ListView_SetColumnWidth(hListView, 0, LVSCW_AUTOSIZE_USEHEADER);
 	ListView_SetColumnWidth(hListView, 1, LVSCW_AUTOSIZE_USEHEADER);
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
+}
+
+/**
+ * Initialize the monospaced font.
+ * TODO: Combine with RP_ShellPropSheetExt's monospaced font code.
+ * @param hFont Base font.
+ */
+void KeyManagerTabPrivate::initMonospacedFont(HFONT hFont)
+{
+	if (!hFont) {
+		// No base font...
+		return;
+	}
+
+	// Get the current ClearType setting.
+	bool bIsClearType = false;
+	BOOL bFontSmoothing;
+	BOOL bRet = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &bFontSmoothing, 0);
+	if (bRet) {
+		UINT uiFontSmoothingType;
+		bRet = SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &uiFontSmoothingType, 0);
+		if (bRet) {
+			bIsClearType = (bFontSmoothing && (uiFontSmoothingType == FE_FONTSMOOTHINGCLEARTYPE));
+		}
+	}
+
+	if (hFontMono) {
+		// Font exists. Only re-create it if the ClearType setting has changed.
+		if (bIsClearType == bPrevIsClearType) {
+			// ClearType setting has not changed.
+			return;
+		}
+	} else {
+		// Font hasn't been created yet.
+		if (GetObject(hFont, sizeof(lfFontMono), &lfFontMono) == 0) {
+			// Unable to obtain the LOGFONT.
+			return;
+		}
+
+		// Find a monospaced font.
+		int ret = LibWin32Common::findMonospacedFont(&lfFontMono);
+		if (ret != 0) {
+			// Monospaced font not found.
+			return;
+		}
+	}
+
+	// Create the monospaced font.
+	// If ClearType is enabled, use DEFAULT_QUALITY;
+	// otherwise, use NONANTIALIASED_QUALITY.
+	lfFontMono.lfQuality = (bIsClearType ? DEFAULT_QUALITY : NONANTIALIASED_QUALITY);
+	HFONT hFontMonoNew = CreateFontIndirect(&lfFontMono);
+	if (!hFontMonoNew) {
+		// Unable to create new font.
+		return;
+	}
+
+	// TODO: Update the ListView fonts?
+
+	// Delete the old font and save the new one.
+	HFONT hFontMonoOld = hFontMono;
+	hFontMono = hFontMonoNew;
+	if (hFontMonoOld) {
+		DeleteFont(hFontMonoOld);
+	}
+	bPrevIsClearType = bIsClearType;
 }
 
 /**
@@ -412,7 +507,50 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					}
 					break;
 				}
-					
+
+				case NM_CUSTOMDRAW: {
+					// Custom drawing notification.
+					if (pHdr->idFrom != IDC_KEYMANAGER_LIST)
+						break;
+
+					// Make sure the "Value" column is drawn with a monospaced font.
+					// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
+					NMLVCUSTOMDRAW *plvcd = reinterpret_cast<LPNMLVCUSTOMDRAW>(lParam);
+
+					// NOTE: Since this is a DlgProc, we can't simply return
+					// the CDRF code. It has to be set as DWLP_MSGRESULT.
+					// References:
+					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+					// - https://stackoverflow.com/a/40552426
+					int result = CDRF_DODEFAULT;
+					switch (plvcd->nmcd.dwDrawStage) {
+						case CDDS_PREPAINT:
+							// Request notifications for individual ListView items.
+							result = CDRF_NOTIFYITEMDRAW;
+							break;
+
+						case CDDS_ITEMPREPAINT:
+							result = CDRF_NOTIFYSUBITEMDRAW;
+							break;
+
+						case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+							if (plvcd->iSubItem == 1) {
+								// Use the monospaced font.
+								if (d->hFontMono) {
+									SelectObject(plvcd->nmcd.hdc, d->hFontMono);
+									result = CDRF_NEWFONT;
+									break;
+								}
+							}
+							break;
+
+						default:
+							break;
+					}
+					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+					return TRUE;
+				}
+
 				default:
 					break;
 			}
@@ -443,6 +581,16 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 							btnRect.left, btnRect.bottom, 0, hDlg, nullptr);
 					}
 				}
+			}
+			break;
+		}
+
+		case WM_NCPAINT: {
+			// Update the monospaced font.
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (d) {
+				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
 		}
