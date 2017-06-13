@@ -45,6 +45,8 @@ using namespace LibRomData;
 
 // C++ includes.
 #include <algorithm>
+#include <string>
+using std::wstring;
 
 // Windows includes.
 #include <commdlg.h>
@@ -985,6 +987,73 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 					break;
 			}
 			break;
+		}
+
+		case WM_PASTE: {
+			// Filter out text pasted in from the clipboard.
+			// Reference: https://stackoverflow.com/questions/22263612/properly-handle-wm-paste-in-subclass-procedure
+			if (!OpenClipboard(hWnd))
+				return TRUE;
+
+			HANDLE hClipboardData = GetClipboardData(CF_UNICODETEXT);
+			if (!hClipboardData) {
+				CloseClipboard();
+				return TRUE;
+			}
+
+			const wchar_t *const pchData = reinterpret_cast<const wchar_t*>(GlobalLock(hClipboardData));
+			if (!pchData) {
+				// No data.
+				CloseClipboard();
+				return TRUE;
+			} else if (pchData[0] == 0) {
+				// Empty string.
+				// TODO: Paste anyway?
+				GlobalUnlock(hClipboardData);
+				CloseClipboard();
+				return TRUE;
+			}
+
+			// Filter out invalid characters.
+			wstring wstr;
+			wstr.reserve(wcslen(pchData));
+			for (const wchar_t *p = pchData; *p != 0; p++) {
+				// Allow hexadecimal digits.
+				if (iswxdigit(*p)) {
+					wstr += *p;
+				} else if (d->bAllowKanji) {
+					// Allow kanji.
+					// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
+					if ((*p >= 0x3400 && *p <= 0x4DB5) ||
+					    (*p >= 0x4E00 && *p <= 0x9FCB) ||
+					    (*p >= 0xF900 && *p <= 0xFA6A))
+					{
+						wstr += *p;
+					} else {
+						// Invalid character.
+						// Prevent the paste.
+						GlobalUnlock(hClipboardData);
+						CloseClipboard();
+						return TRUE;
+					}
+				} else {
+					// Invalid character.
+					// Prevent the paste.
+					GlobalUnlock(hClipboardData);
+					CloseClipboard();
+					return TRUE;
+				}
+			}
+
+			GlobalUnlock(hClipboardData);
+			CloseClipboard();
+
+			if (!wstr.empty()) {
+				// Insert the text.
+				// TODO: Paste even if empty?
+				Edit_ReplaceSel(hWnd, wstr.c_str());
+			}
+			return TRUE;
 		}
 
 		case WM_NCDESTROY:
