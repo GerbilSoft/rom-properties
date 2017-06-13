@@ -964,14 +964,6 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			GetWindowText(hWnd, buf, ARRAY_SIZE(buf));
 			d->keyStore->setKey(d->iEditItem, W2RP_cs(buf));
 
-			// Force an item redraw.
-			// TODO: Implement KeyStoreWin32's notification signals.
-			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
-			assert(hListView != nullptr);
-			if (hListView) {
-				ListView_RedrawItems(hListView, d->iEditItem, d->iEditItem);
-			}
-
 			// Item is no longer being edited.
 			d->iEditItem = -1;
 			break;
@@ -1154,14 +1146,6 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(W2RP_c(filename));
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"Wii keys.bin", iret);
-
-	// TODO: Don't force a ListView update.
-	// Use notifications from KeyStore.
-	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
-	assert(hListView != nullptr);
-	if (hListView) {
-		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
-	}
 }
 
 /**
@@ -1195,14 +1179,6 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(W2RP_c(filename));
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS boot9.bin", iret);
-
-	// TODO: Don't force a ListView update.
-	// Use notifications from KeyStore.
-	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
-	assert(hListView != nullptr);
-	if (hListView) {
-		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
-	}
 }
 
 /**
@@ -1236,14 +1212,6 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(W2RP_c(filename));
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, L"3DS aeskeydb.bin", iret);
-
-	// TODO: Don't force a ListView update.
-	// Use notifications from KeyStore.
-	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
-	assert(hListView != nullptr);
-	if (hListView) {
-		ListView_RedrawItems(hListView, 0, keyStore->totalKeyCount()-1);
-	}
 }
 
 /** KeyManagerTab **/
