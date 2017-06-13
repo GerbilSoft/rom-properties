@@ -92,7 +92,8 @@
 #ifdef ENABLE_DECRYPTION
 // Key Manager
 #define IDC_KEYMANAGER_LIST                     40301
-#define IDC_KEYMANAGER_IMPORT                   40302
+#define IDC_KEYMANAGER_EDIT                     40302
+#define IDC_KEYMANAGER_IMPORT                   40303
 
 // Key Manager: "Import" menu
 #define IDR_KEYMANAGER_IMPORT                   30301

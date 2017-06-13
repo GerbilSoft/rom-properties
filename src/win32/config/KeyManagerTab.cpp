@@ -149,6 +149,36 @@ class KeyManagerTabPrivate
 		 */
 		static UINT CALLBACK callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
 
+		/**
+		 * ListView subclass procedure.
+		 * @param hWnd		Control handle.
+		 * @param uMsg		Message.
+		 * @param wParam	WPARAM
+		 * @param lParam	LPARAM
+		 * @param uIdSubclass	Subclass ID. (usually the control ID)
+		 * @param dwRefData	KeyManagerTabPrivate*
+		 * @return
+		 */
+		static LRESULT CALLBACK ListViewSubclassProc(
+			HWND hWnd, UINT uMsg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		/**
+		 * ListView EDIT control subclass procedure.
+		 * @param hWnd		Control handle.
+		 * @param uMsg		Message.
+		 * @param wParam	WPARAM
+		 * @param lParam	LPARAM
+		 * @param uIdSubclass	Subclass ID. (usually the control ID)
+		 * @param dwRefData	KeyManagerTabPrivate*
+		 * @return
+		 */
+		static LRESULT CALLBACK ListViewEditSubclassProc(
+			HWND hWnd, UINT uMsg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 	public:
 		// Property sheet.
 		HPROPSHEETPAGE hPropSheetPage;
@@ -171,6 +201,11 @@ class KeyManagerTabPrivate
 		// Monospaced font details.
 		LOGFONT lfFontMono;
 		bool bPrevIsClearType;	// Previous ClearType setting.
+
+		// EDIT box for ListView.
+		HWND hEditBox;
+		int iEditItem;		// Item being edited. (-1 for none)
+		bool bCancelEdit;	// True if the edit is being cancelled.
 
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -231,6 +266,9 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hFontDlg(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
+	, hEditBox(nullptr)
+	, iEditItem(-1)
+	, bCancelEdit(false)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 }
@@ -377,6 +415,21 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Auto-size the "Valid?" column.
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
+
+	// Subclass the ListView.
+	// TODO: Error handling?
+	SetWindowSubclass(hListView, ListViewSubclassProc,
+		IDC_KEYMANAGER_LIST, reinterpret_cast<DWORD_PTR>(this));
+
+	// Create the EDIT box.
+	hEditBox = CreateWindowEx(WS_EX_LEFT,
+		WC_EDIT, nullptr,
+		WS_CHILDWINDOW | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL | ES_UPPERCASE | ES_WANTRETURN,
+		0, 0, 0, 0,
+		hListView, (HMENU)IDC_KEYMANAGER_EDIT, nullptr, nullptr);
+	SetWindowFont(hEditBox, hFontMono ? hFontMono : hFontDlg, FALSE);
+	SetWindowSubclass(hEditBox, ListViewEditSubclassProc,
+		IDC_KEYMANAGER_EDIT, reinterpret_cast<DWORD_PTR>(this));
 }
 
 /**
@@ -558,15 +611,15 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 							case 0:
 								// Key name.
 								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->name));
-								break;
+								return TRUE;
 							case 1:
 								// Value.
 								wcscpy_s(plvItem->pszText, plvItem->cchTextMax, RP2W_s(key->value));
-								break;
+								return TRUE;
 							default:
 								// No text for "Valid?".
 								plvItem->pszText[0] = 0;
-								break;
+								return TRUE;
 						}
 					}
 					break;
@@ -715,6 +768,184 @@ UINT CALLBACK KeyManagerTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
 	}
 
 	return FALSE;
+}
+
+/**
+ * ListView subclass procedure.
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	KeyManagerTabPrivate*
+ * @return
+ */
+LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	if (!dwRefData) {
+		// No RP_ShellPropSheetExt. Can't do anything...
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	}
+
+	switch (uMsg) {
+		case WM_LBUTTONDBLCLK: {
+			// Reference: http://www.cplusplus.com/forum/windows/107679/
+			KeyManagerTabPrivate *const d =
+				reinterpret_cast<KeyManagerTabPrivate*>(dwRefData);
+			assert(d->hWndPropSheet != nullptr);
+			if (!d->hWndPropSheet)
+				return FALSE;
+
+			// Check for a double-click in the ListView.
+			// ListView only directly supports editing of the
+			// first column, so we have to handle it manually
+			// for the second column (Value).
+			LVHITTESTINFO lvhti;
+			lvhti.pt.x = GET_X_LPARAM(lParam);
+			lvhti.pt.y = GET_Y_LPARAM(lParam);
+
+			// Check if this point maps to a valid "Value" subitem.
+			int iItem = ListView_SubItemHitTest(hWnd, &lvhti);
+			if (iItem < 0 || lvhti.iSubItem != 1) {
+				// Not a "Value" subitem.
+				break;
+			}
+
+			// Make the edit box visible at the subitem's location.
+			// TODO: Subclass the edit box.
+			//HWND hEditBox = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_EDIT);
+			assert(d->hEditBox != nullptr);
+			if (!d->hEditBox)
+				break;
+
+			// Copy the text from the ListView to the EDIT control.
+			wchar_t szItemText[128];
+			ListView_GetItemText(hWnd, iItem, lvhti.iSubItem, szItemText, ARRAY_SIZE(szItemText));
+			SetWindowText(d->hEditBox, szItemText);
+			// FIXME: ES_AUTOHSCROLL causes some initial scrolling weirdness here,
+			// but disabling it prevents entering more text than fits onscreen...
+			Edit_SetSel(d->hEditBox, 0, -1);	// Select All
+
+			d->iEditItem = iItem;
+			d->bCancelEdit = false;
+			RECT rectSubItem;
+			ListView_GetSubItemRect(hWnd, iItem, lvhti.iSubItem, LVIR_BOUNDS, &rectSubItem);
+			SetWindowPos(d->hEditBox, HWND_TOPMOST, rectSubItem.left, rectSubItem.top,
+				rectSubItem.right - rectSubItem.left,
+				rectSubItem.bottom - rectSubItem.top,
+				SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW);
+			SetFocus(d->hEditBox);
+			return TRUE;
+		}
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * ListView EDIT control subclass procedure.
+ * @param hWnd		Control handle.
+ * @param uMsg		Message.
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID. (usually the control ID)
+ * @param dwRefData	KeyManagerTabPrivate*
+ * @return
+ */
+LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	if (!dwRefData) {
+		// No RP_ShellPropSheetExt. Can't do anything...
+		return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	}
+
+	KeyManagerTabPrivate *const d =
+		reinterpret_cast<KeyManagerTabPrivate*>(dwRefData);
+	assert(d->hWndPropSheet != nullptr);
+	if (!d->hWndPropSheet)
+		return FALSE;
+
+	switch (uMsg) {
+		case WM_KILLFOCUS: {
+			ShowWindow(hWnd, SW_HIDE);
+			if (d->bCancelEdit)
+				break;
+
+			// NOTE: ListView_SetItem() doesn't work with LVS_OWNERDATA.
+			// We'll have to edit the KeyStore directly.
+			if (!d->keyStore)
+				break;
+			else if (d->iEditItem < 0 || d->iEditItem >= d->keyStore->totalKeyCount())
+				break;
+
+			// Save the key.
+			wchar_t buf[128];
+			buf[0] = 0;
+			GetWindowText(hWnd, buf, ARRAY_SIZE(buf));
+			d->keyStore->setKey(d->iEditItem, W2RP_cs(buf));
+
+			// Force an item redraw.
+			// TODO: Implement KeyStoreWin32's notification signals.
+			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (hListView) {
+				ListView_RedrawItems(hListView, d->iEditItem, d->iEditItem);
+			}
+
+			// Item is no longer being edited.
+			d->iEditItem = -1;
+			break;
+		}
+
+		case WM_GETDLGCODE:
+			return (DLGC_WANTALLKEYS | DefSubclassProc(hWnd, uMsg, wParam, lParam));
+
+		case WM_CHAR:
+		case WM_KEYDOWN:
+		case WM_KEYUP:
+			// Reference: https://support.microsoft.com/en-us/help/102589/how-to-use-the-enter-key-from-edit-controls-in-a-dialog-box
+			switch (wParam) {
+				case VK_RETURN:
+					// Finished editing.
+					d->bCancelEdit = false;
+					ShowWindow(hWnd, SW_HIDE);
+					return TRUE;
+				case VK_ESCAPE:
+					// Cancel editing.
+					d->bCancelEdit = true;
+					ShowWindow(hWnd, SW_HIDE);
+					return TRUE;
+				default:
+					break;
+			}
+			break;
+
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /** "Import" menu actions. **/
