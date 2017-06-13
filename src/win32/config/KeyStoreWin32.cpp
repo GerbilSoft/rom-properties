@@ -21,11 +21,16 @@
 
 #include "stdafx.h"
 #include "KeyStoreWin32.hpp"
+#include "../resource.h"
+
+#include "librpbase/common.h"
 
 /**
  * Create a new KeyStore object.
+ * @param hWnd Parent window for messages.
  */
-KeyStoreWin32::KeyStoreWin32()
+KeyStoreWin32::KeyStoreWin32(HWND hWnd)
+	: m_hWnd(hWnd)
 {
 	// Load the keys.
 	reset();
@@ -43,8 +48,9 @@ KeyStoreWin32::~KeyStoreWin32()
  */
 void KeyStoreWin32::keyChanged_int(int sectIdx, int keyIdx)
 {
-	// TODO
-	//emit keyChanged(sectIdx, keyIdx);
+	if (m_hWnd) {
+		KeyStore_KeyChanged_SectKey(m_hWnd, sectIdx, keyIdx);
+	}
 }
 
 /**
@@ -53,8 +59,9 @@ void KeyStoreWin32::keyChanged_int(int sectIdx, int keyIdx)
  */
 void KeyStoreWin32::keyChanged_int(int idx)
 {
-	// TODO
-	//emit keyChanged(idx);
+	if (m_hWnd) {
+		KeyStore_KeyChanged_Idx(m_hWnd, idx);
+	}
 }
 
 /**
@@ -62,8 +69,9 @@ void KeyStoreWin32::keyChanged_int(int idx)
  */
 void KeyStoreWin32::allKeysChanged_int(void)
 {
-	// TODO
-	//emit allKeysChanged();
+	if (m_hWnd) {
+		KeyStore_AllKeysChanged_Idx(m_hWnd);
+	}
 }
 
 /**
@@ -71,6 +79,7 @@ void KeyStoreWin32::allKeysChanged_int(void)
  */
 void KeyStoreWin32::modified_int(void)
 {
-	// TODO
-	//emit modified();
+	if (m_hWnd) {
+		KeyStore_Modified(m_hWnd);
+	}
 }

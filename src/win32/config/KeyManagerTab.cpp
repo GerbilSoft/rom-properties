@@ -186,9 +186,6 @@ class KeyManagerTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
-		// Has the user changed anything?
-		bool changed;
-
 	public:
 		// "Import" popup menu.
 		HMENU hMenuImport;	// Must be deleted using DestroyMenu().
@@ -263,9 +260,8 @@ const KeyManagerTabPrivate::EncKeyFns_t KeyManagerTabPrivate::encKeyFns[] = {
 KeyManagerTabPrivate::KeyManagerTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, changed(false)
 	, hMenuImport(nullptr)
-	, keyStore(new KeyStoreWin32())
+	, keyStore(new KeyStoreWin32(nullptr))
 	, hFontDlg(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
@@ -434,6 +430,9 @@ void KeyManagerTabPrivate::initUI(void)
 	SetWindowFont(hEditBox, hFontMono ? hFontMono : hFontDlg, FALSE);
 	SetWindowSubclass(hEditBox, ListViewEditSubclassProc,
 		IDC_KEYMANAGER_EDIT, reinterpret_cast<DWORD_PTR>(this));
+
+	// Set the KeyStore's window.
+	keyStore->setHWnd(hWndPropSheet);
 }
 
 /**
@@ -511,10 +510,8 @@ void KeyManagerTabPrivate::reset(void)
 	if (!hWndPropSheet)
 		return;
 
-	/* TODO: Load keys from KeyManager. */
-
-	// No longer changed.
-	changed = false;
+	// Reset the keys.
+	keyStore->reset();
 }
 
 /**
@@ -527,9 +524,6 @@ void KeyManagerTabPrivate::save(void)
 		return;
 
 	/* TODO: Save keys. */
-
-	// No longer changed.
-	changed = false;
 }
 
 /**
@@ -588,9 +582,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			switch (pHdr->code) {
 				case PSN_APPLY:
 					// Save settings.
-					if (d->changed) {
-						d->save();
-					}
+					d->save();
 					break;
 
 				case LVN_GETDISPINFO: {
@@ -730,6 +722,19 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			break;
 		}
 
+		case WM_RP_PROP_SHEET_RESET: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Reset the tab.
+			d->reset();
+			break;
+		}
+
 		case WM_NCPAINT: {
 			// Update the monospaced font.
 			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
@@ -738,6 +743,53 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				d->initMonospacedFont(d->hFontDlg);
 			}
 			break;
+		}
+
+		case WM_KEYSTORE_KEYCHANGED_IDX: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Update the row.
+			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (hListView) {
+				ListView_RedrawItems(hListView, (int)lParam, (int)lParam);
+			}
+			return TRUE;
+		}
+
+		case WM_KEYSTORE_ALLKEYSCHANGED: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Update all rows.
+			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (hListView) {
+				ListView_RedrawItems(hListView, 0, d->keyStore->totalKeyCount()-1);
+			}
+			return TRUE;
+		}
+
+		case WM_KEYSTORE_MODIFIED: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			// Key was modified.
+			PropSheet_Changed(GetParent(hDlg), hDlg);
+			return TRUE;
 		}
 
 		default:

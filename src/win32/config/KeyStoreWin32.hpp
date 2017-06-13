@@ -28,11 +28,25 @@
 class KeyStoreWin32 : public LibRomData::KeyStoreUI
 {
 	public:
-		KeyStoreWin32();
+		KeyStoreWin32(HWND hWnd);
 		virtual ~KeyStoreWin32();
 
 	private:
 		RP_DISABLE_COPY(KeyStoreWin32)
+		HWND m_hWnd;
+
+	public:
+		/**
+		 * Get the window.
+		 * @return Window.
+		 */
+		inline HWND hWnd(void) const { return m_hWnd; }
+
+		/**
+		 * Set the window.
+		 * @param hWnd Window.
+		 */
+		inline void setHWnd(HWND hWnd) { m_hWnd = hWnd; }
 
 	protected:
 		/** Pure virtual functions for Qt signals. **/

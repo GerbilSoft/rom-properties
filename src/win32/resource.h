@@ -60,6 +60,32 @@
 #define WM_RP_PROP_SHEET_ENABLE_DEFAULTS	(WM_USER + 0x1236)
 #define RpPropSheet_EnableDefaults(hWnd,enable)	(void)SNDMSG(hWnd,WM_RP_PROP_SHEET_ENABLE_DEFAULTS,(WPARAM)(enable),0)
 
+// KeyStoreWin32 messages.
+// Basically the equivalent of Qt's signals.
+// NOTE: We could pack sectIdx/keyIdx into WPARAM,
+// but that would change the way signals are handled.
+// Define two messages for consistency.
+
+// wParam: sectIdx
+// lParam: keyIdx
+#define WM_KEYSTORE_KEYCHANGED_SECTKEY				(WM_USER + 0x2001)
+#define KeyStore_KeyChanged_SectKey(hWnd,sectIdx,keyIdx)	(void)SNDMSG(hWnd,WM_KEYSTORE_KEYCHANGED_SECTKEY,(sectIdx),(keyIdx))
+
+// wParam: 0
+// lParam: idx
+#define WM_KEYSTORE_KEYCHANGED_IDX				(WM_USER + 0x2002)
+#define KeyStore_KeyChanged_Idx(hWnd,idx)			(void)SNDMSG(hWnd,WM_KEYSTORE_KEYCHANGED_IDX,0,(idx))
+
+// wParam: 0
+// lParam: 0
+#define WM_KEYSTORE_ALLKEYSCHANGED				(WM_USER + 0x2003)
+#define KeyStore_AllKeysChanged_Idx(hWnd)			(void)SNDMSG(hWnd,WM_KEYSTORE_ALLKEYSCHANGED,0,0)
+
+// wParam: 0
+// lParam: 0
+#define WM_KEYSTORE_MODIFIED					(WM_USER + 0x2004)
+#define KeyStore_Modified(hWnd)					(void)SNDMSG(hWnd,WM_KEYSTORE_MODIFIED,0,0)
+
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES                   110
 #define IDD_CONFIG_DOWNLOADS                    111
