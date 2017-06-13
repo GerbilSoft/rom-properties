@@ -206,6 +206,7 @@ class KeyManagerTabPrivate
 		HWND hEditBox;
 		int iEditItem;		// Item being edited. (-1 for none)
 		bool bCancelEdit;	// True if the edit is being cancelled.
+		bool bAllowKanji;	// Allow kanji in the editor.
 
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -269,6 +270,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hEditBox(nullptr)
 	, iEditItem(-1)
 	, bCancelEdit(false)
+	, bAllowKanji(false)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 }
@@ -814,6 +816,12 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 				break;
 			}
 
+			// Get the key.
+			const KeyStoreWin32::Key *key = d->keyStore->getKey(iItem);
+			assert(key != nullptr);
+			if (!key)
+				break;
+
 			// Make the edit box visible at the subitem's location.
 			// TODO: Subclass the edit box.
 			//HWND hEditBox = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_EDIT);
@@ -831,6 +839,9 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 
 			d->iEditItem = iItem;
 			d->bCancelEdit = false;
+			d->bAllowKanji = key->allowKanji;
+
+			// Set the EDIT control's position.
 			RECT rectSubItem;
 			ListView_GetSubItemRect(hWnd, iItem, lvhti.iSubItem, LVIR_BOUNDS, &rectSubItem);
 			SetWindowPos(d->hEditBox, HWND_TOPMOST, rectSubItem.left, rectSubItem.top,
@@ -915,9 +926,49 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 		case WM_GETDLGCODE:
 			return (DLGC_WANTALLKEYS | DefSubclassProc(hWnd, uMsg, wParam, lParam));
 
-		case WM_CHAR:
+		case WM_CHAR: {
+			// Reference: https://support.microsoft.com/en-us/help/102589/how-to-use-the-enter-key-from-edit-controls-in-a-dialog-box
+			switch (wParam) {
+				case VK_RETURN:
+					// Finished editing.
+					d->bCancelEdit = false;
+					ShowWindow(hWnd, SW_HIDE);
+					return TRUE;
+				case VK_ESCAPE:
+					// Cancel editing.
+					d->bCancelEdit = true;
+					ShowWindow(hWnd, SW_HIDE);
+					return TRUE;
+				default:
+					break;
+			}
+
+			// Filter out invalid characters.
+
+			// Always allow control characters and hexadecimal digits.
+			if (iswcntrl(wParam) || iswxdigit(wParam)) {
+				// This is a valid control character or hexadecimal digit.
+				break;
+			}
+
+			// Check for kanji.
+			if (d->bAllowKanji) {
+				// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
+				if ((wParam >= 0x3400 && wParam <= 0x4DB5) ||
+				    (wParam >= 0x4E00 && wParam <= 0x9FCB) ||
+				    (wParam >= 0xF900 && wParam <= 0xFA6A))
+				{
+					// Valid kanji character.
+					break;
+				}
+			}
+
+			// Character is not allowed.
+			return TRUE;
+		}
+
 		case WM_KEYDOWN:
-		case WM_KEYUP:
+		case WM_KEYUP: {
 			// Reference: https://support.microsoft.com/en-us/help/102589/how-to-use-the-enter-key-from-edit-controls-in-a-dialog-box
 			switch (wParam) {
 				case VK_RETURN:
@@ -934,6 +985,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 					break;
 			}
 			break;
+		}
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
