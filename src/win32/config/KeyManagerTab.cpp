@@ -972,7 +972,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			// Filter out invalid characters.
 
 			// Always allow control characters and hexadecimal digits.
-			if (iswcntrl(wParam) || iswxdigit(wParam)) {
+			if (iswcntrl((wint_t)wParam) || iswxdigit((wint_t)wParam)) {
 				// This is a valid control character or hexadecimal digit.
 				break;
 			}
