@@ -1082,7 +1082,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// NOTE: Separate row option is handled by the caller.
 	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, nullptr,
-		WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT,
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
 		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
