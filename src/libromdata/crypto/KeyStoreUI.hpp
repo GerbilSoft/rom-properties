@@ -64,6 +64,24 @@ class KeyStoreUI
 		 */
 		void reset(void);
 
+	public:
+		/**
+		 * Convert a sectIdx/keyIdx pair to a flat key index.
+		 * @param sectIdx	[in] Section index.
+		 * @param keyIdx	[in] Key index.
+		 * @return Flat key index, or -1 if invalid.
+		 */
+		int sectKeyToIdx(int sectIdx, int keyIdx) const;
+
+		/**
+		 * Convert a flat key index to sectIdx/keyIdx.
+		 * @param idx		[in] Flat key index.
+		 * @param pSectIdx	[out] Section index.
+		 * @param pKeyIdx	[out] Key index.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const;
+
 	protected: /*signals:*/
 		/** Key management signals. **/
 		// These must be reimplemented by subclasses

@@ -22,6 +22,7 @@
 // Reference: https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features#virtualgroups
 #include "stdafx.h"
 #include "KeyStore_OwnerDataCallback.hpp"
+#include "KeyStoreWin32.hpp"
 
 KeyStore_OwnerDataCallback::KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore)
 	: m_keyStore(keyStore)
@@ -64,13 +65,11 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::SetItemPosition(int itemIndex, POINT 
  */
 IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex)
 {
-	// TODO: Handle this.
 	if (!pTotalItemIndex)
 		return E_POINTER;
-	char buf[256];
-	snprintf(buf, sizeof(buf), "GetItemInGroup(): groupIndex == %d, groupWideItemIndex == %d\n", groupIndex, groupWideItemIndex);
-	OutputDebugStringA(buf);
-	*pTotalItemIndex = groupWideItemIndex;
+	else if (!m_keyStore)
+		return E_UNEXPECTED;
+	*pTotalItemIndex = m_keyStore->sectKeyToIdx(groupIndex, groupWideItemIndex);
 	return S_OK;
 }
 
@@ -85,10 +84,16 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroup(int itemIndex, int occur
 	// TODO: Handle this.
 	if (!pGroupIndex)
 		return E_POINTER;
+	else if (!m_keyStore)
+		return E_UNEXPECTED;
 	char buf[256];
 	snprintf(buf, sizeof(buf), "GetItemGroup(): itemIndex == %d, occurenceIndex == %d\n", itemIndex, occurenceIndex);
 	OutputDebugStringA(buf);
-	*pGroupIndex = 0;
+	int sectIdx, keyIdx;
+	int ret = m_keyStore->idxToSectKey(itemIndex, &sectIdx, &keyIdx);
+	if (ret != 0)
+		return E_INVALIDARG;
+	*pGroupIndex = sectIdx;
 	return S_OK;
 }
 

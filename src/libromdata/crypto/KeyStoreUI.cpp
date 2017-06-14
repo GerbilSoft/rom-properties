@@ -92,20 +92,29 @@ class KeyStoreUIPrivate
 		// IAesCipher for verifying keys.
 		IAesCipher *cipher;
 
-		/**
-		 * Convert a flat key index to sectIdx/keyIdx.
-		 * @param idx		[in] Flat key index.
-		 * @param sectIdx	[out] Section index.
-		 * @param keyIdx	[out] Key index.
-		 * @return True on success; false on error.
-		 */
-		bool flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx);
-
 	public:
 		/**
 		 * (Re-)Load the keys from keys.conf.
 		 */
 		void reset(void);
+
+	public:
+		/**
+		 * Convert a sectIdx/keyIdx pair to a flat key index.
+		 * @param sectIdx	[in] Section index.
+		 * @param keyIdx	[in] Key index.
+		 * @return Flat key index, or -1 if invalid.
+		 */
+		inline int sectKeyToIdx(int sectIdx, int keyIdx) const;
+
+		/**
+		 * Convert a flat key index to sectIdx/keyIdx.
+		 * @param idx		[in] Flat key index.
+		 * @param pSectIdx	[out] Section index.
+		 * @param pKeyIdx	[out] Key index.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		inline int idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const;
 
 	public:
 		/**
@@ -289,35 +298,6 @@ KeyStoreUIPrivate::~KeyStoreUIPrivate()
 }
 
 /**
- * Convert a flat key index to sectIdx/keyIdx.
- * @param idx		[in] Flat key index.
- * @param sectIdx	[out] Section index.
- * @param keyIdx	[out] Key index.
- * @return True on success; false on error.
- */
-bool KeyStoreUIPrivate::flatKeyToSectKey(int idx, int &sectIdx, int &keyIdx)
-{
-	assert(idx >= 0);
-	assert(idx < (int)keys.size());
-	if (idx < 0 || idx >= (int)keys.size())
-		return false;
-
-	// Figure out what section this key is in.
-	for (int i = 0; i < (int)sections.size(); i++) {
-		const KeyStoreUIPrivate::Section &section = sections[i];
-		if (idx < (section.keyIdxStart + section.keyCount)) {
-			// Found the section.
-			sectIdx = i;
-			keyIdx = idx - section.keyIdxStart;
-			return true;
-		}
-	}
-
-	// Not found.
-	return false;
-}
-
-/**
  * (Re-)Load the keys from keys.conf.
  */
 void KeyStoreUIPrivate::reset(void)
@@ -420,6 +400,61 @@ void KeyStoreUIPrivate::reset(void)
 
 	// Keys have been reset.
 	changed = false;
+}
+
+/**
+ * Convert a sectIdx/keyIdx pair to a flat key index.
+ * @param sectIdx	[in] Section index.
+ * @param keyIdx	[in] Key index.
+ * @return Flat key index, or -1 if invalid.
+ */
+inline int KeyStoreUIPrivate::sectKeyToIdx(int sectIdx, int keyIdx) const
+{
+	assert(sectIdx >= 0);
+	assert(sectIdx < (int)sections.size());
+	if (sectIdx < 0 || sectIdx >= (int)sections.size())
+		return -1;
+
+	assert(keyIdx >= 0);
+	assert(keyIdx < sections[sectIdx].keyCount);
+	if (keyIdx < 0 || keyIdx >= sections[sectIdx].keyCount)
+		return -1;
+
+	return sections[sectIdx].keyIdxStart + keyIdx;
+}
+
+/**
+ * Convert a flat key index to sectIdx/keyIdx.
+ * @param idx		[in] Flat key index.
+ * @param pSectIdx	[out] Section index.
+ * @param pKeyIdx	[out] Key index.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const
+{
+	assert(pSectIdx != nullptr);
+	assert(pKeyIdx != nullptr);
+	if (!pSectIdx || !pKeyIdx)
+		return -EINVAL;
+
+	assert(idx >= 0);
+	assert(idx < (int)keys.size());
+	if (idx < 0 || idx >= (int)keys.size())
+		return -ERANGE;
+
+	// Figure out what section this key is in.
+	for (int i = 0; i < (int)sections.size(); i++) {
+		const KeyStoreUIPrivate::Section &section = sections[i];
+		if (idx < (section.keyIdxStart + section.keyCount)) {
+			// Found the section.
+			*pSectIdx = i;
+			*pKeyIdx = idx - section.keyIdxStart;
+			return 0;
+		}
+	}
+
+	// Not found.
+	return -ENOENT;
 }
 
 /**
@@ -658,18 +693,12 @@ int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *veri
  */
 void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 {
-	assert(sectIdx >= 0);
-	assert(sectIdx < (int)sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)sections.size())
-		return;
-
-	assert(keyIdx >= 0);
-	assert(keyIdx < sections[sectIdx].keyCount);
-	if (keyIdx < 0 || keyIdx >= sections[sectIdx].keyCount)
+	int idx = sectKeyToIdx(sectIdx, keyIdx);
+	if (idx < 0)
 		return;
 
 	// Check the key length.
-	KeyStoreUI::Key &key = keys[sections[sectIdx].keyIdxStart + keyIdx];
+	KeyStoreUI::Key &key = keys[idx];
 	if (key.value.empty()) {
 		// Empty key.
 		key.status = KeyStoreUI::Key::Status_Empty;
@@ -764,6 +793,31 @@ void KeyStoreUI::reset(void)
 	d->reset();
 }
 
+/**
+ * Convert a sectIdx/keyIdx pair to a flat key index.
+ * @param sectIdx	[in] Section index.
+ * @param keyIdx	[in] Key index.
+ * @return Flat key index, or -1 if invalid.
+ */
+int KeyStoreUI::sectKeyToIdx(int sectIdx, int keyIdx) const
+{
+	RP_D(const KeyStoreUI);
+	return d->sectKeyToIdx(sectIdx, keyIdx);
+}
+
+/**
+ * Convert a flat key index to sectIdx/keyIdx.
+ * @param idx		[in] Flat key index.
+ * @param pSectIdx	[out] Section index.
+ * @param pKeyIdx	[out] Key index.
+ * @return 0 on success; non-zero on error.
+ */
+int KeyStoreUI::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const
+{
+	RP_D(const KeyStoreUI);
+	return d->idxToSectKey(idx, pSectIdx, pKeyIdx);
+}
+
 /** Accessors. **/
 
 /**
@@ -840,17 +894,10 @@ bool KeyStoreUI::isEmpty(void) const
 const KeyStoreUI::Key *KeyStoreUI::getKey(int sectIdx, int keyIdx) const
 {
 	RP_D(const KeyStoreUI);
-	assert(sectIdx >= 0);
-	assert(sectIdx < (int)d->sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
+	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
+	if (idx < 0)
 		return nullptr;
-
-	assert(keyIdx >= 0);
-	assert(keyIdx < d->sections[sectIdx].keyCount);
-	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
-		return nullptr;
-
-	return &d->keys[d->sections[sectIdx].keyIdxStart + keyIdx];
+	return &d->keys[idx];
 }
 
 /**
@@ -866,7 +913,6 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
 	assert(idx < (int)d->keys.size());
 	if (idx < 0 || idx >= (int)d->keys.size())
 		return nullptr;
-
 	return &d->keys[idx];
 }
 
@@ -883,20 +929,14 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
 int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
 {
 	RP_D(KeyStoreUI);
-	assert(sectIdx >= 0);
-	assert(sectIdx < (int)d->sections.size());
-	if (sectIdx < 0 || sectIdx >= (int)d->sections.size())
-		return -ERANGE;
-
-	assert(keyIdx >= 0);
-	assert(keyIdx < d->sections[sectIdx].keyCount);
-	if (keyIdx < 0 || keyIdx >= d->sections[sectIdx].keyCount)
+	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
+	if (idx < 0)
 		return -ERANGE;
 
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
 	const KeyStoreUIPrivate::Section &section = d->sections[sectIdx];
-	Key &key = d->keys[section.keyIdxStart + keyIdx];
+	Key &key = d->keys[idx];
 	rp_string new_value;
 	if (key.allowKanji) {
 		// Convert kanji to hexadecimal if needed.
@@ -930,7 +970,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
 		d->verifyKey(sectIdx, keyIdx);
 		// Key has changed.
 		emit keyChanged_int(sectIdx, keyIdx);
-		emit keyChanged_int(section.keyIdxStart + keyIdx);
+		emit keyChanged_int(idx);
 		d->changed = true;
 		emit modified_int();
 	}
@@ -985,9 +1025,9 @@ int KeyStoreUI::setKey(int idx, const rp_string &value)
 		key.value = new_value;
 		key.modified = true;
 		int sectIdx, keyIdx;
-		bool bRet = d->flatKeyToSectKey(idx, sectIdx, keyIdx);
-		assert(bRet);
-		if (bRet) {
+		int ret = d->idxToSectKey(idx, &sectIdx, &keyIdx);
+		assert(ret == 0);
+		if (ret == 0) {
 			// Verify the key.
 			d->verifyKey(sectIdx, keyIdx);
 			emit keyChanged_int(sectIdx, keyIdx);
