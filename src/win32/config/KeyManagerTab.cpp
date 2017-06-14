@@ -32,7 +32,8 @@
 // librpbase
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/config/Config.hpp"
-using LibRpBase::Config;
+#include "librpbase/crypto/KeyManager.hpp"
+using namespace LibRpBase;
 
 // libromdata
 #include "libromdata/disc/WiiPartition.hpp"
@@ -523,7 +524,33 @@ void KeyManagerTabPrivate::save(void)
 	if (!hWndPropSheet)
 		return;
 
-	/* TODO: Save keys. */
+	if (!keyStore->hasChanged())
+		return;
+
+	// NOTE: This may re-check the configuration timestamp.
+	const KeyManager *const keyManager = KeyManager::instance();
+	const rp_char *const filename = keyManager->filename();
+	assert(filename != nullptr);
+	if (!filename) {
+		// No configuration filename...
+		return;
+	}
+
+	// TODO: Keep this in OS-specific code, or make
+	// KeyStore templated and make this a virtual function?
+	const int totalKeyCount = keyStore->totalKeyCount();
+	for (int i = 0; i < totalKeyCount; i++) {
+		const KeyStoreWin32::Key *const pKey = keyStore->getKey(i);
+		assert(pKey != nullptr);
+		if (!pKey || !pKey->modified)
+			continue;
+
+		// Save this key.
+		WritePrivateProfileString(L"Keys", RP2W_s(pKey->name), RP2W_s(pKey->value), RP2W_c(filename));
+	}
+
+	// Clear the modified status.
+	keyStore->allKeysSaved();
 }
 
 /**
