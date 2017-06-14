@@ -26,6 +26,7 @@ SET(rom-properties-win32_SRCS
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
+	config/KeyStore_OwnerDataCallback.cpp
 	sdk/win_iid.cpp
 	resource.rc
 	)
@@ -48,6 +49,7 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
+	config/KeyStore_OwnerDataCallback.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

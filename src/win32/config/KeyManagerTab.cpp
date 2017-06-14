@@ -26,6 +26,10 @@
 // KeyStore
 #include "KeyStoreWin32.hpp"
 
+// IListView and other undocumented stuff.
+#include "../sdk/IListView.hpp"
+#include "KeyStore_OwnerDataCallback.hpp"
+
 // libwin32common
 #include "libwin32common/WinUI.hpp"
 
@@ -146,6 +150,7 @@ class KeyManagerTabPrivate
 
 		// KeyStore.
 		KeyStoreWin32 *keyStore;
+		KeyStore_OwnerDataCallback *keyStore_ownerDataCallback;
 
 		// Fonts.
 		HFONT hFontDlg;		// Main dialog font.
@@ -216,6 +221,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hWndPropSheet(nullptr)
 	, hMenuImport(nullptr)
 	, keyStore(new KeyStoreWin32(nullptr))
+	, keyStore_ownerDataCallback(nullptr)
 	, hFontDlg(nullptr)
 	, hFontMono(nullptr)
 	, bPrevIsClearType(nullptr)
@@ -237,6 +243,9 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	}
 
 	delete keyStore;
+	if (keyStore_ownerDataCallback) {
+		keyStore_ownerDataCallback->Release();
+	}
 }
 
 // Property for "D pointer".
@@ -323,6 +332,53 @@ void KeyManagerTabPrivate::initUI(void)
 	// TODO: Draw an icon.
 	lvCol.pszText = L"Valid?";
 	ListView_InsertColumn(hListView, 2, &lvCol);
+
+	if (isComCtl32_610) {
+		// Set the IOwnerDataCallback.
+		bool hasIListView = false;
+
+		// Check for Windows 7 IListView first.
+		{
+			IListView_Win7 *pListView = nullptr;
+			ListView_QueryInterface(hListView, IID_IListView_Win7, &pListView);
+			if (pListView) {
+				// IListView obtained.
+				keyStore_ownerDataCallback = new KeyStore_OwnerDataCallback(keyStore);
+				pListView->SetOwnerDataCallback(keyStore_ownerDataCallback);
+				pListView->Release();
+				hasIListView = true;
+			}
+		}
+
+		// If that failed, check for Windows Vista IListView.
+		if (!hasIListView) {
+			IListView_WinVista *pListView = nullptr;
+			ListView_QueryInterface(hListView, IID_IListView_WinVista, &pListView);
+			if (pListView) {
+				// IListView obtained.
+				keyStore_ownerDataCallback = new KeyStore_OwnerDataCallback(keyStore);
+				pListView->SetOwnerDataCallback(keyStore_ownerDataCallback);
+				pListView->Release();
+				hasIListView = true;
+			}
+		}
+
+		if (hasIListView) {
+			// Create groups for each section.
+			// NOTE: We have to use the Vista+ LVGROUP definition.
+			LVGROUP_Vista lvGroup;
+			lvGroup.cbSize = sizeof(lvGroup);
+			lvGroup.mask = LVGF_ALIGN | LVGF_GROUPID | LVGF_HEADER | LVGF_ITEMS;
+			lvGroup.uAlign = LVGA_HEADER_LEFT;
+			for (int sectIdx = 0; sectIdx < keyStore->sectCount(); sectIdx++) {
+				lvGroup.iGroupId = sectIdx;
+				lvGroup.pszHeader = const_cast<LPWSTR>(RP2W_c(keyStore->sectName(sectIdx)));
+				lvGroup.cItems = keyStore->keyCount(sectIdx);
+				ListView_InsertGroup(hListView, sectIdx, &lvGroup);
+			}
+			ListView_EnableGroupView(hListView, true);
+		}
+	}
 
 	// Determine the maximum width of columns 0 and 1.
 	// This is needed because LVSCW_AUTOSIZE_USEHEADER doesn't
