@@ -26,6 +26,7 @@ SET(rom-properties-win32_SRCS
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
+	sdk/win_iid.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H

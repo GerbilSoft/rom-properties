@@ -35,8 +35,8 @@ extern "C" {
 
 #define timeval rp_timeval
 struct timeval {
-	time_t   tv_sec;	// seconds
-	uint32_t tv_usec;	// microseconds
+	time_t       tv_sec;	// seconds
+	unsigned int tv_usec;	// microseconds
 };
 
 #define timezone rp_timezone

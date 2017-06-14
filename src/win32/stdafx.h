@@ -109,6 +109,12 @@ typedef struct tagBUTTON_SPLITINFO {
 } BUTTON_SPLITINFO, *PBUTTON_SPLITINFO;
 #endif
 
+// ListView structs.
+typedef struct tagLVITEMINDEX {
+	int iItem;
+	int iGroup;
+} LVITEMINDEX, *PLVITEMINDEX;
+
 #endif /* _WIN32_WINNT < 0x0600 */
 
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

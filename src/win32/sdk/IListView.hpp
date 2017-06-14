@@ -13,6 +13,19 @@
 #include "IOwnerDataCallback.hpp"
 
 #include <oleidl.h>
+#include <commctrl.h>
+
+// Interface IDs.
+extern "C" {
+	extern const IID IID_IListView_WinVista;
+	extern const IID IID_IListView_Win7;
+	#define IID_IListView IID_IListView_WinVista
+	#define IListView IListView_WinVista
+};
+
+// ListView message to get the IListView interface.
+#define LVM_QUERYINTERFACE (LVM_FIRST + 189)
+#define ListView_QueryInterface(hWnd,pOut) (void)SNDMSG((hWnd),LVM_QUERYINTERFACE,(WPARAM)&IID_IListView,(LPARAM)(pOut))
 
 class UUID_ATTR("{2FFE2979-5928-4386-9CDB-8E1F15B72FB4}")
 IListView_WinVista : public IOleWindow

@@ -10,8 +10,12 @@
 #define __UNDOC_LISTVIEW_IOWNERDATACALLBACK_HPP__
 
 #include "libwin32common/msvc_common.h"
-
 #include <unknwn.h>
+
+// Interface IDs.
+extern "C" {
+	extern const IID IID_IOwnerDataCallback;
+}
 
 class UUID_ATTR("{44C09D56-8D3B-419D-A462-7B956B105B47}")
 IOwnerDataCallback : public IUnknown
