@@ -47,7 +47,9 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
-	QITab.h
+	sdk/QITab.h
+	sdk/IListView.hpp
+	sdk/IOwnerDataCallback.hpp
 	resource.h
 	)
 
