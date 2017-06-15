@@ -76,25 +76,6 @@ static FORCEINLINE HBRUSH SelectBrush(_In_ HDC hDC, _In_ HBRUSH hBrush)
 static FORCEINLINE HBRUSH GetStockBrush(_In_ int fnBrush)
 	{ return STATIC_CAST(HBRUSH)(GetStockObject(fnBrush)); }
 
-#undef DeleteRgn
-static FORCEINLINE BOOL DeleteRgn(_In_ HRGN hRgn)
-	{ return DeleteObject(STATIC_CAST(HGDIOBJ)(hRgn)); }
-#undef CopyRgn
-static FORCEINLINE int CopyRgn(_In_ HRGN hrgnDst, _In_ HRGN hrgnSrc)
-	 { return CombineRgn(hrgnDst, hrgnSrc, NULL, RGN_COPY); }
-#undef IntersectRgn
-static FORCEINLINE int IntersectRgn(_In_ HRGN hrgnResult, _In_ HRGN hrgnA, _In_ HRGN hrgnB)
-	 { return CombineRgn(hrgnResult, hrgnA, hrgnB, RGN_AND); }
-#undef SubtractRgn
-static FORCEINLINE int SubtractRgn(_In_ HRGN hrgnResult, _In_ HRGN hrgnA, _In_ HRGN hrgnB)
-	 { return CombineRgn(hrgnResult, hrgnA, hrgnB, RGN_DIFF); }
-#undef UnionRgn
-static FORCEINLINE int UnionRgn(_In_ HRGN hrgnResult, _In_ HRGN hrgnA, _In_ HRGN hrgnB)
-	 { return CombineRgn(hrgnResult, hrgnA, hrgnB, RGN_OR); }
-#undef XorRgn
-static FORCEINLINE int XorRgn(_In_ HRGN hrgnResult, _In_ HRGN hrgnA, _In_ HRGN hrgnB)
-	 { return CombineRgn(hrgnResult, hrgnA, hrgnB, RGN_XOR); }
-
 #undef DeletePalette
 static FORCEINLINE BOOL DeletePalette(_In_ HPALETTE hPal)
 	{ return DeleteObject(STATIC_CAST(HGDIOBJ)(hPal)); }
@@ -115,9 +96,6 @@ static FORCEINLINE BOOL DeleteBitmap(_In_ HBITMAP hbm)
 #undef SelectBitmap
 static FORCEINLINE HBITMAP SelectBitmap(_In_ HDC hDC, _In_ HBITMAP hbm)
 	{ return STATIC_CAST(HBITMAP)(SelectObject(hDC, STATIC_CAST(HGDIOBJ)(hbm))); }
-#undef InsetRect
-static FORCEINLINE BOOL InsetRect(_Inout_ LPRECT lprc, _In_ int dx, _In_ int dy)
-	{ return InflateRect(lprc, -dx, -dy); }
 
 /****** USER Macro APIs ******************************************************/
 
