@@ -26,12 +26,19 @@
 #error stdafx.h is Windows only.
 #endif
 
+// Make sure STRICT is defined for better type safety.
+#ifndef STRICT
+#define STRICT
+#endif
+
 // Windows SDK defines and includes.
 #include "libwin32common/RpWin32_sdk.h"
+#include <windows.h>
+
+// Typesafe inline function wrappers for some Windows headers.
+#include "sdk/windowsx_ts.h"
 
 // Additional Windows headers.
-#include <windows.h>
-#include <windowsx.h>
 #include <olectl.h>
 #include <commctrl.h>
 #include <shlobj.h>
