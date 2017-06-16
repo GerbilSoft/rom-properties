@@ -1769,7 +1769,7 @@ int GameCube::loadFieldData(void)
 
 				// Partition type.
 				rp_string str;
-				static const rp_char part_type_tbl[3][8] = {
+				static const rp_char *const part_type_tbl[3] = {
 					_RP("Game"),	// GameCubePrivate::PARTITION_GAME
 					_RP("Update"),	// GameCubePrivate::PARTITION_UPDATE
 					_RP("Channel"),	// GameCubePrivate::PARTITION_CHANNEL

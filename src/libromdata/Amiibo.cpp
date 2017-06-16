@@ -491,7 +491,7 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// amiibo type.
-	static const rp_char amiibo_type_tbl[3][12] = {
+	static const rp_char *const amiibo_type_tbl[3] = {
 		_RP("Figurine"),	// NFP_TYPE_FIGURINE
 		_RP("Card"),		// NFP_TYPE_CARD
 		_RP("Yarn"),		// NFP_TYPE_YARN

@@ -935,7 +935,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// Content type.
 		// This is normally shown in the CIA content table.
 		if (showContentType) {
-			const rp_char *content_type = ncch->contentType();
+			const rp_char *const content_type = ncch->contentType();
 			fields->addField_string(_RP("Content Type"),
 				(content_type ? content_type : _RP("Unknown")));
 		}
@@ -2238,7 +2238,7 @@ int Nintendo3DS::loadFieldData(void)
 			latin1_to_rp_string(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
 		// Application type. (resource limit category)
-		static const rp_char application_type_tbl[4][16] = {
+		static const rp_char *const application_type_tbl[4] = {
 			_RP("Application"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			_RP("System Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
 			_RP("Library Applet"),	// N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_LIB_APPLET
@@ -2265,9 +2265,9 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Figure out what "Core Version" is.
 
 		// System Mode.
-		static const rp_char old3ds_sys_mode_tbl[6][16] = {
+		static const rp_char *const old3ds_sys_mode_tbl[6] = {
 			_RP("Prod (64 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Prod
-			_RP(""),
+			nullptr,
 			_RP("Dev1 (96 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev1
 			_RP("Dev2 (80 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev2
 			_RP("Dev3 (72 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Dev3
@@ -2276,7 +2276,7 @@ int Nintendo3DS::loadFieldData(void)
 		const uint8_t old3ds_sys_mode = (ncch_exheader->aci.arm11_local.flags[2] &
 			N3DS_NCCH_EXHEADER_ACI_FLAG2_Old3DS_SysMode_Mask) >> 4;
 		if (old3ds_sys_mode < ARRAY_SIZE(old3ds_sys_mode_tbl) &&
-		    old3ds_sys_mode_tbl[old3ds_sys_mode][0] != 0)
+		    old3ds_sys_mode_tbl[old3ds_sys_mode] != nullptr)
 		{
 			d->fields->addField_string(_RP("Old3DS Sys Mode"),
 				old3ds_sys_mode_tbl[old3ds_sys_mode]);
@@ -2286,7 +2286,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// New3DS System Mode.
-		static const rp_char new3ds_sys_mode_tbl[4][16] = {
+		static const rp_char *const new3ds_sys_mode_tbl[4] = {
 			_RP("Legacy (64 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Legacy
 			_RP("Prod (124 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Prod
 			_RP("Dev1 (178 MB)"),	// N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Dev1
