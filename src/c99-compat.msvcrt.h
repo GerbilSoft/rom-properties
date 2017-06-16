@@ -77,7 +77,7 @@ static
 __forceinline
 #elif defined(__GNUC__)
 __inline
-__attribute__ ((__format__ (gnu_printf, 3, 0)))
+__attribute__ ((__format__ (ms_printf, 3, 0)))
 __attribute__ ((__nonnull__ (3)))
 __attribute__ ((always_inline))
 __attribute__ ((unused))
@@ -101,7 +101,7 @@ static
 __forceinline
 #elif defined(__GNUC__)
 __inline
-__attribute__ ((__format__ (gnu_printf, 3, 0)))
+__attribute__ ((__format__ (ms_printf, 3, 4)))
 __attribute__ ((__nonnull__ (3)))
 /* NOTE: gcc complains that this function cannot be inlined
  * becuase it uses variable argument lists.
