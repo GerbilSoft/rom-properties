@@ -21,7 +21,7 @@
 
 // References:
 // - http://www.psdevwiki.com/ps3/Game_Saves#Game_Saves_PS1
-// - http://problemkaputt.de/psx-spx.htm
+// - http://problemkaputt.de/psx-spx.htm#memorycarddataformat
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
@@ -32,6 +32,42 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * 54-byte header used by some standalone saves
+ */
+#pragma pack(1)
+typedef struct PACKED _PS1_54_Header {
+		char filename[21];	// Filename from BlockEntry->filename
+		char title[33];		// Title from SC->title converted to ASCII
+	} PS1_54_Header;
+#pragma pack()
+ASSERT_STRUCT(PS1_54_Header, 54);
+
+typedef enum {
+	PS1_ENTRY_ALLOC_FIRST         = 0x51, // First or only block of a file
+	PS1_ENTRY_ALLOC_MID           = 0x52, // Middle blocks of a file (if 3 or more blocks)
+	PS1_ENTRY_ALLOC_LAST          = 0x53, // Last block of a file (if 2 or more blocks)
+	PS1_ENTRY_ALLOC_FREE          = 0xA0, // Freshly formatted
+	PS1_ENTRY_ALLOC_DELETED_FIRST = 0xA1, // Deleted (first)
+	PS1_ENTRY_ALLOC_DELETED_MID   = 0xA2, // Deleted (middle)
+	PS1_ENTRY_ALLOC_DELETED_LAST  = 0xA3, // Deleted (last)
+} PS1_Entry_Alloc_Flag;
+
+/**
+ * Block Entry. Stored in Block 0 of memorycard. Also used as a header for some standalone saves.
+ */
+#pragma pack(1)
+typedef struct PACKED _PS1_Block_Entry {
+	uint32_t alloc_flag;	// Type 
+	uint32_t filesize;		// Filesize
+	uint16_t next_block;	// Pointer to next block (0xFFFF = EOF)
+	char filename[21];		// BxSxxS-xxxxxyyyyyyyy
+	uint8_t padding[96];
+	uint8_t checksum;
+} PS1_Block_Entry;
+#pragma pack()
+ASSERT_STRUCT(PS1_Block_Entry, 128);
 
 /**
  * "SC" icon display flag.
