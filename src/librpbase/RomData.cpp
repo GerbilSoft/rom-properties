@@ -92,9 +92,6 @@ static inline int calc_frac_part(int64_t size, int64_t mask)
  */
 rp_string RomDataPrivate::formatFileSize(int64_t size)
 {
-	// TODO: Thousands formatting?
-	char buf[64];
-
 	const char *suffix;
 	// frac_part is always 0 to 100.
 	// If whole_part >= 10, frac_part is divided by 10.
@@ -137,10 +134,9 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
 		frac_part = calc_frac_part(size, (1LL << 60));
 	}
 
-	int len;
 	if (size < (2LL << 10)) {
 		// Bytes or negative value. No fractional part.
-		len = snprintf(buf, sizeof(buf), "%d%s", whole_part, suffix);
+		return rp_sprintf("%d%s", whole_part, suffix);
 	} else {
 		// TODO: Localized decimal point?
 		int frac_digits = 2;
@@ -150,13 +146,13 @@ rp_string RomDataPrivate::formatFileSize(int64_t size)
 			frac_part += round_adj;
 			frac_digits = 1;
 		}
-		len = snprintf(buf, sizeof(buf), "%d.%0*d%s",
+		return rp_sprintf("%d.%0*d%s",
 			whole_part, frac_digits, frac_part, suffix);
 	}
 
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return _RP("QUACK");
 }
 
 /**
@@ -174,14 +170,8 @@ LibRpBase::rp_string RomDataPrivate::getURL_GameTDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "http://art.gametdb.com/%s/%s/%s/%s%s",
-			system, type, region, gameID, ext);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	return rp_sprintf("http://art.gametdb.com/%s/%s/%s/%s%s",
+		system, type, region, gameID, ext);
 }
 
 /**
@@ -199,14 +189,8 @@ LibRpBase::rp_string RomDataPrivate::getCacheKey_GameTDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	char buf[128];
-	int len = snprintf(buf, sizeof(buf), "%s/%s/%s/%s%s",
-			system, type, region, gameID, ext);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);	// TODO: Handle truncation better.
-
-	// TODO: UTF-8, not Latin-1?
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	return rp_sprintf("%s/%s/%s/%s%s",
+		system, type, region, gameID, ext);
 }
 
 /**

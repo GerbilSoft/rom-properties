@@ -332,12 +332,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		fields->addField_string(_RP("Publisher"), publisher);
 	} else if (t_code > 0) {
 		// Unknown publisher, but there is a valid T code.
-		char buf[16];
-		int len = snprintf(buf, sizeof(buf), "T-%u", t_code);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		fields->addField_string(_RP("Publisher"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		fields->addField_string(_RP("Publisher"), rp_sprintf("T-%u", t_code));
 	} else {
 		// Unknown publisher.
 		fields->addField_string(_RP("Publisher"), _RP("Unknown"));
@@ -511,21 +506,13 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// #
 		// NOTE: This is the byte address in the vector table.
-		char buf[16];
-		int len = snprintf(buf, sizeof(buf), "$%02X", vector_index*4);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("$??"));
+		data_row.push_back(rp_sprintf("$%02X", vector_index*4));
 
 		// Vector name
 		data_row.push_back(vectors_names[i]);
 
 		// Address
-		len = snprintf(buf, sizeof(buf), "$%08X",
-			be32_to_cpu(pVectors->vectors[vector_index]));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		data_row.push_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
 	}
 
 	static const rp_char *const vectors_headers[] = {

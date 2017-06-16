@@ -384,32 +384,22 @@ int WiiU::loadFieldData(void)
 	// Disc header is read in the constructor.
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	// Game ID.
 	d->fields->addField_string(_RP("Game ID"),
 		latin1_to_rp_string(d->discHeader.id, sizeof(d->discHeader.id)));
 
 	// Game version.
 	// TODO: Validate the version characters.
-	len = snprintf(buf, sizeof(buf), "%.2s", d->discHeader.version);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
 	d->fields->addField_string(_RP("Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		latin1_to_rp_string(d->discHeader.version, sizeof(d->discHeader.version)));
 
 	// OS version.
 	// TODO: Validate the version characters.
-	len = snprintf(buf, sizeof(buf), "%c.%c.%c",
-		d->discHeader.os_version[0],
-		d->discHeader.os_version[1],
-		d->discHeader.os_version[2]);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
 	d->fields->addField_string(_RP("OS Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		rp_sprintf("%c.%c.%c",
+			d->discHeader.os_version[0],
+			d->discHeader.os_version[1],
+			d->discHeader.os_version[2]));
 
 	// Region.
 	// TODO: Compare against list of regions and show the fancy name.

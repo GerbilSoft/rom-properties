@@ -1570,12 +1570,8 @@ int GameCube::loadFieldData(void)
 		d->fields->addField_string(_RP("Region"), region);
 	} else {
 		// Invalid region code.
-		char buf[32];
-		int len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", d->gcnRegion);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("Region"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+			rp_sprintf("Unknown (0x%08X)", d->gcnRegion));
 	}
 
 	if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) !=
@@ -1769,11 +1765,7 @@ int GameCube::loadFieldData(void)
 				const GameCubePrivate::WiiPartEntry &entry = d->wiiVgTbl[i].at(j);
 
 				// Partition number.
-				char buf[16];
-				int len = snprintf(buf, sizeof(buf), "%dp%d", i, j);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
-				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				data_row.push_back(rp_sprintf("%dp%d", i, j));
 
 				// Partition type.
 				rp_string str;
@@ -1789,19 +1781,19 @@ int GameCube::loadFieldData(void)
 					// print it as-is. (SSBB demo channel)
 					// Otherwise, print the hexadecimal value.
 					// NOTE: Must be BE32 for proper display.
-					uint32_t be32_type = cpu_to_be32(entry.type);
-					memcpy(buf, &be32_type, 4);
-					if (isalnum(buf[0]) && isalnum(buf[1]) &&
-					    isalnum(buf[2]) && isalnum(buf[3]))
+					union {
+						uint32_t be32_type;
+						char chr[4];
+					} part_type;
+					part_type.be32_type = cpu_to_be32(entry.type);
+					if (isalnum(part_type.chr[0]) && isalnum(part_type.chr[1]) &&
+					    isalnum(part_type.chr[2]) && isalnum(part_type.chr[3]))
 					{
 						// All four bytes are ASCII letters and/or numbers.
-						str = latin1_to_rp_string(buf, 4);
+						str = latin1_to_rp_string(part_type.chr, sizeof(part_type.chr));
 					} else {
 						// Non-ASCII data. Print the hex values instead.
-						len = snprintf(buf, sizeof(buf), "%08X", entry.type);
-						if (len > (int)sizeof(buf))
-							len = sizeof(buf);
-						str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+						str = rp_sprintf("%08X", entry.type);
 					}
 				}
 				data_row.push_back(str);

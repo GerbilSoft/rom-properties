@@ -85,7 +85,7 @@ EXEPrivate::~EXEPrivate()
  * NOTE: A subtab is NOT created here; if one is desired,
  * create and set it before calling this function.
  *
- * @param pVsFfi	[in] VS_FIXEDFILEINFO
+ * @param pVsFfi	[in] VS_FIXEDFILEINFO (host-endian)
  * @param pVsSfi	[in,opt] IResourceReader::StringFileInfo
  */
 void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi)
@@ -95,31 +95,21 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (!pVsFfi)
 		return;
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	// File version.
-	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
-		pVsFfi->dwFileVersionMS >> 16,
-		pVsFfi->dwFileVersionMS & 0xFFFF,
-		pVsFfi->dwFileVersionLS >> 16,
-		pVsFfi->dwFileVersionLS & 0xFFFF);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	fields->addField_string(_RP("File Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		rp_sprintf("%u.%u.%u.%u",
+			pVsFfi->dwFileVersionMS >> 16,
+			pVsFfi->dwFileVersionMS & 0xFFFF,
+			pVsFfi->dwFileVersionLS >> 16,
+			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// Product version.
-	len = snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
-		pVsFfi->dwProductVersionMS >> 16,
-		pVsFfi->dwProductVersionMS & 0xFFFF,
-		pVsFfi->dwProductVersionLS >> 16,
-		pVsFfi->dwProductVersionLS & 0xFFFF);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	fields->addField_string(_RP("Product Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		rp_sprintf("%u.%u.%u.%u",
+			pVsFfi->dwFileVersionMS >> 16,
+			pVsFfi->dwFileVersionMS & 0xFFFF,
+			pVsFfi->dwFileVersionLS >> 16,
+			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// File flags.
 	static const rp_char *const file_flags_names[] = {
@@ -184,11 +174,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (file_os) {
 		fields->addField_string(_RP("File OS"), file_os);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileOS);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("File OS"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileOS));
 	}
 
 	// File type.
@@ -208,11 +195,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (fileType) {
 		fields->addField_string(_RP("File Type"), fileType);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%08X)", pVsFfi->dwFileType);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("File Type"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%08X)", pVsFfi->dwFileType));
 	}
 
 	// File subtype.
@@ -264,11 +248,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		if (fileSubtype) {
 			fields->addField_string(_RP("File Subtype"), fileSubtype);
 		} else {
-			len = snprintf(buf, sizeof(buf), "Unknown (%08X)", pVsFfi->dwFileSubtype);
-			if (len > (int)sizeof(buf))
-				len = (int)sizeof(buf);
 			fields->addField_string(_RP("File Subtype"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				rp_sprintf("Unknown (%08X)", pVsFfi->dwFileSubtype));
 		}
 	}
 
@@ -415,10 +396,6 @@ void EXEPrivate::addFields_NE(void)
 	fields->setTabName(0, _RP("NE Header"));
 	fields->setTabIndex(0);
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	// Target OS.
 	const rp_char *targetOS = (hdr.ne.targOS < ARRAY_SIZE(NE_TargetOSes))
 					? NE_TargetOSes[hdr.ne.targOS]
@@ -435,11 +412,8 @@ void EXEPrivate::addFields_NE(void)
 	if (targetOS) {
 		fields->addField_string(_RP("Target OS"), targetOS);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", hdr.ne.targOS);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("Target OS"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%02X)", hdr.ne.targOS));
 	}
 
 	// DGroup type.
@@ -513,12 +487,8 @@ void EXEPrivate::addFields_NE(void)
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
-		len = snprintf(buf, sizeof(buf), "%u.%u",
-			hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("Windows Version"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
 	// Load resources.
@@ -530,6 +500,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Load the version resource.
+	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
 	VS_FIXEDFILEINFO vsffi;
 	IResourceReader::StringFileInfo vssfi;
 	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
@@ -552,11 +523,8 @@ void EXEPrivate::addFields_NE(void)
  */
 void EXEPrivate::addFields_LE(void)
 {
-	// TODO: Byteswapping values.
-
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
+	// TODO: Handle fields that indicate byteorder.
+	// Currently assuming little-endian.
 
 	// CPU.
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
@@ -564,11 +532,8 @@ void EXEPrivate::addFields_LE(void)
 	if (cpu) {
 		fields->addField_string(_RP("CPU"), cpu);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)", cpu_type);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("CPU"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%04X)", cpu_type));
 	}
 
 	// Target OS.
@@ -580,11 +545,8 @@ void EXEPrivate::addFields_LE(void)
 	if (targetOS) {
 		fields->addField_string(_RP("Target OS"), targetOS);
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", targOS);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		fields->addField_string(_RP("Target OS"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%02X)", targOS));
 	}
 }
 
@@ -743,10 +705,6 @@ void EXEPrivate::addFields_PE(void)
 	fields->setTabName(0, _RP("PE Header"));
 	fields->setTabIndex(0);
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
 	const uint16_t pe_flags = le16_to_cpu(hdr.pe.FileHeader.Characteristics);
 
@@ -781,11 +739,7 @@ void EXEPrivate::addFields_PE(void)
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
-		len = snprintf(buf, sizeof(buf), "Unknown (0x%04X)%s",
-			machine, (dotnet ? " (.NET)" : ""));
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
-		s_cpu = (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		s_cpu = rp_sprintf("Unknown (0x%04X)", machine);
 	}
 	if (dotnet) {
 		// .NET executable.
@@ -794,11 +748,8 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_string(_RP("CPU"), s_cpu);
 
 	// OS version.
-	len = snprintf(buf, sizeof(buf), "%u.%u", os_ver_major, os_ver_minor);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	fields->addField_string(_RP("OS Version"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem names.
 	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
@@ -820,15 +771,12 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	len = snprintf(buf, sizeof(buf), "%s %u.%u",
-		(pe_subsystem < ARRAY_SIZE(subsysNames)
-			? subsysNames[pe_subsystem]
-			: "Unknown"),
-		subsystem_ver_major, subsystem_ver_minor);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	fields->addField_string(_RP("Subsystem"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+		rp_sprintf("%s %u.%u",
+			(pe_subsystem < ARRAY_SIZE(subsysNames)
+				? subsysNames[pe_subsystem]
+				: "Unknown"),
+			subsystem_ver_major, subsystem_ver_minor));
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.
@@ -868,6 +816,7 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Load the version resource.
+	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
 	VS_FIXEDFILEINFO vsffi;
 	IResourceReader::StringFileInfo vssfi;
 	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);

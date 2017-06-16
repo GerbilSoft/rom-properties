@@ -1401,12 +1401,8 @@ int DreamcastSave::loadFieldData(void)
 		d->fields->addField_string(_RP("File Type"), filetype);
 	} else {
 		// Unknown file type.
-		char buf[20];
-		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.filetype);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("File Type"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%02X)", d->vms_dirent.filetype));
 	}
 
 	// DC VMS directory entry.
@@ -1428,12 +1424,8 @@ int DreamcastSave::loadFieldData(void)
 			d->fields->addField_string(_RP("Copy Protect"), protect);
 		} else {
 			// Unknown copy protection.
-			char buf[20];
-			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.protect);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
 			d->fields->addField_string(_RP("Copy Protect"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				rp_sprintf("Unknown (0x%02X)", d->vms_dirent.protect));
 		}
 
 		// Filename.

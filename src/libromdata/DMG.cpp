@@ -595,23 +595,18 @@ int DMG::loadFieldData(void)
 	d->fields->addField_bitfield(_RP("Features"),
 		v_feature_bitfield_names, 0, DMGPrivate::CartType(romHeader->cart_type).features);
 
-	char buf[64];
-	int len;
-
 	// ROM Size
 	int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
 		d->fields->addField_string(_RP("ROM Size"), _RP("Unknown"));
 	} else {
 		if (rom_size > 32) {
-			len = snprintf(buf, sizeof(buf), "%d KiB (%d banks)", rom_size, rom_size/16);
+			d->fields->addField_string(_RP("ROM Size"),
+				rp_sprintf("%u KiB (%u banks)", (unsigned int)rom_size, (unsigned int)rom_size/16));
 		} else {
-			len = snprintf(buf, sizeof(buf), "%d KiB", rom_size);
+			d->fields->addField_string(_RP("ROM Size"),
+				rp_sprintf("%u KiB", (unsigned int)rom_size));
 		}
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		d->fields->addField_string(_RP("ROM Size"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 	}
 
 	// RAM Size
@@ -627,15 +622,13 @@ int DMG::loadFieldData(void)
 		} else if(ram_size == 0) {
 			d->fields->addField_string(_RP("RAM Size"), _RP("No RAM"));
 		} else {
-			if (ram_size>8) {
-				len = snprintf(buf, sizeof(buf), "%u KiB (%u banks)", ram_size, ram_size/8);
+			if (ram_size > 8) {
+				d->fields->addField_string(_RP("RAM Size"),
+					rp_sprintf("%u KiB (%u banks)", ram_size, ram_size/8));
 			} else {
-				len = snprintf(buf, sizeof(buf), "%u KiB", ram_size);
+				d->fields->addField_string(_RP("RAM Size"),
+					rp_sprintf("%u KiB", ram_size));
 			}
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			d->fields->addField_string(_RP("RAM Size"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 		}
 	}
 
@@ -649,8 +642,8 @@ int DMG::loadFieldData(void)
 			break;
 		default:
 			// Invalid value.
-			len = snprintf(buf, sizeof(buf), "0x%02X (INVALID)", romHeader->region);
-			d->fields->addField_string(_RP("Region"), latin1_to_rp_string(buf, len));
+			d->fields->addField_string(_RP("Region"),
+				rp_sprintf("0x%02X (INVALID)", romHeader->region));
 			break;
 	}
 
@@ -664,18 +657,18 @@ int DMG::loadFieldData(void)
 	// starting at 0x100, so the values are offset accordingly.
 	uint8_t checksum = 0xE7; // -0x19
 	const uint8_t *romHeader8 = reinterpret_cast<const uint8_t*>(romHeader);
-	for(int i = 0x0034; i < 0x004D; i++){
+	for (unsigned int i = 0x0034; i < 0x004D; i++){
 		checksum -= romHeader8[i];
 	}
 
 	if (checksum - romHeader->header_checksum) {
-		len = snprintf(buf, sizeof(buf), "0x%02X (INVALID; should be 0x%02X)",
-			romHeader->header_checksum, checksum);
+		d->fields->addField_string(_RP("Checksum"),
+			rp_sprintf("0x%02X (INVALID; should be 0x%02X)",
+				romHeader->header_checksum, checksum));
 	} else {
-		len = snprintf(buf, sizeof(buf), "0x%02X (valid)", checksum);
+		d->fields->addField_string(_RP("Checksum"),
+			rp_sprintf("0x%02X (valid)", checksum));
 	}
-	d->fields->addField_string(_RP("Checksum"),
-		latin1_to_rp_string(buf, len), RomFields::STRF_MONOSPACE);
 
 	return (int)d->fields->count();
 }

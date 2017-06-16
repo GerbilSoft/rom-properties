@@ -922,12 +922,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	if (tid_desc) {
-		char buf[32];
-		int len = snprintf(buf, sizeof(buf), "%08X-%08X", tid_hi, tid_lo);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
-		fields->addField_string(tid_desc,
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		fields->addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
 	}
 
 	if (ncch && ncch->isOpen()) {
@@ -1167,14 +1162,10 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 inline rp_string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
 {
 	// Reference: https://3dbrew.org/wiki/Titles
-	char buf[12];
-	int len = snprintf(buf, sizeof(buf), "%u.%u.%u",
+	return rp_sprintf("%u.%u.%u",
 		(version >> 10),
 		(version >>  4) & 0x1F,
 		(version & 0x0F));
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 }
 
 /** Nintendo3DS **/
@@ -1676,10 +1667,6 @@ int Nintendo3DS::loadFieldData(void)
 	// Have we shown a warning yet?
 	bool shownWarning = false;
 
-	// Temporary buffer for snprintf().
-	char buf[64];
-	int len;
-
 	// Load headers if we don't already have them.
 	if (!(d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH)) {
 		d->loadSMDH();
@@ -1921,11 +1908,8 @@ int Nintendo3DS::loadFieldData(void)
 			if (media_type < ARRAY_SIZE(media_type_tbl)) {
 				d->fields->addField_string(_RP("Media Type"), media_type_tbl[media_type]);
 			} else {
-				len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", media_type);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
 				d->fields->addField_string(_RP("Media Type"),
-					len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+					rp_sprintf("Unknown (0x%02X)", media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
@@ -1956,13 +1940,10 @@ int Nintendo3DS::loadFieldData(void)
 			if (card_dev_id >= 1 && card_dev_id < ARRAY_SIZE(card_dev_tbl)) {
 				d->fields->addField_string(_RP("Card Device"), card_dev_tbl[card_dev_id]);
 			} else {
-				len = snprintf(buf, sizeof(buf), "Unknown (SDK2=0x%02X, SDK3=0x%02X)",
-					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
-					ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
 				d->fields->addField_string(_RP("Card Device"),
-					len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+					rp_sprintf("Unknown (SDK2=0x%02X, SDK3=0x%02X)",
+						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
+						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}
 
 			// Card revision.
@@ -1995,10 +1976,7 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = partitions->at(vidx);
 
 			// Partition number.
-			len = snprintf(buf, sizeof(buf), "%u", i);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			data_row.push_back(rp_sprintf("%u", i));
 
 			// Partition type.
 			// TODO: Use the partition ID to determine the type?
@@ -2014,18 +1992,17 @@ int Nintendo3DS::loadFieldData(void)
 					int ret = NCCHReader::cryptoType_static(&cryptoType, part_ncch_header);
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
-						len = snprintf(buf, sizeof(buf), "%s",
-							(cryptoType.name ? cryptoType.name : "Unknown"));
+						if (cryptoType.name) {
+							data_row.push_back(latin1_to_rp_string(cryptoType.name, -1));
+						} else {
+							data_row.push_back(_RP("Unknown"));
+						}
 					} else {
-						// Encrypted.
-						len = snprintf(buf, sizeof(buf), "%s%s (0x%02X)",
+						data_row.push_back(rp_sprintf("%s %s (0x%02X)",
 							(cryptoType.name ? cryptoType.name : "Unknown"),
 							(cryptoType.seed ? "+Seed" : ""),
-							cryptoType.keyslot);
+							cryptoType.keyslot));
 					}
-					if (len > (int)sizeof(buf))
-						len = sizeof(buf);
-					data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 					// Version.
 					// Reference: https://3dbrew.org/wiki/Titles
@@ -2059,10 +2036,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (keyslots) {
 				// Keyslot.
-				len = snprintf(buf, sizeof(buf), "0x%02X", keyslots[i]);
-				if (len > (int)sizeof(buf))
-					len = sizeof(buf);
-				data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+				data_row.push_back(rp_sprintf("0x%02X", keyslots[i]));
 			}
 
 			// Partition size.
@@ -2151,10 +2125,7 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = contents->at(vidx);
 
 			// Content index.
-			len = snprintf(buf, sizeof(buf), "%u", i);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("?"));
+			data_row.push_back(rp_sprintf("%u", i));
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *const content_ncch_header =
@@ -2220,19 +2191,19 @@ int Nintendo3DS::loadFieldData(void)
 
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 				// Not encrypted, or not using a predefined keyslot.
-				len = snprintf(buf, sizeof(buf), "%s",
-					(cryptoType.name ? cryptoType.name : "Unknown"));
+				if (cryptoType.name) {
+					data_row.push_back(latin1_to_rp_string(cryptoType.name, -1));
+				} else {
+					data_row.push_back(_RP("Unknown"));
+				}
 			} else {
 				// Encrypted.
-				len = snprintf(buf, sizeof(buf), "%s%s%s (0x%02X)",
+				data_row.push_back(rp_sprintf("%s%s%s (0x%02X)",
 					(isCIAcrypto ? "CIA+" : ""),
 					(cryptoType.name ? cryptoType.name : "Unknown"),
 					(cryptoType.seed ? "+Seed" : ""),
-					cryptoType.keyslot);
+					cryptoType.keyslot));
 			}
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
-			data_row.push_back(len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
 
 			// Version. [FIXME: Might not be right...]
 			const uint16_t version = le16_to_cpu(content_ncch_header->version);
@@ -2278,11 +2249,8 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->addField_string(_RP("Type"),
 				application_type_tbl[application_type]);
 		} else {
-			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", application_type);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
 			d->fields->addField_string(_RP("Type"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				rp_sprintf("Invalid (0x%02X)", application_type));
 		}
 
 		// Flags.
@@ -2313,11 +2281,8 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->addField_string(_RP("Old3DS Sys Mode"),
 				old3ds_sys_mode_tbl[old3ds_sys_mode]);
 		} else {
-			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", old3ds_sys_mode);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
 			d->fields->addField_string(_RP("Old3DS Sys Mode"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				rp_sprintf("Invalid (0x%02X)", old3ds_sys_mode));
 		}
 
 		// New3DS System Mode.
@@ -2333,11 +2298,8 @@ int Nintendo3DS::loadFieldData(void)
 			d->fields->addField_string(_RP("New3DS Sys Mode"),
 				new3ds_sys_mode_tbl[new3ds_sys_mode]);
 		} else {
-			len = snprintf(buf, sizeof(buf), "Invalid (0x%02X)", new3ds_sys_mode);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
 			d->fields->addField_string(_RP("New3DS Sys Mode"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+				rp_sprintf("Invalid (0x%02X)", new3ds_sys_mode));
 		}
 
 		// New3DS CPU Mode.

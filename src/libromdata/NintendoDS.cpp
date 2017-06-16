@@ -1063,10 +1063,6 @@ int NintendoDS::loadFieldData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(12);	// Maximum of 11 fields.
 
-	// Temporary buffer for snprintf().
-	char buf[32];
-	int len;
-
 	// Type.
 	// TODO:
 	// - Show PassMe fields?
@@ -1179,13 +1175,10 @@ int NintendoDS::loadFieldData(void)
 			v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 		// Title ID.
-		len = snprintf(buf, sizeof(buf), "%08X-%08X",
-			le32_to_cpu(romHeader->dsi.title_id.hi),
-			le32_to_cpu(romHeader->dsi.title_id.lo));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("Title ID"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("%08X-%08X",
+				le32_to_cpu(romHeader->dsi.title_id.hi),
+				le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 		// DSi filetype.
 		const rp_char *filetype = nullptr;
@@ -1217,11 +1210,8 @@ int NintendoDS::loadFieldData(void)
 			d->fields->addField_string(_RP("DSi ROM Type"), filetype);
 		} else {
 			// Invalid file type.
-			len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->dsi.filetype);
-			if (len > (int)sizeof(buf))
-				len = sizeof(buf);
 			d->fields->addField_string(_RP("DSi ROM Type"),
-				len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+				rp_sprintf("Unknown (0x%02X)", romHeader->dsi.filetype));
 		}
 
 		// Age rating(s).

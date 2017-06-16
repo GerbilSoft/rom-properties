@@ -553,12 +553,8 @@ int SNES::loadFieldData(void)
 		d->fields->addField_string(_RP("ROM Mapping"), rom_mapping);
 	} else {
 		// Unknown ROM mapping.
-		char buf[20];
-		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", romHeader->rom_mapping);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("ROM Mapping"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("Unknown (0x%02X)", romHeader->rom_mapping));
 	}
 
 	// Cartridge HW.

@@ -486,11 +486,8 @@ int Amiibo::loadFieldData(void)
 	// amiibo ID.
 	// Represents the character and amiibo series.
 	// TODO: Link to http://amiibo.life/nfc/%08X-%08X
-	len = snprintf(buf, sizeof(buf), "%08X-%08X", char_id, amiibo_id);
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
 	d->fields->addField_string(_RP("amiibo ID"),
-		len > 0 ? latin1_to_rp_string(buf, len) : _RP(""),
+		rp_sprintf("%08X-%08X", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
 	// amiibo type.
@@ -503,12 +500,8 @@ int Amiibo::loadFieldData(void)
 		d->fields->addField_string(_RP("amiibo Type"), amiibo_type_tbl[char_id & 0xFF]);
 	} else {
 		// Invalid amiibo type.
-		char buf[24];
-		int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", (char_id & 0xFF));
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("amiibo Type"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+			rp_sprintf("Unknown (0x%02X)", (char_id & 0xFF)));
 	}
 
 	// Character series.
@@ -597,37 +590,26 @@ int Amiibo::extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size
 		return -ENOENT;
 	}
 
-	// Cache key. (amiibo ID)
-	// TODO: "amiibo/" or "nfp/"?
-	char amiibo_id_str[32];
-	int len = snprintf(amiibo_id_str, sizeof(amiibo_id_str), "amiibo/%08X-%08X",
-		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
-	if (len > (int)sizeof(amiibo_id_str))
-		len = (int)sizeof(amiibo_id_str);
-	if (len <= 0) {
-		// Invalid NFC ID.
-		return -EINVAL;
-	}
-
 	// Only one URL.
 	pExtURLs->resize(1);
 	auto &extURL = pExtURLs->at(0);
 
-	// Cache key.
-	extURL.cache_key = latin1_to_rp_string(amiibo_id_str, len);
+	// Amiibo ID.
+	const rp_string amiibo_id = rp_sprintf("%08X-%08X",
+		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
+
+	// Cache key. (amiibo ID)
+	extURL.cache_key.reserve(32);
+	extURL.cache_key = _RP("amiibo/");
+	extURL.cache_key += amiibo_id;
 	extURL.cache_key += _RP(".png");
 
 	// URL.
 	// Format: http://amiibo.life/nfc/[Page21]-[Page22]/image
-	char url_str[64];
-	len = snprintf(url_str, sizeof(url_str), "http://amiibo.life/nfc/%.17s/image", &amiibo_id_str[7]);
-	if (len > (int)sizeof(url_str))
-		len = (int)sizeof(url_str);
-	if (len <= 0) {
-		// Invalid URL.
-		return -EINVAL;
-	}
-	extURL.url = latin1_to_rp_string(url_str, len);
+	extURL.url.reserve(48);
+	extURL.url = _RP("http://amiibo.life/nfc/");
+	extURL.url += amiibo_id;
+	extURL.url += _RP("/image");
 
 	// Size may vary depending on amiibo.
 	extURL.width = 0;

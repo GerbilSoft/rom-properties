@@ -146,11 +146,7 @@ NESPrivate::NESPrivate(NES *q, IRpFile *file)
  */
 inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
 {
-	char buf[32];
-	int len = snprintf(buf, sizeof(buf), "%u KB", (size / 1024));
-	if (len > (int)sizeof(buf))
-		len = (int)sizeof(buf);
-	return (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	return rp_sprintf("%u KB", (size / 1024));
 }
 
 /**
@@ -713,11 +709,7 @@ int NES::loadFieldData(void)
 	}
 
 	if (mapper >= 0) {
-		char buf[16];
-		int len = snprintf(buf, sizeof(buf), "%d", mapper);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
-		rp_string s_mapper = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+		rp_string s_mapper = rp_sprintf("%u", (unsigned int)mapper);
 		s_mapper.reserve(64);
 
 		// Look up the mapper name.
@@ -763,18 +755,12 @@ int NES::loadFieldData(void)
 
 	// Check for FDS fields.
 	if ((d->romType & NESPrivate::ROM_SYSTEM_MASK) == NESPrivate::ROM_SYSTEM_FDS) {
-		char buf[64];
-		int len;
-
 		// Game ID.
 		// TODO: Check for invalid characters?
-		len = snprintf(buf, sizeof(buf), "%s-%.3s",
-			(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
-			d->header.fds.game_id);
-		if (len > (int)sizeof(buf))
-			len = (int)sizeof(buf);
 		d->fields->addField_string(_RP("Game ID"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("%s-%.3s",
+				(d->header.fds.disk_type == FDS_DTYPE_FSC ? "FSC" : "FMC"),
+				d->header.fds.game_id));
 
 		// Publisher.
 		// NOTE: Verify that the FDS list matches NintendoPublishers.

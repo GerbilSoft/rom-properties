@@ -258,10 +258,6 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 	}
 
-	// Temporary buffer for snprintf().
-	char buf[32];
-	int len;
-
 	// If both ARM11 and ARM9 entry points are non-zero,
 	// check if this is an official 3DS firmware binary.
 	const Nintendo3DSFirmData::FirmBin_t *firmBin = nullptr;
@@ -316,12 +312,8 @@ int Nintendo3DSFirm::loadFieldData(void)
 	// Official firmware binary fields.
 	if (firmBin) {
 		// FIRM version.
-		len = snprintf(buf, sizeof(buf), "%u.%u-%u",
-			firmBin->major, firmBin->minor, firmBin->revision);
-		if (len > (int)sizeof(buf))
-			len = sizeof(buf);
 		d->fields->addField_string(_RP("FIRM Version"),
-			len > 0 ? latin1_to_rp_string(buf, len) : _RP("Unknown"));
+			rp_sprintf("%u.%u.%u", firmBin->major, firmBin->minor, firmBin->revision));
 
 		// System version.
 		d->fields->addField_string(_RP("System Version"),

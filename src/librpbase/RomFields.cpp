@@ -808,12 +808,7 @@ int RomFields::addField_string_numeric(const rp_char *name, uint32_t val, Base b
 			break;
 	}
 
-	char buf[32];
-	int len = snprintf(buf, sizeof(buf), fmtstr, digits, val);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-
-	rp_string str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
+	const rp_string str = rp_sprintf(fmtstr, digits, val);
 	return addField_string(name, str, flags);
 }
 
@@ -877,17 +872,7 @@ int RomFields::addField_string_address_range(const rp_char *name,
 	}
 
 	// Address range.
-	char buf[64];
-	int len = snprintf(buf, sizeof(buf), "0x%0*X - 0x%0*X",
-			digits, start, digits, end);
-	if (len > (int)sizeof(buf))
-		len = sizeof(buf);
-
-	rp_string str;
-	if (len > 0) {
-		str = latin1_to_rp_string(buf, len);
-	}
-
+	rp_string str = rp_sprintf("0x%0*X - 0x%0*X", digits, start, digits, end);
 	if (suffix && suffix[0] != 0) {
 		// Append a space and the specified suffix.
 		str += _RP_CHR(' ');
