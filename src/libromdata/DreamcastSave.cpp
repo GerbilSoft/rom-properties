@@ -1307,7 +1307,7 @@ int DreamcastSave::loadFieldData(void)
 	// extra VMI information.
 	switch (d->loaded_headers) {
 		case DreamcastSavePrivate::DC_HAVE_VMS |
-			DreamcastSavePrivate::DC_HAVE_VMI:
+		     DreamcastSavePrivate::DC_HAVE_VMI:
 		case DreamcastSavePrivate::DC_HAVE_VMS |
 		     DreamcastSavePrivate::DC_HAVE_DIR_ENTRY:
 		case DreamcastSavePrivate::DC_HAVE_VMS |
@@ -1424,10 +1424,10 @@ int DreamcastSave::loadFieldData(void)
 				break;
 		}
 
-		if (filetype) {
+		if (protect) {
 			d->fields->addField_string(_RP("Copy Protect"), protect);
 		} else {
-			// Unknown file type.
+			// Unknown copy protection.
 			char buf[20];
 			int len = snprintf(buf, sizeof(buf), "Unknown (0x%02X)", d->vms_dirent.protect);
 			if (len > (int)sizeof(buf))
