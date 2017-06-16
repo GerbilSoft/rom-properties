@@ -494,23 +494,13 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// amiibo type.
-	const rp_char *type = nullptr;
-	switch (char_id & 0xFF) {
-		case NFP_TYPE_FIGURINE:
-			type = _RP("Figurine");
-			break;
-		case NFP_TYPE_CARD:
-			type = _RP("Card");
-			break;
-		case NFP_TYPE_YARN:
-			type = _RP("Yarn");
-			break;
-		default:
-			break;
-	}
-
-	if (type) {
-		d->fields->addField_string(_RP("amiibo Type"), type);
+	static const rp_char amiibo_type_tbl[3][12] = {
+		_RP("Figurine"),	// NFP_TYPE_FIGURINE
+		_RP("Card"),		// NFP_TYPE_CARD
+		_RP("Yarn"),		// NFP_TYPE_YARN
+	};
+	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
+		d->fields->addField_string(_RP("amiibo Type"), amiibo_type_tbl[char_id & 0xFF]);
 	} else {
 		// Invalid amiibo type.
 		char buf[24];

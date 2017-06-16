@@ -1777,35 +1777,31 @@ int GameCube::loadFieldData(void)
 
 				// Partition type.
 				rp_string str;
-				switch (entry.type) {
-					case GameCubePrivate::PARTITION_GAME:
-						str = _RP("Game");
-						break;
-					case GameCubePrivate::PARTITION_UPDATE:
-						str = _RP("Update");
-						break;
-					case GameCubePrivate::PARTITION_CHANNEL:
-						str = _RP("Channel");
-						break;
-					default: {
-						// If all four bytes are ASCII,
-						// print it as-is. (SSBB demo channel)
-						// Otherwise, print the number.
-						// NOTE: Must be BE32 for proper display.
-						uint32_t be32_type = cpu_to_be32(entry.type);
-						memcpy(buf, &be32_type, 4);
-						if (isalnum(buf[0]) && isalnum(buf[1]) &&
-							isalnum(buf[2]) && isalnum(buf[3]))
-						{
-							// All four bytes are ASCII.
-							str = latin1_to_rp_string(buf, 4);
-						} else {
-							// Non-ASCII data. Print the hex values instead.
-							len = snprintf(buf, sizeof(buf), "%08X", entry.type);
-							if (len > (int)sizeof(buf))
-								len = sizeof(buf);
-							str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
-						}
+				static const rp_char part_type_tbl[3][8] = {
+					_RP("Game"),	// GameCubePrivate::PARTITION_GAME
+					_RP("Update"),	// GameCubePrivate::PARTITION_UPDATE
+					_RP("Channel"),	// GameCubePrivate::PARTITION_CHANNEL
+				};
+				if (entry.type <= GameCubePrivate::PARTITION_CHANNEL) {
+					str = part_type_tbl[entry.type];
+				} else {
+					// If all four bytes are ASCII letters and/or numbers,
+					// print it as-is. (SSBB demo channel)
+					// Otherwise, print the hexadecimal value.
+					// NOTE: Must be BE32 for proper display.
+					uint32_t be32_type = cpu_to_be32(entry.type);
+					memcpy(buf, &be32_type, 4);
+					if (isalnum(buf[0]) && isalnum(buf[1]) &&
+					    isalnum(buf[2]) && isalnum(buf[3]))
+					{
+						// All four bytes are ASCII letters and/or numbers.
+						str = latin1_to_rp_string(buf, 4);
+					} else {
+						// Non-ASCII data. Print the hex values instead.
+						len = snprintf(buf, sizeof(buf), "%08X", entry.type);
+						if (len > (int)sizeof(buf))
+							len = sizeof(buf);
+						str = (len > 0 ? latin1_to_rp_string(buf, len) : _RP(""));
 					}
 				}
 				data_row.push_back(str);
