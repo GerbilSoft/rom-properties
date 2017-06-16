@@ -213,6 +213,10 @@ int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
  */
 rp_string rp_sprintf(const char *fmt, ...)
 {
+#if defined(_WIN32) && (!defined(_MSC_VER) || _MSC_VER < 1900)
+	// MSVC 2013 or older, or some other Windows compiler.
+	// vsnprintf() in MSVCRT is not C99 compliant, so we
+	// can't use the local buffer optimization.
 	va_list ap;
 	va_start(ap, fmt);
 	int len = vsnprintf(nullptr, 0, fmt, ap);
@@ -221,7 +225,27 @@ rp_string rp_sprintf(const char *fmt, ...)
 		// Nothing to format...
 		return rp_string();
 	}
+#else
+	// gcc, or MSVC 2015 or later.
+	// vsnprintf() is C99 compliant, so use a local buffer
+	// to reduce memory allocations.
+	// TODO: cmake check for C99 vsnprintf().
+	char locbuf[128];
+	va_list ap;
+	va_start(ap, fmt);
+	int len = vsnprintf(locbuf, sizeof(locbuf), fmt, ap);
+	va_end(ap);
+	if (len <= 0) {
+		// Nothing to format...
+		return rp_string();
+	} else if (len < (int)sizeof(locbuf)) {
+		// The string fits in the local buffer.
+		return utf8_to_rp_string(locbuf, len);
+	}
+#endif
 
+	// Temporarily allocate a buffer large enough for the string,
+	// then call vsnprintf() again.
 	unique_ptr<char[]> buf(new char[len+1]);
 	va_start(ap, fmt);
 	int len2 = vsnprintf(buf.get(), len+1, fmt, ap);
