@@ -37,10 +37,10 @@
 
 // Typesafe inline function wrappers for some Windows headers.
 #include "sdk/windowsx_ts.h"
+#include "sdk/commctrl_ts.h"
 
 // Additional Windows headers.
 #include <olectl.h>
-#include <commctrl.h>
 #include <shlobj.h>
 #include <shellapi.h>
 #include <shlwapi.h>

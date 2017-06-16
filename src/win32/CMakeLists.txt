@@ -55,6 +55,7 @@ SET(rom-properties-win32_H
 	sdk/IOwnerDataCallback.hpp
 	sdk/tsbase.h
 	sdk/windowsx_ts.h
+	sdk/commctrl_ts.h
 	resource.h
 	)
 
