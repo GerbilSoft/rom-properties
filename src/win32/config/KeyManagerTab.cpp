@@ -166,6 +166,13 @@ class KeyManagerTabPrivate
 		bool bCancelEdit;	// True if the edit is being cancelled.
 		bool bAllowKanji;	// Allow kanji in the editor.
 
+		/**
+		 * ListView CustomDraw function.
+		 * @param plvcd	[in] NMLVCUSTOMDRAW
+		 * @return Return value.
+		 */
+		inline int ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd);
+
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
 		// TODO: Central registration of key verification functions?
@@ -662,40 +669,12 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					if (pHdr->idFrom != IDC_KEYMANAGER_LIST)
 						break;
 
-					// Make sure the "Value" column is drawn with a monospaced font.
-					// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
-					NMLVCUSTOMDRAW *plvcd = reinterpret_cast<LPNMLVCUSTOMDRAW>(lParam);
-
 					// NOTE: Since this is a DlgProc, we can't simply return
 					// the CDRF code. It has to be set as DWLP_MSGRESULT.
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					int result = CDRF_DODEFAULT;
-					switch (plvcd->nmcd.dwDrawStage) {
-						case CDDS_PREPAINT:
-							// Request notifications for individual ListView items.
-							result = CDRF_NOTIFYITEMDRAW;
-							break;
-
-						case CDDS_ITEMPREPAINT:
-							result = CDRF_NOTIFYSUBITEMDRAW;
-							break;
-
-						case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
-							if (plvcd->iSubItem == 1) {
-								// Use the monospaced font.
-								if (d->hFontMono) {
-									SelectObject(plvcd->nmcd.hdc, d->hFontMono);
-									result = CDRF_NEWFONT;
-									break;
-								}
-							}
-							break;
-
-						default:
-							break;
-					}
+					const int result = d->ListView_CustomDraw(reinterpret_cast<const NMLVCUSTOMDRAW*>(lParam));
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
 					return TRUE;
 				}
@@ -1147,6 +1126,44 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 	}
 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * ListView CustomDraw function.
+ * @param plvcd	[in] NMLVCUSTOMDRAW
+ * @return Return value.
+ */
+inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd)
+{
+	// Make sure the "Value" column is drawn with a monospaced font.
+	// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
+	int result = CDRF_DODEFAULT;
+	switch (plvcd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			// Request notifications for individual ListView items.
+			result = CDRF_NOTIFYITEMDRAW;
+			break;
+
+		case CDDS_ITEMPREPAINT:
+			result = CDRF_NOTIFYSUBITEMDRAW;
+			break;
+
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+			if (plvcd->iSubItem == 1) {
+				// Use the monospaced font.
+				if (hFontMono) {
+					SelectObject(plvcd->nmcd.hdc, hFontMono);
+					result = CDRF_NEWFONT;
+				}
+				break;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return result;
 }
 
 /** "Import" menu actions. **/
