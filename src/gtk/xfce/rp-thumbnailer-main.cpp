@@ -25,10 +25,15 @@
 
 // C includes.
 #include <stdlib.h>
+// C includes. (stat, passwd)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 // C includes. (C++ namespace)
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 
 // C++ includes.
 #include <string>
@@ -47,30 +52,108 @@ static PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
 static string cache_dir;
 
 /**
+ * Check if a directory is writable.
+ * @param path Directory path.
+ * @return True if this is a writable directory; false if not.
+ */
+static inline bool isWritableDirectory(const char *path)
+{
+	struct stat sb;
+	int ret = stat(path, &sb);
+	if (ret == 0 && S_ISDIR(sb.st_mode)) {
+		// This is a directory.
+		if (!access(path, R_OK|W_OK)) {
+			// Directory is writable.
+			return true;
+		}
+	}
+
+	// Not a writable directory.
+	return false;
+}
+
+/**
+ * Remove trailing slashes.
+ * @param path Path to remove trailing slashes from.
+ */
+static inline void removeTrailingSlashes(string &path)
+{
+	while (!path.empty() && path[path.size()-1] == '/') {
+		path.resize(path.size()-1);
+	}
+}
+
+/**
  * Initialize the cache directory.
  * @return 0 on success; non-zero on error.
  */
 static int init_cache_dir(void)
 {
-	// TODO: Use $XDG_CACHE_HOME and/or getpwuid_r().
+	// Check $XDG_CACHE_HOME first.
+	const char *const xdg_cache_home_env = getenv("XDG_CACHE_HOME");
+	if (xdg_cache_home_env && xdg_cache_home_env[0] == '/') {
+		// Make sure this is a writable directory.
+		if (isWritableDirectory(xdg_cache_home_env)) {
+			// $XDG_CACHE_HOME is a writable directory.
+			cache_dir = xdg_cache_home_env;
+			// Remove trailing slashes.
+			removeTrailingSlashes(cache_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!cache_dir.empty()) {
+				g_debug("Cache directory: $XDG_CACHE_HOME == %s", cache_dir.c_str());
+				return 0;
+			}
+		}
+	}
+
+	// Fall back to $HOME/.cache/.
 	const char *const home_env = getenv("HOME");
-	if (home_env) {
-		cache_dir = home_env;
+	if (home_env && home_env[0] == '/') {
+		// Make sure this is a writable directory.
+		if (isWritableDirectory(home_env)) {
+			// $HOME is a writable directory.
+			cache_dir = home_env;
+			// Remove trailing slashes.
+			removeTrailingSlashes(cache_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!cache_dir.empty()) {
+				cache_dir += "/.cache";
+				g_debug("Cache directory: $HOME/.cache == %s", cache_dir.c_str());
+				return 0;
+			}
+		}
 	}
-	// Remove trailing slashes.
-	// NOTE: If $HOME is "/", this will result in an empty directory,
-	// which will cause the program to exit. Not a big deal, since
-	// that shouldn't happen...
-	while (!cache_dir.empty() && cache_dir[cache_dir.size()-1] == '/') {
-		cache_dir.resize(cache_dir.size()-1);
-	}
-	if (cache_dir.empty()) {
-		g_warning("$HOME is not set.");
+
+	// $HOME isn't valid. Use getpwuid_r().
+	char buf[2048];
+	struct passwd pwd;
+	struct passwd *pwd_result;
+	errno = 0;
+	int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
+	if (ret != 0 || !pwd_result) {
+		// getpwuid_r() failed.
+		g_warning("getpwuid_r() failed: %s", (ret != 0 ? strerror(errno) : "pwd_result is NULL"));
 		return -1;
 	}
-	// Append "/.cache".
-	cache_dir += "/.cache";
-	return 0;
+
+	if (pwd_result->pw_dir[0] == '/') {
+		// Make sure this is a writable directory.
+		if (isWritableDirectory(pwd_result->pw_dir)) {
+			// $HOME is a writable directory.
+			cache_dir = pwd_result->pw_dir;
+			// Remove trailing slashes.
+			removeTrailingSlashes(cache_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!cache_dir.empty()) {
+				cache_dir += "/.cache";
+				g_debug("Cache directory: getpwuid_r() -> == %s", cache_dir.c_str());
+				return 0;
+			}
+		}
+	}
+
+	g_critical("Unable to determine the XDG cache directory.");
+	return -1;
 }
 
 /**
