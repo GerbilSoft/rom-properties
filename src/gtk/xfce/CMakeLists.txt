@@ -3,10 +3,12 @@ PROJECT(rom-properties-xfce)
 # XFCE (Thunar) frontend for rom-properties.
 FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GObject2 2.26.0)
+FIND_PACKAGE(GIO 2.26.0)
+FIND_PACKAGE(GIO-UNIX 2.26.0)
 FIND_PACKAGE(GdkPixbuf2)
 # GTK2 minimum is 2.0.0, so no version check is needed.
 FIND_PACKAGE(GTK2 COMPONENTS gtk)
-IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# Find the ThunarX 2 library.
 	FIND_PACKAGE(ThunarX2)
 	IF(NOT ThunarX2_FOUND)
@@ -14,11 +16,11 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 		# Disable the XFCE frontend.
 		SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
 	ENDIF(NOT ThunarX2_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# GTK+ 2.x (or required dependencies) were not found.
 	# Disable the XFCE frontend.
 	SET(BUILD_XFCE OFF CACHE "" INTERNAL FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-xfce_SRCS "${rom-properties-gtk_SRCS}")
@@ -100,7 +102,7 @@ IF(BUILD_XFCE)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
-	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gobject GLib2::glib)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})

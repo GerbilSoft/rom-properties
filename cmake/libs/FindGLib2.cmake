@@ -1,4 +1,4 @@
-# Find GLIB2 libraries and headers.
+# Find GLib2 libraries and headers.
 # If found, the following variables will be defined:
 # - GLib2_FOUND: System has GLib2.
 # - GLib2_INCLUDE_DIRS: GLib2 include directories.
@@ -20,22 +20,3 @@ FIND_LIBRARY_PKG_CONFIG(GLib2
 	glib-2.0	# library
 	GLib2::glib	# imported target
 	)
-
-IF(GLib2_FOUND)
-	# Find the GDBus code generator.
-	FIND_PROGRAM(GDBUS_CODEGEN gdbus-codegen)
-	IF(NOT GDBUS_CODEGEN)
-		MESSAGE(FATAL_ERROR "gdbus-codegen not found; glib-2.x isn't set up correctly.")
-	ENDIF(NOT GDBUS_CODEGEN)
-ENDIF(GLib2_FOUND)
-
-IF(UNIX)
-	# We also need gio-unix.
-	FIND_LIBRARY_PKG_CONFIG(GIO_Unix
-		gio-unix-2.0		# pkgconfig
-		gio/gunixfdlist.h	# header
-		gio-2.0			# library
-		GLib2::gio-unix		# imported target
-		)
-	SET_TARGET_PROPERTIES(GLib2::glib PROPERTIES IMPORTED_LINK_INTERFACE_LIBRARIES GLib2::gio-unix)
-ENDIF(UNIX)
