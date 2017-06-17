@@ -292,6 +292,7 @@ void ConfigDialog::apply(void)
 	// TODO: Error handling.
 	const Config *const config = Config::instance();
 	const rp_char *filename = config->filename();
+	assert(filename != nullptr);
 	if (!filename) {
 		// No configuration filename...
 		return;
@@ -312,6 +313,7 @@ void ConfigDialog::apply(void)
 	// KeyManager needs to save to keys.conf.
 	const KeyManager *const keyManager = KeyManager::instance();
 	filename = keyManager->filename();
+	assert(filename != nullptr);
 	if (filename) {
 		QSettings keys_conf(RP2Q(filename), QSettings::IniFormat);
 		if (keys_conf.isWritable()) {

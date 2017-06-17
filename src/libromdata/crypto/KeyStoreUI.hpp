@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
- * KeyStore.hpp: Key store object for Qt.                                  *
+ * ROM Properties Page shell extension. (libromdata)                       *
+ * KeyStoreUI.hpp: Key store UI base class.                                *
  *                                                                         *
  * Copyright (c) 2012-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,30 +19,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__
 
-#include <QtCore/QObject>
+#include "librpbase/common.h"
+#include "librpbase/TextFuncs.hpp"
+#include <stdint.h>
 
-class KeyStorePrivate;
-class KeyStore : public QObject
+namespace LibRomData {
+
+class KeyStoreUIPrivate;
+class KeyStoreUI
 {
-	Q_OBJECT
-
-	Q_PROPERTY(int totalKeyCount READ totalKeyCount)
-	// NOTE: modified() isn't a modifier, since it's only emitted
-	// if d->changed becomes true.
-	Q_PROPERTY(bool changed READ hasChanged)
-
 	public:
-		KeyStore(QObject *parent = 0);
-		virtual ~KeyStore();
+		KeyStoreUI();
+		virtual ~KeyStoreUI();
 
 	private:
-		typedef QObject super;
-		KeyStorePrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(KeyStore)
-		Q_DISABLE_COPY(KeyStore)
+		KeyStoreUIPrivate *const d_ptr;
+		friend class KeyStoreUIPrivate;
+		RP_DISABLE_COPY(KeyStoreUI)
 
 	public:
 		/** Key struct. **/
@@ -55,11 +51,11 @@ class KeyStore : public QObject
 				Status_OK,		// Key is OK.
 			};
 
-			QString name;		// Key name.
-			QString value;		// Key value. (as QString for display purposes)
-			uint8_t status;		// Key status. (See the Status enum.)
-			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
-			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
+			LibRpBase::rp_string name;	// Key name.
+			LibRpBase::rp_string value;	// Key value. (as rp-string for display purposes)
+			uint8_t status;			// Key status. (See the Status enum.)
+			bool modified;			// True if the key has been modified since last reset() or allKeysSaved().
+			bool allowKanji;		// Allow kanji for UTF-16LE + BOM.
 		};
 
 	public:
@@ -68,26 +64,46 @@ class KeyStore : public QObject
 		 */
 		void reset(void);
 
-	signals:
-		/** Key management **/
+	public:
+		/**
+		 * Convert a sectIdx/keyIdx pair to a flat key index.
+		 * @param sectIdx	[in] Section index.
+		 * @param keyIdx	[in] Key index.
+		 * @return Flat key index, or -1 if invalid.
+		 */
+		int sectKeyToIdx(int sectIdx, int keyIdx) const;
+
+		/**
+		 * Convert a flat key index to sectIdx/keyIdx.
+		 * @param idx		[in] Flat key index.
+		 * @param pSectIdx	[out] Section index.
+		 * @param pKeyIdx	[out] Key index.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx) const;
+
+	protected: /*signals:*/
+		/** Key management signals. **/
+		// These must be reimplemented by subclasses
+		// and implemented as notification signals.
 
 		/**
 		 * A key has changed.
 		 * @param sectIdx Section index.
 		 * @param keyIdx Key index.
 		 */
-		void keyChanged(int sectIdx, int keyIdx);
+		virtual void keyChanged_int(int sectIdx, int keyIdx) = 0;
 
 		/**
 		 * A key has changed.
 		 * @param idx Flat key index.
 		 */
-		void keyChanged(int idx);
+		virtual void keyChanged_int(int idx) = 0;
 
 		/**
 		 * All keys have changed.
 		 */
-		void allKeysChanged(void);
+		virtual void allKeysChanged_int(void) = 0;
 
 	public:
 		/**
@@ -99,9 +115,9 @@ class KeyStore : public QObject
 		/**
 		 * Get a section name.
 		 * @param sectIdx Section index.
-		 * @return Section name, or empty string on error.
+		 * @return Section name, or nullptr on error.
 		 */
-		QString sectName(int sectIdx) const;
+		const rp_char *sectName(int sectIdx) const;
 
 		/**
 		 * Get the number of keys in a given section.
@@ -148,7 +164,7 @@ class KeyStore : public QObject
 		 * @param value New value.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int sectIdx, int keyIdx, const QString &value);
+		int setKey(int sectIdx, int keyIdx, const LibRpBase::rp_string &value);
 
 		/**
 		 * Set a key's value.
@@ -159,9 +175,9 @@ class KeyStore : public QObject
 		 * @param value New value.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int idx, const QString &value);
+		int setKey(int idx, const LibRpBase::rp_string &value);
 
-	public slots:
+	public /*slots*/:
 		/**
 		 * Mark all keys as saved.
 		 * This clears the "modified" field.
@@ -179,20 +195,22 @@ class KeyStore : public QObject
 		 */
 		bool hasChanged(void) const;
 
-	signals:
+	protected: /*signals:*/
 		/**
 		 * KeyStore has been changed by the user.
+		 * This must be reimplemented by subclasses
+		 * and implemented as a notification signal.
 		 */
-		void modified(void);
+		virtual void modified_int(void) = 0;
 
 	public:
 		enum ImportStatus {
 			Import_InvalidParams = 0,	// Invalid parameters. (Should not happen!)
-			Import_OpenError,	// Could not open the file. (TODO: More info?)
-			Import_ReadError,	// Could not read the file. (TODO: More info?)
-			Import_InvalidFile,	// File is not the correct type.
-			Import_NoKeysImported,	// No keys were imported.
-			Import_KeysImported,	// Keys were imported.
+			Import_OpenError,		// Could not open the file. (TODO: More info?)
+			Import_ReadError,		// Could not read the file. (TODO: More info?)
+			Import_InvalidFile,		// File is not the correct type.
+			Import_NoKeysImported,		// No keys were imported.
+			Import_KeysImported,		// Keys were imported.
 		};
 
 		/**
@@ -213,21 +231,23 @@ class KeyStore : public QObject
 		 * @param filename keys.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn importWiiKeysBin(const QString &filename);
+		ImportReturn importWiiKeysBin(const rp_char *filename);
 
 		/**
 		 * Import a 3DS boot9.bin file.
 		 * @param filename boot9.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn import3DSboot9bin(const QString &filename);
+		ImportReturn import3DSboot9bin(const rp_char *filename);
 
 		/**
 		 * Import a 3DS aeskeydb.bin file.
 		 * @param filename aeskeydb.bin filename.
 		 * @return Key import status.
 		 */
-		ImportReturn import3DSaeskeydb(const QString &filename);
+		ImportReturn import3DSaeskeydb(const rp_char *filename);
 };
 
-#endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTORE_HPP__ */
+}
+
+#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__ */

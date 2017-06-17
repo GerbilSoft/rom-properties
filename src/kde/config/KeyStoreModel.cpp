@@ -20,7 +20,8 @@
  ***************************************************************************/
 
 #include "KeyStoreModel.hpp"
-#include "KeyStore.hpp"
+#include "KeyStoreQt.hpp"
+#include "RpQt.hpp"
 
 // Qt includes.
 #include <QtGui/QFont>
@@ -43,7 +44,7 @@ class KeyStoreModelPrivate
 		Q_DISABLE_COPY(KeyStoreModelPrivate)
 
 	public:
-		KeyStore *keyStore;
+		KeyStoreQt *keyStore;
 
 		// Style variables.
 		struct style_t {
@@ -260,17 +261,18 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 	}
 
 	// Key index.
-	const KeyStore::Key *key = d->keyStore->getKey(LOWORD(id), HIWORD(id));
+	const KeyStoreQt::Key *key = d->keyStore->getKey(LOWORD(id), HIWORD(id));
 	if (!key)
 		return QVariant();
 
+	// TODO: Make KeyStoreUI templated so we can use QString directly?
 	switch (role) {
 		case Qt::DisplayRole:
 			switch (index.column()) {
 				case COL_KEY_NAME:
-					return key->name;
+					return RP2Q(key->name);
 				case COL_VALUE:
-					return key->value;
+					return RP2Q(key->value);
 				default:
 					break;
 			}
@@ -279,7 +281,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 		case Qt::EditRole:
 			switch (index.column()) {
 				case COL_VALUE:
-					return key->value;
+					return RP2Q(key->value);
 				default:
 					break;
 			}
@@ -292,19 +294,19 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 				case COL_ISVALID:
 					switch (key->status) {
 						default:
-						case KeyStore::Key::Status_Unknown:
+						case KeyStoreQt::Key::Status_Unknown:
 							// Unknown...
 							return d->style.pxmIsValid_unknown;
-						case KeyStore::Key::Status_NotAKey:
+						case KeyStoreQt::Key::Status_NotAKey:
 							// The key data is not in the correct format.
 							return d->style.pxmIsValid_invalid;
-						case KeyStore::Key::Status_Empty:
+						case KeyStoreQt::Key::Status_Empty:
 							// Empty key.
 							break;
-						case KeyStore::Key::Status_Incorrect:
+						case KeyStoreQt::Key::Status_Incorrect:
 							// Key is incorrect.
 							return d->style.pxmIsValid_invalid;
-						case KeyStore::Key::Status_OK:
+						case KeyStoreQt::Key::Status_OK:
 							// Key is correct.
 							return d->style.pxmIsValid_good;
 					}
@@ -379,9 +381,9 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 
 	// Edit the value.
 	// TODO: Make sure it's hexadecimal, and verify the key.
-	// KeyStore::setKey() will emit a signal if the value changes,
+	// KeyStoreQt::setKey() will emit a signal if the value changes,
 	// which will cause KeyStoreModel to emit dataChanged().
-	d->keyStore->setKey(LOWORD(id), HIWORD(id), value.toString());
+	d->keyStore->setKey(LOWORD(id), HIWORD(id), Q2RP(value.toString()));
 	return true;
 }
 
@@ -438,7 +440,7 @@ QVariant KeyStoreModel::headerData(int section, Qt::Orientation orientation, int
  * Set the KeyStore to use in this model.
  * @param keyStore KeyStore.
  */
-void KeyStoreModel::setKeyStore(KeyStore *keyStore)
+void KeyStoreModel::setKeyStore(KeyStoreQt *keyStore)
 {
 	Q_D(KeyStoreModel);
 	if (d->keyStore == keyStore) {
@@ -505,7 +507,7 @@ void KeyStoreModel::setKeyStore(KeyStore *keyStore)
  * Get the KeyStore in use by this model.
  * @return KeyStore.
  */
-KeyStore *KeyStoreModel::keyStore(void) const
+KeyStoreQt *KeyStoreModel::keyStore(void) const
 {
 	Q_D(const KeyStoreModel);
 	return d->keyStore;

@@ -3,23 +3,28 @@
 ## v1.1 (released 2017/??/??)
 
 * New features:
+  * (KDE) rp-config is now available in both the KDE4 and KDE5 frontends.
+    This is based on the rp-thumbnail stub that was previously used for the
+    GNOME frontend. Both of them are now part of a new executable, rp-stub.
+  * (KDE, Windows) rp-config now has a Key Manager tab, which allows you
+    to edit and verify encryption keys. There is also a key import function,
+    which allows you to import keys from certain types of key files.
+
+* New system features:
   * Nintendo 3DS firmware binaries are now supported. For official FIRM
     binaries, the CRC32 is compared against an internal database of known
     versions. This currently includes 1.0 through 11.4. For unofficial
     FIRM, various heuristics are used to determine if it's a well-known
     homebrew title.
-  * (KDE) rp-config is now available in both the KDE4 and KDE5 frontends.
-    This is based on the rp-thumbnail stub that was previously used for the
-    GNOME frontend. Both of them are now part of a new executable, rp-stub.
   * Encrypted DSiWare CIAs are now supported, provided you have the keys
     set up in keys.conf. (Slot0x3D, KeyX, KeyY-0 through KeyY-5; or,
     Slot0x3D KeyNormal-0 through KeyNormal-5)
   * Nintendo3DS: The logo section is now checked and displayed. Official
     Nintendo logos and a few Homebrew logos are supported. Anything else
     is listed as "Custom".
-  * MegaDrive: A new "Vector Table" tab has been added. This tab shows
+  * Mega Drive: A new "Vector Table" tab has been added. This tab shows
     the Initial SP and Entry Point, plus several other vectors.
-  * MegaDrive: A second ROM Header tab for locked-on ROMs has been added.
+  * Mega Drive: A second ROM Header tab for locked-on ROMs has been added.
     This shows the ROM header information for locked-on ROMs for e.g.
     "Sonic 3 & Knuckles".
 

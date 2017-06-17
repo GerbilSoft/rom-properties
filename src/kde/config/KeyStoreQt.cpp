@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
- * msvc_common.h: MSVC compatibility functions.                            *
+ * ROM Properties Page shell extension. (KDE)                              *
+ * KeyStoreQt.cpp: Key store object for Qt.                                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2012-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,38 +19,55 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__
+#include "KeyStoreQt.hpp"
 
-#ifdef _MSC_VER
-
-// MSVC doesn't have gettimeofday().
-// NOTE: MSVC does have struct timeval in winsock.h,
-// but it uses long, which is 32-bit.
-#include <time.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define timeval rp_timeval
-struct timeval {
-	time_t       tv_sec;	// seconds
-	unsigned int tv_usec;	// microseconds
-};
-
-#define timezone rp_timezone
-struct timezone {
-	int tz_minuteswest;	// minutes west of Greenwich
-	int tz_dsttime;		// type of DST correction
-};
-
-int gettimeofday(struct timeval *tv, struct timezone *tz);
-
-#ifdef __cplusplus
+/**
+ * Create a new KeyStore object.
+ * @param parent Parent object.
+ */
+KeyStoreQt::KeyStoreQt(QObject *parent)
+	: super(parent)
+{
+	// Load the keys.
+	reset();
 }
-#endif
 
-#endif /* _MSC_VER */
+KeyStoreQt::~KeyStoreQt()
+{ }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__ */
+/** Pure virtual functions for Qt signals. **/
+
+/**
+ * A key has changed.
+ * @param sectIdx Section index.
+ * @param keyIdx Key index.
+ */
+void KeyStoreQt::keyChanged_int(int sectIdx, int keyIdx)
+{
+	emit keyChanged(sectIdx, keyIdx);
+}
+
+/**
+ * A key has changed.
+ * @param idx Flat key index.
+ */
+void KeyStoreQt::keyChanged_int(int idx)
+{
+	emit keyChanged(idx);
+}
+
+/**
+ * All keys have changed.
+ */
+void KeyStoreQt::allKeysChanged_int(void)
+{
+	emit allKeysChanged();
+}
+
+/**
+ * KeyStore has been changed by the user.
+ */
+void KeyStoreQt::modified_int(void)
+{
+	emit modified();
+}

@@ -26,6 +26,8 @@ SET(rom-properties-win32_SRCS
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
 	config/CacheTab.cpp
+	config/KeyStore_OwnerDataCallback.cpp
+	sdk/win_iid.cpp
 	resource.rc
 	)
 SET(rom-properties-win32_H
@@ -47,9 +49,26 @@ SET(rom-properties-win32_H
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
 	config/CacheTab.hpp
-	QITab.h
+	config/KeyStore_OwnerDataCallback.hpp
+	sdk/QITab.h
+	sdk/IListView.hpp
+	sdk/IOwnerDataCallback.hpp
+	sdk/tsbase.h
+	sdk/windowsx_ts.h
+	sdk/commctrl_ts.h
 	resource.h
 	)
+
+IF(ENABLE_DECRYPTION)
+	SET(rom-properties-win32_CRYPTO_SRCS
+		config/KeyManagerTab.cpp
+		config/KeyStoreWin32.cpp
+		)
+	SET(rom-properties-win32_CRYPTO_H
+		config/KeyManagerTab.hpp
+		config/KeyStoreWin32.hpp
+		)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(MSVC)
 	# Precompiled headers.
@@ -82,12 +101,10 @@ ENDIF(MSVC)
 # the 'lib' directory. Use SHARED instead.
 # TODO: Disable building of import libraries.
 ADD_LIBRARY(rom-properties SHARED
-	${rom-properties-win32_PCH_SRC}
-	${rom-properties-win32_PCH_H}
-	${rom-properties-win32-DELAY_LOAD_SRC}
-	${rom-properties-win32-DELAY_LOAD_H}
-	${rom-properties-win32_SRCS}
-	${rom-properties-win32_H}
+	${rom-properties-win32_PCH_SRC} ${rom-properties-win32_PCH_H}
+	${rom-properties-win32-DELAY_LOAD_SRC} ${rom-properties-win32-DELAY_LOAD_H}
+	${rom-properties-win32_SRCS} ${rom-properties-win32_H}
+	${rom-properties-win32_CRYPTO_SRCS} ${rom-properties-win32_CRYPTO_H}
 	)
 # NOTE: Only enabling PCH for MSVC.
 IF(MSVC)

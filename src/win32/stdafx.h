@@ -26,25 +26,36 @@
 #error stdafx.h is Windows only.
 #endif
 
+// Make sure STRICT is defined for better type safety.
+#ifndef STRICT
+#define STRICT
+#endif
+
 // Windows SDK defines and includes.
 #include "libwin32common/RpWin32_sdk.h"
+#include <windows.h>
+
+// Typesafe inline function wrappers for some Windows headers.
+#include "sdk/windowsx_ts.h"
+#include "sdk/commctrl_ts.h"
 
 // Additional Windows headers.
-#include <windows.h>
-#include <windowsx.h>
 #include <olectl.h>
-#include <commctrl.h>
 #include <shlobj.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <comdef.h>
 #include <shlwapi.h>
+#include <commdlg.h>
 
 // IEmptyVolumeCache and related.
 #include <emptyvc.h>
 
-// NOTE: Since we're targetting XP/2003 minimum, some progress bar
-// functionality isn't defined in the headers.
+/** Windows Vista functionality. **/
+// These aren't available in the Windows headers unless
+// _WIN32_WINNT >= 0x0600.
+#if _WIN32_WINNT < 0x0600
+
 #ifndef PBM_SETSTATE
 #define PBM_SETSTATE            (WM_USER+16) // wParam = PBST_[State] (NORMAL, ERROR, PAUSED)
 #endif
@@ -61,5 +72,56 @@
 #ifndef PBST_PAUSED
 #define PBST_PAUSED             0x0003
 #endif
+
+// Split buttons. (for buttons with dropdown menus)
+#ifndef BS_SPLITBUTTON
+#define BS_SPLITBUTTON	0x0000000CL
+#endif
+#ifndef BCSIF_GLYPH
+#define BCSIF_GLYPH	0x0001
+#endif
+#ifndef BCSIF_IMAGE
+#define BCSIF_IMAGE	0x0002
+#endif
+#ifndef BCSIF_STYLE
+#define BCSIF_STYLE	0x0004
+#endif
+#ifndef BCSIF_SIZE
+#define BCSIF_SIZE	0x0008
+#endif
+#ifndef BCSS_NOSPLIT
+#define BCSS_NOSPLIT	0x0001
+#endif
+#ifndef BCSS_STRETCH
+#define BCSS_STRETCH	0x0002
+#endif
+#ifndef BCSS_ALIGNLEFT
+#define BCSS_ALIGNLEFT	0x0004
+#endif
+#ifndef BCSS_IMAGE
+#define BCSS_IMAGE	0x0008
+#endif
+#ifndef BCM_SETSPLITINFO
+#define BCM_SETSPLITINFO         (BCM_FIRST + 0x0007)
+#define Button_SetSplitInfo(hwnd, pInfo) \
+    (BOOL)SNDMSG((hwnd), BCM_SETSPLITINFO, 0, (LPARAM)(pInfo))
+#define BCM_GETSPLITINFO         (BCM_FIRST + 0x0008)
+#define Button_GetSplitInfo(hwnd, pInfo) \
+    (BOOL)SNDMSG((hwnd), BCM_GETSPLITINFO, 0, (LPARAM)(pInfo))
+typedef struct tagBUTTON_SPLITINFO {
+	UINT        mask;
+	HIMAGELIST  himlGlyph;
+	UINT        uSplitStyle;
+	SIZE        size;
+} BUTTON_SPLITINFO, *PBUTTON_SPLITINFO;
+#endif
+
+// ListView structs.
+typedef struct tagLVITEMINDEX {
+	int iItem;
+	int iGroup;
+} LVITEMINDEX, *PLVITEMINDEX;
+
+#endif /* _WIN32_WINNT < 0x0600 */
 
 #endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

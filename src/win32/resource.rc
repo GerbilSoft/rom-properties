@@ -33,6 +33,9 @@
 /** Manifest. **/
 ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rom-properties.dll.manifest"
 
+/** Icons. **/
+IDI_KEY_VALID	ICON	"res\\dialog-ok-apply.ico"
+
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
 // on Windows XP.
@@ -107,14 +110,14 @@ END
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
-EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0
-{
+BEGIN
     LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 302, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore\nFIXME: Generate the grid programmatically to avoid spacing issues?", IDC_IMAGETYPES_DESC2, 7, 37, 306, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\nare provided by <a href=""http://www.gametdb.com/"">GameTDB</a>.\namiibo images are provided by <a href=""http://amiibo.life/"">amiibo.life</a>, the Unofficial amiibo Database.", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 179, 302, 24, 0x00000000
-}
+END
 
 /**
  * Configuration: Download settings.
@@ -122,7 +125,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_CONFIG_DOWNLOADS DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
-EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     AUTOCHECKBOX    "Enable external image downloads.", IDC_EXTIMGDL, 7, 7, 319, 8, 0, WS_EX_TRANSPARENT
@@ -136,7 +139,7 @@ END
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_CONFIG_CACHE DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
-EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "If any image type settings were changed, you will need to clear the system thumbnail cache.", IDC_STATIC, 7, 7, 317, 8, SS_LEFT, WS_EX_TRANSPARENT
@@ -153,13 +156,13 @@ END
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 333, 210
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
-EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "If any image type settings were changed, you will need to clear the thumbnail cache files.\nThis version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted.", IDC_STATIC, 7, 7, 317, 25, SS_LEFT, WS_EX_TRANSPARENT
     AUTORADIOBUTTON "Find all Thumbs.db files on the specified drive(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
     AUTORADIOBUTTON "Specify a path", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST, 7, 46, 317, 40, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 317, 40, WS_EX_LEFT | WS_EX_CLIENTEDGE
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 263, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
     PUSHBUTTON      "Browse...", IDC_CACHE_XP_BROWSE, 275, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
     PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 90, 318, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
@@ -168,3 +171,34 @@ BEGIN
     LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 176, 317, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 187, 317, 16, WS_EX_LEFT
 END
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Configuration: Key Manager.
+ */
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 333, 210
+STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
+EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
+BEGIN
+    CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL, 7, 7, 317, 178, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    // EDIT control is created as a child control of the ListView.
+    //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
+    PUSHBUTTON      "Import", IDC_KEYMANAGER_IMPORT, 7, 189, 50, 14, 0, WS_EX_LEFT
+END
+
+/**
+ * Configuration: Key Manager. ("Import" popup menu.)
+ */
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDR_KEYMANAGER_IMPORT MENU
+BEGIN
+    POPUP "Import"
+    BEGIN
+        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
+        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
+        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
+    END
+END
+#endif /* ENABLE_DECRYPTION */

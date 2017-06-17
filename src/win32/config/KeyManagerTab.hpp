@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
- * msvc_common.h: MSVC compatibility functions.                            *
+ * ROM Properties Page shell extension. (Win32)                            *
+ * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,38 +19,52 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__
+#ifndef __ROMPROPERTIES_WIN32_CONFIG_KEYMANAGERTAB_HPP__
+#define __ROMPROPERTIES_WIN32_CONFIG_KEYMANAGERTAB_HPP__
 
-#ifdef _MSC_VER
+#include "ITab.hpp"
 
-// MSVC doesn't have gettimeofday().
-// NOTE: MSVC does have struct timeval in winsock.h,
-// but it uses long, which is 32-bit.
-#include <time.h>
+class KeyManagerTabPrivate;
+class KeyManagerTab : public ITab
+{
+	public:
+		KeyManagerTab();
+		virtual ~KeyManagerTab();
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	private:
+		typedef ITab super;
+		RP_DISABLE_COPY(KeyManagerTab)
+	private:
+		friend class KeyManagerTabPrivate;
+		KeyManagerTabPrivate *const d_ptr;
 
-#define timeval rp_timeval
-struct timeval {
-	time_t       tv_sec;	// seconds
-	unsigned int tv_usec;	// microseconds
+	public:
+		/**
+		 * Create the HPROPSHEETPAGE for this tab.
+		 *
+		 * NOTE: This function can only be called once.
+		 * Subsequent invocations will return nullptr.
+		 *
+		 * @return HPROPSHEETPAGE.
+		 */
+		virtual HPROPSHEETPAGE getHPropSheetPage(void) override final;
+
+		/**
+		 * Reset the contents of this tab.
+		 */
+		virtual void reset(void) override final;
+
+		/**
+		 * Load the default configuration.
+		 * This does NOT save, and will only emit modified()
+		 * if it's different from the current configuration.
+		 */
+		virtual void loadDefaults(void) override final;
+
+		/**
+		 * Save the contents of this tab.
+		 */
+		virtual void save(void) override final;
 };
 
-#define timezone rp_timezone
-struct timezone {
-	int tz_minuteswest;	// minutes west of Greenwich
-	int tz_dsttime;		// type of DST correction
-};
-
-int gettimeofday(struct timeval *tv, struct timezone *tz);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _MSC_VER */
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_MSVC_COMMON_H__ */
+#endif /* __ROMPROPERTIES_WIN32_CONFIG_KEYMANAGERTAB_HPP__ */
