@@ -235,7 +235,7 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	info.header.size = sizeof(header);
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for PS1.
-	info.szFile = 0;	// Not needed for PS1.
+	info.szFile = file->size();
 	d->saveType = isRomSupported(&info);
 
 	switch (d->saveType) {
@@ -325,9 +325,13 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 	}
 	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct)
 	    && memcmp(header + sizeof(PS1_54_Header), sc_magic, sizeof(sc_magic)) == 0) {
+		// Extra filesize check to prevent false-positives
+		if (info->szFile % 8192 != 54) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_54;
 	}
 	if (memcmp(header, sc_magic, sizeof(sc_magic)) == 0) {
+		// Extra filesize check to prevent false-positives
+		if (info->szFile % 8192 != 0) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_RAW;
 	}
 	
