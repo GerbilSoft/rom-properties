@@ -51,11 +51,10 @@ ENDIF(CMAKE_DL_LIBS)
 ###########################
 
 INCLUDE(DirInstallPaths)
-# TODO: Uncomment this once symlinking is fixed.
-#INSTALL(TARGETS rp-stub
-#	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
-#	COMPONENT "plugin"
-#	)
+INSTALL(TARGETS rp-stub
+	RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+	COMPONENT "plugin"
+	)
 
 # FIXME: Create symlinks for rp-thumbnail and rp-config.
 # CMake doesn't really like this, and in the Debian package build,
