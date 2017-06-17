@@ -85,6 +85,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 			PS1_54_Header ps54Header;
 		};
 		PS1_SC_Struct scHeader;
+		uint8_t icon_data[3][16 * 16 / 2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 
 		/**
 		 * Load the save file's icons.
@@ -185,7 +186,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
 
 		// Icon format is linear 16x16 4bpp with RGB555 palette.
 		iconAnimData->frames[i] = ImageDecoder::fromPS1_CI4(16, 16,
-			scHeader.icon_data[i], sizeof(scHeader.icon_data[i]),
+			icon_data[i], sizeof(icon_data[i]),
 			scHeader.icon_pal, sizeof(scHeader.icon_pal));
 	}
 
@@ -244,17 +245,21 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 			// Save the header for later.
 			memcpy(&d->psvHeader, header, sizeof(d->psvHeader));
 			memcpy(&d->scHeader, header + sizeof(d->psvHeader), sizeof(d->scHeader));
+			memcpy(d->icon_data, header + sizeof(d->psvHeader) + sizeof(d->scHeader), sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_RAW:
 			memcpy(&d->scHeader, header, sizeof(d->scHeader));
+			memcpy(d->icon_data, header + sizeof(d->scHeader), sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
 			memcpy(&d->blockHeader, header, sizeof(d->blockHeader));
 			memcpy(&d->scHeader, header + sizeof(d->blockHeader), sizeof(d->scHeader));
+			memcpy(d->icon_data, header + sizeof(d->blockHeader) + sizeof(d->scHeader), sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_54:
 			memcpy(&d->ps54Header, header, sizeof(d->ps54Header));
 			memcpy(&d->scHeader, header + sizeof(d->ps54Header), sizeof(d->scHeader));
+			memcpy(d->icon_data, header + sizeof(d->ps54Header) + sizeof(d->scHeader), sizeof(d->icon_data));
 			break;
 		default:
 			// Unknown save type.
@@ -278,7 +283,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(PS1_SC_Struct))
+	    info->header.size < sizeof(PS1_SC_Struct) + 128*3 )
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
@@ -289,7 +294,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 	// Check the SC struct magic.
 	static const char sc_magic[2] = { 'S','C' };
-	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct)
+	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct) + 128*3
 	    && memcmp(header + sizeof(PS1_PSV_Header), sc_magic, sizeof(sc_magic)) == 0) {
 		// Check the PSV magic.
 		static const char psv_magic[8] = {
@@ -303,7 +308,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		// This is a PSV (PS1 on PS3) save file.
 		return PlayStationSavePrivate::SAVE_TYPE_PSV;
 	}
-	if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct)
+	if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct) + 128*3
 	    && memcmp(header + sizeof(PS1_Block_Entry), sc_magic, sizeof(sc_magic)) == 0) {
 		// Check the block magic.
 		static const char block_magic[4] = {
@@ -323,7 +328,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 		return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
 	}
-	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct)
+	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct) + 128*3
 	    && memcmp(header + sizeof(PS1_54_Header), sc_magic, sizeof(sc_magic)) == 0) {
 		// Extra filesize check to prevent false-positives
 		if (info->szFile % 8192 != 54) return -1;
