@@ -177,10 +177,11 @@ class KeyManagerTabPrivate
 
 		/**
 		 * ListView CustomDraw function.
-		 * @param plvcd	[in] NMLVCUSTOMDRAW
+		 * @param hListView	[in] ListView control.
+		 * @param plvcd		[in] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(HWND hListView, const NMLVCUSTOMDRAW *plvcd);
 
 		/**
 		 * Load images.
@@ -708,7 +709,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					const int result = d->ListView_CustomDraw(reinterpret_cast<const NMLVCUSTOMDRAW*>(lParam));
+					const int result = d->ListView_CustomDraw(pHdr->hwndFrom, reinterpret_cast<const NMLVCUSTOMDRAW*>(lParam));
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
 					return TRUE;
 				}
@@ -1164,10 +1165,11 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 
 /**
  * ListView CustomDraw function.
- * @param plvcd	[in] NMLVCUSTOMDRAW
+ * @param hListView	[in] ListView control.
+ * @param plvcd		[in] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd)
+inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVCUSTOMDRAW *plvcd)
 {
 	// Make sure the "Value" column is drawn with a monospaced font.
 	// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
@@ -1228,11 +1230,25 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd
 					if (!hDrawIcon)
 						break;
 
+					const RECT *pRcSubItem = &plvcd->nmcd.rc;
+					RECT rectTmp;
+					if (pRcSubItem->right == 0 || pRcSubItem->bottom == 0) {
+						// Windows XP: plvcd->nmcd.rc isn't initialized.
+						// Get the subitem RECT manually.
+						// TODO: Increase row height, or decrease icon size?
+						// The icon is slightly too big for the default row
+						// height on XP.
+						BOOL bRet = ListView_GetSubItemRect(hListView, (int)plvcd->nmcd.dwItemSpec, plvcd->iSubItem, LVIR_BOUNDS, &rectTmp);
+						if (!bRet)
+							break;
+						pRcSubItem = &rectTmp;
+					}
+
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
 
-					const int x = plvcd->nmcd.rc.left + (((plvcd->nmcd.rc.right - plvcd->nmcd.rc.left) - szIcon.cx) / 2);
-					const int y = plvcd->nmcd.rc.top + (((plvcd->nmcd.rc.bottom - plvcd->nmcd.rc.top) - szIcon.cy) / 2);
+					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
+					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - szIcon.cy) / 2);
 
 					DrawIconEx(plvcd->nmcd.hdc, x, y, hIconInvalid,
 						szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
