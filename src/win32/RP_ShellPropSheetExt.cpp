@@ -466,6 +466,13 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		// Get the banner.
 		const rp_image *banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
+			// Save the banner size.
+			if (szBanner.cx == 0) {
+				szBanner.cx = banner->width();
+				szBanner.cy = banner->height();
+				incSizeToMinimum(szBanner);
+			}
+
 			// Convert to HBITMAP using the window background color.
 			// TODO: Redo if the window background color changes.
 			hbmpBanner = RpImageWin32::toHBITMAP(banner, gdipBgColor, szBanner, true);
@@ -485,6 +492,13 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 		// Get the icon.
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
+			// Save the icon size.
+			if (szIcon.cx == 0) {
+				szIcon.cx = icon->width();
+				szIcon.cy = icon->height();
+				incSizeToMinimum(szIcon);
+			}
+
 			// Get the animated icon data.
 			iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
@@ -608,9 +622,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the banner.
 		banner = romData->image(RomData::IMG_INT_BANNER);
 		if (banner && banner->isValid()) {
-			szBanner.cx = banner->width();
-			szBanner.cy = banner->height();
-			incSizeToMinimum(szBanner);
+			// Save the banner size.
+			if (szBanner.cx == 0) {
+				szBanner.cx = banner->width();
+				szBanner.cy = banner->height();
+				incSizeToMinimum(szBanner);
+			}
 
 			// Add the banner width.
 			// The banner will be assigned to a WC_STATIC control.
@@ -630,9 +647,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 		// Get the icon.
 		icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
-			szIcon.cx = icon->width();
-			szIcon.cy = icon->height();
-			incSizeToMinimum(szIcon);
+			// Save the icon size.
+			if (szIcon.cx == 0) {
+				szIcon.cx = icon->width();
+				szIcon.cy = icon->height();
+				incSizeToMinimum(szIcon);
+			}
 
 			// Add the icon width.
 			// The icon will be assigned to a WC_STATIC control.

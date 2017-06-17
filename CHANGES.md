@@ -29,6 +29,8 @@
   * Fixed issues with Shift-JIS titles in some PS1 save files. The title
     fields had garbage characters after the main title, with NULLs before
     and after the garbage characters. (#83)
+  * (Windows) Property page: Fixed icon resizing for icons smaller than
+    32x32. This only affects PS1 save files at the moment.
 
 ## v1.0 (released 2017/05/20)
 
