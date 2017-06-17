@@ -312,6 +312,13 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 			return -1;
 		}
 
+		// Check the checksum
+		uint8_t checksum = 0;
+		for (int i = 0; i < sizeof(PS1_Block_Entry); i++) {
+			checksum ^= header[i];
+		}
+		if (checksum != 0) return -1;
+
 		return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
 	}
 	if (memcmp(header + sizeof(PS1_54_Header), sc_magic, sizeof(sc_magic)) == 0) {
