@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.gerbilsoft.rom-properties.SpecializedThumbnailer1
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/rp-thumbnailer-dbus

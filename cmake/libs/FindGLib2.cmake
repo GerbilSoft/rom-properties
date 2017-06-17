@@ -1,4 +1,4 @@
-# Find GLIB2 libraries and headers.
+# Find GLib2 libraries and headers.
 # If found, the following variables will be defined:
 # - GLib2_FOUND: System has GLib2.
 # - GLib2_INCLUDE_DIRS: GLib2 include directories.

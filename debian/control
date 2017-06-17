@@ -28,6 +28,16 @@ Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
 Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
+Package: rom-properties-all
+Architecture: any
+Depends: rom-properties-kde4, rom-properties-kde5, rom-properties-xfce, rom-properties-gnome, rom-properties-cli, rom-properties-stub
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This is a meta-package that installs all rom-properties packages.
+
 Package: rom-properties-kde4
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -60,13 +70,14 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-gnome
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-stub
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
  including Nintendo GameCube and Wii.
  .
  This package contains the Nautilus (GNOME 3, Unity) version.
+ The stub package is required for thumbnailing.
 
 Package: rom-properties-cli
 Architecture: any

@@ -52,8 +52,14 @@ using LibRomData::TCreateThumbnail;
 #include <memory>
 using std::unique_ptr;
 
+// Qt includes.
+#include <QtCore/QDateTime>
+#include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#include <QtCore/QMimeDatabase>
+#endif
 
 // KDE protocol manager.
 // Used to find the KDE proxy settings.
@@ -298,6 +304,46 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 		// No image.
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
+	}
+
+	// Get values for the XDG thumbnail cache text chunks.
+	// KDE uses this order: Software, MTime, Mimetype, Size, URI
+
+	// Software.
+	// TODO: KDE uses zTXt here.
+	// Qt uses zTXt if the text data is 40 characters or more.
+	ret_img.setText(QLatin1String("Software"),
+		QString::fromLatin1("ROM Properties Page shell extension (KDE%1)").arg(QT_VERSION >> 16));
+
+	// Modification time.
+	const QString qs_source_file = QString::fromUtf8(source_file);
+	QFileInfo fi_src(qs_source_file);
+	int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
+	if (mtime > 0) {
+		ret_img.setText(QLatin1String("Thumb::MTime"),
+			QString::number(mtime));
+	}
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	// MIME type.
+	// TODO: QMimeDatabase was introduced in Qt5.
+	// Use some fallback for Qt4.
+	QMimeDatabase mimeDatabase;
+	QMimeType mimeType = mimeDatabase.mimeTypeForFile(fi_src);
+	ret_img.setText(QLatin1String("Thumb::Mimetype"), mimeType.name());
+#endif
+
+	// File size.
+	int64_t szFile = fi_src.size();
+	if (szFile > 0) {
+		ret_img.setText(QLatin1String("Thumb::Size"),
+			QString::number(szFile));
+	}
+
+	// URI.
+	QUrl url = QUrl::fromLocalFile(qs_source_file);
+	if (url.isValid() && !url.isEmpty()) {
+		ret_img.setText(QLatin1String("Thumb::URI"), url.toString());
 	}
 
 	// Save the image.

@@ -1,1 +1,4 @@
 usr/lib/*/thunarx-2/rom-properties-xfce.so
+usr/bin/rp-thumbnailer-dbus
+usr/share/dbus-1/services/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service
+usr/share/xfce4/thumbnailers/com.gerbilsoft.rom-properties.SpecializedThumbnailer1.service

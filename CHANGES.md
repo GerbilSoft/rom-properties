@@ -9,6 +9,8 @@
   * (KDE, Windows) rp-config now has a Key Manager tab, which allows you
     to edit and verify encryption keys. There is also a key import function,
     which allows you to import keys from certain types of key files.
+  * (XFCE) Thumbnailing is now supported using tumblerd's D-Bus specialized
+    thumbnailer interface. (#39)
 
 * New system features:
   * Nintendo 3DS firmware binaries are now supported. For official FIRM

@@ -26,11 +26,13 @@
  * function from the library.
  */
 #include "config.version.h"
-#include "config.rp-stub.h"
+#include "dll-search.h"
 
+// C includes.
 #include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,50 +58,8 @@ typedef int (*PFN_RP_SHOW_CONFIG_DIALOG)(int argc, char *argv[]);
 
 // Are we running as rp-config?
 static uint8_t is_rp_config = 0;
-
-// Supported rom-properties frontends.
-typedef enum {
-	RP_FE_KDE4,
-	RP_FE_KDE5,
-	RP_FE_XFCE,
-	RP_FE_GNOME,
-
-	RP_FE_MAX
-} RP_Frontend;
-
-// Extension paths.
-static const char *const RP_Extension_Path[RP_FE_MAX] = {
-#ifdef KDE4_PLUGIN_INSTALL_DIR
-	KDE4_PLUGIN_INSTALL_DIR "/rom-properties-kde4.so",
-#else
-	NULL,
-#endif
-#ifdef KDE5_PLUGIN_INSTALL_DIR
-	KDE5_PLUGIN_INSTALL_DIR "/rom-properties-kde5.so",
-#else
-	NULL,
-#endif
-#ifdef ThunarX2_EXTENSIONS_DIR
-	ThunarX2_EXTENSIONS_DIR "/rom-properties-xfce.so",
-#else
-	NULL,
-#endif
-#ifdef LibNautilusExtension_EXTENSION_DIR
-	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gnome.so",
-#else
-	NULL,
-#endif
-};
-
-// Plugin priority order.
-// - Index: Current desktop environment. (RP_Frontend)
-// - Value: Plugin to use. (RP_Frontend)
-static const uint8_t plugin_prio[4][4] = {
-	{RP_FE_KDE4, RP_FE_KDE5, RP_FE_XFCE, RP_FE_GNOME},	// RP_FE_KDE4
-	{RP_FE_KDE5, RP_FE_KDE4, RP_FE_GNOME, RP_FE_XFCE},	// RP_FE_KDE5
-	{RP_FE_XFCE, RP_FE_GNOME, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_XFCE
-	{RP_FE_GNOME, RP_FE_XFCE, RP_FE_KDE5, RP_FE_KDE4},	// RP_FE_GNOME
-};
+// Is debug logging enabled?
+static uint8_t is_debug = 0;
 
 static void show_version(void)
 {
@@ -142,6 +102,27 @@ static void show_help(const char *argv0)
 	}
 }
 
+/**
+ * Debug print function for rp_dll_search().
+ * @param level Debug level.
+ * @param format Format string.
+ * @param ... Format arguments.
+ * @return vfprintf() return value.
+ */
+static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
+{
+	if (level < LEVEL_ERROR && !is_debug)
+		return 0;
+
+	va_list args;
+	va_start(args, format);
+	int ret = vfprintf(stderr, format, args);
+	fputc('\n', stderr);
+	va_end(args);
+
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	/**
@@ -180,7 +161,6 @@ int main(int argc, char *argv[])
 
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
-	uint8_t debug = 0;
 	int maximum_size = 256;
 	int c, option_index;
 	while ((c = getopt_long(argc, argv, "s:cdhV", long_options, &option_index)) != -1) {
@@ -212,7 +192,7 @@ int main(int argc, char *argv[])
 
 			case 'd':
 				// Enable debug output.
-				debug = 1;
+				is_debug = 1;
 				break;
 
 			case 'h':
@@ -251,76 +231,37 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// Attempt to open all available plugins.
-	// TODO: Determine the current desktop. Assuming XFCE for now.
-	const uint8_t cur_desktop = RP_FE_XFCE;
-
+	// Search for a usable rom-properties library.
+	// TODO: Desktop override option?
 	const char *const symname = (config ? "rp_show_config_dialog" : "rp_create_thumbnail");
-	const uint8_t *prio = &plugin_prio[cur_desktop][0];
-	void *hRpPlugin = NULL;
-	void *pfn = NULL;
-	for (unsigned int i = 4; i > 0; i--, prio++) {
-		// Attempt to open this plugin.
-		const char *const plugin_path = RP_Extension_Path[*prio];
-		if (!plugin_path)
-			continue;
-
-		if (debug) {
-			fprintf(stderr, "Attempting to open: %s\n", plugin_path);
-		}
-		hRpPlugin = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
-		if (!hRpPlugin) {
-			// Library not found.
-			continue;
-		}
-
-		// Find the requested symbol.
-		if (debug) {
-			fprintf(stderr, "Checking for symbol: %s\n", symname);
-		}
-		pfn = dlsym(hRpPlugin, symname);
-		if (!pfn) {
-			// Symbol not found.
-			dlclose(hRpPlugin);
-			hRpPlugin = NULL;
-			continue;
-		}
-
-		// Found the symbol.
-		break;
+	void *pDll = NULL, *pfn = NULL;
+	int ret = rp_dll_search(symname, &pDll, &pfn, fnDebug);
+	if (ret != 0) {
+		return ret;
 	}
 
-	if (!pfn) {
-		if (hRpPlugin) {
-			dlclose(hRpPlugin);
-		}
-		fprintf(stderr, "*** ERROR: Could not find %s() in any installed rom-properties plugin.\n", symname);
-		return EXIT_FAILURE;
-	}
-
-	int ret;
 	if (!config) {
 		// Create the thumbnail.
 		const char *const source_file = argv[optind];
 		const char *const output_file = argv[optind+1];
-		if (debug) {
+		if (is_debug) {
 			fprintf(stderr, "Calling function: %s(\"%s\", \"%s\", %d);\n",
 				symname, source_file, output_file, maximum_size);
 		}
 		ret = ((PFN_RP_CREATE_THUMBNAIL)pfn)(source_file, output_file, maximum_size);
 	} else {
 		// Show the configuration dialog.
-		if (debug) {
+		if (is_debug) {
 			fprintf(stderr, "Calling function: %s();\n", symname);
 		}
 		// FIXME: argc/argv may be manipulated by getopt().
 		ret = ((PFN_RP_SHOW_CONFIG_DIALOG)pfn)(argc, argv);
 	}
 
-	if (debug) {
+	if (is_debug) {
 		fprintf(stderr, "%s() returned %d.\n", symname, ret);
 	}
-	dlclose(hRpPlugin);
+	dlclose(pDll);
 	if (ret != 0) {
 		fprintf(stderr, "*** ERROR: %s() returned %d.\n", symname, ret);
 	}

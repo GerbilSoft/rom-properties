@@ -45,6 +45,7 @@ using LibRomData::TCreateThumbnail;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cinttypes>
 
 // C++ includes.
 #include <memory>
@@ -261,15 +262,103 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
+	// Get values for the XDG thumbnail cache text chunks.
+	// KDE uses this order: Software, MTime, Mimetype, Size, URI
+	const char *option_keys[8];
+	const char *option_values[8];
+	int curopt = 0;
+
+	// TODO: Distinguish between GNOME and XFCE?
+	// TODO: Does gdk_pixbuf_savev() support zTXt?
+	// TODO: Set keys in the Qt one.
+	option_keys[curopt] = "tEXt::Software";
+	option_values[curopt] = "ROM Properties Page shell extension (GTK+)";
+	curopt++;
+
+	// Modification time and file size.
+	char mtime_str[32];
+	char szFile_str[32];
+	mtime_str[0] = 0;
+	szFile_str[0] = 0;
+	GFile *const f_src = g_file_new_for_path(source_file);
+	if (f_src) {
+		GError *error = nullptr;
+		GFileInfo *const fi_src = g_file_query_info(f_src,
+			G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_STANDARD_SIZE,
+			G_FILE_QUERY_INFO_NONE, nullptr, &error);
+		if (!error) {
+			// Get the modification time.
+			guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+			if (mtime > 0) {
+				snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
+			}
+
+			// Get the file size.
+			gint64 szFile = g_file_info_get_size(fi_src);
+			if (szFile > 0) {
+				snprintf(szFile_str, sizeof(szFile_str), "%" PRId64, szFile);
+			}
+
+			g_object_unref(fi_src);
+		} else {
+			g_error_free(error);
+		}
+		g_object_unref(f_src);
+	}
+
+	// Modification time.
+	if (mtime_str[0] != 0) {
+		option_keys[curopt] = "tEXt::Thumb::MTime";
+		option_values[curopt] = mtime_str;
+		curopt++;
+	}
+
+	// MIME type.
+	// TODO: Get this directly from the D-Bus call or similar?
+	gchar *const content_type = g_content_type_guess(source_file, nullptr, 0, nullptr);
+	gchar *mime_type = nullptr;
+	if (content_type) {
+		gchar *const mime_type = g_content_type_get_mime_type(content_type);
+		if (mime_type) {
+			option_keys[curopt] = "tEXt::Thumb::Mimetype";
+			option_values[curopt] = mime_type;
+			curopt++;
+		}
+		g_free(content_type);
+	}
+
+	// File size.
+	if (szFile_str[0] != 0) {
+		option_keys[curopt] = "tEXt::Thumb::Size";
+		option_values[curopt] = szFile_str;
+		curopt++;
+	}
+
+	// URI.
+	gchar *const uri = g_filename_to_uri(source_file, nullptr, nullptr);
+	if (uri) {
+		option_keys[curopt] = "tEXt::Thumb::URI";
+		option_values[curopt] = uri;
+		curopt++;
+	}
+
+	// End of options.
+	option_keys[curopt] = nullptr;
+	option_values[curopt] = nullptr;
+
 	// Save the image.
 	ret = RPCT_SUCCESS;
 	GError *error = nullptr;
-	if (!gdk_pixbuf_save(ret_img, output_file, "png", &error, nullptr)) {
+	if (!gdk_pixbuf_savev(ret_img, output_file, "png",
+	    (char**)option_keys, (char**)option_values, &error))
+	{
 		// Image save failed.
 		g_error_free(error);
 		ret = RPCT_OUTPUT_FILE_FAILED;
 	}
 
+	g_free(uri);
+	g_free(mime_type);
 	g_object_unref(ret_img);
 	romData->unref();
 	return ret;

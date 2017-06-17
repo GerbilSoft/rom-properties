@@ -30,7 +30,7 @@ FIND_PACKAGE(LibNautilusExtension 3.0.0)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.rp-stub.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.rp-stub.h")
 
 # rp-stub
-ADD_EXECUTABLE(rp-stub rp-stub.c)
+ADD_EXECUTABLE(rp-stub rp-stub.c dll-search.c dll-search.h)
 DO_SPLIT_DEBUG(rp-stub)
 TARGET_INCLUDE_DIRECTORIES(rp-stub
 	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -56,23 +56,39 @@ INSTALL(TARGETS rp-stub
 	COMPONENT "plugin"
 	)
 
-# Create symlinks for rp-thumbnail and rp-config.
-# Reference: https://cmake.org/pipermail/cmake/2010-April/036504.html
-SET(RP_STUB_FULL_PATH "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rp-stub")
-SET(RP_THUMBNAIL_FULL_PATH "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIBEXEC}/rp-thumbnail")
-SET(RP_CONFIG_FULL_PATH "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_EXE}/rp-config")
-INSTALL(CODE "
-	EXECUTE_PROCESS(COMMAND ln -vsf \"${RP_STUB_FULL_PATH}\" \"${RP_THUMBNAIL_FULL_PATH}\")
-	EXECUTE_PROCESS(COMMAND ln -vsf \"${RP_STUB_FULL_PATH}\" \"${RP_CONFIG_FULL_PATH}\")
-	")
+# FIXME: Create symlinks for rp-thumbnail and rp-config.
+# CMake doesn't really like this, and in the Debian package build,
+# it results in errors due to attempting to create a symlink in
+# the real file system instead of the fakeroot.
+INSTALL(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+	DESTINATION "${DIR_INSTALL_LIBEXEC}"
+	RENAME "rp-thumbnail"
+	COMPONENT "plugin"
+	)
+INSTALL(FILES "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/rp-stub"
+	DESTINATION "${DIR_INSTALL_EXE}"
+	RENAME "rp-config"
+	COMPONENT "plugin"
+	)
 
 # Check if a split debug file should be installed.
 IF(INSTALL_DEBUG)
 	# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 	GET_TARGET_PROPERTY(DEBUG_FILENAME rp-stub PDB)
 	IF(DEBUG_FILENAME)
+		# TODO: Uncomment this once symlinking is fixed.
+		#INSTALL(FILES "${DEBUG_FILENAME}"
+		#	DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+		#	COMPONENT "debug"
+		#	)
 		INSTALL(FILES "${DEBUG_FILENAME}"
 			DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+			RENAME "rp-thumbnail.debug"
+			COMPONENT "debug"
+			)
+		INSTALL(FILES "${DEBUG_FILENAME}"
+			DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+			RENAME "rp-config.debug"
 			COMPONENT "debug"
 			)
 	ENDIF(DEBUG_FILENAME)

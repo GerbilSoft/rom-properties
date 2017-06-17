@@ -107,7 +107,6 @@ class RpPng
 
 		/**
 		 * Save an animated image in APNG format to a file.
-		 * IRpFile must be open for writing.
 		 *
 		 * If the animated image contains a single frame,
 		 * a standard PNG image will be written.

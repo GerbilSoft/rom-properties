@@ -71,6 +71,9 @@ struct _RomPropertiesPage {
 
 	/* Properties */
 	ThunarxFileInfo	*file;
+
+	// Signal handler ID for file::changed()
+	gulong file_changed_signal_handler_id;
 };
 
 // FIXME: THUNARX_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -107,6 +110,9 @@ rom_properties_page_class_init(RomPropertiesPageClass *klass)
 static void
 rom_properties_page_init(RomPropertiesPage *page)
 {
+	page->file = nullptr;
+	page->file_changed_signal_handler_id = 0;
+
 	// Initialize the RomDataView.
 	page->romDataView = rom_data_view_new();
 	rom_data_view_set_desc_format_type(ROM_DATA_VIEW(page->romDataView), RP_DFT_XFCE);
@@ -119,22 +125,28 @@ rom_properties_page_dispose(GObject *object)
 {
 	RomPropertiesPage *page = ROM_PROPERTIES_PAGE(object);
 
+	// Disconnect signals.
+	if (G_LIKELY(page->file_changed_signal_handler_id > 0)) {
+		g_signal_handler_disconnect(page->file, page->file_changed_signal_handler_id);
+		page->file_changed_signal_handler_id = 0;
+	}
+
 	// Unreference the file.
 	// NOTE: Might not be needed, but Nautilus 3.x does this.
-	if (page->file) {
+	if (G_LIKELY(page->file)) {
 		g_object_unref(page->file);
 		page->file = nullptr;
 	}
 
 	// Call the superclass dispose() function.
-	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose)(object);
+	G_OBJECT_CLASS(rom_properties_page_parent_class)->dispose(object);
 }
 
 static void
 rom_properties_page_finalize(GObject *object)
 {
 	// Call the superclass finalize() function.
-	(*G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize)(object);
+	G_OBJECT_CLASS(rom_properties_page_parent_class)->finalize(object);
 }
 
 RomPropertiesPage*
@@ -220,8 +232,10 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 	/* Disconnect from the previous file (if any) */
 	if (G_LIKELY(page->file != nullptr))
 	{
-		g_signal_handlers_disconnect_by_func(G_OBJECT(page->file),
-			reinterpret_cast<gpointer>(rom_properties_page_file_changed), page);
+		if (G_LIKELY(page->file_changed_signal_handler_id > 0)) {
+			g_signal_handler_disconnect(page->file, page->file_changed_signal_handler_id);
+			page->file_changed_signal_handler_id = 0;
+		}
 		g_object_unref(G_OBJECT(page->file));
 	}
 
@@ -234,7 +248,8 @@ rom_properties_page_set_file	(RomPropertiesPage	*page,
 		g_object_ref(G_OBJECT(page->file));
 
 		rom_properties_page_file_changed(file, page);
-		g_signal_connect(G_OBJECT(file), "changed", G_CALLBACK(rom_properties_page_file_changed), page);
+		page->file_changed_signal_handler_id = g_signal_connect(G_OBJECT(file), "changed",
+			G_CALLBACK(rom_properties_page_file_changed), page);
 	} else {
 		// Clear the file.
 		rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), nullptr);
@@ -257,6 +272,9 @@ rom_properties_page_file_changed(ThunarxFileInfo	*file,
 	gchar *filename = g_filename_from_uri(uri, nullptr, nullptr);
 	g_free(uri);
 
+	// FIXME: This only works on initial load.
+	// Need to update it to reload the ROM on file change.
+	// Also, ThunarxFileInfo emits 'changed' *twice* for file changes...
 	rom_data_view_set_filename(ROM_DATA_VIEW(page->romDataView), filename);
 	g_free(filename);
 }
