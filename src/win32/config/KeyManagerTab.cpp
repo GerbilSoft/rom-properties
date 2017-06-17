@@ -166,12 +166,26 @@ class KeyManagerTabPrivate
 		bool bCancelEdit;	// True if the edit is being cancelled.
 		bool bAllowKanji;	// Allow kanji in the editor.
 
+		// Icons for the "Valid?" column.
+		// NOTE: "?" and "X" are copies from User32.
+		// Checkmark is a PNG image loaded from a resource.
+		// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
+		static const SIZE szIcon;
+		HICON hIconUnknown;	// "?" (USER32.dll,-102)
+		HICON hIconInvalid;	// "X" (USER32.dll,-103)
+		HICON hIconGood;	// Checkmark
+
 		/**
 		 * ListView CustomDraw function.
 		 * @param plvcd	[in] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
 		inline int ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd);
+
+		/**
+		 * Load images.
+		 */
+		void loadImages(void);
 
 	public:
 		// TODO: Share with rpcli/verifykeys.cpp.
@@ -215,6 +229,9 @@ class KeyManagerTabPrivate
 
 /** KeyManagerTabPrivate **/
 
+// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
+const SIZE KeyManagerTabPrivate::szIcon = {16, 16};
+
 const KeyManagerTabPrivate::EncKeyFns_t KeyManagerTabPrivate::encKeyFns[] = {
 	ENCKEYFNS(WiiPartition),
 	ENCKEYFNS(CtrKeyScrambler),
@@ -236,8 +253,14 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, iEditItem(-1)
 	, bCancelEdit(false)
 	, bAllowKanji(false)
+	, hIconUnknown(nullptr)
+	, hIconInvalid(nullptr)
+	, hIconGood(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
+
+	// Load images.
+	loadImages();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -252,6 +275,17 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	delete keyStore;
 	if (keyStore_ownerDataCallback) {
 		keyStore_ownerDataCallback->Release();
+	}
+
+	// Icons.
+	if (hIconUnknown) {
+		DestroyIcon(hIconUnknown);
+	}
+	if (hIconInvalid) {
+		DestroyIcon(hIconInvalid);
+	}
+	if (hIconGood) {
+		DestroyIcon(hIconGood);
 	}
 }
 
@@ -1149,13 +1183,64 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd
 			break;
 
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
-			if (plvcd->iSubItem == 1) {
-				// Use the monospaced font.
-				if (hFontMono) {
-					SelectObject(plvcd->nmcd.hdc, hFontMono);
-					result = CDRF_NEWFONT;
+			switch (plvcd->iSubItem) {
+				case 1:
+					// "Value" column.
+					// Use the monospaced font.
+					if (hFontMono) {
+						SelectObject(plvcd->nmcd.hdc, hFontMono);
+						result = CDRF_NEWFONT;
+					}
+					break;
+
+				case 2: {
+					// "Valid?" column.
+					// Draw the icon manually.
+					const KeyStoreWin32::Key *key = keyStore->getKey((int)plvcd->nmcd.dwItemSpec);
+					assert(key != nullptr);
+					if (!key)
+						break;
+
+					HICON hDrawIcon = nullptr;
+					switch (key->status) {
+						case KeyStoreWin32::Key::Status_Unknown:
+							// Unknown...
+							hDrawIcon = hIconUnknown;
+							break;
+						case KeyStoreWin32::Key::Status_NotAKey:
+							// The key data is not in the correct format.
+							hDrawIcon = hIconInvalid;
+							break;
+						case KeyStoreWin32::Key::Status_Empty:
+							// Empty key.
+							break;
+						case KeyStoreWin32::Key::Status_Incorrect:
+							// Key is incorrect.
+							hDrawIcon = hIconInvalid;
+							break;
+						case KeyStoreWin32::Key::Status_OK:
+							// Key is correct.
+							// TODO: hIconGood
+							hDrawIcon = hIconInvalid;
+							break;
+					}
+
+					if (!hDrawIcon)
+						break;
+
+					// Custom drawing this subitem.
+					result = CDRF_SKIPDEFAULT;
+
+					const int x = plvcd->nmcd.rc.left + (((plvcd->nmcd.rc.right - plvcd->nmcd.rc.left) - szIcon.cx) / 2);
+					const int y = plvcd->nmcd.rc.top + (((plvcd->nmcd.rc.bottom - plvcd->nmcd.rc.top) - szIcon.cy) / 2);
+
+					DrawIconEx(plvcd->nmcd.hdc, x, y, hIconInvalid,
+						szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
+					break;
 				}
-				break;
+
+				default:
+					break;
 			}
 			break;
 
@@ -1164,6 +1249,33 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(const NMLVCUSTOMDRAW *plvcd
 	}
 
 	return result;
+}
+
+/**
+ * Load images.
+ */
+void KeyManagerTabPrivate::loadImages(void)
+{
+	if (hIconInvalid) {
+		// Images are already loaded.
+		return;
+	}
+
+	// Load the icons.
+	// NOTE: Using IDI_* will only return the 32x32 icon.
+	// Need to get the icon from USER32 directly.
+	HMODULE hUser32 = GetModuleHandle(L"user32");
+	assert(hUser32 != nullptr);
+	if (hUser32) {
+		hIconUnknown = (HICON)LoadImage(hUser32,
+			MAKEINTRESOURCE(102), IMAGE_ICON,
+			szIcon.cx, szIcon.cy, 0);
+		hIconInvalid = (HICON)LoadImage(hUser32,
+			MAKEINTRESOURCE(103), IMAGE_ICON,
+			szIcon.cx, szIcon.cy, 0);
+	}
+
+	// TODO: Load hIconGood from an icon resource.
 }
 
 /** "Import" menu actions. **/
