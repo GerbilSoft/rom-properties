@@ -86,7 +86,12 @@ IF(BUILD_XFCE)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce cachemgr8 romdata8 rpbase8)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce Xfce::thunarx-2)
 	TARGET_LINK_LIBRARIES(rom-properties-xfce ${GTK2_LIBRARIES} GdkPixbuf2::gdkpixbuf2 GLib2::gobject GLib2::glib)
-	ADD_DEFINITIONS(${GTK2_DEFINITIONS} -DG_LOG_DOMAIN=\"rom-properties-xfce\")
+	# TODO: Move GTK2_DEFINITIONS to TARGET_COMPILE_DEFINITIONS.
+	# (Requires removing the "-D" switches.)
+	ADD_DEFINITIONS(${GTK2_DEFINITIONS})
+	TARGET_COMPILE_DEFINITIONS(rom-properties-xfce
+		PRIVATE G_LOG_DOMAIN=\"rom-properties-xfce\"
+		)
 
 	# D-Bus thumbnailer.
 	ADD_EXECUTABLE(rp-thumbnailer-dbus
@@ -107,6 +112,9 @@ IF(BUILD_XFCE)
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
+	TARGET_COMPILE_DEFINITIONS(rp-thumbnailer-dbus
+		PRIVATE G_LOG_DOMAIN=\"rp-thumbnailer-dbus\"
+		)
 ENDIF(BUILD_XFCE)
 
 #######################
