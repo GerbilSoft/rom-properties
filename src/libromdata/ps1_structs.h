@@ -145,11 +145,9 @@ typedef struct PACKED _PS1_PSV_Header {
 	char filename[20];	// Filename. (filename[6] == 'P' for PocketStation)
 
 	uint8_t reserved4[12];
-
-	PS1_SC_Struct sc;
 } PS1_PSV_Header;
 #pragma pack()
-ASSERT_STRUCT(PS1_PSV_Header, 0x84 + 512);
+ASSERT_STRUCT(PS1_PSV_Header, 0x84);
 
 #ifdef __cplusplus
 }
