@@ -14,6 +14,8 @@
   * Encrypted DSiWare CIAs are now supported, provided you have the keys
     set up in keys.conf. (Slot0x3D, KeyX, KeyY-0 through KeyY-5; or,
     Slot0x3D KeyNormal-0 through KeyNormal-5)
+  * (XFCE) Thumbnailing is now supported using tumblerd's D-Bus specialized
+    thumbnailer interface. (#39)
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
