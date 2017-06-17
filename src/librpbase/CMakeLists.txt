@@ -93,7 +93,6 @@ SET(librpbase_H
 	common.h
 	uvector.h
 	TextFuncs.hpp
-	TextFuncs_int.hpp
 	TextFuncs_utf8.hpp
 	TextFuncs_wchar.hpp
 	RomData.hpp

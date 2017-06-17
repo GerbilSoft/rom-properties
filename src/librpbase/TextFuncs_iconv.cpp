@@ -54,9 +54,6 @@
 using std::string;
 using std::u16string;
 
-// Shared internal functions.
-#include "TextFuncs_int.hpp"
-
 namespace LibRpBase {
 
 /** OS-specific text conversion functions. **/
@@ -152,7 +149,12 @@ static char *rp_iconv(const char *src, int len,
  */
 string cp1252_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	string ret;
 	char *mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
@@ -179,7 +181,12 @@ u16string cp1252_to_utf16(const char *str, int len)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
 
-	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
@@ -202,7 +209,12 @@ u16string cp1252_to_utf16(const char *str, int len)
  */
 string cp1252_sjis_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
@@ -243,7 +255,12 @@ string cp1252_sjis_to_utf8(const char *str, int len)
  */
 u16string cp1252_sjis_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	// Try Shift-JIS first.
 	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
@@ -286,7 +303,12 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
  */
 u16string utf8_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	u16string ret;
 	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
@@ -301,19 +323,25 @@ u16string utf8_to_utf16(const char *str, int len)
 /**
  * Convert UTF-16 text to UTF-8. (INTERNAL FUNCTION)
  * Trailing NULL bytes will be removed.
- * @param str UTF-16 text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16 text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @param encoding iconv encoding.
  * @return UTF-8 string.
  */
-static inline string utf16_to_utf8_int(const char16_t *str, int len, const char *encoding)
+static inline string utf16_to_utf8_int(const char16_t *wcs, int len, const char *encoding)
 {
 	// NOTE: u16_strlen() works for both BE and LE, since 0x0000 is
 	// still 0x0000 when byteswapped.
-	REMOVE_TRAILING_NULLS_STRLEN(string, u16_strlen, str, len);
+
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
 
 	string ret;
-	char *mbs = (char*)rp_iconv((char*)str, len*sizeof(*str), encoding, "UTF-8");
+	char *mbs = (char*)rp_iconv((char*)wcs, len*sizeof(*wcs), encoding, "UTF-8");
 	if (mbs) {
 		ret = mbs;
 		free(mbs);
@@ -325,25 +353,25 @@ static inline string utf16_to_utf8_int(const char16_t *str, int len, const char 
 /**
  * Convert UTF-16LE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16LE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16le_to_utf8(const char16_t *str, int len)
+string utf16le_to_utf8(const char16_t *wcs, int len)
 {
-	return utf16_to_utf8_int(str, len, "UTF-16LE");
+	return utf16_to_utf8_int(wcs, len, "UTF-16LE");
 }
 
 /**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16BE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16BE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16be_to_utf8(const char16_t *str, int len)
+string utf16be_to_utf8(const char16_t *wcs, int len)
 {
-	return utf16_to_utf8_int(str, len, "UTF-16BE");
+	return utf16_to_utf8_int(wcs, len, "UTF-16BE");
 }
 
 }

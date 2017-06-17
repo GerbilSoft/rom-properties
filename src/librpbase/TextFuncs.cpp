@@ -39,9 +39,6 @@ using std::string;
 using std::u16string;
 using std::unique_ptr;
 
-// Shared internal functions.
-#include "TextFuncs_int.hpp"
-
 namespace LibRpBase {
 
 /** OS-independent text conversion functions. **/
@@ -86,7 +83,12 @@ u16string utf16_bswap(const char16_t *str, int len)
  */
 string latin1_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	string mbs;
 	mbs.reserve(len*2);
@@ -117,7 +119,12 @@ string latin1_to_utf8(const char *str, int len)
  */
 u16string latin1_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS_STRLEN(u16string, strlen, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	u16string wcs;
 	wcs.reserve(len);
@@ -145,6 +152,20 @@ size_t u16_strlen(const char16_t *wcs)
 {
 	size_t len = 0;
 	while (*wcs++)
+		len++;
+	return len;
+}
+
+/**
+ * char16_t strlen().
+ * @param wcs 16-bit string.
+ * @param maxlen Maximum length.
+ * @return Length of str, in characters.
+ */
+size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
+{
+	size_t len = 0;
+	while (*wcs++ && len < maxlen)
 		len++;
 	return len;
 }
@@ -262,10 +283,10 @@ rp_string rp_sprintf(const char *fmt, ...)
 /**
  * String length with limit. (8-bit strings)
  * @param str The string itself
- * @param len Maximum length of the string
- * @returns equivivalent to min(strlen(str), len) without buffer overruns
+ * @param maxlen Maximum length of the string
+ * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
  */
-size_t strnlen(const char *str, size_t len)
+size_t strnlen(const char *str, size_t maxlen)
 {
 	size_t rv = 0;
 	for (rv = 0; rv < len; rv++) {

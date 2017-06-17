@@ -41,9 +41,6 @@
 // Conversions to UTF-16 always use host-endian.
 #include "byteorder.h"
 
-// Shared internal functions.
-#include "TextFuncs_int.hpp"
-
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF
 # ifdef __GNUC__
@@ -53,7 +50,111 @@
 # endif
 #endif /* ATTR_PRINTF */
 
+/** Reimplementations of libc functions that aren't present on this system. **/
+
+#ifndef HAVE_STRNLEN
+/**
+ * String length with limit. (8-bit strings)
+ * @param str The string itself
+ * @param maxlen Maximum length of the string
+ * @returns equivivalent to min(strlen(str), maxlen) without buffer overruns
+ */
+extern "C"
+size_t strnlen(const char *str, size_t maxlen);
+#endif /* HAVE_STRNLEN */
+
+#ifndef HAVE_MEMMEM
+/**
+ * Find a string within a block of memory.
+ * @param haystack Block of memory.
+ * @param haystacklen Length of haystack.
+ * @param needle String to search for.
+ * @param needlelen Length of needle.
+ * @return Location of needle in haystack, or nullptr if not found.
+ */
+void *memmem(const void *haystack, size_t haystacklen,
+	     const void *needle, size_t needlelen);
+#endif /* HAVE_MEMMEM */
+
 namespace LibRpBase {
+
+/** UTF-16 string functions. **/
+
+/**
+ * char16_t strlen().
+ * @param wcs 16-bit string.
+ * @return Length of wcs, in characters.
+ */
+#ifdef RP_WIS16
+static inline size_t u16_strlen(const char16_t *wcs)
+{
+	return wcslen(reinterpret_cast<const wchar_t*>(wcs));
+}
+#else /* !RP_WIS16 */
+size_t u16_strlen(const char16_t *wcs);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strnlen().
+ * @param wcs 16-bit string.
+ * @param maxlen Maximum length.
+ * @return Length of wcs, in characters.
+ */
+#ifdef RP_WIS16
+static inline size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
+{
+	return wcsnlen(reinterpret_cast<const wchar_t*>(wcs), maxlen);
+}
+#else /* !RP_WIS16 */
+size_t u16_strnlen(const char16_t *wcs, size_t maxlen);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strdup().
+ * @param wcs 16-bit string.
+ * @return Copy of wcs.
+ */
+#ifdef RP_WIS16
+static inline char16_t *u16_strdup(const char16_t *wcs)
+{
+	return reinterpret_cast<char16_t*>(
+		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
+}
+#else /* !RP_WIS16 */
+char16_t *u16_strdup(const char16_t *wcs);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strcmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcmp() result.
+ */
+#ifdef RP_WIS16
+static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	return wcscmp(reinterpret_cast<const wchar_t*>(wcs1),
+		      reinterpret_cast<const wchar_t*>(wcs2));
+}
+#else /* !RP_WIS16 */
+int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
+#endif /* RP_WIS16 */
+
+/**
+ * char16_t strcmp().
+ * @param wcs1 16-bit string 1.
+ * @param wcs2 16-bit string 2.
+ * @return strcmp() result.
+ */
+#ifdef RP_WIS16
+static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
+{
+	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
+			  reinterpret_cast<const wchar_t*>(wcs2));
+}
+#else /* !RP_WIS16 */
+int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
+#endif /* RP_WIS16 */
 
 /** Generic text conversion functions. **/
 
@@ -108,86 +209,96 @@ std::u16string cp1252_sjis_to_utf16(const char *str, int len);
 /**
  * Convert UTF-8 text to UTF-16.
  * Trailing NULL bytes will be removed.
- * @param str UTF-8 text.
+ * @param wcs UTF-8 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-16 string.
  */
-std::u16string utf8_to_utf16(const char *str, int len);
+std::u16string utf8_to_utf16(const char *wcs, int len);
 
 /**
  * Convert UTF-16LE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16LE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string utf16le_to_utf8(const char16_t *str, int len);
+std::string utf16le_to_utf8(const char16_t *wcs, int len);
 
 /**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16BE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16BE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string utf16be_to_utf8(const char16_t *str, int len);
+std::string utf16be_to_utf8(const char16_t *wcs, int len);
 
 /**
  * Convert UTF-16 text to UTF-8. (host-endian)
  * Trailing NULL bytes will be removed.
- * @param str UTF-16 text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16 text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-static inline std::string utf16_to_utf8(const char16_t *str, int len)
+static inline std::string utf16_to_utf8(const char16_t *wcs, int len)
 {
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	return utf16le_to_utf8(str, len);
+	return utf16le_to_utf8(wcs, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return utf16be_to_utf8(str, len);
+	return utf16be_to_utf8(wcs, len);
 #endif
 }
 
 /**
  * Byteswap and return UTF-16 text.
- * @param str UTF-16 text to byteswap.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16 text to byteswap.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return Byteswapped UTF-16 string.
  */
-std::u16string utf16_bswap(const char16_t *str, int len);
+std::u16string utf16_bswap(const char16_t *wcs, int len);
 
 /**
  * Convert UTF-16LE text to host-endian UTF-16.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16LE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return Host-endian UTF-16 string.
  */
-static inline std::u16string utf16le_to_utf16(const char16_t *str, int len)
+static inline std::u16string utf16le_to_utf16(const char16_t *wcs, int len)
 {
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
+
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
-	return std::u16string(str, len);
+	return std::u16string(wcs, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
-	return utf16_bswap(str, len);
+	return utf16_bswap(wcs, len);
 #endif
 }
 
 /**
  * Convert UTF-16BE text to host-endian UTF-16.
- * @param str UTF-16BLE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16BLE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return Host-endian UTF-16 string.
  */
-static inline std::u16string utf16be_to_utf16(const char16_t *str, int len)
+static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 {
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
+
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	REMOVE_TRAILING_NULLS_RP_WRAPPER_NOIMPLICIT(std::u16string, str, len);
-	return utf16_bswap(str, len);
+	return utf16_bswap(wcs, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
-	return std::u16string(str, len);
+	return std::u16string(wcs, len);
 #endif
 }
 
@@ -212,69 +323,6 @@ std::string latin1_to_utf8(const char *str, int len);
  * @return UTF-16 string.
  */
 std::u16string latin1_to_utf16(const char *str, int len);
-
-/** Miscellaneous functions. **/
-
-/**
- * char16_t strlen().
- * @param wcs 16-bit string.
- * @return Length of wcs, in characters.
- */
-#ifdef RP_WIS16
-static inline size_t u16_strlen(const char16_t *wcs)
-{
-	return wcslen(reinterpret_cast<const wchar_t*>(wcs));
-}
-#else /* !RP_WIS16 */
-size_t u16_strlen(const char16_t *wcs);
-#endif /* RP_WIS16 */
-
-/**
- * char16_t strdup().
- * @param wcs 16-bit string.
- * @return Copy of wcs.
- */
-#ifdef RP_WIS16
-static inline char16_t *u16_strdup(const char16_t *wcs)
-{
-	return reinterpret_cast<char16_t*>(
-		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
-}
-#else /* !RP_WIS16 */
-char16_t *u16_strdup(const char16_t *wcs);
-#endif /* RP_WIS16 */
-
-/**
- * char16_t strcmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcmp() result.
- */
-#ifdef RP_WIS16
-static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	return wcscmp(reinterpret_cast<const wchar_t*>(wcs1),
-		      reinterpret_cast<const wchar_t*>(wcs2));
-}
-#else /* !RP_WIS16 */
-int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
-#endif /* RP_WIS16 */
-
-/**
- * char16_t strcmp().
- * @param wcs1 16-bit string 1.
- * @param wcs2 16-bit string 2.
- * @return strcmp() result.
- */
-#ifdef RP_WIS16
-static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
-{
-	return wcscasecmp(reinterpret_cast<const wchar_t*>(wcs1),
-			  reinterpret_cast<const wchar_t*>(wcs2));
-}
-#else /* !RP_WIS16 */
-int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
-#endif /* RP_WIS16 */
 
 /** rp_string wrappers. **/
 
@@ -320,7 +368,12 @@ static inline rp_string cp1252_sjis_to_rp_string(const char *str, int len)
 static inline rp_string utf8_to_rp_string(const char *str, int len)
 {
 #if defined(RP_UTF8)
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(rp_string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 	return rp_string(str, len);
 #elif defined(RP_UTF16)
 	return utf8_to_utf16(str, len);
@@ -352,7 +405,12 @@ static inline rp_string utf8_to_rp_string(const std::string &str)
 static inline std::string rp_string_to_utf8(const rp_char *str, int len)
 {
 #if defined(RP_UTF8)
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 	return std::string(str, len);
 #elif defined(RP_UTF16)
 	return utf16_to_utf8(str, len);
@@ -377,66 +435,66 @@ static inline std::string rp_string_to_utf8(const rp_string &rps)
 /**
  * Convert UTF-16LE text to rp_string.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16LE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string utf16le_to_rp_string(const char16_t *str, int len)
+static inline rp_string utf16le_to_rp_string(const char16_t *wcs, int len)
 {
 #if defined(RP_UTF8)
-	return utf16le_to_utf8(str, len);
+	return utf16le_to_utf8(wcs, len);
 #elif defined(RP_UTF16)
-	return utf16le_to_utf16(str, len);
+	return utf16le_to_utf16(wcs, len);
 #endif
 }
 
 /**
  * Convert UTF-16BE text to rp_string.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16BE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16BE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string utf16be_to_rp_string(const char16_t *str, int len)
+static inline rp_string utf16be_to_rp_string(const char16_t *wcs, int len)
 {
 #if defined(RP_UTF8)
-	return utf16be_to_utf8(str, len);
+	return utf16be_to_utf8(wcs, len);
 #elif defined(RP_UTF16)
-	return utf16be_to_utf16(str, len);
+	return utf16be_to_utf16(wcs, len);
 #endif
 }
 
 /**
  * Convert UTF-16 text to rp_string. (host-endian)
  * Trailing NULL bytes will be removed.
- * @param str UTF-16 text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16 text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return rp_string.
  */
-static inline rp_string utf16_to_rp_string(const char16_t *str, int len)
+static inline rp_string utf16_to_rp_string(const char16_t *wcs, int len)
 {
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	return utf16le_to_rp_string(str, len);
+	return utf16le_to_rp_string(wcs, len);
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return utf16be_to_rp_string(str, len);
+	return utf16be_to_rp_string(wcs, len);
 #endif
 }
 
 /**
  * Convert UTF-16LE text to rp_string.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
+ * @param wcs UTF-16LE text.
  * @return rp_string.
  */
-static inline rp_string utf16le_to_rp_string(const std::u16string &str)
+static inline rp_string utf16le_to_rp_string(const std::u16string &wcs)
 {
 #if defined(RP_UTF8)
-	return utf16le_to_utf8(str.data(), (int)str.size());
+	return utf16le_to_utf8(wcs.data(), (int)wcs.size());
 #elif defined(RP_UTF16)
 # if SYS_BYTEORDER == SYS_LIL_ENDIAN
-	return str;
+	return wcs;
 # else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return utf16le_to_utf16(str.data(), (int)str.size());
+	return utf16le_to_utf16(wcs.data(), (int)wcs.size());
 # endif
 #endif
 }
@@ -444,18 +502,18 @@ static inline rp_string utf16le_to_rp_string(const std::u16string &str)
 /**
  * Convert UTF-16BE text to rp_string.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16BE text.
+ * @param wcs UTF-16BE text.
  * @return rp_string.
  */
-static inline rp_string utf16be_to_rp_string(const std::u16string &str)
+static inline rp_string utf16be_to_rp_string(const std::u16string &wcs)
 {
 #if defined(RP_UTF8)
-	return utf16be_to_utf8(str.data(), (int)str.size());
+	return utf16be_to_utf8(wcs.data(), (int)wcs.size());
 #elif defined(RP_UTF16)
 # if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	return str;
+	return wcs;
 # else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-	return utf16be_to_utf16(str.data(), (int)str.size());
+	return utf16be_to_utf16(wcs.data(), (int)wcs.size());
 # endif
 #endif
 }
@@ -463,15 +521,15 @@ static inline rp_string utf16be_to_rp_string(const std::u16string &str)
 /**
  * Convert UTF-16 text to rp_string. (host-endian)
  * Trailing NULL bytes will be removed.
- * @param str UTF-16 text.
+ * @param wcs UTF-16 text.
  * @return rp_string.
  */
-static inline rp_string utf16_to_rp_string(const std::u16string &str)
+static inline rp_string utf16_to_rp_string(const std::u16string &wcs)
 {
 #if defined(RP_UTF8)
-	return utf16_to_utf8(str.data(), (int)str.size());
+	return utf16_to_utf8(wcs.data(), (int)wcs.size());
 #elif defined(RP_UTF16)
-	return str;
+	return wcs;
 #endif
 }
 
@@ -487,7 +545,13 @@ static inline std::u16string rp_string_to_utf16(const rp_char *str, int len)
 #if defined(RP_UTF8)
 	return utf8_to_utf16(str, len);
 #elif defined(RP_UTF16)
-	REMOVE_TRAILING_NULLS_RP_WRAPPER(std::u16string, str, len);
+	// Check for a NULL terminator.
+	// NOTE: Can't use rp_strlen() / rp_strnlen() here.
+	if (len < 0) {
+		len = (int)u16_strlen(str);
+	} else {
+		len = (int)u16_strnlen(str, len);
+	}
 	return std::u16string(str, len);
 #endif
 }
@@ -535,6 +599,21 @@ static inline size_t rp_strlen(const rp_char *str)
 	return strlen(str);
 #elif defined(RP_UTF16)
 	return u16_strlen(str);
+#endif
+}
+
+/**
+ * strnlen() function for rp_char strings.
+ * @param str rp_string.
+ * @param Maximum length.
+ * @return Length of str, in characters.
+ */
+static inline size_t rp_strnlen(const rp_char *str, int maxlen)
+{
+#if defined(RP_UTF8)
+	return strnlen(str, maxlen);
+#elif defined(RP_UTF16)
+	return u16_strnlen(str, maxlen);
 #endif
 }
 
@@ -603,32 +682,6 @@ static inline int rp_strcasecmp(const rp_char *str1, const rp_char *str2)
 rp_string rp_sprintf(const char *fmt, ...) ATTR_PRINTF(1, 2);
 
 }
-
-/** Reimplementations of libc functions that aren't present on this system. **/
-
-#ifndef HAVE_STRNLEN
-/**
- * String length with limit. (8-bit strings)
- * @param str The string itself
- * @param len Maximum length of the string
- * @returns equivivalent to min(strlen(str), len) without buffer overruns
- */
-extern "C"
-size_t strnlen(const char *str, size_t len);
-#endif /* HAVE_STRNLEN */
-
-#ifndef HAVE_MEMMEM
-/**
- * Find a string within a block of memory.
- * @param haystack Block of memory.
- * @param haystacklen Length of haystack.
- * @param needle String to search for.
- * @param needlelen Length of needle.
- * @return Location of needle in haystack, or nullptr if not found.
- */
-void *memmem(const void *haystack, size_t haystacklen,
-	     const void *needle, size_t needlelen);
-#endif /* HAVE_MEMMEM */
 
 #ifdef _WIN32
 // wchar_t text conversion macros.

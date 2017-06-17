@@ -40,9 +40,6 @@ using std::string;
 using std::u16string;
 using std::wstring;
 
-// Shared internal functions.
-#include "TextFuncs_int.hpp"
-
 namespace LibRpBase {
 
 /** OS-specific text conversion functions. **/
@@ -145,7 +142,12 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
  */
 string cp1252_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	string ret;
 	int cchWcs;
@@ -183,7 +185,12 @@ u16string cp1252_to_utf16(const char *str, int len)
 	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
 #endif /* RP_WIS16 */
 
-	REMOVE_TRAILING_NULLS(u16string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	u16string ret;
 	int cchWcs;
@@ -211,7 +218,12 @@ u16string cp1252_to_utf16(const char *str, int len)
  */
 string cp1252_sjis_to_utf8(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	// Attempt to convert from Shift-JIS to UTF-16.
 	string ret;
@@ -252,7 +264,12 @@ string cp1252_sjis_to_utf8(const char *str, int len)
  */
 u16string cp1252_sjis_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(u16string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	// Attempt to convert str from Shift-JIS to UTF-16.
 	u16string ret;
@@ -288,7 +305,12 @@ u16string cp1252_sjis_to_utf16(const char *str, int len)
  */
 u16string utf8_to_utf16(const char *str, int len)
 {
-	REMOVE_TRAILING_NULLS(u16string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
 
 	// Win32 version.
 	u16string ret;
@@ -313,17 +335,22 @@ u16string utf8_to_utf16(const char *str, int len)
 /**
  * Convert UTF-16LE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16LE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16LE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16le_to_utf8(const char16_t *str, int len)
+string utf16le_to_utf8(const char16_t *wcs, int len)
 {
-	REMOVE_TRAILING_NULLS(string, str, len);
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
 
 	string ret;
 	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(str, len, CP_UTF8, &cbMbs);
+	char *mbs = W32U_UTF16_to_mbs(wcs, len, CP_UTF8, &cbMbs);
 	if (mbs && cbMbs > 0) {
 		// Remove the NULL terminator if present.
 		if (mbs[cbMbs-1] == 0) {
@@ -339,13 +366,13 @@ string utf16le_to_utf8(const char16_t *str, int len)
 /**
  * Convert UTF-16BE text to UTF-8.
  * Trailing NULL bytes will be removed.
- * @param str UTF-16BE text.
- * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @param wcs UTF-16BE text.
+ * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-string utf16be_to_utf8(const char16_t *str, int len)
+string utf16be_to_utf8(const char16_t *wcs, int len)
 {
-	if (!str || !*str || len == 0) {
+	if (!wcs || !*wcs || len == 0) {
 		// Empty string.
 		return string();
 	}
@@ -356,11 +383,11 @@ string utf16be_to_utf8(const char16_t *str, int len)
 
 	// WideCharToMultiByte() doesn't support UTF-16BE.
 	// Byteswap the text first.
-	u16string bstr = utf16_bswap(str, len);
-	if (bstr.empty()) {
+	u16string bwcs = utf16_bswap(wcs, len);
+	if (bwcs.empty()) {
 		// Error byteswapping the string...
 		return string();
-	} else if (len > 0 && len != (int)(bstr.size())) {
+	} else if (len > 0 && len != (int)(bwcs.size())) {
 		// Byteswapping failed.
 		// NOTE: Only checking if an explicit length
 		// is specified, since we don't want to
@@ -369,7 +396,7 @@ string utf16be_to_utf8(const char16_t *str, int len)
 	}
 
 	// Convert the byteswapped text.
-	return utf16le_to_utf8(bstr.data(), (int)bstr.size());
+	return utf16le_to_utf8(bwcs.data(), (int)bwcs.size());
 }
 
 }

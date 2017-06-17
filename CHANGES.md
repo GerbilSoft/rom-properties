@@ -26,6 +26,9 @@
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
     packages, which prevented thumbnailing from working.
+  * Fixed issues with Shift-JIS titles in some PS1 save files. The title
+    fields had garbage characters after the main title, with NULLs before
+    and after the garbage characters. (#83)
 
 ## v1.0 (released 2017/05/20)
 
