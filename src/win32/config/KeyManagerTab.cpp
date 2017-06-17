@@ -1222,8 +1222,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVC
 							break;
 						case KeyStoreWin32::Key::Status_OK:
 							// Key is correct.
-							// TODO: hIconGood
-							hDrawIcon = hIconInvalid;
+							hDrawIcon = hIconGood;
 							break;
 					}
 
@@ -1250,7 +1249,7 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVC
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
 					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - szIcon.cy) / 2);
 
-					DrawIconEx(plvcd->nmcd.hdc, x, y, hIconInvalid,
+					DrawIconEx(plvcd->nmcd.hdc, x, y, hDrawIcon,
 						szIcon.cx, szIcon.cy, 0, nullptr, DI_NORMAL);
 					break;
 				}
@@ -1291,7 +1290,12 @@ void KeyManagerTabPrivate::loadImages(void)
 			szIcon.cx, szIcon.cy, 0);
 	}
 
-	// TODO: Load hIconGood from an icon resource.
+	// Load hIconGood from our own resource section.
+	// Based on KDE Oxygen 5.35.0's base/16x16/actions/dialog-ok-apply.png
+	extern HINSTANCE g_hInstance;
+	hIconGood = (HICON)LoadImage(g_hInstance,
+		MAKEINTRESOURCE(IDI_KEY_VALID), IMAGE_ICON,
+		szIcon.cx, szIcon.cy, 0);
 }
 
 /** "Import" menu actions. **/

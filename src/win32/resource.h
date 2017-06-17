@@ -24,6 +24,9 @@
 
 #include "config.librpbase.h"
 
+/** Icons. **/
+#define IDI_KEY_VALID           201
+
 // Dialogs
 #define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */
 #define IDD_SUBTAB_CHILD_DIALOG                 101	/* Subtab child dialog. */
