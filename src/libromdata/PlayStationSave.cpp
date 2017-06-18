@@ -3,6 +3,7 @@
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2017 by Egor.                                             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -242,24 +243,23 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	switch (d->saveType) {
 		case PlayStationSavePrivate::SAVE_TYPE_PSV:
 			// PSV (PS1 on PS3)
-			// Save the header for later.
 			memcpy(&d->psvHeader, header, sizeof(d->psvHeader));
-			memcpy(&d->scHeader, header + sizeof(d->psvHeader), sizeof(d->scHeader));
-			memcpy(d->icon_data, header + sizeof(d->psvHeader) + sizeof(d->scHeader), sizeof(d->icon_data));
+			memcpy(&d->scHeader, &header[sizeof(d->psvHeader)], sizeof(d->scHeader));
+			memcpy(d->icon_data, &header[sizeof(d->psvHeader) + sizeof(d->scHeader)], sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_RAW:
 			memcpy(&d->scHeader, header, sizeof(d->scHeader));
-			memcpy(d->icon_data, header + sizeof(d->scHeader), sizeof(d->icon_data));
+			memcpy(d->icon_data, &header[sizeof(d->scHeader)], sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
 			memcpy(&d->blockHeader, header, sizeof(d->blockHeader));
-			memcpy(&d->scHeader, header + sizeof(d->blockHeader), sizeof(d->scHeader));
-			memcpy(d->icon_data, header + sizeof(d->blockHeader) + sizeof(d->scHeader), sizeof(d->icon_data));
+			memcpy(&d->scHeader, &header[sizeof(d->blockHeader)], sizeof(d->scHeader));
+			memcpy(d->icon_data, &header[sizeof(d->blockHeader) + sizeof(d->scHeader)], sizeof(d->icon_data));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_54:
 			memcpy(&d->ps54Header, header, sizeof(d->ps54Header));
-			memcpy(&d->scHeader, header + sizeof(d->ps54Header), sizeof(d->scHeader));
-			memcpy(d->icon_data, header + sizeof(d->ps54Header) + sizeof(d->scHeader), sizeof(d->icon_data));
+			memcpy(&d->scHeader, &header[sizeof(d->ps54Header)], sizeof(d->scHeader));
+			memcpy(d->icon_data, &header[sizeof(d->ps54Header) + sizeof(d->scHeader)], sizeof(d->icon_data));
 			break;
 		default:
 			// Unknown save type.
@@ -295,7 +295,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 	// Check the SC struct magic.
 	static const char sc_magic[2] = { 'S','C' };
 	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct) + 128*3
-	    && memcmp(header + sizeof(PS1_PSV_Header), sc_magic, sizeof(sc_magic)) == 0) {
+	    && memcmp(&header[sizeof(PS1_PSV_Header)], sc_magic, sizeof(sc_magic)) == 0) {
 		// Check the PSV magic.
 		static const char psv_magic[8] = {
 			0x00, 0x56, 0x53, 0x50, 0x00, 0x00, 0x00, 0x00
@@ -309,7 +309,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		return PlayStationSavePrivate::SAVE_TYPE_PSV;
 	}
 	if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct) + 128*3
-	    && memcmp(header + sizeof(PS1_Block_Entry), sc_magic, sizeof(sc_magic)) == 0) {
+	    && memcmp(&header[sizeof(PS1_Block_Entry)], sc_magic, sizeof(sc_magic)) == 0) {
 		// Check the block magic.
 		static const char block_magic[4] = {
 			PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
@@ -321,7 +321,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 		// Check the checksum
 		uint8_t checksum = 0;
-		for (int i = 0; i < sizeof(PS1_Block_Entry); i++) {
+		for (int i = sizeof(PS1_Block_Entry)-1; i >= 0; i--) {
 			checksum ^= header[i];
 		}
 		if (checksum != 0) return -1;
@@ -329,7 +329,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
 	}
 	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct) + 128*3
-	    && memcmp(header + sizeof(PS1_54_Header), sc_magic, sizeof(sc_magic)) == 0) {
+	    && memcmp(&header[sizeof(PS1_54_Header)], sc_magic, sizeof(sc_magic)) == 0) {
 		// Extra filesize check to prevent false-positives
 		if (info->szFile % 8192 != 54) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_54;
@@ -339,7 +339,7 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		if (info->szFile % 8192 != 0) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_RAW;
 	}
-	
+
 	return -1;
 }
 
@@ -392,7 +392,7 @@ const rp_char *const *PlayStationSave::supportedFileExtensions_static(void)
 		_RP(".psv"),
 		_RP(".mcb"), _RP(".mcx"), _RP(".pda"), _RP(".psx"),
 		_RP(".mcs"), _RP(".ps1"),
-		// TODO: support RAW? 
+		// TODO: support RAW?
 		nullptr
 	};
 	return exts;
@@ -537,8 +537,7 @@ int PlayStationSave::loadFieldData(void)
 	}
 
 	// PSV (PS1 on PS3) save file header.
-	const PS1_PSV_Header *psvHeader = &d->psvHeader;
-	const PS1_SC_Struct *scHeader = &d->scHeader;
+	const PS1_SC_Struct *const scHeader = &d->scHeader;
 	d->fields->reserve(2);	// Maximum of 2 fields.
 
 	// Filename.

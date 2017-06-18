@@ -21,7 +21,7 @@
   * Encrypted DSiWare CIAs are now supported, provided you have the keys
     set up in keys.conf. (Slot0x3D, KeyX, KeyY-0 through KeyY-5; or,
     Slot0x3D KeyNormal-0 through KeyNormal-5)
-  * Nintendo3DS: The logo section is now checked and displayed. Official
+  * Nintendo 3DS: The logo section is now checked and displayed. Official
     Nintendo logos and a few Homebrew logos are supported. Anything else
     is listed as "Custom".
   * Mega Drive: A new "Vector Table" tab has been added. This tab shows
@@ -29,7 +29,7 @@
   * Mega Drive: A second ROM Header tab for locked-on ROMs has been added.
     This shows the ROM header information for locked-on ROMs for e.g.
     "Sonic 3 & Knuckles".
-  * PlayStationSave: Save formats other than PSV (\*.mcb, \*.mcx, \*.pda,
+  * PlayStation Saves: Save formats other than PSV (\*.mcb, \*.mcx, \*.pda,
     \*.psx, \*.mcs, \*.ps1, and raw saves) are now supported.
 
 * Bug fixes:

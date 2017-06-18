@@ -2,7 +2,8 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ps1_structs.h: Sony PlayStation data structures.                        *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2017 by Egor.                                             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -38,9 +39,9 @@ extern "C" {
  */
 #pragma pack(1)
 typedef struct PACKED _PS1_54_Header {
-		char filename[21];	// Filename from BlockEntry->filename
-		char title[33];		// Title from SC->title converted to ASCII
-	} PS1_54_Header;
+	char filename[21];	// Filename from BlockEntry->filename
+	char title[33];		// Title from SC->title converted to ASCII
+} PS1_54_Header;
 #pragma pack()
 ASSERT_STRUCT(PS1_54_Header, 54);
 
@@ -55,14 +56,15 @@ typedef enum {
 } PS1_Entry_Alloc_Flag;
 
 /**
- * Block Entry. Stored in Block 0 of memorycard. Also used as a header for some standalone saves.
+ * Block Entry. Stored in Block 0 of memorycard.
+ * Also used as a header for some standalone saves.
  */
 #pragma pack(1)
 typedef struct PACKED _PS1_Block_Entry {
-	uint32_t alloc_flag;	// Type 
-	uint32_t filesize;		// Filesize
+	uint32_t alloc_flag;	// Type
+	uint32_t filesize;	// Filesize
 	uint16_t next_block;	// Pointer to next block (0xFFFF = EOF)
-	char filename[21];		// BxSxxS-xxxxxyyyyyyyy
+	char filename[21];	// BxSxxS-xxxxxyyyyyyyy
 	uint8_t padding[96];
 	uint8_t checksum;
 } PS1_Block_Entry;
