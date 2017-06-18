@@ -303,7 +303,7 @@ int Sega8Bit::loadFieldData(void)
 
 	// Sega 8-bit ROM header. (TMR SEGA)
 	const Sega8_RomHeader *const tmr = &d->romHeader.tmr;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields->reserve(11);	// Maximum of 11 fields.
 
 	// BCD conversion buffer.
 	rp_char bcdbuf[16];
