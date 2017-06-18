@@ -628,18 +628,24 @@ int NES::loadFieldData(void)
 	int mapper = -1;
 	int submapper = -1;
 	int tnes_mapper = -1;
+	bool has_trainer = false;
 	unsigned int prg_rom_size = 0;
 	unsigned int chr_rom_size = 0;
 	unsigned int chr_ram_size = 0;
 	unsigned int chr_ram_battery_size = 0;	// rare but it exists
+	unsigned int save_ram_size = 0;
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
 			rom_format = _RP("Archaic iNES");
 			mapper = (d->header.ines.mapper_lo >> 4);
+			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			if (chr_rom_size == 0) {
 				chr_ram_size = 8192;
+			}
+			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
+				save_ram_size = 8192;
 			}
 			break;
 
@@ -647,10 +653,14 @@ int NES::loadFieldData(void)
 			rom_format = _RP("iNES");
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
+			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			if (chr_rom_size == 0) {
 				chr_ram_size = 8192;
+			}
+			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
+				save_ram_size = 8192;
 			}
 			break;
 
@@ -660,6 +670,7 @@ int NES::loadFieldData(void)
 				 (d->header.ines.mapper_hi & 0xF0) |
 				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
 			submapper = (d->header.ines.nes2.mapper_hi2 >> 4);
+			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
 			prg_rom_size = ((d->header.ines.prg_banks +
 					(d->header.ines.nes2.prg_banks_hi << 8))
 					* INES_PRG_BANK_SIZE);
@@ -672,6 +683,9 @@ int NES::loadFieldData(void)
 			    (d->header.ines.nes2.vram_size & 0xF0))
 			{
 				chr_ram_battery_size = 128 << ((d->header.ines.nes2.vram_size >> 4) - 1);
+			}
+			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
+				save_ram_size = 8192;
 			}
 			break;
 
@@ -761,6 +775,19 @@ int NES::loadFieldData(void)
 			tnes_mapper, RomFields::FB_DEC);
 	}
 
+	// ROM features.
+	const rp_char *rom_features = nullptr;
+	if (save_ram_size > 0 && has_trainer) {
+		rom_features = _RP("Save RAM, Trainer");
+	} else if (save_ram_size > 0 && !has_trainer) {
+		rom_features = _RP("Save RAM");
+	} else if (save_ram_size == 0 && has_trainer) {
+		rom_features = _RP("Trainer");
+	}
+	if (rom_features) {
+		d->fields->addField_string(_RP("Features"), rom_features);
+	}
+
 	// ROM sizes.
 	if (prg_rom_size > 0) {
 		d->fields->addField_string(_RP("PRG ROM"),
@@ -779,6 +806,10 @@ int NES::loadFieldData(void)
 	if (chr_ram_battery_size > 0) {
 		d->fields->addField_string(_RP("CHR RAM (backed up)"),
 			d->formatBankSizeKB(chr_ram_battery_size));
+	}
+	if (save_ram_size > 0) {
+		d->fields->addField_string(_RP("Save RAM (backed up)"),
+			d->formatBankSizeKB(save_ram_size));
 	}
 
 	// Check for FDS fields.
