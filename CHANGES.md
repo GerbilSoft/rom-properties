@@ -98,6 +98,9 @@
     /usr/lib64/. This prevented it from working correctly on anything but
     64-bit Linux systems that used the older multilib path, which means
     the Ubuntu GNOME packages did not work.
+  * (Windows) Fixed a crash if tinyxml2.dll is missing and a Windows EXE
+    with an embedded manifest resource is selected. Also improved the
+    Delay-Load function to use architecture-specific subdirectories.
 
 * Other changes:
   * (Windows) The 32-bit EXEs have been moved out of the i386/ subdirectory
