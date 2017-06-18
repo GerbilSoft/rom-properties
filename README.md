@@ -110,6 +110,7 @@ Notes:
 | Windows/DOS Executables       |       Yes      |        No       |       N/A      |
 | Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
 | Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
+| Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -125,6 +126,7 @@ Notes:
     a card, or a plush.
 * Windows executables may contain multiple icon sizes. Support for Windows icons
   will be added once support for multiple image sizes is added.
+* Sega 8-bit only supports ROM images with a "TMR SEGA" header.
 
 An initial configuration program is included with the Windows version of
 rom-propreties 1.0. This allows you to configure which images will be used for
@@ -155,6 +157,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
   title contents (\*.ncch, \*.app), and firmware binaries (\*.firm, \*.bin)
   * Encryption keys are needed for encrypted cartridge images, importable
     archives, and title contents.
+* Sega 8-bit: Sega Master System and Game Gear ROM images (\*.sms, \*.gg)
 
 ## External Media Downloads
 
@@ -243,3 +246,5 @@ decrypt data will show an error message instead of the data in question.
   cards, and plushes. Used for automatic downloading of amiibo images.
 * [3dbrew](https://www.3dbrew.org): Nintendo 3DS homebrew and reverse
   engineering. Used for Nintendo 3DS file format information.
+* [SMS Power](http://www.smspower.org): Sega 8-bit technical information.
+  Used for ROM format information for Sega Master System and Game Gear.
