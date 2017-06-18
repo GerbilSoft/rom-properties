@@ -194,11 +194,13 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
 		{
 			uint8_t imageType = imgTypePrio.imgTypes[i];
-			assert(imageType == 0xFF || imageType < IMG_TYPE_COUNT);
-			if (imageType >= IMG_TYPE_COUNT && imageType != 0xFF) {
+			assert(imageType < IMG_TYPE_COUNT);
+			if (imageType >= IMG_TYPE_COUNT) {
 				// Invalid image type.
+				// NOTE: 0xFF (no image) should not be encountered here.
 				continue;
 			}
+
 			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
 				// Set the image type.
 				imageTypeSet[imageType] = true;
