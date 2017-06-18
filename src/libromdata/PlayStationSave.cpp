@@ -84,7 +84,7 @@ class PlayStationSavePrivate : public RomDataPrivate
 			PS1_PSV_Header psvHeader;
 			PS1_Block_Entry blockHeader;
 			PS1_54_Header ps54Header;
-		};
+		} mxh;
 		PS1_SC_Struct scHeader;
 
 		/**
@@ -105,8 +105,9 @@ PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file
 	, iconAnimData(nullptr)
 	, saveType(SAVE_TYPE_UNKNOWN)
 {
-	// Clear the save header struct.
-	memset(&psvHeader, 0, sizeof(psvHeader));
+	// Clear the various headers.
+	memset(&mxh, 0, sizeof(mxh));
+	memset(&scHeader, 0, sizeof(scHeader));
 }
 
 PlayStationSavePrivate::~PlayStationSavePrivate()
@@ -242,19 +243,19 @@ PlayStationSave::PlayStationSave(IRpFile *file)
 	switch (d->saveType) {
 		case PlayStationSavePrivate::SAVE_TYPE_PSV:
 			// PSV (PS1 on PS3)
-			memcpy(&d->psvHeader, header, sizeof(d->psvHeader));
-			memcpy(&d->scHeader, &header[sizeof(d->psvHeader)], sizeof(d->scHeader));
+			memcpy(&d->mxh.psvHeader, header, sizeof(d->mxh.psvHeader));
+			memcpy(&d->scHeader, &header[sizeof(d->mxh.psvHeader)], sizeof(d->scHeader));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_RAW:
 			memcpy(&d->scHeader, header, sizeof(d->scHeader));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
-			memcpy(&d->blockHeader, header, sizeof(d->blockHeader));
-			memcpy(&d->scHeader, &header[sizeof(d->blockHeader)], sizeof(d->scHeader));
+			memcpy(&d->mxh.blockHeader, header, sizeof(d->mxh.blockHeader));
+			memcpy(&d->scHeader, &header[sizeof(d->mxh.blockHeader)], sizeof(d->scHeader));
 			break;
 		case PlayStationSavePrivate::SAVE_TYPE_54:
-			memcpy(&d->ps54Header, header, sizeof(d->ps54Header));
-			memcpy(&d->scHeader, &header[sizeof(d->ps54Header)], sizeof(d->scHeader));
+			memcpy(&d->mxh.ps54Header, header, sizeof(d->mxh.ps54Header));
+			memcpy(&d->scHeader, &header[sizeof(d->mxh.ps54Header)], sizeof(d->scHeader));
 			break;
 		default:
 			// Unknown save type.
@@ -543,13 +544,13 @@ int PlayStationSave::loadFieldData(void)
 	const char* filename = nullptr;
 	switch(d->saveType) {
 	case PlayStationSavePrivate::SAVE_TYPE_PSV:
-		filename = d->psvHeader.filename;
+		filename = d->mxh.psvHeader.filename;
 		break;
 	case PlayStationSavePrivate::SAVE_TYPE_BLOCK:
-		filename = d->blockHeader.filename;
+		filename = d->mxh.blockHeader.filename;
 		break;
 	case PlayStationSavePrivate::SAVE_TYPE_54:
-		filename = d->ps54Header.filename;
+		filename = d->mxh.ps54Header.filename;
 		break;
 	}
 
