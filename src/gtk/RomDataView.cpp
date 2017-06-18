@@ -85,8 +85,12 @@ static void	rom_data_view_update_display	(RomDataView	*page);
 static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
 
 /** Signal handlers. **/
-static void	checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
-						  gpointer		 user_data);
+static void	checkbox_no_toggle_signal_handler (GtkToggleButton	*togglebutton,
+						   gpointer		 user_data);
+static void     rom_data_view_map_signal_handler  (RomDataView		*page,
+						   gpointer		 user_data);
+static void     rom_data_view_unmap_signal_handler(RomDataView		*page,
+						   gpointer		 user_data);
 
 /** Icon animation timer. **/
 static void	start_anim_timer(RomDataView *page);
@@ -350,6 +354,13 @@ rom_data_view_init(RomDataView *page)
 	pango_attr_list_insert(attr_lst, attr);
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
 	pango_attr_list_unref(attr_lst);
+
+	// Connect the map and unmap signals.
+	// These are needed in order to start and stop the animation.
+	g_signal_connect(page, "map",
+		reinterpret_cast<GCallback>(rom_data_view_map_signal_handler), nullptr);
+	g_signal_connect(page, "unmap",
+		reinterpret_cast<GCallback>(rom_data_view_unmap_signal_handler), nullptr);
 
 	// Table layout is created in rom_data_view_update_display().
 }
@@ -1365,9 +1376,8 @@ rom_data_view_load_rom_data(gpointer data)
 		delete file;
 	}
 
-	// Start the animation timer.
-	// TODO: Start/stop on window show/hide?
-	start_anim_timer(page);
+	// Animation timer will be started when the page
+	// receives the "map" signal.
 
 	// Clear the timeout.
 	page->changed_idle = 0;
@@ -1398,6 +1408,32 @@ checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 			gtk_toggle_button_set_active(togglebutton, status);
 		}
 	}
+}
+
+/**
+ * RomDataView is being mapped onto the screen.
+ * @param page RomDataView
+ * @param user_data User data.
+ */
+static void
+rom_data_view_map_signal_handler(RomDataView	*page,
+				 gpointer	 user_data)
+{
+	RP_UNUSED(user_data);
+	start_anim_timer(page);
+}
+
+/**
+ * RomDataView is being unmapped from the screen.
+ * @param page RomDataView
+ * @param user_data User data.
+ */
+static void
+rom_data_view_unmap_signal_handler(RomDataView	*page,
+				   gpointer	 user_data)
+{
+	RP_UNUSED(user_data);
+	stop_anim_timer(page);
 }
 
 /** Icon animation timer. **/

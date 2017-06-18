@@ -40,6 +40,8 @@
     and after the garbage characters. (#83)
   * (Windows) Property page: Fixed icon resizing for icons smaller than
     32x32. This only affects PS1 save files at the moment.
+  * (GTK+) In the file properties dialog, animated icons are now paused
+    when the tab isn't visible. This reduces CPU usage.
 
 ## v1.0 (released 2017/05/20)
 
