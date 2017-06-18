@@ -29,6 +29,8 @@
   * Mega Drive: A second ROM Header tab for locked-on ROMs has been added.
     This shows the ROM header information for locked-on ROMs for e.g.
     "Sonic 3 & Knuckles".
+  * PlayStationSave: Save formats other than PSV (\*.mcb, \*.mcx, \*.pda,
+    \*.psx, \*.mcs, \*.ps1, and raw saves) are now supported.
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built

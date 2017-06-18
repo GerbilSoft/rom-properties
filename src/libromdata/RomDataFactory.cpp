@@ -126,7 +126,6 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(N64, false),
 	GetRomDataFns(SNES, false),
 	GetRomDataFns(DreamcastSave, true),
-	GetRomDataFns(PlayStationSave, true),
 	GetRomDataFns(Amiibo, true),
 	GetRomDataFns(NES, false),
 	GetRomDataFns(WiiU, true),
@@ -137,6 +136,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// so it should go at the end.
 	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(EXE, false),
+	GetRomDataFns(PlayStationSave, true),
 	{nullptr, nullptr, nullptr, false}
 };
 

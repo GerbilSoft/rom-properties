@@ -144,7 +144,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb, \*.srl)
 * Nintendo Virtual Boy: Plain binary (\*.vb)
-* Sony PlayStation: Save files (\*.psv)
+* Sony PlayStation: Save files (\*.psv, \*.mcb, \*.mcx, \*.pda, \*.psx, \*.mcs, \*.ps1)
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
 * Nintendo Entertainment System: iNES dumps (\*.nes), FDS dumps (\*.fds, \*.qd),
   3DS Virtual Console dumps (\*.tds)
