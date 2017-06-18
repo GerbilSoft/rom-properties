@@ -629,6 +629,7 @@ int NES::loadFieldData(void)
 	int submapper = -1;
 	int tnes_mapper = -1;
 	bool has_trainer = false;
+	uint8_t tv_mode = 0xFF;			// NES2_TV_Mode (0xFF if unknown)
 	unsigned int prg_rom_size = 0;
 	unsigned int chr_rom_size = 0;
 	unsigned int chr_ram_size = 0;		// CHR RAM
@@ -655,6 +656,9 @@ int NES::loadFieldData(void)
 			mapper = (d->header.ines.mapper_lo >> 4) |
 				 (d->header.ines.mapper_hi & 0xF0);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
+			// NOTE: Very few iNES ROMs have this set correctly,
+			// so we're ignoring it for now.
+			//tv_mode = (d->header.ines.ines.tv_mode & 1);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
 			if (chr_rom_size == 0) {
@@ -672,6 +676,7 @@ int NES::loadFieldData(void)
 				 ((d->header.ines.nes2.mapper_hi2 & 0x0F) << 8);
 			submapper = (d->header.ines.nes2.mapper_hi2 >> 4);
 			has_trainer = !!(d->header.ines.mapper_lo & INES_F6_TRAINER);
+			tv_mode = (d->header.ines.nes2.tv_mode & 3);
 			prg_rom_size = ((d->header.ines.prg_banks +
 					(d->header.ines.nes2.prg_banks_hi << 8))
 					* INES_PRG_BANK_SIZE);
@@ -788,6 +793,17 @@ int NES::loadFieldData(void)
 		// TODO: Look up the name.
 		d->fields->addField_string_numeric(_RP("TNES Mapper"),
 			tnes_mapper, RomFields::FB_DEC);
+	}
+
+	// TV mode.
+	// NOTE: Dendy PAL isn't supported in any headers at the moment.
+	const rp_char *const tv_mode_tbl[] = {
+		_RP("NTSC"), _RP("PAL"),
+		_RP("Dual (NTSC/PAL)"),
+		_RP("Dual (NTSC/PAL)")
+	};
+	if (tv_mode <= ARRAY_SIZE(tv_mode_tbl)) {
+		d->fields->addField_string(_RP("TV Mode"), tv_mode_tbl[tv_mode]);
 	}
 
 	// ROM features.
