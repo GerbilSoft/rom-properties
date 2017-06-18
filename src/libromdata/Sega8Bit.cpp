@@ -62,6 +62,14 @@ class Sega8BitPrivate : public RomDataPrivate
 			};
 			Sega8_RomHeader tmr;
 		} romHeader;
+
+		/**
+		 * Add an SDSC string field.
+		 * @param name Field name.
+		 * @param ptr SDSC string pointer.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addField_string_sdsc(const rp_char *name, uint16_t ptr);
 };
 
 /** Sega8BitPrivate **/
@@ -71,6 +79,44 @@ Sega8BitPrivate::Sega8BitPrivate(Sega8Bit *q, IRpFile *file)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
+}
+
+/**
+ * Add an SDSC string field.
+ * @param name Field name.
+ * @param ptr SDSC string pointer.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Sega8BitPrivate::addField_string_sdsc(const rp_char *name, uint16_t ptr)
+{
+	assert(file != nullptr);
+	assert(file->isOpen());
+	assert(isValid);
+	if (!file || !file->isOpen() || !isValid) {
+		// Can't add anything...
+		return -EBADF;
+	}
+
+	if (ptr == 0x0000 || ptr == 0xFFFF) {
+		// No string here...
+		return 0;
+	}
+
+	int ret = file->seek(ptr);
+	if (ret != 0) {
+		return ret;
+	}
+
+	char strbuf[256];
+	size_t size = file->read(strbuf, sizeof(strbuf));
+	if (size > 0 && size <= sizeof(strbuf)) {
+		// NOTE: SDSC documentation says these strings should be ASCII.
+		// Since SDSC was introduced in 2001, I'll interpret them as cp1252.
+		// Reference: http://www.smspower.org/Development/SDSCHeader#SDSC7fe04BytesASCII
+		fields->addField_string(name,
+			cp1252_to_rp_string(strbuf, sizeof(strbuf)));
+	}
+	return 0;
 }
 
 /** Sega8Bit **/
@@ -454,6 +500,12 @@ int Sega8Bit::loadFieldData(void)
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.
 		);
+
+		// SDSC string fields.
+		d->addField_string_sdsc(_RP("Author"), le16_to_cpu(sdsc->author_ptr));
+		d->addField_string_sdsc(_RP("Name"), le16_to_cpu(sdsc->name_ptr));
+		d->addField_string_sdsc(_RP("Description"), le16_to_cpu(sdsc->desc_ptr));
+
 	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
 		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))
 	{
