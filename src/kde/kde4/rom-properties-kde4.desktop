@@ -11,7 +11,7 @@ X-KDE-Protocol=file
 
 # NOTE: all/all doesn't work; use application/octet-stream.
 # TODO: Remove application/octet-stream and only use more-specific types?
-MimeType=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;
+MimeType=application/octet-stream;application/x-genesis-rom;application/x-gamecube-rom;application/x-wii-rom;application/x-nintendo-ds-rom;application/x-gameboy-rom;application/x-gba-rom;application/x-sms-rom;
 
 # ThumbCreator settings.
 CacheThumbnail=true

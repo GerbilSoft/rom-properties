@@ -60,6 +60,7 @@ using std::vector;
 #include "EXE.hpp"
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DSFirm.hpp"
+#include "Sega8Bit.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -92,6 +93,18 @@ class RomDataFactoryPrivate
 			bool hasThumbnail;
 		};
 
+		struct RomDataFns_addr {
+			pFnIsRomSupported isRomSupported;
+			pFnNewRomData newRomData;
+			pFnSupportedFileExtensions supportedFileExtensions;
+			bool hasThumbnail;
+
+			// Extra fields for files whose headers
+			// appear at specific addresses.
+			uint32_t address;
+			uint32_t size;
+		};
+
 // MSVC 2010 complains if we don't specify the full namespace
 // for the RomData subclass in the lambda expression.
 #define GetRomDataFns(sys, hasThumbnail) \
@@ -99,12 +112,20 @@ class RomDataFactoryPrivate
 	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
 	 sys::supportedFileExtensions_static, \
 	 hasThumbnail}
+#define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
+	{sys::isRomSupported_static, \
+	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
+	 sys::supportedFileExtensions_static, \
+	 hasThumbnail, address, size}
 
 		// RomData subclasses that use a header.
 		static const RomDataFns romDataFns_header[];
 
 		// RomData subclasses that use a footer.
 		static const RomDataFns romDataFns_footer[];
+
+		// RomData subclasses that use specific addresses.
+		static const RomDataFns_addr romDataFns_addr[];
 
 		/**
 		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
@@ -143,6 +164,10 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, false),
 	{nullptr, nullptr, nullptr, false}
+};
+
+const RomDataFactoryPrivate::RomDataFns_addr RomDataFactoryPrivate::romDataFns_addr[] = {
+	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
 };
 
 /**
@@ -319,7 +344,45 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *romData = fns->newRomData(file);
+			RomData *const romData = fns->newRomData(file);
+			if (romData->isValid()) {
+				// RomData subclass obtained.
+				return romData;
+			}
+
+			// Not actually supported.
+			romData->unref();
+		}
+	}
+
+	// Check RomData subclasses that have a header
+	// in a specific location.
+	// NOTE: Checked before footer to prevent long seeks.
+	const RomDataFactoryPrivate::RomDataFns_addr *fns2 =
+		&RomDataFactoryPrivate::romDataFns_addr[0];
+	for (; fns2->supportedFileExtensions != nullptr; fns2++) {
+		if (thumbnail && !fns2->hasThumbnail) {
+			// Thumbnail is requested, but this RomData class
+			// doesn't support any images.
+			continue;
+		}
+
+		// Make sure the file is big enough to
+		// have this header.
+		if (((int64_t)fns2->address + fns2->size) > info.szFile)
+			continue;
+
+		// Read the header data.
+		info.header.addr = fns2->address;
+		int ret = file->seek(info.header.addr);
+		if (ret != 0)
+			continue;
+		info.header.size = (uint32_t)file->read(header, fns2->size);
+		if (info.header.size != fns2->size)
+			continue;
+
+		if (fns2->isRomSupported(&info) >= 0) {
+			RomData *const romData = fns2->newRomData(file);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -374,7 +437,7 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		}
 
 		if (fns->isRomSupported(&info) >= 0) {
-			RomData *romData = fns->newRomData(file);
+			RomData *const romData = fns->newRomData(file);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -431,6 +494,21 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 #endif
 		for (; *sys_exts != nullptr; sys_exts++) {
 			exts[*sys_exts] |= fns->hasThumbnail;
+		}
+	}
+
+	const RomDataFactoryPrivate::RomDataFns_addr *fns2 =
+		&RomDataFactoryPrivate::romDataFns_addr[0];
+	for (; fns2->supportedFileExtensions != nullptr; fns2++) {
+		const rp_char *const *sys_exts = fns2->supportedFileExtensions();
+		if (!sys_exts)
+			continue;
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+		exts.reserve(exts.size() + 4);
+#endif
+		for (; *sys_exts != nullptr; sys_exts++) {
+			exts[*sys_exts] |= fns2->hasThumbnail;
 		}
 	}
 

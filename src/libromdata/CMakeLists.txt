@@ -21,6 +21,7 @@ SET(libromdata_SRCS
 	WiiU.cpp
 	Nintendo3DS.cpp
 	Nintendo3DSFirm.cpp
+	Sega8Bit.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -65,6 +66,7 @@ SET(libromdata_H
 	WiiU.hpp
 	Nintendo3DS.hpp
 	Nintendo3DSFirm.hpp
+	Sega8Bit.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -80,6 +82,7 @@ SET(libromdata_H
 	nes_structs.h
 	wiiu_structs.h
 	n3ds_structs.h
+	sega8_structs.h
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
