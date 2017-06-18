@@ -289,8 +289,9 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 	// Check the SC struct magic.
 	static const char sc_magic[2] = { 'S','C' };
-	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct)
-	    && memcmp(&header[sizeof(PS1_PSV_Header)], sc_magic, sizeof(sc_magic)) == 0) {
+	if (info->header.size >= sizeof(PS1_PSV_Header) + sizeof(PS1_SC_Struct) &&
+	    memcmp(&header[sizeof(PS1_PSV_Header)], sc_magic, sizeof(sc_magic)) == 0)
+	{
 		// Check the PSV magic.
 		static const char psv_magic[8] = {
 			0x00, 0x56, 0x53, 0x50, 0x00, 0x00, 0x00, 0x00
@@ -303,8 +304,9 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 		// This is a PSV (PS1 on PS3) save file.
 		return PlayStationSavePrivate::SAVE_TYPE_PSV;
 	}
-	if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct)
-	    && memcmp(&header[sizeof(PS1_Block_Entry)], sc_magic, sizeof(sc_magic)) == 0) {
+	else if (info->header.size >= sizeof(PS1_Block_Entry) + sizeof(PS1_SC_Struct) &&
+		 memcmp(&header[sizeof(PS1_Block_Entry)], sc_magic, sizeof(sc_magic)) == 0)
+	{
 		// Check the block magic.
 		static const char block_magic[4] = {
 			PS1_ENTRY_ALLOC_FIRST, 0x00, 0x00, 0x00,
@@ -323,13 +325,15 @@ int PlayStationSave::isRomSupported_static(const DetectInfo *info)
 
 		return PlayStationSavePrivate::SAVE_TYPE_BLOCK;
 	}
-	if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct)
-	    && memcmp(&header[sizeof(PS1_54_Header)], sc_magic, sizeof(sc_magic)) == 0) {
+	else if (info->header.size >= sizeof(PS1_54_Header) + sizeof(PS1_SC_Struct) &&
+		 memcmp(&header[sizeof(PS1_54_Header)], sc_magic, sizeof(sc_magic)) == 0)
+	{
 		// Extra filesize check to prevent false-positives
 		if (info->szFile % 8192 != 54) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_54;
 	}
-	if (memcmp(header, sc_magic, sizeof(sc_magic)) == 0) {
+	else if (memcmp(header, sc_magic, sizeof(sc_magic)) == 0)
+	{
 		// Extra filesize check to prevent false-positives
 		if (info->szFile % 8192 != 0) return -1;
 		return PlayStationSavePrivate::SAVE_TYPE_RAW;
