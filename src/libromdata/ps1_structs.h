@@ -113,9 +113,10 @@ typedef struct PACKED _PS1_SC_Struct {
 	// PlayStation icon.
 	// NOTE: A palette entry of $0000 is transparent.
 	uint16_t icon_pal[16];		// Icon palette. (RGB555)
+	uint8_t icon_data[3][16*16/2];	// Icon data. (16x16, 4bpp; up to 3 frames)
 } PS1_SC_Struct;
 #pragma pack()
-ASSERT_STRUCT(PS1_SC_Struct, 128);
+ASSERT_STRUCT(PS1_SC_Struct, 512);
 
 /**
  * PSV save format. (PS1 on PS3)
