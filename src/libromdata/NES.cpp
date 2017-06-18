@@ -618,9 +618,7 @@ int NES::loadFieldData(void)
 	}
 
 	// NES ROM header.
-	// TODO: Reduce the maximum by removing fields that
-	// aren't usable on NES and aren't usable on FDS?
-	d->fields->reserve(12);	// Maximum of 12 fields.
+	d->fields->reserve(15);	// Maximum of 15 fields.
 
 	// Determine stuff based on the ROM format.
 	const rp_char *rom_format;
