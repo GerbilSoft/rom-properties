@@ -745,7 +745,7 @@ int NES::loadFieldData(void)
 		s_mapper.reserve(64);
 
 		// Look up the mapper name.
-		const rp_char *mapper_name = NESMappers::lookup_ines(mapper);
+		const rp_char *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			s_mapper += _RP(" - ");
 			s_mapper += mapper_name;
@@ -763,9 +763,18 @@ int NES::loadFieldData(void)
 
 	if (submapper >= 0) {
 		// Submapper. (NES 2.0 only)
-		// TODO: String version?
-		d->fields->addField_string_numeric(_RP("Submapper"),
-			submapper, RomFields::FB_DEC);
+		rp_string s_submapper = rp_sprintf("%u", (unsigned int)submapper);
+		s_submapper.reserve(64);
+
+		// Look up the submapper name.
+		// TODO: Needs testing.
+		const rp_char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
+		if (submapper_name) {
+			s_submapper += _RP(" - ");
+			s_submapper += submapper_name;
+		}
+
+		d->fields->addField_string(_RP("Submapper"), s_submapper);
 	}
 
 	if (tnes_mapper >= 0) {

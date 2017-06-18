@@ -50,6 +50,15 @@ class NESMappers
 		 * @return iNES mapper number, or -1 if unknown.
 		 */
 		static int tnesMapperToInesMapper(int tnes_mapper);
+
+		/**
+		 * Look up an NES 2.0 submapper number.
+		 * TODO: Return the "depcrecated" value?
+		 * @param mapper Mapper number.
+		 * @param submapper Submapper number.
+		 * @return Submapper name, or nullptr if not found.
+		 */
+		static const rp_char *lookup_nes2_submapper(int mapper, int submapper);
 };
 
 }

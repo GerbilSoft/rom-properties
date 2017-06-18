@@ -22,6 +22,9 @@
 
 #include "NESMappers.hpp"
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 namespace LibRomData {
 
 /**
@@ -81,6 +84,22 @@ class NESMappersPrivate
 			int info_size;			// Number of entries in info.
 		};
 		static const SubmapperEntry submappers[];
+
+		/**
+		 * bsearch() comparison function for SubmapperInfo.
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int SubmapperInfo_compar(const void *a, const void *b);
+
+		/**
+		 * bsearch() comparison function for SubmapperEntry.
+		 * @param a
+		 * @param b
+		 * @return
+		 */
+		static int SubmapperEntry_compar(const void *a, const void *b);
 };
 
 /**
@@ -486,7 +505,39 @@ const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
 	{ 78, mapper078_submappers, ARRAY_SIZE(mapper078_submappers)},
 	{210, namcot_175_340_submappers, ARRAY_SIZE(namcot_175_340_submappers)},	// Namcot 175, 340
 	{232, quattro_submappers, ARRAY_SIZE(quattro_submappers)},			// Codemasters Quattro
+
+	{0, nullptr, 0}
 };
+
+/**
+ * bsearch() comparison function for SubmapperInfo.
+ * @param a
+ * @param b
+ * @return
+ */
+int NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *b)
+{
+	uint8_t submapper1 = static_cast<const SubmapperInfo*>(a)->submapper;
+	uint8_t submapper2 = static_cast<const SubmapperInfo*>(b)->submapper;
+	if (submapper1 < submapper2) return -1;
+	if (submapper1 > submapper2) return 1;
+	return 0;
+}
+
+/**
+ * bsearch() comparison function for SubmapperEntry.
+ * @param a
+ * @param b
+ * @return
+ */
+int NESMappersPrivate::SubmapperEntry_compar(const void *a, const void *b)
+{
+	uint16_t mapper1 = static_cast<const SubmapperEntry*>(a)->mapper;
+	uint16_t mapper2 = static_cast<const SubmapperEntry*>(b)->mapper;
+	if (mapper1 < mapper2) return -1;
+	if (mapper1 > mapper2) return 1;
+	return 0;
+}
 
 /** NESMappers **/
 
@@ -499,6 +550,8 @@ const rp_char *NESMappers::lookup_ines(int mapper)
 {
 	static_assert(sizeof(NESMappersPrivate::mappers) == (256 * sizeof(NESMappersPrivate::MapperEntry)),
 		"NESMappersPrivate::mappers[] doesn't have 256 entries.");
+	assert(mapper >= 0);
+	assert(mapper < ARRAY_SIZE(NESMappersPrivate::mappers));
 	if (mapper < 0 || mapper >= ARRAY_SIZE(NESMappersPrivate::mappers)) {
 		// Mapper number is out of range.
 		return nullptr;
@@ -533,6 +586,47 @@ int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
 	}
 
 	return ines_mappers[tnes_mapper];
+}
+
+/**
+ * Look up an NES 2.0 submapper number.
+ * TODO: Return the "depcrecated" value?
+ * @param mapper Mapper number.
+ * @param submapper Submapper number.
+ * @return Submapper name, or nullptr if not found.
+ */
+const rp_char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
+{
+	assert(mapper >= 0);
+	assert(mapper < ARRAY_SIZE(NESMappersPrivate::mappers));
+	assert(submapper >= 0);
+	assert(submapper < 256);
+	if (mapper < 0 || mapper >= ARRAY_SIZE(NESMappersPrivate::mappers) ||
+	    submapper < 0 || submapper >= 256)
+	{
+		return nullptr;
+	}
+
+	// Do a binary search in submappers[].
+	const NESMappersPrivate::SubmapperEntry key = {(uint16_t)mapper, nullptr, 0};
+	const NESMappersPrivate::SubmapperEntry *res =
+		static_cast<const NESMappersPrivate::SubmapperEntry*>(bsearch(&key,
+			NESMappersPrivate::submappers,
+			ARRAY_SIZE(NESMappersPrivate::submappers)-1,
+			sizeof(NESMappersPrivate::SubmapperEntry),
+			NESMappersPrivate::SubmapperEntry_compar));
+	if (!res || !res->info || res->info_size == 0)
+		return nullptr;
+
+	// Do a minary search in res->info.
+	const NESMappersPrivate::SubmapperInfo key2 = {(uint8_t)submapper, nullptr, false};
+	const NESMappersPrivate::SubmapperInfo *res2 =
+		static_cast<const NESMappersPrivate::SubmapperInfo*>(bsearch(&key2,
+			res->info, res->info_size,
+			sizeof(NESMappersPrivate::SubmapperInfo),
+			NESMappersPrivate::SubmapperInfo_compar));
+	// TODO: Return the "deprecated" value?
+	return (res2 ? res2->desc : nullptr);
 }
 
 }
