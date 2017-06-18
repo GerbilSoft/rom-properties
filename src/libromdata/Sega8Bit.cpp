@@ -53,9 +53,15 @@ class Sega8BitPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(Sega8BitPrivate)
 
 	public:
-		// ROM header.
-		// TODO: Add support for Codemasters and SDSC.
-		Sega8_RomHeader romHeader;
+		// ROM header. (0x7FE0-0x7FFF)
+		struct {
+			union {
+				char m404_copyright[16];
+				Sega8_Codemasters_RomHeader codemasters;
+				Sega8_SDSC_RomHeader sdsc;
+			};
+			Sega8_RomHeader tmr;
+		} romHeader;
 };
 
 /** Sega8BitPrivate **/
@@ -94,7 +100,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	int ret = d->file->seek(0x7FF0);
+	int ret = d->file->seek(0x7FE0);
 	if (ret != 0)
 		return;
 	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
@@ -103,7 +109,7 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 
 	// Check if this ROM image is supported.
 	DetectInfo info;
-	info.header.addr = 0x7FF0;
+	info.header.addr = 0x7FE0;
 	info.header.size = sizeof(d->romHeader);
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
 	info.ext = nullptr;	// Not needed for Sega 8-bit.
@@ -249,16 +255,16 @@ int Sega8Bit::loadFieldData(void)
 		return -EIO;
 	}
 
-	// Sega 8-bit ROM header.
-	const Sega8_RomHeader *const romHeader = &d->romHeader;
+	// Sega 8-bit ROM header. (TMR SEGA)
+	const Sega8_RomHeader *const tmr = &d->romHeader.tmr;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
 	// Product code. (little-endian BCD)
 	rp_char product_code[8];
 	rp_char *p = product_code;
-	if (romHeader->product_code[2] & 0xF0) {
+	if (tmr->product_code[2] & 0xF0) {
 		// Fifth digit is present.
-		uint8_t digit = (romHeader->product_code[2] >> 4) & 0xF;
+		uint8_t digit = (tmr->product_code[2] >> 4) & 0xF;
 		if (digit < 10) {
 			*p++ = _RP_CHR('0' + digit);
 		} else {
@@ -271,16 +277,16 @@ int Sega8Bit::loadFieldData(void)
 	// Convert the product code to BCD.
 	// NOTE: Little-endian BCD; first byte is the *second* set of digits.
 	// TODO: Check for invalid BCD digits?
-	p[0] = _RP_CHR('0' + ((romHeader->product_code[1] >> 4) & 0xF));
-	p[1] = _RP_CHR('0' +  (romHeader->product_code[1] & 0xF));
-	p[2] = _RP_CHR('0' + ((romHeader->product_code[0] >> 4) & 0xF));
-	p[3] = _RP_CHR('0' +  (romHeader->product_code[0] & 0xF));
+	p[0] = _RP_CHR('0' + ((tmr->product_code[1] >> 4) & 0xF));
+	p[1] = _RP_CHR('0' +  (tmr->product_code[1] & 0xF));
+	p[2] = _RP_CHR('0' + ((tmr->product_code[0] >> 4) & 0xF));
+	p[3] = _RP_CHR('0' +  (tmr->product_code[0] & 0xF));
 	p[4] = 0;
 	d->fields->addField_string(_RP("Product Code"), product_code);
 
 	// Version.
 	rp_char version[3];
-	uint8_t digit = romHeader->product_code[2] & 0xF;
+	uint8_t digit = tmr->product_code[2] & 0xF;
 	if (digit < 10) {
 		version[0] = _RP_CHR('0' + digit);
 		version[1] = 0;
@@ -294,7 +300,7 @@ int Sega8Bit::loadFieldData(void)
 	// Region code and system ID.
 	const rp_char *sysID;
 	const rp_char *region;
-	switch ((romHeader->region_and_size >> 4) & 0xF) {
+	switch ((tmr->region_and_size >> 4) & 0xF) {
 		case Sega8_SMS_Japan:
 			sysID = _RP("Sega Master System");
 			region = _RP("Japan");
@@ -324,11 +330,78 @@ int Sega8Bit::loadFieldData(void)
 
 	// Checksum.
 	d->fields->addField_string_numeric(_RP("Checksum"),
-		le16_to_cpu(romHeader->checksum), RomFields::FB_HEX, 4,
+		le16_to_cpu(tmr->checksum), RomFields::FB_HEX, 4,
 		RomFields::STRF_MONOSPACE);
 
 	// TODO: ROM size?
-	// TODO: Codemasters and SDSC headers.
+
+	// Check for other headers.
+	// TODO: SDSC header.
+	if (0x10000 - (uint32_t)le16_to_cpu(d->romHeader.codemasters.checksum) ==
+	    (uint32_t)le16_to_cpu(d->romHeader.codemasters.checksum_compl))
+	{
+		// Codemasters checksums match.
+		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
+		d->fields->addField_string(_RP("Extra Header"), _RP("Codemasters"));
+
+		// Convert date/time from BCD.
+		// NOTE: struct tm has some oddities:
+		// - tm_year: year - 1900
+		// - tm_mon: 0 == January
+
+		// TODO: Check for invalid BCD values.
+		struct tm cmtime;
+		cmtime.tm_year = ((codemasters->timestamp.year >> 4) * 10) +
+				  (codemasters->timestamp.year & 0x0F);
+		if (cmtime.tm_year < 80) {
+			// Assume date values lower than 80 are 2000+.
+			cmtime.tm_year += 100;
+		}
+		cmtime.tm_mon  = ((codemasters->timestamp.month >> 4) * 10) +
+				  (codemasters->timestamp.month & 0x0F);
+		cmtime.tm_mday = ((codemasters->timestamp.day >> 4) * 10) +
+				  (codemasters->timestamp.day & 0x0F);
+		cmtime.tm_hour = ((codemasters->timestamp.hour >> 4) * 10) +
+				  (codemasters->timestamp.hour & 0x0F);
+		cmtime.tm_min  = ((codemasters->timestamp.minute >> 4) * 10) +
+				  (codemasters->timestamp.minute & 0x0F);
+		cmtime.tm_sec = 0;
+
+		// tm_wday and tm_yday are output variables.
+		cmtime.tm_wday = 0;
+		cmtime.tm_yday = 0;
+		cmtime.tm_isdst = 0;
+
+		// If conversion fails, d->ctime will be set to -1.
+#ifdef _WIN32
+		// MSVCRT-specific version.
+		time_t ctime = _mkgmtime(&cmtime);
+#else /* !_WIN32 */
+		// FIXME: Might not be available on some systems.
+		time_t ctime = timegm(&cmtime);
+#endif
+		// TODO: Interpret dateTime of -1 as "error"?
+		d->fields->addField_dateTime(_RP("Build Time"), ctime,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_HAS_TIME |
+			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.
+		);
+
+		// Checksum.
+		d->fields->addField_string_numeric(_RP("CM Checksum Banks"),
+			codemasters->checksum_banks);
+		d->fields->addField_string_numeric(_RP("CM Checksum 1"),
+			le16_to_cpu(codemasters->checksum),
+			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+		d->fields->addField_string_numeric(_RP("CM Checksum 2"),
+			le16_to_cpu(codemasters->checksum_compl),
+			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
+		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))
+	{
+		// Sega Master System M404 prototype copyright.
+		d->fields->addField_string(_RP("Extra Header"), _RP("M404 Copyright Header"));
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
