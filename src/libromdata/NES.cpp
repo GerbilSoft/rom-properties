@@ -631,9 +631,10 @@ int NES::loadFieldData(void)
 	bool has_trainer = false;
 	unsigned int prg_rom_size = 0;
 	unsigned int chr_rom_size = 0;
-	unsigned int chr_ram_size = 0;
-	unsigned int chr_ram_battery_size = 0;	// rare but it exists
-	unsigned int save_ram_size = 0;
+	unsigned int chr_ram_size = 0;		// CHR RAM
+	unsigned int chr_ram_battery_size = 0;	// CHR RAM with battery (rare but it exists)
+	unsigned int prg_ram_size = 0;		// PRG RAM ($6000-$7FFF)
+	unsigned int prg_ram_battery_size = 0;	// PRG RAM with battery (save RAM)
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
 			rom_format = _RP("Archaic iNES");
@@ -645,7 +646,7 @@ int NES::loadFieldData(void)
 				chr_ram_size = 8192;
 			}
 			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
-				save_ram_size = 8192;
+				prg_ram_battery_size = 8192;
 			}
 			break;
 
@@ -660,7 +661,7 @@ int NES::loadFieldData(void)
 				chr_ram_size = 8192;
 			}
 			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
-				save_ram_size = 8192;
+				prg_ram_battery_size = 8192;
 			}
 			break;
 
@@ -684,8 +685,13 @@ int NES::loadFieldData(void)
 			{
 				chr_ram_battery_size = 128 << ((d->header.ines.nes2.vram_size >> 4) - 1);
 			}
-			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
-				save_ram_size = 8192;
+			// PRG RAM size. (TODO: Needs testing.)
+			if (d->header.ines.nes2.prg_ram_size & 0x0F) {
+				prg_ram_size = 128 << ((d->header.ines.nes2.prg_ram_size >> 4) - 1);
+			}
+			// TODO: Require INES_F6_BATTERY?
+			if (d->header.ines.nes2.prg_ram_size & 0xF0) {
+				prg_ram_battery_size = 128 << ((d->header.ines.nes2.prg_ram_size >> 4) - 1);
 			}
 			break;
 
@@ -786,11 +792,11 @@ int NES::loadFieldData(void)
 
 	// ROM features.
 	const rp_char *rom_features = nullptr;
-	if (save_ram_size > 0 && has_trainer) {
+	if (prg_ram_battery_size > 0 && has_trainer) {
 		rom_features = _RP("Save RAM, Trainer");
-	} else if (save_ram_size > 0 && !has_trainer) {
+	} else if (prg_ram_battery_size > 0 && !has_trainer) {
 		rom_features = _RP("Save RAM");
-	} else if (save_ram_size == 0 && has_trainer) {
+	} else if (prg_ram_battery_size == 0 && has_trainer) {
 		rom_features = _RP("Trainer");
 	}
 	if (rom_features) {
@@ -816,9 +822,13 @@ int NES::loadFieldData(void)
 		d->fields->addField_string(_RP("CHR RAM (backed up)"),
 			d->formatBankSizeKB(chr_ram_battery_size));
 	}
-	if (save_ram_size > 0) {
+	if (prg_ram_size > 0) {
+		d->fields->addField_string(_RP("PRG RAM"),
+			d->formatBankSizeKB(prg_ram_size));
+	}
+	if (prg_ram_battery_size > 0) {
 		d->fields->addField_string(_RP("Save RAM (backed up)"),
-			d->formatBankSizeKB(save_ram_size));
+			d->formatBankSizeKB(prg_ram_battery_size));
 	}
 
 	// Check for FDS fields.
