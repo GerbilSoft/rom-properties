@@ -343,6 +343,21 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 		    fns->size > info.header.size)
 		{
 			// Header address has changed.
+
+			// Check the file extension to reduce overhead
+			// for file types that don't use this.
+			// TODO: Don't hard-code this.
+			// Use a pointer to supportedFileExtensions_static() instead?
+			if (info.ext == nullptr) {
+				// No file extension...
+				break;
+			} else if (rp_strcasecmp(info.ext, _RP(".sms")) != 0 &&
+				   rp_strcasecmp(info.ext, _RP(".gg")) != 0)
+			{
+				// Not SMS or Game Gear.
+				break;
+			}
+
 			// Read the new header data.
 
 			// NOTE: fns->size == 0 is only correct
