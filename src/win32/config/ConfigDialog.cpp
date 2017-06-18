@@ -401,6 +401,7 @@ int CALLBACK rp_show_config_dialog(
 
 	ConfigDialog *cfg = new ConfigDialog();
 	INT_PTR ret = cfg->exec();
+	delete cfg;
 
 	// Uninitialize COM.
 	CoUninitialize();
