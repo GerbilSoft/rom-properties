@@ -665,7 +665,16 @@ int NES::loadFieldData(void)
 				chr_ram_size = 8192;
 			}
 			if (d->header.ines.mapper_lo & INES_F6_BATTERY) {
-				prg_ram_battery_size = 8192;
+				if (d->header.ines.ines.prg_ram_size == 0) {
+					prg_ram_battery_size = 8192;
+				} else {
+					prg_ram_battery_size = d->header.ines.ines.prg_ram_size * INES_PRG_RAM_BANK_SIZE;
+				}
+			} else {
+				// FIXME: Is this correct?
+				if (d->header.ines.ines.prg_ram_size > 0) {
+					prg_ram_size = d->header.ines.ines.prg_ram_size * INES_PRG_RAM_BANK_SIZE;
+				}
 			}
 			break;
 

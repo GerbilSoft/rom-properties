@@ -40,6 +40,7 @@ extern "C" {
 // Bank sizes for iNES.
 #define INES_PRG_BANK_SIZE 16384
 #define INES_CHR_BANK_SIZE 8192
+#define INES_PRG_RAM_BANK_SIZE 8192
 
 // Bank sizes for TNES.
 #define TNES_PRG_BANK_SIZE 8192
