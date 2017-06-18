@@ -630,12 +630,17 @@ int NES::loadFieldData(void)
 	int tnes_mapper = -1;
 	unsigned int prg_rom_size = 0;
 	unsigned int chr_rom_size = 0;
+	unsigned int chr_ram_size = 0;
+	unsigned int chr_ram_battery_size = 0;	// rare but it exists
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
 		case NESPrivate::ROM_FORMAT_OLD_INES:
 			rom_format = _RP("Archaic iNES");
 			mapper = (d->header.ines.mapper_lo >> 4);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
+			if (chr_rom_size == 0) {
+				chr_ram_size = 8192;
+			}
 			break;
 
 		case NESPrivate::ROM_FORMAT_INES:
@@ -644,6 +649,9 @@ int NES::loadFieldData(void)
 				 (d->header.ines.mapper_hi & 0xF0);
 			prg_rom_size = d->header.ines.prg_banks * INES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
+			if (chr_rom_size == 0) {
+				chr_ram_size = 8192;
+			}
 			break;
 
 		case NESPrivate::ROM_FORMAT_NES2:
@@ -656,6 +664,15 @@ int NES::loadFieldData(void)
 					(d->header.ines.nes2.prg_banks_hi << 8))
 					* INES_PRG_BANK_SIZE);
 			chr_rom_size = d->header.ines.chr_banks * INES_CHR_BANK_SIZE;
+			// CHR RAM size. (TODO: Needs testing.)
+			if (d->header.ines.nes2.vram_size & 0x0F) {
+				chr_ram_size = 128 << ((d->header.ines.nes2.vram_size & 0x0F) - 1);
+			}
+			if ((d->header.ines.mapper_lo & INES_F6_BATTERY) &&
+			    (d->header.ines.nes2.vram_size & 0xF0))
+			{
+				chr_ram_battery_size = 128 << ((d->header.ines.nes2.vram_size >> 4) - 1);
+			}
 			break;
 
 		case NESPrivate::ROM_FORMAT_TNES:
@@ -664,6 +681,7 @@ int NES::loadFieldData(void)
 			mapper = NESMappers::tnesMapperToInesMapper(tnes_mapper);
 			prg_rom_size = d->header.tnes.prg_banks * TNES_PRG_BANK_SIZE;
 			chr_rom_size = d->header.tnes.chr_banks * TNES_CHR_BANK_SIZE;
+			// FIXME: Check Zelda TNES to see where 8K CHR RAM is.
 			break;
 
 		// NOTE: FDS fields are handled later.
@@ -745,12 +763,22 @@ int NES::loadFieldData(void)
 
 	// ROM sizes.
 	if (prg_rom_size > 0) {
-		d->fields->addField_string(_RP("PRG ROM Size"),
+		d->fields->addField_string(_RP("PRG ROM"),
 			d->formatBankSizeKB(prg_rom_size));
 	}
 	if (chr_rom_size > 0) {
-		d->fields->addField_string(_RP("CHR ROM Size"),
+		d->fields->addField_string(_RP("CHR ROM"),
 			d->formatBankSizeKB(chr_rom_size));
+	}
+
+	// RAM sizes.
+	if (chr_ram_size > 0) {
+		d->fields->addField_string(_RP("CHR RAM"),
+			d->formatBankSizeKB(chr_ram_size));
+	}
+	if (chr_ram_battery_size > 0) {
+		d->fields->addField_string(_RP("CHR RAM (backed up)"),
+			d->formatBankSizeKB(chr_ram_battery_size));
 	}
 
 	// Check for FDS fields.
