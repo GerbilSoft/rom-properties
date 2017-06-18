@@ -91,9 +91,12 @@ static const wchar_t CLSIDs[4][40] = {
 			/* Run the function. */ \
 			free(exe_path); \
 			free(dll_filename); \
-			if (hkeyCLSID) \
+			if (hkeyCLSID) { \
 				RegCloseKey(hkeyCLSID); \
-			return pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
+			} \
+			int ret = pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
+			FreeLibrary(hRpDll); \
+			return ret; \
 		} \
 		FreeLibrary(hRpDll); \
 	} \
@@ -219,7 +222,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 fail:
 	free(exe_path);
 	free(dll_filename);
-	if (hkeyCLSID)
-		RegCloseKey(hkeyCLSID); \
+	if (hkeyCLSID) {
+		RegCloseKey(hkeyCLSID);
+	}
 	return EXIT_FAILURE;
 }
