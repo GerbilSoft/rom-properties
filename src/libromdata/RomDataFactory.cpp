@@ -30,6 +30,9 @@
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
 
+// C includes. (C++ namespace)
+#include <cassert>
+
 // C++ includes.
 #include <unordered_map>
 #include <vector>
@@ -91,13 +94,6 @@ class RomDataFactoryPrivate
 			pFnNewRomData newRomData;
 			pFnSupportedFileExtensions supportedFileExtensions;
 			bool hasThumbnail;
-		};
-
-		struct RomDataFns_addr {
-			pFnIsRomSupported isRomSupported;
-			pFnNewRomData newRomData;
-			pFnSupportedFileExtensions supportedFileExtensions;
-			bool hasThumbnail;
 
 			// Extra fields for files whose headers
 			// appear at specific addresses.
@@ -111,7 +107,7 @@ class RomDataFactoryPrivate
 	{sys::isRomSupported_static, \
 	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
 	 sys::supportedFileExtensions_static, \
-	 hasThumbnail}
+	 hasThumbnail, 0, 0}
 #define GetRomDataFns_addr(sys, hasThumbnail, address, size) \
 	{sys::isRomSupported_static, \
 	 [](IRpFile *file) -> RomData* { return new ::LibRomData::sys(file); }, \
@@ -119,13 +115,12 @@ class RomDataFactoryPrivate
 	 hasThumbnail, address, size}
 
 		// RomData subclasses that use a header.
+		// Headers with addresses other than 0 should be
+		// placed at the end of this array.
 		static const RomDataFns romDataFns_header[];
 
 		// RomData subclasses that use a footer.
 		static const RomDataFns romDataFns_footer[];
-
-		// RomData subclasses that use specific addresses.
-		static const RomDataFns_addr romDataFns_addr[];
 
 		/**
 		 * Attempt to open the other file in a Dreamcast .VMI+.VMS pair.
@@ -154,20 +149,21 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Nintendo3DSFirm, false),
 
 	// NOTE: EXE has a 16-bit magic number,
-	// so it should go at the end.
+	// so it should go at the end of the
+	// address=0 section.
 	// TODO: Thumbnailing on non-Windows platforms.
 	GetRomDataFns(EXE, false),
 	GetRomDataFns(PlayStationSave, true),
-	{nullptr, nullptr, nullptr, false}
+
+	// Headers with non-zero addresses.
+	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
+
+	{nullptr, nullptr, nullptr, false, 0, 0}
 };
 
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, false),
-	{nullptr, nullptr, nullptr, false}
-};
-
-const RomDataFactoryPrivate::RomDataFns_addr RomDataFactoryPrivate::romDataFns_addr[] = {
-	GetRomDataFns_addr(Sega8Bit, false, 0x7FE0, 0x20),
+	{nullptr, nullptr, nullptr, false, 0, 0}
 };
 
 /**
@@ -343,46 +339,37 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			continue;
 		}
 
+		if (fns->address != info.header.addr ||
+		    fns->size > info.header.size)
+		{
+			// Header address has changed.
+			// Read the new header data.
+
+			// NOTE: fns->size == 0 is only correct
+			// for headers located at 0, since we
+			// read the whole 4096+256 bytes for these.
+			assert(fns->size != 0);
+			assert(fns->size <= sizeof(header));
+			if (fns->size == 0 || fns->size > sizeof(header))
+				continue;
+
+			// Make sure the file is big enough to
+			// have this header.
+			if (((int64_t)fns->address + fns->size) > info.szFile)
+				continue;
+
+			// Read the header data.
+			info.header.addr = fns->address;
+			int ret = file->seek(info.header.addr);
+			if (ret != 0)
+				continue;
+			info.header.size = (uint32_t)file->read(header, fns->size);
+			if (info.header.size != fns->size)
+				continue;
+		}
+
 		if (fns->isRomSupported(&info) >= 0) {
 			RomData *const romData = fns->newRomData(file);
-			if (romData->isValid()) {
-				// RomData subclass obtained.
-				return romData;
-			}
-
-			// Not actually supported.
-			romData->unref();
-		}
-	}
-
-	// Check RomData subclasses that have a header
-	// in a specific location.
-	// NOTE: Checked before footer to prevent long seeks.
-	const RomDataFactoryPrivate::RomDataFns_addr *fns2 =
-		&RomDataFactoryPrivate::romDataFns_addr[0];
-	for (; fns2->supportedFileExtensions != nullptr; fns2++) {
-		if (thumbnail && !fns2->hasThumbnail) {
-			// Thumbnail is requested, but this RomData class
-			// doesn't support any images.
-			continue;
-		}
-
-		// Make sure the file is big enough to
-		// have this header.
-		if (((int64_t)fns2->address + fns2->size) > info.szFile)
-			continue;
-
-		// Read the header data.
-		info.header.addr = fns2->address;
-		int ret = file->seek(info.header.addr);
-		if (ret != 0)
-			continue;
-		info.header.size = (uint32_t)file->read(header, fns2->size);
-		if (info.header.size != fns2->size)
-			continue;
-
-		if (fns2->isRomSupported(&info) >= 0) {
-			RomData *const romData = fns2->newRomData(file);
 			if (romData->isValid()) {
 				// RomData subclass obtained.
 				return romData;
@@ -494,21 +481,6 @@ vector<RomDataFactory::ExtInfo> RomDataFactory::supportedFileExtensions(void)
 #endif
 		for (; *sys_exts != nullptr; sys_exts++) {
 			exts[*sys_exts] |= fns->hasThumbnail;
-		}
-	}
-
-	const RomDataFactoryPrivate::RomDataFns_addr *fns2 =
-		&RomDataFactoryPrivate::romDataFns_addr[0];
-	for (; fns2->supportedFileExtensions != nullptr; fns2++) {
-		const rp_char *const *sys_exts = fns2->supportedFileExtensions();
-		if (!sys_exts)
-			continue;
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1700
-		exts.reserve(exts.size() + 4);
-#endif
-		for (; *sys_exts != nullptr; sys_exts++) {
-			exts[*sys_exts] |= fns2->hasThumbnail;
 		}
 	}
 
