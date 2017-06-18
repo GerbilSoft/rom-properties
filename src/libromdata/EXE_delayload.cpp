@@ -34,8 +34,8 @@ using namespace tinyxml2;
 
 namespace LibRomData {
 
-extern volatile Whitespace exe_dl_ws;
-volatile Whitespace exe_dl_ws = PRESERVE_WHITESPACE;
+extern volatile bool exe_dl_nc;
+volatile bool exe_dl_nc = false;
 
 // DelayLoad test implementation.
 // NOTE: TinyXML2 doesn't export any C functions,
@@ -50,19 +50,32 @@ static LONG WINAPI DelayLoad_filter_TinyXML2(DWORD exceptioncode)
 }
 
 /**
+ * Test creating an XMLDocument.
+ * @return XMLDocument::NoChildren() (should be true)
+ */
+static bool DoXMLDocumentTest(void)
+{
+	XMLDocument doc;
+	doc.Clear();
+	return doc.NoChildren();
+}
+
+/**
  * Check if TinyXML2 can be delay-loaded.
  * @return 0 on success; negative POSIX error code on error.
  */
 int DelayLoad_test_TinyXML2(void)
 {
 	static int success = 0;
-	volatile char tmp[sizeof(XMLDocument)] = { 0 };
 	if (!success) {
 		__try {
-			// XMLDocument::WhitespaceMode() is non-virtual and
-			// returns a single value from within the struct.
-			// It should work with our pseudo-struct.
-			exe_dl_ws = ((const XMLDocument*)&tmp[0])->WhitespaceMode();
+			// We have to create an XMLDocument to test the
+			// DLL, but __try/__except doesn't allow us to
+			// do that directly, so we'll call a function.
+			exe_dl_nc = DoXMLDocumentTest();
+			if (!exe_dl_nc) {
+				return -ENOTSUP;
+			}
 		} __except (DelayLoad_filter_TinyXML2(GetExceptionCode())) {
 			return -ENOTSUP;
 		}
