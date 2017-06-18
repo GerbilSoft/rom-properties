@@ -358,7 +358,7 @@ int Sega8Bit::loadFieldData(void)
 			cmtime.tm_year += 100;
 		}
 		cmtime.tm_mon  = ((codemasters->timestamp.month >> 4) * 10) +
-				  (codemasters->timestamp.month & 0x0F);
+				  (codemasters->timestamp.month & 0x0F) - 1;
 		cmtime.tm_mday = ((codemasters->timestamp.day >> 4) * 10) +
 				  (codemasters->timestamp.day & 0x0F);
 		cmtime.tm_hour = ((codemasters->timestamp.hour >> 4) * 10) +
