@@ -65,7 +65,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
-	wchar_t dll_fullpath[MAX_PATH+32];
+	wchar_t dll_fullpath[MAX_PATH+64];
 	SetLastError(ERROR_SUCCESS);
 	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_fullpath, _countof(dll_fullpath));
@@ -84,13 +84,38 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	}
 
 	// Append the module name.
-	// append the module name.
 	unsigned int path_len = (unsigned int)(bs - &dll_fullpath[0] + 1);
 	wchar_t *dest = &dll_fullpath[path_len];
-	for (; *pszModuleName != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
-	     dest++, pszModuleName++)
+	LPCSTR pszDll = pszModuleName;
+	for (; *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
+	     dest++, pszDll++)
 	{
-		*dest = (wchar_t)(unsigned int)*pszModuleName;
+		*dest = (wchar_t)(unsigned int)*pszDll;
+	}
+	*dest = 0;
+
+	// Attempt to load the DLL.
+	HMODULE hDLL = LoadLibrary(dll_fullpath);
+	if (hDLL != nullptr)
+		return hDLL;
+
+	// Check the architecture-specific subdirectory.
+#if defined(__i386__) || defined(_M_IX86)
+	wcscpy(&dll_fullpath[path_len], L"i386\\");
+	path_len += 5;
+#elif defined(__amd64__) || defined(_M_X64)
+	wcscpy(&dll_fullpath[path_len], L"amd64\\");
+	path_len += 6;
+#else
+# error CPU architecture not supported.
+#endif
+
+	dest = &dll_fullpath[path_len];
+	pszDll = pszModuleName;
+	for (; *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
+	     dest++, pszDll++)
+	{
+		*dest = (wchar_t)(unsigned int)*pszDll;
 	}
 	*dest = 0;
 
