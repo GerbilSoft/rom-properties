@@ -125,9 +125,13 @@ typedef struct PACKED _Sega8_SDSC_RomHeader {
 	uint8_t version[2];	// Program version, in BCD.
 				// [0] = major version
 				// [1] = minor version
-	uint8_t date[4];	// Date, in BCD.
-				// Format: DD MM YYCC
-				// (CC == century)
+	struct {
+		// Build date, in BCD.
+		uint8_t day;
+		uint8_t month;
+		uint8_t year;
+		uint8_t century;
+	} date;
 
 	// The following are pointers to ASCII C-strings in the ROM image.
 	// $FFFF indicates no string.

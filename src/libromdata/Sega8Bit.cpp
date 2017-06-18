@@ -259,9 +259,11 @@ int Sega8Bit::loadFieldData(void)
 	const Sega8_RomHeader *const tmr = &d->romHeader.tmr;
 	d->fields->reserve(5);	// Maximum of 5 fields.
 
+	// BCD conversion buffer.
+	rp_char bcdbuf[16];
+
 	// Product code. (little-endian BCD)
-	rp_char product_code[8];
-	rp_char *p = product_code;
+	rp_char *p = bcdbuf;
 	if (tmr->product_code[2] & 0xF0) {
 		// Fifth digit is present.
 		uint8_t digit = (tmr->product_code[2] >> 4) & 0xF;
@@ -282,20 +284,19 @@ int Sega8Bit::loadFieldData(void)
 	p[2] = _RP_CHR('0' + ((tmr->product_code[0] >> 4) & 0xF));
 	p[3] = _RP_CHR('0' +  (tmr->product_code[0] & 0xF));
 	p[4] = 0;
-	d->fields->addField_string(_RP("Product Code"), product_code);
+	d->fields->addField_string(_RP("Product Code"), bcdbuf);
 
 	// Version.
-	rp_char version[3];
 	uint8_t digit = tmr->product_code[2] & 0xF;
 	if (digit < 10) {
-		version[0] = _RP_CHR('0' + digit);
-		version[1] = 0;
+		bcdbuf[0] = _RP_CHR('0' + digit);
+		bcdbuf[1] = 0;
 	} else {
-		version[0] = _RP_CHR('1');
-		version[1] = _RP_CHR('0' + digit - 10);
-		version[2] = 0;
+		bcdbuf[0] = _RP_CHR('1');
+		bcdbuf[1] = _RP_CHR('0' + digit - 10);
+		bcdbuf[2] = 0;
 	}
-	d->fields->addField_string(_RP("Version"), version);
+	d->fields->addField_string(_RP("Version"), bcdbuf);
 
 	// Region code and system ID.
 	const rp_char *sysID;
@@ -396,6 +397,63 @@ int Sega8Bit::loadFieldData(void)
 		d->fields->addField_string_numeric(_RP("CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
 			RomFields::FB_HEX, 4, RomFields::STRF_MONOSPACE);
+	} else if (!memcmp(d->romHeader.sdsc.magic, SDSC_MAGIC, 4)) {
+		// SDSC header magic.
+		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;
+		d->fields->addField_string(_RP("Extra Header"), _RP("SDSC"));
+
+		// Version number. Stored as two BCD values, major.minor.
+		// TODO: Verify BCD.
+		p = bcdbuf;
+		if (sdsc->version[0] > 9) {
+			*p++ = _RP_CHR('0' + (sdsc->version[0] >> 4));
+		}
+		p[0] = _RP_CHR('0' + (sdsc->version[0] & 0x0F));
+		p[1] = _RP_CHR('.');
+		p[2] = _RP_CHR('0' + (sdsc->version[1] >> 4));
+		p[3] = _RP_CHR('0' + (sdsc->version[1] & 0x0F));
+		p[4] = 0;
+		d->fields->addField_string(_RP("SDSC Version"), bcdbuf);
+
+		// Build date.
+
+		// Convert date/time from BCD.
+		// NOTE: struct tm has some oddities:
+		// - tm_year: year - 1900
+		// - tm_mon: 0 == January
+
+		// TODO: Check for invalid BCD values.
+		struct tm cmtime;
+		cmtime.tm_year = ((sdsc->date.century >> 4) * 1000) +
+				 ((sdsc->date.century & 0x0F) * 100) +
+				 ((sdsc->date.year >> 4) * 10) +
+				  (sdsc->date.year & 0x0F) - 1900;
+		cmtime.tm_mon  = ((sdsc->date.month >> 4) * 10) +
+				  (sdsc->date.month & 0x0F) - 1;
+		cmtime.tm_mday = ((sdsc->date.day >> 4) * 10) +
+				  (sdsc->date.day & 0x0F);
+		cmtime.tm_hour = 0;
+		cmtime.tm_min  = 0;
+		cmtime.tm_sec = 0;
+
+		// tm_wday and tm_yday are output variables.
+		cmtime.tm_wday = 0;
+		cmtime.tm_yday = 0;
+		cmtime.tm_isdst = 0;
+
+		// If conversion fails, d->ctime will be set to -1.
+#ifdef _WIN32
+		// MSVCRT-specific version.
+		time_t ctime = _mkgmtime(&cmtime);
+#else /* !_WIN32 */
+		// FIXME: Might not be available on some systems.
+		time_t ctime = timegm(&cmtime);
+#endif
+		// TODO: Interpret dateTime of -1 as "error"?
+		d->fields->addField_dateTime(_RP("Build Date"), ctime,
+			RomFields::RFT_DATETIME_HAS_DATE |
+			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.
+		);
 	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
 		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))
 	{
