@@ -32,7 +32,8 @@
   * PlayStation Saves: Save formats other than PSV (\*.mcb, \*.mcx, \*.pda,
     \*.psx, \*.mcs, \*.ps1, and raw saves) are now supported.
   * Sega 8-bit: Initial reader for Sega 8-bit ROM images. Currently supports
-    Sega Master System and Game Gear ROMs that have the "TMR SEGA" header.
+    Sega Master System and Game Gear ROMs that have the "TMR SEGA" header,
+    as well as Codemasters and SDSC extra headers.
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
