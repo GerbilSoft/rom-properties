@@ -36,6 +36,7 @@ using namespace LibRpBase;
 #include <cctype>
 #include <cstring>
 #include <cstddef>
+#include <ctime>
 
 // C++ includes.
 #include <vector>
