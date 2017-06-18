@@ -85,6 +85,8 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q, IDiscReader *discReader,
 #ifdef ENABLE_DECRYPTION
 	, tid_be(0)
 	, cipher(nullptr)
+	, titleKeyEncIdx(0)
+	, tmd_content_index(0)
 #endif /* ENABLE_DECRYPTION */
 {
 	// Clear the various structs.
