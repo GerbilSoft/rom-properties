@@ -1,12 +1,11 @@
 /******************************************************************************
- * ROM Properties Page shell extension. (Win32)                               *
+ * ROM Properties Page shell extension. (libwin32common)                      *
  * win_iid.cpp: IIDs for undocumented ListView interfaces.                    *
  *                                                                            *
  * Based on the Undocumented List View Features tutorial on CodeProject:      *
  * https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features *
  ******************************************************************************/
 
-#include "stdafx.h"
 #include "IListView.hpp"
 #include "IOwnerDataCallback.hpp"
 

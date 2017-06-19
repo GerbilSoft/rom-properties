@@ -1,12 +1,12 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * windowsx_ts.h: Typesafe inline function wrappers for windowsx.h.        *
  *                                                                         *
  * Based on windowsx.h from the Windows SDK v7.1A.                         *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_SDK_WINDOWSX_TS_H__
-#define __ROMPROPERTIES_WIN32_SDK_WINDOWSX_TS_H__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__
 
 #include "tsbase.h"
 #include <windowsx.h>
@@ -479,4 +479,4 @@ static FORCEINLINE int ComboBox_SetExtendedUI(_In_ HWND hwndCtl, _In_ UINT flags
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, CB_SETEXTENDEDUI, STATIC_CAST(WPARAM)(flags), 0L))); }
 #endif  /* WINVER >= 0x030a */
 
-#endif /* __ROMPROPERTIES_WIN32_SDK_WINDOWSX_TS_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__ */

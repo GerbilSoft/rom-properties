@@ -34,7 +34,7 @@
 #include "librpbase/common.h"
 
 // QISearch()
-#include "sdk/QITab.h"
+#include "libwin32common/sdk/QITab.h"
 extern "C" {
 	extern PFNQISEARCH pQISearch;
 	void incRpGlobalRefCount(void);

@@ -1,17 +1,15 @@
 /******************************************************************************
- * ROM Properties Page shell extension. (Win32)                               *
+ * ROM Properties Page shell extension. (libwin32common)                      *
  * IListView.hpp: IListView interfaces. (undocumented)                        *
  *                                                                            *
  * Based on the Undocumented List View Features tutorial on CodeProject:      *
  * https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features *
  ******************************************************************************/
 
-#ifndef __UNDOC_LISTVIEW_ILISTVIEW_HPP__
-#define __UNDOC_LISTVIEW_ILISTVIEW_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__
 
-#include "libwin32common/msvc_common.h"
-#include "IOwnerDataCallback.hpp"
-
+#include "../RpWin32_sdk.h"
 #include <oleidl.h>
 #include <commctrl.h>
 
@@ -47,6 +45,12 @@ typedef struct LVGROUP_Vista {
 	UINT   cchSubsetTitle;
 } LVGROUP_Vista, *PLVGROUP_Vista;
 
+// LVITEMINDEX
+typedef struct tagLVITEMINDEX {
+	int iItem;
+	int iGroup;
+} LVITEMINDEX, *PLVITEMINDEX;
+
 #define LVGF_SUBTITLE           0x00000100  // pszSubtitle is valid
 #define LVGF_TASK               0x00000200  // pszTask is valid
 #define LVGF_DESCRIPTIONTOP     0x00000400  // pszDescriptionTop is valid
@@ -74,6 +78,8 @@ extern "C" {
 // ListView message to get the IListView interface.
 #define LVM_QUERYINTERFACE (LVM_FIRST + 189)
 #define ListView_QueryInterface(hWnd,riid,pOut) (void)SNDMSG((hWnd),LVM_QUERYINTERFACE,(WPARAM)&(riid),(LPARAM)(pOut))
+
+class IOwnerDataCallback;
 
 class UUID_ATTR("{2FFE2979-5928-4386-9CDB-8E1F15B72FB4}")
 IListView_WinVista : public IOleWindow
@@ -392,4 +398,4 @@ IListView_Win7 : public IOleWindow
 __CRT_UUID_DECL(IListView_Win7, 0xE5B16AF2, 0x3990, 0x4681, 0xA6, 0x09, 0x1F, 0x06, 0x0C, 0xD1, 0x42, 0x69)
 #endif
 
-#endif /* __UNDOC_LISTVIEW_ILISTVIEW_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__ */

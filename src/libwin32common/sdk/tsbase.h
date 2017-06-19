@@ -1,10 +1,10 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * tsbase.h: Base header for the typesafe inline function headers.         *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_SDK_TSBASE_H__
-#define __ROMPROPERTIES_WIN32_SDK_TSBASE_H__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_TSBASE_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_TSBASE_H__
 
 #ifdef _MAC
 #error Old MSVC for Mac compilers are not supported.
@@ -15,7 +15,7 @@
 #define STRICT
 #endif
 
-#include "libwin32common/RpWin32_sdk.h"
+#include "../RpWin32_sdk.h"
 #include <windows.h>
 
 #ifndef FORCEINLINE
@@ -55,4 +55,4 @@
 # endif
 #endif /* CONST_CAST */
 
-#endif /* __ROMPROPERTIES_WIN32_SDK_TSBASE_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_TSBASE_H__ */

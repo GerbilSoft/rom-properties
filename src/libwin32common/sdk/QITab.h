@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * QITab.h: QITAB header.                                                  *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_QITAB_H__
-#define __ROMPROPERTIES_WIN32_QITAB_H__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
 
 #include <windows.h>
 
@@ -64,4 +64,4 @@ typedef HRESULT (STDAPICALLTYPE *PFNQISEARCH)(_Inout_ void* that, _In_ LPCQITAB 
 }
 #endif
 
-#endif /* __ROMPROPERTIES_WIN32_QITAB_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__ */

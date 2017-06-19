@@ -27,7 +27,7 @@
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "RP_ComBase.hpp"
 
-#include "../sdk/IOwnerDataCallback.hpp"
+#include "libwin32common/sdk/IOwnerDataCallback.hpp"
 
 class KeyStoreWin32;
 class KeyStore_OwnerDataCallback : public RP_ComBase<IOwnerDataCallback>

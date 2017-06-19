@@ -1,12 +1,12 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
+ * ROM Properties Page shell extension. (libwin32common)                   *
  * commctrl_ts.h: Typesafe inline function wrappers for commctrl.h.        *
  *                                                                         *
  * Based on commctrl.h from the Windows SDK v7.1A.                         *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_SDK_COMMCTRL_TS_H__
-#define __ROMPROPERTIES_WIN32_SDK_COMMCTRL_TS_H__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__
+#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__
 
 #include "tsbase.h"
 #include <commctrl.h>
@@ -1274,4 +1274,4 @@ static FORCEINLINE BOOL ComboBox_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR l
 #endif /* _WIN32_WINNT >= 0x0501 */
 #endif /* NOCOMBOBOX */
 
-#endif /* __ROMPROPERTIES_WIN32_SDK_COMMCTRL_TS_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__ */

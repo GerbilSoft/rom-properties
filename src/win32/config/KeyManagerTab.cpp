@@ -27,7 +27,7 @@
 #include "KeyStoreWin32.hpp"
 
 // IListView and other undocumented stuff.
-#include "../sdk/IListView.hpp"
+#include "libwin32common/sdk/IListView.hpp"
 #include "KeyStore_OwnerDataCallback.hpp"
 
 // libwin32common

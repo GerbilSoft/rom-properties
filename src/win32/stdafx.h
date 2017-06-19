@@ -36,8 +36,8 @@
 #include <windows.h>
 
 // Typesafe inline function wrappers for some Windows headers.
-#include "sdk/windowsx_ts.h"
-#include "sdk/commctrl_ts.h"
+#include "libwin32common/sdk/windowsx_ts.h"
+#include "libwin32common/sdk/commctrl_ts.h"
 
 // Additional Windows headers.
 #include <olectl.h>
@@ -115,12 +115,6 @@ typedef struct tagBUTTON_SPLITINFO {
 	SIZE        size;
 } BUTTON_SPLITINFO, *PBUTTON_SPLITINFO;
 #endif
-
-// ListView structs.
-typedef struct tagLVITEMINDEX {
-	int iItem;
-	int iGroup;
-} LVITEMINDEX, *PLVITEMINDEX;
 
 #endif /* _WIN32_WINNT < 0x0600 */
 
