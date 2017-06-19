@@ -33,7 +33,7 @@ class KeyStoreWin32;
 class KeyStore_OwnerDataCallback : public RP_ComBase<IOwnerDataCallback>
 {
 	public:
-		KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
+		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
 
 	private:
 		typedef RP_ComBase<IOwnerDataCallback> super;
