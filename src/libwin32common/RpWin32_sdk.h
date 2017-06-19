@@ -93,11 +93,11 @@
  */
 static inline ULONG InterlockedIncrement(ULONG volatile *Addend)
 {
-	return (ULONG)(InterlockedIncrement(reinterpret_cast<LONG volatile*>(Addend)));
+	return (ULONG)(InterlockedIncrement((LONG volatile*)Addend));
 }
 static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 {
-	return (ULONG)(InterlockedDecrement(reinterpret_cast<LONG volatile*>(Addend)));
+	return (ULONG)(InterlockedDecrement((LONG volatile*)Addend));
 }
 #endif /* __GNUC__ && __MINGW32__ && _WIN32_WINNT < 0x0502 */
 
