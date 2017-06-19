@@ -31,7 +31,7 @@ class KeyManagerTab : public ITab
 	Q_PROPERTY(bool defaults READ hasDefaults)
 
 	public:
-		KeyManagerTab(QWidget *parent = nullptr);
+		explicit KeyManagerTab(QWidget *parent = nullptr);
 		virtual ~KeyManagerTab();
 
 	private:

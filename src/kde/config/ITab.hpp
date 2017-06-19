@@ -31,7 +31,7 @@ class ITab : public QWidget
 	Q_OBJECT
 
 	protected:
-		ITab(QWidget *parent = nullptr);
+		explicit ITab(QWidget *parent = nullptr);
 	public:
 		virtual ~ITab();
 

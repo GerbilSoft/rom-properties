@@ -35,7 +35,7 @@ class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 	Q_PROPERTY(bool changed READ hasChanged)
 
 	public:
-		KeyStoreQt(QObject *parent = 0);
+		explicit KeyStoreQt(QObject *parent = 0);
 		virtual ~KeyStoreQt();
 
 	private:

@@ -36,7 +36,7 @@
 class RP_EmptyVolumeCacheCallback : public RP_ComBase<IEmptyVolumeCacheCallBack>
 {
 	public:
-		RP_EmptyVolumeCacheCallback(HWND hProgressBar);
+		explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);
 
 	private:
 		typedef RP_ComBase<RP_EmptyVolumeCacheCallback> super;

@@ -28,7 +28,7 @@
 class KeyStoreWin32 : public LibRomData::KeyStoreUI
 {
 	public:
-		KeyStoreWin32(HWND hWnd);
+		explicit KeyStoreWin32(HWND hWnd);
 		virtual ~KeyStoreWin32();
 
 	private:

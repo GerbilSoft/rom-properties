@@ -30,7 +30,7 @@ class ImageTypesTab : public ITab
 	Q_OBJECT
 
 	public:
-		ImageTypesTab(QWidget *parent = nullptr);
+		explicit ImageTypesTab(QWidget *parent = nullptr);
 		virtual ~ImageTypesTab();
 
 	private:

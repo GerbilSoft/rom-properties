@@ -30,7 +30,7 @@ class DownloadsTab : public ITab
 	Q_OBJECT
 
 	public:
-		DownloadsTab(QWidget *parent = nullptr);
+		explicit DownloadsTab(QWidget *parent = nullptr);
 		virtual ~DownloadsTab();
 
 	private:
