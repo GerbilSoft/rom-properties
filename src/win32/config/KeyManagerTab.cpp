@@ -189,27 +189,6 @@ class KeyManagerTabPrivate
 		void loadImages(void);
 
 	public:
-		// TODO: Share with rpcli/verifykeys.cpp.
-		// TODO: Central registration of key verification functions?
-		typedef int (*pfnKeyCount_t)(void);
-		typedef const char* (*pfnKeyName_t)(int keyIdx);
-		typedef const uint8_t* (*pfnVerifyData_t)(int keyIdx);
-
-		struct EncKeyFns_t {
-			pfnKeyCount_t pfnKeyCount;
-			pfnKeyName_t pfnKeyName;
-			pfnVerifyData_t pfnVerifyData;
-		};
-
-		#define ENCKEYFNS(klass) { \
-			klass::encryptionKeyCount_static, \
-			klass::encryptionKeyName_static, \
-			klass::encryptionVerifyData_static, \
-		}
-
-		static const EncKeyFns_t encKeyFns[];
-
-	public:
 		/** "Import" menu actions. **/
 
 		/**
@@ -232,14 +211,6 @@ class KeyManagerTabPrivate
 
 // FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 const SIZE KeyManagerTabPrivate::szIcon = {16, 16};
-
-const KeyManagerTabPrivate::EncKeyFns_t KeyManagerTabPrivate::encKeyFns[] = {
-	ENCKEYFNS(WiiPartition),
-	ENCKEYFNS(CtrKeyScrambler),
-	ENCKEYFNS(N3DSVerifyKeys),
-
-	{nullptr, nullptr, nullptr}
-};
 
 KeyManagerTabPrivate::KeyManagerTabPrivate()
 	: hPropSheetPage(nullptr)
