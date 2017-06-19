@@ -102,6 +102,13 @@ class EXEPrivate : public LibRpBase::RomDataPrivate
 		 */
 		void addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi);
 
+		/** MZ-specific **/
+
+		/**
+		 * Add fields for MZ executables.
+		 */
+		void addFields_MZ(void);
+
 		/** NE-specific **/
 
 		// NE target OSes.

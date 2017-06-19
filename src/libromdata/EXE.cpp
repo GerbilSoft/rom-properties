@@ -304,6 +304,29 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
 }
 
+/** MZ-specific **/
+
+/**
+ * Add fields for MZ executables.
+ */
+void EXEPrivate::addFields_MZ(void)
+{
+	// Program image size
+	uint32_t program_size = mz.e_cp * 512;
+	if (mz.e_cblp != 0) {
+		program_size -= 512 - mz.e_cblp;
+	}
+	fields->addField_string(_RP("Program Size"), formatFileSize(program_size));
+
+	// Min/Max allocated memory
+	fields->addField_string(_RP("Min. Memory"), formatFileSize(mz.e_minalloc * 16));
+	fields->addField_string(_RP("Max. Memory"), formatFileSize(mz.e_maxalloc * 16));
+
+	// Initial CS:IP/SS:SP
+	fields->addField_string(_RP("Inital CS:IP"), rp_sprintf("%04X:%04X", mz.e_cs, mz.e_ip));
+	fields->addField_string(_RP("Inital SS:SP"), rp_sprintf("%04X:%04X", mz.e_ss, mz.e_sp));
+}
+
 /** NE-specific **/
 
 /**
@@ -1299,6 +1322,10 @@ int EXE::loadFieldData(void)
 	}
 
 	switch (d->exeType) {
+		case EXEPrivate::EXE_TYPE_MZ:
+			d->addFields_MZ();
+			break;
+
 		case EXEPrivate::EXE_TYPE_NE:
 			d->addFields_NE();
 			break;
