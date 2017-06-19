@@ -34,6 +34,7 @@
   * Sega 8-bit: Initial reader for Sega 8-bit ROM images. Currently supports
     Sega Master System and Game Gear ROMs that have the "TMR SEGA" header,
     as well as Codemasters and SDSC extra headers.
+  * EXE: MS-DOS executables now show more information.
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
