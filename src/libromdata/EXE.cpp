@@ -412,8 +412,8 @@ int EXEPrivate::loadNEResourceTable(void)
  */
 void EXEPrivate::addFields_NE(void)
 {
-	// Up to 2 tabs.
-	fields->reserveTabs(2);
+	// Up to 3 tabs.
+	fields->reserveTabs(3);
 
 	// NE Header
 	fields->setTabName(0, _RP("NE Header"));
@@ -548,6 +548,13 @@ void EXEPrivate::addFields_LE(void)
 {
 	// TODO: Handle fields that indicate byteorder.
 	// Currently assuming little-endian.
+
+	// Up to 2 tabs.
+	fields->reserveTabs(2);
+
+	// LE Header
+	fields->setTabName(0, _RP("LE Header"));
+	fields->setTabIndex(0);
 
 	// CPU.
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
@@ -721,8 +728,8 @@ int EXEPrivate::loadPEResourceTypes(void)
  */
 void EXEPrivate::addFields_PE(void)
 {
-	// Up to 3 tabs.
-	fields->reserveTabs(3);
+	// Up to 4 tabs.
+	fields->reserveTabs(4);
 
 	// PE Header
 	fields->setTabName(0, _RP("PE Header"));
@@ -1343,6 +1350,12 @@ int EXE::loadFieldData(void)
 		default:
 			// TODO: Other executable types.
 			break;
+	}
+
+	// Add MZ tab for non-MZ executables
+	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
+		d->fields->addTab(_RP("MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
+		d->addFields_MZ();
 	}
 
 	// Finished reading the field data.
