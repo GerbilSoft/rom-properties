@@ -109,7 +109,7 @@ static INLINE int secoptions_init(void)
 
 	// Using GetModuleHandleEx() to increase the refcount.
 	bRet = GetModuleHandleEx(0, L"kernel32.dll", &hKernel32);
-	if (!hKernel32) {
+	if (!bRet || !hKernel32) {
 		// Should never happen...
 		return GetLastError();
 	}
