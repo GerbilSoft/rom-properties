@@ -323,8 +323,8 @@ void EXEPrivate::addFields_MZ(void)
 	fields->addField_string(_RP("Max. Memory"), formatFileSize(mz.e_maxalloc * 16));
 
 	// Initial CS:IP/SS:SP
-	fields->addField_string(_RP("Inital CS:IP"), rp_sprintf("%04X:%04X", mz.e_cs, mz.e_ip));
-	fields->addField_string(_RP("Inital SS:SP"), rp_sprintf("%04X:%04X", mz.e_ss, mz.e_sp));
+	fields->addField_string(_RP("Inital CS:IP"), rp_sprintf("%04X:%04X", mz.e_cs, mz.e_ip), RomFields::STRF_MONOSPACE);
+	fields->addField_string(_RP("Inital SS:SP"), rp_sprintf("%04X:%04X", mz.e_ss, mz.e_sp), RomFields::STRF_MONOSPACE);
 }
 
 /** NE-specific **/
