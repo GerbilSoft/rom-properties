@@ -258,4 +258,41 @@ int findMonospacedFont(LOGFONT *plfFontMono)
 	return 0;
 }
 
+/**
+ * Get the alternate row color for ListViews.
+ *
+ * This function should be called on ListView creation
+ * and if the system theme is changed.
+ *
+ * @return Alternate row color for ListViews.
+ */
+COLORREF getAltRowColor(void)
+{
+	union {
+		COLORREF color;
+		struct {
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+			uint8_t a;
+		};
+	} rgb;
+	rgb.color = GetSysColor(COLOR_WINDOW);
+
+	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
+	if (((rgb.r + rgb.g + rgb.b) / 3) >= 128) {
+		// Subtract 16 from each color component.
+		rgb.r -= 16;
+		rgb.g -= 16;
+		rgb.b -= 16;
+	} else {
+		// Add 16 to each color component.
+		rgb.r += 16;
+		rgb.g += 16;
+		rgb.b += 16;
+	}
+
+	return rgb.color;
+}
+
 }

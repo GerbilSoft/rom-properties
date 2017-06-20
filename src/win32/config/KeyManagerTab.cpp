@@ -180,11 +180,6 @@ class KeyManagerTabPrivate
 		HBRUSH hbrAltRow;
 
 		/**
-		 * Initialize the alternate row color.
-		 */
-		void initAltRowColor(void);
-
-		/**
 		 * ListView CustomDraw function.
 		 * @param hListView	[in] ListView control.
 		 * @param plvcd		[in/out] NMLVCUSTOMDRAW
@@ -246,7 +241,8 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	loadImages();
 
 	// Initialize the alternate row color.
-	initAltRowColor();
+	colorAltRow = LibWin32Common::getAltRowColor();
+	hbrAltRow = CreateSolidBrush(colorAltRow);
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -781,7 +777,12 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
 				GetProp(hDlg, D_PTR_PROP));
 			if (d) {
-				d->initAltRowColor();
+				// Reinitialize the alternate row color.
+				d->colorAltRow = LibWin32Common::getAltRowColor();
+				if (d->hbrAltRow) {
+					DeleteBrush(d->hbrAltRow);
+				}
+				d->hbrAltRow = CreateSolidBrush(d->colorAltRow);
 			}
 			break;
 		}
@@ -1162,42 +1163,6 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 	}
 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
-/**
- * Initialize alternate row color.
- */
-void KeyManagerTabPrivate::initAltRowColor(void)
-{
-	union {
-		COLORREF color;
-		struct {
-			uint8_t r;
-			uint8_t g;
-			uint8_t b;
-			uint8_t a;
-		};
-	} rgb;
-	rgb.color = GetSysColor(COLOR_WINDOW);
-
-	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
-	if (((rgb.r + rgb.g + rgb.b) / 3) >= 128) {
-		// Subtract 16 from each color component.
-		rgb.r -= 16;
-		rgb.g -= 16;
-		rgb.b -= 16;
-	} else {
-		// Add 16 to each color component.
-		rgb.r += 16;
-		rgb.g += 16;
-		rgb.b += 16;
-	}
-
-	colorAltRow = rgb.color;
-	if (hbrAltRow) {
-		DeleteBrush(hbrAltRow);
-	}
-	hbrAltRow = CreateSolidBrush(colorAltRow);
 }
 
 /**

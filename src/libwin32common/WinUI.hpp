@@ -95,6 +95,16 @@ static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::wstring
  */
 int findMonospacedFont(LOGFONT *plfFontMono);
 
+/**
+ * Get the alternate row color for ListViews.
+ *
+ * This function should be called on ListView creation
+ * and if the system theme is changed.
+ *
+ * @return Alternate row color for ListViews.
+ */
+COLORREF getAltRowColor(void);
+
 }
 
 #endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__ */
