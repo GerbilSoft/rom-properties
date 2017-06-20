@@ -1283,10 +1283,14 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
 
-					// Set the background color for alternating row colors.
-					if (isOdd) {
-						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
-						// not the actual default background color.
+					// Set the row background color.
+					// TODO: "Disabled" state?
+					// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+					// not the actual default background color.
+					if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
+						// Row is selected.
+						FillRect(plvcd->nmcd.hdc, pRcSubItem, (HBRUSH)(COLOR_HIGHLIGHT+1));
+					} else if (isOdd) {
 						// FIXME: On Windows 7:
 						// - Standard row colors are 19px high.
 						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
