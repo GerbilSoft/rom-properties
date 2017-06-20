@@ -1295,6 +1295,11 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 						// - Standard row colors are 19px high.
 						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
+					} else {
+						// Standard row color. Draw it anyway in case
+						// the theme was changed, since ListView only
+						// partially recognizes theme changes.
+						FillRect(plvcd->nmcd.hdc, pRcSubItem, (HBRUSH)(COLOR_WINDOW+1));
 					}
 
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
