@@ -143,12 +143,12 @@ RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
 
 		/**
 		 * Dialog procedure for subtabs.
-		 * @param hWnd
+		 * @param hDlg
 		 * @param uMsg
 		 * @param wParam
 		 * @param lParam
 		 */
-		static INT_PTR CALLBACK SubtabDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static INT_PTR CALLBACK SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #ifdef __CRT_UUID_DECL

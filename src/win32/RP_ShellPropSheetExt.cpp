@@ -152,6 +152,9 @@ class RP_ShellPropSheetExt_Private
 		HMODULE hUxTheme_dll;
 		PFNISTHEMEACTIVE pfnIsThemeActive;
 
+		// Alternate row color.
+		COLORREF colorAltRow;
+
 		// Banner.
 		HBITMAP hbmpBanner;
 		POINT ptBanner;
@@ -323,6 +326,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, colorWinBg(0)
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
+	, colorAltRow(0)
 	, hbmpBanner(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
@@ -342,6 +346,9 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	if (hUxTheme_dll) {
 		pfnIsThemeActive = (PFNISTHEMEACTIVE)GetProcAddress(hUxTheme_dll, "IsThemeActive");
 	}
+
+	// Initialize the alternate row color.
+	colorAltRow = LibWin32Common::getAltRowColor();
 }
 
 RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
@@ -2096,8 +2103,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				return FALSE;
 			}
 
-			LPPSHNOTIFY lppsn = reinterpret_cast<LPPSHNOTIFY>(lParam);
-			switch (lppsn->hdr.code) {
+			NMHDR *const pHdr = reinterpret_cast<NMHDR*>(lParam);
+			switch (pHdr->code) {
 				case PSN_SETACTIVE:
 					d->startAnimTimer();
 					break;
@@ -2109,7 +2116,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case NM_CLICK:
 				case NM_RETURN: {
 					// Check if this is a SysLink control.
-					if (d->hwndSysLinkControls.find(lppsn->hdr.hwndFrom) !=
+					if (d->hwndSysLinkControls.find(pHdr->hwndFrom) !=
 					    d->hwndSysLinkControls.end())
 					{
 						// It's a SysLink control.
@@ -2122,7 +2129,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 				case TCN_SELCHANGE: {
 					// Tab change. Make sure this is the correct WC_TABCONTROL.
-					if (d->hTabWidget != nullptr && d->hTabWidget == lppsn->hdr.hwndFrom) {
+					if (d->hTabWidget != nullptr && d->hTabWidget == pHdr->hwndFrom) {
 						// Tab widget. Show the selected tab.
 						int newTabIndex = TabCtrl_GetCurSel(d->hTabWidget);
 						ShowWindow(d->tabs[d->curTabIndex].hDlg, SW_HIDE);
@@ -2130,6 +2137,42 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						ShowWindow(d->tabs[newTabIndex].hDlg, SW_SHOW);
 					}
 					break;
+				}
+
+				case NM_CUSTOMDRAW: {
+					// Custom drawing notification.
+					if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+						break;
+
+					// NOTE: Since this is a DlgProc, we can't simply return
+					// the CDRF code. It has to be set as DWLP_MSGRESULT.
+					// References:
+					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+					// - https://stackoverflow.com/a/40552426
+					NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(lParam);
+					int result = CDRF_DODEFAULT;
+					switch (plvcd->nmcd.dwDrawStage) {
+						case CDDS_PREPAINT:
+							// Request notifications for individual ListView items.
+							result = CDRF_NOTIFYITEMDRAW;
+							break;
+
+						case CDDS_ITEMPREPAINT: {
+							// Set the background color for alternating row colors.
+							if (plvcd->nmcd.dwItemSpec % 2) {
+								// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+								// not the actual default background color.
+								// FIXME: On Windows 7:
+								// - Standard row colors are 19px high.
+								// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+								plvcd->clrTextBk = d->colorAltRow;
+								result = CDRF_NEWFONT;
+							}
+							break;
+						}
+					}
+					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+					return TRUE;
 				}
 
 				default:
@@ -2189,7 +2232,10 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
 			if (d) {
+				// Reload images in case the background color changed.
 				d->loadImages();
+				// Reinitialize the alternate row color.
+				d->colorAltRow = LibWin32Common::getAltRowColor();
 			}
 			break;
 		}
@@ -2365,13 +2411,27 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 
 /**
  * Dialog procedure for subtabs.
- * @param hWnd
+ * @param hDlg
  * @param uMsg
  * @param wParam
  * @param lParam
  */
-INT_PTR CALLBACK RP_ShellPropSheetExt::SubtabDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RP_ShellPropSheetExt::SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	// Propagate NM_CUSTOMDRAW to the parent dialog.
+	if (uMsg == WM_NOTIFY) {
+		const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
+		if (pHdr->code == NM_CUSTOMDRAW) {
+			// NOTE: Since this is a DlgProc, we can't simply return
+			// the CDRF code. It has to be set as DWLP_MSGRESULT.
+			// References:
+			// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
+			// - https://stackoverflow.com/a/40552426
+			INT_PTR result = SendMessage(GetParent(hDlg), uMsg, wParam, lParam);
+			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+			return TRUE;
+		}
+	}
 	// Dummy callback procedure that does nothing.
 	return FALSE; // Let system deal with other messages
 }
