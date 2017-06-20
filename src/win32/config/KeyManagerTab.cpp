@@ -324,7 +324,7 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Initialize the ListView.
 	// Set full row selection.
-	ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);

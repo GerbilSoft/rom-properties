@@ -1107,7 +1107,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	SetWindowFont(hDlgItem, hFontDlg, FALSE);
 
 	// Set extended ListView styles.
-	ListView_SetExtendedListViewStyle(hDlgItem, LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyle(hDlgItem, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
 	// Insert columns.
 	// TODO: Make sure there aren't any columns to start with?
