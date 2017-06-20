@@ -131,7 +131,6 @@ struct _RomDataView {
 	RomData		*romData;
 
 	// Animated icon data.
-	const IconAnimData *iconAnimData;
 	// TODO: GdkPixmap or cairo_surface_t?
 	// TODO: Use std::array<>?
 	GdkPixbuf	*iconFrames[IconAnimData::MAX_FRAMES];
@@ -515,10 +514,6 @@ rom_data_view_set_filename(RomDataView	*page,
 		g_free(page->filename);
 		page->filename = nullptr;
 
-		// NULL out iconAnimData.
-		// (This is owned by the RomData object.)
-		page->iconAnimData = nullptr;
-
 		// Unreference the existing RomData object.
 		if (page->romData) {
 			page->romData->unref();
@@ -682,11 +677,11 @@ rom_data_view_init_header_row(RomDataView *page)
 		const rp_image *icon = page->romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			page->iconAnimData = page->romData->iconAnimData();
-			if (page->iconAnimData) {
+			const IconAnimData *const iconAnimData = page->romData->iconAnimData();
+			if (iconAnimData) {
 				// Convert the icons to GdkPixbuf.
-				for (int i = 0; i < page->iconAnimData->count; i++) {
-					const rp_image *const frame = page->iconAnimData->frames[i];
+				for (int i = iconAnimData->count-1; i >= 0; i--) {
+					const rp_image *const frame = iconAnimData->frames[i];
 					if (frame && frame->isValid()) {
 						GdkPixbuf *pixbuf = GdkImageConv::rp_image_to_GdkPixbuf(frame);
 						if (pixbuf) {
@@ -696,7 +691,7 @@ rom_data_view_init_header_row(RomDataView *page)
 				}
 
 				// Set up the IconAnimHelper.
-				page->iconAnimHelper->setIconAnimData(page->iconAnimData);
+				page->iconAnimHelper->setIconAnimData(iconAnimData);
 				// Initialize the animation.
 				page->last_frame_number = page->iconAnimHelper->frameNumber();
 
@@ -1443,7 +1438,7 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
  */
 static void start_anim_timer(RomDataView *page)
 {
-	if (!page->iconAnimData || !page->iconAnimHelper->isAnimated()) {
+	if (!page->iconAnimHelper->isAnimated()) {
 		// Not an animated icon.
 		return;
 	}

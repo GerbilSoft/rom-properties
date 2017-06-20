@@ -167,7 +167,6 @@ class RP_ShellPropSheetExt_Private
 		int curTabIndex;
 
 		// Animated icon data.
-		const IconAnimData *iconAnimData;
 		std::array<HBITMAP, IconAnimData::MAX_FRAMES> hbmpIconFrames;
 		RECT rectIcon;
 		SIZE szIcon;
@@ -327,7 +326,6 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hbmpBanner(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
-	, iconAnimData(nullptr)
 	, animTimerID(0)
 	, last_frame_number(0)
 {
@@ -383,7 +381,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
  */
 void RP_ShellPropSheetExt_Private::startAnimTimer(void)
 {
-	if (!iconAnimData) {
+	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
@@ -500,11 +498,10 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			}
 
 			// Get the animated icon data.
-			iconAnimData = romData->iconAnimData();
+			const IconAnimData *const iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to GDI+ bitmaps.
-				// TODO: Refactor this a bit...
-				for (int i = 0; i < iconAnimData->count; i++) {
+				for (int i = iconAnimData->count-1; i >= 0; i--) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
 						// TODO: Redo if the window background color changes.

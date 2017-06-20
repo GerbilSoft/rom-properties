@@ -110,7 +110,6 @@ class RomDataViewPrivate
 		unordered_map<QAbstractButton*, bool> mapBitfields;
 
 		// Animated icon data.
-		const IconAnimData *iconAnimData;
 		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
 		bool anim_running;		// Animation is running.
@@ -195,7 +194,6 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
-	, iconAnimData(nullptr)
 	, anim_running(false)
 	, last_frame_number(0)
 {
@@ -358,10 +356,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 		const rp_image *icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			iconAnimData = romData->iconAnimData();
+			const IconAnimData *const iconAnimData = romData->iconAnimData();
 			if (iconAnimData) {
 				// Convert the icons to QPixmaps.
-				for (int i = 0; i < iconAnimData->count; i++) {
+				for (int i = iconAnimData->count-1; i >= 0; i--) {
 					const rp_image *const frame = iconAnimData->frames[i];
 					if (frame && frame->isValid()) {
 						QImage img = rpToQImage(frame);
@@ -919,10 +917,14 @@ void RomDataViewPrivate::initDisplayWidgets(void)
  */
 void RomDataViewPrivate::startAnimTimer(void)
 {
-	if (!iconAnimData || !ui.tmrIconAnim || !ui.lblIcon) {
+	if (!iconAnimHelper.isAnimated()) {
 		// Not an animated icon.
 		return;
 	}
+
+	// Sanity check: If these aren't set, something's wrong.
+	assert(ui.tmrIconAnim != nullptr);
+	assert(ui.lblIcon != nullptr);
 
 	// Get the current frame information.
 	last_frame_number = iconAnimHelper.frameNumber();
