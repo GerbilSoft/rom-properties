@@ -306,6 +306,32 @@ class RP_ShellPropSheetExt_Private
 		 * @param hDlg Dialog window.
 		 */
 		void initDialog(HWND hDlg);
+
+	public:
+		// Property sheet callback functions.
+		static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		static UINT CALLBACK CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp);
+
+		// Subclass procedure for ES_MULTILINE EDIT controls.
+		static LRESULT CALLBACK MultilineEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		/**
+		 * Animated icon timer.
+		 * @param hWnd
+		 * @param uMsg
+		 * @param idEvent
+		 * @param dwTime
+		 */
+		static void CALLBACK AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+
+		/**
+		 * Dialog procedure for subtabs.
+		 * @param hDlg
+		 * @param uMsg
+		 * @param wParam
+		 * @param lParam
+		 */
+		static INT_PTR CALLBACK SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 /** RP_ShellPropSheetExt_Private **/
@@ -405,8 +431,7 @@ void RP_ShellPropSheetExt_Private::startAnimTimer(void)
 	// We're using the 'd' pointer as nIDEvent.
 	animTimerID = SetTimer(hDlgSheet,
 		reinterpret_cast<UINT_PTR>(this),
-		delay,
-		RP_ShellPropSheetExt::AnimTimerProc);
+		delay, AnimTimerProc);
 }
 
 /**
@@ -880,8 +905,7 @@ int RP_ShellPropSheetExt_Private::initString(HWND hDlg, HWND hWndTab,
 
 			// Subclass the control.
 			// TODO: Error handling?
-			SetWindowSubclass(hDlgItem,
-				RP_ShellPropSheetExt::MultilineEditProc,
+			SetWindowSubclass(hDlgItem, MultilineEditProc,
 				reinterpret_cast<UINT_PTR>(cId),
 				reinterpret_cast<DWORD_PTR>(this));
 		}
@@ -1652,7 +1676,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 			// Create a child dialog for the tab.
 			extern HINSTANCE g_hInstance;
 			tab.hDlg = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_SUBTAB_CHILD_DIALOG),
-				hDlg, RP_ShellPropSheetExt::SubtabDlgProc);
+				hDlg, SubtabDlgProc);
 			SetWindowPos(tab.hDlg, nullptr,
 				dlgRect.left, dlgRect.top,
 				dlgSize.cx, dlgSize.cy,
@@ -1962,9 +1986,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(LPFNADDPROPSHEETPAGE pfnAddPage, L
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_PROPERTY_SHEET);
 	psp.pszIcon = nullptr;
 	psp.pszTitle = L"ROM Properties";
-	psp.pfnDlgProc = DlgProc;
+	psp.pfnDlgProc = RP_ShellPropSheetExt_Private::DlgProc;
 	psp.pcRefParent = nullptr;
-	psp.pfnCallback = CallbackProc;
+	psp.pfnCallback = RP_ShellPropSheetExt_Private::CallbackProc;
 	psp.lParam = reinterpret_cast<LPARAM>(this);
 
 	HPROPSHEETPAGE hPage = CreatePropertySheetPage(&psp);
@@ -2010,7 +2034,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::ReplacePage(UINT uPageID, LPFNADDPROPSHEETP
 //
 //   PURPOSE: Processes messages for the property page.
 //
-INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -2284,7 +2308,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 //            destroyed. An application can use this function to perform 
 //            initialization and cleanup operations for the page.
 //
-UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
+UINT CALLBACK RP_ShellPropSheetExt_Private::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
 	switch (uMsg) {
 		case PSPCB_CREATE: {
@@ -2324,7 +2348,7 @@ UINT CALLBACK RP_ShellPropSheetExt::CallbackProc(HWND hWnd, UINT uMsg, LPPROPSHE
  * @param uIdSubclass	Subclass ID. (usually the control ID)
  * @param dwRefData	RP_ShellPropSheetExt*
  */
-LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
+LRESULT CALLBACK RP_ShellPropSheetExt_Private::MultilineEditProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -2375,7 +2399,7 @@ LRESULT CALLBACK RP_ShellPropSheetExt::MultilineEditProc(
  * @param idEvent
  * @param dwTime
  */
-void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+void CALLBACK RP_ShellPropSheetExt_Private::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	if (hWnd == nullptr || idEvent == 0) {
 		// Not a valid timer procedure call...
@@ -2406,7 +2430,7 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
 
 	// Update the timer.
 	// TODO: Verify that this affects the next callback.
-	SetTimer(hWnd, idEvent, delay, RP_ShellPropSheetExt::AnimTimerProc);
+	SetTimer(hWnd, idEvent, delay, AnimTimerProc);
 }
 
 /**
@@ -2416,7 +2440,7 @@ void CALLBACK RP_ShellPropSheetExt::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PTR
  * @param wParam
  * @param lParam
  */
-INT_PTR CALLBACK RP_ShellPropSheetExt::SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Propagate NM_CUSTOMDRAW to the parent dialog.
 	if (uMsg == WM_NOTIFY) {
