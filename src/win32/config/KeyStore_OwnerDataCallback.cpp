@@ -86,9 +86,6 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::GetItemGroup(int itemIndex, int occur
 		return E_POINTER;
 	else if (!m_keyStore)
 		return E_UNEXPECTED;
-	char buf[256];
-	snprintf(buf, sizeof(buf), "GetItemGroup(): itemIndex == %d, occurenceIndex == %d\n", itemIndex, occurenceIndex);
-	OutputDebugStringA(buf);
 	int sectIdx, keyIdx;
 	int ret = m_keyStore->idxToSectKey(itemIndex, &sectIdx, &keyIdx);
 	if (ret != 0)
