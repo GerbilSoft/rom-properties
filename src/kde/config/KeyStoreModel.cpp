@@ -251,7 +251,7 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 
 		switch (role) {
 			case Qt::DisplayRole:
-				return d->keyStore->sectName(LOWORD(id));
+				return RP2Q(d->keyStore->sectName(LOWORD(id)));
 			default:
 				break;
 		}
