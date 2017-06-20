@@ -166,6 +166,9 @@ class KeyManagerTabPrivate
 		bool bCancelEdit;	// True if the edit is being cancelled.
 		bool bAllowKanji;	// Allow kanji in the editor.
 
+		// Is this COMCTL32.dll 6.10 or later?
+		bool isComCtl32_610;
+
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
 		// Checkmark is a PNG image loaded from a resource.
@@ -229,6 +232,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, iEditItem(-1)
 	, bCancelEdit(false)
 	, bAllowKanji(false)
+	, isComCtl32_610(false)
 	, hIconUnknown(nullptr)
 	, hIconInvalid(nullptr)
 	, hIconGood(nullptr)
@@ -243,6 +247,24 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	// Initialize the alternate row color.
 	colorAltRow = LibWin32Common::getAltRowColor();
 	hbrAltRow = CreateSolidBrush(colorAltRow);
+
+	// Check the COMCTL32.DLL version.
+	HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
+	assert(hComCtl32 != nullptr);
+	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
+	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
+	if (hComCtl32) {
+		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
+	}
+	if (pfnDllGetVersion) {
+		DLLVERSIONINFO dvi;
+		dvi.cbSize = sizeof(dvi);
+		HRESULT hr = pfnDllGetVersion(&dvi);
+		if (SUCCEEDED(hr)) {
+			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
+				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
+		}
+	}
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -300,25 +322,6 @@ void KeyManagerTabPrivate::initUI(void)
 	assert(hListView != nullptr);
 	if (!hBtnImport || !hListView)
 		return;
-
-	// Check the COMCTL32.DLL version.
-	HMODULE hComCtl32 = GetModuleHandle(L"COMCTL32");
-	assert(hComCtl32 != nullptr);
-	typedef HRESULT (CALLBACK *PFNDLLGETVERSION)(DLLVERSIONINFO *pdvi);
-	PFNDLLGETVERSION pfnDllGetVersion = nullptr;
-	bool isComCtl32_610 = false;
-	if (hComCtl32) {
-		pfnDllGetVersion = (PFNDLLGETVERSION)GetProcAddress(hComCtl32, "DllGetVersion");
-	}
-	if (pfnDllGetVersion) {
-		DLLVERSIONINFO dvi;
-		dvi.cbSize = sizeof(dvi);
-		HRESULT hr = pfnDllGetVersion(&dvi);
-		if (SUCCEEDED(hr)) {
-			isComCtl32_610 = dvi.dwMajorVersion > 6 ||
-				(dvi.dwMajorVersion == 6 && dvi.dwMinorVersion >= 10);
-		}
-	}
 
 	if (isComCtl32_610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.
@@ -1173,6 +1176,26 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
  */
 inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd)
 {
+	// Check if this is an "odd" row.
+	bool isOdd;
+	if (isComCtl32_610) {
+		// COMCTL32.dll v6.10: We're using groups, so
+		// check the key index within the section.
+		int sectIdx = -1, keyIdx = -1;
+		int ret = keyStore->idxToSectKey((int)plvcd->nmcd.dwItemSpec, &sectIdx, &keyIdx);
+		if (ret == 0) {
+			isOdd = !!(keyIdx % 2);
+		} else {
+			// Unable to get sect/key.
+			// Fall back to the flat index.
+			isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
+		}
+	} else {
+		// COMCTL32.dll v6.00 or earlier: No groups.
+		// Use the flat key index.
+		isOdd = !!(plvcd->nmcd.dwItemSpec % 2);
+	}
+
 	// Make sure the "Value" column is drawn with a monospaced font.
 	// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
 	int result = CDRF_DODEFAULT;
@@ -1184,10 +1207,9 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 
 		case CDDS_ITEMPREPAINT: {
 			// Set the background color for alternating row colors.
-			// TODO: Alternating within each group.
-			if (plvcd->nmcd.dwItemSpec % 2 == 1) {
-				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here.
-				// Use COLOR_WINDOW as the default background color.
+			if (isOdd) {
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+				// not the actual default background color.
 				// FIXME: On Windows 7:
 				// - Standard row colors are 19px high.
 				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
@@ -1262,10 +1284,9 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 					result = CDRF_SKIPDEFAULT;
 
 					// Set the background color for alternating row colors.
-					// TODO: Alternating within each group.
-					if (plvcd->nmcd.dwItemSpec % 2 == 1) {
-						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here.
-						// Use COLOR_WINDOW as the default background color.
+					if (isOdd) {
+						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
+						// not the actual default background color.
 						// FIXME: On Windows 7:
 						// - Standard row colors are 19px high.
 						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
