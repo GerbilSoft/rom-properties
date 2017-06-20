@@ -175,13 +175,22 @@ class KeyManagerTabPrivate
 		HICON hIconInvalid;	// "X" (USER32.dll,-103)
 		HICON hIconGood;	// Checkmark
 
+		// Alternate row color.
+		COLORREF colorAltRow;
+		HBRUSH hbrAltRow;
+
+		/**
+		 * Initialize the alternate row color.
+		 */
+		void initAltRowColor(void);
+
 		/**
 		 * ListView CustomDraw function.
 		 * @param hListView	[in] ListView control.
-		 * @param plvcd		[in] NMLVCUSTOMDRAW
+		 * @param plvcd		[in/out] NMLVCUSTOMDRAW
 		 * @return Return value.
 		 */
-		inline int ListView_CustomDraw(HWND hListView, const NMLVCUSTOMDRAW *plvcd);
+		inline int ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd);
 
 		/**
 		 * Load images.
@@ -228,11 +237,16 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, hIconUnknown(nullptr)
 	, hIconInvalid(nullptr)
 	, hIconGood(nullptr)
+	, colorAltRow(0)
+	, hbrAltRow(nullptr)
 {
 	memset(&lfFontMono, 0, sizeof(lfFontMono));
 
 	// Load images.
 	loadImages();
+
+	// Initialize the alternate row color.
+	initAltRowColor();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -258,6 +272,11 @@ KeyManagerTabPrivate::~KeyManagerTabPrivate()
 	}
 	if (hIconGood) {
 		DestroyIcon(hIconGood);
+	}
+
+	// Alternate row color.
+	if (hbrAltRow) {
+		DeleteBrush(hbrAltRow);
 	}
 }
 
@@ -680,7 +699,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					const int result = d->ListView_CustomDraw(pHdr->hwndFrom, reinterpret_cast<const NMLVCUSTOMDRAW*>(lParam));
+					const int result = d->ListView_CustomDraw(pHdr->hwndFrom, reinterpret_cast<NMLVCUSTOMDRAW*>(lParam));
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
 					return TRUE;
 				}
@@ -753,6 +772,17 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 
 			// Reset the tab.
 			d->reset();
+			break;
+		}
+
+		case WM_SYSCOLORCHANGE:
+		case WM_THEMECHANGED: {
+			// Reinitialize the alternate row color.
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (d) {
+				d->initAltRowColor();
+			}
 			break;
 		}
 
@@ -1135,12 +1165,48 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 }
 
 /**
+ * Initialize alternate row color.
+ */
+void KeyManagerTabPrivate::initAltRowColor(void)
+{
+	union {
+		COLORREF color;
+		struct {
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+			uint8_t a;
+		};
+	} rgb;
+	rgb.color = GetSysColor(COLOR_WINDOW);
+
+	// TODO: Better "convert to grayscale" and brighten/darken algorithms?
+	if (((rgb.r + rgb.g + rgb.b) / 3) >= 128) {
+		// Subtract 16 from each color component.
+		rgb.r -= 16;
+		rgb.g -= 16;
+		rgb.b -= 16;
+	} else {
+		// Add 16 to each color component.
+		rgb.r += 16;
+		rgb.g += 16;
+		rgb.b += 16;
+	}
+
+	colorAltRow = rgb.color;
+	if (hbrAltRow) {
+		DeleteBrush(hbrAltRow);
+	}
+	hbrAltRow = CreateSolidBrush(colorAltRow);
+}
+
+/**
  * ListView CustomDraw function.
  * @param hListView	[in] ListView control.
  * @param plvcd		[in] NMLVCUSTOMDRAW
  * @return Return value.
  */
-inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVCUSTOMDRAW *plvcd)
+inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMDRAW *plvcd)
 {
 	// Make sure the "Value" column is drawn with a monospaced font.
 	// Reference: https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
@@ -1151,9 +1217,20 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVC
 			result = CDRF_NOTIFYITEMDRAW;
 			break;
 
-		case CDDS_ITEMPREPAINT:
+		case CDDS_ITEMPREPAINT: {
+			// Set the background color for alternating row colors.
+			// TODO: Alternating within each group.
+			if (plvcd->nmcd.dwItemSpec % 2 == 1) {
+				// NOTE: plvcd->clrTextBk is set to 0xFF000000 here.
+				// Use COLOR_WINDOW as the default background color.
+				// FIXME: On Windows 7:
+				// - Standard row colors are 19px high.
+				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+				plvcd->clrTextBk = colorAltRow;
+			}
 			result = CDRF_NOTIFYSUBITEMDRAW;
 			break;
+		}
 
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
 			switch (plvcd->iSubItem) {
@@ -1216,6 +1293,17 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, const NMLVC
 
 					// Custom drawing this subitem.
 					result = CDRF_SKIPDEFAULT;
+
+					// Set the background color for alternating row colors.
+					// TODO: Alternating within each group.
+					if (plvcd->nmcd.dwItemSpec % 2 == 1) {
+						// NOTE: plvcd->clrTextBk is set to 0xFF000000 here.
+						// Use COLOR_WINDOW as the default background color.
+						// FIXME: On Windows 7:
+						// - Standard row colors are 19px high.
+						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
+						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
+					}
 
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
 					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - szIcon.cy) / 2);
