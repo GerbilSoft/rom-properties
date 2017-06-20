@@ -944,6 +944,13 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	gtk_widget_show(treeView);
 	gtk_container_add(GTK_CONTAINER(widget), treeView);
 
+#if GTK_CHECK_VERSION(3,0,0)
+	// FIXME: Alternating row colors isn't working in GTK+ 3.x...
+#else
+	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeView), TRUE);
+#endif
+
 	// Set up the column names.
 	for (int i = 0; i < count; i++) {
 		const rp_string &name = listDataDesc.names->at(i);

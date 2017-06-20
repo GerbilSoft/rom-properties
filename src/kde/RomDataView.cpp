@@ -584,6 +584,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	QTreeWidget *treeWidget = new QTreeWidget(q);
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setUniformRowHeights(true);
+	treeWidget->setAlternatingRowColors(true);
 
 	// Set up the column names.
 	const int count = (int)listDataDesc.names->size();
