@@ -89,12 +89,13 @@ static const wchar_t CLSIDs[4][40] = {
 		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, "rp_show_config_dialog"); \
 		if (pfn) { \
 			/* Run the function. */ \
+			int ret; \
 			free(exe_path); \
 			free(dll_filename); \
 			if (hkeyCLSID) { \
 				RegCloseKey(hkeyCLSID); \
 			} \
-			int ret = pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
+			ret = pfn(nullptr, hInstance, lpCmdLine, nCmdShow); \
 			FreeLibrary(hRpDll); \
 			return ret; \
 		} \
