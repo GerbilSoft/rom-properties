@@ -1227,8 +1227,10 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 				// - Standard row colors are 19px high.
 				// - Alternate row colors are 17px high. (top and bottom lines ignored?)
 				plvcd->clrTextBk = colorAltRow;
+				result = CDRF_NOTIFYSUBITEMDRAW | CDRF_NEWFONT;
+			} else {
+				result = CDRF_NOTIFYSUBITEMDRAW;
 			}
-			result = CDRF_NOTIFYSUBITEMDRAW;
 			break;
 		}
 
