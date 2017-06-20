@@ -1287,20 +1287,22 @@ inline int KeyManagerTabPrivate::ListView_CustomDraw(HWND hListView, NMLVCUSTOMD
 					// TODO: "Disabled" state?
 					// NOTE: plvcd->clrTextBk is set to 0xFF000000 here,
 					// not the actual default background color.
+					HBRUSH hbr;
 					if (plvcd->nmcd.uItemState & CDIS_SELECTED) {
 						// Row is selected.
-						FillRect(plvcd->nmcd.hdc, pRcSubItem, (HBRUSH)(COLOR_HIGHLIGHT+1));
+						hbr = (HBRUSH)(COLOR_HIGHLIGHT+1);
 					} else if (isOdd) {
 						// FIXME: On Windows 7:
 						// - Standard row colors are 19px high.
 						// - Alternate row colors are 17px high. (top and bottom lines ignored?)
-						FillRect(plvcd->nmcd.hdc, pRcSubItem, hbrAltRow);
+						hbr = hbrAltRow;
 					} else {
 						// Standard row color. Draw it anyway in case
 						// the theme was changed, since ListView only
 						// partially recognizes theme changes.
-						FillRect(plvcd->nmcd.hdc, pRcSubItem, (HBRUSH)(COLOR_WINDOW+1));
+						hbr = (HBRUSH)(COLOR_WINDOW+1);
 					}
+					FillRect(plvcd->nmcd.hdc, pRcSubItem, hbr);
 
 					const int x = pRcSubItem->left + (((pRcSubItem->right - pRcSubItem->left) - szIcon.cx) / 2);
 					const int y = pRcSubItem->top + (((pRcSubItem->bottom - pRcSubItem->top) - szIcon.cy) / 2);
