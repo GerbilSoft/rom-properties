@@ -103,6 +103,7 @@ Notes:
 | Nintendo Wii                  |       Yes      |        No       |  Disc, Covers  |
 | Nintendo Game Boy (Color)     |       Yes      |       N/A       |       No       |
 | Nintendo Game Boy Advance     |       Yes      |       N/A       |       No       |
+| Nintendo 64                   |       Yes      |       N/A       |       No       |
 | Nintendo Virtual Boy          |       Yes      |       N/A       |       No       |
 | Sony PlayStation Saves        |       Yes      |       Icon      |       N/A      |
 | Nintendo amiibo               |       Yes      |        No       |      Media     |
@@ -145,6 +146,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
   CISO disc image (\*.ciso), WIA disc image (\*.wia)
 * Nintendo Game Boy: Plain binary (\*.gb, \*.gbc, \*.sgb)
 * Nintendo Game Boy Advance: Plain binary (\*.gba, \*.agb, \*.mb, \*.srl)
+* Nintendo 64: Various byteswap formats (\*.z64, \*.n64, \*.v64)
 * Nintendo Virtual Boy: Plain binary (\*.vb)
 * Sony PlayStation: Save files (\*.psv, \*.mcb, \*.mcx, \*.pda, \*.psx, \*.mcs, \*.ps1)
 * Nintendo amiibo: Plain binary (\*.bin, \*.nfc, \*.nfp)
