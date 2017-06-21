@@ -916,22 +916,45 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 		}
 	}
 
-	// Set up the GtkListStore.
-	GType *types = new GType[col_count];
-	for (int i = 0; i < col_count; i++) {
-		types[i] = G_TYPE_STRING;
+	GtkListStore *listStore;
+	bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	if (hasCheckboxes) {
+		// We need to set up a virtual column 0 with checkboxes.
+		GType *types = new GType[col_count+1];
+		types[0] = G_TYPE_BOOLEAN;
+		for (int i = col_count; i > 0; i--) {
+			types[i] = G_TYPE_STRING;
+		}
+		listStore = gtk_list_store_newv(col_count+1, types);
+		delete[] types;
+	} else {
+		// All strings.
+		GType *types = new GType[col_count];
+		for (int i = col_count-1; i >= 0; i--) {
+			types[i] = G_TYPE_STRING;
+		}
+		listStore = gtk_list_store_newv(col_count, types);
+		delete[] types;
 	}
-	GtkListStore *listStore = gtk_list_store_newv(col_count, types);
-	delete[] types;
+
+	// If we have checkboxes, column 0 is a virtual column.
+	const int col_start = (hasCheckboxes ? 1 : 0);
 
 	// Add the row data.
 	if (list_data) {
 		const int row_count = (int)list_data->size();
+		uint32_t checkboxes = field->data.list_checkboxes;
 		for (int i = 0; i < row_count; i++) {
 			const vector<rp_string> &data_row = list_data->at(i);
 			GtkTreeIter treeIter;
 			gtk_list_store_insert_before(listStore, &treeIter, nullptr);
-			int col = 0;
+			int col = col_start;
+			if (hasCheckboxes) {
+				// Insert a virtual checkbox column.
+				gtk_list_store_set(listStore, &treeIter,
+					0, (checkboxes & 1), -1);
+				checkboxes >>= 1;
+			}
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				gtk_list_store_set(listStore, &treeIter,
 					col, RP2U8_s(*iter), -1);
@@ -960,6 +983,14 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeView), TRUE);
 #endif
 
+	if (hasCheckboxes) {
+		// Add a virtual column.
+		GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
+		GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+			"", renderer, "active", 0, nullptr);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
+	}
+
 	// Set up the column names.
 	if (listDataDesc.names) {
 		for (int i = 0; i < col_count; i++) {
@@ -970,7 +1001,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
 				RP2U8_s(name), renderer,
-				"text", i, nullptr);
+				"text", i+col_start, nullptr);
 			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 		}
 	} else {
@@ -978,7 +1009,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
 				"", renderer,
-				"text", i, nullptr);
+				"text", i+col_start, nullptr);
 			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 		}
 	}
