@@ -287,6 +287,8 @@ void RomFields::detach(void)
 				} else {
 					field_new.data.list_data = nullptr;
 				}
+				field_new.data.list_checkboxes =
+					field_old.data.list_checkboxes;
 				break;
 			case RFT_DATETIME:
 				field_new.desc.flags = field_old.desc.flags;
@@ -709,6 +711,8 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field.data.list_data = (src->data.list_data
 						? new vector<vector<rp_string> >(*(src->data.list_data))
 						: nullptr);
+				field.data.list_checkboxes =
+					src->data.list_checkboxes;
 				break;
 			case RFT_DATETIME:
 				field.data.date_time = src->data.date_time;
@@ -925,12 +929,13 @@ int RomFields::addField_bitfield(const rp_char *name,
  * @param list_data ListData.
  * @param rows_visible Number of visible rows, (0 for "default")
  * @param flags Flags.
+ * @param checkboxes Checkbox bitfield. (requires RFT_LISTVIEW_CHECKBOXES)
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_listData(const rp_char *name,
 	const std::vector<rp_string> *headers,
 	const std::vector<std::vector<rp_string> > *list_data,
-	int rows_visible, uint32_t flags)
+	int rows_visible, uint32_t flags, uint32_t checkboxes)
 {
 	RP_D(RomFields);
 
@@ -940,9 +945,8 @@ int RomFields::addField_listData(const rp_char *name,
 	Field &field = d->fields.at(idx);
 
 	assert(name != nullptr);
-	assert(headers != nullptr);
 	assert(rows_visible >= 0);
-	if (!name || !headers || rows_visible < 0)
+	if (!name || rows_visible < 0)
 		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_LISTDATA;
@@ -950,6 +954,7 @@ int RomFields::addField_listData(const rp_char *name,
 	field.desc.list_data.rows_visible = rows_visible;
 	field.desc.list_data.names = headers;
 	field.data.list_data = list_data;
+	field.data.list_checkboxes = checkboxes;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;
 	return idx;

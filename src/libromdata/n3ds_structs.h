@@ -789,8 +789,11 @@ typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
 			};
 		} storage;
 
-		char services[32][8];		// [0x050] Services.
-		char ext_services[2][8];	// [0x150] Extended services.
+		// Prior to 9.3.0-X, only 32 services were allowed.
+		// 9.3.0-X adds an extra 2 service slots.
+		// Reference: https://3dbrew.org/wiki/9.3.0-21#NATIVE_FIRM
+		char services[34][8];		// [0x050] Services.
+
 		uint8_t reserved[15];		// [0x160]
 		uint8_t res_limit_category;	// [0x16F] See N3DS_NCCH_ExHeader_ACI_ResLimit_Category.
 	} arm11_local;
@@ -805,10 +808,10 @@ typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x1F0]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM9_Access_Control
 	struct {
-		// FIXME: Determine the format of the descriptors.
 		// See N3DS_NCCH_ExHeader_IoAccessControl.
-		uint8_t descriptors[15];
-		uint8_t descriptor_version;
+		uint32_t descriptors;
+		uint8_t reserved[11];
+		uint8_t descriptor_version;	// should be 2
 	} arm9;
 } N3DS_NCCH_ExHeader_ACI_t;
 #pragma pack()

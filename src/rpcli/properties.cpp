@@ -213,26 +213,40 @@ public:
 	ListDataField(size_t width, const RomFields::Field *romField) :width(width), romField(romField) {}
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
+
 		const auto &listDataDesc = romField->desc.list_data;
-		assert(listDataDesc.names != nullptr);
-		assert(romField->data.list_data != nullptr);
-		if (!listDataDesc.names) {
-			return os << "[ERROR: No list field names.]";
-		} else if (!romField->data.list_data) {
+		// NOTE: listDataDesc.names can be nullptr,
+		// which means we don't have any column headers.
+
+		auto list_data = romField->data.list_data;
+		assert(list_data != nullptr);
+
+		if (!romField->data.list_data) {
 			return os << "[ERROR: No list data.]";
 		}
 
-		const size_t fieldCount = listDataDesc.names->size();
-		unique_ptr<size_t[]> colSize(new size_t[fieldCount]());
-		size_t totalWidth = fieldCount + 1;
-		for (int i = (int)fieldCount - 1; i >= 0; i--) {
-			colSize[i] = listDataDesc.names->at(i).size();
+		int col_count = 1;
+		if (listDataDesc.names) {
+			col_count = (int)listDataDesc.names->size();
+		} else {
+			// No column headers.
+			// Use the first row.
+			if (list_data && !list_data->empty()) {
+				col_count = (int)list_data->at(0).size();
+			}
 		}
-		for (auto it = romField->data.list_data->begin();
-		     it != romField->data.list_data->end(); ++it)
-		{
+
+		unique_ptr<size_t[]> colSize(new size_t[col_count]());
+		size_t totalWidth = col_count + 1;
+		if (listDataDesc.names) {
+			for (int i = (int)listDataDesc.names->size()-1; i >= 0; i--) {
+				colSize[i] = listDataDesc.names->at(i).size();
+			}
+		}
+
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 			int i = 0;
-			for (auto jt = it->begin(); jt != it->end(); ++jt) {
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
 				colSize[i] = max(jt->length(), colSize[i]);
 				i++;
 			}
@@ -240,17 +254,28 @@ public:
 
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
-		for (int i = 0; i < (int)listDataDesc.names->size(); i++) {
-			totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-			os << "|" << setw(colSize[i]) << listDataDesc.names->at(i);
+
+		bool skipFirstNL = true;
+		if (listDataDesc.names) {
+			// Print the column names.
+			for (int i = 0; i < (int)listDataDesc.names->size(); i++) {
+				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
+				os << "|" << setw(colSize[i]) << listDataDesc.names->at(i);
+			}
+			os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
+			// Don't skip the first newline, since we're
+			// printing headers.
+			skipFirstNL = false;
 		}
-		os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
-		for (auto it = romField->data.list_data->begin();
-		     it != romField->data.list_data->end(); ++it)
-		{
+
+		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 			int i = 0;
-			os << endl << Pad(field.width);
-			for (auto jt = it->begin(); jt != it->end(); ++jt) {
+			if (!skipFirstNL) {
+				os << endl << Pad(field.width);
+			} else {
+				skipFirstNL = false;
+			}
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
 				os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
 			}
 			os << "|";
@@ -532,28 +557,25 @@ public:
 			case RomFields::RFT_LISTDATA: {
 				const auto &listDataDesc = romField->desc.list_data;
 				os << "{\"type\":\"LISTDATA\",\"desc\":{\"name\":" << JSONString(romField->name.c_str());
-				assert(listDataDesc.names != nullptr);
 				if (listDataDesc.names) {
-					os << ",\"count\":" << listDataDesc.names->size()
-					   << ",\"names\":[";
-					const int count = (int)listDataDesc.names->size();
-					for (int j = 0; j < count; j++) {
+					os << ",\"names\":[";
+					const int col_count = (int)listDataDesc.names->size();
+					for (int j = 0; j < col_count; j++) {
 						if (j) os << ",";
 						os << JSONString(listDataDesc.names->at(j).c_str());
 					}
 					os << ']';
 				} else {
-					os << ",\"count\":0,\"names\":\"ERROR\"";
+					os << ",\"names\":[]";
 				}
 				os << "},\"data\":[";
-				assert(romField->data.list_data != nullptr);
-				if (romField->data.list_data) {
-					for (auto it = romField->data.list_data->begin();
-					     it != romField->data.list_data->end(); ++it)
-					{
+				auto list_data = romField->data.list_data;
+				assert(list_data != nullptr);
+				if (list_data) {
+					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 						if (it != romField->data.list_data->begin()) os << ",";
 						os << "[";
-						for (auto jt = it->begin(); jt != it->end(); ++jt) {
+						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
 							if (jt != it->begin()) os << ",";
 							os << JSONString(jt->c_str());
 						}

@@ -935,7 +935,6 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const rp_string &value)
 
 	// If allowKanji is true, check if the key is kanji
 	// and convert it to UTF-16LE hexadecimal.
-	const KeyStoreUIPrivate::Section &section = d->sections[sectIdx];
 	Key &key = d->keys[idx];
 	rp_string new_value;
 	if (key.allowKanji) {
@@ -1024,10 +1023,12 @@ int KeyStoreUI::setKey(int idx, const rp_string &value)
 	if (key.value != new_value) {
 		key.value = new_value;
 		key.modified = true;
-		int sectIdx, keyIdx;
+		int sectIdx = -1, keyIdx = -1;
 		int ret = d->idxToSectKey(idx, &sectIdx, &keyIdx);
 		assert(ret == 0);
-		if (ret == 0) {
+		assert(sectIdx >= 0);
+		assert(keyIdx >= 0);
+		if (ret == 0 && sectIdx >= 0 && keyIdx >= 0) {
 			// Verify the key.
 			d->verifyKey(sectIdx, keyIdx);
 			emit keyChanged_int(sectIdx, keyIdx);

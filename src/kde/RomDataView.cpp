@@ -52,6 +52,7 @@ using std::vector;
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QSpacerItem>
 #include <QTreeWidget>
 
@@ -574,10 +575,21 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 {
 	// ListData type. Create a QTreeWidget.
 	const auto &listDataDesc = field->desc.list_data;
-	assert(listDataDesc.names != nullptr);
-	if (!listDataDesc.names) {
-		// No column names...
-		return;
+	// NOTE: listDataDesc.names can be nullptr,
+	// which means we don't have any column headers.
+
+	auto list_data = field->data.list_data;
+	assert(list_data != nullptr);
+
+	int col_count = 1;
+	if (listDataDesc.names) {
+		col_count = (int)listDataDesc.names->size();
+	} else {
+		// No column headers.
+		// Use the first row.
+		if (list_data && !list_data->empty()) {
+			col_count = (int)list_data->at(0).size();
+		}
 	}
 
 	Q_Q(RomDataView);
@@ -587,30 +599,43 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	treeWidget->setAlternatingRowColors(true);
 
 	// Set up the column names.
-	const int count = (int)listDataDesc.names->size();
-	treeWidget->setColumnCount(count);
-	QStringList columnNames;
-	columnNames.reserve(count);
-	for (int i = 0; i < count; i++) {
-		const rp_string &name = listDataDesc.names->at(i);
-		if (!name.empty()) {
-			columnNames.append(RP2Q(name));
-		} else {
-			// Don't show this column.
-			columnNames.append(QString());
-			treeWidget->setColumnHidden(i, true);
+	treeWidget->setColumnCount(col_count);
+	if (listDataDesc.names) {
+		QStringList columnNames;
+		columnNames.reserve(col_count);
+		for (int i = 0; i < col_count; i++) {
+			const rp_string &name = listDataDesc.names->at(i);
+			if (!name.empty()) {
+				columnNames.append(RP2Q(name));
+			} else {
+				// Don't show this column.
+				columnNames.append(QString());
+				treeWidget->setColumnHidden(i, true);
+			}
 		}
+		treeWidget->setHeaderLabels(columnNames);
+	} else {
+		// Hide the header.
+		treeWidget->header()->hide();
 	}
-	treeWidget->setHeaderLabels(columnNames);
 
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	// Add the row data.
-	auto list_data = field->data.list_data;
-	assert(list_data != nullptr);
 	if (list_data) {
-		const int count = (int)list_data->size();
-		for (int i = 0; i < count; i++) {
+		const int row_count = (int)list_data->size();
+		uint32_t checkboxes = field->data.list_checkboxes;
+		for (int i = 0; i < row_count; i++) {
 			const vector<rp_string> &data_row = list_data->at(i);
 			QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
+			if (hasCheckboxes) {
+				// The checkbox will only show up if setCheckState()
+				// is called at least once, regardless of value.
+				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
+				checkboxes >>= 1;
+			}
+			// Disable user checkability.
+			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
+
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, RP2Q(*iter));
@@ -619,10 +644,10 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	// Resize the columns to fit the contents.
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < col_count; i++) {
 		treeWidget->resizeColumnToContents(i);
 	}
-	treeWidget->resizeColumnToContents(count);
+	treeWidget->resizeColumnToContents(col_count);
 
 	// TODO: Set height based on rows_visible.
 	if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
