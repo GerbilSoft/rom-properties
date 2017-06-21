@@ -154,6 +154,7 @@ class RP_ShellPropSheetExt_Private
 
 		// Alternate row color.
 		COLORREF colorAltRow;
+		bool isFullyInit;		// TRUE if the window is fully initialized.
 
 		// Banner.
 		HBITMAP hbmpBanner;
@@ -353,6 +354,7 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hUxTheme_dll(nullptr)
 	, pfnIsThemeActive(nullptr)
 	, colorAltRow(0)
+	, isFullyInit(false)
 	, hbmpBanner(nullptr)
 	, hTabWidget(nullptr)
 	, curTabIndex(0)
@@ -1138,7 +1140,15 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	SetWindowFont(hDlgItem, hFontDlg, FALSE);
 
 	// Set extended ListView styles.
-	ListView_SetExtendedListViewStyle(hDlgItem, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+	// TODO: Disable LVS_EX_DOUBLEBUFFER if using RDP.
+	DWORD lvsExStyle;
+	bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	if (hasCheckboxes) {
+		lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_CHECKBOXES;
+	} else {
+		lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
+	}
+	ListView_SetExtendedListViewStyle(hDlgItem, lvsExStyle);
 
 	// Insert columns.
 	// TODO: Make sure there aren't any columns to start with?
@@ -1168,9 +1178,10 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	assert(list_data != nullptr);
 	if (list_data) {
 		const int count = (int)list_data->size();
+		uint32_t checkboxes = field->data.list_checkboxes;
+		LVITEM lvItem;
+		lvItem.mask = LVIF_TEXT;
 		for (int i = 0; i < count; i++) {
-			LVITEM lvItem;
-			lvItem.mask = LVIF_TEXT;
 			lvItem.iItem = i;
 
 			const vector<rp_string> &data_row = list_data->at(i);
@@ -1183,6 +1194,12 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				if (col == 0) {
 					// Column 0: Insert the item.
 					ListView_InsertItem(hDlgItem, &lvItem);
+					// Set the checkbox state after inserting the item.
+					// Setting the state when inserting it doesn't seem to work...
+					if (hasCheckboxes) {
+						ListView_SetCheckState(hDlgItem, i, (checkboxes & 1));
+						checkboxes >>= 1;
+					}
 				} else {
 					// Columns 1 and higher: Set the subitem.
 					ListView_SetItem(hDlgItem, &lvItem);
@@ -1831,6 +1848,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		// Next row.
 		tab.curPt.y += field_cy;
 	}
+
+	// Window is fully initialized.
+	isFullyInit = true;
 }
 
 /** RP_ShellPropSheetExt **/
@@ -2145,7 +2165,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 					{
 						// It's a SysLink control.
 						// Open the URL.
-						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(lParam);
+						PNMLINK pNMLink = reinterpret_cast<PNMLINK>(pHdr);
 						ShellExecute(nullptr, L"open", pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 					}
 					break;
@@ -2173,7 +2193,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 					// References:
 					// - https://stackoverflow.com/questions/40549962/c-winapi-listview-nm-customdraw-not-getting-cdds-itemprepaint
 					// - https://stackoverflow.com/a/40552426
-					NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(lParam);
+					NMLVCUSTOMDRAW *const plvcd = reinterpret_cast<NMLVCUSTOMDRAW*>(pHdr);
 					int result = CDRF_DODEFAULT;
 					switch (plvcd->nmcd.dwDrawStage) {
 						case CDDS_PREPAINT:
@@ -2196,6 +2216,22 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 						}
 					}
 					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, result);
+					return TRUE;
+				}
+
+				case LVN_ITEMCHANGING: {
+					// If the window is fully initialized,
+					// disable modification of checkboxes.
+					// Reference: https://groups.google.com/forum/embed/#!topic/microsoft.public.vc.mfc/e9cbkSsiImA
+					if (!d->isFullyInit)
+						break;
+					if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+						break;
+
+					NMLISTVIEW *pnmlv = reinterpret_cast<NMLISTVIEW*>(pHdr);
+					const unsigned int state = (pnmlv->uOldState ^ pnmlv->uNewState) & LVIS_STATEIMAGEMASK;
+					// Set result to TRUE if the state difference is non-zero (i.e. it's changed).
+					SetWindowLongPtr(hDlg, DWLP_MSGRESULT, (state != 0));
 					return TRUE;
 				}
 
@@ -2445,7 +2481,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 	// Propagate NM_CUSTOMDRAW to the parent dialog.
 	if (uMsg == WM_NOTIFY) {
 		const NMHDR *const pHdr = reinterpret_cast<const NMHDR*>(lParam);
-		if (pHdr->code == NM_CUSTOMDRAW) {
+		if (pHdr->code == NM_CUSTOMDRAW || pHdr->code == LVN_ITEMCHANGING) {
 			// NOTE: Since this is a DlgProc, we can't simply return
 			// the CDRF code. It has to be set as DWLP_MSGRESULT.
 			// References:

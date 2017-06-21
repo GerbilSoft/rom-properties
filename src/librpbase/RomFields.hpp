@@ -70,6 +70,9 @@ class RomFields
 			// Show the ListView on a separate row
 			// from the description label.
 			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
+
+			// Enable checkboxes.
+			RFT_LISTDATA_CHECKBOXES = (1 << 1),
 		};
 
 		// Display flags for RFT_DATETIME.
@@ -166,7 +169,10 @@ class RomFields
 				uint32_t bitfield;
 
 				// RFT_LISTDATA
-				const std::vector<std::vector<rp_string> > *list_data;
+				struct {
+					const std::vector<std::vector<rp_string> > *list_data;
+					uint32_t list_checkboxes;	// Requires RFT_LISTDATA_CHECKBOXES.
+				};
 
 				// RFT_DATETIME (UNIX format)
 				// NOTE: -1 is used to indicate
@@ -412,12 +418,13 @@ class RomFields
 		 * @param list_data ListData.
 		 * @param rows_visible Number of visible rows, (0 for "default")
 		 * @param flags Flags.
+		 * @param checkboxes Checkbox bitfield. (requires RFT_LISTDATA_CHECKBOXES)
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_listData(const rp_char *name,
 			const std::vector<rp_string> *headers,
 			const std::vector<std::vector<rp_string> > *list_data,
-			int rows_visible = 0, uint32_t flags = 0);
+			int rows_visible = 0, uint32_t flags = 0, uint32_t checkboxes = 0);
 
 		/**
 		 * Add DateTime.
