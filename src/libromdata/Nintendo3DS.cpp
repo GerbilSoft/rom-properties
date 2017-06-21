@@ -1217,7 +1217,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	}
 
 	fields->addField_listData(_RP("FS Access"), nullptr, vv_fs,
-		8, RomFields::RFT_LISTDATA_CHECKBOXES,
+		6, RomFields::RFT_LISTDATA_CHECKBOXES,
 		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
 
 	// ARM9 access.
@@ -1250,11 +1250,37 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		}
 
 		fields->addField_listData(_RP("ARM9 Access"), nullptr, vv_arm9,
-			8, RomFields::RFT_LISTDATA_CHECKBOXES,
+			6, RomFields::RFT_LISTDATA_CHECKBOXES,
 			(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm9.descriptors));
 	}
 
-	// TODO: Services.
+	// Services. Each service is a maximum of 8 characters.
+	// The field is NULL-padded, though if the service name
+	// is 8 characters long, there won't be any NULLs.
+	auto vv_svc = new std::vector<std::vector<rp_string> >();
+	vv_svc->reserve(ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services));
+	const char *svc = &pNcchExHeader->aci.arm11_local.services[0][0];
+	for (int i = 0; i < ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services); i++, svc += 8) {
+		if (svc[0] == 0) {
+			// End of service list.
+			break;
+		}
+
+		// Add the service.
+		// TODO: Service descriptions?
+		vv_svc->resize(vv_svc->size()+1);
+		auto &data_row = vv_svc->at(vv_svc->size()-1);
+		data_row.push_back(latin1_to_rp_string(svc, 8));
+	}
+
+	if (!vv_fs->empty()) {
+		fields->addField_listData(_RP("Services"), nullptr, vv_svc, 6, 0);
+	} else {
+		// No services.
+		delete vv_fs;
+	}
+
+	// TODO: ext_services?
 }
 
 /** Nintendo3DS **/
