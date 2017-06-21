@@ -1257,6 +1257,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	// Services. Each service is a maximum of 8 characters.
 	// The field is NULL-padded, though if the service name
 	// is 8 characters long, there won't be any NULLs.
+	// TODO: How to determine 32 or 34? (descriptor version?)
 	auto vv_svc = new std::vector<std::vector<rp_string> >();
 	vv_svc->reserve(ARRAY_SIZE(pNcchExHeader->aci.arm11_local.services));
 	const char *svc = &pNcchExHeader->aci.arm11_local.services[0][0];
@@ -1279,8 +1280,6 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		// No services.
 		delete vv_fs;
 	}
-
-	// TODO: ext_services?
 }
 
 /** Nintendo3DS **/
