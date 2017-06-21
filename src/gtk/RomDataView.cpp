@@ -1257,7 +1257,7 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_LISTDATA:
-				separate_rows = !!(field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW);
+				separate_rows = !!(field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 				widget = rom_data_view_init_listdata(page, field);
 				break;
 

@@ -1771,7 +1771,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 				// Create a ListView control.
 				SIZE size = {dlg_value_width, field_cy*6};
 				POINT pt_ListData = pt_start;
-				if (field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW) {
+				if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
 					size.cx = dlgSize.cx - dlgMargin.left - 1;
 					pt_ListData.x = tab.curPt.x;
@@ -1785,7 +1785,7 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 					DestroyWindow(hStatic);
 				} else {
 					// Add the extra row if necessary.
-					if (field->desc.list_data.flags & RomFields::RFT_LISTVIEW_SEPARATE_ROW) {
+					if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 						const int szAdj = descSize.cy - (dlgMargin.top/3);
 						field_cy += szAdj;
 						// Reduce the hStatic size slightly.

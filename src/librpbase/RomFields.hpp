@@ -69,7 +69,7 @@ class RomFields
 		enum ListDataFlags {
 			// Show the ListView on a separate row
 			// from the description label.
-			RFT_LISTVIEW_SEPARATE_ROW = (1 << 0),
+			RFT_LISTDATA_SEPARATE_ROW = (1 << 0),
 		};
 
 		// Display flags for RFT_DATETIME.

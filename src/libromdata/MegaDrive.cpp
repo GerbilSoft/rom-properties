@@ -523,7 +523,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	vector<rp_string> *v_vectors_headers = RomFields::strArrayToVector(
 		vectors_headers, ARRAY_SIZE(vectors_headers));
 	fields->addField_listData(_RP("Vector Table"), v_vectors_headers, vectors_info,
-		8, RomFields::RFT_LISTVIEW_SEPARATE_ROW);
+		8, RomFields::RFT_LISTDATA_SEPARATE_ROW);
 }
 
 /** MegaDrive **/
