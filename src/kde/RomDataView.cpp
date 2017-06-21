@@ -619,12 +619,23 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 		treeWidget->header()->hide();
 	}
 
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	// Add the row data.
 	if (list_data) {
 		const int row_count = (int)list_data->size();
+		uint32_t checkboxes = field->data.list_checkboxes;
 		for (int i = 0; i < row_count; i++) {
 			const vector<rp_string> &data_row = list_data->at(i);
 			QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem(treeWidget);
+			if (hasCheckboxes) {
+				// The checkbox will only show up if setCheckState()
+				// is called at least once, regardless of value.
+				treeWidgetItem->setCheckState(0, (checkboxes & 1) ? Qt::Checked : Qt::Unchecked);
+				checkboxes >>= 1;
+			}
+			// Disable user checkability.
+			treeWidgetItem->setFlags(treeWidgetItem->flags() & ~Qt::ItemIsUserCheckable);
+
 			int col = 0;
 			for (auto iter = data_row.cbegin(); iter != data_row.cend(); ++iter, ++col) {
 				treeWidgetItem->setData(col, Qt::DisplayRole, RP2Q(*iter));
