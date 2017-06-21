@@ -244,6 +244,13 @@ class Nintendo3DSPrivate : public RomDataPrivate
 		 * @return String.
 		 */
 		static inline rp_string n3dsVersionToString(uint16_t version);
+
+		/**
+		 * Add the Permissions fields. (part of ExHeader)
+		 * A separate tab should be created by the caller first.
+		 * @param pNcchExHeader NCCH ExHeader.
+		 */
+		void addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader);
 };
 
 /** Nintendo3DSPrivate **/
@@ -1168,6 +1175,56 @@ inline rp_string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
 		(version & 0x0F));
 }
 
+/**
+ * Add the Permissions fields. (part of ExHeader)
+ * A separate tab should be created by the caller first.
+ * @param pNcchExHeader NCCH ExHeader.
+ */
+void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader)
+{
+	// FS access.
+	static const rp_char *const perm_fs_access[] = {
+		_RP("CategorySysApplication"),
+		_RP("CategoryHardwareCheck"),
+		_RP("CategoryFileSystemTool"),
+		_RP("Debug"),
+		_RP("TwlCardBackup"),
+		_RP("TwlNandData"),
+		_RP("Boss"),
+		_RP("DirectSdmc"),
+		_RP("Core"),
+		_RP("CtrNandRo"),
+		_RP("CtrNandRw"),
+		_RP("CtrNandRoWrite"),
+		_RP("CategorySystemSettings"),
+		_RP("Cardboard"),
+		_RP("ExportImportIvs"),
+		_RP("DirectSdmcWrite"),
+		_RP("SwitchCleanup"),
+		_RP("SaveDataMove"),
+		_RP("Shop"),
+		_RP("Shell"),
+		_RP("CategoryHomeMenu"),
+		_RP("SeedDB"),
+	};
+
+	// Convert to vector<vector<rp_string> > for RFT_LISTDATA.
+	auto vv_fs = new std::vector<std::vector<rp_string> >();
+	vv_fs->resize(ARRAY_SIZE(perm_fs_access));
+	for (int i = ARRAY_SIZE(perm_fs_access)-1; i >= 0; i--) {
+		auto &data_row = vv_fs->at(i);
+		data_row.push_back(perm_fs_access[i]);
+	}
+
+	vector<rp_string> *v_fs_headers = new vector<rp_string>();
+	v_fs_headers->push_back(_RP("FS Access"));
+	fields->addField_listData(_RP("FS Access"), v_fs_headers, vv_fs,
+		8, RomFields::RFT_LISTDATA_CHECKBOXES,
+		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
+
+	// TODO: ARM9 access, services.
+}
+
 /** Nintendo3DS **/
 
 /**
@@ -1657,9 +1714,9 @@ int Nintendo3DS::loadFieldData(void)
 	// TODO: Disambiguate the various NCCHReader pointers.
 	// TODO: Split up into smaller functions?
 
-	// Maximum of 17 fields.
+	// Maximum of 20 fields.
 	// Tested with several CCI, CIA, and NCCH files.
-	d->fields->reserve(17);
+	d->fields->reserve(20);
 
 	// Reserve at least 2 tabs.
 	d->fields->reserveTabs(2);
@@ -1730,7 +1787,7 @@ int Nintendo3DS::loadFieldData(void)
 			_RP("Australia"), _RP("China"), _RP("South Korea"),
 			_RP("Taiwan")
 		};
-		vector<rp_string> *v_n3ds_region_bitfield_names = RomFields::strArrayToVector(
+		vector<rp_string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector(
 			n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
 		d->fields->addField_bitfield(_RP("Region Code"),
 			v_n3ds_region_bitfield_names, 3, le32_to_cpu(d->smdh.header.settings.region_code));
@@ -2218,7 +2275,7 @@ int Nintendo3DS::loadFieldData(void)
 		static const rp_char *const contents_names[] = {
 			_RP("#"), _RP("Type"), _RP("Encryption"), _RP("Version"), _RP("Size")
 		};
-		vector<rp_string> *v_contents_names = RomFields::strArrayToVector(
+		vector<rp_string> *const v_contents_names = RomFields::strArrayToVector(
 			contents_names, ARRAY_SIZE(contents_names));
 
 		// Add the contents table.
@@ -2257,7 +2314,7 @@ int Nintendo3DS::loadFieldData(void)
 		static const rp_char *const exheader_flags_names[] = {
 			_RP("CompressExefsCode"), _RP("SDApplication")
 		};
-		vector<rp_string> *v_exheader_flags_names = RomFields::strArrayToVector(
+		vector<rp_string> *const v_exheader_flags_names = RomFields::strArrayToVector(
 			exheader_flags_names, ARRAY_SIZE(exheader_flags_names));
 		d->fields->addField_bitfield(_RP("Flags"),
 			v_exheader_flags_names, 0, le32_to_cpu(ncch_exheader->sci.flags));
@@ -2306,7 +2363,7 @@ int Nintendo3DS::loadFieldData(void)
 		static const rp_char *const new3ds_cpu_mode_names[] = {
 			_RP("L2 Cache"), _RP("804 MHz")
 		};
-		vector<rp_string> *v_new3ds_cpu_mode_names = RomFields::strArrayToVector(
+		vector<rp_string> *const v_new3ds_cpu_mode_names = RomFields::strArrayToVector(
 			new3ds_cpu_mode_names, ARRAY_SIZE(new3ds_cpu_mode_names));
 		d->fields->addField_bitfield(_RP("New3DS CPU Mode"),
 			v_new3ds_cpu_mode_names, 0, ncch_exheader->aci.arm11_local.flags[0]);
@@ -2314,6 +2371,12 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Ideal CPU and affinity mask.
 		// TODO: core_version is probably specified for e.g. AGB.
 		// Indicate that somehow.
+
+		// Permissions. These are technically part of the
+		// ExHeader, but we're using a separate tab because
+		// there's a lot of them.
+		d->fields->addTab(_RP("Permissions"));
+		d->addFields_permissions(ncch_exheader);
 	}
 
 	// Finished reading the field data.
