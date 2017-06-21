@@ -899,27 +899,35 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 {
 	// ListData type. Create a GtkListStore for the data.
 	const auto &listDataDesc = field->desc.list_data;
-	assert(listDataDesc.names != nullptr);
-	if (!listDataDesc.names) {
-		// No column names...
-		return nullptr;
+	// NOTE: listDataDesc.names can be nullptr,
+	// which means we don't have any column headers.
+
+	auto list_data = field->data.list_data;
+	assert(list_data != nullptr);
+
+	int col_count = 1;
+	if (listDataDesc.names) {
+		col_count = (int)listDataDesc.names->size();
+	} else {
+		// No column headers.
+		// Use the first row.
+		if (list_data && !list_data->empty()) {
+			col_count = (int)list_data->at(0).size();
+		}
 	}
 
-	// Set up the column names.
-	const int count = (int)listDataDesc.names->size();
-	GType *types = new GType[count];
-	for (int i = 0; i < count; i++) {
+	// Set up the GtkListStore.
+	GType *types = new GType[col_count];
+	for (int i = 0; i < col_count; i++) {
 		types[i] = G_TYPE_STRING;
 	}
-	GtkListStore *listStore = gtk_list_store_newv(count, types);
+	GtkListStore *listStore = gtk_list_store_newv(col_count, types);
 	delete[] types;
 
 	// Add the row data.
-	auto list_data = field->data.list_data;
-	assert(list_data != nullptr);
 	if (list_data) {
-		const int count = (int)list_data->size();
-		for (int i = 0; i < count; i++) {
+		const int row_count = (int)list_data->size();
+		for (int i = 0; i < row_count; i++) {
 			const vector<rp_string> &data_row = list_data->at(i);
 			GtkTreeIter treeIter;
 			gtk_list_store_insert_before(listStore, &treeIter, nullptr);
@@ -940,7 +948,8 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Create the GtkTreeView.
 	GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(listStore));
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
+		(listDataDesc.names != nullptr));
 	gtk_widget_show(treeView);
 	gtk_container_add(GTK_CONTAINER(widget), treeView);
 
@@ -952,12 +961,23 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 #endif
 
 	// Set up the column names.
-	for (int i = 0; i < count; i++) {
-		const rp_string &name = listDataDesc.names->at(i);
-		if (!name.empty()) {
+	if (listDataDesc.names) {
+		for (int i = 0; i < col_count; i++) {
+			const rp_string &name = listDataDesc.names->at(i);
+			if (name.empty())
+				break;
+
 			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
 				RP2U8_s(name), renderer,
+				"text", i, nullptr);
+			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
+		}
+	} else {
+		for (int i = 0; i < col_count; i++) {
+			GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+			GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+				"", renderer,
 				"text", i, nullptr);
 			gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
 		}

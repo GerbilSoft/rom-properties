@@ -1122,17 +1122,22 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		return 0;
 
 	const auto &listDataDesc = field->desc.list_data;
-	assert(listDataDesc.names != nullptr);
-	if (!listDataDesc.names) {
-		// No column names...
-		return 0;
-	}
+	// NOTE: listDataDesc.names can be nullptr,
+	// which means we don't have any column headers.
+
+	auto list_data = field->data.list_data;
+	assert(list_data != nullptr);
 
 	// Create a ListView widget.
 	// NOTE: Separate row option is handled by the caller.
+	// TODO: Enable sorting?
+	// TODO: Optimize by not using OR?
+	DWORD lvsStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER;
+	if (!listDataDesc.names) {
+		lvsStyle |= LVS_NOCOLUMNHEADER;
+	}
 	HWND hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE,
-		WC_LISTVIEW, nullptr,
-		WS_CHILD | WS_VISIBLE | WS_TABSTOP | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL,
+		WC_LISTVIEW, nullptr, lvsStyle,
 		pt_start.x, pt_start.y,
 		size.cx, size.cy,
 		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
@@ -1141,47 +1146,60 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Set extended ListView styles.
 	// TODO: Disable LVS_EX_DOUBLEBUFFER if using RDP.
-	DWORD lvsExStyle;
+	// TODO: Optimize by not using OR?
+	DWORD lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
 	bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
-		lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_CHECKBOXES;
-	} else {
-		lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
+		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
 	ListView_SetExtendedListViewStyle(hDlgItem, lvsExStyle);
 
 	// Insert columns.
-	// TODO: Make sure there aren't any columns to start with?
-	const int count = (int)listDataDesc.names->size();
-	for (int i = 0; i < count; i++) {
-		LVCOLUMN lvColumn;
+	int col_count = 1;
+	if (listDataDesc.names) {
+		col_count = (int)listDataDesc.names->size();
+	} else {
+		// No column headers.
+		// Use the first row.
+		if (list_data && !list_data->empty()) {
+			col_count = (int)list_data->at(0).size();
+		}
+	}
+
+	LVCOLUMN lvColumn;
+	if (listDataDesc.names) {
 		lvColumn.mask = LVCF_FMT | LVCF_TEXT;
 		lvColumn.fmt = LVCFMT_LEFT;
-		const rp_string &name = listDataDesc.names->at(i);
-		if (!name.empty()) {
-			// TODO: Support for RP_UTF8?
-			// NOTE: pszText is LPWSTR, not LPCWSTR...
-			lvColumn.pszText = (LPWSTR)(name.c_str());
-		} else {
-			// Don't show this column.
-			// FIXME: Zero-width column is a bad hack...
-			lvColumn.pszText = L"";
-			lvColumn.mask |= LVCF_WIDTH;
-			lvColumn.cx = 0;
+		for (int i = 0; i < col_count; i++) {
+			const rp_string &name = listDataDesc.names->at(i);
+			if (!name.empty()) {
+				// TODO: Support for RP_UTF8?
+				// NOTE: pszText is LPWSTR, not LPCWSTR...
+				lvColumn.pszText = (LPWSTR)(name.c_str());
+			} else {
+				// Don't show this column.
+				// FIXME: Zero-width column is a bad hack...
+				lvColumn.pszText = L"";
+				lvColumn.mask |= LVCF_WIDTH;
+				lvColumn.cx = 0;
+			}
+			ListView_InsertColumn(hDlgItem, i, &lvColumn);
 		}
-
-		ListView_InsertColumn(hDlgItem, i, &lvColumn);
+	} else {
+		lvColumn.mask = LVCF_FMT;
+		lvColumn.fmt = LVCFMT_LEFT;
+		for (int i = 0; i < col_count; i++) {
+			ListView_InsertColumn(hDlgItem, i, &lvColumn);
+		}
 	}
 
 	// Add the row data.
-	auto list_data = field->data.list_data;
-	assert(list_data != nullptr);
 	if (list_data) {
-		const int count = (int)list_data->size();
+		const int row_count = (int)list_data->size();
 		uint32_t checkboxes = field->data.list_checkboxes;
 		LVITEM lvItem;
 		lvItem.mask = LVIF_TEXT;
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < row_count; i++) {
 			lvItem.iItem = i;
 
 			const vector<rp_string> &data_row = list_data->at(i);
@@ -1210,7 +1228,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Resize all of the columns.
 	// TODO: Do this on system theme change?
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < col_count; i++) {
 		ListView_SetColumnWidth(hDlgItem, i, LVSCW_AUTOSIZE_USEHEADER);
 	}
 
@@ -1224,14 +1242,18 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Default: 5 rows, plus the header.
 	int cy = 0;
 	if (ListView_GetItemCount(hDlgItem) > 0) {
-		// Get the header rect and an item rect.
-		HWND hHeader = ListView_GetHeader(hDlgItem);
-		assert(hHeader != nullptr);
-		if (hHeader) {
-			RECT rectHeader;
-			GetClientRect(hHeader, &rectHeader);
-			cy = rectHeader.bottom;
+		if (listDataDesc.names) {
+			// Get the header rect.
+			HWND hHeader = ListView_GetHeader(hDlgItem);
+			assert(hHeader != nullptr);
+			if (hHeader) {
+				RECT rectHeader;
+				GetClientRect(hHeader, &rectHeader);
+				cy = rectHeader.bottom;
+			}
 		}
+
+		// Get an item rect.
 		RECT rectItem;
 		ListView_GetItemRect(hDlgItem, 0, &rectItem, LVIR_BOUNDS);
 		const int item_cy = (rectItem.bottom - rectItem.top);

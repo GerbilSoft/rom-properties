@@ -414,11 +414,15 @@ class RomFields
 		 * Add ListData.
 		 * NOTE: This object takes ownership of the two vectors.
 		 * @param name Field name.
-		 * @param headers Vector of column names.
+		 * @param headers Vector of column names. (If NULL, no headers will be shown.)
 		 * @param list_data ListData.
 		 * @param rows_visible Number of visible rows, (0 for "default")
 		 * @param flags Flags.
 		 * @param checkboxes Checkbox bitfield. (requires RFT_LISTDATA_CHECKBOXES)
+		 *
+		 * NOTE: If headers is nullptr, the column count will be
+		 * determined using the first row in list_data.
+		 *
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_listData(const rp_char *name,

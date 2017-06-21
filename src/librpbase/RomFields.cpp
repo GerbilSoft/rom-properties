@@ -945,9 +945,8 @@ int RomFields::addField_listData(const rp_char *name,
 	Field &field = d->fields.at(idx);
 
 	assert(name != nullptr);
-	assert(headers != nullptr);
 	assert(rows_visible >= 0);
-	if (!name || !headers || rows_visible < 0)
+	if (!name || rows_visible < 0)
 		return -1;
 	field.name = (name ? name : _RP(""));
 	field.type = RFT_LISTDATA;
