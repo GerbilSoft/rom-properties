@@ -1216,9 +1216,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		data_row.push_back(perm_fs_access[i]);
 	}
 
-	vector<rp_string> *v_fs_headers = new vector<rp_string>();
-	v_fs_headers->push_back(_RP("FS Access"));
-	fields->addField_listData(_RP("FS Access"), v_fs_headers, vv_fs,
+	fields->addField_listData(_RP("FS Access"), nullptr, vv_fs,
 		8, RomFields::RFT_LISTDATA_CHECKBOXES,
 		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
 
