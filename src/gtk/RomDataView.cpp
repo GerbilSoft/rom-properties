@@ -917,7 +917,7 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	}
 
 	GtkListStore *listStore;
-	bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
 		// We need to set up a virtual column 0 with checkboxes.
 		GType *types = new GType[col_count+1];

@@ -1148,7 +1148,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// TODO: Disable LVS_EX_DOUBLEBUFFER if using RDP.
 	// TODO: Optimize by not using OR?
 	DWORD lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
-	bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
 	}
