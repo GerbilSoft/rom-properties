@@ -1069,13 +1069,27 @@ int NintendoDS::loadFieldData(void)
 	//   Reference: http://imrannazar.com/The-Smallest-NDS-File
 	// - Show IR cart and/or other accessories? (NAND ROM, etc.)
 	const rp_char *nds_romType;
-	switch (d->romType) {
-		case NintendoDSPrivate::ROM_NDS_SLOT2:
-			nds_romType = _RP("Slot-2 (PassMe)");
-			break;
-		default:
-			nds_romType = _RP("Slot-1");
-			break;
+	if (d->cia || ((romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi) &&
+		romHeader->dsi.filetype != DSi_FTYPE_CARTRIDGE))
+	{
+		// DSiWare.
+		// TODO: Verify games that are available as both
+		// cartridge and DSiWare.
+		if (romHeader->dsi.filetype == DSi_FTYPE_DSiWARE) {
+			nds_romType = _RP("DSiWare");
+		} else {
+			nds_romType = _RP("DSi System Software");
+		}
+	} else {
+		// TODO: Identify NDS Download Play titles.
+		switch (d->romType) {
+			case NintendoDSPrivate::ROM_NDS_SLOT2:
+				nds_romType = _RP("Slot-2 (PassMe)");
+				break;
+			default:
+				nds_romType = _RP("Slot-1");
+				break;
+		}
 	}
 	d->fields->addField_string(_RP("Type"), nds_romType);
 
