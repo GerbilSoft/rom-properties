@@ -1220,7 +1220,41 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		8, RomFields::RFT_LISTDATA_CHECKBOXES,
 		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
 
-	// TODO: ARM9 access, services.
+	// ARM9 access.
+	static const rp_char *const perm_arm9_access[] = {
+		_RP("FsMountNand"),
+		_RP("FsMountNandRoWrite"),
+		_RP("FsMountTwln"),
+		_RP("FsMountWnand"),
+		_RP("FsMountCardSpi"),
+		_RP("UseSdif3"),
+		_RP("CreateSeed"),
+		_RP("UseCardSpi"),
+		_RP("SDApplication"),
+		_RP("FsMountSdmcWrite"),	// implied by DirectSdmc
+	};
+
+	// TODO: Other descriptor versions?
+	// v2 is standard; may be v3 on 9.3.0-X.
+	assert(pNcchExHeader->aci.arm9.descriptor_version == 2 ||
+	       pNcchExHeader->aci.arm9.descriptor_version == 3);
+	if (pNcchExHeader->aci.arm9.descriptor_version == 2 ||
+	    pNcchExHeader->aci.arm9.descriptor_version == 3)
+	{
+		// Convert to vector<vector<rp_string> > for RFT_LISTDATA.
+		auto vv_arm9 = new std::vector<std::vector<rp_string> >();
+		vv_arm9->resize(ARRAY_SIZE(perm_arm9_access));
+		for (int i = ARRAY_SIZE(perm_arm9_access)-1; i >= 0; i--) {
+			auto &data_row = vv_arm9->at(i);
+			data_row.push_back(perm_arm9_access[i]);
+		}
+
+		fields->addField_listData(_RP("ARM9 Access"), nullptr, vv_arm9,
+			8, RomFields::RFT_LISTDATA_CHECKBOXES,
+			(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm9.descriptors));
+	}
+
+	// TODO: Services.
 }
 
 /** Nintendo3DS **/

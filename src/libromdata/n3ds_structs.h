@@ -805,10 +805,10 @@ typedef struct PACKED _N3DS_NCCH_ExHeader_ACI_t {
 	// [0x1F0]
 	// Reference: https://3dbrew.org/wiki/NCCH/Extended_Header#ARM9_Access_Control
 	struct {
-		// FIXME: Determine the format of the descriptors.
 		// See N3DS_NCCH_ExHeader_IoAccessControl.
-		uint8_t descriptors[15];
-		uint8_t descriptor_version;
+		uint32_t descriptors;
+		uint8_t reserved[11];
+		uint8_t descriptor_version;	// should be 2
 	} arm9;
 } N3DS_NCCH_ExHeader_ACI_t;
 #pragma pack()
