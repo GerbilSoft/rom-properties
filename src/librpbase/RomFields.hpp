@@ -89,33 +89,6 @@ class RomFields
 			RFT_DATETIME_IS_UTC = (1 << 2),
 		};
 
-		// List data for a list view.
-		struct ListData {
-			// Each entry in 'data' contains a vector of strings,
-			// which represents each field.
-			std::vector<std::vector<rp_string> > data;
-		};
-
-		// ROM field data.
-		// Actual contents depend on the field type.
-		struct Data {
-			RomFieldType type;	// ROM field type.
-			union {
-				const rp_char *str;	// String data.
-				uint32_t bitfield;	// Bitfield.
-				ListData *list_data;	// ListData
-
-				// Date/Time. (UNIX format)
-				// NOTE: -1 is used to indicate
-				// an invalid date/time.
-				int64_t date_time;
-
-				// Age ratings. (pointer to uint16_t[16])
-				// See AgeRatingsCountry for field indexes.
-				uint16_t *age_ratings;
-			};
-		};
-
 		// Age Ratings indexes.
 		// These correspond to Wii and/or 3DS fields.
 		enum AgeRatingsCountry {
