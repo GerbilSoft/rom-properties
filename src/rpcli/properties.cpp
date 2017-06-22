@@ -235,6 +235,10 @@ public:
 				col_count = (int)list_data->at(0).size();
 			}
 		}
+		assert(col_count > 0);
+		if (col_count < 0) {
+			return os << "[ERROR: No list data.]";
+		}
 
 		unique_ptr<size_t[]> colSize(new size_t[col_count]());
 		size_t totalWidth = col_count + 1;
@@ -250,6 +254,11 @@ public:
 				colSize[i] = max(jt->length(), colSize[i]);
 				i++;
 			}
+		}
+		// TODO: Use a separate column for the checkboxes?
+		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+			// Prepend 4 spaces in column 0 for "[x] ".
+			colSize[0] += 4;
 		}
 
 		os << ColonPad(field.width, romField->name.c_str());
@@ -268,6 +277,12 @@ public:
 			skipFirstNL = false;
 		}
 
+		uint32_t checkboxes = romField->data.list_checkboxes;
+		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+			// Remove the 4 spaces in column 0.
+			// Those spaces will not be used in the text area.
+			colSize[0] -= 4;
+		}
 		for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 			int i = 0;
 			if (!skipFirstNL) {
@@ -275,10 +290,14 @@ public:
 			} else {
 				skipFirstNL = false;
 			}
-			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-				os << "|" << setw(colSize[i++]) << SafeString(jt->c_str(), false);
+			os << '|';
+			if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+				os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
+				checkboxes >>= 1;
 			}
-			os << "|";
+			for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
+				os << setw(colSize[i++]) << SafeString(jt->c_str(), false) << '|';
+			}
 		}
 		return os;
 	}
