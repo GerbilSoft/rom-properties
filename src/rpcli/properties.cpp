@@ -579,6 +579,10 @@ public:
 				if (listDataDesc.names) {
 					os << ",\"names\":[";
 					const int col_count = (int)listDataDesc.names->size();
+					if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+						// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+						os << "checked,";
+					}
 					for (int j = 0; j < col_count; j++) {
 						if (j) os << ",";
 						os << JSONString(listDataDesc.names->at(j).c_str());
@@ -591,9 +595,15 @@ public:
 				auto list_data = romField->data.list_data;
 				assert(list_data != nullptr);
 				if (list_data) {
+					uint32_t checkboxes = romField->data.list_checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
 						if (it != romField->data.list_data->begin()) os << ",";
 						os << "[";
+						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
+							os << ((checkboxes & 1) ? "true" : "false") << ',';
+							checkboxes >>= 1;
+						}
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
 							if (jt != it->begin()) os << ",";
 							os << JSONString(jt->c_str());
