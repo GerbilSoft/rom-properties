@@ -1544,7 +1544,6 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 				 RomDataView	*page)
 {
 	// TODO: Redo this if the system font and/or style changes.
-	printf("realize\n");
 
 	// Recalculate the row heights for this GtkTreeView.
 	auto iter = page->map_listDataRowCounts->find(treeView);
@@ -1616,7 +1615,6 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 	GtkStyle *style = gtk_widget_get_style(scrolledWindow);
 	height += (style->ythickness * 2);
 #endif
-	printf("w/ border: height == %d\n", height);
 
 	// Set the GtkScrolledWindow's height.
 	// NOTE: gtk_scrolled_window_set_max_content_height() doesn't seem to
