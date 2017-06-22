@@ -1,6 +1,12 @@
 PROJECT(rom-properties-xfce)
 
 # XFCE (Thunar) frontend for rom-properties.
+
+# Disable deprecated GTK+ 2.x functionality that isn't available in GTK+ 3.x.
+# Reference: https://developer.gnome.org/gtk3/stable/gtk-migrating-2-to-3.html
+ADD_DEFINITIONS(-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE)
+
+# Find packages.
 FIND_PACKAGE(GLib2 2.26.0)
 FIND_PACKAGE(GObject2 2.26.0)
 FIND_PACKAGE(GIO 2.26.0)
