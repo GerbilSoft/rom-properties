@@ -44,17 +44,18 @@ using std::unordered_map;
 using std::vector;
 
 #include <QtCore/QDateTime>
+#include <QtCore/QEvent>
 #include <QtCore/QTimer>
 
 #include <QLabel>
 #include <QCheckBox>
+#include <QHeaderView>
+#include <QSpacerItem>
+#include <QTreeWidget>
 
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
-#include <QHeaderView>
-#include <QSpacerItem>
-#include <QTreeWidget>
 
 class RomDataViewPrivate
 {
@@ -110,6 +111,10 @@ class RomDataViewPrivate
 		// Used to prevent the user from changing the values.
 		unordered_map<QAbstractButton*, bool> mapBitfields;
 
+		// QTreeWidgets with minimum row counts.
+		QVector<QPair<QTreeWidget*, int> > listDataRowCounts;
+		bool firstRowHeightInit;
+
 		// Animated icon data.
 		std::array<QPixmap, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
@@ -148,6 +153,11 @@ class RomDataViewPrivate
 		 * @param field RomFields::Field
 		 */
 		void initListData(QLabel *lblDesc, const RomFields::Field *field);
+
+		/**
+		 * Recalculate RFT_LISTDATA row heights.
+		 */
+		void recalcListDataRowHeights(void);
 
 		/**
 		 * Initialize a Date/Time field.
@@ -195,6 +205,7 @@ class RomDataViewPrivate
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(romData->ref())
+	, firstRowHeightInit(false)
 	, anim_running(false)
 	, last_frame_number(0)
 {
@@ -649,7 +660,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 	treeWidget->resizeColumnToContents(col_count);
 
-	// TODO: Set height based on rows_visible.
 	if (field->desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
 		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc);
@@ -657,6 +667,48 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	} else {
 		// Single row.
 		ui.tabs[field->tabIdx].formLayout->addRow(lblDesc, treeWidget);
+	}
+
+	// Row height is recalculated when the window is first visible
+	// and/or the system theme is changed.
+	// TODO: Set an actual default number of rows, or let Qt handle it?
+	// (Windows uses 5.)
+	if (field->desc.list_data.rows_visible > 0) {
+		listDataRowCounts.append(QPair<QTreeWidget*, int>(treeWidget, field->desc.list_data.rows_visible));
+	}
+}
+
+/**
+ * Recalculate RFT_LISTDATA row heights.
+ */
+void RomDataViewPrivate::recalcListDataRowHeights(void)
+{
+	for (auto iter = listDataRowCounts.constBegin(); iter != listDataRowCounts.constEnd(); ++iter) {
+		QTreeWidget *const treeWidget = iter->first;
+		if (treeWidget->topLevelItemCount() <= 0)
+			continue;
+
+		// Get the height of the first item.
+		QTreeWidgetItem *const item = treeWidget->topLevelItem(0);
+		assert(item != 0);
+		if (!item)
+			continue;
+
+		QRect rect = treeWidget->visualItemRect(item);
+		if (rect.height() <= 0)
+			continue;
+
+		// Multiply the height by the requested number of visible rows.
+		int height = rect.height() * iter->second;
+		// Add the header.
+		if (treeWidget->header()->isVisibleTo(treeWidget)) {
+			height += treeWidget->header()->height();
+		}
+		// Add QTreeWidget borders.
+		height += (treeWidget->frameWidth() * 2);
+		// Set the QTreeWidget height.
+		treeWidget->setMinimumHeight(height);
+		treeWidget->setMaximumHeight(height);
 	}
 }
 
@@ -1007,6 +1059,30 @@ RomDataView::~RomDataView()
 /** QWidget overridden functions. **/
 
 /**
+ * State change handler.
+ *
+ * Used to determine if the system font or theme
+ * changes, in which case the ListData row heights
+ * need to be recalculated.
+ *
+ * @param event QEvent.
+ */
+void RomDataView::changeEvent(QEvent *event)
+{
+	Q_D(RomDataView);
+	switch (event->type()) {
+		case QEvent::FontChange:
+		case QEvent::StyleChange:
+			// FIXME: Adjustments in response to QEvent::StyleChange
+			// don't seem to work on Kubuntu 16.10...
+			d->recalcListDataRowHeights();
+			break;
+		default:
+			break;
+	}
+}
+
+/**
  * Window has been hidden.
  * This means that this tab has been selected.
  * @param event QShowEvent.
@@ -1016,6 +1092,10 @@ void RomDataView::showEvent(QShowEvent *event)
 	// Start the icon animation.
 	Q_D(RomDataView);
 	d->startAnimTimer();
+	if (!d->firstRowHeightInit) {
+		d->recalcListDataRowHeights();
+		d->firstRowHeightInit = true;
+	}
 
 	// Pass the event to the superclass.
 	super::showEvent(event);

@@ -51,6 +51,17 @@ class RomDataView : public QWidget
 		/** QWidget overridden functions. **/
 
 		/**
+		 * State change handler.
+		 *
+		 * Used to determine if the system font or theme
+		 * changes, in which case the ListData row heights
+		 * need to be recalculated.
+		 *
+		 * @param event QEvent.
+		 */
+		virtual void changeEvent(QEvent *event) override final;
+
+		/**
 		 * Window has been hidden.
 		 * This means that this tab has been selected.
 		 * @param event QShowEvent.
