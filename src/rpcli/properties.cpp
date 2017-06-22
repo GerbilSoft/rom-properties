@@ -90,7 +90,7 @@ public:
 	ColonPad(size_t width, const rp_char* str) :width(width), str(str) {}
 	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
 		StreamStateSaver state(os);
-		os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ":";
+		os << cp.str << left << setw(max(0, (signed)(cp.width - rp_strlen(cp.str)))) << ':';
 		return os;
 	}
 };
@@ -124,7 +124,7 @@ public:
 			}
 		}
 		if (cp.quotes) {
-			return os << "'" << escaped << "'";
+			return os << '\'' << escaped << '\'';
 		}
 		else {
 			return os << escaped;
@@ -269,9 +269,9 @@ public:
 			// Print the column names.
 			for (int i = 0; i < (int)listDataDesc.names->size(); i++) {
 				totalWidth += colSize[i]; // this could be in a separate loop, but whatever
-				os << "|" << setw(colSize[i]) << listDataDesc.names->at(i);
+				os << '|' << setw(colSize[i]) << listDataDesc.names->at(i);
 			}
-			os << "|" << endl << Pad(field.width) << rp_string(totalWidth, '-');
+			os << '|' << endl << Pad(field.width) << rp_string(totalWidth, '-');
 			// Don't skip the first newline, since we're
 			// printing headers.
 			skipFirstNL = false;
@@ -470,7 +470,7 @@ public:
 		if (!js.str) {
 			// NULL string.
 			// Print "0" to indicate this.
-			return os << "0";
+			return os << '0';
 		}
 
 		// Certain characters need to be escaped.
@@ -524,7 +524,7 @@ public:
 				continue;
 
 			if (printed_first)
-				os << "," << endl;
+				os << ',' << endl;
 
 			switch (romField->type) {
 			case RomFields::RFT_INVALID: {
@@ -536,7 +536,7 @@ public:
 			case RomFields::RFT_STRING: {
 				os << "{\"type\":\"STRING\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
 				   << ",\"format\":" << romField->desc.flags
-				   << "},\"data\":" << JSONString(romField->data.str->c_str()) << "}";
+				   << "},\"data\":" << JSONString(romField->data.str->c_str()) << '}';
 				break;
 			}
 
@@ -561,7 +561,7 @@ public:
 						if (name.empty())
 							continue;
 
-						if (printedOne) os << ",";
+						if (printedOne) os << ',';
 						printedOne = true;
 						os << JSONString(name.c_str());
 					}
@@ -569,7 +569,7 @@ public:
 				} else {
 					os << "\"ERROR\"";
 				}
-				os << "},\"data\":" << romField->data.bitfield << "}";
+				os << "},\"data\":" << romField->data.bitfield << '}';
 				break;
 			}
 
@@ -584,7 +584,7 @@ public:
 						os << "checked,";
 					}
 					for (int j = 0; j < col_count; j++) {
-						if (j) os << ",";
+						if (j) os << ',';
 						os << JSONString(listDataDesc.names->at(j).c_str());
 					}
 					os << ']';
@@ -597,18 +597,18 @@ public:
 				if (list_data) {
 					uint32_t checkboxes = romField->data.list_checkboxes;
 					for (auto it = list_data->cbegin(); it != list_data->cend(); ++it) {
-						if (it != romField->data.list_data->begin()) os << ",";
-						os << "[";
+						if (it != romField->data.list_data->begin()) os << ',';
+						os << '[';
 						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
 							os << ((checkboxes & 1) ? "true" : "false") << ',';
 							checkboxes >>= 1;
 						}
 						for (auto jt = it->cbegin(); jt != it->cend(); ++jt) {
-							if (jt != it->begin()) os << ",";
+							if (jt != it->begin()) os << ',';
 							os << JSONString(jt->c_str());
 						}
-						os << "]";
+						os << ']';
 					}
 				}
 				os << "]}";
@@ -619,7 +619,7 @@ public:
 				os << "{\"type\":\"DATETIME\",\"desc\":{\"name\":" << JSONString(romField->name.c_str())
 				   << ",\"flags\":" << romField->desc.flags
 				   << "},\"data\":" << romField->data.date_time
-				   << "}";
+				   << '}';
 				break;
 			}
 
@@ -643,7 +643,7 @@ public:
 
 					if (printedOne) {
 						// Append a comma.
-						os << ",";
+						os << ',';
 					}
 					printedOne = true;
 
@@ -673,7 +673,7 @@ public:
 
 			printed_first = true;
 		}
-		os << "]";
+		os << ']';
 		return os;
 	}
 };
@@ -687,7 +687,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	const rp_char *fileType = romdata->fileType_string();
 
 	os << "-- " << (sysName ? sysName : "(unknown system)") <<
-	      " " << (fileType ? fileType : "(unknown filetype)") <<
+	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
 	      " detected" << endl;
 	os << FieldsOutput(*(romdata->fields())) << endl;
 
@@ -726,7 +726,7 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
 			os << "-- " <<
 				RomData::getImageTypeName((RomData::ImageType)i) << ": " << iter->url <<
-				" (cache_key: " << iter->cache_key << ")" << endl;
+				" (cache_key: " << iter->cache_key << ')' << endl;
 		}
 	}
 	return os;
@@ -765,14 +765,14 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			os << ",\n\"imgint\":[";
 			first = false;
 		} else {
-			os << ",";
+			os << ',';
 		}
 
 		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
 		auto image = romdata->image((RomData::ImageType)i);
 		if (image && image->isValid()) {
 			os << ",\"format\":" << JSONString(rp_image::getFormatName(image->format()));
-			os << ",\"size\":[" << image->width() << "," << image->height() << "]";
+			os << ",\"size\":[" << image->width() << ',' << image->height() << ']';
 			int ppf = romdata->imgpf((RomData::ImageType) i);
 			if (ppf) {
 				os << ",\"postprocessing\":" << ppf;
@@ -783,22 +783,22 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 					os << ",\"frames\":" << animdata->count;
 					os << ",\"sequence\":[";
 					for (int i = 0; i < animdata->seq_count; i++) {
-						if (i) os << ",";
+						if (i) os << ',';
 						os << (unsigned)animdata->seq_index[i];
 					}
 					os << "],\"delay\":[";
 					for (int i = 0; i < animdata->seq_count; i++) {
-						if (i) os << ",";
+						if (i) os << ',';
 						os << animdata->delays[i].ms;
 					}
-					os << "]";
+					os << ']';
 				}
 			}
 		}
-		os << "}";
+		os << '}';
 	}
 	if (!first) {
-		os << "]";
+		os << ']';
 	}
 
 	first = true;
@@ -821,7 +821,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			os << ",\n\"imgext\":[";
 			first = false;
 		} else {
-			os << ",";
+			os << ',';
 		}
 
 		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
@@ -835,15 +835,15 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
 			if (firsturl) firsturl = false;
-			else os << ",";
+			else os << ',';
 
 			os << "{\"url\":" << JSONString(iter->url.c_str());
-			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
+			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << '}';
 		}
 	}
 	if (!first) {
-		os << "]";
+		os << ']';
 	}
 
-	return os << "}";
+	return os << '}';
 }
