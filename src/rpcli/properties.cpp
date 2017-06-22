@@ -713,6 +713,9 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		if (!(supported & (1 << i)))
 			continue;
 
+		// NOTE: extURLs may be empty even though the class supports it.
+		// Check extURLs before doing anything else.
+
 		extURLs.clear();	// NOTE: May not be needed...
 		// TODO: Customize the image size parameter?
 		// TODO: Option to retrieve supported image size?
@@ -753,14 +756,17 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	int supported = romdata->supportedImageTypes();
 
-	os << ",\n\"imgint\":[";
 	bool first = true;
 	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
 		if (!(supported & (1 << i)))
 			continue;
 
-		if (first) first = false;
-		else os << ",";
+		if (first) {
+			os << ",\n\"imgint\":[";
+			first = false;
+		} else {
+			os << ",";
+		}
 
 		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
 		auto image = romdata->image((RomData::ImageType)i);
@@ -791,16 +797,32 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		}
 		os << "}";
 	}
+	if (!first) {
+		os << "]";
+	}
 
-	os << "],\n\"imgext\":[";
 	first = true;
 	std::vector<RomData::ExtURL> extURLs;
 	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
 		if (!(supported & (1 << i)))
 			continue;
 
-		if (first) first = false;
-		else os << ",";
+		// NOTE: extURLs may be empty even though the class supports it.
+		// Check extURLs before doing anything else.
+
+		extURLs.clear();	// NOTE: May not be needed...
+		// TODO: Customize the image size parameter?
+		// TODO: Option to retrieve supported image size?
+		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+		if (ret != 0 || extURLs.empty())
+			continue;
+
+		if (first) {
+			os << ",\n\"imgext\":[";
+			first = false;
+		} else {
+			os << ",";
+		}
 
 		os << "{\"type\":" << JSONString(RomData::getImageTypeName((RomData::ImageType)i));
 		int ppf = romdata->imgpf((RomData::ImageType) i);
@@ -811,13 +833,6 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 		os << ",\"exturls\":[";
 		bool firsturl = true;
 
-		extURLs.clear();	// NOTE: May not be needed...
-		// TODO: Customize the image size parameter?
-		// TODO: Option to retrieve supported image size?
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-		if (ret != 0 || extURLs.empty())
-			continue;
-
 		for (auto iter = extURLs.cbegin(); iter != extURLs.end(); ++iter) {
 			if (firsturl) firsturl = false;
 			else os << ",";
@@ -826,5 +841,9 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			os << ",\"cache_key\":" << JSONString(iter->cache_key.c_str()) << "}";
 		}
 	}
-	return os << "]}";
+	if (!first) {
+		os << "]";
+	}
+
+	return os << "}";
 }
