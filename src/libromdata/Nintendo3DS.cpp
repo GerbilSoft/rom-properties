@@ -1182,6 +1182,14 @@ inline rp_string Nintendo3DSPrivate::n3dsVersionToString(uint16_t version)
  */
 void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcchExHeader)
 {
+#ifdef _WIN32
+	// Windows: 6 visible rows per RFT_LISTDATA.
+	static const int rows_visible = 6;
+#else
+	// Linux: 4 visible rows per RFT_LISTDATA.
+	static const int rows_visible = 4;
+#endif
+
 	// FS access.
 	static const rp_char *const perm_fs_access[] = {
 		_RP("CategorySysApplication"),
@@ -1217,7 +1225,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	}
 
 	fields->addField_listData(_RP("FS Access"), nullptr, vv_fs,
-		6, RomFields::RFT_LISTDATA_CHECKBOXES,
+		rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
 		(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm11_local.storage.fs_access));
 
 	// ARM9 access.
@@ -1250,7 +1258,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 		}
 
 		fields->addField_listData(_RP("ARM9 Access"), nullptr, vv_arm9,
-			6, RomFields::RFT_LISTDATA_CHECKBOXES,
+			rows_visible, RomFields::RFT_LISTDATA_CHECKBOXES,
 			(uint32_t)le64_to_cpu(pNcchExHeader->aci.arm9.descriptors));
 	}
 
@@ -1275,7 +1283,7 @@ void Nintendo3DSPrivate::addFields_permissions(const N3DS_NCCH_ExHeader_t *pNcch
 	}
 
 	if (!vv_fs->empty()) {
-		fields->addField_listData(_RP("Services"), nullptr, vv_svc, 6, 0);
+		fields->addField_listData(_RP("Services"), nullptr, vv_svc, rows_visible, 0);
 	} else {
 		// No services.
 		delete vv_fs;
