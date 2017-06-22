@@ -52,6 +52,28 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
+// GTK+ 2.x compatibility macros.
+// Reference: https://github.com/kynesim/wireshark/blob/master/ui/gtk/old-gtk-compat.h
+#if !GTK_CHECK_VERSION(3,0,0)
+static inline GtkWidget *gtk_tree_view_column_get_button(GtkTreeViewColumn *tree_column)
+{
+	/* This is too late, see https://bugzilla.gnome.org/show_bug.cgi?id=641089
+	 * According to
+	 * http://ftp.acc.umu.se/pub/GNOME/sources/gtk+/2.13/gtk+-2.13.4.changes
+	 * access to the button element was sealed during 2.13. They also admit that
+	 * they missed a use case and thus failed to provide an accessor function:
+	 * http://mail.gnome.org/archives/commits-list/2010-December/msg00578.html
+	 * An accessor function was finally added in 3.0.
+	 */
+# if (GTK_CHECK_VERSION(2,14,0) && defined(GSEAL_ENABLE))
+	return tree_column->_g_sealed__button;
+# else
+	return tree_column->button;
+# endif
+}
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
+
+
 // References:
 // - audio-tags plugin
 // - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
@@ -85,12 +107,14 @@ static void	rom_data_view_update_display	(RomDataView	*page);
 static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
 
 /** Signal handlers. **/
-static void	checkbox_no_toggle_signal_handler (GtkToggleButton	*togglebutton,
-						   gpointer		 user_data);
-static void     rom_data_view_map_signal_handler  (RomDataView		*page,
-						   gpointer		 user_data);
-static void     rom_data_view_unmap_signal_handler(RomDataView		*page,
-						   gpointer		 user_data);
+static void	checkbox_no_toggle_signal_handler   (GtkToggleButton	*togglebutton,
+						     gpointer		 user_data);
+static void	rom_data_view_map_signal_handler    (RomDataView	*page,
+						     gpointer		 user_data);
+static void	rom_data_view_unmap_signal_handler  (RomDataView	*page,
+						     gpointer		 user_data);
+static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
+						     RomDataView	*page);
 
 /** Icon animation timer. **/
 static void	start_anim_timer(RomDataView *page);
@@ -157,6 +181,9 @@ struct _RomDataView {
 
 	// Bitfield checkboxes.
 	unordered_map<GtkWidget*, gboolean> *mapBitfields;
+
+	// GtkTreeViews with minimum row counts.
+	unordered_map<GtkTreeView*, int> *map_listDataRowCounts;
 };
 
 // FIXME: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -301,6 +328,7 @@ rom_data_view_init(RomDataView *page)
 	page->vecDescLabels = new vector<GtkWidget*>();
 	page->setDescLabelIsWarning = new unordered_set<GtkWidget*>();
 	page->mapBitfields = new unordered_map<GtkWidget*, gboolean>();
+	page->map_listDataRowCounts = new unordered_map<GtkTreeView*, int>();
 
 	// Animation timer.
 	page->tmrIconAnim = 0;
@@ -354,7 +382,7 @@ rom_data_view_init(RomDataView *page)
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
 	pango_attr_list_unref(attr_lst);
 
-	// Connect the map and unmap signals.
+	// Connect the "map" and "unmap" signals.
 	// These are needed in order to start and stop the animation.
 	g_signal_connect(page, "map",
 		reinterpret_cast<GCallback>(rom_data_view_map_signal_handler), nullptr);
@@ -395,6 +423,7 @@ rom_data_view_dispose(GObject *object)
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
+	page->map_listDataRowCounts->clear();
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rom_data_view_parent_class)->dispose(object);
@@ -414,6 +443,7 @@ rom_data_view_finalize(GObject *object)
 	delete page->vecDescLabels;
 	delete page->setDescLabelIsWarning;
 	delete page->mapBitfields;
+	delete page->map_listDataRowCounts;
 
 	// Unreference romData.
 	if (page->romData) {
@@ -560,6 +590,7 @@ rom_data_view_set_filename(RomDataView	*page,
 		page->vecDescLabels->clear();
 		page->setDescLabelIsWarning->clear();
 		page->mapBitfields->clear();
+		page->map_listDataRowCounts->clear();
 	}
 
 	// Filename has been changed.
@@ -976,6 +1007,10 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 	gtk_widget_show(treeView);
 	gtk_container_add(GTK_CONTAINER(widget), treeView);
 
+	// TODO: Set fixed height mode?
+	// May require fixed columns...
+	// Reference: https://developer.gnome.org/gtk3/stable/GtkTreeView.html#gtk-tree-view-set-fixed-height-mode
+
 #if GTK_CHECK_VERSION(3,0,0)
 	// FIXME: Alternating row colors isn't working in GTK+ 3.x...
 #else
@@ -1021,6 +1056,16 @@ rom_data_view_init_listdata(G_GNUC_UNUSED RomDataView *page, const RomFields::Fi
 
 	// Resize the columns to fit the contents.
 	gtk_tree_view_columns_autosize(GTK_TREE_VIEW(treeView));
+
+	// Row height is recalculated when the window is first visible
+	// and/or the system theme is changed.
+	// TODO: Set an actual default number of rows, or let Qt handle it?
+	// (Windows uses 5.)
+	if (field->desc.list_data.rows_visible > 0) {
+		page->map_listDataRowCounts->insert(std::make_pair(GTK_TREE_VIEW(treeView), field->desc.list_data.rows_visible));
+		g_signal_connect(treeView, "realize",
+			reinterpret_cast<GCallback>(tree_view_realize_signal_handler), page);
+	}
 
 	return widget;
 }
@@ -1487,6 +1532,96 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 {
 	RP_UNUSED(user_data);
 	stop_anim_timer(page);
+}
+
+/**
+ * GtkTreeView widget has been realized.
+ * @param treeView GtkTreeView
+ * @param page RomDataView
+ */
+static void
+tree_view_realize_signal_handler(GtkTreeView	*treeView,
+				 RomDataView	*page)
+{
+	// TODO: Redo this if the system font and/or style changes.
+	printf("realize\n");
+
+	// Recalculate the row heights for this GtkTreeView.
+	auto iter = page->map_listDataRowCounts->find(treeView);
+	assert(iter != page->map_listDataRowCounts->end());
+	if (iter == page->map_listDataRowCounts->end()) {
+		// This GtkTreeView doesn't have a fixed number of rows.
+		return;
+	}
+
+	const int rows_visible = iter->second;
+	if (rows_visible <= 0) {
+		// Nothing to do...
+		return;
+	}
+
+	// Get the parent widget.
+	// This should be a GtkScrolledWindow.
+	GtkWidget *scrolledWindow = gtk_widget_get_ancestor(GTK_WIDGET(treeView), GTK_TYPE_SCROLLED_WINDOW);
+	if (!scrolledWindow || !GTK_IS_SCROLLED_WINDOW(scrolledWindow)) {
+		// No parent widget, or not a GtkScrolledWindow.
+		return;
+	}
+
+	// Get the height of the first item.
+	GtkTreePath *path = gtk_tree_path_new_from_string("0");
+	GdkRectangle rect;
+	gtk_tree_view_get_background_area(GTK_TREE_VIEW(treeView), path, nullptr, &rect);
+	gtk_tree_path_free(path);
+	if (rect.height <= 0) {
+		// GtkListStore probably doesn't have any items.
+		return;
+	}
+	int height = rect.height * rows_visible;
+
+	if (gtk_tree_view_get_headers_visible(treeView)) {
+		// Get the header widget of the first column.
+		GtkTreeViewColumn *column = gtk_tree_view_get_column(treeView, 0);
+		assert(column != nullptr);
+		if (!column) {
+			// No columns...
+			return;
+		}
+
+		GtkWidget *header = gtk_tree_view_column_get_widget(column);
+		if (!header) {
+			header = gtk_tree_view_column_get_button(column);
+		}
+		if (header) {
+			// TODO: gtk_widget_get_allocated_height() for GTK+ 3.x?
+			GtkAllocation allocation;
+			gtk_widget_get_allocation(header, &allocation);
+			height += allocation.height;
+		}
+	}
+
+#if GTK_CHECK_VERSION(3,0,0)
+	// Get the GtkScrolledWindow's border, padding, and margin.
+	GtkStyleContext *context = gtk_widget_get_style_context(scrolledWindow);
+	GtkBorder border, padding, margin;
+	gtk_style_context_get_border(context, GTK_STATE_FLAG_NORMAL, &border);
+	gtk_style_context_get_padding(context, GTK_STATE_FLAG_NORMAL, &padding);
+	gtk_style_context_get_margin(context, GTK_STATE_FLAG_NORMAL, &margin);
+	height += border.top + border.bottom;
+	height += padding.top + padding.bottom;
+	height += margin.top + margin.bottom;
+#else
+	// Get the GtkScrolledWindow's border.
+	// NOTE: Assuming we have a border set.
+	GtkStyle *style = gtk_widget_get_style(scrolledWindow);
+	height += (style->ythickness * 2);
+#endif
+	printf("w/ border: height == %d\n", height);
+
+	// Set the GtkScrolledWindow's height.
+	// NOTE: gtk_scrolled_window_set_max_content_height() doesn't seem to
+	// work properly for rows_visible=4, and it's GTK+ 3.x only.
+	gtk_widget_set_size_request(scrolledWindow, -1, height);
 }
 
 /** Icon animation timer. **/
