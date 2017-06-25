@@ -304,6 +304,29 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	fields->addField_listData(_RP("StringFileInfo"), v_field_names, data);
 }
 
+/** MZ-specific **/
+
+/**
+ * Add fields for MZ executables.
+ */
+void EXEPrivate::addFields_MZ(void)
+{
+	// Program image size
+	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512;
+	if (mz.e_cblp != 0) {
+		program_size -= 512 - le16_to_cpu(mz.e_cblp);
+	}
+	fields->addField_string(_RP("Program Size"), formatFileSize(program_size));
+
+	// Min/Max allocated memory
+	fields->addField_string(_RP("Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+	fields->addField_string(_RP("Max. Memory"), formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+
+	// Initial CS:IP/SS:SP
+	fields->addField_string(_RP("Inital CS:IP"), rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
+	fields->addField_string(_RP("Inital SS:SP"), rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
+}
+
 /** NE-specific **/
 
 /**
@@ -389,8 +412,8 @@ int EXEPrivate::loadNEResourceTable(void)
  */
 void EXEPrivate::addFields_NE(void)
 {
-	// Up to 2 tabs.
-	fields->reserveTabs(2);
+	// Up to 3 tabs.
+	fields->reserveTabs(3);
 
 	// NE Header
 	fields->setTabName(0, _RP("NE Header"));
@@ -525,6 +548,13 @@ void EXEPrivate::addFields_LE(void)
 {
 	// TODO: Handle fields that indicate byteorder.
 	// Currently assuming little-endian.
+
+	// Up to 2 tabs.
+	fields->reserveTabs(2);
+
+	// LE Header
+	fields->setTabName(0, _RP("LE Header"));
+	fields->setTabIndex(0);
 
 	// CPU.
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
@@ -698,8 +728,8 @@ int EXEPrivate::loadPEResourceTypes(void)
  */
 void EXEPrivate::addFields_PE(void)
 {
-	// Up to 3 tabs.
-	fields->reserveTabs(3);
+	// Up to 4 tabs.
+	fields->reserveTabs(4);
 
 	// PE Header
 	fields->setTabName(0, _RP("PE Header"));
@@ -1299,6 +1329,10 @@ int EXE::loadFieldData(void)
 	}
 
 	switch (d->exeType) {
+		case EXEPrivate::EXE_TYPE_MZ:
+			d->addFields_MZ();
+			break;
+
 		case EXEPrivate::EXE_TYPE_NE:
 			d->addFields_NE();
 			break;
@@ -1316,6 +1350,12 @@ int EXE::loadFieldData(void)
 		default:
 			// TODO: Other executable types.
 			break;
+	}
+
+	// Add MZ tab for non-MZ executables
+	if (d->exeType != EXEPrivate::EXE_TYPE_MZ) {
+		d->fields->addTab(_RP("MZ Header")); // NOTE: doesn't actually create a separate tab for non implemented types.
+		d->addFields_MZ();
 	}
 
 	// Finished reading the field data.

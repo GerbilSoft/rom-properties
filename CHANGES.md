@@ -36,6 +36,7 @@
     as well as Codemasters and SDSC extra headers.
   * Nintendo 3DS: Application permissions are now listed for CIAs and CCIs.
     (Requires decrypted images or the appropriate encryption keys.)
+  * EXE: MS-DOS executables now show more information.
 
 * Bug fixes:
   * (GNOME) The .thumbnailer file was not packaged in the Ubuntu pre-built
