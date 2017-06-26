@@ -398,14 +398,13 @@ rom_data_view_dispose(GObject *object)
 	RomDataView *page = ROM_DATA_VIEW(object);
 
 	/* Unregister the changed_idle */
-	if (G_UNLIKELY(page->changed_idle != 0)) {
+	if (G_UNLIKELY(page->changed_idle > 0)) {
 		g_source_remove(page->changed_idle);
 		page->changed_idle = 0;
 	}
 
-	// Delete the timer.
+	// Delete the animation timer.
 	if (page->tmrIconAnim > 0) {
-		// TODO: Make sure there's no race conditions...
 		g_source_remove(page->tmrIconAnim);
 		page->tmrIconAnim = 0;
 	}
@@ -420,6 +419,7 @@ rom_data_view_dispose(GObject *object)
 
 	// Clear the widget reference containers.
 	page->tabs->clear();
+	page->tabWidget = nullptr;
 	page->vecDescLabels->clear();
 	page->setDescLabelIsWarning->clear();
 	page->mapBitfields->clear();
@@ -585,6 +585,12 @@ rom_data_view_set_filename(RomDataView	*page,
 			}
 		}
 		page->tabs->clear();
+
+		if (page->tabWidget) {
+			// Delete the tab widget.
+			gtk_widget_destroy(page->tabWidget);
+			page->tabWidget = nullptr;
+		}
 
 		// Clear the various widget references.
 		page->vecDescLabels->clear();
@@ -1224,6 +1230,12 @@ rom_data_view_update_display(RomDataView *page)
 		}
 	}
 	page->tabs->clear();
+
+	if (page->tabWidget) {
+		// Delete the tab widget.
+		gtk_widget_destroy(page->tabWidget);
+		page->tabWidget = nullptr;
+	}
 
 	// Clear the various widget references.
 	page->vecDescLabels->clear();
