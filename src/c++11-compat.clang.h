@@ -58,7 +58,7 @@
 #endif /* __clang_major__ */
 
 /* clang-3.1: constexpr */
-#if (__clang_major__ < 3 || (__clnag_major__ == 3 && __clang_minor < 1))
+#if (__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor < 1))
 #define CXX11_COMPAT_CONSTEXPR
 #endif
 
