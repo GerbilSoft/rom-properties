@@ -52,26 +52,33 @@
 /* Older versions didn't set the correct value for __cplusplus in order to    */
 /* maintain compatibility with gcc-4.6 and earlier. */
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 1))
-#if __cplusplus < 201103L
-#error Please compile with -std=c++11 or -std=gnu++11.
-#endif /* __cplusplus */
+# if __cplusplus < 201103L
+#  error Please compile with -std=c++11 or -std=gnu++11.
+# endif /* __cplusplus */
 #endif /* __clang_major__ */
 
 /* clang-3.1: constexpr */
-#if (__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor < 1))
-#define CXX11_COMPAT_CONSTEXPR
+#if !__has_feature(cxx_constexpr)
+# define CXX11_COMPAT_CONSTEXPR
 #endif
 
 /* clang-3.0: nullptr, explicit virtual override */
-#if (__clang_major__ < 3)
-#define CXX11_COMPAT_NULLPTR
-#define CXX11_COMPAT_OVERRIDE
+#if !__has_feature(cxx_nullptr)
+# define CXX11_COMPAT_NULLPTR
+#endif
+#if !__has_feature(cxx_override_control)
+# define CXX11_COMPAT_OVERRIDE
 #endif
 
 /* clang-2.9: New character types, static assertions */
-#if (__clang_major__ < 2 || (__clang_major__ == 2 && __clang_minor__ < 9))
-#define CXX11_COMPAT_CHARTYPES
-#define CXX11_COMPAT_STATIC_ASSERT
+// NOTE: Can't find a feature macro for char16_t/char32_t,
+// so using Unicode literals instead.
+#if !__has_feature(cxx_unicode_literals)
+# define CXX11_COMPAT_CHARTYPES
+#endif
+
+#if !__has_feature(cxx_static_assert)
+# define CXX11_COMPAT_STATIC_ASSERT
 #endif
 
 #endif /* __cplusplus */
