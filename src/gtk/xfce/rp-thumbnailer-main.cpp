@@ -179,9 +179,9 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 	if (level < LEVEL_ERROR) {
 		// G_MESSAGES_DEBUG must be set to rom-properties-xfce
 		// in order to print these messages.
-		g_debug(buf);
+		g_debug("%s", buf);
 	} else {
-		g_warning(buf);
+		g_warning("%s", buf);
 	}
 	return ret;
 }
