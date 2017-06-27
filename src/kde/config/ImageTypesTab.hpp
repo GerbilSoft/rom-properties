@@ -41,7 +41,7 @@ class ImageTypesTab : public ITab
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
-		void changeEvent(QEvent *event);
+		virtual void changeEvent(QEvent *event) override final;
 
 	public slots:
 		/**
