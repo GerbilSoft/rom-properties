@@ -1,7 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
  * QTreeViewOpt.cpp: QTreeView with drawing optimizations.                 *
- * Specifically, don't update rows that are offscreen.			   *
+ * Specifically, don't update rows that are offscreen.                     *
  *                                                                         *
  * Copyright (c) 2013-2017 by David Korth.                                 *
  *                                                                         *
