@@ -1216,8 +1216,8 @@ KeyStoreUI::ImportReturn KeyStoreUI::import3DSaeskeydb(const rp_char *filename)
 	}
 
 	// Read the entire file into memory.
-	unique_ptr<uint8_t[]> buf(new uint8_t[fileSize]);
-	size_t size = file->read(buf.get(), fileSize);
+	unique_ptr<uint8_t[]> buf(new uint8_t[(size_t)fileSize]);
+	size_t size = file->read(buf.get(), (size_t)fileSize);
 	if (size != (unsigned int)fileSize) {
 		// Read error.
 		// TODO: file->lastError()?
