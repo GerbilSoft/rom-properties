@@ -50,11 +50,13 @@ using std::vector;
 #include <QCheckBox>
 #include <QHeaderView>
 #include <QSpacerItem>
-#include <QTreeWidget>
 
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
+
+// Optimized QTreeWidget.
+#include "QTreeWidgetOpt.hpp"
 
 class RomDataViewPrivate
 {
@@ -603,7 +605,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc, const RomFields::Field *f
 	}
 
 	Q_Q(RomDataView);
-	QTreeWidget *treeWidget = new QTreeWidget(q);
+	QTreeWidget *treeWidget = new QTreeWidgetOpt(q);
 	treeWidget->setRootIsDecorated(false);
 	treeWidget->setUniformRowHeights(true);
 	treeWidget->setAlternatingRowColors(true);

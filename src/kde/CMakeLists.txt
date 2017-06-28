@@ -9,6 +9,7 @@ SET(rom-properties-kde_SRCS
 	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQImageBackend.cpp
+	QTreeWidgetOpt.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -27,6 +28,7 @@ SET(rom-properties-kde_H
 	RomThumbCreator.hpp
 	RpQt.hpp
 	RpQImageBackend.hpp
+	QTreeWidgetOpt.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
