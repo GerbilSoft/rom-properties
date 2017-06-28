@@ -25,8 +25,6 @@
 
 // Qt includes and classes.
 #include <QTreeView>
-class QKeyEvent;
-class QFocusEvent;
 
 class QTreeViewOpt : public QTreeView
 {
@@ -48,17 +46,6 @@ class QTreeViewOpt : public QTreeView
 		virtual void dataChanged(const QModelIndex &topLeft,
 			const QModelIndex &bottomRight) override final;
 #endif
-
-	protected slots:
-		void showColumnContextMenu(const QPoint &point);
-
-	/** Shh... it's a secret to everybody. **/
-	protected:
-		virtual void keyPressEvent(QKeyEvent *event) override final;
-		virtual void focusOutEvent(QFocusEvent *event) override final;
-	signals:
-		void keyPress(QKeyEvent *event);
-		void focusOut(QFocusEvent *event);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_QTREEVIEWOPT_HPP__ */
