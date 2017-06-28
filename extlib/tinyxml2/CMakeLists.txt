@@ -15,6 +15,7 @@ ENDIF(BIICODE)
 project(tinyxml2)
 # rom-properties: Disabled.
 #include(GNUInstallDirs)
+#include(CTest)
 #enable_testing()
 
 #CMAKE_BUILD_TOOL
@@ -22,7 +23,7 @@ project(tinyxml2)
 ################################
 # set lib version here
 
-set(GENERIC_LIB_VERSION "5.0.0")
+set(GENERIC_LIB_VERSION "5.0.1")
 set(GENERIC_LIB_SOVERSION "5")
 
 ################################
@@ -43,7 +44,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 IF(0)
 option(BUILD_SHARED_LIBS "build as shared library" ON)
 option(BUILD_STATIC_LIBS "build as static library" OFF)
-option(BUILD_TESTS "build xmltest" ON)
+option(BUILD_TESTS "build xmltest (deprecated: Use BUILD_TESTING)" ON)
 ENDIF(0) # rom-properties
 
 # rom-properties: Disabled; handled in the main project.
@@ -187,7 +188,7 @@ endif()
 
 # rom-properties: Don't build xmltest or install anything else.
 IF(0)
-if(BUILD_TESTS)
+if(BUILD_TESTING AND BUILD_TESTS)
   add_executable(xmltest xmltest.cpp)
   if(BUILD_SHARED_LIBS)
     add_dependencies(xmltest tinyxml2)
@@ -203,6 +204,8 @@ if(BUILD_TESTS)
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:xmltest>/resources/out
     COMMENT "Configuring xmltest resources directory: ${CMAKE_BINARY_DIR}/resources"
   )
+
+  add_test(NAME xmltest COMMAND xmltest)
 endif()
 
 install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -218,13 +221,15 @@ configure_file(tinyxml2.pc.in tinyxml2.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tinyxml2.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # uninstall target
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+if(NOT TARGET uninstall)
+  configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+      IMMEDIATE @ONLY)
 
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+  add_custom_target(uninstall
+      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
 ENDIF(0) # rom-properties
 
 # rom-properties: Don't install anything.

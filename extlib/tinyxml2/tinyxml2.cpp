@@ -1969,10 +1969,10 @@ const char* XMLDocument::_errorNames[XML_ERROR_COUNT] = {
     "XML_ERROR_FILE_NOT_FOUND",
     "XML_ERROR_FILE_COULD_NOT_BE_OPENED",
     "XML_ERROR_FILE_READ_ERROR",
-    "XML_ERROR_ELEMENT_MISMATCH",
+    "UNUSED_XML_ERROR_ELEMENT_MISMATCH",
     "XML_ERROR_PARSING_ELEMENT",
     "XML_ERROR_PARSING_ATTRIBUTE",
-    "XML_ERROR_IDENTIFYING_TAG",
+    "UNUSED_XML_ERROR_IDENTIFYING_TAG",
     "XML_ERROR_PARSING_TEXT",
     "XML_ERROR_PARSING_CDATA",
     "XML_ERROR_PARSING_COMMENT",
@@ -2309,6 +2309,16 @@ void XMLDocument::SetError( XMLError error, const char* str1, const char* str2, 
     const char* errorName = _errorNames[errorID];
     TIXMLASSERT( errorName && errorName[0] );
     return errorName;
+}
+
+const char* XMLDocument::GetErrorStr1() const 
+{
+	return _errorStr1.GetStr();
+}
+
+const char* XMLDocument::GetErrorStr2() const 
+{
+	return _errorStr2.GetStr();
 }
 
 const char* XMLDocument::ErrorName() const
