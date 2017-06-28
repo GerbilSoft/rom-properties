@@ -29,9 +29,11 @@
 // Windows
 #include "libwin32common/RpWin32_sdk.h"
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cstdlib>
 #include <cstring>
 
 // C++ includes.

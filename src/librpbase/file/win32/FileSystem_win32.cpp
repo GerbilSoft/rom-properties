@@ -46,7 +46,6 @@ using std::wstring;
 
 // libromdata
 #include "TextFuncs.hpp"
-#include "threads/Atomics.h"
 #include "threads/InitOnceExecuteOnceXP.h"
 
 namespace LibRpBase { namespace FileSystem {

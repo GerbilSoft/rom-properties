@@ -40,9 +40,6 @@ using std::unordered_map;
 
 #include "RomData.hpp"
 
-// Text conversion functions and macros.
-#include "TextFuncs.hpp"
-
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"

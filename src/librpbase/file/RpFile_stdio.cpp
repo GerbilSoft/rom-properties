@@ -22,6 +22,9 @@
 #include "RpFile.hpp"
 #include "TextFuncs.hpp"
 
+// C includes. (C++ namespace)
+#include <cerrno>
+
 // C++ includes.
 #include <string>
 using std::string;

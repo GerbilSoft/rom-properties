@@ -23,9 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_WIIPARTITION_HPP__
 
 #include "librpbase/config.librpbase.h"
-
 #include "GcnPartition.hpp"
-#include "GcnFst.hpp"
 
 // librpbase
 #include "librpbase/crypto/KeyManager.hpp"

@@ -24,12 +24,10 @@
 #include "KeyManager.hpp"
 #include "config/ConfReader_p.hpp"
 
-// C includes.
-#include <stdlib.h>
-
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cctype>
+#include <cerrno>
+#include <cstring>
 
 // C++ includes.
 #include <memory>
@@ -41,9 +39,6 @@ using std::unordered_map;
 
 #include "IAesCipher.hpp"
 #include "AesCipherFactory.hpp"
-
-// Text conversion functions and macros.
-#include "TextFuncs.hpp"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

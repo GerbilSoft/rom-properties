@@ -27,12 +27,17 @@
 #endif
 
 // librpbase
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
 // TinyXML2
 #include "tinyxml2.h"
 using namespace tinyxml2;
+
+// C includes. (C++ namespace)
+#include <cerrno>
+#include <cstring>
 
 // C++ includes.
 #include <memory>

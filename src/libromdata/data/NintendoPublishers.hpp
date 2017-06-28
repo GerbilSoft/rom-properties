@@ -25,6 +25,9 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
+// C includes.
+#include <stdint.h>
+
 namespace LibRomData {
 
 class NintendoPublishers

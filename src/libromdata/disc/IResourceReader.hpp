@@ -33,6 +33,10 @@
 #include <unordered_map>
 #include <vector>
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
 namespace LibRomData {
 
 class IResourceReader : public LibRpBase::IPartition

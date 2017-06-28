@@ -21,17 +21,12 @@
 
 #include "GdkImageConv.hpp"
 
-// libcachemgr
-#include "libcachemgr/CacheManager.hpp"
-using LibCacheMgr::CacheManager;
-
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
-#include "librpbase/img/RpImageLoader.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -44,8 +39,9 @@ using LibRomData::RomDataFactory;
 using LibRomData::TCreateThumbnail;
 
 // C includes. (C++ namespace)
-#include <cassert>
 #include <cinttypes>
+#include <cstdio>
+#include <cstring>
 
 // C++ includes.
 #include <memory>

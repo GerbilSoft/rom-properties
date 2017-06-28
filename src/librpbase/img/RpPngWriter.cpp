@@ -49,6 +49,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
@@ -918,7 +919,7 @@ int RpPngWriter::write_IHDR(void)
 	return 0;
 }
 
-#if 0
+#ifdef RP_ENABLE_WRITE_TEXT
 /**
  * Write an array of text chunks.
  * This is needed for e.g. the XDG thumbnailing specification.
@@ -978,7 +979,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	delete[] text;
 	return 0;
 }
-#endif
+#endif /* RP_ENABLE_WRITE_TEXT */
 
 /**
  * Write the rp_image data to the PNG image.

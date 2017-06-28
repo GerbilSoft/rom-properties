@@ -20,12 +20,7 @@
  ***************************************************************************/
 
 #include "rom-properties-page.hpp"
-#include "GdkImageConv.hpp"
-
 #include "../RomDataView.hpp"
-
-// C includes. (C++ namespace)
-#include <cassert>
 
 // C++ includes.
 #include <string>

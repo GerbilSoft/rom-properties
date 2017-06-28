@@ -25,6 +25,10 @@
 #include "librpbase/disc/IPartition.hpp"
 #include "GcnFst.hpp"
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
 namespace LibRomData {
 
 class GcnPartitionPrivate;

@@ -21,9 +21,6 @@
 
 #include "IDiscReader.hpp"
 
-// C includes. (C++ namespace)
-#include <cstdio>
-
 namespace LibRpBase {
 
 IDiscReader::IDiscReader()

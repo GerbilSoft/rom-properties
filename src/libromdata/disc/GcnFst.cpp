@@ -26,9 +26,11 @@
 #include "librpbase/TextFuncs.hpp"
 using namespace LibRpBase;
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cstdlib>
 #include <cstring>
 
 // C++ includes.

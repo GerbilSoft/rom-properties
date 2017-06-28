@@ -24,16 +24,11 @@
 #include "common.h"
 #include "TextFuncs.hpp"
 
-// C includes.
-#include <stdlib.h>
-
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdio>
-#include <cstring>
 
 // C++ includes.
-#include <array>
 #include <limits>
 #include <memory>
 #include <string>

@@ -25,9 +25,14 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
+// Uncomment to enable write_tEXt().
+//#define RP_ENABLE_WRITE_TEXT 1
+
 // C++ includes.
+#if RP_ENABLE_WRITE_TEXT
 #include <string>
 #include <vector>
+#endif /* RP_ENABLE_WRITE_TEXT TEXT */
 
 namespace LibRpBase {
 
@@ -134,7 +139,7 @@ class RpPngWriter
 		 */
 		int write_IHDR(void);
 
-#if 0
+#ifdef RP_ENABLE_WRITE_TEXT
 		typedef std::vector<std::pair<std::string, std::string> > kv_vector;
 
 		/**
@@ -148,7 +153,7 @@ class RpPngWriter
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_tEXt(const kv_vector &kv);
-#endif
+#endif /* RP_ENABLE_WRITE_TEXT */
 
 		/**
 		 * Write the rp_image data to the PNG image.

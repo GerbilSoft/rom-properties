@@ -54,7 +54,11 @@
 #include "img/RpImageLoader.hpp"
 
 // C includes.
-#include <cstdlib>
+#include <stdint.h>
+#include <stdlib.h>
+
+// C includes. (C++ namespace)
+#include <cctype>
 #include <cstring>
 
 // C++ includes.

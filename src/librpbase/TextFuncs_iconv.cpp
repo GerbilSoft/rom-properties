@@ -44,9 +44,10 @@
 // iconv
 #include <iconv.h>
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
-#include <cassert>
-#include <cstdlib>
 #include <cstring>
 
 // C++ includes.

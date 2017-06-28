@@ -27,6 +27,10 @@
 #include <QLabel>
 #include <QSignalMapper>
 
+// C includes. (C++ namespace)
+#include <cassert>
+#include <cerrno>
+
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/TImageTypesConfig.cpp"

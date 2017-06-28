@@ -36,13 +36,11 @@ using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cctype>
-#include <cstdio>
+#include <cerrno>
 #include <cstring>
 #include <ctime>
 
 // C++ includes.
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>

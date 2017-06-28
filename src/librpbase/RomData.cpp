@@ -24,11 +24,10 @@
 
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
-#include "img/rp_image.hpp"
-#include "img/IconAnimData.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 // C++ includes.
 #include <vector>

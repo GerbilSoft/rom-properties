@@ -22,10 +22,6 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_N64_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_N64_HPP__
 
-#include <stdint.h>
-#include <string>
-#include "librpbase/TextFuncs.hpp"
-
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {

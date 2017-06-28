@@ -23,12 +23,11 @@
 
 #include "RpJpeg.hpp"
 #include "rp_image.hpp"
-#include "IconAnimData.hpp"
-#include "../file/RpFile.hpp"
+#include "../file/IRpFile.hpp"
 #include "../file/FileSystem.hpp"
 
-// APNG
-#include "APNG_dlopen.h"
+// C includes.
+#include <stdint.h>
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -270,7 +269,7 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 	src->pub.term_source = term_source;
 	src->infile = infile;
 	src->pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
-	src->pub.next_input_byte = NULL; /* until buffer loaded */
+	src->pub.next_input_byte = nullptr; /* until buffer loaded */
 }
 
 /** RpJpeg **/

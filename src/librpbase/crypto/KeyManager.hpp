@@ -24,6 +24,9 @@
 
 #include "../config/ConfReader.hpp"
 
+// C includes.
+#include <stdint.h>
+
 namespace LibRpBase {
 
 class KeyManager : public ConfReader

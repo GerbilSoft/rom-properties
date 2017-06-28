@@ -24,6 +24,10 @@
 
 #include "librpbase/disc/SparseDiscReader.hpp"
 
+namespace LibRpBase {
+	class IRpFile;
+}
+
 namespace LibRomData {
 
 class WbfsReaderPrivate;

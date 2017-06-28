@@ -27,6 +27,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 
 namespace LibRpBase {
 

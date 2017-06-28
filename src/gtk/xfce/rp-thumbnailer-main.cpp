@@ -25,12 +25,14 @@
 
 // C includes.
 #include <stdlib.h>
+#include <unistd.h>
 // C includes. (stat, passwd)
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>

@@ -21,7 +21,10 @@
 
 #include "GdkImageConv.hpp"
 
-// C include. (C++ namespace)
+// C includes.
+#include <stdint.h>
+
+// C includes. (C++ namespace)
 #include <cassert>
 #include <cstring>
 

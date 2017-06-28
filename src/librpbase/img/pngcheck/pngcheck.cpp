@@ -137,8 +137,11 @@ using LibRpBase::IRpFile;
 #include <memory>
 using std::unique_ptr;
 
+// C includes.
+#include <stdlib.h>
+
+// C includes. (C++ namespace)
 #include <cstdio>
-#include <cstdlib>
 #include <cctype>
 #include <cstring>
 

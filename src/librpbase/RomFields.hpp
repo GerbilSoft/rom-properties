@@ -23,9 +23,11 @@
 #define __ROMPROPERTIES_LIBRPBASE_ROMFIELDS_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
 
+// C includes.
 #include <stdint.h>
+
+// C++ includes.
 #include <array>
 #include <string>
 #include <vector>

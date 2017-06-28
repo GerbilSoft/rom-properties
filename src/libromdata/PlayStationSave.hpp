@@ -22,8 +22,6 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_PLAYSTATIONSAVE_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_PLAYSTATIONSAVE_HPP__
 
-#include <stdint.h>
-#include "librpbase/TextFuncs.hpp"
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {

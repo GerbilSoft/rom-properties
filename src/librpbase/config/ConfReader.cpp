@@ -35,6 +35,7 @@
 #include <stdlib.h>
 
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <ctime>
 
 namespace LibRpBase {

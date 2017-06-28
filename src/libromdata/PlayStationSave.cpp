@@ -42,11 +42,10 @@ using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
-#include <cstddef>
 
 // C++ includes.
-#include <algorithm>
 #include <vector>
 using std::vector;
 

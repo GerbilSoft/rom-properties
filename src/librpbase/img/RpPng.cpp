@@ -23,8 +23,7 @@
 
 #include "RpPng.hpp"
 #include "rp_image.hpp"
-#include "../file/RpFile.hpp"
-#include "../file/FileSystem.hpp"
+#include "../file/IRpFile.hpp"
 
 // PNG writer.
 #include "RpPngWriter.hpp"

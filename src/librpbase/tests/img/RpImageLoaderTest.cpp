@@ -25,6 +25,9 @@
 // zlib
 #include <zlib.h>
 
+// C includes. (C++ namespace)
+#include <cstdio>
+
 /**
  * Test suite main function.
  * Called by gtest_init.c.

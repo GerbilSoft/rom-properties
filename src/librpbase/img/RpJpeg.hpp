@@ -22,14 +22,12 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
 
-#include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
 namespace LibRpBase {
 
 class IRpFile;
 class rp_image;
-struct IconAnimData;
 
 class RpJpeg
 {

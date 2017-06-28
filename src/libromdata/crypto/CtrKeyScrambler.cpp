@@ -34,7 +34,6 @@ using LibRpBase::KeyManager;
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
-#include <cstring>
 
 namespace LibRomData {
 

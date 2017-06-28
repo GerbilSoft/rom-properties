@@ -28,6 +28,7 @@
 
 namespace LibRpBase {
 
+class IRpFile;
 class DiscReader : public IDiscReader
 {
 	public:

@@ -23,12 +23,10 @@
 #include "TextFuncs.hpp"
 #include "byteswap.h"
 
-// C includes.
-#include <stdint.h>
-
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <cwctype>
 

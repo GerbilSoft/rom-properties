@@ -20,9 +20,9 @@
  ***************************************************************************/
 
 #include "IconAnimHelper.hpp"
-#include "rp_image.hpp"
 #include "IconAnimData.hpp"
-#include <cstdio>
+#include "rp_image.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 

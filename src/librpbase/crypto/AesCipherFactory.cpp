@@ -22,7 +22,6 @@
 #include "librpbase/config.librpbase.h"
 
 #include "AesCipherFactory.hpp"
-#include "IAesCipher.hpp"
 
 // IAesCipher implementations.
 #if defined(_WIN32)

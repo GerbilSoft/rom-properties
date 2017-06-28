@@ -43,9 +43,11 @@ using namespace LibRomData;
 #include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cstdlib>
 
 // C++ includes.
 #include <fstream>

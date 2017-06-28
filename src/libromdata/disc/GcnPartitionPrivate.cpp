@@ -30,7 +30,11 @@
 using LibRpBase::IDiscReader;
 using LibRpBase::KeyManager;
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
+#include <cerrno>
 #include <cstring>
 
 namespace LibRomData {

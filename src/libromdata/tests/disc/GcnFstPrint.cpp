@@ -23,9 +23,11 @@
 #include "FstPrint.hpp"
 using LibRomData::GcnFst;
 
+// C includes.
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 
 // C++ includes.

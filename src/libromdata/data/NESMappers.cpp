@@ -22,6 +22,10 @@
 
 #include "NESMappers.hpp"
 
+// C includes.
+#include <stdint.h>
+#include <stdlib.h>
+
 // C includes. (C++ namespace)
 #include <cassert>
 

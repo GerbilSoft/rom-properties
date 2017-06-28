@@ -33,8 +33,6 @@
 
 namespace LibRpBase {
 
-class IRpFile;
-
 class IDiscReader
 {
 	protected:

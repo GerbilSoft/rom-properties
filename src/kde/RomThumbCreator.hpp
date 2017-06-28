@@ -24,7 +24,6 @@
 
 #include <QtCore/qglobal.h>
 #include <kio/thumbcreator.h>
-class QUrl;
 
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KDE5.)

@@ -26,6 +26,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/RomData.hpp"
+#include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/file/FileSystem.hpp"
 using namespace LibRpBase;
@@ -35,7 +36,6 @@ using namespace LibRpBase;
 
 // C++ includes.
 #include <unordered_map>
-#include <vector>
 using std::unordered_map;
 using std::vector;
 

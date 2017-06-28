@@ -34,7 +34,6 @@ using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
-#include <cstdio>
 
 // C++ includes.
 #include <array>

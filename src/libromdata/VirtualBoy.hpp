@@ -23,10 +23,6 @@
 #ifndef __ROMPROPERTIES_LIBROMDATA_VIRTUALBOY_HPP__
 #define __ROMPROPERTIES_LIBROMDATA_VIRTUALBOY_HPP__
 
-#include <stdint.h>
-#include <string>
-#include "librpbase/TextFuncs.hpp"
-
 #include "librpbase/RomData.hpp"
 
 namespace LibRomData {

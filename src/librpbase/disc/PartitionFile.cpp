@@ -22,6 +22,9 @@
 #include "PartitionFile.hpp"
 #include "IDiscReader.hpp"
 
+// C includes. (C++ namespace)
+#include <cerrno>
+
 namespace LibRpBase {
 
 /**

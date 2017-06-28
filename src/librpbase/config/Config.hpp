@@ -24,6 +24,9 @@
 
 #include "ConfReader.hpp"
 
+// C includes.
+#include <stdint.h>
+
 namespace LibRpBase {
 
 class Config : public ConfReader

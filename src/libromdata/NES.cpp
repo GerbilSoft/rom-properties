@@ -37,13 +37,12 @@ using namespace LibRpBase;
 
  // C includes. (C++ namespace)
 #include <cassert>
+#include <cerrno>
 #include <cstring>
-#include <cctype>
 #include <ctime>
 
  // C++ includes.
 #include <vector>
-#include <algorithm>
 using std::vector;
 
 namespace LibRomData {
