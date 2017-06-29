@@ -26,8 +26,12 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <sys/types.h>
+#include <unistd.h>
 
 // Supported rom-properties frontends.
 typedef enum {
@@ -83,8 +87,62 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 	// TODO: Check other values for $XDG_CURRENT_DESKTOP.
 	if (!strcasecmp(name, "KDE")) {
 		// KDE.
-		// TODO: Check parent process to determine KDE5 vs. KDE4.
-		return RP_FE_KDE5;
+		// Check parent processes to determine the version.
+		// NOTE: Assuming KDE5 if unable to determine the KDE version.
+		RP_Frontend ret = RP_FE_KDE5;
+#ifdef __linux__
+		// Linux-specific: Need to walk /proc.
+		pid_t ppid = getppid();
+		while (ppid > 1) {
+			// Open the /proc/$PID/status file.
+			char buf[128];
+			snprintf(buf, sizeof(buf), "/proc/%d/status", ppid);
+			FILE *f = fopen(buf, "r");
+			if (!f) {
+				// Unable to open the file...
+				ppid = 0;
+				break;
+			}
+
+			while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
+				if (buf[0] == 0)
+					break;
+
+				// "Name:\t" is always the first line.
+				// If it matches an expected version of KDE, we're done.
+				// Otherwise, continue until we find "PPid:\t".
+				if (!strncmp(buf, "Name:\t", 6)) {
+					// Found the "Name:" row.
+					if (!strncmp(&buf[6], "kdeinit5\n", 9)) {
+						// Found kdeinit5.
+						ret = RP_FE_KDE5;
+						ppid = 0;
+						break;
+					} else if (!strncmp(&buf[6], "kdeinit4\n", 9)) {
+						// Found kdeinit4.
+						ret = RP_FE_KDE4;
+						ppid = 0;
+						break;
+					}
+				} else if (!strncmp(buf, "PPid:\t", 6)) {
+					// Found the "PPid:" row.
+					char *endptr;
+					ppid = (pid_t)strtol(&buf[6], &endptr, 10);
+					if (*endptr != 0 && *endptr != '\n') {
+						// Invalid numeric value...
+						ppid = 0;
+					}
+					// Check the next process.
+					break;
+				}
+			}
+			fclose(f);
+		}
+
+		return ret;
+#else
+		#error Not implemented
+#endif
 	} else if (!strcasecmp(name, "GNOME") || !strcasecmp(name, "Unity")) {
 		// GNOME and/or Unity.
 		return RP_FE_GNOME;
