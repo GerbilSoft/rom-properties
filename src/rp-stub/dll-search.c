@@ -78,6 +78,77 @@ static const uint8_t plugin_prio[4][4] = {
 };
 
 /**
+ * Walk through the process tree to determine the active desktop environment.
+ * @return RP_Frontend, or RP_FE_MAX if unknown.
+ */
+static RP_Frontend walk_proc_tree(void)
+{
+	RP_Frontend ret = RP_FE_MAX;
+
+#ifdef __linux__
+	// Linux-specific: Walk through /proc.
+	pid_t ppid = getppid();
+	while (ppid > 1) {
+		// Open the /proc/$PID/status file.
+		char buf[128];
+		snprintf(buf, sizeof(buf), "/proc/%d/status", ppid);
+		FILE *f = fopen(buf, "r");
+		if (!f) {
+			// Unable to open the file...
+			ppid = 0;
+			break;
+		}
+
+		while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
+			if (buf[0] == 0)
+				break;
+
+			// "Name:\t" is always the first line.
+			// If it matches an expected version of KDE, we're done.
+			// Otherwise, continue until we find "PPid:\t".
+			if (!strncmp(buf, "Name:\t", 6)) {
+				// Found the "Name:" row.
+				if (!strncmp(&buf[6], "kdeinit5\n", 9)) {
+					// Found kdeinit5.
+					ret = RP_FE_KDE5;
+					ppid = 0;
+					break;
+				} else if (!strncmp(&buf[6], "kdeinit4\n", 9)) {
+					// Found kdeinit4.
+					ret = RP_FE_KDE4;
+					ppid = 0;
+					break;
+				} else if (!strncmp(&buf[6], "gnome-panel\n", 12) ||
+					   !strncmp(&buf[6], "gnome-session\n", 14))
+				{
+					// GNOME session.
+					ret = RP_FE_GNOME;
+					ppid = 0;
+					break;
+				}
+				// TODO: Unity (handle as GNOME) and XFCE.
+			} else if (!strncmp(buf, "PPid:\t", 6)) {
+				// Found the "PPid:" row.
+				char *endptr;
+				ppid = (pid_t)strtol(&buf[6], &endptr, 10);
+				if (*endptr != 0 && *endptr != '\n') {
+					// Invalid numeric value...
+					ppid = 0;
+				}
+				// Check the next process.
+				break;
+			}
+		}
+		fclose(f);
+	}
+#else
+	#error Not implemented.
+#endif
+
+	return ret;
+}
+
+/**
  * Check an XDG desktop name.
  * @param name XDG desktop name.
  * @return RP_Frontend, or RP_FE_MAX if unrecognized.
@@ -89,60 +160,12 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		// KDE.
 		// Check parent processes to determine the version.
 		// NOTE: Assuming KDE5 if unable to determine the KDE version.
-		RP_Frontend ret = RP_FE_KDE5;
-#ifdef __linux__
-		// Linux-specific: Need to walk /proc.
-		pid_t ppid = getppid();
-		while (ppid > 1) {
-			// Open the /proc/$PID/status file.
-			char buf[128];
-			snprintf(buf, sizeof(buf), "/proc/%d/status", ppid);
-			FILE *f = fopen(buf, "r");
-			if (!f) {
-				// Unable to open the file...
-				ppid = 0;
-				break;
-			}
-
-			while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
-				if (buf[0] == 0)
-					break;
-
-				// "Name:\t" is always the first line.
-				// If it matches an expected version of KDE, we're done.
-				// Otherwise, continue until we find "PPid:\t".
-				if (!strncmp(buf, "Name:\t", 6)) {
-					// Found the "Name:" row.
-					if (!strncmp(&buf[6], "kdeinit5\n", 9)) {
-						// Found kdeinit5.
-						ret = RP_FE_KDE5;
-						ppid = 0;
-						break;
-					} else if (!strncmp(&buf[6], "kdeinit4\n", 9)) {
-						// Found kdeinit4.
-						ret = RP_FE_KDE4;
-						ppid = 0;
-						break;
-					}
-				} else if (!strncmp(buf, "PPid:\t", 6)) {
-					// Found the "PPid:" row.
-					char *endptr;
-					ppid = (pid_t)strtol(&buf[6], &endptr, 10);
-					if (*endptr != 0 && *endptr != '\n') {
-						// Invalid numeric value...
-						ppid = 0;
-					}
-					// Check the next process.
-					break;
-				}
-			}
-			fclose(f);
+		RP_Frontend ret = walk_proc_tree();
+		if (ret >= RP_FE_MAX) {
+			// Unknown. Assume KDE5.
+			ret = RP_FE_KDE5;
 		}
-
 		return ret;
-#else
-		#error Not implemented
-#endif
 	} else if (!strcasecmp(name, "GNOME") || !strcasecmp(name, "Unity")) {
 		// GNOME and/or Unity.
 		return RP_FE_GNOME;
@@ -202,10 +225,14 @@ static RP_Frontend get_active_de(void)
 		}
 	}
 
-	// TODO: Check the parent process names.
+	// Walk the process tree to find a known parent process.
+	RP_Frontend ret = walk_proc_tree();
+	if (ret >= RP_FE_MAX) {
+		// No match. Assume RP_FE_GNOME.
+		ret = RP_FE_GNOME;
+	}
 
-	// No match. Assume RP_FE_GNOME.
-	return RP_FE_GNOME;
+	return ret;
 }
 
 /**
