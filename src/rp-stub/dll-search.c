@@ -93,6 +93,16 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		return RP_FE_XFCE;
 	}
 
+	// NOTE: "KDE4" and "KDE5" are not actually used.
+	// They're used here for debugging purposes only.
+	if (!strcasecmp(name, "KDE5")) {
+		// KDE5.
+		return RP_FE_KDE5;
+	} else if (!strcasecmp(name, "KDE4")) {
+		// KDE4.
+		return RP_FE_KDE4;
+	}
+
 	// Unknown desktop name.
 	return RP_FE_MAX;
 }
