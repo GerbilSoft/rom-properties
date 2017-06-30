@@ -211,14 +211,17 @@ static RP_Frontend get_active_de(void)
 		// Use strtok_r() to split the string.
 		char *buf = strdup(xdg_current_desktop);
 		char *saveptr = NULL;
-		char *token = strtok_r(buf, ":", &saveptr);
-		for (; token != nullptr; token = strtok_r(NULL, ":", &saveptr)) {
+		for (const char *token = strtok_r(buf, ":", &saveptr);
+		     token != nullptr; token = strtok_r(NULL, ":", &saveptr))
+		{
 			RP_Frontend ret = check_xdg_desktop_name(token);
 			if (ret < RP_FE_MAX) {
 				// Found a match!
+				free(buf);
 				return ret;
 			}
 		}
+		free(buf);
 	}
 
 	// Check $XDG_SESSION_DESKTOP.
