@@ -132,7 +132,8 @@ static RP_Frontend walk_proc_tree(void)
 					ppid = 0;
 					break;
 				}
-				// TODO: Unity (handle as GNOME) and XFCE.
+				// NOTE: Unity and XFCE don't have unique
+				// parent processes.
 			} else if (!strncmp(buf, "PPid:\t", 6)) {
 				// Found the "PPid:" row.
 				char *endptr;
