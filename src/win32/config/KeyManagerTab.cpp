@@ -342,7 +342,16 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Initialize the ListView.
 	// Set full row selection.
-	ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+	DWORD dwExStyle;
+	if (!GetSystemMetrics(SM_REMOTESESSION)) {
+		// Not RDP (or is RemoteFX): Enable double buffering.
+		dwExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
+	} else {
+		// RDP: Disable double buffering to reduce bandwidth usage.
+		dwExStyle = LVS_EX_FULLROWSELECT;
+	}
+	ListView_SetExtendedListViewStyle(hListView, dwExStyle);
+
 	// Set the virtual list item count.
 	ListView_SetItemCountEx(hListView, keyStore->totalKeyCount(),
 		LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
@@ -474,6 +483,9 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Set the KeyStore's window.
 	keyStore->setHWnd(hWndPropSheet);
+
+	// Register for WTS session notifications. (Remote Desktop)
+	WTSRegisterSessionNotification(hWndPropSheet, NOTIFY_FOR_THIS_SESSION);
 }
 
 /**
@@ -845,6 +857,36 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			// Key was modified.
 			PropSheet_Changed(GetParent(hDlg), hDlg);
 			return TRUE;
+		}
+
+		case WM_WTSSESSION_CHANGE: {
+			KeyManagerTabPrivate *const d = static_cast<KeyManagerTabPrivate*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No KeyManagerTabPrivate. Can't do anything...
+				return FALSE;
+			}
+			HWND hListView = GetDlgItem(d->hWndPropSheet, IDC_KEYMANAGER_LIST);
+			assert(hListView != nullptr);
+			if (!hListView)
+				break;
+			DWORD dwExStyle = ListView_GetExtendedListViewStyle(hListView);
+
+			// If RDP was connected, disable ListView double-buffering.
+			// If console (or RemoteFX) was connected, enable ListView double-buffering.
+			switch (wParam) {
+				case WTS_CONSOLE_CONNECT:
+					dwExStyle |= LVS_EX_DOUBLEBUFFER;
+					ListView_SetExtendedListViewStyle(hListView, dwExStyle);
+					break;
+				case WTS_REMOTE_CONNECT:
+					dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
+					ListView_SetExtendedListViewStyle(hListView, dwExStyle);
+					break;
+				default:
+					break;
+			}
+			break;
 		}
 
 		default:

@@ -75,7 +75,7 @@
 #define NOSERVICE 1
 //#define NOSOUND 1
 //#define NOTEXTMETRIC 1
-#define NOWH 1
+//#define NOWH 1
 //#define NOWINOFFSETS 1
 #define NOCOMM 1
 #define NOKANJI 1

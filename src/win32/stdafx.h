@@ -51,6 +51,9 @@
 // IEmptyVolumeCache and related.
 #include <emptyvc.h>
 
+// Windows Terminal Services. (Remote Desktop)
+#include <wtsapi32.h>
+
 /** Windows Vista functionality. **/
 // These aren't available in the Windows headers unless
 // _WIN32_WINNT >= 0x0600.

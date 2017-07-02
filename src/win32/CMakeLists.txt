@@ -121,7 +121,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16)
-TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32)
+TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32)
 
 # Delay-load some Windows system libraries.
 # TODO: MinGW delay-load?

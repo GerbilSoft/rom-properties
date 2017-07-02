@@ -138,6 +138,8 @@ class RP_ShellPropSheetExt_Private
 		unordered_set<HWND> hwndWarningControls;	// Controls using the "Warning" font.
 		// SysLink controls.
 		unordered_set<HWND> hwndSysLinkControls;
+		// ListView controls. (for toggling LVS_EX_DOUBLEBUFFER)
+		vector<HWND> hwndListViewControls;
 
 		// GDI+ token.
 		ScopedGdiplus gdipScope;
@@ -1143,11 +1145,14 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 		hWndTab, (HMENU)(INT_PTR)(IDC_RFT_LISTDATA(idx)),
 		nullptr, nullptr);
 	SetWindowFont(hDlgItem, hFontDlg, FALSE);
+	hwndListViewControls.push_back(hDlgItem);
 
 	// Set extended ListView styles.
-	// TODO: Disable LVS_EX_DOUBLEBUFFER if using RDP.
-	// TODO: Optimize by not using OR?
-	DWORD lvsExStyle = LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER;
+	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
+	if (!!GetSystemMetrics(SM_REMOTESESSION)) {
+		// Not RDP (or is RemoteFX): Enable double buffering.
+		lvsExStyle |= LVS_EX_DOUBLEBUFFER;
+	}
 	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 	if (hasCheckboxes) {
 		lvsExStyle |= LVS_EX_CHECKBOXES;
@@ -1871,6 +1876,9 @@ void RP_ShellPropSheetExt_Private::initDialog(HWND hDlg)
 		tab.curPt.y += field_cy;
 	}
 
+	// Register for WTS session notifications. (Remote Desktop)
+	WTSRegisterSessionNotification(hDlg, NOTIFY_FOR_THIS_SESSION);
+
 	// Window is fully initialized.
 	isFullyInit = true;
 }
@@ -2346,6 +2354,41 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				// Set the "Warning" color.
 				HDC hdc = reinterpret_cast<HDC>(wParam);
 				SetTextColor(hdc, RGB(255, 0, 0));
+			}
+			break;
+		}
+
+		case WM_WTSSESSION_CHANGE: {
+			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
+				GetProp(hDlg, D_PTR_PROP));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			// If RDP was connected, disable ListView double-buffering.
+			// If console (or RemoteFX) was connected, enable ListView double-buffering.
+			switch (wParam) {
+				case WTS_CONSOLE_CONNECT:
+					for (auto iter = d->hwndListViewControls.cbegin();
+					     iter != d->hwndListViewControls.cend(); ++iter)
+					{
+						DWORD dwExStyle = ListView_GetExtendedListViewStyle(*iter);
+						dwExStyle |= LVS_EX_DOUBLEBUFFER;
+						ListView_SetExtendedListViewStyle(*iter, dwExStyle);
+					}
+					break;
+				case WTS_REMOTE_CONNECT:
+					for (auto iter = d->hwndListViewControls.cbegin();
+					     iter != d->hwndListViewControls.cend(); ++iter)
+					{
+						DWORD dwExStyle = ListView_GetExtendedListViewStyle(*iter);
+						dwExStyle &= ~LVS_EX_DOUBLEBUFFER;
+						ListView_SetExtendedListViewStyle(*iter, dwExStyle);
+					}
+					break;
+				default:
+					break;
 			}
 			break;
 		}
