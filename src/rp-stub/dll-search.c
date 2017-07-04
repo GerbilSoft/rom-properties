@@ -99,6 +99,10 @@ static RP_Frontend walk_proc_tree(void)
 			break;
 		}
 
+		// Zero the ppid in case we don't find another one.
+		// This prevents infinite loops.
+		ppid = 0;
+
 		while (!feof(f) && fgets(buf, sizeof(buf), f) != NULL) {
 			if (buf[0] == 0)
 				break;
@@ -118,12 +122,13 @@ static RP_Frontend walk_proc_tree(void)
 						// Found kdeinit5.
 						ret = RP_FE_KDE5;
 						ppid = 0;
+						break;
 					} else if (!strncmp(&buf[6], "kdeinit4", 8)) {
 						// Found kdeinit4.
 						ret = RP_FE_KDE4;
 						ppid = 0;
+						break;
 					}
-					break;
 				} else if ((len == 11 && !strncmp(&buf[6], "gnome-panel", 11)) ||
 					   (len == 13 && !strncmp(&buf[6], "gnome-session", 13)))
 				{
