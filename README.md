@@ -77,7 +77,7 @@ button.
 |--------------------|:--------------:|:----------:|
 | KDE 4.x            |       Yes      |     Yes    |
 | KDE 5.x            |       Yes      |     Yes    |
-| XFCE (Thunar)      |       Yes      |     No     |
+| XFCE (Thunar)      |       Yes      |     Yes    |
 | GNOME 3 (Nautilus) |       Yes      |     Yes    |
 | Windows            |       Yes      |     Yes    |
 
