@@ -2,7 +2,7 @@ rom-properties (1.1) xenial; urgency=medium
 
   * 1.1 release.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 01:35:27 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 04:32:45 -0400
 
 rom-properties (1.0) xenial; urgency=medium
 
