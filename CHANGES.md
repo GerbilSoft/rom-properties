@@ -1,6 +1,6 @@
 # Changes
 
-## v1.1 (released 2017/??/??)
+## v1.1 (released 2017/07/04)
 
 * New features:
   * (KDE) rp-config is now available in both the KDE4 and KDE5 frontends.
