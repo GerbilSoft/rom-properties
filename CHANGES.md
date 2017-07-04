@@ -1,5 +1,7 @@
 # Changes
 
+## v1.2 (released 2017/??/??)
+
 ## v1.1 (released 2017/07/04)
 
 * New features:
