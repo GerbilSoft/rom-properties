@@ -1,4 +1,4 @@
-rom-properties (1.1-1ppa1~xenial2) xenial; urgency=medium
+rom-properties (1.1-1ppa2~xenial2) xenial; urgency=medium
 
   * Fix infinite loops in rp-stub.
 
