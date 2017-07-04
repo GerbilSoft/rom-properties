@@ -90,7 +90,7 @@ Files:
  extlib/libpng/LICENSE
  extlib/libpng/README
  extlib/libpng/TODO
-Copyright: Copyright (c) 1998-2016 Glenn Randers-Pehrson
+Copyright: Copyright (c) 1998-2017 Glenn Randers-Pehrson
 License: libpng
 
 Files:
@@ -272,7 +272,7 @@ License: Zlib
  3. This notice may not be removed or altered from any source distribution.
 
 License: libpng
- libpng versions 1.0.7, July 1, 2000 through 1.6.28, January 5, 2017 are
+ libpng versions 1.0.7, July 1, 2000 through 1.6.30, June 28, 2017 are
  Copyright (c) 2000-2002, 2004, 2006-2017 Glenn Randers-Pehrson, are
  derived from libpng-1.0.6, and are distributed according to the same
  disclaimer and license as libpng-1.0.6 with the following individuals

@@ -1008,14 +1008,17 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
                optimize_cmf(data, png_image_size(png_ptr));
 #endif
 
-#        ifdef PNG_WRITE_APNG_SUPPORTED
-            if (png_ptr->num_frames_written == 0)
-#        endif
-         png_write_complete_chunk(png_ptr, png_IDAT, data, size);
-#        ifdef PNG_WRITE_APNG_SUPPORTED
-            else
-               png_write_fdAT(png_ptr, data, size);
-#        endif /* PNG_WRITE_APNG_SUPPORTED */
+            if (size > 0)
+#ifdef PNG_WRITE_APNG_SUPPORTED
+            {
+               if (png_ptr->num_frames_written == 0)
+#endif
+               png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+#ifdef PNG_WRITE_APNG_SUPPORTED
+               else
+                  png_write_fdAT(png_ptr, data, size);
+            }
+#endif /* PNG_WRITE_APNG_SUPPORTED */
          png_ptr->mode |= PNG_HAVE_IDAT;
 
          png_ptr->zstream.next_out = data;
@@ -1061,14 +1064,17 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
             optimize_cmf(data, png_image_size(png_ptr));
 #endif
 
-#        ifdef PNG_WRITE_APNG_SUPPORTED
+         if (size > 0)
+#ifdef PNG_WRITE_APNG_SUPPORTED
+         {
             if (png_ptr->num_frames_written == 0)
-#        endif
-         png_write_complete_chunk(png_ptr, png_IDAT, data, size);
-#        ifdef PNG_WRITE_APNG_SUPPORTED
+#endif
+            png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+#ifdef PNG_WRITE_APNG_SUPPORTED
             else
                png_write_fdAT(png_ptr, data, size);
-#        endif /* PNG_WRITE_APNG_SUPPORTED */
+         }
+#endif /* PNG_WRITE_APNG_SUPPORTED */
 
          png_ptr->zstream.avail_out = 0;
          png_ptr->zstream.next_out = NULL;
