@@ -12,12 +12,17 @@
   * (XFCE) Thumbnailing is now supported using tumblerd's D-Bus specialized
     thumbnailer interface. (#39)
 
-* New system features:
+* New systems:
   * Nintendo 3DS firmware binaries are now supported. For official FIRM
     binaries, the CRC32 is compared against an internal database of known
     versions. This currently includes 1.0 through 11.4. For unofficial
     FIRM, various heuristics are used to determine if it's a well-known
     homebrew title.
+  * Sega 8-bit: Initial reader for Sega 8-bit ROM images. Currently supports
+    Sega Master System and Game Gear ROMs that have the "TMR SEGA" header,
+    as well as Codemasters and SDSC extra headers.
+
+* New system features:
   * Encrypted DSiWare CIAs are now supported, provided you have the keys
     set up in keys.conf. (Slot0x3D, KeyX, KeyY-0 through KeyY-5; or,
     Slot0x3D KeyNormal-0 through KeyNormal-5)
@@ -31,9 +36,6 @@
     "Sonic 3 & Knuckles".
   * PlayStation Saves: Save formats other than PSV (\*.mcb, \*.mcx, \*.pda,
     \*.psx, \*.mcs, \*.ps1, and raw saves) are now supported.
-  * Sega 8-bit: Initial reader for Sega 8-bit ROM images. Currently supports
-    Sega Master System and Game Gear ROMs that have the "TMR SEGA" header,
-    as well as Codemasters and SDSC extra headers.
   * Nintendo 3DS: Application permissions are now listed for CIAs and CCIs.
     (Requires decrypted images or the appropriate encryption keys.)
   * EXE: MS-DOS executables now show more information.
