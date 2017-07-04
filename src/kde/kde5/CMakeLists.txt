@@ -44,6 +44,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		ENDIF(NOT PLUGIN_INSTALL_DIR)
 		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt5" instead of "/usr".
 		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69
+		INCLUDE(ReplaceHardcodedPrefix)
 		REPLACE_HARDCODED_PREFIX(PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 		SET(QT_PLUGIN_INSTALL_DIR "${PLUGIN_INSTALL_DIR}")
 
