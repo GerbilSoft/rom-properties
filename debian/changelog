@@ -1,14 +1,20 @@
+rom-properties (1.1-1ppa1~xenial2) xenial; urgency=medium
+
+  * Fix infinite loops in rp-stub.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 17:47:43 -0400
+
 rom-properties (1.1-1ppa1) xenial; urgency=medium
 
   * Add lsb_release dependency to fix the XFCE build.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 04:45:19 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 16:45:19 -0400
 
 rom-properties (1.1) xenial; urgency=medium
 
   * 1.1 release.
 
- -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 01:35:27 -0400
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 04 Jul 2017 13:35:27 -0400
 
 rom-properties (1.0) xenial; urgency=medium
 
