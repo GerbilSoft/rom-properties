@@ -25,7 +25,7 @@
 namespace LibRpBase {
 
 /**
- * Convert a Dreamcast CI4 image to rp_image.
+ * Convert a Dreamcast linear (rectangle) CI4 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -34,7 +34,7 @@ namespace LibRpBase {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
+rp_image *ImageDecoder::fromDreamcastLinearCI4(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
@@ -99,7 +99,7 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 }
 
 /**
- * Convert a Dreamcast CI8 image to rp_image.
+ * Convert a Dreamcast linear (rectangle) CI8 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI8 image buffer.
@@ -108,7 +108,7 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
+rp_image *ImageDecoder::fromDreamcastLinearCI8(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
@@ -163,14 +163,14 @@ rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
 }
 
 /**
- * Convert a Dreamcast ARGB4444 image to rp_image.
+ * Convert a Dreamcast linear (rectangle) ARGB4444 image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf ARGB4444 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
+rp_image *ImageDecoder::fromDreamcastLinearARGB4444(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -202,14 +202,14 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 }
 
 /**
- * Convert a Dreamcast monochrome image to rp_image.
+ * Convert a Dreamcast linear (rectangle) monochrome image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf Monochrome image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/8]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
+rp_image *ImageDecoder::fromDreamcastLinearMono(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.

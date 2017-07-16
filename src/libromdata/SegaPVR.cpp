@@ -90,6 +90,12 @@ class SegaPVRPrivate : public RomDataPrivate
 		rp_image *img;
 
 		/**
+		 * Load the PVR image.
+		 * @return Image, or nullptr on error.
+		 */
+		const rp_image *loadPvrImage(void);
+
+		/**
 		 * Load the GVR image.
 		 * @return Image, or nullptr on error.
 		 */
@@ -141,6 +147,90 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
 #endif
 
 /**
+ * Load the PVR image.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *SegaPVRPrivate::loadPvrImage(void)
+{
+	if (img) {
+		// Image has already been loaded.
+		return img;
+	} else if (!this->file || this->pvrType != PVR_TYPE_PVR) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	if (this->file->size() > 128*1024*1024) {
+		// Sanity check: PVR files shouldn't be more than 128 MB.
+		return nullptr;
+	}
+	const uint32_t file_sz = (uint32_t)this->file->size();
+
+	const uint32_t start = (hasGbix ? 32 : 16);
+	uint32_t expect_size = 0;
+
+	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_RECTANGLE:
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+				case PVR_PX_RGB565:
+				case PVR_PX_ARGB4444:
+					expect_size = ((pvrHeader.width * pvrHeader.height) * 2);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+
+		default:
+			// TODO: Other formats.
+			return nullptr;
+	}
+
+	if ((expect_size + start) > file_sz) {
+		// File is too small.
+		return nullptr;
+	}
+
+	int ret = file->seek(start);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+	unique_ptr<uint8_t> buf(new uint8_t[expect_size]);
+	size_t size = file->read(buf.get(), expect_size);
+	if (size != expect_size) {
+		// Read error.
+		return nullptr;
+	}
+
+	rp_image *ret_img = nullptr;
+	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_RECTANGLE:
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastLinearARGB4444(
+						pvrHeader.width, pvrHeader.height,
+						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+
+		default:
+			// TODO: Other formats.
+			return nullptr;
+	}
+
+	return ret_img;
+}
+
+/**
  * Load the GVR image.
  * @return Image, or nullptr on error.
  */
@@ -155,7 +245,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	}
 
 	if (this->file->size() > 128*1024*1024) {
-		// Sanity check: PVR files shouldn't be more than 128 MB.
+		// Sanity check: GVR files shouldn't be more than 128 MB.
 		return nullptr;
 	}
 	const uint32_t file_sz = (uint32_t)this->file->size();
@@ -713,6 +803,9 @@ int SegaPVR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 
 	// Load the image.
 	switch (d->pvrType) {
+		case SegaPVRPrivate::PVR_TYPE_PVR:
+			*pImage = d->loadPvrImage();
+			break;
 		case SegaPVRPrivate::PVR_TYPE_GVR:
 			*pImage = d->loadGvrImage();
 			break;
