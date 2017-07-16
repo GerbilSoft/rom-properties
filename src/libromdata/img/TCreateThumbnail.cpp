@@ -308,6 +308,8 @@ skip_image_check:
 		ResizeNearestUpPolicy resize_up = RESIZE_UP_HALF;
 		bool needs_resize_up = false;
 
+		// FIXME: Only if both dimensions are less, or if the second dimension
+		// isn't much bigger? (e.g. skip 64x1024)
 		switch (resize_up) {
 			case RESIZE_UP_NONE:
 				// No resize.
@@ -341,9 +343,14 @@ skip_image_check:
 			ImgSize rescale_sz = img_sz;
 			rescale_aspect(rescale_sz, int_sz);
 
-			ImgClass scaled_img = rescaleImgClass(ret_img, rescale_sz);
-			freeImgClass(ret_img);
-			ret_img = scaled_img;
+			// FIXME: If the original image is 64x1024, the rescale
+			// may result in 0x0, which is no good. If this happens,
+			// skip the rescaling entirely.
+			if (rescale_sz.width > 0 && rescale_sz.height > 0) {
+				ImgClass scaled_img = rescaleImgClass(ret_img, rescale_sz);
+				freeImgClass(ret_img);
+				ret_img = scaled_img;
+			}
 		}
 	}
 
