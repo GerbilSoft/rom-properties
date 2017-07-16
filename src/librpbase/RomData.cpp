@@ -488,8 +488,8 @@ std::vector<RomData::ImageSizeDef> RomData::supportedImageSizes(ImageType imageT
  */
 uint32_t RomData::imgpf(ImageType imageType) const
 {
-	assert(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX);
-	if (imageType < IMG_EXT_MIN || imageType > IMG_EXT_MAX) {
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		// ImageType is out of range.
 		return 0;
 	}
