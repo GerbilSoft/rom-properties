@@ -244,8 +244,10 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 SegaPVR::SegaPVR(IRpFile *file)
 	: super(new SegaPVRPrivate(this, file))
 {
+	// This class handles texture files.
 	RP_D(SegaPVR);
 	d->className = "SegaPVR";
+	d->fileType = FTYPE_TEXTURE_FILE;
 
 	if (!d->file) {
 		// Could not dup() the file handle.
@@ -459,8 +461,7 @@ const rp_char *const *SegaPVR::supportedFileExtensions(void) const
  */
 uint32_t SegaPVR::supportedImageTypes_static(void)
 {
-	// TODO: "Internal image", not icon.
-	return IMGBF_INT_ICON;
+	return IMGBF_INT_IMAGE;
 }
 
 /**
@@ -485,9 +486,8 @@ vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) 
 		return vector<ImageSizeDef>();
 	}
 
-	// TODO: "Internal image", not icon.
 	RP_D(SegaPVR);
-	if (!d->isValid || imageType != IMG_INT_ICON) {
+	if (!d->isValid || imageType != IMG_INT_IMAGE) {
 		return vector<ImageSizeDef>();
 	}
 
@@ -513,10 +513,9 @@ uint32_t SegaPVR::imgpf(ImageType imageType) const
 		return 0;
 	}
 
-	// TODO: "Internal image" instead of icon.
 	RP_D(SegaPVR);
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by PVR.
+	if (imageType != IMG_INT_IMAGE) {
+		// Only IMG_INT_IMAGE is supported by PVR.
 		return 0;
 	}
 
@@ -697,10 +696,9 @@ int SegaPVR::loadInternalImage(ImageType imageType, const rp_image **pImage)
 		return -ERANGE;
 	}
 
-	// TODO: "Internal image" instead of icon.
 	RP_D(SegaPVR);
-	if (imageType != IMG_INT_ICON) {
-		// Only IMG_INT_ICON is supported by PVR.
+	if (imageType != IMG_INT_IMAGE) {
+		// Only IMG_INT_IMAGE is supported by PVR.
 		*pImage = nullptr;
 		return -ENOENT;
 	} else if (!d->file) {

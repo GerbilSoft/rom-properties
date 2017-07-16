@@ -122,7 +122,7 @@ class TImageTypesConfig
 		{
 			assert(sys < SYS_COUNT);
 			assert(imageType < IMG_TYPE_COUNT);
-			return (sys << 3) | imageType;
+			return (sys << 4) | imageType;
 		}
 
 		/**
@@ -132,9 +132,9 @@ class TImageTypesConfig
 		 */
 		static inline unsigned int imageTypeFromCbid(unsigned int cbid)
 		{
-			assert(cbid < (SYS_COUNT << 3));
-			assert((cbid & 7) < IMG_TYPE_COUNT);
-			return (cbid & 7);
+			assert(cbid < (SYS_COUNT << 4));
+			assert((cbid & 15) < IMG_TYPE_COUNT);
+			return (cbid & 15);
 		}
 
 		/**
@@ -144,9 +144,9 @@ class TImageTypesConfig
 		 */
 		static inline unsigned int sysFromCbid(unsigned int cbid)
 		{
-			assert(cbid < (SYS_COUNT << 3));
-			assert((cbid & 7) < IMG_TYPE_COUNT);
-			return (cbid >> 3);
+			assert(cbid < (SYS_COUNT << 4));
+			assert((cbid & 15) < IMG_TYPE_COUNT);
+			return (cbid >> 4);
 		}
 
 		/**

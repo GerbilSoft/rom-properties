@@ -442,6 +442,7 @@ const rp_char *RomData::fileType_string(void) const
 		_RP("eMMC Dump"),		// FTYPE_EMMC_DUMP
 		_RP("Title Contents"),		// FTYPE_TITLE_CONTENTS
 		_RP("Firmware Binary"),		// FTYPE_FIRMWARE_BINARY
+		_RP("Texture File"),		// FTYPE_TEXTURE_FILE
 	};
 	static_assert(ARRAY_SIZE(fileType_names) == FTYPE_LAST,
 		"fileType_names[] needs to be updated.");
@@ -632,6 +633,7 @@ const rp_char *RomData::getImageTypeName(ImageType imageType) {
 		_RP("Internal icon"),				// IMG_INT_ICON
 		_RP("Internal banner"),				// IMG_INT_BANNER
 		_RP("Internal media scan"),			// IMG_INT_MEDIA
+		_RP("Internal image"),				// IMG_INT_IMAGE
 		// External
 		_RP("External media scan"),			// IMG_EXT_MEDIA
 		_RP("External cover scan"),			// IMG_EXT_COVER

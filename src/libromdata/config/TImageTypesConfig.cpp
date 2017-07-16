@@ -49,6 +49,7 @@ const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[IMG_TYPE_COUNT]
 	_RP("Internal\nIcon"),
 	_RP("Internal\nBanner"),
 	_RP("Internal\nMedia"),
+	_RP("Internal\nImage"),
 	_RP("External\nMedia"),
 	_RP("External\nCover"),
 	_RP("External\n3D Cover"),

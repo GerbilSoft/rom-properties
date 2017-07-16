@@ -232,7 +232,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// NOTE: One more string than the total number of image types,
 	// since we have a string for "No".
 	static const char s_values[IMG_TYPE_COUNT+1][4] = {
-		"No", "1", "2", "3", "4", "5", "6", "7", "8"
+		"No", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 	};
 	static_assert(ARRAY_SIZE(s_values) == IMG_TYPE_COUNT+1, "s_values[] is the wrong size.");
 
