@@ -497,6 +497,40 @@ vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) 
 }
 
 /**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t SegaPVR::imgpf(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// TODO: "Internal image" instead of icon.
+	RP_D(SegaPVR);
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by PVR.
+		return 0;
+	}
+
+	// If both dimensions of the texture are 64 or less,
+	// specify nearest-neighbor scaling.
+	uint32_t ret = 0;
+	if (d->pvrHeader.width <= 64 && d->pvrHeader.width <= 64) {
+		// 64x64 or smaller.
+		ret = IMGPF_RESCALE_NEAREST;
+	}
+	return ret;
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
