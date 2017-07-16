@@ -201,23 +201,36 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	}
 	const uint32_t file_sz = (uint32_t)this->file->size();
 
-	uint32_t start = (hasGbix ? 32 : 16);
+	const uint32_t gbixStart = (hasGbix ? 32 : 16);
+	uint32_t mipmap_size = 0;
 	uint32_t expect_size = 0;
 
+	// Do we need to skip mipmap data?
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
-		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT: {
-			// Similar to PVR_IMG_SQUARE_TWIDDLED, but mipmaps are present
-			// before the main image data.
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
+		case PVR_IMG_VQ_MIPMAP: {
+			// Skip the mipmaps.
 			// Reference: https://github.com/nickworonekin/puyotools/blob/ccab8e7f788435d1db1fa417b80b96ed29f02b79/Libraries/VrSharp/PvrTexture/PvrTexture.cs#L216
-			static const unsigned int bytespp = 2;	// bytes per pixel
-			unsigned int mipmapOffset;
-			if (pvrHeader.pvr.img_data_type == PVR_IMG_SQUARE_TWIDDLED_MIPMAP) {
-				// A 1x1 mipmap takes up as much space as a 2x1 mipmap.
-				mipmapOffset = 1*bytespp;
-			} else {
-				// A 1x1 mipmap takes up as much space as a 2x2 mipmap.
-				mipmapOffset = 3*bytespp;
+			// TODO: For square, determine bpp from pixel format.
+			unsigned int bpp;	// bits per pixel
+			switch (pvrHeader.pvr.img_data_type) {
+				case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
+					// A 1x1 mipmap takes up as much space as a 2x1 mipmap.
+					bpp = 16;
+					mipmap_size = (1*bpp)>>3;
+					break;
+				case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
+					// A 1x1 mipmap takes up as much space as a 2x2 mipmap.
+					bpp = 16;
+					mipmap_size = (3*bpp)>>3;
+					break;
+				case PVR_IMG_VQ_MIPMAP:
+					// VQ mipmap is technically 2 bits per pixel.
+					bpp = 2;
+					break;
+				default:
+					return nullptr;
 			}
 
 			// Get the log2 of the texture width.
@@ -229,14 +242,20 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 			unsigned int len = uilog2(pvrHeader.width);
 			for (unsigned int size = 1; len > 0; len--, size <<= 1) {
-				mipmapOffset += std::max(size * size * bytespp, 1U);
+				mipmap_size += std::max((size*size*bpp)>>3, 1U);
 			}
-
-			// Skip the mipmaps.
-			start += mipmapOffset;
+			break;
 		}
 
-			// fall-through
+		default:
+			// No mipmaps.
+			break;
+	}
+
+	// Determine the image size.
+	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
 			switch (pvrHeader.pvr.px_format) {
@@ -256,7 +275,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			// VQ images have 1024 palette entries.
 			// Image data size is not necessarily defined,
 			// so set it to everything.
-			expect_size = file_sz - start;
+			expect_size = file_sz - gbixStart;
+			break;
+
+		case PVR_IMG_VQ_MIPMAP:
+			// VQ images have 1024 palette entries.
+			// Image data size is not necessarily defined,
+			// so set it to everything.
+			// NOTE: Palette is skipped here.
+			mipmap_size += (1024*2);
+			expect_size = file_sz - gbixStart - mipmap_size;
 			break;
 
 		default:
@@ -264,12 +292,12 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			return nullptr;
 	}
 
-	if ((expect_size + start) > file_sz) {
+	if ((gbixStart + mipmap_size + expect_size) > file_sz) {
 		// File is too small.
 		return nullptr;
 	}
 
-	int ret = file->seek(start);
+	int ret = file->seek(gbixStart + mipmap_size);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
@@ -361,6 +389,48 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
 						pvrHeader.width, pvrHeader.height,
 						img_buf, img_siz, pal_buf, pal_siz);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+		}
+
+		case PVR_IMG_VQ_MIPMAP: {
+			// VQ images have a 1024-entry palette.
+			// This is stored before the mipmaps, so we need to read it manually.
+			static const unsigned int pal_siz = 1024*2;
+			ret = file->seek(gbixStart);
+			if (ret != 0) {
+				// Seek error.
+				return nullptr;
+			}
+			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
+			size = file->read(pal_buf.get(), pal_siz);
+			if (size != pal_siz) {
+				// Read error.
+				return nullptr;
+			}
+
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB1555>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
+					break;
+
+				case PVR_PX_RGB565:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_RGB565>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
+					break;
+
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
 					break;
 
 				default:
