@@ -192,6 +192,19 @@ class ImageDecoder
 		template<PixelFormat px_format>
 		static rp_image *fromDreamcastSquareTwiddled16(int width, int height,
 			const uint16_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a Dreamcast vector-quantized image to rp_image.
+		 * @tparam px_format Palette pixel format.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf VQ image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		template<PixelFormat px_format>
+		static rp_image *fromDreamcastVQ16(int width, int height,
+			const uint8_t *img_buf, int img_siz);
 };
 
 }

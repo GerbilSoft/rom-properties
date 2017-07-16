@@ -252,6 +252,13 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			}
 			break;
 
+		case PVR_IMG_VQ:
+			// VQ images have 1024 palette entries.
+			// Image data size is not necessarily defined,
+			// so set it to everything.
+			expect_size = file_sz - start;
+			break;
+
 		default:
 			// TODO: Other formats.
 			return nullptr;
@@ -322,6 +329,32 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
 						pvrHeader.width, pvrHeader.height,
 						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+
+		case PVR_IMG_VQ:
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB1555>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size);
+					break;
+
+				case PVR_PX_RGB565:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_RGB565>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size);
+					break;
+
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size);
 					break;
 
 				default:
