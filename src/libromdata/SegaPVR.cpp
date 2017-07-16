@@ -212,6 +212,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			break;
 
 		case GVR_IMG_DXT1:
+			// TODO: Determine if color 3 should be black or transparent.
 			ret_img = ImageDecoder::fromDXT1_BE(
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size);
