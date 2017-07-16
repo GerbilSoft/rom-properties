@@ -43,6 +43,10 @@ using namespace LibRpBase;
 using std::unique_ptr;
 using std::vector;
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 namespace LibRomData {
 
 class SegaPVRPrivate : public RomDataPrivate
@@ -161,12 +165,20 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
  */
 inline unsigned int SegaPVRPrivate::uilog2(unsigned int n)
 {
-	// TODO: Bit scan intrinsics.
-	// FIXME: Handle n == 0?
+#if defined(__GNUC__)
+	return (n == 0 ? 0 : __builtin_clz(n));
+#elif defined(_MSC_VER)
+	if (n == 0)
+		return 0;
+	unsigned long index;
+	unsigned char x = _BitScanReverse(&index, n);
+	return (x ? index : 0);
+#else
 	unsigned int ret = 0;
 	while (n >>= 1)
 		ret++;
 	return ret;
+#endif
 }
 
 /**
