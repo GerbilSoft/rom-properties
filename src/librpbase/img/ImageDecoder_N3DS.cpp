@@ -36,14 +36,19 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
 	// Verify parameters.
-	if (!img_buf)
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * 2))
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) * 2))
-		return nullptr;
+	}
 
 	// N3DS tiled images use 8x8 tiles.
+	assert(width % 8 == 0);
+	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 

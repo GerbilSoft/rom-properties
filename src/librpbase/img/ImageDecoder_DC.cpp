@@ -39,14 +39,20 @@ rp_image *ImageDecoder::fromDreamcastCI4(int width, int height,
 	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
-	if (!img_buf || !pal_buf)
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	assert(pal_siz >= 16*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) / 2) || pal_siz < 0x20)
-		return nullptr;
+	}
 
 	// CI4 width must be a multiple of two.
+	assert(width % 2 == 0);
 	if (width % 2 != 0)
 		return nullptr;
 
@@ -107,12 +113,17 @@ rp_image *ImageDecoder::fromDreamcastCI8(int width, int height,
 	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
-	if (!img_buf || !pal_buf)
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	assert(pal_siz >= 256*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height) || pal_siz < 256*2)
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < (width * height) || pal_siz < 256*2)
-		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
@@ -163,12 +174,15 @@ rp_image *ImageDecoder::fromDreamcastARGB4444(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
 	// Verify parameters.
-	if (!img_buf)
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * 2))
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) * 2))
-		return nullptr;
+	}
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
@@ -199,14 +213,18 @@ rp_image *ImageDecoder::fromDreamcastMono(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.
-	if (!img_buf)
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 8));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 8))
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) / 8))
-		return nullptr;
+	}
 
 	// Monochrome width must be a multiple of eight.
+	assert(width % 8 == 0);
 	if (width % 8 != 0)
 		return nullptr;
 

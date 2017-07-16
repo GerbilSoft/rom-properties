@@ -39,14 +39,21 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
-	if (!img_buf || !pal_buf)
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	assert(pal_siz >= 16*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) / 2) || pal_siz < 0x20)
-		return nullptr;
+	}
 
 	// NDS CI4 uses 8x8 tiles.
+	assert(width % 8 == 0);
+	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
 		return nullptr;
 

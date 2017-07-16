@@ -36,14 +36,19 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
 	// Verify parameters.
-	if (!img_buf)
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * 2))
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < ((width * height) * 2))
-		return nullptr;
+	}
 
 	// GameCube RGB5A3 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
 	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
@@ -89,14 +94,21 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
-	if (!img_buf || !pal_buf)
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	assert(pal_siz >= 256*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height) || pal_siz < 256*2)
+	{
 		return nullptr;
-	else if (width < 0 || height < 0)
-		return nullptr;
-	else if (img_siz < (width * height) || pal_siz < 256*2)
-		return nullptr;
+	}
 
 	// GameCube CI8 uses 8x4 tiles.
+	assert(width % 8 == 0);
+	assert(height % 4 == 0);
 	if (width % 8 != 0 || height % 4 != 0)
 		return nullptr;
 

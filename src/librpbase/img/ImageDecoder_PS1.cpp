@@ -39,12 +39,17 @@ rp_image *ImageDecoder::fromPS1_CI4(int width, int height,
 	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
-	if (!img_buf || !pal_buf)
+	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 2));
+	assert(pal_siz >= 16*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	{
 		return nullptr;
-	else if (width < 0 || height < 0 || (width % 2) != 0)
-		return nullptr;
-	else if (img_siz < ((width * height) / 2) || pal_siz < 16*2)
-		return nullptr;
+	}
 
 	// PS1 CI4 is linear. No tiles.
 
