@@ -147,20 +147,25 @@ template rp_image *ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF
  * @param height Image height.
  * @param img_buf VQ image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @param pal_buf Palette buffer.
+ * @param pal_siz Size of palette data. [must be >= 1024*2]
  * @return rp_image, or nullptr on error.
  */
 template<ImageDecoder::PixelFormat px_format>
 rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
+	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
 	assert(width == height);
-	assert(img_siz > 1024*2);
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    width != height || img_siz <= 1024*2)
+	assert(img_siz > 0);
+	assert(pal_siz >= 1024*2);
+	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
+	    width != height || img_siz == 0 || pal_siz < (1024*2))
 	{
 		return nullptr;
 	}
@@ -172,11 +177,6 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
-
-	// Palette is 1024 entries at the start of the image buffer.
-	const uint16_t *const palette = reinterpret_cast<const uint16_t*>(img_buf);
-	img_buf += 1024*2;
-	img_siz -= 1024*2;
 
 	// Convert one line at a time. (16-bit -> ARGB32)
 	// Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs#L149
@@ -209,7 +209,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 						delete img;
 						return nullptr;
 					}
-					dest[destIdx] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(palette[palIdx]));
+					dest[destIdx] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
 					palIdx++;
 				} }
 			} }
@@ -241,7 +241,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 						delete img;
 						return nullptr;
 					}
-					dest[destIdx] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(palette[palIdx]));
+					dest[destIdx] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
 					palIdx++;
 				} }
 			} }
@@ -273,7 +273,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 						delete img;
 						return nullptr;
 					}
-					dest[destIdx] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(palette[palIdx]));
+					dest[destIdx] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
 					palIdx++;
 				} }
 			} }
@@ -292,12 +292,15 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 // Explicit instantiation.
 template rp_image *ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB1555>(
 	int width, int height,
-	const uint8_t *img_buf, int img_siz);
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
 template rp_image *ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_RGB565>(
 	int width, int height,
-	const uint8_t *img_buf, int img_siz);
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
 template rp_image *ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
 	int width, int height,
-	const uint8_t *img_buf, int img_siz);
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
 
 }

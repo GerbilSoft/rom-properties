@@ -200,11 +200,14 @@ class ImageDecoder
 		 * @param height Image height.
 		 * @param img_buf VQ image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @param pal_buf Palette buffer.
+		 * @param pal_siz Size of palette data. [must be >= 1024*2]
 		 * @return rp_image, or nullptr on error.
 		 */
 		template<PixelFormat px_format>
 		static rp_image *fromDreamcastVQ16(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+			const uint8_t *img_buf, int img_siz,
+			const uint16_t *pal_buf, int pal_siz);
 };
 
 }

@@ -337,24 +337,30 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			}
 			break;
 
-		case PVR_IMG_VQ:
+		case PVR_IMG_VQ: {
+			// VQ images have a 1024-entry palette.
+			static const unsigned int pal_siz = 1024*2;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
+			const uint8_t *const img_buf = buf.get() + pal_siz;
+			const unsigned int img_siz = expect_size - pal_siz;
+
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
 					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB1555>(
 						pvrHeader.width, pvrHeader.height,
-						buf.get(), expect_size);
+						img_buf, img_siz, pal_buf, pal_siz);
 					break;
 
 				case PVR_PX_RGB565:
 					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_RGB565>(
 						pvrHeader.width, pvrHeader.height,
-						buf.get(), expect_size);
+						img_buf, img_siz, pal_buf, pal_siz);
 					break;
 
 				case PVR_PX_ARGB4444:
 					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
 						pvrHeader.width, pvrHeader.height,
-						buf.get(), expect_size);
+						img_buf, img_siz, pal_buf, pal_siz);
 					break;
 
 				default:
@@ -362,6 +368,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					return nullptr;
 			}
 			break;
+		}
 
 		default:
 			// TODO: Other formats.
