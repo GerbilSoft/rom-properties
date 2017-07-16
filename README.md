@@ -112,6 +112,7 @@ Notes:
 | Nintendo Wii U                |       Yes      |        No       |  Disc, Covers  |
 | Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
 | Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       N/A      |
+| Sega PVR Textures             |       Yes      |      Image      |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -160,6 +161,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
   * Encryption keys are needed for encrypted cartridge images, importable
     archives, and title contents.
 * Sega 8-bit: Sega Master System and Game Gear ROM images (\*.sms, \*.gg)
+* Sega PVR Textures: Dreamcast PVR (\*.pvr), GameCube GVR (\*.gvr)
 
 ## External Media Downloads
 
@@ -250,3 +252,5 @@ decrypt data will show an error message instead of the data in question.
   engineering. Used for Nintendo 3DS file format information.
 * [SMS Power](http://www.smspower.org): Sega 8-bit technical information.
   Used for ROM format information for Sega Master System and Game Gear.
+* [Puyo Tools](https://github.com/nickworonekin/puyotools): Information on
+  Sega's PVR, GVR, and related texture formats.
