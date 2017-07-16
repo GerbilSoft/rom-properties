@@ -74,7 +74,7 @@ SET(librpbase_SRCS
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
 	img/RpImageLoader.cpp
-	img/ImageDecoder_DC.cpp
+	img/ImageDecoder_Linear.cpp
 	img/ImageDecoder_GCN.cpp
 	img/ImageDecoder_NDS.cpp
 	img/ImageDecoder_N3DS.cpp

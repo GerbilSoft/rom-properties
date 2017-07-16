@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
- * ImageDecoder_DC.cpp: Image decoding functions. (Dreamcast)              *
+ * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -25,7 +25,8 @@
 namespace LibRpBase {
 
 /**
- * Convert a Dreamcast linear (rectangle) CI4 image to rp_image.
+ * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
+ * @param px_format Palette pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -34,7 +35,8 @@ namespace LibRpBase {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastLinearCI4(int width, int height,
+template<ImageDecoder::PixelFormat px_format>
+rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
@@ -70,13 +72,33 @@ rp_image *ImageDecoder::fromDreamcastLinearCI4(int width, int height,
 	}
 
 	int tr_idx = -1;
-	for (int i = 0; i < 16; i++) {
-		// Dreamcast color format is ARGB4444.
-		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
-		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
-			// Found the transparent color.
-			tr_idx = i;
-		}
+	switch (px_format) {
+		case PXF_ARGB1555:
+			for (unsigned int i = 0; i < 16; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = i;
+				}
+			}
+			break;
+		case PXF_RGB565:
+			for (unsigned int i = 0; i < 16; i++) {
+				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
+			}
+			break;
+		case PXF_ARGB4444:
+			for (unsigned int i = 0; i < 16; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = i;
+				}
+			}
+			break;
+		default:
+			assert(!"Invalid pixel format for this function.");
+			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
 
@@ -98,8 +120,15 @@ rp_image *ImageDecoder::fromDreamcastLinearCI4(int width, int height,
 	return img;
 }
 
+// Explicit instantiation.
+template rp_image *ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444>(
+	int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
+
 /**
- * Convert a Dreamcast linear (rectangle) CI8 image to rp_image.
+ * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
+ * @param px_format Palette pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI8 image buffer.
@@ -108,7 +137,8 @@ rp_image *ImageDecoder::fromDreamcastLinearCI4(int width, int height,
  * @param pal_siz Size of palette data. [must be >= 256*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastLinearCI8(int width, int height,
+template<ImageDecoder::PixelFormat px_format>
+rp_image *ImageDecoder::fromLinearCI8(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
@@ -139,13 +169,33 @@ rp_image *ImageDecoder::fromDreamcastLinearCI8(int width, int height,
 	}
 
 	int tr_idx = -1;
-	for (int i = 0; i < 256; i++) {
-		// Dreamcast color format is ARGB4444.
-		palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
-		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
-			// Found the transparent color.
-			tr_idx = i;
-		}
+	switch (px_format) {
+		case PXF_ARGB1555:
+			for (unsigned int i = 0; i < 256; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = i;
+				}
+			}
+			break;
+		case PXF_RGB565:
+			for (unsigned int i = 0; i < 256; i++) {
+				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
+			}
+			break;
+		case PXF_ARGB4444:
+			for (unsigned int i = 0; i < 256; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = i;
+				}
+			}
+			break;
+		default:
+			assert(!"Invalid pixel format for this function.");
+			return nullptr;
 	}
 	img->set_tr_idx(tr_idx);
 
@@ -162,15 +212,23 @@ rp_image *ImageDecoder::fromDreamcastLinearCI8(int width, int height,
 	return img;
 }
 
+// Explicit instantiation.
+template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
+	int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
+
 /**
- * Convert a Dreamcast linear (rectangle) ARGB4444 image to rp_image.
+ * Convert a linear 16-bit image to rp_image.
+ * @param px_format Palette pixel format.
  * @param width Image width.
  * @param height Image height.
- * @param img_buf ARGB4444 image buffer.
+ * @param img_buf 16-bit image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastLinearARGB4444(int width, int height,
+template<ImageDecoder::PixelFormat px_format>
+rp_image *ImageDecoder::fromLinear16(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -187,29 +245,67 @@ rp_image *ImageDecoder::fromDreamcastLinearARGB4444(int width, int height,
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 
-	// Convert one line at a time. (ARGB4444 -> ARGB32)
-	for (int y = 0; y < height; y++) {
-		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
-			img_buf++;
-			px_dest++;
-		}
+	// Convert one line at a time. (16-bit -> ARGB32)
+	switch (px_format) {
+		case PXF_ARGB1555:
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (int x = width; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
+					img_buf++;
+					px_dest++;
+				}
+			}
+			break;
+		case PXF_RGB565:
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (int x = width; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
+					img_buf++;
+					px_dest++;
+				}
+			}
+			break;
+		case PXF_ARGB4444:
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (int x = width; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
+					img_buf++;
+					px_dest++;
+				}
+			}
+			break;
+		default:
+			assert(!"Invalid pixel format for this function.");
+			return nullptr;
 	}
 
 	// Image has been converted.
 	return img;
 }
 
+// Explicit instantiation.
+template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
+template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
+template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
+
 /**
- * Convert a Dreamcast linear (rectangle) monochrome image to rp_image.
+ * Convert a linear monochrome image to rp_image.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf Monochrome image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/8]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDreamcastLinearMono(int width, int height,
+rp_image *ImageDecoder::fromLinearMono(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -251,84 +347,6 @@ rp_image *ImageDecoder::fromDreamcastLinearMono(int width, int height,
 				*px_dest = (pxMono >> 7);
 				pxMono <<= 1;
 			}
-		}
-	}
-
-	// Image has been converted.
-	return img;
-}
-
-/**
- * Convert a Dreamcast linear (rectangle) ARGB1555 image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf ARGB1555 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)*2]
- * @return rp_image, or nullptr on error.
- */
-rp_image *ImageDecoder::fromDreamcastLinearARGB1555(int width, int height,
-	const uint16_t *img_buf, int img_siz)
-{
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
-	{
-		return nullptr;
-	}
-
-	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
-
-	// Convert one line at a time. (ARGB1555 -> ARGB32)
-	for (int y = 0; y < height; y++) {
-		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
-			img_buf++;
-			px_dest++;
-		}
-	}
-
-	// Image has been converted.
-	return img;
-}
-
-/**
- * Convert a Dreamcast linear (rectangle) RGB565 image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf RGB565 image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)*2]
- * @return rp_image, or nullptr on error.
- */
-rp_image *ImageDecoder::fromDreamcastLinearRGB565(int width, int height,
-	const uint16_t *img_buf, int img_siz)
-{
-	// Verify parameters.
-	assert(img_buf != nullptr);
-	assert(width > 0);
-	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
-	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
-	{
-		return nullptr;
-	}
-
-	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
-
-	// Convert one line at a time. (RGB565 -> ARGB32)
-	for (int y = 0; y < height; y++) {
-		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x--) {
-			*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
-			img_buf++;
-			px_dest++;
 		}
 	}
 

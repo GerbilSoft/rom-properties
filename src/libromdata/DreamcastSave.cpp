@@ -545,7 +545,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		}
 
 		iconAnimData->delays[i] = delay;
-		iconAnimData->frames[i] = ImageDecoder::fromDreamcastLinearCI4(
+		iconAnimData->frames[i] = ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444>(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			icon_buf.u8, sizeof(icon_buf.u8),
 			palette.u16, sizeof(palette.u16));
@@ -649,7 +649,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		}
 
 		// Convert the icon to rp_image.
-		rp_image *img = ImageDecoder::fromDreamcastLinearCI4(
+		rp_image *img = ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444>(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
 			icon_buf.u8, sizeof(icon_buf.u8),
 			palette.u16, sizeof(palette.u16));
@@ -685,7 +685,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	}
 
 	// Convert the icon to rp_image.
-	rp_image *img = ImageDecoder::fromDreamcastLinearMono(
+	rp_image *img = ImageDecoder::fromLinearMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
 		icon_buf.u8, sizeof(icon_buf.u8));
 	if (img) {
@@ -773,7 +773,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		case DC_VMS_EYECATCH_ARGB4444: {
 			// ARGB4444 eyecatch.
 			// FIXME: Completely untested.
-			img_banner = ImageDecoder::fromDreamcastLinearARGB4444(
+			img_banner = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
 			break;
@@ -783,7 +783,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 			// CI8 eyecatch.
 			// TODO: Needs more testing.
 			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI8_PALETTE_SIZE;
-			img_banner = ImageDecoder::fromDreamcastLinearCI8(
+			img_banner = ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI8_DATA_SIZE,
 				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI8_PALETTE_SIZE);
@@ -793,7 +793,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		case DC_VMS_EYECATCH_CI4: {
 			// CI4 eyecatch.
 			const uint8_t *image_buf = data.get() + DC_VMS_EYECATCH_CI4_PALETTE_SIZE;
-			img_banner = ImageDecoder::fromDreamcastLinearCI4(
+			img_banner = ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444>(
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				image_buf, DC_VMS_EYECATCH_CI4_DATA_SIZE,
 				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_CI4_PALETTE_SIZE);

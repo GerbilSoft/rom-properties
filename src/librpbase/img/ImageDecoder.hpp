@@ -40,10 +40,18 @@ class ImageDecoder
 		RP_DISABLE_COPY(ImageDecoder)
 
 	public:
-		/** Dreamcast **/
+		/** Linear images **/
+
+		// Pixel formats.
+		enum PixelFormat {
+			// 16-bit
+			PXF_ARGB1555,
+			PXF_RGB565,
+			PXF_ARGB4444,
+		};
 
 		/**
-		 * Convert a Dreamcast linear (rectangle) CI4 image to rp_image.
+		 * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI4 image buffer.
@@ -52,12 +60,14 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 16*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromDreamcastLinearCI4(int width, int height,
+		template<PixelFormat px_format>
+		static rp_image *fromLinearCI4(int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
 
 		/**
-		 * Convert a Dreamcast linear (rectangle) CI8 image to rp_image.
+		 * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
+		 * @param px_format Palette pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI8 image buffer.
@@ -66,53 +76,34 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 256*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromDreamcastLinearCI8(int width, int height,
+		template<PixelFormat px_format>
+		static rp_image *fromLinearCI8(int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
 
 		/**
-		 * Convert a Dreamcast linear (rectangle) ARGB4444 image to rp_image.
+		 * Convert a linear 16-bit image to rp_image.
+		 * @param px_format Palette pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
-		 * @param img_buf ARGB4444 image buffer.
+		 * @param img_buf 16-bit image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromDreamcastLinearARGB4444(int width, int height,
+		template<PixelFormat px_format>
+		static rp_image *fromLinear16(int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
 		/**
-		 * Convert a Dreamcast linear (rectangle) monochrome image to rp_image.
+		 * Convert a linear monochrome image to rp_image.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf Monochrome image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)/8]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromDreamcastLinearMono(int width, int height,
+		static rp_image *fromLinearMono(int width, int height,
 			const uint8_t *img_buf, int img_siz);
-
-		/**
-		 * Convert a Dreamcast linear (rectangle) ARGB1555 image to rp_image.
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param img_buf ARGB1555 image buffer.
-		 * @param img_siz Size of image data. [must be >= (w*h)*2]
-		 * @return rp_image, or nullptr on error.
-		 */
-		static rp_image *fromDreamcastLinearARGB1555(int width, int height,
-			const uint16_t *img_buf, int img_siz);
-
-		/**
-		 * Convert a Dreamcast linear (rectangle) RGB565 image to rp_image.
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param img_buf RGB565 image buffer.
-		 * @param img_siz Size of image data. [must be >= (w*h)*2]
-		 * @return rp_image, or nullptr on error.
-		 */
-		static rp_image *fromDreamcastLinearRGB565(int width, int height,
-			const uint16_t *img_buf, int img_siz);
 
 		/** GameCube **/
 
