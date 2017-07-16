@@ -104,7 +104,7 @@ CacheTabPrivate::CacheTabPrivate()
 	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
 	if (hKey.isOpen()) {
 		// Windows Vista Thumbnail Cache cleaner is available.
-		isVista = true;
+		//isVista = true;
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
@@ -389,6 +389,16 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				case IDC_CACHE_XP_CLEAR_SYS_THUMBS:
 					// Clear the system thumbnail cache. (XP)
 					// TODO
+					break;
+				case IDC_CACHE_XP_FIND_DRIVES:
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_SHOW);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
+					break;
+				case IDC_CACHE_XP_FIND_PATH:
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_HIDE);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_SHOW);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_SHOW);
 					break;
 				default:
 					break;
