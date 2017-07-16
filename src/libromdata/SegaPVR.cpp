@@ -166,7 +166,7 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
 inline unsigned int SegaPVRPrivate::uilog2(unsigned int n)
 {
 #if defined(__GNUC__)
-	return (n == 0 ? 0 : __builtin_clz(n));
+	return (n == 0 ? 0 : __builtin_ctz(n));
 #elif defined(_MSC_VER)
 	if (n == 0)
 		return 0;
