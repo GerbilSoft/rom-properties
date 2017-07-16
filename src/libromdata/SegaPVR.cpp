@@ -29,10 +29,18 @@
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/ImageDecoder.hpp"
 using namespace LibRpBase;
 
 // C includes. (C++ namespace)
 #include <cassert>
+
+// C++ includes.
+#include <memory>
+#include <vector>
+using std::unique_ptr;
+using std::vector;
 
 namespace LibRomData {
 
@@ -40,6 +48,7 @@ class SegaPVRPrivate : public RomDataPrivate
 {
 	public:
 		SegaPVRPrivate(SegaPVR *q, IRpFile *file);
+		~SegaPVRPrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -76,6 +85,15 @@ class SegaPVRPrivate : public RomDataPrivate
 		// Global Index.
 		bool hasGbix;
 		uint32_t gbix;
+
+		// Decoded image.
+		rp_image *img;
+
+		/**
+		 * Load the GVR image.
+		 * @return Image, or nullptr on error.
+		 */
+		const rp_image *loadGvrImage(void);
 };
 
 /** SegaPVRPrivate **/
@@ -85,9 +103,15 @@ SegaPVRPrivate::SegaPVRPrivate(SegaPVR *q, IRpFile *file)
 	, pvrType(PVR_TYPE_UNKNOWN)
 	, hasGbix(false)
 	, gbix(0)
+	, img(nullptr)
 {
 	// Clear the PVR header structs.
 	memset(&pvrHeader, 0, sizeof(pvrHeader));
+}
+
+SegaPVRPrivate::~SegaPVRPrivate()
+{
+	delete img;
 }
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
@@ -115,6 +139,84 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
 	gvr->height = be16_to_cpu(gvr->height);
 }
 #endif
+
+/**
+ * Load the GVR image.
+ * @return Image, or nullptr on error.
+ */
+const rp_image *SegaPVRPrivate::loadGvrImage(void)
+{
+	if (img) {
+		// Image has already been loaded.
+		return img;
+	} else if (!this->file || this->pvrType != PVR_TYPE_GVR) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	if (this->file->size() > 128*1024*1024) {
+		// Sanity check: PVR files shouldn't be more than 128 MB.
+		return nullptr;
+	}
+	const uint32_t file_sz = (uint32_t)this->file->size();
+
+	const uint32_t start = (hasGbix ? 32 : 16);
+	uint32_t expect_size = 0;
+
+	switch (pvrHeader.gvr.img_data_type) {
+		case GVR_IMG_I4:
+			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			break;
+		case GVR_IMG_I8:
+		case GVR_IMG_IA4:
+			expect_size = (pvrHeader.width * pvrHeader.height);
+			break;
+		case GVR_IMG_IA8:
+		case GVR_IMG_RGB565:
+		case GVR_IMG_RGB5A3:
+			expect_size = ((pvrHeader.width * pvrHeader.height) * 2);
+			break;
+		case GVR_IMG_ARGB8888:
+			expect_size = ((pvrHeader.width * pvrHeader.height) * 4);
+			break;
+
+		default:
+			// TODO: CI4, CI8, DXT1
+			return nullptr;
+	}
+
+	if ((expect_size + start) > file_sz) {
+		// File is too small.
+		return nullptr;
+	}
+
+	int ret = file->seek(start);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+	unique_ptr<uint8_t> buf(new uint8_t[expect_size]);
+	size_t size = file->read(buf.get(), expect_size);
+	if (size != expect_size) {
+		// Read error.
+		return nullptr;
+	}
+
+	rp_image *ret_img = nullptr;
+	switch (pvrHeader.gvr.img_data_type) {
+		case GVR_IMG_RGB5A3:
+			ret_img = ImageDecoder::fromGcnRGB5A3(
+				pvrHeader.width, pvrHeader.height,
+				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+			break;
+
+		default:
+			// TODO: Other types.
+			return nullptr;
+	}
+
+	return ret_img;
+}
 
 /** SegaPVR **/
 
@@ -344,6 +446,49 @@ const rp_char *const *SegaPVR::supportedFileExtensions(void) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t SegaPVR::supportedImageTypes_static(void)
+{
+	// TODO: "Internal image", not icon.
+	return IMGBF_INT_ICON;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t SegaPVR::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> SegaPVR::supportedImageSizes(ImageType imageType) const
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return vector<ImageSizeDef>();
+	}
+
+	// TODO: "Internal image", not icon.
+	RP_D(SegaPVR);
+	if (!d->isValid || imageType != IMG_INT_ICON) {
+		return vector<ImageSizeDef>();
+	}
+
+	// Return the image's size.
+	const ImageSizeDef imgsz[] = {{nullptr, d->pvrHeader.width, d->pvrHeader.height, 0}};
+	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -488,6 +633,55 @@ int SegaPVR::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int SegaPVR::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		*pImage = nullptr;
+		return -ERANGE;
+	}
+
+	// TODO: "Internal image" instead of icon.
+	RP_D(SegaPVR);
+	if (imageType != IMG_INT_ICON) {
+		// Only IMG_INT_ICON is supported by PVR.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (!d->file) {
+		// File isn't open.
+		*pImage = nullptr;
+		return -EBADF;
+	} else if (!d->isValid || d->pvrType < 0) {
+		// PVR image isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	// Load the image.
+	switch (d->pvrType) {
+		case SegaPVRPrivate::PVR_TYPE_GVR:
+			*pImage = d->loadGvrImage();
+			break;
+		default:
+			// Not supported yet.
+			*pImage = nullptr;
+			break;
+	}
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }
