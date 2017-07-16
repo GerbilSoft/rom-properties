@@ -37,6 +37,7 @@ using namespace LibRpBase;
 #include <cassert>
 
 // C++ includes.
+#include <algorithm>
 #include <memory>
 #include <vector>
 using std::unique_ptr;
@@ -88,6 +89,13 @@ class SegaPVRPrivate : public RomDataPrivate
 
 		// Decoded image.
 		rp_image *img;
+
+		/**
+		 * Unsigned integer log2(n).
+		 * @param n Value
+		 * @return uilog2(n)
+		 */
+		static inline unsigned int uilog2(unsigned int n);
 
 		/**
 		 * Load the PVR image.
@@ -147,6 +155,21 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
 #endif
 
 /**
+ * Unsigned integer log2(n).
+ * @param n Value
+ * @return uilog2(n)
+ */
+inline unsigned int SegaPVRPrivate::uilog2(unsigned int n)
+{
+	// TODO: Bit scan intrinsics.
+	// FIXME: Handle n == 0?
+	unsigned int ret = 0;
+	while (n >>= 1)
+		ret++;
+	return ret;
+}
+
+/**
  * Load the PVR image.
  * @return Image, or nullptr on error.
  */
@@ -166,10 +189,42 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	}
 	const uint32_t file_sz = (uint32_t)this->file->size();
 
-	const uint32_t start = (hasGbix ? 32 : 16);
+	uint32_t start = (hasGbix ? 32 : 16);
 	uint32_t expect_size = 0;
 
 	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT: {
+			// Similar to PVR_IMG_SQUARE_TWIDDLED, but mipmaps are present
+			// before the main image data.
+			// Reference: https://github.com/nickworonekin/puyotools/blob/ccab8e7f788435d1db1fa417b80b96ed29f02b79/Libraries/VrSharp/PvrTexture/PvrTexture.cs#L216
+			static const unsigned int bytespp = 2;	// bytes per pixel
+			unsigned int mipmapOffset;
+			if (pvrHeader.pvr.img_data_type == PVR_IMG_SQUARE_TWIDDLED_MIPMAP) {
+				// A 1x1 mipmap takes up as much space as a 2x1 mipmap.
+				mipmapOffset = 1*bytespp;
+			} else {
+				// A 1x1 mipmap takes up as much space as a 2x2 mipmap.
+				mipmapOffset = 3*bytespp;
+			}
+
+			// Get the log2 of the texture width.
+			// FIXME: Make sure it's a power of two.
+			assert(pvrHeader.width > 0);
+			assert(pvrHeader.width == pvrHeader.height);
+			if (pvrHeader.width == 0 || pvrHeader.width != pvrHeader.height)
+				return nullptr;
+
+			unsigned int len = uilog2(pvrHeader.width);
+			for (unsigned int size = 1; len > 0; len--, size <<= 1) {
+				mipmapOffset += std::max(size * size * bytespp, 1U);
+			}
+
+			// Skip the mipmaps.
+			start += mipmapOffset;
+		}
+
+			// fall-through
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
 			switch (pvrHeader.pvr.px_format) {
@@ -210,6 +265,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	rp_image *ret_img = nullptr;
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED:
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
+		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
 					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB1555>(
