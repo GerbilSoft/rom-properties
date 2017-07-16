@@ -64,6 +64,7 @@ using std::vector;
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DSFirm.hpp"
 #include "Sega8Bit.hpp"
+#include "SegaPVR.hpp"
 
 // Special case for Dreamcast save files.
 #include "dc_structs.h"
@@ -147,6 +148,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(WiiU, true),
 	GetRomDataFns(Nintendo3DS, true),
 	GetRomDataFns(Nintendo3DSFirm, false),
+	GetRomDataFns(SegaPVR, true),
 
 	// NOTE: EXE has a 16-bit magic number,
 	// so it should go at the end of the
