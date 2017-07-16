@@ -177,6 +177,21 @@ class ImageDecoder
 		 */
 		static rp_image *fromDXT1_BE(int width, int height,
 			const uint8_t *img_buf, int img_siz);
+
+		/* Dreamcast */
+
+		/**
+		 * Convert a Dreamcast square twiddled 16-bit image to rp_image.
+		 * @tparam px_format Palette pixel format.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf 16-bit image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		template<PixelFormat px_format>
+		static rp_image *fromDreamcastSquareTwiddled16(int width, int height,
+			const uint16_t *img_buf, int img_siz);
 };
 
 }

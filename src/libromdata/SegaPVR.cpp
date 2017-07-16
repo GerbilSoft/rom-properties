@@ -170,6 +170,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	uint32_t expect_size = 0;
 
 	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_RECTANGLE:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
@@ -208,6 +209,32 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 	rp_image *ret_img = nullptr;
 	switch (pvrHeader.pvr.img_data_type) {
+		case PVR_IMG_SQUARE_TWIDDLED:
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB1555>(
+						pvrHeader.width, pvrHeader.height,
+						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					break;
+
+				case PVR_PX_RGB565:
+					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_RGB565>(
+						pvrHeader.width, pvrHeader.height,
+						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					break;
+
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB4444>(
+						pvrHeader.width, pvrHeader.height,
+						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+
 		case PVR_IMG_RECTANGLE:
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:

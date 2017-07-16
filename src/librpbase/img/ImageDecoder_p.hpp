@@ -100,6 +100,14 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Create a Dreamcast twiddle map.
+		 * NOTE: Implementation is in ImageDecoder_DC.cpp.
+		 * @param size Twiddle map size. (usually texture width)
+		 * @return Twiddle map: unsigned int[size] (caller must delete[] this)
+		 */
+		static unsigned int *createDreamcastTwiddleMap(int size);
 };
 
 /**
