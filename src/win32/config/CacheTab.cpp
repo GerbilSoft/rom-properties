@@ -104,7 +104,7 @@ CacheTabPrivate::CacheTabPrivate()
 	RegKey hKey(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache", KEY_READ, false);
 	if (hKey.isOpen()) {
 		// Windows Vista Thumbnail Cache cleaner is available.
-		//isVista = true;
+		isVista = true;
 	} else {
 		// Not available. Use manual cache cleaning.
 		isVista = false;
