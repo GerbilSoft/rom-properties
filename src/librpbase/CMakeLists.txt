@@ -74,7 +74,11 @@ SET(librpbase_SRCS
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
 	img/RpImageLoader.cpp
-	img/ImageDecoder.cpp
+	img/ImageDecoder_DC.cpp
+	img/ImageDecoder_GCN.cpp
+	img/ImageDecoder_NDS.cpp
+	img/ImageDecoder_N3DS.cpp
+	img/ImageDecoder_PS1.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
@@ -109,6 +113,7 @@ SET(librpbase_H
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
+	img/ImageDecoder_p.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/IconAnimData.hpp
