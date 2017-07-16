@@ -26,7 +26,8 @@ namespace LibRpBase {
 
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
+ * @tparam px_format Palette pixel format.
+ * @tparam msn_left If true, most-significant nybble is the left pixel.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI4 image buffer.
@@ -35,7 +36,7 @@ namespace LibRpBase {
  * @param pal_siz Size of palette data. [must be >= 16*2]
  * @return rp_image, or nullptr on error.
  */
-template<ImageDecoder::PixelFormat px_format>
+template<ImageDecoder::PixelFormat px_format, bool msn_left>
 rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
@@ -82,11 +83,13 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 				}
 			}
 			break;
+
 		case PXF_RGB565:
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
 			break;
+
 		case PXF_ARGB4444:
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
@@ -96,6 +99,34 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 				}
 			}
 			break;
+
+		case PXF_BGR555:
+			for (unsigned int i = 0; i < 16; i++) {
+				palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = i;
+				}
+			}
+			break;
+
+		case PXF_BGR555_PS1:
+			for (unsigned int i = 0; i < 16; i++) {
+				// For PS1 BGR555, if the color value is $0000, it's transparent.
+				const uint16_t px16 = le16_to_cpu(pal_buf[i]);
+				if (px16 == 0) {
+					// Transparent color.
+					palette[i] = 0;
+					if (tr_idx < 0) {
+						tr_idx = i;
+					}
+				} else {
+					// Non-transparent color.
+					palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(px16);
+				}
+			}
+			break;
+
 		default:
 			assert(!"Invalid pixel format for this function.");
 			return nullptr;
@@ -106,13 +137,27 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 	// so we don't need to clear the remaining colors.
 
 	// Convert one line at a time. (CI4 -> CI8)
-	for (int y = 0; y < height; y++) {
-		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x -= 2) {
-			px_dest[0] = (*img_buf >> 4);
-			px_dest[1] = (*img_buf & 0x0F);
-			img_buf++;
-			px_dest += 2;
+	if (msn_left) {
+		// Left pixel is the Most Significant Nybble.
+		for (int y = 0; y < height; y++) {
+			uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
+			for (int x = width; x > 0; x -= 2) {
+				px_dest[0] = (*img_buf >> 4);
+				px_dest[1] = (*img_buf & 0x0F);
+				img_buf++;
+				px_dest += 2;
+			}
+		}
+	} else {
+		// Left pixel is the Least Significant Nybble.
+		for (int y = 0; y < height; y++) {
+			uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
+			for (int x = width; x > 0; x -= 2) {
+				px_dest[0] = (*img_buf & 0x0F);
+				px_dest[1] = (*img_buf >> 4);
+				img_buf++;
+				px_dest += 2;
+			}
 		}
 	}
 
@@ -121,14 +166,19 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 }
 
 // Explicit instantiation.
-template rp_image *ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444>(
+template rp_image *ImageDecoder::fromLinearCI4<ImageDecoder::PXF_ARGB4444, true>(
+	int width, int height,
+	const uint8_t *img_buf, int img_siz,
+	const uint16_t *pal_buf, int pal_siz);
+// PS1: LSN is left.
+template rp_image *ImageDecoder::fromLinearCI4<ImageDecoder::PXF_BGR555_PS1, false>(
 	int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz);
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
- * @param px_format Palette pixel format.
+ * @tparam px_format Palette pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI8 image buffer.
@@ -179,11 +229,13 @@ rp_image *ImageDecoder::fromLinearCI8(int width, int height,
 				}
 			}
 			break;
+
 		case PXF_RGB565:
 			for (unsigned int i = 0; i < 256; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
 			break;
+
 		case PXF_ARGB4444:
 			for (unsigned int i = 0; i < 256; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
@@ -193,6 +245,7 @@ rp_image *ImageDecoder::fromLinearCI8(int width, int height,
 				}
 			}
 			break;
+
 		default:
 			assert(!"Invalid pixel format for this function.");
 			return nullptr;
@@ -220,7 +273,7 @@ template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
 
 /**
  * Convert a linear 16-bit image to rp_image.
- * @param px_format Palette pixel format.
+ * @tparam px_format Palette pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf 16-bit image buffer.
@@ -257,6 +310,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 				}
 			}
 			break;
+
 		case PXF_RGB565:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
@@ -267,6 +321,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 				}
 			}
 			break;
+
 		case PXF_ARGB4444:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
@@ -277,6 +332,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 				}
 			}
 			break;
+
 		default:
 			assert(!"Invalid pixel format for this function.");
 			return nullptr;
