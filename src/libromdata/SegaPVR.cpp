@@ -793,7 +793,7 @@ int SegaPVR::loadFieldData(void)
 			nullptr,					// 0x0F
 			_RP("Small (Vector Quantized)"),		// 0x10
 			_RP("Small (Vector Quantized, Mipmap)"),	// 0x11
-			_RP("Square (Twiddled, Mipmap) #2"),		// 0x12
+			_RP("Square (Twiddled, Mipmap) (Alt)"),		// 0x12
 		},
 
 		// GameCube GVR
