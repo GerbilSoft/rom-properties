@@ -258,4 +258,82 @@ rp_image *ImageDecoder::fromDreamcastLinearMono(int width, int height,
 	return img;
 }
 
+/**
+ * Convert a Dreamcast linear (rectangle) ARGB1555 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf ARGB1555 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastLinearARGB1555(int width, int height,
+	const uint16_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * 2))
+	{
+		return nullptr;
+	}
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// Convert one line at a time. (ARGB1555 -> ARGB32)
+	for (int y = 0; y < height; y++) {
+		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x--) {
+			*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
+			img_buf++;
+			px_dest++;
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a Dreamcast linear (rectangle) RGB565 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf RGB565 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDreamcastLinearRGB565(int width, int height,
+	const uint16_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * 2));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * 2))
+	{
+		return nullptr;
+	}
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// Convert one line at a time. (RGB565 -> ARGB32)
+	for (int y = 0; y < height; y++) {
+		uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+		for (int x = width; x > 0; x--) {
+			*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
+			img_buf++;
+			px_dest++;
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
 }

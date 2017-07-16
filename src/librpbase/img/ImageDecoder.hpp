@@ -92,6 +92,28 @@ class ImageDecoder
 		static rp_image *fromDreamcastLinearMono(int width, int height,
 			const uint8_t *img_buf, int img_siz);
 
+		/**
+		 * Convert a Dreamcast linear (rectangle) ARGB1555 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf ARGB1555 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastLinearARGB1555(int width, int height,
+			const uint16_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a Dreamcast linear (rectangle) RGB565 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf RGB565 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDreamcastLinearRGB565(int width, int height,
+			const uint16_t *img_buf, int img_siz);
+
 		/** GameCube **/
 
 		/**

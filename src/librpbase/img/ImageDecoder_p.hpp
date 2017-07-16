@@ -93,6 +93,13 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t RGB565_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an ARGB1555 pixel to ARGB32. (Dreamcast)
+		 * @param px16 ARGB1555 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16);
 };
 
 /**
@@ -233,6 +240,8 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 {
+	// ARGB4444: AAAARRRR GGGGBBBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t px32;
 	px32  =  (px16 & 0x000F);		// B
 	px32 |= ((px16 & 0x00F0) << 4);		// G
@@ -260,6 +269,29 @@ inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 
 	// No alpha channel.
 	px32 |= 0xFF000000U;
+	return px32;
+}
+
+/**
+ * Convert an ARGB1555 pixel to ARGB32. (Dreamcast)
+ * @param px16 ARGB1555 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// ARGB1555: ARRRRRGG GGGBBBBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000300))) |	// Green
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+
+	// Alpha channel.
+	if (px16 & 0x8000) {
+		px32 |= 0xFF000000U;
+	}
 	return px32;
 }
 
