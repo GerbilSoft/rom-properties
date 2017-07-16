@@ -165,6 +165,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:
+		case GVR_IMG_DXT1:
 			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		case GVR_IMG_I8:
@@ -181,7 +182,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			break;
 
 		default:
-			// TODO: CI4, CI8, DXT1
+			// TODO: CI4, CI8
 			return nullptr;
 	}
 
@@ -208,6 +209,12 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			ret_img = ImageDecoder::fromGcnRGB5A3(
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+			break;
+
+		case GVR_IMG_DXT1:
+			ret_img = ImageDecoder::fromDXT1_BE(
+				pvrHeader.width, pvrHeader.height,
+				buf.get(), expect_size);
 			break;
 
 		default:

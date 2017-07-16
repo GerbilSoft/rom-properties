@@ -79,6 +79,7 @@ SET(librpbase_SRCS
 	img/ImageDecoder_NDS.cpp
 	img/ImageDecoder_N3DS.cpp
 	img/ImageDecoder_PS1.cpp
+	img/ImageDecoder_S3TC.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
