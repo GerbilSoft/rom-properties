@@ -127,6 +127,8 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
+			delete[] tmap;
+			delete img;
 			return nullptr;
 	}
 
@@ -293,6 +295,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 
 		default:
 			assert(!"Invalid pixel format for this function.");
+			delete[] tmap;
+			delete img;
 			return nullptr;
 	}
 
