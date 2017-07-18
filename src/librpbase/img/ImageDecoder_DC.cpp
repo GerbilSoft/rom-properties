@@ -95,7 +95,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 		case PXF_ARGB1555:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = 0; x < width; x++) {
+				for (unsigned int x = 0; x < (unsigned int)width; x++) {
 					const unsigned int srcIdx = ((tmap[x] << 1) | tmap[y]);
 					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -106,7 +106,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 		case PXF_RGB565:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = 0; x < width; x++) {
+				for (unsigned int x = 0; x < (unsigned int)width; x++) {
 					const unsigned int srcIdx = ((tmap[x] << 1) | tmap[y]);
 					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -117,7 +117,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 		case PXF_ARGB4444:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = 0; x < width; x++) {
+				for (unsigned int x = 0; x < (unsigned int)width; x++) {
 					const unsigned int srcIdx = ((tmap[x] << 1) | tmap[y]);
 					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
@@ -196,10 +196,10 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 	const unsigned int destMax = width * height;
 	switch (px_format) {
 		case PXF_ARGB1555:
-			for (int y = 0; y < height; y += 2) {
-			for (int x = 0; x < width; x += 2) {
-				const int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= img_siz) {
+			for (unsigned int y = 0; y < (unsigned int)height; y += 2) {
+			for (unsigned int x = 0; x < (unsigned int)width; x += 2) {
+				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
+				if (srcIdx >= (unsigned int)img_siz) {
 					// Out of bounds.
 					delete[] tmap;
 					delete img;
@@ -230,8 +230,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 		case PXF_RGB565:
 			for (int y = 0; y < height; y += 2) {
 			for (int x = 0; x < width; x += 2) {
-				const int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= img_siz) {
+				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
+				if (srcIdx >= (unsigned int)img_siz) {
 					// Out of bounds.
 					delete[] tmap;
 					delete img;
@@ -262,8 +262,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 		case PXF_ARGB4444:
 			for (int y = 0; y < height; y += 2) {
 			for (int x = 0; x < width; x += 2) {
-				const int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= img_siz) {
+				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
+				if (srcIdx >= (unsigned int)img_siz) {
 					// Out of bounds.
 					delete[] tmap;
 					delete img;

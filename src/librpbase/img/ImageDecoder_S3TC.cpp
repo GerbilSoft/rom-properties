@@ -57,8 +57,8 @@ rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 4);
-	const int tilesY = (height / 4);
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
@@ -94,10 +94,10 @@ rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
 
 	// Tiles are arranged in 2x2 blocks.
 	// Reference: https://github.com/nickworonekin/puyotools/blob/80f11884f6cae34c4a56c5b1968600fe7c34628b/Libraries/VrSharp/GvrTexture/GvrDataCodec.cs#L712
-	for (int y = 0; y < tilesY; y += 2) {
-	for (int x = 0; x < tilesX; x += 2) {
-		for (int y2 = 0; y2 < 2; y2++) {
-		for (int x2 = 0; x2 < 2; x2++, dxt1_src++) {
+	for (unsigned int y = 0; y < tilesY; y += 2) {
+	for (unsigned int x = 0; x < tilesX; x += 2) {
+		for (unsigned int y2 = 0; y2 < 2; y2++) {
+		for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
 			// Convert the first two colors from RGB565.
 			pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[0]));
 			pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[1]));

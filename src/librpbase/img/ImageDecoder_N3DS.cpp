@@ -53,8 +53,8 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 8);
-	const int tilesY = (height / 8);
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 8);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
@@ -73,11 +73,11 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 	// Temporary tile buffer.
 	uint32_t tileBuf[8*8];
 
-	for (int y = 0; y < tilesY; y++) {
-		for (int x = 0; x < tilesX; x++) {
+	for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
 			// TODO: Optimize using pointers instead of indexes?
-			for (int i = 0; i < 8*8; i++, img_buf++) {
+			for (unsigned int i = 0; i < 8*8; i++, img_buf++) {
 				tileBuf[tile_order[i]] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
 			}
 

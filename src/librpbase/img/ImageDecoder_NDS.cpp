@@ -58,8 +58,8 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 8);
-	const int tilesY = (height / 8);
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 8);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
@@ -76,7 +76,7 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 
 	palette[0] = 0; // Color 0 is always transparent.
 	img->set_tr_idx(0);
-	for (int i = 1; i < 16; i++) {
+	for (unsigned int i = 1; i < 16; i++) {
 		// NDS color format is BGR555.
 		palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 	}
@@ -84,8 +84,8 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 	// NOTE: rp_image initializes the palette to 0,
 	// so we don't need to clear the remaining colors.
 
-	for (int y = 0; y < tilesY; y++) {
-		for (int x = 0; x < tilesX; x++) {
+	for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++) {
 			// Blit the tile to the main image buffer.
 			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, img_buf, x, y);
 			img_buf += ((8 * 8) / 2);

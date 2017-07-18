@@ -61,8 +61,8 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 4);
-	const int tilesY = (height / 4);
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
@@ -72,8 +72,8 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 
 	switch (px_format) {
 		case PXF_RGB5A3:
-			for (int y = 0; y < tilesY; y++) {
-				for (int x = 0; x < tilesX; x++) {
+			for (unsigned int y = 0; y < tilesY; y++) {
+				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
@@ -87,8 +87,8 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 			break;
 
 		case PXF_RGB565:
-			for (int y = 0; y < tilesY; y++) {
-				for (int x = 0; x < tilesX; x++) {
+			for (unsigned int y = 0; y < tilesY; y++) {
+				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
@@ -102,8 +102,8 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 			break;
 
 		case PXF_IA8:
-			for (int y = 0; y < tilesY; y++) {
-				for (int x = 0; x < tilesX; x++) {
+			for (unsigned int y = 0; y < tilesY; y++) {
+				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
 					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
@@ -170,8 +170,8 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		return nullptr;
 
 	// Calculate the total number of tiles.
-	const int tilesX = (width / 8);
-	const int tilesY = (height / 4);
+	const unsigned int tilesX = (unsigned int)(width / 8);
+	const unsigned int tilesY = (unsigned int)(height / 4);
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
@@ -187,12 +187,12 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	}
 
 	int tr_idx = -1;
-	for (int i = 0; i < 256; i++) {
+	for (unsigned int i = 0; i < 256; i++) {
 		// GCN color format is RGB5A3.
 		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
 		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 			// Found the transparent color.
-			tr_idx = i;
+			tr_idx = (int)i;
 		}
 	}
 	img->set_tr_idx(tr_idx);
@@ -200,8 +200,8 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	// Tile pointer.
 	const uint8_t *tileBuf = img_buf;
 
-	for (int y = 0; y < tilesY; y++) {
-		for (int x = 0; x < tilesX; x++) {
+	for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++) {
 			// Decode the current tile.
 			ImageDecoderPrivate::BlitTile<uint8_t, 8, 4>(img, tileBuf, x, y);
 			tileBuf += (8 * 4);

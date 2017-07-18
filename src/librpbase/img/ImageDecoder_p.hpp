@@ -49,8 +49,9 @@ class ImageDecoderPrivate
 		 * @param tileX		[in] Horizontal tile number.
 		 * @param tileY		[in] Vertical tile number.
 		 */
-		template<typename pixel, int tileW, int tileH>
-		static inline void BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY);
+		template<typename pixel, unsigned int tileW, unsigned int tileH>
+		static inline void BlitTile(rp_image *img, const pixel *tileBuf,
+			unsigned int tileX, unsigned int tileY);
 
 		/**
 		 * Blit a CI4 tile to a CI8 rp_image.
@@ -63,8 +64,9 @@ class ImageDecoderPrivate
 		 * @param tileX		[in] Horizontal tile number.
 		 * @param tileY		[in] Vertical tile number.
 		 */
-		template<int tileW, int tileH>
-		static inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tileX, int tileY);
+		template<unsigned int tileW, unsigned int tileH>
+		static inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf,
+			unsigned int tileX, unsigned int tileY);
 
 		/**
 		 * Convert a BGR555 pixel to ARGB32.
@@ -129,8 +131,9 @@ class ImageDecoderPrivate
  * @param tileX		[in] Horizontal tile number.
  * @param tileY		[in] Vertical tile number.
  */
-template<typename pixel, int tileW, int tileH>
-inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf, int tileX, int tileY)
+template<typename pixel, unsigned int tileW, unsigned int tileH>
+inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf,
+	unsigned int tileX, unsigned int tileY)
 {
 	switch (sizeof(pixel)) {
 		case 4:
@@ -146,10 +149,10 @@ inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf, i
 
 	// Go to the first pixel for this tile.
 	const int stride_px = img->stride() / sizeof(pixel);
-	pixel *imgBuf = static_cast<pixel*>(img->scanLine(tileY * tileH));
+	pixel *imgBuf = static_cast<pixel*>(img->scanLine((int)(tileY * tileH)));
 	imgBuf += (tileX * tileW);
 
-	for (int y = tileH; y > 0; y--) {
+	for (unsigned int y = tileH; y > 0; y--) {
 		memcpy(imgBuf, tileBuf, (tileW * sizeof(pixel)));
 		imgBuf += stride_px;
 		tileBuf += tileW;
@@ -167,8 +170,9 @@ inline void ImageDecoderPrivate::BlitTile(rp_image *img, const pixel *tileBuf, i
  * @param tileX		[in] Horizontal tile number.
  * @param tileY		[in] Vertical tile number.
  */
-template<int tileW, int tileH>
-inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf, int tileX, int tileY)
+template<unsigned int tileW, unsigned int tileH>
+inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf,
+	unsigned int tileX, unsigned int tileY)
 {
 	assert(img->format() == rp_image::FORMAT_CI8);
 	assert(img->width() % 2 == 0);
@@ -179,9 +183,9 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
 	imgBuf += (tileX * tileW);
 
 	const int stride_px_adj = img->stride() - tileW;
-	for (int y = tileH; y > 0; y--) {
+	for (unsigned int y = tileH; y > 0; y--) {
 		// Expand CI4 pixels to CI8 before writing.
-		for (int x = tileW; x > 0; x -= 2) {
+		for (unsigned int x = tileW; x > 0; x -= 2) {
 			imgBuf[0] = (*tileBuf & 0x0F);
 			imgBuf[1] = (*tileBuf >> 4);
 			imgBuf += 2;

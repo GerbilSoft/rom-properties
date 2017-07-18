@@ -87,7 +87,7 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = i;
+					tr_idx = (int)i;
 				}
 			}
 			break;
@@ -103,7 +103,7 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = i;
+					tr_idx = (int)i;
 				}
 			}
 			break;
@@ -113,7 +113,7 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 				palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = i;
+					tr_idx = (int)i;
 				}
 			}
 			break;
@@ -269,7 +269,7 @@ rp_image *ImageDecoder::fromLinearCI8(int width, int height,
 	// Copy one line at a time. (CI8 -> CI8)
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	const int stride = img->stride();
-	for (int y = height; y > 0; y--) {
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		memcpy(px_dest, img_buf, width);
 		px_dest += stride;
 		img_buf += width;
@@ -323,7 +323,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 		case PXF_ARGB1555:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = width; x > 0; x--) {
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
@@ -334,7 +334,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 		case PXF_RGB565:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = width; x > 0; x--) {
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
@@ -345,7 +345,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 		case PXF_ARGB4444:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (int x = width; x > 0; x--) {
+				for (unsigned int x = width; (unsigned int)x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
@@ -415,10 +415,10 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 	// Convert one line at a time. (monochrome -> CI8)
 	for (int y = 0; y < height; y++) {
 		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
-		for (int x = width; x > 0; x -= 8) {
+		for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
 			uint8_t pxMono = *img_buf++;
 			// TODO: Unroll this loop?
-			for (int bit = 8; bit > 0; bit--, px_dest++) {
+			for (unsigned int bit = 8; bit > 0; bit--, px_dest++) {
 				// MSB == left-most pixel.
 				*px_dest = (pxMono >> 7);
 				pxMono <<= 1;
