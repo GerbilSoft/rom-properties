@@ -50,6 +50,10 @@ class ImageDecoder
 			PXF_ARGB4444,
 			PXF_BGR555,
 			PXF_BGR555_PS1,	// Special transparency handling.
+
+			// GameCube-specific 16-bit
+			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
+			PXF_IA8,	// Intensity/Alpha.
 		};
 
 		/**
@@ -112,14 +116,16 @@ class ImageDecoder
 		/** GameCube **/
 
 		/**
-		 * Convert a GameCube RGB5A3 image to rp_image.
+		 * Convert a GameCube 16-bit image to rp_image.
+		 * @tparam px_format 16-bit pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf RGB5A3 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromGcnRGB5A3(int width, int height,
+		template<PixelFormat px_format>
+		static rp_image *fromGcn16(int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
 		/**

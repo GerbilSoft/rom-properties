@@ -513,8 +513,22 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 
 	rp_image *ret_img = nullptr;
 	switch (pvrHeader.gvr.img_data_type) {
+		// FIXME: Untested.
+		case GVR_IMG_IA8:
+			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_IA8>(
+				pvrHeader.width, pvrHeader.height,
+				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+			break;
+
+		// FIXME: Untested.
+		case GVR_IMG_RGB565:
+			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB565>(
+				pvrHeader.width, pvrHeader.height,
+				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+			break;
+
 		case GVR_IMG_RGB5A3:
-			ret_img = ImageDecoder::fromGcnRGB5A3(
+			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB5A3>(
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;

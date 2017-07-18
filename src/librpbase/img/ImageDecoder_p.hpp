@@ -102,6 +102,14 @@ class ImageDecoderPrivate
 		static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16);
 
 		/**
+		 * Convert an IA8 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px16 IA8 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t IA8_to_ARGB32(uint16_t px16);
+
+		/**
 		 * Create a Dreamcast twiddle map.
 		 * NOTE: Implementation is in ImageDecoder_DC.cpp.
 		 * @param size Twiddle map size. (usually texture width)
@@ -192,7 +200,7 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
  */
 inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
+	// NOTE: px16 is in host-endian.
 	uint32_t px32;
 
 	// BGR555: xBBBBBGG GGGRRRRR
@@ -266,10 +274,10 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
+	// NOTE: px16 is in host-endian.
 	uint32_t px32;
 
-	// RGB555: RRRRRGGG GGGBBBBB
+	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
 	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
@@ -301,6 +309,24 @@ inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
 		px32 |= 0xFF000000U;
 	}
 	return px32;
+}
+
+/**
+ * Convert an IA8 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px16 IA8 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 is in host-endian.
+
+	// FIXME: What's the component order of IA8?
+	// Assuming I=MSB, A=LSB...
+
+	// IA8:    IIIIIIII AAAAAAAA
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	return ((px16 & 0xFF) << 16) | ((px16 & 0xFF00) << 8) | (px16 & 0xFF00) | ((px16 >> 8) & 0xFF);
 }
 
 }

@@ -25,16 +25,24 @@
 namespace LibRpBase {
 
 /**
- * Convert a GameCube RGB5A3 image to rp_image.
+ * Convert a GameCube 16-bit image to rp_image.
+ * @tparam px_format 16-bit pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf RGB5A3 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
+template<ImageDecoder::PixelFormat px_format>
+rp_image *ImageDecoder::fromGcn16(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
+	// Verify px_format.
+	static_assert(px_format == PXF_RGB5A3 ||
+		      px_format == PXF_RGB565 ||
+		      px_format == PXF_IA8,
+		      "Invalid pixel format for this function.");
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -62,22 +70,71 @@ rp_image *ImageDecoder::fromGcnRGB5A3(int width, int height,
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
 
-	for (int y = 0; y < tilesY; y++) {
-		for (int x = 0; x < tilesX; x++) {
-			// Convert each tile to ARGB32 manually.
-			// TODO: Optimize using pointers instead of indexes?
-			for (int i = 0; i < 4*4; i++, img_buf++) {
-				tileBuf[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
-			}
+	switch (px_format) {
+		case PXF_RGB5A3:
+			for (int y = 0; y < tilesY; y++) {
+				for (int x = 0; x < tilesX; x++) {
+					// Convert each tile to ARGB32 manually.
+					// TODO: Optimize using pointers instead of indexes?
+					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
+						tileBuf[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
+					}
 
-			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-		}
+					// Blit the tile to the main image buffer.
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+				}
+			}
+			break;
+
+		case PXF_RGB565:
+			for (int y = 0; y < tilesY; y++) {
+				for (int x = 0; x < tilesX; x++) {
+					// Convert each tile to ARGB32 manually.
+					// TODO: Optimize using pointers instead of indexes?
+					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
+						tileBuf[i] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(*img_buf));
+					}
+
+					// Blit the tile to the main image buffer.
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+				}
+			}
+			break;
+
+		case PXF_IA8:
+			for (int y = 0; y < tilesY; y++) {
+				for (int x = 0; x < tilesX; x++) {
+					// Convert each tile to ARGB32 manually.
+					// TODO: Optimize using pointers instead of indexes?
+					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
+						tileBuf[i] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(*img_buf));
+					}
+
+					// Blit the tile to the main image buffer.
+					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+				}
+			}
+			break;
+
+		default:
+			assert(!"Invalid pixel format for this function.");
+			return nullptr;
 	}
 
 	// Image has been converted.
 	return img;
 }
+
+// Explicit instantiation.
+template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB5A3>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
+template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB565>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
+template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_IA8>(
+	int width, int height,
+	const uint16_t *img_buf, int img_siz);
 
 /**
  * Convert a GameCube CI8 image to rp_image.
