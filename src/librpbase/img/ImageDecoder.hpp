@@ -174,14 +174,16 @@ class ImageDecoder
 		/* S3TC */
 
 		/**
-		 * Convert a DXT1 image to rp_image. (big-endian)
+		 * Convert a DXT1 image to rp_image.
+		 * @tparam big_endian If true, the DXT1 is encoded using big-endian values.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI8 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)/2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromDXT1_BE(int width, int height,
+		template<bool big_endian>
+		static rp_image *fromDXT1(int width, int height,
 			const uint8_t *img_buf, int img_siz);
 
 		/* Dreamcast */

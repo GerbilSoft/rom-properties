@@ -29,14 +29,16 @@
 namespace LibRpBase {
 
 /**
- * Convert a DXT1 image to rp_image. (big-endian)
+ * Convert a DXT1 image to rp_image.
+ * @tparam big_endian If true, the DXT1 is encoded using big-endian values.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf CI8 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)/2]
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
+template<bool big_endian>
+rp_image *ImageDecoder::fromDXT1(int width, int height,
 	const uint8_t *img_buf, int img_siz)
 {
 	// Verify parameters.
@@ -99,8 +101,13 @@ rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
 		for (unsigned int y2 = 0; y2 < 2; y2++) {
 		for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
 			// Convert the first two colors from RGB565.
-			pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[0]));
-			pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[1]));
+			if (big_endian) {
+				pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[0]));
+				pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[1]));
+			} else {
+				pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(dxt1_src->color[0]));
+				pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(dxt1_src->color[1]));
+			}
 
 			// Calculate the second two colors.
 			if (pal[0].u32 > pal[1].u32) {
@@ -124,6 +131,9 @@ rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
 				pal[3].u32 = 0;
 			}
 
+			// FIXME: This is correct for BE DXT1 (GameCube),
+			// but might not be right for LE DXT1 (PC).
+
 			// Process the 16 color indexes.
 			// NOTE: MSB has the left-most pixel of the *bottom* row.
 			// LSB has the right-most pixel of the *top* row.
@@ -142,5 +152,10 @@ rp_image *ImageDecoder::fromDXT1_BE(int width, int height,
 	// Image has been converted.
 	return img;
 }
+
+// Explicit instantiation.
+template rp_image *ImageDecoder::fromDXT1<true>(
+	int width, int height,
+	const uint8_t *img_buf, int img_siz);
 
 }
