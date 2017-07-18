@@ -41,6 +41,14 @@ rp_image *ImageDecoder::fromLinearCI4(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
+	// Verify px_format.
+	static_assert(px_format == PXF_ARGB1555 ||
+		      px_format == PXF_RGB565 ||
+		      px_format == PXF_ARGB4444 ||
+		      px_format == PXF_BGR555 ||
+		      px_format == PXF_BGR555_PS1,
+		      "Invalid pixel format for this function.");
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
@@ -192,6 +200,12 @@ rp_image *ImageDecoder::fromLinearCI8(int width, int height,
 	const uint8_t *img_buf, int img_siz,
 	const uint16_t *pal_buf, int pal_siz)
 {
+	// Verify px_format.
+	static_assert(px_format == PXF_ARGB1555 ||
+		      px_format == PXF_RGB565 ||
+		      px_format == PXF_ARGB4444,
+		      "Invalid pixel format for this function.");
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
@@ -284,6 +298,12 @@ template<ImageDecoder::PixelFormat px_format>
 rp_image *ImageDecoder::fromLinear16(int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
+	// Verify px_format.
+	static_assert(px_format == PXF_ARGB1555 ||
+		      px_format == PXF_RGB565 ||
+		      px_format == PXF_ARGB4444,
+		      "Invalid pixel format for this function.");
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
