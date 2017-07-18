@@ -52,7 +52,7 @@ unsigned int *ImageDecoderPrivate::createDreamcastTwiddleMap(int size)
 
 /**
  * Convert a Dreamcast square twiddled 16-bit image to rp_image.
- * @tparam px_format Palette pixel format.
+ * @tparam px_format 16-bit pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf 16-bit image buffer.
