@@ -22,6 +22,7 @@
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_HPP__
 
+#include "config.librpbase.h"
 #include "common.h"
 
 // C includes.
@@ -171,6 +172,7 @@ class ImageDecoder
 		static rp_image *fromN3DSTiledRGB565(int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
+#ifdef ENABLE_S3TC
 		/* S3TC */
 
 		/**
@@ -185,6 +187,7 @@ class ImageDecoder
 		template<bool big_endian>
 		static rp_image *fromDXT1(int width, int height,
 			const uint8_t *img_buf, int img_siz);
+#endif /* ENABLE_S3TC */
 
 		/* Dreamcast */
 

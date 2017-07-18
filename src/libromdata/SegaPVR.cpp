@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "SegaPVR.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -473,7 +475,6 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:
-		case GVR_IMG_DXT1:
 			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
 			break;
 		case GVR_IMG_I8:
@@ -488,6 +489,15 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		case GVR_IMG_ARGB8888:
 			expect_size = ((pvrHeader.width * pvrHeader.height) * 4);
 			break;
+
+		case GVR_IMG_DXT1:
+#ifdef ENABLE_S3TC
+			expect_size = ((pvrHeader.width * pvrHeader.height) / 2);
+			break;
+#else /* !ENABLE_S3TC */
+			// S3TC is disabled in this build.
+			return nullptr;
+#endif
 
 		default:
 			// TODO: CI4, CI8
@@ -534,11 +544,17 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			break;
 
 		case GVR_IMG_DXT1:
+#ifdef ENABLE_S3TC
 			// TODO: Determine if color 3 should be black or transparent.
 			ret_img = ImageDecoder::fromDXT1<true>(
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size);
 			break;
+#else /* !ENABLE_S3TC */
+			// S3TC is disabled in this build.
+			assert(!"Should not get here in non-S3TC builds.");
+			return nullptr;
+#endif
 
 		default:
 			// TODO: Other types.

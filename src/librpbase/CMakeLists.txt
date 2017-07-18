@@ -78,7 +78,6 @@ SET(librpbase_SRCS
 	img/ImageDecoder_GCN.cpp
 	img/ImageDecoder_NDS.cpp
 	img/ImageDecoder_N3DS.cpp
-	img/ImageDecoder_S3TC.cpp
 	img/ImageDecoder_DC.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
@@ -193,6 +192,10 @@ IF(ENABLE_DECRYPTION)
 	ENDIF(WIN32)
 ENDIF(ENABLE_DECRYPTION)
 
+IF(ENABLE_S3TC)
+	SET(librpbase_S3TC_SRCS img/ImageDecoder_S3TC.cpp)
+ENDIF(ENABLE_S3TC)
+
 IF(HAVE_ZLIB)
 	# Enable zlib in pngcheck.
 	SET_SOURCE_FILES_PROPERTIES(img/pngcheck/pngcheck.cpp
@@ -236,6 +239,7 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
+	${librpbase_S3TC_SRCS}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
@@ -246,6 +250,7 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_OS_SRCS} ${librpbase_OS_H}
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
+	${librpbase_S3TC_SRCS}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
