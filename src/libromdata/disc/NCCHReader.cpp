@@ -479,8 +479,9 @@ NCCHReader::NCCHReader(IRpFile *file, uint8_t media_unit_shift,
 /**
  * Construct an NCCHReader with the specified IDiscReader.
  *
- * NOTE: The IDiscReader *must* remain valid while this
- * NCCHReader is open.
+ * NOTE: The NCCHReader *takes ownership* of the IDiscReader.
+ * This makes it easier to create a temporary CIAReader
+ * without worrying about keeping track of it.
  *
  * @param discReader 		[in] IDiscReader. (for CCIs or CIAs)
  * @param media_unit_shift	[in] Media unit shift.
