@@ -268,17 +268,9 @@ NES::NES(IRpFile *file)
 
 		case NESPrivate::ROM_FORMAT_FDS_TNES: {
 			// FDS disk image. (TNES/TDS format)
-			int sret = d->file->seek(0x2010);
-			if (sret != 0) {
-				// Seek error.
-				d->fileType = FTYPE_UNKNOWN;
-				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
-				return;
-			}
-
-			size_t szret = d->file->read(&d->header.fds, sizeof(d->header.fds));
+			size_t szret = d->file->seekAndRead(0x2010, &d->header.fds, sizeof(d->header.fds));
 			if (szret != sizeof(d->header.fds)) {
-				// Error reading the FDS header.
+				// Seek and/or read error.
 				d->fileType = FTYPE_UNKNOWN;
 				d->romType = NESPrivate::ROM_FORMAT_UNKNOWN;
 				return;

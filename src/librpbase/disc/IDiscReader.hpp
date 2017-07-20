@@ -106,6 +106,18 @@ class IDiscReader
 		 */
 		virtual int64_t size(void) = 0;
 
+	public:
+		/** Convenience functions implemented for all IRpFile classes. **/
+
+		/**
+		 * Seek to the specified address, then read data.
+		 * @param pos	[in] Requested seek address.
+		 * @param ptr	[out] Output data buffer.
+		 * @param size	[in] Amount of data to read, in bytes.
+		 * @return Number of bytes read on success; 0 on seek or read error.
+		 */
+		size_t seekAndRead(int64_t pos, void *ptr, size_t size);
+
 	protected:
 		int m_lastError;
 };

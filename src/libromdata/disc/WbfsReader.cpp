@@ -326,8 +326,8 @@ wbfs_disc_t *WbfsReaderPrivate::openWbfsDisc(wbfs_t *p, uint32_t index)
 					free(disc);
 					return nullptr;
 				}
-				file->seek(p->hd_sec_sz + (i*p->disc_info_sz));
-				size_t size = file->read(disc->header, p->disc_info_sz);
+				size_t size = file->seekAndRead((p->hd_sec_sz + (i*p->disc_info_sz)),
+								disc->header, p->disc_info_sz);
 				if (size != p->disc_info_sz) {
 					// Error reading the disc information.
 					free(disc->header);
@@ -461,10 +461,15 @@ int WbfsReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
 	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
-	if (pos < 0 || (int64_t)(pos + size) > (int64_t)d->block_size)
-	{
+	if (pos < 0 || (int64_t)(pos + size) > (int64_t)d->block_size) {
 		// pos+size is out of range.
 		return -1;
+	}
+
+	// TODO: "unlikely" hint.
+	if (size == 0) {
+		// Nothing to read.
+		return 0;
 	}
 
 	// Get the physical block number first.
@@ -483,17 +488,9 @@ int WbfsReader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t size)
 
 	// Go to the block.
 	const int64_t phys_pos = ((int64_t)physBlockIdx * d->block_size) + pos;
-	int ret = d->file->seek(phys_pos);
-	if (ret != 0) {
-		// Seek failed.
-		m_lastError = d->file->lastError();
-		return -1;
-	}
-
-	// Read the first 'size' bytes of the block.
-	ret = (int)d->file->read(ptr, size);
+	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
-	return ret;
+	return (sz_read > 0 ? (int)sz_read : -1);
 }
 
 }

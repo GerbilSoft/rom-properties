@@ -213,15 +213,9 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	RP_Q(PEResourceReader);
 
 	IMAGE_RESOURCE_DIRECTORY root;
-	int ret = file->seek(rsrc_addr + addr);
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		return q->m_lastError;
-	}
-	size_t size = file->read(&root, sizeof(root));
+	size_t size = file->seekAndRead(rsrc_addr + addr, &root, sizeof(root));
 	if (size != sizeof(root)) {
-		// Read error;
+		// Seek and/or read error.
 		q->m_lastError = file->lastError();
 		return q->m_lastError;
 	}
@@ -650,17 +644,13 @@ size_t PEResourceReader::read(void *ptr, size_t size)
 		size = (size_t)((int64_t)d->rsrc_size - d->pos);
 	}
 
-	// Seek to the position.
-	int ret = d->file->seek((int64_t)d->rsrc_addr + (int64_t)d->pos);
-	if (ret != 0) {
-		// Seek error.
-		m_lastError = d->file->lastError();
-		return 0;
-	}
 	// Read the data.
-	size_t read = d->file->read(ptr, size);
+	size_t read = d->file->seekAndRead((int64_t)d->rsrc_addr + (int64_t)d->pos, ptr, size);
+	if (read != size) {
+		// Seek and/or read error.
+		m_lastError = d->file->lastError();
+	}
 	d->pos += read;
-	m_lastError = d->file->lastError();
 	return read;
 }
 
@@ -813,15 +803,9 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 
 	// Get the IMAGE_RESOURCE_DATA_ENTRY.
 	IMAGE_RESOURCE_DATA_ENTRY irdata;
-	int ret = d->file->seek(d->rsrc_addr + dirEntry->addr);
-	if (ret != 0) {
-		// Seek error.
-		m_lastError = d->file->lastError();
-		return nullptr;
-	}
-	size_t size = d->file->read(&irdata, sizeof(irdata));
+	size_t size = d->file->seekAndRead(d->rsrc_addr + dirEntry->addr, &irdata, sizeof(irdata));
 	if (size != sizeof(irdata)) {
-		// Read error.
+		// Seek and/or read error.
 		m_lastError = d->file->lastError();
 		return nullptr;
 	}

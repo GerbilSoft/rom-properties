@@ -197,8 +197,7 @@ int NintendoDSPrivate::loadIconTitleData(void)
 	const uint32_t icon_offset = le32_to_cpu(romHeader.icon_offset);
 
 	// Read the icon/title data.
-	this->file->seek(icon_offset);
-	size_t size = this->file->read(&nds_icon_title, sizeof(nds_icon_title));
+	size_t size = this->file->seekAndRead(icon_offset, &nds_icon_title, sizeof(nds_icon_title));
 
 	// Make sure we have the correct size based on the version.
 	if (size < sizeof(nds_icon_title.version)) {
@@ -437,14 +436,9 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 	// we're reading the first four because CIAReader only
 	// supports multiples of 16 bytes right now.
 	uint32_t secure_area[4];
-	int ret = file->seek(0x4000);
-	if (ret != 0) {
-		// Seek error.
-		return nullptr;
-	}
-	size_t size = file->read(secure_area, sizeof(secure_area));
+	size_t size = file->seekAndRead(0x4000, secure_area, sizeof(secure_area));
 	if (size != sizeof(secure_area)) {
-		// Read error.
+		// Seek and/or read error.
 		return nullptr;
 	}
 
@@ -457,7 +451,7 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 #endif
 
 	const rp_char *secType = nullptr;
-	bool needs_encryption = false;
+	//bool needs_encryption = false;	// TODO
 	if (le32_to_cpu(romHeader.arm9.rom_offset) < 0x4000) {
 		// ARM9 secure area is not present.
 		// This is only valid for homebrew.
@@ -469,21 +463,16 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 		// Secure area is decrypted.
 		// Probably dumped using wooddumper or Decrypt9WIP.
 		secType = _RP("Decrypted");
-		needs_encryption = true;	// CRC requires encryption.
+		//needs_encryption = true;	// CRC requires encryption.
 	} else {
 		// Make sure 0x1000-0x3FFF is blank.
 		// NOTE: ndstool checks 0x0200-0x0FFF, but this may
 		// contain extra data for DSi-enhanced ROMs, or even
 		// for regular DS games released after the DSi.
 		uint32_t blank_area[0x3000/4];
-		ret = file->seek(0x1000);
-		if (ret != 0) {
-			// Seek error.
-			return nullptr;
-		}
-		size = file->read(blank_area, sizeof(blank_area));
+		size = file->seekAndRead(0x1000, blank_area, sizeof(blank_area));
 		if (size != sizeof(blank_area)) {
-			// Read error.
+			// Seek and/or read error.
 			return nullptr;
 		}
 

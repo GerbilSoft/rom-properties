@@ -424,14 +424,9 @@ RomData *RomDataFactory::create(IRpFile *file, bool thumbnail)
 			static const int footer_size = 1024;
 			if (info.szFile > footer_size) {
 				info.header.addr = (uint32_t)(info.szFile - footer_size);
-				int ret = file->seek(info.header.addr);
-				if (ret != 0) {
-					// Seek error.
-					return nullptr;
-				}
-				info.header.size = (uint32_t)file->read(header, footer_size);
+				info.header.size = (uint32_t)file->seekAndRead(info.header.addr, header, footer_size);
 				if (info.header.size == 0) {
-					// Read error.
+					// Seek and/or read error.
 					return nullptr;
 				}
 			}

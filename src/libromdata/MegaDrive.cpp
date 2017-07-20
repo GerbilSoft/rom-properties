@@ -593,8 +593,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
 				uint8_t *const smd_data = block.get();
 				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
-				d->file->seek(512);
-				size = d->file->read(smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
+				size = d->file->seekAndRead(512, smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
 				if (size != MegaDrivePrivate::SMD_BLOCK_SIZE) {
 					// Short read. ROM is invalid.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
@@ -961,24 +960,18 @@ int MegaDrive::loadFieldData(void)
 				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
 				uint8_t *const smd_data = block.get();
 				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
-				int ret = d->file->seek(512 + (2*1024*1024));
-				if (ret == 0) {
-					size_t size = d->file->read(smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
-					if (size == MegaDrivePrivate::SMD_BLOCK_SIZE) {
-						// Deinterleave the block.
-						d->decodeSMDBlock(bin_data, smd_data);
-						memcpy(header, bin_data, sizeof(header));
-						header_loaded = true;
-					}
+				size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
+				if (size == MegaDrivePrivate::SMD_BLOCK_SIZE) {
+					// Deinterleave the block.
+					d->decodeSMDBlock(bin_data, smd_data);
+					memcpy(header, bin_data, sizeof(header));
+					header_loaded = true;
 				}
 			}
 		} else {
 			// Load the header directly.
-			int ret = d->file->seek(2*1024*1024);
-			if (ret == 0) {
-				size_t size = d->file->read(header, sizeof(header));
-				header_loaded = (size == sizeof(header));
-			}
+			size_t size = d->file->seekAndRead(2*1024*1024, header, sizeof(header));
+			header_loaded = (size == sizeof(header));
 		}
 
 		if (header_loaded) {

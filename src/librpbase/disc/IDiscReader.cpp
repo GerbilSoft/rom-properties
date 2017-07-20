@@ -44,4 +44,21 @@ void IDiscReader::clearError(void)
 	m_lastError = 0;
 }
 
+/**
+ * Seek to the specified address, then read data.
+ * @param pos	[in] Requested seek address.
+ * @param ptr	[out] Output data buffer.
+ * @param size	[in] Amount of data to read, in bytes.
+ * @return Number of bytes read on success; 0 on seek or read error.
+ */
+size_t IDiscReader::seekAndRead(int64_t pos, void *ptr, size_t size)
+{
+	int ret = this->seek(pos);
+	if (ret != 0) {
+		// Seek error.
+		return 0;
+	}
+	return this->read(ptr, size);
+}
+
 }

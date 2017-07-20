@@ -268,10 +268,11 @@ SNES::SNES(IRpFile *file)
 		if (*pHeaderAddress == 0)
 			break;
 
-		d->file->seek(*pHeaderAddress);
-		size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-		if (size != sizeof(d->romHeader))
+		size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
+		if (size != sizeof(d->romHeader)) {
+			// Seek and/or read error.
 			continue;
+		}
 
 		if (d->isRomHeaderValid(&d->romHeader, (i & 1))) {
 			// ROM header is valid.

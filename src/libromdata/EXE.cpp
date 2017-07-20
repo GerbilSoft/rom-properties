@@ -624,23 +624,18 @@ int EXEPrivate::loadPESectionTable(void)
 		// Sanity check: Maximum of 128 sections.
 		return -ENOMEM;
 	}
-	int ret = file->seek(section_table_start);
-	if (ret != 0) {
-		// Seek error.
-		return -EIO;
-	}
 	pe_sections.resize(section_count);
 	uint32_t szToRead = (uint32_t)(section_count * sizeof(IMAGE_SECTION_HEADER));
-	size_t size = file->read(pe_sections.data(), szToRead);
+	size_t size = file->seekAndRead(section_table_start, pe_sections.data(), szToRead);
 	if (size != (size_t)szToRead) {
-		// Read error.
+		// Seek and/or read error.
 		pe_sections.clear();
 		return -EIO;
 	}
 
 	// Not all sections may be in use.
 	// Find the first section header with an empty name.
-	ret = 0;
+	int ret = 0;
 	for (unsigned int i = 0; i < (unsigned int)pe_sections.size(); i++) {
 		if (pe_sections[i].Name[0] == 0) {
 			// Found the first empty section.
@@ -941,16 +936,9 @@ EXE::EXE(IRpFile *file)
 		return;
 	}
 
-	int ret = d->file->seek(hdr_addr);
-	if (ret != 0) {
-		// Seek error.
-		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;
-		d->isValid = false;
-		return;
-	}
-	size = d->file->read(&d->hdr, sizeof(d->hdr));
+	size = d->file->seekAndRead(hdr_addr, &d->hdr, sizeof(d->hdr));
 	if (size != sizeof(d->hdr)) {
-		// Read error.
+		// Seek and/or read error.
 		// TODO: Check the signature first instead of
 		// depending on the full union being available?
 		d->exeType = EXEPrivate::EXE_TYPE_UNKNOWN;

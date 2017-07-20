@@ -298,8 +298,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	// References:
 	// - http://wiibrew.org/wiki/Wii_Disc#Partitions_information
 	// - http://blog.delroth.net/2011/06/reading-wii-discs-with-python/
-	discReader->seek(RVL_VolumeGroupTable_ADDRESS);
-	size_t size = discReader->read(&vgtbl, sizeof(vgtbl));
+	size_t size = discReader->seekAndRead(RVL_VolumeGroupTable_ADDRESS, &vgtbl, sizeof(vgtbl));
 	if (size != sizeof(vgtbl)) {
 		// Could not read the volume group table.
 		// TODO: Return error from fread()?
@@ -325,8 +324,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		// Read the partition table entries.
 		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
-		discReader->seek((int64_t)pt_addr);
-		size = discReader->read(pt, ptSize);
+		size = discReader->seekAndRead((int64_t)pt_addr, pt, ptSize);
 		if (size != ptSize) {
 			// Error reading the partition table entries.
 			return -EIO;
@@ -1115,8 +1113,7 @@ GameCube::GameCube(IRpFile *file)
 		case GameCubePrivate::DISC_SYSTEM_GCN:
 		case GameCubePrivate::DISC_SYSTEM_TRIFORCE: {	// TODO?
 			GCN_Boot_Info bootInfo;	// TODO: Save in GameCubePrivate?
-			d->discReader->seek(GCN_Boot_Info_ADDRESS);
-			size = d->discReader->read(&bootInfo, sizeof(bootInfo));
+			size = d->discReader->seekAndRead(GCN_Boot_Info_ADDRESS, &bootInfo, sizeof(bootInfo));
 			if (size != sizeof(bootInfo)) {
 				// Cannot read bi2.bin.
 				delete d->discReader;
@@ -1131,8 +1128,7 @@ GameCube::GameCube(IRpFile *file)
 		}
 
 		case GameCubePrivate::DISC_SYSTEM_WII:
-			d->discReader->seek(RVL_RegionSetting_ADDRESS);
-			size = d->discReader->read(&d->regionSetting, sizeof(d->regionSetting));
+			size = d->discReader->seekAndRead(RVL_RegionSetting_ADDRESS, &d->regionSetting, sizeof(d->regionSetting));
 			if (size != sizeof(d->regionSetting)) {
 				// Cannot read RVL_RegionSetting.
 				delete d->discReader;

@@ -368,10 +368,9 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 	// Load the icon data.
 	// TODO: Only read the first frame unless specifically requested?
 	unique_ptr<uint8_t[]> icondata(new uint8_t[iconsizetotal]);
-	this->file->seek(dataOffset + iconaddr);
-	size_t size = this->file->read(icondata.get(), iconsizetotal);
+	size_t size = file->seekAndRead(dataOffset + iconaddr, icondata.get(), iconsizetotal);
 	if (size != iconsizetotal) {
-		// Error reading the icon data.
+		// Seek and/or read error.
 		return nullptr;
 	}
 
@@ -504,10 +503,10 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
 	// Read the banner data.
 	static const int MAX_BANNER_SIZE = (CARD_BANNER_W * CARD_BANNER_H * 2);
 	uint8_t bannerbuf[MAX_BANNER_SIZE];
-	this->file->seek(this->dataOffset + direntry.iconaddr);
-	size_t size = this->file->read(bannerbuf, bannersize);
+	size_t size = file->seekAndRead(dataOffset + direntry.iconaddr,
+					bannerbuf, bannersize);
 	if (size != bannersize) {
-		// Error reading the banner data.
+		// Seek and/or read error.
 		return nullptr;
 	}
 
@@ -518,10 +517,10 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
 	} else {
 		// Read the palette data.
 		uint16_t palbuf[256];
-		this->file->seek(this->dataOffset + direntry.iconaddr + bannersize);
-		size = this->file->read(palbuf, sizeof(palbuf));
+		size = file->seekAndRead(dataOffset + direntry.iconaddr + bannersize,
+					 palbuf, sizeof(palbuf));
 		if (size != sizeof(palbuf)) {
-			// Error reading the palette data.
+			// Seek and/or read error.
 			return nullptr;
 		}
 
@@ -911,8 +910,8 @@ int GameCubeSave::loadFieldData(void)
 
 	// Description.
 	char desc_buf[64];
-	d->file->seek(d->dataOffset + d->direntry.commentaddr);
-	size_t size = d->file->read(desc_buf, sizeof(desc_buf));
+	size_t size = d->file->seekAndRead(d->dataOffset + d->direntry.commentaddr,
+					   desc_buf, sizeof(desc_buf));
 	if (size == sizeof(desc_buf)) {
 		// Add the description.
 		// NOTE: Some games have garbage after the first NULL byte

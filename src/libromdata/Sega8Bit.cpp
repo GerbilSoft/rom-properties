@@ -102,13 +102,8 @@ int Sega8BitPrivate::addField_string_sdsc(const rp_char *name, uint16_t ptr)
 		return 0;
 	}
 
-	int ret = file->seek(ptr);
-	if (ret != 0) {
-		return ret;
-	}
-
 	char strbuf[256];
-	size_t size = file->read(strbuf, sizeof(strbuf));
+	size_t size = file->seekAndRead(ptr, strbuf, sizeof(strbuf));
 	if (size > 0 && size <= sizeof(strbuf)) {
 		// NOTE: SDSC documentation says these strings should be ASCII.
 		// Since SDSC was introduced in 2001, I'll interpret them as cp1252.
@@ -146,12 +141,11 @@ Sega8Bit::Sega8Bit(IRpFile *file)
 	}
 
 	// Read the ROM header.
-	int ret = d->file->seek(0x7FE0);
-	if (ret != 0)
+	size_t size = d->file->seekAndRead(0x7FE0, &d->romHeader, sizeof(d->romHeader));
+	if (size != sizeof(d->romHeader)) {
+		// Seek and/or read error.
 		return;
-	size_t size = d->file->read(&d->romHeader, sizeof(d->romHeader));
-	if (size != sizeof(d->romHeader))
-		return;
+	}
 
 	// Check if this ROM image is supported.
 	DetectInfo info;

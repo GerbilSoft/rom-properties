@@ -280,15 +280,9 @@ size_t CIAReader::read(void *ptr, size_t size)
 
 	if (!d->cipher) {
 		// No CIA encryption. Read directly from the file.
-		int ret = d->file->seek(d->content_offset + d->pos);
-		if (ret != 0) {
-			// Seek error.
-			m_lastError = d->file->lastError();
-			return 0;
-		}
-		size_t sz_read = d->file->read(ptr, size);
+		size_t sz_read = d->file->seekAndRead(d->content_offset + d->pos, ptr, size);
 		if (sz_read != size) {
-			// Read error.
+			// Seek and/or read error.
 			m_lastError = d->file->lastError();
 			if (m_lastError == 0) {
 				m_lastError = EIO;

@@ -195,16 +195,10 @@ int NEResourceReaderPrivate::loadResTbl(void)
 	// We're only interested in the first three sections.
 
 	// Load the resource table.
-	int ret = file->seek(rsrc_tbl_addr);
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		return q->m_lastError;
-	}
 	unique_ptr<uint8_t[]> rsrcTblData(new uint8_t[rsrc_tbl_size]);
-	size_t size = file->read(rsrcTblData.get(), rsrc_tbl_size);
+	size_t size = file->seekAndRead(rsrc_tbl_addr, rsrcTblData.get(), rsrc_tbl_size);
 	if (size != rsrc_tbl_size) {
-		// Read error.
+		// Seek and/or read error.
 		q->m_lastError = file->lastError();
 		return q->m_lastError;
 	}
@@ -223,7 +217,7 @@ int NEResourceReaderPrivate::loadResTbl(void)
 
 	// TODO: Overflow prevention.
 	// TODO: Use pointers for pos and endpos?
-	ret = -EIO;
+	int ret = -EIO;
 	while (pos < rsrc_tbl_size) {
 		// Read the next type ID.
 		if ((pos + 2) >= rsrc_tbl_size) {

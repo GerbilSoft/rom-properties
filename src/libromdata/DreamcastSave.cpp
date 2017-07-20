@@ -316,14 +316,12 @@ int64_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *v
  */
 unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 {
-	int ret = this->file->seek(address);
-	if (ret != 0)
-		return DC_HAVE_UNKNOWN;
-
 	DC_VMS_Header vms_header;
-	size_t size = this->file->read(&vms_header, sizeof(vms_header));
-	if (size != sizeof(vms_header))
+	size_t size = file->seekAndRead(address, &vms_header, sizeof(vms_header));
+	if (size != sizeof(vms_header)) {
+		// Seek and/or read error.
 		return DC_HAVE_UNKNOWN;
+	}
 
 	// Validate the description fields.
 	// The description fields cannot contain any control characters
@@ -503,8 +501,8 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2];
 		uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4];
 	} palette;
-	this->file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
-	size_t size = this->file->read(palette.u16, sizeof(palette.u16));
+	file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
+	size_t size = file->read(palette.u16, sizeof(palette.u16));
 	if (size != sizeof(palette)) {
 		// Error loading the palette.
 		return nullptr;
@@ -533,7 +531,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		uint32_t u32[DC_VMS_ICON_DATA_SIZE/4];
 	} icon_buf;
 	for (int i = 0; i < icon_count; i++) {
-		size_t size = this->file->read(icon_buf.u8, sizeof(icon_buf.u8));
+		size_t size = file->read(icon_buf.u8, sizeof(icon_buf.u8));
 		if (size != sizeof(icon_buf.u8))
 			break;
 
@@ -612,14 +610,10 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2];
 			uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4];
 		} palette;
-		int ret = this->file->seek(vms_header_offset + vms_header.icondata_vms.color_icon_addr);
-		if (ret != 0) {
-			// Error seeking to the icon data.
-			return nullptr;
-		}
-		size_t size = this->file->read(palette.u16, sizeof(palette.u16));
+		size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.color_icon_addr,
+						palette.u16, sizeof(palette.u16));
 		if (size != sizeof(palette)) {
-			// Error loading the palette.
+			// Seek and/or read error.
 			return nullptr;
 		}
 
@@ -635,7 +629,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			uint8_t u8[DC_VMS_ICON_DATA_SIZE];
 			uint32_t u32[DC_VMS_ICON_DATA_SIZE/4];
 		} icon_buf;
-		size = this->file->read(icon_buf.u8, sizeof(icon_buf.u8));
+		size = file->read(icon_buf.u8, sizeof(icon_buf.u8));
 		if (size != sizeof(icon_buf.u8)) {
 			// Error loading the icon data.
 			return nullptr;
@@ -666,14 +660,10 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		uint8_t u8[DC_VMS_ICONDATA_MONO_ICON_SIZE];
 		uint32_t u32[DC_VMS_ICONDATA_MONO_ICON_SIZE/4];
 	} icon_buf;
-	int ret = this->file->seek(vms_header_offset + vms_header.icondata_vms.mono_icon_addr);
-	if (ret != 0) {
-		// Error seeking to the icon data.
-		return nullptr;
-	}
-	size_t size = this->file->read(icon_buf.u8, sizeof(icon_buf.u8));
+	size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.mono_icon_addr,
+					icon_buf.u8, sizeof(icon_buf.u8));
 	if (size != sizeof(icon_buf.u8)) {
-		// Error loading the icon data.
+		// Seek and/or read error.
 		return nullptr;
 	}
 
@@ -742,15 +732,15 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 	const uint32_t sz_icons = (uint32_t)sizeof(vms_header) +
 		DC_VMS_ICON_PALETTE_SIZE +
 		(vms_header.icon_count * DC_VMS_ICON_DATA_SIZE);
-	if ((int64_t)sz_icons + eyecatch_size > this->file->size()) {
+	if ((int64_t)sz_icons + eyecatch_size > file->size()) {
 		// File is NOT big enough.
 		return nullptr;
 	}
 
 	// Load the eyecatch data.
 	unique_ptr<uint8_t[]> data(new uint8_t[eyecatch_size]);
-	this->file->seek(vms_header_offset + sz_icons);
-	size_t size = this->file->read(data.get(), eyecatch_size);
+	file->seek(vms_header_offset + sz_icons);
+	size_t size = file->read(data.get(), eyecatch_size);
 	if (size != eyecatch_size) {
 		// Error loading the eyecatch data.
 		return nullptr;

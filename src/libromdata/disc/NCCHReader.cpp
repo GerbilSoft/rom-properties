@@ -336,23 +336,20 @@ size_t NCCHReaderPrivate::readFromROM(uint32_t offset, void *ptr, size_t size)
 		return 0;
 	}
 
-	// Seek to the start of the data.
+	// Seek to the start of the data and read it.
 	const int64_t phys_addr = ncch_offset + offset;
-	int ret = (useDiscReader ? discReader->seek(phys_addr) : file->seek(phys_addr));
-	if (ret != 0) {
-		// Seek error.
+	size_t sz_read;
+	if (useDiscReader) {
+		sz_read = discReader->seekAndRead(phys_addr, ptr, size);
+	} else {
+		sz_read = file->seekAndRead(phys_addr, ptr, size);
+	}
+	if (sz_read != size) {
+		// Seek and/or read error.
 		q->m_lastError = (useDiscReader ? discReader->lastError() : file->lastError());
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		return 0;
-	}
-
-	// Read the data.
-	size_t sz_read = (useDiscReader ? discReader->read(ptr, size) : file->read(ptr, size));
-	if (sz_read != size) {
-		// Short read.
-		q->m_lastError = (useDiscReader ? discReader->lastError() : file->lastError());
 	}
 
 	// Data read successfully.
@@ -403,19 +400,11 @@ int NCCHReaderPrivate::loadExHeader(void)
 	// Load the ExHeader.
 	// ExHeader is stored immediately after the main header.
 	int64_t prev_pos = q->tell();
-	int ret = q->seek(sizeof(N3DS_NCCH_Header_t));
-	if (ret != 0) {
-		// Seek error.
-		q->m_lastError = file->lastError();
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		q->seek(prev_pos);
-		return -4;
-	}
-	size_t size = q->read(&ncch_exheader, exheader_length);
+	q->m_lastError = 0;
+	size_t size = q->seekAndRead(sizeof(N3DS_NCCH_Header_t),
+				     &ncch_exheader, exheader_length);
 	if (size != exheader_length) {
-		// Read error.
+		// Seek and/or read error.
 		q->m_lastError = file->lastError();
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;

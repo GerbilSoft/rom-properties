@@ -117,29 +117,20 @@ WiiU::WiiU(IRpFile *file)
 	info.header.pData = reinterpret_cast<const uint8_t*>(&d->discHeader);
 	info.ext = nullptr;	// Not needed for Wii U.
 	info.szFile = d->file->size();
-	bool isValid = (isRomSupported_static(&info) >= 0);
-	if (!isValid)
+	if (isRomSupported_static(&info) < 0) {
+		// Disc image is invalid.
 		return;
+	}
 
 	// Verify the secondary magic number at 0x10000.
 	static const uint8_t wiiu_magic[4] = {0xCC, 0x54, 0x9E, 0xB9};
-	int ret = d->file->seek(0x10000);
-	if (ret != 0) {
-		// Seek error.
-		return;
-	}
-
 	uint8_t disc_magic[4];
-	size = d->file->read(disc_magic, sizeof(disc_magic));
+	size = d->file->seekAndRead(0x10000, disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
-		// Read error.
+		// Seek and/or read error.
 		return;
 	}
-
-	if (!memcmp(disc_magic, wiiu_magic, sizeof(wiiu_magic))) {
-		// Secondary magic matches.
-		d->isValid = true;
-	}
+	d->isValid = !memcmp(disc_magic, wiiu_magic, sizeof(wiiu_magic));
 }
 
 /** ROM detection functions. **/

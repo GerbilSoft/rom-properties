@@ -83,24 +83,25 @@ int GcnPartitionPrivate::loadBootBlockAndInfo(void)
 	}
 
 	// Load the boot block and boot info.
+	// TODO: Consolidate into a single read?
 	RP_Q(GcnPartition);
-	int ret = q->seek(GCN_Boot_Block_ADDRESS);
-	if (ret != 0) {
-		// Seek failed.
+	q->m_lastError = 0;
+	size_t size = q->seekAndRead(GCN_Boot_Block_ADDRESS, &bootBlock, sizeof(bootBlock));
+	if (size != sizeof(bootBlock)) {
+		// Seek and/or read failed.
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
 		return -q->m_lastError;
 	}
 
-	// TODO: Consolidate into a single read?
-	size_t size = q->read(&bootBlock, sizeof(bootBlock));
-	if (size != sizeof(bootBlock)) {
-		// bootBlock read failed.
-		q->m_lastError = EIO;
-		return -q->m_lastError;
-	}
+	q->m_lastError = 0;
 	size = q->read(&bootInfo, sizeof(bootInfo));
 	if (size != sizeof(bootInfo)) {
 		// bootInfo read failed.
-		q->m_lastError = EIO;
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
 		return -q->m_lastError;
 	}
 

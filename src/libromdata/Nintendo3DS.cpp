@@ -330,15 +330,10 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Read the SMDH section.
-			int ret = file->seek(le32_to_cpu(mxh.hb3dsx_header.smdh_offset));
-			if (ret != 0) {
-				// Seek error.
-				return -4;
-			}
-			size_t size = file->read(&smdh, sizeof(smdh));
+			size_t size = file->seekAndRead(le32_to_cpu(mxh.hb3dsx_header.smdh_offset), &smdh, sizeof(smdh));
 			if (size != sizeof(smdh)) {
-				// Error reading the SMDH section.
-				return -5;
+				// Seek and/or read error.
+				return -4;
 			}
 
 			// SMDH section has been read.
@@ -357,7 +352,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// NOTE: CIA header should have been loaded by the constructor.
 			if (!(headers_loaded & HEADER_CIA)) {
 				// CIA header wasn't loaded...
-				return -6;
+				return -5;
 			}
 
 			// Do we have a meta section?
@@ -371,14 +366,10 @@ int Nintendo3DSPrivate::loadSMDH(void)
 						toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
 						toNext64(le32_to_cpu((uint32_t)mxh.cia_header.content_size)) +
 						(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
-				int ret = file->seek(addr);
-				if (ret == 0) {
-					// Read the SMDH section.
-					size_t size = file->read(&smdh, sizeof(smdh));
-					if (size == sizeof(smdh)) {
-						// SMDH section read.
-						break;
-					}
+				size_t size = file->seekAndRead(addr, &smdh, sizeof(smdh));
+				if (size == sizeof(smdh)) {
+					// SMDH section read.
+					break;
 				}
 			}
 
@@ -393,23 +384,23 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			NCCHReader *const ncch_reader = loadNCCH();
 			if (!ncch_reader || !ncch_reader->isOpen()) {
 				// Unable to open the primary NCCH.
-				return -7;
+				return -6;
 			}
 
 			unique_ptr<IRpFile> f_icon(ncch_reader->open(N3DS_NCCH_SECTION_EXEFS, "icon"));
 			if (!f_icon) {
 				// Failed to open "icon".
-				return -8;
+				return -7;
 			} else if (f_icon->size() < (int64_t)sizeof(smdh)) {
 				// Icon is too small.
-				return -9;
+				return -8;
 			}
 
 			// Load the SMDH section.
 			size_t size = f_icon->read(&smdh, sizeof(smdh));
 			if (size != sizeof(smdh)) {
 				// Read error.
-				return -10;
+				return -9;
 			}
 			break;
 		}
@@ -632,29 +623,23 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 
 	/** Read the ticket. **/
 
-	// Determine the ticket starting address.
+	// Determine the ticket starting address
+	// and read the signature type.
 	const uint32_t ticket_start = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
 			toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size));
 	uint32_t addr = ticket_start;
-	int ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		return -2;
-	}
-
-	// Read the signature type.
 	uint32_t signature_type;
-	size_t size = file->read(&signature_type, sizeof(signature_type));
+	size_t size = file->seekAndRead(addr, &signature_type, sizeof(signature_type));
 	if (size != sizeof(signature_type)) {
-		// Read error.
-		return -3;
+		// Seek and/or read error.
+		return -2;
 	}
 	signature_type = be32_to_cpu(signature_type);
 
 	// Verify the signature type.
 	if ((signature_type & 0xFFFFFFF8) != 0x00010000) {
 		// Invalid signature type.
-		return -4;
+		return -3;
 	}
 
 	// Skip over the signature and padding.
@@ -674,27 +659,22 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	uint32_t sig_len = sig_len_tbl[signature_type & 0x07];
 	if (sig_len == 0) {
 		// Invalid signature type.
-		return -4;
+		return -3;
 	}
 
 	// Make sure the ticket is large enough.
 	const uint32_t ticket_size = le32_to_cpu(mxh.cia_header.ticket_size);
 	if (ticket_size < (sizeof(N3DS_Ticket_t) + sig_len)) {
 		// Ticket is too small.
-		return -5;
+		return -4;
 	}
 
 	// Read the ticket.
 	addr += sizeof(signature_type) + sig_len;
-	ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		return -6;
-	}
-	size = file->read(&mxh.ticket, sizeof(mxh.ticket));
+	size = file->seekAndRead(addr, &mxh.ticket, sizeof(mxh.ticket));
 	if (size != sizeof(mxh.ticket)) {
-		// Read error.
-		return -7;
+		// Seek and/or read error.
+		return -5;
 	}
 
 	/** Read the TMD. **/
@@ -703,60 +683,42 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	const uint32_t tmd_start = ticket_start +
 			toNext64(le32_to_cpu(mxh.cia_header.ticket_size));
 	addr = tmd_start;
-	ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		return -8;
-	}
-
-	// Read the signature type.
-	size = file->read(&signature_type, sizeof(signature_type));
+	size = file->seekAndRead(addr, &signature_type, sizeof(signature_type));
 	if (size != sizeof(signature_type)) {
-		// Read error.
-		return -9;
+		// Seek and/or read error.
+		return -6;
 	}
 	signature_type = be32_to_cpu(signature_type);
 
 	// Verify the signature type.
 	if ((signature_type & 0xFFFFFFF8) != 0x00010000) {
 		// Invalid signature type.
-		return -10;
+		return -7;
 	}
 
 	// Skip over the signature and padding.
 	sig_len = sig_len_tbl[signature_type & 0x07];
 	if (sig_len == 0) {
 		// Invalid signature type.
-		return -11;
+		return -7;
 	}
 
 	// Make sure the TMD is large enough.
 	const uint32_t tmd_size = le32_to_cpu(mxh.cia_header.tmd_size);
 	if (tmd_size < (sizeof(N3DS_TMD_t) + sig_len)) {
 		// TMD is too small.
-		return -12;
+		return -8;
 	}
 
 	// Read the TMD.
 	addr += sizeof(signature_type) + sig_len;
-	ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		return -13;
-	}
-	size = file->read(&mxh.tmd_header, sizeof(mxh.tmd_header));
+	size = file->seekAndRead(addr, &mxh.tmd_header, sizeof(mxh.tmd_header));
 	if (size != sizeof(mxh.tmd_header)) {
-		// Read error.
-		return -14;
+		// Seek and/or read error.
+		return -9;
 	}
 
 	// Load the content chunk records.
-	addr += sizeof(N3DS_TMD_t);
-	ret = file->seek(addr);
-	if (ret != 0) {
-		// Seek error.
-		return -15;
-	}
 	content_count = be16_to_cpu(mxh.tmd_header.content_count);
 	if (content_count > 255) {
 		// TODO: Do any titles have more than 255 contents?
@@ -765,12 +727,14 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	}
 	content_chunks.reset(new N3DS_Content_Chunk_Record_t[content_count]);
 	const size_t content_chunks_size = content_count * sizeof(N3DS_Content_Chunk_Record_t);
-	size = file->read(content_chunks.get(), content_chunks_size);
+
+	addr += sizeof(N3DS_TMD_t);
+	size = file->seekAndRead(addr, content_chunks.get(), content_chunks_size);
 	if (size != content_chunks_size) {
-		// Read error.
+		// Seek and/or read error.
 		content_count = 0;
 		content_chunks.reset(nullptr);
-		return -16;
+		return -10;
 	}
 
 	// Store the content start address.
