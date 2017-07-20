@@ -308,15 +308,15 @@ void RomFields::detach(void)
  * Get the abbreviation of an age rating organization.
  * (TODO: Full name function?)
  * @param country Rating country. (See AgeRatingCountry.)
- * @return Abbreviation (in ASCII), or nullptr if invalid.
+ * @return Abbreviation, or nullptr if invalid.
  */
-const char *RomFields::ageRatingAbbrev(int country)
+const rp_char *RomFields::ageRatingAbbrev(int country)
 {
-	static const char abbrevs[16][8] = {
-		"CERO", "ESRB", "",        "USK",
-		"PEGI", "MEKU", "PEGI-PT", "BBFC",
-		"AGCB", "GRB",  "CGSRR",   "",
-		"", "", "", ""
+	static const rp_char abbrevs[16][8] = {
+		_RP("CERO"), _RP("ESRB"), _RP(""),        _RP("USK"),
+		_RP("PEGI"), _RP("MEKU"), _RP("PEGI-PT"), _RP("BBFC"),
+		_RP("AGCB"), _RP("GRB"),  _RP("CGSRR"),   _RP(""),
+		_RP(""),     _RP(""),     _RP(""),        _RP(""),
 	};
 
 	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
@@ -325,7 +325,7 @@ const char *RomFields::ageRatingAbbrev(int country)
 		return nullptr;
 	}
 
-	const char *ret = abbrevs[country];
+	const rp_char *ret = abbrevs[country];
 	if (ret[0] == 0) {
 		// Empty string. Return nullptr instead.
 		ret = nullptr;
@@ -344,25 +344,25 @@ const char *RomFields::ageRatingAbbrev(int country)
  * @param rating Rating value.
  * @return Human-readable string, or empty string if the rating isn't active.
  */
-string RomFields::ageRatingDecode(int country, uint16_t rating)
+rp_string RomFields::ageRatingDecode(int country, uint16_t rating)
 {
 	if (!(rating & AGEBF_ACTIVE)) {
 		// Rating isn't active.
-		return string();
+		return rp_string();
 	}
 
 	// Check for special statuses.
-	const char *s_rating = nullptr;
+	const rp_char *s_rating = nullptr;
 	if (rating & RomFields::AGEBF_PROHIBITED) {
 		// Prohibited.
 		// TODO: Better description?
-		s_rating = "No";
+		s_rating = _RP("No");
 	} else if (rating & RomFields::AGEBF_PENDING) {
 		// Rating is pending.
-		s_rating = "RP";
+		s_rating = _RP("RP");
 	} else if (rating & RomFields::AGEBF_NO_RESTRICTION) {
 		// No age restriction.
-		s_rating = "All";
+		s_rating = _RP("All");
 	} else {
 		// Use the age rating.
 		// TODO: Verify these.
@@ -370,19 +370,19 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_JAPAN:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
-						s_rating = "A";
+						s_rating = _RP("A");
 						break;
 					case 12:
-						s_rating = "B";
+						s_rating = _RP("B");
 						break;
 					case 15:
-						s_rating = "C";
+						s_rating = _RP("C");
 						break;
 					case 17:
-						s_rating = "D";
+						s_rating = _RP("D");
 						break;
 					case 18:
-						s_rating = "Z";
+						s_rating = _RP("Z");
 						break;
 					default:
 						// Unknown rating.
@@ -393,22 +393,22 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_USA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 3:
-						s_rating = "eC";
+						s_rating = _RP("eC");
 						break;
 					case 6:
-						s_rating = "E";
+						s_rating = _RP("E");
 						break;
 					case 10:
-						s_rating = "E10+";
+						s_rating = _RP("E10+");
 						break;
 					case 13:
-						s_rating = "T";
+						s_rating = _RP("T");
 						break;
 					case 17:
-						s_rating = "M";
+						s_rating = _RP("M");
 						break;
 					case 18:
-						s_rating = "AO";
+						s_rating = _RP("AO");
 						break;
 					default:
 						// Unknown rating.
@@ -419,19 +419,19 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 			case AGE_AUSTRALIA:
 				switch (rating & RomFields::AGEBF_MIN_AGE_MASK) {
 					case 0:
-						s_rating = "G";
+						s_rating = _RP("G");
 						break;
 					case 7:
-						s_rating = "PG";
+						s_rating = _RP("PG");
 						break;
 					case 14:
-						s_rating = "M";
+						s_rating = _RP("M");
 						break;
 					case 15:
-						s_rating = "MA15+";
+						s_rating = _RP("MA15+");
 						break;
 					case 18:
-						s_rating = "R18+";
+						s_rating = _RP("R18+");
 						break;
 					default:
 						// Unknown rating.
@@ -445,26 +445,82 @@ string RomFields::ageRatingDecode(int country, uint16_t rating)
 		}
 	}
 
-	string str;
-	str.reserve(8);
+	rp_string rps;
+	rps.reserve(8);
 	if (s_rating) {
-		str = s_rating;
+		rps = s_rating;
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		char buf[4];
-		snprintf(buf, sizeof(buf), "%u", rating & RomFields::AGEBF_MIN_AGE_MASK);
-		str = buf;
+		rps = rp_sprintf("%u", rating & RomFields::AGEBF_MIN_AGE_MASK);
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
 		// Rating may change during online play.
 		// TODO: Add a description of this somewhere.
-		// NOTE: Unicode U+00B0, encoded as UTF-8.
-		str += "\xC2\xB0";
+#ifdef RP_UTF16
+		// Unicode U+00B0, encoded as UTF-16.
+		rps += _RP("\x00B0");
+#else /* RP_UTF8 */
+		// Unicode U+00B0, encoded as UTF-8.
+		rps += _RP("\xC2\xB0");
+#endif
 	}
 
-	return str;
+	return rps;
+}
+
+/**
+ * Decode all age ratings into a human-readable string.
+ * This includes the names of the rating organizations.
+ * @param age_ratings Age ratings.
+ * @param newlines If true, print newlines after every four ratings.
+ * @return Human-readable string, or empty string if no ratings.
+ */
+rp_string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines)
+{
+	assert(age_ratings != nullptr);
+	if (!age_ratings)
+		return rp_string();
+
+	// Convert the age ratings field to a string.
+	rp_string rps;
+	rps.reserve(64);
+	unsigned int ratings_count = 0;
+	for (int i = 0; i < (int)age_ratings->size(); i++) {
+		const uint16_t rating = age_ratings->at(i);
+		if (!(rating & RomFields::AGEBF_ACTIVE))
+			continue;
+
+		if (ratings_count > 0) {
+			// Append a comma.
+			if (newlines && ratings_count % 4 == 0) {
+				// 4 ratings per line.
+				rps += _RP(",\n");
+			} else {
+				rps += _RP(", ");
+			}
+		}
+
+		const rp_char *const abbrev = RomFields::ageRatingAbbrev(i);
+		if (abbrev) {
+			rps += abbrev;
+		} else {
+			// Invalid age rating organization.
+			// Use the numeric index.
+			rps += rp_sprintf("%d", i);
+		}
+		rps += _RP_CHR('=');
+		rps += ageRatingDecode(i, rating);
+		ratings_count++;
+	}
+
+	if (ratings_count == 0) {
+		// No age ratings.
+		rps = _RP("None");
+	}
+
+	return rps;
 }
 
 /** Field accessors. **/

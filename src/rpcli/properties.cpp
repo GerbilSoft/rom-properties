@@ -363,42 +363,10 @@ public:
 		os << ColonPad(field.width, romField->name.c_str());
 		StreamStateSaver state(os);
 
+		// Convert the age ratings field to a string.
 		const RomFields::age_ratings_t *age_ratings = romField->data.age_ratings;
-		assert(age_ratings != nullptr);
-		if (!age_ratings) {
-			os << "Unknown";
-			return os;
-		}
-
-		bool printedOne = false;
-		for (int i = 0; i < (int)age_ratings->size(); i++) {
-			const uint16_t rating = age_ratings->at(i);
-			if (!(rating & RomFields::AGEBF_ACTIVE))
-				continue;
-
-			if (printedOne) {
-				// Append a comma.
-				os << ", ";
-			}
-			printedOne = true;
-
-			const char *abbrev = RomFields::ageRatingAbbrev(i);
-			if (abbrev) {
-				os << abbrev;
-			} else {
-				// Invalid age rating.
-				// Use the numeric index.
-				os << i;
-			}
-			os << '=';
-			os << RomFields::ageRatingDecode(i, rating);
-		}
-
-		if (!printedOne) {
-			// No age ratings.
-			os << "None";
-		}
-
+		rp_string rps = RomFields::ageRatingsDecode(age_ratings, false);
+		os << RP2U8_s(rps);
 		return os;
 	}
 };
