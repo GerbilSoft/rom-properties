@@ -540,7 +540,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				for (int i = iconAnimData->count-1; i >= 0; i--) {
 					if (iconAnimData->frames[i] && iconAnimData->frames[i]->isValid()) {
 						// Convert to HBITMAP using the window background color.
-						// TODO: Redo if the window background color changes.
 						hbmpIconFrames[i] = RpImageWin32::toHBITMAP(iconAnimData->frames[i], gdipBgColor, szIcon, true);
 					}
 				}
@@ -555,7 +554,6 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 				last_frame_number = 0;
 
 				// Convert to HBITMAP using the window background color.
-				// TODO: Redo if the window background color changes.
 				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
 			}
 		}
@@ -2321,11 +2319,26 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Reload the images.
 			RP_ShellPropSheetExt_Private *const d = static_cast<RP_ShellPropSheetExt_Private*>(
 				GetProp(hDlg, RP_ShellPropSheetExt_Private::D_PTR_PROP));
-			if (d) {
-				// Reload images in case the background color changed.
-				d->loadImages();
-				// Reinitialize the alternate row color.
-				d->colorAltRow = LibWin32Common::getAltRowColor();
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			// Reload images in case the background color changed.
+			d->loadImages();
+			// Reinitialize the alternate row color.
+			d->colorAltRow = LibWin32Common::getAltRowColor();
+			// Invalidate the banner and icon rectangles.
+			if (d->hbmpBanner) {
+				const RECT rectBitmap = {
+					d->ptBanner.x, d->ptBanner.y,
+					d->ptBanner.x + d->szBanner.cx,
+					d->ptBanner.y + d->szBanner.cy,
+				};
+				InvalidateRect(d->hDlgSheet, &rectBitmap, FALSE);
+			}
+			if (d->szIcon.cx > 0) {
+				InvalidateRect(d->hDlgSheet, &rectIcon, FALSE);
 			}
 			break;
 		}
