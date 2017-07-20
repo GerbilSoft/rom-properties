@@ -2338,7 +2338,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				InvalidateRect(d->hDlgSheet, &rectBitmap, FALSE);
 			}
 			if (d->szIcon.cx > 0) {
-				InvalidateRect(d->hDlgSheet, &rectIcon, FALSE);
+				InvalidateRect(d->hDlgSheet, &d->rectIcon, FALSE);
 			}
 			break;
 		}
