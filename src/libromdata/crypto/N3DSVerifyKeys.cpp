@@ -335,6 +335,11 @@ KeyManager::VerifyResult N3DSVerifyKeys::loadNCCHKeys(u128_t pKeyOut[2],
 	// KeyNormal, not KeyX. Return immediately.
 	if (isFixedKey) {
 		// Copy the keys.
+		assert(keyX_data[0].key != nullptr);
+		if (!keyX_data[0].key) {
+			// Should not happen...
+			return KeyManager::VERIFY_KEY_DB_ERROR;
+		}
 		const int idx2 = (keyX_name[1] ? 1 : 0);
 		memcpy(pKeyOut[0].u8, keyX_data[0].key, 16);
 		memcpy(pKeyOut[1].u8, keyX_data[idx2].key, 16);
