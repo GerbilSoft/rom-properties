@@ -221,8 +221,7 @@ public:
 
 		auto list_data = romField->data.list_data;
 		assert(list_data != nullptr);
-
-		if (!romField->data.list_data) {
+		if (!list_data) {
 			return os << "[ERROR: No list data.]";
 		}
 
