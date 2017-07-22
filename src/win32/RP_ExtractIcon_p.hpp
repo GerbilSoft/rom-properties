@@ -23,7 +23,7 @@
 #define __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__
 
 #include "RP_ExtractIcon.hpp"
-#include "libromdata/img/TCreateThumbnail.hpp"
+#include "CreateThumbnail.hpp"
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define RP_ExtractIconPrivate RP_ExtractIcon_Private
@@ -31,14 +31,13 @@
 // CLSID
 extern const CLSID CLSID_RP_ExtractIcon;
 
-class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
+class RP_ExtractIcon_Private
 {
 	public:
 		RP_ExtractIcon_Private();
-		virtual ~RP_ExtractIcon_Private();
+		~RP_ExtractIcon_Private();
 
 	private:
-		typedef TCreateThumbnail<HBITMAP> super;
 		RP_DISABLE_COPY(RP_ExtractIcon_Private)
 
 	public:
@@ -47,6 +46,9 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;
+
+		// CreateThumbnail instance.
+		CreateThumbnail thumbnailer;
 
 	public:
 		/**
@@ -114,49 +116,6 @@ class RP_ExtractIcon_Private : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		LONG Fallback(HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
-
-	public:
-		/** TCreateThumbnail functions. **/
-
-		/**
-		 * Wrapper function to convert rp_image* to ImgClass.
-		 * @param img rp_image
-		 * @return ImgClass
-		 */
-		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override final;
-
-		/**
-		 * Wrapper function to check if an ImgClass is valid.
-		 * @param imgClass ImgClass
-		 * @return True if valid; false if not.
-		 */
-		virtual bool isImgClassValid(const HBITMAP &imgClass) const override final;
-
-		/**
-		 * Wrapper function to get a "null" ImgClass.
-		 * @return "Null" ImgClass.
-		 */
-		virtual HBITMAP getNullImgClass(void) const override final;
-
-		/**
-		 * Free an ImgClass object.
-		 * @param imgClass ImgClass object.
-		 */
-		virtual void freeImgClass(HBITMAP &imgClass) const override final;
-
-		/**
-		 * Rescale an ImgClass using nearest-neighbor scaling.
-		 * @param imgClass ImgClass object.
-		 * @param sz New size.
-		 * @return Rescaled ImgClass.
-		 */
-		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override final;
-
-		/**
-		 * Get the proxy for the specified URL.
-		 * @return Proxy, or empty string if no proxy is needed.
-		 */
-		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const override final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_P_HPP__ */
