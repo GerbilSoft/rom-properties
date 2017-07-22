@@ -56,18 +56,19 @@ template<uint32_t flags>
 static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_block *dxt1_src)
 {
 	// Convert the first two colors from RGB565.
+	uint16_t c0, c1;
 	if (flags & DXTn_PALETTE_BIG_ENDIAN) {
-		pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[0]));
-		pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[1]));
+		c0 = be16_to_cpu(dxt1_src->color[0]);
+		c1 = be16_to_cpu(dxt1_src->color[1]);
 	} else {
-		pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(dxt1_src->color[0]));
-		pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(dxt1_src->color[1]));
+		c0 = le16_to_cpu(dxt1_src->color[0]);
+		c1 = le16_to_cpu(dxt1_src->color[1]);
 	}
+	pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c0);
+	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
 
 	// Calculate the second two colors.
-	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) ||
-	    (pal[0].u32 > pal[1].u32))
-	{
+	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) || (c0 > c1)) {
 		// color0 > color1
 		pal[2].r = ((2 * pal[0].r) + pal[1].r) / 3;
 		pal[2].g = ((2 * pal[0].g) + pal[1].g) / 3;
