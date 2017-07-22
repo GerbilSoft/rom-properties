@@ -312,11 +312,14 @@ void RomFields::detach(void)
  */
 const rp_char *RomFields::ageRatingAbbrev(int country)
 {
-	static const rp_char abbrevs[16][8] = {
-		_RP("CERO"), _RP("ESRB"), _RP(""),        _RP("USK"),
+	// FIXME: Use rp_char[16][8] instead of rp_char*[16].
+	// We can't use the 2D array due to issues with _RP()
+	// on MSVC versions older than 2015.
+	static const rp_char *const abbrevs[16] = {
+		_RP("CERO"), _RP("ESRB"), nullptr,        _RP("USK"),
 		_RP("PEGI"), _RP("MEKU"), _RP("PEGI-PT"), _RP("BBFC"),
-		_RP("AGCB"), _RP("GRB"),  _RP("CGSRR"),   _RP(""),
-		_RP(""),     _RP(""),     _RP(""),        _RP(""),
+		_RP("AGCB"), _RP("GRB"),  _RP("CGSRR"),   nullptr,
+		nullptr,     nullptr,     nullptr,        nullptr,
 	};
 
 	assert(country >= 0 && country < ARRAY_SIZE(abbrevs));
@@ -325,12 +328,7 @@ const rp_char *RomFields::ageRatingAbbrev(int country)
 		return nullptr;
 	}
 
-	const rp_char *ret = abbrevs[country];
-	if (ret[0] == 0) {
-		// Empty string. Return nullptr instead.
-		ret = nullptr;
-	}
-	return ret;
+	return abbrevs[country];
 }
 
 /**
