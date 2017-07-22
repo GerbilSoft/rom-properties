@@ -94,6 +94,12 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	, m_palette(nullptr)
 	, m_palette_len(0)
 {
+	if (width == 0 || height == 0) {
+		// Error initializing the backend.
+		// (Width, height, or format is probably broken.)
+		return;
+	}
+
 	// Allocate memory for the image.
 	m_data_len = height * stride;
 	assert(m_data_len > 0);

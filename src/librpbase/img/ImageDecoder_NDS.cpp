@@ -63,6 +63,11 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// Convert the palette.
 	// TODO: Optimize using pointers instead of indexes?

@@ -57,6 +57,11 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 	, m_gdipFmt(0)
 	, m_pGdipPalette(nullptr)
 {
+	if (this->width <= 0 || this->height <= 0) {
+		// Image did not initialize successfully.
+		return;
+	}
+
 	// Initialize GDI+.
 	m_gdipToken = GdiplusHelper::InitGDIPlus();
 	assert(m_gdipToken != 0);

@@ -93,6 +93,12 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete[] tmap;
+		delete img;
+		return nullptr;
+	}
 
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
@@ -199,6 +205,12 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete[] tmap;
+		delete img;
+		return nullptr;
+	}
 
 	// Convert the palette.
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);

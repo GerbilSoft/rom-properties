@@ -66,6 +66,11 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];

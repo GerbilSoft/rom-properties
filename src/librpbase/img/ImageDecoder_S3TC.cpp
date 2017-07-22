@@ -273,6 +273,12 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Temporary tile buffer.
@@ -350,6 +356,12 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
 	// Temporary tile buffer.
@@ -448,6 +460,11 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// DXT3 block format.
 	struct dxt3_block {
@@ -557,6 +574,11 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// DXT5 block format.
 	struct dxt5_block {

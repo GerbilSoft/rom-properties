@@ -409,14 +409,24 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	// Update the PNG info.
 	png_read_update_info(png_ptr, info_ptr);
 
+	// Create the rp_image.
+
+	// Initialize the row pointers array.
+	img = new rp_image(width, height, fmt);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
 	// Allocate the row pointers.
 	row_pointers = (png_byte**)png_malloc(png_ptr, sizeof(png_byte*) * height);
 	if (!row_pointers) {
+		delete img;
 		return nullptr;
 	}
 
 	// Initialize the row pointers array.
-	img = new rp_image(width, height, fmt);
 	for (int y = height-1; y >= 0; y--) {
 		row_pointers[y] = static_cast<png_byte*>(img->scanLine(y));
 	}

@@ -51,8 +51,8 @@ rp_image *rp_image::dup(void) const
 	assert(height != 0);
 
 	rp_image *img = new rp_image(width, height, format);
-	if (width == 0 || height == 0) {
-		// One of the dimensions is 0.
+	if (!img->isValid()) {
+		// Image is invalid. Return it immediately.
 		return img;
 	}
 
@@ -130,6 +130,11 @@ rp_image *rp_image::squared(void) const
 			return this->dup();
 		}
 		sq_img = new rp_image(width, width, rp_image::FORMAT_ARGB32);
+		if (!sq_img->isValid()) {
+			// Could not allocate the image.
+			delete sq_img;
+			return nullptr;
+		}
 
 		const int addToTop = (width-height)/2;
 		const int addToBottom = addToTop + ((width-height)%2);
@@ -165,6 +170,11 @@ rp_image *rp_image::squared(void) const
 			return this->dup();
 		}
 		sq_img = new rp_image(height, height, rp_image::FORMAT_ARGB32);
+		if (!sq_img->isValid()) {
+			// Could not allocate the image.
+			delete sq_img;
+			return nullptr;
+		}
 
 		// NOTE: Mega Man Gold amiibo is "shifting" by 1px when
 		// refreshing in Win7. (switching from icon to thumbnail)
