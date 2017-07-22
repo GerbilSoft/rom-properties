@@ -199,6 +199,17 @@ class ImageDecoder
 			const uint8_t *img_buf, int img_siz);
 
 		/**
+		 * Convert a DXT3 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT3 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDXT3(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
+		/**
 		 * Convert a DXT5 image to rp_image.
 		 * @param width Image width.
 		 * @param height Image height.

@@ -60,6 +60,7 @@ ASSERT_STRUCT(argb32_t, 4);
 enum DXTn_Palette_Flags {
 	DXTn_PALETTE_BIG_ENDIAN		= (1 << 0),
 	DXTn_PALETTE_COLOR3_ALPHA	= (1 << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+	DXTn_PALETTE_COLOR0_LE_COLOR1	= (1 << 2),	// Assume color0 <= color1. (DXT2/DXT3)
 };
 
 /**
@@ -81,7 +82,10 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 	}
 
 	// Calculate the second two colors.
-	if (pal[0].u32 > pal[1].u32) {
+	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) ||
+	    (pal[0].u32 > pal[1].u32))
+	{
+		// color0 > color1
 		pal[2].r = ((2 * pal[0].r) + pal[1].r) / 3;
 		pal[2].g = ((2 * pal[0].g) + pal[1].g) / 3;
 		pal[2].b = ((2 * pal[0].b) + pal[1].b) / 3;
@@ -92,6 +96,7 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 		pal[3].b = ((2 * pal[1].b) + pal[0].b) / 3;
 		pal[3].a = 0xFF;
 	} else {
+		// color0 <= color1
 		pal[2].r = (pal[0].r + pal[1].r) / 2;
 		pal[2].g = (pal[0].g + pal[1].g) / 2;
 		pal[2].b = (pal[0].b + pal[1].b) / 2;
@@ -297,6 +302,77 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		uint32_t indexes = dxt1_src->indexes;
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
 			tileBuf[i] = pal[indexes & 3].u32;
+		}
+
+		// Blit the tile to the main image buffer.
+		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+	} }
+
+	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a DXT3 image to rp_image.
+ * TODO: UNTESTED - get a DXT3 texture to test!
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf DXT5 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDXT3(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= (width * height));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < (width * height))
+	{
+		return nullptr;
+	}
+
+	// DXT3 uses 2x2 blocks of 4x4 tiles.
+	assert(width % 8 == 0);
+	assert(height % 8 == 0);
+	if (width % 8 != 0 || height % 8 != 0)
+		return nullptr;
+
+	// Calculate the total number of tiles.
+	const unsigned int tilesX = (unsigned int)(width / 4);
+	const unsigned int tilesY = (unsigned int)(height / 4);
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+
+	// DXT3 block format.
+	struct dxt3_block {
+		uint64_t alpha;		// Alpha values. (4-bit per pixel)
+		dxt1_block colors;	// DXT1-style color block.
+	};
+	ASSERT_STRUCT(dxt3_block, 16);
+	const dxt3_block *dxt3_src = reinterpret_cast<const dxt3_block*>(img_buf);
+
+	// Temporary tile buffer.
+	uint32_t tileBuf[4*4];
+
+	for (unsigned int y = 0; y < tilesY; y++) {
+	for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
+		// Decode the DXT3 tile palette.
+		argb32_t pal[4];
+		decode_DXTn_tile_color_palette<DXTn_PALETTE_COLOR0_LE_COLOR1>(pal, &dxt3_src->colors);
+
+		// Process the 16 color indexes and apply alpha.
+		uint32_t indexes = dxt3_src->colors.indexes;
+		uint64_t alpha = dxt3_src->alpha;
+		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
+			argb32_t color = pal[indexes & 3];
+			// TODO: Verify alpha value handling for DXT3.
+			color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
+			tileBuf[i] = color.u32;
 		}
 
 		// Blit the tile to the main image buffer.
