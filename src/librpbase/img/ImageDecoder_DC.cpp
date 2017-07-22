@@ -24,6 +24,10 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+// C++ includes.
+#include <memory>
+using std::unique_ptr;
+
 namespace LibRpBase {
 
 /**
@@ -192,113 +196,66 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 
-	// Convert one line at a time. (16-bit -> ARGB32)
-	// Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs#L149
-	uint32_t *dest = static_cast<uint32_t*>(img->bits());
-	const unsigned int destMax = width * height;
+	// Convert the palette.
+	static const unsigned int pal_entry_count = 1024;
+	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
 		case PXF_ARGB1555:
-			for (unsigned int y = 0; y < (unsigned int)height; y += 2) {
-			for (unsigned int x = 0; x < (unsigned int)width; x += 2) {
-				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= (unsigned int)img_siz) {
-					// Out of bounds.
-					delete[] tmap;
-					delete img;
-					return nullptr;
-				}
-
-				// Palette index.
-				// Each block of 2x2 pixels uses a 4-element block of
-				// the palette, so the palette index needs to be
-				// multiplied by 4.
-				unsigned int palIdx = img_buf[srcIdx] * 4;
-
-				for (unsigned int x2 = 0; x2 < 2; x2++) {
-				for (unsigned int y2 = 0; y2 < 2; y2++) {
-					const unsigned int destIdx = (((y + y2) * width) + (x + x2));
-					if (destIdx > destMax) {
-						// Out of bounds.
-						delete[] tmap;
-						delete img;
-						return nullptr;
-					}
-					dest[destIdx] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
-					palIdx++;
-				} }
-			} }
+			for (unsigned int i = 0; i < pal_entry_count; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i]);
+			}
 			break;
-
 		case PXF_RGB565:
-			for (int y = 0; y < height; y += 2) {
-			for (int x = 0; x < width; x += 2) {
-				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= (unsigned int)img_siz) {
-					// Out of bounds.
-					delete[] tmap;
-					delete img;
-					return nullptr;
-				}
-
-				// Palette index.
-				// Each block of 2x2 pixels uses a 4-element block of
-				// the palette, so the palette index needs to be
-				// multiplied by 4.
-				unsigned int palIdx = img_buf[srcIdx] * 4;
-
-				for (unsigned int x2 = 0; x2 < 2; x2++) {
-				for (unsigned int y2 = 0; y2 < 2; y2++) {
-					const unsigned int destIdx = (((y + y2) * width) + (x + x2));
-					if (destIdx > destMax) {
-						// Out of bounds.
-						delete[] tmap;
-						delete img;
-						return nullptr;
-					}
-					dest[destIdx] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
-					palIdx++;
-				} }
-			} }
+			for (unsigned int i = 0; i < pal_entry_count; i++) {
+				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i]);
+			}
 			break;
-
 		case PXF_ARGB4444:
-			for (int y = 0; y < height; y += 2) {
-			for (int x = 0; x < width; x += 2) {
-				const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
-				if (srcIdx >= (unsigned int)img_siz) {
-					// Out of bounds.
-					delete[] tmap;
-					delete img;
-					return nullptr;
-				}
-
-				// Palette index.
-				// Each block of 2x2 pixels uses a 4-element block of
-				// the palette, so the palette index needs to be
-				// multiplied by 4.
-				unsigned int palIdx = img_buf[srcIdx] * 4;
-
-				for (unsigned int x2 = 0; x2 < 2; x2++) {
-				for (unsigned int y2 = 0; y2 < 2; y2++) {
-					const unsigned int destIdx = (((y + y2) * width) + (x + x2));
-					if (destIdx > destMax) {
-						// Out of bounds.
-						delete[] tmap;
-						delete img;
-						return nullptr;
-					}
-					dest[destIdx] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[palIdx]));
-					palIdx++;
-				} }
-			} }
+			for (unsigned int i = 0; i < pal_entry_count; i++) {
+				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i]);
+			}
 			break;
-
 		default:
 			assert(!"Invalid pixel format for this function.");
 			delete[] tmap;
 			delete img;
 			return nullptr;
 	}
+
+	// Convert one line at a time. (16-bit -> ARGB32)
+	// Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs#L149
+	uint32_t *dest = static_cast<uint32_t*>(img->bits());
+	const unsigned int destMax = width * height;
+	for (unsigned int y = 0; y < (unsigned int)height; y += 2) {
+	for (unsigned int x = 0; x < (unsigned int)width; x += 2) {
+		const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
+		if (srcIdx >= (unsigned int)img_siz) {
+			// Out of bounds.
+			delete[] tmap;
+			delete img;
+			return nullptr;
+		}
+
+		// Palette index.
+		// Each block of 2x2 pixels uses a 4-element block of
+		// the palette, so the palette index needs to be
+		// multiplied by 4.
+		unsigned int palIdx = img_buf[srcIdx] * 4;
+
+		// NOTE: Can't use BlitTile() due to the inverted x/y order here.
+		for (unsigned int x2 = 0; x2 < 2; x2++) {
+		for (unsigned int y2 = 0; y2 < 2; y2++) {
+			const unsigned int destIdx = (((y + y2) * width) + (x + x2));
+			if (destIdx > destMax) {
+				// Out of bounds.
+				delete[] tmap;
+				delete img;
+				return nullptr;
+			}
+			dest[destIdx] = palette[palIdx];
+			palIdx++;
+		} }
+	} }
 
 	// Image has been converted.
 	delete[] tmap;
