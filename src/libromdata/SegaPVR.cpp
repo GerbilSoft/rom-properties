@@ -679,7 +679,7 @@ SegaPVR::SegaPVR(IRpFile *file)
 	if (size != sizeof(header))
 		return;
 
-	// Check if this ROM image is supported.
+	// Check if this PVR image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
 	info.header.size = sizeof(header);
@@ -962,7 +962,7 @@ int SegaPVR::loadFieldData(void)
 		// File isn't open.
 		return -EBADF;
 	} else if (!d->isValid || d->pvrType < 0) {
-		// Unknown ROM image type.
+		// Unknown PVR image type.
 		return -EIO;
 	}
 
