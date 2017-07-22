@@ -214,7 +214,8 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
-		case PVR_IMG_VQ_MIPMAP: {
+		case PVR_IMG_VQ_MIPMAP:
+		case PVR_IMG_SMALL_VQ_MIPMAP: {
 			// Skip the mipmaps.
 			// Reference: https://github.com/nickworonekin/puyotools/blob/ccab8e7f788435d1db1fa417b80b96ed29f02b79/Libraries/VrSharp/PvrTexture/PvrTexture.cs#L216
 			// TODO: For square, determine bpp from pixel format.
@@ -231,6 +232,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 					mipmap_size = (3*bpp)>>3;
 					break;
 				case PVR_IMG_VQ_MIPMAP:
+				case PVR_IMG_SMALL_VQ_MIPMAP:
 					// VQ mipmap is technically 2 bits per pixel.
 					bpp = 2;
 					break;
@@ -285,9 +287,30 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		case PVR_IMG_VQ_MIPMAP:
 			// VQ images have 1024 palette entries,
 			// and the image data is 2bpp.
+			// Skip the palette, since that's handled later.
 			mipmap_size += (1024*2);
 			expect_size = (pvrHeader.width * pvrHeader.height) / 4;
 			break;
+
+		case PVR_IMG_SMALL_VQ: {
+			// Small VQ images have up to 1024 palette entries based on width,
+			// and the image data is 2bpp.
+			const unsigned int pal_siz =
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+			expect_size = pal_siz + ((pvrHeader.width * pvrHeader.height) / 4);
+			break;
+		}
+
+		case PVR_IMG_SMALL_VQ_MIPMAP: {
+			// Small VQ images have up to 1024 palette entries based on width,
+			// and the image data is 2bpp.
+			// Skip the palette, since that's handled later.
+			const unsigned int pal_siz =
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+			mipmap_size += pal_siz;
+			expect_size = ((pvrHeader.width * pvrHeader.height) / 4);
+			break;
+		}
 
 		default:
 			// TODO: Other formats.
@@ -431,6 +454,83 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 				case PVR_PX_ARGB4444:
 					ret_img = ImageDecoder::fromDreamcastVQ16<ImageDecoder::PXF_ARGB4444>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+		}
+
+		case PVR_IMG_SMALL_VQ: {
+			// Small VQ images have up to 1024 palette entries based on width.
+			const unsigned int pal_siz =
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
+			const uint8_t *const img_buf = buf.get() + pal_siz;
+			const unsigned int img_siz = expect_size - pal_siz;
+
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_ARGB1555>(
+						pvrHeader.width, pvrHeader.height,
+						img_buf, img_siz, pal_buf, pal_siz);
+					break;
+
+				case PVR_PX_RGB565:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_RGB565>(
+						pvrHeader.width, pvrHeader.height,
+						img_buf, img_siz, pal_buf, pal_siz);
+					break;
+
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_ARGB4444>(
+						pvrHeader.width, pvrHeader.height,
+						img_buf, img_siz, pal_buf, pal_siz);
+					break;
+
+				default:
+					// TODO
+					return nullptr;
+			}
+			break;
+		}
+
+		case PVR_IMG_SMALL_VQ_MIPMAP: {
+			// Small VQ images have up to 1024 palette entries based on width.
+			// This is stored before the mipmaps, so we need to read it manually.
+			const unsigned int pal_siz =
+				ImageDecoder::calcDreamcastSmallVQPaletteEntries(pvrHeader.width) * 2;
+			ret = file->seek(gbixStart);
+			if (ret != 0) {
+				// Seek error.
+				return nullptr;
+			}
+			unique_ptr<uint16_t> pal_buf(new uint16_t[pal_siz/2]);
+			size = file->read(pal_buf.get(), pal_siz);
+			if (size != pal_siz) {
+				// Read error.
+				return nullptr;
+			}
+
+			switch (pvrHeader.pvr.px_format) {
+				case PVR_PX_ARGB1555:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_ARGB1555>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
+					break;
+
+				case PVR_PX_RGB565:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_RGB565>(
+						pvrHeader.width, pvrHeader.height,
+						buf.get(), expect_size, pal_buf.get(), pal_siz);
+					break;
+
+				case PVR_PX_ARGB4444:
+					ret_img = ImageDecoder::fromDreamcastSmallVQ16<ImageDecoder::PXF_ARGB4444>(
 						pvrHeader.width, pvrHeader.height,
 						buf.get(), expect_size, pal_buf.get(), pal_siz);
 					break;

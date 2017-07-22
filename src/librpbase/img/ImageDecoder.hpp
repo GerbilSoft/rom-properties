@@ -219,7 +219,50 @@ class ImageDecoder
 		static rp_image *fromDreamcastVQ16(int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
+
+		/**
+		 * Get the number of palette entries for Dreamcast SmallVQ textures.
+		 * TODO: constexpr?
+		 * @param width Texture width.
+		 * @return Number of palette entries.
+		 */
+		static inline int calcDreamcastSmallVQPaletteEntries(int width);
+
+		/**
+		 * Convert a Dreamcast small vector-quantized image to rp_image.
+		 * @tparam px_format Palette pixel format.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf VQ image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @param pal_buf Palette buffer.
+		 * @param pal_siz Size of palette data. [must be >= 64*2, 256*2, 512*2, or 1024*2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		template<PixelFormat px_format>
+		static rp_image *fromDreamcastSmallVQ16(int width, int height,
+			const uint8_t *img_buf, int img_siz,
+			const uint16_t *pal_buf, int pal_siz);
 };
+
+/**
+ * Get the number of palette entries for Dreamcast SmallVQ textures.
+ * TODO: constexpr?
+ * @param width Texture width.
+ * @return Number of palette entries.
+ */
+inline int ImageDecoder::calcDreamcastSmallVQPaletteEntries(int width)
+{
+	if (width <= 16) {
+		return 64;
+	} else if (width <= 32) {
+		return 256;
+	} else if (width <= 64) {
+		return 512;
+	} else {
+		return 1024;
+	}
+}
 
 }
 
