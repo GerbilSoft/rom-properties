@@ -296,8 +296,8 @@ template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
 	const uint16_t *pal_buf, int pal_siz);
 
 /**
- * Convert a linear 16-bit image to rp_image.
- * @tparam px_format 16-bit pixel format.
+ * Convert a linear 16-bit RGB image to rp_image.
+ * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
  * @param img_buf	[in] 16-bit image buffer.
@@ -305,17 +305,11 @@ template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
  * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-template<ImageDecoder::PixelFormat px_format>
-rp_image *ImageDecoder::fromLinear16(int width, int height,
+rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
+	int width, int height,
 	const uint16_t *img_buf, int img_siz, int pitch)
 {
 	static const int bytespp = 2;
-
-	// Verify px_format.
-	static_assert(px_format == PXF_ARGB1555 ||
-		      px_format == PXF_RGB565 ||
-		      px_format == PXF_ARGB4444,
-		      "Invalid pixel format for this function.");
 
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -389,24 +383,13 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 			break;
 
 		default:
-			assert(!"Invalid pixel format for this function.");
+			assert(!"Unsupported pixel format.");
 			return nullptr;
 	}
 
 	// Image has been converted.
 	return img;
 }
-
-// Explicit instantiation.
-template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz, int pitch);
-template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz, int pitch);
-template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz, int pitch);
 
 /**
  * Convert a linear monochrome image to rp_image.

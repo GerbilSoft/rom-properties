@@ -93,8 +93,8 @@ class ImageDecoder
 			const uint16_t *pal_buf, int pal_siz);
 
 		/**
-		 * Convert a linear 16-bit image to rp_image.
-		 * @tparam px_format 16-bit pixel format.
+		 * Convert a linear 16-bit RGB image to rp_image.
+		 * @param px_format	[in] 16-bit pixel format.
 		 * @param width		[in] Image width.
 		 * @param height	[in] Image height.
 		 * @param img_buf	[in] 16-bit image buffer.
@@ -102,8 +102,8 @@ class ImageDecoder
 		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format>
-		static rp_image *fromLinear16(int width, int height,
+		static rp_image *fromLinear16(PixelFormat px_format,
+			int width, int height,
 			const uint16_t *img_buf, int img_siz, int pitch = 0);
 
 		/**

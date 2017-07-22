@@ -773,7 +773,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		case DC_VMS_EYECATCH_ARGB4444: {
 			// ARGB4444 eyecatch.
 			// FIXME: Completely untested.
-			img_banner = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
+			img_banner = ImageDecoder::fromLinear16(ImageDecoder::PXF_ARGB4444,
 				DC_VMS_EYECATCH_W, DC_VMS_EYECATCH_H,
 				reinterpret_cast<const uint16_t*>(data.get()), DC_VMS_EYECATCH_ARGB4444_DATA_SIZE);
 			break;

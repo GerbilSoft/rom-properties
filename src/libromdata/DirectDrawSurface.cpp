@@ -361,6 +361,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Uncompressed linear RGB data.
 		unsigned int bytespp = 0;
 		ImageDecoder::PixelFormat px_format = getPixelFormat(ddspf, &bytespp);
+		if (px_format == ImageDecoder::PXF_UNKNOWN || bytespp == 0) {
+			// Unknown pixel format.
+			return nullptr;
+		}
 
 		unsigned int pitch = ddsHeader.dwPitchOrLinearSize;
 		if (ddsHeader.dwPitchOrLinearSize == 0) {
@@ -384,26 +388,18 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			return nullptr;
 		}
 
-		switch (px_format) {
-			case ImageDecoder::PXF_ARGB1555: {
-				ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
+		switch (bytespp) {
+			case sizeof(uint16_t):
+				// 16-bit RGB image.
+				ret_img = ImageDecoder::fromLinear16(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, pitch);
 				break;
-			}
-
-			case ImageDecoder::PXF_RGB565: {
-				printf("X\n");
-				ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
-					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					reinterpret_cast<const uint16_t*>(buf.get()),
-					expected_size, pitch);
-				break;
-			}
 
 			default:
 				// TODO: Implement other formats.
+				assert(!"Unsupported pixel format.");
 				break;
 		}
 	}

@@ -363,29 +363,25 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 
 		case PVR_IMG_RECTANGLE:
+			ImageDecoder::PixelFormat px_format;
 			switch (pvrHeader.pvr.px_format) {
 				case PVR_PX_ARGB1555:
-					ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					px_format = ImageDecoder::PXF_ARGB1555;
 					break;
-
 				case PVR_PX_RGB565:
-					ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					px_format = ImageDecoder::PXF_RGB565;
 					break;
-
 				case PVR_PX_ARGB4444:
-					ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
+					px_format = ImageDecoder::PXF_ARGB4444;
 					break;
-
 				default:
 					// TODO
+					assert(!"Unsupported pixel format.");
 					return nullptr;
 			}
+			ret_img = ImageDecoder::fromLinear16(px_format,
+				pvrHeader.width, pvrHeader.height,
+				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case PVR_IMG_VQ: {
