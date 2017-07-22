@@ -110,9 +110,14 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
  * Decode the DXT5 alpha channel value.
  * @param a3	3-bit alpha selector code.
  * @param alpha	2-element alpha array from dxt5_block.
+ * @param c0c1	For S2TC, select c0 or c1.
  * @return Alpha channel value.
  */
-static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2])
+static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
+#ifndef ENABLE_S3TC
+	, unsigned int c0c1
+#endif
+	)
 {
 	unsigned int a_ret = 255;
 
@@ -190,7 +195,7 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2])
 			default:
 				// Values 2-5 aren't used.
 				// a0 or a1 are selected based on the pixel number.
-				a_ret = 0;
+				a_ret = alpha[c0c1];
 				break;
 		}
 	} else {
@@ -210,7 +215,7 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2])
 			default:
 				// Values 2-5 aren't used.
 				// a0 or a1 are selected based on the pixel number.
-				a_ret = 0;
+				a_ret = alpha[c0c1];
 				break;
 		}
 	}
@@ -583,14 +588,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 			}
 			argb32_t color = pal[sel];
 			// Decode the alpha channel value.
-			sel = alpha48 & 7;
-			if (sel >= 2 && sel <= 5) {
-				// Select the alpha value based on the pixel number.
-				color.a = dxt5_src->alpha[i & 1];
-			} else {
-				// Decode the alpha value.
-				color.a = decode_DXT5_alpha(sel, dxt5_src->alpha);
-			}
+			color.a = decode_DXT5_alpha(sel, dxt5_src->alpha, i & 1);
 #endif /* ENABLE_S3TC */
 			tileBuf[i] = color.u32;
 		}
