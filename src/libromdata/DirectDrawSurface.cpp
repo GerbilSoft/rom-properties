@@ -126,31 +126,53 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
-		if (ddsHeader.dwPitchOrLinearSize >= file_sz + img_data_start) {
-			// dwPitchOrLinearSize should be the size of the
-			// compressed image data, but it's incorrect.
+
+#ifdef ENABLE_S3TC
+		// NOTE: dwPitchOrLinearSize is not necessarily correct.
+		// Calculate the expected size.
+		uint32_t expected_size;
+		switch (ddspf.dwFourCC) {
+			case DDPF_FOURCC_DXT1:
+				// 16 pixels compressed into 64 bits. (4bpp)
+				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
+				break;
+
+			case DDPF_FOURCC_DXT2:
+			case DDPF_FOURCC_DXT3:
+			case DDPF_FOURCC_DXT4:
+			case DDPF_FOURCC_DXT5:
+				// 16 pixels compressed into 128 bits. (8bpp)
+				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
+				break;
+
+			default:
+				// Not supported.
+				return nullptr;
+		}
+
+		if (expected_size >= file_sz + img_data_start) {
+			// File is too small.
 			return nullptr;
 		}
 
-		unique_ptr<uint8_t[]> buf(new uint8_t[ddsHeader.dwPitchOrLinearSize]);
-		size_t size = file->read(buf.get(), ddsHeader.dwPitchOrLinearSize);
-		if (size != ddsHeader.dwPitchOrLinearSize) {
+		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
+		size_t size = file->read(buf.get(), expected_size);
+		if (size != expected_size) {
 			// Read error.
 			return nullptr;
 		}
 
-#ifdef ENABLE_S3TC
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
 				ret_img = ImageDecoder::fromDXT1(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), ddsHeader.dwPitchOrLinearSize);
+					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT5:
 				ret_img = ImageDecoder::fromDXT5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), ddsHeader.dwPitchOrLinearSize);
+					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT2:
@@ -158,7 +180,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DDPF_FOURCC_DXT4:
 			default:
 				// Not supported.
-				break;
+				return nullptr;
 		}
 #else /* !ENABLE_S3TC */
 		// S3TC is disabled in this build.
