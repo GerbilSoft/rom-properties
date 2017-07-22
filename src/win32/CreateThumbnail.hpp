@@ -25,6 +25,10 @@
 #include "libromdata/img/TCreateThumbnail.hpp"
 #include "libwin32common/RpWin32_sdk.h"
 
+/**
+ * CreateThumbnail implementation for Windows.
+ * This version uses alpha transparency.
+ */
 class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 {
 	public:
@@ -42,7 +46,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param img rp_image
 		 * @return ImgClass
 		 */
-		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override final;
+		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override;
 
 		/**
 		 * Wrapper function to check if an ImgClass is valid.
@@ -69,13 +73,46 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param sz New size.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override final;
+		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override;
 
 		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
 		virtual LibRpBase::rp_string proxyForUrl(const LibRpBase::rp_string &url) const override final;
+};
+
+/**
+ * CreateThumbnail implementation for Windows.
+ * This version does NOT use alpha transparency.
+ * COLOR_WINDOW is used for the background.
+ */
+class CreateThumbnailNoAlpha : public CreateThumbnail
+{
+	public:
+		CreateThumbnailNoAlpha() { }
+
+	private:
+		typedef CreateThumbnail super;
+		RP_DISABLE_COPY(CreateThumbnailNoAlpha)
+
+	public:
+		/** TCreateThumbnail functions. **/
+
+		/**
+		 * Wrapper function to convert rp_image* to ImgClass.
+		 * @param img rp_image
+		 * @return ImgClass
+		 */
+		virtual HBITMAP rpImageToImgClass(const LibRpBase::rp_image *img) const override final;
+
+		/**
+		 * Rescale an ImgClass using nearest-neighbor scaling.
+		 * @param imgClass ImgClass object.
+		 * @param sz New size.
+		 * @return Rescaled ImgClass.
+		 */
+		virtual HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const override final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CREATETHUMBNAIL_HPP__ */
