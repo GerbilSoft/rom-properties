@@ -626,7 +626,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		case GVR_IMG_DXT1:
 #ifdef ENABLE_S3TC
 			// TODO: Determine if color 3 should be black or transparent.
-			ret_img = ImageDecoder::fromDXT1<true>(
+			ret_img = ImageDecoder::fromDXT1_GCN(
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size);
 			break;

@@ -176,15 +176,25 @@ class ImageDecoder
 		/* S3TC */
 
 		/**
-		 * Convert a DXT1 image to rp_image.
-		 * @tparam big_endian If true, the DXT1 is encoded using big-endian values.
+		 * Convert a GameCube DXT1 image to rp_image.
+		 * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
 		 * @param width Image width.
 		 * @param height Image height.
-		 * @param img_buf CI8 image buffer.
+		 * @param img_buf DXT1 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)/2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<bool big_endian>
+		static rp_image *fromDXT1_GCN(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a DXT1 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT1 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
 		static rp_image *fromDXT1(int width, int height,
 			const uint8_t *img_buf, int img_siz);
 #endif /* ENABLE_S3TC */

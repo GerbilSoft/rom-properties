@@ -96,8 +96,74 @@ DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
  */
 const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 {
-	// TODO
-	return nullptr;
+	if (img) {
+		// Image has already been loaded.
+		return img;
+	} else if (!this->file || !this->isValid) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	if (file->size() > 128*1024*1024) {
+		// Sanity check: DDS files shouldn't be more than 128 MB.
+		return nullptr;
+	}
+	const uint32_t file_sz = (uint32_t)file->size();
+
+	// Seek to the start of the image data.
+	static const unsigned int img_data_start = sizeof(DDS_HEADER) + 4;
+	int ret = file->seek(img_data_start);
+	if (ret != 0) {
+		// Seek error.
+		return nullptr;
+	}
+
+	// TODO:
+	// - Support more than just DXT1.
+	// - Verify that mipmaps are handled correctly.
+
+	// NOTE: Mipmaps are stored *after* the main image.
+	// Hence, no mipmap processing is necessary.
+	rp_image *ret_img = nullptr;
+	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
+	if (ddspf.dwFlags & DDPF_FOURCC) {
+		// Compressed RGB data.
+		if (ddsHeader.dwPitchOrLinearSize >= file_sz + img_data_start) {
+			// dwPitchOrLinearSize should be the size of the
+			// compressed image data, but it's incorrect.
+			return nullptr;
+		}
+
+		unique_ptr<uint8_t[]> buf(new uint8_t[ddsHeader.dwPitchOrLinearSize]);
+		size_t size = file->read(buf.get(), ddsHeader.dwPitchOrLinearSize);
+		if (size != ddsHeader.dwPitchOrLinearSize) {
+			// Read error.
+			return nullptr;
+		}
+
+#ifdef ENABLE_S3TC
+		switch (ddspf.dwFourCC) {
+			case DDPF_FOURCC_DXT1:
+				ret_img = ImageDecoder::fromDXT1(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), ddsHeader.dwPitchOrLinearSize);
+				break;
+
+			case DDPF_FOURCC_DXT2:
+			case DDPF_FOURCC_DXT3:
+			case DDPF_FOURCC_DXT4:
+			case DDPF_FOURCC_DXT5:
+			default:
+				// Not supported.
+				break;
+		}
+#else /* !ENABLE_S3TC */
+		// S3TC is disabled in this build.
+		break;
+#endif
+	}
+
+	return ret_img;
 }
 
 /** DirectDrawSurface **/
