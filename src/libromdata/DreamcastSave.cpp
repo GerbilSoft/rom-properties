@@ -150,6 +150,27 @@ class DreamcastSavePrivate : public RomDataPrivate
 		// Graphic eyecatch sizes.
 		static const uint32_t eyecatch_sizes[4];
 
+		// VMS icon struct.
+		// For processing VMS icons only;
+		// do not use directly for saving!
+		// NOTE: If using `icon_mono`, don't use `palette` or `icon_color`.
+		union VmsIcon_buf_t {
+			struct {
+				union {
+					uint16_t u16[DC_VMS_ICON_PALETTE_SIZE >> 1];
+					uint32_t u32[DC_VMS_ICON_PALETTE_SIZE >> 2];
+				} palette;
+				union {
+					uint8_t   u8[DC_VMS_ICON_DATA_SIZE];
+					uint32_t u32[DC_VMS_ICON_DATA_SIZE >> 2];
+				} icon_color;
+			};
+			union {
+				uint8_t   u8[DC_VMS_ICONDATA_MONO_ICON_SIZE];
+				uint32_t u32[DC_VMS_ICONDATA_MONO_ICON_SIZE >> 2];
+			} icon_mono;
+		};
+
 		/**
 		 * Load the save file's icons.
 		 *
@@ -496,15 +517,14 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		return nullptr;
 	}
 
+	// Temporary icon buffer.
+	VmsIcon_buf_t buf;
+
 	// Load the palette.
-	union {
-		uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2];
-		uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4];
-	} palette;
-	file->seek(vms_header_offset + (uint32_t)sizeof(vms_header));
-	size_t size = file->read(palette.u16, sizeof(palette.u16));
-	if (size != sizeof(palette)) {
-		// Error loading the palette.
+	size_t size = file->seekAndRead(vms_header_offset + (uint32_t)sizeof(vms_header),
+					buf.palette.u16, sizeof(buf.palette.u16));
+	if (size != sizeof(buf.palette.u16)) {
+		// Seek and/or read error.
 		return nullptr;
 	}
 
@@ -512,7 +532,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 		// Apply 32-bit byteswapping to the palette.
 		// TODO: Use an IRpFile subclass that automatically byteswaps
 		// instead of doing manual byteswapping here?
-		__byte_swap_32_array(palette.u32, sizeof(palette.u32));
+		__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
 
 	this->iconAnimData = new IconAnimData();
@@ -526,27 +546,25 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	// Load the icons. (32x32, 4bpp)
 	// Icons are stored contiguously immediately after the palette.
-	union {
-		uint8_t u8[DC_VMS_ICON_DATA_SIZE];
-		uint32_t u32[DC_VMS_ICON_DATA_SIZE/4];
-	} icon_buf;
 	for (int i = 0; i < icon_count; i++) {
-		size_t size = file->read(icon_buf.u8, sizeof(icon_buf.u8));
-		if (size != sizeof(icon_buf.u8))
+		size_t size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
+		if (size != sizeof(buf.icon_color)) {
+			// Read error.
 			break;
+		}
 
 		if (this->saveType == SAVE_TYPE_DCI) {
 			// Apply 32-bit byteswapping to the palette.
 			// TODO: Use an IRpFile subclass that automatically byteswaps
 			// instead of doing manual byteswapping here?
-			__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
+			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
 		iconAnimData->delays[i] = delay;
 		iconAnimData->frames[i] = ImageDecoder::fromDreamcastCI4(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
-			icon_buf.u8, sizeof(icon_buf.u8),
-			palette.u16, sizeof(palette.u16));
+			buf.icon_color.u8, sizeof(buf.icon_color.u8),
+			buf.palette.u16, sizeof(buf.palette.u16));
 		if (!iconAnimData->frames[i])
 			break;
 
@@ -601,18 +619,17 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 	iconAnimData->delays[0].ms = 0;
 	iconAnimData->frames[0] = nullptr;
 
+	// Temporary icon buffer.
+	VmsIcon_buf_t buf;
+
 	// Do we have a color icon?
 	if (vms_header.icondata_vms.color_icon_addr >= sizeof(vms_header.icondata_vms)) {
 		// We have a color icon.
 
 		// Load the palette.
-		union {
-			uint16_t u16[DC_VMS_ICON_PALETTE_SIZE/2];
-			uint32_t u32[DC_VMS_ICON_PALETTE_SIZE/4];
-		} palette;
 		size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.color_icon_addr,
-						palette.u16, sizeof(palette.u16));
-		if (size != sizeof(palette)) {
+						buf.palette.u16, sizeof(buf.palette.u16));
+		if (size != sizeof(buf.palette.u16)) {
 			// Seek and/or read error.
 			return nullptr;
 		}
@@ -621,17 +638,13 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			// Apply 32-bit byteswapping to the palette.
 			// TODO: Use an IRpFile subclass that automatically byteswaps
 			// instead of doing manual byteswapping here?
-			__byte_swap_32_array(palette.u32, sizeof(palette.u32));
+			__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 		}
 
 		// Load the icon data.
-		union {
-			uint8_t u8[DC_VMS_ICON_DATA_SIZE];
-			uint32_t u32[DC_VMS_ICON_DATA_SIZE/4];
-		} icon_buf;
-		size = file->read(icon_buf.u8, sizeof(icon_buf.u8));
-		if (size != sizeof(icon_buf.u8)) {
-			// Error loading the icon data.
+		size = file->read(buf.icon_color.u8, sizeof(buf.icon_color.u8));
+		if (size != sizeof(buf.icon_color.u8)) {
+			// Read error.
 			return nullptr;
 		}
 
@@ -639,14 +652,14 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 			// Apply 32-bit byteswapping to the icon data.
 			// TODO: Use an IRpFile subclass that automatically byteswaps
 			// instead of doing manual byteswapping here?
-			__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
+			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
 		// Convert the icon to rp_image.
 		rp_image *img = ImageDecoder::fromDreamcastCI4(
 			DC_VMS_ICON_W, DC_VMS_ICON_H,
-			icon_buf.u8, sizeof(icon_buf.u8),
-			palette.u16, sizeof(palette.u16));
+			buf.icon_color.u8, sizeof(buf.icon_color.u8),
+			buf.palette.u16, sizeof(buf.palette.u16));
 		if (img) {
 			// Icon converted successfully.
 			iconAnimData->frames[0] = img;
@@ -656,13 +669,9 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 	// We don't have a color icon.
 	// Load the monochrome icon.
-	union {
-		uint8_t u8[DC_VMS_ICONDATA_MONO_ICON_SIZE];
-		uint32_t u32[DC_VMS_ICONDATA_MONO_ICON_SIZE/4];
-	} icon_buf;
 	size_t size = file->seekAndRead(vms_header_offset + vms_header.icondata_vms.mono_icon_addr,
-					icon_buf.u8, sizeof(icon_buf.u8));
-	if (size != sizeof(icon_buf.u8)) {
+					buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
+	if (size != sizeof(buf.icon_mono.u8)) {
 		// Seek and/or read error.
 		return nullptr;
 	}
@@ -671,13 +680,13 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 		// Apply 32-bit byteswapping to the icon data.
 		// TODO: Use an IRpFile subclass that automatically byteswaps
 		// instead of doing manual byteswapping here?
-		__byte_swap_32_array(icon_buf.u32, sizeof(icon_buf.u32));
+		__byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
 	}
 
 	// Convert the icon to rp_image.
 	rp_image *img = ImageDecoder::fromDreamcastMono(
 		DC_VMS_ICON_W, DC_VMS_ICON_H,
-		icon_buf.u8, sizeof(icon_buf.u8));
+		buf.icon_mono.u8, sizeof(buf.icon_mono.u8));
 	if (img) {
 		// Adjust the palette to use a more
 		// VMU-like color scheme.
