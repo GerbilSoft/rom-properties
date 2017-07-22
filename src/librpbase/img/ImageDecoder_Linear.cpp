@@ -298,16 +298,19 @@ template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
 /**
  * Convert a linear 16-bit image to rp_image.
  * @tparam px_format 16-bit pixel format.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf 16-bit image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)*2]
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 16-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+ * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
 template<ImageDecoder::PixelFormat px_format>
 rp_image *ImageDecoder::fromLinear16(int width, int height,
-	const uint16_t *img_buf, int img_siz)
+	const uint16_t *img_buf, int img_siz, int pitch)
 {
+	static const int bytespp = 2;
+
 	// Verify px_format.
 	static_assert(px_format == PXF_ARGB1555 ||
 		      px_format == PXF_RGB565 ||
@@ -318,11 +321,25 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= ((width * height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < ((width * height) * bytespp))
 	{
 		return nullptr;
+	}
+
+	// Line offset adjustment.
+	int line_offset_adj = 0;
+	assert(pitch >= 0);
+	if (pitch > 0) {
+		// Set line_offset_adj to the number of pixels we need to
+		// add to the end of each line to get to the next row.
+		assert(pitch % bytespp == 0);
+		if (pitch % bytespp != 0) {
+			// Invalid pitch.
+			return nullptr;
+		}
+		line_offset_adj = width - (pitch / bytespp);
 	}
 
 	// Create an rp_image.
@@ -343,6 +360,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 					img_buf++;
 					px_dest++;
 				}
+				img_buf += line_offset_adj;
 			}
 			break;
 
@@ -354,6 +372,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 					img_buf++;
 					px_dest++;
 				}
+				img_buf += line_offset_adj;
 			}
 			break;
 
@@ -365,6 +384,7 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 					img_buf++;
 					px_dest++;
 				}
+				img_buf += line_offset_adj;
 			}
 			break;
 
@@ -380,13 +400,13 @@ rp_image *ImageDecoder::fromLinear16(int width, int height,
 // Explicit instantiation.
 template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
 	int width, int height,
-	const uint16_t *img_buf, int img_siz);
+	const uint16_t *img_buf, int img_siz, int pitch);
 template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
 	int width, int height,
-	const uint16_t *img_buf, int img_siz);
+	const uint16_t *img_buf, int img_siz, int pitch);
 template rp_image *ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB4444>(
 	int width, int height,
-	const uint16_t *img_buf, int img_siz);
+	const uint16_t *img_buf, int img_siz, int pitch);
 
 /**
  * Convert a linear monochrome image to rp_image.

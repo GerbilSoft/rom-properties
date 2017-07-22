@@ -45,6 +45,8 @@ class ImageDecoder
 
 		// Pixel formats.
 		enum PixelFormat {
+			PXF_UNKNOWN,
+
 			// 16-bit
 			PXF_ARGB1555,
 			PXF_RGB565,
@@ -93,15 +95,16 @@ class ImageDecoder
 		/**
 		 * Convert a linear 16-bit image to rp_image.
 		 * @tparam px_format 16-bit pixel format.
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param img_buf 16-bit image buffer.
-		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 16-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
 		template<PixelFormat px_format>
 		static rp_image *fromLinear16(int width, int height,
-			const uint16_t *img_buf, int img_siz);
+			const uint16_t *img_buf, int img_siz, int pitch = 0);
 
 		/**
 		 * Convert a linear monochrome image to rp_image.

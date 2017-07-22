@@ -71,9 +71,170 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadImage(void);
+
+	public:
+		// TODO: Convert const rp_char* to rp_char[10].
+		// Can't do that right now due to issues with _RP() on
+		// MSVC versions older than 2015.
+
+		// Supported RGBA formats.
+		struct RGBA_Format_Table_t {
+			uint32_t Rmask;
+			uint32_t Gmask;
+			uint32_t Bmask;
+			uint32_t Amask;
+			const rp_char *desc;
+			uint8_t bits;		// Bits per pixel.
+			uint8_t px_format;	// ImageDecoder::PixelFormat
+		};
+		static const RGBA_Format_Table_t rgba_fmt_tbl[];
+
+		// Supported RGB formats.
+		struct RGB_Format_Table_t {
+			uint32_t Rmask;
+			uint32_t Gmask;
+			uint32_t Bmask;
+			const rp_char *desc;
+			uint8_t bits;		// Bits per pixel.
+			uint8_t px_format;	// ImageDecoder::PixelFormat
+		};
+		static const RGB_Format_Table_t rgb_fmt_tbl[];
+
+		/**
+		 * Get the format name of an RGB(A) DirectDraw surface pixel format.
+		 * @param ddspf DDS_PIXELFORMAT
+		 * @return Format name, or nullptr if not supported.
+		 */
+		static const rp_char *getRGBFormatName(const DDS_PIXELFORMAT &ddspf);
+
+		/**
+		 * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
+		 * @param ddspf	[in] DDS_PIXELFORMAT
+		 * @param bpp	[out,opt] Bytes per pixel. (15/16 becomes 2)
+		 * @return ImageDecoder::PixelFormat, or ImageDecoder::PXF_UNKNOWN if not supported.
+		 */
+		static ImageDecoder::PixelFormat getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp);
 };
 
 /** DirectDrawSurfacePrivate **/
+
+// Supported RGBA formats.
+const DirectDrawSurfacePrivate::RGBA_Format_Table_t DirectDrawSurfacePrivate::rgba_fmt_tbl[] = {
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x7C00, 0x03E0, 0x001F, 0x8000, _RP("ARGB1555"), 16, ImageDecoder::PXF_ARGB1555},
+	{0x001F, 0x03E0, 0x007C, 0x8000, _RP("ABGR1555"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0xF800, 0x07C0, 0x003E, 0x0001, _RP("RGBA1555"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0x003E, 0x03E0, 0x00F8, 0x0001, _RP("BGRA1555"), 16, ImageDecoder::PXF_UNKNOWN},
+};
+
+// Supported RGB formats.
+const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl[] = {
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("XRGB8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_UNKNOWN},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_UNKNOWN},
+	{0xF800, 0x07E0, 0x001F, _RP("RGB565"), 16, ImageDecoder::PXF_RGB565},
+	{0x001F, 0x07E0, 0xF800, _RP("BGR565"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0x7C00, 0x03E0, 0x001F, _RP("RGB555"), 15, ImageDecoder::PXF_UNKNOWN},
+	{0x001F, 0x03E0, 0x7C00, _RP("BGR555"), 15, ImageDecoder::PXF_UNKNOWN},
+};
+
+/**
+ * Get the format name of an RGB(A) DirectDraw surface pixel format.
+ * @param ddspf DDS_PIXELFORMAT
+ * @return Format name, or nullptr if not supported.
+ */
+const rp_char *DirectDrawSurfacePrivate::getRGBFormatName(const DDS_PIXELFORMAT &ddspf)
+{
+	assert(ddspf.dwFlags & DDPF_RGB);
+	assert(!(ddspf.dwFlags & (DDPF_FOURCC | DDPF_ALPHA | DDPF_YUV | DDPF_LUMINANCE)));
+
+	if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
+		// Texture has an alpha channel.
+		for (unsigned int i = 0; i < ARRAY_SIZE(rgba_fmt_tbl); i++) {
+			const RGBA_Format_Table_t *const fmt = &rgba_fmt_tbl[i];
+			if (ddspf.dwRGBBitCount == fmt->bits &&
+			    ddspf.dwRBitMask == fmt->Rmask &&
+			    ddspf.dwGBitMask == fmt->Gmask &&
+			    ddspf.dwBBitMask == fmt->Bmask &&
+			    ddspf.dwABitMask == fmt->Amask)
+			{
+				return fmt->desc;
+			}
+		}
+	} else {
+		// Texture does not have an alpha channel.
+		for (unsigned int i = 0; i < ARRAY_SIZE(rgb_fmt_tbl); i++) {
+			const RGB_Format_Table_t *const fmt = &rgb_fmt_tbl[i];
+			if (ddspf.dwRGBBitCount == fmt->bits &&
+			    ddspf.dwRBitMask == fmt->Rmask &&
+			    ddspf.dwGBitMask == fmt->Gmask &&
+			    ddspf.dwBBitMask == fmt->Bmask)
+			{
+				return fmt->desc;
+			}
+		}
+	}
+
+	// Format not found.
+	return nullptr;
+}
+
+/**
+ * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
+ * @param ddspf	[in] DDS_PIXELFORMAT
+ * @param bpp	[out,opt] Bytes per pixel. (15/16 becomes 2)
+ * @return ImageDecoder::PixelFormat, or ImageDecoder::PXF_UNKNOWN if not supported.
+ */
+ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp)
+{
+	assert(ddspf.dwFlags & DDPF_RGB);
+	assert(!(ddspf.dwFlags & (DDPF_FOURCC | DDPF_ALPHA | DDPF_YUV | DDPF_LUMINANCE)));
+
+	if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
+		// Texture has an alpha channel.
+		for (unsigned int i = 0; i < ARRAY_SIZE(rgba_fmt_tbl); i++) {
+			const RGBA_Format_Table_t *const fmt = &rgba_fmt_tbl[i];
+			if (ddspf.dwRGBBitCount == fmt->bits &&
+			    ddspf.dwRBitMask == fmt->Rmask &&
+			    ddspf.dwGBitMask == fmt->Gmask &&
+			    ddspf.dwBBitMask == fmt->Bmask &&
+			    ddspf.dwABitMask == fmt->Amask)
+			{
+				if (bytespp) {
+					*bytespp = (fmt->bits == 15 ? 2 : (fmt->bits / 8));
+				}
+				return (ImageDecoder::PixelFormat)fmt->px_format;
+			}
+		}
+	} else {
+		// Texture does not have an alpha channel.
+		for (unsigned int i = 0; i < ARRAY_SIZE(rgb_fmt_tbl); i++) {
+			const RGB_Format_Table_t *const fmt = &rgb_fmt_tbl[i];
+			if (ddspf.dwRGBBitCount == fmt->bits &&
+			    ddspf.dwRBitMask == fmt->Rmask &&
+			    ddspf.dwGBitMask == fmt->Gmask &&
+			    ddspf.dwBBitMask == fmt->Bmask)
+			{
+				if (bytespp) {
+					*bytespp = (fmt->bits == 15 ? 2 : (fmt->bits / 8));
+				}
+				return (ImageDecoder::PixelFormat)fmt->px_format;
+			}
+		}
+	}
+
+	// Format not found.
+	if (bytespp) {
+		*bytespp = 0;
+	}
+	return ImageDecoder::PXF_UNKNOWN;
+}
 
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
 	: super(q, file)
@@ -147,11 +308,13 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				return nullptr;
 		}
 
+		// Verify file size.
 		if (expected_size >= file_sz + img_data_start) {
 			// File is too small.
 			return nullptr;
 		}
 
+		// Read the texture data.
 		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
 		size_t size = file->read(buf.get(), expected_size);
 		if (size != expected_size) {
@@ -193,6 +356,55 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			default:
 				// Not supported.
 				return nullptr;
+		}
+	} else if (ddspf.dwFlags & DDPF_RGB) {
+		// Uncompressed linear RGB data.
+		unsigned int bytespp = 0;
+		ImageDecoder::PixelFormat px_format = getPixelFormat(ddspf, &bytespp);
+
+		unsigned int pitch = ddsHeader.dwPitchOrLinearSize;
+		if (ddsHeader.dwPitchOrLinearSize == 0) {
+			// Invalid pitch. Assume pitch == width * bytespp.
+			// TODO: Check for pitch is too small but non-zero?
+			pitch = ddsHeader.dwWidth * bytespp;
+		}
+		const unsigned int expected_size = ddsHeader.dwHeight * pitch;
+
+		// Verify file size.
+		if (expected_size >= file_sz + img_data_start) {
+			// File is too small.
+			return nullptr;
+		}
+
+		// Read the texture data.
+		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
+		size_t size = file->read(buf.get(), expected_size);
+		if (size != expected_size) {
+			// Read error.
+			return nullptr;
+		}
+
+		switch (px_format) {
+			case ImageDecoder::PXF_ARGB1555: {
+				ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_ARGB1555>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					reinterpret_cast<const uint16_t*>(buf.get()),
+					expected_size, pitch);
+				break;
+			}
+
+			case ImageDecoder::PXF_RGB565: {
+				printf("X\n");
+				ret_img = ImageDecoder::fromLinear16<ImageDecoder::PXF_RGB565>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					reinterpret_cast<const uint16_t*>(buf.get()),
+					expected_size, pitch);
+				break;
+			}
+
+			default:
+				// TODO: Implement other formats.
+				break;
 		}
 	}
 
@@ -510,74 +722,7 @@ int DirectDrawSurface::loadFieldData(void)
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
 		// Check the masks to determine the actual type.
-		const rp_char *pxfmt = nullptr;
-		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-			// Texture has an alpha channel.
-			struct RGBA_Format_Table_t {
-				unsigned int bits;
-				uint32_t Rmask;
-				uint32_t Gmask;
-				uint32_t Bmask;
-				uint32_t Amask;
-				const rp_char *desc;
-			};
-			static const RGBA_Format_Table_t fmt_tbl[] = {
-				{32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888")},
-				{32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888")},
-				{32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888")},
-				{32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888")},
-				{16, 0x7C00, 0x03E0, 0x001F, 0x8000, _RP("ARGB1555")},
-				{16, 0x001F, 0x03E0, 0x007C, 0x8000, _RP("ABGR1555")},
-				{16, 0xF800, 0x07C0, 0x003E, 0x0001, _RP("RGBA1555")},
-				{16, 0x003E, 0x03E0, 0x00F8, 0x0001, _RP("BGRA1555")},
-			};
-
-			for (unsigned int i = 0; i < ARRAY_SIZE(fmt_tbl); i++) {
-				const RGBA_Format_Table_t *const fmt = &fmt_tbl[i];
-				if (ddspf.dwRGBBitCount == fmt->bits &&
-				    ddspf.dwRBitMask == fmt->Rmask &&
-				    ddspf.dwGBitMask == fmt->Gmask &&
-				    ddspf.dwBBitMask == fmt->Bmask &&
-				    ddspf.dwABitMask == fmt->Amask)
-				{
-					pxfmt = fmt->desc;
-					break;
-				}
-			}
-		} else {
-			// Texture does not have an alpha channel.
-			struct RGB_Format_Table_t {
-				unsigned int bits;
-				uint32_t Rmask;
-				uint32_t Gmask;
-				uint32_t Bmask;
-				const rp_char *desc;
-			};
-			static const RGB_Format_Table_t fmt_tbl[] = {
-				{32, 0x00FF0000, 0x0000FF00, 0x000000FF, _RP("XRGB8888")},
-				{32, 0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888")},
-				{32, 0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888")},
-				{32, 0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888")},
-				{24, 0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888")},
-				{24, 0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888")},
-				{16, 0xF800, 0x07E0, 0x001F, _RP("RGB565")},
-				{16, 0x001F, 0x07E0, 0xF800, _RP("BGR565")},
-				{15, 0x7C00, 0x03E0, 0x001F, _RP("RGB555")},
-				{15, 0x001F, 0x03E0, 0x7C00, _RP("BGR555")},
-			};
-
-			for (unsigned int i = 0; i < ARRAY_SIZE(fmt_tbl); i++) {
-				const RGB_Format_Table_t *const fmt = &fmt_tbl[i];
-				if (ddspf.dwRGBBitCount == fmt->bits &&
-				    ddspf.dwRBitMask == fmt->Rmask &&
-				    ddspf.dwGBitMask == fmt->Gmask &&
-				    ddspf.dwBBitMask == fmt->Bmask)
-				{
-					pxfmt = fmt->desc;
-					break;
-				}
-			}
-		}
+		const rp_char *pxfmt = d->getRGBFormatName(ddspf);
 		d->fields->addField_string(_RP("Pixel Format"),
 			(pxfmt ? pxfmt : _RP("RGB")));
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
