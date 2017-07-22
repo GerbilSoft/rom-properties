@@ -203,6 +203,9 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 	}
 	const uint32_t file_sz = (uint32_t)this->file->size();
 
+	// TODO: Support YUV422, 4-bit, 8-bit, and BUMP formats.
+	// Currently assuming all formats use 16bpp.
+
 	const uint32_t gbixStart = (hasGbix ? 32 : 16);
 	uint32_t mipmap_size = 0;
 	uint32_t expect_size = 0;
@@ -274,19 +277,16 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			break;
 
 		case PVR_IMG_VQ:
-			// VQ images have 1024 palette entries.
-			// Image data size is not necessarily defined,
-			// so set it to everything.
-			expect_size = file_sz - gbixStart;
+			// VQ images have 1024 palette entries,
+			// and the image data is 2bpp.
+			expect_size = (1024*2) + ((pvrHeader.width * pvrHeader.height) / 4);
 			break;
 
 		case PVR_IMG_VQ_MIPMAP:
-			// VQ images have 1024 palette entries.
-			// Image data size is not necessarily defined,
-			// so set it to everything.
-			// NOTE: Palette is skipped here.
+			// VQ images have 1024 palette entries,
+			// and the image data is 2bpp.
 			mipmap_size += (1024*2);
-			expect_size = file_sz - gbixStart - mipmap_size;
+			expect_size = (pvrHeader.width * pvrHeader.height) / 4;
 			break;
 
 		default:
