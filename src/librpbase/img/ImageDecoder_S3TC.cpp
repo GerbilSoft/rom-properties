@@ -115,7 +115,7 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
  */
 static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
 #ifndef ENABLE_S3TC
-	, unsigned int c0c1
+	, int c0c1
 #endif
 	)
 {
@@ -225,6 +225,19 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
 #endif /* ENABLE_S3TC */
 }
 
+#ifndef ENABLE_S3TC
+/**
+ * Select the color or alpha value to use for S2TC interpolation.
+ * @param px_number Pixel number.
+ * @return 0 or 1 for c0/c1 or a0/a1.
+ */
+static FORCE_INLINE int s2tc_select_c0c1(int px_number)
+{
+	// TODO: constexpr
+	return (px_number & 1) ^ ((px_number & 4) >> 2);
+}
+#endif /* !ENABLE_S3TC */
+
 /**
  * Convert a GameCube DXT1 image to rp_image.
  * The GameCube variant has 2x2 block tiling in addition to 4x4 pixel tiling.
@@ -288,7 +301,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 #ifndef ENABLE_S3TC
 				if (sel == 2) {
 					// Select c0 or c1, depending on pixel number.
-					sel = i & 1;
+					sel = s2tc_select_c0c1(i);
 				}
 #endif /* !ENABLE_S3TC */
 				tileBuf[i] = pal[sel].u32;
@@ -358,7 +371,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 #ifndef ENABLE_S3TC
 			if (sel == 2) {
 				// Select c0 or c1, depending on pixel number.
-				sel = i & 1;
+				sel = s2tc_select_c0c1((int)i);
 			}
 #endif /* !ENABLE_S3TC */
 			tileBuf[i] = pal[sel].u32;
@@ -464,7 +477,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 #ifndef ENABLE_S3TC
 			if (sel == 2) {
 				// Select c0 or c1, depending on pixel number.
-				sel = i & 1;
+				sel = s2tc_select_c0c1((int)i);
 			}
 #endif /* !ENABLE_S3TC */
 			argb32_t color = pal[sel];
@@ -581,14 +594,15 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 			// Decode the alpha channel value.
 			color.a = decode_DXT5_alpha(alpha48 & 7, dxt5_src->alpha);
 #else /* !ENABLE_S3TC */
+			const int c0c1 = s2tc_select_c0c1((int)i);
 			unsigned int sel = indexes & 3;
 			if (sel == 2) {
 				// Select c0 or c1, depending on pixel number.
-				sel = i & 1;
+				sel = c0c1;
 			}
 			argb32_t color = pal[sel];
 			// Decode the alpha channel value.
-			color.a = decode_DXT5_alpha(sel, dxt5_src->alpha, i & 1);
+			color.a = decode_DXT5_alpha(sel, dxt5_src->alpha, c0c1);
 #endif /* ENABLE_S3TC */
 			tileBuf[i] = color.u32;
 		}
