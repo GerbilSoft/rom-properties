@@ -75,95 +75,6 @@ RP_ThumbnailProvider_Private::~RP_ThumbnailProvider_Private()
 	delete file;
 }
 
-/**
- * Wrapper function to convert rp_image* to ImgClass.
- * @param img rp_image
- * @return ImgClass.
- */
-HBITMAP RP_ThumbnailProvider_Private::rpImageToImgClass(const rp_image *img) const
-{
-	// Windows doesn't like non-square icons.
-	// Add extra transparent columns/rows before
-	// converting to HBITMAP.
-
-	// (NOTE: IThumbnailProvider doesn't have this problem,
-	// but we're doing this for consistency with
-	// RP_ExtractIcon in order to prevent image shifting
-	// when refreshing Explorer.)
-
-	unique_ptr<rp_image> tmp_img;
-	if (!img->isSquare()) {
-		// Image is non-square.
-		tmp_img.reset(img->squared());
-		assert(tmp_img.get() != nullptr);
-		if (tmp_img) {
-			img = tmp_img.get();
-		}
-	}
-
-	return RpImageWin32::toHBITMAP_alpha(img);
-}
-
-/**
- * Wrapper function to check if an ImgClass is valid.
- * @param imgClass ImgClass
- * @return True if valid; false if not.
- */
-bool RP_ThumbnailProvider_Private::isImgClassValid(const HBITMAP &imgClass) const
-{
-	return (imgClass != nullptr);
-}
-
-/**
- * Wrapper function to get a "null" ImgClass.
- * @return "Null" ImgClass.
- */
-HBITMAP RP_ThumbnailProvider_Private::getNullImgClass(void) const
-{
-	return nullptr;
-}
-
-/**
- * Free an ImgClass object.
- * @param imgClass ImgClass object.
- */
-void RP_ThumbnailProvider_Private::freeImgClass(HBITMAP &imgClass) const
-{
-	DeleteObject(imgClass);
-}
-
-/**
- * Rescale an ImgClass using nearest-neighbor scaling.
- * @param imgClass ImgClass object.
- * @param sz New size.
- * @return Rescaled ImgClass.
- */
-HBITMAP RP_ThumbnailProvider_Private::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz) const
-{
-	// Convert the HBITMAP to rp_image.
-	unique_ptr<rp_image> img(RpImageWin32::fromHBITMAP(imgClass));
-	if (!img) {
-		// Error converting to rp_image.
-		return nullptr;
-	}
-
-	// Resize the image.
-	// TODO: "nearest" parameter.
-	const SIZE win_sz = {sz.width, sz.height};
-	return RpImageWin32::toHBITMAP_alpha(img.get(), win_sz, true);
-}
-
-/**
- * Get the proxy for the specified URL.
- * @return Proxy, or empty string if no proxy is needed.
- */
-rp_string RP_ThumbnailProvider_Private::proxyForUrl(const rp_string &url) const
-{
-	// libcachemgr uses urlmon on Windows, which
-	// always uses the system proxy.
-	return rp_string();
-}
-
 /** RP_ThumbnailProvider **/
 
 RP_ThumbnailProvider::RP_ThumbnailProvider()
@@ -236,7 +147,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*phbmp = nullptr;
 	*pdwAlpha = WTSAT_ARGB;
 
-	int ret = d->getThumbnail(d->file, cx, *phbmp);
+	int ret = d->thumbnailer.getThumbnail(d->file, cx, *phbmp);
 	if (ret != 0 || !*phbmp) {
 		// ROM is not supported. Use the fallback.
 		return d->Fallback(cx, phbmp, pdwAlpha);

@@ -117,9 +117,9 @@ HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize 
 		return nullptr;
 	}
 
-	// IExtractIcon returns an icon with alpha transparency.
-	// We're returning an HBITMAP here. It's converted into
-	// an HICON later.
+	// IExtractIcon and IThumbnailProvider both support alpha transparency.
+	// We're returning HBITMAP here, which works for IThumbnailProvider.
+	// Our IExtractIcon implementation converts it to HICON later.
 
 	// Resize the image.
 	// TODO: "nearest" parameter.
