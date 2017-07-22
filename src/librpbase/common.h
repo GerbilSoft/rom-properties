@@ -80,7 +80,7 @@
 #endif
 
 // Force inline attribute.
-#ifndef FORCE_INLINE
+#if !defined(FORCE_INLINE) && (!defined(_DEBUG) || defined(NDEBUG))
 # if defined(__GNUC__)
 #  define FORCE_INLINE __attribute__((always_inline))
 # elif defined(_MSC_VER)
@@ -88,6 +88,8 @@
 # else
 #  define FORCE_INLINE
 # endif
+#else
+# define FORCE_INLINE
 #endif
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */
