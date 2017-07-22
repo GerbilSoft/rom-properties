@@ -57,11 +57,11 @@ ENDIF()
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
 # Link-time optimization.
-# FIXME: Not working in clang builds...
-IF(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-	SET(LTO_DEFAULT OFF)
-ELSEIF(CMAKE_COMPILER_IS_GNUCXX OR MSVC)
+# FIXME: Not working in clang builds and Ubuntu's gcc...
+IF(MSVC)
 	SET(LTO_DEFAULT ON)
+ELSE()
+	SET(LTO_DEFAULT OFF)
 ENDIF()
 OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ${LTO_DEFAULT})
 
