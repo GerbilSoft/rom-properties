@@ -375,7 +375,10 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
 		// Decode the DXT3 tile palette.
 		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<DXTn_PALETTE_COLOR0_LE_COLOR1>(pal, &dxt3_src->colors);
+		// FIXME: DXTn_PALETTE_COLOR0_LE_COLOR1 seems to result in garbage pixels.
+		// https://github.com/kchapelier/decode-dxt/tree/master/lib has similar code
+		// but handles DXT3 like both DXT1 and DXT5, so disable this for now.
+		decode_DXTn_tile_color_palette<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
 
 		// Process the 16 color indexes and apply alpha.
 		uint32_t indexes = dxt3_src->colors.indexes;
