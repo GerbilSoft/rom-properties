@@ -169,8 +169,20 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					buf.get(), expected_size);
 				break;
 
+			case DDPF_FOURCC_DXT2:
+				ret_img = ImageDecoder::fromDXT2(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size);
+				break;
+
 			case DDPF_FOURCC_DXT3:
 				ret_img = ImageDecoder::fromDXT3(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size);
+				break;
+
+			case DDPF_FOURCC_DXT4:
+				ret_img = ImageDecoder::fromDXT4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
@@ -181,8 +193,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					buf.get(), expected_size);
 				break;
 
-			case DDPF_FOURCC_DXT2:
-			case DDPF_FOURCC_DXT4:
 			default:
 				// Not supported.
 				return nullptr;

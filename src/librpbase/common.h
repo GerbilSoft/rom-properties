@@ -69,12 +69,25 @@
 #endif /* __cplusplus */
 
 // Deprecated function attribute.
-#if defined(__GNUC__)
-#define DEPRECATED __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED __declspec(deprecated)
-#else
-#define DEPRECATED
+#ifndef DEPRECATED
+# if defined(__GNUC__)
+#  define DEPRECATED __attribute__ ((deprecated))
+# elif defined(_MSC_VER)
+#  define DEPRECATED __declspec(deprecated)
+# else
+#  define DEPRECATED
+# endif
+#endif
+
+// Force inline attribute.
+#ifndef FORCE_INLINE
+# if defined(__GNUC__)
+#  define FORCE_INLINE __attribute__((always_inline))
+# elif defined(_MSC_VER)
+#  define FORCE_INLINE __forceinline
+# else
+#  define FORCE_INLINE
+# endif
 #endif
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

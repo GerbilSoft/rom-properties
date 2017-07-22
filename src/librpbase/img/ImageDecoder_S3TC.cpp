@@ -108,6 +108,50 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 }
 
 /**
+ * Un-premultiply an argb32_t pixel.
+ * This is needed in order to convert DXT2/3 to DXT4/5.
+ * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
+ */
+static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
+{
+	if (px.a == 0) {
+		px.u32 = 0;
+	} else {
+		px.r = px.r * 255 / px.a;
+		px.g = px.g * 255 / px.a;
+		px.b = px.b * 255 / px.a;
+	}
+}
+
+/**
+ * Un-premultiply an ARGB32 rp_image.
+ * @param img	[in] rp_image to un-premultiply.
+ * @return 0 on success; non-zero on error.
+ */
+static int un_premultiply_image(rp_image *img)
+{
+	assert(img->format() != rp_image::FORMAT_ARGB32);
+	if (img->format() != rp_image::FORMAT_ARGB32) {
+		// Incorrect format...
+		return -1;
+	}
+
+	const int width = img->width();
+	for (int y = img->height()-1; y >= 0; y--) {
+		argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+		int x = width;
+		for (; x > 1; x -= 2, px_dest += 2) {
+			un_premultiply_pixel(px_dest[0]);
+			un_premultiply_pixel(px_dest[1]);
+		}
+		if (x == 1) {
+			un_premultiply_pixel(*px_dest);
+		}
+	}
+	return 0;
+}
+
+/**
  * Decode the DXT5 alpha channel value.
  * @param a3	3-bit alpha selector code.
  * @param alpha	2-element alpha array from dxt5_block.
@@ -313,8 +357,36 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 }
 
 /**
+ * Convert a DXT2 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf DXT5 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDXT2(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// TODO: Completely untested. Needs testing!
+
+	// Use fromDXT3(), then convert from premultiplied alpha
+	// to standard alpha.
+	rp_image *img = fromDXT3(width, height, img_buf, img_siz);
+	if (!img) {
+		return nullptr;
+	}
+
+	// Un-premultiply the image.
+	int ret = un_premultiply_image(img);
+	if (ret != 0) {
+		delete img;
+		img = nullptr;
+	}
+	return img;
+}
+
+/**
  * Convert a DXT3 image to rp_image.
- * TODO: UNTESTED - get a DXT3 texture to test!
  * @param width Image width.
  * @param height Image height.
  * @param img_buf DXT5 image buffer.
@@ -380,6 +452,35 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	} }
 
 	// Image has been converted.
+	return img;
+}
+
+/**
+ * Convert a DXT4 image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf DXT5 image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromDXT4(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// TODO: Completely untested. Needs testing!
+
+	// Use fromDXT5(), then convert from premultiplied alpha
+	// to standard alpha.
+	rp_image *img = fromDXT5(width, height, img_buf, img_siz);
+	if (!img) {
+		return nullptr;
+	}
+
+	// Un-premultiply the image.
+	int ret = un_premultiply_image(img);
+	if (ret != 0) {
+		delete img;
+		img = nullptr;
+	}
 	return img;
 }
 
