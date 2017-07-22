@@ -36,7 +36,9 @@ namespace LibRpBase {
  */
 static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
 {
-	if (px.a == 0) {
+	if (px.a == 255) {
+		// Do nothing.
+	} else if (px.a == 0) {
 		px.u32 = 0;
 	} else {
 		px.r = px.r * 255 / px.a;
