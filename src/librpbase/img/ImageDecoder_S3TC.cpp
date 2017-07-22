@@ -56,18 +56,23 @@ union argb32_t {
 };
 ASSERT_STRUCT(argb32_t, 4);
 
+// decode_DXTn_tile_color_palette flags.
+enum DXTn_Palette_Flags {
+	DXTn_PALETTE_BIG_ENDIAN		= (1 << 0),
+	DXTn_PALETTE_COLOR3_ALPHA	= (1 << 1),	// GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+};
+
 /**
  * Decode a DXTn tile color palette.
- * @tparam big_endian If true, use big-endian value decoding.
- * @tparam col3_black If true, color 3 is black. Otherwise, color 3 is transparent.
+ * @tparam flags Flags. (See DXTn_Palette_Flags)
  * @param pal		[out] Array of four argb32_t values.
  * @param dxt1_src	[in] DXT1 block.
  */
-template<bool big_endian, bool col3_black>
+template<uint32_t flags>
 static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_block *dxt1_src)
 {
 	// Convert the first two colors from RGB565.
-	if (big_endian) {
+	if (flags & DXTn_PALETTE_BIG_ENDIAN) {
 		pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[0]));
 		pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(dxt1_src->color[1]));
 	} else {
@@ -93,7 +98,7 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 		pal[2].a = 0xFF;
 
 		// Black and/or transparent.
-		pal[3].u32 = (col3_black ? 0xFF000000 : 0x00000000);
+		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
 	}
 }
 
@@ -216,8 +221,10 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 			// Decode the DXT1 tile palette.
 			// TODO: Color 3 may be either black or transparent.
 			// Figure out if there's a way to specify that in GVR.
+			// Assuming transparent for now, since most GVR DXT1
+			// textures use transparency.
 			argb32_t pal[4];
-			decode_DXTn_tile_color_palette<true, false>(pal, dxt1_src);
+			decode_DXTn_tile_color_palette<DXTn_PALETTE_BIG_ENDIAN | DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
 
 			// Process the 16 color indexes.
 			// NOTE: MSB has the left-most pixel of the *bottom* row.
@@ -282,8 +289,9 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		// Decode the DXT1 tile palette.
 		// TODO: Color 3 may be either black or transparent.
 		// Figure out if there's a way to specify that in DDS.
+		// Assuming black for now, since that's standard DXT1.
 		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<false, false>(pal, dxt1_src);
+		decode_DXTn_tile_color_palette<0>(pal, dxt1_src);
 
 		// Process the 16 color indexes.
 		uint32_t indexes = dxt1_src->indexes;
@@ -350,7 +358,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
 		// Decode the DXT5 tile palette.
 		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<false, true>(pal, &dxt5_src->colors);
+		decode_DXTn_tile_color_palette<0>(pal, &dxt5_src->colors);
 
 		// Decode the DXT5 alpha values.
 		// NOTE: Combining the alpha values into a uint64_t first
