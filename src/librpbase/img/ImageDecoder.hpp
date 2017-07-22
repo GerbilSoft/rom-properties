@@ -206,17 +206,19 @@ class ImageDecoder
 
 		/**
 		 * Convert a Dreamcast vector-quantized image to rp_image.
-		 * @tparam px_format Palette pixel format.
+		 * @tparam smallVQ If true, handle this image as SmallVQ.
+		 * @param px_format Palette pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf VQ image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @param pal_buf Palette buffer.
-		 * @param pal_siz Size of palette data. [must be >= 1024*2]
+		 * @param pal_siz Size of palette data. [must be >= 1024*2; for SmallVQ, 64*2, 256*2, or 512*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format>
-		static rp_image *fromDreamcastVQ16(int width, int height,
+		template<bool smallVQ>
+		static rp_image *fromDreamcastVQ16(PixelFormat px_format,
+			int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
 
@@ -227,22 +229,6 @@ class ImageDecoder
 		 * @return Number of palette entries.
 		 */
 		static inline int calcDreamcastSmallVQPaletteEntries(int width);
-
-		/**
-		 * Convert a Dreamcast small vector-quantized image to rp_image.
-		 * @tparam px_format Palette pixel format.
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param img_buf VQ image buffer.
-		 * @param img_siz Size of image data. [must be >= (w*h)*2]
-		 * @param pal_buf Palette buffer.
-		 * @param pal_siz Size of palette data. [must be >= 64*2, 256*2, 512*2, or 1024*2]
-		 * @return rp_image, or nullptr on error.
-		 */
-		template<PixelFormat px_format>
-		static rp_image *fromDreamcastSmallVQ16(int width, int height,
-			const uint8_t *img_buf, int img_siz,
-			const uint16_t *pal_buf, int pal_siz);
 };
 
 /**
