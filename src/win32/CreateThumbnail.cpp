@@ -99,7 +99,7 @@ HBITMAP CreateThumbnail::getNullImgClass(void) const
  */
 void CreateThumbnail::freeImgClass(HBITMAP &imgClass) const
 {
-	DeleteObject(imgClass);
+	DeleteBitmap(imgClass);
 }
 
 /**
