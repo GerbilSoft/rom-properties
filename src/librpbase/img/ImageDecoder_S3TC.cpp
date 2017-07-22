@@ -216,13 +216,11 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 			decode_DXTn_tile_color_palette<DXTn_PALETTE_BIG_ENDIAN | DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
 
 			// Process the 16 color indexes.
-			// NOTE: MSB has the left-most pixel of the *bottom* row.
-			// LSB has the right-most pixel of the *top* row.
-			static const uint8_t pxmap[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
-			// TODO: Pointer optimization.
-			uint32_t indexes = dxt1_src->indexes;
-			for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
-				tileBuf[pxmap[i]] = pal[indexes & 3].u32;
+			// NOTE: The tile indexes are stored "backwards" due to
+			// big endian shenanigans.
+			uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
+			for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
+				tileBuf[i] = pal[indexes & 3].u32;
 			}
 
 			// Blit the tile to the main image buffer.
@@ -283,7 +281,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		decode_DXTn_tile_color_palette<0>(pal, dxt1_src);
 
 		// Process the 16 color indexes.
-		uint32_t indexes = dxt1_src->indexes;
+		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
 			tileBuf[i] = pal[indexes & 3].u32;
 		}
@@ -381,8 +379,8 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 		decode_DXTn_tile_color_palette<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
 
 		// Process the 16 color indexes and apply alpha.
-		uint32_t indexes = dxt3_src->colors.indexes;
-		uint64_t alpha = dxt3_src->alpha;
+		uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
+		uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
 			argb32_t color = pal[indexes & 3];
 			// TODO: Verify alpha value handling for DXT3.
@@ -465,7 +463,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	// DXT5 block format.
 	struct dxt5_block {
 		uint8_t alpha[2];	// Alpha values.
-		uint16_t codes[3];	// Alpha operation codes. (48-bit unsigned; 3-bit per pixel)
+		uint8_t codes[6];	// Alpha operation codes. (48-bit unsigned; 3-bit per pixel)
 		dxt1_block colors;	// DXT1-style color block.
 	};
 	ASSERT_STRUCT(dxt5_block, 16);
@@ -484,11 +482,14 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 		// NOTE: Combining the alpha values into a uint64_t first
 		// in order to make it easier to manage.
 		uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
-				   ((uint64_t)dxt5_src->codes[1] << 16) |
-				   ((uint64_t)dxt5_src->codes[2] << 32);
+				   ((uint64_t)dxt5_src->codes[1] << 8) |
+				   ((uint64_t)dxt5_src->codes[2] << 16) |
+				   ((uint64_t)dxt5_src->codes[3] << 24) |
+				   ((uint64_t)dxt5_src->codes[4] << 32) |
+				   ((uint64_t)dxt5_src->codes[5] << 40);
 
 		// Process the 16 color and alpha indexes.
-		uint32_t indexes = dxt5_src->colors.indexes;
+		uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
 			argb32_t color = pal[indexes & 3];
 			// Decode the alpha channel value.
