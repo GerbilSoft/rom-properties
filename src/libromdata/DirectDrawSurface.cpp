@@ -19,8 +19,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "config.librpbase.h"
-
 #include "DirectDrawSurface.hpp"
 #include "librpbase/RomData_p.hpp"
 
@@ -127,7 +125,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 
-#ifdef ENABLE_S3TC
 		// NOTE: dwPitchOrLinearSize is not necessarily correct.
 		// Calculate the expected size.
 		uint32_t expected_size;
@@ -197,10 +194,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// Not supported.
 				return nullptr;
 		}
-#else /* !ENABLE_S3TC */
-		// S3TC is disabled in this build.
-		break;
-#endif
 	}
 
 	return ret_img;

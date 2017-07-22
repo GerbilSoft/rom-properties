@@ -172,7 +172,6 @@ class ImageDecoder
 		static rp_image *fromN3DSTiledRGB565(int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
-#ifdef ENABLE_S3TC
 		/* S3TC */
 
 		/**
@@ -241,7 +240,6 @@ class ImageDecoder
 		 */
 		static rp_image *fromDXT5(int width, int height,
 			const uint8_t *img_buf, int img_siz);
-#endif /* ENABLE_S3TC */
 
 		/* Dreamcast */
 

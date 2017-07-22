@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
@@ -29,6 +31,8 @@
 // - http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
 // - https://en.wikipedia.org/wiki/S3_Texture_Compression
 // - https://www.khronos.org/opengl/wiki/S3_Texture_Compression
+
+// S2TC: https://github.com/divVerent/s2tc/blob/master/s2tc_libtxc_dxtn.cpp
 
 namespace LibRpBase {
 
@@ -67,6 +71,7 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 	pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c0);
 	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
 
+#ifdef ENABLE_S3TC
 	// Calculate the second two colors.
 	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
 		// color0 > color1
@@ -89,6 +94,16 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 		// Black and/or transparent.
 		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
 	}
+#else /* !ENABLE_S3TC */
+	// S2TC fallback.
+	pal[2].u32 = 0;	// not used; select c0 or c1 depending on pixel number.
+	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
+		pal[3].u32 = pal[0].u32;
+	} else {
+		// Black and/or transparent.
+		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
+	}
+#endif /* ENABLE_S3TC */
 }
 
 /**
@@ -101,6 +116,7 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2])
 {
 	unsigned int a_ret = 255;
 
+#ifdef ENABLE_S3TC
 	if (alpha[0] > alpha[1]) {
 		switch (a3 & 7) {
 			case 0:
@@ -159,6 +175,49 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2])
 
 	// Prevent overflow.
 	return (uint8_t)(a_ret > 255 ? 255 : a_ret);
+#else /* !ENABLE_S3TC */
+	// S2TC fallback.
+	if (alpha[0] > alpha[1]) {
+		switch (a3 & 7) {
+			case 0:
+			case 6:
+			case 7:
+				a_ret = alpha[0];
+				break;
+			case 1:
+				a_ret = alpha[1];
+				break;
+			default:
+				// Values 2-5 aren't used.
+				// a0 or a1 are selected based on the pixel number.
+				a_ret = 0;
+				break;
+		}
+	} else {
+		switch (a3 & 7) {
+			case 0:
+				a_ret = alpha[0];
+				break;
+			case 1:
+				a_ret = alpha[1];
+				break;
+			case 6:
+				a_ret = 0;
+				break;
+			case 7:
+				a_ret = 255;
+				break;
+			default:
+				// Values 2-5 aren't used.
+				// a0 or a1 are selected based on the pixel number.
+				a_ret = 0;
+				break;
+		}
+	}
+
+	// No overflow is possible in S2TC mode.
+	return (uint8_t)a_ret;
+#endif /* ENABLE_S3TC */
 }
 
 /**
@@ -220,7 +279,14 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 			// big endian shenanigans.
 			uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
 			for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
-				tileBuf[i] = pal[indexes & 3].u32;
+				unsigned int sel = indexes & 3;
+#ifndef ENABLE_S3TC
+				if (sel == 2) {
+					// Select c0 or c1, depending on pixel number.
+					sel = i & 1;
+				}
+#endif /* !ENABLE_S3TC */
+				tileBuf[i] = pal[sel].u32;
 			}
 
 			// Blit the tile to the main image buffer.
@@ -283,7 +349,14 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		// Process the 16 color indexes.
 		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
-			tileBuf[i] = pal[indexes & 3].u32;
+			unsigned int sel = indexes & 3;
+#ifndef ENABLE_S3TC
+			if (sel == 2) {
+				// Select c0 or c1, depending on pixel number.
+				sel = i & 1;
+			}
+#endif /* !ENABLE_S3TC */
+			tileBuf[i] = pal[sel].u32;
 		}
 
 		// Blit the tile to the main image buffer.
@@ -382,7 +455,14 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 		uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
 		uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
-			argb32_t color = pal[indexes & 3];
+			unsigned int sel = indexes & 3;
+#ifndef ENABLE_S3TC
+			if (sel == 2) {
+				// Select c0 or c1, depending on pixel number.
+				sel = i & 1;
+			}
+#endif /* !ENABLE_S3TC */
+			argb32_t color = pal[sel];
 			// TODO: Verify alpha value handling for DXT3.
 			color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
 			tileBuf[i] = color.u32;
@@ -491,9 +571,27 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 		// Process the 16 color and alpha indexes.
 		uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
 		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
+#ifdef ENABLE_S3TC
 			argb32_t color = pal[indexes & 3];
 			// Decode the alpha channel value.
 			color.a = decode_DXT5_alpha(alpha48 & 7, dxt5_src->alpha);
+#else /* !ENABLE_S3TC */
+			unsigned int sel = indexes & 3;
+			if (sel == 2) {
+				// Select c0 or c1, depending on pixel number.
+				sel = i & 1;
+			}
+			argb32_t color = pal[sel];
+			// Decode the alpha channel value.
+			sel = alpha48 & 7;
+			if (sel >= 2 && sel <= 5) {
+				// Select the alpha value based on the pixel number.
+				color.a = dxt5_src->alpha[i & 1];
+			} else {
+				// Decode the alpha value.
+				color.a = decode_DXT5_alpha(sel, dxt5_src->alpha);
+			}
+#endif /* ENABLE_S3TC */
 			tileBuf[i] = color.u32;
 		}
 
