@@ -225,7 +225,6 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 	// Convert one line at a time. (16-bit -> ARGB32)
 	// Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs#L149
 	uint32_t *dest = static_cast<uint32_t*>(img->bits());
-	const unsigned int destMax = width * height;
 	for (unsigned int y = 0; y < (unsigned int)height; y += 2) {
 	for (unsigned int x = 0; x < (unsigned int)width; x += 2) {
 		const unsigned int srcIdx = ((tmap[x >> 1] << 1) | tmap[y >> 1]);
@@ -244,17 +243,11 @@ rp_image *ImageDecoder::fromDreamcastVQ16(int width, int height,
 
 		// NOTE: Can't use BlitTile() due to the inverted x/y order here.
 		for (unsigned int x2 = 0; x2 < 2; x2++) {
-		for (unsigned int y2 = 0; y2 < 2; y2++) {
-			const unsigned int destIdx = (((y + y2) * width) + (x + x2));
-			if (destIdx > destMax) {
-				// Out of bounds.
-				delete[] tmap;
-				delete img;
-				return nullptr;
-			}
+			const unsigned int destIdx = ((y * width) + (x + x2));
 			dest[destIdx] = palette[palIdx];
-			palIdx++;
-		} }
+			dest[destIdx+width] = palette[palIdx+1];
+			palIdx += 2;
+		}
 	} }
 
 	// Image has been converted.
