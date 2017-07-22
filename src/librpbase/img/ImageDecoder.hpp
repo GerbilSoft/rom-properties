@@ -197,6 +197,17 @@ class ImageDecoder
 		 */
 		static rp_image *fromDXT1(int width, int height,
 			const uint8_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a DXT5 image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf DXT5 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromDXT5(int width, int height,
+			const uint8_t *img_buf, int img_siz);
 #endif /* ENABLE_S3TC */
 
 		/* Dreamcast */

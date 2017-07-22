@@ -118,9 +118,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// TODO:
-	// - Support more than just DXT1.
-	// - Verify that mipmaps are handled correctly.
+	// TODO: Support more than just DXT1 and DXT5.
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
@@ -149,10 +147,15 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					buf.get(), ddsHeader.dwPitchOrLinearSize);
 				break;
 
+			case DDPF_FOURCC_DXT5:
+				ret_img = ImageDecoder::fromDXT5(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), ddsHeader.dwPitchOrLinearSize);
+				break;
+
 			case DDPF_FOURCC_DXT2:
 			case DDPF_FOURCC_DXT3:
 			case DDPF_FOURCC_DXT4:
-			case DDPF_FOURCC_DXT5:
 			default:
 				// Not supported.
 				break;
