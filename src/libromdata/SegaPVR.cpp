@@ -940,7 +940,7 @@ uint32_t SegaPVR::imgpf(ImageType imageType) const
 	// If both dimensions of the texture are 64 or less,
 	// specify nearest-neighbor scaling.
 	uint32_t ret = 0;
-	if (d->pvrHeader.width <= 64 && d->pvrHeader.width <= 64) {
+	if (d->pvrHeader.width <= 64 && d->pvrHeader.height <= 64) {
 		// 64x64 or smaller.
 		ret = IMGPF_RESCALE_NEAREST;
 	}
