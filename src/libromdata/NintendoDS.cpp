@@ -469,15 +469,16 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 		// NOTE: ndstool checks 0x0200-0x0FFF, but this may
 		// contain extra data for DSi-enhanced ROMs, or even
 		// for regular DS games released after the DSi.
-		uint32_t blank_area[0x3000/4];
+		uintptr_t blank_area[0x3000/sizeof(uintptr_t)];
 		size = file->seekAndRead(0x1000, blank_area, sizeof(blank_area));
 		if (size != sizeof(blank_area)) {
 			// Seek and/or read error.
 			return nullptr;
 		}
 
-		for (int i = ARRAY_SIZE(blank_area)-1; i >= 0; i--) {
-			if (blank_area[i] != 0) {
+		const uintptr_t *const end = &blank_area[ARRAY_SIZE(blank_area)-1];
+		for (const uintptr_t *p = blank_area; p < end; p += 2) {
+			if (p[0] != 0 || p[1] != 0) {
 				// Not zero. This area is not accessible
 				// on the NDS, so it might be an original
 				// mask ROM dump. Either that, or a Wii U
