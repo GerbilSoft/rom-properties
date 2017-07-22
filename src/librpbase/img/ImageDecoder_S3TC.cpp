@@ -22,6 +22,8 @@
 #include "ImageDecoder.hpp"
 #include "ImageDecoder_p.hpp"
 
+#include "un-premultiply.hpp"
+
 // References:
 // - http://www.matejtomcik.com/Public/KnowHow/DXTDecompression/
 // - http://www.fsdeveloper.com/wiki/index.php?title=DXT_compression_explained
@@ -36,25 +38,6 @@ struct dxt1_block {
 	uint32_t indexes;	// Two-bit color indexes.
 };
 ASSERT_STRUCT(dxt1_block, 8);
-
-// ARGB32 value with byte accessors.
-union argb32_t {
-	struct {
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		uint8_t r;
-		uint8_t g;
-		uint8_t b;
-		uint8_t a;
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		uint8_t a;
-		uint8_t r;
-		uint8_t g;
-		uint8_t b;
-#endif
-	};
-	uint32_t u32;
-};
-ASSERT_STRUCT(argb32_t, 4);
 
 // decode_DXTn_tile_color_palette flags.
 enum DXTn_Palette_Flags {
@@ -105,50 +88,6 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 		// Black and/or transparent.
 		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
 	}
-}
-
-/**
- * Un-premultiply an argb32_t pixel.
- * This is needed in order to convert DXT2/3 to DXT4/5.
- * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
- */
-static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
-{
-	if (px.a == 0) {
-		px.u32 = 0;
-	} else {
-		px.r = px.r * 255 / px.a;
-		px.g = px.g * 255 / px.a;
-		px.b = px.b * 255 / px.a;
-	}
-}
-
-/**
- * Un-premultiply an ARGB32 rp_image.
- * @param img	[in] rp_image to un-premultiply.
- * @return 0 on success; non-zero on error.
- */
-static int un_premultiply_image(rp_image *img)
-{
-	assert(img->format() != rp_image::FORMAT_ARGB32);
-	if (img->format() != rp_image::FORMAT_ARGB32) {
-		// Incorrect format...
-		return -1;
-	}
-
-	const int width = img->width();
-	for (int y = img->height()-1; y >= 0; y--) {
-		argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
-		int x = width;
-		for (; x > 1; x -= 2, px_dest += 2) {
-			un_premultiply_pixel(px_dest[0]);
-			un_premultiply_pixel(px_dest[1]);
-		}
-		if (x == 1) {
-			un_premultiply_pixel(*px_dest);
-		}
-	}
-	return 0;
 }
 
 /**
