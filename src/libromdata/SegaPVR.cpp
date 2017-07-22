@@ -931,8 +931,8 @@ int SegaPVR::loadFieldData(void)
 			_RP("Rectangle (Twiddled)"),			// 0x0D
 			nullptr,					// 0x0E
 			nullptr,					// 0x0F
-			_RP("Small (Vector Quantized)"),		// 0x10
-			_RP("Small (Vector Quantized, Mipmap)"),	// 0x11
+			_RP("Small VQ"),				// 0x10
+			_RP("Small VQ (Mipmap)"),			// 0x11
 			_RP("Square (Twiddled, Mipmap) (Alt)"),		// 0x12
 		},
 
