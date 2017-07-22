@@ -68,7 +68,7 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
 
 	// Calculate the second two colors.
-	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) || (c0 > c1)) {
+	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
 		// color0 > color1
 		pal[2].r = ((2 * pal[0].r) + pal[1].r) / 3;
 		pal[2].g = ((2 * pal[0].g) + pal[1].g) / 3;
