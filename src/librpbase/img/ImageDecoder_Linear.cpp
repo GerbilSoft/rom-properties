@@ -296,6 +296,68 @@ template rp_image *ImageDecoder::fromLinearCI8<ImageDecoder::PXF_ARGB4444>(
 	const uint16_t *pal_buf, int pal_siz);
 
 /**
+ * Convert a linear monochrome image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf Monochrome image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromLinearMono(int width, int height,
+	const uint8_t *img_buf, int img_siz)
+{
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) / 8));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) / 8))
+	{
+		return nullptr;
+	}
+
+	// Monochrome width must be a multiple of eight.
+	assert(width % 8 == 0);
+	if (width % 8 != 0)
+		return nullptr;
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Set a default monochrome palette.
+	uint32_t *palette = img->palette();
+	palette[0] = 0xFFFFFFFF;	// white
+	palette[1] = 0xFF000000;	// black
+	img->set_tr_idx(-1);
+
+	// NOTE: rp_image initializes the palette to 0,
+	// so we don't need to clear the remaining colors.
+
+	// Convert one line at a time. (monochrome -> CI8)
+	for (int y = 0; y < height; y++) {
+		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
+		for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
+			uint8_t pxMono = *img_buf++;
+			// TODO: Unroll this loop?
+			for (unsigned int bit = 8; bit > 0; bit--, px_dest++) {
+				// MSB == left-most pixel.
+				*px_dest = (pxMono >> 7);
+				pxMono <<= 1;
+			}
+		}
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
  * Convert a linear 16-bit RGB image to rp_image.
  * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.
@@ -383,7 +445,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 			break;
 
 		default:
-			assert(!"Unsupported pixel format.");
+			assert(!"Unsupported 16-bit pixel format.");
 			return nullptr;
 	}
 
@@ -392,61 +454,86 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 }
 
 /**
- * Convert a linear monochrome image to rp_image.
- * @param width Image width.
- * @param height Image height.
- * @param img_buf Monochrome image buffer.
- * @param img_siz Size of image data. [must be >= (w*h)/8]
+ * Convert a linear 24-bit RGB image to rp_image.
+ * @param px_format	[in] 24-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer. (must be byte-addressable)
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinearMono(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+	int width, int height,
+	const uint8_t *img_buf, int img_siz, int pitch)
 {
+	static const int bytespp = 3;
+
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 8));
+	assert(img_siz >= ((width * height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 8))
+	    img_siz < ((width * height) * bytespp))
 	{
 		return nullptr;
 	}
 
-	// Monochrome width must be a multiple of eight.
-	assert(width % 8 == 0);
-	if (width % 8 != 0)
-		return nullptr;
+	// Line offset adjustment.
+	int line_offset_adj = 0;
+	assert(pitch >= 0);
+	if (pitch > 0) {
+		// Set line_offset_adj to the number of pixels we need to
+		// add to the end of each line to get to the next row.
+		assert(pitch % bytespp == 0);
+		if (pitch % bytespp != 0) {
+			// Invalid pitch.
+			return nullptr;
+		}
+		// Byte addressing, so keep it in units of bytespp.
+		line_offset_adj = (width * bytespp) - pitch;
+	}
 
 	// Create an rp_image.
-	rp_image *img = new rp_image(width, height, rp_image::FORMAT_CI8);
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
 	if (!img->isValid()) {
 		// Could not allocate the image.
 		delete img;
 		return nullptr;
 	}
 
-	// Set a default monochrome palette.
-	uint32_t *palette = img->palette();
-	palette[0] = 0xFFFFFFFF;	// white
-	palette[1] = 0xFF000000;	// black
-	img->set_tr_idx(-1);
-
-	// NOTE: rp_image initializes the palette to 0,
-	// so we don't need to clear the remaining colors.
-
-	// Convert one line at a time. (monochrome -> CI8)
-	for (int y = 0; y < height; y++) {
-		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
-		for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
-			uint8_t pxMono = *img_buf++;
-			// TODO: Unroll this loop?
-			for (unsigned int bit = 8; bit > 0; bit--, px_dest++) {
-				// MSB == left-most pixel.
-				*px_dest = (pxMono >> 7);
-				pxMono <<= 1;
+	// Convert one line at a time. (24-bit -> ARGB32)
+	switch (px_format) {
+		case PXF_RGB888:
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
+					*px_dest = 0xFF000000 | (img_buf[2] << 16) |
+						(img_buf[1] << 8) | img_buf[0];
+					img_buf += 3;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
 			}
-		}
+			break;
+
+		case PXF_BGR888:
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
+					*px_dest = 0xFF000000 | (img_buf[0] << 16) |
+						(img_buf[1] << 8) | img_buf[2];
+					img_buf += 3;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		default:
+			assert(!"Unsupported 24-bit pixel format.");
+			return nullptr;
 	}
 
 	// Image has been converted.

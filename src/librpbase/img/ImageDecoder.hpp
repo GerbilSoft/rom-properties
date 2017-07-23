@@ -57,6 +57,10 @@ class ImageDecoder
 			// GameCube-specific 16-bit
 			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
 			PXF_IA8,	// Intensity/Alpha.
+
+			// 24-bit
+			PXF_RGB888,
+			PXF_BGR888,
 		};
 
 		/**
@@ -93,6 +97,17 @@ class ImageDecoder
 			const uint16_t *pal_buf, int pal_siz);
 
 		/**
+		 * Convert a linear monochrome image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf Monochrome image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)/8]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinearMono(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
+		/**
 		 * Convert a linear 16-bit RGB image to rp_image.
 		 * @param px_format	[in] 16-bit pixel format.
 		 * @param width		[in] Image width.
@@ -107,15 +122,18 @@ class ImageDecoder
 			const uint16_t *img_buf, int img_siz, int pitch = 0);
 
 		/**
-		 * Convert a linear monochrome image to rp_image.
-		 * @param width Image width.
-		 * @param height Image height.
-		 * @param img_buf Monochrome image buffer.
-		 * @param img_siz Size of image data. [must be >= (w*h)/8]
+		 * Convert a linear 24-bit RGB image to rp_image.
+		 * @param px_format	[in] 24-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] Image buffer. (must be byte-addressable)
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromLinearMono(int width, int height,
-			const uint8_t *img_buf, int img_siz);
+		static rp_image *fromLinear24(PixelFormat px_format,
+			int width, int height,
+			const uint8_t *img_buf, int img_siz, int pitch = 0);
 
 		/** GameCube **/
 

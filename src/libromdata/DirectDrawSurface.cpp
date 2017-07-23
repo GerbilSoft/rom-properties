@@ -136,8 +136,8 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888"), 32, ImageDecoder::PXF_UNKNOWN},
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888"), 32, ImageDecoder::PXF_UNKNOWN},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_UNKNOWN},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_RGB888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_BGR888},
 	{0xF800, 0x07E0, 0x001F, _RP("RGB565"), 16, ImageDecoder::PXF_RGB565},
 	{0x001F, 0x07E0, 0xF800, _RP("BGR565"), 16, ImageDecoder::PXF_UNKNOWN},
 	{0x7C00, 0x03E0, 0x001F, _RP("RGB555"), 15, ImageDecoder::PXF_UNKNOWN},
@@ -395,6 +395,13 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, pitch);
+				break;
+
+			case 24/8:
+				// 24-bit image.
+				ret_img = ImageDecoder::fromLinear24(
+					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, pitch);
 				break;
 
 			default:
