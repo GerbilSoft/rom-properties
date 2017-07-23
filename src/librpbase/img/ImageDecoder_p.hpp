@@ -140,6 +140,13 @@ class ImageDecoderPrivate
 		// 15-bit
 
 		/**
+		 * Convert an RGB555 pixel to ARGB32.
+		 * @param px16 RGB555 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGB555_to_ARGB32(uint16_t px16);
+
+		/**
 		 * Convert a BGR555 pixel to ARGB32.
 		 * @param px16 BGR555 pixel.
 		 * @return ARGB32 pixel.
@@ -346,6 +353,27 @@ inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
 }
 
 // 15-bit
+
+/**
+ * Convert an RGB555 pixel to ARGB32.
+ * @param px16 RGB555 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGB555_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 is in host-endian.
+	uint32_t px32;
+
+	// RGB555: xRRRRRGG GGGBBBBB
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+
+	// No alpha channel.
+	px32 |= 0xFF000000U;
+	return px32;
+}
 
 /**
  * Convert a BGR555 pixel to ARGB32.

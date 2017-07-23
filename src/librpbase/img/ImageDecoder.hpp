@@ -57,6 +57,7 @@ class ImageDecoder
 			PXF_IA8,	// Intensity/Alpha.
 
 			// 15-bit
+			PXF_RGB555,
 			PXF_BGR555,
 			PXF_BGR555_PS1,	// Special transparency handling.
 
