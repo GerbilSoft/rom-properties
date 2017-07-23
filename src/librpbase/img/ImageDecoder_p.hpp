@@ -238,6 +238,24 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t G16R16_to_ARGB32(uint32_t px32);
+
+		// 2-bit alpha lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint32_t a2_lookup[4];
+
+		/**
+		 * Convert an A2R10G10B10 pixel to ARGB32.
+		 * @param px32 A2R10G10B10 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t A2R10G10B10_to_ARGB32(uint32_t px32);
+
+		/**
+		 * Convert an A2B10G10R10 pixel to ARGB32.
+		 * @param px32 A2B10G10R10 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t A2B10G10R10_to_ARGB32(uint32_t px32);
 };
 
 /**
@@ -668,11 +686,54 @@ inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::G16R16_to_ARGB32(uint32_t px32)
 {
+	// NOTE: This will truncate the color channels.
+	// TODO: Add ARGB64 support?
+
 	// G16R16: GGGGGGGG gggggggg RRRRRRRR rrrrrrrr
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t argb = 0xFF000000U;
 	argb |= ((px32 <<  8) & 0x00FF0000) |
 		((px32 >> 16) & 0x0000FF00);
+	return argb;
+}
+
+/**
+ * Convert an A2R10G10B10 pixel to ARGB32.
+ * @param px32 A2R10G10B10 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::A2R10G10B10_to_ARGB32(uint32_t px32)
+{
+	// NOTE: This will truncate the color channels.
+	// TODO: Add ARGB64 support?
+
+	// A2R10G10B10: AARRRRRR RRrrGGGG GGGGggBB BBBBBBbb
+	//      ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb;
+	argb = ((px32 >> 6) & 0xFF0000) |	// Red
+	       ((px32 >> 4) & 0x00FF00) |	// Green
+	       ((px32 >> 2) & 0x0000FF) |	// Blue
+	       a2_lookup[px32 >> 30];		// Alpha
+	return argb;
+}
+
+/**
+ * Convert an A2B10G10R10 pixel to ARGB32.
+ * @param px32 A2B10G10R10 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::A2B10G10R10_to_ARGB32(uint32_t px32)
+{
+	// NOTE: This will truncate the color channels.
+	// TODO: Add ARGB64 support?
+
+	// A2B10G10R10: AABBBBBB BBbbGGGG GGGGggRR RRRRRRrr
+	//      ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb;
+	argb = ((px32 << 14) & 0xFF0000) |	// Red
+	       ((px32 >>  4) & 0x00FF00) |	// Green
+	       ((px32 >> 14) & 0x0000FF) |	// Blue
+	       a2_lookup[px32 >> 30];		// Alpha
 	return argb;
 }
 
