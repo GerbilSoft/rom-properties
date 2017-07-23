@@ -821,11 +821,9 @@ int DirectDrawSurface::loadFieldData(void)
 		return -EIO;
 	}
 
-	// TODO: Flags, capabilities.
-
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(6);	// Maximum of 3 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
@@ -842,6 +840,11 @@ int DirectDrawSurface::loadFieldData(void)
 	pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE) ? _RP("Linear Size") : _RP("Pitch");
 	d->fields->addField_string_numeric(pitch_name,
 		ddsHeader->dwPitchOrLinearSize, RomFields::FB_DEC, 0);
+
+	// Mipmap count.
+	// NOTE: DDSD_MIPMAPCOUNT might not be accurate, so ignore it.
+	d->fields->addField_string_numeric(_RP("Mipmap Count"),
+		ddsHeader->dwMipMapCount, RomFields::FB_DEC, 0);
 
 	// Pixel format.
 	const DDS_PIXELFORMAT &ddspf = ddsHeader->ddspf;
