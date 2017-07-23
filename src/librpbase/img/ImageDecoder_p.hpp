@@ -128,6 +128,55 @@ class ImageDecoderPrivate
 		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
 
 		/**
+		 * Convert an ABGR4444 pixel to ARGB32.
+		 * @param px16 ABGR4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ABGR4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an RGBA4444 pixel to ARGB32.
+		 * @param px16 RGBA4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGBA4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert a BGRA4444 pixel to ARGB32.
+		 * @param px16 BGRA4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGRA4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an xRGB4444 pixel to ARGB32. (Dreamcast)
+		 * @param px16 xRGB4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t xRGB4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an xBGR4444 pixel to ARGB32.
+		 * @param px16 xBGR4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t xBGR4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an RGBx4444 pixel to ARGB32.
+		 * @param px16 RGBx4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGBx4444_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert a BGRx4444 pixel to ARGB32.
+		 * @param px16 BGRx4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGRx4444_to_ARGB32(uint16_t px16);
+
+		/**
 		 * Convert an ABGR1555 pixel to ARGB32.
 		 * @param px16 ABGR1555 pixel.
 		 * @return ARGB32 pixel.
@@ -411,6 +460,128 @@ inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
 	px32 |= ((px16 & 0x00F0) << 4);		// G
 	px32 |= ((px16 & 0x0F00) << 8);		// R
 	px32 |= ((px16 & 0xF000) << 12);	// A
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an ABGR4444 pixel to ARGB32.
+ * @param px16 ABGR4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ABGR4444_to_ARGB32(uint16_t px16)
+{
+	// ARGB4444: AAAABBBB GGGGRRRR
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32  = ((px16 & 0x000F) << 16);	// R
+	px32 |= ((px16 & 0x00F0) << 4);		// G
+	px32 |= ((px16 & 0x0F00) >> 8);		// B
+	px32 |= ((px16 & 0xF000) << 12);	// A
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an RGBA4444 pixel to ARGB32.
+ * @param px16 RGBA4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGBA4444_to_ARGB32(uint16_t px16)
+{
+	// RGBA4444: RRRRGGGG BBBBAAAA
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32  = ((px16 & 0x000F) << 24);	// A
+	px32 |= ((px16 & 0x00F0) >> 4);		// B
+	px32 |=  (px16 & 0x0F00);		// G
+	px32 |= ((px16 & 0xF000) << 4);		// R
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert a BGRA4444 pixel to ARGB32.
+ * @param px16 BGRA4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGRA4444_to_ARGB32(uint16_t px16)
+{
+	// RGBA4444: BBBBGGGG RRRRAAAA
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32  = ((px16 & 0x000F) << 24);	// A
+	px32 |= ((px16 & 0x00F0) << 12);	// R
+	px32 |=  (px16 & 0x0F00);		// G
+	px32 |= ((px16 & 0xF000) >> 12);	// B
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an xRGB4444 pixel to ARGB32.
+ * @param px16 xRGB4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::xRGB4444_to_ARGB32(uint16_t px16)
+{
+	// xRGB4444: xxxxRRRR GGGGBBBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32 = 0xFF000000U;
+	px32 |=  (px16 & 0x000F);		// B
+	px32 |= ((px16 & 0x00F0) << 4);		// G
+	px32 |= ((px16 & 0x0F00) << 8);		// R
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an xBGR4444 pixel to ARGB32.
+ * @param px16 xBGR4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::xBGR4444_to_ARGB32(uint16_t px16)
+{
+	// xRGB4444: xxxxBBBB GGGGRRRR
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((px16 & 0x000F) << 16);	// R
+	px32 |= ((px16 & 0x00F0) << 4);		// G
+	px32 |= ((px16 & 0x0F00) >> 8);		// B
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert an RGBx4444 pixel to ARGB32.
+ * @param px16 RGBx4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGBx4444_to_ARGB32(uint16_t px16)
+{
+	// RGBx4444: RRRRGGGG BBBBxxxx
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((px16 & 0x00F0) >> 4);		// B
+	px32 |=  (px16 & 0x0F00);		// G
+	px32 |= ((px16 & 0xF000) << 4);		// R
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+/**
+ * Convert a BGRx4444 pixel to ARGB32.
+ * @param px16 BGRx4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGRx4444_to_ARGB32(uint16_t px16)
+{
+	// RGBx4444: BBBBGGGG RRRRxxxx
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((px16 & 0x00F0) << 12);	// R
+	px32 |=  (px16 & 0x0F00);		// G
+	px32 |= ((px16 & 0xF000) >> 12);	// B
 	px32 |=  (px32 << 4);			// Copy to the top nybble.
 	return px32;
 }

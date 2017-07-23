@@ -429,6 +429,13 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		fromLinear16_convert(RGBA5551);
 		fromLinear16_convert(BGRA5551);
 		fromLinear16_convert(ARGB4444);
+		fromLinear16_convert(ABGR4444);
+		fromLinear16_convert(RGBA4444);
+		fromLinear16_convert(BGRA4444);
+		fromLinear16_convert(xRGB4444);
+		fromLinear16_convert(xBGR4444);
+		fromLinear16_convert(RGBx4444);
+		fromLinear16_convert(BGRx4444);
 
 		// 15-bit
 		fromLinear16_convert(RGB555);
