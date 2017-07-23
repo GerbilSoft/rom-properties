@@ -515,7 +515,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 			
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
-		// 16-bit
+		// 16-bit RGB.
 		fromLinear16_convert(RGB565);
 		fromLinear16_convert(BGR565);
 		fromLinear16_convert(ARGB1555);
@@ -532,9 +532,13 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		fromLinear16_convert(BGRx4444);
 		fromLinear16_convert(ARGB8332);
 
-		// 15-bit
+		// 15-bit RGB.
 		fromLinear16_convert(RGB555);
 		fromLinear16_convert(BGR555);
+
+		// Luminance.
+		fromLinear16_convert(L16);
+		fromLinear16_convert(A8L8);
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");

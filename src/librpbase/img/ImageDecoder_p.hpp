@@ -289,6 +289,22 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t A4L4_to_ARGB32(uint8_t px8);
+
+		/**
+		 * Convert an L16 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px16 L16 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t L16_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an A8L8 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px16 A8L8 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t A8L8_to_ARGB32(uint16_t px16);
 };
 
 /**
@@ -819,6 +835,37 @@ inline uint32_t ImageDecoderPrivate::A4L4_to_ARGB32(uint8_t px8)
 	argb |= (argb << 4);				// Copy to high nybble.
 	argb |= (argb & 0xFF) <<  8;			// Copy B to G.
 	argb |= (argb & 0xFF) << 16;			// Copy B to R.
+	return argb;
+}
+
+/**
+ * Convert an L16 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px16 L16 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::L16_to_ARGB32(uint16_t px16)
+{
+	// NOTE: This will truncate the luminance.
+	// TODO: Add ARGB64 support?
+	return L8_to_ARGB32(px16 >> 8);
+}
+
+/**
+ * Convert an A8L8 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px16 A8L8 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::A8L8_to_ARGB32(uint16_t px16)
+{
+	//   A8L8: AAAAAAAA LLLLLLLL
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb;
+	argb =  (px16 & 0xFF) |			// Red
+	       ((px16 & 0xFF) << 8) |		// Green
+	       ((px16 & 0xFF) << 16) |		// Blue
+	       ((px16 << 16) & 0xFF000000);	// Alpha
 	return argb;
 }
 
