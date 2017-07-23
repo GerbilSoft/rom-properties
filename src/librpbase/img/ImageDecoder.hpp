@@ -48,15 +48,17 @@ class ImageDecoder
 			PXF_UNKNOWN,
 
 			// 16-bit
-			PXF_ARGB1555,
 			PXF_RGB565,
+			PXF_ARGB1555,
 			PXF_ARGB4444,
-			PXF_BGR555,
-			PXF_BGR555_PS1,	// Special transparency handling.
 
 			// GameCube-specific 16-bit
 			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
 			PXF_IA8,	// Intensity/Alpha.
+
+			// 15-bit
+			PXF_BGR555,
+			PXF_BGR555_PS1,	// Special transparency handling.
 
 			// 24-bit
 			PXF_RGB888,

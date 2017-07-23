@@ -408,11 +408,11 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
-		case PXF_ARGB1555:
+		case PXF_RGB565:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
+					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
 				}
@@ -420,11 +420,11 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 			}
 			break;
 
-		case PXF_RGB565:
+		case PXF_ARGB1555:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
+					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
 				}

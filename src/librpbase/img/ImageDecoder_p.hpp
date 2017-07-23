@@ -88,28 +88,19 @@ class ImageDecoderPrivate
 			unsigned int tileX, unsigned int tileY);
 
 		/**
-		 * Convert a BGR555 pixel to ARGB32.
-		 * @param px16 BGR555 pixel.
-		 * @return ARGB32 pixel.
+		 * Create a Dreamcast twiddle map.
+		 * NOTE: Implementation is in ImageDecoder_DC.cpp.
+		 * @param size Twiddle map size. (usually texture width)
+		 * @return Twiddle map: unsigned int[size] (caller must delete[] this)
 		 */
-		static inline uint32_t BGR555_to_ARGB32(uint16_t px16);
+		static unsigned int *createDreamcastTwiddleMap(int size);
+
+		/** Color conversion functions. **/
+
+		// 16-bit
 
 		/**
-		 * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
-		 * @param px16 RGB5A3 pixel.
-		 * @return ARGB32 pixel.
-		 */
-		static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16);
-
-		/**
-		 * Convert an ARGB4444 pixel to ARGB32. (Dreamcast)
-		 * @param px16 ARGB4444 pixel.
-		 * @return ARGB32 pixel.
-		 */
-		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
-
-		/**
-		 * Convert an RGB565 pixel to ARGB32. (Dreamcast)
+		 * Convert an RGB565 pixel to ARGB32.
 		 * @param px16 RGB565 pixel.
 		 * @return ARGB32 pixel.
 		 */
@@ -123,20 +114,37 @@ class ImageDecoderPrivate
 		static inline uint32_t ARGB1555_to_ARGB32(uint16_t px16);
 
 		/**
-		 * Convert an IA8 pixel to ARGB32.
+		 * Convert an ARGB4444 pixel to ARGB32. (Dreamcast)
+		 * @param px16 ARGB4444 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
+
+		// GameCube-specific 15-bit
+
+		/**
+		 * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
+		 * @param px16 RGB5A3 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGB5A3_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an IA8 pixel to ARGB32. (GameCube/Wii)
 		 * NOTE: Uses a grayscale palette.
 		 * @param px16 IA8 pixel.
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t IA8_to_ARGB32(uint16_t px16);
 
+		// 15-bit
+
 		/**
-		 * Create a Dreamcast twiddle map.
-		 * NOTE: Implementation is in ImageDecoder_DC.cpp.
-		 * @param size Twiddle map size. (usually texture width)
-		 * @return Twiddle map: unsigned int[size] (caller must delete[] this)
+		 * Convert a BGR555 pixel to ARGB32.
+		 * @param px16 BGR555 pixel.
+		 * @return ARGB32 pixel.
 		 */
-		static unsigned int *createDreamcastTwiddleMap(int size);
+		static inline uint32_t BGR555_to_ARGB32(uint16_t px16);
 };
 
 /**
@@ -216,26 +224,73 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
 	}
 }
 
+/** Color conversion functions. **/
+
+// 16-bit
+
 /**
- * Convert a BGR555 pixel to ARGB32.
- * @param px16 BGR555 pixel.
+ * Convert an RGB565 pixel to ARGB32.
+ * @param px16 RGB565 pixel.
  * @return ARGB32 pixel.
  */
-inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
+inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 {
 	// NOTE: px16 is in host-endian.
 	uint32_t px32;
 
-	// BGR555: xBBBBBGG GGGRRRRR
+	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
+	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
 
 	// No alpha channel.
 	px32 |= 0xFF000000U;
 	return px32;
 }
+
+/**
+ * Convert an ARGB1555 pixel to ARGB32.
+ * @param px16 ARGB1555 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// ARGB1555: ARRRRRGG GGGBBBBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000300))) |	// Green
+	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+
+	// Alpha channel.
+	if (px16 & 0x8000) {
+		px32 |= 0xFF000000U;
+	}
+	return px32;
+}
+
+/**
+ * Convert an ARGB4444 pixel to ARGB32.
+ * @param px16 ARGB4444 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
+{
+	// ARGB4444: AAAARRRR GGGGBBBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32  =  (px16 & 0x000F);		// B
+	px32 |= ((px16 & 0x00F0) << 4);		// G
+	px32 |= ((px16 & 0x0F00) << 8);		// R
+	px32 |= ((px16 & 0xF000) << 12);	// A
+	px32 |=  (px32 << 4);			// Copy to the top nybble.
+	return px32;
+}
+
+// GameCube-specific 16-bit
 
 /**
  * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
@@ -273,69 +328,7 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 }
 
 /**
- * Convert an ARGB4444 pixel to ARGB32. (Dreamcast)
- * @param px16 ARGB4444 pixel.
- * @return ARGB32 pixel.
- */
-inline uint32_t ImageDecoderPrivate::ARGB4444_to_ARGB32(uint16_t px16)
-{
-	// ARGB4444: AAAARRRR GGGGBBBB
-	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t px32;
-	px32  =  (px16 & 0x000F);		// B
-	px32 |= ((px16 & 0x00F0) << 4);		// G
-	px32 |= ((px16 & 0x0F00) << 8);		// R
-	px32 |= ((px16 & 0xF000) << 12);	// A
-	px32 |=  (px32 << 4);			// Copy to the top nybble.
-	return px32;
-}
-
-/**
- * Convert an RGB565 pixel to ARGB32. (Dreamcast)
- * @param px16 RGB565 pixel.
- * @return ARGB32 pixel.
- */
-inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
-{
-	// NOTE: px16 is in host-endian.
-	uint32_t px32;
-
-	// RGB565: RRRRRGGG GGGBBBBB
-	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
-	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
-
-	// No alpha channel.
-	px32 |= 0xFF000000U;
-	return px32;
-}
-
-/**
- * Convert an ARGB1555 pixel to ARGB32. (Dreamcast)
- * @param px16 ARGB1555 pixel.
- * @return ARGB32 pixel.
- */
-inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
-{
-	// NOTE: px16 has already been byteswapped.
-	uint32_t px32;
-
-	// ARGB1555: ARRRRRGG GGGBBBBB
-	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000300))) |	// Green
-	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
-
-	// Alpha channel.
-	if (px16 & 0x8000) {
-		px32 |= 0xFF000000U;
-	}
-	return px32;
-}
-
-/**
- * Convert an IA8 pixel to ARGB32.
+ * Convert an IA8 pixel to ARGB32. (GameCube/Wii)
  * NOTE: Uses a grayscale palette.
  * @param px16 IA8 pixel.
  * @return ARGB32 pixel.
@@ -350,6 +343,29 @@ inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
 	// IA8:    IIIIIIII AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	return ((px16 & 0xFF) << 16) | ((px16 & 0xFF00) << 8) | (px16 & 0xFF00) | ((px16 >> 8) & 0xFF);
+}
+
+// 15-bit
+
+/**
+ * Convert a BGR555 pixel to ARGB32.
+ * @param px16 BGR555 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 is in host-endian.
+	uint32_t px32;
+
+	// BGR555: xBBBBBGG GGGRRRRR
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+
+	// No alpha channel.
+	px32 |= 0xFF000000U;
+	return px32;
 }
 
 }
