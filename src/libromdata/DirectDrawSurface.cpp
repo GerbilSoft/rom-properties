@@ -86,16 +86,18 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 			const rp_char *desc;
 			uint8_t px_format;	// ImageDecoder::PixelFormat
 		};
-		static const RGB_Format_Table_t rgb_fmt_tbl_16[];
-		static const RGB_Format_Table_t rgb_fmt_tbl_24[];
-		static const RGB_Format_Table_t rgb_fmt_tbl_32[];
+		static const RGB_Format_Table_t rgb_fmt_tbl_16[];	// 16-bit RGB
+		static const RGB_Format_Table_t rgb_fmt_tbl_24[];	// 24-bit RGB
+		static const RGB_Format_Table_t rgb_fmt_tbl_32[];	// 32-bit RGB
+		static const RGB_Format_Table_t rgb_fmt_tbl_luma[];	// Luminance
+		static const RGB_Format_Table_t rgb_fmt_tbl_alpha[];	// Alpha
 
 		/**
-		 * Get the format name of an RGB(A) DirectDraw surface pixel format.
+		 * Get the format name of an uncompressed DirectDraw surface pixel format.
 		 * @param ddspf DDS_PIXELFORMAT
 		 * @return Format name, or nullptr if not supported.
 		 */
-		static const rp_char *getRGBFormatName(const DDS_PIXELFORMAT &ddspf);
+		static const rp_char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
 
 		/**
 		 * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
@@ -176,34 +178,70 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0, 0, 0, 0, nullptr, 0}
 };
 
+// Supported luminance formats.
+const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
+	// 8-bit
+	{0x00FF, 0x0000, 0x0000, 0x0000, _RP("L8"), ImageDecoder::PXF_UNKNOWN},
+	{0x000F, 0x0000, 0x0000, 0x00F0, _RP("A4L4"), ImageDecoder::PXF_UNKNOWN},
+
+	// 16-bit
+	{0xFFFF, 0x0000, 0x0000, 0x0000, _RP("L16"), ImageDecoder::PXF_UNKNOWN},
+	{0x00FF, 0x0000, 0x0000, 0xFF00, _RP("A8L8"), ImageDecoder::PXF_UNKNOWN},
+
+	// end
+	{0, 0, 0, 0, nullptr, 0}
+};
+
+// Supported alpha formats.
+const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
+	// 8-bit
+	{0x0000, 0x0000, 0x0000, 0x00FF, _RP("A8"), ImageDecoder::PXF_UNKNOWN},
+
+	// end
+	{0, 0, 0, 0, nullptr, 0}
+};
+
 /**
- * Get the format name of an RGB(A) DirectDraw surface pixel format.
+ * Get the format name of an uncompressed DirectDraw surface pixel format.
  * @param ddspf DDS_PIXELFORMAT
  * @return Format name, or nullptr if not supported.
  */
-const rp_char *DirectDrawSurfacePrivate::getRGBFormatName(const DDS_PIXELFORMAT &ddspf)
+const rp_char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
 {
-	assert(ddspf.dwFlags & DDPF_RGB);
-	assert(!(ddspf.dwFlags & (DDPF_FOURCC | DDPF_ALPHA | DDPF_YUV | DDPF_LUMINANCE)));
+	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
+	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
+	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
+	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
 
 	const RGB_Format_Table_t *entry = nullptr;
-	switch (ddspf.dwRGBBitCount) {
-		case 15:
-		case 16:
-			// 16-bit.
-			entry = rgb_fmt_tbl_16;
-			break;
-		case 24:
-			// 24-bit.
-			entry = rgb_fmt_tbl_24;
-			break;
-		case 32:
-			// 32-bit.
-			entry = rgb_fmt_tbl_32;
-			break;
-		default:
-			// Unsupported.
-			return nullptr;
+	if (ddspf.dwFlags & DDPF_RGB) {
+		switch (ddspf.dwRGBBitCount) {
+			case 15:
+			case 16:
+				// 16-bit.
+				entry = rgb_fmt_tbl_16;
+				break;
+			case 24:
+				// 24-bit.
+				entry = rgb_fmt_tbl_24;
+				break;
+			case 32:
+				// 32-bit.
+				entry = rgb_fmt_tbl_32;
+				break;
+			default:
+				// Unsupported.
+				return nullptr;
+		}
+	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
+		// Luminance.
+		entry = rgb_fmt_tbl_luma;
+	} else if (ddspf.dwFlags & DDPF_ALPHA) {
+		// Alpha.
+		entry = rgb_fmt_tbl_alpha;
+	} else {
+		// Unsupported.
+		return nullptr;
 	}
 
 	if (!entry) {
@@ -227,34 +265,53 @@ const rp_char *DirectDrawSurfacePrivate::getRGBFormatName(const DDS_PIXELFORMAT 
 }
 
 /**
- * Get the ImageDecoder::PixelFormat of an RGB(A) DirectDraw surface pixel format.
+ * Get the ImageDecoder::PixelFormat of an uncompressed DirectDraw surface pixel format.
  * @param ddspf	[in] DDS_PIXELFORMAT
  * @param bpp	[out,opt] Bytes per pixel. (15/16 becomes 2)
  * @return ImageDecoder::PixelFormat, or ImageDecoder::PXF_UNKNOWN if not supported.
  */
 ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIXELFORMAT &ddspf, unsigned int *bytespp)
 {
-	assert(ddspf.dwFlags & DDPF_RGB);
-	assert(!(ddspf.dwFlags & (DDPF_FOURCC | DDPF_ALPHA | DDPF_YUV | DDPF_LUMINANCE)));
+	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
+	assert(((ddspf.dwFlags & FORMATS) == DDPF_RGB) ||
+	       ((ddspf.dwFlags & FORMATS) == DDPF_LUMINANCE) ||
+	       ((ddspf.dwFlags & FORMATS) == DDPF_ALPHA));
 
 	const RGB_Format_Table_t *entry = nullptr;
-	switch (ddspf.dwRGBBitCount) {
-		case 15:
-		case 16:
-			// 16-bit.
-			entry = rgb_fmt_tbl_16;
-			break;
-		case 24:
-			// 24-bit.
-			entry = rgb_fmt_tbl_24;
-			break;
-		case 32:
-			// 32-bit.
-			entry = rgb_fmt_tbl_32;
-			break;
-		default:
-			// Unsupported.
-			return ImageDecoder::PXF_UNKNOWN;
+	if (ddspf.dwFlags & DDPF_RGB) {
+		switch (ddspf.dwRGBBitCount) {
+			case 15:
+			case 16:
+				// 16-bit.
+				entry = rgb_fmt_tbl_16;
+				break;
+			case 24:
+				// 24-bit.
+				entry = rgb_fmt_tbl_24;
+				break;
+			case 32:
+				// 32-bit.
+				entry = rgb_fmt_tbl_32;
+				break;
+			default:
+				// Unsupported.
+				if (bytespp) {
+					*bytespp = 0;
+				}
+				return ImageDecoder::PXF_UNKNOWN;
+		}
+	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
+		// Luminance.
+		entry = rgb_fmt_tbl_luma;
+	} else if (ddspf.dwFlags & DDPF_ALPHA) {
+		// Alpha.
+		entry = rgb_fmt_tbl_alpha;
+	} else {
+		// Unsupported.
+		if (bytespp) {
+			*bytespp = 0;
+		}
+		return ImageDecoder::PXF_UNKNOWN;
 	}
 
 	if (!entry) {
@@ -791,24 +848,37 @@ int DirectDrawSurface::loadFieldData(void)
 				(ddspf.dwFourCC >> 24) & 0xFF));
 	} else if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
-		// Check the masks to determine the actual type.
-		const rp_char *pxfmt = d->getRGBFormatName(ddspf);
-		d->fields->addField_string(_RP("Pixel Format"),
-			(pxfmt ? pxfmt : _RP("RGB")));
+		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+		} else {
+			d->fields->addField_string(_RP("Pixel Format"),
+				rp_sprintf("RGB (%u-bit)", ddspf.dwRGBBitCount));
+		}
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
-		d->fields->addField_string(_RP("Pixel Format"),
-			rp_sprintf("Alpha (%u-bit)", ddspf.dwRGBBitCount));
+		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+		} else {
+			d->fields->addField_string(_RP("Pixel Format"),
+				rp_sprintf("Alpha (%u-bit)", ddspf.dwRGBBitCount));
+		}
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
 		d->fields->addField_string(_RP("Pixel Format"),
 			rp_sprintf("YUV (%u-bit)", ddspf.dwRGBBitCount));
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
-		const char *pxfmt = (ddspf.dwFlags & DDPF_ALPHAPIXELS
-			? "Luminance + Alpha" : "Luminance");
-		d->fields->addField_string(_RP("Pixel Format"),
-			rp_sprintf("%s (%u-bit)", pxfmt, ddspf.dwRGBBitCount));
+		const rp_char *pxfmt = d->getPixelFormatName(ddspf);
+		if (pxfmt) {
+			d->fields->addField_string(_RP("Pixel Format"), pxfmt);
+		} else {
+			d->fields->addField_string(_RP("Pixel Format"),
+				rp_sprintf("%s (%u-bit)",
+					(ddspf.dwFlags & DDPF_ALPHAPIXELS ? "Luminance + Alpha" : "Luminance"),
+					ddspf.dwRGBBitCount));
+		}
 	} else {
 		// Unknown pixel format.
 		d->fields->addField_string(_RP("Pixel Format"), _RP("Unknown"));
