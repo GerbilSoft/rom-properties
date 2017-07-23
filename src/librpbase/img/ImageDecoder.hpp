@@ -63,6 +63,9 @@ class ImageDecoder
 			PXF_RGBx4444,	// RRRRGGGG BBBBxxxx
 			PXF_BGRx4444,	// BBBBGGGG RRRRxxxx
 
+			// Uncommon 16-bit formats.
+			PXF_ARGB8332,
+
 			// GameCube-specific 16-bit
 			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
 			PXF_IA8,	// Intensity/Alpha.

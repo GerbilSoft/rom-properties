@@ -97,6 +97,18 @@ class ImageDecoderPrivate
 
 		/** Color conversion functions. **/
 
+		// 2-bit alpha lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint32_t a2_lookup[4];
+
+		// 2-bit color lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint8_t c2_lookup[4];
+
+		// 3-bit color lookup table.
+		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
+		static const uint8_t c3_lookup[8];
+
 		// 16-bit
 
 		/**
@@ -197,6 +209,13 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16);
 
+		/**
+		 * Convert an ARGB8332 pixel to ARGB32.
+		 * @param px16 ARGB8332 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ARGB8332_to_ARGB32(uint16_t px16);
+
 		// GameCube-specific 16-bit
 
 		/**
@@ -238,10 +257,6 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t G16R16_to_ARGB32(uint32_t px32);
-
-		// 2-bit alpha lookup table.
-		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
-		static const uint32_t a2_lookup[4];
 
 		/**
 		 * Convert an A2R10G10B10 pixel to ARGB32.
@@ -449,6 +464,23 @@ inline uint32_t ImageDecoderPrivate::BGRA5551_to_ARGB32(uint16_t px16)
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
 	}
+	return px32;
+}
+
+/**
+ * Convert an ARGB8332 pixel to ARGB32.
+ * @param px16 ARGB8332 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ARGB8332_to_ARGB32(uint16_t px16)
+{
+	// ARGB8332: AAAAAAAA RRRGGGBB
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
+	px32 = (c3_lookup[(px16 >> 5) & 7] << 16) |	// Red
+	       (c3_lookup[(px16 >> 2) & 7] <<  8) |	// Green
+	       (c2_lookup[ px16       & 3]      ) |	// Blue
+	       ((px16 << 16) & 0xFF000000);		// Alpha
 	return px32;
 }
 

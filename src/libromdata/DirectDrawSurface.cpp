@@ -136,6 +136,9 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0xF000, 0x0F00, 0x00F0, 0x0000, _RP("RGBx4444"), ImageDecoder::PXF_RGBx4444},
 	{0x00F0, 0x0F00, 0xF000, 0x0000, _RP("BGRx4444"), ImageDecoder::PXF_BGRx4444},
 
+	// Other uncommon 16-bit formats.
+	{0x00E0, 0x001C, 0x0003, 0xFF00, _RP("ARGB8332"), ImageDecoder::PXF_ARGB8332},
+
 	// end
 	{0, 0, 0, 0, nullptr, 0}
 };

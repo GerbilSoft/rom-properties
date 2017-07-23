@@ -30,6 +30,17 @@ const uint32_t ImageDecoderPrivate::a2_lookup[4] = {
 	0xAA000000, 0xFF000000
 };
 
+// 2-bit color lookup table.
+const uint8_t ImageDecoderPrivate::c2_lookup[4] = {
+	0x00, 0x55, 0xAA, 0xFF
+};
+
+// 3-bit color lookup table.
+const uint8_t ImageDecoderPrivate::c3_lookup[8] = {
+	0x00, 0x24, 0x49, 0x6D,
+	0x92, 0xB6, 0xDB, 0xFF
+};
+
 /**
  * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
  * @tparam px_format Palette pixel format.
@@ -442,6 +453,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		fromLinear16_convert(xBGR4444);
 		fromLinear16_convert(RGBx4444);
 		fromLinear16_convert(BGRx4444);
+		fromLinear16_convert(ARGB8332);
 
 		// 15-bit
 		fromLinear16_convert(RGB555);
