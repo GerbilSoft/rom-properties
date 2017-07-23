@@ -107,6 +107,13 @@ class ImageDecoderPrivate
 		static inline uint32_t RGB565_to_ARGB32(uint16_t px16);
 
 		/**
+		 * Convert a BGR565 pixel to ARGB32.
+		 * @param px16 BGR565 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGR565_to_ARGB32(uint16_t px16);
+
+		/**
 		 * Convert an ARGB1555 pixel to ARGB32. (Dreamcast)
 		 * @param px16 ARGB1555 pixel.
 		 * @return ARGB32 pixel.
@@ -120,7 +127,28 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t ARGB4444_to_ARGB32(uint16_t px16);
 
-		// GameCube-specific 15-bit
+		/**
+		 * Convert an ABGR1555 pixel to ARGB32.
+		 * @param px16 ABGR1555 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t ABGR1555_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert an RGBA5551 pixel to ARGB32.
+		 * @param px16 RGBA5551 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGBA5551_to_ARGB32(uint16_t px16);
+
+		/**
+		 * Convert a BGRA5551 pixel to ARGB32.
+		 * @param px16 BGRA5551 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t BGRA5551_to_ARGB32(uint16_t px16);
+
+		// GameCube-specific 16-bit
 
 		/**
 		 * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
@@ -257,6 +285,27 @@ inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 }
 
 /**
+ * Convert a BGR565 pixel to ARGB32.
+ * @param px16 BGR565 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGR565_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 is in host-endian.
+	uint32_t px32;
+
+	// RGB565: BBBBBGGG GGGRRRRR
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
+	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
+
+	// No alpha channel.
+	px32 |= 0xFF000000U;
+	return px32;
+}
+
+/**
  * Convert an ARGB1555 pixel to ARGB32.
  * @param px16 ARGB1555 pixel.
  * @return ARGB32 pixel.
@@ -274,6 +323,75 @@ inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
 
 	// Alpha channel.
 	if (px16 & 0x8000) {
+		px32 |= 0xFF000000U;
+	}
+	return px32;
+}
+
+/**
+ * Convert an ABGR1555 pixel to ARGB32.
+ * @param px16 ABGR1555 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::ABGR1555_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// ABGR1555: ABBBBBGG GGGRRRRR
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 17) & 0x070000))) |	// Red
+	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
+
+	// Alpha channel.
+	if (px16 & 0x8000) {
+		px32 |= 0xFF000000U;
+	}
+	return px32;
+}
+
+/**
+ * Convert an RGBA5551 pixel to ARGB32.
+ * @param px16 RGBA5551 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGBA5551_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// RGBA5551: RRRRRGGG GGBBBBBA
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
+	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000300))) |	// Green
+	       ((((px16 <<  2) & 0x0000F8) | ((px16 >>  3) & 0x000007)));	// Blue
+
+	// Alpha channel.
+	if (px16 & 0x0001) {
+		px32 |= 0xFF000000U;
+	}
+	return px32;
+}
+
+/**
+ * Convert a BGRA5551 pixel to ARGB32.
+ * @param px16 BGRA5551 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::BGRA5551_to_ARGB32(uint16_t px16)
+{
+	// NOTE: px16 has already been byteswapped.
+	uint32_t px32;
+
+	// BGRA5551: BBBBBGGG GGRRRRRA
+	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	px32 = ((((px16 << 18) & 0xF80000) | ((px16 << 13) & 0x070000))) |	// Red
+	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000300))) |	// Green
+	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
+
+	// Alpha channel.
+	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
 	}
 	return px32;
