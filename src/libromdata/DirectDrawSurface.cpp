@@ -132,10 +132,10 @@ const DirectDrawSurfacePrivate::RGBA_Format_Table_t DirectDrawSurfacePrivate::rg
 
 // Supported RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl[] = {
-	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("XRGB8888"), 32, ImageDecoder::PXF_XRGB8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888"), 32, ImageDecoder::PXF_XBGR8888},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888"), 32, ImageDecoder::PXF_RGBX8888},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888"), 32, ImageDecoder::PXF_BGRX8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("xRGB8888"), 32, ImageDecoder::PXF_xRGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("xBGR8888"), 32, ImageDecoder::PXF_xBGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBx8888"), 32, ImageDecoder::PXF_RGBx8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRx8888"), 32, ImageDecoder::PXF_BGRx8888},
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_BGR888},
 	{0xF800, 0x07E0, 0x001F, _RP("RGB565"), 16, ImageDecoder::PXF_RGB565},

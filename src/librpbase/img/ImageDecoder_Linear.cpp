@@ -672,7 +672,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_HOST_XRGB32:
+		case PXF_HOST_xRGB32:
 			// Host-endian XRGB32.
 			// Pixel copy is needed, with alpha channel masking.
 			for (int y = 0; y < height; y++) {
@@ -694,8 +694,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			}
 			break;
 
-		case PXF_HOST_RGBX32:
-			// Host-endian RGBX32.
+		case PXF_HOST_RGBx32:
+			// Host-endian RGBx32.
 			// Pixel copy is needed, with a right shift.
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
@@ -774,7 +774,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_SWAP_XRGB32:
+		case PXF_SWAP_xRGB32:
 			// Byteswapped XRGB32.
 			// Pixel copy is needed, with byteswapping and alpha channel masking.
 			for (int y = 0; y < height; y++) {
@@ -796,8 +796,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			}
 			break;
 
-		case PXF_SWAP_RGBX32:
-			// Byteswapped RGBX32.
+		case PXF_SWAP_RGBx32:
+			// Byteswapped RGBx32.
 			// Pixel copy is needed, with byteswapping and a right shift.
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
