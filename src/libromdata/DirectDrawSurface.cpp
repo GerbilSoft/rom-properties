@@ -124,8 +124,6 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	// (Technically 15-bit, but DDS usually lists it as 16-bit.)
 	{0x7C00, 0x03E0, 0x001F, 0x0000, _RP("RGB555"), ImageDecoder::PXF_RGB555},
 	{0x001F, 0x03E0, 0x7C00, 0x0000, _RP("BGR555"), ImageDecoder::PXF_BGR555},
-	{0x7C00, 0x03E0, 0x001F, 0x0000, _RP("RGB555"), ImageDecoder::PXF_RGB555},
-	{0x001F, 0x03E0, 0x7C00, 0x0000, _RP("BGR555"), ImageDecoder::PXF_BGR555},
 
 	// 4-bit per channel formats. (uncommon nowadays) (alpha)
 	{0x0F00, 0x00F0, 0x000F, 0xF000, _RP("ARGB4444"), ImageDecoder::PXF_ARGB4444},
