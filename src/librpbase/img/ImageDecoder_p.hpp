@@ -309,6 +309,7 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
 }
 
 /** Color conversion functions. **/
+// NOTE: px16 is always in host-endian.
 
 // 16-bit
 
@@ -319,17 +320,12 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
  */
 inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 is in host-endian.
-	uint32_t px32;
-
 	// RGB565: RRRRRGGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
-	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
-
-	// No alpha channel.
-	px32 |= 0xFF000000U;
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
+		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
 	return px32;
 }
 
@@ -340,17 +336,12 @@ inline uint32_t ImageDecoderPrivate::RGB565_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::BGR565_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 is in host-endian.
-	uint32_t px32;
-
 	// RGB565: BBBBBGGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-	       ((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
-	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
-
-	// No alpha channel.
-	px32 |= 0xFF000000U;
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
+		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+		((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
 	return px32;
 }
 
@@ -361,15 +352,12 @@ inline uint32_t ImageDecoderPrivate::BGR565_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
-	uint32_t px32;
-
 	// ARGB1555: ARRRRRGG GGGBBBBB
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
 	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
 	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000300))) |	// Green
 	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
-
 	// Alpha channel.
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
@@ -384,15 +372,12 @@ inline uint32_t ImageDecoderPrivate::ARGB1555_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::ABGR1555_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
-	uint32_t px32;
-
 	// ABGR1555: ABBBBBGG GGGRRRRR
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
 	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 17) & 0x070000))) |	// Red
 	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
 	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
-
 	// Alpha channel.
 	if (px16 & 0x8000) {
 		px32 |= 0xFF000000U;
@@ -407,15 +392,12 @@ inline uint32_t ImageDecoderPrivate::ABGR1555_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::RGBA5551_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
-	uint32_t px32;
-
 	// RGBA5551: RRRRRGGG GGBBBBBA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
 	px32 = ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
 	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000300))) |	// Green
 	       ((((px16 <<  2) & 0x0000F8) | ((px16 >>  3) & 0x000007)));	// Blue
-
 	// Alpha channel.
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
@@ -430,15 +412,12 @@ inline uint32_t ImageDecoderPrivate::RGBA5551_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::BGRA5551_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 has already been byteswapped.
-	uint32_t px32;
-
 	// BGRA5551: BBBBBGGG GGRRRRRA
 	// ARGB32:   AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t px32;
 	px32 = ((((px16 << 18) & 0xF80000) | ((px16 << 13) & 0x070000))) |	// Red
 	       ((((px16 <<  5) & 0x00F800) | ((px16      ) & 0x000300))) |	// Green
 	       ((((px16 >>  8) & 0x0000F8) | ((px16 >> 13) & 0x000007)));	// Blue
-
 	// Alpha channel.
 	if (px16 & 0x0001) {
 		px32 |= 0xFF000000U;
@@ -595,15 +574,15 @@ inline uint32_t ImageDecoderPrivate::BGRx4444_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
 {
-	uint32_t px32 = 0;
+	uint32_t px32;
 
 	if (px16 & 0x8000) {
 		// BGR555: xRRRRRGG GGGBBBBB
 		// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+		px32  = 0xFF000000U;	// no alpha channel
 		px32 |= (((px16 << 3) & 0x0000F8) | ((px16 >> 2) & 0x000007));	// B
 		px32 |= (((px16 << 6) & 0x00F800) | ((px16 << 1) & 0x000700));	// G
 		px32 |= (((px16 << 9) & 0xF80000) | ((px16 << 4) & 0x070000));	// R
-		px32 |= 0xFF000000U; // no alpha channel
 	} else {
 		// RGB4A3
 		px32  =  (px16 & 0x000F);	// B
@@ -631,8 +610,6 @@ inline uint32_t ImageDecoderPrivate::RGB5A3_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 is in host-endian.
-
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
 
@@ -650,17 +627,12 @@ inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::RGB555_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 is in host-endian.
-	uint32_t px32;
-
 	// RGB555: xRRRRRGG GGGBBBBB
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-	       ((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
-
-	// No alpha channel.
-	px32 |= 0xFF000000U;
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((((px16 <<  9) & 0xF80000) | ((px16 <<  4) & 0x070000))) |	// Red
+		((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
 	return px32;
 }
 
@@ -671,17 +643,12 @@ inline uint32_t ImageDecoderPrivate::RGB555_to_ARGB32(uint16_t px16)
  */
 inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 {
-	// NOTE: px16 is in host-endian.
-	uint32_t px32;
-
 	// BGR555: xBBBBBGG GGGRRRRR
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	px32 = ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
-	       ((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
-	       ((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
-
-	// No alpha channel.
-	px32 |= 0xFF000000U;
+	uint32_t px32 = 0xFF000000U;
+	px32 |= ((((px16 << 19) & 0xF80000) | ((px16 << 14) & 0x070000))) |	// Red
+		((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
+		((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
 	return px32;
 }
 
