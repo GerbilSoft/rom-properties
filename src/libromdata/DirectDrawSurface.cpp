@@ -121,8 +121,7 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0x001F, 0x07E0, 0xF800, 0x0000, _RP("BGR565"), ImageDecoder::PXF_BGR565},
 
 	// 5-bit per channel, without alpha.
-	// NOTE: 15-bit DDS textures actually have 16 as the bit count.
-	// Keep both 15 and 16 listed just in case.
+	// (Technically 15-bit, but DDS usually lists it as 16-bit.)
 	{0x7C00, 0x03E0, 0x001F, 0x0000, _RP("RGB555"), ImageDecoder::PXF_RGB555},
 	{0x001F, 0x03E0, 0x7C00, 0x0000, _RP("BGR555"), ImageDecoder::PXF_BGR555},
 	{0x7C00, 0x03E0, 0x001F, 0x0000, _RP("RGB555"), ImageDecoder::PXF_RGB555},
