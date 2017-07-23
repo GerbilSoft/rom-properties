@@ -540,4 +540,259 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 	return img;
 }
 
+/**
+ * Convert a linear 32-bit RGB image to rp_image.
+ * @param px_format	[in] 32-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 32-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+ * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+	int width, int height,
+	const uint32_t *img_buf, int img_siz, int pitch)
+{
+	static const int bytespp = 4;
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * bytespp));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * bytespp))
+	{
+		return nullptr;
+	}
+
+	// Line offset adjustment.
+	int line_offset_adj = 0;
+	assert(pitch >= 0);
+	if (pitch > 0) {
+		// Set line_offset_adj to the number of pixels we need to
+		// add to the end of each line to get to the next row.
+		assert(pitch % bytespp == 0);
+		if (pitch % bytespp != 0) {
+			// Invalid pitch.
+			return nullptr;
+		}
+		line_offset_adj = width - (pitch / bytespp);
+	}
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+	// Convert one line at a time. (32-bit -> ARGB32)
+	// NOTE: All functions except PXF_HOST_ARGB32 are partially unrolled.
+	switch (px_format) {
+		case PXF_HOST_ARGB32: {
+			// Host-endian ARGB32.
+			// We can directly copy the entire row.
+			const unsigned int copy_len = (unsigned int)width * bytespp;
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				memcpy(px_dest, img_buf, copy_len);
+				img_buf += (pitch / bytespp);
+			}
+			break;
+		}
+
+		case PXF_HOST_ABGR32: {
+			// Host-endian ABGR32.
+			// Pixel copy is needed, with byte shuffling.
+			// TODO: pshufb on x86 with SSSE3?
+			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
+			for (int y = 0; y < height; y++) {
+				argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0].a = img_buf_abgr32[0].a;
+					px_dest[0].r = img_buf_abgr32[0].b;
+					px_dest[0].g = img_buf_abgr32[0].g;
+					px_dest[0].b = img_buf_abgr32[0].r;
+
+					px_dest[1].a = img_buf_abgr32[1].a;
+					px_dest[1].r = img_buf_abgr32[1].b;
+					px_dest[1].g = img_buf_abgr32[1].g;
+					px_dest[1].b = img_buf_abgr32[1].r;
+
+					img_buf_abgr32 += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					px_dest->a = img_buf_abgr32->a;
+					px_dest->r = img_buf_abgr32->b;
+					px_dest->g = img_buf_abgr32->g;
+					px_dest->b = img_buf_abgr32->r;
+					img_buf_abgr32++;
+					px_dest++;
+				}
+				img_buf_abgr32 += line_offset_adj;
+			}
+			break;
+		}
+
+		case PXF_HOST_XRGB32:
+			// Host-endian XRGB32.
+			// Pixel copy is needed, with alpha channel masking.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0] = img_buf[0] | 0xFF000000;
+					px_dest[1] = img_buf[1] | 0xFF000000;
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest = *img_buf | 0xFF000000;
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		case PXF_HOST_RGBX32:
+			// Host-endian RGBX32.
+			// Pixel copy is needed, with a right shift.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0] = (img_buf[0] >> 8) | 0xFF000000;
+					px_dest[1] = (img_buf[1] >> 8) | 0xFF000000;
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest = (*img_buf >> 8) | 0xFF000000;
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		case PXF_SWAP_ARGB32:
+			// Byteswapped ARGB32.
+			// Pixel copy is needed, with byteswapping.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0] = __swab32(img_buf[0]);
+					px_dest[1] = __swab32(img_buf[1]);
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest = __swab32(*img_buf);
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		case PXF_SWAP_ABGR32: {
+			// Byteswapped ABGR32.
+			// Pixel copy is needed, with byte shuffling.
+			// TODO: pshufb on x86 with SSSE3?
+			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
+			for (int y = 0; y < height; y++) {
+				argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0].a = img_buf_abgr32[0].r;
+					px_dest[0].r = img_buf_abgr32[0].g;
+					px_dest[0].g = img_buf_abgr32[0].b;
+					px_dest[0].b = img_buf_abgr32[0].a;
+
+					px_dest[1].a = img_buf_abgr32[1].r;
+					px_dest[1].r = img_buf_abgr32[1].g;
+					px_dest[1].g = img_buf_abgr32[1].b;
+					px_dest[1].b = img_buf_abgr32[1].a;
+
+					img_buf_abgr32 += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					px_dest->a = img_buf_abgr32->r;
+					px_dest->r = img_buf_abgr32->g;
+					px_dest->g = img_buf_abgr32->b;
+					px_dest->b = img_buf_abgr32->a;
+					img_buf_abgr32++;
+					px_dest++;
+				}
+				img_buf_abgr32 += line_offset_adj;
+			}
+			break;
+		}
+
+		case PXF_SWAP_XRGB32:
+			// Byteswapped XRGB32.
+			// Pixel copy is needed, with byteswapping and alpha channel masking.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0] = __swab32(img_buf[0]) | 0xFF000000;
+					px_dest[1] = __swab32(img_buf[1]) | 0xFF000000;
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest = __swab32(*img_buf) | 0xFF000000;
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		case PXF_SWAP_RGBX32:
+			// Byteswapped RGBX32.
+			// Pixel copy is needed, with byteswapping and a right shift.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 1; x -= 2) {
+					px_dest[0] = (__swab32(img_buf[0]) >> 8) | 0xFF000000;
+					px_dest[1] = (__swab32(img_buf[1]) >> 8) | 0xFF000000;
+					img_buf += 2;
+					px_dest += 2;
+				}
+				if (x == 1) {
+					// Extra pixel.
+					*px_dest = (__swab32(*img_buf) >> 8) | 0xFF000000;
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+
+		default:
+			assert(!"Unsupported 16-bit pixel format.");
+			return nullptr;
+	}
+
+	// Image has been converted.
+	return img;
+}
+
 }

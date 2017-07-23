@@ -120,10 +120,10 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 
 // Supported RGBA formats.
 const DirectDrawSurfacePrivate::RGBA_Format_Table_t DirectDrawSurfacePrivate::rgba_fmt_tbl[] = {
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888"), 32, ImageDecoder::PXF_ARGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888"), 32, ImageDecoder::PXF_ABGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888"), 32, ImageDecoder::PXF_RGBA8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888"), 32, ImageDecoder::PXF_BGRA8888},
 	{0x7C00, 0x03E0, 0x001F, 0x8000, _RP("ARGB1555"), 16, ImageDecoder::PXF_ARGB1555},
 	{0x001F, 0x03E0, 0x007C, 0x8000, _RP("ABGR1555"), 16, ImageDecoder::PXF_UNKNOWN},
 	{0xF800, 0x07C0, 0x003E, 0x0001, _RP("RGBA1555"), 16, ImageDecoder::PXF_UNKNOWN},
@@ -132,10 +132,10 @@ const DirectDrawSurfacePrivate::RGBA_Format_Table_t DirectDrawSurfacePrivate::rg
 
 // Supported RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl[] = {
-	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("XRGB8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888"), 32, ImageDecoder::PXF_UNKNOWN},
-	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888"), 32, ImageDecoder::PXF_UNKNOWN},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("XRGB8888"), 32, ImageDecoder::PXF_XRGB8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("XBGR8888"), 32, ImageDecoder::PXF_XBGR8888},
+	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBX8888"), 32, ImageDecoder::PXF_RGBX8888},
+	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRX8888"), 32, ImageDecoder::PXF_BGRX8888},
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_BGR888},
 	{0xF800, 0x07E0, 0x001F, _RP("RGB565"), 16, ImageDecoder::PXF_RGB565},
@@ -402,10 +402,18 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				break;
 
 			case 24/8:
-				// 24-bit image.
+				// 24-bit RGB image.
 				ret_img = ImageDecoder::fromLinear24(
 					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size, pitch);
+				break;
+
+			case sizeof(uint32_t):
+				// 32-bit RGB image.
+				ret_img = ImageDecoder::fromLinear32(px_format,
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					reinterpret_cast<const uint32_t*>(buf.get()),
+					expected_size, pitch);
 				break;
 
 			default:

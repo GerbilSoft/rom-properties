@@ -61,6 +61,38 @@ class ImageDecoder
 			// 24-bit
 			PXF_RGB888,
 			PXF_BGR888,
+
+			// 32-bit with alpha channel.
+			PXF_ARGB8888,
+			PXF_ABGR8888,
+			PXF_RGBA8888,
+			PXF_BGRA8888,
+			// 32-bit with unused alpha channel.
+			PXF_XRGB8888,
+			PXF_XBGR8888,
+			PXF_RGBX8888,
+			PXF_BGRX8888,
+
+			// Endian-specific ARGB32 definitions.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			PXF_HOST_ARGB32 = PXF_ARGB8888,
+			PXF_HOST_ABGR32 = PXF_ABGR8888,
+			PXF_HOST_XRGB32 = PXF_XRGB8888,
+			PXF_HOST_RGBX32 = PXF_RGBX8888,
+			PXF_SWAP_ARGB32 = PXF_BGRA8888,
+			PXF_SWAP_ABGR32 = PXF_RGBA8888,
+			PXF_SWAP_XRGB32 = PXF_BGRX8888,
+			PXF_SWAP_RGBX32 = PXF_XBGR8888,
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			PXF_HOST_ARGB32 = PXF_BGRA8888,
+			PXF_HOST_ABGR32 = PXF_RGBA8888
+			PXF_HOST_XRGB32 = PXF_BGRX8888,
+			PXF_HOST_RGBX32 = PXF_XBGR8888,
+			PXF_SWAP_ARGB32 = PXF_ARGB8888,
+			PXF_SWAP_ABGR32 = PXF_ABGR8888,
+			PXF_SWAP_XRGB32 = PXF_XRGB8888,
+			PXF_SWAP_RGBX32 = PXF_RGBX8888,
+#endif
 		};
 
 		/**
@@ -134,6 +166,20 @@ class ImageDecoder
 		static rp_image *fromLinear24(PixelFormat px_format,
 			int width, int height,
 			const uint8_t *img_buf, int img_siz, int pitch = 0);
+
+		/**
+		 * Convert a linear 32-bit RGB image to rp_image.
+		 * @param px_format	[in] 32-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 32-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear32(PixelFormat px_format,
+			int width, int height,
+			const uint32_t *img_buf, int img_siz, int pitch = 0);
 
 		/** GameCube **/
 
