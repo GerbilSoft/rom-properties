@@ -261,7 +261,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 		return nullptr;
 	}
 
-	// DXT1 uses 2x2 blocks of 4x4 tiles.
+	// GameCube DXT1 uses 2x2 blocks of 4x4 tiles.
 	assert(width % 8 == 0);
 	assert(height % 8 == 0);
 	if (width % 8 != 0 || height % 8 != 0)
@@ -344,10 +344,10 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		return nullptr;
 	}
 
-	// DXT1 uses 2x2 blocks of 4x4 tiles.
-	assert(width % 8 == 0);
-	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
+	// DXT1 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
 	// Calculate the total number of tiles.
@@ -448,10 +448,10 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 		return nullptr;
 	}
 
-	// DXT3 uses 2x2 blocks of 4x4 tiles.
-	assert(width % 8 == 0);
-	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
+	// DXT3 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
 	// Calculate the total number of tiles.
@@ -562,10 +562,10 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 		return nullptr;
 	}
 
-	// DXT5 uses 2x2 blocks of 4x4 tiles.
-	assert(width % 8 == 0);
-	assert(height % 8 == 0);
-	if (width % 8 != 0 || height % 8 != 0)
+	// DXT5 uses 4x4 tiles.
+	assert(width % 4 == 0);
+	assert(height % 4 == 0);
+	if (width % 4 != 0 || height % 4 != 0)
 		return nullptr;
 
 	// Calculate the total number of tiles.
