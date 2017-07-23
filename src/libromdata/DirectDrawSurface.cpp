@@ -370,13 +370,13 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			return nullptr;
 		}
 
-		unsigned int pitch = ddsHeader.dwPitchOrLinearSize;
+		unsigned int stride = ddsHeader.dwPitchOrLinearSize;
 		if (ddsHeader.dwPitchOrLinearSize == 0) {
-			// Invalid pitch. Assume pitch == width * bytespp.
-			// TODO: Check for pitch is too small but non-zero?
-			pitch = ddsHeader.dwWidth * bytespp;
+			// Invalid stride. Assume stride == width * bytespp.
+			// TODO: Check for stride is too small but non-zero?
+			stride = ddsHeader.dwWidth * bytespp;
 		}
-		const unsigned int expected_size = ddsHeader.dwHeight * pitch;
+		const unsigned int expected_size = ddsHeader.dwHeight * stride;
 
 		// Verify file size.
 		if (expected_size >= file_sz + img_data_start) {
@@ -398,14 +398,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				ret_img = ImageDecoder::fromLinear16(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf.get()),
-					expected_size, pitch);
+					expected_size, stride);
 				break;
 
 			case 24/8:
 				// 24-bit RGB image.
 				ret_img = ImageDecoder::fromLinear24(
 					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size, pitch);
+					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
@@ -413,7 +413,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				ret_img = ImageDecoder::fromLinear32(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint32_t*>(buf.get()),
-					expected_size, pitch);
+					expected_size, stride);
 				break;
 
 			default:

@@ -146,12 +146,12 @@ class ImageDecoder
 		 * @param height	[in] Image height.
 		 * @param img_buf	[in] 16-bit image buffer.
 		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
-		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromLinear16(PixelFormat px_format,
 			int width, int height,
-			const uint16_t *img_buf, int img_siz, int pitch = 0);
+			const uint16_t *img_buf, int img_siz, int stride = 0);
 
 		/**
 		 * Convert a linear 24-bit RGB image to rp_image.
@@ -160,12 +160,12 @@ class ImageDecoder
 		 * @param height	[in] Image height.
 		 * @param img_buf	[in] Image buffer. (must be byte-addressable)
 		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
-		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromLinear24(PixelFormat px_format,
 			int width, int height,
-			const uint8_t *img_buf, int img_siz, int pitch = 0);
+			const uint8_t *img_buf, int img_siz, int stride = 0);
 
 		/**
 		 * Convert a linear 32-bit RGB image to rp_image.
@@ -174,12 +174,12 @@ class ImageDecoder
 		 * @param height	[in] Image height.
 		 * @param img_buf	[in] 32-bit image buffer.
 		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
-		 * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
 		static rp_image *fromLinear32(PixelFormat px_format,
 			int width, int height,
-			const uint32_t *img_buf, int img_siz, int pitch = 0);
+			const uint32_t *img_buf, int img_siz, int stride = 0);
 
 		/** GameCube **/
 

@@ -364,12 +364,12 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
  * @param height	[in] Image height.
  * @param img_buf	[in] 16-bit image buffer.
  * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
- * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int pitch)
+	const uint16_t *img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 2;
 
@@ -386,16 +386,16 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 	// Line offset adjustment.
 	int line_offset_adj = 0;
-	assert(pitch >= 0);
-	if (pitch > 0) {
+	assert(stride >= 0);
+	if (stride > 0) {
 		// Set line_offset_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
-		assert(pitch % bytespp == 0);
-		if (pitch % bytespp != 0) {
-			// Invalid pitch.
+		assert(stride % bytespp == 0);
+		if (stride % bytespp != 0) {
+			// Invalid stride.
 			return nullptr;
 		}
-		line_offset_adj = width - (pitch / bytespp);
+		line_offset_adj = width - (stride / bytespp);
 	}
 
 	// Create an rp_image.
@@ -460,12 +460,12 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
  * @param height	[in] Image height.
  * @param img_buf	[in] Image buffer. (must be byte-addressable)
  * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
- * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *img_buf, int img_siz, int pitch)
+	const uint8_t *img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 3;
 
@@ -482,17 +482,17 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 
 	// Line offset adjustment.
 	int line_offset_adj = 0;
-	assert(pitch >= 0);
-	if (pitch > 0) {
+	assert(stride >= 0);
+	if (stride > 0) {
 		// Set line_offset_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
-		assert(pitch % bytespp == 0);
-		if (pitch % bytespp != 0) {
-			// Invalid pitch.
+		assert(stride % bytespp == 0);
+		if (stride % bytespp != 0) {
+			// Invalid stride.
 			return nullptr;
 		}
 		// Byte addressing, so keep it in units of bytespp.
-		line_offset_adj = (width * bytespp) - pitch;
+		line_offset_adj = (width * bytespp) - stride;
 	}
 
 	// Create an rp_image.
@@ -547,12 +547,12 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
  * @param height	[in] Image height.
  * @param img_buf	[in] 32-bit image buffer.
  * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
- * @param pitch		[in,opt] Pitch, in bytes. If 0, assumes width*bytespp.
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
 rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *img_buf, int img_siz, int pitch)
+	const uint32_t *img_buf, int img_siz, int stride)
 {
 	static const int bytespp = 4;
 
@@ -569,16 +569,16 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 
 	// Line offset adjustment.
 	int line_offset_adj = 0;
-	assert(pitch >= 0);
-	if (pitch > 0) {
+	assert(stride >= 0);
+	if (stride > 0) {
 		// Set line_offset_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
-		assert(pitch % bytespp == 0);
-		if (pitch % bytespp != 0) {
-			// Invalid pitch.
+		assert(stride % bytespp == 0);
+		if (stride % bytespp != 0) {
+			// Invalid stride.
 			return nullptr;
 		}
-		line_offset_adj = width - (pitch / bytespp);
+		line_offset_adj = width - (stride / bytespp);
 	}
 
 	// Create an rp_image.
@@ -599,7 +599,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				memcpy(px_dest, img_buf, copy_len);
-				img_buf += (pitch / bytespp);
+				img_buf += (stride / bytespp);
 			}
 			break;
 		}
