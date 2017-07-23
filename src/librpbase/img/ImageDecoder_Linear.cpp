@@ -428,7 +428,15 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		case PXF_##fmt: \
 			for (int y = 0; y < height; y++) { \
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
-				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
+				unsigned int x; \
+				for (x = (unsigned int)width; x > 1; x -= 2) { \
+					px_dest[0] = ImageDecoderPrivate::fmt##_to_ARGB32(img_buf[0]); \
+					px_dest[1] = ImageDecoderPrivate::fmt##_to_ARGB32(img_buf[1]); \
+					img_buf += 2; \
+					px_dest += 2; \
+				} \
+				if (x == 1) { \
+					/* Extra pixel. */ \
 					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(*img_buf); \
 					img_buf++; \
 					px_dest++; \
@@ -439,8 +447,12 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 
 	// Convert one line at a time. (8-bit -> ARGB32)
 	switch (px_format) {
+		// Luminance.
 		fromLinear8_convert(L8);
 		fromLinear8_convert(A4L4);
+
+		// Alpha.
+		fromLinear8_convert(A8);
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");

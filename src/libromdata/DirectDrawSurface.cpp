@@ -195,7 +195,7 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 // Supported alpha formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
 	// 8-bit
-	{0x0000, 0x0000, 0x0000, 0x00FF, _RP("A8"), ImageDecoder::PXF_UNKNOWN},
+	{0x0000, 0x0000, 0x0000, 0x00FF, _RP("A8"), ImageDecoder::PXF_A8},
 
 	// end
 	{0, 0, 0, 0, nullptr, 0}
@@ -468,7 +468,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		// Uncompressed linear image data.
 		unsigned int bytespp = 0;
 		ImageDecoder::PixelFormat px_format = getPixelFormat(ddspf, &bytespp);
-		printf("%u %u\n", bytespp, px_format);
 		if (px_format == ImageDecoder::PXF_UNKNOWN || bytespp == 0) {
 			// Unknown pixel format.
 			return nullptr;

@@ -101,6 +101,9 @@ class ImageDecoder
 			PXF_L16,	// LLLLLLLL llllllll
 			PXF_A8L8,	// AAAAAAAA LLLLLLLL
 
+			// Alpha formats.
+			PXF_A8,		// AAAAAAAA
+
 			// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			PXF_HOST_ARGB32 = PXF_ARGB8888,
