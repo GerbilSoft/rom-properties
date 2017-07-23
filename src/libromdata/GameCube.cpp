@@ -1905,7 +1905,7 @@ int GameCube::loadInternalImage(ImageType imageType, const rp_image **pImage)
 	}
 
 	// Convert the banner from GameCube RGB5A3 to ARGB32.
-	rp_image *banner = ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB5A3>(
+	rp_image *banner = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 		BANNER_IMAGE_W, BANNER_IMAGE_H,
 		d->gcn_opening_bnr->banner, sizeof(d->gcn_opening_bnr->banner));
 	if (!banner) {

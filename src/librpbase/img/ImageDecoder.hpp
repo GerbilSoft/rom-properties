@@ -128,8 +128,8 @@ class ImageDecoder
 
 		/**
 		 * Convert a linear CI4 image to rp_image with a little-endian 16-bit palette.
-		 * @tparam px_format Palette pixel format.
 		 * @tparam msn_left If true, most-significant nybble is the left pixel.
+		 * @param px_format Palette pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI4 image buffer.
@@ -138,14 +138,15 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 16*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format, bool msn_left>
-		static rp_image *fromLinearCI4(int width, int height,
+		template<bool msn_left>
+		static rp_image *fromLinearCI4(PixelFormat px_format,
+			int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
 
 		/**
 		 * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
-		 * @tparam px_format Palette pixel format.
+		 * @param px_format Palette pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf CI8 image buffer.
@@ -154,8 +155,8 @@ class ImageDecoder
 		 * @param pal_siz Size of palette data. [must be >= 256*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format>
-		static rp_image *fromLinearCI8(int width, int height,
+		static rp_image *fromLinearCI8(PixelFormat px_format,
+			int width, int height,
 			const uint8_t *img_buf, int img_siz,
 			const uint16_t *pal_buf, int pal_siz);
 
@@ -231,15 +232,15 @@ class ImageDecoder
 
 		/**
 		 * Convert a GameCube 16-bit image to rp_image.
-		 * @tparam px_format 16-bit pixel format.
+		 * @param px_format 16-bit pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf RGB5A3 image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format>
-		static rp_image *fromGcn16(int width, int height,
+		static rp_image *fromGcn16(PixelFormat px_format,
+			int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
 		/**
@@ -358,15 +359,15 @@ class ImageDecoder
 
 		/**
 		 * Convert a Dreamcast square twiddled 16-bit image to rp_image.
-		 * @tparam px_format 16-bit pixel format.
+		 * @param px_format 16-bit pixel format.
 		 * @param width Image width.
 		 * @param height Image height.
 		 * @param img_buf 16-bit image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @return rp_image, or nullptr on error.
 		 */
-		template<PixelFormat px_format>
-		static rp_image *fromDreamcastSquareTwiddled16(int width, int height,
+		static rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
+			int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
 		/**

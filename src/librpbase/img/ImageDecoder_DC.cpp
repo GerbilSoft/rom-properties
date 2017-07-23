@@ -56,23 +56,17 @@ unsigned int *ImageDecoderPrivate::createDreamcastTwiddleMap(int size)
 
 /**
  * Convert a Dreamcast square twiddled 16-bit image to rp_image.
- * @tparam px_format 16-bit pixel format.
+ * @param px_format 16-bit pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf 16-bit image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-template<ImageDecoder::PixelFormat px_format>
-rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
+rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
+	int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
-	// Verify px_format.
-	static_assert(px_format == PXF_ARGB1555 ||
-		      px_format == PXF_RGB565 ||
-		      px_format == PXF_ARGB4444,
-		      "Invalid pixel format for this function.");
-
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -146,17 +140,6 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(int width, int height,
 	delete[] tmap;
 	return img;
 }
-
-// Explicit instantiation.
-template rp_image *ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB1555>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
-template rp_image *ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_RGB565>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
-template rp_image *ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB4444>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
 
 /**
  * Convert a Dreamcast vector-quantized image to rp_image.

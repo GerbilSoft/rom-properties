@@ -26,23 +26,17 @@ namespace LibRpBase {
 
 /**
  * Convert a GameCube 16-bit image to rp_image.
- * @tparam px_format 16-bit pixel format.
+ * @param px_format 16-bit pixel format.
  * @param width Image width.
  * @param height Image height.
  * @param img_buf RGB5A3 image buffer.
  * @param img_siz Size of image data. [must be >= (w*h)*2]
  * @return rp_image, or nullptr on error.
  */
-template<ImageDecoder::PixelFormat px_format>
-rp_image *ImageDecoder::fromGcn16(int width, int height,
+rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
+	int width, int height,
 	const uint16_t *img_buf, int img_siz)
 {
-	// Verify px_format.
-	static_assert(px_format == PXF_RGB5A3 ||
-		      px_format == PXF_RGB565 ||
-		      px_format == PXF_IA8,
-		      "Invalid pixel format for this function.");
-
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
@@ -129,17 +123,6 @@ rp_image *ImageDecoder::fromGcn16(int width, int height,
 	// Image has been converted.
 	return img;
 }
-
-// Explicit instantiation.
-template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB5A3>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
-template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB565>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
-template rp_image *ImageDecoder::fromGcn16<ImageDecoder::PXF_IA8>(
-	int width, int height,
-	const uint16_t *img_buf, int img_siz);
 
 /**
  * Convert a GameCube CI8 image to rp_image.

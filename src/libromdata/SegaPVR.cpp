@@ -332,53 +332,35 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 		return nullptr;
 	}
 
+	// Determine the pixel format.
+	// TODO: Not for 4-bit or 8-bit?
+	ImageDecoder::PixelFormat px_format;
+	switch (pvrHeader.pvr.px_format) {
+		case PVR_PX_ARGB1555:
+			px_format = ImageDecoder::PXF_ARGB1555;
+			break;
+		case PVR_PX_RGB565:
+			px_format = ImageDecoder::PXF_RGB565;
+			break;
+		case PVR_PX_ARGB4444:
+			px_format = ImageDecoder::PXF_ARGB4444;
+			break;
+		default:
+			// Unsupported pixel format.
+			return nullptr;
+	}
+
 	rp_image *ret_img = nullptr;
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB1555>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
-					break;
-
-				case PVR_PX_RGB565:
-					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_RGB565>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
-					break;
-
-				case PVR_PX_ARGB4444:
-					ret_img = ImageDecoder::fromDreamcastSquareTwiddled16<ImageDecoder::PXF_ARGB4444>(
-						pvrHeader.width, pvrHeader.height,
-						reinterpret_cast<uint16_t*>(buf.get()), expect_size);
-					break;
-
-				default:
-					// TODO
-					return nullptr;
-			}
+			ret_img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
+				pvrHeader.width, pvrHeader.height,
+				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
-			ImageDecoder::PixelFormat px_format;
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					px_format = ImageDecoder::PXF_ARGB1555;
-					break;
-				case PVR_PX_RGB565:
-					px_format = ImageDecoder::PXF_RGB565;
-					break;
-				case PVR_PX_ARGB4444:
-					px_format = ImageDecoder::PXF_ARGB4444;
-					break;
-				default:
-					// TODO
-					assert(!"Unsupported pixel format.");
-					return nullptr;
-			}
 			ret_img = ImageDecoder::fromLinear16(px_format,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
@@ -391,21 +373,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expect_size - pal_siz;
 
-			ImageDecoder::PixelFormat px_format;
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					px_format = ImageDecoder::PXF_ARGB1555;
-					break;
-				case PVR_PX_RGB565:
-					px_format = ImageDecoder::PXF_RGB565;
-					break;
-				case PVR_PX_ARGB4444:
-					px_format = ImageDecoder::PXF_ARGB4444;
-					break;
-				default:
-					// TODO
-					return nullptr;
-			}
 			ret_img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
@@ -428,21 +395,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				return nullptr;
 			}
 
-			ImageDecoder::PixelFormat px_format;
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					px_format = ImageDecoder::PXF_ARGB1555;
-					break;
-				case PVR_PX_RGB565:
-					px_format = ImageDecoder::PXF_RGB565;
-					break;
-				case PVR_PX_ARGB4444:
-					px_format = ImageDecoder::PXF_ARGB4444;
-					break;
-				default:
-					// TODO
-					return nullptr;
-			}
 			ret_img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size, pal_buf.get(), pal_siz);
@@ -457,21 +409,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expect_size - pal_siz;
 
-			ImageDecoder::PixelFormat px_format;
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					px_format = ImageDecoder::PXF_ARGB1555;
-					break;
-				case PVR_PX_RGB565:
-					px_format = ImageDecoder::PXF_RGB565;
-					break;
-				case PVR_PX_ARGB4444:
-					px_format = ImageDecoder::PXF_ARGB4444;
-					break;
-				default:
-					// TODO
-					return nullptr;
-			}
 			ret_img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
@@ -495,21 +432,6 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				return nullptr;
 			}
 
-			ImageDecoder::PixelFormat px_format;
-			switch (pvrHeader.pvr.px_format) {
-				case PVR_PX_ARGB1555:
-					px_format = ImageDecoder::PXF_ARGB1555;
-					break;
-				case PVR_PX_RGB565:
-					px_format = ImageDecoder::PXF_RGB565;
-					break;
-				case PVR_PX_ARGB4444:
-					px_format = ImageDecoder::PXF_ARGB4444;
-					break;
-				default:
-					// TODO
-					return nullptr;
-			}
 			ret_img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size, pal_buf.get(), pal_siz);
@@ -591,22 +513,22 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 
 	rp_image *ret_img = nullptr;
 	switch (pvrHeader.gvr.img_data_type) {
-		// FIXME: Untested.
 		case GVR_IMG_IA8:
-			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_IA8>(
+			// FIXME: Untested.
+			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_IA8,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
-		// FIXME: Untested.
 		case GVR_IMG_RGB565:
-			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB565>(
+			// FIXME: Untested.
+			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB565,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case GVR_IMG_RGB5A3:
-			ret_img = ImageDecoder::fromGcn16<ImageDecoder::PXF_RGB5A3>(
+			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
