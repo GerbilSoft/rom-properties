@@ -406,117 +406,33 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		return nullptr;
 	}
 
+#define fromLinear16_convert(fmt) \
+		case PXF_##fmt: \
+			for (int y = 0; y < height; y++) { \
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
+				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
+					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(le16_to_cpu(*img_buf)); \
+					img_buf++; \
+					px_dest++; \
+				} \
+				img_buf += line_offset_adj; \
+			} \
+			break
+			
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
 		// 16-bit
-		case PXF_RGB565:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_BGR565:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::BGR565_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_ARGB1555:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_ABGR1555:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::ABGR1555_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_RGBA5551:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RGBA5551_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_BGRA5551:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::BGRA5551_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_ARGB4444:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
+		fromLinear16_convert(RGB565);
+		fromLinear16_convert(BGR565);
+		fromLinear16_convert(ARGB1555);
+		fromLinear16_convert(ABGR1555);
+		fromLinear16_convert(RGBA5551);
+		fromLinear16_convert(BGRA5551);
+		fromLinear16_convert(ARGB4444);
 
 		// 15-bit
-		case PXF_RGB555:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::RGB555_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
-
-		case PXF_BGR555:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(*img_buf));
-					img_buf++;
-					px_dest++;
-				}
-				img_buf += line_offset_adj;
-			}
-			break;
+		fromLinear16_convert(RGB555);
+		fromLinear16_convert(BGR555);
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
