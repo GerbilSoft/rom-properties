@@ -120,24 +120,34 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 
 // Supported RGBA formats.
 const DirectDrawSurfacePrivate::RGBA_Format_Table_t DirectDrawSurfacePrivate::rgba_fmt_tbl[] = {
+	// 32-bit
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, _RP("ARGB8888"), 32, ImageDecoder::PXF_ARGB8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000, _RP("ABGR8888"), 32, ImageDecoder::PXF_ABGR8888},
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x000000FF, _RP("RGBA8888"), 32, ImageDecoder::PXF_RGBA8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x000000FF, _RP("BGRA8888"), 32, ImageDecoder::PXF_BGRA8888},
+	// 16-bit
 	{0x7C00, 0x03E0, 0x001F, 0x8000, _RP("ARGB1555"), 16, ImageDecoder::PXF_ARGB1555},
 	{0x001F, 0x03E0, 0x007C, 0x8000, _RP("ABGR1555"), 16, ImageDecoder::PXF_ABGR1555},
 	{0xF800, 0x07C0, 0x003E, 0x0001, _RP("RGBA5551"), 16, ImageDecoder::PXF_RGBA5551},
 	{0x003E, 0x03E0, 0x00F8, 0x0001, _RP("BGRA5551"), 16, ImageDecoder::PXF_BGRA5551},
+	// 4-bit per channel formats. (uncommon nowadays)
+	{0x0F00, 0x00F0, 0x000F, 0xF000, _RP("ARGB4444"), 16, ImageDecoder::PXF_ARGB4444},
+	{0x000F, 0x00F0, 0x0F00, 0xF000, _RP("ABGR4444"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0xF000, 0x0F00, 0x00F0, 0x000F, _RP("RGBA4444"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0x00F0, 0x0F00, 0xF000, 0x000F, _RP("BGRA4444"), 16, ImageDecoder::PXF_UNKNOWN},
 };
 
 // Supported RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl[] = {
+	// 32-bit
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("xRGB8888"), 32, ImageDecoder::PXF_xRGB8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("xBGR8888"), 32, ImageDecoder::PXF_xBGR8888},
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGBx8888"), 32, ImageDecoder::PXF_RGBx8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGRx8888"), 32, ImageDecoder::PXF_BGRx8888},
+	// 24-bit
 	{0x00FF0000, 0x0000FF00, 0x000000FF, _RP("RGB888"), 24, ImageDecoder::PXF_RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, _RP("BGR888"), 24, ImageDecoder::PXF_BGR888},
+	// 16-bit
 	{0xF800, 0x07E0, 0x001F, _RP("RGB565"), 16, ImageDecoder::PXF_RGB565},
 	{0x001F, 0x07E0, 0xF800, _RP("BGR565"), 16, ImageDecoder::PXF_BGR565},
 	// NOTE: 15-bit DDS textures actually have 16 as the bit count.
@@ -146,6 +156,11 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0x001F, 0x03E0, 0x7C00, _RP("BGR555"), 16, ImageDecoder::PXF_BGR555},
 	{0x7C00, 0x03E0, 0x001F, _RP("RGB555"), 15, ImageDecoder::PXF_RGB555},
 	{0x001F, 0x03E0, 0x7C00, _RP("BGR555"), 15, ImageDecoder::PXF_BGR555},
+	// 4-bit per channel formats. (uncommon nowadays)
+	{0x0F00, 0x00F0, 0x000F, _RP("xRGB4444"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0x000F, 0x00F0, 0x0F00, _RP("xBGR4444"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0xF000, 0x0F00, 0x00F0, _RP("RGBx4444"), 16, ImageDecoder::PXF_UNKNOWN},
+	{0x00F0, 0x0F00, 0xF000, _RP("BGRx4444"), 16, ImageDecoder::PXF_UNKNOWN},
 };
 
 /**
