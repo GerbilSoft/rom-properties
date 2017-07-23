@@ -87,6 +87,9 @@ class ImageDecoder
 			PXF_RGBx8888,
 			PXF_BGRx8888,
 
+			// Uncommon 32-bit formats.
+			PXF_G16R16,
+
 			// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			PXF_HOST_ARGB32 = PXF_ARGB8888,

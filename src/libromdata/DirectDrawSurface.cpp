@@ -163,6 +163,9 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, _RP("RGBx8888"), ImageDecoder::PXF_RGBx8888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, _RP("BGRx8888"), ImageDecoder::PXF_BGRx8888},
 
+	// Uncommon 32-bit formats.
+	{0x0000FFFF, 0xFFFF0000, 0x00000000, 0x00000000, _RP("G16R16"), ImageDecoder::PXF_G16R16},
+
 	// end
 	{0, 0, 0, 0, nullptr, 0}
 };

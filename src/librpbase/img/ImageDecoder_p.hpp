@@ -229,6 +229,15 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t BGR555_to_ARGB32(uint16_t px16);
+
+		// 32-bit
+
+		/**
+		 * Convert a G16R16 pixel to ARGB32.
+		 * @param px32 G16R16 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t G16R16_to_ARGB32(uint32_t px32);
 };
 
 /**
@@ -309,7 +318,7 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
 }
 
 /** Color conversion functions. **/
-// NOTE: px16 is always in host-endian.
+// NOTE: px16 and px32 are always in host-endian.
 
 // 16-bit
 
@@ -650,6 +659,21 @@ inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 		((((px16 <<  6) & 0x00F800) | ((px16 <<  1) & 0x000700))) |	// Green
 		((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
 	return px32;
+}
+
+/**
+ * Convert a G16R16 pixel to ARGB32.
+ * @param px32 G16R16 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::G16R16_to_ARGB32(uint32_t px32)
+{
+	// G16R16: GGGGGGGG gggggggg RRRRRRRR rrrrrrrr
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb = 0xFF000000U;
+	argb |= ((px32 <<  8) & 0x00FF0000) |
+		((px32 >> 16) & 0x0000FF00);
+	return argb;
 }
 
 }

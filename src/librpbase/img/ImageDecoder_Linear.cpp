@@ -789,6 +789,24 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			}
 			break;
 
+		/** Uncommon 32-bit formats. **/
+
+		case PXF_G16R16: {
+			// TODO: Add an ARGB64 format to rp_image.
+			// For now, truncating it to G8R8.
+			for (int y = 0; y < height; y++) {
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				unsigned int x;
+				for (x = (unsigned int)width; x > 0; x--) {
+					*px_dest = ImageDecoderPrivate::G16R16_to_ARGB32(le32_to_cpu(*img_buf));
+					img_buf++;
+					px_dest++;
+				}
+				img_buf += line_offset_adj;
+			}
+			break;
+		}
+
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
 			return nullptr;
