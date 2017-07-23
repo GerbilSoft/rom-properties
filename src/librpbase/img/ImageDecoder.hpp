@@ -64,7 +64,7 @@ class ImageDecoder
 			PXF_BGRx4444,	// BBBBGGGG RRRRxxxx
 
 			// Uncommon 16-bit formats.
-			PXF_ARGB8332,
+			PXF_ARGB8332,	// AAAAAAAA RRRGGGBB
 
 			// GameCube-specific 16-bit
 			PXF_RGB5A3,	// High bit determines RGB555 or ARGB4444.
@@ -94,6 +94,12 @@ class ImageDecoder
 			PXF_G16R16,
 			PXF_A2R10G10B10,
 			PXF_A2B10G10R10,
+
+			// Luminance formats.
+			PXF_L8,		// LLLLLLLL
+			PXF_A4L4,	// AAAAllll
+			PXF_L16,	// LLLLLLLL llllllll
+			PXF_A8L8,	// AAAAAAAA LLLLLLLL
 
 			// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -160,6 +166,21 @@ class ImageDecoder
 		 */
 		static rp_image *fromLinearMono(int width, int height,
 			const uint8_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a linear 8-bit RGB image to rp_image.
+		 * Usually used for luminance and alpha images.
+		 * @param px_format	[in] 8-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 8-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear8(PixelFormat px_format,
+			int width, int height,
+			const uint8_t *img_buf, int img_siz, int stride);
 
 		/**
 		 * Convert a linear 16-bit RGB image to rp_image.

@@ -375,6 +375,83 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 }
 
 /**
+ * Convert a linear 8-bit RGB image to rp_image.
+ * Usually used for luminance and alpha images.
+ * @param px_format	[in] 8-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 8-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
+	int width, int height,
+	const uint8_t *img_buf, int img_siz, int stride)
+{
+	static const int bytespp = 1;
+
+	// Verify parameters.
+	assert(img_buf != nullptr);
+	assert(width > 0);
+	assert(height > 0);
+	assert(img_siz >= ((width * height) * bytespp));
+	if (!img_buf || width <= 0 || height <= 0 ||
+	    img_siz < ((width * height) * bytespp))
+	{
+		return nullptr;
+	}
+
+	// Line offset adjustment.
+	int line_offset_adj = 0;
+	assert(stride >= 0);
+	if (stride > 0) {
+		// Set line_offset_adj to the number of pixels we need to
+		// add to the end of each line to get to the next row.
+		assert(stride % bytespp == 0);
+		if (stride % bytespp != 0) {
+			// Invalid stride.
+			return nullptr;
+		}
+		line_offset_adj = width - (stride / bytespp);
+	}
+
+	// Create an rp_image.
+	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
+
+#define fromLinear8_convert(fmt) \
+		case PXF_##fmt: \
+			for (int y = 0; y < height; y++) { \
+				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
+				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
+					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(*img_buf); \
+					img_buf++; \
+					px_dest++; \
+				} \
+				img_buf += line_offset_adj; \
+			} \
+			break
+
+	// Convert one line at a time. (8-bit -> ARGB32)
+	switch (px_format) {
+		fromLinear8_convert(L8);
+		fromLinear8_convert(A4L4);
+
+		default:
+			assert(!"Unsupported 8-bit pixel format.");
+			return nullptr;
+	}
+
+	// Image has been converted.
+	return img;
+}
+
+/**
  * Convert a linear 16-bit RGB image to rp_image.
  * @param px_format	[in] 16-bit pixel format.
  * @param width		[in] Image width.

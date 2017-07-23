@@ -181,12 +181,12 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 // Supported luminance formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
 	// 8-bit
-	{0x00FF, 0x0000, 0x0000, 0x0000, _RP("L8"), ImageDecoder::PXF_UNKNOWN},
-	{0x000F, 0x0000, 0x0000, 0x00F0, _RP("A4L4"), ImageDecoder::PXF_UNKNOWN},
+	{0x00FF, 0x0000, 0x0000, 0x0000, _RP("L8"), ImageDecoder::PXF_L8},
+	{0x000F, 0x0000, 0x0000, 0x00F0, _RP("A4L4"), ImageDecoder::PXF_A4L4},
 
 	// 16-bit
-	{0xFFFF, 0x0000, 0x0000, 0x0000, _RP("L16"), ImageDecoder::PXF_UNKNOWN},
-	{0x00FF, 0x0000, 0x0000, 0xFF00, _RP("A8L8"), ImageDecoder::PXF_UNKNOWN},
+	{0xFFFF, 0x0000, 0x0000, 0x0000, _RP("L16"), ImageDecoder::PXF_L16},
+	{0x00FF, 0x0000, 0x0000, 0xFF00, _RP("A8L8"), ImageDecoder::PXF_A8L8},
 
 	// end
 	{0, 0, 0, 0, nullptr, 0}
@@ -464,10 +464,11 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// Not supported.
 				return nullptr;
 		}
-	} else if (ddspf.dwFlags & DDPF_RGB) {
-		// Uncompressed linear RGB data.
+	} else {
+		// Uncompressed linear image data.
 		unsigned int bytespp = 0;
 		ImageDecoder::PixelFormat px_format = getPixelFormat(ddspf, &bytespp);
+		printf("%u %u\n", bytespp, px_format);
 		if (px_format == ImageDecoder::PXF_UNKNOWN || bytespp == 0) {
 			// Unknown pixel format.
 			return nullptr;
@@ -505,6 +506,13 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		switch (bytespp) {
+			case sizeof(uint8_t):
+				// 8-bit image. (Usually luminance or alpha.)
+				ret_img = ImageDecoder::fromLinear8(px_format,
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, stride);
+				break;
+
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
 				ret_img = ImageDecoder::fromLinear16(px_format,

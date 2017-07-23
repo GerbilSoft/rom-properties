@@ -109,7 +109,7 @@ class ImageDecoderPrivate
 		// NOTE: Implementation is in ImageDecoder_Linear.cpp.
 		static const uint8_t c3_lookup[8];
 
-		// 16-bit
+		// 16-bit RGB
 
 		/**
 		 * Convert an RGB565 pixel to ARGB32.
@@ -216,7 +216,7 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t ARGB8332_to_ARGB32(uint16_t px16);
 
-		// GameCube-specific 16-bit
+		// GameCube-specific 16-bit RGB
 
 		/**
 		 * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
@@ -233,7 +233,7 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t IA8_to_ARGB32(uint16_t px16);
 
-		// 15-bit
+		// 15-bit RGB
 
 		/**
 		 * Convert an RGB555 pixel to ARGB32.
@@ -249,7 +249,7 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t BGR555_to_ARGB32(uint16_t px16);
 
-		// 32-bit
+		// 32-bit RGB
 
 		/**
 		 * Convert a G16R16 pixel to ARGB32.
@@ -271,6 +271,24 @@ class ImageDecoderPrivate
 		 * @return ARGB32 pixel.
 		 */
 		static inline uint32_t A2B10G10R10_to_ARGB32(uint32_t px32);
+
+		// Luminance
+
+		/**
+		 * Convert an L8 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px8 L8 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t L8_to_ARGB32(uint8_t px8);
+
+		/**
+		 * Convert an A4L4 pixel to ARGB32.
+		 * NOTE: Uses a grayscale palette.
+		 * @param px8 A4L4 pixel.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t A4L4_to_ARGB32(uint8_t px8);
 };
 
 /**
@@ -353,7 +371,7 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(rp_image *img, const uint8
 /** Color conversion functions. **/
 // NOTE: px16 and px32 are always in host-endian.
 
-// 16-bit
+// 16-bit RGB
 
 /**
  * Convert an RGB565 pixel to ARGB32.
@@ -624,7 +642,7 @@ inline uint32_t ImageDecoderPrivate::BGRx4444_to_ARGB32(uint16_t px16)
 	return px32;
 }
 
-// GameCube-specific 16-bit
+// GameCube-specific 16-bit RGB
 
 /**
  * Convert an RGB5A3 pixel to ARGB32. (GameCube/Wii)
@@ -677,7 +695,7 @@ inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
 	return ((px16 & 0xFF) << 16) | ((px16 & 0xFF00) << 8) | (px16 & 0xFF00) | ((px16 >> 8) & 0xFF);
 }
 
-// 15-bit
+// 15-bit RGB
 
 /**
  * Convert an RGB555 pixel to ARGB32.
@@ -710,6 +728,8 @@ inline uint32_t ImageDecoderPrivate::BGR555_to_ARGB32(uint16_t px16)
 		((((px16 >>  7) & 0x0000F8) | ((px16 >> 12) & 0x000007)));	// Blue
 	return px32;
 }
+
+// 32-bit RGB
 
 /**
  * Convert a G16R16 pixel to ARGB32.
@@ -766,6 +786,39 @@ inline uint32_t ImageDecoderPrivate::A2B10G10R10_to_ARGB32(uint32_t px32)
 	       ((px32 >>  4) & 0x00FF00) |	// Green
 	       ((px32 >> 14) & 0x0000FF) |	// Blue
 	       a2_lookup[px32 >> 30];		// Alpha
+	return argb;
+}
+
+/**
+ * Convert an L8 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px8 L8 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::L8_to_ARGB32(uint8_t px8)
+{
+	//     L8: LLLLLLLL
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb = 0xFF000000U;
+	argb |= px8 | (px8 << 8) | (px8 << 16);
+	return argb;
+}
+
+/**
+ * Convert an A4L4 pixel to ARGB32.
+ * NOTE: Uses a grayscale palette.
+ * @param px8 A4L4 pixel.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::A4L4_to_ARGB32(uint8_t px8)
+{
+	//   A4L4: AAAALLLL
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb;
+	argb = ((px8 & 0xF0) << 20) | (px8 & 0x0F);	// Low nybble of A and B.
+	argb |= (argb << 4);				// Copy to high nybble.
+	argb |= (argb & 0xFF) <<  8;			// Copy B to G.
+	argb |= (argb & 0xFF) << 16;			// Copy B to R.
 	return argb;
 }
 
