@@ -794,6 +794,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 		case PXF_G16R16: {
 			// TODO: Add an ARGB64 format to rp_image.
 			// For now, truncating it to G8R8.
+			// TODO: This might be a candidate for SSE2 optimization.
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				unsigned int x;
