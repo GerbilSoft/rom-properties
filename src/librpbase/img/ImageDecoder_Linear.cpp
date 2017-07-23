@@ -594,12 +594,18 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 	switch (px_format) {
 		case PXF_HOST_ARGB32: {
 			// Host-endian ARGB32.
-			// We can directly copy the entire row.
-			const unsigned int copy_len = (unsigned int)width * bytespp;
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				memcpy(px_dest, img_buf, copy_len);
-				img_buf += (stride / bytespp);
+			// We can directly copy the image data without conversions.
+			if (stride == img->stride()) {
+				// Stride is identical. Copy the whole image all at once.
+				memcpy(img->bits(), img_buf, stride * height);
+			} else {
+				// Stride is not identical. Copy each scanline.
+				const unsigned int copy_len = (unsigned int)width * bytespp;
+				for (int y = 0; y < height; y++) {
+					uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+					memcpy(px_dest, img_buf, copy_len);
+					img_buf += (stride / bytespp);
+				}
 			}
 			break;
 		}
