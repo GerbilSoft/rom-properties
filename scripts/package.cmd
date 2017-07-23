@@ -98,7 +98,7 @@ IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10
 
 IF "%CMAKE_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2010, 2012, 2013, 2015
+	ECHO Supported versions: 2010, 2012, 2013, 2015, 2017
 	PAUSE
 	EXIT /B 1
 )
