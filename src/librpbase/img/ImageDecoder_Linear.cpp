@@ -435,7 +435,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		case PXF_ARGB4444:
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
-				for (unsigned int x = width; (unsigned int)x > 0; x--) {
+				for (unsigned int x = (unsigned int)width; x > 0; x--) {
 					*px_dest = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(*img_buf));
 					img_buf++;
 					px_dest++;
