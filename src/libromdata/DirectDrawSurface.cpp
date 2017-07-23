@@ -825,7 +825,7 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(6);	// Maximum of 3 fields.
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
@@ -890,6 +890,58 @@ int DirectDrawSurface::loadFieldData(void)
 		// Unknown pixel format.
 		d->fields->addField_string(_RP("Pixel Format"), _RP("Unknown"));
 	}
+
+	// dwFlags
+	static const rp_char *const dwFlags_names[] = {
+		_RP("Caps"), _RP("Height"), _RP("Width"), _RP("Pitch"),		// 0x1-0x8
+		nullptr, nullptr, nullptr, nullptr,				// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,				// 0x100-0x800
+		_RP("Pixel Format"), nullptr, nullptr, nullptr,			// 0x1000-0x8000
+		nullptr, _RP("Mipmap Count"), nullptr, _RP("Linear Size"),	// 0x10000-0x80000
+		nullptr, nullptr, nullptr, _RP("Depth")				// 0x100000-0x800000
+	};
+	vector<rp_string> *v_dwFlags_names = RomFields::strArrayToVector(
+		dwFlags_names, ARRAY_SIZE(dwFlags_names));
+	d->fields->addField_bitfield(_RP("Flags"),
+		v_dwFlags_names, 3, ddsHeader->dwFlags);
+
+	// dwCaps
+	static const rp_char *const dwCaps_names[] = {
+		nullptr, nullptr, nullptr, _RP("Complex"),	// 0x1-0x8
+		nullptr, nullptr, nullptr, nullptr,		// 0x10-0x80
+		nullptr, nullptr, nullptr, nullptr,		// 0x100-0x800
+		_RP("Texture"), nullptr, nullptr, nullptr,	// 0x1000-0x8000
+		nullptr, nullptr, nullptr, nullptr,		// 0x10000-0x80000
+		nullptr, nullptr, _RP("Mipmap")			// 0x100000-0x400000
+	};
+	vector<rp_string> *v_dwCaps_names = RomFields::strArrayToVector(
+		dwCaps_names, ARRAY_SIZE(dwCaps_names));
+	d->fields->addField_bitfield(_RP("Caps"),
+		v_dwCaps_names, 3, ddsHeader->dwCaps);
+
+#if 0
+	DDSCAPS2_CUBEMAP		= 0x200,
+	DDSCAPS2_CUBEMAP_POSITIVEX	= 0x400,
+	DDSCAPS2_CUBEMAP_NEGATIVEX	= 0x800,
+	DDSCAPS2_CUBEMAP_POSITIVEY	= 0x1000,
+	DDSCAPS2_CUBEMAP_NEGATIVEY	= 0x2000,
+	DDSCAPS2_CUBEMAP_POSITIVEZ	= 0x4000,
+	DDSCAPS2_CUBEMAP_NEGATIVEZ	= 0x8000,
+	DDSCAPS2_VOLUME			= 0x200000,
+#endif
+	// dwCaps2
+	static const rp_char *const dwCaps2_names[] = {
+		nullptr, nullptr, nullptr, nullptr,		// 0x1-0x8
+		nullptr, nullptr, nullptr, nullptr,		// 0x10-0x80
+		nullptr, _RP("Cubemap"), _RP("+X"), _RP("-X"),	// 0x100-0x800
+		_RP("+Y"), _RP("-Y"), _RP("+Z"), _RP("-Z"),	// 0x1000-0x8000
+		nullptr, nullptr, nullptr, nullptr,		// 0x10000-0x80000
+		nullptr, _RP("Volume")				// 0x100000-0x200000
+	};
+	vector<rp_string> *v_dwCaps2_names = RomFields::strArrayToVector(
+		dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
+	d->fields->addField_bitfield(_RP("Caps2"),
+		v_dwCaps2_names, 4, ddsHeader->dwCaps2);
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
