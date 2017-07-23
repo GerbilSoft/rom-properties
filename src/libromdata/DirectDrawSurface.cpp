@@ -410,8 +410,17 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			return nullptr;
 		}
 
-		unsigned int stride = ddsHeader.dwPitchOrLinearSize;
-		if (ddsHeader.dwPitchOrLinearSize == 0) {
+		// If DDSD_LINEARSIZE is set, the field is linear size,
+		// so it needs to be divided by the image height.
+		unsigned int stride = 0;
+		if (ddsHeader.dwFlags & DDSD_LINEARSIZE) {
+			if (ddsHeader.dwHeight != 0) {
+				stride = ddsHeader.dwPitchOrLinearSize / ddsHeader.dwHeight;
+			}
+		} else {
+			stride = ddsHeader.dwPitchOrLinearSize;
+		}
+		if (stride == 0) {
 			// Invalid stride. Assume stride == width * bytespp.
 			// TODO: Check for stride is too small but non-zero?
 			stride = ddsHeader.dwWidth * bytespp;
