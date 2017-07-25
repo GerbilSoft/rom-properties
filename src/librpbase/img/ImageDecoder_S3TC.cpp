@@ -372,9 +372,10 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		// Decode the DXT1 tile palette.
 		// TODO: Color 3 may be either black or transparent.
 		// Figure out if there's a way to specify that in DDS.
-		// Assuming black for now, since that's standard DXT1.
+		// Assuming transparent for now, since black can be
+		// specified using a color value.
 		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<0>(pal, dxt1_src);
+		decode_DXTn_tile_color_palette<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
 
 		// Process the 16 color indexes.
 		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
