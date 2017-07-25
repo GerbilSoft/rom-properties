@@ -113,6 +113,7 @@ Notes:
 | Nintendo 3DS                  |       Yes      |       Icon      |  Covers, Box   |
 | Sega 8-bit (SMS, GG)          |       Yes      |       N/A       |       N/A      |
 | Sega PVR Textures             |       Yes      |      Image      |       N/A      |
+| Microsoft DirectDraw Surface  |       Yes      |      Image      |       N/A      |
 
 Notes:
 * Internal image refers to artwork contained within the ROM and/or disc image.
@@ -162,6 +163,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
     archives, and title contents.
 * Sega 8-bit: Sega Master System and Game Gear ROM images (\*.sms, \*.gg)
 * Sega PVR Textures: Dreamcast PVR (\*.pvr), GameCube GVR (\*.gvr)
+* Microsoft DirectDraw Surface: DDS files (\*.dds)
 
 ## External Media Downloads
 
