@@ -2,6 +2,12 @@
 
 ## v1.2 (released 2017/??/??)
 
+* New systems:
+  * Sega PVR and GVR decoding. These are texture files used in Sega games
+    on Dreamcast, GameCube, and various PC ports.
+  * Microsoft DirectDraw Surface decoding. These are texture files used in
+    various PC games.
+
 ## v1.1 (released 2017/07/04)
 
 * New features:
