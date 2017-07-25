@@ -226,6 +226,12 @@ class rp_image
 		rp_image *dup(void) const;
 
 		/**
+		 * Duplicate the rp_image, converting to ARGB32 if necessary.
+		 * @return New ARGB32 rp_image with a copy of the image data.
+		 */
+		rp_image *dup_ARGB32(void) const;
+
+		/**
 		 * Square the rp_image.
 		 *
 		 * If the width and height don't match, transparent rows

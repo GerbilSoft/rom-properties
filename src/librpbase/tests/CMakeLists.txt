@@ -40,8 +40,8 @@ ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
 # NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FILE(GLOB test_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
-FOREACH(test_image ${test_images})
+FILE(GLOB RpImageLoaderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
+FOREACH(test_image ${RpImageLoaderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy_if_different
@@ -54,7 +54,7 @@ FOREACH(test_image ${test_images})
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
 			"${CMAKE_CURRENT_BINARY_DIR}/png_data/${test_image}"
 		)
-ENDFOREACH(test_image test_images)
+ENDFOREACH(test_image ${RpImageLoaderTest_images})
 
 IF(ENABLE_DECRYPTION)
 	# AesCipher test.
@@ -105,3 +105,46 @@ TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest16)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest16 CONSOLE)
 ADD_TEST(NAME TextFuncsTest16 COMMAND TextFuncsTest16)
+
+# ImageDecoder test.
+ADD_EXECUTABLE(ImageDecoderTest
+	gtest_init.cpp
+	img/ImageDecoderTest.cpp
+	)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(ImageDecoderTest win32common)
+ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(ImageDecoderTest romdata8)
+TARGET_LINK_LIBRARIES(ImageDecoderTest gtest ${ZLIB_LIBRARY})
+TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
+TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
+IF(PNG_LIBRARY)
+	TARGET_LINK_LIBRARIES(ImageDecoderTest ${PNG_LIBRARY})
+	TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${PNG_INCLUDE_DIRS})
+	TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${PNG_DEFINITIONS})
+ENDIF(PNG_LIBRARY)
+DO_SPLIT_DEBUG(ImageDecoderTest)
+SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest)
+
+# Copy the reference images to:
+# - bin/ImageDecoder_data/ (TODO: Subdirectory?)
+# - ${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/
+# NOTE: Although the test executable is in bin/, CTest still
+# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
+# Hence, we have to copy the files to both places.
+FILE(GLOB ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data" img/ImageDecoder_data/*.png img/ImageDecoder_data/*.dds.gz)
+FOREACH(test_image ${ImageDecoderTest_images})
+	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
+			"$<TARGET_FILE_DIR:ImageDecoderTest>/ImageDecoder_data/${test_image}"
+		)
+	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
+			"${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/${test_image}"
+		)
+ENDFOREACH(test_image ${ImageDecoderTest_images})
