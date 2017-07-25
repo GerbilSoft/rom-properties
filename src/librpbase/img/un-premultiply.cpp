@@ -97,7 +97,7 @@ static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
  */
 int un_premultiply_image(rp_image *img)
 {
-	assert(img->format() != rp_image::FORMAT_ARGB32);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
 	if (img->format() != rp_image::FORMAT_ARGB32) {
 		// Incorrect format...
 		return -1;
