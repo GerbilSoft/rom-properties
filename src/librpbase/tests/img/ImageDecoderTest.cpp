@@ -390,11 +390,23 @@ INSTANTIATE_TEST_CASE_P(DDS, ImageDecoderTest,
 			_RP("dxt1-rgb.dds.gz"),
 			_RP("dxt1-rgb.png")),
 		ImageDecoderTest_mode(
+			_RP("dxt2-rgb.dds.gz"),
+			_RP("dxt2-rgb.png")),
+		ImageDecoderTest_mode(
+			_RP("dxt2-argb.dds.gz"),
+			_RP("dxt2-argb.png")),
+		ImageDecoderTest_mode(
 			_RP("dxt3-rgb.dds.gz"),
 			_RP("dxt3-rgb.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt3-argb.dds.gz"),
 			_RP("dxt3-argb.png")),
+		ImageDecoderTest_mode(
+			_RP("dxt4-rgb.dds.gz"),
+			_RP("dxt4-rgb.png")),
+		ImageDecoderTest_mode(
+			_RP("dxt4-argb.dds.gz"),
+			_RP("dxt4-argb.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt5-rgb.dds.gz"),
 			_RP("dxt5-rgb.png")),
