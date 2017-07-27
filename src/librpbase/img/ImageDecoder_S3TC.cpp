@@ -223,45 +223,26 @@ static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t pal[4], const dx
  */
 static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alpha[2], int c0c1)
 {
-	unsigned int a_ret = 255;
-
 	// S2TC fallback.
-	if (alpha[0] > alpha[1]) {
-		switch (a3 & 7) {
-			case 0:
-			case 6:
-			case 7:
-				a_ret = alpha[0];
-				break;
-			case 1:
-				a_ret = alpha[1];
-				break;
-			default:
-				// Values 2-5 aren't used.
-				// a0 or a1 are selected based on the pixel number.
-				a_ret = alpha[c0c1];
-				break;
-		}
-	} else {
-		switch (a3 & 7) {
-			case 0:
-				a_ret = alpha[0];
-				break;
-			case 1:
-				a_ret = alpha[1];
-				break;
-			case 6:
-				a_ret = 0;
-				break;
-			case 7:
-				a_ret = 255;
-				break;
-			default:
-				// Values 2-5 aren't used.
-				// a0 or a1 are selected based on the pixel number.
-				a_ret = alpha[c0c1];
-				break;
-		}
+	unsigned int a_ret;
+	switch (a3 & 7) {
+		case 0:
+			a_ret = alpha[0];
+			break;
+		case 1:
+			a_ret = alpha[1];
+			break;
+		case 6:
+			a_ret = (alpha[1] >= alpha[0]) ? 0 : alpha[0];
+			break;
+		case 7:
+			a_ret = (alpha[1] >= alpha[0]) ? 255 : alpha[0];
+			break;
+		default:
+			// Values 2-5 aren't used.
+			// a0 or a1 are selected based on the pixel number.
+			a_ret = alpha[c0c1];
+			break;
 	}
 
 	// No overflow is possible in S2TC mode.
