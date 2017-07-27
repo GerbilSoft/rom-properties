@@ -33,9 +33,9 @@ namespace LibRpBase {
 union argb32_t {
 	struct {
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		uint8_t r;
-		uint8_t g;
 		uint8_t b;
+		uint8_t g;
+		uint8_t r;
 		uint8_t a;
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		uint8_t a;
