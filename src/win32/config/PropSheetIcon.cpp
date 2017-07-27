@@ -22,8 +22,8 @@
 #include "stdafx.h"
 #include "PropSheetIcon.hpp"
 
-// librpbase
-#include "librpbase/threads/InitOnceExecuteOnceXP.h"
+// One-time initialization.
+#include "threads/pthread_once.h"
 
 class PropSheetIconPrivate
 {
@@ -33,8 +33,8 @@ class PropSheetIconPrivate
 		RP_DISABLE_COPY(PropSheetIconPrivate)
 
 	public:
-		// InitOnceExecuteOnce() control variable.
-		static INIT_ONCE initOnce;
+		// pthread_once() control variable.
+		static pthread_once_t once_control;
 
 		// Property sheet icons.
 		static HICON hIcon;
@@ -42,21 +42,15 @@ class PropSheetIconPrivate
 
 		/**
 		 * Get the property sheet icons.
-		 * NOTE: This function should be called with InitOnceExecuteOnce().
-		 * @param InitOnce INIT_ONCE control variable.
-		 * @param Parameter Parameter.
-		 * @param Context Context.
+		 * NOTE: This function should be called with pthread_once().
 		 */
-		static BOOL CALLBACK getPropSheetIcons(
-			_Inout_ PINIT_ONCE once,
-			_Inout_opt_ PVOID param,
-			_Out_opt_ PVOID *context);
+		static void getPropSheetIcons(void);
 };
 
 /** PropSheetIconPrivate **/
 
-// InitOnceExecuteOnce() control variable.
-INIT_ONCE PropSheetIconPrivate::initOnce = INIT_ONCE_STATIC_INIT;
+// pthread_once() control variable.
+pthread_once_t PropSheetIconPrivate::once_control = PTHREAD_ONCE_INIT;
 
 // Property sheet icons.
 HICON PropSheetIconPrivate::hIcon = nullptr;
@@ -64,21 +58,10 @@ HICON PropSheetIconPrivate::hIconSmall = nullptr;
 
 /**
  * Get the property sheet icons.
- * NOTE: This function should be called with InitOnceExecuteOnce().
- * @param InitOnce INIT_ONCE control variable.
- * @param Parameter Parameter.
- * @param Context Context.
+ * NOTE: This function should be called with pthread_once().
  */
-BOOL CALLBACK PropSheetIconPrivate::getPropSheetIcons(
-	_Inout_ PINIT_ONCE once,
-	_Inout_opt_ PVOID param,
-	_Out_opt_ PVOID *context)
+void PropSheetIconPrivate::getPropSheetIcons(void)
 {
-	// We aren't using any of the InitOnceExecuteOnce() parameters.
-	RP_UNUSED(once);
-	RP_UNUSED(param);
-	RP_UNUSED(context);
-
 	// Check for a DLL containing a usable ROM chip icon.
 	struct IconDllData_t {
 		const wchar_t *dll_filename;
@@ -109,7 +92,7 @@ BOOL CALLBACK PropSheetIconPrivate::getPropSheetIcons(
 				GetSystemMetrics(SM_CYSMICON), 0));
 
 			FreeLibrary(hDll);
-			return TRUE;
+			return;
 		}
 
 		// Icon not found in this DLL.
@@ -120,10 +103,11 @@ BOOL CALLBACK PropSheetIconPrivate::getPropSheetIcons(
 	hIcon = nullptr;
 	hIconSmall = nullptr;
 
-	// NOTE: Returning TRUE anyway to prevent
-	// reinitialization, which will fail because
-	// system DLLs shouldn't change at runtime.
-	return TRUE;
+	// NOTE: pthread_once() has no way to indicate
+	// an error occurred, but that isn't important
+	// here because if we couldn't load the icons
+	// the first time, we won't be able to load the
+	// icons the second time.
 }
 
 /** PropSheetIcon **/
@@ -134,8 +118,9 @@ BOOL CALLBACK PropSheetIconPrivate::getPropSheetIcons(
  */
 HICON PropSheetIcon::getLargeIcon(void)
 {
-	InitOnceExecuteOnce(&PropSheetIconPrivate::initOnce,
-		PropSheetIconPrivate::getPropSheetIcons, nullptr, nullptr);
+	// TODO: Handle errors.
+	pthread_once(&PropSheetIconPrivate::once_control,
+		PropSheetIconPrivate::getPropSheetIcons);
 	return PropSheetIconPrivate::hIcon;
 }
 
@@ -145,7 +130,8 @@ HICON PropSheetIcon::getLargeIcon(void)
  */
 HICON PropSheetIcon::getSmallIcon(void)
 {
-	InitOnceExecuteOnce(&PropSheetIconPrivate::initOnce,
-		PropSheetIconPrivate::getPropSheetIcons, nullptr, nullptr);
+	// TODO: Handle errors.
+	pthread_once(&PropSheetIconPrivate::once_control,
+		PropSheetIconPrivate::getPropSheetIcons);
 	return PropSheetIconPrivate::hIconSmall;
 }

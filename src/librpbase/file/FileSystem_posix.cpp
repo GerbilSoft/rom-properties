@@ -24,6 +24,9 @@
 // libromdata
 #include "TextFuncs.hpp"
 
+// One-time initialization.
+#include "threads/pthread_once.h"
+
 // C includes.
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,7 +34,6 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <utime.h>
-#include <pthread.h>
 
 // C includes. (C++ namespace)
 #include <cstring>

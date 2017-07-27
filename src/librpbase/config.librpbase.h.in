@@ -108,6 +108,14 @@
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
 
+/** Threading model **/
+
+/* Define to 1 if the system uses Win32 threads. */
+#cmakedefine HAVE_WIN32_THREADS 1
+
+/* Define to 1 if the system uses POSIX threads. */
+#cmakedefine HAVE_PTHREADS 1
+
 /* Define to 1 if the system has a 16-bit wchar_t. */
 #ifdef _WIN32
 #define RP_WIS16 1

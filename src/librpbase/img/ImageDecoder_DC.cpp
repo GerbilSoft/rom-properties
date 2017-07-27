@@ -28,11 +28,8 @@
 #include <memory>
 using std::unique_ptr;
 
-#ifdef _WIN32
-# include "../threads/InitOnceExecuteOnceXP.h"
-#else
-# include <pthread.h>
-#endif
+// One-time initialization.
+#include "threads/pthread_once.h"
 
 namespace LibRpBase {
 
@@ -44,43 +41,23 @@ namespace LibRpBase {
  */
 static unsigned int dc_tmap[4096];
 
-// NOTE: INIT_ONCE is defined as a union in the Windows SDK.
-// Since we can't be sure that MSVC won't end up using
-// thread-safe initialization, we'll define once_control here.
-#ifdef _WIN32
-static INIT_ONCE once_control = INIT_ONCE_STATIC_INIT;
-#else
+// pthread_once() control variable.
 static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-#endif
 
 /**
  * Initialize the Dreamcast twiddle map.
  * This initializes dc_tmap[].
  *
- * This function must be called using pthread_once() or InitOnceExecuteOnce().
+ * This function MUST be called using pthread_once().
  */
-#ifdef _WIN32
-static BOOL WINAPI initDreamcastTwiddleMap_int(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
-#else
 static void initDreamcastTwiddleMap_int(void)
-#endif
 {
-#ifdef _WIN32
-	RP_UNUSED(once);
-	RP_UNUSED(param);
-	RP_UNUSED(context);
-#endif
-
 	for (unsigned int i = 0; i < ARRAY_SIZE(dc_tmap); i++) {
 		dc_tmap[i] = 0;
 		for (unsigned int j = 0, k = 1; k <= i; j++, k <<= 1) {
 			dc_tmap[i] |= ((i & k) << j);
 		}
 	}
-
-#ifdef _WIN32
-	return TRUE;
-#endif
 }
 
 /**
@@ -88,15 +65,9 @@ static void initDreamcastTwiddleMap_int(void)
  * This initializes dc_tmap[].
  * @return 0 on success; non-zero on error.
  */
-static FORCE_INLINE int initDreamcastTwiddleMap(void)
+static FORCE_INLINE void initDreamcastTwiddleMap(void)
 {
-	// TODO: Handle errors.
-#ifdef _WIN32
-	return !InitOnceExecuteOnce(&once_control, initDreamcastTwiddleMap_int, nullptr, nullptr);
-#else /* !_WIN32 */
 	pthread_once(&once_control, initDreamcastTwiddleMap_int);
-	return 0;
-#endif
 }
 
 /**
@@ -127,10 +98,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	}
 
 	// Initialize the twiddle map.
-	if (initDreamcastTwiddleMap() != 0) {
-		// Twiddle map initialization failed.
-		return nullptr;
-	}
+	initDreamcastTwiddleMap();
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);
@@ -228,10 +196,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	// Initialize the twiddle map.
-	if (initDreamcastTwiddleMap() != 0) {
-		// Twiddle map initialization failed.
-		return nullptr;
-	}
+	initDreamcastTwiddleMap();
 
 	// Create an rp_image.
 	rp_image *img = new rp_image(width, height, rp_image::FORMAT_ARGB32);

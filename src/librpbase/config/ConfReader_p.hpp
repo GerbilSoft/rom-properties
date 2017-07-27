@@ -28,13 +28,6 @@
 // load() mutex.
 #include "../threads/Mutex.hpp"
 
-// One-time initialization.
-#ifdef _WIN32
-#include "threads/InitOnceExecuteOnceXP.h"
-#else
-#include <pthread.h>
-#endif
-
 namespace LibRpBase {
 
 class ConfReader;
