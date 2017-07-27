@@ -164,6 +164,7 @@ an example configuration file, which can be placed in `~/.config/rom-properties`
 * Sega 8-bit: Sega Master System and Game Gear ROM images (\*.sms, \*.gg)
 * Sega PVR Textures: Dreamcast PVR (\*.pvr), GameCube GVR (\*.gvr)
 * Microsoft DirectDraw Surface: DDS files (\*.dds)
+  * Currently supports uncompressed RGB, DXTn, BC4, and BC5.
 
 ## External Media Downloads
 
