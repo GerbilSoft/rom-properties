@@ -86,10 +86,14 @@
 # elif defined(_MSC_VER)
 #  define FORCE_INLINE __forceinline
 # else
-#  define FORCE_INLINE
+#  define FORCE_INLINE inline
 # endif
 #else
-# define FORCE_INLINE
+# ifdef _MSC_VER
+#  define FORCE_INLINE __inline
+# else
+#  define FORCE_INLINE inline
+# endif
 #endif
 
 // gcc branch prediction hints.
