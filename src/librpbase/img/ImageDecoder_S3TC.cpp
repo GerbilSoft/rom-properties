@@ -760,7 +760,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 				}
 				argb32_t color = pal[sel];
 				// Decode the alpha channel value.
-				color.a = decode_DXT5_alpha_S2TC(sel, dxt5_src->alpha, c0c1);
+				color.a = decode_DXT5_alpha_S2TC(alpha48 & 7, dxt5_src->alpha, c0c1);
 				tileBuf[i] = color.u32;
 			}
 
