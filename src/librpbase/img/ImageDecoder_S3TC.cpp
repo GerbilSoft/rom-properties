@@ -64,6 +64,29 @@ struct dxt1_block {
 };
 ASSERT_STRUCT(dxt1_block, 8);
 
+// DXT5 alpha+codes struct.
+// Also used by BC4/BC5 for color channels.
+union dxt5_alpha {
+	struct {
+		uint8_t values[2];	// Alpha values.
+		uint8_t codes[6];	// Alpha operation codes. (48-bit unsigned; 3-bit per pixel)
+	};
+	uint64_t u64;	// Access the 48-bit code value directly. (Requires shifting.)
+};
+
+/**
+ * Extract the 48-bit code value from dxt5_alpha.
+ * @param data dxt5_alpha.
+ * @return 48-bit code value.
+ */
+static FORCE_INLINE uint64_t extract48(const dxt5_alpha *data)
+{
+	// codes[6] starts at 0x02 within dxt5_alpha.
+	// Hence, we need to lshift it after byteswapping.
+	// TODO: constexpr?
+	return le64_to_cpu(data->u64) >> 16;
+}
+
 // decode_DXTn_tile_color_palette flags.
 enum DXTn_Palette_Flags {
 	DXTn_PALETTE_BIG_ENDIAN		= (1 << 0),
@@ -692,8 +715,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 
 	// DXT5 block format.
 	struct dxt5_block {
-		uint8_t alpha[2];	// Alpha values.
-		uint8_t codes[6];	// Alpha operation codes. (48-bit unsigned; 3-bit per pixel)
+		dxt5_alpha alpha;
 		dxt1_block colors;	// DXT1-style color block.
 	};
 	ASSERT_STRUCT(dxt5_block, 16);
@@ -711,22 +733,15 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 			argb32_t pal[4];
 			decode_DXTn_tile_color_palette_S3TC<0>(pal, &dxt5_src->colors);
 
-			// Decode the DXT5 alpha values.
-			// NOTE: Combining the alpha values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
-					   ((uint64_t)dxt5_src->codes[1] << 8) |
-					   ((uint64_t)dxt5_src->codes[2] << 16) |
-					   ((uint64_t)dxt5_src->codes[3] << 24) |
-					   ((uint64_t)dxt5_src->codes[4] << 32) |
-					   ((uint64_t)dxt5_src->codes[5] << 40);
+			// Get the DXT5 alpha codes.
+			uint64_t alpha48 = extract48(&dxt5_src->alpha);
 
 			// Process the 16 color and alpha indexes.
 			uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
 			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
 				argb32_t color = pal[indexes & 3];
 				// Decode the alpha channel value.
-				color.a = decode_DXT5_alpha_S3TC(alpha48 & 7, dxt5_src->alpha);
+				color.a = decode_DXT5_alpha_S3TC(alpha48 & 7, dxt5_src->alpha.values);
 				tileBuf[i] = color.u32;
 			}
 
@@ -743,15 +758,8 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 			argb32_t pal[4];
 			decode_DXTn_tile_color_palette_S2TC<0>(pal, &dxt5_src->colors);
 
-			// Decode the DXT5 alpha values.
-			// NOTE: Combining the alpha values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
-					   ((uint64_t)dxt5_src->codes[1] << 8) |
-					   ((uint64_t)dxt5_src->codes[2] << 16) |
-					   ((uint64_t)dxt5_src->codes[3] << 24) |
-					   ((uint64_t)dxt5_src->codes[4] << 32) |
-					   ((uint64_t)dxt5_src->codes[5] << 40);
+			// Get the DXT5 alpha codes.
+			uint64_t alpha48 = extract48(&dxt5_src->alpha);
 
 			// Process the 16 color and alpha indexes.
 			uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
@@ -764,7 +772,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 				}
 				argb32_t color = pal[sel];
 				// Decode the alpha channel value.
-				color.a = decode_DXT5_alpha_S2TC(alpha48 & 7, dxt5_src->alpha, c0c1);
+				color.a = decode_DXT5_alpha_S2TC(alpha48 & 7, dxt5_src->alpha.values, c0c1);
 				tileBuf[i] = color.u32;
 			}
 
@@ -819,8 +827,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 
 	// BC4 block format.
 	struct bc4_block {
-		uint8_t red[2];		// Red values. (interpolated like DXT5 alpha)
-		uint8_t rcodes[6];	// Red color operation codes. (48-bit unsigned; 3-bit per pixel)
+		dxt5_alpha red;
 	};
 	ASSERT_STRUCT(bc4_block, 8);
 	const bc4_block *bc4_src = reinterpret_cast<const bc4_block*>(img_buf);
@@ -835,15 +842,8 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 		for (unsigned int x = 0; x < tilesX; x++, bc4_src++) {
 			// BC4 colors are determined using DXT5-style alpha interpolation.
 
-			// Decode the BC4 color values.
-			// NOTE: Combining the color values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t red48 =  (uint64_t)bc4_src->rcodes[0] |
-					 ((uint64_t)bc4_src->rcodes[1] << 8) |
-					 ((uint64_t)bc4_src->rcodes[2] << 16) |
-					 ((uint64_t)bc4_src->rcodes[3] << 24) |
-					 ((uint64_t)bc4_src->rcodes[4] << 32) |
-					 ((uint64_t)bc4_src->rcodes[5] << 40);
+			// Get the BC4 color codes.
+			uint64_t red48 = extract48(&bc4_src->red);
 
 			// Process the 16 color indexes.
 			// NOTE: Using red instead of grayscale here.
@@ -851,7 +851,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 			color.u32 = 0xFF000000;	// opaque black
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
 				// Decode the red channel value.
-				color.r = decode_DXT5_alpha_S3TC(red48 & 7, bc4_src->red);
+				color.r = decode_DXT5_alpha_S3TC(red48 & 7, bc4_src->red.values);
 				tileBuf[i] = color.u32;
 			}
 
@@ -866,15 +866,8 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 		for (unsigned int x = 0; x < tilesX; x++, bc4_src++) {
 			// BC4 colors are determined using DXT5-style alpha interpolation.
 
-			// Decode the BC4 color values.
-			// NOTE: Combining the color values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t red48 =  (uint64_t)bc4_src->rcodes[0] |
-					 ((uint64_t)bc4_src->rcodes[1] << 8) |
-					 ((uint64_t)bc4_src->rcodes[2] << 16) |
-					 ((uint64_t)bc4_src->rcodes[3] << 24) |
-					 ((uint64_t)bc4_src->rcodes[4] << 32) |
-					 ((uint64_t)bc4_src->rcodes[5] << 40);
+			// Get the BC4 color codes.
+			uint64_t red48 = extract48(&bc4_src->red);
 
 			// Process the 16 color indexes.
 			// NOTE: Using red instead of grayscale here.
@@ -883,7 +876,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
 				// Decode the red channel value.
 				const int c0c1 = S2TC_select_c0c1((int)i);
-				color.r = decode_DXT5_alpha_S2TC(red48 & 7, bc4_src->red, c0c1);
+				color.r = decode_DXT5_alpha_S2TC(red48 & 7, bc4_src->red.values, c0c1);
 				tileBuf[i] = color.u32;
 			}
 
@@ -938,10 +931,8 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 
 	// BC5 block format.
 	struct bc5_block {
-		uint8_t red[2];		// Red values. (interpolated like DXT5 alpha)
-		uint8_t rcodes[6];	// Red color operation codes. (48-bit unsigned; 3-bit per pixel)
-		uint8_t green[2];	// Green values. (interpolated like DXT5 alpha)
-		uint8_t gcodes[6];	// Green color operation codes. (48-bit unsigned; 3-bit per pixel)
+		dxt5_alpha red;
+		dxt5_alpha green;
 	};
 	ASSERT_STRUCT(bc5_block, 16);
 	const bc5_block *bc5_src = reinterpret_cast<const bc5_block*>(img_buf);
@@ -956,29 +947,17 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 		for (unsigned int x = 0; x < tilesX; x++, bc5_src++) {
 			// BC5 colors are determined using DXT5-style alpha interpolation.
 
-			// Decode the BC5 color values.
-			// NOTE: Combining the color values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t red48 =    (uint64_t)bc5_src->rcodes[0] |
-					   ((uint64_t)bc5_src->rcodes[1] << 8) |
-					   ((uint64_t)bc5_src->rcodes[2] << 16) |
-					   ((uint64_t)bc5_src->rcodes[3] << 24) |
-					   ((uint64_t)bc5_src->rcodes[4] << 32) |
-					   ((uint64_t)bc5_src->rcodes[5] << 40);
-			uint64_t green48 =  (uint64_t)bc5_src->gcodes[0] |
-					   ((uint64_t)bc5_src->gcodes[1] << 8) |
-					   ((uint64_t)bc5_src->gcodes[2] << 16) |
-					   ((uint64_t)bc5_src->gcodes[3] << 24) |
-					   ((uint64_t)bc5_src->gcodes[4] << 32) |
-					   ((uint64_t)bc5_src->gcodes[5] << 40);
+			// Get the BC5 color codes.
+			uint64_t red48   = extract48(&bc5_src->red);
+			uint64_t green48 = extract48(&bc5_src->green);
 
 			// Process the 16 color indexes.
 			argb32_t color;
 			color.u32 = 0xFF000000;	// opaque black
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3, green48 >>= 3) {
 				// Decode the red and green channel values.
-				color.r = decode_DXT5_alpha_S3TC(red48   & 7, bc5_src->red);
-				color.g = decode_DXT5_alpha_S3TC(green48 & 7, bc5_src->green);
+				color.r = decode_DXT5_alpha_S3TC(red48   & 7, bc5_src->red.values);
+				color.g = decode_DXT5_alpha_S3TC(green48 & 7, bc5_src->green.values);
 				tileBuf[i] = color.u32;
 			}
 
@@ -993,21 +972,9 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 		for (unsigned int x = 0; x < tilesX; x++, bc5_src++) {
 			// BC5 colors are determined using DXT5-style alpha interpolation.
 
-			// Decode the BC5 color values.
-			// NOTE: Combining the color values into a uint64_t first
-			// in order to make it easier to manage.
-			uint64_t red48 =    (uint64_t)bc5_src->rcodes[0] |
-					   ((uint64_t)bc5_src->rcodes[1] << 8) |
-					   ((uint64_t)bc5_src->rcodes[2] << 16) |
-					   ((uint64_t)bc5_src->rcodes[3] << 24) |
-					   ((uint64_t)bc5_src->rcodes[4] << 32) |
-					   ((uint64_t)bc5_src->rcodes[5] << 40);
-			uint64_t green48 =  (uint64_t)bc5_src->gcodes[0] |
-					   ((uint64_t)bc5_src->gcodes[1] << 8) |
-					   ((uint64_t)bc5_src->gcodes[2] << 16) |
-					   ((uint64_t)bc5_src->gcodes[3] << 24) |
-					   ((uint64_t)bc5_src->gcodes[4] << 32) |
-					   ((uint64_t)bc5_src->gcodes[5] << 40);
+			// Get the BC5 color codes.
+			uint64_t red48   = extract48(&bc5_src->red);
+			uint64_t green48 = extract48(&bc5_src->green);
 
 			// Process the 16 color indexes.
 			argb32_t color;
@@ -1015,8 +982,8 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
 				// Decode the red and green channel values.
 				const int c0c1 = S2TC_select_c0c1((int)i);
-				color.r = decode_DXT5_alpha_S2TC(red48   & 7, bc5_src->red, c0c1);
-				color.g = decode_DXT5_alpha_S2TC(green48 & 7, bc5_src->green, c0c1);
+				color.r = decode_DXT5_alpha_S2TC(red48   & 7, bc5_src->red.values,   c0c1);
+				color.g = decode_DXT5_alpha_S2TC(green48 & 7, bc5_src->green.values, c0c1);
 				tileBuf[i] = color.u32;
 			}
 
