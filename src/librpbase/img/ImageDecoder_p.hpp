@@ -87,14 +87,6 @@ class ImageDecoderPrivate
 		static inline void BlitTile_CI4_LeftLSN(rp_image *img, const uint8_t *tileBuf,
 			unsigned int tileX, unsigned int tileY);
 
-		/**
-		 * Create a Dreamcast twiddle map.
-		 * NOTE: Implementation is in ImageDecoder_DC.cpp.
-		 * @param size Twiddle map size. (usually texture width)
-		 * @return Twiddle map: unsigned int[size] (caller must delete[] this)
-		 */
-		static unsigned int *createDreamcastTwiddleMap(int size);
-
 		/** Color conversion functions. **/
 
 		// 2-bit alpha lookup table.

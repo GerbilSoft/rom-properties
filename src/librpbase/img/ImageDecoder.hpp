@@ -399,8 +399,8 @@ class ImageDecoder
 		/**
 		 * Convert a Dreamcast square twiddled 16-bit image to rp_image.
 		 * @param px_format 16-bit pixel format.
-		 * @param width Image width.
-		 * @param height Image height.
+		 * @param width Image width. (Maximum is 4096.)
+		 * @param height Image height. (Must be equal to width.)
 		 * @param img_buf 16-bit image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @return rp_image, or nullptr on error.
@@ -413,8 +413,8 @@ class ImageDecoder
 		 * Convert a Dreamcast vector-quantized image to rp_image.
 		 * @tparam smallVQ If true, handle this image as SmallVQ.
 		 * @param px_format Palette pixel format.
-		 * @param width Image width.
-		 * @param height Image height.
+		 * @param width Image width. (Maximum is 4096.)
+		 * @param height Image height. (Must be equal to width.)
 		 * @param img_buf VQ image buffer.
 		 * @param img_siz Size of image data. [must be >= (w*h)*2]
 		 * @param pal_buf Palette buffer.
