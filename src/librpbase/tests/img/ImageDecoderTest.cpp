@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.librpbase.h"
+
 // Google Test
 #include "gtest/gtest.h"
 
@@ -51,6 +53,7 @@
 #include "file/FileSystem.hpp"
 #include "img/rp_image.hpp"
 #include "img/RpImageLoader.hpp"
+#include "img/ImageDecoder.hpp"
 
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
@@ -80,18 +83,27 @@ struct ImageDecoderTest_mode
 {
 	rp_string dds_gz_filename;	// Source texture to test.
 	rp_string png_filename;		// PNG image for comparison.
+	bool s3tc;			// Enable S3TC.
 
 	ImageDecoderTest_mode(
 		const rp_char *dds_gz_filename,
-		const rp_char *png_filename)
+		const rp_char *png_filename,
+#ifdef ENABLE_S3TC
+		bool s3tc = true
+#else /* !ENABLE_S3TC */
+		bool s3tc = false
+#endif /* ENABLE_S3TC */
+		)
 		: dds_gz_filename(dds_gz_filename)
 		, png_filename(png_filename)
+		, s3tc(s3tc)
 	{ }
 
 	// May be required for MSVC 2010?
 	ImageDecoderTest_mode(const ImageDecoderTest_mode &other)
 		: dds_gz_filename(other.dds_gz_filename)
 		, png_filename(other.png_filename)
+		, s3tc(other.s3tc)
 	{ }
 
 	// Required for MSVC 2010.
@@ -99,6 +111,7 @@ struct ImageDecoderTest_mode
 	{
 		dds_gz_filename = other.dds_gz_filename;
 		png_filename = other.png_filename;
+		s3tc = other.s3tc;
 		return *this;
 	}
 };
@@ -180,6 +193,14 @@ void ImageDecoderTest::SetUp(void)
 
 	// Parameterized test.
 	const ImageDecoderTest_mode &mode = GetParam();
+
+#ifdef ENABLE_S3TC
+	// Enable/disable S3TC.
+	ImageDecoder::EnableS3TC = mode.s3tc;
+#else /* !ENABLE_S3TC */
+	// Can't test S3TC in this build.
+	ASSERT_FALSE(mode.s3tc) << "Cannot test S3TC compression in this build. Recompile with -DENABLE_S3TC"
+#endif /* ENABLE_S3TC */
 
 	// Open the gzipped DDS texture file being tested.
 	rp_string path = _RP("ImageDecoder_data");
@@ -383,36 +404,70 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 // Test cases.
 
-// DirectDrawSurface tests.
-INSTANTIATE_TEST_CASE_P(DDS, ImageDecoderTest,
+#ifdef ENABLE_S3TC
+// DirectDrawSurface tests. (S3TC)
+INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
 			_RP("dxt1-rgb.dds.gz"),
-			_RP("dxt1-rgb.png")),
+			_RP("dxt1-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt2-rgb.dds.gz"),
-			_RP("dxt2-rgb.png")),
+			_RP("dxt2-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt2-argb.dds.gz"),
-			_RP("dxt2-argb.png")),
+			_RP("dxt2-argb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt3-rgb.dds.gz"),
-			_RP("dxt3-rgb.png")),
+			_RP("dxt3-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt3-argb.dds.gz"),
-			_RP("dxt3-argb.png")),
+			_RP("dxt3-argb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt4-rgb.dds.gz"),
-			_RP("dxt4-rgb.png")),
+			_RP("dxt4-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt4-argb.dds.gz"),
-			_RP("dxt4-argb.png")),
+			_RP("dxt4-argb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt5-rgb.dds.gz"),
-			_RP("dxt5-rgb.png")),
+			_RP("dxt5-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt5-argb.dds.gz"),
-			_RP("dxt5-argb.png")))
+			_RP("dxt5-argb.s3tc.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_S3TC */
+
+// DirectDrawSurface tests. (S2TC)
+INSTANTIATE_TEST_CASE_P(DDS_S2TC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("dxt1-rgb.dds.gz"),
+			_RP("dxt1-rgb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt2-rgb.dds.gz"),
+			_RP("dxt2-rgb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt2-argb.dds.gz"),
+			_RP("dxt2-argb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt3-rgb.dds.gz"),
+			_RP("dxt3-rgb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt3-argb.dds.gz"),
+			_RP("dxt3-argb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt4-rgb.dds.gz"),
+			_RP("dxt4-rgb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt4-argb.dds.gz"),
+			_RP("dxt4-argb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt5-rgb.dds.gz"),
+			_RP("dxt5-rgb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("dxt5-argb.dds.gz"),
+			_RP("dxt5-argb.s2tc.png"), false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
