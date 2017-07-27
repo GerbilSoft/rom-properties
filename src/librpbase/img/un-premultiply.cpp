@@ -74,7 +74,7 @@ static const unsigned int qt_inv_premul_factor[256] = {
  */
 static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
 {
-	if (px.a == 255) {
+	if (likely(px.a) == 255) {
 		// Do nothing.
 	} else if (px.a == 0) {
 		px.u32 = 0;

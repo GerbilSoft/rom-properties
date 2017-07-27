@@ -309,7 +309,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 	// Tiles are arranged in 2x2 blocks.
 	// Reference: https://github.com/nickworonekin/puyotools/blob/80f11884f6cae34c4a56c5b1968600fe7c34628b/Libraries/VrSharp/GvrTexture/GvrDataCodec.cs#L712
 #ifdef ENABLE_S3TC
-	if (EnableS3TC) {
+	if (likely(EnableS3TC)) {
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y += 2) {
 		for (unsigned int x = 0; x < tilesX; x += 2) {
@@ -420,7 +420,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 	uint32_t tileBuf[4*4];
 
 #ifdef ENABLE_S3TC
-	if (EnableS3TC) {
+	if (likely(EnableS3TC)) {
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
@@ -556,7 +556,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	uint32_t tileBuf[4*4];
 
 #ifdef ENABLE_S3TC
-	if (EnableS3TC) {
+	if (likely(EnableS3TC)) {
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
@@ -699,7 +699,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	uint32_t tileBuf[4*4];
 
 #ifdef ENABLE_S3TC
-	if (EnableS3TC) {
+	if (likely(EnableS3TC)) {
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
