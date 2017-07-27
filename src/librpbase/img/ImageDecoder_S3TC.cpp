@@ -36,6 +36,23 @@
 
 namespace LibRpBase {
 
+/**
+ * Global flag for enabling S3TC decompression.
+ * If S3TC is enabled, this defaults to true.
+ * If S3TC is disabled, this is always false.
+ *
+ * This is primarily used for the ImageDecoder test suite,
+ * since there's no point in using S2TC if S3TC is available.
+ *
+ * WARNING: Modifying this variable is NOT thread-safe. Do NOT modify
+ * this in multi-threaded environments unless you know what you're doing.
+ */
+#ifdef ENABLE_S3TC
+bool ImageDecoder::EnableS3TC = true;
+#else /* !ENABLE_S3TC */
+const bool ImageDecoder::EnableS3TC = false;
+#endif
+
 // DXT1 block format.
 struct dxt1_block {
 	uint16_t color[2];	// Colors 0 and 1, in RGB565 format.
@@ -50,14 +67,15 @@ enum DXTn_Palette_Flags {
 	DXTn_PALETTE_COLOR0_LE_COLOR1	= (1 << 2),	// Assume color0 <= color1. (DXT2/DXT3)
 };
 
+#ifdef ENABLE_S3TC
 /**
- * Decode a DXTn tile color palette.
+ * Decode a DXTn tile color palette. (S3TC version)
  * @tparam flags Flags. (See DXTn_Palette_Flags)
  * @param pal		[out] Array of four argb32_t values.
  * @param dxt1_src	[in] DXT1 block.
  */
 template<uint32_t flags>
-static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_block *dxt1_src)
+static inline void decode_DXTn_tile_color_palette_S3TC(argb32_t pal[4], const dxt1_block *dxt1_src)
 {
 	// Convert the first two colors from RGB565.
 	uint16_t c0, c1;
@@ -71,7 +89,6 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 	pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c0);
 	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
 
-#ifdef ENABLE_S3TC
 	// Calculate the second two colors.
 	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
 		// color0 > color1
@@ -94,34 +111,18 @@ static inline void decode_DXTn_tile_color_palette(argb32_t pal[4], const dxt1_bl
 		// Black and/or transparent.
 		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
 	}
-#else /* !ENABLE_S3TC */
-	// S2TC fallback.
-	pal[2].u32 = 0;	// not used; select c0 or c1 depending on pixel number.
-	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
-		pal[3].u32 = pal[0].u32;
-	} else {
-		// Black and/or transparent.
-		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
-	}
-#endif /* ENABLE_S3TC */
 }
 
 /**
- * Decode the DXT5 alpha channel value.
+ * Decode the DXT5 alpha channel value. (S3TC version)
  * @param a3	3-bit alpha selector code.
  * @param alpha	2-element alpha array from dxt5_block.
- * @param c0c1	For S2TC, select c0 or c1.
  * @return Alpha channel value.
  */
-static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
-#ifndef ENABLE_S3TC
-	, int c0c1
-#endif
-	)
+static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t alpha[2])
 {
 	unsigned int a_ret = 255;
 
-#ifdef ENABLE_S3TC
 	if (alpha[0] > alpha[1]) {
 		switch (a3 & 7) {
 			case 0:
@@ -180,7 +181,50 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
 
 	// Prevent overflow.
 	return (uint8_t)(a_ret > 255 ? 255 : a_ret);
-#else /* !ENABLE_S3TC */
+}
+#endif /* ENABLE_S3TC */
+
+/**
+ * Decode a DXTn tile color palette. (S2TC version)
+ * @tparam flags Flags. (See DXTn_Palette_Flags)
+ * @param pal		[out] Array of four argb32_t values.
+ * @param dxt1_src	[in] DXT1 block.
+ */
+template<uint32_t flags>
+static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t pal[4], const dxt1_block *dxt1_src)
+{
+	// Convert the first two colors from RGB565.
+	uint16_t c0, c1;
+	if (flags & DXTn_PALETTE_BIG_ENDIAN) {
+		c0 = be16_to_cpu(dxt1_src->color[0]);
+		c1 = be16_to_cpu(dxt1_src->color[1]);
+	} else {
+		c0 = le16_to_cpu(dxt1_src->color[0]);
+		c1 = le16_to_cpu(dxt1_src->color[1]);
+	}
+	pal[0].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c0);
+	pal[1].u32 = ImageDecoderPrivate::RGB565_to_ARGB32(c1);
+
+	pal[2].u32 = 0;	// not used; select c0 or c1 depending on pixel number.
+	if (!(flags & DXTn_PALETTE_COLOR0_LE_COLOR1) && (c0 > c1)) {
+		pal[3].u32 = pal[0].u32;
+	} else {
+		// Black and/or transparent.
+		pal[3].u32 = ((flags & DXTn_PALETTE_COLOR3_ALPHA) ? 0x00000000 : 0xFF000000);
+	}
+}
+
+/**
+ * Decode the DXT5 alpha channel value. (S2TC version)
+ * @param a3	3-bit alpha selector code.
+ * @param alpha	2-element alpha array from dxt5_block.
+ * @param c0c1	For S2TC, select c0 or c1.
+ * @return Alpha channel value.
+ */
+static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alpha[2], int c0c1)
+{
+	unsigned int a_ret = 255;
+
 	// S2TC fallback.
 	if (alpha[0] > alpha[1]) {
 		switch (a3 & 7) {
@@ -222,21 +266,18 @@ static inline uint8_t decode_DXT5_alpha(unsigned int a3, const uint8_t alpha[2]
 
 	// No overflow is possible in S2TC mode.
 	return (uint8_t)a_ret;
-#endif /* ENABLE_S3TC */
 }
 
-#ifndef ENABLE_S3TC
 /**
  * Select the color or alpha value to use for S2TC interpolation.
  * @param px_number Pixel number.
  * @return 0 or 1 for c0/c1 or a0/a1.
  */
-static FORCE_INLINE int s2tc_select_c0c1(int px_number)
+static FORCE_INLINE int S2TC_select_c0c1(int px_number)
 {
 	// TODO: constexpr
 	return (px_number & 1) ^ ((px_number & 4) >> 2);
 }
-#endif /* !ENABLE_S3TC */
 
 /**
  * Convert a GameCube DXT1 image to rp_image.
@@ -286,37 +327,67 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 	// Tiles are arranged in 2x2 blocks.
 	// Reference: https://github.com/nickworonekin/puyotools/blob/80f11884f6cae34c4a56c5b1968600fe7c34628b/Libraries/VrSharp/GvrTexture/GvrDataCodec.cs#L712
-	for (unsigned int y = 0; y < tilesY; y += 2) {
-	for (unsigned int x = 0; x < tilesX; x += 2) {
-		for (unsigned int y2 = 0; y2 < 2; y2++) {
-		for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
-			// Decode the DXT1 tile palette.
-			// TODO: Color 3 may be either black or transparent.
-			// Figure out if there's a way to specify that in GVR.
-			// Assuming transparent for now, since most GVR DXT1
-			// textures use transparency.
-			argb32_t pal[4];
-			decode_DXTn_tile_color_palette<DXTn_PALETTE_BIG_ENDIAN | DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+#ifdef ENABLE_S3TC
+	if (EnableS3TC) {
+		// S3TC version.
+		for (unsigned int y = 0; y < tilesY; y += 2) {
+		for (unsigned int x = 0; x < tilesX; x += 2) {
+			for (unsigned int y2 = 0; y2 < 2; y2++) {
+			for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
+				// Decode the DXT1 tile palette.
+				// TODO: Color 3 may be either black or transparent.
+				// Figure out if there's a way to specify that in GVR.
+				// Assuming transparent for now, since most GVR DXT1
+				// textures use transparency.
+				argb32_t pal[4];
+				decode_DXTn_tile_color_palette_S3TC<DXTn_PALETTE_BIG_ENDIAN | DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
 
-			// Process the 16 color indexes.
-			// NOTE: The tile indexes are stored "backwards" due to
-			// big endian shenanigans.
-			uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
-			for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
-				unsigned int sel = indexes & 3;
-#ifndef ENABLE_S3TC
-				if (sel == 2) {
-					// Select c0 or c1, depending on pixel number.
-					sel = s2tc_select_c0c1(i);
+				// Process the 16 color indexes.
+				// NOTE: The tile indexes are stored "backwards" due to
+				// big endian shenanigans.
+				uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
+				for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
+					tileBuf[i] = pal[indexes & 3].u32;
 				}
-#endif /* !ENABLE_S3TC */
-				tileBuf[i] = pal[sel].u32;
-			}
 
-			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x+x2, y+y2);
+				// Blit the tile to the main image buffer.
+				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x+x2, y+y2);
+			} }
 		} }
-	} }
+	} else
+#endif /* ENABLE_S3TC */
+	{
+		// S2TC version.
+		for (unsigned int y = 0; y < tilesY; y += 2) {
+		for (unsigned int x = 0; x < tilesX; x += 2) {
+			for (unsigned int y2 = 0; y2 < 2; y2++) {
+			for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
+				// Decode the DXT1 tile palette.
+				// TODO: Color 3 may be either black or transparent.
+				// Figure out if there's a way to specify that in GVR.
+				// Assuming transparent for now, since most GVR DXT1
+				// textures use transparency.
+				argb32_t pal[4];
+				decode_DXTn_tile_color_palette_S2TC<DXTn_PALETTE_BIG_ENDIAN | DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+
+				// Process the 16 color indexes.
+				// NOTE: The tile indexes are stored "backwards" due to
+				// big endian shenanigans.
+				uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
+				for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
+					unsigned int sel = indexes & 3;
+					if (sel == 2) {
+						// Select c0 or c1, depending on pixel number.
+						sel = S2TC_select_c0c1(i);
+					}
+					tileBuf[i] = pal[sel].u32;
+				}
+
+				// Blit the tile to the main image buffer.
+				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x+x2, y+y2);
+			} }
+		} }
+	}
 
 	// Image has been converted.
 	return img;
@@ -367,32 +438,57 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
 
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
-		// Decode the DXT1 tile palette.
-		// TODO: Color 3 may be either black or transparent.
-		// Figure out if there's a way to specify that in DDS.
-		// Assuming transparent for now, since black can be
-		// specified using a color value.
-		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+#ifdef ENABLE_S3TC
+	if (EnableS3TC) {
+		// S3TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
+			// Decode the DXT1 tile palette.
+			// TODO: Color 3 may be either black or transparent.
+			// Figure out if there's a way to specify that in DDS.
+			// Assuming transparent for now, since black can be
+			// specified using a color value.
+			argb32_t pal[4];
+			decode_DXTn_tile_color_palette_S3TC<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
 
-		// Process the 16 color indexes.
-		uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
-			unsigned int sel = indexes & 3;
-#ifndef ENABLE_S3TC
-			if (sel == 2) {
-				// Select c0 or c1, depending on pixel number.
-				sel = s2tc_select_c0c1((int)i);
+			// Process the 16 color indexes.
+			uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
+				tileBuf[i] = pal[indexes & 3].u32;
 			}
-#endif /* !ENABLE_S3TC */
-			tileBuf[i] = pal[sel].u32;
-		}
 
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-	} }
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	} else
+#endif /* ENABLE_S3TC */
+	{
+		// S2TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt1_src++) {
+			// Decode the DXT1 tile palette.
+			// TODO: Color 3 may be either black or transparent.
+			// Figure out if there's a way to specify that in DDS.
+			// Assuming transparent for now, since black can be
+			// specified using a color value.
+			argb32_t pal[4];
+			decode_DXTn_tile_color_palette_S2TC<DXTn_PALETTE_COLOR3_ALPHA>(pal, dxt1_src);
+
+			// Process the 16 color indexes.
+			uint32_t indexes = le32_to_cpu(dxt1_src->indexes);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2) {
+				unsigned int sel = indexes & 3;
+				if (sel == 2) {
+					// Select c0 or c1, depending on pixel number.
+					sel = S2TC_select_c0c1((int)i);
+				}
+				tileBuf[i] = pal[sel].u32;
+			}
+
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	}
 
 	// Image has been converted.
 	return img;
@@ -478,35 +574,63 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
 
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
-		// Decode the DXT3 tile palette.
-		argb32_t pal[4];
-		// FIXME: DXTn_PALETTE_COLOR0_LE_COLOR1 seems to result in garbage pixels.
-		// https://github.com/kchapelier/decode-dxt/tree/master/lib has similar code
-		// but handles DXT3 like both DXT1 and DXT5, so disable this for now.
-		decode_DXTn_tile_color_palette<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
+#ifdef ENABLE_S3TC
+	if (EnableS3TC) {
+		// S3TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
+			// Decode the DXT3 tile palette.
+			argb32_t pal[4];
+			// FIXME: DXTn_PALETTE_COLOR0_LE_COLOR1 seems to result in garbage pixels.
+			// https://github.com/kchapelier/decode-dxt/tree/master/lib has similar code
+			// but handles DXT3 like both DXT1 and DXT5, so disable this for now.
+			decode_DXTn_tile_color_palette_S3TC<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
 
-		// Process the 16 color indexes and apply alpha.
-		uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
-		uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
-			unsigned int sel = indexes & 3;
-#ifndef ENABLE_S3TC
-			if (sel == 2) {
-				// Select c0 or c1, depending on pixel number.
-				sel = s2tc_select_c0c1((int)i);
+			// Process the 16 color indexes and apply alpha.
+			uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
+			uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
+				argb32_t color = pal[indexes & 3];
+				// TODO: Verify alpha value handling for DXT3.
+				color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
+				tileBuf[i] = color.u32;
 			}
-#endif /* !ENABLE_S3TC */
-			argb32_t color = pal[sel];
-			// TODO: Verify alpha value handling for DXT3.
-			color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
-			tileBuf[i] = color.u32;
-		}
 
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-	} }
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	} else
+#endif /* ENABLE_S3TC */
+	{
+		// S2TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt3_src++) {
+			// Decode the DXT3 tile palette.
+			argb32_t pal[4];
+			// FIXME: DXTn_PALETTE_COLOR0_LE_COLOR1 seems to result in garbage pixels.
+			// https://github.com/kchapelier/decode-dxt/tree/master/lib has similar code
+			// but handles DXT3 like both DXT1 and DXT5, so disable this for now.
+			decode_DXTn_tile_color_palette_S2TC<0/*DXTn_PALETTE_COLOR0_LE_COLOR1*/>(pal, &dxt3_src->colors);
+
+			// Process the 16 color indexes and apply alpha.
+			uint32_t indexes = le32_to_cpu(dxt3_src->colors.indexes);
+			uint64_t alpha = le64_to_cpu(dxt3_src->alpha);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha >>= 4) {
+				unsigned int sel = indexes & 3;
+				if (sel == 2) {
+					// Select c0 or c1, depending on pixel number.
+					sel = S2TC_select_c0c1((int)i);
+				}
+				argb32_t color = pal[sel];
+				// TODO: Verify alpha value handling for DXT3.
+				color.a = (alpha & 0xF) | ((alpha & 0xF) << 4);
+				tileBuf[i] = color.u32;
+			}
+
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	}
 
 	// Image has been converted.
 	return img;
@@ -593,46 +717,76 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 	// Temporary tile buffer.
 	uint32_t tileBuf[4*4];
 
-	for (unsigned int y = 0; y < tilesY; y++) {
-	for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
-		// Decode the DXT5 tile palette.
-		argb32_t pal[4];
-		decode_DXTn_tile_color_palette<0>(pal, &dxt5_src->colors);
-
-		// Decode the DXT5 alpha values.
-		// NOTE: Combining the alpha values into a uint64_t first
-		// in order to make it easier to manage.
-		uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
-				   ((uint64_t)dxt5_src->codes[1] << 8) |
-				   ((uint64_t)dxt5_src->codes[2] << 16) |
-				   ((uint64_t)dxt5_src->codes[3] << 24) |
-				   ((uint64_t)dxt5_src->codes[4] << 32) |
-				   ((uint64_t)dxt5_src->codes[5] << 40);
-
-		// Process the 16 color and alpha indexes.
-		uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
-		for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
 #ifdef ENABLE_S3TC
-			argb32_t color = pal[indexes & 3];
-			// Decode the alpha channel value.
-			color.a = decode_DXT5_alpha(alpha48 & 7, dxt5_src->alpha);
-#else /* !ENABLE_S3TC */
-			const int c0c1 = s2tc_select_c0c1((int)i);
-			unsigned int sel = indexes & 3;
-			if (sel == 2) {
-				// Select c0 or c1, depending on pixel number.
-				sel = c0c1;
-			}
-			argb32_t color = pal[sel];
-			// Decode the alpha channel value.
-			color.a = decode_DXT5_alpha(sel, dxt5_src->alpha, c0c1);
-#endif /* ENABLE_S3TC */
-			tileBuf[i] = color.u32;
-		}
+	if (EnableS3TC) {
+		// S3TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
+			// Decode the DXT5 tile palette.
+			argb32_t pal[4];
+			decode_DXTn_tile_color_palette_S3TC<0>(pal, &dxt5_src->colors);
 
-		// Blit the tile to the main image buffer.
-		ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
-	} }
+			// Decode the DXT5 alpha values.
+			// NOTE: Combining the alpha values into a uint64_t first
+			// in order to make it easier to manage.
+			uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
+					   ((uint64_t)dxt5_src->codes[1] << 8) |
+					   ((uint64_t)dxt5_src->codes[2] << 16) |
+					   ((uint64_t)dxt5_src->codes[3] << 24) |
+					   ((uint64_t)dxt5_src->codes[4] << 32) |
+					   ((uint64_t)dxt5_src->codes[5] << 40);
+
+			// Process the 16 color and alpha indexes.
+			uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
+				argb32_t color = pal[indexes & 3];
+				// Decode the alpha channel value.
+				color.a = decode_DXT5_alpha_S3TC(alpha48 & 7, dxt5_src->alpha);
+				tileBuf[i] = color.u32;
+			}
+
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	} else
+#endif /* ENABLE_S3TC */
+	{
+		// S2TC version.
+		for (unsigned int y = 0; y < tilesY; y++) {
+		for (unsigned int x = 0; x < tilesX; x++, dxt5_src++) {
+			// Decode the DXT5 tile palette.
+			argb32_t pal[4];
+			decode_DXTn_tile_color_palette_S2TC<0>(pal, &dxt5_src->colors);
+
+			// Decode the DXT5 alpha values.
+			// NOTE: Combining the alpha values into a uint64_t first
+			// in order to make it easier to manage.
+			uint64_t alpha48 =  (uint64_t)dxt5_src->codes[0] |
+					   ((uint64_t)dxt5_src->codes[1] << 8) |
+					   ((uint64_t)dxt5_src->codes[2] << 16) |
+					   ((uint64_t)dxt5_src->codes[3] << 24) |
+					   ((uint64_t)dxt5_src->codes[4] << 32) |
+					   ((uint64_t)dxt5_src->codes[5] << 40);
+
+			// Process the 16 color and alpha indexes.
+			uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
+			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
+				const int c0c1 = S2TC_select_c0c1((int)i);
+				unsigned int sel = indexes & 3;
+				if (sel == 2) {
+					// Select c0 or c1, depending on pixel number.
+					sel = c0c1;
+				}
+				argb32_t color = pal[sel];
+				// Decode the alpha channel value.
+				color.a = decode_DXT5_alpha_S2TC(sel, dxt5_src->alpha, c0c1);
+				tileBuf[i] = color.u32;
+			}
+
+			// Blit the tile to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
+		} }
+	}
 
 	// Image has been converted.
 	return img;
