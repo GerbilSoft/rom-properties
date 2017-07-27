@@ -384,8 +384,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// TODO: Support more than just DXT1 and DXT5.
-
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 	rp_image *ret_img = nullptr;
@@ -398,6 +396,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		uint32_t expected_size;
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
+			case DDPF_FOURCC_ATI1:
 				// 16 pixels compressed into 64 bits. (4bpp)
 				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
 				break;
@@ -406,6 +405,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DDPF_FOURCC_DXT3:
 			case DDPF_FOURCC_DXT4:
 			case DDPF_FOURCC_DXT5:
+			case DDPF_FOURCC_ATI2:
 				// 16 pixels compressed into 128 bits. (8bpp)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
 				break;
@@ -456,6 +456,18 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 			case DDPF_FOURCC_DXT5:
 				ret_img = ImageDecoder::fromDXT5(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size);
+				break;
+
+			case DDPF_FOURCC_ATI1:
+				ret_img = ImageDecoder::fromBC4(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size);
+				break;
+
+			case DDPF_FOURCC_ATI2:
+				ret_img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;

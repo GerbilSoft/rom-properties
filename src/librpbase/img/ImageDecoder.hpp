@@ -372,6 +372,28 @@ class ImageDecoder
 		static rp_image *fromDXT5(int width, int height,
 			const uint8_t *img_buf, int img_siz);
 
+		/**
+		 * Convert a BC4 (ATI1) image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf BC4 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromBC4(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
+		/**
+		 * Convert a BC5 (ATI2) image to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf BC4 image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromBC5(int width, int height,
+			const uint8_t *img_buf, int img_siz);
+
 		/* Dreamcast */
 
 		/**

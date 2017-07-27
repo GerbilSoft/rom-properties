@@ -434,7 +434,13 @@ INSTANTIATE_TEST_CASE_P(DDS_S3TC, ImageDecoderTest,
 			_RP("dxt5-rgb.s3tc.png")),
 		ImageDecoderTest_mode(
 			_RP("dxt5-argb.dds.gz"),
-			_RP("dxt5-argb.s3tc.png")))
+			_RP("dxt5-argb.s3tc.png")),
+		ImageDecoderTest_mode(
+			_RP("bc4.dds.gz"),
+			_RP("bc4.s3tc.png")),
+		ImageDecoderTest_mode(
+			_RP("bc5.dds.gz"),
+			_RP("bc5.s3tc.png")))
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_S3TC */
 
@@ -467,7 +473,13 @@ INSTANTIATE_TEST_CASE_P(DDS_S2TC, ImageDecoderTest,
 			_RP("dxt5-rgb.s2tc.png"), false),
 		ImageDecoderTest_mode(
 			_RP("dxt5-argb.dds.gz"),
-			_RP("dxt5-argb.s2tc.png"), false))
+			_RP("dxt5-argb.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("bc4.dds.gz"),
+			_RP("bc4.s2tc.png"), false),
+		ImageDecoderTest_mode(
+			_RP("bc5.dds.gz"),
+			_RP("bc5.s2tc.png"), false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
