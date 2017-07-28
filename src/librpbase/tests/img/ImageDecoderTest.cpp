@@ -482,6 +482,108 @@ INSTANTIATE_TEST_CASE_P(DDS_S2TC, ImageDecoderTest,
 			_RP("bc5.s2tc.png"), false))
 	, ImageDecoderTest::test_case_suffix_generator);
 
+// DirectDrawSurface tests. (Uncompressed 16-bit RGB)
+INSTANTIATE_TEST_CASE_P(DDS_RGB16, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("RGB565.dds.gz"),
+			_RP("RGB565.png")),
+		ImageDecoderTest_mode(
+			_RP("xRGB4444.dds.gz"),
+			_RP("xRGB4444.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Uncompressed 16-bit ARGB)
+INSTANTIATE_TEST_CASE_P(DDS_ARGB16, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("ARGB1555.dds.gz"),
+			_RP("ARGB1555.png")),
+		ImageDecoderTest_mode(
+			_RP("ARGB4444.dds.gz"),
+			_RP("ARGB4444.png")),
+		ImageDecoderTest_mode(
+			_RP("ARGB8332.dds.gz"),
+			_RP("ARGB8332.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Uncompressed 15-bit RGB)
+INSTANTIATE_TEST_CASE_P(DDS_RGB15, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("RGB565.dds.gz"),
+			_RP("RGB565.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Uncompressed 24-bit RGB)
+INSTANTIATE_TEST_CASE_P(DDS_RGB24, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("RGB888.dds.gz"),
+			_RP("RGB888.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Uncompressed 32-bit RGB)
+INSTANTIATE_TEST_CASE_P(DDS_RGB32, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("xRGB8888.dds.gz"),
+			_RP("xRGB8888.png")),
+		ImageDecoderTest_mode(
+			_RP("xBGR8888.dds.gz"),
+			_RP("xBGR8888.png")),
+
+		// Uncommon formats.
+		ImageDecoderTest_mode(
+			_RP("G16R16.dds.gz"),
+			_RP("G16R16.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Uncompressed 32-bit ARGB)
+INSTANTIATE_TEST_CASE_P(DDS_ARGB32, ImageDecoderTest,
+	::testing::Values(
+		// 32-bit
+		ImageDecoderTest_mode(
+			_RP("ARGB8888.dds.gz"),
+			_RP("ARGB8888.png")),
+		ImageDecoderTest_mode(
+			_RP("ABGR8888.dds.gz"),
+			_RP("ABGR8888.png")),
+
+		// Uncommon formats.
+		ImageDecoderTest_mode(
+			_RP("A2R10G10B10.dds.gz"),
+			_RP("A2R10G10B10.png")),
+		ImageDecoderTest_mode(
+			_RP("A2B10G10R10.dds.gz"),
+			_RP("A2B10G10R10.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Luminance)
+INSTANTIATE_TEST_CASE_P(DDS_Luma, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("L8.dds.gz"),
+			_RP("L8.png")),
+		ImageDecoderTest_mode(
+			_RP("A4L4.dds.gz"),
+			_RP("A4L4.png")),
+		ImageDecoderTest_mode(
+			_RP("L16.dds.gz"),
+			_RP("L16.png")),
+		ImageDecoderTest_mode(
+			_RP("A8L8.dds.gz"),
+			_RP("A8L8.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests. (Alpha)
+INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("A8.dds.gz"),
+			_RP("A8.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
 } }
 
 /**
