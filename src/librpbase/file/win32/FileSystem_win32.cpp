@@ -21,6 +21,12 @@
 
 #include "../FileSystem.hpp"
 
+// libromdata
+#include "TextFuncs.hpp"
+
+// One-time initialization.
+#include "threads/pthread_once.h"
+
 // C includes.
 #include <sys/utime.h>
 
@@ -44,14 +50,10 @@ using std::wstring;
 #include <shlobj.h>
 #include <direct.h>
 
-// libromdata
-#include "TextFuncs.hpp"
-#include "threads/InitOnceExecuteOnceXP.h"
-
 namespace LibRpBase { namespace FileSystem {
 
-// InitOnceExecuteOnce() control variable.
-static INIT_ONCE once_control = INIT_ONCE_STATIC_INIT;
+// pthread_once() control variable.
+static pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
 // Configuration directories.
 
@@ -159,15 +161,10 @@ int64_t filesize(const rp_string &filename)
 
 /**
  * Initialize the configuration directory paths.
- * Called by InitOnceExecuteOnce().
+ * Called by pthread_once().
  */
-static BOOL WINAPI initConfigDirectories(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
+static void initConfigDirectories(void)
 {
-	// We aren't using any of the InitOnceExecuteOnce() parameters.
-	RP_UNUSED(once);
-	RP_UNUSED(param);
-	RP_UNUSED(context);
-
 	wchar_t path[MAX_PATH];
 	HRESULT hr;
 
@@ -210,9 +207,6 @@ static BOOL WINAPI initConfigDirectories(_Inout_ PINIT_ONCE_XP once, _Inout_opt_
 			config_dir += _RP("rom-properties");
 		}
 	}
-
-	// Directories have been initialized.
-	return TRUE;
 }
 
 /**
@@ -227,7 +221,7 @@ static BOOL WINAPI initConfigDirectories(_Inout_ PINIT_ONCE_XP once, _Inout_opt_
 const rp_string &getCacheDirectory(void)
 {
 	// TODO: Handle errors.
-	InitOnceExecuteOnce(&once_control, initConfigDirectories, nullptr, nullptr);
+	pthread_once(&once_control, initConfigDirectories);
 	return cache_dir;
 }
 
@@ -242,7 +236,7 @@ const rp_string &getCacheDirectory(void)
 const rp_string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
-	InitOnceExecuteOnce(&once_control, initConfigDirectories, nullptr, nullptr);
+	pthread_once(&once_control, initConfigDirectories);
 	return config_dir;
 }
 

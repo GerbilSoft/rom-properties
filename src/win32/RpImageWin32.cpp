@@ -408,6 +408,11 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// Copy the data into a new rp_image.
 	rp_image *img = new rp_image(bm.bmWidth, height, format);
+	if (!img->isValid()) {
+		// Could not allocate the image.
+		delete img;
+		return nullptr;
+	}
 
 	// TODO: Copy the palette for 8-bit.
 

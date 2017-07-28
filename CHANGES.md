@@ -2,6 +2,17 @@
 
 ## v1.2 (released 2017/??/??)
 
+* New systems:
+  * Sega PVR and GVR decoding. These are texture files used in Sega games
+    on Dreamcast, GameCube, and various PC ports.
+  * Microsoft DirectDraw Surface decoding. These are texture files used in
+    various PC games. Supports several uncompressed RGB and ARGB formats,
+    DXTn, BC4, and BC5.
+
+* Bug fixes:
+  * Fixed decoding of BGR555 images. The lower part of the R channel was
+    shifted the wrong amount, resulting in an incorrect Red value expansion.
+
 ## v1.1 (released 2017/07/04)
 
 * New features:

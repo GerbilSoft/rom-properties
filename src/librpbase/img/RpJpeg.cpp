@@ -380,6 +380,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 
 			// Create the image.
 			img = new rp_image(cinfo.output_width, cinfo.output_height, rp_image::FORMAT_CI8);
+			if (!img->isValid()) {
+				// Could not allocate the image.
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
+			}
 
 			// Create a grayscale palette.
 			uint32_t *img_palette = img->palette();
@@ -425,6 +431,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 			cinfo.out_color_space = JCS_RGB;
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			if (!img->isValid()) {
+				// Could not allocate the image.
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
+			}
 			break;
 		}
 
@@ -440,6 +452,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 			cinfo.out_color_space = JCS_CMYK;
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			if (!img->isValid()) {
+				// Could not allocate the image.
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
+			}
 			break;
 
 		default:

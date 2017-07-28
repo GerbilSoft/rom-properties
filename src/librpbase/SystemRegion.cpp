@@ -22,14 +22,15 @@
 #include "SystemRegion.hpp"
 #include "librpbase/common.h"
 
+// One-time initialization.
+#include "threads/pthread_once.h"
+
 #ifdef _WIN32
 #include "libwin32common/RpWin32_sdk.h"
-#include "threads/InitOnceExecuteOnceXP.h"
 #else
 #include <cctype>
 #include <clocale>
 #include <cstring>
-#include <pthread.h>
 #endif
 
 namespace LibRpBase {
@@ -51,21 +52,6 @@ class SystemRegionPrivate
 		 ** both country code and language code at the same time.       **/
 
 		// One-time initialization variable and functions.
-#ifdef _WIN32
-		static INIT_ONCE once_control;
-
-		/**
-		 * Get the system region information.
-		 * Called by InitOnceExecuteOnce().
-		 * Country code will be stored in 'cc'.
-		 * Language code will be stored in 'lc'.
-		 * @param once
-		 * @param param
-		 * @param context
-		 * @return TRUE on success; FALSE on error.
-		 */
-		static BOOL WINAPI getSystemRegion(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context);
-#else /* !_WIN32 */
 		static pthread_once_t once_control;
 
 		/**
@@ -75,33 +61,24 @@ class SystemRegionPrivate
 		 * Language code will be stored in 'lc'.
 		 */
 		static void getSystemRegion(void);
-#endif /* _WIN32 */
 };
 
 // Country and language codes.
 uint32_t SystemRegionPrivate::cc = 0;
 uint32_t SystemRegionPrivate::lc = 0;
 
-// One-time initialization variable and functions.
-#ifdef _WIN32
-INIT_ONCE SystemRegionPrivate::once_control = INIT_ONCE_STATIC_INIT;
+// pthread_once() control variable.
+pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 
+#ifdef _WIN32
 /**
  * Get the system region information.
  * Called by InitOnceExecuteOnce().
  * Country code will be stored in 'cc'.
  * Language code will be stored in 'lc'.
- * @param once
- * @param param
- * @param context
- * @return TRUE on success; FALSE on error.
  */
-BOOL WINAPI SystemRegionPrivate::getSystemRegion(_Inout_ PINIT_ONCE_XP once, _Inout_opt_ PVOID param, _Out_opt_ LPVOID *context)
+void SystemRegionPrivate::getSystemRegion(void)
 {
-	RP_UNUSED(once);
-	RP_UNUSED(param);
-	RP_UNUSED(context);
-
 	// References:
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
 	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
@@ -156,14 +133,10 @@ BOOL WINAPI SystemRegionPrivate::getSystemRegion(_Inout_ PINIT_ONCE_XP once, _In
 			lc = 0;
 			break;
 	}
-
-	// System region information retrieved.
-	return TRUE;
 }
 
 #else
 
-pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
 
 /**
  * Get the system region information.
@@ -244,13 +217,8 @@ void SystemRegionPrivate::getSystemRegion(void)
  */
 uint32_t SystemRegion::getCountryCode(void)
 {
-#ifdef _WIN32
-	InitOnceExecuteOnce(&SystemRegionPrivate::once_control,
-		SystemRegionPrivate::getSystemRegion, nullptr, nullptr);
-#else /* !_WIN32 */
 	pthread_once(&SystemRegionPrivate::once_control,
 		SystemRegionPrivate::getSystemRegion);
-#endif /* _WIN32 */
 	return SystemRegionPrivate::cc;
 }
 
@@ -266,13 +234,8 @@ uint32_t SystemRegion::getCountryCode(void)
  */
 uint32_t SystemRegion::getLanguageCode(void)
 {
-#ifdef _WIN32
-	InitOnceExecuteOnce(&SystemRegionPrivate::once_control,
-		SystemRegionPrivate::getSystemRegion, nullptr, nullptr);
-#else /* !_WIN32 */
 	pthread_once(&SystemRegionPrivate::once_control,
 		SystemRegionPrivate::getSystemRegion);
-#endif /* _WIN32 */
 	return SystemRegionPrivate::lc;
 }
 

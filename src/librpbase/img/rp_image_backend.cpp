@@ -30,13 +30,6 @@ namespace LibRpBase {
 
 static inline int calc_stride(int width, rp_image::Format format)
 {
-	assert(width > 0);
-	assert(format > rp_image::FORMAT_NONE);
-	assert(format <= rp_image::FORMAT_ARGB32);
-
-	if (width <= 0)
-		return 0;
-
 	switch (format) {
 		case rp_image::FORMAT_CI8:
 			return width;
@@ -58,6 +51,23 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	, format(format)
 	, tr_idx(-1)
 {
+	// Sanity check: Maximum of 32768x32768.
+	// Also make sure the format is valid.
+	assert(width > 0);
+	assert(width <= 32768);
+	assert(height > 0);
+	assert(height <= 32768);
+	assert(format > rp_image::FORMAT_NONE);
+	assert(format <= rp_image::FORMAT_ARGB32);
+	if (width <= 0 || width > 32768 ||
+	    height <= 0 || height > 32768 ||
+	    format < rp_image::FORMAT_NONE || format > rp_image::FORMAT_ARGB32)
+	{
+		// Invalid values.
+		clear_properties();
+		return;
+	}
+
 	// Calculate the stride.
 	// NOTE: If format == FORMAT_NONE, the subclass is
 	// managing width/height/format.

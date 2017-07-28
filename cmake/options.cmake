@@ -56,6 +56,9 @@ ENDIF()
 # Enable decryption for newer ROM and disc images.
 OPTION(ENABLE_DECRYPTION "Enable decryption for newer ROM and disc images." ON)
 
+# Enable S3TC decompression. If disabled, uses S2TC.
+OPTION(ENABLE_S3TC "Enable S3TC decompression. If disabled, uses S2TC." ON)
+
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...
 IF(MSVC)

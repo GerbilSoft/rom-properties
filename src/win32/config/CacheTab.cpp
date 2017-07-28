@@ -390,6 +390,16 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 					// Clear the system thumbnail cache. (XP)
 					// TODO
 					break;
+				case IDC_CACHE_XP_FIND_DRIVES:
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_SHOW);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_HIDE);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_HIDE);
+					break;
+				case IDC_CACHE_XP_FIND_PATH:
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_DRIVES), SW_HIDE);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_PATH), SW_SHOW);
+					ShowWindow(GetDlgItem(d->hWndPropSheet, IDC_CACHE_XP_BROWSE), SW_SHOW);
+					break;
 				default:
 					break;
 			}

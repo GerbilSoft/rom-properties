@@ -69,12 +69,41 @@
 #endif /* __cplusplus */
 
 // Deprecated function attribute.
-#if defined(__GNUC__)
-#define DEPRECATED __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED __declspec(deprecated)
+#ifndef DEPRECATED
+# if defined(__GNUC__)
+#  define DEPRECATED __attribute__ ((deprecated))
+# elif defined(_MSC_VER)
+#  define DEPRECATED __declspec(deprecated)
+# else
+#  define DEPRECATED
+# endif
+#endif
+
+// Force inline attribute.
+#if !defined(FORCE_INLINE) && (!defined(_DEBUG) || defined(NDEBUG))
+# if defined(__GNUC__)
+#  define FORCE_INLINE __attribute__((always_inline))
+# elif defined(_MSC_VER)
+#  define FORCE_INLINE __forceinline
+# else
+#  define FORCE_INLINE inline
+# endif
 #else
-#define DEPRECATED
+# ifdef _MSC_VER
+#  define FORCE_INLINE __inline
+# else
+#  define FORCE_INLINE inline
+# endif
+#endif
+
+// gcc branch prediction hints.
+// Should be used in combination with profile-guided optimization.
+#ifdef __GNUC__
+# define likely(x)	__builtin_expect(!!(x), 1)
+# define unlikely(x)	__builtin_expect(!!(x), 0)
+#else
+# define likely(x)	x
+# define unlikely(x)	x
 #endif
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

@@ -51,8 +51,8 @@ rp_image *rp_image::dup(void) const
 	assert(height != 0);
 
 	rp_image *img = new rp_image(width, height, format);
-	if (width == 0 || height == 0) {
-		// One of the dimensions is 0.
+	if (!img->isValid()) {
+		// Image is invalid. Return it immediately.
 		return img;
 	}
 
@@ -99,6 +99,75 @@ rp_image *rp_image::dup(void) const
 }
 
 /**
+ * Duplicate the rp_image, converting to ARGB32 if necessary.
+ * @return New ARGB32 rp_image with a copy of the image data.
+ */
+rp_image *rp_image::dup_ARGB32(void) const
+{
+	RP_D(const rp_image);
+	if (d->backend->format == FORMAT_ARGB32) {
+		// Already in ARGB32.
+		// Do a direct dup().
+		return this->dup();
+	} else if (d->backend->format != FORMAT_CI8) {
+		// Only CI8->ARGB32 is supported right now.
+		return nullptr;
+	}
+
+	const int width = d->backend->width;
+	const int height = d->backend->height;
+	const rp_image::Format format = d->backend->format;
+	assert(width != 0);
+	assert(height != 0);
+
+	// TODO: Handle palette length smaller than 256.
+	assert(d->backend->palette_len() == 256);
+	if (d->backend->palette_len() != 256) {
+		return nullptr;
+	}
+
+	rp_image *img = new rp_image(width, height, FORMAT_ARGB32);
+	if (!img->isValid()) {
+		// Image is invalid. Something went wrong.
+		delete img;
+		return nullptr;
+	}
+
+	// Copy the image, converting from CI8 to ARGB32.
+	uint32_t *dest = static_cast<uint32_t*>(img->bits());
+	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const uint32_t *pal = d->backend->palette();
+	const int dest_adj = (img->stride() / 4) - width;
+	const int src_adj = d->backend->stride - width;
+
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
+		// Convert up to 4 pixels per loop iteration.
+		unsigned int x;
+		for (x = (unsigned int)width; x > 3; x -= 4) {
+			dest[0] = pal[src[0]];
+			dest[1] = pal[src[1]];
+			dest[2] = pal[src[2]];
+			dest[3] = pal[src[3]];
+			dest += 4;
+			src += 4;
+		}
+		// Remaining pixels.
+		for (; x > 0; x--) {
+			*dest = pal[*src];
+			dest++;
+			src++;
+		}
+
+		// Next line.
+		dest += dest_adj;
+		src += src_adj;
+	}
+
+	// Converted to ARGB32.
+	return img;
+}
+
+/**
  * Square the rp_image.
  *
  * If the width and height don't match, transparent rows
@@ -130,6 +199,11 @@ rp_image *rp_image::squared(void) const
 			return this->dup();
 		}
 		sq_img = new rp_image(width, width, rp_image::FORMAT_ARGB32);
+		if (!sq_img->isValid()) {
+			// Could not allocate the image.
+			delete sq_img;
+			return nullptr;
+		}
 
 		const int addToTop = (width-height)/2;
 		const int addToBottom = addToTop + ((width-height)%2);
@@ -165,6 +239,11 @@ rp_image *rp_image::squared(void) const
 			return this->dup();
 		}
 		sq_img = new rp_image(height, height, rp_image::FORMAT_ARGB32);
+		if (!sq_img->isValid()) {
+			// Could not allocate the image.
+			delete sq_img;
+			return nullptr;
+		}
 
 		// NOTE: Mega Man Gold amiibo is "shifting" by 1px when
 		// refreshing in Win7. (switching from icon to thumbnail)

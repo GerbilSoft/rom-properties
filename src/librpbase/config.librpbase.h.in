@@ -100,10 +100,21 @@
 #define XML_IS_DLL 1
 #endif
 
+/* Define to 1 if S3TC decompression should be enabled. */
+#cmakedefine ENABLE_S3TC 1
+
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
 #cmakedefine HAVE_ICONV 1
+
+/** Threading model **/
+
+/* Define to 1 if the system uses Win32 threads. */
+#cmakedefine HAVE_WIN32_THREADS 1
+
+/* Define to 1 if the system uses POSIX threads. */
+#cmakedefine HAVE_PTHREADS 1
 
 /* Define to 1 if the system has a 16-bit wchar_t. */
 #ifdef _WIN32

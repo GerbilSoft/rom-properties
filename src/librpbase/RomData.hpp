@@ -227,6 +227,7 @@ class RomData
 			FTYPE_EMMC_DUMP,		// eMMC dump
 			FTYPE_TITLE_CONTENTS,		// Title contents, e.g. NCCH.
 			FTYPE_FIRMWARE_BINARY,		// Firmware binary, e.g. 3DS FIRM.
+			FTYPE_TEXTURE_FILE,		// Texture file, e.g. Sega PVR.
 
 			FTYPE_LAST			// End of FileType.
 		};
@@ -273,6 +274,7 @@ class RomData
 			IMG_INT_ICON = 0,	// Internal icon, e.g. DS launcher icon
 			IMG_INT_BANNER,		// Internal banner, e.g. GameCube discs
 			IMG_INT_MEDIA,		// Internal media scan, e.g. Dreamcast discs
+			IMG_INT_IMAGE,		// Internal image, e.g. PVR images.
 
 			// External images are downloaded from websites,
 			// such as GameTDB.
@@ -284,7 +286,7 @@ class RomData
 
 			// Ranges.
 			IMG_INT_MIN = IMG_INT_ICON,
-			IMG_INT_MAX = IMG_INT_MEDIA,
+			IMG_INT_MAX = IMG_INT_IMAGE,
 			IMG_EXT_MIN = IMG_EXT_MEDIA,
 			IMG_EXT_MAX = IMG_EXT_BOX,
 
@@ -303,6 +305,7 @@ class RomData
 			IMGBF_INT_ICON   = (1 << IMG_INT_ICON),		// Internal icon, e.g. DS launcher icon
 			IMGBF_INT_BANNER = (1 << IMG_INT_BANNER),	// Internal banner, e.g. GameCube discs
 			IMGBF_INT_MEDIA  = (1 << IMG_INT_MEDIA),	// Internal media scan, e.g. Dreamcast discs
+			IMGBF_INT_IMAGE  = (1 << IMG_INT_IMAGE),	// Internal image, e.g. PVR images.
 
 			// External images are downloaded from websites,
 			// such as GameTDB.

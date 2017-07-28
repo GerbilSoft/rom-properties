@@ -57,9 +57,6 @@ CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
 INCLUDE(CheckCXX11LambdaAsFunctionPointer)
 CHECK_CXX11_LAMBDA_AS_FUNCTION_POINTER(HAVE_LAMBDA_AS_FUNCTION_POINTER)
 
-# Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
-
 # Sources.
 SET(librpbase_SRCS
 	byteswap.c
@@ -74,7 +71,13 @@ SET(librpbase_SRCS
 	img/rp_image_backend.cpp
 	img/rp_image_ops.cpp
 	img/RpImageLoader.cpp
-	img/ImageDecoder.cpp
+	img/ImageDecoder_Linear.cpp
+	img/ImageDecoder_GCN.cpp
+	img/ImageDecoder_NDS.cpp
+	img/ImageDecoder_N3DS.cpp
+	img/ImageDecoder_S3TC.cpp
+	img/ImageDecoder_DC.cpp
+	img/un-premultiply.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
 	img/IconAnimHelper.cpp
@@ -109,6 +112,8 @@ SET(librpbase_H
 	img/rp_image_backend.hpp
 	img/RpImageLoader.hpp
 	img/ImageDecoder.hpp
+	img/ImageDecoder_p.hpp
+	img/un-premultiply.hpp
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/IconAnimData.hpp
@@ -144,14 +149,12 @@ IF(WIN32)
 		file/win32/IStreamWrapper.cpp
 		img/GdiplusHelper.cpp
 		img/RpGdiplusBackend.cpp
-		threads/InitOnceExecuteOnceXP.c
 		)
 	SET(librpbase_OS_H
 		TextFuncs_wchar.hpp
 		file/win32/IStreamWrapper.hpp
 		img/GdiplusHelper.hpp
 		img/RpGdiplusBackend.hpp
-		threads/InitOnceExecuteOnceXP.h
 		)
 ELSE(WIN32)
 	SET(librpbase_OS_SRCS
@@ -205,13 +208,17 @@ SET(librpbase_THREAD_H
 	threads/Atomics.h
 	threads/Semaphore.hpp
 	threads/Mutex.hpp
+	threads/pthread_once.h
 	)
 IF(CMAKE_USE_WIN32_THREADS_INIT)
+	SET(HAVE_WIN32_THREADS 1)
 	SET(librpbase_THREAD_SRCS
 		threads/SemaphoreWin32.cpp
 		threads/MutexWin32.cpp
+		threads/pthread_once.c
 		)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
+	SET(HAVE_PTHREADS 1)
 	SET(librpbase_THREAD_SRCS
 		threads/SemaphorePosix.cpp
 		threads/MutexPosix.cpp
@@ -219,6 +226,9 @@ ELSEIF(CMAKE_USE_PTHREADS_INIT)
 ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
 
 ######################
 # Build the library. #
