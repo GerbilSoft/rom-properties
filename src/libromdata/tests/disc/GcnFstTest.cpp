@@ -428,7 +428,7 @@ TEST_P(GcnFstTest, FstPrint)
 		string(reinterpret_cast<const char*>(fst_txt_buf.data()), fst_txt_buf.size()));
 
 	// Print the FST.bin to a new stringstream.
-	FstFileCount fc;
+	FstFileCount fc = {0, 0};
 	stringstream fst_text_actual;
 	fstPrint(m_fst, fst_text_actual, &fc);
 
