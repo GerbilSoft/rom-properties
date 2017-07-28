@@ -386,7 +386,6 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
-	rp_image *ret_img = nullptr;
 	const DDS_PIXELFORMAT &ddspf = ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
@@ -431,43 +430,43 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
-				ret_img = ImageDecoder::fromDXT1(
+				img = ImageDecoder::fromDXT1(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT2:
-				ret_img = ImageDecoder::fromDXT2(
+				img = ImageDecoder::fromDXT2(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT3:
-				ret_img = ImageDecoder::fromDXT3(
+				img = ImageDecoder::fromDXT3(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT4:
-				ret_img = ImageDecoder::fromDXT4(
+				img = ImageDecoder::fromDXT4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_DXT5:
-				ret_img = ImageDecoder::fromDXT5(
+				img = ImageDecoder::fromDXT5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI1:
-				ret_img = ImageDecoder::fromBC4(
+				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI2:
-				ret_img = ImageDecoder::fromBC5(
+				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
@@ -519,14 +518,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		switch (bytespp) {
 			case sizeof(uint8_t):
 				// 8-bit image. (Usually luminance or alpha.)
-				ret_img = ImageDecoder::fromLinear8(px_format,
+				img = ImageDecoder::fromLinear8(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
-				ret_img = ImageDecoder::fromLinear16(px_format,
+				img = ImageDecoder::fromLinear16(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint16_t*>(buf.get()),
 					expected_size, stride);
@@ -534,14 +533,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 			case 24/8:
 				// 24-bit RGB image.
-				ret_img = ImageDecoder::fromLinear24(
+				img = ImageDecoder::fromLinear24(
 					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
 				// 32-bit RGB image.
-				ret_img = ImageDecoder::fromLinear32(px_format,
+				img = ImageDecoder::fromLinear32(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					reinterpret_cast<const uint32_t*>(buf.get()),
 					expected_size, stride);
@@ -554,7 +553,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 	}
 
-	return ret_img;
+	return img;
 }
 
 /** DirectDrawSurface **/

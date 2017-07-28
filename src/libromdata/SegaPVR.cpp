@@ -350,18 +350,17 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			return nullptr;
 	}
 
-	rp_image *ret_img = nullptr;
 	switch (pvrHeader.pvr.img_data_type) {
 		case PVR_IMG_SQUARE_TWIDDLED:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP:
 		case PVR_IMG_SQUARE_TWIDDLED_MIPMAP_ALT:
-			ret_img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
+			img = ImageDecoder::fromDreamcastSquareTwiddled16(px_format,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case PVR_IMG_RECTANGLE:
-			ret_img = ImageDecoder::fromLinear16(px_format,
+			img = ImageDecoder::fromLinear16(px_format,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
@@ -373,7 +372,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expect_size - pal_siz;
 
-			ret_img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -395,7 +394,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				return nullptr;
 			}
 
-			ret_img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16<false>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size, pal_buf.get(), pal_siz);
 			break;
@@ -409,7 +408,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			const uint8_t *const img_buf = buf.get() + pal_siz;
 			const unsigned int img_siz = expect_size - pal_siz;
 
-			ret_img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				img_buf, img_siz, pal_buf, pal_siz);
 			break;
@@ -432,7 +431,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 				return nullptr;
 			}
 
-			ret_img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
+			img = ImageDecoder::fromDreamcastVQ16<true>(px_format,
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size, pal_buf.get(), pal_siz);
 			break;
@@ -443,7 +442,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 			return nullptr;
 	}
 
-	return ret_img;
+	return img;
 }
 
 /**
@@ -511,31 +510,30 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 		return nullptr;
 	}
 
-	rp_image *ret_img = nullptr;
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_IA8:
 			// FIXME: Untested.
-			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_IA8,
+			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_IA8,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case GVR_IMG_RGB565:
 			// FIXME: Untested.
-			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB565,
+			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB565,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case GVR_IMG_RGB5A3:
-			ret_img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
+			img = ImageDecoder::fromGcn16(ImageDecoder::PXF_RGB5A3,
 				pvrHeader.width, pvrHeader.height,
 				reinterpret_cast<uint16_t*>(buf.get()), expect_size);
 			break;
 
 		case GVR_IMG_DXT1:
 			// TODO: Determine if color 3 should be black or transparent.
-			ret_img = ImageDecoder::fromDXT1_GCN(
+			img = ImageDecoder::fromDXT1_GCN(
 				pvrHeader.width, pvrHeader.height,
 				buf.get(), expect_size);
 			break;
@@ -545,7 +543,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 			return nullptr;
 	}
 
-	return ret_img;
+	return img;
 }
 
 /** SegaPVR **/
