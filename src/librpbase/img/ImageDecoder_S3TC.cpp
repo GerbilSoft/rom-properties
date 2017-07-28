@@ -248,7 +248,7 @@ static inline void decode_DXTn_tile_color_palette_S2TC(argb32_t pal[4], const dx
  * @param c0c1	For S2TC, select c0 or c1.
  * @return Alpha channel value.
  */
-static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alpha[2], int c0c1)
+static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alpha[2], unsigned int c0c1)
 {
 	// S2TC fallback.
 	unsigned int a_ret;
@@ -281,7 +281,7 @@ static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alph
  * @param px_number Pixel number.
  * @return 0 or 1 for c0/c1 or a0/a1.
  */
-static FORCE_INLINE int S2TC_select_c0c1(int px_number)
+static FORCE_INLINE unsigned int S2TC_select_c0c1(unsigned int px_number)
 {
 	// TODO: constexpr
 	return (px_number & 1) ^ ((px_number & 4) >> 2);
@@ -386,7 +386,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 					unsigned int sel = indexes & 3;
 					if (sel == 2) {
 						// Select c0 or c1, depending on pixel number.
-						sel = S2TC_select_c0c1(i);
+						sel = S2TC_select_c0c1((unsigned int)i);
 					}
 					tileBuf[i] = pal[sel].u32;
 				}
@@ -488,7 +488,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 				unsigned int sel = indexes & 3;
 				if (sel == 2) {
 					// Select c0 or c1, depending on pixel number.
-					sel = S2TC_select_c0c1((int)i);
+					sel = S2TC_select_c0c1(i);
 				}
 				tileBuf[i] = pal[sel].u32;
 			}
@@ -627,7 +627,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 				unsigned int sel = indexes & 3;
 				if (sel == 2) {
 					// Select c0 or c1, depending on pixel number.
-					sel = S2TC_select_c0c1((int)i);
+					sel = S2TC_select_c0c1(i);
 				}
 				argb32_t color = pal[sel];
 				// TODO: Verify alpha value handling for DXT3.
@@ -764,7 +764,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 			// Process the 16 color and alpha indexes.
 			uint32_t indexes = le32_to_cpu(dxt5_src->colors.indexes);
 			for (unsigned int i = 0; i < 16; i++, indexes >>= 2, alpha48 >>= 3) {
-				const int c0c1 = S2TC_select_c0c1((int)i);
+				const unsigned int c0c1 = S2TC_select_c0c1(i);
 				unsigned int sel = indexes & 3;
 				if (sel == 2) {
 					// Select c0 or c1, depending on pixel number.
@@ -875,7 +875,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 			color.u32 = 0xFF000000;	// opaque black
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
 				// Decode the red channel value.
-				const int c0c1 = S2TC_select_c0c1((int)i);
+				const unsigned int c0c1 = S2TC_select_c0c1(i);
 				color.r = decode_DXT5_alpha_S2TC(red48 & 7, bc4_src->red.values, c0c1);
 				tileBuf[i] = color.u32;
 			}
@@ -981,7 +981,7 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 			color.u32 = 0xFF000000;	// opaque black
 			for (unsigned int i = 0; i < 16; i++, red48 >>= 3) {
 				// Decode the red and green channel values.
-				const int c0c1 = S2TC_select_c0c1((int)i);
+				const unsigned int c0c1 = S2TC_select_c0c1(i);
 				color.r = decode_DXT5_alpha_S2TC(red48   & 7, bc5_src->red.values,   c0c1);
 				color.g = decode_DXT5_alpha_S2TC(green48 & 7, bc5_src->green.values, c0c1);
 				tileBuf[i] = color.u32;
