@@ -802,7 +802,7 @@ inline uint32_t ImageDecoderPrivate::A2B10G10R10_to_ARGB32(uint32_t px32)
 	uint32_t argb;
 	argb = ((px32 << 14) & 0xFF0000) |	// Red
 	       ((px32 >>  4) & 0x00FF00) |	// Green
-	       ((px32 >> 14) & 0x0000FF) |	// Blue
+	       ((px32 >> 22) & 0x0000FF) |	// Blue
 	       a2_lookup[px32 >> 30];		// Alpha
 	return argb;
 }
