@@ -82,7 +82,7 @@
 // Force inline attribute.
 #if !defined(FORCE_INLINE) && (!defined(_DEBUG) || defined(NDEBUG))
 # if defined(__GNUC__)
-#  define FORCE_INLINE __attribute__((always_inline))
+#  define FORCE_INLINE inline __attribute__((always_inline))
 # elif defined(_MSC_VER)
 #  define FORCE_INLINE __forceinline
 # else
