@@ -1,4 +1,4 @@
-PROJECT(libromdata-tests)
+PROJECT(librpbase-tests)
 
 # Top-level src directory.
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
@@ -21,7 +21,7 @@ ADD_EXECUTABLE(RpImageLoaderTest
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(RpImageLoaderTest win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest romdata8)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest rpbase8)
 TARGET_LINK_LIBRARIES(RpImageLoaderTest gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -62,7 +62,7 @@ IF(ENABLE_DECRYPTION)
 		gtest_init.cpp
 		AesCipherTest.cpp
 		)
-	TARGET_LINK_LIBRARIES(AesCipherTest romdata8)
+	TARGET_LINK_LIBRARIES(AesCipherTest rpbase8)
 	TARGET_LINK_LIBRARIES(AesCipherTest gtest)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(AesCipherTest win32common)
@@ -77,7 +77,7 @@ IF(ENABLE_DECRYPTION)
 	ADD_TEST(NAME AesCipherTest COMMAND AesCipherTest)
 ENDIF(ENABLE_DECRYPTION)
 
-# TextFuncsTest. (libromdata8)
+# TextFuncsTest. (librpbase8)
 ADD_EXECUTABLE(TextFuncsTest8
 	gtest_init.cpp
 	TextFuncsTest.cpp
@@ -85,13 +85,13 @@ ADD_EXECUTABLE(TextFuncsTest8
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(TextFuncsTest8 win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(TextFuncsTest8 romdata8)
+TARGET_LINK_LIBRARIES(TextFuncsTest8 rpbase8)
 TARGET_LINK_LIBRARIES(TextFuncsTest8 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest8)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest8 CONSOLE)
 ADD_TEST(NAME TextFuncsTest8 COMMAND TextFuncsTest8)
 
-# TextFuncsTest. (libromdata16)
+# TextFuncsTest. (librpbase16)
 ADD_EXECUTABLE(TextFuncsTest16
 	gtest_init.cpp
 	TextFuncsTest.cpp
@@ -100,51 +100,8 @@ ADD_EXECUTABLE(TextFuncsTest16
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(TextFuncsTest16 win32common)
 ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(TextFuncsTest16 romdata16)
+TARGET_LINK_LIBRARIES(TextFuncsTest16 rpbase16)
 TARGET_LINK_LIBRARIES(TextFuncsTest16 gtest)
 DO_SPLIT_DEBUG(TextFuncsTest16)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest16 CONSOLE)
 ADD_TEST(NAME TextFuncsTest16 COMMAND TextFuncsTest16)
-
-# ImageDecoder test.
-ADD_EXECUTABLE(ImageDecoderTest
-	gtest_init.cpp
-	img/ImageDecoderTest.cpp
-	)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(ImageDecoderTest win32common)
-ENDIF(WIN32)
-TARGET_LINK_LIBRARIES(ImageDecoderTest romdata8)
-TARGET_LINK_LIBRARIES(ImageDecoderTest gtest ${ZLIB_LIBRARY})
-TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
-TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
-IF(PNG_LIBRARY)
-	TARGET_LINK_LIBRARIES(ImageDecoderTest ${PNG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${PNG_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${PNG_DEFINITIONS})
-ENDIF(PNG_LIBRARY)
-DO_SPLIT_DEBUG(ImageDecoderTest)
-SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
-ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest)
-
-# Copy the reference images to:
-# - bin/ImageDecoder_data/ (TODO: Subdirectory?)
-# - ${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/
-# NOTE: Although the test executable is in bin/, CTest still
-# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
-# Hence, we have to copy the files to both places.
-FILE(GLOB ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data" img/ImageDecoder_data/*.png img/ImageDecoder_data/*.dds.gz)
-FOREACH(test_image ${ImageDecoderTest_images})
-	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
-			"$<TARGET_FILE_DIR:ImageDecoderTest>/ImageDecoder_data/${test_image}"
-		)
-	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
-			"${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/${test_image}"
-		)
-ENDFOREACH(test_image ${ImageDecoderTest_images})

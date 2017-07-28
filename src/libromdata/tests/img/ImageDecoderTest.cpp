@@ -26,7 +26,6 @@
 
 // zlib and libpng
 #include <zlib.h>
-#include "png_chunks.h"
 
 #ifdef HAVE_PNG
 #include <png.h>
