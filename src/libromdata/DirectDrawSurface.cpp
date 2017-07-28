@@ -62,6 +62,10 @@ class DirectDrawSurfacePrivate : public RomDataPrivate
 	public:
 		// DDS header.
 		DDS_HEADER ddsHeader;
+		DDS_HEADER_DXT10 dxt10Header;
+
+		// Texture data start address.
+		uint32_t texDataStartAddr;
 
 		// Decoded image.
 		rp_image *img;
@@ -345,10 +349,12 @@ ImageDecoder::PixelFormat DirectDrawSurfacePrivate::getPixelFormat(const DDS_PIX
 
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
 	: super(q, file)
+	, texDataStartAddr(0)
 	, img(nullptr)
 {
 	// Clear the DDS header structs.
 	memset(&ddsHeader, 0, sizeof(ddsHeader));
+	memset(&dxt10Header, 0, sizeof(dxt10Header));
 }
 
 DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
@@ -376,9 +382,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	}
 	const uint32_t file_sz = (uint32_t)file->size();
 
-	// Seek to the start of the image data.
-	static const unsigned int img_data_start = sizeof(DDS_HEADER) + 4;
-	int ret = file->seek(img_data_start);
+	// Seek to the start of the texture data.
+	int ret = file->seek(texDataStartAddr);
 	if (ret != 0) {
 		// Seek error.
 		return nullptr;
@@ -415,7 +420,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Verify file size.
-		if (expected_size >= file_sz + img_data_start) {
+		if (expected_size >= file_sz + texDataStartAddr) {
 			// File is too small.
 			return nullptr;
 		}
@@ -502,7 +507,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		const unsigned int expected_size = ddsHeader.dwHeight * stride;
 
 		// Verify file size.
-		if (expected_size >= file_sz + img_data_start) {
+		if (expected_size >= file_sz + texDataStartAddr) {
 			// File is too small.
 			return nullptr;
 		}
@@ -585,24 +590,52 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	}
 
 	// Read the DDS magic number and header.
-	uint8_t header[sizeof(DDS_HEADER)+4];
+	uint8_t header[4+sizeof(DDS_HEADER)+sizeof(DDS_HEADER_DXT10)];
 	d->file->rewind();
 	size_t size = d->file->read(header, sizeof(header));
-	if (size != sizeof(header))
+	if (size < 4+sizeof(DDS_HEADER))
 		return;
 
 	// Check if this DDS texture is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(header);
+	info.header.size = (uint32_t)size;
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DDS.
 	info.szFile = file->size();
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (d->isValid) {
+		// Is this a DXT10 image?
+		const DDS_HEADER *const pSrcHeader = reinterpret_cast<const DDS_HEADER*>(&header[4]);
+		if (le32_to_cpu(pSrcHeader->ddspf.dwFourCC) == DDPF_FOURCC_DX10) {
+			if (size < sizeof(header)) {
+				// DXT10 header wasn't read.
+				d->isValid = false;
+				return;
+			}
+
+			// Save the DXT10 header.
+			memcpy(&d->dxt10Header, &header[4+sizeof(DDS_HEADER)], sizeof(d->dxt10Header));
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			// Byteswap the DXT10 header.
+			d->dxt10Header.dxgiFormat = (DXGI_FORMAT)le32_to_cpu((uint32_t)d->dxt10Header.dxgiFormat);
+			d->dxt10Header.resourceDimension = (D3D10_RESOURCE_DIMENSION)le32_to_cpu((uint32_t)d->dxt10Header.resourceDimension);
+			d->dxt10Header.miscFlag   = le32_to_cpu(d->dxt10Header.miscFlag);
+			d->dxt10Header.arraySize  = le32_to_cpu(d->dxt10Header.arraySize);
+			d->dxt10Header.miscFlags2 = le32_to_cpu(d->dxt10Header.miscFlags2);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+			// Texture data start address.
+			d->texDataStartAddr = sizeof(header);
+		} else {
+			// No DXT10 header.
+			d->texDataStartAddr = 4+sizeof(DDS_HEADER);
+		}
+
 		// Save the DDS header.
-		memcpy(&d->ddsHeader, &header[4], sizeof(d->ddsHeader));
+		memcpy(&d->ddsHeader, pSrcHeader, sizeof(d->ddsHeader));
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 		// Byteswap the DDS header.
@@ -834,7 +867,7 @@ int DirectDrawSurface::loadFieldData(void)
 
 	// DDS header.
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Texture size.
 	if (ddsHeader->dwFlags & DDSD_DEPTH) {
@@ -905,6 +938,83 @@ int DirectDrawSurface::loadFieldData(void)
 		d->fields->addField_string(_RP("Pixel Format"), _RP("Unknown"));
 	}
 
+	if (ddspf.dwFourCC == DDPF_FOURCC_DX10) {
+		// DX10 texture.
+		const DDS_HEADER_DXT10 *const dxt10Header = &d->dxt10Header;
+
+		// Texture format.
+		static const rp_char *const dx10_texFormat_tbl[] = {
+			nullptr, _RP("R32G32B32A32_TYPELESS"),				// 0,1
+			_RP("R32G32B32A32_FLOAT"), _RP("R32G32B32A32_UINT"),		// 2,3
+			_RP("R32G32B32A32_SINT"), _RP("R32G32B32_TYPELESS"),		// 4,5
+			_RP("R32G32B32_FLOAT"),	_RP("R32G32B32_UINT"),			// 6,7
+			_RP("R32G32B32_SINT"), _RP("R16G16B16A16_TYPELESS"),		// 8,9
+			_RP("R16G16B16A16_FLOAT"), _RP("R16G16B16A16_UNORM"),		// 10,11
+			_RP("R16G16B16A16_UINT"), _RP("R16G16B16A16_SNORM"),		// 12,13
+			_RP("R16G16B16A16_SINT"), _RP("R32G32_TYPELESS"),		// 14,15
+			_RP("R32G32_FLOAT"), _RP("R32G32_UINT"),			// 16,17
+			_RP("R32G32_SINT"), _RP("R32G8X24_TYPELESS"),			// 18,19
+			_RP("D32_FLOAT_S8X24_UINT"), _RP("R32_FLOAT_X8X24_TYPELESS"),	// 20,21
+			_RP("X32_TYPELESS_G8X24_UINT"),	_RP("R10G10B10A2_TYPELESS"),	// 22,23
+			_RP("R10G10B10A2_UNORM"), _RP("R10G10B10A2_UINT"),		// 24,25
+			_RP("R11G11B10_FLOAT"), _RP("R8G8B8A8_TYPELESS"),		// 26,27
+			_RP("R8G8B8A8_UNORM"), _RP("R8G8B8A8_UNORM_SRGB"),		// 28,29
+			_RP("R8G8B8A8_UINT"), _RP("R8G8B8A8_SNORM"),			// 30,31
+			_RP("R8G8B8A8_SINT"), _RP("R16G16_TYPELESS"),			// 32,33
+			_RP("R16G16_FLOAT"), _RP("R16G16_UNORM"),			// 34,35
+			_RP("R16G16_UINT"), _RP("R16G16_SNORM"),			// 36,37
+			_RP("R16G16_SINT"), _RP("R32_TYPELESS"),			// 38,39
+			_RP("D32_FLOAT"), _RP("R32_FLOAT"),				// 40,41
+			_RP("R32_UINT"), _RP("R32_SINT"),				// 42,43
+			_RP("R24G8_TYPELESS"), _RP("D24_UNORM_S8_UINT"),		// 44,45
+			_RP("R24_UNORM_X8_TYPELESS"), _RP("X24_TYPELESS_G8_UINT"),	// 46,47
+			_RP("R8G8_TYPELESS"), _RP("R8G8_UNORM"),			// 48,49
+			_RP("R8G8_UINT"), _RP("R8G8_SNORM"),				// 50,51
+			_RP("R8G8_SINT"), _RP("R16_TYPELESS"),				// 52,53
+			_RP("R16_FLOAT"), _RP("D16_UNORM"),				// 54,55
+			_RP("R16_UNORM"), _RP("R16_UINT"),				// 56,57
+			_RP("R16_SNORM"), _RP("R16_SINT"),				// 58,59
+			_RP("R8_TYPELESS"), _RP("R8_UNORM"),				// 60,61
+			_RP("R8_UINT"), _RP("R8_SNORM"),				// 62,63
+			_RP("R8_SINT"), _RP("A8_UNORM"),				// 64,65
+			_RP("R1_UNORM"), _RP("R9G9B9E5_SHAREDEXP"),			// 66,67
+			_RP("R8G8_B8G8_UNORM"), _RP("G8R8_G8B8_UNORM"),			// 68,69
+			_RP("BC1_TYPELESS"), _RP("BC1_UNORM"),				// 70,71
+			_RP("BC1_UNORM_SRGB"), _RP("BC2_TYPELESS"),			// 72,73
+			_RP("BC2_UNORM"), _RP("BC2_UNORM_SRGB"),			// 74,75
+			_RP("BC3_TYPELESS"), _RP("BC3_UNORM"),				// 76,77
+			_RP("BC3_UNORM_SRGB"), _RP("BC4_TYPELESS"),			// 78,79
+			_RP("BC4_UNORM"), _RP("BC4_SNORM"),				// 80,81
+			_RP("BC5_TYPELESS"), _RP("BC5_UNORM"),				// 82,83
+			_RP("BC5_SNORM"), _RP("B5G6R5_UNORM"),				// 84,85
+			_RP("B5G5R5A1_UNORM"), _RP("B8G8R8A8_UNORM"),			// 86,87
+			_RP("B8G8R8X8_UNORM"), _RP("R10G10B10_XR_BIAS_A2_UNORM"),	// 88,89
+			_RP("B8G8R8A8_TYPELESS"), _RP("B8G8R8A8_UNORM_SRGB"),		// 90,91
+			_RP("B8G8R8X8_TYPELESS"), _RP("B8G8R8X8_UNORM_SRGB"),		// 92,93
+			_RP("BC6H_TYPELESS"), _RP("BC6H_UF16"),				// 94,95
+			_RP("BC6H_SF16"), _RP("BC7_TYPELESS"),				// 96,97
+			_RP("BC7_UNORM"), _RP("BC7_UNORM_SRGB"),			// 98,99
+			_RP("AYUV"), _RP("Y410"), _RP("Y416"), _RP("NV12"),		// 100-103
+			_RP("P010"), _RP("P016"), _RP("420_OPAQUE"), _RP("YUY2"),	// 104-107
+			_RP("Y210"), _RP("Y216"), _RP("NV11"), _RP("AI44"),		// 108-111
+			_RP("IA44"), _RP("P8"), _RP("A8P8"), _RP("B4G4R4A4_UNORM"),	// 112-115
+			nullptr, nullptr, nullptr, nullptr,				// 116-119
+			nullptr, nullptr, nullptr, nullptr,				// 120-123
+			nullptr, nullptr, nullptr, nullptr,				// 124-127
+			nullptr, nullptr,						// 128,129
+			_RP("P208"), _RP("V208"), _RP("V408"),				// 130-132
+		};
+
+		const rp_char *texFormat = nullptr;
+		if (dxt10Header->dxgiFormat > 0 && dxt10Header->dxgiFormat < ARRAY_SIZE(dx10_texFormat_tbl)) {
+			texFormat = dx10_texFormat_tbl[dxt10Header->dxgiFormat];
+		} else if (dxt10Header->dxgiFormat == DXGI_FORMAT_FORCE_UINT) {
+			texFormat = _RP("FORCE_UINT");
+		}
+		d->fields->addField_string(_RP("DX10 Format"),
+			(texFormat ? texFormat : rp_sprintf("Unknown (0x%08X)", dxt10Header->dxgiFormat)));
+	}
+
 	// dwFlags
 	static const rp_char *const dwFlags_names[] = {
 		_RP("Caps"), _RP("Height"), _RP("Width"), _RP("Pitch"),		// 0x1-0x8
@@ -933,16 +1043,6 @@ int DirectDrawSurface::loadFieldData(void)
 	d->fields->addField_bitfield(_RP("Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
-#if 0
-	DDSCAPS2_CUBEMAP		= 0x200,
-	DDSCAPS2_CUBEMAP_POSITIVEX	= 0x400,
-	DDSCAPS2_CUBEMAP_NEGATIVEX	= 0x800,
-	DDSCAPS2_CUBEMAP_POSITIVEY	= 0x1000,
-	DDSCAPS2_CUBEMAP_NEGATIVEY	= 0x2000,
-	DDSCAPS2_CUBEMAP_POSITIVEZ	= 0x4000,
-	DDSCAPS2_CUBEMAP_NEGATIVEZ	= 0x8000,
-	DDSCAPS2_VOLUME			= 0x200000,
-#endif
 	// dwCaps2
 	static const rp_char *const dwCaps2_names[] = {
 		nullptr, nullptr, nullptr, nullptr,		// 0x1-0x8
