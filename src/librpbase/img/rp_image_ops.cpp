@@ -116,7 +116,6 @@ rp_image *rp_image::dup_ARGB32(void) const
 
 	const int width = d->backend->width;
 	const int height = d->backend->height;
-	const rp_image::Format format = d->backend->format;
 	assert(width != 0);
 	assert(height != 0);
 
