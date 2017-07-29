@@ -227,8 +227,6 @@ int RpGdiplusBackend::doInitialLock(void)
 {
 	// Lock the bitmap.
 	// It will only be (temporarily) unlocked when converting to HBITMAP.
-	// FIXME: rp_image needs to support "stride", since GDI+ stride is
-	// not necessarily the same as width*sizeof(pixel).
 	Gdiplus::Status status = lock();
 	if (status != Gdiplus::Status::Ok) {
 		// Error locking the GDI+ bitmap.
@@ -281,6 +279,7 @@ const void *RpGdiplusBackend::data(void) const
 
 size_t RpGdiplusBackend::data_len(void) const
 {
+	// FIXME: Last line might not be the full stride...
 	return this->stride * this->height;
 }
 
