@@ -28,11 +28,12 @@
 
 #include "../IRpFile.hpp"
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/ComBase.hpp"
 #include <objidl.h>
 
 namespace LibRpBase {
 
-class IStreamWrapper : public IStream
+class IStreamWrapper : public LibWin32Common::ComBase<IStream>
 {
 	public:
 		/**
@@ -44,7 +45,7 @@ class IStreamWrapper : public IStream
 		virtual ~IStreamWrapper();
 
 	private:
-		typedef IStream super;
+		typedef LibWin32Common::ComBase<IStream> super;
 		RP_DISABLE_COPY(IStreamWrapper)
 
 	public:
@@ -64,8 +65,6 @@ class IStreamWrapper : public IStream
 	public:
 		// IUnknown
 		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) override final;
-		IFACEMETHODIMP_(ULONG) AddRef(void) override final;
-		IFACEMETHODIMP_(ULONG) Release(void) override final;
 
 		// ISequentialStream
 		IFACEMETHODIMP Read(void *pv, ULONG cb, ULONG *pcbRead) override final;
@@ -81,10 +80,6 @@ class IStreamWrapper : public IStream
 		IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) override final;
 		IFACEMETHODIMP Stat(STATSTG *pstatstg, DWORD grfStatFlag) override final;
 		IFACEMETHODIMP Clone(IStream **ppstm) override final;
-
-	private:
-		/* References of this object. */
-		volatile ULONG m_ulRefCount;
 
 	protected:
 		IRpFile *m_file;

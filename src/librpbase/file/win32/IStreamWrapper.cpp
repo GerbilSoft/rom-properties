@@ -36,7 +36,6 @@ namespace LibRpBase {
  * @param file IRpFile.
  */
 IStreamWrapper::IStreamWrapper(IRpFile *file)
-	: m_ulRefCount(1)
 {
 	if (file) {
 		// dup() the file.
@@ -88,48 +87,11 @@ void IStreamWrapper::setFile(IRpFile *file)
 
 IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	// Check if this interface is supported.
-	// NOTE: static_cast<> is required due to vtable shenanigans.
-	// Also, IID_IUnknown must always return the same pointer.
-	// References:
-	// - http://stackoverflow.com/questions/1742848/why-exactly-do-i-need-an-explicit-upcast-when-implementing-queryinterface-in-a
-	// - http://stackoverflow.com/a/2812938
-	if (riid == IID_IUnknown || riid == IID_ISequentialStream) {
-		*ppvObj = static_cast<ISequentialStream*>(this);
-	} else if (riid == IID_IStream) {
-		*ppvObj = static_cast<IStream*>(this);
-	} else {
-		// Interface is not supported.
-		*ppvObj = nullptr;
-		return E_NOINTERFACE;
-	}
-
-	// Make sure we count this reference.
-	AddRef();
-	return NOERROR;
-}
-
-IFACEMETHODIMP_(ULONG) IStreamWrapper::AddRef(void)
-{
-	//InterlockedIncrement(&RP_ulTotalRefCount);	// FIXME
-	InterlockedIncrement(&m_ulRefCount);
-	return m_ulRefCount;
-}
-
-IFACEMETHODIMP_(ULONG) IStreamWrapper::Release(void)
-{
-	ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount);
-	if (ulRefCount == 0) {
-		/* No more references. */
-		delete this;
-	}
-
-	//InterlockedDecrement(&RP_ulTotalRefCount);	// FIXME
-	return ulRefCount;
+	static const QITAB rgqit[] = {
+		QITABENT(IStreamWrapper, IStream),
+		{ 0, 0 }
+	};
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** ISequentialStream **/
