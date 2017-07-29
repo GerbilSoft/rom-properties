@@ -78,13 +78,25 @@ static inline void removeTrailingSlashes(string &path)
  */
 std::string getHomeDirectory(void)
 {
-	const char *const home = getenv("HOME");
-	if (home && home[0] != 0) {
+	string home_dir;
+
+	const char *const home_env = getenv("HOME");
+	if (home_env && home_env[0] != 0) {
 		// HOME variable is set.
-		return string(home);
+		// Make sure the directory is writable.
+		if (isWritableDirectory(home_env)) {
+			// $HOME is writable.
+			home_dir = home_env;
+			// Remove trailing slashes.
+			removeTrailingSlashes(home_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!home_dir.empty()) {
+				return home_dir;
+			}
+		}
 	}
 
-	// HOME variable is not set.
+	// HOME variable is not set or the directory is not writable.
 	// Check the user's pwent.
 	// TODO: Can pwd_result be nullptr?
 	// TODO: Check for ENOMEM?
@@ -103,7 +115,21 @@ std::string getHomeDirectory(void)
 		return string();
 	}
 
-	return string(pwd_result->pw_dir);
+	// Make sure the directory is writable.
+	if (isWritableDirectory(pwd_result->pw_dir)) {
+		// Directory is writable.
+		// $HOME is writable.
+		home_dir = pwd_result->pw_dir;
+		// Remove trailing slashes.
+		removeTrailingSlashes(home_dir);
+		// If the path was "/", this will result in an empty directory.
+		if (!home_dir.empty()) {
+			return home_dir;
+		}
+	}
+
+	// Unable to get the user's home directory...
+	return string();
 }
 
 /**
@@ -134,51 +160,15 @@ string getCacheDirectory(void)
 		}
 	}
 
-	// Fall back to $HOME/.cache/.
-	const char *const home_env = getenv("HOME");
-	if (home_env && home_env[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(home_env)) {
-			// $HOME is a writable directory.
-			cache_dir = home_env;
-			// Remove trailing slashes.
-			removeTrailingSlashes(cache_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!cache_dir.empty()) {
-				cache_dir += "/.cache";
-				return cache_dir;
-			}
-		}
-	}
-
-	// $HOME isn't valid. Use getpwuid_r().
-	char buf[2048];
-	struct passwd pwd;
-	struct passwd *pwd_result;
-	errno = 0;
-	int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
-	if (ret != 0 || !pwd_result) {
-		// getpwuid_r() failed.
+	// Get the user's home directory.
+	cache_dir = getHomeDirectory();
+	if (cache_dir.empty()) {
+		// No home directory...
 		return string();
 	}
 
-	if (pwd_result->pw_dir[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(pwd_result->pw_dir)) {
-			// $HOME is a writable directory.
-			cache_dir = pwd_result->pw_dir;
-			// Remove trailing slashes.
-			removeTrailingSlashes(cache_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!cache_dir.empty()) {
-				cache_dir += "/.cache";
-				return cache_dir;
-			}
-		}
-	}
-
-	// Unable to determine the XDG cache directory.
-	return string();
+	cache_dir += "/.cache";
+	return cache_dir;
 }
 
 /**
@@ -195,51 +185,15 @@ string getConfigDirectory(void)
 
 	// TODO: $XDG_CONFIG_DIRS
 
-	// Fall back to $HOME/.config/.
-	const char *const home_env = getenv("HOME");
-	if (home_env && home_env[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(home_env)) {
-			// $HOME is a writable directory.
-			config_dir = home_env;
-			// Remove trailing slashes.
-			removeTrailingSlashes(config_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!config_dir.empty()) {
-				config_dir += "/.config";
-				return config_dir;
-			}
-		}
-	}
-
-	// $HOME isn't valid. Use getpwuid_r().
-	char buf[2048];
-	struct passwd pwd;
-	struct passwd *pwd_result;
-	errno = 0;
-	int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
-	if (ret != 0 || !pwd_result) {
-		// getpwuid_r() failed.
+	// Get the user's home directory.
+	config_dir = getHomeDirectory();
+	if (config_dir.empty()) {
+		// No home directory...
 		return string();
 	}
 
-	if (pwd_result->pw_dir[0] == '/') {
-		// Make sure this is a writable directory.
-		if (isWritableDirectory(pwd_result->pw_dir)) {
-			// $HOME is a writable directory.
-			config_dir = pwd_result->pw_dir;
-			// Remove trailing slashes.
-			removeTrailingSlashes(config_dir);
-			// If the path was "/", this will result in an empty directory.
-			if (!config_dir.empty()) {
-				config_dir += "/.config";
-				return config_dir;
-			}
-		}
-	}
-
-	// Unable to determine the XDG configuration directory.
-	return string();
+	config_dir += "/.config";
+	return config_dir;
 }
 
 }
