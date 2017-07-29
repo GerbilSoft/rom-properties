@@ -33,7 +33,6 @@
 #include "stdafx.h"
 #include "config.version.h"
 
-#include "RP_ComBase.hpp"
 #include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
 #include "RP_ExtractImage.hpp"
@@ -41,6 +40,7 @@
 #include "RP_ThumbnailProvider.hpp"
 
 // libwin32common
+#include "libwin32common/ComBase.hpp"
 #include "libwin32common/RegKey.hpp"
 using LibWin32Common::RegKey;
 
@@ -134,7 +134,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
  */
 STDAPI DllCanUnloadNow(void)
 {
-	return (RP_ComBase_isReferenced() ? S_FALSE : S_OK);
+	return (LibWin32Common::ComBase_isReferenced() ? S_FALSE : S_OK);
 }
 
 /**

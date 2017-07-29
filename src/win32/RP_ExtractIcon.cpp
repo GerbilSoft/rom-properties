@@ -92,7 +92,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ExtractIcon, IExtractIconA),
 		{ 0, 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IPersistFile **/

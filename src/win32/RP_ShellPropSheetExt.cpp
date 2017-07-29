@@ -1868,7 +1868,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ShellPropSheetExt, IShellPropSheetExt),
 		{ 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IShellExtInit **/

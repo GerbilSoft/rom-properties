@@ -37,7 +37,7 @@ IFACEMETHODIMP KeyStore_OwnerDataCallback::QueryInterface(REFIID riid, LPVOID *p
 		QITABENT(KeyStore_OwnerDataCallback, IOwnerDataCallback),
 		{ 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** KeyStore_OwnerDataCallback **/

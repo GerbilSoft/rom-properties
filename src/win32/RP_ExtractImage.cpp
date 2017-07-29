@@ -96,7 +96,7 @@ IFACEMETHODIMP RP_ExtractImage::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ExtractImage, IExtractImage2),
 		{ 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IPersistFile **/

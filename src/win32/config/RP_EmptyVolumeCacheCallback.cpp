@@ -36,7 +36,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *
 		QITABENT(RP_EmptyVolumeCacheCallback, IEmptyVolumeCacheCallBack),
 		{ 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IEmptyVolumeCacheCallBack **/

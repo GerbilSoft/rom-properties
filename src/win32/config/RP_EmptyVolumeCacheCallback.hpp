@@ -31,15 +31,15 @@
  */
 
 #include "librpbase/common.h"
-#include "RP_ComBase.hpp"
+#include "libwin32common/ComBase.hpp"
 
-class RP_EmptyVolumeCacheCallback : public RP_ComBase<IEmptyVolumeCacheCallBack>
+class RP_EmptyVolumeCacheCallback : public LibWin32Common::ComBase<IEmptyVolumeCacheCallBack>
 {
 	public:
 		explicit RP_EmptyVolumeCacheCallback(HWND hProgressBar);
 
 	private:
-		typedef RP_ComBase<RP_EmptyVolumeCacheCallback> super;
+		typedef LibWin32Common::ComBase<RP_EmptyVolumeCacheCallback> super;
 		RP_DISABLE_COPY(RP_EmptyVolumeCacheCallback)
 
 	public:

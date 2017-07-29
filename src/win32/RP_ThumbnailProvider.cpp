@@ -96,7 +96,7 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 		QITABENT(RP_ThumbnailProvider, IThumbnailProvider),
 		{ 0, 0 }
 	};
-	return pQISearch(this, rgqit, riid, ppvObj);
+	return LibWin32Common::pQISearch(this, rgqit, riid, ppvObj);
 }
 
 /** IInitializeWithStream **/

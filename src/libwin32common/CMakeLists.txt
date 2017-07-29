@@ -13,6 +13,7 @@ SET(libwin32common_SRCS
 	RegKey.cpp
 	WinUI.cpp
 	w32err.c
+	ComBase.cpp
 	sdk/win_iid.cpp
 	)
 SET(libwin32common_H
@@ -25,6 +26,7 @@ SET(libwin32common_H
 	w32err.h
 	msvc_common.h
 	w32time.h
+	ComBase.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp

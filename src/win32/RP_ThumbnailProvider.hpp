@@ -26,7 +26,7 @@
 #include "librpbase/common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "RP_ComBase.hpp"
+#include "libwin32common/ComBase.hpp"
 
 // IThumbnailProvider
 #include "thumbcache.h"
@@ -46,14 +46,14 @@ namespace LibWin32Common {
 class RP_ThumbnailProvider_Private;
 
 class UUID_ATTR("{4723DF58-463E-4590-8F4A-8D9DD4F4355A}")
-RP_ThumbnailProvider : public RP_ComBase2<IInitializeWithStream, IThumbnailProvider>
+RP_ThumbnailProvider : public LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider>
 {
 	public:
 		RP_ThumbnailProvider();
 		virtual ~RP_ThumbnailProvider();
 
 	private:
-		typedef RP_ComBase2<IInitializeWithStream, IThumbnailProvider> super;
+		typedef LibWin32Common::ComBase2<IInitializeWithStream, IThumbnailProvider> super;
 		RP_DISABLE_COPY(RP_ThumbnailProvider)
 	private:
 		friend class RP_ThumbnailProvider_Private;

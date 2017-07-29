@@ -30,7 +30,7 @@
 // - http://www.codeproject.com/Articles/338268/COM-in-C
 // - https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 // - https://msdn.microsoft.com/en-us/library/ms677109(v=vs.85).aspx
-#include "RP_ComBase.hpp"
+#include "libwin32common/ComBase.hpp"
 
 namespace LibWin32Common {
 	class RegKey;
@@ -47,14 +47,14 @@ extern "C" {
 class RP_ShellPropSheetExt_Private;
 
 class UUID_ATTR("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
-RP_ShellPropSheetExt : public RP_ComBase2<IShellExtInit, IShellPropSheetExt>
+RP_ShellPropSheetExt : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt>
 {
 	public:
 		RP_ShellPropSheetExt();
 		virtual ~RP_ShellPropSheetExt();
 
 	private:
-		typedef RP_ComBase2<IShellExtInit, IShellPropSheetExt> super;
+		typedef LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt> super;
 		RP_DISABLE_COPY(RP_ShellPropSheetExt)
 	private:
 		friend class RP_ShellPropSheetExt_Private;

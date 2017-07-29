@@ -9,7 +9,6 @@ SET(rom-properties-win32_SRCS
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
-	RP_ComBase.cpp
 	RP_ExtractImage.cpp
 	RP_ExtractImage_Register.cpp
 	RP_ExtractImage_Fallback.cpp
@@ -34,7 +33,6 @@ SET(rom-properties-win32_H
 	RP_ExtractIcon.hpp
 	RP_ExtractIcon_p.hpp
 	RP_ClassFactory.hpp
-	RP_ComBase.hpp
 	RP_ExtractImage.hpp
 	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
@@ -122,7 +120,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
-TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16)
+TARGET_LINK_LIBRARIES(rom-properties cachemgr16 romdata16 rpbase16 win32common)
 TARGET_LINK_LIBRARIES(rom-properties comctl32 advapi32 wtsapi32)
 
 # Delay-load some Windows system libraries.

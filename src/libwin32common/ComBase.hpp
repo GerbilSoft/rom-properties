@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (Win32)                            *
- * RP_ComBase.hpp: Base class for COM objects.                             *
+ * ROM Properties Page shell extension. (libwin32common)                   *
+ * ComBase.hpp: Base class for COM objects.                                *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,8 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__
-#define __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__
+#define __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__
 
 /**
  * COM base class. Handles reference counting and IUnknown.
@@ -30,25 +30,26 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
-// librpbase common macros.
-#include "librpbase/common.h"
-
 // QISearch()
-#include "libwin32common/sdk/QITab.h"
-extern "C" {
-	extern PFNQISEARCH pQISearch;
-	void incRpGlobalRefCount(void);
-	void decRpGlobalRefCount(void);
-}
+#include "sdk/QITab.h"
+
+namespace LibWin32Common {
+
+// QISearch() function pointer.
+extern PFNQISEARCH pQISearch;
 
 // References of all objects.
 extern volatile ULONG RP_ulTotalRefCount;
+
+// Manipulate the global COM reference count.
+void incRpGlobalRefCount(void);
+void decRpGlobalRefCount(void);
 
 /**
  * Is an RP_ComBase object referenced?
  * @return True if RP_ulTotalRefCount > 0; false if not.
  */
-static inline bool RP_ComBase_isReferenced(void)
+static inline bool ComBase_isReferenced(void)
 {
 	return (RP_ulTotalRefCount > 0);
 }
@@ -88,15 +89,17 @@ static inline bool RP_ComBase_isReferenced(void)
 }
 
 template<class I>
-class RP_ComBase : public I
-	RP_COMBASE_IMPL(RP_ComBase);
+class ComBase : public I
+	RP_COMBASE_IMPL(ComBase);
 
 template<class I1, class I2>
-class RP_ComBase2 : public I1, public I2
-	RP_COMBASE_IMPL(RP_ComBase2);
+class ComBase2 : public I1, public I2
+	RP_COMBASE_IMPL(ComBase2);
 
 template<class I1, class I2, class I3>
-class RP_ComBase3 : public I1, public I2, public I3
-	RP_COMBASE_IMPL(RP_ComBase3);
+class ComBase3 : public I1, public I2, public I3
+	RP_COMBASE_IMPL(ComBase3);
+
+}
 
 #endif /* __ROMPROPERTIES_WIN32_RP_COMBASE_HPP__ */

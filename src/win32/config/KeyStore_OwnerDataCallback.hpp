@@ -24,19 +24,18 @@
 #ifndef __ROMPROPERTIES_WIN32_CONFIG_KEYSTORE_OWNERDATACALLBACK_HPP__
 #define __ROMPROPERTIES_WIN32_CONFIG_KEYSTORE_OWNERDATACALLBACK_HPP__
 
-// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "RP_ComBase.hpp"
-
+#include "librpbase/common.h"
+#include "libwin32common/ComBase.hpp"
 #include "libwin32common/sdk/IOwnerDataCallback.hpp"
 
 class KeyStoreWin32;
-class KeyStore_OwnerDataCallback : public RP_ComBase<IOwnerDataCallback>
+class KeyStore_OwnerDataCallback : public LibWin32Common::ComBase<IOwnerDataCallback>
 {
 	public:
 		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
 
 	private:
-		typedef RP_ComBase<IOwnerDataCallback> super;
+		typedef LibWin32Common::ComBase<IOwnerDataCallback> super;
 		RP_DISABLE_COPY(KeyStore_OwnerDataCallback)
 
 	public:

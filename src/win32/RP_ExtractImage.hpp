@@ -26,7 +26,7 @@
 #include "librpbase/common.h"
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
-#include "RP_ComBase.hpp"
+#include "libwin32common/ComBase.hpp"
 
 // CLSID
 extern "C" {
@@ -40,14 +40,14 @@ namespace LibWin32Common {
 class RP_ExtractImage_Private;
 
 class UUID_ATTR("{84573BC0-9502-42F8-8066-CC527D0779E5}")
-RP_ExtractImage : public RP_ComBase2<IPersistFile, IExtractImage2>
+RP_ExtractImage : public LibWin32Common::ComBase2<IPersistFile, IExtractImage2>
 {
 	public:
 		RP_ExtractImage();
 		virtual ~RP_ExtractImage();
 
 	private:
-		typedef RP_ComBase2<IPersistFile, IExtractImage> super;
+		typedef LibWin32Common::ComBase2<IPersistFile, IExtractImage> super;
 		RP_DISABLE_COPY(RP_ExtractImage)
 	private:
 		friend class RP_ExtractImage_Private;

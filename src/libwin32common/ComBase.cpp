@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libwin32common)                   *
- * QITab.h: QITAB header.                                                  *
+ * ComBase.cpp: Base class for COM objects.                                *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -19,50 +19,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__
+// Reference: http://www.codeproject.com/Articles/338268/COM-in-C
+#include "ComBase.hpp"
 
-#include "RpWin32_sdk.h"
-#include <shlwapi.h>
+// C includes. (C++ namespace)
+#include <cassert>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace LibWin32Common {
 
-#ifndef OFFSETOFCLASS
-// Get the class vtable offset. Used for QITAB.
-// NOTE: QITAB::dwOffset is int, not DWORD.
-#define OFFSETOFCLASS(base, derived) \
-    (int)((DWORD)(DWORD_PTR)((base*)((derived*)8))-8)
-#endif
+// References of all objects.
+volatile ULONG RP_ulTotalRefCount = 0;
 
-#ifndef QITABENT
-// QITAB is not defined on MinGW-w64 4.0.6.
-typedef struct {
-	const IID *piid;
-	int dwOffset;
-} QITAB, *LPQITAB;
-typedef const QITAB *LPCQITAB;
+// QISearch() function.
+static HMODULE hShlwapi = nullptr;
+PFNQISEARCH pQISearch = nullptr;
 
-#ifdef __cplusplus
-# define QITABENTMULTI(Cthis, Ifoo, Iimpl) \
-    { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
-#else
-# define QITABENTMULTI(Cthis, Ifoo, Iimpl) \
-    { (IID*) &IID_##Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
-#endif /* __cplusplus */
+void incRpGlobalRefCount(void)
+{
+	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
+	if (ulRefCount != 1)
+		return;
 
-#define QITABENTMULTI2(Cthis, Ifoo, Iimpl) \
-    { (IID*) &Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
-
-#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
-#endif /* QITABENT */
-
-// QISearch() function pointer.
-typedef HRESULT (STDAPICALLTYPE *PFNQISEARCH)(_Inout_ void* that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
-
-#ifdef __cplusplus
+	// First initialization. Load QISearch().
+	hShlwapi = LoadLibrary(L"shlwapi.dll");
+	assert(hShlwapi != nullptr);
+	if (hShlwapi) {
+		pQISearch = (PFNQISEARCH)GetProcAddress(hShlwapi, MAKEINTRESOURCEA(219));
+		assert(pQISearch != nullptr);
+		if (!pQISearch) {
+			FreeLibrary(hShlwapi);
+			hShlwapi = nullptr;
+		}
+	}
 }
-#endif
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_QITAB_H__ */
+void decRpGlobalRefCount(void)
+{
+	ULONG ulRefCount = InterlockedDecrement(&RP_ulTotalRefCount);
+	if (ulRefCount != 0)
+		return;
+
+	// Last Release(). Unload QISearch().
+	pQISearch = nullptr;
+	FreeLibrary(hShlwapi);
+	hShlwapi = nullptr;
+}
+
+}
