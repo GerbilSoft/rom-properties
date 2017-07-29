@@ -330,8 +330,8 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 
 	const dxt1_block *dxt1_src = reinterpret_cast<const dxt1_block*>(img_buf);
 
-	// Temporary tile buffer.
-	uint32_t tileBuf[4*4];
+	// Temporary 4-tile buffer.
+	uint32_t tileBuf[4][4*4];
 
 	// Tiles are arranged in 2x2 blocks.
 	// Reference: https://github.com/nickworonekin/puyotools/blob/80f11884f6cae34c4a56c5b1968600fe7c34628b/Libraries/VrSharp/GvrTexture/GvrDataCodec.cs#L712
@@ -340,8 +340,8 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 		// S3TC version.
 		for (unsigned int y = 0; y < tilesY; y += 2) {
 		for (unsigned int x = 0; x < tilesX; x += 2) {
-			for (unsigned int y2 = 0; y2 < 2; y2++) {
-			for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
+			// Decode 4 tiles at once.
+			for (unsigned int tile = 0; tile < 4; tile++, dxt1_src++) {
 				// Decode the DXT1 tile palette.
 				// TODO: Color 3 may be either black or transparent.
 				// Figure out if there's a way to specify that in GVR.
@@ -355,12 +355,15 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 				// big endian shenanigans.
 				uint32_t indexes = be32_to_cpu(dxt1_src->indexes);
 				for (int i = 16-1; i >= 0; i--, indexes >>= 2) {
-					tileBuf[i] = pal[indexes & 3].u32;
+					tileBuf[tile][i] = pal[indexes & 3].u32;
 				}
+			}
 
-				// Blit the tile to the main image buffer.
-				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x+x2, y+y2);
-			} }
+			// Blit the tiles to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[0], x+0, y+0);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[1], x+1, y+0);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[2], x+0, y+1);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[3], x+1, y+1);
 		} }
 	} else
 #endif /* ENABLE_S3TC */
@@ -368,8 +371,8 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 		// S2TC version.
 		for (unsigned int y = 0; y < tilesY; y += 2) {
 		for (unsigned int x = 0; x < tilesX; x += 2) {
-			for (unsigned int y2 = 0; y2 < 2; y2++) {
-			for (unsigned int x2 = 0; x2 < 2; x2++, dxt1_src++) {
+			// Decode 4 tiles at once.
+			for (unsigned int tile = 0; tile < 4; tile++, dxt1_src++) {
 				// Decode the DXT1 tile palette.
 				// TODO: Color 3 may be either black or transparent.
 				// Figure out if there's a way to specify that in GVR.
@@ -388,12 +391,15 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 						// Select c0 or c1, depending on pixel number.
 						sel = S2TC_select_c0c1((unsigned int)i);
 					}
-					tileBuf[i] = pal[sel].u32;
+					tileBuf[tile][i] = pal[sel].u32;
 				}
+			}
 
-				// Blit the tile to the main image buffer.
-				ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x+x2, y+y2);
-			} }
+			// Blit the tiles to the main image buffer.
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[0], x+0, y+0);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[1], x+1, y+0);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[2], x+0, y+1);
+			ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf[3], x+1, y+1);
 		} }
 	}
 
