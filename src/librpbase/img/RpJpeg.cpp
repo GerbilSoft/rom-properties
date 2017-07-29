@@ -54,6 +54,26 @@ extern "C" {
 
 namespace LibRpBase {
 
+// ARGB32 value with byte accessors.
+// TODO: Share with ImageDecoder_p.hpp.
+union argb32_t {
+	struct {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		uint8_t b;
+		uint8_t g;
+		uint8_t r;
+		uint8_t a;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		uint8_t a;
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+#endif
+	};
+	uint32_t u32;
+};
+ASSERT_STRUCT(argb32_t, 4);
+
 #ifdef _MSC_VER
 // DelayLoad test implementation.
 // TODO: jdiv_round_up() uses division. Find a better function?
@@ -356,7 +376,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			cinfo.out_color_space = JCS_RGB;
 			break;
 		case JCS_YCCK:
-			// libjpeg (standard) supports YCCK->CMYK.
+			// libjpeg (standard) supports YCCK->CMYK conversion.
 			cinfo.out_color_space = JCS_CMYK;
 			break;
 		default:
@@ -404,7 +424,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			{
 				uint8_t gray = (uint8_t)i;
 				*img_palette = (gray | gray << 8 | gray << 16);
-				// TODO: tRNS chunk handling.
 				*img_palette |= 0xFF000000;
 			}
 
@@ -484,13 +503,36 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			jpeg_read_scanlines(&cinfo, buffer, 1);
 			switch (cinfo.out_color_space) {
 				case JCS_RGB: {
-					// Convert from 24-bit RGB to 32-bit ARGB.
-					// TODO: Optimized version?
-					// TODO: Unroll the loop?
-					uint32_t *dest = static_cast<uint32_t*>(vdest);
+					// Convert from 24-bit BGR to 32-bit ARGB.
+
+					// TODO: Optimized versions using standard C and SSSE3.
+					// The one listed below won't work as-is because libjpeg
+					// uses BGR instead of RGB.
+					// Reference:
+					// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
+					// - https://stackoverflow.com/a/2974266
+
+					// Process 2 pixels per iteration.
+					argb32_t *dest = static_cast<argb32_t*>(vdest);
 					const uint8_t *src = buffer[0];
-					for (unsigned int i = cinfo.output_width; i > 0; i--, dest++, src += 3) {
-						*dest = 0xFF000000 | (src[0] << 16) | (src[1] << 8) | src[2];
+					unsigned int x;
+					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 2*3) {
+						dest[0].a = 0xFF;
+						dest[0].r = src[0];
+						dest[0].g = src[1];
+						dest[0].b = src[2];
+
+						dest[1].a = 0xFF;
+						dest[1].r = src[3];
+						dest[1].g = src[4];
+						dest[1].b = src[5];
+					}
+					// Remaining pixels.
+					for (; x > 0; x--, dest++, src += 3) {
+						dest->a = 0xFF;
+						dest->r = src[0];
+						dest->g = src[1];
+						dest->b = src[2];
 					}
 					break;
 				}
