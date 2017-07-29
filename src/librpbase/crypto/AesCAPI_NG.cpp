@@ -494,18 +494,30 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 			break;
 
 		case CM_CTR: {
+			// CTR isn't supported by CryptoAPI-NG directly.
 			// Need to decrypt each block manually.
-			uint8_t ctr_crypt[16];
+
+			// Using a union to allow 64-bit XORs
+			// for improved performance.
+			// NOTE: Can't use u128_t, since that's in libromdata. (N3DSVerifyKeys.hpp)
+			union ctr_block {
+				uint8_t u8[16];
+				uint64_t u64[2];
+			};
+
+			// TODO: Verify data alignment.
+			ctr_block ctr_crypt;
+			ctr_block *ctr_data = reinterpret_cast<ctr_block*>(data);
 			ULONG cbTmpResult;
 			cbResult = 0;
-			for (; data_len > 0; data_len -= 16, data += 16) {
+			for (; data_len > 0; data_len -= 16, ctr_data++) {
 				// Encrypt the current counter.
-				memcpy(ctr_crypt, d->iv, sizeof(ctr_crypt));
+				memcpy(ctr_crypt.u8, d->iv, sizeof(ctr_crypt.u8));
 				status = d->pBCryptEncrypt(d->hKey,
-						ctr_crypt, sizeof(ctr_crypt),
+						ctr_crypt.u8, sizeof(ctr_crypt.u8),
 						nullptr,
 						nullptr, 0,
-						ctr_crypt, sizeof(ctr_crypt),
+						ctr_crypt.u8, sizeof(ctr_crypt.u8),
 						&cbTmpResult, 0);
 				if (!NT_SUCCESS(status)) {
 					// Encryption failed.
@@ -514,10 +526,8 @@ unsigned int AesCAPI_NG::decrypt(uint8_t *data, unsigned int data_len)
 				cbResult += cbTmpResult;
 
 				// XOR with the ciphertext.
-				// TODO: Optimized XOR.
-				for (int i = 15; i >= 0; i--) {
-					data[i] ^= ctr_crypt[i];
-				}
+				ctr_data->u64[0] ^= ctr_crypt.u64[0];
+				ctr_data->u64[1] ^= ctr_crypt.u64[1];
 
 				// Increment the counter.
 				for (int i = 15; i >= 0; i--) {
