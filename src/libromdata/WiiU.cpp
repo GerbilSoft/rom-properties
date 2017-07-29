@@ -25,6 +25,7 @@
 #include "librpbase/RomData_p.hpp"
 
 #include "wiiu_structs.h"
+#include "gcn_structs.h"
 #include "data/WiiUData.hpp"
 
 // librpbase
@@ -105,16 +106,21 @@ WiiU::WiiU(IRpFile *file)
 	}
 
 	// Read the disc header.
+	// NOTE: Using sizeof(GCN_DiscHeader) so we can verify that
+	// GCN/Wii magic numbers are not present.
+	static_assert(sizeof(GCN_DiscHeader) >= sizeof(WiiU_DiscHeader),
+		"GCN_DiscHeader is smaller than WiiU_DiscHeader.");
+	uint8_t header[sizeof(GCN_DiscHeader)];
 	d->file->rewind();
-	size_t size = d->file->read(&d->discHeader, sizeof(d->discHeader));
-	if (size != sizeof(d->discHeader))
+	size_t size = d->file->read(header, sizeof(header));
+	if (size != sizeof(header))
 		return;
 
 	// Check if this disc image is supported.
 	DetectInfo info;
 	info.header.addr = 0;
-	info.header.size = sizeof(d->discHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->discHeader);
+	info.header.size = sizeof(header);
+	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for Wii U.
 	info.szFile = d->file->size();
 	if (isRomSupported_static(&info) < 0) {
@@ -130,7 +136,14 @@ WiiU::WiiU(IRpFile *file)
 		// Seek and/or read error.
 		return;
 	}
-	d->isValid = !memcmp(disc_magic, wiiu_magic, sizeof(wiiu_magic));
+
+	if (!memcmp(disc_magic, wiiu_magic, sizeof(wiiu_magic))) {
+		// Secondary magic matches.
+		d->isValid = true;
+
+		// Save the disc header.
+		memcpy(&d->discHeader, header, sizeof(d->discHeader));
+	}
 }
 
 /** ROM detection functions. **/
@@ -147,7 +160,7 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(WiiU_DiscHeader) ||
+	    info->header.size < sizeof(GCN_DiscHeader) ||
 	    info->szFile < 0x20000)
 	{
 		// Either no detection information was specified,
@@ -158,7 +171,6 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Game ID must start with "WUP-".
-	// TODO: Make sure GCN/Wii magic numbers aren't present.
 	// NOTE: There's also a secondary magic number at 0x10000,
 	// but we can't check it here.
 	const WiiU_DiscHeader *wiiu_header = reinterpret_cast<const WiiU_DiscHeader*>(info->header.pData);
@@ -176,6 +188,16 @@ int WiiU::isRomSupported_static(const DetectInfo *info)
 	    wiiu_header->hyphen5 != '-')
 	{
 		// Missing hyphen.
+		return -1;
+	}
+
+	// Check for GCN/Wii magic numbers.
+	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
+	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC ||
+	    be32_to_cpu(gcn_header->magic_gcn) == GCN_MAGIC)
+	{
+		// GameCube and/or Wii magic is present.
+		// This is not a Wii U disc image.
 		return -1;
 	}
 

@@ -12,7 +12,10 @@
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
     shifted the wrong amount, resulting in an incorrect Red value expansion.
-  * (KDE4) rp_create_thumbnail(): Set the MIME type in the thumbnail file.
+  * (KDE4) rp_create_thumbnail(): Set the MIME type in the thumbnail file.  
+  * Wii U: Make sure GameCube and Wii magic numbers aren't present in the
+    disc header. This ensures that a GCN/Wii disc image with the game ID
+    "WUP-" doesn't get detected as a Wii U disc image.
 
 ## v1.1 (released 2017/07/04)
 
