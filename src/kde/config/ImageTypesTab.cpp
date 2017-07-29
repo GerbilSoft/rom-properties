@@ -239,7 +239,6 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
 	for (int i = 0; i <= max_prio; i++) {
-		assert(s_values[i] != nullptr);
 		cbo->addItem(QLatin1String(s_values[i]));
 	}
 	cbo->setCurrentIndex(0);

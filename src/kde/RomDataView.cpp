@@ -973,6 +973,7 @@ void RomDataViewPrivate::startAnimTimer(void)
 	// Get the current frame information.
 	last_frame_number = iconAnimHelper.frameNumber();
 	const int delay = iconAnimHelper.frameDelay();
+	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.
 		return;

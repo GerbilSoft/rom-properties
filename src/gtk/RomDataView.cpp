@@ -1614,6 +1614,7 @@ static void start_anim_timer(RomDataView *page)
 	// Get the current frame information.
 	page->last_frame_number = page->iconAnimHelper->frameNumber();
 	const int delay = page->iconAnimHelper->frameDelay();
+	assert(delay > 0);
 	if (delay <= 0) {
 		// Invalid delay value.
 		return;
