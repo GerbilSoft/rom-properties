@@ -71,26 +71,6 @@ so you may want to place the DLLs in a common location.
 To uninstall the plugin, run install.exe again, then click the "Uninstall"
 button.
 
-## Current OS Feature Support Level
-
-|      Platform      | Properties Tab | Thumbnails |
-|--------------------|:--------------:|:----------:|
-| KDE 4.x            |       Yes      |     Yes    |
-| KDE 5.x            |       Yes      |     Yes    |
-| XFCE (Thunar)      |       Yes      |     Yes    |
-| GNOME 3 (Nautilus) |       Yes      |     Yes    |
-| Windows            |       Yes      |     Yes    |
-
-Notes:
-* The KDE 4.x and 5.x plugins share most of the code. The only differences
-  are in the plugin interface (due to automoc issues) and the .desktop file.
-* Similarly, the GNOME and XFCE property page plugins also share most of the
-  code. The main difference here is the interface to the specific property
-  page object for each file browser.
-* Windows supports separate icon and thumbnail handlers. Linux desktop
-  environments generally use the file's MIME type to determine the icon, so
-  custom icons are always implemented using the thumbnail interface.
-
 ## Current ROM Feature Support Level
 
 |             System            | Properties Tab | Internal Images | External Scans |
