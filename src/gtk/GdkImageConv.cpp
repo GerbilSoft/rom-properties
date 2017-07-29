@@ -40,7 +40,7 @@ using LibRpBase::rp_image;
 GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 {
 	assert(img != nullptr);
-	if (!img || !img->isValid())
+	if (unlikely(!img || !img->isValid()))
 		return nullptr;
 
 	// NOTE: GdkPixbuf's convenience functions don't do a
@@ -49,7 +49,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 	const int height = img->height();
 	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
 	assert(pixbuf != nullptr);
-	if (!pixbuf)
+	if (unlikely(!pixbuf))
 		return nullptr;
 
 	switch (img->format()) {
@@ -59,11 +59,22 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
 			for (int y = 0; y < height; y++, dest += strideDiff) {
 				const uint32_t *src = static_cast<const uint32_t*>(img->scanLine(y));
-				for (int x = width; x > 0; x--, dest++, src++) {
+				int x;
+				for (x = width; x > 1; x -= 2, dest += 2, src += 2) {
 					// Swap the R and B channels.
-					*dest =  (*src & 0xFF00FF00) |
-						((*src & 0x00FF0000) >> 16) |
-						((*src & 0x000000FF) << 16);
+					dest[0] = (src[0] & 0xFF00FF00) |
+						 ((src[0] & 0x00FF0000) >> 16) |
+						 ((src[0] & 0x000000FF) << 16);
+					dest[1] = (src[1] & 0xFF00FF00) |
+						 ((src[1] & 0x00FF0000) >> 16) |
+						 ((src[1] & 0x000000FF) << 16);
+				}
+				if (x == 1) {
+					// Last pixel.
+					*dest = (*src & 0xFF00FF00) |
+					       ((*src & 0x00FF0000) >> 16) |
+					       ((*src & 0x000000FF) << 16);
+					dest++;
 				}
 			}
 			break;
@@ -79,11 +90,21 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 
 			// Get the palette.
 			uint32_t palette[256];
-			for (int i = 0; i < src_pal_len; i++, src_pal++) {
+			int i;
+			for (i = 0; i < src_pal_len; i += 2, src_pal += 2) {
 				// Swap the R and B channels in the palette.
-				palette[i] =  (*src_pal & 0xFF00FF00) |
-					     ((*src_pal & 0x00FF0000) >> 16) |
-					     ((*src_pal & 0x000000FF) << 16);
+				palette[i+0] = (src_pal[0] & 0xFF00FF00) |
+					      ((src_pal[0] & 0x00FF0000) >> 16) |
+					      ((src_pal[0] & 0x000000FF) << 16);
+				palette[i+1] = (src_pal[1] & 0xFF00FF00) |
+					      ((src_pal[1] & 0x00FF0000) >> 16) |
+					      ((src_pal[1] & 0x000000FF) << 16);
+			}
+			for (; i < src_pal_len; i++, src_pal++) {
+				// Last color.
+				palette[i] = (*src_pal & 0xFF00FF00) |
+					    ((*src_pal & 0x00FF0000) >> 16) |
+					    ((*src_pal & 0x000000FF) << 16);
 			}
 			if (src_pal_len < 256) {
 				memset(&palette[src_pal_len], 0, (256 - src_pal_len) * sizeof(uint32_t));
@@ -94,7 +115,15 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
 			for (int y = 0; y < height; y++, dest += strideDiff) {
 				const uint8_t *src = static_cast<const uint8_t*>(img->scanLine(y));
-				for (int x = width; x > 0; x--, dest++, src++) {
+				int x;
+				for (x = width; x > 3; x -= 4, dest += 4, src += 4) {
+					dest[0] = palette[src[0]];
+					dest[1] = palette[src[1]];
+					dest[2] = palette[src[2]];
+					dest[3] = palette[src[3]];
+				}
+				for (; x > 0; x--, dest++, src++) {
+					// Last pixels.
 					*dest = palette[*src];
 				}
 			}
