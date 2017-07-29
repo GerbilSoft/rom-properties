@@ -74,6 +74,7 @@
 # endif
 #elif defined(_MSC_VER)
 # include <intrin.h>
+# include "common.h"
 static FORCE_INLINE int ATOMIC_INC_FETCH(volatile int *ptr)
 {
 	return _InterlockedIncrement(REINTERPRET_CAST(volatile long*)(ptr));
