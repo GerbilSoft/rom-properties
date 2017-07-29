@@ -183,7 +183,21 @@ string getConfigDirectory(void)
 {
 	string config_dir;
 
-	// TODO: $XDG_CONFIG_DIRS
+	// Check $XDG_CONFIG_HOME first.
+	const char *const xdg_config_home_env = getenv("XDG_CONFIG_HOME");
+	if (xdg_config_home_env && xdg_config_home_env[0] == '/') {
+		// Make sure this is a writable directory.
+		if (isWritableDirectory(xdg_config_home_env)) {
+			// $XDG_CACHE_HOME is a writable directory.
+			config_dir = xdg_config_home_env;
+			// Remove trailing slashes.
+			removeTrailingSlashes(config_dir);
+			// If the path was "/", this will result in an empty directory.
+			if (!config_dir.empty()) {
+				return config_dir;
+			}
+		}
+	}
 
 	// Get the user's home directory.
 	config_dir = getHomeDirectory();
