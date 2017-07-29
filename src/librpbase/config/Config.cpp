@@ -175,9 +175,6 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 {
 	// NOTE: Invalid lines are ignored, so we're always returning 1.
 
-	// TODO: Load image type priorities.
-	// For now, only loading the "Download" options.
-
 	// Verify that the parameters are valid.
 	if (!section || section[0] == 0 ||
 	    !name || name[0] == 0 ||

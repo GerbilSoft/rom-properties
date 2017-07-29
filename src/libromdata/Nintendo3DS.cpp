@@ -447,13 +447,6 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 				return -EIO;
 			}
 
-			// TODO: Check the issuer to determine which set
-			// of encryption keys to use.
-			// TODO: Print TMD info in properties?
-
-			// TODO: Determine the encryption method from the ticket.
-			// For now, assuming the NCCH is unencrypted.
-
 			// Check if the content index is valid.
 			if ((unsigned int)idx >= content_count) {
 				// Content index is out of range.

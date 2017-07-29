@@ -208,7 +208,6 @@ int ConfReader::load(bool force)
 	}
 
 	// Save the mtime from the keys.conf file.
-	// TODO: IRpFile::get_mtime()?
 	// TODO: Combine with earlier check?
 	time_t mtime;
 	ret = FileSystem::get_mtime(d->conf_filename, &mtime);
