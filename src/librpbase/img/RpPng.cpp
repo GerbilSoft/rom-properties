@@ -336,8 +336,15 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	png_uint_32 width, height;
 	png_get_IHDR(png_ptr, info_ptr, &width, &height,
 		&bit_depth, &color_type, nullptr, nullptr, nullptr);
-	if (width <= 0 || height <= 0) {
-		// Invalid image size.
+	// Sanity check: Don't allow images larger than 32768x32768.
+	assert(width > 0);
+	assert(height > 0);
+	assert(width <= 32768);
+	assert(height <= 32768);
+	if (width <= 0 || height <= 0 ||
+	    width > 32768 || height > 32768)
+	{
+		// Image size is either invalid or too big.
 		return nullptr;
 	}
 
