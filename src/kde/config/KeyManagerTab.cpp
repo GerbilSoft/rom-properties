@@ -286,8 +286,7 @@ void KeyManagerTab::save(QSettings *pSettings)
 	// [Keys]
 	pSettings->beginGroup(QLatin1String("Keys"));
 
-	// TODO: Keep this in OS-specific code, or make
-	// KeyStore templated and make this a virtual function?
+	// Save the keys.
 	const int totalKeyCount = d->keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreQt::Key *const pKey = d->keyStore->getKey(i);

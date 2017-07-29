@@ -588,8 +588,7 @@ void KeyManagerTabPrivate::save(void)
 		return;
 	}
 
-	// TODO: Keep this in OS-specific code, or make
-	// KeyStore templated and make this a virtual function?
+	// Save the keys.
 	const int totalKeyCount = keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreWin32::Key *const pKey = keyStore->getKey(i);

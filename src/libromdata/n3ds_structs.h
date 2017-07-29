@@ -229,7 +229,7 @@ typedef struct PACKED _N3DS_CIA_Header_t {
 	uint32_t tmd_size;
 	uint32_t meta_size;	// SMDH at the end of the file if non-zero.
 	uint64_t content_size;
-	uint8_t content_index[0x2000];	// TODO
+	uint8_t content_index[0x2000];
 } N3DS_CIA_Header_t;
 #pragma pack()
 ASSERT_STRUCT(N3DS_CIA_Header_t, 0x2020);

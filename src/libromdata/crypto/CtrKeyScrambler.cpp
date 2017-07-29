@@ -129,9 +129,8 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 {
 	// CTR key scrambler: KeyNormal = (((KeyX <<< 2) ^ KeyY) + constant) <<< 87
 	// NOTE: Since C doesn't have 128-bit types, we'll operate on
-	// 32-bit types. This requires some byteswapping, since the
+	// 64-bit types. This requires some byteswapping, since the
 	// key is handled as if it's big-endian.
-	// TODO: Operate on 64-bit types if building for 64-bit?
 
 	assert(keyNormal != nullptr);
 	assert(keyX != nullptr);

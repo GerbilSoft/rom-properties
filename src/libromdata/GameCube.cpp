@@ -724,7 +724,6 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	size = f_opening_bnr->read(&pBanner->reserved, banner_size-4);
 	if (size != banner_size-4) {
 		// Read error.
-		// TODO: Allow smaller than "full" for BNR2?
 		int err = f_opening_bnr->lastError();
 		return (err != 0 ? -err : -EIO);
 	}
@@ -1720,8 +1719,8 @@ int GameCube::loadFieldData(void)
 				IFst::DirEnt *dirent;
 				while ((dirent = d->updatePartition->readdir(dirp)) != nullptr) {
 					if (dirent->name && dirent->type == DT_REG) {
+						// Check if this filename matches the expected pattern.
 						unsigned int version;
-						// TODO: Optimize this?
 						string u8str = rp_string_to_utf8(dirent->name);
 						int ret = sscanf(u8str.c_str(), "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {

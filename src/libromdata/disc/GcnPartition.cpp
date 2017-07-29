@@ -235,7 +235,7 @@ int64_t GcnPartition::partition_size_used(void) const
 
 /**
  * Open a directory.
- * @param path	[in] Directory path. [TODO; always reads "/" right now.]
+ * @param path	[in] Directory path.
  * @return IFst::Dir*, or nullptr on error.
  */
 IFst::Dir *GcnPartition::opendir(const rp_char *path)

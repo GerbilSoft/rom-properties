@@ -113,7 +113,7 @@ class DreamcastSavePrivate : public RomDataPrivate
 		DC_VMS_Header vms_header;
 		// Header offset. (0 for standard save files; 0x200 for game files.)
 		uint32_t vms_header_offset;
-		// VMI header. (TODO)
+		// VMI header.
 		DC_VMI_Header vmi_header;
 		// Directory entry.
 		DC_VMS_DirEnt vms_dirent;
@@ -128,8 +128,7 @@ class DreamcastSavePrivate : public RomDataPrivate
 		static int64_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
 		static int64_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
 
-		// Is this a game file?
-		// TODO: Bitfield in saveType or something.
+		// Is this a VMS game file?
 		bool isGameFile;
 
 		/**
