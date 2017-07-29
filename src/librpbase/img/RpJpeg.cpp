@@ -31,6 +31,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <cstring>
 
 // C++ includes.
 #include <algorithm>
@@ -104,6 +105,12 @@ class RpJpegPrivate
 		 */
 		static void my_error_exit(j_common_ptr cinfo);
 
+		/**
+		 * output_message replacement for JPEG.
+		 * @param cinfo j_common_ptr
+		 */
+		static void my_output_message(j_common_ptr cinfo);
+
 		/** I/O functions. **/
 
 		// JPEG source manager struct.
@@ -158,17 +165,45 @@ class RpJpegPrivate
 
 /** Error handling functions. **/
 
+/**
+ * error_exit replacement for JPEG.
+ * @param cinfo j_common_ptr
+ */
 void RpJpegPrivate::my_error_exit(j_common_ptr cinfo)
 {
 	// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
 	my_error_mgr *myerr = reinterpret_cast<my_error_mgr*>(cinfo->err);
 
-	// Always display the message.
-	// We could postpone this until after returning, if we chose.
+	// TODO: Don't show errors if using standard libjpeg
+	// and JCS_EXT_BGRA failed.
+
+	// Print the message.
 	(*cinfo->err->output_message)(cinfo);
 
 	// Return control to the setjmp point.
 	longjmp(myerr->setjmp_buffer, 1);
+}
+
+/**
+ * output_message replacement for JPEG.
+ * @param cinfo j_common_ptr
+ */
+void RpJpegPrivate::my_output_message(j_common_ptr cinfo)
+{
+	// Format the string.
+	char buffer[JMSG_LENGTH_MAX];
+	(*cinfo->err->format_message)(cinfo, buffer);
+
+#ifdef _WIN32
+	// The default libjpeg error handler uses MessageBox() on Windows.
+	// This is bad design, so we'll use OutputDebugStringA() instead.
+	OutputDebugStringA("libjpeg error: ");
+	OutputDebugStringA(buffer);
+	OutputDebugStringA("\n");
+#else
+	// Print to stderr.
+	fprintf(stderr, "libjpeg error: %s\n", buffer);
+#endif
 }
 
 /** I/O functions. **/
@@ -324,21 +359,46 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	jpeg_decompress_struct cinfo;
 	int row_stride;			// Physical row width in output buffer
 	rp_image *img = nullptr;	// Image.
+	bool direct_copy = false;	// True if a direct copy can be made.
+
+	// libjpeg-turbo BGRA extension.
+	// Defining MY_JCS_EXT_BGRA so it can be compiled with libjpeg and
+	// later used with libjpeg-turbo. Prefixed so it doesn't conflict
+	// with libjpeg-turbo's headers.
+	static const int MY_JCS_EXT_BGRA = 13;
+	bool try_ext_bgra = true;	// True if image is JCS_RGB and we switch it to JCS_EXT_BGRA.
+	bool tried_ext_bgra = false;	// True if we tried JCS_EXT_BGRA.
 
 	/** Step 1: Allocate and initialize JPEG decompression object. **/
 
 	// Set up error handling.
 	cinfo.err = jpeg_std_error(&jerr.pub);
 	jerr.pub.error_exit = RpJpegPrivate::my_error_exit;
-	if (setjmp(jerr.setjmp_buffer)) {
-		// An error occurred while decoding the JPEG.
-		// NOTE: buffer is allocated using JPEG allocation functions,
-		// so it's automatically freed when we destroy cinfo.
-		jpeg_destroy_decompress(&cinfo);
-		if (img) {
-			delete img;
+	jerr.pub.output_message = RpJpegPrivate::my_output_message;
+
+	// Multi-level setjmp() so we can test for JCS_EXT_BGRA.
+	int jmperr = setjmp(jerr.setjmp_buffer);
+	if (jmperr) {
+		if (try_ext_bgra && tried_ext_bgra) {
+			// Tried using JCS_EXT_BGRA and it didn't work.
+			// Try again with JCS_RGB.
+			printf("JCS_EXT_BGRA FAILED, trying JCS_RGB\n");
+			try_ext_bgra = false;
+			direct_copy = false;
+			file->rewind();
+			jmperr = setjmp(jerr.setjmp_buffer);
 		}
-		return nullptr;
+		if (jmperr) {
+			printf("JPEG decoding FAILED\n");
+			// An error occurred while decoding the JPEG.
+			// NOTE: buffer is allocated using JPEG allocation functions,
+			// so it's automatically freed when we destroy cinfo.
+			jpeg_destroy_decompress(&cinfo);
+			if (img) {
+				delete img;
+			}
+			return nullptr;
+		}
 	}
 
 	// Set up the decompression struct.
@@ -370,10 +430,26 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	// Make sure we use libjpeg's built-in colorspace conversion
 	// where possible.
 	switch (cinfo.jpeg_color_space) {
+		case JCS_RGB:
+			// libjpeg-turbo supports RGB->BGRA conversion.
+			if (try_ext_bgra) {
+				cinfo.out_color_space = (J_COLOR_SPACE)MY_JCS_EXT_BGRA;
+				cinfo.output_components = 4;
+				direct_copy = true;
+				tried_ext_bgra = true;
+			}
+			break;
 		case JCS_YCbCr:
-			// libjpeg (standard) supports RGB->YCbCr conversion.
-			// TODO: libjpeg-turbo supports RGBX output as well.
-			cinfo.out_color_space = JCS_RGB;
+			// libjpeg (standard) supports YCbCr->RGB conversion.
+			// libjpeg-turbo supports YCbCr->BGRA conversion.
+			if (try_ext_bgra) {
+				cinfo.out_color_space = (J_COLOR_SPACE)MY_JCS_EXT_BGRA;
+				cinfo.output_components = 4;
+				direct_copy = true;
+				tried_ext_bgra = true;
+			} else {
+				cinfo.out_color_space = JCS_RGB;
+			}
 			break;
 		case JCS_YCCK:
 			// libjpeg (standard) supports YCCK->CMYK conversion.
@@ -389,7 +465,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	jpeg_start_decompress(&cinfo);
 
 	// Create the rp_image.
-	bool direct_copy = false;
 	switch (cinfo.out_color_space) {
 		case JCS_GRAYSCALE: {
 			// Grayscale JPEG.
@@ -450,7 +525,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
-			cinfo.out_color_space = JCS_RGB;
+
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
@@ -471,7 +546,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				jpeg_destroy_decompress(&cinfo);
 				return nullptr;
 			}
-			cinfo.out_color_space = JCS_CMYK;
+
 			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
 			if (!img->isValid()) {
 				// Could not allocate the image.
@@ -480,6 +555,26 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 			break;
+
+		case MY_JCS_EXT_BGRA: {
+			// BGRA colorspace.
+			// Matches ARGB32 images.
+			assert(cinfo.output_components == 4);
+			if (cinfo.output_components != 4) {
+				// Only 32-bit BGRA is supported.
+				jpeg_destroy_decompress(&cinfo);
+				return nullptr;
+			}
+
+			img = new rp_image(cinfo.image_width, cinfo.image_height, rp_image::FORMAT_ARGB32);
+			if (!img->isValid()) {
+				// Could not allocate the image.
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
+			}
+			break;
+		}
 
 		default:
 			// Unsupported colorspace.
@@ -492,8 +587,8 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	/** Step 6: while (scan lines remain to be read) jpeg_read_scanlines(...); */
 	row_stride = cinfo.output_width * cinfo.output_components;
 	if (!direct_copy) {
-		// Not a grayscale image. Manual image expansion is needed.
-		// TODO: Needs testing.
+		// Not a grayscale image, or JCS_EXT_BGRA isn't supported.
+		// Manual image expansion is needed.
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
 			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
 		while (cinfo.output_scanline < cinfo.output_height) {
