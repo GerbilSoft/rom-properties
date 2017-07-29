@@ -202,7 +202,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// Get the DefaultIcon key.
 	DWORD dwType;
-	wstring defaultIcon = hkey_RP_Fallback.read(L"DefaultIcon", &dwType);
+	wstring defaultIcon = hkey_RP_Fallback.read_expand(L"DefaultIcon", &dwType);
 	if (defaultIcon.empty()) {
 		// No default icon.
 		return ERROR_FILE_NOT_FOUND;
@@ -285,25 +285,6 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	} else {
 		// Assume the default icon index.
 		nIconIndex = 0;
-	}
-
-	// If the registry key type is REG_EXPAND_SZ, expand it.
-	// TODO: Move to RegKey?
-	if (dwType == REG_EXPAND_SZ) {
-		// cchExpand includes the NULL terminator.
-		DWORD cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), nullptr, 0);
-		if (cchExpand == 0) {
-			// Error expanding the strings.
-			return GetLastError();
-		}
-
-		unique_ptr<wchar_t[]> wbuf(new wchar_t[cchExpand]);
-		cchExpand = ExpandEnvironmentStrings(defaultIcon.c_str(), wbuf.get(), cchExpand);
-		if (cchExpand == 0) {
-			// Error expanding the strings.
-			return GetLastError();
-		}
-		defaultIcon.assign(wbuf.get(), cchExpand-1);
 	}
 
 	// PrivateExtractIcons() is published as of Windows XP SP1,

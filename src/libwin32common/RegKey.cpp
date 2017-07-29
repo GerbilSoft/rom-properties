@@ -224,6 +224,54 @@ wstring RegKey::read(LPCWSTR lpValueName, LPDWORD lpType) const
 }
 
 /**
+ * Read a string value from a key. (REG_SZ, REG_EXPAND_SZ)
+ * REG_EXPAND_SZ values are expanded if necessary.
+ * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
+ * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE, REG_SZ, or REG_EXPAND_SZ)
+ * @return String value, or empty string on error. (check lpType)
+ */
+wstring RegKey::read_expand(LPCWSTR lpValueName, LPDWORD lpType) const
+{
+	DWORD dwType = 0;
+	wstring wstr = read(lpValueName, &dwType);
+	if (wstr.empty() || dwType != REG_EXPAND_SZ) {
+		// Empty string, or not REG_EXPAND_SZ.
+		// Return immediately.
+		if (lpType) {
+			*lpType = dwType;
+		}
+		return wstr;
+	}
+
+	// Attempt to expand the string using the current environment.
+	// cchExpand includes the NULL terminator.
+	DWORD cchExpand = ExpandEnvironmentStrings(wstr.c_str(), nullptr, 0);
+	if (cchExpand == 0) {
+		// Error expanding the strings.
+		if (lpType) {
+			*lpType = 0;
+		}
+		return wstring();
+	}
+
+	unique_ptr<wchar_t[]> wbuf(new wchar_t[cchExpand]);
+	cchExpand = ExpandEnvironmentStrings(wstr.c_str(), wbuf.get(), cchExpand);
+	if (cchExpand == 0) {
+		// Error expanding the strings.
+		if (lpType) {
+			*lpType = 0;
+		}
+		return wstring();
+	}
+
+	// String has been expanded.
+	if (lpType) {
+		*lpType = REG_EXPAND_SZ;
+	}
+	return wstring(wbuf.get(), cchExpand-1);
+}
+
+/**
  * Read a DWORD value from a key. (REG_DWORD)
  * @param lpValueName	[in] Value name. (Use nullptr or an empty string for the default value.)
  * @param lpType	[out,opt] Variable to store the key type in. (REG_NONE or REG_DWORD)
