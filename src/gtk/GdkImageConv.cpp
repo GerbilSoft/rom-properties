@@ -52,11 +52,12 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 	if (unlikely(!pixbuf))
 		return nullptr;
 
+	uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
+	const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
+
 	switch (img->format()) {
 		case rp_image::FORMAT_ARGB32: {
 			// Copy the image data.
-			uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
 			for (int y = 0; y < height; y++, dest += strideDiff) {
 				const uint32_t *src = static_cast<const uint32_t*>(img->scanLine(y));
 				int x;
@@ -111,8 +112,6 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf(const rp_image *img)
 			}
 
 			// Copy the image data.
-			uint32_t *dest = reinterpret_cast<uint32_t*>(gdk_pixbuf_get_pixels(pixbuf));
-			const int strideDiff = (gdk_pixbuf_get_rowstride(pixbuf) / sizeof(*dest)) - img->width();
 			for (int y = 0; y < height; y++, dest += strideDiff) {
 				const uint8_t *src = static_cast<const uint8_t*>(img->scanLine(y));
 				int x;
