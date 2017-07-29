@@ -59,6 +59,9 @@ typedef struct PACKED _WiiU_DiscHeader {
 #pragma pack()
 ASSERT_STRUCT(WiiU_DiscHeader, 22);
 
+// Secondary Wii U disc magic at 0x10000.
+#define WIIU_SECONDARY_MAGIC 0xCC549EB9
+
 #ifdef __cplusplus
 }
 #endif

@@ -129,15 +129,14 @@ WiiU::WiiU(IRpFile *file)
 	}
 
 	// Verify the secondary magic number at 0x10000.
-	static const uint8_t wiiu_magic[4] = {0xCC, 0x54, 0x9E, 0xB9};
-	uint8_t disc_magic[4];
-	size = d->file->seekAndRead(0x10000, disc_magic, sizeof(disc_magic));
+	uint32_t disc_magic;
+	size = d->file->seekAndRead(0x10000, &disc_magic, sizeof(disc_magic));
 	if (size != sizeof(disc_magic)) {
 		// Seek and/or read error.
 		return;
 	}
 
-	if (!memcmp(disc_magic, wiiu_magic, sizeof(wiiu_magic))) {
+	if (disc_magic == cpu_to_be32(WIIU_SECONDARY_MAGIC)) {
 		// Secondary magic matches.
 		d->isValid = true;
 
