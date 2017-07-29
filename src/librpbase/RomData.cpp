@@ -24,6 +24,7 @@
 
 #include "TextFuncs.hpp"
 #include "file/IRpFile.hpp"
+#include "threads/Atomics.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -256,7 +257,7 @@ const RomData::ImageSizeDef *RomDataPrivate::selectBestSize(const std::vector<Ro
 		// Found a match already.
 		return ret;
 	}
-	for (auto iter = sizeDefs.begin()+1; iter != sizeDefs.end(); ++iter) {
+	for (auto iter = sizeDefs.cbegin()+1; iter != sizeDefs.cend(); ++iter) {
 		const RomData::ImageSizeDef *sizeDef = &(*iter);
 		const int szchk = std::max(sizeDef->width, sizeDef->height);
 		if (sz >= size) {
@@ -339,9 +340,8 @@ RomData::~RomData()
  */
 LibRpBase::RomData *RomData::ref(void)
 {
-	// TODO: Atomic addition.
 	RP_D(RomData);
-	++d->ref_count;
+	ATOMIC_INC_FETCH(&d->ref_count);
 	return this;
 }
 
@@ -351,10 +351,9 @@ LibRpBase::RomData *RomData::ref(void)
  */
 void RomData::unref(void)
 {
-	// TODO: Atomic subtraction.
 	RP_D(RomData);
 	assert(d->ref_count > 0);
-	if (--d->ref_count <= 0) {
+	if (ATOMIC_DEC_FETCH(&d->ref_count) <= 0) {
 		// All references removed.
 		delete this;
 	}
