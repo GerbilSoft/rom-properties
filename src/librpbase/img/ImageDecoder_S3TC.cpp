@@ -79,7 +79,7 @@ union dxt5_alpha {
  * @param data dxt5_alpha.
  * @return 48-bit code value.
  */
-static FORCE_INLINE uint64_t extract48(const dxt5_alpha *data)
+static FORCEINLINE uint64_t extract48(const dxt5_alpha *data)
 {
 	// codes[6] starts at 0x02 within dxt5_alpha.
 	// Hence, we need to lshift it after byteswapping.
@@ -281,7 +281,7 @@ static inline uint8_t decode_DXT5_alpha_S2TC(unsigned int a3, const uint8_t alph
  * @param px_number Pixel number.
  * @return 0 or 1 for c0/c1 or a0/a1.
  */
-static FORCE_INLINE unsigned int S2TC_select_c0c1(unsigned int px_number)
+static FORCEINLINE unsigned int S2TC_select_c0c1(unsigned int px_number)
 {
 	// TODO: constexpr
 	return (px_number & 1) ^ ((px_number & 4) >> 2);

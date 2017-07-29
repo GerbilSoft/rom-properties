@@ -65,7 +65,7 @@ static void initDreamcastTwiddleMap_int(void)
  * This initializes dc_tmap[].
  * @return 0 on success; non-zero on error.
  */
-static FORCE_INLINE void initDreamcastTwiddleMap(void)
+static FORCEINLINE void initDreamcastTwiddleMap(void)
 {
 	pthread_once(&once_control, initDreamcastTwiddleMap_int);
 }

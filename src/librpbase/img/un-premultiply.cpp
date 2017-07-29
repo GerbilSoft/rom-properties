@@ -72,7 +72,7 @@ static const unsigned int qt_inv_premul_factor[256] = {
  * This is needed in order to convert DXT2/3 to DXT4/5.
  * @param px	[in/out] argb32_t pixel to un-premultiply, in place.
  */
-static FORCE_INLINE void un_premultiply_pixel(argb32_t &px)
+static FORCEINLINE void un_premultiply_pixel(argb32_t &px)
 {
 	if (likely(px.a) == 255) {
 		// Do nothing.

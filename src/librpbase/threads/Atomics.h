@@ -75,23 +75,23 @@
 #elif defined(_MSC_VER)
 # include <intrin.h>
 # include "common.h"
-static FORCE_INLINE int ATOMIC_INC_FETCH(volatile int *ptr)
+static FORCEINLINE int ATOMIC_INC_FETCH(volatile int *ptr)
 {
 	return _InterlockedIncrement(REINTERPRET_CAST(volatile long*)(ptr));
 }
-static FORCE_INLINE int ATOMIC_DEC_FETCH(volatile int *ptr)
+static FORCEINLINE int ATOMIC_DEC_FETCH(volatile int *ptr)
 {
 	return _InterlockedDecrement(REINTERPRET_CAST(volatile long*)(ptr));
 }
-static FORCE_INLINE int ATOMIC_OR_FETCH(volatile int *ptr, int val)
+static FORCEINLINE int ATOMIC_OR_FETCH(volatile int *ptr, int val)
 {
 	return _InterlockedOr(REINTERPRET_CAST(volatile long*)(ptr), val);
 }
-static FORCE_INLINE int ATOMIC_CMPXCHG(volatile int *ptr, int cmp, int xchg)
+static FORCEINLINE int ATOMIC_CMPXCHG(volatile int *ptr, int cmp, int xchg)
 {
 	return _InterlockedCompareExchange(REINTERPRET_CAST(volatile long*)(ptr), xchg, cmp);
 }
-static FORCE_INLINE int ATOMIC_EXCHANGE(volatile int *ptr, int val)
+static FORCEINLINE int ATOMIC_EXCHANGE(volatile int *ptr, int val)
 {
 	return _InterlockedExchange(REINTERPRET_CAST(volatile long*)(ptr), val);
 }

@@ -80,21 +80,23 @@
 #endif
 
 // Force inline attribute.
-#if !defined(FORCE_INLINE) && (!defined(_DEBUG) || defined(NDEBUG))
-# if defined(__GNUC__)
-#  define FORCE_INLINE inline __attribute__((always_inline))
-# elif defined(_MSC_VER)
-#  define FORCE_INLINE __forceinline
+#if !defined(FORCEINLINE)
+# if (!defined(_DEBUG) || defined(NDEBUG))
+#  if defined(__GNUC__)
+#   define FORCEINLINE inline __attribute__((always_inline))
+#  elif defined(_MSC_VER)
+#   define FORCEINLINE __forceinline
+#  else
+#   define FORCEINLINE inline
+#  endif
 # else
-#  define FORCE_INLINE inline
+#  ifdef _MSC_VER
+#   define FORCEINLINE __inline
+#  else
+#   define FORCEINLINE inline
+#  endif
 # endif
-#else
-# ifdef _MSC_VER
-#  define FORCE_INLINE __inline
-# else
-#  define FORCE_INLINE inline
-# endif
-#endif
+#endif /* !defined(FORCEINLINE) */
 
 // gcc branch prediction hints.
 // Should be used in combination with profile-guided optimization.

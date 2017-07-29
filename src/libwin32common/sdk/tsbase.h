@@ -18,15 +18,28 @@
 #include "../RpWin32_sdk.h"
 #include <windows.h>
 
-#ifndef FORCEINLINE
-# if defined(_MSC_VER)
-#  define FORCEINLINE __forceinline
-# elif defined(__GNUC__)
-#  define FORCEINLINE __attribute__((always_inline))
+// Force inline attribute.
+#if !defined(FORCEINLINE)
+# if (!defined(_DEBUG) || defined(NDEBUG))
+#  if defined(__GNUC__)
+#   define FORCEINLINE inline __attribute__((always_inline))
+#  elif defined(_MSC_VER)
+#   define FORCEINLINE __forceinline
+#  else
+#   define FORCEINLINE inline
+#  endif
 # else
-#  error FORCEINLINE not defined for this compiler.
+#  ifdef _MSC_VER
+#   define FORCEINLINE __inline
+#  else
+#   define FORCEINLINE inline
+#  endif
 # endif
-#endif /* FORCEINLINE */
+#endif /* !defined(FORCEINLINE) */
+
+#ifndef FORCEINLINE
+# error FORCEINLINE not defined for this compiler.
+#endif
 
 // STATIC_CAST() macro that matches shlwapi.h's version.
 #ifndef STATIC_CAST
