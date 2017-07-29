@@ -45,7 +45,7 @@ namespace LibRomData {
 
 // Image type names.
 template<typename ComboBox>
-const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[IMG_TYPE_COUNT] = {
+const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[] = {
 	_RP("Internal\nIcon"),
 	_RP("Internal\nBanner"),
 	_RP("Internal\nMedia"),
@@ -59,7 +59,7 @@ const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[IMG_TYPE_COUNT]
 
 // System data.
 template<typename ComboBox>
-const SysData_t TImageTypesConfig<ComboBox>::sysData[SYS_COUNT] = {
+const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
 	SysDataEntry(Amiibo,		_RP("amiibo")),
 	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
 	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
@@ -75,6 +75,8 @@ TImageTypesConfig<ComboBox>::TImageTypesConfig()
 	: changed(false)
 {
 	static_assert(std::is_pointer<ComboBox>::value, "TImageTypesConfig template parameter must be a pointer.");
+	static_assert(ARRAY_SIZE(imageTypeNames) == IMG_TYPE_COUNT, "imageTypeNames[] is the wrong size.");
+	static_assert(ARRAY_SIZE(sysData) == SYS_COUNT, "sysData[] is the wrong size.");
 
 	// Clear the arrays.
 	memset(cboImageType, 0, sizeof(cboImageType));
@@ -323,17 +325,18 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		// Convert the image type priority to strings.
 		// TODO: Export the string data from Config.
-		static const rp_char *const imageTypeNames[IMG_TYPE_COUNT] = {
+		static const rp_char *const conf_imageTypeNames[] = {
 			_RP("IntIcon"),
 			_RP("IntBanner"),
 			_RP("IntMedia"),
+			_RP("IntImage"),
 			_RP("ExtMedia"),
 			_RP("ExtCover"),
 			_RP("ExtCover3D"),
 			_RP("ExtCoverFull"),
 			_RP("ExtBox"),
 		};
-		static_assert(ARRAY_SIZE(imageTypeNames) == IMG_TYPE_COUNT, "imageTypeNames[] is the wrong size.");
+		static_assert(ARRAY_SIZE(conf_imageTypeNames) == IMG_TYPE_COUNT, "conf_imageTypeNames[] is the wrong size.");
 
 		bool hasOne = false;
 		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
@@ -342,7 +345,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 				if (hasOne)
 					imageTypeList += _RP_CHR(',');
 				hasOne = true;
-				imageTypeList += imageTypeNames[imageType];
+				imageTypeList += conf_imageTypeNames[imageType];
 			}
 		}
 

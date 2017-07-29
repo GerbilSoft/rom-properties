@@ -287,7 +287,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// MSVC 2015 and gcc-4.5.2. In order to get it to work correctly,
 			// we have to store the length byte separately from the actual
 			// image type name.
-			static const char *const imageTypeNames[RomData::IMG_EXT_MAX+1] = {
+			static const char *const imageTypeNames[] = {
 				"\x07" "IntIcon",
 				"\x09" "IntBanner",
 				"\x08" "IntMedia",

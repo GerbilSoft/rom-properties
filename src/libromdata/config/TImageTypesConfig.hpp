@@ -105,11 +105,11 @@ class TImageTypesConfig
 		int save(void);
 
 	public:
-		// Image type data.
-		static const rp_char *const imageTypeNames[IMG_TYPE_COUNT];
+		// Image type data. (IMG_TYPE_COUNT)
+		static const rp_char *const imageTypeNames[];
 
-		// System data.
-		static const SysData_t sysData[SYS_COUNT];
+		// System data. (SYS_COUNT)
+		static const SysData_t sysData[];
 
 	public:
 		/**
