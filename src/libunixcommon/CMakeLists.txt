@@ -44,14 +44,13 @@ ENDIF(NOT HAVE_GETPWUID_R AND NOT HAVE_GETPWUID)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libunixcommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libunixcommon.h")
 
 # Sources and headers.
-SET(libunixcommon_SRCS
-	userdirs.cpp
-	dll-search.c
-	)
-SET(libunixcommon_H
-	userdirs.hpp
-	dll-search.h
-	)
+IF(APPLE)
+	SET(libunixcommon_SRCS userdirs_mac.mm)
+	SET(libunixcommon_H userdirs.h)
+ELSE(APPLE)
+	SET(libunixcommon_SRCS userdirs.cpp dll-search.c)
+	SET(libunixcommon_H userdirs.hpp dll-search.h)
+ENDIF(APPLE)
 
 ######################
 # Build the library. #
