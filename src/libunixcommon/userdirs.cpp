@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
+#include "config.libunixcommon.h"
+
 // NOTE: All functions return 8-bit strings.
 // This is usually encoded as UTF-8.
 #include "userdirs.hpp"
@@ -100,7 +102,8 @@ std::string getHomeDirectory(void)
 	// Check the user's pwent.
 	// TODO: Can pwd_result be nullptr?
 	// TODO: Check for ENOMEM?
-	// TODO: Support getpwuid() if the system doesn't support getpwuid_r()?
+	const char *pw_dir = nullptr;
+#if defined(HAVE_GETPWUID_R)
 	char buf[2048];
 	struct passwd pwd;
 	struct passwd *pwd_result;
@@ -109,17 +112,29 @@ std::string getHomeDirectory(void)
 		// getpwuid_r() failed.
 		return string();
 	}
+	pw_dir = pwd_result->pw_dir;
+#elif defined(HAVE_GETPWUID)
+	// NOTE: Non-reentrant version...
+	struct passwd *pwd = getpwuid(getuid());
+	if (!pwd) {
+		// getpwuid() failed.
+		return string();
+	}
+	pw_dir = pwd->pw_dir;
+#else
+# error No supported getpwuid() function.
+#endif
 
-	if (pwd_result->pw_dir[0] == 0) {
+	if (!pw_dir || pw_dir[0] == 0) {
 		// Empty home directory...
 		return string();
 	}
 
 	// Make sure the directory is writable.
-	if (isWritableDirectory(pwd_result->pw_dir)) {
+	if (isWritableDirectory(pw_dir)) {
 		// Directory is writable.
 		// $HOME is writable.
-		home_dir = pwd_result->pw_dir;
+		home_dir = pw_dir;
 		// Remove trailing slashes.
 		removeTrailingSlashes(home_dir);
 		// If the path was "/", this will result in an empty directory.

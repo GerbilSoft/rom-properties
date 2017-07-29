@@ -29,9 +29,19 @@ IF(NOT APPLE)
 	FIND_PACKAGE(ThunarX2)
 	FIND_PACKAGE(LibNautilusExtension 3.0.0)
 
-	# Write the config.h file.
-	CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libunixcommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libunixcommon.h")
 ENDIF(NOT APPLE)
+
+INCLUDE(CheckSymbolExists)
+CHECK_SYMBOL_EXISTS(getpwuid_r "pwd.h" HAVE_GETPWUID_R)
+IF(NOT HAVE_GETPWUID_R)
+	CHECK_SYMBOL_EXISTS(getpwuid   "pwd.h" HAVE_GETPWUID)
+ENDIF(NOT HAVE_GETPWUID_R)
+IF(NOT HAVE_GETPWUID_R AND NOT HAVE_GETPWUID)
+	MESSAGE(FATAL_ERROR "Neither getpwuid_r() nor getpwuid() were found.")
+ENDIF(NOT HAVE_GETPWUID_R AND NOT HAVE_GETPWUID)
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libunixcommon.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libunixcommon.h")
 
 # Sources and headers.
 SET(libunixcommon_SRCS
