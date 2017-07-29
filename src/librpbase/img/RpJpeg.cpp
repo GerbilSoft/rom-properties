@@ -334,12 +334,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	jpeg_read_header(&cinfo, TRUE);
 
 	// Sanity check: Don't allow images larger than 32768x32768.
-	assert(cinfo.output_width > 0);
-	assert(cinfo.output_height > 0);
-	assert(cinfo.output_width <= 32768);
-	assert(cinfo.output_height <= 32768);
-	if (cinfo.output_width <= 0 || cinfo.output_height <= 0 ||
-	    cinfo.output_width > 32768 || cinfo.output_height > 32768)
+	assert(cinfo.image_width > 0);
+	assert(cinfo.image_width > 0);
+	assert(cinfo.image_width <= 32768);
+	assert(cinfo.image_width <= 32768);
+	if (cinfo.image_width <= 0 || cinfo.image_width <= 0 ||
+	    cinfo.image_width > 32768 || cinfo.image_width > 32768)
 	{
 		// Image size is either invalid or too big.
 		jpeg_destroy_decompress(&cinfo);
