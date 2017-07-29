@@ -119,7 +119,6 @@ rom_properties_provider_get_pages(NautilusPropertyPageProvider *provider, GList 
 		// need to subclass NautilusPropertyPage. Instead,
 		// we create a NautilusPropertyPage and add a
 		// RomDataView widget to it.
-		// TODO: GNOME uses left-aligned, non-bold description labels.
 		// TODO: Add some extra padding to the top...
 		GtkWidget *romDataView = static_cast<GtkWidget*>(
 			g_object_new(rom_data_view_get_type(), nullptr));

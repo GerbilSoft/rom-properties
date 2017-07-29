@@ -146,7 +146,6 @@ struct _RomDataView {
 	GtkWidget	*lblSysInfo;
 	GtkWidget	*imgIcon;
 	GtkWidget	*imgBanner;
-	// TODO: Icon and banner.
 
 	// Filename.
 	gchar		*filename;
@@ -658,7 +657,6 @@ static void
 rom_data_view_init_header_row(RomDataView *page)
 {
 	// Initialize the header row.
-	// TODO: Icon, banner.
 	assert(page != nullptr);
 
 	// NOTE: romData might be nullptr in some cases.
