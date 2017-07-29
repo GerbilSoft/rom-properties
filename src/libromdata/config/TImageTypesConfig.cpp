@@ -75,8 +75,10 @@ TImageTypesConfig<ComboBox>::TImageTypesConfig()
 	: changed(false)
 {
 	static_assert(std::is_pointer<ComboBox>::value, "TImageTypesConfig template parameter must be a pointer.");
+#if defined(_MSC_VER) && _MSC_VER < 1900
 	static_assert(ARRAY_SIZE(imageTypeNames) == IMG_TYPE_COUNT, "imageTypeNames[] is the wrong size.");
 	static_assert(ARRAY_SIZE(sysData) == SYS_COUNT, "sysData[] is the wrong size.");
+#endif
 
 	// Clear the arrays.
 	memset(cboImageType, 0, sizeof(cboImageType));
