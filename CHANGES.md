@@ -12,6 +12,7 @@
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
     shifted the wrong amount, resulting in an incorrect Red value expansion.
+  * (KDE4) rp_create_thumbnail(): Set the MIME type in the thumbnail file.
 
 ## v1.1 (released 2017/07/04)
 

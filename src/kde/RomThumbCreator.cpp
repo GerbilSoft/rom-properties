@@ -59,6 +59,8 @@ using std::unique_ptr;
 #include <QtGui/QImage>
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #include <QtCore/QMimeDatabase>
+#else
+#include <kmimetype.h>
 #endif
 
 // KDE protocol manager.
@@ -324,13 +326,18 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 			QString::number(mtime));
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// MIME type.
-	// TODO: QMimeDatabase was introduced in Qt5.
-	// Use some fallback for Qt4.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	// Use QMimeDatabase for Qt5.
 	QMimeDatabase mimeDatabase;
 	QMimeType mimeType = mimeDatabase.mimeTypeForFile(fi_src);
 	ret_img.setText(QLatin1String("Thumb::Mimetype"), mimeType.name());
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	// Use KMimeType for Qt4.
+	KMimeType::Ptr mimeType = KMimeType::findByPath(qs_source_file, 0, true);
+	if (mimeType) {
+		ret_img.setText(QLatin1String("Thumb::Mimetype"), mimeType->name());
+	}
 #endif
 
 	// File size.
