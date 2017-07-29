@@ -176,7 +176,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	// Need to open "HKCR\\CLSID\\{CLSID}\\InprocServer32".
 	for (i = 0; i < _countof(CLSIDs); i++) {
 		HKEY hkeyClass, hkeyInprocServer32;
-		DWORD cbData, type;
+		DWORD cbData, dwType;
 
 		lResult = RegOpenKeyEx(hkeyCLSID, CLSIDs[i], 0, KEY_ENUMERATE_SUB_KEYS, &hkeyClass);
 		if (lResult != ERROR_SUCCESS)
@@ -194,21 +194,40 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 			hkeyInprocServer32,	// hKey
 			NULL,			// lpValueName
 			NULL,			// lpReserved
-			&type,			// lpType
+			&dwType,		// lpType
 			(LPBYTE)dll_filename,	// lpData
 			&cbData);		// lpcbData
 		RegCloseKey(hkeyInprocServer32);
 		RegCloseKey(hkeyClass);
 
-		// TODO: REG_EXPAND_SZ?
-		if (lResult != ERROR_SUCCESS || type != REG_SZ)
+		if (lResult != ERROR_SUCCESS || (dwType != REG_SZ && dwType != REG_EXPAND_SZ))
 			continue;
 
 		// Verify the NULL terminator.
-		if ((cbData % 2 != 0) || dll_filename[(cbData/2)-1] != 0) {
+		if ((cbData % sizeof(wchar_t) != 0) || dll_filename[(cbData/sizeof(wchar_t))-1] != 0) {
 			// Either this isn't a multiple of 2 bytes,
 			// or there's no NULL terminator.
 			continue;
+		}
+
+		if (dll_filename[0] != 0 && dwType == REG_EXPAND_SZ) {
+			// Expand the string.
+			// cchExpand includes the NULL terminator.
+			wchar_t *wbuf;
+			DWORD cchExpand = ExpandEnvironmentStrings(dll_filename, nullptr, 0);
+			if (cchExpand == 0) {
+				// Error expanding the string.
+				continue;
+			}
+			wbuf = malloc(cchExpand*sizeof(wchar_t));
+			cchExpand = ExpandEnvironmentStrings(dll_filename, wbuf, cchExpand);
+			if (cchExpand == 0) {
+				// Error expanding the string.
+				free(wbuf);
+			}
+			// String has been expanded.
+			free(dll_filename);
+			dll_filename = wbuf;
 		}
 
 		// Attempt to load this DLL.
