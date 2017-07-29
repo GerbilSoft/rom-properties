@@ -9,6 +9,13 @@
     various PC games. Supports several uncompressed RGB and ARGB formats,
     DXTn, BC4, and BC5.
 
+* New system features:
+  * Nintendo DS: Detect "Mask ROM" separately from Secure Area encryption.
+    This indicates if the $1000-$3FFF area is blank. This area cannot be read
+    on hardware (or the method to read it is unknown), so it's always 0 bytes
+    in dumped ROMs. The official SDK puts unknown pseudo-random data here, so
+    DSiWare and Wii U VC SRLs will have non-zero data here.
+
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
     shifted the wrong amount, resulting in an incorrect Red value expansion.

@@ -134,6 +134,18 @@ class NintendoDSPrivate : public RomDataPrivate
 		int getTitleIndex(void) const;
 
 		/**
+		 * Check the NDS Mask ROM area.
+		 *
+		 * $1000-$3FFF is normally unreadable on hardware, so this
+		 * area is usually blank in dumped ROMs. However, the official
+		 * SDK puts unknown pseudo-random data here, so DSiWare and
+		 * Wii U VC SRLs will have non-zero data here.
+		 *
+		 * @return True if the mask ROM area has non-zero data; false if not.
+		 */
+		bool checkNDSMaskROMArea(void);
+
+		/**
 		 * Check the NDS Secure Area type.
 		 * @return Secure area type.
 		 */
@@ -426,6 +438,41 @@ int NintendoDSPrivate::getTitleIndex(void) const
 }
 
 /**
+ * Check the NDS Mask ROM area.
+ *
+ * $1000-$3FFF is normally unreadable on hardware, so this
+ * area is usually blank in dumped ROMs. However, the official
+ * SDK puts unknown pseudo-random data here, so DSiWare and
+ * Wii U VC SRLs will have non-zero data here.
+ *
+ * @return True if the mask ROM area has non-zero data; false if not.
+ */
+bool NintendoDSPrivate::checkNDSMaskROMArea(void)
+{
+	// Make sure 0x1000-0x3FFF is blank.
+	// NOTE: ndstool checks 0x0200-0x0FFF, but this may
+	// contain extra data for DSi-enhanced ROMs, or even
+	// for regular DS games released after the DSi.
+	uintptr_t blank_area[0x3000/sizeof(uintptr_t)];
+	size_t size = file->seekAndRead(0x1000, blank_area, sizeof(blank_area));
+	if (size != sizeof(blank_area)) {
+		// Seek and/or read error.
+		return false;
+	}
+
+	const uintptr_t *const end = &blank_area[ARRAY_SIZE(blank_area)-1];
+	for (const uintptr_t *p = blank_area; p < end; p += 2) {
+		if (p[0] != 0 || p[1] != 0) {
+			// Not zero. This isn't a dumped ROM.
+			return true;
+		}
+	}
+
+	// The Mask ROM area is zero. This is a dumped ROM.
+	return false;
+}
+
+/**
  * Check the NDS Secure Area type.
  * @return Secure area type, or nullptr if unknown.
  */
@@ -459,32 +506,8 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 		secType = _RP("Decrypted");
 		//needs_encryption = true;	// CRC requires encryption.
 	} else {
-		// Make sure 0x1000-0x3FFF is blank.
-		// NOTE: ndstool checks 0x0200-0x0FFF, but this may
-		// contain extra data for DSi-enhanced ROMs, or even
-		// for regular DS games released after the DSi.
-		uintptr_t blank_area[0x3000/sizeof(uintptr_t)];
-		size = file->seekAndRead(0x1000, blank_area, sizeof(blank_area));
-		if (size != sizeof(blank_area)) {
-			// Seek and/or read error.
-			return nullptr;
-		}
-
-		const uintptr_t *const end = &blank_area[ARRAY_SIZE(blank_area)-1];
-		for (const uintptr_t *p = blank_area; p < end; p += 2) {
-			if (p[0] != 0 || p[1] != 0) {
-				// Not zero. This area is not accessible
-				// on the NDS, so it might be an original
-				// mask ROM dump. Either that, or a Wii U
-				// Virtual Console dump.
-				secType = _RP("Mask ROM");
-				break;
-			}
-		}
-		if (!secType) {
-			// Encrypted ROM dump.
-			secType = _RP("Encrypted");
-		}
+		// Secure area is encrypted.
+		secType = _RP("Encrypted");
 	}
 
 	// TODO: Verify the CRC?
@@ -1046,7 +1069,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Nintendo DS ROM header.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(12);	// Maximum of 11 fields.
+	d->fields->reserve(13);	// Maximum of 13 fields.
 
 	// Type.
 	// TODO:
@@ -1103,6 +1126,11 @@ int NintendoDS::loadFieldData(void)
 	// ROM version.
 	d->fields->addField_string_numeric(_RP("Revision"),
 		romHeader->rom_version, RomFields::FB_DEC, 2);
+
+	// Is this a Mask ROM?
+	// TODO: Better way to represent a boolean.
+	d->fields->addField_string(_RP("Mask ROM"),
+		d->checkNDSMaskROMArea() ? _RP("Yes") : _RP("No"));
 
 	// Secure Area.
 	// TODO: Verify the CRC.
