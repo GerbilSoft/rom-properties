@@ -382,7 +382,7 @@ int64_t WbfsReaderPrivate::getWbfsDiscSize(const wbfs_disc_t *disc) const
 	// NOTE: This is in WBFS blocks, not Wii blocks.
 	int lastBlock = disc->p->n_wbfs_sec_per_disc - 1;
 	for (; lastBlock >= 0; lastBlock--) {
-		if (be16_to_cpu(wlba_table[lastBlock]) != 0)
+		if (wlba_table[lastBlock] != cpu_to_be16(0))
 			break;
 	}
 

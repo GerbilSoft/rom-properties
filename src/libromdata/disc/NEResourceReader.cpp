@@ -395,7 +395,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// wLength contains the total string table length.
 	// wValueLength should be 0.
-	if (le16_to_cpu(fields[1]) != 0) {
+	if (fields[1] != cpu_to_le16(0)) {
 		// Not a string table.
 		return -EIO;
 	}

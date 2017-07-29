@@ -170,7 +170,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 			// "Action Replay".
 
 			// The entry point for expansion cartridges is 0xFFFFFFFF.
-			if (le32_to_cpu(gba_header->entry_point) == 0xFFFFFFFF) {
+			if (gba_header->entry_point == cpu_to_le32(0xFFFFFFFF)) {
 				// This is a Nintendo DS expansion cartridge.
 				return GameBoyAdvancePrivate::ROM_NDS_EXP;
 			} else {

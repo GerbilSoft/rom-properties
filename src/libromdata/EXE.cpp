@@ -918,7 +918,7 @@ EXE::EXE(IRpFile *file)
 	// - Relocation table address less than 0x40
 	// - Magic number is 'ZM' (Windows only accepts 'MZ')
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
-	    be16_to_cpu(d->mz.e_magic) == 'ZM') {
+	    d->mz.e_magic == cpu_to_be16('ZM')) {
 		// MS-DOS executable.
 		d->exeType = EXEPrivate::EXE_TYPE_MZ;
 		// TODO: Check for MS-DOS device drivers?
@@ -949,7 +949,7 @@ EXE::EXE(IRpFile *file)
 	// Check the signature.
 	// FIXME: MSVC handles 'PE\0\0' as 0x00504500,
 	// probably due to the embedded NULL bytes.
-	if (be32_to_cpu(d->hdr.pe.Signature) == 0x50450000 /*'PE\0\0'*/) {
+	if (d->hdr.pe.Signature == cpu_to_be32(0x50450000) /*'PE\0\0'*/) {
 		// This is a PE executable.
 		// Check if it's PE or PE32+.
 		// (.NET is checked in loadFieldData().)
@@ -994,7 +994,7 @@ EXE::EXE(IRpFile *file)
 					break;
 			}
 		}
-	} else if (be16_to_cpu(d->hdr.ne.sig) == 'NE' /* 'NE' */) {
+	} else if (d->hdr.ne.sig == cpu_to_be16('NE') /* 'NE' */) {
 		// New Executable.
 		d->exeType = EXEPrivate::EXE_TYPE_NE;
 
@@ -1021,28 +1021,28 @@ EXE::EXE(IRpFile *file)
 		} else {
 			d->fileType = FTYPE_EXECUTABLE;
 		}
-	} else if (be16_to_cpu(d->hdr.le.sig) == 'LE' ||
-		   be16_to_cpu(d->hdr.le.sig) == 'LX')
+	} else if (d->hdr.le.sig == cpu_to_be16('LE') ||
+		   d->hdr.le.sig == cpu_to_be16('LX'))
 	{
 		// Linear Executable.
-		if (be16_to_cpu(d->hdr.le.sig) == 'LE') {
+		if (d->hdr.le.sig == cpu_to_be16('LE')) {
 			d->exeType = EXEPrivate::EXE_TYPE_LE;
-		} else /*if (be16_to_cpu(d->hdr.le.sig) == 'LX')*/ {
+		} else /*if (d->hdr.le.sig == cpu_to_be16('LX'))*/ {
 			d->exeType = EXEPrivate::EXE_TYPE_LX;
 		}
 
 		// TODO: Check byteorder flags and adjust as necessary.
-		if (le16_to_cpu(d->hdr.le.targOS) == NE_OS_WIN386) {
+		if (d->hdr.le.targOS == cpu_to_le16(NE_OS_WIN386)) {
 			// LE VxD
 			d->fileType = FTYPE_DEVICE_DRIVER;
-		} else if (le32_to_cpu(d->hdr.le.module_type_flags) & LE_MODULE_IS_DLL) {
+		} else if (d->hdr.le.module_type_flags & cpu_to_le32(LE_MODULE_IS_DLL)) {
 			// LE DLL
 			d->fileType = FTYPE_DLL;
 		} else {
 			// LE EXE
 			d->fileType = FTYPE_EXECUTABLE;
 		}
-	} else if (be16_to_cpu(d->hdr.sig16) == 'W3' /* 'W3' */) {
+	} else if (d->hdr.sig16 == cpu_to_be16('W3') /* 'W3' */) {
 		// W3 executable. (Collection of LE executables.)
 		// Only used by WIN386.EXE.
 		// TODO: Check for W4. (Compressed version of W3 used by Win9x.)

@@ -218,7 +218,7 @@ bool GameCubeSavePrivate::isCardDirEntry(const uint8_t *buffer, uint32_t data_si
 		}
 	}
 
-	if (be16_to_cpu(direntry->pad_01) != 0xFFFF) {
+	if (direntry->pad_01 != cpu_to_be16(0xFFFF)) {
 		// Incorrect padding.
 		return false;
 	}

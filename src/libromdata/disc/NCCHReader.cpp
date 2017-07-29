@@ -258,7 +258,7 @@ void NCCHReaderPrivate::init(void)
 		}
 
 		// RomFS
-		if (le32_to_cpu(ncch_header.hdr.romfs_size) != 0) {
+		if (ncch_header.hdr.romfs_size != cpu_to_le32(0)) {
 			const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
 			encSections.push_back(EncSection(
 				romfs_offset,	// Address within NCCH.
@@ -807,7 +807,7 @@ int NCCHReader::cryptoType_static(CryptoType *pCryptoType, const N3DS_NCCH_Heade
 		pCryptoType->keyslot = 0xFF;
 		pCryptoType->seed = false;
 		// NOTE: Using GodMode9's fixed keyset determination.
-		if (le32_to_cpu(pNcchHeader->program_id.hi) & 0x10) {
+		if (pNcchHeader->program_id.hi & cpu_to_le32(0x10)) {
 			// Using the fixed debug key.
 			pCryptoType->name = "Fixed (Debug)";
 		} else {

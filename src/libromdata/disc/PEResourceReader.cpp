@@ -466,7 +466,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	// wLength contains the total string table length.
 	// wValueLength should be 0.
 	// wType should be 1, indicating a language ID string.
-	if (le16_to_cpu(fields[1]) != 0 || le16_to_cpu(fields[2]) != 1) {
+	if (fields[1] != cpu_to_le16(0) || fields[2] != cpu_to_le16(1)) {
 		// Not a string table.
 		return -EIO;
 	}
@@ -475,7 +475,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	char16_t s_langID[9];
 	size = file->read(s_langID, sizeof(s_langID));
 	if (size != sizeof(s_langID) ||
-	   (le16_to_cpu(s_langID[8]) != 0))
+	   (s_langID[8] != cpu_to_le16(0)))
 	{
 		// Read error, or not NULL terminated.
 		return -EIO;
@@ -520,7 +520,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	while (tblPos < strTblData_len) {
 		// wLength, wValueLength, wType
 		memcpy(fields, &strTblData[tblPos], sizeof(fields));
-		if (le16_to_cpu(fields[2]) != 1) {
+		if (fields[2] != cpu_to_le16(1)) {
 			// Not a string...
 			return -EIO;
 		}
@@ -547,7 +547,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 		const char16_t *key = reinterpret_cast<const char16_t*>(&strTblData[tblPos]);
-		if (le16_to_cpu(key[key_len]) != 0) {
+		if (key[key_len] != cpu_to_le16(0)) {
 			// Not NULL-terminated.
 			return -EIO;
 		}
@@ -563,7 +563,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			// Empty value.
 			static const char16_t u16_empty[1] = {0};
 			value = u16_empty;
-		} else if (le16_to_cpu(value[value_len]) != 0) {
+		} else if (value[value_len] != cpu_to_le16(0)) {
 			// Not NULL-terminated.
 			return -EIO;
 		}

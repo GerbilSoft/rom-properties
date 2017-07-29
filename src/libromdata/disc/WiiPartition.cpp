@@ -202,7 +202,7 @@ WiiPartitionPrivate::WiiPartitionPrivate(WiiPartition *q, IDiscReader *discReade
 	}
 
 	// Make sure the signature type is correct.
-	if (be32_to_cpu(partitionHeader.ticket.signature_type) != RVL_SIGNATURE_TYPE_RSA2048) {
+	if (partitionHeader.ticket.signature_type != cpu_to_be32(RVL_SIGNATURE_TYPE_RSA2048)) {
 		// TODO: Better error?
 		q->m_lastError = EIO;
 		return;
@@ -378,7 +378,7 @@ KeyManager::VerifyResult WiiPartitionPrivate::initDecryption(void)
 	// If it isn't, the key is probably wrong.
 	const GCN_DiscHeader *discHeader =
 		reinterpret_cast<const GCN_DiscHeader*>(&sector_buf[SECTOR_SIZE_DECRYPTED_OFFSET]);
-	if (be32_to_cpu(discHeader->magic_wii) != WII_MAGIC) {
+	if (discHeader->magic_wii != cpu_to_be32(WII_MAGIC)) {
 		// Invalid disc header.
 		verifyResult = KeyManager::VERIFY_WRONG_KEY;
 		return verifyResult;

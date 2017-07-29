@@ -411,7 +411,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader)
 		}
 
 		// Check for an extra ROM chip.
-		if (be32_to_cpu(pRomHeader->extrom.info) == 0x524F2020) {
+		if (pRomHeader->extrom.info == cpu_to_be32(0x524F2020)) {
 			// Extra ROM chip. (Sonic & Knuckles)
 			// Format: 'R', 'O', 0x20, 0x20
 			// Start and End locations are listed twice, in 24-bit format.

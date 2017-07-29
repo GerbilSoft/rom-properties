@@ -534,7 +534,7 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 			const uint16_t content_index = be16_to_cpu(content_chunk->index);
 			if (content_index == idx) {
 				// Found the content index.
-				if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+				if (content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// Content is encrypted.
 					ticket = &mxh.ticket;
 				}
@@ -754,7 +754,7 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 			// Check if this content is encrypted.
 			// If it is, we'll need to create a CIAReader.
 			IDiscReader *srlReader = nullptr;
-			if (be16_to_cpu(content_chunks[0].type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+			if (content_chunks[0].type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 				// Content is encrypted.
 				srlReader = new CIAReader(this->file, offset, length,
 					&mxh.ticket, be16_to_cpu(content_chunks[0].index));
@@ -1406,9 +1406,9 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 		// Verify the header parameters.
 		const N3DS_CIA_Header_t *const cia_header =
 			reinterpret_cast<const N3DS_CIA_Header_t*>(info->header.pData);
-		if (le32_to_cpu(cia_header->header_size) == (uint32_t)sizeof(N3DS_CIA_Header_t) &&
-		    le16_to_cpu(cia_header->type) == 0 &&
-		    le16_to_cpu(cia_header->version) == 0)
+		if (cia_header->header_size == cpu_to_le32((uint32_t)sizeof(N3DS_CIA_Header_t)) &&
+		    cia_header->type == cpu_to_le16(0) &&
+		    cia_header->version == cpu_to_le16(0))
 		{
 			// Add up all the sizes and see if it matches the file.
 			uint32_t sz_min = Nintendo3DSPrivate::toNext64(le32_to_cpu(cia_header->header_size)) +
@@ -2185,7 +2185,7 @@ int Nintendo3DS::loadFieldData(void)
 		}
 
 		// Demo use limit.
-		if (be32_to_cpu(d->mxh.ticket.limits[0]) == 4) {
+		if (d->mxh.ticket.limits[0] == cpu_to_be32(4)) {
 			// Title has use limits.
 			d->fields->addField_string_numeric(_RP("Demo Use Limit"),
 				be32_to_cpu(d->mxh.ticket.limits[1]));
@@ -2221,7 +2221,7 @@ int Nintendo3DS::loadFieldData(void)
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
 				const rp_char *crypto = nullptr;
-				if (be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED) {
+				if (content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// CIA encryption.
 					crypto = _RP("CIA");
 				}
@@ -2261,7 +2261,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Encryption.
 			NCCHReader::CryptoType cryptoType;
-			bool isCIAcrypto = !!(be16_to_cpu(content_chunk->type) & N3DS_CONTENT_CHUNK_ENCRYPTED);
+			bool isCIAcrypto = !!(content_chunk->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
 			ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
 			if (ret != 0) {
 				// Unknown encryption.

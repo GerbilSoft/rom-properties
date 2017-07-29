@@ -264,8 +264,8 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 	// TODO: Some configuration option to return the standard
 	// NDS icon for the standard icon instead of the first frame
 	// of the animated DSi icon? (Except for DSiWare...)
-	if ( le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
-	    (le16_to_cpu(nds_icon_title.dsi_icon_seq[0]) & 0xFF) == 0)
+	if (le16_to_cpu(nds_icon_title.version) < NDS_ICON_VERSION_DSi ||
+	    (nds_icon_title.dsi_icon_seq[0] & cpu_to_le16(0xFF)) == 0)
 	{
 		// Either this isn't a DSi icon/title struct (pre-v0103),
 		// or the animated icon sequence is invalid.
@@ -444,22 +444,16 @@ const rp_char *NintendoDSPrivate::checkNDSSecureArea(void)
 
 	// Reference: https://github.com/devkitPro/ndstool/blob/master/source/header.cpp#L39
 
-	// Byteswap the Secure Area start.
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	secure_area[0] = le32_to_cpu(secure_area[0]);
-	secure_area[1] = le32_to_cpu(secure_area[1]);
-#endif
-
 	const rp_char *secType = nullptr;
 	//bool needs_encryption = false;	// TODO
 	if (le32_to_cpu(romHeader.arm9.rom_offset) < 0x4000) {
 		// ARM9 secure area is not present.
 		// This is only valid for homebrew.
 		secType = _RP("Homebrew");
-	} else if (secure_area[0] == 0x00000000 && secure_area[1] == 0x00000000) {
+	} else if (secure_area[0] == cpu_to_le32(0x00000000) && secure_area[1] == cpu_to_le32(0x00000000)) {
 		// Secure area is empty. (DS Download Play)
 		secType = _RP("Multiboot");
-	} else if (secure_area[0] == 0xE7FFDEFF && secure_area[1] == 0xE7FFDEFF) {
+	} else if (secure_area[0] == cpu_to_le32(0xE7FFDEFF) && secure_area[1] == cpu_to_le32(0xE7FFDEFF)) {
 		// Secure area is decrypted.
 		// Probably dumped using wooddumper or Decrypt9WIP.
 		secType = _RP("Decrypted");
@@ -773,7 +767,7 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 	const NDS_RomHeader *const romHeader =
 		reinterpret_cast<const NDS_RomHeader*>(info->header.pData);
 	if (!memcmp(romHeader->nintendo_logo, nintendo_gba_logo, sizeof(nintendo_gba_logo)) &&
-	    le16_to_cpu(romHeader->nintendo_logo_checksum) == 0xCF56) {
+	    romHeader->nintendo_logo_checksum == cpu_to_le16(0xCF56)) {
 		// Nintendo logo is valid. (Slot-1)
 		static const uint8_t nds_romType[] = {
 			NintendoDSPrivate::ROM_NDS,		// 0x00 == Nintendo DS
@@ -783,7 +777,7 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 		};
 		return nds_romType[romHeader->unitcode & 3];
 	} else if (!memcmp(romHeader->nintendo_logo, nintendo_ds_logo_slot2, sizeof(nintendo_ds_logo_slot2)) &&
-		   le16_to_cpu(romHeader->nintendo_logo_checksum) == 0x9E1A) {
+		   romHeader->nintendo_logo_checksum == cpu_to_le16(0x9E1A)) {
 		// Nintendo logo is valid. (Slot-2)
 		// NOTE: Slot-2 is NDS only.
 		return NintendoDSPrivate::ROM_NDS_SLOT2;
@@ -838,7 +832,7 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
 		// DSi-exclusive game.
 		idx |= (1 << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {
-			if ((le32_to_cpu(d->romHeader.dsi.region_code) & DSi_REGION_CHINA) ||
+			if ((d->romHeader.dsi.region_code & cpu_to_le32(DSi_REGION_CHINA)) ||
 			    (d->romHeader.nds_region & 0x80))
 			{
 				// iQue DSi.
