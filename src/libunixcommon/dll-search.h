@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-stub)                          *
- * config.rp-stub.h.in: rp-stub configuration. (source file)               *
+ * ROM Properties Page shell extension. (libunixcommon)                    *
+ * dll-search.h: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,19 +19,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_STUB_CONFIG_H__
-#define __ROMPROPERTIES_RP_STUB_CONFIG_H__
+#ifndef __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
+#define __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
 
-/* KDE4 plugin path. */
-#cmakedefine KDE4_PLUGIN_INSTALL_DIR "@KDE4_PLUGIN_INSTALL_DIR@"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* KDE5 plugin path. */
-#cmakedefine KDE5_PLUGIN_INSTALL_DIR "@KDE5_PLUGIN_INSTALL_DIR@"
+#ifndef ATTR_PRINTF
+# ifdef __GNUC__
+#  define ATTR_PRINTF(arg_format, arg_varargs) __attribute__ ((format (printf, arg_format, arg_varargs)))
+# else
+#  define ATTR_PRINTF(arg_format, arg_varargs)
+# endif
+#endif
 
-/* ThunarX2 extensions path. */
-#cmakedefine ThunarX2_EXTENSIONS_DIR "@ThunarX2_EXTENSIONS_DIR@"
+#define LEVEL_DEBUG 0
+#define LEVEL_ERROR 1
+typedef int (*PFN_RP_DLL_DEBUG)(int level, const char *format, ...) ATTR_PRINTF(2, 3);
 
-/* libnautilus-extension extensions path. */
-#cmakedefine LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
+/**
+ * Search for a rom-properties library.
+ * @param symname	[in] Symbol name to look up.
+ * @param ppDll		[out] Handle to opened library.
+ * @param ppfn		[out] Pointer to function.
+ * @param pfnDebug	[in,opt] Pointer to debug logging function. (printf-style) (may be NULL)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEBUG pfnDebug);
 
-#endif /* __ROMPROPERTIES_RP_STUB_CONFIG_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__ */

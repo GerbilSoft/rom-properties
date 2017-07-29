@@ -21,6 +21,8 @@
 
 #include "FileSystem.hpp"
 
+// libunixcommon
+#include "libunixcommon/userdirs.hpp"
 // libromdata
 #include "TextFuncs.hpp"
 
@@ -29,10 +31,8 @@
 
 // C includes.
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <pwd.h>
 #include <utime.h>
 
 // C includes. (C++ namespace)
@@ -160,65 +160,20 @@ int64_t filesize(const rp_string &filename)
  */
 static void initConfigDirectories(void)
 {
-	/** Home directory. **/
-	// NOTE: The home directory is NOT cached.
-	// It's only used to determine the other directories.
+	// Use LibUnixCommon to get the XDG directories.
 
-	rp_string home_dir;
-	const char *const home = getenv("HOME");
-	if (home && home[0] != 0) {
-		// HOME variable is set.
-		home_dir = utf8_to_rp_string(home);
-	} else {
-		// HOME variable is not set.
-		// Check the user's pwent.
-		// TODO: Can pwd_result be nullptr?
-		// TODO: Check for ENOMEM?
-		// TODO: Support getpwuid() if the system doesn't support getpwuid_r()?
-		char buf[2048];
-		struct passwd pwd;
-		struct passwd *pwd_result;
-		int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
-		if (ret != 0 || !pwd_result) {
-			// getpwuid_r() failed.
-			return;
-		}
+	// Cache directory.
+	cache_dir = utf8_to_rp_string(LibUnixCommon::getCacheDirectory());
 
-		if (pwd_result->pw_dir[0] == 0) {
-			// Empty home directory...
-			return;
-		}
-
-		home_dir = utf8_to_rp_string(pwd_result->pw_dir, strlen(pwd_result->pw_dir));
+	// Config directory.
+	config_dir = utf8_to_rp_string(LibUnixCommon::getConfigDirectory());
+	if (!config_dir.empty()) {
+		// Add a trailing slash if necessary.
+		if (config_dir.at(config_dir.size()-1) != '/')
+			config_dir += _RP_CHR('/');
+		// Append "rom-properties".
+		config_dir += _RP("rom-properties");
 	}
-	if (home_dir.empty()) {
-		// Unable to get the home directory...
-		return;
-	}
-
-	/** Cache directory. **/
-	// TODO: Check XDG variables.
-
-	// Unix/Linux: Cache directory is ~/.cache/rom-properties/.
-	// TODO: Mac OS X.
-	cache_dir = home_dir;
-	// Add a trailing slash if necessary.
-	if (cache_dir.at(cache_dir.size()-1) != '/')
-		cache_dir += _RP_CHR('/');
-	// Append ".cache/rom-properties".
-	cache_dir += _RP(".cache/rom-properties");
-
-	/** Configuration directory. **/
-	// TODO: Check XDG variables.
-
-	// Unix/Linux: Cache directory is ~/.config/rom-properties/.
-	// TODO: Mac OS X.
-	config_dir = home_dir;
-	// Add a trailing slash if necessary.
-	if (config_dir.at(config_dir.size()-1) != '/')
-		config_dir += _RP_CHR('/');
-	// Append ".config/rom-properties".
-	config_dir += _RP(".config/rom-properties");
 
 	// Directories have been initialized.
 }

@@ -26,7 +26,7 @@
  * function from the library.
  */
 #include "config.version.h"
-#include "dll-search.h"
+#include "libunixcommon/dll-search.h"
 
 // C includes.
 #include <dlfcn.h>

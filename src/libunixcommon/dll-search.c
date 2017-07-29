@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (rp-stub)                          *
+ * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "rp-stub/config.rp-stub.h"
+#include "config.libunixcommon.h"
 #include "dll-search.h"
 
 // C includes.

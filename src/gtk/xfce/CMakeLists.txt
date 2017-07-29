@@ -60,12 +60,10 @@ SET(rp-thumbnailer-dbus_SRCS
 	rp-thumbnailer-dbus.cpp
 	rp-thumbnailer-main.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
-	../../rp-stub/dll-search.c
 	)
 SET(rp-thumbnailer-dbus_H
 	rp-thumbnailer-dbus.hpp
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.h
-	../../rp-stub/dll-search.h
 	)
 
 # Process the .service file.
@@ -113,6 +111,7 @@ IF(BUILD_XFCE)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
 		)
+	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus unixcommon)
 	TARGET_LINK_LIBRARIES(rp-thumbnailer-dbus GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
