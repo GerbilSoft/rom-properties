@@ -199,7 +199,7 @@ typedef struct PACKED _NDS_RomHeader {
 		uint8_t reserved6[176];		// Zero-filled
 
 		// 0x2F0
-		uint8_t age_ratings[0x10];	// Age ratings. [TODO]
+		uint8_t age_ratings[0x10];	// Age ratings.
 
 		// 0x300
 		uint8_t sha1_hmac_arm9[20];	// SHA1 HMAC of ARM9 (with encrypted secure area)
@@ -241,6 +241,21 @@ typedef enum {
 	DSi_FTYPE_SYSTEM_BASE_TOOL	= 0x15,
 	DSi_FTYPE_SYSTEM_MENU		= 0x17,
 } DSi_FileType;
+
+/**
+ * Nintendo DSi: Country indexes for age_ratings[].
+ */
+typedef enum {
+	DSi_RATING_JAPAN = 0,		// CERO
+	DSi_RATING_USA = 1,		// ESRB
+	DSi_RATING_GERMANY = 3,		// USK
+	DSi_RATING_PEGI = 4,		// PEGI
+	DSi_RATING_FINLAND = 5,		// MEKU?
+	DSi_RATING_PORTUGAL = 6,	// Modified PEGI
+	DSi_RATING_BRITAIN = 7,		// BBFC
+	DSi_RATING_AUSTRALIA = 8,	// AGCB
+	DSi_RATING_SOUTH_KOREA = 9,	// GRB
+} DSi_RatingCountry;
 
 // NDS_IconTitleData version.
 typedef enum {

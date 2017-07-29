@@ -290,21 +290,20 @@ ASSERT_STRUCT(RVL_PartitionHeader, 0x20000);
  * Country indexes in RVL_RegionSetting.ratings[].
  */
 typedef enum {
-	RATING_JAPAN = 0,	// CERO
-	RATING_USA = 1,		// ESRB
-	RATING_GERMANY = 3,	// USK
-	RATING_PEGI = 4,	// PEGI
-	RATING_FINLAND = 5,	// MEKU?
-	RATING_PORTUGAL = 6,	// Modified PEGI
-	RATING_BRITAIN = 7,	// BBFC
-	RATING_AUSTRALIA = 8,	// AGCB
-	RATING_SOUTH_KOREA = 9,	// GRB
+	RVL_RATING_JAPAN = 0,		// CERO
+	RVL_RATING_USA = 1,		// ESRB
+	RVL_RATING_GERMANY = 3,		// USK
+	RVL_RATING_PEGI = 4,		// PEGI
+	RVL_RATING_FINLAND = 5,		// MEKU?
+	RVL_RATING_PORTUGAL = 6,	// Modified PEGI
+	RVL_RATING_BRITAIN = 7,		// BBFC
+	RVL_RATING_AUSTRALIA = 8,	// AGCB
+	RVL_RATING_SOUTH_KOREA = 9,	// GRB
 } RVL_RegionSetting_RatingCountry;
 
 /**
  * Region setting and age ratings.
  * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
- * TODO: Decode age ratings into e.g. ESRB.
  */
 #pragma pack(1)
 #define RVL_RegionSetting_ADDRESS 0x4E000
