@@ -24,6 +24,7 @@ SET(libromdata_SRCS
 	Sega8Bit.cpp
 	SegaPVR.cpp
 	DirectDrawSurface.cpp
+	Dreamcast.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -71,6 +72,7 @@ SET(libromdata_H
 	Sega8Bit.hpp
 	SegaPVR.hpp
 	DirectDrawSurface.hpp
+	Dreamcast.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -89,6 +91,7 @@ SET(libromdata_H
 	sega8_structs.h
 	pvr_structs.h
 	dds_structs.h
+	cdrom_structs.h
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
