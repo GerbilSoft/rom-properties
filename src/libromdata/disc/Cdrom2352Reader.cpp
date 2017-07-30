@@ -90,7 +90,8 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 	}
 
 	// Disc parameters.
-	blockCount = fileSize / 2352;
+	// TODO: 64-bit block count?
+	blockCount = (unsigned int)(fileSize / 2352);
 	block_size = 2048;
 	disc_size = fileSize / 2352 * 2048;
 
