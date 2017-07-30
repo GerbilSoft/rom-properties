@@ -22,6 +22,7 @@
 #include "Dreamcast.hpp"
 #include "librpbase/RomData_p.hpp"
 
+#include "data/SegaPublishers.hpp"
 #include "dc_structs.h"
 #include "cdrom_structs.h"
 
@@ -517,9 +518,32 @@ int Dreamcast::loadFieldData(void)
 		(len > 0 ? latin1_to_rp_string(discHeader->boot_filename, len) : _RP("Unknown")));
 
 	// Publisher.
-	len = d->trim_spaces(discHeader->publisher, (int)sizeof(discHeader->publisher));
-	d->fields->addField_string(_RP("Publisher"),
-		(len > 0 ? latin1_to_rp_string(discHeader->publisher, len) : _RP("Unknown")));
+	const rp_char *publisher = nullptr;
+	if (!memcmp(discHeader->publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader->publisher))) {
+		// First-party Sega title.
+		publisher = _RP("Sega");
+	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
+		// This may be a third-party T-code.
+		char *endptr;
+		unsigned int t_code = strtoul(&discHeader->publisher[10], &endptr, 10);
+		if (t_code != 0 &&
+		    endptr > &discHeader->publisher[10] &&
+		    endptr <= &discHeader->publisher[15])
+		{
+			// Valid T-code. Look up the publisher.
+			publisher = SegaPublishers::lookup(t_code);
+		}
+	}
+
+	if (publisher) {
+		d->fields->addField_string(_RP("Publisher"), publisher);
+	} else {
+		// Unknown publisher.
+		// List the field as-is.
+		len = d->trim_spaces(discHeader->publisher, (int)sizeof(discHeader->publisher));
+		d->fields->addField_string(_RP("Publisher"),
+			(len > 0 ? latin1_to_rp_string(discHeader->publisher, len) : _RP("Unknown")));
+	}
 
 	// Title. (TODO: Encoding?)
 	len = d->trim_spaces(discHeader->title, (int)sizeof(discHeader->title));
