@@ -136,6 +136,16 @@ class DMGPrivate : public RomDataPrivate
 		static const uint8_t dmg_nintendo[0x18];
 
 	public:
+		enum DMG_RomType {
+			ROM_UNKNOWN	= -1,	// Unknown ROM type.
+			ROM_DMG		= 0,	// Game Boy
+			ROM_CGB		= 1,	// Game Boy Color
+		};
+
+		// ROM type.
+		int romType;
+
+	public:
 		// ROM header.
 		DMG_RomHeader romHeader;
 };
@@ -209,6 +219,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
 	: super(q, file)
+	, romType(ROM_UNKNOWN)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -311,8 +322,9 @@ DMG::DMG(IRpFile *file)
 	info.header.pData = header;
 	info.ext = nullptr;	// Not needed for DMG.
 	info.szFile = 0;	// Not needed for DMG.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->romType = isRomSupported_static(&info);
 
+	d->isValid = (d->romType >= 0);
 	if (d->isValid) {
 		// Save the header for later.
 		// TODO: Save the RST table?
@@ -347,10 +359,9 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 	if (!memcmp(romHeader->nintendo, DMGPrivate::dmg_nintendo, sizeof(DMGPrivate::dmg_nintendo))) {
 		// Found a DMG ROM.
 		if (romHeader->cgbflag & 0x80) {
-			//TODO: Make this an enum, maybe
-			return 1; // CGB supported
+			return DMGPrivate::ROM_CGB; // CGB supported
 		}
-		return 0;
+		return DMGPrivate::ROM_DMG;
 	}
 
 	// Not supported.
@@ -380,6 +391,7 @@ const rp_char *DMG::systemName(uint32_t type) const
 
 	// GB/GBC have the same names worldwide, so we can
 	// ignore the region selection.
+	// TODO: Abbreviation might be different... (Japan uses DMG/CGB?)
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"DMG::systemName() array index optimization needs to be updated.");
 
@@ -390,13 +402,10 @@ const rp_char *DMG::systemName(uint32_t type) const
 		_RP("Nintendo Game Boy Color"), _RP("Game Boy Color"), _RP("GBC"), nullptr
 	};
 
-	uint32_t idx = (type & SYSNAME_TYPE_MASK);
-	if (d->romHeader.cgbflag & 0x80) {
-		// ROM supports Game Boy Color functionality.
-		// NOTE: Pokemon Yellow used a "Game Boy" box, even though
-		// the US version supported GBC, but Pokemon Gold and Silver
-		// use a "Game Boy Color" box.
-		idx |= 4;
+	unsigned int idx = (d->romType << 2) | (type & SYSNAME_TYPE_MASK);
+	if (idx >= ARRAY_SIZE(sysNames)) {
+		// Invalid index...
+		idx &= SYSNAME_TYPE_MASK;
 	}
 
 	return sysNames[idx];
@@ -458,8 +467,8 @@ int DMG::loadFieldData(void)
 	} else if (!d->file || !d->file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
-	} else if (!d->isValid) {
-		// ROM image isn't valid.
+	} else if (!d->isValid || d->romType < 0) {
+		// Unknown ROM image type.
 		return -EIO;
 	}
 

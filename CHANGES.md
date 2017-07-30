@@ -15,6 +15,8 @@
     on hardware (or the method to read it is unknown), so it's always 0 bytes
     in dumped ROMs. The official SDK puts unknown pseudo-random data here, so
     DSiWare and Wii U VC SRLs will have non-zero data here.
+  * Game Boy: "Game Boy Color" will now only be shown for GBC-exclusive ROMs
+    instead of both GBC-exclusive and GBC-enhanced.
 
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
