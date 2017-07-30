@@ -336,6 +336,13 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 
 	// Create a PartitionFile at the specified address.
 	const int64_t gdtex_addr = (int64_t)(dirEntry_0gdtex->block.he - session_start_address) * block_size;
+	if (gdtex_addr >= discReader->size()) {
+		// Out of range.
+		// ChuChu Rocket! has 0GDTEX.PVR listed in its
+		// directory table on track 03, but for some
+		// reason, the actual data is on track 19.
+		return nullptr;
+	}
 	PartitionFile *const pvrFile_tmp = new PartitionFile(discReader, gdtex_addr, dirEntry_0gdtex->size.he);
 	rootdir_data.reset();
 
