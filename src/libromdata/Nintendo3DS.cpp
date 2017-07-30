@@ -1877,7 +1877,6 @@ int Nintendo3DS::loadFieldData(void)
 	}
 
 	// Is the NCSD header loaded?
-	// TODO: Show before SMDH, and/or on a different subtab?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
 		if (haveSeparateSMDHTab) {
