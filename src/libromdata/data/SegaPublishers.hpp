@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * MegaDrivePublishers.hpp: Sega Mega Drive third-party publishers list.   *
+ * SegaPublishers.hpp: Sega third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -19,40 +19,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__
 
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
 
 namespace LibRomData {
 
-class MegaDrivePublishers
+class SegaPublishers
 {
 	private:
-		MegaDrivePublishers();
-		~MegaDrivePublishers();
-	private:
-		RP_DISABLE_COPY(MegaDrivePublishers)
-
-	private:
-		/**
-		 * Sega Mega Drive third-party publisher list.
-		 * Reference: http://segaretro.org/Third-party_T-series_codes
-		 */
-		struct ThirdPartyList {
-			unsigned int t_code;
-			const rp_char *publisher;
-		};
-		static const ThirdPartyList ms_thirdPartyList[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int compar(const void *a, const void *b);
+		SegaPublishers();
+		~SegaPublishers();
+		RP_DISABLE_COPY(SegaPublishers)
 
 	public:
 		/**
@@ -65,4 +45,4 @@ class MegaDrivePublishers
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_MEGADRIVEPUBLISHERS_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__ */

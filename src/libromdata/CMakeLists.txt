@@ -25,7 +25,7 @@ SET(libromdata_SRCS
 	SegaPVR.cpp
 	DirectDrawSurface.cpp
 	Dreamcast.cpp
-	data/MegaDrivePublishers.cpp
+	data/SegaPublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
 	data/WiiSystemMenuVersion.cpp
@@ -92,7 +92,7 @@ SET(libromdata_H
 	pvr_structs.h
 	dds_structs.h
 	cdrom_structs.h
-	data/MegaDrivePublishers.hpp
+	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
 	data/WiiSystemMenuVersion.hpp
