@@ -122,11 +122,11 @@ class DreamcastSavePrivate : public RomDataPrivate
 		// depending on if we loaded a VMI or DCI.
 		// If the original value is invalid, this will
 		// be set to -1.
-		int64_t ctime;
+		time_t ctime;
 
 		// Time conversion functions.
-		static int64_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
-		static int64_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
+		static time_t vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm);
+		static time_t vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm);
 
 		// Is this a VMS game file?
 		bool isGameFile;
@@ -250,7 +250,7 @@ DreamcastSavePrivate::~DreamcastSavePrivate()
  * NOTE: vmi_tm->year must have been byteswapped prior to
  * calling this function.
  */
-int64_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
+time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 {
 	// Convert the VMI time to Unix time.
 	// NOTE: struct tm has some oddities:
@@ -283,7 +283,7 @@ int64_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
  * not likely to be valid for Dreamcast, since Dreamcast
  * was released in 1998.
  */
-int64_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm)
+time_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *vms_bcd_tm)
 {
 	// Convert the VMS BCD time to Unix time.
 	// NOTE: struct tm has some oddities:

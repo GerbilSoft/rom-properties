@@ -121,7 +121,7 @@ class NESPrivate : public RomDataPrivate
 		 * not likely to be valid for NES/Famicom, since the Famicom
 		 * was released in 1983.
 		 */
-		static int64_t fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds);
+		static time_t fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds);
 };
 
 /** NESPrivate **/
@@ -157,9 +157,9 @@ inline rp_string NESPrivate::formatBankSizeKB(unsigned int size)
  * not likely to be valid for NES/Famicom, since the Famicom
  * was released in 1983.
  */
-int64_t NESPrivate::fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_ds)
+time_t NESPrivate::fds_bcd_datestamp_to_unix_time(const FDS_BCD_DateStamp *fds_bcd_ds)
 {
-	// Convert the VMI time to Unix time.
+	// Convert the FDS time to Unix time.
 	// NOTE: struct tm has some oddities:
 	// - tm_year: year - 1900
 	// - tm_mon: 0 == January
@@ -871,7 +871,7 @@ int NES::loadFieldData(void)
 			d->header.fds.revision, RomFields::FB_DEC, 2);
 
 		// Manufacturing Date.
-		int64_t mfr_date = d->fds_bcd_datestamp_to_unix(&d->header.fds.mfr_date);
+		time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
 		d->fields->addField_dateTime(_RP("Manufacturing Date"), mfr_date,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // Date only.

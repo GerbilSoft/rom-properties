@@ -39,7 +39,7 @@
  * @param unix_time Unix time.
  * @param pSystemTime Win32 SYSTEMTIME.
  */
-static TIME_INLINE void UnixTimeToSystemTime(int64_t unix_time, SYSTEMTIME *pSystemTime)
+static TIME_INLINE void UnixTimeToSystemTime(time_t unix_time, SYSTEMTIME *pSystemTime)
 {
 	LARGE_INTEGER li;
 	FILETIME ft;

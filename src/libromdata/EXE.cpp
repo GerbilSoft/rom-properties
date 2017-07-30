@@ -263,7 +263,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 #ifndef HECTONANOSEC_PER_SEC
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
-		int64_t fileTimeUnix = (fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC;
+		time_t fileTimeUnix = (time_t)((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
 		fields->addField_dateTime(_RP("File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
