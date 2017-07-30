@@ -84,6 +84,7 @@ class DreamcastPrivate : public RomDataPrivate
 		// Session start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
+		bool session_start_found;
 		unsigned int session_start_address;
 
 		// 0GDTEX.PVR image.
@@ -125,6 +126,7 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	: super(q, file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
+	, session_start_found(false)
 	, session_start_address(0)
 	, pvrFile(nullptr)
 	, pvrData(nullptr)
@@ -273,12 +275,28 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 
 	// Check the root directory entry.
 	const ISO_DirEntry *const rootdir = &pvd.pri.dir_entry_root;
-	if (rootdir->block.he < (session_start_address + 2) ||
-	    rootdir->size.he > 16*1024*1024)
-	{
-		// Either the starting block is invalid,
-		// or the root directory size is too big.
+	if (rootdir->size.he > 16*1024*1024) {
+		// Root directory is too big.
 		return nullptr;
+	}
+
+	if (session_start_found) {
+		// Session start address was already determined.
+		if (rootdir->block.he < (session_start_address + 2)) {
+			// Starting block is invalid.
+			return nullptr;
+		}
+	} else {
+		// We didn't find the session start address yet.
+		// This might be a 2048-byte single-track image,
+		// in which case, we'll need to assume that the
+		// root directory starts at block 20.
+		// TODO: Better heuristics.
+		if (rootdir->block.he < 20) {
+			// Starting block is invalid.
+			return nullptr;
+		}
+		session_start_address = rootdir->block.he - 20;
 	}
 
 	// Load the root directory.
@@ -420,6 +438,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
 			d->session_start_address = cdrom_msf_to_lba(&sector.msf);
+			d->session_start_found = true;
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
 			d->discReader = new Cdrom2352Reader(d->file);
 			break;
