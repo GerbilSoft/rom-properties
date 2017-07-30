@@ -159,9 +159,9 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	assert(pos >= 0 && pos < (int)d->block_size);
 	assert(size <= d->block_size);
 	// TODO: Make sure overflow doesn't occur.
-	assert((int64_t)(pos + size) < (int64_t)d->block_size);
+	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
 	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
-	    (int64_t)(pos + size) >= (int64_t)d->block_size)
+	    (int64_t)(pos + size) > (int64_t)d->block_size)
 	{
 		// pos+size is out of range.
 		return -1;
