@@ -227,7 +227,6 @@ wbfs_t *WbfsReaderPrivate::readWbfsHeader(void)
 
 	// If the sector size is wrong, reallocate and reread.
 	if (p->hd_sec_sz != hd_sec_sz) {
-		// TODO: realloc()?
 		hd_sec_sz = p->hd_sec_sz;
 		free(head);
 		head = (wbfs_head_t*)malloc(hd_sec_sz);
