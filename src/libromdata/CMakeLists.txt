@@ -44,6 +44,7 @@ SET(libromdata_SRCS
 	disc/NEResourceReader.cpp
 	disc/NCCHReader.cpp
 	disc/CIAReader.cpp
+	disc/Cdrom2352Reader.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	)
 # Headers.
@@ -115,6 +116,7 @@ SET(libromdata_H
 	disc/NCCHReader.hpp
 	disc/NCCHReader_p.hpp
 	disc/CIAReader.hpp
+	disc/Cdrom2352Reader.hpp
 	config/TImageTypesConfig.hpp
 	)
 

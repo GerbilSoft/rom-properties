@@ -33,6 +33,10 @@
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
 
+// DiscReader
+#include "librpbase/disc/DiscReader.hpp"
+#include "disc/Cdrom2352Reader.hpp"
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cctype>
@@ -49,6 +53,7 @@ class DreamcastPrivate : public RomDataPrivate
 {
 	public:
 		DreamcastPrivate(Dreamcast *q, IRpFile *file);
+		~DreamcastPrivate();
 
 	private:
 		typedef RomDataPrivate super;
@@ -61,8 +66,9 @@ class DreamcastPrivate : public RomDataPrivate
 			DISC_ISO_2352		= 1,	// ISO-9660, 2352-byte sectors.
 		};
 
-		// Disc type.
+		// Disc type and reader.
 		int discType;
+		IDiscReader *discReader;
 
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
@@ -100,10 +106,16 @@ class DreamcastPrivate : public RomDataPrivate
 DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	: super(q, file)
 	, discType(DISC_UNKNOWN)
+	, discReader(nullptr)
 	, session_start_address(0)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));
+}
+
+DreamcastPrivate::~DreamcastPrivate()
+{
+	delete discReader;
 }
 
 /**
@@ -249,12 +261,14 @@ Dreamcast::Dreamcast(IRpFile *file)
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
+			d->discReader = new DiscReader(d->file);
 			break;
 		case DreamcastPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
 			d->session_start_address = cdrom_msf_to_lba(&sector.msf);
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
+			d->discReader = new Cdrom2352Reader(d->file);
 			break;
 		default:
 			// Unsupported.
@@ -301,9 +315,7 @@ int Dreamcast::isRomSupported_static(const DetectInfo *info)
 	{
 		// Found HW and Maker IDs at 0x0010.
 		// Verify the sync bytes.
-		static const uint8_t cdrom_sync[12] =
-			{0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00};
-		if (!memcmp(info->header.pData, cdrom_sync, sizeof(cdrom_sync))) {
+		if (Cdrom2352Reader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 			// Found CD-ROM sync bytes.
 			// This is a 2352-byte sector image.
 			return DreamcastPrivate::DISC_ISO_2352;
