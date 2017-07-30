@@ -735,7 +735,7 @@ rom_data_view_init_header_row(RomDataView *page)
 					page->iconFrames[page->last_frame_number]);
 				gtk_widget_show(page->imgIcon);
 
-				// Icon animation timer is set in startAnimTimer().
+				// Icon animation timer is set in start_anim_timer().
 			} else {
 				// Not an animated icon.
 				page->last_frame_number = 0;
@@ -1646,11 +1646,17 @@ static void stop_anim_timer(RomDataView *page)
  */
 static gboolean anim_timer_func(RomDataView *page)
 {
+	if (page->tmrIconAnim == 0) {
+		// Shutting down...
+		return FALSE;
+	}
+
 	// Next frame.
 	int delay = 0;
 	int frame = page->iconAnimHelper->nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
+		page->tmrIconAnim = 0;
 		return FALSE;
 	}
 
