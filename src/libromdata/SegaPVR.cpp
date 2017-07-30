@@ -710,7 +710,7 @@ int SegaPVR::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *SegaPVR::systemName(uint32_t type) const
+const rp_char *SegaPVR::systemName(unsigned int type) const
 {
 	RP_D(const SegaPVR);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -721,16 +721,19 @@ const rp_char *SegaPVR::systemName(uint32_t type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"SegaPVR::systemName() array index optimization needs to be updated.");
 
-	static const rp_char *const sysNames[3][4] = {
-		{_RP("Sega Dreamcast PVR"), _RP("Sega PVR"), _RP("PVR"), nullptr},
-		{_RP("Sega GVR for GameCube"), _RP("Sega GVR"), _RP("GVR"), nullptr},
-		{_RP("Sega PVRX for Xbox"), _RP("Sega PVRX"), _RP("PVRX"), nullptr},
+	static const rp_char *const sysNames[12] = {
+		_RP("Sega Dreamcast PVR"), _RP("Sega PVR"), _RP("PVR"), nullptr,
+		_RP("Sega GVR for GameCube"), _RP("Sega GVR"), _RP("GVR"), nullptr,
+		_RP("Sega PVRX for Xbox"), _RP("Sega PVRX"), _RP("PVRX"), nullptr,
 	};
 
-	if (d->pvrType < 0 || d->pvrType >= SegaPVRPrivate::PVR_TYPE_MAX)
-		return nullptr;
+	unsigned int idx = (d->pvrType << 2) | (type & SYSNAME_TYPE_MASK);
+	if (idx >= ARRAY_SIZE(sysNames)) {
+		// Invalid index...
+		idx &= SYSNAME_TYPE_MASK;
+	}
 
-	return sysNames[d->pvrType][type & SYSNAME_TYPE_MASK];
+	return sysNames[idx];
 }
 
 /**

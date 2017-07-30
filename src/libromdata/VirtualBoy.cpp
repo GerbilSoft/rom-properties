@@ -284,7 +284,7 @@ int VirtualBoy::isRomSupported(const DetectInfo *info) const
  * Get the name of the system the loaded ROM is designed for.
  * @return System name, or nullptr if not supported.
  */
-const rp_char *VirtualBoy::systemName(uint32_t type) const
+const rp_char *VirtualBoy::systemName(unsigned int type) const
 {
 	RP_D(const VirtualBoy);
 	if (!d->isValid || !isSystemNameTypeValid(type))

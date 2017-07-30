@@ -78,7 +78,7 @@ class NES : public LibRpBase::RomData
 		 * @param type System name type. (See the SystemName enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const override;
+		virtual const rp_char *systemName(unsigned int type) const override;
 
 	public:
 		/**

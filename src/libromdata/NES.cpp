@@ -458,7 +458,7 @@ int NES::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *NES::systemName(uint32_t type) const
+const rp_char *NES::systemName(unsigned int type) const
 {
 	RP_D(NES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -468,7 +468,7 @@ const rp_char *NES::systemName(uint32_t type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"NES::systemName() array index optimization needs to be updated.");
 
-	uint32_t idx = (type & SYSNAME_TYPE_MASK);
+	const unsigned int idx = (type & SYSNAME_TYPE_MASK);
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {

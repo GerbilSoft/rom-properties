@@ -181,7 +181,7 @@ class RomData
 		 * @param type Bitfield containing SystemNameType values.
 		 * @return True if valid; false if not.
 		 */
-		static inline bool isSystemNameTypeValid(uint32_t type)
+		static inline bool isSystemNameTypeValid(unsigned int type)
 		{
 			// Check for an invalid SYSNAME_TYPE.
 			if ((type & SYSNAME_TYPE_MASK) > SYSNAME_TYPE_ABBREVIATION)
@@ -199,7 +199,7 @@ class RomData
 		 * @param type System name type. (See the SystemNameType enum.)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const rp_char *systemName(uint32_t type) const = 0;
+		virtual const rp_char *systemName(unsigned int type) const = 0;
 
 		/**
 		 * Get the class name for the user configuration.

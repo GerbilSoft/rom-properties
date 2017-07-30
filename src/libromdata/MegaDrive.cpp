@@ -751,7 +751,7 @@ int MegaDrive::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *MegaDrive::systemName(uint32_t type) const
+const rp_char *MegaDrive::systemName(unsigned int type) const
 {
 	RP_D(const MegaDrive);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -765,7 +765,7 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"MegaDrive::systemName() array index optimization needs to be updated.");
 
-	uint32_t romSys = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
+	unsigned int romSys = (d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK);
 	if (romSys > MegaDrivePrivate::ROM_SYSTEM_MAX) {
 		// Invalid system type. Default to MD.
 		romSys = MegaDrivePrivate::ROM_SYSTEM_MD;
@@ -774,7 +774,7 @@ const rp_char *MegaDrive::systemName(uint32_t type) const
 	// sysNames[] bitfield:
 	// - Bits 0-1: Type. (short, long, abbreviation)
 	// - Bits 2-4: System type.
-	uint32_t idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
+	unsigned int idx = (romSys << 2) | (type & SYSNAME_TYPE_MASK);
 	if (idx >= 20) {
 		// Invalid index...
 		idx &= SYSNAME_TYPE_MASK;

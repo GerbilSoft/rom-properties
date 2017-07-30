@@ -825,7 +825,7 @@ int NintendoDS::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *NintendoDS::systemName(uint32_t type) const
+const rp_char *NintendoDS::systemName(unsigned int type) const
 {
 	RP_D(const NintendoDS);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -850,8 +850,8 @@ const rp_char *NintendoDS::systemName(uint32_t type) const
 		_RP("iQue DSi"), _RP("iQue DSi"), _RP("DSi"), nullptr
 	};
 
-	uint32_t idx = (type & SYSNAME_TYPE_MASK);
-	if ((d->romHeader.unitcode & 0x03) == 0x03) {
+	unsigned int idx = (type & SYSNAME_TYPE_MASK);
+	if (d->romType == NintendoDSPrivate::ROM_DSi_ONLY) {
 		// DSi-exclusive game.
 		idx |= (1 << 2);
 		if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_ROM_LOCAL) {

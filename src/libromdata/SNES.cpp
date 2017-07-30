@@ -359,7 +359,7 @@ int SNES::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *SNES::systemName(uint32_t type) const
+const rp_char *SNES::systemName(unsigned int type) const
 {
 	RP_D(const SNES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -368,7 +368,7 @@ const rp_char *SNES::systemName(uint32_t type) const
 	// sysNames[] bitfield:
 	// - Bits 0-1: Type. (short, long, abbreviation)
 	// - Bits 2-3: Region.
-	uint32_t idx = (type & SYSNAME_TYPE_MASK);
+	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
 	static const rp_char *const sysNames[16] = {
 		// Japan: Super Famicom

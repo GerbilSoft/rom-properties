@@ -358,7 +358,7 @@ int PlayStationSave::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *PlayStationSave::systemName(uint32_t type) const
+const rp_char *PlayStationSave::systemName(unsigned int type) const
 {
 	RP_D(const PlayStationSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))

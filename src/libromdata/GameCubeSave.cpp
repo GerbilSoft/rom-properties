@@ -705,7 +705,7 @@ int GameCubeSave::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *GameCubeSave::systemName(uint32_t type) const
+const rp_char *GameCubeSave::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))

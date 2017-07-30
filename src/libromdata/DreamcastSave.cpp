@@ -1122,7 +1122,7 @@ int DreamcastSave::isRomSupported(const DetectInfo *info) const
  * @param type System name type. (See the SystemName enum.)
  * @return System name, or nullptr if type is invalid.
  */
-const rp_char *DreamcastSave::systemName(uint32_t type) const
+const rp_char *DreamcastSave::systemName(unsigned int type) const
 {
 	RP_D(const DreamcastSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
