@@ -271,13 +271,7 @@ int64_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
 	dctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-#ifdef _WIN32
-	// MSVCRT-specific version.
-	return _mkgmtime(&dctime);
-#else /* !_WIN32 */
-	// FIXME: Might not be available on some systems.
 	return timegm(&dctime);
-#endif
 }
 
 /**
@@ -319,13 +313,7 @@ int64_t DreamcastSavePrivate::vms_bcd_to_unix_time(const DC_VMS_BCD_Timestamp *v
 	dctime.tm_isdst = 0;
 
 	// If conversion fails, d->ctime will be set to -1.
-#ifdef _WIN32
-	// MSVCRT-specific version.
-	return _mkgmtime(&dctime);
-#else /* !_WIN32 */
-	// FIXME: Might not be available on some systems.
 	return timegm(&dctime);
-#endif
 }
 
 /**

@@ -414,13 +414,8 @@ int Sega8Bit::loadFieldData(void)
 		cmtime.tm_isdst = 0;
 
 		// If conversion fails, d->ctime will be set to -1.
-#ifdef _WIN32
-		// MSVCRT-specific version.
-		time_t ctime = _mkgmtime(&cmtime);
-#else /* !_WIN32 */
-		// FIXME: Might not be available on some systems.
 		time_t ctime = timegm(&cmtime);
-#endif
+
 		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(_RP("Build Time"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
@@ -482,13 +477,8 @@ int Sega8Bit::loadFieldData(void)
 		cmtime.tm_isdst = 0;
 
 		// If conversion fails, d->ctime will be set to -1.
-#ifdef _WIN32
-		// MSVCRT-specific version.
-		time_t ctime = _mkgmtime(&cmtime);
-#else /* !_WIN32 */
-		// FIXME: Might not be available on some systems.
 		time_t ctime = timegm(&cmtime);
-#endif
+
 		// TODO: Interpret dateTime of -1 as "error"?
 		d->fields->addField_dateTime(_RP("Build Date"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |

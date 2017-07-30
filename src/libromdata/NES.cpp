@@ -174,7 +174,7 @@ int64_t NESPrivate::fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_d
 		return -1;
 	}
 
-	struct tm fdstime = { };
+	struct tm fdstime;
 
 	// TODO: Check for invalid BCD values.
 	fdstime.tm_year = ((fds_bcd_ds->year >> 4) * 10) +
@@ -184,14 +184,18 @@ int64_t NESPrivate::fds_bcd_datestamp_to_unix(const FDS_BCD_DateStamp *fds_bcd_d
 	fdstime.tm_mday = ((fds_bcd_ds->mday >> 4) * 10) +
 			   (fds_bcd_ds->mday & 0x0F);
 
+	// Time portion is empty.
+	fdstime.tm_hour = 0;
+	fdstime.tm_min = 0;
+	fdstime.tm_sec = 0;
+
+	// tm_wday and tm_yday are output variables.
+	fdstime.tm_wday = 0;
+	fdstime.tm_yday = 0;
+	fdstime.tm_isdst = 0;
+
 	// If conversion fails, d->ctime will be set to -1.
-#ifdef _WIN32
-	// MSVCRT-specific version.
-	return _mkgmtime(&fdstime);
-#else /* !_WIN32 */
-	// FIXME: Might not be available on some systems.
 	return timegm(&fdstime);
-#endif
 }
 
 /** NES **/
