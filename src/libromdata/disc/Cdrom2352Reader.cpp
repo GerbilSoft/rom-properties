@@ -56,6 +56,9 @@ class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 		// CD-ROM sync magic.
 		static const uint8_t CDROM_2352_MAGIC[12];
 
+		// Physical block size.
+		static const unsigned int physBlockSize = 2352;
+
 		// Number of 2352-byte blocks.
 		unsigned int blockCount;
 };
@@ -87,6 +90,7 @@ Cdrom2352ReaderPrivate::Cdrom2352ReaderPrivate(Cdrom2352Reader *q, IRpFile *file
 	}
 
 	// Disc parameters.
+	blockCount = fileSize / 2352;
 	block_size = 2048;
 	disc_size = fileSize / 2352 * 2048;
 
@@ -158,10 +162,12 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	RP_D(Cdrom2352Reader);
 	assert(pos >= 0 && pos < (int)d->block_size);
 	assert(size <= d->block_size);
+	assert(blockIdx < d->blockCount);
 	// TODO: Make sure overflow doesn't occur.
 	assert((int64_t)(pos + size) <= (int64_t)d->block_size);
 	if (pos < 0 || pos >= (int)d->block_size || size > d->block_size ||
-	    (int64_t)(pos + size) > (int64_t)d->block_size)
+	    (int64_t)(pos + size) > (int64_t)d->block_size ||
+	    blockIdx >= d->blockCount)
 	{
 		// pos+size is out of range.
 		return -1;
@@ -173,7 +179,7 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, void *ptr, int pos, size_t siz
 	}
 
 	// Go to the block.
-	const int64_t phys_pos = ((int64_t)blockIdx * d->block_size) + 16 + pos;
+	const int64_t phys_pos = ((int64_t)blockIdx * d->physBlockSize) + 16 + pos;
 	size_t sz_read = d->file->seekAndRead(phys_pos, ptr, size);
 	m_lastError = d->file->lastError();
 	return (sz_read > 0 ? (int)sz_read : -1);
