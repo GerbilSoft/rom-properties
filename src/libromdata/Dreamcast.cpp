@@ -25,17 +25,23 @@
 #include "data/SegaPublishers.hpp"
 #include "dc_structs.h"
 #include "cdrom_structs.h"
+#include "iso_structs.h"
 
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
+#include "librpbase/img/rp_image.hpp"
 using namespace LibRpBase;
 
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/Cdrom2352Reader.hpp"
+
+// SegaPVR decoder.
+#include "SegaPVR.hpp"
+#include "librpbase/disc/PartitionFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -44,7 +50,9 @@ using namespace LibRpBase;
 #include <cstring>
 
 // C++ includes.
+#include <memory>
 #include <vector>
+using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {
@@ -78,6 +86,10 @@ class DreamcastPrivate : public RomDataPrivate
 		// not offsets relative to the start of the track.
 		unsigned int session_start_address;
 
+		// 0GDTEX.PVR image.
+		PartitionFile *pvrFile;	// uses discReader
+		SegaPVR *pvrData;	// SegaPVR object.
+
 		/**
 		 * Calculate the Product CRC16.
 		 * @param ip0000_bin IP0000.bin struct.
@@ -99,6 +111,12 @@ class DreamcastPrivate : public RomDataPrivate
 		 * @return String length, minus spaces.
 		 */
 		static inline int trim_spaces(const char *str, int max_len);
+
+		/**
+		 * Load 0GDTEX.PVR.
+		 * @return 0GDTEX.PVR as rp_image, or nullptr on error.
+		 */
+		const rp_image *load0GDTEX(void);
 };
 
 /** DreamcastPrivate **/
@@ -108,6 +126,8 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, session_start_address(0)
+	, pvrFile(nullptr)
+	, pvrData(nullptr)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));
@@ -115,6 +135,10 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 
 DreamcastPrivate::~DreamcastPrivate()
 {
+	if (pvrData) {
+		pvrData->unref();
+	}
+	delete pvrFile;
 	delete discReader;
 }
 
@@ -206,6 +230,123 @@ inline int DreamcastPrivate::trim_spaces(const char *str, int max_len)
 			break;
 	}
 	return max_len;
+}
+
+/**
+ * Load 0GDTEX.PVR.
+ * @return 0GDTEX.PVR as rp_image, or nullptr on error.
+ */
+const rp_image *DreamcastPrivate::load0GDTEX(void)
+{
+	if (pvrData) {
+		// Image has already been loaded.
+		return pvrData->image(RomData::IMG_INT_IMAGE);
+	} else if (!this->file || !this->discReader) {
+		// Can't load the image.
+		return nullptr;
+	}
+
+	// TODO: ISO-9660 file system reader.
+	// For now, parsing the structs here.
+
+	// Read the primary volume descriptor.
+	// TODO: Assuming this is the first one.
+	// Check for multiple?
+	ISO_Volume_Descriptor pvd;
+	size_t size = discReader->seekAndRead(0x8000, &pvd, sizeof(pvd));
+	if (size != sizeof(pvd)) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Verify the signature and volume descriptor type.
+	if (pvd.type != ISO_VDT_PRIMARY || pvd.version != ISO_VD_VERSION ||
+	    memcmp(pvd.identifier, ISO_MAGIC, sizeof(pvd.identifier)) != 0)
+	{
+		// Invalid volume descriptor.
+		return nullptr;
+	}
+
+	// Block size.
+	// Should be 2048, but other values are possible.
+	const unsigned int block_size = pvd.pri.logical_block_size.he;
+
+	// Check the root directory entry.
+	const ISO_DirEntry *const rootdir = &pvd.pri.dir_entry_root;
+	if (rootdir->block.he < (session_start_address + 2) ||
+	    rootdir->size.he > 16*1024*1024)
+	{
+		// Either the starting block is invalid,
+		// or the root directory size is too big.
+		return nullptr;
+	}
+
+	// Load the root directory.
+	// NOTE: Due to variable-length entries, we need to load
+	// the entire root directory all at once.
+	unique_ptr<uint8_t[]> rootdir_data(new uint8_t[rootdir->size.he]);
+	const int64_t rootdir_addr = (int64_t)(rootdir->block.he - session_start_address) * block_size;
+	size = discReader->seekAndRead(rootdir_addr, rootdir_data.get(), rootdir->size.he);
+	if (size != rootdir->size.he) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Search for the file.
+	const ISO_DirEntry *dirEntry_0gdtex = nullptr;
+	const uint8_t *p = rootdir_data.get();
+	const uint8_t *const p_end = p + rootdir->size.he;
+	while (p < p_end) {
+		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
+		const char *filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
+		if (filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
+			// Filename is out of bounds.
+			break;
+		}
+
+		// Check if this is "0GDTEX.PVR" or "0GDTEX.PVR;1".
+		// TODO: Better way to handle the ";1".
+		if ((dirEntry->filename_length == 12 && !strcasecmp(filename, "0GDTEX.PVR;1")) ||
+		    (dirEntry->filename_length == 10 && !strcasecmp(filename, "0GDTEX.PVR")))
+		{
+			// Found it!
+			dirEntry_0gdtex = dirEntry;
+			break;
+		}
+
+		// Next entry.
+		p += dirEntry->entry_length;
+	}
+
+	if (!dirEntry_0gdtex) {
+		// File not found.
+		return nullptr;
+	}
+
+	// Sanity check: PVR shouldn't be larger than 4 MB.
+	if (dirEntry_0gdtex->size.he > 4*1024*1024) {
+		// PVR is too big.
+		return nullptr;
+	}
+
+	// Create a PartitionFile at the specified address.
+	const int64_t gdtex_addr = (int64_t)(dirEntry_0gdtex->block.he - session_start_address) * block_size;
+	PartitionFile *const pvrFile_tmp = new PartitionFile(discReader, gdtex_addr, dirEntry_0gdtex->size.he);
+	rootdir_data.reset();
+
+	// Create the SegaPVR object.
+	SegaPVR *const pvrData_tmp = new SegaPVR(pvrFile_tmp);
+	if (pvrData_tmp->isValid()) {
+		// PVR is valid. Save it.
+		this->pvrFile = pvrFile_tmp;
+		this->pvrData = pvrData_tmp;
+		return pvrData->image(RomData::IMG_INT_IMAGE);
+	}
+
+	// PVR is invalid.
+	pvrData_tmp->unref();
+	delete pvrFile_tmp;
+	return nullptr;
 }
 
 /** Dreamcast **/
@@ -406,6 +547,71 @@ const rp_char *const *Dreamcast::supportedFileExtensions_static(void)
 const rp_char *const *Dreamcast::supportedFileExtensions(void) const
 {
 	return supportedFileExtensions_static();
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Dreamcast::supportedImageTypes_static(void)
+{
+	return IMGBF_INT_MEDIA;
+}
+
+/**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t Dreamcast::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> Dreamcast::supportedImageSizes(ImageType imageType) const
+{
+	// TODO: Forward to pvrData.
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return vector<ImageSizeDef>();
+	}
+
+	RP_D(Dreamcast);
+	if (!d->isValid || imageType != IMG_INT_MEDIA) {
+		return vector<ImageSizeDef>();
+	}
+
+	// TODO: Return the image's size.
+	// For now, just return a generic image.
+	const ImageSizeDef imgsz[] = {{nullptr, 0, 0, 0}};
+	return vector<ImageSizeDef>(imgsz, imgsz + 1);
+}
+
+/**
+ * Get image processing flags.
+ *
+ * These specify post-processing operations for images,
+ * e.g. applying transparency masks.
+ *
+ * @param imageType Image type.
+ * @return Bitfield of ImageProcessingBF operations to perform.
+ */
+uint32_t Dreamcast::imgpf(ImageType imageType) const
+{
+	// TODO: Forward to pvrData.
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
+	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
+		// ImageType is out of range.
+		return 0;
+	}
+
+	// No image processing flags.
+	return 0;
 }
 
 /**
@@ -614,6 +820,46 @@ int Dreamcast::loadFieldData(void)
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
+}
+
+/**
+ * Load an internal image.
+ * Called by RomData::image().
+ * @param imageType	[in] Image type to load.
+ * @param pImage	[out] Pointer to const rp_image* to store the image in.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int Dreamcast::loadInternalImage(ImageType imageType, const rp_image **pImage)
+{
+	assert(imageType >= IMG_INT_MIN && imageType <= IMG_INT_MAX);
+	assert(pImage != nullptr);
+	if (!pImage) {
+		// Invalid parameters.
+		return -EINVAL;
+	} else if (imageType < IMG_INT_MIN || imageType > IMG_INT_MAX) {
+		// ImageType is out of range.
+		*pImage = nullptr;
+		return -ERANGE;
+	}
+
+	RP_D(Dreamcast);
+	if (imageType != IMG_INT_MEDIA) {
+		// Only IMG_INT_MEDIA is supported by Dreamcast.
+		*pImage = nullptr;
+		return -ENOENT;
+	} else if (!d->file) {
+		// File isn't open.
+		*pImage = nullptr;
+		return -EBADF;
+	} else if (!d->isValid || d->discType < 0) {
+		// PVR image isn't valid.
+		*pImage = nullptr;
+		return -EIO;
+	}
+
+	// Load the image.
+	*pImage = d->load0GDTEX();
+	return (*pImage != nullptr ? 0 : -EIO);
 }
 
 }

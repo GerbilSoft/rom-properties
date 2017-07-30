@@ -93,6 +93,7 @@ SET(libromdata_H
 	pvr_structs.h
 	dds_structs.h
 	cdrom_structs.h
+	iso_structs.h
 	data/SegaPublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp

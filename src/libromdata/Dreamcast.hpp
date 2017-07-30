@@ -112,6 +112,40 @@ class Dreamcast : public LibRpBase::RomData
 		 */
 		virtual const rp_char *const *supportedFileExtensions(void) const override final;
 
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		static uint32_t supportedImageTypes_static(void);
+
+		/**
+		 * Get a bitfield of image types this class can retrieve.
+		 * @return Bitfield of supported image types. (ImageTypesBF)
+		 */
+		virtual uint32_t supportedImageTypes(void) const override final;
+
+		/**
+		 * Get a list of all available image sizes for the specified image type.
+		 *
+		 * The first item in the returned vector is the "default" size.
+		 * If the width/height is 0, then an image exists, but the size is unknown.
+		 *
+		 * @param imageType Image type.
+		 * @return Vector of available image sizes, or empty vector if no images are available.
+		 */
+		virtual std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const override final;
+
+		/**
+		 * Get image processing flags.
+		 *
+		 * These specify post-processing operations for images,
+		 * e.g. applying transparency masks.
+		 *
+		 * @param imageType Image type.
+		 * @return Bitfield of ImageProcessingBF operations to perform.
+		 */
+		virtual uint32_t imgpf(ImageType imageType) const override final;
+
 	protected:
 		/**
 		 * Load field data.
@@ -119,6 +153,16 @@ class Dreamcast : public LibRpBase::RomData
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int loadFieldData(void) override final;
+
+		/**
+		 * Load an internal image.
+		 * Called by RomData::image().
+		 * @param imageType	[in] Image type to load.
+		 * @param pImage	[out] Pointer to const rp_image* to store the image in.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		virtual int loadInternalImage(ImageType imageType,
+			const LibRpBase::rp_image **pImage) override final;
 };
 
 }
