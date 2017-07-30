@@ -323,7 +323,7 @@ typedef enum {
 	DCP_CTRL_ANALOG_V2	= (1 << 24),	// Analog vertical controller #2
 
 	// Optional expansion peripherals.
-	DCP_CTRL_GUN		= (1 << 25),	// Lightgun
+	DCP_CTRL_GUN		= (1 << 25),	// Light Gun
 	DCP_CTRL_KEYBOARD	= (1 << 26),	// Keyboard
 	DCP_CTRL_MOUSE		= (1 << 27),	// Mouse
 } DC_IP0000_BIN_Peripherals;

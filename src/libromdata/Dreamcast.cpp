@@ -417,11 +417,12 @@ int Dreamcast::loadFieldData(void)
 
 	// Dreamcast disc header.
 	const DC_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields->reserve(12);	// Maximum of 12 fields.
 
 	// FIXME: The CRC algorithm isn't working right...
 #if 0
 	// Product CRC16.
+	// TODO: Use strtoul().
 	unsigned int crc16_expected = 0;
 	const char *p = discHeader->device_info;
 	for (unsigned int i = 4; i > 0; i--, p++) {
@@ -525,7 +526,7 @@ int Dreamcast::loadFieldData(void)
 	} else if (!memcmp(discHeader->publisher, "SEGA LC-T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;
-		unsigned int t_code = strtoul(&discHeader->publisher[10], &endptr, 10);
+		unsigned int t_code = (unsigned int)strtoul(&discHeader->publisher[10], &endptr, 10);
 		if (t_code != 0 &&
 		    endptr > &discHeader->publisher[10] &&
 		    endptr <= &discHeader->publisher[15])
@@ -549,6 +550,55 @@ int Dreamcast::loadFieldData(void)
 	len = d->trim_spaces(discHeader->title, (int)sizeof(discHeader->title));
 	d->fields->addField_string(_RP("Title"),
 		(len > 0 ? latin1_to_rp_string(discHeader->title, len) : _RP("Unknown")));
+
+	/** Peripeherals. **/
+
+	// Peripherals are stored as an ASCII hex bitfield.
+	char *endptr;
+	unsigned int peripherals = (unsigned int)strtoul(discHeader->peripherals, &endptr, 16);
+	if (endptr > discHeader->peripherals &&
+	    endptr <= &discHeader->peripherals[7])
+	{
+		// Peripherals decoded.
+		// OS support.
+		static const rp_char *const os_bitfield_names[] = {
+			_RP("Windows CE"), nullptr, nullptr, nullptr, _RP("VGA Box")
+		};
+		vector<rp_string> *v_os_bitfield_names = RomFields::strArrayToVector(
+			os_bitfield_names, ARRAY_SIZE(os_bitfield_names));
+		d->fields->addField_bitfield(_RP("OS Support"),
+			v_os_bitfield_names, 0, peripherals);
+
+		// Supported expansion units.
+		static const rp_char *const expansion_bitfield_names[] = {
+			_RP("Other"), _RP("Jump Pack"), _RP("Microphone"), _RP("VMU")
+		};
+		vector<rp_string> *v_expansion_bitfield_names = RomFields::strArrayToVector(
+			expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
+		d->fields->addField_bitfield(_RP("Expansion Units"),
+			v_expansion_bitfield_names, 0, peripherals >> 8);
+
+		// Required controller features.
+		static const rp_char *const req_controller_bitfield_names[] = {
+			_RP("Start, A, B, D-Pad"), _RP("C Button"), _RP("D Button"),
+			_RP("X Button"), _RP("Y Button"), _RP("Z Button"),
+			_RP("Second D-Pad"), _RP("Analog L Trigger"), _RP("Analog R Trigger"),
+			_RP("Analog H1"), _RP("Analog V1"), _RP("Analog H2"), _RP("Analog V2")
+		};
+		vector<rp_string> *v_req_controller_bitfield_names = RomFields::strArrayToVector(
+			req_controller_bitfield_names, ARRAY_SIZE(req_controller_bitfield_names));
+		d->fields->addField_bitfield(_RP("Req. Controller"),
+			v_req_controller_bitfield_names, 3, peripherals >> 12);
+
+		// Optional controller features.
+		static const rp_char *const opt_controller_bitfield_names[] = {
+			_RP("Light Gun"), _RP("Keyboard"), _RP("Mouse")
+		};
+		vector<rp_string> *v_opt_controller_bitfield_names = RomFields::strArrayToVector(
+			opt_controller_bitfield_names, ARRAY_SIZE(opt_controller_bitfield_names));
+		d->fields->addField_bitfield(_RP("Opt. Controller"),
+			v_opt_controller_bitfield_names, 0, peripherals >> 25);
+	}
 
 	// Finished reading the field data.
 	return (int)d->fields->count();
