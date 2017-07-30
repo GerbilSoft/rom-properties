@@ -1143,8 +1143,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Hardware type.
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
-	uint32_t hw_type = (romHeader->unitcode & NintendoDSPrivate::DS_HW_DS) ^ NintendoDSPrivate::DS_HW_DS;
-	hw_type |= (romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
+	uint32_t hw_type = (romHeader->unitcode & 3) ^ NintendoDSPrivate::DS_HW_DS;
 	if (hw_type == 0) {
 		// 0x01 is invalid. Assume DS.
 		hw_type = NintendoDSPrivate::DS_HW_DS;
