@@ -298,7 +298,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 	const uint8_t *const p_end = p + rootdir->size.he;
 	while (p < p_end) {
 		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
-		if (dirEntry->filename_length == 0) {
+		if (dirEntry->entry_length == 0) {
 			// End of directory.
 			break;
 		}
