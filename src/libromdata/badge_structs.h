@@ -45,7 +45,7 @@ extern "C" {
 #define BADGE_SIZE_LARGE_H 64
 
 /**
- * PRB: Badge file.
+ * PRBS: Badge file.
  *
  * Contains an individual badge, or multiple badges
  * as part of a "mega badge".
@@ -79,6 +79,27 @@ typedef struct PACKED _Badge_PRBS_Header {
 	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
 } Badge_PRBS_Header;
 ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
+
+/**
+ * CABS: Badge set file.
+ *
+ * Contains an icon representing a set of badges.
+ *
+ * Image data starts at 0x2080;
+ *
+ * All fields are in little-endian.
+ */
+#define BADGE_CABS_MAGIC "CABS"
+typedef struct PACKED _Badge_CABS_Header {
+	char magic[4];		// [0x000] "CABS"
+	uint8_t reserved1[32];	// [0x004] Unknown
+	uint32_t set_id;	// [0x024] Set ID.
+	uint8_t reserved2[4];	// [0x028] Unknown
+	char setname[48];	// [0x02C] Set name. (Latin-1?)
+	uint8_t reserved3[12];	// [0x05C] Unknown
+	char16_t name[16][128];	// [0x068] Set names. (UTF-16LE)
+} Badge_CABS_Header;
+ASSERT_STRUCT(Badge_CABS_Header, 0x1068);
 
 #pragma pack()
 
