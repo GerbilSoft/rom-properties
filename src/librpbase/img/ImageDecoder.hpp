@@ -286,6 +286,20 @@ class ImageDecoder
 		static rp_image *fromN3DSTiledRGB565(int width, int height,
 			const uint16_t *img_buf, int img_siz);
 
+		/**
+		 * Convert a Nintendo 3DS RGB565+A4 tiled icon to rp_image.
+		 * @param width Image width.
+		 * @param height Image height.
+		 * @param img_buf RGB565 tiled image buffer.
+		 * @param img_siz Size of image data. [must be >= (w*h)*2]
+		 * @param alpha_buf A4 tiled alpha buffer.
+		 * @param alpha_siz Size of alpha data. [must be >= (w*h)/2]
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromN3DSTiledRGB565_A4(int width, int height,
+			const uint16_t *img_buf, int img_siz,
+			const uint8_t *alpha_buf, int alpha_siz);
+
 		/* S3TC */
 
 		/**

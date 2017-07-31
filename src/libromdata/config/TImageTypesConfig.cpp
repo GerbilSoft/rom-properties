@@ -36,6 +36,7 @@
 #include "../DreamcastSave.hpp"
 #include "../GameCube.hpp"
 #include "../GameCubeSave.hpp"
+#include "../NintendoBadge.hpp"
 #include "../NintendoDS.hpp"
 #include "../Nintendo3DS.hpp"
 #include "../PlayStationSave.hpp"
@@ -61,6 +62,7 @@ const rp_char *const TImageTypesConfig<ComboBox>::imageTypeNames[] = {
 template<typename ComboBox>
 const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
 	SysDataEntry(Amiibo,		_RP("amiibo")),
+	SysDataEntry(NintendoBadge,	_RP("Badge Arcade")),
 	SysDataEntry(DreamcastSave,	_RP("Dreamcast Saves")),
 	SysDataEntry(GameCube,		_RP("GameCube / Wii")),
 	SysDataEntry(GameCubeSave,	_RP("GameCube Saves")),

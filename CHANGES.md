@@ -8,6 +8,8 @@
   * Microsoft DirectDraw Surface decoding. These are texture files used in
     various PC games. Supports several uncompressed RGB and ARGB formats,
     DXTn, BC4, and BC5.
+  * Nintendo Badge Arcade decoding. Supports both PRBS (badge) and CABS
+    (badge set) files. PRBS decoding supports mega badges as well.
 
 * New system features:
   * Nintendo DS: Detect "Mask ROM" separately from Secure Area encryption.

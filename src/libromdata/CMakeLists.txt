@@ -24,6 +24,7 @@ SET(libromdata_SRCS
 	Sega8Bit.cpp
 	SegaPVR.cpp
 	DirectDrawSurface.cpp
+	NintendoBadge.cpp
 	data/MegaDrivePublishers.cpp
 	data/NintendoPublishers.cpp
 	data/AmiiboData.cpp
@@ -32,6 +33,7 @@ SET(libromdata_SRCS
 	data/EXEData.cpp
 	data/WiiUData.cpp
 	data/Nintendo3DSFirmData.cpp
+	data/Nintendo3DSSysTitles.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -71,6 +73,7 @@ SET(libromdata_H
 	Sega8Bit.hpp
 	SegaPVR.hpp
 	DirectDrawSurface.hpp
+	NintendoBadge.hpp
 	md_structs.h
 	gcn_structs.h
 	gcn_card.h
@@ -89,6 +92,7 @@ SET(libromdata_H
 	sega8_structs.h
 	pvr_structs.h
 	dds_structs.h
+	badge_structs.h
 	data/MegaDrivePublishers.hpp
 	data/NintendoPublishers.hpp
 	data/AmiiboData.hpp
@@ -97,6 +101,7 @@ SET(libromdata_H
 	data/EXEData.hpp
 	data/WiiUData.hpp
 	data/Nintendo3DSFirmData.hpp
+	data/Nintendo3DSSysTitles.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h
