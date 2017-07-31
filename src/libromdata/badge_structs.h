@@ -38,6 +38,12 @@ extern "C" {
 
 #pragma pack(1)
 
+// Badge dimensions.
+#define BADGE_SIZE_SMALL_W 32
+#define BADGE_SIZE_SMALL_H 32
+#define BADGE_SIZE_LARGE_W 64
+#define BADGE_SIZE_LARGE_H 64
+
 /**
  * PRB: Badge file.
  *

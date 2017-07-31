@@ -70,6 +70,8 @@ class NintendoBadgePrivate : public RomDataPrivate
 
 		// Badge type.
 		int badgeType;
+		// Is this multi-badge? (>1x1)
+		bool multiBadge;
 
 		// Badge header.
 		// TODO: CABS header.
@@ -82,9 +84,10 @@ class NintendoBadgePrivate : public RomDataPrivate
 
 		/**
 		 * Load the badge image.
+		 * @param idx Image index. (0 == 32x32; 1 == 64x64)
 		 * @return Image, or nullptr on error.
 		 */
-		const rp_image *loadImage(void);
+		const rp_image *loadImage(int idx = 1);
 };
 
 /** NintendoBadgePrivate **/
@@ -92,6 +95,7 @@ class NintendoBadgePrivate : public RomDataPrivate
 NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
 	: super(q, file)
 	, badgeType(BADGE_TYPE_UNKNOWN)
+	, multiBadge(false)
 	, img(nullptr)
 {
 	// Clear the PVR header structs.
@@ -105,10 +109,17 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
 
 /**
  * Load the badge image.
+ * @param idx Image index. (0 == 32x32; 1 == 64x64)
  * @return Image, or nullptr on error.
  */
-const rp_image *NintendoBadgePrivate::loadImage(void)
+const rp_image *NintendoBadgePrivate::loadImage(int idx)
 {
+	assert(idx == 0 || idx == 1);
+	if (idx != 0 && idx != 1) {
+		// Invalid image index.
+		return nullptr;
+	}
+
 	if (img) {
 		// Image has already been loaded.
 		return img;
@@ -117,8 +128,43 @@ const rp_image *NintendoBadgePrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// TODO
-	return nullptr;
+	if (badgeType != BADGE_TYPE_PRBS) {
+		// TODO: Support CABS.
+		return nullptr;
+	}
+
+	// Badge sizes.
+	static const unsigned int badge64_sz = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H*2;
+	static const unsigned int badge32_sz = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
+
+	// Starting address depends on multi-badge status.
+	unsigned int start_addr = (multiBadge ? 0x4300 : 0x1100);
+	unsigned int badge_sz, badge_dims;
+	if (idx == 1) {
+		badge_sz = badge64_sz;
+		badge_dims = BADGE_SIZE_LARGE_W;
+	} else {
+		badge_sz = badge32_sz;
+		badge_dims = BADGE_SIZE_SMALL_W;
+		start_addr += badge64_sz + 0x800;	// FIXME: What's the 0x800?
+	}
+
+	// TODO: Multiple internal image sizes.
+	// For now, 64x64 only.
+
+	// TODO: Multi-badge.
+	unique_ptr<uint16_t[]> badgeData(new uint16_t[badge_sz/2]);
+	size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
+	if (size != badge_sz) {
+		// Seek and/or read error.
+		return nullptr;
+	}
+
+	// Convert to rp_image.
+	img = ImageDecoder::fromN3DSTiledRGB565(
+		badge_dims, badge_dims,
+		badgeData.get(), badge_sz);
+	return img;
 }
 
 /** NintendoBadge **/
@@ -165,9 +211,24 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	info.szFile = 0;	// Not needed for badges.
 	d->badgeType = isRomSupported_static(&info);
 	d->isValid = (d->badgeType >= 0);
+	d->multiBadge = false;	// check later
 
 	if (!d->isValid)
 		return;
+
+	// Check for multi-badge.
+	switch (d->badgeType) {
+		case NintendoBadgePrivate::BADGE_TYPE_PRBS:
+			if (d->badgeHeader.prbs.width > 1 ||
+			    d->badgeHeader.prbs.height > 1)
+			{
+				// This is multi-badge.
+				d->multiBadge = true;
+			}
+			break;
+		default:
+			break;
+	}
 }
 
 /**
@@ -484,8 +545,11 @@ int NintendoBadge::loadInternalImage(ImageType imageType, const rp_image **pImag
 		return -EIO;
 	}
 
+	// NOTE: Assuming image index 1. (64x64)
+	const int idx = 1;
+
 	// Load the image.
-	*pImage = d->loadImage();
+	*pImage = d->loadImage(idx);
 	return (*pImage != nullptr ? 0 : -EIO);
 }
 
