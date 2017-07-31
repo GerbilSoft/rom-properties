@@ -199,6 +199,60 @@ u16string cp1252_to_utf16(const char *str, int len)
 	return ret;
 }
 
+/**
+ * Convert UTF-8 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param str UTF-8 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+string utf8_to_cp1252(const char *str, int len)
+{
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
+
+	string ret;
+	char *mbs = rp_iconv((char*)str, len, "UTF-8", "CP1252//IGNORE");
+	if (mbs) {
+		ret = mbs;
+		free(mbs);
+	}
+
+	return ret;
+}
+
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param wcs UTF-16 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+string utf16_to_cp1252(const char16_t *wcs, int len)
+{
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
+
+	string ret;
+	char *mbs = rp_iconv((char*)wcs, len*sizeof(*wcs), RP_ICONV_UTF16_ENCODING, "CP1252//IGNORE");
+	if (mbs) {
+		ret = mbs;
+		free(mbs);
+	}
+
+	return ret;
+}
+
 /** Code Page 1252 + Shift-JIS (932) **/
 
 /**

@@ -436,8 +436,7 @@ IRpFile *IsoPartition::open(const rp_char *filename)
 
 	// TODO: Which encoding?
 	// Assuming cp1252...
-	// TODO: Add rp_string_to_cp1252().
-	string s_filename = rp_string_to_utf8(filename, -1);
+	string s_filename = rp_string_to_cp1252(filename, -1);
 
 	RP_D(IsoPartition);
 	if (d->rootDir_data.empty()) {

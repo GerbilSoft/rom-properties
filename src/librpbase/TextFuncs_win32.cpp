@@ -151,6 +151,7 @@ string cp1252_to_utf8(const char *str, int len)
 		len = (int)strnlen(str, len);
 	}
 
+	// Convert the cp1252 to UTF-16.
 	string ret;
 	int cchWcs;
 	char16_t *wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
@@ -194,6 +195,7 @@ u16string cp1252_to_utf16(const char *str, int len)
 		len = (int)strnlen(str, len);
 	}
 
+	// Convert the cp1252 to UTF-16.
 	u16string ret;
 	int cchWcs;
 	char16_t *wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
@@ -206,6 +208,84 @@ u16string cp1252_to_utf16(const char *str, int len)
 	}
 
 	free(wcs);
+	return ret;
+}
+
+/**
+ * Convert UTF-8 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param str UTF-8 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+string utf8_to_cp1252(const char *str, int len)
+{
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)strlen(str);
+	} else {
+		len = (int)strnlen(str, len);
+	}
+
+	// Convert the UTF-8 to UTF-16.
+	string ret;
+	int cchWcs;
+	char16_t *wcs = W32U_mbs_to_UTF16(str, len, CP_UTF8, &cchWcs, 0);
+	if (wcs && cchWcs > 0) {
+		// Convert the UTF-16 to cp1252.
+		int cbMbs;
+		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, 1252, &cbMbs);
+		if (mbs && cbMbs > 0) {
+			// Remove the NULL terminator if present.
+			if (mbs[cbMbs-1] == 0) {
+				cbMbs--;
+			}
+			ret.assign(mbs, cbMbs);
+		}
+		free(mbs);
+	}
+
+	free(wcs);
+	return ret;
+}
+
+/**
+ * Convert UTF-16 text to cp1252.
+ * Trailing NULL bytes will be removed.
+ * Invalid characters will be ignored.
+ * @param wcs UTF-16 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return cp1252 string.
+ */
+string utf16_to_cp1252(const char16_t *wcs, int len)
+{
+#ifdef RP_WIS16
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
+#else /* !RP_WIS16 */
+	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
+#endif /* RP_WIS16 */
+
+	// Check for a NULL terminator.
+	if (len < 0) {
+		len = (int)u16_strlen(wcs);
+	} else {
+		len = (int)u16_strnlen(wcs, len);
+	}
+
+	// Convert the UTF-16 to cp1252.
+	string ret;
+	int cbMbs;
+	char *mbs = W32U_UTF16_to_mbs(wcs, len, 1252, &cbMbs);
+	if (mbs && cbMbs > 0) {
+		// Remove the NULL terminator if present.
+		if (mbs[cbMbs-1] == 0) {
+			cbMbs--;
+		}
+		ret.assign(mbs, cbMbs);
+	}
+
+	free(mbs);
 	return ret;
 }
 
