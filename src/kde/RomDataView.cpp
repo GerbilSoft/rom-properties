@@ -954,6 +954,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 				break;
 		}
 	}
+
+	// Close the file.
+	// Keeping the file open may prevent the user from
+	// changing the file.
+	romData->close();
 }
 
 /**
