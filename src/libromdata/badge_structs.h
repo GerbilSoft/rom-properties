@@ -73,8 +73,8 @@ typedef struct PACKED _Badge_PRBS_Header {
 		};
 	} title_id;
 	uint8_t reserved3[12];	// [0x0AC] Unknown
-	uint32_t width;		// [0x0B8] Mega-badge width.
-	uint32_t height;	// [0x0BC] Mega-badge height.
+	uint32_t mb_width;	// [0x0B8] Mega-badge width.
+	uint32_t mb_height;	// [0x0BC] Mega-badge height.
 	uint8_t reserved4[32];	// [0x0C0] Unknown
 	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
 } Badge_PRBS_Header;

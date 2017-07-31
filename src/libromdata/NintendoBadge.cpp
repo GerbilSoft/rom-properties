@@ -141,29 +141,73 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	unsigned int start_addr = (megaBadge ? 0x4300 : 0x1100);
 	unsigned int badge_sz, badge_dims;
 	if (idx == 1) {
+		// 32x32 badges. (0xA00+0x200)
+		// NOTE: There are 0x200 bytes after the badge data.
 		badge_sz = badge64_sz;
 		badge_dims = BADGE_SIZE_LARGE_W;
 	} else {
+		// 64x64 badges. (0x2000+0x800)
+		// NOTE: There are 0x800 bytes after the badge data.
 		badge_sz = badge32_sz;
 		badge_dims = BADGE_SIZE_SMALL_W;
-		start_addr += badge64_sz + 0x800;	// FIXME: What's the 0x800?
+		start_addr += badge64_sz + 0x800;
 	}
 
 	// TODO: Multiple internal image sizes.
 	// For now, 64x64 only.
 
-	// TODO: Mega badge.
 	unique_ptr<uint16_t[]> badgeData(new uint16_t[badge_sz/2]);
-	size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
-	if (size != badge_sz) {
-		// Seek and/or read error.
-		return nullptr;
+
+	if (!megaBadge) {
+		// Single badge.
+		size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
+		if (size != badge_sz) {
+			// Seek and/or read error.
+			return nullptr;
+		}
+
+		// Convert to rp_image.
+		img = ImageDecoder::fromN3DSTiledRGB565(
+			badge_dims, badge_dims,
+			badgeData.get(), badge_sz);
+	} else {
+		// Mega badge. Need to convert each 64x64 badge
+		// and concatenate them manually.
+
+		// Mega badge dimensions.
+		const unsigned int mb_width  = badgeHeader.prbs.mb_width;
+		const unsigned int mb_height = badgeHeader.prbs.mb_height;
+		const unsigned int mb_pitch  = badge_dims * sizeof(uint32_t);
+
+		// Badges are stored vertically, then horizontally.
+		img = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::FORMAT_ARGB32);
+		for (unsigned int x = 0; x < mb_width; x++) {
+			const unsigned int mx = x*badge_dims;
+			for (unsigned int y = 0; y < mb_height; y++, start_addr += (0x2800+0xA00)) {
+				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
+				if (size != badge_sz) {
+					// Seek and/or read error.
+					delete img;
+					return nullptr;
+				}
+
+				rp_image *mb_img = ImageDecoder::fromN3DSTiledRGB565(
+					badge_dims, badge_dims,
+					badgeData.get(), badge_sz);
+
+				// Copy the image into place.
+				const unsigned int my = y*badge_dims;
+				for (int py = badge_dims-1; py >= 0; py--) {
+					const uint32_t *src = reinterpret_cast<const uint32_t*>(mb_img->scanLine(py));
+					uint32_t *dest = reinterpret_cast<uint32_t*>(img->scanLine(py+my)) + mx;
+					memcpy(dest, src, mb_pitch);
+				}
+
+				delete mb_img;
+			}
+		}
 	}
 
-	// Convert to rp_image.
-	img = ImageDecoder::fromN3DSTiledRGB565(
-		badge_dims, badge_dims,
-		badgeData.get(), badge_sz);
 	return img;
 }
 
@@ -219,8 +263,8 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	// Check for mega badge.
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BADGE_TYPE_PRBS:
-			if (d->badgeHeader.prbs.width > 1 ||
-			    d->badgeHeader.prbs.height > 1)
+			if (d->badgeHeader.prbs.mb_width > 1 ||
+			    d->badgeHeader.prbs.mb_height > 1)
 			{
 				// This is mega badge.
 				d->megaBadge = true;
@@ -373,13 +417,24 @@ vector<RomData::ImageSizeDef> NintendoBadge::supportedImageSizes(ImageType image
 		return vector<ImageSizeDef>();
 	}
 
-	// TODO: Mega badge sizes.
-	static const ImageSizeDef sz_INT_IMAGE[] = {
-		{nullptr, 32, 32, 0},
-		{nullptr, 64, 64, 1},
-	};
-	return vector<ImageSizeDef>(sz_INT_IMAGE,
-		sz_INT_IMAGE + ARRAY_SIZE(sz_INT_IMAGE));
+	// Multiply the standard size by the mega badge sizes.
+	unsigned int mb_width, mb_height;
+	switch (d->badgeType) {
+		case NintendoBadgePrivate::BADGE_TYPE_PRBS:
+			mb_width = d->badgeHeader.prbs.mb_width;
+			mb_height = d->badgeHeader.prbs.mb_height;
+			break;
+		default:
+			mb_width = 1;
+			mb_height = 1;
+			break;
+	}
+
+	const ImageSizeDef imgsz[] = {
+		{nullptr, (uint16_t)(BADGE_SIZE_SMALL_W*mb_width), (uint16_t)(BADGE_SIZE_SMALL_H*mb_height), 0},
+		{nullptr, (uint16_t)(BADGE_SIZE_LARGE_W*mb_width), (uint16_t)(BADGE_SIZE_LARGE_H*mb_height), 1},
+  	};
+	return vector<ImageSizeDef>(imgsz, imgsz + 1);
 }
 
 /**
@@ -479,7 +534,7 @@ int NintendoBadge::loadFieldData(void)
 	// Mega badge size.
 	if (d->megaBadge) {
 		d->fields->addField_string(_RP("Mega Badge Size"),
-			rp_sprintf("%ux%u", prbs->width, prbs->height));
+			rp_sprintf("%ux%u", prbs->mb_width, prbs->mb_height));
 	}
 
 	// Title ID.
