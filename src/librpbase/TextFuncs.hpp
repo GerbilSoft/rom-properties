@@ -400,9 +400,9 @@ static inline std::string rp_string_to_cp1252(const rp_char *str, int len)
 static inline std::string rp_string_to_cp1252(const rp_string &rps)
 {
 #ifdef RP_UTF8
-	return utf8_to_cp1252(rps.data(), rps.size());
+	return utf8_to_cp1252(rps.data(), (int)rps.size());
 #else
-	return utf16_to_cp1252(rps.data(), rps.size());
+	return utf16_to_cp1252(rps.data(), (int)rps.size());
 #endif
 }
 
