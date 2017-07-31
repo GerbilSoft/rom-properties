@@ -434,25 +434,13 @@ int NintendoBadge::loadFieldData(void)
 	// Type.
 	const rp_char *badgeType;
 	switch (d->badgeType) {
-		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
-			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
-			if (prbs->width > 1 && prbs->width > 1) {
-				badgeType = _RP("Individual Badge");
-			} else {
-				badgeType = _RP("Mega Badge");
-			}
+		case NintendoBadgePrivate::BADGE_TYPE_PRBS:
+			badgeType = (d->multiBadge ? _RP("Mega Badge") : _RP("Individual Badge"));
 			break;
-		}
 
-		case NintendoBadgePrivate::BADGE_TYPE_CABS: {
-			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
-			if (prbs->width > 1 && prbs->width > 1) {
-				badgeType = _RP("Badge Set");
-			} else {
-				badgeType = _RP("Mega Badge Set");
-			}
+		case NintendoBadgePrivate::BADGE_TYPE_CABS:
+			badgeType = (d->multiBadge ? _RP("Mega Badge Set") : _RP("Badge Set"));
 			break;
-		}
 
 		default:
 			// Unknown.
