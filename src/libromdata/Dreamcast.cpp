@@ -25,7 +25,6 @@
 #include "data/SegaPublishers.hpp"
 #include "dc_structs.h"
 #include "cdrom_structs.h"
-#include "iso_structs.h"
 
 // librpbase
 #include "librpbase/common.h"
@@ -38,10 +37,10 @@ using namespace LibRpBase;
 // DiscReader
 #include "librpbase/disc/DiscReader.hpp"
 #include "disc/Cdrom2352Reader.hpp"
+#include "disc/IsoPartition.hpp"
 
 // SegaPVR decoder.
 #include "SegaPVR.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
@@ -77,6 +76,7 @@ class DreamcastPrivate : public RomDataPrivate
 		// Disc type and reader.
 		int discType;
 		IDiscReader *discReader;
+		IsoPartition *isoPartition;
 
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
@@ -84,11 +84,10 @@ class DreamcastPrivate : public RomDataPrivate
 		// Session start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
-		bool session_start_found;
-		unsigned int session_start_address;
+		int session_start_offset;
 
 		// 0GDTEX.PVR image.
-		PartitionFile *pvrFile;	// uses discReader
+		IRpFile *pvrFile;	// uses discReader
 		SegaPVR *pvrData;	// SegaPVR object.
 
 		/**
@@ -126,8 +125,8 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	: super(q, file)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
-	, session_start_found(false)
-	, session_start_address(0)
+	, isoPartition(nullptr)
+	, session_start_offset(-1)
 	, pvrFile(nullptr)
 	, pvrData(nullptr)
 {
@@ -142,6 +141,7 @@ DreamcastPrivate::~DreamcastPrivate()
 	}
 	delete pvrFile;
 	delete discReader;
+	delete isoPartition;
 }
 
 /**
@@ -248,121 +248,31 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
 		return nullptr;
 	}
 
-	// TODO: ISO-9660 file system reader.
-	// For now, parsing the structs here.
-
-	// Read the primary volume descriptor.
-	// TODO: Assuming this is the first one.
-	// Check for multiple?
-	ISO_Volume_Descriptor pvd;
-	size_t size = discReader->seekAndRead(0x8000, &pvd, sizeof(pvd));
-	if (size != sizeof(pvd)) {
-		// Seek and/or read error.
-		return nullptr;
-	}
-
-	// Verify the signature and volume descriptor type.
-	if (pvd.type != ISO_VDT_PRIMARY || pvd.version != ISO_VD_VERSION ||
-	    memcmp(pvd.identifier, ISO_MAGIC, sizeof(pvd.identifier)) != 0)
-	{
-		// Invalid volume descriptor.
-		return nullptr;
-	}
-
-	// Block size.
-	// Should be 2048, but other values are possible.
-	const unsigned int block_size = pvd.pri.logical_block_size.he;
-
-	// Check the root directory entry.
-	const ISO_DirEntry *const rootdir = &pvd.pri.dir_entry_root;
-	if (rootdir->size.he > 16*1024*1024) {
-		// Root directory is too big.
-		return nullptr;
-	}
-
-	if (session_start_found) {
-		// Session start address was already determined.
-		if (rootdir->block.he < (session_start_address + 2)) {
-			// Starting block is invalid.
+	// Create the ISO-9660 file system reader if it isn't already opened.
+	// TODO: Support multi-track images.
+	if (!isoPartition) {
+		isoPartition = new IsoPartition(discReader, 0, session_start_offset);
+		if (!isoPartition->isOpen()) {
+			// Unable to open the ISO-9660 partition.
+			delete isoPartition;
+			isoPartition = nullptr;
 			return nullptr;
 		}
-	} else {
-		// We didn't find the session start address yet.
-		// This might be a 2048-byte single-track image,
-		// in which case, we'll need to assume that the
-		// root directory starts at block 20.
-		// TODO: Better heuristics.
-		if (rootdir->block.he < 20) {
-			// Starting block is invalid.
-			return nullptr;
-		}
-		session_start_address = rootdir->block.he - 20;
 	}
 
-	// Load the root directory.
-	// NOTE: Due to variable-length entries, we need to load
-	// the entire root directory all at once.
-	unique_ptr<uint8_t[]> rootdir_data(new uint8_t[rootdir->size.he]);
-	const int64_t rootdir_addr = (int64_t)(rootdir->block.he - session_start_address) * block_size;
-	size = discReader->seekAndRead(rootdir_addr, rootdir_data.get(), rootdir->size.he);
-	if (size != rootdir->size.he) {
-		// Seek and/or read error.
-		return nullptr;
-	}
-
-	// Search for the file.
-	const ISO_DirEntry *dirEntry_0gdtex = nullptr;
-	const uint8_t *p = rootdir_data.get();
-	const uint8_t *const p_end = p + rootdir->size.he;
-	while (p < p_end) {
-		const ISO_DirEntry *dirEntry = reinterpret_cast<const ISO_DirEntry*>(p);
-		if (dirEntry->entry_length < sizeof(*dirEntry)) {
-			// End of directory.
-			break;
-		}
-
-		const char *filename = reinterpret_cast<const char*>(p) + sizeof(*dirEntry);
-		if (filename + dirEntry->filename_length > reinterpret_cast<const char*>(p_end)) {
-			// Filename is out of bounds.
-			break;
-		}
-
-		// Check if this is "0GDTEX.PVR" or "0GDTEX.PVR;1".
-		// TODO: Better way to handle the ";1".
-		if ((dirEntry->filename_length == 12 && !strcasecmp(filename, "0GDTEX.PVR;1")) ||
-		    (dirEntry->filename_length == 10 && !strcasecmp(filename, "0GDTEX.PVR")))
-		{
-			// Found it!
-			dirEntry_0gdtex = dirEntry;
-			break;
-		}
-
-		// Next entry.
-		p += dirEntry->entry_length;
-	}
-
-	if (!dirEntry_0gdtex) {
-		// File not found.
+	// Find "0GDTEX.PVR".
+	IRpFile *pvrFile_tmp = isoPartition->open(_RP("/0GDTEX.PVR"));
+	if (!pvrFile_tmp) {
+		// Error opening "0GDTEX.PVR".
 		return nullptr;
 	}
 
 	// Sanity check: PVR shouldn't be larger than 4 MB.
-	if (dirEntry_0gdtex->size.he > 4*1024*1024) {
+	if (pvrFile_tmp->size() > 4*1024*1024) {
 		// PVR is too big.
+		delete pvrFile_tmp;
 		return nullptr;
 	}
-
-	// Create a PartitionFile at the specified address.
-	const int64_t gdtex_addr = (int64_t)(dirEntry_0gdtex->block.he - session_start_address) * block_size;
-	if (gdtex_addr >= discReader->size()) {
-		// Out of range.
-		// ChuChu Rocket! has 0GDTEX.PVR listed in its
-		// directory table on track 03, but for some
-		// reason, the actual data is on track 19.
-		return nullptr;
-	}
-	PartitionFile *const pvrFile_tmp = new PartitionFile(discReader, gdtex_addr, dirEntry_0gdtex->size.he);
-	rootdir_data.reset();
 
 	// Create the SegaPVR object.
 	SegaPVR *const pvrData_tmp = new SegaPVR(pvrFile_tmp);
@@ -432,14 +342,14 @@ Dreamcast::Dreamcast(IRpFile *file)
 			// 2048-byte sectors.
 			// TODO: Determine session start address.
 			memcpy(&d->discHeader, &sector, sizeof(d->discHeader));
+			d->session_start_offset = -1;
 			d->discReader = new DiscReader(d->file);
 			break;
 		case DreamcastPrivate::DISC_ISO_2352:
 			// 2352-byte sectors.
 			// FIXME: Assuming Mode 1.
-			d->session_start_address = cdrom_msf_to_lba(&sector.msf);
-			d->session_start_found = true;
 			memcpy(&d->discHeader, &sector.m1.data, sizeof(d->discHeader));
+			d->session_start_offset = (int)cdrom_msf_to_lba(&sector.msf);
 			d->discReader = new Cdrom2352Reader(d->file);
 			break;
 		default:
