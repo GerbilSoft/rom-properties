@@ -225,6 +225,16 @@ class ImageDecoderPrivate
 		 */
 		static inline uint32_t IA8_to_ARGB32(uint16_t px16);
 
+		// Nintendo 3DS-specific 16-bit RGB
+
+		/**
+		 * Convert an RGB565+A4 pixel to ARGB32.
+		 * @param px16 RGB565 pixel.
+		 * @param a4 A4 value.
+		 * @return ARGB32 pixel.
+		 */
+		static inline uint32_t RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4);
+
 		// 15-bit RGB
 
 		/**
@@ -711,6 +721,26 @@ inline uint32_t ImageDecoderPrivate::IA8_to_ARGB32(uint16_t px16)
 	// IA8:    IIIIIIII AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	return ((px16 & 0xFF) << 16) | ((px16 & 0xFF00) << 8) | (px16 & 0xFF00) | ((px16 >> 8) & 0xFF);
+}
+
+// Nintendo 3DS-specific 16-bit RGB
+
+/**
+ * Convert an RGB565+A4 pixel to ARGB32.
+ * @param px16 RGB565 pixel.
+ * @param a4 A4 value.
+ * @return ARGB32 pixel.
+ */
+inline uint32_t ImageDecoderPrivate::RGB565_A4_to_ARGB32(uint16_t px16, uint8_t a4)
+{
+	// RGB565: RRRRRGGG GGGBBBBB
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	a4 &= 0x0F;
+	uint32_t px32 = (a4 << 24) | (a4 << 28);				// Alpha
+	px32 |= ((((px16 <<  8) & 0xF80000) | ((px16 <<  3) & 0x070000))) |	// Red
+		((((px16 <<  5) & 0x00FC00) | ((px16 >>  1) & 0x000300))) |	// Green
+		((((px16 <<  3) & 0x0000F8) | ((px16 >>  2) & 0x000007)));	// Blue
+	return px32;
 }
 
 // 15-bit RGB

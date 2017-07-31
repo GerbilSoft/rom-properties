@@ -134,29 +134,33 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	}
 
 	// Badge sizes.
-	static const unsigned int badge64_sz = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H*2;
-	static const unsigned int badge32_sz = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
+	// Badge data is RGB565 + A4.
+	static const unsigned int badge64_rgb_sz = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H*2;
+	static const unsigned int badge64_a4_sz  = BADGE_SIZE_LARGE_W*BADGE_SIZE_LARGE_H/2;
+	static const unsigned int badge32_rgb_sz = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
+	static const unsigned int badge32_a4_sz  = BADGE_SIZE_SMALL_W*BADGE_SIZE_SMALL_H*2;
 
 	// Starting address depends on mega badge status.
 	unsigned int start_addr = (megaBadge ? 0x4300 : 0x1100);
-	unsigned int badge_sz, badge_dims;
+	unsigned int badge_rgb_sz, badge_a4_sz, badge_dims;
 	if (idx == 1) {
 		// 32x32 badges. (0xA00+0x200)
-		// NOTE: There are 0x200 bytes after the badge data.
-		badge_sz = badge64_sz;
+		badge_rgb_sz = badge64_rgb_sz;
+		badge_a4_sz = badge64_a4_sz;
 		badge_dims = BADGE_SIZE_LARGE_W;
 	} else {
 		// 64x64 badges. (0x2000+0x800)
-		// NOTE: There are 0x800 bytes after the badge data.
-		badge_sz = badge32_sz;
+		badge_rgb_sz = badge32_rgb_sz;
+		badge_a4_sz = badge32_a4_sz;
 		badge_dims = BADGE_SIZE_SMALL_W;
-		start_addr += badge64_sz + 0x800;
+		start_addr += badge64_rgb_sz + badge64_a4_sz;
 	}
+	const unsigned int badge_sz = badge_rgb_sz + badge_a4_sz;
 
 	// TODO: Multiple internal image sizes.
 	// For now, 64x64 only.
 
-	unique_ptr<uint16_t[]> badgeData(new uint16_t[badge_sz/2]);
+	unique_ptr<uint8_t[]> badgeData(new uint8_t[badge_sz]);
 
 	if (!megaBadge) {
 		// Single badge.
@@ -167,9 +171,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		}
 
 		// Convert to rp_image.
-		img = ImageDecoder::fromN3DSTiledRGB565(
+		img = ImageDecoder::fromN3DSTiledRGB565_A4(
 			badge_dims, badge_dims,
-			badgeData.get(), badge_sz);
+			reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
+			&badgeData.get()[badge_rgb_sz], badge_a4_sz);
 	} else {
 		// Mega badge. Need to convert each 64x64 badge
 		// and concatenate them manually.
@@ -191,9 +196,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 					return nullptr;
 				}
 
-				rp_image *mb_img = ImageDecoder::fromN3DSTiledRGB565(
+				rp_image *mb_img = ImageDecoder::fromN3DSTiledRGB565_A4(
 					badge_dims, badge_dims,
-					badgeData.get(), badge_sz);
+					reinterpret_cast<const uint16_t*>(badgeData.get()), badge_rgb_sz,
+					&badgeData.get()[badge_rgb_sz], badge_a4_sz);
 
 				// Copy the image into place.
 				const unsigned int my = y*badge_dims;
