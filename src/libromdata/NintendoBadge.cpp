@@ -477,7 +477,7 @@ int NintendoBadge::loadFieldData(void)
 		latin1_to_rp_string(prbs->setname, sizeof(prbs->setname)));
 
 	// Mega badge size.
-	if (prbs->width > 1 || prbs->height > 1) {
+	if (d->megaBadge) {
 		d->fields->addField_string(_RP("Mega Badge Size"),
 			rp_sprintf("%ux%u", prbs->width, prbs->height));
 	}
