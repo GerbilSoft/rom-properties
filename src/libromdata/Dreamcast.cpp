@@ -655,6 +655,8 @@ int Dreamcast::loadFieldData(void)
 	d->fields->addField_bitfield(_RP("Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
 
+	// TODO: Latin-1, cp1252, or Shift-JIS?
+
 	// Product number.
 	int len = d->trim_spaces(discHeader->product_number, (int)sizeof(discHeader->product_number));
 	d->fields->addField_string(_RP("Product #"),
