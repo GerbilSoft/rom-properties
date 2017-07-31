@@ -117,7 +117,9 @@ class RP_ShellPropSheetExt_Private
 		static const wchar_t D_PTR_PROP[];
 
 	public:
-		// ROM data.
+		// ROM filename.
+		rp_string filename;
+		// ROM data. (Not opened until the properties tab is shown.)
 		RomData *romData;
 
 		// Useful window handles.
@@ -461,10 +463,6 @@ void RP_ShellPropSheetExt_Private::stopAnimTimer(void)
  */
 void RP_ShellPropSheetExt_Private::loadImages(void)
 {
-	assert(romData != nullptr);
-	if (!romData)
-		return;
-
 	// Window background color.
 	// Static controls don't support alpha transparency (?? test),
 	// so we have to fake it.
@@ -553,6 +551,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
 			} else {
 				// Not an animated icon.
 				last_frame_number = 0;
+				iconAnimHelper.setIconAnimData(nullptr);
 
 				// Convert to HBITMAP using the window background color.
 				hbmpIconFrames[0] = RpImageWin32::toHBITMAP(icon, gdipBgColor, szIcon, true);
@@ -597,7 +596,7 @@ void RP_ShellPropSheetExt_Private::incSizeToMinimum(SIZE &sz)
  */
 int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size)
 {
-	if (!hDlg)
+	if (!hDlg || !romData)
 		return 0;
 
 	// Total widget width.
@@ -1908,7 +1907,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	UINT nFiles, cchFilename;
 	wchar_t *filename = nullptr;
 	unique_ptr<IRpFile> file;
-	RomData *romData = nullptr;
 
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
@@ -1953,7 +1951,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file.reset(new RpFile(W2RP_cl(filename, cchFilename), RpFile::FM_OPEN_READ));
+	file.reset(new RpFile(W2RP_cl(filename, cchFilename-1), RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -1961,18 +1959,18 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Get the appropriate RomData class for this ROM.
 	// file is dup()'d by RomData.
-	romData = RomDataFactory::create(file.get());
+	RomData *romData = RomDataFactory::create(file.get());
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
 	}
 
-	// Make sure the existing RomData is unreferenced.
-	// TODO: If the filename matches, don't reopen?
-	if (d->romData) {
-		d->romData->unref();
-	}
-	d->romData = romData;
+	// Unreference the RomData object.
+	// We only want to open the RomData if the "ROM Properties"
+	// tab is clicked, because otherwise the file will be held
+	// open and may block the user from changing attributes.
+	romData->unref();
+	d->filename = W2RP_cl(filename, cchFilename-1);
 	hr = S_OK;
 
 cleanup:
@@ -2077,11 +2075,6 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// since some other extension (e.g. HashTab) may be
 			// resizing the dialog.
 
-			// We need to load the images here.
-			// Otherwise, the animation won't be initialized
-			// properly when the tab is first displayed.
-			d->loadImages();
-
 			// NOTE: We're using WM_SHOWWINDOW instead of WM_SIZE
 			// because WM_SIZE isn't sent for block devices,
 			// e.g. CD-ROM drives.
@@ -2098,18 +2091,37 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				return FALSE;
 			}
 
-			// TODO: Support dynamic resizing? The standard
-			// Explorer file properties dialog doesn't support
-			// it, but others might...
-			if (d->romData->isOpen()) {
-				// Initialize the dialog.
-				d->initDialog(hDlg);
-
-				// Make sure the underlying file handle is closed,
-				// since we don't need it once the RomData has been
-				// loaded by RomDataView.
-				d->romData->close();
+			if (d->isFullyInit) {
+				// Dialog is already initialized.
+				break;
 			}
+
+			// Open the RomData object.
+			unique_ptr<IRpFile> file(new RpFile(d->filename, RpFile::FM_OPEN_READ));
+			if (!file || !file->isOpen()) {
+				// Unable to open the file.
+				break;
+			}
+			d->romData = RomDataFactory::create(file.get());
+			if (!d->romData) {
+				// Unable to get a RomData object.
+				break;
+			} else if (!d->romData->isOpen()) {
+				// RomData is not open.
+				d->romData->unref();
+				d->romData = nullptr;
+				break;
+			}
+
+			// Load the images.
+			d->loadImages();
+			// Initialize the dialog.
+			d->initDialog(hDlg);
+			// We can close the RomData's underlying IRpFile now.
+			d->romData->close();
+
+			// Start the animation timer.
+			d->startAnimTimer();
 
 			// Continue normal processing.
 			break;
