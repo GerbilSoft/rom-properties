@@ -428,8 +428,10 @@ int NintendoBadge::loadFieldData(void)
 		latin1_to_rp_string(prbs->setname, sizeof(prbs->setname)));
 
 	// Multi-badge size.
-	d->fields->addField_string(_RP("Multi-Badge Size"),
-		rp_sprintf("%ux%u", prbs->width, prbs->height));
+	if (prbs->width > 1 || prbs->height > 1) {
+		d->fields->addField_string(_RP("Multi-Badge Size"),
+			rp_sprintf("%ux%u", prbs->width, prbs->height));
+	}
 
 	// Title ID.
 	if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
