@@ -70,7 +70,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 	uint32_t tileBuf[4*4];
 
 	switch (px_format) {
-		case PXF_RGB5A3:
+		case PXF_RGB5A3: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
@@ -83,9 +83,15 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
+			// Set the sBIT data.
+			// NOTE: Pixels may be RGB555 or ARGB4444.
+			// We'll use 555 for RGB, and 4 for alpha.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_RGB565:
+		case PXF_RGB565: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
@@ -98,9 +104,13 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_IA8:
+		case PXF_IA8: {
 			for (unsigned int y = 0; y < tilesY; y++) {
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
@@ -113,7 +123,13 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
+			// Set the sBIT data.
+			// NOTE: Setting the grayscale value, though we're
+			// not saving grayscale PNGs at the moment.
+			static const rp_image::sBIT_t sBIT = {8,8,8,8,8};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -195,6 +211,12 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 			tileBuf += (8 * 4);
 		}
 	}
+
+	// Set the sBIT data.
+	// NOTE: Pixels may be RGB555 or ARGB4444.
+	// We'll use 555 for RGB, and 4 for alpha.
+	static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
+	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
 	return img;

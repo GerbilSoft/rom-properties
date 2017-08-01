@@ -110,7 +110,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
-		case PXF_ARGB1555:
+		case PXF_ARGB1555: {
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = 0; x < (unsigned int)width; x++) {
@@ -119,9 +119,13 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_RGB565:
+		case PXF_RGB565: {
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = 0; x < (unsigned int)width; x++) {
@@ -130,9 +134,13 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_ARGB4444:
+		case PXF_ARGB4444: {
 			for (int y = 0; y < height; y++) {
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = 0; x < (unsigned int)width; x++) {
@@ -141,7 +149,11 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -209,21 +221,36 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	// Convert the palette.
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
-		case PXF_ARGB1555:
+		case PXF_ARGB1555: {
 			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i]);
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			img->set_sBIT(&sBIT);
 			break;
-		case PXF_RGB565:
+		}
+
+		case PXF_RGB565: {
 			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i]);
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
-		case PXF_ARGB4444:
+		}
+
+		case PXF_ARGB4444: {
 			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i]);
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
 			break;
+		}
+
 		default:
 			assert(!"Invalid pixel format for this function.");
 			delete img;

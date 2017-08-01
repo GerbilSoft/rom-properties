@@ -92,6 +92,10 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 		}
 	}
 
+	// Set the sBIT data.
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+	img->set_sBIT(&sBIT);
+
 	// Image has been converted.
 	return img;
 }
@@ -162,6 +166,10 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
 			ImageDecoderPrivate::BlitTile<uint32_t, 8, 8>(img, tileBuf, x, y);
 		}
 	}
+
+	// Set the sBIT data.
+	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
+	img->set_sBIT(&sBIT);
 
 	// Image has been converted.
 	return img;

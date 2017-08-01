@@ -97,7 +97,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 
 	int tr_idx = -1;
 	switch (px_format) {
-		case PXF_ARGB1555:
+		case PXF_ARGB1555: {
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
@@ -105,15 +105,23 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_RGB565:
+		case PXF_RGB565: {
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_ARGB4444:
+		case PXF_ARGB4444: {
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
@@ -121,9 +129,13 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_BGR555:
+		case PXF_BGR555: {
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
@@ -131,9 +143,13 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_BGR555_PS1:
+		case PXF_BGR555_PS1: {
 			for (unsigned int i = 0; i < 16; i++) {
 				// For PS1 BGR555, if the color value is $0000, it's transparent.
 				const uint16_t px16 = le16_to_cpu(pal_buf[i]);
@@ -148,7 +164,11 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(px16);
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -247,7 +267,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 
 	int tr_idx = -1;
 	switch (px_format) {
-		case PXF_ARGB1555:
+		case PXF_ARGB1555: {
 			for (unsigned int i = 0; i < 256; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
@@ -255,15 +275,23 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = i;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_RGB565:
+		case PXF_RGB565: {
 			for (unsigned int i = 0; i < 256; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
-		case PXF_ARGB4444:
+		case PXF_ARGB4444: {
 			for (unsigned int i = 0; i < 256; i++) {
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
@@ -271,7 +299,11 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = i;
 				}
 			}
+			// Set the sBIT data.
+			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
+			img->set_sBIT(&sBIT);
 			break;
+		}
 
 		default:
 			assert(!"Invalid pixel format for this function.");
@@ -350,6 +382,12 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 		}
 	}
 
+	// Set the sBIT data.
+	// NOTE: Setting the grayscale value, though we're
+	// not saving grayscale PNGs at the moment.
+	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
+	img->set_sBIT(&sBIT);
+
 	// Image has been converted.
 	return img;
 }
@@ -404,8 +442,8 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		return nullptr;
 	}
 
-#define fromLinear8_convert(fmt) \
-		case PXF_##fmt: \
+#define fromLinear8_convert(fmt, r,g,b,gr,a) \
+		case PXF_##fmt: { \
 			for (int y = 0; y < height; y++) { \
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
 				unsigned int x; \
@@ -423,16 +461,20 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 				} \
 				img_buf += line_offset_adj; \
 			} \
-			break
+			/* Set the sBIT data. */ \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			img->set_sBIT(&sBIT); \
+		} break
 
 	// Convert one line at a time. (8-bit -> ARGB32)
 	switch (px_format) {
 		// Luminance.
-		fromLinear8_convert(L8);
-		fromLinear8_convert(A4L4);
+		fromLinear8_convert(L8, 8,8,8,8,0);
+		fromLinear8_convert(A4L4, 4,4,4,4,4);
 
 		// Alpha.
-		fromLinear8_convert(A8);
+		// NOTE: Have to specify RGB bits...
+		fromLinear8_convert(A8, 1,1,1,1,8);
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");
@@ -492,8 +534,8 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		return nullptr;
 	}
 
-#define fromLinear16_convert(fmt) \
-		case PXF_##fmt: \
+#define fromLinear16_convert(fmt, r,g,b,gr,a) \
+		case PXF_##fmt: { \
 			for (int y = 0; y < height; y++) { \
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
@@ -503,34 +545,38 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 				} \
 				img_buf += line_offset_adj; \
 			} \
-			break
+			/* Set the sBIT data. */ \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			img->set_sBIT(&sBIT); \
+		} break
 			
 	// Convert one line at a time. (16-bit -> ARGB32)
 	switch (px_format) {
 		// 16-bit RGB.
-		fromLinear16_convert(RGB565);
-		fromLinear16_convert(BGR565);
-		fromLinear16_convert(ARGB1555);
-		fromLinear16_convert(ABGR1555);
-		fromLinear16_convert(RGBA5551);
-		fromLinear16_convert(BGRA5551);
-		fromLinear16_convert(ARGB4444);
-		fromLinear16_convert(ABGR4444);
-		fromLinear16_convert(RGBA4444);
-		fromLinear16_convert(BGRA4444);
-		fromLinear16_convert(xRGB4444);
-		fromLinear16_convert(xBGR4444);
-		fromLinear16_convert(RGBx4444);
-		fromLinear16_convert(BGRx4444);
-		fromLinear16_convert(ARGB8332);
+		fromLinear16_convert(RGB565, 5,6,5,0,0);
+		fromLinear16_convert(BGR565, 5,6,5,0,0);
+		fromLinear16_convert(ARGB1555, 5,5,5,0,1);
+		fromLinear16_convert(ABGR1555, 5,5,5,0,1);
+		fromLinear16_convert(RGBA5551, 5,5,5,0,1);
+		fromLinear16_convert(BGRA5551, 5,5,5,0,1);
+		fromLinear16_convert(ARGB4444, 4,4,4,0,4);
+		fromLinear16_convert(ABGR4444, 4,4,4,0,4);
+		fromLinear16_convert(RGBA4444, 4,4,4,0,4);
+		fromLinear16_convert(BGRA4444, 4,4,4,0,4);
+		fromLinear16_convert(xRGB4444, 4,4,4,0,4);
+		fromLinear16_convert(xBGR4444, 4,4,4,0,4);
+		fromLinear16_convert(RGBx4444, 4,4,4,0,4);
+		fromLinear16_convert(BGRx4444, 4,4,4,0,4);
+		fromLinear16_convert(ARGB8332, 3,3,2,0,8);
 
 		// 15-bit RGB.
-		fromLinear16_convert(RGB555);
-		fromLinear16_convert(BGR555);
+		fromLinear16_convert(RGB555, 5,5,5,0,0);
+		fromLinear16_convert(BGR555, 5,5,5,0,0);
 
 		// Luminance.
-		fromLinear16_convert(L16);
-		fromLinear16_convert(A8L8);
+		// TODO: 16-bit support. Downconverted to 8 for now.
+		fromLinear16_convert(L16, 8,8,8,8,0);
+		fromLinear16_convert(A8L8, 8,8,8,8,8);
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
@@ -624,6 +670,10 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 			return nullptr;
 	}
 
+	// Set the sBIT data.
+	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+	img->set_sBIT(&sBIT);
+
 	// Image has been converted.
 	return img;
 }
@@ -677,10 +727,13 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 		return nullptr;
 	}
 
+	// sBIT for standard ARGB32.
+	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
+
 	// Convert one line at a time. (32-bit -> ARGB32)
 	// NOTE: All functions except PXF_HOST_ARGB32 are partially unrolled.
 	switch (px_format) {
-		case PXF_HOST_ARGB32: {
+		case PXF_HOST_ARGB32:
 			// Host-endian ARGB32.
 			// We can directly copy the image data without conversions.
 			if (stride == img->stride()) {
@@ -695,8 +748,9 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf += (stride / bytespp);
 				}
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
-		}
 
 		case PXF_HOST_ABGR32: {
 			// Host-endian ABGR32.
@@ -731,6 +785,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf_abgr32 += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 		}
 
@@ -754,6 +810,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 
 		case PXF_HOST_RGBx32:
@@ -776,6 +834,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 
 		case PXF_SWAP_ARGB32:
@@ -798,6 +858,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 
 		case PXF_SWAP_ABGR32: {
@@ -833,6 +895,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf_abgr32 += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 		}
 
@@ -856,6 +920,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 
 		case PXF_SWAP_RGBx32:
@@ -878,12 +944,14 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
+			// Set the sBIT data.
+			img->set_sBIT(&sBIT_32);
 			break;
 
 		/** Uncommon 32-bit formats. **/
 
-#define fromLinear32_convert(fmt) \
-		case PXF_##fmt: \
+#define fromLinear32_convert(fmt, r,g,b,gr,a) \
+		case PXF_##fmt: { \
 			for (int y = 0; y < height; y++) { \
 				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
@@ -893,17 +961,22 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				} \
 				img_buf += line_offset_adj; \
 			} \
-			break
+			/* Set the sBIT data. */ \
+			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
+			img->set_sBIT(&sBIT); \
+		} break
 
 		// TODO: Add an ARGB64 format to rp_image.
 		// For now, truncating it to G8R8.
 		// TODO: This might be a candidate for SSE2 optimization.
-		fromLinear32_convert(G16R16);
+		// NOTE: We have to set '1' for the empty Blue channel,
+		// since libpng complains if it's set to '0'.
+		fromLinear32_convert(G16R16, 8,8,1,0,0);
 
 		// TODO: Add an ARGB64 format to rp_image.
 		// For now, truncating it to ARGB32.
-		fromLinear32_convert(A2R10G10B10);
-		fromLinear32_convert(A2B10G10R10);
+		fromLinear32_convert(A2R10G10B10, 8,8,8,0,2);
+		fromLinear32_convert(A2B10G10R10, 8,8,8,0,2);
 
 		default:
 			assert(!"Unsupported 16-bit pixel format.");
