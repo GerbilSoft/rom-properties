@@ -118,6 +118,12 @@ class RpPngWriterPrivate
 		// Current state.
 		bool IHDR_written;
 
+#ifdef PNG_sBIT_SUPPORTED
+		// If true, skip the alpha channel.
+		// This is done if sBIT is set and alpha == 0.
+		bool skip_alpha;
+#endif /* PNG_sBIT_SUPPORTED */
+
 	public:
 		/**
 		 * Initialize the PNG write structs.
@@ -189,6 +195,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
+#ifdef PNG_sBIT_SUPPORTED
+	, skip_alpha(false)
+#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->img = img;
 	if (!filename || filename[0] == 0 || !img || !img->isValid()) {
@@ -554,6 +563,8 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	if (has_tRNS) {
 		// Palette has transparency.
 		// Write the tRNS chunk.
+		// NOTE: Ignoring skip_alpha here, since it doesn't make
+		// sense to skip for paletted images.
 		png_set_tRNS(png_ptr, info_ptr, png_tRNS, num_entries, nullptr);
 	}
 	return 0;
@@ -604,6 +615,17 @@ int RpPngWriterPrivate::write_IDAT(void)
 	//png_set_swap(png_ptr);
 	// TODO: What format on big-endian?
 	png_set_bgr(png_ptr);
+
+	if (skip_alpha && img->format() == rp_image::FORMAT_ARGB32) {
+		// Need to skip the alpha bytes.
+		// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTE_ORDER == SYS_LIL_ENDIAN
+		static const int flags = PNG_FILLER_AFTER;
+#else /* SYS_BYTE_ORDER == SYS_BIG_ENDIAN */
+		static const int flags = PNG_FILLER_BEFORE;
+#endif
+		png_set_filler(png_ptr, 0xFF, flags);
+	}
 
 	// Allocate the row pointers.
 	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
@@ -878,12 +900,27 @@ int RpPngWriter::write_IHDR(void)
 	png_set_filter(d->png_ptr, 0, PNG_FILTER_NONE);
 	png_set_compression_level(d->png_ptr, 5);	// TODO: Customizable?
 
+#ifdef PNG_sBIT_SUPPORTED
+	// Get the rp_image's sBIT data.
+	// If alpha == 0, we can write RGB and/or skip tRNS.
+	rp_image::sBIT_t sBIT;
+	bool has_sBIT = (img0->get_sBIT(&sBIT) == 0);
+	d->skip_alpha = (has_sBIT && sBIT.alpha == 0);
+#endif /* PNG_sBIT_SUPPORTED */
+
 	// Write the PNG header.
 	switch (img0->format()) {
 		case rp_image::FORMAT_ARGB32: {
+			// TODO: Use PNG_COLOR_TYPE_GRAY and/or PNG_COLOR_TYPE_GRAY_ALPHA
+			// if sBIT.gray > 0?
+#ifdef PNG_sBIT_SUPPORTED
+			const int color_type = (d->skip_alpha ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA);
+#else /* !PNG_sBIT_SUPPORTED */
+			static const int color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+#endif /* PNG_sBIT_SUPPORTED */
 			png_set_IHDR(d->png_ptr, d->info_ptr,
 					img0->width(), img0->height(), 8,
-					PNG_COLOR_TYPE_RGB_ALPHA,
+					color_type,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
 					PNG_FILTER_TYPE_DEFAULT);
@@ -915,10 +952,6 @@ int RpPngWriter::write_IHDR(void)
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
-	// Get the rp_image's sBIT data.
-	// If alpha == 0, we can write RGB and/or skip tRNS.
-	rp_image::sBIT_t sBIT;
-	bool has_sBIT = (img0->get_sBIT(&sBIT) == 0);
 	if (has_sBIT) {
 		// Write the sBIT chunk.
 		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
