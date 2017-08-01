@@ -47,6 +47,19 @@
 	png_set_gray_1_2_4_to_8(png_ptr)
 #endif
 
+// libpng-1.5.0beta42 marked several function parameters as const.
+// Older versions don't have them marked as const, but they're
+// effectively const anyway.
+#if PNG_LIBPNG_VER < 10500 || \
+    (PNG_LIBPNG_VER == 10500 && \
+        (PNG_LIBPNG_VER_BUILD >= 1 && PNG_LIBPNG_VER_BUILD < 42))
+// libpng-1.5.0beta41 or earlier: Functions do *not* have const pointer arguments.
+# define PNG_CONST_CAST(type) const_cast<type>
+#else
+// libpng-1.5.0beta42: Functions have const pointer arguments.
+# define PNG_CONST_CAST(type)
+#endif
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
@@ -964,7 +977,8 @@ int RpPngWriter::write_IHDR(void)
 	if (has_sBIT) {
 		// Write the sBIT chunk.
 		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
-		png_set_sBIT(d->png_ptr, d->info_ptr, reinterpret_cast<const png_color_8*>(&sBIT));
+		const png_color_8 *const sBIT_pc8 = reinterpret_cast<const png_color_8*>(&sBIT);
+		png_set_sBIT(d->png_ptr, d->info_ptr, PNG_CONST_CAST(png_color_8p)(sBIT_pc8));
 	}
 #endif /* PNG_sBIT_SUPPORTED */
 
