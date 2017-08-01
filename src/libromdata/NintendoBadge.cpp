@@ -237,9 +237,9 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		// Badges are stored vertically, then horizontally.
 		img = new rp_image(badge_dims * mb_width, badge_dims * mb_height, rp_image::FORMAT_ARGB32);
-		for (unsigned int x = 0; x < mb_width; x++) {
-			const unsigned int mx = x*badge_dims;
-			for (unsigned int y = 0; y < mb_height; y++, start_addr += (0x2800+0xA00)) {
+		for (unsigned int y = 0; y < mb_height; y++) {
+			const unsigned int my = y*badge_dims;
+			for (unsigned int x = 0; x < mb_width; x++, start_addr += (0x2800+0xA00)) {
 				size_t size = file->seekAndRead(start_addr, badgeData.get(), badge_sz);
 				if (size != badge_sz) {
 					// Seek and/or read error.
@@ -254,7 +254,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 					&badgeData.get()[badge_rgb_sz], badge_a4_sz);
 
 				// Copy the image into place.
-				const unsigned int my = y*badge_dims;
+				const unsigned int mx = x*badge_dims;
 				for (int py = badge_dims-1; py >= 0; py--) {
 					const uint32_t *src = reinterpret_cast<const uint32_t*>(mb_img->scanLine(py));
 					uint32_t *dest = reinterpret_cast<uint32_t*>(img->scanLine(py+my)) + mx;
