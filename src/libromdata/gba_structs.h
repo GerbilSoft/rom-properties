@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Game Boy Advance ROM header.
  * This matches the GBA ROM header format exactly.
@@ -38,7 +40,6 @@ extern "C" {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _GBA_RomHeader {
 	union {
 		uint32_t entry_point;	// 32-bit ARM branch opcode.
@@ -61,8 +62,9 @@ typedef struct PACKED _GBA_RomHeader {
 	uint8_t checksum;
 	uint8_t reserved2[2];
 } GBA_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(GBA_RomHeader, 192);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

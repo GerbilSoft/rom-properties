@@ -49,6 +49,8 @@ distribution.
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Memory card system locations.
  */
@@ -67,9 +69,7 @@ extern "C" {
  * - Revision bef3d7229eca9a7f9568abf72de6b4d467feee9f
  * - File: Source/Core/Core/Src/HW/GCMemcard.h
  */
-#pragma pack(1)
-typedef struct PACKED _card_header
-{
+typedef struct PACKED _card_header {
 	// The following is uint32_t serial[8] in libogc.
 	// It's used as an 8-word key for F-Zero GX and PSO "encryption".
 	union {
@@ -91,28 +91,22 @@ typedef struct PACKED _card_header
 	uint16_t chksum1;	// Checksum.
 	uint16_t chksum2;	// Inverted checksum.
 } card_header;
-#pragma pack()
 
 /**
  * Directory control block.
  */
-#pragma pack(1)
-typedef struct PACKED _card_dircntrl
-{
+typedef struct PACKED _card_dircntrl {
 	uint8_t pad[58];
 	uint16_t updated;	// Update counter.
 	uint16_t chksum1;	// Checksum 1.
 	uint16_t chksum2;	// Checksum 2.
 } card_dircntrl;
-#pragma pack()
 
 /**
  * Directory entry.
  * Addresses are relative to the start of the file.
  */
-#pragma pack(1)
-typedef struct PACKED _card_direntry
-{
+typedef struct PACKED _card_direntry {
 	union {
 		struct {
 			char gamecode[4];	// Game code.
@@ -134,25 +128,19 @@ typedef struct PACKED _card_direntry
 	uint16_t pad_01;	// Padding. (0xFFFF)
 	uint32_t commentaddr;	// Comment address.
 } card_direntry;
-#pragma pack()
 
 /**
  * Directory table.
  */
-#pragma pack(1)
-typedef struct PACKED _card_dat
-{
+typedef struct PACKED _card_dat {
 	struct _card_direntry entries[CARD_MAXFILES];
 	struct _card_dircntrl dircntrl;
 } card_dat;
-#pragma pack()
 
 /**
  * Block allocation table.
  */
-#pragma pack(1)
-typedef struct PACKED _card_bat
-{
+typedef struct PACKED _card_bat {
 	uint16_t chksum1;	// Checksum 1.
 	uint16_t chksum2;	// Checksum 2.
 	uint16_t updated;	// Update counter.
@@ -163,7 +151,6 @@ typedef struct PACKED _card_bat
 	// before looking it up in the FAT!
 	uint16_t fat[0xFFB];	// File allocation table.
 } card_bat;
-#pragma pack()
 
 // File attributes.
 #define CARD_ATTRIB_PUBLIC	0x04
@@ -214,6 +201,8 @@ typedef struct PACKED _card_bat
 // Difference between GameCube timebase and Unix timebase.
 // (GameCube starts at 2000/01/01; Unix starts at 1970/01/01.)
 #define GC_UNIX_TIME_DIFF	0x386D4380
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

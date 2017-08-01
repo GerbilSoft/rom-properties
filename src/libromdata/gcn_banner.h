@@ -34,6 +34,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 // Magic numbers.
 #define BANNER_MAGIC_BNR1 0x424E5231	/* 'BNR1' */
 #define BANNER_MAGIC_BNR2 0x424E5232	/* 'BNR2' */
@@ -46,9 +48,7 @@ extern "C" {
 // depending on the game region.
 
 // Banner comment.
-#pragma pack(1)
 #define GCN_BANNER_COMMENT_SIZE 0x140
-#pragma pack(1)
 typedef struct PACKED _banner_comment_t
 {
 	char gamename[0x20];
@@ -57,11 +57,9 @@ typedef struct PACKED _banner_comment_t
 	char company_full[0x40];
 	char gamedesc[0x80];
 } banner_comment_t;
-#pragma pack()
 ASSERT_STRUCT(banner_comment_t, GCN_BANNER_COMMENT_SIZE);
 
 // BNR1
-#pragma pack(1)
 #define GCN_BANNER_BNR1_SIZE (0x1820 + GCN_BANNER_COMMENT_SIZE)
 typedef struct PACKED _banner_bnr1_t
 {
@@ -70,11 +68,9 @@ typedef struct PACKED _banner_bnr1_t
 	uint16_t banner[0x1800>>1];	// Banner image. (96x32, RGB5A3)
 	banner_comment_t comment;
 } banner_bnr1_t;
-#pragma pack()
 ASSERT_STRUCT(banner_bnr1_t, GCN_BANNER_BNR1_SIZE);
 
 // BNR2
-#pragma pack(1)
 #define GCN_BANNER_BNR2_SIZE (0x1820 + (GCN_BANNER_COMMENT_SIZE * 6))
 typedef struct PACKED _banner_bnr2_t
 {
@@ -83,7 +79,6 @@ typedef struct PACKED _banner_bnr2_t
 	uint16_t banner[0x1800>>1];	// Banner image. (96x32, RGB5A3)
 	banner_comment_t comments[6];
 } banner_bnr2_t;
-#pragma pack()
 ASSERT_STRUCT(banner_bnr2_t, GCN_BANNER_BNR2_SIZE);
 
 // BNR2 languages. (Maps to GameCube language setting.)
@@ -128,7 +123,6 @@ typedef enum {
 #define BANNER_WIBN_STRUCT_SIZE_ICONS(icons) \
 	(BANNER_WIBN_STRUCT_SIZE + ((icons)*BANNER_WIBN_ICON_SIZE))
 
-#pragma pack(1)
 typedef struct PACKED _wii_savegame_header_t {
 	uint32_t magic;			// BANNER_MAGIC_WIBN
 	uint32_t flags;
@@ -137,22 +131,17 @@ typedef struct PACKED _wii_savegame_header_t {
 	uint16_t gameTitle[32];		// Game title. (UTF-16 BE)
 	uint16_t gameSubTitle[32];	// Game subtitle. (UTF-16 BE)
 } wii_savegame_header_t;
-#pragma pack()
 ASSERT_STRUCT(wii_savegame_header_t, 160);
 
-#pragma pack(1)
 typedef struct PACKED _wii_savegame_banner_t {
 	uint16_t banner[BANNER_WIBN_IMAGE_W*BANNER_WIBN_IMAGE_H];	// Banner image. (192x64, RGB5A3)
 	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];		// Main icon. (48x48, RGB5A3)
 } wii_savegame_banner_t;
-#pragma pack()
 ASSERT_STRUCT(wii_savegame_banner_t, BANNER_WIBN_IMAGE_SIZE+BANNER_WIBN_ICON_SIZE);
 
-#pragma pack(1)
 typedef struct PACKED _wii_savegame_icon_t {
 	uint16_t icon[BANNER_WIBN_ICON_W*BANNER_WIBN_ICON_H];	// Additional icon. (48x48, RGB5A3) [optional]
 } wii_savegame_icon_t;
-#pragma pack()
 ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
 
 // IMET magic number.
@@ -165,7 +154,6 @@ ASSERT_STRUCT(_wii_savegame_icon_t, BANNER_WIBN_ICON_SIZE);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 typedef struct _wii_imet_t {
 	uint8_t zeroes1[64];
 	uint32_t magic;		// "IMET"
@@ -184,7 +172,6 @@ typedef struct _wii_imet_t {
 	uint8_t md5[16];	// MD5 of 0 to 'hashsize' in the header.
 				// This field is all 0 when calculating.
 } wii_imet_t;
-#pragma pack()
 ASSERT_STRUCT(wii_imet_t, 1536);
 
 // Wii languages. (Maps to IMET indexes.)
@@ -199,6 +186,8 @@ typedef enum {
 	// 7 and 8 are unknown. (Chinese?)
 	WII_LANG_KOREAN		= 9,
 } Wii_Language;
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * ROM mapping. (SNES_RomHeader.rom_mapping)
  */
@@ -98,7 +100,6 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _SNES_RomHeader {
 	/** Extended header is only present if old_publisher_code == 0x33. **/
 	struct {
@@ -149,7 +150,6 @@ typedef struct PACKED _SNES_RomHeader {
 		} emulation;
 	} vectors;
 } SNES_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(SNES_RomHeader, 80);
 
 /**
@@ -175,6 +175,8 @@ enum SNES_Destination_Code {
 	SNES_DEST_OTHER_Y	= 0x13,
 	SNES_DEST_OTHER_Z	= 0x14,
 };
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

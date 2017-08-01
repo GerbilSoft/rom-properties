@@ -29,11 +29,12 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
- * 68000 vector table.
+ * Motorola 68000 vector table.
  * All fields are big-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _M68K_VectorTable {
 	union {
 		uint32_t vectors[64];
@@ -71,7 +72,6 @@ ASSERT_STRUCT(M68K_VectorTable, 256);
  * All fields are big-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _MD_RomHeader {
 	// Titles may be encoded in either
 	// Shift-JIS (cp932) or cp1252.
@@ -109,8 +109,9 @@ typedef struct PACKED _MD_RomHeader {
 	};
 	char region_codes[16];
 } MD_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(MD_RomHeader, 256);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

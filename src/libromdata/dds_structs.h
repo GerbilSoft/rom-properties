@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * References:
  * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943990(v=vs.85).aspx
@@ -46,7 +48,6 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _DDS_PIXELFORMAT {
 	uint32_t dwSize;
 	uint32_t dwFlags;		// See DDS_PIXELFORMAT_FLAGS
@@ -57,7 +58,6 @@ typedef struct PACKED _DDS_PIXELFORMAT {
 	uint32_t dwBBitMask;
 	uint32_t dwABitMask;
 } DDS_PIXELFORMAT;
-#pragma pack()
 ASSERT_STRUCT(DDS_PIXELFORMAT, 32);
 
 // dwFlags
@@ -89,7 +89,6 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
 #define DDS_MAGIC "DDS "
 typedef struct PACKED _DDS_HEADER {
 	uint32_t dwSize;
@@ -107,7 +106,6 @@ typedef struct PACKED _DDS_HEADER {
 	uint32_t dwCaps4;
 	uint32_t dwReserved2;
 } DDS_HEADER;
-#pragma pack()
 ASSERT_STRUCT(DDS_HEADER, 124);
 
 // dwFlags
@@ -287,7 +285,6 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _DDS_HEADER_DXT10 {
 	DXGI_FORMAT dxgiFormat;
 	D3D10_RESOURCE_DIMENSION resourceDimension;
@@ -295,7 +292,6 @@ typedef struct PACKED _DDS_HEADER_DXT10 {
 	unsigned int arraySize;
 	unsigned int miscFlags2;	// See DDS_DXT10_MISC_FLAGS2.
 } DDS_HEADER_DXT10;
-#pragma pack()
 ASSERT_STRUCT(DDS_HEADER_DXT10, 20);
 
 // miscFlag
@@ -311,6 +307,8 @@ typedef enum {
 	DDS_ALPHA_MODE_OPAQUE		= 0x3,
 	DDS_ALPHA_MODE_CUSTOM		= 0x4,
 } DDS_DXT10_MISC_FLAGS2;
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

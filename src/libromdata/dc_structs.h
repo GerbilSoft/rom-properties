@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 // VMS blocks are 512 bytes.
 #define DC_VMS_BLOCK_SIZE 512
 
@@ -47,13 +49,11 @@ extern "C" {
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _DC_VMS_ICONDATA_Header {
 	char vms_description[16];	// Shift-JIS; space-padded.
 	uint32_t mono_icon_addr;	// Address of monochrome icon.
 	uint32_t color_icon_addr;	// Address of color icon.
 } DC_VMS_ICONDATA_Header;
-#pragma pack()
 ASSERT_STRUCT(DC_VMS_ICONDATA_Header, 24);
 
 /** VMS header **/
@@ -66,7 +66,6 @@ ASSERT_STRUCT(DC_VMS_ICONDATA_Header, 24);
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef union PACKED _DC_VMS_Header {
 	struct {
 		char vms_description[16];	// Shift-JIS; space-padded.
@@ -90,7 +89,6 @@ typedef union PACKED _DC_VMS_Header {
 	// immediately after the VMS header, followed
 	// by the eyecatch (if present).
 } DC_VMS_Header;
-#pragma pack()
 ASSERT_STRUCT(DC_VMS_Header, 96);
 
 /**
@@ -134,7 +132,6 @@ typedef enum {
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _DC_VMI_Timestamp {
 	uint16_t year;		// Year (exact value)
 	uint8_t mon;		// Month (1-12)
@@ -144,7 +141,6 @@ typedef struct PACKED _DC_VMI_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Sunday, 6=Saturday)
 } DC_VMI_Timestamp;
-#pragma pack()
 
 /**
  * Dreamcast VMI header. (.vmi files)
@@ -154,7 +150,6 @@ typedef struct PACKED _DC_VMI_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _DC_VMI_Header {
 	// Very primitive checksum.
 	// First four bytes of vms_resource_name,
@@ -173,7 +168,6 @@ typedef struct PACKED _DC_VMI_Header {
 	uint16_t reserved;		// Set to 0.
 	uint32_t filesize;		// .VMS file size, in bytes.
 } DC_VMI_Header;
-#pragma pack()
 ASSERT_STRUCT(DC_VMI_Header, 108);
 
 /**
@@ -197,7 +191,6 @@ typedef enum {
  *
  * Reference: http://mc.pp.se/dc/vms/flashmem.html
  */
-#pragma pack(1)
 typedef struct PACKED _DC_VMS_BCD_Timestamp {
 	uint8_t century;	// Century.
 	uint8_t year;		// Year.
@@ -208,7 +201,6 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
 	uint8_t sec;		// Second (0-59)
 	uint8_t wday;		// Day of week (0=Monday, 6=Sunday)
 } DC_VMS_BCD_Timestamp;
-#pragma pack()
 
 /**
  * Dreamcast VMS directory entry.
@@ -221,7 +213,6 @@ typedef struct PACKED _DC_VMS_BCD_Timestamp {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _DC_VMS_DirEnt {
 	uint8_t filetype;	// See DC_VMS_DirEnt_FType.
 	uint8_t protect;	// See DC_VMS_DirEnt_Protect.
@@ -233,7 +224,6 @@ typedef struct PACKED _DC_VMS_DirEnt {
 	uint16_t header_addr;	// Offset of header (in blocks) from file start.
 	uint8_t reserved[4];	// Reserved. (all zero)
 } DC_VMS_DirEnt;
-#pragma pack()
 ASSERT_STRUCT(DC_VMS_DirEnt, 32);
 
 /**
@@ -252,6 +242,8 @@ typedef enum {
 	DC_VMS_DIRENT_PROTECT_COPY_OK        = 0x00,
 	DC_VMS_DIRENT_PROTECT_COPY_PROTECTED = 0xFF,
 } DC_VMS_DirEnt_Protect;
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

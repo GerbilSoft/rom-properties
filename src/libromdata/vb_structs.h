@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Virtual Boy ROM header.
  * This matches the ROM header format exactly.
@@ -38,7 +40,6 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 typedef struct PACKED _VB_RomHeader {
 	char title[21];
 	uint8_t reserved[4];
@@ -46,8 +47,9 @@ typedef struct PACKED _VB_RomHeader {
 	char gameid[4];
 	uint8_t version;
 } VB_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(VB_RomHeader, 32);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }

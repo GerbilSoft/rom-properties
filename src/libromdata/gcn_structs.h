@@ -29,13 +29,14 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * GameCube/Wii disc image header.
  * This matches the disc image format exactly.
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
 #define GCN_MAGIC 0xC2339F3D
 #define WII_MAGIC 0x5D1C9EA3
 typedef struct PACKED _GCN_DiscHeader {
@@ -59,7 +60,6 @@ typedef struct PACKED _GCN_DiscHeader {
 
 	char game_title[64];		// Game title.
 } GCN_DiscHeader;
-#pragma pack()
 ASSERT_STRUCT(GCN_DiscHeader, 96);
 
 /**
@@ -82,7 +82,6 @@ typedef enum {
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 #define GCN_Boot_Block_ADDRESS 0x420
 typedef struct PACKED _GCN_Boot_Block {
 	uint32_t dol_offset;	// NOTE: 34-bit RSH2 on Wii.
@@ -95,7 +94,6 @@ typedef struct PACKED _GCN_Boot_Block {
 	uint32_t user_len;	// Data area length. (Might be wrong; use FST.)
 	uint32_t reserved;
 } GCN_Boot_Block;
-#pragma pack()
 ASSERT_STRUCT(GCN_Boot_Block, 32);
 
 /**
@@ -104,7 +102,6 @@ ASSERT_STRUCT(GCN_Boot_Block, 32);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 #define GCN_Boot_Info_ADDRESS 0x440
 typedef struct PACKED _GCN_Boot_Info {
 	uint32_t debug_mon_size;	// Debug monitor size. [FIXME: Listed as signed?]
@@ -118,7 +115,6 @@ typedef struct PACKED _GCN_Boot_Info {
 	uint32_t dol_limit;		// Maximum total size of DOL text/data sections. (0 == unlimited)
 	uint32_t reserved2;
 } GCN_Boot_Info;
-#pragma pack()
 ASSERT_STRUCT(GCN_Boot_Info, 48);
 
 /**
@@ -127,7 +123,6 @@ ASSERT_STRUCT(GCN_Boot_Info, 48);
  *
  * Reference: http://hitmen.c02.at/files/yagcd/yagcd/index.html#idx13.4
  */
-#pragma pack(1)
 typedef struct PACKED _GCN_FST_Entry {
 	uint32_t file_type_name_offset;	// MSB = type; low 24 bits = name offset
 	union {
@@ -145,7 +140,6 @@ typedef struct PACKED _GCN_FST_Entry {
 		} file;
 	};
 } GCN_FST_Entry;
-#pragma pack()
 ASSERT_STRUCT(GCN_FST_Entry, 12);
 
 /**
@@ -156,7 +150,6 @@ ASSERT_STRUCT(GCN_FST_Entry, 12);
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 #define TGC_MAGIC 0xAE0F38A2
 typedef struct PACKED _GCN_TGC_Header {
 	uint32_t tgc_magic;	// TGC magic.
@@ -173,7 +166,6 @@ typedef struct PACKED _GCN_TGC_Header {
 	uint32_t banner_size;	// opening.bnr size.
 	uint32_t reserved4[3];
 } GCN_TGC_Header;
-#pragma pack()
 ASSERT_STRUCT(GCN_TGC_Header, 64);
 
 /** Wii-specific structs. **/
@@ -191,7 +183,6 @@ typedef uint32_t uint34_rshift2_t;
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 #define RVL_VolumeGroupTable_ADDRESS 0x40000
 typedef struct PACKED _RVL_VolumeGroupTable {
 	struct {
@@ -199,7 +190,6 @@ typedef struct PACKED _RVL_VolumeGroupTable {
 		uint34_rshift2_t addr;	// Start address of this table, rshifted by 2.
 	} vg[4];
 } RVL_VolumeGroupTable;
-#pragma pack()
 
 /**
  * Wii partition table entry.
@@ -208,12 +198,10 @@ typedef struct PACKED _RVL_VolumeGroupTable {
  *
  * All fields are big-endian.
  */
-#pragma pack(1)
 typedef struct PACKED _RVL_PartitionTableEntry {
 	uint34_rshift2_t addr;	// Start address of this partition, rshifted by 2.
 	uint32_t type;		// Type of partition. (0 == Game, 1 == Update, 2 == Channel Installer, other = title ID)
 } RVL_PartitionTableEntry;
-#pragma pack()
 
 // Wii ticket constants.
 #define RVL_SIGNATURE_TYPE_RSA2048 0x10001
@@ -224,19 +212,16 @@ typedef struct PACKED _RVL_PartitionTableEntry {
  * Time limit structs for Wii ticket.
  * Reference: http://wiibrew.org/wiki/Ticket
  */
-#pragma pack(1)
 typedef struct PACKED _RVL_TimeLimit {
 	uint32_t enable;	// 1 == enable; 0 == disable
 	uint32_t seconds;	// Time limit, in seconds.
 } RVL_TimeLimit;
-#pragma pack()
 ASSERT_STRUCT(RVL_TimeLimit, 8);
 
 /**
  * Wii ticket.
  * Reference: http://wiibrew.org/wiki/Ticket
  */
-#pragma pack(1)
 typedef struct PACKED _RVL_Ticket {
 	uint32_t signature_type;	// [0x000] Always 0x10001 for RSA-2048.
 	uint8_t signature[0x100];	// [0x004] Signature.
@@ -262,14 +247,12 @@ typedef struct PACKED _RVL_Ticket {
 	uint8_t padding3[2];		// [0x262] Padding. (always 0)
 	RVL_TimeLimit time_limits[8];	// [0x264] Time limits.
 } RVL_Ticket;
-#pragma pack()
 ASSERT_STRUCT(RVL_Ticket, 0x2A4);
 
 /**
  * Wii partition header.
  * Reference: http://wiibrew.org/wiki/Wii_Disc#Partition
  */
-#pragma pack(1)
 typedef struct PACKED _RVL_PartitionHeader {
 	RVL_Ticket ticket;			// [0x000]
 	uint32_t tmd_size;			// [0x2A4] TMD size.
@@ -283,7 +266,6 @@ typedef struct PACKED _RVL_PartitionHeader {
 	// 0x2C0
 	uint8_t tmd[0x1FD40];			// TMD, variable length up to data_offset.
 } RVL_PartitionHeader;
-#pragma pack()
 ASSERT_STRUCT(RVL_PartitionHeader, 0x20000);
 
 /**
@@ -305,13 +287,13 @@ typedef enum {
  * Region setting and age ratings.
  * Reference: http://wiibrew.org/wiki/Wii_Disc#Region_setting
  */
-#pragma pack(1)
 #define RVL_RegionSetting_ADDRESS 0x4E000
 typedef struct PACKED _RVL_RegionSetting {
 	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
 	uint8_t reserved[12];
 	uint8_t ratings[0x10];	// Country-specific age ratings.
 } RVL_RegionSetting;
+
 #pragma pack()
 
 #ifdef __cplusplus

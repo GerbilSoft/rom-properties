@@ -16,10 +16,11 @@
    extern "C" {
 #endif /* __cplusplus */
 
+#pragma pack(1)
+
 typedef uint32_t be32_t;
 typedef uint16_t be16_t;
 
-#pragma pack(1)
 typedef struct PACKED wbfs_head {
         be32_t	magic;
         // parameters copied in the partition for easy dumping, and bug reports
@@ -29,13 +30,12 @@ typedef struct PACKED wbfs_head {
         uint8_t	padding3[2];
         uint8_t	disc_table[0];	// size depends on hd sector size
 } wbfs_head_t;
-#pragma pack()
 
-#pragma pack(1)
 typedef struct PACKED wbfs_disc_info {
         uint8_t	disc_header_copy[0x100];
         be16_t	wlba_table[0];
 } wbfs_disc_info_t;
+
 #pragma pack()
 
 //  WBFS first wbfs_sector structure:

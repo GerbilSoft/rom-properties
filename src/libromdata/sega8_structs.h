@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 /**
  * Sega Master System ROM header.
  * This matches the SMS ROM header format exactly.
@@ -40,7 +42,6 @@ extern "C" {
  * Note that $7FF0 is the only one used in any released titles.
  */
 #define SEGA8_MAGIC "TMR SEGA"
-#pragma pack(1)
 typedef struct PACKED _Sega8_RomHeader {
 	char magic[8];			// "TMR SEGA"
 	uint8_t reserved[2];		// $00 $00, $FF $FF, $20 $20
@@ -56,7 +57,6 @@ typedef struct PACKED _Sega8_RomHeader {
 	uint8_t region_and_size;	// High 4 bits: Sega8_Region_Code
 					// Low 4 bits: Sega8_ROM_Size
 } Sega8_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(Sega8_RomHeader, 16);
 
 // Region code and system ID.
@@ -90,7 +90,6 @@ typedef enum {
  *
  * Located at $7FE0.
  */
-#pragma pack(1)
 typedef struct PACKED _Sega8_Codemasters_RomHeader {
 	uint8_t checksum_banks;		// Number of 16KB banks over which to calculate the checksum.
 	struct {
@@ -106,7 +105,6 @@ typedef struct PACKED _Sega8_Codemasters_RomHeader {
 	uint16_t checksum_compl;	// 0x10000 - checksum
 	uint8_t reserved[6];		// all zero
 } Sega8_Codemasters_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(Sega8_Codemasters_RomHeader, 16);
 
 /**
@@ -119,7 +117,6 @@ ASSERT_STRUCT(Sega8_Codemasters_RomHeader, 16);
  * Located at $7FE0.
  */
 #define SDSC_MAGIC "SDSC"
-#pragma pack(1)
 typedef struct PACKED _Sega8_SDSC_RomHeader {
 	char magic[4];		// "SDSC"
 	uint8_t version[2];	// Program version, in BCD.
@@ -139,8 +136,9 @@ typedef struct PACKED _Sega8_SDSC_RomHeader {
 	uint16_t name_ptr;	// Program name.
 	uint16_t desc_ptr;	// Program description.
 } Sega8_SDSC_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(Sega8_SDSC_RomHeader, 16);
+
+#pragma pack()
 
 #ifdef __cplusplus
 }
