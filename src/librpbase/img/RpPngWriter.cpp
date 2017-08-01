@@ -937,6 +937,13 @@ int RpPngWriter::write_IHDR(void)
 
 			// Write the palette and tRNS values.
 			d->write_CI8_palette();
+
+#ifdef PNG_sBIT_SUPPORTED
+			// Make sure sBIT.alpha = 0.
+			// libpng will complain if it's not zero, since alpha
+			// is handled differently in paletted images.
+			sBIT.alpha = 0;
+#endif /* PNG_sBIT_SUPPORTED */
 			break;
 
 		default:
