@@ -22,8 +22,9 @@
 #include "NintendoBadge.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "data/Nintendo3DSSysTitles.hpp"
 #include "badge_structs.h"
+#include "data/Nintendo3DSSysTitles.hpp"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -549,6 +550,10 @@ int NintendoBadge::loadFieldData(void)
 	// Maximum of 7 fields.
 	d->fields->reserve(7);
 
+	// Get the system language.
+	// TODO: Verify against the region code somehow?
+	int lang = NintendoLanguage::getN3DSLanguage();
+
 	// Type.
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BADGE_TYPE_PRBS: {
@@ -559,9 +564,29 @@ int NintendoBadge::loadFieldData(void)
 			const Badge_PRBS_Header *const prbs = &d->badgeHeader.prbs;
 
 			// Name.
-			// TODO: Multi-language support?
-			d->fields->addField_string(_RP("Name"),
-				utf16_to_rp_string(prbs->name[0], sizeof(prbs->name[0])));
+			// Check that the field is valid.
+			if (prbs->name[lang][0] == 0) {
+				// Not valid. Check English.
+				if (prbs->name[N3DS_LANG_ENGLISH][0] != 0) {
+					// English is valid.
+					lang = N3DS_LANG_ENGLISH;
+				} else {
+					// Not valid. Check Japanese.
+					if (prbs->name[N3DS_LANG_JAPANESE][0] != 0) {
+						// Japanese is valid.
+						lang = N3DS_LANG_JAPANESE;
+					} else {
+						// Not valid...
+						// TODO: Check other languages?
+						lang = -1;
+					}
+				}
+			}
+			// NOTE: There aer 16 name entries, but only 12 languages...
+			if (lang >= 0 && lang < ARRAY_SIZE(prbs->name)) {
+				d->fields->addField_string(_RP("Name"),
+					utf16_to_rp_string(prbs->name[lang], sizeof(prbs->name[lang])));
+			}
 
 			// Badge ID.
 			d->fields->addField_string_numeric(_RP("Badge ID"), le32_to_cpu(prbs->badge_id));
@@ -622,9 +647,29 @@ int NintendoBadge::loadFieldData(void)
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
 
 			// Name.
-			// TODO: Multi-language support?
-			d->fields->addField_string(_RP("Name"),
-				utf16_to_rp_string(cabs->name[0], sizeof(cabs->name[0])));
+			// Check that the field is valid.
+			if (cabs->name[lang][0] == 0) {
+				// Not valid. Check English.
+				if (cabs->name[N3DS_LANG_ENGLISH][0] != 0) {
+					// English is valid.
+					lang = N3DS_LANG_ENGLISH;
+				} else {
+					// Not valid. Check Japanese.
+					if (cabs->name[N3DS_LANG_JAPANESE][0] != 0) {
+						// Japanese is valid.
+						lang = N3DS_LANG_JAPANESE;
+					} else {
+						// Not valid...
+						// TODO: Check other languages?
+						lang = -1;
+					}
+				}
+			}
+			// NOTE: There aer 16 name entries, but only 12 languages...
+			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
+				d->fields->addField_string(_RP("Name"),
+					utf16_to_rp_string(cabs->name[lang], sizeof(cabs->name[lang])));
+			}
 
 			// Badge ID.
 			d->fields->addField_string_numeric(_RP("Set ID"), le32_to_cpu(cabs->set_id));
