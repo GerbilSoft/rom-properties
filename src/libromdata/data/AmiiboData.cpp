@@ -280,7 +280,9 @@ const rp_char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr, nullptr, nullptr, nullptr,	// 0x310
 
 	_RP("Sonic the Hedgehog"),		// 0x320
-	nullptr, nullptr, nullptr,		// 0x324
+	_RP("Bayonetta"),			// 0x324
+	nullptr,				// 0x328
+	nullptr,				// 0x32C
 	nullptr,				// 0x330
 	_RP("Pac-Man"),				// 0x334
 	nullptr,				// 0x338
@@ -293,12 +295,7 @@ const rp_char *const AmiiboDataPrivate::char_series_names[] = {
 	nullptr,				// 0x354
 	nullptr,				// 0x358
 	_RP("Shovel Knight"),			// 0x35C
-
-	// TODO
-#if 0
-	_RP("Bayonetta"),
-	_RP("Final Fantasy"),
-#endif
+	_RP("Final Fantasy"),			// 0x360
 };
 
 // Character variants.
@@ -1119,6 +1116,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 	// Sonic the Hedgehog (character series = 0x320)
 	{0x3200, _RP("Sonic"), nullptr, 0},
 
+	// Bayonetta (character series = 0x324)
+	{0x3240, _RP("Bayonetta"), nullptr, 0},
+
 	// Pac-Man (character series = 0x334)
 	{0x3340, _RP("Pac-Man"), nullptr, 0},
 
@@ -1137,6 +1137,9 @@ const AmiiboDataPrivate::char_id_t AmiiboDataPrivate::char_ids[] = {
 
 	// Shovel Knight (character series = 0x35C)
 	{0x35C0, _RP("Shovel Knight"), nullptr, 0},
+
+	// Final Fantasy (character series = 0x360)
+	{0x3600, _RP("Cloud"), nullptr, 0},
 };
 
 /**
@@ -1823,9 +1826,10 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	// SSB: Special amiibo [0x0258]
 	{  0, 0, _RP("Mega Man (Gold Edition)")},// 0x0258
 
-	// Unused [0x0259-0x025B]
-	{  0, 0, nullptr},			// 0x0259
-	{  0, 0, nullptr}, {  0, 0, nullptr},	// 0x025A,0x025B
+	// SSB: Wave 10 [0x0259-0x025B]
+	{ 57, 10, _RP("Cloud")},		// 0x0259
+	{ 58, 10, _RP("Corrin")},		// 0x025A
+	{ 59, 10, _RP("Bayonetta")},		// 0x025B
 
 	// Pokkén Tournament [0x025C]
 	{  0, 0, _RP("Shadow Mewtwo")},		// 0x025C
@@ -2096,26 +2100,27 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
 	{  0, 0, _RP("Alm")},				// 0x0360
 	{  0, 0, _RP("Celica")},			// 0x0361
 
+	// SSB: Wave 10 [0x0362-0x0364]
+	{ 60, 10, _RP("Cloud (Player 2)")},		// 0x0362
+	{ 61, 10, _RP("Corrin (Player 2)")},		// 0x0363
+	{ 62, 10, _RP("Bayonetta (Player 2)")},		// 0x0364
+
+	// Unused [0x0365-0x0368]
+	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x0365,0x0366
+	{  0, 0, nullptr}, {  0, 0, nullptr},		// 0x0367,0x0368
+
+	// Splatoon: Wave 3 [0x0369-0x036A]
+	{  0, 3, _RP("Inkling Girl (Neon Pink)")},	// 0x0369
+	{  0, 3, _RP("Inkling Boy (Neon Green)")},	// 0x036A
+	{  0, 3, _RP("Inkling Squid (Neon Purple)")},	// 0x036B
+
 #if 0
 	// TODO: Not released yet.
-
-	// SSB: DLC characters.
-	{ 57, 10, _RP("Bayonetta")},			// 0x0xxx
-	{ 58, 10, _RP("Cloud")},			// 0x0xxx
-	{ 59, 10, _RP("Corrin")},			// 0x0xxx
-	{ 60, 10, _RP("Bayonetta (Player 2)")},		// 0x0xxx
-	{ 61, 10, _RP("Cloud (Player 2)")},		// 0x0xxx
-	{ 62, 10, _RP("Corrin (Player 2)")},		// 0x0xxx
 
 	// The Legend of Zelda
 	{  0,  0, _RP("Link (Majora's Mask)")},		// 0x0xxx
 	{  0,  0, _RP("Link (Twilight Princess)")},	// 0x0xxx
 	{  0,  0, _RP("Link (Skyward Sword)")},		// 0x0xxx
-
-	// Splatoon
-	{  0, 3, _RP("Inkling Girl (Neon Pink)")},	// 0x0xxx
-	{  0, 3, _RP("Inkling Boy (Neon Green)")},	// 0x0xxx
-	{  0, 3, _RP("Inkling Squid (Neon Purple)")},	// 0x0xxx
 
 	// Pikmin
 	{  0, 0, _RP("Pikmin")},			// 0x0xxx
@@ -2131,7 +2136,7 @@ const AmiiboDataPrivate::amiibo_id_t AmiiboDataPrivate::amiibo_ids[] = {
  */
 const rp_char *AmiiboData::lookup_char_series_name(uint32_t char_id)
 {
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == 0x360/4,
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::char_series_names) == (0x360/4)+1,
 		"char_series_names[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (char_id >> 22) & 0x3FF;
@@ -2201,7 +2206,7 @@ const rp_char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id)
 	// FIXME: gcc-6.3.0 is trying to interpret 0x035E+1 as a
 	// floating-point hex constant:
 	// error: unable to find numeric literal operator ‘operator""+1’
-	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x0361)+1),
+	static_assert(ARRAY_SIZE(AmiiboDataPrivate::amiibo_ids) == ((0x036B)+1),
 		"amiibo_ids[] is out of sync with the amiibo ID list.");
 
 	const unsigned int series_id = (amiibo_id >> 8) & 0xFF;
