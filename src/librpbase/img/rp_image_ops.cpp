@@ -47,8 +47,8 @@ rp_image *rp_image::dup(void) const
 	const int width = d->backend->width;
 	const int height = d->backend->height;
 	const rp_image::Format format = d->backend->format;
-	assert(width != 0);
-	assert(height != 0);
+	assert(width > 0);
+	assert(height > 0);
 
 	rp_image *img = new rp_image(width, height, format);
 	if (!img->isValid()) {
@@ -77,7 +77,7 @@ rp_image *rp_image::dup(void) const
 			return nullptr;
 	}
 
-	for (unsigned int y = height; y > 0; y--) {
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		memcpy(dest, src, row_bytes);
 		dest += dest_stride;
 		src += src_stride;
@@ -116,8 +116,8 @@ rp_image *rp_image::dup_ARGB32(void) const
 
 	const int width = d->backend->width;
 	const int height = d->backend->height;
-	assert(width != 0);
-	assert(height != 0);
+	assert(width > 0);
+	assert(height > 0);
 
 	// TODO: Handle palette length smaller than 256.
 	assert(d->backend->palette_len() == 256);
@@ -173,7 +173,7 @@ rp_image *rp_image::dup_ARGB32(void) const
  * and/or columns will be added to "square" the image.
  * Otherwise, this is the same as dup().
  *
- * @return New rp_image with a squared version of the original.
+ * @return New rp_image with a squared version of the original, , or nullptr on error.
  */
 rp_image *rp_image::squared(void) const
 {
@@ -183,8 +183,14 @@ rp_image *rp_image::squared(void) const
 	RP_D(const rp_image);
 	const int width = d->backend->width;
 	const int height = d->backend->height;
-	rp_image *sq_img = nullptr;
+	assert(width > 0);
+	assert(height > 0);
+	if (width <= 0 || height <= 0) {
+		// Cannot resize the image.
+		return nullptr;
+	}
 
+	rp_image *sq_img = nullptr;
 	if (width == height) {
 		// Image is already square. dup() it.
 		return this->dup();
@@ -279,6 +285,96 @@ rp_image *rp_image::squared(void) const
 	}
 
 	return sq_img;
+}
+
+/**
+ * Resize the rp_image.
+ *
+ * A new rp_image will be created with the specified dimensions,
+ * and the current image will be copied into the new image.
+ * If the new dimensions are smaller than the old dimensions,
+ * the image will be cropped. If the new dimensions are larger,
+ * the original image will be in the upper-left corner and the
+ * new space will be empty. (ARGB: 0x00000000)
+ *
+ * @param width New width.
+ * @param height New height.
+ * @return New rp_image with a resized version of the original, or nullptr on error.
+ */
+rp_image *rp_image::resized(int width, int height) const
+{
+	assert(width > 0);
+	assert(height > 0);
+	if (width <= 0 || height <= 0) {
+		// Cannot resize the image.
+		return nullptr;
+	}
+
+	RP_D(const rp_image);
+	const int orig_width = d->backend->width;
+	const int orig_height = d->backend->height;
+	assert(orig_width > 0);
+	assert(orig_height > 0);
+	if (orig_width <= 0 || orig_height <= 0) {
+		// Cannot resize the image.
+		return nullptr;
+	}
+
+	if (width == orig_width && height == orig_height) {
+		// No resize is necessary.
+		return this->dup();
+	}
+
+	const rp_image::Format format = d->backend->format;
+	rp_image *img = new rp_image(width, height, format);
+	if (!img->isValid()) {
+		// Image is invalid.
+		delete img;
+		return nullptr;
+	}
+
+	// Copy the image.
+	// NOTE: Using uint8_t* because stride is measured in bytes.
+	uint8_t *dest = static_cast<uint8_t*>(img->bits());
+	const uint8_t *src = static_cast<const uint8_t*>(d->backend->data());
+	const int dest_stride = img->stride();
+	const int src_stride = d->backend->stride;
+
+	// We want to copy the minimum of new vs. old width.
+	int row_bytes;
+	switch (format) {
+		case rp_image::FORMAT_CI8:
+			row_bytes = std::min(width, orig_width);
+			break;
+		case rp_image::FORMAT_ARGB32:
+			row_bytes = std::min(width, orig_width) * sizeof(uint32_t);
+			break;
+		default:
+			assert(!"Unsupported rp_image::Format.");
+			delete img;
+			return nullptr;
+	}
+
+	for (unsigned int y = (unsigned int)std::min(height, orig_height); y > 0; y--) {
+		memcpy(dest, src, row_bytes);
+		dest += dest_stride;
+		src += src_stride;
+	}
+
+	// If CI8, copy the palette.
+	if (format == rp_image::FORMAT_CI8) {
+		int entries = std::min(img->palette_len(), d->backend->palette_len());
+		uint32_t *const dest_pal = img->palette();
+		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
+		if (img->palette_len() < d->backend->palette_len()) {
+			// Zero the remaining entries.
+			int zero_entries = d->backend->palette_len() - img->palette_len();
+			memset(&dest_pal[entries], 0, zero_entries * sizeof(uint32_t));
+		}
+	}
+
+	// Image resized.
+	return img;
 }
 
 }

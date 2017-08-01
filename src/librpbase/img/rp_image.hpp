@@ -238,9 +238,25 @@ class rp_image
 		 * and/or columns will be added to "square" the image.
 		 * Otherwise, this is the same as dup().
 		 *
-		 * @return New rp_image with a squared version of the original.
+		 * @return New rp_image with a squared version of the original, or nullptr on error.
 		 */
 		rp_image *squared(void) const;
+
+		/**
+		 * Resize the rp_image.
+		 *
+		 * A new rp_image will be created with the specified dimensions,
+		 * and the current image will be copied into the new image.
+		 * If the new dimensions are smaller than the old dimensions,
+		 * the image will be cropped. If the new dimensions are larger,
+		 * the original image will be in the upper-left corner and the
+		 * new space will be empty. (ARGB: 0x00000000)
+		 *
+		 * @param width New width.
+		 * @param height New height.
+		 * @return New rp_image with a resized version of the original, or nullptr on error.
+		 */
+		rp_image *resized(int width, int height) const;
 };
 
 }

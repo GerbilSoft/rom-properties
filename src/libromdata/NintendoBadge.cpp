@@ -215,14 +215,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 		if (badgeType == BADGE_TYPE_CABS) {
 			// Need to crop the 64x64 image to 48x48.
-			// TODO: Add a crop() function to rp_image?
-			rp_image *img48 = new rp_image(48, 48, rp_image::FORMAT_ARGB32);
-			static const unsigned int b48_row_bytes = 48 * sizeof(uint32_t);
-			for (int y = 48-1; y >= 0; y--) {
-				const uint32_t *src = reinterpret_cast<const uint32_t*>(img->scanLine(y));
-				uint32_t *dest = reinterpret_cast<uint32_t*>(img48->scanLine(y));
-				memcpy(dest, src, b48_row_bytes);
-			}
+			rp_image *img48 = img->resized(48, 48);
 			delete img;
 			img = img48;
 		}
