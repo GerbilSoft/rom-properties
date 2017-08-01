@@ -109,6 +109,14 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PGDKPIXBUF>
 		virtual PGDKPIXBUF rescaleImgClass(const PGDKPIXBUF &imgClass, const ImgSize &sz) const override final;
 
 		/**
+		 * Get the size of the specified ImgClass.
+		 * @param imgClass	[in] ImgClass object.
+		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		virtual int getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const override final;
+
+		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
@@ -167,6 +175,19 @@ PGDKPIXBUF CreateThumbnailPrivate::rescaleImgClass(const PGDKPIXBUF &imgClass, c
 {
 	// TODO: Interpolation option?
 	return gdk_pixbuf_scale_simple(imgClass, sz.width, sz.height, GDK_INTERP_NEAREST);
+}
+
+/**
+ * Get the size of the specified ImgClass.
+ * @param imgClass	[in] ImgClass object.
+ * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+ * @return 0 on success; non-zero on error.
+ */
+int CreateThumbnailPrivate::getImgClassSize(const PGDKPIXBUF &imgClass, ImgSize *pOutSize) const
+{
+	pOutSize->width = gdk_pixbuf_get_width(imgClass);
+	pOutSize->height = gdk_pixbuf_get_height(imgClass);
+	return 0;
 }
 
 /**

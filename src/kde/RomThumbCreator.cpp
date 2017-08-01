@@ -131,6 +131,14 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		virtual QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz) const override final;
 
 		/**
+		 * Get the size of the specified ImgClass.
+		 * @param imgClass	[in] ImgClass object.
+		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		virtual int getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const override final;
+
+		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
@@ -188,6 +196,19 @@ QImage RomThumbCreatorPrivate::rescaleImgClass(const QImage &imgClass, const Img
 {
 	return imgClass.scaled(sz.width, sz.height,
 		Qt::KeepAspectRatio, Qt::FastTransformation);
+}
+
+/**
+ * Get the size of the specified ImgClass.
+ * @param imgClass	[in] ImgClass object.
+ * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+ * @return 0 on success; non-zero on error.
+ */
+int RomThumbCreatorPrivate::getImgClassSize(const QImage &imgClass, ImgSize *pOutSize) const
+{
+	pOutSize->width = imgClass.width();
+	pOutSize->height = imgClass.height();
+	return 0;
 }
 
 /**

@@ -208,6 +208,14 @@ class TCreateThumbnail
 		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, const ImgSize &sz) const = 0;
 
 		/**
+		 * Get the size of the specified ImgClass.
+		 * @param imgClass	[in] ImgClass object.
+		 * @param pOutSize	[out] Pointer to ImgSize to store the image size.
+		 * @return 0 on success; non-zero on error.
+		 */
+		virtual int getImgClassSize(const ImgClass &imgClass, ImgSize *pOutSize) const = 0;
+
+		/**
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */

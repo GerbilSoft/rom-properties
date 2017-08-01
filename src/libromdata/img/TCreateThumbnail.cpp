@@ -87,8 +87,11 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		// Image converted successfully.
 		if (pOutSize) {
 			// Get the image size.
-			pOutSize->width = image->width();
-			pOutSize->height = image->height();
+			// NOTE: The image may have been resized on Windows,
+			// since Windows has issues with non-square images.
+			// Hence, we have to get the size from ret_img.
+			// TODO: Check for errors?
+			getImgClassSize(ret_img, pOutSize);
 		}
 	}
 	return ret_img;
