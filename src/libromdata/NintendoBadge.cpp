@@ -565,14 +565,14 @@ int NintendoBadge::loadFieldData(void)
 
 			// Name.
 			// Check that the field is valid.
-			if (prbs->name[lang][0] == 0) {
+			if (prbs->name[lang][0] == cpu_to_le16(0)) {
 				// Not valid. Check English.
-				if (prbs->name[N3DS_LANG_ENGLISH][0] != 0) {
+				if (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16(0)) {
 					// English is valid.
 					lang = N3DS_LANG_ENGLISH;
 				} else {
 					// Not valid. Check Japanese.
-					if (prbs->name[N3DS_LANG_JAPANESE][0] != 0) {
+					if (prbs->name[N3DS_LANG_JAPANESE][0] != cpu_to_le16(0)) {
 						// Japanese is valid.
 						lang = N3DS_LANG_JAPANESE;
 					} else {

@@ -1800,14 +1800,14 @@ int Nintendo3DS::loadFieldData(void)
 		int lang = NintendoLanguage::getN3DSLanguage();
 
 		// Check that the field is valid.
-		if (d->smdh.header.titles[lang].desc_short[0] == 0) {
+		if (d->smdh.header.titles[lang].desc_short[0] == cpu_to_le16(0)) {
 			// Not valid. Check English.
-			if (d->smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != 0) {
+			if (d->smdh.header.titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16(0)) {
 				// English is valid.
 				lang = N3DS_LANG_ENGLISH;
 			} else {
 				// Not valid. Check Japanese.
-				if (d->smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != 0) {
+				if (d->smdh.header.titles[N3DS_LANG_JAPANESE].desc_short[0] != cpu_to_le16(0)) {
 					// Japanese is valid.
 					lang = N3DS_LANG_JAPANESE;
 				} else {
