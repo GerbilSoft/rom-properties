@@ -601,7 +601,7 @@ int RpPngWriterPrivate::write_IDAT(void)
 #endif
 
 	// TODO: Byteswap image data on big-endian systems?
-	//ppng_set_swap(png_ptr);
+	//png_set_swap(png_ptr);
 	// TODO: What format on big-endian?
 	png_set_bgr(png_ptr);
 
@@ -880,19 +880,20 @@ int RpPngWriter::write_IHDR(void)
 
 	// Write the PNG header.
 	switch (img0->format()) {
-		case rp_image::FORMAT_ARGB32:
+		case rp_image::FORMAT_ARGB32: {
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					img0->width(), img0->height(),
-					8, PNG_COLOR_TYPE_RGB_ALPHA,
+					img0->width(), img0->height(), 8,
+					PNG_COLOR_TYPE_RGB_ALPHA,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
 					PNG_FILTER_TYPE_DEFAULT);
 			break;
+		}
 
 		case rp_image::FORMAT_CI8:
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					img0->width(), img0->height(),
-					8, PNG_COLOR_TYPE_PALETTE,
+					img0->width(), img0->height(), 8,
+					PNG_COLOR_TYPE_PALETTE,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
 					PNG_FILTER_TYPE_DEFAULT);
@@ -912,6 +913,18 @@ int RpPngWriter::write_IHDR(void)
 		// Write an acTL chunk to indicate that this is an APNG image.
 		png_set_acTL(d->png_ptr, d->info_ptr, d->iconAnimData->seq_count, 0);
 	}
+
+#ifdef PNG_sBIT_SUPPORTED
+	// Get the rp_image's sBIT data.
+	// If alpha == 0, we can write RGB and/or skip tRNS.
+	rp_image::sBIT_t sBIT;
+	bool has_sBIT = (img0->get_sBIT(&sBIT) == 0);
+	if (has_sBIT) {
+		// Write the sBIT chunk.
+		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
+		png_set_sBIT(d->png_ptr, d->info_ptr, reinterpret_cast<const png_color_8*>(&sBIT));
+	}
+#endif /* PNG_sBIT_SUPPORTED */
 
 	// Write the PNG information to the file.
 	png_write_info(d->png_ptr, d->info_ptr);
