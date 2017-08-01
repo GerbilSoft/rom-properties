@@ -2,6 +2,12 @@
 
 ## v1.2 (released 2017/??/??)
 
+* New features:
+  * rpcli: PNG images now have an `sBIT` chunk, which indicates the number of
+    bits per channel that were present in the original image. In addition,
+    RGB images that don't have an alpha channel are now saved as RGB PNGs
+    instead of ARGB PNGs, which usually results in a smaller file.
+
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games
     on Dreamcast, GameCube, and various PC ports.
