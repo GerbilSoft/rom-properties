@@ -19,6 +19,10 @@
     DSiWare and Wii U VC SRLs will have non-zero data here.
   * Game Boy: "Game Boy Color" will now only be shown for GBC-exclusive ROMs
     instead of both GBC-exclusive and GBC-enhanced.
+  * Nintendo 3DS: Display the game title that most closely matches the system
+    language. This was already done for Nintendo DS titles, and is also being
+    done for Nintendo Badge Arcade files, which use a language setup similar
+    to Nintendo 3DS.
 
 * Bug fixes:
   * Fixed decoding of BGR555 images. The lower part of the R channel was
