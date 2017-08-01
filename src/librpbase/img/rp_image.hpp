@@ -217,6 +217,37 @@ class rp_image
 		static const rp_char *getFormatName(Format format);
 
 	public:
+		/** Metadata. **/
+
+		// sBIT struct.
+		// This matches libpng's.
+		struct sBIT_t {
+			uint8_t red;
+			uint8_t green;
+			uint8_t blue;
+			uint8_t gray;
+			uint8_t alpha;	// Set to 0 to write an RGB image in RpPngWriter.
+		};
+
+		/**
+		 * Set the number of significant bits per channel.
+		 * @param sBIT	[in] sBIT_t struct.
+		 */
+		void set_sBIT(const sBIT_t *sBIT);
+
+		/**
+		 * Get the number of significant bits per channel.
+		 * @param sBIT	[out] sBIT_t struct.
+		 * @return 0 on success; non-zero if not set or error.
+		 */
+		int get_sBIT(sBIT_t *sBIT) const;
+
+		/**
+		 * Clear the sBIT data.
+		 */
+		void clear_sBIT(void);
+
+	public:
 		/** Image operations. **/
 
 		/**

@@ -95,6 +95,11 @@ rp_image *rp_image::dup(void) const
 		}
 	}
 
+	// Copy sBIT if it's set.
+	if (d->has_sBIT) {
+		img->set_sBIT(&d->sBIT);
+	}
+
 	return img;
 }
 
@@ -160,6 +165,11 @@ rp_image *rp_image::dup_ARGB32(void) const
 		// Next line.
 		dest += dest_adj;
 		src += src_adj;
+	}
+
+	// Copy sBIT if it's set.
+	if (d->has_sBIT) {
+		img->set_sBIT(&d->sBIT);
 	}
 
 	// Converted to ARGB32.
@@ -284,6 +294,11 @@ rp_image *rp_image::squared(void) const
 		memset(&dest[row_bytes], 0, addToRight * sizeof(uint32_t));
 	}
 
+	// Copy sBIT if it's set.
+	if (d->has_sBIT) {
+		sq_img->set_sBIT(&d->sBIT);
+	}
+
 	return sq_img;
 }
 
@@ -371,6 +386,12 @@ rp_image *rp_image::resized(int width, int height) const
 			int zero_entries = d->backend->palette_len() - img->palette_len();
 			memset(&dest_pal[entries], 0, zero_entries * sizeof(uint32_t));
 		}
+	}
+
+	// Copy sBIT if it's set.
+	// TODO: Make sure alpha is at least 1?
+	if (d->has_sBIT) {
+		img->set_sBIT(&d->sBIT);
 	}
 
 	// Image resized.

@@ -63,6 +63,10 @@ class rp_image_private
 	public:
 		// Image backend.
 		rp_image_backend *backend;
+
+		// Metadata.
+		bool has_sBIT;
+		rp_image::sBIT_t sBIT;
 };
 
 }
