@@ -283,7 +283,7 @@ typedef enum {
 	NDS_LANG_SPANISH	= 5,
 	NDS_LANG_CHINESE	= 6,
 	NDS_LANG_KOREAN		= 7,
-} NDS_Language;
+} NDS_Language_ID;
 
 /**
  * Nintendo DS icon and title struct.

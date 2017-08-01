@@ -34,6 +34,7 @@ SET(libromdata_SRCS
 	data/WiiUData.cpp
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
+	data/NintendoLanguage.cpp
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	disc/WbfsReader.cpp
 	disc/CisoGcnReader.cpp
@@ -102,6 +103,7 @@ SET(libromdata_H
 	data/WiiUData.hpp
 	data/Nintendo3DSFirmData.hpp
 	data/Nintendo3DSSysTitles.hpp
+	data/NintendoLanguage.hpp
 	img/TCreateThumbnail.hpp
 	disc/WbfsReader.hpp
 	disc/libwbfs.h

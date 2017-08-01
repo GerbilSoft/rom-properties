@@ -24,9 +24,9 @@
 #include "NintendoDS.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "data/NintendoPublishers.hpp"
 #include "nds_structs.h"
-#include "librpbase/SystemRegion.hpp"
+#include "data/NintendoPublishers.hpp"
+#include "data/NintendoLanguage.hpp"
 
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
@@ -373,47 +373,7 @@ int NintendoDSPrivate::getTitleIndex(void) const
 
 	// Version number check is required for ZH and KO.
 	const uint16_t version = le16_to_cpu(nds_icon_title.version);
-
-	int lang = -1;
-	switch (SystemRegion::getLanguageCode()) {
-		case 'en':
-		default:
-			lang = NDS_LANG_ENGLISH;
-			break;
-		case 'ja':
-			lang = NDS_LANG_JAPANESE;
-			break;
-		case 'fr':
-			lang = NDS_LANG_FRENCH;
-			break;
-		case 'de':
-			lang = NDS_LANG_GERMAN;
-			break;
-		case 'it':
-			lang = NDS_LANG_ITALIAN;
-			break;
-		case 'es':
-			lang = NDS_LANG_SPANISH;
-			break;
-		case 'zh':
-			if (version >= NDS_ICON_VERSION_ZH) {
-				// NOTE: No distinction between
-				// Simplified and Traditional Chinese...
-				lang = NDS_LANG_CHINESE;
-			} else {
-				// No Chinese title here.
-				lang = NDS_LANG_ENGLISH;
-			}
-			break;
-		case 'ko':
-			if (version >= NDS_ICON_VERSION_ZH_KO) {
-				lang = NDS_LANG_KOREAN;
-			} else {
-				// No Korean title here.
-				lang = NDS_LANG_ENGLISH;
-			}
-			break;
-	}
+	int lang = NintendoLanguage::getNDSLanguage(version);
 
 	// Check that the field is valid.
 	if (nds_icon_title.title[lang][0] == 0) {
