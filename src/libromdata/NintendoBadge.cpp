@@ -228,6 +228,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 				if (size != badge_sz) {
 					// Seek and/or read error.
 					delete img;
+					img = nullptr;
 					return nullptr;
 				}
 
