@@ -942,6 +942,8 @@ int RpPngWriter::write_IHDR(void)
 			// Make sure sBIT.alpha = 0.
 			// libpng will complain if it's not zero, since alpha
 			// is handled differently in paletted images.
+			// NOTE: Or maybe not? It only checks if the color type
+			// has PNG_COLOR_MASK_ALPHA set.
 			sBIT.alpha = 0;
 #endif /* PNG_sBIT_SUPPORTED */
 			break;
