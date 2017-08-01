@@ -173,7 +173,9 @@ int APNG_ref(void)
 		// Attempt to load APNG.
 		if (init_apng() != 0) {
 			// Error loading APNG.
-			ref_cnt = 0;
+			// NOTE: Not resetting the reference count here.
+			// Caller must call APNG_unref() regardless of
+			// initialization success or failure.
 			return -1;
 		}
 	}
