@@ -52,7 +52,8 @@
 // effectively const anyway.
 #if PNG_LIBPNG_VER < 10500 || \
     (PNG_LIBPNG_VER == 10500 && \
-        (PNG_LIBPNG_VER_BUILD >= 1 && PNG_LIBPNG_VER_BUILD < 42))
+        ((PNG_LIBPNG_BUILD_BASE_TYPE & PNG_LIBPNG_BUILD_RELEASE_STATUS_MASK) < PNG_LIBPNG_BUILD_BETA || \
+            ((PNG_LIBPNG_BUILD_BASE_TYPE & PNG_LIBPNG_BUILD_RELEASE_STATUS_MASK) == PNG_LIBPNG_BUILD_BETA && PNG_LIBPNG_VER_BUILD < 42)))
 // libpng-1.5.0beta41 or earlier: Functions do *not* have const pointer arguments.
 # define PNG_CONST_CAST(type) const_cast<type>
 #else
