@@ -142,7 +142,23 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 	unsigned int badge_rgb_sz, badge_a4_sz, badge_dims;
 	switch (badgeType) {
 		case BADGE_TYPE_PRBS:
-			start_addr = (megaBadge ? 0x4300 : 0x1100);
+			if (megaBadge) {
+				// Sanity check: Maximum of 16x16 for mega badges.
+				assert(badgeHeader.prbs.mb_width <= 16);
+				assert(badgeHeader.prbs.mb_height <= 16);
+				if (badgeHeader.prbs.mb_width > 16 ||
+				    badgeHeader.prbs.mb_height > 16)
+				{
+					// Mega Badge is too mega for us.
+					return nullptr;
+				}
+				// TODO: What's stored in the area between
+				// 0x1100 and 0x4300 in mega badges?
+				start_addr = 0x4300;
+			} else {
+				start_addr = 0x1100;
+			}
+
 			if (idx == 1) {
 				// 32x32 badges. (0xA00+0x200)
 				badge_rgb_sz = badge64_rgb_sz;
