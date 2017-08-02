@@ -554,7 +554,16 @@ void RpPngWriterPrivate::close(void)
 {
 	// Close libpng.
 	if (png_ptr || info_ptr) {
-		png_write_end(png_ptr, info_ptr);
+		// If PNG write failed, png_write_end()
+		// may call longjmp().
+		if (setjmp(png_jmpbuf(png_ptr))) {
+			// PNG write failed.
+			// TODO: unlink()?
+		} else {
+			// Attempt to finish writing the PNG file.
+			png_write_end(png_ptr, info_ptr);
+		}
+
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		png_ptr = nullptr;
 		info_ptr = nullptr;
