@@ -162,7 +162,7 @@ class RpPngWriterPrivate
 			void set_sBIT(const rp_image::sBIT_t* sBIT)
 			{
 				static const rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
-				if (sBIT && !memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT))) {
+				if (sBIT && memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT)) != 0) {
 					// sBIT is valid.
 					this->sBIT = *sBIT;
 					has_sBIT = true;
