@@ -220,9 +220,13 @@ class RpPngWriter
 		 * If called after write_IHDR(), tEXt chunks will be written
 		 * after the IDAT chunk.
 		 *
-		 * NOTE: This currently only supports Latin-1 strings.
+		 * NOTE: Key must be Latin-1. Value may be UTF-8.
+		 * If value is ASCII or exclusively uses Latin-1 code points,
+		 * it will be saved as Latin-1.
 		 *
-		 * @param kv_vector Vector of key/value pairs.
+		 * Strings that are 40 bytes or longer will be saved as zTXt.
+		 *
+		 * @param kv Vector of key/value pairs.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_tEXt(const kv_vector &kv);

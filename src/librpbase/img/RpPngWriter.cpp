@@ -69,6 +69,12 @@
 #include <cassert>
 #include <cerrno>
 
+// C++ includes.
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
+
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
 #include <zlib.h>
@@ -1185,6 +1191,110 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
 }
 
 /**
+ * Check if a UTF-8 string contains any non-Latin-1 characters.
+ *
+ * NOTE: If this function returns 1, the string will need to be
+ * converted from UTF-8 to Latin-1.
+ *
+ * TODO: Move to TextFuncs.
+ *
+ * @param str UTF-8 string.
+ * @return 0 if it's ASCII; 1 if it's Latin-1; 2 if it's not Latin-1.
+ */
+static inline int u8strIsLatin1(const char *str)
+{
+	int ret = 0;
+	for (; *str != 0; str++) {
+		if (!(*str & 0x80))
+			continue;
+
+		// Check for a 2-byte UTF-8 sequence.
+		if ((*str & 0xE0) == 0xC0) {
+			// 2-byte sequence.
+			if ((str[1] & 0xC0) != 0x80) {
+				// Invalid second character.
+				return 2;
+			}
+			unsigned int chr = (((unsigned int)str[0] & 0x1F) << 5) |
+					    ((unsigned int)str[1] & 0x3F);
+			if ((chr > 0xFF) ||
+			    (chr < 0x20 && chr != '\n') ||
+			    (chr > 0x7E && chr < 0xA0))
+			{
+				// Not a valid Latin-1 character,
+				// or not an allowed control character.
+				return 2;
+			}
+
+			// This is an allowed Latin-1 character.
+			ret = 1;
+			str++;
+		} else {
+			// More than 2 bytes.
+			// This is definitely not Latin-1.
+			return 2;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Convert UTF-8 to Latin-1.
+ * TODO: Move to TextFuncs.
+ *
+ * @param str UTF-8 string.
+ * @return Latin-1 string, with '?' for invalid code points.
+ */
+static inline string utf8_to_latin1(const string &str)
+{
+	string l1str;
+	l1str.reserve(str.size());
+
+	const char *p = str.c_str();
+	for (; *p != 0; p++) {
+		if (!(*p & 0x80)) {
+			l1str += *p;
+		} else if ((*p & 0xE0) == 0xC0) {
+			// 2-byte sequence.
+			if (p[1] == 0) {
+				// Second character is NULL.
+				l1str += '?';
+				break;
+			} else if ((p[1] & 0xC0) != 0x80) {
+				// Invalid second character.
+				l1str += '?';
+				continue;
+			}
+
+			unsigned int chr = (((unsigned int)p[0] & 0x1F) << 6) |
+					    ((unsigned int)p[1] & 0x3F);
+			if ((chr > 0xFF) || (chr > 0x7E && chr < 0xA0)) {
+				// Not a valid Latin-1 character.
+				l1str += '?';
+			} else {
+				// Valid Latin-1 character.
+				printf("chr: %02X\n", chr);
+				l1str += (char)chr;
+			}
+
+			// Skip the second character in the sequence.
+			p++;
+		} else if ((*p & 0xF0) == 0xE0) {
+			// 3-byte sequence.
+			l1str += '?';
+			p += 2;
+		} else if ((*p & 0xF8) == 0xF0) {
+			// 4-byte sequence.
+			l1str += '?';
+			p += 3;
+		}
+	}
+
+	return l1str;
+}
+
+/**
  * Write an array of text chunks.
  * This is needed for e.g. the XDG thumbnailing specification.
  *
@@ -1194,9 +1304,13 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
  * If called after write_IHDR(), tEXt chunks will be written
  * after the IDAT chunk.
  *
- * NOTE: This currently only supports Latin-1 strings.
+ * NOTE: Key must be Latin-1. Value must be UTF-8.
+ * If value is ASCII or exclusively uses code points compatible
+ * with Latin-1, it will be saved as Latin-1.
  *
- * @param kv_vector Vector of key/value pairs.
+ * Strings that are 40 bytes or longer will be saved as zTXt.
+ *
+ * @param kv Vector of key/value pairs.
  * @return 0 on success; negative POSIX error code on error.
  */
 int RpPngWriter::write_tEXt(const kv_vector &kv)
@@ -1214,6 +1328,12 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 		return 0;
 	}
 
+	// Vector of string pointers to be freed.
+	// Needed in case we have to convert from
+	// UTF-8 to Latin-1.
+	vector<char*> vU8toL1;
+	vU8toL1.reserve(kv.size());
+
 	// Allocate string pointer arrays for kv_vector.
 	// Since kv_vector is Latin-1, we don't have to
 	// strdup() the strings.
@@ -1221,9 +1341,50 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	png_text *text = new png_text[kv.size()];
 	png_text *pTxt = text;
 	for (unsigned int i = 0; i < kv.size(); i++, pTxt++) {
-		pTxt->compression = PNG_TEXT_COMPRESSION_NONE;
-		pTxt->key = (png_charp)kv[i].first;
-		pTxt->text = (png_charp)kv[i].second.c_str();
+		// Check if the string is ASCII, Latin-1, or other.
+		const string &value = kv[i].second;
+		const bool compress = (value.size() >= 40);	// same as Qt
+
+		int status = u8strIsLatin1(value.c_str());
+		switch (status) {
+			case 0:
+				// ASCII. Use it as-is.
+				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
+				pTxt->key = (png_charp)kv[i].first;
+				pTxt->text = (png_charp)value.c_str();
+				break;
+			case 1: {
+				// Latin-1. Convert it.
+				// TODO: TextFuncs function to do this.
+				char *l1str = strdup(utf8_to_latin1(value).c_str());
+				vU8toL1.push_back(l1str);
+				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
+				pTxt->key = (png_charp)kv[i].first;
+				pTxt->text = (png_charp)l1str;
+				break;
+			}
+			case 2:
+				// UTF-8. Use iTXt.
+				pTxt->key = (png_charp)kv[i].first;
+				pTxt->text = (png_charp)value.c_str();
+#ifdef PNG_iTXt_SUPPORTED
+				// iTXt is supported at compile time.
+				// FIXME: iTXt might not actually be supported prior to libpng-1.4.
+				pTxt->compression = (compress ? PNG_ITXT_COMPRESSION_zTXt : PNG_ITXT_COMPRESSION_NONE);
+				pTxt->lang = nullptr;
+				pTxt->lang_key = nullptr;
+#else /* !PNG_iTXt_SUPPORTED */
+				// iTXt is not supported at compile time.
+				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
+#endif /* PNG_iTXt_SUPPORTED */
+				break;
+			default:
+				assert(!"Should not get here...");
+				pTxt->compression = PNG_TEXT_COMPRESSION_NONE;
+				pTxt->key = (png_charp)"";
+				pTxt->text = (png_charp)"";
+				break;
+		}
 	}
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -1231,6 +1392,9 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	if (setjmp(png_jmpbuf(d->png_ptr))) {
 		// PNG write failed.
 		delete[] text;
+		for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
+			free(*iter);
+		}
 		d->lastError = EIO;
 		return -d->lastError;
 	}
@@ -1238,6 +1402,9 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 
 	png_set_text(d->png_ptr, d->info_ptr, text, kv.size());
 	delete[] text;
+	for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
+		free(*iter);
+	}
 	return 0;
 }
 
