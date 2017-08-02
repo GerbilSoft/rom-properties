@@ -119,11 +119,53 @@ class RpPngWriterPrivate
 		IRpFile *file;
 
 		// Image and/or animated image data to save.
-		bool isAnimated;
+		enum {
+			IMGT_INVALID = 0,	// Invalid image.
+			IMGT_RAW,		// Raw image.
+			IMGT_RP_IMAGE,		// rp_image
+			IMGT_ICONANIMDATA,	// iconAnimData
+		} imageTag;
 		union {
 			const rp_image *img;
 			const IconAnimData *iconAnimData;
 		};
+
+		// Cached width, height, and image format.
+		struct cache_t {
+			int width;
+			int height;
+			rp_image::Format format;
+
+#ifdef PNG_sBIT_SUPPORTED
+			// sBIT data. If we have sBIT, and alpha == 0,
+			// we'll skip saving the alpha channel.
+			bool has_sBIT;
+			bool skip_alpha;
+			rp_image::sBIT_t sBIT;
+#endif /* PNG_sBIT_SUPPORTED */
+
+			cache_t() : width(0), height(0), format(rp_image::FORMAT_NONE)
+			{
+#ifdef PNG_sBIT_SUPPORTED
+				has_sBIT = false;
+				skip_alpha = false;
+				memset(&sBIT, 0, sizeof(sBIT));
+#endif /* PNG_sBIT_SUPPORTED */
+			}
+
+			void setFrom(const rp_image *img) {
+				this->width = img->width();
+				this->height = img->height();
+				this->format = img->format();
+#ifdef PNG_sBIT_SUPPORTED
+				// Get the rp_image's sBIT data.
+				// If alpha == 0, we can write RGB and/or skip tRNS.
+				has_sBIT = (img->get_sBIT(&sBIT) == 0);
+				skip_alpha = (has_sBIT && sBIT.alpha == 0);
+#endif /* PNG_sBIT_SUPPORTED */
+			}
+		};
+		cache_t cache;
 
 		// PNG pointers.
 		png_structp png_ptr;
@@ -131,12 +173,6 @@ class RpPngWriterPrivate
 
 		// Current state.
 		bool IHDR_written;
-
-#ifdef PNG_sBIT_SUPPORTED
-		// If true, skip the alpha channel.
-		// This is done if sBIT is set and alpha == 0.
-		bool skip_alpha;
-#endif /* PNG_sBIT_SUPPORTED */
 
 	public:
 		/**
@@ -205,13 +241,10 @@ class RpPngWriterPrivate
 RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *img)
 	: lastError(0)
 	, file(nullptr)
-	, isAnimated(false)
+	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
-#ifdef PNG_sBIT_SUPPORTED
-	, skip_alpha(false)
-#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->img = img;
 	if (!filename || filename[0] == 0 || !img || !img->isValid()) {
@@ -251,18 +284,19 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *
 		delete this->file;
 		this->file = nullptr;
 	}
+
+	// Cache the image parameters.
+	imageTag = IMGT_RP_IMAGE;
+	cache.setFrom(img);
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	: lastError(0)
 	, file(nullptr)
-	, isAnimated(false)
+	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
-#ifdef PNG_sBIT_SUPPORTED
-	, skip_alpha(false)
-#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->img = img;
 	if (!file || !img || !img->isValid()) {
@@ -317,18 +351,19 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 		delete this->file;
 		this->file = nullptr;
 	}
+
+	// Cache the image parameters.
+	imageTag = IMGT_RP_IMAGE;
+	cache.setFrom(img);
 }
 
 RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimData *iconAnimData)
 	: lastError(0)
 	, file(nullptr)
-	, isAnimated(false)
+	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
-#ifdef PNG_sBIT_SUPPORTED
-	, skip_alpha(false)
-#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->iconAnimData = nullptr;
 	if (!filename || filename[0] == 0 || !iconAnimData || iconAnimData->seq_count <= 0) {
@@ -356,7 +391,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimDa
 			lastError = ENOTSUP;
 			return;
 		}
-		this->isAnimated = true;
+		imageTag = IMGT_ICONANIMDATA;
+	} else {
+		imageTag = IMGT_RP_IMAGE;
 	}
 
 	file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
@@ -372,10 +409,22 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimDa
 	}
 
 	// Set img or iconAnimData.
-	if (this->isAnimated) {
+	if (imageTag == IMGT_ICONANIMDATA) {
 		this->iconAnimData = iconAnimData;
+		// Cache the image parameters.
+		const rp_image *img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
+		assert(img0 != nullptr);
+		if (!img0) {
+			// Invalid animated image.
+			delete this->file;
+			this->file = nullptr;
+			lastError = EINVAL;
+			imageTag = IMGT_INVALID;
+		}
+		cache.setFrom(img0);
 	} else {
 		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
+		cache.setFrom(img);
 	}
 
 	// Initialize the PNG write structs.
@@ -391,13 +440,10 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimDa
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData)
 	: lastError(0)
 	, file(nullptr)
-	, isAnimated(false)
+	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
-#ifdef PNG_sBIT_SUPPORTED
-	, skip_alpha(false)
-#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->iconAnimData = nullptr;
 	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
@@ -424,7 +470,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 			lastError = ENOTSUP;
 			return;
 		}
-		this->isAnimated = true;
+		imageTag = IMGT_ICONANIMDATA;
+	} else {
+		imageTag = IMGT_RP_IMAGE;
 	}
 
 	if (!file->isOpen()) {
@@ -456,10 +504,22 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 	this->file->rewind();
 
 	// Set img or iconAnimData.
-	if (this->isAnimated) {
+	if (imageTag == IMGT_ICONANIMDATA) {
 		this->iconAnimData = iconAnimData;
+		// Cache the image parameters.
+		const rp_image *img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
+		assert(img0 != nullptr);
+		if (!img0) {
+			// Invalid animated image.
+			delete this->file;
+			this->file = nullptr;
+			lastError = EINVAL;
+			imageTag = IMGT_INVALID;
+		}
+		cache.setFrom(img0);
 	} else {
 		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
+		cache.setFrom(img);
 	}
 
 	// Initialize the PNG write structs.
@@ -484,7 +544,7 @@ RpPngWriterPrivate::~RpPngWriterPrivate()
 	// Close the IRpFile.
 	delete this->file;
 
-	if (this->isAnimated) {
+	if (imageTag == IMGT_ICONANIMDATA) {
 		// Unreference APNG.
 		APNG_unref();
 	}
@@ -558,7 +618,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	// have different widths, heights, and/or formats.
 	// Also, does PNG support separate palettes per frame?
 	// If not, the frames may need to be converted to ARGB32.
-	const rp_image *const img0 = (this->isAnimated
+	const rp_image *const img0 = (imageTag == IMGT_ICONANIMDATA
 		? this->iconAnimData->frames[iconAnimData->seq_index[0]]
 		: this->img);
 
@@ -607,9 +667,9 @@ int RpPngWriterPrivate::write_IDAT(void)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
-	assert(!isAnimated);
+	assert(imageTag == IMGT_RP_IMAGE);
 	assert(IHDR_written);
-	if (!file || !img || isAnimated) {
+	if (!file || !img || imageTag != IMGT_RP_IMAGE) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -639,7 +699,7 @@ int RpPngWriterPrivate::write_IDAT(void)
 	// TODO: What format on big-endian?
 	png_set_bgr(png_ptr);
 
-	if (skip_alpha && img->format() == rp_image::FORMAT_ARGB32) {
+	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
 		// Need to skip the alpha bytes.
 		// Assuming 'after' on LE, 'before' on BE.
 #if SYS_BYTE_ORDER == SYS_LIL_ENDIAN
@@ -691,9 +751,9 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
-	assert(isAnimated);
+	assert(imageTag == IMGT_ICONANIMDATA);
 	assert(IHDR_written);
-	if (!file || !img || !isAnimated) {
+	if (!file || !img || imageTag != IMGT_ICONANIMDATA) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -708,14 +768,9 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	// Row pointers. (NOTE: Allocated after IHDR is written.)
 	const png_byte **row_pointers = nullptr;
 
-	// Get the first image.
+	// Using the cached width/height from the first image.
 	// TODO: Handle animated images where the different frames
 	// have different widths, heights, and/or formats.
-	const rp_image *const img0 = (this->isAnimated
-		? this->iconAnimData->frames[iconAnimData->seq_index[0]]
-		: this->img);
-	const int width = img0->width();
-	const int height = img0->height();
 
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
@@ -732,7 +787,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	png_set_bgr(png_ptr);
 
 	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * cache.height);
 	if (!row_pointers) {
 		lastError = ENOMEM;
 		return -lastError;
@@ -745,13 +800,13 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 			break;
 
 		// Initialize the row pointers array.
-		for (int y = height-1; y >= 0; y--) {
+		for (int y = cache.height-1; y >= 0; y--) {
 			row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
 		}
 
 		// Frame header.
 		png_write_frame_head(png_ptr, info_ptr, (png_bytepp)row_pointers,
-				width, height, 0, 0,		// width, height, x offset, y offset
+				cache.width, cache.height, 0, 0,	// width, height, x offset, y offset
 				iconAnimData->delays[i].numer,
 				iconAnimData->delays[i].denom,
 				PNG_DISPOSE_OP_NONE,
@@ -903,12 +958,9 @@ int RpPngWriter::write_IHDR(void)
 		return -d->lastError;
 	}
 
-	// Get the first image.
+	// Using the cached width/height from the first image.
 	// TODO: Handle animated images where the different frames
 	// have different widths, heights, and/or formats.
-	const rp_image *const img0 = (d->isAnimated
-		? d->iconAnimData->frames[d->iconAnimData->seq_index[0]]
-		: d->img);
 
 #ifdef PNG_SETJMP_SUPPORTED
 	// WARNING: Do NOT initialize any C++ objects past this point!
@@ -923,26 +975,18 @@ int RpPngWriter::write_IHDR(void)
 	png_set_filter(d->png_ptr, 0, PNG_FILTER_NONE);
 	png_set_compression_level(d->png_ptr, 5);	// TODO: Customizable?
 
-#ifdef PNG_sBIT_SUPPORTED
-	// Get the rp_image's sBIT data.
-	// If alpha == 0, we can write RGB and/or skip tRNS.
-	rp_image::sBIT_t sBIT;
-	bool has_sBIT = (img0->get_sBIT(&sBIT) == 0);
-	d->skip_alpha = (has_sBIT && sBIT.alpha == 0);
-#endif /* PNG_sBIT_SUPPORTED */
-
 	// Write the PNG header.
-	switch (img0->format()) {
+	switch (d->cache.format) {
 		case rp_image::FORMAT_ARGB32: {
 			// TODO: Use PNG_COLOR_TYPE_GRAY and/or PNG_COLOR_TYPE_GRAY_ALPHA
 			// if sBIT.gray > 0?
 #ifdef PNG_sBIT_SUPPORTED
-			const int color_type = (d->skip_alpha ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA);
+			const int color_type = (d->cache.skip_alpha ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA);
 #else /* !PNG_sBIT_SUPPORTED */
 			static const int color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 #endif /* PNG_sBIT_SUPPORTED */
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					img0->width(), img0->height(), 8,
+					d->cache.width, d->cache.height, 8,
 					color_type,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
@@ -952,7 +996,7 @@ int RpPngWriter::write_IHDR(void)
 
 		case rp_image::FORMAT_CI8:
 			png_set_IHDR(d->png_ptr, d->info_ptr,
-					img0->width(), img0->height(), 8,
+					d->cache.width, d->cache.height, 8,
 					PNG_COLOR_TYPE_PALETTE,
 					PNG_INTERLACE_NONE,
 					PNG_COMPRESSION_TYPE_DEFAULT,
@@ -967,7 +1011,7 @@ int RpPngWriter::write_IHDR(void)
 			// is handled differently in paletted images.
 			// NOTE: Or maybe not? It only checks if the color type
 			// has PNG_COLOR_MASK_ALPHA set.
-			sBIT.alpha = 0;
+			d->cache.sBIT.alpha = 0;
 #endif /* PNG_sBIT_SUPPORTED */
 			break;
 
@@ -978,16 +1022,16 @@ int RpPngWriter::write_IHDR(void)
 			return -d->lastError;
 	}
 
-	if (d->isAnimated) {
+	if (d->imageTag == RpPngWriterPrivate::IMGT_ICONANIMDATA) {
 		// Write an acTL chunk to indicate that this is an APNG image.
 		png_set_acTL(d->png_ptr, d->info_ptr, d->iconAnimData->seq_count, 0);
 	}
 
 #ifdef PNG_sBIT_SUPPORTED
-	if (has_sBIT) {
+	if (d->cache.has_sBIT) {
 		// Write the sBIT chunk.
 		// NOTE: rp_image::sBIT_t has the same format as png_color_8.
-		const png_color_8 *const sBIT_pc8 = reinterpret_cast<const png_color_8*>(&sBIT);
+		const png_color_8 *const sBIT_pc8 = reinterpret_cast<const png_color_8*>(&d->cache.sBIT);
 		png_set_sBIT(d->png_ptr, d->info_ptr, PNG_CONST_CAST(png_color_8p)(sBIT_pc8));
 	}
 #endif /* PNG_sBIT_SUPPORTED */
@@ -1073,15 +1117,25 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 int RpPngWriter::write_IDAT(void)
 {
 	RP_D(RpPngWriter);
-	if (d->isAnimated) {
-		// Write an animated PNG image.
-		// NOTE: d->isAnimated is only set if APNG is loaded,
-		// so we don't have to check it again here.
-		return d->write_IDAT_APNG();
-	} else {
-		// Write a regular PNG image.
-		return d->write_IDAT();
+	switch (d->imageTag) {
+		case RpPngWriterPrivate::IMGT_RP_IMAGE:
+			// Write a regular PNG image.
+			return d->write_IDAT();
+
+		case RpPngWriterPrivate::IMGT_ICONANIMDATA:
+			// Write an animated PNG image.
+			// NOTE: d->isAnimated is only set if APNG is loaded,
+			// so we don't have to check it again here.
+			return d->write_IDAT_APNG();
+
+		default:
+			// Unsupported...
+			assert(!"Unsupported image tag.");
+			break;
 	}
+
+	// Shouldn't get here...
+	return -ENOTSUP;
 }
 
 }
