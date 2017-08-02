@@ -161,11 +161,14 @@ class RpPngWriterPrivate
 
 			void set_sBIT(const rp_image::sBIT_t* sBIT)
 			{
-				if (sBIT) {
+				static const rp_image::sBIT_t sBIT_invalid = {0,0,0,0,0};
+				if (sBIT && !memcmp(sBIT, &sBIT_invalid, sizeof(*sBIT))) {
+					// sBIT is valid.
 					this->sBIT = *sBIT;
 					has_sBIT = true;
 					skip_alpha = (has_sBIT && this->sBIT.alpha == 0);
 				} else {
+					// No sBIT, or sBIT is invalid.
 					has_sBIT = false;
 					skip_alpha = false;
 				}
@@ -643,7 +646,7 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers)
 	assert(file != nullptr);
 	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
 	assert(IHDR_written);
-	if (unlikely(!file || !img || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE))) {
+	if (unlikely(!file || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE))) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
@@ -1001,9 +1004,8 @@ int RpPngWriter::write_IHDR(void)
 {
 	RP_D(RpPngWriter);
 	assert(d->file != nullptr);
-	assert(d->img != nullptr);
 	assert(!d->IHDR_written);
-	if (unlikely(!d->file || !d->img)) {
+	if (unlikely(!d->file)) {
 		// Invalid state.
 		d->lastError = EIO;
 		return -d->lastError;

@@ -80,11 +80,11 @@ typedef int (*PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *outp
 
 #ifdef __cplusplus
 #include "librpbase/RomData.hpp"
+#include "librpbase/img/rp_image.hpp"
 
 namespace LibRpBase {
 	class IRpFile;
 	class RomData;
-	class rp_image;
 };
 
 namespace LibRomData {
@@ -112,11 +112,13 @@ class TCreateThumbnail
 		 * @param romData	[in] RomData object.
 		 * @param imageType	[in] Image type.
 		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
+		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return Internal image, or null ImgClass on error.
 		 */
 		ImgClass getInternalImage(const LibRpBase::RomData *romData,
 			LibRpBase::RomData::ImageType imageType,
-			ImgSize *pOutSize);
+			ImgSize *pOutSize = nullptr,
+			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Get an external image.
@@ -135,27 +137,33 @@ class TCreateThumbnail
 		 * @param romData	[in] RomData object.
 		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
+		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const LibRpBase::RomData *romData, int req_size, ImgClass &ret_img);
+		int getThumbnail(const LibRpBase::RomData *romData, int req_size, ImgClass &ret_img,
+			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param file		[in] Open IRpFile object.
 		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
+		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(LibRpBase::IRpFile *file, int req_size, ImgClass &ret_img);
+		int getThumbnail(LibRpBase::IRpFile *file, int req_size, ImgClass &ret_img,
+			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param filename	[in] ROM file.
 		 * @param req_size	[in] Requested image size.
 		 * @param ret_img	[out] Return image.
+		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img);
+		int getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img,
+			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 	protected:
 		/**

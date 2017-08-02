@@ -61,13 +61,15 @@ TCreateThumbnail<ImgClass>::~TCreateThumbnail()
  * @param romData	[in] RomData object.
  * @param imageType	[in] Image type.
  * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
+ * @param sBIT		[out,opt] sBIT metadata.
  * @return Internal image, or null ImgClass on error.
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 	const RomData *romData,
 	RomData::ImageType imageType,
-	ImgSize *pOutSize)
+	ImgSize *pOutSize,
+	rp_image::sBIT_t *sBIT)
 {
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
@@ -92,6 +94,14 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 			// Hence, we have to get the size from ret_img.
 			// TODO: Check for errors?
 			getImgClassSize(ret_img, pOutSize);
+		}
+		if (sBIT) {
+			// Get the sBIT metadata.
+			if (image->get_sBIT(sBIT) != 0) {
+				// No sBIT metadata.
+				// Clear the struct.
+				memset(sBIT, 0, sizeof(*sBIT));
+			}
 		}
 	}
 	return ret_img;
@@ -214,10 +224,11 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
  * @param romData	[in] RomData object.
  * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
+ * @param sBIT		[out,opt] sBIT metadata.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
 {
 	uint32_t imgbf = romData->supportedImageTypes();
 	uint32_t imgpf = 0;
@@ -248,7 +259,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		// Check for an icon first.
 		// TODO: Define "small sizes" somewhere. (DPI independence?)
 		if (imgbf & RomData::IMGBF_INT_ICON) {
-			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz);
+			ret_img = getInternalImage(romData, RomData::IMG_INT_ICON, &img_sz, sBIT);
 			imgpf = romData->imgpf(RomData::IMG_INT_ICON);
 			imgbf &= ~RomData::IMGBF_INT_ICON;
 
@@ -280,10 +291,11 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 		// This image may be present.
 		if (imgType <= RomData::IMG_INT_MAX) {
 			// Internal image.
-			ret_img = getInternalImage(romData, imgType, &img_sz);
+			ret_img = getInternalImage(romData, imgType, &img_sz, sBIT);
 			imgpf = romData->imgpf(imgType);
 		} else {
 			// External image.
+			// TODO: sBIT metadata?
 			ret_img = getExternalImage(romData, imgType, req_size, &img_sz);
 			imgpf = romData->imgpf(imgType);
 		}
@@ -366,10 +378,11 @@ skip_image_check:
  * @param file		[in] Open IRpFile object.
  * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
+ * @param sBIT		[out,opt] sBIT metadata.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
 {
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
@@ -380,7 +393,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, req_size, ret_img);
+	int ret = getThumbnail(romData, req_size, ret_img, sBIT);
 	romData->unref();
 	return ret;
 }
@@ -390,10 +403,11 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
  * @param filename	[in] ROM file.
  * @param req_size	[in] Requested image size.
  * @param ret_img	[out] Return image.
+ * @param sBIT		[out,opt] sBIT metadata.
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img)
+int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_size, ImgClass &ret_img, rp_image::sBIT_t *sBIT)
 {
 	// Attempt to open the ROM file.
 	// TODO: OS-specific wrappers, e.g. RpQFile or RpGVfsFile.
@@ -414,7 +428,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_si
 	}
 
 	// Call the actual function.
-	int ret = getThumbnail(romData, req_size, ret_img);
+	int ret = getThumbnail(romData, req_size, ret_img, sBIT);
 	romData->unref();
 	return ret;
 }

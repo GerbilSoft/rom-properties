@@ -27,6 +27,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/RpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
+#include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
 
 // libromdata
@@ -267,7 +268,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	// TODO: If image is larger than maximum_size, resize down.
 	CreateThumbnailPrivate *d = new CreateThumbnailPrivate();
 	GdkPixbuf *ret_img = nullptr;
-	int ret = d->getThumbnail(romData, maximum_size, ret_img);
+	rp_image::sBIT_t sBIT;
+	int ret = d->getThumbnail(romData, maximum_size, ret_img, &sBIT);
 	delete d;
 
 	if (ret != 0 || !ret_img) {
@@ -279,6 +281,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
+#if 0
 	// Get values for the XDG thumbnail cache text chunks.
 	// KDE uses this order: Software, MTime, Mimetype, Size, URI
 	const char *option_keys[8];
@@ -376,6 +379,53 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	g_free(uri);
 	g_free(mime_type);
+#endif
+
+	// Save the image using RpPngWriter.
+	const int height = gdk_pixbuf_get_height(ret_img);
+	unique_ptr<const uint8_t*[]> row_pointers;
+	guchar *pixels;
+	int rowstride;
+	int pwRet;
+
+	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
+		gdk_pixbuf_get_width(ret_img), height,
+		rp_image::FORMAT_ARGB32);
+	if (!pngWriter->isOpen()) {
+		// Could not open the PNG writer.
+		ret = RPCT_OUTPUT_FILE_FAILED;
+		goto cleanup;
+	}
+
+	// If sBIT wasn't found, all fields will be 0.
+	// RpPngWriter will ignore sBIT in this case.
+	pwRet = pngWriter->write_IHDR(&sBIT);
+	if (pwRet != 0) {
+		// Error writing IHDR.
+		// TODO: Unlink the PNG image.
+		ret = RPCT_OUTPUT_FILE_FAILED;
+		goto cleanup;
+	}
+
+	// Initialize the row pointers.
+	row_pointers.reset(new const uint8_t*[height]);
+	pixels = gdk_pixbuf_get_pixels(ret_img);
+	rowstride = gdk_pixbuf_get_rowstride(ret_img);
+	for (int y = 0; y < height; y++, pixels += rowstride) {
+		row_pointers[y] = pixels;
+	}
+
+	// Write the IDAT section.
+	pwRet = pngWriter->write_IDAT(row_pointers.get());
+	if (pwRet != 0) {
+		// Error writing IDAT.
+		// TODO: Unlink the PNG image.
+		ret = RPCT_OUTPUT_FILE_FAILED;
+		goto cleanup;
+	}
+
+cleanup:
+	delete pngWriter;
 	g_object_unref(ret_img);
 	romData->unref();
 	return ret;
