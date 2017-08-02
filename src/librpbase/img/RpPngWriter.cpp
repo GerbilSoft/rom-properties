@@ -24,7 +24,6 @@
 
 #include "../common.h"
 #include "../file/RpFile.hpp"
-#include "../img/rp_image.hpp"
 
 // APNG
 #include "../img/IconAnimData.hpp"
@@ -97,6 +96,7 @@ class RpPngWriterPrivate
 {
 	public:
 		// NOTE: The public class constructor must dup() file.
+		RpPngWriterPrivate(IRpFile *file, int width, int height, rp_image::Format format);
 		RpPngWriterPrivate(IRpFile *file, const rp_image *img);
 		RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData);
 		~RpPngWriterPrivate();
@@ -158,6 +158,18 @@ class RpPngWriterPrivate
 				skip_alpha = (has_sBIT && sBIT.alpha == 0);
 #endif /* PNG_sBIT_SUPPORTED */
 			}
+
+			void set_sBIT(const rp_image::sBIT_t* sBIT)
+			{
+				if (sBIT) {
+					this->sBIT = *sBIT;
+					has_sBIT = true;
+					skip_alpha = (has_sBIT && this->sBIT.alpha == 0);
+				} else {
+					has_sBIT = false;
+					skip_alpha = false;
+				}
+			}
 		};
 		cache_t cache;
 
@@ -213,7 +225,7 @@ class RpPngWriterPrivate
 		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IDAT(const png_byte **row_pointers);
+		int write_IDAT(const png_byte *const *row_pointers);
 
 		/**
 		 * Write the rp_image data to the PNG image.
@@ -241,6 +253,82 @@ class RpPngWriterPrivate
 };
 
 /** RpPngWriterPrivate **/
+
+RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, int width, int height, rp_image::Format format)
+	: lastError(0)
+	, file(file)
+	, imageTag(IMGT_INVALID)
+	, png_ptr(nullptr)
+	, info_ptr(nullptr)
+	, IHDR_written(false)
+{
+	this->img = nullptr;
+	if (!file || width <= 0 || height <= 0 ||
+	    (format != rp_image::FORMAT_CI8 && format != rp_image::FORMAT_ARGB32))
+	{
+		// Invalid parameters.
+		delete this->file;
+		this->file = nullptr;
+		lastError = EINVAL;
+		return;
+	}
+
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		delete this->file;
+		this->file = nullptr;
+		lastError = ENOTSUP;
+		return;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		lastError = (file ? file->lastError() : 0);
+		if (lastError == 0) {
+			lastError = EIO;
+		}
+		delete this->file;
+		this->file = nullptr;
+		return;
+	}
+
+	// Truncate the file.
+	int ret = file->truncate(0);
+	if (ret != 0) {
+		// Unable to truncate the file.
+		lastError = file->lastError();
+		if (lastError == 0) {
+			lastError = EIO;
+		}
+		delete this->file;
+		this->file = nullptr;
+		return;
+	}
+
+	// Truncation should automatically rewind,
+	// but let's do it anyway.
+	file->rewind();
+
+	// Initialize the PNG write structs.
+	ret = init_png_write_structs();
+	if (ret != 0) {
+		// FIXME: Unlink the file if necessary.
+		lastError = -ret;
+		delete this->file;
+		this->file = nullptr;
+	}
+
+	// Cache the image parameters.
+	// NOTE: sBIT is specified in write_IHDR().
+	imageTag = IMGT_RAW;
+	cache.width = width;
+	cache.height = height;
+	cache.format = format;
+}
 
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	: lastError(0)
@@ -550,7 +638,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
  * @param row_pointers PNG row pointers. Array must have cache.height elements.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriterPrivate::write_IDAT(const png_byte **row_pointers)
+int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers)
 {
 	assert(file != nullptr);
 	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
@@ -834,6 +922,51 @@ RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
 		(file ? file->dup() : nullptr), iconAnimData))
 { }
 
+/**
+ * Write a raw image to a PNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param filename	[in] Filename.
+ * @param width 	[in] Image width.
+ * @param height 	[in] Image height.
+ * @param format 	[in] Image format.
+ */
+RpPngWriter::RpPngWriter(const rp_char *filename, int width, int height, rp_image::Format format)
+	: d_ptr(new RpPngWriterPrivate(
+		(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), width, height, format))
+{ }
+
+/**
+ * Write a raw image to a PNG file.
+ * IRpFile must be open for writing.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param file	[in] IRpFile open for writing.
+ * @param width 	[in] Image width.
+ * @param height 	[in] Image height.
+ * @param format 	[in] Image format.
+ */
+RpPngWriter::RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format)
+	: d_ptr(new RpPngWriterPrivate(
+		(file ? file->dup() : nullptr), width, height, format))
+{ }
+
 RpPngWriter::~RpPngWriter()
 {
 	delete d_ptr;
@@ -965,6 +1098,30 @@ int RpPngWriter::write_IHDR(void)
 	return 0;
 }
 
+/**
+ * Write the PNG IHDR.
+ * This must be called before writing any other image data.
+ *
+ * This function sets the cached sBIT before writing IHDR.
+ * It should only be used for raw images. Use write_IHDR()
+ * for rp_image and IconAnimData.
+ *
+ * @param sBIT sBIT metadata.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT)
+{
+	RP_D(RpPngWriter);
+	assert(d->imageTag == RpPngWriterPrivate::IMGT_RAW);
+	if (d->imageTag != RpPngWriterPrivate::IMGT_RAW) {
+		// Can't be used for this type.
+		return -EINVAL;
+	}
+
+	d->cache.set_sBIT(sBIT);
+	return write_IHDR();
+}
+
 #ifdef RP_ENABLE_WRITE_TEXT
 /**
  * Write an array of text chunks.
@@ -1028,12 +1185,58 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 #endif /* RP_ENABLE_WRITE_TEXT */
 
 /**
+ * Write raw image data to the PNG image.
+ *
+ * This must be called after any other modifier functions.
+ *
+ * If constructed using a filename instead of IRpFile,
+ * this will automatically close the file.
+ *
+ * NOTE: This version is *only* for raw images!
+ *
+ * @param row_pointers PNG row pointers. Array must have cache.height elements.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers)
+{
+	assert(row_pointers != nullptr);
+	if (unlikely(!row_pointers)) {
+		return -EINVAL;
+	}
+
+	RP_D(RpPngWriter);
+	assert(d->imageTag == RpPngWriterPrivate::IMGT_RAW);
+	if (unlikely(d->imageTag != RpPngWriterPrivate::IMGT_RAW)) {
+		// Can't be used for this type.
+		return -EINVAL;
+	}
+
+	int ret = d->write_IDAT(row_pointers);
+	if (ret == 0) {
+		// PNG image written successfully.
+		png_write_end(d->png_ptr, d->info_ptr);
+
+		// Free the PNG structs and close the file.
+		png_destroy_write_struct(&d->png_ptr, &d->info_ptr);
+		d->png_ptr = nullptr;
+		d->info_ptr = nullptr;
+		delete d->file;
+		d->file = nullptr;
+	}
+
+	return ret;
+}
+
+/**
  * Write the rp_image data to the PNG image.
  *
  * This must be called after any other modifier functions.
  *
  * If constructed using a filename instead of IRpFile,
  * this will automatically close the file.
+ *
+ * NOTE: Do NOT use this function for raw images!
+ * Use the version that takes an array of row pointers.
  *
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -1055,9 +1258,9 @@ int RpPngWriter::write_IDAT(void)
 			break;
 
 		default:
-			// Unsupported...
-			assert(!"Unsupported image tag.");
-			ret = -ENOTSUP;
+			// Can't be used for this type.
+			assert(!"Function does not support this image tag.");
+			ret = -EINVAL;
 			break;
 	}
 

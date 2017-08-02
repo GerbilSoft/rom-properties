@@ -23,7 +23,8 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPPNGWRITER_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
+#include "../common.h"
+#include "rp_image.hpp"
 
 // Uncomment to enable write_tEXt().
 //#define RP_ENABLE_WRITE_TEXT 1
@@ -37,13 +38,51 @@
 namespace LibRpBase {
 
 class IRpFile;
-class rp_image;
 struct IconAnimData;
 
 class RpPngWriterPrivate;
 class RpPngWriter
 {
 	public:
+		/**
+		 * Write a raw image to a PNG file.
+		 *
+		 * Check isOpen() after constructing to verify that
+		 * the file was opened.
+		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param filename	[in] Filename.
+		 * @param width 	[in] Image width.
+		 * @param height 	[in] Image height.
+		 * @param format 	[in] Image format.
+		 */
+		RpPngWriter(const rp_char *filename, int width, int height, rp_image::Format format);
+
+		/**
+		 * Write a raw image to a PNG file.
+		 * IRpFile must be open for writing.
+		 *
+		 * Check isOpen() after constructing to verify that
+		 * the file was opened.
+		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * @param file	[in] IRpFile open for writing.
+		 * @param width 	[in] Image width.
+		 * @param height 	[in] Image height.
+		 * @param format 	[in] Image format.
+		 */
+		RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format);
+
 		/**
 		 * Write an image to a PNG file.
 		 *
@@ -151,6 +190,19 @@ class RpPngWriter
 		 */
 		int write_IHDR(void);
 
+		/**
+		 * Write the PNG IHDR.
+		 * This must be called before writing any other image data.
+		 *
+		 * This function sets the cached sBIT before writing IHDR.
+		 * It should only be used for raw images. Use write_IHDR()
+		 * for rp_image and IconAnimData.
+		 *
+		 * @param sBIT sBIT metadata.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_IHDR(const rp_image::sBIT_t *sBIT);
+
 #ifdef RP_ENABLE_WRITE_TEXT
 		typedef std::vector<std::pair<std::string, std::string> > kv_vector;
 
@@ -166,6 +218,21 @@ class RpPngWriter
 		 */
 		int write_tEXt(const kv_vector &kv);
 #endif /* RP_ENABLE_WRITE_TEXT */
+
+		/**
+		 * Write raw image data to the PNG image.
+		 *
+		 * This must be called after any other modifier functions.
+		 *
+		 * If constructed using a filename instead of IRpFile,
+		 * this will automatically close the file.
+		 *
+		 * NOTE: This version is *only* for raw images!
+		 *
+		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_IDAT(const uint8_t *const *row_pointers);
 
 		/**
 		 * Write the rp_image data to the PNG image.
