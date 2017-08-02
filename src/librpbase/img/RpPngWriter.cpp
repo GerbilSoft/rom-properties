@@ -1157,13 +1157,17 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT)
 	return write_IHDR();
 }
 
-#ifdef RP_ENABLE_WRITE_TEXT
 /**
  * Write an array of text chunks.
  * This is needed for e.g. the XDG thumbnailing specification.
  *
+ * If called before write_IHDR(), tEXt chunks will be written
+ * before the IDAT chunk.
+ *
+ * If called after write_IHDR(), tEXt chunks will be written
+ * after the IDAT chunk.
+ *
  * NOTE: This currently only supports Latin-1 strings.
- * FIXME: Untested!
  *
  * @param kv_vector Vector of key/value pairs.
  * @return 0 on success; negative POSIX error code on error.
@@ -1172,16 +1176,8 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 {
 	RP_D(RpPngWriter);
 	assert(d->file != nullptr);
-	assert(d->img != nullptr);
-	assert(d->IHDR_written);
-	if (unlikely(!d->file || !d->img)) {
+	if (unlikely(!d->file)) {
 		// Invalid state.
-		d->lastError = EIO;
-		return -d->lastError;
-	}
-	if (unlikely(!d->IHDR_written)) {
-		// IHDR has not been written yet.
-		// TODO: Better error code?
 		d->lastError = EIO;
 		return -d->lastError;
 	}
@@ -1199,7 +1195,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	png_text *pTxt = text;
 	for (unsigned int i = 0; i < kv.size(); i++, pTxt++) {
 		pTxt->compression = PNG_TEXT_COMPRESSION_NONE;
-		pTxt->key = (png_charp)kv[i].first.c_str();
+		pTxt->key = (png_charp)kv[i].first;
 		pTxt->text = (png_charp)kv[i].second.c_str();
 	}
 
@@ -1217,7 +1213,6 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	delete[] text;
 	return 0;
 }
-#endif /* RP_ENABLE_WRITE_TEXT */
 
 /**
  * Write raw image data to the PNG image.

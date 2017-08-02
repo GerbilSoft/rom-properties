@@ -281,26 +281,47 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}
 
-#if 0
+	// Save the image using RpPngWriter.
+	const int height = gdk_pixbuf_get_height(ret_img);
+	unique_ptr<const uint8_t*[]> row_pointers;
+	guchar *pixels;
+	int rowstride;
+	int pwRet;
+
+	// tEXt chunks.
+	RpPngWriter::kv_vector kv;
+	char mtime_str[32];
+	char szFile_str[32];
+	GFile *f_src;
+	gchar *content_type, *uri;
+
+	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
+		gdk_pixbuf_get_width(ret_img), height,
+		rp_image::FORMAT_ARGB32);
+	if (!pngWriter->isOpen()) {
+		// Could not open the PNG writer.
+		ret = RPCT_OUTPUT_FILE_FAILED;
+		goto cleanup;
+	}
+
+	/** tEXt chunks. **/
+	// NOTE: These are written before IHDR in order to put the
+	// tEXt chunks before the IDAT chunk.
+
 	// Get values for the XDG thumbnail cache text chunks.
 	// KDE uses this order: Software, MTime, Mimetype, Size, URI
-	const char *option_keys[8];
-	const char *option_values[8];
-	int curopt = 0;
+	kv.reserve(5);
 
+	// Software.
 	// TODO: Distinguish between GNOME and XFCE?
 	// TODO: Does gdk_pixbuf_savev() support zTXt?
 	// TODO: Set keys in the Qt one.
-	option_keys[curopt] = "tEXt::Software";
-	option_values[curopt] = "ROM Properties Page shell extension (GTK+)";
-	curopt++;
+	kv.push_back(std::make_pair("Software", "ROM Properties Page shell extension (GTK+)"));
 
 	// Modification time and file size.
-	char mtime_str[32];
-	char szFile_str[32];
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
-	GFile *const f_src = g_file_new_for_path(source_file);
+	f_src = g_file_new_for_path(source_file);
 	if (f_src) {
 		GError *error = nullptr;
 		GFileInfo *const fi_src = g_file_query_info(f_src,
@@ -328,74 +349,37 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 
 	// Modification time.
 	if (mtime_str[0] != 0) {
-		option_keys[curopt] = "tEXt::Thumb::MTime";
-		option_values[curopt] = mtime_str;
-		curopt++;
+		kv.push_back(std::make_pair("Thumb::MTime", mtime_str));
 	}
 
 	// MIME type.
 	// TODO: Get this directly from the D-Bus call or similar?
-	gchar *const content_type = g_content_type_guess(source_file, nullptr, 0, nullptr);
-	gchar *mime_type = nullptr;
+	content_type = g_content_type_guess(source_file, nullptr, 0, nullptr);
 	if (content_type) {
 		gchar *const mime_type = g_content_type_get_mime_type(content_type);
 		if (mime_type) {
-			option_keys[curopt] = "tEXt::Thumb::Mimetype";
-			option_values[curopt] = mime_type;
-			curopt++;
+			kv.push_back(std::make_pair("Thumb::Mimetype", mime_type));
+			g_free(mime_type);
 		}
 		g_free(content_type);
 	}
 
 	// File size.
 	if (szFile_str[0] != 0) {
-		option_keys[curopt] = "tEXt::Thumb::Size";
-		option_values[curopt] = szFile_str;
-		curopt++;
+		kv.push_back(std::make_pair("Thumb::Size", szFile_str));
 	}
 
 	// URI.
-	gchar *const uri = g_filename_to_uri(source_file, nullptr, nullptr);
+	uri = g_filename_to_uri(source_file, nullptr, nullptr);
 	if (uri) {
-		option_keys[curopt] = "tEXt::Thumb::URI";
-		option_values[curopt] = uri;
-		curopt++;
+		kv.push_back(std::make_pair("Thumb::URI", uri));
+		g_free(uri);
 	}
 
-	// End of options.
-	option_keys[curopt] = nullptr;
-	option_values[curopt] = nullptr;
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
 
-	// Save the image.
-	ret = RPCT_SUCCESS;
-	GError *error = nullptr;
-	if (!gdk_pixbuf_savev(ret_img, output_file, "png",
-	    (char**)option_keys, (char**)option_values, &error))
-	{
-		// Image save failed.
-		g_error_free(error);
-		ret = RPCT_OUTPUT_FILE_FAILED;
-	}
-
-	g_free(uri);
-	g_free(mime_type);
-#endif
-
-	// Save the image using RpPngWriter.
-	const int height = gdk_pixbuf_get_height(ret_img);
-	unique_ptr<const uint8_t*[]> row_pointers;
-	guchar *pixels;
-	int rowstride;
-	int pwRet;
-
-	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
-		gdk_pixbuf_get_width(ret_img), height,
-		rp_image::FORMAT_ARGB32);
-	if (!pngWriter->isOpen()) {
-		// Could not open the PNG writer.
-		ret = RPCT_OUTPUT_FILE_FAILED;
-		goto cleanup;
-	}
+	/** IHDR **/
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.
@@ -406,6 +390,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 		ret = RPCT_OUTPUT_FILE_FAILED;
 		goto cleanup;
 	}
+
+	/** IDAT chunk. **/
 
 	// Initialize the row pointers.
 	row_pointers.reset(new const uint8_t*[height]);

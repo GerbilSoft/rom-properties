@@ -26,14 +26,9 @@
 #include "../common.h"
 #include "rp_image.hpp"
 
-// Uncomment to enable write_tEXt().
-//#define RP_ENABLE_WRITE_TEXT 1
-
 // C++ includes.
-#if RP_ENABLE_WRITE_TEXT
 #include <string>
 #include <vector>
-#endif /* RP_ENABLE_WRITE_TEXT TEXT */
 
 namespace LibRpBase {
 
@@ -208,21 +203,27 @@ class RpPngWriter
 		 */
 		int write_IHDR(const rp_image::sBIT_t *sBIT);
 
-#ifdef RP_ENABLE_WRITE_TEXT
-		typedef std::vector<std::pair<std::string, std::string> > kv_vector;
+		// Key/value pair.
+		// - Key: Must be Latin-1.
+		// - Value: May be UTF-8.
+		typedef std::vector<std::pair<const char*, std::string> > kv_vector;
 
 		/**
 		 * Write an array of text chunks.
 		 * This is needed for e.g. the XDG thumbnailing specification.
 		 *
+		 * If called before write_IHDR(), tEXt chunks will be written
+		 * before the IDAT chunk.
+		 *
+		 * If called after write_IHDR(), tEXt chunks will be written
+		 * after the IDAT chunk.
+		 *
 		 * NOTE: This currently only supports Latin-1 strings.
-		 * FIXME: Untested!
 		 *
 		 * @param kv_vector Vector of key/value pairs.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_tEXt(const kv_vector &kv);
-#endif /* RP_ENABLE_WRITE_TEXT */
 
 		/**
 		 * Write raw image data to the PNG image.
