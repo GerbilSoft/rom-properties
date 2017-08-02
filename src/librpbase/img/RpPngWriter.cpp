@@ -206,12 +206,25 @@ class RpPngWriterPrivate
 		int write_CI8_palette(void);
 
 		/**
+		 * Write raw image data to the PNG image.
+		 *
+		 * This must be called after any other modifier functions.
+		 *
+		 * NOTE: This will automatically close the file.
+		 * TODO: Keep it open so we can write text after IDAT?
+		 *
+		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int write_IDAT(const png_byte **row_pointers);
+
+		/**
 		 * Write the rp_image data to the PNG image.
 		 *
 		 * This must be called after any other modifier functions.
 		 *
-		 * If constructed using a filename instead of IRpFile,
-		 * this will automatically close the file.
+		 * NOTE: This will automatically close the file.
+		 * TODO: Keep it open so we can write text after IDAT?
 		 *
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
@@ -222,8 +235,8 @@ class RpPngWriterPrivate
 		 *
 		 * This must be called after any other modifier functions.
 		 *
-		 * If constructed using a filename instead of IRpFile,
-		 * this will automatically close the file.
+		 * NOTE: This will automatically close the file.
+		 * TODO: Keep it open so we can write text after IDAT?
 		 *
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
@@ -524,12 +537,69 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 }
 
 /**
+ * Write raw image data to the PNG image.
+ *
+ * This must be called after any other modifier functions.
+ *
+ * NOTE: This will automatically close the file.
+ * TODO: Keep it open so we can write text after IDAT?
+ *
+ * @param row_pointers PNG row pointers. Array must have cache.height elements.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RpPngWriterPrivate::write_IDAT(const png_byte **row_pointers)
+{
+	assert(file != nullptr);
+	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
+	assert(IHDR_written);
+	if (!file || !img || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE)) {
+		// Invalid state.
+		lastError = EIO;
+		return -lastError;
+	}
+	if (!IHDR_written) {
+		// IHDR has not been written yet.
+		// TODO: Better error code?
+		lastError = EIO;
+		return -lastError;
+	}
+
+#ifdef PNG_SETJMP_SUPPORTED
+	// WARNING: Do NOT initialize any C++ objects past this point!
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		// PNG read failed.
+		return -EIO;
+	}
+#endif
+
+	// TODO: Byteswap image data on big-endian systems?
+	//png_set_swap(png_ptr);
+	// TODO: What format on big-endian?
+	png_set_bgr(png_ptr);
+
+	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
+		// Need to skip the alpha bytes.
+		// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTE_ORDER == SYS_LIL_ENDIAN
+		static const int flags = PNG_FILLER_AFTER;
+#else /* SYS_BYTE_ORDER == SYS_BIG_ENDIAN */
+		static const int flags = PNG_FILLER_BEFORE;
+#endif
+		png_set_filler(png_ptr, 0xFF, flags);
+	}
+
+	// Write the image data.
+	png_write_image(png_ptr, const_cast<png_bytepp>(row_pointers));
+	return 0;
+}
+
+/**
  * Write the rp_image data to the PNG image.
  *
  * This must be called after any other modifier functions.
  *
- * If constructed using a filename instead of IRpFile,
- * this will automatically close the file.
+ * NOTE: This will automatically close the file.
+ * TODO: Keep it open so we can write text after IDAT?
  *
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -551,60 +621,24 @@ int RpPngWriterPrivate::write_IDAT(void)
 		return -lastError;
 	}
 
-	// Row pointers. (NOTE: Allocated after IHDR is written.)
-	const int height = img->height();
-	const png_byte **row_pointers = nullptr;
-
-#ifdef PNG_SETJMP_SUPPORTED
-	// WARNING: Do NOT initialize any C++ objects past this point!
-	if (setjmp(png_jmpbuf(png_ptr))) {
-		// PNG read failed.
-		png_free(png_ptr, row_pointers);
-		return -EIO;
-	}
-#endif
-
-	// TODO: Byteswap image data on big-endian systems?
-	//png_set_swap(png_ptr);
-	// TODO: What format on big-endian?
-	png_set_bgr(png_ptr);
-
-	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
-		// Need to skip the alpha bytes.
-		// Assuming 'after' on LE, 'before' on BE.
-#if SYS_BYTE_ORDER == SYS_LIL_ENDIAN
-		static const int flags = PNG_FILLER_AFTER;
-#else /* SYS_BYTE_ORDER == SYS_BIG_ENDIAN */
-		static const int flags = PNG_FILLER_BEFORE;
-#endif
-		png_set_filler(png_ptr, 0xFF, flags);
-	}
-
 	// Allocate the row pointers.
-	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
+	const png_byte **row_pointers = static_cast<const png_byte**>(
+		png_malloc(png_ptr, sizeof(const png_byte*) * cache.height));
 	if (!row_pointers) {
 		lastError = ENOMEM;
 		return -lastError;
 	}
 
 	// Initialize the row pointers array.
-	for (int y = height-1; y >= 0; y--) {
+	for (int y = cache.height-1; y >= 0; y--) {
 		row_pointers[y] = static_cast<const png_byte*>(img->scanLine(y));
 	}
 
 	// Write the image data.
-	png_write_image(png_ptr, (png_bytepp)row_pointers);
+	int ret = write_IDAT(row_pointers);
+	// Free the row pointers.
 	png_free(png_ptr, row_pointers);
-	row_pointers = nullptr;
-
-	// Finished writing.
-	png_write_end(png_ptr, info_ptr);
-
-	// Free the PNG structs and close the file.
-	png_destroy_write_struct(&png_ptr, &info_ptr);
-	delete file;
-	file = nullptr;
-	return 0;
+	return ret;
 }
 
 /**
@@ -612,8 +646,8 @@ int RpPngWriterPrivate::write_IDAT(void)
  *
  * This must be called after any other modifier functions.
  *
- * If constructed using a filename instead of IRpFile,
- * this will automatically close the file.
+ * NOTE: This will automatically close the file.
+ * TODO: Keep it open so we can write text after IDAT?
  *
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -1003,25 +1037,40 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 int RpPngWriter::write_IDAT(void)
 {
 	RP_D(RpPngWriter);
+	int ret = -1;
 	switch (d->imageTag) {
 		case RpPngWriterPrivate::IMGT_RP_IMAGE:
 			// Write a regular PNG image.
-			return d->write_IDAT();
+			ret = d->write_IDAT();
+			break;
 
 		case RpPngWriterPrivate::IMGT_ICONANIMDATA:
 			// Write an animated PNG image.
 			// NOTE: d->isAnimated is only set if APNG is loaded,
 			// so we don't have to check it again here.
-			return d->write_IDAT_APNG();
+			ret = d->write_IDAT_APNG();
+			break;
 
 		default:
 			// Unsupported...
 			assert(!"Unsupported image tag.");
+			ret = -ENOTSUP;
 			break;
 	}
 
-	// Shouldn't get here...
-	return -ENOTSUP;
+	if (ret == 0) {
+		// PNG image written successfully.
+		png_write_end(d->png_ptr, d->info_ptr);
+
+		// Free the PNG structs and close the file.
+		png_destroy_write_struct(&d->png_ptr, &d->info_ptr);
+		d->png_ptr = nullptr;
+		d->info_ptr = nullptr;
+		delete d->file;
+		d->file = nullptr;
+	}
+
+	return ret;
 }
 
 }
