@@ -162,6 +162,14 @@ string cp1252_to_utf8(const char *str, int len)
 	if (mbs) {
 		ret = mbs;
 		free(mbs);
+	} else {
+		// iconv will sometimes fail cp1252 even with //IGNORE.
+		// Fall back to latin1//IGNORE.
+		mbs = rp_iconv((char*)str, len, "LATIN1//IGNORE", "UTF-8");
+		if (mbs) {
+			ret = mbs;
+			free(mbs);
+		}
 	}
 
 	return ret;
@@ -194,6 +202,14 @@ u16string cp1252_to_utf16(const char *str, int len)
 	if (wcs) {
 		ret = wcs;
 		free(wcs);
+	} else {
+		// iconv will sometimes fail cp1252 even with //IGNORE.
+		// Fall back to latin1//IGNORE.
+		wcs = (char16_t*)rp_iconv((char*)str, len, "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING);
+		if (wcs) {
+			ret = wcs;
+			free(wcs);
+		}
 	}
 
 	return ret;
