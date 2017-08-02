@@ -293,7 +293,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	char mtime_str[32];
 	char szFile_str[32];
 	GFile *f_src;
-	gchar *content_type, *uri;
+	gchar *content_type;
+	gchar *uri = nullptr;
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
@@ -373,7 +374,23 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// URI.
-	uri = g_filename_to_uri(source_file, nullptr, nullptr);
+	if (g_path_is_absolute(source_file)) {
+		// We have an absolute path.
+		uri = g_filename_to_uri(source_file, nullptr, nullptr);
+	} else {
+		// We have a relative path.
+		// Convert the filename to an absolute path.
+		GFile *curdir = g_file_new_for_path(".");
+		if (curdir) {
+			GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+			if (abspath) {
+				uri = g_file_get_uri(abspath);
+				g_object_unref(abspath);
+			}
+			g_object_unref(curdir);
+		}
+	}
+
 	if (uri) {
 		kv.push_back(std::make_pair("Thumb::URI", uri));
 		g_free(uri);
