@@ -198,10 +198,12 @@ class RpPngWriter
 		 * It should only be used for raw images. Use write_IHDR()
 		 * for rp_image and IconAnimData.
 		 *
-		 * @param sBIT sBIT metadata.
+		 * @param sBIT		[in] sBIT metadata.
+		 * @param palette	[in,opt] Palette for CI8 images.
+		 * @param palette_len	[in,opt] Number of entries in `palette`.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IHDR(const rp_image::sBIT_t *sBIT);
+		int write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette = nullptr, int palette_len = 0);
 
 		// Key/value pair.
 		// - Key: Must be Latin-1.

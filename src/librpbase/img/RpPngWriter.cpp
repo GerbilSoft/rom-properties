@@ -135,6 +135,10 @@ class RpPngWriterPrivate
 			int height;
 			rp_image::Format format;
 
+			// Palette for CI8 images.
+			const uint32_t *palette;
+			int palette_len;
+
 #ifdef PNG_sBIT_SUPPORTED
 			// sBIT data. If we have sBIT, and alpha == 0,
 			// we'll skip saving the alpha channel.
@@ -143,7 +147,12 @@ class RpPngWriterPrivate
 			rp_image::sBIT_t sBIT;
 #endif /* PNG_sBIT_SUPPORTED */
 
-			cache_t() : width(0), height(0), format(rp_image::FORMAT_NONE)
+			cache_t()
+				: width(0)
+				, height(0)
+				, format(rp_image::FORMAT_NONE)
+				, palette(nullptr)
+				, palette_len(0)
 			{
 #ifdef PNG_sBIT_SUPPORTED
 				has_sBIT = false;
@@ -156,6 +165,11 @@ class RpPngWriterPrivate
 				this->width = img->width();
 				this->height = img->height();
 				this->format = img->format();
+				if (this->format == rp_image::FORMAT_CI8) {
+					// Get the palette.
+					this->palette = img->palette();
+					this->palette_len = img->palette_len();
+				}
 #ifdef PNG_sBIT_SUPPORTED
 				// Get the rp_image's sBIT data.
 				// If alpha == 0, we can write RGB and/or skip tRNS.
@@ -618,17 +632,12 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 		return -EINVAL;
 	}
 
-	// Get the first image.
+	// Using the cached palette from the first image.
 	// TODO: Handle animated images where the different frames
 	// have different widths, heights, and/or formats.
 	// Also, does PNG support separate palettes per frame?
 	// If not, the frames may need to be converted to ARGB32.
-	const rp_image *const img0 = (imageTag == IMGT_ICONANIMDATA
-		? this->iconAnimData->frames[iconAnimData->seq_index[0]]
-		: this->img);
-
-	const int num_entries = img0->palette_len();
-	if (num_entries < 0 || num_entries > 256)
+	if (cache.palette_len <= 0 || cache.palette_len > 256)
 		return -EINVAL;
 
 	// Maximum size.
@@ -637,23 +646,26 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	bool has_tRNS = false;
 
 	// Convert the palette.
-	const uint32_t *const palette = img0->palette();
-	for (int i = 0; i < num_entries; i++) {
-		png_pal[i].blue  = ( palette[i]        & 0xFF);
-		png_pal[i].green = ((palette[i] >> 8)  & 0xFF);
-		png_pal[i].red   = ((palette[i] >> 16) & 0xFF);
-		png_tRNS[i]      = ((palette[i] >> 24) & 0xFF);
-		has_tRNS |= (png_tRNS[i] != 0xFF);
+	const uint32_t *p_img_pal = cache.palette;
+	png_color *p_png_pal = png_pal;
+	uint8_t *p_png_tRNS = png_tRNS;
+	for (int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
+		// TODO: Use argb32_t?
+		p_png_pal->blue  = ( *p_img_pal        & 0xFF);
+		p_png_pal->green = ((*p_img_pal >> 8)  & 0xFF);
+		p_png_pal->red   = ((*p_img_pal >> 16) & 0xFF);
+		*p_png_tRNS      = ((*p_img_pal >> 24) & 0xFF);
+		has_tRNS |= (*p_png_tRNS != 0xFF);
 	}
 
 	// Write the PLTE and tRNS chunks.
-	png_set_PLTE(png_ptr, info_ptr, png_pal, num_entries);
+	png_set_PLTE(png_ptr, info_ptr, png_pal, cache.palette_len);
 	if (has_tRNS) {
 		// Palette has transparency.
 		// Write the tRNS chunk.
 		// NOTE: Ignoring skip_alpha here, since it doesn't make
 		// sense to skip for paletted images.
-		png_set_tRNS(png_ptr, info_ptr, png_tRNS, num_entries, nullptr);
+		png_set_tRNS(png_ptr, info_ptr, png_tRNS, cache.palette_len, nullptr);
 	}
 	return 0;
 }
@@ -1150,10 +1162,12 @@ int RpPngWriter::write_IHDR(void)
  * It should only be used for raw images. Use write_IHDR()
  * for rp_image and IconAnimData.
  *
- * @param sBIT sBIT metadata.
+ * @param sBIT		[in] sBIT metadata.
+ * @param palette	[in,opt] Palette for CI8 images.
+ * @param palette_len	[in,opt] Number of entries in `palette`.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT)
+int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, int palette_len)
 {
 	RP_D(RpPngWriter);
 	assert(d->imageTag == RpPngWriterPrivate::IMGT_RAW);
@@ -1163,6 +1177,8 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT)
 	}
 
 	d->cache.set_sBIT(sBIT);
+	d->cache.palette = palette;
+	d->cache.palette_len = palette_len;
 	return write_IHDR();
 }
 
