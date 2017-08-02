@@ -389,7 +389,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 		// Cache the image parameters.
 		const rp_image *img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
 		assert(img0 != nullptr);
-		if (!img0) {
+		if (unlikely(!img0)) {
 			// Invalid animated image.
 			delete this->file;
 			this->file = nullptr;
@@ -494,7 +494,7 @@ void RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
 int RpPngWriterPrivate::write_CI8_palette(void)
 {
 	assert(cache.format == rp_image::FORMAT_CI8);
-	if (cache.format != rp_image::FORMAT_CI8) {
+	if (unlikely(cache.format != rp_image::FORMAT_CI8)) {
 		// Not a CI8 image.
 		return -EINVAL;
 	}
@@ -555,12 +555,12 @@ int RpPngWriterPrivate::write_IDAT(const png_byte **row_pointers)
 	assert(file != nullptr);
 	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
 	assert(IHDR_written);
-	if (!file || !img || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE)) {
+	if (unlikely(!file || !img || (imageTag != IMGT_RAW && imageTag != IMGT_RP_IMAGE))) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
 	}
-	if (!IHDR_written) {
+	if (unlikely(!IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
 		lastError = EIO;
@@ -612,12 +612,12 @@ int RpPngWriterPrivate::write_IDAT(void)
 	assert(img != nullptr);
 	assert(imageTag == IMGT_RP_IMAGE);
 	assert(IHDR_written);
-	if (!file || !img || imageTag != IMGT_RP_IMAGE) {
+	if (unlikely(!file || !img || imageTag != IMGT_RP_IMAGE)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
 	}
-	if (!IHDR_written) {
+	if (unlikely(!IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
 		lastError = EIO;
@@ -660,12 +660,12 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	assert(img != nullptr);
 	assert(imageTag == IMGT_ICONANIMDATA);
 	assert(IHDR_written);
-	if (!file || !img || imageTag != IMGT_ICONANIMDATA) {
+	if (unlikely(!file || !img || imageTag != IMGT_ICONANIMDATA)) {
 		// Invalid state.
 		lastError = EIO;
 		return -lastError;
 	}
-	if (!IHDR_written) {
+	if (unlikely(!IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
 		lastError = EIO;
@@ -870,12 +870,12 @@ int RpPngWriter::write_IHDR(void)
 	assert(d->file != nullptr);
 	assert(d->img != nullptr);
 	assert(!d->IHDR_written);
-	if (!d->file || !d->img) {
+	if (unlikely(!d->file || !d->img)) {
 		// Invalid state.
 		d->lastError = EIO;
 		return -d->lastError;
 	}
-	if (d->IHDR_written) {
+	if (unlikely(d->IHDR_written)) {
 		// IHDR has already been written.
 		d->lastError = EEXIST;
 		return -d->lastError;
@@ -982,19 +982,19 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	assert(d->file != nullptr);
 	assert(d->img != nullptr);
 	assert(d->IHDR_written);
-	if (!d->file || !d->img) {
+	if (unlikely(!d->file || !d->img)) {
 		// Invalid state.
 		d->lastError = EIO;
 		return -d->lastError;
 	}
-	if (!d->IHDR_written) {
+	if (unlikely(!d->IHDR_written)) {
 		// IHDR has not been written yet.
 		// TODO: Better error code?
 		d->lastError = EIO;
 		return -d->lastError;
 	}
 
-	if (kv.empty()) {
+	if (unlikely(kv.empty())) {
 		// Empty vector...
 		return 0;
 	}
