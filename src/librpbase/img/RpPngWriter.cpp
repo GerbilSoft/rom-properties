@@ -60,6 +60,11 @@
 # define PNG_CONST_CAST(type)
 #endif
 
+// libpng-1.5 doesn't define PNG_Z_DEFAULT_COMPRESSION.
+#ifndef PNG_Z_DEFAULT_COMPRESSION
+# define PNG_Z_DEFAULT_COMPRESSION (-1)
+#endif
+
 // C includes. (C++ namespace)
 #include <cassert>
 #include <cerrno>
