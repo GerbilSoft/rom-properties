@@ -646,15 +646,17 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	bool has_tRNS = false;
 
 	// Convert the palette.
-	const uint32_t *p_img_pal = cache.palette;
+	const argb32_t *p_img_pal = reinterpret_cast<const argb32_t*>(cache.palette);
 	png_color *p_png_pal = png_pal;
 	uint8_t *p_png_tRNS = png_tRNS;
 	for (int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
-		// TODO: Use argb32_t?
-		p_png_pal->blue  = ( *p_img_pal        & 0xFF);
-		p_png_pal->green = ((*p_img_pal >> 8)  & 0xFF);
-		p_png_pal->red   = ((*p_img_pal >> 16) & 0xFF);
-		*p_png_tRNS      = ((*p_img_pal >> 24) & 0xFF);
+		// NOTE: Shifting method is actually more
+		// efficient on gcc, but MSVC handles both
+		// the same as gcc with argb32_t. (movzx)
+		p_png_pal->blue  = p_img_pal->b;
+		p_png_pal->green = p_img_pal->g;
+		p_png_pal->red   = p_img_pal->r;
+		*p_png_tRNS      = p_img_pal->a;
 		has_tRNS |= (*p_png_tRNS != 0xFF);
 	}
 
