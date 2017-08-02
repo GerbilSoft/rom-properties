@@ -50,6 +50,12 @@ class RpPngWriter
 		 * Check isOpen() after constructing to verify that
 		 * the file was opened.
 		 *
+		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
+		 *
 		 * @param filename	[in] Filename.
 		 * @param img		[in] rp_image.
 		 */
@@ -63,6 +69,9 @@ class RpPngWriter
 		 * the file was opened.
 		 *
 		 * NOTE: If the write fails, the caller will need
+		 * to delete the file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
 		 * to delete the file.
 		 *
 		 * @param file	[in] IRpFile open for writing.
@@ -83,6 +92,9 @@ class RpPngWriter
 		 * write support is unavailable, -ENOTSUP will be
 		 * set as the last error. The caller should then save
 		 * the image as a standard PNG file.
+		 *
+		 * NOTE 2: If the write fails, the caller will need
+		 * to delete the file.
 		 *
 		 * @param file		[in] IRpFile open for writing.
 		 * @param iconAnimData	[in] Animated image data.

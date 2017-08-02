@@ -96,9 +96,8 @@ static int DelayLoad_test_zlib_and_png(void)
 class RpPngWriterPrivate
 {
 	public:
-		RpPngWriterPrivate(const rp_char *filename, const rp_image *img);
+		// NOTE: The public class constructor must dup() file.
 		RpPngWriterPrivate(IRpFile *file, const rp_image *img);
-		RpPngWriterPrivate(const rp_char *filename, const IconAnimData *iconAnimData);
 		RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData);
 		~RpPngWriterPrivate();
 
@@ -109,13 +108,8 @@ class RpPngWriterPrivate
 		// Last error value.
 		int lastError;
 
-		// Filename. This is used to unlink() the file on error.
-		// If the IRpFile constructor was used, this is empty.
-		rp_string filename;
-
 		// Open instance of the file.
-		// If the filename constructor was used, we own this file.
-		// Otherwise, it's a dup()'d instance of the IRpFile.
+		// This is a dup()'d instance from the public class constructor.
 		IRpFile *file;
 
 		// Image and/or animated image data to save.
@@ -238,61 +232,9 @@ class RpPngWriterPrivate
 
 /** RpPngWriterPrivate **/
 
-RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const rp_image *img)
-	: lastError(0)
-	, file(nullptr)
-	, imageTag(IMGT_INVALID)
-	, png_ptr(nullptr)
-	, info_ptr(nullptr)
-	, IHDR_written(false)
-{
-	this->img = img;
-	if (!filename || filename[0] == 0 || !img || !img->isValid()) {
-		// Invalid parameters.
-		lastError = EINVAL;
-		return;
-	}
-	this->filename = filename;
-
-#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlib_and_png() != 0) {
-		// Delay load failed.
-		lastError = ENOTSUP;
-		return;
-	}
-#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
-
-	file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
-	if (!file->isOpen()) {
-		// Unable to open the file.
-		lastError = file->lastError();
-		if (lastError == 0) {
-			lastError = EIO;
-		}
-		delete file;
-		file = nullptr;
-		return;
-	}
-
-	// Initialize the PNG write structs.
-	int ret = init_png_write_structs();
-	if (ret != 0) {
-		// FIXME: Unlink the file if necessary.
-		lastError = -ret;
-		delete this->file;
-		this->file = nullptr;
-	}
-
-	// Cache the image parameters.
-	imageTag = IMGT_RP_IMAGE;
-	cache.setFrom(img);
-}
-
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	: lastError(0)
-	, file(nullptr)
+	, file(file)
 	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
@@ -301,6 +243,8 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	this->img = img;
 	if (!file || !img || !img->isValid()) {
 		// Invalid parameters.
+		delete this->file;
+		this->file = nullptr;
 		lastError = EINVAL;
 		return;
 	}
@@ -310,27 +254,29 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
+		delete this->file;
+		this->file = nullptr;
 		lastError = ENOTSUP;
 		return;
 	}
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-	if (!file->isOpen()) {
+	if (!file || !file->isOpen()) {
 		// File isn't open.
-		lastError = file->lastError();
+		lastError = (file ? file->lastError() : 0);
 		if (lastError == 0) {
 			lastError = EIO;
 		}
+		delete this->file;
+		this->file = nullptr;
 		return;
 	}
 
-	this->file = file->dup();
-
 	// Truncate the file.
-	int ret = this->file->truncate(0);
+	int ret = file->truncate(0);
 	if (ret != 0) {
 		// Unable to truncate the file.
-		lastError = this->file->lastError();
+		lastError = file->lastError();
 		if (lastError == 0) {
 			lastError = EIO;
 		}
@@ -341,7 +287,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 
 	// Truncation should automatically rewind,
 	// but let's do it anyway.
-	this->file->rewind();
+	file->rewind();
 
 	// Initialize the PNG write structs.
 	ret = init_png_write_structs();
@@ -357,89 +303,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	cache.setFrom(img);
 }
 
-RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimData *iconAnimData)
-	: lastError(0)
-	, file(nullptr)
-	, imageTag(IMGT_INVALID)
-	, png_ptr(nullptr)
-	, info_ptr(nullptr)
-	, IHDR_written(false)
-{
-	this->iconAnimData = nullptr;
-	if (!filename || filename[0] == 0 || !iconAnimData || iconAnimData->seq_count <= 0) {
-		// Invalid parameters.
-		lastError = EINVAL;
-		return;
-	}
-	this->filename = filename;
-
-#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlib_and_png() != 0) {
-		// Delay load failed.
-		lastError = ENOTSUP;
-		return;
-	}
-#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
-
-	if (iconAnimData->seq_count > 1) {
-		// Load APNG.
-		int ret = APNG_ref();
-		if (ret != 0) {
-			// Error loading APNG.
-			lastError = ENOTSUP;
-			return;
-		}
-		imageTag = IMGT_ICONANIMDATA;
-	} else {
-		imageTag = IMGT_RP_IMAGE;
-	}
-
-	file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
-	if (!file->isOpen()) {
-		// Unable to open the file.
-		lastError = file->lastError();
-		if (lastError == 0) {
-			lastError = EIO;
-		}
-		delete file;
-		file = nullptr;
-		return;
-	}
-
-	// Set img or iconAnimData.
-	if (imageTag == IMGT_ICONANIMDATA) {
-		this->iconAnimData = iconAnimData;
-		// Cache the image parameters.
-		const rp_image *img0 = iconAnimData->frames[iconAnimData->seq_index[0]];
-		assert(img0 != nullptr);
-		if (!img0) {
-			// Invalid animated image.
-			delete this->file;
-			this->file = nullptr;
-			lastError = EINVAL;
-			imageTag = IMGT_INVALID;
-		}
-		cache.setFrom(img0);
-	} else {
-		this->img = iconAnimData->frames[iconAnimData->seq_index[0]];
-		cache.setFrom(img);
-	}
-
-	// Initialize the PNG write structs.
-	int ret = init_png_write_structs();
-	if (ret != 0) {
-		// FIXME: Unlink the file if necessary.
-		lastError = -ret;
-		delete this->file;
-		this->file = nullptr;
-	}
-}
-
 RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAnimData)
 	: lastError(0)
-	, file(nullptr)
+	, file(file)
 	, imageTag(IMGT_INVALID)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
@@ -448,6 +314,8 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 	this->iconAnimData = nullptr;
 	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
 		// Invalid parameters.
+		delete this->file;
+		this->file = nullptr;
 		lastError = EINVAL;
 		return;
 	}
@@ -457,6 +325,8 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 	// TODO: Only if linked with /DELAYLOAD?
 	if (DelayLoad_test_zlib_and_png() != 0) {
 		// Delay load failed.
+		delete this->file;
+		this->file = nullptr;
 		lastError = ENOTSUP;
 		return;
 	}
@@ -475,22 +345,22 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 		imageTag = IMGT_RP_IMAGE;
 	}
 
-	if (!file->isOpen()) {
+	if (!file || !file->isOpen()) {
 		// File isn't open.
-		lastError = file->lastError();
+		lastError = (file ? file->lastError() : 0);
 		if (lastError == 0) {
 			lastError = EIO;
 		}
+		delete this->file;
+		this->file = nullptr;
 		return;
 	}
 
-	this->file = file->dup();
-
 	// Truncate the file.
-	int ret = this->file->truncate(0);
+	int ret = file->truncate(0);
 	if (ret != 0) {
 		// Unable to truncate the file.
-		lastError = this->file->lastError();
+		lastError = file->lastError();
 		if (lastError == 0) {
 			lastError = EIO;
 		}
@@ -501,7 +371,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 
 	// Truncation should automatically rewind,
 	// but let's do it anyway.
-	this->file->rewind();
+	file->rewind();
 
 	// Set img or iconAnimData.
 	if (imageTag == IMGT_ICONANIMDATA) {
@@ -841,11 +711,18 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
  * Check isOpen() after constructing to verify that
  * the file was opened.
  *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
  * @param filename	[in] Filename.
  * @param img		[in] rp_image.
  */
 RpPngWriter::RpPngWriter(const rp_char *filename, const rp_image *img)
-	: d_ptr(new RpPngWriterPrivate(filename, img))
+	: d_ptr(new RpPngWriterPrivate(
+		(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), img))
 { }
 
 /**
@@ -858,11 +735,15 @@ RpPngWriter::RpPngWriter(const rp_char *filename, const rp_image *img)
  * NOTE: If the write fails, the caller will need
  * to delete the file.
  *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
  * @param file	[in] IRpFile open for writing.
  * @param img	[in] rp_image.
  */
 RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
-	: d_ptr(new RpPngWriterPrivate(file, img))
+	: d_ptr(new RpPngWriterPrivate(
+		(file ? file->dup() : nullptr), img))
 { }
 
 /**
@@ -879,11 +760,15 @@ RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
  * set as the last error. The caller should then save
  * the image as a standard PNG file.
  *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
  * @param file		[in] IRpFile open for writing.
  * @param iconAnimData	[in] Animated image data.
  */
 RpPngWriter::RpPngWriter(const rp_char *filename, const IconAnimData *iconAnimData)
-	: d_ptr(new RpPngWriterPrivate(filename, iconAnimData))
+	: d_ptr(new RpPngWriterPrivate(
+		(filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr), iconAnimData))
 { }
 
 /**
@@ -908,7 +793,8 @@ RpPngWriter::RpPngWriter(const rp_char *filename, const IconAnimData *iconAnimDa
  * @param iconAnimData	[in] Animated image data.
  */
 RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
-	: d_ptr(new RpPngWriterPrivate(file, iconAnimData))
+	: d_ptr(new RpPngWriterPrivate(
+		(file ? file->dup() : nullptr), iconAnimData))
 { }
 
 RpPngWriter::~RpPngWriter()
