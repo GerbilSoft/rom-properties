@@ -420,7 +420,7 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// URI.
-	QUrl url = QUrl::fromLocalFile(qs_source_file);
+	QUrl url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	if (url.isValid() && !url.isEmpty()) {
 		kv.push_back(std::make_pair("Thumb::URI",
 			string(url.toString().toUtf8().constData())));
