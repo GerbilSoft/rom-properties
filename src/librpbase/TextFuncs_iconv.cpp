@@ -19,7 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
  ***************************************************************************/
 
-#include "librpbase/config.librpbase.h"
+#include "config.librpbase.h"
+#include "common.h"
 #include "TextFuncs.hpp"
 
 #if defined(_WIN32)
@@ -70,6 +71,12 @@ namespace LibRpBase {
 static char *rp_iconv(const char *src, int len,
 		const char *src_charset, const char *dest_charset)
 {
+#ifdef RP_WIS16
+	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
+#else /* !RP_WIS16 */
+	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
+#endif /* RP_WIS16 */
+
 	if (!src || len <= 0)
 		return nullptr;
 
@@ -139,256 +146,144 @@ static char *rp_iconv(const char *src, int len,
 
 /** Public text conversion functions. **/
 
+// TODO: Use templates instead of macros?
+// TODO: Instead of inlining, specify encodings as parameters?
+// This will reduce inlining overhead.
+
+// Overloaded NULL terminator checks for ICONV_FUNCTION_*.
+static FORCEINLINE int check_NULL_terminator(const char *str, int len)
+{
+	if (len < 0) {
+		return (int)strlen(str);
+	} else {
+		return (int)strnlen(str, len);
+	}
+}
+
+static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
+{
+	if (len < 0) {
+		return (int)u16_strlen(wcs);
+	} else {
+		return (int)u16_strnlen(wcs, len);
+	}
+}
+
+/**
+ * Convert from one encoding to another.
+ * Base version with no encoding fallbacks.
+ * Trailing NULL bytes will be removed.
+ * @param src_prefix	Function suffix. (destination encoding)
+ * @param src_type	Source character type.
+ * @param iconv_src0	Source encoding.
+ * @param dest_suffix	Function prefix. (source encoding)
+ * @param dest_type	Destination character type.
+ * @param iconv_dest	Destination encoding.
+ */
+#define ICONV_FUNCTION_1(src_prefix, src_type, iconv_src0, dest_suffix, dest_type, iconv_dest) \
+std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+{ \
+	len = check_NULL_terminator(str, len); \
+	\
+	std::basic_string<dest_type> ret; \
+	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
+	if (mbs) { \
+		ret = mbs; \
+		free(mbs); \
+	} \
+	\
+	return ret; \
+}
+
+/**
+ * Convert from one encoding to another.
+ * One encoding fallback is provided.
+ * Trailing NULL bytes will be removed.
+ * @param src_prefix	Function suffix. (destination encoding)
+ * @param src_type	Source character type.
+ * @param iconv_src0	Source encoding.
+ * @param iconv_src1	Fallback encoding.
+ * @param dest_suffix	Function prefix. (source encoding)
+ * @param dest_type	Destination character type.
+ * @param iconv_dest	Destination encoding.
+ */
+#define ICONV_FUNCTION_2(src_prefix, src_type, iconv_src0, iconv_src1, dest_suffix, dest_type, iconv_dest) \
+std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+{ \
+	len = check_NULL_terminator(str, len); \
+	\
+	/* First encoding. */ \
+	std::basic_string<dest_type> ret; \
+	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
+	if (mbs) { \
+		ret = mbs; \
+		free(mbs); \
+	} else { \
+		/* Second encoding. */ \
+		mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src1, iconv_dest)); \
+		if (mbs) { \
+			ret = mbs; \
+			free(mbs); \
+		} \
+	} \
+	\
+	return ret; \
+}
+
+/**
+ * Convert from one encoding to another.
+ * Two encoding fallbacks are provided.
+ * Trailing NULL bytes will be removed.
+ * @param src_prefix	Function suffix. (destination encoding)
+ * @param src_type	Source character type.
+ * @param iconv_src0	Source encoding.
+ * @param iconv_src1	Fallback encoding #1.
+ * @param iconv_src2	Fallback encoding #2.
+ * @param dest_suffix	Function prefix. (source encoding)
+ * @param dest_type	Destination character type.
+ * @param iconv_dest	Destination encoding.
+ */
+#define ICONV_FUNCTION_3(src_prefix, src_type, iconv_src0, iconv_src1, iconv_src2, dest_suffix, dest_type, iconv_dest) \
+std::basic_string<dest_type> src_prefix##_to_##dest_suffix(const src_type *str, int len) \
+{ \
+	len = check_NULL_terminator(str, len); \
+	\
+	/* First encoding. */ \
+	std::basic_string<dest_type> ret; \
+	dest_type *mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src0, iconv_dest)); \
+	if (mbs) { \
+		ret = mbs; \
+		free(mbs); \
+	} else { \
+		/* Second encoding. */ \
+		mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src1, iconv_dest)); \
+		if (mbs) { \
+			ret = mbs; \
+			free(mbs); \
+		} else { \
+			/* Third encoding. */ \
+			mbs = reinterpret_cast<dest_type*>(rp_iconv((char*)str, len*sizeof(src_type), iconv_src2, iconv_dest)); \
+			if (mbs) { \
+				ret = mbs; \
+				free(mbs); \
+			} \
+		} \
+	} \
+	\
+	return ret; \
+}
+
 /** Code Page 1252 **/
-
-/**
- * Convert cp1252 text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str cp1252 text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-string cp1252_to_utf8(const char *str, int len)
-{
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)strlen(str);
-	} else {
-		len = (int)strnlen(str, len);
-	}
-
-	string ret;
-	char *mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
-	if (mbs) {
-		ret = mbs;
-		free(mbs);
-	} else {
-		// iconv will sometimes fail cp1252 even with //IGNORE.
-		// Fall back to latin1//IGNORE.
-		mbs = rp_iconv((char*)str, len, "LATIN1//IGNORE", "UTF-8");
-		if (mbs) {
-			ret = mbs;
-			free(mbs);
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Convert cp1252 text to UTF-16.
- * Trailing NULL bytes will be removed.
- * @param str cp1252 text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-16 string.
- */
-u16string cp1252_to_utf16(const char *str, int len)
-{
-#ifdef RP_WIS16
-	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
-#else /* !RP_WIS16 */
-	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
-#endif /* RP_WIS16 */
-
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)strlen(str);
-	} else {
-		len = (int)strnlen(str, len);
-	}
-
-	u16string ret;
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
-	if (wcs) {
-		ret = wcs;
-		free(wcs);
-	} else {
-		// iconv will sometimes fail cp1252 even with //IGNORE.
-		// Fall back to latin1//IGNORE.
-		wcs = (char16_t*)rp_iconv((char*)str, len, "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING);
-		if (wcs) {
-			ret = wcs;
-			free(wcs);
-		}
-	}
-
-	return ret;
-}
+ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
+ICONV_FUNCTION_2(cp1252, char, "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
 
 /** Code Page 1252 + Shift-JIS (932) **/
-
-/**
- * Convert cp1252 or Shift-JIS text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-string cp1252_sjis_to_utf8(const char *str, int len)
-{
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)strlen(str);
-	} else {
-		len = (int)strnlen(str, len);
-	}
-
-	// Try Shift-JIS first.
-	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
-	// References:
-	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
-	// - https://en.wikipedia.org/wiki/Wave_dash
-	string ret;
-	char *mbs = rp_iconv((char*)str, len, "CP932", "UTF-8");
-	if (mbs) {
-		ret = mbs;
-		free(mbs);
-	} else {
-		// Try cp1252.
-		mbs = rp_iconv((char*)str, len, "CP1252//IGNORE", "UTF-8");
-		if (mbs) {
-			ret = mbs;
-			free(mbs);
-		} else {
-			// iconv will sometimes fail cp1252 even with //IGNORE.
-			// Fall back to latin1//IGNORE.
-			mbs = rp_iconv((char*)str, len, "LATIN1//IGNORE", "UTF-8");
-			if (mbs) {
-				ret = mbs;
-				free(mbs);
-			}
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Convert cp1252 or Shift-JIS text to UTF-16.
- * Trailing NULL bytes will be removed.
- * @param str cp1252 or Shift-JIS text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-16 string.
- */
-u16string cp1252_sjis_to_utf16(const char *str, int len)
-{
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)strlen(str);
-	} else {
-		len = (int)strnlen(str, len);
-	}
-
-	// Try Shift-JIS first.
-	// NOTE: Using CP932 instead of SHIFT-JIS due to issues with Wave Dash.
-	// References:
-	// - https://en.wikipedia.org/wiki/Tilde#Unicode_and_Shift_JIS_encoding_of_wave_dash
-	// - https://en.wikipedia.org/wiki/Wave_dash
-	u16string ret;
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "CP932", RP_ICONV_UTF16_ENCODING);
-	if (wcs) {
-		ret = wcs;
-		free(wcs);
-	} else {
-		// Try cp1252.
-		wcs = (char16_t*)rp_iconv((char*)str, len, "CP1252//IGNORE", RP_ICONV_UTF16_ENCODING);
-		if (wcs) {
-			ret = wcs;
-			free(wcs);
-		} else {
-			// iconv will sometimes fail cp1252 even with //IGNORE.
-			// Fall back to latin1//IGNORE.
-			wcs = (char16_t*)rp_iconv((char*)str, len, "LATIN1//IGNORE", RP_ICONV_UTF16_ENCODING);
-			if (wcs) {
-				ret = wcs;
-				free(wcs);
-			}
-		}
-	}
-
-	return ret;
-}
+ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf8, char, "UTF-8")
+ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
 
 /** UTF-8 to UTF-16 and vice-versa **/
-
-/**
- * Convert UTF-8 text to UTF-16.
- * Trailing NULL bytes will be removed.
- * @param str UTF-8 text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-16 string.
- */
-u16string utf8_to_utf16(const char *str, int len)
-{
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)strlen(str);
-	} else {
-		len = (int)strnlen(str, len);
-	}
-
-	u16string ret;
-	char16_t *wcs = (char16_t*)rp_iconv((char*)str, len, "UTF-8", RP_ICONV_UTF16_ENCODING);
-	if (wcs) {
-		ret = wcs;
-		free(wcs);
-	}
-
-	return ret;
-}
-
-/**
- * Convert UTF-16 text to UTF-8. (INTERNAL FUNCTION)
- * Trailing NULL bytes will be removed.
- * @param wcs UTF-16 text.
- * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
- * @param encoding iconv encoding.
- * @return UTF-8 string.
- */
-static inline string utf16_to_utf8_int(const char16_t *wcs, int len, const char *encoding)
-{
-	// NOTE: u16_strlen() works for both BE and LE, since 0x0000 is
-	// still 0x0000 when byteswapped.
-
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)u16_strlen(wcs);
-	} else {
-		len = (int)u16_strnlen(wcs, len);
-	}
-
-	string ret;
-	char *mbs = (char*)rp_iconv((char*)wcs, len*sizeof(*wcs), encoding, "UTF-8");
-	if (mbs) {
-		ret = mbs;
-		free(mbs);
-	}
-
-	return ret;
-}
-
-/**
- * Convert UTF-16LE text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param wcs UTF-16LE text.
- * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-string utf16le_to_utf8(const char16_t *wcs, int len)
-{
-	return utf16_to_utf8_int(wcs, len, "UTF-16LE");
-}
-
-/**
- * Convert UTF-16BE text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param wcs UTF-16BE text.
- * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-string utf16be_to_utf8(const char16_t *wcs, int len)
-{
-	return utf16_to_utf8_int(wcs, len, "UTF-16BE");
-}
+ICONV_FUNCTION_1(utf8, char, "UTF-8", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
+ICONV_FUNCTION_1(utf16le, char16_t, "UTF-16LE", utf8, char, "UTF-8")
+ICONV_FUNCTION_1(utf16be, char16_t, "UTF-16BE", utf8, char, "UTF-8")
 
 }
