@@ -198,9 +198,6 @@ class RpPngWriterPrivate
 
 		/**
 		 * Write the palette from a CI8 image.
-		 * @param png_ptr png_structp
-		 * @param info_ptr png_infop
-		 * @param img rp_image containing the palette.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int write_CI8_palette(void);
@@ -496,6 +493,12 @@ void RpPngWriterPrivate::png_io_IRpFile_flush(png_structp png_ptr)
  */
 int RpPngWriterPrivate::write_CI8_palette(void)
 {
+	assert(cache.format == rp_image::FORMAT_CI8);
+	if (cache.format != rp_image::FORMAT_CI8) {
+		// Not a CI8 image.
+		return -EINVAL;
+	}
+
 	// Get the first image.
 	// TODO: Handle animated images where the different frames
 	// have different widths, heights, and/or formats.
