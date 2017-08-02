@@ -260,6 +260,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const rp_image *img)
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
+#ifdef PNG_sBIT_SUPPORTED
+	, skip_alpha(false)
+#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->img = img;
 	if (!file || !img || !img->isValid()) {
@@ -323,6 +326,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(const rp_char *filename, const IconAnimDa
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
+#ifdef PNG_sBIT_SUPPORTED
+	, skip_alpha(false)
+#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->iconAnimData = nullptr;
 	if (!filename || filename[0] == 0 || !iconAnimData || iconAnimData->seq_count <= 0) {
@@ -389,6 +395,9 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 	, png_ptr(nullptr)
 	, info_ptr(nullptr)
 	, IHDR_written(false)
+#ifdef PNG_sBIT_SUPPORTED
+	, skip_alpha(false)
+#endif /* PNG_sBIT_SUPPORTED */
 {
 	this->iconAnimData = nullptr;
 	if (!file || !iconAnimData || iconAnimData->seq_count <= 0) {
