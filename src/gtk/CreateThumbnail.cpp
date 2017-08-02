@@ -374,6 +374,8 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// URI.
+	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
+	// GTK+ desktops do urlencode spaces and non-ASCII characters.
 	if (g_path_is_absolute(source_file)) {
 		// We have an absolute path.
 		uri = g_filename_to_uri(source_file, nullptr, nullptr);

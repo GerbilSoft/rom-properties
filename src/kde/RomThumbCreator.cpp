@@ -420,6 +420,8 @@ Q_DECL_EXPORT int rp_create_thumbnail(const char *source_file, const char *outpu
 	}
 
 	// URI.
+	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
+	// GTK+ desktops do urlencode spaces and non-ASCII characters.
 	QUrl url = QUrl::fromLocalFile(fi_src.absoluteFilePath());
 	if (url.isValid() && !url.isEmpty()) {
 		kv.push_back(std::make_pair("Thumb::URI",
