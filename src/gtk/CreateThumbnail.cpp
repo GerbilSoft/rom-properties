@@ -295,6 +295,9 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	GFile *f_src;
 	gchar *content_type, *uri;
 
+	// gdk-pixbuf doesn't support CI8, so we'll assume all
+	// images are ARGB32. (Well, ABGR32, but close enough.)
+	// TODO: Verify channels, etc.?
 	RpPngWriter *pngWriter = new RpPngWriter(U82RP_c(output_file),
 		gdk_pixbuf_get_width(ret_img), height,
 		rp_image::FORMAT_ARGB32);
