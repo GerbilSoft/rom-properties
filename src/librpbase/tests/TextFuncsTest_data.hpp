@@ -465,7 +465,7 @@ const uint8_t TextFuncsTest::utf16be_data[558] = {
 
 #define U8_FFFD 0xEF,0xBF,0xBD
 /**
- * Latin1 to UTF-8 test string.
+ * Latin-1 to UTF-8 test string.
  * Contains the expected result from:
  * - latin1_to_utf8(cp1252_data, ARRAY_SIZE(cp1252_data))
  * (NOTE: Unsupported characters are replaced with U+FFFD.)
@@ -518,7 +518,7 @@ const uint8_t TextFuncsTest::latin1_utf8_data[346+(26*2)] = {
 };
 
 /**
- * Latin1 to UTF-16 test string.
+ * Latin-1 to UTF-16 test string.
  * Contains the expected result from:
  * - latin1_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
  * (NOTE: Unsupported characters are replaced with U+FFFD.)
