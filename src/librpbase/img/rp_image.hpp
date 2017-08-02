@@ -24,6 +24,7 @@
 
 #include "librpbase/config.librpbase.h"
 #include "librpbase/common.h"
+#include "librpbase/byteorder.h"
 
 // C includes.
 #include <stdint.h>
