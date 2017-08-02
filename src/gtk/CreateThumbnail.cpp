@@ -416,7 +416,7 @@ G_MODULE_EXPORT int rp_create_thumbnail(const char *source_file, const char *out
 	}
 
 	// Write the IDAT section.
-	pwRet = pngWriter->write_IDAT(row_pointers.get());
+	pwRet = pngWriter->write_IDAT(row_pointers.get(), true);
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.

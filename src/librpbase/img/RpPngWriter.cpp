@@ -226,9 +226,10 @@ class RpPngWriterPrivate
 		 * TODO: Keep it open so we can write text after IDAT?
 		 *
 		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
+		 * @param is_abgr If true, image data is ABGR instead of ARGB.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IDAT(const png_byte *const *row_pointers);
+		int write_IDAT(const png_byte *const *row_pointers, bool is_abgr = false);
 
 		/**
 		 * Write the rp_image data to the PNG image.
@@ -639,9 +640,10 @@ int RpPngWriterPrivate::write_CI8_palette(void)
  * TODO: Keep it open so we can write text after IDAT?
  *
  * @param row_pointers PNG row pointers. Array must have cache.height elements.
+ * @param is_abgr If true, image data is ABGR instead of ARGB.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers)
+int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_abgr)
 {
 	assert(file != nullptr);
 	assert(imageTag == IMGT_RAW || imageTag == IMGT_RP_IMAGE);
@@ -668,8 +670,11 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers)
 
 	// TODO: Byteswap image data on big-endian systems?
 	//png_set_swap(png_ptr);
+
 	// TODO: What format on big-endian?
-	png_set_bgr(png_ptr);
+	if (!is_abgr) {
+		png_set_bgr(png_ptr);
+	}
 
 	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
 		// Need to skip the alpha bytes.
@@ -1198,9 +1203,10 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
  * NOTE: This version is *only* for raw images!
  *
  * @param row_pointers PNG row pointers. Array must have cache.height elements.
+ * @param is_abgr If true, image data is ABGR instead of ARGB.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers)
+int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers, bool is_abgr)
 {
 	assert(row_pointers != nullptr);
 	if (unlikely(!row_pointers)) {
@@ -1214,7 +1220,7 @@ int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers)
 		return -EINVAL;
 	}
 
-	int ret = d->write_IDAT(row_pointers);
+	int ret = d->write_IDAT(row_pointers, is_abgr);
 	if (ret == 0) {
 		// PNG image written successfully.
 		png_write_end(d->png_ptr, d->info_ptr);

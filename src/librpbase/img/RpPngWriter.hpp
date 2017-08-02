@@ -230,9 +230,10 @@ class RpPngWriter
 		 * NOTE: This version is *only* for raw images!
 		 *
 		 * @param row_pointers PNG row pointers. Array must have cache.height elements.
+		 * @param is_abgr If true, image data is ABGR instead of ARGB.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int write_IDAT(const uint8_t *const *row_pointers);
+		int write_IDAT(const uint8_t *const *row_pointers, bool is_abgr = false);
 
 		/**
 		 * Write the rp_image data to the PNG image.
