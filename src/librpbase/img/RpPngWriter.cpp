@@ -576,10 +576,13 @@ void RpPngWriterPrivate::close(void)
 	if (png_ptr || info_ptr) {
 		// If PNG write failed, png_write_end()
 		// may call longjmp().
+#ifdef PNG_SETJMP_SUPPORTED
 		if (setjmp(png_jmpbuf(png_ptr))) {
 			// PNG write failed.
 			// TODO: unlink()?
-		} else {
+		} else
+#endif /* PNG_SETJMP_SUPPORTED */
+		{
 			// Attempt to finish writing the PNG file.
 			png_write_end(png_ptr, info_ptr);
 		}
