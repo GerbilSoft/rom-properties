@@ -184,6 +184,11 @@ class RpPngWriter
 		int lastError(void) const;
 
 		/**
+		 * Close the PNG file.
+		 */
+		void close(void);
+
+		/**
 		 * Write the PNG IHDR.
 		 * This must be called before writing any other image data.
 		 * @return 0 on success; negative POSIX error code on error.

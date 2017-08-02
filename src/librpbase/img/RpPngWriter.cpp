@@ -191,6 +191,9 @@ class RpPngWriterPrivate
 		 */
 		int init_png_write_structs(void);
 
+		// Close the PNG image.
+		void close(void);
+
 	public:
 		/** I/O functions. **/
 
@@ -506,15 +509,7 @@ RpPngWriterPrivate::RpPngWriterPrivate(IRpFile *file, const IconAnimData *iconAn
 
 RpPngWriterPrivate::~RpPngWriterPrivate()
 {
-	if (png_ptr || info_ptr) {
-		// PNG structs are still present...
-		// TODO: Unlink the PNG file, since it
-		// wasn't written correctly.
-		png_destroy_write_struct(&png_ptr, &info_ptr);
-	}
-
-	// Close the IRpFile.
-	delete this->file;
+	this->close();
 
 	if (imageTag == IMGT_ICONANIMDATA) {
 		// Unreference APNG.
@@ -545,6 +540,24 @@ int RpPngWriterPrivate::init_png_write_structs(void)
 		png_io_IRpFile_write,
 		png_io_IRpFile_flush);
 	return 0;
+}
+
+/**
+ * Close the PNG image.
+ */
+void RpPngWriterPrivate::close(void)
+{
+	// Close libpng.
+	if (png_ptr || info_ptr) {
+		png_write_end(png_ptr, info_ptr);
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+		png_ptr = nullptr;
+		info_ptr = nullptr;
+	}
+
+	// Close the file.
+	delete this->file;
+	this->file = nullptr;
 }
 
 /**
@@ -1001,6 +1014,15 @@ int RpPngWriter::lastError(void) const
 }
 
 /**
+ * Close the PNG file.
+ */
+void RpPngWriter::close(void)
+{
+	RP_D(RpPngWriter);
+	d->close();
+}
+
+/**
  * Write the PNG IHDR.
  * This must be called before writing any other image data.
  * @return 0 on success; negative POSIX error code on error.
@@ -1220,20 +1242,7 @@ int RpPngWriter::write_IDAT(const uint8_t *const *row_pointers, bool is_abgr)
 		return -EINVAL;
 	}
 
-	int ret = d->write_IDAT(row_pointers, is_abgr);
-	if (ret == 0) {
-		// PNG image written successfully.
-		png_write_end(d->png_ptr, d->info_ptr);
-
-		// Free the PNG structs and close the file.
-		png_destroy_write_struct(&d->png_ptr, &d->info_ptr);
-		d->png_ptr = nullptr;
-		d->info_ptr = nullptr;
-		delete d->file;
-		d->file = nullptr;
-	}
-
-	return ret;
+	return d->write_IDAT(row_pointers, is_abgr);
 }
 
 /**
@@ -1272,19 +1281,6 @@ int RpPngWriter::write_IDAT(void)
 			ret = -EINVAL;
 			break;
 	}
-
-	if (ret == 0) {
-		// PNG image written successfully.
-		png_write_end(d->png_ptr, d->info_ptr);
-
-		// Free the PNG structs and close the file.
-		png_destroy_write_struct(&d->png_ptr, &d->info_ptr);
-		d->png_ptr = nullptr;
-		d->info_ptr = nullptr;
-		delete d->file;
-		d->file = nullptr;
-	}
-
 	return ret;
 }
 
