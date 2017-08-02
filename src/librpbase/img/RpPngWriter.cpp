@@ -1030,8 +1030,9 @@ int RpPngWriter::write_IHDR(void)
 #endif
 
 	// Initialize compression parameters.
+	// TODO: Customizable?
 	png_set_filter(d->png_ptr, 0, PNG_FILTER_NONE);
-	png_set_compression_level(d->png_ptr, 5);	// TODO: Customizable?
+	png_set_compression_level(d->png_ptr, PNG_Z_DEFAULT_COMPRESSION);
 
 	// Write the PNG header.
 	switch (d->cache.format) {
