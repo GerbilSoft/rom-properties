@@ -23,8 +23,8 @@
 #define __ROMPROPERTIES_LIBRPBASE_RP_IMAGE_HPP__
 
 #include "librpbase/config.librpbase.h"
-#include "librpbase/common.h"
-#include "librpbase/byteorder.h"
+#include "../common.h"
+#include "../byteorder.h"
 
 // C includes.
 #include <stdint.h>
