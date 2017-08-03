@@ -224,6 +224,24 @@ std::string latin1_to_utf8(const char *str, int len);
  */
 std::u16string latin1_to_utf16(const char *str, int len);
 
+/**
+ * Convert UTF-8 text to Latin-1 (ISO-8859-1).
+ * Trailing NULL bytes will be removed.
+ * @param str UTF-8 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return Latin-1 string.
+ */
+std::string utf8_to_latin1(const char *str, int len);
+
+/**
+ * Convert UTF-16 Latin-1 (ISO-8859-1).
+ * Trailing NULL bytes will be removed.
+ * @param wcs UTF-16 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return Latin-1 string.
+ */
+std::string utf16_to_latin1(const char16_t *wcs, int len);
+
 /** UTF-8 to UTF-16 and vice-versa **/
 
 /**
@@ -582,6 +600,37 @@ static inline rp_string latin1_to_rp_string(const char *str, int len)
 	return latin1_to_utf8(str, len);
 #elif defined(RP_UTF16)
 	return latin1_to_utf16(str, len);
+#endif
+}
+
+/**
+ * Convert rp_string to Latin-1 (ISO-8859-1) text.
+ * Trailing NULL bytes will be removed.
+ * @param str rp_string.
+ * @param len Length of str, in characters. (-1 for NULL-terminated string)
+ * @return Latin-1 string.
+ */
+static inline std::string rp_string_to_latin1(const rp_char *str, int len)
+{
+#if defined(RP_UTF8)
+	return utf8_to_latin1(str, len);
+#elif defined(RP_UTF16)
+	return utf16_to_latin1(str, len);
+#endif
+}
+
+/**
+ * Convert rp_string to Latin-1 (ISO-8859-1) text.
+ * Trailing NULL bytes will be removed.
+ * @param rps rp_string.
+ * @return Latin-1 string.
+ */
+static inline std::string rp_string_to_latin1(const rp_string &rps)
+{
+#if defined(RP_UTF8)
+	return utf8_to_latin1(rps.data(), (int)rps.size());
+#elif defined(RP_UTF16)
+	return utf16_to_latin1(rps.data(), (int)rps.size());
 #endif
 }
 

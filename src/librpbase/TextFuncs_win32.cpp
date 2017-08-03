@@ -263,6 +263,7 @@ u16string src_prefix##_to_utf16(const char *str, int len) \
 	return ret; \
 }
 
+
 /**
  * Convert from an 8-bit encoding to UTF-16.
  * Base version with no encoding fallbacks.
@@ -297,6 +298,34 @@ u16string src_prefix##_to_utf16(const char *str, int len) \
 	return ret; \
 }
 
+/**
+ * Convert from an 8-bit encoding to UTF-16.
+ * Base version with no encoding fallbacks.
+ * Trailing NULL bytes will be removed.
+ * @param dest_suffix	Function prefix. (source encoding)
+ * @param cp_dest	Destination code page.
+ */
+#define W32U_16TO8_1(dest_suffix, cp_dest0) \
+string utf16_to_##dest_suffix(const char16_t *wcs, int len) \
+{ \
+	len = check_NULL_terminator(wcs, len); \
+	\
+	/* Convert from UTF-16 to cp_dest0. */ \
+	string ret; \
+	int cbMbs; \
+	char *mbs = W32U_UTF16_to_mbs(wcs, len, cp_dest0, &cbMbs); \
+	if (mbs && cbMbs > 0) { \
+		/* Remove the NULL terminator if present. */ \
+		if (mbs[cbMbs-1] == 0) { \
+			cbMbs--; \
+		} \
+		ret.assign(mbs, cbMbs); \
+	} \
+	\
+	free(mbs); \
+	return ret; \
+}
+
 /** Code Page 1252 **/
 W32U_8TO8_1(cp1252, 1252, utf8, CP_UTF8)
 W32U_8TO16_1(cp1252, 1252)
@@ -309,43 +338,20 @@ W32U_8TO16_2(cp1252_sjis, 932, 1252)
 W32U_8TO8_1(latin1, 28591, utf8, CP_UTF8)
 W32U_8TO16_1(latin1, 28591)
 
+W32U_8TO8_1(utf8, CP_UTF8, latin1, 28591)
+W32U_16TO8_1(latin1, 28591)
+
 /** UTF-8 to UTF-16 and vice-versa **/
 W32U_8TO16_1(utf8, CP_UTF8)
+
+// Reuse W32U_16TO8_1 for utf16le.
+#define utf16_to_utf8 utf16le_to_utf8
+W32U_16TO8_1(utf8, CP_UTF8)
+#undef utf16_to_utf8
 
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 #error TextFuncs_win32.cpp only works on little-endian architectures.
 #endif
-
-/**
- * Convert UTF-16LE text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param wcs UTF-16LE text.
- * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-string utf16le_to_utf8(const char16_t *wcs, int len)
-{
-	// Check for a NULL terminator.
-	if (len < 0) {
-		len = (int)u16_strlen(wcs);
-	} else {
-		len = (int)u16_strnlen(wcs, len);
-	}
-
-	string ret;
-	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(wcs, len, CP_UTF8, &cbMbs);
-	if (mbs && cbMbs > 0) {
-		// Remove the NULL terminator if present.
-		if (mbs[cbMbs-1] == 0) {
-			cbMbs--;
-		}
-		ret.assign(mbs, cbMbs);
-	}
-
-	free(mbs);
-	return ret;
-}
 
 /**
  * Convert UTF-16BE text to UTF-8.

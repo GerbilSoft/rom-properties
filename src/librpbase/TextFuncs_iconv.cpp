@@ -284,6 +284,8 @@ ICONV_FUNCTION_3(cp1252_sjis, char, "CP932", "CP1252//IGNORE", "LATIN1//IGNORE",
 /** Latin-1 (ISO-8859-1) **/
 ICONV_FUNCTION_1(latin1, char, "LATIN1//IGNORE", utf8, char, "UTF-8")
 ICONV_FUNCTION_1(latin1, char, "LATIN1//IGNORE", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
+ICONV_FUNCTION_1(utf8, char, "UTF-8", latin1, char, "LATIN1//IGNORE")
+ICONV_FUNCTION_1(utf16, char16_t, RP_ICONV_UTF16_ENCODING, latin1, char, "LATIN1//IGNORE")
 
 /** UTF-8 to UTF-16 and vice-versa **/
 ICONV_FUNCTION_1(utf8, char, "UTF-8", utf16, char16_t, RP_ICONV_UTF16_ENCODING)
