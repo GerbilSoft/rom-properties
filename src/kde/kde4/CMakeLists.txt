@@ -29,8 +29,10 @@ SET(rom-properties-kde4_SRCS
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
 
-# Wrap UI files.
-QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+IF(COMMAND QT4_WRAP_UI)
+	# Wrap UI files.
+	QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
+ENDIF(COMMAND QT4_WRAP_UI)
 
 #####################
 # Build the plugin. #

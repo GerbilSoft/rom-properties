@@ -74,8 +74,10 @@ SET(rom-properties-kde5_SRCS
 	RomPropertiesDialogPluginFactoryKDE5.cpp
 	)
 
-# Wrap UI files.
-QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+IF(COMMAND QT5_WRAP_UI)
+	# Wrap UI files.
+	QT5_WRAP_UI(rom-properties-kde5_UIS_H ${rom-properties-kde5_UIS})
+ENDIF(COMMAND QT5_WRAP_UI)
 
 #####################
 # Build the plugin. #
