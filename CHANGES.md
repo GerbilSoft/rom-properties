@@ -41,6 +41,7 @@
   * Wii U: Make sure GameCube and Wii magic numbers aren't present in the
     disc header. This ensures that a GCN/Wii disc image with the game ID
     "WUP-" doesn't get detected as a Wii U disc image.
+  * Fixed CIAReader failing to compile in no-crytpto builds.
 
 ## v1.1 (released 2017/07/04)
 
