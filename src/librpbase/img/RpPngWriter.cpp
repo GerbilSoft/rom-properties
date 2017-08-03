@@ -1330,12 +1330,15 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 				pTxt->text = (png_charp)value.c_str();
 #ifdef PNG_iTXt_SUPPORTED
 				// iTXt is supported at compile time.
-				// FIXME: iTXt might not actually be supported prior to libpng-1.4.
+				// libpng-1.4 enabled this by default.
+				// Previous versions did not, since it changed the struct size.
 				pTxt->compression = (compress ? PNG_ITXT_COMPRESSION_zTXt : PNG_ITXT_COMPRESSION_NONE);
 				pTxt->lang = nullptr;
 				pTxt->lang_key = nullptr;
 #else /* !PNG_iTXt_SUPPORTED */
 				// iTXt is not supported at compile time.
+				// Fall back to storing UTF-8 as tEXt.
+				// TODO: Convert to Latin-1 instead?
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
 #endif /* PNG_iTXt_SUPPORTED */
 				break;
