@@ -7,6 +7,10 @@
     bits per channel that were present in the original image. In addition,
     RGB images that don't have an alpha channel are now saved as RGB PNGs
     instead of ARGB PNGs, which usually results in a smaller file.
+  * The system text conversion functions are now used for handling Latin-1
+    (ISO-8859-1) encoding. In particular, this means the C1 control characters
+    (0x80-0x9F) are no longer invalid and will be converted to the corresponding
+    Unicode code points.
 
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games
