@@ -717,7 +717,7 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 		// PNG read failed.
 		return -EIO;
 	}
-#endif
+#endif /* PNG_SETJMP_SUPPORTED */
 
 	// TODO: Byteswap image data on big-endian systems?
 	//png_set_swap(png_ptr);
@@ -833,7 +833,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 		png_free(png_ptr, row_pointers);
 		return -EIO;
 	}
-#endif
+#endif /* PNG_SETJMP_SUPPORTED */
 
 	// TODO: Byteswap image data on big-endian systems?
 	//ppng_set_swap(png_ptr);
@@ -1092,7 +1092,7 @@ int RpPngWriter::write_IHDR(void)
 		d->lastError = EIO;
 		return -d->lastError;
 	}
-#endif
+#endif /* PNG_SETJMP_SUPPORTED */
 
 	// Initialize compression parameters.
 	// TODO: Customizable?
@@ -1362,7 +1362,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 		d->lastError = EIO;
 		return -d->lastError;
 	}
-#endif
+#endif /* PNG_SETJMP_SUPPORTED */
 
 	png_set_text(d->png_ptr, d->info_ptr, text, kv.size());
 	delete[] text;
