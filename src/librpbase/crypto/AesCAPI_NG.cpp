@@ -29,6 +29,9 @@
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
 
+// Atomic reference counter.
+#include "../threads/Atomics.h"
+
 // References:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
 #include <bcrypt.h>
@@ -54,6 +57,15 @@ class AesCAPI_NG_Private
 		RP_DISABLE_COPY(AesCAPI_NG_Private)
 
 	public:
+		// Reference counter.
+		static int ref_cnt;
+
+		/**
+		 * Load bcrypt.dll and associated function pointers.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static int load_bcrypt(void);
+
 		/** bcrypt.dll handle and function pointers. **/
 		static HMODULE hBcryptDll;
 		static DECL_FUNCPTR(BCryptOpenAlgorithmProvider);
@@ -93,6 +105,9 @@ class AesCAPI_NG_Private
 
 /** AesCAPI_NG_Private **/
 
+// Reference counter.
+int AesCAPI_NG_Private::ref_cnt = 0;
+
 /** bcrypt.dll handle and function pointers. **/
 HMODULE AesCAPI_NG_Private::hBcryptDll = nullptr;
 DEF_FUNCPTR(BCryptOpenAlgorithmProvider);
@@ -116,10 +131,15 @@ AesCAPI_NG_Private::AesCAPI_NG_Private()
 	memset(key, 0, sizeof(key));
 	memset(iv, 0, sizeof(iv));
 
-	if (!hBcryptDll) {
+	// Increment the reference counter.
+	assert(ref_cnt >= 0);
+	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
+		// First AesCAPI_NG reference.
 		// Attempt to load bcrypt.dll.
-		if (AesCAPI_NG::isUsable()) {
-			// Failed to load bcrypt.dll.
+		if (load_bcrypt() != 0 || !hBcryptDll) {
+			// Error loading bcrypt.dll.
+			// NOTE: Not resetting the reference count here.
+			// It will be decremented in the destructor.
 			return;
 		}
 	}
@@ -155,40 +175,33 @@ AesCAPI_NG_Private::~AesCAPI_NG_Private()
 		}
 	}
 
-	free(pbKeyObject);
-}
-
-/** AesCAPI_NG **/
-
-AesCAPI_NG::AesCAPI_NG()
-	: d_ptr(new AesCAPI_NG_Private())
-{ }
-
-AesCAPI_NG::~AesCAPI_NG()
-{
-	delete d_ptr;
+	assert(ref_cnt > 0);
+	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
+		// Unload bcrypt.dll.
+		// TODO: Clear the function pointers?
+		if (hBcryptDll) {
+			FreeLibrary(hBcryptDll);
+			hBcryptDll = nullptr;
+		}
+	}
 }
 
 /**
- * Is CryptoAPI NG usable on this system?
- *
- * If CryptoAPI NG is usable, this function will load
- * bcrypt.dll and all required function pointers.
- *
- * @return True if this system supports CryptoAPI NG.
+ * Load bcrypt.dll and associated function pointers.
+ * @return 0 on success; non-zero on error.
  */
-bool AesCAPI_NG::isUsable(void)
+int AesCAPI_NG_Private::load_bcrypt(void)
 {
-	if (AesCAPI_NG_Private::hBcryptDll) {
+	if (hBcryptDll) {
 		// bcrypt.dll has already been loaded.
-		return true;
+		return 0;
 	}
 
 	// Attempt to load bcrypt.dll.
-	HMODULE hBcryptDll = LoadLibrary(L"bcrypt.dll");
+	hBcryptDll = LoadLibrary(L"bcrypt.dll");
 	if (!hBcryptDll) {
 		// bcrypt.dll not found.
-		return false;
+		return -ENOENT;
 	}
 
 	// Load the function pointers.
@@ -222,12 +235,49 @@ bool AesCAPI_NG::isUsable(void)
 		AesCAPI_NG_Private::pBCryptEncrypt = nullptr;
 
 		FreeLibrary(hBcryptDll);
-		return false;
+		return -ENOENT;
 	}
 
 	// bcrypt.dll has been loaded.
-	AesCAPI_NG_Private::hBcryptDll = hBcryptDll;
-	return true;
+	return 0;
+}
+
+/** AesCAPI_NG **/
+
+AesCAPI_NG::AesCAPI_NG()
+	: d_ptr(new AesCAPI_NG_Private())
+{ }
+
+AesCAPI_NG::~AesCAPI_NG()
+{
+	delete d_ptr;
+}
+
+/**
+ * Is CryptoAPI NG usable on this system?
+ *
+ * If CryptoAPI NG is usable, this function will load
+ * bcrypt.dll and all required function pointers.
+ *
+ * @return True if this system supports CryptoAPI NG.
+ */
+bool AesCAPI_NG::isUsable(void)
+{
+	if (AesCAPI_NG_Private::hBcryptDll) {
+		// bcrypt.dll is loaded.
+		return true;
+	}
+
+	// NOTE: We can't call load_bcrypt() due to reference counting,
+	// so assume it works as long as bcrypt.dll is present and
+	// BCryptOpenAlgorithmProvider exists.
+	bool bRet = false;
+	HMODULE hBcryptDll = LoadLibrary(L"bcrypt.dll");
+	if (hBcryptDll) {
+		bRet = (GetProcAddress(hBcryptDll, "BCryptOpenAlgorithmProvider") != nullptr);
+		FreeLibrary(hBcryptDll);
+	}
+	return bRet;
 }
 
 /**
