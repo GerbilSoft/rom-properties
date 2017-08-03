@@ -766,7 +766,6 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 				srlFile = new PartitionFile(srlReader, 0, length);
 				if (srlFile->isOpen()) {
 					// Create the NintendoDS object.
-					// TODO: Close it when not needed. (override close()?)
 					srlData = new NintendoDS(srlFile, true);
 				}
 			}
