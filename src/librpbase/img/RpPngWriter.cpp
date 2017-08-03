@@ -22,11 +22,12 @@
 #include "librpbase/config.librpbase.h"
 #include "RpPngWriter.hpp"
 
-#include "../common.h"
-#include "../file/RpFile.hpp"
+#include "common.h"
+#include "TextFuncs.hpp"
+#include "file/RpFile.hpp"
 
 // APNG
-#include "../img/IconAnimData.hpp"
+#include "img/IconAnimData.hpp"
 #include "APNG_dlopen.h"
 
 // libpng
@@ -1194,17 +1195,29 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
 }
 
 /**
- * Check if a UTF-8 string contains any non-Latin-1 characters.
+ * Check if a UTF-8 string contains any characters not allowed
+ * by libpng's Latin-1 tEXt chunk.
  *
- * NOTE: If this function returns 1, the string will need to be
- * converted from UTF-8 to Latin-1.
+ * libpng doesn't allow the following characters:
+ * - C0 control characters (0x00-0x1F) other than '\n'
+ * - 0x7F (DEL)
+ * - C1 control characters (0x80-0x9F)
  *
- * TODO: Move to TextFuncs.
+ * If any forbidden Latin-1 characters, or characters outside
+ * of Latin-1, are detected, the function will return 2, which
+ * indicates that the string must be stored as iTXt.
+ *
+ * If the string is ASCII only, the function will return 0, which
+ * indicates that the string can be stored as tEXt with no changes.
+ *
+ * If the string contains allowed Latin-1 code points between
+ * 0xA0-0xFF, the function will return 1, which indicates that the
+ * string must be converted from UTF-8 to Latin-1.
  *
  * @param str UTF-8 string.
  * @return 0 if it's ASCII; 1 if it's Latin-1; 2 if it's not Latin-1.
  */
-static inline int u8strIsLatin1(const char *str)
+static inline int u8strIsPngLatin1(const char *str)
 {
 	int ret = 0;
 	for (; *str != 0; str++) {
@@ -1240,61 +1253,6 @@ static inline int u8strIsLatin1(const char *str)
 	}
 
 	return ret;
-}
-
-/**
- * Convert UTF-8 to Latin-1.
- * TODO: Move to TextFuncs.
- *
- * @param str UTF-8 string.
- * @return Latin-1 string, with '?' for invalid code points.
- */
-static inline string utf8_to_latin1(const string &str)
-{
-	string l1str;
-	l1str.reserve(str.size());
-
-	const char *p = str.c_str();
-	for (; *p != 0; p++) {
-		if (!(*p & 0x80)) {
-			l1str += *p;
-		} else if ((*p & 0xE0) == 0xC0) {
-			// 2-byte sequence.
-			if (p[1] == 0) {
-				// Second character is NULL.
-				l1str += '?';
-				break;
-			} else if ((p[1] & 0xC0) != 0x80) {
-				// Invalid second character.
-				l1str += '?';
-				continue;
-			}
-
-			unsigned int chr = (((unsigned int)p[0] & 0x1F) << 6) |
-					    ((unsigned int)p[1] & 0x3F);
-			if ((chr > 0xFF) || (chr > 0x7E && chr < 0xA0)) {
-				// Not a valid Latin-1 character.
-				l1str += '?';
-			} else {
-				// Valid Latin-1 character.
-				printf("chr: %02X\n", chr);
-				l1str += (char)chr;
-			}
-
-			// Skip the second character in the sequence.
-			p++;
-		} else if ((*p & 0xF0) == 0xE0) {
-			// 3-byte sequence.
-			l1str += '?';
-			p += 2;
-		} else if ((*p & 0xF8) == 0xF0) {
-			// 4-byte sequence.
-			l1str += '?';
-			p += 3;
-		}
-	}
-
-	return l1str;
 }
 
 /**
@@ -1348,7 +1306,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 		const string &value = kv[i].second;
 		const bool compress = (value.size() >= 40);	// same as Qt
 
-		int status = u8strIsLatin1(value.c_str());
+		const int status = u8strIsPngLatin1(value.c_str());
 		switch (status) {
 			case 0:
 				// ASCII. Use it as-is.
@@ -1358,12 +1316,12 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 				break;
 			case 1: {
 				// Latin-1. Convert it.
-				// TODO: TextFuncs function to do this.
-				char *l1str = strdup(utf8_to_latin1(value).c_str());
-				vU8toL1.push_back(l1str);
+				// TODO: utf8_to_latin1() wrapper that takes std::string?
+				char *const latin1_str = strdup(utf8_to_latin1(value.c_str(), (int)value.size()).c_str());
+				vU8toL1.push_back(latin1_str);
 				pTxt->compression = (compress ? PNG_TEXT_COMPRESSION_zTXt : PNG_TEXT_COMPRESSION_NONE);
 				pTxt->key = (png_charp)kv[i].first;
-				pTxt->text = (png_charp)l1str;
+				pTxt->text = (png_charp)latin1_str;
 				break;
 			}
 			case 2:
