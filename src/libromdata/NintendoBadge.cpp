@@ -161,12 +161,12 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 			}
 
 			if (idx == 1) {
-				// 32x32 badges. (0xA00+0x200)
+				// 64x64 badges. (0x2000+0x800)
 				badge_rgb_sz = badge64_rgb_sz;
 				badge_a4_sz = badge64_a4_sz;
 				badge_dims = BADGE_SIZE_LARGE_W;
 			} else {
-				// 64x64 badges. (0x2000+0x800)
+				// 32x32 badges. (0xA00+0x200)
 				badge_rgb_sz = badge32_rgb_sz;
 				badge_a4_sz = badge32_a4_sz;
 				badge_dims = BADGE_SIZE_SMALL_W;
