@@ -3,10 +3,13 @@
 ## v1.2 (released 2017/??/??)
 
 * New features:
-  * rpcli: PNG images now have an `sBIT` chunk, which indicates the number of
-    bits per channel that were present in the original image. In addition,
-    RGB images that don't have an alpha channel are now saved as RGB PNGs
-    instead of ARGB PNGs, which usually results in a smaller file.
+  * rpcli, rp-stub, rp-thumbnailer-dbus: PNG images now have an `sBIT` chunk,
+    which indicates the number of bits per channel that were present in the
+    original image. In addition, RGB images that don't have an alpha channel
+    are now saved as RGB PNGs instead of ARGB PNGs, which usually results in
+    a smaller file.
+  * The PNG compression level is now set to the default value instead of 5.
+    This corresponds to 6 with libpng-1.6.31 and zlib-1.2.11.
   * The system text conversion functions are now used for handling Latin-1
     (ISO-8859-1) encoding instead of our own conversion function. In particular,
     this means the C1 control characters (0x80-0x9F) are no longer invalid and
