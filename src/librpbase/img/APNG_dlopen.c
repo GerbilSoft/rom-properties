@@ -72,7 +72,7 @@ APNG_png_write_frame_tail_t APNG_png_write_frame_tail = NULL;
 /**
  * APNG reference couner.
  */
-static int ref_cnt = 0;
+static volatile int ref_cnt = 0;
 
 /**
  * Check if the PNG library supports APNG.

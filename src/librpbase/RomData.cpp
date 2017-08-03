@@ -48,7 +48,7 @@ namespace LibRpBase {
  */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
 	: q_ptr(q)
-	, ref_count(1)
+	, ref_cnt(1)
 	, isValid(false)
 	, file(nullptr)
 	, fields(new RomFields())
@@ -341,19 +341,19 @@ RomData::~RomData()
 LibRpBase::RomData *RomData::ref(void)
 {
 	RP_D(RomData);
-	ATOMIC_INC_FETCH(&d->ref_count);
+	ATOMIC_INC_FETCH(&d->ref_cnt);
 	return this;
 }
 
 /**
  * Unreference this RomData* object.
- * If ref_count reaches 0, the RomData* object is deleted.
+ * If ref_cnt reaches 0, the RomData* object is deleted.
  */
 void RomData::unref(void)
 {
 	RP_D(RomData);
-	assert(d->ref_count > 0);
-	if (ATOMIC_DEC_FETCH(&d->ref_count) <= 0) {
+	assert(d->ref_cnt > 0);
+	if (ATOMIC_DEC_FETCH(&d->ref_cnt) <= 0) {
 		// All references removed.
 		delete this;
 	}

@@ -58,7 +58,7 @@ class AesCAPI_NG_Private
 
 	public:
 		// Reference counter.
-		static int ref_cnt;
+		static volatile int ref_cnt;
 
 		/**
 		 * Load bcrypt.dll and associated function pointers.
@@ -106,7 +106,7 @@ class AesCAPI_NG_Private
 /** AesCAPI_NG_Private **/
 
 // Reference counter.
-int AesCAPI_NG_Private::ref_cnt = 0;
+volatile int AesCAPI_NG_Private::ref_cnt = 0;
 
 /** bcrypt.dll handle and function pointers. **/
 HMODULE AesCAPI_NG_Private::hBcryptDll = nullptr;

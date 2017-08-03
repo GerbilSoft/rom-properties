@@ -98,7 +98,7 @@ class RomData
 
 		/**
 		 * Unreference this RomData* object.
-		 * If ref_count reaches 0, the RomData* object is deleted.
+		 * If ref_cnt reaches 0, the RomData* object is deleted.
 		 */
 		void unref(void);
 
