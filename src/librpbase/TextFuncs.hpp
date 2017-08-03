@@ -204,6 +204,26 @@ std::string cp1252_sjis_to_utf8(const char *str, int len);
  */
 std::u16string cp1252_sjis_to_utf16(const char *str, int len);
 
+/** Latin-1 (ISO-8859-1) **/
+
+/**
+ * Convert Latin-1 (ISO-8859-1) text to UTF-8.
+ * Trailing NULL bytes will be removed.
+ * @param str Latin-1 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string latin1_to_utf8(const char *str, int len);
+
+/**
+ * Convert Latin-1 (ISO-8859-1) text to UTF-16.
+ * Trailing NULL bytes will be removed.
+ * @param str Latin-1 text.
+ * @param len Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-16 string.
+ */
+std::u16string latin1_to_utf16(const char *str, int len);
+
 /** UTF-8 to UTF-16 and vice-versa **/
 
 /**
@@ -301,28 +321,6 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 	return std::u16string(wcs, len);
 #endif
 }
-
-/** Latin-1 (ISO-8859-1) **/
-
-/**
- * Convert Latin-1 (ISO-8859-1) text to UTF-8.
- * Trailing NULL bytes will be removed.
- * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
- * @param str Latin-1 text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-std::string latin1_to_utf8(const char *str, int len);
-
-/**
- * Convert Latin-1 (ISO-8859-1) text to UTF-16.
- * Trailing NULL bytes will be removed.
- * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
- * @param str Latin-1 text.
- * @param len Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-16 string.
- */
-std::u16string latin1_to_utf16(const char *str, int len);
 
 /** rp_string wrappers. **/
 
@@ -574,7 +572,6 @@ static inline std::u16string rp_string_to_utf16(const rp_string &rps)
 /**
  * Convert Latin-1 (ISO-8859-1) text to rp_string.
  * Trailing NULL bytes will be removed.
- * NOTE: 0x80-0x9F (cp1252) is converted to '?'.
  * @param str Latin-1 text.
  * @param len Length of str, in bytes. (-1 for NULL-terminated string)
  * @return rp_string.

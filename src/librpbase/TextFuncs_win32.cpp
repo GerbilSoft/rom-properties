@@ -305,6 +305,10 @@ W32U_8TO16_1(cp1252, 1252)
 W32U_8TO8_2(cp1252_sjis, 932, 1252, utf8, CP_UTF8)
 W32U_8TO16_2(cp1252_sjis, 932, 1252)
 
+/** Latin-1 (ISO-8859-1) */
+W32U_8TO8_1(latin1, 28591, utf8, CP_UTF8)
+W32U_8TO16_1(latin1, 28591)
+
 /** UTF-8 to UTF-16 and vice-versa **/
 W32U_8TO16_1(utf8, CP_UTF8)
 
