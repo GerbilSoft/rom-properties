@@ -75,8 +75,9 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
-						tileBuf[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(*img_buf));
+					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
+						tileBuf[i+0] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -96,8 +97,9 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
-						tileBuf[i] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(*img_buf));
+					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
+						tileBuf[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -115,8 +117,9 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 				for (unsigned int x = 0; x < tilesX; x++) {
 					// Convert each tile to ARGB32 manually.
 					// TODO: Optimize using pointers instead of indexes?
-					for (unsigned int i = 0; i < 4*4; i++, img_buf++) {
-						tileBuf[i] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(*img_buf));
+					for (unsigned int i = 0; i < 4*4; i += 2, img_buf += 2) {
+						tileBuf[i+0] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(img_buf[0]));
+						tileBuf[i+1] = ImageDecoderPrivate::IA8_to_ARGB32(be16_to_cpu(img_buf[1]));
 					}
 
 					// Blit the tile to the main image buffer.
@@ -191,12 +194,17 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 	}
 
 	int tr_idx = -1;
-	for (unsigned int i = 0; i < 256; i++) {
+	for (unsigned int i = 0; i < 256; i += 2) {
 		// GCN color format is RGB5A3.
 		palette[i] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i]));
 		if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 			// Found the transparent color.
 			tr_idx = (int)i;
+		}
+		palette[i+1] = ImageDecoderPrivate::RGB5A3_to_ARGB32(be16_to_cpu(pal_buf[i+1]));
+		if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+			// Found the transparent color.
+			tr_idx = (int)i+1;
 		}
 	}
 	img->set_tr_idx(tr_idx);

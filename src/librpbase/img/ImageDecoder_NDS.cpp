@@ -81,9 +81,10 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 
 	palette[0] = 0; // Color 0 is always transparent.
 	img->set_tr_idx(0);
-	for (unsigned int i = 1; i < 16; i++) {
+	for (unsigned int i = 1; i < 16; i += 2) {
 		// NDS color format is BGR555.
-		palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i]));
+		palette[i+0] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+		palette[i+1] = ImageDecoderPrivate::BGR555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 	}
 
 	// NOTE: rp_image initializes the palette to 0,

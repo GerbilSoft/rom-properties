@@ -201,9 +201,13 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 
 	// Determine the number of palette entries.
 	const int pal_entry_count = (smallVQ ? calcDreamcastSmallVQPaletteEntries(width) : 1024);
-	assert((pal_entry_count * 2) >= pal_siz);
-	if ((pal_entry_count * 2) < pal_siz) {
-		// Palette isn't large enough.
+	assert(pal_entry_count % 2 == 0);
+	assert(pal_entry_count * 2 >= pal_siz);
+	if ((pal_entry_count % 2 != 0) ||
+	    (pal_entry_count * 2 < pal_siz))
+	{
+		// Palette isn't large enough,
+		// or palette isn't an even multiple.
 		return nullptr;
 	}
 
@@ -222,8 +226,9 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	unique_ptr<uint32_t[]> palette(new uint32_t[pal_entry_count]);
 	switch (px_format) {
 		case PXF_ARGB1555: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
-				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i]);
+			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+				palette[i+0] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT data.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
@@ -232,8 +237,9 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		}
 
 		case PXF_RGB565: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
-				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i]);
+			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT data.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -242,8 +248,9 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		}
 
 		case PXF_ARGB4444: {
-			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i++) {
-				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i]);
+			for (unsigned int i = 0; i < (unsigned int)pal_entry_count; i += 2) {
+				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+0]);
+				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+1]);
 			}
 			// Set the sBIT data.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};

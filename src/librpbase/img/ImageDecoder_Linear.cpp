@@ -268,11 +268,16 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 	int tr_idx = -1;
 	switch (px_format) {
 		case PXF_ARGB1555: {
-			for (unsigned int i = 0; i < 256; i++) {
+			for (unsigned int i = 0; i < 256; i += 2) {
 				palette[i] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = i;
+					tr_idx = (int)i;
+				}
+				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = (int)i+1;
 				}
 			}
 			// Set the sBIT data.
@@ -282,8 +287,9 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 		}
 
 		case PXF_RGB565: {
-			for (unsigned int i = 0; i < 256; i++) {
-				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
+			for (unsigned int i = 0; i < 256; i += 2) {
+				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT data.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -296,7 +302,12 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 				palette[i] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i]));
 				if (tr_idx < 0 && ((palette[i] >> 24) == 0)) {
 					// Found the transparent color.
-					tr_idx = i;
+					tr_idx = (int)i;
+				}
+				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
+				if (tr_idx < 0 && ((palette[i+1] >> 24) == 0)) {
+					// Found the transparent color.
+					tr_idx = (int)i+1;
 				}
 			}
 			// Set the sBIT data.
