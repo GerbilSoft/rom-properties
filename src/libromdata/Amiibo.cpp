@@ -184,7 +184,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		case NFP_FILE_NO_PW:	// Missing password bytes.
 		case NFP_FILE_STANDARD:	// Standard dump.
 		case NFP_FILE_EXTENDED:	// Extended dump.
-			if (info->header.size < info->szFile) {
+			if (info->header.size < NFP_FILE_NO_PW) {
 				// Not enough data is available.
 				return -1;
 			}
