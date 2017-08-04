@@ -89,7 +89,7 @@ typedef enum {
 	GCN_PAL_LANG_SPANISH	= 3,
 	GCN_PAL_LANG_ITALIAN	= 4,
 	GCN_PAL_LANG_DUTCH	= 5,
-} GCN_PAL_Language;
+} GCN_PAL_Language_ID;
 
 /**
  * WIBN (Wii Banner)
@@ -185,7 +185,7 @@ typedef enum {
 	WII_LANG_DUTCH		= 6,
 	// 7 and 8 are unknown. (Chinese?)
 	WII_LANG_KOREAN		= 9,
-} Wii_Language;
+} Wii_Language_ID;
 
 #pragma pack()
 

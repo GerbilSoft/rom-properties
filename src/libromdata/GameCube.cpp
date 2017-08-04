@@ -22,10 +22,11 @@
 #include "GameCube.hpp"
 #include "librpbase/RomData_p.hpp"
 
-#include "data/NintendoPublishers.hpp"
-#include "data/WiiSystemMenuVersion.hpp"
 #include "gcn_structs.h"
 #include "gcn_banner.h"
+#include "data/NintendoPublishers.hpp"
+#include "data/WiiSystemMenuVersion.hpp"
+#include "data/NintendoLanguage.hpp"
 
 // librpbase
 #include "librpbase/common.h"
@@ -814,33 +815,9 @@ const banner_comment_t *GameCubePrivate::gcn_getBannerComment(void) const
 	// BNR2 has language-specific fields.
 	const banner_comment_t *comment = nullptr;
 	if (gcn_opening_bnr->magic == BANNER_MAGIC_BNR2) {
-		// Determine the system language.
-		switch (SystemRegion::getLanguageCode()) {
-			case 'en':
-			default:
-				// English. (default)
-				// Used if the host system language
-				// doesn't match any of the languages
-				// supported by PAL GameCubes.
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ENGLISH];
-				break;
-
-			case 'de':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_GERMAN];
-				break;
-			case 'fr':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_FRENCH];
-				break;
-			case 'es':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_SPANISH];
-				break;
-			case 'it':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_ITALIAN];
-				break;
-			case 'nl':
-				comment = &gcn_opening_bnr->comments[GCN_PAL_LANG_DUTCH];
-				break;
-		}
+		// Get the system language.
+		const int lang = NintendoLanguage::getGcnPalLanguage();
+		comment = &gcn_opening_bnr->comments[lang];
 
 		// If all of the language-specific fields are empty,
 		// revert to English.
@@ -883,54 +860,24 @@ rp_string GameCubePrivate::wii_getBannerName(void) const
 		}
 	}
 
-	// Determine the system language.
-	int langIdx;
-	switch (SystemRegion::getLanguageCode()) {
-		case 'en':
-		default:
-			// English. (default)
-			// Used if the host system language doesn't match
-			// any of the languages supported by Wii.
-			langIdx = WII_LANG_ENGLISH;
-			break;
-
-		case 'ja':
-			langIdx = WII_LANG_JAPANESE;
-			break;
-		case 'de':
-			langIdx = WII_LANG_GERMAN;
-			break;
-		case 'fr':
-			langIdx = WII_LANG_FRENCH;
-			break;
-		case 'es':
-			langIdx = WII_LANG_SPANISH;
-			break;
-		case 'it':
-			langIdx = WII_LANG_ITALIAN;
-			break;
-		case 'nl':
-			langIdx = WII_LANG_DUTCH;
-			break;
-		case 'ko':
-			langIdx = WII_LANG_KOREAN;
-			break;
-	}
+	// Get the system language.
+	// TODO: Verify against the region code somehow?
+	int lang = NintendoLanguage::getWiiLanguage();
 
 	// If the language-specific name is empty,
 	// revert to English.
-	if (wii_opening_bnr->names[langIdx][0][0] == 0) {
+	if (wii_opening_bnr->names[lang][0][0] == 0) {
 		// Revert to English.
-		langIdx = WII_LANG_ENGLISH;
+		lang = WII_LANG_ENGLISH;
 	}
 
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[langIdx][0], 21);
-	if (wii_opening_bnr->names[langIdx][1][0] != 0) {
+	rp_string info = utf16be_to_rp_string(wii_opening_bnr->names[lang][0], 21);
+	if (wii_opening_bnr->names[lang][1][0] != 0) {
 		info += _RP_CHR('\n');
-		info += utf16be_to_rp_string(wii_opening_bnr->names[langIdx][1], 21);
+		info += utf16be_to_rp_string(wii_opening_bnr->names[lang][1], 21);
 	}
 	return info;
 }

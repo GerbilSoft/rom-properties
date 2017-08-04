@@ -39,6 +39,18 @@ class NintendoLanguage
 
 	public:
 		/**
+		 * Determine the system language for PAL GameCube.
+		 * @return GCN_PAL_Language_ID. (If unknown, defaults to GCN_PAL_LANG_ENGLISH.)
+		 */
+		static int getGcnPalLanguage(void);
+
+		/**
+		 * Determine the system language for Wii.
+		 * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
+		 */
+		static int getWiiLanguage(void);
+
+		/**
 		 * Determine the system language for Nintendo DS.
 		 * @param version NDS_IconTitleData version.
 		 * @return NDS_Language_ID. If unknown, defaults to NDS_LANG_ENGLISH.

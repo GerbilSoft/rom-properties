@@ -26,10 +26,76 @@ using LibRpBase::SystemRegion;
 // C includes.
 #include <cassert>
 
+#include "gcn_banner.h"
 #include "nds_structs.h"
 #include "n3ds_structs.h"
 
 namespace LibRomData {
+
+/**
+ * Determine the system language for PAL GameCube.
+ * @return GCN_PAL_Language_ID. (If unknown, defaults to GCN_PAL_LANG_ENGLISH.)
+ */
+int NintendoLanguage::getGcnPalLanguage(void)
+{
+	switch (SystemRegion::getLanguageCode()) {
+		case 'en':
+		default:
+			// English. (default)
+			// Used if the host system language
+			// doesn't match any of the languages
+			// supported by PAL GameCubes.
+			return GCN_PAL_LANG_ENGLISH;
+		case 'de':
+			return GCN_PAL_LANG_GERMAN;
+		case 'fr':
+			return GCN_PAL_LANG_FRENCH;
+		case 'es':
+			return GCN_PAL_LANG_SPANISH;
+		case 'it':
+			return GCN_PAL_LANG_ITALIAN;
+		case 'nl':
+			return GCN_PAL_LANG_DUTCH;
+	}
+
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return GCN_PAL_LANG_ENGLISH;
+}
+
+/**
+ * Determine the system language for Wii.
+ * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
+ */
+int NintendoLanguage::getWiiLanguage(void)
+{
+	switch (SystemRegion::getLanguageCode()) {
+		case 'en':
+		default:
+			// English. (default)
+			// Used if the host system language doesn't match
+			// any of the languages supported by Wii.
+			return WII_LANG_ENGLISH;
+		case 'ja':
+			return WII_LANG_JAPANESE;
+		case 'de':
+			return WII_LANG_GERMAN;
+		case 'fr':
+			return WII_LANG_FRENCH;
+		case 'es':
+			return WII_LANG_SPANISH;
+		case 'it':
+			return WII_LANG_ITALIAN;
+		case 'nl':
+			return WII_LANG_DUTCH;
+		case 'ko':
+			return WII_LANG_KOREAN;
+	}
+
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return WII_LANG_ENGLISH;
+}
 
 /**
  * Determine the system language for Nintendo DS.
