@@ -27,10 +27,6 @@
 // C includes.
 #include <stdint.h>
 
-// System structs.
-#include "nds_structs.h"
-#include "n3ds_structs.h"
-
 namespace LibRomData {
 
 class NintendoLanguage
@@ -45,16 +41,16 @@ class NintendoLanguage
 		/**
 		 * Determine the system language for Nintendo DS.
 		 * @param version NDS_IconTitleData version.
-		 * @return NDS_Language. If unknown, defaults to NDS_LANG_ENGLISH.
+		 * @return NDS_Language_ID. If unknown, defaults to NDS_LANG_ENGLISH.
 		 */
-		static NDS_Language_ID getNDSLanguage(uint16_t version);
+		static int getNDSLanguage(uint16_t version);
 
 		/**
 		 * Determine the system language for Nintendo 3DS.
 		 * TODO: Verify against the game's region code?
-		 * @return N3DS_Language. If unknown, defaults to N3DS_LANG_ENGLISH.
+		 * @return N3DS_Language_ID. If unknown, defaults to N3DS_LANG_ENGLISH.
 		 */
-		static N3DS_Language_ID getN3DSLanguage(void);
+		static int getN3DSLanguage(void);
 };
 
 }

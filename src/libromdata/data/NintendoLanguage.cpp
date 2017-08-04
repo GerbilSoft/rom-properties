@@ -23,6 +23,12 @@
 #include "librpbase/SystemRegion.hpp"
 using LibRpBase::SystemRegion;
 
+// C includes.
+#include <cassert>
+
+#include "nds_structs.h"
+#include "n3ds_structs.h"
+
 namespace LibRomData {
 
 /**
@@ -30,52 +36,42 @@ namespace LibRomData {
  * @param version NDS_IconTitleData version.
  * @return NDS_Language. If unknown, defaults to NDS_LANG_ENGLISH.
  */
-NDS_Language_ID NintendoLanguage::getNDSLanguage(uint16_t version)
+int NintendoLanguage::getNDSLanguage(uint16_t version)
 {
-	NDS_Language_ID lang;
-
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
 		default:
-			lang = NDS_LANG_ENGLISH;
-			break;
+			return NDS_LANG_ENGLISH;
 		case 'ja':
-			lang = NDS_LANG_JAPANESE;
-			break;
+			return NDS_LANG_JAPANESE;
 		case 'fr':
-			lang = NDS_LANG_FRENCH;
-			break;
+			return NDS_LANG_FRENCH;
 		case 'de':
-			lang = NDS_LANG_GERMAN;
-			break;
+			return NDS_LANG_GERMAN;
 		case 'it':
-			lang = NDS_LANG_ITALIAN;
-			break;
+			return NDS_LANG_ITALIAN;
 		case 'es':
-			lang = NDS_LANG_SPANISH;
-			break;
+			return NDS_LANG_SPANISH;
 		case 'zh':
 			if (version >= NDS_ICON_VERSION_ZH) {
 				// NOTE: No distinction between
 				// Simplified and Traditional Chinese
 				// on Nintendo DS...
-				lang = NDS_LANG_CHINESE;
-			} else {
-				// No Chinese title here.
-				lang = NDS_LANG_ENGLISH;
+				return NDS_LANG_CHINESE;
 			}
-			break;
+			// No Chinese title here.
+			return NDS_LANG_ENGLISH;
 		case 'ko':
 			if (version >= NDS_ICON_VERSION_ZH_KO) {
-				lang = NDS_LANG_KOREAN;
-			} else {
-				// No Korean title here.
-				lang = NDS_LANG_ENGLISH;
+				return NDS_LANG_KOREAN;
 			}
-			break;
+			// No Korean title here.
+			return NDS_LANG_ENGLISH;
 	}
 
-	return lang;
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return NDS_LANG_ENGLISH;
 }
 
 /**
@@ -83,50 +79,39 @@ NDS_Language_ID NintendoLanguage::getNDSLanguage(uint16_t version)
  * TODO: Verify against the game's region code?
  * @return N3DS_Language. If unknown, defaults to N3DS_LANG_ENGLISH.
  */
-N3DS_Language_ID NintendoLanguage::getN3DSLanguage(void)
+int NintendoLanguage::getN3DSLanguage(void)
 {
-	N3DS_Language_ID lang;
-
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
 		default:
-			lang = N3DS_LANG_ENGLISH;
-			break;
+			return N3DS_LANG_ENGLISH;
 		case 'ja':
-			lang = N3DS_LANG_JAPANESE;
-			break;
+			return N3DS_LANG_JAPANESE;
 		case 'fr':
-			lang = N3DS_LANG_FRENCH;
-			break;
+			return N3DS_LANG_FRENCH;
 		case 'de':
-			lang = N3DS_LANG_GERMAN;
-			break;
+			return N3DS_LANG_GERMAN;
 		case 'it':
-			lang = N3DS_LANG_ITALIAN;
-			break;
+			return N3DS_LANG_ITALIAN;
 		case 'es':
-			lang = N3DS_LANG_SPANISH;
-			break;
+			return N3DS_LANG_SPANISH;
 		case 'zh':
 			// TODO: Simplified vs. Traditional?
 			// May need to check the country code.
-			lang = N3DS_LANG_CHINESE_SIMP;
-			break;
+			return N3DS_LANG_CHINESE_SIMP;
 		case 'ko':
-			lang = N3DS_LANG_KOREAN;
-			break;
+			return N3DS_LANG_KOREAN;
 		case 'nl':
-			lang = N3DS_LANG_DUTCH;
-			break;
+			return N3DS_LANG_DUTCH;
 		case 'pt':
-			lang = N3DS_LANG_PORTUGUESE;
-			break;
+			return N3DS_LANG_PORTUGUESE;
 		case 'ru':
-			lang = N3DS_LANG_RUSSIAN;
-			break;
+			return N3DS_LANG_RUSSIAN;
 	}
 
-	return lang;
+	// Should not get here...
+	assert(!"Invalid code path.");
+	return N3DS_LANG_ENGLISH;
 }
 
 }
