@@ -616,22 +616,30 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					// Convert from CMYK to 32-bit ARGB.
 					// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
 					// TODO: Optimized version?
-					// TODO: Unroll the loop?
-					uint8_t *dest = static_cast<uint8_t*>(vdest);
+					argb32_t *dest = static_cast<argb32_t*>(vdest);
 					const uint8_t *src = buffer[0];
-					for (unsigned int i = cinfo.output_width; i > 0; i--, dest += 4, src += 4) {
+					unsigned int x;
+					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 8) {
 						unsigned int k = src[3];
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-						dest[3] = 255;			// Alpha
-						dest[2] = k * src[0] / 255;	// Red
-						dest[1] = k * src[1] / 255;	// Green
-						dest[0] = k * src[2] / 255;	// Blue
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-						dest[0] = 255;			// Alpha
-						dest[1] = k * src[0] / 255;	// Red
-						dest[2] = k * src[1] / 255;	// Green
-						dest[3] = k * src[2] / 255;	// Blue
-#endif
+
+						dest[0].a = 255;		// Alpha
+						dest[0].r = k * src[0] / 255;	// Red
+						dest[0].g = k * src[1] / 255;	// Green
+						dest[0].b = k * src[2] / 255;	// Blue
+
+						k = src[7];
+						dest[1].a = 255;		// Alpha
+						dest[1].r = k * src[4] / 255;	// Red
+						dest[1].g = k * src[5] / 255;	// Green
+						dest[1].b = k * src[6] / 255;	// Blue
+					}
+					// Remaining pixels.
+					for (; x > 0; x--, dest++, src += 4) {
+						unsigned int k = src[3];
+						dest->a = 255;			// Alpha
+						dest->r = k * src[0] / 255;	// Red
+						dest->g = k * src[1] / 255;	// Green
+						dest->b = k * src[2] / 255;	// Blue
 					}
 					break;
 				}
