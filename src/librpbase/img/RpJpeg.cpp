@@ -654,7 +654,8 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 		}
 	} else {
-		// Grayscale image. Decompress directly to the rp_image.
+		// Grayscale image, or RGB image with libjpeg-turbo's JCS_EXT_BGRA.
+		// Decompress directly to the rp_image.
 		// NOTE: jpeg_read_scanlines() has an option to specify how many
 		// scanlines to read, but it doesn't work. We'll have to read
 		// one scanline at a time.
