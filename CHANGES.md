@@ -8,12 +8,6 @@
     original image. In addition, RGB images that don't have an alpha channel
     are now saved as RGB PNGs instead of ARGB PNGs, which usually results in
     a smaller file.
-  * The PNG compression level is now set to the default value instead of 5.
-    This corresponds to 6 with libpng-1.6.31 and zlib-1.2.11.
-  * The system text conversion functions are now used for handling Latin-1
-    (ISO-8859-1) encoding instead of our own conversion function. In particular,
-    this means the C1 control characters (0x80-0x9F) are no longer invalid and
-    will be converted to the corresponding Unicode code points.
 
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games
@@ -45,6 +39,18 @@
     disc header. This ensures that a GCN/Wii disc image with the game ID
     "WUP-" doesn't get detected as a Wii U disc image.
   * Fixed CIAReader failing to compile in no-crytpto builds.
+
+* Other changes:
+  * The PNG compression level is now set to the default value instead of 5.
+    This corresponds to 6 with libpng-1.6.31 and zlib-1.2.11.
+  * The system text conversion functions are now used for handling Latin-1
+    (ISO-8859-1) encoding instead of our own conversion function. In particular,
+    this means the C1 control characters (0x80-0x9F) are no longer invalid and
+    will be converted to the corresponding Unicode code points.
+  * When comparing byteswapped data to a constant, the byteswapping macro
+    is now used on the constant instead of the variable. This is needed
+    in order to byteswap the constant at compile time in MSVC builds.
+    (gcc does this even if the byteswap is on the variable.)
 
 ## v1.1 (released 2017/07/04)
 

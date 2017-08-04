@@ -777,7 +777,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
 	}
 
 	// Verify the IMET magic.
-	if (be32_to_cpu(pBanner->magic) != WII_IMET_MAGIC) {
+	if (pBanner->magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Magic is incorrect.
 		// TODO: Better error code?
 		return -EIO;
@@ -1082,11 +1082,11 @@ GameCube::GameCube(IRpFile *file)
 		// - CISO doesn't store a copy of the disc header
 		//   in range of the data we read.
 		// - TGC has a 32 KB header before the embedded GCM.
-		if (be32_to_cpu(d->discHeader.magic_wii) == WII_MAGIC) {
+		if (d->discHeader.magic_wii == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image.
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
 			d->discType |=  GameCubePrivate::DISC_SYSTEM_WII;
-		} else if (be32_to_cpu(d->discHeader.magic_gcn) == GCN_MAGIC) {
+		} else if (d->discHeader.magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image.
 			// TODO: Check for Triforce?
 			d->discType &= ~GameCubePrivate::DISC_SYSTEM_MASK;
@@ -1173,10 +1173,10 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for the magic numbers.
 	const GCN_DiscHeader *gcn_header = reinterpret_cast<const GCN_DiscHeader*>(info->header.pData);
-	if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
+	if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 		// Wii disc image.
 		return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_RAW);
-	} else if (be32_to_cpu(gcn_header->magic_gcn) == GCN_MAGIC) {
+	} else if (gcn_header->magic_gcn == cpu_to_be32(GCN_MAGIC)) {
 		// GameCube disc image.
 		// TODO: Check for Triforce?
 		return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_RAW);
@@ -1190,7 +1190,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 	// Check for TGC.
 	const GCN_TGC_Header *const tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(info->header.pData);
-	if (be32_to_cpu(tgcHeader->tgc_magic) == TGC_MAGIC) {
+	if (tgcHeader->tgc_magic == cpu_to_be32(TGC_MAGIC)) {
 		// TGC images have their own 32 KB header, so we can't
 		// check the actual GCN/Wii header here.
 		return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_TGC);
@@ -1208,7 +1208,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 			// Check for Wii magic.
 			// FIXME: GCN magic too?
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
-			if (be32_to_cpu(gcn_header->magic_wii) == WII_MAGIC) {
+			if (gcn_header->magic_wii == cpu_to_be32(WII_MAGIC)) {
 				// Wii disc image. (WBFS format)
 				return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WBFS);
 			}
@@ -1244,12 +1244,12 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 		// TODO: WIA struct when full WIA support is added.
 		uint32_t magic_tmp;
 		memcpy(&magic_tmp, &info->header.pData[0x70], sizeof(magic_tmp));
-		if (be32_to_cpu(magic_tmp) == WII_MAGIC) {
+		if (magic_tmp == cpu_to_be32(WII_MAGIC)) {
 			// Wii disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_WII | GameCubePrivate::DISC_FORMAT_WIA);
 		}
 		memcpy(&magic_tmp, &info->header.pData[0x74], sizeof(magic_tmp));
-		if (be32_to_cpu(magic_tmp) == GCN_MAGIC) {
+		if (magic_tmp == cpu_to_be32(GCN_MAGIC)) {
 			// GameCube disc image. (WIA format)
 			return (GameCubePrivate::DISC_SYSTEM_GCN | GameCubePrivate::DISC_FORMAT_WIA);
 		}
