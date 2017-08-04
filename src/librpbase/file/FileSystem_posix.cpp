@@ -164,6 +164,13 @@ static void initConfigDirectories(void)
 
 	// Cache directory.
 	cache_dir = utf8_to_rp_string(LibUnixCommon::getCacheDirectory());
+	if (!cache_dir.empty()) {
+		// Add a trailing slash if necessary.
+		if (cache_dir.at(cache_dir.size()-1) != '/')
+			cache_dir += _RP_CHR('/');
+		// Append "rom-properties".
+		cache_dir += _RP("rom-properties");
+	}
 
 	// Config directory.
 	config_dir = utf8_to_rp_string(LibUnixCommon::getConfigDirectory());
