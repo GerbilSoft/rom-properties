@@ -401,6 +401,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		switch (ddspf.dwFourCC) {
 			case DDPF_FOURCC_DXT1:
 			case DDPF_FOURCC_ATI1:
+			case DDPF_FOURCC_BC4U:
 				// 16 pixels compressed into 64 bits. (4bpp)
 				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
 				break;
@@ -410,6 +411,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DDPF_FOURCC_DXT4:
 			case DDPF_FOURCC_DXT5:
 			case DDPF_FOURCC_ATI2:
+			case DDPF_FOURCC_BC5U:
 				// 16 pixels compressed into 128 bits. (8bpp)
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight;
 				break;
@@ -465,12 +467,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				break;
 
 			case DDPF_FOURCC_ATI1:
+			case DDPF_FOURCC_BC4U:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
 				break;
 
 			case DDPF_FOURCC_ATI2:
+			case DDPF_FOURCC_BC5U:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
