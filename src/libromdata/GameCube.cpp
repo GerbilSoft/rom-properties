@@ -132,7 +132,7 @@ class GameCubePrivate : public RomDataPrivate
 		 * Decoded from the actual on-disc tables.
 		 */
 		struct WiiPartEntry {
-			uint64_t start;			// Starting address, in bytes.
+			int64_t start;			// Starting address, in bytes.
 			uint32_t type;			// Partition type. (See WiiPartitionType.)
 			WiiPartition *partition;	// Partition object.
 		};
@@ -313,8 +313,8 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 	}
 
 	// Process each volume group.
-	for (int i = 0; i < 4; i++) {
-		uint32_t count = be32_to_cpu(vgtbl.vg[i].count);
+	for (unsigned int i = 0; i < 4; i++) {
+		unsigned int count = be32_to_cpu(vgtbl.vg[i].count);
 		if (count == 0) {
 			continue;
 		} else if (count > ARRAY_SIZE(pt)) {
@@ -322,9 +322,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		uint64_t pt_addr = (uint64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		int64_t pt_addr = (int64_t)(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		const size_t ptSize = sizeof(RVL_PartitionTableEntry) * count;
-		size = discReader->seekAndRead((int64_t)pt_addr, pt, ptSize);
+		size = discReader->seekAndRead(pt_addr, pt, ptSize);
 		if (size != ptSize) {
 			// Error reading the partition table entries.
 			return -EIO;
@@ -332,9 +332,9 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 		// Process each partition table entry.
 		wiiVgTbl[i].resize(count);
-		for (int j = 0; j < (int)count; j++) {
+		for (unsigned int j = 0; j < count; j++) {
 			WiiPartEntry &entry = wiiVgTbl[i].at(j);
-			entry.start = (uint64_t)(be32_to_cpu(pt[j].addr)) << 2;
+			entry.start = (int64_t)(be32_to_cpu(pt[j].addr)) << 2;
 			entry.type = be32_to_cpu(pt[j].type);
 			entry.partition = new WiiPartition(discReader, entry.start);
 
