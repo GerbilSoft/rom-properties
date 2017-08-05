@@ -15,6 +15,7 @@ SET(rom-properties-kde_SRCS
 	config/ITab.cpp
 	config/ImageTypesTab.cpp
 	config/DownloadsTab.cpp
+	config/AboutTab.cpp
 	config/QTreeViewOpt.cpp
 	config/KeyStoreQt.cpp
 	config/KeyStoreModel.cpp
@@ -33,6 +34,7 @@ SET(rom-properties-kde_H
 	config/ITab.hpp
 	config/ImageTypesTab.hpp
 	config/DownloadsTab.hpp
+	config/AboutTab.hpp
 	config/QTreeViewOpt.hpp
 	config/KeyStoreQt.hpp
 	config/KeyStoreModel.hpp
@@ -44,6 +46,7 @@ SET(rom-properties-kde_UIS
 	config/ConfigDialog.ui
 	config/ImageTypesTab.ui
 	config/DownloadsTab.ui
+	config/AboutTab.ui
 	)
 
 IF(ENABLE_DECRYPTION)

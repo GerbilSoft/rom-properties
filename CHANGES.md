@@ -52,6 +52,7 @@
     in order to byteswap the constant at compile time in MSVC builds.
     (gcc does this even if the byteswap is on the variable.)
   * Updated MiniZip to an unofficial fork: https://github.com/nmoinvaz/minizip
+  * rp-config: Added an "About" tab.
 
 ## v1.1 (released 2017/07/04)
 
