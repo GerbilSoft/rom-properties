@@ -182,8 +182,7 @@ int main(int argc, char *argv[])
 						"Try '%s --help' for more information.\n",
 						argv[0], optarg, argv[0]);
 					return EXIT_FAILURE;
-				}
-				else if (lTmp <= 0 || lTmp > 1048576) {
+				} else if (lTmp <= 0 || lTmp > 32768) {
 					fprintf(stderr, "%s: size '%s' is out of range\n"
 						"Try '%s --help' for more information.\n",
 						argv[0], optarg, argv[0]);
