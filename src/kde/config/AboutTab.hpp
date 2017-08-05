@@ -39,6 +39,18 @@ class AboutTab : public ITab
 		Q_DECLARE_PRIVATE(AboutTab);
 		Q_DISABLE_COPY(AboutTab)
 
+	public:
+		/**
+		 * Does this tab have defaults available?
+		 * If so, the "Defaults" button will be enabled.
+		 * Otherwise, it will be disabled.
+		 *
+		 * AboutTab sets this to false.
+		 *
+		 * @return True to enable; false to disable.
+		 */
+		virtual bool hasDefaults(void) const override final { return false; }
+
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
 		virtual void changeEvent(QEvent *event) override final;
