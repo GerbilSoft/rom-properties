@@ -154,10 +154,13 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		SET(SSE2_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
+		# TODO: Not needed on 64-bit.
 		SET(SSE2_FLAG "-msse2")
 	ENDIF()
-	SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_sse2.cpp
-		APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+	IF(SSE2_FLAG)
+		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_sse2.cpp
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+	ENDIF(SSE2_FLAG)
 ENDIF()
 UNSET(arch)
 
