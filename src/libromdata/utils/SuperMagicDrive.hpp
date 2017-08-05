@@ -31,6 +31,9 @@
 # include "librpbase/cpuflags_x86.h"
 # define SMD_HAS_SSE2 1
 #endif
+#if defined(__x86_64__) || defined(_M_X64)
+# define SMD_ALWAYS_HAS_SSE2 1
+#endif
 
 namespace LibRomData {
 
@@ -78,6 +81,9 @@ class SuperMagicDrive
 		static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 };
 
+// TODO: Use gcc target-specific function attributes if available?
+// (IFUNC dispatcher, etc.)
+
 /**
  * Decode a Super Magic Drive interleaved block.
  * NOTE: Pointers must be 16-byte aligned if using SSE2.
@@ -86,14 +92,19 @@ class SuperMagicDrive
  */
 inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
-#ifdef SMD_HAS_SSE2
+#ifdef SMD_ALWAYS_HAS_SSE2
+	// amd64 always has SSE2.
+	decodeBlock_sse2(pDest, pSrc);
+#else /* SMD_ALWAYS_HAS_SSE2 */
+# ifdef SMD_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
 		decodeBlock_sse2(pDest, pSrc);
 	} else
-#endif
+# endif /* SMD_HAS_SSE2 */
 	{
 		decodeBlock_cpp(pDest, pSrc);
 	}
+#endif /* SMD_ALWAYS_HAS_SSE2 */
 }
 
 }
