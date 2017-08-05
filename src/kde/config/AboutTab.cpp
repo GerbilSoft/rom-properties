@@ -258,6 +258,7 @@ void AboutTabPrivate::initCreditsTab(void)
 void AboutTabPrivate::initLibrariesTab(void)
 {
 	// lblLibraries is PlainText.
+	// TODO: RichText with links.
 
 	// Useful strings.
 	const QChar br = L'\n';
@@ -459,6 +460,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Support sites.
 	const supportSite_t supportSites[] = {
+		{QT_TRANSLATE_NOOP(AboutTab, "GitHub: GerbilSoft/rom-properties"), "https://github.com/GerbilSoft/rom-properties"},
 		{QT_TRANSLATE_NOOP(AboutTab, "Sonic Retro"), "https://forums.sonicretro.org/index.php?showtopic=35692"},
 		{QT_TRANSLATE_NOOP(AboutTab, "GBAtemp"), "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
 		{nullptr, nullptr}
@@ -479,9 +481,9 @@ void AboutTabPrivate::initSupportTab(void)
 	// Email the author.
 	sSupport += br +
 		AboutTab::tr("You can also email the developer directly:") + br +
-		chrBullet + QChar(L' ') + QLatin1String(
-			"<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
-			"gerbilsoft@gerbilsoft.com</a>");
+		sIndent + chrBullet + QChar(L' ') +
+			QLatin1String("<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
+			"David Korth &lt;gerbilsoft@gerbilsoft.com&gt;</a>");
 
 	// We're done building the string.
 	ui.lblSupport->setText(sSupport);
