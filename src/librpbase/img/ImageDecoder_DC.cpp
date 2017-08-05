@@ -267,8 +267,8 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	// Convert one line at a time. (16-bit -> ARGB32)
 	// Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs#L149
 	uint32_t *dest = static_cast<uint32_t*>(img->bits());
-	for (unsigned int y = 0; y < (unsigned int)height; y += 2) {
-	for (unsigned int x = 0; x < (unsigned int)width; x += 2) {
+	for (unsigned int y = 0; y < (unsigned int)height; y += 2, dest += width) {
+	for (unsigned int x = 0; x < (unsigned int)width; x += 2, dest += 2) {
 		const unsigned int srcIdx = ((dc_tmap[x >> 1] << 1) | dc_tmap[y >> 1]);
 		if (srcIdx >= (unsigned int)img_siz) {
 			// Out of bounds.
@@ -280,7 +280,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		// Each block of 2x2 pixels uses a 4-element block of
 		// the palette, so the palette index needs to be
 		// multiplied by 4.
-		unsigned int palIdx = img_buf[srcIdx] * 4;
+		const unsigned int palIdx = img_buf[srcIdx] * 4;
 		if (smallVQ && palIdx >= (unsigned int)pal_entry_count) {
 			// Palette index is out of bounds.
 			// NOTE: This can only happen with SmallVQ,
@@ -289,13 +289,10 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 			return nullptr;
 		}
 
-		// NOTE: Can't use BlitTile() due to the inverted x/y order here.
-		for (unsigned int x2 = 0; x2 < 2; x2++) {
-			const unsigned int destIdx = ((y * width) + (x + x2));
-			dest[destIdx] = palette[palIdx];
-			dest[destIdx+width] = palette[palIdx+1];
-			palIdx += 2;
-		}
+		dest[0]		= palette[palIdx];
+		dest[1]		= palette[palIdx+2];
+		dest[width]	= palette[palIdx+1];
+		dest[width+1]	= palette[palIdx+3];
 	} }
 
 	// Image has been converted.
