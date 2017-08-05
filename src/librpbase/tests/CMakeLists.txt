@@ -48,6 +48,12 @@ FOREACH(test_image ${RpImageLoaderTest_images})
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
 			"$<TARGET_FILE_DIR:RpImageLoaderTest>/png_data/${test_image}"
 		)
+	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy_if_different
+			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
+			"${CMAKE_CURRENT_BINARY_DIR}/png_data/${test_image}"
+		)
 ENDFOREACH(test_image ${RpImageLoaderTest_images})
 
 IF(ENABLE_DECRYPTION)
