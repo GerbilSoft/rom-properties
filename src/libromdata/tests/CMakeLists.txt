@@ -122,3 +122,18 @@ FOREACH(test_image ${ImageDecoderTest_images})
 			"${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/${test_image}"
 		)
 ENDFOREACH(test_image ${ImageDecoderTest_images})
+
+# SuperMagicDrive test.
+ADD_EXECUTABLE(SuperMagicDriveTest
+	../../librpbase/tests/gtest_init.cpp
+	utils/SuperMagicDriveTest.cpp
+	utils/SuperMagicDriveTest_data.hpp
+	)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest rpbase8 romdata8)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest gtest)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest ${ZLIB_LIBRARY})
+TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})
+TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
+DO_SPLIT_DEBUG(SuperMagicDriveTest)
+SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
+ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest)
