@@ -81,6 +81,7 @@ ENDIF(ENABLE_DECRYPTION)
 ADD_EXECUTABLE(TextFuncsTest8
 	gtest_init.cpp
 	TextFuncsTest.cpp
+	TextFuncsTest_data.hpp
 	)
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(TextFuncsTest8 win32common)
