@@ -53,6 +53,9 @@ class SuperMagicDriveTest : public ::testing::Test
 		 */
 		static const uint8_t bin_data_gz[11811];
 
+		// Number of iterations for benchmarks.
+		static const unsigned int BENCHMARK_ITERATIONS = 100000;
+
 		/**
 		 * 16 KB SMD-interleaved data block.
 		 */
@@ -198,6 +201,17 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 	EXPECT_EQ(0, memcmp(m_bin_data.data(), buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
+/**
+ * Benchmark the standard SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
+{
+	unique_ptr<uint8_t[]> buf(new uint8_t[SuperMagicDrive::SMD_BLOCK_SIZE]);
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		SuperMagicDrive::decodeBlock_cpp(buf.get(), m_smd_data.data());
+	}
+}
+
 } }
 
 /**
@@ -206,6 +220,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 extern "C" int gtest_main(int argc, char *argv[])
 {
 	fprintf(stderr, "LibRomData test suite: SuperMagicDrive tests.\n\n");
+	fprintf(stderr, "Benchmark iterations: %u\n", LibRomData::Tests::SuperMagicDriveTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 
 	// Decompress the data blocks before running the tests.
