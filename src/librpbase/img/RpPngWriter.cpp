@@ -23,6 +23,7 @@
 #include "RpPngWriter.hpp"
 
 #include "common.h"
+#include "byteorder.h"
 #include "TextFuncs.hpp"
 #include "file/RpFile.hpp"
 
@@ -730,9 +731,9 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 	if (cache.skip_alpha && cache.format == rp_image::FORMAT_ARGB32) {
 		// Need to skip the alpha bytes.
 		// Assuming 'after' on LE, 'before' on BE.
-#if SYS_BYTE_ORDER == SYS_LIL_ENDIAN
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		static const int flags = PNG_FILLER_AFTER;
-#else /* SYS_BYTE_ORDER == SYS_BIG_ENDIAN */
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		static const int flags = PNG_FILLER_BEFORE;
 #endif
 		png_set_filler(png_ptr, 0xFF, flags);
