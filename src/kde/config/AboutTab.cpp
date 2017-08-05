@@ -444,6 +444,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Useful strings.
 	const QString br = QLatin1String("<br/>\n");
+	const QString sIndent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	static const QChar chrBullet = 0x2022;  // U+2022: BULLET
 
 	QString sSupport;
@@ -466,15 +467,13 @@ void AboutTabPrivate::initSupportTab(void)
 	for (const supportSite_t *supportSite = &supportSites[0];
 	     supportSite->name != nullptr; supportSite++)
 	{
-		QString siteUrl = QLatin1String(supportSite->url);
-		QString siteName = QLatin1String(supportSite->name);
 		QString siteUrlHtml = QLatin1String("<a href=\"") +
-					siteUrl +
+					QLatin1String(supportSite->url) +
 					QLatin1String("\">") +
-					siteName +
+					QLatin1String(supportSite->name) +
 					QLatin1String("</a>");
 
-		sSupport += chrBullet + QChar(L' ') + siteUrlHtml + br;
+		sSupport += sIndent + chrBullet + QChar(L' ') + siteUrlHtml + br;
 	}
 
 	// Email the author.
