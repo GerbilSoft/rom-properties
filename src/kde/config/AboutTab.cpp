@@ -80,6 +80,11 @@ class AboutTabPrivate
 		static bool is_APNG_supported(void);
 
 		/**
+		 * Initialize the "Credits" tab.
+		 */
+		void initCreditsTab(void);
+
+		/**
 		 * Initialize the "Libraries" tab.
 		 */
 		void initLibrariesTab(void);
@@ -140,6 +145,111 @@ void AboutTabPrivate::initProgramTitleText(void)
 #endif /* RP_GIT_VERSION */
 
 	ui.lblTitle->setText(sPrgTitle);
+}
+
+/**
+ * Initialize the "Credits" tab.
+ */
+void AboutTabPrivate::initCreditsTab(void)
+{
+	// lblCredits is RichText.
+
+	// Useful strings.
+	const QString br = QLatin1String("<br/>\n");
+	const QString brbr = QLatin1String("<br/>\n<br/>\n");
+	const QString b_start = QLatin1String("<b>");
+	const QString b_end = QLatin1String("</b>");
+	const QString sIndent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+	static const QChar chrBullet = 0x2022;  // U+2022: BULLET
+
+	QString sCredits;
+	sCredits.reserve(4096);
+	sCredits += QLatin1String("Copyright (c) 2016-2017 by David Korth.");
+	sCredits += br + AboutTab::tr("This program is licensed under the "
+		"<a href='https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'>GNU GPL v2</a> or later.");
+
+	enum CreditType_t {
+		CT_CONTINUE = 0,	// Continue previous type.
+		CT_DEVELOPER,		// Developer
+		CT_CONTRIBUTOR,		// Contributor
+		CT_TRANSLATOR,		// Translator (TODO)
+
+		CT_MAX
+	};
+
+	struct CreditsData_t {
+		CreditType_t type;
+		const char *name;
+		const char *url;
+		const char *sub;
+	};
+
+	// Credits data.
+	static const CreditsData_t CreditsData[] = {
+		// Developers
+		{CT_DEVELOPER,		"Egor", "egor@opensrc.club", nullptr},
+
+		// Contributors
+		{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr},
+
+		// End of list
+		{CT_MAX, nullptr, nullptr, nullptr}
+	};
+
+	CreditType_t lastCreditType = CT_CONTINUE;
+	for (const CreditsData_t *creditsData = &CreditsData[0];
+	     creditsData->type < CT_MAX; creditsData++)
+	{
+		if (creditsData->type != CT_CONTINUE &&
+		    creditsData->type != lastCreditType)
+		{
+			// New credit type.
+			sCredits += brbr;
+			sCredits += b_start;
+
+			switch (creditsData->type) {
+				case CT_DEVELOPER:
+					sCredits += AboutTab::tr("Developers:");
+					break;
+
+				case CT_CONTRIBUTOR:
+					sCredits += AboutTab::tr("Contributors:");
+					break;
+
+				case CT_TRANSLATOR:
+					sCredits += AboutTab::tr("Translators:");
+					break;
+
+				case CT_CONTINUE:
+				case CT_MAX:
+				default:
+					assert(!"Invalid credit type.");
+					break;
+			}
+
+			sCredits += b_end;
+		}
+
+		// Append the contributor's name.
+		sCredits += br + sIndent + chrBullet + QChar(L' ');
+		if (creditsData->url) {
+			sCredits += QLatin1String("<a href='") +
+				QLatin1String(creditsData->url) +
+				QLatin1String("'>");
+		}
+		sCredits += QString::fromUtf8(creditsData->name);
+		if (creditsData->url) {
+			sCredits += QLatin1String("</a>");
+		}
+		if (creditsData->sub) {
+			sCredits += QLatin1String(" (") +
+				QLatin1String(creditsData->sub) +
+				QChar(L')');
+		}
+	}
+
+	// We're done building the string.
+	ui.lblCredits->setText(sCredits);
 }
 
 /**
@@ -334,7 +444,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Useful strings.
 	const QString br = QLatin1String("<br/>\n");
-	const QChar chrBullet = 0x2022;  // U+2022: BULLET
+	static const QChar chrBullet = 0x2022;  // U+2022: BULLET
 
 	QString sSupport;
 	sSupport.reserve(4096);
@@ -384,6 +494,7 @@ void AboutTabPrivate::initSupportTab(void)
 void AboutTabPrivate::init(void)
 {
 	initProgramTitleText();
+	initCreditsTab();
 	initLibrariesTab();
 	initSupportTab();
 }
