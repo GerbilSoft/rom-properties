@@ -39,10 +39,10 @@ class SuperMagicDrive
 		/**
 		 * Decode a Super Magic Drive interleaved block.
 		 * Standard version using regular C++ code.
-		 * @param dest	[out] Destination block. (Must be 16 KB.)
-		 * @param src	[in] Source block. (Must be 16 KB.)
+		 * @param pDest	[out] Destination block. (Must be 16 KB.)
+		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
-		static void decodeBlock_cpp(uint8_t *RESTRICT dest, const uint8_t *RESTRICT src);
+		static void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 
 	public:
 		// SMD block size.
@@ -50,10 +50,10 @@ class SuperMagicDrive
 
 		/**
 		 * Decode a Super Magic Drive interleaved block.
-		 * @param dest	[out] Destination block. (Must be 16 KB.)
-		 * @param src	[in] Source block. (Must be 16 KB.)
+		 * @param pDest	[out] Destination block. (Must be 16 KB.)
+		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
-		static inline void decodeBlock(uint8_t *RESTRICT dest, const uint8_t *RESTRICT src);
+		static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 };
 
 /**
@@ -61,10 +61,10 @@ class SuperMagicDrive
  * @param dest	[out] Destination block. (Must be 16 KB.)
  * @param src	[in] Source block. (Must be 16 KB.)
  */
-inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT dest, const uint8_t *RESTRICT src)
+inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
 	// TODO: Add an SSE2-optimized version.
-	decodeBlock_cpp(dest, src);
+	decodeBlock_cpp(pDest, pSrc);
 }
 
 }
