@@ -112,6 +112,7 @@ SET(librpbase_H
 	byteswap.h
 	common.h
 	uvector.h
+	aligned_malloc.h
 	TextFuncs.hpp
 	TextFuncs_utf8.hpp
 	TextFuncs_wchar.hpp
@@ -242,6 +243,15 @@ ELSEIF(CMAKE_USE_PTHREADS_INIT)
 ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
+
+# Aligned malloc() functions.
+# NOTE: MinGW-w64 only has _aligned_malloc().
+# It doesn't even have inline function wrappers
+# for the other functions.
+CHECK_FUNCTION_EXISTS(_aligned_malloc	HAVE_MSVC_ALIGNED_MALLOC)
+CHECK_FUNCTION_EXISTS(aligned_alloc	HAVE_ALIGNED_ALLOC)
+CHECK_FUNCTION_EXISTS(posix_memalign	HAVE_POSIX_MEMALIGN)
+CHECK_FUNCTION_EXISTS(memalign		HAVE_MEMALIGN)
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
