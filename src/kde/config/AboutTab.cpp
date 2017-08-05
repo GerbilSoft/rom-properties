@@ -67,6 +67,7 @@ class AboutTabPrivate
 	public:
 		Ui::AboutTab ui;
 
+	protected:
 		/**
 		 * Initialize the program title text.
 		 */
@@ -87,6 +88,12 @@ class AboutTabPrivate
 		 * Initialize the "Support" tab.
 		 */
 		void initSupportTab(void);
+
+	public:
+		/**
+		 * Initialize the dialog.
+		 */
+		void init(void);
 };
 
 /** AboutTabPrivate **/
@@ -371,6 +378,16 @@ void AboutTabPrivate::initSupportTab(void)
 	ui.lblSupport->setText(sSupport);
 }
 
+/**
+ * Initialize the dialog.
+ */
+void AboutTabPrivate::init(void)
+{
+	initProgramTitleText();
+	initLibrariesTab();
+	initSupportTab();
+}
+
 /** AboutTab **/
 
 AboutTab::AboutTab(QWidget *parent)
@@ -380,10 +397,8 @@ AboutTab::AboutTab(QWidget *parent)
 	Q_D(AboutTab);
 	d->ui.setupUi(this);
 
-	// Initialize the title and tabs.
-	d->initProgramTitleText();
-	d->initLibrariesTab();
-	d->initSupportTab();
+	// Initialize the dialog.
+	d->init();
 }
 
 AboutTab::~AboutTab()
@@ -401,6 +416,9 @@ void AboutTab::changeEvent(QEvent *event)
 		// Retranslate the UI.
 		Q_D(AboutTab);
 		d->ui.retranslateUi(this);
+
+		// Reinitialize the dialog.
+		d->init();
 	}
 
 	// Pass the event to the base class.
