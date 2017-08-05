@@ -141,9 +141,10 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Otherwise, no-crypto builds will break.
 	d->tabKeyManager = new KeyManagerTab();
 	d->tabKeyManager->setObjectName(QLatin1String("tabKeyManager"));
-	// NOTE: Using insertTab() in case we decide to add
-	// an "About" tab at the end.
-	d->ui.tabWidget->insertTab(2, d->tabKeyManager, QString());
+	// NOTE: The last tab is the "About" tab, so we need to
+	// use insertTab() so it gets inserted before "About".
+	d->ui.tabWidget->insertTab(d->ui.tabWidget->indexOf(d->ui.tabAbout),
+		d->tabKeyManager, QString());
 #endif /* ENABLE_DECRYPTION */
 
 	// Retranslate non-Designer widgets.
