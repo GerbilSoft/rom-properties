@@ -653,6 +653,11 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				}
 			}
 		}
+
+		// Set the sBIT data.
+		// TODO: 10-bit/12-bit JPEGs?
+		static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
+		img->set_sBIT(&sBIT);
 	} else {
 		// Grayscale image, or RGB image with libjpeg-turbo's JCS_EXT_BGRA.
 		// Decompress directly to the rp_image.
@@ -663,6 +668,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			uint8_t *dest = static_cast<uint8_t*>(img->scanLine(i));
 			jpeg_read_scanlines(&cinfo, &dest, 1);
 		}
+
+		// Set the sBIT data.
+		// NOTE: Setting the grayscale value, though we're
+		// not saving grayscale PNGs at the moment.
+		static const rp_image::sBIT_t sBIT = {8,8,8,8,0};
+		img->set_sBIT(&sBIT);
 	}
 
 	/** Step 7: Finish decompression. **/
