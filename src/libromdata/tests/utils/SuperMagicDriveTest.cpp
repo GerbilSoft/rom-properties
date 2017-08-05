@@ -235,14 +235,17 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 	}
 }
 
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#ifdef SMD_HAS_SSE2
 /**
  * Test the SSE2-optimized SMD decoder.
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 {
-	// TODO: Check for SSE2 capabilities.
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
 	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
 	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
@@ -253,16 +256,18 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 {
-	// TODO: Check for SSE2 capabilities.
+	if (!RP_CPU_HasSSE2()) {
+		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.");
+		return;
+	}
+
 	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 		SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
 	}
 }
-#endif
+#endif /* SMD_HAS_SSE2 */
 
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
 /**
  * Test the decodeBlock() dispatch function.
  */
@@ -285,7 +290,6 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 		SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
 	}
 }
-#endif
 
 } }
 
