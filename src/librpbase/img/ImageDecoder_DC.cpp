@@ -270,6 +270,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 	for (unsigned int y = 0; y < (unsigned int)height; y += 2, dest += width) {
 	for (unsigned int x = 0; x < (unsigned int)width; x += 2, dest += 2) {
 		const unsigned int srcIdx = ((dc_tmap[x >> 1] << 1) | dc_tmap[y >> 1]);
+		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= (unsigned int)img_siz) {
 			// Out of bounds.
 			delete img;
@@ -281,12 +282,15 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 		// the palette, so the palette index needs to be
 		// multiplied by 4.
 		const unsigned int palIdx = img_buf[srcIdx] * 4;
-		if (smallVQ && palIdx >= (unsigned int)pal_entry_count) {
-			// Palette index is out of bounds.
-			// NOTE: This can only happen with SmallVQ,
-			// since VQ always has 1024 palette entries.
-			delete img;
-			return nullptr;
+		if (smallVQ) {
+			assert(palIdx < (unsigned int)pal_entry_count);
+			if (palIdx >= (unsigned int)pal_entry_count) {
+				// Palette index is out of bounds.
+				// NOTE: This can only happen with SmallVQ,
+				// since VQ always has 1024 palette entries.
+				delete img;
+				return nullptr;
+			}
 		}
 
 		dest[0]		= palette[palIdx];
