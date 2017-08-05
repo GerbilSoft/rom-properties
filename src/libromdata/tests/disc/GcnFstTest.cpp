@@ -300,7 +300,16 @@ int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
 		p += ret;
 		size -= ret;
 	}
-	// TODO: Read once more to ensure it returns 0 for EOF?
+
+	// Read one more byte to ensure unzReadCurrentFile() returns 0 for EOF.
+	// NOTE: MiniZip will zero out tmp if there's no data available.
+	uint8_t tmp;
+	ret = unzReadCurrentFile(unz, &tmp, 1);
+	EXPECT_EQ(0, ret);
+	if (ret != 0) {
+		unzClose(unz);
+		return -7;
+	}
 
 	// Close the FST file.
 	// An error will occur here if the CRC is incorrect.
@@ -308,7 +317,7 @@ int GcnFstTest::getFileFromZip(const rp_char *zip_filename,
 	EXPECT_EQ(UNZ_OK, ret);
 	if (ret != UNZ_OK) {
 		unzClose(unz);
-		return -7;
+		return -8;
 	}
 
 	// Close the Zip file.
