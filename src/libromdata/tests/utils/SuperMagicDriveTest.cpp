@@ -120,6 +120,9 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
 	// Decompress the stream.
 	unsigned int avail_out_before;
 	unsigned int avail_out_after;
+	// Set the input buffer values.
+	// This doesn't need to be changed during decompression,
+	// since we're reading everything in one go.
 	strm.avail_in = in_len;
 	strm.next_in = const_cast<Bytef*>(pIn);
 	do {
