@@ -1,19 +1,18 @@
-This copy of minizip-1.1 is a modified version of the original.
+This copy of minizip is based on the updated version maintained
+by Nathan Moinvaziri at https://github.com/nmoinvaz/minizip .
+
+Commit: d507f2e7e8b771a76f4eb96d5c5d4dee50988196
+Merge pull request #124 from Coeur/patch-3
 
 The following changes have been made to the original:
 
-- The build system has been replaced with CMake.
+- cmake_minimum_required() has been disabled. The project-wide values
+  will be used instead.
 
-- The additional MiniZip tools and examples have been removed.
+- Some other functionality not needed by rom-properties has been disabled.
 
-- The Windows Runtime "app" check has been fixed.
-
-- iowin32.c: Use the specified dwMoveMethod instead of hard-coding
-  FILE_CURRENT.
-
-To obtain the original minizip-1.1, visit
+To obtain the original minizip-1.1, visit:
 http://www.winimage.com/zLibDll/minizip.html
 
-NOTE: Some changes were imported from zlib-1.2.9's copy of
-minizip-1.1. To obtain a copy of zlib-1.2.9, visit the zlib
-website at http://www.zlib.net/ .
+To obtain the original updated version, visit:
+https://github.com/nmoinvaz/minizip
