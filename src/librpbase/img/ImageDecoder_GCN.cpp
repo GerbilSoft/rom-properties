@@ -84,7 +84,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			// NOTE: Pixels may be RGB555 or ARGB4444.
 			// We'll use 555 for RGB, and 4 for alpha.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,4};
@@ -106,7 +106,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -126,7 +126,7 @@ rp_image *ImageDecoder::fromGcn16(PixelFormat px_format,
 					ImageDecoderPrivate::BlitTile<uint32_t, 4, 4>(img, tileBuf, x, y);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			// NOTE: Setting the grayscale value, though we're
 			// not saving grayscale PNGs at the moment.
 			static const rp_image::sBIT_t sBIT = {8,8,8,8,8};
@@ -220,7 +220,7 @@ rp_image *ImageDecoder::fromGcnCI8(int width, int height,
 		}
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	// NOTE: Pixels may be RGB555 or ARGB4444.
 	// We'll use 555 for RGB, and 4 for alpha.
 	static const rp_image::sBIT_t sBIT = {5,5,5,0,4};

@@ -654,7 +654,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			}
 		}
 
-		// Set the sBIT data.
+		// Set the sBIT metadata.
 		// TODO: 10-bit/12-bit JPEGs?
 		static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 		img->set_sBIT(&sBIT);
@@ -669,7 +669,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			jpeg_read_scanlines(&cinfo, &dest, 1);
 		}
 
-		// Set the sBIT data.
+		// Set the sBIT metadata.
 		// NOTE: Setting the grayscale value, though we're
 		// not saving grayscale PNGs at the moment.
 		static const rp_image::sBIT_t sBIT = {8,8,8,8,0};

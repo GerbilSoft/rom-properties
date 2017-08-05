@@ -105,7 +105,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -115,7 +115,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -129,7 +129,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -143,7 +143,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -164,7 +164,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(px16);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -280,7 +280,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = (int)i+1;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -291,7 +291,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
 				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -310,7 +310,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = (int)i+1;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -393,7 +393,7 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 		}
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
 	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
@@ -681,7 +681,7 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 			return nullptr;
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
@@ -759,7 +759,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf += (stride / bytespp);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 
@@ -796,7 +796,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf_abgr32 += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 		}
@@ -821,7 +821,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 
@@ -845,7 +845,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 
@@ -869,7 +869,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 
@@ -906,7 +906,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf_abgr32 += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 		}
@@ -931,7 +931,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 
@@ -955,7 +955,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 				img_buf += line_offset_adj;
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			img->set_sBIT(&sBIT_32);
 			break;
 

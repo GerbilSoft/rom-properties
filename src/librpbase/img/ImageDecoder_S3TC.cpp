@@ -403,7 +403,7 @@ rp_image *ImageDecoder::fromDXT1_GCN(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
 
@@ -508,7 +508,7 @@ rp_image *ImageDecoder::fromDXT1(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,1};
 	img->set_sBIT(&sBIT);
 
@@ -654,7 +654,7 @@ rp_image *ImageDecoder::fromDXT3(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,4};
 	img->set_sBIT(&sBIT);
 
@@ -799,7 +799,7 @@ rp_image *ImageDecoder::fromDXT5(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,8};
 	img->set_sBIT(&sBIT);
 
@@ -907,7 +907,7 @@ rp_image *ImageDecoder::fromBC4(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Green and Blue channels,
 	// since libpng complains if it's set to '0'.
 	static const rp_image::sBIT_t sBIT = {8,1,1,0,0};
@@ -1020,7 +1020,7 @@ rp_image *ImageDecoder::fromBC5(int width, int height,
 		} }
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	// NOTE: We have to set '1' for the empty Blue channel,
 	// since libpng complains if it's set to '0'.
 	static const rp_image::sBIT_t sBIT = {8,8,1,0,0};

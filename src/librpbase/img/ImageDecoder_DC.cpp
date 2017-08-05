@@ -119,7 +119,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -134,7 +134,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -149,7 +149,7 @@ rp_image *ImageDecoder::fromDreamcastSquareTwiddled16(PixelFormat px_format,
 					px_dest++;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -230,7 +230,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 				palette[i+0] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::ARGB1555_to_ARGB32(pal_buf[i+1]);
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -241,7 +241,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(pal_buf[i+1]);
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -252,7 +252,7 @@ rp_image *ImageDecoder::fromDreamcastVQ16(PixelFormat px_format,
 				palette[i+0] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+0]);
 				palette[i+1] = ImageDecoderPrivate::ARGB4444_to_ARGB32(pal_buf[i+1]);
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
