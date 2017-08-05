@@ -24,6 +24,7 @@
 
 // SuperMagicDrive
 #include "libromdata/utils/SuperMagicDrive.hpp"
+#include "librpbase/aligned_malloc.h"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -31,10 +32,6 @@
 // C++ includes.
 #include <memory>
 using std::unique_ptr;
-
-// Uninitialized vector class.
-// Reference: http://andreoffringa.org/?q=uvector
-#include "uvector.h"
 
 // zlib
 #define CHUNK 4096
@@ -45,9 +42,19 @@ namespace LibRomData { namespace Tests {
 class SuperMagicDriveTest : public ::testing::Test
 {
 	protected:
-		SuperMagicDriveTest() { }
+		SuperMagicDriveTest()
+			: align_buf(nullptr)
+		{ }
+
+		virtual ~SuperMagicDriveTest()
+		{
+			aligned_free(align_buf);
+		}
 
 	public:
+		// Output block size. (+64 for zlib)
+		static const unsigned int OUT_BLOCK_UNZ_SIZE = SuperMagicDrive::SMD_BLOCK_SIZE+64;
+
 		/**
 		 * 16 KB plain binary data block.
 		 */
@@ -63,18 +70,19 @@ class SuperMagicDriveTest : public ::testing::Test
 
 	public:
 		// Uncompressed data buffers.
-		static ao::uvector<uint8_t> m_bin_data;
-		static ao::uvector<uint8_t> m_smd_data;
+		static uint8_t *m_bin_data;
+		static uint8_t *m_smd_data;
 
 	private:
 		/**
 		 * Decompress a data block.
-		 * @param vOut		[out] Output ao::uvector.
+		 * @param pOut		[out] Output buffer. (Must be 16 KB.)
+		 * @param out_len	[in] Output buffer length.
 		 * @param pIn		[in] Input array.
 		 * @param in_len	[in] Input length.
 		 * @return 0 on success; non-zero on error.
 		 */
-		static int decompress(ao::uvector<uint8_t> &vOut, const uint8_t *pIn, unsigned int in_len);
+		static int decompress(uint8_t *RESTRICT pOut, unsigned int out_len, const uint8_t *RESTRICT pIn, unsigned int in_len);
 
 	public:
 		/**
@@ -82,32 +90,41 @@ class SuperMagicDriveTest : public ::testing::Test
 		 * @return 0 on success; non-zero on error.
 		 */
 		static int decompress(void);
+
+	public:
+		// Temporary aligned memory buffer.
+		// Automatically freed in teardown().
+		uint8_t *align_buf;
 };
 
 // Test data is in SuperMagicDriveTest_data.hpp.
 #include "SuperMagicDriveTest_data.hpp"
 
 // Uncompressed data buffers.
-ao::uvector<uint8_t> SuperMagicDriveTest::m_bin_data;
-ao::uvector<uint8_t> SuperMagicDriveTest::m_smd_data;
+uint8_t *SuperMagicDriveTest::m_bin_data = nullptr;
+uint8_t *SuperMagicDriveTest::m_smd_data = nullptr;
 
 /**
  * Decompress a data block.
- * @param vOut		[out] Output ao::uvector.
+ * @param pOut		[out] Output buffer. (Must be 16 KB.)
+ * @param out_len	[in] Output buffer length.
  * @param pIn		[in] Input array.
  * @param in_len	[in] Input length.
  * @return 0 on success; non-zero on error.
  */
-int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *pIn, unsigned int in_len)
+int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const uint8_t *pIn, unsigned int in_len)
 {
 	// Based on zlib example code:
 	// http://www.zlib.net/zlib_how.html
 	int ret;
 	z_stream strm;
 
-	const unsigned int buf_siz = 16384;
-	const unsigned int out_len = buf_siz + 64;
-	vOut.resize(out_len);
+	const unsigned int buf_siz = SuperMagicDrive::SMD_BLOCK_SIZE;
+	assert(out_len >= OUT_BLOCK_UNZ_SIZE);
+	if (out_len < OUT_BLOCK_UNZ_SIZE) {
+		// Output buffer is too small.
+		return Z_MEM_ERROR;
+	}
 	unsigned int out_pos = 0;
 
 	// Allocate the zlib inflate state.
@@ -116,7 +133,6 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
 	strm.opaque = Z_NULL;
 	ret = inflateInit2(&strm, 15+16);
 	if (ret != Z_OK) {
-		vOut.clear();
 		return ret;
 	}
 
@@ -133,7 +149,7 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
 		do {
 			avail_out_before = (out_len - out_pos);
 			strm.avail_out = avail_out_before;
-			strm.next_out = &vOut[out_pos];
+			strm.next_out = &pOut[out_pos];
 
 			ret = inflate(&strm, Z_NO_FLUSH);
 			assert(ret != Z_STREAM_ERROR);	// make sure the state isn't clobbered
@@ -147,7 +163,6 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
 					// Error occurred while decoding the stream.
 					inflateEnd(&strm);
 					fprintf(stderr, "*** zlib error: %d\n", ret);
-					vOut.clear();
 					return ret;
 				default:
 					break;
@@ -164,18 +179,15 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
 
 	// If we didn't actually finish reading the compressed data, something went wrong.
 	if (ret != Z_STREAM_END) {
-		vOut.clear();
 		return Z_DATA_ERROR;
 	}
 
 	// VRAM data is 64 KB.
 	if (out_pos != buf_siz) {
-		vOut.clear();
 		return Z_DATA_ERROR;
 	}
 
 	// Data was read successfully.
-	vOut.resize(buf_siz);
 	return 0;
 }
 
@@ -185,10 +197,21 @@ int SuperMagicDriveTest::decompress(ao::uvector<uint8_t> &vOut, const uint8_t *p
  */
 int SuperMagicDriveTest::decompress(void)
 {
-	int ret = decompress(m_bin_data, bin_data_gz, (unsigned int)sizeof(bin_data_gz));
-	if (ret != 0)
+	m_bin_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
+	int ret = decompress(m_bin_data, OUT_BLOCK_UNZ_SIZE, bin_data_gz, (unsigned int)sizeof(bin_data_gz));
+	if (ret != 0) {
+		free(m_bin_data);
+		m_bin_data = nullptr;
 		return ret;
-	return decompress(m_smd_data, smd_data_gz, (unsigned int)sizeof(smd_data_gz));
+	}
+
+	m_smd_data = static_cast<uint8_t*>(aligned_malloc(16, OUT_BLOCK_UNZ_SIZE));
+	ret = decompress(m_smd_data, OUT_BLOCK_UNZ_SIZE, smd_data_gz, (unsigned int)sizeof(smd_data_gz));
+	if (ret != 0) {
+		free(m_smd_data);
+		m_smd_data = nullptr;
+	}
+	return ret;
 }
 
 /**
@@ -196,9 +219,9 @@ int SuperMagicDriveTest::decompress(void)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 {
-	unique_ptr<uint8_t[]> buf(new uint8_t[SuperMagicDrive::SMD_BLOCK_SIZE]);
-	SuperMagicDrive::decodeBlock_cpp(buf.get(), m_smd_data.data());
-	EXPECT_EQ(0, memcmp(m_bin_data.data(), buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
 /**
@@ -206,11 +229,37 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 {
-	unique_ptr<uint8_t[]> buf(new uint8_t[SuperMagicDrive::SMD_BLOCK_SIZE]);
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		SuperMagicDrive::decodeBlock_cpp(buf.get(), m_smd_data.data());
+		SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
 	}
 }
+
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+/**
+ * Test the SSE2-optimized SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
+{
+	// TODO: Check for SSE2 capabilities.
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+}
+
+/**
+ * Benchmark the standard SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
+{
+	// TODO: Check for SSE2 capabilities.
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
+	}
+}
+#endif
 
 } }
 
@@ -231,5 +280,10 @@ extern "C" int gtest_main(int argc, char *argv[])
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	int ret = RUN_ALL_TESTS();
+
+	// Free the allocated data blocks.
+	aligned_free(LibRomData::Tests::SuperMagicDriveTest::m_bin_data);
+	aligned_free(LibRomData::Tests::SuperMagicDriveTest::m_smd_data);
+	return ret;
 }

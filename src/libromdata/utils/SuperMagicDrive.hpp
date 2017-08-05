@@ -23,6 +23,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__
 
 #include "librpbase/common.h"
+
 #include <stdint.h>
 
 namespace LibRomData {
@@ -36,6 +37,9 @@ class SuperMagicDrive
 		RP_DISABLE_COPY(SuperMagicDrive)
 
 	public:
+		/** Internal algorithms. **/
+		// NOTE: These are public to allow for unit tests and benchmarking.
+
 		/**
 		 * Decode a Super Magic Drive interleaved block.
 		 * Standard version using regular C++ code.
@@ -44,12 +48,25 @@ class SuperMagicDrive
 		 */
 		static void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+		/**
+		 * Decode a Super Magic Drive interleaved block.
+		 * SSE2-optimized version.
+		 * NOTE: Pointers must be 16-byte aligned.
+		 * @param dest	[out] Destination block. (Must be 16 KB.)
+		 * @param src	[in] Source block. (Must be 16 KB.)
+		 */
+		static void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+#endif
+
 	public:
 		// SMD block size.
 		static const unsigned int SMD_BLOCK_SIZE = 16384;
 
 		/**
 		 * Decode a Super Magic Drive interleaved block.
+		 * NOTE: Pointers must be 16-byte aligned if using SSE2.
 		 * @param pDest	[out] Destination block. (Must be 16 KB.)
 		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
@@ -58,13 +75,21 @@ class SuperMagicDrive
 
 /**
  * Decode a Super Magic Drive interleaved block.
+ * NOTE: Pointers must be 16-byte aligned if using SSE2.
  * @param dest	[out] Destination block. (Must be 16 KB.)
  * @param src	[in] Source block. (Must be 16 KB.)
  */
 inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
-	// TODO: Add an SSE2-optimized version.
+	// TODO:
+	// - Common cpuid macro that works for gcc and msvc.
+	// - Use pthread_once() + cpuid to check if the system supports SSE2.
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+	decodeBlock_sse2(pDest, pSrc);
+#else
 	decodeBlock_cpp(pDest, pSrc);
+#endif
 }
 
 }

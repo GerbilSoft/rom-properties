@@ -144,6 +144,23 @@ IF(ENABLE_DECRYPTION)
 		)
 ENDIF(ENABLE_DECRYPTION)
 
+# Optimized sources.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	SET(libromdata_OPTIMIZE_SRCS
+		utils/SuperMagicDrive_sse2.cpp
+		)
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSE2_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSE2_FLAG "-msse2")
+	ENDIF()
+	SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_sse2.cpp
+		APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")
+ENDIF()
+UNSET(arch)
+
 ######################
 # Build the library. #
 ######################
@@ -153,6 +170,7 @@ ADD_LIBRARY(romdata8 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata8 rpbase8)
 
@@ -161,6 +179,7 @@ ADD_LIBRARY(romdata16 STATIC
 	${libromdata_SRCS} ${libromdata_H}
 	${libromdata_OS_SRCS} ${libromdata_OS_H}
 	${libromdata_CRYPTO_SRCS} ${libromdata_CRYPTO_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_LINK_LIBRARIES(romdata16 rpbase16)
 

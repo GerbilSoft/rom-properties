@@ -31,6 +31,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
@@ -545,13 +546,20 @@ MegaDrive::MegaDrive(IRpFile *file)
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
 
 				// First bank needs to be deinterleaved.
-				unique_ptr<uint8_t[]> block(new uint8_t[SuperMagicDrive::SMD_BLOCK_SIZE * 2]);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = block.get() + SuperMagicDrive::SMD_BLOCK_SIZE;
+				uint8_t *const block = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2));
+				assert(block != nullptr);
+				if (!block) {
+					// aligned_malloc() failed.
+					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+					break;
+				}
+				uint8_t *const smd_data = block;
+				uint8_t *const bin_data = block + SuperMagicDrive::SMD_BLOCK_SIZE;
 				size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
 				if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
 					// Short read. ROM is invalid.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+					aligned_free(block);
 					break;
 				}
 
@@ -562,6 +570,7 @@ MegaDrive::MegaDrive(IRpFile *file)
 				// Vector table is at 0.
 				memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
 				memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+				aligned_free(block);
 				break;
 			}
 
@@ -912,15 +921,19 @@ int MegaDrive::loadFieldData(void)
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
 			// Load the 16K block and deinterleave it.
 			if (d->file->size() >= (512 + (2*1024*1024) + 16384)) {
-				unique_ptr<uint8_t[]> block(new uint8_t[SuperMagicDrive::SMD_BLOCK_SIZE * 2]);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = block.get() + SuperMagicDrive::SMD_BLOCK_SIZE;
-				size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
-				if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
-					// Deinterleave the block.
-					SuperMagicDrive::decodeBlock(bin_data, smd_data);
-					memcpy(header, bin_data, sizeof(header));
-					header_loaded = true;
+				uint8_t *const block = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2));
+				assert(block != nullptr);
+				if (block) {
+					uint8_t *const smd_data = block;
+					uint8_t *const bin_data = block + SuperMagicDrive::SMD_BLOCK_SIZE;
+					size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+					if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
+						// Deinterleave the block.
+						SuperMagicDrive::decodeBlock(bin_data, smd_data);
+						memcpy(header, bin_data, sizeof(header));
+						header_loaded = true;
+					}
+					aligned_free(block);
 				}
 			}
 		} else {
