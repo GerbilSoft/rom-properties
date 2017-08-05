@@ -108,4 +108,9 @@
 # define unlikely(x)	x
 #endif
 
+// C99 restrict macro.
+// NOTE: gcc only defines restrict in C, not C++,
+// so use __restrict on both gcc and MSVC.
+#define RESTRICT __restrict
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

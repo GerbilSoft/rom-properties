@@ -47,6 +47,7 @@ SET(libromdata_SRCS
 	disc/NCCHReader.cpp
 	disc/CIAReader.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
+	utils/SuperMagicDrive.cpp
 	)
 # Headers.
 SET(libromdata_H
@@ -120,6 +121,7 @@ SET(libromdata_H
 	disc/NCCHReader_p.hpp
 	disc/CIAReader.hpp
 	config/TImageTypesConfig.hpp
+	utils/SuperMagicDrive.hpp
 	)
 
 IF(ENABLE_XML)
