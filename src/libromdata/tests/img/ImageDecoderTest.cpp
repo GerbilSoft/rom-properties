@@ -371,13 +371,7 @@ void ImageDecoderTest::Compare_RpImage(
 	const int stride_expected = pImgExpected->stride();
 	const int stride_actual   = pImgActual->stride();
 	for (unsigned int y = (unsigned int)pImgExpected->height(); y > 0; y--) {
-		for (unsigned int x = 0; x < (unsigned int)pImgExpected->width(); x++) {
-			if (((uint32_t*)pBitsExpected)[x] != ((uint32_t*)pBitsActual)[x]) {
-				printf("ERR: (%u,%u): exp == %08X, act == %08X\n",
-				       x, y, ((uint32_t*)pBitsExpected)[x], ((uint32_t*)pBitsActual)[x]);
-			}
-		}
-		EXPECT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
+		ASSERT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
 			"Decoded image does not match the expected PNG image.";
 		pBitsExpected += stride_expected;
 		pBitsActual   += stride_actual;
@@ -630,7 +624,23 @@ INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
 			_RP("Alpha/A8.png")))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// PVR tests. (SmallVQ)
+// PVR tests. (square twiddled)
+INSTANTIATE_TEST_CASE_P(PVR_SqTwiddled, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("PVR/bg_00.pvr.gz"),
+			_RP("PVR/bg_00.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PVR tests. (VQ)
+INSTANTIATE_TEST_CASE_P(PVR_VQ, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("PVR/mr_128k_huti.pvr.gz"),
+			_RP("PVR/mr_128k_huti.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PVR tests. (Small VQ)
 INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
