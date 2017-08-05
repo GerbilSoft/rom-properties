@@ -56,12 +56,6 @@ FOREACH(test_fst ${test_fsts})
 			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
 			"$<TARGET_FILE_DIR:GcnFstTest>/fst_data/${test_fst}"
 		)
-	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
-			"${CMAKE_CURRENT_BINARY_DIR}/fst_data/${test_fst}"
-		)
 ENDFOREACH(test_fst test_fsts)
 
 # ImageDecoder test.
@@ -98,11 +92,5 @@ FOREACH(test_image ${ImageDecoderTest_images})
 		ARGS -E copy_if_different
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
 			"$<TARGET_FILE_DIR:ImageDecoderTest>/ImageDecoder_data/${test_image}"
-		)
-	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data/${test_image}"
-			"${CMAKE_CURRENT_BINARY_DIR}/ImageDecoder_data/${test_image}"
 		)
 ENDFOREACH(test_image ${ImageDecoderTest_images})
