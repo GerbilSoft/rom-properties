@@ -1,1 +1,2 @@
 *.awk	text eol=lf
+*.dfa	text eol=lf
