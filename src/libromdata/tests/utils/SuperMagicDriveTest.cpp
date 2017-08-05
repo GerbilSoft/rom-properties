@@ -268,6 +268,8 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 }
 #endif /* SMD_HAS_SSE2 */
 
+// NOTE: Add more instruction sets to the #ifdef if other optimizations are added.
+#ifdef SMD_HAS_SSE2
 /**
  * Test the decodeBlock() dispatch function.
  */
@@ -290,6 +292,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 		SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
 	}
 }
+#endif /* SMD_HAS_SSE2 */
 
 } }
 
