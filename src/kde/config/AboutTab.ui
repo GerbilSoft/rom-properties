@@ -85,7 +85,7 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="vboxCredits">
+         <layout class="QVBoxLayout" name="vboxFraCredits">
           <property name="margin">
            <number>8</number>
           </property>
@@ -117,7 +117,7 @@ QWidget#scrlCreditsContents {
                <height>313</height>
               </rect>
              </property>
-             <layout class="QVBoxLayout" name="vboxCredits_2">
+             <layout class="QVBoxLayout" name="vboxScrlCredits">
               <property name="margin">
                <number>0</number>
               </property>
@@ -165,24 +165,57 @@ QWidget#scrlCreditsContents {
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="vboxLibraries">
+         <layout class="QVBoxLayout" name="vboxFraLibraries">
           <property name="margin">
            <number>8</number>
           </property>
           <item>
-           <widget class="QLabel" name="lblLibraries">
-            <property name="textFormat">
-             <enum>Qt::PlainText</enum>
+           <widget class="QScrollArea" name="scrlLibraries">
+            <property name="styleSheet">
+             <string notr="true">QAbstractScrollArea {
+	background-color: transparent;
+}
+QWidget#scrlLibrariesContents {
+	background-color: transparent;
+} </string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
             </property>
-            <property name="openExternalLinks">
+            <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
+            <widget class="QWidget" name="scrlLibrariesContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>433</width>
+               <height>310</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="vboxScrlLibraries">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="lblLibraries">
+                <property name="textFormat">
+                 <enum>Qt::PlainText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="openExternalLinks">
+                 <bool>true</bool>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
          </layout>
@@ -203,24 +236,57 @@ QWidget#scrlCreditsContents {
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="vboxDebugInfo">
+         <layout class="QVBoxLayout" name="vboxFraDebugInfo">
           <property name="margin">
            <number>8</number>
           </property>
           <item>
-           <widget class="QLabel" name="lblDebugInfo">
-            <property name="textFormat">
-             <enum>Qt::PlainText</enum>
+           <widget class="QScrollArea" name="scrlDebugInfo">
+            <property name="styleSheet">
+             <string notr="true">QAbstractScrollArea {
+	background-color: transparent;
+}
+QWidget#scrlDebugInfoContents {
+	background-color: transparent;
+} </string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
             </property>
-            <property name="openExternalLinks">
+            <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
+            <widget class="QWidget" name="scrlDebugInfoContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>433</width>
+               <height>310</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="vboxScrlDebugInfo">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="lblDebugInfo">
+                <property name="textFormat">
+                 <enum>Qt::PlainText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="openExternalLinks">
+                 <bool>true</bool>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
          </layout>
@@ -241,24 +307,57 @@ QWidget#scrlCreditsContents {
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="vboxSupport">
+         <layout class="QVBoxLayout" name="vboxFraSupport">
           <property name="margin">
            <number>8</number>
           </property>
           <item>
-           <widget class="QLabel" name="lblSupport">
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           <widget class="QScrollArea" name="scrlSupport">
+            <property name="styleSheet">
+             <string notr="true">QAbstractScrollArea {
+	background-color: transparent;
+}
+QWidget#scrlSupportContents {
+	background-color: transparent;
+} </string>
             </property>
-            <property name="wordWrap">
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <property name="openExternalLinks">
-             <bool>true</bool>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
+            <widget class="QWidget" name="scrlSupportContents">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>433</width>
+               <height>310</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="vboxScrlSupport">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="lblSupport">
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="openExternalLinks">
+                 <bool>true</bool>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
          </layout>
