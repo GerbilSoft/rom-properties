@@ -181,19 +181,21 @@ void AboutTabPrivate::initCreditsTab(void)
 		CreditType_t type;
 		const char *name;
 		const char *url;
+		const char *linkText;
 		const char *sub;
 	};
 
 	// Credits data.
 	static const CreditsData_t CreditsData[] = {
 		// Developers
-		{CT_DEVELOPER,		"Egor", "egor@opensrc.club", nullptr},
+		{CT_DEVELOPER,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
+		{CT_CONTINUE,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
 
 		// Contributors
-		{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr},
+		{CT_CONTRIBUTOR,	"CheatFreak47", nullptr, nullptr, nullptr},
 
 		// End of list
-		{CT_MAX, nullptr, nullptr, nullptr}
+		{CT_MAX, nullptr, nullptr, nullptr, nullptr}
 	};
 
 	CreditType_t lastCreditType = CT_CONTINUE;
@@ -232,14 +234,17 @@ void AboutTabPrivate::initCreditsTab(void)
 
 		// Append the contributor's name.
 		sCredits += br + sIndent + chrBullet + QChar(L' ');
-		if (creditsData->url) {
-			sCredits += QLatin1String("<a href='") +
-				QLatin1String(creditsData->url) +
-				QLatin1String("'>");
-		}
 		sCredits += QString::fromUtf8(creditsData->name);
 		if (creditsData->url) {
-			sCredits += QLatin1String("</a>");
+			sCredits += QLatin1String(" &lt;<a href='") +
+				QLatin1String(creditsData->url) +
+				QLatin1String("'>");
+			if (creditsData->linkText) {
+				sCredits += QLatin1String(creditsData->linkText);
+			} else {
+				sCredits += QLatin1String(creditsData->url);
+			}
+			sCredits += QLatin1String("</a>&gt;");
 		}
 		if (creditsData->sub) {
 			sCredits += QLatin1String(" (") +
