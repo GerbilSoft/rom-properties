@@ -82,6 +82,11 @@ class AboutTabPrivate
 		 * Initialize the "Libraries" tab.
 		 */
 		void initLibrariesTab(void);
+
+		/**
+		 * Initialize the "Support" tab.
+		 */
+		void initSupportTab(void);
 };
 
 /** AboutTabPrivate **/
@@ -313,6 +318,59 @@ void AboutTabPrivate::initLibrariesTab(void)
 	ui.lblLibraries->setText(sLibraries);
 }
 
+/**
+ * Initialize the "Support" tab.
+ */
+void AboutTabPrivate::initSupportTab(void)
+{
+	// lblSupport is RichText.
+
+	// Useful strings.
+	const QString br = QLatin1String("<br/>\n");
+	const QChar chrBullet = 0x2022;  // U+2022: BULLET
+
+	QString sSupport;
+	sSupport.reserve(4096);
+	sSupport = AboutTab::tr(
+		"For technical support, you can visit the following websites:") + br;
+
+	struct supportSite_t {
+		const char *name;
+		const char *url;
+	};
+
+	// Support sites.
+	const supportSite_t supportSites[] = {
+		{QT_TRANSLATE_NOOP(AboutTab, "Sonic Retro"), "https://forums.sonicretro.org/index.php?showtopic=35692"},
+		{QT_TRANSLATE_NOOP(AboutTab, "GBAtemp"), "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
+		{nullptr, nullptr}
+	};
+
+	for (const supportSite_t *supportSite = &supportSites[0];
+	     supportSite->name != nullptr; supportSite++)
+	{
+		QString siteUrl = QLatin1String(supportSite->url);
+		QString siteName = QLatin1String(supportSite->name);
+		QString siteUrlHtml = QLatin1String("<a href=\"") +
+					siteUrl +
+					QLatin1String("\">") +
+					siteName +
+					QLatin1String("</a>");
+
+		sSupport += chrBullet + QChar(L' ') + siteUrlHtml + br;
+	}
+
+	// Email the author.
+	sSupport += br +
+		AboutTab::tr("You can also email the developer directly:") + br +
+		chrBullet + QChar(L' ') + QLatin1String(
+			"<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
+			"gerbilsoft@gerbilsoft.com</a>");
+
+	// We're done building the string.
+	ui.lblSupport->setText(sSupport);
+}
+
 /** AboutTab **/
 
 AboutTab::AboutTab(QWidget *parent)
@@ -325,6 +383,7 @@ AboutTab::AboutTab(QWidget *parent)
 	// Initialize the title and tabs.
 	d->initProgramTitleText();
 	d->initLibrariesTab();
+	d->initSupportTab();
 }
 
 AboutTab::~AboutTab()
