@@ -190,8 +190,8 @@ QWidget#scrlLibrariesContents {
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>433</width>
-               <height>310</height>
+               <width>443</width>
+               <height>313</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="vboxScrlLibraries">
@@ -200,77 +200,6 @@ QWidget#scrlLibrariesContents {
               </property>
               <item>
                <widget class="QLabel" name="lblLibraries">
-                <property name="textFormat">
-                 <enum>Qt::PlainText</enum>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                </property>
-                <property name="openExternalLinks">
-                 <bool>true</bool>
-                </property>
-                <property name="textInteractionFlags">
-                 <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tabDebugInfo">
-      <attribute name="title">
-       <string>&amp;Debug Info</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="vboxDebugInfoTab">
-       <item>
-        <widget class="QFrame" name="fraDebugInfo">
-         <property name="frameShape">
-          <enum>QFrame::Box</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QVBoxLayout" name="vboxFraDebugInfo">
-          <property name="margin">
-           <number>8</number>
-          </property>
-          <item>
-           <widget class="QScrollArea" name="scrlDebugInfo">
-            <property name="styleSheet">
-             <string notr="true">QAbstractScrollArea {
-	background-color: transparent;
-}
-QWidget#scrlDebugInfoContents {
-	background-color: transparent;
-} </string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="scrlDebugInfoContents">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>433</width>
-               <height>310</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="vboxScrlDebugInfo">
-              <property name="margin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="lblDebugInfo">
                 <property name="textFormat">
                  <enum>Qt::PlainText</enum>
                 </property>
@@ -332,8 +261,8 @@ QWidget#scrlSupportContents {
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>433</width>
-               <height>310</height>
+               <width>443</width>
+               <height>313</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="vboxScrlSupport">
