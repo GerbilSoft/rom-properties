@@ -57,7 +57,9 @@
 // TODO: Separate out the actual DDS texture loader
 // from the RomData subclass?
 #include "DirectDrawSurface.hpp"
+#include "SegaPVR.hpp"
 using LibRomData::DirectDrawSurface;
+using LibRomData::SegaPVR;
 
 // DirectDraw Surface structs.
 #include "dds_structs.h"
@@ -231,7 +233,7 @@ void ImageDecoderTest::SetUp(void)
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(rp_string_to_utf8(path).c_str(), "rb");
-	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file:"
+	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file: "
 		<< rp_string_to_utf8(mode.dds_gz_filename);
 
 	// Get the decompressed file size.
@@ -369,7 +371,13 @@ void ImageDecoderTest::Compare_RpImage(
 	const int stride_expected = pImgExpected->stride();
 	const int stride_actual   = pImgActual->stride();
 	for (unsigned int y = (unsigned int)pImgExpected->height(); y > 0; y--) {
-		ASSERT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
+		for (unsigned int x = 0; x < (unsigned int)pImgExpected->width(); x++) {
+			if (((uint32_t*)pBitsExpected)[x] != ((uint32_t*)pBitsActual)[x]) {
+				printf("ERR: (%u,%u): exp == %08X, act == %08X\n",
+				       x, y, ((uint32_t*)pBitsExpected)[x], ((uint32_t*)pBitsActual)[x]);
+			}
+		}
+		EXPECT_EQ(0, memcmp(pBitsExpected, pBitsActual, row_bytes)) <<
 			"Decoded image does not match the expected PNG image.";
 		pBitsExpected += stride_expected;
 		pBitsActual   += stride_actual;
@@ -381,6 +389,9 @@ void ImageDecoderTest::Compare_RpImage(
  */
 TEST_P(ImageDecoderTest, decodeTest)
 {
+	// Parameterized test.
+	const ImageDecoderTest_mode &mode = GetParam();
+
 	// Load the PNG image.
 	unique_ptr<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
@@ -388,12 +399,22 @@ TEST_P(ImageDecoderTest, decodeTest)
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
-	// Attempt to decode the DDS image.
-	// TODO: Separate out the actual DDS texture loader
-	// from the RomData subclass?
+	// Open the image as an IRpFile.
 	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
-	m_romData = new DirectDrawSurface(m_f_dds);
+
+	// Determine the image type by checking the last 7 characters of the filename.
+	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
+	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz")) {
+		// DDS image.
+		m_romData = new DirectDrawSurface(m_f_dds);
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz")) {
+		// PVR/GVR image.
+		m_romData = new SegaPVR(m_f_dds);
+	} else {
+		ASSERT_TRUE(false) << "Unknown image type.";
+	}
 	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
 	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
@@ -607,6 +628,39 @@ INSTANTIATE_TEST_CASE_P(DDS_Alpha, ImageDecoderTest,
 		ImageDecoderTest_mode(
 			_RP("Alpha/A8.dds.gz"),
 			_RP("Alpha/A8.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// PVR tests. (SmallVQ)
+INSTANTIATE_TEST_CASE_P(PVR_SmallVQ, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("PVR/drumfuta1.pvr.gz"),
+			_RP("PVR/drumfuta1.png")),
+		ImageDecoderTest_mode(
+			_RP("PVR/drum_ref.pvr.gz"),
+			_RP("PVR/drum_ref.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// GVR tests. (RGB5A3)
+INSTANTIATE_TEST_CASE_P(GVR_RGB5A3, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("GVR/zanki_sonic.gvr.gz"),
+			_RP("GVR/zanki_sonic.png")))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// GVR tests. (DXT1)
+INSTANTIATE_TEST_CASE_P(GVR_DXT1, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			_RP("GVR/paldam_off.gvr.gz"),
+			_RP("GVR/paldam_off.png")),
+		ImageDecoderTest_mode(
+			_RP("GVR/paldam_on.gvr.gz"),
+			_RP("GVR/paldam_on.png")),
+		ImageDecoderTest_mode(
+			_RP("GVR/weeklytitle.gvr.gz"),
+			_RP("GVR/weeklytitle.png")))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 } }
