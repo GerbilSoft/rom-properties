@@ -244,6 +244,15 @@ ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
 
+# CPU-specific sources.
+# TODO: Move arch detection to platform.cmake.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	SET(librpbase_CPU_SRCS cpuflags_x86.c)
+	SET(librpbase_CPU_H cpuflags_x86.h)
+ENDIF()
+UNSET(arch)
+
 # Aligned malloc() functions.
 # NOTE: MinGW-w64 only has _aligned_malloc().
 # It doesn't even have inline function wrappers
@@ -267,6 +276,7 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
+	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
 
@@ -277,6 +287,7 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
+	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
 

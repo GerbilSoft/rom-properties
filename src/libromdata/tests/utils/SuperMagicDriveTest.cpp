@@ -261,6 +261,32 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 }
 #endif
 
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+/**
+ * Test the decodeBlock() dispatch function.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_test)
+{
+	// TODO: Check for SSE2 capabilities.
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+}
+
+/**
+ * Benchmark the decodeBlock() dispatch function.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
+{
+	// TODO: Check for SSE2 capabilities.
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
+	}
+}
+#endif
+
 } }
 
 /**

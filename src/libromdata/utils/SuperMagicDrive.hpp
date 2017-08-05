@@ -26,6 +26,12 @@
 
 #include <stdint.h>
 
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+# include "librpbase/cpuflags_x86.h"
+# define SMD_HAS_SSE2 1
+#endif
+
 namespace LibRomData {
 
 class SuperMagicDrive
@@ -48,17 +54,16 @@ class SuperMagicDrive
 		 */
 		static void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#if SMD_HAS_SSE2
 		/**
 		 * Decode a Super Magic Drive interleaved block.
 		 * SSE2-optimized version.
 		 * NOTE: Pointers must be 16-byte aligned.
-		 * @param dest	[out] Destination block. (Must be 16 KB.)
-		 * @param src	[in] Source block. (Must be 16 KB.)
+		 * @param pDest	[out] Destination block. (Must be 16 KB.)
+		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
 		static void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
-#endif
+#endif /* SMD_HAS_SSE2 */
 
 	public:
 		// SMD block size.
@@ -81,15 +86,14 @@ class SuperMagicDrive
  */
 inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
-	// TODO:
-	// - Common cpuid macro that works for gcc and msvc.
-	// - Use pthread_once() + cpuid to check if the system supports SSE2.
-#if defined(__i386__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
-	decodeBlock_sse2(pDest, pSrc);
-#else
-	decodeBlock_cpp(pDest, pSrc);
+#ifdef SMD_HAS_SSE2
+	if (RP_CPU_HasSSE2()) {
+		decodeBlock_sse2(pDest, pSrc);
+	} else
 #endif
+	{
+		decodeBlock_cpp(pDest, pSrc);
+	}
 }
 
 }
