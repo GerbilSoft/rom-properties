@@ -23,6 +23,7 @@
 // since RpPng_gdiplus.cpp uses the backend directly.
 
 #include "RpGdiplusBackend.hpp"
+#include "../aligned_malloc.h"
 
 // C includes.
 #include <stdlib.h>
@@ -100,7 +101,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// palette data every time the underlying image
 		// is requested.
 		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
-		m_pGdipPalette = (Gdiplus::ColorPalette*)calloc(1, gdipPalette_sz);
+		m_pGdipPalette = (Gdiplus::ColorPalette*)aligned_malloc(16, gdipPalette_sz);
 		if (!m_pGdipPalette) {
 			// ENOMEM
 			delete m_pGdipBmp;
@@ -108,6 +109,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 			clear_properties();
 			return;
 		}
+		memset(m_pGdipPalette, 0, gdipPalette_sz);
 		m_pGdipPalette->Flags = 0;
 		m_pGdipPalette->Count = 256;
 	}
@@ -123,8 +125,8 @@ RpGdiplusBackend::~RpGdiplusBackend()
 		delete m_pGdipBmp;
 	}
 
-	free(m_pImgBuf);
-	free(m_pGdipPalette);
+	aligned_free(m_pImgBuf);
+	aligned_free(m_pGdipPalette);
 	GdiplusHelper::ShutdownGDIPlus(m_gdipToken);
 }
 
@@ -230,7 +232,7 @@ Gdiplus::Status RpGdiplusBackend::lock(void)
 
 	if (!m_pImgBuf) {
 		// Allocate the image buffer.
-		m_pImgBuf = malloc(m_gdipBmpData.Stride * this->height);
+		m_pImgBuf = aligned_malloc(16, m_gdipBmpData.Stride * this->height);
 		if (!m_pImgBuf) {
 			// malloc() failed.
 			return Gdiplus::Status::OutOfMemory;
