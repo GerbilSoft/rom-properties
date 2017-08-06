@@ -125,10 +125,11 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
-		m_palette = (uint32_t*)calloc(256, sizeof(*m_palette));
+		const size_t palette_sz = 256*sizeof(*m_palette);
+		m_palette = static_cast<uint32_t*>(aligned_malloc(16, palette_sz));
 		if (!m_palette) {
 			// Failed to allocate memory.
-			free(m_data);
+			aligned_free(m_data);
 			m_data = nullptr;
 			m_data_len = 0;
 			clear_properties();
@@ -136,14 +137,15 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		}
 
 		// 256 colors allocated in the palette.
+		memset(m_palette, 0, palette_sz);
 		m_palette_len = 256;
 	}
 }
 
 rp_image_backend_default::~rp_image_backend_default()
 {
-	free(m_data);
-	free(m_palette);
+	aligned_free(m_data);
+	aligned_free(m_palette);
 }
 
 /** rp_image_private **/
