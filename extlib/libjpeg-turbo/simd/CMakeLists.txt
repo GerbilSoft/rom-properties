@@ -29,6 +29,12 @@ IF(WIN32)
 		SET(ProgramFiles "$ENV{ProgramFiles}")
 	ENDIF(DEFINED ENV{ProgramW6432})
 
+	# Replace backslashes with slashes.
+	STRING(REPLACE "\\" "/" LocalAppData    "${LocalAppData}")
+	STRING(REPLACE "\\" "/" ProgramFiles    "${ProgramFiles}")
+	STRING(REPLACE "\\" "/" ProgramFilesX86 "${ProgramFilesX86}")
+
+	# Find NASM.
 	FIND_PROGRAM(NASM nasm
 		PATHS	"${LocalAppData}/NASM"
 			"${ProgramFiles}/NASM"
