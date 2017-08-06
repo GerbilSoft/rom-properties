@@ -113,4 +113,16 @@
 // so use __restrict on both gcc and MSVC.
 #define RESTRICT __restrict
 
+// typeof() for MSVC.
+#ifdef _MSC_VER
+#define typeof(x) decltype(x)
+#endif
+
+/**
+ * Alignment macro.
+ * @param a	Alignment value.
+ * @param x	Byte count to align.
+ */
+#define ALIGN(a, x)	(((x)+((a)-1))&~((typeof(x))((a)-1)))
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

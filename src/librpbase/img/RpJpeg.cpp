@@ -577,7 +577,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
 			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride + 16, 1);
 		buffer[0] = reinterpret_cast<JSAMPROW>(
-			(reinterpret_cast<intptr_t>(buffer[0]) + 15) & ~((intptr_t)15));
+			(ALIGN(16, reinterpret_cast<intptr_t>(buffer[0]))));
 
 		switch (cinfo.out_color_space) {
 			case JCS_RGB:

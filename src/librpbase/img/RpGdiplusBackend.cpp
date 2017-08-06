@@ -226,7 +226,7 @@ Gdiplus::Status RpGdiplusBackend::lock(void)
 	// We're allocating our own image buffer in order to set a custom stride.
 	// Stride should be a multiple of 16 bytes for SSE2 optimization.
 	m_gdipBmpData.Stride = this->width << m_bytesppShift;
-	m_gdipBmpData.Stride = (m_gdipBmpData.Stride + 15) & ~15;
+	m_gdipBmpData.Stride = ALIGN(16, m_gdipBmpData.Stride);
 
 	if (!m_pImgBuf) {
 		// Allocate the image buffer.
@@ -707,7 +707,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	// HBITMAP stride is a multiple of 4.
 	const uint8_t *gdip_px = static_cast<const uint8_t*>(pBmpData->Scan0);
 	const size_t row_bytes = pBmpData->Width;
-	const int hbmp_stride = (row_bytes + 3) & ~3;
+	const int hbmp_stride = ALIGN(4, row_bytes);
 	const int gdip_stride = pBmpData->Stride;
 	for (int y = (int)pBmpData->Height; y > 0; y--) {
 		memcpy(pvBits, gdip_px, row_bytes);
