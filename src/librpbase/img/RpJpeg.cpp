@@ -514,22 +514,22 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					// Process 2 pixels per iteration.
 					unsigned int x = cinfo.output_width;
 					for (; x > 1; x -= 2, dest += 2, src += 2*3) {
-						dest[0].a = 0xFF;
-						dest[0].r = src[0];
-						dest[0].g = src[1];
 						dest[0].b = src[2];
+						dest[0].g = src[1];
+						dest[0].r = src[0];
+						dest[0].a = 0xFF;
 
-						dest[1].a = 0xFF;
-						dest[1].r = src[3];
-						dest[1].g = src[4];
 						dest[1].b = src[5];
+						dest[1].g = src[4];
+						dest[1].r = src[3];
+						dest[1].a = 0xFF;
 					}
 					// Remaining pixels.
 					for (; x > 0; x--, dest++, src += 3) {
-						dest->a = 0xFF;
-						dest->r = src[0];
-						dest->g = src[1];
 						dest->b = src[2];
+						dest->g = src[1];
+						dest->r = src[0];
+						dest->a = 0xFF;
 					}
 
 					// Next line.
@@ -552,24 +552,24 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 8) {
 						unsigned int k = src[3];
 
-						dest[0].a = 255;		// Alpha
-						dest[0].r = k * src[0] / 255;	// Red
-						dest[0].g = k * src[1] / 255;	// Green
 						dest[0].b = k * src[2] / 255;	// Blue
+						dest[0].g = k * src[1] / 255;	// Green
+						dest[0].r = k * src[0] / 255;	// Red
+						dest[0].a = 255;		// Alpha
 
 						k = src[7];
-						dest[1].a = 255;		// Alpha
-						dest[1].r = k * src[4] / 255;	// Red
-						dest[1].g = k * src[5] / 255;	// Green
 						dest[1].b = k * src[6] / 255;	// Blue
+						dest[1].g = k * src[5] / 255;	// Green
+						dest[1].r = k * src[4] / 255;	// Red
+						dest[1].a = 255;		// Alpha
 					}
 					// Remaining pixels.
 					for (; x > 0; x--, dest++, src += 4) {
 						unsigned int k = src[3];
-						dest->a = 255;			// Alpha
-						dest->r = k * src[0] / 255;	// Red
-						dest->g = k * src[1] / 255;	// Green
 						dest->b = k * src[2] / 255;	// Blue
+						dest->g = k * src[1] / 255;	// Green
+						dest->r = k * src[0] / 255;	// Red
+						dest->a = 255;			// Alpha
 					}
 
 					// Next line.

@@ -80,24 +80,12 @@ void RpJpegPrivate::decodeBGRtoARGB(rp_image *img, jpeg_decompress_struct *cinfo
 			_mm_store_si128(xmm_dest+3, val);
 		}
 
-		// Process 2 pixels per iteration.
-		for (; x > 1; x -= 2, dest += 2, src += 2*3) {
-			dest[0].a = 0xFF;
-			dest[0].r = src[0];
-			dest[0].g = src[1];
-			dest[0].b = src[2];
-
-			dest[1].a = 0xFF;
-			dest[1].r = src[3];
-			dest[1].g = src[4];
-			dest[1].b = src[5];
-		}
 		// Remaining pixels.
 		for (; x > 0; x--, dest++, src += 3) {
-			dest->a = 0xFF;
-			dest->r = src[0];
-			dest->g = src[1];
 			dest->b = src[2];
+			dest->g = src[1];
+			dest->r = src[0];
+			dest->a = 0xFF;
 		}
 
 		// Next line.
