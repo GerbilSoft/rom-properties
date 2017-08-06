@@ -571,25 +571,25 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 		// Manual image expansion is needed.
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
 			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
-		while (cinfo.output_scanline < cinfo.output_height) {
-			// NOTE: jpeg_read_scanlines() increments the scanline value,
-			// so we have to save the rp_image scanline pointer first.
-			void *const vdest = img->scanLine(cinfo.output_scanline);
-			jpeg_read_scanlines(&cinfo, buffer, 1);
-			switch (cinfo.out_color_space) {
-				case JCS_RGB: {
-					// Convert from 24-bit BGR to 32-bit ARGB.
+		switch (cinfo.out_color_space) {
+			case JCS_RGB:
+				// Convert from 24-bit BGR to 32-bit ARGB.
 
-					// TODO: Optimized versions using standard C and SSSE3.
-					// The one listed below won't work as-is because libjpeg
-					// uses BGR instead of RGB.
-					// Reference:
-					// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
-					// - https://stackoverflow.com/a/2974266
+				// TODO: Optimized versions using standard C and SSSE3.
+				// The one listed below won't work as-is because libjpeg
+				// uses BGR instead of RGB.
+				// Reference:
+				// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
+				// - https://stackoverflow.com/a/2974266
+
+				while (cinfo.output_scanline < cinfo.output_height) {
+					// NOTE: jpeg_read_scanlines() increments the scanline value,
+					// so we have to save the rp_image scanline pointer first.
+					argb32_t *dest = static_cast<argb32_t*>(img->scanLine(cinfo.output_scanline));
+					jpeg_read_scanlines(&cinfo, buffer, 1);
+					const uint8_t *src = buffer[0];
 
 					// Process 2 pixels per iteration.
-					argb32_t *dest = static_cast<argb32_t*>(vdest);
-					const uint8_t *src = buffer[0];
 					unsigned int x;
 					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 2*3) {
 						dest[0].a = 0xFF;
@@ -611,13 +611,19 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					}
 					break;
 				}
+				break;
 
-				case JCS_CMYK: {
-					// Convert from CMYK to 32-bit ARGB.
-					// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
-					// TODO: Optimized version?
-					argb32_t *dest = static_cast<argb32_t*>(vdest);
+			case JCS_CMYK:
+				// Convert from CMYK to 32-bit ARGB.
+				// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
+				while (cinfo.output_scanline < cinfo.output_height) {
+					// NOTE: jpeg_read_scanlines() increments the scanline value,
+					// so we have to save the rp_image scanline pointer first.
+					argb32_t *dest = static_cast<argb32_t*>(img->scanLine(cinfo.output_scanline));
+					jpeg_read_scanlines(&cinfo, buffer, 1);
 					const uint8_t *src = buffer[0];
+
+					// TODO: Optimized version?
 					unsigned int x;
 					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 8) {
 						unsigned int k = src[3];
@@ -643,15 +649,14 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					}
 					break;
 				}
+				break;
 
-				default: {
-					assert(!"Unsupported JPEG colorspace.");
-					jpeg_finish_decompress(&cinfo);
-					jpeg_destroy_decompress(&cinfo);
-					delete img;
-					return nullptr;
-				}
-			}
+			default:
+				assert(!"Unsupported JPEG colorspace.");
+				jpeg_finish_decompress(&cinfo);
+				jpeg_destroy_decompress(&cinfo);
+				delete img;
+				return nullptr;
 		}
 
 		// Set the sBIT metadata.
