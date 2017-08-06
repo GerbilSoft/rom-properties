@@ -244,12 +244,24 @@ ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
 
-# CPU-specific sources.
+# CPU-specific and optimized sources.
 # TODO: Move arch detection to platform.cmake.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
+
+	# FIXME: Move the 24-bit BGR to ARGB SSSE3 code to a separate file.
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSSE3_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSSE3_FLAG "-mssse3")
+	ENDIF()
+	IF(SSSE3_FLAG)
+		SET_SOURCE_FILES_PROPERTIES(img/RpJpeg.cpp
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
+	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)
 

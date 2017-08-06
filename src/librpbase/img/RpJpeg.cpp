@@ -43,6 +43,11 @@ using std::unique_ptr;
 #include <jerror.h>
 #include <setjmp.h>
 
+// TODO: Split SSSE3 code out.
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <tmmintrin.h>
+
 #ifdef _MSC_VER
 // NOTE: jpegint.h does not have extern "C".
 // We're using it for DELAYLOAD verification.
@@ -346,7 +351,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	// later used with libjpeg-turbo. Prefixed so it doesn't conflict
 	// with libjpeg-turbo's headers.
 	static const int MY_JCS_EXT_BGRA = 13;
-	bool try_ext_bgra = true;	// True if image is JCS_RGB and we switch it to JCS_EXT_BGRA.
+	bool try_ext_bgra = false;	// True if we should try JCS_EXT_BGRA first.
 	bool tried_ext_bgra = false;	// True if we tried JCS_EXT_BGRA.
 
 	/** Step 1: Allocate and initialize JPEG decompression object. **/
@@ -567,18 +572,24 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	/** Step 6: while (scan lines remain to be read) jpeg_read_scanlines(...); */
 	row_stride = cinfo.output_width * cinfo.output_components;
 	if (!direct_copy) {
-		// Not a grayscale image, or JCS_EXT_BGRA isn't supported.
-		// Manual image expansion is needed.
+		// NOTE: jmemmgr's memory alignment is sizeof(double), so we'll
+		// need to allocate a bit more to get 16-byte alignment.
 		JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
-			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
+			((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride + 16, 1);
+		buffer[0] = reinterpret_cast<JSAMPROW>(
+			(reinterpret_cast<intptr_t>(buffer[0]) + 15) & ~((intptr_t)15));
+
 		switch (cinfo.out_color_space) {
 			case JCS_RGB:
 				// Convert from 24-bit BGR to 32-bit ARGB.
+				// NOTE: libjpeg-turbo has SSE2-optimized * to ARGB conversion,
+				// which is preferred because it usually skips an intermediate
+				// conversion step.
 
-				// TODO: Optimized versions using standard C and SSSE3.
-				// The one listed below won't work as-is because libjpeg
-				// uses BGR instead of RGB.
-				// Reference:
+				// TODO: Split into a separate file and add tests and benchmarking.
+				// Also, make use of this in ImageDecoder_Linear.cpp.
+
+				// SSSE3-optimized version based on:
 				// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 				// - https://stackoverflow.com/a/2974266
 
@@ -589,9 +600,35 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					jpeg_read_scanlines(&cinfo, buffer, 1);
 					const uint8_t *src = buffer[0];
 
+					// Process 16 pixels per iteration using SSSE3.
+					unsigned int x = cinfo.output_width;
+					__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
+					__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+					for (; x > 15; x -= 16, dest += 16, src += 16*3) {
+						const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src);
+						__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest);
+
+						__m128i sa = _mm_load_si128(xmm_src);
+						__m128i sb = _mm_load_si128(xmm_src+1);
+						__m128i sc = _mm_load_si128(xmm_src+2);
+
+						// FIXME: rp_image should have aligned rows.
+						__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
+						val = _mm_or_si128(val, alpha_mask);
+						_mm_storeu_si128(xmm_dest, val);
+						val = _mm_shuffle_epi8(_mm_alignr_epi8(sb, sa, 12), shuf_mask);
+						val = _mm_or_si128(val, alpha_mask);
+						_mm_storeu_si128(xmm_dest+1, val);
+						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sb, 8), shuf_mask);
+						val = _mm_or_si128(val, alpha_mask);
+						_mm_storeu_si128(xmm_dest+2, val);
+						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sc, 4), shuf_mask);
+						val = _mm_or_si128(val, alpha_mask);
+						_mm_storeu_si128(xmm_dest+3, val);
+					}
+
 					// Process 2 pixels per iteration.
-					unsigned int x;
-					for (x = cinfo.output_width; x > 1; x -= 2, dest += 2, src += 2*3) {
+					for (; x > 1; x -= 2, dest += 2, src += 2*3) {
 						dest[0].a = 0xFF;
 						dest[0].r = src[0];
 						dest[0].g = src[1];
