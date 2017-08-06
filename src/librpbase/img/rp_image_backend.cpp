@@ -32,9 +32,9 @@ static inline int calc_stride(int width, rp_image::Format format)
 {
 	switch (format) {
 		case rp_image::FORMAT_CI8:
-			return ALIGN(width, 16);
+			return ALIGN(16, width);
 		case rp_image::FORMAT_ARGB32:
-			return ALIGN(width * 4, 16);
+			return ALIGN(16, width * 4);
 		default:
 			// Invalid image format.
 			assert(!"Unsupported rp_image::Format.");
