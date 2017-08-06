@@ -63,7 +63,19 @@ static FORCEINLINE int RP_CPU_HasSSE2(void)
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
-	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);	
+	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);
+}
+
+/**
+ * Check if the CPU supports SSSE3.
+ * @return Non-zero if SSSE3 is supported; 0 if not.
+ */
+static FORCEINLINE int RP_CPU_HasSSSE3(void)
+{
+	if (unlikely(!RP_CPU_Flags_Init)) {
+		RP_CPU_InitCPUFlags();
+	}
+	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSSE3);
 }
 
 #ifdef __cplusplus
