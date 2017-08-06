@@ -656,15 +656,19 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 		return nullptr;
 	}
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
-	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+	argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
+
+	// TODO: Is it faster or slower to use argb32_t vs. shifting?
 
 	// Convert one line at a time. (24-bit -> ARGB32)
 	switch (px_format) {
 		case PXF_RGB888:
 			for (int y = 0; y < height; y++) {
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = 0xFF000000 | (img_buf[2] << 16) |
-						(img_buf[1] << 8) | img_buf[0];
+					px_dest->b = img_buf[0];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[2];
+					px_dest->a = 0xFF;
 					img_buf += 3;
 					px_dest++;
 				}
@@ -675,10 +679,11 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 
 		case PXF_BGR888:
 			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = 0xFF000000 | (img_buf[0] << 16) |
-						(img_buf[1] << 8) | img_buf[2];
+					px_dest->b = img_buf[2];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[0];
+					px_dest->a = 0xFF;
 					img_buf += 3;
 					px_dest++;
 				}
