@@ -351,7 +351,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 	// later used with libjpeg-turbo. Prefixed so it doesn't conflict
 	// with libjpeg-turbo's headers.
 	static const int MY_JCS_EXT_BGRA = 13;
-	bool try_ext_bgra = false;	// True if we should try JCS_EXT_BGRA first.
+	bool try_ext_bgra = true;	// True if we should try JCS_EXT_BGRA first.
 	bool tried_ext_bgra = false;	// True if we tried JCS_EXT_BGRA.
 
 	/** Step 1: Allocate and initialize JPEG decompression object. **/
