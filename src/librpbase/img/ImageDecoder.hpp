@@ -253,6 +253,7 @@ class ImageDecoder
 
 		/**
 		 * Convert a linear 32-bit RGB image to rp_image.
+		 * Standard version using regular C++ code.
 		 * @param px_format	[in] 32-bit pixel format.
 		 * @param width		[in] Image width.
 		 * @param height	[in] Image height.
@@ -261,7 +262,38 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromLinear32(PixelFormat px_format,
+		static rp_image *fromLinear32_cpp(PixelFormat px_format,
+			int width, int height,
+			const uint32_t *img_buf, int img_siz, int stride = 0);
+
+#ifdef IMAGEDECODER_HAS_SSSE3
+		/**
+		 * Convert a linear 32-bit RGB image to rp_image.
+		 * SSSE3-optimized version.
+		 * @param px_format	[in] 32-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 32-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear32_ssse3(PixelFormat px_format,
+			int width, int height,
+			const uint32_t *img_buf, int img_siz, int stride = 0);
+#endif /* IMAGEDECODER_HAS_SSSE3 */
+
+		/**
+		 * Convert a linear 32-bit RGB image to rp_image.
+		 * @param px_format	[in] 32-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] 32-bit image buffer.
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static inline rp_image *fromLinear32(PixelFormat px_format,
 			int width, int height,
 			const uint32_t *img_buf, int img_siz, int stride = 0);
 
@@ -508,6 +540,30 @@ inline rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 # endif /* IMAGEDECODER_HAS_SSSE3 */
 	{
 		return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+}
+
+/**
+ * Convert a linear 32-bit RGB image to rp_image.
+ * @param px_format	[in] 32-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] 32-bit image buffer.
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*2]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+inline rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+	int width, int height,
+	const uint32_t *img_buf, int img_siz, int stride)
+{
+# ifdef IMAGEDECODER_HAS_SSSE3
+	if (RP_CPU_HasSSSE3()) {
+		return fromLinear32_ssse3(px_format, width, height, img_buf, img_siz, stride);
+	} else
+# endif /* IMAGEDECODER_HAS_SSSE3 */
+	{
+		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 }
 
