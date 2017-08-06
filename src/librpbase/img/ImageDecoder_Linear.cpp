@@ -757,7 +757,8 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 
 	// sBIT for standard ARGB32.
-	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
 
 	// Convert one line at a time. (32-bit -> ARGB32)
 	// NOTE: All functions except PXF_HOST_ARGB32 are partially unrolled.
@@ -779,7 +780,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				}
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_A32);
 			break;
 
 		case PXF_HOST_ABGR32: {
@@ -817,7 +818,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_A32);
 			break;
 		}
 
@@ -843,7 +844,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_x32);
 			break;
 		}
 
@@ -869,7 +870,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_x32);
 			break;
 		}
 
@@ -895,7 +896,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_A32);
 			break;
 		}
 
@@ -934,7 +935,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_A32);
 			break;
 		}
 
@@ -960,7 +961,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_x32);
 			break;
 		}
 
@@ -986,7 +987,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
-			img->set_sBIT(&sBIT_32);
+			img->set_sBIT(&sBIT_x32);
 			break;
 		}
 
