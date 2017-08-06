@@ -265,10 +265,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 	// - https://stackoverflow.com/a/2974266
 
-	// 32-bit xRGB images don't have an alpha channel.
-	//                                 B G R  A
-	__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
-
 	// Determine the byte shuffle mask.
 	__m128i shuf_mask;
 	bool has_alpha;
@@ -306,10 +302,11 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			return nullptr;
 	}
 
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
-		// Process 16 pixels per iteration using SSSE3.
-		unsigned int x = (unsigned int)width;
-		if (has_alpha) {
+	if (has_alpha) {
+		// Image has a valid alpha channel.
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			// Process 16 pixels per iteration using SSSE3.
+			unsigned int x = (unsigned int)width;
 			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 				__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
@@ -331,7 +328,62 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 				val = _mm_shuffle_epi8(sd, shuf_mask);
 				_mm_store_si128(xmm_dest+3, val);
 			}
-		} else {
+
+			// Remaining pixels.
+			switch (px_format) {
+				case PXF_HOST_RGBA32:
+					// Host-endian RGBA32.
+					// Pixel copy is needed, with shifting.
+					for (; x > 0; x--) {
+						*px_dest = (*img_buf >> 8) | (*img_buf << 24);
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PXF_SWAP_ARGB32:
+					// Byteswapped ARGB32.
+					// Pixel copy is needed, with byteswapping.
+					for (; x > 0; x--) {
+						*px_dest = __swab32(*img_buf);
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PXF_SWAP_RGBA32:
+					// Byteswapped ABGR32.
+					// Pixel copy is needed, with shifting.
+					for (; x > 0; x--) {
+						const uint32_t px = __swab32(*img_buf);
+						*px_dest = (px >> 8) | (px << 24);
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				default:
+					assert(!"Unsupported 32-bit alpha pixel format.");
+					delete img;
+					return nullptr;
+			}
+
+			// Next line.
+			img_buf += src_stride_adj;
+			px_dest += dest_stride_adj;
+		}
+
+		// Set the sBIT metadata.
+		static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
+		img->set_sBIT(&sBIT_A32);
+	} else {
+		// Image does not have an alpha channel.
+		__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			// Process 16 pixels per iteration using SSSE3.
+			unsigned int x = (unsigned int)width;
+			for (; x > 15; x -= 16, px_dest += 16, img_buf += 16) {
 				const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 				__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
 
@@ -355,96 +407,65 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 				val = _mm_shuffle_epi8(sd, shuf_mask);
 				val = _mm_or_si128(val, alpha_mask);
 				_mm_store_si128(xmm_dest+3, val);
+			}
+
+			// Remaining pixels.
+			switch (px_format) {
+				case PXF_HOST_xRGB32:
+					// Host-endian XRGB32.
+					// Pixel copy is needed, with alpha channel masking.
+					for (; x > 0; x--) {
+						*px_dest = *img_buf | 0xFF000000;
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PXF_HOST_RGBx32:
+					// Host-endian RGBx32.
+					// Pixel copy is needed, with a right shift.
+					for (; x > 0; x--) {
+						*px_dest = (*img_buf >> 8) | 0xFF000000;
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PXF_SWAP_xRGB32:
+					// Byteswapped XRGB32.
+					// Pixel copy is needed, with byteswapping and alpha channel masking.
+					for (; x > 0; x--) {
+						*px_dest = __swab32(*img_buf) | 0xFF000000;
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				case PXF_SWAP_RGBx32:
+					// Byteswapped RGBx32.
+					// Pixel copy is needed, with byteswapping and a right shift.
+					for (; x > 0; x--) {
+						*px_dest = (__swab32(*img_buf) >> 8) | 0xFF000000;
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
+				default:
+					assert(!"Unsupported 32-bit no-alpha pixel format.");
+					delete img;
+					return nullptr;
+			}
+
+			// Next line.
+			img_buf += src_stride_adj;
+			px_dest += dest_stride_adj;
 		}
 
-		// Remaining pixels.
-		switch (px_format) {
-			case PXF_HOST_RGBA32:
-				// Host-endian RGBA32.
-				// Pixel copy is needed, with shifting.
-				for (; x > 0; x--) {
-					*px_dest = (*img_buf >> 8) | (*img_buf << 24);
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_HOST_xRGB32:
-				// Host-endian XRGB32.
-				// Pixel copy is needed, with alpha channel masking.
-				for (; x > 0; x--) {
-					*px_dest = *img_buf | 0xFF000000;
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_HOST_RGBx32:
-				// Host-endian RGBx32.
-				// Pixel copy is needed, with a right shift.
-				for (; x > 0; x--) {
-					*px_dest = (*img_buf >> 8) | 0xFF000000;
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_SWAP_ARGB32:
-				// Byteswapped ARGB32.
-				// Pixel copy is needed, with byteswapping.
-				for (; x > 0; x--) {
-					*px_dest = __swab32(*img_buf);
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_SWAP_RGBA32:
-				// Byteswapped ABGR32.
-				// Pixel copy is needed, with shifting.
-				for (; x > 0; x--) {
-					const uint32_t px = __swab32(*img_buf);
-					*px_dest = (px >> 8) | (px << 24);
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_SWAP_xRGB32:
-				// Byteswapped XRGB32.
-				// Pixel copy is needed, with byteswapping and alpha channel masking.
-				for (; x > 0; x--) {
-					*px_dest = __swab32(*img_buf) | 0xFF000000;
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			case PXF_SWAP_RGBx32:
-				// Byteswapped RGBx32.
-				// Pixel copy is needed, with byteswapping and a right shift.
-				for (; x > 0; x--) {
-					*px_dest = (__swab32(*img_buf) >> 8) | 0xFF000000;
-					img_buf++;
-					px_dest++;
-				}
-				break;
-
-			default:
-				assert(!"Unsupported 32-bit pixel format.");
-				delete img;
-				return nullptr;
-		}
-
-		// Next line.
-		img_buf += src_stride_adj;
-		px_dest += dest_stride_adj;
+		// Set the sBIT metadata.
+		static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+		img->set_sBIT(&sBIT_x32);
 	}
-
-	// Set the sBIT metadata.
-	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
-	static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
-	img->set_sBIT(has_alpha ? &sBIT_A32 : &sBIT_x32);
 
 	// Image has been converted.
 	return img;
