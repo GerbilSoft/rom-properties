@@ -612,19 +612,18 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 						__m128i sb = _mm_load_si128(xmm_src+1);
 						__m128i sc = _mm_load_si128(xmm_src+2);
 
-						// FIXME: rp_image should have aligned rows.
 						__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
 						val = _mm_or_si128(val, alpha_mask);
-						_mm_storeu_si128(xmm_dest, val);
+						_mm_store_si128(xmm_dest, val);
 						val = _mm_shuffle_epi8(_mm_alignr_epi8(sb, sa, 12), shuf_mask);
 						val = _mm_or_si128(val, alpha_mask);
-						_mm_storeu_si128(xmm_dest+1, val);
+						_mm_store_si128(xmm_dest+1, val);
 						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sb, 8), shuf_mask);
 						val = _mm_or_si128(val, alpha_mask);
-						_mm_storeu_si128(xmm_dest+2, val);
+						_mm_store_si128(xmm_dest+2, val);
 						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sc, 4), shuf_mask);
 						val = _mm_or_si128(val, alpha_mask);
-						_mm_storeu_si128(xmm_dest+3, val);
+						_mm_store_si128(xmm_dest+3, val);
 					}
 
 					// Process 2 pixels per iteration.
