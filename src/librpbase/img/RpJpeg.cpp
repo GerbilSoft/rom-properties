@@ -493,7 +493,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			(ALIGN(16, reinterpret_cast<intptr_t>(buffer[0]))));
 
 		switch (cinfo.out_color_space) {
-			case JCS_RGB:
+			case JCS_RGB: {
 				// Convert from 24-bit BGR to 32-bit ARGB.
 				// NOTE: libjpeg-turbo has SSE2-optimized * to ARGB conversion,
 				// which is preferred because it usually skips an intermediate
@@ -505,10 +505,9 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				}
 #endif /* RPJPEG_HAS_SSSE3 */
 
+				argb32_t *dest = static_cast<argb32_t*>(img->bits());
+				const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 				while (cinfo.output_scanline < cinfo.output_height) {
-					// NOTE: jpeg_read_scanlines() increments the scanline value,
-					// so we have to save the rp_image scanline pointer first.
-					argb32_t *dest = static_cast<argb32_t*>(img->scanLine(cinfo.output_scanline));
 					jpeg_read_scanlines(&cinfo, buffer, 1);
 					const uint8_t *src = buffer[0];
 
@@ -532,16 +531,19 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 						dest->g = src[1];
 						dest->b = src[2];
 					}
+
+					// Next line.
+					dest += dest_stride_adj;
 				}
 				break;
+			}
 
-			case JCS_CMYK:
+			case JCS_CMYK: {
 				// Convert from CMYK to 32-bit ARGB.
 				// Reference: https://github.com/qt/qtbase/blob/ffa578faf02226eb53793854ad53107afea4ab91/src/plugins/imageformats/jpeg/qjpeghandler.cpp#L395
+				argb32_t *dest = static_cast<argb32_t*>(img->bits());
+				const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 				while (cinfo.output_scanline < cinfo.output_height) {
-					// NOTE: jpeg_read_scanlines() increments the scanline value,
-					// so we have to save the rp_image scanline pointer first.
-					argb32_t *dest = static_cast<argb32_t*>(img->scanLine(cinfo.output_scanline));
 					jpeg_read_scanlines(&cinfo, buffer, 1);
 					const uint8_t *src = buffer[0];
 
@@ -569,8 +571,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 						dest->g = k * src[1] / 255;	// Green
 						dest->b = k * src[2] / 255;	// Blue
 					}
+
+					// Next line.
+					dest += dest_stride_adj;
 				}
 				break;
+			}
 
 			default:
 				assert(!"Unsupported JPEG colorspace.");
