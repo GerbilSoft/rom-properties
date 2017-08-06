@@ -107,9 +107,9 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 			return nullptr;
 	}
 
-	for (int y = height; y > 0; y--) {
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		// Process 16 pixels per iteration using SSSE3.
-		int x = width;
+		unsigned int x = (unsigned int)width;
 		for (; x > 15; x -= 16, px_dest += 16, img_buf += 16*3) {
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(img_buf);
 			__m128i *xmm_dest = reinterpret_cast<__m128i*>(px_dest);
