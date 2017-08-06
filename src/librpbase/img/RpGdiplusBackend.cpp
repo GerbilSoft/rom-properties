@@ -100,7 +100,7 @@ RpGdiplusBackend::RpGdiplusBackend(int width, int height, rp_image::Format forma
 		// modifying the palette, so we have to copy our
 		// palette data every time the underlying image
 		// is requested.
-		size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
+		const size_t gdipPalette_sz = sizeof(Gdiplus::ColorPalette) + (sizeof(Gdiplus::ARGB)*255);
 		m_pGdipPalette = (Gdiplus::ColorPalette*)aligned_malloc(16, gdipPalette_sz);
 		if (!m_pGdipPalette) {
 			// ENOMEM
