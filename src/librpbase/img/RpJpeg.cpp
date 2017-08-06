@@ -14,17 +14,20 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "librpbase/config.librpbase.h"
 
 #include "RpJpeg.hpp"
-#include "rp_image.hpp"
+#include "RpJpeg_p.hpp"
 #include "../file/IRpFile.hpp"
 #include "../file/FileSystem.hpp"
+
+#ifdef RPJPEG_HAS_SSSE3
+# include "librpbase/cpuflags_x86.h"
+#endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes.
 #include <stdint.h>
@@ -37,16 +40,6 @@
 #include <algorithm>
 #include <memory>
 using std::unique_ptr;
-
-// Image format libraries.
-#include <jpeglib.h>
-#include <jerror.h>
-#include <setjmp.h>
-
-// TODO: Split SSSE3 code out.
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#include <tmmintrin.h>
 
 #ifdef _MSC_VER
 // NOTE: jpegint.h does not have extern "C".
@@ -65,86 +58,6 @@ namespace LibRpBase {
 // TODO: jdiv_round_up() uses division. Find a better function?
 DELAYLOAD_TEST_FUNCTION_IMPL2(jdiv_round_up, 0, 1);
 #endif /* _MSC_VER */
-
-class RpJpegPrivate
-{
-	private:
-		// RpJpegPrivate is a static class.
-		RpJpegPrivate();
-		~RpJpegPrivate();
-		RP_DISABLE_COPY(RpJpegPrivate)
-
-	public:
-		/** Error handling functions. **/
-
-		// Error manager.
-		// Based on libjpeg-turbo 1.5.1's read_JPEG_file(). (example.c)
-		struct my_error_mgr {
-			jpeg_error_mgr pub;	// "public" fields
-			jmp_buf setjmp_buffer;	// for return to caller
-		};
-
-		/**
-		 * error_exit replacement for JPEG.
-		 * @param cinfo j_common_ptr
-		 */
-		static void my_error_exit(j_common_ptr cinfo);
-
-		/**
-		 * output_message replacement for JPEG.
-		 * @param cinfo j_common_ptr
-		 */
-		static void my_output_message(j_common_ptr cinfo);
-
-		/** I/O functions. **/
-
-		// JPEG source manager struct.
-		// Based on libjpeg-turbo 1.5.1's jpeg_stdio_src(). (jdatasrc.c)
-		static const unsigned int INPUT_BUF_SIZE = 4096;
-		struct MySourceMgr {
-			jpeg_source_mgr pub;
-
-			IRpFile *infile;	// Source stream.
-			JOCTET *buffer;		// Start of buffer.
-			bool start_of_file;	// Have we gotten any data yet?
-		};
-
-		/**
-		 * Initialize MySourceMgr.
-		 * @param cinfo j_decompress_ptr
-		 */
-		static void init_source(j_decompress_ptr cinfo);
-
-		/**
-		 * Fill the input buffer.
-		 * @param cinfo j_decompress_ptr
-		 * @return TRUE on success. (NOTE: 'boolean' is a JPEG typedef.)
-		 */
-		static boolean fill_input_buffer(j_decompress_ptr cinfo);
-
-		/**
-		 * Terminate the source.
-		 * This is called once all JPEG data has been read.
-		 * Usually a no-op.
-		 *
-		 * @param cinfo j_decompress_ptr
-		 */
-		static void term_source(j_decompress_ptr cinfo);
-
-		/**
-		 * Skip data in the source file.
-		 * @param cinfo j_decompress_ptr
-		 * @param num_bytes Number of bytes to skip.
-		 */
-		static void skip_input_data(j_decompress_ptr cinfo, long num_bytes);
-
-		/**
-		 * Initialize a JPEG source manager for an IRpFile.
-		 * @param cinfo j_decompress_ptr
-		 * @param file IRpFile
-		 */
-		static void jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile);
-};
 
 /** RpJpegPrivate **/
 
@@ -585,13 +498,12 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				// NOTE: libjpeg-turbo has SSE2-optimized * to ARGB conversion,
 				// which is preferred because it usually skips an intermediate
 				// conversion step.
-
-				// TODO: Split into a separate file and add tests and benchmarking.
-				// Also, make use of this in ImageDecoder_Linear.cpp.
-
-				// SSSE3-optimized version based on:
-				// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
-				// - https://stackoverflow.com/a/2974266
+#ifdef RPJPEG_HAS_SSSE3
+				if (RP_CPU_HasSSSE3()) {
+					RpJpegPrivate::decodeBGRtoARGB(img, &cinfo, buffer);
+					break;
+				}
+#endif /* RPJPEG_HAS_SSSE3 */
 
 				while (cinfo.output_scanline < cinfo.output_height) {
 					// NOTE: jpeg_read_scanlines() increments the scanline value,
@@ -600,33 +512,8 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 					jpeg_read_scanlines(&cinfo, buffer, 1);
 					const uint8_t *src = buffer[0];
 
-					// Process 16 pixels per iteration using SSSE3.
-					unsigned int x = cinfo.output_width;
-					__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
-					__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
-					for (; x > 15; x -= 16, dest += 16, src += 16*3) {
-						const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src);
-						__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest);
-
-						__m128i sa = _mm_load_si128(xmm_src);
-						__m128i sb = _mm_load_si128(xmm_src+1);
-						__m128i sc = _mm_load_si128(xmm_src+2);
-
-						__m128i val = _mm_shuffle_epi8(sa, shuf_mask);
-						val = _mm_or_si128(val, alpha_mask);
-						_mm_store_si128(xmm_dest, val);
-						val = _mm_shuffle_epi8(_mm_alignr_epi8(sb, sa, 12), shuf_mask);
-						val = _mm_or_si128(val, alpha_mask);
-						_mm_store_si128(xmm_dest+1, val);
-						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sb, 8), shuf_mask);
-						val = _mm_or_si128(val, alpha_mask);
-						_mm_store_si128(xmm_dest+2, val);
-						val = _mm_shuffle_epi8(_mm_alignr_epi8(sc, sc, 4), shuf_mask);
-						val = _mm_or_si128(val, alpha_mask);
-						_mm_store_si128(xmm_dest+3, val);
-					}
-
 					// Process 2 pixels per iteration.
+					unsigned int x = cinfo.output_width;
 					for (; x > 1; x -= 2, dest += 2, src += 2*3) {
 						dest[0].a = 0xFF;
 						dest[0].r = src[0];

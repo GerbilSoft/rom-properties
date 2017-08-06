@@ -251,7 +251,10 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 	SET(librpbase_CPU_SRCS cpuflags_x86.c)
 	SET(librpbase_CPU_H cpuflags_x86.h)
 
-	# FIXME: Move the 24-bit BGR to ARGB SSSE3 code to a separate file.
+	SET(libromdata_OPTIMIZE_SRCS
+		img/RpJpeg_ssse3.cpp
+		)
+
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSSE3_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
@@ -259,7 +262,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(img/RpJpeg.cpp
+		SET_SOURCE_FILES_PROPERTIES(img/RpJpeg_ssse3.cpp
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
 	ENDIF(SSSE3_FLAG)
 ENDIF()
@@ -289,6 +292,7 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
 
@@ -300,6 +304,7 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
 	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
 
