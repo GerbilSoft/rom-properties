@@ -199,10 +199,12 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 						pOutSize->height = dl_img->height();
 					}
 					// Get the sBIT metadata.
-					if (dl_img->get_sBIT(sBIT) != 0) {
-						// No sBIT metadata.
-						// Clear the struct.
-						memset(sBIT, 0, sizeof(*sBIT));
+					if (sBIT) {
+						if (dl_img->get_sBIT(sBIT) != 0) {
+							// No sBIT metadata.
+							// Clear the struct.
+							memset(sBIT, 0, sizeof(*sBIT));
+						}
 					}
 					// TODO: Transparency processing?
 					return ret_img;
