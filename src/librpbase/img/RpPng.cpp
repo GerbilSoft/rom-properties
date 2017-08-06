@@ -307,7 +307,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
-	png_byte **row_pointers = nullptr;
+	const png_byte **row_pointers = nullptr;
 	rp_image *img = nullptr;
 
 #ifdef PNG_SETJMP_SUPPORTED
@@ -425,19 +425,21 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 	}
 
 	// Allocate the row pointers.
-	row_pointers = (png_byte**)png_malloc(png_ptr, sizeof(png_byte*) * height);
+	row_pointers = (const png_byte**)png_malloc(png_ptr, sizeof(const png_byte*) * height);
 	if (!row_pointers) {
 		delete img;
 		return nullptr;
 	}
 
 	// Initialize the row pointers array.
-	for (int y = height-1; y >= 0; y--) {
-		row_pointers[y] = static_cast<png_byte*>(img->scanLine(y));
+	const png_byte *pb = static_cast<const png_byte*>(img->bits());
+	const int stride = img->stride();
+	for (png_uint_32 y = 0; y < height; y++, pb += stride) {
+		row_pointers[y] = pb;
 	}
 
 	// Read the image.
-	png_read_image(png_ptr, row_pointers);
+	png_read_image(png_ptr, const_cast<png_byte**>(row_pointers));
 	png_free(png_ptr, row_pointers);
 
 	// If CI8, read the palette.
