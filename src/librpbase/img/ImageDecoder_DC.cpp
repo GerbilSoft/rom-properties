@@ -63,7 +63,6 @@ static void initDreamcastTwiddleMap_int(void)
 /**
  * Initialize the Dreamcast twiddle map.
  * This initializes dc_tmap[].
- * @return 0 on success; non-zero on error.
  */
 static FORCEINLINE void initDreamcastTwiddleMap(void)
 {
