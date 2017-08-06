@@ -783,38 +783,25 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			img->set_sBIT(&sBIT_A32);
 			break;
 
-		case PXF_HOST_ABGR32: {
-			// Host-endian ABGR32.
-			// Pixel copy is needed, with byte shuffling.
-			// TODO: pshufb on x86 with SSSE3?
-			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
-			argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
+		case PXF_HOST_RGBA32: {
+			// Host-endian RGBA32.
+			// Pixel copy is needed, with shifting.
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
-					px_dest[0].a = img_buf_abgr32[0].a;
-					px_dest[0].r = img_buf_abgr32[0].b;
-					px_dest[0].g = img_buf_abgr32[0].g;
-					px_dest[0].b = img_buf_abgr32[0].r;
-
-					px_dest[1].a = img_buf_abgr32[1].a;
-					px_dest[1].r = img_buf_abgr32[1].b;
-					px_dest[1].g = img_buf_abgr32[1].g;
-					px_dest[1].b = img_buf_abgr32[1].r;
-
-					img_buf_abgr32 += 2;
+					px_dest[0] = (img_buf[0] >> 8) | (img_buf[0] << 24);
+					px_dest[1] = (img_buf[1] >> 8) | (img_buf[1] << 24);
+					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
 					// Extra pixel.
-					px_dest->a = img_buf_abgr32->a;
-					px_dest->r = img_buf_abgr32->b;
-					px_dest->g = img_buf_abgr32->g;
-					px_dest->b = img_buf_abgr32->r;
-					img_buf_abgr32++;
+					*px_dest = (*img_buf >> 8) | (*img_buf << 24);
+					img_buf++;
 					px_dest++;
 				}
-				img_buf_abgr32 += src_stride_adj;
+				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
@@ -900,38 +887,28 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			break;
 		}
 
-		case PXF_SWAP_ABGR32: {
+		case PXF_SWAP_RGBA32: {
 			// Byteswapped ABGR32.
-			// Pixel copy is needed, with byte shuffling.
-			// TODO: pshufb on x86 with SSSE3?
-			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
-			argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
+			// Pixel copy is needed, with shifting.
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
-					px_dest[0].a = img_buf_abgr32[0].r;
-					px_dest[0].r = img_buf_abgr32[0].g;
-					px_dest[0].g = img_buf_abgr32[0].b;
-					px_dest[0].b = img_buf_abgr32[0].a;
-
-					px_dest[1].a = img_buf_abgr32[1].r;
-					px_dest[1].r = img_buf_abgr32[1].g;
-					px_dest[1].g = img_buf_abgr32[1].b;
-					px_dest[1].b = img_buf_abgr32[1].a;
-
-					img_buf_abgr32 += 2;
+					const uint32_t px0 = __swab32(img_buf[0]);
+					const uint32_t px1 = __swab32(img_buf[1]);
+					px_dest[0] = (px0 >> 8) | (px0 << 24);
+					px_dest[1] = (px1 >> 8) | (px1 << 24);
+					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
 					// Extra pixel.
-					px_dest->a = img_buf_abgr32->r;
-					px_dest->r = img_buf_abgr32->g;
-					px_dest->g = img_buf_abgr32->b;
-					px_dest->b = img_buf_abgr32->a;
-					img_buf_abgr32++;
+					const uint32_t px = __swab32(*img_buf);
+					*px_dest = (px >> 8) | (px << 24);
+					img_buf++;
 					px_dest++;
 				}
-				img_buf_abgr32 += src_stride_adj;
+				img_buf += src_stride_adj;
 				px_dest += dest_stride_adj;
 			}
 			// Set the sBIT metadata.
