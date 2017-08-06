@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
+ * Standard version. (C++ code only)                                       *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -14,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ImageDecoder.hpp"
@@ -84,6 +84,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = img->stride() - img->width();
 
 	// Convert the palette.
 	// TODO: Optimize using pointers instead of indexes?
@@ -105,7 +106,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -115,7 +116,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 			for (unsigned int i = 0; i < 16; i++) {
 				palette[i] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i]));
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -129,7 +130,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -143,7 +144,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					tr_idx = (int)i;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -164,7 +165,7 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 					palette[i] = ImageDecoderPrivate::BGR555_to_ARGB32(px16);
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -180,27 +181,28 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 	// so we don't need to clear the remaining colors.
 
 	// Convert one line at a time. (CI4 -> CI8)
+	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	if (msn_left) {
 		// Left pixel is the Most Significant Nybble.
-		for (int y = 0; y < height; y++) {
-			uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
-			for (int x = width; x > 0; x -= 2) {
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			for (unsigned int x = (unsigned int)width; x > 0; x -= 2) {
 				px_dest[0] = (*img_buf >> 4);
 				px_dest[1] = (*img_buf & 0x0F);
 				img_buf++;
 				px_dest += 2;
 			}
+			px_dest += dest_stride_adj;
 		}
 	} else {
 		// Left pixel is the Least Significant Nybble.
-		for (int y = 0; y < height; y++) {
-			uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
-			for (int x = width; x > 0; x -= 2) {
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			for (unsigned int x = (unsigned int)width; x > 0; x -= 2) {
 				px_dest[0] = (*img_buf & 0x0F);
 				px_dest[1] = (*img_buf >> 4);
 				img_buf++;
 				px_dest += 2;
 			}
+			px_dest += dest_stride_adj;
 		}
 	}
 
@@ -280,7 +282,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = (int)i+1;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 			img->set_sBIT(&sBIT);
 			break;
@@ -291,7 +293,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 				palette[i+0] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
 				palette[i+1] = ImageDecoderPrivate::RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 			img->set_sBIT(&sBIT);
 			break;
@@ -310,7 +312,7 @@ rp_image *ImageDecoder::fromLinearCI8(PixelFormat px_format,
 					tr_idx = (int)i+1;
 				}
 			}
-			// Set the sBIT data.
+			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
 			img->set_sBIT(&sBIT);
 			break;
@@ -369,6 +371,7 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = img->stride() - img->width();
 
 	// Set a default monochrome palette.
 	uint32_t *palette = img->palette();
@@ -380,8 +383,8 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 	// so we don't need to clear the remaining colors.
 
 	// Convert one line at a time. (monochrome -> CI8)
-	for (int y = 0; y < height; y++) {
-		uint8_t *px_dest = static_cast<uint8_t*>(img->scanLine(y));
+	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
 			uint8_t pxMono = *img_buf++;
 			// TODO: Unroll this loop?
@@ -391,9 +394,10 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 				pxMono <<= 1;
 			}
 		}
+		px_dest += dest_stride_adj;
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	// NOTE: Setting the grayscale value, though we're
 	// not saving grayscale PNGs at the moment.
 	static const rp_image::sBIT_t sBIT = {1,1,1,1,0};
@@ -431,18 +435,18 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Line offset adjustment.
-	int line_offset_adj = 0;
+	// Stride adjustment.
+	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set line_offset_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
 		if (stride % bytespp != 0) {
 			// Invalid stride.
 			return nullptr;
 		}
-		line_offset_adj = width - (stride / bytespp);
+		src_stride_adj = width - (stride / bytespp);
 	}
 
 	// Create an rp_image.
@@ -452,11 +456,12 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 #define fromLinear8_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
-			for (int y = 0; y < height; y++) { \
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				unsigned int x; \
 				for (x = (unsigned int)width; x > 1; x -= 2) { \
 					px_dest[0] = ImageDecoderPrivate::fmt##_to_ARGB32(img_buf[0]); \
@@ -470,7 +475,8 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 					img_buf++; \
 					px_dest++; \
 				} \
-				img_buf += line_offset_adj; \
+				img_buf += src_stride_adj; \
+				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
 			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
@@ -523,18 +529,18 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Line offset adjustment.
-	int line_offset_adj = 0;
+	// Stride adjustment.
+	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set line_offset_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
 		if (stride % bytespp != 0) {
 			// Invalid stride.
 			return nullptr;
 		}
-		line_offset_adj = width - (stride / bytespp);
+		src_stride_adj = width - (stride / bytespp);
 	}
 
 	// Create an rp_image.
@@ -544,17 +550,19 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 
 #define fromLinear16_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
-			for (int y = 0; y < height; y++) { \
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
 					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(le16_to_cpu(*img_buf)); \
 					img_buf++; \
 					px_dest++; \
 				} \
-				img_buf += line_offset_adj; \
+				img_buf += src_stride_adj; \
+				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
 			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \
@@ -600,6 +608,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 /**
  * Convert a linear 24-bit RGB image to rp_image.
+ * Standard version using regular C++ code.
  * @param px_format	[in] 24-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -608,7 +617,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, int img_siz, int stride)
 {
@@ -625,11 +634,11 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Line offset adjustment.
-	int line_offset_adj = 0;
+	// Stride adjustment.
+	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set line_offset_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
 		if (stride % bytespp != 0) {
@@ -637,7 +646,7 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 			return nullptr;
 		}
 		// Byte addressing, so keep it in units of bytespp.
-		line_offset_adj = (width * bytespp) - stride;
+		src_stride_adj = (width * bytespp) - stride;
 	}
 
 	// Create an rp_image.
@@ -647,32 +656,40 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
+	argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
+
+	// TODO: Is it faster or slower to use argb32_t vs. shifting?
 
 	// Convert one line at a time. (24-bit -> ARGB32)
 	switch (px_format) {
 		case PXF_RGB888:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = 0xFF000000 | (img_buf[2] << 16) |
-						(img_buf[1] << 8) | img_buf[0];
+					px_dest->b = img_buf[0];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[2];
+					px_dest->a = 0xFF;
 					img_buf += 3;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
 			break;
 
 		case PXF_BGR888:
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
-					*px_dest = 0xFF000000 | (img_buf[0] << 16) |
-						(img_buf[1] << 8) | img_buf[2];
+					px_dest->b = img_buf[2];
+					px_dest->g = img_buf[1];
+					px_dest->r = img_buf[0];
+					px_dest->a = 0xFF;
 					img_buf += 3;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
 			break;
 
@@ -681,7 +698,7 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 			return nullptr;
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {8,8,8,0,0};
 	img->set_sBIT(&sBIT);
 
@@ -691,6 +708,7 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
 
 /**
  * Convert a linear 32-bit RGB image to rp_image.
+ * Standard version using regular C++ code.
  * @param px_format	[in] 32-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -699,7 +717,7 @@ rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
+rp_image *ImageDecoder::fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *img_buf, int img_siz, int stride)
 {
@@ -716,18 +734,18 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 		return nullptr;
 	}
 
-	// Line offset adjustment.
-	int line_offset_adj = 0;
+	// Stride adjustment.
+	int src_stride_adj = 0;
 	assert(stride >= 0);
 	if (stride > 0) {
-		// Set line_offset_adj to the number of pixels we need to
+		// Set src_stride_adj to the number of pixels we need to
 		// add to the end of each line to get to the next row.
 		assert(stride % bytespp == 0);
 		if (stride % bytespp != 0) {
 			// Invalid stride.
 			return nullptr;
 		}
-		line_offset_adj = width - (stride / bytespp);
+		src_stride_adj = width - (stride / bytespp);
 	}
 
 	// Create an rp_image.
@@ -737,9 +755,11 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 		delete img;
 		return nullptr;
 	}
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 
 	// sBIT for standard ARGB32.
-	static const rp_image::sBIT_t sBIT_32 = {8,8,8,0,8};
+	static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+	static const rp_image::sBIT_t sBIT_A32 = {8,8,8,0,8};
 
 	// Convert one line at a time. (32-bit -> ARGB32)
 	// NOTE: All functions except PXF_HOST_ARGB32 are partially unrolled.
@@ -752,60 +772,49 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				memcpy(img->bits(), img_buf, stride * height);
 			} else {
 				// Stride is not identical. Copy each scanline.
+				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = (unsigned int)width * bytespp;
-				for (int y = 0; y < height; y++) {
-					uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+				for (unsigned int y = (unsigned int)height; y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
 					img_buf += (stride / bytespp);
+					px_dest += dest_stride_adj;
 				}
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_A32);
 			break;
 
-		case PXF_HOST_ABGR32: {
-			// Host-endian ABGR32.
-			// Pixel copy is needed, with byte shuffling.
-			// TODO: pshufb on x86 with SSSE3?
-			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
-			for (int y = 0; y < height; y++) {
-				argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+		case PXF_HOST_RGBA32: {
+			// Host-endian RGBA32.
+			// Pixel copy is needed, with shifting.
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
-					px_dest[0].a = img_buf_abgr32[0].a;
-					px_dest[0].r = img_buf_abgr32[0].b;
-					px_dest[0].g = img_buf_abgr32[0].g;
-					px_dest[0].b = img_buf_abgr32[0].r;
-
-					px_dest[1].a = img_buf_abgr32[1].a;
-					px_dest[1].r = img_buf_abgr32[1].b;
-					px_dest[1].g = img_buf_abgr32[1].g;
-					px_dest[1].b = img_buf_abgr32[1].r;
-
-					img_buf_abgr32 += 2;
+					px_dest[0] = (img_buf[0] >> 8) | (img_buf[0] << 24);
+					px_dest[1] = (img_buf[1] >> 8) | (img_buf[1] << 24);
+					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
 					// Extra pixel.
-					px_dest->a = img_buf_abgr32->a;
-					px_dest->r = img_buf_abgr32->b;
-					px_dest->g = img_buf_abgr32->g;
-					px_dest->b = img_buf_abgr32->r;
-					img_buf_abgr32++;
+					*px_dest = (*img_buf >> 8) | (*img_buf << 24);
+					img_buf++;
 					px_dest++;
 				}
-				img_buf_abgr32 += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_A32);
 			break;
 		}
 
-		case PXF_HOST_xRGB32:
+		case PXF_HOST_xRGB32: {
 			// Host-endian XRGB32.
 			// Pixel copy is needed, with alpha channel masking.
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = img_buf[0] | 0xFF000000;
@@ -819,17 +828,19 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf++;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_x32);
 			break;
+		}
 
-		case PXF_HOST_RGBx32:
+		case PXF_HOST_RGBx32: {
 			// Host-endian RGBx32.
 			// Pixel copy is needed, with a right shift.
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = (img_buf[0] >> 8) | 0xFF000000;
@@ -843,17 +854,19 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf++;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_x32);
 			break;
+		}
 
-		case PXF_SWAP_ARGB32:
+		case PXF_SWAP_ARGB32: {
 			// Byteswapped ARGB32.
 			// Pixel copy is needed, with byteswapping.
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = __swab32(img_buf[0]);
@@ -867,55 +880,48 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf++;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_A32);
 			break;
+		}
 
-		case PXF_SWAP_ABGR32: {
+		case PXF_SWAP_RGBA32: {
 			// Byteswapped ABGR32.
-			// Pixel copy is needed, with byte shuffling.
-			// TODO: pshufb on x86 with SSSE3?
-			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
-			for (int y = 0; y < height; y++) {
-				argb32_t *px_dest = static_cast<argb32_t*>(img->scanLine(y));
+			// Pixel copy is needed, with shifting.
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
-					px_dest[0].a = img_buf_abgr32[0].r;
-					px_dest[0].r = img_buf_abgr32[0].g;
-					px_dest[0].g = img_buf_abgr32[0].b;
-					px_dest[0].b = img_buf_abgr32[0].a;
-
-					px_dest[1].a = img_buf_abgr32[1].r;
-					px_dest[1].r = img_buf_abgr32[1].g;
-					px_dest[1].g = img_buf_abgr32[1].b;
-					px_dest[1].b = img_buf_abgr32[1].a;
-
-					img_buf_abgr32 += 2;
+					const uint32_t px0 = __swab32(img_buf[0]);
+					const uint32_t px1 = __swab32(img_buf[1]);
+					px_dest[0] = (px0 >> 8) | (px0 << 24);
+					px_dest[1] = (px1 >> 8) | (px1 << 24);
+					img_buf += 2;
 					px_dest += 2;
 				}
 				if (x == 1) {
 					// Extra pixel.
-					px_dest->a = img_buf_abgr32->r;
-					px_dest->r = img_buf_abgr32->g;
-					px_dest->g = img_buf_abgr32->b;
-					px_dest->b = img_buf_abgr32->a;
-					img_buf_abgr32++;
+					const uint32_t px = __swab32(*img_buf);
+					*px_dest = (px >> 8) | (px << 24);
+					img_buf++;
 					px_dest++;
 				}
-				img_buf_abgr32 += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_A32);
 			break;
 		}
 
-		case PXF_SWAP_xRGB32:
+		case PXF_SWAP_xRGB32: {
 			// Byteswapped XRGB32.
 			// Pixel copy is needed, with byteswapping and alpha channel masking.
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = __swab32(img_buf[0]) | 0xFF000000;
@@ -929,17 +935,19 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf++;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_x32);
 			break;
+		}
 
-		case PXF_SWAP_RGBx32:
+		case PXF_SWAP_RGBx32: {
 			// Byteswapped RGBx32.
 			// Pixel copy is needed, with byteswapping and a right shift.
-			for (int y = 0; y < height; y++) {
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y));
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = (__swab32(img_buf[0]) >> 8) | 0xFF000000;
@@ -953,24 +961,27 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 					img_buf++;
 					px_dest++;
 				}
-				img_buf += line_offset_adj;
+				img_buf += src_stride_adj;
+				px_dest += dest_stride_adj;
 			}
-			// Set the sBIT data.
-			img->set_sBIT(&sBIT_32);
+			// Set the sBIT metadata.
+			img->set_sBIT(&sBIT_x32);
 			break;
+		}
 
 		/** Uncommon 32-bit formats. **/
 
 #define fromLinear32_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
-			for (int y = 0; y < height; y++) { \
-				uint32_t *px_dest = static_cast<uint32_t*>(img->scanLine(y)); \
+			uint32_t *px_dest = static_cast<uint32_t*>(img->bits()); \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
 					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(le32_to_cpu(*img_buf)); \
 					img_buf++; \
 					px_dest++; \
 				} \
-				img_buf += line_offset_adj; \
+				img_buf += src_stride_adj; \
+				px_dest += dest_stride_adj; \
 			} \
 			/* Set the sBIT data. */ \
 			static const rp_image::sBIT_t sBIT = {r,g,b,gr,a}; \

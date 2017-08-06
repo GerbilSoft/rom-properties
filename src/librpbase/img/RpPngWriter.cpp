@@ -1365,7 +1365,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	png_set_text(d->png_ptr, d->info_ptr, text, kv.size());
+	png_set_text(d->png_ptr, d->info_ptr, text, (int)kv.size());
 	delete[] text;
 	for (auto iter = vU8toL1.begin(); iter != vU8toL1.end(); ++iter) {
 		free(*iter);

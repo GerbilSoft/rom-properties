@@ -8,6 +8,11 @@
     original image. In addition, RGB images that don't have an alpha channel
     are now saved as RGB PNGs instead of ARGB PNGs, which usually results in
     a smaller file.
+  * Some functions are now optimized using SIMD instructions if supported by
+    the host system's CPU:
+    * Sega Mega Drive: SMD format decoding (SSE2)
+    * 24-bit linear RGB image decoding (SSSE3)
+    * 32-bit linear ARGB/xRGB image decoding (SSSE3)
 
 * New systems:
   * Sega PVR and GVR decoding. These are texture files used in Sega games

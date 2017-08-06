@@ -22,14 +22,16 @@
 #include "MegaDrive.hpp"
 #include "librpbase/RomData_p.hpp"
 
+#include "md_structs.h"
 #include "data/MegaDrivePublishers.hpp"
 #include "MegaDriveRegions.hpp"
-#include "md_structs.h"
 #include "CopierFormats.h"
+#include "utils/SuperMagicDrive.hpp"
 
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 using namespace LibRpBase;
@@ -118,9 +120,6 @@ class MegaDrivePrivate : public RomDataPrivate
 		int romType;		// ROM type.
 		uint32_t md_region;	// MD hexadecimal region code.
 
-		// SMD bank size.
-		static const uint32_t SMD_BLOCK_SIZE = 16384;
-
 		/**
 		 * Is this a disc?
 		 * Discs don't have a vector table.
@@ -132,13 +131,6 @@ class MegaDrivePrivate : public RomDataPrivate
 			return (rfmt == ROM_FORMAT_DISC_2048 ||
 				rfmt == ROM_FORMAT_DISC_2352);
 		}
-
-		/**
-		 * Decode a Super Magic Drive interleaved block.
-		 * @param dest	[out] Destination block. (Must be 16 KB.)
-		 * @param src	[in] Source block. (Must be 16 KB.)
-		 */
-		static void decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE]);
 
 	public:
 		/**
@@ -245,42 +237,6 @@ uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 	}
 
 	return ret;
-}
-
-/**
- * Decode a Super Magic Drive interleaved block.
- * @param dest	[out] Destination block. (Must be 16 KB.)
- * @param src	[in] Source block. (Must be 16 KB.)
- */
-void MegaDrivePrivate::decodeSMDBlock(uint8_t dest[SMD_BLOCK_SIZE], const uint8_t src[SMD_BLOCK_SIZE])
-{
-	// TODO: Add the "restrict" keyword to both parameters?
-
-	// First 8 KB of the source block is ODD bytes.
-	const uint8_t *end_block = src + 8192;
-	for (uint8_t *odd = dest + 1; src < end_block; odd += 16, src += 8) {
-		odd[ 0] = src[0];
-		odd[ 2] = src[1];
-		odd[ 4] = src[2];
-		odd[ 6] = src[3];
-		odd[ 8] = src[4];
-		odd[10] = src[5];
-		odd[12] = src[6];
-		odd[14] = src[7];
-	}
-
-	// Second 8 KB of the source block is EVEN bytes.
-	end_block = src + 8192;
-	for (uint8_t *even = dest; src < end_block; even += 16, src += 8) {
-		even[ 0] = src[ 0];
-		even[ 2] = src[ 1];
-		even[ 4] = src[ 2];
-		even[ 6] = src[ 3];
-		even[ 8] = src[ 4];
-		even[10] = src[ 5];
-		even[12] = src[ 6];
-		even[14] = src[ 7];
-	}
 }
 
 /**
@@ -590,23 +546,31 @@ MegaDrive::MegaDrive(IRpFile *file)
 				memcpy(&d->smdHeader, header, sizeof(d->smdHeader));
 
 				// First bank needs to be deinterleaved.
-				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
-				size = d->file->seekAndRead(512, smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
-				if (size != MegaDrivePrivate::SMD_BLOCK_SIZE) {
+				uint8_t *const block = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2));
+				assert(block != nullptr);
+				if (!block) {
+					// aligned_malloc() failed.
+					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+					break;
+				}
+				uint8_t *const smd_data = block;
+				uint8_t *const bin_data = block + SuperMagicDrive::SMD_BLOCK_SIZE;
+				size = d->file->seekAndRead(512, smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+				if (size != SuperMagicDrive::SMD_BLOCK_SIZE) {
 					// Short read. ROM is invalid.
 					d->romType = MegaDrivePrivate::ROM_UNKNOWN;
+					aligned_free(block);
 					break;
 				}
 
 				// Decode the SMD block.
-				d->decodeSMDBlock(bin_data, smd_data);
+				SuperMagicDrive::decodeBlock(bin_data, smd_data);
 
 				// MD header is at 0x100.
 				// Vector table is at 0.
 				memcpy(&d->vectors,    bin_data,        sizeof(d->vectors));
 				memcpy(&d->romHeader, &bin_data[0x100], sizeof(d->romHeader));
+				aligned_free(block);
 				break;
 			}
 
@@ -957,15 +921,19 @@ int MegaDrive::loadFieldData(void)
 		if ((d->romType & MegaDrivePrivate::ROM_FORMAT_MASK) == MegaDrivePrivate::ROM_FORMAT_CART_SMD) {
 			// Load the 16K block and deinterleave it.
 			if (d->file->size() >= (512 + (2*1024*1024) + 16384)) {
-				unique_ptr<uint8_t[]> block(new uint8_t[MegaDrivePrivate::SMD_BLOCK_SIZE * 2]);
-				uint8_t *const smd_data = block.get();
-				uint8_t *const bin_data = block.get() + MegaDrivePrivate::SMD_BLOCK_SIZE;
-				size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, MegaDrivePrivate::SMD_BLOCK_SIZE);
-				if (size == MegaDrivePrivate::SMD_BLOCK_SIZE) {
-					// Deinterleave the block.
-					d->decodeSMDBlock(bin_data, smd_data);
-					memcpy(header, bin_data, sizeof(header));
-					header_loaded = true;
+				uint8_t *const block = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE * 2));
+				assert(block != nullptr);
+				if (block) {
+					uint8_t *const smd_data = block;
+					uint8_t *const bin_data = block + SuperMagicDrive::SMD_BLOCK_SIZE;
+					size_t size = d->file->seekAndRead(512 + (2*1024*1024), smd_data, SuperMagicDrive::SMD_BLOCK_SIZE);
+					if (size == SuperMagicDrive::SMD_BLOCK_SIZE) {
+						// Deinterleave the block.
+						SuperMagicDrive::decodeBlock(bin_data, smd_data);
+						memcpy(header, bin_data, sizeof(header));
+						header_loaded = true;
+					}
+					aligned_free(block);
 				}
 			}
 		} else {

@@ -98,7 +98,7 @@ rp_image *ImageDecoder::fromNDS_CI4(int width, int height,
 		}
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
 	img->set_sBIT(&sBIT);
 

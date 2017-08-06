@@ -24,6 +24,7 @@
 #include "rp_image_backend.hpp"
 
 #include "common.h"
+#include "aligned_malloc.h"
 
 // C includes.
 #include <stdlib.h>
@@ -102,6 +103,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	}
 
 	// Allocate memory for the image.
+	// TODO: Don't use the full stride for the last row?
 	m_data_len = height * stride;
 	assert(m_data_len > 0);
 	if (m_data_len == 0) {
@@ -110,7 +112,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		return;
 	}
 
-	m_data = malloc(m_data_len);
+	m_data = aligned_malloc(16, m_data_len);
 	assert(m_data != nullptr);
 	if (!m_data) {
 		// Failed to allocate memory.
@@ -123,10 +125,11 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		// Palette is initialized to 0 to ensure
 		// there's no weird artifacts if the caller
 		// is converting a lower-color image.
-		m_palette = (uint32_t*)calloc(256, sizeof(*m_palette));
+		const size_t palette_sz = 256*sizeof(*m_palette);
+		m_palette = static_cast<uint32_t*>(aligned_malloc(16, palette_sz));
 		if (!m_palette) {
 			// Failed to allocate memory.
-			free(m_data);
+			aligned_free(m_data);
 			m_data = nullptr;
 			m_data_len = 0;
 			clear_properties();
@@ -134,14 +137,15 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		}
 
 		// 256 colors allocated in the palette.
+		memset(m_palette, 0, palette_sz);
 		m_palette_len = 256;
 	}
 }
 
 rp_image_backend_default::~rp_image_backend_default()
 {
-	free(m_data);
-	free(m_palette);
+	aligned_free(m_data);
+	aligned_free(m_palette);
 }
 
 /** rp_image_private **/
@@ -489,7 +493,7 @@ void rp_image::set_sBIT(const sBIT_t *sBIT)
 
 /**
  * Get the number of significant bits per channel.
- * @param sBIT	[out] sBIT_t struct.
+ * @param sBIT	[out,opt] sBIT_t struct.
  * @return 0 on success; non-zero if not set or error.
  */
 int rp_image::get_sBIT(sBIT_t *sBIT) const

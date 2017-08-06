@@ -92,7 +92,7 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565(int width, int height,
 		}
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
 	img->set_sBIT(&sBIT);
 
@@ -167,7 +167,7 @@ rp_image *ImageDecoder::fromN3DSTiledRGB565_A4(int width, int height,
 		}
 	}
 
-	// Set the sBIT data.
+	// Set the sBIT metadata.
 	static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
 	img->set_sBIT(&sBIT);
 

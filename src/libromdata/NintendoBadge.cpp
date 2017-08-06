@@ -289,7 +289,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 			}
 		}
 
-		// Set the sBIT data.
+		// Set the sBIT metadata.
 		static const rp_image::sBIT_t sBIT = {5,6,5,0,4};
 		img->set_sBIT(&sBIT);
 	}

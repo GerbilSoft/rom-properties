@@ -112,6 +112,7 @@ SET(librpbase_H
 	byteswap.h
 	common.h
 	uvector.h
+	aligned_malloc.h
 	TextFuncs.hpp
 	TextFuncs_utf8.hpp
 	TextFuncs_wchar.hpp
@@ -243,6 +244,42 @@ ELSE()
 	MESSAGE(FATAL_ERROR "No threading model is supported on this system.")
 ENDIF()
 
+# CPU-specific and optimized sources.
+# TODO: Move arch detection to platform.cmake.
+STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
+IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	SET(librpbase_CPU_SRCS cpuflags_x86.c)
+	SET(librpbase_CPU_H cpuflags_x86.h)
+
+	SET(libromdata_OPTIMIZE_SRCS
+		img/RpJpeg_ssse3.cpp
+		img/ImageDecoder_Linear_ssse3.cpp
+		)
+
+	IF(MSVC AND NOT CMAKE_CL_64)
+		SET(SSSE3_FLAG "/arch:SSE2")
+	ELSEIF(NOT MSVC)
+		# TODO: Other compilers?
+		SET(SSSE3_FLAG "-mssse3")
+	ENDIF()
+	IF(SSSE3_FLAG)
+		FOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
+		ENDFOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+	ENDIF(SSSE3_FLAG)
+ENDIF()
+UNSET(arch)
+
+# Aligned malloc() functions.
+# NOTE: MinGW-w64 only has _aligned_malloc().
+# It doesn't even have inline function wrappers
+# for the other functions.
+CHECK_FUNCTION_EXISTS(_aligned_malloc	HAVE_MSVC_ALIGNED_MALLOC)
+CHECK_FUNCTION_EXISTS(aligned_alloc	HAVE_ALIGNED_ALLOC)
+CHECK_FUNCTION_EXISTS(posix_memalign	HAVE_POSIX_MEMALIGN)
+CHECK_FUNCTION_EXISTS(memalign		HAVE_MEMALIGN)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpbase.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpbase.h")
 
@@ -257,6 +294,8 @@ ADD_LIBRARY(rpbase8 STATIC
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
+	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase8 PUBLIC -DRP_UTF8)
 
@@ -267,6 +306,8 @@ ADD_LIBRARY(rpbase16 STATIC
 	${librpbase_CRYPTO_SRCS} ${librpbase_CRYPTO_H}
 	${librpbase_CRYPTO_OS_SRCS} ${librpbase_CRYPTO_OS_H}
 	${librpbase_THREAD_SRCS} ${librpbase_THREAD_H}
+	${librpbase_CPU_SRCS} ${librpbase_CPU_H}
+	${libromdata_OPTIMIZE_SRCS}
 	)
 TARGET_COMPILE_DEFINITIONS(rpbase16 PUBLIC -DRP_UTF16)
 
