@@ -24,6 +24,7 @@
 #include "rp_image_backend.hpp"
 
 #include "common.h"
+#include "aligned_malloc.h"
 
 // C includes.
 #include <stdlib.h>
@@ -102,6 +103,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	}
 
 	// Allocate memory for the image.
+	// TODO: Don't use the full stride for the last row?
 	m_data_len = height * stride;
 	assert(m_data_len > 0);
 	if (m_data_len == 0) {
@@ -110,7 +112,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 		return;
 	}
 
-	m_data = malloc(m_data_len);
+	m_data = aligned_malloc(16, m_data_len);
 	assert(m_data != nullptr);
 	if (!m_data) {
 		// Failed to allocate memory.
