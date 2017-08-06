@@ -27,6 +27,7 @@
 // librpbase
 #include "librpbase/common.h"
 #include "librpbase/byteswap.h"
+#include "librpbase/aligned_malloc.h"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/file/IRpFile.hpp"
 #include "librpbase/img/rp_image.hpp"
@@ -517,10 +518,12 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 		}
 
 		// Read the texture data.
-		unique_ptr<uint8_t[]> buf(new uint8_t[expected_size]);
-		size_t size = file->read(buf.get(), expected_size);
+		// TODO: unique_ptr<> helper that uses aligned_malloc() and aligned_free()?
+		uint8_t *buf = static_cast<uint8_t*>(aligned_malloc(16, expected_size));
+		size_t size = file->read(buf, expected_size);
 		if (size != expected_size) {
 			// Read error.
+			aligned_free(buf);
 			return nullptr;
 		}
 
@@ -529,14 +532,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// 8-bit image. (Usually luminance or alpha.)
 				img = ImageDecoder::fromLinear8(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size, stride);
+					buf, expected_size, stride);
 				break;
 
 			case sizeof(uint16_t):
 				// 16-bit RGB image.
 				img = ImageDecoder::fromLinear16(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					reinterpret_cast<const uint16_t*>(buf.get()),
+					reinterpret_cast<const uint16_t*>(buf),
 					expected_size, stride);
 				break;
 
@@ -544,14 +547,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// 24-bit RGB image.
 				img = ImageDecoder::fromLinear24(
 					px_format, ddsHeader.dwWidth, ddsHeader.dwHeight,
-					buf.get(), expected_size, stride);
+					buf, expected_size, stride);
 				break;
 
 			case sizeof(uint32_t):
 				// 32-bit RGB image.
 				img = ImageDecoder::fromLinear32(px_format,
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
-					reinterpret_cast<const uint32_t*>(buf.get()),
+					reinterpret_cast<const uint32_t*>(buf),
 					expected_size, stride);
 				break;
 
@@ -560,6 +563,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				assert(!"Unsupported pixel format.");
 				break;
 		}
+
+		aligned_free(buf);
 	}
 
 	return img;

@@ -253,6 +253,7 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 
 	SET(libromdata_OPTIMIZE_SRCS
 		img/RpJpeg_ssse3.cpp
+		img/ImageDecoder_Linear_ssse3.cpp
 		)
 
 	IF(MSVC AND NOT CMAKE_CL_64)
@@ -262,8 +263,10 @@ IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
 		SET(SSSE3_FLAG "-mssse3")
 	ENDIF()
 	IF(SSSE3_FLAG)
-		SET_SOURCE_FILES_PROPERTIES(img/RpJpeg_ssse3.cpp
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
+		FOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
+			SET_SOURCE_FILES_PROPERTIES(${ssse3_file}
+				APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSSE3_FLAG} ")
+		ENDFOREACH(ssse3_file ${libromdata_OPTIMIZE_SRCS})
 	ENDIF(SSSE3_FLAG)
 ENDIF()
 UNSET(arch)

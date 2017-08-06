@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder.cpp: Image decoding functions.                             *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify it *
  * under the terms of the GNU General Public License as published by the   *
@@ -14,9 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_IMG_IMAGEDECODER_HPP__
@@ -27,6 +26,12 @@
 
 // C includes.
 #include <stdint.h>
+
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_IX86) || defined(_M_X64)
+# include "librpbase/cpuflags_x86.h"
+# define IMAGEDECODER_HAS_SSSE3 1
+#endif
 
 namespace LibRpBase {
 
@@ -202,6 +207,7 @@ class ImageDecoder
 
 		/**
 		 * Convert a linear 24-bit RGB image to rp_image.
+		 * Standard version using regular C++ code.
 		 * @param px_format	[in] 24-bit pixel format.
 		 * @param width		[in] Image width.
 		 * @param height	[in] Image height.
@@ -210,7 +216,38 @@ class ImageDecoder
 		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
 		 * @return rp_image, or nullptr on error.
 		 */
-		static rp_image *fromLinear24(PixelFormat px_format,
+		static rp_image *fromLinear24_cpp(PixelFormat px_format,
+			int width, int height,
+			const uint8_t *img_buf, int img_siz, int stride = 0);
+
+#ifdef IMAGEDECODER_HAS_SSSE3
+		/**
+		 * Convert a linear 24-bit RGB image to rp_image.
+		 * SSSE3-optimized version.
+		 * @param px_format	[in] 24-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] Image buffer. (must be byte-addressable)
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static rp_image *fromLinear24_ssse3(PixelFormat px_format,
+			int width, int height,
+			const uint8_t *img_buf, int img_siz, int stride = 0);
+#endif /* IMAGEDECODER_HAS_SSSE3 */
+
+		/**
+		 * Convert a linear 24-bit RGB image to rp_image.
+		 * @param px_format	[in] 24-bit pixel format.
+		 * @param width		[in] Image width.
+		 * @param height	[in] Image height.
+		 * @param img_buf	[in] Image buffer. (must be byte-addressable)
+		 * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+		 * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+		 * @return rp_image, or nullptr on error.
+		 */
+		static inline rp_image *fromLinear24(PixelFormat px_format,
 			int width, int height,
 			const uint8_t *img_buf, int img_siz, int stride = 0);
 
@@ -449,6 +486,30 @@ class ImageDecoder
 		 */
 		static inline int calcDreamcastSmallVQPaletteEntries(int width);
 };
+
+/**
+ * Convert a linear 24-bit RGB image to rp_image.
+ * @param px_format	[in] 24-bit pixel format.
+ * @param width		[in] Image width.
+ * @param height	[in] Image height.
+ * @param img_buf	[in] Image buffer. (must be byte-addressable)
+ * @param img_siz	[in] Size of image data. [must be >= (w*h)*3]
+ * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
+ * @return rp_image, or nullptr on error.
+ */
+inline rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+	int width, int height,
+	const uint8_t *img_buf, int img_siz, int stride)
+{
+# ifdef IMAGEDECODER_HAS_SSSE3
+	if (RP_CPU_HasSSSE3()) {
+		return fromLinear24_ssse3(px_format, width, height, img_buf, img_siz, stride);
+	} else
+# endif /* IMAGEDECODER_HAS_SSSE3 */
+	{
+		return fromLinear24_cpp(px_format, width, height, img_buf, img_siz, stride);
+	}
+}
 
 /**
  * Get the number of palette entries for Dreamcast SmallVQ textures.

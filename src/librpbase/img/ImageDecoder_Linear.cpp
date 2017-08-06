@@ -1,6 +1,7 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase)                        *
  * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
+ * Standard version. (C++ code only)                                       *
  *                                                                         *
  * Copyright (c) 2016-2017 by David Korth.                                 *
  *                                                                         *
@@ -14,9 +15,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
  * GNU General Public License for more details.                            *
  *                                                                         *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.           *
+ * You should have received a copy of the GNU General Public License       *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.   *
  ***************************************************************************/
 
 #include "ImageDecoder.hpp"
@@ -608,6 +608,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 /**
  * Convert a linear 24-bit RGB image to rp_image.
+ * Standard version using regular C++ code.
  * @param px_format	[in] 24-bit pixel format.
  * @param width		[in] Image width.
  * @param height	[in] Image height.
@@ -616,7 +617,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
-rp_image *ImageDecoder::fromLinear24(PixelFormat px_format,
+rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, int img_siz, int stride)
 {
