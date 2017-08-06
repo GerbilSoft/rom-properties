@@ -43,21 +43,21 @@ namespace LibRpBase {
 void RpJpegPrivate::decodeBGRtoARGB(rp_image *img, jpeg_decompress_struct *cinfo, JSAMPARRAY buffer)
 {
 	assert(reinterpret_cast<intptr_t>(buffer) % 16 == 0);
+	assert(img->format() == rp_image::FORMAT_ARGB32);
 
 	// SSSE3-optimized version based on:
 	// - https://stackoverflow.com/questions/2973708/fast-24-bit-array-32-bit-array-conversion
 	// - https://stackoverflow.com/a/2974266
+	__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
+	__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
+	argb32_t *dest = static_cast<argb32_t*>(img->bits());
+	const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - img->width();
 	while (cinfo->output_scanline < cinfo->output_height) {
-		// NOTE: jpeg_read_scanlines() increments the scanline value,
-		// so we have to save the rp_image scanline pointer first.
-		argb32_t *dest = static_cast<argb32_t*>(img->scanLine(cinfo->output_scanline));
 		jpeg_read_scanlines(cinfo, buffer, 1);
 		const uint8_t *src = buffer[0];
 
 		// Process 16 pixels per iteration using SSSE3.
 		unsigned int x = cinfo->output_width;
-		__m128i shuf_mask = _mm_setr_epi8(2,1,0,-1, 5,4,3,-1, 8,7,6,-1, 11,10,9,-1);
-		__m128i alpha_mask = _mm_setr_epi8(0,0,0,-1, 0,0,0,-1, 0,0,0,-1, 0,0,0,-1);
 		for (; x > 15; x -= 16, dest += 16, src += 16*3) {
 			const __m128i *xmm_src = reinterpret_cast<const __m128i*>(src);
 			__m128i *xmm_dest = reinterpret_cast<__m128i*>(dest);
@@ -99,6 +99,9 @@ void RpJpegPrivate::decodeBGRtoARGB(rp_image *img, jpeg_decompress_struct *cinfo
 			dest->g = src[1];
 			dest->b = src[2];
 		}
+
+		// Next line.
+		dest += dest_stride_adj;
 	}
 }
 
