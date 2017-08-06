@@ -191,7 +191,6 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 	// FIXME: Add support for these formats.
 	// For now, redirect back to the C++ version.
 	switch (px_format) {
-		case PXF_G16R16:
 		case PXF_A2R10G10B10:
 		case PXF_A2B10G10R10:
 			return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
@@ -294,6 +293,12 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		case PXF_SWAP_RGBx32:
 			shuf_mask = _mm_setr_epi8(2,1,0,3, 6,5,4,7, 10,9,8,11, 14,13,12,15);
 			has_alpha = (px_format == PXF_SWAP_RGBA32);
+			break;
+
+		case PXF_G16R16:
+			// NOTE: Truncates to G8R8.
+			shuf_mask = _mm_setr_epi8(-1,3,1,-1, -1,7,5,-1, -1,11,9,-1, -1,15,13,-1);
+			has_alpha = false;
 			break;
 
 		default:
@@ -451,6 +456,15 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 					}
 					break;
 
+				case PXF_G16R16:
+					// G16R16.
+					for (; x > 0; x--) {
+						*px_dest = ImageDecoderPrivate::G16R16_to_ARGB32(le32_to_cpu(*img_buf));
+						img_buf++;
+						px_dest++;
+					}
+					break;
+
 				default:
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
 					delete img;
@@ -463,8 +477,13 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 		}
 
 		// Set the sBIT metadata.
-		static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
-		img->set_sBIT(&sBIT_x32);
+		if (unlikely(px_format == PXF_G16R16)) {
+			static const rp_image::sBIT_t sBIT_G16R16 = {8,8,1,0,0};
+			img->set_sBIT(&sBIT_G16R16);
+		} else {
+			static const rp_image::sBIT_t sBIT_x32 = {8,8,8,0,0};
+			img->set_sBIT(&sBIT_x32);
+		}
 	}
 
 	// Image has been converted.
