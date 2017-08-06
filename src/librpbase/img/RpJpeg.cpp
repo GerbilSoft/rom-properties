@@ -609,7 +609,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 						dest->g = src[1];
 						dest->b = src[2];
 					}
-					break;
 				}
 				break;
 
@@ -647,7 +646,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 						dest->g = k * src[1] / 255;	// Green
 						dest->b = k * src[2] / 255;	// Blue
 					}
-					break;
 				}
 				break;
 
