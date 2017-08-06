@@ -39,9 +39,8 @@ void SuperMagicDrive::decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *R
 {
 	// FIXME: MSVC 2017 generates `movdqu` instead of `movdqa`.
 	// https://developercommunity.visualstudio.com/content/problem/48123/perf-regression-movdqu-instructions-are-generated.html
-
-	assert(reinterpret_cast<uintptr_t>(pDest) % 16 == 0);
-	assert(reinterpret_cast<uintptr_t>(pSrc) % 16 == 0);
+	ASSERT_ALIGNMENT(16, pDest);
+	ASSERT_ALIGNMENT(16, pSrc);
 
 	// First 8 KB of the source block is ODD bytes.
 	// Second 8 KB of the source block is EVEN bytes.

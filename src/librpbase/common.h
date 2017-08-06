@@ -125,4 +125,9 @@
  */
 #define ALIGN(a, x)	(((x)+((a)-1))&~((typeof(x))((a)-1)))
 
+/**
+ * Alignment assertion macro.
+ */
+#define ASSERT_ALIGNMENT(a, ptr)	assert(reinterpret_cast<intptr_t>(ptr) % 16 == 0);
+
 #endif /* __ROMPROPERTIES_LIBRPBASE_COMMON_H__ */

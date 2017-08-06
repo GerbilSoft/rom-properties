@@ -47,7 +47,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *img_buf, int img_siz, int stride)
 {
-	assert(reinterpret_cast<intptr_t>(img_buf) % 16 == 0);
+	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 3;
 
 	// Verify parameters.

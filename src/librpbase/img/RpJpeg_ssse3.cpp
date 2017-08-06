@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "RpJpeg_p.hpp"
+
+#include "../common.h"
 using LibRpBase::rp_image;
 
 // C includes. (C++ namespace)
@@ -42,7 +44,7 @@ namespace LibRpBase {
  */
 void RpJpegPrivate::decodeBGRtoARGB(rp_image *img, jpeg_decompress_struct *cinfo, JSAMPARRAY buffer)
 {
-	assert(reinterpret_cast<intptr_t>(buffer) % 16 == 0);
+	ASSERT_ALIGNMENT(16, buffer);
 	assert(img->format() == rp_image::FORMAT_ARGB32);
 
 	// SSSE3-optimized version based on:
