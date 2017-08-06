@@ -126,11 +126,13 @@ class TCreateThumbnail
 		 * @param imageType	[in] Image type.
 		 * @param req_size	[in] Requested image size.
 		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
+		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return External image, or null ImgClass on error.
 		 */
 		ImgClass getExternalImage(
 			const LibRpBase::RomData *romData, LibRpBase::RomData::ImageType imageType,
-			int req_size, ImgSize *pOutSize);
+			int req_size, ImgSize *pOutSize = nullptr,
+			LibRpBase::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.

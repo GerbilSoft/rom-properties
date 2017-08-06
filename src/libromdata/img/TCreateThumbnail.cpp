@@ -74,12 +74,18 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 	assert(imageType >= RomData::IMG_INT_MIN && imageType <= RomData::IMG_INT_MAX);
 	if (imageType < RomData::IMG_INT_MIN || imageType > RomData::IMG_INT_MAX) {
 		// Out of range.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return getNullImgClass();
 	}
 
 	const rp_image *image = romData->image(imageType);
 	if (!image) {
 		// No image.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return getNullImgClass();
 	}
 
@@ -113,16 +119,21 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
  * @param imageType	[in] Image type.
  * @param req_size	[in] Requested image size.
  * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
+ * @param sBIT		[out,opt] sBIT metadata.
  * @return External image, or null ImgClass on error.
  */
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	const RomData *romData, RomData::ImageType imageType,
-	int req_size, ImgSize *pOutSize)
+	int req_size, ImgSize *pOutSize,
+	rp_image::sBIT_t *sBIT)
 {
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
 	if (imageType < RomData::IMG_EXT_MIN || imageType > RomData::IMG_EXT_MAX) {
 		// Out of range.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return getNullImgClass();
 	}
 
@@ -132,6 +143,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	int ret = romData->extURLs(imageType, &extURLs, req_size);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return getNullImgClass();
 	}
 
@@ -184,6 +198,12 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 						pOutSize->width = dl_img->width();
 						pOutSize->height = dl_img->height();
 					}
+					// Get the sBIT metadata.
+					if (dl_img->get_sBIT(sBIT) != 0) {
+						// No sBIT metadata.
+						// Clear the struct.
+						memset(sBIT, 0, sizeof(*sBIT));
+					}
 					// TODO: Transparency processing?
 					return ret_img;
 				}
@@ -192,6 +212,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	}
 
 	// No image.
+	if (sBIT) {
+		memset(sBIT, 0, sizeof(*sBIT));
+	}
 	return getNullImgClass();
 }
 
@@ -295,8 +318,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int req_siz
 			imgpf = romData->imgpf(imgType);
 		} else {
 			// External image.
-			// TODO: sBIT metadata?
-			ret_img = getExternalImage(romData, imgType, req_size, &img_sz);
+			ret_img = getExternalImage(romData, imgType, req_size, &img_sz, sBIT);
 			imgpf = romData->imgpf(imgType);
 		}
 
@@ -389,6 +411,9 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int req_size, ImgCla
 	RomData *romData = RomDataFactory::create(file, true);
 	if (!romData) {
 		// ROM is not supported.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
@@ -415,6 +440,9 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_si
 	unique_ptr<IRpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
 	if (!file || !file->isOpen()) {
 		// Could not open the file.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
@@ -424,6 +452,9 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const rp_char *filename, int req_si
 	file.reset(nullptr);	// file is dup()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
+		if (sBIT) {
+			memset(sBIT, 0, sizeof(*sBIT));
+		}
 		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
