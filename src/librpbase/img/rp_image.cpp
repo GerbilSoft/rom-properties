@@ -489,7 +489,7 @@ void rp_image::set_sBIT(const sBIT_t *sBIT)
 
 /**
  * Get the number of significant bits per channel.
- * @param sBIT	[out] sBIT_t struct.
+ * @param sBIT	[out,opt] sBIT_t struct.
  * @return 0 on success; non-zero if not set or error.
  */
 int rp_image::get_sBIT(sBIT_t *sBIT) const

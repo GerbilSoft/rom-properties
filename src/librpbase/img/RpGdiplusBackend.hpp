@@ -209,8 +209,12 @@ class RpGdiplusBackend : public rp_image_backend
 
 		// BitmapData for locking.
 		bool m_isLocked;
+		uint8_t m_bytesppShift;	// bytespp shift value.
 		Gdiplus::PixelFormat m_gdipFmt;
 		Gdiplus::BitmapData m_gdipBmpData;
+
+		// Allocated image buffer for Bitmap::LockBits().
+		void *m_pImgBuf;
 
 		// Color palette.
 		// Pointer to Entries[0] is used for rp_image_backend::palette.
