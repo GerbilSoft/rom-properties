@@ -184,8 +184,8 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
 	if (msn_left) {
 		// Left pixel is the Most Significant Nybble.
-		for (int y = 0; y < height; y++) {
-			for (int x = width; x > 0; x -= 2) {
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			for (unsigned int x = (unsigned int)width; x > 0; x -= 2) {
 				px_dest[0] = (*img_buf >> 4);
 				px_dest[1] = (*img_buf & 0x0F);
 				img_buf++;
@@ -195,8 +195,8 @@ rp_image *ImageDecoder::fromLinearCI4(PixelFormat px_format,
 		}
 	} else {
 		// Left pixel is the Least Significant Nybble.
-		for (int y = 0; y < height; y++) {
-			for (int x = width; x > 0; x -= 2) {
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			for (unsigned int x = (unsigned int)width; x > 0; x -= 2) {
 				px_dest[0] = (*img_buf & 0x0F);
 				px_dest[1] = (*img_buf >> 4);
 				img_buf++;
@@ -384,7 +384,7 @@ rp_image *ImageDecoder::fromLinearMono(int width, int height,
 
 	// Convert one line at a time. (monochrome -> CI8)
 	uint8_t *px_dest = static_cast<uint8_t*>(img->bits());
-	for (int y = 0; y < height; y++) {
+	for (unsigned int y = (unsigned int)height; y > 0; y--) {
 		for (unsigned int x = (unsigned int)width; x > 0; x -= 8) {
 			uint8_t pxMono = *img_buf++;
 			// TODO: Unroll this loop?
@@ -461,7 +461,7 @@ rp_image *ImageDecoder::fromLinear8(PixelFormat px_format,
 
 #define fromLinear8_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
-			for (int y = 0; y < height; y++) { \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				unsigned int x; \
 				for (x = (unsigned int)width; x > 1; x -= 2) { \
 					px_dest[0] = ImageDecoderPrivate::fmt##_to_ARGB32(img_buf[0]); \
@@ -555,7 +555,7 @@ rp_image *ImageDecoder::fromLinear16(PixelFormat px_format,
 
 #define fromLinear16_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
-			for (int y = 0; y < height; y++) { \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
 					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(le16_to_cpu(*img_buf)); \
 					img_buf++; \
@@ -664,7 +664,7 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 	// Convert one line at a time. (24-bit -> ARGB32)
 	switch (px_format) {
 		case PXF_RGB888:
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
 					px_dest->b = img_buf[0];
 					px_dest->g = img_buf[1];
@@ -679,7 +679,7 @@ rp_image *ImageDecoder::fromLinear24_cpp(PixelFormat px_format,
 			break;
 
 		case PXF_BGR888:
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				for (unsigned int x = (unsigned int)width; x > 0; x--) {
 					px_dest->b = img_buf[2];
 					px_dest->g = img_buf[1];
@@ -772,7 +772,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 				// Stride is not identical. Copy each scanline.
 				uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
 				const unsigned int copy_len = (unsigned int)width * bytespp;
-				for (int y = 0; y < height; y++) {
+				for (unsigned int y = (unsigned int)height; y > 0; y--) {
 					memcpy(px_dest, img_buf, copy_len);
 					img_buf += (stride / bytespp);
 					px_dest += dest_stride_adj;
@@ -788,7 +788,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// TODO: pshufb on x86 with SSSE3?
 			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
 			argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0].a = img_buf_abgr32[0].a;
@@ -825,7 +825,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// Host-endian XRGB32.
 			// Pixel copy is needed, with alpha channel masking.
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = img_buf[0] | 0xFF000000;
@@ -851,7 +851,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// Host-endian RGBx32.
 			// Pixel copy is needed, with a right shift.
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = (img_buf[0] >> 8) | 0xFF000000;
@@ -877,7 +877,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// Byteswapped ARGB32.
 			// Pixel copy is needed, with byteswapping.
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = __swab32(img_buf[0]);
@@ -905,7 +905,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// TODO: pshufb on x86 with SSSE3?
 			const argb32_t *img_buf_abgr32 = reinterpret_cast<const argb32_t*>(img_buf);
 			argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0].a = img_buf_abgr32[0].r;
@@ -942,7 +942,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// Byteswapped XRGB32.
 			// Pixel copy is needed, with byteswapping and alpha channel masking.
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = __swab32(img_buf[0]) | 0xFF000000;
@@ -968,7 +968,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 			// Byteswapped RGBx32.
 			// Pixel copy is needed, with byteswapping and a right shift.
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits());
-			for (int y = 0; y < height; y++) {
+			for (unsigned int y = (unsigned int)height; y > 0; y--) {
 				unsigned int x;
 				for (x = (unsigned int)width; x > 1; x -= 2) {
 					px_dest[0] = (__swab32(img_buf[0]) >> 8) | 0xFF000000;
@@ -995,7 +995,7 @@ rp_image *ImageDecoder::fromLinear32(PixelFormat px_format,
 #define fromLinear32_convert(fmt, r,g,b,gr,a) \
 		case PXF_##fmt: { \
 			uint32_t *px_dest = static_cast<uint32_t*>(img->bits()); \
-			for (int y = 0; y < height; y++) { \
+			for (unsigned int y = (unsigned int)height; y > 0; y--) { \
 				for (unsigned int x = (unsigned int)width; x > 0; x--) { \
 					*px_dest = ImageDecoderPrivate::fmt##_to_ARGB32(le32_to_cpu(*img_buf)); \
 					img_buf++; \
