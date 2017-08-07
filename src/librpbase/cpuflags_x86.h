@@ -60,10 +60,15 @@ void RP_CPU_InitCPUFlags(void);
  */
 static FORCEINLINE int RP_CPU_HasMMX(void)
 {
+#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+	// 64-bit always has MMX.
+	return 1;
+#else
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
 	return (RP_CPU_Flags & RP_CPUFLAG_X86_MMX);
+#endif
 }
 
 /**
@@ -72,10 +77,15 @@ static FORCEINLINE int RP_CPU_HasMMX(void)
  */
 static FORCEINLINE int RP_CPU_HasSSE2(void)
 {
+#if defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+	// 64-bit always has SSE2.
+	return 1;
+#else
 	if (unlikely(!RP_CPU_Flags_Init)) {
 		RP_CPU_InitCPUFlags();
 	}
 	return (RP_CPU_Flags & RP_CPUFLAG_X86_SSE2);
+#endif
 }
 
 /**
