@@ -55,6 +55,18 @@ extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
 void RP_CPU_InitCPUFlags(void);
 
 /**
+ * Check if the CPU supports MMX.
+ * @return Non-zero if MMX is supported; 0 if not.
+ */
+static FORCEINLINE int RP_CPU_HasMMX(void)
+{
+	if (unlikely(!RP_CPU_Flags_Init)) {
+		RP_CPU_InitCPUFlags();
+	}
+	return (RP_CPU_Flags & RP_CPUFLAG_X86_MMX);
+}
+
+/**
  * Check if the CPU supports SSE2.
  * @return Non-zero if SSE2 is supported; 0 if not.
  */

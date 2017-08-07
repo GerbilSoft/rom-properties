@@ -147,16 +147,30 @@ ENDIF(ENABLE_DECRYPTION)
 # Optimized sources.
 STRING(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" arch)
 IF(arch MATCHES "^(i.|x)86$|^x86_64$|^amd64$")
+	# MSVC does not support MMX intrinsics in 64-bit builds.
+	# Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx
+	# TODO: Disable MMX on all 64-bit builds?
+	IF(NOT MSVC OR NOT CMAKE_CL_64)
+		SET(libromdata_OPTIMIZE_SRCS utils/SuperMagicDrive_mmx.cpp)
+	ENDIF(NOT MSVC OR NOT CMAKE_CL_64)
 	SET(libromdata_OPTIMIZE_SRCS
+		${libromdata_OPTIMIZE_SRCS}
 		utils/SuperMagicDrive_sse2.cpp
 		)
+
 	IF(MSVC AND NOT CMAKE_CL_64)
 		SET(SSE2_FLAG "/arch:SSE2")
 	ELSEIF(NOT MSVC)
 		# TODO: Other compilers?
 		# TODO: Not needed on 64-bit.
+		SET(MMX_FLAG "-mmmx")
 		SET(SSE2_FLAG "-msse2")
 	ENDIF()
+
+	IF(MMX_FLAG)
+		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_mmx.cpp
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${MMX_FLAG} ")
+	ENDIF(MMX_FLAG)
 	IF(SSE2_FLAG)
 		SET_SOURCE_FILES_PROPERTIES(utils/SuperMagicDrive_sse2.cpp
 			APPEND_STRING PROPERTIES COMPILE_FLAGS " ${SSE2_FLAG} ")

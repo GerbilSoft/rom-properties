@@ -29,6 +29,12 @@
 #if defined(__i386__) || defined(__x86_64__) || \
     defined(_M_IX86) || defined(_M_X64)
 # include "librpbase/cpuflags_x86.h"
+/* MSVC does not support MMX intrinsics in 64-bit builds. */
+/* Reference: https://msdn.microsoft.com/en-us/library/08x3t697(v=vs.110).aspx */
+/* TODO: Disable MMX on all 64-bit builds? */
+# if !defined(_MSC_VER) || (defined(_M_IX86) && !defined(_M_X64))
+#  define SMD_HAS_MMX 1
+# endif
 # define SMD_HAS_SSE2 1
 #endif
 #if defined(__x86_64__) || defined(_M_X64)
@@ -56,6 +62,17 @@ class SuperMagicDrive
 		 * @param pSrc	[in] Source block. (Must be 16 KB.)
 		 */
 		static void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+
+#if SMD_HAS_MMX
+		/**
+		 * Decode a Super Magic Drive interleaved block.
+		 * MMX-optimized version.
+		 * NOTE: Pointers must be 16-byte aligned.
+		 * @param pDest	[out] Destination block. (Must be 16 KB.)
+		 * @param pSrc	[in] Source block. (Must be 16 KB.)
+		 */
+		static void decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+#endif /* SMD_HAS_MMX */
 
 #if SMD_HAS_SSE2
 		/**
@@ -101,6 +118,11 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
 		decodeBlock_sse2(pDest, pSrc);
 	} else
 # endif /* SMD_HAS_SSE2 */
+# ifdef SMD_HAS_MMX
+	if (RP_CPU_HasMMX()) {
+		decodeBlock_mmx(pDest, pSrc);
+	} else
+#endif /* SMD_HAS_MMX */
 	{
 		decodeBlock_cpp(pDest, pSrc);
 	}

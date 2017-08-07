@@ -235,6 +235,39 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 	}
 }
 
+#ifdef SMD_HAS_MMX
+/**
+ * Test the MMX-optimized SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_mmx_test)
+{
+	if (!RP_CPU_HasMMX()) {
+		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+}
+
+/**
+ * Benchmark the MMX-optimized SMD decoder.
+ */
+TEST_F(SuperMagicDriveTest, decodeBlock_mmx_benchmark)
+{
+	if (!RP_CPU_HasMMX()) {
+		fprintf(stderr, "*** MMX is not supported on this CPU. Skipping test.");
+		return;
+	}
+
+	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
+	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
+		SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
+	}
+}
+#endif /* SMD_HAS_SSE2 */
+
 #ifdef SMD_HAS_SSE2
 /**
  * Test the SSE2-optimized SMD decoder.
@@ -252,7 +285,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 }
 
 /**
- * Benchmark the standard SMD decoder.
+ * Benchmark the SSE2-optimized SMD decoder.
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 {
