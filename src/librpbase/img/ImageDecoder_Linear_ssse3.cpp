@@ -133,6 +133,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 		}
 
 		// Remaining pixels.
+		if (x > 0) {
 		switch (px_format) {
 			case PXF_RGB888:
 				for (; x > 0; x--, px_dest++, img_buf += 3) {
@@ -155,7 +156,7 @@ rp_image *ImageDecoder::fromLinear24_ssse3(PixelFormat px_format,
 			default:
 				assert(!"Unsupported 24-bit pixel format.");
 				return nullptr;
-		}
+		} }
 
 		// Next line.
 		img_buf += src_stride_adj;
@@ -335,6 +336,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			}
 
 			// Remaining pixels.
+			if (x > 0) {
 			switch (px_format) {
 				case PXF_HOST_RGBA32:
 					// Host-endian RGBA32.
@@ -371,7 +373,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 					assert(!"Unsupported 32-bit alpha pixel format.");
 					delete img;
 					return nullptr;
-			}
+			} }
 
 			// Next line.
 			img_buf += src_stride_adj;
@@ -415,6 +417,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 			}
 
 			// Remaining pixels.
+			if (x > 0) {
 			switch (px_format) {
 				case PXF_HOST_xRGB32:
 					// Host-endian XRGB32.
@@ -469,7 +472,7 @@ rp_image *ImageDecoder::fromLinear32_ssse3(PixelFormat px_format,
 					assert(!"Unsupported 32-bit no-alpha pixel format.");
 					delete img;
 					return nullptr;
-			}
+			} }
 
 			// Next line.
 			img_buf += src_stride_adj;
