@@ -21,6 +21,7 @@
 #include "RelatedFile.hpp"
 #include "FileSystem.hpp"
 #include "RpFile.hpp"
+#include "TextFuncs.hpp"
 
 // C includes. (C++ namespace)
 #include <cctype>
@@ -115,8 +116,20 @@ IRpFile *openRelatedFile(const rp_char *filename, const rp_char *basename, const
 #endif /* _WIN32 */
 	}
 
-	// TODO: If the primary file is a symlink,
-	// dereference it and check the dereferenced directory.
+	if (!test_file && FileSystem::is_symlink(filename)) {
+		// Could not open the related file, but the
+		// primary file is a symlink. Dereference the
+		// symlink and check the original directory.
+		// TODO: Windows; move symlink resolution to main FileSystem code.
+#ifndef _WIN32
+		// Use realpath() to get the real path.
+		char *resolved_path = realpath(RP2U8_c(filename), nullptr);
+		if (resolved_path != nullptr) {
+			test_file = openRelatedFile(U82RP_c(resolved_path), basename, ext);
+			free(resolved_path);
+		}
+#endif
+	}
 	return test_file;
 }
 
